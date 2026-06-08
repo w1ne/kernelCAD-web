@@ -30,6 +30,35 @@
  * `prune()` evicts entries whose `lastAccessAt` is older than `ttlMs`. The
  * `vite.config.ts` plugin runs `prune()` on a `setInterval`. `get(token)`
  * bumps `lastAccessAt` so an active SSE connection keeps the session alive.
+ *
+ * An optional `maxEntries` count cap is the hard memory backstop for the
+ * hosted server: each entry pins a whole `BuiltModel` in the OCCT WASM heap, so
+ * an unbounded pool of N authenticated users would eventually OOM the single
+ * WASM instance. When inserting a new entry would exceed `maxEntries`, the
+ * least-recently-accessed entry is evicted first via the SAME drop path TTL
+ * uses, so SSE clients see identical `session.evicted` semantics. Default
+ * (undefined) = unbounded, preserving the single-user vite dev behavior.
+ *
+ * Multi-user scoping + global kernel lock
+ * =======================================
+ * The pool keys entries by an opaque `key` the caller composes, NOT by the
+ * bare `scriptPath`. The vite dev path passes only a `scriptPath` (so the key
+ * IS the path — unchanged single-user behavior); the hosted server composes a
+ * per-user key like `${userId}|${scriptPath}` so two users opening the same
+ * script get DIFFERENT tokens/entries and a leaked/guessed token can't reach
+ * another user's live model. The owner is carried on the entry as `ownerId`
+ * (the pool does NOT enforce auth — it just records the owner so the server
+ * route can 403 on a token/owner mismatch).
+ *
+ * The hosted server shares ONE OCCT WASM instance across the pool AND its
+ * stateless `/__kernelcad/mesh` route, so every kernel-touching op must be
+ * serialized behind a global mutex the CALLER injects via `runExclusive`. The
+ * pool wraps its OWN kernel calls (the `build(...)` in `getOrCreate`/rebuild)
+ * in `runExclusive`, and re-exposes it as `pool.runExclusive` so the ENDPOINTS
+ * (param-update drain, per-frame bake solves — which live in the endpoint
+ * files, not the pool) route their kernel work through the same lock. The
+ * default `runExclusive` is an identity passthrough (`fn => fn()`), so the vite
+ * dev path runs unlocked exactly as before.
  */
 
 import { randomUUID } from 'node:crypto';
@@ -39,6 +68,16 @@ import type { BuiltModel } from '../modeling/buildModel';
 export interface SessionPoolEntry {
   readonly token: string;
   readonly scriptPath: string;
+  /** Opaque identity key the caller composed (e.g. `${userId}|${scriptPath}`
+   *  on the hosted server, or just `scriptPath` on the vite dev path). Two
+   *  `getOrCreate` calls with the same key share one entry; different keys get
+   *  distinct entries even for the same `scriptPath`. */
+  readonly key: string;
+  /** Owner this session belongs to (the hosted server's authenticated user
+   *  id), or `undefined` in single-user dev mode. The pool only RECORDS this —
+   *  it does NOT enforce auth. The server route reads `entry.ownerId` to 403 on
+   *  a token/owner mismatch (a leaked/guessed token from another user). */
+  readonly ownerId?: string;
   /** Swapped in place by `rebuildByScript` — always read, never cache. */
   model: BuiltModel;
   /** Wall-clock ms (Date.now()) of the most recent access. */
@@ -56,15 +95,47 @@ export interface SessionPoolOptions {
   /** Time-to-live for idle sessions, in milliseconds. Entries whose
    *  `lastAccessAt` is older than `now - ttlMs` are evicted on `prune()`. */
   ttlMs: number;
+  /** Hard cap on live entries. Inserting a new entry past this evicts the
+   *  least-recently-accessed entry first (same drop path TTL uses). Default
+   *  (undefined) = unbounded, preserving single-user vite behavior. The hosted
+   *  server sets this as the OCCT-heap memory backstop across N users. */
+  maxEntries?: number;
+  /** Caller-provided global mutex. Every kernel-touching op (the pool's
+   *  `build(...)`, plus endpoint param-update/bake solves routed through
+   *  `pool.runExclusive`) runs inside this so a single shared OCCT WASM
+   *  instance is never re-entered concurrently. Default = identity passthrough
+   *  (`fn => fn()`), i.e. no locking — the vite dev path is single-user. */
+  runExclusive?: <T>(fn: () => Promise<T>) => Promise<T>;
+}
+
+/** Options for a single `getOrCreate` call. `key` defaults to the bare
+ *  `scriptPath` (single-user dev behavior); the hosted server composes a
+ *  per-user key and passes `ownerId` so the route can later authorize. */
+export interface GetOrCreateOptions {
+  /** Opaque identity key. Defaults to `scriptPath` when omitted. */
+  key?: string;
+  /** Owner recorded on the entry (the authenticated user id). */
+  ownerId?: string;
 }
 
 export interface SessionPool {
   /**
-   * Look up or build a session for the given script path. If an entry already
-   * exists for the script and hasn't been pruned, returns the same token so
-   * multiple browser tabs on the same script share a session.
+   * Look up or build a session for the given script path. Sessions are keyed by
+   * `opts.key` (defaulting to `scriptPath`): if a live entry already exists for
+   * that key, the same token is returned so multiple browser tabs sharing the
+   * key share a session. The hosted server passes a per-user `key`
+   * (`${userId}|${scriptPath}`) and an `ownerId` so distinct users never share
+   * an entry; the vite dev path passes just `scriptPath` (key === scriptPath,
+   * ownerId undefined) — unchanged single-user behavior.
+   *
+   * `scriptPath` is always the real path used to build/load the model.
    */
-  getOrCreate(scriptPath: string): Promise<SessionPoolEntry>;
+  getOrCreate(scriptPath: string, opts?: GetOrCreateOptions): Promise<SessionPoolEntry>;
+  /** Run `fn` under the pool's global kernel lock. Endpoints (param-update
+   *  drain, per-frame bake solves) MUST route their kernel work through this so
+   *  it serializes against the pool's own `build(...)` on the shared OCCT WASM
+   *  instance. Default impl is an identity passthrough (no locking). */
+  runExclusive<T>(fn: () => Promise<T>): Promise<T>;
   /** Get the entry by token. Side effect: bumps `lastAccessAt`. */
   get(token: string): SessionPoolEntry | undefined;
   /** Drop the entry (e.g. when the user closes the tab or rebuilds). */
@@ -99,8 +170,15 @@ interface EntryInternals {
 
 export function createSessionPool(opts: SessionPoolOptions): SessionPool {
   const byToken = new Map<string, SessionPoolEntry>();
-  const byScript = new Map<string, string>();
+  // Reverse index from the opaque identity key (NOT the bare scriptPath) to
+  // the token, so same-key requests share a session and different keys (e.g.
+  // two users on the same script) get distinct entries.
+  const byKey = new Map<string, string>();
   const internals = new Map<string, EntryInternals>();
+  // Identity passthrough by default — the vite dev path is single-user and
+  // runs the kernel unlocked exactly as before.
+  const runExclusive: <T>(fn: () => Promise<T>) => Promise<T> =
+    opts.runExclusive ?? ((fn) => fn());
 
   function touch(entry: SessionPoolEntry): SessionPoolEntry {
     entry.lastAccessAt = Date.now();
@@ -131,15 +209,30 @@ export function createSessionPool(opts: SessionPoolOptions): SessionPool {
     internals.delete(token);
     byToken.delete(token);
     // Only drop the reverse index if it still points at this token —
-    // a subsequent `getOrCreate` for the same script may have already
-    // re-registered the script under a different token.
-    if (byScript.get(entry.scriptPath) === token) {
-      byScript.delete(entry.scriptPath);
+    // a subsequent `getOrCreate` for the same key may have already
+    // re-registered the key under a different token.
+    if (byKey.get(entry.key) === token) {
+      byKey.delete(entry.key);
     }
   }
 
+  /** Evict the single least-recently-accessed entry. Used as the `maxEntries`
+   *  backstop on insert. Same drop path as TTL eviction → identical
+   *  `session.evicted` semantics for SSE clients. */
+  function evictLru(): void {
+    let oldestToken: string | undefined;
+    let oldestAt = Infinity;
+    for (const [token, entry] of byToken) {
+      if (entry.lastAccessAt < oldestAt) {
+        oldestAt = entry.lastAccessAt;
+        oldestToken = token;
+      }
+    }
+    if (oldestToken !== undefined) drop(oldestToken);
+  }
+
   async function rebuildEntry(entry: SessionPoolEntry): Promise<void> {
-    const model = await opts.build(entry.scriptPath);
+    const model = await runExclusive(() => opts.build(entry.scriptPath));
     entry.model = model;
     touch(entry);
     wireEngine(entry);
@@ -149,20 +242,36 @@ export function createSessionPool(opts: SessionPoolOptions): SessionPool {
   }
 
   return {
-    async getOrCreate(scriptPath: string): Promise<SessionPoolEntry> {
-      const existingToken = byScript.get(scriptPath);
+    runExclusive,
+
+    async getOrCreate(scriptPath: string, options?: GetOrCreateOptions): Promise<SessionPoolEntry> {
+      const key = options?.key ?? scriptPath;
+      const ownerId = options?.ownerId;
+      const existingToken = byKey.get(key);
       if (existingToken !== undefined) {
         const existing = byToken.get(existingToken);
         if (existing) return touch(existing);
-        // Stale reverse-index entry (entry was pruned between accesses).
-        byScript.delete(scriptPath);
+        // Stale reverse-index entry (entry was pruned/evicted between accesses).
+        byKey.delete(key);
       }
-      const model = await opts.build(scriptPath);
+      const model = await runExclusive(() => opts.build(scriptPath));
+      // Enforce the count cap AFTER the (awaited) build but BEFORE inserting,
+      // so a fresh insert never pushes the live count past maxEntries. Evict
+      // the LRU entry first — never the one we're about to add.
+      if (opts.maxEntries !== undefined) {
+        while (byToken.size >= opts.maxEntries) {
+          const before = byToken.size;
+          evictLru();
+          if (byToken.size >= before) break; // safety: nothing evictable
+        }
+      }
       const token = randomUUID();
       const listeners = new Set<(affectedIds: string[]) => void>();
       const entry: SessionPoolEntry = {
         token,
         scriptPath,
+        key,
+        ownerId,
         model,
         lastAccessAt: Date.now(),
         onRelower(cb) {
@@ -179,7 +288,7 @@ export function createSessionPool(opts: SessionPoolOptions): SessionPool {
         rebuildQueued: false,
       });
       byToken.set(token, entry);
-      byScript.set(scriptPath, token);
+      byKey.set(key, token);
       wireEngine(entry);
       return entry;
     },

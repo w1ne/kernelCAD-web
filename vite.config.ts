@@ -161,6 +161,14 @@ function kernelCadMeshEndpoint(): Plugin {
               import('./src/server/middleware/animationBakeEndpoint'),
               import('./src/modeling/buildModel'),
             ]);
+            // Single-user dev pool: no `maxEntries` cap (unbounded) and no
+            // `runExclusive` lock (identity passthrough) — one local developer
+            // shares this OCCT instance, so the multi-user backstops are off.
+            // The hosted server injects a real `maxEntries` (OCCT-heap memory
+            // backstop) and a real `runExclusive` mutex (the kernel is shared
+            // with the stateless mesh route), composes a per-user `key` +
+            // `ownerId` on `getOrCreate`, and routes its param-update/bake
+            // kernel work through `pool.runExclusive`.
             const pool = createSessionPool({
               build: (scriptPath) => buildModelFromFile({ file: scriptPath }),
               ttlMs: 5 * 60 * 1000,
