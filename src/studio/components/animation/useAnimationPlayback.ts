@@ -305,54 +305,79 @@ export function useAnimationPlayback(
         });
     }, [sampleBatch]);
 
-    // --- rAF clock ------------------------------------------------------------
+    // --- rAF clock (absolute wall-time anchoring) -----------------------------
+    // The displayed time is a PURE FUNCTION of (now - anchorWall) — never a
+    // running sum of per-frame deltas. This makes playback oscillation-proof by
+    // construction: if two rAF chains ever fire in the same frame (the dev
+    // StrictMode mount/cleanup/mount race orphans a chain whose committed frame
+    // outran its cancel), both compute the SAME tMs from the SAME anchor for the
+    // same `now`, so the result is idempotent — no leapfrogging, no backward
+    // step. `maxElapsedRef` additionally clamps elapsed to be non-decreasing so
+    // an out-of-order (earlier) `now` delivered by an orphaned chain can never
+    // drag the timeline backward within a segment.
     const rafRef = useRef<number | null>(null);
-    const lastNowRef = useRef<number | null>(null);
-    const dirRef = useRef<1 | -1>(1);
+    // Generation token: every (re)start bumps it; only callbacks carrying the
+    // current generation may run or reschedule. Stale orphan chains bail.
+    const genRef = useRef(0);
+    const anchorWallRef = useRef(0);   // clock.now() at the anchor
+    const anchorTMsRef = useRef(0);    // displayed timeline pos at the anchor
+    const maxElapsedRef = useRef(0);   // monotonic forward distance from anchor
+
+    // Re-anchor the clock to the current displayed pose at the current wall
+    // time. Called on play, speed change, mode change, and scrub. After this,
+    // tMs = map(anchorTMs + (now - anchorWall) * speed).
+    const reanchor = useCallback(() => {
+        anchorWallRef.current = clockRef.current.now();
+        anchorTMsRef.current = tMsRef.current;
+        maxElapsedRef.current = 0;
+    }, []);
 
     const stopRaf = useCallback(() => {
+        // Invalidate any in-flight chain (single-flight guard) and cancel the
+        // scheduled frame.
+        genRef.current += 1;
         if (rafRef.current !== null) {
             clockRef.current.cancel(rafRef.current);
             rafRef.current = null;
         }
-        lastNowRef.current = null;
     }, []);
 
     const tickRef = useRef<(nowMs: number) => void>(() => {});
     useEffect(() => {
         tickRef.current = (nowMs: number) => {
             if (!mountedRef.current) return;
+            // Single-flight: capture the generation this chain belongs to.
+            const myGen = genRef.current;
             const dur = metaRef.current?.durationMs ?? 0;
-            const prevNow = lastNowRef.current;
-            lastNowRef.current = nowMs;
-            if (prevNow === null) {
-                rafRef.current = clockRef.current.request((n) => tickRef.current(n));
-                return;
-            }
-            const wallDelta = nowMs - prevNow;
-            const advance = wallDelta * speedRef.current * dirRef.current;
-            let next = tMsRef.current + advance;
-            let keepGoing = true;
 
             if (dur <= 0) {
-                next = 0;
-                keepGoing = false;
-            } else if (modeRef.current === 'once') {
-                if (next >= dur) { next = dur; keepGoing = false; }
-                else if (next < 0) { next = 0; keepGoing = false; }
-            } else if (modeRef.current === 'loop') {
-                if (next >= dur) next = next % dur;
-                if (next < 0) next = ((next % dur) + dur) % dur;
-            } else { // reciprocate — ping-pong at the boundaries
-                if (next >= dur) {
-                    next = dur - (next - dur);
-                    if (next < 0) next = 0;
-                    dirRef.current = -1;
-                } else if (next <= 0) {
-                    next = -next;
-                    if (next > dur) next = dur;
-                    dirRef.current = 1;
-                }
+                tMsRef.current = 0;
+                setTMs(0);
+                setIsPlaying(false);
+                stopRaf();
+                return;
+            }
+
+            // Absolute-anchored elapsed, clamped non-decreasing so an orphaned
+            // chain's out-of-order `now` can't run the clock backward.
+            const rawElapsed = (nowMs - anchorWallRef.current) * speedRef.current;
+            const elapsed = Math.max(maxElapsedRef.current, rawElapsed);
+            maxElapsedRef.current = elapsed;
+            const advanced = anchorTMsRef.current + elapsed;
+
+            let next: number;
+            let keepGoing = true;
+            const mode = modeRef.current;
+            if (mode === 'once') {
+                if (advanced >= dur) { next = dur; keepGoing = false; }
+                else next = advanced;
+            } else if (mode === 'loop') {
+                next = advanced % dur;
+            } else {
+                // reciprocate as a pure triangle wave of period 2*dur — no flip
+                // state, so there is no double-back glitch at the apex.
+                const phase = advanced % (2 * dur);
+                next = phase <= dur ? phase : 2 * dur - phase;
             }
 
             tMsRef.current = next;
@@ -360,6 +385,10 @@ export function useAnimationPlayback(
             // Pure client-side: interpolate + apply baked transforms. NO param
             // edit during playback.
             applyBakedAt(next);
+
+            // Only the current-generation chain may reschedule; a stale orphan
+            // (whose generation was bumped by stopRaf/re-anchor) stops here.
+            if (myGen !== genRef.current) return;
 
             if (keepGoing) {
                 rafRef.current = clockRef.current.request((n) => tickRef.current(n));
@@ -378,7 +407,6 @@ export function useAnimationPlayback(
         // `once` parked at the end restarts from 0.
         if (modeRef.current === 'once' && tMsRef.current >= (meta.durationMs ?? 0)) {
             tMsRef.current = 0;
-            dirRef.current = 1;
             setTMs(0);
         }
         // Kick the bake if not ready; playback starts moving once it resolves
@@ -401,16 +429,27 @@ export function useAnimationPlayback(
         else play();
     }, [isPlaying, play, pause]);
 
-    // Drive the loop off `isPlaying`.
+    // Drive the loop off `isPlaying`. `stopRaf` bumps the generation and cancels
+    // any in-flight frame BEFORE scheduling a new chain, so even the StrictMode
+    // mount/cleanup/mount cycle can never leave two live chains: the orphaned
+    // chain carries a stale generation and bails on its next tick.
     useEffect(() => {
         if (!isPlaying) {
             stopRaf();
             return;
         }
-        lastNowRef.current = null;
+        stopRaf();         // single-flight: kill any prior chain first
+        reanchor();        // absolute anchor at the current pose + wall time
         rafRef.current = clockRef.current.request((n) => tickRef.current(n));
         return () => { stopRaf(); };
-    }, [isPlaying, stopRaf]);
+    }, [isPlaying, stopRaf, reanchor]);
+
+    // Re-anchor on speed or mode change so the displayed time stays continuous
+    // (no jump) and the new rate/mode applies from the current pose forward.
+    useEffect(() => {
+        if (!isPlaying) return;
+        reanchor();
+    }, [speed, mode, isPlaying, reanchor]);
 
     // Unmount: stop rAF and drop viewport overrides so the next session starts
     // from the kernel's solved pose, not a left-over baked frame.
@@ -427,16 +466,17 @@ export function useAnimationPlayback(
         const dur = metaRef.current?.durationMs ?? 0;
         const clamped = Math.max(0, Math.min(dur, to));
         setIsPlaying(false);
-        dirRef.current = 1;
+        stopRaf();             // single-flight: kill any in-flight chain
         tMsRef.current = clamped;
         setTMs(clamped);
+        reanchor();            // anchor the (paused) clock to the scrubbed pose
         // Ensure the bake, then apply immediately (instant scrub). Sync the
         // kernel to the scrubbed pose for state coherence.
         void ensureBake().then((baked) => {
             if (baked && mountedRef.current) applyBakedAt(clamped);
         });
         syncKernelTo(clamped);
-    }, [ensureBake, applyBakedAt, syncKernelTo]);
+    }, [ensureBake, applyBakedAt, syncKernelTo, stopRaf, reanchor]);
 
     const trackValues = useMemo<TrackReadout[]>(() => {
         if (!metadata) return [];

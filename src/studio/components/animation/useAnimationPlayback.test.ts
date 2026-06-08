@@ -46,6 +46,54 @@ function fakeBake(): BakedTimeline {
     };
 }
 
+/**
+ * Reproduce the live-browser oscillation deterministically.
+ *
+ * Confirmed mechanism: in the dev StrictMode browser there are intermittently
+ * TWO live self-rescheduling rAF chains (the `isPlaying` effect schedules one;
+ * the tick self-reschedules another; a mount/cleanup/mount cycle whose cleanup
+ * `cancelAnimationFrame` landed *after* the browser committed the prior frame
+ * orphans one of them). Both chains share `lastNowRef`/`tMsRef`. Because rAF
+ * delivers each chain's frame with ITS OWN timestamp, the two chains fire with
+ * out-of-order `nowMs`: chain A advances lastNow to 100, then orphan chain B's
+ * already-committed frame fires with nowMs=92 → `wallDelta = 92 - 100 = -8` →
+ * tMs steps BACKWARD. Next frame steps forward again. That is the back-and-forth
+ * oscillation the controller sampled (744,760,794,777 — a 17ms backward step).
+ *
+ * This clock retains the most-recent scheduled callback as the "live" chain and
+ * lets the test fire it (`stepLive`) and ALSO fire it a second time as an
+ * orphan with an earlier timestamp (`stepOrphan`) — exactly the out-of-order
+ * two-chain delivery. With absolute-anchored playback both calls compute the
+ * SAME tMs from the shared anchor (idempotent); with delta accumulation the
+ * orphan drags tMs backward.
+ */
+function makeRacingClock(): PlaybackClock & {
+    /** Fire the live chain at wall-time `nowMs` (advances the clock). */
+    stepLive: (nowMs: number) => void;
+    /** Re-fire the live chain's callback as an orphaned second chain whose
+     *  browser-committed frame arrives with an earlier `nowMs`. Does not change
+     *  which callback is "live". */
+    stepOrphan: (nowMs: number) => void;
+    hasLive: boolean;
+} {
+    let nowMs = 0;
+    let handle = 0;
+    let live: ((n: number) => void) | null = null;
+    return {
+        request(fn) { live = fn; handle += 1; return handle; },
+        cancel() { /* orphan frames are already committed; cancel is a no-op */ },
+        now() { return nowMs; },
+        stepLive(t: number) { nowMs = t; const fn = live; if (fn) fn(t); },
+        stepOrphan(t: number) {
+            // The orphan frame fires with its own (earlier) timestamp without
+            // becoming the live chain. The browser would pass it nowMs=t.
+            const fn = live;
+            if (fn) fn(t);
+        },
+        get hasLive() { return live !== null; },
+    };
+}
+
 function makeManualClock(): PlaybackClock & { flush: (nowMs: number) => void; pending: boolean } {
     let cb: ((nowMs: number) => void) | null = null;
     let handle = 0;
@@ -297,5 +345,123 @@ describe('useAnimationPlayback (baked)', () => {
         expect(h.clock.pending).toBe(false);
         // End-of-playback kernel sync: exactly one edit at the final pose.
         expect(h.update).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('useAnimationPlayback — oscillation (clock monotonicity)', () => {
+    function baseHarness() {
+        return {
+            apply: vi.fn(),
+            clear: vi.fn(),
+            update: vi.fn().mockResolvedValue(undefined),
+            bakeFetcher: vi.fn().mockResolvedValue(fakeBake()),
+        };
+    }
+
+    function renderRacing(
+        clock: PlaybackClock,
+        h: ReturnType<typeof baseHarness>,
+    ) {
+        return renderHook(() =>
+            useAnimationPlayback({
+                metadata: FIXTURE,
+                sessionToken: 't1',
+                updateParam: h.update,
+                applyPartTransform: h.apply,
+                clearPartTransforms: h.clear,
+                bakeFetcher: h.bakeFetcher,
+                clock,
+            }),
+        );
+    }
+
+    // REPRODUCTION: two concurrent rAF chains (the documented mechanism — a
+    // StrictMode mount/cleanup/mount cycle whose cleanup cancel landed after the
+    // browser had already committed the prior chain's frame). Both chains share
+    // lastNowRef/tMsRef. We interleave a "stale" orphan frame with a "current"
+    // frame; on delta-accumulation code the orphan computes its advance against
+    // the other chain's lastNow, leapfrogging tMs forward then snapping it back
+    // — the visible oscillation. Absolute-anchored code computes the SAME tMs
+    // from the shared anchor regardless of which chain fires → idempotent.
+    it('loop playback survives two interleaved rAF chains without stepping backward', async () => {
+        const clock = makeRacingClock();
+        const h = baseHarness();
+        const { result } = renderRacing(clock, h);
+
+        await act(async () => { result.current.play(); await Promise.resolve(); await Promise.resolve(); });
+
+        const samples: number[] = [];
+        let t = 0;
+        for (let i = 0; i < 60; i++) {
+            t += 16;
+            // Fire the live chain at the frame's wall-time.
+            await act(async () => { clock.stepLive(t); await Promise.resolve(); });
+            samples.push(result.current.tMs);
+            // Every few frames, an orphaned second chain's already-committed
+            // frame arrives with an EARLIER timestamp — the StrictMode race.
+            if (i % 3 === 0) {
+                await act(async () => { clock.stepOrphan(t - 8); await Promise.resolve(); });
+                samples.push(result.current.tMs);
+            }
+        }
+
+        const dur = FIXTURE.durationMs;
+        const backwardNonWrap = samples
+            .map((v, i) => (i === 0 ? 0 : v - samples[i - 1]))
+            .filter((d) => d < 0 && Math.abs(d) < dur / 2);
+        expect(backwardNonWrap).toEqual([]);
+    });
+
+    it('reciprocate produces a clean triangle (no jittery double-back at the apex)', async () => {
+        const clock = makeRacingClock();
+        const h = baseHarness();
+        const { result } = renderRacing(clock, h);
+
+        act(() => { result.current.setMode('reciprocate'); });
+        await act(async () => { result.current.play(); await Promise.resolve(); await Promise.resolve(); });
+
+        const samples: number[] = [];
+        let t = 0;
+        for (let i = 0; i < 700; i++) { // > 2x duration to cross the apex
+            t += 16;
+            await act(async () => { clock.stepLive(t); await Promise.resolve(); });
+            samples.push(result.current.tMs);
+            if (i % 3 === 0) {
+                await act(async () => { clock.stepOrphan(t - 8); await Promise.resolve(); });
+                samples.push(result.current.tMs);
+            }
+        }
+
+        let reversals = 0;
+        let prevDir = 0;
+        for (let i = 1; i < samples.length; i++) {
+            const d = samples[i] - samples[i - 1];
+            const dir = d > 1e-6 ? 1 : d < -1e-6 ? -1 : 0;
+            if (dir !== 0 && prevDir !== 0 && dir !== prevDir) reversals++;
+            if (dir !== 0) prevDir = dir;
+        }
+        // 0→4000 up, 4000→0 down, 0→~3200 up → at most 3 direction reversals for
+        // a clean triangle. The oscillation bug yields dozens.
+        expect(reversals).toBeLessThanOrEqual(3);
+    });
+
+    it('speed change mid-play does not jump tMs (re-anchor preserves position)', async () => {
+        const clock = makeRacingClock();
+        const h = baseHarness();
+        const { result } = renderRacing(clock, h);
+
+        await act(async () => { result.current.play(); await Promise.resolve(); await Promise.resolve(); });
+        let t = 0;
+        for (let i = 0; i < 30; i++) {
+            t += 16;
+            await act(async () => { clock.stepLive(t); await Promise.resolve(); });
+        }
+        const before = result.current.tMs;
+        act(() => { result.current.setSpeed(0.25); });
+        t += 16;
+        await act(async () => { clock.stepLive(t); await Promise.resolve(); });
+        const after = result.current.tMs;
+        expect(after).toBeGreaterThanOrEqual(before);
+        expect(after - before).toBeLessThan(50);
     });
 });
