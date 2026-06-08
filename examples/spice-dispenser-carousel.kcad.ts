@@ -76,7 +76,6 @@ const SKIRT_D = 40;
 const MC_X = 23.0, MC_Y = -8.1;
 const DISC_R = 14.1, DISC_T = 8;
 const PKT_X = -1.0, PKT_Y = 8.1;
-const DUMP_X = 30.6, DUMP_Y = -10.8;
 const CH_X = 31.1, CH_Y = -11.0;   // drop-channel axis — Ø11 bore sits just outside the outlet annulus
 
 // ── MG90S (metering servo), modeled to datasheet ────────────────────────────
