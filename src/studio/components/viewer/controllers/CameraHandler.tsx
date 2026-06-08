@@ -4,12 +4,19 @@ import { useEffect, useRef } from "react";
 import { useWorkbench } from "../../../context/WorkbenchContext";
 import type { GeometryResult } from "../../../../shared/worker/geometryEngine";
 import { computeGeometryBounds } from "./cameraBounds";
+import { buildCameraPose, buildFitCameraPose, type ViewTarget } from "./cameraPose";
 
 // Using the exported constants if needed, but they are defined in Viewer.tsx conventionally.
 // For now I will hardcode or use the same values.
 const SKETCH_DISTANCE = 20;
 
-export function CameraHandler({ geometries }: { geometries: GeometryResult[] }) {
+export function CameraHandler({
+    geometries,
+    navigationRequest,
+}: {
+    geometries: GeometryResult[];
+    navigationRequest?: { target: ViewTarget; id: number } | null;
+}) {
     const { selectedFace, sketchMode } = useWorkbench();
     const { camera, controls } = useThree();
     const cameraRef = useRef(camera);
@@ -45,14 +52,31 @@ export function CameraHandler({ geometries }: { geometries: GeometryResult[] }) 
         lastFitBounds.current = { center: bounds.center.clone(), radius: bounds.radius };
 
         const distance = Math.max(bounds.radius * 2.8, SKETCH_DISTANCE);
-        const direction = new THREE.Vector3(1, 1, 0.75).normalize();
-        const nextPosition = bounds.center.clone().add(direction.multiplyScalar(distance));
-
-        targetState.current = { position: nextPosition, lookAt: bounds.center };
+        const pose = buildFitCameraPose(bounds.center, distance);
+        cameraRef.current.up.copy(pose.up);
+        targetState.current = { position: pose.position, lookAt: pose.lookAt };
         cameraRef.current.near = Math.max(distance / 500, 0.01);
         cameraRef.current.far = Math.max(distance * 20, 1000);
         cameraRef.current.updateProjectionMatrix();
     }, [geometries, sketchMode.active]);
+
+    useEffect(() => {
+        if (!navigationRequest || geometries.length === 0 || sketchMode.active) return;
+
+        const bounds = computeGeometryBounds(geometries);
+        if (!bounds) return;
+
+        const distance = Math.max(bounds.radius * 2.8, SKETCH_DISTANCE);
+        const pose = navigationRequest.target === 'fit'
+            ? buildFitCameraPose(bounds.center, distance)
+            : buildCameraPose(navigationRequest.target, bounds.center, distance);
+
+        cameraRef.current.up.copy(pose.up);
+        cameraRef.current.near = Math.max(distance / 500, 0.01);
+        cameraRef.current.far = Math.max(distance * 20, 1000);
+        cameraRef.current.updateProjectionMatrix();
+        targetState.current = { position: pose.position, lookAt: pose.lookAt };
+    }, [navigationRequest, geometries, sketchMode.active]);
 
     useEffect(() => {
         const isSketching = sketchMode.active;
