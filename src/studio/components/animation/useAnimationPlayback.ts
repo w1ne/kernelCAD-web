@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AnimationViewMetadata } from '../../../shared/intent/animationViewRecord';
 import { sampleTrackAt } from '../../../agent/render/animationSampler';
 import type { ParamEdit, UpdateParamFn } from '../../hooks/useParamUpdate';
-import type { BakedTimeline } from './bakeInterpolation';
+import type { BakedTimeline, BakedCollision } from './bakeInterpolation';
 import { sampleBakedTransforms } from './bakeInterpolation';
 import { fetchAnimationBake, type BakeFetcher } from './fetchAnimationBake';
 
@@ -71,6 +71,16 @@ export interface UseAnimationPlaybackOptions {
     bakeFetcher?: BakeFetcher;
     /** Injected clock for deterministic tests; defaults to real rAF. */
     clock?: PlaybackClock;
+    /** Monotonic kernel-state epoch, bumped by GeometryContext on EVERY relower
+     *  the session receives (a ParamsTab edit that re-poses a non-animated mate
+     *  or changes geometry, a script rebuild, etc.). Folded into the bake cache
+     *  key so ANY kernel mutation invalidates the cached bake — otherwise a
+     *  Params-tab edit changes a param's current value WITHOUT touching
+     *  metadata.tracks, leaving the key unchanged and the stale bake playing
+     *  pre-edit transforms. The player's OWN kernel writes (the bake's trailing
+     *  relower + the pause/scrub-sync edit) are excluded from invalidation (see
+     *  `selfEditsRef`) so they don't trigger a pointless re-bake loop. */
+    kernelEpoch?: number;
 }
 
 export interface TrackReadout {
@@ -98,6 +108,10 @@ export interface AnimationPlaybackState {
     readonly bakeFrames: number;
     /** Server-side bake error message when `bakeState === 'error'`. */
     readonly bakeError: string | null;
+    /** ADVISORY keyframe-pose collisions reported by the last successful bake
+     *  (the same check `kernelcad animate` runs). Non-empty → the tab shows a
+     *  collision warning banner. Empty for a clean mechanism. */
+    readonly collisions: readonly BakedCollision[];
     setMode: (mode: PlaybackMode) => void;
     setSpeed: (speed: PlaybackSpeed) => void;
     /** Scrub to an absolute timeline position (pauses playback). */
@@ -150,6 +164,7 @@ export function useAnimationPlayback(
         setViewportDriverLock,
         bakeFetcher = fetchAnimationBake,
         clock = defaultClock,
+        kernelEpoch = 0,
     } = opts;
 
     const durationMs = metadata?.durationMs ?? 0;
@@ -165,6 +180,7 @@ export function useAnimationPlayback(
     const [bakeState, setBakeState] = useState<BakeState>('idle');
     const [bakeFrames, setBakeFrames] = useState(0);
     const [bakeError, setBakeError] = useState<string | null>(null);
+    const [collisions, setCollisions] = useState<readonly BakedCollision[]>([]);
 
     const mountedRef = useRef(true);
     useEffect(() => {
@@ -209,12 +225,27 @@ export function useAnimationPlayback(
     // Keyed by record identity + token. A script edit produces a fresh
     // metadata object (new tracks array reference), so the key changes and the
     // bake is lazily re-fetched on the next play/scrub. An external relower
-    // that's purely a pose edit doesn't change metadata, so the cache survives.
+    // that's purely a pose edit doesn't change metadata — so the timeline key
+    // survives — but a Params-tab edit changes a param's CURRENT value (kernel
+    // state) WITHOUT touching metadata.tracks, leaving the baked transforms
+    // stale. The kernel-state `epoch` (bumped by GeometryContext on every
+    // relower) is folded in below so ANY kernel mutation invalidates the bake.
     const bakeRef = useRef<BakedTimeline | null>(null);
     const bakeKeyRef = useRef<string | null>(null);
+    const epochRef = useRef(kernelEpoch);
     const bakeInFlightRef = useRef<Promise<BakedTimeline | null> | null>(null);
     const bakeFetcherRef = useRef(bakeFetcher);
     useEffect(() => { bakeFetcherRef.current = bakeFetcher; });
+
+    // Count of kernel relowers the PLAYER itself caused that have not yet been
+    // observed as epoch bumps. The player's own writes — the bake's single
+    // trailing relower (after restoring the pre-bake pose) and the
+    // pause/scrub/end-sync `updateParam` — each bump the epoch, but those must
+    // NOT invalidate the bake (re-baking on a self-edit would loop: bake →
+    // trailing relower → epoch bump → invalidate → re-bake …). Each such
+    // self-edit increments this; the epoch-invalidation effect consumes one
+    // pending self-edit per bump instead of invalidating.
+    const pendingSelfEditsRef = useRef(0);
 
     const bakeKey = useMemo(() => {
         if (!metadata || !sessionToken) return null;
@@ -231,17 +262,45 @@ export function useAnimationPlayback(
         });
     }, [metadata, sessionToken]);
 
-    // Invalidate the cached bake when the key changes (script edit, new token).
+    const invalidateBake = useCallback(() => {
+        bakeRef.current = null;
+        bakeInFlightRef.current = null;
+        setBakeState('idle');
+        setBakeFrames(0);
+        setBakeError(null);
+        setCollisions([]);
+    }, []);
+
+    // Invalidate the cached bake when the timeline identity changes (script
+    // edit, new token).
     useEffect(() => {
         if (bakeKeyRef.current !== null && bakeKeyRef.current !== bakeKey) {
-            bakeRef.current = null;
-            bakeInFlightRef.current = null;
-            setBakeState('idle');
-            setBakeFrames(0);
-            setBakeError(null);
+            invalidateBake();
         }
         bakeKeyRef.current = bakeKey;
-    }, [bakeKey]);
+    }, [bakeKey, invalidateBake]);
+
+    // Invalidate the cached bake when the kernel-state epoch advances —
+    // UNLESS the advance was caused by the player's own kernel write (tracked
+    // by `pendingSelfEditsRef`). A foreign edit (Params-tab change that re-poses
+    // a non-animated mate or changes geometry) leaves the timeline key
+    // unchanged but makes the baked transforms stale; this picks it up. The
+    // re-bake happens lazily on the next play/scrub, never mid-loop.
+    useEffect(() => {
+        if (kernelEpoch === epochRef.current) return;
+        const delta = kernelEpoch - epochRef.current;
+        epochRef.current = kernelEpoch;
+        // Consume self-originated bumps first; only a NET foreign bump
+        // invalidates. (Bumps are monotonic, so delta is the number of
+        // relowers since last observed.)
+        if (pendingSelfEditsRef.current >= delta) {
+            pendingSelfEditsRef.current -= delta;
+            return;
+        }
+        const foreign = delta - pendingSelfEditsRef.current;
+        pendingSelfEditsRef.current = 0;
+        if (foreign > 0) invalidateBake();
+    }, [kernelEpoch, invalidateBake]);
 
     // Fetch (or reuse) the bake for the current key. Single-flight: a second
     // caller while a fetch is pending awaits the same promise.
@@ -255,9 +314,15 @@ export function useAnimationPlayback(
         const promise = (async () => {
             try {
                 const baked = await bakeFetcherRef.current(token);
+                // A completed bake restores the pre-bake pose with ONE trailing
+                // (non-silent) relower — a self-edit that must not invalidate
+                // this very bake. Account for it BEFORE storing the result so
+                // the epoch bump that follows is consumed, not acted on.
+                pendingSelfEditsRef.current += 1;
                 if (!mountedRef.current) return null;
                 bakeRef.current = baked;
                 setBakeFrames(baked.frames);
+                setCollisions(baked.collisions ?? []);
                 setBakeState('ready');
                 return baked;
             } catch (err) {
@@ -300,7 +365,14 @@ export function useAnimationPlayback(
         if (!fn) return;
         const batch = sampleBatch(at);
         if (batch.length === 0) return;
+        // This is a player-originated kernel write — it relowers ONE (the
+        // displayed pose) and bumps the kernel epoch. Account for it so the
+        // epoch-invalidation effect consumes the bump instead of re-baking.
+        pendingSelfEditsRef.current += 1;
         fn(batch).catch((err: unknown) => {
+            // The relower never fired (the edit failed), so don't leave a
+            // phantom self-edit credit that would swallow a later foreign bump.
+            pendingSelfEditsRef.current = Math.max(0, pendingSelfEditsRef.current - 1);
             console.warn('[AnimationTab] pause-sync updateParam failed', err, batch);
         });
     }, [sampleBatch]);
@@ -499,6 +571,7 @@ export function useAnimationPlayback(
         bakeState,
         bakeFrames,
         bakeError,
+        collisions,
         setMode,
         setSpeed,
         scrubTo,

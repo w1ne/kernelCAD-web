@@ -38,7 +38,7 @@ export function AnimationTab(): JSX.Element {
         clearGeometryTransformOverrides,
         setViewportDriverLock,
     } = useRecomputeResult();
-    const { sessionToken } = useWorkbench();
+    const { sessionToken, kernelEpoch } = useWorkbench();
     const metadata = selectAnimationMetadata(features);
 
     const playback = useAnimationPlayback({
@@ -49,6 +49,9 @@ export function AnimationTab(): JSX.Element {
         applyPartTransform: sessionToken ? setGeometryTransformOverride : undefined,
         clearPartTransforms: clearGeometryTransformOverrides,
         setViewportDriverLock: sessionToken ? setViewportDriverLock : undefined,
+        // Any kernel relower (Params-tab edit, rebuild) bumps this; folded into
+        // the bake cache key so a stale bake never survives a kernel mutation.
+        kernelEpoch,
     });
 
     if (!metadata) {
@@ -64,7 +67,7 @@ export function AnimationTab(): JSX.Element {
 
     const {
         durationMs, fps, name, tMs, isPlaying, mode, speed, trackValues, canDrive,
-        bakeState, bakeFrames, bakeError,
+        bakeState, bakeFrames, bakeError, collisions,
     } = playback;
 
     return (
@@ -185,6 +188,17 @@ export function AnimationTab(): JSX.Element {
                     </li>
                 ))}
             </ul>
+
+            {canDrive && collisions.length > 0 && (
+                <div
+                    className="mx-3 mt-2 px-2 py-1.5 text-[10px] leading-tight text-amber-200/90 bg-amber-950/30 border border-amber-900/60 rounded"
+                    data-testid="animation-collision-warning"
+                >
+                    ⚠ {collisions.length} pose collision{collisions.length === 1 ? '' : 's'} in
+                    this timeline — run `kernelcad animate` for the colliding
+                    pairs and times.
+                </div>
+            )}
 
             <p className="px-3 py-2 text-[10px] leading-tight text-gray-500 border-t border-[#1f1f1f]">
                 Playback is smooth — the timeline is baked once (every frame

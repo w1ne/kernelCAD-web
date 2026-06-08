@@ -5,7 +5,7 @@ import type { StudioRecomputeResult } from '../../types';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 
 const mockUseRecomputeResult = vi.fn<() => StudioRecomputeResult>();
-const mockUseWorkbench = vi.fn<() => { sessionToken: string | null }>();
+const mockUseWorkbench = vi.fn<() => { sessionToken: string | null; kernelEpoch?: number }>();
 
 vi.mock('../../hooks/useRecomputeResult', () => ({
     useRecomputeResult: () => mockUseRecomputeResult(),
@@ -13,6 +13,21 @@ vi.mock('../../hooks/useRecomputeResult', () => ({
 vi.mock('../../context/WorkbenchContext', () => ({
     useWorkbench: () => mockUseWorkbench(),
 }));
+
+// The playback hook is exercised directly in useAnimationPlayback.test.ts.
+// Here we override its return only for the collision-banner test; every other
+// test delegates to the real implementation.
+const mockPlayback = vi.fn();
+vi.mock('./useAnimationPlayback', async (importActual) => {
+    const actual = await importActual<typeof import('./useAnimationPlayback')>();
+    return {
+        ...actual,
+        useAnimationPlayback: (opts: Parameters<typeof actual.useAnimationPlayback>[0]) => {
+            const override = mockPlayback();
+            return override ?? actual.useAnimationPlayback(opts);
+        },
+    };
+});
 
 import { AnimationTab } from './AnimationTab';
 
@@ -62,6 +77,9 @@ afterEach(() => { cleanup(); });
 beforeEach(() => {
     mockUseRecomputeResult.mockReset();
     mockUseWorkbench.mockReset();
+    // Default: no override → real useAnimationPlayback runs.
+    mockPlayback.mockReset();
+    mockPlayback.mockReturnValue(undefined);
 });
 
 describe('AnimationTab', () => {
@@ -102,5 +120,42 @@ describe('AnimationTab', () => {
         expect(screen.getByTestId('animation-editor-mode-note')).toBeTruthy();
         fireEvent.change(screen.getByTestId('animation-scrubber'), { target: { value: '600' } });
         expect(update).not.toHaveBeenCalled();
+    });
+
+    // I1: when the bake reports advisory collisions, the tab shows a warning
+    // banner near the honesty caption; a clean timeline shows none.
+    function playbackState(over: Record<string, unknown>) {
+        return {
+            durationMs: 4000, fps: 30, name: 'x', tMs: 0, isPlaying: false,
+            mode: 'loop', speed: 1, trackValues: [], canDrive: true,
+            bakeState: 'ready', bakeFrames: 2, bakeError: null, collisions: [],
+            setMode: vi.fn(), setSpeed: vi.fn(), scrubTo: vi.fn(),
+            play: vi.fn(), pause: vi.fn(), toggle: vi.fn(),
+            ...over,
+        };
+    }
+
+    it('renders the collision warning banner when the bake reports collisions', () => {
+        mockUseRecomputeResult.mockReturnValue(result([ANIM_RECORD]));
+        mockUseWorkbench.mockReturnValue({ sessionToken: 'sess-1' });
+        mockPlayback.mockReturnValue(playbackState({
+            collisions: [
+                { tMs: 500, a: 'arm', b: 'post', volumeMm3: 312.5 },
+                { tMs: 600, a: 'arm', b: 'post', volumeMm3: 120.0 },
+            ],
+        }));
+        render(<AnimationTab />);
+        const banner = screen.getByTestId('animation-collision-warning');
+        expect(banner).toBeTruthy();
+        expect(banner.textContent).toContain('2 pose collisions');
+        expect(banner.textContent).toContain('kernelcad animate');
+    });
+
+    it('renders NO collision banner for a clean timeline', () => {
+        mockUseRecomputeResult.mockReturnValue(result([ANIM_RECORD]));
+        mockUseWorkbench.mockReturnValue({ sessionToken: 'sess-1' });
+        mockPlayback.mockReturnValue(playbackState({ collisions: [] }));
+        render(<AnimationTab />);
+        expect(screen.queryByTestId('animation-collision-warning')).toBeNull();
     });
 });

@@ -25,7 +25,8 @@
  * Response shape
  * --------------
  *   { frames, durationMs, fps, times: number[],
- *     parts: [{ name, matrices: number[][] }] }   // matrices[frame] = mat4[16]
+ *     parts: [{ name, matrices: number[][] }],    // matrices[frame] = mat4[16]
+ *     collisions: [{ tMs, a, b, volumeMm3 }] }    // ADVISORY keyframe-pose interferences
  *
  * Each part's `matrices[i]` is its world transform at `times[i]`. The Studio
  * viewport already poses parts by replacing each geometry's `transform`
@@ -56,6 +57,10 @@ import {
   type ParamUpdateEdit,
 } from '../../modeling/buildModel';
 import { sampleTracks } from '../../agent/render/animationSampler';
+import {
+  verifyAnimation,
+  type AnimationCollision,
+} from '../../agent/render/verifyAnimation';
 import type {
   AnimationViewMetadata,
   NormalizedAnimationTrack,
@@ -88,6 +93,31 @@ export interface AnimationBakeResult {
   fps: number;
   times: number[];
   parts: BakedPart[];
+  /** ADVISORY keyframe-pose interferences (same check `kernelcad animate`
+   *  runs: every keyframe time + segment midpoint). NON-FATAL — the bake still
+   *  succeeds and playback works; a non-empty array drives the Studio warning
+   *  banner. Empty when the mechanism is collision-free at every sampled pose. */
+  collisions: AnimationCollision[];
+}
+
+/** Record kinds that lower to an assembly SceneBackend (per-part world
+ *  transforms). A pose-only (mate-driven) timeline edit re-lowers ONLY these
+ *  records; a geometry-driving param re-lowers part records BEFORE them. */
+const ASSEMBLY_RECORD_KINDS: ReadonlySet<string> = new Set([
+  'solvedAssembly',
+  'assemblyModel',
+]);
+
+/** Chain index of the first assembly (scene) record, or -1 if none. Used by the
+ *  geometry-param guard: a pose-only edit's re-lowered set starts AT this record
+ *  (its mate poses are the only refs to the animated param); a geometry edit
+ *  re-lowers a part record at a lower index, which is the silent-wrong-shape
+ *  signal the bake must refuse. */
+function firstAssemblyIndex(model: BuiltModel): number {
+  for (let i = 0; i < model.records.length; i += 1) {
+    if (ASSEMBLY_RECORD_KINDS.has(model.records[i].kind)) return i;
+  }
+  return -1;
 }
 
 /** Last-wins animationView metadata across the model's records (same policy as
@@ -179,6 +209,13 @@ export function createAnimationBakeEndpoint(deps: AnimationBakeEndpointDeps) {
         });
       }
 
+      // Chain index of the assembly (scene) record. A geometry-driving track
+      // param re-lowers a part record BEFORE this index (the geometry-param
+      // guard below); a pose-only edit re-lowers only at/after it.
+      const assemblyIndex = firstAssemblyIndex(model);
+      const recordIndexById = new Map<string, number>();
+      model.records.forEach((rec, idx) => recordIndexById.set(rec.id, idx));
+
       try {
         const times: number[] = [];
         // partName → matrices[frame]. Preserve first-seen part order.
@@ -198,9 +235,36 @@ export function createAnimationBakeEndpoint(deps: AnimationBakeEndpointDeps) {
           // (25 useless fetches across a 24-frame bake) and the live viewport
           // twitched through every pose mid-bake. The single post-restore
           // relower below is the only one a bake should produce.
-          const { model: updated } = await updateModelParams(model, edits, {
-            silent: true,
-          });
+          const { model: updated, result: updateResult } = await updateModelParams(
+            model,
+            edits,
+            { silent: true },
+          );
+          // Geometry-param guard (B1). Studio baked playback only re-applies
+          // RIGID per-part world transforms — it never re-meshes. A track param
+          // that drives part GEOMETRY (a dimension, extrude depth, hole radius)
+          // re-lowers a part record BEFORE the assembly record; the baked
+          // transforms would then pose the PRE-EDIT shape → silently wrong.
+          // Detect on the first sampled frame and refuse: if any re-lowered
+          // record sits at a lower chain index than the assembly record, the
+          // edit changed geometry, not just a mate pose.
+          if (i === 0 && assemblyIndex >= 0) {
+            const touchedGeometry = updateResult.relowered.some((id) => {
+              const idx = recordIndexById.get(id);
+              return idx !== undefined && idx < assemblyIndex;
+            });
+            if (touchedGeometry) {
+              return writeJson(res, 422, {
+                error:
+                  'this animationView timeline drives part GEOMETRY (a dimension / extrude depth / hole radius), not just a mate pose — ' +
+                  'Studio baked playback only re-applies rigid per-part transforms, so it cannot represent a changing shape.',
+                code: 'animation.bake.geometry-param',
+                hint:
+                  'Studio playback supports POSE-ONLY (mate-driven) timelines. Render geometry-animating timelines with `kernelcad animate` ' +
+                  '(offline MP4 re-meshes every frame).',
+              });
+            }
+          }
           const tail = liveTail(updated);
           if (!isSceneBackend(tail)) {
             return writeJson(res, 422, {
@@ -220,12 +284,34 @@ export function createAnimationBakeEndpoint(deps: AnimationBakeEndpointDeps) {
           }
         }
 
+        // ADVISORY collision check (I1). Run the SAME keyframe-sample
+        // interference check `kernelcad animate` uses — keyframe times +
+        // segment midpoints (~11 poses), NOT every baked frame — so Studio can
+        // warn on a self-colliding mechanism the offline tool would catch.
+        // NON-FATAL: a failure here must never sink a bake whose transforms are
+        // already computed, so it is wrapped and yields an empty list on error.
+        // `silent` so the keyframe re-solves do NOT each fan a relower out (the
+        // bake emits its own single trailing relower after the param restore
+        // below); verifyAnimation restores its own intermediate params, and the
+        // authoritative restore to the true pre-bake pose happens in `finally`.
+        let collisions: AnimationCollision[] = [];
+        try {
+          const verdict = await verifyAnimation(model, tracks, { silent: true });
+          collisions = verdict.collisions;
+        } catch (e) {
+          console.warn(
+            `[animation-bake] advisory collision check failed for session ${token}:`,
+            e instanceof Error ? e.message : String(e),
+          );
+        }
+
         const result: AnimationBakeResult = {
           frames: schedule.length,
           durationMs,
           fps,
           times,
           parts: order.map((name) => ({ name, matrices: byPart.get(name) ?? [] })),
+          collisions,
         };
         return writeJson(res, 200, result);
       } finally {

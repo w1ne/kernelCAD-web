@@ -346,6 +346,87 @@ describe('useAnimationPlayback (baked)', () => {
         // End-of-playback kernel sync: exactly one edit at the final pose.
         expect(h.update).toHaveBeenCalledTimes(1);
     });
+
+    // I3: a Params-tab edit changes a param's CURRENT value (kernel state)
+    // without touching metadata.tracks, so the timeline key is unchanged. The
+    // kernel-state epoch (bumped by GeometryContext on every relower) must
+    // invalidate the stale bake so the next play/scrub re-bakes.
+    it('I3: a foreign kernel-epoch bump between plays re-bakes (stale bake not served)', async () => {
+        const h = harness();
+        const { result, rerender } = renderHook(
+            (props: { kernelEpoch: number }) =>
+                useAnimationPlayback({
+                    metadata: FIXTURE,
+                    sessionToken: 't1',
+                    updateParam: h.update,
+                    applyPartTransform: h.apply,
+                    clearPartTransforms: h.clear,
+                    bakeFetcher: h.bakeFetcher,
+                    clock: h.clock,
+                    kernelEpoch: props.kernelEpoch,
+                }),
+            { initialProps: { kernelEpoch: 0 } },
+        );
+        // First play bakes once. Its trailing relower is a SELF-edit; the test
+        // models that as part of the foreign bump below being net-foreign.
+        await act(async () => { result.current.play(); await Promise.resolve(); await Promise.resolve(); });
+        act(() => { result.current.pause(); });
+        expect(h.bakeFetcher).toHaveBeenCalledTimes(1);
+
+        // A Params-tab edit lands: GeometryContext sees the relower and bumps the
+        // epoch. The player accounted for ONE self-edit (the bake's trailing
+        // relower) + ONE self-edit (the pause-sync), so to be NET foreign the
+        // epoch must advance past those. Bump by 3 (2 self + 1 foreign).
+        rerender({ kernelEpoch: 3 });
+        expect(result.current.bakeState).toBe('idle'); // cache dropped
+
+        await act(async () => { result.current.play(); await Promise.resolve(); await Promise.resolve(); });
+        expect(h.bakeFetcher).toHaveBeenCalledTimes(2); // re-baked on foreign edit
+    });
+
+    it('I3: the player\'s OWN kernel writes (bake restore + pause-sync) do NOT trigger a re-bake', async () => {
+        const h = harness();
+        const { result, rerender } = renderHook(
+            (props: { kernelEpoch: number }) =>
+                useAnimationPlayback({
+                    metadata: FIXTURE,
+                    sessionToken: 't1',
+                    updateParam: h.update,
+                    applyPartTransform: h.apply,
+                    clearPartTransforms: h.clear,
+                    bakeFetcher: h.bakeFetcher,
+                    clock: h.clock,
+                    kernelEpoch: props.kernelEpoch,
+                }),
+            { initialProps: { kernelEpoch: 0 } },
+        );
+        // Scrub bakes once (1 self-edit: bake restore) + scrub-sync (1 self-edit).
+        await act(async () => { result.current.scrubTo(1000); await Promise.resolve(); await Promise.resolve(); });
+        expect(h.bakeFetcher).toHaveBeenCalledTimes(1);
+
+        // The two self-originated relowers arrive as epoch bumps (0 → 2). They
+        // are exactly consumed by the pending self-edit credit, so the bake is
+        // NOT invalidated and a second scrub serves the cache.
+        rerender({ kernelEpoch: 2 });
+        expect(result.current.bakeState).toBe('ready'); // cache survived
+
+        await act(async () => { result.current.scrubTo(3000); await Promise.resolve(); await Promise.resolve(); });
+        expect(h.bakeFetcher).toHaveBeenCalledTimes(1); // no re-bake from self-edits
+    });
+
+    it('I1: collisions from the bake response are exposed on the playback state', async () => {
+        const collidingBake: BakedTimeline = {
+            ...fakeBake(),
+            collisions: [{ tMs: 500, a: 'arm', b: 'post', volumeMm3: 312.5 }],
+        };
+        const h = harness({ bakeFetcher: vi.fn().mockResolvedValue(collidingBake) });
+        const { result } = renderPlayback(h);
+        expect(result.current.collisions).toEqual([]); // none before the bake
+        await act(async () => { result.current.scrubTo(500); await Promise.resolve(); await Promise.resolve(); });
+        expect(result.current.collisions).toEqual([
+            { tMs: 500, a: 'arm', b: 'post', volumeMm3: 312.5 },
+        ]);
+    });
 });
 
 describe('useAnimationPlayback — oscillation (clock monotonicity)', () => {

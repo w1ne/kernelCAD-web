@@ -16,8 +16,10 @@ describe('diagnostic catalogue invariants', () => {
     //   animation.view.shadowed, animation.collision.
     // + 1 assembly.structure.unstructured-bodies (agent-parts-discipline:
     //   multi-body model with no named assembly().part(...) structure).
-    expect(DIAGNOSTIC_CODES).toHaveLength(225);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(225);
+    // + 1 animation.bake.geometry-param (Studio bake refuses geometry-driving
+    //   track params — only pose-only mate timelines bake to rigid transforms).
+    expect(DIAGNOSTIC_CODES).toHaveLength(226);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(226);
   });
 
   it('every code has a non-empty hint template', () => {
