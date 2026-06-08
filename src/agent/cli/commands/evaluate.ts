@@ -14,6 +14,7 @@ import {
   reviewPoseEnvelope,
   type PoseEnvelopeDiagnostic,
 } from '../../../modeling/mates/poseEnvelope';
+import { detectUnstructuredBodies } from '../../../modeling/validation/unstructuredBodies';
 
 export interface EvaluateInput {
   file?: string;
@@ -98,6 +99,19 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
     };
   }
   const fatal = model.diagnostics.some(d => d.severity === 'error');
+
+  // Agent-parts-discipline: flag multi-body models authored as loose
+  // top-level bodies instead of named `assembly().part(...)`. Runs on a
+  // clean build only — a broken build surfaces its own failure first.
+  // Emitting here (the shared producer for `evaluate_script` AND the
+  // `/__kernelcad/review` payload, plus the CLI) surfaces the info
+  // diagnostic on every authoring surface from a single seam, and — unlike
+  // the assembly validator — runs for NON-assembly scripts too.
+  if (!fatal) {
+    model.diagnostics.push(
+      ...detectUnstructuredBodies({ returnValue: model.returnValue, code: model.code }),
+    );
+  }
 
   // W3 DFM enforcement: when the script declares dfmSpec(...), run the
   // declared gates and merge their diagnostics into the model's. This one

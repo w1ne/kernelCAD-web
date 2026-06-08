@@ -104,6 +104,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       name: 'evaluate_script',
       description:
         'Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics. ' +
+        'When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), ' +
+        'also returns a parts summary { count, names }. ' +
         'Pass either { file: "<path>" } or { code: "<inline source>" }.',
       inputSchema: {
         type: 'object',

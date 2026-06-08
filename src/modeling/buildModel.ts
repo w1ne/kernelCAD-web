@@ -49,6 +49,15 @@ export interface BuiltModel {
   /** Lowered shape of the script's `return` value. Prefer this over
    *  `tailShape` in export / probe / measurement consumers. */
   rootShape?: ShapeBackend;
+  /** The raw value the script `return`ed (Shape, Scene, array of Shapes, or
+   *  anything else). Threaded so the agent-parts-discipline check can tell a
+   *  multi-body non-assembly return (array of Shapes) apart from an
+   *  assembly-built Scene without re-deriving from the lowered geometry. */
+  returnValue?: unknown;
+  /** The script source text. Threaded so review/analysis passes (e.g. the
+   *  unstructured-bodies check) can read returned-variable names via the AST
+   *  helpers without re-reading the file. */
+  code?: string;
 }
 
 export interface ParamUpdateEdit {
@@ -101,6 +110,8 @@ export async function buildModel(input: BuildModelInput): Promise<BuiltModel> {
     tailShape,
     rootId,
     rootShape,
+    returnValue: run.returnValue,
+    code: input.code,
   };
 }
 

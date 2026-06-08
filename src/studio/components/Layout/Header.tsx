@@ -1,5 +1,5 @@
 import { useWorkbench } from '../../context/WorkbenchContext';
-import { Loader2, Download, FileDown, Undo2, Redo2, Box, Grid as GridIcon, Circle, FolderOpen, Moon, Sun, LayoutGrid } from 'lucide-react';
+import { Loader2, Download, FileDown, Undo2, Redo2, Box, Grid as GridIcon, Grid3x3, Circle, FolderOpen, Moon, Sun, LayoutGrid } from 'lucide-react';
 import { exportSTEP, exportSTL } from '../../../shared/worker/geometryEngine';
 import { formatTooltip, SHORTCUT_HINTS } from '../../../shared/constants/shortcuts';
 import { useProject } from '../../context/ProjectContext';
@@ -12,7 +12,7 @@ export function Header() {
         viewMode3D, setViewMode3D,
         isComputing, code, commandManager, setActiveDialog
     } = useWorkbench();
-    const { viewportBackground, setViewportBackground } = useUI();
+    const { viewportBackground, setViewportBackground, gridVisible, setGridVisible } = useUI();
 
     const { activeProject } = useProject();
 
@@ -124,6 +124,18 @@ export function Header() {
                         <LayoutGrid size={14} />
                     </button>
                 </div>
+
+                {/* Ground grid visibility */}
+                <button
+                    onClick={() => setGridVisible(!gridVisible)}
+                    className={`ml-1 p-1 rounded text-xs flex items-center gap-1 ${gridVisible ? 'bg-[#444] text-white shadow' : 'text-gray-400 hover:text-white'}`}
+                    title={gridVisible ? 'Hide ground grid' : 'Show ground grid'}
+                    aria-label="Toggle ground grid"
+                    aria-pressed={gridVisible}
+                    data-testid="viewport-grid-toggle"
+                >
+                    <Grid3x3 size={14} />
+                </button>
 
                 <div className="h-6 w-px bg-[#333] mx-2" />
 

@@ -39,6 +39,7 @@ const EMITTING_FILES = [
   'modeling/sheetMetal.ts',                      // W2.2
   'modeling/sketch/index.ts',
   'modeling/compute/recomputeEngine.ts',
+  'modeling/validation/unstructuredBodies.ts', // agent-parts-discipline
   'agent/cli/commands/evaluate.ts',
   'agent/cli/commands/export.ts',
   'agent/script-runtime/export.ts',
@@ -145,7 +146,9 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       animation.param.unknown + animation.track.duplicate-param +
     //       animation.keys.invalid + animation.value.clamped +
     //       animation.view.shadowed + animation.collision = 224.
-    expect(catalogue.size).toBe(224);
+    //  +  1 assembly.structure.unstructured-bodies (agent-parts-discipline:
+    //       multi-body model with no named assembly().part(...) structure) = 225.
+    expect(catalogue.size).toBe(225);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

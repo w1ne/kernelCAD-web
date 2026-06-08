@@ -913,6 +913,17 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'assembly',
     description: 'A joint axis (mate connector origin + direction) does not intersect the part body it claims to act on.',
   },
+  'assembly.structure.unstructured-bodies': {
+    hintTemplate:
+      'Wrap the loose bodies in assembly().part(name, shape) so each part carries identity, per-part stats, and review handles; name every returned shape. This is an authoring-time signal — a multi-body model with no part names loses inspect --focus, list_part_stats, and Studio per-part validity.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'wrap each loose top-level body in a named assembly().part(name, shape)',
+    },
+    defaultSeverity: 'info',
+    group: 'assembly',
+    description: 'A multi-body model returns loose top-level bodies with no assembly().part(...) structure, so the parts carry no identity for inspection, stats, or per-part review.',
+  },
   'assembly.joint.load-exceeded': {
     hintTemplate:
       "Increase maxLoad on this joint, reduce externalLoads, or split the load path with an additional joint.",
