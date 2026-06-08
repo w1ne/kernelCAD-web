@@ -1,6 +1,20 @@
-# kernelCAD v0.11.0
+# kernelCAD v0.12.0
 
-## Unreleased — agent animation toolset
+## v0.12.0 — 2026-06-09
+
+Headline release folding all post-v0.11.0 workstreams (themed sections below):
+
+- **Agent animation toolset** — keyframe-track `animationView()`, `kernelcad animate` CLI, `capture_animation` MCP tool, Studio Animation tab with baked 60fps playback, and sampled-pose interference verification.
+- **Print-readiness DFM suite** — `kernelcad dfm` CLI + `dfm_check` MCP tool with min-wall thickness, sealed-void/channel topology, part-pair clearance, and four gate diagnostics enforced in `evaluate`.
+- **STEP inspection** — `kernelcad inspect step` CLI + `inspect_step` MCP tool: solid tree, exact bbox/volume, and cylindrical-hole detection on imported BREP.
+- **Studio tools** — quarter/octant cutaway section tool, marking tool, hidable Inspector panel, hardened bake invalidation, and one canonical hosted API routing convention.
+- **cadskills parity (A–F)** — export trio (DXF/3MF/GLB), REST robotics (URDF/SRDF/SDFormat), parts catalog, npx skills distribution, DFM preflight, and topology-ref-safe naming.
+- **Hosted + connect** — multi-user session-pool hardening (LRU cap, per-user scoping), optional SSE auth, scene-tree validity, Claude Desktop connect modal, MCP-resources bridge, and anonymous MCP telemetry client.
+- **Generation-loop tightening (W1–W4)** — closed-loop repair, face-loop fidelity gate, hardened oracle, typed feedback, and best-of-N selection.
+- **Geometry** — `spring()` primitive, smooth B-spline sweep spines for dense rails (watertight), `Curve3D.analytics.*` namespace, and watertight export verification.
+- **Legal/privacy** — privacy policy and neutral copyright attribution.
+
+## v0.12.0 — agent animation toolset
 
 - **Keyframe-track `animationView()`.** Two author forms: the legacy
   single-param linear sweep (`param`/`from`/`to`/`durationMs`) and multi-track
@@ -35,7 +49,7 @@
   `?script=` server-pool session; editor mode previews sampled values. Offline
   `kernelcad animate` stays the full-fidelity capture.
 
-## Unreleased — print-readiness DFM gates (W3)
+## v0.12.0 — print-readiness DFM gates (W3)
 
 - **`dfmSpec()` declaration.** Scripts declare printability gates: `minWall`,
   `minClearance`, `ignore` pairs (design-intent contacts), `exclude`
@@ -59,7 +73,7 @@
   two-revision print job: the pre-fix revision fails all three gates on its
   known defects; the shipped revision measures clearance-clean.
 
-## Unreleased — STEP inspection + section renders (W4)
+## v0.12.0 — STEP inspection + section renders (W4)
 
 - **STEP file inspection.** `kernelcad inspect step <file.step>` and MCP
   `inspect_step` interrogate an external STEP file before placement: solid
@@ -72,7 +86,7 @@
   interior structure; keeps the negative-axis side by default,
   `--section-flip` keeps the positive side.
 
-## Unreleased — print-prep export suite (W2)
+## v0.12.0 — print-prep export suite (W2)
 
 - **Per-part STL export.** Export each solved-assembly part as its own binary
   STL in its modeled (world-frame) position: CLI `kernelcad export stl <file>
@@ -102,7 +116,7 @@
   per-segment tubes; `spring()` uses this spine internally. Default
   `spine: 'polyline'` behavior is unchanged.
 
-## Unreleased — borrow-integration follow-ups (conventions clarified)
+## v0.12.0 — borrow-integration follow-ups (conventions clarified)
 
 Documentation cleanup for the two non-bug "discoveries" that surfaced while
 debugging the Luxo lamp:
@@ -130,7 +144,7 @@ debugging the Luxo lamp:
   No code change — the cookbook examples already followed the convention; the
   docs caught up.
 
-## Unreleased — borrow-integration bug fixes
+## v0.12.0 — borrow-integration bug fixes
 
 Caught while building the Luxo lamp demo (2026-05-25) — actual use of the new
 V/Q/kinematic borrows together surfaced two real bugs and one no-repro.
@@ -183,7 +197,7 @@ in 9.5–11.5 s. The hang originally observed during the Luxo lamp session
 was almost certainly a zombie-process / stale-build artefact from accumulated
 chromium instances across an extended render iteration loop.
 
-## Unreleased — V slice: NURBS curve analytics layer
+## v0.12.0 — V slice: NURBS curve analytics layer
 
 ### Added — `Curve3D.analytics.*` namespace
 
