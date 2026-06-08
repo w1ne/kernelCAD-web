@@ -3,19 +3,24 @@
 // Spec: docs/specs/2026-05-30-studio-hosted-mcp-coverage-design.md
 // Plan: docs/plans/2026-05-30-studio-hosted-mcp-s1-api-base-helper.md
 //
-// Single place every Studio backend fetch routes through. Returns the URL
-// prefix to prepend to legacy `/__kernelcad/...` paths and the headers to
-// merge into `init.headers`:
+// THE single place every Studio backend fetch resolves its URL. One canonical
+// convention, so the client path always equals the server mount path:
 //
-// - Unsigned-in: `{ base: '', headers: {} }` — relative paths hit the
-//   existing local vite middleware so behavior is bit-for-bit identical
-//   to today.
-// - Signed-in: `{ base: <hosted-api-root>, headers: { Authorization } }`
-//   — fetches go to the hosted backend with the Supabase JWT.
+//   <base> + "/__kernelcad/<endpoint>"
 //
-// The hosted endpoints themselves (S2-S5) are not in this slice; the
-// rewrite is correct but signed-in requests against the legacy paths will
-// 404 until the hosted side lands.
+// - Local dev (no API base configured): `base = ''` → relative `/__kernelcad/…`
+//   hits the same-origin vite middleware. Bit-for-bit identical to today.
+// - Hosted: `base = VITE_API_BASE_URL` (= https://api.kernelcad.com, the Hetzner
+//   backend, direct origin — NOT CF-proxied). The `/__kernelcad` prefix is KEPT,
+//   because that is exactly where the backend mounts every route (mesh, session,
+//   params, transforms, events, animation-bake, source). Signed-in calls add the
+//   Supabase JWT as a bearer header.
+//
+// History / why no `/api/v1`: an earlier draft sent signed-in calls to
+// `app.kernelcad.com/api/v1/*` and stripped the `/__kernelcad` prefix, relying
+// on a CF edge rewrite that does not exist (POST → 405, never reached Hetzner).
+// `scriptSource.ts`'s mesh path already used VITE_API_BASE_URL + kept-prefix and
+// worked; this module now matches it, so there is ONE routing convention.
 
 import { getSupabase } from '../../funnel/lib/supabaseClient';
 
@@ -37,7 +42,8 @@ export interface ApiCallContext {
  *    — fetches go to the hosted backend with the Supabase JWT.
  *
  *  Resolves the hosted base from `import.meta.env.VITE_KERNELCAD_API_BASE`
- *  (preferred — dev override) or falls back to the prod URL.
+ *  (dev override) then `VITE_API_BASE_URL` (the prod hosted backend, shared with
+ *  scriptSource.ts), else `''` (local same-origin vite middleware).
  */
 export async function apiCall(): Promise<ApiCallContext> {
   // Plain local dev has no Supabase env, so `getSupabase()` throws. That is
@@ -57,17 +63,22 @@ export async function apiCall(): Promise<ApiCallContext> {
   } = await supabase.auth.getSession();
   const token = session?.access_token;
   if (!token) return { base: '', headers: {} };
+  // Same base resolution as scriptSource.ts's hosted mesh path → ONE host for
+  // all Studio backend traffic (api.kernelcad.com, the direct Hetzner origin).
   const base = import.meta.env.VITE_KERNELCAD_API_BASE
-    ?? 'https://app.kernelcad.com/api/v1';
+    ?? import.meta.env.VITE_API_BASE_URL
+    ?? '';
   return { base, headers: { Authorization: `Bearer ${token}` } };
 }
 
 /** Convenience for the common case `fetch(rewritePath('/__kernelcad/foo', base))`.
- *  Strips the leading `/__kernelcad` and substitutes the hosted prefix
- *  when signed-in, keeping the same path tail. */
+ *  Prepends the hosted origin while KEEPING the `/__kernelcad` prefix — the
+ *  backend mounts every route under `/__kernelcad/*`, so the client path must
+ *  match the server mount path. Empty base → unchanged same-origin path (local
+ *  vite middleware). */
 export function rewritePath(localPath: string, base: string): string {
   if (base === '') return localPath;
-  return base + localPath.replace(/^\/__kernelcad/, '');
+  return base + localPath;
 }
 
 /** Extracts the raw Supabase JWT from an `apiCall()` headers map, or
