@@ -1,0 +1,24 @@
+name: DCO
+
+on:
+  pull_request:
+    branches: [develop, main]
+
+jobs:
+  dco:
+    name: Check sign-offs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify every commit is signed off
+        run: |
+          fail=0
+          for c in $(git rev-list --no-merges ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}); do
+            if ! git show -s --format=%B "$c" | grep -q '^Signed-off-by: '; then
+              echo "::error::Commit $c is missing a Signed-off-by line (see CONTRIBUTING.md)"
+              fail=1
+            fi
+          done
+          exit $fail
