@@ -18,6 +18,7 @@ interface ShapeProps {
     shapeIndex: number;
     viewMode3D: ViewMode3D;
     clippingPlanes?: THREE.Plane[];
+    clipIntersection?: boolean;
     isSelected: boolean;
     name: string | undefined;
 }
@@ -94,6 +95,7 @@ export function ConsolidatedShape({
     shapeIndex,
     viewMode3D,
     clippingPlanes,
+    clipIntersection,
     isSelected,
     name
 }: ShapeProps) {
@@ -156,8 +158,11 @@ export function ConsolidatedShape({
     const resolvedColor = resolveColor(geometry.color) ?? DEFAULT_COLOR;
     const color = isSelected ? CAD_COLORS.selection : resolvedColor;
     const material = useMemo(
-        () => buildShapeMaterial(geometry.material, isSelected, color, viewMode3D, clippingPlanes ?? EMPTY_PLANES),
-        [geometry.material, isSelected, color, viewMode3D, clippingPlanes],
+        () => buildShapeMaterial(
+            geometry.material, isSelected, color, viewMode3D,
+            clippingPlanes ?? EMPTY_PLANES, clipIntersection ?? false,
+        ),
+        [geometry.material, isSelected, color, viewMode3D, clippingPlanes, clipIntersection],
     );
 
     if (!mergedGeometry) return null;
@@ -176,7 +181,11 @@ export function ConsolidatedShape({
                 // are ghosted by buildShapeMaterial), drawn in the body colour
                 // so they read against the viewport background.
                 <lineSegments geometry={edgesGeo} renderOrder={500}>
-                    <lineBasicMaterial color={viewMode3D === 'wireframe' ? color : 0x000000} />
+                    <lineBasicMaterial
+                        color={viewMode3D === 'wireframe' ? color : 0x000000}
+                        clippingPlanes={clippingPlanes ?? EMPTY_PLANES}
+                        clipIntersection={clipIntersection ?? false}
+                    />
                 </lineSegments>
             )}
             {selectedFace?.shapeIndex === shapeIndex && (

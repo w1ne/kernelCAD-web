@@ -35,9 +35,18 @@ export interface ShellState {
     readonly stagedEdit: StagedEdit | null;
     readonly markingMode: boolean;
     readonly sectionMode: boolean;
-    readonly sectionAxis: 'x' | 'y' | 'z';
-    readonly sectionFlip: boolean;
-    readonly sectionPosition: number;
+    /**
+     * Per axis: does this axis contribute a cut plane? One enabled axis is
+     * a classic section plane, two are a quarter wedge, three an octant
+     * corner — one mechanism, no modes.
+     */
+    readonly sectionAxesEnabled: Readonly<Record<'x' | 'y' | 'z', boolean>>;
+    /** Per axis: true ⇒ the POSITIVE side of that axis is removed. */
+    readonly sectionSides: Readonly<Record<'x' | 'y' | 'z', boolean>>;
+    /** Cut plane positions along each axis, world mm. */
+    readonly sectionOffsets: Readonly<Record<'x' | 'y' | 'z', number>>;
+    /** Part keys excluded from clipping (rendered complete). */
+    readonly sectionKeepWhole: ReadonlySet<string>;
 }
 
 const STORAGE_KEY_INSPECTOR_OPEN = 'kernelcad:inspectorOpen';
@@ -70,9 +79,10 @@ const INITIAL_STATE: ShellState = {
     stagedEdit: null,
     markingMode: false,
     sectionMode: false,
-    sectionAxis: 'z',
-    sectionFlip: false,
-    sectionPosition: 0,
+    sectionAxesEnabled: { x: false, y: false, z: true },
+    sectionSides: { x: true, y: true, z: true },
+    sectionOffsets: { x: 0, y: 0, z: 0 },
+    sectionKeepWhole: new Set<string>(),
 };
 
 type Listener = () => void;
@@ -132,30 +142,74 @@ export class ShellStore {
 
     setSectionMode = (on: boolean): void => {
         if (this.state.sectionMode === on) return;
-        this.state = { ...this.state, sectionMode: on };
+        this.state = {
+            ...this.state,
+            sectionMode: on,
+            // Keep-whole choices are scoped to one sectioning session.
+            sectionKeepWhole: on ? this.state.sectionKeepWhole : new Set<string>(),
+        };
         this.emit();
     };
 
     toggleSectionMode = (): void => {
-        this.state = { ...this.state, sectionMode: !this.state.sectionMode };
+        const on = !this.state.sectionMode;
+        this.state = {
+            ...this.state,
+            sectionMode: on,
+            sectionKeepWhole: on ? this.state.sectionKeepWhole : new Set<string>(),
+        };
         this.emit();
     };
 
-    setSectionAxis = (axis: 'x' | 'y' | 'z'): void => {
-        if (this.state.sectionAxis === axis) return;
-        this.state = { ...this.state, sectionAxis: axis };
+    /** Enable/disable one axis's cut plane. */
+    setSectionAxisEnabled = (axis: 'x' | 'y' | 'z', on: boolean): void => {
+        if (this.state.sectionAxesEnabled[axis] === on) return;
+        this.state = {
+            ...this.state,
+            sectionAxesEnabled: { ...this.state.sectionAxesEnabled, [axis]: on },
+        };
         this.emit();
     };
 
-    setSectionFlip = (flip: boolean): void => {
-        if (this.state.sectionFlip === flip) return;
-        this.state = { ...this.state, sectionFlip: flip };
+    /** Set all three axis-enable flags at once (preset buttons). */
+    setSectionAxesEnabled = (enabled: Readonly<Record<'x' | 'y' | 'z', boolean>>): void => {
+        const cur = this.state.sectionAxesEnabled;
+        if (cur.x === enabled.x && cur.y === enabled.y && cur.z === enabled.z) return;
+        this.state = { ...this.state, sectionAxesEnabled: { ...enabled } };
         this.emit();
     };
 
-    setSectionPosition = (position: number): void => {
-        if (this.state.sectionPosition === position) return;
-        this.state = { ...this.state, sectionPosition: position };
+    setSectionSide = (axis: 'x' | 'y' | 'z', removed: boolean): void => {
+        if (this.state.sectionSides[axis] === removed) return;
+        this.state = {
+            ...this.state,
+            sectionSides: { ...this.state.sectionSides, [axis]: removed },
+        };
+        this.emit();
+    };
+
+    setSectionOffset = (axis: 'x' | 'y' | 'z', position: number): void => {
+        if (this.state.sectionOffsets[axis] === position) return;
+        this.state = {
+            ...this.state,
+            sectionOffsets: { ...this.state.sectionOffsets, [axis]: position },
+        };
+        this.emit();
+    };
+
+    toggleSectionKeepWhole = (key: string): void => {
+        const next = new Set(this.state.sectionKeepWhole);
+        if (!next.delete(key)) next.add(key);
+        this.state = { ...this.state, sectionKeepWhole: next };
+        this.emit();
+    };
+
+    /** Drop keep-whole keys no longer present in the scene. No-op if all valid. */
+    pruneSectionKeepWhole = (validKeys: ReadonlyArray<string>): void => {
+        const valid = new Set(validKeys);
+        const kept = [...this.state.sectionKeepWhole].filter((k) => valid.has(k));
+        if (kept.length === this.state.sectionKeepWhole.size) return;
+        this.state = { ...this.state, sectionKeepWhole: new Set(kept) };
         this.emit();
     };
 
