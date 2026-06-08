@@ -65,6 +65,7 @@ function Probe() {
     scriptReview,
     error,
     setPreviewCode,
+    setViewportDriverLock,
   } = useGeometry();
   const faceCount = geometries[0]?.faces.length ?? 0;
   const firstColor = geometries[0]?.color ?? '';
@@ -90,6 +91,7 @@ function Probe() {
       <button data-testid="trigger-preview" onClick={() => setPreviewCode('return makeBox(1,1,1);')}>Trigger</button>
       <button data-testid="trigger-preview-2" onClick={() => setPreviewCode('return makeBox(2,2,2);')}>Trigger2</button>
       <button data-testid="clear-preview" onClick={() => setPreviewCode(null)}>Clear</button>
+      <button data-testid="lock-viewport" onClick={() => setViewportDriverLock?.(true)}>Lock</button>
     </div>
   );
 }
@@ -469,6 +471,64 @@ describe('GeometryContext latest-intent-wins', () => {
     // prompt) is intentionally kept from the initial review.
     expect(fetchUrl(fetchMock, 5)).toBe('/__kernelcad/review?session=tok-abc&script=examples%2Frobot-arm%2Fdesktop-3axis-mates.kcad.ts&live=1');
     expect(screen.getByTestId('script-review-repair').textContent).toBe('initial review');
+  });
+
+  it('viewport-driver lock suppresses the pose-only /transforms fast path (no fetch while animation drives)', async () => {
+    // Animation playback owns the override map while it drives the viewport.
+    // A trailing solvedAssembly* (pose-only) relower must NOT fire a
+    // /transforms fetch that would yank the baked pose; the handler treats it
+    // as handled and the override map is left to the player.
+    window.history.pushState({}, '', '/?script=examples/robot-arm/desktop-3axis-mates.kcad.ts');
+
+    let relowerHandler: ((event: unknown) => void) | null = null;
+    (globalThis as { EventSource?: unknown }).EventSource = class FakeES {
+      addEventListener(type: string, cb: (event: unknown) => void) {
+        if (type === 'relower') relowerHandler = cb;
+      }
+      removeEventListener() {}
+      close() {}
+      onerror: (() => void) | null = null;
+    };
+
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ sessionToken: 'tok-abc' }) } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ features: [], bounds: { min: [0, 0, 0], max: [0, 0, 0] }, params: {} }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ok: true, diagnostics: [], suggestedRepairPrompt: 'initial review' }),
+      } as Response);
+
+    render(
+      <GeometryProvider code={'const ignored = 1;'}>
+        <Probe />
+      </GeometryProvider>,
+    );
+
+    await act(async () => {
+      await Promise.resolve(); await Promise.resolve();
+      await Promise.resolve(); await Promise.resolve();
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(relowerHandler).not.toBeNull();
+
+    // Animation claims the lock.
+    await act(async () => { screen.getByTestId('lock-viewport').click(); });
+
+    // A pose-only relower (all affected ids are solvedAssembly*) arrives.
+    const poseEvent = { data: JSON.stringify({ affectedIds: ['solvedAssembly#0'] }) };
+    await act(async () => {
+      relowerHandler?.(poseEvent);
+      await Promise.resolve(); await Promise.resolve();
+      await Promise.resolve(); await Promise.resolve();
+    });
+
+    // No further fetch: the fast path saw the lock and skipped /transforms,
+    // and (being pose-only) it did not fall back to the full mesh path either.
+    expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
   it('coalesces relower bursts into one active mesh+review fetch pair plus one trailing pair', async () => {

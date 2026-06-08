@@ -27,6 +27,13 @@
 - **`capture_animation` MCP tool.** File-only input, snake_case envelope; mirrors
   the CLI. Collisions surface on `verified: false` + `collisions[]` and do NOT
   flip `ok`.
+- **Studio Animation tab.** Plays the `animationView` timeline live — scrub /
+  play with once/loop/reciprocate modes and a speed control. The timeline is
+  baked once (every frame solved server-side into per-part transforms), then
+  interpolated and played client-side at full rate for smooth playback; on
+  pause the kernel pose syncs to the displayed frame. Live drive needs a
+  `?script=` server-pool session; editor mode previews sampled values. Offline
+  `kernelcad animate` stays the full-fidelity capture.
 
 ## Unreleased — print-readiness DFM gates (W3)
 
