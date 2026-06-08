@@ -243,7 +243,7 @@ const meterDisc = cylinder(DISC_T, DISC_R, 96)
 
 // ── CAP — fill collar at 180°, drum spigot bearing, press-fit ────────────────
 // Local frame: seat on the wall top (world z=69.6).
-const capPort = cylinder(16, 8, 32).translate(-BOLT_R, 0, -5);                // Ø16 fill port
+const capPort = cylinder(18, 8, 32).translate(-BOLT_R, 0, -5);                // Ø16 fill port — top z13 clears the Ø22 collar (z12); was 16 (top z11), which left a 1 mm lid sealing the port shut
 const cap = cylinder(5, BASE_R, 96)
   .union(
     cylinder(6, BASE_R, 96).translate(0, 0, -6)
