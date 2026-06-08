@@ -29,6 +29,34 @@ export interface EventsEndpointDeps {
   pool: SessionPool;
   /** Send a `: keepalive` comment every N ms. Set to 0 to disable. */
   heartbeatMs?: number;
+  /**
+   * OPTIONAL auth hook, called BEFORE the SSE stream is established.
+   *
+   * EventSource cannot send custom headers, so signed-in Studio cannot put
+   * the Supabase JWT in an `Authorization: Bearer` header the way every other
+   * Studio fetch does. Instead the client appends it as an `access_token`
+   * query param (see `buildEventsUrl` in `apiBase.ts`), and the hosted server
+   * injects this hook to validate it.
+   *
+   * This endpoint stays framework-agnostic and has NO Supabase client of its
+   * own — the validator lives in kernelCAD-server, which injects an
+   * implementation that:
+   *   1. reads `access_token` from `req.url`'s query,
+   *   2. verifies the JWT against Supabase, and
+   *   3. checks the JWT subject matches the owner of the `session` token
+   *      (defense-in-depth: the per-user `sessionToken` is already an
+   *      unguessable randomUUID scoped to the user, so the channel is
+   *      user-scoped by the token alone; `access_token` lets the server
+   *      additionally reject a token whose owner != the JWT subject).
+   *
+   * Default = undefined = no-op allow, which preserves the vite single-user
+   * dev path bit-for-bit (no auth, no Supabase, no `access_token`).
+   *
+   * Security note: the `access_token` rides in the query string, so it can
+   * appear in proxy/access logs. Accepted for now; the token is the
+   * short-lived Supabase JWT, not a long-lived secret.
+   */
+  authenticate?: (req: EventsReqLike) => Promise<{ ok: boolean; status?: number; error?: string }>;
 }
 
 export interface EventsReqLike {
@@ -56,6 +84,17 @@ export function createEventsEndpoint(deps: EventsEndpointDeps) {
     const entry = deps.pool.get(token);
     if (!entry) {
       return writeJson(res, 404, { error: 'unknown session token' });
+    }
+    // Optional auth gate (hosted only). Runs BEFORE we touch the engine or
+    // emit any SSE byte, so a rejected request never opens a stream. The vite
+    // dev path has no `authenticate` dep and skips this entirely.
+    if (deps.authenticate) {
+      const verdict = await deps.authenticate(req);
+      if (!verdict.ok) {
+        return writeJson(res, verdict.status ?? 401, {
+          error: verdict.error ?? 'unauthorized',
+        });
+      }
     }
     if (!entry.model.session.engine) {
       return writeJson(res, 409, {
