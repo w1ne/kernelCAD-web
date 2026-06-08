@@ -314,29 +314,32 @@ asm.mate('battery-fit', 'cover.batterySeat', 'battery.seat', 'fastened');
 asm.mate('esp-fit', 'cover.espSeat', 'esp32.seat', 'fastened');
 
 // ── Dispense cycle (the carousel's whole job, on one timeline) ───────────────
-// index → fill dwell → swing → drop dwell → return. The drum carries the next
-// chamber over the station (60° = one chamber pitch) and HOLDS dead-still while
-// the meter disc works under it: the disc fills under the parked outlet, swings
-// ~117° to lay its pocket over the chute mouth, dwells to let the ~0.5 ml dose
-// fall, then returns to the fill pose. Two sealed DOFs, never moving at once —
-// exactly the choreography the architecture exists to make collision-free.
-// Play it in Studio's Animation tab, or capture an MP4:
+// index → meter swing → drop dwell → meter return → drum re-home. The drum
+// carries the next chamber over the station (60° = one chamber pitch) and HOLDS
+// dead-still while the meter disc works under it: the disc swings ~117° to lay
+// its pocket over the chute mouth, dwells to let the ~0.5 ml dose fall, then
+// returns. The drum finally re-homes to 0 so the timeline loops seamlessly (a
+// physical drum would hold the new chamber; this demo closes the loop). The two
+// sealed DOFs NEVER move at once — exactly the choreography the architecture
+// exists to make collision-free, which the pose verification proves.
+// Play it in Studio's Animation tab, or capture a cutaway MP4:
 //   kernelcad animate examples/spice-dispenser-carousel.kcad.ts cycle.mp4 \
-//     --hide wall,cap,skirt,cover,base
+//     --hide wall,cap,skirt,cover,base,servo-drum,servo-meter,battery,esp32
 // (Param-driven content last — relower perf rule.)
 animationView({
   name: 'dispense-cycle',
   tracks: [
     { param: 'drumDeg', keys: [
       { atMs: 0, value: 0 },
-      { atMs: 1200, value: 60, ease: 'easeInOut' },   // index next chamber over the station
-      { atMs: 4000, value: 60 },                       // hold through metering
+      { atMs: 1000, value: 60, ease: 'easeInOut' },   // index next chamber over the station
+      { atMs: 3600, value: 60 },                       // hold dead-still through metering
+      { atMs: 4000, value: 0, ease: 'easeInOut' },     // re-home so the loop closes seamlessly
     ]},
     { param: 'meterDeg', keys: [
       { atMs: 1400, value: 0 },
       { atMs: 2200, value: 117, ease: 'easeIn' },      // swing pocket to the chute
       { atMs: 3000, value: 117 },                      // dwell — let the dose fall
-      { atMs: 3800, value: 0, ease: 'easeOut' },       // return to fill
+      { atMs: 3600, value: 0, ease: 'easeOut' },       // return to fill (before the drum moves)
     ]},
   ],
   fps: 30,
