@@ -623,12 +623,13 @@ not ship a mechanism animation with `--no-verify` standing in for a clean pass.
 
 **Studio Animation tab (live review).** The same `animationView` timeline plays
 live in Studio's Inspector Animation tab — scrub or play it (with loop /
-reciprocate modes and a speed control), and each pose is a real kernel re-solve
-through the params pipeline, so the viewport mechanism actually moves (live
-drive needs a server-pool session, i.e. the model opened via `?script=`; the
-editor-only mode still previews sampled values). Offline `kernelcad animate`
-remains the full-fidelity, verified MP4 capture. `examples/animation/revolute-sweep.kcad.ts`
-is the runnable demo for both paths.
+reciprocate modes and a speed control). The timeline is baked once (every frame
+solved server-side into per-part transforms), then interpolated and played
+client-side at full rate, so playback is smooth; on pause the kernel pose is
+synced to the displayed frame so Export/Validate agree with the viewport. Live
+drive needs a server-pool session (the model opened via `?script=`); the
+editor-only mode previews sampled values. Offline `kernelcad animate` remains
+the full-fidelity, verified MP4 capture.
 
 ## Out of Scope
 
