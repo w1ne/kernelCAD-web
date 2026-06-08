@@ -14,6 +14,7 @@ Use `assembly()` when the model needs named mechanical parts, connector frames, 
 - **`assembly.part.floating`** — a part has no joint connecting it to any other part. The fix: declare the connection via `arm.mate(..., 'fastened')` or `arm.mate(..., 'revolute', ...)`.
 - **`assembly.part.orphan`** — a part is in a sub-assembly disconnected from the main mechanism.
 - **`assembly.interference.overlap`** — two parts share volume (promoted from `kernelcad interference`).
+- **`assembly.structure.unstructured-bodies`** (info) — a multi-body model returns loose top-level bodies with no `assembly().part(...)` structure, so the parts carry no identity for `inspect --focus`, `list_part_stats`, or per-part review. The fix: wrap each distinct body in a named `assembly().part(name, shape)`.
 
 Exit codes: 0 (solved) / 1 (warnings) / 2 (errors). Pipe-friendly:
 

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 218 codes', () => {
+  it('emits exactly 225 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -10,8 +10,14 @@ describe('diagnostic catalogue invariants', () => {
     // + 1 cli.file-write (W2 part-mode export: structured output-write failures)
     // + 4 W3 DFM gates: dfm.wall.too-thin, dfm.clearance.violated,
     //   dfm.channel.openings-mismatch, dfm.void.undeclared.
-    expect(DIAGNOSTIC_CODES).toHaveLength(218);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(218);
+    // + 6 animation views (multi-track keyframe animationView):
+    //   animation.param.unknown, animation.track.duplicate-param,
+    //   animation.keys.invalid, animation.value.clamped,
+    //   animation.view.shadowed, animation.collision.
+    // + 1 assembly.structure.unstructured-bodies (agent-parts-discipline:
+    //   multi-body model with no named assembly().part(...) structure).
+    expect(DIAGNOSTIC_CODES).toHaveLength(225);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(225);
   });
 
   it('every code has a non-empty hint template', () => {

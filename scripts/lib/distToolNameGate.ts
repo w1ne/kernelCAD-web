@@ -12,6 +12,7 @@ import { TOOL_REGISTRY } from '../../src/agent/mcp/toolRegistry';
 
 // CLI subcommands (kept in sync with src/agent/cli/index.ts).
 const CLI_SUBCOMMANDS = new Set<string>([
+  'animate',
   'dfm',
   'evaluate',
   'export',
@@ -83,6 +84,13 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   // Referenced in sdformat prose only to state it does NOT exist as a tool
   // ("There is no separate `validate_sdf` MCP tool") — not a tool call.
   'validate_sdf',
+  // capture_animation tool parameters / envelope fields (documented
+  // alongside the real capture_animation tool name, which DOES resolve —
+  // these are its params/result fields, not tool calls).
+  'frames_dir',
+  'verify_every',
+  'verify_skipped',
+  'failure_kind',
 ]);
 
 export interface ToolNameHit {

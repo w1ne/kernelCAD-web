@@ -11,7 +11,7 @@ import type { Browser, Page } from 'playwright';
 import sharp from 'sharp';
 import { loadScriptFeatures } from '../../modeling/runtime/scriptLoader';
 import { meshFeaturesPerFeature } from '../../modeling/capture/featureMeshing';
-import { serializeForBridge } from '../../modeling/capture/featureMeshSerialize';
+import { serializeForBridge, type FeatureMeshSerialized } from '../../modeling/capture/featureMeshSerialize';
 import type { RenderView } from '../../shared/render/views';
 
 export type { RenderView };
@@ -144,13 +144,139 @@ export interface HeadlessRenderResult {
   objectVisibility?: HeadlessObjectVisibility;
 }
 
-const HEADLESS_VIEWPORT = { width: 1920, height: 1080 } as const;
+/** The demo-player's headless ViewerPane is fixed at this size; capturing
+ *  any other viewport clips the canvas. Static renders capture at this size
+ *  then crop/resize; animation capture emits frames at exactly this size. */
+export const HEADLESS_VIEWPORT = { width: 1920, height: 1080 } as const;
 
 /** Single source of truth for the studio dev-server URL. The CLI render
  *  commands use this as the `--base-url` option default; no other port
  *  literal may exist in the render pipeline (guarded by
  *  tests/unit/cli/renderBaseUrlDefault.test.ts). */
 export const DEFAULT_RENDER_BASE_URL = 'http://localhost:5173';
+
+export interface DemoPlayerPageOpts {
+  /** Studio dev-server URL (`DEFAULT_RENDER_BASE_URL` for the CLI default). */
+  baseUrl: string;
+  /** Browser-context viewport AND page viewport (pinned via
+   *  `setViewportSize` so screenshots keep this size even when attached to
+   *  an existing Chrome window of a different size). */
+  viewport: { width: number; height: number };
+  /** Extra `key=value` demo-player query parts appended after the always-on
+   *  `headless=1` (e.g. `nowatermark=1`, `section=z:10`). */
+  extraQueryParts?: readonly string[];
+  /** When set, try attaching to an existing Chrome over CDP first, falling
+   *  back to a fresh `chromium.launch` when the attach fails (the animation
+   *  capture path). When unset, always launch a fresh headless chromium. */
+  cdpUrl?: string;
+  gotoTimeoutMs?: number;
+  /** Timeout for the `window.__demoPlayer` readiness wait. */
+  readyTimeoutMs?: number;
+  /** Playwright default operation timeout applied to the page. */
+  pageDefaultTimeoutMs?: number;
+}
+
+export interface DemoPlayerPageHandle {
+  page: Page;
+  /** True when attached to an existing Chrome over CDP. `close()` then
+   *  closes the capture tab and disconnects — it does not kill the user's
+   *  browser. */
+  attachedOverCdp: boolean;
+  /** Close (or disconnect from) the browser. Tolerant of the known
+   *  timeout-on-close issue (mirrors captureDemo): races a 3 s timer. */
+  close: () => Promise<void>;
+}
+
+/**
+ * Shared demo-player browser bootstrap: lazy playwright import, optional
+ * CDP attach with launch fallback, context + page, `/demo-player?headless=1`
+ * navigation, and the `window.__demoPlayer` readiness wait. Used by both the
+ * static `headlessRender` path and the animation capture engine
+ * (`captureAnimation.ts`) — do not fork another browser bootstrap.
+ */
+export async function openDemoPlayerPage(opts: DemoPlayerPageOpts): Promise<DemoPlayerPageHandle> {
+  // Lazy-import playwright so the CLI's evaluate/export/mcp/skill paths
+  // don't fail at module load when playwright isn't installed (it's an
+  // optional dependency).
+  let chromium;
+  try {
+    ({ chromium } = await import('playwright'));
+  } catch {
+    throw new Error(
+      "kernelcad render and animation capture require 'playwright'. Install with: npm install playwright && npx playwright install chromium",
+    );
+  }
+  let browser: Browser | undefined;
+  let attachedOverCdp = false;
+  let page: Page | undefined;
+  const closeHandle = async (): Promise<void> => {
+    // CDP-attached: the page lives in the user's running Chrome and
+    // disconnecting would leave it open — close it first so every capture
+    // doesn't leak a 1920×1080 tab. Fresh-launch path skips this:
+    // browser.close() tears the whole headless process down.
+    if (attachedOverCdp && page) {
+      await page.close().catch(() => undefined);
+    }
+    if (!browser) return;
+    await Promise.race([
+      browser.close(),
+      new Promise<void>((r) => setTimeout(r, 3000).unref()),
+    ]).catch(() => undefined);
+  };
+  try {
+    let context;
+    if (opts.cdpUrl !== undefined) {
+      try {
+        browser = await chromium.connectOverCDP(opts.cdpUrl);
+        // Reuse the first existing context (a fresh Playwright-launched
+        // chromium would always create a new one; CDP-attached chromes
+        // already have one).
+        const contexts = browser.contexts();
+        context = contexts[0] ?? (await browser.newContext({ viewport: opts.viewport }));
+        attachedOverCdp = true;
+      } catch {
+        browser = undefined;
+      }
+    }
+    if (!browser) {
+      browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
+      context = await browser.newContext({ viewport: opts.viewport });
+    }
+    page = await context!.newPage();
+    // Pin the screenshot size regardless of the attached Chrome window size.
+    await page.setViewportSize(opts.viewport);
+    if (opts.pageDefaultTimeoutMs !== undefined) page.setDefaultTimeout(opts.pageDefaultTimeoutMs);
+    // ?headless=1 suppresses TanStackRouterDevtools (and any future dev-mode
+    // chrome) in src/studio/routes/__root.tsx so captured pixels contain
+    // only the scene. See issue #173.
+    const queryParts = ['headless=1', ...(opts.extraQueryParts ?? [])];
+    await page.goto(`${opts.baseUrl}/demo-player?${queryParts.join('&')}`, {
+      waitUntil: 'domcontentloaded',
+      timeout: opts.gotoTimeoutMs ?? 30_000,
+    });
+    await page.waitForFunction(() => window.__demoPlayer !== undefined, {
+      timeout: opts.readyTimeoutMs ?? 15_000,
+    });
+    return { page, attachedOverCdp, close: closeHandle };
+  } catch (e) {
+    await closeHandle();
+    throw e;
+  }
+}
+
+/** Push serialized FeatureMeshes into the demo-player scene. Shared by the
+ *  static render path and the animation capture engine so there is exactly
+ *  one `loadFeatureMeshes` bridge call in the codebase. */
+export async function loadFeatureMeshesIntoPage(
+  page: Page,
+  serialized: readonly FeatureMeshSerialized[],
+  bounds: unknown,
+): Promise<void> {
+  await page.evaluate(
+    ({ feats, b }) => window.__demoPlayer!.loadFeatureMeshes(feats, b),
+    { feats: serialized, b: bounds },
+  );
+}
 
 export async function headlessRender(opts: HeadlessRenderOpts): Promise<HeadlessRenderResult> {
   const baseUrl = opts.baseUrl ?? DEFAULT_RENDER_BASE_URL;
@@ -181,50 +307,30 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
   }
   const serialized = meshing.features.map(serializeForBridge);
 
-  // 2. Launch headless chromium. Lazy-import playwright so the CLI's
-  //    evaluate/export/mcp/skill paths don't fail at module load when
-  //    playwright isn't installed (it's an optional dependency).
-  let browser: Browser | undefined;
-  let page: Page | undefined;
+  // 2. Launch headless chromium via the shared demo-player bootstrap.
+  //    Build query string: headless=1 always (added by the helper),
+  //    nowatermark=1 when requested.
+  let pageHandle: DemoPlayerPageHandle | undefined;
   try {
-    let chromium;
-    try {
-      ({ chromium } = await import('playwright'));
-    } catch {
-      throw new Error(
-        "kernelcad render requires 'playwright'. Install with: npm install playwright && npx playwright install chromium",
-      );
+    const extraQueryParts: string[] = [];
+    if (opts.noWatermark) extraQueryParts.push('nowatermark=1');
+    if (opts.section) {
+      extraQueryParts.push(`section=${opts.section.axis}:${opts.section.positionRaw}`);
+      if (opts.section.flip) extraQueryParts.push('sectionflip=1');
     }
-    browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
-    const context = await browser.newContext({
+    pageHandle = await openDemoPlayerPage({
+      baseUrl,
       // DemoPlayer's headless ViewerPane is currently fixed at 1920×1080.
       // Capturing a smaller viewport clips the top-left of that canvas and
       // produces false visual-review evidence. Capture the full pane, then
       // resize/pad to the requested tile dimensions below.
       viewport: HEADLESS_VIEWPORT,
+      extraQueryParts,
     });
-    page = await context.newPage();
-    // ?headless=1 suppresses TanStackRouterDevtools (and any future dev-mode
-    // chrome) in src/studio/routes/__root.tsx so the captured PNG contains
-    // only scene pixels. See issue #173.
-    // Build query string: headless=1 always, nowatermark=1 when requested.
-    const queryParts = ['headless=1'];
-    if (opts.noWatermark) queryParts.push('nowatermark=1');
-    if (opts.section) {
-      queryParts.push(`section=${opts.section.axis}:${opts.section.positionRaw}`);
-      if (opts.section.flip) queryParts.push('sectionflip=1');
-    }
-    await page.goto(`${baseUrl}/demo-player?${queryParts.join('&')}`, {
-      waitUntil: 'domcontentloaded',
-      timeout: 30_000,
-    });
-    await page.waitForFunction(() => window.__demoPlayer !== undefined, { timeout: 15000 });
+    const page = pageHandle.page;
 
     // 3. Load meshes + skip the fade-in animation.
-    await page.evaluate(
-      ({ feats, b }) => window.__demoPlayer!.loadFeatureMeshes(feats, b),
-      { feats: serialized, b: meshing.bounds },
-    );
+    await loadFeatureMeshesIntoPage(page, serialized, meshing.bounds);
     await page.evaluate(() => window.__demoPlayer!.forceFullOpacity());
     // Hide intermediate construction-debris feature groups so engineering
     // captures show only the final shape — not stacked cutter boxes, sketch
@@ -354,13 +460,9 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
       ...(objectVisibility !== undefined ? { objectVisibility } : {}),
     };
   } finally {
-    // captureDemo has a known timeout-on-close issue; mirror its tolerance.
-    if (browser) {
-      await Promise.race([
-        browser.close(),
-        new Promise<void>((r) => setTimeout(r, 3000).unref()),
-      ]).catch(() => undefined);
-    }
+    // captureDemo has a known timeout-on-close issue; the handle's close()
+    // mirrors its tolerance (3 s race).
+    if (pageHandle) await pageHandle.close();
   }
 }
 
