@@ -29,7 +29,7 @@ const h = param('Height', 40, { unit: 'mm' });
 const t = param('Thickness', 5, { unit: 'mm' });
 
 const base = box(w, h, t);
-const hole = cylinder(t + 2, 4).translate(w / 2, h / 2, -1);
+const hole = cylinder(t.add(2), 4).translate(w.divide(2), h.divide(2), -1);
 return base.subtract(hole);
 `;
 
