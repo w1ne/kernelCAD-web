@@ -1957,7 +1957,7 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'query',
     description: 'A topology input string failed to parse as either an @kc[...] ref, an @kcq[...] Query DSL expression, or a JSON-AST object.',
   },
-  // Animation views (6) — multi-track keyframe animationView() validation.
+  // Animation views (7) — multi-track keyframe animationView() validation.
   // The first five fire at capture time from CaptureSession.addAnimationView
   // (errors THROW KernelError — the addDfmSpec precedent, since stashed
   // virtual-record diagnostics never reach evaluate; warns stash on
@@ -2010,6 +2010,14 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'animation',
     description: 'Motion verification found two parts interpenetrating at a sampled timestamp of the animationView timeline.',
+  },
+  'animation.bake.geometry-param': {
+    hintTemplate:
+      'A track param drives part GEOMETRY (a dimension, extrude depth, hole radius, …) rather than a mate pose, so Studio baked playback — which only re-applies rigid per-part world transforms — would show the wrong shape. Studio playback supports POSE-ONLY (mate-driven) timelines; render geometry-animating timelines with `kernelcad animate` (offline MP4 re-meshes every frame).',
+    nextAction: { kind: 'call-tool', tool: 'kernelcad animate', args: { reason: 'geometry-animating timeline' } },
+    defaultSeverity: 'error',
+    group: 'animation',
+    description: 'An animationView track param re-lowers part-local geometry (not just a solvedAssembly mate pose), so Studio baked playback — which only re-applies rigid per-part transforms — cannot represent it; offline MP4 capture is required.',
   },
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 

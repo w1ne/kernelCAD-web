@@ -24,6 +24,24 @@ function fixture(overrides: Partial<StudioRecomputeResult> = {}): StudioRecomput
     };
 }
 
+function animationViewRecord() {
+    return {
+        id: 'animationView_1' as never,
+        kind: 'animationView' as const,
+        inputs: {},
+        params: {},
+        transforms: [],
+        suppressed: false,
+        metadata: {
+            name: 'spin',
+            fps: 30,
+            durationMs: 4000,
+            virtual: true,
+            tracks: [{ param: 'drumDeg', keys: [{ atMs: 0, value: 0, ease: 'linear' }] }],
+        },
+    };
+}
+
 function jointFixture(name: string) {
     return {
         mate: {
@@ -89,15 +107,31 @@ describe('getVisibleTabs', () => {
         });
     }
 
-    it('reserved tabs (sections/cut/animation/render) are never returned (Phase 2 baseline)', () => {
+    it('reserved tabs (sections/cut/render) are never returned (Phase 2 baseline)', () => {
         const result = fixture({
             paramTable: paramTableWith(1),
             validity: { status: 'solved', diagnostics: [], partCount: 1, jointCount: 0 },
         });
         const tabs = getVisibleTabs(result);
-        for (const reserved of ['sections', 'cut', 'animation', 'render'] as TabId[]) {
+        for (const reserved of ['sections', 'cut', 'render'] as TabId[]) {
             expect(tabs).not.toContain(reserved);
         }
+    });
+
+    it('animation tab surfaces when an animationView record is present', () => {
+        const result = fixture({ features: [animationViewRecord()] as never });
+        expect(getVisibleTabs(result)).toContain('animation');
+    });
+
+    it('animation tab is hidden when no animationView record exists', () => {
+        const result = fixture({ features: [] });
+        expect(getVisibleTabs(result)).not.toContain('animation');
+    });
+
+    it('animation last-wins / hidden when the only animation record lacks metadata', () => {
+        const bare = { ...animationViewRecord(), metadata: undefined };
+        const result = fixture({ features: [bare] as never });
+        expect(getVisibleTabs(result)).not.toContain('animation');
     });
 
     it('joints tab surfaces when at least one mate with pose is present (Slice 2C)', () => {

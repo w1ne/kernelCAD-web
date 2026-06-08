@@ -86,6 +86,7 @@ function kernelCadMeshEndpoint(): Plugin {
     eventsHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
     paramsHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
     transformsHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
+    animationBakeHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
   };
   let poolBundlePromise: Promise<PoolBundle> | undefined;
 
@@ -149,6 +150,7 @@ function kernelCadMeshEndpoint(): Plugin {
               { createEventsEndpoint },
               { createParamsEndpoint },
               { createTransformsEndpoint },
+              { createAnimationBakeEndpoint },
               { buildModelFromFile },
             ] = await Promise.all([
               import('./src/server/sessionPool'),
@@ -156,6 +158,7 @@ function kernelCadMeshEndpoint(): Plugin {
               import('./src/server/middleware/eventsEndpoint'),
               import('./src/server/middleware/paramsEndpoint'),
               import('./src/server/middleware/transformsEndpoint'),
+              import('./src/server/middleware/animationBakeEndpoint'),
               import('./src/modeling/buildModel'),
             ]);
             const pool = createSessionPool({
@@ -172,6 +175,7 @@ function kernelCadMeshEndpoint(): Plugin {
               eventsHandler: createEventsEndpoint({ pool, heartbeatMs: 15_000 }),
               paramsHandler: createParamsEndpoint({ pool }),
               transformsHandler: createTransformsEndpoint({ pool }),
+              animationBakeHandler: createAnimationBakeEndpoint({ pool }),
             };
           })();
         }
@@ -204,6 +208,10 @@ function kernelCadMeshEndpoint(): Plugin {
       server.middlewares.use('/__kernelcad/transforms', async (req, res) => {
         const bundle = await getPoolBundle();
         await bundle.transformsHandler(req, res);
+      });
+      server.middlewares.use('/__kernelcad/animation-bake', async (req, res) => {
+        const bundle = await getPoolBundle();
+        await bundle.animationBakeHandler(req, res);
       });
 
       server.middlewares.use('/__kernelcad/mesh', async (req, res) => {

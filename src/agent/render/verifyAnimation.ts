@@ -83,6 +83,12 @@ export interface VerifyAnimationOpts {
   /** Extra ignored pairs as `pairKey(a, b)` strings — unioned with the
    *  model's own `solvedModel({ ignore })` lists. */
   ignorePairs?: ReadonlySet<string>;
+  /** Suppress the per-pose `engine.emitRelower(...)` SSE fan-out for the
+   *  verification sweep (and its param restore). Server callers that run
+   *  verification inside a larger solve (the animation-bake endpoint, which
+   *  emits its own single trailing relower) set this so verification does not
+   *  flood SSE subscribers with one relower per sampled pose. */
+  silent?: boolean;
 }
 
 function diag(code: DiagnosticCode, message: string, hint: string): CompilerDiagnostic {
@@ -161,7 +167,7 @@ export async function verifyAnimation(
     }));
     let lowered;
     try {
-      const { model: updated } = await updateModelParams(model, edits);
+      const { model: updated } = await updateModelParams(model, edits, { silent: opts.silent });
       lowered = updated.rootShape ?? updated.tailShape;
       if (lowered === undefined) {
         throw new Error('the chain root produced no lowered shape');
@@ -214,7 +220,7 @@ export async function verifyAnimation(
   // later consumers reuse the model and must see it unchanged.
   if (originals.length > 0) {
     try {
-      await updateModelParams(model, originals);
+      await updateModelParams(model, originals, { silent: opts.silent });
     } catch (e) {
       poseFailures += 1;
       diagnostics.push(diag(

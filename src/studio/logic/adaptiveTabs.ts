@@ -1,4 +1,5 @@
 import type { StudioRecomputeResult, TabId } from '../types';
+import { selectAnimationMetadata } from './animationRecord';
 
 const ALWAYS_VISIBLE: readonly TabId[] = ['scene', 'code'];
 
@@ -13,11 +14,12 @@ const ALWAYS_VISIBLE: readonly TabId[] = ['scene', 'code'];
  * - `joints` — the script's assembly declared at least one mate with pose.
  * - `validity` — `validateAssembly` ran (regardless of status).
  * - `export` — there's at least one geometry to export.
+ * - `animation` — the script declared an `animationView(...)` (last-wins).
  *
- * Reserved tabs (`sections`, `cut`, `animation`, `render`) are not returned
- * here; Phase 3 renders them dim-disabled with a tooltip explaining what
- * the script must declare to enable them. They'll move into this function
- * as their owning workstreams ship.
+ * Reserved tabs (`sections`, `cut`, `render`) are not returned here; Phase 3
+ * renders them dim-disabled with a tooltip explaining what the script must
+ * declare to enable them. They'll move into this function as their owning
+ * workstreams ship.
  */
 export function getVisibleTabs(result: StudioRecomputeResult | null): readonly TabId[] {
     if (result == null) return ALWAYS_VISIBLE;
@@ -26,5 +28,6 @@ export function getVisibleTabs(result: StudioRecomputeResult | null): readonly T
     if ((result.joints ?? []).length > 0) tabs.push('joints');
     if (result.validity != null) tabs.push('validity');
     if (result.geometries.length > 0) tabs.push('export');
+    if (selectAnimationMetadata(result.features) != null) tabs.push('animation');
     return tabs;
 }

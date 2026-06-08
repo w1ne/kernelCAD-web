@@ -81,6 +81,9 @@ export function useRecomputeResult(): StudioRecomputeResult {
     const clearGeometryTransformOverrides =
         (workbench as { clearGeometryTransformOverrides?: StudioRecomputeResult['clearGeometryTransformOverrides'] })
             .clearGeometryTransformOverrides;
+    const setViewportDriverLock =
+        (workbench as { setViewportDriverLock?: StudioRecomputeResult['setViewportDriverLock'] })
+            .setViewportDriverLock;
 
     return useMemo<StudioRecomputeResult>(
         () => ({
@@ -96,6 +99,7 @@ export function useRecomputeResult(): StudioRecomputeResult {
             updateParam,
             setGeometryTransformOverride,
             clearGeometryTransformOverrides,
+            setViewportDriverLock,
         }),
         [
             workbench.featureRecords,
@@ -110,6 +114,7 @@ export function useRecomputeResult(): StudioRecomputeResult {
             mechanismBanner,
             setGeometryTransformOverride,
             clearGeometryTransformOverrides,
+            setViewportDriverLock,
         ],
     );
 }
