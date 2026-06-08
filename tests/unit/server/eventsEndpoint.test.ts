@@ -164,6 +164,100 @@ describe('eventsEndpoint', () => {
     expect(JSON.parse(res.body).error).toMatch(/engine/i);
   });
 
+  it('streams as today when no authenticate dep is supplied (vite path)', async () => {
+    const engine = fakeEngine();
+    const pool = createSessionPool({
+      build: async () => fakeBuiltModelWithEngine(engine),
+      ttlMs: 60_000,
+    });
+    const entry = await pool.getOrCreate('/abs/x.kcad.ts');
+    const handler = createEventsEndpoint({ pool });
+    const req = createFakeReqWithClose(`/__kernelcad/events?session=${entry.token}`);
+    const res = createFakeRes();
+
+    void handler(req, res);
+    await Promise.resolve();
+
+    expect(res.statusCode).toBe(200);
+    expect(res.headers['content-type']).toBe('text/event-stream');
+    expect(res.writes.some((c) => c.startsWith(': connected'))).toBe(true);
+  });
+
+  it('rejects with 401 and does NOT open the stream when authenticate denies', async () => {
+    const engine = fakeEngine();
+    const pool = createSessionPool({
+      build: async () => fakeBuiltModelWithEngine(engine),
+      ttlMs: 60_000,
+    });
+    const entry = await pool.getOrCreate('/abs/x.kcad.ts');
+    const authenticate = vi.fn(async () => ({ ok: false }));
+    const handler = createEventsEndpoint({ pool, authenticate });
+    const req = createFakeReqWithClose(
+      `/__kernelcad/events?session=${entry.token}&access_token=bad`,
+    );
+    const res = createFakeRes();
+
+    await handler(req, res);
+
+    expect(authenticate).toHaveBeenCalledTimes(1);
+    expect(res.statusCode).toBe(401);
+    // No SSE preamble, no subscription — the stream never opened. (writeJson
+    // sets a JSON content-type for the error body; the stream content-type is
+    // text/event-stream, which must NOT have been set.)
+    expect(res.headers['content-type']).not.toBe('text/event-stream');
+    expect(res.writes).toHaveLength(0);
+    expect(engine.subscribers).toHaveLength(1); // only the pool entry's hub
+  });
+
+  it('honors a custom status/error from a denying authenticate hook', async () => {
+    const engine = fakeEngine();
+    const pool = createSessionPool({
+      build: async () => fakeBuiltModelWithEngine(engine),
+      ttlMs: 60_000,
+    });
+    const entry = await pool.getOrCreate('/abs/x.kcad.ts');
+    const authenticate = vi.fn(async () => ({
+      ok: false,
+      status: 403,
+      error: 'token owner mismatch',
+    }));
+    const handler = createEventsEndpoint({ pool, authenticate });
+    const req = createFakeReqWithClose(`/__kernelcad/events?session=${entry.token}`);
+    const res = createFakeRes();
+
+    await handler(req, res);
+
+    expect(res.statusCode).toBe(403);
+    expect(JSON.parse(res.body).error).toBe('token owner mismatch');
+    expect(res.writes).toHaveLength(0);
+  });
+
+  it('streams when authenticate allows', async () => {
+    const engine = fakeEngine();
+    const pool = createSessionPool({
+      build: async () => fakeBuiltModelWithEngine(engine),
+      ttlMs: 60_000,
+    });
+    const entry = await pool.getOrCreate('/abs/x.kcad.ts');
+    const authenticate = vi.fn(async () => ({ ok: true }));
+    const handler = createEventsEndpoint({ pool, authenticate });
+    const req = createFakeReqWithClose(
+      `/__kernelcad/events?session=${entry.token}&access_token=good-jwt`,
+    );
+    const res = createFakeRes();
+
+    void handler(req, res);
+    await Promise.resolve();
+
+    expect(authenticate).toHaveBeenCalledTimes(1);
+    expect(res.statusCode).toBe(200);
+    expect(res.headers['content-type']).toBe('text/event-stream');
+    expect(res.writes.some((c) => c.startsWith(': connected'))).toBe(true);
+
+    engine.emitRelower(['feat_1']);
+    expect(res.writes.some((c) => c.startsWith('event: relower\n'))).toBe(true);
+  });
+
   it('writes periodic keep-alive comments when heartbeatMs is set', async () => {
     vi.useFakeTimers();
     try {
