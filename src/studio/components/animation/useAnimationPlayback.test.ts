@@ -346,6 +346,158 @@ describe('useAnimationPlayback (baked)', () => {
         // End-of-playback kernel sync: exactly one edit at the final pose.
         expect(h.update).toHaveBeenCalledTimes(1);
     });
+
+    // I3: a Params-tab edit changes a param's CURRENT value (kernel state)
+    // without touching metadata.tracks, so the timeline key is unchanged. The
+    // kernel-state epoch (bumped by GeometryContext on every relower) must
+    // invalidate the stale bake so the next play/scrub re-bakes.
+    it('I3: a foreign kernel-epoch bump between plays re-bakes (stale bake not served)', async () => {
+        const h = harness();
+        const { result, rerender } = renderHook(
+            (props: { kernelEpoch: number }) =>
+                useAnimationPlayback({
+                    metadata: FIXTURE,
+                    sessionToken: 't1',
+                    updateParam: h.update,
+                    applyPartTransform: h.apply,
+                    clearPartTransforms: h.clear,
+                    bakeFetcher: h.bakeFetcher,
+                    clock: h.clock,
+                    kernelEpoch: props.kernelEpoch,
+                }),
+            { initialProps: { kernelEpoch: 0 } },
+        );
+        // First play bakes once. Its trailing relower is a SELF-edit; the test
+        // models that as part of the foreign bump below being net-foreign.
+        await act(async () => { result.current.play(); await Promise.resolve(); await Promise.resolve(); });
+        act(() => { result.current.pause(); });
+        expect(h.bakeFetcher).toHaveBeenCalledTimes(1);
+
+        // A Params-tab edit lands: GeometryContext sees the relower and bumps the
+        // epoch. The player accounted for ONE self-edit (the bake's trailing
+        // relower) + ONE self-edit (the pause-sync), so to be NET foreign the
+        // epoch must advance past those. Bump by 3 (2 self + 1 foreign).
+        rerender({ kernelEpoch: 3 });
+        expect(result.current.bakeState).toBe('idle'); // cache dropped
+
+        await act(async () => { result.current.play(); await Promise.resolve(); await Promise.resolve(); });
+        expect(h.bakeFetcher).toHaveBeenCalledTimes(2); // re-baked on foreign edit
+    });
+
+    // RACE (the finding): a FOREIGN Params-tab edit's relower bump arrives
+    // BEFORE a still-pending self-edit's bump. Under a fungible COUNT-based
+    // credit the foreign bump is wrongly consumed by the outstanding self-credit
+    // → the stale bake is served. The invariant under test: a foreign edit ALWAYS
+    // invalidates; the worst acceptable outcome is a redundant re-bake, never a
+    // silent stale serve.
+    //
+    // Simulated by holding the scrub-sync write UNSETTLED (its relower bump has
+    // not yet been attributed) and delivering a foreign epoch bump in that
+    // window. The self-credit must NOT absorb the foreign bump.
+    it('I3-race: a foreign bump interleaved BEFORE a pending self-edit settles still invalidates', async () => {
+        // A controllable updateParam: the player's scrub/pause-sync write stays
+        // pending until we release it, modelling the window in which a foreign
+        // relower can interleave before the self relower is attributed.
+        let releaseSync: (() => void) | null = null;
+        const update = vi.fn().mockImplementation(
+            () => new Promise<void>((resolve) => { releaseSync = () => resolve(); }),
+        );
+        const bakeFetcher = vi.fn().mockResolvedValue(fakeBake());
+        const clock = makeManualClock();
+        const { result, rerender } = renderHook(
+            (props: { kernelEpoch: number }) =>
+                useAnimationPlayback({
+                    metadata: FIXTURE,
+                    sessionToken: 't1',
+                    updateParam: update,
+                    applyPartTransform: vi.fn(),
+                    clearPartTransforms: vi.fn(),
+                    bakeFetcher,
+                    clock,
+                    kernelEpoch: props.kernelEpoch,
+                }),
+            { initialProps: { kernelEpoch: 0 } },
+        );
+
+        // Scrub bakes once. The bake-restore relower settles (bake promise
+        // resolved) and is attributed: epoch advances to 1 for it. The
+        // scrub-sync write is issued but held UNSETTLED (releaseSync not called).
+        await act(async () => {
+            result.current.scrubTo(1000);
+            await Promise.resolve(); await Promise.resolve();
+        });
+        expect(bakeFetcher).toHaveBeenCalledTimes(1);
+        expect(update).toHaveBeenCalledTimes(1);
+
+        // Account for the bake-restore self relower (epoch 0 → 1) — that one IS
+        // settled (the bake resolved) so it must be credited.
+        rerender({ kernelEpoch: 1 });
+        expect(result.current.bakeState).toBe('ready'); // bake-restore credited
+
+        // FOREIGN edit lands now, BEFORE the held scrub-sync write settles. Its
+        // relower bumps the epoch 1 → 2. A fungible self-credit for the
+        // unsettled scrub-sync would wrongly swallow this → stale serve. The fix
+        // must treat it as foreign and invalidate.
+        rerender({ kernelEpoch: 2 });
+        expect(result.current.bakeState).toBe('idle'); // foreign edit invalidated
+
+        // Now the held scrub-sync finally settles + its own relower arrives
+        // (epoch 2 → 3). This must NOT resurrect the (already-invalidated) bake.
+        await act(async () => { releaseSync?.(); await Promise.resolve(); });
+        rerender({ kernelEpoch: 3 });
+        expect(result.current.bakeState).toBe('idle');
+
+        // Next scrub must RE-BAKE — the stale bake was correctly dropped.
+        await act(async () => {
+            result.current.scrubTo(3000);
+            await Promise.resolve(); await Promise.resolve();
+        });
+        expect(bakeFetcher).toHaveBeenCalledTimes(2);
+    });
+
+    it('I3: the player\'s OWN kernel writes (bake restore + pause-sync) do NOT trigger a re-bake', async () => {
+        const h = harness();
+        const { result, rerender } = renderHook(
+            (props: { kernelEpoch: number }) =>
+                useAnimationPlayback({
+                    metadata: FIXTURE,
+                    sessionToken: 't1',
+                    updateParam: h.update,
+                    applyPartTransform: h.apply,
+                    clearPartTransforms: h.clear,
+                    bakeFetcher: h.bakeFetcher,
+                    clock: h.clock,
+                    kernelEpoch: props.kernelEpoch,
+                }),
+            { initialProps: { kernelEpoch: 0 } },
+        );
+        // Scrub bakes once (1 self-edit: bake restore) + scrub-sync (1 self-edit).
+        await act(async () => { result.current.scrubTo(1000); await Promise.resolve(); await Promise.resolve(); });
+        expect(h.bakeFetcher).toHaveBeenCalledTimes(1);
+
+        // The two self-originated relowers arrive as epoch bumps (0 → 2). They
+        // are exactly consumed by the pending self-edit credit, so the bake is
+        // NOT invalidated and a second scrub serves the cache.
+        rerender({ kernelEpoch: 2 });
+        expect(result.current.bakeState).toBe('ready'); // cache survived
+
+        await act(async () => { result.current.scrubTo(3000); await Promise.resolve(); await Promise.resolve(); });
+        expect(h.bakeFetcher).toHaveBeenCalledTimes(1); // no re-bake from self-edits
+    });
+
+    it('I1: collisions from the bake response are exposed on the playback state', async () => {
+        const collidingBake: BakedTimeline = {
+            ...fakeBake(),
+            collisions: [{ tMs: 500, a: 'arm', b: 'post', volumeMm3: 312.5 }],
+        };
+        const h = harness({ bakeFetcher: vi.fn().mockResolvedValue(collidingBake) });
+        const { result } = renderPlayback(h);
+        expect(result.current.collisions).toEqual([]); // none before the bake
+        await act(async () => { result.current.scrubTo(500); await Promise.resolve(); await Promise.resolve(); });
+        expect(result.current.collisions).toEqual([
+            { tMs: 500, a: 'arm', b: 'post', volumeMm3: 312.5 },
+        ]);
+    });
 });
 
 describe('useAnimationPlayback — oscillation (clock monotonicity)', () => {

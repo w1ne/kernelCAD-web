@@ -15,6 +15,8 @@ import {
 import type { SessionPool } from '../sessionPool';
 
 const FIXTURE = 'tests/fixtures/animation/revolute-sweep.kcad.ts';
+const COLLIDING_FIXTURE = 'tests/fixtures/animation/colliding-sweep.kcad.ts';
+const GEOMETRY_PARAM_FIXTURE = 'tests/fixtures/animation/geometry-param-sweep.kcad.ts';
 
 function fakeReq(query: string): AnimationBakeReqLike {
   return { url: `/__kernelcad/animation-bake${query}`, method: 'POST' };
@@ -176,6 +178,96 @@ describe('animationBakeEndpoint', () => {
       expect(body.code).toBe('animation.bake.too-many-frames');
       // Sanity: the constant is the documented ceiling.
       expect(MAX_BAKE_FRAMES).toBe(600);
+    },
+    120_000,
+  );
+
+  it(
+    'B1: a timeline whose track param drives GEOMETRY (not a mate pose) is refused with animation.bake.geometry-param',
+    async () => {
+      const model = await buildModelFromFile({ file: GEOMETRY_PARAM_FIXTURE });
+      expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+
+      const handler = createAnimationBakeEndpoint({ pool: fakePool(model) });
+      const r = fakeRes();
+      await handler(fakeReq('?session=t1'), r.res as never);
+
+      expect(r.out.statusCode).toBe(422);
+      const body = r.out.body as { code?: string; error?: string; hint?: string };
+      expect(body.code).toBe('animation.bake.geometry-param');
+      // The message must steer the user to the offline tool.
+      expect(body.hint).toContain('kernelcad animate');
+    },
+    120_000,
+  );
+
+  it(
+    'I1: the bake response carries an empty collisions[] for a clean (air-gapped) mechanism',
+    async () => {
+      const model = await buildModelFromFile({ file: FIXTURE });
+      expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+
+      const handler = createAnimationBakeEndpoint({ pool: fakePool(model) });
+      const r = fakeRes();
+      await handler(fakeReq('?session=t1'), r.res as never);
+
+      expect(r.out.statusCode).toBe(200);
+      const body = r.out.body as AnimationBakeResult;
+      expect(Array.isArray(body.collisions)).toBe(true);
+      expect(body.collisions).toEqual([]);
+    },
+    120_000,
+  );
+
+  it(
+    'I1: a self-colliding timeline still bakes (200) but the response advises the collisions',
+    async () => {
+      const model = await buildModelFromFile({ file: COLLIDING_FIXTURE });
+      expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+
+      const handler = createAnimationBakeEndpoint({ pool: fakePool(model) });
+      const r = fakeRes();
+      await handler(fakeReq('?session=t1'), r.res as never);
+
+      // NON-FATAL: the bake succeeds; collisions are advisory.
+      expect(r.out.statusCode).toBe(200);
+      const body = r.out.body as AnimationBakeResult;
+      expect(body.frames).toBeGreaterThan(0);
+      expect(body.parts.length).toBeGreaterThan(0);
+      expect(body.collisions.length).toBeGreaterThan(0);
+      for (const c of body.collisions) {
+        expect(typeof c.tMs).toBe('number');
+        expect(typeof c.a).toBe('string');
+        expect(typeof c.b).toBe('string');
+        expect(c.volumeMm3).toBeGreaterThan(0);
+      }
+    },
+    120_000,
+  );
+
+  it(
+    'I1: the advisory collision check does NOT add SSE relowers — still exactly ONE across the whole bake',
+    async () => {
+      const model = await buildModelFromFile({ file: COLLIDING_FIXTURE });
+      expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+
+      const engine = model.session.engine;
+      expect(engine).toBeDefined();
+      const relowers: string[][] = [];
+      const off = engine!.onRelower((ids) => relowers.push([...ids]));
+
+      const handler = createAnimationBakeEndpoint({ pool: fakePool(model) });
+      const r = fakeRes();
+      try {
+        await handler(fakeReq('?session=t1'), r.res as never);
+      } finally {
+        off();
+      }
+
+      expect(r.out.statusCode).toBe(200);
+      // The silent verifyAnimation sweep must emit nothing; only the post-bake
+      // pose restore fans a single relower out.
+      expect(relowers).toHaveLength(1);
     },
     120_000,
   );

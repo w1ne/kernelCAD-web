@@ -98,6 +98,13 @@ export interface GeometryContextType {
      *  current script. `null` until the first session fetch lands; remains
      *  `null` for the legacy in-process script path (no studioScript). */
     sessionToken: string | null;
+    /** Monotonic kernel-state epoch, bumped on EVERY relower the pooled session
+     *  pushes over SSE (pose-only fast path AND full mesh+review path). Lets
+     *  consumers that cache kernel-derived results — notably the Animation tab's
+     *  baked timeline — invalidate on ANY kernel mutation, including a
+     *  Params-tab edit that changes a param's current value without touching the
+     *  animationView metadata. Starts at 0. */
+    kernelEpoch: number;
     // Execute code to update geometries
     executeGeometry: (code: string) => Promise<void>;
     setPreviewCode: (code: string | null) => void;
@@ -182,6 +189,10 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     const [staleMainResponsesDropped, setStaleMainResponsesDropped] = useState(0);
     const [stalePreviewResponsesDropped, setStalePreviewResponsesDropped] = useState(0);
     const [sessionToken, setSessionToken] = useState<string | null>(null);
+    // Kernel-state epoch: bumped on every SSE relower (both fast and full
+    // paths) so kernel-derived caches (the Animation tab's baked timeline) can
+    // invalidate on any kernel mutation. See GeometryContextType.kernelEpoch.
+    const [kernelEpoch, setKernelEpoch] = useState(0);
     // Slice 2E.bridge: tracks whether the GET /session attempt has settled
     // so the mesh effect knows to wait. 'idle' → no studio script (legacy
     // in-process path); 'pending' → fetch in flight; 'resolved' → token set;
@@ -534,6 +545,13 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         // name, so addEventListener resolves to the generic overload; the
         // frame is a MessageEvent carrying `{"affectedIds": [...]}`.
         const onRelower = (event: Event) => {
+            // Bump the kernel-state epoch on EVERY relower (both the pose-only
+            // fast path and the full mesh+review path below) so kernel-derived
+            // caches can invalidate on any mutation — notably the Animation
+            // tab's baked timeline, which would otherwise keep playing
+            // pre-edit transforms after a Params-tab edit that doesn't touch
+            // the animationView metadata.
+            setKernelEpoch((e) => e + 1);
             // Pose-only fast path: when EVERY affected record is a
             // `solvedAssembly*` (a param-driven mate pose edit), only per-part
             // worldTransforms changed — part-LOCAL meshes are untouched — so
@@ -1038,13 +1056,14 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         staleMainResponsesDropped,
         stalePreviewResponsesDropped,
         sessionToken,
+        kernelEpoch,
         executeGeometry,
         setPreviewCode,
         updateParam,
         setGeometryTransformOverride,
         clearGeometryTransformOverrides,
         setViewportDriverLock,
-    }), [displayGeometries, previewGeometries, sketchesGeometries, showSketches, toggleSketchVisibility, error, isReady, isComputing, executionCount, currentCodeRevision, lastSuccessfulRevision, executionHistory, scriptParams, scriptReview, featureRecords, recomputeMs, staleMainResponsesDropped, stalePreviewResponsesDropped, sessionToken, executeGeometry, updateParam, setGeometryTransformOverride, clearGeometryTransformOverrides, setViewportDriverLock]);
+    }), [displayGeometries, previewGeometries, sketchesGeometries, showSketches, toggleSketchVisibility, error, isReady, isComputing, executionCount, currentCodeRevision, lastSuccessfulRevision, executionHistory, scriptParams, scriptReview, featureRecords, recomputeMs, staleMainResponsesDropped, stalePreviewResponsesDropped, sessionToken, kernelEpoch, executeGeometry, updateParam, setGeometryTransformOverride, clearGeometryTransformOverrides, setViewportDriverLock]);
 
     return <GeometryContext.Provider value={value}>{children}</GeometryContext.Provider>;
 }

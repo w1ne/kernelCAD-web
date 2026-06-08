@@ -17,6 +17,16 @@ export interface BakedPart {
     matrices: number[][];
 }
 
+/** One colliding part pair at one sampled timeline position (advisory). */
+export interface BakedCollision {
+    /** Timeline position (ms) at which the pair interpenetrates. */
+    tMs: number;
+    a: string;
+    b: string;
+    /** Shared volume in mm³ above the interference threshold. */
+    volumeMm3: number;
+}
+
 /** The full baked timeline returned by the bake endpoint. */
 export interface BakedTimeline {
     frames: number;
@@ -25,6 +35,11 @@ export interface BakedTimeline {
     /** Monotonic non-decreasing frame times in ms; `times[0]` is 0. */
     times: number[];
     parts: BakedPart[];
+    /** ADVISORY keyframe-pose interferences (the same check `kernelcad animate`
+     *  runs). NON-FATAL — playback works regardless; a non-empty array drives
+     *  the Animation tab's collision warning banner. May be absent on responses
+     *  from an older server; treat `undefined` as "no collisions reported". */
+    collisions?: BakedCollision[];
 }
 
 /** Locate `tMs` within the baked `times` schedule.
