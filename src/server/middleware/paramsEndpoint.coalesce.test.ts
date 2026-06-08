@@ -42,6 +42,7 @@ function fakePool(update: (edits: Array<{ name: string; value: number | boolean 
     return {
         get: (token: string) => (token === 't1' ? (entry as never) : undefined),
         getOrCreate: async () => entry as never,
+        runExclusive: (fn) => fn(),
         eject() {},
         prune() {},
         entries: function* () {} as never,

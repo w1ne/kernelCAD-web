@@ -136,4 +136,173 @@ describe('SessionPool', () => {
     const all: SessionPoolEntry[] = [...pool.entries()];
     expect(all).toHaveLength(2);
   });
+
+  describe('maxEntries LRU cap', () => {
+    it('is unbounded by default (no maxEntries)', async () => {
+      const { createSessionPool } = await loadPoolModule();
+      const pool = createSessionPool({ build: async () => fakeBuiltModel(), ttlMs: 60_000 });
+
+      await pool.getOrCreate('/abs/a.kcad.ts');
+      await pool.getOrCreate('/abs/b.kcad.ts');
+      await pool.getOrCreate('/abs/c.kcad.ts');
+
+      expect([...pool.entries()]).toHaveLength(3);
+    });
+
+    it('evicts the least-recently-accessed entry on insert past the cap', async () => {
+      const { createSessionPool } = await loadPoolModule();
+      const pool = createSessionPool({ build: async () => fakeBuiltModel(), ttlMs: 60_000, maxEntries: 2 });
+
+      const a = await pool.getOrCreate('/abs/a.kcad.ts');
+      vi.advanceTimersByTime(10);
+      const b = await pool.getOrCreate('/abs/b.kcad.ts');
+      vi.advanceTimersByTime(10);
+      // Inserting c exceeds the cap of 2 → the LRU (a) is evicted.
+      const c = await pool.getOrCreate('/abs/c.kcad.ts');
+
+      expect([...pool.entries()]).toHaveLength(2);
+      // The evicted token now misses — same as the TTL `session.evicted` path.
+      expect(pool.get(a.token)).toBeUndefined();
+      expect(pool.get(b.token)).toBeDefined();
+      expect(pool.get(c.token)).toBeDefined();
+    });
+
+    it('keeps a recently-touched entry alive and evicts a colder one instead', async () => {
+      const { createSessionPool } = await loadPoolModule();
+      const pool = createSessionPool({ build: async () => fakeBuiltModel(), ttlMs: 60_000, maxEntries: 2 });
+
+      const a = await pool.getOrCreate('/abs/a.kcad.ts');
+      vi.advanceTimersByTime(10);
+      const b = await pool.getOrCreate('/abs/b.kcad.ts');
+      vi.advanceTimersByTime(10);
+      // Touch a so b becomes the coldest.
+      pool.get(a.token);
+      vi.advanceTimersByTime(10);
+      const c = await pool.getOrCreate('/abs/c.kcad.ts');
+
+      expect(pool.get(a.token)).toBeDefined();
+      expect(pool.get(b.token)).toBeUndefined();
+      expect(pool.get(c.token)).toBeDefined();
+    });
+  });
+
+  describe('runExclusive global lock hook', () => {
+    it('defaults to identity passthrough (kernel build still runs)', async () => {
+      const { createSessionPool } = await loadPoolModule();
+      const builder = vi.fn(async () => fakeBuiltModel());
+      const pool = createSessionPool({ build: builder, ttlMs: 60_000 });
+
+      const entry = await pool.getOrCreate('/abs/a.kcad.ts');
+      expect(entry.token).toBeDefined();
+      expect(builder).toHaveBeenCalledTimes(1);
+      // Exposed for endpoints to route their own kernel ops through.
+      await expect(pool.runExclusive(async () => 42)).resolves.toBe(42);
+    });
+
+    it('serializes the pool\'s own build() calls when a real mutex is injected', async () => {
+      const { createSessionPool } = await loadPoolModule();
+      vi.useRealTimers(); // need real microtask/timer ordering for overlap probe
+
+      // Simple promise-chained mutex.
+      let chain: Promise<unknown> = Promise.resolve();
+      const runExclusive = <T>(fn: () => Promise<T>): Promise<T> => {
+        const run = chain.then(fn, fn);
+        chain = run.then(
+          () => undefined,
+          () => undefined,
+        );
+        return run as Promise<T>;
+      };
+
+      let active = 0;
+      let maxConcurrent = 0;
+      const builder = vi.fn(async () => {
+        active += 1;
+        maxConcurrent = Math.max(maxConcurrent, active);
+        await new Promise((r) => setTimeout(r, 5));
+        active -= 1;
+        return fakeBuiltModel();
+      });
+
+      const pool = createSessionPool({ build: builder, ttlMs: 60_000, runExclusive });
+
+      // Fire three distinct-key builds concurrently; the mutex must serialize.
+      await Promise.all([
+        pool.getOrCreate('/abs/a.kcad.ts'),
+        pool.getOrCreate('/abs/b.kcad.ts'),
+        pool.getOrCreate('/abs/c.kcad.ts'),
+      ]);
+
+      expect(builder).toHaveBeenCalledTimes(3);
+      expect(maxConcurrent).toBe(1); // never overlapped
+
+      vi.useFakeTimers();
+    });
+  });
+
+  describe('per-user session scoping', () => {
+    it('same scriptPath + different keys/owners get DIFFERENT tokens and entries', async () => {
+      const { createSessionPool } = await loadPoolModule();
+      const builder = vi.fn(async () => fakeBuiltModel());
+      const pool = createSessionPool({ build: builder, ttlMs: 60_000 });
+
+      const userA = await pool.getOrCreate('/abs/shared.kcad.ts', {
+        key: 'userA|/abs/shared.kcad.ts',
+        ownerId: 'userA',
+      });
+      const userB = await pool.getOrCreate('/abs/shared.kcad.ts', {
+        key: 'userB|/abs/shared.kcad.ts',
+        ownerId: 'userB',
+      });
+
+      expect(userA.token).not.toBe(userB.token);
+      expect(builder).toHaveBeenCalledTimes(2);
+      expect(userA.scriptPath).toBe('/abs/shared.kcad.ts');
+      expect(userB.scriptPath).toBe('/abs/shared.kcad.ts');
+    });
+
+    it('same key reuses the same entry', async () => {
+      const { createSessionPool } = await loadPoolModule();
+      const builder = vi.fn(async () => fakeBuiltModel());
+      const pool = createSessionPool({ build: builder, ttlMs: 60_000 });
+
+      const a = await pool.getOrCreate('/abs/shared.kcad.ts', {
+        key: 'userA|/abs/shared.kcad.ts',
+        ownerId: 'userA',
+      });
+      const b = await pool.getOrCreate('/abs/shared.kcad.ts', {
+        key: 'userA|/abs/shared.kcad.ts',
+        ownerId: 'userA',
+      });
+
+      expect(b.token).toBe(a.token);
+      expect(builder).toHaveBeenCalledTimes(1);
+    });
+
+    it('carries ownerId on the entry so the server route can authorize', async () => {
+      const { createSessionPool } = await loadPoolModule();
+      const pool = createSessionPool({ build: async () => fakeBuiltModel(), ttlMs: 60_000 });
+
+      const entry = await pool.getOrCreate('/abs/x.kcad.ts', {
+        key: 'userA|/abs/x.kcad.ts',
+        ownerId: 'userA',
+      });
+      expect(entry.ownerId).toBe('userA');
+      expect(pool.get(entry.token)!.ownerId).toBe('userA');
+    });
+
+    it('defaults key to scriptPath and ownerId to undefined (single-user dev mode)', async () => {
+      const { createSessionPool } = await loadPoolModule();
+      const builder = vi.fn(async () => fakeBuiltModel());
+      const pool = createSessionPool({ build: builder, ttlMs: 60_000 });
+
+      const a = await pool.getOrCreate('/abs/dev.kcad.ts');
+      const b = await pool.getOrCreate('/abs/dev.kcad.ts');
+
+      expect(a.key).toBe('/abs/dev.kcad.ts');
+      expect(a.ownerId).toBeUndefined();
+      expect(b.token).toBe(a.token); // bare path reuse unchanged
+      expect(builder).toHaveBeenCalledTimes(1);
+    });
+  });
 });

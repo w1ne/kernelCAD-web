@@ -44,6 +44,7 @@ function fakePool(model: BuiltModel | null): SessionPool {
   return {
     get: (token: string) => (token === 't1' && entry ? (entry as never) : undefined),
     getOrCreate: async () => entry as never,
+    runExclusive: (fn) => fn(),
     eject() {},
     prune() {},
     entries: function* () {} as never,
