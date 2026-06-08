@@ -13,6 +13,17 @@ import { generate } from 'astring';
 
 type UnknownRecord = Record<string, unknown>;
 
+// Dev-only console logging guard. `import.meta.env` is a Vite/browser global;
+// this module is also reachable from the Node server graph (vite.config →
+// reviewCadTool → evaluateAndBuildScript → unstructuredBodies), where
+// `import.meta.env` is untyped/undefined. Read it defensively so the helper
+// compiles and runs under both the `vite/client` (app) and `node` tsconfig
+// projects.
+function isDevNonTest(): boolean {
+    const env = (import.meta as unknown as { env?: { DEV?: boolean; MODE?: string } }).env;
+    return Boolean(env?.DEV) && env?.MODE !== 'test';
+}
+
 const isRecord = (value: unknown): value is UnknownRecord => {
     return typeof value === 'object' && value !== null;
 };
@@ -121,7 +132,7 @@ export function parseCode(code: string): acorn.Node {
             locations: true
         });
     } catch (error) {
-        if (import.meta.env.DEV && import.meta.env.MODE !== 'test') {
+        if (isDevNonTest()) {
             console.error('Parse error:', error);
         }
         throw error;
@@ -138,7 +149,7 @@ export function generateCode(ast: acorn.Node): string {
             lineEnd: '\n',
         });
     } catch (error) {
-        if (import.meta.env.DEV && import.meta.env.MODE !== 'test') {
+        if (isDevNonTest()) {
             console.error('Code generation error:', error);
         }
         throw error;

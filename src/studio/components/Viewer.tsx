@@ -11,7 +11,9 @@ import type { ViewMode3D } from "../../shared/types/viewMode";
 import { useWorkbench } from "../context/WorkbenchContext";
 import { useUI } from "../context/UIContext";
 import { useShellStore } from "../store/useShellStore";
-import { sectionPlaneFromState } from "./viewer/sectionPlane";
+import { cutawayPlanesFromState } from "./viewer/sectionPlane";
+import { computeGeometryBox } from "./viewer/sectionRange";
+import { sectionPartKey } from "./viewer/sectionParts";
 import type { HoverResult } from "../features-ui/interaction/HoverManager";
 import type { SnapResult } from "../features-ui/interaction/SnapManager";
 
@@ -30,6 +32,9 @@ import { SceneBackground } from "./viewer/SceneBackground";
 // Constants
 export const SKETCH_FOV = 40;
 export const SKETCH_DISTANCE = 20;
+
+// Stable empty array so keep-whole shapes never re-memo their materials.
+const NO_PLANES: THREE.Plane[] = [];
 
 interface ViewerProps {
     geometries: GeometryResult[];
@@ -54,19 +59,42 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
         setHoveredItemId
     } = useWorkbench();
 
-    const { setContextMenu, viewportBackground } = useUI();
+    const { setContextMenu, viewportBackground, gridVisible } = useUI();
 
-    const { sectionMode, sectionAxis, sectionFlip, sectionPosition } = useShellStore();
-    // One stable plane instance, mutated in place so slider/axis/flip changes
-    // never rebuild materials (only on/off toggle does — see ShapeGeometry).
-    const sectionPlaneRef = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 0, -1), 0), []);
-    useEffect(() => {
-        sectionPlaneRef.copy(sectionPlaneFromState(sectionAxis, sectionFlip, sectionPosition));
-    }, [sectionPlaneRef, sectionAxis, sectionFlip, sectionPosition]);
-    const clippingPlanes = useMemo(
-        () => (sectionMode ? [sectionPlaneRef] : []),
-        [sectionMode, sectionPlaneRef],
+    // kernelCAD models are z-up, so the ground grid must lie in the XY plane
+    // at the model's lowest point — drei's default y-up XZ grid would slice
+    // vertically through the model. Nudged slightly below min-z to avoid
+    // z-fighting with bottom faces; fade scales with model size.
+    const gridPlacement = useMemo(() => {
+        const box = computeGeometryBox(geometries);
+        if (!box) return { z: 0, fade: 300 };
+        const size = box.getSize(new THREE.Vector3());
+        const radius = Math.max(size.x, size.y, size.z) / 2;
+        return { z: box.min.z - 0.1, fade: Math.max(300, radius * 8) };
+    }, [geometries]);
+
+    const {
+        sectionMode, sectionAxesEnabled, sectionSides, sectionOffsets, sectionKeepWhole,
+    } = useShellStore();
+    // Three stable plane instances, mutated in place so slider/side changes
+    // never rebuild materials (only mode/axis-count switches do — see ShapeGeometry).
+    const sectionPlaneRefs = useMemo(
+        () => [
+            new THREE.Plane(new THREE.Vector3(0, 0, -1), 0),
+            new THREE.Plane(new THREE.Vector3(0, 0, -1), 0),
+            new THREE.Plane(new THREE.Vector3(0, 0, -1), 0),
+        ],
+        [],
     );
+    useEffect(() => {
+        cutawayPlanesFromState(sectionAxesEnabled, sectionSides, sectionOffsets)
+            .forEach((p, i) => sectionPlaneRefs[i].copy(p));
+    }, [sectionPlaneRefs, sectionAxesEnabled, sectionSides, sectionOffsets]);
+    const clippingPlanes = useMemo(() => {
+        if (!sectionMode) return NO_PLANES;
+        const count = (['x', 'y', 'z'] as const).filter((a) => sectionAxesEnabled[a]).length;
+        return count === 0 ? NO_PLANES : sectionPlaneRefs.slice(0, count);
+    }, [sectionMode, sectionAxesEnabled, sectionPlaneRefs]);
 
     const itemNames = useMemo(() => {
         return (codeContext?.returnedVariables as (string | null)[]) || [];
@@ -137,8 +165,18 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                 <SnapIndicator snap={snapPoint} />
                 <SelectionOutline geometries={geometries} itemNames={itemNames} selectedItemIds={selectedItemIds} />
 
-                {!sketchMode.active && (
-                    <Grid args={[200, 200]} cellColor="#404040" sectionColor="#606060" fadeDistance={100} />
+                {!sketchMode.active && gridVisible && (
+                    <Grid
+                        position={[0, 0, gridPlacement.z]}
+                        rotation={[Math.PI / 2, 0, 0]}
+                        infiniteGrid
+                        cellSize={5}
+                        sectionSize={25}
+                        cellColor="#404040"
+                        sectionColor="#606060"
+                        fadeDistance={gridPlacement.fade}
+                        fadeStrength={1.5}
+                    />
                 )}
 
                 <group>
@@ -148,13 +186,15 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                         // Hide whole assembly parts by name (the Parts list in the
                         // Scene tab toggles `assemblyPartName` into hiddenIds).
                         if (g.assemblyPartName && hiddenIds.includes(g.assemblyPartName)) return null;
+                        const partKey = sectionPartKey(g, name, i);
                         return (
                             <Shape
                                 key={i}
                                 geometry={g}
                                 shapeIndex={i}
                                 viewMode3D={viewMode3D}
-                                clippingPlanes={clippingPlanes}
+                                clippingPlanes={sectionKeepWhole.has(partKey) ? NO_PLANES : clippingPlanes}
+                                clipIntersection={true}
                                 isSelected={name ? selectedItemIds.includes(name) : false}
                                 name={name ?? undefined}
                             />

@@ -49,6 +49,15 @@ export interface BuiltModel {
   /** Lowered shape of the script's `return` value. Prefer this over
    *  `tailShape` in export / probe / measurement consumers. */
   rootShape?: ShapeBackend;
+  /** The raw value the script `return`ed (Shape, Scene, array of Shapes, or
+   *  anything else). Threaded so the agent-parts-discipline check can tell a
+   *  multi-body non-assembly return (array of Shapes) apart from an
+   *  assembly-built Scene without re-deriving from the lowered geometry. */
+  returnValue?: unknown;
+  /** The script source text. Threaded so review/analysis passes (e.g. the
+   *  unstructured-bodies check) can read returned-variable names via the AST
+   *  helpers without re-reading the file. */
+  code?: string;
 }
 
 export interface ParamUpdateEdit {
@@ -101,6 +110,8 @@ export async function buildModel(input: BuildModelInput): Promise<BuiltModel> {
     tailShape,
     rootId,
     rootShape,
+    returnValue: run.returnValue,
+    code: input.code,
   };
 }
 
@@ -132,9 +143,23 @@ export function resolveRootId(
   return tailId;
 }
 
+/** Internal options for `updateModelParams`. Not part of the params.update
+ *  public API surface — only server-side batch callers (e.g. the animation
+ *  bake sweep) set these. */
+export interface UpdateModelParamsOptions {
+  /** Suppress the `engine.emitRelower(...)` notification for this solve. The
+   *  model still re-solves and the cache is repopulated exactly as normal; only
+   *  the host-side relower hub fan-out is skipped. Used by the animation-bake
+   *  sweep so its N per-frame pose solves do NOT each trigger an SSE relower
+   *  (and a client `/transforms` re-fetch + viewport twitch); the bake emits a
+   *  single relower itself after restoring the pre-bake pose. */
+  silent?: boolean;
+}
+
 export async function updateModelParams(
   model: BuiltModel,
   edits: ParamUpdateEdit[],
+  options?: UpdateModelParamsOptions,
 ): Promise<BuiltModelParamUpdate> {
   const session = model.session;
   validateParamEdits(session, edits);
@@ -213,7 +238,11 @@ export async function updateModelParams(
   // Slice 2E: notify `onRelower` subscribers with the records re-lowered by
   // this update. Studio's WorkbenchContext subscribes server-side via the
   // session engine to live-refresh ParamsTab without a Validate press.
-  engine.emitRelower(relowered);
+  // `silent` callers (animation-bake per-frame sweep) skip this fan-out so a
+  // single bake doesn't emit one SSE relower per baked frame.
+  if (!options?.silent) {
+    engine.emitRelower(relowered);
+  }
 
   return {
     model: nextModel,

@@ -37,6 +37,31 @@ describe('ShellStore', () => {
         expect(store.getSnapshot().selectedFeatureId).toBeNull();
     });
 
+    it('inspector starts open by default', () => {
+        store = new ShellStore();
+        expect(store.getSnapshot().inspectorOpen).toBe(true);
+    });
+
+    it('setInspectorOpen is idempotent on same value', () => {
+        store = new ShellStore();
+        const listener = vi.fn();
+        store.subscribe(listener);
+
+        store.setInspectorOpen(false);
+        store.setInspectorOpen(false);
+        store.setInspectorOpen(true);
+
+        expect(listener).toHaveBeenCalledTimes(2);
+    });
+
+    it('toggleInspectorOpen flips the state each call', () => {
+        store = new ShellStore();
+        store.toggleInspectorOpen();
+        expect(store.getSnapshot().inspectorOpen).toBe(false);
+        store.toggleInspectorOpen();
+        expect(store.getSnapshot().inspectorOpen).toBe(true);
+    });
+
     it('setAgentRailOpen is idempotent on same value', () => {
         store = new ShellStore();
         const listener = vi.fn();

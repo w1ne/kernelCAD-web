@@ -14,6 +14,7 @@ import { ParamsTab } from './tabs/ParamsTab';
 import { JointsTab } from './tabs/JointsTab';
 import { ValidityTab } from './tabs/ValidityTab';
 import { ExportTab } from './tabs/ExportTab';
+import { AnimationTab } from './components/animation/AnimationTab';
 import { StatusBar } from './components/Layout/StatusBar';
 import ProjectManagerDialog from './components/Dialogs/ProjectManagerDialog';
 import { useWorkbench } from './context/WorkbenchContext';
@@ -30,7 +31,7 @@ import { useProject } from './context/ProjectContext';
  */
 export function StudioShell() {
     const workbench = useWorkbench();
-    const { agentRailOpen, selectedFeatureId, markingMode, sectionMode } = useShellStore();
+    const { agentRailOpen, inspectorOpen, selectedFeatureId, markingMode, sectionMode } = useShellStore();
     const handleToggleMarkingMode = useCallback(() => {
         shellStore.toggleMarkingMode();
     }, []);
@@ -96,6 +97,10 @@ export function StudioShell() {
         shellStore.setAgentRailOpen(!agentRailOpen);
     }, [agentRailOpen]);
 
+    const handleToggleInspector = useCallback(() => {
+        shellStore.toggleInspectorOpen();
+    }, []);
+
     const [referenceImagesVisible, setReferenceImagesVisible] = useState(true);
     const referenceImagesPresent = useMemo(
         () => recompute.features.some((f) => f.kind === 'referenceImage'),
@@ -156,6 +161,7 @@ export function StudioShell() {
         joints: <JointsTab />,
         validity: <ValidityTab />,
         export: <ExportTab />,
+        animation: <AnimationTab />,
     };
 
     // HUD reads RAW interference pairs (pre-filter), not the validator's
@@ -190,6 +196,8 @@ export function StudioShell() {
                 onToggleMarkingMode={handleToggleMarkingMode}
                 sectionMode={sectionMode}
                 onToggleSectionMode={handleToggleSectionMode}
+                inspectorOpen={inspectorOpen}
+                onToggleInspector={handleToggleInspector}
             />
 
             <div className="flex-1 flex overflow-hidden relative">

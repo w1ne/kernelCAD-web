@@ -3,6 +3,10 @@
 // End-to-end capture-side test: feed `materialize` an `SdfField`, get back a
 // Shape whose backend was parked on session.importedGeometry; lowering the
 // shape returns a closed solid with the right bbox.
+//
+// NOTE: companion file materialize.defaultRes.test.ts was split out for CI
+// shard balance (per-file vitest sharding); it hosts the default-resolution
+// (res=30) test, the slowest case in this suite.
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct, OcctBackend } from '../../../../src/kernel/backends/occt/occtBackend';
@@ -28,18 +32,6 @@ describe('sdf.materialize (capture side)', () => {
     expect(() => materialize({ session }, sphere(10), { resolution: -10 }))
       .toThrow(/resolution must be an integer in \[10, 200\]/);
   });
-
-  it('default resolution = 30 when opts is undefined', () => {
-    const session = new CaptureSession();
-    // Slice-1 deviation: plan called for default=50, but OCCT sewing is
-    // O(triangle count) and res=50 takes ~170s for sphere(10). Default
-    // lowered to 30 (~20s for sphere(10)). Use sphere(2) here so test
-    // completes in <10s standalone, ~20s under parallel suite load.
-    const s = materialize({ session }, sphere(2));
-    const record = session.getRecords().find(r => r.id === s.id)!;
-    expect(record.kind).toBe('sdfMaterialize');
-    expect(record.params.resolution.evaluated).toBe(30);
-  }, 120_000);
 
   it('parks an OcctBackend on session.importedGeometry keyed by shape id', () => {
     const session = new CaptureSession();

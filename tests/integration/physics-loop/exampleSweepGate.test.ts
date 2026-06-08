@@ -30,6 +30,12 @@
 // is heavy. The whole loop budgets ~5 minutes per example with an
 // individual test timeout. Slow but reliable; tighten when the kernel
 // gets faster (see issue #348 for the pose-sweep BREP-cost discussion).
+//
+// CI shard balance: examples listed in HOSTED_IN_DEDICATED_FILE have
+// their per-example loop check hosted in a dedicated integration-test
+// file (so the ~2-minute validate run can be shared with that file's
+// other assertions instead of being recomputed here). The check itself
+// is unchanged — only its file moved.
 
 import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs';
@@ -140,6 +146,19 @@ const ISSUE_TRACKED: ReadonlyMap<string, { issue: number; testFile: string }> = 
   // mechanism: 'real' and empty mechanismFailures.
 ]);
 
+// Examples whose per-example loop check lives in a dedicated test file
+// for CI shard balance. The hosting file runs the IDENTICAL
+// `runValidateCli({ includeInterference: true, ... })` check (shared
+// with its own validate-result assertions via beforeAll); this sweep
+// file must not re-register (and re-pay) it. Every entry must name the
+// hosting file so the delegation is auditable.
+const HOSTED_IN_DEDICATED_FILE: ReadonlyMap<string, { testFile: string }> = new Map([
+  [
+    'examples/kinematic/luxo-lamp.kcad.ts',
+    { testFile: 'tests/integration/examples/luxoLampClevis.validate.test.ts' },
+  ],
+]);
+
 function walkExamples(dir: string, prefix = ''): string[] {
   const out: string[] = [];
   for (const entry of readdirSync(dir)) {
@@ -168,6 +187,38 @@ describe('Every example under examples/**/*.kcad.ts is loop-clean or has a track
         examples,
         `${listed} appears in EXEMPT_UNVERIFIED or ISSUE_TRACKED but the file is missing`,
       ).toContain(listed);
+    }
+    // CI shard balance delegation: every HOSTED_IN_DEDICATED_FILE entry
+    // must point at an existing test file that actually references the
+    // example — otherwise the per-example check would silently vanish.
+    for (const [examplePath, { testFile }] of HOSTED_IN_DEDICATED_FILE) {
+      expect(
+        examples,
+        `${examplePath} appears in HOSTED_IN_DEDICATED_FILE but the example is missing`,
+      ).toContain(examplePath);
+      const absTest = join(REPO_ROOT, testFile);
+      expect(
+        existsSync(absTest),
+        `${examplePath}: declared hosting testFile ${testFile} does not exist`,
+      ).toBe(true);
+      const testSrc = readFileSync(absTest, 'utf8');
+      expect(
+        testSrc.includes(examplePath),
+        `${examplePath}: hosting testFile ${testFile} must reference the example path`,
+      ).toBe(true);
+      // The hosting file must carry the exact per-example it-title this
+      // sweep would have generated AND actually invoke the validate CLI —
+      // otherwise a skip/gut edit to the hosting file would silently drop
+      // the example's loop coverage while this gate stays green.
+      expect(
+        testSrc.includes(`${examplePath} passes the physics-grounded loop`),
+        `${examplePath}: hosting testFile ${testFile} must contain the it-title ` +
+          `"${examplePath} passes the physics-grounded loop"`,
+      ).toBe(true);
+      expect(
+        testSrc.includes('runValidateCli'),
+        `${examplePath}: hosting testFile ${testFile} must call runValidateCli`,
+      ).toBe(true);
     }
   });
 
@@ -207,6 +258,11 @@ describe('Every example under examples/**/*.kcad.ts is loop-clean or has a track
       it.skip(`${examplePath}: tracked under issues/${issue}`, () => {
         // citation enforced by the per-example assertion test above
       });
+      continue;
+    }
+    if (HOSTED_IN_DEDICATED_FILE.has(examplePath)) {
+      // Loop check hosted in the dedicated file (CI shard balance) —
+      // delegation enforced by the structural assertion test above.
       continue;
     }
     it(`${examplePath} passes the physics-grounded loop`, async () => {

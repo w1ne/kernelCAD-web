@@ -93,6 +93,11 @@ export interface StudioRecomputeResult {
     readonly updateParam?: (edits: { name: string; value: number | boolean }[]) => Promise<void>;
     readonly setGeometryTransformOverride?: (partName: string, transform: number[]) => void;
     readonly clearGeometryTransformOverrides?: () => void;
+    /** Claim/release sole ownership of the part-transform override map for
+     *  animation playback. While locked the SSE pose-only fast path will not
+     *  replace the override map, so a baked playback pose isn't yanked off by a
+     *  trailing relower. `undefined` on the legacy in-process path. */
+    readonly setViewportDriverLock?: (locked: boolean) => void;
 }
 
 /**

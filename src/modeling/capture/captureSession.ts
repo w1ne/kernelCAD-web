@@ -18,10 +18,16 @@ import type {
   CameraTargetMetadata,
   CameraTargetSpec,
 } from '../../shared/intent/cameraTargetRecord';
-import type {
-  AnimationViewMetadata,
-  AnimationViewSpec,
+import {
+  type AnimationViewMetadata,
+  type AnimationViewSpec,
+  type AnimationViewSweepSpec,
+  type AnimationViewTracksSpec,
+  ANIMATION_EASES,
+  isAnimationViewTracksSpec,
+  normalizeAnimationView,
 } from '../../shared/intent/animationViewRecord';
+import type { DfmSpec, DfmSpecMetadata } from '../../shared/intent/dfmSpecRecord';
 import type { Curve3DMetadata } from '../../shared/intent/curve3dRecord';
 import type {
   EmbossTextMetadata, EmbossTextAlign, EmbossTextScaleMode,
@@ -682,18 +688,211 @@ export class CaptureSession {
   }
 
   /**
-   * Capture an animation-view virtual feature. Validates that `param` names
-   * a previously-declared `param()` (or defers the check to capture-script
-   * time if not yet registered), that `from`/`to`/`durationMs` are finite,
-   * and that `durationMs` + `fps` are positive. On invalid input a
-   * diagnostic is stashed on `metadata.diagnostics` and a default-safe
-   * record is still produced (matching the `addCameraTarget` pattern).
+   * Capture an animation-view virtual feature (legacy sweep form OR the
+   * keyframe-track form; see `AnimationViewSpec`). Metadata is ALWAYS stored
+   * in the normalized track shape (`AnimationViewMetadata`).
+   *
+   * Validation mechanics:
+   *   - New `animation.*` error conditions THROW `KernelError` — the
+   *     `addDfmSpec` precedent. Stashed virtual-record diagnostics never
+   *     reach evaluate (recomputeEngine marks virtual records healthy and
+   *     skips them), so a malformed animation timeline would otherwise
+   *     silently produce a broken or empty capture.
+   *       - `animation.param.unknown` — a track (or the legacy `param`)
+   *         names a param not declared by a prior `param()` call, or one
+   *         declared with a non-numeric type (tracks interpolate numbers).
+   *       - `animation.track.duplicate-param` — two tracks target the same
+   *         param.
+   *       - `animation.keys.invalid` — empty tracks array, empty key list,
+   *         non-finite atMs/value, negative atMs, duplicate atMs within a
+   *         track, or unknown ease.
+   *   - Warns are stashed on `metadata.diagnostics` with a default-safe
+   *     record still produced (the `addCameraTarget` pattern):
+   *       - `animation.value.clamped` — a key value outside the param's
+   *         declared min/max range is clamped to the range.
+   *       - `animation.view.shadowed` — an earlier animationView record is
+   *         shadowed by this one (last-wins).
+   *       - invalid `fps` defaults to 30 (`feature.invalid-args` warn).
+   *   - The LEGACY sweep form keeps its historic stash-on-metadata behavior
+   *     for malformed param / from / to / durationMs (`feature.invalid-args`
+   *     error diagnostics + default-safe record).
+   *
    * Multiple calls register multiple records — the capture script picks
    * the last one when more than one is declared.
    */
   addAnimationView(args: AnimationViewSpec): FeatureId {
     const diagnostics: CompilerDiagnostic[] = [];
 
+    // Last-wins shadowing: warn on the NEW record, naming the records it
+    // shadows, so the agent sees stale animationView calls.
+    const shadowedIds = this.records.filter((r) => r.kind === 'animationView').map((r) => r.id);
+    if (shadowedIds.length > 0) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'animation.view.shadowed',
+        severity: 'warn',
+        message: `animationView: this call shadows earlier animationView record(s) ${shadowedIds.join(', ')}; capture uses only the LAST record.`,
+        hint: HINT_TEMPLATES['animation.view.shadowed'].template,
+      });
+    }
+
+    let fps = 30;
+    if (args.fps !== undefined) {
+      if (!Number.isFinite(args.fps) || args.fps <= 0) {
+        diagnostics.push({
+          target: 'export-occt',
+          code: 'feature.invalid-args',
+          severity: 'warn',
+          message: `animationView: 'fps' ${args.fps} is not a positive finite number; defaulting to 30.`,
+          hint: `invalid-args.animation-view.bad-fps — pass fps > 0 or omit for the 30 default.`,
+        });
+      } else {
+        fps = args.fps;
+      }
+    }
+
+    // Clamps key values into the param's declared min/max range (when the
+    // param() declared one), pushing an animation.value.clamped warn per
+    // clamped key. Mutates the normalized tracks in place.
+    const clampToParamRange = (tracks: AnimationViewMetadata['tracks']): void => {
+      for (const track of tracks) {
+        if (!this.paramTable.has(track.param)) continue; // legacy default-safe '' param
+        const meta = this.paramTable.get(track.param).meta;
+        const min = meta?.min;
+        const max = meta?.max;
+        if (min === undefined && max === undefined) continue;
+        for (const key of track.keys) {
+          let clamped = key.value;
+          if (min !== undefined && clamped < min) clamped = min;
+          if (max !== undefined && clamped > max) clamped = max;
+          if (clamped !== key.value) {
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'animation.value.clamped',
+              severity: 'warn',
+              message: `animationView: track '${track.param}' key at ${key.atMs}ms has value ${key.value} outside the param's declared range [${min ?? '-inf'}, ${max ?? '+inf'}]; stored value clamped to ${clamped}.`,
+              hint: HINT_TEMPLATES['animation.value.clamped'].template,
+            });
+            key.value = clamped;
+          }
+        }
+      }
+    };
+
+    let metadata: AnimationViewMetadata & { diagnostics?: CompilerDiagnostic[] };
+
+    if (isAnimationViewTracksSpec(args)) {
+      metadata = this.validateAnimationTracks(args, fps);
+    } else {
+      metadata = this.validateAnimationSweep(args, fps, diagnostics);
+    }
+
+    clampToParamRange(metadata.tracks);
+    if (diagnostics.length > 0) metadata.diagnostics = diagnostics;
+
+    const r = this.register({
+      kind: 'animationView',
+      params: {},
+      inputs: {},
+      metadata: metadata as unknown as Record<string, unknown>,
+    });
+    return r.id;
+  }
+
+  /** Throws animation.param.unknown unless `name` is declared by a prior
+   *  param() call on this session AND that declaration is numeric — boolean
+   *  params cannot be keyframed (updateModelParams would reject the
+   *  interpolated number values mid-capture). Shared by both the track and
+   *  legacy sweep forms of addAnimationView. */
+  private requireDeclaredNumericParam(name: unknown, where: string): void {
+    if (typeof name !== 'string' || name.length === 0 || !this.paramTable.has(name)) {
+      throw new KernelError(
+        'animation.param.unknown',
+        `animationView: ${where} names param ${JSON.stringify(name)} which is not declared by a prior param() call.`,
+        undefined,
+        HINT_TEMPLATES['animation.param.unknown'].template,
+      );
+    }
+    const declaredType = this.paramTable.get(name).type;
+    if (declaredType !== 'number') {
+      throw new KernelError(
+        'animation.param.unknown',
+        `animationView: ${where} names param '${name}' which is declared as ${declaredType}; animation tracks require numeric params.`,
+        undefined,
+        HINT_TEMPLATES['animation.param.unknown'].template,
+      );
+    }
+  }
+
+  /** Keyframe-track form of addAnimationView: throwing validation, then
+   *  normalization. See addAnimationView for the mechanics rationale. */
+  private validateAnimationTracks(
+    args: AnimationViewTracksSpec,
+    fps: number,
+  ): AnimationViewMetadata {
+    const badKeys = (why: string): never => {
+      throw new KernelError(
+        'animation.keys.invalid',
+        `animationView: ${why}.`,
+        undefined,
+        HINT_TEMPLATES['animation.keys.invalid'].template,
+      );
+    };
+
+    if (!Array.isArray(args.tracks) || args.tracks.length === 0) {
+      badKeys(`'tracks' must be a non-empty array; got ${JSON.stringify(args.tracks)}`);
+    }
+    const seenParams = new Set<string>();
+    for (let i = 0; i < args.tracks.length; i += 1) {
+      const track = args.tracks[i];
+      if (typeof track !== 'object' || track === null) {
+        badKeys(`tracks[${i}] must be an object { param, keys }; got ${JSON.stringify(track)}`);
+      }
+      this.requireDeclaredNumericParam(track.param, `tracks[${i}].param`);
+      if (seenParams.has(track.param)) {
+        throw new KernelError(
+          'animation.track.duplicate-param',
+          `animationView: tracks[${i}] targets param '${track.param}' which an earlier track already animates; merge the keys into one track per param.`,
+          undefined,
+          HINT_TEMPLATES['animation.track.duplicate-param'].template,
+        );
+      }
+      seenParams.add(track.param);
+      if (!Array.isArray(track.keys) || track.keys.length === 0) {
+        badKeys(`tracks[${i}] ('${track.param}') has an empty keys array; declare at least one key`);
+      }
+      const seenAtMs = new Set<number>();
+      for (let j = 0; j < track.keys.length; j += 1) {
+        const key = track.keys[j];
+        if (typeof key !== 'object' || key === null) {
+          badKeys(`tracks[${i}].keys[${j}] must be an object { atMs, value, ease? }; got ${JSON.stringify(key)}`);
+        }
+        if (!Number.isFinite(key.atMs) || !Number.isFinite(key.value)) {
+          badKeys(`tracks[${i}].keys[${j}] atMs and value must be finite numbers; got (atMs: ${key.atMs}, value: ${key.value})`);
+        }
+        if (key.atMs < 0) {
+          badKeys(`tracks[${i}].keys[${j}] atMs must be >= 0; got ${key.atMs}`);
+        }
+        if (seenAtMs.has(key.atMs)) {
+          badKeys(`tracks[${i}] ('${track.param}') has duplicate atMs ${key.atMs}; key timestamps must be unique within a track`);
+        }
+        seenAtMs.add(key.atMs);
+        if (key.ease !== undefined && !(ANIMATION_EASES as readonly string[]).includes(key.ease as string)) {
+          badKeys(`tracks[${i}].keys[${j}] has unknown ease ${JSON.stringify(key.ease)}; expected one of ${ANIMATION_EASES.join(' | ')}`);
+        }
+      }
+    }
+    return normalizeAnimationView(args, fps);
+  }
+
+  /** Legacy sweep form of addAnimationView: historic stash-on-metadata
+   *  validation (default-safe record), plus the throwing param-declared
+   *  check, normalized to the track shape. */
+  private validateAnimationSweep(
+    args: AnimationViewSweepSpec,
+    fps: number,
+    diagnostics: CompilerDiagnostic[],
+  ): AnimationViewMetadata {
     const paramOk = typeof args.param === 'string' && args.param.length > 0;
     if (!paramOk) {
       diagnostics.push({
@@ -703,6 +902,8 @@ export class CaptureSession {
         message: `animationView: 'param' must be a non-empty string; got ${JSON.stringify(args.param)}.`,
         hint: `invalid-args.animation-view.param-empty — name a param('...') declared earlier in the script.`,
       });
+    } else {
+      this.requireDeclaredNumericParam(args.param, `'param'`);
     }
 
     const fromOk = Number.isFinite(args.from);
@@ -728,33 +929,125 @@ export class CaptureSession {
       });
     }
 
-    let fps = 30;
-    if (args.fps !== undefined) {
-      if (!Number.isFinite(args.fps) || args.fps <= 0) {
-        diagnostics.push({
-          target: 'export-occt',
-          code: 'feature.invalid-args',
-          severity: 'warn',
-          message: `animationView: 'fps' ${args.fps} is not a positive finite number; defaulting to 30.`,
-          hint: `invalid-args.animation-view.bad-fps — pass fps > 0 or omit for the 30 default.`,
-        });
-      } else {
-        fps = args.fps;
+    return normalizeAnimationView(
+      {
+        param: paramOk ? args.param : '',
+        from: fromOk ? args.from : 0,
+        to: toOk ? args.to : 0,
+        durationMs: durOk ? args.durationMs : 1000,
+      },
+      fps,
+    );
+  }
+
+  /**
+   * Capture a dfmSpec (print-prep gate declaration) virtual feature.
+   *
+   * Validation THROWS `KernelError` — a deliberate deviation from the
+   * addRenderEnvironment / addCameraTarget stash-on-metadata pattern:
+   * stashed virtual-record `metadata.diagnostics` never reach evaluate
+   * (recomputeEngine marks virtual records healthy and skips them), so a
+   * malformed dfmSpec would silently disable the enforcement gate it
+   * declares. Failing the build is the agent-friendly behavior here.
+   *
+   * Multiple calls register multiple records; the check engine applies the
+   * last one (same convention as setRenderEnvironment).
+   */
+  addDfmSpec(args: DfmSpec): FeatureId {
+    const bad = (field: string, why: string): never => {
+      throw new KernelError(
+        'feature.invalid-args',
+        `dfmSpec: ${field} ${why}.`,
+        undefined,
+        `invalid-args.dfm-spec.${field} — fix the field; dfmSpec is an enforcement gate, malformed declarations fail the build rather than silently disabling checks.`,
+      );
+    };
+
+    if (args.minWall === undefined && args.minClearance === undefined && !(args.channels?.length)) {
+      bad('spec', 'declares no checks; pass minWall, minClearance, and/or channels');
+    }
+    if (args.minWall !== undefined && !(Number.isFinite(args.minWall) && args.minWall > 0)) {
+      bad('minWall', `must be a positive finite number; got ${args.minWall}`);
+    }
+    if (args.minClearance !== undefined && !(Number.isFinite(args.minClearance) && args.minClearance > 0)) {
+      bad('minClearance', `must be a positive finite number; got ${args.minClearance}`);
+    }
+    // Sandbox scripts are untyped — guard the array shapes so a wrong-shaped
+    // field surfaces as a named KernelError, not a raw TypeError.
+    if (args.ignore !== undefined && !Array.isArray(args.ignore)) {
+      bad('ignore', `must be an array of [partA, partB] pairs; got ${JSON.stringify(args.ignore)}`);
+    }
+    if (args.exclude !== undefined && !Array.isArray(args.exclude)) {
+      bad('exclude', `must be an array of part-name strings; got ${JSON.stringify(args.exclude)}`);
+    }
+    if (args.channels !== undefined && !Array.isArray(args.channels)) {
+      bad('channels', `must be an array of { part, name, openings, sealed? } entries; got ${JSON.stringify(args.channels)}`);
+    }
+    for (const [i, pair] of (args.ignore ?? []).entries()) {
+      const isPair = Array.isArray(pair) && pair.length === 2 &&
+        pair.every(p => typeof p === 'string' && p.length > 0);
+      if (!isPair) {
+        bad(`ignore[${i}]`, `must be a [partA, partB] pair of non-empty strings; got ${JSON.stringify(pair)}`);
+      }
+      if (pair[0] === pair[1]) {
+        bad(`ignore[${i}]`, `must name two different parts; ['${pair[0]}', '${pair[1]}'] can never match a distinct-part pair`);
       }
     }
+    for (const [i, name] of (args.exclude ?? []).entries()) {
+      if (typeof name !== 'string' || name.length === 0) {
+        bad(`exclude[${i}]`, `must be a non-empty part-name string; got ${JSON.stringify(name)}`);
+      }
+      // Glob shape: literal name or trailing-'*' prefix glob only. A bare '*'
+      // would silently exclude every part while the spec claims the checks.
+      const star = name.indexOf('*');
+      if (star !== -1 && (star !== name.length - 1 || name.length === 1)) {
+        bad(`exclude[${i}]`, `must be a literal part name or a trailing-'*' prefix glob (e.g. 'servo-*'); got ${JSON.stringify(name)}`);
+      }
+    }
+    for (const [i, c] of (args.channels ?? []).entries()) {
+      if (typeof c !== 'object' || c === null) {
+        bad(`channels[${i}]`, `must be a { part, name, openings, sealed? } object; got ${JSON.stringify(c)}`);
+      }
+      if (typeof c.part !== 'string' || c.part.length === 0) {
+        bad(`channels[${i}].part`, `must be a non-empty part-name string; got ${JSON.stringify(c.part)}`);
+      }
+      if (typeof c.name !== 'string' || c.name.length === 0) {
+        bad(`channels[${i}].name`, `must be a non-empty label string; got ${JSON.stringify(c.name)}`);
+      }
+      if (!Number.isInteger(c.openings) || c.openings < 0) {
+        bad(`channels[${i}].openings`, `must be a non-negative integer; got ${c.openings}`);
+      }
+      if (c.openings === 0 && c.sealed !== true) {
+        bad(`channels[${i}].openings`, `is 0 but the channel is not declared sealed; pass sealed: true for an intentionally sealed void`);
+      }
+      if (c.sealed === true && c.openings !== 0) {
+        bad(`channels[${i}].openings`, `must be 0 when sealed: true; got ${c.openings}`);
+      }
+    }
+    // Downstream matching is by (part, name) — two entries with the same key
+    // are unresolvable contradictory declarations, not a refinement.
+    const channelKeys = new Set<string>();
+    for (const [i, c] of (args.channels ?? []).entries()) {
+      const key = JSON.stringify([c.part, c.name]);
+      if (channelKeys.has(key)) {
+        bad(`channels[${i}]`, `duplicates part '${c.part}' + name '${c.name}' declared at an earlier index`);
+      }
+      channelKeys.add(key);
+    }
 
-    const metadata: AnimationViewMetadata & { diagnostics?: CompilerDiagnostic[] } = {
+    const metadata: DfmSpecMetadata = {
       virtual: true,
-      param: paramOk ? args.param : '',
-      from: fromOk ? args.from : 0,
-      to: toOk ? args.to : 0,
-      durationMs: durOk ? args.durationMs : 1000,
-      fps,
-      ...(diagnostics.length > 0 ? { diagnostics } : {}),
+      ...(args.minWall !== undefined ? { minWall: args.minWall } : {}),
+      ...(args.minClearance !== undefined ? { minClearance: args.minClearance } : {}),
+      ignore: (args.ignore ?? []).map(([a, b]) => [a, b] as const),
+      exclude: [...(args.exclude ?? [])],
+      channels: (args.channels ?? []).map(c => ({
+        part: c.part, name: c.name, openings: c.openings, sealed: c.sealed ?? false,
+      })),
     };
 
     const r = this.register({
-      kind: 'animationView',
+      kind: 'dfmSpec',
       params: {},
       inputs: {},
       metadata: metadata as unknown as Record<string, unknown>,

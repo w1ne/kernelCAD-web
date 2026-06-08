@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import type { TabId } from './types';
 import { useRecomputeResult } from './hooks/useRecomputeResult';
+import { useShellStore } from './store/useShellStore';
 import { getVisibleTabs } from './logic/adaptiveTabs';
 import { InspectorTabs } from './InspectorTabs';
 
@@ -11,6 +12,7 @@ interface InspectorProps {
 
 export function Inspector({ tabSlots }: InspectorProps) {
     const result = useRecomputeResult();
+    const { inspectorOpen } = useShellStore();
     const visibleTabs = getVisibleTabs(result);
 
     const [activeTab, setActiveTab] = useState<TabId>('scene');
@@ -23,9 +25,13 @@ export function Inspector({ tabSlots }: InspectorProps) {
     const effectiveTab: TabId = visibleTabs.includes(activeTab) ? activeTab : 'scene';
 
     return (
+        // Width collapses to 0 when hidden (mirrors AgentRail) so the
+        // viewport reclaims the space without unmounting tab state.
         <div
-            className="flex flex-col shrink-0 bg-[#111] border-l border-[#333] text-gray-300"
-            style={{ width: 290 }}
+            className="flex flex-col shrink-0 overflow-hidden bg-[#111] border-l border-[#333] text-gray-300"
+            style={{ width: inspectorOpen ? 290 : 0 }}
+            aria-hidden={!inspectorOpen}
+            data-open={inspectorOpen}
             data-testid="inspector"
         >
             <InspectorTabs

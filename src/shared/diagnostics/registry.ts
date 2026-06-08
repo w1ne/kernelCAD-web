@@ -24,7 +24,8 @@ export type DiagnosticGroup =
   | 'dfm'
   | 'query'
   | 'kinematic'
-  | 'mechanism';
+  | 'mechanism'
+  | 'animation';
 
 export type DiagnosticSeverityLevel = 'info' | 'warn' | 'error';
 
@@ -912,6 +913,17 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'assembly',
     description: 'A joint axis (mate connector origin + direction) does not intersect the part body it claims to act on.',
   },
+  'assembly.structure.unstructured-bodies': {
+    hintTemplate:
+      'Wrap the loose bodies in assembly().part(name, shape) so each part carries identity, per-part stats, and review handles; name every returned shape. This is an authoring-time signal — a multi-body model with no part names loses inspect --focus, list_part_stats, and Studio per-part validity.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'wrap each loose top-level body in a named assembly().part(name, shape)',
+    },
+    defaultSeverity: 'info',
+    group: 'assembly',
+    description: 'A multi-body model returns loose top-level bodies with no assembly().part(...) structure, so the parts carry no identity for inspection, stats, or per-part review.',
+  },
   'assembly.joint.load-exceeded': {
     hintTemplate:
       "Increase maxLoad on this joint, reduce externalLoads, or split the load path with an additional joint.",
@@ -1721,6 +1733,40 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'dfm',
     description: 'A rule\'s per-material threshold is null in specs.json because the vendor does not publish the value.',
   },
+  // DFM print-prep gates (4) — W3 Task 7: dfmSpec({...}) enforcement
+  // (min-wall sampling, part-pair clearance, voxel void/channel topology).
+  'dfm.wall.too-thin': {
+    hintTemplate:
+      'A printed wall is thinner than dfmSpec.minWall at the reported location. Thicken the section (offset the cut, widen the rib), or lower minWall only if the target printer resolves it.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'thicken the wall at the reported xyz to >= minWall' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'Inward ray sampling measured a material wall thinner than the declared minimum.',
+  },
+  'dfm.clearance.violated': {
+    hintTemplate:
+      'Two distinct parts sit closer than dfmSpec.minClearance. Translate one part along its mating direction, or add the pair to dfmSpec.ignore if the contact is intentional (seated vendor part, fastened printed joint).',
+    nextAction: { kind: 'rewrite-feature', guidance: 'open the gap to >= minClearance or declare the pair in dfmSpec.ignore' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'BREP minimum distance between a part pair is below the declared clearance and the pair is not mated, ignored, or interfering.',
+  },
+  'dfm.channel.openings-mismatch': {
+    hintTemplate:
+      'A declared channel has a different number of mouth openings than declared — a breach adds openings, a blocked mouth removes them, and found=0 can mean the channel is wider than the ~16mm detection limit. Inspect the channel walls near the part surface.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'Voxel flood-fill counted a different number of channel mouths than the dfmSpec.channels declaration.',
+  },
+  'dfm.void.undeclared': {
+    hintTemplate:
+      'A sealed internal void traps powder/resin/support and is unprintable on FDM without declaration. Open a drain channel, or declare it via dfmSpec.channels with sealed: true if intentional.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'open a drain channel or declare the void sealed: true' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'Flood-fill found an enclosed empty region not declared as a sealed channel.',
+  },
   // Kinematic grounding (9) — K1-K9. Local sampled-pose collision sweep,
   // analytical / numeric IK reachability, closed-form beam load capacity,
   // and fastener-side hole-diameter agreement. Every check runs in-process
@@ -1910,6 +1956,68 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'query',
     description: 'A topology input string failed to parse as either an @kc[...] ref, an @kcq[...] Query DSL expression, or a JSON-AST object.',
+  },
+  // Animation views (7) — multi-track keyframe animationView() validation.
+  // The first five fire at capture time from CaptureSession.addAnimationView
+  // (errors THROW KernelError — the addDfmSpec precedent, since stashed
+  // virtual-record diagnostics never reach evaluate; warns stash on
+  // metadata.diagnostics). animation.collision is registered ahead of the
+  // motion-verification surface that emits it (capture/verify slice).
+  'animation.param.unknown': {
+    hintTemplate:
+      "An animationView track (or the legacy sweep 'param') names a param that no prior param() call declared, or one declared with a non-numeric type. Declare a numeric param first — e.g. const angle = param('angleDeg', 0, { min: 0, max: 360 }) — or fix the spelling in tracks[].param; boolean params cannot be animated.",
+    nextAction: { kind: 'fix-arg', field: 'tracks[].param' },
+    defaultSeverity: 'error',
+    group: 'animation',
+    description: 'An animationView track (or legacy sweep) references a param name not declared by a prior param() call in the session, or declared with a non-numeric type.',
+  },
+  'animation.track.duplicate-param': {
+    hintTemplate:
+      'Two animationView tracks target the same param; a param may appear in at most one track per call. Merge the keyframes into a single track for that param.',
+    nextAction: { kind: 'fix-arg', field: 'tracks' },
+    defaultSeverity: 'error',
+    group: 'animation',
+    description: 'Two or more tracks in one animationView() call animate the same param name.',
+  },
+  'animation.keys.invalid': {
+    hintTemplate:
+      'Fix the track/key named in the message: tracks must be a non-empty array, every track needs at least one key, atMs and value must be finite with atMs >= 0, atMs must be unique within a track, and ease must be one of linear | step | easeIn | easeOut | easeInOut.',
+    nextAction: { kind: 'fix-arg', field: 'see-message' },
+    defaultSeverity: 'error',
+    group: 'animation',
+    description: 'An animationView track or keyframe is malformed (empty tracks/keys, non-finite or negative atMs, non-finite value, duplicate atMs within a track, or unknown ease).',
+  },
+  'animation.value.clamped': {
+    hintTemplate:
+      "A keyframe value lies outside the param's declared min/max range; the stored value was clamped to the range boundary. Author key values inside the param() range, or widen the range on the param() declaration if the sweep is intended.",
+    nextAction: { kind: 'fix-arg', field: 'tracks[].keys[].value' },
+    defaultSeverity: 'warn',
+    group: 'animation',
+    description: 'An animationView keyframe value fell outside the declared param min/max range and was clamped to the boundary.',
+  },
+  'animation.view.shadowed': {
+    hintTemplate:
+      'Multiple animationView() calls registered; capture uses only the LAST record. Remove the earlier animationView() calls (record ids in the message), or keep only the intended timeline.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'remove the earlier animationView() calls so only the intended record remains' },
+    defaultSeverity: 'warn',
+    group: 'animation',
+    description: 'A later animationView() call shadows one or more earlier animationView records; only the last record is captured.',
+  },
+  'animation.collision': {
+    hintTemplate:
+      'Two parts collide at a sampled timestamp of the animation timeline (the message names the colliding part pair and the time in ms). Adjust the keyframes so the poses stay clear at that time, or reshape / add clearance to the colliding geometry.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'adjust the keyframes or the colliding part geometry so the named pair stays clear at the reported timestamp' },
+    defaultSeverity: 'error',
+    group: 'animation',
+    description: 'Motion verification found two parts interpenetrating at a sampled timestamp of the animationView timeline.',
+  },
+  'animation.bake.geometry-param': {
+    hintTemplate:
+      'A track param drives part GEOMETRY (a dimension, extrude depth, hole radius, …) rather than a mate pose, so Studio baked playback — which only re-applies rigid per-part world transforms — would show the wrong shape. Studio playback supports POSE-ONLY (mate-driven) timelines; render geometry-animating timelines with `kernelcad animate` (offline MP4 re-meshes every frame).',
+    nextAction: { kind: 'call-tool', tool: 'kernelcad animate', args: { reason: 'geometry-animating timeline' } },
+    defaultSeverity: 'error',
+    group: 'animation',
+    description: 'An animationView track param re-lowers part-local geometry (not just a solvedAssembly mate pose), so Studio baked playback — which only re-applies rigid per-part transforms — cannot represent it; offline MP4 capture is required.',
   },
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 

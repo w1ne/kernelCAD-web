@@ -314,4 +314,47 @@ asm.mate('cover-fit', 'skirt.coverSeat', 'cover.seat', 'fastened');
 asm.mate('battery-fit', 'cover.batterySeat', 'battery.seat', 'fastened');
 asm.mate('esp-fit', 'cover.espSeat', 'esp32.seat', 'fastened');
 
+dfmSpec({
+  minWall: 0.75,
+  minClearance: 0.45,
+  exclude: ['battery', 'esp32', 'servo-*'],
+  // Design-intent sub-threshold interfaces, derived empirically from the
+  // shipped v7.6.1 print (mated pairs are auto-exempt and not listed):
+  ignore: [
+    ['drum', 'meter-disc'],        // 0.250 mm — rotating metering interface (drum outlet over disc pocket)
+    ['drum', 'cap'],               // 0.300 mm — cap spigot bearing in the drum bore (0.35 design gap)
+    ['drum', 'servo-drum'],        // 0.000 mm — drum hub face sits flat on the servo horn disc (screwed)
+    ['meter-disc', 'servo-drum'],  // 0.285 mm — disc swings under the drum servo's body relief
+    ['skirt', 'servo-meter'],      // 0.298 mm — meter servo seat recess in the skirt
+    ['servo-drum', 'cover'],       // 0.250 mm — servo bottom over the cover's cradle block (foam preload)
+  ],
+  channels: [{ part: 'skirt', name: 'spout', openings: 2 }],
+});
+
+// ── Dispense cycle (the carousel's whole job, on one timeline) ───────────────
+// index → fill dwell → swing → drop dwell → return. The drum carries the next
+// chamber over the station (60° = one chamber pitch) and HOLDS dead-still while
+// the meter disc works under it: the disc fills under the parked outlet, swings
+// ~117° to lay its pocket over the chute mouth, dwells to let the ~0.5 ml dose
+// fall, then returns to the fill pose. Two sealed DOFs, never moving at once —
+// exactly the choreography the architecture exists to make collision-free.
+// (Param-driven content last — relower perf rule.)
+animationView({
+  name: 'dispense-cycle',
+  tracks: [
+    { param: 'drumDeg', keys: [
+      { atMs: 0, value: 0 },
+      { atMs: 1200, value: 60, ease: 'easeInOut' },   // index next chamber over the station
+      { atMs: 4000, value: 60 },                       // hold through metering
+    ]},
+    { param: 'meterDeg', keys: [
+      { atMs: 1400, value: 0 },
+      { atMs: 2200, value: 117, ease: 'easeIn' },      // swing pocket to drop
+      { atMs: 3000, value: 117 },                      // dwell over the chute
+      { atMs: 3800, value: 0, ease: 'easeOut' },       // return to fill
+    ]},
+  ],
+  fps: 30,
+});
+
 return asm.solvedModel({});

@@ -5,11 +5,16 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 import { buildModel, buildModelFromFile, type BuiltModel } from '../../../modeling/buildModel';
+import {
+  runDfmChecksOnModel,
+  type DfmCheckReport,
+} from '../../../modeling/runtime/dfm/runDfmChecks';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import {
   reviewPoseEnvelope,
   type PoseEnvelopeDiagnostic,
 } from '../../../modeling/mates/poseEnvelope';
+import { detectUnstructuredBodies } from '../../../modeling/validation/unstructuredBodies';
 
 export interface EvaluateInput {
   file?: string;
@@ -45,6 +50,10 @@ export interface EvaluateResult {
 export interface EvaluateAndBuildResult {
   evaluation: EvaluateResult;
   model?: BuiltModel;
+  /** DFM gate report when the script declares `dfmSpec(...)` and the build
+   *  had no fatal diagnostics. Undefined otherwise — the gates are opt-in.
+   *  Its diagnostics are already merged into `evaluation.diagnostics`. */
+  dfmReport?: DfmCheckReport;
 }
 
 export async function evaluateAndBuildScript(input: EvaluateInput): Promise<EvaluateAndBuildResult> {
@@ -90,13 +99,40 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
     };
   }
   const fatal = model.diagnostics.some(d => d.severity === 'error');
+
+  // Agent-parts-discipline: flag multi-body models authored as loose
+  // top-level bodies instead of named `assembly().part(...)`. Runs on a
+  // clean build only — a broken build surfaces its own failure first.
+  // Emitting here (the shared producer for `evaluate_script` AND the
+  // `/__kernelcad/review` payload, plus the CLI) surfaces the info
+  // diagnostic on every authoring surface from a single seam, and — unlike
+  // the assembly validator — runs for NON-assembly scripts too.
+  if (!fatal) {
+    model.diagnostics.push(
+      ...detectUnstructuredBodies({ returnValue: model.returnValue, code: model.code }),
+    );
+  }
+
+  // W3 DFM enforcement: when the script declares dfmSpec(...), run the
+  // declared gates and merge their diagnostics into the model's. This one
+  // hook covers CLI evaluate, MCP evaluate_script (delegates here), and the
+  // eval harness. Zero cost for scripts without the record (findDfmSpec is
+  // a records scan returning undefined). Skipped after fatal build
+  // diagnostics — the underlying failure surfaces first.
+  let dfmReport: DfmCheckReport | undefined;
+  if (!fatal) {
+    dfmReport = await runDfmChecksOnModel(model);
+    if (dfmReport) model.diagnostics.push(...dfmReport.diagnostics);
+  }
+  const fatalAfterDfm = model.diagnostics.some(d => d.severity === 'error');
   return {
     evaluation: {
-      exitCode: fatal ? 1 : 0,
+      exitCode: fatalAfterDfm ? 1 : 0,
       featureCount: model.records.length,
       diagnostics: withNextActions(model.diagnostics),
     },
     model,
+    ...(dfmReport !== undefined ? { dfmReport } : {}),
   };
 }
 

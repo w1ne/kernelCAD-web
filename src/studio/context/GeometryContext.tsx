@@ -6,7 +6,7 @@ import { rehydrateFromBridge, type FeatureMeshSerialized } from '../../modeling/
 import type { SerializedParamEntry, SerializedParamTable } from '../../shared/runtime/paramTable';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import { shouldUseHostedMesh, meshSourceHosted, devMeshAvailable, meshSourceDev, needsFullKernel, type BackendMeshPayload } from '../scriptSource';
-import { apiCall, rewritePath } from '../api/apiBase';
+import { apiCall, rewritePath, bearerToken, buildEventsUrl } from '../api/apiBase';
 
 export type ExecutionStatus = 'success' | 'error' | 'stale';
 
@@ -98,6 +98,13 @@ export interface GeometryContextType {
      *  current script. `null` until the first session fetch lands; remains
      *  `null` for the legacy in-process script path (no studioScript). */
     sessionToken: string | null;
+    /** Monotonic kernel-state epoch, bumped on EVERY relower the pooled session
+     *  pushes over SSE (pose-only fast path AND full mesh+review path). Lets
+     *  consumers that cache kernel-derived results — notably the Animation tab's
+     *  baked timeline — invalidate on ANY kernel mutation, including a
+     *  Params-tab edit that changes a param's current value without touching the
+     *  animationView metadata. Starts at 0. */
+    kernelEpoch: number;
     // Execute code to update geometries
     executeGeometry: (code: string) => Promise<void>;
     setPreviewCode: (code: string | null) => void;
@@ -107,6 +114,13 @@ export interface GeometryContextType {
     updateParam: (edits: { name: string; value: number | boolean }[]) => Promise<void>;
     setGeometryTransformOverride: (partName: string, transform: number[]) => void;
     clearGeometryTransformOverrides: () => void;
+    /** Animation playback claims sole ownership of the part-transform override
+     *  map while it is driving the viewport (baking or playing). While locked,
+     *  the SSE pose-only fast path (`applyPoseOnlyRelower`) does NOT replace the
+     *  override map — otherwise the single post-bake/restore relower (or a
+     *  ParamsTab edit mid-playback) would yank the viewport off the baked pose.
+     *  Idempotent; the player releases on pause/stop/unmount. */
+    setViewportDriverLock: (locked: boolean) => void;
 }
 
 const GeometryContext = createContext<GeometryContextType | undefined>(undefined);
@@ -152,6 +166,11 @@ function isAbortError(err: unknown): boolean {
 export function GeometryProvider({ children, code }: { children: ReactNode; code: string }) {
     const [geometries, setGeometries] = useState<GeometryResult[]>([]);
     const [geometryTransformOverrides, setGeometryTransformOverrides] = useState<Record<string, number[]>>({});
+    // While true, animation playback owns the override map; the SSE pose-only
+    // fast path must not replace it (see `setViewportDriverLock`). A ref, not
+    // state, so reads inside the long-lived SSE handler always see the current
+    // value without re-subscribing the EventSource.
+    const viewportDriverLockRef = useRef(false);
     const [previewGeometries, setPreviewGeometries] = useState<GeometryResult[]>([]);
     const [previewCode, setPreviewCode] = useState<string | null>(null);
     const [sketchesGeometries, setSketchesGeometries] = useState<SketchGeometry[]>([]);
@@ -170,6 +189,10 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     const [staleMainResponsesDropped, setStaleMainResponsesDropped] = useState(0);
     const [stalePreviewResponsesDropped, setStalePreviewResponsesDropped] = useState(0);
     const [sessionToken, setSessionToken] = useState<string | null>(null);
+    // Kernel-state epoch: bumped on every SSE relower (both fast and full
+    // paths) so kernel-derived caches (the Animation tab's baked timeline) can
+    // invalidate on any kernel mutation. See GeometryContextType.kernelEpoch.
+    const [kernelEpoch, setKernelEpoch] = useState(0);
     // Slice 2E.bridge: tracks whether the GET /session attempt has settled
     // so the mesh effect knows to wait. 'idle' → no studio script (legacy
     // in-process path); 'pending' → fetch in flight; 'resolved' → token set;
@@ -458,6 +481,10 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     // payload. Returns false on any failure so the caller can fall back to
     // the full mesh re-fetch.
     const applyPoseOnlyRelower = useCallback(async (token: string): Promise<boolean> => {
+        // Animation playback owns the override map while driving the viewport.
+        // Honour the SSE event (return true = handled, no full-mesh fallback)
+        // but do NOT replace the overrides — the player's baked pose stands.
+        if (viewportDriverLockRef.current) return true;
         try {
             const { base, headers } = await apiCall();
             const url = rewritePath(
@@ -518,6 +545,13 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         // name, so addEventListener resolves to the generic overload; the
         // frame is a MessageEvent carrying `{"affectedIds": [...]}`.
         const onRelower = (event: Event) => {
+            // Bump the kernel-state epoch on EVERY relower (both the pose-only
+            // fast path and the full mesh+review path below) so kernel-derived
+            // caches can invalidate on any mutation — notably the Animation
+            // tab's baked timeline, which would otherwise keep playing
+            // pre-edit transforms after a Params-tab edit that doesn't touch
+            // the animationView metadata.
+            setKernelEpoch((e) => e + 1);
             // Pose-only fast path: when EVERY affected record is a
             // `solvedAssembly*` (a param-driven mate pose edit), only per-part
             // worldTransforms changed — part-LOCAL meshes are untouched — so
@@ -565,16 +599,16 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             // the live-interference channel.)
             requestMeshAndReview(studioScript, sessionToken, { keepExistingOnError: true, liveReview: true });
         };
-        // S1: route the SSE URL through apiCall so signed-in users hit the
-        // hosted /events endpoint. (EventSource can't carry custom headers,
-        // so signed-in auth for SSE is an S3 concern — for unsigned-in the
-        // base is '' and behavior is bit-for-bit identical to today.)
-        void apiCall().then(({ base }) => {
+        // Route the SSE URL through apiCall so signed-in users hit the hosted
+        // /events endpoint. EventSource can't carry custom headers, so the
+        // Supabase JWT is appended as an `access_token` query param (the
+        // hosted server validates it via its injected authenticate hook; see
+        // eventsEndpoint.ts). For unsigned-in local dev the base is '' and the
+        // JWT is undefined, so buildEventsUrl omits access_token and behavior
+        // is bit-for-bit identical to today.
+        void apiCall().then(({ base, headers }) => {
             if (cancelled) return;
-            const url = rewritePath(
-                `/__kernelcad/events?session=${encodeURIComponent(sessionToken)}`,
-                base,
-            );
+            const url = buildEventsUrl(base, sessionToken, bearerToken(headers));
             es = new EventSource(url);
             es.addEventListener('relower', onRelower);
             // The browser auto-reconnects on transient drops; we only log here.
@@ -632,6 +666,10 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
 
     const clearGeometryTransformOverrides = useCallback(() => {
         setGeometryTransformOverrides({});
+    }, []);
+
+    const setViewportDriverLock = useCallback((locked: boolean) => {
+        viewportDriverLockRef.current = locked;
     }, []);
 
     // Slice 2E.bridge: smoke hook for browser-console verification (see the
@@ -1018,12 +1056,14 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         staleMainResponsesDropped,
         stalePreviewResponsesDropped,
         sessionToken,
+        kernelEpoch,
         executeGeometry,
         setPreviewCode,
         updateParam,
         setGeometryTransformOverride,
         clearGeometryTransformOverrides,
-    }), [displayGeometries, previewGeometries, sketchesGeometries, showSketches, toggleSketchVisibility, error, isReady, isComputing, executionCount, currentCodeRevision, lastSuccessfulRevision, executionHistory, scriptParams, scriptReview, featureRecords, recomputeMs, staleMainResponsesDropped, stalePreviewResponsesDropped, sessionToken, executeGeometry, updateParam, setGeometryTransformOverride, clearGeometryTransformOverrides]);
+        setViewportDriverLock,
+    }), [displayGeometries, previewGeometries, sketchesGeometries, showSketches, toggleSketchVisibility, error, isReady, isComputing, executionCount, currentCodeRevision, lastSuccessfulRevision, executionHistory, scriptParams, scriptReview, featureRecords, recomputeMs, staleMainResponsesDropped, stalePreviewResponsesDropped, sessionToken, kernelEpoch, executeGeometry, updateParam, setGeometryTransformOverride, clearGeometryTransformOverrides, setViewportDriverLock]);
 
     return <GeometryContext.Provider value={value}>{children}</GeometryContext.Provider>;
 }

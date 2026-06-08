@@ -11,6 +11,8 @@ export interface UIContextType {
     setViewMode3D: (mode: ViewMode3D) => void;
     viewportBackground: ViewportBackground;
     setViewportBackground: (mode: ViewportBackground) => void;
+    gridVisible: boolean;
+    setGridVisible: (visible: boolean) => void;
     activeDialog: string | null;
     setActiveDialog: (dialogId: string | null) => void;
     sidePanelVisible: boolean;
@@ -33,6 +35,7 @@ const STORAGE_KEYS = {
     viewMode3D: 'kernelcad:viewMode3D',
     viewportBackground: 'kernelcad:viewportBackground',
     sidePanelVisible: 'kernelcad:sidePanelVisible',
+    gridVisible: 'kernelcad:gridVisible',
 } as const;
 
 function readStoredViewMode(): 'code' | 'gui' {
@@ -65,12 +68,19 @@ function readStoredViewportBackground(): ViewportBackground {
     return raw === 'light' || raw === 'checkered' || raw === 'dark' ? raw : 'dark';
 }
 
+function readStoredGridVisible(): boolean {
+    if (typeof window === 'undefined') return true;
+    // Default on: only an explicit stored 'false' hides the ground grid.
+    return window.localStorage.getItem(STORAGE_KEYS.gridVisible) !== 'false';
+}
+
 export function UIProvider({ children }: { children: ReactNode }) {
     const [viewMode, setViewMode] = useState<'code' | 'gui'>(() => readStoredViewMode());
     const [layoutMode, setLayoutMode] = useState<StudioLayoutMode>(() => readStoredLayoutMode());
     const [viewMode3D, setViewMode3D] = useState<ViewMode3D>(() => readStoredViewMode3D());
     const [viewportBackground, setViewportBackground] = useState<ViewportBackground>(() => readStoredViewportBackground());
     const [sidePanelVisible, setSidePanelVisible] = useState(() => readStoredSidePanelVisible());
+    const [gridVisible, setGridVisible] = useState(() => readStoredGridVisible());
     const [contextMenu, setContextMenu] = useState<{ visible: boolean; position: { x: number, y: number } | null; type: 'FACE' | 'EDGE' | 'VERTEX' | 'SKETCH' }>({
         visible: false,
         position: null,
@@ -139,6 +149,11 @@ export function UIProvider({ children }: { children: ReactNode }) {
         window.localStorage.setItem(STORAGE_KEYS.sidePanelVisible, String(sidePanelVisible));
     }, [sidePanelVisible]);
 
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        window.localStorage.setItem(STORAGE_KEYS.gridVisible, String(gridVisible));
+    }, [gridVisible]);
+
     const value: UIContextType = useMemo(() => ({
         viewMode,
         setViewMode,
@@ -148,6 +163,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
         setViewMode3D,
         viewportBackground,
         setViewportBackground,
+        gridVisible,
+        setGridVisible,
         activeDialog,
         setActiveDialog,
         sidePanelVisible,
@@ -158,7 +175,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
         closePanel,
         contextMenu,
         setContextMenu,
-    }), [viewMode, layoutMode, viewMode3D, viewportBackground, activeDialog, setActiveDialog, sidePanelVisible, toggleSidePanel, state.activePanels, openPanel, closePanel, contextMenu]);
+    }), [viewMode, layoutMode, viewMode3D, viewportBackground, gridVisible, activeDialog, setActiveDialog, sidePanelVisible, toggleSidePanel, state.activePanels, openPanel, closePanel, contextMenu]);
 
     return <UIContext.Provider value={value}>{children}</UIContext.Provider>;
 }

@@ -72,7 +72,7 @@ pages every 24 hours, pins the raw HTML by sha256 under
 `catalogs/vendors/<vendor>/sources-snapshot/`, and updates the manifest
 for drift detection.
 
-## Diagnostic codes (24)
+## Diagnostic codes (24 preflight + 4 print-prep gates)
 
 | Code | Severity | Recovery |
 |------|----------|----------|
@@ -104,6 +104,19 @@ for drift detection.
 The `dfm.rule.threshold-unknown` code collapses to a single warn-level row
 even when multiple rules return null thresholds for the same material; this
 avoids redundant noise.
+
+### Print-prep gate codes (dfmSpec)
+
+Four further `dfm.*` codes come from the print-readiness gates a model
+declares with `dfmSpec({...})` — they are emitted by `evaluate` / build,
+not by the `dfm_preflight` sheet-metal operations above:
+
+| Code | Severity | Recovery |
+|------|----------|----------|
+| dfm.wall.too-thin | error | Thicken the wall at the reported location to >= `minWall`. |
+| dfm.clearance.violated | error | Open the part-pair gap to >= `minClearance`, or declare the pair in `dfmSpec.ignore`. |
+| dfm.channel.openings-mismatch | error | Inspect the channel walls; fix breaches/blockages or correct the declared opening count. |
+| dfm.void.undeclared | error | Open a drain channel, or declare the void via `dfmSpec.channels` with `sealed: true`. |
 
 ## Verification gates
 

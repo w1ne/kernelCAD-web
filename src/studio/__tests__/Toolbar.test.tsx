@@ -15,6 +15,12 @@ function renderToolbar(overrides: Partial<Parameters<typeof Toolbar>[0]> = {}) {
         referenceImagesPresent: false,
         referenceImagesVisible: true,
         onToggleReferenceImages: vi.fn(),
+        markingMode: false,
+        onToggleMarkingMode: vi.fn(),
+        sectionMode: false,
+        onToggleSectionMode: vi.fn(),
+        inspectorOpen: true,
+        onToggleInspector: vi.fn(),
         ...overrides,
     };
     render(<Toolbar {...props} />);
@@ -103,6 +109,24 @@ describe('Toolbar', () => {
         const props = renderToolbar({ referenceImagesPresent: true });
         fireEvent.click(screen.getByRole('button', { name: /reference images?/i }));
         expect(props.onToggleReferenceImages).toHaveBeenCalledTimes(1);
+    });
+
+    it('fires onToggleInspector when the panel button is clicked', () => {
+        const props = renderToolbar();
+        fireEvent.click(screen.getByTestId('toolbar-inspector'));
+        expect(props.onToggleInspector).toHaveBeenCalledTimes(1);
+    });
+
+    it('reflects inspectorOpen state in the panel toggle', () => {
+        renderToolbar({ inspectorOpen: true });
+        const btn = screen.getByRole('button', { name: 'Hide inspector panel' });
+        expect(btn.getAttribute('aria-pressed')).toBe('true');
+    });
+
+    it('reflects hidden inspector state in the panel toggle', () => {
+        renderToolbar({ inspectorOpen: false });
+        const btn = screen.getByRole('button', { name: 'Show inspector panel' });
+        expect(btn.getAttribute('aria-pressed')).toBe('false');
     });
 
     it('renders the Connect link pointing at /connect', () => {

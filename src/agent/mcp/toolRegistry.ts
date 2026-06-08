@@ -31,6 +31,7 @@ import { getEdgesOfTool } from './tools/getEdgesOf';
 import { getShapeInfoTool } from './tools/getShapeInfo';
 import { inspectAssemblyTool } from './tools/inspectAssembly';
 import { inspectRobotTool } from './tools/inspectRobot';
+import { inspectStepTool } from './tools/inspectStep';
 import { validateUrdfTool } from './tools/validateUrdf';
 import { listApiTool } from './tools/listApi';
 import { listDiagnosticCodesTool } from './tools/listDiagnosticCodes';
@@ -62,10 +63,12 @@ import { whyDidThisFailTool } from './tools/whyDidThisFail';
 import { flattenPatternTool } from './tools/flattenPattern';
 import { getBendTableTool } from './tools/getBendTable';
 import { dfmPreflightTool } from './tools/dfmPreflight';
+import { dfmCheckTool } from './tools/dfmCheck';
 import { checkSweptCollisionTool } from './tools/checkSweptCollision';
 import { checkReachableTool } from './tools/checkReachable';
 import { checkMountingHoleConsistencyTool } from './tools/checkMountingHoleConsistency';
 import { checkLoadCapacityTool } from './tools/checkLoadCapacity';
+import { captureAnimationTool } from './tools/captureAnimation';
 export { runClosedLoop } from '../loop/closedLoop.js';
 export { buildRepairPrompt } from '../loop/repairPrompt.js';
 export * from '../loop/types.js';
@@ -101,6 +104,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       name: 'evaluate_script',
       description:
         'Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics. ' +
+        'When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), ' +
+        'also returns a parts summary { count, names }. ' +
         'Pass either { file: "<path>" } or { code: "<inline source>" }.',
       inputSchema: {
         type: 'object',
@@ -1060,6 +1065,24 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
+      name: 'inspect_step',
+      description:
+        'Inspect a STEP file without evaluating a script: solid tree (index + best-effort name), ' +
+        'per-solid exact bounding box and volume, and detected cylindrical holes ' +
+        '(axis origin + direction, diameter, depth, blind/through). Use before placing imported ' +
+        'vendor parts to find mounting-hole positions and verify the part-local frame.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .step file (absolute, or relative to cwd).' },
+        },
+        required: ['file'],
+      },
+    },
+    handler: input => inspectStepTool(input as unknown as Parameters<typeof inspectStepTool>[0]),
+  },
+  {
+    definition: {
       name: 'params_list',
       description:
         'List all parameters declared on the active session, with current values, defaults, and metadata. Read-only.',
@@ -1615,6 +1638,24 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
+      name: 'dfm_check',
+      description:
+        'Run the print-readiness gates declared by dfmSpec() in a kernelCAD script: part-pair clearance ' +
+        '(exact BREP distance), minimum wall thickness (inward ray sampling), and void/channel topology ' +
+        '(voxel flood-fill). Pass either { file } or { code }. Reports per-pair distances, worst thin spots ' +
+        '(xyz + part), channel mouth counts, and diagnostics with hints. No-op error if the script declares no dfmSpec.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+        },
+      },
+    },
+    handler: input => dfmCheckTool(input as Parameters<typeof dfmCheckTool>[0]),
+  },
+  {
+    definition: {
       name: 'evaluate_sdf',
       description:
         'Sample the signed distance from an in-script sdf.* field at a 3D point. ' +
@@ -1762,6 +1803,42 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => checkLoadCapacityTool(input as Parameters<typeof checkLoadCapacityTool>[0]),
+  },
+  {
+    definition: {
+      name: 'capture_animation',
+      description:
+        "Capture a kernelCAD script's animationView({...}) timeline to an MP4 (ffmpeg) or a PNG frame sequence, " +
+        'verifying the sampled poses for part interference. FILE ONLY: pass { file } (a .kcad.ts path) — there is no ' +
+        '{ code } mode, because the capture engine renders from a file on disk (its relative lib.fromSTEP imports resolve ' +
+        'against the script directory). MP4 by default; pass { frames_dir } to write frame-0000.png... and skip ffmpeg ' +
+        'entirely (mutually exclusive with output_path). Animation-pose interference verification runs by default ' +
+        '(keyframe times + segment midpoints) BEFORE any browser/ffmpeg cost; { no_verify: true } skips it and ' +
+        '{ verify_every: n } additionally samples every n-th frame time. Pass { focus } or { hide } (arrays of feature ids ' +
+        'or assembly part names, mutually exclusive) to isolate parts in the rendered frames — same semantics as ' +
+        '`kernelcad render --focus/--hide`; visibility is render-only and does NOT affect the pose verification. ' +
+        'Collisions DO NOT fail the call — the artifact ' +
+        'is still written as evidence with ok: true; read verified: false + the collisions[] array. ' +
+        'ENVIRONMENT REQUIREMENT (identical to `kernelcad render`): capture drives a headless browser against a running ' +
+        'studio dev server reachable at http://localhost:5173 (or the VITE_PORT override); there is no bundled-static ' +
+        'serving mode yet, so the same dev-server precondition applies in a production MCP install. ' +
+        'Returns { ok, output_path, frame_count, duration_ms, fps, verified, verify_skipped?, collisions: [{ t_ms, a, b, volume_mm3 }], diagnostics }.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script with an animationView({...}) record. Required (no inline { code } mode).' },
+          output_path: { type: 'string', description: 'MP4 output path; default <scriptDir>/<basename>-animation.mp4. Mutually exclusive with frames_dir.' },
+          frames_dir: { type: 'string', description: 'PNG-sequence mode directory: write frame-0000.png... and skip ffmpeg. Mutually exclusive with output_path.' },
+          fps: { type: 'number', description: "Override the animationView record's fps." },
+          no_verify: { type: 'boolean', description: 'Skip the animation-pose interference verification (default: verify on).', default: false },
+          verify_every: { type: 'integer', minimum: 1, description: 'Additionally verify at every n-th frame time of the fps schedule (unioned with the keyframe sample set).' },
+          focus: { type: 'array', items: { type: 'string' }, description: 'Show only matching feature ids / assembly part names in the rendered frames. Mutually exclusive with hide. Render-only; does not affect pose verification.' },
+          hide: { type: 'array', items: { type: 'string' }, description: 'Hide matching feature ids / assembly part names in the rendered frames. Mutually exclusive with focus. Render-only; does not affect pose verification.' },
+        },
+        required: ['file'],
+      },
+    },
+    handler: input => captureAnimationTool(input as Parameters<typeof captureAnimationTool>[0]),
   },
 ];
 

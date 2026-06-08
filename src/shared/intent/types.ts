@@ -164,6 +164,8 @@ export type FeatureKind =
   // by sampling N frames across the sweep, leveraging the mesh-cache fast
   // path so each frame's recompute is ~5 ms warm.
   | 'animationView'
+  // W3: capture-only print-prep (DFM gate) declaration, no OCCT output.
+  | 'dfmSpec'
   // NURBS Slice B: 3D parametric curve (Geom_BSplineCurve under the hood)
   //   and multi-section sweep (BRepOffsetAPI_MakePipeShell).
   | 'curve3d'

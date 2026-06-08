@@ -30,12 +30,19 @@ await esbuild.build({
     'verb-nurbs': verbNurbsPath,
   },
   banner: {
+    // __filename/__dirname shim for the ESM bundle. MUST use fileURLToPath, not
+    // `new URL(...).pathname`: on Windows the latter yields "/D:/path" (leading
+    // slash + drive letter), so when the OCCT loader joins it with the wasm
+    // filename the drive doubles into "D:\D:\...\replicad_single.wasm" and the
+    // load fails. fileURLToPath produces a native path ("D:\path") on Windows
+    // and "/path" on POSIX, so the wasm resolves on every platform.
     js: [
       '#!/usr/bin/env node',
       "import{createRequire as __bcr}from'node:module';",
+      "import{fileURLToPath as __furl}from'node:url';",
       'const require=__bcr(import.meta.url);',
-      "const __filename=new URL(import.meta.url).pathname;",
-      "const __dirname=new URL('.',import.meta.url).pathname;",
+      "const __filename=__furl(import.meta.url);",
+      "const __dirname=__furl(new URL('.',import.meta.url));",
     ].join('\n'),
   },
 });

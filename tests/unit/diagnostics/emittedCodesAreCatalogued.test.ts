@@ -10,7 +10,7 @@
 // per-code drift check) which were predicated on the old HINTS map.
 
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { resolve as resolvePath, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DIAGNOSTIC_CODES } from '../../../src/shared/diagnostics/registry';
@@ -20,28 +20,30 @@ const SRC_DIR = resolvePath(__dirname, '../../../src');
 
 // Files known to emit CompilerDiagnostic / KernelError code literals.
 // Adding to this list is meaningful — it must be a deliberate choice
-// (a new emit site).
+// (a new emit site). Paths are relative to src/ post the
+// kernel/modeling/agent/shared layering refactor.
 const EMITTING_FILES = [
-  'backends/occt/occtLowerer.ts',
-  'backends/occt/holeLowerer.ts',
-  'backends/occt/edgeSelection.ts',
-  'backends/occt/edgeQueries.ts',
-  'backends/occt/textLowerer.ts',
-  'backends/occt/sheetMetalLowerer.ts',     // W2.2
-  'backends/occt/flattenPattern.ts',        // W2.2
-  'capture/captureSession.ts',
-  'capture/proxy.ts',
-  'capture/sketch.ts',
-  'capture/faceLabels.ts',
-  'lib/fonts/index.ts',
-  'modules/api.ts',
-  'modules/sheetMetal.ts',                  // W2.2
-  'modules/sketch/index.ts',
-  'compute/recomputeEngine.ts',
-  'cli/commands/evaluate.ts',
-  'cli/commands/export.ts',
-  'script-runtime/export.ts',
-  'naming/resolveFaceRef.ts',
+  'modeling/backends/occt/occtLowerer.ts',
+  'kernel/backends/occt/holeLowerer.ts',
+  'kernel/backends/occt/edgeSelection.ts',
+  'kernel/backends/occt/edgeQueries.ts',
+  'kernel/backends/occt/textLowerer.ts',
+  'modeling/backends/occt/sheetMetalLowerer.ts', // W2.2
+  'kernel/backends/occt/flattenPattern.ts',      // W2.2
+  'modeling/capture/captureSession.ts',
+  'modeling/capture/proxy.ts',
+  'modeling/capture/sketch.ts',
+  'modeling/capture/faceLabels.ts',
+  'shared/fonts/index.ts',
+  'modeling/api.ts',
+  'modeling/sheetMetal.ts',                      // W2.2
+  'modeling/sketch/index.ts',
+  'modeling/compute/recomputeEngine.ts',
+  'modeling/validation/unstructuredBodies.ts', // agent-parts-discipline
+  'agent/cli/commands/evaluate.ts',
+  'agent/cli/commands/export.ts',
+  'agent/script-runtime/export.ts',
+  'kernel/naming/resolveFaceRef.ts',
 ];
 
 // Match `code: '<value>'` and `new KernelError('<code>', ...)`.
@@ -51,12 +53,7 @@ const KERNEL_ERR_RE = /new\s+KernelError\(\s*['"]([\w.-]+)['"]/g;
 function emittedCodes(): Set<string> {
   const codes = new Set<string>();
   for (const rel of EMITTING_FILES) {
-    let src;
-    try {
-      src = readFileSync(join(SRC_DIR, rel), 'utf8');
-    } catch {
-      continue;
-    }
+    const src = readFileSync(join(SRC_DIR, rel), 'utf8');
     for (const m of src.matchAll(CODE_LITERAL_RE)) codes.add(m[1]);
     for (const m of src.matchAll(KERNEL_ERR_RE)) codes.add(m[1]);
   }
@@ -66,7 +63,19 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 214 codes', () => {
+  it('every listed emit-site file exists on disk', () => {
+    // Fail LOUD when a refactor moves an emit site: a silently-skipped file
+    // makes the scan below vacuous (this happened once — the whole list went
+    // stale after the kernel/modeling/agent layering refactor and the scan
+    // checked nothing).
+    const missing = EMITTING_FILES.filter((rel) => !existsSync(join(SRC_DIR, rel)));
+    expect(
+      missing,
+      `Emit-site files missing from src/: ${JSON.stringify(missing)}.\nIf a refactor moved them, update EMITTING_FILES to the new paths.`,
+    ).toEqual([]);
+  });
+
+  it('catalogue has exactly 226 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -130,7 +139,18 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  +  1 feature.emboss-text.boolean-noop (#393 silent no-op guard) = 211.
     //  +  2 W2 export suite: export.mesh.not-watertight + export.part.not-found = 213.
     //  +  1 cli.file-write (W2 part-mode export: structured output-write failures) = 214.
-    expect(catalogue.size).toBe(214);
+    //  +  4 W3 dfmSpec print-prep gates: dfm.wall.too-thin +
+    //       dfm.clearance.violated + dfm.channel.openings-mismatch +
+    //       dfm.void.undeclared = 218.
+    //  +  6 animation views (multi-track keyframe animationView):
+    //       animation.param.unknown + animation.track.duplicate-param +
+    //       animation.keys.invalid + animation.value.clamped +
+    //       animation.view.shadowed + animation.collision = 224.
+    //  +  1 assembly.structure.unstructured-bodies (agent-parts-discipline:
+    //       multi-body model with no named assembly().part(...) structure) = 225.
+    //  +  1 animation.bake.geometry-param (Studio bake refuses geometry-driving
+    //       track params — only pose-only mate timelines bake) = 226.
+    expect(catalogue.size).toBe(226);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

@@ -86,6 +86,7 @@ function kernelCadMeshEndpoint(): Plugin {
     eventsHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
     paramsHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
     transformsHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
+    animationBakeHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
   };
   let poolBundlePromise: Promise<PoolBundle> | undefined;
 
@@ -149,6 +150,7 @@ function kernelCadMeshEndpoint(): Plugin {
               { createEventsEndpoint },
               { createParamsEndpoint },
               { createTransformsEndpoint },
+              { createAnimationBakeEndpoint },
               { buildModelFromFile },
             ] = await Promise.all([
               import('./src/server/sessionPool'),
@@ -156,8 +158,17 @@ function kernelCadMeshEndpoint(): Plugin {
               import('./src/server/middleware/eventsEndpoint'),
               import('./src/server/middleware/paramsEndpoint'),
               import('./src/server/middleware/transformsEndpoint'),
+              import('./src/server/middleware/animationBakeEndpoint'),
               import('./src/modeling/buildModel'),
             ]);
+            // Single-user dev pool: no `maxEntries` cap (unbounded) and no
+            // `runExclusive` lock (identity passthrough) — one local developer
+            // shares this OCCT instance, so the multi-user backstops are off.
+            // The hosted server injects a real `maxEntries` (OCCT-heap memory
+            // backstop) and a real `runExclusive` mutex (the kernel is shared
+            // with the stateless mesh route), composes a per-user `key` +
+            // `ownerId` on `getOrCreate`, and routes its param-update/bake
+            // kernel work through `pool.runExclusive`.
             const pool = createSessionPool({
               build: (scriptPath) => buildModelFromFile({ file: scriptPath }),
               ttlMs: 5 * 60 * 1000,
@@ -172,6 +183,7 @@ function kernelCadMeshEndpoint(): Plugin {
               eventsHandler: createEventsEndpoint({ pool, heartbeatMs: 15_000 }),
               paramsHandler: createParamsEndpoint({ pool }),
               transformsHandler: createTransformsEndpoint({ pool }),
+              animationBakeHandler: createAnimationBakeEndpoint({ pool }),
             };
           })();
         }
@@ -204,6 +216,10 @@ function kernelCadMeshEndpoint(): Plugin {
       server.middlewares.use('/__kernelcad/transforms', async (req, res) => {
         const bundle = await getPoolBundle();
         await bundle.transformsHandler(req, res);
+      });
+      server.middlewares.use('/__kernelcad/animation-bake', async (req, res) => {
+        const bundle = await getPoolBundle();
+        await bundle.animationBakeHandler(req, res);
       });
 
       server.middlewares.use('/__kernelcad/mesh', async (req, res) => {

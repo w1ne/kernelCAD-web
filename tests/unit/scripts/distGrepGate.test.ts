@@ -159,7 +159,7 @@ describe('distGrepGate', () => {
   it('does not scan LICENSE (legal text) or the LICENSE word in headers', () => {
     const root = mkdtempSync(join(tmpdir(), 'kc-grep-license-'));
     try {
-      writeFileSync(join(root, 'LICENSE'), 'MIT License\n\nCopyright (c) Andrii Shylenko\n');
+      writeFileSync(join(root, 'LICENSE'), 'MIT License\n\nCopyright (c) kernelCAD contributors\n');
       const r = runGrepGate(root);
       expect(r.ok).toBe(true);
     } finally {
