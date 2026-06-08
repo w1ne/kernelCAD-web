@@ -58,6 +58,21 @@
 //
 // BUILD RULE — Formlabs SLA: running fits ≥0.25 mm/face, sliding bores
 // ≥0.3 mm radial, walls ≥1.5 mm, heat-set inserts over resin threads.
+//
+// SEALING (v7.4 — making the dose path leak-tight):
+//   • METER DISC = a rotary valve. Its pocket sits 1.4 mm from the rim, too
+//     tight for an O-ring gland, so both faces seal by LAPPED FLAT CONTACT —
+//     disc top to the drum underside, disc bottom to the seat floor — at a
+//     tight running fit (≤0.1 mm/face after lapping) with light axial preload
+//     from the MG90S horn seating the disc down. Flat lapped faces are how
+//     small metering valves seal; the pocket bottom rides closed on solid
+//     plate at every angle except over the dump bore. (Lap both faces; resin
+//     prints get a finishing pass on these two surfaces.)
+//   • SPLASH-FLOOR: a sealed floor caps the electronics compartment so any
+//     spice that escapes a drive channel cannot reach the LiPo/ESP — the only
+//     clean opening below the spice zone is the enclosed chute→spout. The two
+//     servo drives pass through close-collared cutouts (boot them in a real
+//     build); battery and ESP sit fully under the floor.
 
 // ── Dimensions (mm) ────────────────────────────────────────────────────────
 const BASE_R  = 44;            // Ø88 base plate / skirt / cap
@@ -174,8 +189,19 @@ const coverInsert = cylinder(5, 1.6, 16).translate(37.5 * 0.5, 37.5 * 0.866, -37
 const cableNotch = box(14, 8, 14, true).translate(0, -41.5, -33);
 const feet = cylinder(1.5, 3, 32).translate(40.9, 0, -41.5)
   .patternCircular({ count: 3, axis: [0, 0, 1] });                             // 3 pads on the rim — stable stance, clear of mouth + cable notch
+// Splash-floor: a 1.5 mm sealed shelf just under the base, spanning the bay to
+// the skirt wall, so spice that escapes a drive channel lands here instead of
+// on the LiPo/ESP below. Cutouts pass only the two servo drives (collar them
+// in a real build) and the chute sheath; nothing else opens to the bay.
+const splashFloor = cylinder(1.5, 39.4, 96).translate(0, 0, -3.0)
+  .subtract(
+    box(27, 48, 4, true).translate(0, -12.5, -2.5),                           // STS3215 drive column
+    box(16, 34, 4, true).translate(MC_X, MC_Y + 5.4, -2.5),                   // MG90S drive column (case+flange footprint, +0.5 clr)
+    cylinder(10, 8.0, 48).alongAxis([0.606, -0.214, -0.766]).translate(CH_X, CH_Y, 6.3), // chute sheath clearance
+    box(14, 9, 6, true).translate(0, -38, -2.5),                              // cable pass (over the notch)
+  );
 const skirt = skirtBody
-  .union(skirtFlange, spoutSheath, coverBoss, feet)
+  .union(skirtFlange, spoutSheath, coverBoss, feet, splashFloor)
   .subtract(chuteAngledS, skirtScrewHole, coverInsert, cableNotch,
             box(27, 7, 6, true).translate(0, -35.5, -2))                       // flange relief over the STS3215 far end + cable
   .material({ baseColor: '#ffffff', metalness: 0, roughness: 0.2, transmission: 0.3, ior: 1.5, thickness: 3 });
@@ -217,7 +243,7 @@ const meterDisc = cylinder(DISC_T, DISC_R, 96)
 
 // ── CAP — fill collar at 180°, drum spigot bearing, press-fit ────────────────
 // Local frame: seat on the wall top (world z=69.6).
-const capPort = cylinder(16, 8, 32).translate(-BOLT_R, 0, -5);                // Ø16 fill port
+const capPort = cylinder(18, 8, 32).translate(-BOLT_R, 0, -5);                // Ø16 fill port — top z13 clears the Ø22 collar (z12); was 16 (top z11), which left a 1 mm lid sealing the port shut
 const cap = cylinder(5, BASE_R, 96)
   .union(
     cylinder(6, BASE_R, 96).translate(0, 0, -6)
