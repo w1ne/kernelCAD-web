@@ -8,7 +8,7 @@ Headline release folding all post-v0.11.0 workstreams (themed sections below):
 - **Print-readiness DFM suite** — `kernelcad dfm` CLI + `dfm_check` MCP tool with min-wall thickness, sealed-void/channel topology, part-pair clearance, and four gate diagnostics enforced in `evaluate`.
 - **STEP inspection** — `kernelcad inspect step` CLI + `inspect_step` MCP tool: solid tree, exact bbox/volume, and cylindrical-hole detection on imported BREP.
 - **Studio tools** — quarter/octant cutaway section tool, marking tool, hidable Inspector panel, hardened bake invalidation, and one canonical hosted API routing convention.
-- **cadskills parity (A–F)** — export trio (DXF/3MF/GLB), REST robotics (URDF/SRDF/SDFormat), parts catalog, npx skills distribution, DFM preflight, and topology-ref-safe naming.
+- **Interop & distribution (A–F)** — export trio (DXF/3MF/GLB), REST robotics (URDF/SRDF/SDFormat), parts catalog, npx skills distribution, DFM preflight, and topology-ref-safe naming.
 - **Hosted + connect** — multi-user session-pool hardening (LRU cap, per-user scoping), optional SSE auth, scene-tree validity, Claude Desktop connect modal, MCP-resources bridge, and anonymous MCP telemetry client.
 - **Generation-loop tightening (W1–W4)** — closed-loop repair, face-loop fidelity gate, hardened oracle, typed feedback, and best-of-N selection.
 - **Geometry** — `spring()` primitive, smooth B-spline sweep spines for dense rails (watertight), `Curve3D.analytics.*` namespace, and watertight export verification.
