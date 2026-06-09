@@ -91,6 +91,22 @@ export class GeometryEngine {
 
         if (!this.worker) {
             try {
+                // The library (embed) build defines `__KERNELCAD_EMBED__ = true`
+                // so the worker construction below is dead-code-eliminated by
+                // Rollup. Embed hosts (e.g. proto.cat) route every geometry
+                // request through `StudioConfig.backendUrl` and never reach
+                // this path. Keeping the branch in a `if (false) { … }` shape
+                // means Vite/Rollup also skip the `new URL(...)` static
+                // analysis that would otherwise emit the worker chunk + WASM
+                // bundle (a ~25 MB asset the embed never needs). The
+                // standalone build leaves `__KERNELCAD_EMBED__` undefined so
+                // the original code path stays.
+                if (typeof __KERNELCAD_EMBED__ !== 'undefined' && __KERNELCAD_EMBED__) {
+                    throw new Error(
+                        'kernelCAD in-browser geometry worker is disabled in embed mode. ' +
+                        'Configure `StudioConfig.backendUrl` so geometry routes to the kernelCAD backend instead.',
+                    );
+                }
                 this.worker = new Worker(new URL('../../kernel/backends/occt/worker.ts', import.meta.url), { type: 'module' });
                 this.worker.onmessage = this.handleMessage.bind(this);
                 this.worker.onerror = this.handleError.bind(this);

@@ -41,7 +41,7 @@
     "prebuild": "tsr generate",
     "build": "tsc -b && vite build",
     "build:cli": "tsc --noEmit -p tsconfig.cli.json && node scripts/build-cli.mjs",
-    "build:studio": "tsup --config tsup.studio.config.ts",
+    "build:studio": "vite build --config vite.studio.config.ts",
     "dist:skills": "npx tsx scripts/distGenerate.mjs",
     "eval": "npx tsx eval/run.ts",
     "eval:ab": "npx tsx scripts/evalAb.ts",
@@ -159,10 +159,10 @@
     "playwright": "^1.58.0",
     "tailwindcss": "^4.1.18",
     "three-stdlib": "^2.36.1",
-    "tsup": "^8.5.1",
     "tsx": "^4.21.0",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
+    "vite-plugin-dts": "^5.0.2",
     "vitest": "^4.0.18"
   },
   "optionalDependencies": {
