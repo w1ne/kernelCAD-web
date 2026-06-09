@@ -84,6 +84,12 @@ export async function saveProject(input: SaveProjectInput): Promise<SaveProjectR
   return authedFetch<SaveProjectResult>('POST', '/api/v1/save', input);
 }
 
+/** "Sign in to save": claim an anonymous (owner-less) project for the signed-in
+ *  user. `claimed` is false if it was already owned. */
+export async function claimProject(slug: string): Promise<{ claimed: boolean }> {
+  return authedFetch<{ claimed: boolean }>('POST', `/api/v1/projects/${encodeURIComponent(slug)}/claim`, {});
+}
+
 export interface ProjectRow {
   id: string;
   slug: string;
@@ -94,7 +100,8 @@ export interface ProjectRow {
   parameters: Artifact['parameters'];
   version: number;
   updated_at: string;
-  owner_id: string;
+  /** Null for anonymous (public-by-link) projects — claimable via claimProject. */
+  owner_id: string | null;
 }
 
 export async function fetchProjectBySlug(slug: string): Promise<ProjectRow | null> {
