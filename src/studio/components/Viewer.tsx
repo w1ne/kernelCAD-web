@@ -28,6 +28,8 @@ import { SnapIndicator } from "./viewer/overlays/SnapIndicator";
 import { HighlightOverlay } from "./viewer/overlays/HighlightOverlay";
 import { SelectionOutline } from "./viewer/overlays/SelectionOutline";
 import { SceneBackground } from "./viewer/SceneBackground";
+import { ViewGizmo } from "./viewer/overlays/ViewGizmo";
+import type { ViewTarget } from "./viewer/controllers/cameraPose";
 
 // Constants
 export const SKETCH_FOV = 40;
@@ -102,6 +104,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
 
     const [hoveredItem, setHoveredItem] = useState<HoverResult | null>(null);
     const [snapPoint, setSnapPoint] = useState<SnapResult | null>(null);
+    const [navigationRequest, setNavigationRequest] = useState<{ target: ViewTarget; id: number } | null>(null);
 
     useEffect(() => {
         if (hoveredItem?.object?.userData?.ownerId) {
@@ -243,9 +246,30 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
 
                 <PlaneLayer planes={planes} />
                 {sketchMode.active && <ParametricLayer />}
-                <OrbitControls makeDefault enabled={!sketchMode.active} />
-                <CameraHandler geometries={geometries} />
+                <OrbitControls
+                    makeDefault
+                    enabled={!sketchMode.active}
+                    mouseButtons={{
+                        LEFT: THREE.MOUSE.ROTATE,
+                        MIDDLE: THREE.MOUSE.PAN,
+                        RIGHT: THREE.MOUSE.PAN,
+                    }}
+                    touches={{
+                        ONE: THREE.TOUCH.ROTATE,
+                        TWO: THREE.TOUCH.DOLLY_PAN,
+                    }}
+                    screenSpacePanning
+                    enableDamping
+                    dampingFactor={0.12}
+                />
+                <CameraHandler geometries={geometries} navigationRequest={navigationRequest} />
             </Canvas>
+            <ViewGizmo
+                onNavigate={(target) => setNavigationRequest((prev) => ({
+                    target,
+                    id: (prev?.id ?? 0) + 1,
+                }))}
+            />
             <div className="absolute top-4 left-4 text-white/50 text-xs pointer-events-none font-mono">
                 kernelCAD v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'DEV'} ({typeof __COMMIT_HASH__ !== 'undefined' ? __COMMIT_HASH__ : 'DEV'}) | {viewMode3D === 'shadedWithEdges' ? 'Shaded + Edges' :
                     viewMode3D === 'wireframe' ? 'Wireframe' : 'Shaded'}
