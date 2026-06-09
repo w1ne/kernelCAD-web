@@ -21,15 +21,16 @@
   },
   "exports": {
     "./studio": {
-      "types": "./src/studio/index.ts",
-      "import": "./src/studio/index.ts"
+      "types": "./dist/studio/index.d.ts",
+      "import": "./dist/studio/index.js"
     },
     "./studio.css": "./src/index.css",
     "./package.json": "./package.json"
   },
   "files": [
     "dist/cli",
-    "src",
+    "dist/studio",
+    "src/index.css",
     "README.md",
     "LICENSE",
     "assets/parts/**"
@@ -40,6 +41,7 @@
     "prebuild": "tsr generate",
     "build": "tsc -b && vite build",
     "build:cli": "tsc --noEmit -p tsconfig.cli.json && node scripts/build-cli.mjs",
+    "build:studio": "tsup --config tsup.studio.config.ts",
     "dist:skills": "npx tsx scripts/distGenerate.mjs",
     "eval": "npx tsx eval/run.ts",
     "eval:ab": "npx tsx scripts/evalAb.ts",
@@ -51,7 +53,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "release": "npx tsx scripts/release.ts",
-    "prepack": "npm run build:cli",
+    "prepack": "npm run build:cli && npm run build:studio",
+    "prepare": "npm run build:studio",
     "generate:parts": "npx tsx scripts/generateSeedCatalog.ts assets/parts",
     "prepublishOnly": "npm run generate:parts",
     "pretest": "npm run generate:parts",
@@ -156,6 +159,7 @@
     "playwright": "^1.58.0",
     "tailwindcss": "^4.1.18",
     "three-stdlib": "^2.36.1",
+    "tsup": "^8.5.1",
     "tsx": "^4.21.0",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
