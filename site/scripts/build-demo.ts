@@ -56,9 +56,16 @@ function main() {
 
   mkdirSync(PUBLIC_DIR, { recursive: true });
   copyFileSync(result.mp4Path, path.join(PUBLIC_DIR, 'demo.mp4'));
-  const posterPath = path.join(path.dirname(result.mp4Path), 'hero-frame.png');
+  // Poster: prefer hero-frame.png, fall back to panel.png. lint-demos requires
+  // packets to ship panel.png; older packets ship hero-frame.png. Accept either
+  // so any catalog-conformant packet yields a landing poster.
+  const demoDir = path.dirname(result.mp4Path);
+  const posterPath = [
+    path.join(demoDir, 'hero-frame.png'),
+    path.join(demoDir, 'panel.png'),
+  ].find((p) => existsSync(p));
   const publicPosterPath = path.join(PUBLIC_DIR, 'demo-poster.png');
-  if (existsSync(posterPath)) {
+  if (posterPath) {
     copyFileSync(posterPath, publicPosterPath);
   }
 
