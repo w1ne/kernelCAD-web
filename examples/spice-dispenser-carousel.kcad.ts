@@ -221,9 +221,36 @@ const mouthL  = cylinder(4, 11.5, 32).translate(25.2, 0, 52.5);               //
 const sideScallops = cylinder(57, 8.5, 48).translate(40.5, 0, -1)
   .rotate([0, 0, 1], 30).patternCircular({ count: 6, axis: [0, 0, 1] });       // 6 flutes between chambers, 6 deep — less resin, faster layers; >=2.4 walls
 const mouthsL = mouthL.patternCircular({ count: 6, axis: [0, 0, 1] });
+// ── CHAMBER NUMBERS 1-6 (engraved on the drum top) ───────────────────────────
+// drumDeg = (N−1)·60 parks engraved chamber N at the station — the engraved
+// number IS the firmware chamber index. Detours around two embossText gaps
+// (cuts no-op on cylinder end-caps; glyphs come out mirrored): each digit is
+// embossed RAISED on a sacrificial box, the box subtracted to extract the glyph
+// prism, the prism un-mirrored with reflect('yz'), then used as a top-face cutter.
+const NUM_R = 9.5, NUM_SIZE = 6, NUM_CUT = 0.8;
+const digitCutter = (k) => {
+  const glyph = box(12, 12, 2, true)
+    .embossText({
+      textContent: String(k + 1),
+      face: 'top',
+      size: NUM_SIZE,
+      depth: 2 * NUM_CUT,
+      align: 'center',
+      anchorU: 0.5,
+      anchorV: 0.5,
+    })
+    .subtract(box(12, 12, 2, true))
+    .reflect('yz');
+  const az = (k * 60 * Math.PI) / 180;
+  return glyph
+    .rotate([0, 0, 1], k * 60 - 90)
+    .translate(NUM_R * Math.cos(az), NUM_R * Math.sin(az), DRUM_H - 1 - NUM_CUT);
+};
+const numberCutters = digitCutter(0)
+  .union(digitCutter(1), digitCutter(2), digitCutter(3), digitCutter(4), digitCutter(5));
 const drum = cylinder(DRUM_H, DRUM_R, 96)
   .union(drumHub)
-  .subtract(chambersL, outletsL, hornInserts, centralBore, mouthsL, sideScallops)
+  .subtract(chambersL, outletsL, hornInserts, centralBore, mouthsL, sideScallops, numberCutters)
   .material({ baseColor: '#ffffff', metalness: 0, roughness: 0.08, transmission: 0.8, ior: 1.5, thickness: 2 });
 
 // ── METER DISC ───────────────────────────────────────────────────────────────

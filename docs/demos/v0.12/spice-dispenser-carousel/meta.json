@@ -1,0 +1,11 @@
+{
+  "taskId": "spice-dispenser-carousel",
+  "module": "v0.12",
+  "capturedAt": "2026-06-09T00:00:00Z",
+  "durationMs": 4000,
+  "truncated": false,
+  "gitSha": "e99f033aed93c3e7361ffe61585e0a85e9473a60",
+  "heroArtifact": "spice-dispenser-carousel",
+  "catalogSource": "reference: six-chamber rotary spice dispenser — an indexing chamber drum over a single metering station with a swinging pocket disc and an enclosed dose chute",
+  "overrideApprovedBy": "release: user selected the spice-dispenser carousel as the v0.12 marketing hero"
+}
