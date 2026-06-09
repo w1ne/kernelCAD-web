@@ -155,15 +155,19 @@ async function runRenderMechanismProbe(absScriptPath: string): Promise<{
     if (assemblies.length === 0) {
       return { mechanism: 'unverified', failures: [] };
     }
+    // Verdict precedence across assemblies: broken > unverified > real.
+    // A skipped BREP sweep (issue #348) surfaces as 'unverified'.
     let anyBroken = false;
+    let anyUnverified = false;
     const aggregated: CompilerDiagnostic[] = [];
     for (const arm of assemblies) {
       const verdict = await checkMechanismTruth(arm);
       if (verdict.mechanism === 'broken') anyBroken = true;
+      else if (verdict.mechanism === 'unverified') anyUnverified = true;
       aggregated.push(...verdict.failures);
     }
     return {
-      mechanism: anyBroken ? 'broken' : 'real',
+      mechanism: anyBroken ? 'broken' : anyUnverified ? 'unverified' : 'real',
       failures: aggregated,
     };
   } catch {
