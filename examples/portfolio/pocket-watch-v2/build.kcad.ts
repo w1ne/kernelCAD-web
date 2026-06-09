@@ -251,6 +251,33 @@ setCameraTarget(0, 0, 0);
 
 const watch = assembly('pop-art octagonal pocket watch');
 
+// G0 migration shim: the v0.5 `fixed(label, parent, child, {origin})`
+// shortcut was removed in favor of the mate vocabulary. `fixed()` packages the
+// connector-pair + 'fastened' mate equivalent (auto-numbered connector names so
+// multi-join parts stay unique) so this gallery script still builds.
+function frameConnector(origin: [number, number, number]) {
+  return { type: 'frame', origin: { kind: 'vec3', value: origin } };
+}
+let fastenSeq = 0;
+function fixed(
+  label: string,
+  parent: ReturnType<typeof watch.part>,
+  child: ReturnType<typeof watch.part>,
+  opts: { origin: [number, number, number] },
+) {
+  const slot = ++fastenSeq;
+  const parentConn = `fastener-${slot}-parent`;
+  const childConn = `fastener-${slot}-child`;
+  parent.connector(parentConn, frameConnector(opts.origin));
+  child.connector(childConn, frameConnector(opts.origin));
+  watch.mate(
+    `${label}-mate-${slot}`,
+    `${parent.name}.${parentConn}`,
+    `${child.name}.${childConn}`,
+    'fastened',
+  );
+}
+
 // FRAME (pink) — outer octagon with a pocket for the case, the pendant horn
 // and tab fused on top, the bail hole through the tab.
 //
@@ -326,7 +353,7 @@ for (const [x, z] of screwVerts) {
 // applied at the caseRaw leaf above; the post-boolean .material() would be
 // a no-op).
 const caseFinal = watch.part('yellow-octagonal-case', caseBored);
-watch.fixed('case nested into frame pocket', frame, caseFinal, { origin: [0, 0, 0] });
+fixed('case nested into frame pocket', frame, caseFinal, { origin: [0, 0, 0] });
 
 // HEX SCREWS — flat-black hex heads seated at each case vertex.
 const SCREW_HEAD_T = 0.35;
@@ -344,7 +371,7 @@ function hexHead(x, z) {
 for (let i = 0; i < screwVerts.length; i += 1) {
   const [x, z] = screwVerts[i];
   const screw = watch.part(`bezel-hex-screw-${i}`, hexHead(x, z));
-  watch.fixed('screw seated in case counterbore', caseFinal, screw, { origin: [x, CASE_Y_FRONT, z] });
+  fixed('screw seated in case counterbore', caseFinal, screw, { origin: [x, CASE_Y_FRONT, z] });
 }
 
 // DIAL — turquoise plate with subdial pocket. Material on the leaf cylinder.
@@ -358,7 +385,7 @@ const subdialPocket = cylY(DIAL_DEPTH + 0.8, SUBDIAL_R + 0.1, DIAL_Y_BACK + 0.05
   .translate(SUBDIAL_CX, 0, SUBDIAL_CZ);
 const dialPlate = dialRaw.subtract(subdialPocket);
 const dial = watch.part('turquoise-tapisserie-dial-plate', dialPlate);
-watch.fixed('dial plate seated in case dial pocket', caseFinal, dial, { origin: [0, DIAL_Y_FRONT, 0] });
+fixed('dial plate seated in case dial pocket', caseFinal, dial, { origin: [0, DIAL_Y_FRONT, 0] });
 
 // TAPISSERIE — small raised squares standing proud of the dial.
 const TAP_PITCH = 0.9;
@@ -379,7 +406,7 @@ for (let ix = -TAP_HALF; ix <= TAP_HALF; ix += 1) {
       .translate(x, DIAL_Y_FRONT - TAP_THICK / 2, z)
       .color('#32c0c5');
     const part = watch.part(`tap-bump-${tapIdx}`, bump);
-    watch.fixed('tap bump bonded to dial', dial, part, { origin: [x, DIAL_Y_FRONT, z] });
+    fixed('tap bump bonded to dial', dial, part, { origin: [x, DIAL_Y_FRONT, z] });
     tapIdx += 1;
   }
 }
@@ -410,10 +437,10 @@ const crystalRetainer = cylY(CRYSTAL_GASKET_THICK, DIAL_RADIUS + 0.42, CRYSTAL_G
   .subtract(cylY(CRYSTAL_GASKET_THICK + 0.12, DIAL_RADIUS + 0.06, CRYSTAL_GASKET_Y_BACK + 0.06))
   .material(YELLOW_MAT);
 const crystalRetainerPart = watch.part('yellow-crystal-retaining-lip', crystalRetainer);
-watch.fixed('crystal retaining lip clamps the glass rim', caseFinal, crystalRetainerPart, {
+fixed('crystal retaining lip clamps the glass rim', caseFinal, crystalRetainerPart, {
   origin: [0, CRYSTAL_GASKET_Y_BACK, 0],
 });
-watch.fixed('sapphire crystal rim captured under retaining lip', crystalRetainerPart, crystal, {
+fixed('sapphire crystal rim captured under retaining lip', crystalRetainerPart, crystal, {
   origin: [0, CRYSTAL_BASE_Y, 0],
 });
 
@@ -428,7 +455,7 @@ const numerals = [
 for (const [value, x, z] of numerals) {
   const numeral = faceText(value, NUMERAL_SIZE, x, z, DIAL_Y_FRONT - 0.4, '#f0d34a');
   const part = watch.part(`numeral-${value}`, numeral);
-  watch.fixed('raised numeral on dial face', dial, part, { origin: [x, DIAL_Y_FRONT, z] });
+  fixed('raised numeral on dial face', dial, part, { origin: [x, DIAL_Y_FRONT, z] });
 }
 
 // STICK HOUR MARKERS — yellow rectangles around the perimeter.
@@ -449,7 +476,7 @@ for (let i = 0; i < 12; i += 1) {
   if (i === 0 || i === 3 || i === 4 || i === 6 || i === 9) continue;
   const stick = stickMarker(i * 30);
   const part = watch.part(`stick-marker-${i}`, stick);
-  watch.fixed('stick marker on dial', dial, part, { origin: [0, DIAL_Y_FRONT, 0] });
+  fixed('stick marker on dial', dial, part, { origin: [0, DIAL_Y_FRONT, 0] });
 }
 
 // SUBDIAL — pink ring + white face + red hand.
@@ -458,13 +485,13 @@ const subRing = cylY(SUBRING_THICK, SUBDIAL_R, SUBRING_Y_BACK)
   .translate(SUBDIAL_CX, 0, SUBDIAL_CZ)
   .color('#e26679');
 const subRingPart = watch.part('pink-subdial-ring', subRing);
-watch.fixed('subdial ring around subdial pocket', dial, subRingPart, { origin: [SUBDIAL_CX, DIAL_Y_FRONT, SUBDIAL_CZ] });
+fixed('subdial ring around subdial pocket', dial, subRingPart, { origin: [SUBDIAL_CX, DIAL_Y_FRONT, SUBDIAL_CZ] });
 
 const subFace = cylY(SUBFACE_THICK, SUBDIAL_R - 0.5, SUBFACE_Y_BACK)
   .translate(SUBDIAL_CX, 0, SUBDIAL_CZ)
   .color('#f1c7cf');
 const subFacePart = watch.part('white-subdial-face', subFace);
-watch.fixed('subdial face inside ring', subRingPart, subFacePart, { origin: [SUBDIAL_CX, DIAL_Y_FRONT, SUBDIAL_CZ] });
+fixed('subdial face inside ring', subRingPart, subFacePart, { origin: [SUBDIAL_CX, DIAL_Y_FRONT, SUBDIAL_CZ] });
 
 const subHandAngleDeg = -50;
 const subHandLen = SUBDIAL_R - 0.65;
@@ -475,7 +502,7 @@ const subHand = box(0.18, SUBHAND_THICK, subHandLen, true)
   .translate(SUBDIAL_CX, 0, SUBDIAL_CZ)
   .color('#c8243a');
 const subHandPart = watch.part('red-subdial-hand', subHand);
-watch.fixed('subdial hand pinned at subdial center', subFacePart, subHandPart, { origin: [SUBDIAL_CX, DIAL_Y_FRONT, SUBDIAL_CZ] });
+fixed('subdial hand pinned at subdial center', subFacePart, subHandPart, { origin: [SUBDIAL_CX, DIAL_Y_FRONT, SUBDIAL_CZ] });
 
 // MAIN HANDS — yellow hour + minute, separate Y layers.
 const HOUR_HAND_Y_CENTER = HOUR_HAND_Y_BACK - HOUR_HAND_THICK / 2;
@@ -494,7 +521,7 @@ const pinion = cylY(PIN_THICK, PIN_RADIUS, PIN_Y_BACK)
   .color('#f0d34a');
 const handStack = hourHand.union(minuteHand).union(pinion).color('#f0d34a');
 const handStackPart = watch.part('yellow-stacked-hands-on-central-pinion-arbor', handStack);
-watch.fixed('hands mounted on central pinion arbor seated in dial', dial, handStackPart, { origin: [0, DIAL_Y_FRONT, 0] });
+fixed('hands mounted on central pinion arbor seated in dial', dial, handStackPart, { origin: [0, DIAL_Y_FRONT, 0] });
 
 // SIDE CROWN — yellow windable crown on the 3 o'clock side of the body.
 let sideCrownBody = cylX(SIDE_CROWN_BODY_LEN, SIDE_CROWN_BODY_R, SIDE_CROWN_BODY_X_MAX, 72);
@@ -509,7 +536,7 @@ const sideCrownAssembly = cylX(SIDE_CROWN_STEM_LEN, SIDE_CROWN_STEM_R, SIDE_CROW
   .material(YELLOW_MAT)
   .translate(0, SIDE_CROWN_Y, SIDE_CROWN_Z);
 const sideCrown = watch.part('yellow-side-winding-crown-and-stem', sideCrownAssembly);
-watch.fixed('side crown stem physically enters 3 oclock case wall', frame, sideCrown, {
+fixed('side crown stem physically enters 3 oclock case wall', frame, sideCrown, {
   origin: [FRAME_FLAT, SIDE_CROWN_Y, SIDE_CROWN_Z],
 });
 
@@ -530,6 +557,6 @@ const bailShape = bailPath
   .rotate([1, 0, 0], 90)
   .translate(0, 0, BAIL_CENTER_Z);
 const bail = watch.part('pink-lanyard-bail', bailShape);
-watch.fixed('bail mounted atop pendant tab', frame, bail, { origin: [0, 0, BAIL_CENTER_Z] });
+fixed('bail mounted atop pendant tab', frame, bail, { origin: [0, 0, BAIL_CENTER_Z] });
 
 return watch.model();
