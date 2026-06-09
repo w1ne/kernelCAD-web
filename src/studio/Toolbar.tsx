@@ -10,6 +10,11 @@ interface ToolbarProps {
      *  entirely (the rail itself is also unmounted in `StudioShell`).
      *  Default true (standalone). */
     enableAgentRail?: boolean;
+    /** Embed-mode opt-out for the "Connect to Claude Desktop" link. The
+     *  target route (`/connect`) only exists in the standalone kernelcad.app
+     *  deploy, so hosts (proto.cat) hide it to avoid dead links. Default
+     *  true (standalone). */
+    enableConnect?: boolean;
     /** True iff at least one referenceImage record is present in the current
      *  scene. The toggle button only renders when this is true; otherwise the
      *  toolbar slot stays empty so casual scripts don't see a dead button. */
@@ -45,6 +50,7 @@ export function Toolbar({
     agentRailOpen,
     onToggleAgentRail,
     enableAgentRail = true,
+    enableConnect = true,
     referenceImagesPresent,
     referenceImagesVisible,
     onToggleReferenceImages,
@@ -81,15 +87,17 @@ export function Toolbar({
                         Agent
                     </button>
                 )}
-                <a
-                    href="/connect"
-                    data-testid="toolbar-connect-link"
-                    aria-label="Connect to Claude Desktop"
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded text-gray-300 hover:text-white hover:bg-[#222] transition-colors"
-                >
-                    <Plug size={12} />
-                    Connect
-                </a>
+                {enableConnect && (
+                    <a
+                        href="/connect"
+                        data-testid="toolbar-connect-link"
+                        aria-label="Connect to Claude Desktop"
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded text-gray-300 hover:text-white hover:bg-[#222] transition-colors"
+                    >
+                        <Plug size={12} />
+                        Connect
+                    </a>
+                )}
                 {isModified && (
                     <span
                         data-testid="toolbar-modified-dot"

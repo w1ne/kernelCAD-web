@@ -47,6 +47,11 @@ export interface StudioConfig {
      *  (standalone). Hosts that drive the agent themselves embed with
      *  `false`. */
     enableAgentRail?: boolean;
+    /** Render the "Connect to Claude Desktop" link in the toolbar.
+     *  Default true (standalone). The target route (`/connect`) only
+     *  exists in the standalone kernelcad.app deploy, so hosts hide it
+     *  to avoid a dead link inside their own routing. */
+    enableConnect?: boolean;
     /** Optional header chrome slots, forwarded to `StudioChromeProvider`
      *  so funnel-style host integrations can still render header content
      *  when `showHeader` is false. */

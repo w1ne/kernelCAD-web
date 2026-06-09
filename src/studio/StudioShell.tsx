@@ -39,6 +39,7 @@ export function StudioShell() {
     // both to drive a stripped viewport+inspector+toolbar shell.
     const showHeader = embed.showHeader ?? true;
     const enableAgentRail = embed.enableAgentRail ?? true;
+    const enableConnect = embed.enableConnect ?? true;
     const handleToggleMarkingMode = useCallback(() => {
         shellStore.toggleMarkingMode();
     }, []);
@@ -193,6 +194,7 @@ export function StudioShell() {
                 agentRailOpen={agentRailOpen}
                 onToggleAgentRail={handleToggleAgentRail}
                 enableAgentRail={enableAgentRail}
+                enableConnect={enableConnect}
                 referenceImagesPresent={referenceImagesPresent}
                 referenceImagesVisible={referenceImagesVisible}
                 onToggleReferenceImages={handleToggleReferenceImages}
