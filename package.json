@@ -4,6 +4,14 @@
   "private": false,
   "version": "0.12.0",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/w1ne/kernelCAD-web.git"
+  },
+  "homepage": "https://github.com/w1ne/kernelCAD-web#readme",
+  "bugs": {
+    "url": "https://github.com/w1ne/kernelCAD-web/issues"
+  },
   "engines": {
     "node": ">=22.12.0",
     "npm": ">=10.0.0"
