@@ -109,10 +109,6 @@ const ISSUE_TRACKED: ReadonlyMap<string, { issue: number; testFile: string }> = 
     { issue: 349, testFile: 'tests/integration/examples/assemblyExamples.test.ts' },
   ],
   [
-    'examples/gallery/gearfinity-planetary-stage.kcad.ts',
-    { issue: 348, testFile: 'tests/integration/examples/gearfinityPlanetaryStage.test.ts' },
-  ],
-  [
     'examples/gallery/meta-glasses.kcad.ts',
     { issue: 350, testFile: 'tests/integration/examples/metaGlasses.test.ts' },
   ],
@@ -156,6 +152,14 @@ const HOSTED_IN_DEDICATED_FILE: ReadonlyMap<string, { testFile: string }> = new 
   [
     'examples/kinematic/luxo-lamp.kcad.ts',
     { testFile: 'tests/integration/examples/luxoLampClevis.validate.test.ts' },
+  ],
+  // gearfinity completes the loop with mechanism: 'unverified' after the
+  // BREP-sweep budget skip (issue #348 resolved). Its dedicated file runs
+  // the identical runValidateCli check; hosting it there avoids paying the
+  // ~1-2 minute validate run twice.
+  [
+    'examples/gallery/gearfinity-planetary-stage.kcad.ts',
+    { testFile: 'tests/integration/examples/gearfinityPlanetaryStage.test.ts' },
   ],
 ]);
 

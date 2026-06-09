@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { readFile } from 'node:fs/promises';
 import { dirname, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { evaluateAndBuildScript } from '../../../src/agent/cli/commands/evaluate';
-import { inspectAssemblyTool } from '../../../src/agent/mcp/tools/inspectAssembly';
+import { runValidateCli } from '../../../src/agent/cli/commands/validate';
 import { Scene } from '../../../src/modeling/validation/scene';
 import { runScript } from '../../../src/modeling/runtime/runScript';
 
@@ -11,7 +11,26 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const EXAMPLE_PATH = 'examples/gallery/gearfinity-planetary-stage.kcad.ts';
 const EXAMPLE_ABSOLUTE = resolvePath(__dirname, '../../..', EXAMPLE_PATH);
 
+type ValidateResult = Awaited<ReturnType<typeof runValidateCli>>;
+
 describe('Gearfinity-inspired planetary stage gallery example', () => {
+  // Both #348 assertions read the SAME validate run (pure over the script
+  // file). The rest-pose interference surface over 24 gear meshes is the
+  // heavy part (~150 s); compute it once in beforeAll and share it so the
+  // file pays it once, not per-test.
+  let validateResult: ValidateResult;
+
+  beforeAll(async () => {
+    validateResult = await runValidateCli({
+      file: EXAMPLE_PATH,
+      epsilon: 0.01,
+      includeInterference: true,
+      physical: false,
+      json: true,
+      includePhysics: false,
+    });
+  }, 300_000);
+
   it('evaluates as a dense mate-driven gear mechanism', async () => {
     const result = await evaluateAndBuildScript({ file: EXAMPLE_PATH });
 
@@ -55,24 +74,43 @@ describe('Gearfinity-inspired planetary stage gallery example', () => {
     expect(scene.part('output-fan-wheel').connectors?.some((connector) => connector.name === 'blade-tip')).toBe(true);
   }, 300_000);
 
-  // P1 physics-loop discovery (2026-06-01): the gearfinity planetary
-  // stage example times out under the new physics-grounded loop —
-  // 24 parts × multiple revolute samples × pairwise BREP overlap
-  // detection exceeds the 5-minute CLI budget. P3 sweep filed the
-  // follow-up; either the geometry simplifies or the kernel grows an
-  // early-out before this re-enables.
+  // Issue #348 RESOLVED (2026-06-09): the gearfinity planetary stage
+  // used to time the physics-grounded loop out — 24 parts × 13 pose
+  // samples × pairwise BREP overlap + 4 revolute mates × 3 dof
+  // micro-poses blew past the 5-minute CLI budget. The deterministic
+  // BREP-sweep budget (`BREP_SWEEP_BUDGET`, see mechanismTruth.ts) now
+  // estimates the sweep work up front (~600 work units > 300 budget) and
+  // SKIPS criteria 2/3/7/8 rather than grinding through them, so the
+  // verdict degrades to `mechanism: 'unverified'` and the run completes
+  // in normal time. Rest-pose static interference is still checked by
+  // the validate interference surface (interferencePairs), which runs
+  // independently of the probe.
   //
   // Spec:   docs/specs/2026-06-01-physics-grounded-loop-design.md §risks-and-open-questions #1
   // Plan:   docs/plans/2026-06-01-physics-loop-P3-sweep-and-demote.md
-  // Issue:  https://github.com/w1ne/kernelCAD-web/issues/348
-  it.skip('has connected mechanism geometry under inspect_assembly — see issues/348', async () => {
-    const result = await inspectAssemblyTool({ file: EXAMPLE_PATH });
+  it('degrades to mechanism: unverified under the BREP-sweep budget (issue #348)', () => {
+    // Over budget → sweep skipped → unverified (NOT 'real', which would
+    // dishonestly claim the articulated overlap was checked, and NOT
+    // 'broken', since the probe found no defect).
+    expect(validateResult.mechanism).toBe('unverified');
+    // The skipped sweep emits no probe diagnostics — degradation is
+    // explicit in the verdict + a console.warn, not hidden in failures.
+    expect(validateResult.mechanismFailures ?? []).toEqual([]);
+  });
 
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.unexplainedGeometry).toEqual([]);
-      expect(result.partCount).toBeGreaterThanOrEqual(18);
-      expect(result.mateCount).toBeGreaterThanOrEqual(18);
-    }
-  }, 300_000);
+  // Example-sweep-gate entry for this example (delegated here from
+  // exampleSweepGate.test.ts via HOSTED_IN_DEDICATED_FILE). After #348
+  // the example completes the loop with `mechanism: 'unverified'`, which
+  // the sweep gate accepts.
+  // NOTE: the it-title below is a LITERAL (not a `${EXAMPLE_PATH}`
+  // template) because exampleSweepGate.test.ts's HOSTED_IN_DEDICATED_FILE
+  // structural assertion greps the hosting source for the exact string
+  // "<path> passes the physics-grounded loop".
+  it('examples/gallery/gearfinity-planetary-stage.kcad.ts passes the physics-grounded loop', () => {
+    expect(
+      validateResult.mechanism === 'real' || validateResult.mechanism === 'unverified',
+      `${EXAMPLE_PATH}: expected mechanism: real or unverified, got '${validateResult.mechanism}'. ` +
+        `Failures: ${JSON.stringify(validateResult.mechanismFailures ?? [], null, 2)}`,
+    ).toBe(true);
+  });
 });

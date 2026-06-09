@@ -270,7 +270,9 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
       : input.includePhysics;
     try {
       const verdict = await checkMechanismTruth(arm, { physicsCheck });
-      mechanism = verdict.mechanism === 'broken' ? 'broken' : 'real';
+      // Preserve 'unverified' (e.g. a skipped BREP sweep, issue #348) —
+      // don't collapse it to 'real'.
+      mechanism = verdict.mechanism;
       mechanismFailures = verdict.failures;
     } catch {
       // Probe-side throw — surface as unverified so the legacy review

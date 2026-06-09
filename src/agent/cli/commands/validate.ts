@@ -185,14 +185,19 @@ async function runMechanismProbe(
       return { mechanism: 'unverified', failures: [] };
     }
     const aggregated: CompilerDiagnostic[] = [];
+    // Verdict precedence across assemblies: broken > unverified > real.
+    // A skipped BREP sweep (issue #348) surfaces as 'unverified' and must
+    // not be silently upgraded to 'real'.
     let anyBroken = false;
+    let anyUnverified = false;
     for (const arm of assemblies) {
       const verdict = await checkMechanismTruth(arm, { physicsCheck: opts.physicsCheck });
       if (verdict.mechanism === 'broken') anyBroken = true;
+      else if (verdict.mechanism === 'unverified') anyUnverified = true;
       aggregated.push(...verdict.failures);
     }
     return {
-      mechanism: anyBroken ? 'broken' : 'real',
+      mechanism: anyBroken ? 'broken' : anyUnverified ? 'unverified' : 'real',
       failures: aggregated,
     };
   } catch {
