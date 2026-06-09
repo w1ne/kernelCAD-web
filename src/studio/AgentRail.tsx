@@ -2,6 +2,7 @@ import React from 'react';
 import { useShellStore } from './store/useShellStore';
 import { StagedEditSlot } from './StagedEditSlot';
 import { AgentActivityLog } from './AgentActivityLog';
+import { StudioGenerate } from './StudioGenerate';
 
 /**
  * Left-side rail. Width animates between 0 and 240px based on
@@ -19,6 +20,9 @@ export const AgentRail: React.FC = () => {
             style={{ width: agentRailOpen ? 240 : 0 }}
             className="h-full flex-shrink-0 overflow-hidden bg-[#1a1a1a] border-r border-[#2d2d2d] text-gray-200 text-xs flex flex-col"
         >
+            <div className="flex-shrink-0 border-b border-[#2d2d2d]">
+                <StudioGenerate />
+            </div>
             <div className="flex-shrink-0 border-b border-[#2d2d2d]">
                 <StagedEditSlot />
             </div>
