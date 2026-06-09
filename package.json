@@ -19,8 +19,17 @@
   "bin": {
     "kernelcad": "dist/cli/index.js"
   },
+  "exports": {
+    "./studio": {
+      "types": "./src/studio/index.ts",
+      "import": "./src/studio/index.ts"
+    },
+    "./studio.css": "./src/index.css",
+    "./package.json": "./package.json"
+  },
   "files": [
     "dist/cli",
+    "src",
     "README.md",
     "LICENSE",
     "assets/parts/**"
