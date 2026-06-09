@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { shellStore } from '../../../store/shellStore';
 import { rendererSnapshot } from '../rendererSnapshot';
+import { getEmbedConfig } from '../../../config/embedConfigRef';
 
 /**
  * Inpainting-style review overlay. When `markingMode` is on, a transparent
@@ -313,6 +314,23 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
       struckParts,
       raycastDebug,
     };
+
+    // Embed-mode short-circuit: when a host (e.g. proto.cat) supplies
+    // `onBrushReport`, deliver the payload directly and skip both the
+    // dev-only :5174 save server AND the same-origin fallback. The host
+    // owns auth, transport, and storage from here. We read the embed
+    // config from the module ref because `persistMark` runs from an
+    // unmount cleanup, where React context is no longer reliably available.
+    const embed = getEmbedConfig();
+    if (embed?.onBrushReport) {
+      try {
+        embed.onBrushReport({ screenshot: screenshot ?? '', mask, meta });
+        console.log('[marking-overlay] mark delivered via embed onBrushReport');
+      } catch (err) {
+        console.warn('[marking-overlay] onBrushReport threw:', err);
+      }
+      return;
+    }
     // POST to the standalone save server (port 5174, auto-spawned by vite as
     // a worker thread) so saves keep working when vite's main thread
     // saturates on OCCT/replicad transforms.

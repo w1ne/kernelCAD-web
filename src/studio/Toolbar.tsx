@@ -6,6 +6,10 @@ interface ToolbarProps {
     onRun: () => void;
     agentRailOpen: boolean;
     onToggleAgentRail: () => void;
+    /** Embed-mode opt-out: when false, the Agent toggle button is hidden
+     *  entirely (the rail itself is also unmounted in `StudioShell`).
+     *  Default true (standalone). */
+    enableAgentRail?: boolean;
     /** True iff at least one referenceImage record is present in the current
      *  scene. The toggle button only renders when this is true; otherwise the
      *  toolbar slot stays empty so casual scripts don't see a dead button. */
@@ -40,6 +44,7 @@ export function Toolbar({
     onRun,
     agentRailOpen,
     onToggleAgentRail,
+    enableAgentRail = true,
     referenceImagesPresent,
     referenceImagesVisible,
     onToggleReferenceImages,
@@ -60,20 +65,22 @@ export function Toolbar({
             className="h-8 shrink-0 border-b border-[#2b313c] bg-[#111] flex items-center justify-between px-3 text-xs text-gray-300 select-none"
         >
             <div className="flex items-center gap-2 min-w-0">
-                <button
-                    type="button"
-                    onClick={onToggleAgentRail}
-                    aria-label={agentRailOpen ? 'Close agent rail' : 'Open agent rail'}
-                    aria-pressed={agentRailOpen}
-                    className={`inline-flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-                        agentRailOpen
-                            ? 'bg-[#333] text-white'
-                            : 'text-gray-300 hover:text-white hover:bg-[#222]'
-                    }`}
-                >
-                    <MessageSquare size={12} />
-                    Agent
-                </button>
+                {enableAgentRail && (
+                    <button
+                        type="button"
+                        onClick={onToggleAgentRail}
+                        aria-label={agentRailOpen ? 'Close agent rail' : 'Open agent rail'}
+                        aria-pressed={agentRailOpen}
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded transition-colors ${
+                            agentRailOpen
+                                ? 'bg-[#333] text-white'
+                                : 'text-gray-300 hover:text-white hover:bg-[#222]'
+                        }`}
+                    >
+                        <MessageSquare size={12} />
+                        Agent
+                    </button>
+                )}
                 <a
                     href="/connect"
                     data-testid="toolbar-connect-link"

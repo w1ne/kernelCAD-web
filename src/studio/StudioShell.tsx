@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Header } from './components/Layout/Header';
 import { Toolbar } from './Toolbar';
+import { useStudioConfig } from './config/StudioConfigContext';
 import { Viewport } from './Viewport';
 import { Inspector } from './Inspector';
 import { AgentRail } from './AgentRail';
@@ -32,6 +33,12 @@ import { useProject } from './context/ProjectContext';
 export function StudioShell() {
     const workbench = useWorkbench();
     const { agentRailOpen, inspectorOpen, selectedFeatureId, markingMode, sectionMode } = useShellStore();
+    const embed = useStudioConfig();
+    // Defaults preserve standalone behavior: show the kernelCAD header and
+    // mount the AgentRail. Embed hosts (e.g. proto.cat) pass `false` for
+    // both to drive a stripped viewport+inspector+toolbar shell.
+    const showHeader = embed.showHeader ?? true;
+    const enableAgentRail = embed.enableAgentRail ?? true;
     const handleToggleMarkingMode = useCallback(() => {
         shellStore.toggleMarkingMode();
     }, []);
@@ -178,13 +185,14 @@ export function StudioShell() {
             className="flex w-screen h-screen bg-black text-white font-sans overflow-hidden flex-col"
             data-testid="workbench-ready"
         >
-            <Header />
+            {showHeader && <Header />}
             <Toolbar
                 isModified={isModified}
                 onValidate={handleValidate}
                 onRun={handleRun}
                 agentRailOpen={agentRailOpen}
                 onToggleAgentRail={handleToggleAgentRail}
+                enableAgentRail={enableAgentRail}
                 referenceImagesPresent={referenceImagesPresent}
                 referenceImagesVisible={referenceImagesVisible}
                 onToggleReferenceImages={handleToggleReferenceImages}
@@ -201,7 +209,7 @@ export function StudioShell() {
             />
 
             <div className="flex-1 flex overflow-hidden relative">
-                {agentRailOpen && <AgentRail />}
+                {enableAgentRail && agentRailOpen && <AgentRail />}
                 <div className="flex-1 relative">
                     <Viewport />
                     <MarkingOverlay visible={markingMode} />
