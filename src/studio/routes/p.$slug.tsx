@@ -54,7 +54,7 @@ function ProjectPage() {
         // version is not incorrectly dropped.
         fetchProjectBySlug(slug)
           .then((p) => {
-            if (p) {
+            if (p && shouldApplyProjectUpdate(versionRef.current, p.version ?? null)) {
               versionRef.current = p.version ?? versionRef.current;
               setLiveCode(p.current_code);
               setLastLiveUpdate(new Date());
