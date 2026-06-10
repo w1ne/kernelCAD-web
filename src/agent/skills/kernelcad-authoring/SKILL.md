@@ -12,7 +12,7 @@ Author or modify kernelCAD models in TypeScript. Scripts live in `.kcad.ts` file
 Use this loop for every non-trivial model edit:
 
 1. **Classify the job**: blockout, production-ish part, reference replication, assembly/mechanism, sheet metal, or standard-part integration. Load the matching specialty skill before editing.
-2. **Write the design brief in plain engineering terms**: purpose, external dimensions, interfaces, materials/finish if relevant, moving parts, manufacturability assumptions, and what must be proven.
+2. **Write the design brief in plain engineering terms**: purpose, external dimensions, interfaces, materials/finish if relevant, moving parts, manufacturability assumptions, and what must be proven. If the request is ambiguous on load-bearing parameters — overall dimensions, units, symmetry, part count, fit/clearance targets — ask 1–3 targeted clarifying questions BEFORE generating geometry; if you proceed anyway, list each assumption in the brief and encode it as a named `param()` so the user can correct it without a rewrite.
 3. **Map words to geometry**: turn important prompt phrases into named source sections, parameters, parts, connectors, materials, or tests so the generated model stays traceable to the user's words.
 4. **Plan parameters and artifacts**: identify the `.kcad.ts` source file, named parameters, imported STEP files, expected exports, and the smallest verification command set before writing geometry.
 5. **Edit source only**: treat `.kcad.ts`, prompt/brief markdown, and provenance metadata as source. Do not hand-edit generated PNG, MP4, STEP, STL, score JSON, or capture metadata.

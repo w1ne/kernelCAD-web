@@ -23,6 +23,7 @@ import { addWorkspaceTargetSourceTool } from './tools/addWorkspaceTargetSource';
 import { setSceneReturnSourceTool } from './tools/setSceneReturnSource';
 import { addMateTool } from './tools/addMate';
 import { evaluateScriptTool } from './tools/evaluateScript';
+import { diffScriptsTool } from './tools/diffScripts';
 import { evaluateSdfTool } from './tools/evaluateSdf';
 import { exportModelTool } from './tools/exportModel';
 import { exportPartTool } from './tools/exportPart';
@@ -106,16 +107,52 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
         'Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics. ' +
         'When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), ' +
         'also returns a parts summary { count, names }. ' +
-        'Pass either { file: "<path>" } or { code: "<inline source>" }.',
+        'Pass either { file: "<path>" } or { code: "<inline source>" }. ' +
+        'Set { dryRun: true } for fast validation while iterating: transpile + capture + ' +
+        'capture-light checks WITHOUT OCCT lowering, DFM gates, or meshing — milliseconds ' +
+        'instead of seconds (100x+ on boolean/fillet-heavy scripts). A dry run catches script ' +
+        'throws, capture-time API misuse, and assembly validity-gate failures, but NOT ' +
+        'lowering failures or dfmSpec diagnostics; it leaves the active session untouched, ' +
+        'so finish with a full (non-dry) evaluate_script before using session-dependent tools.',
       inputSchema: {
         type: 'object',
         properties: {
           file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
           code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          dryRun: {
+            type: 'boolean',
+            description:
+              'Fast validation only: skip OCCT lowering, DFM gates, and meshing. ' +
+              'Does not set or clear the active session.',
+          },
         },
       },
     },
     handler: input => evaluateScriptTool(input as Parameters<typeof evaluateScriptTool>[0]),
+  },
+  {
+    definition: {
+      name: 'diff_scripts',
+      description:
+        'Structured geometric delta between two versions of a kernelCAD script — a baseline ' +
+        '({ baseFile } or { baseCode }) and a revision ({ file } or { code }). Returns ' +
+        'agent-readable JSON: per-part added/removed/renamed/changed (volume mm³ + exact bbox ' +
+        'deltas, numbers matching list_part_stats), total interference-volume delta with ' +
+        'per-pair detail, mate-graph changes (added/removed/changed mates incl. type, ' +
+        'connectors, pose, limits), and param changes (value/min/max). Single-shape scripts ' +
+        'diff as one "(root)" pseudo-part. Use after editing a script to verify exactly what ' +
+        'changed physically before re-rendering. Read-only — never touches the active session.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          baseFile: { type: 'string', description: 'Baseline script — path to a .kcad.ts file.' },
+          baseCode: { type: 'string', description: 'Baseline script — inline source.' },
+          file: { type: 'string', description: 'Revised script — path to a .kcad.ts file.' },
+          code: { type: 'string', description: 'Revised script — inline source.' },
+        },
+      },
+    },
+    handler: input => diffScriptsTool(input as Parameters<typeof diffScriptsTool>[0]),
   },
   {
     definition: {
