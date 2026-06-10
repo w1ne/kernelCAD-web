@@ -5,7 +5,7 @@ import { useShellStore } from './store/useShellStore';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
 import { parseCode } from '../shared/codeGeneration/ast';
-import { StudioChromeProvider } from './context/StudioChromeContext';
+import { StudioChromeProvider, useStudioChrome } from './context/StudioChromeContext';
 
 const LazyDevLab = lazy(() =>
   import('./devlab/DevLab').then(({ DevLab }) => ({
@@ -43,6 +43,7 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
   } = useWorkbench();
 
   const { activeProject, saveActiveProject } = useProject();
+  const { viewerMode } = useStudioChrome();
   const { agentRailOpen } = useShellStore();
   const [isInitialized, setIsInitialized] = useState(false);
   // setLoadedSourceRouteKey is still called for its side effects (gating the
@@ -100,6 +101,10 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
   useEffect(() => {
     if (scriptParam || galleryParam) return;
     if (isDevLab || !activeProject) return;
+    // Viewer mode: code is driven externally (live agent updates via the
+    // `liveCode` prop); the ephemeral project's mount-time snapshot must not
+    // win the diff below and clobber updates back to the initial code.
+    if (viewerMode) return;
 
     // Only sync on initial load or project switch
     if (!isInitialized || activeProject.code !== code) {
@@ -112,12 +117,13 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsInitialized(true);
     }
-  }, [activeProject, isDevLab, setCode, setViewMode, setViewMode3D, isInitialized, code, viewMode3D, scriptParam, galleryParam]);
+  }, [activeProject, isDevLab, setCode, setViewMode, setViewMode3D, isInitialized, code, viewMode3D, scriptParam, galleryParam, viewerMode]);
 
   // Auto-save: workbench state -> active project
   useEffect(() => {
     if (scriptParam || galleryParam) return;
     if (isDevLab || !isInitialized || !activeProject) return;
+    if (viewerMode) return; // read-only review page — never persist
     if (!isCodeParsable(code)) return;
 
     const timeoutId = setTimeout(() => {
@@ -134,7 +140,7 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     }, 1500); // 1.5s debounce for project save
 
     return () => clearTimeout(timeoutId);
-  }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, agentRailOpen, isDevLab, isInitialized, activeProject, saveActiveProject, scriptParam, galleryParam]);
+  }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, agentRailOpen, isDevLab, isInitialized, activeProject, saveActiveProject, scriptParam, galleryParam, viewerMode]);
 
   const activeSourceLoadError = sourceRouteKey && sourceLoadError?.routeKey === sourceRouteKey
     ? sourceLoadError.message
