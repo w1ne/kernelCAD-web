@@ -51,8 +51,12 @@ vi.mock('./context/ProjectContext', () => ({
                 agentRailOpen: false,
             },
         },
+        // Non-ephemeral id: must NOT trigger the ephemeral guard so that
+        // viewerMode and real-project sync paths behave exactly as before.
+        activeProjectId: 'local-project-id',
         saveActiveProject: mocks.saveActiveProject,
     }),
+    isEphemeralProjectId: (id: string | null) => id === '__funnel_ephemeral__',
 }));
 
 vi.mock('./store/useShellStore', () => ({

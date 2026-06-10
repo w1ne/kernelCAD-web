@@ -51,8 +51,14 @@ vi.mock('./context/ProjectContext', () => ({
         agentRailOpen: false,
       },
     },
+    // Non-ephemeral id: gallery source route uses a ?gallery= param and
+    // returns early before the ephemeral guard, so this value is irrelevant
+    // there — but must be present to avoid undefined-function crashes on
+    // any effects that reach the guard.
+    activeProjectId: 'local-project-id',
     saveActiveProject: mocks.saveActiveProject,
   }),
+  isEphemeralProjectId: (id: string | null) => id === '__funnel_ephemeral__',
 }));
 
 vi.mock('./store/useShellStore', () => ({

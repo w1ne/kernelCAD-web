@@ -19,6 +19,15 @@ export const ProjectContext = createContext<ProjectContextType | undefined>(unde
 
 const EPHEMERAL_ID = '__funnel_ephemeral__';
 
+/** Returns true when the active project id belongs to the in-memory funnel
+ * project created by ProjectProvider for /g/$genId and /p/$slug routes.
+ * Ephemeral projects must seed the workbench once but must never overwrite
+ * live code afterward. */
+// eslint-disable-next-line react-refresh/only-export-components
+export function isEphemeralProjectId(id: string | null): boolean {
+    return id === EPHEMERAL_ID;
+}
+
 export function ProjectProvider({ children, initialCode, projectName }: {
     children: React.ReactNode;
     initialCode?: string;
