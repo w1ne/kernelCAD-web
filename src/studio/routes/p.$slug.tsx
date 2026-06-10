@@ -4,7 +4,6 @@ import App from '../App';
 import { SignInButton } from '../../funnel/components/SignInButton';
 import { useSession } from '../../funnel/hooks/useSession';
 import { fetchProjectBySlug, claimProject, type ProjectRow } from '../../funnel/lib/apiClient';
-import { getSupabase } from '../../funnel/lib/supabaseClient';
 import { shouldApplyProjectUpdate } from '../../funnel/lib/liveProject';
 
 export const Route = createFileRoute('/p/$slug')({
@@ -38,50 +37,36 @@ function ProjectPage() {
   }, [project]);
 
   useEffect(() => {
-    const supabase = getSupabase();
-    let everSubscribed = false;
-    const applyRow = (row: { current_code?: string | null; version?: number | null }) => {
-      if (!shouldApplyProjectUpdate(versionRef.current, row.version ?? null)) return;
-      if (typeof row.current_code === 'string' && row.current_code.length > 0) {
-        // Advance the version guard only after we have the final data in hand.
-        versionRef.current = row.version ?? versionRef.current;
-        setLiveCode(row.current_code);
-        setLastLiveUpdate(new Date());
-      } else {
-        // Oversized realtime payloads omit big columns — fall back to a refetch.
-        // Do NOT advance versionRef here; advance it inside .then once we have
-        // the fetched row's version, so a concurrent applyRow with a higher
-        // version is not incorrectly dropped.
-        fetchProjectBySlug(slug)
-          .then((p) => {
-            if (p && shouldApplyProjectUpdate(versionRef.current, p.version ?? null)) {
-              versionRef.current = p.version ?? versionRef.current;
-              setLiveCode(p.current_code);
-              setLastLiveUpdate(new Date());
-            }
-          })
-          .catch(() => {});
-      }
+    let disposed = false;
+    // Guarded refetch: the SSE payload carries only the version; fetch the row
+    // and apply it monotonically (re-check after the await — an in-flight fetch
+    // must not overwrite a newer update).
+    const refetchAndApply = (incomingVersion: number | null) => {
+      if (!shouldApplyProjectUpdate(versionRef.current, incomingVersion)) return;
+      fetchProjectBySlug(slug)
+        .then((p) => {
+          if (disposed || !p) return;
+          if (!shouldApplyProjectUpdate(versionRef.current, p.version ?? null)) return;
+          versionRef.current = p.version ?? versionRef.current;
+          setLiveCode(p.current_code);
+          setLastLiveUpdate(new Date());
+        })
+        .catch(() => {});
     };
-    const channel = supabase
-      .channel(`p-${slug}`)
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'projects', filter: `slug=eq.${slug}` },
-        (payload) => applyRow(payload.new as { current_code?: string | null; version?: number | null }),
-      )
-      .subscribe((status) => {
-        // After a drop+resubscribe, catch anything missed while offline.
-        if (status === 'SUBSCRIBED') {
-          if (everSubscribed) {
-            fetchProjectBySlug(slug)
-              .then((p) => { if (p) applyRow(p); })
-              .catch(() => {});
-          }
-          everSubscribed = true;
-        }
-      });
-    return () => { void supabase.removeChannel(channel); };
+    const base = import.meta.env.VITE_API_BASE_URL ?? '';
+    const es = new EventSource(`${base}/api/v1/projects/${encodeURIComponent(slug)}/events`);
+    let hadError = false;
+    es.addEventListener('update', (ev) => {
+      let version: number | null = null;
+      try { version = JSON.parse((ev as MessageEvent).data)?.version ?? null; } catch { /* malformed frame — refetch applies unguarded */ }
+      refetchAndApply(version);
+    });
+    es.addEventListener('open', () => {
+      // After an auto-reconnect, catch anything missed while disconnected.
+      if (hadError) { hadError = false; refetchAndApply(null); }
+    });
+    es.addEventListener('error', () => { hadError = true; });
+    return () => { disposed = true; es.close(); };
   }, [slug]);
 
   const handleClaim = useCallback(async () => {
