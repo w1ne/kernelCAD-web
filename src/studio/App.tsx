@@ -22,7 +22,7 @@ function isCodeParsable(code: string): boolean {
   }
 }
 
-import { useProject } from './context/ProjectContext';
+import { useProject, isEphemeralProjectId } from './context/ProjectContext';
 import { loadGalleryScriptSource, loadStudioScriptSource } from './scriptSource';
 import { registerLiveScriptTarget, unregisterLiveScriptTarget } from './liveScriptBridge';
 
@@ -42,7 +42,7 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     setCode, setViewMode, setViewMode3D
   } = useWorkbench();
 
-  const { activeProject, saveActiveProject } = useProject();
+  const { activeProject, activeProjectId, saveActiveProject } = useProject();
   const { viewerMode } = useStudioChrome();
   const { agentRailOpen } = useShellStore();
   const [isInitialized, setIsInitialized] = useState(false);
@@ -105,6 +105,11 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     // `liveCode` prop); the ephemeral project's mount-time snapshot must not
     // win the diff below and clobber updates back to the initial code.
     if (viewerMode) return;
+    // Ephemeral funnel project (/g/$genId): seed the workbench once on the
+    // first run, then step aside. After initialization, external/programmatic
+    // setCode calls (e.g. live agent updates) must not be overwritten by the
+    // frozen mount-time initialCode snapshot stored in the ephemeral project.
+    if (isInitialized && isEphemeralProjectId(activeProjectId)) return;
 
     // Only sync on initial load or project switch
     if (!isInitialized || activeProject.code !== code) {
@@ -117,7 +122,7 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsInitialized(true);
     }
-  }, [activeProject, isDevLab, setCode, setViewMode, setViewMode3D, isInitialized, code, viewMode3D, scriptParam, galleryParam, viewerMode]);
+  }, [activeProject, activeProjectId, isDevLab, setCode, setViewMode, setViewMode3D, isInitialized, code, viewMode3D, scriptParam, galleryParam, viewerMode]);
 
   // Auto-save: workbench state -> active project
   useEffect(() => {
