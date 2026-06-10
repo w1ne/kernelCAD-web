@@ -4,7 +4,7 @@
 // discoverable via list_api as the single entry "export the model to a file".
 // Replaces the legacy `export_stl` shim (removed in the C2 cull).
 //
-// Format enum: stl | step | dxf | 3mf | glb | urdf | srdf | sdf-gazebo.
+// Format enum: stl | step | dxf | 3mf | glb | svg-drawing | urdf | srdf | sdf-gazebo.
 // URDF / SRDF / SDF-Gazebo are reserved on the surface but emit
 // `export.<format>.not-implemented` until a follow-up slice fills them in.
 

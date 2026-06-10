@@ -930,7 +930,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       description:
         'Export the script geometry to a file. Pass either { file } or { code } plus a required { output_path } and { format }. ' +
         'Supported formats: stl (binary STL mesh), step (BREP CAD interchange), dxf (planar laser/waterjet profile from a Region or planar face), ' +
-        '3mf (slicer-friendly mesh with per-part colors), glb (web-viewer / AR with PBR materials). ' +
+        '3mf (slicer-friendly mesh with per-part colors), glb (web-viewer / AR with PBR materials), ' +
+        'svg-drawing (third-angle engineering-drawing sheet: front/top/left + isometric views, hidden edges dashed, tangent edges thin, ' +
+        'overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion). ' +
         'Reserved (return export.<format>.not-implemented until a follow-up slice fills them in): urdf, srdf, sdf-gazebo. ' +
         'STL exports run a watertight verify by default; failures return ok: false with export.mesh.not-watertight ' +
         '(open-edge count + up to 5 crack-cluster locations) but the file is still written so the broken mesh can be inspected. ' +
@@ -946,7 +948,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           output_path: { type: 'string', description: 'Destination path for the export file. Required.' },
           format: {
             type: 'string',
-            enum: ['stl', 'step', 'dxf', '3mf', 'glb', 'urdf', 'srdf', 'sdf-gazebo'],
+            enum: ['stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'urdf', 'srdf', 'sdf-gazebo'],
             description: 'Output file format. Required.',
           },
           feature_id: { type: 'string', description: 'Optional FeatureId to export; defaults to last.' },
@@ -956,7 +958,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
               'Optional per-format options bag. Discriminator options.format must equal top-level format. ' +
               'dxf: { layers?, unit?: "mm"|"cm"|"in", tolerance? }. ' +
               '3mf: { printUnit?: "mm"|"cm"|"in", embedSource? }. ' +
-              'glb: { axis?: "y-up"|"z-up", draco?: false }.',
+              'glb: { axis?: "y-up"|"z-up", draco?: false }. ' +
+              'svg-drawing: { sheet?: "a4"|"a3", modelName?, date? }.',
           },
           no_verify: { type: 'boolean', description: 'Skip the STL watertight verify gate.', default: false },
         },
