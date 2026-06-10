@@ -933,13 +933,14 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
         '3mf (slicer-friendly mesh with per-part colors), glb (web-viewer / AR with PBR materials), ' +
         'svg-drawing (third-angle engineering-drawing sheet: front/top/left + isometric views, hidden edges dashed, tangent edges thin, ' +
         'overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion). ' +
-        'Reserved (return export.<format>.not-implemented until a follow-up slice fills them in): urdf, srdf, sdf-gazebo. ' +
+        'Robot descriptions: urdf (tree-topology robot description), srdf (motion-planning semantics layered over the URDF), sdf-gazebo (SDFormat 1.10 with native ball joints, closed loops, and solved per-link poses). ' +
+        'urdf and sdf-gazebo also write one meshes/<part>.stl per link next to output_path (reported in mesh_files) — ship the whole directory to the consumer. ' +
         'STL exports run a watertight verify by default; failures return ok: false with export.mesh.not-watertight ' +
         '(open-edge count + up to 5 crack-cluster locations) but the file is still written so the broken mesh can be inspected. ' +
         'Pass { no_verify: true } to skip the gate. ' +
         'Optional { feature_id } selects which feature to export (default: last). ' +
         'Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: dxf layers/tolerance/unit, 3mf printUnit/embedSource, glb axis/draco). ' +
-        'Returns { ok, output_path, byte_count, feature_count, format, diagnostics }.',
+        'Returns { ok, output_path, byte_count, feature_count, format, mesh_files?, diagnostics }.',
       inputSchema: {
         type: 'object',
         properties: {

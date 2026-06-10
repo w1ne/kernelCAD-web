@@ -54,10 +54,22 @@ export interface ExportInput {
   options?: ExportOptions;
 }
 
+/** Companion mesh file for robot-description exports (URDF / SDF). The
+ *  emitted XML references these by relative path, so the writer must put
+ *  them on disk next to the output file or the consumer cannot resolve the
+ *  visual/collision geometry. */
+export interface CompanionMeshFile {
+  /** Path relative to the directory of the primary output file. */
+  relPath: string;
+  bytes: Uint8Array;
+}
+
 export interface ExportResult {
   bytes: Uint8Array;
   featureCount: number;
   diagnostics: CompilerDiagnostic[];
+  /** Per-link mesh files referenced by the primary output (URDF / SDF). */
+  meshes?: CompanionMeshFile[];
 }
 
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
@@ -141,6 +153,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
         bytes: new TextEncoder().encode(out.urdf),
         featureCount,
         diagnostics: [...r.diagnostics, ...out.diagnostics],
+        meshes: out.urdf === '' ? [] : await emitCompanionMeshes(out.meshPaths),
       };
     }
     if (format === 'srdf') {
@@ -162,6 +175,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
         bytes: new TextEncoder().encode(out.sdf),
         featureCount,
         diagnostics: [...r.diagnostics, ...out.diagnostics],
+        meshes: out.sdf === '' ? [] : await emitCompanionMeshes(out.meshPaths),
       };
     }
   }
@@ -488,6 +502,18 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   // URDF / SRDF / SDF-Gazebo are dispatched in the early Assembly-aware
   // branch above, before targetId resolution. Unreachable here.
   return { bytes: new Uint8Array(), featureCount, diagnostics: r.diagnostics };
+}
+
+/** Mesh the per-link shapes referenced by a robot-description export into
+ *  binary STLs. Shared by the URDF and SDF dispatch branches. */
+async function emitCompanionMeshes(
+  meshPaths: ReadonlyArray<{ relPath: string; shape: OcctBackend }>,
+): Promise<CompanionMeshFile[]> {
+  const meshes: CompanionMeshFile[] = [];
+  for (const m of meshPaths) {
+    meshes.push({ relPath: m.relPath, bytes: await m.shape.exportSTLAsync() });
+  }
+  return meshes;
 }
 
 export interface PartStlExport {

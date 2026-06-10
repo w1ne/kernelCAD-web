@@ -46,3 +46,20 @@ describe('mateToSdfJoint — SDFormat mate mapping (Task B5.A)', () => {
     expect(r.diagnostics.map(d => d.code)).toContain('export.sdf-gazebo.pin-slot-lossy');
   });
 });
+
+describe('mateToSdfJoint — child-frame joint pose convention', () => {
+  it('emits the joint <pose> and <axis> from the CHILD-side connector (SDFormat joint poses are child-frame-relative)', () => {
+    // An SDFormat <joint> <pose> is resolved relative to the child link
+    // frame and <axis><xyz> is expressed in the joint frame, which shares
+    // the child link orientation. Parent connector at [10,0,0]/+Z, child
+    // connector at [2,3,4]/+Y: the emitted pose must be the child-side
+    // origin (in metres) and the axis the child-side axis — emitting the
+    // parent side anchors the joint at the wrong point in the simulator.
+    const resolver = (ref: string) => ref.startsWith('p1.')
+      ? { partName: 'p1', origin: [10, 0, 0] as [number, number, number], axis: [0, 0, 1] as [number, number, number] }
+      : { partName: 'p2', origin: [2, 3, 4] as [number, number, number], axis: [0, 1, 0] as [number, number, number] };
+    const r = mateToSdfJoint(mate({ type: 'revolute' }), resolver);
+    expect(r.jointBlocks[0]).toMatch(/<pose>0\.002000 0\.003000 0\.004000 0 0 0<\/pose>/);
+    expect(r.jointBlocks[0]).toMatch(/<axis><xyz>0\.000000 1\.000000 0\.000000<\/xyz>/);
+  });
+});

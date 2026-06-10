@@ -491,23 +491,13 @@ async function loopSolve(
   loopMates: readonly MateRecord[],
   initialPoses: Map<string, Transform>,
 ): Promise<SolveResult> {
-  // For v0.6.0 we only support fastened-only loops. If any mate (tree or
-  // loop) on a closed-loop assembly is non-fastened, that's the articulated
-  // path — return 'did-not-converge' with iterations=0 and let T7.x handle
-  // it once T9 wires pose-driven articulation through the solver.
-  const hasNonFastened = allMates.some((m) => m.type !== 'fastened');
-  if (hasNonFastened) {
-    return {
-      status: 'did-not-converge',
-      poses: initialPoses,
-      iterations: 0,
-    };
-  }
-
-  // Fastened-only loop: with zero free DOFs, the residual is independent of
-  // any pose vector `x` and Newton-Raphson collapses to a single evaluation.
-  // The N-R helpers from `../numeric/jacobian.ts` are imported and unit-
-  // tested there; they get wired in here in T7.x for the articulated path.
+  // Residual at the tree-FK configuration first: when the loop already
+  // closes at the resolved poses (e.g. a linkage authored so its default
+  // pose is the assembled configuration), the loop is consistent regardless
+  // of articulation — there is nothing for a loop solver to adjust and the
+  // tree-FK transforms are the solution. This matters for closed-loop
+  // export: a 4-bar whose geometry closes at pose 0 must ship solved link
+  // poses, not a refusal.
   const residual = await computeLoopResidual(loopMates, partByName, initialPoses);
   const rNorm = norm2(residual);
 
@@ -519,9 +509,24 @@ async function loopSolve(
     };
   }
 
-  // Disagreement: classify as over-constrained. There's no free DOF to
-  // adjust, so Newton can't reduce the residual. (See `SOLVER.OVER_*` JSDoc
-  // above for why we don't apply the factor on the fastened-only path.)
+  // Loop does NOT close at the resolved poses. If any mate (tree or loop)
+  // is articulated there are free DOFs a Newton-Raphson pass could adjust —
+  // that path lands in T7.x once T9 wires pose-driven articulation through
+  // the solver — so until then classify as 'did-not-converge' with
+  // iterations=0.
+  const hasNonFastened = allMates.some((m) => m.type !== 'fastened');
+  if (hasNonFastened) {
+    return {
+      status: 'did-not-converge',
+      poses: initialPoses,
+      iterations: 0,
+    };
+  }
+
+  // Fastened-only loop with non-zero residual: there's no free DOF to
+  // adjust, so Newton can't reduce the residual — the mate geometry itself
+  // disagrees. (See `SOLVER.OVER_*` JSDoc above for why we don't apply the
+  // factor on the fastened-only path.)
   return {
     status: 'over-constrained',
     poses: initialPoses,
