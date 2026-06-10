@@ -75,7 +75,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     ).toEqual([]);
   });
 
-  it('catalogue has exactly 226 codes', () => {
+  it('catalogue has exactly 227 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -150,7 +150,9 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       multi-body model with no named assembly().part(...) structure) = 225.
     //  +  1 animation.bake.geometry-param (Studio bake refuses geometry-driving
     //       track params — only pose-only mate timelines bake) = 226.
-    expect(catalogue.size).toBe(226);
+    //  +  1 export.sdf-gazebo.pose-unsolved (simulator-verified SDF export:
+    //       mate graph unsolvable -> links emitted at the model origin) = 227.
+    expect(catalogue.size).toBe(227);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
