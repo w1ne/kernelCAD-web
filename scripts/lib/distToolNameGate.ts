@@ -60,6 +60,10 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   'feature_count',
   'output_path',
   'byte_count',
+  // export_model result field listing the companion mesh files written
+  // next to robot-description exports (documented alongside the real
+  // export_model tool name, which DOES resolve — a field, not a call).
+  'mesh_files',
   'binding_name',
   'curve_bindings',
   'chain_anchor',

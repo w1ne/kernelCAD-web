@@ -1,11 +1,11 @@
 ---
 name: kernelcad-sdformat
-description: Export multi-part assemblies to SDFormat — closed kinematic loops, native ball joints, solved per-link poses, per-link inertial/visual/collision with mesh files. Use when the downstream consumer is a Gazebo-family simulator or requires closed-loop / native-spherical-joint support.
+description: Export multi-part assemblies to SDFormat — closed kinematic loops, native ball joints, solved per-link poses, per-link inertial/visual/collision with mesh files. Use when the downstream simulator ingests SDFormat directly or the assembly needs closed-loop / native-spherical-joint support.
 ---
 
 # kernelCAD — SDFormat export
 
-SDFormat is an XML model description that, unlike URDF, accepts closed kinematic loops natively and exposes a native ball-joint type. kernelCAD's `export_model({ format: 'sdf-gazebo' })` writes a `.sdf` (spec version 1.10 — parsed by current Gazebo LTS releases) plus a sibling `meshes/` directory with one STL per link. Ship the whole directory: the SDF references `meshes/<part>.stl` by relative URI, resolved against the `.sdf` file location, so the export loads in `gz sim` with no resource-path environment setup.
+SDFormat is an XML model description that, unlike URDF, accepts closed kinematic loops natively and exposes a native ball-joint type. kernelCAD's `export_model({ format: 'sdf-gazebo' })` writes a `.sdf` (spec version 1.10 — parsed by current simulator LTS releases) plus a sibling `meshes/` directory with one STL per link. Ship the whole directory: the SDF references `meshes/<part>.stl` by relative URI, resolved against the `.sdf` file location, so the export loads in `gz sim` with no resource-path environment setup.
 
 ## When to use over URDF
 
