@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { shellStore } from '../../../store/shellStore';
 import { rendererSnapshot } from '../rendererSnapshot';
+import { resolveReviewPaintTargets } from './reviewPaintTargets';
 
 /**
  * Inpainting-style review overlay. When `markingMode` is on, a transparent
@@ -17,8 +18,9 @@ import { rendererSnapshot } from '../rendererSnapshot';
  *
  * Save: on unmount (toolbar toggle off, Esc, or markingMode→false from any
  * other path) the overlay fire-and-forget POSTs the canvas + a viewport
- * screenshot to `/__kernelcad/review-paint`. `keepalive: true` lets the
- * fetch survive the component unmount.
+ * screenshot. Targets come from `resolveReviewPaintTargets`: hosted /p pages
+ * go to the backend (`/api/v1/review-paint`, packet keyed by project slug),
+ * local dev goes to the :5174 save server, same-origin as fallback either way.
  */
 
 const FIXED_BRUSH_PX = 24;
@@ -304,6 +306,17 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
     const { parts: struckParts, debug: raycastDebug } = struckPartsFromMask();
     console.log(`[marking-overlay] struck parts:`, struckParts, 'debug:', raycastDebug);
     const scriptParam = new URLSearchParams(window.location.search).get('script');
+    // Same env resolution order as apiBase.ts, but NOT session-gated:
+    // anonymous brushing on hosted /p pages is the point, so the backend
+    // target comes straight from the build env — no Supabase session needed.
+    const apiBase =
+      import.meta.env.VITE_KERNELCAD_API_BASE ??
+      import.meta.env.VITE_API_BASE_URL ??
+      undefined;
+    const { slug, urls } = resolveReviewPaintTargets(
+      window.location.pathname,
+      apiBase,
+    );
     const meta = {
       note: '',
       scriptPath: scriptParam,
@@ -312,18 +325,21 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
       screenshotMissing: screenshot === null,
       struckParts,
       raycastDebug,
+      // On hosted /p pages the backend keys the packet by project slug so
+      // `review_paint_peek_latest {slug}` can fetch it without auth.
+      ...(slug ? { projectSlug: slug } : {}),
     };
-    // POST to the standalone save server (port 5174, auto-spawned by vite as
-    // a worker thread) so saves keep working when vite's main thread
-    // saturates on OCCT/replicad transforms.
+    // Local dev: POST to the standalone save server (port 5174, auto-spawned
+    // by vite as a worker thread) so saves keep working when vite's main
+    // thread saturates on OCCT/replicad transforms. Hosted /p pages: POST to
+    // the backend first. Either way, same-origin is the fallback.
     //
     // We deliberately do NOT set `keepalive: true`: Chrome silently rejects
     // keepalive fetches with bodies over 64 KB, and a viewport screenshot +
     // mask base64-encoded blows through that cap easily. Without keepalive,
     // the fetch fires as a normal request — the component is unmounting but
     // the request is in flight on the global queue and completes regardless.
-    const saveUrl =
-      `${window.location.protocol}//${window.location.hostname}:5174/__kernelcad/review-paint`;
+    const [saveUrl, fallbackUrl] = urls;
     // mask is always present; screenshot may be empty string if renderer canvas
     // was missing — server stores both keys regardless.
     const body = JSON.stringify({ screenshot: screenshot ?? '', mask, meta });
@@ -338,13 +354,13 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
         console.log(`[marking-overlay] mark saved (${saveUrl})`);
       })
       .catch((err) => {
-        console.warn('[marking-overlay] save to :5174 failed, trying same-origin fallback:', err);
-        fetch('/__kernelcad/review-paint', {
+        console.warn(`[marking-overlay] save to ${saveUrl} failed, trying fallback:`, err);
+        fetch(fallbackUrl, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body,
         }).catch((err2) => {
-          console.warn('[marking-overlay] same-origin fallback also failed:', err2);
+          console.warn('[marking-overlay] fallback save also failed:', err2);
         });
       });
   }
