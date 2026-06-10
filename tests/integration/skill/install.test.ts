@@ -22,13 +22,14 @@ describe.skipIf(SKIP)('skill install (built CLI)', () => {
     expect(content).toMatch(/^---\nname: kernelcad/);
   });
 
-  it('installs all 17 skill subdirectories', () => {
+  it('installs all 18 skill subdirectories', () => {
     const tmp = mkdtempSync(join(tmpdir(), 'kcad-skill-int-'));
     execFileSync('node', [CLI_BIN, 'skill', 'install', tmp], { encoding: 'utf8' });
     const dirs = readdirSync(tmp);
     // Develop's C2 cull (2026-05-31) removed the deprecated `kernelcad-sdf`
-    // alias (17 → 16); Slice C adds the `kernelcad-parts` skill (16 → 17).
-    expect(dirs.length).toBe(17);
+    // alias (17 → 16); Slice C adds the `kernelcad-parts` skill (16 → 17);
+    // the drawings slice adds `kernelcad-drawings` (17 → 18).
+    expect(dirs.length).toBe(18);
   });
 
   it('writes combined skill content to an explicit path via skill onefile', () => {
