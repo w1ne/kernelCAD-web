@@ -98,14 +98,14 @@ function ProjectPage() {
 
   const headerLeft = (
     <div className="flex items-center gap-2 min-w-0">
-      <span className="text-xs text-gray-200 font-medium truncate max-w-[280px]" title={project.title}>
+      <span className="text-xs text-gray-200 font-medium truncate min-w-[72px] max-w-[160px] md:max-w-[280px]" title={project.title}>
         {project.title}
       </span>
-      <span className="text-[10px] uppercase tracking-widest text-gray-500 font-mono px-1.5 py-0.5 rounded border border-[#333]">
+      <span className="hidden lg:inline-flex shrink-0 whitespace-nowrap text-[10px] uppercase tracking-widest text-gray-500 font-mono px-1.5 py-0.5 rounded border border-[#333]">
         {formatPrivacyLabel(project.privacy)}
       </span>
       <span
-        className="text-[10px] uppercase tracking-widest font-mono px-1.5 py-0.5 rounded border border-emerald-700 text-emerald-500"
+        className="shrink-0 whitespace-nowrap text-[10px] uppercase tracking-widest font-mono px-1.5 py-0.5 rounded border border-emerald-700 text-emerald-500"
         title={lastLiveUpdate ? `last update ${lastLiveUpdate.toLocaleTimeString()}` : 'waiting for agent updates'}
       >
         ● live
@@ -116,7 +116,7 @@ function ProjectPage() {
   // Anonymous (owner-less) projects — e.g. built by a web-Claude session via
   // open_in_studio — can be claimed: "sign in to save" → claim into your account.
   const isAnonymous = project.owner_id == null && !claimed;
-  const btnClass = 'inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 transition-colors';
+  const btnClass = 'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-0.5 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 transition-colors';
 
   let headerRight: ReactNode = null;
   if (claimed) {
