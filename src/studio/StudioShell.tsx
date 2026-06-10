@@ -22,6 +22,7 @@ import { useShellStore, shellStore } from './store/useShellStore';
 import type { StagedEdit } from './store/shellStore';
 import { useRecomputeResult } from './hooks/useRecomputeResult';
 import { useProject } from './context/ProjectContext';
+import { useStudioChrome } from './context/StudioChromeContext';
 
 /**
  * Top-level Studio shell. Composes the six slots — Toolbar / Viewport /
@@ -32,6 +33,7 @@ import { useProject } from './context/ProjectContext';
 export function StudioShell() {
     const workbench = useWorkbench();
     const { agentRailOpen, inspectorOpen, selectedFeatureId, markingMode, sectionMode } = useShellStore();
+    const { viewerMode } = useStudioChrome();
     const handleToggleMarkingMode = useCallback(() => {
         shellStore.toggleMarkingMode();
     }, []);
@@ -185,6 +187,7 @@ export function StudioShell() {
                 onRun={handleRun}
                 agentRailOpen={agentRailOpen}
                 onToggleAgentRail={handleToggleAgentRail}
+                agentRailHidden={viewerMode}
                 referenceImagesPresent={referenceImagesPresent}
                 referenceImagesVisible={referenceImagesVisible}
                 onToggleReferenceImages={handleToggleReferenceImages}
@@ -201,7 +204,7 @@ export function StudioShell() {
             />
 
             <div className="flex-1 flex overflow-hidden relative">
-                {agentRailOpen && <AgentRail />}
+                {agentRailOpen && !viewerMode && <AgentRail />}
                 <div className="flex-1 relative">
                     <Viewport />
                     <MarkingOverlay visible={markingMode} />

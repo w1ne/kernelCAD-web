@@ -1,5 +1,9 @@
 # kernelCAD v0.12.0
 
+## Unreleased
+
+- `/p/<slug>` is now a live read-only review page: when a connected agent updates a saved project, the open tab re-renders in real time.
+
 ## v0.12.0 — 2026-06-09
 
 Headline release folding all post-v0.11.0 workstreams (themed sections below):

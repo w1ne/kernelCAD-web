@@ -3,7 +3,7 @@ import { StudioShell } from './StudioShell';
 import { shellStore } from './store/shellStore';
 import { useShellStore } from './store/useShellStore';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
 import { parseCode } from '../shared/codeGeneration/ast';
 import { StudioChromeProvider } from './context/StudioChromeContext';
 
@@ -164,6 +164,21 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
   );
 }
 
+/** Applies externally-driven code updates into the workbench. Rendered inside
+ * WorkbenchProvider so it has access to setCode. Skips duplicate values to
+ * avoid re-triggering the geometry pipeline on unchanged code. */
+function LiveCodeApplier({ liveCode }: { liveCode?: string }) {
+  const { setCode } = useWorkbench();
+  const lastApplied = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (liveCode !== undefined && liveCode !== lastApplied.current) {
+      lastApplied.current = liveCode;
+      setCode(liveCode);
+    }
+  }, [liveCode, setCode]);
+  return null;
+}
+
 interface AppProps {
   /** Seed the workbench with this code on first mount. Used by the funnel
    * routes (/g/$genId, /p/$slug) to open generated/saved artifacts inside
@@ -175,6 +190,13 @@ interface AppProps {
   /** Funnel-route chrome injected into the Studio Header (right cluster).
    * Use for Save / Sign-in / per-project actions. */
   headerRight?: ReactNode;
+  /** Read-only live review mode for funnel project pages (/p/<slug>): code
+   * editor read-only, built-in agent rail hidden — the model is driven by
+   * an external agent, not authored here. */
+  viewerMode?: boolean;
+  /** Externally-driven code updates; each new value replaces the workbench
+   * code through the normal setCode path. */
+  liveCode?: string;
 }
 
 function AppProviders({
@@ -182,14 +204,17 @@ function AppProviders({
   isDevLab,
   headerLeft,
   headerRight,
+  viewerMode,
+  liveCode,
 }: AppProps & { isDevLab: boolean }) {
   return (
     <WorkbenchProvider initialCode={initialCode}>
-      <StudioChromeProvider value={{ headerLeft, headerRight }}>
+      <StudioChromeProvider value={{ headerLeft, headerRight, viewerMode }}>
         <ErrorBoundary>
           <AppContent isDevLab={isDevLab} />
         </ErrorBoundary>
       </StudioChromeProvider>
+      <LiveCodeApplier liveCode={liveCode} />
     </WorkbenchProvider>
   );
 }
@@ -227,7 +252,7 @@ function DevLabApp({ headerLeft, headerRight }: Pick<AppProps, 'headerLeft' | 'h
   );
 }
 
-export default function App({ initialCode: initialCodeProp, headerLeft, headerRight }: AppProps = {}) {
+export default function App({ initialCode: initialCodeProp, headerLeft, headerRight, viewerMode, liveCode }: AppProps = {}) {
   const isDevLab = typeof window !== 'undefined' && window.location.pathname.startsWith('/dev-lab');
 
   if (isDevLab && initialCodeProp === undefined) {
@@ -240,6 +265,8 @@ export default function App({ initialCode: initialCodeProp, headerLeft, headerRi
       isDevLab={isDevLab}
       headerLeft={headerLeft}
       headerRight={headerRight}
+      viewerMode={viewerMode}
+      liveCode={liveCode}
     />
   );
 }

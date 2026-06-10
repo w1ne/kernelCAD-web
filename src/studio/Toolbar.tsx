@@ -32,6 +32,9 @@ interface ToolbarProps {
     /** Right-side Inspector panel visibility. */
     inspectorOpen: boolean;
     onToggleInspector: () => void;
+    /** When true the agent-rail toggle button is not rendered. Used in
+     * viewer mode where the model is driven by an external agent. */
+    agentRailHidden?: boolean;
 }
 
 export function Toolbar({
@@ -53,6 +56,7 @@ export function Toolbar({
     onToggleSectionMode,
     inspectorOpen,
     onToggleInspector,
+    agentRailHidden = false,
 }: ToolbarProps) {
     return (
         <div
@@ -60,20 +64,22 @@ export function Toolbar({
             className="h-8 shrink-0 border-b border-[#2b313c] bg-[#111] flex items-center justify-between px-3 text-xs text-gray-300 select-none"
         >
             <div className="flex items-center gap-2 min-w-0">
-                <button
-                    type="button"
-                    onClick={onToggleAgentRail}
-                    aria-label={agentRailOpen ? 'Close agent rail' : 'Open agent rail'}
-                    aria-pressed={agentRailOpen}
-                    className={`inline-flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-                        agentRailOpen
-                            ? 'bg-[#333] text-white'
-                            : 'text-gray-300 hover:text-white hover:bg-[#222]'
-                    }`}
-                >
-                    <MessageSquare size={12} />
-                    Agent
-                </button>
+                {!agentRailHidden && (
+                    <button
+                        type="button"
+                        onClick={onToggleAgentRail}
+                        aria-label={agentRailOpen ? 'Close agent rail' : 'Open agent rail'}
+                        aria-pressed={agentRailOpen}
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded transition-colors ${
+                            agentRailOpen
+                                ? 'bg-[#333] text-white'
+                                : 'text-gray-300 hover:text-white hover:bg-[#222]'
+                        }`}
+                    >
+                        <MessageSquare size={12} />
+                        Agent
+                    </button>
+                )}
                 <a
                     href="/connect"
                     data-testid="toolbar-connect-link"
