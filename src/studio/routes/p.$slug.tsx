@@ -58,7 +58,7 @@ function ProjectPage() {
     let hadError = false;
     es.addEventListener('update', (ev) => {
       let version: number | null = null;
-      try { version = JSON.parse((ev as MessageEvent).data)?.version ?? null; } catch {}
+      try { version = JSON.parse((ev as MessageEvent).data)?.version ?? null; } catch { /* malformed frame — refetch applies unguarded */ }
       refetchAndApply(version);
     });
     es.addEventListener('open', () => {
