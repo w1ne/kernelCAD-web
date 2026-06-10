@@ -2,7 +2,7 @@
 //
 // Pure 2D logic for the engineering-drawing SVG exporter: projected-segment
 // dedup, drawing-scale selection, third-angle sheet layout, and linear
-// dimension geometry. No OCCT / replicad imports — everything here is
+// dimension geometry. No OCCT / kernel-backend imports — everything here is
 // deterministic math on number pairs, unit-testable without the wasm kernel.
 //
 // Coordinate conventions:
