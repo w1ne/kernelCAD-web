@@ -131,7 +131,8 @@ export async function ingestStepFile(
   // Derive category/family from the source folder layout when no sidecar:
   // <srcRoot>/<category>/<family>/part.step
   const relParts = relative(srcRoot, dirname(stepPath)).split(/[\\/]/).filter(Boolean);
-  const category = meta.category ?? relParts[0] ?? 'imported';
+  const rootName = slugify(basename(srcRoot)) || 'imported';
+  const category = meta.category ?? relParts[0] ?? rootName;
   const family = meta.family ?? relParts[relParts.length - 1] ?? category;
 
   const report = await inspectStepFile(stepPath);
@@ -186,12 +187,24 @@ export async function ingestDirectory(
 
   const records: CatalogRecord[] = [];
   const shaManifest: Record<string, string> = {};
+  const skipped: { file: string; reason: string }[] = [];
   for (const stepPath of stepFiles) {
-    const { record, bytes } = await ingestStepFile(stepPath, srcDir, opts);
-    writeFileSync(join(outDir, 'step', `${record.id}.step`), bytes);
-    writeFileSync(join(outDir, 'v1', 'parts', `${record.id}.json`), JSON.stringify(record, null, 2));
-    records.push(record);
-    shaManifest[record.id] = record.sha256;
+    // Real-world catalogs carry STEP the kernel can't parse (surface-only
+    // exports, non-solid bodies). Skip and record them rather than aborting the
+    // whole ingest on one bad file.
+    try {
+      const { record, bytes } = await ingestStepFile(stepPath, srcDir, opts);
+      writeFileSync(join(outDir, 'step', `${record.id}.step`), bytes);
+      writeFileSync(join(outDir, 'v1', 'parts', `${record.id}.json`), JSON.stringify(record, null, 2));
+      records.push(record);
+      shaManifest[record.id] = record.sha256;
+    } catch (e) {
+      skipped.push({ file: relative(srcDir, stepPath), reason: e instanceof Error ? e.message : String(e) });
+    }
+  }
+  if (skipped.length > 0) {
+    writeFileSync(join(outDir, 'skipped.json'), JSON.stringify(skipped, null, 2));
+    console.warn(`skipped ${skipped.length} unparseable STEP file(s) → ${join(outDir, 'skipped.json')}`);
   }
 
   // Discovery index (step.parts-compatible: { catalog, items }).
