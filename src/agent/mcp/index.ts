@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/index.ts
 export { createMcpServer } from './server';
 export { evaluateScriptTool, type EvaluateScriptInput, type EvaluateScriptOutput } from './tools/evaluateScript';

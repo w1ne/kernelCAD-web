@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Q1.5 — Part-level lineage parity with FaceLineage / EdgeLineage.
 //
 // Unit-level verification that PartLineage exposes featureId / featureName /

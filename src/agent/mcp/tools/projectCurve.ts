@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/projectCurve.ts
 //
 // W3 MCP tool: AST-edit a `<shape>.projectCurve({...})` chained call into a

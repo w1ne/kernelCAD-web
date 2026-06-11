@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/cli/commands/interference.ts
 //
 // `kernelcad interference <file.kcad.ts>` — pairwise BREP clash detection

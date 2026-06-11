@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/listPartCategories.ts
 import { loadCatalog } from '../../../modeling/parts/catalog';
 

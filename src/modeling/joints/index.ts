@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/joints/index.ts
 //
 // Public re-export of the `joint.*` namespace for the kernelCAD modeling SDK.

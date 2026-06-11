@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, test, expect, beforeAll } from 'vitest';
 import * as fc from 'fast-check';
 import { executeGeometry, initReplicad } from '../../../../tests/regressionTestHelpers';

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kinematic/beamGeometry.ts
 //
 // Closed-form cross-section properties for the Euler-Bernoulli beam path.

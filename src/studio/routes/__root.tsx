@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createRootRoute, Outlet } from '@tanstack/react-router';
 import { Suspense, lazy } from 'react';
 import { getSupabase } from '../../funnel/lib/supabaseClient';

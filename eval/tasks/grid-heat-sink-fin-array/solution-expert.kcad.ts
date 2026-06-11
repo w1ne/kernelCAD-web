@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 const base = box(100, 100, 3);
 const fin = box(3, 25, 12).translate(0, 0, 3);
 const fins = fin.patternGrid({

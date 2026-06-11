@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { getOC } from 'replicad';
 import type { CaptureSession } from '../../capture/captureSession';
 import type { Curve3DMetadata } from '../../../shared/intent/curve3dRecord';

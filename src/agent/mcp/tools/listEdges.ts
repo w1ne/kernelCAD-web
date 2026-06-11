@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/listEdges.ts
 //
 // MCP tool: list edges of a kernelCAD shape with optional EdgeQuery filter.

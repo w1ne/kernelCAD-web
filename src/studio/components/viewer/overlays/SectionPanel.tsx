@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useEffect, useMemo, useRef } from 'react';
 import { useShellStore, shellStore } from '../../../store/useShellStore';
 import { useRecomputeResult } from '../../../hooks/useRecomputeResult';

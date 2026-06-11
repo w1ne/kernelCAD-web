@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/lib/mates/mate.ts
 //
 // Mate record + capture-time connector-ref parser. A mate connects two named

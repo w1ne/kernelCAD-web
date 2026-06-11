@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/shared/parts/connectorManifest.ts
 //
 // Sidecar JSON loaded next to each bundled STEP file. The loader rejects a

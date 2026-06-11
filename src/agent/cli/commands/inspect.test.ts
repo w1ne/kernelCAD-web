@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/cli/commands/inspect.test.ts
 //
 // W4 inspection — Task 4: `kernelcad inspect step` CLI. Tests target the

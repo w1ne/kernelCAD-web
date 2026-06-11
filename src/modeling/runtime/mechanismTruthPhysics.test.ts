@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/runtime/mechanismTruthPhysics.test.ts
 //
 // Tests for criteria 5 (static equilibrium) + 6 (drop-on-release) of

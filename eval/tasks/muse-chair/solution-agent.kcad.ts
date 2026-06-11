@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // MUSE 'chair' — four-legged dining chair with backrest, CNC timber,
 // interlocking joinery. 6 independent components: seat panel, 4 legs,
 // backrest panel. Legs carry top tenons into seat-bottom sockets; the

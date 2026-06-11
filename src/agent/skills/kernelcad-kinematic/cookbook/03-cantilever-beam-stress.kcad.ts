@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // expected: ['kinematic.load-exceeds-yield']
 //
 // Snippet 3 — checkLoadCapacity in beam mode on a cantilever bracket.

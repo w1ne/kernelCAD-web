@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/runtime/mjcfExport.ts
 //
 // Assembly → MJCF (MuJoCo XML) converter for the P6 physics gate.

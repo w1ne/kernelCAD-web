@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect, beforeAll } from 'vitest';
 import * as replicad from 'replicad';
 import { initOcct } from './occtBackend';

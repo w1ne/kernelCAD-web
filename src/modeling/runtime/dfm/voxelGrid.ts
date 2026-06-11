@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/runtime/dfm/voxelGrid.ts
 //
 // W3 Task 6 — voxel rasterization + grid primitives for the void/channel

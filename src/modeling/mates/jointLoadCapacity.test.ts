@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/lib/mates/jointLoadCapacity.test.ts
 //
 // v0.7.4 Gate 3 — joint-load capacity STUB. Each mate of the four gated

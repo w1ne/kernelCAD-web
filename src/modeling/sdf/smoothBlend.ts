@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modules/sdf/smoothBlend.ts
 //
 // Polynomial smooth-min combinator. Returns a closure that smoothly blends

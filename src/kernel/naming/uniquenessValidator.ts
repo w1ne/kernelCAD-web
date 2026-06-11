@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/naming/uniquenessValidator.ts
 //
 // Capture-time enforcement that names emitted by user code (face labels,

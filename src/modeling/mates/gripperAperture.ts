@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { TrackedConnectorPose } from './poseEnvelope';
 
 export interface GripperApertureRequest {

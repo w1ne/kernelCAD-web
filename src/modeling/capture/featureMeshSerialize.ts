@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/featureMeshSerialize.ts
 import type { FeatureMesh } from './featureMeshing';
 import type { FaceGeometry } from '../../shared/worker/workerTypes';

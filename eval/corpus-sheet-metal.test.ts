@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/corpus-sheet-metal.test.ts
 //
 // W2.2 corpus tests — verify the expert solutions for the 3 sheet-metal

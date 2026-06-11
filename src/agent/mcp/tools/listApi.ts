@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/listApi.ts
 //
 // MCP tool: advertise the kernelCAD script-runtime surface so agents can

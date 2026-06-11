@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/backends/occt/drawingLayout.ts
 //
 // Pure 2D logic for the engineering-drawing SVG exporter: projected-segment

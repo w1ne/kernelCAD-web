@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // MUSE 'table' — four-legged CNC timber table, mortise-and-tenon joinery.
 // 5 independent components: tabletop panel + 4 legs. Legs carry a square
 // top tenon; the tabletop carries matching bottom sockets with clearance

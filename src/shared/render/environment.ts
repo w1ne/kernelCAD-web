@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/shared/render/environment.ts
 //
 // HDRI / IBL environment helper. Resolves a RenderEnvironmentSpec to a URL,

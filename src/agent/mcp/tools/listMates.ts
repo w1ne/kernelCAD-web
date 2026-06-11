@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/listMates.ts
 //
 // v0.6 MCP tool — read the declared mate records on the active assembly.

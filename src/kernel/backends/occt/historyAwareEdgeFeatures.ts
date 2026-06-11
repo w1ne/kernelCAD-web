@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /**
  * Direct-OCCT edge-feature helpers with history capture.
  * Same pattern as historyAwareBooleans: bypass Replicad to read

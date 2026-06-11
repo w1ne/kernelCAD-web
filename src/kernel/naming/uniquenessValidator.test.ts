@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect } from 'vitest';
 import { assertTopoRefSafeName, TOPO_REF_NAME_REGEX, RESERVED_TOPO_REF_CHARS } from './uniquenessValidator';
 import { KernelError } from '../../shared/intent/kernelError';

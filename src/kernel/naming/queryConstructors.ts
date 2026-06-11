@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/naming/queryConstructors.ts
 //
 // Slice Q — the kc.q.* namespace. Every constructor returns a Query value

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Adapter: FeatureRecord[] → MateRecord[].
 //
 // The /__kernelcad/mesh endpoint returns serialized `FeatureRecord`s; when an

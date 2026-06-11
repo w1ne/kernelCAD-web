@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/lib/mates/limitFixSuggest.ts
 //
 // Binary-search fix-suggestion engine. Given a PoseEnvelopeDiagnostic of code

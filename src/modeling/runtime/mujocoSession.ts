@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/runtime/mujocoSession.ts
 //
 // Thin wrapper around @mujoco/mujoco for the physics-loop gate.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/naming/parseAnyTopologyInput.test.ts
 //
 // Q7 — failing tests for the MCP-boundary dispatcher per spec §3.7. The

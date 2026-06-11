@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ShellStore } from '../store/shellStore';
 import type { ValidatorResult } from '../../modeling/mates/validator';

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kinematic/beamMaterials.ts
 //
 // Bulk-material catalog for the closed-form Euler-Bernoulli load path.

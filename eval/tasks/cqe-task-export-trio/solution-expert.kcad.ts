@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/tasks/cqe-task-export-trio/solution-expert.kcad.ts
 //
 // Reference solution for cqe-task-export-trio. Two named parts under a single

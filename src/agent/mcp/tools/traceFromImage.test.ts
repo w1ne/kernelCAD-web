@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/traceFromImage.test.ts
 //
 // MCP wrapper tests for `trace_from_image`. The wrapper is a thin pass-through

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Reference build for the composed Query DSL eval task. The box declares
 // a user-applied face label `top -> top`; a typed face Query is composed
 // via `q.face()` + `.and(q.withLabel('top'))`; that Query is passed

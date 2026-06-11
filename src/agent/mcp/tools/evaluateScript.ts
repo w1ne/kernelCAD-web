@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/evaluateScript.ts
 import { dryRunScript, evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/evaluate';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/lib/distHarnessAuthor.ts
 //
 // Distills the dist-repo harness/AGENTS.md from the upstream CLAUDE.md.

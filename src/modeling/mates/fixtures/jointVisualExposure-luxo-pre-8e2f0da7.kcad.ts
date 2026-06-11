@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Regression fixture — pre-8e2f0da7 Luxo shoulder joint dimensions.
 //
 // Reproduces the joint hardware (clevis fork on the parent, tongue on the

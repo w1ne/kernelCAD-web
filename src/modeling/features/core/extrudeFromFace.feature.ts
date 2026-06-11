@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { ArrowUpFromLine } from 'lucide-react';
 import { type Feature } from '../types';
 import { CodeBuilder } from '../../../shared/codeGeneration/CodeBuilder';

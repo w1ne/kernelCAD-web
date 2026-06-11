@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useState, useCallback } from 'react';
 import { getReturnedVariables } from '../../shared/codeGeneration/ast';
 import type { GeometryResult } from '../../shared/worker/geometryEngine';

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/shared/cache/userCache.test.ts
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';

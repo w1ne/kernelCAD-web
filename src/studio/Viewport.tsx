@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import Viewer from './components/Viewer';
 import { useWorkbench } from './context/WorkbenchContext';
 import { useRecomputeResult } from './hooks/useRecomputeResult';

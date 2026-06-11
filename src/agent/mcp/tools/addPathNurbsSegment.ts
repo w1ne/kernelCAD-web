@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/addPathNurbsSegment.ts
 //
 // MCP tool wrapper for `add_path_nurbs_segment`. Injects `.nurbsSegment([...])`

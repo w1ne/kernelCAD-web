@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Query types shared between kernel resolvers and intent records.
 // Lives in shared/ so intent types (featureRecord, queryKeys) can reference
 // FaceQuery/EdgeQuery without a shared→kernel upward dep.

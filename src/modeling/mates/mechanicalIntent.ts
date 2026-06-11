@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { Assembly, MechanicalJointIntentRecord } from '../capture/assembly';
 import type { Vec3 } from '../../shared/runtime/se3';
 import { parseConnectorRef, type MateRecord } from './mate';

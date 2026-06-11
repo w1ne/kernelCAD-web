@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/backends/occt/exportSvgDrawing.test.ts
 //
 // Structural gate for the engineering-drawing SVG exporter. Renders small

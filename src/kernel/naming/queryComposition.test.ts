@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/naming/queryComposition.test.ts
 //
 // Q4 — composed-query failure isolation per D0.16 (c).

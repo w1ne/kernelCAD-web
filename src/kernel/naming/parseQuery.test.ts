@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/naming/parseQuery.test.ts
 //
 // Q7 — failing tests for the @kcq[...] string DSL parser. The parser is a

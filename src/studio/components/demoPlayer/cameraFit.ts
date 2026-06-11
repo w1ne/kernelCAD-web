@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Perspective-fit math shared by the demo player's engineering-view camera
 // (fitCameraToBounds / setRenderView) and arbitrary-pose camera
 // (setRenderPose). Computes the camera distance at which all eight bounds

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/addMate.ts
 //
 // v0.6 MCP tool — declare a typed mate between two named connectors on the

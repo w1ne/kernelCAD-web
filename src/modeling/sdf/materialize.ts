@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modules/sdf/materialize.ts
 //
 // Capture-time orchestrator for `sdf.materialize(field, opts?)`.

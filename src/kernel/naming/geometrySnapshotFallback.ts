@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/naming/geometrySnapshotFallback.ts
 //
 // Geometry-snapshot fallback resolver. Used by `resolveFaceRef` when the

@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/portfolioAttempt.ts
 //
 // Run one agent attempt against a portfolio entry's prompt and append

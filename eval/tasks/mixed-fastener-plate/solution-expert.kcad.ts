@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 return box(100, 100, 10)
   .hole('top', { u: -30, v:   0, diameter: 6, depth: 'through', counterbore: { diameter: 11, depth: 4 } })
   .hole('top', { u:  30, v:   0, diameter: 6, depth: 'through', counterbore: { diameter: 11, depth: 4 } })

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { SketchGeometry } from '../worker/geometryEngine';
 import { getSketchVariablesAST, getReturnedVariables } from './ast';
 

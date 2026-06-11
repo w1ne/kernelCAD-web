@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { CaptureSession } from './captureSession';
 import type { FeatureId, Vec3 } from '../../shared/intent/types';
 import type { Curve3DMetadata } from '../../shared/intent/curve3dRecord';

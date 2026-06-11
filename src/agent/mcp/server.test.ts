@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /**
  * Bridge wiring for MCP `resources/*` — Slice C of the meaningful-onboarding
  * iteration (2026-05-24).

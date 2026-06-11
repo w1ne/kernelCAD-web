@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /**
  * `/__kernelcad/texture?path=<encoded>` — dev-server route for serving texture
  * image bytes off the host filesystem (or sha256-cached from a remote URL).

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useWorkbench } from '../context/WorkbenchContext';
 import { InsertShapeCommand } from '../../authoring/commands/implementations/InsertShapeCommand';
 

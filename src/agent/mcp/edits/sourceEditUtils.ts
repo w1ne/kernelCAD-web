@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Small source-edit primitives shared by MCP source mutation tools.
 
 export interface SourceEditResult {

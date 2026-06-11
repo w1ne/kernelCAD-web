@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { AnimationViewMetadata } from '../../shared/intent/animationViewRecord';
 

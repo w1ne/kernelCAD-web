@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // MUSE 'pen_holder' — cylindrical desktop pen cup, PLA, 3D printed.
 // Single solid: outer cylinder minus inner cavity, leaving a uniform
 // 3 mm wall and 3 mm base floor.

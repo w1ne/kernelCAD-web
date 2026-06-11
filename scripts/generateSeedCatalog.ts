@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/generateSeedCatalog.ts
 //
 // Build-time generator for the bundled parts catalog. Emits one STEP file

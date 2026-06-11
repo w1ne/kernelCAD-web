@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/backends/occt/drawingLayout.test.ts
 //
 // Pure-math tests for the drawing-sheet 2D layer: coincident-segment dedup,

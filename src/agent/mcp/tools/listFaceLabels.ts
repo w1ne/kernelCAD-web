@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/listFaceLabels.ts
 //
 // MCP tool: list user-applied labels visible in a script — both sketch-segment

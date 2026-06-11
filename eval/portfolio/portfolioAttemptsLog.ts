@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/portfolio/portfolioAttemptsLog.ts
 import { appendFileSync, existsSync, readFileSync } from 'node:fs';
 import { isFailureModeTag, type FailureModeTag } from './failureMode';

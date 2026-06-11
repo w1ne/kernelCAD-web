@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/lint-demos.ts
 //
 // Validates the docs/demos/ directory contents against H11 ship-gate criteria.

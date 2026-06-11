@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/faceLabels.ts
 // Shared capture-time validation for `faceLabels` option on creating ops.
 // Kept in a separate module to avoid circular dependencies between

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kinematic/sweptPoseEnumeration.ts
 //
 // Pure pose enumeration for the swept-collision loop. Three branches:

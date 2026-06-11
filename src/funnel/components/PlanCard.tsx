@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { PlanTier } from '../lib/apiClient';
 
 export interface PlanCardProps {

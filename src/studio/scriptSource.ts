@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { findGallerySourceUrl, galleryPrecomputedMeshUrl } from './gallerySource';
 import { apiCall, rewritePath } from './api/apiBase';
 import type { SerializedParamTable } from '../shared/runtime/paramTable';

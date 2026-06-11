@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/backends/verb/curveBridge.ts
 //
 // Internal-only bridge between kernelCAD's OCCT-backed Curve3D proxy and the

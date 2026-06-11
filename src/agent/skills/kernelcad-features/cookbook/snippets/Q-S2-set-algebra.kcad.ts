@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Q-S2 — Set-algebra composition on face Queries
 //
 // Demonstrates: `.and(...)` (intersection), `.or(...)` (union),

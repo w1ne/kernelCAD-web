@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/shared/intent/referenceImageRecord.ts
 //
 // Types for the referenceImage() top-level API. A reference-image feature is

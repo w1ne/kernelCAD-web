@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/transformMesh.ts
 //
 // Apply an SE(3) Transform to a FeatureMesh's geometry.

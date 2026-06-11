@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback } from 'react';
 import { Check, X } from 'lucide-react';
 import { useShellStore, shellStore } from './store/useShellStore';

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { useRef } from "react";

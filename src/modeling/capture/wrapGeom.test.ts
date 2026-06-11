@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/wrapGeom.test.ts
 //
 // P11 Slice 2 — capture-side validation for `part.wrapGeom(name, opts)`

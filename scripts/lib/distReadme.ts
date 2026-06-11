@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/lib/distReadme.ts
 //
 // Authors the dist repo's README.md. Native phrasing only — no

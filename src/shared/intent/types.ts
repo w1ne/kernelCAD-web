@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 export type Vec3 = [number, number, number];
 export type Vec2 = [number, number];
 export type Mat4 = number[]; // 16 elements, column-major

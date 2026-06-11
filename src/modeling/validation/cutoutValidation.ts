@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/intent/cutoutValidation.ts
 //
 // Script-time validators for `Shape.cutout(profile, opts)`. Same vocabulary

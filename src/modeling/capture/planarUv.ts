@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/planarUv.ts
 //
 // Bbox-planar UV generator. For each face we project the vertex positions onto

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Q-S5 — Connector Queries for mate-side targeting
 //
 // Demonstrates: `q.connector(...)` composed with `q.ownedByPart(...)` and

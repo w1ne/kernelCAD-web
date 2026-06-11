@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/oracle/scoreReference.ts
 //
 // Wraps src/lib/imageSimilarity/score.ts for per-task harnesses that score

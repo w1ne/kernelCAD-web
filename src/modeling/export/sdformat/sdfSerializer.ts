@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/export/sdformat/sdfSerializer.ts
 //
 // Pure SDFormat minimal-tier serializer. Emits <sdf><model> with

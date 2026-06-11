@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/addConnector.ts
 //
 // v0.6 MCP tool — register a mate-style connector on a named part of the

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/script-runtime/partStats.ts
 //
 // Stats-only view of a solved assembly's parts — shared by the

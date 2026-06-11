@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/parts/remoteClient.ts
 //
 // Opt-in remote tier. Accepts partsBaseUrl as an argument OR the

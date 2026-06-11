@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Visual smoke for the W1 material expansion: glass + brushed-metal + textured.
 //
 // Three primitives side by side, each demonstrating one new PBR archetype.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/backends/occt/holeLowerer.ts
 //
 // Lowering for `Shape.hole(face, opts)` / `Shape.holes(face, opts)`.

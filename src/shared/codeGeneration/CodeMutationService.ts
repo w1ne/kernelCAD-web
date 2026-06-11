@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { parseCode } from './ast';
 
 export type CodeTransform = (prev: string) => string;

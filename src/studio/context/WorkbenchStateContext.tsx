@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createContext, useContext, useReducer, type ReactNode } from 'react';
 import { type WorkbenchState, type WorkbenchAction, workbenchReducer, INITIAL_STATE } from './workbenchState';
 

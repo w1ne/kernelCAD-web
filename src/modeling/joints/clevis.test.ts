@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/joints/clevis.test.ts
 //
 // G1 unit tests for `joint.clevis(...)`. Six tests covering the spec's

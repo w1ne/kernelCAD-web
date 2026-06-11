@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Wayfarer front face — V slice rewrite (recognizable Ray-Ban Meta).
 // Uses path().spline() (V4 tangent extension) for wing + bridge curves.
 // Uses Curve3D.analytics.divideByEqualArcLength (V2) for lens centers.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/lib/distToolNameGate.ts
 //
 // For every backtick-quoted identifier in every shipped SKILL.md +

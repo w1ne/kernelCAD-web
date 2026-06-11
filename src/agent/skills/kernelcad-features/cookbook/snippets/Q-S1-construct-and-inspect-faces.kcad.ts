@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Q-S1 — Construct a Query and inspect it before consuming
 //
 // Demonstrates: building a `Query<FaceMarker>` via `q.face(...)`, narrowing

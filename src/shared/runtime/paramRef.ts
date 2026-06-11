@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Symbolic parameter reference. See spec §E.1.
 //
 // A ParamRef is a branded handle returned by `kcad.param()` and `kcad.params({})`.

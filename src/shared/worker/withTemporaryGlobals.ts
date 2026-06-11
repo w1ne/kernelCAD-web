@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 type GlobalScope = Record<string, unknown>;
 
 export function withTemporaryGlobals<T>(globals: Record<string, unknown>, run: () => T): T {

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Q-S6 — Inspect first, build after (the agent-loop pattern)
 //
 // Demonstrates: building a Query, serializing it via `.toString()` to the
