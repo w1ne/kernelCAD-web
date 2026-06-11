@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/parts/stepPartsAdapter.ts
 //
 // Adapter for the step.parts public catalog (https://api.step.parts). This is

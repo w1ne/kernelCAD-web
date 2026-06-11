@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Tests for the step.parts → PartRecord adapter. The fixture is a verbatim
 // /v1/parts/{id} response captured from https://api.step.parts (June 2026).
 

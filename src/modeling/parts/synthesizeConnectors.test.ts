@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Tests for fetch-time connector synthesis from a STEP inspection report.
 
 import { describe, it, expect } from 'vitest';

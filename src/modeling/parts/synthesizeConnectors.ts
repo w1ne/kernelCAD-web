@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/parts/synthesizeConnectors.ts
 //
 // Fetch-time connector synthesis for parts pulled from a remote catalog
