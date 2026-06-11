@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/addPatternFeature.ts
 //
 // Typed AST-edit MCP tool — composes a Shape.patternLinear / .patternCircular /

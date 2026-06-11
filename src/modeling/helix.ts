@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modules/helix.ts
 //
 // Pure helix point generator for `Sketch.sweep(rail)`. Returns a polyline

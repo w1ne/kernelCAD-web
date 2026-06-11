@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/runtime/mjcfWrapGeom.test.ts
 //
 // P11 Slice 2 — MJCF emit for tendon wrap-geom routing. A part with a

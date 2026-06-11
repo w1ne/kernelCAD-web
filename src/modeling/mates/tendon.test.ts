@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/mates/tendon.test.ts
 //
 // P7 — capture-side validation for `arm.tendon(name, opts)`. Verifies the

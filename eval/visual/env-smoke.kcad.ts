@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Visual smoke for HDRI / IBL rendering (W2).
 //
 // A reflective sphere + matte cube; the matte cube is the "control" that

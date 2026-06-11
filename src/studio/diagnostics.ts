@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Studio shell — synthetic diagnostic codes the UI emits.
 //
 // SEPARATE registry from the kernel-emitted `DiagnosticCode` catalogue

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { AlertTriangle, CheckCircle2, Loader2, MousePointer2 } from 'lucide-react';
 import type { StudioLayoutMode } from '../../../shared/types/layout';
 import type { ViewMode3D } from '../../../shared/types/viewMode';

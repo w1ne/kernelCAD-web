@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AnimationViewMetadata } from '../../../shared/intent/animationViewRecord';
 import { sampleTrackAt } from '../../../agent/render/animationSampler';

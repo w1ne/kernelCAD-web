@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/validateUrdf.ts
 //
 // Parse-and-check the .urdf at urdf_path. Useful for round-trip

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createRequire } from 'node:module';
 import { TelemetryEmitter } from './emitter';
 import {

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // 30 × 6 mm rectangle, centered on (0, 0) in face-local 2D.
 const slot = path()
   .moveTo(-15, -3)

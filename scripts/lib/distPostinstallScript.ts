@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/lib/distPostinstallScript.ts
 //
 // Authors scripts/postinstall.mjs INSIDE the dist repo. The script

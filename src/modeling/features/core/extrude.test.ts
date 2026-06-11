@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect, vi } from 'vitest';
 import { ExtrudeFeature } from './extrude.feature';
 import { type FeatureContext } from '../types';

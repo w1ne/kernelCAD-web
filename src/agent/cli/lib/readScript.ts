@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/cli/lib/readScript.ts
 //
 // Shared CLI-layer helper: read a .kcad.ts script from disk, mapping FS

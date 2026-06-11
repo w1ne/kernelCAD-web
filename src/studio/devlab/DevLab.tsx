@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useMemo, useState } from 'react';
 import { StudioShell } from '../StudioShell';
 import { devLabScenarios } from './scenarios';

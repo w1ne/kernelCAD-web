@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/captureRotateOnly.ts
 //
 // Minimal rotate-only capture for the pocket-watch demo.mp4. Bypasses the

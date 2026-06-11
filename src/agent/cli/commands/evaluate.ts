@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/cli/commands/evaluate.ts
 import { Command } from 'commander';
 import { formatHuman } from '../../../shared/diagnostics/formatter';

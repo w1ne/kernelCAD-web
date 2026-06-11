@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/lib/mates/validator.test.ts
 import { describe, it, expect } from 'vitest';
 import {

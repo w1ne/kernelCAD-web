@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/naming/queryEvaluator.ts
 //
 // Q3 — the Query evaluator. evaluate(query, scene) → ResolvedEntity[].

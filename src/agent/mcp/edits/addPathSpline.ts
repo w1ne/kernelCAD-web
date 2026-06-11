@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/edits/addPathSpline.ts
 //
 // NURBS Slice D Task 4: insert a `.spline([...], opts?)` call into an

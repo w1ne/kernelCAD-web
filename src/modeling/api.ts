@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { CaptureSession } from './capture/captureSession';
 import { validateFaceLabels } from './capture/faceLabels';
 import { makeAssembly, type Assembly } from './capture/assembly';

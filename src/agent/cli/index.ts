@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/cli/index.ts
 import { Command } from 'commander';
 import { createRequire } from 'node:module';

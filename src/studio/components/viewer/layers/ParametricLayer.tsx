@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { type ThreeEvent } from "@react-three/fiber";
 import { TransformControls } from "@react-three/drei/core/TransformControls";
 import * as THREE from "three";

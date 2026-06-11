@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/getBendTable.ts
 //
 // W2.2: MCP `get_bend_table` tool — list every sheetMetalBend in the script

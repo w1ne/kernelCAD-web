@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { INGEST_URL, EVENT_FIELD_ALLOWLIST, type TelemetryEvent } from './types';
 
 export interface EmitterOptions {

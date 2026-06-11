@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 export interface RateLimitedPanelProps {
   /** Whether the visitor is currently signed in. When false, the panel
    * routes the click to the existing SignInModal flow rather than Stripe. */

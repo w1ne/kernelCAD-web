@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 export const MCP_URL = 'https://mcp.kernelcad.com/mcp';
 
 export const CLAUDE_CODE_CMD = `claude mcp add --transport http kernelcad ${MCP_URL}`;

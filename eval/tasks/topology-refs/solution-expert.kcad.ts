@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Reference build for the topology-refs eval task. The box declares a
 // user-applied face label `lid -> top`; a bottom-face pilot hole stamps
 // lineage snapshots on every result face; the fillet on the bottom face

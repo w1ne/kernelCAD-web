@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { ShapeBackend } from '../kernel/backends/backend';

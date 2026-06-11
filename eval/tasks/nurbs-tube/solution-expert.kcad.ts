@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Polygonal NURBS tube: 16-sided approximation of a circle.
 // Slice-1 ships non-rational surfaces only, so we use a fine polygon
 // (degree 1 in U) rather than a 3-point rational quarter-circle.

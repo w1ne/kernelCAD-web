@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/edits/addPathHermiteG2.ts
 //
 // NURBS Slice D Task 4: insert a `.hermiteG2(a, b)` call into an existing

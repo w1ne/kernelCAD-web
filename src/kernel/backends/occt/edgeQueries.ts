@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/backends/occt/edgeQueries.ts
 //
 // Query-based edge/face selection. Maps typed query keys to the kernel's

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // The flat-pattern roundtrip is exercised by the harness via the
 // `flatten_pattern` MCP tool, which lowers the Shape (populating the
 // bendRecord metadata) before walking back to the sheetMetal root.

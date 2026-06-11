@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /**
  * Code analysis utilities for kernelCAD.
  * Note: Most code manipulation now uses AST (see ast.ts).

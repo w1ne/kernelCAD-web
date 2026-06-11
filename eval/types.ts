@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Shared types for the eval harness. No runtime code here.
 
 export interface Diagnostic {

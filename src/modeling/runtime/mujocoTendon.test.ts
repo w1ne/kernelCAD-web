@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/runtime/mujocoTendon.test.ts
 //
 // P7 Task 0 — verify MuJoCo's <tendon><spatial> primitive applies force on

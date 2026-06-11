@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/backends/occt/exportGlb.ts
 //
 // GLB writer using three.js's `GLTFExporter`. Builds a `THREE.Scene` from

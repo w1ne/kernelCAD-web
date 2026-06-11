@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Adapter: WorkbenchContext.scriptReview → ValidatorResult.
 //
 // `/__kernelcad/review` runs `reviewCadTool` server-side, which calls

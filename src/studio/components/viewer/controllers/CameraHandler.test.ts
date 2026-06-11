@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
 import { computeGeometryBounds } from './cameraBounds';
 import type { GeometryResult } from '../../../../shared/worker/geometryEngine';

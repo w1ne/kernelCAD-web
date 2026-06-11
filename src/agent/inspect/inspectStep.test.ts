@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/inspect/inspectStep.test.ts
 //
 // W4 inspection — Task 3: STEP inspect orchestrator. Round-trips a known

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/listFaces.ts
 //
 // MCP tool: list faces of a kernelCAD shape with optional FaceQuery filter.

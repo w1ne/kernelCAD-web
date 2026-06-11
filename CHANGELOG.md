@@ -1,4 +1,12 @@
-# kernelCAD v0.12.0
+# kernelCAD v0.12.1
+
+## v0.12.1 — 2026-06-11
+
+Metadata-only patch (code identical to v0.12.0):
+
+- `package.json` declares `license: MIT` and the package author, so the npm registry no longer lists the package as unlicensed.
+- LICENSE copyright line is now `Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors`.
+- Every source file carries a two-line SPDX license/copyright header (idempotent `scripts/addSpdxHeaders.mjs`).
 
 ## v0.12.0 — 2026-06-09
 

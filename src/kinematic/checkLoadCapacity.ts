@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kinematic/checkLoadCapacity.ts
 //
 // T6 closed-form Euler-Bernoulli load-capacity check.

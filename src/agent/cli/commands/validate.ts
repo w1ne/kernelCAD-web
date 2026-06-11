@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/cli/commands/validate.ts
 //
 // `kernelcad validate <file.kcad.ts>` — runs the MVP assembly validator

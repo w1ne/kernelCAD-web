@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/oracle/cadQueryEvalScorer.test.ts
 //
 // Tests for the pure enrichment helper that lifts the opaque "Mesh is

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/render/headlessRender.ts
 //
 // Headless multi-view PNG renderer. Powers `kernelcad render`. Reuses the

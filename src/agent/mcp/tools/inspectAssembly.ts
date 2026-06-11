@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/evaluate';
 import type { Assembly, AssemblyPartStored, TransmissionIntentRecord } from '../../../modeling/capture/assembly';
 import type { Vec3 } from '../../../shared/intent/types';

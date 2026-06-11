@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/flattenPattern.ts
 //
 // W2.2: MCP `flatten_pattern` tool — return the unfolded 2D outline of a

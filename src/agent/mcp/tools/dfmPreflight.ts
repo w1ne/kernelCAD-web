@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/dfmPreflight.ts
 //
 // Slice E — vendor-parameterized DFM preflight MCP tool. Public skill:

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 export interface GalleryManifestEntry {
   slug: string;
   sourceUrl: string | null;

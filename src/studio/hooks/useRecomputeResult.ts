@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useEffect, useMemo } from 'react';
 import { useWorkbench } from '../context/WorkbenchContext';
 import { reviewToValidity, reviewToMechanismBanner } from '../adapters/reviewToValidity';

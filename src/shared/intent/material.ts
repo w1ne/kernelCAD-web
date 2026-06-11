@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /**
  * Physically-based-rendering material spec applied to a Shape at capture time.
  * Mutated onto `FeatureRecord.metadata.material` by `Shape.material()`. The

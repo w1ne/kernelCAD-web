@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/edits/addSurfaceFromBoundary.ts
 //
 // NURBS Slice C Task 7: insert a `surfaceFromBoundary([c1, c2, c3, c4], opts?)`

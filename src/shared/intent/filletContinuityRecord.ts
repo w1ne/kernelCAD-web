@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /**
  * Discriminator for the per-group continuity grade on `Shape.fillet` and
  * `Shape.chamfer` requests. Threaded through to the OCCT backend in Task 6

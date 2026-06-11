@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/oracle/scoreMesh.ts
 //
 // 3D-geometric scorer comparing two STL meshes.

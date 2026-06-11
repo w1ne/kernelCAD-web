@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/vision/router.ts
 //
 // Auto-routing for the `trace_from_image` tool. Inspects the image's corner

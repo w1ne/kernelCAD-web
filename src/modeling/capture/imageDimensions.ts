@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/imageDimensions.ts
 //
 // Minimal image-header parser. Reads only the first N bytes of a file to

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/tasks/eyewear-wayfarer-front/harness.test.ts
 //
 // W2 — verifies the harness ANDs fidelity gates BEFORE visual scoring so a

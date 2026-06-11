@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Equilateral triangle (30 mm sides) revolved 180° around the Z axis.
 // One side runs radially from (30, 0) → (60, 0) in (radial-X, axial-Z);
 // the apex sits at (45, 25.981). A 180° partial revolve sweeps CCW from

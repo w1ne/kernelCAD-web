@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/edits/addPathSpline.test.ts
 //
 // V slice — Task V4: tangent-extension input shape for the add_path_spline

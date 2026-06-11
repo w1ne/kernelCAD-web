@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Hub: cylinder height 10, radius 30, anchored at origin.
 const hub = cylinder(10, 30);
 

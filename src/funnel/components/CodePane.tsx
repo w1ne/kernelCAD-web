@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import Editor from '@monaco-editor/react';
 
 export interface CodePaneProps {

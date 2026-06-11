@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { GateReport, GateRunner } from '../../src/agent/loop/types.js';
 import { evaluateScript } from '../oracle/kernelcad-client.js';
 import { runInterference } from '../oracle/interference.js';

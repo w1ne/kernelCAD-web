@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/index.ts
 //
 // Top-level kernel barrel — re-exports the public-within-the-monorepo

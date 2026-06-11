@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/vision/types.ts
 //
 // Public I/O types for the `trace_from_image` photo-to-sketch trace tool.

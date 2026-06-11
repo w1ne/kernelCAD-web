@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/mates/helixPolyline.test.ts
 //
 // P11 Slice 3 — helixPolylineRouted spirals a coil along a wrap-routed

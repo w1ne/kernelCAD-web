@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/lib/imageSimilarity/fidelityGates.test.ts
 //
 // W2 fidelity gates. The "expected feature" gate is STRUCTURAL: it consumes the

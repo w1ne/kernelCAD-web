@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/properties/massProperties.ts
 //
 // Pure wrapper over OCCT's BRepGProp::VolumeProperties. Mirrors the

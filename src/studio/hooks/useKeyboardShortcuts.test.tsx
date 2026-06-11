@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // @vitest-environment jsdom
 import { render, cleanup } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';

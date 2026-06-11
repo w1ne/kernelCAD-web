@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Param table — session-owned registry of declared symbolic parameters.
 // See spec §E.5.
 //

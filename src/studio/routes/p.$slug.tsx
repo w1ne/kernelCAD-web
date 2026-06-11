@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import App from '../App';

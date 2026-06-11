@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/lib/distSkillManifest.ts
 //
 // Generates .claude-plugin/plugin.json from filesystem-discovered

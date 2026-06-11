@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useSyncExternalStore } from 'react';
 import { shellStore, type ShellState } from './shellStore';
 

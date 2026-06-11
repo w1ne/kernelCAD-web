@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/backends/occt/lookupSourceColor.ts
 //
 // SceneBackend emission helper (used by the solvedAssembly / assemblyModel

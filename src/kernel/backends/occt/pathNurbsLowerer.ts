@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/backends/occt/pathNurbsLowerer.ts
 //
 // NURBS Slice D Task 3 — mixed-source path-NURBS lowerer.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/inspectStep.ts
 //
 // MCP tool: inspect a STEP file without evaluating a script — solid tree

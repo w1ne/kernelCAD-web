@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/lib/mates/validator.ts
 //
 // MVP assembly validator (v0.5). Catches the "parts floating in space"

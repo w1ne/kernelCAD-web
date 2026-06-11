@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ValidatorResult } from '../../modeling/mates/validator';
 import type { SelectedFeatureId } from '../types';
 

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/naming/topoRef.ts
 //
 // Parser + formatter for the @kc[owner/kind/name] topology-ref grammar.

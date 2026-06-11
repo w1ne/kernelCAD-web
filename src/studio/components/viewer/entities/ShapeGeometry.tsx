@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as THREE from "three";
 import { useCallback, useMemo, useEffect } from "react";
 import { type ThreeEvent } from "@react-three/fiber";

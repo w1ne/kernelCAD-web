@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/render/materialRoles.ts
 //
 // Role → physically-based-rendering profile. Drives MeshStandardMaterial's

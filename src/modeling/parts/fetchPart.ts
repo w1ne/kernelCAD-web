@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/parts/fetchPart.ts
 //
 // Resolution-order orchestrator. Per spec §4.3:

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/mates/tendon.ts
 //
 // P7 — closed-loop balance-spring primitive. A tendon is a passive spring

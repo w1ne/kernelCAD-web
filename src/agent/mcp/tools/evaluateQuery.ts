@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/evaluateQuery.ts
 //
 // Q8a — the agent's discovery primitive for the Query DSL. Inspect a Query

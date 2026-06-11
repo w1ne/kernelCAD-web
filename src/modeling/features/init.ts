@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { featureRegistry } from './FeatureRegistry';
 import { BoxFeature, CylinderFeature, FilletFeature, ChamferFeature, CutFeature, UnionFeature, IntersectFeature, ExtrudeFeature, RevolveFeature, OffsetPlaneFeature, MidplaneFeature, TangentPlaneFeature, SketchOnFaceFeature, ExtrudeFromFaceFeature } from './core/index';
 

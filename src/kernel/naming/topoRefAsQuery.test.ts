@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/naming/topoRefAsQuery.test.ts
 //
 // Q7 — failing tests for the strings-as-sugar bridge per D0.9 (b).

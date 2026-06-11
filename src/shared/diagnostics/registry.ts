@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Single source of truth for the kernelCAD agent-facing diagnostic
 // vocabulary. Every entry below corresponds to a distinct recovery action
 // an agent would take. See spec 2026-05-05-diagnostic-vocabulary-milestone-c.

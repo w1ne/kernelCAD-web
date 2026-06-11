@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { Diagnostic, HarnessResult, Score, TranscriptEvent } from './types';
 
 const FENCED_LANGS = ['typescript', 'ts', 'kcad', ''];

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/evaluate';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';

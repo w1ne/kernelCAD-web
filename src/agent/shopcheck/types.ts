@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/shopcheck/types.ts
 //
 // Slice E DFM preflight — shared types for the rule engine, measurement

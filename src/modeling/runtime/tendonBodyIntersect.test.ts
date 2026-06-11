@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/runtime/tendonBodyIntersect.test.ts
 //
 // P11 Slice 2 — criterion 8 (mechanism.tendon-body-intersect), tested at

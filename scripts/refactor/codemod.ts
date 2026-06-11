@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { Project } from 'ts-morph';
 import { resolve, relative, dirname, join } from 'node:path';
 import { existsSync } from 'node:fs';

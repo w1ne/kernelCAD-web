@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/components/demoPlayer/AnimationEngine.test.ts
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest';

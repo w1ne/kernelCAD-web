@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/addSurfaceFromBoundary.ts
 //
 // MCP tool wrapper for `add_surface_from_boundary`. Inserts a

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useState, useEffect, useRef } from 'react';
 import { agentAPI } from '../../../agent/api';
 import Markdown from 'react-markdown';

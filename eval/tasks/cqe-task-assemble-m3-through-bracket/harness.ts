@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/tasks/cqe-task-assemble-m3-through-bracket/harness.ts
 //
 // Gates the parts-catalog round-trip:

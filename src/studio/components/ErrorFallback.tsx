@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { AlertTriangle, Copy, Download, RefreshCw } from 'lucide-react';
 import { useWorkbench } from '../context/WorkbenchContext';
 

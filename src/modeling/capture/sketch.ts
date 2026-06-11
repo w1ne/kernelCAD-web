@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/sketch.ts
 import type { FeatureId, FeatureRef, Vec3, AxisSpec, Param } from '../../shared/intent/types';
 import { isValidAxisSpec } from '../../shared/intent/types';

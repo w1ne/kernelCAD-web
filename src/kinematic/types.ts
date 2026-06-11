@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kinematic/types.ts
 //
 // T2 scaffolding for the kc.kinematic.* facade. Defines the per-entry

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Q3 — Query evaluator. Resolves QueryAst nodes against a QueryScene, returning
 // the matching ResolvedEntity[] in canonical order. Lazy at lowering per D0.3:
 // construction never touches the scene; evaluation reads the scene afresh on

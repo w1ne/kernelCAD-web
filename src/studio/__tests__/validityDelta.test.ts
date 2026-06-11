@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
 import { computeValidityDelta } from '../logic/validityDelta';
 import type { ValidatorDiagnostic, ValidatorResult } from '../../modeling/mates/validator';

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/backends/occt/embossTextLowerer.ts
 //
 // Lower a W3 `embossText` FeatureRecord into a face-authored solid.

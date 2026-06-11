@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/checkVideoNotBlack.ts
 //
 // Per-frame "is this video black?" gate. Required by

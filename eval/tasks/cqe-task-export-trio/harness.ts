@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/tasks/cqe-task-export-trio/harness.ts
 //
 // Round-trip gate covering the whole export_model matrix in a single eval

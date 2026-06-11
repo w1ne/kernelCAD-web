@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Agent-parts-discipline check: flag multi-body models that were authored as
 // loose top-level bodies instead of named `assembly().part(name, shape)`
 // parts.

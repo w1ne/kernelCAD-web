@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Reference build for cqe-task-assemble-m3-through-bracket.
 
 const arm = assembly('arm');

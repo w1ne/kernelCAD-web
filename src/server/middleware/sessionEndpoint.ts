@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /**
  * Slice 2E.bridge — `GET /__kernelcad/session?script=<path>`.
  *

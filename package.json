@@ -2,7 +2,9 @@
   "name": "kernelcad",
   "mcpName": "com.kernelcad/kernelcad",
   "private": false,
-  "version": "0.12.0",
+  "version": "0.12.1",
+  "license": "MIT",
+  "author": "Andrii Shylenko <andrii@shylenko.com>",
   "type": "module",
   "repository": {
     "type": "git",

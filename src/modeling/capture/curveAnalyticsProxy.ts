@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/curveAnalyticsProxy.ts
 //
 // JS-side analytics surface for Curve3D. All methods delegate to the

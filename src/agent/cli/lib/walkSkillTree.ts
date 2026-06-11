@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/cli/lib/walkSkillTree.ts
 //
 // Depth-unbounded SKILL.md discoverer. Shared by the legacy

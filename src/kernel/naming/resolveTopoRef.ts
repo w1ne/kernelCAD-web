@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/naming/resolveTopoRef.ts
 //
 // Unified topology-ref dispatcher. Compose-layer over the existing identity

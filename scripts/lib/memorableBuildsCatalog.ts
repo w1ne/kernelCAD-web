@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/lib/memorableBuildsCatalog.ts
 //
 // Machine-readable mirror of §2 of

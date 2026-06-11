@@ -1,4 +1,6 @@
 #!/usr/bin/env tsx
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/smokeKinematicFacade.ts
 //
 // Inner-loop smoke for the T2 kc.kinematic.* facade. Builds a tiny

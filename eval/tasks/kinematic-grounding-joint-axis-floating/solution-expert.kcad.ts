@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Gate 2 demonstration — revolute mate whose axis line floats 50 mm above
 // both bodies. Gate 2 emits `assembly.joint-axis.unbound` (error) on
 // each unbound side. Under `validate: 'warn'` the diagnostic appears on

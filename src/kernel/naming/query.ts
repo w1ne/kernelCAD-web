@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/naming/query.ts
 //
 // Slice Q — Query value type + AST + EntityMarker phantom types + chainable

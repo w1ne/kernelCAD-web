@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 export function TitleCard({ title, tagline }: { title: string; tagline: string }): React.JSX.Element {
   return (
     <div

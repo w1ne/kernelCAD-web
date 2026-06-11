@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/addSketchText.ts
 //
 // MCP tool: AST-edit a `sketch.text(...)` call into a kernelCAD script.

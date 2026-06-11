@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';

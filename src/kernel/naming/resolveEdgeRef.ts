@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/naming/resolveEdgeRef.ts
 //
 // Slice scope: edge `created` refs are resolved by delegating to

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /**
  * Pose-only fast path — `GET /__kernelcad/transforms?session=<token>`.
  *

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // expected: []
 //
 // Snippet 6 — non-robotics mechanism: an over-center latch driving a

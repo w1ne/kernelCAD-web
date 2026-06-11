@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { Canvas } from "@react-three/fiber";
 // Subpath imports — pulling from the barrel index made vite prebundle 3.6MB
 // of drei. We only use 3 components total across the whole app.

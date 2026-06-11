@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/tasks/topology-refs/harness.ts
 //
 // F-surface Task F6 — lock the @kc[...] round-trip property:

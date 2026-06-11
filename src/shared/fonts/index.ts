@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/lib/fonts/index.ts
 //
 // Bundled-font loader + script-relative font path resolver. Owns the

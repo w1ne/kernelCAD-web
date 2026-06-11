@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/lookupCookbook.ts
 //
 // MCP tool: BM25 search over the curated kernelCAD cookbook. Returns

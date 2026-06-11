@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect } from 'vitest';
 import { extractScript, formatDiagnostics, computeScore, renderTranscript } from './lib';
 import type { Diagnostic, TranscriptEvent, Score } from './types';
