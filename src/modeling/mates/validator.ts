@@ -298,16 +298,23 @@ function collectParts(records: readonly FeatureRecord[]): PartInfo[] {
 }
 
 /**
- * Walk `solvedAssembly` records and pull v0.6 mate edges into a flat list
- * of `[aPartName, bPartName]` pairs. Mate refs are `'partName.connectorName'`
- * strings; we slice off the connector and keep the part. Returns [] when no
- * solvedAssembly record carries mates (v0.5-only assemblies or pre-solve
- * record streams).
+ * Walk scene-producing assembly records (`solvedAssembly` AND `assemblyModel`)
+ * and pull v0.6 mate edges into a flat list of `[aPartName, bPartName]`
+ * pairs. Mate refs are `'partName.connectorName'` strings; we slice off the
+ * connector and keep the part. Returns [] when no record carries mates
+ * (v0.5-only assemblies or pre-solve record streams).
+ *
+ * Both record kinds matter (issue #448): `Assembly.solvedModel` writes mate
+ * metadata onto a `solvedAssembly` record, while `Assembly.model()` writes
+ * the identical metadata onto an `assemblyModel` record. Walking only
+ * `solvedAssembly` made the same mated assembly validate clean via
+ * `solvedModel({})` but emit spurious floating-part warnings via `.model()` —
+ * which trains agents to ignore the floating-part gate.
  */
 function collectMateEdges(records: readonly FeatureRecord[]): readonly (readonly [string, string])[] {
   const out: [string, string][] = [];
   for (const r of records) {
-    if (r.kind !== 'solvedAssembly') continue;
+    if (r.kind !== 'solvedAssembly' && r.kind !== 'assemblyModel') continue;
     const meta = r.metadata as { mates?: ReadonlyArray<{ a: string; b: string }> } | undefined;
     const mates = meta?.mates;
     if (!Array.isArray(mates)) continue;
