@@ -93,6 +93,7 @@ export function computeScore(
   };
   if (meta.firstFailureCode !== undefined) out.firstFailureCode = meta.firstFailureCode;
   out.funnel = buildFunnel(result.gates, result.scored);
+  if (result.metrics !== undefined) out.metrics = result.metrics;
   return out;
 }
 

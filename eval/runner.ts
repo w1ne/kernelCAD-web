@@ -187,7 +187,13 @@ export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
   let harnessResult: HarnessResult;
   if (lastEvaluateOk) {
     const harnessModule = await import(harnessPath);
-    harnessResult = await harnessModule.default(outputScriptPath);
+    // Harnesses take an optional ctx so external scorers (cadqueryeval, MUSE)
+    // know where the task's reference artifacts live and where to write
+    // intermediates. Single-arg harnesses ignore the extra argument.
+    harnessResult = await harnessModule.default(outputScriptPath, {
+      taskDir: taskDirAbs,
+      runDir: args.runDir,
+    });
   } else {
     harnessResult = { gates: { 'evaluates clean': false }, scored: {} };
   }
