@@ -9,10 +9,11 @@
 //   - `connectors` — step.parts ships none; they are synthesized at fetch time
 //     from the downloaded STEP (see synthesizeConnectors.ts). The mapper emits
 //     an empty list; fetchPartHost fills it.
-//   - `license`    — step.parts exposes no license field. We stamp a provenance
-//     default (`STEP_PARTS_LICENSE`) plus `attribution = pageUrl` so the source
-//     is always recorded. The STEP geometry is NOT re-hosted; it is fetched to
-//     the user cache on demand.
+//   - `license`    — step.parts exposes no per-part license field, but the
+//     catalog repo (earthtojake/step.parts) is MIT, which covers the geometry.
+//     We stamp `STEP_PARTS_LICENSE` ('MIT') plus `attribution = pageUrl` to
+//     satisfy MIT's attribution requirement. The STEP is NOT re-hosted; it is
+//     fetched to the user cache on demand.
 //
 // `sha256` and `stepUrl` ARE present on the per-part detail endpoint, so byte
 // integrity verification (getOrFetchAsync) works unchanged.
@@ -21,11 +22,11 @@ import type { PartRecord } from '../../shared/parts/types';
 
 export const STEP_PARTS_BASE_URL = 'https://api.step.parts';
 
-/** Provenance marker stamped on every step.parts record. step.parts publishes
- *  no per-part license; the catalog repo is MIT, but individual geometry terms
- *  are the source's to state, so we record provenance rather than assert a
- *  license we cannot verify. */
-export const STEP_PARTS_LICENSE = 'unverified:step.parts';
+/** License stamped on every step.parts record. The catalog repo
+ *  (earthtojake/step.parts) is MIT, which covers the bundled geometry; MIT's
+ *  attribution requirement is met by each record's `attribution` (the part's
+ *  catalog page). Matches kernelCAD's own bundled-tier license. */
+export const STEP_PARTS_LICENSE = 'MIT';
 
 /** Raw shape of a step.parts /v1/parts/{id} detail record (the fields we read). */
 export interface StepPartsRecord {

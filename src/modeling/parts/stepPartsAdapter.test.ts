@@ -48,7 +48,7 @@ describe('mapStepPartsRecord', () => {
     );
   });
 
-  it('stamps a provenance license and pageUrl attribution (step.parts has none)', () => {
+  it('stamps MIT (the step.parts repo license) and pageUrl attribution', () => {
     const r = mapStepPartsRecord(REAL);
     expect(r.license).toBe(STEP_PARTS_LICENSE);
     expect(r.attribution).toBe(REAL.pageUrl);

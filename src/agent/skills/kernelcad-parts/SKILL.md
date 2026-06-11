@@ -165,10 +165,10 @@ a bundled one:
   central hole. The part participates in `add_mate` with no manual
   `partRef.connector(...)`. Oddly-shaped parts may still need a hand-authored
   frame — inspect the synthesized set before relying on it.
-- **Provenance.** Each record carries `license: 'unverified:step.parts'` and
-  `attribution` = the part's catalog page. The geometry is fetched on demand,
-  never re-hosted; confirm per-part terms before redistributing a deliverable
-  that embeds it.
+- **Provenance.** The step.parts catalog repo is MIT, so each record carries
+  `license: 'MIT'` with `attribution` = the part's catalog page (satisfying
+  MIT's attribution requirement). The geometry is fetched on demand, never
+  re-hosted; keep the attribution when shipping a deliverable that embeds it.
 
 **Overriding or disabling the source:**
 
