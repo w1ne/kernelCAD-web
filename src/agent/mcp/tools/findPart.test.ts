@@ -7,14 +7,16 @@ describe('find_part MCP tool', () => {
   let prevEnv: string | undefined;
   beforeEach(() => {
     prevEnv = process.env.KERNELCAD_PARTS_BASE_URL;
-    delete process.env.KERNELCAD_PARTS_BASE_URL;
+    // step.parts is the production default; disable the tier so these assert
+    // bundled-only / remote-disabled behavior offline.
+    process.env.KERNELCAD_PARTS_BASE_URL = 'off';
   });
   afterEach(() => {
     if (prevEnv === undefined) delete process.env.KERNELCAD_PARTS_BASE_URL;
     else process.env.KERNELCAD_PARTS_BASE_URL = prevEnv;
   });
 
-  it('returns bundled-only results when partsBaseUrl is unset', async () => {
+  it('returns bundled-only results when the tier is disabled (off)', async () => {
     const r = await findPartTool({ query: 'M3 screw', limit: 5 });
     expect(r.ok).toBe(true);
     if (!r.ok) throw new Error('not ok');
@@ -22,7 +24,7 @@ describe('find_part MCP tool', () => {
     expect(r.results.length).toBeGreaterThan(0);
   });
 
-  it('source: "remote" with no partsBaseUrl returns parts.fetch.remote-disabled', async () => {
+  it('source: "remote" with the tier disabled (off) returns parts.fetch.remote-disabled', async () => {
     const r = await findPartTool({ query: 'M3', source: 'remote' });
     expect(r.ok).toBe(false);
     if (r.ok) throw new Error('expected error');

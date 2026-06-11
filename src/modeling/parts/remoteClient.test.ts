@@ -14,8 +14,18 @@ describe('remoteClient', () => {
     vi.restoreAllMocks();
   });
 
-  it('throws RemoteDisabledError when partsBaseUrl is unset and env is unset', async () => {
+  it('defaults to the step.parts catalog when no url is configured', async () => {
     delete process.env.KERNELCAD_PARTS_BASE_URL;
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ items: [], total: 0 }), { status: 200 }),
+    );
+    await remoteFindParts({ query: 'M3' });
+    const url = fetchSpy.mock.calls[0][0] as string;
+    expect(url).toMatch(/^https:\/\/api\.step\.parts\/v1\/parts\?/);
+  });
+
+  it('disables the remote tier when KERNELCAD_PARTS_BASE_URL is "off"', async () => {
+    process.env.KERNELCAD_PARTS_BASE_URL = 'off';
     await expect(remoteFindParts({ query: 'M3' })).rejects.toBeInstanceOf(
       RemoteDisabledError,
     );
@@ -43,6 +53,44 @@ describe('remoteClient', () => {
     await remoteFindParts({ query: 'M3' });
     const url = fetchSpy.mock.calls[0][0] as string;
     expect(url).toMatch(/^https:\/\/env-parts\.example/);
+  });
+
+  it('maps a step.parts search payload (items/total) to PartRecord results', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          total: 1,
+          items: [
+            {
+              id: 'bearing_608',
+              name: '608 deep-groove ball bearing',
+              category: 'bearing',
+              family: 'deep-groove-ball-bearing',
+              tags: ['bearing'],
+              aliases: ['skate bearing'],
+              standard: { designation: 'ISO 15' },
+              attributes: { boreMm: 8 },
+              stepUrl: 'https://media.example/608.step',
+              sha256: 'deadbeef',
+              pageUrl: 'https://www.step.parts/parts/bearing_608',
+            },
+          ],
+        }),
+        { status: 200 },
+      ),
+    );
+    const out = await remoteFindParts({ query: 'bearing', partsBaseUrl: 'https://x.test/' });
+    expect(out.totalMatches).toBe(1);
+    expect(out.results).toHaveLength(1);
+    expect(out.results[0]).toMatchObject({
+      id: 'bearing_608',
+      family: 'deep-groove-ball-bearing',
+      standard: 'ISO 15',
+      sha256: 'deadbeef',
+      stepUrl: 'https://media.example/608.step',
+      source: 'remote',
+    });
+    expect(out.results[0].tags).toEqual(expect.arrayContaining(['bearing', 'skate bearing']));
   });
 
   it('surfaces 5xx as parts.fetch.api-error', async () => {

@@ -2,12 +2,19 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/parts/remoteClient.ts
 //
-// Opt-in remote tier. Accepts partsBaseUrl as an argument OR the
-// KERNELCAD_PARTS_BASE_URL env var; throws RemoteDisabledError when
-// neither is set. There is NO kernelCAD-shipped default URL.
+// Remote parts tier. Defaults to the step.parts public catalog so kernelCAD can
+// find off-the-shelf parts out of the box. Override the source with a
+// partsBaseUrl argument or the KERNELCAD_PARTS_BASE_URL env var (e.g. a
+// self-hosted catalog serving the same /v1/parts schema); set that env var to
+// `off` / `none` to disable the remote tier and restore offline-only behavior.
 
 import { KernelError } from '../../shared/intent/kernelError';
 import type { PartRecord } from '../../shared/parts/types';
+import {
+  mapStepPartsRecord,
+  STEP_PARTS_BASE_URL,
+  type StepPartsRecord,
+} from './stepPartsAdapter';
 
 export class RemoteDisabledError extends KernelError {
   constructor() {
@@ -41,8 +48,15 @@ export interface RemoteFetchOpts {
 }
 
 function resolveBaseUrl(arg: string | undefined): string {
-  const url = (arg ?? process.env.KERNELCAD_PARTS_BASE_URL ?? '').trim();
-  if (url.length === 0) throw new RemoteDisabledError();
+  const raw = (arg ?? process.env.KERNELCAD_PARTS_BASE_URL ?? '').trim();
+  // Explicit opt-out: `KERNELCAD_PARTS_BASE_URL=off` (or `none`) disables the
+  // remote tier entirely, restoring `parts.fetch.remote-disabled` behavior.
+  if (raw.toLowerCase() === 'off' || raw.toLowerCase() === 'none') {
+    throw new RemoteDisabledError();
+  }
+  // Zero-config default: step.parts. An explicit arg/env URL overrides it (e.g.
+  // a self-hosted catalog that serves the same /v1/parts schema).
+  const url = raw.length === 0 ? STEP_PARTS_BASE_URL : raw;
   return url.replace(/\/$/, '');
 }
 
@@ -82,7 +96,16 @@ export async function remoteFindParts(
   if (opts.tag) qs.set('tag', opts.tag);
   if (opts.limit) qs.set('pageSize', String(opts.limit));
   const res = await callRemote(`${base}/v1/parts?${qs.toString()}`, 5000);
-  return res.json() as Promise<RemoteFindResult>;
+  // step.parts search returns `{ items, total, ... }` where each item is the
+  // same per-part shape as the detail endpoint (stepUrl + sha256 included).
+  // Map each onto a PartRecord; geometry/connectors are resolved later by
+  // fetch_part, so discovery records carry empty connectors.
+  const raw = (await res.json()) as {
+    items?: StepPartsRecord[];
+    total?: number;
+  };
+  const results = (raw.items ?? []).map(mapStepPartsRecord);
+  return { results, totalMatches: raw.total ?? results.length };
 }
 
 export async function remoteFetchPartMeta(
@@ -93,7 +116,11 @@ export async function remoteFetchPartMeta(
     `${base}/v1/parts/${encodeURIComponent(opts.id)}`,
     5000,
   );
-  return res.json() as Promise<PartRecord>;
+  // step.parts (the default source) returns its own schema, not a kernelCAD
+  // PartRecord — map it. `connectors` come back empty; fetchPartHost synthesizes
+  // them from the downloaded STEP.
+  const raw = (await res.json()) as StepPartsRecord;
+  return mapStepPartsRecord(raw);
 }
 
 export async function remoteFetchPartBytes(stepUrl: string): Promise<Buffer> {

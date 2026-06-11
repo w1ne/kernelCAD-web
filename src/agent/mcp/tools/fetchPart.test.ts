@@ -7,7 +7,9 @@ describe('fetch_part MCP tool', () => {
   let prevEnv: string | undefined;
   beforeEach(() => {
     prevEnv = process.env.KERNELCAD_PARTS_BASE_URL;
-    delete process.env.KERNELCAD_PARTS_BASE_URL;
+    // step.parts is the production default; disable the tier so the
+    // remote-disabled path is exercised offline.
+    process.env.KERNELCAD_PARTS_BASE_URL = 'off';
   });
   afterEach(() => {
     if (prevEnv === undefined) delete process.env.KERNELCAD_PARTS_BASE_URL;
@@ -23,7 +25,7 @@ describe('fetch_part MCP tool', () => {
     expect(r.cachePath).toMatch(/iso-4762-m3x12\.step$/);
   });
 
-  it('parts.fetch.remote-disabled for unknown id with no partsBaseUrl', async () => {
+  it('parts.fetch.remote-disabled for unknown id when the tier is disabled (off)', async () => {
     const r = await fetchPartTool({ id: 'made-up-id' });
     expect(r.ok).toBe(false);
     if (r.ok) throw new Error('expected error');

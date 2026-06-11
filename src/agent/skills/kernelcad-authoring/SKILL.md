@@ -22,6 +22,14 @@ Use this loop for every non-trivial model edit:
 9. **Packetize visual evidence**: when visual evidence matters, run `kernelcad render inspect <file> <outDir>` to produce a deterministic inspection bundle: a manifest naming the source file, command, generated artifacts, and caveats, plus canonical RGB views. Add `--channels rgb,mask,depth,normals` when machine-readable object masks, depth, or view-space normals are needed. Use `--focus <names>` or `--hide <names>` to isolate feature ids or assembly part names when clutter would obscure the check. Keep richer channels in the same manifest packet; do not replace the canonical RGB views.
 10. **Repair one cause at a time**: target the smallest source change that addresses the failing check, then rerun the same check. Do not loosen gates or silently skip failing evidence.
 
+**Verify against geometry, not against your own summary.** Trust measured
+evidence — exact bbox/volume from `get_shape_info`/`inspect_step`, interference
+volumes, DFM findings, the rendered pixels — over the narrative of what the
+script "should" have built. A green `evaluate` (`ok: true, featureCount: N`)
+proves the script ran, not that the geometry is correct. When a check cannot
+measure a thing (kernel error, unknown clearance status, an inconclusive
+render), treat that uncertainty as a failure to resolve, not a pass to assume.
+
 ## Inner loop: render after every visible change
 
 The authoring loop above is the *outer* loop. The *inner* loop runs after every feature you add that you expect to see in the rendered output. Skipping the inner loop is the single biggest cause of "tests green, output wrong" shipments.
