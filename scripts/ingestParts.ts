@@ -131,7 +131,8 @@ export async function ingestStepFile(
   // Derive category/family from the source folder layout when no sidecar:
   // <srcRoot>/<category>/<family>/part.step
   const relParts = relative(srcRoot, dirname(stepPath)).split(/[\\/]/).filter(Boolean);
-  const category = meta.category ?? relParts[0] ?? 'imported';
+  const rootName = slugify(basename(srcRoot)) || 'imported';
+  const category = meta.category ?? relParts[0] ?? rootName;
   const family = meta.family ?? relParts[relParts.length - 1] ?? category;
 
   const report = await inspectStepFile(stepPath);
@@ -186,12 +187,24 @@ export async function ingestDirectory(
 
   const records: CatalogRecord[] = [];
   const shaManifest: Record<string, string> = {};
+  const skipped: { file: string; reason: string }[] = [];
   for (const stepPath of stepFiles) {
-    const { record, bytes } = await ingestStepFile(stepPath, srcDir, opts);
-    writeFileSync(join(outDir, 'step', `${record.id}.step`), bytes);
-    writeFileSync(join(outDir, 'v1', 'parts', `${record.id}.json`), JSON.stringify(record, null, 2));
-    records.push(record);
-    shaManifest[record.id] = record.sha256;
+    // Real-world catalogs carry STEP the kernel can't parse (surface-only
+    // exports, non-solid bodies). Skip and record them rather than aborting the
+    // whole ingest on one bad file.
+    try {
+      const { record, bytes } = await ingestStepFile(stepPath, srcDir, opts);
+      writeFileSync(join(outDir, 'step', `${record.id}.step`), bytes);
+      writeFileSync(join(outDir, 'v1', 'parts', `${record.id}.json`), JSON.stringify(record, null, 2));
+      records.push(record);
+      shaManifest[record.id] = record.sha256;
+    } catch (e) {
+      skipped.push({ file: relative(srcDir, stepPath), reason: e instanceof Error ? e.message : String(e) });
+    }
+  }
+  if (skipped.length > 0) {
+    writeFileSync(join(outDir, 'skipped.json'), JSON.stringify(skipped, null, 2));
+    console.warn(`skipped ${skipped.length} unparseable STEP file(s) → ${join(outDir, 'skipped.json')}`);
   }
 
   // Discovery index (step.parts-compatible: { catalog, items }).
@@ -211,27 +224,27 @@ export async function ingestDirectory(
 // adapter calls, over the bundled index. Emitted into the catalog so the whole
 // outDir deploys as one Pages project. See remoteClient.ts for the contract.
 const PAGES_FUNCTION = `// SPDX-License-Identifier: MIT
-// Serves /v1/parts?q=... (search) and /v1/parts/{id} (detail) from the bundled
-// parts.index.json. Deploy this directory to Cloudflare Pages and point
-// KERNELCAD_PARTS_BASE_URL at it.
-import index from '../../catalog/parts.index.json';
+// Serves /v1/parts?q=... (search) and /v1/parts/{id} (detail) from the static
+// /v1/catalog/parts.index.json asset (fetched at runtime, not build-imported,
+// so the index lives outside the functions tree). Deploy this directory to
+// Cloudflare Pages and point KERNELCAD_PARTS_BASE_URL at it.
+interface Rec { id: string; name: string; tags?: string[] }
 
-export const onRequest: PagesFunction = ({ params, request }) => {
-  const items = (index as { items: Array<Record<string, unknown>> }).items;
+export const onRequest: PagesFunction = async ({ params, request }) => {
+  const url = new URL(request.url);
+  const res = await fetch(url.origin + '/v1/catalog/parts.index.json');
+  if (!res.ok) return new Response('catalog index unavailable', { status: 502 });
+  const items = ((await res.json()) as { items: Rec[] }).items;
+
   const path = ([] as string[]).concat((params.path as string[]) ?? []).join('/');
   if (path) {
     const rec = items.find((r) => r.id === path);
-    return rec
-      ? Response.json(rec)
-      : new Response('not found', { status: 404 });
+    return rec ? Response.json(rec) : new Response('not found', { status: 404 });
   }
-  const q = new URL(request.url).searchParams.get('q')?.toLowerCase() ?? '';
+  const q = (url.searchParams.get('q') ?? '').toLowerCase();
   const hits = q
     ? items.filter((r) =>
-        [r.id, r.name, ...((r.tags as string[]) ?? [])]
-          .join(' ')
-          .toLowerCase()
-          .includes(q),
+        [r.id, r.name, ...(r.tags ?? [])].join(' ').toLowerCase().includes(q),
       )
     : items;
   return Response.json({ items: hits, total: hits.length });
