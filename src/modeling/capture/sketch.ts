@@ -656,7 +656,13 @@ export class PathBuilder {
    * Throws (capture-time) on:
    * - `points.length < 2` (degenerate);
    * - any non-finite coordinate;
-   * - consecutive duplicate points (< 1e-9 mm apart).
+   * - consecutive duplicate points (< 1e-9 mm apart);
+   * - no current pen position (call `moveTo` before `spline`);
+   * - `points[0]` not matching the current pen position within 1e-6 mm —
+   *   a gap makes the path's edge chain disconnected, and OCCT wire
+   *   assembly silently drops unreachable edges, so a revolve/extrude of
+   *   the profile yields degenerate geometry (e.g. a flat disc) with no
+   *   kernel error (issue #447).
    *
    * `opts.tension` is reserved for future Catmull-Rom-style stiffness
    * control; ignored in v1.
@@ -726,6 +732,31 @@ export class PathBuilder {
           'path.spline.degenerate-points — pass at least 2 finite Vec2 waypoints (the path interpolates through every one).',
         );
       }
+    }
+    // points[0] must match the current pen position within 1e-6 mm — same
+    // contract (and tolerance) as nurbsSegment / hermiteG2. A gap leaves the
+    // lowered edge chain disconnected; OCCT's wire builder silently drops
+    // edges it cannot reach, so the spline (and everything after it) vanishes
+    // from the profile and a revolve/extrude produces degenerate geometry
+    // (e.g. a flat disc) while evaluation reports ok (issue #447).
+    const pen = this.#currentPenPosition();
+    if (pen === null) {
+      throw new KernelError(
+        'feature.path.spline.degenerate-points',
+        `path().spline: no current pen position — call moveTo(x, y) before spline.`,
+        undefined,
+        'path.spline.degenerate-points — start the path with moveTo(points[0][0], points[0][1]) so the spline has a start position to chain from.',
+      );
+    }
+    const penDx = paramPoints[0].x.evaluated - pen.x;
+    const penDy = paramPoints[0].y.evaluated - pen.y;
+    if (Math.hypot(penDx, penDy) > 1e-6) {
+      throw new KernelError(
+        'feature.path.spline.degenerate-points',
+        `path().spline: points[0] = (${paramPoints[0].x.evaluated}, ${paramPoints[0].y.evaluated}) does not match current pen position (${pen.x}, ${pen.y}) within 1e-6 mm.`,
+        undefined,
+        'path.spline.degenerate-points — the spline starts where the previous segment ended: make points[0] equal the current pen position, or add a lineTo(points[0][0], points[0][1]) before the spline.',
+      );
     }
     // V slice — validate optional tangent constraints.
     const validateTangent = (

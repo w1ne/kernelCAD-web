@@ -202,7 +202,7 @@ All three methods accept `Editable<number>` coords so symbolic params survive in
 
 ### 2D path NURBS diagnostic codes
 
-- `feature.path.spline.degenerate-points` (error) — fewer than 2 points, NaN coord, or two consecutive duplicates within 1e-9 mm. Hint: pass ≥ 2 distinct finite Vec2 waypoints.
+- `feature.path.spline.degenerate-points` (error) — fewer than 2 points, NaN coord, two consecutive duplicates within 1e-9 mm, no prior `moveTo`, or `points[0]` not matching the current pen position within 1e-6 mm (a gap disconnects the wire and OCCT silently drops the unreachable edges, so a revolve/extrude of the profile would degenerate). Hint: pass ≥ 2 distinct finite Vec2 waypoints with `points[0]` exactly at the current pen position.
 - `feature.path.nurbs-segment.degenerate-controls` (error) — fewer than `degree + 1` control points, non-finite coord, or `controlPoints[0]` not matching current pen position within 1e-6 mm. Hint: provide at least degree+1 finite Vec2 control points with the first matching the current pen position.
 - `feature.path.nurbs-segment.weights-non-positive` (error) — weight ≤ 0. Hint: weights must be strictly positive (zero collapses the basis; negative is undefined for B-splines).
 - `feature.path.hermite-g2.start-mismatch` (error) — `a.point` not matching current pen position within 1e-6 mm. Hint: align `a.point` with the path's current position, or call `moveTo` first.
