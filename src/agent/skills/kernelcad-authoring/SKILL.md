@@ -671,6 +671,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 | path-spline-organic-outline | You need a freeform 2D outline (eyewear brow, ergonomic grip silhouette, sneaker midsole) authored as a sequence of measured waypoints, and arc primitives + smoothSpline are too rigid. Drop a single .spline([...]) call into the path() chain after moveTo; the path interpolates through every waypoint at degree 3. |
 | revolve-rectangular-profile | You want a thin cylindrical wall, ring, or tube — author the rectangular profile via path() with the inner radius as the x offset, then call .revolve() to sweep it around Z. |
 | subtract-then-fillet-rim | You want a parametric plate, drill a through-hole, and round the rim where the hole meets the top face. |
+| tab-slot-flush-joint | You are joining flat stock (laser/CNC plywood, acrylic, sheet) with an interlocking tab-and-slot. The through-tab must span the full mating wall thickness — flush or slightly proud, never recessed — and the fit clearance belongs on the slot, not on the tab. |
 | union-of-stacked-primitives | You want to compose multiple primitives into one part by translating each into place and unioning them, without volume overlap. |
 
 <!-- COOKBOOK:END -->
@@ -684,6 +685,19 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 - For symmetric parts, prefer `.mirror(plane)` (union of source + reflection) over manual duplication. Use `.reflect(plane)` when you only want the reflected geometry without the original.
 - In booleans, prefer ≥0.1 mm of overlap (unions) or offset (subtractions/clearances) over exact tangency or coincidence between solids — exact-tangent junctions stress the export mesher; the export pipeline heals the resulting cracks, but offsets keep meshes clean at the source.
 - For helical features (coils, springs, threads), generate the rail with `helix(...)` and sweep a closed `path()` profile with `spine: 'smooth'` — the dense helix rail needs a single B-spline spine to produce a sewn, watertight tube; the default polyline spine emits per-segment tubes that fail the watertight export verify. `frenet` is unnecessary with a smooth spine.
+
+## Interlocking joinery (flat-pack / laser / CNC)
+
+Tab-and-slot and finger joints in flat stock follow a fixed discipline; getting it backwards produces joints that read as empty slots and carry no load.
+
+- **Through-tabs sit flush or slightly proud — never recessed.** Model the tab to span the FULL thickness of the mating wall; add 0.2–0.5 mm of proud allowance when the face will be sanded or flush-trimmed after assembly. A tab whose end face stops short of the mating surface — even by 0.2 mm — looks like an empty slot and leaves the glue/bearing area undersized.
+- **Fit clearance goes on the slot/pocket, not the tab.** Keep the tab at nominal width and thickness; widen the slot by a per-side clearance. Shortening or thinning the tab destroys both the flush face and the joint's reference geometry.
+- **Clearance is process-dependent — encode it as a named param (`tabFit`)** so it can be retuned per machine and material without touching geometry:
+  - Laser: the beam removes a kerf (~0.1–0.3 mm depending on material and thickness) that already loosens nominal-drawn joints by roughly one kerf width; `tabFit` of 0–0.1 mm per side usually yields a snug press fit.
+  - CNC router: `tabFit` 0.1–0.25 mm per side, plus dog-bone / T-bone corner relief at internal slot corners (relief radius ≥ endmill radius) so square tab corners can seat fully.
+  - Mating 3D-printed parts: `tabFit` 0.15–0.3 mm per side.
+- **Finger joints (box joints):** finger width 1–2× material thickness; finger depth equals the mating wall thickness exactly (plus the same proud allowance) so finger ends finish flush with the outer face; prefer an odd finger count for a symmetric edge.
+- Canonical pattern: cookbook snippet `tab-slot-flush-joint` — `lookup_cookbook("tab and slot flush joint")`.
 
 ## Sample
 
