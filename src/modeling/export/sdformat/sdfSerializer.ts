@@ -160,7 +160,10 @@ async function solveLinkPoses(
   diagnostics: CompilerDiagnostic[],
 ): Promise<Map<string, Transform> | undefined> {
   try {
-    const solved = await solveMates(arm);
+    // Articulated closed loops that already close at the default pose are
+    // consistent — opt in to classifying them as solved so a 4-bar ships
+    // real link poses instead of an identity-pose fallback.
+    const solved = await solveMates(arm, undefined, { acceptConsistentArticulatedLoops: true });
     if (solved.status === 'solved' || solved.status === 'redundant-ok') {
       return solved.poses;
     }

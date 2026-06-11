@@ -110,7 +110,7 @@ describe('solveMates — closed loop (Newton-Raphson)', () => {
     expect(r.status).toBe('over-constrained');
   });
 
-  it('returns redundant-ok with tree-FK poses for an articulated loop that closes at the default pose', async () => {
+  it('classifies an articulated loop that closes at the default pose as redundant-ok when opted in', async () => {
     // Parallelogram 4-bar linkage authored so the loop closes exactly at
     // pose 0: ground pivots 50 apart, crank/rocker pivots 25 apart, coupler
     // pivots 50 apart, all revolute about +Y. The loop-closure residual is
@@ -134,10 +134,15 @@ describe('solveMates — closed loop (Newton-Raphson)', () => {
     arm.mate('crank_coupler', 'crank.couplerPivot', 'coupler.crankPivot', 'revolute');
     arm.mate('coupler_rocker', 'coupler.rockerPivot', 'rocker.couplerPivot', 'revolute');
     arm.mate('rocker_ground', 'rocker.groundPivot', 'ground.rockerPivot', 'revolute');
-    const r = await solveMates(arm);
+    const r = await solveMates(arm, undefined, { acceptConsistentArticulatedLoops: true });
     expect(r.status).toBe('redundant-ok');
     expect(r.poses.get('coupler')!.decomposeToTranslateAndRotate().translate[2]).toBeCloseTo(25);
     expect(r.poses.get('rocker')!.decomposeToTranslateAndRotate().translate[0]).toBeCloseTo(50);
+    // Default (no opt-in) keeps the conservative classification so the
+    // solved-pose consumers (verification sweeps, interference gates) are
+    // not silently opted in by a solver-level behavior change.
+    const conservative = await solveMates(arm);
+    expect(conservative.status).toBe('did-not-converge');
   });
 
   it('reports did-not-converge for an articulated loop whose default pose does NOT close', async () => {
@@ -163,7 +168,7 @@ describe('solveMates — closed loop (Newton-Raphson)', () => {
     arm.mate('crank_coupler', 'crank.couplerPivot', 'coupler.crankPivot', 'revolute');
     arm.mate('coupler_rocker', 'coupler.rockerPivot', 'rocker.couplerPivot', 'revolute');
     arm.mate('rocker_ground', 'rocker.groundPivot', 'ground.rockerPivot', 'revolute');
-    const r = await solveMates(arm);
+    const r = await solveMates(arm, undefined, { acceptConsistentArticulatedLoops: true });
     expect(r.status).toBe('did-not-converge');
   });
 
