@@ -4,6 +4,14 @@
 // (a) ball is native (no decomposition), (b) <pose> replaces
 // <origin xyz rpy>, (c) limits live inside <axis><limit><lower>/<upper>.
 // Cylindrical and pin_slot remain lossy — SDFormat lacks them too.
+//
+// Frame conventions (these differ from URDF and were verified against a
+// real simulator consumer): an SDFormat <joint> <pose> is relative to the
+// CHILD link frame, and <axis><xyz> is expressed in the joint frame (which
+// shares the child link orientation). Both therefore come from the
+// child-side (`mate.b`) connector — emitting the parent-side connector
+// places the joint anchor at the wrong point and the link pivots around
+// the wrong axis whenever the two connector origins differ.
 
 import type { MateRecord } from '../../mates/mate';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -31,8 +39,9 @@ export function mateToSdfJoint(mate: MateRecord, resolver: ConnectorResolver): M
   const b = resolver(mate.b);
   const parent = a.partName;
   const child = b.partName;
-  const pose = poseTuple(a.origin);
-  const axis = a.axis.map(n => n.toFixed(6)).join(' ');
+  // Child-frame-relative anchor + joint-frame axis: both from the b side.
+  const pose = poseTuple(b.origin);
+  const axis = b.axis.map(n => n.toFixed(6)).join(' ');
 
   switch (mate.type) {
     case 'fastened':

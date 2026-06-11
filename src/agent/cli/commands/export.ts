@@ -35,6 +35,8 @@ export interface ExportCliResult {
   exitCode: number;
   bytesWritten: number;
   diagnostics: CompilerDiagnostic[];
+  /** Companion mesh files written next to the output (URDF / SDF exports). */
+  meshFiles?: string[];
 }
 
 export async function exportScript(input: ExportInput): Promise<ExportCliResult> {
@@ -70,8 +72,18 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
   // still carries the mesh bytes, so the file is written for inspection
   // BEFORE the gate fails the command — same contract as part-mode.
   const outPath = resolve(input.out);
+  const meshFiles: string[] = [];
   try {
     await writeFile(outPath, result.bytes);
+    // Robot-description exports (URDF / SDF) reference per-link mesh files
+    // by relative path — write them next to the output file so the
+    // document is consumable as-is.
+    for (const m of result.meshes ?? []) {
+      const meshPath = join(dirname(outPath), m.relPath);
+      await mkdir(dirname(meshPath), { recursive: true });
+      await writeFile(meshPath, m.bytes);
+      meshFiles.push(meshPath);
+    }
   } catch (e) {
     return {
       exitCode: 1, bytesWritten: 0,
@@ -82,6 +94,7 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
     exitCode: fatal ? 1 : 0,
     bytesWritten: result.bytes.length,
     diagnostics: withNextActions(result.diagnostics),
+    ...(meshFiles.length > 0 ? { meshFiles } : {}),
   };
 }
 
@@ -252,11 +265,13 @@ export function exportCommand(): Command {
           ok: r.exitCode === 0,
           bytesWritten: r.bytesWritten,
           out: opts.out,
+          ...(r.meshFiles !== undefined ? { meshFiles: r.meshFiles } : {}),
           diagnostics: r.diagnostics,
         }, null, 2));
       } else {
         if (r.diagnostics.length > 0) console.log(formatHuman(r.diagnostics));
         if (r.exitCode === 0) console.log(`Wrote ${r.bytesWritten} bytes to ${opts.out}`);
+        for (const m of r.meshFiles ?? []) console.log(`wrote mesh ${m}`);
       }
       process.exitCode = r.exitCode;
     });

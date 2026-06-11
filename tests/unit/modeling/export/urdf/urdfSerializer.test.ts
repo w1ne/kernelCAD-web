@@ -129,3 +129,21 @@ describe('urdfSerialize — Task B3.C (G0 migrated to mate API)', () => {
     expect(r.urdf).toMatch(/filename="\.\/meshes\/base\.stl"/);
   });
 });
+
+describe('urdfSerialize — mesh geometry units', () => {
+  it('stamps scale="0.001 0.001 0.001" on visual + collision meshes (link STLs are mm; URDF consumes metres)', async () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('a');
+    const base = arm.part('base', kcad.box(10, 10, 10), { density: 2700 });
+    const tip = arm.part('tip', kcad.box(10, 10, 10), { density: 2700 });
+    frameConn(base, 'j', [10, 0, 0]);
+    frameConn(tip, 'j', [0, 0, 0]);
+    arm.mate('j', 'base.j', 'tip.j', 'fastened');
+    const r = await urdfSerialize(arm, {});
+    // 2 links x (visual + collision) = 4 scaled mesh tags. Without the
+    // scale the meshes render/collide 1000x larger than the SI inertials
+    // and joint origins in any consumer.
+    expect((r.urdf.match(/scale="0\.001 0\.001 0\.001"/g) ?? []).length).toBe(4);
+  });
+});

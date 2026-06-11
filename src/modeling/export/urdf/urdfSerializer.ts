@@ -125,13 +125,16 @@ export async function urdfSerialize(arm: Assembly, opts: UrdfSerializeOptions): 
     linkBlocks.push([
       `  <link name="${escapeXml(partName)}">`,
       inertial.xml,
+      // Mesh geometry is kernelCAD-native mm; URDF consumes metres. The
+      // scale attribute keeps visuals/collisions consistent with the
+      // already-SI inertials and joint origins.
       `    <visual>`,
       `      <origin xyz="0 0 0" rpy="0 0 0"/>`,
-      `      <geometry><mesh filename="${meshFilename}"/></geometry>`,
+      `      <geometry><mesh filename="${meshFilename}" scale="0.001 0.001 0.001"/></geometry>`,
       `    </visual>`,
       `    <collision>`,
       `      <origin xyz="0 0 0" rpy="0 0 0"/>`,
-      `      <geometry><mesh filename="${meshFilename}"/></geometry>`,
+      `      <geometry><mesh filename="${meshFilename}" scale="0.001 0.001 0.001"/></geometry>`,
       `    </collision>`,
       `  </link>`,
     ].join('\n'));

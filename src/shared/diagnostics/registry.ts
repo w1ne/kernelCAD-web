@@ -472,7 +472,7 @@ export const DIAGNOSTIC_REGISTRY = {
   },
   'export.sdf-gazebo.invalid-version': {
     hintTemplate:
-      'SDFormat version attribute must be a recognised SDF spec version. The emitter writes <sdf version="1.12"> by default; do not override.',
+      'SDFormat version attribute must be a recognised SDF spec version. The emitter writes <sdf version="1.10"> by default — the newest spec current simulator LTS releases parse; do not override.',
     nextAction: { kind: 'fix-arg', field: 'version' },
     defaultSeverity: 'error',
     group: 'export',
@@ -485,6 +485,14 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'export',
     description: 'SDFormat structural validation detected a joint referencing an undeclared link.',
+  },
+  'export.sdf-gazebo.pose-unsolved': {
+    hintTemplate:
+      'The mate graph could not be solved to per-link world poses, so every <link> was emitted at the model origin. The simulator will see overlapping links at spawn and joints will snap or explode. Run solve_mates to diagnose the unsolvable mate, fix the connector geometry, then re-export.',
+    nextAction: { kind: 'call-introspection-tool', tool: 'solve_mates' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'SDFormat export fell back to identity link poses because the mate graph did not solve.',
   },
   // NURBS surfaces (2) — W1.3
   'feature.nurbs.degenerate-controls': {

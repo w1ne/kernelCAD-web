@@ -33,7 +33,11 @@ Export via MCP:
 { "tool": "export_model", "input": { "file": "two-link.kcad.ts", "format": "urdf", "output_path": "out/robot.urdf" } }
 ```
 
-Result: `out/robot.urdf` containing one `<link>` per part and one `<joint>` per mate.
+Result: `out/robot.urdf` containing one `<link>` per part and one `<joint>` per mate, plus `out/meshes/<part>.stl` for every link (reported in the tool's `mesh_files`). Ship the whole directory: the visual/collision tags reference the meshes by the configured prefix.
+
+## Geometry units
+
+Link STL meshes are written in kernelCAD-native mm; every `<mesh>` tag carries `scale="0.001 0.001 0.001"` so consumers see metres — consistent with the SI `<inertial>` blocks and joint origins. Do not strip the scale attribute.
 
 ## Mate-to-joint mapping
 

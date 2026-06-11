@@ -110,6 +110,68 @@ describe('solveMates — closed loop (Newton-Raphson)', () => {
     expect(r.status).toBe('over-constrained');
   });
 
+  it('classifies an articulated loop that closes at the default pose as redundant-ok when opted in', async () => {
+    // Parallelogram 4-bar linkage authored so the loop closes exactly at
+    // pose 0: ground pivots 50 apart, crank/rocker pivots 25 apart, coupler
+    // pivots 50 apart, all revolute about +Y. The loop-closure residual is
+    // zero at the tree-FK configuration, so the solver must report the
+    // configuration as consistent and ship the tree-FK world transforms —
+    // robot-description export depends on these per-link poses.
+    const { arm, kcad } = makeArm();
+    const ground = arm.part('ground', kcad.box(60, 10, 10));
+    const crank = arm.part('crank', kcad.box(10, 10, 35));
+    const coupler = arm.part('coupler', kcad.box(60, 10, 10));
+    const rocker = arm.part('rocker', kcad.box(10, 10, 35));
+    ground.connector('crankPivot', { type: 'axis', origin: { kind: 'vec3', value: [5, 5, 5] }, axis: [0, 1, 0] });
+    crank.connector('groundPivot', { type: 'axis', origin: { kind: 'vec3', value: [5, 5, 5] }, axis: [0, 1, 0] });
+    crank.connector('couplerPivot', { type: 'axis', origin: { kind: 'vec3', value: [5, 5, 30] }, axis: [0, 1, 0] });
+    coupler.connector('crankPivot', { type: 'axis', origin: { kind: 'vec3', value: [5, 5, 5] }, axis: [0, 1, 0] });
+    coupler.connector('rockerPivot', { type: 'axis', origin: { kind: 'vec3', value: [55, 5, 5] }, axis: [0, 1, 0] });
+    rocker.connector('couplerPivot', { type: 'axis', origin: { kind: 'vec3', value: [5, 5, 30] }, axis: [0, 1, 0] });
+    rocker.connector('groundPivot', { type: 'axis', origin: { kind: 'vec3', value: [5, 5, 5] }, axis: [0, 1, 0] });
+    ground.connector('rockerPivot', { type: 'axis', origin: { kind: 'vec3', value: [55, 5, 5] }, axis: [0, 1, 0] });
+    arm.mate('crank_ground', 'ground.crankPivot', 'crank.groundPivot', 'revolute');
+    arm.mate('crank_coupler', 'crank.couplerPivot', 'coupler.crankPivot', 'revolute');
+    arm.mate('coupler_rocker', 'coupler.rockerPivot', 'rocker.couplerPivot', 'revolute');
+    arm.mate('rocker_ground', 'rocker.groundPivot', 'ground.rockerPivot', 'revolute');
+    const r = await solveMates(arm, undefined, { acceptConsistentArticulatedLoops: true });
+    expect(r.status).toBe('redundant-ok');
+    expect(r.poses.get('coupler')!.decomposeToTranslateAndRotate().translate[2]).toBeCloseTo(25);
+    expect(r.poses.get('rocker')!.decomposeToTranslateAndRotate().translate[0]).toBeCloseTo(50);
+    // Default (no opt-in) keeps the conservative classification so the
+    // solved-pose consumers (verification sweeps, interference gates) are
+    // not silently opted in by a solver-level behavior change.
+    const conservative = await solveMates(arm);
+    expect(conservative.status).toBe('did-not-converge');
+  });
+
+  it('reports did-not-converge for an articulated loop whose default pose does NOT close', async () => {
+    // Same parallelogram topology but the ground-side rocker pivot is
+    // authored 10mm away from where the loop lands at pose 0 — the
+    // loop-closure residual is non-zero and the articulated Newton path is
+    // not wired yet, so the solver must refuse rather than ship a broken
+    // configuration.
+    const { arm, kcad } = makeArm();
+    const ground = arm.part('ground', kcad.box(60, 10, 10));
+    const crank = arm.part('crank', kcad.box(10, 10, 35));
+    const coupler = arm.part('coupler', kcad.box(60, 10, 10));
+    const rocker = arm.part('rocker', kcad.box(10, 10, 35));
+    ground.connector('crankPivot', { type: 'axis', origin: { kind: 'vec3', value: [5, 5, 5] }, axis: [0, 1, 0] });
+    crank.connector('groundPivot', { type: 'axis', origin: { kind: 'vec3', value: [5, 5, 5] }, axis: [0, 1, 0] });
+    crank.connector('couplerPivot', { type: 'axis', origin: { kind: 'vec3', value: [5, 5, 30] }, axis: [0, 1, 0] });
+    coupler.connector('crankPivot', { type: 'axis', origin: { kind: 'vec3', value: [5, 5, 5] }, axis: [0, 1, 0] });
+    coupler.connector('rockerPivot', { type: 'axis', origin: { kind: 'vec3', value: [55, 5, 5] }, axis: [0, 1, 0] });
+    rocker.connector('couplerPivot', { type: 'axis', origin: { kind: 'vec3', value: [5, 5, 30] }, axis: [0, 1, 0] });
+    rocker.connector('groundPivot', { type: 'axis', origin: { kind: 'vec3', value: [5, 5, 5] }, axis: [0, 1, 0] });
+    ground.connector('rockerPivot', { type: 'axis', origin: { kind: 'vec3', value: [65, 5, 5] }, axis: [0, 1, 0] });
+    arm.mate('crank_ground', 'ground.crankPivot', 'crank.groundPivot', 'revolute');
+    arm.mate('crank_coupler', 'crank.couplerPivot', 'coupler.crankPivot', 'revolute');
+    arm.mate('coupler_rocker', 'coupler.rockerPivot', 'rocker.couplerPivot', 'revolute');
+    arm.mate('rocker_ground', 'rocker.groundPivot', 'ground.rockerPivot', 'revolute');
+    const r = await solveMates(arm, undefined, { acceptConsistentArticulatedLoops: true });
+    expect(r.status).toBe('did-not-converge');
+  });
+
   // T7.x will add an assembly-level did-not-converge test once T9 wires
   // pose-driven articulation (revolute/prismatic) — closed loops over
   // articulated joints exercise the Newton-Raphson iteration path that a

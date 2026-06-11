@@ -16,7 +16,7 @@ function ballConn(part: ReturnType<ReturnType<typeof createApi>['assembly']>['pa
 describe('sdfSerialize — Task B5.B (G0 migrated to mate API)', () => {
   beforeAll(async () => { await initOcct(); });
 
-  it('emits <sdf version="1.12"> + <model> + per-link inertial/visual/collision', async () => {
+  it('emits <sdf version="1.10"> + <model> + per-link inertial/visual/collision', async () => {
     const session = new CaptureSession();
     const kcad = createApi({ session });
     const arm = kcad.assembly('two-link');
@@ -26,7 +26,7 @@ describe('sdfSerialize — Task B5.B (G0 migrated to mate API)', () => {
     axisConn(upper, 'shoulder', [0, 0, 0], [0, 0, 1]);
     arm.mate('shoulder', 'base.shoulder', 'upper.shoulder', 'revolute', { limitsDeg: [-90, 90] });
     const r = await sdfSerialize(arm, {});
-    expect(r.sdf).toMatch(/<sdf version="1\.12">/);
+    expect(r.sdf).toMatch(/<sdf version="1\.10">/);
     expect(r.sdf).toMatch(/<model name="two-link">/);
     expect((r.sdf.match(/<link /g) ?? []).length).toBe(2);
     expect(r.sdf).toMatch(/<inertial>/);
@@ -73,5 +73,76 @@ describe('sdfSerialize — Task B5.B (G0 migrated to mate API)', () => {
     const r = await sdfSerialize(arm, {});
     expect((r.sdf.match(/<joint /g) ?? []).length).toBe(1);
     expect(r.sdf).toMatch(/<joint name="shoulder" type="ball">/);
+  });
+});
+
+describe('sdfSerialize — simulator-consumable output (links posed, meshes scaled, loop solved)', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  function parallelogram4Bar() {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('fourbar');
+    const ground = arm.part('ground', kcad.box(60, 10, 10), { density: 2700 });
+    const crank = arm.part('crank', kcad.box(10, 10, 35), { density: 2700 });
+    const coupler = arm.part('coupler', kcad.box(60, 10, 10), { density: 2700 });
+    const rocker = arm.part('rocker', kcad.box(10, 10, 35), { density: 2700 });
+    axisConn(ground, 'crankPivot', [5, 5, 5], [0, 1, 0]);
+    axisConn(crank, 'groundPivot', [5, 5, 5], [0, 1, 0]);
+    axisConn(crank, 'couplerPivot', [5, 5, 30], [0, 1, 0]);
+    axisConn(coupler, 'crankPivot', [5, 5, 5], [0, 1, 0]);
+    axisConn(coupler, 'rockerPivot', [55, 5, 5], [0, 1, 0]);
+    axisConn(rocker, 'couplerPivot', [5, 5, 30], [0, 1, 0]);
+    axisConn(rocker, 'groundPivot', [5, 5, 5], [0, 1, 0]);
+    axisConn(ground, 'rockerPivot', [55, 5, 5], [0, 1, 0]);
+    arm.mate('crank_ground', 'ground.crankPivot', 'crank.groundPivot', 'revolute');
+    arm.mate('crank_coupler', 'crank.couplerPivot', 'coupler.crankPivot', 'revolute');
+    arm.mate('coupler_rocker', 'coupler.rockerPivot', 'rocker.couplerPivot', 'revolute');
+    arm.mate('rocker_ground', 'rocker.groundPivot', 'ground.rockerPivot', 'revolute');
+    return arm;
+  }
+
+  it('emits per-link <pose> from the solved mate graph so links spawn assembled, not stacked at the origin', async () => {
+    const arm = parallelogram4Bar();
+    const r = await sdfSerialize(arm, {});
+    // Loop closes at pose 0 → no pose-unsolved warning.
+    expect(r.diagnostics.map(d => d.code)).not.toContain('export.sdf-gazebo.pose-unsolved');
+    // coupler sits 25mm above the ground link, rocker 50mm along +X (metres in SDF).
+    expect(r.sdf).toMatch(/<link name="coupler">\n {4}<pose>0\.000000 0\.000000 0\.025000 /);
+    expect(r.sdf).toMatch(/<link name="rocker">\n {4}<pose>0\.050000 0\.000000 0\.000000 /);
+  });
+
+  it('warns pose-unsolved and falls back to identity link poses when the loop cannot close', async () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('badloop');
+    const a = arm.part('a', kcad.box(10, 10, 10), { density: 2700 });
+    const b = arm.part('b', kcad.box(10, 10, 10), { density: 2700 });
+    axisConn(a, 'p', [0, 0, 0], [0, 0, 1]);
+    axisConn(b, 'p', [0, 0, 0], [0, 0, 1]);
+    axisConn(a, 'q', [10, 0, 0], [0, 0, 1]);
+    axisConn(b, 'q', [20, 0, 0], [0, 0, 1]);
+    arm.mate('m1', 'a.p', 'b.p', 'revolute');
+    arm.mate('m2', 'a.q', 'b.q', 'revolute'); // disagrees with m1 by 10mm
+    const r = await sdfSerialize(arm, {});
+    expect(r.diagnostics.map(d => d.code)).toContain('export.sdf-gazebo.pose-unsolved');
+    expect(r.sdf).toMatch(/<link name="a">\n {4}<pose>0 0 0 0 0 0<\/pose>/);
+  });
+
+  it('scales mesh geometry mm->m and defaults to a relative meshes/ uri the simulator resolves next to the .sdf', async () => {
+    const arm = parallelogram4Bar();
+    const r = await sdfSerialize(arm, {});
+    expect(r.sdf).toMatch(/<uri>meshes\/ground\.stl<\/uri><scale>0\.001 0\.001 0\.001<\/scale>/);
+    // One mesh emission request per part, so the writer can put real files on disk.
+    expect(r.meshPaths.map(m => m.relPath).sort()).toEqual([
+      'meshes/coupler.stl', 'meshes/crank.stl', 'meshes/ground.stl', 'meshes/rocker.stl',
+    ]);
+  });
+
+  it('lowers a fixed world virtual joint to a native world-parent joint so the model spawns anchored', async () => {
+    const arm = parallelogram4Bar();
+    arm.virtualJoint('world_weld', { type: 'fixed', parentFrame: 'world', childLink: 'ground' });
+    const r = await sdfSerialize(arm, {});
+    expect(r.sdf).toMatch(/<joint name="world_weld" type="fixed"><parent>world<\/parent><child>ground<\/child><\/joint>/);
   });
 });
