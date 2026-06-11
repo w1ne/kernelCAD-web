@@ -11,7 +11,7 @@ and does not already know a STEP file path.
 
 The catalog ships **bundled** with the npm package — `npm install` resolves
 every bundled id offline. When a query has no bundled match, discovery and
-fetch fall through to the step.parts public catalog by default (see "Remote
+fetch fall through to a built-in public parts catalog by default (see "Remote
 tier" below), so kernelCAD can find off-the-shelf parts it does not bundle.
 Set `KERNELCAD_PARTS_BASE_URL=off` to stay offline on the bundled seed only.
 
@@ -140,17 +140,17 @@ Bundled tier coverage (273 records on the seed catalog):
 
 Bundled parts ship under kernelCAD's MIT license — see `record.license`.
 
-## Remote tier — the step.parts catalog (default)
+## Remote tier — built-in public catalog (default)
 
-When a query has no bundled match, discovery and fetch fall through to the
-[step.parts](https://www.step.parts) public catalog automatically — this is how
-kernelCAD finds off-the-shelf parts (motors, bearings, connectors, brackets) it
-does not bundle. No configuration is required.
+When a query has no bundled match, discovery and fetch fall through to a
+built-in public parts catalog automatically — this is how kernelCAD finds
+off-the-shelf parts (motors, bearings, connectors, brackets) it does not bundle.
+No configuration is required.
 
 ```typescript
-// Falls through to step.parts when not bundled — nothing to configure.
-const matches = await lib.findPart('LMK10LUU flanged linear bearing');
-const bearing = await lib.fetchPart('linear_bearing_lmk10luu');
+// Falls through to the public catalog when not bundled — nothing to configure.
+const matches = await lib.findPart('flanged linear bearing');
+const bearing = await lib.fetchPart('linear-bearing-lmk10luu');
 ```
 
 What kernelCAD adds on top of the raw catalog, so a *found* part is as usable as
@@ -165,7 +165,7 @@ a bundled one:
   central hole. The part participates in `add_mate` with no manual
   `partRef.connector(...)`. Oddly-shaped parts may still need a hand-authored
   frame — inspect the synthesized set before relying on it.
-- **Provenance.** The step.parts catalog repo is MIT, so each record carries
+- **Provenance.** The catalog's source repository is MIT, so each record carries
   `license: 'MIT'` with `attribution` = the part's catalog page (satisfying
   MIT's attribution requirement). The geometry is fetched on demand, never
   re-hosted; keep the attribution when shipping a deliverable that embeds it.
