@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **Fix: `.model()` assemblies validate mate-aware (#448).** The record-level assembly validator (`kernelcad validate`, and any consumer of `validateAssembly({ records })`) now reads mate edges from `assemblyModel` records as well as `solvedAssembly` records. Previously a mated multi-part assembly returned via `.model()` emitted spurious `assembly.part.floating` warnings while the identical assembly via `solvedModel({})` validated clean. Genuinely unmated parts still warn on both paths.
 - `/p/<slug>` is now a live read-only review page: when a connected agent updates a saved project, the open tab re-renders in real time.
 - **`evaluate_script` dry-run mode.** `{ dryRun: true }` validates a script via transpile + capture + capture-light checks without OCCT lowering, DFM gates, or meshing — milliseconds instead of seconds on boolean/fillet-heavy scripts. Catches script throws, capture-time API misuse, and assembly validity-gate failures; lowering failures and `dfmSpec` diagnostics still require a full evaluation. Dry runs never set or clear the active MCP session.
 - **`diff_scripts` MCP tool.** Structured geometric delta between a baseline (`baseFile`/`baseCode`) and a revised (`file`/`code`) script: per-part added/removed/renamed/changed with volume + exact-bbox deltas (numbers match `list_part_stats`), per-side interference totals + delta with pair detail, mate-graph changes, and param changes. Single-shape scripts diff as one `(root)` pseudo-part. Read-only.
