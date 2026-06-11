@@ -21,6 +21,7 @@
   },
   "files": [
     "dist/cli",
+    "dist/headless-player",
     "README.md",
     "LICENSE",
     "assets/parts/**"
@@ -31,6 +32,7 @@
     "prebuild": "tsr generate",
     "build": "tsc -b && vite build",
     "build:cli": "tsc --noEmit -p tsconfig.cli.json && node scripts/build-cli.mjs",
+    "build:player": "vite build -c vite.player.config.ts",
     "dist:skills": "npx tsx scripts/distGenerate.mjs",
     "eval": "npx tsx eval/run.ts",
     "eval:ab": "npx tsx scripts/evalAb.ts",
@@ -42,7 +44,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "release": "npx tsx scripts/release.ts",
-    "prepack": "npm run build:cli",
+    "prepack": "npm run build:cli && npm run build:player",
     "generate:parts": "npx tsx scripts/generateSeedCatalog.ts assets/parts",
     "prepublishOnly": "npm run generate:parts",
     "pretest": "npm run generate:parts",
