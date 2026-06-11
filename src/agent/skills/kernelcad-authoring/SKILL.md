@@ -287,6 +287,10 @@ dfmSpec(spec: {
   degrees: Editable<number>,
   pivot?: [Editable<number>, Editable<number>, Editable<number>],
 ): Shape
+// Cardinal-axis aliases for .rotate — prefer these for the common cases:
+.rotateX(degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]): Shape  // .rotate([1, 0, 0], ...)
+.rotateY(degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]): Shape  // .rotate([0, 1, 0], ...)
+.rotateZ(degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]): Shape  // .rotate([0, 0, 1], ...)
 // Uniform (single positive finite number) or per-axis Vec3 (non-uniform sx/sy/sz).
 // Non-uniform lowers via gp_GTrsf + BRepBuilderAPI_GTransform so face refs survive
 // (topology preserved under any affine transform). All factors must be positive
@@ -679,6 +683,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 ## Conventions
 
 - Always declare params at the top of the script with units; the kernel evaluates them and surfaces them as live sliders to the studio.
+- Never use JS arithmetic on a `param()` result — `param('w', 18) + 4` coerces the branded ParamRef and throws `feature.invalid-args`. Build derived dimensions with the ParamRef methods: `.add(n)`, `.subtract(n)`, `.multiply(n)`, `.divide(n)`, `.negate()` — e.g. `w.add(4)`, `r.divide(2)`. These return derived ParamRefs that re-evaluate whenever the underlying param changes.
 - Prefer `target.hole(face, opts)` for cylindrical bores (single hole), `target.holes(face, opts)` for bolt patterns, and `target.cutout(profile, opts)` for irregular subtractive shapes (slots, D-pockets) over `subtract(cylinder)` — they emit named created refs (`'wall'`, `'floor'`, `'wall-back'`, `'counterbore-wall'`, `'counterbore-floor'`, `'countersink-cone'`) that downstream `.fillet()` / `.shell()` can address.
 - Apply transforms AFTER edge/face features when the face filter matters; transforms commute with everything except face-ref resolution.
 - Always `return` a single shape from the top of the script — the kernelCAD CLI exports whatever you return. Only the returned shape is honored by export / probe / measurement surfaces; "the last thing I created" is NOT a fallback you can rely on — mutating transforms (`.translate()`, `.rotate()`) re-use their record, and any helper shape created after the main body silently becomes the newest record. If a probe reports the same bbox no matter what you edit, you are measuring a stale or decoy record: check what the script returns.

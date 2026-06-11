@@ -139,6 +139,25 @@ export class Shape {
     return this;
   }
 
+  /** Rotate `degrees` around the world X axis. Thin alias for
+   *  `.rotate([1, 0, 0], degrees, pivot?)` — same validation, same
+   *  ShapeTransform record, same ParamRef support. */
+  rotateX(degrees: Editable<number>, pivot?: EditableVec3): Shape {
+    return this.rotate([1, 0, 0], degrees, pivot);
+  }
+
+  /** Rotate `degrees` around the world Y axis. Thin alias for
+   *  `.rotate([0, 1, 0], degrees, pivot?)`. */
+  rotateY(degrees: Editable<number>, pivot?: EditableVec3): Shape {
+    return this.rotate([0, 1, 0], degrees, pivot);
+  }
+
+  /** Rotate `degrees` around the world Z axis. Thin alias for
+   *  `.rotate([0, 0, 1], degrees, pivot?)`. */
+  rotateZ(degrees: Editable<number>, pivot?: EditableVec3): Shape {
+    return this.rotate([0, 0, 1], degrees, pivot);
+  }
+
   /**
    * Apply an SE(3) Transform to this shape. Decomposes the transform into
    * one rotate + one translate component (T = Translate · Rotate) and

@@ -447,13 +447,38 @@ export interface SpringOptions {
 const mm = (n: Editable<number>): Param => toParam(n, 'mm');
 const ul = (n: Editable<number>): Param => toParam(n, 'unitless');
 
+/** Targeted hint for the top parametric-authoring trap: JS arithmetic or
+ *  string templating on a ParamRef (`param('w', 18) + 4`, `\`\${ref}4\``)
+ *  produces `"[object Object]4"` / NaN strings that land in dimension slots.
+ *  Returns a specific repair hint when the garbage matches that fingerprint;
+ *  undefined otherwise (callers fall back to the generic hint). */
+function paramArithmeticHint(value: unknown): string | undefined {
+  const methodsHint =
+    `use the ParamRef arithmetic methods — .add(n), .subtract(n), .multiply(n), .divide(n), .negate() — not JS operators (+ - * /) or template strings. Example: param('w', 18).add(4) instead of param('w', 18) + 4.`;
+  if (typeof value === 'string') {
+    if (/\[object Object\]/.test(value)) {
+      return `invalid-args.param.js-arithmetic — this value looks like JS arithmetic or string concatenation on a ParamRef; ${methodsHint}`;
+    }
+    return `invalid-args.param.string-dimension — dimension arguments must be numbers, not strings; if this string came from templating/concatenating a ParamRef, ${methodsHint}`;
+  }
+  if (typeof value === 'number' && Number.isNaN(value)) {
+    return `invalid-args.param.js-arithmetic — NaN here often means JS arithmetic was applied to a ParamRef; ${methodsHint}`;
+  }
+  if (isParamRef(value) && (value as { _type?: unknown })._type !== 'number') {
+    return `invalid-args.param.type-mismatch — this slot needs a NUMERIC param; the ParamRef passed is '${(value as { _type?: string })._type}'. Declare the param with a numeric defaultValue.`;
+  }
+  return undefined;
+}
+
 function assertEditableNumber(featureKind: string, paramName: string, value: unknown): void {
   if (isValidEditableNumber(value)) return;
+  const targetedHint = paramArithmeticHint(value);
   throw new KernelError(
     'feature.invalid-args',
     `${featureKind}: ${paramName} must be a finite number or a numeric ParamRef; got ${formatScalarForError(value)}.`,
     featureKind,
-    `Pass a number (or a ParamRef returned by param()) for ${paramName}; primitives do NOT accept an options object such as { radius, height }. Use the positional signature: ${featureKind}(...).`,
+    targetedHint ??
+      `Pass a number (or a ParamRef returned by param()) for ${paramName}; primitives do NOT accept an options object such as { radius, height }. Use the positional signature: ${featureKind}(...).`,
   );
 }
 

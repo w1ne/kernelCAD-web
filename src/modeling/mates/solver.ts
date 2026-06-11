@@ -104,9 +104,13 @@ const SOLVER = {
  * Resolve a mate's articulation pose to its numeric joint-frame value.
  *
  * Pose-resolution chain (highest priority first):
- *   1. `numericOverrides[mate.name]` — caller-supplied numeric override
- *      (used by `Assembly.solvedModel(poses)` once the public pose surface
- *      lands; today's callers pass `undefined`).
+ *   1. `numericOverrides[mate.name]` — caller-supplied override (the
+ *      `Assembly.solvedModel(poses)` surface). May carry ParamRefs per
+ *      component — `solvedModel` passes them through unresolved so the
+ *      record stays reactive — and is resolved here exactly like a
+ *      capture-time pose. (Before ParamRef numeric coercion threw, an
+ *      unresolved ref silently produced a NaN spanning-tree transform that
+ *      downstream lowering happened to discard.)
  *   2. `mate.pose` — capture-time pose stored on the MateRecord. May carry
  *      a ParamRef; resolved via the session's ParamTable through
  *      `currentValue` (the same path `Assembly.solve` uses for `Editable`
@@ -123,9 +127,20 @@ function resolveMatePose(
   numericOverrides: NumericPoses | undefined,
 ): number | [number, number, number] | undefined {
   if (mate.type === 'fastened' || mate.type === 'planar') return undefined;
-  // 1. Numeric override (caller-supplied) wins.
+  // 1. Caller-supplied override wins; resolve any ParamRef components via
+  //    the ParamTable before shape validation, same as capture-time poses.
   const override = numericOverrides?.[mate.name];
-  if (override !== undefined) return validateNumericPoseShape(mate, override, 'solveMates');
+  if (override !== undefined) {
+    const table = arm.__session().paramTable;
+    const resolved = Array.isArray(override)
+      ? (override.map((v) => currentValue(v as Editable<number>, table)) as [
+          number,
+          number,
+          number,
+        ])
+      : currentValue(override as Editable<number>, table);
+    return validateNumericPoseShape(mate, resolved, 'solveMates');
+  }
   // 2. Capture-time mate.pose (may be ParamRef — resolve via ParamTable).
   if (mate.pose !== undefined) {
     return resolvePoseFromEditable(mate.pose, mate.type, arm);
