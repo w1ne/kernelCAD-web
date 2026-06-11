@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../kernel/backends/occt/occtBackend';
 import { getFaceLineageTool } from './getFaceLineage';

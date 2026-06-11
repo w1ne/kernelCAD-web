@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/parts/findPart.ts
 //
 // Discovery tier. Local-only by default; remote merges when partsBaseUrl

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/backends/occt/assertWatertight.ts
 //
 // Half-edge count check on a triangle mesh: every undirected edge must be

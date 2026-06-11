@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/cli/commands/telemetry.ts
 //
 // `kernelcad telemetry status|enable|disable|reset` — manage anonymous

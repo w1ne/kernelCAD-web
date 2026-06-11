@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/lib/parts/fromSTEP.ts
 //
 // Host-side STEP loader. The agent-facing `lib.fromSTEP(path)` call lives

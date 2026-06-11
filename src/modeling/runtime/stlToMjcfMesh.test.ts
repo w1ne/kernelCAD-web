@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/runtime/stlToMjcfMesh.test.ts
 //
 // Unit tests for the binary-STL → MJCF vertex-string formatter. Round-

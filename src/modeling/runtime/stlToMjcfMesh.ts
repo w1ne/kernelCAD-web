@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/runtime/stlToMjcfMesh.ts
 //
 // Binary STL → MJCF `<mesh vertex="...">` formatter for the P11 collision-

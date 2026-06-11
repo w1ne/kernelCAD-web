@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/vision/opencvBackend.test.ts
 //
 // Tests for the pure-JS opencv silhouette backend.

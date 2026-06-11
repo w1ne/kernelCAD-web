@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modules/sdf/marchingCubes.ts
 //
 // Thin wrapper around the `isosurface.surfaceNets` library. Adapts the

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/backends/occt/holeDetection.test.ts
 //
 // W4 inspection — Task 2: cylindrical-hole detection core on BREP solids.

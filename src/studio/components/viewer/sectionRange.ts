@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as THREE from 'three';
 import type { GeometryResult } from '../../../shared/worker/geometryEngine';
 import { applyGeometryTransform } from './entities/geometryTransform';

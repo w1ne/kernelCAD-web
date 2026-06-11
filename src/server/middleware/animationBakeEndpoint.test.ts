@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Integration test for the animation-bake endpoint against a REAL kernel
 // build of the revolute-sweep fixture (a two-mate assembly: grounded `base`,
 // revolute `arm`, prismatic `slider`). Verifies the baked timeline shape,

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/naming/queryTypeMismatch.test.ts
 //
 // Q5 — runtime type-narrowing fallback per D0.7 (c).

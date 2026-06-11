@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/lib/importMuseTasks.ts
 //
 // Importer for MUSE benchmark cases (arXiv:2605.28579, dataset

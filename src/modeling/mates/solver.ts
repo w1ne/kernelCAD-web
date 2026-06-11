@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/lib/mates/solver.ts
 //
 // v0.6 Task 6: tree-FK over the mate graph for all 7 mate types.

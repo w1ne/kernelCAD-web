@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/edits/embossText.ts
 //
 // W3: insert a `<shape>.embossText({...})` chained call into a .kcad.ts

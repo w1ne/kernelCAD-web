@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kinematic/inverseKinematicsAnalytical.ts
 //
 // Closed-form analytical IK for the spherical-wrist 6-DOF serial chain. The

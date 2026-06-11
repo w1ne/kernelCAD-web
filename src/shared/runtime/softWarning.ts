@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Soft warnings — non-fatal advisories surfaced by the param edit loop and
 // the gated-feature lineage resolver. See spec §E.7.
 //

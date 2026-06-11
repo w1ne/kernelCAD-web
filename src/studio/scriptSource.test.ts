@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // S1: scriptSource now routes through the apiBase helper, which calls

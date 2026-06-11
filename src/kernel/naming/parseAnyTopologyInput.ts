@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/naming/parseAnyTopologyInput.ts
 //
 // Q7 — MCP-boundary dispatcher per spec §3.7. The single entry-point every

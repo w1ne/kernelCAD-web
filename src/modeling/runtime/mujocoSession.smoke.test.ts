@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /**
  * Smoke test for @mujoco/mujoco loading in Node + vitest.
  *

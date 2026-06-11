@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // v0.2 tracked-refs corpus — labeled-* tasks.
 //
 // Split out of corpus-v0.2.test.ts for CI shard balance (per-file vitest

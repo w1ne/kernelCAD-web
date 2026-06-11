@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Canonical backend target enum. 'faceted-mesh' is reserved for a future fallback
 // path (Manifold / mesh-only); v0.1 ships only 'export-occt'.
 //

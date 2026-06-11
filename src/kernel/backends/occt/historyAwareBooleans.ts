@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /**
  * Direct-OCCT boolean operation helpers that capture shape evolution history
  * via BRepAlgoAPI_*::Generated/Modified/IsDeleted callbacks.

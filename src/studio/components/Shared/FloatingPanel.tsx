@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import React from 'react';
 import { motion, useDragControls } from 'framer-motion';
 import { X, GripVertical } from 'lucide-react';

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/lib/numeric/jacobian.test.ts
 //
 // Unit tests for the small-matrix helpers used by the v0.6 mate solver

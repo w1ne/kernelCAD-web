@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ConstraintSolver } from './solver';
 import type { SolverState, SketchEntity, Point } from './types';

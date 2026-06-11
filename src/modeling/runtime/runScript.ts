@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { CaptureSession } from '../capture/captureSession';
 import { createApi } from '../api';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';

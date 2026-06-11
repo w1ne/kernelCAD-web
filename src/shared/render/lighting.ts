@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /**
  * CAD-style lighting setup
  * Prioritizes consistent illumination and clarity over realism

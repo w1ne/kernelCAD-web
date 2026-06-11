@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/studio/components/demoPlayer/sectionParam.ts
 //
 // Parser for the demo-player section-plane URL params. The headless render

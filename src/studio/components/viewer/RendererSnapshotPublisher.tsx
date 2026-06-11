@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useThree } from '@react-three/fiber';
 import { useEffect } from 'react';
 import { rendererSnapshot } from './rendererSnapshot';

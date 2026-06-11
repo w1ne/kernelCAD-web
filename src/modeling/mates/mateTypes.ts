@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // URDF + Fusion 360 + OnShape converged mate vocabulary (7 types).
 // DOF table + connector-pair compatibility per spec
 // `2026-05-11-assembly-mates-validator-design.md` §"v0.6 full mates+connector API".

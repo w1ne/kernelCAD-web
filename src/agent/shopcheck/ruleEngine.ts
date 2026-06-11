@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/shopcheck/ruleEngine.ts
 //
 // Slice E rule engine — generic dispatcher over a DfmRule list. The engine

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/lib/whatsNewTemplate.ts
 import { writeFileSync, existsSync, readFileSync } from 'node:fs';
 

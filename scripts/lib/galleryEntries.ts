@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';

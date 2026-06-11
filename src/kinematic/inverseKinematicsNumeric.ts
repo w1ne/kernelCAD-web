@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kinematic/inverseKinematicsNumeric.ts
 //
 // Damped-Least-Squares (Levenberg–Marquardt) Jacobian IK for general open

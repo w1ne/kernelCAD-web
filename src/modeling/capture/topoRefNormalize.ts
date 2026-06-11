@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/topoRefNormalize.ts
 //
 // Single-source-of-truth helper for accepting either a `@kc[owner/kind/name]`

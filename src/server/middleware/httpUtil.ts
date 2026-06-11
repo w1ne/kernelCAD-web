@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /**
  * Tiny helpers shared by the Slice 2E.bridge middleware handlers. Kept
  * deliberately minimal — these endpoints don't need a framework, just URL

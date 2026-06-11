@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/runtime/dfm/clearance.ts
 //
 // W3 Task 4 — part-pair clearance check, the enforcement primitive behind

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/cli/commands/dfm.ts
 //
 // `kernelcad dfm <file.kcad.ts>` — run the print-readiness gates declared

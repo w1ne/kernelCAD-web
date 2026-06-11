@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/getFaceLineage.ts
 //
 // MCP tool: walk the HistoryMap of a lowered shape and return the chain of

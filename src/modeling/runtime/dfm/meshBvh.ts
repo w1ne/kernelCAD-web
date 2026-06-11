@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/runtime/dfm/meshBvh.ts
 //
 // Plain-TypeScript triangle BVH for the DFM gates (min-wall ray sampler,

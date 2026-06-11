@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { evaluateScriptTool } from './evaluateScript';
 

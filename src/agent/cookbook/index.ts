@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { scoreBM25 } from './bm25';
 import type { Snippet } from './loader';
 

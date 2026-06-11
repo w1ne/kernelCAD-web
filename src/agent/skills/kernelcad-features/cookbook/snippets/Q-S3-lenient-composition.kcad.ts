@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Q-S3 — Lenient composition for optional features
 //
 // Demonstrates: `.asLenient()` and the strict-vs-lenient contract for

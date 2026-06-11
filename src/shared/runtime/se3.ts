@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/runtime/se3.ts
 //
 // Internal SE(3) math primitives. Used by:

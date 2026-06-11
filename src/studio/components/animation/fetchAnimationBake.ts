@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Client fetcher for `POST /__kernelcad/animation-bake`. Routes through the
 // shared apiBase helper (signed-in users hit the hosted backend; localhost
 // hits the vite middleware), same as the mesh / transforms fetches in

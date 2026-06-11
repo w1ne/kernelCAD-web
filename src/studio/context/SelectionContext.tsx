@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { SketchData, SketchModeState } from '../../shared/types/sketch';
 import type { SketchPlaneEntity } from '../../shared/types/plane';

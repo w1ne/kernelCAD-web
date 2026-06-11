@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { JSX } from 'react';
 import { Play, Pause } from 'lucide-react';
 import { useRecomputeResult } from '../../hooks/useRecomputeResult';

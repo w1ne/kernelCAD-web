@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createContext, useCallback, useContext, useMemo, useState, useEffect, useRef, type ReactNode } from 'react';
 import { GeometryEngine, type GeometryResult, type SketchGeometry } from '../../shared/worker/geometryEngine';
 import { remapSketchNames } from '../../shared/codeGeneration/sketchNaming';

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createContext, useContext, useState, useMemo, type ReactNode, useRef, useCallback } from 'react';
 import type { Constraint, SketchEntity, SolverState } from '../../modeling/constraints/types';
 import { ConstraintSolver } from '../../modeling/constraints/solver';

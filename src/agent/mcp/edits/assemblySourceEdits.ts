@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ConnectorOrigin, ConnectorType } from '../../../modeling/mates/connector';
 import type { MateLimitRange, MatePose } from '../../../modeling/mates/mate';
 import type { MateType } from '../../../modeling/mates/mateTypes';

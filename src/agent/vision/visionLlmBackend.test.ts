@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/vision/visionLlmBackend.test.ts
 //
 // Unit tests for the vision-LLM backend. The Anthropic client is replaced with

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/refreshCatalog.ts
 //
 // Slice E — TS-native catalog refresh. Pulls the four upstream HTML pages

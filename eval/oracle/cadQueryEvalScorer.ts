@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/oracle/cadQueryEvalScorer.ts
 //
 // Node oracle that runs cadqueryeval's Python geometry scorer on a

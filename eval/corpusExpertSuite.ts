@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/corpusExpertSuite.ts
 //
 // Shared harness for the "expert solutions score 100%" corpus suites

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 let cached: SupabaseClient | null = null;

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/checkMountingHoleConsistency.ts
 //
 // MCP tool: wraps the kc.kinematic.checkMountingHoleConsistency facade.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/runtime/dfm/runDfmChecks.ts
 //
 // W3 Task 7 — DFM gate orchestrator. Binds the gates declared by the

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /**
  * AST Engine V2 - Using acorn parser
  * Phase 1: Basic parsing ✅

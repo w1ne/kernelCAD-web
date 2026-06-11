@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // MUSE 'handless_comb' — single-piece resin comb: curved ergonomic grip
 // ridge, continuous spine, 20 evenly spaced inner teeth, and reinforced
 // (longer, wider) start/end teeth. One monolithic fused solid.

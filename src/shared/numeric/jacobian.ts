@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/lib/numeric/jacobian.ts
 //
 // Small-matrix helpers for the v0.6 mate solver (T7 — Newton-Raphson

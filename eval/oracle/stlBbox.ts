@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/oracle/stlBbox.ts
 //
 // STL-extent oracle for harness bbox gates.

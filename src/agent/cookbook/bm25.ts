@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Pure BM25 over a corpus of {id, text} docs. Standard Robertson/Sparck-Jones
 // parameters (k1=1.5, b=0.75). No external deps. Tokenizer drops tokens <= 2
 // chars and a small English stopword set.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/forwardKinematics.ts
 //
 // Pure body-tree forward kinematics, extracted from Assembly.solve so the

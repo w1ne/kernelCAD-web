@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { runTask, BEST_OF_N } from './runner';

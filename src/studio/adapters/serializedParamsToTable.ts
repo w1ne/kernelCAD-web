@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Adapter: SerializedParamEntry[] → ParamTable.
 //
 // `/__kernelcad/mesh` returns a `SerializedParamTable` (record keyed by

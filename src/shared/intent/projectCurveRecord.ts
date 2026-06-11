@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/shared/intent/projectCurveRecord.ts
 //
 // Capture-time metadata for the `Shape.projectCurve({...})` face-authoring

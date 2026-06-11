@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { JSX } from 'react';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useParamUpdate, type ParamUpdater } from '../hooks/useParamUpdate';

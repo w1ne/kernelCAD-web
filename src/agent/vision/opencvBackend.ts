@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/vision/opencvBackend.ts
 //
 // Pure-JS opencv silhouette extractor for the `trace_from_image` tool.

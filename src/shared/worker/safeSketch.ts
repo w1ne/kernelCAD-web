@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 type Point = [number, number] | [number, number, number];
 
 type ReplicadLike = Record<string, unknown> & {

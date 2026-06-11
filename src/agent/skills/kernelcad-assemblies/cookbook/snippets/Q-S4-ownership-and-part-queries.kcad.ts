@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Q-S4 — Ownership filters and Part Queries
 //
 // Demonstrates: `q.part(...)`, `q.ownedByPart(...)`, and `q.ownerPart(...)`.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/backends/occt/sketchToDrawing.ts
 //
 // Shared helper: rebuild a `replicad.Drawing` from a SketchCommand[]. Used by

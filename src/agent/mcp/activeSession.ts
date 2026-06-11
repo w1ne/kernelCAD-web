@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { CaptureSession } from '../../modeling/capture/captureSession';
 import { buildModel, buildModelFromFile } from '../../modeling/buildModel';

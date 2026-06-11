@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modules/sdf/index.ts
 //
 // `sdf` namespace export. SDF fields are plain callable closures plus a

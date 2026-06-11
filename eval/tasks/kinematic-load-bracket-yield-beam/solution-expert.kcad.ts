@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Load-capacity eval — a 200×50×5 mm cantilever bracket fastened to a wall.
 // Steel + 50 N tip load: ok=true, SF ≈ 5.2. PLA + 500 N: K6 fires (stress
 // exceeds yield). Both branches assert in-script via throw so a clean

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modules/sdf/primitives.ts
 //
 // SDF primitive constructors. Each returns a closure `(p: Vec3) => number`

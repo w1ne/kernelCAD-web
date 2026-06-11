@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/parts/catalog.ts
 //
 // Bundled-tier catalog loader + resolver. Reads <catalogDir>/index.json

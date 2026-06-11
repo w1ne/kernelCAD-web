@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/server.ts
 import { createRequire } from 'node:module';
 import { randomUUID } from 'node:crypto';

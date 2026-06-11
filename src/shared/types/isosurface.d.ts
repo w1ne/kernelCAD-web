@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Ambient declaration for the `isosurface` npm package (no @types package
 // exists; the lib is pure JS). Slice-1 only consumes `surfaceNets`.
 declare module 'isosurface' {

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/addPathHermiteG2.ts
 //
 // MCP tool wrapper for `add_path_hermite_g2`. Injects `.hermiteG2(a, b)` into

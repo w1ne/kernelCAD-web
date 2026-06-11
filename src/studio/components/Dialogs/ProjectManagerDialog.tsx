@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useState } from 'react';
 import { X, Plus, Trash2, FolderOpen, Edit2, Check, Clock } from 'lucide-react';
 import { useProject } from '../../context/ProjectContext';

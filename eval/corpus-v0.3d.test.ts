@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // v0.3 corpus — expert solutions score 100% (part d).
 //
 // Split out of corpus-v0.3.test.ts for CI shard balance (per-file vitest

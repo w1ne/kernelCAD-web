@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/vision/anthropicVisionClient.ts
 //
 // Thin client over `@anthropic-ai/sdk`'s `messages.create` for image+text

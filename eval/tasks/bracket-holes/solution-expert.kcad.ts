@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 const boltDiam = 5;
 
 const t = 2 * boltDiam;       // wall thickness

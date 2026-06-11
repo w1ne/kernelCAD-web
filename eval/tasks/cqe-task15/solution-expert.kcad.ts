@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Loft: circle (40 mm diameter) at z=0 → square (30 mm side) at z=40.
 //
 // Reference bbox: X = [-20, 20], Y = [-20, 20], Z = [0, 40]. The XY bounds

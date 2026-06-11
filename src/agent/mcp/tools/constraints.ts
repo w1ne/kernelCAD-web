@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { ConstraintSolver } from '../../../modeling/constraints/solver';
 import type { Constraint, ConstraintType, SketchEntity } from '../../../modeling/constraints/types';
 

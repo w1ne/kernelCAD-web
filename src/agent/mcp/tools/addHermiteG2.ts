@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/addHermiteG2.ts
 //
 // MCP tool wrapper for `add_hermite_g2`. Inserts a `hermiteG2(...)` binding

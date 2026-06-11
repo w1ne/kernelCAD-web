@@ -1,4 +1,6 @@
 #!/usr/bin/env tsx
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /**
  * Atomic move-batch: read a mapping JSON, perform filesystem moves,
  * then run the codemod. Either everything succeeds or the script aborts

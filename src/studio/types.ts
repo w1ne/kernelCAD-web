@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Studio adaptive UI — shared types.
 //
 // The Studio shell is a pure function of the latest recompute result. These

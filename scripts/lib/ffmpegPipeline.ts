@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { spawn, type ChildProcessByStdio } from 'node:child_process';
 import { type Writable, type Readable } from 'node:stream';
 import { execSync } from 'node:child_process';

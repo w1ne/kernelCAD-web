@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
 import { selectBest, type ScoredCandidate } from './bestOfN.js';
 import type { GateReport } from './types.js';

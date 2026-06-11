@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/edits/addVariableSweep.ts
 //
 // NURBS Slice B Task 11: insert a `variableSweep(spine, sections, opts?)`

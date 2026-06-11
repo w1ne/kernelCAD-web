@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/lib/mates/jointAxisBinding.test.ts
 //
 // v0.7.4 Gate 2 — joint-axis-to-structure binding. Each

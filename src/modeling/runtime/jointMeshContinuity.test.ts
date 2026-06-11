@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/runtime/jointMeshContinuity.test.ts
 //
 // P8 unit tests for the joint-mesh-continuity helper.

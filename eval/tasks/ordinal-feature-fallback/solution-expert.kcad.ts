@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 return box(60, 40, 12)
   .hole('top', { u: -20, v: 0, diameter: 5, depth: 'through' })
   .hole('top', { u:  20, v: 0, diameter: 5, depth: 'through' })

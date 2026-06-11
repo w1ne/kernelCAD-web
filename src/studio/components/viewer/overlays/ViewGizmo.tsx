@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { Home } from 'lucide-react';
 import type { ViewTarget } from '../controllers/cameraPose';
 

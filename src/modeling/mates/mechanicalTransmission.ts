@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { Assembly, TransmissionIntentRecord } from '../capture/assembly';
 import type { RuntimeMesh } from '../../kernel/backends/runtimeMesh';
 import type { Vec3 } from '../../shared/intent/types';
