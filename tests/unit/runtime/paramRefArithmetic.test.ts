@@ -201,3 +201,46 @@ describe('ParamRef arithmetic methods', () => {
     expect(refs.has('y')).toBe(true);
   });
 });
+
+describe('ParamRef JS-coercion guard (Symbol.toPrimitive)', () => {
+  it('JS + on a ParamRef throws loudly with the .add hint (no [object Object] concat)', () => {
+    const w = makeParamRef<number>('fingerWidth', 'number');
+    let caught: unknown;
+    try {
+      // Deliberate misuse — the #439 trap.
+      void ((w as unknown as number) + 4);
+    } catch (e) { caught = e; }
+    expect(caught).toBeDefined();
+    expect(String(caught)).toMatch(/JS arithmetic on a ParamRef/);
+    expect((caught as { hint?: string }).hint).toMatch(/\.add\(n\)/);
+    expect((caught as { code?: string }).code).toBe('feature.invalid-args');
+  });
+
+  it('JS * and / on a ParamRef throw the same loud error', () => {
+    const r = makeParamRef<number>('r', 'number');
+    expect(() => (r as unknown as number) * 2).toThrow(/JS arithmetic on a ParamRef/);
+    expect(() => (r as unknown as number) / 2).toThrow(/JS arithmetic on a ParamRef/);
+  });
+
+  it('Math.* numeric coercion of a ParamRef throws instead of producing NaN', () => {
+    const r = makeParamRef<number>('r', 'number');
+    expect(() => Math.max(r as unknown as number, 0)).toThrow(/JS arithmetic on a ParamRef/);
+  });
+
+  it('string contexts render the symbolic expression, not [object Object]', () => {
+    const r = makeParamRef<number>('r', 'number');
+    expect(`${r}`).toBe('r');
+    expect(String(r)).toBe('r');
+    expect(r.divide(2).toString()).toBe('(r / 2)');
+  });
+
+  it('coercion guard does NOT freeze parametric semantics — derived refs still reflow', () => {
+    const t = new ParamTable();
+    declared(t, 'w', 18);
+    const w = makeParamRef<number>('w', 'number');
+    const derived = w.add(4);
+    expect(resolveExpr(derived._expr, t)).toBe(22);
+    t.set('w', 30);
+    expect(resolveExpr(derived._expr, t)).toBe(34);
+  });
+});
