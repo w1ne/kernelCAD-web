@@ -27,6 +27,25 @@ export interface ShapeInfo {
 export interface HarnessResult {
   gates: Record<string, boolean>;
   scored: Record<string, boolean>;
+  /**
+   * Optional free-form diagnostics surfaced by external scorers (e.g. the
+   * cadqueryeval six-check metrics or the MUSE funnel-stage payload).
+   * Passed through to score.json so downstream tooling can read them
+   * without re-running the scorer.
+   */
+  metrics?: Record<string, number | boolean | string | null>;
+}
+
+/**
+ * Context handed to a task harness by the runner. Optional second argument —
+ * harnesses that don't need it keep working when invoked with the script
+ * path alone (e.g. from unit tests or the best-of-N candidate selector).
+ */
+export interface HarnessCtx {
+  /** Absolute path to the task directory (reference artifacts live here). */
+  taskDir: string;
+  /** Absolute path to this run's output directory (scratch + artifacts). */
+  runDir: string;
 }
 
 export interface Score {
@@ -52,6 +71,8 @@ export interface Score {
    * no matching gate/scored item. Existing `score`/`gate_pass` are unaffected.
    */
   funnel?: { stage: string; passed: number; total: number }[];
+  /** External-scorer metrics passed through from HarnessResult.metrics. */
+  metrics?: Record<string, number | boolean | string | null>;
 }
 
 // Transcript events — captured during a run, rendered to markdown afterward.
