@@ -2,19 +2,24 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/parts/remoteClient.ts
 //
-// Remote parts tier. Defaults to the step.parts public catalog so kernelCAD can
-// find off-the-shelf parts out of the box. Override the source with a
-// partsBaseUrl argument or the KERNELCAD_PARTS_BASE_URL env var (e.g. a
-// self-hosted catalog serving the same /v1/parts schema); set that env var to
-// `off` / `none` to disable the remote tier and restore offline-only behavior.
+// Remote parts tier. Defaults to kernelCAD's own public catalog
+// (kernelcad-parts.pages.dev) so kernelCAD can find off-the-shelf parts out of
+// the box with no third-party dependency. Override the source with a
+// partsBaseUrl argument or the KERNELCAD_PARTS_BASE_URL env var (e.g. point it
+// at api.step.parts, or any catalog serving the same /v1/parts schema); set
+// that env var to `off` / `none` to disable the remote tier and restore
+// offline-only behavior.
 
 import { KernelError } from '../../shared/intent/kernelError';
 import type { PartRecord } from '../../shared/parts/types';
-import {
-  mapStepPartsRecord,
-  STEP_PARTS_BASE_URL,
-  type StepPartsRecord,
-} from './stepPartsAdapter';
+import { mapStepPartsRecord, type StepPartsRecord } from './stepPartsAdapter';
+
+/** Zero-config default remote source: kernelCAD's own license-clean catalog,
+ *  built from the CC-BY FreeCAD parts_library and served from Cloudflare Pages
+ *  (see scripts/ingestFreecadLibrary.ts + .github/workflows/parts-catalog.yml).
+ *  Serves the same /v1/parts schema the step.parts adapter speaks, so the
+ *  mapper below is unchanged. Override via partsBaseUrl / KERNELCAD_PARTS_BASE_URL. */
+export const KERNELCAD_PARTS_BASE_URL = 'https://kernelcad-parts.pages.dev';
 
 export class RemoteDisabledError extends KernelError {
   constructor() {
@@ -54,9 +59,9 @@ function resolveBaseUrl(arg: string | undefined): string {
   if (raw.toLowerCase() === 'off' || raw.toLowerCase() === 'none') {
     throw new RemoteDisabledError();
   }
-  // Zero-config default: step.parts. An explicit arg/env URL overrides it (e.g.
-  // a self-hosted catalog that serves the same /v1/parts schema).
-  const url = raw.length === 0 ? STEP_PARTS_BASE_URL : raw;
+  // Zero-config default: kernelCAD's own catalog. An explicit arg/env URL
+  // overrides it (e.g. api.step.parts, or any catalog serving /v1/parts).
+  const url = raw.length === 0 ? KERNELCAD_PARTS_BASE_URL : raw;
   return url.replace(/\/$/, '');
 }
 
