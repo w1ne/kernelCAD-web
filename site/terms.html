@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="kernelCAD terms of service — the rules for using kernelCAD, including AI-generated output, accounts, and subscriptions." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;1,500&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <title>kernelCAD — Terms of Service</title>
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "e5f5f4c6464f456d8f5376411e77f545"}'></script>
+  <style>
+    .legal { max-width: 760px; margin: 0 auto; padding: 1rem 0 4rem; }
+    .legal h1 { font-family: 'Source Serif 4', serif; font-size: 2.2rem; margin: 1.5rem 0 0.25rem; }
+    .legal .effective { color: var(--ink-faint, #8a8475); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; margin-bottom: 2rem; }
+    .legal h2 { font-family: 'Source Serif 4', serif; font-size: 1.25rem; margin: 2rem 0 0.5rem; }
+    .legal p, .legal li { font-family: 'Inter', sans-serif; line-height: 1.65; color: var(--ink-soft, #3a3a3a); }
+    .legal ul { padding-left: 1.25rem; }
+    .legal li { margin: 0.35rem 0; }
+    .legal code { font-family: 'JetBrains Mono', monospace; font-size: 0.88em; }
+    .legal a { color: var(--blueprint, #2f6df0); }
+    .legal strong { color: var(--ink, #1a1a1a); }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <nav class="nav">
+      <a class="nav-mark" href="/">
+        <svg class="k" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
+          <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
+        </svg>
+        <span>kernel<span class="cad">CAD</span></span>
+      </a>
+      <div class="nav-links">
+        <a class="app-link" href="https://app.kernelcad.com">app ↗</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">@kernelcad</a>
+      </div>
+    </nav>
+
+    <main class="legal">
+      <h1>Terms of Service</h1>
+      <p class="effective">Effective: 2026-06-12</p>
+
+      <p>These Terms govern your use of kernelCAD ("we", "us", "the Service") — the website (<code>kernelcad.com</code>), the hosted Studio (<code>app.kernelcad.com</code>), the hosted MCP server (<code>mcp.kernelcad.com</code>), and the <code>kernelcad</code> tooling. By using the Service you agree to these Terms and to our <a href="/privacy.html">Privacy Policy</a>. If you do not agree, do not use the Service.</p>
+
+      <h2>The Service</h2>
+      <p>kernelCAD is an agent-first CAD toolkit: you describe a part or mechanism in natural language and the Service produces parametric <code>.kcad.ts</code> models you can view, refine, validate, and export. You may use it with our built-in hosted agent, or by connecting your own AI agent over MCP (bring-your-own-Claude). We may add, change, or remove features at any time.</p>
+
+      <h2>Accounts</h2>
+      <p>Some features require an account, created by signing in through a third-party identity provider. You are responsible for activity under your account and for keeping your access credentials secure. You must be at least 16 years old to use the Service.</p>
+
+      <h2>Acceptable use</h2>
+      <p>You agree not to:</p>
+      <ul>
+        <li>use the Service to violate any law or infringe anyone's rights;</li>
+        <li>attempt to disrupt, overload, probe, or circumvent the security or rate limits of the Service or its infrastructure;</li>
+        <li>resell or redistribute access to the hosted Service except as expressly permitted;</li>
+        <li>upload content you do not have the right to use, or that is unlawful, malicious, or harmful.</li>
+      </ul>
+      <p>We may suspend or limit access that we reasonably believe breaches these Terms or threatens the Service.</p>
+
+      <h2>Your content and ownership</h2>
+      <p>You retain ownership of the prompts you submit and the CAD models (<code>.kcad.ts</code> source and exports) you generate ("Your Content"). You grant us a limited, worldwide, royalty-free license to host, process, store, and display Your Content solely to operate and provide the Service to you. If you choose to make a project public, it becomes accessible to anyone with the link. You are responsible for not including confidential or third-party-restricted material in content you make public.</p>
+
+      <h2 id="ai-output">AI-generated output — verify before you build</h2>
+      <p><strong>CAD models, validations, animations, and other output are generated automatically and may contain errors, omissions, or unsafe geometry.</strong> The Service does not provide engineering, manufacturing, structural, medical, or other professional advice, and no output is certified fit for any purpose. You are solely responsible for independently reviewing, testing, and validating any output before relying on it — including before manufacturing, 3D printing, machining, assembling, or deploying any physical object. Do not rely on the Service for any application where an error could cause injury, death, or significant loss.</p>
+
+      <h2>Bring-your-own-agent (MCP)</h2>
+      <p>When you connect your own AI agent (e.g. Claude) to the Service, that agent and its provider are governed by your own agreement with that provider. You are responsible for your use of, and the cost of, your own agent. We receive only the tool calls needed to run modeling, introspection, review, and export.</p>
+
+      <h2>Subscriptions and payments</h2>
+      <p>The Service offers a free tier (including unlimited bring-your-own-agent use) and optional paid plans. Paid plans are billed in advance on a recurring basis through our payment processor (Stripe); current pricing and plan features are shown at checkout. You can cancel at any time and your plan remains active through the end of the paid period. Fees are exclusive of taxes where applicable. Except where required by law, payments are non-refundable. We may change pricing or plan limits prospectively, with notice for active subscribers.</p>
+
+      <h2>Free-tier limits</h2>
+      <p>Free-tier usage (such as hosted generations) may be subject to quotas and fair-use limits that we may adjust to keep the Service available to everyone.</p>
+
+      <h2>Intellectual property</h2>
+      <p>The open-source <code>kernelcad</code> tooling is licensed under its published license (MIT) — those terms govern that code. The "kernelCAD" name, logo, website, and the hosted Service (other than Your Content and open-source components) are owned by us and protected by intellectual-property law. These Terms grant you no rights in our marks.</p>
+
+      <h2>Third-party services</h2>
+      <p>The Service relies on third parties — including Supabase, Stripe, Cloudflare, Hetzner, our hosted-inference provider, and (for bring-your-own-agent) your AI provider. Your use may also be subject to their terms. We are not responsible for third-party services.</p>
+
+      <h2>Disclaimer of warranties</h2>
+      <p>The Service is provided <strong>"as is" and "as available," without warranties of any kind</strong>, whether express, implied, or statutory, including merchantability, fitness for a particular purpose, accuracy, and non-infringement. We do not warrant that the Service will be uninterrupted, error-free, or that any output is correct or fit for any use.</p>
+
+      <h2>Limitation of liability</h2>
+      <p>To the maximum extent permitted by law, we will not be liable for any indirect, incidental, special, consequential, or punitive damages, or for any loss of profits, data, or goodwill, arising from your use of the Service. Our total liability for any claim relating to the Service will not exceed the greater of the amount you paid us for the Service in the three (3) months before the claim, or USD 50. Nothing in these Terms limits liability that cannot be limited under applicable law.</p>
+
+      <h2>Indemnification</h2>
+      <p>You agree to indemnify and hold us harmless from claims, damages, and expenses arising out of Your Content, your use of the Service, or your breach of these Terms.</p>
+
+      <h2>Termination</h2>
+      <p>You may stop using the Service at any time. We may suspend or terminate access if you breach these Terms or to protect the Service or others. Provisions that by their nature should survive termination (including ownership, disclaimers, limitation of liability, and indemnification) will survive.</p>
+
+      <h2>Changes to these Terms</h2>
+      <p>We may update these Terms; material changes will be reflected by the effective date above. Continued use after changes take effect constitutes acceptance.</p>
+
+      <h2>Governing law</h2>
+      <p>These Terms are governed by the laws of the operator's place of residence, without regard to conflict-of-laws rules, and any dispute will be subject to the courts of that location — except where mandatory consumer-protection law gives you the right to bring proceedings in your own jurisdiction.</p>
+
+      <h2>Contact</h2>
+      <p>Questions about these Terms: <a href="mailto:andrii@shylenko.com">andrii@shylenko.com</a>.</p>
+    </main>
+
+    <footer class="footer">
+      <div>kernelCAD · MIT</div>
+      <div class="footer-links">
+        <a href="/terms.html">terms</a>
+        <a href="/privacy.html">privacy</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">x</a>
+        <a href="https://app.kernelcad.com">app</a>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
