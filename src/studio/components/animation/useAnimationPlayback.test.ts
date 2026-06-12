@@ -132,11 +132,12 @@ function harness(overrides: Partial<{ bakeFetcher: Harness['bakeFetcher'] }> = {
     };
 }
 
-function renderPlayback(h: Harness, opts: { metadata?: AnimationViewMetadata | null; sessionToken?: string | null } = {}) {
+function renderPlayback(h: Harness, opts: { metadata?: AnimationViewMetadata | null; sessionToken?: string | null; staticBakeKey?: string | null } = {}) {
     return renderHook(() =>
         useAnimationPlayback({
             metadata: opts.metadata === undefined ? FIXTURE : opts.metadata,
             sessionToken: opts.sessionToken === undefined ? 't1' : opts.sessionToken,
+            staticBakeKey: opts.staticBakeKey,
             updateParam: h.update,
             applyPartTransform: h.apply,
             clearPartTransforms: h.clear,
@@ -148,6 +149,36 @@ function renderPlayback(h: Harness, opts: { metadata?: AnimationViewMetadata | n
 }
 
 afterEach(() => { vi.restoreAllMocks(); });
+
+describe('useAnimationPlayback — gallery static-bake (no session)', () => {
+    it('drives the viewport from staticBakeKey with NO sessionToken', async () => {
+        const h = harness();
+        const { result } = renderPlayback(h, { sessionToken: null, staticBakeKey: 'export default carousel;' });
+
+        // No live session, but a static bake source → the player can drive.
+        expect(result.current.canDrive).toBe(true);
+
+        await act(async () => {
+            result.current.scrubTo(2000);
+            await Promise.resolve();
+            await Promise.resolve();
+        });
+
+        // Baked once via the injected (static) fetcher, keyed by the source.
+        expect(h.bakeFetcher).toHaveBeenCalledTimes(1);
+        expect(h.bakeFetcher).toHaveBeenCalledWith('export default carousel;');
+        // Transforms applied to the viewport — the mechanism moves.
+        expect(h.apply.mock.calls.length).toBeGreaterThan(0);
+        // (The session-only gating of the pause-sync `updateParam` lives in
+        // AnimationTab, not this hook — the hook uses whatever is passed.)
+    });
+
+    it('cannot drive with neither a session nor a static key', () => {
+        const h = harness();
+        const { result } = renderPlayback(h, { sessionToken: null, staticBakeKey: undefined });
+        expect(result.current.canDrive).toBe(false);
+    });
+});
 
 describe('useAnimationPlayback (baked)', () => {
     it('scrub bakes once then applies interpolated transforms; ONE pause-sync param edit', async () => {
