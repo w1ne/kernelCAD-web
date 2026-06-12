@@ -769,23 +769,31 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             const revision = ++mainRevisionRef.current;
             setCurrentCodeRevision(revision);
             let staleRecorded = false;
-            try {
-                parseCode(code);
-            } catch (err) {
-                if (revision !== mainRevisionRef.current) {
-                    setStaleMainResponsesDropped((prev) => prev + 1);
-                    staleRecorded = true;
+            // Only the legacy in-browser worker (plain-JS `new Function`) needs an
+            // acorn syntax pre-check — acorn can't parse TypeScript. The hosted and
+            // dev-kernel paths transpile TS server-side and surface their own
+            // diagnostics, so acorn must NOT gate them: it throws "Unexpected token
+            // (line:col)" on type annotations in modern .kcad.ts (e.g. gallery
+            // models), blanking a model the server renders fine.
+            if (!hosted && !routesToDevKernel) {
+                try {
+                    parseCode(code);
+                } catch (err) {
+                    if (revision !== mainRevisionRef.current) {
+                        setStaleMainResponsesDropped((prev) => prev + 1);
+                        staleRecorded = true;
+                        return;
+                    }
+                    const message = err instanceof Error ? err.message : String(err);
+                    setError(message);
+                    pushExecutionRecord({
+                        revision,
+                        status: 'error',
+                        error: message,
+                        executionCountAtRecord: executionCount + 1,
+                    });
                     return;
                 }
-                const message = err instanceof Error ? err.message : String(err);
-                setError(message);
-                pushExecutionRecord({
-                    revision,
-                    status: 'error',
-                    error: message,
-                    executionCountAtRecord: executionCount + 1,
-                });
-                return;
             }
             if (hosted) {
                 setIsComputing(true);
@@ -986,18 +994,23 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     const executeGeometry = useCallback(async (codeToExecute: string) => {
         const revision = ++mainRevisionRef.current;
         setCurrentCodeRevision(revision);
-        try {
-            parseCode(codeToExecute);
-        } catch (err) {
-            const message = err instanceof Error ? err.message : String(err);
-            setError(message);
-            pushExecutionRecord({
-                revision,
-                status: 'error',
-                error: message,
-                executionCountAtRecord: executionCount + 1,
-            });
-            return;
+        // Acorn can't parse TypeScript; only the legacy worker path below needs
+        // this pre-check. The hosted server-mesh path transpiles modern .kcad.ts
+        // itself, so acorn must not block it (it throws "Unexpected token" on TS).
+        if (!shouldUseHostedMesh()) {
+            try {
+                parseCode(codeToExecute);
+            } catch (err) {
+                const message = err instanceof Error ? err.message : String(err);
+                setError(message);
+                pushExecutionRecord({
+                    revision,
+                    status: 'error',
+                    error: message,
+                    executionCountAtRecord: executionCount + 1,
+                });
+                return;
+            }
         }
 
         // Hosted deploy (app.kernelcad.com): no local kernel backend, and the

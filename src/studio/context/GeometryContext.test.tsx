@@ -437,6 +437,68 @@ describe('GeometryContext latest-intent-wins', () => {
     expect(screen.getByTestId('script-review-ok').textContent).toBe('true');
   });
 
+  // Regression: gallery/MCP models authored as modern .kcad.ts carry TypeScript
+  // syntax (type annotations). The old acorn pre-check (`parseCode`, a JS-only
+  // parser) threw "Unexpected token (line:col)" and blanked the model on the
+  // hosted app — even though the server mesh transpiles TS and renders it fine.
+  // The hosted path must NOT run the acorn guard.
+  it('hosted: renders modern TypeScript .kcad.ts via server mesh (no acorn parse error)', async () => {
+    vi.stubGlobal('window', {
+      ...window,
+      location: { ...window.location, hostname: 'app.kernelcad.com', search: '' },
+      localStorage: window.localStorage,
+      history: window.history,
+      crypto: window.crypto,
+    });
+
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        features: [
+          {
+            featureId: 'b',
+            featureKind: 'box',
+            predecessors: [],
+            faces: [
+              {
+                vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
+                indices: [0, 1, 2],
+                normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+                faceId: 0,
+              },
+            ],
+          },
+        ],
+        featureRecords: [],
+        bounds: { min: [0, 0, 0], max: [1, 1, 0] },
+        params: {},
+        review: { ok: true, diagnostics: [] },
+      }),
+    } as Response);
+
+    // The `: number` annotations make this invalid JavaScript — acorn would
+    // throw "Unexpected token". The fix skips acorn on the hosted path.
+    const tsCode = 'const widen = (x: number): number => x * 2;\nexport default box(widen(1), 1, 1);';
+    render(
+      <GeometryProvider code={tsCode}>
+        <Probe />
+      </GeometryProvider>,
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(screen.getByTestId('error').textContent).toBe('');
+    expect(screen.getByTestId('face-count').textContent).toBe('1');
+    expect(fetchMock).toHaveBeenCalled();
+  });
+
   it('refreshes mesh AND review when params relower over SSE', async () => {
     // PR #315 / I1: relower MUST re-run review so the StudioShell HUD
     // (interferences: N) reflects the post-param model. Old behavior
