@@ -49,7 +49,7 @@ describe('ingestParts', () => {
     // Deployable tree.
     expect(existsSync(join(out, 'step', 'mount-plate.step'))).toBe(true);
     expect(existsSync(join(out, 'v1', 'parts', 'mount-plate.json'))).toBe(true);
-    expect(existsSync(join(out, 'functions', 'v1', 'parts', '[[path]].ts'))).toBe(true);
+    expect(existsSync(join(out, '_worker.js'))).toBe(true);
     const index = JSON.parse(
       readFileSync(join(out, 'v1', 'catalog', 'parts.index.json'), 'utf8'),
     ) as { catalog: { partCount: number }; items: Array<{ id: string }> };
