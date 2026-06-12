@@ -53,6 +53,31 @@
       "appUrl": null
     },
     {
+      "slug": "spice-dispenser-carousel",
+      "title": "Spice Dispenser Carousel",
+      "author": {
+        "handle": "kernelcad",
+        "url": "https://x.com/kernelcad"
+      },
+      "version": "v0.12.0",
+      "prompt": "Design a compact countertop spice dispenser in a Ø88 × 110 mm mug format that doses a measured ~0.5 ml on demand. Use a six-chamber drum that indexes one chamber pitch over a single metering station, plus a separate pocket metering disc that fills, swings to an enclosed drop chute, dwells, and returns. Keep the dose path enclosed, the electronics bay isolated, and deliver the full dispense cycle as a looping cutaway animation with collision-free motion.",
+      "source": "curated",
+      "video": "../../docs/demos/v0.12/spice-dispenser-carousel/demo.mp4",
+      "codeLocal": "../../examples/spice-dispenser-carousel.kcad.ts",
+      "code": "https://github.com/w1ne/kernelCAD-web/blob/main/examples/spice-dispenser-carousel.kcad.ts",
+      "tags": [
+        "consumer-product",
+        "assembly",
+        "carousel",
+        "dosing",
+        "animation",
+        "words-to-geometry"
+      ],
+      "featured": false,
+      "createdAt": "2026-06-09",
+      "appUrl": null
+    },
+    {
       "slug": "meta-glasses",
       "title": "Ray-Ban Meta \u2014 Full Wayfarer-Style Smart Glasses",
       "author": {

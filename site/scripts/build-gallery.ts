@@ -35,11 +35,13 @@ interface PublishedEntry extends Omit<GalleryEntry, 'video' | 'codeLocal'> {
   modelUrl: string;
   promptUrl: string;
   sourceUrl: string | null;
+  scriptPath: string | null;
   studioUrl: string;
 }
 
 const GLB_SIZE_HARD_CAP = 500_000;
 const STUDIO_ORIGIN = 'https://app.kernelcad.com';
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 /**
  * Builds the `ScriptReviewSummary` the hosted Studio consumes (see
  * GeometryContext) from the already-evaluated session — reusing the loaded
@@ -123,6 +125,9 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
     const dstPrompt = path.join(slugDir, 'prompt.md');
     const dstSource = path.join(slugDir, 'source.kcad.ts');
     const sourceUrl = entry.source === 'curated' ? `/gallery/${entry.slug}/source.kcad.ts` : null;
+    const scriptPath = entry.source === 'curated'
+      ? entry.codeLocal.split(path.sep).join('/')
+      : null;
     const studioUrl = entry.source === 'curated'
       ? `${STUDIO_ORIGIN}/studio?gallery=${encodeURIComponent(entry.slug)}`
       : entry.appUrl;
@@ -207,6 +212,7 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
       modelUrl: `/gallery/${entry.slug}/model.glb`,
       promptUrl: `/gallery/${entry.slug}/prompt.md`,
       sourceUrl,
+      scriptPath,
       studioUrl,
     });
   }
@@ -217,8 +223,6 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
 
 // CLI entrypoint
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  const REPO_ROOT = path.resolve(__dirname, '../..');
   buildGallery({
     entriesPath: path.join(REPO_ROOT, 'site/gallery/entries.json'),
     publicDir: path.join(REPO_ROOT, 'site/public'),
