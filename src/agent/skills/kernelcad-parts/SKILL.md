@@ -165,10 +165,11 @@ a bundled one:
   central hole. The part participates in `add_mate` with no manual
   `partRef.connector(...)`. Oddly-shaped parts may still need a hand-authored
   frame — inspect the synthesized set before relying on it.
-- **Provenance.** The catalog's source repository is MIT, so each record carries
-  `license: 'MIT'` with `attribution` = the part's catalog page (satisfying
-  MIT's attribution requirement). The geometry is fetched on demand, never
-  re-hosted; keep the attribution when shipping a deliverable that embeds it.
+- **Provenance.** The default catalog is built from a license-clean mechanical
+  parts library (CC-BY-3.0), so each record carries its own `license` (commonly
+  `'CC-BY-3.0'`) plus `attribution`. Read `record.license` / `record.attribution`
+  rather than assuming — a record's terms govern it. Keep the attribution when
+  shipping a deliverable that embeds the geometry.
 
 **Overriding or disabling the source:**
 
