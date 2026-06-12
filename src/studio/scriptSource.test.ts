@@ -97,6 +97,45 @@ describe('loadStudioScriptSource', () => {
       expect.anything(),
     );
   });
+
+  it('resolves hosted curated script links through the marketing gallery manifest', async () => {
+    vi.stubGlobal('window', { location: { hostname: 'app.kernelcad.com' } });
+    const fetchMock = vi.fn(async (url: string) => {
+      if (url === 'https://kernelcad.com/gallery.json') {
+        return {
+          ok: true,
+          json: async () => ({
+            entries: [
+              {
+                slug: 'ratchet-height-adjust-stool',
+                sourceUrl: '/gallery/ratchet-height-adjust-stool/source.kcad.ts',
+                scriptPath: 'examples/gallery/ratchet-stool.kcad.ts',
+              },
+            ],
+          }),
+        };
+      }
+
+      return {
+        ok: true,
+        text: async () => 'export default box(3, 3, 3);',
+      };
+    }) as unknown as typeof fetch;
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(loadStudioScriptSource('examples/gallery/ratchet-stool.kcad.ts'))
+      .resolves.toContain('box(3');
+
+    expect(fetchMock).toHaveBeenCalledWith('https://kernelcad.com/gallery.json');
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://kernelcad.com/gallery/ratchet-height-adjust-stool/source.kcad.ts',
+    );
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      expect.stringContaining('/__kernelcad/source?script=examples%2Fgallery%2Fratchet-stool.kcad.ts'),
+      expect.anything(),
+    );
+  });
 });
 
 describe('loadGalleryScriptSource', () => {

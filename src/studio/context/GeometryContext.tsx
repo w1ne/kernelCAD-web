@@ -277,6 +277,58 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             : `/__kernelcad/review?script=${encodeURIComponent(script)}`;
 
         let aborted = false;
+        if (!token && shouldUseHostedMesh()) {
+            const promise = meshSourceHosted(code)
+                .then((payload) => {
+                    if (revision !== mainRevisionRef.current) {
+                        setStaleMainResponsesDropped((prev) => prev + 1);
+                        return;
+                    }
+                    setGeometries(featureMeshesToGeometries(payload.features));
+                    setGeometryTransformOverrides({});
+                    setFeatureRecords(payload.featureRecords ?? []);
+                    setRecomputeMs(Math.max(0, Math.round(performance.now() - fetchStart)));
+                    setScriptParams(Object.values(payload.params ?? {}));
+                    setScriptReview(payload.review ?? null);
+                    setSketchesGeometries([]);
+                    setPreviewGeometries([]);
+                    setError(null);
+                    setLastSuccessfulRevision(revision);
+                    pushExecutionRecord({
+                        revision,
+                        status: 'success',
+                        executionCountAtRecord: revision,
+                    });
+                })
+                .catch((err: unknown) => {
+                    if (revision !== mainRevisionRef.current) {
+                        setStaleMainResponsesDropped((prev) => prev + 1);
+                        return;
+                    }
+                    const message = err instanceof Error ? err.message : String(err);
+                    setError(message);
+                    if (!opts?.keepExistingOnError) {
+                        setScriptParams([]);
+                        setScriptReview(null);
+                    }
+                    pushExecutionRecord({
+                        revision,
+                        status: 'error',
+                        error: message,
+                        executionCountAtRecord: revision,
+                    });
+                })
+                .finally(() => {
+                    if (revision === mainRevisionRef.current && !aborted) {
+                        setIsComputing(false);
+                        setExecutionCount((prev) => prev + 1);
+                    } else if (revision === mainRevisionRef.current) {
+                        setIsComputing(false);
+                    }
+                });
+            return { revision, promise };
+        }
+
         const promise = apiCall().then(({ base, headers }) => {
             const meshUrl = rewritePath(meshPath, base);
             const reviewUrl = rewritePath(reviewPath, base);

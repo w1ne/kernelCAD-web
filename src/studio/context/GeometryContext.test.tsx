@@ -110,6 +110,7 @@ describe('GeometryContext latest-intent-wins', () => {
   afterEach(() => {
     cleanup();
     vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it('ignores stale execute responses that finish after a newer request', async () => {
@@ -370,6 +371,70 @@ describe('GeometryContext latest-intent-wins', () => {
     expect(screen.getByTestId('script-param-name').textContent).toBe('shoulderDeg');
     expect(screen.getByTestId('script-review-ok').textContent).toBe('false');
     expect(screen.getByTestId('script-review-repair').textContent).toContain('supported clevis');
+  });
+
+  it('falls back to hosted mesh-by-source when hosted script sessions are unavailable', async () => {
+    window.history.pushState(
+      {},
+      '',
+      '/?script=examples/gallery/ratchet-stool.kcad.ts',
+    );
+    vi.stubGlobal('window', {
+      ...window,
+      location: { ...window.location, hostname: 'app.kernelcad.com', search: '?script=examples/gallery/ratchet-stool.kcad.ts' },
+      localStorage: window.localStorage,
+      history: window.history,
+      crypto: window.crypto,
+    });
+
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: async () => ({ error: 'not found' }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          features: [
+            {
+              featureId: 'seat',
+              featureKind: 'box',
+              predecessors: [],
+              faces: [
+                {
+                  vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
+                  indices: [0, 1, 2],
+                  normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+                  faceId: 0,
+                },
+              ],
+            },
+          ],
+          featureRecords: [],
+          bounds: { min: [0, 0, 0], max: [1, 1, 0] },
+          params: {},
+          review: { ok: true, diagnostics: [] },
+        }),
+      } as Response);
+
+    render(
+      <GeometryProvider code={'export default box(1, 1, 1);'}>
+        <Probe />
+      </GeometryProvider>,
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(fetchUrl(fetchMock, 1)).toBe('/__kernelcad/session?script=examples%2Fgallery%2Fratchet-stool.kcad.ts');
+    expect(fetchUrl(fetchMock, 2)).toContain('https://kernelcad.com/gallery/_mesh/');
+    expect(screen.getByTestId('face-count').textContent).toBe('1');
+    expect(screen.getByTestId('script-review-ok').textContent).toBe('true');
   });
 
   it('refreshes mesh AND review when params relower over SSE', async () => {
