@@ -5,6 +5,8 @@ import { Play, Pause } from 'lucide-react';
 import { useRecomputeResult } from '../../hooks/useRecomputeResult';
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { selectAnimationMetadata } from '../../logic/animationRecord';
+import { shouldUseHostedMesh } from '../../scriptSource';
+import { fetchGalleryAnimBake } from './fetchGalleryAnimBake';
 import {
     useAnimationPlayback,
     PLAYBACK_MODES,
@@ -40,16 +42,32 @@ export function AnimationTab(): JSX.Element {
         clearGeometryTransformOverrides,
         setViewportDriverLock,
     } = useRecomputeResult();
-    const { sessionToken, kernelEpoch } = useWorkbench();
+    const { sessionToken, kernelEpoch, code } = useWorkbench();
     const metadata = selectAnimationMetadata(features);
+
+    // Gallery static-bake mode: on the hosted app with no live session, an
+    // animated curated model plays from its build-time precomputed timeline
+    // (`/gallery/_anim/<sha>.json`) — anonymous visitors can't open a session,
+    // so this is how the gallery mechanism moves. Active only when hosted,
+    // session-less, animated, and we have the source to key the static file.
+    const galleryStatic = Boolean(!sessionToken && metadata && code && shouldUseHostedMesh());
 
     const playback = useAnimationPlayback({
         metadata,
         sessionToken,
-        // updateParam is only the pause-sync edit now; gate on the session too.
+        // Gallery static bake source: the source code, which fetchGalleryAnimBake
+        // hashes to locate the static `_anim/<sha>.json`.
+        staticBakeKey: galleryStatic ? code : undefined,
+        bakeFetcher: galleryStatic ? fetchGalleryAnimBake : undefined,
+        // updateParam is the pause-sync edit; needs a live session (no kernel to
+        // sync in static mode), so session-only.
         updateParam: sessionToken ? updateParam : undefined,
-        applyPartTransform: sessionToken ? setGeometryTransformOverride : undefined,
+        // Apply baked transforms to the viewport in BOTH live-session and
+        // gallery-static mode (the gallery geometry is rendered and overridable).
+        applyPartTransform: (sessionToken || galleryStatic) ? setGeometryTransformOverride : undefined,
         clearPartTransforms: clearGeometryTransformOverrides,
+        // The viewport driver-lock guards against SSE relower races — only the
+        // live session has those; static mode needs no lock.
         setViewportDriverLock: sessionToken ? setViewportDriverLock : undefined,
         // Any kernel relower (Params-tab edit, rebuild) bumps this; folded into
         // the bake cache key so a stale bake never survives a kernel mutation.
