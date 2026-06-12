@@ -14,14 +14,14 @@ describe('remoteClient', () => {
     vi.restoreAllMocks();
   });
 
-  it('defaults to the step.parts catalog when no url is configured', async () => {
+  it("defaults to kernelCAD's own catalog when no url is configured", async () => {
     delete process.env.KERNELCAD_PARTS_BASE_URL;
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(JSON.stringify({ items: [], total: 0 }), { status: 200 }),
     );
     await remoteFindParts({ query: 'M3' });
     const url = fetchSpy.mock.calls[0][0] as string;
-    expect(url).toMatch(/^https:\/\/api\.step\.parts\/v1\/parts\?/);
+    expect(url).toMatch(/^https:\/\/kernelcad-parts\.pages\.dev\/v1\/parts\?/);
   });
 
   it('disables the remote tier when KERNELCAD_PARTS_BASE_URL is "off"', async () => {
