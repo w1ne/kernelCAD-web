@@ -4,6 +4,7 @@ import { CaptureSession } from '../capture/captureSession';
 import { createApi } from '../api';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { ParamTable } from '../../shared/runtime/paramTable';
+import { normalizeUserScript } from '../../shared/runtime/normalizeUserScript';
 import { transpileTs } from './transpile';
 import { runIsolated } from './isolation';
 
@@ -45,7 +46,15 @@ export async function runScript(input: RunScriptInput): Promise<RunScriptResult>
   session.scriptDir = scriptDir;
   const api = createApi({ session, scriptDir });
 
-  const transpiled = transpileTs(code, fileName);
+  // Agent-authored scripts are idiomatic ES modules: they end with
+  // `export default <model>`, use `export const`, or carry top-level `import`s.
+  // The runtime wraps the body in an IIFE (`wrapReturn`) and captures the
+  // top-level `return`, so module syntax is a SyntaxError ("Unexpected token
+  // 'export'"). Rewrite module-isms into function-body statements first —
+  // `export default <expr>` becomes the `return <expr>` the IIFE expects.
+  const normalized = normalizeUserScript(code);
+
+  const transpiled = transpileTs(normalized, fileName);
 
   // Two surface forms are supported inside `.kcad.ts` scripts:
   //   - Top-level globals (`box(...)`, `q.face(...)`) via the api spread.
