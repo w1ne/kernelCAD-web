@@ -41,13 +41,12 @@ interface PublishedEntry extends Omit<GalleryEntry, 'video' | 'codeLocal'> {
   studioUrl: string;
 }
 
-// Per-tile GLB budget for the gallery 3D preview. This is a load-time budget,
-// not a correctness gate — it keeps tiles snappy. Detailed hero mechanisms
-// (e.g. the 95-body spice-dispenser carousel at ~565 KB) legitimately exceed
-// the original 500 KB; 768 KB stays comfortably under the entry's own video
-// payload (~630 KB) while leaving headroom. Revisit with mesh quantization /
-// Draco if tiles ever feel heavy.
-const GLB_SIZE_HARD_CAP = 768_000;
+// Per-tile GLB budget for the gallery 3D preview — a load-time budget that
+// keeps tiles snappy. Held at 500 KB: vertex welding in exportGlb (lossless
+// dedup of OCCT's per-face boundary duplicates) keeps even the 95-body
+// spice-dispenser carousel under it (~452 KB). Next lever if tiles ever grow:
+// mesh quantization / Draco.
+const GLB_SIZE_HARD_CAP = 500_000;
 const STUDIO_ORIGIN = 'https://app.kernelcad.com';
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 /**
