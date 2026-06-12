@@ -10,7 +10,7 @@ import {
   MeshStandardMaterial,
   Scene as ThreeScene,
 } from 'three';
-import { GLTFExporter } from 'three-stdlib';
+import { GLTFExporter, mergeVertices } from 'three-stdlib';
 import { evaluateAndBuildScript } from '../../src/agent/cli/commands/evaluate';
 import { pbrFromMetadata, type OcctBackend } from '../../src/kernel/backends/occt/occtBackend';
 import { loadScriptFeatures } from '../../src/modeling/runtime/scriptLoader';
@@ -65,7 +65,12 @@ function addSingleMesh(
   geometry.setAttribute('position', new BufferAttribute(positions, 3));
   geometry.setAttribute('normal', new BufferAttribute(normals, 3));
   geometry.setIndex(new BufferAttribute(indices, 1));
-  scene.add(new Mesh(geometry, makeMaterial(color, material)));
+  // OCCT meshes each face independently, so shared edges carry duplicate
+  // vertices (coordinate-equal, index-distinct). Weld them — lossless, and at
+  // hard edges the differing normals keep the vertices split so shading is
+  // preserved. Shrinks the exported GLB with no visual change.
+  const welded = mergeVertices(geometry);
+  scene.add(new Mesh(welded, makeMaterial(color, material)));
 }
 
 function addFeatureMesh(scene: ThreeScene, fm: FeatureMesh): void {
