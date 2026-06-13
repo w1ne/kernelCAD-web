@@ -4,6 +4,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import App from '../App';
 import { SignInButton } from '../../funnel/components/SignInButton';
+import { ProjectViewerActions } from './-ProjectViewerActions';
 import { useSession } from '../../funnel/hooks/useSession';
 import {
   fetchProjectBySlug,
@@ -157,11 +158,11 @@ function ProjectPage() {
   const isPrivate = project.privacy === 'private';
   const btnClass = 'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-0.5 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 transition-colors';
 
-  let headerRight: ReactNode = null;
+  let claimControl: ReactNode = null;
   if (claimed) {
-    headerRight = <span className="text-[11px] text-green-500 font-mono">Saved ✓</span>;
+    claimControl = <span className="text-[11px] text-green-500 font-mono">Saved ✓</span>;
   } else if (isAnonymous && !session) {
-    headerRight = (
+    claimControl = (
       <SignInButton
         redirectTo={typeof window !== 'undefined' ? window.location.href : undefined}
         className={btnClass}
@@ -170,13 +171,13 @@ function ProjectPage() {
       </SignInButton>
     );
   } else if (isAnonymous && session) {
-    headerRight = (
+    claimControl = (
       <button type="button" onClick={handleClaim} disabled={claiming} className={btnClass}>
         {claiming ? 'Saving…' : 'Save to my projects'}
       </button>
     );
   } else if (isOwner) {
-    headerRight = upgradeNeeded ? (
+    claimControl = upgradeNeeded ? (
       <button type="button" onClick={handleUpgrade} className={btnClass} title="Private projects require Pro">
         Upgrade to keep private
       </button>
@@ -186,6 +187,16 @@ function ProjectPage() {
       </button>
     );
   }
+
+  const headerRight: ReactNode = (
+    <div className="flex items-center gap-2 min-w-0">
+      {claimControl}
+      <ProjectViewerActions
+        slug={slug}
+        project={project}
+      />
+    </div>
+  );
 
   return (
     <App
