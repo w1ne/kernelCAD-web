@@ -84,4 +84,8 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // Write geometry/animation to a file on disk.
   export: WRITES_FILE,
   capture_animation: WRITES_FILE,
+
+  // Renders the model to PNG views on the local filesystem — does not change the
+  // design, but writes image files (same class as capture_animation).
+  render_preview: WRITES_FILE,
 };

@@ -1307,8 +1307,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'render_preview',
       description:
-        'Render a kernelCAD script to deterministic PNG views and LOOK at them — the visual half of the ' +
-        'evaluate → render → inspect → fix loop. Pass { code } (inline source) or { file } (a .kcad.ts path), exactly one. ' +
+        'Use this when you need to LOOK at a kernelCAD model — render its script to deterministic PNG views ' +
+        'for visual self-check (the visual half of the evaluate → render → inspect → fix loop), with NO studio or ' +
+        'dev server required. Pass { code } (inline source) or { file } (a .kcad.ts path), exactly one. ' +
         'Renders the canonical engineering views (front, right, top, iso — pass { views } for a subset, e.g. ["iso"] for ' +
         'fastest iteration) plus an optional { pose: "<az>,<el>" } arbitrary camera angle (degrees; az=0,el=0 is front, ' +
         '+az rotates CCW around +Z, +el lifts the camera). NO STUDIO / DEV-SERVER REQUIRED: a prebuilt static player ' +
