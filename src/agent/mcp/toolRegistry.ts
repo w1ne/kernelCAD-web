@@ -35,6 +35,7 @@ import { flattenPatternTool } from './tools/flattenPattern';
 import { verifyTool } from './tools/verify';
 import { inspectTool } from './tools/inspect';
 import { queryTool } from './tools/query';
+import { TOOL_ANNOTATIONS, type ToolAnnotations } from './toolAnnotations';
 import { captureAnimationTool } from './tools/captureAnimation';
 export { runClosedLoop } from '../loop/closedLoop.js';
 export { buildRepairPrompt } from '../loop/repairPrompt.js';
@@ -48,6 +49,9 @@ export interface McpToolDefinition {
     properties: Record<string, unknown>;
     required?: string[];
   };
+  /** MCP behavioral hints (readOnly/destructive/openWorld). Required for ChatGPT
+   *  app-directory submission; merged from TOOL_ANNOTATIONS at build time. */
+  annotations?: ToolAnnotations;
 }
 
 type ToolHandler = (input: Record<string, unknown>) => Promise<unknown>;
@@ -1296,15 +1300,25 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
 ];
 
+/** Merge the MCP behavioral hints from TOOL_ANNOTATIONS onto a definition.
+ *  Annotations live in one central map (toolAnnotations.ts) so the surface is
+ *  classified in a single place and the consistency gate can enforce coverage. */
+function withAnnotations(def: McpToolDefinition): McpToolDefinition {
+  const annotations = TOOL_ANNOTATIONS[def.name];
+  return annotations ? { ...def, annotations } : def;
+}
+
 const toolHandlers = new Map(TOOL_REGISTRY.map(entry => [entry.definition.name, entry.handler]));
-const toolDefinitions = new Map(TOOL_REGISTRY.map(entry => [entry.definition.name, entry.definition]));
+const toolDefinitions = new Map(
+  TOOL_REGISTRY.map(entry => [entry.definition.name, withAnnotations(entry.definition)]),
+);
 
 /**
- * Flat array of all tool definitions, in registry order.
+ * Flat array of all tool definitions (with behavioral annotations), in registry order.
  *
  * Public contract — depended on by kernelCAD-server.
  */
-export const TOOLS = TOOL_REGISTRY.map(entry => entry.definition);
+export const TOOLS = TOOL_REGISTRY.map(entry => withAnnotations(entry.definition));
 
 /**
  * Dispatch an MCP tool call by name. Transport-agnostic: used by stdio MCP server,

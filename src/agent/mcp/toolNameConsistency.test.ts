@@ -102,4 +102,19 @@ describe('tool-name consistency', () => {
       .map(t => t.name);
     expect(offenders, `Tool descriptions must start with "Use this when…":\n${offenders.join('\n')}`).toEqual([]);
   });
+
+  it('every tool carries readOnly/destructive/openWorld behavioral annotations (ChatGPT directory requirement)', () => {
+    // OpenAI Apps SDK: "incorrect or missing action labels are a common cause of
+    // rejection." Every tool must declare all three hints as booleans.
+    const offenders = TOOLS
+      .filter(t => {
+        const a = (t as { annotations?: Record<string, unknown> }).annotations;
+        return !a
+          || typeof a.readOnlyHint !== 'boolean'
+          || typeof a.destructiveHint !== 'boolean'
+          || typeof a.openWorldHint !== 'boolean';
+      })
+      .map(t => t.name);
+    expect(offenders, `Tools missing behavioral annotations:\n${offenders.join('\n')}`).toEqual([]);
+  });
 });
