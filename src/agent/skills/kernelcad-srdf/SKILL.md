@@ -5,7 +5,7 @@ description: Add planning-group, end-effector, virtual-joint, and allowed-collis
 
 # kernelCAD — SRDF export
 
-SRDF layers planning-group and motion-planner semantics on top of a URDF: which joints form an arm, which links form a gripper, which link pairs are safe to ignore for collision-checking, and named pose snapshots. kernelCAD's `export_model({ format: 'srdf' })` writes the `.srdf` file; the allowed-collision matrix is auto-derived from the existing mate graph.
+SRDF layers planning-group and motion-planner semantics on top of a URDF: which joints form an arm, which links form a gripper, which link pairs are safe to ignore for collision-checking, and named pose snapshots. kernelCAD's `export({ target: 'model', format: 'srdf' })` writes the `.srdf` file; the allowed-collision matrix is auto-derived from the existing mate graph.
 
 ## When to use
 
@@ -16,7 +16,7 @@ Always pair with `kernelcad-urdf`: SRDF is a layer over URDF, not a standalone d
 
 ## Capture-time API
 
-Five capture-time methods on the `arm.*` namespace. Each is declarative — the methods record intent; `export_model` materialises the SRDF later.
+Five capture-time methods on the `arm.*` namespace. Each is declarative — the methods record intent; `export` materialises the SRDF later.
 
 ```typescript
 arm.planningGroup('main', { chain: { baseLink: 'base', tipLink: 'tool_tip' } });
@@ -39,9 +39,9 @@ Auto-derived from the existing kernelCAD data. Four reasons:
 Sampling configuration:
 
 ```typescript
-// MCP: pass options on export_model.
-export_model({ format: 'srdf', file: 'arm.kcad.ts', output_path: 'out/robot.srdf',
-               options: { samplesPerMate: 4, combinatorial: true } });
+// MCP: pass options on export.
+export({ target: 'model', format: 'srdf', file: 'arm.kcad.ts', output_path: 'out/robot.srdf',
+         options: { samplesPerMate: 4, combinatorial: true } });
 ```
 
 Sparse sampling (`samplesPerMate < 4`) emits `export.srdf.acm-sparse-sampling` as a warning.

@@ -5,7 +5,7 @@ description: Export multi-part assemblies to URDF — links, joints, inertial bl
 
 # kernelCAD — URDF export
 
-URDF (Unified Robot Description Format) is a tree-shaped XML description of a multi-part assembly: links with inertial properties, joints with axes and limits, and visual + collision meshes. kernelCAD's `export_model({ format: 'urdf' })` writes a `.urdf` plus a sibling `meshes/` directory with one STL per link.
+URDF (Unified Robot Description Format) is a tree-shaped XML description of a multi-part assembly: links with inertial properties, joints with axes and limits, and visual + collision meshes. kernelCAD's `export({ target: 'model', format: 'urdf' })` writes a `.urdf` plus a sibling `meshes/` directory with one STL per link.
 
 ## When to use
 
@@ -30,7 +30,7 @@ return arm.model();
 Export via MCP:
 
 ```json
-{ "tool": "export_model", "input": { "file": "two-link.kcad.ts", "format": "urdf", "output_path": "out/robot.urdf" } }
+{ "tool": "export", "input": { "target": "model", "file": "two-link.kcad.ts", "format": "urdf", "output_path": "out/robot.urdf" } }
 ```
 
 Result: `out/robot.urdf` containing one `<link>` per part and one `<joint>` per mate, plus `out/meshes/<part>.stl` for every link (reported in the tool's `mesh_files`). Ship the whole directory: the visual/collision tags reference the meshes by the configured prefix.
@@ -62,20 +62,20 @@ Typical values: steel `7850`, aluminum `2700`, ABS `1050`, brass `8500`, titaniu
 
 ## Closed loops
 
-URDF requires a tree topology. If the assembly has a closed mate graph (e.g. a 4-bar linkage), `export_model({ format: 'urdf' })` refuses with `export.urdf.closed-loop`. Two paths forward:
+URDF requires a tree topology. If the assembly has a closed mate graph (e.g. a 4-bar linkage), `export({ target: 'model', format: 'urdf' })` refuses with `export.urdf.closed-loop`. Two paths forward:
 
-1. Switch to `export_model({ format: 'sdf-gazebo' })` — supports closed loops natively.
+1. Switch to `export({ target: 'model', format: 'sdf-gazebo' })` — supports closed loops natively.
 2. Restructure the mate graph so each part has at most one parent.
 
 ## Verification gates
 
-- `G-urdf-valid` — the exported `.urdf` parses cleanly via the `validate_urdf` MCP tool.
+- `G-urdf-valid` — the exported `.urdf` parses cleanly via the `verify({ check: 'urdf' })` MCP tool.
 - `G-urdf-tree-shape` — no closed loops in the mate graph.
 - `G-urdf-inertia-density-declared` — no link inherits the default density.
 
 ## Pre-export inspection
 
-Call `inspect_robot({ file })` to preview what the export will emit before writing to disk. The tool returns the link / joint shape, declared planning groups, and any open issues (closed loops, missing density) the export would surface.
+Call `inspect({ of: 'robot', file })` to preview what the export will emit before writing to disk. The tool returns the link / joint shape, declared planning groups, and any open issues (closed loops, missing density) the export would surface.
 
 ## Mesh format
 

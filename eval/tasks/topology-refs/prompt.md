@@ -13,7 +13,7 @@ face selector and `name: 'lidBolt'`.
 This exercises the load-bearing topology-ref claim: after an upstream
 fillet preserves the labeled face, the `@kc[base/face/lid]` ref still
 resolves and can be pasted into `hole(...)`. The label form is the
-shape `list_faces` actually emits when the user applied a face label
+shape `inspect({ of: 'faces' })` actually emits when the user applied a face label
 upstream — the collective `base/` owner is the portable form when the
 upstream chain isn't known to the caller.
 

@@ -11,7 +11,8 @@ can paste straight back into authoring tools.
 
 ```typescript
 // Preflight a bracket against the configured shop's rules.
-await mcp.dfm_preflight({
+await mcp.verify({
+  check: 'dfm-preflight',
   file: 'bracket.kcad.ts',
   vendor: 'sendcutsend',
   material: 'aluminum-6061-t6',
@@ -29,7 +30,8 @@ await mcp.dfm_preflight({
 ## API
 
 ```typescript
-dfm_preflight(input: {
+verify(input: {
+  check: 'dfm-preflight';
   file?: string;
   code?: string;
   dxf?: string;
@@ -109,7 +111,7 @@ avoids redundant noise.
 
 Four further `dfm.*` codes come from the print-readiness gates a model
 declares with `dfmSpec({...})` — they are emitted by `evaluate` / build,
-not by the `dfm_preflight` sheet-metal operations above:
+not by the `verify({ check: 'dfm-preflight' })` sheet-metal operations above:
 
 | Code | Severity | Recovery |
 |------|----------|----------|
@@ -122,7 +124,7 @@ not by the `dfm_preflight` sheet-metal operations above:
 
 | Gate | Pass criterion |
 |------|----------------|
-| G-shopcheck-vendor-required | Calling `dfm_preflight` without `vendor` returns `dfm.input.vendor-required`. |
+| G-shopcheck-vendor-required | Calling `verify({ check: 'dfm-preflight' })` without `vendor` returns `dfm.input.vendor-required`. |
 | G-shopcheck-material-required | Calling with `vendor` but no `material` returns `dfm.input.material-required`. |
 | G-shopcheck-thickness-required | Calling without `thicknessIn` / `thicknessMm` returns `dfm.input.thickness-required`. |
 | G-shopcheck-catalog-fresh | `catalog.json` and `specs.json` were last fetched within 30 days (warn) / 90 days (error). |
@@ -134,9 +136,9 @@ not by the `dfm_preflight` sheet-metal operations above:
 
 ## Related skills
 
-- `kernelcad-sheet-metal` — sheet-metal authoring; `dfm_preflight` reads
-  its `flatten_pattern` and `get_bend_table` outputs.
-- `kernelcad-mcp` — `flatten_pattern` and `get_bend_table` are the
-  upstream tools; `dfm_preflight` is the validation gate.
+- `kernelcad-sheet-metal` — sheet-metal authoring; `verify({ check: 'dfm-preflight' })` reads
+  its `flatten_pattern` and `inspect({ of: 'bend-table' })` outputs.
+- `kernelcad-mcp` — `flatten_pattern` and `inspect({ of: 'bend-table' })` are the
+  upstream tools; `verify({ check: 'dfm-preflight' })` is the validation gate.
 - `kernelcad-features` — `hole`, `cutout`, `shell` feed the geometry
-  `dfm_preflight` measures.
+  `verify({ check: 'dfm-preflight' })` measures.

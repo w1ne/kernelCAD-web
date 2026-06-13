@@ -12,7 +12,7 @@ engraved-nameplate — a flat mounting plate with the word "KERNEL" cut into its
 
 ## What's new
 
-This release ships 2D text as a sketch-internal primitive. `sketch.text(content, opts)` returns a `Sketch` covering all glyph outlines of the rendered string; chain `.extrude(depth)` to get a 3D text feature, then `.subtract()` to engrave or `.union()` to raise the relief. Bundled font is Liberation Sans Regular (SIL OFL 1.1); pass `opts.font: fontPath('/abs/path.ttf')` to use a custom TTF. The new `add_sketch_text` MCP tool drives this from AST-edit workflows.
+This release ships 2D text as a sketch-internal primitive. `sketch.text(content, opts)` returns a `Sketch` covering all glyph outlines of the rendered string; chain `.extrude(depth)` to get a 3D text feature, then `.subtract()` to engrave or `.union()` to raise the relief. Bundled font is Liberation Sans Regular (SIL OFL 1.1); pass `opts.font: fontPath('/abs/path.ttf')` to use a custom TTF. The new `add_text({ mode: 'sketch' })` MCP tool drives this from AST-edit workflows.
 
 ![Demo](./demo.mp4)
 ![Panel](./panel.png)

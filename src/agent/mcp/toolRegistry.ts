@@ -1,76 +1,42 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { addConnectorTool } from './tools/addConnector';
-import { addConstraintTool, listConstraintsTool, solveSketchTool } from './tools/constraints';
+import { addConstraintTool, solveSketchTool } from './tools/constraints';
 import { addFeatureTool } from './tools/addFeature';
-import { addHermiteG2Tool } from './tools/addHermiteG2';
-import { addNurbsCurveTool } from './tools/addNurbsCurve';
-import { addNurbsSurfaceTool } from './tools/addNurbsSurface';
-import { addPathHermiteG2Tool } from './tools/addPathHermiteG2';
-import { addPathNurbsSegmentTool } from './tools/addPathNurbsSegment';
-import { addPathSplineTool } from './tools/addPathSpline';
+import { addCurveTool } from './tools/addCurve';
+import { addSurfaceTool } from './tools/addSurface';
+import { addPathSegmentTool } from './tools/addPathSegment';
 import { traceFromImageTool } from './tools/traceFromImage';
-import { addSurfaceFromBoundaryTool } from './tools/addSurfaceFromBoundary';
 import { addPatternFeatureTool } from './tools/addPatternFeature';
 import { addVariableSweepTool } from './tools/addVariableSweep';
-import { addSketchTextTool } from './tools/addSketchText';
-import { embossTextTool } from './tools/embossText';
+import { addTextTool } from './tools/addText';
 import { projectCurveTool } from './tools/projectCurve';
 import { addAssemblyPartSourceTool } from './tools/addAssemblyPartSource';
 import { addPartConnectorSourceTool } from './tools/addPartConnectorSource';
-import { addMateSourceTool } from './tools/addMateSource';
-import { addMateCouplingSourceTool } from './tools/addMateCouplingSource';
-import { addTransmissionSourceTool } from './tools/addTransmissionSource';
 import { addWorkspaceTargetSourceTool } from './tools/addWorkspaceTargetSource';
 import { setSceneReturnSourceTool } from './tools/setSceneReturnSource';
-import { addMateTool } from './tools/addMate';
+import { addMateAuthoringTool } from './tools/addMateAuthoring';
 import { evaluateScriptTool } from './tools/evaluateScript';
 import { diffScriptsTool } from './tools/diffScripts';
 import { evaluateSdfTool } from './tools/evaluateSdf';
-import { exportModelTool } from './tools/exportModel';
-import { exportPartTool } from './tools/exportPart';
-import { listPartStatsTool } from './tools/listPartStats';
-import { getEdgesOfTool } from './tools/getEdgesOf';
-import { getShapeInfoTool } from './tools/getShapeInfo';
-import { inspectAssemblyTool } from './tools/inspectAssembly';
-import { inspectRobotTool } from './tools/inspectRobot';
-import { inspectStepTool } from './tools/inspectStep';
-import { validateUrdfTool } from './tools/validateUrdf';
+import { exportTool } from './tools/export';
 import { listApiTool } from './tools/listApi';
 import { listDiagnosticCodesTool } from './tools/listDiagnosticCodes';
-import { listEdgesTool } from './tools/listEdges';
-import { listFaceLabelsTool } from './tools/listFaceLabels';
-import { getFaceLineageTool } from './tools/getFaceLineage';
-import { resolveTopoRefTool } from './tools/resolveTopoRef';
-import { evaluateQueryTool } from './tools/evaluateQuery';
-import { listAssembliesTool } from './tools/listAssemblies';
-import { listFacesTool } from './tools/listFaces';
-import { listFeaturesTool } from './tools/listFeatures';
-import { listMatesTool } from './tools/listMates';
-import { listTopologyTool } from './tools/listTopology';
 import { lookupCookbookTool } from './tools/lookupCookbook';
 import { findPartTool } from './tools/findPart';
 import { fetchPartTool } from './tools/fetchPart';
-import { listPartCategoriesTool } from './tools/listPartCategories';
-import { listPartFamiliesTool } from './tools/listPartFamilies';
-import { paramsListTool } from './tools/paramsList';
-import { paramsUpdateTool } from './tools/paramsUpdate';
 import { removeFeatureTool } from './tools/removeFeature';
 import { designLoopTool } from './tools/designLoop';
 import { reviewCadTool } from './tools/reviewCad';
 import { reviewPaintPeekLatestTool } from './tools/reviewPaint';
 import { setParamValueTool } from './tools/setParamValue';
 import { solveMatesTool } from './tools/solveMates';
-import { validateAssemblyTool } from './tools/validateAssembly';
 import { whyDidThisFailTool } from './tools/whyDidThisFail';
 import { flattenPatternTool } from './tools/flattenPattern';
-import { getBendTableTool } from './tools/getBendTable';
-import { dfmPreflightTool } from './tools/dfmPreflight';
-import { dfmCheckTool } from './tools/dfmCheck';
-import { checkSweptCollisionTool } from './tools/checkSweptCollision';
-import { checkReachableTool } from './tools/checkReachable';
-import { checkMountingHoleConsistencyTool } from './tools/checkMountingHoleConsistency';
-import { checkLoadCapacityTool } from './tools/checkLoadCapacity';
+import { verifyTool } from './tools/verify';
+import { inspectTool } from './tools/inspect';
+import { queryTool } from './tools/query';
+import { TOOL_ANNOTATIONS, type ToolAnnotations } from './toolAnnotations';
+import { TOOL_OUTPUT_SCHEMAS, type JSONSchemaObject } from './toolOutputSchemas';
 import { captureAnimationTool } from './tools/captureAnimation';
 export { runClosedLoop } from '../loop/closedLoop.js';
 export { buildRepairPrompt } from '../loop/repairPrompt.js';
@@ -84,6 +50,12 @@ export interface McpToolDefinition {
     properties: Record<string, unknown>;
     required?: string[];
   };
+  /** MCP behavioral hints (readOnly/destructive/openWorld). Required for ChatGPT
+   *  app-directory submission; merged from TOOL_ANNOTATIONS at build time. */
+  annotations?: ToolAnnotations;
+  /** MCP structured-output schema (JSON Schema for the tool's return value).
+   *  Merged from TOOL_OUTPUT_SCHEMAS at build time. */
+  outputSchema?: JSONSchemaObject;
 }
 
 type ToolHandler = (input: Record<string, unknown>) => Promise<unknown>;
@@ -106,6 +78,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'evaluate_script',
       description:
+        'Use this when you need to run a script and check it compiles. ' +
         'Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics. ' +
         'When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), ' +
         'also returns a parts summary { count, names }. ' +
@@ -136,10 +109,11 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'diff_scripts',
       description:
+        'Use this when you need to see exactly what changed between two script versions. ' +
         'Structured geometric delta between two versions of a kernelCAD script — a baseline ' +
         '({ baseFile } or { baseCode }) and a revision ({ file } or { code }). Returns ' +
         'agent-readable JSON: per-part added/removed/renamed/changed (volume mm³ + exact bbox ' +
-        'deltas, numbers matching list_part_stats), total interference-volume delta with ' +
+        "deltas, numbers matching inspect({ of: 'part-stats' })), total interference-volume delta with " +
         'per-pair detail, mate-graph changes (added/removed/changed mates incl. type, ' +
         'connectors, pose, limits), and param changes (value/min/max). Single-shape scripts ' +
         'diff as one "(root)" pseudo-part. Use after editing a script to verify exactly what ' +
@@ -158,139 +132,108 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'list_features',
+      name: 'inspect',
       description:
-        'List the features captured by a kernelCAD script — kind, id, params, inputs, ' +
-        'transforms count, suppression. Pass either { file } or { code }.',
+        'Use this when you need to read facts about a model. One reader, selected by `of`:\n' +
+        "- 'assembly' — physical assembly inventory (parts, bboxes, connectors, mates, disconnected solids).\n" +
+        "- 'robot' — URDF/SDFormat export preview (links, joints, planning groups, end-effectors, issues).\n" +
+        "- 'step' — inspect an imported STEP file.\n" +
+        "- 'shape' — volume / surfaceArea / bbox for one feature ({ feature_id? }).\n" +
+        "- 'features' — features captured by the script (kind, id, params, transforms, suppression).\n" +
+        "- 'assemblies' — assembly intent (assemblies, parts, connectors, joints).\n" +
+        "- 'topology' — canonical face names + edge count for a feature ({ feature_id? }).\n" +
+        "- 'edges' — edges of a shape with optional EdgeQuery ({ feature_id?, query? }); returns @kc[...] refs.\n" +
+        "- 'face-edges' — boundary edges of a named canonical face ({ feature_id?, face_name }).\n" +
+        "- 'faces' — faces of a shape with optional FaceQuery ({ feature_id?, query? }); returns @kc[...] refs.\n" +
+        "- 'face-labels' — user-applied labels visible in the script.\n" +
+        "- 'mates' — mates captured by the script.\n" +
+        "- 'constraints' — sketch constraints captured by the script.\n" +
+        "- 'part-stats' — bundled parts-catalog statistics.\n" +
+        "- 'bend-table' — sheet-metal bend table for a flattened pattern.\n" +
+        "- 'params' — declared model parameters.\n" +
+        "- 'part-categories' — top-level part-catalog categories available in the bundled (and configured remote) catalog.\n" +
+        "- 'part-families' — part families within a category ({ category? }); count + exemplar ids per family.\n" +
+        'All params except `of` are subject-specific and forwarded verbatim. Most subjects accept { file | code }.',
       inputSchema: {
         type: 'object',
         properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-        },
-      },
-    },
-    handler: input => listFeaturesTool(input as Parameters<typeof listFeaturesTool>[0]),
-  },
-  {
-    definition: {
-      name: 'list_assemblies',
-      description:
-        'List assembly intent captured by a kernelCAD script: assemblies, parts, named connectors, ' +
-        'fixed connections, joints, and aggregate assembly models. Pass either { file } or { code }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-        },
-      },
-    },
-    handler: input => listAssembliesTool(input as Parameters<typeof listAssembliesTool>[0]),
-  },
-  {
-    definition: {
-      name: 'inspect_assembly',
-      description:
-        'Evaluate a kernelCAD script and return an agent-facing physical assembly inventory: named parts, bboxes, connectors (topology-bound connector summaries carry `origin` as a `@kc[<part>/<kind>/<name>]` string plus the resolved [x,y,z] vec3; numeric-vec3 origins are echoed back as the tuple), mates, disconnected solids, mechanical review facts, and a next-action prompt. Use before design_loop or after a visual rejection to make random/floating geometry explicit.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
-        },
-      },
-    },
-    handler: input => inspectAssemblyTool(input as Parameters<typeof inspectAssemblyTool>[0]),
-  },
-  {
-    definition: {
-      name: 'inspect_robot',
-      description:
-        'Preview an assembly as it would be exported to URDF or SDFormat: returns links (name + bounding-box extent + declared density), joints (with limits in SI units), planning groups, end-effectors, and open issues the export would surface (closed loops, missing density). Read-only — pass either { file } or { code }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
-        },
-      },
-    },
-    handler: input => inspectRobotTool(input as Parameters<typeof inspectRobotTool>[0]),
-  },
-  {
-    definition: {
-      name: 'validate_urdf',
-      description:
-        'Parse a .urdf file and check structural validity: well-formed XML, every <joint>\'s parent/child link resolves, link/joint names unique, no closed kinematic loops. Returns { ok, linkCount, jointCount, rootLinks }. Read-only — does not write to disk.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          urdf_path: { type: 'string', description: 'Path to the .urdf file to validate.' },
-        },
-        required: ['urdf_path'],
-      },
-    },
-    handler: input => validateUrdfTool(input as unknown as Parameters<typeof validateUrdfTool>[0]),
-  },
-  {
-    definition: {
-      name: 'get_shape_info',
-      description:
-        "Run + recompute a script, return volume/surfaceArea/bbox for one feature (default: the script's returned shape). " +
-        'Pass { file?, code?, feature_id? }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          feature_id: {
+          of: {
             type: 'string',
-            description: "Feature id to inspect. Defaults to the script's returned shape (falls back to the last captured feature when nothing lowerable is returned).",
+            enum: ['assembly', 'robot', 'step', 'shape', 'features', 'assemblies', 'topology', 'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints', 'part-stats', 'bend-table', 'params', 'part-categories', 'part-families'],
+            description: 'Which facts to read.',
           },
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          assembly: { type: 'string', description: "of:'assembly'|'robot' — assembly name; defaults to the first captured assembly." },
+          feature_id: { type: 'string', description: "of:'shape'|'topology'|'edges'|'faces'|'face-edges'|'face-labels' — FeatureId; defaults to the last returned shape." },
+          face_name: { type: 'string', enum: ['top', 'bottom', 'left', 'right', 'front', 'back'], description: "of:'face-edges' — canonical face name (required for that subject)." },
+          query: { type: 'object', description: "of:'edges'|'faces' — optional EdgeQuery/FaceQuery filter." },
+          category: { type: 'string', description: "of:'part-families' — optional top-level category to filter families by." },
         },
+        required: ['of'],
       },
     },
-    handler: input => getShapeInfoTool(input as Parameters<typeof getShapeInfoTool>[0]),
+    handler: input => inspectTool(input as unknown as Parameters<typeof inspectTool>[0]),
   },
   {
     definition: {
-      name: 'list_topology',
-      description: 'List the canonical face names available on a feature (top/bottom/left/right/front/back for box; top/bottom for cylinder; none for sphere or non-primitives) plus the total edge count. Pass { file?, code?, feature_id? }.',
+      name: 'verify',
+      description:
+        'Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n' +
+        "- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n" +
+        "- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n" +
+        "- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n" +
+        "- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }).\n" +
+        "- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n" +
+        "- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n" +
+        "- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n" +
+        "- 'load-capacity' — closed-form Euler-Bernoulli beam stress / safety-factor check ({ loads, materials, ... }).\n" +
+        'All params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.',
       inputSchema: {
         type: 'object',
         properties: {
-          file: { type: 'string' },
-          code: { type: 'string' },
-          feature_id: { type: 'string' },
+          check: {
+            type: 'string',
+            enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity'],
+            description: 'Which verification to run.',
+          },
+          file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity).' },
+          code: { type: 'string', description: 'Inline kernelCAD script source (same checks as `file`).' },
+          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
+          urdf_path: { type: 'string', description: "check:'urdf' — path to the .urdf file." },
+          dxf: { type: 'string', description: "check:'dfm-preflight' — path to a DXF file." },
+          featureId: { type: 'string', description: "check:'dfm-preflight' — FeatureId to scope to." },
+          vendor: { type: 'string', description: "check:'dfm-preflight' — vendor SKU (required for that check)." },
+          material: { type: 'string', description: "check:'dfm-preflight' — material SKU (required for that check)." },
+          thicknessIn: { type: 'number', description: "check:'dfm-preflight' — material thickness in inches." },
+          thicknessMm: { type: 'number', description: "check:'dfm-preflight' — material thickness in millimeters." },
+          service: { type: 'string', enum: ['laser', 'cnc-router', 'waterjet', 'bending'], description: "check:'dfm-preflight' — service." },
+          refreshCatalog: { type: 'boolean', description: "check:'dfm-preflight' — force vendor catalog refresh." },
+          joint: { type: 'string', description: "check:'swept-collision' — joint to sweep; omit to sweep every declared joint." },
+          range: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: "check:'swept-collision' — [lower, upper, step] in joint-native units." },
+          collision_tolerance_mm3: { type: 'number', description: "check:'swept-collision' — BREP intersection volume tolerance (mm^3)." },
+          tip_link: { type: 'string', description: "check:'reachable' — end-effector part name (required for that check)." },
+          target_position: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: "check:'reachable' — target [x, y, z] mm (world frame)." },
+          target_orientation: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: "check:'reachable' — target XYZ Euler angles in radians." },
+          position_tolerance_mm: { type: 'number', description: "check:'reachable' — position tolerance in mm." },
+          orientation_tolerance_rad: { type: 'number', description: "check:'reachable' — orientation tolerance in radians." },
+          prefer_solver: { type: 'string', enum: ['analytical', 'numeric', 'auto'], description: "check:'reachable' — force the IK path ('auto' default)." },
+          max_iterations: { type: 'number', description: "check:'reachable' — numeric-path iteration cap." },
+          seed: { type: 'object', description: "check:'reachable' — numeric IK seed pose (joint name -> deg/mm)." },
+          loads: { type: 'object', description: "check:'load-capacity' — partName -> { force?: [Fx,Fy,Fz] N, torque?: [Tx,Ty,Tz] N*m }." },
+          materials: { type: 'object', description: "check:'load-capacity' — partName -> material declaration." },
+          mode: { type: 'string', enum: ['stub', 'beam'], description: "check:'load-capacity' — 'beam' (default) or 'stub'." },
+          safety_factor_threshold: { type: 'number', description: "check:'load-capacity' — pass/fail safety-factor floor (default 1.5)." },
         },
+        required: ['check'],
       },
     },
-    handler: input => listTopologyTool(input as Parameters<typeof listTopologyTool>[0]),
-  },
-  {
-    definition: {
-      name: 'get_edges_of',
-      description: "Return the boundary edges of a named canonical face on an un-transformed primitive — index, centroid, length, isClosed. Pass { file?, code?, feature_id?, face_name: 'top' | ... }.",
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string' },
-          code: { type: 'string' },
-          feature_id: { type: 'string' },
-          face_name: { type: 'string', enum: ['top', 'bottom', 'left', 'right', 'front', 'back'] },
-        },
-        required: ['face_name'],
-      },
-    },
-    handler: input => getEdgesOfTool(input as unknown as Parameters<typeof getEdgesOfTool>[0]),
+    handler: input => verifyTool(input as unknown as Parameters<typeof verifyTool>[0]),
   },
   {
     definition: {
       name: 'why_did_this_fail',
-      description: "Walk the upstream chain of a failing feature. Returns the diagnostics of the requested feature plus the diagnostics of every upstream feature in topological order (the requested feature is the last entry). Per-code hints are inline on every diagnostic — call list_diagnostic_codes for the full catalogue. Pass { file?, code?, feature_id? }.",
+      description: "Use this when you need to trace why a feature failed. Walk the upstream chain of a failing feature. Returns the diagnostics of the requested feature plus the diagnostics of every upstream feature in topological order (the requested feature is the last entry). Per-code hints are inline on every diagnostic — call lookup_diagnostics for the full catalogue. Pass { file?, code?, feature_id? }.",
       inputSchema: {
         type: 'object',
         properties: {
@@ -304,8 +247,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'set_param_value',
-      description: 'Edit a param() default value in a kernelCAD script. Returns the modified code as text plus diagnostics from re-evaluating the result. Caller persists the new code via standard file-write tools (this tool has no side effects).',
+      name: 'set_param',
+      description: 'Use this when you need to edit a param() default value in a kernelCAD script. Returns the modified code as text plus diagnostics from re-evaluating the result. Caller persists the new code via standard file-write tools (this tool has no side effects).',
       inputSchema: {
         type: 'object',
         properties: {
@@ -321,7 +264,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'add_feature',
-      description: 'Insert a new feature line into a kernelCAD script before the last top-level return statement. Returns the modified code as text plus diagnostics from re-evaluating the result. Side-effect-free. Primitives that accept faceLabels (box, cylinder, extrudeRect, extrudeCircle, extrudePolygon, extrudeRoundedRect) can receive `opts.faceLabels` in the inserted code — use `list_api` to see `featureKindFaceLabels` for the full value schema.',
+      description: 'Use this when you need to insert a new feature line into a script. Insert a new feature line into a kernelCAD script before the last top-level return statement. Returns the modified code as text plus diagnostics from re-evaluating the result. Side-effect-free. Primitives that accept faceLabels (box, cylinder, extrudeRect, extrudeCircle, extrudePolygon, extrudeRoundedRect) can receive `opts.faceLabels` in the inserted code — use `lookup_api` to see `featureKindFaceLabels` for the full value schema.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -335,16 +278,24 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'add_nurbs_surface',
+      name: 'add_surface',
       description:
-        "Insert a nurbsSurface(...) or surfaceFromCurves(...) call into the user's .kcad.ts. The returned Surface is captured but produces no Shape until you chain .thicken(t) or .toShape() (do that via add_feature on the binding name). Pass either { controls, degree, weights?, knots?, periodic? } for direct construction, OR { section_sketch_ids } for skinning. Returns the modified code + diagnostics. Slice-1 limitation: weights are accepted but currently ignored (TColStd_Array2OfReal not exposed in WASM bindings); surfaces are non-rational.",
+        'Use this when you need to author a NURBS Surface into the user\'s .kcad.ts. One authoring path, selected by `kind`:\n' +
+        "- 'nurbs' — insert a nurbsSurface(...) / surfaceFromCurves(...) call. Pass either { controls, degree, weights?, knots?, periodic? } for direct construction, OR { section_sketch_ids } for skinning. Slice-1 limitation: weights are accepted but currently ignored (TColStd_Array2OfReal not exposed in WASM bindings); surfaces are non-rational.\n" +
+        "- 'boundary' — insert a surfaceFromBoundary([c1,c2,c3,c4], opts?) call: one NURBS face through 4 boundary Curve3D refs (bottom, right, top, left in loop order; adjacent endpoints must coincide within 1e-6 mm) via OCCT BRepOffsetAPI_MakeFilling.\n" +
+        'The returned Surface produces no Shape until you chain .thicken(t) or .toShape() (do that via add_feature on the binding name). Returns the modified code + diagnostics. Each kind fails closed on its own missing required params.',
       inputSchema: {
         type: 'object',
         properties: {
+          kind: {
+            type: 'string',
+            enum: ['nurbs', 'boundary'],
+            description: 'Which surface-construction path to use.',
+          },
           code: { type: 'string', description: 'Current .kcad.ts source.' },
           controls: {
             type: 'array',
-            description: 'Control-point grid for direct construction (controls[u][v] = [x, y, z], mm).',
+            description: "kind:'nurbs' — control-point grid for direct construction (controls[u][v] = [x, y, z], mm).",
             items: {
               type: 'array',
               items: { type: 'array', items: { type: 'number' } },
@@ -352,12 +303,12 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           },
           weights: {
             type: 'array',
-            description: 'Optional rational weights, same grid shape as controls. Ignored in slice-1.',
+            description: "kind:'nurbs' — optional rational weights, same grid shape as controls. Ignored in slice-1.",
             items: { type: 'array', items: { type: 'number' } },
           },
           degree: {
             type: 'object',
-            description: 'Degrees in U and V; each in [1, nU-1] / [1, nV-1].',
+            description: "kind:'nurbs' — degrees in U and V; each in [1, nU-1] / [1, nV-1].",
             properties: {
               u: { type: 'integer', minimum: 1 },
               v: { type: 'integer', minimum: 1 },
@@ -366,7 +317,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           },
           knots: {
             type: 'object',
-            description: 'Optional explicit knot vectors; missing => clamped uniform inferred.',
+            description: "kind:'nurbs' — optional explicit knot vectors; missing => clamped uniform inferred.",
             properties: {
               u: { type: 'array', items: { type: 'number' } },
               v: { type: 'array', items: { type: 'number' } },
@@ -374,7 +325,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           },
           periodic: {
             type: 'object',
-            description: 'Optional periodic flags per parametric direction.',
+            description: "kind:'nurbs' — optional periodic flags per parametric direction.",
             properties: {
               u: { type: 'boolean' },
               v: { type: 'boolean' },
@@ -382,91 +333,67 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           },
           section_sketch_ids: {
             type: 'array',
-            description: 'Existing sketch FeatureIds (2 or more) to skin a surface through, in order.',
+            description: "kind:'nurbs' — existing sketch FeatureIds (2 or more) to skin a surface through, in order.",
             items: { type: 'string' },
           },
-          binding_name: {
-            type: 'string',
-            description: 'JS const name for the new Surface binding (default: surface_<N>).',
-          },
-        },
-        required: ['code'],
-      },
-    },
-    handler: input => addNurbsSurfaceTool(input as unknown as Parameters<typeof addNurbsSurfaceTool>[0]),
-  },
-  {
-    definition: {
-      name: 'add_nurbs_curve',
-      description:
-        "Insert a `nurbsCurve(controlPoints, opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. The returned binding has type Curve3D (peer to Shape / Surface) — consume it via `add_variable_sweep` (spine input) or downstream Curve3D-accepting features. Pass `controlPoints` as a Vec3[] (mm, at least 2 points). Optional NURBS knobs: `degree` (default 3), rational `weights`, explicit `knots`, `closed`. Returns the modified code + diagnostics from re-evaluating. Side-effect-free.",
-      inputSchema: {
-        type: 'object',
-        properties: {
-          code: { type: 'string', description: 'The .kcad.ts source code.' },
-          controlPoints: {
-            type: 'array',
-            description: 'Control points as Vec3 triples in mm; at least 2 entries.',
-            items: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
-          },
-          degree: { type: 'integer', minimum: 1, description: 'Curve degree; default 3 (cubic).' },
-          weights: {
-            type: 'array',
-            description: 'Optional rational weights, one per control point (same length as controlPoints).',
-            items: { type: 'number' },
-          },
-          knots: {
-            type: 'array',
-            description: 'Optional explicit knot vector; missing => clamped-uniform inferred.',
-            items: { type: 'number' },
-          },
-          closed: { type: 'boolean', description: 'Optional periodic/closed-curve flag.' },
-          binding_name: { type: 'string', description: 'JS const name for the new Curve3D binding (default: _curve_<N>).' },
-        },
-        required: ['code', 'controlPoints'],
-      },
-    },
-    handler: input => addNurbsCurveTool(input as unknown as Parameters<typeof addNurbsCurveTool>[0]),
-  },
-  {
-    definition: {
-      name: 'add_surface_from_boundary',
-      description:
-        "Insert a `surfaceFromBoundary([c1, c2, c3, c4], opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. Builds the shipped filling surface: one NURBS face through 4 boundary Curve3D refs via OCCT BRepOffsetAPI_MakeFilling. The 4 curves must be passed in exact loop order: `curve_bindings[0]` = bottom, `curve_bindings[1]` = right, `curve_bindings[2]` = top, `curve_bindings[3]` = left; adjacent endpoints must coincide within 1e-6 mm or capture emits `feature.surface-from-boundary.corner-mismatch`. The result has type Surface — chain `.thicken(t)` or `.toShape()` via `add_feature` on the returned binding name. `opts.continuity` accepts a single grade ('C0' | 'C1' | 'C2') applied to all 4 edges or a length-4 array per edge; defaults to 'C0'. `opts.sampling` controls NbPtsOnCur (default 15). Validates every `curve_bindings[i]` is declared in the source via regex before inserting (fast structured error vs capture-time stack). Returns the modified code + diagnostics. Side-effect-free.",
-      inputSchema: {
-        type: 'object',
-        properties: {
-          code: { type: 'string', description: 'The .kcad.ts source code.' },
           curve_bindings: {
             type: 'array',
-            description: 'Tuple of 4 existing Curve3D variable names (bottom, right, top, left) declared earlier in the source.',
+            description: "kind:'boundary' — tuple of 4 existing Curve3D variable names (bottom, right, top, left) declared earlier in the source.",
             items: { type: 'string' },
             minItems: 4,
             maxItems: 4,
           },
           continuity: {
-            description: "Continuity grade applied to every edge ('C0' | 'C1' | 'C2'), or an array of 4 grades (one per edge). Default 'C0'.",
+            description: "kind:'boundary' — continuity grade applied to every edge ('C0' | 'C1' | 'C2'), or an array of 4 grades (one per edge). Default 'C0'.",
           },
-          sampling: { type: 'integer', minimum: 1, description: 'OCCT NbPtsOnCur sampling parameter (default 15).' },
-          binding_name: { type: 'string', description: 'JS const name for the new Surface binding (default: _surface_<N>).' },
+          sampling: { type: 'integer', minimum: 1, description: "kind:'boundary' — OCCT NbPtsOnCur sampling parameter (default 15)." },
+          binding_name: {
+            type: 'string',
+            description: "JS const name for the new Surface binding (kind:'nurbs' default surface_<N>; kind:'boundary' default _surface_<N>).",
+          },
         },
-        required: ['code', 'curve_bindings'],
+        required: ['kind', 'code'],
       },
     },
-    handler: input => addSurfaceFromBoundaryTool(input as unknown as Parameters<typeof addSurfaceFromBoundaryTool>[0]),
+    handler: input => addSurfaceTool(input as unknown as Parameters<typeof addSurfaceTool>[0]),
   },
   {
     definition: {
-      name: 'add_hermite_g2',
+      name: 'add_curve',
       description:
-        "Insert a `hermiteG2(a, b)` declaration into the user's .kcad.ts immediately before the last top-level return. Builds a quintic Hermite Curve3D that interpolates two endpoints with matching positions, tangents, and (optional) curvatures — used to bridge two existing curves with G2 continuity. The returned binding has type Curve3D (peer to nurbsCurve / spline3d) — consume it via `add_variable_sweep` (spine input), `add_surface_from_boundary` (boundary curve), or downstream Curve3D-accepting features. Each endpoint is `{ point: Vec3, tangent: Vec3, curvature?: Vec3 }` in mm; tangent magnitude controls how aggressively the curve heads out of the endpoint (typical magnitude ~ chord length). Curvature defaults to [0, 0, 0] which makes the curve G1 only (lifted cubic Hermite). Returns the modified code + diagnostics. Capture-time emits `feature.hermite-g2.degenerate-tangent` if a tangent has magnitude < 1e-12 and `feature.hermite-g2.non-finite-input` on any NaN/Infinity. Side-effect-free.",
+        "Use this when you need to author a 3D Curve3D into the user's .kcad.ts immediately before the last top-level return. One authoring path, selected by `kind`:\n" +
+        "- 'nurbs' — insert a `nurbsCurve(controlPoints, opts?)` declaration. Pass `controlPoints` as a Vec3[] (mm, at least 2 points). Optional NURBS knobs: `degree` (default 3), rational `weights`, explicit `knots`, `closed`.\n" +
+        "- 'hermite' — insert a `hermiteG2(a, b)` declaration: a quintic Hermite curve interpolating two endpoints with matching positions, tangents, and (optional) curvatures — bridges two curves with G2 continuity. Each endpoint is `{ point: Vec3, tangent: Vec3, curvature?: Vec3 }` in mm; tangent magnitude ~ chord length; curvature defaults to [0,0,0] (G1-only).\n" +
+        "The returned binding has type Curve3D (peer to Shape / Surface) — consume it via `add_variable_sweep` (spine input), `add_surface({ kind: 'boundary' })` (boundary curve), or downstream Curve3D-accepting features. Returns the modified code + diagnostics from re-evaluating. Side-effect-free. Each kind fails closed on its own missing required params.",
       inputSchema: {
         type: 'object',
         properties: {
+          kind: {
+            type: 'string',
+            enum: ['nurbs', 'hermite'],
+            description: 'Which curve-construction path to use.',
+          },
           code: { type: 'string', description: 'The .kcad.ts source code.' },
+          controlPoints: {
+            type: 'array',
+            description: "kind:'nurbs' — control points as Vec3 triples in mm; at least 2 entries.",
+            items: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+          },
+          degree: { type: 'integer', minimum: 1, description: "kind:'nurbs' — curve degree; default 3 (cubic)." },
+          weights: {
+            type: 'array',
+            description: "kind:'nurbs' — optional rational weights, one per control point (same length as controlPoints).",
+            items: { type: 'number' },
+          },
+          knots: {
+            type: 'array',
+            description: "kind:'nurbs' — optional explicit knot vector; missing => clamped-uniform inferred.",
+            items: { type: 'number' },
+          },
+          closed: { type: 'boolean', description: "kind:'nurbs' — optional periodic/closed-curve flag." },
           a: {
             type: 'object',
-            description: 'Start endpoint.',
+            description: "kind:'hermite' — start endpoint.",
             properties: {
               point: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: 'Endpoint position in mm.' },
               tangent: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: 'First derivative of the curve at this endpoint.' },
@@ -476,7 +403,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           },
           b: {
             type: 'object',
-            description: 'End endpoint.',
+            description: "kind:'hermite' — end endpoint.",
             properties: {
               point: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
               tangent: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
@@ -486,53 +413,99 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           },
           binding_name: { type: 'string', description: 'JS const name for the new Curve3D binding (default: _curve_<N>).' },
         },
-        required: ['code', 'a', 'b'],
+        required: ['kind', 'code'],
       },
     },
-    handler: input => addHermiteG2Tool(input as unknown as Parameters<typeof addHermiteG2Tool>[0]),
+    handler: input => addCurveTool(input as unknown as Parameters<typeof addCurveTool>[0]),
   },
   {
     definition: {
-      name: 'add_path_spline',
+      name: 'add_path_segment',
       description:
-        "Insert a `.spline(points, opts?)` call into an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()` (or before the statement terminator if `.close()` has not yet been added). `points` is a `Vec2[]` (mm) with at least 2 entries; the path interpolates through every waypoint. `points[0]` must match the current pen position within 1e-6 mm or capture-time emits `feature.path.spline.degenerate-points`. Optional `tension` forwards to the underlying `makeBSplineApproximation` call (tightens or relaxes the smoothing tolerance). Optional `startTangent` / `endTangent` are 2D direction vectors `[x, y]` that constrain the curve's first-derivative direction at the first and last waypoint (magnitude is normalised internally — `[1, 0]` and `[100, 0]` produce the same curve). When either tangent is set the underlying lowerer dispatches through a tangent-constrained interpolator; when both are omitted the existing fast approximation path is used. Use for organic 2D outlines (eyewear brow, ergonomic handle silhouettes, sneaker midsole) authored from measured waypoints. Returns the modified code + diagnostics from re-evaluating. Side-effect-free.",
+        "Use this when you need to append a curved segment to an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()`. One segment kind, selected by `kind`:\n" +
+        "- 'spline' — `.spline(points, opts?)`: interpolates through every `points` waypoint (Vec2[] mm, >= 2 entries; points[0] must match current pen position). Optional `tension`, and `startTangent`/`endTangent` 2D direction vectors that constrain the first-derivative direction at the endpoints (magnitude normalised internally). Use for organic 2D outlines (eyewear brow, ergonomic handle, sneaker midsole).\n" +
+        "- 'nurbs' — `.nurbsSegment(controlPoints, opts?)`: explicit B-spline net (Vec2[] mm, >= degree+1 entries; controlPoints[0] must match pen; pen ends at controlPoints[N-1]). Optional `degree` (default 3), rational `weights` (strictly positive), explicit `knots` (length = controlPoints.length + degree + 1).\n" +
+        "- 'hermite' — `.hermiteG2(a, b)`: each endpoint `{ point: Vec2, tangent: Vec2, curvature?: Vec2 }` in mm (a.point must match pen; pen ends at b.point). `curvature` defaults to [0,0] (G1); pass matching curvatures for G2 blends. Tangent magnitude is the first derivative (~ chord length), NOT unit length.\n" +
+        'Returns the modified code + diagnostics from re-evaluating. Side-effect-free. Each kind fails closed on its own missing required params.',
       inputSchema: {
         type: 'object',
         properties: {
+          kind: {
+            type: 'string',
+            enum: ['spline', 'nurbs', 'hermite'],
+            description: 'Which path-segment kind to append.',
+          },
           code: { type: 'string', description: 'The .kcad.ts source code.' },
           chain_anchor: { type: 'string', description: 'JS identifier of an existing PathBuilder binding (e.g. `const brow = path().moveTo(0,0)`).' },
           points: {
             type: 'array',
-            description: 'Waypoints as Vec2 pairs in mm; at least 2 entries; first must match current pen position.',
+            description: "kind:'spline' — waypoints as Vec2 pairs in mm; at least 2 entries; first must match current pen position.",
             items: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
             minItems: 2,
           },
-          tension: { type: 'number', description: 'Optional Catmull-Rom-style stiffness; forwarded to the underlying B-spline approximation.' },
+          tension: { type: 'number', description: "kind:'spline' — optional Catmull-Rom-style stiffness; forwarded to the underlying B-spline approximation." },
           startTangent: {
             type: 'array',
-            description: 'Optional [x, y] direction vector at points[0]. Magnitude is normalised internally; direction matters.',
+            description: "kind:'spline' — optional [x, y] direction vector at points[0]. Magnitude is normalised internally; direction matters.",
             items: { type: 'number' },
             minItems: 2,
             maxItems: 2,
           },
           endTangent: {
             type: 'array',
-            description: 'Optional [x, y] direction vector at points[N-1]. Magnitude is normalised internally; direction matters.',
+            description: "kind:'spline' — optional [x, y] direction vector at points[N-1]. Magnitude is normalised internally; direction matters.",
             items: { type: 'number' },
             minItems: 2,
             maxItems: 2,
           },
-          binding_name: { type: 'string', description: 'Reserved for future use; the spline injection mutates the chain anchor in place.' },
+          controlPoints: {
+            type: 'array',
+            description: "kind:'nurbs' — control-net vertices as Vec2 pairs in mm; at least degree+1 entries.",
+            items: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+          },
+          degree: { type: 'integer', minimum: 1, description: "kind:'nurbs' — B-spline degree (default 3)." },
+          weights: {
+            type: 'array',
+            description: "kind:'nurbs' — optional rational weights (one per control point; strictly positive).",
+            items: { type: 'number' },
+          },
+          knots: {
+            type: 'array',
+            description: "kind:'nurbs' — optional explicit knot vector; length must equal controlPoints.length + degree + 1.",
+            items: { type: 'number' },
+          },
+          a: {
+            type: 'object',
+            description: "kind:'hermite' — start endpoint; point must match current pen position within 1e-6 mm.",
+            properties: {
+              point: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+              tangent: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+              curvature: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+            },
+            required: ['point', 'tangent'],
+          },
+          b: {
+            type: 'object',
+            description: "kind:'hermite' — end endpoint.",
+            properties: {
+              point: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+              tangent: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+              curvature: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+            },
+            required: ['point', 'tangent'],
+          },
+          binding_name: { type: 'string', description: 'Reserved for future use; the segment injection mutates the chain anchor in place.' },
         },
-        required: ['code', 'chain_anchor', 'points'],
+        required: ['kind', 'code', 'chain_anchor'],
       },
     },
-    handler: input => addPathSplineTool(input as unknown as Parameters<typeof addPathSplineTool>[0]),
+    handler: input => addPathSegmentTool(input as unknown as Parameters<typeof addPathSegmentTool>[0]),
   },
   {
     definition: {
       name: 'trace_from_image',
       description:
+        "Use this when you need to trace features from a reference photo into waypoints. " +
         "Trace pixel-space features from a reference photo into normalized [0..1] waypoints the agent can map to mm via a known scale anchor and feed to path().spline / path().nurbsSegment. Three backends are dispatched behind the scenes: `opencv` (deterministic; uniform-bg silhouette only), `vision-llm` (Claude vision; named points/cluttered backgrounds; caller-supplied ANTHROPIC_API_KEY), and `hybrid` (opencv silhouette + LLM-labeled named points). Default backend is `auto` — the tool picks based on the image's corner-color stddev. Accuracy honesty: opencv contour is geometrically exact; vision-LLM is typically 5–10% off on dense landmarks. Per-feature `confidence` is reported. Caller pays for any vision-LLM API spend via their own ANTHROPIC_API_KEY. Pair with the `kernelcad-trace-from-image` skill for the conversion-to-mm pipeline.",
       inputSchema: {
         type: 'object',
@@ -583,78 +556,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'add_path_nurbs_segment',
-      description:
-        "Insert a `.nurbsSegment(controlPoints, opts?)` call into an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()`. `controlPoints` is a `Vec2[]` (mm) — at least `degree + 1` entries; `controlPoints[0]` must match the current pen position within 1e-6 mm; the pen ends at `controlPoints[N-1]`. Optional `degree` defaults to 3; `weights` for rational NURBS (strictly positive); `knots` for an explicit clamped knot vector (length must equal `controlPoints.length + degree + 1`). Use for explicit B-spline outlines where the control net is the natural mental model (NURBS round-tripping, programmatic profile generation). Returns the modified code + diagnostics. Side-effect-free.",
-      inputSchema: {
-        type: 'object',
-        properties: {
-          code: { type: 'string', description: 'The .kcad.ts source code.' },
-          chain_anchor: { type: 'string', description: 'JS identifier of an existing PathBuilder binding.' },
-          controlPoints: {
-            type: 'array',
-            description: 'Control-net vertices as Vec2 pairs in mm; at least degree+1 entries.',
-            items: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
-          },
-          degree: { type: 'integer', minimum: 1, description: 'B-spline degree (default 3).' },
-          weights: {
-            type: 'array',
-            description: 'Optional rational weights (one per control point; strictly positive).',
-            items: { type: 'number' },
-          },
-          knots: {
-            type: 'array',
-            description: 'Optional explicit knot vector; length must equal controlPoints.length + degree + 1.',
-            items: { type: 'number' },
-          },
-          binding_name: { type: 'string', description: 'Reserved for future use; the segment injection mutates the chain anchor in place.' },
-        },
-        required: ['code', 'chain_anchor', 'controlPoints'],
-      },
-    },
-    handler: input => addPathNurbsSegmentTool(input as unknown as Parameters<typeof addPathNurbsSegmentTool>[0]),
-  },
-  {
-    definition: {
-      name: 'add_path_hermite_g2',
-      description:
-        "Insert a `.hermiteG2(a, b)` call into an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()`. Each endpoint is `{ point: Vec2, tangent: Vec2, curvature?: Vec2 }` in mm. `a.point` must match the current pen position within 1e-6 mm; the pen ends at `b.point`. `curvature` defaults to `[0, 0]` (degrades to G1 / lifted cubic Hermite); pass matching curvatures on both endpoints for G2-continuous blends (eyewear bridge ↔ brow transitions, sneaker midsole transitions). Tangent magnitude is the first derivative, NOT unit length — typical magnitude is the chord length between endpoints. Returns the modified code + diagnostics. Side-effect-free.",
-      inputSchema: {
-        type: 'object',
-        properties: {
-          code: { type: 'string', description: 'The .kcad.ts source code.' },
-          chain_anchor: { type: 'string', description: 'JS identifier of an existing PathBuilder binding.' },
-          a: {
-            type: 'object',
-            description: 'Start endpoint; point must match current pen position within 1e-6 mm.',
-            properties: {
-              point: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
-              tangent: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
-              curvature: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
-            },
-            required: ['point', 'tangent'],
-          },
-          b: {
-            type: 'object',
-            description: 'End endpoint.',
-            properties: {
-              point: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
-              tangent: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
-              curvature: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
-            },
-            required: ['point', 'tangent'],
-          },
-          binding_name: { type: 'string', description: 'Reserved for future use; the segment injection mutates the chain anchor in place.' },
-        },
-        required: ['code', 'chain_anchor', 'a', 'b'],
-      },
-    },
-    handler: input => addPathHermiteG2Tool(input as unknown as Parameters<typeof addPathHermiteG2Tool>[0]),
-  },
-  {
-    definition: {
       name: 'add_variable_sweep',
       description:
+        "Use this when you need to author a variable-section sweep along a spine. " +
         "Insert a `variableSweep(spine, sections, opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. The result is a Shape — chain `.translate(...)`, `.union(...)`, etc. via `add_feature`. `spine_binding` references an existing variable (Curve3D / Sketch / Vec3[]) in the source; each `sections[i].profile_binding` references an existing Sketch. Sections must be strictly increasing in `t` and span [0, 1]; first t=0, last t=1. Orientation is not exposed by this MCP tool until runtime orientation support is wired. Validates every binding exists in the source via regex before inserting (fast structured error vs capture-time stack). Returns the modified code + diagnostics. Side-effect-free.",
       inputSchema: {
         type: 'object',
@@ -684,55 +588,46 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'add_sketch_text',
-      description: 'Insert a sketch.text(...) call into a kernelCAD script before the last top-level return statement. Returns the modified code as text plus diagnostics from re-evaluating the result. Side-effect-free. The emitted sketch is chainable: pair with subsequent .extrude(...) / cut(...) edits to land an engraved or raised text feature. Default font is the runtime-bundled Liberation Sans; pass `font` as a `.ttf` path to load a custom font.',
+      name: 'add_text',
+      description:
+        'Use this when you need to author text into a kernelCAD script before the last top-level return. One authoring path, selected by `mode`:\n' +
+        "- 'sketch' — insert a sketch.text(...) call. The emitted sketch is chainable: pair with subsequent .extrude(...) / cut(...) edits to land an engraved or raised text feature.\n" +
+        "- 'emboss' — insert a `<shape>.embossText({...})` chained call onto an existing Shape `target`. Use for engraved brand text on faces (Ray-Ban temple, CE mark, model number). `depth > 0` raises text out of the face; `depth < 0` engraves text into the face. Lowers via replicad drawText → sketchOnFace → extrude → fuse|cut.\n" +
+        'Default font is the runtime-bundled Liberation Sans. Side-effect-free; returns the modified code plus diagnostics from re-evaluating. Each mode fails closed on its own missing required params.',
       inputSchema: {
         type: 'object',
         properties: {
-          code:     { type: 'string', description: 'The .kcad.ts source code.' },
-          content:  { type: 'string', description: 'Text content (UTF-8, non-empty, non-whitespace).' },
-          size:     { type: 'number', description: 'Glyph cap height in mm (positive finite).' },
-          font:     { type: 'string', description: 'Optional logical font name or .ttf file path; defaults to bundled Liberation Sans.' },
-          align:    { type: 'string', enum: ['left', 'center', 'right'], description: 'Horizontal alignment relative to position. Default left.' },
-          position: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2, description: '[x, y] anchor in mm. Default [0, 0].' },
-          rotation: { type: 'number', description: 'CCW rotation in degrees around position. Default 0.' },
-          bindAs:   { type: 'string', description: 'Optional local variable name; emits const <bindAs> = sketch.text(...).' },
-        },
-        required: ['code', 'content', 'size'],
-      },
-    },
-    handler: input => addSketchTextTool(input as unknown as Parameters<typeof addSketchTextTool>[0]),
-  },
-  {
-    definition: {
-      name: 'emboss_text',
-      description: 'Insert a `<shape>.embossText({ text, face, size, depth, align?, anchor?, rotation?, scaleMode? })` chained call into a kernelCAD script before the last top-level return. Use for engraved brand text on faces (Ray-Ban temple, CE mark, model number). `depth > 0` raises text out of the face; `depth < 0` engraves text into the face. Side-effect-free; returns modified code plus diagnostics from re-evaluating. The emitted feature lowers via replicad drawText → sketchOnFace → extrude → fuse|cut.',
-      inputSchema: {
-        type: 'object',
-        properties: {
+          mode: {
+            type: 'string',
+            enum: ['sketch', 'emboss'],
+            description: 'Which text-authoring path to use.',
+          },
           code:        { type: 'string', description: 'The .kcad.ts source code.' },
-          target:      { type: 'string', description: 'Variable name of the Shape to chain onto (inserted verbatim).' },
-          textContent: { type: 'string', description: 'Text content (UTF-8, non-empty, non-whitespace).' },
-          size:        { type: 'number', description: 'Glyph cap height in mm (positive finite).' },
-          depth:       { type: 'number', description: 'Signed extrusion depth in mm: positive emboss out, negative engrave in. Must be non-zero.' },
-          face:        { type: 'string', description: "Target face — canonical name ('top'/'bottom'/'left'/'right'/'front'/'back') or label." },
-          fontFamily:  { type: 'string', description: 'Optional logical font name or .ttf file path; defaults to bundled Liberation Sans.' },
-          align:       { type: 'string', enum: ['left', 'center', 'right'], description: 'Horizontal alignment relative to the UV anchor. Default center.' },
-          anchorU:     { type: 'number', description: 'U anchor in [0, 1] face-local (0=umin, 0.5=centre, 1=umax). Default 0.5.' },
-          anchorV:     { type: 'number', description: 'V anchor in [0, 1] face-local. Default 0.5.' },
-          rotation:    { type: 'number', description: 'CCW rotation in degrees, in the face tangent plane. Default 0.' },
-          scaleMode:   { type: 'string', enum: ['original', 'native', 'bounds'], description: 'Drawing.sketchOnFace scaling mode. Default original.' },
-          bindAs:      { type: 'string', description: 'Optional local variable name; emits `const <bindAs> = <target>.embossText(...);`.' },
+          content:     { type: 'string', description: "mode:'sketch' — text content (UTF-8, non-empty, non-whitespace)." },
+          size:        { type: 'number', description: "mode:'sketch'|'emboss' — glyph cap height in mm (positive finite)." },
+          font:        { type: 'string', description: "mode:'sketch' — optional logical font name or .ttf file path; defaults to bundled Liberation Sans." },
+          align:       { type: 'string', enum: ['left', 'center', 'right'], description: "mode:'sketch' — horizontal alignment relative to position (default left); mode:'emboss' — relative to the UV anchor (default center)." },
+          position:    { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2, description: "mode:'sketch' — [x, y] anchor in mm. Default [0, 0]." },
+          rotation:    { type: 'number', description: "mode:'sketch' — CCW rotation in degrees around position (default 0); mode:'emboss' — CCW rotation in the face tangent plane (default 0)." },
+          bindAs:      { type: 'string', description: "mode:'sketch' — emits `const <bindAs> = sketch.text(...)`; mode:'emboss' — emits `const <bindAs> = <target>.embossText(...);`." },
+          target:      { type: 'string', description: "mode:'emboss' — variable name of the Shape to chain onto (inserted verbatim)." },
+          textContent: { type: 'string', description: "mode:'emboss' — text content (UTF-8, non-empty, non-whitespace)." },
+          depth:       { type: 'number', description: "mode:'emboss' — signed extrusion depth in mm: positive emboss out, negative engrave in. Must be non-zero." },
+          face:        { type: 'string', description: "mode:'emboss' — target face — canonical name ('top'/'bottom'/'left'/'right'/'front'/'back') or label." },
+          fontFamily:  { type: 'string', description: "mode:'emboss' — optional logical font name or .ttf file path; defaults to bundled Liberation Sans." },
+          anchorU:     { type: 'number', description: "mode:'emboss' — U anchor in [0, 1] face-local (0=umin, 0.5=centre, 1=umax). Default 0.5." },
+          anchorV:     { type: 'number', description: "mode:'emboss' — V anchor in [0, 1] face-local. Default 0.5." },
+          scaleMode:   { type: 'string', enum: ['original', 'native', 'bounds'], description: "mode:'emboss' — Drawing.sketchOnFace scaling mode. Default original." },
         },
-        required: ['code', 'target', 'textContent', 'size', 'depth', 'face'],
+        required: ['mode', 'code'],
       },
     },
-    handler: input => embossTextTool(input as unknown as Parameters<typeof embossTextTool>[0]),
+    handler: input => addTextTool(input as unknown as Parameters<typeof addTextTool>[0]),
   },
   {
     definition: {
       name: 'project_curve',
-      description: 'Insert a `<shape>.projectCurve({ curve, face, scaleMode?, asEdge? })` chained call into a kernelCAD script. Wraps a 2D closed curve onto a 3D face along the face normal; pair with `.extrude(d)` / `.cut(...)` for engraved logos or label inserts on curved bodies. `asEdge: true` is captured but currently deferred at lower time (BRepProj_Projection not bundled). Side-effect-free; returns modified code plus diagnostics.',
+      description: 'Use this when you need to wrap a 2D curve onto a 3D face. Insert a `<shape>.projectCurve({ curve, face, scaleMode?, asEdge? })` chained call into a kernelCAD script. Wraps a 2D closed curve onto a 3D face along the face normal; pair with `.extrude(d)` / `.cut(...)` for engraved logos or label inserts on curved bodies. `asEdge: true` is captured but currently deferred at lower time (BRepProj_Projection not bundled). Side-effect-free; returns modified code plus diagnostics.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -752,7 +647,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'add_pattern_feature',
-      description: "Insert a Shape.patternLinear / .patternCircular / .patternGrid call into a kernelCAD script before the last top-level return. Pass structured args (kind + the matching spec object). Returns the modified code plus diagnostics from re-evaluating. Side-effect-free. The pattern feature is a single editable unit; pattern-instance face refs resolve via `<sourceId>_pattern_<i>` on the pattern feature's lineage. Geometric note: pattern is implemented as cumulative boolean union of transformed source copies — additive features (boxes, ribs, fins, spokes) pattern cleanly; patterning a subtractive feature (hole, cutout) only preserves the per-instance void when adjacent bodies are disjoint.",
+      description: "Use this when you need to repeat a feature in a pattern. Insert a Shape.patternLinear / .patternCircular / .patternGrid call into a kernelCAD script before the last top-level return. Pass structured args (kind + the matching spec object). Returns the modified code plus diagnostics from re-evaluating. Side-effect-free. The pattern feature is a single editable unit; pattern-instance face refs resolve via `<sourceId>_pattern_<i>` on the pattern feature's lineage. Geometric note: pattern is implemented as cumulative boolean union of transformed source copies — additive features (boxes, ribs, fins, spokes) pattern cleanly; patterning a subtractive feature (hole, cutout) only preserves the per-instance void when adjacent bodies are disjoint.",
       inputSchema: {
         type: 'object',
         properties: {
@@ -782,7 +677,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'remove_feature',
-      description: 'Remove a single line from a kernelCAD script identified by a substring match. Returns the modified code plus diagnostics from re-evaluating. Refuses to remove the line containing the return statement. Side-effect-free.',
+      description: 'Use this when you need to remove a feature line from a script. Remove a single line from a kernelCAD script identified by a substring match. Returns the modified code plus diagnostics from re-evaluating. Refuses to remove the line containing the return statement. Side-effect-free.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -796,114 +691,34 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'list_edges',
+      name: 'query',
       description:
-        'List edges of a kernelCAD shape with optional EdgeQuery filter. Returns each edge\'s id, midpoint, direction, length, curveType, convex, dihedralAngleDeg, boundary status, AND a stable `ref` string of the form `@kc[<owner>/edge/<refName>]` suitable for pasting into fillet/chamfer/add_connector. Pass either { file } or { code }; query is an optional EdgeQuery object.',
+        "Use this when you need to resolve or inspect topology against a script's lowered geometry. " +
+        "Selected by `mode` (default 'evaluate'):\n" +
+        "- 'evaluate' — inspect a Query (@kc[...] ref, @kcq[...] DSL, or { ast }); returns matched entities. Pass expect:'unique' to assert exactly-one.\n" +
+        "- 'resolve' — resolve a single @kc[...] / @kcq[...] ref to one entity ({ ref }).\n" +
+        "- 'lineage' — walk the HistoryMap for a named face ref ({ feature_id, ref }).\n" +
+        'All params except `mode` are forwarded verbatim.',
       inputSchema: {
         type: 'object',
         properties: {
+          mode: { type: 'string', enum: ['evaluate', 'resolve', 'lineage'], description: "Resolution mode (default 'evaluate')." },
           file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
           code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          feature_id: { type: 'string', description: 'Optional FeatureId to inspect; defaults to last returned shape.' },
-          query: { type: 'object', description: 'Optional EdgeQuery filter (atZ, parallel, convex, ofCurveType, etc).' },
+          query: { description: "mode:'evaluate' — Query input: @kc[...] / @kcq[...] string or { ast } object." },
+          ref: { type: 'string', description: "mode:'resolve'|'lineage' — topology ref string." },
+          expect: { type: 'string', enum: ['any', 'unique'], description: "mode:'evaluate' — 'unique' asserts exactly-one." },
+          feature_id: { type: 'string', description: 'Optional FeatureId; defaults to the last lowered shape (use "auto" for lineage).' },
         },
       },
     },
-    handler: input => listEdgesTool(input as Parameters<typeof listEdgesTool>[0]),
+    handler: input => queryTool(input as unknown as Parameters<typeof queryTool>[0]),
   },
   {
     definition: {
-      name: 'list_faces',
+      name: 'lookup_api',
       description:
-        'List faces of a kernelCAD shape with optional FaceQuery filter. Returns each face\'s id (deprecated), centroid, normal, surfaceType, area, label, AND a stable `ref` string of the form `@kc[<owner>/face/<refName>]` plus a `lineage` struct with canonicalName / labelName / featureKind. Paste the ref into hole/holes/cutout/shell/add_connector/resolve_topo_ref. Pass either { file } or { code }; query is an optional FaceQuery object.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          feature_id: { type: 'string', description: 'Optional FeatureId to inspect; defaults to last returned shape.' },
-          query: { type: 'object', description: 'Optional FaceQuery filter (atZ, parallelTo, ofSurfaceType, etc).' },
-        },
-      },
-    },
-    handler: input => listFacesTool(input as Parameters<typeof listFacesTool>[0]),
-  },
-  {
-    definition: {
-      name: 'resolve_topo_ref',
-      description:
-        "Resolve a single topology reference against a kernelCAD script's lowered geometry. Accepts either @kc[<owner>/<kind>/<name>] (single addressed entity, F-surface path) or @kcq[<expr>] (Query DSL form, dispatches through the Q3 evaluator with expect: 'unique'; surfaces query.over-determined when the Query matches multiple). Returns { ok, ref, entity: { kind, hash, path } } on success; on ambiguity returns candidate refs in the diagnostic. Pass either { file } or { code } plus the required { ref } string. For multi-hit inspection, prefer evaluate_query.",
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          ref: { type: 'string', description: 'Topology reference of the form @kc[owner/kind/name] or @kc[owner/kind/name#modifier].' },
-          feature_id: { type: 'string', description: 'Optional FeatureId to resolve against; defaults to the last lowered shape.' },
-        },
-        required: ['ref'],
-      },
-    },
-    handler: input => resolveTopoRefTool(input as unknown as Parameters<typeof resolveTopoRefTool>[0]),
-  },
-  {
-    definition: {
-      name: 'evaluate_query',
-      description:
-        "Inspect a Query against a kernelCAD script's lowered geometry before consuming it in a feature op. Accepts three input forms: (1) an @kc[<owner>/<kind>/<name>] string ref, (2) an @kcq[<expr>] Query DSL string (face(createdBy(\"id\")), union(...), intersection(...), subtraction(...), withLabel, closestTo, etc.), or (3) a JSON-AST wrapper { ast: { op: '...', ... } } that round-trips Query.toJSON(). Returns { ok: true, entities: [{ kind, ref, handle, snapshot? }], query: { ast } } on success; on diagnostic returns { ok: false, errorCode, errorHint } with the structured query.* code. Pass expect: 'unique' to assert exactly-one and surface query.over-determined on multi-hit / query.empty on no-hit.",
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          query: { description: 'Query input — string (@kc[...] or @kcq[...]) or JSON-AST object { ast: { op, ... } }.' },
-          expect: { type: 'string', enum: ['any', 'unique'], description: "When 'unique', emit query.over-determined on multi-hit and query.empty on no-hit." },
-          feature_id: { type: 'string', description: 'Optional FeatureId to resolve against; defaults to the last lowered shape.' },
-        },
-        required: ['query'],
-      },
-    },
-    handler: input => evaluateQueryTool(input as unknown as Parameters<typeof evaluateQueryTool>[0]),
-  },
-  {
-    definition: {
-      name: 'list_face_labels',
-      description:
-        'List user-applied labels visible in a script: both sketch-segment labels (path().label(\'rim\')) and creating-op faceLabels (box(..., { faceLabels: { ... } })). Each result includes its source so the agent can disambiguate. Lets agents discover the label vocabulary on a shape before referencing labels in fillet/chamfer/shell.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          feature_id: { type: 'string', description: 'Optional FeatureId; defaults to scanning all features.' },
-        },
-      },
-    },
-    handler: input => listFaceLabelsTool(input as Parameters<typeof listFaceLabelsTool>[0]),
-  },
-  {
-    definition: {
-      name: 'get_face_lineage',
-      description:
-        'Walk the HistoryMap of a lowered feature and return the chain of lineage entries that produced a named face ref. Inputs: feature_id ("auto" for last) and ref (string selector "name.slot" or a structured FaceRef / EdgeRef). Returns { chain, usedFallback }. Ships create/modify ops in this slice; split/delete classification is deferred.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          feature_id: { type: 'string', description: 'Feature id, or "auto" for the last feature.' },
-          ref: { description: 'Selector string ("name.slot") or structured FaceRef / EdgeRef.' },
-        },
-        required: ['feature_id', 'ref'],
-      },
-    },
-    handler: input => getFaceLineageTool(input as unknown as Parameters<typeof getFaceLineageTool>[0]),
-  },
-  {
-    definition: {
-      name: 'list_api',
-      description:
-        'List the kernelCAD script-runtime surface: global functions (box, path, selectEdges, helix, etc), Shape methods (fillet, sweep, lower, etc), Sketch methods (extrude, revolve, sweep), PathBuilder methods, EdgeQuery/FaceQuery key sets, and featureKindFaceLabels (which globals accept opts.faceLabels and valid value shapes). Use this to discover what is callable from a .kcad.ts script.',
+        'Use this when you need to list the kernelCAD script-runtime surface: global functions (box, path, selectEdges, helix, etc), Shape methods (fillet, sweep, lower, etc), Sketch methods (extrude, revolve, sweep), PathBuilder methods, EdgeQuery/FaceQuery key sets, and featureKindFaceLabels (which globals accept opts.faceLabels and valid value shapes). Use this to discover what is callable from a .kcad.ts script.',
       inputSchema: {
         type: 'object',
         properties: {},
@@ -913,9 +728,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'list_diagnostic_codes',
+      name: 'lookup_diagnostics',
       description:
-        'Return the kernelCAD 26-code diagnostic catalogue with hint templates. ' +
+        'Use this when you need the kernelCAD 26-code diagnostic catalogue with hint templates. ' +
         'Tiny one-shot call; useful for an agent that wants to pre-populate ' +
         'retry strategies. Hints are also inline on every emitted diagnostic — ' +
         'this tool just gives you the canonical list up front.',
@@ -928,9 +743,10 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'export_model',
+      name: 'export',
       description:
-        'Export the script geometry to a file. Pass either { file } or { code } plus a required { output_path } and { format }. ' +
+        'Use this when you need to export geometry to a file. One exporter, selected by `target`:\n' +
+        "- target:'model' — export the script geometry to one file. Pass { file | code }, a required { output_path }, and { format }. " +
         'Supported formats: stl (binary STL mesh), step (BREP CAD interchange), dxf (planar laser/waterjet profile from a Region or planar face), ' +
         '3mf (slicer-friendly mesh with per-part colors), glb (web-viewer / AR with PBR materials), ' +
         'svg-drawing (third-angle engineering-drawing sheet: front/top/left + isometric views, hidden edges dashed, tangent edges thin, ' +
@@ -939,84 +755,53 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
         'urdf and sdf-gazebo also write one meshes/<part>.stl per link next to output_path (reported in mesh_files) — ship the whole directory to the consumer. ' +
         'STL exports run a watertight verify by default; failures return ok: false with export.mesh.not-watertight ' +
         '(open-edge count + up to 5 crack-cluster locations) but the file is still written so the broken mesh can be inspected. ' +
-        'Pass { no_verify: true } to skip the gate. ' +
         'Optional { feature_id } selects which feature to export (default: last). ' +
-        'Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: dxf layers/tolerance/unit, 3mf printUnit/embedSource, glb axis/draco). ' +
-        'Returns { ok, output_path, byte_count, feature_count, format, mesh_files?, diagnostics }.',
+        'Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: dxf layers/tolerance/unit, 3mf printUnit/embedSource, glb axis/draco).\n' +
+        "- target:'part' — export solved-assembly parts as individual binary STL files in their modeled (world-frame) positions. " +
+        'Pass { file | code }, plus { part, output_path } for one part or { output_dir } for all parts ' +
+        '(files land at <output_dir>/<part>.stl). A watertight verify runs on every exported mesh by default ' +
+        'and fails the call with export.mesh.not-watertight; unknown part names fail with export.part.not-found listing the valid names.\n' +
+        'Pass { no_verify: true } to skip the watertight gate. All params except `target` are forwarded verbatim; each target fails closed on its own missing required params.',
       inputSchema: {
         type: 'object',
         properties: {
+          target: {
+            type: 'string',
+            enum: ['model', 'part'],
+            description: "Which exporter to run: 'model' (whole-script geometry to one file) or 'part' (per-part STLs from a solved assembly).",
+          },
           file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
           code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          output_path: { type: 'string', description: 'Destination path for the export file. Required.' },
+          output_path: { type: 'string', description: "Destination path. target:'model' — the export file (required). target:'part' — single-part .stl path." },
           format: {
             type: 'string',
             enum: ['stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'urdf', 'srdf', 'sdf-gazebo'],
-            description: 'Output file format. Required.',
+            description: "target:'model' — output file format (required for that target).",
           },
-          feature_id: { type: 'string', description: 'Optional FeatureId to export; defaults to last.' },
+          feature_id: { type: 'string', description: "target:'model' — optional FeatureId to export; defaults to last." },
           options: {
             type: 'object',
             description:
-              'Optional per-format options bag. Discriminator options.format must equal top-level format. ' +
+              "target:'model' — optional per-format options bag. Discriminator options.format must equal top-level format. " +
               'dxf: { layers?, unit?: "mm"|"cm"|"in", tolerance? }. ' +
               '3mf: { printUnit?: "mm"|"cm"|"in", embedSource? }. ' +
               'glb: { axis?: "y-up"|"z-up", draco?: false }. ' +
               'svg-drawing: { sheet?: "a4"|"a3", modelName?, date? }.',
           },
+          part: { type: 'string', description: "target:'part' — part name for single-part export, or 'all'." },
+          output_dir: { type: 'string', description: "target:'part' — destination directory (all-parts mode); files are <dir>/<part>.stl." },
           no_verify: { type: 'boolean', description: 'Skip the STL watertight verify gate.', default: false },
         },
-        required: ['output_path', 'format'],
+        required: ['target'],
       },
     },
-    handler: input => exportModelTool(input as unknown as Parameters<typeof exportModelTool>[0]),
-  },
-  {
-    definition: {
-      name: 'export_part',
-      description:
-        'Export solved-assembly parts as individual binary STL files in their modeled (world-frame) positions. ' +
-        'Pass { file } or { code }, plus { part, output_path } for one part or { output_dir } for all parts ' +
-        '(files land at <output_dir>/<part>.stl). A watertight verify runs on every exported mesh by default ' +
-        'and fails the call with export.mesh.not-watertight (open-edge count + up to 5 crack cluster locations); ' +
-        'pass { no_verify: true } only to inspect broken meshes. Unknown part names fail with ' +
-        'export.part.not-found listing the valid names. ' +
-        'Returns { ok, written: [{ part, output_path, byte_count, watertight }], diagnostics }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          part: { type: 'string', description: "Part name for single-part export, or 'all'." },
-          output_path: { type: 'string', description: 'Destination .stl path (single-part mode).' },
-          output_dir: { type: 'string', description: 'Destination directory (all-parts mode); files are <dir>/<part>.stl.' },
-          no_verify: { type: 'boolean', description: 'Skip the watertight verify gate.', default: false },
-        },
-      },
-    },
-    handler: input => exportPartTool(input as unknown as Parameters<typeof exportPartTool>[0]),
-  },
-  {
-    definition: {
-      name: 'list_part_stats',
-      description:
-        'List solved-assembly parts with print-prep stats: name, exact bounding box (from the export ' +
-        'tessellation), volume (mm^3), surface area (mm^2), and export triangle count. Pass { file } or { code }. ' +
-        'Returns { ok, parts: [{ name, bbox, volumeMm3, surfaceAreaMm2, triangleCount }], diagnostics }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-        },
-      },
-    },
-    handler: input => listPartStatsTool(input as unknown as Parameters<typeof listPartStatsTool>[0]),
+    handler: input => exportTool(input as unknown as Parameters<typeof exportTool>[0]),
   },
   {
     definition: {
       name: 'lookup_cookbook',
       description:
+        'Use this when you need a canonical pattern snippet for a CAD task. ' +
         'Search the kernelCAD cookbook for canonical pattern snippets. ' +
         'Returns top-k snippets matching the natural-language query, ' +
         'ranked by BM25 over title/tags/keywords/trigger. ' +
@@ -1045,31 +830,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'list_part_categories',
-      description:
-        'Enumerate the top-level part-catalog categories available locally (and remotely, when partsBaseUrl is configured). The fastest path for an agent to discover what kinds of off-the-shelf parts the bundled catalog covers.',
-      inputSchema: { type: 'object', properties: {} },
-    },
-    handler: () => listPartCategoriesTool(),
-  },
-  {
-    definition: {
-      name: 'list_part_families',
-      description:
-        'Enumerate the part families within a category (e.g. socket-head-cap-screw, deep-groove-ball-bearing). Returns count and up to three exemplar ids per family. Pass { category } to filter; without filters returns every family in the bundled catalog.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          category: { type: 'string', description: 'Top-level category to filter by.' },
-        },
-      },
-    },
-    handler: input => listPartFamiliesTool(input as Parameters<typeof listPartFamiliesTool>[0]),
-  },
-  {
-    definition: {
       name: 'find_part',
       description:
+        'Use this when you need to find a part in the catalog. ' +
         'Discover bundled (and optionally remote) part-catalog records by fuzzy query and faceted filters. Tokens AND-combine; cross-facet filters AND-combine. Pass partsBaseUrl (or set KERNELCAD_PARTS_BASE_URL) to enable the remote tier; otherwise results are bundled-only.',
       inputSchema: {
         type: 'object',
@@ -1091,6 +854,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'fetch_part',
       description:
+        'Use this when you need to download a catalog part as a STEP file. ' +
         'Resolve an id (or single-match query) to a part record and write its STEP file to the local cache. Bundled ids resolve offline; non-bundled ids require partsBaseUrl (or KERNELCAD_PARTS_BASE_URL). Returns the cache path plus a sha256 fingerprint.',
       inputSchema: {
         type: 'object',
@@ -1108,63 +872,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'inspect_step',
-      description:
-        'Inspect a STEP file without evaluating a script: solid tree (index + best-effort name), ' +
-        'per-solid exact bounding box and volume, and detected cylindrical holes ' +
-        '(axis origin + direction, diameter, depth, blind/through). Use before placing imported ' +
-        'vendor parts to find mounting-hole positions and verify the part-local frame.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .step file (absolute, or relative to cwd).' },
-        },
-        required: ['file'],
-      },
-    },
-    handler: input => inspectStepTool(input as unknown as Parameters<typeof inspectStepTool>[0]),
-  },
-  {
-    definition: {
-      name: 'params_list',
-      description:
-        'List all parameters declared on the active session, with current values, defaults, and metadata. Read-only.',
-      inputSchema: {
-        type: 'object',
-        properties: {},
-      },
-    },
-    handler: () => paramsListTool(),
-  },
-  {
-    definition: {
-      name: 'params_update',
-      description:
-        'Edit one or more session parameters and re-lower the affected records. Validates every edit before applying any (atomic). Returns the updated shape, the list of records that re-lowered, and any soft warnings (e.g., named feature refs that became passthroughs because a boolean param gated their feature off).',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          edits: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                name: { type: 'string' },
-                value: {},
-              },
-              required: ['name', 'value'],
-            },
-          },
-        },
-        required: ['edits'],
-      },
-    },
-    handler: input => paramsUpdateTool(input as unknown as Parameters<typeof paramsUpdateTool>[0]),
-  },
-  {
-    definition: {
       name: 'solve_sketch',
       description:
+        'Use this when you need to solve a 2D sketch constraint set. ' +
         'Solve a 2D sketch constraint set. Side-effect-free: pass { entities, constraints } and receive solved entities plus the original constraints. Entities are POINT, LINE, and CIRCLE records; constraints use the kernelCAD constraint vocabulary.',
       inputSchema: {
         type: 'object',
@@ -1189,6 +899,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'add_constraint',
       description:
+        'Use this when you need to add a sketch constraint to a list. ' +
         'Append one validated sketch constraint to a constraint list. Side-effect-free: pass { constraints, constraint } and receive the updated list.',
       inputSchema: {
         type: 'object',
@@ -1203,23 +914,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'list_constraints',
+      name: 'add_part',
       description:
-        'List supported sketch constraint types and echo the provided constraint list. Use before add_constraint or solve_sketch to discover the vocabulary.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          constraints: { type: 'array', items: { type: 'object' } },
-        },
-      },
-    },
-    handler: input => listConstraintsTool(input as unknown as Parameters<typeof listConstraintsTool>[0]),
-  },
-  {
-    definition: {
-      name: 'add_assembly_part_source',
-      description:
-        'Durably insert `const <binding> = <assembly>.part(partName, shapeExpression, opts?)` before the final top-level return in a kernelCAD source string. Returns modified source plus diagnostics from re-evaluating it. Side-effect-free: caller persists the returned source.',
+        'Use this when you need to add a part to an assembly. Durably insert `const <binding> = <assembly>.part(partName, shapeExpression, opts?)` before the final top-level return in a kernelCAD source string. Returns modified source plus diagnostics from re-evaluating it. Side-effect-free: caller persists the returned source.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -1237,9 +934,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'add_part_connector_source',
+      name: 'add_connector',
       description:
-        'Durably insert `<partBinding>.connector(name, { type, origin, axis?, normal? })` before the final top-level return. Use with the binding returned by add_assembly_part_source. Returns modified source plus diagnostics from re-evaluation. Side-effect-free; distinct from active-session add_connector.',
+        'Use this when you need to add a mate connector to a part. Durably insert `<partBinding>.connector(name, { type, origin, axis?, normal? })` before the final top-level return. Use the part binding returned by add_part. Returns modified source plus diagnostics from re-evaluation. Side-effect-free.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -1258,78 +955,49 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'add_mate_source',
+      name: 'add_mate',
       description:
-        'Durably insert `<assembly>.mate(name, a, b, type, opts?)` before the final top-level return. Connector refs use "<partName>.<connectorName>". Returns modified source plus diagnostics from re-evaluation. Side-effect-free; distinct from active-session add_mate.',
+        "Use this when you need to author a mate-graph relationship into the source, selected by `relation` (default 'mate'):\n" +
+        "- 'mate' — a typed mate between two connectors ({ name, a, b, type, pose?, limitsDeg?, limitsMm? }).\n" +
+        "- 'coupling' — couple a driven mate to a source mate by ratio ({ driven, source, ratio, offset? }).\n" +
+        "- 'transmission' — a physical drive path across mates ({ name, kind, sourceMate, drivenMates, path, ... }).\n" +
+        'All durably edit source and need { code, assembly_binding }. Params other than `relation` are forwarded verbatim; each relation fails closed on its own missing required params.',
       inputSchema: {
         type: 'object',
         properties: {
+          relation: { type: 'string', enum: ['mate', 'coupling', 'transmission'], description: "Which relationship to author (default 'mate')." },
           code: { type: 'string', description: 'The .kcad.ts source code.' },
           assembly_binding: { type: 'string', description: 'JS identifier bound to assembly(...).' },
-          name: { type: 'string', description: 'Mate name unique within the assembly.' },
-          a: { type: 'string', description: 'Connector ref "<partName>.<connectorName>".' },
-          b: { type: 'string', description: 'Connector ref "<partName>.<connectorName>".' },
-          type: { type: 'string', enum: ['fastened', 'revolute', 'prismatic', 'cylindrical', 'planar', 'ball', 'pin_slot'] },
-          pose: { description: 'Optional mate pose.' },
-          limitsDeg: { type: 'array', items: { type: 'number' }, description: 'Optional [minDeg, maxDeg].' },
-          limitsMm: { type: 'array', items: { type: 'number' }, description: 'Optional [minMm, maxMm].' },
+          name: { type: 'string', description: "relation:'mate'|'transmission' — name unique within the assembly." },
+          a: { type: 'string', description: "relation:'mate' — connector ref \"<partName>.<connectorName>\"." },
+          b: { type: 'string', description: "relation:'mate' — connector ref \"<partName>.<connectorName>\"." },
+          type: { type: 'string', enum: ['fastened', 'revolute', 'prismatic', 'cylindrical', 'planar', 'ball', 'pin_slot'], description: "relation:'mate' — mate type." },
+          pose: { description: "relation:'mate' — optional mate pose." },
+          limitsDeg: { type: 'array', items: { type: 'number' }, description: "relation:'mate' — optional [minDeg, maxDeg]." },
+          limitsMm: { type: 'array', items: { type: 'number' }, description: "relation:'mate' — optional [minMm, maxMm]." },
+          driven: { type: 'string', description: "relation:'coupling' — driven mate name." },
+          source: { type: 'string', description: "relation:'coupling' — source mate name." },
+          ratio: { type: 'number', description: "relation:'coupling' — driven pose = source pose * ratio + offset." },
+          offset: { type: 'number', description: "relation:'coupling' — optional pose offset." },
+          kind: { type: 'string', enum: ['direct-horn', 'link-rod', 'four-bar', 'gear-pair', 'belt', 'tendon'], description: "relation:'transmission' — transmission kind." },
+          sourceMate: { type: 'string', description: "relation:'transmission' — source mate name." },
+          drivenMates: { type: 'array', items: { type: 'string' }, description: "relation:'transmission' — driven mate names." },
+          actuator: { type: 'string', description: "relation:'transmission' — optional actuator." },
+          input: { type: 'string', description: "relation:'transmission' — optional input." },
+          output: { type: 'string', description: "relation:'transmission' — optional output." },
+          path: { type: 'array', items: { type: 'string' }, description: "relation:'transmission' — drive path." },
+          notes: { type: 'string', description: "relation:'transmission' — optional notes." },
         },
-        required: ['code', 'assembly_binding', 'name', 'a', 'b', 'type'],
+        required: ['code', 'assembly_binding'],
       },
     },
-    handler: input => addMateSourceTool(input as unknown as Parameters<typeof addMateSourceTool>[0]),
+    handler: input => addMateAuthoringTool(input as unknown as Parameters<typeof addMateAuthoringTool>[0]),
   },
   {
     definition: {
-      name: 'add_mate_coupling_source',
+      name: 'add_workspace_target',
       description:
-        'Durably insert `<assembly>.coupleMates(driven, { source, ratio, offset? })` before the final top-level return. Returns modified source plus diagnostics from re-evaluation. Pair coupled mates with add_transmission_source so review_cad can see a physical drive path.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          code: { type: 'string', description: 'The .kcad.ts source code.' },
-          assembly_binding: { type: 'string', description: 'JS identifier bound to assembly(...).' },
-          driven: { type: 'string', description: 'Driven mate name.' },
-          source: { type: 'string', description: 'Source mate name.' },
-          ratio: { type: 'number', description: 'Driven pose = source pose * ratio + offset.' },
-          offset: { type: 'number', description: 'Optional pose offset.' },
-        },
-        required: ['code', 'assembly_binding', 'driven', 'source', 'ratio'],
-      },
-    },
-    handler: input => addMateCouplingSourceTool(input as unknown as Parameters<typeof addMateCouplingSourceTool>[0]),
-  },
-  {
-    definition: {
-      name: 'add_transmission_source',
-      description:
-        'Durably insert `<assembly>.transmission(name, { kind, sourceMate, drivenMates, path, ... })` before the final top-level return. Supports the current script API kinds direct-horn, link-rod, four-bar, gear-pair, belt, and tendon. Returns modified source plus diagnostics from re-evaluation.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          code: { type: 'string', description: 'The .kcad.ts source code.' },
-          assembly_binding: { type: 'string', description: 'JS identifier bound to assembly(...).' },
-          name: { type: 'string' },
-          kind: { type: 'string', enum: ['direct-horn', 'link-rod', 'four-bar', 'gear-pair', 'belt', 'tendon'] },
-          sourceMate: { type: 'string' },
-          drivenMates: { type: 'array', items: { type: 'string' } },
-          actuator: { type: 'string' },
-          input: { type: 'string' },
-          output: { type: 'string' },
-          path: { type: 'array', items: { type: 'string' } },
-          ratio: { type: 'number' },
-          notes: { type: 'string' },
-        },
-        required: ['code', 'assembly_binding', 'name', 'kind', 'sourceMate', 'drivenMates', 'path'],
-      },
-    },
-    handler: input => addTransmissionSourceTool(input as unknown as Parameters<typeof addTransmissionSourceTool>[0]),
-  },
-  {
-    definition: {
-      name: 'add_workspace_target_source',
-      description:
-        'Durably insert `<assembly>.workspace(connectorRef, { reachable, toleranceMm? })` before the final top-level return. Workspace targets are checked by solvedModel validation/review pose-envelope gates. Returns modified source plus diagnostics from re-evaluation.',
+        'Use this when you need to declare a reachability target for a connector. Durably insert `<assembly>.workspace(connectorRef, { reachable, toleranceMm? })` before the final top-level return. Workspace targets are checked by solvedModel validation/review pose-envelope gates. Returns modified source plus diagnostics from re-evaluation.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -1350,9 +1018,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'set_scene_return_source',
+      name: 'set_scene_return',
       description:
-        'Replace the final top-level return statement with `return <assembly>.model();` or `return <assembly>.solvedModel(poses, options?);`. Use solvedModel for mate-authored mechanisms so FK and validation run. Returns modified source plus diagnostics from re-evaluation.',
+        'Use this when you need to set how the script returns its assembly. Replace the final top-level return statement with `return <assembly>.model();` or `return <assembly>.solvedModel(poses, options?);`. Use solvedModel for mate-authored mechanisms so FK and validation run. Returns modified source plus diagnostics from re-evaluation.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -1369,77 +1037,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'add_connector',
-      description:
-        'Register a v0.6 mate-style connector on a named part of the active assembly. Requires a prior evaluate_script that called kcad.assembly(...). Origin accepts a [x, y, z] tuple shorthand, a structured ConnectorOrigin ({ kind: "vec3" | "topology", ... }), or a @kc[<part>/face/<name>] / @kc[<part>/edge/<name>] / @kc[<part>/vertex/<name>] topology ref string (the `#normal` modifier on a face ref yields face-normal). Returns the registered connector\'s { partName, name, type }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          assembly: { type: 'string', description: 'Assembly name; defaults to the only/first assembly on the active session.' },
-          part: { type: 'string', description: 'Part name declared via arm.part(name, ...).' },
-          name: { type: 'string', description: 'Connector name (unique within the part).' },
-          type: { type: 'string', enum: ['frame', 'axis', 'planar', 'ball'] },
-          origin: { description: 'Origin as [x, y, z] (vec3 shorthand), a structured ConnectorOrigin, or a @kc[<part>/face/<name>] topology ref string (face-center default; #normal modifier yields face-normal). @kc[<part>/edge/<name>] maps to edge-axis; @kc[<part>/vertex/<name>] maps to vertex.' },
-          axis: { type: 'array', description: 'Optional [x, y, z] axis (axis connectors).' },
-          normal: { type: 'array', description: 'Optional [x, y, z] normal (frame / planar connectors).' },
-        },
-        required: ['part', 'name', 'type', 'origin'],
-      },
-    },
-    handler: input => addConnectorTool(input as unknown as Parameters<typeof addConnectorTool>[0]),
-  },
-  {
-    definition: {
-      name: 'add_mate',
-      description:
-        'Declare a typed mate between two named connectors on the active assembly. Connector refs accept "<partName>.<connectorName>" (legacy) or "@kc[<partName>/connector/<connectorName>]" (preferred). Mate types: fastened, revolute, prismatic, cylindrical, planar, ball, pin_slot. Optional pose and limitsDeg/limitsMm expose articulated intent for solver/review tools.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          assembly: { type: 'string' },
-          name: { type: 'string', description: 'Mate name (unique within the assembly).' },
-          a: { type: 'string', description: 'Connector ref: "<partName>.<connectorName>" (legacy) or "@kc[<partName>/connector/<connectorName>]".' },
-          b: { type: 'string', description: 'Connector ref: "<partName>.<connectorName>" (legacy) or "@kc[<partName>/connector/<connectorName>]".' },
-          type: { type: 'string', enum: ['fastened', 'revolute', 'prismatic', 'cylindrical', 'planar', 'ball', 'pin_slot'] },
-          pose: { description: 'Optional mate pose: number for scalar mates or [x, y, z] degrees for ball mates.' },
-          limitsDeg: { type: 'array', description: 'Optional [minDeg, maxDeg] range for revolute/cylindrical/pin_slot mates.' },
-          limitsMm: { type: 'array', description: 'Optional [minMm, maxMm] range for prismatic mates.' },
-        },
-        required: ['name', 'a', 'b', 'type'],
-      },
-    },
-    handler: input => addMateTool(input as unknown as Parameters<typeof addMateTool>[0]),
-  },
-  {
-    definition: {
-      name: 'list_mates',
-      description: 'List the mate records declared on the active assembly. Read-only; reads arm.__mates() under the hood. Returns { mates: [{ name, a, b, type, pose?, limitsDeg?, limitsMm? }, ...] }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          assembly: { type: 'string' },
-        },
-      },
-    },
-    handler: input => listMatesTool(input as unknown as Parameters<typeof listMatesTool>[0]),
-  },
-  {
-    definition: {
-      name: 'validate_assembly',
-      description: 'Run the mate-aware assembly validator (validateAssemblyWithMates) on the active assembly. Returns { status, diagnostics, partCount, jointCount } where diagnostics carry per-code hints agents use to recover.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          assembly: { type: 'string' },
-        },
-      },
-    },
-    handler: input => validateAssemblyTool(input as unknown as Parameters<typeof validateAssemblyTool>[0]),
-  },
-  {
-    definition: {
       name: 'solve_mates',
-      description: 'Run the v0.6 mate-graph solver on the active assembly. Returns { status, poses, iterations? } where each pose is a serialized Transform ({ translation, rotateAxis, rotateDeg }). Optional poses overrides mate pose values by mate name.',
+      description: 'Use this when you need to solve the mate graph and get part poses. Run the v0.6 mate-graph solver on the active assembly. Returns { status, poses, iterations? } where each pose is a serialized Transform ({ translation, rotateAxis, rotateDeg }). Optional poses overrides mate pose values by mate name.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -1453,7 +1052,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'review_cad',
-      description: 'Run the deterministic CAD review loop: evaluate the script, validate the assembly/mate graph, check mate connectors touch modeled material, sample declared mate limits, optionally check interferences at sampled poses, report connector workspace bounds, and return a mechanism fitness verdict for agent self-review. Fitness includes repairMode: none, local-fix, parameter-tune, or topology-redesign.',
+      description: 'Use this when you need to review a mechanism for fitness and repair mode. Run the deterministic CAD review loop: evaluate the script, validate the assembly/mate graph, check mate connectors touch modeled material, sample declared mate limits, optionally check interferences at sampled poses, report connector workspace bounds, and return a mechanism fitness verdict for agent self-review. Fitness includes repairMode: none, local-fix, parameter-tune, or topology-redesign.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -1500,6 +1099,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'review_paint_peek_latest',
       description:
+        'Use this when you need to see the latest region the user painted in Studio. ' +
         'Return the newest inpainting-style review packet the user painted in Studio. ' +
         'Studio writes packets to <scriptPath>.review-paint/latest/ as the user marks regions ' +
         'over the 3D viewport; this tool scans the known kernelCAD-web checkouts and returns the ' +
@@ -1532,7 +1132,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'design_loop',
-      description: 'Run an agent CAD design loop over one or more attempt scripts: review each attempt with review_cad, continue past functional attempts that still have unresolved review warnings, return structured repair prompts, and optionally write a Studio-compatible build record JSON for visual replay.',
+      description: 'Use this when you need to run a CAD design loop over multiple attempts. Run an agent CAD design loop over one or more attempt scripts: review each attempt with review_cad, continue past functional attempts that still have unresolved review warnings, return structured repair prompts, and optionally write a Studio-compatible build record JSON for visual replay.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -1620,6 +1220,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'flatten_pattern',
       description:
+        'Use this when you need the unfolded flat pattern of a bent sheet-metal part. ' +
         'Return the unfolded 2D flat-pattern of a bent sheet-metal Shape as a Region ' +
         '(outer polyline + holes + bend lines + sketch plane). Slice 1: at most 2 bends. ' +
         'Pass { file } or { code }; optional { featureId } to pick a specific Shape.',
@@ -1636,71 +1237,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'get_bend_table',
-      description:
-        'List every sheetMetalBend in a script with its computed K-factor bend allowance, ' +
-        'axis line, angle, radius, and parent sheetMetal thickness + kFactor. Pass { file } or { code }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string' },
-          code: { type: 'string' },
-        },
-      },
-    },
-    handler: input => getBendTableTool(input as unknown as Parameters<typeof getBendTableTool>[0]) as Promise<unknown>,
-  },
-  {
-    definition: {
-      name: 'dfm_preflight',
-      description:
-        'Preflight a sheet-metal flat pattern or planar body against a job-shop\'s public ordering rules. ' +
-        'Required: vendor (e.g. "sendcutsend"), material SKU (from catalog.json), and thicknessIn or thicknessMm. ' +
-        'Returns { ok, findings[], diagnostics[] } where findings carry repairHint.action ' +
-        '(enlarge | remove | relocate | change-material | change-thickness) and an @kc[...] ref. ' +
-        'Tool fails closed when vendor / material / thickness are omitted. Source: .kcad.ts script ' +
-        '(via flatten_pattern + get_bend_table) or DXF file path. STEP path ships in a follow-up slice.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          dxf:  { type: 'string', description: 'Path to a DXF file.' },
-          featureId: { type: 'string', description: 'Optional FeatureId to scope to.' },
-          vendor: { type: 'string', description: 'Vendor SKU (required). See catalogs/sources-manifest.json.' },
-          material: { type: 'string', description: 'Material SKU (required). See catalog.json.' },
-          thicknessIn: { type: 'number', description: 'Material thickness in inches.' },
-          thicknessMm: { type: 'number', description: 'Material thickness in millimeters.' },
-          service: { type: 'string', enum: ['laser', 'cnc-router', 'waterjet', 'bending'] },
-          refreshCatalog: { type: 'boolean', description: 'Force refresh of the vendor catalog (24h cache).' },
-        },
-        required: ['vendor', 'material'],
-      },
-    },
-    handler: input => dfmPreflightTool(input as unknown as Parameters<typeof dfmPreflightTool>[0]) as Promise<unknown>,
-  },
-  {
-    definition: {
-      name: 'dfm_check',
-      description:
-        'Run the print-readiness gates declared by dfmSpec() in a kernelCAD script: part-pair clearance ' +
-        '(exact BREP distance), minimum wall thickness (inward ray sampling), and void/channel topology ' +
-        '(voxel flood-fill). Pass either { file } or { code }. Reports per-pair distances, worst thin spots ' +
-        '(xyz + part), channel mouth counts, and diagnostics with hints. No-op error if the script declares no dfmSpec.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-        },
-      },
-    },
-    handler: input => dfmCheckTool(input as Parameters<typeof dfmCheckTool>[0]),
-  },
-  {
-    definition: {
       name: 'evaluate_sdf',
       description:
+        'Use this when you need to sample a signed-distance field at a point. ' +
         'Sample the signed distance from an in-script sdf.* field at a 3D point. ' +
         'Returns { distance, inside, aabb, kind }. Distance is in mm; negative = inside the surface, ' +
         '0 = exactly on the surface, positive = outside. Use this to verify SDF composition before ' +
@@ -1728,129 +1267,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'check_swept_collision',
-      description:
-        'Sweep the assembly across declared joint range(s) and report every pose at which a pair of parts share a non-empty BREP intersection. Returns posesSampled + collidingPoses[] with per-pose contact pairs. Diagnostics: kinematic.collision.swept (K1), kinematic.collision.swept.sample-density-warning (K2). Local in-process compute; no network. Pass either { file } or { code }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
-          joint: { type: 'string', description: 'Joint name to sweep; omit to sweep every declared joint.' },
-          range: {
-            type: 'array',
-            items: { type: 'number' },
-            minItems: 3,
-            maxItems: 3,
-            description: 'Inclusive [lower, upper, step] in joint-native units (deg for revolute, mm for prismatic).',
-          },
-          collision_tolerance_mm3: {
-            type: 'number',
-            description: 'BREP boolean-intersection volume tolerance (default 0.01 mm^3).',
-          },
-        },
-      },
-    },
-    handler: input => checkSweptCollisionTool(input as Parameters<typeof checkSweptCollisionTool>[0]),
-  },
-  {
-    definition: {
-      name: 'check_reachable',
-      description:
-        'Solve inverse kinematics for an end-effector target on a serial open chain. Returns ok=true with the solved pose when the target is reachable within tolerance; otherwise carries axis-discriminated diagnostics so the caller can lengthen a link, add a DOF, or relax orientation. Diagnostics: kinematic.unreachable (K3), kinematic.reachability.iteration-cap-hit (K4), kinematic.solver.unsupported-config (K5). Local in-process compute. Pass either { file } or { code }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
-          tip_link: { type: 'string', description: 'End-effector part name.' },
-          target_position: {
-            type: 'array',
-            items: { type: 'number' },
-            minItems: 3,
-            maxItems: 3,
-            description: 'Target position [x, y, z] in mm (world frame).',
-          },
-          target_orientation: {
-            type: 'array',
-            items: { type: 'number' },
-            minItems: 3,
-            maxItems: 3,
-            description: 'Target orientation as XYZ Euler angles in radians.',
-          },
-          position_tolerance_mm: { type: 'number', description: 'Position tolerance in mm.' },
-          orientation_tolerance_rad: { type: 'number', description: 'Orientation tolerance in radians.' },
-          prefer_solver: {
-            type: 'string',
-            enum: ['analytical', 'numeric', 'auto'],
-            description: "Force the IK path; 'auto' (default) routes spherical-wrist chains to the analytical solver.",
-          },
-          max_iterations: { type: 'number', description: 'Numeric-path iteration cap (default 200).' },
-          seed: {
-            type: 'object',
-            description: 'Seed pose for the numeric path (joint name -> numeric value in deg or mm).',
-          },
-        },
-        required: ['tip_link'],
-      },
-    },
-    handler: input => checkReachableTool(input as unknown as Parameters<typeof checkReachableTool>[0]),
-  },
-  {
-    definition: {
-      name: 'check_mounting_hole_consistency',
-      description:
-        'Walk every fastened mate in the assembly and verify both sides expose the same hole diameter on their bound faces. Returns mismatches[] with per-mate side details (boundFaceName, diameterMm, depth). Diagnostics: kinematic.mounting-hole.diameter-mismatch (K9). Local in-process compute. Pass either { file } or { code }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
-        },
-      },
-    },
-    handler: input => checkMountingHoleConsistencyTool(input as Parameters<typeof checkMountingHoleConsistencyTool>[0]),
-  },
-  {
-    definition: {
-      name: 'check_load_capacity',
-      description:
-        "Closed-form Euler-Bernoulli beam stress check on cantilever-shaped parts that declare a rectangular crossSection. Returns the worst-of safety factor across every successfully-computed part, plus per-part stress / yield / SF records and structured failure entries. Diagnostics: kinematic.load-exceeds-yield (K6), kinematic.load.beam-not-applicable (K7), kinematic.no-material-declared (K8). Catalog materials: 'steel' | 'aluminum' | 'pla' | 'abs' | 'pet' | 'custom' (yieldStressMPa + youngsModulusGPa required for 'custom'). Local in-process compute. Pass either { file } or { code }.",
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
-          loads: {
-            type: 'object',
-            description: 'Map of partName -> { force?: [Fx, Fy, Fz] (N), torque?: [Tx, Ty, Tz] (N*m) }. Applied at the loaded part\'s free end.',
-          },
-          materials: {
-            type: 'object',
-            description: "Map of partName -> { material: 'steel' | 'aluminum' | 'pla' | 'abs' | 'pet' | 'custom', yieldStressMPa?, youngsModulusGPa?, density? }.",
-          },
-          mode: {
-            type: 'string',
-            enum: ['stub', 'beam'],
-            description: "'beam' (default) runs the closed-form path; 'stub' re-exports the mate-side maxLoad-vs-externalLoads check.",
-          },
-          safety_factor_threshold: {
-            type: 'number',
-            description: 'Pass-fail floor on the computed safety factor (default 1.5).',
-          },
-        },
-      },
-    },
-    handler: input => checkLoadCapacityTool(input as Parameters<typeof checkLoadCapacityTool>[0]),
-  },
-  {
-    definition: {
       name: 'capture_animation',
       description:
+        "Use this when you need to render a script's animation timeline to a video. " +
         "Capture a kernelCAD script's animationView({...}) timeline to an MP4 (ffmpeg) or a PNG frame sequence, " +
         'verifying the sampled poses for part interference. FILE ONLY: pass { file } (a .kcad.ts path) — there is no ' +
         '{ code } mode, because the capture engine renders from a file on disk (its relative lib.fromSTEP imports resolve ' +
@@ -1885,15 +1304,31 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
 ];
 
+/** Merge the central MCP metadata maps onto a definition: behavioral hints
+ *  (TOOL_ANNOTATIONS) and the structured-output schema (TOOL_OUTPUT_SCHEMAS).
+ *  Both live in one central map each so the surface is classified in a single
+ *  place and the consistency gate can enforce coverage. */
+function withMetadata(def: McpToolDefinition): McpToolDefinition {
+  const annotations = TOOL_ANNOTATIONS[def.name];
+  const outputSchema = TOOL_OUTPUT_SCHEMAS[def.name];
+  return {
+    ...def,
+    ...(annotations ? { annotations } : {}),
+    ...(outputSchema ? { outputSchema } : {}),
+  };
+}
+
 const toolHandlers = new Map(TOOL_REGISTRY.map(entry => [entry.definition.name, entry.handler]));
-const toolDefinitions = new Map(TOOL_REGISTRY.map(entry => [entry.definition.name, entry.definition]));
+const toolDefinitions = new Map(
+  TOOL_REGISTRY.map(entry => [entry.definition.name, withMetadata(entry.definition)]),
+);
 
 /**
- * Flat array of all tool definitions, in registry order.
+ * Flat array of all tool definitions (with behavioral annotations + output schemas), in registry order.
  *
  * Public contract — depended on by kernelCAD-server.
  */
-export const TOOLS = TOOL_REGISTRY.map(entry => entry.definition);
+export const TOOLS = TOOL_REGISTRY.map(entry => withMetadata(entry.definition));
 
 /**
  * Dispatch an MCP tool call by name. Transport-agnostic: used by stdio MCP server,

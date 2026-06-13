@@ -54,11 +54,11 @@ Every facade entry has a paired MCP tool that accepts the same shape from an
 agent context. The tools load the `.kcad.ts` source, run it, capture the
 named assembly off the script's session, and dispatch to the facade.
 
-- `check_mounting_hole_consistency` — wraps the facade; accepts `file` or `code`
-- `check_swept_collision` — wraps the facade; accepts `file|code`, `joint`, `range`, `collision_tolerance_mm3`
-- `check_reachable` — wraps the facade; accepts `file|code`, `tip_link`, `target_position`, `target_orientation`, `prefer_solver`, `max_iterations`, `seed`
-- `check_load_capacity` — wraps the facade; accepts `file|code`, `loads`, `materials`, `mode`, `safety_factor_threshold`
-- `validate_assembly` (extended) — composes all four when called with `gates: ['kinematic']`
+- `verify({ check: 'mounting-holes' })` — wraps the facade; accepts `file` or `code`
+- `verify({ check: 'swept-collision' })` — wraps the facade; accepts `file|code`, `joint`, `range`, `collision_tolerance_mm3`
+- `verify({ check: 'reachable' })` — wraps the facade; accepts `file|code`, `tip_link`, `target_position`, `target_orientation`, `prefer_solver`, `max_iterations`, `seed`
+- `verify({ check: 'load-capacity' })` — wraps the facade; accepts `file|code`, `loads`, `materials`, `mode`, `safety_factor_threshold`
+- `verify({ check: 'assembly' })` (extended) — composes all four when called with `gates: ['kinematic']`
 
 ## Recovery loop — code → nextAction → repair
 
@@ -100,7 +100,7 @@ Two interference checks cover motion, answering different questions — pick by
 what you are validating:
 
 - **Range-based swept collision (this skill)** —
-  `kinematic.checkSweptCollision(arm, opts)` / the `check_swept_collision` MCP
+  `kinematic.checkSweptCollision(arm, opts)` / the `verify({ check: 'swept-collision' })` MCP
   tool sweep ONE joint across its full `range` at a sample density and ask "is
   any pose in this joint's whole envelope a collision?" Use it as a feasibility
   gate while designing the mechanism — it does not care about timing, easing,
