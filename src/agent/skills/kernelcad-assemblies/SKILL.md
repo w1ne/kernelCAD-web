@@ -65,7 +65,7 @@ return arm.model();
 
 ### Per-part density
 
-`arm.part(name, shape, { density })` accepts a per-part material density in `kg/m^3`. The default is `1000` (water-equivalent), which produces correct silhouettes but unrealistic dynamics for any metallic or plastic part. Declare density when the assembly will be exported to a downstream dynamics-aware format — `export_model({ format: 'urdf' })` or `export_model({ format: 'sdf-gazebo' })` emit a warning for any link that inherits the default.
+`arm.part(name, shape, { density })` accepts a per-part material density in `kg/m^3`. The default is `1000` (water-equivalent), which produces correct silhouettes but unrealistic dynamics for any metallic or plastic part. Declare density when the assembly will be exported to a downstream dynamics-aware format — `export({ target: 'model', format: 'urdf' })` or `export({ target: 'model', format: 'sdf-gazebo' })` emit a warning for any link that inherits the default.
 
 Typical values: steel `7850`, aluminum `2700`, ABS plastic `1050`, brass `8500`, titanium `4500`.
 
@@ -739,7 +739,7 @@ After authoring a multi-part assembly, run before reporting done:
 | G-frame-not-floating | Every part is reachable in the mate graph from at least one fixed or grounded connector — disconnected parts fail Solvespace-style 5-way status |
 | G-mate-pair-compatible | Each `arm.mate(a, b, type, …)` connects two connectors whose types are compatible with the mate type (capture-time validation surfaces `assembly.mate.type-mismatch`) |
 | G-pose-paramref-bound | If pose ParamRefs are used for revolute / prismatic mates, each ParamRef is declared at script top with `param('joint-name', default, { min, max })` |
-| G-solvedmodel-reactive | After `arm.solvedModel({validate: 'error'})`, param updates trigger fresh Scene emission — verify by running `params_update` via MCP and re-rendering; positions must change |
+| G-solvedmodel-reactive | After `arm.solvedModel({validate: 'error'})`, param updates trigger fresh Scene emission — verify by running `set_param` via MCP and re-rendering; positions must change |
 
 ## Related skills
 

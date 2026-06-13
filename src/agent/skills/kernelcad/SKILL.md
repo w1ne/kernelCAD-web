@@ -12,7 +12,7 @@ A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.k
 - Authoring or editing `.kcad.ts` geometry → load `kernelcad-authoring`.
 - Building from a reference photo or visual brief → also load `kernelcad-from-reference`.
 - Adding fillets, chamfers, shells, holes, cutouts → also load `kernelcad-features`.
-- Editable parameters / params_update / live sliders → also load `kernelcad-params`.
+- Editable parameters / set_param / live sliders → also load `kernelcad-params`.
 - Multi-part with joints / mates / connectors → also load `kernelcad-assemblies`.
 - Need an off-the-shelf fastener, bearing, motor, header, or connector → also load `kernelcad-parts`.
 - Freeform NURBS surfaces, NURBS curves, Coons patches, multi-section sweeps, G2 fillet continuity, or freeform 2D path outlines (`nurbsSurface`, `surfaceFromCurves`, `surfaceFromBoundary`, `nurbsCurve`, `spline3d`, `hermiteG2`, `variableSweep`, `fillet({ continuity: 'G2' })`, `path().spline(...)`, `path().nurbsSegment(...)`, `path().hermiteG2(...)`) → also load `kernelcad-nurbs`.

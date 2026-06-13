@@ -17,6 +17,8 @@ vi.mock('./constraints', () => ({ listConstraintsTool: vi.fn(async () => 'constr
 vi.mock('./listPartStats', () => ({ listPartStatsTool: vi.fn(async () => 'part-stats') }));
 vi.mock('./getBendTable', () => ({ getBendTableTool: vi.fn(async () => 'bend-table') }));
 vi.mock('./paramsList', () => ({ paramsListTool: vi.fn(async () => 'params') }));
+vi.mock('./listPartCategories', () => ({ listPartCategoriesTool: vi.fn(async () => 'part-categories') }));
+vi.mock('./listPartFamilies', () => ({ listPartFamiliesTool: vi.fn(async () => 'part-families') }));
 
 import { inspectTool, type InspectOf } from './inspect';
 import { inspectAssemblyTool } from './inspectAssembly';
@@ -27,7 +29,7 @@ import { getEdgesOfTool } from './getEdgesOf';
 const SUBJECTS: InspectOf[] = [
   'assembly', 'robot', 'step', 'shape', 'features', 'assemblies', 'topology',
   'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints',
-  'part-stats', 'bend-table', 'params',
+  'part-stats', 'bend-table', 'params', 'part-categories', 'part-families',
 ];
 
 describe('inspect dispatcher', () => {

@@ -32,15 +32,15 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 ### Diagnostics
 
 - `why_did_this_fail({ file? code?, feature_id? })` — walk the upstream chain of a failing feature; returns each upstream feature's id/kind/health/diagnostics in topological order (per-code hints already inline on every diagnostic). Use when `code` is `recompute.input.missing` to find the root cause.
-- `list_diagnostic_codes({})` — return the full diagnostic catalogue with hint templates, structured next-actions, and per-code metadata (one-shot; useful at session start to pre-populate retry strategies).
-- `list_api({})` — full curated API surface (globals, Shape methods, Sketch methods, constrained-sketch capability)
+- `lookup_diagnostics({})` — return the full diagnostic catalogue with hint templates, structured next-actions, and per-code metadata (one-shot; useful at session start to pre-populate retry strategies).
+- `lookup_api({})` — full curated API surface (globals, Shape methods, Sketch methods, constrained-sketch capability)
 - `lookup_cookbook({ query, k? })` — retrieve up to k canonical pattern snippets ranked by BM25; returns `{ ok, hits[] }`. Empty hits is a valid success ("no canonical pattern; proceed without cookbook help").
 
 ### Source edit operations
 
 All edit tools return the modified source plus diagnostics. Re-run `kernelcad evaluate` on the returned source before committing.
 
-- `set_param_value({ code, param_name, new_value })` — edit a `param()` default value and return modified code plus diagnostics
+- `set_param({ code, param_name, new_value })` — edit a `param()` default value and return modified code plus diagnostics
 - `add_feature({ code, feature_code })` — insert one source line before the last top-level return and return modified code plus diagnostics
 - `add_part({ code, assembly_binding, part_name, shape_expression, binding_name?, at? })` — insert `const <binding> = <assembly>.part(...)` and return modified code plus diagnostics. Use the returned/bound part ref for connector edits.
 - `add_connector({ code, part_binding, name, type, origin, axis?, normal? })` — insert `<partBinding>.connector(...)` durably in source. Side-effect-free.
@@ -71,7 +71,7 @@ All edit tools return the modified source plus diagnostics. Re-run `kernelcad ev
 ### Params
 
 - `inspect({ of: 'params' })` — list symbolic parameters declared on the active evaluated session, including current value, default, type, and metadata.
-- `params_update({ edits })` — edit one or more active-session params atomically and re-lower affected records; returns a shape preview, skipped/relowered record ids, and soft warnings.
+- `set_param({ code, param_name, new_value })` — edit a `param()` default in the source string (source-only; no active-session mutation) and return modified code plus diagnostics.
 
 ### Constrained sketches
 
@@ -114,7 +114,7 @@ interface RepairContext {
 
 ### Export
 
-- `export_model({ file? | code?, output_path, format, feature_id?, options?, no_verify? })` — write the script geometry to a file server-side. `format` is one of `stl`, `step`, `dxf`, `3mf`, `glb`, `svg-drawing` (the reserved `urdf`, `srdf`, `sdf-gazebo` slots ship in a follow-up slice and return a structured `*.not-implemented` diagnostic today). STL exports run a watertight verify **by default**; a failing mesh still writes the file (so the broken mesh can be inspected) but the call returns `ok: false` with `export.mesh.not-watertight` (open-edge count + up to 5 crack-cluster locations). Pass `{ no_verify: true }` only to skip the gate. Returns `{ ok, output_path, byte_count, feature_count, format, diagnostics }`. `feature_count` is the total features in the script, not the count contributing to the exported shape.
+- `export({ target: 'model', file? | code?, output_path, format, feature_id?, options?, no_verify? })` — write the script geometry to a file server-side. `format` is one of `stl`, `step`, `dxf`, `3mf`, `glb`, `svg-drawing` (the reserved `urdf`, `srdf`, `sdf-gazebo` slots ship in a follow-up slice and return a structured `*.not-implemented` diagnostic today). STL exports run a watertight verify **by default**; a failing mesh still writes the file (so the broken mesh can be inspected) but the call returns `ok: false` with `export.mesh.not-watertight` (open-edge count + up to 5 crack-cluster locations). Pass `{ no_verify: true }` only to skip the gate. Returns `{ ok, output_path, byte_count, feature_count, format, diagnostics }`. `feature_count` is the total features in the script, not the count contributing to the exported shape.
 
   **Per-format options** (passed via `options`):
   - `stl` — `verify?: boolean` (default `true`): the watertight verify gate. Equivalent to the top-level `no_verify: true` when set to `false`.
@@ -126,9 +126,9 @@ interface RepairContext {
 
   PBR materials propagate from `.material({...})` calls in the script through `MeshPhysicalMaterial` into the glTF `KHR_materials_*` extensions (transmission / clearcoat / anisotropy / sheen / volume / ior). 3MF carries the `baseColor` only (the format has no rich PBR slot). DXF carries no material.
 
-- `export_part({ file? | code?, part?, output_path?, output_dir?, no_verify? })` — export solved-assembly parts as individual binary STL files in their modeled (world-frame) positions. The script must return `assembly.solvedModel(...)` / `assembly.model()`. Pass `{ part, output_path }` for one part, or `{ output_dir }` (with `part` omitted or `'all'`) for all parts — files land at `<output_dir>/<part>.stl`. A watertight verify runs on every exported mesh **by default**; a failing part still writes its file (so the broken mesh can be inspected) but fails the call with `export.mesh.not-watertight` (open-edge count + up to 5 crack-cluster locations). Pass `{ no_verify: true }` only to inspect broken meshes. Unknown part names fail with `export.part.not-found` listing the valid names. Returns `{ ok, written: [{ part, output_path, byte_count, watertight }], diagnostics }`.
+- `export({ target: 'part', file? | code?, part?, output_path?, output_dir?, no_verify? })` — export solved-assembly parts as individual binary STL files in their modeled (world-frame) positions. The script must return `assembly.solvedModel(...)` / `assembly.model()`. Pass `{ part, output_path }` for one part, or `{ output_dir }` (with `part` omitted or `'all'`) for all parts — files land at `<output_dir>/<part>.stl`. A watertight verify runs on every exported mesh **by default**; a failing part still writes its file (so the broken mesh can be inspected) but fails the call with `export.mesh.not-watertight` (open-edge count + up to 5 crack-cluster locations). Pass `{ no_verify: true }` only to inspect broken meshes. Unknown part names fail with `export.part.not-found` listing the valid names. Returns `{ ok, written: [{ part, output_path, byte_count, watertight }], diagnostics }`.
 
-- `inspect({ of: 'part-stats', file? | code? })` — list solved-assembly parts with print-prep stats: name, exact world-frame bounding box (from the export tessellation), volume (mm³), surface area (mm²), and export triangle count (same mesher as the STL exporter, so the numbers match `export_part` exactly). Returns `{ ok, parts: [{ name, bbox, volumeMm3, surfaceAreaMm2, triangleCount }], diagnostics }`.
+- `inspect({ of: 'part-stats', file? | code? })` — list solved-assembly parts with print-prep stats: name, exact world-frame bounding box (from the export tessellation), volume (mm³), surface area (mm²), and export triangle count (same mesher as the STL exporter, so the numbers match `export({ target: 'part' })` exactly). Returns `{ ok, parts: [{ name, bbox, volumeMm3, surfaceAreaMm2, triangleCount }], diagnostics }`.
 
 - `capture_animation({ file, output_path?, frames_dir?, fps?, no_verify?, verify_every?, focus?, hide? })` — capture the script's `animationView({...})` timeline (see `kernelcad-authoring`) to an MP4 (default) or a PNG frame sequence (`frames_dir`, zero external dependencies; mutually exclusive with `output_path`). **File-only** — there is no `{ code }` mode (the capture engine renders from a file on disk so relative `lib.fromSTEP(...)` imports resolve); passing `{ code }` is refused with `cli.invalid-args`. Animation-pose interference verification runs **by default** (keyframe times + segment midpoints, plus every n-th frame time with `verify_every`); `no_verify: true` skips it. `focus` / `hide` (arrays of feature ids or assembly part names, mutually exclusive — same semantics as `kernelcad render`) isolate parts in the rendered frames for cutaways; visibility is render-only and does NOT affect the pose verification, which always runs against the full model. Returns `{ ok, output_path, frame_count, duration_ms, fps, verified, verify_skipped?, collisions: [{ t_ms, a, b, volume_mm3 }], diagnostics }`. **Collisions do NOT flip `ok`**: a captured artifact with interfering poses is still `ok: true` with `verified: false` and `collisions[]` populated (`animation.collision` diagnostics) — the artifact is the evidence. Only a could-not-capture fault (bad file, build error, no `animationView` record, unsolvable pose, ffmpeg missing, browser bootstrap failure) returns `ok: false` with a `failure_kind` of `model` or `environment`. Like `kernelcad render`, capture drives a headless browser against a running studio dev server (`VITE_PORT` / localhost:5173). CLI equivalent: `kernelcad animate <file.kcad.ts> [out.mp4]`.
 
@@ -373,6 +373,6 @@ See `cookbook/snippets/Q-S6-inspect-first-build-after.kcad.ts`.
 ## Related skills
 
 - `kernelcad-authoring` — the API surface MCP operates on.
-- `kernelcad-params` — `params_update({ edits })` is the live-edit path for symbolic parameters.
+- `kernelcad-params` — `set_param({ code, param_name, new_value })` is the source-edit path for symbolic parameters.
 - `kernelcad-features` — face-ref queries and add-feature edits route through MCP.
 - `kernelcad-assemblies` — assembly-specific MCP tools (`inspect({ of: 'assembly' })`, `review_cad`, `design_loop`) and the mechanism build loop.

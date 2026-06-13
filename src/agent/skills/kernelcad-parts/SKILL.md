@@ -20,9 +20,9 @@ Set `KERNELCAD_PARTS_BASE_URL=off` to stay offline on the bundled seed only.
 When the agent does not know which id covers the intent, walk the discovery
 chain. Each step narrows the search:
 
-1. `list_part_categories` → top-level buckets (e.g. `fastener`, `bearing`,
+1. `inspect({ of: 'part-categories' })` → top-level buckets (e.g. `fastener`, `bearing`,
    `motor`, `connector`, `shaft`).
-2. `list_part_families` `{ category }` → families within the bucket
+2. `inspect({ of: 'part-families', category })` → families within the bucket
    (e.g. `socket-head-cap-screw`, `deep-groove-ball-bearing`).
 3. `find_part` `{ query, family?, standard?, tag? }` → ranked records that
    match the fuzzy query plus filters. Tokens AND-combine; cross-facet

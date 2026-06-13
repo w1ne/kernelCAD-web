@@ -18,16 +18,12 @@ import { addMateAuthoringTool } from './tools/addMateAuthoring';
 import { evaluateScriptTool } from './tools/evaluateScript';
 import { diffScriptsTool } from './tools/diffScripts';
 import { evaluateSdfTool } from './tools/evaluateSdf';
-import { exportModelTool } from './tools/exportModel';
-import { exportPartTool } from './tools/exportPart';
+import { exportTool } from './tools/export';
 import { listApiTool } from './tools/listApi';
 import { listDiagnosticCodesTool } from './tools/listDiagnosticCodes';
 import { lookupCookbookTool } from './tools/lookupCookbook';
 import { findPartTool } from './tools/findPart';
 import { fetchPartTool } from './tools/fetchPart';
-import { listPartCategoriesTool } from './tools/listPartCategories';
-import { listPartFamiliesTool } from './tools/listPartFamilies';
-import { paramsUpdateTool } from './tools/paramsUpdate';
 import { removeFeatureTool } from './tools/removeFeature';
 import { designLoopTool } from './tools/designLoop';
 import { reviewCadTool } from './tools/reviewCad';
@@ -145,13 +141,15 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
         "- 'part-stats' — bundled parts-catalog statistics.\n" +
         "- 'bend-table' — sheet-metal bend table for a flattened pattern.\n" +
         "- 'params' — declared model parameters.\n" +
+        "- 'part-categories' — top-level part-catalog categories available in the bundled (and configured remote) catalog.\n" +
+        "- 'part-families' — part families within a category ({ category? }); count + exemplar ids per family.\n" +
         'All params except `of` are subject-specific and forwarded verbatim. Most subjects accept { file | code }.',
       inputSchema: {
         type: 'object',
         properties: {
           of: {
             type: 'string',
-            enum: ['assembly', 'robot', 'step', 'shape', 'features', 'assemblies', 'topology', 'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints', 'part-stats', 'bend-table', 'params'],
+            enum: ['assembly', 'robot', 'step', 'shape', 'features', 'assemblies', 'topology', 'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints', 'part-stats', 'bend-table', 'params', 'part-categories', 'part-families'],
             description: 'Which facts to read.',
           },
           file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
@@ -160,6 +158,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           feature_id: { type: 'string', description: "of:'shape'|'topology'|'edges'|'faces'|'face-edges'|'face-labels' — FeatureId; defaults to the last returned shape." },
           face_name: { type: 'string', enum: ['top', 'bottom', 'left', 'right', 'front', 'back'], description: "of:'face-edges' — canonical face name (required for that subject)." },
           query: { type: 'object', description: "of:'edges'|'faces' — optional EdgeQuery/FaceQuery filter." },
+          category: { type: 'string', description: "of:'part-families' — optional top-level category to filter families by." },
         },
         required: ['of'],
       },
@@ -224,7 +223,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'why_did_this_fail',
-      description: "Walk the upstream chain of a failing feature. Returns the diagnostics of the requested feature plus the diagnostics of every upstream feature in topological order (the requested feature is the last entry). Per-code hints are inline on every diagnostic — call list_diagnostic_codes for the full catalogue. Pass { file?, code?, feature_id? }.",
+      description: "Walk the upstream chain of a failing feature. Returns the diagnostics of the requested feature plus the diagnostics of every upstream feature in topological order (the requested feature is the last entry). Per-code hints are inline on every diagnostic — call lookup_diagnostics for the full catalogue. Pass { file?, code?, feature_id? }.",
       inputSchema: {
         type: 'object',
         properties: {
@@ -238,8 +237,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'set_param_value',
-      description: 'Edit a param() default value in a kernelCAD script. Returns the modified code as text plus diagnostics from re-evaluating the result. Caller persists the new code via standard file-write tools (this tool has no side effects).',
+      name: 'set_param',
+      description: 'Use this when you need to edit a param() default value in a kernelCAD script. Returns the modified code as text plus diagnostics from re-evaluating the result. Caller persists the new code via standard file-write tools (this tool has no side effects).',
       inputSchema: {
         type: 'object',
         properties: {
@@ -255,7 +254,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'add_feature',
-      description: 'Insert a new feature line into a kernelCAD script before the last top-level return statement. Returns the modified code as text plus diagnostics from re-evaluating the result. Side-effect-free. Primitives that accept faceLabels (box, cylinder, extrudeRect, extrudeCircle, extrudePolygon, extrudeRoundedRect) can receive `opts.faceLabels` in the inserted code — use `list_api` to see `featureKindFaceLabels` for the full value schema.',
+      description: 'Insert a new feature line into a kernelCAD script before the last top-level return statement. Returns the modified code as text plus diagnostics from re-evaluating the result. Side-effect-free. Primitives that accept faceLabels (box, cylinder, extrudeRect, extrudeCircle, extrudePolygon, extrudeRoundedRect) can receive `opts.faceLabels` in the inserted code — use `lookup_api` to see `featureKindFaceLabels` for the full value schema.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -705,9 +704,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'list_api',
+      name: 'lookup_api',
       description:
-        'List the kernelCAD script-runtime surface: global functions (box, path, selectEdges, helix, etc), Shape methods (fillet, sweep, lower, etc), Sketch methods (extrude, revolve, sweep), PathBuilder methods, EdgeQuery/FaceQuery key sets, and featureKindFaceLabels (which globals accept opts.faceLabels and valid value shapes). Use this to discover what is callable from a .kcad.ts script.',
+        'Use this when you need to list the kernelCAD script-runtime surface: global functions (box, path, selectEdges, helix, etc), Shape methods (fillet, sweep, lower, etc), Sketch methods (extrude, revolve, sweep), PathBuilder methods, EdgeQuery/FaceQuery key sets, and featureKindFaceLabels (which globals accept opts.faceLabels and valid value shapes). Use this to discover what is callable from a .kcad.ts script.',
       inputSchema: {
         type: 'object',
         properties: {},
@@ -717,9 +716,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'list_diagnostic_codes',
+      name: 'lookup_diagnostics',
       description:
-        'Return the kernelCAD 26-code diagnostic catalogue with hint templates. ' +
+        'Use this when you need the kernelCAD 26-code diagnostic catalogue with hint templates. ' +
         'Tiny one-shot call; useful for an agent that wants to pre-populate ' +
         'retry strategies. Hints are also inline on every emitted diagnostic — ' +
         'this tool just gives you the canonical list up front.',
@@ -732,9 +731,10 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'export_model',
+      name: 'export',
       description:
-        'Export the script geometry to a file. Pass either { file } or { code } plus a required { output_path } and { format }. ' +
+        'Use this when you need to export geometry to a file. One exporter, selected by `target`:\n' +
+        "- target:'model' — export the script geometry to one file. Pass { file | code }, a required { output_path }, and { format }. " +
         'Supported formats: stl (binary STL mesh), step (BREP CAD interchange), dxf (planar laser/waterjet profile from a Region or planar face), ' +
         '3mf (slicer-friendly mesh with per-part colors), glb (web-viewer / AR with PBR materials), ' +
         'svg-drawing (third-angle engineering-drawing sheet: front/top/left + isometric views, hidden edges dashed, tangent edges thin, ' +
@@ -743,62 +743,47 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
         'urdf and sdf-gazebo also write one meshes/<part>.stl per link next to output_path (reported in mesh_files) — ship the whole directory to the consumer. ' +
         'STL exports run a watertight verify by default; failures return ok: false with export.mesh.not-watertight ' +
         '(open-edge count + up to 5 crack-cluster locations) but the file is still written so the broken mesh can be inspected. ' +
-        'Pass { no_verify: true } to skip the gate. ' +
         'Optional { feature_id } selects which feature to export (default: last). ' +
-        'Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: dxf layers/tolerance/unit, 3mf printUnit/embedSource, glb axis/draco). ' +
-        'Returns { ok, output_path, byte_count, feature_count, format, mesh_files?, diagnostics }.',
+        'Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: dxf layers/tolerance/unit, 3mf printUnit/embedSource, glb axis/draco).\n' +
+        "- target:'part' — export solved-assembly parts as individual binary STL files in their modeled (world-frame) positions. " +
+        'Pass { file | code }, plus { part, output_path } for one part or { output_dir } for all parts ' +
+        '(files land at <output_dir>/<part>.stl). A watertight verify runs on every exported mesh by default ' +
+        'and fails the call with export.mesh.not-watertight; unknown part names fail with export.part.not-found listing the valid names.\n' +
+        'Pass { no_verify: true } to skip the watertight gate. All params except `target` are forwarded verbatim; each target fails closed on its own missing required params.',
       inputSchema: {
         type: 'object',
         properties: {
+          target: {
+            type: 'string',
+            enum: ['model', 'part'],
+            description: "Which exporter to run: 'model' (whole-script geometry to one file) or 'part' (per-part STLs from a solved assembly).",
+          },
           file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
           code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          output_path: { type: 'string', description: 'Destination path for the export file. Required.' },
+          output_path: { type: 'string', description: "Destination path. target:'model' — the export file (required). target:'part' — single-part .stl path." },
           format: {
             type: 'string',
             enum: ['stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'urdf', 'srdf', 'sdf-gazebo'],
-            description: 'Output file format. Required.',
+            description: "target:'model' — output file format (required for that target).",
           },
-          feature_id: { type: 'string', description: 'Optional FeatureId to export; defaults to last.' },
+          feature_id: { type: 'string', description: "target:'model' — optional FeatureId to export; defaults to last." },
           options: {
             type: 'object',
             description:
-              'Optional per-format options bag. Discriminator options.format must equal top-level format. ' +
+              "target:'model' — optional per-format options bag. Discriminator options.format must equal top-level format. " +
               'dxf: { layers?, unit?: "mm"|"cm"|"in", tolerance? }. ' +
               '3mf: { printUnit?: "mm"|"cm"|"in", embedSource? }. ' +
               'glb: { axis?: "y-up"|"z-up", draco?: false }. ' +
               'svg-drawing: { sheet?: "a4"|"a3", modelName?, date? }.',
           },
+          part: { type: 'string', description: "target:'part' — part name for single-part export, or 'all'." },
+          output_dir: { type: 'string', description: "target:'part' — destination directory (all-parts mode); files are <dir>/<part>.stl." },
           no_verify: { type: 'boolean', description: 'Skip the STL watertight verify gate.', default: false },
         },
-        required: ['output_path', 'format'],
+        required: ['target'],
       },
     },
-    handler: input => exportModelTool(input as unknown as Parameters<typeof exportModelTool>[0]),
-  },
-  {
-    definition: {
-      name: 'export_part',
-      description:
-        'Export solved-assembly parts as individual binary STL files in their modeled (world-frame) positions. ' +
-        'Pass { file } or { code }, plus { part, output_path } for one part or { output_dir } for all parts ' +
-        '(files land at <output_dir>/<part>.stl). A watertight verify runs on every exported mesh by default ' +
-        'and fails the call with export.mesh.not-watertight (open-edge count + up to 5 crack cluster locations); ' +
-        'pass { no_verify: true } only to inspect broken meshes. Unknown part names fail with ' +
-        'export.part.not-found listing the valid names. ' +
-        'Returns { ok, written: [{ part, output_path, byte_count, watertight }], diagnostics }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          part: { type: 'string', description: "Part name for single-part export, or 'all'." },
-          output_path: { type: 'string', description: 'Destination .stl path (single-part mode).' },
-          output_dir: { type: 'string', description: 'Destination directory (all-parts mode); files are <dir>/<part>.stl.' },
-          no_verify: { type: 'boolean', description: 'Skip the watertight verify gate.', default: false },
-        },
-      },
-    },
-    handler: input => exportPartTool(input as unknown as Parameters<typeof exportPartTool>[0]),
+    handler: input => exportTool(input as unknown as Parameters<typeof exportTool>[0]),
   },
   {
     definition: {
@@ -829,29 +814,6 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => lookupCookbookTool(input as unknown as Parameters<typeof lookupCookbookTool>[0]),
-  },
-  {
-    definition: {
-      name: 'list_part_categories',
-      description:
-        'Enumerate the top-level part-catalog categories available locally (and remotely, when partsBaseUrl is configured). The fastest path for an agent to discover what kinds of off-the-shelf parts the bundled catalog covers.',
-      inputSchema: { type: 'object', properties: {} },
-    },
-    handler: () => listPartCategoriesTool(),
-  },
-  {
-    definition: {
-      name: 'list_part_families',
-      description:
-        'Enumerate the part families within a category (e.g. socket-head-cap-screw, deep-groove-ball-bearing). Returns count and up to three exemplar ids per family. Pass { category } to filter; without filters returns every family in the bundled catalog.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          category: { type: 'string', description: 'Top-level category to filter by.' },
-        },
-      },
-    },
-    handler: input => listPartFamiliesTool(input as Parameters<typeof listPartFamiliesTool>[0]),
   },
   {
     definition: {
@@ -892,31 +854,6 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => fetchPartTool(input as Parameters<typeof fetchPartTool>[0]),
-  },
-  {
-    definition: {
-      name: 'params_update',
-      description:
-        'Edit one or more session parameters and re-lower the affected records. Validates every edit before applying any (atomic). Returns the updated shape, the list of records that re-lowered, and any soft warnings (e.g., named feature refs that became passthroughs because a boolean param gated their feature off).',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          edits: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                name: { type: 'string' },
-                value: {},
-              },
-              required: ['name', 'value'],
-            },
-          },
-        },
-        required: ['edits'],
-      },
-    },
-    handler: input => paramsUpdateTool(input as unknown as Parameters<typeof paramsUpdateTool>[0]),
   },
   {
     definition: {

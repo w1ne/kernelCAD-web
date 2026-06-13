@@ -63,4 +63,14 @@ export const RETIRED_TOOL_NAMES: Record<string, string> = {
   add_path_hermite_g2: "use add_path_segment({ kind: 'hermite' })",
   add_sketch_text: "use add_text({ mode: 'sketch' })",
   emboss_text: "use add_text({ mode: 'emboss' })",
+
+  // Task 6 — params/export/parts/reference collapse:
+  params_update: 'session param editing removed (source-only); use set_param({ code, param_name, new_value }) to edit a param() default',
+  set_param_value: 'use set_param({ code, param_name, new_value })',
+  export_model: "use export({ target: 'model', output_path, format })",
+  export_part: "use export({ target: 'part', output_path | output_dir })",
+  list_part_categories: "use inspect({ of: 'part-categories' })",
+  list_part_families: "use inspect({ of: 'part-families' })",
+  list_api: 'use lookup_api({})',
+  list_diagnostic_codes: 'use lookup_diagnostics({})',
 };

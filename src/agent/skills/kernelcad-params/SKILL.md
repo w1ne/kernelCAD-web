@@ -1,6 +1,6 @@
 ---
 name: kernelcad-params
-description: Editable symbolic parameters — param(), params(), ParamRef arithmetic, MCP params_update. Use when the model needs values the agent or studio can change live.
+description: Editable symbolic parameters — param(), params(), ParamRef arithmetic, MCP set_param. Use when the model needs values the agent or studio can change live.
 ---
 
 # kernelCAD — editable parameters
@@ -65,17 +65,17 @@ const p = params({ plateW: 80, plateD: 50, plateT: 6 });
 return box(p.plateW, p.plateD, p.plateT);
 ```
 
-### MCP: `inspect({ of: 'params' })` / `params_update`
+### MCP: `inspect({ of: 'params' })` / `set_param`
 
-For post-build edits, use MCP `inspect({ of: 'params' })` to inspect the active evaluated session, then `params_update({ edits: [{ name: 'boltDia', value: 6 }] })`. Updates validate atomically, re-lower only affected records plus their downstream dependents, and return soft warnings when a boolean-gated feature makes a named downstream reference become a passthrough.
+For post-build edits, use MCP `inspect({ of: 'params' })` to inspect the active evaluated session, then `set_param({ code, param_name: 'boltDia', new_value: 6 })` to rewrite the `param()` default in the source. The edit is source-only and side-effect-free — it returns the modified code plus diagnostics from re-evaluating; the caller persists the returned code. A new value outside `[min, max]` surfaces as a `feature.invalid-args` diagnostic.
 
 ```typescript
 // Via MCP (introspection session):
 inspect({ of: 'params' })
 // → [{ name: 'boltDia', value: 5, min: 3, max: 10, description: '...' }, ...]
 
-params_update({ edits: [{ name: 'boltDia', value: 6 }] })
-// → { applied: true, warnings: [] }
+set_param({ code, param_name: 'boltDia', new_value: 6 })
+// → { code: '...rewritten source...', diagnostics: [] }
 ```
 
 ## Parametric assembly frames
@@ -107,7 +107,7 @@ The following diagnostic codes surface in the `diagnostics[]` array returned by 
 | `feature.invalid-args` | `param()` default is outside declared `min`/`max`, or a `ParamRef` axis resolves to `[0,0,0]` |
 | `feature.invalid-args` (hint `invalid-args.axis.zero`) | A Vec3 built from params resolves to the zero vector at lower time |
 
-Boundary errors from `params_update` set a value outside `[min, max]` also surface as `feature.invalid-args` before the update is applied (atomic validation).
+Boundary errors from `set_param` setting a value outside `[min, max]` also surface as `feature.invalid-args` when the rewritten source is re-evaluated.
 
 ## Verification gates
 
@@ -119,11 +119,11 @@ After authoring with editable parameters, run before reporting done:
 | G-default-in-range | Every `param()` default value satisfies its declared `min` / `max` |
 | G-unique-names | No two `param()` calls share a `name` in the same script — duplicates fail at capture time |
 | G-paramref-survives-arithmetic | `ParamRef.add/.subtract/.multiply/.divide/.negate` return new ParamRefs, not numbers; chains like `radius.multiply(2).add(1)` stay symbolic |
-| G-params-update-keeps-bounds | When the studio or MCP `params_update` sets a new value, it must satisfy `min` / `max`; otherwise the kernel refuses the edit and surfaces a diagnostic |
+| G-params-update-keeps-bounds | When the studio or MCP `set_param` sets a new value, it must satisfy `min` / `max`; otherwise re-evaluating the rewritten source surfaces a diagnostic |
 
 ## Related skills
 
 - `kernelcad-authoring` — primitives + sketches accept Editable<number> wherever a number is accepted.
 - `kernelcad-features` — fillet radius / hole diameter / shell thickness all accept ParamRefs.
 - `kernelcad-assemblies` — pose ParamRefs drive mate angles / translations via `.solvedModel()`.
-- `kernelcad-mcp` — `params_update({ name, value })` edits a live model.
+- `kernelcad-mcp` — `set_param({ code, param_name, new_value })` rewrites a `param()` default in the source.

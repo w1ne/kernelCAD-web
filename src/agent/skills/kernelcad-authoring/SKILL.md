@@ -122,8 +122,8 @@ Verify the install with `kernelcad --version` (should print `0.1.0` or higher).
 
 ```typescript
 // Editable symbolic parameters. Returned value is a ParamRef accepted anywhere
-// the API expects an editable number or boolean. Edit post-build with
-// params_update via MCP / session.params.update in runtime code.
+// the API expects an editable number or boolean. Edit the param() default
+// post-build with set_param via MCP / session.params.update in runtime code.
 param<T extends number | boolean>(name: string, defaultValue: T, opts?: {
   min?: number;
   max?: number;
@@ -469,7 +469,7 @@ Entity and selection recovery:
 - If a `LINE` references non-POINT endpoints or a `CIRCLE` references a non-POINT center, replace the referenced id with a `POINT`.
 - If a constraint reports the wrong entity count, check the type arity: most types use 2 entities; `RADIUS` uses 1, `ANGLE` uses 1 or 2, and `SYMMETRIC` uses 3.
 - If `DISTANCE`, `RADIUS`, or `ANGLE` reports a missing value, add a numeric `value`.
-- If the type is unsupported, call `inspect({ of: 'constraints' })` or `list_api({})` and choose one of the supported types above.
+- If the type is unsupported, call `inspect({ of: 'constraints' })` or `lookup_api({})` and choose one of the supported types above.
 
 ## Labels — naming faces at creation time
 
@@ -505,7 +505,7 @@ failed because an upstream feature failed (`code` is
 and find the root cause.
 
 The full code catalogue is enumerated by the
-`list_diagnostic_codes` MCP tool. Call it once at session start if you
+`lookup_diagnostics` MCP tool. Call it once at session start if you
 want to pre-populate retry strategies.
 
 ## CLI Commands

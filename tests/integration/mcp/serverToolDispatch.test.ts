@@ -14,7 +14,7 @@ describe('MCP server tool registry', () => {
     expect(new Set(names).size).toBe(names.length);
     expect(names).toContain('design_loop');
 
-    await expect(callMcpTool('list_api', {})).resolves.toMatchObject({
+    await expect(callMcpTool('lookup_api', {})).resolves.toMatchObject({
       globals: expect.any(Array),
       shapeMethods: expect.any(Array),
     });

@@ -14,6 +14,8 @@ import { listConstraintsTool } from './constraints';
 import { listPartStatsTool } from './listPartStats';
 import { getBendTableTool } from './getBendTable';
 import { paramsListTool } from './paramsList';
+import { listPartCategoriesTool } from './listPartCategories';
+import { listPartFamiliesTool } from './listPartFamilies';
 
 /** The introspection subject. Each value maps 1:1 to a dedicated reader. */
 export type InspectOf =
@@ -32,7 +34,9 @@ export type InspectOf =
   | 'constraints'
   | 'part-stats'
   | 'bend-table'
-  | 'params';
+  | 'params'
+  | 'part-categories'
+  | 'part-families';
 
 export interface InspectInput {
   of: InspectOf;
@@ -91,12 +95,16 @@ export function inspectTool(input: InspectInput): Promise<unknown> {
       return getBendTableTool(rest as unknown as Parameters<typeof getBendTableTool>[0]);
     case 'params':
       return paramsListTool();
+    case 'part-categories':
+      return listPartCategoriesTool();
+    case 'part-families':
+      return listPartFamiliesTool(rest as unknown as Parameters<typeof listPartFamiliesTool>[0]);
     default:
       return Promise.reject(
         new Error(
           `Unknown inspect subject: ${String(of)}. Valid: assembly, robot, step, shape, ` +
             `features, assemblies, topology, edges, face-edges, faces, face-labels, mates, ` +
-            `constraints, part-stats, bend-table, params.`,
+            `constraints, part-stats, bend-table, params, part-categories, part-families.`,
         ),
       );
   }
