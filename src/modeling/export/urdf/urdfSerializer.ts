@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/export/urdf/urdfSerializer.ts
 //
 // Pure URDF serializer. Walks an Assembly, validates tree-shape via the

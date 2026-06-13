@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/intent/region.ts
 //
 // W2.2 sheet-metal slice 1: Region — a closed planar outline with optional

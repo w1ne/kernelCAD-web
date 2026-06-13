@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // MUSE 'cnc_shoe_rack_compact_two_tier' — compact two-tier CNC timber shoe
 // rack: left/right side panels (with lightening window cutouts and shelf
 // mortises) + two solid shelves whose end tabs interlock through the side

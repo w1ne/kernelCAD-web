@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/render/views.ts
 //
 // Single-source-of-truth type for the engineering-view projections used by

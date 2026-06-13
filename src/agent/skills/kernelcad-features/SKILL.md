@@ -242,7 +242,7 @@ The same strict/lenient rule applies to `kc.q.intersection(...)` and `kc.q.subtr
 
 ### Runtime kind checks
 
-`tsc --strict` rejects `kc.fillet({ edges: kc.q.face(...) })` at compile time because `kc.q.face(...)` returns `Query<FaceMarker>` and the `edges` slot expects `Query<EdgeMarker>`. The static check vanishes at JSON-AST / string-DSL boundaries — most notably the `evaluate_query` MCP tool's `query` input, where the phantom marker cannot survive `JSON.parse`. Consumers expecting a specific kind fall back to a runtime check that surfaces `query.type-mismatch` when the `Query.target` data field disagrees with the expected kind.
+`tsc --strict` rejects `kc.fillet({ edges: kc.q.face(...) })` at compile time because `kc.q.face(...)` returns `Query<FaceMarker>` and the `edges` slot expects `Query<EdgeMarker>`. The static check vanishes at JSON-AST / string-DSL boundaries — most notably the `query({ mode: 'evaluate' })` MCP tool's `query` input, where the phantom marker cannot survive `JSON.parse`. Consumers expecting a specific kind fall back to a runtime check that surfaces `query.type-mismatch` when the `Query.target` data field disagrees with the expected kind.
 
 ```typescript
 // Compile-time: tsc rejects, kc.q.face(...) is Query<FaceMarker>, fillet wants edges.

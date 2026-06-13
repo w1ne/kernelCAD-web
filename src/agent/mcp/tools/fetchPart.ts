@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/fetchPart.ts
 //
 // MCP tool: resolve a bundled (or remote) part id to a record + cache path.

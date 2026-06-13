@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/lib/imageSimilarity/cornerColorStdDev.test.ts
 //
 // Tests for the `cornerColorStdDev` helper added in W4 §3. The helper samples

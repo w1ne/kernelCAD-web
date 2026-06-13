@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { GateReport } from './types.js';
 
 /** A generated candidate with its gate report and (optional) selector score. */

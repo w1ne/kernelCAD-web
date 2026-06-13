@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ShapeBackend } from '../../../kernel/backends/backend';
 import { isKernelError } from '../../../shared/intent/kernelError';
 import type { SoftWarning } from '../../../shared/runtime/softWarning';

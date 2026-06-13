@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/backends/occt/exportSvgDrawing.ts
 //
 // Engineering-drawing SVG exporter: a standard third-angle sheet with

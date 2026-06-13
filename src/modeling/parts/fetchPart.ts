@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/parts/fetchPart.ts
 //
 // Resolution-order orchestrator. Per spec §4.3:
@@ -21,6 +23,8 @@ import { KernelError } from '../../shared/intent/kernelError';
 import type { PartRecord } from '../../shared/parts/types';
 import { loadConnectorManifest } from '../../shared/parts/connectorManifest';
 import { formatTopoRef } from '../../kernel/naming';
+import { inspectStepFile } from '../../agent/inspect/inspectStep';
+import { synthesizeConnectorsFromReport } from './synthesizeConnectors';
 
 export interface FetchPartCtx {
   session: CaptureSession;
@@ -118,6 +122,24 @@ export async function fetchPartHost(
     });
     const bytes = readFileSync(path);
     const shape = await fromStepBytes(ctx, bytes, meta.stepUrl);
+    // Catalog STEP ships no connector frames, so a *found* part would arrive as
+    // a dead solid that cannot mate. Recover the bundled-tier auto-connector
+    // convention from the geometry itself (bbox faces + detected hole axes).
+    // Defensive: a STEP that resists inspection still imports, just without
+    // synthesized connectors.
+    try {
+      const report = await inspectStepFile(path);
+      const conns = synthesizeConnectorsFromReport(report, shape.id);
+      if (conns.length > 0) {
+        ctx.session.attachAutoConnectors(shape.id, conns);
+        return {
+          shape,
+          record: { ...meta, source: 'remote', connectors: conns.map((c) => c.name) },
+        };
+      }
+    } catch {
+      // fall through to the unenriched record
+    }
     return { shape, record: { ...meta, source: 'remote' } };
   } catch (e) {
     if (e instanceof RemoteDisabledError) throw e;

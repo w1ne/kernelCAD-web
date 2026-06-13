@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { Constraint, Point, SketchEntity, SolverState, Line, Circle } from "./types";
 // import type { EntityType } from "./types";
 

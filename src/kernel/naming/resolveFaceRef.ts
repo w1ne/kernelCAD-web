@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /**
  * Walk-back-to-primitive + walk-forward-through-history face/edge ref resolver.
  *

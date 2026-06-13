@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/capturePortfolioEntry.ts
 //
 // Wrap captureDemo for a portfolio entry: produces build.mp4, build.step,

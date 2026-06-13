@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/export/urdf/urdfWrite.ts
 //
 // IO wrapper around urdfSerialize. Writes the .urdf file + the sibling

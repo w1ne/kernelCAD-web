@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Swept-collision eval — 2-DOF shoulder-elbow arm whose shoulder yaws into
 // a wide base wall on the -X side of the pivot. K1 fires across the
 // [120°, 180°] band; the script asserts ≥12 colliding poses and the K1

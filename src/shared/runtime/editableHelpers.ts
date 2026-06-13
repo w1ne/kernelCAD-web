@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Helpers that bridge user-side `Editable<T>` opts and capture-side `Param`
 // records / numeric validation views. See spec §E.1, §E.3.
 

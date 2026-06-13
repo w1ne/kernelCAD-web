@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // @vitest-environment happy-dom
 /**
  * Regression guard for the /g/$genId live-code-clobber bug.

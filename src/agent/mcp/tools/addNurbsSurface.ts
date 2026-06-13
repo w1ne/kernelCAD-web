@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { addNurbsSurface } from '../edits/addNurbsSurface';
 import type { AddNurbsSurfaceInput } from '../edits/addNurbsSurface';
 import { evaluateScriptTool } from './evaluateScript';

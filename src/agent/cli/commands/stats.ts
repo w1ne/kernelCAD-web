@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/cli/commands/stats.ts
 //
 // `kernelcad stats` — maintainer view of anonymous usage telemetry.

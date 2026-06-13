@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/edits/addHermiteG2.ts
 //
 // NURBS Slice C Task 7: insert a `hermiteG2(a, b)` binding into a .kcad.ts

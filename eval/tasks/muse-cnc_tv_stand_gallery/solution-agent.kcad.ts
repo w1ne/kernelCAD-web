@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // MUSE 'cnc_tv_stand_gallery' — gallery-style CNC timber TV stand: top and
 // bottom panels locked onto two outer side panels and two center dividers
 // by interlocking tab/mortise joints. 6 independent components with

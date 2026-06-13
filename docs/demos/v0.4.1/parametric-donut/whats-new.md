@@ -18,7 +18,7 @@ This release closes the parametric authoring arc. Every editable dimensional arg
 - **`cylinder().fillet(r)` and revolved-shape fillets work** ([#109](https://github.com/w1ne/kernelCAD-web/pull/109)): three-part wrapper fix around replicad's `Face.normalAt` U-seam throw. Bumps replicad 0.20.5 → 0.23.1.
 - **`PathBuilder` accepts `Editable<number>`** ([#112](https://github.com/w1ne/kernelCAD-web/pull/112)): every `moveTo` / `lineTo` / `tangentArc` / `threePointsArc` / `sagittaArc` / `bulgeArc` / `radiusArc` coord/scalar takes a `ParamRef`. Demotes `revolveRect` (no unique capability over `path()...close().revolve()`).
 - **`Shape.translate` and `Shape.rotate` accept `Editable<number>`** ([#113](https://github.com/w1ne/kernelCAD-web/pull/113)): every coordinate / axis component / angle / pivot takes a `ParamRef`. Plus `CaptureSession.appendTransform` correctly propagates ParamRefs into the dependency index for `params.update` reactivity.
-- **Diagnostic vocabulary collapse — milestone C** (earlier): ~80 codes → 24, mandatory `hint` field, `why_did_this_fail` reshaped to upstream-walk only, new `list_diagnostic_codes` MCP tool.
+- **Diagnostic vocabulary collapse — milestone C** (earlier): ~80 codes → 24, mandatory `hint` field, `why_did_this_fail` reshaped to upstream-walk only, new `lookup_diagnostics` MCP tool.
 
 Plus the donut hero artifact rewritten in two passes (#111, #112, #113) to demonstrate the surface end-to-end.
 

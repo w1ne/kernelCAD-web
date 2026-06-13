@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/shopcheck/parseDxfInput.ts
 //
 // Slice E Phase 4 — parse a DXF file produced by Slice A's exportDxf

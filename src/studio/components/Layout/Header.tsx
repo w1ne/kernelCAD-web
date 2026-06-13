@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { Loader2, Download, FileDown, Undo2, Redo2, Box, Grid as GridIcon, Grid3x3, Circle, FolderOpen, Moon, Sun, LayoutGrid } from 'lucide-react';
 import { exportSTEP, exportSTL } from '../../../shared/worker/geometryEngine';

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { FeatureId, ScriptLocation } from '../intent/types';
 import type { BackendTarget } from '../types/backendTarget';
 import type { DiagnosticCode } from './registry';

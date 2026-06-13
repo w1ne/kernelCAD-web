@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { Command, type CommandContext } from '../Command';
 import { insertShape } from '../../../shared/codeGeneration/ast';
 

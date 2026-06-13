@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { Assembly } from '../capture/assembly';
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { Vec3 } from '../../shared/intent/types';

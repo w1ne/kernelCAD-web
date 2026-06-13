@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/lib/parts/fromSTEP.test.ts
 //
 // Round-trip smoke for the `lib.fromSTEP(path)` global. Generates a STEP

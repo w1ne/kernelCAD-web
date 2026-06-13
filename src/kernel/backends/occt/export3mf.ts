@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/backends/occt/export3mf.ts
 //
 // Minimal 3MF (Open Packaging Convention) writer. 3MF is a zip with three

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { CheckCircle2, Play, MessageSquare, Image as ImageIcon, Plug, Brush, Scissors, PanelRight } from 'lucide-react';
 
 interface ToolbarProps {

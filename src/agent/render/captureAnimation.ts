@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/render/captureAnimation.ts
 //
 // Typed animation-capture engine. Powers `scripts/captureAnimationView.mjs`

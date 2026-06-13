@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/oracle/museScorer.ts
 //
 // Node oracle that pushes a kernelCAD script through the MUSE text-to-CAD

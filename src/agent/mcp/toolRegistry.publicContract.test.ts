@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect } from 'vitest';
 import {
   TOOL_REGISTRY,
@@ -11,7 +13,7 @@ import {
 } from './toolRegistry';
 
 describe('toolRegistry public contract', () => {
-  // 'list_api' is a stable, always-registered tool used as a contract anchor below.
+  // 'lookup_api' is a stable, always-registered tool used as a contract anchor below.
   // If you rename or remove it, update the references in this file.
   it('exports TOOL_REGISTRY as a non-empty array of entries with definition+handler', () => {
     expect(Array.isArray(TOOL_REGISTRY)).toBe(true);
@@ -32,7 +34,7 @@ describe('toolRegistry public contract', () => {
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {
-    const result = await callMcpTool('list_api', {});
+    const result = await callMcpTool('lookup_api', {});
     expect(result).toBeDefined();
   });
 
@@ -41,15 +43,15 @@ describe('toolRegistry public contract', () => {
   });
 
   it('exports getToolDefinition(name) returning the definition or undefined', () => {
-    const def = getToolDefinition('list_api');
+    const def = getToolDefinition('lookup_api');
     expect(def).toBeDefined();
-    expect(def?.name).toBe('list_api');
+    expect(def?.name).toBe('lookup_api');
     expect(getToolDefinition('nonexistent_tool_xyz')).toBeUndefined();
   });
 
   it('type McpToolDefinition is exported and compatible with getToolDefinition return', () => {
     // Assignment compiles only if McpToolDefinition matches the returned shape.
-    const def: McpToolDefinition | undefined = getToolDefinition('list_api');
+    const def: McpToolDefinition | undefined = getToolDefinition('lookup_api');
     expect(def).toBeDefined();
   });
 

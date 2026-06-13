@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { CommandManager } from '../../authoring/commands/CommandManager';
 import { defaultCode } from '../../shared/worker/geometryEngine';

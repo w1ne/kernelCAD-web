@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 return box(40, 40, 10)
   .hole('top', { u: 0, v: 0, diameter: 6, depth: 'through', name: 'centerBolt' })
   .translate(5, 0, 0)

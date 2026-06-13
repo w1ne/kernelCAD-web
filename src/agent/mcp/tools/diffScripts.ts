@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/diffScripts.ts
 //
 // MCP `diff_scripts` — structured geometric delta between two versions of a

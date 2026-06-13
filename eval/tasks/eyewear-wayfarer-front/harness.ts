@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
@@ -172,7 +174,7 @@ export default async function harness(scriptPath: string, ctx?: HarnessCtx): Pro
 
   // W2 — fidelity gates, ANDed before any visual score. The "expected feature"
   // gate is STRUCTURAL: eyewear must have >= 2 inner boundary loops on a face
-  // (the two lens openings), read from list_faces. This is invariant to whether
+  // (the two lens openings), read from inspect({ of: 'faces' }). This is invariant to whether
   // tinted lens bodies are inserted into the openings — unlike a render/pixel
   // heuristic, which false-negatives a lens-inserted frame. Geometry-only, so
   // it runs whether or not the render succeeded.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/featureMeshing.ts
 import type { FeatureId, FeatureKind, FeatureRef } from '../../shared/intent/types';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/runtime/brepDistance.ts
 //
 // Shared BREP minimum-distance primitives, extracted from

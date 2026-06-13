@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import Viewer from '../Viewer';
 import type { GeometryResult, SketchGeometry } from '../../../shared/worker/geometryEngine';
 import type { ViewMode3D } from '../../../shared/types/viewMode';

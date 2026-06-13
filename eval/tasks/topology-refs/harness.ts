@@ -1,11 +1,13 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/tasks/topology-refs/harness.ts
 //
 // F-surface Task F6 — lock the @kc[...] round-trip property:
 //
 // 1. Happy path. Build a labeled box with a snapshot-stamping op, capture
-//    a face's `@kc[...]` ref via `list_faces`, apply a `fillet` on an
+//    a face's `@kc[...]` ref via `inspect({ of: 'faces' })`, apply a `fillet` on an
 //    unrelated edge set (the captured face survives untouched), then
-//    resolve the same ref via `resolve_topo_ref` on the post-fillet
+//    resolve the same ref via `query({ mode: 'resolve' })` on the post-fillet
 //    shape. The resolver must return `ok` with `entity.kind === 'face'`
 //    and `entity.path === 'lineage'` — proving the lineage propagated
 //    the ref across the upstream op.
@@ -61,9 +63,9 @@ const STAMPED_BOX_THEN_SPLIT = `
 `;
 
 interface ProbeOutcome {
-  /** list_faces returned the top face with a well-formed `@kc[...]` ref. */
+  /** inspect({ of: 'faces' }) returned the top face with a well-formed `@kc[...]` ref. */
   captureOk: boolean;
-  /** Captured ref string from list_faces — pasted into the post-op resolve. */
+  /** Captured ref string from inspect({ of: 'faces' }) — pasted into the post-op resolve. */
   capturedRef?: string;
   /** Post-fillet resolve returned `ok` via the lineage path on the captured ref. */
   happyPathOk: boolean;
@@ -80,7 +82,7 @@ interface ProbeOutcome {
  *  booleans. */
 async function runProbes(): Promise<ProbeOutcome> {
   // ── Probe A: happy path ──────────────────────────────────────────────
-  // 1. list_faces on the stamped box → find the top face, capture its ref.
+  // 1. inspect({ of: 'faces' }) on the stamped box → find the top face, capture its ref.
   const facesOnBase = await listFacesTool({ code: STAMPED_BOX });
   if (!facesOnBase.ok || !facesOnBase.faces) {
     return {
@@ -177,7 +179,7 @@ export default async function harness(scriptPath: string): Promise<HarnessResult
       'non-empty solid': s.volume > 0,
       'no blocking face-ref diagnostics': blockingFaceRefDiagnostics.length === 0,
       // Round-trip probes — lock the F-surface contract.
-      'capture: list_faces emits a top-face ref': probes.captureOk,
+      'capture: inspect of:faces emits a top-face ref': probes.captureOk,
       'happy path: @kc ref resolves ok through fillet': probes.happyPathOk,
       'degraded path: split face yields ambiguous-after-split':
         probes.degradedPathAmbiguous,

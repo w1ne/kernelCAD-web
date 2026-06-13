@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/components/demoPlayer/AnimationEngine.ts
 import * as THREE from 'three';
 import type { FeatureEvent } from '../../../modeling/compute/featureEvents';

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/cli/commands/animate.ts
 //
 // `kernelcad animate <file.kcad.ts> [out.mp4]` — capture the script's

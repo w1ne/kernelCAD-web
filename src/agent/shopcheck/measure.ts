@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/shopcheck/measure.ts
 //
 // Convert a flatten_pattern Region + get_bend_table output into a typed

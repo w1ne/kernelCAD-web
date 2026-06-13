@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // v0.2 tracked-refs corpus — expert solutions score 100%.
 //
 // NOTE: companion file corpus-v0.2.labeled.test.ts was split out for CI

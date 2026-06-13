@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/generateSeedCatalog.ts
 //
 // Build-time generator for the bundled parts catalog. Emits one STEP file
@@ -229,6 +231,42 @@ async function linearShaftStep(args: {
 }): Promise<Uint8Array> {
   const shaft = OcctBackend.cylinder(args.length, args.dia / 2);
   return shaft.exportSTEPAsync();
+}
+
+// Spur-gear envelope. Like the bearing/NEMA records, this is fit-and-clearance
+// geometry, not a manufacturing-accurate involute: a toothed prism (trapezoidal
+// teeth around the pitch circle) bored down the axis. Standard 20° proportions —
+// pitch d = m·z, addendum = m, dedendum = 1.25·m. Teeth occupy ~50% of the
+// circular pitch, narrowing tip→root so the profile reads as a gear and meshes
+// at the correct centre distance (rp1 + rp2).
+async function spurGearStep(args: {
+  module: number;
+  teeth: number;
+  faceWidth: number;
+  boreDia: number;
+}): Promise<Uint8Array> {
+  const rp = (args.module * args.teeth) / 2; // pitch radius
+  const ra = rp + args.module; // addendum (outer) radius
+  const rf = rp - 1.25 * args.module; // root radius
+  const pa = (2 * Math.PI) / args.teeth; // angular pitch
+  const tipHalf = 0.16 * pa; // tooth half-width at the tip
+  const rootHalf = 0.3 * pa; // tooth half-width at the root
+  const pts: [number, number][] = [];
+  const polar = (r: number, a: number): [number, number] => [
+    r * Math.cos(a),
+    r * Math.sin(a),
+  ];
+  for (let i = 0; i < args.teeth; i++) {
+    const c = i * pa;
+    pts.push(polar(rf, c - rootHalf)); // root, leading flank
+    pts.push(polar(ra, c - tipHalf)); // tip, leading
+    pts.push(polar(ra, c + tipHalf)); // tip, trailing
+    pts.push(polar(rf, c + rootHalf)); // root, trailing flank
+    pts.push(polar(rf, c + pa / 2)); // root land in the gap to the next tooth
+  }
+  const blank = OcctBackend.extrudePolygon(pts, args.faceWidth);
+  const bore = OcctBackend.cylinder(args.faceWidth, args.boreDia / 2);
+  return blank.subtract(bore).exportSTEPAsync();
 }
 
 async function stepperMotorStep(args: {
@@ -717,6 +755,59 @@ function linearShaft(): SeedFamily {
   };
 }
 
+function spurGear(): SeedFamily {
+  // Module → (face width, bore) so each gear lands on a shaft you already stock
+  // (linear-shaft Ø5 / Ø6 are bundled). Teeth span the common small-mechanism range.
+  const byModule: Record<number, { faceWidth: number; boreDia: number }> = {
+    1: { faceWidth: 6, boreDia: 5 },
+    2: { faceWidth: 10, boreDia: 6 },
+  };
+  const teeth = [12, 16, 20, 24, 30, 40];
+  const variants: Array<Record<string, string | number>> = [];
+  for (const module of Object.keys(byModule).map(Number)) {
+    for (const z of teeth) variants.push({ module, teeth: z });
+  }
+  return {
+    id: 'spur-gear',
+    category: 'gear',
+    variants,
+    async generate({ module, teeth: z }) {
+      const m = module as number;
+      const teethN = z as number;
+      const { faceWidth, boreDia } = byModule[m];
+      const bytes = await spurGearStep({ module: m, teeth: teethN, faceWidth, boreDia });
+      const id = `spur-gear-m${m}-z${teethN}`;
+      const pitchDia = m * teethN;
+      return {
+        stepBytes: bytes,
+        record: {
+          id,
+          name: `Spur gear module ${m}, ${teethN} teeth`,
+          category: 'gear',
+          family: 'spur-gear',
+          tags: ['gear', 'spur', 'mechanism', `m${m}`, `z${teethN}`],
+          attributes: {
+            module: m,
+            teeth: teethN,
+            pitchDiameterMm: pitchDia,
+            outerDiameterMm: pitchDia + 2 * m,
+            boreMm: boreDia,
+            faceWidthMm: faceWidth,
+            pressureAngleDeg: 20,
+          },
+          license: 'MIT',
+          connectors: ['bore', 'front-face', 'back-face'],
+        },
+        connectors: [
+          { name: 'bore', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] },
+          { name: 'front-face', type: 'frame', origin: [0, 0, 0], normal: [0, 0, -1] },
+          { name: 'back-face', type: 'frame', origin: [0, 0, faceWidth], normal: [0, 0, 1] },
+        ],
+      };
+    },
+  };
+}
+
 function stepperMotor(): SeedFamily {
   const sizes = Object.keys(NEMA);
   const variants = sizes.map((s) => ({ size: s }));
@@ -867,6 +958,7 @@ export const SEED_FAMILIES: SeedFamily[] = [
   heatSetInsert(),
   deepGrooveBallBearing(),
   linearShaft(),
+  spurGear(),
   stepperMotor(),
   pinHeader(),
   jstXh(),

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { WorkbenchProvider, useWorkbench } from './context/WorkbenchContext';
 import { StudioShell } from './StudioShell';
 import { shellStore } from './store/shellStore';

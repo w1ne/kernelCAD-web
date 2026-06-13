@@ -1,23 +1,59 @@
-import { findGallerySourceUrl, galleryPrecomputedMeshUrl } from './gallerySource';
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import {
+  findGallerySourceUrl,
+  findGallerySourceUrlForScriptPath,
+  galleryPrecomputedMeshUrl,
+} from './gallerySource';
 import { apiCall, rewritePath } from './api/apiBase';
 import type { SerializedParamTable } from '../shared/runtime/paramTable';
 import type { ScriptReviewSummary } from './context/GeometryContext';
+import type { FeatureMeshSerialized } from '../modeling/capture/featureMeshSerialize';
+import type { FeatureRecord } from '../shared/intent/featureRecord';
+
+async function parseJsonOrThrowHelpful(response: Response, fallbackMessage: string): Promise<unknown> {
+  try {
+    return await response.json();
+  } catch {
+    const text = await response.text().catch(() => '');
+    if (text.includes('<!doctype html') || text.includes('<html')) {
+      throw new Error(fallbackMessage);
+    }
+    throw new Error(fallbackMessage);
+  }
+}
 
 export async function loadStudioScriptSource(script: string): Promise<string> {
+  if (shouldUseHostedMesh()) {
+    const curatedSourceUrl = await findGallerySourceUrlForScriptPath(script);
+    if (curatedSourceUrl) {
+      const curatedResponse = await fetch(curatedSourceUrl);
+      if (!curatedResponse.ok) {
+        throw new Error(`Failed to load gallery source: ${curatedResponse.status}`);
+      }
+      return curatedResponse.text();
+    }
+  }
+
   const { base, headers } = await apiCall();
   const response = await fetch(
     rewritePath(`/__kernelcad/source?script=${encodeURIComponent(script)}`, base),
     { headers },
   );
-  const payload = await response.json();
+  const payload = await parseJsonOrThrowHelpful(
+    response,
+    'Hosted script link is not public. Use a curated gallery link or sign in.',
+  );
   if (!response.ok) {
-    const message = typeof payload?.error === 'string' ? payload.error : response.statusText;
+    const message = payload && typeof payload === 'object' && typeof (payload as { error?: unknown }).error === 'string'
+      ? (payload as { error: string }).error
+      : response.statusText;
     throw new Error(message);
   }
-  if (typeof payload?.source !== 'string') {
+  if (!payload || typeof payload !== 'object' || typeof (payload as { source?: unknown }).source !== 'string') {
     throw new Error('Source endpoint did not return source code.');
   }
-  return payload.source;
+  return (payload as { source: string }).source;
 }
 
 export async function loadGalleryScriptSource(slug: string): Promise<string> {
@@ -33,8 +69,8 @@ export async function loadGalleryScriptSource(slug: string): Promise<string> {
  * GeometryContext success handler can consume it the same way.
  */
 export interface BackendMeshPayload {
-  features: unknown[];
-  featureRecords?: unknown[];
+  features: FeatureMeshSerialized[];
+  featureRecords?: FeatureRecord[];
   bounds: { min: [number, number, number]; max: [number, number, number] };
   params?: SerializedParamTable;
   /** Deterministic review baked at build time (precompute) or returned by the

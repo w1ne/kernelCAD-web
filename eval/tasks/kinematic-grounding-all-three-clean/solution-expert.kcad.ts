@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // All-three-gates-clean — small two-mate assembly that passes Gate 1
 // (matched mounting holes), Gate 2 (joint axis intersects both bodies),
 // and Gate 3 (no maxLoad declared, so nothing to exceed).

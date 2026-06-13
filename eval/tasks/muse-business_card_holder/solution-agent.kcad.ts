@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // MUSE 'business_card_holder' — desktop stand with a backward-tilted card
 // slot. Single solid: rectangular base block minus a tilted slot volume.
 // Envelope ~104 x 20 x 25 mm; slot tilted back 15 degrees, open at the top,

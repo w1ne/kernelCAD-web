@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { readFileSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 import { runScript } from './runScript';

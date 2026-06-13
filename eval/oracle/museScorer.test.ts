@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/oracle/museScorer.test.ts
 //
 // Tests for the pure payload-shaping helper that turns the MUSE wrapper's

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/export/srdf/acmDerive.ts
 //
 // Allowed-collision matrix auto-derivation from kernelCAD's existing

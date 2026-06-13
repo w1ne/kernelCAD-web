@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/exportModel.ts
 //
 // Unified write-side export MCP tool. ONE tool, format-enum-dispatched —

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { projectService, type KernelCADProject, type ProjectMetadata } from '../../authoring/projectService';
 import { defaultCode } from '../../shared/worker/geometryEngine';

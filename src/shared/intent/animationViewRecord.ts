@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/shared/intent/animationViewRecord.ts
 //
 // Types for the animationView() top-level API. An animation-view feature is a

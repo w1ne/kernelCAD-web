@@ -22,6 +22,14 @@ Use this loop for every non-trivial model edit:
 9. **Packetize visual evidence**: when visual evidence matters, run `kernelcad render inspect <file> <outDir>` to produce a deterministic inspection bundle: a manifest naming the source file, command, generated artifacts, and caveats, plus canonical RGB views. Add `--channels rgb,mask,depth,normals` when machine-readable object masks, depth, or view-space normals are needed. Use `--focus <names>` or `--hide <names>` to isolate feature ids or assembly part names when clutter would obscure the check. Keep richer channels in the same manifest packet; do not replace the canonical RGB views.
 10. **Repair one cause at a time**: target the smallest source change that addresses the failing check, then rerun the same check. Do not loosen gates or silently skip failing evidence.
 
+**Verify against geometry, not against your own summary.** Trust measured
+evidence — exact bbox/volume from `inspect({ of: 'shape' })`/`inspect({ of: 'step' })`, interference
+volumes, DFM findings, the rendered pixels — over the narrative of what the
+script "should" have built. A green `evaluate` (`ok: true, featureCount: N`)
+proves the script ran, not that the geometry is correct. When a check cannot
+measure a thing (kernel error, unknown clearance status, an inconclusive
+render), treat that uncertainty as a failure to resolve, not a pass to assume.
+
 ## Inner loop: render after every visible change
 
 The authoring loop above is the *outer* loop. The *inner* loop runs after every feature you add that you expect to see in the rendered output. Skipping the inner loop is the single biggest cause of "tests green, output wrong" shipments.
@@ -61,7 +69,7 @@ two-feature placement math, subtract-chain reliability, JSON-`ok`-is-not-visual-
 
 - Every physically distinct component is a named `assembly().part(name, shape)` — one body per part unless the component is genuinely monolithic.
 - Anonymous loose top-level bodies in a multi-body model are a defect smell: the review loop emits `assembly.structure.unstructured-bodies` (info) with the recovery hint. Wrap each loose body in a named part.
-- Part names are the durable handles for `inspect --focus`, `list_part_stats`, and Studio's hide / keep-whole / per-part validity — choose stable, descriptive names.
+- Part names are the durable handles for `inspect --focus`, `inspect({ of: 'part-stats' })`, and Studio's hide / keep-whole / per-part validity — choose stable, descriptive names.
 
 - If a model has moving parts, design the joint structure before styling: name the parent/child parts, joint type, axis/frame, limits, and editable pose parameters up front.
 - If two parts are intended to touch, author the relationship with connectors and mates rather than relying on raw `translate()` offsets alone. Raw offsets are acceptable for free placement, but touching load-path geometry needs named interfaces the validator and Studio can inspect.
@@ -84,7 +92,7 @@ Use `lib.fromSTEP(...)` for off-the-shelf components whenever physical fit matte
 
 - Good candidates: motors, servos, bearings, shafts, fasteners, hinges, sensors, PCBs, connectors, rails, and purchased enclosures.
 - Store or reference the vendor STEP file deliberately; name the source, version, and license/terms in nearby metadata or README when the file is part of a demo/portfolio bundle.
-- Before placing a vendor STEP, run `kernelcad inspect step <file.step>` (or the `inspect_step` MCP tool) to read the solid tree, per-solid exact bbox + volume, and detected cylindrical holes (axis, diameter, depth, blind/through) — find mounting-hole positions and verify the part-local frame from exact geometry instead of measuring renders.
+- Before placing a vendor STEP, run `kernelcad inspect step <file.step>` (or the `inspect({ of: 'step' })` MCP tool) to read the solid tree, per-solid exact bbox + volume, and detected cylindrical holes (axis, diameter, depth, blind/through) — find mounting-hole positions and verify the part-local frame from exact geometry instead of measuring renders.
 - Build modeled brackets, mounts, clearances, cable paths, and keepouts around the imported part rather than approximating the part with generic boxes/cylinders.
 - Placeholder geometry is acceptable for early blockouts, but final review must label it as a placeholder or replace it with catalog geometry.
 
@@ -114,8 +122,8 @@ Verify the install with `kernelcad --version` (should print `0.1.0` or higher).
 
 ```typescript
 // Editable symbolic parameters. Returned value is a ParamRef accepted anywhere
-// the API expects an editable number or boolean. Edit post-build with
-// params_update via MCP / session.params.update in runtime code.
+// the API expects an editable number or boolean. Edit the param() default
+// post-build with set_param via MCP / session.params.update in runtime code.
 param<T extends number | boolean>(name: string, defaultValue: T, opts?: {
   min?: number;
   max?: number;
@@ -287,6 +295,10 @@ dfmSpec(spec: {
   degrees: Editable<number>,
   pivot?: [Editable<number>, Editable<number>, Editable<number>],
 ): Shape
+// Cardinal-axis aliases for .rotate — prefer these for the common cases:
+.rotateX(degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]): Shape  // .rotate([1, 0, 0], ...)
+.rotateY(degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]): Shape  // .rotate([0, 1, 0], ...)
+.rotateZ(degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]): Shape  // .rotate([0, 0, 1], ...)
 // Uniform (single positive finite number) or per-axis Vec3 (non-uniform sx/sy/sz).
 // Non-uniform lowers via gp_GTrsf + BRepBuilderAPI_GTransform so face refs survive
 // (topology preserved under any affine transform). All factors must be positive
@@ -447,7 +459,7 @@ Supported constraint types:
 
 Minimal tool flow:
 
-- `list_constraints({ constraints? })` — discover the supported types and echo the current constraint list.
+- `inspect({ of: 'constraints', constraints? })` — discover the supported types and echo the current constraint list.
 - `add_constraint({ constraints?, constraint })` — validate one constraint and return a new list; no session state is mutated.
 - `solve_sketch({ entities, constraints })` — solve a 2D constraint set and return `{ ok, entities, constraints }` or validation errors; no script is modified.
 
@@ -457,7 +469,7 @@ Entity and selection recovery:
 - If a `LINE` references non-POINT endpoints or a `CIRCLE` references a non-POINT center, replace the referenced id with a `POINT`.
 - If a constraint reports the wrong entity count, check the type arity: most types use 2 entities; `RADIUS` uses 1, `ANGLE` uses 1 or 2, and `SYMMETRIC` uses 3.
 - If `DISTANCE`, `RADIUS`, or `ANGLE` reports a missing value, add a numeric `value`.
-- If the type is unsupported, call `list_constraints({})` or `list_api({})` and choose one of the supported types above.
+- If the type is unsupported, call `inspect({ of: 'constraints' })` or `lookup_api({})` and choose one of the supported types above.
 
 ## Labels — naming faces at creation time
 
@@ -481,7 +493,7 @@ Labels survive transforms (`.translate`, `.rotate`, `.scale`, `.reflect`, `.mirr
 
 `sphere` does not accept `faceLabels` (no canonical face names; query targets undefined). Use a different primitive if labels are needed.
 
-Discover labels on a script with the `list_face_labels` MCP tool — it surfaces both `faceLabels`-declared labels (creating-op metadata) and sketch-segment labels (`path().label('rim')`).
+Discover labels on a script with the `inspect({ of: 'face-labels' })` MCP tool — it surfaces both `faceLabels`-declared labels (creating-op metadata) and sketch-segment labels (`path().label('rim')`).
 
 ## When something fails
 
@@ -493,7 +505,7 @@ failed because an upstream feature failed (`code` is
 and find the root cause.
 
 The full code catalogue is enumerated by the
-`list_diagnostic_codes` MCP tool. Call it once at session start if you
+`lookup_diagnostics` MCP tool. Call it once at session start if you
 want to pre-populate retry strategies.
 
 ## CLI Commands
@@ -679,6 +691,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 ## Conventions
 
 - Always declare params at the top of the script with units; the kernel evaluates them and surfaces them as live sliders to the studio.
+- Never use JS arithmetic on a `param()` result — `param('w', 18) + 4` coerces the branded ParamRef and throws `feature.invalid-args`. Build derived dimensions with the ParamRef methods: `.add(n)`, `.subtract(n)`, `.multiply(n)`, `.divide(n)`, `.negate()` — e.g. `w.add(4)`, `r.divide(2)`. These return derived ParamRefs that re-evaluate whenever the underlying param changes.
 - Prefer `target.hole(face, opts)` for cylindrical bores (single hole), `target.holes(face, opts)` for bolt patterns, and `target.cutout(profile, opts)` for irregular subtractive shapes (slots, D-pockets) over `subtract(cylinder)` — they emit named created refs (`'wall'`, `'floor'`, `'wall-back'`, `'counterbore-wall'`, `'counterbore-floor'`, `'countersink-cone'`) that downstream `.fillet()` / `.shell()` can address.
 - Apply transforms AFTER edge/face features when the face filter matters; transforms commute with everything except face-ref resolution.
 - Always `return` a single shape from the top of the script — the kernelCAD CLI exports whatever you return. Only the returned shape is honored by export / probe / measurement surfaces; "the last thing I created" is NOT a fallback you can rely on — mutating transforms (`.translate()`, `.rotate()`) re-use their record, and any helper shape created after the main body silently becomes the newest record. If a probe reports the same bbox no matter what you edit, you are measuring a stale or decoy record: check what the script returns.
@@ -836,7 +849,7 @@ Semantics that matter when authoring the declaration:
   structs keep part-local coordinates.
 
 Surfaces: automatic on `kernelcad evaluate` / MCP `evaluate_script`; standalone
-report via `kernelcad dfm <file>` (`--json`) and MCP `dfm_check`.
+report via `kernelcad dfm <file>` (`--json`) and MCP `verify({ check: 'dfm' })`.
 
 ## Materials
 

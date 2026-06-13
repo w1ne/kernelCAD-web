@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 export type PlaneType = 'base' | 'offset' | 'face' | 'angle' | 'midplane' | 'tangent';
 
 export interface SketchPlaneEntity {

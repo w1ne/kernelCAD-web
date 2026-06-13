@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modules/sketch/index.ts
 //
 // `sketch` namespace API. Currently exposes one method, `text(content, opts)`,

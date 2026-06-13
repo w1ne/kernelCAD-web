@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // expected: []
 //
 // Snippet 2 — checkReachable on a 6-DOF spherical-wrist arm.

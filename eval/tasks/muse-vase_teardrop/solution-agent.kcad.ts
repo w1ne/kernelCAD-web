@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // MUSE 'vase_teardrop' — teardrop vase with a high shoulder and small top
 // opening. Single hollow solid produced by ONE revolve of an annular wall
 // profile (outer boundary up, inner boundary back down), leaving a 2.5 mm

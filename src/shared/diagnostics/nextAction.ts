@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Back-compat re-exports for the `NextAction` type and per-code map.
 //
 // The structured form of "what to try next" is now declared inline in

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/visual/emboss-and-project-smoke.kcad.ts
 //
 // W3 visual smoke fixture. Exercises both face-authoring features in one

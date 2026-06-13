@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import React from 'react';
 import type { ValidatorDiagnostic } from '../modeling/mates/validator';
 import { useFeatureSelection } from './hooks/useFeatureSelection';

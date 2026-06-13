@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 

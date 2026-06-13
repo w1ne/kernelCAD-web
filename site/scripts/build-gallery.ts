@@ -20,6 +20,8 @@ import { exportGlb } from '../../scripts/lib/exportGlb';
 import { loadScriptFeatures } from '../../src/modeling/runtime/scriptLoader';
 import { meshFeaturesPerFeature } from '../../src/modeling/capture/featureMeshing';
 import { serializeForBridge } from '../../src/modeling/capture/featureMeshSerialize';
+import { evaluateAndBuildScript } from '../../src/agent/cli/commands/evaluate';
+import { bakeAnimationTimeline, selectAnimationMetadata } from '../../src/modeling/animation/bakeAnimationTimeline';
 import { validateAssemblyWithMates } from '../../src/modeling/mates/validator';
 import type { Assembly } from '../../src/modeling/capture/assembly';
 import type { CaptureSession } from '../../src/modeling/capture/captureSession';
@@ -35,11 +37,18 @@ interface PublishedEntry extends Omit<GalleryEntry, 'video' | 'codeLocal'> {
   modelUrl: string;
   promptUrl: string;
   sourceUrl: string | null;
+  scriptPath: string | null;
   studioUrl: string;
 }
 
+// Per-tile GLB budget for the gallery 3D preview — a load-time budget that
+// keeps tiles snappy. Held at 500 KB: vertex welding in exportGlb (lossless
+// dedup of OCCT's per-face boundary duplicates) keeps even the 95-body
+// spice-dispenser carousel under it (~452 KB). Next lever if tiles ever grow:
+// mesh quantization / Draco.
 const GLB_SIZE_HARD_CAP = 500_000;
 const STUDIO_ORIGIN = 'https://app.kernelcad.com';
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 /**
  * Builds the `ScriptReviewSummary` the hosted Studio consumes (see
  * GeometryContext) from the already-evaluated session — reusing the loaded
@@ -97,6 +106,15 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
   const meshOutDir = path.join(galleryOutDir, '_mesh');
   mkdirSync(meshOutDir, { recursive: true });
 
+  // Precomputed animation timelines, keyed by sha256(source) like the mesh.
+  // The hosted Studio fetches `/gallery/_anim/<sha>.json` to PLAY a curated
+  // model's animationView with zero server compute (anonymous gallery visitors
+  // can't open a live session). Only emitted for entries that declare an
+  // animationView; everything else has no file and the Studio simply shows a
+  // static model.
+  const animOutDir = path.join(galleryOutDir, '_anim');
+  mkdirSync(animOutDir, { recursive: true });
+
   const published: PublishedEntry[] = [];
 
   for (const entry of parsed.entries) {
@@ -123,6 +141,9 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
     const dstPrompt = path.join(slugDir, 'prompt.md');
     const dstSource = path.join(slugDir, 'source.kcad.ts');
     const sourceUrl = entry.source === 'curated' ? `/gallery/${entry.slug}/source.kcad.ts` : null;
+    const scriptPath = entry.source === 'curated'
+      ? entry.codeLocal.split(path.sep).join('/')
+      : null;
     const studioUrl = entry.source === 'curated'
       ? `${STUDIO_ORIGIN}/studio?gallery=${encodeURIComponent(entry.slug)}`
       : entry.appUrl;
@@ -194,6 +215,27 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
           `build-gallery: ${entry.slug} precompute skipped — ${err instanceof Error ? err.message : String(err)}`,
         );
       }
+
+      // Precompute the animation timeline (per-part world transforms per frame)
+      // for entries that declare an animationView. Keyed by the SAME sha256 of
+      // the source bytes, so the browser resolves it via the same digest. Built
+      // from a full `evaluateAndBuildScript` model (the baker re-solves mate
+      // poses per frame). Non-fatal: a non-animated or unbakeable model simply
+      // has no `_anim` file and plays static.
+      try {
+        const sourceText = readFileSync(srcScript, 'utf8');
+        const sha = createHash('sha256').update(sourceText, 'utf8').digest('hex');
+        const { evaluation, model } = await evaluateAndBuildScript({ file: srcScript });
+        if (evaluation.exitCode === 0 && model && selectAnimationMetadata(model)) {
+          const baked = await bakeAnimationTimeline(model);
+          writeFileSync(path.join(animOutDir, `${sha}.json`), JSON.stringify(baked));
+          console.log(`build-gallery: ${entry.slug} animation baked (${baked.frames} frames, ${baked.parts.length} parts)`);
+        }
+      } catch (err) {
+        console.warn(
+          `build-gallery: ${entry.slug} animation bake skipped — ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
     }
 
     writeFileSync(dstPrompt, entry.prompt + '\n');
@@ -207,6 +249,7 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
       modelUrl: `/gallery/${entry.slug}/model.glb`,
       promptUrl: `/gallery/${entry.slug}/prompt.md`,
       sourceUrl,
+      scriptPath,
       studioUrl,
     });
   }
@@ -217,8 +260,6 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
 
 // CLI entrypoint
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  const REPO_ROOT = path.resolve(__dirname, '../..');
   buildGallery({
     entriesPath: path.join(REPO_ROOT, 'site/gallery/entries.json'),
     publicDir: path.join(REPO_ROOT, 'site/public'),

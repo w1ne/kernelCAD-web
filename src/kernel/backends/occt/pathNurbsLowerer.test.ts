@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/backends/occt/pathNurbsLowerer.test.ts
 //
 // V slice — Task V4: tangent-aware dispatch path inside `buildSplineEdge`.

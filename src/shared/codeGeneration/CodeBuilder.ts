@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 export class CodeBuilder {
     private lines: string[] = [];
     private variables: Set<string> = new Set();

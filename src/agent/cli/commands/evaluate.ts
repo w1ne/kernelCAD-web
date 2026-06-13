@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/cli/commands/evaluate.ts
 import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';

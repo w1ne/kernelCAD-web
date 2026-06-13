@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { readFileSync } from 'node:fs';
 import { evaluateScript, getShapeInfo } from '../../oracle/kernelcad-client';
 import type { HarnessResult } from '../../types';

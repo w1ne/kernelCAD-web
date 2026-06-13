@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as replicad from 'replicad';
 import { setOC } from 'replicad';
 import wasmUrl from 'replicad-opencascadejs/src/replicad_single.wasm?url';
@@ -6,6 +8,7 @@ import { createSafeReplicad, SafeSketcher } from '../../../shared/worker/safeSke
 import { withTemporaryGlobals } from '../../../shared/worker/withTemporaryGlobals';
 import { createUserGlobals } from '../../../shared/worker/userGlobals';
 import { createV01ApiGlobals, unwrapV01Shape } from '../../../shared/worker/v01ApiShim';
+import { normalizeUserScript } from '../../../shared/runtime/normalizeUserScript';
 import {
   type ExecutionResult,
   type GeometryResult,
@@ -110,7 +113,7 @@ self.onmessage = (e: MessageEvent<unknown>) => {
     if (type === 'EXECUTE') {
       try {
         await init();
-        const code = request.code;
+        const code = normalizeUserScript(request.code);
         if (DEBUG) console.log(`Worker: Executing code: ${code.substring(0, 100)}...`);
 
         const activeSketches: SafeSketcher[] = [];
@@ -285,7 +288,7 @@ self.onmessage = (e: MessageEvent<unknown>) => {
     if (type === 'EXPORT_STEP' || type === 'EXPORT_STL') {
       try {
         await init();
-        const code = request.code;
+        const code = normalizeUserScript(request.code);
         const safeReplicad = createSafeReplicad(replicad);
 
         const wrappedStartSketch = () => {

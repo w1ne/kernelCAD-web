@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/corpus-shopcheck.test.ts
 //
 // Slice E corpus tests — verify the expert solutions for the two

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/setParamValue.ts
 import { setParamValue } from '../edits/setParamValue';
 import { evaluateScriptTool } from './evaluateScript';

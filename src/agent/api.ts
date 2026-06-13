@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { HeadlessKernel, type ExecutionResult } from '../modeling/HeadlessKernel';
 import { featureRegistry } from '../modeling/features/FeatureRegistry';
 import type { FeatureContext } from '../modeling/features/types';

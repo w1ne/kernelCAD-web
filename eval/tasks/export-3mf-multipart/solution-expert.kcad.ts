@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/tasks/export-3mf-multipart/solution-expert.kcad.ts
 //
 // Slice A 3MF multi-body entry: a three-part fastener assembly with

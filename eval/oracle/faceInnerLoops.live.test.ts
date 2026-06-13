@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // LIVE: the structural fidelity signal on real OCCT geometry via the CLI/MCP.
 // A frame with two lens cutouts reports 2 inner loops whether or not lens
 // bodies are inserted; a solid slab reports 0. This is the regression for the

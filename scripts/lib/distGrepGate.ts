@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/lib/distGrepGate.ts
 //
 // Greps every shipped path in a dist tree against the comparator

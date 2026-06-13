@@ -10,18 +10,19 @@ fastener, deep-groove ball bearing, NEMA stepper, pin header, JST-XH housing)
 and does not already know a STEP file path.
 
 The catalog ships **bundled** with the npm package — `npm install` resolves
-every id offline. The remote tier is dormant by default and only activates
-when the caller passes `partsBaseUrl` (or sets `KERNELCAD_PARTS_BASE_URL`).
-There is no kernelCAD-shipped default URL.
+every bundled id offline. When a query has no bundled match, discovery and
+fetch fall through to a built-in public parts catalog by default (see "Remote
+tier" below), so kernelCAD can find off-the-shelf parts it does not bundle.
+Set `KERNELCAD_PARTS_BASE_URL=off` to stay offline on the bundled seed only.
 
 ## Four-tool discovery flow
 
 When the agent does not know which id covers the intent, walk the discovery
 chain. Each step narrows the search:
 
-1. `list_part_categories` → top-level buckets (e.g. `fastener`, `bearing`,
+1. `inspect({ of: 'part-categories' })` → top-level buckets (e.g. `fastener`, `bearing`,
    `motor`, `connector`, `shaft`).
-2. `list_part_families` `{ category }` → families within the bucket
+2. `inspect({ of: 'part-families', category })` → families within the bucket
    (e.g. `socket-head-cap-screw`, `deep-groove-ball-bearing`).
 3. `find_part` `{ query, family?, standard?, tag? }` → ranked records that
    match the fuzzy query plus filters. Tokens AND-combine; cross-facet
@@ -116,13 +117,13 @@ ref grammar as authored faces and edges:
 ```
 
 Either form works as the source / target of `add_mate` and survives
-`resolve_topo_ref`. The dot form is shorter for human-authored scripts;
+`query({ mode: 'resolve' })`. The dot form is shorter for human-authored scripts;
 the @kc form is canonical in MCP tool outputs and diagnostic payloads.
 See `kernelcad-mcp` for the full grammar.
 
 ## Bundled-only by default
 
-Bundled tier coverage (261 records on the seed catalog):
+Bundled tier coverage (273 records on the seed catalog):
 
 - M2 / M2.5 / M3 / M4 / M5 / M6 socket head, button head, flat head
   countersunk screws (ISO 4762 / 7380 / 10642).
@@ -131,6 +132,7 @@ Bundled tier coverage (261 records on the seed catalog):
 - M2.5 / M3 / M4 heat-set inserts (3.8 mm and 5.7 mm length).
 - Deep-groove ball bearings 608 / 623 / 624 / 625 / 626 / 6800 / 688 / 6900.
 - Linear shaft Ø3..Ø12 × 20..200 mm.
+- Spur gears module 1 / 2, 12–40 teeth (20° pressure angle, bored Ø5 / Ø6).
 - NEMA 8 / 11 / 14 / 17 / 23 stepper motor envelopes with auto-emitted
   4-bolt-hole connector frames at the standard bolt circle.
 - 2.54 mm and 1.27 mm pin headers, 2–20 pins, straight and right-angle.
@@ -138,28 +140,45 @@ Bundled tier coverage (261 records on the seed catalog):
 
 Bundled parts ship under kernelCAD's MIT license — see `record.license`.
 
-## Opting into the remote tier
+## Remote tier — built-in public catalog (default)
 
-The remote tier extends discovery beyond the bundled seed. It is strictly
-opt-in:
+When a query has no bundled match, discovery and fetch fall through to a
+built-in public parts catalog automatically — this is how kernelCAD finds
+off-the-shelf parts (motors, bearings, connectors, brackets) it does not bundle.
+No configuration is required.
 
 ```typescript
-// Programmatic: pass partsBaseUrl per call.
-const r = await lib.findPart('M8 carriage bolt', {
-  partsBaseUrl: 'https://parts.example.com',
-});
-
-// Or set the env var once for the whole script.
-process.env.KERNELCAD_PARTS_BASE_URL = 'https://parts.example.com';
-const part = await lib.fetchPart('din-603-m8x40');
+// Falls through to the public catalog when not bundled — nothing to configure.
+const matches = await lib.findPart('flanged linear bearing');
+const bearing = await lib.fetchPart('linear-bearing-lmk10luu');
 ```
 
-Without a configured base URL, any tool call that would require the
-remote tier returns `parts.fetch.remote-disabled`. The recovery is one of:
+What kernelCAD adds on top of the raw catalog, so a *found* part is as usable as
+a bundled one:
 
-- Pass `partsBaseUrl` programmatically (or via env), OR
-- Use `find_part { source: 'local' }` to surface similar bundled ids, OR
-- Refine the query to match a bundled id directly.
+- **Byte integrity.** The STEP is downloaded to `~/.cache/kernelcad/parts/` and
+  verified against the catalog's `sha256` before use.
+- **Synthesized connectors.** Catalog STEP ships no connector frames, so they
+  are derived from the geometry at fetch time: `mating-face` / `top-face` from
+  the bounding box, `bolt-holes-N` from detected mounting holes (coaxial
+  segments collapsed; deterministically numbered), and `bore` from a distinct
+  central hole. The part participates in `add_mate` with no manual
+  `partRef.connector(...)`. Oddly-shaped parts may still need a hand-authored
+  frame — inspect the synthesized set before relying on it.
+- **Provenance.** The default catalog is built from a license-clean mechanical
+  parts library (CC-BY-3.0), so each record carries its own `license` (commonly
+  `'CC-BY-3.0'`) plus `attribution`. Read `record.license` / `record.attribution`
+  rather than assuming — a record's terms govern it. Keep the attribution when
+  shipping a deliverable that embeds the geometry.
+
+**Overriding or disabling the source:**
+
+- Point at a different catalog (e.g. a self-hosted index serving the same
+  `/v1/parts` schema) with `partsBaseUrl` per call or the
+  `KERNELCAD_PARTS_BASE_URL` env var.
+- Set `KERNELCAD_PARTS_BASE_URL=off` (or `none`) to disable the remote tier
+  entirely; unmatched lookups then return `parts.fetch.remote-disabled` and you
+  stay fully offline on the bundled seed.
 
 Bytes returned from the remote tier are cached under
 `~/.cache/kernelcad/parts/<sha256>.step` with sha256 verification at write
@@ -191,10 +210,14 @@ return arm.model();
 
 ### 608 bearing on an 8 mm shaft (cylindrical mate)
 
+There is no `lib.standard.*` shortcut for linear shafts — fetch the catalog
+record by id (`shaft-d<diameter>-l<length>`, Ø3..Ø12 × 20..200 mm). The
+shaft's `axis` connector mates into the bearing's `inner-bore`.
+
 ```typescript
 const arm = assembly('arm');
-const shaft = await lib.standard.bearing608(); // mis-named in this stub; replace with linear shaft Ø8
-const bearing = await lib.standard.bearing608();
+const shaft = await lib.fetchPart('shaft-d8-l50'); // Ø8 × 50 mm linear shaft
+const bearing = await lib.standard.bearing608();   // Ø8 bore deep-groove bearing
 arm.part('shaft', shaft);
 arm.part('bearing', bearing);
 arm.mate('shaft.axis', 'bearing.inner-bore', { kind: 'cylindrical' });

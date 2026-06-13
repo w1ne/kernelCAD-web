@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/backends/occt/exportDxf.ts
 //
 // AutoCAD R2013 (AC1027) DXF writer for kernelCAD's sheet-metal and planar

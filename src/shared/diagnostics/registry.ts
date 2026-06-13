@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Single source of truth for the kernelCAD agent-facing diagnostic
 // vocabulary. Every entry below corresponds to a distinct recovery action
 // an agent would take. See spec 2026-05-05-diagnostic-vocabulary-milestone-c.
@@ -1402,11 +1404,11 @@ export const DIAGNOSTIC_REGISTRY = {
   // NURBS Slice D (4) — 2D path NURBS authoring (PathBuilder .spline / .nurbsSegment / .hermiteG2).
   'feature.path.spline.degenerate-points': {
     hintTemplate:
-      'path().spline expects at least 2 distinct finite Vec2 waypoints; the curve interpolates through every one. Remove duplicate consecutive points (closer than 1e-9 mm), replace any NaN / Infinity coords with finite values, and ensure the array has length >= 2.',
+      'path().spline expects at least 2 distinct finite Vec2 waypoints, with points[0] at the current pen position (within 1e-6 mm); the curve interpolates through every one. Remove duplicate consecutive points (closer than 1e-9 mm), replace any NaN / Infinity coords with finite values, ensure the array has length >= 2, and make points[0] equal the previous segment endpoint (or add a lineTo bridging the gap).',
     nextAction: { kind: 'fix-arg', field: 'points' },
     defaultSeverity: 'error',
     group: 'feature',
-    description: 'path().spline received fewer than 2 distinct finite waypoints.',
+    description: 'path().spline received fewer than 2 distinct finite waypoints, or points[0] does not start at the current pen position.',
   },
   // V slice Task V4 (2) — path().spline tangent extension.
   'feature.path.spline.tangent-zero-magnitude': {

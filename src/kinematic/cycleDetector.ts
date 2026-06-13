@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kinematic/cycleDetector.ts
 //
 // Closed-loop classifier for the kinematic dispatcher. The forward-kinematics

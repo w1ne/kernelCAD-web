@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/parts/holeAutoConnectors.ts
 //
 // Bracket-side auto-connector rule: any hole feature emits a `bolt-holes-N`

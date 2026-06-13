@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 const boltDia = param('boltDia', 5, {
   min: 3,
   max: 10,

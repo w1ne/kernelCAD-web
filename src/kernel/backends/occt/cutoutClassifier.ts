@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/backends/occt/cutoutClassifier.ts
 //
 // Slice-2 cutout-feature face classifier. Used only by cutoutLowerer.ts.

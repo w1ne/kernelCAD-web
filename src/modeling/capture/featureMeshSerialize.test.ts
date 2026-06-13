@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/featureMeshSerialize.test.ts
 import { describe, it, expect } from 'vitest';
 import { serializeForBridge, rehydrateFromBridge } from './featureMeshSerialize';

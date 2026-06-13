@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/whyDidThisFail.ts
 //
 // Walk the upstream chain of a failing feature. Returns the diagnostics

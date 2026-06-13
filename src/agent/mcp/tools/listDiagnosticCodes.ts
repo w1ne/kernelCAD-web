@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/listDiagnosticCodes.ts
 //
 // Protocol-discoverable view of the kernelCAD diagnostic vocabulary.

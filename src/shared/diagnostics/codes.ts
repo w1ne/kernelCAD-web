@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Back-compat re-exports for the kernelCAD diagnostic vocabulary.
 //
 // The single source of truth is `./registry.ts` (DIAGNOSTIC_REGISTRY). Prefer

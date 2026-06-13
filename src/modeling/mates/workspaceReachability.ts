@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/mates/workspaceReachability.ts
 //
 // v0.7 Slice 1 — workspace-reachability gate.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { isCatalogSlug, GRANDFATHERED_VERSIONS } from './memorableBuildsCatalog';

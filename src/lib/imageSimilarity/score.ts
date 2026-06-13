@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/lib/imageSimilarity/score.ts
 //
 // Image-similarity scorer for "render-vs-reference" verification in the

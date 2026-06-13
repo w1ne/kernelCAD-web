@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/tasks/export-dxf-planar-bracket/solution-expert.kcad.ts
 //
 // Slice A DXF entry: build a 50 x 25 mm sheet-metal blank with a single

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/addPathSpline.test.ts
 //
 // V slice — Task V4: tool-level test that addPathSplineTool relays the new

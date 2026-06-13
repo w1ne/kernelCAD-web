@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/parts/standardParts.ts
 //
 // Typed, autocomplete-friendly shortcuts that map argument records onto

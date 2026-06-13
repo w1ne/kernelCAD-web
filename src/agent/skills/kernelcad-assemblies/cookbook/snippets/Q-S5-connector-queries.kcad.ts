@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Q-S5 — Connector Queries for mate-side targeting
 //
 // Demonstrates: `q.connector(...)` composed with `q.ownedByPart(...)` and
@@ -10,7 +12,7 @@
 // Once mate-side consumer integration lands (a later slice), both sides of
 // `arm.mate(...)` accept a `Query<ConnectorMarker>` directly; today the
 // Query is a descriptor the agent can serialize to JSON and pass through
-// the `evaluate_query` MCP tool.
+// the `query({ mode: 'evaluate' })` MCP tool.
 
 const arm = assembly('attach');
 arm.part('base', box(20, 20, 10))

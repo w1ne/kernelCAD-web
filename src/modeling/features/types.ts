@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { type LucideIcon, type LucideProps } from 'lucide-react';
 import { type CodeGenerationContext } from '../../shared/codeGeneration/index';
 import { z } from 'zod';

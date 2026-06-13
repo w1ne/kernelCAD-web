@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/lib/distFsDiscoverySentinel.ts
 //
 // Guards against the generator accidentally growing a hand-coded skill

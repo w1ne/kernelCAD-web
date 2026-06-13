@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // MUSE 'pegboard' — perforated CNC timber panel, 600 x 400 x 5 mm, with a
 // centered grid of 6 mm through-holes on a 25 mm pitch and rounded corners.
 // Single solid: rounded-rect plate minus a patterned cylinder grid.

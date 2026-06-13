@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
 // Connector primitive — named coordinate frame embedded in a part.
 // Per spec `2026-05-11-assembly-mates-validator-design.md` §1. Origin

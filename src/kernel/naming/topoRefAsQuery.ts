@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/naming/topoRefAsQuery.ts
 //
 // Q7 — strings-as-sugar bridge per D0.9 (b). Compiles an F-surface-parsed

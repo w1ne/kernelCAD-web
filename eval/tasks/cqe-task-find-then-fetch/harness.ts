@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/tasks/cqe-task-find-then-fetch/harness.ts
 //
 // Gates the discovery chain:

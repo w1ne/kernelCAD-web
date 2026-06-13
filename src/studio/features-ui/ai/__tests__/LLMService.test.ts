@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { LLMService } from '../LLMService';
 

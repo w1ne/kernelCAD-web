@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/benchHistorySkipSimplify.ts
 import { evaluateScript } from '../src/agent/cli/commands/evaluate';
 import { resolve as resolvePath, dirname } from 'node:path';

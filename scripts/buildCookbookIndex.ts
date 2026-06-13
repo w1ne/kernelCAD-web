@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { readFileSync, writeFileSync } from 'node:fs';
 import { loadSnippets, type Snippet } from '../src/agent/cookbook/index';
 

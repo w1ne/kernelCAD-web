@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Gate 3 demonstration — revolute mate with declared maxLoad.torque = 5
 // N·m and externalLoads producing 10 N·m (200 N at a 50 mm lever arm).
 // Gate 3 emits `assembly.joint.load-exceeded` (error). Under

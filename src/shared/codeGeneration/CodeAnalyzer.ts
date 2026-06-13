@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { getDeclaredVariablesAST, getReturnedVariables } from './ast';
 import type { CodeGenerationContext } from './CodeGenerationContext';
 

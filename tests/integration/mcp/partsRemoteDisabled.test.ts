@@ -6,7 +6,9 @@ describe('parts.fetch.remote-disabled — coverage across tools', () => {
   let prevEnv: string | undefined;
   beforeEach(() => {
     prevEnv = process.env.KERNELCAD_PARTS_BASE_URL;
-    delete process.env.KERNELCAD_PARTS_BASE_URL;
+    // step.parts is the production default; disable the tier to exercise the
+    // remote-disabled error path deterministically (offline, no live calls).
+    process.env.KERNELCAD_PARTS_BASE_URL = 'off';
   });
   afterEach(() => {
     if (prevEnv === undefined) delete process.env.KERNELCAD_PARTS_BASE_URL;

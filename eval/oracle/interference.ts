@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/oracle/interference.ts
 //
 // Wraps `kernelcad interference --json <script>` for use by per-task harnesses.

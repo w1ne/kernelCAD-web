@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // NURBS Slice C Task 5 — hermiteG2 quintic Hermite transition curve.
 //
 // Pure-JS solver. Given two endpoints with prescribed point, first derivative

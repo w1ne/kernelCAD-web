@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // expected: ['kinematic.collision.swept']
 //
 // Snippet 1 — checkSweptCollision on a 2-DOF arm.

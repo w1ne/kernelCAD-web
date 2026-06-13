@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/backends/occt/createdRefs.ts
 //
 // Slice-2 generic created-refs subsystem. Replaces slice-1's hard-coded

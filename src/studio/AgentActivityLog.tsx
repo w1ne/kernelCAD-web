@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import React, { useMemo, useState } from 'react';
 import { createMcpToken } from '../funnel/lib/apiClient';
 

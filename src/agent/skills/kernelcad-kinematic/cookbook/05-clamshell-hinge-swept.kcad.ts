@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // expected: ['kinematic.collision.swept']
 //
 // Snippet 5 — non-robotics mechanism: a laptop clamshell hinge swept across

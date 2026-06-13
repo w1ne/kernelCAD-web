@@ -1,9 +1,18 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createFileRoute } from '@tanstack/react-router';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import App from '../App';
 import { SignInButton } from '../../funnel/components/SignInButton';
 import { useSession } from '../../funnel/hooks/useSession';
-import { fetchProjectBySlug, claimProject, type ProjectRow } from '../../funnel/lib/apiClient';
+import {
+  fetchProjectBySlug,
+  claimProject,
+  setProjectPrivacy,
+  createCheckoutSession,
+  PRIVATE_REQUIRES_PAID,
+  type ProjectRow,
+} from '../../funnel/lib/apiClient';
 import { shouldApplyProjectUpdate } from '../../funnel/lib/liveProject';
 
 export const Route = createFileRoute('/p/$slug')({
@@ -23,6 +32,8 @@ function ProjectPage() {
   const [err, setErr] = useState<string | null>(null);
   const [claimed, setClaimed] = useState(false);
   const [claiming, setClaiming] = useState(false);
+  const [privacyBusy, setPrivacyBusy] = useState(false);
+  const [upgradeNeeded, setUpgradeNeeded] = useState(false);
   const [liveCode, setLiveCode] = useState<string | undefined>();
   const [lastLiveUpdate, setLastLiveUpdate] = useState<Date | null>(null);
   const versionRef = useRef<number | null>(null);
@@ -81,6 +92,32 @@ function ProjectPage() {
     }
   }, [slug]);
 
+  // Owner-only privacy toggle: public_unlisted <-> private. Making a project
+  // private is Pro-gated server-side; a 403 surfaces the upgrade CTA instead.
+  const handleTogglePrivacy = useCallback(async () => {
+    setPrivacyBusy(true);
+    setUpgradeNeeded(false);
+    try {
+      const next = project?.privacy === 'private' ? 'public_unlisted' : 'private';
+      const { privacy } = await setProjectPrivacy(slug, next);
+      setProject(p => (p ? { ...p, privacy } : p));
+    } catch (e) {
+      if (String(e).includes(PRIVATE_REQUIRES_PAID)) setUpgradeNeeded(true);
+      // else: transient — leave the button available to retry.
+    } finally {
+      setPrivacyBusy(false);
+    }
+  }, [slug, project?.privacy]);
+
+  const handleUpgrade = useCallback(async () => {
+    try {
+      const { url } = await createCheckoutSession();
+      if (typeof window !== 'undefined') window.location.href = url;
+    } catch {
+      // Leave the button available to retry.
+    }
+  }, []);
+
   if (err) {
     return (
       <main className="min-h-screen bg-vellum font-sans p-8">
@@ -116,6 +153,8 @@ function ProjectPage() {
   // Anonymous (owner-less) projects — e.g. built by a web-Claude session via
   // open_in_studio — can be claimed: "sign in to save" → claim into your account.
   const isAnonymous = project.owner_id == null && !claimed;
+  const isOwner = !!session && project.owner_id != null && project.owner_id === session.user.id;
+  const isPrivate = project.privacy === 'private';
   const btnClass = 'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-0.5 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 transition-colors';
 
   let headerRight: ReactNode = null;
@@ -134,6 +173,16 @@ function ProjectPage() {
     headerRight = (
       <button type="button" onClick={handleClaim} disabled={claiming} className={btnClass}>
         {claiming ? 'Saving…' : 'Save to my projects'}
+      </button>
+    );
+  } else if (isOwner) {
+    headerRight = upgradeNeeded ? (
+      <button type="button" onClick={handleUpgrade} className={btnClass} title="Private projects require Pro">
+        Upgrade to keep private
+      </button>
+    ) : (
+      <button type="button" onClick={handleTogglePrivacy} disabled={privacyBusy} className={btnClass}>
+        {privacyBusy ? '…' : isPrivate ? 'Make public' : 'Make private'}
       </button>
     );
   }

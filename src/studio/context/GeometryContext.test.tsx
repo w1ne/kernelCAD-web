@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // @vitest-environment happy-dom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act, cleanup } from '@testing-library/react';
@@ -27,6 +29,25 @@ function expectFetchSignal(fetchMock: ReturnType<typeof vi.spyOn>, callIndex: nu
   expect(fetchMock.mock.calls[callIndex - 1]?.[1]).toEqual(
     expect.objectContaining({ signal: expect.any(Object) }),
   );
+}
+
+/**
+ * Deterministically wait for an async fetch chain (e.g. session → fallback mesh
+ * → review) to complete, instead of a FIXED number of `await Promise.resolve()`
+ * flushes. Advances fake timers + flushes microtasks in small rounds until
+ * `predicate` holds (covers the 600 ms debounced build) or a cap is hit.
+ *
+ * Root-cause fix: the fixed-flush pattern occasionally under-flushed a
+ * variable-length async chain, so the next fetch hadn't fired when the test
+ * asserted — intermittent '' / wrong-count failures, especially under CI load.
+ */
+async function flushUntil(predicate: () => boolean, maxRounds = 80): Promise<void> {
+  for (let round = 0; round < maxRounds; round++) {
+    if (predicate()) return;
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10);
+    });
+  }
 }
 
 const mockEngine = {
@@ -108,6 +129,7 @@ describe('GeometryContext latest-intent-wins', () => {
   afterEach(() => {
     cleanup();
     vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it('ignores stale execute responses that finish after a newer request', async () => {
@@ -370,6 +392,120 @@ describe('GeometryContext latest-intent-wins', () => {
     expect(screen.getByTestId('script-review-repair').textContent).toContain('supported clevis');
   });
 
+  it('falls back to hosted mesh-by-source when hosted script sessions are unavailable', async () => {
+    window.history.pushState(
+      {},
+      '',
+      '/?script=examples/gallery/ratchet-stool.kcad.ts',
+    );
+    vi.stubGlobal('window', {
+      ...window,
+      location: { ...window.location, hostname: 'app.kernelcad.com', search: '?script=examples/gallery/ratchet-stool.kcad.ts' },
+      localStorage: window.localStorage,
+      history: window.history,
+      crypto: window.crypto,
+    });
+
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: async () => ({ error: 'not found' }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          features: [
+            {
+              featureId: 'seat',
+              featureKind: 'box',
+              predecessors: [],
+              faces: [
+                {
+                  vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
+                  indices: [0, 1, 2],
+                  normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+                  faceId: 0,
+                },
+              ],
+            },
+          ],
+          featureRecords: [],
+          bounds: { min: [0, 0, 0], max: [1, 1, 0] },
+          params: {},
+          review: { ok: true, diagnostics: [] },
+        }),
+      } as Response);
+
+    render(
+      <GeometryProvider code={'export default box(1, 1, 1);'}>
+        <Probe />
+      </GeometryProvider>,
+    );
+
+    await flushUntil(() => fetchMock.mock.calls.length >= 2);
+
+    expect(fetchUrl(fetchMock, 1)).toBe('/__kernelcad/session?script=examples%2Fgallery%2Fratchet-stool.kcad.ts');
+    expect(fetchUrl(fetchMock, 2)).toContain('https://kernelcad.com/gallery/_mesh/');
+    expect(screen.getByTestId('face-count').textContent).toBe('1');
+    expect(screen.getByTestId('script-review-ok').textContent).toBe('true');
+  });
+
+  // Regression: gallery/MCP models authored as modern .kcad.ts carry TypeScript
+  // syntax (type annotations). The old acorn pre-check (`parseCode`, a JS-only
+  // parser) threw "Unexpected token (line:col)" and blanked the model on the
+  // hosted app — even though the server mesh transpiles TS and renders it fine.
+  // The hosted path must NOT run the acorn guard.
+  it('hosted: renders modern TypeScript .kcad.ts via server mesh (no acorn parse error)', async () => {
+    vi.stubGlobal('window', {
+      ...window,
+      location: { ...window.location, hostname: 'app.kernelcad.com', search: '' },
+      localStorage: window.localStorage,
+      history: window.history,
+      crypto: window.crypto,
+    });
+
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        features: [
+          {
+            featureId: 'b',
+            featureKind: 'box',
+            predecessors: [],
+            faces: [
+              {
+                vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
+                indices: [0, 1, 2],
+                normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+                faceId: 0,
+              },
+            ],
+          },
+        ],
+        featureRecords: [],
+        bounds: { min: [0, 0, 0], max: [1, 1, 0] },
+        params: {},
+        review: { ok: true, diagnostics: [] },
+      }),
+    } as Response);
+
+    // The `: number` annotations make this invalid JavaScript — acorn would
+    // throw "Unexpected token". The fix skips acorn on the hosted path.
+    const tsCode = 'const widen = (x: number): number => x * 2;\nexport default box(widen(1), 1, 1);';
+    render(
+      <GeometryProvider code={tsCode}>
+        <Probe />
+      </GeometryProvider>,
+    );
+
+    await flushUntil(() => screen.getByTestId('face-count').textContent === '1');
+
+    expect(screen.getByTestId('error').textContent).toBe('');
+    expect(screen.getByTestId('face-count').textContent).toBe('1');
+    expect(fetchMock).toHaveBeenCalled();
+  });
+
   it('refreshes mesh AND review when params relower over SSE', async () => {
     // PR #315 / I1: relower MUST re-run review so the StudioShell HUD
     // (interferences: N) reflects the post-param model. Old behavior
@@ -443,23 +579,15 @@ describe('GeometryContext latest-intent-wins', () => {
       </GeometryProvider>,
     );
 
-    await act(async () => {
-      await Promise.resolve();
-      await Promise.resolve();
-      await Promise.resolve();
-      await Promise.resolve();
-    });
+    await flushUntil(() => fetchMock.mock.calls.length >= 3);
 
     expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(relowerHandler).not.toBeNull();
 
     await act(async () => {
       relowerHandler?.();
-      await Promise.resolve();
-      await Promise.resolve();
-      await Promise.resolve();
-      await Promise.resolve();
     });
+    await flushUntil(() => fetchMock.mock.calls.length >= 5);
 
     expect(fetchMock).toHaveBeenCalledTimes(5);
     expect(fetchUrl(fetchMock, 4)).toBe('/__kernelcad/mesh?session=tok-abc');

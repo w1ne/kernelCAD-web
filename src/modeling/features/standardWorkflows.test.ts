@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, beforeAll } from 'vitest';
 import { initReplicad, executeGeometry } from '../../../tests/regressionTestHelpers';
 import { expectGeometryMatch } from '../../../tests/geometryValidators';

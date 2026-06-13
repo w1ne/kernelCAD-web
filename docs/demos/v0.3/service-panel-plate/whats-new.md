@@ -93,13 +93,13 @@ return box(plateW, plateD, plateT)
   .cutout(panelCableProfile, { face: 'top', depth: 'through', name: 'cablePort', enabled: addCablePort });
 ```
 
-After the first build, an agent can inspect and edit the active session with
-MCP:
+After the first build, an agent can inspect the params and rewrite their
+`param()` defaults in the source with MCP:
 
 ```typescript
-params_list({});
-params_update({ edits: [{ name: 'cornerBoltDia', value: 6 }] });
-params_update({ edits: [{ name: 'addCablePort', value: false }] });
+inspect({ of: 'params' });
+set_param({ code, param_name: 'cornerBoltDia', new_value: 6 });
+set_param({ code, param_name: 'addCablePort', new_value: false });
 ```
 
 Numeric edits re-lower the first affected feature and its downstream

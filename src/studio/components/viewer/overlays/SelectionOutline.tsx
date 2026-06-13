@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as THREE from "three";
 import { useMemo, useEffect } from "react";
 import type { GeometryResult, FaceGeometry } from "../../../../shared/worker/geometryEngine";

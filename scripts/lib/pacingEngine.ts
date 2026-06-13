@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { FeatureKind } from '../../src/shared/intent/types';
 
 export interface FeatureSpec {

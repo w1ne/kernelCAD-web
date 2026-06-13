@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -123,13 +125,14 @@ describe('parseGalleryEntries', () => {
     expect(result.entries[0].codeLocal).toBe(entry.codeLocal);
   });
 
-  it('keeps the release gallery focused on the new watch and stool', () => {
+  it('keeps the release gallery focused on the watch, stool, and spice dispenser', () => {
     const entriesPath = path.resolve(__dirname, '../../site/gallery/entries.json');
     const parsed = parseGalleryEntries(JSON.parse(readFileSync(entriesPath, 'utf8')));
     const slugs = parsed.entries.map(entry => entry.slug);
 
     expect(slugs).toContain('royal-pop-pocket-watch');
     expect(slugs).toContain('ratchet-height-adjust-stool');
+    expect(slugs).toContain('spice-dispenser-carousel');
     expect(slugs).not.toContain('pink-pocket-watch');
     expect(slugs.filter(slug => slug.includes('watch'))).toEqual(['royal-pop-pocket-watch']);
   });

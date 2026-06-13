@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // MUSE 'stool' — four-legged CNC-milled timber stool, interlocking joinery.
 // 5 independent components: seat panel + 4 legs. Legs carry a square tenon
 // on top; the seat panel carries matching sockets cut into its bottom face

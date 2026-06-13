@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { SurfaceId } from '../../shared/intent/surfaceRecord';
 import type { CaptureSession } from './captureSession';
 import { Shape } from './proxy';

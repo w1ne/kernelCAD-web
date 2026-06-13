@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/cli/commands/parts.ts
 //
 // `kernelcad parts <file>` — list solved-assembly parts with exact bbox,

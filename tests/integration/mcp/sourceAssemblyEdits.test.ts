@@ -249,9 +249,19 @@ describe('durable assembly source-edit MCP tools', () => {
     }
   });
 
-  it('exposes durable source tools through the MCP registry without replacing active-session tools', async () => {
+  it('exposes the source-only assembly tools through the MCP registry', async () => {
     const toolNames = TOOL_REGISTRY.map(entry => entry.definition.name);
+    // Source-only surface (the ephemeral active-session layer was removed; the
+    // mate trio collapsed into add_mate({ relation })).
     expect(toolNames).toEqual(expect.arrayContaining([
+      'add_part',
+      'add_connector',
+      'add_mate',
+      'add_workspace_target',
+      'set_scene_return',
+    ]));
+    // Retired names must be gone from the registry.
+    for (const retired of [
       'add_assembly_part_source',
       'add_part_connector_source',
       'add_mate_source',
@@ -259,11 +269,11 @@ describe('durable assembly source-edit MCP tools', () => {
       'add_transmission_source',
       'add_workspace_target_source',
       'set_scene_return_source',
-      'add_connector',
-      'add_mate',
-    ]));
+    ]) {
+      expect(toolNames).not.toContain(retired);
+    }
 
-    const result = await callMcpTool('set_scene_return_source', {
+    const result = await callMcpTool('set_scene_return', {
       code: CONNECTED_SEED,
       assembly_binding: 'rig',
       mode: 'model',
@@ -278,8 +288,10 @@ describe('durable assembly source-edit MCP tools', () => {
       ]),
     );
 
-    const activeConnector = TOOL_REGISTRY.find(entry => entry.definition.name === 'add_connector');
-    expect(activeConnector?.definition.description).toMatch(/active assembly/i);
-    expect(activeConnector?.definition.inputSchema.properties).not.toHaveProperty('code');
+    // add_connector is now the durable source-edit tool — it takes `code` and
+    // is no longer the active-session register.
+    const connector = TOOL_REGISTRY.find(entry => entry.definition.name === 'add_connector');
+    expect(connector?.definition.inputSchema.properties).toHaveProperty('code');
+    expect(connector?.definition.description).not.toMatch(/active assembly/i);
   });
 });

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { StudioLayoutMode } from '../../shared/types/layout';
 import type { ViewMode3D, ViewportBackground } from '../../shared/types/viewMode';

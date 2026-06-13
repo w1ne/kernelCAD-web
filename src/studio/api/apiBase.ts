@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Studio ↔ hosted MCP coverage — S1: API base-URL helper + auth wiring.
 //
 // Spec: docs/specs/2026-05-30-studio-hosted-mcp-coverage-design.md

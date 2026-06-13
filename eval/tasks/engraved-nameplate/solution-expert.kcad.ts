@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/tasks/engraved-nameplate/solution-expert.kcad.ts
 const base = box(80, 30, 3);
 const label = sketch

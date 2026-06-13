@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 export const CAD_COLORS = {
     highlight: 0xFF9F1C, // Orange
     selection: 0x2EC4B6, // Blue/Teal

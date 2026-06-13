@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/corpus-query-dsl.test.ts
 //
 // Q10 corpus test — verifies the composed-Query-DSL expert solution

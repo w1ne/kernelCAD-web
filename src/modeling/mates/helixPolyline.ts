@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/mates/helixPolyline.ts
 //
 // P10 — pure geometry helper for tendon coil rendering, consumed by the

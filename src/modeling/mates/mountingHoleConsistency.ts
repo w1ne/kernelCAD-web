@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/lib/mates/mountingHoleConsistency.ts
 //
 // v0.7.4 Gate 1 — fastened-mate mounting-hole consistency check.
