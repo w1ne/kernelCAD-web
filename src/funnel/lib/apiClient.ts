@@ -39,7 +39,7 @@ export async function fetchGeneration(genId: string): Promise<GenerationRow | nu
 // ---------------------------------------------------------------------------
 
 export async function authedFetch<T>(
-  method: 'GET' | 'POST',
+  method: 'GET' | 'POST' | 'PATCH',
   path: string,
   body?: unknown,
 ): Promise<T> {
@@ -90,6 +90,21 @@ export async function saveProject(input: SaveProjectInput): Promise<SaveProjectR
  *  user. `claimed` is false if it was already owned. */
 export async function claimProject(slug: string): Promise<{ claimed: boolean }> {
   return authedFetch<{ claimed: boolean }>('POST', `/api/v1/projects/${encodeURIComponent(slug)}/claim`, {});
+}
+
+/** Thrown when a free user tries to make a project private — the body text
+ *  authedFetch surfaces on a 403 carries this code. Lets the UI show an
+ *  upgrade CTA instead of a generic failure. */
+export const PRIVATE_REQUIRES_PAID = 'private_requires_paid_account';
+
+/** Owner-only privacy toggle (public_unlisted <-> private). Making a project
+ *  private is Pro-gated server-side; a 403 carrying PRIVATE_REQUIRES_PAID means
+ *  the caller needs to upgrade. */
+export async function setProjectPrivacy(
+  slug: string,
+  privacy: Extract<ProjectPrivacy, 'public_unlisted' | 'private'>,
+): Promise<{ privacy: Extract<ProjectPrivacy, 'public_unlisted' | 'private'> }> {
+  return authedFetch('PATCH', `/api/v1/projects/${encodeURIComponent(slug)}/privacy`, { privacy });
 }
 
 export interface ProjectRow {
