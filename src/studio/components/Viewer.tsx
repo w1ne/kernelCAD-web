@@ -186,7 +186,15 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
 
                 <group>
                     {geometries.map((g, i) => {
-                        const name = itemNames[i];
+                        // Prefer the authored assembly part name over the
+                        // return-variable name. For assemblies a single returned
+                        // variable expands into many per-part geometries, so
+                        // `itemNames[i]` is absent for all but the first — using
+                        // it alone leaves parts anonymous and downstream consumers
+                        // (selection, the marking/review overlay's `ownerId`) fall
+                        // back to `shape#<index>`. `assemblyPartName` carries the
+                        // real authored name per part. Mirrors `sectionPartKey`.
+                        const name = g.assemblyPartName ?? itemNames[i];
                         if (name && hiddenIds.includes(name)) return null;
                         // Hide whole assembly parts by name (the Parts list in the
                         // Scene tab toggles `assemblyPartName` into hiddenIds).
