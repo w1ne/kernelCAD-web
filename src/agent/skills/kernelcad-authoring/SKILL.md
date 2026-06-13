@@ -849,7 +849,7 @@ Semantics that matter when authoring the declaration:
   structs keep part-local coordinates.
 
 Surfaces: automatic on `kernelcad evaluate` / MCP `evaluate_script`; standalone
-report via `kernelcad dfm <file>` (`--json`) and MCP `dfm_check`.
+report via `kernelcad dfm <file>` (`--json`) and MCP `verify({ check: 'dfm' })`.
 
 ## Materials
 

@@ -35,7 +35,6 @@ import { getShapeInfoTool } from './tools/getShapeInfo';
 import { inspectAssemblyTool } from './tools/inspectAssembly';
 import { inspectRobotTool } from './tools/inspectRobot';
 import { inspectStepTool } from './tools/inspectStep';
-import { validateUrdfTool } from './tools/validateUrdf';
 import { listApiTool } from './tools/listApi';
 import { listDiagnosticCodesTool } from './tools/listDiagnosticCodes';
 import { listEdgesTool } from './tools/listEdges';
@@ -61,16 +60,10 @@ import { reviewCadTool } from './tools/reviewCad';
 import { reviewPaintPeekLatestTool } from './tools/reviewPaint';
 import { setParamValueTool } from './tools/setParamValue';
 import { solveMatesTool } from './tools/solveMates';
-import { validateAssemblyTool } from './tools/validateAssembly';
 import { whyDidThisFailTool } from './tools/whyDidThisFail';
 import { flattenPatternTool } from './tools/flattenPattern';
 import { getBendTableTool } from './tools/getBendTable';
-import { dfmPreflightTool } from './tools/dfmPreflight';
-import { dfmCheckTool } from './tools/dfmCheck';
-import { checkSweptCollisionTool } from './tools/checkSweptCollision';
-import { checkReachableTool } from './tools/checkReachable';
-import { checkMountingHoleConsistencyTool } from './tools/checkMountingHoleConsistency';
-import { checkLoadCapacityTool } from './tools/checkLoadCapacity';
+import { verifyTool } from './tools/verify';
 import { captureAnimationTool } from './tools/captureAnimation';
 export { runClosedLoop } from '../loop/closedLoop.js';
 export { buildRepairPrompt } from '../loop/repairPrompt.js';
@@ -222,18 +215,58 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'validate_urdf',
+      name: 'verify',
       description:
-        'Parse a .urdf file and check structural validity: well-formed XML, every <joint>\'s parent/child link resolves, link/joint names unique, no closed kinematic loops. Returns { ok, linkCount, jointCount, rootLinks }. Read-only — does not write to disk.',
+        'Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n' +
+        "- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n" +
+        "- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n" +
+        "- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n" +
+        "- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }).\n" +
+        "- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n" +
+        "- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n" +
+        "- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n" +
+        "- 'load-capacity' — closed-form Euler-Bernoulli beam stress / safety-factor check ({ loads, materials, ... }).\n" +
+        'All params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.',
       inputSchema: {
         type: 'object',
         properties: {
-          urdf_path: { type: 'string', description: 'Path to the .urdf file to validate.' },
+          check: {
+            type: 'string',
+            enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity'],
+            description: 'Which verification to run.',
+          },
+          file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity).' },
+          code: { type: 'string', description: 'Inline kernelCAD script source (same checks as `file`).' },
+          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
+          urdf_path: { type: 'string', description: "check:'urdf' — path to the .urdf file." },
+          dxf: { type: 'string', description: "check:'dfm-preflight' — path to a DXF file." },
+          featureId: { type: 'string', description: "check:'dfm-preflight' — FeatureId to scope to." },
+          vendor: { type: 'string', description: "check:'dfm-preflight' — vendor SKU (required for that check)." },
+          material: { type: 'string', description: "check:'dfm-preflight' — material SKU (required for that check)." },
+          thicknessIn: { type: 'number', description: "check:'dfm-preflight' — material thickness in inches." },
+          thicknessMm: { type: 'number', description: "check:'dfm-preflight' — material thickness in millimeters." },
+          service: { type: 'string', enum: ['laser', 'cnc-router', 'waterjet', 'bending'], description: "check:'dfm-preflight' — service." },
+          refreshCatalog: { type: 'boolean', description: "check:'dfm-preflight' — force vendor catalog refresh." },
+          joint: { type: 'string', description: "check:'swept-collision' — joint to sweep; omit to sweep every declared joint." },
+          range: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: "check:'swept-collision' — [lower, upper, step] in joint-native units." },
+          collision_tolerance_mm3: { type: 'number', description: "check:'swept-collision' — BREP intersection volume tolerance (mm^3)." },
+          tip_link: { type: 'string', description: "check:'reachable' — end-effector part name (required for that check)." },
+          target_position: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: "check:'reachable' — target [x, y, z] mm (world frame)." },
+          target_orientation: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: "check:'reachable' — target XYZ Euler angles in radians." },
+          position_tolerance_mm: { type: 'number', description: "check:'reachable' — position tolerance in mm." },
+          orientation_tolerance_rad: { type: 'number', description: "check:'reachable' — orientation tolerance in radians." },
+          prefer_solver: { type: 'string', enum: ['analytical', 'numeric', 'auto'], description: "check:'reachable' — force the IK path ('auto' default)." },
+          max_iterations: { type: 'number', description: "check:'reachable' — numeric-path iteration cap." },
+          seed: { type: 'object', description: "check:'reachable' — numeric IK seed pose (joint name -> deg/mm)." },
+          loads: { type: 'object', description: "check:'load-capacity' — partName -> { force?: [Fx,Fy,Fz] N, torque?: [Tx,Ty,Tz] N*m }." },
+          materials: { type: 'object', description: "check:'load-capacity' — partName -> material declaration." },
+          mode: { type: 'string', enum: ['stub', 'beam'], description: "check:'load-capacity' — 'beam' (default) or 'stub'." },
+          safety_factor_threshold: { type: 'number', description: "check:'load-capacity' — pass/fail safety-factor floor (default 1.5)." },
         },
-        required: ['urdf_path'],
+        required: ['check'],
       },
     },
-    handler: input => validateUrdfTool(input as unknown as Parameters<typeof validateUrdfTool>[0]),
+    handler: input => verifyTool(input as unknown as Parameters<typeof verifyTool>[0]),
   },
   {
     definition: {
@@ -1425,19 +1458,6 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'validate_assembly',
-      description: 'Run the mate-aware assembly validator (validateAssemblyWithMates) on the active assembly. Returns { status, diagnostics, partCount, jointCount } where diagnostics carry per-code hints agents use to recover.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          assembly: { type: 'string' },
-        },
-      },
-    },
-    handler: input => validateAssemblyTool(input as unknown as Parameters<typeof validateAssemblyTool>[0]),
-  },
-  {
-    definition: {
       name: 'solve_mates',
       description: 'Run the v0.6 mate-graph solver on the active assembly. Returns { status, poses, iterations? } where each pose is a serialized Transform ({ translation, rotateAxis, rotateDeg }). Optional poses overrides mate pose values by mate name.',
       inputSchema: {
@@ -1652,53 +1672,6 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'dfm_preflight',
-      description:
-        'Preflight a sheet-metal flat pattern or planar body against a job-shop\'s public ordering rules. ' +
-        'Required: vendor (e.g. "sendcutsend"), material SKU (from catalog.json), and thicknessIn or thicknessMm. ' +
-        'Returns { ok, findings[], diagnostics[] } where findings carry repairHint.action ' +
-        '(enlarge | remove | relocate | change-material | change-thickness) and an @kc[...] ref. ' +
-        'Tool fails closed when vendor / material / thickness are omitted. Source: .kcad.ts script ' +
-        '(via flatten_pattern + get_bend_table) or DXF file path. STEP path ships in a follow-up slice.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          dxf:  { type: 'string', description: 'Path to a DXF file.' },
-          featureId: { type: 'string', description: 'Optional FeatureId to scope to.' },
-          vendor: { type: 'string', description: 'Vendor SKU (required). See catalogs/sources-manifest.json.' },
-          material: { type: 'string', description: 'Material SKU (required). See catalog.json.' },
-          thicknessIn: { type: 'number', description: 'Material thickness in inches.' },
-          thicknessMm: { type: 'number', description: 'Material thickness in millimeters.' },
-          service: { type: 'string', enum: ['laser', 'cnc-router', 'waterjet', 'bending'] },
-          refreshCatalog: { type: 'boolean', description: 'Force refresh of the vendor catalog (24h cache).' },
-        },
-        required: ['vendor', 'material'],
-      },
-    },
-    handler: input => dfmPreflightTool(input as unknown as Parameters<typeof dfmPreflightTool>[0]) as Promise<unknown>,
-  },
-  {
-    definition: {
-      name: 'dfm_check',
-      description:
-        'Run the print-readiness gates declared by dfmSpec() in a kernelCAD script: part-pair clearance ' +
-        '(exact BREP distance), minimum wall thickness (inward ray sampling), and void/channel topology ' +
-        '(voxel flood-fill). Pass either { file } or { code }. Reports per-pair distances, worst thin spots ' +
-        '(xyz + part), channel mouth counts, and diagnostics with hints. No-op error if the script declares no dfmSpec.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-        },
-      },
-    },
-    handler: input => dfmCheckTool(input as Parameters<typeof dfmCheckTool>[0]),
-  },
-  {
-    definition: {
       name: 'evaluate_sdf',
       description:
         'Sample the signed distance from an in-script sdf.* field at a 3D point. ' +
@@ -1725,127 +1698,6 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => evaluateSdfTool(input as unknown as Parameters<typeof evaluateSdfTool>[0]),
-  },
-  {
-    definition: {
-      name: 'check_swept_collision',
-      description:
-        'Sweep the assembly across declared joint range(s) and report every pose at which a pair of parts share a non-empty BREP intersection. Returns posesSampled + collidingPoses[] with per-pose contact pairs. Diagnostics: kinematic.collision.swept (K1), kinematic.collision.swept.sample-density-warning (K2). Local in-process compute; no network. Pass either { file } or { code }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
-          joint: { type: 'string', description: 'Joint name to sweep; omit to sweep every declared joint.' },
-          range: {
-            type: 'array',
-            items: { type: 'number' },
-            minItems: 3,
-            maxItems: 3,
-            description: 'Inclusive [lower, upper, step] in joint-native units (deg for revolute, mm for prismatic).',
-          },
-          collision_tolerance_mm3: {
-            type: 'number',
-            description: 'BREP boolean-intersection volume tolerance (default 0.01 mm^3).',
-          },
-        },
-      },
-    },
-    handler: input => checkSweptCollisionTool(input as Parameters<typeof checkSweptCollisionTool>[0]),
-  },
-  {
-    definition: {
-      name: 'check_reachable',
-      description:
-        'Solve inverse kinematics for an end-effector target on a serial open chain. Returns ok=true with the solved pose when the target is reachable within tolerance; otherwise carries axis-discriminated diagnostics so the caller can lengthen a link, add a DOF, or relax orientation. Diagnostics: kinematic.unreachable (K3), kinematic.reachability.iteration-cap-hit (K4), kinematic.solver.unsupported-config (K5). Local in-process compute. Pass either { file } or { code }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
-          tip_link: { type: 'string', description: 'End-effector part name.' },
-          target_position: {
-            type: 'array',
-            items: { type: 'number' },
-            minItems: 3,
-            maxItems: 3,
-            description: 'Target position [x, y, z] in mm (world frame).',
-          },
-          target_orientation: {
-            type: 'array',
-            items: { type: 'number' },
-            minItems: 3,
-            maxItems: 3,
-            description: 'Target orientation as XYZ Euler angles in radians.',
-          },
-          position_tolerance_mm: { type: 'number', description: 'Position tolerance in mm.' },
-          orientation_tolerance_rad: { type: 'number', description: 'Orientation tolerance in radians.' },
-          prefer_solver: {
-            type: 'string',
-            enum: ['analytical', 'numeric', 'auto'],
-            description: "Force the IK path; 'auto' (default) routes spherical-wrist chains to the analytical solver.",
-          },
-          max_iterations: { type: 'number', description: 'Numeric-path iteration cap (default 200).' },
-          seed: {
-            type: 'object',
-            description: 'Seed pose for the numeric path (joint name -> numeric value in deg or mm).',
-          },
-        },
-        required: ['tip_link'],
-      },
-    },
-    handler: input => checkReachableTool(input as unknown as Parameters<typeof checkReachableTool>[0]),
-  },
-  {
-    definition: {
-      name: 'check_mounting_hole_consistency',
-      description:
-        'Walk every fastened mate in the assembly and verify both sides expose the same hole diameter on their bound faces. Returns mismatches[] with per-mate side details (boundFaceName, diameterMm, depth). Diagnostics: kinematic.mounting-hole.diameter-mismatch (K9). Local in-process compute. Pass either { file } or { code }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
-        },
-      },
-    },
-    handler: input => checkMountingHoleConsistencyTool(input as Parameters<typeof checkMountingHoleConsistencyTool>[0]),
-  },
-  {
-    definition: {
-      name: 'check_load_capacity',
-      description:
-        "Closed-form Euler-Bernoulli beam stress check on cantilever-shaped parts that declare a rectangular crossSection. Returns the worst-of safety factor across every successfully-computed part, plus per-part stress / yield / SF records and structured failure entries. Diagnostics: kinematic.load-exceeds-yield (K6), kinematic.load.beam-not-applicable (K7), kinematic.no-material-declared (K8). Catalog materials: 'steel' | 'aluminum' | 'pla' | 'abs' | 'pet' | 'custom' (yieldStressMPa + youngsModulusGPa required for 'custom'). Local in-process compute. Pass either { file } or { code }.",
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
-          loads: {
-            type: 'object',
-            description: 'Map of partName -> { force?: [Fx, Fy, Fz] (N), torque?: [Tx, Ty, Tz] (N*m) }. Applied at the loaded part\'s free end.',
-          },
-          materials: {
-            type: 'object',
-            description: "Map of partName -> { material: 'steel' | 'aluminum' | 'pla' | 'abs' | 'pet' | 'custom', yieldStressMPa?, youngsModulusGPa?, density? }.",
-          },
-          mode: {
-            type: 'string',
-            enum: ['stub', 'beam'],
-            description: "'beam' (default) runs the closed-form path; 'stub' re-exports the mate-side maxLoad-vs-externalLoads check.",
-          },
-          safety_factor_threshold: {
-            type: 'number',
-            description: 'Pass-fail floor on the computed safety factor (default 1.5).',
-          },
-        },
-      },
-    },
-    handler: input => checkLoadCapacityTool(input as Parameters<typeof checkLoadCapacityTool>[0]),
   },
   {
     definition: {

@@ -9,7 +9,7 @@ zero error findings.
 Return the bracket Shape from your `.kcad.ts` script.
 
 Gates:
-- `dfm_preflight({ vendor: 'sendcutsend', material: 'aluminum-6061-t6', thicknessIn: 0.125, service: 'bending' })`
+- `verify({ check: 'dfm-preflight', vendor: 'sendcutsend', material: 'aluminum-6061-t6', thicknessIn: 0.125, service: 'bending' })`
   returns `ok: true`.
 - Zero `dfm.*` error findings.
 - At least one `flatten_pattern` + `get_bend_table` row each.

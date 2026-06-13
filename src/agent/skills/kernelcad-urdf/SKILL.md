@@ -69,7 +69,7 @@ URDF requires a tree topology. If the assembly has a closed mate graph (e.g. a 4
 
 ## Verification gates
 
-- `G-urdf-valid` — the exported `.urdf` parses cleanly via the `validate_urdf` MCP tool.
+- `G-urdf-valid` — the exported `.urdf` parses cleanly via the `verify({ check: 'urdf' })` MCP tool.
 - `G-urdf-tree-shape` — no closed loops in the mate graph.
 - `G-urdf-inertia-density-declared` — no link inherits the default density.
 
