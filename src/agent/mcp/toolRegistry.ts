@@ -70,6 +70,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'evaluate_script',
       description:
+        'Use this when you need to run a script and check it compiles. ' +
         'Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics. ' +
         'When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), ' +
         'also returns a parts summary { count, names }. ' +
@@ -100,6 +101,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'diff_scripts',
       description:
+        'Use this when you need to see exactly what changed between two script versions. ' +
         'Structured geometric delta between two versions of a kernelCAD script — a baseline ' +
         '({ baseFile } or { baseCode }) and a revision ({ file } or { code }). Returns ' +
         'agent-readable JSON: per-part added/removed/renamed/changed (volume mm³ + exact bbox ' +
@@ -223,7 +225,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'why_did_this_fail',
-      description: "Walk the upstream chain of a failing feature. Returns the diagnostics of the requested feature plus the diagnostics of every upstream feature in topological order (the requested feature is the last entry). Per-code hints are inline on every diagnostic — call lookup_diagnostics for the full catalogue. Pass { file?, code?, feature_id? }.",
+      description: "Use this when you need to trace why a feature failed. Walk the upstream chain of a failing feature. Returns the diagnostics of the requested feature plus the diagnostics of every upstream feature in topological order (the requested feature is the last entry). Per-code hints are inline on every diagnostic — call lookup_diagnostics for the full catalogue. Pass { file?, code?, feature_id? }.",
       inputSchema: {
         type: 'object',
         properties: {
@@ -254,7 +256,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'add_feature',
-      description: 'Insert a new feature line into a kernelCAD script before the last top-level return statement. Returns the modified code as text plus diagnostics from re-evaluating the result. Side-effect-free. Primitives that accept faceLabels (box, cylinder, extrudeRect, extrudeCircle, extrudePolygon, extrudeRoundedRect) can receive `opts.faceLabels` in the inserted code — use `lookup_api` to see `featureKindFaceLabels` for the full value schema.',
+      description: 'Use this when you need to insert a new feature line into a script. Insert a new feature line into a kernelCAD script before the last top-level return statement. Returns the modified code as text plus diagnostics from re-evaluating the result. Side-effect-free. Primitives that accept faceLabels (box, cylinder, extrudeRect, extrudeCircle, extrudePolygon, extrudeRoundedRect) can receive `opts.faceLabels` in the inserted code — use `lookup_api` to see `featureKindFaceLabels` for the full value schema.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -495,6 +497,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'trace_from_image',
       description:
+        "Use this when you need to trace features from a reference photo into waypoints. " +
         "Trace pixel-space features from a reference photo into normalized [0..1] waypoints the agent can map to mm via a known scale anchor and feed to path().spline / path().nurbsSegment. Three backends are dispatched behind the scenes: `opencv` (deterministic; uniform-bg silhouette only), `vision-llm` (Claude vision; named points/cluttered backgrounds; caller-supplied ANTHROPIC_API_KEY), and `hybrid` (opencv silhouette + LLM-labeled named points). Default backend is `auto` — the tool picks based on the image's corner-color stddev. Accuracy honesty: opencv contour is geometrically exact; vision-LLM is typically 5–10% off on dense landmarks. Per-feature `confidence` is reported. Caller pays for any vision-LLM API spend via their own ANTHROPIC_API_KEY. Pair with the `kernelcad-trace-from-image` skill for the conversion-to-mm pipeline.",
       inputSchema: {
         type: 'object',
@@ -547,6 +550,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'add_variable_sweep',
       description:
+        "Use this when you need to author a variable-section sweep along a spine. " +
         "Insert a `variableSweep(spine, sections, opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. The result is a Shape — chain `.translate(...)`, `.union(...)`, etc. via `add_feature`. `spine_binding` references an existing variable (Curve3D / Sketch / Vec3[]) in the source; each `sections[i].profile_binding` references an existing Sketch. Sections must be strictly increasing in `t` and span [0, 1]; first t=0, last t=1. Orientation is not exposed by this MCP tool until runtime orientation support is wired. Validates every binding exists in the source via regex before inserting (fast structured error vs capture-time stack). Returns the modified code + diagnostics. Side-effect-free.",
       inputSchema: {
         type: 'object',
@@ -615,7 +619,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'project_curve',
-      description: 'Insert a `<shape>.projectCurve({ curve, face, scaleMode?, asEdge? })` chained call into a kernelCAD script. Wraps a 2D closed curve onto a 3D face along the face normal; pair with `.extrude(d)` / `.cut(...)` for engraved logos or label inserts on curved bodies. `asEdge: true` is captured but currently deferred at lower time (BRepProj_Projection not bundled). Side-effect-free; returns modified code plus diagnostics.',
+      description: 'Use this when you need to wrap a 2D curve onto a 3D face. Insert a `<shape>.projectCurve({ curve, face, scaleMode?, asEdge? })` chained call into a kernelCAD script. Wraps a 2D closed curve onto a 3D face along the face normal; pair with `.extrude(d)` / `.cut(...)` for engraved logos or label inserts on curved bodies. `asEdge: true` is captured but currently deferred at lower time (BRepProj_Projection not bundled). Side-effect-free; returns modified code plus diagnostics.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -635,7 +639,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'add_pattern_feature',
-      description: "Insert a Shape.patternLinear / .patternCircular / .patternGrid call into a kernelCAD script before the last top-level return. Pass structured args (kind + the matching spec object). Returns the modified code plus diagnostics from re-evaluating. Side-effect-free. The pattern feature is a single editable unit; pattern-instance face refs resolve via `<sourceId>_pattern_<i>` on the pattern feature's lineage. Geometric note: pattern is implemented as cumulative boolean union of transformed source copies — additive features (boxes, ribs, fins, spokes) pattern cleanly; patterning a subtractive feature (hole, cutout) only preserves the per-instance void when adjacent bodies are disjoint.",
+      description: "Use this when you need to repeat a feature in a pattern. Insert a Shape.patternLinear / .patternCircular / .patternGrid call into a kernelCAD script before the last top-level return. Pass structured args (kind + the matching spec object). Returns the modified code plus diagnostics from re-evaluating. Side-effect-free. The pattern feature is a single editable unit; pattern-instance face refs resolve via `<sourceId>_pattern_<i>` on the pattern feature's lineage. Geometric note: pattern is implemented as cumulative boolean union of transformed source copies — additive features (boxes, ribs, fins, spokes) pattern cleanly; patterning a subtractive feature (hole, cutout) only preserves the per-instance void when adjacent bodies are disjoint.",
       inputSchema: {
         type: 'object',
         properties: {
@@ -665,7 +669,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'remove_feature',
-      description: 'Remove a single line from a kernelCAD script identified by a substring match. Returns the modified code plus diagnostics from re-evaluating. Refuses to remove the line containing the return statement. Side-effect-free.',
+      description: 'Use this when you need to remove a feature line from a script. Remove a single line from a kernelCAD script identified by a substring match. Returns the modified code plus diagnostics from re-evaluating. Refuses to remove the line containing the return statement. Side-effect-free.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -789,6 +793,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'lookup_cookbook',
       description:
+        'Use this when you need a canonical pattern snippet for a CAD task. ' +
         'Search the kernelCAD cookbook for canonical pattern snippets. ' +
         'Returns top-k snippets matching the natural-language query, ' +
         'ranked by BM25 over title/tags/keywords/trigger. ' +
@@ -819,6 +824,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'find_part',
       description:
+        'Use this when you need to find a part in the catalog. ' +
         'Discover bundled (and optionally remote) part-catalog records by fuzzy query and faceted filters. Tokens AND-combine; cross-facet filters AND-combine. Pass partsBaseUrl (or set KERNELCAD_PARTS_BASE_URL) to enable the remote tier; otherwise results are bundled-only.',
       inputSchema: {
         type: 'object',
@@ -840,6 +846,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'fetch_part',
       description:
+        'Use this when you need to download a catalog part as a STEP file. ' +
         'Resolve an id (or single-match query) to a part record and write its STEP file to the local cache. Bundled ids resolve offline; non-bundled ids require partsBaseUrl (or KERNELCAD_PARTS_BASE_URL). Returns the cache path plus a sha256 fingerprint.',
       inputSchema: {
         type: 'object',
@@ -859,6 +866,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'solve_sketch',
       description:
+        'Use this when you need to solve a 2D sketch constraint set. ' +
         'Solve a 2D sketch constraint set. Side-effect-free: pass { entities, constraints } and receive solved entities plus the original constraints. Entities are POINT, LINE, and CIRCLE records; constraints use the kernelCAD constraint vocabulary.',
       inputSchema: {
         type: 'object',
@@ -883,6 +891,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'add_constraint',
       description:
+        'Use this when you need to add a sketch constraint to a list. ' +
         'Append one validated sketch constraint to a constraint list. Side-effect-free: pass { constraints, constraint } and receive the updated list.',
       inputSchema: {
         type: 'object',
@@ -1021,7 +1030,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'solve_mates',
-      description: 'Run the v0.6 mate-graph solver on the active assembly. Returns { status, poses, iterations? } where each pose is a serialized Transform ({ translation, rotateAxis, rotateDeg }). Optional poses overrides mate pose values by mate name.',
+      description: 'Use this when you need to solve the mate graph and get part poses. Run the v0.6 mate-graph solver on the active assembly. Returns { status, poses, iterations? } where each pose is a serialized Transform ({ translation, rotateAxis, rotateDeg }). Optional poses overrides mate pose values by mate name.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -1035,7 +1044,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'review_cad',
-      description: 'Run the deterministic CAD review loop: evaluate the script, validate the assembly/mate graph, check mate connectors touch modeled material, sample declared mate limits, optionally check interferences at sampled poses, report connector workspace bounds, and return a mechanism fitness verdict for agent self-review. Fitness includes repairMode: none, local-fix, parameter-tune, or topology-redesign.',
+      description: 'Use this when you need to review a mechanism for fitness and repair mode. Run the deterministic CAD review loop: evaluate the script, validate the assembly/mate graph, check mate connectors touch modeled material, sample declared mate limits, optionally check interferences at sampled poses, report connector workspace bounds, and return a mechanism fitness verdict for agent self-review. Fitness includes repairMode: none, local-fix, parameter-tune, or topology-redesign.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -1082,6 +1091,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'review_paint_peek_latest',
       description:
+        'Use this when you need to see the latest region the user painted in Studio. ' +
         'Return the newest inpainting-style review packet the user painted in Studio. ' +
         'Studio writes packets to <scriptPath>.review-paint/latest/ as the user marks regions ' +
         'over the 3D viewport; this tool scans the known kernelCAD-web checkouts and returns the ' +
@@ -1114,7 +1124,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'design_loop',
-      description: 'Run an agent CAD design loop over one or more attempt scripts: review each attempt with review_cad, continue past functional attempts that still have unresolved review warnings, return structured repair prompts, and optionally write a Studio-compatible build record JSON for visual replay.',
+      description: 'Use this when you need to run a CAD design loop over multiple attempts. Run an agent CAD design loop over one or more attempt scripts: review each attempt with review_cad, continue past functional attempts that still have unresolved review warnings, return structured repair prompts, and optionally write a Studio-compatible build record JSON for visual replay.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -1202,6 +1212,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'flatten_pattern',
       description:
+        'Use this when you need the unfolded flat pattern of a bent sheet-metal part. ' +
         'Return the unfolded 2D flat-pattern of a bent sheet-metal Shape as a Region ' +
         '(outer polyline + holes + bend lines + sketch plane). Slice 1: at most 2 bends. ' +
         'Pass { file } or { code }; optional { featureId } to pick a specific Shape.',
@@ -1220,6 +1231,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'evaluate_sdf',
       description:
+        'Use this when you need to sample a signed-distance field at a point. ' +
         'Sample the signed distance from an in-script sdf.* field at a 3D point. ' +
         'Returns { distance, inside, aabb, kind }. Distance is in mm; negative = inside the surface, ' +
         '0 = exactly on the surface, positive = outside. Use this to verify SDF composition before ' +
@@ -1249,6 +1261,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'capture_animation',
       description:
+        "Use this when you need to render a script's animation timeline to a video. " +
         "Capture a kernelCAD script's animationView({...}) timeline to an MP4 (ffmpeg) or a PNG frame sequence, " +
         'verifying the sampled poses for part interference. FILE ONLY: pass { file } (a .kcad.ts path) — there is no ' +
         '{ code } mode, because the capture engine renders from a file on disk (its relative lib.fromSTEP imports resolve ' +

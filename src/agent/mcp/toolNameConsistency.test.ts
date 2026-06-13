@@ -95,4 +95,11 @@ describe('tool-name consistency', () => {
     expect(new Set(names).size).toBe(names.length);
     for (const n of names) expect(n).toMatch(/^[a-z][a-z0-9_]*$/);
   });
+
+  it('every tool description starts with "Use this when" (ChatGPT-discovery metadata convention)', () => {
+    const offenders = TOOLS
+      .filter(t => !/^Use this when/i.test(t.description.trimStart()))
+      .map(t => t.name);
+    expect(offenders, `Tool descriptions must start with "Use this when…":\n${offenders.join('\n')}`).toEqual([]);
+  });
 });
