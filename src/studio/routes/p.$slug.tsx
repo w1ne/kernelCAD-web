@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import App from '../App';
 import { SignInButton } from '../../funnel/components/SignInButton';
@@ -29,7 +29,6 @@ function formatPrivacyLabel(privacy: ProjectRow['privacy']): string {
 function ProjectPage() {
   const { slug } = Route.useParams();
   const { session } = useSession();
-  const navigate = useNavigate();
   const [project, setProject] = useState<ProjectRow | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [claimed, setClaimed] = useState(false);
@@ -110,13 +109,6 @@ function ProjectPage() {
       setPrivacyBusy(false);
     }
   }, [slug, project?.privacy]);
-
-  const handleNavigateToSlug = useCallback(
-    (target: string) => {
-      navigate({ to: '/p/$slug', params: { slug: target } });
-    },
-    [navigate],
-  );
 
   const handleUpgrade = useCallback(async () => {
     try {
@@ -202,8 +194,6 @@ function ProjectPage() {
       <ProjectViewerActions
         slug={slug}
         project={project}
-        session={session}
-        onNavigateToSlug={handleNavigateToSlug}
       />
     </div>
   );
