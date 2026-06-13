@@ -1,6 +1,8 @@
-# kernelCAD v0.12.0
+# kernelCAD v0.13.0
 
 ## Unreleased
+
+## v0.13.0 — 2026-06-13
 
 - **BREAKING — MCP tool surface collapsed (~76 → ~37 coherent tools).** Near-duplicate tool families were merged into single mode-parameterized tools, and the ephemeral active-session authoring layer was dropped in favor of durable source-editing (source is the design source of truth). Renames/merges: the 8 verify tools → `verify({ check })`; 19 read tools → `inspect({ of })` + `query({ mode })`; the assembly `_source`/active-session tools → `add_part` / `add_connector` / `add_mate({ relation })` / `add_workspace_target` / `set_scene_return`; path/surface/text authoring → `add_surface({ kind })` / `add_curve({ kind })` / `add_path_segment({ kind })` / `add_text({ mode })`; `export_model`/`export_part` → `export({ target })`; `set_param_value` → `set_param` (session `params_update` removed); `list_api` → `lookup_api`, `list_diagnostic_codes` → `lookup_diagnostics`; `list_part_*` reads → `inspect`. A build gate (`toolNameConsistency.test.ts`) now fails CI if any skill/doc/eval/source references a retired tool name.
 - **License metadata and SPDX headers.** `package.json` now declares `"license": "MIT"` and an `author` field so the npm registry shows the package as MIT-licensed. The `LICENSE` copyright line reads `Andrii Shylenko and kernelCAD contributors` (DCO model — contributors retain their copyright). Every `.ts`/`.tsx` source under `src/`, `scripts/`, and `eval/` carries a two-line SPDX header; `scripts/addSpdxHeaders.mjs` (re-runnable, `--check` mode) applies the convention and the repo-hygiene audit enforces it for new files under `src/`.
