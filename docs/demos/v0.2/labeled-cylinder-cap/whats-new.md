@@ -14,7 +14,7 @@ A hollow cylinder of radius 10 mm and height 20 mm with the open-top end labeled
 
 - `faceLabels` accepted on `cylinder` (v0.2 — this iteration).
 - Canonical-alias values (e.g. `{ cap: 'top' }`) resolve through the existing canonical-ref machinery, inheriting full lineage tracking through transforms and unambiguous booleans.
-- Discoverable via the existing `list_face_labels` MCP tool.
+- Discoverable via the existing `inspect({ of: 'face-labels' })` MCP tool.
 
 ![Demo](./demo.mp4)
 ![Panel](./panel.png)

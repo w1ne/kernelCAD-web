@@ -15,7 +15,7 @@ describe('distToolNameGate', () => {
       mkdirSync(join(out, 'skills/x'), { recursive: true });
       writeFileSync(
         join(out, 'skills/x/SKILL.md'),
-        '---\nname: x\ndescription: y\n---\nCall `evaluate_script`, `list_features`, `inspect_assembly`.\n',
+        '---\nname: x\ndescription: y\n---\nCall `evaluate_script`, `inspect`, `verify`.\n',
       );
       const r = runToolNameGate({ outDir: out, repoRoot });
       expect(r.ok).toBe(true);

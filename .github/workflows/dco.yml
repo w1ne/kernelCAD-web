@@ -12,12 +12,22 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Verify every commit is signed off
+      - name: Verify external commits are signed off
         run: |
+          # DCO sign-off is required from EXTERNAL contributors only. Commits
+          # authored by maintainers are exempt (they accept the DCO implicitly).
+          # Add maintainer author emails here.
+          MAINTAINER_EMAILS="14119286+w1ne@users.noreply.github.com andrii@shylenko.com"
           fail=0
           for c in $(git rev-list --no-merges ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}); do
+            email=$(git show -s --format=%ae "$c")
+            skip=0
+            for m in $MAINTAINER_EMAILS; do
+              if [ "$email" = "$m" ]; then skip=1; break; fi
+            done
+            if [ "$skip" = "1" ]; then continue; fi
             if ! git show -s --format=%B "$c" | grep -q '^Signed-off-by: '; then
-              echo "::error::Commit $c is missing a Signed-off-by line (see CONTRIBUTING.md)"
+              echo "::error::Commit $c by external contributor $email is missing a Signed-off-by line (see CONTRIBUTING.md)"
               fail=1
             fi
           done

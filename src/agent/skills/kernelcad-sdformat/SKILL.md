@@ -5,7 +5,7 @@ description: Export multi-part assemblies to SDFormat — closed kinematic loops
 
 # kernelCAD — SDFormat export
 
-SDFormat is an XML model description that, unlike URDF, accepts closed kinematic loops natively and exposes a native ball-joint type. kernelCAD's `export_model({ format: 'sdf-gazebo' })` writes a `.sdf` (spec version 1.10 — parsed by current simulator LTS releases) plus a sibling `meshes/` directory with one STL per link. Ship the whole directory: the SDF references `meshes/<part>.stl` by relative URI, resolved against the `.sdf` file location, so the export loads in `gz sim` with no resource-path environment setup.
+SDFormat is an XML model description that, unlike URDF, accepts closed kinematic loops natively and exposes a native ball-joint type. kernelCAD's `export({ target: 'model', format: 'sdf-gazebo' })` writes a `.sdf` (spec version 1.10 — parsed by current simulator LTS releases) plus a sibling `meshes/` directory with one STL per link. Ship the whole directory: the SDF references `meshes/<part>.stl` by relative URI, resolved against the `.sdf` file location, so the export loads in `gz sim` with no resource-path environment setup.
 
 ## When to use over URDF
 
@@ -54,7 +54,7 @@ return arm.model();
 Export via MCP:
 
 ```json
-{ "tool": "export_model", "input": { "file": "4bar.kcad.ts", "format": "sdf-gazebo", "output_path": "out/model.sdf" } }
+{ "tool": "export", "input": { "target": "model", "file": "4bar.kcad.ts", "format": "sdf-gazebo", "output_path": "out/model.sdf" } }
 ```
 
 Result: `out/model.sdf` with all 4 joints preserved and solved link poses, plus `out/meshes/{ground,crank,coupler,rocker}.stl`.

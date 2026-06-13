@@ -6,7 +6,7 @@ const SKILL_MD = loadCombinedSkillMd();
 
 const editTools = [
   {
-    name: 'set_param_value',
+    name: 'set_param',
     forbiddenParams: ['file', 'value'],
   },
   {
