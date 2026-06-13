@@ -51,6 +51,21 @@ describe('tool-name consistency', () => {
     ).toEqual([]);
   });
 
+  it('no surviving tool description references a retired tool name', () => {
+    const retired = Object.keys(RETIRED_TOOL_NAMES);
+    if (retired.length === 0) return;
+    const offenders: string[] = [];
+    for (const tool of TOOLS) {
+      const text = JSON.stringify(tool); // name + description + schema prose
+      for (const name of retired) {
+        if (new RegExp(`\\b${name}\\b`).test(text)) {
+          offenders.push(`tool '${tool.name}' references retired '${name}' → ${RETIRED_TOOL_NAMES[name]}`);
+        }
+      }
+    }
+    expect(offenders, `Retired names leaked into live tool definitions:\n${offenders.join('\n')}`).toEqual([]);
+  });
+
   it('every registry tool name is unique and snake_case', () => {
     const names = TOOLS.map(t => t.name);
     expect(new Set(names).size).toBe(names.length);
