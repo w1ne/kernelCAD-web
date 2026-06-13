@@ -24,14 +24,31 @@ chain. Each step narrows the search:
    `motor`, `connector`, `shaft`).
 2. `inspect({ of: 'part-families', category })` → families within the bucket
    (e.g. `socket-head-cap-screw`, `deep-groove-ball-bearing`).
-3. `find_part` `{ query, family?, standard?, tag? }` → ranked records that
-   match the fuzzy query plus filters. Tokens AND-combine; cross-facet
-   filters AND-combine.
+3. `find_part` `{ query, family?, standard?, tag?, licenseClass? }` → ranked
+   records that match the fuzzy query plus filters. Tokens AND-combine;
+   cross-facet filters AND-combine. `licenseClass` (`'permissive'` |
+   `'share-alike'` | `'fetch-only'`) filters by redistribution license; records
+   with no class are treated as `permissive` (the bundled catalog).
 4. `fetch_part` `{ id }` → resolves the id to a record, writes the STEP into
    the cache, returns the cache path + sha256.
 
 For tasks where the id is already known, skip straight to `fetch_part` or
 use the typed `lib.standard.*` shortcuts.
+
+### Fetch-by-URL (parts not in the catalog)
+
+`fetch_part { url }` pulls geometry on demand from an **allowlisted** host
+(`raw.githubusercontent.com`, `objects.githubusercontent.com`, `github.com`,
+`gitlab.com`, `api.step.parts`) — it is cached locally, never re-hosted
+(`redistribution: 'fetch-only'`):
+
+- A `.step`/`.stp` URL → inspected, connectors synthesized, returned as a record.
+- A `.stl`/`.dae`/`.obj` URL → returned as a `mesh-import` handle (non-BREP,
+  `attributes.geometryKind = 'mesh'`) for blockout/reference.
+- A **vendor configurator** URL (igus/MISUMI/Pololu/TraceParts) → NOT fetched;
+  returns `{ kind: 'link_out', url, instruction }`. Download the STEP from the
+  configurator and ingest it locally with `fetch_part { file }`.
+- A disallowed host → `{ error: 'url_host_not_allowed' }`.
 
 ## Authoring surface
 
