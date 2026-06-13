@@ -7,54 +7,7 @@ const getSupabaseMock = vi.fn(() => ({ auth: { getSession: getSessionMock } }));
 
 vi.mock('./supabaseClient', () => ({ getSupabase: () => getSupabaseMock() }));
 
-import { setProjectPrivacy, cloneProject, PRIVATE_REQUIRES_PAID } from './apiClient';
-
-describe('cloneProject', () => {
-  const fetchMock = vi.fn();
-
-  beforeEach(() => {
-    getSessionMock.mockReset();
-    getSupabaseMock.mockReturnValue({ auth: { getSession: getSessionMock } });
-    getSessionMock.mockResolvedValue({ data: { session: { access_token: 'tok-1' } } });
-    vi.stubEnv('VITE_API_BASE_URL', 'https://api.kernelcad.com');
-    vi.stubGlobal('fetch', fetchMock);
-    fetchMock.mockReset();
-  });
-
-  afterEach(() => {
-    vi.unstubAllEnvs();
-    vi.unstubAllGlobals();
-  });
-
-  it('POSTs the clone endpoint with a bearer token and returns the parsed body', async () => {
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ slug: 'cloned-slug', projectId: 'proj-9' }),
-    });
-
-    await expect(cloneProject('slug-1')).resolves.toEqual({
-      slug: 'cloned-slug',
-      projectId: 'proj-9',
-    });
-
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [url, init] = fetchMock.mock.calls[0]!;
-    expect(url).toBe('https://api.kernelcad.com/api/v1/projects/slug-1/clone');
-    expect(init.method).toBe('POST');
-    expect(init.headers.Authorization).toBe('Bearer tok-1');
-  });
-
-  it('url-encodes the slug', async () => {
-    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ slug: 'x', projectId: 'y' }) });
-    await cloneProject('a/b');
-    expect(fetchMock.mock.calls[0]![0]).toBe('https://api.kernelcad.com/api/v1/projects/a%2Fb/clone');
-  });
-
-  it('throws the response body on a non-2xx', async () => {
-    fetchMock.mockResolvedValueOnce({ ok: false, status: 500, text: async () => 'boom' });
-    await expect(cloneProject('slug-1')).rejects.toThrow('boom');
-  });
-});
+import { setProjectPrivacy, PRIVATE_REQUIRES_PAID } from './apiClient';
 
 describe('setProjectPrivacy', () => {
   const fetchMock = vi.fn();

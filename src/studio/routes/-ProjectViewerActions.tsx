@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useState, type ReactNode } from 'react';
-import type { Session } from '@supabase/supabase-js';
-import { SignInButton } from '../../funnel/components/SignInButton';
-import { cloneProject, type ProjectRow } from '../../funnel/lib/apiClient';
+import type { ProjectRow } from '../../funnel/lib/apiClient';
 
 const BTN_CLASS =
   'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-0.5 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 transition-colors';
@@ -11,9 +9,6 @@ const BTN_CLASS =
 export interface ProjectViewerActionsProps {
   slug: string;
   project: ProjectRow;
-  session: Session | null;
-  /** Navigate to a project page by slug — wraps the router's navigate. */
-  onNavigateToSlug: (slug: string) => void;
 }
 
 function isPublic(privacy: ProjectRow['privacy']): boolean {
@@ -24,17 +19,13 @@ function isPublic(privacy: ProjectRow['privacy']): boolean {
   );
 }
 
-/** Share + Clone affordances rendered in the /p/:slug header's right slot,
- *  alongside the existing claim/save/privacy buttons. */
+/** Share affordance rendered in the /p/:slug header's right slot, alongside the
+ *  existing claim/save/privacy buttons. */
 export function ProjectViewerActions({
   slug,
   project,
-  session,
-  onNavigateToSlug,
 }: ProjectViewerActionsProps): ReactNode {
   const [copied, setCopied] = useState(false);
-  const [cloning, setCloning] = useState(false);
-  const [cloneErr, setCloneErr] = useState<string | null>(null);
 
   const sharePublic = isPublic(project.privacy);
 
@@ -49,18 +40,6 @@ export function ProjectViewerActions({
       // Clipboard blocked (permissions / insecure context) — leave label as-is.
     }
   }, [slug]);
-
-  const handleClone = useCallback(async () => {
-    setCloning(true);
-    setCloneErr(null);
-    try {
-      const result = await cloneProject(slug);
-      onNavigateToSlug(result.slug);
-    } catch (e) {
-      setCloneErr(e instanceof Error ? e.message : String(e));
-      setCloning(false);
-    }
-  }, [slug, onNavigateToSlug]);
 
   return (
     <div className="flex items-center gap-2 min-w-0">
@@ -77,25 +56,6 @@ export function ProjectViewerActions({
         >
           Share
         </button>
-      )}
-
-      {session ? (
-        <button type="button" onClick={handleClone} disabled={cloning} className={BTN_CLASS}>
-          {cloning ? 'Cloning…' : 'Clone to my projects'}
-        </button>
-      ) : (
-        <SignInButton
-          redirectTo={typeof window !== 'undefined' ? window.location.href : undefined}
-          className={BTN_CLASS}
-        >
-          Sign in to clone
-        </SignInButton>
-      )}
-
-      {cloneErr && (
-        <span className="text-[11px] text-copper font-mono whitespace-nowrap">
-          Clone failed
-        </span>
       )}
     </div>
   );
