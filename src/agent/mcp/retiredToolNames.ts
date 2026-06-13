@@ -52,4 +52,15 @@ export const RETIRED_TOOL_NAMES: Record<string, string> = {
   add_transmission_source: "use add_mate({ relation: 'transmission', code, assembly_binding, name, kind, sourceMate, drivenMates, path })",
   add_workspace_target_source: 'use add_workspace_target({ code, assembly_binding, connector_ref, reachable })',
   set_scene_return_source: 'use set_scene_return({ code, assembly_binding, mode })',
+
+  // Task 5 — NURBS / path / text authoring collapse (9 → 4):
+  add_nurbs_surface: "use add_surface({ kind: 'nurbs' })",
+  add_surface_from_boundary: "use add_surface({ kind: 'boundary' })",
+  add_nurbs_curve: "use add_curve({ kind: 'nurbs' })",
+  add_hermite_g2: "use add_curve({ kind: 'hermite' })",
+  add_path_spline: "use add_path_segment({ kind: 'spline' })",
+  add_path_nurbs_segment: "use add_path_segment({ kind: 'nurbs' })",
+  add_path_hermite_g2: "use add_path_segment({ kind: 'hermite' })",
+  add_sketch_text: "use add_text({ mode: 'sketch' })",
+  emboss_text: "use add_text({ mode: 'emboss' })",
 };

@@ -2,18 +2,13 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { addConstraintTool, solveSketchTool } from './tools/constraints';
 import { addFeatureTool } from './tools/addFeature';
-import { addHermiteG2Tool } from './tools/addHermiteG2';
-import { addNurbsCurveTool } from './tools/addNurbsCurve';
-import { addNurbsSurfaceTool } from './tools/addNurbsSurface';
-import { addPathHermiteG2Tool } from './tools/addPathHermiteG2';
-import { addPathNurbsSegmentTool } from './tools/addPathNurbsSegment';
-import { addPathSplineTool } from './tools/addPathSpline';
+import { addCurveTool } from './tools/addCurve';
+import { addSurfaceTool } from './tools/addSurface';
+import { addPathSegmentTool } from './tools/addPathSegment';
 import { traceFromImageTool } from './tools/traceFromImage';
-import { addSurfaceFromBoundaryTool } from './tools/addSurfaceFromBoundary';
 import { addPatternFeatureTool } from './tools/addPatternFeature';
 import { addVariableSweepTool } from './tools/addVariableSweep';
-import { addSketchTextTool } from './tools/addSketchText';
-import { embossTextTool } from './tools/embossText';
+import { addTextTool } from './tools/addText';
 import { projectCurveTool } from './tools/projectCurve';
 import { addAssemblyPartSourceTool } from './tools/addAssemblyPartSource';
 import { addPartConnectorSourceTool } from './tools/addPartConnectorSource';
@@ -274,16 +269,24 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'add_nurbs_surface',
+      name: 'add_surface',
       description:
-        "Insert a nurbsSurface(...) or surfaceFromCurves(...) call into the user's .kcad.ts. The returned Surface is captured but produces no Shape until you chain .thicken(t) or .toShape() (do that via add_feature on the binding name). Pass either { controls, degree, weights?, knots?, periodic? } for direct construction, OR { section_sketch_ids } for skinning. Returns the modified code + diagnostics. Slice-1 limitation: weights are accepted but currently ignored (TColStd_Array2OfReal not exposed in WASM bindings); surfaces are non-rational.",
+        'Use this when you need to author a NURBS Surface into the user\'s .kcad.ts. One authoring path, selected by `kind`:\n' +
+        "- 'nurbs' — insert a nurbsSurface(...) / surfaceFromCurves(...) call. Pass either { controls, degree, weights?, knots?, periodic? } for direct construction, OR { section_sketch_ids } for skinning. Slice-1 limitation: weights are accepted but currently ignored (TColStd_Array2OfReal not exposed in WASM bindings); surfaces are non-rational.\n" +
+        "- 'boundary' — insert a surfaceFromBoundary([c1,c2,c3,c4], opts?) call: one NURBS face through 4 boundary Curve3D refs (bottom, right, top, left in loop order; adjacent endpoints must coincide within 1e-6 mm) via OCCT BRepOffsetAPI_MakeFilling.\n" +
+        'The returned Surface produces no Shape until you chain .thicken(t) or .toShape() (do that via add_feature on the binding name). Returns the modified code + diagnostics. Each kind fails closed on its own missing required params.',
       inputSchema: {
         type: 'object',
         properties: {
+          kind: {
+            type: 'string',
+            enum: ['nurbs', 'boundary'],
+            description: 'Which surface-construction path to use.',
+          },
           code: { type: 'string', description: 'Current .kcad.ts source.' },
           controls: {
             type: 'array',
-            description: 'Control-point grid for direct construction (controls[u][v] = [x, y, z], mm).',
+            description: "kind:'nurbs' — control-point grid for direct construction (controls[u][v] = [x, y, z], mm).",
             items: {
               type: 'array',
               items: { type: 'array', items: { type: 'number' } },
@@ -291,12 +294,12 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           },
           weights: {
             type: 'array',
-            description: 'Optional rational weights, same grid shape as controls. Ignored in slice-1.',
+            description: "kind:'nurbs' — optional rational weights, same grid shape as controls. Ignored in slice-1.",
             items: { type: 'array', items: { type: 'number' } },
           },
           degree: {
             type: 'object',
-            description: 'Degrees in U and V; each in [1, nU-1] / [1, nV-1].',
+            description: "kind:'nurbs' — degrees in U and V; each in [1, nU-1] / [1, nV-1].",
             properties: {
               u: { type: 'integer', minimum: 1 },
               v: { type: 'integer', minimum: 1 },
@@ -305,7 +308,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           },
           knots: {
             type: 'object',
-            description: 'Optional explicit knot vectors; missing => clamped uniform inferred.',
+            description: "kind:'nurbs' — optional explicit knot vectors; missing => clamped uniform inferred.",
             properties: {
               u: { type: 'array', items: { type: 'number' } },
               v: { type: 'array', items: { type: 'number' } },
@@ -313,7 +316,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           },
           periodic: {
             type: 'object',
-            description: 'Optional periodic flags per parametric direction.',
+            description: "kind:'nurbs' — optional periodic flags per parametric direction.",
             properties: {
               u: { type: 'boolean' },
               v: { type: 'boolean' },
@@ -321,91 +324,67 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           },
           section_sketch_ids: {
             type: 'array',
-            description: 'Existing sketch FeatureIds (2 or more) to skin a surface through, in order.',
+            description: "kind:'nurbs' — existing sketch FeatureIds (2 or more) to skin a surface through, in order.",
             items: { type: 'string' },
           },
-          binding_name: {
-            type: 'string',
-            description: 'JS const name for the new Surface binding (default: surface_<N>).',
-          },
-        },
-        required: ['code'],
-      },
-    },
-    handler: input => addNurbsSurfaceTool(input as unknown as Parameters<typeof addNurbsSurfaceTool>[0]),
-  },
-  {
-    definition: {
-      name: 'add_nurbs_curve',
-      description:
-        "Insert a `nurbsCurve(controlPoints, opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. The returned binding has type Curve3D (peer to Shape / Surface) — consume it via `add_variable_sweep` (spine input) or downstream Curve3D-accepting features. Pass `controlPoints` as a Vec3[] (mm, at least 2 points). Optional NURBS knobs: `degree` (default 3), rational `weights`, explicit `knots`, `closed`. Returns the modified code + diagnostics from re-evaluating. Side-effect-free.",
-      inputSchema: {
-        type: 'object',
-        properties: {
-          code: { type: 'string', description: 'The .kcad.ts source code.' },
-          controlPoints: {
-            type: 'array',
-            description: 'Control points as Vec3 triples in mm; at least 2 entries.',
-            items: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
-          },
-          degree: { type: 'integer', minimum: 1, description: 'Curve degree; default 3 (cubic).' },
-          weights: {
-            type: 'array',
-            description: 'Optional rational weights, one per control point (same length as controlPoints).',
-            items: { type: 'number' },
-          },
-          knots: {
-            type: 'array',
-            description: 'Optional explicit knot vector; missing => clamped-uniform inferred.',
-            items: { type: 'number' },
-          },
-          closed: { type: 'boolean', description: 'Optional periodic/closed-curve flag.' },
-          binding_name: { type: 'string', description: 'JS const name for the new Curve3D binding (default: _curve_<N>).' },
-        },
-        required: ['code', 'controlPoints'],
-      },
-    },
-    handler: input => addNurbsCurveTool(input as unknown as Parameters<typeof addNurbsCurveTool>[0]),
-  },
-  {
-    definition: {
-      name: 'add_surface_from_boundary',
-      description:
-        "Insert a `surfaceFromBoundary([c1, c2, c3, c4], opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. Builds the shipped filling surface: one NURBS face through 4 boundary Curve3D refs via OCCT BRepOffsetAPI_MakeFilling. The 4 curves must be passed in exact loop order: `curve_bindings[0]` = bottom, `curve_bindings[1]` = right, `curve_bindings[2]` = top, `curve_bindings[3]` = left; adjacent endpoints must coincide within 1e-6 mm or capture emits `feature.surface-from-boundary.corner-mismatch`. The result has type Surface — chain `.thicken(t)` or `.toShape()` via `add_feature` on the returned binding name. `opts.continuity` accepts a single grade ('C0' | 'C1' | 'C2') applied to all 4 edges or a length-4 array per edge; defaults to 'C0'. `opts.sampling` controls NbPtsOnCur (default 15). Validates every `curve_bindings[i]` is declared in the source via regex before inserting (fast structured error vs capture-time stack). Returns the modified code + diagnostics. Side-effect-free.",
-      inputSchema: {
-        type: 'object',
-        properties: {
-          code: { type: 'string', description: 'The .kcad.ts source code.' },
           curve_bindings: {
             type: 'array',
-            description: 'Tuple of 4 existing Curve3D variable names (bottom, right, top, left) declared earlier in the source.',
+            description: "kind:'boundary' — tuple of 4 existing Curve3D variable names (bottom, right, top, left) declared earlier in the source.",
             items: { type: 'string' },
             minItems: 4,
             maxItems: 4,
           },
           continuity: {
-            description: "Continuity grade applied to every edge ('C0' | 'C1' | 'C2'), or an array of 4 grades (one per edge). Default 'C0'.",
+            description: "kind:'boundary' — continuity grade applied to every edge ('C0' | 'C1' | 'C2'), or an array of 4 grades (one per edge). Default 'C0'.",
           },
-          sampling: { type: 'integer', minimum: 1, description: 'OCCT NbPtsOnCur sampling parameter (default 15).' },
-          binding_name: { type: 'string', description: 'JS const name for the new Surface binding (default: _surface_<N>).' },
+          sampling: { type: 'integer', minimum: 1, description: "kind:'boundary' — OCCT NbPtsOnCur sampling parameter (default 15)." },
+          binding_name: {
+            type: 'string',
+            description: "JS const name for the new Surface binding (kind:'nurbs' default surface_<N>; kind:'boundary' default _surface_<N>).",
+          },
         },
-        required: ['code', 'curve_bindings'],
+        required: ['kind', 'code'],
       },
     },
-    handler: input => addSurfaceFromBoundaryTool(input as unknown as Parameters<typeof addSurfaceFromBoundaryTool>[0]),
+    handler: input => addSurfaceTool(input as unknown as Parameters<typeof addSurfaceTool>[0]),
   },
   {
     definition: {
-      name: 'add_hermite_g2',
+      name: 'add_curve',
       description:
-        "Insert a `hermiteG2(a, b)` declaration into the user's .kcad.ts immediately before the last top-level return. Builds a quintic Hermite Curve3D that interpolates two endpoints with matching positions, tangents, and (optional) curvatures — used to bridge two existing curves with G2 continuity. The returned binding has type Curve3D (peer to nurbsCurve / spline3d) — consume it via `add_variable_sweep` (spine input), `add_surface_from_boundary` (boundary curve), or downstream Curve3D-accepting features. Each endpoint is `{ point: Vec3, tangent: Vec3, curvature?: Vec3 }` in mm; tangent magnitude controls how aggressively the curve heads out of the endpoint (typical magnitude ~ chord length). Curvature defaults to [0, 0, 0] which makes the curve G1 only (lifted cubic Hermite). Returns the modified code + diagnostics. Capture-time emits `feature.hermite-g2.degenerate-tangent` if a tangent has magnitude < 1e-12 and `feature.hermite-g2.non-finite-input` on any NaN/Infinity. Side-effect-free.",
+        "Use this when you need to author a 3D Curve3D into the user's .kcad.ts immediately before the last top-level return. One authoring path, selected by `kind`:\n" +
+        "- 'nurbs' — insert a `nurbsCurve(controlPoints, opts?)` declaration. Pass `controlPoints` as a Vec3[] (mm, at least 2 points). Optional NURBS knobs: `degree` (default 3), rational `weights`, explicit `knots`, `closed`.\n" +
+        "- 'hermite' — insert a `hermiteG2(a, b)` declaration: a quintic Hermite curve interpolating two endpoints with matching positions, tangents, and (optional) curvatures — bridges two curves with G2 continuity. Each endpoint is `{ point: Vec3, tangent: Vec3, curvature?: Vec3 }` in mm; tangent magnitude ~ chord length; curvature defaults to [0,0,0] (G1-only).\n" +
+        "The returned binding has type Curve3D (peer to Shape / Surface) — consume it via `add_variable_sweep` (spine input), `add_surface({ kind: 'boundary' })` (boundary curve), or downstream Curve3D-accepting features. Returns the modified code + diagnostics from re-evaluating. Side-effect-free. Each kind fails closed on its own missing required params.",
       inputSchema: {
         type: 'object',
         properties: {
+          kind: {
+            type: 'string',
+            enum: ['nurbs', 'hermite'],
+            description: 'Which curve-construction path to use.',
+          },
           code: { type: 'string', description: 'The .kcad.ts source code.' },
+          controlPoints: {
+            type: 'array',
+            description: "kind:'nurbs' — control points as Vec3 triples in mm; at least 2 entries.",
+            items: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+          },
+          degree: { type: 'integer', minimum: 1, description: "kind:'nurbs' — curve degree; default 3 (cubic)." },
+          weights: {
+            type: 'array',
+            description: "kind:'nurbs' — optional rational weights, one per control point (same length as controlPoints).",
+            items: { type: 'number' },
+          },
+          knots: {
+            type: 'array',
+            description: "kind:'nurbs' — optional explicit knot vector; missing => clamped-uniform inferred.",
+            items: { type: 'number' },
+          },
+          closed: { type: 'boolean', description: "kind:'nurbs' — optional periodic/closed-curve flag." },
           a: {
             type: 'object',
-            description: 'Start endpoint.',
+            description: "kind:'hermite' — start endpoint.",
             properties: {
               point: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: 'Endpoint position in mm.' },
               tangent: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: 'First derivative of the curve at this endpoint.' },
@@ -415,7 +394,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           },
           b: {
             type: 'object',
-            description: 'End endpoint.',
+            description: "kind:'hermite' — end endpoint.",
             properties: {
               point: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
               tangent: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
@@ -425,48 +404,93 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           },
           binding_name: { type: 'string', description: 'JS const name for the new Curve3D binding (default: _curve_<N>).' },
         },
-        required: ['code', 'a', 'b'],
+        required: ['kind', 'code'],
       },
     },
-    handler: input => addHermiteG2Tool(input as unknown as Parameters<typeof addHermiteG2Tool>[0]),
+    handler: input => addCurveTool(input as unknown as Parameters<typeof addCurveTool>[0]),
   },
   {
     definition: {
-      name: 'add_path_spline',
+      name: 'add_path_segment',
       description:
-        "Insert a `.spline(points, opts?)` call into an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()` (or before the statement terminator if `.close()` has not yet been added). `points` is a `Vec2[]` (mm) with at least 2 entries; the path interpolates through every waypoint. `points[0]` must match the current pen position within 1e-6 mm or capture-time emits `feature.path.spline.degenerate-points`. Optional `tension` forwards to the underlying `makeBSplineApproximation` call (tightens or relaxes the smoothing tolerance). Optional `startTangent` / `endTangent` are 2D direction vectors `[x, y]` that constrain the curve's first-derivative direction at the first and last waypoint (magnitude is normalised internally — `[1, 0]` and `[100, 0]` produce the same curve). When either tangent is set the underlying lowerer dispatches through a tangent-constrained interpolator; when both are omitted the existing fast approximation path is used. Use for organic 2D outlines (eyewear brow, ergonomic handle silhouettes, sneaker midsole) authored from measured waypoints. Returns the modified code + diagnostics from re-evaluating. Side-effect-free.",
+        "Use this when you need to append a curved segment to an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()`. One segment kind, selected by `kind`:\n" +
+        "- 'spline' — `.spline(points, opts?)`: interpolates through every `points` waypoint (Vec2[] mm, >= 2 entries; points[0] must match current pen position). Optional `tension`, and `startTangent`/`endTangent` 2D direction vectors that constrain the first-derivative direction at the endpoints (magnitude normalised internally). Use for organic 2D outlines (eyewear brow, ergonomic handle, sneaker midsole).\n" +
+        "- 'nurbs' — `.nurbsSegment(controlPoints, opts?)`: explicit B-spline net (Vec2[] mm, >= degree+1 entries; controlPoints[0] must match pen; pen ends at controlPoints[N-1]). Optional `degree` (default 3), rational `weights` (strictly positive), explicit `knots` (length = controlPoints.length + degree + 1).\n" +
+        "- 'hermite' — `.hermiteG2(a, b)`: each endpoint `{ point: Vec2, tangent: Vec2, curvature?: Vec2 }` in mm (a.point must match pen; pen ends at b.point). `curvature` defaults to [0,0] (G1); pass matching curvatures for G2 blends. Tangent magnitude is the first derivative (~ chord length), NOT unit length.\n" +
+        'Returns the modified code + diagnostics from re-evaluating. Side-effect-free. Each kind fails closed on its own missing required params.',
       inputSchema: {
         type: 'object',
         properties: {
+          kind: {
+            type: 'string',
+            enum: ['spline', 'nurbs', 'hermite'],
+            description: 'Which path-segment kind to append.',
+          },
           code: { type: 'string', description: 'The .kcad.ts source code.' },
           chain_anchor: { type: 'string', description: 'JS identifier of an existing PathBuilder binding (e.g. `const brow = path().moveTo(0,0)`).' },
           points: {
             type: 'array',
-            description: 'Waypoints as Vec2 pairs in mm; at least 2 entries; first must match current pen position.',
+            description: "kind:'spline' — waypoints as Vec2 pairs in mm; at least 2 entries; first must match current pen position.",
             items: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
             minItems: 2,
           },
-          tension: { type: 'number', description: 'Optional Catmull-Rom-style stiffness; forwarded to the underlying B-spline approximation.' },
+          tension: { type: 'number', description: "kind:'spline' — optional Catmull-Rom-style stiffness; forwarded to the underlying B-spline approximation." },
           startTangent: {
             type: 'array',
-            description: 'Optional [x, y] direction vector at points[0]. Magnitude is normalised internally; direction matters.',
+            description: "kind:'spline' — optional [x, y] direction vector at points[0]. Magnitude is normalised internally; direction matters.",
             items: { type: 'number' },
             minItems: 2,
             maxItems: 2,
           },
           endTangent: {
             type: 'array',
-            description: 'Optional [x, y] direction vector at points[N-1]. Magnitude is normalised internally; direction matters.',
+            description: "kind:'spline' — optional [x, y] direction vector at points[N-1]. Magnitude is normalised internally; direction matters.",
             items: { type: 'number' },
             minItems: 2,
             maxItems: 2,
           },
-          binding_name: { type: 'string', description: 'Reserved for future use; the spline injection mutates the chain anchor in place.' },
+          controlPoints: {
+            type: 'array',
+            description: "kind:'nurbs' — control-net vertices as Vec2 pairs in mm; at least degree+1 entries.",
+            items: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+          },
+          degree: { type: 'integer', minimum: 1, description: "kind:'nurbs' — B-spline degree (default 3)." },
+          weights: {
+            type: 'array',
+            description: "kind:'nurbs' — optional rational weights (one per control point; strictly positive).",
+            items: { type: 'number' },
+          },
+          knots: {
+            type: 'array',
+            description: "kind:'nurbs' — optional explicit knot vector; length must equal controlPoints.length + degree + 1.",
+            items: { type: 'number' },
+          },
+          a: {
+            type: 'object',
+            description: "kind:'hermite' — start endpoint; point must match current pen position within 1e-6 mm.",
+            properties: {
+              point: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+              tangent: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+              curvature: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+            },
+            required: ['point', 'tangent'],
+          },
+          b: {
+            type: 'object',
+            description: "kind:'hermite' — end endpoint.",
+            properties: {
+              point: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+              tangent: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+              curvature: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+            },
+            required: ['point', 'tangent'],
+          },
+          binding_name: { type: 'string', description: 'Reserved for future use; the segment injection mutates the chain anchor in place.' },
         },
-        required: ['code', 'chain_anchor', 'points'],
+        required: ['kind', 'code', 'chain_anchor'],
       },
     },
-    handler: input => addPathSplineTool(input as unknown as Parameters<typeof addPathSplineTool>[0]),
+    handler: input => addPathSegmentTool(input as unknown as Parameters<typeof addPathSegmentTool>[0]),
   },
   {
     definition: {
@@ -522,76 +546,6 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'add_path_nurbs_segment',
-      description:
-        "Insert a `.nurbsSegment(controlPoints, opts?)` call into an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()`. `controlPoints` is a `Vec2[]` (mm) — at least `degree + 1` entries; `controlPoints[0]` must match the current pen position within 1e-6 mm; the pen ends at `controlPoints[N-1]`. Optional `degree` defaults to 3; `weights` for rational NURBS (strictly positive); `knots` for an explicit clamped knot vector (length must equal `controlPoints.length + degree + 1`). Use for explicit B-spline outlines where the control net is the natural mental model (NURBS round-tripping, programmatic profile generation). Returns the modified code + diagnostics. Side-effect-free.",
-      inputSchema: {
-        type: 'object',
-        properties: {
-          code: { type: 'string', description: 'The .kcad.ts source code.' },
-          chain_anchor: { type: 'string', description: 'JS identifier of an existing PathBuilder binding.' },
-          controlPoints: {
-            type: 'array',
-            description: 'Control-net vertices as Vec2 pairs in mm; at least degree+1 entries.',
-            items: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
-          },
-          degree: { type: 'integer', minimum: 1, description: 'B-spline degree (default 3).' },
-          weights: {
-            type: 'array',
-            description: 'Optional rational weights (one per control point; strictly positive).',
-            items: { type: 'number' },
-          },
-          knots: {
-            type: 'array',
-            description: 'Optional explicit knot vector; length must equal controlPoints.length + degree + 1.',
-            items: { type: 'number' },
-          },
-          binding_name: { type: 'string', description: 'Reserved for future use; the segment injection mutates the chain anchor in place.' },
-        },
-        required: ['code', 'chain_anchor', 'controlPoints'],
-      },
-    },
-    handler: input => addPathNurbsSegmentTool(input as unknown as Parameters<typeof addPathNurbsSegmentTool>[0]),
-  },
-  {
-    definition: {
-      name: 'add_path_hermite_g2',
-      description:
-        "Insert a `.hermiteG2(a, b)` call into an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()`. Each endpoint is `{ point: Vec2, tangent: Vec2, curvature?: Vec2 }` in mm. `a.point` must match the current pen position within 1e-6 mm; the pen ends at `b.point`. `curvature` defaults to `[0, 0]` (degrades to G1 / lifted cubic Hermite); pass matching curvatures on both endpoints for G2-continuous blends (eyewear bridge ↔ brow transitions, sneaker midsole transitions). Tangent magnitude is the first derivative, NOT unit length — typical magnitude is the chord length between endpoints. Returns the modified code + diagnostics. Side-effect-free.",
-      inputSchema: {
-        type: 'object',
-        properties: {
-          code: { type: 'string', description: 'The .kcad.ts source code.' },
-          chain_anchor: { type: 'string', description: 'JS identifier of an existing PathBuilder binding.' },
-          a: {
-            type: 'object',
-            description: 'Start endpoint; point must match current pen position within 1e-6 mm.',
-            properties: {
-              point: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
-              tangent: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
-              curvature: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
-            },
-            required: ['point', 'tangent'],
-          },
-          b: {
-            type: 'object',
-            description: 'End endpoint.',
-            properties: {
-              point: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
-              tangent: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
-              curvature: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
-            },
-            required: ['point', 'tangent'],
-          },
-          binding_name: { type: 'string', description: 'Reserved for future use; the segment injection mutates the chain anchor in place.' },
-        },
-        required: ['code', 'chain_anchor', 'a', 'b'],
-      },
-    },
-    handler: input => addPathHermiteG2Tool(input as unknown as Parameters<typeof addPathHermiteG2Tool>[0]),
-  },
-  {
-    definition: {
       name: 'add_variable_sweep',
       description:
         "Insert a `variableSweep(spine, sections, opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. The result is a Shape — chain `.translate(...)`, `.union(...)`, etc. via `add_feature`. `spine_binding` references an existing variable (Curve3D / Sketch / Vec3[]) in the source; each `sections[i].profile_binding` references an existing Sketch. Sections must be strictly increasing in `t` and span [0, 1]; first t=0, last t=1. Orientation is not exposed by this MCP tool until runtime orientation support is wired. Validates every binding exists in the source via regex before inserting (fast structured error vs capture-time stack). Returns the modified code + diagnostics. Side-effect-free.",
@@ -623,50 +577,41 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'add_sketch_text',
-      description: 'Insert a sketch.text(...) call into a kernelCAD script before the last top-level return statement. Returns the modified code as text plus diagnostics from re-evaluating the result. Side-effect-free. The emitted sketch is chainable: pair with subsequent .extrude(...) / cut(...) edits to land an engraved or raised text feature. Default font is the runtime-bundled Liberation Sans; pass `font` as a `.ttf` path to load a custom font.',
+      name: 'add_text',
+      description:
+        'Use this when you need to author text into a kernelCAD script before the last top-level return. One authoring path, selected by `mode`:\n' +
+        "- 'sketch' — insert a sketch.text(...) call. The emitted sketch is chainable: pair with subsequent .extrude(...) / cut(...) edits to land an engraved or raised text feature.\n" +
+        "- 'emboss' — insert a `<shape>.embossText({...})` chained call onto an existing Shape `target`. Use for engraved brand text on faces (Ray-Ban temple, CE mark, model number). `depth > 0` raises text out of the face; `depth < 0` engraves text into the face. Lowers via replicad drawText → sketchOnFace → extrude → fuse|cut.\n" +
+        'Default font is the runtime-bundled Liberation Sans. Side-effect-free; returns the modified code plus diagnostics from re-evaluating. Each mode fails closed on its own missing required params.',
       inputSchema: {
         type: 'object',
         properties: {
-          code:     { type: 'string', description: 'The .kcad.ts source code.' },
-          content:  { type: 'string', description: 'Text content (UTF-8, non-empty, non-whitespace).' },
-          size:     { type: 'number', description: 'Glyph cap height in mm (positive finite).' },
-          font:     { type: 'string', description: 'Optional logical font name or .ttf file path; defaults to bundled Liberation Sans.' },
-          align:    { type: 'string', enum: ['left', 'center', 'right'], description: 'Horizontal alignment relative to position. Default left.' },
-          position: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2, description: '[x, y] anchor in mm. Default [0, 0].' },
-          rotation: { type: 'number', description: 'CCW rotation in degrees around position. Default 0.' },
-          bindAs:   { type: 'string', description: 'Optional local variable name; emits const <bindAs> = sketch.text(...).' },
-        },
-        required: ['code', 'content', 'size'],
-      },
-    },
-    handler: input => addSketchTextTool(input as unknown as Parameters<typeof addSketchTextTool>[0]),
-  },
-  {
-    definition: {
-      name: 'emboss_text',
-      description: 'Insert a `<shape>.embossText({ text, face, size, depth, align?, anchor?, rotation?, scaleMode? })` chained call into a kernelCAD script before the last top-level return. Use for engraved brand text on faces (Ray-Ban temple, CE mark, model number). `depth > 0` raises text out of the face; `depth < 0` engraves text into the face. Side-effect-free; returns modified code plus diagnostics from re-evaluating. The emitted feature lowers via replicad drawText → sketchOnFace → extrude → fuse|cut.',
-      inputSchema: {
-        type: 'object',
-        properties: {
+          mode: {
+            type: 'string',
+            enum: ['sketch', 'emboss'],
+            description: 'Which text-authoring path to use.',
+          },
           code:        { type: 'string', description: 'The .kcad.ts source code.' },
-          target:      { type: 'string', description: 'Variable name of the Shape to chain onto (inserted verbatim).' },
-          textContent: { type: 'string', description: 'Text content (UTF-8, non-empty, non-whitespace).' },
-          size:        { type: 'number', description: 'Glyph cap height in mm (positive finite).' },
-          depth:       { type: 'number', description: 'Signed extrusion depth in mm: positive emboss out, negative engrave in. Must be non-zero.' },
-          face:        { type: 'string', description: "Target face — canonical name ('top'/'bottom'/'left'/'right'/'front'/'back') or label." },
-          fontFamily:  { type: 'string', description: 'Optional logical font name or .ttf file path; defaults to bundled Liberation Sans.' },
-          align:       { type: 'string', enum: ['left', 'center', 'right'], description: 'Horizontal alignment relative to the UV anchor. Default center.' },
-          anchorU:     { type: 'number', description: 'U anchor in [0, 1] face-local (0=umin, 0.5=centre, 1=umax). Default 0.5.' },
-          anchorV:     { type: 'number', description: 'V anchor in [0, 1] face-local. Default 0.5.' },
-          rotation:    { type: 'number', description: 'CCW rotation in degrees, in the face tangent plane. Default 0.' },
-          scaleMode:   { type: 'string', enum: ['original', 'native', 'bounds'], description: 'Drawing.sketchOnFace scaling mode. Default original.' },
-          bindAs:      { type: 'string', description: 'Optional local variable name; emits `const <bindAs> = <target>.embossText(...);`.' },
+          content:     { type: 'string', description: "mode:'sketch' — text content (UTF-8, non-empty, non-whitespace)." },
+          size:        { type: 'number', description: "mode:'sketch'|'emboss' — glyph cap height in mm (positive finite)." },
+          font:        { type: 'string', description: "mode:'sketch' — optional logical font name or .ttf file path; defaults to bundled Liberation Sans." },
+          align:       { type: 'string', enum: ['left', 'center', 'right'], description: "mode:'sketch' — horizontal alignment relative to position (default left); mode:'emboss' — relative to the UV anchor (default center)." },
+          position:    { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2, description: "mode:'sketch' — [x, y] anchor in mm. Default [0, 0]." },
+          rotation:    { type: 'number', description: "mode:'sketch' — CCW rotation in degrees around position (default 0); mode:'emboss' — CCW rotation in the face tangent plane (default 0)." },
+          bindAs:      { type: 'string', description: "mode:'sketch' — emits `const <bindAs> = sketch.text(...)`; mode:'emboss' — emits `const <bindAs> = <target>.embossText(...);`." },
+          target:      { type: 'string', description: "mode:'emboss' — variable name of the Shape to chain onto (inserted verbatim)." },
+          textContent: { type: 'string', description: "mode:'emboss' — text content (UTF-8, non-empty, non-whitespace)." },
+          depth:       { type: 'number', description: "mode:'emboss' — signed extrusion depth in mm: positive emboss out, negative engrave in. Must be non-zero." },
+          face:        { type: 'string', description: "mode:'emboss' — target face — canonical name ('top'/'bottom'/'left'/'right'/'front'/'back') or label." },
+          fontFamily:  { type: 'string', description: "mode:'emboss' — optional logical font name or .ttf file path; defaults to bundled Liberation Sans." },
+          anchorU:     { type: 'number', description: "mode:'emboss' — U anchor in [0, 1] face-local (0=umin, 0.5=centre, 1=umax). Default 0.5." },
+          anchorV:     { type: 'number', description: "mode:'emboss' — V anchor in [0, 1] face-local. Default 0.5." },
+          scaleMode:   { type: 'string', enum: ['original', 'native', 'bounds'], description: "mode:'emboss' — Drawing.sketchOnFace scaling mode. Default original." },
         },
-        required: ['code', 'target', 'textContent', 'size', 'depth', 'face'],
+        required: ['mode', 'code'],
       },
     },
-    handler: input => embossTextTool(input as unknown as Parameters<typeof embossTextTool>[0]),
+    handler: input => addTextTool(input as unknown as Parameters<typeof addTextTool>[0]),
   },
   {
     definition: {

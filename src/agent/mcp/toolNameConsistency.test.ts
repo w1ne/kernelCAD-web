@@ -66,6 +66,30 @@ describe('tool-name consistency', () => {
     expect(offenders, `Retired names leaked into live tool definitions:\n${offenders.join('\n')}`).toEqual([]);
   });
 
+  it('no code dispatches a retired tool name via callMcpTool / getToolDefinition', () => {
+    // Functional breakage class: a test or source that calls a retired name by
+    // string through the registry throws "Unknown tool" at runtime. The docs
+    // checks above don't cover this — call sites live in src/ and tests/.
+    const retired = Object.keys(RETIRED_TOOL_NAMES);
+    if (retired.length === 0) return;
+    const codeFiles = ['src', 'tests'].flatMap(d =>
+      walk(join(ROOT, d)).filter(f => f.endsWith('.ts')),
+    );
+    const offenders: string[] = [];
+    for (const file of codeFiles) {
+      if (file.endsWith('retiredToolNames.ts') || file.endsWith('toolNameConsistency.test.ts')) continue;
+      const text = readFileSync(file, 'utf8');
+      for (const name of retired) {
+        // callMcpTool('name' | getToolDefinition('name' — string-literal dispatch
+        const re = new RegExp(`(callMcpTool|getToolDefinition)\\(\\s*['"\`]${name}['"\`]`);
+        if (re.test(text)) {
+          offenders.push(`${file.replace(ROOT + '/', '')}: dispatches retired '${name}' → ${RETIRED_TOOL_NAMES[name]}`);
+        }
+      }
+    }
+    expect(offenders, `Retired tool names dispatched in code:\n${offenders.join('\n')}`).toEqual([]);
+  });
+
   it('every registry tool name is unique and snake_case', () => {
     const names = TOOLS.map(t => t.name);
     expect(new Set(names).size).toBe(names.length);

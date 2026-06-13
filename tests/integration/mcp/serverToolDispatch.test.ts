@@ -21,7 +21,8 @@ describe('MCP server tool registry', () => {
   });
 
   it('dispatches assembly inspection through the advertised registry', async () => {
-    await expect(callMcpTool('list_assemblies', {
+    await expect(callMcpTool('inspect', {
+      of: 'assemblies',
       code: `
         const hinge = assembly('registry hinge');
         hinge.part('leafA', box(20, 8, 2));
