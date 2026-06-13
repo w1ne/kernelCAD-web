@@ -117,4 +117,11 @@ describe('tool-name consistency', () => {
       .map(t => t.name);
     expect(offenders, `Tools missing behavioral annotations:\n${offenders.join('\n')}`).toEqual([]);
   });
+
+  it('every tool declares an outputSchema (structured-output metadata)', () => {
+    const offenders = TOOLS
+      .filter(t => { const o = (t as { outputSchema?: { type?: string } }).outputSchema; return !o || o.type !== 'object'; })
+      .map(t => t.name);
+    expect(offenders, `Tools missing outputSchema:\n${offenders.join('\n')}`).toEqual([]);
+  });
 });

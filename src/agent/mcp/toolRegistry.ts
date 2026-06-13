@@ -36,6 +36,7 @@ import { verifyTool } from './tools/verify';
 import { inspectTool } from './tools/inspect';
 import { queryTool } from './tools/query';
 import { TOOL_ANNOTATIONS, type ToolAnnotations } from './toolAnnotations';
+import { TOOL_OUTPUT_SCHEMAS, type JSONSchemaObject } from './toolOutputSchemas';
 import { captureAnimationTool } from './tools/captureAnimation';
 export { runClosedLoop } from '../loop/closedLoop.js';
 export { buildRepairPrompt } from '../loop/repairPrompt.js';
@@ -52,6 +53,9 @@ export interface McpToolDefinition {
   /** MCP behavioral hints (readOnly/destructive/openWorld). Required for ChatGPT
    *  app-directory submission; merged from TOOL_ANNOTATIONS at build time. */
   annotations?: ToolAnnotations;
+  /** MCP structured-output schema (JSON Schema for the tool's return value).
+   *  Merged from TOOL_OUTPUT_SCHEMAS at build time. */
+  outputSchema?: JSONSchemaObject;
 }
 
 type ToolHandler = (input: Record<string, unknown>) => Promise<unknown>;
@@ -1300,25 +1304,31 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
 ];
 
-/** Merge the MCP behavioral hints from TOOL_ANNOTATIONS onto a definition.
- *  Annotations live in one central map (toolAnnotations.ts) so the surface is
- *  classified in a single place and the consistency gate can enforce coverage. */
-function withAnnotations(def: McpToolDefinition): McpToolDefinition {
+/** Merge the central MCP metadata maps onto a definition: behavioral hints
+ *  (TOOL_ANNOTATIONS) and the structured-output schema (TOOL_OUTPUT_SCHEMAS).
+ *  Both live in one central map each so the surface is classified in a single
+ *  place and the consistency gate can enforce coverage. */
+function withMetadata(def: McpToolDefinition): McpToolDefinition {
   const annotations = TOOL_ANNOTATIONS[def.name];
-  return annotations ? { ...def, annotations } : def;
+  const outputSchema = TOOL_OUTPUT_SCHEMAS[def.name];
+  return {
+    ...def,
+    ...(annotations ? { annotations } : {}),
+    ...(outputSchema ? { outputSchema } : {}),
+  };
 }
 
 const toolHandlers = new Map(TOOL_REGISTRY.map(entry => [entry.definition.name, entry.handler]));
 const toolDefinitions = new Map(
-  TOOL_REGISTRY.map(entry => [entry.definition.name, withAnnotations(entry.definition)]),
+  TOOL_REGISTRY.map(entry => [entry.definition.name, withMetadata(entry.definition)]),
 );
 
 /**
- * Flat array of all tool definitions (with behavioral annotations), in registry order.
+ * Flat array of all tool definitions (with behavioral annotations + output schemas), in registry order.
  *
  * Public contract — depended on by kernelCAD-server.
  */
-export const TOOLS = TOOL_REGISTRY.map(entry => withAnnotations(entry.definition));
+export const TOOLS = TOOL_REGISTRY.map(entry => withMetadata(entry.definition));
 
 /**
  * Dispatch an MCP tool call by name. Transport-agnostic: used by stdio MCP server,
