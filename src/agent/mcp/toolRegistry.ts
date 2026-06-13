@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { addConnectorTool } from './tools/addConnector';
 import { addConstraintTool, solveSketchTool } from './tools/constraints';
 import { addFeatureTool } from './tools/addFeature';
 import { addHermiteG2Tool } from './tools/addHermiteG2';
@@ -18,12 +17,9 @@ import { embossTextTool } from './tools/embossText';
 import { projectCurveTool } from './tools/projectCurve';
 import { addAssemblyPartSourceTool } from './tools/addAssemblyPartSource';
 import { addPartConnectorSourceTool } from './tools/addPartConnectorSource';
-import { addMateSourceTool } from './tools/addMateSource';
-import { addMateCouplingSourceTool } from './tools/addMateCouplingSource';
-import { addTransmissionSourceTool } from './tools/addTransmissionSource';
 import { addWorkspaceTargetSourceTool } from './tools/addWorkspaceTargetSource';
 import { setSceneReturnSourceTool } from './tools/setSceneReturnSource';
-import { addMateTool } from './tools/addMate';
+import { addMateAuthoringTool } from './tools/addMateAuthoring';
 import { evaluateScriptTool } from './tools/evaluateScript';
 import { diffScriptsTool } from './tools/diffScripts';
 import { evaluateSdfTool } from './tools/evaluateSdf';
@@ -1019,9 +1015,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'add_assembly_part_source',
+      name: 'add_part',
       description:
-        'Durably insert `const <binding> = <assembly>.part(partName, shapeExpression, opts?)` before the final top-level return in a kernelCAD source string. Returns modified source plus diagnostics from re-evaluating it. Side-effect-free: caller persists the returned source.',
+        'Use this when you need to add a part to an assembly. Durably insert `const <binding> = <assembly>.part(partName, shapeExpression, opts?)` before the final top-level return in a kernelCAD source string. Returns modified source plus diagnostics from re-evaluating it. Side-effect-free: caller persists the returned source.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -1039,9 +1035,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'add_part_connector_source',
+      name: 'add_connector',
       description:
-        'Durably insert `<partBinding>.connector(name, { type, origin, axis?, normal? })` before the final top-level return. Use with the binding returned by add_assembly_part_source. Returns modified source plus diagnostics from re-evaluation. Side-effect-free; distinct from active-session add_connector.',
+        'Use this when you need to add a mate connector to a part. Durably insert `<partBinding>.connector(name, { type, origin, axis?, normal? })` before the final top-level return. Use the part binding returned by add_part. Returns modified source plus diagnostics from re-evaluation. Side-effect-free.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -1060,78 +1056,49 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'add_mate_source',
+      name: 'add_mate',
       description:
-        'Durably insert `<assembly>.mate(name, a, b, type, opts?)` before the final top-level return. Connector refs use "<partName>.<connectorName>". Returns modified source plus diagnostics from re-evaluation. Side-effect-free; distinct from active-session add_mate.',
+        "Use this when you need to author a mate-graph relationship into the source, selected by `relation` (default 'mate'):\n" +
+        "- 'mate' — a typed mate between two connectors ({ name, a, b, type, pose?, limitsDeg?, limitsMm? }).\n" +
+        "- 'coupling' — couple a driven mate to a source mate by ratio ({ driven, source, ratio, offset? }).\n" +
+        "- 'transmission' — a physical drive path across mates ({ name, kind, sourceMate, drivenMates, path, ... }).\n" +
+        'All durably edit source and need { code, assembly_binding }. Params other than `relation` are forwarded verbatim; each relation fails closed on its own missing required params.',
       inputSchema: {
         type: 'object',
         properties: {
+          relation: { type: 'string', enum: ['mate', 'coupling', 'transmission'], description: "Which relationship to author (default 'mate')." },
           code: { type: 'string', description: 'The .kcad.ts source code.' },
           assembly_binding: { type: 'string', description: 'JS identifier bound to assembly(...).' },
-          name: { type: 'string', description: 'Mate name unique within the assembly.' },
-          a: { type: 'string', description: 'Connector ref "<partName>.<connectorName>".' },
-          b: { type: 'string', description: 'Connector ref "<partName>.<connectorName>".' },
-          type: { type: 'string', enum: ['fastened', 'revolute', 'prismatic', 'cylindrical', 'planar', 'ball', 'pin_slot'] },
-          pose: { description: 'Optional mate pose.' },
-          limitsDeg: { type: 'array', items: { type: 'number' }, description: 'Optional [minDeg, maxDeg].' },
-          limitsMm: { type: 'array', items: { type: 'number' }, description: 'Optional [minMm, maxMm].' },
+          name: { type: 'string', description: "relation:'mate'|'transmission' — name unique within the assembly." },
+          a: { type: 'string', description: "relation:'mate' — connector ref \"<partName>.<connectorName>\"." },
+          b: { type: 'string', description: "relation:'mate' — connector ref \"<partName>.<connectorName>\"." },
+          type: { type: 'string', enum: ['fastened', 'revolute', 'prismatic', 'cylindrical', 'planar', 'ball', 'pin_slot'], description: "relation:'mate' — mate type." },
+          pose: { description: "relation:'mate' — optional mate pose." },
+          limitsDeg: { type: 'array', items: { type: 'number' }, description: "relation:'mate' — optional [minDeg, maxDeg]." },
+          limitsMm: { type: 'array', items: { type: 'number' }, description: "relation:'mate' — optional [minMm, maxMm]." },
+          driven: { type: 'string', description: "relation:'coupling' — driven mate name." },
+          source: { type: 'string', description: "relation:'coupling' — source mate name." },
+          ratio: { type: 'number', description: "relation:'coupling' — driven pose = source pose * ratio + offset." },
+          offset: { type: 'number', description: "relation:'coupling' — optional pose offset." },
+          kind: { type: 'string', enum: ['direct-horn', 'link-rod', 'four-bar', 'gear-pair', 'belt', 'tendon'], description: "relation:'transmission' — transmission kind." },
+          sourceMate: { type: 'string', description: "relation:'transmission' — source mate name." },
+          drivenMates: { type: 'array', items: { type: 'string' }, description: "relation:'transmission' — driven mate names." },
+          actuator: { type: 'string', description: "relation:'transmission' — optional actuator." },
+          input: { type: 'string', description: "relation:'transmission' — optional input." },
+          output: { type: 'string', description: "relation:'transmission' — optional output." },
+          path: { type: 'array', items: { type: 'string' }, description: "relation:'transmission' — drive path." },
+          notes: { type: 'string', description: "relation:'transmission' — optional notes." },
         },
-        required: ['code', 'assembly_binding', 'name', 'a', 'b', 'type'],
+        required: ['code', 'assembly_binding'],
       },
     },
-    handler: input => addMateSourceTool(input as unknown as Parameters<typeof addMateSourceTool>[0]),
+    handler: input => addMateAuthoringTool(input as unknown as Parameters<typeof addMateAuthoringTool>[0]),
   },
   {
     definition: {
-      name: 'add_mate_coupling_source',
+      name: 'add_workspace_target',
       description:
-        'Durably insert `<assembly>.coupleMates(driven, { source, ratio, offset? })` before the final top-level return. Returns modified source plus diagnostics from re-evaluation. Pair coupled mates with add_transmission_source so review_cad can see a physical drive path.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          code: { type: 'string', description: 'The .kcad.ts source code.' },
-          assembly_binding: { type: 'string', description: 'JS identifier bound to assembly(...).' },
-          driven: { type: 'string', description: 'Driven mate name.' },
-          source: { type: 'string', description: 'Source mate name.' },
-          ratio: { type: 'number', description: 'Driven pose = source pose * ratio + offset.' },
-          offset: { type: 'number', description: 'Optional pose offset.' },
-        },
-        required: ['code', 'assembly_binding', 'driven', 'source', 'ratio'],
-      },
-    },
-    handler: input => addMateCouplingSourceTool(input as unknown as Parameters<typeof addMateCouplingSourceTool>[0]),
-  },
-  {
-    definition: {
-      name: 'add_transmission_source',
-      description:
-        'Durably insert `<assembly>.transmission(name, { kind, sourceMate, drivenMates, path, ... })` before the final top-level return. Supports the current script API kinds direct-horn, link-rod, four-bar, gear-pair, belt, and tendon. Returns modified source plus diagnostics from re-evaluation.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          code: { type: 'string', description: 'The .kcad.ts source code.' },
-          assembly_binding: { type: 'string', description: 'JS identifier bound to assembly(...).' },
-          name: { type: 'string' },
-          kind: { type: 'string', enum: ['direct-horn', 'link-rod', 'four-bar', 'gear-pair', 'belt', 'tendon'] },
-          sourceMate: { type: 'string' },
-          drivenMates: { type: 'array', items: { type: 'string' } },
-          actuator: { type: 'string' },
-          input: { type: 'string' },
-          output: { type: 'string' },
-          path: { type: 'array', items: { type: 'string' } },
-          ratio: { type: 'number' },
-          notes: { type: 'string' },
-        },
-        required: ['code', 'assembly_binding', 'name', 'kind', 'sourceMate', 'drivenMates', 'path'],
-      },
-    },
-    handler: input => addTransmissionSourceTool(input as unknown as Parameters<typeof addTransmissionSourceTool>[0]),
-  },
-  {
-    definition: {
-      name: 'add_workspace_target_source',
-      description:
-        'Durably insert `<assembly>.workspace(connectorRef, { reachable, toleranceMm? })` before the final top-level return. Workspace targets are checked by solvedModel validation/review pose-envelope gates. Returns modified source plus diagnostics from re-evaluation.',
+        'Use this when you need to declare a reachability target for a connector. Durably insert `<assembly>.workspace(connectorRef, { reachable, toleranceMm? })` before the final top-level return. Workspace targets are checked by solvedModel validation/review pose-envelope gates. Returns modified source plus diagnostics from re-evaluation.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -1152,9 +1119,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'set_scene_return_source',
+      name: 'set_scene_return',
       description:
-        'Replace the final top-level return statement with `return <assembly>.model();` or `return <assembly>.solvedModel(poses, options?);`. Use solvedModel for mate-authored mechanisms so FK and validation run. Returns modified source plus diagnostics from re-evaluation.',
+        'Use this when you need to set how the script returns its assembly. Replace the final top-level return statement with `return <assembly>.model();` or `return <assembly>.solvedModel(poses, options?);`. Use solvedModel for mate-authored mechanisms so FK and validation run. Returns modified source plus diagnostics from re-evaluation.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -1168,49 +1135,6 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => setSceneReturnSourceTool(input as unknown as Parameters<typeof setSceneReturnSourceTool>[0]),
-  },
-  {
-    definition: {
-      name: 'add_connector',
-      description:
-        'Register a v0.6 mate-style connector on a named part of the active assembly. Requires a prior evaluate_script that called kcad.assembly(...). Origin accepts a [x, y, z] tuple shorthand, a structured ConnectorOrigin ({ kind: "vec3" | "topology", ... }), or a @kc[<part>/face/<name>] / @kc[<part>/edge/<name>] / @kc[<part>/vertex/<name>] topology ref string (the `#normal` modifier on a face ref yields face-normal). Returns the registered connector\'s { partName, name, type }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          assembly: { type: 'string', description: 'Assembly name; defaults to the only/first assembly on the active session.' },
-          part: { type: 'string', description: 'Part name declared via arm.part(name, ...).' },
-          name: { type: 'string', description: 'Connector name (unique within the part).' },
-          type: { type: 'string', enum: ['frame', 'axis', 'planar', 'ball'] },
-          origin: { description: 'Origin as [x, y, z] (vec3 shorthand), a structured ConnectorOrigin, or a @kc[<part>/face/<name>] topology ref string (face-center default; #normal modifier yields face-normal). @kc[<part>/edge/<name>] maps to edge-axis; @kc[<part>/vertex/<name>] maps to vertex.' },
-          axis: { type: 'array', description: 'Optional [x, y, z] axis (axis connectors).' },
-          normal: { type: 'array', description: 'Optional [x, y, z] normal (frame / planar connectors).' },
-        },
-        required: ['part', 'name', 'type', 'origin'],
-      },
-    },
-    handler: input => addConnectorTool(input as unknown as Parameters<typeof addConnectorTool>[0]),
-  },
-  {
-    definition: {
-      name: 'add_mate',
-      description:
-        'Declare a typed mate between two named connectors on the active assembly. Connector refs accept "<partName>.<connectorName>" (legacy) or "@kc[<partName>/connector/<connectorName>]" (preferred). Mate types: fastened, revolute, prismatic, cylindrical, planar, ball, pin_slot. Optional pose and limitsDeg/limitsMm expose articulated intent for solver/review tools.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          assembly: { type: 'string' },
-          name: { type: 'string', description: 'Mate name (unique within the assembly).' },
-          a: { type: 'string', description: 'Connector ref: "<partName>.<connectorName>" (legacy) or "@kc[<partName>/connector/<connectorName>]".' },
-          b: { type: 'string', description: 'Connector ref: "<partName>.<connectorName>" (legacy) or "@kc[<partName>/connector/<connectorName>]".' },
-          type: { type: 'string', enum: ['fastened', 'revolute', 'prismatic', 'cylindrical', 'planar', 'ball', 'pin_slot'] },
-          pose: { description: 'Optional mate pose: number for scalar mates or [x, y, z] degrees for ball mates.' },
-          limitsDeg: { type: 'array', description: 'Optional [minDeg, maxDeg] range for revolute/cylindrical/pin_slot mates.' },
-          limitsMm: { type: 'array', description: 'Optional [minMm, maxMm] range for prismatic mates.' },
-        },
-        required: ['name', 'a', 'b', 'type'],
-      },
-    },
-    handler: input => addMateTool(input as unknown as Parameters<typeof addMateTool>[0]),
   },
   {
     definition: {
