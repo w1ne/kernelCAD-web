@@ -5,7 +5,18 @@ import { callMcpTool, TOOL_REGISTRY } from '../../../src/agent/mcp/toolRegistry'
 describe('MCP server tool registry', () => {
   it('derives the advertised TOOLS array from the executable registry', () => {
     expect(TOOLS).toBeDefined();
-    expect(TOOLS).toEqual(TOOL_REGISTRY.map(entry => entry.definition));
+    // TOOLS is derived 1:1 from TOOL_REGISTRY in registry order. Each advertised
+    // tool carries the same name + inputSchema as its registry definition, plus
+    // the centrally-attached behavioral annotations and structured outputSchema
+    // (required MCP metadata — never stripped). Assert the derivation: same names
+    // in the same order, and each advertised entry is a superset of its registry
+    // definition.
+    expect(TOOLS.map(tool => tool.name)).toEqual(
+      TOOL_REGISTRY.map(entry => entry.definition.name),
+    );
+    for (const [i, entry] of TOOL_REGISTRY.entries()) {
+      expect(TOOLS[i]).toMatchObject(entry.definition);
+    }
     expect(TOOLS.length).toBeGreaterThanOrEqual(21);
   });
 
@@ -14,14 +25,15 @@ describe('MCP server tool registry', () => {
     expect(new Set(names).size).toBe(names.length);
     expect(names).toContain('design_loop');
 
-    await expect(callMcpTool('list_api', {})).resolves.toMatchObject({
+    await expect(callMcpTool('lookup_api', {})).resolves.toMatchObject({
       globals: expect.any(Array),
       shapeMethods: expect.any(Array),
     });
   });
 
   it('dispatches assembly inspection through the advertised registry', async () => {
-    await expect(callMcpTool('list_assemblies', {
+    await expect(callMcpTool('inspect', {
+      of: 'assemblies',
       code: `
         const hinge = assembly('registry hinge');
         hinge.part('leafA', box(20, 8, 2));

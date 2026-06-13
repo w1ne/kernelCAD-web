@@ -61,7 +61,7 @@ BA = (pi * |angle_deg| / 180) * (kFactor * thickness + radius)
 ## MCP introspection
 
 - `flatten_pattern` — returns the unfolded `Region` as JSON (outer ring + bend lines + holes).
-- `get_bend_table` — lists every bend with its K-factor bend allowance, axis line, and parent `sheetMetal` opts.
+- `inspect({ of: 'bend-table' })` — lists every bend with its K-factor bend allowance, axis line, and parent `sheetMetal` opts.
 
 ## Sheet-metal diagnostic codes
 
@@ -79,7 +79,7 @@ After authoring a sheet-metal part, run before reporting done:
 | G-kfactor-valid | `kFactor` is a finite number in `[0, 1]`; pick 0.33-0.45 for mild steel / aluminum unless you have a measured value |
 | G-radius-vs-thickness | Inner bend radius `>= 0.5 * thickness`; tighter bends fail OCCT and emit `feature.kernel-failed` |
 | G-bend-edge-linear | Every `.bend(...)` selector resolves to a straight edge (slice 1: `{ atX }`, `{ atY }`, or `{ face: 'top' }`) |
-| G-bend-table-exists | `get_bend_table` returns one entry per `.bend(...)` call with non-negative bend allowance and a finite axis line |
+| G-bend-table-exists | `inspect({ of: 'bend-table' })` returns one entry per `.bend(...)` call with non-negative bend allowance and a finite axis line |
 | G-flatten-roundtrip | `shape.flattenPattern()` produces a `Region` whose `outer` polyline area equals the source profile area within `1e-6` (chain has <= 2 bends in slice 1) |
 | G-flatten-bend-count | `flattenPattern()` chains have at most 2 bends — 3+ emits `feature.flattenPattern.multi-bend-unsupported` |
 | G-profile-polyline | Sketch profile uses only `moveTo` / `lineTo` / `close` — no arcs (slice 1) |
@@ -89,4 +89,4 @@ After authoring a sheet-metal part, run before reporting done:
 - `kernelcad-authoring` — `path()` + `Sketch` shape this skill operates on; rotate / translate the bracket after folding.
 - `kernelcad-features` — fillet / chamfer / hole apply to the folded result; remember the slice-1 sharp-corner approximation when placing features on the inside corner.
 - `kernelcad-params` — `thickness`, `kFactor`, `angle`, `radius` all accept `Editable<number>`; wire to params for fab-iteration.
-- `kernelcad-mcp` — `flatten_pattern` and `get_bend_table` are the inspection surface for downstream CAM / nesting tools.
+- `kernelcad-mcp` — `flatten_pattern` and `inspect({ of: 'bend-table' })` are the inspection surface for downstream CAM / nesting tools.

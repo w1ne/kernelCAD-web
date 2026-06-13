@@ -31,6 +31,25 @@ function expectFetchSignal(fetchMock: ReturnType<typeof vi.spyOn>, callIndex: nu
   );
 }
 
+/**
+ * Deterministically wait for an async fetch chain (e.g. session → fallback mesh
+ * → review) to complete, instead of a FIXED number of `await Promise.resolve()`
+ * flushes. Advances fake timers + flushes microtasks in small rounds until
+ * `predicate` holds (covers the 600 ms debounced build) or a cap is hit.
+ *
+ * Root-cause fix: the fixed-flush pattern occasionally under-flushed a
+ * variable-length async chain, so the next fetch hadn't fired when the test
+ * asserted — intermittent '' / wrong-count failures, especially under CI load.
+ */
+async function flushUntil(predicate: () => boolean, maxRounds = 80): Promise<void> {
+  for (let round = 0; round < maxRounds; round++) {
+    if (predicate()) return;
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10);
+    });
+  }
+}
+
 const mockEngine = {
   initialize: vi.fn().mockResolvedValue(undefined),
   executeCode: vi.fn(),
@@ -424,12 +443,7 @@ describe('GeometryContext latest-intent-wins', () => {
       </GeometryProvider>,
     );
 
-    await act(async () => {
-      await Promise.resolve();
-      await Promise.resolve();
-      await Promise.resolve();
-      await Promise.resolve();
-    });
+    await flushUntil(() => fetchMock.mock.calls.length >= 2);
 
     expect(fetchUrl(fetchMock, 1)).toBe('/__kernelcad/session?script=examples%2Fgallery%2Fratchet-stool.kcad.ts');
     expect(fetchUrl(fetchMock, 2)).toContain('https://kernelcad.com/gallery/_mesh/');
@@ -485,14 +499,7 @@ describe('GeometryContext latest-intent-wins', () => {
       </GeometryProvider>,
     );
 
-    await act(async () => {
-      await Promise.resolve();
-    });
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(600);
-      await Promise.resolve();
-      await Promise.resolve();
-    });
+    await flushUntil(() => screen.getByTestId('face-count').textContent === '1');
 
     expect(screen.getByTestId('error').textContent).toBe('');
     expect(screen.getByTestId('face-count').textContent).toBe('1');
@@ -572,23 +579,15 @@ describe('GeometryContext latest-intent-wins', () => {
       </GeometryProvider>,
     );
 
-    await act(async () => {
-      await Promise.resolve();
-      await Promise.resolve();
-      await Promise.resolve();
-      await Promise.resolve();
-    });
+    await flushUntil(() => fetchMock.mock.calls.length >= 3);
 
     expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(relowerHandler).not.toBeNull();
 
     await act(async () => {
       relowerHandler?.();
-      await Promise.resolve();
-      await Promise.resolve();
-      await Promise.resolve();
-      await Promise.resolve();
     });
+    await flushUntil(() => fetchMock.mock.calls.length >= 5);
 
     expect(fetchMock).toHaveBeenCalledTimes(5);
     expect(fetchUrl(fetchMock, 4)).toBe('/__kernelcad/mesh?session=tok-abc');

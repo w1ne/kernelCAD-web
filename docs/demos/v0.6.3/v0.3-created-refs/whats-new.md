@@ -24,7 +24,7 @@ op rewrites enough topology to lose the slot lookup. Successful fallback emits
 `feature.created-ref.fallback-used` as a warning (not an error) so downstream
 features continue without retry. `FaceLineage` gained two siblings — `snapshotAtCreate`
 (immutable) and `surfaceType` — that ride through every downstream lowerer's merge.
-The new MCP tool `get_face_lineage` walks the chain of lineage entries that produced
+The new MCP tool `query({ mode: 'lineage' })` walks the chain of lineage entries that produced
 a named face ref, surfacing `chain` and `usedFallback` for an agent to inspect.
 
 ![Source](./source.kcad.ts)

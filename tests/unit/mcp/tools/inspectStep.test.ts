@@ -84,11 +84,11 @@ describe('inspect_step MCP tool', () => {
     expect(r.errorHint).toBeUndefined();
   });
 
-  it('is registered in TOOL_REGISTRY and dispatchable via callMcpTool', async () => {
-    const def = getToolDefinition('inspect_step');
+  it('is dispatchable through inspect({ of: "step" })', async () => {
+    const def = getToolDefinition('inspect');
     expect(def).toBeDefined();
-    expect(def!.inputSchema.required).toEqual(['file']);
-    const r = (await callMcpTool('inspect_step', { file: stepPath })) as {
+    expect(def!.inputSchema.required).toEqual(['of']);
+    const r = (await callMcpTool('inspect', { of: 'step', file: stepPath })) as {
       ok: boolean;
       report?: { solidCount: number };
     };

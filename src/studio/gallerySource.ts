@@ -36,6 +36,17 @@ export function galleryPrecomputedMeshUrl(sourceSha256Hex: string): string {
   return `${galleryAssetBase()}/gallery/_mesh/${sourceSha256Hex}.json`;
 }
 
+/**
+ * URL of a build-time precomputed ANIMATION timeline (per-part world transforms
+ * per frame), keyed by the sha256 hex of the .kcad.ts source. `build-gallery.ts`
+ * writes these under `public/gallery/_anim/<sha>.json` for curated entries that
+ * declare an `animationView()`, so the hosted Studio can PLAY the mechanism for
+ * anonymous visitors (who can't open a live server session) with zero compute.
+ */
+export function galleryPrecomputedAnimUrl(sourceSha256Hex: string): string {
+  return `${galleryAssetBase()}/gallery/_anim/${sourceSha256Hex}.json`;
+}
+
 function resolveGalleryAssetUrl(sourceUrl: string, manifestUrl: string): string {
   if (/^https?:\/\//i.test(sourceUrl)) return sourceUrl;
   if (/^https?:\/\//i.test(manifestUrl)) return new URL(sourceUrl, manifestUrl).toString();

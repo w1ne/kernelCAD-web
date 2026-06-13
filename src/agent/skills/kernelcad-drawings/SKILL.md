@@ -5,7 +5,7 @@ description: Export 2D engineering-drawing sheets (SVG) from any model or assemb
 
 # kernelCAD — engineering drawings
 
-`export_model({ format: 'svg-drawing' })` renders a `.kcad.ts` model as a standard third-angle engineering-drawing sheet in SVG. It works on single bodies and on assemblies (`assembly.model()` / `solvedModel(...)`) — assembly parts are projected together in world frame, so one part occluding another renders correctly as hidden lines.
+`export({ target: 'model', format: 'svg-drawing' })` renders a `.kcad.ts` model as a standard third-angle engineering-drawing sheet in SVG. It works on single bodies and on assemblies (`assembly.model()` / `solvedModel(...)`) — assembly parts are projected together in world frame, so one part occluding another renders correctly as hidden lines.
 
 ## What the sheet contains
 
@@ -20,7 +20,7 @@ description: Export 2D engineering-drawing sheets (SVG) from any model or assemb
 MCP:
 
 ```json
-{ "tool": "export_model", "input": { "file": "bracket.kcad.ts", "format": "svg-drawing", "output_path": "out/bracket-drawing.svg" } }
+{ "tool": "export", "input": { "target": "model", "file": "bracket.kcad.ts", "format": "svg-drawing", "output_path": "out/bracket-drawing.svg" } }
 ```
 
 CLI:

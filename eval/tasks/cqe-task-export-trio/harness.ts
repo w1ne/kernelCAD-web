@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/tasks/cqe-task-export-trio/harness.ts
 //
-// Round-trip gate covering the whole export_model matrix in a single eval
+// Round-trip gate covering the whole export (target:'model') matrix in a single eval
 // run. The expert solution returns a two-part Scene (sheet-metal plate +
 // solid bracket); the harness exercises four format paths:
 //

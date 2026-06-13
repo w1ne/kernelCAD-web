@@ -1,7 +1,7 @@
 // Service-panel mounting plate — v0.3 hero artifact.
 // Slice 3 makes the model parametric: dimensions, fastener diameters, and the
 // optional cable port survive capture as symbolic params and can be edited
-// post-build with params_update/session.params.update.
+// post-build with set_param/session.params.update.
 
 const plateW = param('plateW', 120, { min: 80, max: 180, description: 'overall plate width' });
 const plateD = param('plateD', 80, { min: 50, max: 120, description: 'overall plate depth' });

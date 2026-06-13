@@ -13,7 +13,7 @@ return blank.bend({ atX: 30 }, 90, 1); // radius 1 mm < vendor min 2.39 mm
 ```
 
 Gate:
-- The repaired build returns `ok: true` from `dfm_preflight` with
+- The repaired build returns `ok: true` from `verify({ check: 'dfm-preflight' })` with
   `{ vendor: 'sendcutsend', material: 'aluminum-6061-t6', thicknessIn: 0.125, service: 'bending' }`.
 - The repaired bend radius is >= the `threshold.value` reported in the
   failing finding.

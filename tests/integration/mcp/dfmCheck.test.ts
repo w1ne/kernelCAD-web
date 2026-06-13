@@ -74,11 +74,11 @@ describe('dfm_check (MCP)', () => {
     assertAllHints(r);
   });
 
-  it('is registered and dispatchable through the tool registry', async () => {
-    const def = getToolDefinition('dfm_check');
+  it('is dispatchable through verify({ check: "dfm" })', async () => {
+    const def = getToolDefinition('verify');
     expect(def).toBeDefined();
-    expect(def!.description).toContain('dfmSpec');
-    const r = await callMcpTool('dfm_check', { code: THIN }) as DfmCheckOutput;
+    expect(def!.description).toContain('dfm');
+    const r = await callMcpTool('verify', { check: 'dfm', code: THIN }) as DfmCheckOutput;
     expect(r.ok).toBe(false);
     expect(r.diagnostics.some(d => d.code === 'dfm.wall.too-thin')).toBe(true);
   }, 120_000);

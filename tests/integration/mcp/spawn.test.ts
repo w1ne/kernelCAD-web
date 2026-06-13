@@ -93,8 +93,9 @@ describe.skipIf(SKIP)('MCP server (spawn)', () => {
     expect(payload.featureCount).toBe(1);
   }, 90000);
 
-  it('responds to list_features with feature kinds', async () => {
-    const result = await callTool('list_features', {
+  it("responds to inspect({ of: 'features' }) with feature kinds", async () => {
+    const result = await callTool('inspect', {
+      of: 'features',
       code: 'return box(10, 10, 10).fillet(2);',
     });
     const text = (result as { content: { text: string }[] }).content[0].text;
@@ -102,16 +103,16 @@ describe.skipIf(SKIP)('MCP server (spawn)', () => {
     expect(payload.features.map((f: { kind: string }) => f.kind)).toEqual(['box', 'fillet']);
   }, 90000);
 
-  it('responds to list_topology with canonical box face names', async () => {
-    const result = await callTool('list_topology', { code: 'return box(10, 10, 10);' });
+  it("responds to inspect({ of: 'topology' }) with canonical box face names", async () => {
+    const result = await callTool('inspect', { of: 'topology', code: 'return box(10, 10, 10);' });
     const text = (result as { content: { text: string }[] }).content[0].text;
     const payload = JSON.parse(text);
     expect(payload.ok).toBe(true);
     expect(payload.faceNames).toEqual(expect.arrayContaining(['top', 'bottom']));
   }, 90000);
 
-  it('responds to get_edges_of with 4 edges of the top face of a box', async () => {
-    const result = await callTool('get_edges_of', { code: 'return box(20, 20, 20);', face_name: 'top' });
+  it("responds to inspect({ of: 'face-edges' }) with 4 edges of the top face of a box", async () => {
+    const result = await callTool('inspect', { of: 'face-edges', code: 'return box(20, 20, 20);', face_name: 'top' });
     const text = (result as { content: { text: string }[] }).content[0].text;
     const payload = JSON.parse(text);
     expect(payload.ok).toBe(true);
@@ -131,8 +132,8 @@ describe.skipIf(SKIP)('MCP server (spawn)', () => {
     expect(last.diagnostics).toEqual([]);
   }, 90000);
 
-  it('responds to set_param_value with edited code + diagnostics', async () => {
-    const result = await callTool('set_param_value', {
+  it('responds to set_param with edited code + diagnostics', async () => {
+    const result = await callTool('set_param', {
       code: `const w = param('Width', 60, { unit: 'mm' });\nreturn box(w, 20, 5);`,
       param_name: 'Width',
       new_value: 120,

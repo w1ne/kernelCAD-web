@@ -36,7 +36,7 @@ export default async function harness(scriptPath: string, ctx?: HarnessCtx): Pro
 
   // Use the *meshed* STL extent for the bbox gate — this is what the
   // cadqueryeval scorer and every downstream STL consumer sees. The BREP
-  // AABB from get_shape_info can over-report for turned / chamfered parts
+  // AABB from inspect({ of: 'shape' }) can over-report for turned / chamfered parts
   // (see eval/oracle/stlBbox.ts). When ctx is absent (harness called from
   // a unit test without a run dir) we fall back to the BREP AABB.
   let actualExtent: [number, number, number];
