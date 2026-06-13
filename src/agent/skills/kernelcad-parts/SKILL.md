@@ -38,9 +38,8 @@ use the typed `lib.standard.*` shortcuts.
 ### Fetch-by-URL (parts not in the catalog)
 
 `fetch_part { url }` pulls geometry on demand from an **allowlisted** host
-(`raw.githubusercontent.com`, `objects.githubusercontent.com`, `github.com`,
-`gitlab.com`, `api.step.parts`) — it is cached locally, never re-hosted
-(`redistribution: 'fetch-only'`):
+(GitHub/GitLab raw + release-asset hosts and the kernelCAD parts host) — it is
+cached locally, never re-hosted (`redistribution: 'fetch-only'`):
 
 - A `.step`/`.stp` URL → inspected, connectors synthesized, returned as a record.
 - A `.stl`/`.dae`/`.obj` URL → returned as a `mesh-import` handle (non-BREP,
