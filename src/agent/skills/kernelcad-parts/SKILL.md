@@ -117,7 +117,7 @@ ref grammar as authored faces and edges:
 ```
 
 Either form works as the source / target of `add_mate` and survives
-`resolve_topo_ref`. The dot form is shorter for human-authored scripts;
+`query({ mode: 'resolve' })`. The dot form is shorter for human-authored scripts;
 the @kc form is canonical in MCP tool outputs and diagnostic payloads.
 See `kernelcad-mcp` for the full grammar.
 

@@ -16,18 +16,18 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 ### Evaluation and introspection
 
 - `evaluate_script({ file? code?, dryRun? })` — pass/fail + featureCount + diagnostics; plus a `parts` summary `{ count, names }` when the scene is assembly-built (absent for single-shape / non-assembly scripts). `dryRun: true` is the fast iteration mode: transpile + capture + capture-light checks WITHOUT OCCT lowering, DFM gates, or meshing — milliseconds instead of seconds. A dry run catches script throws, capture-time API misuse, and assembly validity-gate failures, but NOT lowering failures (failed booleans, oversized fillets) or `dfmSpec` diagnostics, and it leaves the active session untouched — finish with a full `evaluate_script` before using session-dependent tools.
-- `diff_scripts({ baseFile? baseCode?, file? code? })` — structured geometric delta between a baseline script and a revision. Returns per-part `added`/`removed`/`renamed`/`changed` (volume mm³ + exact bbox deltas; numbers match `list_part_stats`), interference totals per side + `deltaMm3` with per-pair detail, mate-graph changes (type, connectors, pose, limits), and param changes (value/min/max). Single-shape scripts diff as one `(root)` pseudo-part. Use after editing a script to verify exactly what changed physically before re-rendering; read-only, never touches the active session.
-- `list_features({ file? code? })` — array of feature summaries (kind/id/params/inputs)
-- `list_assemblies({ file? code? })` — captured assembly intent: assemblies, parts, named connectors, fixed connections, joints, and aggregate models
-- `inspect_assembly({ file? | code?, assembly? })` — physical assembly inventory for agents: named parts, bboxes, connectors, mates, mechanical review facts, disconnected solids, `unexplainedGeometry`, and a next-action prompt. Run this before accepting visually suspicious mechanisms; random/floating geometry must be repaired or explicitly justified by the original prompt.
-- `inspect_step({ file })` — inspect a STEP file directly, without evaluating a script (`{ file }` is required; no `{ code }` mode): solid tree (index + best-effort name), per-solid exact bounding box + volume + face count, and detected cylindrical holes (axis origin + direction, diameter, depth, blind/through; co-axial seam-split faces merge into one bore). Run this before placing an imported vendor part — find mounting-hole positions and verify the part-local frame from exact geometry instead of measuring renders. CLI equivalent: `kernelcad inspect step <file.step>`.
-- `get_shape_info({ file? code?, feature_id? })` — volume/surfaceArea/bbox of a feature (default: last)
-- `list_topology({ file? code?, feature_id? })` — canonical face names + edge count
-- `get_edges_of({ file? code?, feature_id?, face_name })` — boundary edges of a face (centroid, length, isClosed)
-- `list_edges({ file? code?, feature_id? })` — enumerate all edges (index, centroid, length, isClosed)
-- `list_faces({ file? code?, feature_id? })` — enumerate all faces with area and centroid
-- `list_face_labels({ file? code?, feature_id? })` — canonical face names resolvable on a feature
-- `get_face_lineage({ file? code?, feature_id, ref })` — walk the HistoryMap chain that produced a named face/edge ref; returns `{ chain, usedFallback }`.
+- `diff_scripts({ baseFile? baseCode?, file? code? })` — structured geometric delta between a baseline script and a revision. Returns per-part `added`/`removed`/`renamed`/`changed` (volume mm³ + exact bbox deltas; numbers match `inspect({ of: 'part-stats' })`), interference totals per side + `deltaMm3` with per-pair detail, mate-graph changes (type, connectors, pose, limits), and param changes (value/min/max). Single-shape scripts diff as one `(root)` pseudo-part. Use after editing a script to verify exactly what changed physically before re-rendering; read-only, never touches the active session.
+- `inspect({ of: 'features', file? code? })` — array of feature summaries (kind/id/params/inputs)
+- `inspect({ of: 'assemblies', file? code? })` — captured assembly intent: assemblies, parts, named connectors, fixed connections, joints, and aggregate models
+- `inspect({ of: 'assembly', file? | code?, assembly? })` — physical assembly inventory for agents: named parts, bboxes, connectors, mates, mechanical review facts, disconnected solids, `unexplainedGeometry`, and a next-action prompt. Run this before accepting visually suspicious mechanisms; random/floating geometry must be repaired or explicitly justified by the original prompt.
+- `inspect({ of: 'step', file })` — inspect a STEP file directly, without evaluating a script (`{ file }` is required; no `{ code }` mode): solid tree (index + best-effort name), per-solid exact bounding box + volume + face count, and detected cylindrical holes (axis origin + direction, diameter, depth, blind/through; co-axial seam-split faces merge into one bore). Run this before placing an imported vendor part — find mounting-hole positions and verify the part-local frame from exact geometry instead of measuring renders. CLI equivalent: `kernelcad inspect step <file.step>`.
+- `inspect({ of: 'shape', file? code?, feature_id? })` — volume/surfaceArea/bbox of a feature (default: last)
+- `inspect({ of: 'topology', file? code?, feature_id? })` — canonical face names + edge count
+- `inspect({ of: 'face-edges', file? code?, feature_id?, face_name })` — boundary edges of a face (centroid, length, isClosed)
+- `inspect({ of: 'edges', file? code?, feature_id? })` — enumerate all edges (index, centroid, length, isClosed)
+- `inspect({ of: 'faces', file? code?, feature_id? })` — enumerate all faces with area and centroid
+- `inspect({ of: 'face-labels', file? code?, feature_id? })` — canonical face names resolvable on a feature
+- `query({ mode: 'lineage', file? code?, feature_id, ref })` — walk the HistoryMap chain that produced a named face/edge ref; returns `{ chain, usedFallback }`.
 
 ### Diagnostics
 
@@ -68,26 +68,26 @@ All edit tools return the modified source plus diagnostics. Re-run `kernelcad ev
 
 ### Params
 
-- `params_list({})` — list symbolic parameters declared on the active evaluated session, including current value, default, type, and metadata.
+- `inspect({ of: 'params' })` — list symbolic parameters declared on the active evaluated session, including current value, default, type, and metadata.
 - `params_update({ edits })` — edit one or more active-session params atomically and re-lower affected records; returns a shape preview, skipped/relowered record ids, and soft warnings.
 
 ### Constrained sketches
 
 - `solve_sketch({ entities, constraints })` — solve a 2D POINT/LINE/CIRCLE sketch constraint set; returns `{ ok, entities, constraints }` or validation errors. Side-effect-free.
 - `add_constraint({ constraints?, constraint })` — validate and append one sketch constraint to a constraint list; returns the updated list. Side-effect-free.
-- `list_constraints({ constraints? })` — list supported sketch constraint types (`COINCIDENT`, `DISTANCE`, `HORIZONTAL`, `VERTICAL`, `PARALLEL`, `PERPENDICULAR`, `EQUAL_LENGTH`, `TANGENT`, `RADIUS`, `ANGLE`, `CONCENTRIC`, `SYMMETRIC`) and echo the provided constraint list.
+- `inspect({ of: 'constraints', constraints? })` — list supported sketch constraint types (`COINCIDENT`, `DISTANCE`, `HORIZONTAL`, `VERTICAL`, `PARALLEL`, `PERPENDICULAR`, `EQUAL_LENGTH`, `TANGENT`, `RADIUS`, `ANGLE`, `CONCENTRIC`, `SYMMETRIC`) and echo the provided constraint list.
 
 ### Sheet metal and SDF probes
 
 - `flatten_pattern({ file? | code?, feature_id? })` — return an unfolded sheet-metal `Region` as JSON with outer ring, holes, and bend lines. Use before CAM/nesting assumptions.
-- `get_bend_table({ file? | code?, feature_id? })` — list sheet-metal bend records with K-factor bend allowance, axis line, and parent options.
+- `inspect({ of: 'bend-table', file? | code?, feature_id? })` — list sheet-metal bend records with K-factor bend allowance, axis line, and parent options.
 - `evaluate_sdf({ file? | code?, fieldName, point })` — sample a bound SDF field at `[x, y, z]`; returns distance/inside/AABB/kind without materializing the field.
 
 ### Assembly and mate tools
 
 - `add_connector({ part, name, type, origin, axis?, normal?, assembly? })` — register a mate-style connector on a named part of the active assembly; requires a prior `evaluate_script`. `type` is one of `frame`/`axis`/`planar`/`ball`. `origin` accepts a `[x, y, z]` shorthand or a structured `ConnectorOrigin`.
 - `add_mate({ name, a, b, type, pose?, limitsDeg?, limitsMm?, assembly? })` — declare a typed mate between two `"<partName>.<connectorName>"` refs on the active assembly. `type` is one of `fastened`/`revolute`/`prismatic`/`cylindrical`/`planar`/`ball`/`pin_slot`; capture-time validation surfaces type-mismatch / connector-not-found errors.
-- `list_mates({ assembly? })` — return the declared mate records on the active assembly: `{ mates: [{ name, a, b, type, pose?, limitsDeg?, limitsMm? }, ...] }`.
+- `inspect({ of: 'mates', assembly? })` — return the declared mate records on the active assembly: `{ mates: [{ name, a, b, type, pose?, limitsDeg?, limitsMm? }, ...] }`.
 - `verify({ check: 'assembly', assembly? })` — run the mate-aware validator on the active assembly; returns `{ status, diagnostics, partCount, jointCount }` where each diagnostic carries `code` and `hint` for recovery.
 - `solve_mates({ assembly?, poses? })` — run the mate-graph solver on the active assembly; returns `{ status, poses, iterations? }` with each pose serialized as `{ translation, rotateAxis, rotateDeg }`. The `poses` input overrides mate pose values by mate name; coupled driven mates are expanded from their source mate before solve.
 - `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, samplesPerMate?, combinatorial?, epsilonMm3?, trackConnectors?, gripperAperture? })` — evaluate a script, validate its assembly/mate graph, check that mate connectors touch modeled material, sample declared mate limits, optionally run BREP interference checks at those samples, report connector workspace bounds, optionally report gripper aperture between two fingertip connector refs, and return raw diagnostics plus a fitness summary (`fitness.functional`, `fitness.blockingReasons`, `fitness.mechanismSummary`) after an assembly is selected. `samplesPerMate` (integer ≥ 1, default 1) is the **total** sample count per declared-limit mate — `1`/`2` = corners only, `>=3` adds `samplesPerMate - 2` uniform interior points. `combinatorial` (default false) emits all `2^M` min/max corner-tuples across mates with declared limits and is capped at `M <= 8` (`M=9` throws with `combinatorial sampling capped at 8 mates with declared limits`). `review_cad` always returns `repairContext: RepairContext` (see below).
@@ -119,7 +119,7 @@ interface RepairContext {
   **Per-format options** (passed via `options`):
   - `stl` — `verify?: boolean` (default `true`): the watertight verify gate. Equivalent to the top-level `no_verify: true` when set to `false`.
   - `step` — `unit?: 'mm' | 'cm' | 'in'`.
-  - `dxf` — `unit?: 'mm' | 'cm' | 'in'` (default `mm`); `tolerance?: number` (chord tolerance for polyline flattening; mm; default 0.05); `layers?: DxfLayerSpec[]` (named layers for cut profiles; bend lines always emit on a dedicated `BEND` layer). Output is `LWPOLYLINE`-only; the input must be planar — non-planar geometry fails with `export.dxf.non-planar` and a `list_faces` next-action.
+  - `dxf` — `unit?: 'mm' | 'cm' | 'in'` (default `mm`); `tolerance?: number` (chord tolerance for polyline flattening; mm; default 0.05); `layers?: DxfLayerSpec[]` (named layers for cut profiles; bend lines always emit on a dedicated `BEND` layer). Output is `LWPOLYLINE`-only; the input must be planar — non-planar geometry fails with `export.dxf.non-planar` and a `inspect({ of: 'faces' })` next-action.
   - `3mf` — `printUnit?: 'mm' | 'cm' | 'in'` (default `mm`); `embedSource?: boolean` (when `true`, the source script is attached to the 3MF under `Metadata/source.kcad.ts`). Watertightness is verified before write; non-manifold meshes fail with `export.3mf.not-watertight`.
   - `glb` — `axis?: 'y-up' | 'z-up'` (default `y-up`; world-units convention is mm). `draco?: false` is reserved for a follow-up slice; passing `draco: true` is a static type error today and a runtime `export.glb.draco-glass-conflict` if the type is widened upstream.
   - `svg-drawing` — third-angle engineering-drawing sheet (front/top/left + isometric, hidden edges dashed, tangent edges thin, overall bbox dimensions, title block). `sheet?: 'a4' | 'a3'` (default `a4` landscape); `modelName?: string` (title block; defaults to the script file name); `date?: string` (title block; defaults to a placeholder for deterministic output). Accepts single bodies and assembly Scenes — parts project together so inter-part occlusion renders as hidden lines. See `kernelcad-drawings` for the full sheet anatomy.
@@ -128,7 +128,7 @@ interface RepairContext {
 
 - `export_part({ file? | code?, part?, output_path?, output_dir?, no_verify? })` — export solved-assembly parts as individual binary STL files in their modeled (world-frame) positions. The script must return `assembly.solvedModel(...)` / `assembly.model()`. Pass `{ part, output_path }` for one part, or `{ output_dir }` (with `part` omitted or `'all'`) for all parts — files land at `<output_dir>/<part>.stl`. A watertight verify runs on every exported mesh **by default**; a failing part still writes its file (so the broken mesh can be inspected) but fails the call with `export.mesh.not-watertight` (open-edge count + up to 5 crack-cluster locations). Pass `{ no_verify: true }` only to inspect broken meshes. Unknown part names fail with `export.part.not-found` listing the valid names. Returns `{ ok, written: [{ part, output_path, byte_count, watertight }], diagnostics }`.
 
-- `list_part_stats({ file? | code? })` — list solved-assembly parts with print-prep stats: name, exact world-frame bounding box (from the export tessellation), volume (mm³), surface area (mm²), and export triangle count (same mesher as the STL exporter, so the numbers match `export_part` exactly). Returns `{ ok, parts: [{ name, bbox, volumeMm3, surfaceAreaMm2, triangleCount }], diagnostics }`.
+- `inspect({ of: 'part-stats', file? | code? })` — list solved-assembly parts with print-prep stats: name, exact world-frame bounding box (from the export tessellation), volume (mm³), surface area (mm²), and export triangle count (same mesher as the STL exporter, so the numbers match `export_part` exactly). Returns `{ ok, parts: [{ name, bbox, volumeMm3, surfaceAreaMm2, triangleCount }], diagnostics }`.
 
 - `capture_animation({ file, output_path?, frames_dir?, fps?, no_verify?, verify_every?, focus?, hide? })` — capture the script's `animationView({...})` timeline (see `kernelcad-authoring`) to an MP4 (default) or a PNG frame sequence (`frames_dir`, zero external dependencies; mutually exclusive with `output_path`). **File-only** — there is no `{ code }` mode (the capture engine renders from a file on disk so relative `lib.fromSTEP(...)` imports resolve); passing `{ code }` is refused with `cli.invalid-args`. Animation-pose interference verification runs **by default** (keyframe times + segment midpoints, plus every n-th frame time with `verify_every`); `no_verify: true` skips it. `focus` / `hide` (arrays of feature ids or assembly part names, mutually exclusive — same semantics as `kernelcad render`) isolate parts in the rendered frames for cutaways; visibility is render-only and does NOT affect the pose verification, which always runs against the full model. Returns `{ ok, output_path, frame_count, duration_ms, fps, verified, verify_skipped?, collisions: [{ t_ms, a, b, volume_mm3 }], diagnostics }`. **Collisions do NOT flip `ok`**: a captured artifact with interfering poses is still `ok: true` with `verified: false` and `collisions[]` populated (`animation.collision` diagnostics) — the artifact is the evidence. Only a could-not-capture fault (bad file, build error, no `animationView` record, unsolvable pose, ffmpeg missing, browser bootstrap failure) returns `ok: false` with a `failure_kind` of `model` or `environment`. Like `kernelcad render`, capture drives a headless browser against a running studio dev server (`VITE_PORT` / localhost:5173). CLI equivalent: `kernelcad animate <file.kcad.ts> [out.mp4]`.
 
@@ -207,7 +207,7 @@ Renaming offenders is the recovery path; the gate does not loosen.
 | Situation | Form |
 |---|---|
 | Agent passing a face/edge/connector handle between tools | `@kc[...]` string (canonical handoff) |
-| Output of `list_faces` / `list_edges` / `inspect_assembly` | always emits `ref: '@kc[...]'` strings |
+| Output of `inspect({ of: 'faces' })` / `inspect({ of: 'edges' })` / `inspect({ of: 'assembly' })` | always emits `ref: '@kc[...]'` strings |
 | Hand-authored `.kcad.ts` against canonical names | bare canonical name (e.g. `'top'`) — still accepted |
 | Programmatic / batch construction of selectors | structured form (e.g. `{ kind: 'face-center', name: 'lid' }`) — still accepted |
 | Cross-tool agent emission and resolution | `@kc[...]` string — most stable, lineage-walked first, snapshot-fallback second |
@@ -218,9 +218,9 @@ The structured forms remain valid escape hatches. The `@kc[...]` string form is 
 
 | MCP tool | Field |
 |---|---|
-| `list_faces` | `faces[i].ref` (string) and `faces[i].lineage` (struct). The legacy `faces[i].id: 'f<idx>'` stays one release with `deprecated: true`. |
-| `list_edges` | `edges[i].ref` (string). |
-| `inspect_assembly` | Topology-bound connector summaries carry `origin: '@kc[<part>/<kind>/<name>]'` plus a `resolved: [x, y, z]` numeric vec3 for direct downstream consumption. |
+| `inspect({ of: 'faces' })` | `faces[i].ref` (string) and `faces[i].lineage` (struct). The legacy `faces[i].id: 'f<idx>'` stays one release with `deprecated: true`. |
+| `inspect({ of: 'edges' })` | `edges[i].ref` (string). |
+| `inspect({ of: 'assembly' })` | Topology-bound connector summaries carry `origin: '@kc[<part>/<kind>/<name>]'` plus a `resolved: [x, y, z]` numeric vec3 for direct downstream consumption. |
 
 ### Tools that accept refs
 
@@ -229,7 +229,7 @@ The structured forms remain valid escape hatches. The `@kc[...]` string form is 
 | `add_mate` | `a` / `b` accept the legacy `'<partName>.<connectorName>'` dot form OR `'@kc[<partName>/connector/<connectorName>]'`. |
 | `add_connector` | `origin` accepts `[x, y, z]`, a structured `ConnectorOrigin`, OR `'@kc[<part>/face/<name>]'` (face-center default; `#normal` for the face-normal direction). |
 | `add_feature` | When the feature line includes a face selector (`hole`, `holes`, `cutout`, `shell`, `fillet`, `chamfer`), the selector accepts `@kc[<owner>/face/<name>]` strings, structured `{ face: <name> }` forms, or bare canonical names. |
-| `resolve_topo_ref` | The discovery primitive — pass `{ ref, file? | code? }` to confirm a ref still resolves on the current geometry. |
+| `query({ mode: 'resolve' })` | The discovery primitive — pass `{ ref, file? | code? }` to confirm a ref still resolves on the current geometry. |
 
 Capture-time `Connector.origin` (the script API on `partRef.connector(name, opts)`) also accepts `origin: '@kc[<part>/face/<name>]'` directly; the ref is normalised to a structured `ConnectorOrigin` at capture-time so downstream review tools see the same shape they always did.
 
@@ -248,14 +248,14 @@ Three diagnostic codes surface through `KernelError.hint` and the MCP error enve
 
 Read the hint — it carries the recovery move (paste a candidate ref, narrow the selector, or accept provisional resolution).
 
-### `resolve_topo_ref` — discovery primitive
+### `query({ mode: 'resolve' })` — discovery primitive
 
-`resolve_topo_ref({ file? | code?, ref })` is the tool an agent calls when it already holds a ref (typically from a prior `list_faces` / `list_edges` / `inspect_assembly` call) and wants to confirm the ref still resolves on the current geometry, or wants to inspect what an upstream tool emitted.
+`query({ mode: 'resolve', file? | code?, ref })` is the tool an agent calls when it already holds a ref (typically from a prior `inspect({ of: 'faces' })` / `inspect({ of: 'edges' })` / `inspect({ of: 'assembly' })` call) and wants to confirm the ref still resolves on the current geometry, or wants to inspect what an upstream tool emitted.
 
 ```json
 {
-  "name": "resolve_topo_ref",
-  "input": { "code": "<.kcad.ts source>", "ref": "@kc[base/face/top]" },
+  "name": "query",
+  "input": { "mode": "resolve", "code": "<.kcad.ts source>", "ref": "@kc[base/face/top]" },
   "output_ok": {
     "ok": true,
     "ref": "@kc[base/face/top]",
@@ -354,7 +354,7 @@ const narrowed = candidates.and(q.withLabel('lid'));
 
 // 5. JSON.stringify round-trips cleanly; chainable methods are
 //    non-enumerable so the wire form carries only data fields. The
-//    `evaluate_query` MCP tool (ships in a follow-on slice) consumes
+//    `query({ mode: 'evaluate' })` MCP tool (ships in a follow-on slice) consumes
 //    exactly this JSON shape from outside the script.
 JSON.stringify(narrowed);   // { "_kind": "kc.query", "target": "face", ... }
 ```
@@ -366,7 +366,7 @@ See `cookbook/snippets/Q-S6-inspect-first-build-after.kcad.ts`.
 | Gate | Pass criterion |
 |------|----------------|
 | G-mcp-reachable | `kernelcad mcp` is listening; tool calls return JSON-RPC results not transport errors |
-| G-feature-id-stable | After re-evaluating the same script, `list_features` returns the same IDs (deterministic capture) — if not, the script is non-deterministic and should be fixed before using MCP edits |
+| G-feature-id-stable | After re-evaluating the same script, `inspect({ of: 'features' })` returns the same IDs (deterministic capture) — if not, the script is non-deterministic and should be fixed before using MCP edits |
 | G-edit-then-reeval | After `add_feature` / `add_nurbs_surface` etc., re-run `kernelcad evaluate` on the resulting source to confirm the edit landed and evaluates clean |
 | G-diagnostic-hint-cited | When relaying an MCP error to the user, include the `hint` field — it points at the fix |
 
@@ -375,4 +375,4 @@ See `cookbook/snippets/Q-S6-inspect-first-build-after.kcad.ts`.
 - `kernelcad-authoring` — the API surface MCP operates on.
 - `kernelcad-params` — `params_update({ edits })` is the live-edit path for symbolic parameters.
 - `kernelcad-features` — face-ref queries and add-feature edits route through MCP.
-- `kernelcad-assemblies` — assembly-specific MCP tools (`inspect_assembly`, `review_cad`, `design_loop`) and the mechanism build loop.
+- `kernelcad-assemblies` — assembly-specific MCP tools (`inspect({ of: 'assembly' })`, `review_cad`, `design_loop`) and the mechanism build loop.

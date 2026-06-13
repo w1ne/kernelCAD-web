@@ -137,8 +137,8 @@ not by the `verify({ check: 'dfm-preflight' })` sheet-metal operations above:
 ## Related skills
 
 - `kernelcad-sheet-metal` — sheet-metal authoring; `verify({ check: 'dfm-preflight' })` reads
-  its `flatten_pattern` and `get_bend_table` outputs.
-- `kernelcad-mcp` — `flatten_pattern` and `get_bend_table` are the
+  its `flatten_pattern` and `inspect({ of: 'bend-table' })` outputs.
+- `kernelcad-mcp` — `flatten_pattern` and `inspect({ of: 'bend-table' })` are the
   upstream tools; `verify({ check: 'dfm-preflight' })` is the validation gate.
 - `kernelcad-features` — `hole`, `cutout`, `shell` feed the geometry
   `verify({ check: 'dfm-preflight' })` measures.

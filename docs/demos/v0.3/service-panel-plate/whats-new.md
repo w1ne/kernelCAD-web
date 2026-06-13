@@ -97,7 +97,7 @@ After the first build, an agent can inspect and edit the active session with
 MCP:
 
 ```typescript
-params_list({});
+inspect({ of: 'params' });
 params_update({ edits: [{ name: 'cornerBoltDia', value: 6 }] });
 params_update({ edits: [{ name: 'addCablePort', value: false }] });
 ```

@@ -85,7 +85,7 @@ export async function getShapeInfo(scriptPath: string): Promise<ShapeInfo> {
     jsonrpc: '2.0',
     id: 2,
     method: 'tools/call',
-    params: { name: 'get_shape_info', arguments: { file: scriptPath } },
+    params: { name: 'inspect', arguments: { of: 'shape', file: scriptPath } },
   });
   const stdin = `${initialize}\n${initialized}\n${callTool}\n`;
 
@@ -110,13 +110,13 @@ export async function getShapeInfo(scriptPath: string): Promise<ShapeInfo> {
       const result = (parsed as { result: { content?: Array<{ type: string; text?: string }> } }).result;
       const text = result.content?.[0]?.text;
       if (typeof text !== 'string') {
-        throw new Error(`get_shape_info returned no text content: ${JSON.stringify(result)}`);
+        throw new Error(`inspect({ of: 'shape' }) returned no text content: ${JSON.stringify(result)}`);
       }
       const shapeJson = JSON.parse(text);
       // Contract: the MCP tool returns { ok: boolean, shape: { volume, surfaceArea, bbox: { min, max } } }.
       // If the producer ever changes this shape, fail loudly here so the eval harness doesn't silently produce nonsense.
       if (typeof shapeJson !== 'object' || shapeJson === null || typeof shapeJson.shape !== 'object' || shapeJson.shape === null) {
-        throw new Error(`get_shape_info returned unexpected envelope (expected { ok, shape: {...} }): ${text}`);
+        throw new Error(`inspect({ of: 'shape' }) returned unexpected envelope (expected { ok, shape: {...} }): ${text}`);
       }
       const shape = shapeJson.shape;
       if (
@@ -126,7 +126,7 @@ export async function getShapeInfo(scriptPath: string): Promise<ShapeInfo> {
         !Array.isArray(shape.bbox.min) ||
         !Array.isArray(shape.bbox.max)
       ) {
-        throw new Error(`get_shape_info returned unexpected shape body: ${text}`);
+        throw new Error(`inspect({ of: 'shape' }) returned unexpected shape body: ${text}`);
       }
       return {
         volume: shape.volume,
@@ -136,13 +136,13 @@ export async function getShapeInfo(scriptPath: string): Promise<ShapeInfo> {
     }
   }
   throw new Error(
-    `get_shape_info: no response with id=2 in stdout. stdout=${r.stdout.slice(0, 500)} stderr=${r.stderr.slice(0, 500)}`,
+    `inspect({ of: 'shape' }): no response with id=2 in stdout. stdout=${r.stdout.slice(0, 500)} stderr=${r.stderr.slice(0, 500)}`,
   );
 }
 
 /**
  * Maximum inner-loop (hole) count across all faces of the model, via the
- * `list_faces` MCP tool. A frame with N lens cutouts reports N on its
+ * `inspect({ of: 'faces' })` MCP tool. A frame with N lens cutouts reports N on its
  * front/back faces; a solid slab reports 0. This is a structural property of
  * the BREP — invariant to whether a lens body is inserted into the opening —
  * so it is the robust signal for "the expected lens openings exist" that pixel
@@ -160,7 +160,7 @@ export async function getMaxFaceInnerLoops(scriptPath: string): Promise<number> 
     jsonrpc: '2.0',
     id: 2,
     method: 'tools/call',
-    params: { name: 'list_faces', arguments: { file: scriptPath } },
+    params: { name: 'inspect', arguments: { of: 'faces', file: scriptPath } },
   });
   const stdin = `${initialize}\n${initialized}\n${callTool}\n`;
 

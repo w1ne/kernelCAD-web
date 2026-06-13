@@ -12,7 +12,7 @@ spice-dispenser-carousel — a Ø88 "carousel in a can" spice dispenser. A six-c
 
 ## What's new
 
-v0.12 ships the agent animation toolset. `animationView({ tracks })` declares keyframe timelines over numeric params with per-segment easing; `kernelcad animate <file> [out.mp4]` captures the timeline to MP4 (or a PNG sequence) with sampled-pose interference verification; the `capture_animation` MCP tool mirrors the CLI; and Studio's Animation tab scrubs/plays the same timeline via a bake-once + client-interpolation path. This release also lands the print-readiness DFM suite (`kernelcad dfm`), STEP inspection (`inspect_step`), Studio cutaway sections, the parts catalog + export trio (DXF/3MF/GLB), hosted multi-user session hardening, and generation-loop tightening — full notes in `CHANGELOG.md`.
+v0.12 ships the agent animation toolset. `animationView({ tracks })` declares keyframe timelines over numeric params with per-segment easing; `kernelcad animate <file> [out.mp4]` captures the timeline to MP4 (or a PNG sequence) with sampled-pose interference verification; the `capture_animation` MCP tool mirrors the CLI; and Studio's Animation tab scrubs/plays the same timeline via a bake-once + client-interpolation path. This release also lands the print-readiness DFM suite (`kernelcad dfm`), STEP inspection (`inspect({ of: 'step' })`), Studio cutaway sections, the parts catalog + export trio (DXF/3MF/GLB), hosted multi-user session hardening, and generation-loop tightening — full notes in `CHANGELOG.md`.
 
 ![Demo](./demo.mp4)
 ![Panel](./panel.png)

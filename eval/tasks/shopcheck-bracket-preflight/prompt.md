@@ -12,4 +12,4 @@ Gates:
 - `verify({ check: 'dfm-preflight', vendor: 'sendcutsend', material: 'aluminum-6061-t6', thicknessIn: 0.125, service: 'bending' })`
   returns `ok: true`.
 - Zero `dfm.*` error findings.
-- At least one `flatten_pattern` + `get_bend_table` row each.
+- At least one `flatten_pattern` + `inspect({ of: 'bend-table' })` row each.

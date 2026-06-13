@@ -65,13 +65,13 @@ const p = params({ plateW: 80, plateD: 50, plateT: 6 });
 return box(p.plateW, p.plateD, p.plateT);
 ```
 
-### MCP: `params_list` / `params_update`
+### MCP: `inspect({ of: 'params' })` / `params_update`
 
-For post-build edits, use MCP `params_list({})` to inspect the active evaluated session, then `params_update({ edits: [{ name: 'boltDia', value: 6 }] })`. Updates validate atomically, re-lower only affected records plus their downstream dependents, and return soft warnings when a boolean-gated feature makes a named downstream reference become a passthrough.
+For post-build edits, use MCP `inspect({ of: 'params' })` to inspect the active evaluated session, then `params_update({ edits: [{ name: 'boltDia', value: 6 }] })`. Updates validate atomically, re-lower only affected records plus their downstream dependents, and return soft warnings when a boolean-gated feature makes a named downstream reference become a passthrough.
 
 ```typescript
 // Via MCP (introspection session):
-params_list({})
+inspect({ of: 'params' })
 // → [{ name: 'boltDia', value: 5, min: 3, max: 10, description: '...' }, ...]
 
 params_update({ edits: [{ name: 'boltDia', value: 6 }] })

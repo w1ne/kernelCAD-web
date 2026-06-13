@@ -23,7 +23,7 @@ Use this loop for every non-trivial model edit:
 10. **Repair one cause at a time**: target the smallest source change that addresses the failing check, then rerun the same check. Do not loosen gates or silently skip failing evidence.
 
 **Verify against geometry, not against your own summary.** Trust measured
-evidence — exact bbox/volume from `get_shape_info`/`inspect_step`, interference
+evidence — exact bbox/volume from `inspect({ of: 'shape' })`/`inspect({ of: 'step' })`, interference
 volumes, DFM findings, the rendered pixels — over the narrative of what the
 script "should" have built. A green `evaluate` (`ok: true, featureCount: N`)
 proves the script ran, not that the geometry is correct. When a check cannot
@@ -69,7 +69,7 @@ two-feature placement math, subtract-chain reliability, JSON-`ok`-is-not-visual-
 
 - Every physically distinct component is a named `assembly().part(name, shape)` — one body per part unless the component is genuinely monolithic.
 - Anonymous loose top-level bodies in a multi-body model are a defect smell: the review loop emits `assembly.structure.unstructured-bodies` (info) with the recovery hint. Wrap each loose body in a named part.
-- Part names are the durable handles for `inspect --focus`, `list_part_stats`, and Studio's hide / keep-whole / per-part validity — choose stable, descriptive names.
+- Part names are the durable handles for `inspect --focus`, `inspect({ of: 'part-stats' })`, and Studio's hide / keep-whole / per-part validity — choose stable, descriptive names.
 
 - If a model has moving parts, design the joint structure before styling: name the parent/child parts, joint type, axis/frame, limits, and editable pose parameters up front.
 - If two parts are intended to touch, author the relationship with connectors and mates rather than relying on raw `translate()` offsets alone. Raw offsets are acceptable for free placement, but touching load-path geometry needs named interfaces the validator and Studio can inspect.
@@ -92,7 +92,7 @@ Use `lib.fromSTEP(...)` for off-the-shelf components whenever physical fit matte
 
 - Good candidates: motors, servos, bearings, shafts, fasteners, hinges, sensors, PCBs, connectors, rails, and purchased enclosures.
 - Store or reference the vendor STEP file deliberately; name the source, version, and license/terms in nearby metadata or README when the file is part of a demo/portfolio bundle.
-- Before placing a vendor STEP, run `kernelcad inspect step <file.step>` (or the `inspect_step` MCP tool) to read the solid tree, per-solid exact bbox + volume, and detected cylindrical holes (axis, diameter, depth, blind/through) — find mounting-hole positions and verify the part-local frame from exact geometry instead of measuring renders.
+- Before placing a vendor STEP, run `kernelcad inspect step <file.step>` (or the `inspect({ of: 'step' })` MCP tool) to read the solid tree, per-solid exact bbox + volume, and detected cylindrical holes (axis, diameter, depth, blind/through) — find mounting-hole positions and verify the part-local frame from exact geometry instead of measuring renders.
 - Build modeled brackets, mounts, clearances, cable paths, and keepouts around the imported part rather than approximating the part with generic boxes/cylinders.
 - Placeholder geometry is acceptable for early blockouts, but final review must label it as a placeholder or replace it with catalog geometry.
 
@@ -459,7 +459,7 @@ Supported constraint types:
 
 Minimal tool flow:
 
-- `list_constraints({ constraints? })` — discover the supported types and echo the current constraint list.
+- `inspect({ of: 'constraints', constraints? })` — discover the supported types and echo the current constraint list.
 - `add_constraint({ constraints?, constraint })` — validate one constraint and return a new list; no session state is mutated.
 - `solve_sketch({ entities, constraints })` — solve a 2D constraint set and return `{ ok, entities, constraints }` or validation errors; no script is modified.
 
@@ -469,7 +469,7 @@ Entity and selection recovery:
 - If a `LINE` references non-POINT endpoints or a `CIRCLE` references a non-POINT center, replace the referenced id with a `POINT`.
 - If a constraint reports the wrong entity count, check the type arity: most types use 2 entities; `RADIUS` uses 1, `ANGLE` uses 1 or 2, and `SYMMETRIC` uses 3.
 - If `DISTANCE`, `RADIUS`, or `ANGLE` reports a missing value, add a numeric `value`.
-- If the type is unsupported, call `list_constraints({})` or `list_api({})` and choose one of the supported types above.
+- If the type is unsupported, call `inspect({ of: 'constraints' })` or `list_api({})` and choose one of the supported types above.
 
 ## Labels — naming faces at creation time
 
@@ -493,7 +493,7 @@ Labels survive transforms (`.translate`, `.rotate`, `.scale`, `.reflect`, `.mirr
 
 `sphere` does not accept `faceLabels` (no canonical face names; query targets undefined). Use a different primitive if labels are needed.
 
-Discover labels on a script with the `list_face_labels` MCP tool — it surfaces both `faceLabels`-declared labels (creating-op metadata) and sketch-segment labels (`path().label('rim')`).
+Discover labels on a script with the `inspect({ of: 'face-labels' })` MCP tool — it surfaces both `faceLabels`-declared labels (creating-op metadata) and sketch-segment labels (`path().label('rim')`).
 
 ## When something fails
 
