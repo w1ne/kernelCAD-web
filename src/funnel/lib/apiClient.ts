@@ -92,13 +92,6 @@ export async function claimProject(slug: string): Promise<{ claimed: boolean }> 
   return authedFetch<{ claimed: boolean }>('POST', `/api/v1/projects/${encodeURIComponent(slug)}/claim`, {});
 }
 
-/** "Clone to my projects": copy a public project into a new project owned by
- *  the signed-in user. Returns the new project's slug + id so the caller can
- *  navigate to it. */
-export async function cloneProject(slug: string): Promise<{ slug: string; projectId: string }> {
-  return authedFetch('POST', `/api/v1/projects/${encodeURIComponent(slug)}/clone`);
-}
-
 /** Thrown when a free user tries to make a project private — the body text
  *  authedFetch surfaces on a 403 carries this code. Lets the UI show an
  *  upgrade CTA instead of a generic failure. */
