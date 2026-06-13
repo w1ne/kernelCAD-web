@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { addPathSplineTool } from './addPathSpline';
 import { addPathNurbsSegmentTool } from './addPathNurbsSegment';
 import { addPathHermiteG2Tool } from './addPathHermiteG2';

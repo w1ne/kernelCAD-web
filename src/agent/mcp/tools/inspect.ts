@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { inspectAssemblyTool } from './inspectAssembly';
 import { inspectRobotTool } from './inspectRobot';
 import { inspectStepTool } from './inspectStep';

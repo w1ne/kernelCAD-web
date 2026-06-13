@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { addMateSourceTool } from './addMateSource';
 import { addMateCouplingSourceTool } from './addMateCouplingSource';
 import { addTransmissionSourceTool } from './addTransmissionSource';

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /**
  * Tool names REMOVED from the public MCP surface (renamed, or merged into a
  * mode-parameterized tool). The consistency gate (toolNameConsistency.test.ts)

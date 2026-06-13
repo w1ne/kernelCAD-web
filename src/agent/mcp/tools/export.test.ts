@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock both exporters — this is a routing layer, so we test that `target`

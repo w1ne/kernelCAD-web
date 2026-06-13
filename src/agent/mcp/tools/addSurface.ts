@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { addNurbsSurfaceTool } from './addNurbsSurface';
 import { addSurfaceFromBoundaryTool } from './addSurfaceFromBoundary';
 

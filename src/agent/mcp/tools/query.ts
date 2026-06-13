@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { evaluateQueryTool } from './evaluateQuery';
 import { resolveTopoRefTool } from './resolveTopoRef';
 import { getFaceLineageTool } from './getFaceLineage';
