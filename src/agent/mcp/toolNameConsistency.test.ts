@@ -82,8 +82,11 @@ describe('tool-name consistency', () => {
       if (file.endsWith('retiredToolNames.ts') || file.endsWith('toolNameConsistency.test.ts')) continue;
       const text = readFileSync(file, 'utf8');
       for (const name of retired) {
-        // callMcpTool('name' | getToolDefinition('name' — string-literal dispatch
-        const re = new RegExp(`(callMcpTool|getToolDefinition)\\(\\s*['"\`]${name}['"\`]`);
+        // String-literal dispatch through the registry or a spawned MCP server:
+        // callMcpTool('name' | getToolDefinition('name' | callTool('name' (the
+        // spawn-test JSON-RPC helper — this one bit us on CI, where the bundle
+        // is built and the call actually runs).
+        const re = new RegExp(`(callMcpTool|getToolDefinition|callTool)\\(\\s*['"\`]${name}['"\`]`);
         if (re.test(text)) {
           offenders.push(`${file.replace(ROOT + '/', '')}: dispatches retired '${name}' → ${RETIRED_TOOL_NAMES[name]}`);
         }
