@@ -87,7 +87,7 @@ export function AnimationTab(): JSX.Element {
 
     const {
         durationMs, fps, name, tMs, isPlaying, mode, speed, trackValues, canDrive,
-        bakeState, bakeFrames, bakeError, collisions,
+        bakeState, bakeError, collisions,
     } = playback;
 
     return (
@@ -115,24 +115,16 @@ export function AnimationTab(): JSX.Element {
                     className="mx-3 mb-2 px-2 py-1.5 text-[10px] leading-tight text-sky-200/90 bg-sky-950/30 border border-sky-900/60 rounded"
                     data-testid="animation-bake-status"
                 >
-                    Baking timeline… solving every frame once so playback runs
-                    smooth.
+                    Preparing animation…
                 </div>
             )}
-            {canDrive && bakeState === 'ready' && (
-                <div
-                    className="mx-3 mb-2 px-2 py-1 text-[10px] leading-tight text-gray-500"
-                    data-testid="animation-bake-status"
-                >
-                    Baked {bakeFrames} frames · smooth client-side playback.
-                </div>
-            )}
+            {/* 'ready' shows no status — the mechanism just plays. */}
             {canDrive && bakeState === 'error' && (
                 <div
                     className="mx-3 mb-2 px-2 py-1.5 text-[10px] leading-tight text-red-300/90 bg-red-950/30 border border-red-900/60 rounded"
                     data-testid="animation-bake-status"
                 >
-                    Bake failed: {bakeError ?? 'unknown error'}. Fix the script and retry.
+                    Animation unavailable: {bakeError ?? 'unknown error'}.
                 </div>
             )}
 
@@ -220,12 +212,6 @@ export function AnimationTab(): JSX.Element {
                 </div>
             )}
 
-            <p className="px-3 py-2 text-[10px] leading-tight text-gray-500 border-t border-[#1f1f1f]">
-                Playback is smooth — the timeline is baked once (every frame
-                solved server-side into per-part transforms), then interpolated
-                and played client-side at full rate. On pause the kernel pose is
-                synced to the displayed frame.
-            </p>
         </div>
     );
 }
