@@ -15,6 +15,10 @@ describe('packageReleaseAudit', () => {
       kind: 'missing-prepack-build',
       message: 'package.json scripts.prepack must run npm run build:cli',
     });
+    expect(result.blockers).toContainEqual({
+      kind: 'missing-prepack-build',
+      message: 'package.json scripts.prepack must run npm run build:player',
+    });
     expect(formatPackageAuditReport(result)).toContain('missing-prepack-build');
   });
 
@@ -22,7 +26,7 @@ describe('packageReleaseAudit', () => {
     const result = auditPackageJsonText(JSON.stringify({
       bin: { kernelcad: 'dist/cli/index.js' },
       files: ['dist/cli', 'README.md', 'LICENSE'],
-      scripts: { prepack: 'npm run build:cli' },
+      scripts: { prepack: 'npm run build:cli && npm run build:player' },
     }));
 
     expect(result.blockers).toEqual([]);
@@ -34,7 +38,7 @@ describe('packageReleaseAudit', () => {
         version: '0.11.0',
         bin: { kernelcad: 'dist/cli/index.js' },
         files: ['dist/cli', 'README.md', 'LICENSE'],
-        scripts: { prepack: 'npm run build:cli' },
+        scripts: { prepack: 'npm run build:cli && npm run build:player' },
       }),
       tagNames: ['v0.6.1', 'v0.8.0', 'v0.9.0-rc.1'],
     });
