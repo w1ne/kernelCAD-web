@@ -1106,7 +1106,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
         'over the 3D viewport; this tool scans the known kernelCAD-web checkouts and returns the ' +
         'freshest one within a configurable freshness window (default 30 minutes). Returns base64 ' +
         'PNGs of the screenshot + mask in-band so any MCP client can see the marked regions ' +
-        'without local-disk Read access. Call this whenever the user says "look at my mark", ' +
+        'without local-disk Read access. The packet also carries the user\'s intent — an optional ' +
+        'one-line note and preset tags (e.g. "too thick", "missing", "wrong angle") describing ' +
+        'WHAT is wrong, not just where. Call this whenever the user says "look at my mark", ' +
         '"check what I painted", or any equivalent.',
       inputSchema: {
         type: 'object',
