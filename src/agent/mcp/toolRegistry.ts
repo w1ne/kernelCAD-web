@@ -38,6 +38,7 @@ import { queryTool } from './tools/query';
 import { TOOL_ANNOTATIONS, type ToolAnnotations } from './toolAnnotations';
 import { TOOL_OUTPUT_SCHEMAS, type JSONSchemaObject } from './toolOutputSchemas';
 import { captureAnimationTool } from './tools/captureAnimation';
+import { renderPreviewTool } from './tools/renderPreview';
 export { runClosedLoop } from '../loop/closedLoop.js';
 export { buildRepairPrompt } from '../loop/repairPrompt.js';
 export * from '../loop/types.js';
@@ -1105,7 +1106,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
         'over the 3D viewport; this tool scans the known kernelCAD-web checkouts and returns the ' +
         'freshest one within a configurable freshness window (default 30 minutes). Returns base64 ' +
         'PNGs of the screenshot + mask in-band so any MCP client can see the marked regions ' +
-        'without local-disk Read access. Call this whenever the user says "look at my mark", ' +
+        'without local-disk Read access. The packet also carries the user\'s intent — an optional ' +
+        'one-line note and preset tags (e.g. "too thick", "missing", "wrong angle") describing ' +
+        'WHAT is wrong, not just where. Call this whenever the user says "look at my mark", ' +
         '"check what I painted", or any equivalent.',
       inputSchema: {
         type: 'object',
@@ -1301,6 +1304,49 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => captureAnimationTool(input as Parameters<typeof captureAnimationTool>[0]),
+  },
+  {
+    definition: {
+      name: 'render_preview',
+      description:
+        'Use this when you need to LOOK at a kernelCAD model — render its script to deterministic PNG views ' +
+        'for visual self-check (the visual half of the evaluate → render → inspect → fix loop), with NO studio or ' +
+        'dev server required. Pass { code } (inline source) or { file } (a .kcad.ts path), exactly one. ' +
+        'Renders the canonical engineering views (front, right, top, iso — pass { views } for a subset, e.g. ["iso"] for ' +
+        'fastest iteration) plus an optional { pose: "<az>,<el>" } arbitrary camera angle (degrees; az=0,el=0 is front, ' +
+        '+az rotates CCW around +Z, +el lifts the camera). NO STUDIO / DEV-SERVER REQUIRED: a prebuilt static player ' +
+        '(dist/headless-player) is served from an ephemeral local port automatically; a running studio dev server is used ' +
+        'as fallback, and { base_url } forces one. The only environment dependency is playwright chromium ' +
+        '(npx playwright install chromium). Pass { focus } or { hide } (arrays of feature ids or assembly part names, ' +
+        'mutually exclusive) to isolate parts — same semantics as `kernelcad render --focus/--hide`. PNGs are written to ' +
+        '{ out_dir } (default: a fresh temp session directory) and returned as absolute paths with per-view camera ' +
+        'descriptions (kernelCAD is Z-up). Mechanism truth runs first, same protocol as `kernelcad render`: a broken ' +
+        'mechanism still renders but every tile is watermarked MECHANISM BROKEN (KERNELCAD_RENDER_STRICT=1 refuses ' +
+        'instead); read { mechanism, mechanism_failure_codes }. The probe runs full BREP interference sweeps and can ' +
+        'dominate latency on large assemblies — pass { no_mechanism_check: true } for fast iteration (the preview then ' +
+        'reports mechanism: "unverified"; ignored under strict mode). Returns { ok, images: [{ name, path, description }], ' +
+        'out_dir, bounds, mechanism, render_source, render_ms, diagnostics }. PATHS ARE LOCAL to the machine running the ' +
+        'MCP server — local stdio clients read them directly; hosted/remote clients should use open_in_studio instead.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'Inline kernelCAD script source. Mutually exclusive with file. Relative imports resolve against a temp dir — use file for scripts with relative lib.fromSTEP(...) imports.' },
+          file: { type: 'string', description: 'Path to a .kcad.ts script on disk. Mutually exclusive with code.' },
+          views: { type: 'array', items: { type: 'string', enum: ['front', 'right', 'top', 'iso'] }, description: 'Canonical views to render (default: all four). Fewer views = faster.' },
+          pose: { type: 'string', description: "Extra arbitrary camera pose '<az>,<el>' in degrees, e.g. '30,20'." },
+          focus: { type: 'array', items: { type: 'string' }, description: 'Show only matching feature ids / assembly part names. Mutually exclusive with hide.' },
+          hide: { type: 'array', items: { type: 'string' }, description: 'Hide matching feature ids / assembly part names. Mutually exclusive with focus.' },
+          out_dir: { type: 'string', description: 'Directory for the PNGs (created if missing). Default: a fresh temp session dir.' },
+          width: { type: 'integer', minimum: 64, maximum: 2048, description: 'Per-view tile width in px (default 768).' },
+          height: { type: 'integer', minimum: 64, maximum: 2048, description: 'Per-view tile height in px (default 768).' },
+          environment: { type: 'string', description: "HDRI environment override: preset ('studio', 'softbox', 'neutral', 'outdoor', 'warehouse'), a URL, or 'none' for the default three-light rig." },
+          no_watermark: { type: 'boolean', description: 'Suppress the kernelCAD version watermark.', default: false },
+          no_mechanism_check: { type: 'boolean', description: "Skip the mechanism-truth probe for fast iteration on large assemblies; the preview reports mechanism: 'unverified'. Ignored under KERNELCAD_RENDER_STRICT=1.", default: false },
+          base_url: { type: 'string', description: 'Advanced: force a specific render server (e.g. a running studio dev server) instead of the bundled static player.' },
+        },
+      },
+    },
+    handler: input => renderPreviewTool(input as Parameters<typeof renderPreviewTool>[0]),
   },
 ];
 

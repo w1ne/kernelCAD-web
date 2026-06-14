@@ -400,4 +400,28 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     required: ['ok', 'diagnostics'],
     additionalProperties: true,
   },
+
+  render_preview: {
+    type: 'object',
+    properties: {
+      ok: { type: 'boolean', description: 'Whether the preview rendered.' },
+      images: {
+        type: 'array',
+        items: { type: 'object', additionalProperties: true },
+        description: 'Rendered tiles { name, path, description } — absolute local PNG paths with per-view camera orientation (kernelCAD is Z-up).',
+      },
+      out_dir: { type: 'string', description: 'Directory holding the PNGs (session temp dir unless out_dir was given).' },
+      bounds: { type: 'object', additionalProperties: true, description: 'Model AABB in mm { min, max } the camera was fit to (success).' },
+      mechanism: { type: 'string', description: "Mechanism-truth verdict: 'real' | 'broken' | 'unverified'." },
+      mechanism_failure_codes: { type: 'array', items: { type: 'string' }, description: "De-duplicated failure codes when mechanism is 'broken'." },
+      render_source: { type: 'string', description: "Lane that served the render: 'static-player' | 'dev-server' | 'explicit'." },
+      render_ms: { type: 'number', description: 'Wall-clock render time in ms (provisioning + browser + captures).' },
+      diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
+      error: { type: 'string' },
+      errorCode: { type: 'string' },
+      errorHint: { type: 'string' },
+    },
+    required: ['ok', 'images', 'diagnostics'],
+    additionalProperties: true,
+  },
 };

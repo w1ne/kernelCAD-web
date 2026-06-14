@@ -97,6 +97,14 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   'verify_every',
   'verify_skipped',
   'failure_kind',
+  // render_preview tool parameters (documented alongside the real
+  // render_preview tool name, which DOES resolve — params, not calls).
+  'out_dir',
+  'base_url',
+  // Hosted-product tool that lives in kernelCAD-server's registry, not the
+  // local TOOL_REGISTRY — referenced in prose to redirect hosted/remote
+  // clients ("hosted clients should use `open_in_studio` instead").
+  'open_in_studio',
 ]);
 
 export interface ToolNameHit {
