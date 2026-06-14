@@ -87,6 +87,7 @@ function Probe() {
     error,
     setPreviewCode,
     setViewportDriverLock,
+    updateParam,
   } = useGeometry();
   const faceCount = geometries[0]?.faces.length ?? 0;
   const firstColor = geometries[0]?.color ?? '';
@@ -113,6 +114,7 @@ function Probe() {
       <button data-testid="trigger-preview-2" onClick={() => setPreviewCode('return makeBox(2,2,2);')}>Trigger2</button>
       <button data-testid="clear-preview" onClick={() => setPreviewCode(null)}>Clear</button>
       <button data-testid="lock-viewport" onClick={() => setViewportDriverLock?.(true)}>Lock</button>
+      <button data-testid="trigger-param" onClick={() => { void updateParam([{ name: 'w', value: 9 }]); }}>Param</button>
     </div>
   );
 }
@@ -601,6 +603,56 @@ describe('GeometryContext latest-intent-wins', () => {
 
     // Let the debounced build settle, then assert no error was raised.
     await flushUntil(() => screen.getByTestId('execution-count').textContent !== '0');
+    expect(screen.getByTestId('error').textContent).toBe('');
+  });
+
+  it('no session: a param edit re-runs the script through the dev mesh endpoint with overrides', async () => {
+    // The core "re-run on edit" fix: with no live session token, dragging a
+    // param must re-run the whole script (stateless) with the new value baked
+    // in, instead of throwing. Localhost dev → meshSourceDev path.
+    vi.stubEnv('DEV', '1');
+    mockEngine.executeCode.mockResolvedValue({ geometries: [], sketches: [] });
+
+    const meshPayload = {
+      features: [
+        {
+          featureId: 'b',
+          featureKind: 'box',
+          predecessors: [],
+          faces: [{ vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0], indices: [0, 1, 2], normals: [0, 0, 1, 0, 0, 1, 0, 0, 1], faceId: 0 }],
+        },
+      ],
+      featureRecords: [{ id: 'b', kind: 'box' }],
+      bounds: { min: [0, 0, 0], max: [1, 1, 0] },
+      params: { w: 9 },
+      review: { ok: true, diagnostics: [] },
+    };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => meshPayload,
+    } as Response);
+
+    render(
+      <GeometryProvider code={'return box(w, 1, 1);'}>
+        <Probe />
+      </GeometryProvider>,
+    );
+
+    // Initial (worker) build settles — no geometry yet.
+    await flushUntil(() => screen.getByTestId('execution-count').textContent !== '0');
+
+    // Drag a param with no session → stateless re-run.
+    await act(async () => {
+      screen.getByTestId('trigger-param').click();
+    });
+    await flushUntil(() => screen.getByTestId('face-count').textContent === '1');
+
+    const meshCall = fetchMock.mock.calls.find((c) => String(c[0]) === '/__kernelcad/mesh');
+    expect(meshCall).toBeTruthy();
+    expect(JSON.parse((meshCall![1] as RequestInit).body as string)).toEqual({
+      source: 'return box(w, 1, 1);',
+      params: { w: 9 },
+    });
     expect(screen.getByTestId('error').textContent).toBe('');
   });
 
