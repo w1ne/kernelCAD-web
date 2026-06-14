@@ -506,6 +506,104 @@ describe('GeometryContext latest-intent-wins', () => {
     expect(fetchMock).toHaveBeenCalled();
   });
 
+  it('hosted: surfaces an error when a solid-producing build renders zero geometry', async () => {
+    // Regression: app.kernelcad.com/p/43PSZn6U sat on "Computing" then went
+    // EMPTY with no signal — a swallowed build failure. A 200 mesh response
+    // carrying feature records but zero rendered meshes must surface, not show
+    // a green "Ready / 0 bodies".
+    vi.stubGlobal('window', {
+      ...window,
+      location: { ...window.location, hostname: 'app.kernelcad.com', search: '' },
+      localStorage: window.localStorage,
+      history: window.history,
+      crypto: window.crypto,
+    });
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        features: [], // build rendered nothing...
+        featureRecords: [{ id: 'b', kind: 'box' }], // ...but a solid was expected
+        bounds: { min: [0, 0, 0], max: [0, 0, 0] },
+        params: {},
+        review: { ok: true, diagnostics: [] },
+      }),
+    } as Response);
+
+    render(
+      <GeometryProvider code={'export default box(1, 1, 1);'}>
+        <Probe />
+      </GeometryProvider>,
+    );
+
+    await flushUntil(() => screen.getByTestId('error').textContent !== '');
+
+    expect(screen.getByTestId('error').textContent).toMatch(/no visible geometry/i);
+    expect(screen.getByTestId('face-count').textContent).toBe('0');
+  });
+
+  it('hosted: prefers the kernel error diagnostic in the empty-build message', async () => {
+    vi.stubGlobal('window', {
+      ...window,
+      location: { ...window.location, hostname: 'app.kernelcad.com', search: '' },
+      localStorage: window.localStorage,
+      history: window.history,
+      crypto: window.crypto,
+    });
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        features: [],
+        featureRecords: [{ id: 'cut', kind: 'boolean' }],
+        bounds: { min: [0, 0, 0], max: [0, 0, 0] },
+        params: {},
+        review: { ok: false, diagnostics: [{ severity: 'error', message: 'subtract removed all geometry' }] },
+      }),
+    } as Response);
+
+    render(
+      <GeometryProvider code={'export default cut;'}>
+        <Probe />
+      </GeometryProvider>,
+    );
+
+    await flushUntil(() => screen.getByTestId('error').textContent !== '');
+
+    expect(screen.getByTestId('error').textContent).toContain('subtract removed all geometry');
+  });
+
+  it('hosted: does NOT flag an empty/sketch-only build as an error', async () => {
+    vi.stubGlobal('window', {
+      ...window,
+      location: { ...window.location, hostname: 'app.kernelcad.com', search: '' },
+      localStorage: window.localStorage,
+      history: window.history,
+      crypto: window.crypto,
+    });
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        features: [],
+        featureRecords: [{ id: 's', kind: 'sketch' }],
+        bounds: { min: [0, 0, 0], max: [0, 0, 0] },
+        params: {},
+        review: { ok: true, diagnostics: [] },
+      }),
+    } as Response);
+
+    render(
+      <GeometryProvider code={'sketch().lineTo(1,0);'}>
+        <Probe />
+      </GeometryProvider>,
+    );
+
+    // Let the debounced build settle, then assert no error was raised.
+    await flushUntil(() => screen.getByTestId('execution-count').textContent !== '0');
+    expect(screen.getByTestId('error').textContent).toBe('');
+  });
+
   it('refreshes mesh AND review when params relower over SSE', async () => {
     // PR #315 / I1: relower MUST re-run review so the StudioShell HUD
     // (interferences: N) reflects the post-param model. Old behavior

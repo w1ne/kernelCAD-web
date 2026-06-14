@@ -77,6 +77,37 @@ export interface ScriptReviewSummary {
     }>;
 }
 
+/**
+ * Detect a *silent* build failure in an otherwise-200 mesh response.
+ *
+ * The kernel can return a successful payload that renders nothing: an assembly
+ * whose parts all failed to mesh (`meshFeaturesPerFeature` skips them), a
+ * boolean that subtracted everything, or a feature that compiled to an empty
+ * solid. Left alone the viewport just goes blank under a green "Ready / 0
+ * bodies" — the swallowed-error symptom reported for app.kernelcad.com/p/43PSZn6U.
+ *
+ * Returns a message to surface via `error`, or null when the empty result is
+ * legitimate (an empty or sketch-only script renders no solids by design and
+ * must NOT be flagged). When the kernel attached its own error diagnostic
+ * (the hosted server includes `review`), that message is preferred.
+ */
+function detectEmptyBuild(
+    renderedMeshCount: number,
+    featureRecords: FeatureRecord[],
+    review: ScriptReviewSummary | null | undefined,
+): string | null {
+    if (renderedMeshCount > 0) return null;
+    // Empty or sketch-only scripts render no solids by design — not a failure.
+    if (!featureRecords.some((r) => r.kind !== 'sketch')) return null;
+    // A solid-producing model that rendered nothing is a swallowed build
+    // failure. Prefer the kernel's own error diagnostic when present.
+    const firstError = (review?.diagnostics ?? []).find((d) => (d.severity ?? 'error') === 'error');
+    if (firstError?.message) {
+        return `Model produced no visible geometry: ${firstError.message}`;
+    }
+    return 'Model compiled but produced no visible geometry. Open the Validity panel for diagnostics.';
+}
+
 export interface GeometryContextType {
     geometries: GeometryResult[];
     previewGeometries: GeometryResult[];
@@ -804,16 +835,24 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                         staleRecorded = true;
                         return;
                     }
-                    setGeometries(featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]));
+                    const hostedGeometries = featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]);
+                    const hostedRecords = (payload.featureRecords as FeatureRecord[]) ?? [];
+                    const hostedReview = payload.review ?? { ok: true, diagnostics: [] };
+                    const emptyNotice = detectEmptyBuild(hostedGeometries.length, hostedRecords, hostedReview);
+                    setGeometries(hostedGeometries);
                     setGeometryTransformOverrides({});
-                    setFeatureRecords((payload.featureRecords as FeatureRecord[]) ?? []);
+                    setFeatureRecords(hostedRecords);
                     setScriptParams(Object.values(payload.params ?? {}));
-                    setScriptReview(payload.review ?? { ok: true, diagnostics: [] });
+                    setScriptReview(hostedReview);
                     setSketchesGeometries([]);
                     setPreviewGeometries([]);
-                    setError(null);
-                    setLastSuccessfulRevision(revision);
-                    pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+                    setError(emptyNotice);
+                    if (emptyNotice) {
+                        pushExecutionRecord({ revision, status: 'error', error: emptyNotice, executionCountAtRecord: executionCount + 1 });
+                    } else {
+                        setLastSuccessfulRevision(revision);
+                        pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+                    }
                 } catch (err: unknown) {
                     if (revision !== mainRevisionRef.current) {
                         setStaleMainResponsesDropped((prev) => prev + 1);
@@ -846,16 +885,24 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             // net for any other API the worker happens to lack.
             const useDevKernel = devMeshAvailable() && needsFullKernel(code);
             const applyDevPayload = (payload: BackendMeshPayload) => {
-                setGeometries(featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]));
+                const devGeometries = featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]);
+                const devRecords = (payload.featureRecords as FeatureRecord[]) ?? [];
+                const devReview = payload.review ?? { ok: true, diagnostics: [] };
+                const emptyNotice = detectEmptyBuild(devGeometries.length, devRecords, devReview);
+                setGeometries(devGeometries);
                 setGeometryTransformOverrides({});
-                setFeatureRecords((payload.featureRecords as FeatureRecord[]) ?? []);
+                setFeatureRecords(devRecords);
                 setScriptParams(Object.values(payload.params ?? {}));
-                setScriptReview(payload.review ?? { ok: true, diagnostics: [] });
+                setScriptReview(devReview);
                 setSketchesGeometries([]);
                 setPreviewGeometries([]);
-                setError(null);
-                setLastSuccessfulRevision(revision);
-                pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+                setError(emptyNotice);
+                if (emptyNotice) {
+                    pushExecutionRecord({ revision, status: 'error', error: emptyNotice, executionCountAtRecord: executionCount + 1 });
+                } else {
+                    setLastSuccessfulRevision(revision);
+                    pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+                }
             };
             try {
                 if (useDevKernel) {
