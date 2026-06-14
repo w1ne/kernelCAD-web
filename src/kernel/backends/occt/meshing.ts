@@ -377,12 +377,58 @@ export function meshWireToSketch(wire: unknown, id: string, name: string): Sketc
   return { id, name, vertices: new Float32Array(mesh.vertices as number[]) };
 }
 
-export function meshFaceToGeometry(face: unknown, faceId: number): FaceGeometry | null {
+// Display tessellation is size-relative (screen-space-error style). A fixed
+// 0.1 mm linear deflection is export-grade and explodes triangle counts on
+// large models (a 4 m car or an 800 mm sphere meshes to tens of MB), which is
+// pure waste for the VIEWPORT — the chord error is invisible at that scale.
+// We scale the deflection with the shape's bounding-box diagonal, floored at
+// the previous 0.1 mm so small/medium parts are byte-for-byte unchanged (zero
+// regression) and only large parts coarsen. Export (replicad exportSTLAsync)
+// uses its own mesher and is unaffected. If the bbox can't be read, we fall
+// back to the floor — i.e. current behaviour.
+export const DISPLAY_TOLERANCE_FLOOR_MM = 0.1;
+const DISPLAY_TOLERANCE_CEIL_MM = 3.0;
+const DISPLAY_TOLERANCE_FACTOR = 5e-4; // ~ diagonal / 2000
+
+function shapeBBoxDiagonalMm(shape: Record<string, unknown>): number | null {
+  try {
+    const bbRaw = getFn(shape, 'boundingBox');
+    const bb = bbRaw ? bbRaw.call(shape) : (shape as { boundingBox?: unknown }).boundingBox;
+    if (!isRecord(bb)) return null;
+    // replicad BoundingBox exposes `.bounds = [[xmin,ymin,zmin],[xmax,ymax,zmax]]`.
+    const bounds = (bb as { bounds?: unknown }).bounds;
+    if (Array.isArray(bounds) && bounds.length === 2 && Array.isArray(bounds[0]) && Array.isArray(bounds[1])) {
+      const mn = bounds[0] as number[];
+      const mx = bounds[1] as number[];
+      const dx = (mx[0] ?? 0) - (mn[0] ?? 0);
+      const dy = (mx[1] ?? 0) - (mn[1] ?? 0);
+      const dz = (mx[2] ?? 0) - (mn[2] ?? 0);
+      const d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      return Number.isFinite(d) && d > 0 ? d : null;
+    }
+  } catch {
+    // fall through to floor
+  }
+  return null;
+}
+
+/** Viewport tessellation deflection for a shape: floored at the export-grade
+ *  0.1 mm (small/medium parts unchanged), scaled up for large parts, capped. */
+export function displayToleranceForShape(shape: Record<string, unknown>): number {
+  const diag = shapeBBoxDiagonalMm(shape);
+  if (diag == null) return DISPLAY_TOLERANCE_FLOOR_MM;
+  return Math.min(
+    DISPLAY_TOLERANCE_CEIL_MM,
+    Math.max(DISPLAY_TOLERANCE_FLOOR_MM, diag * DISPLAY_TOLERANCE_FACTOR),
+  );
+}
+
+export function meshFaceToGeometry(face: unknown, faceId: number, tolerance = DISPLAY_TOLERANCE_FLOOR_MM): FaceGeometry | null {
   if (!isRecord(face)) return null;
   const meshFn = getFn(face, 'mesh');
   if (!meshFn) return null;
 
-  const mesh = meshFn.call(face, { tolerance: 0.1, angularTolerance: 30 }) as UnknownRecord;
+  const mesh = meshFn.call(face, { tolerance, angularTolerance: 30 }) as UnknownRecord;
   if (!isRecord(mesh)) return null;
 
   const vertices = Array.isArray(mesh.vertices) ? (mesh.vertices as number[]) : null;
@@ -470,11 +516,15 @@ export function meshShape(shape: unknown): GeometryResult | null {
     return Array.from(facesRaw as unknown as ArrayLike<unknown>);
   })();
 
+  // Size-relative viewport deflection (see displayToleranceForShape): unchanged
+  // (0.1 mm) for small/medium parts, coarser for large ones where it's invisible.
+  const displayTolerance = displayToleranceForShape(shape);
+
   const faceGeometries: FaceGeometry[] = [];
   if (Array.isArray(faces)) {
     faces.forEach((face, faceId) => {
       try {
-        const geometry = meshFaceToGeometry(face, faceId);
+        const geometry = meshFaceToGeometry(face, faceId, displayTolerance);
         if (geometry) faceGeometries.push(geometry);
       } catch {
         // ignore per-face mesh errors — match worker behavior
@@ -489,7 +539,7 @@ export function meshShape(shape: unknown): GeometryResult | null {
   try {
     const meshEdgesFn = getFn(shape, 'meshEdges');
     if (meshEdgesFn) {
-      const edgeRes = meshEdgesFn.call(shape, { tolerance: 0.1, angularTolerance: 30 }) as Record<string, unknown>;
+      const edgeRes = meshEdgesFn.call(shape, { tolerance: displayTolerance, angularTolerance: 30 }) as Record<string, unknown>;
       if (isRecord(edgeRes) && Array.isArray(edgeRes.lines)) {
         const lines = edgeRes.lines as number[];
         if (lines.length > 0) edges = new Float32Array(lines);
