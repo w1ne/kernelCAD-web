@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/render/headless-player/main.tsx
 //
 // Entry for the standalone headless player bundle (see index.html). Mounts

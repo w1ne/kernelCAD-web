@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/render/playerServer.ts
 //
 // Self-contained base-URL provisioning for the headless render pipeline

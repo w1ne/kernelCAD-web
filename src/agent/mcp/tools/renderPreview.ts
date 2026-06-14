@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/renderPreview.ts
 //
 // MCP `render_preview` tool (#440) — first-class inline visual feedback for
