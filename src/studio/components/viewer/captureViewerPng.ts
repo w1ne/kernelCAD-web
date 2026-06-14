@@ -12,6 +12,8 @@
 // callers must treat capture as best-effort and never break the viewer on a
 // missing/failed grab.
 
+import { rendererSnapshot } from './rendererSnapshot';
+
 /** Find the three.js WebGL canvas in the document. The viewer mounts exactly
  *  one such canvas; the brush overlay's transient 2D canvas is excluded by the
  *  `webgl` context probe. */
@@ -30,11 +32,23 @@ export function findRendererCanvas(): HTMLCanvasElement | null {
 
 /** Capture the viewer canvas as a base64 PNG with the `data:image/png;base64,`
  *  prefix stripped (the backend render endpoint wants the raw base64). Returns
- *  null on any failure — capture is best-effort. */
+ *  null on any failure — capture is best-effort.
+ *
+ *  Forces a fresh render of the live scene/camera right before reading. The
+ *  viewer renders on the r3f loop, so an IDLE `toDataURL` reads whatever frame
+ *  is left in the preserved drawing buffer — often a stale early frame (pre-mesh
+ *  / pre-camera-fit), giving an unframed shot. The brush avoids this only
+ *  because it captures right after the user moved the camera. Re-rendering
+ *  scene+camera into the preserved buffer makes an idle auto-capture read the
+ *  CURRENT view. */
 export function captureViewerPngBase64(): string | null {
   try {
-    const canvas = findRendererCanvas();
+    const { gl, scene, camera } = rendererSnapshot;
+    const canvas = gl?.domElement ?? findRendererCanvas();
     if (!canvas) return null;
+    if (gl && scene && camera) {
+      try { gl.render(scene, camera); } catch { /* fall back to the buffered frame */ }
+    }
     const dataUrl = canvas.toDataURL('image/png');
     const comma = dataUrl.indexOf(',');
     if (comma < 0) return null;
