@@ -11,10 +11,12 @@ import {
   claimProject,
   setProjectPrivacy,
   createCheckoutSession,
+  postProjectRender,
   PRIVATE_REQUIRES_PAID,
   type ProjectRow,
 } from '../../funnel/lib/apiClient';
 import { shouldApplyProjectUpdate } from '../../funnel/lib/liveProject';
+import { captureViewerPngBase64 } from '../components/viewer/captureViewerPng';
 
 export const Route = createFileRoute('/p/$slug')({
   component: ProjectPage,
@@ -80,6 +82,34 @@ function ProjectPage() {
     es.addEventListener('error', () => { hadError = true; });
     return () => { disposed = true; es.close(); };
   }, [slug]);
+
+  // Render-to-image for web Claude: the hosted backend has no browser, so this
+  // open tab captures its own WebGL canvas after the model settles and uploads
+  // it to the render endpoint; an agent then fetches the stored image.
+  //
+  // Fires ~800 ms after the model loads and ~800 ms after each live update
+  // (debounced so a flurry only uploads once, and only after the render has
+  // settled). Strictly fire-and-forget: a failed capture or upload must never
+  // break the viewer, so every error is swallowed.
+  useEffect(() => {
+    if (!project) return;
+    let disposed = false;
+    const timer = window.setTimeout(() => {
+      if (disposed) return;
+      try {
+        const png = captureViewerPngBase64();
+        if (!png) return;
+        postProjectRender(slug, png).catch(() => {});
+      } catch {
+        // best-effort: never surface capture/upload failures to the viewer
+      }
+    }, 800);
+    return () => {
+      disposed = true;
+      window.clearTimeout(timer);
+    };
+    // Re-run on initial load (project) and after each live update (lastLiveUpdate).
+  }, [slug, project, lastLiveUpdate]);
 
   const handleClaim = useCallback(async () => {
     setClaiming(true);

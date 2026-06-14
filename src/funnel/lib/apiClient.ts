@@ -92,6 +92,19 @@ export async function claimProject(slug: string): Promise<{ claimed: boolean }> 
   return authedFetch<{ claimed: boolean }>('POST', `/api/v1/projects/${encodeURIComponent(slug)}/claim`, {});
 }
 
+/** POST a viewer-captured PNG (base64, no `data:` prefix) to the backend render
+ *  endpoint. The hosted backend has no browser, so the user's open Studio tab
+ *  captures its own WebGL canvas and uploads it here; an agent then fetches the
+ *  stored image. Anonymous-capable: the slug is the capability (same pattern as
+ *  claimProject). Returns the URL the agent can read the image from. */
+export async function postProjectRender(slug: string, pngBase64: string): Promise<{ url: string }> {
+  return authedFetch<{ ok: true; url: string }>(
+    'POST',
+    `/api/v1/projects/${encodeURIComponent(slug)}/render`,
+    { png: pngBase64 },
+  );
+}
+
 /** Thrown when a free user tries to make a project private — the body text
  *  authedFetch surfaces on a 403 carries this code. Lets the UI show an
  *  upgrade CTA instead of a generic failure. */

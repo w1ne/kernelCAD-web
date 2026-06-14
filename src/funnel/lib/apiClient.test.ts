@@ -7,7 +7,7 @@ const getSupabaseMock = vi.fn(() => ({ auth: { getSession: getSessionMock } }));
 
 vi.mock('./supabaseClient', () => ({ getSupabase: () => getSupabaseMock() }));
 
-import { setProjectPrivacy, PRIVATE_REQUIRES_PAID } from './apiClient';
+import { setProjectPrivacy, postProjectRender, PRIVATE_REQUIRES_PAID } from './apiClient';
 
 describe('setProjectPrivacy', () => {
   const fetchMock = vi.fn();
@@ -56,5 +56,60 @@ describe('setProjectPrivacy', () => {
     });
 
     await expect(setProjectPrivacy('slug-1', 'private')).rejects.toThrow(PRIVATE_REQUIRES_PAID);
+  });
+});
+
+describe('postProjectRender', () => {
+  const fetchMock = vi.fn();
+
+  beforeEach(() => {
+    getSessionMock.mockReset();
+    getSupabaseMock.mockReturnValue({ auth: { getSession: getSessionMock } });
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.kernelcad.com');
+    vi.stubGlobal('fetch', fetchMock);
+    fetchMock.mockReset();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it('POSTs the render endpoint with the png body and a bearer token, returning the url', async () => {
+    getSessionMock.mockResolvedValue({ data: { session: { access_token: 'tok-1' } } });
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ ok: true, url: 'https://cdn.kernelcad.com/r/slug-1.png' }),
+    });
+
+    await expect(postProjectRender('slug-1', 'aGVsbG8=')).resolves.toEqual({
+      ok: true,
+      url: 'https://cdn.kernelcad.com/r/slug-1.png',
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe('https://api.kernelcad.com/api/v1/projects/slug-1/render');
+    expect(init.method).toBe('POST');
+    expect(init.headers.Authorization).toBe('Bearer tok-1');
+    expect(JSON.parse(init.body)).toEqual({ png: 'aGVsbG8=' });
+  });
+
+  it('works anonymously (no session → no Authorization header)', async () => {
+    getSessionMock.mockResolvedValue({ data: { session: null } });
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true, url: 'u' }) });
+
+    await postProjectRender('slug-2', 'eHl6');
+
+    const [, init] = fetchMock.mock.calls[0]!;
+    expect(init.headers.Authorization).toBeUndefined();
+    expect(JSON.parse(init.body)).toEqual({ png: 'eHl6' });
+  });
+
+  it('url-encodes the slug', async () => {
+    getSessionMock.mockResolvedValue({ data: { session: null } });
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true, url: 'u' }) });
+    await postProjectRender('a/b', 'cG5n');
+    expect(fetchMock.mock.calls[0]![0]).toBe('https://api.kernelcad.com/api/v1/projects/a%2Fb/render');
   });
 });
