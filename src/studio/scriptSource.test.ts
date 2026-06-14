@@ -11,11 +11,12 @@ vi.mock('../funnel/lib/supabaseClient', () => ({
   }),
 }));
 
-import { loadGalleryScriptSource, loadStudioScriptSource, meshSourceDev, needsFullKernel } from './scriptSource';
+import { loadGalleryScriptSource, loadStudioScriptSource, meshSourceDev, meshSourceHosted, needsFullKernel } from './scriptSource';
 
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 
 describe('needsFullKernel', () => {
@@ -75,6 +76,42 @@ describe('meshSourceDev', () => {
       json: async () => ({ notFeatures: true }),
     } as Response);
     await expect(meshSourceDev('x')).rejects.toThrow(/did not return features/);
+  });
+});
+
+describe('param overrides (stateless re-run path)', () => {
+  it('meshSourceDev includes params in the POST body when overrides are given', async () => {
+    const payload = { features: [], featureRecords: [], bounds: { min: [0, 0, 0], max: [1, 1, 1] }, params: { w: 5 } };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, json: async () => payload } as Response);
+    await meshSourceDev('return box(w,1,1);', { w: 5 });
+    expect(fetchMock).toHaveBeenCalledWith('/__kernelcad/mesh', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source: 'return box(w,1,1);', params: { w: 5 } }),
+    });
+  });
+
+  it('meshSourceDev omits params when overrides are empty', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, json: async () => ({ features: [] }) } as Response);
+    await meshSourceDev('x', {});
+    const body = JSON.parse((fetchMock.mock.calls[0][1] as RequestInit).body as string);
+    expect(body).toEqual({ source: 'x' });
+  });
+
+  it('meshSourceHosted skips the static precompute and posts params to the backend when overrides are given', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    const payload = { features: [], featureRecords: [], bounds: { min: [0, 0, 0], max: [1, 1, 1] }, params: { w: 7 } };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, json: async () => payload } as Response);
+
+    await meshSourceHosted('return box(w,1,1);', { w: 7 });
+
+    // First (and only) fetch must be the backend POST — proving the precompute
+    // GET was skipped (it cannot reflect an override).
+    expect(String(fetchMock.mock.calls[0][0])).toBe('https://api.example.com/__kernelcad/mesh');
+    expect(fetchMock).toHaveBeenCalledWith('https://api.example.com/__kernelcad/mesh', expect.objectContaining({
+      method: 'POST',
+      body: JSON.stringify({ source: 'return box(w,1,1);', params: { w: 7 } }),
+    }));
   });
 });
 
