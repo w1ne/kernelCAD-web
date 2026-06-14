@@ -100,6 +100,9 @@ const server = createServer(async (req, res) => {
       JSON.stringify(
         {
           note: parsed.meta?.note ?? '',
+          // Preset intent tags the user picked ("too thick", "missing", …).
+          // Carries WHAT is wrong, complementing struckParts (WHERE).
+          tags: Array.isArray(parsed.meta?.tags) ? parsed.meta.tags : [],
           scriptPath: scriptPath ? relative(repoRoot, scriptPath) : null,
           ts: parsed.meta?.ts ?? new Date().toISOString(),
           ua: parsed.meta?.ua ?? '',

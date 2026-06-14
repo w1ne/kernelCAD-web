@@ -27,6 +27,20 @@ import { resolveReviewPaintTargets } from './reviewPaintTargets';
 
 const FIXED_BRUSH_PX = 24;
 
+/** Max stored note length — mirrors the backend NOTE_MAX_LEN cap so the input
+ *  can't paste in more than the server will keep. */
+const NOTE_MAX_LEN = 280;
+
+/** Preset intent tags. A blob says WHERE; these say WHAT is wrong. Kept short
+ *  and ordered roughly by how often they come up reviewing CAD. */
+const PRESET_TAGS = [
+  'too thick',
+  'too thin',
+  'missing',
+  'wrong angle/position',
+  'wrong shape',
+] as const;
+
 export function MarkingOverlay({ visible }: { visible: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   // True once the user has painted anything; gates the auto-save on
@@ -36,6 +50,21 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null);
   const drawingRef = useRef(false);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+
+  // Intent: a one-line note + preset tags carried with the stroke so the agent
+  // reads WHAT is wrong, not just where. State drives the UI; refs let the
+  // unmount-time / debounced persistMark read the latest values without being
+  // re-created on every keystroke.
+  const [note, setNote] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
+  const noteRef = useRef('');
+  const tagsRef = useRef<string[]>([]);
+  noteRef.current = note;
+  tagsRef.current = tags;
+
+  function toggleTag(tag: string) {
+    setTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
+  }
 
   // Escape closes marking mode — Photoshop / Figma muscle memory.
   useEffect(() => {
@@ -294,6 +323,14 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
       console.log('[marking-overlay] nothing painted — skipping save');
       return;
     }
+    // The mask canvas is the source of truth for the stroke. If its ref is
+    // already detached (e.g. React nulled it during unmount), there's nothing
+    // to read — bail rather than throw. The pointer-up debounce path normally
+    // persists while still mounted, so this only guards the unmount race.
+    if (!canvasRef.current) {
+      console.warn('[marking-overlay] canvas detached before save — skipping');
+      return;
+    }
     let screenshot: string | null;
     try {
       screenshot = screenshotAsPng();
@@ -320,7 +357,11 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
       apiBase,
     );
     const meta = {
-      note: '',
+      // One-line note + preset tags carried with the stroke (WHAT is wrong, not
+      // just where). Both optional — backend caps/sanitises and stays
+      // backward-compatible when omitted.
+      note: noteRef.current.trim(),
+      tags: tagsRef.current,
       scriptPath: scriptParam,
       ts: new Date().toISOString(),
       ua: navigator.userAgent,
@@ -422,6 +463,82 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
           }}
         />
       )}
+
+      {/* Intent panel: a one-line note + preset tags so the stroke carries
+          WHAT is wrong. Unobtrusive (bottom-left), optional, and captures its
+          own pointer events so interacting with it never paints on the canvas
+          underneath. */}
+      <div
+        data-testid="marking-intent-panel"
+        // Stop pointer/wheel events from reaching the painting canvas below.
+        onPointerDown={(e) => e.stopPropagation()}
+        onPointerMove={(e) => e.stopPropagation()}
+        onPointerUp={(e) => e.stopPropagation()}
+        style={{
+          position: 'absolute',
+          left: 12,
+          bottom: 12,
+          maxWidth: 360,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 6,
+          padding: '8px 10px',
+          borderRadius: 8,
+          background: 'rgba(20, 20, 24, 0.82)',
+          border: '1px solid rgba(255,255,255,0.12)',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.4)',
+          cursor: 'default',
+          pointerEvents: 'auto',
+        }}
+      >
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+          {PRESET_TAGS.map((tag) => {
+            const active = tags.includes(tag);
+            return (
+              <button
+                key={tag}
+                type="button"
+                data-testid={`marking-tag-${tag}`}
+                aria-pressed={active}
+                onClick={() => toggleTag(tag)}
+                style={{
+                  fontSize: 11,
+                  lineHeight: 1.2,
+                  padding: '3px 8px',
+                  borderRadius: 999,
+                  cursor: 'pointer',
+                  border: active
+                    ? '1px solid rgba(239, 68, 68, 0.9)'
+                    : '1px solid rgba(255,255,255,0.18)',
+                  background: active ? 'rgba(239, 68, 68, 0.25)' : 'rgba(255,255,255,0.06)',
+                  color: active ? '#fecaca' : 'rgba(255,255,255,0.82)',
+                }}
+              >
+                {tag}
+              </button>
+            );
+          })}
+        </div>
+        <input
+          type="text"
+          data-testid="marking-note-input"
+          value={note}
+          maxLength={NOTE_MAX_LEN}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="Add a note: what's wrong? (optional)"
+          style={{
+            width: '100%',
+            boxSizing: 'border-box',
+            fontSize: 12,
+            padding: '5px 8px',
+            borderRadius: 6,
+            border: '1px solid rgba(255,255,255,0.18)',
+            background: 'rgba(255,255,255,0.06)',
+            color: '#fff',
+            outline: 'none',
+          }}
+        />
+      </div>
     </div>
   );
 }
