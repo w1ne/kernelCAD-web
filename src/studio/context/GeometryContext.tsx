@@ -7,7 +7,7 @@ import { parseCode } from '../../shared/codeGeneration/ast';
 import { rehydrateFromBridge, type FeatureMeshSerialized } from '../../modeling/capture/featureMeshSerialize';
 import type { SerializedParamEntry, SerializedParamTable } from '../../shared/runtime/paramTable';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
-import { shouldUseHostedMesh, meshSourceHosted, devMeshAvailable, meshSourceDev, needsFullKernel, type BackendMeshPayload } from '../scriptSource';
+import { shouldUseHostedMesh, meshSourceHosted, devMeshAvailable, meshSourceDev, needsFullKernel, type BackendMeshPayload, type ParamOverrides } from '../scriptSource';
 import { apiCall, rewritePath, bearerToken, buildEventsUrl } from '../api/apiBase';
 
 export type ExecutionStatus = 'success' | 'error' | 'stale';
@@ -232,6 +232,11 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     // 'failed' → session fetch failed, mesh effect falls back to by-script.
     const [sessionStatus, setSessionStatus] = useState<'idle' | 'pending' | 'resolved' | 'failed'>('idle');
     const mainRevisionRef = useRef(0);
+    // Accumulated param-slider overrides for the no-live-session recompute path
+    // (hosted viewer / arbitrary edited code). A param edit re-runs the whole
+    // script through the stateless mesh endpoint with these applied. Cleared
+    // when `code` changes (a fresh build starts from the script's defaults).
+    const paramOverridesRef = useRef<ParamOverrides>({});
     const previewRevisionRef = useRef(0);
     const activeMeshFetchAbortRef = useRef<AbortController | null>(null);
     const meshFetchBusyRef = useRef(false);
@@ -716,33 +721,100 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     // Slice 2E.bridge: callback exposed to consumers (forwarded by
     // `useRecomputeResult`). Awaits the server ack; the SSE push that
     // follows is what actually refreshes context state.
+    // Apply a stateless re-run mesh payload to context state (mirrors the main
+    // execution loop's apply, incl. the empty-build guard). Used by the
+    // no-session param recompute path.
+    const applyBridgePayload = useCallback((payload: BackendMeshPayload, revision: number) => {
+        const geos = featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]);
+        const recs = (payload.featureRecords as FeatureRecord[]) ?? [];
+        const review = payload.review ?? { ok: true, diagnostics: [] };
+        const emptyNotice = detectEmptyBuild(geos.length, recs, review);
+        setGeometries(geos);
+        setGeometryTransformOverrides({});
+        setFeatureRecords(recs);
+        setScriptParams(Object.values(payload.params ?? {}));
+        setScriptReview(review);
+        setSketchesGeometries([]);
+        setPreviewGeometries([]);
+        setError(emptyNotice);
+        if (emptyNotice) {
+            pushExecutionRecord({ revision, status: 'error', error: emptyNotice, executionCountAtRecord: executionCount + 1 });
+        } else {
+            setLastSuccessfulRevision(revision);
+            pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+        }
+    }, [executionCount, pushExecutionRecord]);
+
+    // Clear accumulated param overrides whenever the script changes — a code
+    // edit re-meshes from the declared defaults (main loop), and stale
+    // overrides must not leak onto the new build.
+    useEffect(() => {
+        paramOverridesRef.current = {};
+    }, [code]);
+
     const updateParam = useCallback(async (
         edits: { name: string; value: number | boolean }[],
     ) => {
-        if (!sessionToken) {
-            throw new Error('updateParam called before a session token was issued');
+        // Live session (pooled `?script=`): incremental params.update — only the
+        // edited feature + downstream re-lower, pushed back over SSE.
+        if (sessionToken) {
+            const { base, headers } = await apiCall();
+            const res = await fetch(
+                rewritePath(
+                    `/__kernelcad/params?session=${encodeURIComponent(sessionToken)}`,
+                    base,
+                ),
+                {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json', ...headers },
+                    body: JSON.stringify({ edits }),
+                },
+            );
+            if (!res.ok) {
+                let message = res.statusText;
+                try {
+                    const body = await res.json();
+                    if (typeof body?.error === 'string') message = body.error;
+                } catch { /* keep statusText fallback */ }
+                throw new Error(message);
+            }
+            return;
         }
-        const { base, headers } = await apiCall();
-        const res = await fetch(
-            rewritePath(
-                `/__kernelcad/params?session=${encodeURIComponent(sessionToken)}`,
-                base,
-            ),
-            {
-                method: 'POST',
-                headers: { 'content-type': 'application/json', ...headers },
-                body: JSON.stringify({ edits }),
-            },
-        );
-        if (!res.ok) {
-            let message = res.statusText;
-            try {
-                const body = await res.json();
-                if (typeof body?.error === 'string') message = body.error;
-            } catch { /* keep statusText fallback */ }
-            throw new Error(message);
+
+        // No live session (hosted viewer / arbitrary edited code): re-run the
+        // whole script through the stateless mesh endpoint with the param
+        // overrides applied. This is what makes a declared parameter actually
+        // move the model when there is no pooled kernel session behind the tab.
+        const hosted = shouldUseHostedMesh();
+        if (!hosted && !devMeshAvailable()) {
+            throw new Error(
+                'Editing parameters needs a live kernel session or a compute backend.',
+            );
         }
-    }, [sessionToken]);
+        const overrides: ParamOverrides = { ...paramOverridesRef.current };
+        for (const edit of edits) overrides[edit.name] = edit.value;
+        paramOverridesRef.current = overrides;
+
+        const revision = ++mainRevisionRef.current;
+        setCurrentCodeRevision(revision);
+        setIsComputing(true);
+        try {
+            const payload = hosted
+                ? await meshSourceHosted(code, overrides)
+                : await meshSourceDev(code, overrides);
+            // Superseded by a newer edit (code change or another param drag).
+            if (revision !== mainRevisionRef.current) return;
+            applyBridgePayload(payload, revision);
+        } catch (err) {
+            if (revision !== mainRevisionRef.current) return;
+            setError(err instanceof Error ? err.message : String(err));
+        } finally {
+            if (revision === mainRevisionRef.current) {
+                setIsComputing(false);
+                setExecutionCount(prev => prev + 1);
+            }
+        }
+    }, [sessionToken, code, applyBridgePayload]);
 
     const setGeometryTransformOverride = useCallback((partName: string, transform: number[]) => {
         if (transform.length !== 16) return;
