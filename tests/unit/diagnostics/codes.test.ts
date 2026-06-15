@@ -20,8 +20,10 @@ describe('diagnostic catalogue invariants', () => {
     //   track params — only pose-only mate timelines bake to rigid transforms).
     // + 1 export.sdf-gazebo.pose-unsolved (simulator-verified SDF export:
     //   mate graph unsolvable -> links emitted at the model origin).
-    expect(DIAGNOSTIC_CODES).toHaveLength(227);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(227);
+    // + 1 tool.trace-from-image.trace-timeout (pure-JS tracer: hard per-call
+    //   backend timeout so trace_from_image can never hang).
+    expect(DIAGNOSTIC_CODES).toHaveLength(228);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(228);
   });
 
   it('every code has a non-empty hint template', () => {

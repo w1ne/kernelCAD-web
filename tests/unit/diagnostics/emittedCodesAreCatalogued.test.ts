@@ -152,7 +152,9 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       track params — only pose-only mate timelines bake) = 226.
     //  +  1 export.sdf-gazebo.pose-unsolved (simulator-verified SDF export:
     //       mate graph unsolvable -> links emitted at the model origin) = 227.
-    expect(catalogue.size).toBe(227);
+    //  +  1 tool.trace-from-image.trace-timeout (pure-JS tracer: hard per-call
+    //       backend timeout so trace_from_image can never hang) = 228.
+    expect(catalogue.size).toBe(228);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
