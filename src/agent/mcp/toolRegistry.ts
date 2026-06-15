@@ -50,6 +50,9 @@ export interface McpToolDefinition {
     type: 'object';
     properties: Record<string, unknown>;
     required?: string[];
+    /** Optional JSON Schema conditional blocks (if/then/else) for
+     *  required-by-discriminator fields. */
+    allOf?: unknown[];
   };
   /** MCP behavioral hints (readOnly/destructive/openWorld). Required for ChatGPT
    *  app-directory submission; merged from TOOL_ANNOTATIONS at build time. */
@@ -345,7 +348,11 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
             maxItems: 4,
           },
           continuity: {
-            description: "kind:'boundary' — continuity grade applied to every edge ('C0' | 'C1' | 'C2'), or an array of 4 grades (one per edge). Default 'C0'.",
+            description: "kind:'boundary' — continuity grade applied to every edge ('C0' | 'C1' | 'C2'), or an array of 4 grades (one per edge, bottom/right/top/left order). Default 'C0'.",
+            oneOf: [
+              { type: 'string', enum: ['C0', 'C1', 'C2'] },
+              { type: 'array', items: { type: 'string', enum: ['C0', 'C1', 'C2'] }, minItems: 4, maxItems: 4 },
+            ],
           },
           sampling: { type: 'integer', minimum: 1, description: "kind:'boundary' — OCCT NbPtsOnCur sampling parameter (default 15)." },
           binding_name: {
@@ -415,6 +422,10 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           binding_name: { type: 'string', description: 'JS const name for the new Curve3D binding (default: _curve_<N>).' },
         },
         required: ['kind', 'code'],
+        allOf: [
+          { if: { properties: { kind: { const: 'nurbs' } } }, then: { required: ['controlPoints'] } },
+          { if: { properties: { kind: { const: 'hermite' } } }, then: { required: ['a', 'b'] } },
+        ],
       },
     },
     handler: input => addCurveTool(input as unknown as Parameters<typeof addCurveTool>[0]),
@@ -498,6 +509,11 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           binding_name: { type: 'string', description: 'Reserved for future use; the segment injection mutates the chain anchor in place.' },
         },
         required: ['kind', 'code', 'chain_anchor'],
+        allOf: [
+          { if: { properties: { kind: { const: 'spline' } } }, then: { required: ['points'] } },
+          { if: { properties: { kind: { const: 'nurbs' } } }, then: { required: ['controlPoints'] } },
+          { if: { properties: { kind: { const: 'hermite' } } }, then: { required: ['a', 'b'] } },
+        ],
       },
     },
     handler: input => addPathSegmentTool(input as unknown as Parameters<typeof addPathSegmentTool>[0]),
@@ -666,11 +682,25 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
             angleDeg: { type: 'number', description: 'Optional; defaults to 360.' },
           }, required: ['count', 'axis'] },
           grid:      { type: 'object', description: 'Required when kind=grid.', properties: {
-            x: { type: 'object' }, y: { type: 'object' },
+            x: { type: 'object', description: 'First grid axis.', properties: {
+              count: { type: 'integer', minimum: 2 },
+              direction: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+              spacing: { type: 'number' },
+            }, required: ['count', 'direction', 'spacing'] },
+            y: { type: 'object', description: 'Second grid axis.', properties: {
+              count: { type: 'integer', minimum: 2 },
+              direction: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+              spacing: { type: 'number' },
+            }, required: ['count', 'direction', 'spacing'] },
           }, required: ['x', 'y'] },
           assign_to: { type: 'string', description: "Optional const-binding name; emits `const <assign_to> = <target>.patternX(...);`. Omit for statement form." },
         },
         required: ['code', 'target', 'kind'],
+        allOf: [
+          { if: { properties: { kind: { const: 'linear' } } }, then: { required: ['linear'] } },
+          { if: { properties: { kind: { const: 'circular' } } }, then: { required: ['circular'] } },
+          { if: { properties: { kind: { const: 'grid' } } }, then: { required: ['grid'] } },
+        ],
       },
     },
     handler: input => addPatternFeatureTool(input as unknown as Parameters<typeof addPatternFeatureTool>[0]),
@@ -883,12 +913,37 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           entities: {
             type: 'array',
             description: 'Sketch entities to solve. Lines reference point ids; circles reference a center point id.',
-            items: { type: 'object' },
+            items: {
+              oneOf: [
+                { type: 'object', description: 'POINT — a 2D point.', properties: {
+                  id: { type: 'string' }, type: { type: 'string', enum: ['POINT'] },
+                  x: { type: 'number' }, y: { type: 'number' },
+                  fixed: { type: 'boolean', description: "If true, the solver won't move this point." },
+                }, required: ['id', 'type', 'x', 'y'] },
+                { type: 'object', description: 'LINE — references two point ids.', properties: {
+                  id: { type: 'string' }, type: { type: 'string', enum: ['LINE'] },
+                  p1: { type: 'string' }, p2: { type: 'string' },
+                }, required: ['id', 'type', 'p1', 'p2'] },
+                { type: 'object', description: 'CIRCLE — references a center point id.', properties: {
+                  id: { type: 'string' }, type: { type: 'string', enum: ['CIRCLE'] },
+                  center: { type: 'string' }, radius: { type: 'number' },
+                }, required: ['id', 'type', 'center', 'radius'] },
+              ],
+            },
           },
           constraints: {
             type: 'array',
             description: 'Constraints to apply to the entities.',
-            items: { type: 'object' },
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                type: { type: 'string', enum: ['COINCIDENT', 'DISTANCE', 'HORIZONTAL', 'VERTICAL', 'PARALLEL', 'PERPENDICULAR', 'EQUAL_LENGTH', 'TANGENT', 'RADIUS', 'ANGLE', 'CONCENTRIC', 'SYMMETRIC'] },
+                entities: { type: 'array', items: { type: 'string' }, description: 'Ids of the entities the constraint relates.' },
+                value: { type: 'number', description: 'Required for DISTANCE, RADIUS, and ANGLE.' },
+              },
+              required: ['id', 'type', 'entities'],
+            },
           },
         },
         required: ['entities', 'constraints'],
@@ -905,8 +960,31 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       inputSchema: {
         type: 'object',
         properties: {
-          constraints: { type: 'array', items: { type: 'object' } },
-          constraint: { type: 'object' },
+          constraints: {
+            type: 'array',
+            description: 'Existing constraint list to append to (omit for an empty list).',
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                type: { type: 'string', enum: ['COINCIDENT', 'DISTANCE', 'HORIZONTAL', 'VERTICAL', 'PARALLEL', 'PERPENDICULAR', 'EQUAL_LENGTH', 'TANGENT', 'RADIUS', 'ANGLE', 'CONCENTRIC', 'SYMMETRIC'] },
+                entities: { type: 'array', items: { type: 'string' } },
+                value: { type: 'number' },
+              },
+              required: ['id', 'type', 'entities'],
+            },
+          },
+          constraint: {
+            type: 'object',
+            description: 'The constraint to append.',
+            properties: {
+              id: { type: 'string' },
+              type: { type: 'string', enum: ['COINCIDENT', 'DISTANCE', 'HORIZONTAL', 'VERTICAL', 'PARALLEL', 'PERPENDICULAR', 'EQUAL_LENGTH', 'TANGENT', 'RADIUS', 'ANGLE', 'CONCENTRIC', 'SYMMETRIC'] },
+              entities: { type: 'array', items: { type: 'string' }, description: 'Ids of the entities the constraint relates.' },
+              value: { type: 'number', description: 'Required for DISTANCE, RADIUS, and ANGLE.' },
+            },
+            required: ['id', 'type', 'entities'],
+          },
         },
         required: ['constraint'],
       },
@@ -945,7 +1023,23 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           part_binding: { type: 'string', description: 'JS identifier bound to an AssemblyPartRef, e.g. "basePart".' },
           name: { type: 'string', description: 'Connector name unique within the part.' },
           type: { type: 'string', enum: ['frame', 'axis', 'planar', 'ball'] },
-          origin: { description: 'Origin as [x, y, z] shorthand or structured ConnectorOrigin.' },
+          origin: {
+            description: 'Origin as [x, y, z] shorthand, or a structured ConnectorOrigin.',
+            oneOf: [
+              { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: '[x, y, z] shorthand.' },
+              { type: 'object', description: 'Explicit numeric origin.', properties: {
+                kind: { type: 'string', enum: ['vec3'] },
+                value: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+              }, required: ['kind', 'value'] },
+              { type: 'object', description: 'Topology-derived origin.', properties: {
+                kind: { type: 'string', enum: ['topology'] },
+                query: { type: 'object', properties: {
+                  kind: { type: 'string', enum: ['face-center', 'face-normal', 'vertex', 'edge-axis'] },
+                  name: { type: 'string' },
+                }, required: ['kind', 'name'] },
+              }, required: ['kind', 'query'] },
+            ],
+          },
           axis: { type: 'array', items: { type: 'number' }, description: 'Optional [x, y, z] axis.' },
           normal: { type: 'array', items: { type: 'number' }, description: 'Optional [x, y, z] normal.' },
         },
@@ -990,6 +1084,11 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           notes: { type: 'string', description: "relation:'transmission' — optional notes." },
         },
         required: ['code', 'assembly_binding'],
+        allOf: [
+          { if: { properties: { relation: { const: 'coupling' } }, required: ['relation'] }, then: { required: ['driven', 'source', 'ratio'] } },
+          { if: { properties: { relation: { const: 'transmission' } }, required: ['relation'] }, then: { required: ['name', 'kind', 'sourceMate', 'drivenMates', 'path'] } },
+          { if: { properties: { relation: { enum: ['coupling', 'transmission'] } }, required: ['relation'] }, then: {}, else: { required: ['name', 'a', 'b', 'type'] } },
+        ],
       },
     },
     handler: input => addMateAuthoringTool(input as unknown as Parameters<typeof addMateAuthoringTool>[0]),
