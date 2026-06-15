@@ -1583,6 +1583,14 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'tool',
     description: 'A point/bbox feature was requested but the opencv backend was forced, so only the silhouette polyline could be returned.',
   },
+  'tool.trace-from-image.trace-timeout': {
+    hintTemplate:
+      "The selected backend did not return within the hard time budget and was aborted to avoid hanging the tool. Retry with a smaller image, a different `backend`, or check that the vision-LLM credentials/network are reachable.",
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'error',
+    group: 'tool',
+    description: 'A trace_from_image backend exceeded the hard per-call timeout and was aborted.',
+  },
   // K1 watertight gap enrichment — STL export tessellation self-intersects on revolved cones.
   'mesher.cone-self-intersection': {
     hintTemplate:
