@@ -32,8 +32,9 @@ function EmbedPage() {
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
+    // `state` starts at 'loading' (initial useState); the fetch resolves it to
+    // ready/missing/error. No synchronous setState in the effect body.
     let disposed = false;
-    setState('loading');
     fetchProjectBySlug(slug)
       .then((p) => {
         if (disposed) return;
