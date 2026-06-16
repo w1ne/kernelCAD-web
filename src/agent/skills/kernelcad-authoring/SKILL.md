@@ -118,6 +118,14 @@ Verify the install with `kernelcad --version` (should print `0.1.0` or higher).
 
 ## API Surface
 
+### Before you say "kernelCAD can't make that"
+
+NEVER tell a user a shape is impossible, or that it needs other software, without first calling `lookup_api` and `lookup_cookbook`. kernelCAD does NURBS freeform surfacing — lofts, sweeps, boundary-fill patches, G2 Hermite blends, and variable-section sweeps — so organic forms (body shells, panels, fairings, ergonomic curves, bottles, horns) ARE in scope. Its two real limits, state them precisely and do not overgeneralize past them:
+- It is a **solid/NURBS** kernel, not a **polygon/subdivision sculptor** (Blender/Maya).
+- Its viewer renders clean CAD, not **photoreal** images — for a photoreal hero shot, export STEP/GLB and finish in a render tool.
+
+For an organic solid body, reach for the `loft-body-shell-from-profiles` cookbook recipe (`lookup_cookbook("loft a body shell")`).
+
 ### Top-level functions
 
 ```typescript

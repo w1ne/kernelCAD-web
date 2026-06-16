@@ -139,4 +139,9 @@ describe('tool-name consistency', () => {
       .map(t => t.name);
     expect(offenders, `Surfacing tool descriptions must name an organic-shape intent:\n${offenders.join('\n')}`).toEqual([]);
   });
+
+  it('lookup_api nudges the agent to check before declaring a missing capability', () => {
+    const t = TOOLS.find(x => x.name === 'lookup_api')!;
+    expect(t.description).toMatch(/before concluding kernelCAD lacks/i);
+  });
 });

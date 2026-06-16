@@ -719,7 +719,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'lookup_api',
       description:
-        'Use this when you need to list the kernelCAD script-runtime surface: global functions (box, path, selectEdges, helix, etc), Shape methods (fillet, sweep, lower, etc), Sketch methods (extrude, revolve, sweep), PathBuilder methods, EdgeQuery/FaceQuery key sets, and featureKindFaceLabels (which globals accept opts.faceLabels and valid value shapes). Use this to discover what is callable from a .kcad.ts script.',
+        'Use this when you need to list the kernelCAD script-runtime surface: global functions (box, path, selectEdges, helix, etc), Shape methods (fillet, sweep, lower, etc), Sketch methods (extrude, revolve, sweep), PathBuilder methods, EdgeQuery/FaceQuery key sets, and featureKindFaceLabels (which globals accept opts.faceLabels and valid value shapes). Use this to discover what is callable from a .kcad.ts script.' +
+        ' Call this BEFORE concluding kernelCAD lacks a capability — its NURBS freeform surfacing (loft, sweep, boundary-fill, G2 blend) is easy to miss from tool names alone.',
       inputSchema: {
         type: 'object',
         properties: {},
