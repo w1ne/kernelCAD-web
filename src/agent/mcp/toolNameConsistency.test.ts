@@ -135,7 +135,7 @@ describe('tool-name consistency', () => {
     const SURFACING = ['add_surface', 'add_curve', 'add_path_segment', 'add_variable_sweep'];
     const offenders = TOOLS
       .filter(t => SURFACING.includes(t.name))
-      .filter(t => !INTENT.test(t.description))
+      .filter(t => !INTENT.test(t.description.slice(0, 160)))
       .map(t => t.name);
     expect(offenders, `Surfacing tool descriptions must name an organic-shape intent:\n${offenders.join('\n')}`).toEqual([]);
   });
