@@ -129,4 +129,14 @@ describe('tool-name consistency', () => {
       .map(t => t.name);
     expect(offenders, `Tools missing outputSchema:\n${offenders.join('\n')}`).toEqual([]);
   });
+
+  it('surfacing tools lead with intent keywords (organic/freeform/body/shell/…)', () => {
+    const INTENT = /organic|freeform|body shell|body silhouette|panel|fairing|sculpt|swept/i;
+    const SURFACING = ['add_surface', 'add_curve', 'add_path_segment', 'add_variable_sweep'];
+    const offenders = TOOLS
+      .filter(t => SURFACING.includes(t.name))
+      .filter(t => !INTENT.test(t.description))
+      .map(t => t.name);
+    expect(offenders, `Surfacing tool descriptions must name an organic-shape intent:\n${offenders.join('\n')}`).toEqual([]);
+  });
 });

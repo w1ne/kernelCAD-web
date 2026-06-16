@@ -281,7 +281,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'add_surface',
       description:
-        'Use this when you need to author a NURBS Surface into the user\'s .kcad.ts. One authoring path, selected by `kind`:\n' +
+        'Use this when you need an organic, freeform, or swept shape — a body shell, panel, fairing, ergonomic curve, lens, or sculpted form — authored as a NURBS Surface into the user\'s .kcad.ts. One authoring path, selected by `kind`:\n' +
         "- 'nurbs' — insert a nurbsSurface(...) / surfaceFromCurves(...) call. Pass either { controls, degree, weights?, knots?, periodic? } for direct construction, OR { section_sketch_ids } for skinning. Slice-1 limitation: weights are accepted but currently ignored (TColStd_Array2OfReal not exposed in WASM bindings); surfaces are non-rational.\n" +
         "- 'boundary' — insert a surfaceFromBoundary([c1,c2,c3,c4], opts?) call: one NURBS face through 4 boundary Curve3D refs (bottom, right, top, left in loop order; adjacent endpoints must coincide within 1e-6 mm) via OCCT BRepOffsetAPI_MakeFilling.\n" +
         'The returned Surface produces no Shape until you chain .thicken(t) or .toShape() (do that via add_feature on the binding name). Returns the modified code + diagnostics. Each kind fails closed on its own missing required params.',
@@ -362,7 +362,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'add_curve',
       description:
-        "Use this when you need to author a 3D Curve3D into the user's .kcad.ts immediately before the last top-level return. One authoring path, selected by `kind`:\n" +
+        "Use this when you need a freeform/organic 3D curve — a body feature line, brow, spine rail, or G2 blend between panels — authored as a Curve3D into the user's .kcad.ts immediately before the last top-level return. One authoring path, selected by `kind`:\n" +
         "- 'nurbs' — insert a `nurbsCurve(controlPoints, opts?)` declaration. Pass `controlPoints` as a Vec3[] (mm, at least 2 points). Optional NURBS knobs: `degree` (default 3), rational `weights`, explicit `knots`, `closed`.\n" +
         "- 'hermite' — insert a `hermiteG2(a, b)` declaration: a quintic Hermite curve interpolating two endpoints with matching positions, tangents, and (optional) curvatures — bridges two curves with G2 continuity. Each endpoint is `{ point: Vec3, tangent: Vec3, curvature?: Vec3 }` in mm; tangent magnitude ~ chord length; curvature defaults to [0,0,0] (G1-only).\n" +
         "The returned binding has type Curve3D (peer to Shape / Surface) — consume it via `add_variable_sweep` (spine input), `add_surface({ kind: 'boundary' })` (boundary curve), or downstream Curve3D-accepting features. Returns the modified code + diagnostics from re-evaluating. Side-effect-free. Each kind fails closed on its own missing required params.",
@@ -559,7 +559,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'add_variable_sweep',
       description:
-        "Use this when you need to author a variable-section sweep along a spine. " +
+        "Use this when you need an organic swept solid whose cross-section changes along its length — a tapering body, horn, bottle, fairing, or duct — authored as a variable-section sweep along a spine. " +
         "Insert a `variableSweep(spine, sections, opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. The result is a Shape — chain `.translate(...)`, `.union(...)`, etc. via `add_feature`. `spine_binding` references an existing variable (Curve3D / Sketch / Vec3[]) in the source; each `sections[i].profile_binding` references an existing Sketch. Sections must be strictly increasing in `t` and span [0, 1]; first t=0, last t=1. Orientation is not exposed by this MCP tool until runtime orientation support is wired. Validates every binding exists in the source via regex before inserting (fast structured error vs capture-time stack). Returns the modified code + diagnostics. Side-effect-free.",
       inputSchema: {
         type: 'object',
