@@ -394,7 +394,7 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 // opts.spacing z-stacks sections axially; opts.planes overrides with explicit per-section placement.
 .loft(other: Sketch | Sketch[], opts?: {
   spacing?: number;
-  planes?: { normal: [number, number, number]; origin: [number, number, number] }[];
+  planes?: { plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number] }[];
   ruled?: boolean;
   startPoint?: [number, number];
   endPoint?: [number, number];
