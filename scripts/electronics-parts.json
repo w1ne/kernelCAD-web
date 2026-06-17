@@ -53,12 +53,20 @@
       "tags": ["ic", "package", "lqfp", "stm32"]
     },
     {
+      "id": "ic-lqfp-144",
+      "name": "LQFP-144 (20x20mm, 0.5mm pitch)",
+      "family": "IC package",
+      "mpn": "LQFP-144",
+      "model": "Package_QFP.3dshapes/LQFP-144_20x20mm_P0.5mm.step",
+      "tags": ["ic", "package", "lqfp", "stm32"]
+    },
+    {
       "id": "ic-qfn-56-7x7",
       "name": "QFN-56 (7x7mm, 0.4mm pitch)",
       "family": "IC package",
       "mpn": "QFN-56",
       "model": "Package_DFN_QFN.3dshapes/QFN-56-1EP_7x7mm_P0.4mm_EP3.2x3.2mm.step",
-      "tags": ["ic", "package", "qfn", "rp2040"]
+      "tags": ["ic", "package", "qfn", "rp2040", "esp32s3"]
     }
   ]
 }
