@@ -27,9 +27,26 @@ export interface ProjectMetadata {
     lastUpdated: string;
 }
 
+/** A single point-in-time snapshot of a project's code. Stored client-side
+ *  only (localStorage); newest revision is the last element of the array. */
+export interface ProjectRevision {
+    v: number;
+    code: string;
+    ts: string;
+}
+
 const CURRENT_PROJECT_VERSION = '1.1';
 const INDEX_KEY = 'kernelcad_project_index';
 const LEGACY_STORAGE_KEY = 'kernelcad_current_project';
+
+/** Max revisions retained per project; oldest are dropped past this. */
+const MAX_REVISIONS = 50;
+/** Window within which rapid editor autosaves coalesce into one revision. */
+const REVISION_COALESCE_MS = 10000;
+
+function revisionsKey(id: string): string {
+    return `kernelcad_project_revisions_${id}`;
+}
 
 const ViewModeSchema = z.enum(['code', 'gui']);
 
@@ -136,7 +153,41 @@ export const projectService = {
         const updatedProject = { ...project, lastUpdated: new Date().toISOString() };
         localStorage.setItem(`kernelcad_project_${id}`, JSON.stringify(updatedProject));
         this.updateIndex(id, updatedProject.name, updatedProject.lastUpdated);
+        this.snapshotRevision(id, updatedProject.code);
         return updatedProject;
+    },
+
+    listRevisions(id: string): ProjectRevision[] {
+        const raw = localStorage.getItem(revisionsKey(id));
+        if (!raw) return [];
+        try {
+            return JSON.parse(raw);
+        } catch {
+            return [];
+        }
+    },
+
+    /** Append/coalesce a code snapshot into the project's revision history.
+     *  Identical-code saves are skipped; rapid saves (<10s) replace the last
+     *  revision in place so editor autosaves don't explode into hundreds. */
+    snapshotRevision(id: string, code: string) {
+        const revs = this.listRevisions(id);
+        const last = revs[revs.length - 1];
+
+        if (last && last.code === code) return;
+
+        if (last && (Date.now() - Date.parse(last.ts)) < REVISION_COALESCE_MS) {
+            last.code = code;
+            last.ts = new Date().toISOString();
+        } else {
+            revs.push({ v: (last?.v ?? 0) + 1, code, ts: new Date().toISOString() });
+        }
+
+        while (revs.length > MAX_REVISIONS) {
+            revs.shift();
+        }
+
+        localStorage.setItem(revisionsKey(id), JSON.stringify(revs));
     },
 
     updateIndex(id: string, name: string, lastUpdated: string) {
@@ -153,6 +204,7 @@ export const projectService = {
 
     deleteProject(id: string) {
         localStorage.removeItem(`kernelcad_project_${id}`);
+        localStorage.removeItem(revisionsKey(id));
         const index = this.listProjects().filter(p => p.id !== id);
         localStorage.setItem(INDEX_KEY, JSON.stringify(index));
     },
