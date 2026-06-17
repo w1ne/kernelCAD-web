@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+// scripts/ingestElectronics.ts
+//
 // Ingest the electronics parts (chips, modules, IC packages) declared in
 // scripts/electronics-parts.json into the kernelCAD parts catalog. Mirrors the
 // FreeCAD-library ingest, but the source models are fetched at run time from a
