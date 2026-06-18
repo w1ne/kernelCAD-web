@@ -5,8 +5,12 @@
 # not here — keep this composite tight.
 #
 # Steps:
-#   1. Install ffmpeg (needed by gallery video tests: blackFrameCheck,
-#      extractPoster, build-gallery).
+#   1. Ensure ffmpeg (needed by gallery video tests: blackFrameCheck,
+#      extractPoster, build-gallery). Uses a static build fetched from GitHub's
+#      release CDN — NOT apt — because ubuntu-24.04 runners don't ship ffmpeg
+#      and the Ubuntu apt mirror is unreliable from CI (it hung/failed for the
+#      full job timeout, flaking the `test` gate). Skip-if-present, retried,
+#      non-fatal.
 #   2. setup-node (with built-in npm cache for ~/.npm).
 #   3. Cache node_modules keyed on package-lock.json hash → skips npm ci on hit.
 #   4. Cache .tsbuildinfo + node_modules/.cache + node_modules/.vite keyed on
@@ -19,12 +23,41 @@ description: Shared setup steps (node, caches, install) for parallel CI jobs.
 runs:
   using: composite
   steps:
-    - name: Install ffmpeg
+    - name: Ensure ffmpeg
       shell: bash
       run: |
-        sudo apt-get update -qq
-        sudo apt-get install -y -qq ffmpeg
-        ffmpeg -version | head -1
+        set -uo pipefail
+        # Why not apt? ubuntu-24.04 runners (current `ubuntu-latest`) don't ship
+        # ffmpeg, and the Ubuntu apt mirror is unreachable from CI — `apt-get
+        # update` hung for the full 10-min job timeout and cancelled shards,
+        # flaking the required `test` gate. The runner DOES reach GitHub's CDN
+        # (checkout/setup-node/cache all succeed there), so we fetch a static
+        # ffmpeg build from a GitHub release instead. No apt mirror dependency.
+        if command -v ffmpeg >/dev/null 2>&1; then
+          echo "ffmpeg already present: $(ffmpeg -version | head -1)"
+          exit 0
+        fi
+        echo "ffmpeg not on runner image — fetching static build from GitHub CDN"
+        url="https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz"
+        work="$(mktemp -d)"
+        for attempt in 1 2 3; do
+          if curl -fsSL --retry 3 --retry-delay 3 --max-time 180 "$url" -o "$work/ffmpeg.tar.xz" \
+             && tar -xJf "$work/ffmpeg.tar.xz" -C "$work"; then
+            bindir="$(dirname "$(find "$work" -type f -name ffmpeg | head -1)")"
+            if [ -x "$bindir/ffmpeg" ] \
+               && sudo install -m755 "$bindir/ffmpeg" "$bindir/ffprobe" /usr/local/bin/; then
+              ffmpeg -version | head -1
+              exit 0
+            fi
+          fi
+          echo "ffmpeg fetch attempt ${attempt} failed; retrying in 5s…"
+          sleep 5
+        done
+        # Non-fatal: most shards don't use ffmpeg, so a fetch failure must not
+        # cancel them. The few gallery-video tests that need it will fail with a
+        # clear per-test error if it's truly absent — a real signal, not infra.
+        echo "::warning::could not install ffmpeg; gallery-video tests needing it may fail, other tests proceed"
+        exit 0
 
     - name: Setup Node
       uses: actions/setup-node@v4
