@@ -33,6 +33,7 @@ import { resolveEdgeQuery, resolveFaceQuery, computeDihedralPublic } from './edg
 import type { FaceQuery } from './edgeQueries';
 import { EDGE_QUERY_KEYS } from '../../../shared/intent/queryKeys';
 import { resolveFaceRef } from '../../naming/resolveFaceRef';
+import { resolveCanonicalByGeometry } from './canonicalFaceGeometry';
 import { resolveEdgeRef } from '../../naming/resolveEdgeRef';
 import {
   parseFaceSelector,
@@ -293,7 +294,15 @@ export function pickEdges(
     return edgesOfFaceByHash(base, resolved.faceHash);
   }
 
-  // No historyMap → must be an un-transformed primitive (kind tag set).
+  // No historyMap → either an un-transformed primitive (kind tag set), or a
+  // swept/lofted/revolved solid (no kind tag). For the latter, resolve
+  // canonical top/bottom by geometry on cylinder-topology solids, else emit an
+  // actionable diagnostic instead of the misleading "apply transforms" message.
+  if (!base.kind && faceRef.ref.kind === 'canonical') {
+    const f = canonicalFaceOnSweptSolid(record, base, faceRef.ref.face);
+    if ('error' in f) return f;
+    return f.edges;
+  }
   if (!base.kind) {
     return {
       error: {
@@ -523,6 +532,53 @@ function findCanonicalFace(base: OcctBackend, face: CanonicalFace): Face | null 
   return null; // sphere has no canonical faces
 }
 
+/**
+ * Resolve a canonical face name on a solid that carries NO primitive `kind`
+ * and NO lineage `historyMap` — i.e. a swept / lofted / revolved solid.
+ *
+ * Such solids have no STORED canonical face names. For the common
+ * cylinder-topology case (an agent's wheel: a swept/lofted circle or a
+ * revolved rectangle) we resolve 'top'/'bottom' purely from geometry. When the
+ * geometry can't back the requested name, we emit a clear, actionable
+ * diagnostic — NOT the legacy "requires an un-transformed primitive — apply
+ * transforms after the feature" message, which sent agents chasing a phantom
+ * transform they never applied.
+ */
+function canonicalFaceOnSweptSolid(
+  record: FeatureRecord,
+  base: OcctBackend,
+  face: CanonicalFace,
+): Face | { error: CompilerDiagnostic } {
+  const shape = base.getReplicadShape();
+  const res = resolveCanonicalByGeometry(shape, face);
+  if (res.kind === 'resolved') {
+    return res.face;
+  }
+  if (res.kind === 'not-a-cap') {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.face-ref.not-applicable',
+        featureId: record.id,
+        severity: 'error',
+        message: `Canonical face '${face}' is not applicable to this swept/lofted/revolved solid; its only canonical faces are the '${res.capAxisLabel}' end caps.`,
+        hint: `Use '${res.capAxisLabel.replace('/', "' or '")}' for the end caps, or select the side wall with a query like kc.q.face({ ofSurfaceType: 'CYLINDER' }) — run list_faces to see all faces on this solid.`,
+      },
+    };
+  }
+  // no-canonical-faces
+  return {
+    error: {
+      target: 'export-occt',
+      code: 'feature.face-ref.not-applicable',
+      featureId: record.id,
+      severity: 'error',
+      message: `This swept/lofted/revolved solid has no canonical face names; canonical names ('top'/'bottom'/...) exist only on primitives and cylinder-topology solids. It has ${res.faceCount} face${res.faceCount === 1 ? '' : 's'}.`,
+      hint: `Select faces by query instead, e.g. kc.q.face({ byNormal: 'Z' }) for an upward-facing face or kc.q.face({ atZ: <height> }) for a face at a known height, or run list_faces to enumerate all ${res.faceCount} faces on this solid.`,
+    },
+  };
+}
+
 function findFaceByPlane(
   shape: import('replicad').Shape3D,
   axisIndex: 0 | 1 | 2,
@@ -727,20 +783,15 @@ export function pickFace(
       };
     }
 
-    // No historyMap → must be an un-transformed primitive (kind tag set).
-    if (!base.kind) {
-      return {
-        error: {
-          target: 'export-occt',
-          code: 'feature.face-ref.not-resolvable',
-          featureId: record.id,
-          severity: 'error',
-          message: `Canonical face refs require an un-transformed primitive (box, cylinder, or sphere). Apply transforms after the face feature instead of before.`,
-          hint: 'Apply the face feature (e.g. shell) before transforms; or use a label / FaceQuery instead of a canonical face name.',
-        },
-      };
-    }
+    // No historyMap → either an un-transformed primitive (kind tag set), or a
+    // swept/lofted/revolved solid (no kind tag). The latter has no stored
+    // canonical names; resolve top/bottom by geometry for cylinder-topology
+    // solids, else emit an actionable diagnostic (NOT the misleading
+    // "apply transforms after" message).
     const face = faceRef.ref.face as CanonicalFace;
+    if (!base.kind) {
+      return canonicalFaceOnSweptSolid(record, base, face);
+    }
     const f = findCanonicalFace(base, face);
     if (f === null) {
       return {

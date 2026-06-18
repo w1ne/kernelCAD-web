@@ -66,6 +66,6 @@ describe('Shape.mirror(plane)', () => {
     const engine = new RecomputeEngine(new OcctLowerer());
     const result = await engine.run(run.records);
     const codes = result.diagnostics.map(d => d.code);
-    expect(codes).toContain('feature.face-ref.not-resolvable');
+    expect(codes).toContain('feature.face-ref.not-applicable');
   }, 60000);
 });
