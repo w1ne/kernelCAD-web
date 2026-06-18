@@ -19,7 +19,7 @@
 // records and rewrites the index to include both); or into its own dir to
 // inspect electronics alone.
 
-import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync, readdirSync, copyFileSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync, copyFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { ingestDirectory, type CatalogRecord } from './ingestParts';
