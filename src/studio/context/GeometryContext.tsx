@@ -475,6 +475,10 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             });
         });
         return { revision, promise };
+        // This callback reads `code` at call time by design (it's invoked
+        // imperatively, not on every keystroke); resubscribing on each `code`
+        // change would churn the executor. Intentional omission.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pushExecutionRecord]);
 
     const requestMeshAndReview = useCallback((
