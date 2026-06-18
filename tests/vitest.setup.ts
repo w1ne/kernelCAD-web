@@ -41,7 +41,26 @@ process.env.KERNELCAD_PARTS_BASE_URL ??= 'off';
 // here is the load-bearing call. The `restoreAllMocks`/`useRealTimers` calls are
 // kept as belt-and-suspenders (harmless at the file boundary) so this stays
 // correct even if the suite later runs with `unstubGlobals`/timer auto-reset off.
-import { afterAll, afterEach, vi } from 'vitest';
+import { afterAll, afterEach, beforeEach, vi } from 'vitest';
+
+// Pristine `fetch`, captured at setup-file load — before ANY test file runs, so
+// it is the environment's real binding, never a mock. See the beforeEach below.
+const PRISTINE_FETCH = globalThis.fetch;
+
+// Per-TEST: reset `fetch` to its pristine binding before every test. Some files
+// mock fetch with a raw `global.fetch = vi.fn()` and "restore" to a value they
+// captured at module load — which can itself already be a leaked mock, so the
+// `vi.unstubAllGlobals()` scrub below (which only undoes vi.stubGlobal) can't
+// catch it. A sibling's leaked fetch then bleeds into a test that sets up no
+// fetch of its own (e.g. GeometryContext's zero-geometry case received another
+// file's "Not JSON" mock). Resetting here makes every test see fetch exactly as
+// it would in isolation. Targeted to `fetch` ONLY, so it cannot disturb the
+// file-scope `beforeAll` stubs of OTHER globals (e.g. geometryEngine's `Worker`
+// stub) that the file-boundary design above deliberately preserves — verified
+// no test installs `fetch` in a `beforeAll`.
+beforeEach(() => {
+    globalThis.fetch = PRISTINE_FETCH;
+});
 
 // Per-TEST: only the idempotent timer reset. `useRealTimers()` is a no-op when
 // real timers are already active, so it is safe to run after every test and
