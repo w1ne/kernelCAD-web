@@ -1,24 +1,24 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /**
- * /embed/$slug — a chrome-free embed of a public model's viewer, for iframing
- * from other products (e.g. proto.cat's device page CAD tab) WITHOUT forcing a
- * second login.
+ * /embed/$slug — a chrome-free embed of a public model's 3D viewer, for iframing
+ * from other products (e.g. proto.cat's device-page CAD tab) WITHOUT a second
+ * login and WITHOUT the Studio editor chrome.
  *
- * It renders the same Studio viewport as /p/$slug (`App` in `viewerMode`, which
- * is read-only and never persists), but injects NO header chrome — no title, no
- * privacy badge, and crucially no "Sign in to save" button. The kernelCAD Header
- * has no default auth UI (sign-in is only ever rendered via the injected
- * `headerRight`), so omitting it yields a login-free viewer that still keeps the
- * real view toolbar (3D/2D, grid, STEP/STL export).
+ * It reuses `FunnelViewer` — the same purpose-built "render geometry without the
+ * full Studio shell" wrapper the anonymous-generation funnel uses: a bare 3D
+ * canvas that auto-executes the model code and frames it, with no toolbar, no
+ * inspector rail, no agent connect, and no auth UI. (Rendering the full `App`
+ * even in viewerMode pulls in the toolbar + Inspector + Run/Brush/Section — the
+ * editor, not a viewer.)
  *
- * Models load anonymously by slug (capability-based): `fetchProjectBySlug` returns
- * public/`public_unlisted` rows with no auth. Private models resolve to null and
- * show "Not available" — embeds are expected to target public models only.
+ * Models load anonymously by slug (capability-based): `fetchProjectBySlug`
+ * returns public/`public_unlisted` rows with no auth. Private models resolve to
+ * null → "Not available".
  */
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import App from '../App';
+import { FunnelViewer } from '../../funnel/components/FunnelViewer';
 import { fetchProjectBySlug, type ProjectRow } from '../../funnel/lib/apiClient';
 
 export const Route = createFileRoute('/embed/$slug')({
@@ -28,32 +28,38 @@ export const Route = createFileRoute('/embed/$slug')({
 function EmbedPage() {
   const { slug } = Route.useParams();
   const [project, setProject] = useState<ProjectRow | null>(null);
+  const [state, setState] = useState<'loading' | 'ready' | 'missing' | 'error'>('loading');
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
+    // `state` starts at 'loading' (initial useState); the fetch resolves it to
+    // ready/missing/error. No synchronous setState in the effect body.
     let disposed = false;
     fetchProjectBySlug(slug)
-      .then((p) => { if (!disposed) setProject(p); })
-      .catch((e) => { if (!disposed) setErr(String(e)); });
+      .then((p) => {
+        if (disposed) return;
+        if (p) { setProject(p); setState('ready'); }
+        else { setState('missing'); }
+      })
+      .catch((e) => { if (!disposed) { setErr(String(e)); setState('error'); } });
     return () => { disposed = true; };
   }, [slug]);
 
-  if (err) {
+  if (state === 'ready' && project) {
     return (
-      <main className="min-h-screen bg-vellum font-sans grid place-items-center p-8">
-        <p className="text-copper font-mono text-sm">Failed to load: {err}</p>
-      </main>
-    );
-  }
-  if (project === null && !err) {
-    // Either still loading, or a private/missing model (anon fetch returned null).
-    return (
-      <main className="min-h-screen bg-vellum font-sans grid place-items-center p-8">
-        <p className="text-ink-faint font-mono text-sm">Loading…</p>
-      </main>
+      <div className="fixed inset-0">
+        <FunnelViewer code={project.current_code} />
+      </div>
     );
   }
 
-  // Chrome-free: the real Studio viewport, read-only, no header chrome → no login.
-  return <App initialCode={project!.current_code} viewerMode />;
+  const message =
+    state === 'error' ? `Failed to load: ${err}`
+    : state === 'missing' ? 'Model not available.'
+    : 'Loading…';
+  return (
+    <main className="fixed inset-0 bg-vellum font-sans grid place-items-center p-8">
+      <p className="text-ink-faint font-mono text-sm">{message}</p>
+    </main>
+  );
 }
