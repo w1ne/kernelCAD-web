@@ -145,6 +145,41 @@ export async function fetchProjectBySlug(slug: string): Promise<ProjectRow | nul
   return (data as ProjectRow | null) ?? null;
 }
 
+// ---------------------------------------------------------------------------
+// Server-side revision history (Supabase-backed, owner-or-slug auth).
+//   GET  /api/v1/projects/:slug/revisions            -> { revisions: [...] }
+//   POST /api/v1/projects/:slug/revisions/:v/restore -> { version }
+// ---------------------------------------------------------------------------
+
+export interface ProjectRevision {
+  version: number;
+  created_at: string;
+}
+
+/** Newest-first list of saved server revisions for a slug-backed project.
+ *  Unwraps the `{ revisions: [...] }` envelope; returns `[]` when missing. */
+export async function listProjectRevisions(slug: string): Promise<ProjectRevision[]> {
+  const res = await authedFetch<{ revisions?: ProjectRevision[] }>(
+    'GET',
+    `/api/v1/projects/${encodeURIComponent(slug)}/revisions`,
+  );
+  return res.revisions ?? [];
+}
+
+/** Restore the project's code to a prior revision; returns the restored
+ *  version. The displayed model is refreshed by the caller via
+ *  fetchProjectBySlug. */
+export async function restoreProjectRevision(
+  slug: string,
+  version: number,
+): Promise<{ version: number }> {
+  return authedFetch<{ version: number }>(
+    'POST',
+    `/api/v1/projects/${encodeURIComponent(slug)}/revisions/${version}/restore`,
+    {},
+  );
+}
+
 export async function listMyProjects(): Promise<ProjectRow[]> {
   const supabase = getSupabase();
   const { data, error } = await supabase

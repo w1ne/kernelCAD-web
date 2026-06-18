@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import App from '../App';
 import { SignInButton } from '../../funnel/components/SignInButton';
 import { ProjectViewerActions } from './-ProjectViewerActions';
+import { ServerRevisionHistory } from './-ServerRevisionHistory';
 import { useSession } from '../../funnel/hooks/useSession';
 import {
   fetchProjectBySlug,
@@ -158,6 +159,16 @@ function ProjectPage() {
     }
   }, [slug, project?.privacy]);
 
+  // A server-side revision restore changes the project's current_code. Push it
+  // through the same liveCode/lastLiveUpdate path the SSE updates use so the 3D
+  // viewer re-renders to the restored revision immediately, and bump the
+  // version guard so a stale in-flight SSE refetch can't clobber it.
+  const handleRestored = useCallback((code: string) => {
+    if (versionRef.current != null) versionRef.current += 1;
+    setLiveCode(code);
+    setLastLiveUpdate(new Date());
+  }, []);
+
   const handleUpgrade = useCallback(async () => {
     try {
       const { url } = await createCheckoutSession();
@@ -239,6 +250,7 @@ function ProjectPage() {
   const headerRight: ReactNode = (
     <div className="flex items-center gap-2 min-w-0">
       {claimControl}
+      <ServerRevisionHistory slug={slug} onRestored={handleRestored} />
       <ProjectViewerActions
         slug={slug}
         project={project}
