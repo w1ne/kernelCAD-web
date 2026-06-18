@@ -86,4 +86,14 @@ runs:
     - name: Install dependencies (only if node_modules cache missed)
       if: steps.cache-node-modules.outputs.cache-hit != 'true'
       shell: bash
-      run: npm ci
+      run: |
+        # Retry: npm ci hits the registry and is the other place (besides
+        # ffmpeg) a transient registry/CDN blip could fail a shard. Bounded
+        # retries keep a one-off network hiccup from flaking the gate.
+        for attempt in 1 2 3; do
+          if npm ci --no-audit --no-fund; then exit 0; fi
+          echo "npm ci attempt ${attempt} failed; retrying in 10s…"
+          sleep 10
+        done
+        echo "::error::npm ci failed after 3 attempts"
+        exit 1
