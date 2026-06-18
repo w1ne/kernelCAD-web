@@ -21,8 +21,18 @@
   "bin": {
     "kernelcad": "dist/cli/index.js"
   },
+  "exports": {
+    "./studio": {
+      "types": "./dist/studio/index.d.ts",
+      "import": "./dist/studio/index.js"
+    },
+    "./studio.css": "./src/index.css",
+    "./package.json": "./package.json"
+  },
   "files": [
     "dist/cli",
+    "dist/studio",
+    "src/index.css",
     "dist/headless-player",
     "README.md",
     "LICENSE",
@@ -34,6 +44,7 @@
     "prebuild": "tsr generate",
     "build": "tsc -b && vite build",
     "build:cli": "tsc --noEmit -p tsconfig.cli.json && node scripts/build-cli.mjs",
+    "build:studio": "vite build --config vite.studio.config.ts",
     "build:player": "vite build -c vite.player.config.ts",
     "dist:skills": "npx tsx scripts/distGenerate.mjs",
     "eval": "npx tsx eval/run.ts",
@@ -46,7 +57,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "release": "npx tsx scripts/release.ts",
-    "prepack": "npm run build:cli && npm run build:player",
+    "prepack": "npm run build:cli && npm run build:studio && npm run build:player",
+    "prepare": "npm run build:studio",
     "generate:parts": "npx tsx scripts/generateSeedCatalog.ts assets/parts",
     "prepublishOnly": "npm run generate:parts",
     "pretest": "npm run generate:parts",
@@ -154,6 +166,7 @@
     "tsx": "^4.21.0",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
+    "vite-plugin-dts": "^5.0.2",
     "vitest": "^4.0.18"
   },
   "optionalDependencies": {

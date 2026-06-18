@@ -8,6 +8,15 @@ interface ToolbarProps {
     onRun: () => void;
     agentRailOpen: boolean;
     onToggleAgentRail: () => void;
+    /** Embed-mode opt-out: when false, the Agent toggle button is hidden
+     *  entirely (the rail itself is also unmounted in `StudioShell`).
+     *  Default true (standalone). */
+    enableAgentRail?: boolean;
+    /** Embed-mode opt-out for the "Connect to Claude Desktop" link. The
+     *  target route (`/connect`) only exists in the standalone kernelcad.app
+     *  deploy, so hosts (proto.cat) hide it to avoid dead links. Default
+     *  true (standalone). */
+    enableConnect?: boolean;
     /** True iff at least one referenceImage record is present in the current
      *  scene. The toggle button only renders when this is true; otherwise the
      *  toolbar slot stays empty so casual scripts don't see a dead button. */
@@ -45,6 +54,8 @@ export function Toolbar({
     onRun,
     agentRailOpen,
     onToggleAgentRail,
+    enableAgentRail = true,
+    enableConnect = true,
     referenceImagesPresent,
     referenceImagesVisible,
     onToggleReferenceImages,
@@ -66,7 +77,7 @@ export function Toolbar({
             className="h-8 shrink-0 border-b border-[#2b313c] bg-[#111] flex items-center gap-2 px-3 text-xs text-gray-300 select-none bar-scroll-x"
         >
             <div className="flex items-center gap-2 shrink-0">
-                {!agentRailHidden && (
+                {enableAgentRail && !agentRailHidden && (
                     <button
                         type="button"
                         onClick={onToggleAgentRail}
@@ -82,15 +93,17 @@ export function Toolbar({
                         Agent
                     </button>
                 )}
-                <a
-                    href="/connect"
-                    data-testid="toolbar-connect-link"
-                    aria-label="Connect to Claude Desktop"
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded text-gray-300 hover:text-white hover:bg-[#222] transition-colors"
-                >
-                    <Plug size={12} />
-                    Connect
-                </a>
+                {enableConnect && (
+                    <a
+                        href="/connect"
+                        data-testid="toolbar-connect-link"
+                        aria-label="Connect to Claude Desktop"
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded text-gray-300 hover:text-white hover:bg-[#222] transition-colors"
+                    >
+                        <Plug size={12} />
+                        Connect
+                    </a>
+                )}
                 {isModified && (
                     <span
                         data-testid="toolbar-modified-dot"

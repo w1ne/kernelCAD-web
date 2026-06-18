@@ -180,7 +180,8 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
          * Safely applies code after validating it with the Agent API.
          * Returns true if successful, false if validation failed.
          */
-        applyCodeSafe: codeCtx.applyCodeSafe
+        applyCodeSafe: codeCtx.applyCodeSafe,
+        hasControlledCode: codeCtx.hasControlledCode,
     }), [
         codeCtx,
         uiCtx.viewMode,
@@ -285,10 +286,27 @@ import { ProjectProvider } from './ProjectContext';
 /**
  * Main WorkbenchProvider composing all focused contexts
  */
-export function WorkbenchProvider({ children, initialCode }: { children: ReactNode; initialCode?: string }) {
+export function WorkbenchProvider({
+    children,
+    initialCode,
+    controlledCode,
+    onCodeChange,
+}: {
+    children: ReactNode;
+    initialCode?: string;
+    /** Embed-mode controlled source: when set, the host owns the canonical
+     *  `.kcad.ts` string. See `CodeProvider` for the controlled-mode rules. */
+    controlledCode?: string;
+    /** Embed-mode change callback, debounced inside `CodeProvider`. */
+    onCodeChange?: (next: string) => void;
+}) {
     return (
         <ProjectProvider initialCode={initialCode}>
-            <CodeProvider initialCode={initialCode}>
+            <CodeProvider
+                initialCode={initialCode}
+                controlledCode={controlledCode}
+                onCodeChange={onCodeChange}
+            >
                 <WorkbenchStateProvider>
                     <UIProvider>
                         <SelectionProvider>

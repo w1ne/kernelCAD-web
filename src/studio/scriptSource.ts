@@ -148,9 +148,14 @@ export async function meshSourceDev(
   source: string,
   paramOverrides?: ParamOverrides,
 ): Promise<BackendMeshPayload> {
-  const response = await fetch('/__kernelcad/mesh', {
+  // Route through `apiCall()` so embed-mode hosts (StudioConfigProvider
+  // with a `backendUrl`) get the correct prefix; standalone dev with no
+  // embed config resolves to base='' and the URL stays `/__kernelcad/mesh`
+  // (matches the existing test contract bit-for-bit).
+  const { base, headers } = await apiCall();
+  const response = await fetch(rewritePath('/__kernelcad/mesh', base), {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...headers },
     body: JSON.stringify({ source, ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}) }),
   });
   const payload = await response.json().catch(() => null);

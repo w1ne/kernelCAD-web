@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { CommandManager } from '../../authoring/commands/CommandManager';
 import { defaultCode } from '../../shared/worker/geometryEngine';
 import type { EditorLike } from '../../shared/types/editor';
@@ -24,12 +24,81 @@ export interface CodeContextType {
     applyCodeSafe: (code: string) => Promise<boolean>;
     getMutationDiagnostics: () => Readonly<CodeMutationDiagnostics>;
     resetMutationDiagnostics: () => void;
+    /** True when Studio was mounted with a `controlledCode` prop (embed
+     *  mode). Consumers like `App.tsx` use this to suppress the
+     *  `?script=`/`?gallery=` URL-driven source load when the host has
+     *  already provided the source. */
+    hasControlledCode: boolean;
 }
 
 const CodeContext = createContext<CodeContextType | undefined>(undefined);
 
-export function CodeProvider({ children, initialCode = defaultCode }: { children: ReactNode; initialCode?: string }) {
-    const [code, setRawCode] = useState<string>(initialCode);
+/** Controlled-mode props: when `controlledCode` is supplied, the provider
+ *  treats the parent as the source of truth — local state still exists so
+ *  the editor stays responsive during user input, but every mutation also
+ *  fires `onCodeChange` (debounced) so the host can ingest the new source.
+ *  Incoming `controlledCode` changes that differ from the last value Studio
+ *  emitted overwrite local state, which is how an external author (e.g. the
+ *  proto.cat agent producing a fresh `.kcad.ts`) drives Studio. */
+const ON_CODE_CHANGE_DEBOUNCE_MS = 150;
+
+export function CodeProvider({
+    children,
+    initialCode = defaultCode,
+    controlledCode,
+    onCodeChange,
+}: {
+    children: ReactNode;
+    initialCode?: string;
+    controlledCode?: string;
+    onCodeChange?: (next: string) => void;
+}) {
+    const seedCode = controlledCode ?? initialCode;
+    const [code, setRawCode] = useState<string>(seedCode);
+
+    // Stable ref to the latest onCodeChange so the emit effect doesn't have
+    // to re-subscribe when the host swaps callbacks.
+    const onCodeChangeRef = useRef(onCodeChange);
+    onCodeChangeRef.current = onCodeChange;
+    const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    // The last `code` value we either received from the host (via
+    // controlledCode) or emitted to the host (via onCodeChange). Used to
+    // suppress the echo loop: when controlledCode comes back equal to what
+    // we just sent, the sync effect skips its setRawCode; and when a fresh
+    // controlledCode arrives, we mark it as already-known so the emit
+    // effect doesn't bounce it back to the host as if the user typed it.
+    const lastEmittedRef = useRef<string>(seedCode);
+
+    // Sync external `controlledCode` updates into local state. Skip when
+    // the incoming value equals the last sync'd / emitted value — that
+    // means the host is echoing our own change and we're already in sync.
+    useEffect(() => {
+        if (controlledCode === undefined) return;
+        if (controlledCode === lastEmittedRef.current) return;
+        lastEmittedRef.current = controlledCode;
+        setRawCode(controlledCode);
+    }, [controlledCode]);
+
+    // Emit user-driven code changes (debounced) when in controlled mode.
+    // Skips the initial render (code === seed === lastEmitted) and skips
+    // host-driven changes (the sync effect bumps lastEmitted first).
+    useEffect(() => {
+        const cb = onCodeChangeRef.current;
+        if (!cb) return;
+        if (code === lastEmittedRef.current) return;
+        if (debounceTimerRef.current !== null) clearTimeout(debounceTimerRef.current);
+        const snapshot = code;
+        debounceTimerRef.current = setTimeout(() => {
+            lastEmittedRef.current = snapshot;
+            cb(snapshot);
+        }, ON_CODE_CHANGE_DEBOUNCE_MS);
+        return () => {
+            if (debounceTimerRef.current !== null) {
+                clearTimeout(debounceTimerRef.current);
+                debounceTimerRef.current = null;
+            }
+        };
+    }, [code]);
 
     const [editorInstance, setEditorInstance] = useState<EditorLike | null>(null);
     const mutationService = useMemo(() => new CodeMutationService(setRawCode), []);
@@ -182,6 +251,8 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
     }, [code, mutationService]);
 
 
+    const hasControlledCode = controlledCode !== undefined;
+
     const value: CodeContextType = useMemo(() => ({
         code,
         setCode,
@@ -196,8 +267,9 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
         deleteHistoryItem,
         applyCodeSafe,
         getMutationDiagnostics,
-        resetMutationDiagnostics
-    }), [code, setCode, mutateCode, insertCode, editorInstance, commandManager, codeContext, renameItem, deleteItem, deleteHistoryItem, applyCodeSafe, getMutationDiagnostics, resetMutationDiagnostics]);
+        resetMutationDiagnostics,
+        hasControlledCode,
+    }), [code, setCode, mutateCode, insertCode, editorInstance, commandManager, codeContext, renameItem, deleteItem, deleteHistoryItem, applyCodeSafe, getMutationDiagnostics, resetMutationDiagnostics, hasControlledCode]);
 
     return <CodeContext.Provider value={value}>{children}</CodeContext.Provider>;
 }
