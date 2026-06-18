@@ -7,7 +7,13 @@ const getSupabaseMock = vi.fn(() => ({ auth: { getSession: getSessionMock } }));
 
 vi.mock('./supabaseClient', () => ({ getSupabase: () => getSupabaseMock() }));
 
-import { setProjectPrivacy, postProjectRender, PRIVATE_REQUIRES_PAID } from './apiClient';
+import {
+  setProjectPrivacy,
+  postProjectRender,
+  PRIVATE_REQUIRES_PAID,
+  listProjectRevisions,
+  restoreProjectRevision,
+} from './apiClient';
 
 describe('setProjectPrivacy', () => {
   const fetchMock = vi.fn();
@@ -111,5 +117,87 @@ describe('postProjectRender', () => {
     fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true, url: 'u' }) });
     await postProjectRender('a/b', 'cG5n');
     expect(fetchMock.mock.calls[0]![0]).toBe('https://api.kernelcad.com/api/v1/projects/a%2Fb/render');
+  });
+});
+
+describe('listProjectRevisions', () => {
+  const fetchMock = vi.fn();
+
+  beforeEach(() => {
+    getSessionMock.mockReset();
+    getSupabaseMock.mockReturnValue({ auth: { getSession: getSessionMock } });
+    getSessionMock.mockResolvedValue({ data: { session: { access_token: 'tok-1' } } });
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.kernelcad.com');
+    vi.stubGlobal('fetch', fetchMock);
+    fetchMock.mockReset();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it('GETs the revisions endpoint and unwraps the {revisions} envelope', async () => {
+    const revisions = [
+      { version: 3, created_at: '2026-06-15T12:00:00Z' },
+      { version: 2, created_at: '2026-06-14T12:00:00Z' },
+    ];
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ revisions }) });
+
+    await expect(listProjectRevisions('slug-1')).resolves.toEqual(revisions);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe('https://api.kernelcad.com/api/v1/projects/slug-1/revisions');
+    expect(init.method).toBe('GET');
+    expect(init.headers.Authorization).toBe('Bearer tok-1');
+  });
+
+  it('returns [] when the envelope omits revisions', async () => {
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+    await expect(listProjectRevisions('slug-1')).resolves.toEqual([]);
+  });
+
+  it('url-encodes the slug', async () => {
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ revisions: [] }) });
+    await listProjectRevisions('a/b');
+    expect(fetchMock.mock.calls[0]![0]).toBe('https://api.kernelcad.com/api/v1/projects/a%2Fb/revisions');
+  });
+});
+
+describe('restoreProjectRevision', () => {
+  const fetchMock = vi.fn();
+
+  beforeEach(() => {
+    getSessionMock.mockReset();
+    getSupabaseMock.mockReturnValue({ auth: { getSession: getSessionMock } });
+    getSessionMock.mockResolvedValue({ data: { session: { access_token: 'tok-1' } } });
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.kernelcad.com');
+    vi.stubGlobal('fetch', fetchMock);
+    fetchMock.mockReset();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it('POSTs the restore endpoint with the version and returns the restored version', async () => {
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ version: 5 }) });
+
+    await expect(restoreProjectRevision('slug-1', 5)).resolves.toEqual({ version: 5 });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe('https://api.kernelcad.com/api/v1/projects/slug-1/revisions/5/restore');
+    expect(init.method).toBe('POST');
+    expect(init.headers.Authorization).toBe('Bearer tok-1');
+    expect(JSON.parse(init.body)).toEqual({});
+  });
+
+  it('url-encodes the slug', async () => {
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ version: 1 }) });
+    await restoreProjectRevision('a/b', 1);
+    expect(fetchMock.mock.calls[0]![0]).toBe('https://api.kernelcad.com/api/v1/projects/a%2Fb/revisions/1/restore');
   });
 });

@@ -118,6 +118,14 @@ Verify the install with `kernelcad --version` (should print `0.1.0` or higher).
 
 ## API Surface
 
+### Before you say "kernelCAD can't make that"
+
+NEVER tell a user a shape is impossible, or that it needs other software, without first calling `lookup_api` and `lookup_cookbook`. kernelCAD does NURBS freeform surfacing — lofts, sweeps, boundary-fill patches, G2 Hermite blends, and variable-section sweeps — so organic forms (body shells, panels, fairings, ergonomic curves, bottles, horns) ARE in scope. Its two real limits, state them precisely and do not overgeneralize past them:
+- It is a **solid/NURBS** kernel, not a **polygon/subdivision sculptor** (Blender/Maya).
+- Its viewer renders clean CAD, not **photoreal** images — for a photoreal hero shot, export STEP/GLB and finish in a render tool.
+
+For an organic solid body, reach for the `loft-body-shell-from-profiles` cookbook recipe (`lookup_cookbook("loft a body shell")`).
+
 ### Top-level functions
 
 ```typescript
@@ -386,7 +394,7 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 // opts.spacing z-stacks sections axially; opts.planes overrides with explicit per-section placement.
 .loft(other: Sketch | Sketch[], opts?: {
   spacing?: number;
-  planes?: { normal: [number, number, number]; origin: [number, number, number] }[];
+  planes?: { plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number] }[];
   ruled?: boolean;
   startPoint?: [number, number];
   endPoint?: [number, number];
@@ -675,6 +683,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 | fillet-face-after-subtract | After subtracting a hole or pocket, you want to round only the rim of the resulting opening — not every edge in the part. |
 | fillet-translated-shape | You translated a primitive and now want to fillet one of its canonical faces by name (canonical face refs survive translate). |
 | hermite-g2-blend | You have a pair of existing NURBS curves whose tangents and curvatures match at the join point and you want a G2-continuous compound spine (so a downstream variableSweep does not kink at the join). Author the flanks via nurbsCurve, then drop a hermiteG2 between them with matching endpoint tangents and curvatures. |
+| loft-body-shell-from-profiles | You need a recognizable, printable stylized solid body (car body, boat hull, fuselage, casing) that primitives can't express. Define cross-section profiles at stations along an axis, loft a solid through them, then shell + fillet. This is NURBS surfacing for organic bodies — not a polygon sculpt and not a photoreal render. |
 | mirror-half-part | The part is symmetric across a cardinal plane; build only one half and call mirror to produce the complete symmetric part. |
 | non-overlapping-l-bracket | You're building two perpendicular plates joined at a right angle; both plates have the same thickness; volumes must not overlap at the joint. |
 | parametric-bolt-pattern-skeleton | You want a compact bolt-hole part with an editable bolt-diameter parameter that can be changed later. |

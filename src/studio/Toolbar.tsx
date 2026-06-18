@@ -74,9 +74,9 @@ export function Toolbar({
     return (
         <div
             data-testid="studio-toolbar"
-            className="h-8 shrink-0 border-b border-[#2b313c] bg-[#111] flex items-center justify-between px-3 text-xs text-gray-300 select-none"
+            className="h-8 shrink-0 border-b border-[#2b313c] bg-[#111] flex items-center gap-2 px-3 text-xs text-gray-300 select-none bar-scroll-x"
         >
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-2 shrink-0">
                 {enableAgentRail && !agentRailHidden && (
                     <button
                         type="button"
@@ -113,7 +113,7 @@ export function Toolbar({
                 )}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 ml-auto shrink-0">
                 <button
                     type="button"
                     onClick={onValidate}
