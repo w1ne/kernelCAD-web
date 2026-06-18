@@ -77,7 +77,7 @@ export function Header() {
     };
 
     return (
-        <div className="h-10 bg-[#111] border-b border-[#333] flex items-center px-4 justify-between select-none shrink-0" data-testid="header">
+        <div className="h-10 bg-[#111] border-b border-[#333] flex items-center px-4 gap-2 select-none shrink-0 bar-scroll-x" data-testid="header">
             <div className="flex items-center gap-3 min-w-0">
                 <button
                     onClick={() => setActiveDialog('projectManager')}
@@ -98,7 +98,7 @@ export function Header() {
                 )}
             </div>
 
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-2 items-center ml-auto shrink-0">
                 {headerRight && (
                     <>
                         <div className="flex items-center gap-2">{headerRight}</div>

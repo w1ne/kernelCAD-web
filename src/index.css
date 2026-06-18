@@ -43,6 +43,19 @@ body {
     background-color: #000;
 }
 
+/* Horizontal-scroll fallback for the fixed-height chrome bars (Header,
+ * Toolbar, StatusBar). On narrow viewports (e.g. a Pixel 8 at 412px) the bars
+ * carry more controls than fit; this lets them scroll instead of overlapping,
+ * with the scrollbar hidden so the thin bars stay clean. */
+.bar-scroll-x {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none; /* Firefox */
+}
+.bar-scroll-x::-webkit-scrollbar {
+    display: none; /* Chromium / WebKit */
+}
+
 /* Studio workbench routes (StudioShell, DemoPlayerPage, AnonGenPage,
  * ProjectPage) provide their own h-screen overflow-hidden container, so the
  * body no longer needs the global viewport lock. Removing it lets the
