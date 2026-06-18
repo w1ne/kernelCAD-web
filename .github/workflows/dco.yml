@@ -13,11 +13,22 @@ jobs:
         with:
           fetch-depth: 0
       - name: Verify external commits are signed off
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # DCO sign-off is required from EXTERNAL contributors only. Commits
-          # authored by maintainers are exempt (they accept the DCO implicitly).
-          # Add maintainer author emails here.
+          # DCO sign-off is required from EXTERNAL contributors only. Maintainer
+          # commits are exempt (they accept the DCO implicitly). A maintainer is
+          # recognised two ways so committing from a new machine doesn't flake
+          # the gate:
+          #   1. by author email (covers the canonical noreply / primary email), or
+          #   2. by GitHub login — resolved from the commit's GitHub author —
+          #      which covers any machine whose git email is associated with the
+          #      maintainer's GitHub account.
+          # (A commit authored with an email NOT associated with any GitHub
+          # account can't be attributed and still needs a Signed-off-by; set your
+          # git email to your @users.noreply.github.com address to avoid that.)
           MAINTAINER_EMAILS="14119286+w1ne@users.noreply.github.com andrii@shylenko.com"
+          MAINTAINER_LOGINS="w1ne"
           fail=0
           for c in $(git rev-list --no-merges ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}); do
             email=$(git show -s --format=%ae "$c")
@@ -25,9 +36,15 @@ jobs:
             for m in $MAINTAINER_EMAILS; do
               if [ "$email" = "$m" ]; then skip=1; break; fi
             done
+            if [ "$skip" = "0" ]; then
+              login=$(gh api "repos/${{ github.repository }}/commits/$c" --jq '.author.login // ""' 2>/dev/null || echo "")
+              for l in $MAINTAINER_LOGINS; do
+                if [ -n "$login" ] && [ "$login" = "$l" ]; then skip=1; break; fi
+              done
+            fi
             if [ "$skip" = "1" ]; then continue; fi
             if ! git show -s --format=%B "$c" | grep -q '^Signed-off-by: '; then
-              echo "::error::Commit $c by external contributor $email is missing a Signed-off-by line (see CONTRIBUTING.md)"
+              echo "::error::Commit $c by external contributor $email is missing a Signed-off-by line (see CONTRIBUTING.md). Maintainers: set your git email to a GitHub-associated address (e.g. your @users.noreply.github.com) or add a Signed-off-by trailer."
               fail=1
             fi
           done
