@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/shared/intent/cameraTargetRecord.ts
 //
 // Types for the setCameraTarget() / setCameraDistance() top-level APIs. A

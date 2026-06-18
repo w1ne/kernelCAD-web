@@ -1,9 +1,22 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { CaptureSession } from '../capture/captureSession';
 import { createApi } from '../api';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { ParamTable } from '../../shared/runtime/paramTable';
+import { normalizeUserScript } from '../../shared/runtime/normalizeUserScript';
 import { transpileTs } from './transpile';
-import { runIsolated } from './isolation';
+import { runIsolated, type IsolationOptions, type IsolationResult } from './isolation';
+
+/** Pluggable script runner. `runIsolated` (node `vm`) is the default; the
+ *  browser worker passes `runInRealm` (new Function) so the SAME engine runs
+ *  client-side. See kernelCAD-private docs/plans/2026-06-12-unify-script-engine-in-worker.md. */
+export type ScriptRunner = (
+  code: string,
+  fileName: string,
+  injected: Record<string, unknown>,
+  opts?: IsolationOptions,
+) => IsolationResult;
 
 export interface RunScriptInput {
   code: string;
@@ -12,6 +25,9 @@ export interface RunScriptInput {
    *  so `lib.fromSTEP('parts/foo.step')` resolves paths relative to the
    *  caller, matching how user .kcad.ts files reference sibling assets. */
   scriptDir?: string;
+  /** Runner backend. Defaults to the node `vm` runner; the browser worker
+   *  injects the `new Function` realm runner so one engine serves both. */
+  runner?: ScriptRunner;
 }
 
 export interface RunScriptResult {
@@ -38,12 +54,20 @@ export interface RunScriptResult {
  * body is wrapped in an IIFE inside the sandbox.
  */
 export async function runScript(input: RunScriptInput): Promise<RunScriptResult> {
-  const { code, fileName, scriptDir } = input;
+  const { code, fileName, scriptDir, runner = runIsolated } = input;
   const session = new CaptureSession();
   session.scriptDir = scriptDir;
   const api = createApi({ session, scriptDir });
 
-  const transpiled = transpileTs(code, fileName);
+  // Agent-authored scripts are idiomatic ES modules: they end with
+  // `export default <model>`, use `export const`, or carry top-level `import`s.
+  // The runtime wraps the body in an IIFE (`wrapReturn`) and captures the
+  // top-level `return`, so module syntax is a SyntaxError ("Unexpected token
+  // 'export'"). Rewrite module-isms into function-body statements first —
+  // `export default <expr>` becomes the `return <expr>` the IIFE expects.
+  const normalized = normalizeUserScript(code);
+
+  const transpiled = transpileTs(normalized, fileName);
 
   // Two surface forms are supported inside `.kcad.ts` scripts:
   //   - Top-level globals (`box(...)`, `q.face(...)`) via the api spread.
@@ -56,7 +80,7 @@ export async function runScript(input: RunScriptInput): Promise<RunScriptResult>
     kc: api,
   };
 
-  const result = runIsolated(
+  const result = runner(
     transpiled.code,
     fileName,
     apiGlobals,

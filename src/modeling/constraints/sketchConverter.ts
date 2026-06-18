@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { SketchEntity, Point2D } from '../../shared/types/sketch';
 import type {
     SketchEntity as SolverEntity,

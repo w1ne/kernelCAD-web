@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /// <reference types="vite/client" />
 /// <reference types="@react-three/fiber" />
 

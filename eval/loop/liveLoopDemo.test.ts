@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // LIVE end-to-end integration test: drives the REAL closed loop against the
 // REAL OCCT CLI (no mocks). A scripted "author" emits a broken model (two
 // overlapping parts) then a fixed one; everything else — evaluate, interference

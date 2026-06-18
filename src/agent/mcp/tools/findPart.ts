@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/findPart.ts
 //
 // MCP tool: discovery against the bundled (and optionally remote) catalog.
@@ -7,7 +9,7 @@ import {
   type FindPartOpts,
 } from '../../../modeling/parts/findPart';
 import { KernelError } from '../../../shared/intent/kernelError';
-import type { PartRecord } from '../../../shared/parts/types';
+import type { LicenseClass, PartRecord } from '../../../shared/parts/types';
 
 export interface FindPartInput {
   query?: string;
@@ -18,6 +20,8 @@ export interface FindPartInput {
   limit?: number;
   source?: 'local' | 'remote' | 'auto';
   partsBaseUrl?: string;
+  /** Restrict to a redistribution license class ('permissive' | 'share-alike' | 'fetch-only'). */
+  licenseClass?: LicenseClass;
 }
 
 export interface FindPartOk {
@@ -66,6 +70,9 @@ export async function findPartTool(
       ...(input.source !== undefined ? { source: input.source } : {}),
       ...(input.partsBaseUrl !== undefined
         ? { partsBaseUrl: input.partsBaseUrl }
+        : {}),
+      ...(input.licenseClass !== undefined
+        ? { licenseClass: input.licenseClass }
         : {}),
     };
     const r = await findPartHost(input.query ?? '', opts);

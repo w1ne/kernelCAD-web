@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/runtime/mjcfPhysicsContacts.test.ts
 //
 // P11 Slice 1 proof-of-life test: two interpenetrating cubes, hinged so

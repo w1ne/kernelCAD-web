@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AnimationViewMetadata } from '../../../shared/intent/animationViewRecord';
 import { sampleTrackAt } from '../../../agent/render/animationSampler';
@@ -69,6 +71,12 @@ export interface UseAnimationPlaybackOptions {
     setViewportDriverLock?: (locked: boolean) => void;
     /** Injected bake fetcher for tests; defaults to the real network fetch. */
     bakeFetcher?: BakeFetcher;
+    /** Gallery static-bake mode: when set (and `sessionToken` is absent), the
+     *  player drives the viewport from a build-time precomputed timeline that
+     *  `bakeFetcher(staticBakeKey)` fetches (the `/gallery/_anim/<sha>.json`
+     *  static file) — no live session required. This is how anonymous gallery
+     *  visitors, who cannot open a server session, get a moving mechanism. */
+    staticBakeKey?: string | null;
     /** Injected clock for deterministic tests; defaults to real rAF. */
     clock?: PlaybackClock;
     /** Monotonic kernel-state epoch, bumped by GeometryContext on EVERY relower
@@ -166,15 +174,20 @@ export function useAnimationPlayback(
         clearPartTransforms,
         setViewportDriverLock,
         bakeFetcher = fetchAnimationBake,
+        staticBakeKey,
         clock = defaultClock,
         kernelEpoch = 0,
     } = opts;
 
+    // The bake source is the live session OR a gallery static-bake key.
+    const bakeSourceKey = sessionToken ?? staticBakeKey ?? null;
+
     const durationMs = metadata?.durationMs ?? 0;
     const fps = metadata?.fps ?? 30;
     const name = metadata?.name ?? 'animation';
-    // Driving the viewport needs a session (bake source) AND an apply path.
-    const canDrive = Boolean(sessionToken) && applyPartTransform != null;
+    // Driving the viewport needs a bake source (live session OR gallery static
+    // bake) AND an apply path.
+    const canDrive = Boolean(bakeSourceKey) && applyPartTransform != null;
 
     const [tMs, setTMs] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -261,19 +274,19 @@ export function useAnimationPlayback(
     const settledSelfCreditsRef = useRef(0);
 
     const bakeKey = useMemo(() => {
-        if (!metadata || !sessionToken) return null;
-        // Identity of the timeline that matters for the baked poses: token +
-        // per-track keyframes (param/atMs/value/ease) + fps. Stable across
-        // re-renders that don't change the timeline.
+        if (!metadata || !bakeSourceKey) return null;
+        // Identity of the timeline that matters for the baked poses: source key
+        // (session token or static gallery key) + per-track keyframes + fps.
+        // Stable across re-renders that don't change the timeline.
         return JSON.stringify({
-            token: sessionToken,
+            token: bakeSourceKey,
             fps: metadata.fps,
             tracks: metadata.tracks.map((t) => ({
                 p: t.param,
                 k: t.keys.map((k) => [k.atMs, k.value, k.ease]),
             })),
         });
-    }, [metadata, sessionToken]);
+    }, [metadata, bakeSourceKey]);
 
     const invalidateBake = useCallback(() => {
         bakeRef.current = null;
@@ -331,7 +344,9 @@ export function useAnimationPlayback(
     // Fetch (or reuse) the bake for the current key. Single-flight: a second
     // caller while a fetch is pending awaits the same promise.
     const ensureBake = useCallback(async (): Promise<BakedTimeline | null> => {
-        const token = sessionToken;
+        // Live session token, or the gallery static-bake key. The injected
+        // bakeFetcher interprets it (session POST vs static-file GET).
+        const token = sessionToken ?? staticBakeKey ?? null;
         if (!token || !applyRef.current || !metaRef.current) return null;
         if (bakeRef.current) return bakeRef.current;
         if (bakeInFlightRef.current) return bakeInFlightRef.current;
@@ -364,7 +379,7 @@ export function useAnimationPlayback(
         })();
         bakeInFlightRef.current = promise;
         return promise;
-    }, [sessionToken]);
+    }, [sessionToken, staticBakeKey]);
 
     // Sample every track at `at` → one param-edit batch (for the pause-sync
     // and the readout). Pure; no I/O.

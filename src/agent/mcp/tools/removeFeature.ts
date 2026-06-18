@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/removeFeature.ts
 import { removeFeature } from '../edits/removeFeature';
 import { evaluateScriptTool } from './evaluateScript';

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/render/animationSampler.ts
 //
 // Pure keyframe-track sampler for animationView() timelines. Turns the

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/backends/occt/textLowerer.ts
 //
 // Lower a sketch FeatureRecord whose metadata carries text content (instead of

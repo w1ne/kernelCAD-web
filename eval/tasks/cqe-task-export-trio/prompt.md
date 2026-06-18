@@ -28,5 +28,5 @@ format.
 - The assembly exports to **GLB** with two glTF nodes named `plate` and
   `bracket`.
 
-The harness exercises the full `export_model` matrix in a single eval
+The harness exercises the full `export` (target:'model') matrix in a single eval
 run, so a regression in any of the four writer paths surfaces here.

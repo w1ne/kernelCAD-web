@@ -1,8 +1,10 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/oracle/stlBbox.ts
 //
 // STL-extent oracle for harness bbox gates.
 //
-// Background: `get_shape_info` (MCP) returns the BREP AABB — i.e. the
+// Background: `inspect({ of: 'shape' })` (MCP) returns the BREP AABB — i.e. the
 // corner-to-corner bounding box that OCCT reports on the un-meshed shape.
 // For turned / chamfered / non-axis-aligned parts that AABB can differ
 // noticeably from the *meshed* extent (the cadqueryeval scorer and every

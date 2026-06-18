@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/sketchSplineTangent.test.ts
 //
 // V slice — Task V4: path().spline(points, { startTangent, endTangent })

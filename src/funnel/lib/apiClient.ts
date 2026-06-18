@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { getSupabase } from './supabaseClient';
 import type { Artifact } from './generateClient';
 
@@ -37,7 +39,7 @@ export async function fetchGeneration(genId: string): Promise<GenerationRow | nu
 // ---------------------------------------------------------------------------
 
 export async function authedFetch<T>(
-  method: 'GET' | 'POST',
+  method: 'GET' | 'POST' | 'PATCH',
   path: string,
   body?: unknown,
 ): Promise<T> {
@@ -84,6 +86,40 @@ export async function saveProject(input: SaveProjectInput): Promise<SaveProjectR
   return authedFetch<SaveProjectResult>('POST', '/api/v1/save', input);
 }
 
+/** "Sign in to save": claim an anonymous (owner-less) project for the signed-in
+ *  user. `claimed` is false if it was already owned. */
+export async function claimProject(slug: string): Promise<{ claimed: boolean }> {
+  return authedFetch<{ claimed: boolean }>('POST', `/api/v1/projects/${encodeURIComponent(slug)}/claim`, {});
+}
+
+/** POST a viewer-captured PNG (base64, no `data:` prefix) to the backend render
+ *  endpoint. The hosted backend has no browser, so the user's open Studio tab
+ *  captures its own WebGL canvas and uploads it here; an agent then fetches the
+ *  stored image. Anonymous-capable: the slug is the capability (same pattern as
+ *  claimProject). Returns the URL the agent can read the image from. */
+export async function postProjectRender(slug: string, pngBase64: string): Promise<{ url: string }> {
+  return authedFetch<{ ok: true; url: string }>(
+    'POST',
+    `/api/v1/projects/${encodeURIComponent(slug)}/render`,
+    { png: pngBase64 },
+  );
+}
+
+/** Thrown when a free user tries to make a project private — the body text
+ *  authedFetch surfaces on a 403 carries this code. Lets the UI show an
+ *  upgrade CTA instead of a generic failure. */
+export const PRIVATE_REQUIRES_PAID = 'private_requires_paid_account';
+
+/** Owner-only privacy toggle (public_unlisted <-> private). Making a project
+ *  private is Pro-gated server-side; a 403 carrying PRIVATE_REQUIRES_PAID means
+ *  the caller needs to upgrade. */
+export async function setProjectPrivacy(
+  slug: string,
+  privacy: Extract<ProjectPrivacy, 'public_unlisted' | 'private'>,
+): Promise<{ privacy: Extract<ProjectPrivacy, 'public_unlisted' | 'private'> }> {
+  return authedFetch('PATCH', `/api/v1/projects/${encodeURIComponent(slug)}/privacy`, { privacy });
+}
+
 export interface ProjectRow {
   id: string;
   slug: string;
@@ -94,7 +130,8 @@ export interface ProjectRow {
   parameters: Artifact['parameters'];
   version: number;
   updated_at: string;
-  owner_id: string;
+  /** Null for anonymous (public-by-link) projects — claimable via claimProject. */
+  owner_id: string | null;
 }
 
 export async function fetchProjectBySlug(slug: string): Promise<ProjectRow | null> {

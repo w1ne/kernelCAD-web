@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/runtime/dfm/minWall.ts
 //
 // W3 Task 5 — minimum wall thickness check via inward ray sampling over the

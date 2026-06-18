@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3 } from '../../shared/intent/types';
 import { isValidVec3, isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
@@ -137,6 +139,25 @@ export class Shape {
       : { op: 'rotateAxis', axis: toVec3Param(axis, 'unitless'), degrees: toParam(degrees, 'deg'), pivot: toVec3Param(pivot, 'mm') };
     this.session.appendTransform(this.id, transform);
     return this;
+  }
+
+  /** Rotate `degrees` around the world X axis. Thin alias for
+   *  `.rotate([1, 0, 0], degrees, pivot?)` — same validation, same
+   *  ShapeTransform record, same ParamRef support. */
+  rotateX(degrees: Editable<number>, pivot?: EditableVec3): Shape {
+    return this.rotate([1, 0, 0], degrees, pivot);
+  }
+
+  /** Rotate `degrees` around the world Y axis. Thin alias for
+   *  `.rotate([0, 1, 0], degrees, pivot?)`. */
+  rotateY(degrees: Editable<number>, pivot?: EditableVec3): Shape {
+    return this.rotate([0, 1, 0], degrees, pivot);
+  }
+
+  /** Rotate `degrees` around the world Z axis. Thin alias for
+   *  `.rotate([0, 0, 1], degrees, pivot?)`. */
+  rotateZ(degrees: Editable<number>, pivot?: EditableVec3): Shape {
+    return this.rotate([0, 0, 1], degrees, pivot);
   }
 
   /**

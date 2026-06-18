@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/naming/index.ts
 //
 // Public-within-the-monorepo barrel for the topology-naming machinery.

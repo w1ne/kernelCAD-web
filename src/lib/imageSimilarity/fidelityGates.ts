@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/lib/imageSimilarity/fidelityGates.ts
 //
 // W2 — Harden the oracle. Boolean fidelity gates that the eval harness ANDs

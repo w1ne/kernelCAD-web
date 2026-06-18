@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createContext, useContext, type ReactNode } from 'react';
 
 export interface StudioChromeValue {
@@ -8,6 +10,10 @@ export interface StudioChromeValue {
   /** Extra chrome injected into the Header's right cluster, before the
    * built-in toolbar group. Used by funnel routes for Save / Sign in. */
   headerRight?: ReactNode;
+  /** Read-only live review mode for funnel project pages (/p/<slug>): code
+   * editor read-only, built-in agent rail hidden — the model is driven by
+   * an external agent, not authored here. */
+  viewerMode?: boolean;
 }
 
 const StudioChromeContext = createContext<StudioChromeValue>({});

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/reviewPaint.ts
 //
 // MCP tool surface for Studio's inpainting-style review packets.
@@ -56,6 +58,9 @@ export interface ReviewPaintPacket {
   ts: string;
   /** One-line note the user typed when painting (`""` if none). */
   note: string;
+  /** Preset intent tags the user picked ("too thick", "missing", …). Carries
+   *  WHAT is wrong, complementing struck_parts (WHERE). Empty array if none. */
+  tags: string[];
   /** Repo-relative .kcad.ts file under review (null when the packet was
    *  saved without a script context — e.g. user testing at `/`). */
   script_path: string | null;
@@ -125,7 +130,7 @@ export async function reviewPaintPeekLatestTool(
   // Pull out into local for narrowing inside TypeScript (the loop assigns
   // `best` inside a callback and the inferrer needs the rebind).
   const found: { dir: string; mtime: number } = best;
-  let meta: { note?: string; scriptPath?: string | null; ts?: string; struckParts?: string[] } = {};
+  let meta: { note?: string; tags?: string[]; scriptPath?: string | null; ts?: string; struckParts?: string[] } = {};
   try { meta = JSON.parse(readFileSync(join(found.dir, 'meta.json'), 'utf8')); } catch {
     // keep defaults
   }
@@ -137,6 +142,7 @@ export async function reviewPaintPeekLatestTool(
     meta_path: join(found.dir, 'meta.json'),
     ts: meta.ts ?? new Date(found.mtime).toISOString(),
     note: meta.note ?? '',
+    tags: Array.isArray(meta.tags) ? meta.tags : [],
     script_path: meta.scriptPath ?? null,
     struck_parts: Array.isArray(meta.struckParts) ? meta.struckParts : [],
   };

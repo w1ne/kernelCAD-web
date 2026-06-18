@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // @vitest-environment jsdom
 // src/components/demoPlayer/DemoPlayerPage.test.tsx
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';

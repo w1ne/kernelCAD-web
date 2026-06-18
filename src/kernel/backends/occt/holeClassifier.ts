@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/backends/occt/holeClassifier.ts
 //
 // Slice-2 hole-feature face classifier. Used only by holeLowerer.ts.

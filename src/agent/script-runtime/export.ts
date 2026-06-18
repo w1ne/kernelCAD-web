@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { runScript } from '../../modeling/runtime/runScript';
 import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
@@ -7,6 +9,7 @@ import { verifyWatertight, type WatertightReport } from '../../kernel/backends/o
 import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exportDxf';
 import { export3mfAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occt/exportGlb';
+import { exportSvgDrawing, type SvgDrawingOptions } from '../../kernel/backends/occt/exportSvgDrawing';
 import { sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { flattenPattern } from '../../kernel/backends/occt/flattenPattern';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
@@ -17,7 +20,7 @@ import { Scene } from '../../modeling/validation/scene';
 import { isRegion } from '../../shared/intent/region';
 
 export type ExportFormat =
-  | 'stl' | 'step' | 'dxf' | '3mf' | 'glb'
+  | 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'svg-drawing'
   | 'urdf' | 'srdf' | 'sdf-gazebo';
 
 /** Per-format option payloads. The union member is selected by `format`. */
@@ -27,6 +30,7 @@ export type ExportOptions =
   | { format: 'dxf'; layers?: DxfLayerSpec[]; unit?: 'mm' | 'cm' | 'in'; tolerance?: number }
   | { format: '3mf'; printUnit?: 'mm' | 'cm' | 'in'; embedSource?: boolean }
   | { format: 'glb'; axis?: 'y-up' | 'z-up'; draco?: false }
+  | { format: 'svg-drawing'; sheet?: 'a4' | 'a3'; modelName?: string; date?: string }
   | { format: 'urdf' }
   | { format: 'srdf' }
   | { format: 'sdf-gazebo' };
@@ -52,10 +56,22 @@ export interface ExportInput {
   options?: ExportOptions;
 }
 
+/** Companion mesh file for robot-description exports (URDF / SDF). The
+ *  emitted XML references these by relative path, so the writer must put
+ *  them on disk next to the output file or the consumer cannot resolve the
+ *  visual/collision geometry. */
+export interface CompanionMeshFile {
+  /** Path relative to the directory of the primary output file. */
+  relPath: string;
+  bytes: Uint8Array;
+}
+
 export interface ExportResult {
   bytes: Uint8Array;
   featureCount: number;
   diagnostics: CompilerDiagnostic[];
+  /** Per-link mesh files referenced by the primary output (URDF / SDF). */
+  meshes?: CompanionMeshFile[];
 }
 
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
@@ -139,6 +155,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
         bytes: new TextEncoder().encode(out.urdf),
         featureCount,
         diagnostics: [...r.diagnostics, ...out.diagnostics],
+        meshes: out.urdf === '' ? [] : await emitCompanionMeshes(out.meshPaths),
       };
     }
     if (format === 'srdf') {
@@ -160,6 +177,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
         bytes: new TextEncoder().encode(out.sdf),
         featureCount,
         diagnostics: [...r.diagnostics, ...out.diagnostics],
+        meshes: out.sdf === '' ? [] : await emitCompanionMeshes(out.meshPaths),
       };
     }
   }
@@ -227,6 +245,25 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
         nextAction: NEXT_ACTIONS['recompute.input.missing'],
       }],
     };
+  }
+
+  // svg-drawing entry path: the engineering-drawing sheet accepts both a
+  // single body and a multi-body Scene — Scene parts ship in world frame so
+  // the hidden-line pass sees inter-part occlusion. Dispatched before the
+  // Scene-aware block because the drawing exporter owns its own Scene
+  // handling (no union / per-part split needed).
+  if (format === 'svg-drawing') {
+    const opts =
+      (input.options as SvgDrawingOptions | undefined) ??
+      { format: 'svg-drawing' as const };
+    const baseName = fileName.split(/[\\/]/).pop() ?? fileName;
+    const modelName =
+      opts.modelName ?? baseName.replace(/(\.kcad)?\.ts$/, '');
+    const drawingParts: WorldFramePart[] = isSceneBackend(lowered)
+      ? sceneToWorldFrameParts(lowered)
+      : [{ name: 'part', shape: lowered as OcctBackend }];
+    const bytes = exportSvgDrawing(drawingParts, { ...opts, modelName });
+    return { bytes, featureCount, diagnostics: r.diagnostics };
   }
 
   // Scene-aware path: STEP export of a SceneBackend ships a STEP file
@@ -467,6 +504,18 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   // URDF / SRDF / SDF-Gazebo are dispatched in the early Assembly-aware
   // branch above, before targetId resolution. Unreachable here.
   return { bytes: new Uint8Array(), featureCount, diagnostics: r.diagnostics };
+}
+
+/** Mesh the per-link shapes referenced by a robot-description export into
+ *  binary STLs. Shared by the URDF and SDF dispatch branches. */
+async function emitCompanionMeshes(
+  meshPaths: ReadonlyArray<{ relPath: string; shape: OcctBackend }>,
+): Promise<CompanionMeshFile[]> {
+  const meshes: CompanionMeshFile[] = [];
+  for (const m of meshPaths) {
+    meshes.push({ relPath: m.relPath, bytes: await m.shape.exportSTLAsync() });
+  }
+  return meshes;
 }
 
 export interface PartStlExport {

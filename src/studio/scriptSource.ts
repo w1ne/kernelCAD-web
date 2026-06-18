@@ -1,23 +1,59 @@
-import { findGallerySourceUrl, galleryPrecomputedMeshUrl } from './gallerySource';
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import {
+  findGallerySourceUrl,
+  findGallerySourceUrlForScriptPath,
+  galleryPrecomputedMeshUrl,
+} from './gallerySource';
 import { apiCall, rewritePath } from './api/apiBase';
 import type { SerializedParamTable } from '../shared/runtime/paramTable';
 import type { ScriptReviewSummary } from './context/GeometryContext';
+import type { FeatureMeshSerialized } from '../modeling/capture/featureMeshSerialize';
+import type { FeatureRecord } from '../shared/intent/featureRecord';
+
+async function parseJsonOrThrowHelpful(response: Response, fallbackMessage: string): Promise<unknown> {
+  try {
+    return await response.json();
+  } catch {
+    const text = await response.text().catch(() => '');
+    if (text.includes('<!doctype html') || text.includes('<html')) {
+      throw new Error(fallbackMessage);
+    }
+    throw new Error(fallbackMessage);
+  }
+}
 
 export async function loadStudioScriptSource(script: string): Promise<string> {
+  if (shouldUseHostedMesh()) {
+    const curatedSourceUrl = await findGallerySourceUrlForScriptPath(script);
+    if (curatedSourceUrl) {
+      const curatedResponse = await fetch(curatedSourceUrl);
+      if (!curatedResponse.ok) {
+        throw new Error(`Failed to load gallery source: ${curatedResponse.status}`);
+      }
+      return curatedResponse.text();
+    }
+  }
+
   const { base, headers } = await apiCall();
   const response = await fetch(
     rewritePath(`/__kernelcad/source?script=${encodeURIComponent(script)}`, base),
     { headers },
   );
-  const payload = await response.json();
+  const payload = await parseJsonOrThrowHelpful(
+    response,
+    'Hosted script link is not public. Use a curated gallery link or sign in.',
+  );
   if (!response.ok) {
-    const message = typeof payload?.error === 'string' ? payload.error : response.statusText;
+    const message = payload && typeof payload === 'object' && typeof (payload as { error?: unknown }).error === 'string'
+      ? (payload as { error: string }).error
+      : response.statusText;
     throw new Error(message);
   }
-  if (typeof payload?.source !== 'string') {
+  if (!payload || typeof payload !== 'object' || typeof (payload as { source?: unknown }).source !== 'string') {
     throw new Error('Source endpoint did not return source code.');
   }
-  return payload.source;
+  return (payload as { source: string }).source;
 }
 
 export async function loadGalleryScriptSource(slug: string): Promise<string> {
@@ -33,8 +69,8 @@ export async function loadGalleryScriptSource(slug: string): Promise<string> {
  * GeometryContext success handler can consume it the same way.
  */
 export interface BackendMeshPayload {
-  features: unknown[];
-  featureRecords?: unknown[];
+  features: FeatureMeshSerialized[];
+  featureRecords?: FeatureRecord[];
   bounds: { min: [number, number, number]; max: [number, number, number] };
   params?: SerializedParamTable;
   /** Deterministic review baked at build time (precompute) or returned by the
@@ -97,7 +133,21 @@ export function needsFullKernel(code: string): boolean {
  * consumes it identically. Used as the localhost fallback when the
  * in-browser worker can't evaluate the script (e.g. assembly models).
  */
-export async function meshSourceDev(source: string): Promise<BackendMeshPayload> {
+/** Override map for declared parameters: `{ paramName: value }`. Applied to the
+ *  param table after the script runs but before lowering, so a slider edit
+ *  re-runs the script with the new value baked in — the stateless recompute
+ *  path used when there is no live kernel session (hosted viewer / arbitrary
+ *  edited code). Empty/undefined = use the script's declared defaults. */
+export type ParamOverrides = Record<string, number | boolean>;
+
+function hasOverrides(p?: ParamOverrides): p is ParamOverrides {
+  return !!p && Object.keys(p).length > 0;
+}
+
+export async function meshSourceDev(
+  source: string,
+  paramOverrides?: ParamOverrides,
+): Promise<BackendMeshPayload> {
   // Route through `apiCall()` so embed-mode hosts (StudioConfigProvider
   // with a `backendUrl`) get the correct prefix; standalone dev with no
   // embed config resolves to base='' and the URL stays `/__kernelcad/mesh`
@@ -106,7 +156,7 @@ export async function meshSourceDev(source: string): Promise<BackendMeshPayload>
   const response = await fetch(rewritePath('/__kernelcad/mesh', base), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...headers },
-    body: JSON.stringify({ source }),
+    body: JSON.stringify({ source, ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}) }),
   });
   const payload = await response.json().catch(() => null);
   if (!response.ok) {
@@ -141,26 +191,33 @@ function isBridgePayload(value: unknown): value is BackendMeshPayload {
  * to the server mesh endpoint (`POST {VITE_API_BASE_URL}/__kernelcad/mesh`)
  * for edited code, when a backend is configured. Throws if neither resolves.
  */
-export async function meshSourceHosted(source: string): Promise<BackendMeshPayload> {
-  // 1. Static precompute by source hash.
-  try {
-    const hash = await sha256Hex(source);
-    const res = await fetch(galleryPrecomputedMeshUrl(hash));
-    if (res.ok) {
-      const payload = await res.json().catch(() => null);
-      if (isBridgePayload(payload)) return payload;
+export async function meshSourceHosted(
+  source: string,
+  paramOverrides?: ParamOverrides,
+): Promise<BackendMeshPayload> {
+  // 1. Static precompute by source hash — ONLY when there are no param
+  //    overrides. The precompute is keyed on the unmodified source, so it
+  //    cannot reflect a slider edit; with overrides we must hit the backend.
+  if (!hasOverrides(paramOverrides)) {
+    try {
+      const hash = await sha256Hex(source);
+      const res = await fetch(galleryPrecomputedMeshUrl(hash));
+      if (res.ok) {
+        const payload = await res.json().catch(() => null);
+        if (isBridgePayload(payload)) return payload;
+      }
+    } catch {
+      // fall through to backend
     }
-  } catch {
-    // fall through to backend
   }
 
-  // 2. Server mesh endpoint for edited / non-gallery code.
+  // 2. Server mesh endpoint for edited / non-gallery code (and param edits).
   const base = import.meta.env.VITE_API_BASE_URL;
   if (typeof base === 'string' && base.length > 0) {
     const response = await fetch(`${base}/__kernelcad/mesh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ source }),
+      body: JSON.stringify({ source, ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}) }),
     });
     const payload = await response.json().catch(() => null);
     if (!response.ok) {

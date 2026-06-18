@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Pure interpolation of baked per-part world transforms for client-side
 // animation playback. No React, no THREE-scene mutation — just matrix math —
 // so the slerp/lerp behaviour is golden-testable in isolation.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/intent/queryKeys.ts
 //
 // Single source of truth for the legal keys of `EdgeQuery` and `FaceQuery`.

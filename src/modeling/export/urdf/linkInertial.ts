@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/export/urdf/linkInertial.ts
 //
 // Emits a URDF <inertial> block for one link, sourcing mass / CoM /

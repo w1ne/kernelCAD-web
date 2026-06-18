@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 /** Single param edit accepted by `updateParam` on the geometry context. */
@@ -121,12 +123,16 @@ export function useParamUpdate(
   // confusing aborted-request warnings. Callers that care about the
   // trailing value should bind `flush` to pointer-up / blur explicitly.
   useEffect(() => {
+    // Capture the ref'd Map at mount so the cleanup clears the same instance
+    // (the ref object identity is stable, so this is behaviour-equivalent — it
+    // just satisfies react-hooks/exhaustive-deps' ref-in-cleanup check).
+    const pending = pendingRef.current;
     return () => {
       if (timerRef.current !== null) {
         clearTimeout(timerRef.current);
         timerRef.current = null;
       }
-      pendingRef.current.clear();
+      pending.clear();
     };
   }, []);
 

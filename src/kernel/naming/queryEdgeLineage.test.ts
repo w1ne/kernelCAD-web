@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Q1 — Edge-level lineage parity with FaceLineage.
 //
 // Unit-level verification that EdgeLineage exposes the same featureId /

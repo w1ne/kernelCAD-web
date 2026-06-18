@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/backends/occt/projectCurveLowerer.ts
 //
 // Lower a W3 `projectCurve` FeatureRecord.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/tasks/query-dsl-composed/harness.ts
 //
 // Q10 — end-to-end exercise of the composed Query DSL pipeline.

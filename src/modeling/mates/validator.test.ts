@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/lib/mates/validator.test.ts
 import { describe, it, expect } from 'vitest';
 import {
@@ -79,6 +81,48 @@ describe('validateAssembly', () => {
     expect(r.status).toBe('warning');
     const floatingCodes = r.diagnostics.filter((d) => d.code === 'assembly.part.floating');
     expect(floatingCodes.length).toBe(6);
+  });
+
+  // Issue #448 — mate edges must reach the record-level validator through
+  // BOTH scene-producing record kinds. `Assembly.solvedModel` writes mates
+  // onto a `solvedAssembly` record; `Assembly.model()` writes the identical
+  // metadata onto an `assemblyModel` record. The validator used to walk only
+  // `solvedAssembly`, so the same mated assembly validated clean via
+  // `solvedModel({})` but emitted spurious floating warnings via `.model()`.
+  it('sees mate edges on an assemblyModel record — .model() path (issue #448)', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('t');
+    arm
+      .part('a', kcad.box(1, 1, 1))
+      .connector('top', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 1] } });
+    arm
+      .part('b', kcad.box(1, 1, 1))
+      .connector('bot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('a-b', 'a.top', 'b.bot', 'fastened');
+    arm.model(); // records `assemblyModel` (NOT `solvedAssembly`) with mate metadata
+    const r = validateAssembly({ records: session.getRecords() });
+    expect(r.diagnostics.filter((d) => d.code === 'assembly.part.floating')).toEqual([]);
+    expect(r.status).toBe('solved');
+  });
+
+  it('still flags a genuinely unmated part when siblings are mated via .model()', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('t');
+    arm
+      .part('a', kcad.box(1, 1, 1))
+      .connector('top', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 1] } });
+    arm
+      .part('b', kcad.box(1, 1, 1))
+      .connector('bot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.part('stray', kcad.box(1, 1, 1)); // authored but never mated — must warn
+    arm.mate('a-b', 'a.top', 'b.bot', 'fastened');
+    arm.model();
+    const r = validateAssembly({ records: session.getRecords() });
+    const floating = r.diagnostics.filter((d) => d.code === 'assembly.part.floating');
+    expect(floating.map((d) => d.partName)).toEqual(['stray']);
+    expect(r.status).toBe('warning');
   });
 
   it('flags an orphan sub-assembly disconnected from the main mechanism', () => {

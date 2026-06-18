@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kinematic/checkMountingHoleConsistency.ts
 //
 // Thin wrapper around the v0.7.4 substrate at

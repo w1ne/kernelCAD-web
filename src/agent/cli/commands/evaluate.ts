@@ -1,10 +1,16 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/cli/commands/evaluate.ts
+import { readFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
 import { Command } from 'commander';
 import { formatHuman } from '../../../shared/diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 import { buildModel, buildModelFromFile, type BuiltModel } from '../../../modeling/buildModel';
+import { initOcct } from '../../../kernel/backends/occt/occtBackend';
+import { runScript, type RunScriptResult } from '../../../modeling/runtime/runScript';
 import {
   runDfmChecksOnModel,
   type DfmCheckReport,
@@ -64,14 +70,7 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
   applyEvaluateDefaults();
 
   if (input.code === undefined && input.file === undefined) {
-    return { evaluation: {
-      exitCode: 2, featureCount: 0,
-      diagnostics: withNextActions([{
-        target: 'export-occt', code: 'cli.invalid-args', severity: 'error',
-        message: 'evaluateScript: must provide either { file } or { code }.',
-        hint: 'Pass --file <path> on the CLI, or { file } / { code } when calling programmatically.',
-      }]),
-    } };
+    return { evaluation: invalidArgsEvaluation() };
   }
 
   let model;
@@ -81,17 +80,7 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
       : await buildModelFromFile({ file: input.file! });
   } catch (e) {
     if (isFileReadError(e)) {
-      const msg = e instanceof Error ? e.message : String(e);
-      return {
-        evaluation: {
-          exitCode: 2, featureCount: 0,
-          diagnostics: withNextActions([{
-            target: 'export-occt', code: 'cli.file-read', severity: 'error',
-            message: `Cannot read file: ${msg}`,
-            hint: 'Check that the file path exists and is readable.',
-          }]),
-        },
-      };
+      return { evaluation: fileReadEvaluation(e) };
     }
     const diag = kernelErrorToDiagnostic(e);
     return {
@@ -138,6 +127,105 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
 
 export async function evaluateScript(input: EvaluateInput): Promise<EvaluateResult> {
   return (await evaluateAndBuildScript(input)).evaluation;
+}
+
+export interface DryRunScriptResult {
+  evaluation: EvaluateResult;
+  /** The raw value the script `return`ed (Shape, Scene, array, …). Threaded
+   *  so consumers (e.g. the `evaluate_script` MCP tool) can surface the
+   *  assembly parts summary without lowering any geometry. Absent when the
+   *  script failed before returning. */
+  returnValue?: unknown;
+}
+
+/**
+ * Fast validation pass over a `.kcad.ts` script: transpile + capture +
+ * capture-light checks + diagnostics, WITHOUT the OCCT recompute (boolean
+ * lowering), DFM gates, meshing, or export. The expensive `engine.run`
+ * lowering pass is skipped entirely — this is the cheap pre-check agents
+ * use to iterate on script validity before paying for a full evaluation.
+ *
+ * What a dry run catches:
+ * - transpile/syntax errors and any throw during script execution,
+ * - capture-time API misuse (invalid args on primitives, sketches, params),
+ * - assembly mate/connector validity-gate failures (the `solvedModel`
+ *   validate gate runs at capture and defaults to `'error'` here, exactly
+ *   like a full evaluation),
+ * - the agent-parts-discipline `assembly.structure.unstructured-bodies`
+ *   info diagnostic (a static check on the return value + source).
+ *
+ * What it does NOT catch: lowering failures (failed booleans, oversized
+ * fillets, degenerate sweeps) and `dfmSpec(...)` gate diagnostics — those
+ * only surface on a full `evaluateAndBuildScript` run.
+ */
+export async function dryRunScript(input: EvaluateInput): Promise<DryRunScriptResult> {
+  applyEvaluateDefaults();
+
+  if (input.code === undefined && input.file === undefined) {
+    return { evaluation: invalidArgsEvaluation() };
+  }
+
+  // Capture-time script APIs may lazily lower (e.g. measurement helpers or
+  // topology-bound connector resolution inside `solvedModel`), so the OCCT
+  // runtime must be initialized. `initOcct` is memoized — repeat dry runs
+  // pay nothing here.
+  await initOcct();
+
+  let run: RunScriptResult;
+  let code: string;
+  try {
+    if (input.code !== undefined) {
+      code = input.code;
+      run = await runScript({ code, fileName: input.file ?? '<inline>' });
+    } else {
+      const fileName = resolve(input.file!);
+      code = await readFile(fileName, 'utf8');
+      run = await runScript({ code, fileName, scriptDir: dirname(fileName) });
+    }
+  } catch (e) {
+    if (isFileReadError(e)) {
+      return { evaluation: fileReadEvaluation(e) };
+    }
+    return {
+      evaluation: { exitCode: 1, featureCount: 0, diagnostics: [kernelErrorToDiagnostic(e)] },
+    };
+  }
+
+  // Capture-light static check — same producer the full evaluation runs.
+  // Needs only the return value + source text, no lowered geometry.
+  const diagnostics = detectUnstructuredBodies({ returnValue: run.returnValue, code });
+
+  return {
+    evaluation: {
+      exitCode: 0,
+      featureCount: run.records.length,
+      diagnostics: withNextActions(diagnostics),
+    },
+    returnValue: run.returnValue,
+  };
+}
+
+function invalidArgsEvaluation(): EvaluateResult {
+  return {
+    exitCode: 2, featureCount: 0,
+    diagnostics: withNextActions([{
+      target: 'export-occt', code: 'cli.invalid-args', severity: 'error',
+      message: 'evaluateScript: must provide either { file } or { code }.',
+      hint: 'Pass --file <path> on the CLI, or { file } / { code } when calling programmatically.',
+    }]),
+  };
+}
+
+function fileReadEvaluation(e: unknown): EvaluateResult {
+  const msg = e instanceof Error ? e.message : String(e);
+  return {
+    exitCode: 2, featureCount: 0,
+    diagnostics: withNextActions([{
+      target: 'export-occt', code: 'cli.file-read', severity: 'error',
+      message: `Cannot read file: ${msg}`,
+      hint: 'Check that the file path exists and is readable.',
+    }]),
+  };
 }
 
 export interface EvaluateWithEnvelopeInput extends EvaluateInput {

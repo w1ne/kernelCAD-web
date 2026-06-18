@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/vision/index.ts
 //
 // Public surface of the `src/agent/vision/` module — photo-to-sketch trace.

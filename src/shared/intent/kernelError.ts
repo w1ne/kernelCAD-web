@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/intent/kernelError.ts
 //
 // `KernelError` is the kernelCAD-thrown exception type. Carrying a structured

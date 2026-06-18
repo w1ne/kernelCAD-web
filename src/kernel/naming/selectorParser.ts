@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/runtime/selectorParser.ts
 //
 // Slice-2 face-selector parser + resolver. Used by `pickFace` and `pickEdges`

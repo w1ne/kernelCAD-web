@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Parallel-jaw gripper. Two prismatic fingers slide apart along ±X; the
 // `right-slide` mate is the actuator (limits 0..25 mm) and `left-slide` is
 // coupled to it 1:1 so a single source pose drives both jaws symmetrically.

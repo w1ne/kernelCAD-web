@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/runtime/jointMeshContinuity.ts
 //
 // Physics-grounded loop — P8 slice (criterion 7 — joint-mesh-continuity).

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { Canvas } from "@react-three/fiber";
 // Subpath imports — pulling from the barrel index made vite prebundle 3.6MB
 // of drei. We only use 3 components total across the whole app.
@@ -30,6 +32,12 @@ import { SelectionOutline } from "./viewer/overlays/SelectionOutline";
 import { SceneBackground } from "./viewer/SceneBackground";
 import { ViewGizmo } from "./viewer/overlays/ViewGizmo";
 import type { ViewTarget } from "./viewer/controllers/cameraPose";
+import { CAPTURE_HIDDEN_FLAG } from "./viewer/captureViewerPng";
+
+// Tag value for scene furniture (origin construction planes + ground grid) that
+// render-to-image capture hides so the PNG shows the clean framed model, not the
+// authoring view. Read by captureViewerPngBase64; see captureViewerPng.ts.
+const CAPTURE_HIDDEN_USERDATA = { [CAPTURE_HIDDEN_FLAG]: true } as const;
 
 // Constants
 export const SKETCH_FOV = 40;
@@ -169,22 +177,32 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                 <SelectionOutline geometries={geometries} itemNames={itemNames} selectedItemIds={selectedItemIds} />
 
                 {!sketchMode.active && gridVisible && (
-                    <Grid
-                        position={[0, 0, gridPlacement.z]}
-                        rotation={[Math.PI / 2, 0, 0]}
-                        infiniteGrid
-                        cellSize={5}
-                        sectionSize={25}
-                        cellColor="#404040"
-                        sectionColor="#606060"
-                        fadeDistance={gridPlacement.fade}
-                        fadeStrength={1.5}
-                    />
+                    <group userData={CAPTURE_HIDDEN_USERDATA}>
+                        <Grid
+                            position={[0, 0, gridPlacement.z]}
+                            rotation={[Math.PI / 2, 0, 0]}
+                            infiniteGrid
+                            cellSize={5}
+                            sectionSize={25}
+                            cellColor="#404040"
+                            sectionColor="#606060"
+                            fadeDistance={gridPlacement.fade}
+                            fadeStrength={1.5}
+                        />
+                    </group>
                 )}
 
                 <group>
                     {geometries.map((g, i) => {
-                        const name = itemNames[i];
+                        // Prefer the authored assembly part name over the
+                        // return-variable name. For assemblies a single returned
+                        // variable expands into many per-part geometries, so
+                        // `itemNames[i]` is absent for all but the first — using
+                        // it alone leaves parts anonymous and downstream consumers
+                        // (selection, the marking/review overlay's `ownerId`) fall
+                        // back to `shape#<index>`. `assemblyPartName` carries the
+                        // real authored name per part. Mirrors `sectionPartKey`.
+                        const name = g.assemblyPartName ?? itemNames[i];
                         if (name && hiddenIds.includes(name)) return null;
                         // Hide whole assembly parts by name (the Parts list in the
                         // Scene tab toggles `assemblyPartName` into hiddenIds).
@@ -244,7 +262,9 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     </group>
                 )}
 
-                <PlaneLayer planes={planes} />
+                <group userData={CAPTURE_HIDDEN_USERDATA}>
+                    <PlaneLayer planes={planes} />
+                </group>
                 {sketchMode.active && <ParametricLayer />}
                 <OrbitControls
                     makeDefault

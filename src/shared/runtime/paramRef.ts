@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Symbolic parameter reference. See spec §E.1.
 //
 // A ParamRef is a branded handle returned by `kcad.param()` and `kcad.params({})`.
@@ -9,8 +11,10 @@
 // As of v0.4.1 ParamRef<number> exposes arithmetic methods (.add, .subtract,
 // .multiply, .divide, .negate) that build a structured expression AST. The
 // expression is stored on `_expr` and resolved against the ParamTable at lower
-// time. This lets agents write `param('r', 5).divide(2)` instead of being
-// forced to use plain JS numbers (which would NaN-coerce the branded object).
+// time. This lets agents write `param('r', 5).divide(2)` instead of plain JS
+// arithmetic — which is rejected loudly: `Symbol.toPrimitive` throws on
+// numeric/default coercion (see below) so `ref + 4` fails at the operator
+// instead of flowing `"[object Object]4"` / NaN into geometry (#439).
 
 import { KernelError } from '../intent/kernelError';
 
@@ -91,6 +95,33 @@ export class ParamRef<T extends number | boolean = number | boolean> {
   negate(this: ParamRef<number>): ParamRef<number> {
     assertNumericReceiver(this, 'negate');
     return new ParamRef<number>({ kind: 'neg', expr: this._expr }, 'number');
+  }
+
+  /** String contexts (template literals, String(ref)) render the symbolic
+   *  expression instead of `[object Object]`, so a ref that leaks into a
+   *  message or a concatenated string stays identifiable. */
+  toString(): string {
+    return this.$param;
+  }
+
+  /**
+   * JS operators (`+ - * /`, comparisons) coerce via this hook. Deliberately
+   * NOT a value-returning `valueOf`: a ParamRef has no binding to the live
+   * ParamTable at authoring time, and even if it did, coercing to a plain
+   * number would bake a frozen snapshot into the captured record — the
+   * dimension would silently stop re-evaluating on param updates. That trades
+   * a loud failure for a silent one, so numeric/default coercion throws with
+   * the exact fix instead. String-hint coercion (template literals) returns
+   * the symbolic expression for readable diagnostics.
+   */
+  [Symbol.toPrimitive](hint: string): string {
+    if (hint === 'string') return this.$param;
+    throw new KernelError(
+      'feature.invalid-args',
+      `JS arithmetic on a ParamRef is not supported: tried to coerce ParamRef '${this.$param}' to a primitive (hint: '${hint}'). The result would be a frozen number that no longer re-evaluates when the param changes.`,
+      undefined,
+      `invalid-args.param.js-arithmetic — use the ParamRef arithmetic methods instead of JS operators: .add(n), .subtract(n), .multiply(n), .divide(n), .negate(). Example: param('w', 18).add(4) instead of param('w', 18) + 4. These return derived ParamRefs that re-evaluate whenever the underlying param changes.`,
+    );
   }
 }
 

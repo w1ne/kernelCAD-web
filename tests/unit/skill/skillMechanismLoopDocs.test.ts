@@ -7,7 +7,7 @@ describe('SKILL.md fresh-agent mechanism loop docs', () => {
   it('documents the mechanism build loop and critical review tools', () => {
     // The skill tree uses "Fresh-agent mechanism loop" as the section heading.
     expect(SKILL_MD).toMatch(/Fresh-agent mechanism loop/);
-    expect(SKILL_MD).toMatch(/inspect_assembly\(\{ file\? \| code\?, assembly\? \}\)/);
+    expect(SKILL_MD).toMatch(/inspect\(\{ of: 'assembly', file\? \| code\?, assembly\? \}\)/);
     expect(SKILL_MD).toMatch(/review_cad\(\{ file\? \| code\?/);
     expect(SKILL_MD).toMatch(/design_loop\(\{ goal, attempts/);
     expect(SKILL_MD).toMatch(/arm\.transmission\(name/);

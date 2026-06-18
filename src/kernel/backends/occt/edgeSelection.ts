@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/backends/occt/edgeSelection.ts
 //
 // Lowerer-side selector dispatch. Every feature lowerer (fillet / chamfer /

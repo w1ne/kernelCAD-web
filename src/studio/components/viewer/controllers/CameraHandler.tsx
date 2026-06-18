@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { useEffect, useRef } from "react";
@@ -121,6 +123,23 @@ export function CameraHandler({
             }
         }
     }, [sketchMode, selectedFace, geometries, camera, controls]);
+
+    // Hand control to the user the instant they grab the camera. The fit/
+    // navigation tween below lerps the camera every frame until it converges
+    // (~seconds); without this, an orbit/pan/zoom during that window is fought
+    // by the lerp and feels unresponsive on first load. OrbitControls fires
+    // 'start' on pointer/touch down (user-initiated, not on programmatic
+    // update()), so cancelling the tween there yields immediately.
+    useEffect(() => {
+        const ctrl = controls as unknown as {
+            addEventListener?: (type: string, fn: () => void) => void;
+            removeEventListener?: (type: string, fn: () => void) => void;
+        } | null;
+        if (!ctrl?.addEventListener) return;
+        const onUserInteractStart = () => { targetState.current = null; };
+        ctrl.addEventListener('start', onUserInteractStart);
+        return () => ctrl.removeEventListener?.('start', onUserInteractStart);
+    }, [controls]);
 
     useFrame((_state, delta) => {
         if (!targetState.current) return;

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Repair-loop fixed half — Gate 1 stays silent because both mounting
 // holes are now Ø5 mm. Same skeleton as
 // kinematic-grounding-repair-loop-broken, single parameter delta.

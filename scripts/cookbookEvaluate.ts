@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { loadSnippets } from '../src/agent/cookbook/index';
 import { evaluateScript, isKernelcadAvailable } from '../eval/oracle/kernelcad-client';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';

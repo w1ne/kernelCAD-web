@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/backends/occt/meshHeal.ts
 //
 // Mesh-level crack healing + watertight verification for export meshes.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/shared/intent/textureRef.ts
 //
 // TextureRef + TextureSet — image-map references attached to a PBRMaterial.

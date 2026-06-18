@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/lib/demoMetaValidator.ts
 //
 // Pure validator for docs/demos/v0.X/<task>/meta.json contents.

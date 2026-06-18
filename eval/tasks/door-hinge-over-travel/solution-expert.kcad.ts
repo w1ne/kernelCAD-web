@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Door hinged to a wall via one revolute mate.
 //
 // The hinge must allow the door to swing through 0°-95° without the panel

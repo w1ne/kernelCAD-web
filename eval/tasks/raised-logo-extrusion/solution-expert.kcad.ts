@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/tasks/raised-logo-extrusion/solution-expert.kcad.ts
 const base = extrudeRect(60, 60, 2);
 const logo = sketch

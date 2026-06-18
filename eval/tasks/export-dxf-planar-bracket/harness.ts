@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/tasks/export-dxf-planar-bracket/harness.ts
 //
 // Round-trip gate for the Slice A DXF writer: run the candidate script

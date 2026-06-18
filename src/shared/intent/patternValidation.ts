@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/intent/patternValidation.ts
 //
 // Shared pattern-arg validators. Hoisted out of src/modeling/capture/proxy.ts so the

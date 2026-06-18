@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ConnectorOrigin, ConnectorType } from '../../../modeling/mates/connector';
 import type { MateLimitRange, MatePose } from '../../../modeling/mates/mate';
 import type { MateType } from '../../../modeling/mates/mateTypes';
@@ -91,13 +93,13 @@ export type AssemblySourceEditResult = SourceEditResult & { binding_name?: strin
 export function addAssemblyPartSource(input: AddAssemblyPartSourceInput): AssemblySourceEditResult {
   const baseError = validateSourceBasics(input.code, input.assembly_binding);
   if (baseError) return baseError;
-  if (!isNonEmptyString(input.part_name)) return { ok: false, error: 'add_assembly_part_source: part_name must be a non-empty string.' };
-  if (!isNonEmptyString(input.shape_expression)) return { ok: false, error: 'add_assembly_part_source: shape_expression must be a non-empty string.' };
-  if (input.at !== undefined && !isVec3(input.at)) return { ok: false, error: 'add_assembly_part_source: at must be a finite Vec3 when provided.' };
+  if (!isNonEmptyString(input.part_name)) return { ok: false, error: 'add_part: part_name must be a non-empty string.' };
+  if (!isNonEmptyString(input.shape_expression)) return { ok: false, error: 'add_part: shape_expression must be a non-empty string.' };
+  if (input.at !== undefined && !isVec3(input.at)) return { ok: false, error: 'add_part: at must be a finite Vec3 when provided.' };
 
   const binding = input.binding_name ?? derivePartBinding(input.code, input.part_name);
   if (!isValidIdentifier(binding)) {
-    return { ok: false, error: `add_assembly_part_source: binding_name must be a JS identifier; got ${JSON.stringify(binding)}.` };
+    return { ok: false, error: `add_part: binding_name must be a JS identifier; got ${JSON.stringify(binding)}.` };
   }
 
   const args = [
@@ -113,15 +115,15 @@ export function addAssemblyPartSource(input: AddAssemblyPartSourceInput): Assemb
 }
 
 export function addPartConnectorSource(input: AddPartConnectorSourceInput): SourceEditResult {
-  if (!isNonEmptyString(input.code)) return { ok: false, error: 'add_part_connector_source: code must be a non-empty string.' };
-  const partError = validateIdentifierField('add_part_connector_source', 'part_binding', input.part_binding);
+  if (!isNonEmptyString(input.code)) return { ok: false, error: 'add_connector: code must be a non-empty string.' };
+  const partError = validateIdentifierField('add_connector', 'part_binding', input.part_binding);
   if (partError) return partError;
-  if (!isNonEmptyString(input.name)) return { ok: false, error: 'add_part_connector_source: name must be a non-empty string.' };
-  if (!isConnectorType(input.type)) return { ok: false, error: `add_part_connector_source: unsupported connector type '${String(input.type)}'.` };
+  if (!isNonEmptyString(input.name)) return { ok: false, error: 'add_connector: name must be a non-empty string.' };
+  if (!isConnectorType(input.type)) return { ok: false, error: `add_connector: unsupported connector type '${String(input.type)}'.` };
   const origin = normalizeOrigin(input.origin);
-  if (origin === undefined) return { ok: false, error: 'add_part_connector_source: origin must be a Vec3 shorthand or ConnectorOrigin object.' };
-  if (input.axis !== undefined && !isVec3(input.axis)) return { ok: false, error: 'add_part_connector_source: axis must be a finite Vec3 when provided.' };
-  if (input.normal !== undefined && !isVec3(input.normal)) return { ok: false, error: 'add_part_connector_source: normal must be a finite Vec3 when provided.' };
+  if (origin === undefined) return { ok: false, error: 'add_connector: origin must be a Vec3 shorthand or ConnectorOrigin object.' };
+  if (input.axis !== undefined && !isVec3(input.axis)) return { ok: false, error: 'add_connector: axis must be a finite Vec3 when provided.' };
+  if (input.normal !== undefined && !isVec3(input.normal)) return { ok: false, error: 'add_connector: normal must be a finite Vec3 when provided.' };
 
   const opts = {
     type: input.type,
@@ -139,9 +141,9 @@ export function addMateSource(input: AddMateSourceInput): SourceEditResult {
   const baseError = validateSourceBasics(input.code, input.assembly_binding);
   if (baseError) return baseError;
   for (const field of ['name', 'a', 'b'] as const) {
-    if (!isNonEmptyString(input[field])) return { ok: false, error: `add_mate_source: ${field} must be a non-empty string.` };
+    if (!isNonEmptyString(input[field])) return { ok: false, error: `add_mate: ${field} must be a non-empty string.` };
   }
-  if (!isMateType(input.type)) return { ok: false, error: `add_mate_source: unsupported mate type '${String(input.type)}'.` };
+  if (!isMateType(input.type)) return { ok: false, error: `add_mate: unsupported mate type '${String(input.type)}'.` };
   const opts = {
     ...(input.pose !== undefined ? { pose: input.pose } : {}),
     ...(input.limitsDeg !== undefined ? { limitsDeg: input.limitsDeg } : {}),
@@ -161,10 +163,10 @@ export function addMateSource(input: AddMateSourceInput): SourceEditResult {
 export function addMateCouplingSource(input: AddMateCouplingSourceInput): SourceEditResult {
   const baseError = validateSourceBasics(input.code, input.assembly_binding);
   if (baseError) return baseError;
-  if (!isNonEmptyString(input.driven)) return { ok: false, error: 'add_mate_coupling_source: driven must be a non-empty string.' };
-  if (!isNonEmptyString(input.source)) return { ok: false, error: 'add_mate_coupling_source: source must be a non-empty string.' };
-  if (!Number.isFinite(input.ratio)) return { ok: false, error: 'add_mate_coupling_source: ratio must be finite.' };
-  if (input.offset !== undefined && !Number.isFinite(input.offset)) return { ok: false, error: 'add_mate_coupling_source: offset must be finite when provided.' };
+  if (!isNonEmptyString(input.driven)) return { ok: false, error: 'add_mate: driven must be a non-empty string.' };
+  if (!isNonEmptyString(input.source)) return { ok: false, error: 'add_mate: source must be a non-empty string.' };
+  if (!Number.isFinite(input.ratio)) return { ok: false, error: 'add_mate: ratio must be finite.' };
+  if (input.offset !== undefined && !Number.isFinite(input.offset)) return { ok: false, error: 'add_mate: offset must be finite when provided.' };
   return insertStatementBeforeLastTopLevelReturn(
     input.code,
     `${input.assembly_binding}.coupleMates(${quoteString(input.driven)}, ${formatJsValue({
@@ -178,17 +180,17 @@ export function addMateCouplingSource(input: AddMateCouplingSourceInput): Source
 export function addTransmissionSource(input: AddTransmissionSourceInput): SourceEditResult {
   const baseError = validateSourceBasics(input.code, input.assembly_binding);
   if (baseError) return baseError;
-  if (!isNonEmptyString(input.name)) return { ok: false, error: 'add_transmission_source: name must be a non-empty string.' };
-  if (!isTransmissionKind(input.kind)) return { ok: false, error: `add_transmission_source: unsupported kind '${String(input.kind)}'.` };
-  if (!isNonEmptyString(input.sourceMate)) return { ok: false, error: 'add_transmission_source: sourceMate must be a non-empty string.' };
-  if (!isStringArray(input.drivenMates, true)) return { ok: false, error: 'add_transmission_source: drivenMates must be a non-empty string array.' };
-  if (!isStringArray(input.path, true)) return { ok: false, error: 'add_transmission_source: path must be a non-empty string array.' };
+  if (!isNonEmptyString(input.name)) return { ok: false, error: 'add_mate: name must be a non-empty string.' };
+  if (!isTransmissionKind(input.kind)) return { ok: false, error: `add_mate: unsupported kind '${String(input.kind)}'.` };
+  if (!isNonEmptyString(input.sourceMate)) return { ok: false, error: 'add_mate: sourceMate must be a non-empty string.' };
+  if (!isStringArray(input.drivenMates, true)) return { ok: false, error: 'add_mate: drivenMates must be a non-empty string array.' };
+  if (!isStringArray(input.path, true)) return { ok: false, error: 'add_mate: path must be a non-empty string array.' };
   for (const field of ['actuator', 'input', 'output', 'notes'] as const) {
     if (input[field] !== undefined && !isNonEmptyString(input[field])) {
-      return { ok: false, error: `add_transmission_source: ${field} must be a non-empty string when provided.` };
+      return { ok: false, error: `add_mate: ${field} must be a non-empty string when provided.` };
     }
   }
-  if (input.ratio !== undefined && !Number.isFinite(input.ratio)) return { ok: false, error: 'add_transmission_source: ratio must be finite when provided.' };
+  if (input.ratio !== undefined && !Number.isFinite(input.ratio)) return { ok: false, error: 'add_mate: ratio must be finite when provided.' };
 
   return insertStatementBeforeLastTopLevelReturn(
     input.code,
@@ -209,12 +211,12 @@ export function addTransmissionSource(input: AddTransmissionSourceInput): Source
 export function addWorkspaceTargetSource(input: AddWorkspaceTargetSourceInput): SourceEditResult {
   const baseError = validateSourceBasics(input.code, input.assembly_binding);
   if (baseError) return baseError;
-  if (!isNonEmptyString(input.connector_ref)) return { ok: false, error: 'add_workspace_target_source: connector_ref must be a non-empty string.' };
+  if (!isNonEmptyString(input.connector_ref)) return { ok: false, error: 'add_workspace_target: connector_ref must be a non-empty string.' };
   if (!Array.isArray(input.reachable) || input.reachable.length === 0 || !input.reachable.every(isVec3)) {
-    return { ok: false, error: 'add_workspace_target_source: reachable must be a non-empty Vec3 array.' };
+    return { ok: false, error: 'add_workspace_target: reachable must be a non-empty Vec3 array.' };
   }
   if (input.toleranceMm !== undefined && (!Number.isFinite(input.toleranceMm) || input.toleranceMm < 0)) {
-    return { ok: false, error: 'add_workspace_target_source: toleranceMm must be finite and non-negative when provided.' };
+    return { ok: false, error: 'add_workspace_target: toleranceMm must be finite and non-negative when provided.' };
   }
   return insertStatementBeforeLastTopLevelReturn(
     input.code,
@@ -229,7 +231,7 @@ export function setSceneReturnSource(input: SetSceneReturnSourceInput): SourceEd
   const baseError = validateSourceBasics(input.code, input.assembly_binding);
   if (baseError) return baseError;
   if (input.mode !== 'model' && input.mode !== 'solvedModel') {
-    return { ok: false, error: "set_scene_return_source: mode must be 'model' or 'solvedModel'." };
+    return { ok: false, error: "set_scene_return: mode must be 'model' or 'solvedModel'." };
   }
 
   if (input.mode === 'model') {

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/edits/addNurbsCurve.ts
 //
 // NURBS Slice B Task 11: insert a `nurbsCurve(controlPoints, opts?)` binding

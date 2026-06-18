@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/cli/commands/skill.ts
 import { Command } from 'commander';
 import { mkdirSync, copyFileSync, writeFileSync, existsSync, statSync } from 'node:fs';

@@ -47,9 +47,10 @@ describe('inspect_assembly MCP tool', () => {
   });
 
   it('is advertised and dispatchable through the registry', async () => {
-    expect(TOOL_REGISTRY.map((entry) => entry.definition.name)).toContain('inspect_assembly');
+    expect(TOOL_REGISTRY.map((entry) => entry.definition.name)).toContain('inspect');
 
-    await expect(callMcpTool('inspect_assembly', {
+    await expect(callMcpTool('inspect', {
+      of: 'assembly',
       code: `
         const arm = assembly('registry inspect');
         arm.part('base', box(10, 10, 4, true));

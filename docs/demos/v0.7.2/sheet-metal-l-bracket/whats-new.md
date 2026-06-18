@@ -7,7 +7,7 @@ A 60 x 100 x 2 mm steel sheet folded into an L-bracket along its midline at 90 d
 ## Why memorable
 
 - This is the first kernelCAD release where a single agent call (`sheetMetal(s, opts).bend(...)`) produces a folded sheet-metal solid — no boolean union of pre-shaped boxes, no manual extrude + rotate gymnastics.
-- The K-factor bend-allowance math is exposed verbatim in SKILL.md and `get_bend_table`; agents can reason about flat-blank size before lowering.
+- The K-factor bend-allowance math is exposed verbatim in SKILL.md and `inspect({ of: 'bend-table' })`; agents can reason about flat-blank size before lowering.
 - `.flattenPattern()` recovers the original sketch outline within float tolerance, usable directly for laser/CNC consumption.
 
 ## What's new
@@ -17,5 +17,5 @@ A 60 x 100 x 2 mm steel sheet folded into an L-bracket along its midline at 90 d
 - `Shape.flattenPattern() -> Region` derived view
 - `Region` type (new 2D outline + bend-line metadata)
 - 3 new diagnostic codes (30 -> 33)
-- 2 new MCP tools (`flatten_pattern`, `get_bend_table`)
+- 2 new MCP tools (`flatten_pattern`, `inspect({ of: 'bend-table' })`)
 - 3 corpus tasks (`sheet-metal-l-bracket`, `sheet-metal-u-channel`, `sheet-metal-flatten-roundtrip`)

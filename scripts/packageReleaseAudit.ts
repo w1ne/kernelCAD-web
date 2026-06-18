@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -75,11 +77,17 @@ export function auditPackageReleaseState(input: PackageAuditInput): PackageAudit
   const pkg = JSON.parse(input.packageJsonText) as PackageJsonShape;
   const blockers: PackageAuditFinding[] = [];
 
-  if (pkg.scripts?.prepack !== 'npm run build:cli') {
-    blockers.push({
-      kind: 'missing-prepack-build',
-      message: 'package.json scripts.prepack must run npm run build:cli',
-    });
+  // The package ships the CLI bundle (dist/cli) AND the static headless
+  // player (dist/headless-player, consumed by render_preview) — prepack must
+  // build both before npm pack or publish.
+  const prepackSteps = (pkg.scripts?.prepack ?? '').split('&&').map(step => step.trim());
+  for (const required of ['npm run build:cli', 'npm run build:player']) {
+    if (!prepackSteps.includes(required)) {
+      blockers.push({
+        kind: 'missing-prepack-build',
+        message: `package.json scripts.prepack must run ${required}`,
+      });
+    }
   }
 
   const files = pkg.files ?? [];

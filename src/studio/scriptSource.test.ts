@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // S1: scriptSource now routes through the apiBase helper, which calls
@@ -9,11 +11,12 @@ vi.mock('../funnel/lib/supabaseClient', () => ({
   }),
 }));
 
-import { loadGalleryScriptSource, loadStudioScriptSource, meshSourceDev, needsFullKernel } from './scriptSource';
+import { loadGalleryScriptSource, loadStudioScriptSource, meshSourceDev, meshSourceHosted, needsFullKernel } from './scriptSource';
 
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 
 describe('needsFullKernel', () => {
@@ -76,6 +79,42 @@ describe('meshSourceDev', () => {
   });
 });
 
+describe('param overrides (stateless re-run path)', () => {
+  it('meshSourceDev includes params in the POST body when overrides are given', async () => {
+    const payload = { features: [], featureRecords: [], bounds: { min: [0, 0, 0], max: [1, 1, 1] }, params: { w: 5 } };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, json: async () => payload } as Response);
+    await meshSourceDev('return box(w,1,1);', { w: 5 });
+    expect(fetchMock).toHaveBeenCalledWith('/__kernelcad/mesh', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source: 'return box(w,1,1);', params: { w: 5 } }),
+    });
+  });
+
+  it('meshSourceDev omits params when overrides are empty', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, json: async () => ({ features: [] }) } as Response);
+    await meshSourceDev('x', {});
+    const body = JSON.parse((fetchMock.mock.calls[0][1] as RequestInit).body as string);
+    expect(body).toEqual({ source: 'x' });
+  });
+
+  it('meshSourceHosted skips the static precompute and posts params to the backend when overrides are given', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    const payload = { features: [], featureRecords: [], bounds: { min: [0, 0, 0], max: [1, 1, 1] }, params: { w: 7 } };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, json: async () => payload } as Response);
+
+    await meshSourceHosted('return box(w,1,1);', { w: 7 });
+
+    // First (and only) fetch must be the backend POST — proving the precompute
+    // GET was skipped (it cannot reflect an override).
+    expect(String(fetchMock.mock.calls[0][0])).toBe('https://api.example.com/__kernelcad/mesh');
+    expect(fetchMock).toHaveBeenCalledWith('https://api.example.com/__kernelcad/mesh', expect.objectContaining({
+      method: 'POST',
+      body: JSON.stringify({ source: 'return box(w,1,1);', params: { w: 7 } }),
+    }));
+  });
+});
+
 describe('loadStudioScriptSource', () => {
   it('loads source from the lightweight source endpoint instead of mesh', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
@@ -92,6 +131,45 @@ describe('loadStudioScriptSource', () => {
     );
     expect(fetchMock).not.toHaveBeenCalledWith(
       expect.stringContaining('/__kernelcad/mesh'),
+      expect.anything(),
+    );
+  });
+
+  it('resolves hosted curated script links through the marketing gallery manifest', async () => {
+    vi.stubGlobal('window', { location: { hostname: 'app.kernelcad.com' } });
+    const fetchMock = vi.fn(async (url: string) => {
+      if (url === 'https://kernelcad.com/gallery.json') {
+        return {
+          ok: true,
+          json: async () => ({
+            entries: [
+              {
+                slug: 'ratchet-height-adjust-stool',
+                sourceUrl: '/gallery/ratchet-height-adjust-stool/source.kcad.ts',
+                scriptPath: 'examples/gallery/ratchet-stool.kcad.ts',
+              },
+            ],
+          }),
+        };
+      }
+
+      return {
+        ok: true,
+        text: async () => 'export default box(3, 3, 3);',
+      };
+    }) as unknown as typeof fetch;
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(loadStudioScriptSource('examples/gallery/ratchet-stool.kcad.ts'))
+      .resolves.toContain('box(3');
+
+    expect(fetchMock).toHaveBeenCalledWith('https://kernelcad.com/gallery.json');
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://kernelcad.com/gallery/ratchet-height-adjust-stool/source.kcad.ts',
+    );
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      expect.stringContaining('/__kernelcad/source?script=examples%2Fgallery%2Fratchet-stool.kcad.ts'),
       expect.anything(),
     );
   });

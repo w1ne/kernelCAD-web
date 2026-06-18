@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /**
  * FunnelViewer — wraps the existing Viewer inside a self-contained provider
  * stack so anonymous-generation pages can render 3D geometry without the

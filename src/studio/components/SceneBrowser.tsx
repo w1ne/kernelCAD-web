@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import React from 'react';
 import type { HistoryItem } from '../../shared/codeGeneration/codeAnalysis';
 import type { SketchPlaneEntity } from '../../shared/types/plane';
@@ -55,7 +57,7 @@ const SceneBrowser: React.FC<SceneBrowserProps> = ({
     onDelete
 }) => {
     const [constructionOpen, setConstructionOpen] = React.useState(true);
-    const [historyOpen, setHistoryOpen] = React.useState(true);
+    const [featuresOpen, setFeaturesOpen] = React.useState(true);
 
     const [contextMenu, setContextMenu] = React.useState<{ x: number, y: number, item: HistoryItem } | null>(null);
 
@@ -177,17 +179,17 @@ const SceneBrowser: React.FC<SceneBrowserProps> = ({
                 )}
             </div>
 
-            {/* History Folder */}
+            {/* Features Folder — the construction operations (box, fillet, extrude, …) */}
             <div className="bg-[#1a1a1a] border-t border-[#333]">
                 <button
-                    onClick={() => setHistoryOpen(!historyOpen)}
+                    onClick={() => setFeaturesOpen(!featuresOpen)}
                     className="w-full px-3 py-2 flex items-center gap-2 text-gray-400 hover:text-white uppercase tracking-wider font-semibold border-b border-[#333]"
                 >
-                    {historyOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                    {featuresOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                     <Layers size={12} />
-                    History
+                    Features
                 </button>
-                {historyOpen && (
+                {featuresOpen && (
                     <div className="py-1">
                         {items.length === 0 ? (
                             <div className="px-6 py-4 text-gray-500 italic">No operations yet.</div>

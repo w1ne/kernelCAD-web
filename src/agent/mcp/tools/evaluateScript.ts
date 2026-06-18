@@ -1,5 +1,7 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/evaluateScript.ts
-import { evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/evaluate';
+import { dryRunScript, evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/evaluate';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
@@ -8,12 +10,22 @@ import { Scene } from '../../../modeling/validation/scene';
 export interface EvaluateScriptInput {
   file?: string;
   code?: string;
+  /** Fast validation mode: transpile + capture + capture-light checks +
+   *  diagnostics WITHOUT the OCCT lowering pass, DFM gates, or meshing.
+   *  Catches script throws, capture-time API misuse, and assembly
+   *  validity-gate failures; does NOT catch lowering failures (failed
+   *  booleans, oversized fillets) or `dfmSpec` diagnostics. Leaves the
+   *  active MCP session untouched (neither set nor cleared). */
+  dryRun?: boolean;
 }
 
 export interface EvaluateScriptOutput {
   ok: boolean;
   featureCount: number;
   diagnostics: CompilerDiagnostic[];
+  /** Echoed `true` when the run was a dry run (capture-only validation —
+   *  no geometry was lowered and the active session was not touched). */
+  dryRun?: true;
   /**
    * Present ONLY when the evaluated scene is assembly-built
    * (`assembly().part(...)` → `.model()` / `.solvedModel()`). Carries the
@@ -31,11 +43,32 @@ export interface EvaluateScriptOutput {
  * (path on disk) or `{ code }` (inline source). Returns a JSON-serializable
  * envelope agents can reason over.
  *
+ * With `dryRun: true` the script is transpiled + captured but never lowered:
+ * no OCCT booleans, no DFM gates, no meshing. Use it to iterate cheaply on
+ * script validity before paying for a full evaluation. Dry runs do not
+ * produce lowered shapes, so the active MCP session is left untouched —
+ * session-dependent tools keep whatever full evaluation ran last.
+ *
  * No side effects — does not write to disk.
  */
 export async function evaluateScriptTool(
   input: EvaluateScriptInput,
 ): Promise<EvaluateScriptOutput> {
+  if (input.dryRun) {
+    const { evaluation: r, returnValue } = await dryRunScript(input as EvaluateInput);
+    const parts =
+      returnValue instanceof Scene
+        ? { count: returnValue.parts.length, names: returnValue.parts.map(p => p.name) }
+        : undefined;
+    return {
+      ok: r.exitCode === 0,
+      dryRun: true,
+      featureCount: r.featureCount,
+      diagnostics: withNextActions(r.diagnostics),
+      ...(parts !== undefined ? { parts } : {}),
+    };
+  }
+
   const { evaluation: r, model, dfmReport } = await evaluateAndBuildScript(input as EvaluateInput);
   // Session policy: keep/refresh the active session whenever the model
   // BUILD succeeded — even when dfm gate diagnostics made the evaluation

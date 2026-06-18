@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Single source of truth for the kernelCAD agent-facing diagnostic
 // vocabulary. Every entry below corresponds to a distinct recovery action
 // an agent would take. See spec 2026-05-05-diagnostic-vocabulary-milestone-c.
@@ -472,7 +474,7 @@ export const DIAGNOSTIC_REGISTRY = {
   },
   'export.sdf-gazebo.invalid-version': {
     hintTemplate:
-      'SDFormat version attribute must be a recognised SDF spec version. The emitter writes <sdf version="1.12"> by default; do not override.',
+      'SDFormat version attribute must be a recognised SDF spec version. The emitter writes <sdf version="1.10"> by default — the newest spec current simulator LTS releases parse; do not override.',
     nextAction: { kind: 'fix-arg', field: 'version' },
     defaultSeverity: 'error',
     group: 'export',
@@ -485,6 +487,14 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'export',
     description: 'SDFormat structural validation detected a joint referencing an undeclared link.',
+  },
+  'export.sdf-gazebo.pose-unsolved': {
+    hintTemplate:
+      'The mate graph could not be solved to per-link world poses, so every <link> was emitted at the model origin. The simulator will see overlapping links at spawn and joints will snap or explode. Run solve_mates to diagnose the unsolvable mate, fix the connector geometry, then re-export.',
+    nextAction: { kind: 'call-introspection-tool', tool: 'solve_mates' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'SDFormat export fell back to identity link poses because the mate graph did not solve.',
   },
   // NURBS surfaces (2) — W1.3
   'feature.nurbs.degenerate-controls': {
@@ -1394,11 +1404,11 @@ export const DIAGNOSTIC_REGISTRY = {
   // NURBS Slice D (4) — 2D path NURBS authoring (PathBuilder .spline / .nurbsSegment / .hermiteG2).
   'feature.path.spline.degenerate-points': {
     hintTemplate:
-      'path().spline expects at least 2 distinct finite Vec2 waypoints; the curve interpolates through every one. Remove duplicate consecutive points (closer than 1e-9 mm), replace any NaN / Infinity coords with finite values, and ensure the array has length >= 2.',
+      'path().spline expects at least 2 distinct finite Vec2 waypoints, with points[0] at the current pen position (within 1e-6 mm); the curve interpolates through every one. Remove duplicate consecutive points (closer than 1e-9 mm), replace any NaN / Infinity coords with finite values, ensure the array has length >= 2, and make points[0] equal the previous segment endpoint (or add a lineTo bridging the gap).',
     nextAction: { kind: 'fix-arg', field: 'points' },
     defaultSeverity: 'error',
     group: 'feature',
-    description: 'path().spline received fewer than 2 distinct finite waypoints.',
+    description: 'path().spline received fewer than 2 distinct finite waypoints, or points[0] does not start at the current pen position.',
   },
   // V slice Task V4 (2) — path().spline tangent extension.
   'feature.path.spline.tangent-zero-magnitude': {

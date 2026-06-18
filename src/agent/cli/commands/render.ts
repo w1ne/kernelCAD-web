@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/cli/commands/render.ts
 //
 // `kernelcad render <file.kcad.ts>` — multi-view headless renderer.
@@ -145,7 +147,7 @@ function normalizePatternList(values: readonly string[] | undefined): string[] {
  * + Studio runtime use (single source of truth — see spec
  * `docs/specs/2026-06-01-physics-grounded-loop-design.md`).
  */
-async function runRenderMechanismProbe(absScriptPath: string): Promise<{
+export async function runRenderMechanismProbe(absScriptPath: string): Promise<{
   mechanism: 'real' | 'broken' | 'unverified';
   failures: CompilerDiagnostic[];
 }> {
@@ -175,7 +177,7 @@ async function runRenderMechanismProbe(absScriptPath: string): Promise<{
   }
 }
 
-function isRenderStrictMode(): boolean {
+export function isRenderStrictMode(): boolean {
   const v = process.env.KERNELCAD_RENDER_STRICT;
   return v !== undefined && v !== '' && v !== '0' && v.toLowerCase() !== 'false';
 }
@@ -209,7 +211,7 @@ function reportBrokenMechanismToStderr(failures: readonly CompilerDiagnostic[]):
  * fires per pose-sample so 3+ entries with the same code would
  * dominate the box).
  */
-async function watermarkBrokenMechanism(
+export async function watermarkBrokenMechanism(
   buf: Buffer,
   failures: readonly CompilerDiagnostic[],
 ): Promise<Buffer> {

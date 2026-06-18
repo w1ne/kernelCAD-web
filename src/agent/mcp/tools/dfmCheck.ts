@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/dfmCheck.ts
 //
 // MCP `dfm_check` tool — W3 Task 8. Runs the print-readiness gates declared

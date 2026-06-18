@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/tasks/export-3mf-multipart/harness.ts
 //
 // Round-trip gate for the Slice A 3MF writer: run the candidate script

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it, vi } from 'vitest';
 import { createSessionPool } from './sessionPool';
 import type { BuiltModel } from '../modeling/buildModel';

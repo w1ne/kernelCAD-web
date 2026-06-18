@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Reachable eval — 6-DOF spherical-wrist arm. The analytical IK path solves
 // a reachable target; the numeric DLS path on an out-of-reach 5000 mm target
 // produces K3 (kinematic.unreachable). Both branches are asserted in-script

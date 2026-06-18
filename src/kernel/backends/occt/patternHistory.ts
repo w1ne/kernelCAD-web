@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/backends/occt/patternHistory.ts
 //
 // W2.1 — virtual pattern-instance id minter. Rewrites historyMap lineage

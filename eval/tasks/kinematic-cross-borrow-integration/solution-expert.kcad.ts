@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Cross-borrow integration eval — composes three slices in one .kcad.ts:
 //
 //   1. 3D parametric curve API: nurbsCurve(controlPoints, { degree }) +

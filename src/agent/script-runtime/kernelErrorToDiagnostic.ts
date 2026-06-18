@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/script-runtime/kernelErrorToDiagnostic.ts
 //
 // Converts a script-runtime exception into a `CompilerDiagnostic`. KernelError

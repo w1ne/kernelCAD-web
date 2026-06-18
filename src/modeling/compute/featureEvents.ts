@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/compute/featureEvents.ts
 import type { FeatureId, FeatureKind } from '../../shared/intent/types';
 import type { ShapeBackend } from '../../kernel/backends/backend';

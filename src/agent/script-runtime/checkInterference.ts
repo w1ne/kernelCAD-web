@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/script-runtime/checkInterference.ts
 //
 // Script-aware wrapper around the pure detection routine. Runs a script

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/vision/orchestrator.test.ts
 //
 // End-to-end tests for the `traceFromImage()` orchestrator. Uses fixture PNGs

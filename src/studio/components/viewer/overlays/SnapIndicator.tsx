@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { SnapResult } from "../../../features-ui/interaction/SnapManager";
 import { CAD_COLORS_HEX } from "../../../../shared/constants/colors";
 

@@ -1,5 +1,8 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as replicad from 'replicad';
 import opencascade from 'replicad-opencascadejs';
+import { normalizeUserScript } from '../shared/runtime/normalizeUserScript';
 
 let isInitialized = false;
 
@@ -96,6 +99,10 @@ export class HeadlessKernel implements HeadlessContext {
         // Note: This needs better logic for partial updates in real agent scenarios
         this.code = code;
 
+        // Agent-authored scripts are often ES modules (`export default <model>`);
+        // rewrite module-isms into function-body statements before sandboxing.
+        const executable = normalizeUserScript(code);
+
         try {
             // Function constructor to sandbox basic execution
             // Note: This is NOT secure sandbox, but sufficient for internal agent
@@ -104,7 +111,7 @@ export class HeadlessKernel implements HeadlessContext {
                 'console',
                 `"use strict";
                 try {
-                    ${code}
+                    ${executable}
                 } catch (e) {
                     throw e;
                 }

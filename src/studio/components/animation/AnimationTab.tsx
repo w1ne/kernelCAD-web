@@ -1,8 +1,12 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { JSX } from 'react';
 import { Play, Pause } from 'lucide-react';
 import { useRecomputeResult } from '../../hooks/useRecomputeResult';
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { selectAnimationMetadata } from '../../logic/animationRecord';
+import { shouldUseHostedMesh } from '../../scriptSource';
+import { fetchGalleryAnimBake } from './fetchGalleryAnimBake';
 import {
     useAnimationPlayback,
     PLAYBACK_MODES,
@@ -38,16 +42,32 @@ export function AnimationTab(): JSX.Element {
         clearGeometryTransformOverrides,
         setViewportDriverLock,
     } = useRecomputeResult();
-    const { sessionToken, kernelEpoch } = useWorkbench();
+    const { sessionToken, kernelEpoch, code } = useWorkbench();
     const metadata = selectAnimationMetadata(features);
+
+    // Gallery static-bake mode: on the hosted app with no live session, an
+    // animated curated model plays from its build-time precomputed timeline
+    // (`/gallery/_anim/<sha>.json`) — anonymous visitors can't open a session,
+    // so this is how the gallery mechanism moves. Active only when hosted,
+    // session-less, animated, and we have the source to key the static file.
+    const galleryStatic = Boolean(!sessionToken && metadata && code && shouldUseHostedMesh());
 
     const playback = useAnimationPlayback({
         metadata,
         sessionToken,
-        // updateParam is only the pause-sync edit now; gate on the session too.
+        // Gallery static bake source: the source code, which fetchGalleryAnimBake
+        // hashes to locate the static `_anim/<sha>.json`.
+        staticBakeKey: galleryStatic ? code : undefined,
+        bakeFetcher: galleryStatic ? fetchGalleryAnimBake : undefined,
+        // updateParam is the pause-sync edit; needs a live session (no kernel to
+        // sync in static mode), so session-only.
         updateParam: sessionToken ? updateParam : undefined,
-        applyPartTransform: sessionToken ? setGeometryTransformOverride : undefined,
+        // Apply baked transforms to the viewport in BOTH live-session and
+        // gallery-static mode (the gallery geometry is rendered and overridable).
+        applyPartTransform: (sessionToken || galleryStatic) ? setGeometryTransformOverride : undefined,
         clearPartTransforms: clearGeometryTransformOverrides,
+        // The viewport driver-lock guards against SSE relower races — only the
+        // live session has those; static mode needs no lock.
         setViewportDriverLock: sessionToken ? setViewportDriverLock : undefined,
         // Any kernel relower (Params-tab edit, rebuild) bumps this; folded into
         // the bake cache key so a stale bake never survives a kernel mutation.
@@ -67,7 +87,7 @@ export function AnimationTab(): JSX.Element {
 
     const {
         durationMs, fps, name, tMs, isPlaying, mode, speed, trackValues, canDrive,
-        bakeState, bakeFrames, bakeError, collisions,
+        bakeState, bakeError, collisions,
     } = playback;
 
     return (
@@ -95,24 +115,16 @@ export function AnimationTab(): JSX.Element {
                     className="mx-3 mb-2 px-2 py-1.5 text-[10px] leading-tight text-sky-200/90 bg-sky-950/30 border border-sky-900/60 rounded"
                     data-testid="animation-bake-status"
                 >
-                    Baking timeline… solving every frame once so playback runs
-                    smooth.
+                    Preparing animation…
                 </div>
             )}
-            {canDrive && bakeState === 'ready' && (
-                <div
-                    className="mx-3 mb-2 px-2 py-1 text-[10px] leading-tight text-gray-500"
-                    data-testid="animation-bake-status"
-                >
-                    Baked {bakeFrames} frames · smooth client-side playback.
-                </div>
-            )}
+            {/* 'ready' shows no status — the mechanism just plays. */}
             {canDrive && bakeState === 'error' && (
                 <div
                     className="mx-3 mb-2 px-2 py-1.5 text-[10px] leading-tight text-red-300/90 bg-red-950/30 border border-red-900/60 rounded"
                     data-testid="animation-bake-status"
                 >
-                    Bake failed: {bakeError ?? 'unknown error'}. Fix the script and retry.
+                    Animation unavailable: {bakeError ?? 'unknown error'}.
                 </div>
             )}
 
@@ -200,12 +212,6 @@ export function AnimationTab(): JSX.Element {
                 </div>
             )}
 
-            <p className="px-3 py-2 text-[10px] leading-tight text-gray-500 border-t border-[#1f1f1f]">
-                Playback is smooth — the timeline is baked once (every frame
-                solved server-side into per-part transforms), then interpolated
-                and played client-side at full rate. On pause the kernel pose is
-                synced to the displayed frame.
-            </p>
         </div>
     );
 }

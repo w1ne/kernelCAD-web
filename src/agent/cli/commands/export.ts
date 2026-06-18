@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { Command } from 'commander';
 import { writeFile, mkdir } from 'node:fs/promises';
 import { resolve, dirname, join } from 'node:path';
@@ -35,6 +37,8 @@ export interface ExportCliResult {
   exitCode: number;
   bytesWritten: number;
   diagnostics: CompilerDiagnostic[];
+  /** Companion mesh files written next to the output (URDF / SDF exports). */
+  meshFiles?: string[];
 }
 
 export async function exportScript(input: ExportInput): Promise<ExportCliResult> {
@@ -70,8 +74,18 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
   // still carries the mesh bytes, so the file is written for inspection
   // BEFORE the gate fails the command — same contract as part-mode.
   const outPath = resolve(input.out);
+  const meshFiles: string[] = [];
   try {
     await writeFile(outPath, result.bytes);
+    // Robot-description exports (URDF / SDF) reference per-link mesh files
+    // by relative path — write them next to the output file so the
+    // document is consumable as-is.
+    for (const m of result.meshes ?? []) {
+      const meshPath = join(dirname(outPath), m.relPath);
+      await mkdir(dirname(meshPath), { recursive: true });
+      await writeFile(meshPath, m.bytes);
+      meshFiles.push(meshPath);
+    }
   } catch (e) {
     return {
       exitCode: 1, bytesWritten: 0,
@@ -82,6 +96,7 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
     exitCode: fatal ? 1 : 0,
     bytesWritten: result.bytes.length,
     diagnostics: withNextActions(result.diagnostics),
+    ...(meshFiles.length > 0 ? { meshFiles } : {}),
   };
 }
 
@@ -191,13 +206,13 @@ function collectParts(value: string, prev: string[]): string[] {
 }
 
 const SUPPORTED_FORMATS = new Set<ExportFormat>([
-  'stl', 'step', 'dxf', '3mf', 'glb', 'urdf', 'srdf', 'sdf-gazebo',
+  'stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'urdf', 'srdf', 'sdf-gazebo',
 ]);
 
 export function exportCommand(): Command {
   const cmd = new Command('export')
-    .description('Export a .kcad.ts script to STL, STEP, DXF, 3MF, or GLB')
-    .argument('<format>', 'stl | step | dxf | 3mf | glb | urdf | srdf | sdf-gazebo')
+    .description('Export a .kcad.ts script to STL, STEP, DXF, 3MF, GLB, or an SVG engineering-drawing sheet')
+    .argument('<format>', 'stl | step | dxf | 3mf | glb | svg-drawing | urdf | srdf | sdf-gazebo')
     .argument('<file>', 'path to .kcad.ts script')
     .requiredOption('-o, --out <path>', 'output file path (output directory for --parts all and repeated --part)')
     .option('--part <name>', 'export a single named assembly part (STL only); repeat for a subset (-o is then a directory)', collectParts, [] as string[])
@@ -252,11 +267,13 @@ export function exportCommand(): Command {
           ok: r.exitCode === 0,
           bytesWritten: r.bytesWritten,
           out: opts.out,
+          ...(r.meshFiles !== undefined ? { meshFiles: r.meshFiles } : {}),
           diagnostics: r.diagnostics,
         }, null, 2));
       } else {
         if (r.diagnostics.length > 0) console.log(formatHuman(r.diagnostics));
         if (r.exitCode === 0) console.log(`Wrote ${r.bytesWritten} bytes to ${opts.out}`);
+        for (const m of r.meshFiles ?? []) console.log(`wrote mesh ${m}`);
       }
       process.exitCode = r.exitCode;
     });

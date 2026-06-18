@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { Diagnostic, HarnessResult, Score, TranscriptEvent } from './types';
 
 const FENCED_LANGS = ['typescript', 'ts', 'kcad', ''];
@@ -93,6 +95,7 @@ export function computeScore(
   };
   if (meta.firstFailureCode !== undefined) out.firstFailureCode = meta.firstFailureCode;
   out.funnel = buildFunnel(result.gates, result.scored);
+  if (result.metrics !== undefined) out.metrics = result.metrics;
   return out;
 }
 

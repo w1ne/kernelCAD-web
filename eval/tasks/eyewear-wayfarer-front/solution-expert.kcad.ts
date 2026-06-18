@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Eyewear front face — NURBS Slice C rewrite (Task 10).
 //
 // Hero capability: the front face is a single `surfaceFromBoundary` Coons

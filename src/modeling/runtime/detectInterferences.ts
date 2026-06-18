@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/runtime/detectInterferences.ts
 //
 // Pure pairwise BREP interference detection over an already-resolved

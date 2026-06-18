@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CommandManager } from './CommandManager';
 import { Command, type CommandContext } from './Command';

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /**
  * Per-shape history machinery. Each OcctBackend carries a `HistoryMap` that
  * tracks every face's lineage back to its originating primitive and canonical name.

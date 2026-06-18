@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/curveAnalyticsProxy.test.ts
 //
 // Tests for the Curve3D.analytics namespace (closestPoint / closestParam /

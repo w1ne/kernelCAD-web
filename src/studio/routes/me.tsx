@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { useSession } from '../../funnel/hooks/useSession';
@@ -12,6 +14,34 @@ import {
 import { PlanCard } from '../../funnel/components/PlanCard';
 
 type CheckoutStatus = 'success' | 'cancel' | undefined;
+
+/** Copies the public /p/<slug> link for a project card to the clipboard with
+ *  transient "Copied" feedback. Stops propagation so it doesn't trigger the
+ *  surrounding card link. */
+function CopyLinkButton({ slug }: { slug: string }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof window === 'undefined') return;
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/p/${slug}`);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard unavailable — no-op.
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      className="font-mono text-[11px] text-ink-soft hover:text-ink underline decoration-dotted"
+    >
+      {copied ? 'Copied' : 'Copy link'}
+    </button>
+  );
+}
 
 export const Route = createFileRoute('/me')({
   component: MePage,
@@ -185,6 +215,9 @@ function MePage() {
                     {p.privacy} · {new Date(p.updated_at).toLocaleDateString()}
                   </p>
                 </a>
+                <div className="mt-3">
+                  <CopyLinkButton slug={p.slug} />
+                </div>
               </li>
             ))}
           </ul>

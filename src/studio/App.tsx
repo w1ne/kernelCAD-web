@@ -1,11 +1,13 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { WorkbenchProvider, useWorkbench } from './context/WorkbenchContext';
 import { StudioShell } from './StudioShell';
 import { shellStore } from './store/shellStore';
 import { useShellStore } from './store/useShellStore';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
 import { parseCode } from '../shared/codeGeneration/ast';
-import { StudioChromeProvider } from './context/StudioChromeContext';
+import { StudioChromeProvider, useStudioChrome } from './context/StudioChromeContext';
 import { useStudioConfig } from './config/StudioConfigContext';
 
 const LazyDevLab = lazy(() =>
@@ -23,7 +25,7 @@ function isCodeParsable(code: string): boolean {
   }
 }
 
-import { useProject } from './context/ProjectContext';
+import { useProject, isEphemeralProjectId } from './context/ProjectContext';
 import { loadGalleryScriptSource, loadStudioScriptSource } from './scriptSource';
 import { registerLiveScriptTarget, unregisterLiveScriptTarget } from './liveScriptBridge';
 
@@ -43,7 +45,8 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     setCode, setViewMode, setViewMode3D
   } = useWorkbench();
 
-  const { activeProject, saveActiveProject } = useProject();
+  const { activeProject, activeProjectId, saveActiveProject } = useProject();
+  const { viewerMode } = useStudioChrome();
   const { agentRailOpen } = useShellStore();
   const [isInitialized, setIsInitialized] = useState(false);
   // setLoadedSourceRouteKey is still called for its side effects (gating the
@@ -106,6 +109,15 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
   useEffect(() => {
     if (scriptParam || galleryParam) return;
     if (isDevLab || !activeProject) return;
+    // Viewer mode: code is driven externally (live agent updates via the
+    // `liveCode` prop); the ephemeral project's mount-time snapshot must not
+    // win the diff below and clobber updates back to the initial code.
+    if (viewerMode) return;
+    // Ephemeral funnel project (/g/$genId): seed the workbench once on the
+    // first run, then step aside. After initialization, external/programmatic
+    // setCode calls (e.g. live agent updates) must not be overwritten by the
+    // frozen mount-time initialCode snapshot stored in the ephemeral project.
+    if (isInitialized && isEphemeralProjectId(activeProjectId)) return;
 
     // Only sync on initial load or project switch
     if (!isInitialized || activeProject.code !== code) {
@@ -118,12 +130,13 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsInitialized(true);
     }
-  }, [activeProject, isDevLab, setCode, setViewMode, setViewMode3D, isInitialized, code, viewMode3D, scriptParam, galleryParam]);
+  }, [activeProject, activeProjectId, isDevLab, setCode, setViewMode, setViewMode3D, isInitialized, code, viewMode3D, scriptParam, galleryParam, viewerMode]);
 
   // Auto-save: workbench state -> active project
   useEffect(() => {
     if (scriptParam || galleryParam) return;
     if (isDevLab || !isInitialized || !activeProject) return;
+    if (viewerMode) return; // read-only review page — never persist
     if (!isCodeParsable(code)) return;
 
     const timeoutId = setTimeout(() => {
@@ -140,7 +153,7 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     }, 1500); // 1.5s debounce for project save
 
     return () => clearTimeout(timeoutId);
-  }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, agentRailOpen, isDevLab, isInitialized, activeProject, saveActiveProject, scriptParam, galleryParam]);
+  }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, agentRailOpen, isDevLab, isInitialized, activeProject, saveActiveProject, scriptParam, galleryParam, viewerMode]);
 
   const activeSourceLoadError = sourceRouteKey && sourceLoadError?.routeKey === sourceRouteKey
     ? sourceLoadError.message
@@ -170,6 +183,21 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
   );
 }
 
+/** Applies externally-driven code updates into the workbench. Rendered inside
+ * WorkbenchProvider so it has access to setCode. Skips duplicate values to
+ * avoid re-triggering the geometry pipeline on unchanged code. */
+function LiveCodeApplier({ liveCode }: { liveCode?: string }) {
+  const { setCode } = useWorkbench();
+  const lastApplied = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (liveCode !== undefined && liveCode !== lastApplied.current) {
+      lastApplied.current = liveCode;
+      setCode(liveCode);
+    }
+  }, [liveCode, setCode]);
+  return null;
+}
+
 interface AppProps {
   /** Seed the workbench with this code on first mount. Used by the funnel
    * routes (/g/$genId, /p/$slug) to open generated/saved artifacts inside
@@ -186,6 +214,13 @@ interface AppProps {
   /** Funnel-route chrome injected into the Studio Header (right cluster).
    * Use for Save / Sign-in / per-project actions. */
   headerRight?: ReactNode;
+  /** Read-only live review mode for funnel project pages (/p/<slug>): code
+   * editor read-only, built-in agent rail hidden — the model is driven by
+   * an external agent, not authored here. */
+  viewerMode?: boolean;
+  /** Externally-driven code updates; each new value replaces the workbench
+   * code through the normal setCode path. */
+  liveCode?: string;
 }
 
 function AppProviders({
@@ -194,6 +229,8 @@ function AppProviders({
   isDevLab,
   headerLeft,
   headerRight,
+  viewerMode,
+  liveCode,
 }: AppProps & { isDevLab: boolean }) {
   // Embed mode: pull controlled props from StudioConfig context. Standalone
   // app never wraps StudioConfigProvider, so useStudioConfig() returns {} and
@@ -214,11 +251,13 @@ function AppProviders({
       controlledCode={controlledCode}
       onCodeChange={onCodeChange}
     >
-      <StudioChromeProvider value={{ headerLeft: effectiveHeaderLeft, headerRight: effectiveHeaderRight }}>
+      <StudioChromeProvider value={{ headerLeft: effectiveHeaderLeft, headerRight: effectiveHeaderRight, viewerMode }}>
+
         <ErrorBoundary>
           <AppContent isDevLab={isDevLab} />
         </ErrorBoundary>
       </StudioChromeProvider>
+      <LiveCodeApplier liveCode={liveCode} />
     </WorkbenchProvider>
   );
 }
@@ -261,6 +300,8 @@ export function StudioApp({
   code,
   headerLeft,
   headerRight,
+  viewerMode,
+  liveCode,
 }: AppProps = {}) {
   const isDevLab = typeof window !== 'undefined' && window.location.pathname.startsWith('/dev-lab');
 
@@ -275,6 +316,8 @@ export function StudioApp({
       isDevLab={isDevLab}
       headerLeft={headerLeft}
       headerRight={headerRight}
+      viewerMode={viewerMode}
+      liveCode={liveCode}
     />
   );
 }

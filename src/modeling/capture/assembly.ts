@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { lookupSourceColor } from '../../kernel/backends/occt/lookupSourceColor';
 import { assertTopoRefSafeName } from '../../kernel/naming/uniquenessValidator';
 import { KernelError } from '../../shared/intent/kernelError';
@@ -128,6 +130,10 @@ export interface AssemblyPartRef {
    *  `assembly.wrap-geom.duplicate-name` if the name is already used on
    *  this part, or `feature.invalid-args` on a bad axis / radius. */
   wrapGeom(name: string, opts: WrapGeomOptions): AssemblyPartRef;
+  /** Add another part to the SAME assembly and return its ref — enables fluent
+   *  chaining: `assembly.part(a, ...).part(b, ...).part(c, ...)`. Identical to
+   *  calling `assembly.part(...)` again on the assembly. */
+  part(name: string, shape: Shape, opts?: AssemblyPartOpts): AssemblyPartRef;
 }
 
 function validateLimitRange(
@@ -505,7 +511,12 @@ export class Assembly {
     // so `makeScene` sees additions made after `part(...)` returns.
     const mateConnectors: Connector[] = [];
     const wrapGeoms: WrapGeomRecord[] = [];
-    const part = makePartRef(this.name, record.id, name, at, connectors, mateConnectors, wrapGeoms);
+    const part = makePartRef(
+      this.name, record.id, name, at, connectors, mateConnectors, wrapGeoms,
+      // Fluent chaining: `arm.part(a).part(b)` — the ref's `.part(...)` adds
+      // another part to this same assembly (delegates straight to this method).
+      (chainName, chainShape, chainOpts) => this.part(chainName, chainShape, chainOpts),
+    );
     const stored: AssemblyPartStored = {
       ...part,
       originalShape: shape,
@@ -2588,6 +2599,7 @@ function makePartRef(
   connectors: Record<string, AssemblyConnectorFrameStored>,
   mateConnectors: Connector[],
   wrapGeoms: WrapGeomRecord[],
+  addPart: (name: string, shape: Shape, opts?: AssemblyPartOpts) => AssemblyPartRef,
 ): AssemblyPartRef {
   // Overload: `connector(name)` returns the v0.5 kinematic AssemblyConnectorRef;
   // `connector(name, opts)` registers a v0.6 mate-style Connector and returns
@@ -2716,6 +2728,7 @@ function makePartRef(
     wrapGeoms,
     connector: connector as AssemblyPartRef['connector'],
     wrapGeom,
+    part: addPart,
   };
   return ref;
 }

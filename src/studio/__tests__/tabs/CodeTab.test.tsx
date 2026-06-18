@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /** @vitest-environment jsdom */
 import React from 'react';
 import { cleanup, render, screen } from '@testing-library/react';

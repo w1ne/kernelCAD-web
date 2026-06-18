@@ -1,8 +1,11 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { shellStore } from '../../../store/shellStore';
 import { rendererSnapshot } from '../rendererSnapshot';
 import { getEmbedConfig } from '../../../config/embedConfigRef';
+import { resolveReviewPaintTargets } from './reviewPaintTargets';
 
 /**
  * Inpainting-style review overlay. When `markingMode` is on, a transparent
@@ -18,11 +21,26 @@ import { getEmbedConfig } from '../../../config/embedConfigRef';
  *
  * Save: on unmount (toolbar toggle off, Esc, or markingMode→false from any
  * other path) the overlay fire-and-forget POSTs the canvas + a viewport
- * screenshot to `/__kernelcad/review-paint`. `keepalive: true` lets the
- * fetch survive the component unmount.
+ * screenshot. Targets come from `resolveReviewPaintTargets`: hosted /p pages
+ * go to the backend (`/api/v1/review-paint`, packet keyed by project slug),
+ * local dev goes to the :5174 save server, same-origin as fallback either way.
  */
 
 const FIXED_BRUSH_PX = 24;
+
+/** Max stored note length — mirrors the backend NOTE_MAX_LEN cap so the input
+ *  can't paste in more than the server will keep. */
+const NOTE_MAX_LEN = 280;
+
+/** Preset intent tags. A blob says WHERE; these say WHAT is wrong. Kept short
+ *  and ordered roughly by how often they come up reviewing CAD. */
+const PRESET_TAGS = [
+  'too thick',
+  'too thin',
+  'missing',
+  'wrong angle/position',
+  'wrong shape',
+] as const;
 
 export function MarkingOverlay({ visible }: { visible: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -33,6 +51,21 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null);
   const drawingRef = useRef(false);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+
+  // Intent: a one-line note + preset tags carried with the stroke so the agent
+  // reads WHAT is wrong, not just where. State drives the UI; refs let the
+  // unmount-time / debounced persistMark read the latest values without being
+  // re-created on every keystroke.
+  const [note, setNote] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
+  const noteRef = useRef('');
+  const tagsRef = useRef<string[]>([]);
+  noteRef.current = note;
+  tagsRef.current = tags;
+
+  function toggleTag(tag: string) {
+    setTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
+  }
 
   // Escape closes marking mode — Photoshop / Figma muscle memory.
   useEffect(() => {
@@ -291,6 +324,14 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
       console.log('[marking-overlay] nothing painted — skipping save');
       return;
     }
+    // The mask canvas is the source of truth for the stroke. If its ref is
+    // already detached (e.g. React nulled it during unmount), there's nothing
+    // to read — bail rather than throw. The pointer-up debounce path normally
+    // persists while still mounted, so this only guards the unmount race.
+    if (!canvasRef.current) {
+      console.warn('[marking-overlay] canvas detached before save — skipping');
+      return;
+    }
     let screenshot: string | null;
     try {
       screenshot = screenshotAsPng();
@@ -305,14 +346,32 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
     const { parts: struckParts, debug: raycastDebug } = struckPartsFromMask();
     console.log(`[marking-overlay] struck parts:`, struckParts, 'debug:', raycastDebug);
     const scriptParam = new URLSearchParams(window.location.search).get('script');
+    // Same env resolution order as apiBase.ts, but NOT session-gated:
+    // anonymous brushing on hosted /p pages is the point, so the backend
+    // target comes straight from the build env — no Supabase session needed.
+    const apiBase =
+      import.meta.env.VITE_KERNELCAD_API_BASE ??
+      import.meta.env.VITE_API_BASE_URL ??
+      undefined;
+    const { slug, urls } = resolveReviewPaintTargets(
+      window.location.pathname,
+      apiBase,
+    );
     const meta = {
-      note: '',
+      // One-line note + preset tags carried with the stroke (WHAT is wrong, not
+      // just where). Both optional — backend caps/sanitises and stays
+      // backward-compatible when omitted.
+      note: noteRef.current.trim(),
+      tags: tagsRef.current,
       scriptPath: scriptParam,
       ts: new Date().toISOString(),
       ua: navigator.userAgent,
       screenshotMissing: screenshot === null,
       struckParts,
       raycastDebug,
+      // On hosted /p pages the backend keys the packet by project slug so
+      // `review_paint_peek_latest {slug}` can fetch it without auth.
+      ...(slug ? { projectSlug: slug } : {}),
     };
 
     // Embed-mode short-circuit: when a host (e.g. proto.cat) supplies
@@ -331,17 +390,17 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
       }
       return;
     }
-    // POST to the standalone save server (port 5174, auto-spawned by vite as
-    // a worker thread) so saves keep working when vite's main thread
-    // saturates on OCCT/replicad transforms.
+    // Local dev: POST to the standalone save server (port 5174, auto-spawned
+    // by vite as a worker thread) so saves keep working when vite's main
+    // thread saturates on OCCT/replicad transforms. Hosted /p pages: POST to
+    // the backend first. Either way, same-origin is the fallback.
     //
     // We deliberately do NOT set `keepalive: true`: Chrome silently rejects
     // keepalive fetches with bodies over 64 KB, and a viewport screenshot +
     // mask base64-encoded blows through that cap easily. Without keepalive,
     // the fetch fires as a normal request — the component is unmounting but
     // the request is in flight on the global queue and completes regardless.
-    const saveUrl =
-      `${window.location.protocol}//${window.location.hostname}:5174/__kernelcad/review-paint`;
+    const [saveUrl, fallbackUrl] = urls;
     // mask is always present; screenshot may be empty string if renderer canvas
     // was missing — server stores both keys regardless.
     const body = JSON.stringify({ screenshot: screenshot ?? '', mask, meta });
@@ -356,13 +415,13 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
         console.log(`[marking-overlay] mark saved (${saveUrl})`);
       })
       .catch((err) => {
-        console.warn('[marking-overlay] save to :5174 failed, trying same-origin fallback:', err);
-        fetch('/__kernelcad/review-paint', {
+        console.warn(`[marking-overlay] save to ${saveUrl} failed, trying fallback:`, err);
+        fetch(fallbackUrl, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body,
         }).catch((err2) => {
-          console.warn('[marking-overlay] same-origin fallback also failed:', err2);
+          console.warn('[marking-overlay] fallback save also failed:', err2);
         });
       });
   }
@@ -422,6 +481,82 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
           }}
         />
       )}
+
+      {/* Intent panel: a one-line note + preset tags so the stroke carries
+          WHAT is wrong. Unobtrusive (bottom-left), optional, and captures its
+          own pointer events so interacting with it never paints on the canvas
+          underneath. */}
+      <div
+        data-testid="marking-intent-panel"
+        // Stop pointer/wheel events from reaching the painting canvas below.
+        onPointerDown={(e) => e.stopPropagation()}
+        onPointerMove={(e) => e.stopPropagation()}
+        onPointerUp={(e) => e.stopPropagation()}
+        style={{
+          position: 'absolute',
+          left: 12,
+          bottom: 12,
+          maxWidth: 360,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 6,
+          padding: '8px 10px',
+          borderRadius: 8,
+          background: 'rgba(20, 20, 24, 0.82)',
+          border: '1px solid rgba(255,255,255,0.12)',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.4)',
+          cursor: 'default',
+          pointerEvents: 'auto',
+        }}
+      >
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+          {PRESET_TAGS.map((tag) => {
+            const active = tags.includes(tag);
+            return (
+              <button
+                key={tag}
+                type="button"
+                data-testid={`marking-tag-${tag}`}
+                aria-pressed={active}
+                onClick={() => toggleTag(tag)}
+                style={{
+                  fontSize: 11,
+                  lineHeight: 1.2,
+                  padding: '3px 8px',
+                  borderRadius: 999,
+                  cursor: 'pointer',
+                  border: active
+                    ? '1px solid rgba(239, 68, 68, 0.9)'
+                    : '1px solid rgba(255,255,255,0.18)',
+                  background: active ? 'rgba(239, 68, 68, 0.25)' : 'rgba(255,255,255,0.06)',
+                  color: active ? '#fecaca' : 'rgba(255,255,255,0.82)',
+                }}
+              >
+                {tag}
+              </button>
+            );
+          })}
+        </div>
+        <input
+          type="text"
+          data-testid="marking-note-input"
+          value={note}
+          maxLength={NOTE_MAX_LEN}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="Add a note: what's wrong? (optional)"
+          style={{
+            width: '100%',
+            boxSizing: 'border-box',
+            fontSize: 12,
+            padding: '5px 8px',
+            borderRadius: 6,
+            border: '1px solid rgba(255,255,255,0.18)',
+            background: 'rgba(255,255,255,0.06)',
+            color: '#fff',
+            outline: 'none',
+          }}
+        />
+      </div>
     </div>
   );
 }

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Gate 1 demonstration — fastened mate between two parts whose mounting
 // holes have mismatching diameters (Ø5 on side A, Ø6 on side B). The
 // expert calls solvedModel under 'warn' mode so the diagnostic appears

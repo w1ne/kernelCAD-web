@@ -5,7 +5,7 @@ description: Mechanical patterns — linear, circular, grid. Use when replicatin
 
 # kernelCAD — mechanical patterns
 
-`Shape.patternLinear` / `.patternCircular` / `.patternGrid` produce a single `FeatureRecord` per call — one editable unit, one row in `list_features`, one undo step. The pattern composes the source feature into N instances; instance 0 is the source position.
+`Shape.patternLinear` / `.patternCircular` / `.patternGrid` produce a single `FeatureRecord` per call — one editable unit, one row in `inspect({ of: 'features' })`, one undo step. The pattern composes the source feature into N instances; instance 0 is the source position.
 
 ```ts
 // Linear: 5 fins evenly spaced 10 mm along +X
@@ -65,7 +65,7 @@ To address all instances together, use the source feature's **name selector** �
 
 ## Pattern diagnostic codes
 
-- `feature.pattern.source-not-found` (error) — the pattern source feature was not found. Verify the variable receiving `.patternLinear` / `.patternCircular` / `.patternGrid` is bound from an earlier feature, that the source feature is not suppressed, and that the source FeatureId matches what `list_features` reports.
+- `feature.pattern.source-not-found` (error) — the pattern source feature was not found. Verify the variable receiving `.patternLinear` / `.patternCircular` / `.patternGrid` is bound from an earlier feature, that the source feature is not suppressed, and that the source FeatureId matches what `inspect({ of: 'features' })` reports.
 - `feature.pattern.count-out-of-range` (error) — pattern count must be an integer >= 2. For grid patterns, both `x.count` and `y.count` must be >= 2. If count is a Param, set `{ min: 2 }` on the Param declaration so updates can't lower it below the valid range.
 
 ## Verification gates
@@ -79,7 +79,7 @@ After authoring a pattern, run before reporting done:
 | G-direction-spacing-finite | `direction` is a finite Vec3 (not zero-length); `spacing` is a non-zero finite number |
 | G-source-bound | The variable receiving `.patternLinear` / `.patternCircular` / `.patternGrid` is bound from an earlier feature in the same chain; source is not suppressed |
 | G-no-overlap | `kernelcad interference` reports zero overlaps between patterned instances; if patterning a subtractive feature, every instance still subtracts the expected void |
-| G-instance-ref-resolves | If downstream features reference a specific instance (`<sourceId>_pattern_<i>` or `'<name>.<slot>'`), `list_features` shows the resolved ref before exporting |
+| G-instance-ref-resolves | If downstream features reference a specific instance (`<sourceId>_pattern_<i>` or `'<name>.<slot>'`), `inspect({ of: 'features' })` shows the resolved ref before exporting |
 
 ## Related skills
 

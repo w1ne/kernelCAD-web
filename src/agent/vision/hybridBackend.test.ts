@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/vision/hybridBackend.test.ts
 //
 // Hybrid-backend unit tests. We stub BOTH the opencv silhouette extractor and

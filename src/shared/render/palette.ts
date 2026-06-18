@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/render/palette.ts
 //
 // Role-based color tokens for kernelCAD assemblies. Tokens carry semantic

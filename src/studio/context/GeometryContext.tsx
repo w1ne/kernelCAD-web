@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createContext, useCallback, useContext, useMemo, useState, useEffect, useRef, type ReactNode } from 'react';
 import { GeometryEngine, type GeometryResult, type SketchGeometry } from '../../shared/worker/geometryEngine';
 import { remapSketchNames } from '../../shared/codeGeneration/sketchNaming';
@@ -5,7 +7,7 @@ import { parseCode } from '../../shared/codeGeneration/ast';
 import { rehydrateFromBridge, type FeatureMeshSerialized } from '../../modeling/capture/featureMeshSerialize';
 import type { SerializedParamEntry, SerializedParamTable } from '../../shared/runtime/paramTable';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
-import { shouldUseHostedMesh, meshSourceHosted, devMeshAvailable, meshSourceDev, needsFullKernel, type BackendMeshPayload } from '../scriptSource';
+import { shouldUseHostedMesh, meshSourceHosted, devMeshAvailable, meshSourceDev, needsFullKernel, type BackendMeshPayload, type ParamOverrides } from '../scriptSource';
 import { apiCall, rewritePath, bearerToken, buildEventsUrl } from '../api/apiBase';
 
 export type ExecutionStatus = 'success' | 'error' | 'stale';
@@ -73,6 +75,37 @@ export interface ScriptReviewSummary {
         message?: string;
         hint?: string;
     }>;
+}
+
+/**
+ * Detect a *silent* build failure in an otherwise-200 mesh response.
+ *
+ * The kernel can return a successful payload that renders nothing: an assembly
+ * whose parts all failed to mesh (`meshFeaturesPerFeature` skips them), a
+ * boolean that subtracted everything, or a feature that compiled to an empty
+ * solid. Left alone the viewport just goes blank under a green "Ready / 0
+ * bodies" — the swallowed-error symptom reported for app.kernelcad.com/p/43PSZn6U.
+ *
+ * Returns a message to surface via `error`, or null when the empty result is
+ * legitimate (an empty or sketch-only script renders no solids by design and
+ * must NOT be flagged). When the kernel attached its own error diagnostic
+ * (the hosted server includes `review`), that message is preferred.
+ */
+function detectEmptyBuild(
+    renderedMeshCount: number,
+    featureRecords: FeatureRecord[],
+    review: ScriptReviewSummary | null | undefined,
+): string | null {
+    if (renderedMeshCount > 0) return null;
+    // Empty or sketch-only scripts render no solids by design — not a failure.
+    if (!featureRecords.some((r) => r.kind !== 'sketch')) return null;
+    // A solid-producing model that rendered nothing is a swallowed build
+    // failure. Prefer the kernel's own error diagnostic when present.
+    const firstError = (review?.diagnostics ?? []).find((d) => (d.severity ?? 'error') === 'error');
+    if (firstError?.message) {
+        return `Model produced no visible geometry: ${firstError.message}`;
+    }
+    return 'Model compiled but produced no visible geometry. Open the Validity panel for diagnostics.';
 }
 
 export interface GeometryContextType {
@@ -199,6 +232,11 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     // 'failed' → session fetch failed, mesh effect falls back to by-script.
     const [sessionStatus, setSessionStatus] = useState<'idle' | 'pending' | 'resolved' | 'failed'>('idle');
     const mainRevisionRef = useRef(0);
+    // Accumulated param-slider overrides for the no-live-session recompute path
+    // (hosted viewer / arbitrary edited code). A param edit re-runs the whole
+    // script through the stateless mesh endpoint with these applied. Cleared
+    // when `code` changes (a fresh build starts from the script's defaults).
+    const paramOverridesRef = useRef<ParamOverrides>({});
     const previewRevisionRef = useRef(0);
     const activeMeshFetchAbortRef = useRef<AbortController | null>(null);
     const meshFetchBusyRef = useRef(false);
@@ -275,6 +313,58 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             : `/__kernelcad/review?script=${encodeURIComponent(script)}`;
 
         let aborted = false;
+        if (!token && shouldUseHostedMesh()) {
+            const promise = meshSourceHosted(code)
+                .then((payload) => {
+                    if (revision !== mainRevisionRef.current) {
+                        setStaleMainResponsesDropped((prev) => prev + 1);
+                        return;
+                    }
+                    setGeometries(featureMeshesToGeometries(payload.features));
+                    setGeometryTransformOverrides({});
+                    setFeatureRecords(payload.featureRecords ?? []);
+                    setRecomputeMs(Math.max(0, Math.round(performance.now() - fetchStart)));
+                    setScriptParams(Object.values(payload.params ?? {}));
+                    setScriptReview(payload.review ?? null);
+                    setSketchesGeometries([]);
+                    setPreviewGeometries([]);
+                    setError(null);
+                    setLastSuccessfulRevision(revision);
+                    pushExecutionRecord({
+                        revision,
+                        status: 'success',
+                        executionCountAtRecord: revision,
+                    });
+                })
+                .catch((err: unknown) => {
+                    if (revision !== mainRevisionRef.current) {
+                        setStaleMainResponsesDropped((prev) => prev + 1);
+                        return;
+                    }
+                    const message = err instanceof Error ? err.message : String(err);
+                    setError(message);
+                    if (!opts?.keepExistingOnError) {
+                        setScriptParams([]);
+                        setScriptReview(null);
+                    }
+                    pushExecutionRecord({
+                        revision,
+                        status: 'error',
+                        error: message,
+                        executionCountAtRecord: revision,
+                    });
+                })
+                .finally(() => {
+                    if (revision === mainRevisionRef.current && !aborted) {
+                        setIsComputing(false);
+                        setExecutionCount((prev) => prev + 1);
+                    } else if (revision === mainRevisionRef.current) {
+                        setIsComputing(false);
+                    }
+                });
+            return { revision, promise };
+        }
+
         const promise = apiCall().then(({ base, headers }) => {
             const meshUrl = rewritePath(meshPath, base);
             const reviewUrl = rewritePath(reviewPath, base);
@@ -385,6 +475,10 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             });
         });
         return { revision, promise };
+        // This callback reads `code` at call time by design (it's invoked
+        // imperatively, not on every keystroke); resubscribing on each `code`
+        // change would churn the executor. Intentional omission.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pushExecutionRecord]);
 
     const requestMeshAndReview = useCallback((
@@ -631,33 +725,100 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     // Slice 2E.bridge: callback exposed to consumers (forwarded by
     // `useRecomputeResult`). Awaits the server ack; the SSE push that
     // follows is what actually refreshes context state.
+    // Apply a stateless re-run mesh payload to context state (mirrors the main
+    // execution loop's apply, incl. the empty-build guard). Used by the
+    // no-session param recompute path.
+    const applyBridgePayload = useCallback((payload: BackendMeshPayload, revision: number) => {
+        const geos = featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]);
+        const recs = (payload.featureRecords as FeatureRecord[]) ?? [];
+        const review = payload.review ?? { ok: true, diagnostics: [] };
+        const emptyNotice = detectEmptyBuild(geos.length, recs, review);
+        setGeometries(geos);
+        setGeometryTransformOverrides({});
+        setFeatureRecords(recs);
+        setScriptParams(Object.values(payload.params ?? {}));
+        setScriptReview(review);
+        setSketchesGeometries([]);
+        setPreviewGeometries([]);
+        setError(emptyNotice);
+        if (emptyNotice) {
+            pushExecutionRecord({ revision, status: 'error', error: emptyNotice, executionCountAtRecord: executionCount + 1 });
+        } else {
+            setLastSuccessfulRevision(revision);
+            pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+        }
+    }, [executionCount, pushExecutionRecord]);
+
+    // Clear accumulated param overrides whenever the script changes — a code
+    // edit re-meshes from the declared defaults (main loop), and stale
+    // overrides must not leak onto the new build.
+    useEffect(() => {
+        paramOverridesRef.current = {};
+    }, [code]);
+
     const updateParam = useCallback(async (
         edits: { name: string; value: number | boolean }[],
     ) => {
-        if (!sessionToken) {
-            throw new Error('updateParam called before a session token was issued');
+        // Live session (pooled `?script=`): incremental params.update — only the
+        // edited feature + downstream re-lower, pushed back over SSE.
+        if (sessionToken) {
+            const { base, headers } = await apiCall();
+            const res = await fetch(
+                rewritePath(
+                    `/__kernelcad/params?session=${encodeURIComponent(sessionToken)}`,
+                    base,
+                ),
+                {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json', ...headers },
+                    body: JSON.stringify({ edits }),
+                },
+            );
+            if (!res.ok) {
+                let message = res.statusText;
+                try {
+                    const body = await res.json();
+                    if (typeof body?.error === 'string') message = body.error;
+                } catch { /* keep statusText fallback */ }
+                throw new Error(message);
+            }
+            return;
         }
-        const { base, headers } = await apiCall();
-        const res = await fetch(
-            rewritePath(
-                `/__kernelcad/params?session=${encodeURIComponent(sessionToken)}`,
-                base,
-            ),
-            {
-                method: 'POST',
-                headers: { 'content-type': 'application/json', ...headers },
-                body: JSON.stringify({ edits }),
-            },
-        );
-        if (!res.ok) {
-            let message = res.statusText;
-            try {
-                const body = await res.json();
-                if (typeof body?.error === 'string') message = body.error;
-            } catch { /* keep statusText fallback */ }
-            throw new Error(message);
+
+        // No live session (hosted viewer / arbitrary edited code): re-run the
+        // whole script through the stateless mesh endpoint with the param
+        // overrides applied. This is what makes a declared parameter actually
+        // move the model when there is no pooled kernel session behind the tab.
+        const hosted = shouldUseHostedMesh();
+        if (!hosted && !devMeshAvailable()) {
+            throw new Error(
+                'Editing parameters needs a live kernel session or a compute backend.',
+            );
         }
-    }, [sessionToken]);
+        const overrides: ParamOverrides = { ...paramOverridesRef.current };
+        for (const edit of edits) overrides[edit.name] = edit.value;
+        paramOverridesRef.current = overrides;
+
+        const revision = ++mainRevisionRef.current;
+        setCurrentCodeRevision(revision);
+        setIsComputing(true);
+        try {
+            const payload = hosted
+                ? await meshSourceHosted(code, overrides)
+                : await meshSourceDev(code, overrides);
+            // Superseded by a newer edit (code change or another param drag).
+            if (revision !== mainRevisionRef.current) return;
+            applyBridgePayload(payload, revision);
+        } catch (err) {
+            if (revision !== mainRevisionRef.current) return;
+            setError(err instanceof Error ? err.message : String(err));
+        } finally {
+            if (revision === mainRevisionRef.current) {
+                setIsComputing(false);
+                setExecutionCount(prev => prev + 1);
+            }
+        }
+    }, [sessionToken, code, applyBridgePayload]);
 
     const setGeometryTransformOverride = useCallback((partName: string, transform: number[]) => {
         if (transform.length !== 16) return;
@@ -715,23 +876,31 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             const revision = ++mainRevisionRef.current;
             setCurrentCodeRevision(revision);
             let staleRecorded = false;
-            try {
-                parseCode(code);
-            } catch (err) {
-                if (revision !== mainRevisionRef.current) {
-                    setStaleMainResponsesDropped((prev) => prev + 1);
-                    staleRecorded = true;
+            // Only the legacy in-browser worker (plain-JS `new Function`) needs an
+            // acorn syntax pre-check — acorn can't parse TypeScript. The hosted and
+            // dev-kernel paths transpile TS server-side and surface their own
+            // diagnostics, so acorn must NOT gate them: it throws "Unexpected token
+            // (line:col)" on type annotations in modern .kcad.ts (e.g. gallery
+            // models), blanking a model the server renders fine.
+            if (!hosted && !routesToDevKernel) {
+                try {
+                    parseCode(code);
+                } catch (err) {
+                    if (revision !== mainRevisionRef.current) {
+                        setStaleMainResponsesDropped((prev) => prev + 1);
+                        staleRecorded = true;
+                        return;
+                    }
+                    const message = err instanceof Error ? err.message : String(err);
+                    setError(message);
+                    pushExecutionRecord({
+                        revision,
+                        status: 'error',
+                        error: message,
+                        executionCountAtRecord: executionCount + 1,
+                    });
                     return;
                 }
-                const message = err instanceof Error ? err.message : String(err);
-                setError(message);
-                pushExecutionRecord({
-                    revision,
-                    status: 'error',
-                    error: message,
-                    executionCountAtRecord: executionCount + 1,
-                });
-                return;
             }
             if (hosted) {
                 setIsComputing(true);
@@ -742,16 +911,24 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                         staleRecorded = true;
                         return;
                     }
-                    setGeometries(featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]));
+                    const hostedGeometries = featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]);
+                    const hostedRecords = (payload.featureRecords as FeatureRecord[]) ?? [];
+                    const hostedReview = payload.review ?? { ok: true, diagnostics: [] };
+                    const emptyNotice = detectEmptyBuild(hostedGeometries.length, hostedRecords, hostedReview);
+                    setGeometries(hostedGeometries);
                     setGeometryTransformOverrides({});
-                    setFeatureRecords((payload.featureRecords as FeatureRecord[]) ?? []);
+                    setFeatureRecords(hostedRecords);
                     setScriptParams(Object.values(payload.params ?? {}));
-                    setScriptReview(payload.review ?? { ok: true, diagnostics: [] });
+                    setScriptReview(hostedReview);
                     setSketchesGeometries([]);
                     setPreviewGeometries([]);
-                    setError(null);
-                    setLastSuccessfulRevision(revision);
-                    pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+                    setError(emptyNotice);
+                    if (emptyNotice) {
+                        pushExecutionRecord({ revision, status: 'error', error: emptyNotice, executionCountAtRecord: executionCount + 1 });
+                    } else {
+                        setLastSuccessfulRevision(revision);
+                        pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+                    }
                 } catch (err: unknown) {
                     if (revision !== mainRevisionRef.current) {
                         setStaleMainResponsesDropped((prev) => prev + 1);
@@ -784,16 +961,24 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             // net for any other API the worker happens to lack.
             const useDevKernel = devMeshAvailable() && needsFullKernel(code);
             const applyDevPayload = (payload: BackendMeshPayload) => {
-                setGeometries(featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]));
+                const devGeometries = featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]);
+                const devRecords = (payload.featureRecords as FeatureRecord[]) ?? [];
+                const devReview = payload.review ?? { ok: true, diagnostics: [] };
+                const emptyNotice = detectEmptyBuild(devGeometries.length, devRecords, devReview);
+                setGeometries(devGeometries);
                 setGeometryTransformOverrides({});
-                setFeatureRecords((payload.featureRecords as FeatureRecord[]) ?? []);
+                setFeatureRecords(devRecords);
                 setScriptParams(Object.values(payload.params ?? {}));
-                setScriptReview(payload.review ?? { ok: true, diagnostics: [] });
+                setScriptReview(devReview);
                 setSketchesGeometries([]);
                 setPreviewGeometries([]);
-                setError(null);
-                setLastSuccessfulRevision(revision);
-                pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+                setError(emptyNotice);
+                if (emptyNotice) {
+                    pushExecutionRecord({ revision, status: 'error', error: emptyNotice, executionCountAtRecord: executionCount + 1 });
+                } else {
+                    setLastSuccessfulRevision(revision);
+                    pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+                }
             };
             try {
                 if (useDevKernel) {
@@ -932,18 +1117,23 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     const executeGeometry = useCallback(async (codeToExecute: string) => {
         const revision = ++mainRevisionRef.current;
         setCurrentCodeRevision(revision);
-        try {
-            parseCode(codeToExecute);
-        } catch (err) {
-            const message = err instanceof Error ? err.message : String(err);
-            setError(message);
-            pushExecutionRecord({
-                revision,
-                status: 'error',
-                error: message,
-                executionCountAtRecord: executionCount + 1,
-            });
-            return;
+        // Acorn can't parse TypeScript; only the legacy worker path below needs
+        // this pre-check. The hosted server-mesh path transpiles modern .kcad.ts
+        // itself, so acorn must not block it (it throws "Unexpected token" on TS).
+        if (!shouldUseHostedMesh()) {
+            try {
+                parseCode(codeToExecute);
+            } catch (err) {
+                const message = err instanceof Error ? err.message : String(err);
+                setError(message);
+                pushExecutionRecord({
+                    revision,
+                    status: 'error',
+                    error: message,
+                    executionCountAtRecord: executionCount + 1,
+                });
+                return;
+            }
         }
 
         // Hosted deploy (app.kernelcad.com): no local kernel backend, and the

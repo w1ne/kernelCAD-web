@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/parts/findPart.ts
 //
 // Discovery tier. Local-only by default; remote merges when partsBaseUrl
@@ -5,7 +7,7 @@
 
 import { loadCatalog, queryCatalog } from './catalog';
 import { remoteFindParts, RemoteDisabledError } from './remoteClient';
-import type { PartRecord } from '../../shared/parts/types';
+import type { LicenseClass, PartRecord } from '../../shared/parts/types';
 
 export interface FindPartOpts {
   category?: string;
@@ -15,6 +17,22 @@ export interface FindPartOpts {
   limit?: number;
   source?: 'local' | 'remote' | 'auto';
   partsBaseUrl?: string;
+  /** Restrict results to records of this redistribution license class. Records
+   *  with NO licenseClass are treated as 'permissive' (the bundled catalog). */
+  licenseClass?: LicenseClass;
+}
+
+/** A record's effective license class — absent ⇒ 'permissive' (bundled catalog). */
+function effectiveLicenseClass(r: PartRecord): LicenseClass {
+  return r.licenseClass ?? 'permissive';
+}
+
+function filterByLicenseClass(
+  records: PartRecord[],
+  licenseClass: LicenseClass | undefined,
+): PartRecord[] {
+  if (licenseClass === undefined) return records;
+  return records.filter((r) => effectiveLicenseClass(r) === licenseClass);
 }
 
 export interface FindPartResult {
@@ -30,13 +48,16 @@ export async function findPartHost(
 ): Promise<FindPartResult> {
   const source = opts.source ?? 'auto';
   const catalog = loadCatalog();
-  const local = queryCatalog(catalog, query, {
-    ...(opts.category !== undefined ? { category: opts.category } : {}),
-    ...(opts.family !== undefined ? { family: opts.family } : {}),
-    ...(opts.standard !== undefined ? { standard: opts.standard } : {}),
-    ...(opts.tag !== undefined ? { tag: opts.tag } : {}),
-    ...(opts.limit !== undefined ? { limit: opts.limit } : {}),
-  });
+  const local = filterByLicenseClass(
+    queryCatalog(catalog, query, {
+      ...(opts.category !== undefined ? { category: opts.category } : {}),
+      ...(opts.family !== undefined ? { family: opts.family } : {}),
+      ...(opts.standard !== undefined ? { standard: opts.standard } : {}),
+      ...(opts.tag !== undefined ? { tag: opts.tag } : {}),
+      ...(opts.limit !== undefined ? { limit: opts.limit } : {}),
+    }),
+    opts.licenseClass,
+  );
   const remoteCandidate =
     (opts.partsBaseUrl !== undefined && opts.partsBaseUrl.length > 0) ||
     (process.env.KERNELCAD_PARTS_BASE_URL !== undefined &&
@@ -57,9 +78,11 @@ export async function findPartHost(
         ? { partsBaseUrl: opts.partsBaseUrl }
         : {}),
     });
+    const results = filterByLicenseClass(remote.results, opts.licenseClass);
     return {
-      results: remote.results,
-      totalMatches: remote.totalMatches,
+      results,
+      totalMatches:
+        opts.licenseClass !== undefined ? results.length : remote.totalMatches,
       source: 'remote',
       remoteEnabled: true,
     };
@@ -81,7 +104,11 @@ export async function findPartHost(
         : {}),
     });
     const merged = [...local];
-    for (const r of remote.results) {
+    const remoteResults = filterByLicenseClass(
+      remote.results,
+      opts.licenseClass,
+    );
+    for (const r of remoteResults) {
       if (!merged.find((m) => m.id === r.id)) merged.push(r);
     }
     return {

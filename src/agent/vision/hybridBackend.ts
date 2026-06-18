@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/vision/hybridBackend.ts
 //
 // Hybrid backend = opencv silhouette + LLM-labeled named points/bboxes. Used

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // v0.7 Slice 1 workspace-reachability demonstration — a 1-DOF revolute
 // arm with tight ±10° limits and a tracked tip connector. The expert
 // declares a target on the opposite side of the arm (world [-200, 10, 10])

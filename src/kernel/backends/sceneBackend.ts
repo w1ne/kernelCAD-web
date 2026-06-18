@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ShapeBackend, BackendTarget } from './backend';
 import type { Transform } from '../../shared/runtime/se3';
 import type { PBRMaterial } from '../../shared/intent/material';

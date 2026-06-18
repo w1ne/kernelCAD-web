@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { ShapeBackend } from '../kernel/backends/backend';
@@ -13,6 +15,7 @@ import { runScript } from './runtime/runScript';
 import { KernelError } from '../shared/intent/kernelError';
 import { Shape } from './capture/proxy';
 import { Scene } from './validation/scene';
+import { computePrefixReuse, type RecordHealth } from './compute/prefixReuse';
 
 export interface BuildModelInput {
   code: string;
@@ -93,6 +96,109 @@ export async function buildModel(input: BuildModelInput): Promise<BuiltModel> {
     gatedFeatureNames: session.gatedFeatureNames,
   });
 
+  return assembleBuiltModel(session, run, result, warningsBefore, input.code);
+}
+
+/**
+ * Incremental code-edit rebuild — Slice 1 (append-only prefix reuse).
+ *
+ * `buildModel` re-lowers every record from scratch on a code edit. When an
+ * agent APPENDS a feature to the end of the script, the unchanged prefix is
+ * re-lowered needlessly. This function reuses the previous build's cached
+ * prefix shapes ONLY when it can prove the new record list is a pure
+ * append/strict-prefix-superset of the previous one (same ids, same resolved
+ * structural hash for the entire shared prefix, every prefix record healthy +
+ * cached). In that case it seeds the engine with the cached prefix shapes and
+ * lowers only the appended tail.
+ *
+ * In EVERY other case — an edit/insert/delete anywhere in the prefix, any hash
+ * mismatch, a missing cached shape, a non-healthy prefix record, or any
+ * unexpected condition — it falls back to a full `buildModel(input)`. Its
+ * output is shape-identical to `buildModel` for the append case and is
+ * literally `buildModel`'s output otherwise, so it never renders a stale or
+ * wrong model. See docs/specs/2026-06-14-incremental-code-rebuild-design.md.
+ *
+ * Slice 1 ships this alongside `buildModel`; existing callers are untouched.
+ */
+export async function rebuildModelIncremental(
+  prevModel: BuiltModel,
+  input: BuildModelInput,
+): Promise<BuiltModel> {
+  await initOcct();
+
+  // 1. Capture the new script. Capture is cheap (JS execution); the expensive
+  //    work is lowering, which we want to skip for the unchanged prefix. If the
+  //    script throws, fall back — `buildModel` reproduces the same failure path.
+  let run;
+  try {
+    run = await runScript(input);
+  } catch {
+    return buildModel(input);
+  }
+  const session = run.session;
+
+  // 2. Decide whether the entire previous record list is a healthy, cached
+  //    prefix of the new one (pure append).
+  const prevHealth: ReadonlyMap<string, RecordHealth> = prevModel.health;
+  const decision = computePrefixReuse({
+    prevRecords: prevModel.records,
+    nextRecords: run.records,
+    prevParamTable: prevModel.session.paramTable,
+    nextParamTable: session.paramTable,
+    hasCachedShape: id => prevModel.session.cachedShapes.has(id),
+    prevHealth,
+  });
+
+  if (!decision.reusable) {
+    // Not a provable append → full rebuild. The session we just captured is
+    // discarded; `buildModel` re-runs the script in a fresh session. Re-running
+    // is acceptable: capture is cheap and re-running guarantees the fallback is
+    // byte-identical to the normal build path (no half-seeded state leaks).
+    return buildModel(input);
+  }
+
+  // 3. Seed the engine with the previous build's cached prefix shapes and lower
+  //    only the appended tail.
+  const seedShapes = new Map<FeatureId, ShapeBackend>();
+  for (const id of decision.reusableIds) {
+    const cached = prevModel.session.cachedShapes.get(id);
+    // Defensive: computePrefixReuse already verified presence, but a missing
+    // entry here would mean lowering a record whose upstream shape we promised
+    // to seed — fall back rather than risk it.
+    if (!cached) return buildModel(input);
+    seedShapes.set(id, cached);
+  }
+
+  const engine = new RecomputeEngine(createOcctLowerer(session));
+  session.setEngine(engine);
+  const warningsBefore = session.warnings.length;
+  const result = await engine.run(run.records, {
+    paramTable: session.paramTable,
+    seedShapes,
+    warningSink: warning => session.warnings.push(warning),
+    warningPhase: 'build',
+    gatedFeatureNames: session.gatedFeatureNames,
+  });
+
+  return assembleBuiltModel(session, run, result, warningsBefore, input.code);
+}
+
+/** Shared post-`engine.run` assembly for `buildModel` /
+ *  `rebuildModelIncremental`: populates the session cache and derives the
+ *  tail/root shapes onto a `BuiltModel`. Keeping this in one place guarantees
+ *  the incremental path produces a `BuiltModel` shaped exactly like the full
+ *  build's. */
+function assembleBuiltModel(
+  session: CaptureSession,
+  run: { records: readonly FeatureRecord[]; returnValue: unknown },
+  result: {
+    shapes: Map<FeatureId, ShapeBackend>;
+    diagnostics: CompilerDiagnostic[];
+    health: Map<FeatureId, 'healthy' | 'warning' | 'error'>;
+  },
+  warningsBefore: number,
+  code: string,
+): BuiltModel {
   populateCache(session, result.shapes);
   const tailId = run.records.length > 0 ? run.records[run.records.length - 1].id : undefined;
   const tailShape = tailId ? result.shapes.get(tailId) : undefined;
@@ -111,7 +217,7 @@ export async function buildModel(input: BuildModelInput): Promise<BuiltModel> {
     rootId,
     rootShape,
     returnValue: run.returnValue,
-    code: input.code,
+    code,
   };
 }
 

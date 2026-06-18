@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kinematic/checkSweptCollision.ts
 //
 // Sampled-pose loop for swept-volume collision detection. The headline

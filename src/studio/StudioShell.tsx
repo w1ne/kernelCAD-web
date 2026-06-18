@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Header } from './components/Layout/Header';
@@ -23,6 +25,7 @@ import { useShellStore, shellStore } from './store/useShellStore';
 import type { StagedEdit } from './store/shellStore';
 import { useRecomputeResult } from './hooks/useRecomputeResult';
 import { useProject } from './context/ProjectContext';
+import { useStudioChrome } from './context/StudioChromeContext';
 
 /**
  * Top-level Studio shell. Composes the six slots — Toolbar / Viewport /
@@ -40,6 +43,7 @@ export function StudioShell() {
     const showHeader = embed.showHeader ?? true;
     const enableAgentRail = embed.enableAgentRail ?? true;
     const enableConnect = embed.enableConnect ?? true;
+    const { viewerMode } = useStudioChrome();
     const handleToggleMarkingMode = useCallback(() => {
         shellStore.toggleMarkingMode();
     }, []);
@@ -195,6 +199,7 @@ export function StudioShell() {
                 onToggleAgentRail={handleToggleAgentRail}
                 enableAgentRail={enableAgentRail}
                 enableConnect={enableConnect}
+                agentRailHidden={viewerMode}
                 referenceImagesPresent={referenceImagesPresent}
                 referenceImagesVisible={referenceImagesVisible}
                 onToggleReferenceImages={handleToggleReferenceImages}
@@ -211,7 +216,7 @@ export function StudioShell() {
             />
 
             <div className="flex-1 flex overflow-hidden relative">
-                {enableAgentRail && agentRailOpen && <AgentRail />}
+                {enableAgentRail && agentRailOpen && !viewerMode && <AgentRail />}
                 <div className="flex-1 relative">
                     <Viewport />
                     <MarkingOverlay visible={markingMode} />

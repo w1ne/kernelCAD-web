@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/lib/distHarnessAuthor.ts
 //
 // Distills the dist-repo harness/AGENTS.md from the upstream CLAUDE.md.
@@ -17,14 +19,11 @@ the same \`.kcad.ts\` source, serialize across these three buckets and
 parallelize only within a bucket:
 
 - **Mutating generation** — anything that writes to the \`.kcad.ts\` file
-  or changes its evaluation: \`params_update\`, every \`add_*\` MCP edit
-  tool, \`set_param_value\`, \`remove_feature\`.
+  or changes its evaluation: every \`add_*\` MCP edit
+  tool, \`set_param\`, \`remove_feature\`.
 - **Inspection** — read-only tools that observe the current evaluation:
-  \`evaluate_script\`, \`list_features\`, \`list_assemblies\`,
-  \`inspect_assembly\`, \`get_shape_info\`, \`list_topology\`,
-  \`get_edges_of\`, \`list_edges\`, \`list_faces\`, \`list_face_labels\`,
-  \`get_face_lineage\`, \`list_mates\`, \`list_constraints\`,
-  \`list_diagnostic_codes\`, \`why_did_this_fail\`, \`validate_assembly\`.
+  \`evaluate_script\`, \`inspect\`, \`query\`,
+  \`lookup_diagnostics\`, \`why_did_this_fail\`, \`verify\`.
 - **Render / review** — anything that produces a visual artifact:
   \`kernelcad render inspect\`, \`review_cad\`, screenshot capture.
 

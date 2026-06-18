@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/mates/matePhysicalRealization.ts
 //
 // G2 — Gate 6 mate physical realization.

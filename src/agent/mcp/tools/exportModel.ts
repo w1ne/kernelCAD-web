@@ -1,12 +1,15 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/exportModel.ts
 //
 // Unified write-side export MCP tool. ONE tool, format-enum-dispatched —
 // discoverable via list_api as the single entry "export the model to a file".
 // Replaces the legacy `export_stl` shim (removed in the C2 cull).
 //
-// Format enum: stl | step | dxf | 3mf | glb | urdf | srdf | sdf-gazebo.
-// URDF / SRDF / SDF-Gazebo are reserved on the surface but emit
-// `export.<format>.not-implemented` until a follow-up slice fills them in.
+// Format enum: stl | step | dxf | 3mf | glb | svg-drawing | urdf | srdf | sdf-gazebo.
+// URDF / SDF-Gazebo exports also write companion meshes/<part>.stl files
+// next to output_path (the emitted XML references them by relative path);
+// the written paths are reported in `mesh_files`.
 
 import { writeFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
@@ -41,6 +44,9 @@ export interface ExportModelOutput {
   feature_count?: number;
   /** The format actually used for export; echoed for receipt-side dispatching. */
   format?: ExportFormat;
+  /** Companion mesh files written next to output_path (URDF / SDF exports
+   *  reference per-link meshes by relative path). */
+  mesh_files?: string[];
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -120,9 +126,19 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
   }
   const finalPath = pathCheck.resolved!;
 
+  const meshFiles: string[] = [];
   try {
     await mkdir(dirname(finalPath), { recursive: true });
     await writeFile(finalPath, Buffer.from(result.bytes));
+    // Robot-description exports (URDF / SDF) reference per-link mesh files
+    // by relative path — write them next to the output file so the
+    // document is consumable as-is.
+    for (const m of result.meshes ?? []) {
+      const meshPath = resolve(dirname(finalPath), m.relPath);
+      await mkdir(dirname(meshPath), { recursive: true });
+      await writeFile(meshPath, Buffer.from(m.bytes));
+      meshFiles.push(meshPath);
+    }
   } catch (e) {
     return {
       ok: false,
@@ -136,6 +152,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
     byte_count: result.bytes.byteLength,
     feature_count: result.featureCount,
     format,
+    ...(meshFiles.length > 0 ? { mesh_files: meshFiles } : {}),
     diagnostics: withNextActions(result.diagnostics),
   };
 }

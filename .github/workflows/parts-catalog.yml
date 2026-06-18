@@ -1,0 +1,72 @@
+name: Parts Catalog
+
+# Builds a self-hosted, license-clean parts catalog from the CC-BY FreeCAD
+# parts_library and deploys it to Cloudflare Pages (project: kernelcad-parts).
+# Point KERNELCAD_PARTS_BASE_URL at https://kernelcad-parts.pages.dev to use it
+# as kernelCAD's remote source instead of a third-party API.
+
+on:
+  schedule:
+    - cron: '0 4 * * 1' # weekly, Monday 04:00 UTC
+  workflow_dispatch:
+    inputs:
+      subdir:
+        description: 'FreeCAD-library subtree to ingest (e.g. "Mechanical Parts/Bearings" for a quick run)'
+        type: string
+        default: 'Mechanical Parts'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: parts-catalog
+  cancel-in-progress: false
+
+jobs:
+  ingest-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Ingest FreeCAD library
+        run: >
+          npx tsx scripts/ingestFreecadLibrary.ts
+          --out catalog
+          --subdir "${{ github.event.inputs.subdir || 'Mechanical Parts' }}"
+          --base-url https://kernelcad-parts.pages.dev
+
+      - name: Ingest electronics (chips, modules, IC packages)
+        # Fetches the CC-licensed 3D models declared in scripts/electronics-parts.json
+        # and MERGES them into the same catalog (never clobbers the mechanical parts).
+        # These are the parts LabWired supports, so a design can carry real geometry.
+        run: >
+          npx tsx scripts/ingestElectronics.ts catalog
+          --manifest scripts/electronics-parts.json
+          --base-url https://kernelcad-parts.pages.dev
+
+      - name: Summarize
+        run: |
+          COUNT=$(node -e "console.log(require('./catalog/v1/catalog/parts.index.json').catalog.partCount)")
+          echo "Ingested **$COUNT** parts." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Ensure Cloudflare Pages project exists
+        run: npx wrangler@4.94.0 pages project create kernelcad-parts --production-branch=main || true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Deploy catalog to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.94.0'
+          command: pages deploy catalog --project-name=kernelcad-parts --branch=main --commit-dirty=true --skip-caching

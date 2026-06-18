@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/listPartStats.ts
 //
 // Stats-only MCP view of a solved assembly's parts — name, exact bbox,

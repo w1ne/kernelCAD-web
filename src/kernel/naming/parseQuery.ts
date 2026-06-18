@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/naming/parseQuery.ts
 //
 // Q7 — @kcq[...] string DSL parser. Hand-rolled recursive descent per

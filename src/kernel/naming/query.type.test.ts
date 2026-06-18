@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Type-narrowing assertions for Query<T>. This file is type-checked by tsc
 // via the project's typecheck step; the assertions are compile-time. If a
 // line marked `// @ts-expect-error` does NOT error, the type narrowing

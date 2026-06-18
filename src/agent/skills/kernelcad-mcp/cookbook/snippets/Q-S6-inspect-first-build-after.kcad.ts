@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Q-S6 — Inspect first, build after (the agent-loop pattern)
 //
 // Demonstrates: building a Query, serializing it via `.toString()` to the
@@ -38,7 +40,7 @@ const narrowed = candidates.and(q.withLabel('lid'));
 if (narrowed.ast.op !== 'intersection') throw new Error('Q-S6: narrowed op');
 
 // 5. The agent can also bottom out on the same surface via the
-//    `evaluate_query` MCP tool from outside the script — the tool ships
+//    `query({ mode: 'evaluate' })` MCP tool from outside the script — the tool ships
 //    in a follow-on slice and consumes the same Query AST that
 //    `.toJSON()` emits here.
 const astSnapshot = narrowed.toJSON();

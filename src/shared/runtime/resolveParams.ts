@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Pre-resolve helpers. See spec §E.4.
 //
 // `resolveParams` walks a record's `params` blob and replaces every Param that

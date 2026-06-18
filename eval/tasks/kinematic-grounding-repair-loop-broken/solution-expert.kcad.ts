@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Repair-loop broken half — Gate 1 mounting-hole mismatch (Ø5 vs Ø6).
 // Mirrors kinematic-grounding-mounting-hole-mismatch's expert solution.
 // Pairs with kinematic-grounding-repair-loop-fixed which repairs to

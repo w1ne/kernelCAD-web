@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/backends/occt/pathNurbsLowerer.ts
 //
 // NURBS Slice D Task 3 — mixed-source path-NURBS lowerer.
@@ -416,6 +418,25 @@ export function buildNurbsSketchOnPlane(
       currentX = c.x.evaluated;
       currentY = c.y.evaluated;
     } else if (c.kind === 'spline' || c.kind === 'nurbsSegment' || c.kind === 'hermiteG2_2d') {
+      // Connectivity guard (defense-in-depth behind PathBuilder's own
+      // capture-time checks): the NURBS segment must start at the current
+      // pen position. A gap leaves the edge chain disconnected — OCCT's
+      // BRepBuilderAPI_MakeWire silently drops edges it cannot reach (its
+      // Error() flag reflects only the LAST Add, so a later connectable
+      // edge resets it to WireDone) and the profile degenerates with no
+      // kernel error (issue #447). Throwing here surfaces as a blocking
+      // `feature.kernel-failed` diagnostic in the consumer lowerers.
+      const segStart = c.kind === 'spline'
+        ? { x: c.points[0].x.evaluated, y: c.points[0].y.evaluated }
+        : c.kind === 'nurbsSegment'
+          ? { x: c.controlPoints[0].x.evaluated, y: c.controlPoints[0].y.evaluated }
+          : { x: c.ax.evaluated, y: c.ay.evaluated };
+      const gap = Math.hypot(segStart.x - currentX, segStart.y - currentY);
+      if (gap > 1e-6) {
+        throw new Error(
+          `buildNurbsSketchOnPlane: ${c.kind} segment starts at (${segStart.x}, ${segStart.y}) but the path pen is at (${currentX}, ${currentY}) — ${gap.toFixed(6)} mm gap. Segments must chain head-to-tail; make the segment's first point equal the previous segment's endpoint (or add a lineTo bridging the gap).`,
+        );
+      }
       commitPenRun();
       let edge: replicad.Edge;
       if (c.kind === 'spline') {
@@ -459,10 +480,18 @@ export function buildNurbsSketchOnPlane(
   }
 
   // Compose all edges into a single closed wire. `replicad.assembleWire`
-  // accepts mixed `(Edge | Wire)[]` and orients adjacent edges head-to-tail
-  // — it will throw OCCT's wire-discontinuity error if endpoints don't match
-  // within OCCT's default tolerance.
+  // accepts mixed `(Edge | Wire)[]` and orients adjacent edges head-to-tail.
+  // NOTE: its post-Build Error() check is NOT a reliable discontinuity
+  // gate — OCCT's MakeWire.Error() reflects only the most recent Add, so a
+  // disconnected edge in the middle is silently skipped whenever a later
+  // edge does connect. Verify nothing was dropped by edge count.
   const wire = replicad.assembleWire(edges);
+  const assembled = wire.edges.length;
+  if (assembled !== edges.length) {
+    throw new Error(
+      `buildNurbsSketchOnPlane: wire assembly dropped ${edges.length - assembled} of ${edges.length} edges (disconnected path) — the profile would be silently wrong. Segments must chain head-to-tail with no gaps.`,
+    );
+  }
 
   // Wrap as a `replicad.Sketch` on the target plane. Set `defaultDirection`
   // to the plane normal so `Sketch.extrude(depth)` produces an axis-aligned

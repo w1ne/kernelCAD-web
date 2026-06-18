@@ -5,7 +5,7 @@ description: Multi-part assemblies — assembly(), parts, connectors, 7 mate typ
 
 # kernelCAD — assemblies
 
-Use `assembly()` when the model needs named mechanical parts, connector frames, and joint metadata that a human or agent can inspect later. Call `.model()` after adding parts to return a `Scene` with per-part bodies; iterate `.parts` for per-part rendering / export, call `.toCompound()` for an OCCT group (lossless on color/name/identity, default for STEP), or `.toUnion()` for one fused solid (lossy on color/name — antipattern except when downstream truly needs a single Shape). Connector and joint records remain metadata for now; `.model()` does not solve motion (use `.solvedModel(poses)` for that). Use MCP `list_assemblies({ file? code? })` to inspect the captured assembly intent without recomputing topology.
+Use `assembly()` when the model needs named mechanical parts, connector frames, and joint metadata that a human or agent can inspect later. Call `.model()` after adding parts to return a `Scene` with per-part bodies; iterate `.parts` for per-part rendering / export, call `.toCompound()` for an OCCT group (lossless on color/name/identity, default for STEP), or `.toUnion()` for one fused solid (lossy on color/name — antipattern except when downstream truly needs a single Shape). Connector and joint records remain metadata for now; `.model()` does not solve motion (use `.solvedModel(poses)` for that). Use MCP `inspect({ of: 'assemblies', file? code? })` to inspect the captured assembly intent without recomputing topology.
 
 ## Assembly validity
 
@@ -14,7 +14,7 @@ Use `assembly()` when the model needs named mechanical parts, connector frames, 
 - **`assembly.part.floating`** — a part has no joint connecting it to any other part. The fix: declare the connection via `arm.mate(..., 'fastened')` or `arm.mate(..., 'revolute', ...)`.
 - **`assembly.part.orphan`** — a part is in a sub-assembly disconnected from the main mechanism.
 - **`assembly.interference.overlap`** — two parts share volume (promoted from `kernelcad interference`).
-- **`assembly.structure.unstructured-bodies`** (info) — a multi-body model returns loose top-level bodies with no `assembly().part(...)` structure, so the parts carry no identity for `inspect --focus`, `list_part_stats`, or per-part review. The fix: wrap each distinct body in a named `assembly().part(name, shape)`.
+- **`assembly.structure.unstructured-bodies`** (info) — a multi-body model returns loose top-level bodies with no `assembly().part(...)` structure, so the parts carry no identity for `inspect --focus`, `inspect({ of: 'part-stats' })`, or per-part review. The fix: wrap each distinct body in a named `assembly().part(name, shape)`.
 
 Exit codes: 0 (solved) / 1 (warnings) / 2 (errors). Pipe-friendly:
 
@@ -41,6 +41,18 @@ arm.part('jaw', jaw.translate(0, 0, 50), { at: [0, 0, 0] });
 
 Authoring rule: imported parts for vendor catalog geometry; `box`/`cylinder`/`extrude` for the printed/machined plates and brackets that connect them.
 
+`part(...)` returns the part-ref and is fluent — chain more parts directly, and chain `.connector(...)` off any part:
+
+```js
+const arm = assembly('so100');
+arm
+  .part('base', box(30, 30, 8))
+  .part('link', box(80, 12, 8)).connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] })
+  .part('jaw', jaw);
+```
+
+Each `.part(...)` adds to the same assembly (identical to calling `arm.part(...)` again); the return value is the last part's ref, so you can keep chaining `.part(...)` / `.connector(...)`.
+
 ## Assembly intent API
 
 ```typescript
@@ -65,7 +77,7 @@ return arm.model();
 
 ### Per-part density
 
-`arm.part(name, shape, { density })` accepts a per-part material density in `kg/m^3`. The default is `1000` (water-equivalent), which produces correct silhouettes but unrealistic dynamics for any metallic or plastic part. Declare density when the assembly will be exported to a downstream dynamics-aware format — `export_model({ format: 'urdf' })` or `export_model({ format: 'sdf-gazebo' })` emit a warning for any link that inherits the default.
+`arm.part(name, shape, { density })` accepts a per-part material density in `kg/m^3`. The default is `1000` (water-equivalent), which produces correct silhouettes but unrealistic dynamics for any metallic or plastic part. Declare density when the assembly will be exported to a downstream dynamics-aware format — `export({ target: 'model', format: 'urdf' })` or `export({ target: 'model', format: 'sdf-gazebo' })` emit a warning for any link that inherits the default.
 
 Typical values: steel `7850`, aluminum `2700`, ABS plastic `1050`, brass `8500`, titanium `4500`.
 
@@ -302,7 +314,7 @@ arm.part('servo', servoShape)
   });
 ```
 
-`@kc[<part>/face/<name>]` defaults to face-center; `@kc[<part>/face/<name>#normal]` selects the face-normal vector. `@kc[<part>/edge/<name>]` maps to edge-axis. Both the string form and the structured form live in the same connector-origin slot; the structured form remains the escape hatch for batch authoring or programmatic construction. Full grammar — kinds, modifiers, indexed segments, reserved characters, and resolution semantics — lives in `kernelcad-mcp/SKILL.md` under "Topology references". The discovery primitive is `resolve_topo_ref`.
+`@kc[<part>/face/<name>]` defaults to face-center; `@kc[<part>/face/<name>#normal]` selects the face-normal vector. `@kc[<part>/edge/<name>]` maps to edge-axis. Both the string form and the structured form live in the same connector-origin slot; the structured form remains the escape hatch for batch authoring or programmatic construction. Full grammar — kinds, modifiers, indexed segments, reserved characters, and resolution semantics — lives in `kernelcad-mcp/SKILL.md` under "Topology references". The discovery primitive is `query({ mode: 'resolve' })`.
 
 ### Declaring mates — `arm.mate(name, aRef, bRef, type)`
 
@@ -323,7 +335,7 @@ arm.mate('shoulder-bolts',  'shoulder-servo.base-mount',  'base.shoulder-mount',
 arm.mate('shoulder-rotate', 'shoulder-servo.output-shaft', 'horn.shaft-hub',     'revolute');
 ```
 
-Mate refs accept either the legacy `"<partName>.<connectorName>"` dot form OR the `"@kc[<partName>/connector/<connectorName>]"` topology-ref string form. Both resolve identically; the `@kc[...]` form is preferred when emitting refs through MCP (`add_mate`) or pasting refs that came out of `inspect_assembly`:
+Mate refs accept either the legacy `"<partName>.<connectorName>"` dot form OR the `"@kc[<partName>/connector/<connectorName>]"` topology-ref string form. Both resolve identically; the `@kc[...]` form is preferred when emitting refs through MCP (`add_mate`) or pasting refs that came out of `inspect({ of: 'assembly' })`:
 
 ```typescript
 arm.mate('shoulder-bolts',
@@ -423,17 +435,16 @@ The hint names the mate, both connectors, both observed hole specs, and the two 
 
 The MCP server exposes assembly-specific tools for runtime introspection:
 
-- `inspect_assembly({ file? | code?, assembly? })` — evaluate a script and return a physical inventory: named parts, bounding boxes, connectors, mates, mechanical review facts, disconnected solids, and `unexplainedGeometry`. Use this before accepting a mechanism that looks suspicious in Studio; random boxes/floating fragments must either disappear or be explicitly justified by the original design goal.
-- Durable source-edit path: use `add_assembly_part_source`, `add_part_connector_source`, `add_mate_source`, `add_mate_coupling_source`, `add_transmission_source`, `add_workspace_target_source`, and `set_scene_return_source` when the mechanism must persist in the user's `.kcad.ts` source. These tools insert/replace source text, return `new_code`, and include diagnostics from re-evaluating that returned source.
-- `add_connector({ part, name, type, origin, axis?, normal?, assembly? })` — register a mate-style connector on a named part. `type` is one of `frame`/`axis`/`planar`/`ball`; `origin` accepts either a `[x, y, z]` shorthand (becomes `{ kind: 'vec3' }`) or a structured `ConnectorOrigin`.
-- `add_mate({ name, a, b, type, pose?, limitsDeg?, limitsMm?, assembly? })` — declare a typed mate between two `"<partName>.<connectorName>"` refs. Same capture-time validation as the script API: type-mismatch and connector-not-found errors surface immediately with structured hints.
-- `list_mates({ assembly? })` — return the declared mate records as `{ mates: [{ name, a, b, type, pose?, limitsDeg?, limitsMm? }, ...] }`. Read-only.
-- `validate_assembly({ assembly? })` — run `validateAssemblyWithMates(arm)` and return `{ status, diagnostics, partCount, jointCount }`. Each diagnostic carries `code` and `hint` for recovery.
+- `inspect({ of: 'assembly', file? | code?, assembly? })` — evaluate a script and return a physical inventory: named parts, bounding boxes, connectors, mates, mechanical review facts, disconnected solids, and `unexplainedGeometry`. Use this before accepting a mechanism that looks suspicious in Studio; random boxes/floating fragments must either disappear or be explicitly justified by the original design goal.
+- Source-edit authoring (durable — this is how a mechanism persists in the user's `.kcad.ts`; each tool inserts/replaces source text, returns `new_code`, and includes diagnostics from re-evaluating it — persist the returned `new_code`): `add_part`, `add_connector`, `add_mate`, `add_workspace_target`, `set_scene_return`.
+- `add_part({ code, assembly_binding, part_name, shape_expression, binding_name?, at? })` — insert `const <binding> = <assembly>.part(partName, shapeExpression, opts?)`. Returns the part binding used by `add_connector`.
+- `add_connector({ code, part_binding, name, type, origin, axis?, normal? })` — insert `<partBinding>.connector(name, { type, origin, axis?, normal? })`. `type` is one of `frame`/`axis`/`planar`/`ball`; `origin` accepts a `[x, y, z]` shorthand or a structured `ConnectorOrigin`. Use the part binding returned by `add_part`.
+- `add_mate({ relation, code, assembly_binding, ... })` — author a mate-graph relationship into source. `relation: 'mate'` → `{ name, a, b, type, pose?, limitsDeg?, limitsMm? }` (refs `"<partName>.<connectorName>"`); `relation: 'coupling'` → `{ driven, source, ratio, offset? }`; `relation: 'transmission'` → `{ name, kind, sourceMate, drivenMates, path, ... }`.
+- `inspect({ of: 'mates', assembly? })` — return the declared mate records as `{ mates: [{ name, a, b, type, pose?, limitsDeg?, limitsMm? }, ...] }`. Read-only.
+- `verify({ check: 'assembly', assembly? })` — run `validateAssemblyWithMates(arm)` and return `{ status, diagnostics, partCount, jointCount }`. Each diagnostic carries `code` and `hint` for recovery.
 - `solve_mates({ assembly?, poses? })` — run the mate-graph solver and return `{ status, poses, iterations? }`. `poses` overrides mate pose values by mate name; coupled driven mates are expanded from their source mate before solve.
 - `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors?, gripperAperture? })` — run the deterministic agent review loop: evaluate, validate mates, sample declared pose limits, check that mate connectors touch modeled material, report connector workspace bounds, and return raw diagnostics plus a fitness summary (`fitness.functional`, `fitness.blockingReasons`, `fitness.mechanismSummary`) after an assembly is selected. Pass `trackConnectors: ['gripper-plate.tool-tip']` to focus workspace output on an end-effector; connector workspace is only computed when pose-envelope sampling is enabled. For grippers, pass `gripperAperture: { left: 'left-finger.tip', right: 'right-finger.tip' }` to get `minMm`, `maxMm`, `travelMm`, and per-sample fingertip distances.
 - `design_loop({ goal, attempts, assembly?, preserveInterfaces?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors?, gripperAperture?, stopOnPass?, allowReviewWarnings?, requireVisualReview?, outputRecordPath?, recordTitle? })` — run ordered design attempts through `review_cad`, continue past functional attempts that still have unresolved non-visual warnings, return repair prompts, and optionally write a Studio replay record. Visual review is required by default: each accepted attempt must include `visualReview: { accepted, screenshotPath, findings, checks }` after the vision-capable agent renders/opens screenshots and records concrete observations. Accepted reviews must pass these checklist codes: `main-object-count`, `proportions-match-reference`, `required-visible-features`, `no-stray-or-floating-geometry`, `attachment-plausibility`, `semantic-orientation-alignment`, `device-depth-and-construction`, and `canonical-views-physically-coherent`. Missing `screenshotPath`, empty `findings`, missing checklist entries, or blank check findings fails with `assembly.visual.review-incomplete`; weak check evidence fails with `assembly.visual.review-evidence-weak`; failed checks fail with `assembly.visual.review-check-failed`. Visual review warnings cannot be allow-listed. Use `requireVisualReview: false` only for explicit non-visual batch checks. Only use `allowReviewWarnings` when the original prompt explicitly permits that non-visual warning code.
-
-Use active-session `add_connector` / `add_mate` only for temporary in-memory iteration after `evaluate_script`; they do not rewrite the source. When the user expects saved mechanism code, use the durable `*_source` tools and persist their returned `new_code`.
 
 ## Pose-envelope review
 
@@ -613,10 +624,10 @@ When a user asks for a robot arm, hand, gripper, linkage, or other physical mech
 1. Build named, purpose-bearing parts. Every visible solid should be a base, bracket, servo/motor body, shaft/pin, bearing/clevis/knuckle, link, palm, finger, fixture, or clearly named end-effector part.
 2. Declare connector frames and mates on the parts that carry load. Prefer revolute/prismatic/fastened mates with limits over visually aligned free geometry.
 3. If one mate drives another, declare both `coupleMates(...)` and `transmission(...)`; the coupling is the kinematic ratio, the transmission is the physical drive path. Do not jump directly from a servo horn to a distant finger; include the real adjacent horn/link/gear/belt/tendon/support parts in `path`.
-4. Run `inspect_assembly({ file })`. If `unexplainedGeometry` is non-empty, redesign before continuing unless the original prompt explicitly allows the disconnected geometry and you document why.
+4. Run `inspect({ of: 'assembly', file })`. If `unexplainedGeometry` is non-empty, redesign before continuing unless the original prompt explicitly allows the disconnected geometry and you document why.
 5. Run `review_cad({ file, designGoal, preserveInterfaces, trackConnectors, gripperAperture? })`. Treat `fitness.functional === false`, `fitness.blockingReasons`, connector-not-in-solid, unsupported revolutes, missing mate contact, missing drive transmission, pose-limit failures, and interference pairs as repair facts, not optional style feedback.
 6. Run `design_loop({ goal, attempts, outputRecordPath? })` when comparing mechanism attempts or creating a Studio replay. Visual review is mandatory by default; a pass means functional, quality-clean, and screenshot-reviewed. A merely renderable model is not enough.
-7. Only after the deterministic tools are clean should you open Studio or a screenshot for visual review. If the image still shows arbitrary fragments, go back to `inspect_assembly` and make the fragment inventory explainable.
+7. Only after the deterministic tools are clean should you open Studio or a screenshot for visual review. If the image still shows arbitrary fragments, go back to `inspect({ of: 'assembly' })` and make the fragment inventory explainable.
 
 For robot arms specifically, preserve at least these interfaces between repair attempts when present: base yaw mate, shoulder pitch mate, elbow pitch mate, wrist/grip mate, tool-tip connector, and fingertip connectors. Track the tool-tip workspace and gripper aperture so the review proves movement, not just static contact.
 
@@ -740,11 +751,11 @@ After authoring a multi-part assembly, run before reporting done:
 | G-frame-not-floating | Every part is reachable in the mate graph from at least one fixed or grounded connector — disconnected parts fail Solvespace-style 5-way status |
 | G-mate-pair-compatible | Each `arm.mate(a, b, type, …)` connects two connectors whose types are compatible with the mate type (capture-time validation surfaces `assembly.mate.type-mismatch`) |
 | G-pose-paramref-bound | If pose ParamRefs are used for revolute / prismatic mates, each ParamRef is declared at script top with `param('joint-name', default, { min, max })` |
-| G-solvedmodel-reactive | After `arm.solvedModel({validate: 'error'})`, param updates trigger fresh Scene emission — verify by running `params_update` via MCP and re-rendering; positions must change |
+| G-solvedmodel-reactive | After `arm.solvedModel({validate: 'error'})`, param updates trigger fresh Scene emission — verify by running `set_param` via MCP and re-rendering; positions must change |
 
 ## Related skills
 
 - `kernelcad-authoring` — Parts wrap Shapes built by primitives + sketches + features.
 - `kernelcad-params` — pose ParamRefs drive mate angles reactively.
 - `kernelcad-features` — features apply per part inside the assembly the same way as standalone Shapes.
-- `kernelcad-mcp` — `list_assemblies` inspects captured intent without re-evaluating.
+- `kernelcad-mcp` — `inspect({ of: 'assemblies' })` inspects captured intent without re-evaluating.

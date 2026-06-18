@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { loadStudioScriptSource } from './scriptSource';
 
 // Live-edit bridge (dev only). The `kernelcad-mesh-endpoint` vite plugin

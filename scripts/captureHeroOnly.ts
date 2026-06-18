@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/captureHeroOnly.ts
 //
 // Fast hero-only capture for tight iteration loops on the pocket-watch demo.

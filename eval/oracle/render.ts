@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // eval/oracle/render.ts
 //
 // Wraps `kernelcad render <script> --separate --pose <az>,<el> -o <stem>`.

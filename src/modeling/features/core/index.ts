@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Core CAD Features
 export { BoxFeature } from './box.feature';
 export { CylinderFeature } from './cylinder.feature';

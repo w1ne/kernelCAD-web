@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { getOC } from 'replicad';
 import * as replicad from 'replicad';
 import { lowerCurve3D } from './curve3dLowerer';

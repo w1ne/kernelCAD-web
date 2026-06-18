@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import type { TabId } from './types';

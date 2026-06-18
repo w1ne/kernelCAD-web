@@ -1,5 +1,8 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import Editor from "@monaco-editor/react";
 import type { EditorLike } from '../../shared/types/editor';
+import { useStudioChrome } from '../context/StudioChromeContext';
 
 interface CodeEditorProps {
     value: string;
@@ -8,6 +11,8 @@ interface CodeEditorProps {
 }
 
 export default function CodeEditor({ value, onChange, onMount }: CodeEditorProps) {
+    const { viewerMode } = useStudioChrome();
+
     return (
         <div className="w-full h-full border-r border-[#333]">
             <Editor
@@ -24,6 +29,7 @@ export default function CodeEditor({ value, onChange, onMount }: CodeEditorProps
                     scrollBeyondLastLine: false,
                     automaticLayout: true,
                     padding: { top: 16 },
+                    ...(viewerMode ? { readOnly: true } : {}),
                 }}
             />
         </div>

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 export const SCHEMA_VERSION = 1 as const;
 export const INGEST_URL = 'https://telemetry.kernelcad.com/v1/events';
 

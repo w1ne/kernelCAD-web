@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/lib/distToolNameGate.ts
 //
 // For every backtick-quoted identifier in every shipped SKILL.md +
@@ -60,6 +62,10 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   'feature_count',
   'output_path',
   'byte_count',
+  // export_model result field listing the companion mesh files written
+  // next to robot-description exports (documented alongside the real
+  // export_model tool name, which DOES resolve — a field, not a call).
+  'mesh_files',
   'binding_name',
   'curve_bindings',
   'chain_anchor',
@@ -91,6 +97,14 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   'verify_every',
   'verify_skipped',
   'failure_kind',
+  // render_preview tool parameters (documented alongside the real
+  // render_preview tool name, which DOES resolve — params, not calls).
+  'out_dir',
+  'base_url',
+  // Hosted-product tool that lives in kernelCAD-server's registry, not the
+  // local TOOL_REGISTRY — referenced in prose to redirect hosted/remote
+  // clients ("hosted clients should use `open_in_studio` instead").
+  'open_in_studio',
 ]);
 
 export interface ToolNameHit {

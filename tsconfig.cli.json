@@ -28,6 +28,7 @@
               "src/agent/cookbook/**/*", "src/modeling/**/*", "src/kernel/naming/**/*",
               "src/shared/types/**/*"],
   "exclude": ["src/studio/**/*",
+              "src/agent/render/headless-player/**/*",
               "src/modeling/features/**/*", "src/modeling/HeadlessKernel.ts",
               "src/kernel/backends/occt/worker.ts",
               "tests/**/*", "**/*.test.ts"]

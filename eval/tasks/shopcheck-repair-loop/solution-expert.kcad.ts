@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // The original failing bend radius was 1.0 mm; the per-material minimum
 // for laser-cut + bending 6061 0.125 in is 0.094 in = 2.388 mm.
 // Repair: enlarge to 3 mm to be safely above the threshold.

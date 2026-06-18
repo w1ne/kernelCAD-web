@@ -80,4 +80,53 @@ describe('validateAssembly is v0.6 mate-aware', () => {
     expect(result.diagnostics.filter((d) => d.code === 'assembly.part.floating')).toHaveLength(0);
     expect(result.diagnostics.filter((d) => d.code === 'assembly.part.orphan')).toHaveLength(0);
   });
+
+  // Issue #448 — the `.model()` path must be just as mate-aware as the
+  // `solvedModel({})` path. `Assembly.model()` records the same mate
+  // metadata on an `assemblyModel` record; pre-fix the validator only
+  // walked `solvedAssembly` records, so the SAME assembly validated clean
+  // via `solvedModel({})` but warned spuriously via `.model()` — training
+  // agents to ignore floating-part warnings.
+  it('does NOT flag floating for mated parts returned via .model() (issue #448)', async () => {
+    const model = await buildModel({
+      fileName: 'mate-only-model.kcad.ts',
+      code: `
+        const arm = assembly('test');
+        arm.part('base', box(10, 10, 10))
+           .connector('p', { type: 'frame', origin: { kind: 'vec3', value: [5, 0, 0] } });
+        arm.part('child', box(10, 10, 10))
+           .connector('q', { type: 'frame', origin: { kind: 'vec3', value: [-5, 0, 0] } });
+        arm.mate('m', 'base.p', 'child.q', 'fastened');
+        // .model() instead of solvedModel({}) — same mate graph, and the
+        // validator must see it through the assemblyModel record.
+        return arm.model();
+      `,
+    });
+    const result = validateAssembly({ records: model.records });
+    const floating = result.diagnostics.filter((d) => d.code === 'assembly.part.floating');
+    expect(floating).toHaveLength(0);
+    expect(result.status).toBe('solved');
+  });
+
+  it('still flags a genuinely unmated part via .model() (gate not weakened)', async () => {
+    const model = await buildModel({
+      fileName: 'one-floating-model.kcad.ts',
+      code: `
+        const arm = assembly('test');
+        arm.part('base', box(10, 10, 10))
+           .connector('p', { type: 'frame', origin: { kind: 'vec3', value: [5, 0, 0] } });
+        arm.part('child', box(10, 10, 10))
+           .connector('q', { type: 'frame', origin: { kind: 'vec3', value: [-5, 0, 0] } });
+        // 'lonely' has no mate at all — must STILL warn on the .model() path.
+        arm.part('lonely', box(5, 5, 5));
+        arm.mate('m', 'base.p', 'child.q', 'fastened');
+        return arm.model();
+      `,
+    });
+    const result = validateAssembly({ records: model.records });
+    const floating = result.diagnostics.filter((d) => d.code === 'assembly.part.floating');
+    expect(floating).toHaveLength(1);
+    expect(floating[0].partName).toBe('lonely');
+    expect(result.status).toBe('warning');
+  });
 });

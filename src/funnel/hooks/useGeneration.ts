@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useState } from 'react';
 import { parseSseStream, startGeneration, type Artifact, type GenerateEvent } from '../lib/generateClient';
 

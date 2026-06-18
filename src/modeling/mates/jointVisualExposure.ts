@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/lib/mates/jointVisualExposure.ts
 //
 // v0.7 Gate 4 — joint visual exposure.

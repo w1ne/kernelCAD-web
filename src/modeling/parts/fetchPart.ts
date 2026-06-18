@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/parts/fetchPart.ts
 //
 // Resolution-order orchestrator. Per spec §4.3:
@@ -7,6 +9,7 @@
 //   4. Throw `parts.fetch.remote-disabled` when no partsBaseUrl is set.
 
 import { existsSync, readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import type { CaptureSession } from '../capture/captureSession';
 import { fromStepBytes } from './fromSTEP';
 import type { Shape } from '../capture/proxy';
@@ -21,6 +24,8 @@ import { KernelError } from '../../shared/intent/kernelError';
 import type { PartRecord } from '../../shared/parts/types';
 import { loadConnectorManifest } from '../../shared/parts/connectorManifest';
 import { formatTopoRef } from '../../kernel/naming';
+import { inspectStepFile } from '../../agent/inspect/inspectStep';
+import { synthesizeConnectorsFromReport } from './synthesizeConnectors';
 
 export interface FetchPartCtx {
   session: CaptureSession;
@@ -39,6 +44,243 @@ export interface FetchPartOpts {
 export interface FetchPartResult {
   shape: Shape;
   record: PartRecord;
+}
+
+// ---------------------------------------------------------------------------
+// FETCH-BY-URL mode
+//
+// An agent may hand fetch_part a direct geometry URL instead of a catalog id.
+// We never re-host these bytes (redistribution:'fetch-only') and we only ever
+// touch the network for a small allowlist of trusted code-hosting hosts. Vendor
+// *configurators* (igus, misumi, …) are detected and turned into a `link_out`
+// instruction — those need a human to drive a parametric download UI, so the
+// agent is told to ingest the resulting STEP locally with fetch_part({ file }).
+// ---------------------------------------------------------------------------
+
+/** Hosts we are willing to fetch raw geometry bytes from. */
+const ALLOWED_PART_URL_HOSTS = [
+  'raw.githubusercontent.com',
+  'objects.githubusercontent.com',
+  'github.com',
+  'gitlab.com',
+  'api.step.parts',
+];
+
+/**
+ * Vendor configurator hosts. These serve parametric part *UIs*, not direct
+ * geometry, so we never fetch them — we return a `link_out` telling the agent
+ * to download the STEP by hand and ingest it locally.
+ */
+const VENDOR_CONFIGURATOR_HOSTS: RegExp[] = [
+  /(^|\.)partcommunity\.com$/i, // igus.partcommunity.com and friends
+  /(^|\.)misumi([.-]|$)/i, // misumi*, e.g. us.misumi-ec.com / misumi.com
+  /(^|\.)pololu\.com$/i,
+  /(^|\.)traceparts/i, // traceparts.com / traceparts*
+];
+
+function parseUrlHost(url: string): string | null {
+  try {
+    return new URL(url).host.toLowerCase();
+  } catch {
+    return null;
+  }
+}
+
+/** True when `url` parses and its host is on the trusted fetch allowlist. */
+export function isAllowedPartUrl(url: string): boolean {
+  const host = parseUrlHost(url);
+  if (host === null) return false;
+  // `host` includes a :port; compare on hostname (strip the port) too.
+  const hostname = host.replace(/:\d+$/, '');
+  return ALLOWED_PART_URL_HOSTS.includes(hostname);
+}
+
+function isVendorConfiguratorUrl(url: string): boolean {
+  const host = parseUrlHost(url);
+  if (host === null) return false;
+  const hostname = host.replace(/:\d+$/, '');
+  return VENDOR_CONFIGURATOR_HOSTS.some((re) => re.test(hostname));
+}
+
+/**
+ * Classify a part URL into one of three handling modes:
+ *  - 'link_out' — a vendor configurator; the agent must download the STEP by
+ *                 hand and ingest it locally (never fetched here).
+ *  - 'fetch'    — an allowed host; bytes may be fetched.
+ *  - 'blocked'  — anything else (unknown / untrusted host, or unparseable).
+ *
+ * Vendor detection wins over the allowlist so a configurator can never be
+ * fetched even if it were also allowlisted.
+ */
+export function classifyPartUrl(url: string): 'fetch' | 'link_out' | 'blocked' {
+  if (isVendorConfiguratorUrl(url)) return 'link_out';
+  if (isAllowedPartUrl(url)) return 'fetch';
+  return 'blocked';
+}
+
+/** Structured outcomes of the fetch-by-URL path (host-level, pre-Shape). */
+export type FetchPartUrlOutcome =
+  | { ok: false; error: 'url_host_not_allowed'; host: string | null }
+  | {
+      ok: true;
+      kind: 'link_out';
+      url: string;
+      instruction: string;
+    }
+  | { ok: true; kind: 'part'; result: FetchPartResult };
+
+export interface FetchPartUrlOpts {
+  /** Injectable network fetch so tests never hit the wire. Defaults to global fetch. */
+  fetchImpl?: typeof fetch;
+}
+
+const STEP_EXT_RE = /\.(step|stp)(\?.*)?$/i;
+const MESH_EXT_RE = /\.(stl|dae|obj)(\?.*)?$/i;
+
+function sha256Hex(bytes: Buffer): string {
+  return createHash('sha256').update(bytes).digest('hex');
+}
+
+/**
+ * FETCH-BY-URL entrypoint. Resolves a direct geometry URL on a trusted host to
+ * a fetch-only PartRecord (STEP → inspected + connector-synthesized; mesh →
+ * cached, flagged non-BREP). Never re-hosts. See classifyPartUrl for routing.
+ */
+export async function fetchPartFromUrlHost(
+  ctx: FetchPartCtx,
+  url: string,
+  opts: FetchPartUrlOpts = {},
+): Promise<FetchPartUrlOutcome> {
+  const mode = classifyPartUrl(url);
+  if (mode === 'link_out') {
+    return {
+      ok: true,
+      kind: 'link_out',
+      url,
+      instruction:
+        'Download the STEP from this configurator and ingest it locally with fetch_part({ file })',
+    };
+  }
+  if (mode === 'blocked') {
+    return { ok: false, error: 'url_host_not_allowed', host: parseUrlHost(url) };
+  }
+
+  const doFetch = opts.fetchImpl ?? fetch;
+  const fetcher = async (u: string): Promise<Buffer> => {
+    const resp = await doFetch(u);
+    if (!resp.ok) {
+      throw new KernelError(
+        'parts.fetch.api-error',
+        `fetch_part(url): HTTP ${resp.status} fetching ${u}.`,
+        undefined,
+        'parts.fetch.url.http-error — the geometry URL returned a non-2xx status; verify the link is a direct file URL.',
+      );
+    }
+    return Buffer.from(await resp.arrayBuffer());
+  };
+
+  const isMesh = MESH_EXT_RE.test(url);
+  const isStep = STEP_EXT_RE.test(url);
+  if (!isMesh && !isStep) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `fetch_part(url): ${url} is not a recognized geometry URL (.step/.stp or .stl/.dae/.obj).`,
+      undefined,
+      'parts.fetch.url.unsupported-ext — point at a direct .step/.stp (BREP) or .stl/.dae/.obj (mesh) URL.',
+    );
+  }
+
+  const ext = isMesh ? meshExt(url) : '.step';
+  // Cache under the same ~/.cache/kernelcad/parts/<sha256(url)><ext> path the
+  // remote tier uses. No expectedSha256: the URL is the trust anchor here, and
+  // we hash the bytes ourselves for the record's provenance field.
+  const path = await getOrFetchAsync({
+    consumer: 'parts',
+    url,
+    ext,
+    ttlMs: null,
+    fetcher,
+  });
+  const bytes = readFileSync(path);
+  const sha256 = sha256Hex(bytes);
+  const baseName = urlBaseName(url);
+
+  if (isMesh) {
+    // Mesh import: we do NOT have a BREP path here, so return a usable cached
+    // handle flagged as a mesh. The cache path is exposed via metadata so the
+    // mesh-import escape hatch can pick it up.
+    const record: PartRecord = {
+      id: `url:${sha256.slice(0, 16)}`,
+      name: baseName,
+      category: 'imported',
+      family: 'url-import',
+      tags: ['url-import', 'mesh-import'],
+      attributes: { geometryKind: 'mesh', cachePath: path },
+      sha256,
+      source: 'remote',
+      license: 'unknown',
+      connectors: [],
+      stepUrl: url,
+      redistribution: 'fetch-only',
+    };
+    // Mesh imports have no Shape (no BREP); surface the cached path on a stub
+    // shape so callers keep a uniform { shape, record } contract. We park no
+    // geometry — the lowerer treats this as a mesh-import escape hatch.
+    const shape = ctx.session.createShape({
+      kind: 'importedMesh',
+      params: {},
+      inputs: {},
+      metadata: { sourcePath: path, geometryKind: 'mesh' },
+    });
+    return { ok: true, kind: 'part', result: { shape, record } };
+  }
+
+  // STEP path: import → inspect → synthesize connectors (same flow the remote
+  // tier uses for catalog STEP).
+  const shape = await fromStepBytes(ctx, bytes, url);
+  let connectors: string[] = [];
+  try {
+    const report = await inspectStepFile(path);
+    const conns = synthesizeConnectorsFromReport(report, shape.id);
+    if (conns.length > 0) {
+      ctx.session.attachAutoConnectors(shape.id, conns);
+      connectors = conns.map((c) => c.name);
+    }
+  } catch {
+    // Defensive: a STEP that resists inspection still imports, just without
+    // synthesized connectors.
+  }
+
+  const record: PartRecord = {
+    id: `url:${sha256.slice(0, 16)}`,
+    name: baseName,
+    category: 'imported',
+    family: 'url-import',
+    tags: ['url-import'],
+    attributes: {},
+    sha256,
+    source: 'remote',
+    license: 'unknown',
+    connectors,
+    stepUrl: url,
+    redistribution: 'fetch-only',
+  };
+  return { ok: true, kind: 'part', result: { shape, record } };
+}
+
+function meshExt(url: string): string {
+  const m = MESH_EXT_RE.exec(url);
+  return m ? `.${m[1].toLowerCase()}` : '.stl';
+}
+
+function urlBaseName(url: string): string {
+  try {
+    const p = new URL(url).pathname;
+    const last = p.split('/').filter(Boolean).pop();
+    return last ? decodeURIComponent(last) : url;
+  } catch {
+    return url;
+  }
 }
 
 export async function fetchPartHost(
@@ -118,6 +360,24 @@ export async function fetchPartHost(
     });
     const bytes = readFileSync(path);
     const shape = await fromStepBytes(ctx, bytes, meta.stepUrl);
+    // Catalog STEP ships no connector frames, so a *found* part would arrive as
+    // a dead solid that cannot mate. Recover the bundled-tier auto-connector
+    // convention from the geometry itself (bbox faces + detected hole axes).
+    // Defensive: a STEP that resists inspection still imports, just without
+    // synthesized connectors.
+    try {
+      const report = await inspectStepFile(path);
+      const conns = synthesizeConnectorsFromReport(report, shape.id);
+      if (conns.length > 0) {
+        ctx.session.attachAutoConnectors(shape.id, conns);
+        return {
+          shape,
+          record: { ...meta, source: 'remote', connectors: conns.map((c) => c.name) },
+        };
+      }
+    } catch {
+      // fall through to the unenriched record
+    }
     return { shape, record: { ...meta, source: 'remote' } };
   } catch (e) {
     if (e instanceof RemoteDisabledError) throw e;
