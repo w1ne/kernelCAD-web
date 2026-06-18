@@ -29,8 +29,16 @@ interface ManifestPart {
   name: string;
   family: string;
   mpn: string;
-  model: string;
+  /** Path appended to the manifest baseModelUrl. Ignored if `url` is set. */
+  model?: string;
+  /** Full model URL (overrides baseModelUrl + model) — for parts from a
+   *  different CC-licensed source than the default catalog base. */
+  url?: string;
   tags?: string[];
+  /** Per-part license / attribution override (e.g. an MIT Adafruit STEP in an
+   *  otherwise CC-BY-SA KiCad manifest). Falls back to the manifest defaults. */
+  license?: string;
+  attribution?: string;
 }
 interface Manifest {
   baseModelUrl: string;
@@ -67,7 +75,8 @@ export async function ingestElectronics(
 
   let ok = 0;
   for (const part of manifest.parts) {
-    const url = `${manifest.baseModelUrl.replace(/\/$/, '')}/${part.model}`;
+    // Full per-part URL wins (different CC source); else baseModelUrl + model.
+    const url = part.url ?? `${manifest.baseModelUrl.replace(/\/$/, '')}/${part.model}`;
     const res = await fetch(url);
     if (!res.ok) {
       console.warn(`SKIP ${part.id}: fetch ${url} -> HTTP ${res.status}`);
@@ -90,8 +99,8 @@ export async function ingestElectronics(
           family: part.family,
           tags: part.tags ?? ['electronics', part.family],
           attributes: { mpn: part.mpn },
-          license: manifest.license,
-          attribution: manifest.attribution,
+          license: part.license ?? manifest.license,
+          attribution: part.attribution ?? manifest.attribution,
         },
         null,
         2,

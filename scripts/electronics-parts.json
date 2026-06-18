@@ -67,6 +67,26 @@
       "mpn": "QFN-56",
       "model": "Package_DFN_QFN.3dshapes/QFN-56-1EP_7x7mm_P0.4mm_EP3.2x3.2mm.step",
       "tags": ["ic", "package", "qfn", "rp2040", "esp32s3"]
+    },
+    {
+      "id": "epaper-29-tricolor",
+      "name": "2.9\" tri-color e-paper panel",
+      "family": "Display",
+      "mpn": "Adafruit 4086",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/4086%20TriColor%20ePaper%20Display/4086-tricolor-epaper-display.step",
+      "tags": ["display", "epaper", "eink", "tricolor", "2.9inch"],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT"
+    },
+    {
+      "id": "lipo-1200mah-pouch",
+      "name": "LiPo pouch cell (~1200mAh, 53x37x5mm)",
+      "family": "Battery",
+      "mpn": "Adafruit 258",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/258%201200mAh%20lipo/258%201200mAh%20lipo.step",
+      "tags": ["battery", "lipo", "pouch", "power"],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT"
     }
   ]
 }
