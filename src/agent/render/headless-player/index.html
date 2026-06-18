@@ -1,0 +1,27 @@
+<!doctype html>
+<!--
+  Standalone headless demo-player page.
+
+  Built by `npm run build:player` into dist/headless-player/ and served by
+  the ephemeral static server in src/agent/render/playerServer.ts so the
+  headless render pipeline (render_preview MCP tool) works WITHOUT a running
+  studio dev server. Mounts the exact same DemoPlayerPage component the
+  studio's /demo-player route uses — same camera math, same
+  window.__demoPlayer bridge — so captures are pixel-identical to the
+  dev-server path.
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>kernelCAD headless player</title>
+    <style>
+      html, body, #root { margin: 0; padding: 0; width: 100%; height: 100%; }
+      body { background: #000; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>

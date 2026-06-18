@@ -4,16 +4,19 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import App from '../App';
 import { SignInButton } from '../../funnel/components/SignInButton';
+import { ProjectViewerActions } from './-ProjectViewerActions';
 import { useSession } from '../../funnel/hooks/useSession';
 import {
   fetchProjectBySlug,
   claimProject,
   setProjectPrivacy,
   createCheckoutSession,
+  postProjectRender,
   PRIVATE_REQUIRES_PAID,
   type ProjectRow,
 } from '../../funnel/lib/apiClient';
 import { shouldApplyProjectUpdate } from '../../funnel/lib/liveProject';
+import { captureViewerPngBase64 } from '../components/viewer/captureViewerPng';
 
 export const Route = createFileRoute('/p/$slug')({
   component: ProjectPage,
@@ -79,6 +82,52 @@ function ProjectPage() {
     es.addEventListener('error', () => { hadError = true; });
     return () => { disposed = true; es.close(); };
   }, [slug]);
+
+  // Render-to-image for web Claude: the hosted backend has no browser, so this
+  // open tab captures its own WebGL canvas and uploads it; an agent then fetches
+  // the stored image via get_latest_render.
+  //
+  // Capture only once the render has SETTLED. A fixed delay grabs an empty /
+  // unframed frame, because meshing + the camera-fit tween finish well after the
+  // project metadata loads. Instead we poll the canvas and upload the first
+  // frame that is stable (two consecutive grabs of ~equal size) — i.e. after the
+  // model is meshed and the camera has stopped moving. Re-armed on initial load
+  // (project) and after each live update (lastLiveUpdate). Strictly
+  // fire-and-forget: a failed capture/upload must never break the viewer.
+  useEffect(() => {
+    if (!project) return;
+    const FIRST_DELAY_MS = 1000; // let the first paint happen before sampling
+    const POLL_MS = 600;
+    const MAX_TRIES = 25; // ~15s ceiling, then give up silently
+    const MIN_PNG_LEN = 2000; // skip a blank/near-empty canvas
+    const STABLE_FRAC = 0.02; // ≤2% size change between grabs == settled
+    let disposed = false;
+    let timer: number | undefined;
+    let prevLen = 0;
+    let tries = 0;
+
+    const poll = () => {
+      if (disposed) return;
+      tries++;
+      let png: string | null = null;
+      try { png = captureViewerPngBase64(); } catch { png = null; }
+      if (png && png.length > MIN_PNG_LEN) {
+        const settled = prevLen > 0 && Math.abs(png.length - prevLen) <= prevLen * STABLE_FRAC;
+        if (settled) {
+          postProjectRender(slug, png).catch(() => {});
+          return; // done — captured the settled frame
+        }
+        prevLen = png.length;
+      }
+      if (tries < MAX_TRIES) timer = window.setTimeout(poll, POLL_MS);
+    };
+
+    timer = window.setTimeout(poll, FIRST_DELAY_MS);
+    return () => {
+      disposed = true;
+      if (timer !== undefined) window.clearTimeout(timer);
+    };
+  }, [slug, project, lastLiveUpdate]);
 
   const handleClaim = useCallback(async () => {
     setClaiming(true);
@@ -157,11 +206,11 @@ function ProjectPage() {
   const isPrivate = project.privacy === 'private';
   const btnClass = 'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-0.5 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 transition-colors';
 
-  let headerRight: ReactNode = null;
+  let claimControl: ReactNode = null;
   if (claimed) {
-    headerRight = <span className="text-[11px] text-green-500 font-mono">Saved ✓</span>;
+    claimControl = <span className="text-[11px] text-green-500 font-mono">Saved ✓</span>;
   } else if (isAnonymous && !session) {
-    headerRight = (
+    claimControl = (
       <SignInButton
         redirectTo={typeof window !== 'undefined' ? window.location.href : undefined}
         className={btnClass}
@@ -170,13 +219,13 @@ function ProjectPage() {
       </SignInButton>
     );
   } else if (isAnonymous && session) {
-    headerRight = (
+    claimControl = (
       <button type="button" onClick={handleClaim} disabled={claiming} className={btnClass}>
         {claiming ? 'Saving…' : 'Save to my projects'}
       </button>
     );
   } else if (isOwner) {
-    headerRight = upgradeNeeded ? (
+    claimControl = upgradeNeeded ? (
       <button type="button" onClick={handleUpgrade} className={btnClass} title="Private projects require Pro">
         Upgrade to keep private
       </button>
@@ -186,6 +235,16 @@ function ProjectPage() {
       </button>
     );
   }
+
+  const headerRight: ReactNode = (
+    <div className="flex items-center gap-2 min-w-0">
+      {claimControl}
+      <ProjectViewerActions
+        slug={slug}
+        project={project}
+      />
+    </div>
+  );
 
   return (
     <App

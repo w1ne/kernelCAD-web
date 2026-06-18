@@ -36,6 +36,7 @@ import { join, relative, basename, extname, dirname } from 'node:path';
 import { createHash } from 'node:crypto';
 import { inspectStepFile } from '../src/agent/inspect/inspectStep';
 import { synthesizeConnectorsFromReport } from '../src/modeling/parts/synthesizeConnectors';
+import { PAGES_WORKER } from './parts/workerTemplate';
 
 // -----------------------------------------------------------------------------
 // Types — the served record matches the remote adapter's StepPartsRecord shape.
@@ -217,47 +218,11 @@ export async function ingestDirectory(
   return records;
 }
 
-// A single advanced-mode Cloudflare Pages Worker (`_worker.js` at the deploy
-// root) implementing the two endpoints the remote adapter calls, over the
-// bundled static index. Advanced mode is used instead of a `functions/` route
-// because a `[[path]]` catch-all sharing the `/v1/parts` prefix with the static
-// per-part `.json` assets does not route reliably (static-asset precedence +
-// zero-segment catch-all both 404). The Worker intercepts `/v1/parts` itself and
-// passes everything else through to `env.ASSETS` (the .step / .json / index).
-// See remoteClient.ts for the contract.
-const PAGES_WORKER = `// SPDX-License-Identifier: MIT
-// Serves /v1/parts?q=... (search) and /v1/parts/{id} (detail) from the static
-// /v1/catalog/parts.index.json asset; all other paths fall through to static
-// assets. Deploy this directory to Cloudflare Pages and point
-// KERNELCAD_PARTS_BASE_URL at it.
-export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
-    const m = url.pathname.match(/^\\/v1\\/parts(?:\\/(.+))?$/);
-    if (!m) return env.ASSETS.fetch(request);
-
-    const idxReq = new Request(url.origin + '/v1/catalog/parts.index.json');
-    const res = await env.ASSETS.fetch(idxReq);
-    if (!res.ok) return new Response('catalog index unavailable', { status: 502 });
-    const items = (await res.json()).items;
-
-    const id = m[1] ? m[1].replace(/\\.json$/, '') : '';
-    if (id) {
-      const rec = items.find((r) => r.id === id);
-      return rec
-        ? Response.json(rec)
-        : new Response('not found', { status: 404 });
-    }
-    const q = (url.searchParams.get('q') || '').toLowerCase();
-    const hits = q
-      ? items.filter((r) =>
-          [r.id, r.name, ...(r.tags || [])].join(' ').toLowerCase().includes(q),
-        )
-      : items;
-    return Response.json({ items: hits, total: hits.length });
-  },
-};
-`;
+// The advanced-mode Cloudflare Pages Worker (`_worker.js`) is factored into
+// scripts/parts/workerTemplate.ts (PAGES_WORKER) so the registry-driven engine
+// and this directory-ingest CLI emit the same serving shim. It intercepts
+// `/v1/parts` itself and passes everything else (the .step / .json / index)
+// through to `env.ASSETS`. See remoteClient.ts for the contract.
 
 // -----------------------------------------------------------------------------
 // CLI

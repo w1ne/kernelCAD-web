@@ -16,6 +16,38 @@ const DEBUG = false;
 
 type UnknownRecord = Record<string, unknown>;
 
+/**
+ * Linear + angular deflection passed to replicad's `mesh()` / `meshEdges()`.
+ * Smaller values produce finer (slower) tessellation.
+ *
+ * The historical fixed quality used everywhere is `{ tolerance: 0.1,
+ * angularTolerance: 30 }` — exported as {@link FINE_MESH_OPTIONS} and used as
+ * the default for every existing caller, so behavior is unchanged unless a
+ * caller explicitly opts into a coarser preset.
+ */
+export interface MeshOptions {
+  /** Linear deflection in model units (OCCT `BRepMesh` `theLinDeflection`). */
+  tolerance: number;
+  /** Angular deflection in degrees (replicad converts to radians). */
+  angularTolerance: number;
+}
+
+/**
+ * Default fine mesh quality — the exact constants used by every caller before
+ * the two-tier path existed. Keeping this as the default preserves byte-for-byte
+ * output for the single-pass callers.
+ */
+export const FINE_MESH_OPTIONS: MeshOptions = { tolerance: 0.1, angularTolerance: 30 };
+
+/**
+ * Coarse mesh quality for an immediate-preview fast path. Much looser linear
+ * AND angular deflection so large imported STEP parts tessellate quickly enough
+ * to show *something* in Studio while the fine pass runs. Visually rougher
+ * (faceted curves) but topologically valid and positive-volume — never used as
+ * the final mesh, only as a first paint before a refine pass replaces it.
+ */
+export const COARSE_MESH_OPTIONS: MeshOptions = { tolerance: 1.0, angularTolerance: 60 };
+
 export function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === 'object' && value !== null;
 }
@@ -377,12 +409,19 @@ export function meshWireToSketch(wire: unknown, id: string, name: string): Sketc
   return { id, name, vertices: new Float32Array(mesh.vertices as number[]) };
 }
 
-export function meshFaceToGeometry(face: unknown, faceId: number): FaceGeometry | null {
+export function meshFaceToGeometry(
+  face: unknown,
+  faceId: number,
+  options: MeshOptions = FINE_MESH_OPTIONS,
+): FaceGeometry | null {
   if (!isRecord(face)) return null;
   const meshFn = getFn(face, 'mesh');
   if (!meshFn) return null;
 
-  const mesh = meshFn.call(face, { tolerance: 0.1, angularTolerance: 30 }) as UnknownRecord;
+  const mesh = meshFn.call(face, {
+    tolerance: options.tolerance,
+    angularTolerance: options.angularTolerance,
+  }) as UnknownRecord;
   if (!isRecord(mesh)) return null;
 
   const vertices = Array.isArray(mesh.vertices) ? (mesh.vertices as number[]) : null;
@@ -456,8 +495,15 @@ function tryGetVolume(shape: unknown): number | undefined {
  *
  * Returns null if the shape has no valid face geometries (e.g. deleted,
  * non-record, or all faces fail to mesh).
+ *
+ * `options` controls tessellation quality. Defaults to {@link FINE_MESH_OPTIONS}
+ * so existing single-pass callers are unchanged. Pass {@link COARSE_MESH_OPTIONS}
+ * (or any looser {@link MeshOptions}) for a fast preview mesh.
  */
-export function meshShape(shape: unknown): GeometryResult | null {
+export function meshShape(
+  shape: unknown,
+  options: MeshOptions = FINE_MESH_OPTIONS,
+): GeometryResult | null {
   if (!isRecord(shape)) return null;
   if (shape.isDeleted) return null;
 
@@ -474,7 +520,7 @@ export function meshShape(shape: unknown): GeometryResult | null {
   if (Array.isArray(faces)) {
     faces.forEach((face, faceId) => {
       try {
-        const geometry = meshFaceToGeometry(face, faceId);
+        const geometry = meshFaceToGeometry(face, faceId, options);
         if (geometry) faceGeometries.push(geometry);
       } catch {
         // ignore per-face mesh errors — match worker behavior
@@ -489,7 +535,10 @@ export function meshShape(shape: unknown): GeometryResult | null {
   try {
     const meshEdgesFn = getFn(shape, 'meshEdges');
     if (meshEdgesFn) {
-      const edgeRes = meshEdgesFn.call(shape, { tolerance: 0.1, angularTolerance: 30 }) as Record<string, unknown>;
+      const edgeRes = meshEdgesFn.call(shape, {
+        tolerance: options.tolerance,
+        angularTolerance: options.angularTolerance,
+      }) as Record<string, unknown>;
       if (isRecord(edgeRes) && Array.isArray(edgeRes.lines)) {
         const lines = edgeRes.lines as number[];
         if (lines.length > 0) edges = new Float32Array(lines);

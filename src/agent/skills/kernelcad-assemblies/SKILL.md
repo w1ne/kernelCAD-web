@@ -41,6 +41,18 @@ arm.part('jaw', jaw.translate(0, 0, 50), { at: [0, 0, 0] });
 
 Authoring rule: imported parts for vendor catalog geometry; `box`/`cylinder`/`extrude` for the printed/machined plates and brackets that connect them.
 
+`part(...)` returns the part-ref and is fluent — chain more parts directly, and chain `.connector(...)` off any part:
+
+```js
+const arm = assembly('so100');
+arm
+  .part('base', box(30, 30, 8))
+  .part('link', box(80, 12, 8)).connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] })
+  .part('jaw', jaw);
+```
+
+Each `.part(...)` adds to the same assembly (identical to calling `arm.part(...)` again); the return value is the last part's ref, so you can keep chaining `.part(...)` / `.connector(...)`.
+
 ## Assembly intent API
 
 ```typescript
