@@ -31,12 +31,18 @@ on:
       - 'doc/**'
       - 'archive/**'
   workflow_dispatch:
+  # Required so the branch-protection merge queue gets its checks: the queue
+  # tests a speculative merge on a temporary `merge_group` ref and waits for the
+  # same required checks (lint / build-and-checks / test) to report there.
+  merge_group:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  # Keyed per-PR (a new push cancels the prior run) but per-run for merge_group
+  # so queued entries never cancel one another.
+  group: ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
 # Three independent QC jobs run in parallel; e2e (master-only) gates on all
