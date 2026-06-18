@@ -318,6 +318,29 @@ dfmSpec(spec: {
 // [0, 0, -1] is a deterministic 180° around X. Zero vector throws feature.invalid-args.
 .alongAxis(axis: [number, number, number]): Shape
 
+// Bounding-box query + placement normalizers — ESSENTIAL for placing fetched
+// catalog parts. A `lib.fetchPart(ref)` STEP arrives at its own arbitrary
+// native origin; box(l,w,h) is corner-origin (min corner at 0,0,0). Without
+// normalizing, .translate(x,y,z) just nudges a part from wherever the STEP
+// authored it, so real parts scatter/overlap. These three fix that. All async
+// (they lower the shape to read its real AABB) — `await` them.
+//
+// AABB in the CURRENT world frame (after every transform appended so far), mm:
+.boundingBox(opts?: { exact?: boolean }): Promise<{ min: [number,number,number]; max: [number,number,number]; size: [number,number,number]; center: [number,number,number] }>
+// Translate so bbox center → world origin; returns this Shape for chaining.
+// After recenter(), a following .translate(x,y,z) places the part's CENTER at
+// (x,y,z). Pass { z:false } etc to recenter only the named axes.
+.recenter(opts?: { x?: boolean; y?: boolean; z?: boolean }): Promise<Shape>
+// Seat on the z=0 floor (bbox min.z → 0), centered in x/y; returns this Shape.
+// { center:false } drops onto z=0 without moving x/y.
+.seatOnFloor(opts?: { center?: boolean }): Promise<Shape>
+//
+//   // Place a fetched servo so its CENTER lands at (20, 0, 0):
+//   const servo = await lib.fetchPart('servo/sg90');
+//   (await servo.recenter()).translate(20, 0, 0);
+//   // Stand a part upright on the build plate:
+//   (await bracket.seatOnFloor());
+
 // Tag this shape with a render-time role color (geometry unchanged). Booleans drop
 // the color so identity lives at leaf parts: a `.color()` call applied to a
 // composed/unioned shape silently has NO effect on the underlying leaf parts —
