@@ -1,0 +1,72 @@
+{
+  "_comment": "Declarative manifest of electronic parts for the kernelCAD catalog. Each entry maps a real, CC-licensed 3D model (fetched at ingest time, NOT committed) to a stable catalog id that LabWired chip/peripheral configs reference. Source: KiCad packages3D (CC-BY-SA 4.0 with the library exception). LabWired sims the silicon; the model placed in a design is the package/module a user actually solders. Where a part has no faithful off-the-shelf model yet, it is OMITTED here (not faked) so the coverage gate flags it.",
+  "baseModelUrl": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/master",
+  "license": "CC-BY-SA-4.0",
+  "attribution": "KiCad Libraries (kicad-packages3D), CC-BY-SA 4.0 with the KiCad library exception",
+  "parts": [
+    {
+      "id": "esp32-wroom-32",
+      "name": "ESP32-WROOM-32 module",
+      "family": "ESP32",
+      "mpn": "ESP32-WROOM-32",
+      "model": "RF_Module.3dshapes/ESP32-WROOM-32.step",
+      "tags": ["mcu", "module", "wifi", "ble", "esp32", "xtensa"]
+    },
+    {
+      "id": "esp32-s3-wroom-1",
+      "name": "ESP32-S3-WROOM-1 module",
+      "family": "ESP32",
+      "mpn": "ESP32-S3-WROOM-1",
+      "model": "RF_Module.3dshapes/ESP32-S3-WROOM-1.step",
+      "tags": ["mcu", "module", "wifi", "ble", "esp32", "esp32s3", "xtensa"]
+    },
+    {
+      "id": "esp32-c3-wroom-02",
+      "name": "ESP32-C3-WROOM-02 module",
+      "family": "ESP32",
+      "mpn": "ESP32-C3-WROOM-02",
+      "model": "RF_Module.3dshapes/ESP32-C3-WROOM-02.step",
+      "tags": ["mcu", "module", "wifi", "ble", "esp32", "esp32c3", "riscv"]
+    },
+    {
+      "id": "ic-lqfp-48",
+      "name": "LQFP-48 (7x7mm, 0.5mm pitch)",
+      "family": "IC package",
+      "mpn": "LQFP-48",
+      "model": "Package_QFP.3dshapes/LQFP-48_7x7mm_P0.5mm.step",
+      "tags": ["ic", "package", "lqfp", "stm32"]
+    },
+    {
+      "id": "ic-lqfp-64",
+      "name": "LQFP-64 (10x10mm, 0.5mm pitch)",
+      "family": "IC package",
+      "mpn": "LQFP-64",
+      "model": "Package_QFP.3dshapes/LQFP-64_10x10mm_P0.5mm.step",
+      "tags": ["ic", "package", "lqfp", "stm32"]
+    },
+    {
+      "id": "ic-lqfp-100",
+      "name": "LQFP-100 (14x14mm, 0.5mm pitch)",
+      "family": "IC package",
+      "mpn": "LQFP-100",
+      "model": "Package_QFP.3dshapes/LQFP-100_14x14mm_P0.5mm.step",
+      "tags": ["ic", "package", "lqfp", "stm32"]
+    },
+    {
+      "id": "ic-lqfp-144",
+      "name": "LQFP-144 (20x20mm, 0.5mm pitch)",
+      "family": "IC package",
+      "mpn": "LQFP-144",
+      "model": "Package_QFP.3dshapes/LQFP-144_20x20mm_P0.5mm.step",
+      "tags": ["ic", "package", "lqfp", "stm32"]
+    },
+    {
+      "id": "ic-qfn-56-7x7",
+      "name": "QFN-56 (7x7mm, 0.4mm pitch)",
+      "family": "IC package",
+      "mpn": "QFN-56",
+      "model": "Package_DFN_QFN.3dshapes/QFN-56-1EP_7x7mm_P0.4mm_EP3.2x3.2mm.step",
+      "tags": ["ic", "package", "qfn", "rp2040", "esp32s3"]
+    }
+  ]
+}
