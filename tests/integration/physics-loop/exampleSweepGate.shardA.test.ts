@@ -12,26 +12,6 @@
 // set the original loop ran. The fast structural completeness checks live in
 // exampleSweepGate.test.ts and guarantee nothing falls out of that set silently.
 
-import { describe, it } from 'vitest';
-import {
-  SHARD_COUNT,
-  discoverSweepExamples,
-  assertExampleLoopClean,
-  PER_EXAMPLE_TIMEOUT_MS,
-} from './exampleSweepShared';
+import { registerSweepShard } from './exampleSweepShared';
 
-const SHARD_INDEX = 0;
-
-describe('example-sweep gate partition A (live runValidateCli, shard 0)', () => {
-  const partition = discoverSweepExamples().filter((_, i) => i % SHARD_COUNT === SHARD_INDEX);
-
-  for (const examplePath of partition) {
-    it(
-      `${examplePath} passes the physics-grounded loop`,
-      async () => {
-        await assertExampleLoopClean(examplePath);
-      },
-      PER_EXAMPLE_TIMEOUT_MS,
-    );
-  }
-});
+registerSweepShard('A', 0);

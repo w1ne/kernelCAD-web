@@ -17,7 +17,7 @@
 import { readdirSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { runValidateCli } from '../../../src/agent/cli/commands/validate';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -210,3 +210,39 @@ export async function assertExampleLoopClean(examplePath: string): Promise<void>
 
 // Per-example test timeout (ms) — each call runs the full BREP-heavy probe.
 export const PER_EXAMPLE_TIMEOUT_MS = 600_000;
+
+// Registers the live per-example sweep suite for one shard partition.
+// Each shard file calls this with its own SHARD_INDEX (0..SHARD_COUNT-1)
+// and partition label. The partition is the index-modulo-SHARD_COUNT slice
+// of `discoverSweepExamples()`.
+//
+// Because SHARD_COUNT is fixed but the live-sweep example set grows and
+// shrinks, some partitions may be EMPTY (e.g. when there are fewer examples
+// than shards). vitest fails a file whose suite registers zero tests
+// ("No test found in suite"), so an empty partition would break CI. We guard
+// by registering a single skipped placeholder when the partition is empty —
+// this keeps every shard file green regardless of example count, with no
+// SHARD_COUNT coupling to maintain.
+export function registerSweepShard(label: string, shardIndex: number): void {
+  const partition = discoverSweepExamples().filter((_, i) => i % SHARD_COUNT === shardIndex);
+
+  describe(`example-sweep gate partition ${label} (live runValidateCli, shard ${shardIndex})`, () => {
+    if (partition.length === 0) {
+      // No examples land in this partition at the current example count.
+      // Register a skipped placeholder so vitest sees a non-empty suite
+      // instead of failing with "No test found in suite".
+      it.skip(`no examples in shard ${shardIndex} at the current example count`, () => {});
+      return;
+    }
+
+    for (const examplePath of partition) {
+      it(
+        `${examplePath} passes the physics-grounded loop`,
+        async () => {
+          await assertExampleLoopClean(examplePath);
+        },
+        PER_EXAMPLE_TIMEOUT_MS,
+      );
+    }
+  });
+}
