@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // @vitest-environment happy-dom
 //
 // Phase 1 embed-mode smoke tests. Covers the new public surface for hosts
@@ -24,6 +26,15 @@ vi.mock('../../funnel/lib/supabaseClient', () => ({
 afterEach(() => {
     cleanup();
     setEmbedConfig(null);
+    // Tests in this file may install fake timers (CodeProvider debounce) and
+    // spy on globals like `fetch`. Restore EVERYTHING so we never leak state
+    // into a sibling test file that vitest runs in the same worker/shard —
+    // e.g. GeometryContext.test.tsx asserts on a fresh `fetch` and a clean
+    // `window`. `vi.unstubAllGlobals()` undoes any `vi.stubGlobal`,
+    // `vi.restoreAllMocks()` undoes any `vi.spyOn`, and `vi.useRealTimers()`
+    // guards against a fake-timer leak if a test throws before restoring.
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
     vi.restoreAllMocks();
 });
 

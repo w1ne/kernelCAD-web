@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Public entry for kernelCAD Studio when consumed as a library (e.g. embedded
 // inside proto.cat). The standalone Vite app still mounts via `main.tsx` →
 // `App.tsx`; this barrel exists so hosts can `import { StudioApp,

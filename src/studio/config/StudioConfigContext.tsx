@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react';
 import { setEmbedConfig } from './embedConfigRef';
 import type { StudioConfig } from './types';
