@@ -5,8 +5,9 @@
 # not here — keep this composite tight.
 #
 # Steps:
-#   1. Install ffmpeg (needed by gallery video tests: blackFrameCheck,
-#      extractPoster, build-gallery).
+#   1. Ensure ffmpeg (needed by gallery video tests: blackFrameCheck,
+#      extractPoster, build-gallery). Preinstalled on the runner image, so the
+#      common path is a no-op; apt fallback is bounded + retried.
 #   2. setup-node (with built-in npm cache for ~/.npm).
 #   3. Cache node_modules keyed on package-lock.json hash → skips npm ci on hit.
 #   4. Cache .tsbuildinfo + node_modules/.cache + node_modules/.vite keyed on
@@ -19,12 +20,31 @@ description: Shared setup steps (node, caches, install) for parallel CI jobs.
 runs:
   using: composite
   steps:
-    - name: Install ffmpeg
+    - name: Ensure ffmpeg
       shell: bash
       run: |
-        sudo apt-get update -qq
-        sudo apt-get install -y -qq ffmpeg
-        ffmpeg -version | head -1
+        # ffmpeg is preinstalled on GitHub's ubuntu-latest runner images, so the
+        # common path touches no network at all. We only fall back to apt when it
+        # is genuinely missing — and even then every apt call is bounded by
+        # `timeout` and retried, so a hung/unreachable mirror can never consume
+        # the whole job. (The previous unbounded `apt-get update` regularly hung
+        # for the full 10-min timeout and cancelled shards → flaky `test` gate.)
+        if command -v ffmpeg >/dev/null 2>&1; then
+          echo "ffmpeg already present: $(ffmpeg -version | head -1)"
+          exit 0
+        fi
+        echo "ffmpeg not found — installing via apt (bounded + retried)"
+        for attempt in 1 2 3; do
+          if sudo timeout 120 apt-get update -qq \
+             && sudo timeout 180 apt-get install -y -qq ffmpeg; then
+            ffmpeg -version | head -1
+            exit 0
+          fi
+          echo "apt attempt ${attempt} failed (mirror flake/timeout); retrying in 5s…"
+          sleep 5
+        done
+        echo "::error::ffmpeg install failed after 3 bounded attempts"
+        exit 1
 
     - name: Setup Node
       uses: actions/setup-node@v4
