@@ -51,7 +51,7 @@ export function StatusBar({
     return (
         <footer
             data-testid="status-bar"
-            className="h-6 shrink-0 border-t border-[#2b313c] bg-[#101318] text-[11px] text-gray-400 flex items-center justify-between px-3 select-none"
+            className="h-6 shrink-0 border-t border-[#2b313c] bg-[#101318] text-[11px] text-gray-400 flex items-center gap-3 px-3 select-none bar-scroll-x"
         >
             <div
                 role="status"
@@ -72,7 +72,7 @@ export function StatusBar({
                     <span className="truncate">No diagnostics</span>
                 )}
             </div>
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-3 shrink-0 ml-auto">
                 <span>{bodyLabel}</span>
                 <span className="inline-flex items-center gap-1">
                     <MousePointer2 size={12} />
