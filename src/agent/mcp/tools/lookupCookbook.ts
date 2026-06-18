@@ -8,6 +8,9 @@
 // is a valid success — tells the agent "no canonical pattern available
 // for this intent; proceed without cookbook help."
 
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
 import { loadSnippets, search } from '../../cookbook/index';
 
 export interface LookupCookbookInput {
@@ -31,9 +34,27 @@ export interface LookupCookbookOutput {
 
 // Snippet inventory is small (~12 in v1) and pure data — load once per
 // process and reuse across calls. Tests load lazily on first use.
+// Resolve the cookbook directory independent of process cwd. In prod the tool
+// runs from the esbuild bundle (dist/mcp/toolRegistry.js) with the cookbook
+// copied alongside it (vendor:build → dist/mcp/cookbook); in dev/tests it runs
+// from source with the cookbook at the repo root. Was previously cwd-relative,
+// which 404'd in the prod container (cwd=/app, no /app/cookbook).
+function resolveCookbookDir(): string {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const candidates = [
+    resolve(here, 'cookbook'), // bundled: dist/mcp/toolRegistry.js → dist/mcp/cookbook
+    resolve(here, '../../../../cookbook'), // source: src/agent/mcp/tools → <repo>/cookbook
+    'cookbook', // cwd-relative fallback (repo-root runs/tests)
+  ];
+  return candidates.find((c) => existsSync(resolve(c, 'snippets'))) ?? candidates[candidates.length - 1];
+}
+
 let cached: ReturnType<typeof loadSnippets> | null = null;
 function snippets() {
-  if (cached === null) cached = loadSnippets();
+  if (cached === null) {
+    const dir = resolveCookbookDir();
+    cached = loadSnippets(resolve(dir, 'snippets'), resolve(dir, 'tags.json'));
+  }
   return cached;
 }
 

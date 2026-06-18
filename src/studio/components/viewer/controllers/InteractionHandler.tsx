@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { useRef } from "react";
 import { HoverManager, type HoverResult } from "../../../features-ui/interaction/HoverManager";
 import { SnapManager, type SnapResult } from "../../../features-ui/interaction/SnapManager";
+import { filterClippedIntersections } from "../clipFilter";
 
 interface InteractionHandlerProps {
     setHovered: (h: HoverResult | null) => void;
@@ -24,7 +25,12 @@ export function InteractionHandler({ setHovered, setSnap }: InteractionHandlerPr
         raycaster.setFromCamera(pointer, camera);
         const intersects = raycaster.intersectObjects(scene.children, true);
 
-        const best = HoverManager.getBestHover(intersects);
+        // In a section/cutaway view the Raycaster still hits geometry that the
+        // clipping planes have visually removed; drop those so hover/selection
+        // doesn't highlight the cut-away ("invisible") structures.
+        const visible = filterClippedIntersections(intersects);
+
+        const best = HoverManager.getBestHover(visible);
         setHovered(best);
         setSnap(SnapManager.getSnapFromHover(best));
     });
