@@ -314,8 +314,67 @@ These are not real-time-graphics methods; for per-frame queries on large counts 
 - `feature.path.spline.tangent-on-2d-only` (error) — tangent vectors must be 2D `[number, number]` arrays (path is planar). Hint: drop the third coordinate.
 - `feature.nurbs.bridge-conversion-failed` (error) — internal bridge could not lift the JS-fit curve back into a `Geom_BSplineCurve`. Hint: reduce waypoint count or relax tolerance; surfaces with > 200 waypoints occasionally hit this on tight fits.
 
+## Reference-driven surfacing — derive sections, don't free-hand them
+
+For an organic body (car body, helmet, fairing, ergonomic shell) do NOT type
+cross-section coordinates by eye and iterate in a chat loop — eyeballed
+waypoints never converge. Derive the curves from a reference photo:
+
+1. **Trace the silhouette.** Run `trace_from_image` (pure-JS contour tracer) on
+   the reference and lift the normalized `[0,1]` waypoints to mm via a scale
+   anchor. See `kernelcad-from-reference/kernelcad-trace-from-image` for the
+   tracing pipeline and the Y-flip.
+2. **Derive sections from the traced outline.** Build the profile/section curves
+   from the traced waypoints (`path().spline(...)`, `nurbsCurve(...)`,
+   `spline3d(...)`), then skin or sweep them — `surfaceFromCurves(sections)`,
+   `variableSweep(spine, sections)`, or `surfaceFromBoundary([...])`. Let the
+   trace own the shape; the agent owns scale, depth, and symmetry.
+3. **Finish with SMALL edge radii.** Tight radii (~20–25 mm) read as
+   crisp-but-curved panels. Huge corner radii (≥ ~120 mm) melt the body into a
+   featureless blob — the silhouette gate passes but the shape stops reading as
+   the object.
+
+### Surfacing gotchas (real, verified — not hypothetical)
+
+- **Swept / lofted / revolved solids LOSE canonical face names.** A
+  `surfaceFromCurves`/`variableSweep`/revolve result has no `'top'`/`'bottom'`
+  faces. Select its faces with the query DSL (`kc.q.face({ ... })`) or list them
+  via `inspect` — never the cardinal-name shortcuts.
+- **Rational NURBS weights are accepted but ignored.** Every surface and curve
+  is built non-rational today; `weights` does not change the result. For an
+  exact conic, approximate with control points, not weights.
+- **You cannot trim / blend / stitch multiple freeform NURBS surfaces into one
+  watertight body yet.** Either `.thicken()` a SINGLE surface to a solid, or
+  boolean-`union` several thickened surfaces (accepting a seam discontinuity at
+  the join). Continuous multi-surface body finishing (G2 trim/stitch into one
+  shell) is a deferred kernel slice — see the handoff workflow below.
+
+## Blockout → export → finish in a DCC tool
+
+For photoreal or heavily-sculpted organic surfacing, the native workflow is to
+build the parametric, watertight **blockout** and printable solids in kernelCAD,
+then export for downstream subdivision / organic surfacing in a DCC tool. This
+is the intended interop handoff: kernelCAD owns the parametric, dimensioned,
+manufacturable body; the DCC tool owns final continuous sculpting.
+
+```bash
+# BREP handoff — named bodies + per-part colors preserved
+kernelcad export step body.kcad.ts -o body.step
+# Mesh handoff — triangulated, PBR materials + axis convention preserved
+kernelcad export glb body.kcad.ts -o body.glb
+```
+
+Confirmed real export targets (the unified `export` tool / `kernelcad export`
+CLI, format-enum dispatched): **STEP** (one named body per part, colors
+preserved), **GLB** (`MeshPhysicalMaterial` PBR + `KHR_materials_*` extensions,
+Z-up→Y-up axis option), **STL** (binary, watertight-verified),
+**3MF** (watertight-gated, print units), plus DXF, SVG-drawing, URDF, SRDF,
+SDF-Gazebo. For organic-surfacing handoff prefer **STEP** (carries true BREP for
+a NURBS-capable DCC) or **GLB** (carries mesh + materials for a subdivision /
+sculpting tool).
+
 ## Related skills
 
 - `kernelcad-authoring` — primitives + sketches still cover most shapes; reach for NURBS only when the freeform contour can't be expressed.
 - `kernelcad-features` — `.thicken(t)` returns a Shape that participates in all standard booleans and face/edge features.
-- `kernelcad-from-reference` — when matching a domed/curved real object (lens, dial, dome).
+- `kernelcad-from-reference` — when matching a domed/curved real object (lens, dial, dome); `kernelcad-trace-from-image` sub-skill drives the reference-trace pipeline above.
