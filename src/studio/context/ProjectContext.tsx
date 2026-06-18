@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { projectService, type KernelCADProject, type ProjectMetadata } from '../../authoring/projectService';
+import { projectService, type KernelCADProject, type ProjectMetadata, type ProjectRevision } from '../../authoring/projectService';
 import { defaultCode } from '../../shared/worker/geometryEngine';
 
 interface ProjectContextType {
@@ -14,6 +14,8 @@ interface ProjectContextType {
     deleteProject: (id: string) => void;
     renameActiveProject: (newName: string) => void;
     saveActiveProject: (project: Partial<KernelCADProject>) => void;
+    revisions: ProjectRevision[];
+    restoreRevision: (v: number) => void;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -97,6 +99,15 @@ export function ProjectProvider({ children, initialCode, projectName }: {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeProjectId, projectVersion, ephemeralProject]);
 
+    // Revision history for the active, persisted project. Ephemeral funnel
+    // projects never persist, so they have no revisions. Recomputes on save
+    // (projectVersion) and on project switch (activeProjectId).
+    const revisions = useMemo<ProjectRevision[]>(() => {
+        if (!activeProjectId || activeProjectId === EPHEMERAL_ID) return [];
+        return projectService.listRevisions(activeProjectId);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeProjectId, projectVersion]);
+
     const openProject = useCallback((id: string) => {
         setActiveProjectId(id);
     }, []);
@@ -159,6 +170,13 @@ export function ProjectProvider({ children, initialCode, projectName }: {
         setTimeout(() => setIsSaving(false), 500);
     }, [activeProjectId, activeProject]);
 
+    const restoreRevision = useCallback((v: number) => {
+        if (!activeProjectId || activeProjectId === EPHEMERAL_ID) return;
+        const rev = revisions.find(r => r.v === v);
+        if (!rev) return;
+        saveActiveProject({ code: rev.code });
+    }, [activeProjectId, revisions, saveActiveProject]);
+
     const value = useMemo(() => ({
         activeProjectId,
         projects,
@@ -168,8 +186,10 @@ export function ProjectProvider({ children, initialCode, projectName }: {
         createProject,
         deleteProject,
         renameActiveProject,
-        saveActiveProject
-    }), [activeProjectId, projects, activeProject, isSaving, openProject, createProject, deleteProject, renameActiveProject, saveActiveProject]);
+        saveActiveProject,
+        revisions,
+        restoreRevision
+    }), [activeProjectId, projects, activeProject, isSaving, openProject, createProject, deleteProject, renameActiveProject, saveActiveProject, revisions, restoreRevision]);
 
     return <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>;
 }
