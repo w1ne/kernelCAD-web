@@ -67,7 +67,11 @@ jobs:
   # green only when ALL shards pass.
   test-shard:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # 15 (not 10) gives headroom for the shard that draws the heavy physics
+    # example-sweep tests (a single example can run ~6 min) so a legitimately
+    # slow run is never cancelled mid-test. Setup itself is now near-instant
+    # (ffmpeg preinstalled; apt fallback bounded) so this is pure test headroom.
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
