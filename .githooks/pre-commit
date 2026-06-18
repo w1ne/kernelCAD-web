@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+#
+# Dependency-free pre-commit hook. Catches — locally, before push — the two
+# "forgot to regenerate the derived artifact" failures that have wasted CI:
+#   (a) missing SPDX headers on new/edited TS source under src/, and
+#   (b) stale cookbook artifacts (src/agent/skills/.../SKILL.md) when their
+#       cookbook source (src/agent/cookbook/**) is part of the commit.
+#
+# Design goals:
+#   - FAST: only acts on what is staged; cookbook:build runs ONLY when a
+#     cookbook source file is staged (never on every commit).
+#   - NON-BLOCKING: if node/scripts are missing (partial checkout) it warns and
+#     exits 0 rather than blocking commits.
+#   - SKIPPABLE: `git commit --no-verify` bypasses it via git's own mechanism.
+#
+# Wired up via core.hooksPath (set by the `prepare` npm script). No husky / no
+# dependencies.
+set -euo pipefail
+
+# Resolve to the repo root so relative script/path checks are stable regardless
+# of the directory the commit was invoked from.
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [ -z "${repo_root}" ]; then
+  exit 0
+fi
+cd "${repo_root}"
+
+# Partial checkout / missing toolchain: warn and let the commit through.
+if ! command -v node >/dev/null 2>&1; then
+  echo "pre-commit: node not found; skipping SPDX/cookbook checks." >&2
+  exit 0
+fi
+
+# Staged added/copied/modified files (renames/deletes excluded by --diff-filter).
+mapfile -t staged < <(git diff --cached --name-only --diff-filter=ACM)
+if [ "${#staged[@]}" -eq 0 ]; then
+  exit 0
+fi
+
+# ---------------------------------------------------------------------------
+# (a) SPDX headers on staged TS source under src/.
+# ---------------------------------------------------------------------------
+ts_staged=()
+for f in "${staged[@]}"; do
+  case "${f}" in
+    src/*.ts | src/*.tsx) ts_staged+=("${f}") ;;
+  esac
+done
+
+if [ "${#ts_staged[@]}" -gt 0 ]; then
+  if [ ! -f scripts/addSpdxHeaders.mjs ]; then
+    echo "pre-commit: scripts/addSpdxHeaders.mjs missing; skipping SPDX check." >&2
+  else
+    # The script rewrites all tracked src/scripts/eval *.ts in place and is
+    # idempotent. Run it, then re-stage only the staged files it touched so we
+    # never silently add unrelated working-tree changes to the commit.
+    node scripts/addSpdxHeaders.mjs >/dev/null
+    spdx_fixed=()
+    for f in "${ts_staged[@]}"; do
+      if ! git diff --quiet -- "${f}"; then
+        git add -- "${f}"
+        spdx_fixed+=("${f}")
+      fi
+    done
+    if [ "${#spdx_fixed[@]}" -gt 0 ]; then
+      echo "pre-commit: inserted missing SPDX header(s) and re-staged:" >&2
+      for f in "${spdx_fixed[@]}"; do echo "  ${f}" >&2; done
+    fi
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+# (b) Cookbook drift — only when a cookbook source file is staged.
+# ---------------------------------------------------------------------------
+cookbook_touched=0
+for f in "${staged[@]}"; do
+  case "${f}" in
+    src/agent/cookbook/*) cookbook_touched=1; break ;;
+  esac
+done
+
+if [ "${cookbook_touched}" -eq 1 ]; then
+  skill_md="src/agent/skills/kernelcad-authoring/SKILL.md"
+  if ! npm run --silent cookbook:build >/dev/null 2>&1; then
+    echo "pre-commit: cookbook:build unavailable; skipping cookbook drift check." >&2
+  elif [ -f "${skill_md}" ] && ! git diff --quiet -- "${skill_md}"; then
+    git add -- "${skill_md}"
+    echo "pre-commit: regenerated stale cookbook artifact and re-staged:" >&2
+    echo "  ${skill_md}" >&2
+  fi
+fi
+
+exit 0

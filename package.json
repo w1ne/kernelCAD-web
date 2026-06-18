@@ -58,7 +58,7 @@
     "preview": "vite preview",
     "release": "npx tsx scripts/release.ts",
     "prepack": "npm run build:cli && npm run build:studio && npm run build:player",
-    "prepare": "npm run build:studio",
+    "prepare": "git config core.hooksPath .githooks || true; npm run build:studio",
     "generate:parts": "npx tsx scripts/generateSeedCatalog.ts assets/parts",
     "prepublishOnly": "npm run generate:parts",
     "pretest": "npm run generate:parts",
