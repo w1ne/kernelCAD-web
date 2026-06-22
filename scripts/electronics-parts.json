@@ -87,6 +87,36 @@
       "tags": ["battery", "lipo", "pouch", "power"],
       "license": "MIT",
       "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT"
+    },
+    {
+      "id": "esp32-c3-supermini",
+      "name": "ESP32-C3 SuperMini board",
+      "family": "ESP32",
+      "mpn": "ESP32-C3-SuperMini",
+      "url": "https://raw.githubusercontent.com/mrtnvgr/KiCad_ESP32-C3-SuperMini/master/ESP32-C3-SuperMini.stp",
+      "tags": ["mcu", "module", "wifi", "ble", "esp32", "esp32c3", "riscv", "usb-c", "supermini"],
+      "license": "OSHW-attribution",
+      "attribution": "KiCad_ESP32-C3-SuperMini by mrtnvgr (github.com/mrtnvgr/KiCad_ESP32-C3-SuperMini)"
+    },
+    {
+      "id": "mlx90640",
+      "name": "MLX90640 thermal camera (Adafruit STEMMA)",
+      "family": "Sensor",
+      "mpn": "Adafruit 4469",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/4469%20MLX90640%20Stemma/4469%20MLX90640%20Stemma.step",
+      "tags": ["sensor", "thermal", "ir", "camera", "mlx90640", "i2c", "stemma"],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT"
+    },
+    {
+      "id": "m12-iolink-5pin",
+      "name": "M12 IO-Link connector (5-pin, A-coded, male)",
+      "family": "Connector",
+      "mpn": "Phoenix Contact 1694211",
+      "url": "https://raw.githubusercontent.com/oro-os/link/HEAD/pcb/link/lib/step/pxc_1694211_02_00_SACC-DSIV-M12MS-5CON-L180_3D.stp",
+      "tags": ["connector", "m12", "iolink", "io-link", "5pin", "a-coded", "phoenix-contact"],
+      "license": "OSHW",
+      "attribution": "Phoenix Contact via oro-os/link (github.com/oro-os/link), OSHW"
     }
   ]
 }
