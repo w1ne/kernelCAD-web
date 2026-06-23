@@ -1319,7 +1319,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
         '(dist/headless-player) is served from an ephemeral local port automatically; a running studio dev server is used ' +
         'as fallback, and { base_url } forces one. The only environment dependency is playwright chromium ' +
         '(npx playwright install chromium). Pass { focus } or { hide } (arrays of feature ids or assembly part names, ' +
-        'mutually exclusive) to isolate parts — same semantics as `kernelcad render --focus/--hide`. PNGs are written to ' +
+        'mutually exclusive) to isolate parts — same semantics as `kernelcad render --focus/--hide`. Pass ' +
+        '{ section: { axis, position, flip? } } to cut a cross-section and inspect INTERIOR geometry (wall thickness, ' +
+        'internal pockets, whether a bore runs through) rather than only the outer shell. PNGs are written to ' +
         '{ out_dir } (default: a fresh temp session directory) and returned as absolute paths with per-view camera ' +
         'descriptions (kernelCAD is Z-up). Mechanism truth runs first, same protocol as `kernelcad render`: a broken ' +
         'mechanism still renders but every tile is watermarked MECHANISM BROKEN (KERNELCAD_RENDER_STRICT=1 refuses ' +
@@ -1344,6 +1346,17 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           no_watermark: { type: 'boolean', description: 'Suppress the kernelCAD version watermark.', default: false },
           no_mechanism_check: { type: 'boolean', description: "Skip the mechanism-truth probe for fast iteration on large assemblies; the preview reports mechanism: 'unverified'. Ignored under KERNELCAD_RENDER_STRICT=1.", default: false },
           base_url: { type: 'string', description: 'Advanced: force a specific render server (e.g. a running studio dev server) instead of the bundled static player.' },
+          section: {
+            type: 'object',
+            description: "Cut the model with one axis-aligned section plane to inspect INTERIOR structure (wall thickness, internal pockets, whether a bore runs through) instead of only the outer shell. position is in mm along the axis (kernelCAD Z-up frame); flip keeps the +axis side (default keeps the -axis side).",
+            properties: {
+              axis: { type: 'string', enum: ['x', 'y', 'z'] },
+              position: { type: 'number' },
+              flip: { type: 'boolean', default: false },
+            },
+            required: ['axis', 'position'],
+            additionalProperties: false,
+          },
         },
       },
     },
