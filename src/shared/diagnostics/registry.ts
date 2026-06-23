@@ -1376,6 +1376,15 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'BRepOffsetAPI_MakeFilling returned no face for the supplied boundary curves.',
   },
+  // NURBS Slice E (1) — surfaceTrim / split.
+  'feature.surface-trim.no-intersection': {
+    hintTemplate:
+      'Surface trim found no intersection between the surface and the cutter. Ensure they actually cross.',
+    nextAction: { kind: 'fix-arg', field: 'by' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A surface trim/split produced no section curve — surfaces do not intersect.',
+  },
   'feature.fillet.continuity-not-applicable': {
     hintTemplate:
       "continuity: 'G2' was requested but the adjacent faces along the target edge are themselves only G1-continuous, so the resulting blend can be no smoother than G1. Either accept the G1 result, refit the upstream faces as NURBS so they are G2 internally, or apply a smaller fillet that fits inside a single smooth region.",

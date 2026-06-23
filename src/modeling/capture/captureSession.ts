@@ -8,7 +8,7 @@ import type { FeatureRecord, ShapeTransform } from '../../shared/intent/featureR
 import type { FeatureId, FeatureKind, FeatureRef, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../../shared/intent/types';
 import { isValidPlaneSpec } from '../../shared/intent/types';
 import type {
-  SurfaceRecord, SurfaceId, NurbsSurfaceData, CoonsPatchData,
+  SurfaceRecord, SurfaceId, NurbsSurfaceData, CoonsPatchData, SurfaceTrimData,
 } from '../../shared/intent/surfaceRecord';
 import type { ReferenceImageMetadata, ReferenceImageScale } from '../../shared/intent/referenceImageRecord';
 import type {
@@ -444,6 +444,15 @@ export class CaptureSession {
 
   getSurfaceRecord(id: SurfaceId): SurfaceRecord | undefined {
     return this.surfaceRecords.find(s => s.id === id);
+  }
+
+  /** Capture a surface trim or split record. Returns a new SurfaceProxy whose
+   *  lowerer (Task 3) runs BRepAlgoAPI_Section against `byRef` at build time. */
+  addSurfaceTrim(surfaceId: SurfaceId, byRef: SurfaceTrimData['byRef'], op: 'trim' | 'split'): SurfaceProxy {
+    const id = this.surfaceIdGen.next();
+    const data: SurfaceTrimData = { surfaceId, byRef, op };
+    this.surfaceRecords.push({ id, kind: 'surfaceTrim', params: {}, data });
+    return new SurfaceProxy(id, this);
   }
 
   /**

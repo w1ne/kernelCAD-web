@@ -1,12 +1,20 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import type { SurfaceId } from '../../shared/intent/surfaceRecord';
+import type { SurfaceId, SurfaceTrimData } from '../../shared/intent/surfaceRecord';
 import type { CaptureSession } from './captureSession';
 import { Shape } from './proxy';
 import { KernelError } from '../../shared/intent/kernelError';
 import { toParam } from '../../shared/runtime/editableHelpers';
 import { isParamRef, type Editable } from '../../shared/runtime/paramRef';
 import { formatScalarForError } from '../../shared/intent/types';
+import type { Curve3DProxy } from './curveProxy';
+
+/** Map a cutter argument to the `byRef` discriminant stored on `SurfaceTrimData`.
+ *  SurfaceProxy → { surfaceId }; Shape / Curve3DProxy → { featureRef }. */
+function refOf(by: SurfaceProxy | Shape | Curve3DProxy): SurfaceTrimData['byRef'] {
+  if (by instanceof SurfaceProxy) return { surfaceId: by.id };
+  return { featureRef: (by as Shape | Curve3DProxy).id };
+}
 
 /**
  * Capture-time proxy for a NURBS surface. NOT a `Shape` — does NOT implement
@@ -85,6 +93,32 @@ export class SurfaceProxy {
       inputs: this._buildInputsWithSectionRefs(),
       params: {},
     });
+  }
+
+  /**
+   * Trim this surface by `by` (another surface, solid Shape, or Curve3D) and
+   * return a new `SurfaceProxy` representing the trimmed result. No geometry is
+   * computed at capture time — the OCCT lowerer (Task 3) runs
+   * `BRepAlgoAPI_Section` and discards the unwanted half at build time.
+   *
+   * @emits feature.surface-trim.no-intersection when the cutter produces no
+   *  section curve against this surface.
+   */
+  trimTo(by: SurfaceProxy | Shape | Curve3DProxy): SurfaceProxy {
+    return this.session.addSurfaceTrim(this.id, refOf(by), 'trim');
+  }
+
+  /**
+   * Split this surface at the intersection with `by`, returning a new
+   * `SurfaceProxy` that represents both halves as a compound. Differs from
+   * `.trimTo()` only in the stored `op` field — the lowerer returns both
+   * pieces instead of discarding one.
+   *
+   * @emits feature.surface-trim.no-intersection when the cutter produces no
+   *  section curve against this surface.
+   */
+  split(by: SurfaceProxy | Shape | Curve3DProxy): SurfaceProxy {
+    return this.session.addSurfaceTrim(this.id, refOf(by), 'split');
   }
 
   /**

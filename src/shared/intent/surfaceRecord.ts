@@ -63,15 +63,28 @@ export interface CoonsPatchData {
 }
 
 /**
+ * Data payload for `surface.trimTo(by)` / `surface.split(by)`. Produced at
+ * capture time only — no geometry is computed here. The lowerer (Task 3) reads
+ * `surfaceId`, resolves the cutter via `byRef`, runs OCCT BRepAlgoAPI_Section,
+ * and returns the trimmed/split result. `op: 'trim'` keeps the portion chosen
+ * by the keep-side heuristic; `op: 'split'` returns both halves as a compound.
+ */
+export interface SurfaceTrimData {
+  surfaceId: SurfaceId;
+  byRef: { surfaceId: SurfaceId } | { featureRef: import('./types').FeatureId };
+  op: 'trim' | 'split';
+}
+
+/**
  * Capture-time record for a Surface. Parallel to `FeatureRecord` but lives
  * on `CaptureSession.surfaceRecords`. Carries enough data for the lowerer
  * to rebuild the surface from session state alone.
  */
 export interface SurfaceRecord {
   id: SurfaceId;
-  kind: 'nurbsSurface' | 'surfaceFromCurves' | 'coonsPatch';
+  kind: 'nurbsSurface' | 'surfaceFromCurves' | 'coonsPatch' | 'surfaceTrim';
   params: Record<string, Param>;
-  data: NurbsSurfaceData | SurfaceFromCurvesData | CoonsPatchData;
+  data: NurbsSurfaceData | SurfaceFromCurvesData | CoonsPatchData | SurfaceTrimData;
   scriptLocation?: ScriptLocation;
   /** Optional structured diagnostics from capture-time validation. */
   diagnostics?: import('../diagnostics/diagnostic').CompilerDiagnostic[];

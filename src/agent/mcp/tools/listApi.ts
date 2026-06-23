@@ -196,6 +196,16 @@ export const SURFACE_METHODS: ApiEntry[] = [
     signature: '() => Shape',
     description: 'Wrap this surface as a single-face zero-volume Shape (TopoDS_Shell). Use as a profile placeholder for downstream face-aware features; `.volume()` returns ~0 but `.boundingBox()` works.',
   },
+  {
+    name: 'trimTo',
+    signature: '(by: Surface | Shape | Curve3D) => Surface',
+    description: 'Trim this surface at its intersection with `by` (another Surface, a solid Shape, or a Curve3D) and return a new Surface representing the kept half. No geometry is computed at capture time — the lowerer runs BRepAlgoAPI_Section and discards the unwanted half. Emits `feature.surface-trim.no-intersection` when the cutter produces no section curve.',
+  },
+  {
+    name: 'split',
+    signature: '(by: Surface | Shape | Curve3D) => Surface',
+    description: 'Split this surface at its intersection with `by` and return a new Surface that represents both halves as a compound. Differs from `.trimTo()` only in that both pieces are kept. Emits `feature.surface-trim.no-intersection` when the cutter produces no section curve.',
+  },
 ];
 
 /**
