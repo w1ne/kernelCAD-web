@@ -152,7 +152,10 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       track params — only pose-only mate timelines bake) = 226.
     //  +  1 export.sdf-gazebo.pose-unsolved (simulator-verified SDF export:
     //       mate graph unsolvable -> links emitted at the model origin) = 227.
-    expect(catalogue.size).toBe(227);
+    //  +  1 mechanism.unverified-budget-exceeded (T3 post-condition gate: the
+    //       over-budget BREP pose-sweep skip is now a LOUD structured
+    //       diagnostic instead of a silent console.warn) = 228.
+    expect(catalogue.size).toBe(228);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

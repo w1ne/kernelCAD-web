@@ -52,6 +52,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
       dryRun: { type: 'boolean', description: 'True when the result came from a fast dry run.' },
       parts: { type: 'object', additionalProperties: true, description: 'Assembly parts summary { count, names } when the scene is assembly-built.' },
+      mechanism: { type: 'string', enum: ['real', 'broken', 'unverified'], description: "Mechanism-truth verdict for an assembly-built scene (default-on; omitted for dryRun, non-assembly, or skipMechanismCheck:true). 'broken' makes ok:false; 'unverified' keeps ok and surfaces a loud budget diagnostic." },
     },
     required: ['ok', 'featureCount', 'diagnostics'],
     additionalProperties: true,

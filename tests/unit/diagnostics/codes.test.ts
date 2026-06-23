@@ -20,8 +20,11 @@ describe('diagnostic catalogue invariants', () => {
     //   track params — only pose-only mate timelines bake to rigid transforms).
     // + 1 export.sdf-gazebo.pose-unsolved (simulator-verified SDF export:
     //   mate graph unsolvable -> links emitted at the model origin).
-    expect(DIAGNOSTIC_CODES).toHaveLength(227);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(227);
+    // + 1 mechanism.unverified-budget-exceeded (T3 post-condition gate: the
+    //   over-budget BREP pose-sweep skip is now a LOUD structured diagnostic
+    //   instead of a silent console.warn).
+    expect(DIAGNOSTIC_CODES).toHaveLength(228);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(228);
   });
 
   it('every code has a non-empty hint template', () => {

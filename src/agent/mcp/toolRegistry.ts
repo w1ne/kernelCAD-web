@@ -82,7 +82,10 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
         'Use this when you need to run a script and check it compiles. ' +
         'Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics. ' +
         'When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), ' +
-        'also returns a parts summary { count, names }. ' +
+        'also returns a parts summary { count, names } AND runs the mechanism-truth gate by ' +
+        'default: the `mechanism` field reports real/broken/unverified and a broken mechanism ' +
+        '(self-collision, fastened drift, dof-mismatch) makes ok:false with the failures in ' +
+        'diagnostics. Pass { skipMechanismCheck: true } to opt out. ' +
         'Pass either { file: "<path>" } or { code: "<inline source>" }. ' +
         'Set { dryRun: true } for fast validation while iterating: transpile + capture + ' +
         'capture-light checks WITHOUT OCCT lowering, DFM gates, or meshing — milliseconds ' +
@@ -100,6 +103,15 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
             description:
               'Fast validation only: skip OCCT lowering, DFM gates, and meshing. ' +
               'Does not set or clear the active session.',
+          },
+          skipMechanismCheck: {
+            type: 'boolean',
+            description:
+              'Opt out of the default mechanism-truth gate. By default a full ' +
+              'evaluation of an assembly-built scene runs checkMechanismTruth and ' +
+              'returns a `mechanism` verdict (real/broken/unverified); a broken ' +
+              "mechanism makes ok:false. Set true to skip the sweep entirely (no " +
+              '`mechanism` field, no cost). Ignored for dryRun and non-assembly scripts.',
           },
         },
       },

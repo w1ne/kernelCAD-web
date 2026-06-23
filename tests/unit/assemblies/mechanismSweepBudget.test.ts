@@ -17,7 +17,12 @@
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createApi } from '../../../src/modeling/api';
-import { checkMechanismTruth } from '../../../src/modeling/runtime/mechanismTruth';
+import {
+  checkMechanismTruth,
+  effectiveSweepBudget,
+  BREP_SWEEP_BUDGET,
+  BREP_SWEEP_BUDGET_CEILING,
+} from '../../../src/modeling/runtime/mechanismTruth';
 
 function makeHinge() {
   const session = new CaptureSession();
@@ -36,11 +41,55 @@ describe('checkMechanismTruth — BREP-sweep budget gate (issue #348)', () => {
     const arm = makeHinge();
     // A zero budget forces the over-budget branch for any assembly with
     // parts and samples. The cheap criteria (1 fastened — no-op for a
-    // revolute-only arm; 4 orphan — graph-connected) find nothing, so the
-    // verdict is the honest 'unverified': we never ran the overlap sweep.
+    // revolute-only arm; 4 orphan — graph-connected) find nothing.
     const result = await checkMechanismTruth(arm, { sweepBudget: 0 });
     expect(result.mechanism).toBe('unverified');
-    expect(result.failures).toEqual([]);
+  });
+
+  it('emits a LOUD structured diagnostic (not just console.warn) when the sweep is skipped', async () => {
+    const arm = makeHinge();
+    // The over-budget skip used to push NOTHING into failures and only
+    // console.warn — so an 'unverified' verdict carried no machine-readable
+    // signal. It must now push exactly one structured diagnostic carrying
+    // the work estimate, the budget, and the part count.
+    const result = await checkMechanismTruth(arm, { sweepBudget: 0 });
+    expect(result.mechanism).toBe('unverified');
+    const budgetDiags = result.failures.filter(
+      (d) => d.code === 'mechanism.unverified-budget-exceeded',
+    );
+    expect(budgetDiags).toHaveLength(1);
+    // Diagnostic is a non-fatal carrier of the skip, NOT a 'broken' verdict.
+    expect(budgetDiags[0].severity).toBe('warn');
+    // Carries the evidence: estimated work, budget, part count.
+    expect(budgetDiags[0].message).toMatch(/budget/i);
+    expect(budgetDiags[0].message).toContain('2'); // 2 parts in the hinge
+  });
+
+  describe('effectiveSweepBudget — auto-scale to part count, clamped to a ceiling', () => {
+    it('keeps the fixed floor for small assemblies', () => {
+      // 2 parts × 60 = 120 < 300 floor, so the fixed budget wins.
+      expect(effectiveSweepBudget(2)).toBe(BREP_SWEEP_BUDGET);
+    });
+
+    it('scales above the fixed floor as part count grows', () => {
+      // A ~33-part assembly would blow past the old fixed 300 on pose
+      // samples alone; the auto-scaled budget tracks part count so it is
+      // actually swept rather than silently dropped.
+      expect(effectiveSweepBudget(33)).toBeGreaterThan(BREP_SWEEP_BUDGET);
+      expect(effectiveSweepBudget(33)).toBe(33 * 60);
+    });
+
+    it('clamps to the ceiling so a pathological dense assembly still bails LOUDLY', () => {
+      // 100 parts × 60 = 6000 would exceed the ceiling; clamp to it so a
+      // 100-part × 13-pose blow-up (work ≫ ceiling) still degrades to
+      // unverified rather than hanging.
+      expect(effectiveSweepBudget(100)).toBe(BREP_SWEEP_BUDGET_CEILING);
+    });
+
+    it('honours a caller override verbatim (no clamp) as the escape hatch / test seam', () => {
+      expect(effectiveSweepBudget(100, Infinity)).toBe(Infinity);
+      expect(effectiveSweepBudget(2, 0)).toBe(0);
+    });
   });
 
   it('runs the full sweep (verdict is real or broken, never unverified) under a generous budget', async () => {
