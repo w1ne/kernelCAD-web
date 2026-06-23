@@ -347,14 +347,18 @@ waypoints never converge. Derive the curves from a reference photo:
   `surfaceFromCurves`/`variableSweep`/revolve result has no `'top'`/`'bottom'`
   faces. Select its faces with the query DSL (`kc.q.face({ ... })`) or list them
   via `inspect` — never the cardinal-name shortcuts.
-- **Rational NURBS weights are accepted but ignored.** Every surface and curve
-  is built non-rational today; `weights` does not change the result. For an
-  exact conic, approximate with control points, not weights.
-- **You cannot trim / blend / stitch multiple freeform NURBS surfaces into one
-  watertight body yet.** Either `.thicken()` a SINGLE surface to a solid, or
-  boolean-`union` several thickened surfaces (accepting a seam discontinuity at
-  the join). Continuous multi-surface body finishing (G2 trim/stitch into one
-  shell) is a deferred kernel slice — see the handoff workflow below.
+- **Rational NURBS surface weights are honored** (Slice E, v0.14.0). Supplying
+  `weights` builds an exact rational surface — use them for exact circles,
+  cylinders, spheres, and conics rather than approximating with control points.
+  (3D `nurbsCurve` weights are still non-rational; that lane is deferred.)
+- **Trim and sew freeform NURBS surfaces into a watertight solid** (Slice E).
+  `.trimTo(cutter)` aligns a patch to a shared boundary (planar patches only —
+  curved patches are refused with `feature.surface-trim.non-planar`), then
+  `sew([...], { requireClosed: true })` fuses coincident-edged patches into a
+  closed solid, then optionally `.draft(angle, { face })` tapers a face for mold
+  release (analytic faces only; OCCT refuses to draft spline faces, emitting
+  `feature.draft.failed`). A single patch can still `.thicken()` to a solid.
+  Face-face blends and standalone surface offset are deferred to a later slice.
 
 ## Blockout → export → finish in a DCC tool
 
