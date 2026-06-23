@@ -13,7 +13,7 @@ import type { Curve3DProxy } from './curveProxy';
  *  SurfaceProxy → { surfaceId }; Shape / Curve3DProxy → { featureRef }. */
 function refOf(by: SurfaceProxy | Shape | Curve3DProxy): SurfaceTrimData['byRef'] {
   if (by instanceof SurfaceProxy) return { surfaceId: by.id };
-  return { featureRef: (by as Shape | Curve3DProxy).id };
+  return { featureRef: { kind: 'feature', id: (by as Shape | Curve3DProxy).id } };
 }
 
 /**

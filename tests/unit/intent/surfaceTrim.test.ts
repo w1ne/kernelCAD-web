@@ -4,6 +4,7 @@ import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { SurfaceProxy } from '../../../src/modeling/capture/surfaceProxy';
 import type { SurfaceTrimData } from '../../../src/shared/intent/surfaceRecord';
+import type { FeatureRef } from '../../../src/shared/intent/types';
 
 const UNIT_PATCH = {
   kind: 'nurbsSurface' as const,
@@ -48,7 +49,9 @@ describe('SurfaceProxy.trimTo', () => {
     const rec = session.getSurfaceRecord(trimmed.id);
     expect(rec?.kind).toBe('surfaceTrim');
     const data = rec?.data as SurfaceTrimData;
-    expect((data.byRef as { featureRef: string }).featureRef).toBe(shape.id);
+    const ref = (data.byRef as { featureRef: FeatureRef }).featureRef;
+    expect((ref as { kind: string; id: string }).kind).toBe('feature');
+    expect((ref as { kind: string; id: string }).id).toBe(shape.id);
   });
 
   it('trimTo returns a fresh SurfaceProxy with a new incremented id', () => {

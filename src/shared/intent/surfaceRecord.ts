@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import type { Param, ScriptLocation, Vec3, FeatureId } from './types';
+import type { Param, ScriptLocation, Vec3, FeatureId, FeatureRef } from './types';
 
 /**
  * Stable per-session identifier for a captured NURBS surface. Parallel to
@@ -71,7 +71,7 @@ export interface CoonsPatchData {
  */
 export interface SurfaceTrimData {
   surfaceId: SurfaceId;
-  byRef: { surfaceId: SurfaceId } | { featureRef: import('./types').FeatureId };
+  byRef: { surfaceId: SurfaceId } | { featureRef: FeatureRef };
   op: 'trim' | 'split';
 }
 
