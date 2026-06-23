@@ -29,6 +29,7 @@ import { isCurve3DMetadata } from '../../../shared/intent/curve3dRecord';
 import { lowerVariableSweep, type VariableSweepSectionLowered } from './variableSweepLowerer';
 import { isVariableSweepMetadata } from '../../../shared/intent/variableSweepRecord';
 import { lowerCoonsPatch } from './coonsPatchLowerer';
+import { lowerSurfaceTrim } from './surfaceTrimLowerer';
 import { lowerEmbossText } from './embossTextLowerer';
 import { lowerProjectCurve } from './projectCurveLowerer';
 import { pickEdges, pickFace } from '../../../kernel/backends/occt/edgeSelection';
@@ -480,6 +481,23 @@ export class OcctLowerer implements FeatureLowerer {
       return undefined;
     }
     const sid = surfaceRef.surfaceId;
+    return this.buildSurfaceById(sid, r, inputs, diagnostics, allRecords);
+  }
+
+  /**
+   * Resolve a SurfaceId to a `BuiltSurface`, building it from its
+   * `SurfaceRecord` when not already cached. Recursive: a `surfaceTrim` record
+   * resolves its own base surface (and a sibling-surface cutter) through this
+   * same method. `r` is the *consuming* feature record (used only for
+   * diagnostic attribution).
+   */
+  private buildSurfaceById(
+    sid: import('../../../shared/intent/surfaceRecord').SurfaceId,
+    r: FeatureRecord,
+    inputs: ResolvedInputs,
+    diagnostics: CompilerDiagnostic[],
+    allRecords?: readonly FeatureRecord[],
+  ): import('../../../kernel/backends/occt/nurbsSurfaceLowerer').BuiltSurface | undefined {
     let surface: import('../../../kernel/backends/occt/nurbsSurfaceLowerer').BuiltSurface | undefined =
       inputs.surfaces?.get(sid) ?? this.surfaceCache.get(sid);
     if (surface) return surface;
@@ -562,6 +580,50 @@ export class OcctLowerer implements FeatureLowerer {
         }
         const { face } = lowerCoonsPatch(surfRec.data, allRecords, this.importedGeometry);
         surface = { kind: 'face', face };
+      } else if (surfRec.kind === 'surfaceTrim') {
+        // NURBS Slice E (E2): trim/split a surface against a cutter. Resolve the
+        // base surface and the cutter, then cut via BRepAlgoAPI_Section + a
+        // half-space prism (BRepFeat_SplitShape is not bound in this wasm —
+        // see surfaceTrimLowerer.ts header). Both base and a sibling-surface
+        // cutter resolve through this same method (recursion). NB:
+        // `SurfaceTrimData` (unlike the other data unions) carries no `kind`
+        // discriminant, so branch on the *record* kind here.
+        const trimData = surfRec.data as import('../../../shared/intent/surfaceRecord').SurfaceTrimData;
+        const baseBuilt = this.buildSurfaceById(trimData.surfaceId, r, inputs, diagnostics, allRecords);
+        if (!baseBuilt) return undefined;
+        if (baseBuilt.kind !== 'face') {
+          diagnostics.push({
+            target: this.target,
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `surfaceTrim ${sid}: base surface is a multi-face shell; trim supports single-face surfaces only.`,
+            hint: 'invalid-args.surfaceTrim.base — trim a nurbsSurface / coonsPatch face, not a skinned shell.',
+          });
+          return undefined;
+        }
+
+        const cutterFace = this.resolveTrimCutter(trimData, r, inputs, diagnostics, allRecords);
+        if (!cutterFace) return undefined;
+
+        try {
+          const { face } = lowerSurfaceTrim(baseBuilt.face, cutterFace, trimData.op);
+          surface = { kind: 'face', face };
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          const noIntersection = /do not intersect|no section curve/i.test(msg);
+          diagnostics.push({
+            target: this.target,
+            code: noIntersection ? 'feature.surface-trim.no-intersection' : 'feature.kernel-failed',
+            featureId: r.id,
+            severity: 'error',
+            message: `surfaceTrim ${sid}: ${msg}`,
+            hint: noIntersection
+              ? HINT_TEMPLATES['feature.surface-trim.no-intersection'].template
+              : 'kernel-failed — ensure the surface and cutter cross cleanly (well-conditioned, non-tangent).',
+          });
+          return undefined;
+        }
       } else {
         diagnostics.push({
           target: this.target,
@@ -591,6 +653,86 @@ export class OcctLowerer implements FeatureLowerer {
     if (!surface) return undefined;
     this.surfaceCache.set(sid, surface);
     return surface;
+  }
+
+  /**
+   * Resolve a `surfaceTrim` cutter (`byRef`) to a single `replicad.Face`.
+   *  - `{ surfaceId }`: a sibling Surface → resolved through `buildSurfaceById`
+   *    and required to be a single face.
+   *  - `{ featureRef }`: a lowered feature shape (box / imported solid / sweep)
+   *    looked up via `importedGeometry` / `inputs.byKey` → its first TopoDS_Face
+   *    is used as the cutter surface (best-effort; the Section only needs a
+   *    surface that crosses the base).
+   */
+  private resolveTrimCutter(
+    trimData: import('../../../shared/intent/surfaceRecord').SurfaceTrimData,
+    r: FeatureRecord,
+    inputs: ResolvedInputs,
+    diagnostics: CompilerDiagnostic[],
+    allRecords?: readonly FeatureRecord[],
+  ): import('replicad').Face | undefined {
+    const byRef = trimData.byRef;
+    if ('surfaceId' in byRef) {
+      const built = this.buildSurfaceById(byRef.surfaceId, r, inputs, diagnostics, allRecords);
+      if (!built) return undefined;
+      if (built.kind !== 'face') {
+        diagnostics.push({
+          target: this.target,
+          code: 'feature.invalid-args',
+          featureId: r.id,
+          severity: 'error',
+          message: `surfaceTrim: cutter surface ${byRef.surfaceId} is a multi-face shell; use a single-face surface as the cutter.`,
+          hint: 'invalid-args.surfaceTrim.cutter — pass a nurbsSurface / coonsPatch face as the cutter.',
+        });
+        return undefined;
+      }
+      return built.face;
+    }
+
+    // featureRef cutter: find the lowered shape and extract its first face.
+    const fid = byRef.featureRef.id;
+    const back =
+      this.importedGeometry.get(fid) ??
+      (inputs.byKey[fid] as OcctBackend | undefined) ??
+      (inputs.byKey['by'] as OcctBackend | undefined);
+    if (!back) {
+      diagnostics.push({
+        target: this.target,
+        code: 'recompute.input.missing',
+        featureId: r.id,
+        severity: 'error',
+        message: `surfaceTrim: cutter feature ${fid} was not lowered before the trim resolved.`,
+        hint: 'recompute.input.missing — capture/lower the cutter shape before trimming against it.',
+      });
+      return undefined;
+    }
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const oc = (replicad as any).getOC();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const raw = (back.getReplicadShape() as any).wrapped;
+      const exp = new oc.TopExp_Explorer_2(
+        raw,
+        oc.TopAbs_ShapeEnum.TopAbs_FACE,
+        oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
+      );
+      if (!exp.More()) {
+        throw new Error(`cutter feature ${fid} has no faces`);
+      }
+      const topoFace = oc.TopoDS.Face_1(exp.Current());
+      return new replicad.Face(topoFace);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      diagnostics.push({
+        target: this.target,
+        code: 'feature.invalid-args',
+        featureId: r.id,
+        severity: 'error',
+        message: `surfaceTrim: could not extract a cutter face from feature ${fid}: ${msg}`,
+        hint: 'invalid-args.surfaceTrim.cutter — pass a surface or a shape with at least one planar face.',
+      });
+      return undefined;
+    }
   }
 
   /** v0.6: absolute directory of the calling `.kcad.ts` script. Used by the
