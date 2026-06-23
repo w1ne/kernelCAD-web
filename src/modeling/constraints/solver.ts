@@ -3,18 +3,42 @@
 import type { Constraint, Point, SketchEntity, SolverState, Line, Circle } from "./types";
 // import type { EntityType } from "./types";
 
+/** Aggregate-residual tolerance below which the constraint solve is
+ *  considered converged. Mirrors the per-iteration early-out threshold. */
+export const CONSTRAINT_RESIDUAL_TOL = 0.0001;
+
+export interface ConstraintSolveResult {
+    /** True when the aggregate residual fell below `CONSTRAINT_RESIDUAL_TOL`
+     *  within the iteration cap. False means the constraints could not be
+     *  satisfied (contradictory / over-constrained / stalled). */
+    converged: boolean;
+    /** The aggregate residual on the final iteration (sum of per-constraint
+     *  error magnitudes). 0 when there are no constraints. */
+    residual: number;
+    /** Number of iterations actually run before convergence or the cap. */
+    iterations: number;
+}
+
 export class ConstraintSolver {
     private iterations: number = 100;
 
-    solve(state: SolverState) {
+    solve(state: SolverState): ConstraintSolveResult {
+        let totalError = 0;
+        let ran = 0;
         for (let i = 0; i < this.iterations; i++) {
-            let totalError = 0;
+            ran = i + 1;
+            totalError = 0;
             for (const constraint of state.constraints) {
                 totalError += this.solveConstraint(constraint, state.entities);
             }
             // If satisfied, break early? (Maybe keep it stable for dragging)
-            if (totalError < 0.0001) break;
+            if (totalError < CONSTRAINT_RESIDUAL_TOL) break;
         }
+        return {
+            converged: totalError < CONSTRAINT_RESIDUAL_TOL,
+            residual: totalError,
+            iterations: ran,
+        };
     }
 
     private solveConstraint(constraint: Constraint, entities: Map<string, SketchEntity>): number {
