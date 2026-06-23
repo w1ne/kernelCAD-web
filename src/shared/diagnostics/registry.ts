@@ -575,6 +575,14 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'BRepOffsetAPI_DraftAngle could not taper the requested faces.',
   },
+  'feature.draft.neutral-plane-derived': {
+    hintTemplate:
+      'A named neutralPlane different from the drafted face is not yet honored; the parting plane was derived from the face geometry. Full named-neutral-plane support lands in a later slice.',
+    nextAction: { kind: 'fix-arg', field: 'neutralPlane' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'A draft was given a named neutralPlane distinct from the drafted face; the plane was derived from face geometry instead of the named plane.',
+  },
   // SDF (2) — W2.3
   'feature.sdf.field-undefined': {
     hintTemplate:

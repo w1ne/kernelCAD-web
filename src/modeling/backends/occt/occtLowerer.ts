@@ -8,7 +8,7 @@ import type {
   ShapeBackend,
 } from '../../../kernel/backends/backend';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
-import type { FeatureId, FeatureKind, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../../../shared/intent/types';
+import type { FaceRef, FeatureId, FeatureKind, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../../../shared/intent/types';
 import { isValidPlaneSpec } from '../../../shared/intent/types';
 import { forwardKinematics, type NumericPoses } from '../../capture/forwardKinematics';
 import type { AssemblyJointStored, AssemblyPartStored } from '../../capture/assembly';
@@ -1783,6 +1783,30 @@ export class OcctLowerer implements FeatureLowerer {
           return { shape: base, diagnostics };
         }
         drainResolvedWarnings(r, diagnostics);
+        // Honesty signal: the capture layer DEFAULTS metadata.neutralPlane to
+        // the drafted face's own selector string (canonical/label name), and
+        // sets '' when the face is a non-named selector (FaceQuery etc.). The
+        // neutral plane is ALWAYS derived from the target face geometry here, so
+        // a genuine override — a named neutralPlane pointing at a DIFFERENT face
+        // than the drafted one — is silently dropped. Surface a warning in that
+        // case rather than pretending the named plane was honored. Full
+        // named-neutral-plane resolution is deferred to a later slice.
+        const neutralPlane = (r.metadata as { neutralPlane?: string } | undefined)?.neutralPlane ?? '';
+        const faceRef = (r.inputs.face as { ref?: FaceRef } | undefined)?.ref;
+        const targetFaceSelector =
+          faceRef?.kind === 'canonical' ? faceRef.face
+          : faceRef?.kind === 'label' ? faceRef.name
+          : ''; // FaceQuery / tracked / created etc. → capture default was ''
+        if (neutralPlane !== '' && neutralPlane !== targetFaceSelector) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.draft.neutral-plane-derived',
+            featureId: r.id,
+            severity: 'warn',
+            message: `Named neutralPlane '${neutralPlane}' differs from the drafted face '${targetFaceSelector || '(query)'}'; the parting plane was derived from the face geometry instead.`,
+            hint: 'A named neutralPlane different from the drafted face is not yet honored; the parting plane was derived from the face geometry. Full named-neutral-plane support lands in a later slice.',
+          });
+        }
         try {
           // The resolved replicad Face gives us both the target face hash and the
           // geometry needed to DERIVE the neutral plane + pull direction when the

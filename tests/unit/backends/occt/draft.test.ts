@@ -65,11 +65,15 @@ describe('draftWithHistory (direct OCCT)', () => {
     );
     expect(res.shape).toBeDefined();
 
-    // The descendant of the front face is now tapered; its area ≠ 100.
+    // The descendant of the front face is now tapered. With Add(flag=true) the
+    // angle is measured FROM the pull direction (additive taper): drafting the
+    // front face about the bottom plane while pulling +Z leans the face OUTWARD
+    // as it rises, so its area GROWS past the flat 100. Lock that sign so a
+    // flipped-angle regression is caught, not just any deviation from 100.
     const drafted = faceAreas(res.shape).filter(f => f.cy < 4);
     const tilted = drafted.find(f => Math.abs(f.area - 100) > 1e-2);
     expect(tilted).toBeDefined();
-    expect(Math.abs(tilted!.area - 100)).toBeGreaterThan(1e-2); // taper changed the area
+    expect(tilted!.area).toBeGreaterThan(100 + 1e-2); // additive taper → drafted face area > original 100
   });
 
   it('lowers a draft feature through OcctLowerer and changes geometry', async () => {
@@ -89,6 +93,46 @@ describe('draftWithHistory (direct OCCT)', () => {
     expect(result.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
     // Drafting tilts a face → the solid volume changes.
     expect(Math.abs(result.shape.volume() - beforeVol)).toBeGreaterThan(1e-2);
+  });
+
+  it('warns feature.draft.neutral-plane-derived when a named neutralPlane differs from the drafted face', async () => {
+    // draft(angle, { face: 'front', neutralPlane: 'bottom' }) — a genuine override
+    // to a DIFFERENT parting plane. Full named-neutral-plane support is deferred,
+    // so the lowerer derives the plane from face geometry and must SIGNAL that.
+    const base = OcctBackend.box(10, 10, 10);
+    const r: FeatureRecord = {
+      id: 'draft_3', kind: 'draft',
+      inputs: {
+        base: { kind: 'feature', id: 'box_1' },
+        face: { kind: 'face', featureId: 'box_1', ref: { kind: 'canonical', face: 'front' } },
+      },
+      params: { angle: deg(8) },
+      transforms: [], suppressed: false,
+      metadata: { neutralPlane: 'bottom' }, // override: parting plane ≠ drafted face
+    };
+    const result = await new OcctLowerer().lower(r, { byKey: { base } });
+    expect(result.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    expect(result.diagnostics.some(d => d.code === 'feature.draft.neutral-plane-derived')).toBe(true);
+    // Geometry still changes — the derived plane is used, the override is only signalled.
+    expect(Math.abs(result.shape.volume() - base.volume())).toBeGreaterThan(1e-2);
+  });
+
+  it('does NOT warn neutral-plane-derived for the default case (neutralPlane == drafted face)', async () => {
+    // draft(angle, { face: 'front' }) — capture defaults neutralPlane to 'front'
+    // (the drafted face). That is the default, not an override → no warning spam.
+    const base = OcctBackend.box(10, 10, 10);
+    const r: FeatureRecord = {
+      id: 'draft_4', kind: 'draft',
+      inputs: {
+        base: { kind: 'feature', id: 'box_1' },
+        face: { kind: 'face', featureId: 'box_1', ref: { kind: 'canonical', face: 'front' } },
+      },
+      params: { angle: deg(8) },
+      transforms: [], suppressed: false,
+      metadata: { neutralPlane: 'front' }, // default: equals the drafted face selector
+    };
+    const result = await new OcctLowerer().lower(r, { byKey: { base } });
+    expect(result.diagnostics.some(d => d.code === 'feature.draft.neutral-plane-derived')).toBe(false);
   });
 
   it('emits feature.draft.failed for an unresolvable / impossible draft (no throw)', async () => {
