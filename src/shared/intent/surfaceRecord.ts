@@ -67,7 +67,12 @@ export interface CoonsPatchData {
  * capture time only — no geometry is computed here. The lowerer (Task 3) reads
  * `surfaceId`, resolves the cutter via `byRef`, runs OCCT BRepAlgoAPI_Section,
  * and returns the trimmed/split result. `op: 'trim'` keeps the portion chosen
- * by the keep-side heuristic; `op: 'split'` returns both halves as a compound.
+ * by the keep-side heuristic (the larger surviving piece).
+ *
+ * `op: 'split'` currently returns ONLY the larger piece too — identical to
+ * `trim` — and emits a `feature.surface-trim.split-deferred` warning. Full
+ * split-into-both-halves (a compound of both sides) is deferred to a later
+ * slice; the lowerer does not fabricate a compound today.
  */
 export interface SurfaceTrimData {
   surfaceId: SurfaceId;

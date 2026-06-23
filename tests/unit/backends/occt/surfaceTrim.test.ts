@@ -3,9 +3,15 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 import { buildNurbsFace } from '../../../../src/kernel/backends/occt/nurbsSurfaceLowerer';
-import { lowerSurfaceTrim, faceArea } from '../../../../src/modeling/backends/occt/surfaceTrimLowerer';
+import {
+  lowerSurfaceTrim,
+  faceArea,
+  NonPlanarTrimError,
+} from '../../../../src/modeling/backends/occt/surfaceTrimLowerer';
 import { CaptureSession } from '../../../../src/modeling/capture/captureSession';
 import { createApi } from '../../../../src/modeling/api';
+import { RecomputeEngine } from '../../../../src/modeling/compute/recomputeEngine';
+import { createOcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
 import type * as replicad from 'replicad';
 
 /** A 2×2 axis-aligned planar patch in the z=0 plane, area 4, spanning [0,2]×[0,2]. */
@@ -33,6 +39,23 @@ function crossingPatchHalving(): replicad.Face {
   });
 }
 
+/**
+ * A genuinely curved (non-planar) patch: a 3×3 degree-2 control net whose
+ * middle row/column is lifted in +z, so the surface normal swings far across
+ * the UV domain. The slab-trim path would silently mis-trim this — the guard
+ * must refuse.
+ */
+function curvedPatch(): replicad.Face {
+  return buildNurbsFace({
+    controls: [
+      [[0, 0, 0], [0, 1, 0], [0, 2, 0]],
+      [[1, 0, 2], [1, 1, 2], [1, 2, 2]],
+      [[2, 0, 0], [2, 1, 0], [2, 2, 0]],
+    ],
+    degree: { u: 2, v: 2 },
+  });
+}
+
 describe('lowerSurfaceTrim', () => {
   beforeAll(async () => {
     await initOcct();
@@ -45,10 +68,10 @@ describe('lowerSurfaceTrim', () => {
     const { face } = lowerSurfaceTrim(base, crossingPatchHalving(), 'trim');
 
     const trimmedArea = faceArea(face);
-    // The crossing halves the patch; trim keeps the larger surviving piece,
-    // which is strictly smaller than the original 2×2 patch.
-    expect(trimmedArea).toBeLessThan(4 - 1e-3);
-    expect(trimmedArea).toBeGreaterThan(0);
+    // The crossing at x=1 halves the 2×2 patch (area 4) right down the middle,
+    // so the kept piece is the [1,2]×[0,2] half — area ≈ 2. Pin the actual
+    // halving, not just "smaller than 4".
+    expect(trimmedArea).toBeCloseTo(2, 1);
   });
 
   it('still produces a face (composable into sew) — outerWire is non-empty', () => {
@@ -84,8 +107,8 @@ describe('lowerSurfaceTrim', () => {
     const area = faceArea(
       (backend.getReplicadShape() as unknown as { faces: replicad.Face[] }).faces[0],
     );
-    expect(area).toBeLessThan(4 - 1e-3);
-    expect(area).toBeGreaterThan(0);
+    // Halved at x=1 → the surviving shell is the [1,2]×[0,2] piece, area ≈ 2.
+    expect(area).toBeCloseTo(2, 1);
   });
 
   it('throws when the surfaces do not intersect', () => {
@@ -99,5 +122,75 @@ describe('lowerSurfaceTrim', () => {
       degree: { u: 1, v: 1 },
     });
     expect(() => lowerSurfaceTrim(base, disjoint, 'trim')).toThrow();
+  });
+
+  it('refuses to trim a curved (non-planar) base — guard fires, no silent mis-trim', () => {
+    const cutter = crossingPatchHalving();
+    // The planar slab path would happily produce SOME area here (wrong).
+    // The near-planar guard must reject instead.
+    expect(() => lowerSurfaceTrim(curvedPatch(), cutter, 'trim')).toThrow(NonPlanarTrimError);
+  });
+
+  it('refuses to trim by a curved (non-planar) cutter', () => {
+    const base = unitPlanarPatch();
+    expect(() => lowerSurfaceTrim(base, curvedPatch(), 'trim')).toThrow(NonPlanarTrimError);
+  });
+
+  it('emits feature.surface-trim.non-planar through the dispatch arm for a curved base', async () => {
+    const session = new CaptureSession();
+    const api = createApi({ session });
+    const base = api.nurbsSurface({
+      controls: [
+        [[0, 0, 0], [0, 1, 0], [0, 2, 0]],
+        [[1, 0, 2], [1, 1, 2], [1, 2, 2]],
+        [[2, 0, 0], [2, 1, 0], [2, 2, 0]],
+      ],
+      degree: { u: 2, v: 2 },
+    });
+    const cutter = api.nurbsSurface({
+      controls: [
+        [[1, -1, -1], [1, 3, -1]],
+        [[1, -1, 1], [1, 3, 1]],
+      ],
+      degree: { u: 1, v: 1 },
+    });
+    // Force the surfaceTrim record to be demanded by wiring it into a returned shape.
+    base.trimTo(cutter).toShape();
+
+    const engine = new RecomputeEngine(createOcctLowerer(session));
+    const r = await engine.run(session.getRecords());
+    expect(
+      r.diagnostics.some(
+        (d) => d.code === 'feature.surface-trim.non-planar' && d.severity === 'error',
+      ),
+    ).toBe(true);
+  });
+
+  it('emits feature.surface-trim.split-deferred (warning) for the split op', async () => {
+    const session = new CaptureSession();
+    const api = createApi({ session });
+    const base = api.nurbsSurface({
+      controls: [
+        [[0, 0, 0], [0, 2, 0]],
+        [[2, 0, 0], [2, 2, 0]],
+      ],
+      degree: { u: 1, v: 1 },
+    });
+    const cutter = api.nurbsSurface({
+      controls: [
+        [[1, -1, -1], [1, 3, -1]],
+        [[1, -1, 1], [1, 3, 1]],
+      ],
+      degree: { u: 1, v: 1 },
+    });
+    base.split(cutter).toShape();
+
+    const engine = new RecomputeEngine(createOcctLowerer(session));
+    const r = await engine.run(session.getRecords());
+    expect(
+      r.diagnostics.some(
+        (d) => d.code === 'feature.surface-trim.split-deferred' && d.severity === 'warn',
+      ),
+    ).toBe(true);
   });
 });

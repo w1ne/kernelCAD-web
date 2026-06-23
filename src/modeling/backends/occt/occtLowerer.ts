@@ -29,7 +29,7 @@ import { isCurve3DMetadata } from '../../../shared/intent/curve3dRecord';
 import { lowerVariableSweep, type VariableSweepSectionLowered } from './variableSweepLowerer';
 import { isVariableSweepMetadata } from '../../../shared/intent/variableSweepRecord';
 import { lowerCoonsPatch } from './coonsPatchLowerer';
-import { lowerSurfaceTrim } from './surfaceTrimLowerer';
+import { lowerSurfaceTrim, NonPlanarTrimError } from './surfaceTrimLowerer';
 import { lowerEmbossText } from './embossTextLowerer';
 import { lowerProjectCurve } from './projectCurveLowerer';
 import { pickEdges, pickFace } from '../../../kernel/backends/occt/edgeSelection';
@@ -606,21 +606,42 @@ export class OcctLowerer implements FeatureLowerer {
         const cutterFace = this.resolveTrimCutter(trimData, r, inputs, diagnostics, allRecords);
         if (!cutterFace) return undefined;
 
+        // split-into-N is deferred: the lowerer returns only the larger piece
+        // (identical to trim). Surface that honestly as a warning rather than
+        // silently masquerading the larger half as the promised compound.
+        if (trimData.op === 'split') {
+          diagnostics.push({
+            target: this.target,
+            code: 'feature.surface-trim.split-deferred',
+            featureId: r.id,
+            severity: 'warn',
+            message: `surfaceTrim ${sid}: split currently returns only the larger piece; full split-into-both-halves is deferred to a later slice.`,
+            hint: HINT_TEMPLATES['feature.surface-trim.split-deferred'].template,
+          });
+        }
+
         try {
           const { face } = lowerSurfaceTrim(baseBuilt.face, cutterFace, trimData.op);
           surface = { kind: 'face', face };
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
+          const nonPlanar = e instanceof NonPlanarTrimError || /not near-planar/i.test(msg);
           const noIntersection = /do not intersect|no section curve/i.test(msg);
+          const code = nonPlanar
+            ? 'feature.surface-trim.non-planar'
+            : noIntersection
+              ? 'feature.surface-trim.no-intersection'
+              : 'feature.kernel-failed';
           diagnostics.push({
             target: this.target,
-            code: noIntersection ? 'feature.surface-trim.no-intersection' : 'feature.kernel-failed',
+            code,
             featureId: r.id,
             severity: 'error',
             message: `surfaceTrim ${sid}: ${msg}`,
-            hint: noIntersection
-              ? HINT_TEMPLATES['feature.surface-trim.no-intersection'].template
-              : 'kernel-failed — ensure the surface and cutter cross cleanly (well-conditioned, non-tangent).',
+            hint:
+              code === 'feature.kernel-failed'
+                ? 'kernel-failed — ensure the surface and cutter cross cleanly (well-conditioned, non-tangent).'
+                : HINT_TEMPLATES[code].template,
           });
           return undefined;
         }

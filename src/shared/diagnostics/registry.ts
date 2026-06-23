@@ -1385,6 +1385,22 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'A surface trim/split produced no section curve — surfaces do not intersect.',
   },
+  'feature.surface-trim.non-planar': {
+    hintTemplate:
+      'Surface trim currently supports near-planar patches only — the slab/half-space path would mis-trim a curved base or cutter, so it refused. Trim a planar (degree-1, flat) nurbsSurface / coonsPatch by a planar cutter, or wait for the curved-surface trim slice.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'use a near-planar base and cutter, or defer to the curved-surface trim slice' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A surface trim/split was attempted where the base or cutter patch is not near-planar; the planar-only lowerer refused rather than silently mis-trim a curved surface.',
+  },
+  'feature.surface-trim.split-deferred': {
+    hintTemplate:
+      'surface.split(by) currently returns only the larger piece (identical to trim) — full split-into-both-halves is deferred to a later slice. If you only need the larger piece, ignore this warning; otherwise re-author so the half you keep is the larger one, or wait for the split slice.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'rely on the larger returned piece for now; full split is deferred' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'surface.split(by) was lowered but full split-into-N is deferred; only the larger piece is returned (a warning, not a failure).',
+  },
   'feature.fillet.continuity-not-applicable': {
     hintTemplate:
       "continuity: 'G2' was requested but the adjacent faces along the target edge are themselves only G1-continuous, so the resulting blend can be no smoother than G1. Either accept the G1 result, refit the upstream faces as NURBS so they are G2 internally, or apply a smaller fillet that fits inside a single smooth region.",

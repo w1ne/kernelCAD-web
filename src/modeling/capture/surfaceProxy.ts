@@ -103,6 +103,8 @@ export class SurfaceProxy {
    *
    * @emits feature.surface-trim.no-intersection when the cutter produces no
    *  section curve against this surface.
+   * @emits feature.surface-trim.non-planar when the base or cutter is not
+   *  near-planar (the planar-only lowerer refuses rather than mis-trim).
    */
   trimTo(by: SurfaceProxy | Shape | Curve3DProxy): SurfaceProxy {
     return this.session.addSurfaceTrim(this.id, refOf(by), 'trim');
@@ -110,12 +112,19 @@ export class SurfaceProxy {
 
   /**
    * Split this surface at the intersection with `by`, returning a new
-   * `SurfaceProxy` that represents both halves as a compound. Differs from
-   * `.trimTo()` only in the stored `op` field — the lowerer returns both
-   * pieces instead of discarding one.
+   * `SurfaceProxy`. Differs from `.trimTo()` only in the stored `op` field.
    *
+   * Current behavior: split returns ONLY the larger surviving piece (the same
+   * as `.trimTo()`) and the lowerer emits a `feature.surface-trim.split-deferred`
+   * warning. Full split-into-both-halves (both pieces as a compound) is deferred
+   * to a later slice — no compound is fabricated today.
+   *
+   * @emits feature.surface-trim.split-deferred always (split is deferred to the
+   *  larger-piece path for this slice).
    * @emits feature.surface-trim.no-intersection when the cutter produces no
    *  section curve against this surface.
+   * @emits feature.surface-trim.non-planar when the base or cutter is not
+   *  near-planar (the planar-only lowerer refuses rather than mis-trim).
    */
   split(by: SurfaceProxy | Shape | Curve3DProxy): SurfaceProxy {
     return this.session.addSurfaceTrim(this.id, refOf(by), 'split');

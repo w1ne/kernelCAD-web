@@ -52,6 +52,75 @@ function baseNormal(face: replicad.Face): [number, number, number] {
   return [n.x / len, n.y / len, n.z / len];
 }
 
+/** Thrown by `lowerSurfaceTrim` when a base/cutter patch is not near-planar.
+ *  The dispatch arm pattern-matches this to emit
+ *  `feature.surface-trim.non-planar` (return base unchanged + diagnostic). */
+export class NonPlanarTrimError extends Error {}
+
+/**
+ * Near-planar guard. The slab/half-space trim path prisms each patch along a
+ * single average normal, so a curved base or cutter would be silently
+ * mis-trimmed. We refuse rather than mis-trim.
+ *
+ * Primary check (cheap, exact): `BRepAdaptor_Surface.GetType() == GeomAbs_Plane`
+ * — both `BRepAdaptor_Surface_2` and `GeomAbs_SurfaceType.GeomAbs_Plane` are
+ * confirmed bound in this wasm build (used by `holeDetection.ts` /
+ * `meshing.ts`). A genuinely planar NURBS face (degree-1 control net in a
+ * plane) reports `GeomAbs_Plane` here.
+ *
+ * Fallback (for analytic-plane-but-not-flagged or BSpline-that-is-flat): sample
+ * the surface normal at the four corners + centre of the UV domain and require
+ * the max angular divergence from the centre normal to stay under `tolDeg`.
+ * Uses `BRepAdaptor_Surface.D1` (bound) to build per-sample normals.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isNearPlanar(oc: any, faceShape: any, tolDeg = 2): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const adaptor = new oc.BRepAdaptor_Surface_2(faceShape, true);
+  try {
+    const type = adaptor.GetType();
+    if (type.value === oc.GeomAbs_SurfaceType.GeomAbs_Plane.value) return true;
+
+    // Sample normals across the UV domain via D1 (first derivatives → normal).
+    const u0 = adaptor.FirstUParameter();
+    const u1 = adaptor.LastUParameter();
+    const v0 = adaptor.FirstVParameter();
+    const v1 = adaptor.LastVParameter();
+    const us = [u0, u1, 0.5 * (u0 + u1)];
+    const vs = [v0, v1, 0.5 * (v0 + v1)];
+
+    const normals: Array<[number, number, number]> = [];
+    for (const u of us) {
+      for (const v of vs) {
+        const p = new oc.gp_Pnt_1();
+        const d1u = new oc.gp_Vec_1();
+        const d1v = new oc.gp_Vec_1();
+        adaptor.D1(u, v, p, d1u, d1v);
+        // normal = d1u × d1v
+        const nx = d1u.Y() * d1v.Z() - d1u.Z() * d1v.Y();
+        const ny = d1u.Z() * d1v.X() - d1u.X() * d1v.Z();
+        const nz = d1u.X() * d1v.Y() - d1u.Y() * d1v.X();
+        p.delete();
+        d1u.delete();
+        d1v.delete();
+        const len = Math.hypot(nx, ny, nz);
+        if (len > 1e-9) normals.push([nx / len, ny / len, nz / len]);
+      }
+    }
+    if (normals.length < 2) return true; // degenerate sampling — don't block
+
+    const ref = normals[Math.floor(normals.length / 2)] ?? normals[0];
+    const tolCos = Math.cos((tolDeg * Math.PI) / 180);
+    for (const n of normals) {
+      const dot = Math.abs(n[0] * ref[0] + n[1] * ref[1] + n[2] * ref[2]);
+      if (dot < tolCos) return false;
+    }
+    return true;
+  } finally {
+    adaptor.delete();
+  }
+}
+
 /**
  * Lower a `surfaceTrim` record: cut `baseFace` against `cutter` and return the
  * trimmed face.
@@ -87,6 +156,22 @@ export function lowerSurfaceTrim(
   const oc = getOC() as any;
   const baseShape = unwrap(baseFace);
   const cutterShape = unwrap(cutter);
+
+  // 0. Near-planar guard. The slab/half-space path below prisms each patch
+  //    along a single average normal, so a curved base or cutter would be
+  //    silently mis-trimmed. Refuse rather than ship a wrong result — the
+  //    dispatch arm turns NonPlanarTrimError into
+  //    `feature.surface-trim.non-planar` (base returned unchanged).
+  if (!isNearPlanar(oc, baseShape)) {
+    throw new NonPlanarTrimError(
+      'surfaceTrim: base surface is not near-planar; the planar slab-trim path would mis-trim a curved patch (curved surface trim is deferred).',
+    );
+  }
+  if (!isNearPlanar(oc, cutterShape)) {
+    throw new NonPlanarTrimError(
+      'surfaceTrim: cutter surface is not near-planar; the planar slab-trim path would mis-trim against a curved cutter (curved surface trim is deferred).',
+    );
+  }
 
   // 1. Section — verify the two surfaces actually intersect.
   const section = new oc.BRepAlgoAPI_Section_3(baseShape, cutterShape, false);
@@ -131,19 +216,22 @@ export function lowerSurfaceTrim(
 
   // 4. The half-space splits the slab into the +normal side (Common) and the
   //    −normal side (Cut).
+  // The 3-arg (S1, S2, ProgressRange) ctor builds in the constructor; no
+  // separate .Build() needed (confirmed against the .d.ts ctor signature).
   const common = new oc.BRepAlgoAPI_Common_3(slab, wall, new oc.Message_ProgressRange_1());
-  common.Build(new oc.Message_ProgressRange_1());
   const pieceA = common.Shape();
 
   const cut = new oc.BRepAlgoAPI_Cut_3(slab, wall, new oc.Message_ProgressRange_1());
-  cut.Build(new oc.Message_ProgressRange_1());
   const pieceB = cut.Shape();
 
   const areaA = shapeArea(oc, pieceA);
   const areaB = shapeArea(oc, pieceB);
 
-  // 'trim' keeps the larger surviving piece; 'split' (single-face form) returns
-  // the larger piece too for now (split-into-N is deferred — see plan §Deferred).
+  // 'trim' keeps the larger surviving piece. 'split' (single-face form) ALSO
+  // returns just the larger piece for now — full split-into-N is deferred to a
+  // later slice (see plan §Deferred). The dispatch arm emits
+  // `feature.surface-trim.split-deferred` (warning) for the split op so this is
+  // honest, not a silent stand-in for the promised compound.
   const keptSlab = areaA >= areaB ? pieceA : pieceB;
 
   // Extract the trimmed base face: the slab cap whose face coincides with the
