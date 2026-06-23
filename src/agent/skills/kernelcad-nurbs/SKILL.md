@@ -14,12 +14,19 @@ const s0 = path().moveTo(-30, -10).lineTo(30, -10).lineTo(30, 10).lineTo(-30, 10
 const panel = surfaceFromCurves([s0, s1]).thicken(2);
 ```
 
-`nurbsSurface({ controls, degree, weights?, knots?, periodic? })` returns a `Surface` peer to `Shape`. The `Surface` exposes exactly two escape methods:
+`nurbsSurface({ controls, degree, weights?, knots?, periodic? })` returns a `Surface` peer to `Shape`. The `Surface` exposes these escape methods:
 
 | Method | Returns | Notes |
 |---|---|---|
 | `.thicken(t)` | `Shape` (closed solid) | Offsets both sides by `t` mm via `BRepOffsetAPI_MakeThickSolid.MakeThickSolidBySimple`. `t` accepts `Editable<number>`. |
 | `.toShape()` | `Shape` (zero-volume shell) | Single-face Shape; use as profile placeholder for future face-aware features. |
+| `.trimTo(by)` | `Surface` | Trim this surface at its intersection with `by` (Surface, Shape, or Curve3D) and return the kept half. No geometry computed at capture time — the lowerer runs BRepAlgoAPI_Section. Use before `sew` to align adjacent patch edges. Emits `feature.surface-trim.no-intersection` when the cutter misses. |
+| `.split(by)` | `Surface` | Like `.trimTo()` but retains both halves as a compound Surface. Emits `feature.surface-trim.no-intersection` when the cutter misses. |
+
+Top-level finishing ops that consume `Surface` instances:
+
+- `sew(surfaces, opts?)` — stitch N surfaces into a shell or closed solid via OCCT `BRepBuilderAPI_Sewing`. Edges within `tolerance` mm (default 1e-6) are merged. `requireClosed: true` emits `feature.surface-sew.open-shell` instead of a partial shell when the result is still open. Returns a `Shape`.
+- The workflow for a multi-patch body: `trimTo` each patch to shared boundary curves → `sew([...], { requireClosed: true })` → optionally `.draft(angleDeg, { face })` for mold release.
 
 `surfaceFromCurves(sections)` skins through 2+ closed `Sketch` cross-sections in declaration order. Section order = skin direction.
 
