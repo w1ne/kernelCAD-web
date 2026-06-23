@@ -21,7 +21,7 @@ const panel = surfaceFromCurves([s0, s1]).thicken(2);
 | `.thicken(t)` | `Shape` (closed solid) | Offsets both sides by `t` mm via `BRepOffsetAPI_MakeThickSolid.MakeThickSolidBySimple`. `t` accepts `Editable<number>`. |
 | `.toShape()` | `Shape` (zero-volume shell) | Single-face Shape; use as profile placeholder for future face-aware features. |
 | `.trimTo(by)` | `Surface` | Trim this surface at its intersection with `by` (Surface, Shape, or Curve3D) and return the kept half. No geometry computed at capture time — the lowerer runs BRepAlgoAPI_Section. Use before `sew` to align adjacent patch edges. Emits `feature.surface-trim.no-intersection` when the cutter misses. |
-| `.split(by)` | `Surface` | Like `.trimTo()` but retains both halves as a compound Surface. Emits `feature.surface-trim.no-intersection` when the cutter misses. |
+| `.split(by)` | `Surface` | Like `.trimTo()` but for splitting; this slice returns the larger piece and emits a `feature.surface-trim.split-deferred` warning (full split-into-N is deferred to a later slice). Emits `feature.surface-trim.no-intersection` when the cutter misses. |
 
 Top-level finishing ops that consume `Surface` instances:
 
