@@ -31,6 +31,7 @@ import { isVariableSweepMetadata } from '../../../shared/intent/variableSweepRec
 import { lowerCoonsPatch } from './coonsPatchLowerer';
 import { lowerEmbossText } from './embossTextLowerer';
 import { subtractiveNoOpDiagnostic } from './subtractiveNoOp';
+import { intersectionEmptyDiagnostic, emptyResultDiagnostic } from './additiveNoOp';
 import { lowerProjectCurve } from './projectCurveLowerer';
 import { pickEdges, pickFace } from '../../../kernel/backends/occt/edgeSelection';
 import { computeDihedralPublic } from '../../../kernel/backends/occt/edgeQueries';
@@ -626,6 +627,13 @@ export class OcctLowerer implements FeatureLowerer {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const boxWrapped = (rawBox as OcctBackend).getReplicadShape() as any;
         shape = new OcctBackend(boxWrapped, 'box', boxSeedMap);
+        {
+          const e = emptyResultDiagnostic({
+            featureId: r.id, opLabel: 'box',
+            volumeAfter: (shape as OcctBackend).volume(), isEmpty: (shape as OcctBackend).isEmpty(),
+          });
+          if (e) diagnostics.push(e);
+        }
         break;
       }
       case 'cylinder': {
@@ -643,12 +651,26 @@ export class OcctLowerer implements FeatureLowerer {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const cylWrapped = (rawCyl as OcctBackend).getReplicadShape() as any;
         shape = new OcctBackend(cylWrapped, 'cylinder', cylSeedMap);
+        {
+          const e = emptyResultDiagnostic({
+            featureId: r.id, opLabel: 'cylinder',
+            volumeAfter: (shape as OcctBackend).volume(), isEmpty: (shape as OcctBackend).isEmpty(),
+          });
+          if (e) diagnostics.push(e);
+        }
         break;
       }
       case 'sphere': {
         // Sphere has no canonical planar face names — leave historyMap undefined.
         // Falls back to the legacy !base.kind path in edgeSelection (correct behaviour).
         shape = OcctBackend.sphere(r.params.r.evaluated);
+        {
+          const e = emptyResultDiagnostic({
+            featureId: r.id, opLabel: 'sphere',
+            volumeAfter: (shape as OcctBackend).volume(), isEmpty: (shape as OcctBackend).isEmpty(),
+          });
+          if (e) diagnostics.push(e);
+        }
         break;
       }
       case 'importedStep': {
@@ -861,6 +883,15 @@ export class OcctLowerer implements FeatureLowerer {
             ],
           };
         }
+        // extrude always builds a solid by sweeping a closed profile through a
+        // depth — an empty / zero-volume result is degenerate, never legitimate.
+        {
+          const e = emptyResultDiagnostic({
+            featureId: r.id, opLabel: 'extrude',
+            volumeAfter: (shape as OcctBackend).volume(), isEmpty: (shape as OcctBackend).isEmpty(),
+          });
+          if (e) diagnostics.push(e);
+        }
         break;
       }
       case 'sheetMetal': {
@@ -1049,6 +1080,15 @@ export class OcctLowerer implements FeatureLowerer {
           });
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
+        // revolve sweeps a closed profile around an axis into a solid — an
+        // empty / zero-volume result is degenerate, never legitimate.
+        {
+          const e = emptyResultDiagnostic({
+            featureId: r.id, opLabel: 'revolve',
+            volumeAfter: (shape as OcctBackend).volume(), isEmpty: (shape as OcctBackend).isEmpty(),
+          });
+          if (e) diagnostics.push(e);
+        }
         break;
       }
       case 'sweep': {
@@ -1171,6 +1211,15 @@ export class OcctLowerer implements FeatureLowerer {
             ],
           };
         }
+        // sweep drags a closed profile along a rail into a solid — an empty /
+        // zero-volume result is degenerate, never legitimate.
+        {
+          const e = emptyResultDiagnostic({
+            featureId: r.id, opLabel: 'sweep',
+            volumeAfter: (shape as OcctBackend).volume(), isEmpty: (shape as OcctBackend).isEmpty(),
+          });
+          if (e) diagnostics.push(e);
+        }
         break;
       }
       case 'loft': {
@@ -1266,6 +1315,15 @@ export class OcctLowerer implements FeatureLowerer {
             ],
           };
         }
+        // loft blends ≥2 closed sections into a solid — an empty / zero-volume
+        // result is degenerate, never legitimate.
+        {
+          const e = emptyResultDiagnostic({
+            featureId: r.id, opLabel: 'loft',
+            volumeAfter: (shape as OcctBackend).volume(), isEmpty: (shape as OcctBackend).isEmpty(),
+          });
+          if (e) diagnostics.push(e);
+        }
         break;
       }
       case 'boolean': {
@@ -1309,6 +1367,18 @@ export class OcctLowerer implements FeatureLowerer {
             volumeAfter: acc.volume(),
           });
           if (noop) diagnostics.push(noop);
+        }
+        // Additive analog of the cutter-miss: an intersection of disjoint
+        // bodies yields no common solid. Empty/zero-volume here is unambiguous
+        // (the operands don't overlap). Union is NOT gated — containment of one
+        // operand in another is a legitimate no-volume-change result.
+        if (op === 'intersection') {
+          const empty = intersectionEmptyDiagnostic({
+            featureId: r.id,
+            volumeAfter: acc.volume(),
+            isEmpty: acc.isEmpty(),
+          });
+          if (empty) diagnostics.push(empty);
         }
         break;
       }
