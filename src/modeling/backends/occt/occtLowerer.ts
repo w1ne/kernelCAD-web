@@ -30,6 +30,7 @@ import { lowerVariableSweep, type VariableSweepSectionLowered } from './variable
 import { isVariableSweepMetadata } from '../../../shared/intent/variableSweepRecord';
 import { lowerCoonsPatch } from './coonsPatchLowerer';
 import { lowerSurfaceTrim, NonPlanarTrimError } from './surfaceTrimLowerer';
+import { lowerSurfaceSew } from './surfaceSewLowerer';
 import { lowerEmbossText } from './embossTextLowerer';
 import { lowerProjectCurve } from './projectCurveLowerer';
 import { pickEdges, pickFace } from '../../../kernel/backends/occt/edgeSelection';
@@ -419,6 +420,7 @@ export class OcctLowerer implements FeatureLowerer {
     'assemblyExport',
     'surfaceThicken',   // W1.3
     'surfaceToShape',   // W1.3
+    'surfaceSew',       // NURBS Slice E (5): stitch N surface faces into a closed solid
     'sheetMetal',       // W2.2
     'sheetMetalBend',   // W2.2
     'sdfMaterialize',   // W2.3
@@ -2768,6 +2770,100 @@ export class OcctLowerer implements FeatureLowerer {
           });
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
+        break;
+      }
+      case 'surfaceSew': {
+        // NURBS Slice E (5): stitch N surface faces into a shell — and, when
+        // watertight, a solid — via BRepBuilderAPI_Sewing. Each `surface_<i>`
+        // input resolves through the same buildSurfaceById path as
+        // surfaceThicken / surfaceToShape (extended to MULTIPLE inputs). Only
+        // single-face surfaces are sewable: a skinned multi-face shell as an
+        // input is rejected with feature.invalid-args.
+        const surfaceKeys = Object.keys(r.inputs)
+          .filter((k) => k.startsWith('surface_'))
+          .sort((a, b) => {
+            const ia = Number(a.slice('surface_'.length));
+            const ib = Number(b.slice('surface_'.length));
+            return ia - ib;
+          });
+        if (surfaceKeys.length === 0) {
+          diagnostics.push({
+            target: this.target,
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `surfaceSew: no surface_* inputs found.`,
+            hint: 'invalid-args.surfaceSew.input — call sew([surfaceA, surfaceB, ...]).',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        const faces: import('replicad').Face[] = [];
+        for (const key of surfaceKeys) {
+          const ref = r.inputs[key];
+          if (!ref || ref.kind !== 'surface') {
+            diagnostics.push({
+              target: this.target,
+              code: 'feature.invalid-args',
+              featureId: r.id,
+              severity: 'error',
+              message: `surfaceSew: input ${key} is missing or not a surface ref.`,
+              hint: 'invalid-args.surfaceSew.input — every sew() input must be a captured Surface.',
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          const built = this.buildSurfaceById(ref.surfaceId, r, inputs, diagnostics, allRecords);
+          if (!built) {
+            // buildSurfaceById already pushed the specific diagnostic.
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          if (built.kind !== 'face') {
+            diagnostics.push({
+              target: this.target,
+              code: 'feature.invalid-args',
+              featureId: r.id,
+              severity: 'error',
+              message: `surfaceSew: input ${key} (${ref.surfaceId}) is a multi-face shell; sew accepts single-face surfaces only.`,
+              hint: 'invalid-args.surfaceSew.input — sew nurbsSurface / coonsPatch / trimmed faces, not skinned shells.',
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          faces.push(built.face);
+        }
+
+        const tolerance = r.params.tolerance.evaluated;
+        const requireClosed = (r.metadata as { requireClosed?: boolean } | undefined)?.requireClosed === true;
+        let sewResult: import('./surfaceSewLowerer').SurfaceSewResult;
+        try {
+          sewResult = lowerSurfaceSew(faces, { tolerance, requireClosed });
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          diagnostics.push({
+            target: this.target,
+            code: 'feature.kernel-failed',
+            featureId: r.id,
+            severity: 'error',
+            message: `surfaceSew: OCCT sewing failed: ${msg}`,
+            hint: 'kernel-failed — ensure the faces are well-conditioned and share edges within tolerance.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+
+        // Review-mandated enforcement: requireClosed must not be a silent
+        // no-op. When the caller asked for a watertight result but the sewed
+        // shell is not a closed solid, surface the open-shell diagnostic. When
+        // requireClosed is false, accept the (possibly open) shell silently.
+        if (requireClosed && !(sewResult.isSolid && sewResult.isClosed)) {
+          diagnostics.push({
+            target: this.target,
+            code: 'feature.surface-sew.open-shell',
+            featureId: r.id,
+            severity: 'error',
+            message: `surfaceSew: requireClosed was set but the sewn result is an open shell (not a closed solid).`,
+            hint: HINT_TEMPLATES['feature.surface-sew.open-shell'].template,
+          });
+        }
+
+        shape = sewResult.backend;
         break;
       }
       case 'referenceImage': {
