@@ -173,14 +173,22 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
             lowered = (await p.originalShape.lower()) as OcctBackend;
             const density = p.density ?? DEFAULT_DENSITY_KG_M3;
             const mp = lowered.massProperties(density);
+            const massKg = Math.max(1e-6, mp.mass);
             // Diagonal inertia in MuJoCo's body frame; for our default
             // we feed back the full 6 (ixx, ixy, ixz, iyy, iyz, izz).
             // MuJoCo's <inertial> takes diaginertia OR fullinertia; we
             // use fullinertia to preserve the off-diagonal terms.
+            //
+            // The raw tensor from a degenerate / very-thin / rank-deficient
+            // BREP can fail to be symmetric positive-definite (a near-zero
+            // or slightly-negative principal moment), and MuJoCo rejects it
+            // with "inertia must have positive eigenvalues" at compile time,
+            // bricking the whole physics gate. Regularize to SPD here,
+            // mirroring the mass floor on the line above.
             inertials.set(p.name, {
-                massKg: Math.max(1e-6, mp.mass),
+                massKg,
                 comLocalMm: mp.com,
-                inertia6: mp.inertia6,
+                inertia6: regularizeInertia6(mp.inertia6),
             });
         } catch {
             // Fall back to a unit inertia tensor (1 kg point mass at the
@@ -729,6 +737,182 @@ function crossProduct(a: Vec3, b: Vec3): Vec3 {
         a[2] * b[0] - a[0] * b[2],
         a[0] * b[1] - a[1] * b[0],
     ];
+}
+
+/**
+ * Regularize a symmetric inertia 6-vector to be positive-definite.
+ *
+ * Input/output layout matches `MassProperties.inertia6`:
+ * `[ixx, ixy, ixz, iyy, iyz, izz]` (kg·m²).
+ *
+ * Why: MuJoCo's compiler diagonalises every body's inertia and rejects
+ * the model with "inertia must have positive eigenvalues" if any
+ * principal moment is ≤ 0. A degenerate / very-thin / rank-deficient
+ * BREP (e.g. a zero-thickness plate, or a sliver whose volume integral
+ * loses a principal axis to round-off) yields exactly such a tensor, and
+ * a single bad part bricks the whole `--include-physics` gate. This is
+ * the inertia analogue of the `Math.max(1e-6, mp.mass)` mass floor.
+ *
+ * Method: diagonalise the symmetric 3×3 via a Jacobi sweep (exact and
+ * stable for 3×3 — no external dep), floor every eigenvalue to a small
+ * positive `eps`, then reconstruct `I' = V · diag(λ') · Vᵀ`. This is the
+ * correct way to enforce SPD: clamping only the diagonal blocks would
+ * leave off-diagonal-dominated tensors (the actual failure mode of a
+ * thin plate, whose products of inertia survive while one principal
+ * moment collapses) still indefinite. Reconstructing from floored
+ * eigenvalues guarantees the *result* is SPD regardless of where the
+ * non-positivity lived.
+ *
+ * Floor: physically the smallest meaningful principal moment scales with
+ * mass × (extent)². We don't have the body extent here, so we floor
+ * relative to the tensor's own scale: `eps = max(FLOOR_ABS, FLOOR_FRAC ×
+ * maxAbsEigenvalue)`. The relative term keeps a healthy tensor's tiny-but-
+ * legitimate principal moment from being clobbered while still lifting a
+ * genuine zero/negative axis to ~1e-6 of the largest moment — far below
+ * any drift threshold the drop-test scores, so a regularized plate
+ * behaves like the near-2D body it is.
+ *
+ * The absolute floor is 1e-9 kg·m² — NOT smaller — for two reasons. (1) It
+ * must clear `fmtNum`'s `< 1e-9 → "0"` write-time cutoff: a floor below
+ * that would be serialised as a literal `0` in `fullinertia="..."`, which
+ * is exactly the non-positive value MuJoCo rejects, silently undoing the
+ * regularization. (2) A principal moment of 1e-9 kg·m² is sub-milligram
+ * point-mass scale; any genuine kernelCAD part has far larger moments, so
+ * the absolute floor only ever bites a degenerate/near-2D body that has no
+ * meaningful rotational inertia about that axis anyway. A HEALTHY body
+ * whose eigenvalues are all already ≥ eps is returned bit-for-bit
+ * unchanged (the Jacobi reconstruction path is skipped entirely).
+ */
+const INERTIA_EIGENVALUE_FLOOR_FRAC = 1e-6;
+const INERTIA_EIGENVALUE_FLOOR_ABS = 1e-9;
+export function regularizeInertia6(
+    inertia6: readonly [number, number, number, number, number, number],
+): [number, number, number, number, number, number] {
+    const [ixx, ixy, ixz, iyy, iyz, izz] = inertia6;
+    // Sanitise non-finite inputs up front so the eigensolver can't spin.
+    const a = [
+        [finiteOrZero(ixx), finiteOrZero(ixy), finiteOrZero(ixz)],
+        [finiteOrZero(ixy), finiteOrZero(iyy), finiteOrZero(iyz)],
+        [finiteOrZero(ixz), finiteOrZero(iyz), finiteOrZero(izz)],
+    ];
+    const { values, vectors } = jacobiEigenSymmetric3(a);
+    const maxAbs = Math.max(
+        Math.abs(values[0]),
+        Math.abs(values[1]),
+        Math.abs(values[2]),
+    );
+    const eps = Math.max(INERTIA_EIGENVALUE_FLOOR_ABS, INERTIA_EIGENVALUE_FLOOR_FRAC * maxAbs);
+    const flooredAlready =
+        values[0] >= eps && values[1] >= eps && values[2] >= eps;
+    if (flooredAlready) {
+        // Healthy tensor — pass the ORIGINAL components through untouched
+        // (avoid even round-off churn from the reconstruction).
+        return [
+            finiteOrZero(ixx),
+            finiteOrZero(ixy),
+            finiteOrZero(ixz),
+            finiteOrZero(iyy),
+            finiteOrZero(iyz),
+            finiteOrZero(izz),
+        ];
+    }
+    const lam = [
+        Math.max(eps, values[0]),
+        Math.max(eps, values[1]),
+        Math.max(eps, values[2]),
+    ];
+    // I' = V · diag(lam) · Vᵀ. vectors[*][k] is eigenvector k (columns).
+    const m = (r: number, c: number): number =>
+        lam[0] * vectors[r][0] * vectors[c][0] +
+        lam[1] * vectors[r][1] * vectors[c][1] +
+        lam[2] * vectors[r][2] * vectors[c][2];
+    return [m(0, 0), m(0, 1), m(0, 2), m(1, 1), m(1, 2), m(2, 2)];
+}
+
+function finiteOrZero(n: number): number {
+    return Number.isFinite(n) ? n : 0;
+}
+
+/**
+ * Jacobi eigenvalue decomposition for a symmetric 3×3 matrix. Returns
+ * the eigenvalues and an orthonormal eigenvector matrix `vectors` whose
+ * COLUMN `k` (i.e. `vectors[*][k]`) is the eigenvector for `values[k]`.
+ * Converges in a handful of sweeps for 3×3; capped to stay bounded on
+ * pathological input.
+ */
+function jacobiEigenSymmetric3(
+    input: number[][],
+): { values: [number, number, number]; vectors: number[][] } {
+    // Work on a mutable copy.
+    const a = input.map((row) => row.slice());
+    // Identity eigenvector accumulator.
+    const v = [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1],
+    ];
+    const offDiag = (): number =>
+        Math.abs(a[0][1]) + Math.abs(a[0][2]) + Math.abs(a[1][2]);
+    const scale = Math.max(Math.abs(a[0][0]), Math.abs(a[1][1]), Math.abs(a[2][2]), 1);
+    const tol = 1e-15 * scale;
+    for (let sweep = 0; sweep < 50 && offDiag() > tol; sweep++) {
+        for (const [p, q] of [
+            [0, 1],
+            [0, 2],
+            [1, 2],
+        ] as const) {
+            const apq = a[p][q];
+            if (Math.abs(apq) <= tol) continue;
+            // Rotation angle that zeroes a[p][q].
+            const theta = (a[q][q] - a[p][p]) / (2 * apq);
+            const t =
+                Math.sign(theta || 1) / (Math.abs(theta) + Math.sqrt(theta * theta + 1));
+            const c = 1 / Math.sqrt(t * t + 1);
+            const s = t * c;
+            // Apply Givens rotation a := Jᵀ a J.
+            for (let k = 0; k < 3; k++) {
+                const akp = a[k][p];
+                const akq = a[k][q];
+                a[k][p] = c * akp - s * akq;
+                a[k][q] = s * akp + c * akq;
+            }
+            for (let k = 0; k < 3; k++) {
+                const apk = a[p][k];
+                const aqk = a[q][k];
+                a[p][k] = c * apk - s * aqk;
+                a[q][k] = s * apk + c * aqk;
+            }
+            // Accumulate eigenvectors.
+            for (let k = 0; k < 3; k++) {
+                const vkp = v[k][p];
+                const vkq = v[k][q];
+                v[k][p] = c * vkp - s * vkq;
+                v[k][q] = s * vkp + c * vkq;
+            }
+        }
+    }
+    return { values: [a[0][0], a[1][1], a[2][2]], vectors: v };
+}
+
+/**
+ * Sylvester's-criterion positive-definiteness check for a symmetric 3×3
+ * inertia tensor given as the `[ixx, ixy, ixz, iyy, iyz, izz]` 6-vector.
+ * Exported for tests (the emitter never calls it — the Jacobi
+ * regularization above is unconditional). All three leading principal
+ * minors must be strictly positive.
+ */
+export function isInertia6PositiveDefinite(
+    inertia6: readonly [number, number, number, number, number, number],
+): boolean {
+    const [ixx, ixy, ixz, iyy, iyz, izz] = inertia6;
+    if (!inertia6.every((n) => Number.isFinite(n))) return false;
+    const m1 = ixx;
+    const m2 = ixx * iyy - ixy * ixy;
+    const det =
+        ixx * (iyy * izz - iyz * iyz) -
+        ixy * (ixy * izz - iyz * ixz) +
+        ixz * (ixy * iyz - iyy * ixz);
+    return m1 > 0 && m2 > 0 && det > 0;
 }
 
 // Re-export so callers (criterion 5/6) don't have to know the resolver
