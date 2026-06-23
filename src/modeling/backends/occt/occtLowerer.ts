@@ -30,6 +30,7 @@ import { lowerVariableSweep, type VariableSweepSectionLowered } from './variable
 import { isVariableSweepMetadata } from '../../../shared/intent/variableSweepRecord';
 import { lowerCoonsPatch } from './coonsPatchLowerer';
 import { lowerEmbossText } from './embossTextLowerer';
+import { subtractiveNoOpDiagnostic } from './subtractiveNoOp';
 import { lowerProjectCurve } from './projectCurveLowerer';
 import { pickEdges, pickFace } from '../../../kernel/backends/occt/edgeSelection';
 import { computeDihedralPublic } from '../../../kernel/backends/occt/edgeQueries';
@@ -1273,6 +1274,10 @@ export class OcctLowerer implements FeatureLowerer {
         const base = inputs.byKey['base'];
         if (!base) throw new Error(`Boolean ${r.id} missing 'base' input`);
         let acc: OcctBackend = base as OcctBackend;
+        // For a difference, capture the base volume so we can flag a no-op cut
+        // (cutter missed the body) below — the kernel otherwise returns the
+        // unchanged solid as a success.
+        const volumeBeforeCut = op === 'difference' ? acc.volume() : null;
         const cutters = Object.entries(inputs.byKey)
           .filter(([k]) => k.startsWith('cutter_'))
           .sort(([a], [b]) => a.localeCompare(b))
@@ -1296,6 +1301,15 @@ export class OcctLowerer implements FeatureLowerer {
           acc = new OcctBackend(wrapped, undefined, newMap);
         }
         shape = acc;
+        if (volumeBeforeCut !== null) {
+          const noop = subtractiveNoOpDiagnostic({
+            featureId: r.id,
+            opLabel: 'boolean difference',
+            volumeBefore: volumeBeforeCut,
+            volumeAfter: acc.volume(),
+          });
+          if (noop) diagnostics.push(noop);
+        }
         break;
       }
       case 'fillet': {
@@ -1606,6 +1620,13 @@ export class OcctLowerer implements FeatureLowerer {
           return { shape: target, diagnostics };
         }
         shape = res.backend;
+        {
+          const noop = subtractiveNoOpDiagnostic({
+            featureId: r.id, opLabel: 'hole',
+            volumeBefore: target.volume(), volumeAfter: res.backend.volume(),
+          });
+          if (noop) diagnostics.push(noop);
+        }
         break;
       }
       case 'holes': {
@@ -1628,6 +1649,13 @@ export class OcctLowerer implements FeatureLowerer {
           return { shape: target, diagnostics };
         }
         shape = res.backend;
+        {
+          const noop = subtractiveNoOpDiagnostic({
+            featureId: r.id, opLabel: 'holes',
+            volumeBefore: target.volume(), volumeAfter: res.backend.volume(),
+          });
+          if (noop) diagnostics.push(noop);
+        }
         break;
       }
       case 'cutout': {
@@ -1651,6 +1679,13 @@ export class OcctLowerer implements FeatureLowerer {
           return { shape: target, diagnostics };
         }
         shape = res.backend;
+        {
+          const noop = subtractiveNoOpDiagnostic({
+            featureId: r.id, opLabel: 'cutout',
+            volumeBefore: target.volume(), volumeAfter: res.backend.volume(),
+          });
+          if (noop) diagnostics.push(noop);
+        }
         break;
       }
       case 'mirror': {
