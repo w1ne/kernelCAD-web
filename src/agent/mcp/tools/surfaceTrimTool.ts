@@ -15,10 +15,11 @@ export interface SurfaceTrimOutput {
 }
 
 /**
- * MCP tool wrapper for `add_surface kind:'trim'` and `kind:'split'`.
+ * MCP tool wrapper for `add_surface kind:'trim'`.
  *
- * Inserts a `.trimTo(by)` or `.split(by)` chain statement, then re-evaluates
- * the modified script and returns capture-time diagnostics inline.
+ * Inserts a `.trimTo(by)` (op:'trim') or `.split(by)` (op:'split') chain
+ * statement, then re-evaluates the modified script and returns capture-time
+ * diagnostics inline. Both ops are selected via the `op` field, not `kind`.
  */
 export async function surfaceTrimTool(input: SurfaceTrimInput): Promise<SurfaceTrimOutput> {
   const edit = surfaceTrimEdit(input);

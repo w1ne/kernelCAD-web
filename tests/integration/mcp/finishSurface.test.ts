@@ -159,4 +159,45 @@ describe('add_surface finishing ops dispatcher', () => {
       addSurfaceTool({ kind: 'unknown-op' as never, code: SEED_CODE }),
     ).rejects.toThrow(/Unknown add_surface kind: unknown-op/);
   });
+
+  // -------------------------------------------------------------------------
+  // Geometry outcome: sew diagnostic round-trips through the MCP layer
+  // -------------------------------------------------------------------------
+
+  // Six nurbsSurface bindings forming the faces of a unit cube [0,1]^3.
+  const CUBE_FACE_CODE = [
+    // controls layout: [[a,d],[b,c]] maps corners (see surfaceSew.test.ts)
+    'const f0 = nurbsSurface({ controls: [[[0,0,0],[0,1,0]],[[1,0,0],[1,1,0]]], degree: { u: 1, v: 1 } });',
+    'const f1 = nurbsSurface({ controls: [[[0,0,1],[0,1,1]],[[1,0,1],[1,1,1]]], degree: { u: 1, v: 1 } });',
+    'const f2 = nurbsSurface({ controls: [[[0,0,0],[0,0,1]],[[1,0,0],[1,0,1]]], degree: { u: 1, v: 1 } });',
+    'const f3 = nurbsSurface({ controls: [[[0,1,0],[0,1,1]],[[1,1,0],[1,1,1]]], degree: { u: 1, v: 1 } });',
+    'const f4 = nurbsSurface({ controls: [[[0,0,0],[0,1,0]],[[0,0,1],[0,1,1]]], degree: { u: 1, v: 1 } });',
+    'const f5 = nurbsSurface({ controls: [[[1,0,0],[1,1,0]],[[1,0,1],[1,1,1]]], degree: { u: 1, v: 1 } });',
+    'return f0;',
+  ].join('\n');
+
+  it('geometry outcome: closed sew of 6 cube faces returns ok:true and no open-shell diagnostic', async () => {
+    const out = await addSurfaceTool({
+      kind: 'sew',
+      code: CUBE_FACE_CODE,
+      surface_bindings: ['f0', 'f1', 'f2', 'f3', 'f4', 'f5'],
+      require_closed: true,
+    } as never);
+    const r = out as { ok: boolean; diagnostics?: Array<{ code: string }> };
+    expect(r.ok).toBe(true);
+    const openShell = (r.diagnostics ?? []).some(d => d.code === 'feature.surface-sew.open-shell');
+    expect(openShell).toBe(false);
+  }, 60_000);
+
+  it('geometry outcome: open sew (5 of 6 faces) with require_closed emits open-shell diagnostic', async () => {
+    const out = await addSurfaceTool({
+      kind: 'sew',
+      code: CUBE_FACE_CODE,
+      surface_bindings: ['f0', 'f1', 'f2', 'f3', 'f4'],
+      require_closed: true,
+    } as never);
+    const r = out as { ok: boolean; diagnostics?: Array<{ code: string }> };
+    const openShell = (r.diagnostics ?? []).some(d => d.code === 'feature.surface-sew.open-shell');
+    expect(openShell).toBe(true);
+  }, 60_000);
 });

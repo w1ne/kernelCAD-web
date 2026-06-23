@@ -8,6 +8,7 @@
 
 import { addFeature } from './addFeature';
 import type { AddFeatureResult } from './addFeature';
+import { isValidIdentifier, bindingExists } from './sourceEditUtils';
 
 export interface SurfaceTrimInput {
   /** Current .kcad.ts source. */
@@ -22,21 +23,10 @@ export interface SurfaceTrimInput {
   binding_name?: string;
 }
 
-const IDENTIFIER_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
-function isValidIdentifier(s: string): boolean {
-  return IDENTIFIER_RE.test(s);
-}
-
-function bindingExists(code: string, name: string): boolean {
-  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re = new RegExp(`(?:^|[^A-Za-z0-9_$])(?:const|let|var)\\s+${escaped}\\b`);
-  return re.test(code);
-}
-
 function deriveDefaultBinding(code: string, op: 'trim' | 'split'): string {
   const prefix = op === 'trim' ? '_trimmed_' : '_split_';
   let max = 0;
-  for (const m of code.matchAll(new RegExp(`const\\s+${prefix.replace('_', '_')}(\\d+)\\s*=`, 'g'))) {
+  for (const m of code.matchAll(new RegExp(`const\\s+${prefix}(\\d+)\\s*=`, 'g'))) {
     const n = parseInt(m[1], 10);
     if (n > max) max = n;
   }

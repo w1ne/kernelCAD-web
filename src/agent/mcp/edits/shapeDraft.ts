@@ -7,6 +7,7 @@
 
 import { addFeature } from './addFeature';
 import type { AddFeatureResult } from './addFeature';
+import { isValidIdentifier, bindingExists } from './sourceEditUtils';
 
 export interface ShapeDraftInput {
   /** Current .kcad.ts source. */
@@ -31,17 +32,6 @@ export interface ShapeDraftInput {
   pull_dir?: [number, number, number];
   /** JS const name for the resulting Shape binding. Auto-derived if omitted. */
   binding_name?: string;
-}
-
-const IDENTIFIER_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
-function isValidIdentifier(s: string): boolean {
-  return IDENTIFIER_RE.test(s);
-}
-
-function bindingExists(code: string, name: string): boolean {
-  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re = new RegExp(`(?:^|[^A-Za-z0-9_$])(?:const|let|var)\\s+${escaped}\\b`);
-  return re.test(code);
 }
 
 function deriveDefaultBinding(code: string): string {
