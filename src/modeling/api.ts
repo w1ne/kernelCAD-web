@@ -149,9 +149,9 @@ export interface KernelCadApi {
    * Returns a `Surface` peer to `Shape`. Use `.thicken(t)` to get a
    * closed solid, or `.toShape()` to get a zero-volume single-face shell.
    *
-   * Slice-1 limitation: `weights` is accepted but silently degraded to
-   * non-rational (the underlying OCCT `TColStd_Array2OfReal` binding isn't
-   * exposed in `replicad-opencascadejs`). See decision doc 2026-05-14.
+   * `weights` are honored: when supplied, the surface is built rational
+   * (OCCT `Geom_BSplineSurface_2`), so exact circles/cylinders/spheres/
+   * conics are representable. Omit `weights` for a non-rational surface.
    */
   nurbsSurface(opts: {
     controls: Vec3[][];

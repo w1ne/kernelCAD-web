@@ -16,10 +16,9 @@ export type SurfaceId = string;
  * before resolving the per-record `surface` FeatureRef into a Replicad
  * `Face` cached on the OcctLowerer.
  *
- * Slice-1 limitation: weights are accepted for forward compatibility but
- * silently degraded to non-rational at lower time (the underlying
- * `TColStd_Array2OfReal` class is not exposed in the replicad-opencascadejs
- * bindings). See `src/backends/occt/nurbsSurfaceLowerer.ts` deviation #3.
+ * Weights are honored: when supplied, the lowerer builds a rational surface
+ * (OCCT `Geom_BSplineSurface_2`), so exact circles/cylinders/spheres/conics
+ * are representable. See `src/kernel/backends/occt/nurbsSurfaceLowerer.ts`.
  */
 export interface NurbsSurfaceData {
   kind: 'nurbsSurface';
