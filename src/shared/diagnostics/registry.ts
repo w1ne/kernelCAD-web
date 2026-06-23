@@ -1401,6 +1401,15 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'surface.split(by) was lowered but full split-into-N is deferred; only the larger piece is returned (a warning, not a failure).',
   },
+  // NURBS Slice E (2) — sew() surface stitching.
+  'feature.surface-sew.open-shell': {
+    hintTemplate:
+      'sew() produced an open shell (some edges have no matching neighbour within tolerance). Either increase opts.tolerance so adjacent edge pairs close, add the missing patch to seal the gap, or set requireClosed: false to accept an open shell.',
+    nextAction: { kind: 'fix-arg', field: 'surfaces' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'BRepBuilderAPI_Sewing produced an open shell — one or more boundary edges are unmatched within the stitching tolerance.',
+  },
   'feature.fillet.continuity-not-applicable': {
     hintTemplate:
       "continuity: 'G2' was requested but the adjacent faces along the target edge are themselves only G1-continuous, so the resulting blend can be no smoother than G1. Either accept the G1 result, refit the upstream faces as NURBS so they are G2 internally, or apply a smaller fillet that fits inside a single smooth region.",
