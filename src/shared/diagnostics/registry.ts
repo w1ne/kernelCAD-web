@@ -566,6 +566,15 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: '.flattenPattern() was called on a Shape with more than 2 bends, exceeding the slice-1 limit.',
   },
+  // Draft (1) — Slice E Task 6/7
+  'feature.draft.failed': {
+    hintTemplate:
+      'Draft failed on the selected face(s). Drafts need a planar neutral plane and a consistent pull direction; check that the face is planar and the angle is < 90°.',
+    nextAction: { kind: 'fix-arg', field: 'face' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'BRepOffsetAPI_DraftAngle could not taper the requested faces.',
+  },
   // SDF (2) — W2.3
   'feature.sdf.field-undefined': {
     hintTemplate:
