@@ -10,7 +10,10 @@ import { addPathNurbsSegmentTool } from '../../../src/agent/mcp/tools/addPathNur
 
 const SEED_CODE = [
   'const ridge = path().moveTo(0, 0);',
-  'const sketch = ridge.lineTo(20, 0).close();',
+  // The injected .nurbsSegment(...) lands on `ridge` and ends at (20,0);
+  // close() straight back to (0,0) forms a valid extrudable profile. (A
+  // redundant .lineTo(20,0) here would inject a zero-length edge → invalid wire.)
+  'const sketch = ridge.close();',
   'return sketch.extrude(3);',
 ].join('\n');
 

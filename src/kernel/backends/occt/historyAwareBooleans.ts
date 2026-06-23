@@ -109,6 +109,32 @@ function listToHashes(oc: ReturnType<typeof getOC>, list: unknown): string[] {
   return result;
 }
 
+/** Minimal structural view of a BRepAlgoAPI_* builder's status accessors. */
+interface BooleanBuilderStatus {
+  IsDone(): boolean;
+  /** Not exposed by every OCCT binding — optional. */
+  HasErrors?(): boolean;
+}
+
+/**
+ * Assert a BRepAlgoAPI_* boolean actually succeeded before its result is
+ * trusted. A degenerate boolean (coplanar/tangent tool faces, a tool that
+ * misses the body) can leave the builder with `IsDone()==false` /
+ * `HasErrors()==true` while `Shape()` still returns the UNMODIFIED body —
+ * so reading the result without this check reports a no-op as a successful
+ * operation. Throwing here surfaces the failure as a lowering diagnostic
+ * (the lowerers catch exceptions into `recompute.lowering.exception`) instead
+ * of silently-unchanged geometry.
+ */
+export function assertBooleanSucceeded(builder: BooleanBuilderStatus, op: string): void {
+  if (!builder.IsDone()) {
+    throw new Error(`historyAwareBooleans: ${op} boolean did not complete (IsDone()==false) — result would be the unmodified input shape.`);
+  }
+  if (typeof builder.HasErrors === 'function' && builder.HasErrors()) {
+    throw new Error(`historyAwareBooleans: ${op} boolean reported errors (HasErrors()==true) — result is not trustworthy.`);
+  }
+}
+
 /**
  * Run a BRepAlgoAPI_* boolean and return the shape + history maps.
  * Internal core for cutWithHistory/fuseWithHistory/intersectWithHistory.
@@ -118,6 +144,7 @@ function runBooleanWithHistory(
   tool: OcctBackend,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   builderClass: any,
+  op: string,
 ): BooleanHistoryResult {
   const oc = getOC();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -134,6 +161,9 @@ function runBooleanWithHistory(
   const builder = new builderClass(bodyShape, toolShape, progress);
   builder.SetToFillHistory(true);
   builder.Build(progress);
+  // Verify the boolean actually completed before trusting Shape(): a degenerate
+  // op can leave IsDone()==false while Shape() returns the unmodified body.
+  assertBooleanSucceeded(builder, op);
   // INTENTIONALLY skip builder.SimplifyResult() to preserve history accuracy.
   const resultShape = builder.Shape();
 
@@ -195,17 +225,17 @@ function runBooleanWithHistory(
 
 export function cutWithHistory(body: OcctBackend, tool: OcctBackend): BooleanHistoryResult {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return runBooleanWithHistory(body, tool, (getOC() as any).BRepAlgoAPI_Cut_3);
+  return runBooleanWithHistory(body, tool, (getOC() as any).BRepAlgoAPI_Cut_3, 'cut');
 }
 
 export function fuseWithHistory(body: OcctBackend, tool: OcctBackend): BooleanHistoryResult {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return runBooleanWithHistory(body, tool, (getOC() as any).BRepAlgoAPI_Fuse_3);
+  return runBooleanWithHistory(body, tool, (getOC() as any).BRepAlgoAPI_Fuse_3, 'fuse');
 }
 
 export function intersectWithHistory(body: OcctBackend, tool: OcctBackend): BooleanHistoryResult {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return runBooleanWithHistory(body, tool, (getOC() as any).BRepAlgoAPI_Common_3);
+  return runBooleanWithHistory(body, tool, (getOC() as any).BRepAlgoAPI_Common_3, 'intersect');
 }
 
 /**

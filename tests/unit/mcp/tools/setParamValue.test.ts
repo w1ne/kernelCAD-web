@@ -30,7 +30,9 @@ describe('setParamValueTool', () => {
       return box(w, 20, 5);
     `;
     const r = await setParamValueTool({ code, param_name: 'Width', new_value: 'not_a_var' });
-    expect(r.ok).toBe(true); // edit succeeded
+    // The edit succeeded, but the new value breaks re-evaluation — ok reflects
+    // evaluation. new_code + diagnostics stay available so the agent can repair.
+    expect(r.ok).toBe(false);
     expect(r.new_code).toBeDefined();
     expect(r.diagnostics).toBeDefined();
   });
