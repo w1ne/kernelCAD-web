@@ -52,6 +52,19 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
       dryRun: { type: 'boolean', description: 'True when the result came from a fast dry run.' },
       parts: { type: 'object', additionalProperties: true, description: 'Assembly parts summary { count, names } when the scene is assembly-built.' },
+      featureHealth: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            featureId: { type: 'string' },
+            status: { type: 'string', enum: ['warning', 'error'] },
+          },
+          required: ['featureId', 'status'],
+          additionalProperties: false,
+        },
+        description: 'Per-feature health degradations — ONLY features that fell back to a passthrough (warning) or failed to lower (error). Empty when every feature is healthy. Surfaces which feature degraded even when ok is true.',
+      },
     },
     required: ['ok', 'featureCount', 'diagnostics'],
     additionalProperties: true,
