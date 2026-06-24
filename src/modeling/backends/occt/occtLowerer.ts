@@ -8,7 +8,7 @@ import type {
   ShapeBackend,
 } from '../../../kernel/backends/backend';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
-import type { FeatureId, FeatureKind, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../../../shared/intent/types';
+import type { FaceRef, FeatureId, FeatureKind, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../../../shared/intent/types';
 import { isValidPlaneSpec } from '../../../shared/intent/types';
 import { forwardKinematics, type NumericPoses } from '../../capture/forwardKinematics';
 import type { AssemblyJointStored, AssemblyPartStored } from '../../capture/assembly';
@@ -29,6 +29,8 @@ import { isCurve3DMetadata } from '../../../shared/intent/curve3dRecord';
 import { lowerVariableSweep, type VariableSweepSectionLowered } from './variableSweepLowerer';
 import { isVariableSweepMetadata } from '../../../shared/intent/variableSweepRecord';
 import { lowerCoonsPatch } from './coonsPatchLowerer';
+import { lowerSurfaceTrim, NonPlanarTrimError } from './surfaceTrimLowerer';
+import { lowerSurfaceSew } from './surfaceSewLowerer';
 import { lowerEmbossText } from './embossTextLowerer';
 import { lowerProjectCurve } from './projectCurveLowerer';
 import { pickEdges, pickFace } from '../../../kernel/backends/occt/edgeSelection';
@@ -52,6 +54,7 @@ import {
   mergeEdgeFeatureHistory,
   type EdgeRefForFilleting,
 } from '../../../kernel/backends/occt/historyAwareEdgeFeatures';
+import { draftWithHistory } from '../../../kernel/backends/occt/draftWithHistory';
 import { propagateTransformHistory } from '../../../kernel/naming/evolutionRecord';
 import type { HistoryMap, FaceLineage } from '../../../kernel/naming/evolutionRecord';
 import { retagInstance } from '../../../kernel/backends/occt/patternHistory';
@@ -418,6 +421,7 @@ export class OcctLowerer implements FeatureLowerer {
     'assemblyExport',
     'surfaceThicken',   // W1.3
     'surfaceToShape',   // W1.3
+    'surfaceSew',       // NURBS Slice E (5): stitch N surface faces into a closed solid
     'sheetMetal',       // W2.2
     'sheetMetalBend',   // W2.2
     'sdfMaterialize',   // W2.3
@@ -480,6 +484,23 @@ export class OcctLowerer implements FeatureLowerer {
       return undefined;
     }
     const sid = surfaceRef.surfaceId;
+    return this.buildSurfaceById(sid, r, inputs, diagnostics, allRecords);
+  }
+
+  /**
+   * Resolve a SurfaceId to a `BuiltSurface`, building it from its
+   * `SurfaceRecord` when not already cached. Recursive: a `surfaceTrim` record
+   * resolves its own base surface (and a sibling-surface cutter) through this
+   * same method. `r` is the *consuming* feature record (used only for
+   * diagnostic attribution).
+   */
+  private buildSurfaceById(
+    sid: import('../../../shared/intent/surfaceRecord').SurfaceId,
+    r: FeatureRecord,
+    inputs: ResolvedInputs,
+    diagnostics: CompilerDiagnostic[],
+    allRecords?: readonly FeatureRecord[],
+  ): import('../../../kernel/backends/occt/nurbsSurfaceLowerer').BuiltSurface | undefined {
     let surface: import('../../../kernel/backends/occt/nurbsSurfaceLowerer').BuiltSurface | undefined =
       inputs.surfaces?.get(sid) ?? this.surfaceCache.get(sid);
     if (surface) return surface;
@@ -562,6 +583,69 @@ export class OcctLowerer implements FeatureLowerer {
         }
         const { face } = lowerCoonsPatch(surfRec.data, allRecords, this.importedGeometry);
         surface = { kind: 'face', face };
+      } else if (surfRec.data.kind === 'surfaceTrim') {
+        // NURBS Slice E (E2): trim/split a surface against a cutter. Resolve the
+        // base surface and the cutter, then cut via BRepAlgoAPI_Section + a
+        // half-space prism (BRepFeat_SplitShape is not bound in this wasm —
+        // see surfaceTrimLowerer.ts header). Both base and a sibling-surface
+        // cutter resolve through this same method (recursion).
+        const trimData = surfRec.data;
+        const baseBuilt = this.buildSurfaceById(trimData.surfaceId, r, inputs, diagnostics, allRecords);
+        if (!baseBuilt) return undefined;
+        if (baseBuilt.kind !== 'face') {
+          diagnostics.push({
+            target: this.target,
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `surfaceTrim ${sid}: base surface is a multi-face shell; trim supports single-face surfaces only.`,
+            hint: 'invalid-args.surfaceTrim.base — trim a nurbsSurface / coonsPatch face, not a skinned shell.',
+          });
+          return undefined;
+        }
+
+        const cutterFace = this.resolveTrimCutter(trimData, r, inputs, diagnostics, allRecords);
+        if (!cutterFace) return undefined;
+
+        // split-into-N is deferred: the lowerer returns only the larger piece
+        // (identical to trim). Surface that honestly as a warning rather than
+        // silently masquerading the larger half as the promised compound.
+        if (trimData.op === 'split') {
+          diagnostics.push({
+            target: this.target,
+            code: 'feature.surface-trim.split-deferred',
+            featureId: r.id,
+            severity: 'warn',
+            message: `surfaceTrim ${sid}: split currently returns only the larger piece; full split-into-both-halves is deferred to a later slice.`,
+            hint: HINT_TEMPLATES['feature.surface-trim.split-deferred'].template,
+          });
+        }
+
+        try {
+          const { face } = lowerSurfaceTrim(baseBuilt.face, cutterFace, trimData.op);
+          surface = { kind: 'face', face };
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          const nonPlanar = e instanceof NonPlanarTrimError || /not near-planar/i.test(msg);
+          const noIntersection = /do not intersect|no section curve/i.test(msg);
+          const code = nonPlanar
+            ? 'feature.surface-trim.non-planar'
+            : noIntersection
+              ? 'feature.surface-trim.no-intersection'
+              : 'feature.kernel-failed';
+          diagnostics.push({
+            target: this.target,
+            code,
+            featureId: r.id,
+            severity: 'error',
+            message: `surfaceTrim ${sid}: ${msg}`,
+            hint:
+              code === 'feature.kernel-failed'
+                ? 'kernel-failed — ensure the surface and cutter cross cleanly (well-conditioned, non-tangent).'
+                : HINT_TEMPLATES[code].template,
+          });
+          return undefined;
+        }
       } else {
         diagnostics.push({
           target: this.target,
@@ -591,6 +675,94 @@ export class OcctLowerer implements FeatureLowerer {
     if (!surface) return undefined;
     this.surfaceCache.set(sid, surface);
     return surface;
+  }
+
+  /**
+   * Resolve a `surfaceTrim` cutter (`byRef`) to a single `replicad.Face`.
+   *  - `{ surfaceId }`: a sibling Surface → resolved through `buildSurfaceById`
+   *    and required to be a single face.
+   *  - `{ featureRef }`: a lowered feature shape (box / imported solid / sweep)
+   *    looked up via `importedGeometry` / `inputs.byKey` → its first TopoDS_Face
+   *    is used as the cutter surface (best-effort; the Section only needs a
+   *    surface that crosses the base).
+   */
+  private resolveTrimCutter(
+    trimData: import('../../../shared/intent/surfaceRecord').SurfaceTrimData,
+    r: FeatureRecord,
+    inputs: ResolvedInputs,
+    diagnostics: CompilerDiagnostic[],
+    allRecords?: readonly FeatureRecord[],
+  ): import('replicad').Face | undefined {
+    const byRef = trimData.byRef;
+    if ('surfaceId' in byRef) {
+      const built = this.buildSurfaceById(byRef.surfaceId, r, inputs, diagnostics, allRecords);
+      if (!built) return undefined;
+      if (built.kind !== 'face') {
+        diagnostics.push({
+          target: this.target,
+          code: 'feature.invalid-args',
+          featureId: r.id,
+          severity: 'error',
+          message: `surfaceTrim: cutter surface ${byRef.surfaceId} is a multi-face shell; use a single-face surface as the cutter.`,
+          hint: 'invalid-args.surfaceTrim.cutter — pass a nurbsSurface / coonsPatch face as the cutter.',
+        });
+        return undefined;
+      }
+      return built.face;
+    }
+
+    // featureRef cutter: find the lowered shape and extract its first face.
+    // FeatureRef is a discriminated union; the cutter authoring contract
+    // (surfaceTrim byRef = a Shape feature) implies kind='feature' carrying `.id`,
+    // but we fall back to `.featureId` for face/edge/vertex refs so the lookup
+    // still resolves the owning feature's lowered shape.
+    const featureRef = byRef.featureRef;
+    const fid = featureRef.kind === 'feature' ? featureRef.id : featureRef.kind === 'surface' ? featureRef.surfaceId : featureRef.featureId;
+    const back =
+      this.importedGeometry.get(fid) ??
+      (inputs.byKey[fid] as OcctBackend | undefined) ??
+      (inputs.byKey['by'] as OcctBackend | undefined);
+    if (!back) {
+      diagnostics.push({
+        target: this.target,
+        code: 'recompute.input.missing',
+        featureId: r.id,
+        severity: 'error',
+        message: `surfaceTrim: cutter feature ${fid} was not lowered before the trim resolved.`,
+        hint: 'recompute.input.missing — capture/lower the cutter shape before trimming against it.',
+      });
+      return undefined;
+    }
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const oc = (replicad as any).getOC();
+      // `back` is always an OcctBackend at this call site — importedGeometry
+      // and inputs.byKey are both keyed on OcctBackend instances; the union
+      // type is wider than necessary because the accessor type is ShapeBackend.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const raw = ((back as OcctBackend).getReplicadShape() as any).wrapped;
+      const exp = new oc.TopExp_Explorer_2(
+        raw,
+        oc.TopAbs_ShapeEnum.TopAbs_FACE,
+        oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
+      );
+      if (!exp.More()) {
+        throw new Error(`cutter feature ${fid} has no faces`);
+      }
+      const topoFace = oc.TopoDS.Face_1(exp.Current());
+      return new replicad.Face(topoFace);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      diagnostics.push({
+        target: this.target,
+        code: 'feature.invalid-args',
+        featureId: r.id,
+        severity: 'error',
+        message: `surfaceTrim: could not extract a cutter face from feature ${fid}: ${msg}`,
+        hint: 'invalid-args.surfaceTrim.cutter — pass a surface or a shape with at least one planar face.',
+      });
+      return undefined;
+    }
   }
 
   /** v0.6: absolute directory of the calling `.kcad.ts` script. Used by the
@@ -1581,6 +1753,154 @@ export class OcctLowerer implements FeatureLowerer {
             severity: 'error',
             message: `OCCT shell failed: ${msg}`,
             hint: 'OCCT could not shell that solid — try a thinner wall or a different open face. Thickness must be smaller than the shape\'s minimum thickness.',
+          });
+          return { shape: base, diagnostics };
+        }
+        break;
+      }
+      case 'draft': {
+        const base = inputs.byKey.base as OcctBackend | undefined;
+        if (!base) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `draft requires an input named 'base'.`,
+            hint: 'Chain draft onto a solid shape.',
+          });
+          throw new Error('draft: no base shape');
+        }
+        const angleDeg = r.params.angle?.evaluated;
+        if (angleDeg === undefined) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `draft requires an 'angle' parameter.`,
+            hint: "Pass the taper angle in degrees, e.g. .draft(5, { face: 'front' }).",
+          });
+          throw new Error('draft: no angle');
+        }
+        const faceResult = pickFace(r, base, allRecords);
+        if ('error' in faceResult) {
+          diagnostics.push(faceResult.error);
+          return { shape: base, diagnostics };
+        }
+        drainResolvedWarnings(r, diagnostics);
+        // Honesty signal: the capture layer DEFAULTS metadata.neutralPlane to
+        // the drafted face's own selector string (canonical/label name), and
+        // sets '' when the face is a non-named selector (FaceQuery etc.). The
+        // neutral plane is ALWAYS derived from the target face geometry here, so
+        // a genuine override — a named neutralPlane pointing at a DIFFERENT face
+        // than the drafted one — is silently dropped. Surface a warning in that
+        // case rather than pretending the named plane was honored. Full
+        // named-neutral-plane resolution is deferred to a later slice.
+        const neutralPlane = (r.metadata as { neutralPlane?: string } | undefined)?.neutralPlane ?? '';
+        const faceRef = (r.inputs.face as { ref?: FaceRef } | undefined)?.ref;
+        const targetFaceSelector =
+          faceRef?.kind === 'canonical' ? faceRef.face
+          : faceRef?.kind === 'label' ? faceRef.name
+          : ''; // FaceQuery / tracked / created etc. → capture default was ''
+        if (neutralPlane !== '' && neutralPlane !== targetFaceSelector) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.draft.neutral-plane-derived',
+            featureId: r.id,
+            severity: 'warn',
+            message: `Named neutralPlane '${neutralPlane}' differs from the drafted face '${targetFaceSelector || '(query)'}'; the parting plane was derived from the face geometry instead.`,
+            hint: 'A named neutralPlane different from the drafted face is not yet honored; the parting plane was derived from the face geometry. Full named-neutral-plane support lands in a later slice.',
+          });
+        }
+        try {
+          // The resolved replicad Face gives us both the target face hash and the
+          // geometry needed to DERIVE the neutral plane + pull direction when the
+          // capture metadata left them unspecified (Slice E cross-task contract:
+          // metadata.neutralPlane may be the empty string '' for FaceQuery
+          // selectors, and metadata.pullDir is absent when not supplied).
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const face = faceResult as any;
+          const faceHash = (face.wrapped ?? face._wrapped ?? face).HashCode(2147483647).toString(16);
+          const center = face.center as { x: number; y: number; z: number };
+          const nRaw = typeof face.normalAt === 'function'
+            ? (face.normalAt() as { x: number; y: number; z: number })
+            : { x: 0, y: 0, z: 1 };
+          const nLen = Math.hypot(nRaw.x, nRaw.y, nRaw.z) || 1;
+          const faceNormal: [number, number, number] = [nRaw.x / nLen, nRaw.y / nLen, nRaw.z / nLen];
+
+          // Pull direction: explicit metadata.pullDir, else derive a demoulding
+          // axis. The pull must NOT be parallel to the drafted face normal (a face
+          // tapered about a plane parallel to itself is degenerate), so when no
+          // pullDir is given we pick the principal axis (±X/±Y/±Z) most
+          // perpendicular to the face normal, breaking ties toward +Z — the
+          // conventional mould-opening direction for a top-drafted side wall.
+          const meta = r.metadata as { pullDir?: [number, number, number] } | undefined;
+          let pullDir: [number, number, number];
+          if (meta?.pullDir !== undefined) {
+            pullDir = meta.pullDir;
+          } else {
+            // Candidate axes ordered so +Z wins ties (stable, conventional).
+            const axes: [number, number, number][] = [
+              [0, 0, 1], [0, 0, -1], [0, 1, 0], [0, -1, 0], [1, 0, 0], [-1, 0, 0],
+            ];
+            let best = axes[0];
+            let bestPerp = -1;
+            for (const a of axes) {
+              const dotAbs = Math.abs(a[0] * faceNormal[0] + a[1] * faceNormal[1] + a[2] * faceNormal[2]);
+              const perp = 1 - dotAbs; // larger = more perpendicular to face normal
+              if (perp > bestPerp + 1e-9) { bestPerp = perp; best = a; }
+            }
+            pullDir = best;
+          }
+
+          // Neutral plane: derived from the target face geometry. A face tapered
+          // about its own plane would be a no-op, so we anchor the parting plane
+          // at the base of the shape along the pull axis and orient it by the pull
+          // direction. This is the robust default that also satisfies the
+          // neutralPlane === '' contract (no resolvable neutral-plane face).
+          const bb = base.boundingBox();
+          const pLen = Math.hypot(pullDir[0], pullDir[1], pullDir[2]) || 1;
+          const pUnit: [number, number, number] = [pullDir[0] / pLen, pullDir[1] / pLen, pullDir[2] / pLen];
+          // Anchor at the face centroid projected onto the parting level: place the
+          // plane at the shape extent OPPOSITE the pull direction so the whole face
+          // tapers (the parting line sits at the base, away from the pull).
+          const lows = [bb.min[0], bb.min[1], bb.min[2]];
+          const highs = [bb.max[0], bb.max[1], bb.max[2]];
+          const anchor: [number, number, number] = [
+            pUnit[0] >= 0 ? lows[0] : highs[0],
+            pUnit[1] >= 0 ? lows[1] : highs[1],
+            pUnit[2] >= 0 ? lows[2] : highs[2],
+          ];
+          // Keep the in-pull-axis component at the parting level but the in-plane
+          // components at the face centroid so the plane passes through the body.
+          const planePoint: [number, number, number] = [
+            Math.abs(pUnit[0]) > 0.5 ? anchor[0] : center.x,
+            Math.abs(pUnit[1]) > 0.5 ? anchor[1] : center.y,
+            Math.abs(pUnit[2]) > 0.5 ? anchor[2] : center.z,
+          ];
+
+          const angleRad = (angleDeg * Math.PI) / 180;
+          const res = draftWithHistory(
+            base,
+            [{ hash: faceHash }],
+            angleRad,
+            pullDir,
+            { point: planePoint, normal: pUnit },
+          );
+          const newMap = mergeEdgeFeatureHistory(base.historyMap, res);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const wrapped = replicad.cast(res.shape as any) as replicad.Shape3D;
+          shape = new OcctBackend(wrapped, undefined, newMap);
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : 'OCCT draft failed';
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.draft.failed',
+            featureId: r.id,
+            severity: 'error',
+            message: `OCCT draft failed: ${msg}`,
+            hint: 'Drafts need a planar neutral plane and a consistent pull direction; check that the face is planar and the angle is < 90°.',
           });
           return { shape: base, diagnostics };
         }
@@ -2605,6 +2925,100 @@ export class OcctLowerer implements FeatureLowerer {
           });
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
+        break;
+      }
+      case 'surfaceSew': {
+        // NURBS Slice E (5): stitch N surface faces into a shell — and, when
+        // watertight, a solid — via BRepBuilderAPI_Sewing. Each `surface_<i>`
+        // input resolves through the same buildSurfaceById path as
+        // surfaceThicken / surfaceToShape (extended to MULTIPLE inputs). Only
+        // single-face surfaces are sewable: a skinned multi-face shell as an
+        // input is rejected with feature.invalid-args.
+        const surfaceKeys = Object.keys(r.inputs)
+          .filter((k) => k.startsWith('surface_'))
+          .sort((a, b) => {
+            const ia = Number(a.slice('surface_'.length));
+            const ib = Number(b.slice('surface_'.length));
+            return ia - ib;
+          });
+        if (surfaceKeys.length === 0) {
+          diagnostics.push({
+            target: this.target,
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `surfaceSew: no surface_* inputs found.`,
+            hint: 'invalid-args.surfaceSew.input — call sew([surfaceA, surfaceB, ...]).',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        const faces: import('replicad').Face[] = [];
+        for (const key of surfaceKeys) {
+          const ref = r.inputs[key];
+          if (!ref || ref.kind !== 'surface') {
+            diagnostics.push({
+              target: this.target,
+              code: 'feature.invalid-args',
+              featureId: r.id,
+              severity: 'error',
+              message: `surfaceSew: input ${key} is missing or not a surface ref.`,
+              hint: 'invalid-args.surfaceSew.input — every sew() input must be a captured Surface.',
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          const built = this.buildSurfaceById(ref.surfaceId, r, inputs, diagnostics, allRecords);
+          if (!built) {
+            // buildSurfaceById already pushed the specific diagnostic.
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          if (built.kind !== 'face') {
+            diagnostics.push({
+              target: this.target,
+              code: 'feature.invalid-args',
+              featureId: r.id,
+              severity: 'error',
+              message: `surfaceSew: input ${key} (${ref.surfaceId}) is a multi-face shell; sew accepts single-face surfaces only.`,
+              hint: 'invalid-args.surfaceSew.input — sew nurbsSurface / coonsPatch / trimmed faces, not skinned shells.',
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          faces.push(built.face);
+        }
+
+        const tolerance = r.params.tolerance.evaluated;
+        const requireClosed = (r.metadata as { requireClosed?: boolean } | undefined)?.requireClosed === true;
+        let sewResult: import('./surfaceSewLowerer').SurfaceSewResult;
+        try {
+          sewResult = lowerSurfaceSew(faces, { tolerance, requireClosed });
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          diagnostics.push({
+            target: this.target,
+            code: 'feature.kernel-failed',
+            featureId: r.id,
+            severity: 'error',
+            message: `surfaceSew: OCCT sewing failed: ${msg}`,
+            hint: 'kernel-failed — ensure the faces are well-conditioned and share edges within tolerance.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+
+        // Review-mandated enforcement: requireClosed must not be a silent
+        // no-op. When the caller asked for a watertight result but the sewed
+        // shell is not a closed solid, surface the open-shell diagnostic. When
+        // requireClosed is false, accept the (possibly open) shell silently.
+        if (requireClosed && !(sewResult.isSolid && sewResult.isClosed)) {
+          diagnostics.push({
+            target: this.target,
+            code: 'feature.surface-sew.open-shell',
+            featureId: r.id,
+            severity: 'error',
+            message: `surfaceSew: requireClosed was set but the sewn result is an open shell (not a closed solid).`,
+            hint: HINT_TEMPLATES['feature.surface-sew.open-shell'].template,
+          });
+        }
+
+        shape = sewResult.backend;
         break;
       }
       case 'referenceImage': {
