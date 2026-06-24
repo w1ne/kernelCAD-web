@@ -6,7 +6,6 @@ import { buildNurbsFace } from '../../../../src/kernel/backends/occt/nurbsSurfac
 import {
   lowerSurfaceTrim,
   faceArea,
-  NonPlanarTrimError,
 } from '../../../../src/modeling/backends/occt/surfaceTrimLowerer';
 import { CaptureSession } from '../../../../src/modeling/capture/captureSession';
 import { createApi } from '../../../../src/modeling/api';
@@ -124,19 +123,37 @@ describe('lowerSurfaceTrim', () => {
     expect(() => lowerSurfaceTrim(base, disjoint, 'trim')).toThrow();
   });
 
-  it('refuses to trim a curved (non-planar) base — guard fires, no silent mis-trim', () => {
+  it('trims a curved base by imprinting the section curve instead of refusing non-planar input', () => {
     const cutter = crossingPatchHalving();
-    // The planar slab path would happily produce SOME area here (wrong).
-    // The near-planar guard must reject instead.
-    expect(() => lowerSurfaceTrim(curvedPatch(), cutter, 'trim')).toThrow(NonPlanarTrimError);
+    const base = curvedPatch();
+    const baseArea = faceArea(base);
+
+    const { face } = lowerSurfaceTrim(base, cutter, 'trim');
+
+    const trimmedArea = faceArea(face);
+    expect(trimmedArea).toBeGreaterThan(0.1);
+    expect(trimmedArea).toBeLessThan(baseArea - 0.1);
+    expect(face.outerWire()).toBeTruthy();
   });
 
-  it('refuses to trim by a curved (non-planar) cutter', () => {
-    const base = unitPlanarPatch();
-    expect(() => lowerSurfaceTrim(base, curvedPatch(), 'trim')).toThrow(NonPlanarTrimError);
+  it('returns both valid halves for split, with area conserved against the curved base', () => {
+    const base = curvedPatch();
+    const cutter = crossingPatchHalving();
+    const baseArea = faceArea(base);
+
+    const first = lowerSurfaceTrim(base, cutter, 'split', 0).face;
+    const second = lowerSurfaceTrim(base, cutter, 'split', 1).face;
+    const areaA = faceArea(first);
+    const areaB = faceArea(second);
+
+    expect(areaA).toBeGreaterThan(0.1);
+    expect(areaB).toBeGreaterThan(0.1);
+    expect(first.outerWire()).toBeTruthy();
+    expect(second.outerWire()).toBeTruthy();
+    expect(Math.abs(areaA + areaB - baseArea)).toBeLessThan(0.25);
   });
 
-  it('emits feature.surface-trim.non-planar through the dispatch arm for a curved base', async () => {
+  it('lowers a curved trim through the dispatch arm without feature.surface-trim.non-planar', async () => {
     const session = new CaptureSession();
     const api = createApi({ session });
     const base = api.nurbsSurface({
@@ -160,13 +177,11 @@ describe('lowerSurfaceTrim', () => {
     const engine = new RecomputeEngine(createOcctLowerer(session));
     const r = await engine.run(session.getRecords());
     expect(
-      r.diagnostics.some(
-        (d) => d.code === 'feature.surface-trim.non-planar' && d.severity === 'error',
-      ),
-    ).toBe(true);
+      r.diagnostics.some((d) => d.code === 'feature.surface-trim.non-planar'),
+    ).toBe(false);
   });
 
-  it('emits feature.surface-trim.split-deferred (warning) for the split op', async () => {
+  it('lowers both split halves through the dispatch arm without split-deferred warning', async () => {
     const session = new CaptureSession();
     const api = createApi({ session });
     const base = api.nurbsSurface({
@@ -183,14 +198,16 @@ describe('lowerSurfaceTrim', () => {
       ],
       degree: { u: 1, v: 1 },
     });
-    base.split(cutter).toShape();
+    const [left, right] = base.split(cutter);
+    left.toShape();
+    right.toShape();
 
     const engine = new RecomputeEngine(createOcctLowerer(session));
     const r = await engine.run(session.getRecords());
     expect(
       r.diagnostics.some(
-        (d) => d.code === 'feature.surface-trim.split-deferred' && d.severity === 'warn',
+        (d) => d.code === 'feature.surface-trim.split-deferred',
       ),
-    ).toBe(true);
+    ).toBe(false);
   });
 });
