@@ -30,7 +30,13 @@ export async function evaluateSourceEdit(
   if (!edit.ok || !edit.new_code) {
     return { ok: false, error: edit.error };
   }
-  const evalResult = await evaluateScriptTool({ code: edit.new_code });
+  // Source edits are INCREMENTAL: a partly-built assembly legitimately has
+  // an unmated part / interpenetrating blockout at an intermediate edit
+  // step. Running the default T3 mechanism gate here would surface spurious
+  // mechanism.* failures mid-build. The mechanism gate belongs on the
+  // agent's terminal evaluate_script / review_cad call, not on every edit —
+  // so skip it for the per-edit re-evaluation.
+  const evalResult = await evaluateScriptTool({ code: edit.new_code, skipMechanismCheck: true });
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
