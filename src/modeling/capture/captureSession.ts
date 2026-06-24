@@ -8,7 +8,7 @@ import type { FeatureRecord, ShapeTransform } from '../../shared/intent/featureR
 import type { FeatureId, FeatureKind, FeatureRef, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../../shared/intent/types';
 import { isValidPlaneSpec } from '../../shared/intent/types';
 import type {
-  SurfaceRecord, SurfaceId, NurbsSurfaceData, CoonsPatchData,
+  SurfaceRecord, SurfaceId, NurbsSurfaceData, CoonsPatchData, SurfaceTrimData,
 } from '../../shared/intent/surfaceRecord';
 import type { ReferenceImageMetadata, ReferenceImageScale } from '../../shared/intent/referenceImageRecord';
 import type {
@@ -444,6 +444,15 @@ export class CaptureSession {
 
   getSurfaceRecord(id: SurfaceId): SurfaceRecord | undefined {
     return this.surfaceRecords.find(s => s.id === id);
+  }
+
+  /** Capture a surface trim or split record. Returns a new SurfaceProxy whose
+   *  lowerer (Task 3) runs BRepAlgoAPI_Section against `byRef` at build time. */
+  addSurfaceTrim(surfaceId: SurfaceId, byRef: SurfaceTrimData['byRef'], op: 'trim' | 'split'): SurfaceProxy {
+    const id = this.surfaceIdGen.next();
+    const data: SurfaceTrimData = { kind: 'surfaceTrim', surfaceId, byRef, op };
+    this.surfaceRecords.push({ id, kind: 'surfaceTrim', params: {}, data });
+    return new SurfaceProxy(id, this);
   }
 
   /**
@@ -1937,6 +1946,56 @@ export class CaptureSession {
       kind: 'sheetMetalBend',
       params: { angle: angleParam, radius: radiusParam },
       inputs,
+    });
+  }
+
+  /**
+   * Slice E Task 6: capture a `kind: 'draft'` FeatureRecord.
+   * The taper `angle` (degrees) goes into `params.angle`; the target face
+   * selector is stored in `inputs.face` via the same `buildEdgeFeatureRef`
+   * path as `shell`. The optional `neutralPlane` (string canonical face or
+   * label) and `pullDir` ([x, y, z] vector) are stored in `metadata` so the
+   * Task-7 lowerer (`BRepOffsetAPI_DraftAngle`) can read them back without
+   * needing a new FeatureRecord field.
+   */
+  draftFeature(
+    base: Shape,
+    angleDeg: Editable<number>,
+    opts: {
+      face: import('./proxy').FaceSelector | string;
+      neutralPlane?: string;
+      pullDir?: [number, number, number];
+    },
+  ): Shape {
+    if (!this.records.some(r => r.id === base.id)) {
+      throw new Error(`draft: base shape '${base.id}' is not from this CaptureSession`);
+    }
+    const inputs: Record<string, FeatureRef> = {
+      base: { kind: 'feature', id: base.id },
+    };
+    // Reuse the face-selector path from buildEdgeFeatureRef by wrapping the
+    // face value in the { face: ... } envelope that buildEdgeFeatureRef expects.
+    const faceSelector = typeof opts.face === 'string' || (typeof opts.face === 'object' && opts.face !== null && !('face' in opts.face))
+      ? { face: opts.face }
+      : (opts.face as { face: import('./proxy').FaceSelector | string });
+    const ref = buildEdgeFeatureRef(base.id, faceSelector as Parameters<typeof buildEdgeFeatureRef>[1]);
+    if (ref.key === 'face') inputs.face = ref.value;
+
+    // neutralPlane defaults to the face string when it is a plain canonical/label
+    // name (Task 7 reads metadata.neutralPlane to locate the neutral plane).
+    const neutralPlane: string =
+      opts.neutralPlane ?? (typeof opts.face === 'string' ? opts.face : '');
+
+    const metadata: import('../../shared/intent/featureRecord').FeatureMetadata = {
+      neutralPlane,
+      ...(opts.pullDir !== undefined ? { pullDir: opts.pullDir } : {}),
+    };
+
+    return this.createShape({
+      kind: 'draft',
+      params: { angle: toParam(angleDeg, 'deg') },
+      inputs,
+      metadata,
     });
   }
 
