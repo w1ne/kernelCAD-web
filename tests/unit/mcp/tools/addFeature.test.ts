@@ -30,7 +30,10 @@ describe('addFeatureTool', () => {
       `return base;`,
     ].join('\n');
     const r = await addFeatureTool({ code, feature_code: `const x = nonexistent();` });
-    expect(r.ok).toBe(true); // edit succeeded
+    // The splice succeeded, but re-evaluation failed — ok reflects evaluation,
+    // not the edit. new_code + diagnostics remain available so the agent can repair.
+    expect(r.ok).toBe(false);
+    expect(r.new_code).toBeDefined();
     expect(r.diagnostics?.some(d => d.severity === 'error')).toBe(true);
   });
 });
