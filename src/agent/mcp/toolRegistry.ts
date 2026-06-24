@@ -698,19 +698,31 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'project_curve',
-      description: 'Use this when you need to wrap a 2D curve onto a 3D face. Insert a `<shape>.projectCurve({ curve, face, scaleMode?, asEdge? })` chained call into a kernelCAD script. Wraps a 2D closed curve onto a 3D face along the face normal; pair with `.extrude(d)` / `.cut(...)` for engraved logos or label inserts on curved bodies. `asEdge: true` is captured but currently deferred at lower time (BRepProj_Projection not bundled). Side-effect-free; returns modified code plus diagnostics.',
+      description: 'Use this when you need to wrap a 2D closed curve onto a 3D face. Insert a `<shape>.projectCurve({ source, face, scaleMode? })` chained call into a kernelCAD script. The `source` is the structured `{ kind: "sketchCommands", commands: [...] }` wire format the runtime API accepts. Wraps the curve onto the face along the face normal; pair with `.extrude(d)` / `.cut(...)` for raised or engraved logos on curved bodies. Open-wire projection (`asEdge: true`) is deferred (BRepProj_Projection not bundled) and is rejected at edit time. Side-effect-free; returns modified code plus diagnostics.',
       inputSchema: {
         type: 'object',
         properties: {
-          code:            { type: 'string', description: 'The .kcad.ts source code.' },
-          target:          { type: 'string', description: 'Variable name of the Shape to chain onto.' },
-          curveExpression: { type: 'string', description: 'JS expression returning a closed sketch (e.g. `path().moveTo(0,0).lineTo(2,0).lineTo(2,2).close().build()`). Inserted verbatim as the `curve:` field.' },
-          face:            { type: 'string', description: "Target face — canonical name or label." },
-          scaleMode:       { type: 'string', enum: ['original', 'native', 'bounds'], description: 'Drawing.sketchOnFace scaling mode. Default original.' },
-          asEdge:          { type: 'boolean', description: 'Project as an open edge instead of a closed face-bound sketch. Currently deferred.' },
-          bindAs:          { type: 'string', description: 'Optional local variable name; emits `const <bindAs> = <target>.projectCurve(...);`.' },
+          code:      { type: 'string', description: 'The .kcad.ts source code.' },
+          target:    { type: 'string', description: 'Variable name of the Shape to chain onto.' },
+          commands:  {
+            type: 'array',
+            description: 'Closed 2D path to wrap onto the face, as plain-number commands. Must start with a `moveTo` and end with a `close` (e.g. [{kind:"moveTo",x:0,y:0},{kind:"lineTo",x:2,y:0},{kind:"lineTo",x:2,y:2},{kind:"close"}]).',
+            items: {
+              type: 'object',
+              properties: {
+                kind: { type: 'string', enum: ['moveTo', 'lineTo', 'close'] },
+                x:    { type: 'number' },
+                y:    { type: 'number' },
+              },
+              required: ['kind'],
+            },
+          },
+          face:      { type: 'string', description: 'Target face — canonical name or label.' },
+          scaleMode: { type: 'string', enum: ['original', 'native', 'bounds'], description: 'Drawing.sketchOnFace scaling mode. Default original.' },
+          asEdge:    { type: 'boolean', description: 'Open-wire (edge) projection. DEFERRED — rejected at edit time (BRepProj_Projection not bundled).' },
+          bindAs:    { type: 'string', description: 'Optional local variable name; emits `const <bindAs> = <target>.projectCurve(...);`.' },
         },
-        required: ['code', 'target', 'curveExpression', 'face'],
+        required: ['code', 'target', 'commands', 'face'],
       },
     },
     handler: input => projectCurveTool(input as unknown as Parameters<typeof projectCurveTool>[0]),
