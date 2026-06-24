@@ -31,8 +31,9 @@ describe('diagnostic catalogue invariants', () => {
     // + 1 mechanism.unverified-budget-exceeded (this PR — T3 post-condition
     //   gate: the over-budget BREP pose-sweep skip is now a LOUD structured
     //   diagnostic instead of a silent console.warn). = 237.
-    expect(DIAGNOSTIC_CODES).toHaveLength(237);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(237);
+    // + 1 tool.trace-from-image.trace-timeout (forward-ported: pure-JS tracer hard per-call timeout). = 238.
+    expect(DIAGNOSTIC_CODES).toHaveLength(238);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(238);
   });
 
   it('every code has a non-empty hint template', () => {

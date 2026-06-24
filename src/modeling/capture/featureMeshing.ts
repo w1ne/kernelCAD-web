@@ -699,6 +699,11 @@ export async function meshFeaturesPerFeature(
      *  Optional — scripts without `arm.tendon(...)` (or that don't
      *  expose an assemblies map) render unchanged. */
     assemblies?: ReadonlyMap<string, unknown>;
+    /** Streaming hook: fired as each FeatureMesh is produced during the
+     *  interleaved lower+mesh pass, so a caller can flush it progressively
+     *  instead of waiting for the whole build. Optional — non-streaming callers
+     *  omit it and the emitted set / return value are byte-identical. */
+    onFeature?: (mesh: FeatureMesh) => void;
   },
 ): Promise<MeshFeaturesResult> {
   await initOcct();
@@ -711,6 +716,13 @@ export async function meshFeaturesPerFeature(
   }
   const engine = new RecomputeEngine(lowerer);
   const features: FeatureMesh[] = [];
+  // Collect every produced FeatureMesh, and — when a streaming caller passed
+  // `session.onFeature` — flush it immediately so the viewport can paint parts
+  // as they finish instead of waiting for the whole build.
+  const emitFeature = (mesh: FeatureMesh): void => {
+    features.push(mesh);
+    session?.onFeature?.(mesh);
+  };
   const failedFeatureIds: FeatureId[] = [];
   const recordById = new Map<FeatureId, FeatureRecord>(records.map((r) => [r.id, r]));
   let minX = Infinity, minY = Infinity, minZ = Infinity;
@@ -758,7 +770,7 @@ export async function meshFeaturesPerFeature(
       const cameraTgt = r.kind === 'cameraTarget'
         ? (r.metadata as unknown as CameraTargetMetadata)
         : undefined;
-      features.push({
+      emitFeature({
         featureId: r.id,
         featureKind: r.kind,
         predecessors: [],
@@ -898,7 +910,7 @@ export async function meshFeaturesPerFeature(
             ...(edges ? { edges } : {}),
           };
           if (!cachedPart) attachPlanarUVs(local.faces);
-          features.push({
+          emitFeature({
             ...local,
             assemblyFeatureId: event.featureId,
             assemblyPartName: part.name,
@@ -949,7 +961,7 @@ export async function meshFeaturesPerFeature(
         // sourced directly off the SceneBackend.
         const tendonMeshes = collectTendonMeshes(event.shape, event.featureId, assembliesIn);
         for (const tm of tendonMeshes) {
-          features.push(tm);
+          emitFeature(tm);
           for (const f of tm.faces) {
             for (let i = 0; i < f.vertices.length; i += 3) {
               const x = f.vertices[i], y = f.vertices[i + 1], z = f.vertices[i + 2];
@@ -1067,7 +1079,7 @@ export async function meshFeaturesPerFeature(
         ...(material !== undefined ? { material } : {}),
         ...(materialByFaceId !== undefined ? { materialByFaceId } : {}),
       };
-      features.push(emitted);
+      emitFeature(emitted);
       // Populate per-feature mesh cache so a subsequent `params.update` whose
       // first-affected scan keeps this record's lowered shape can re-emit the
       // cached mesh directly instead of calling `meshShape` again.
@@ -1100,7 +1112,7 @@ export async function meshFeaturesPerFeature(
       const cached = cachedFeatureMeshes.get(r.id);
       if (!cached) continue;
       const mesh = cached as FeatureMesh;
-      features.push(mesh);
+      emitFeature(mesh);
       for (const f of mesh.faces) {
         for (let i = 0; i < f.vertices.length; i += 3) {
           const x = f.vertices[i], y = f.vertices[i + 1], z = f.vertices[i + 2];

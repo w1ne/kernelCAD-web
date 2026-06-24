@@ -2,52 +2,41 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/vision/opencvBackend.test.ts
 //
-// Tests for the pure-JS opencv silhouette backend.
+// Tests for the pure-JS silhouette backend. There is no longer any WASM/opencv
+// dependency, so the extractor runs in-process directly against the fixtures.
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { execFile } from 'node:child_process';
+import { describe, expect, it } from 'vitest';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { promisify } from 'node:util';
+import {
+  arcLength,
+  douglasPeucker,
+  extractSilhouettePolyline,
+  otsuThreshold,
+} from './opencvBackend';
 
 const FIXTURE_DIR = join(__dirname, '../../..', 'tests/fixtures/vision');
-const FAIL_FAST_MS = 4000;
-const execFileAsync = promisify(execFile);
 
-async function withFailFast<T>(promise: Promise<T>): Promise<T> {
-  let timer: NodeJS.Timeout | undefined;
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<never>((_, reject) => {
-        timer = setTimeout(
-          () => reject(new Error(`test-side fail-fast after ${FAIL_FAST_MS}ms`)),
-          FAIL_FAST_MS,
-        );
-      }),
-    ]);
-  } finally {
-    if (timer) clearTimeout(timer);
-  }
+async function fixture(name: string): Promise<Buffer> {
+  return readFile(join(FIXTURE_DIR, name));
 }
 
 describe('extractSilhouettePolyline', () => {
-  afterEach(() => {
-    vi.doUnmock('@techstark/opencv-js');
-    vi.resetModules();
-    delete process.env.KERNELCAD_OPENCV_INIT_TIMEOUT_MS;
-  });
+  it('extracts a ~4-corner polyline hugging the centered black square', async () => {
+    const t0 = Date.now();
+    const polyline = await extractSilhouettePolyline(await fixture('uniform-bg-square.png'), 12);
+    const elapsed = Date.now() - t0;
 
-  it('extracts a polyline hugging the centered black square on a white background', async () => {
-    const polyline = await runExtractorInNode('uniform-bg-square.png', 12);
-    // Must extract at least the 4 corners of the square.
+    // Must be fast — this replaces the path that used to hang forever.
+    expect(elapsed).toBeLessThan(1000);
+
+    // A square simplifies to its 4 corners (allow a couple extra for stairstep
+    // edges, but never the whole boundary).
     expect(polyline.length).toBeGreaterThanOrEqual(4);
-    expect(polyline.length).toBeLessThanOrEqual(12);
+    expect(polyline.length).toBeLessThanOrEqual(8);
 
-    // Bounding box of the extracted polyline should hug the centered 100×100
-    // square inside a 256×256 image. Square spans pixel rows/cols [78..177];
-    // normalised [78/256, 177/256] = [~0.305, ~0.691]. Allow a few px of slack
-    // for findContours' edge handling.
+    // Bounding box hugs the centered 100×100 square in a 256×256 image:
+    // rows/cols ~[78..177] → normalized ~[0.305, 0.691].
     const xs = polyline.map(([x]) => x);
     const ys = polyline.map(([, y]) => y);
     const minX = Math.min(...xs);
@@ -64,45 +53,104 @@ describe('extractSilhouettePolyline', () => {
     expect(maxY).toBeLessThan(0.75);
   }, 5000);
 
-  it('times out instead of hanging when opencv never initializes', async () => {
-    process.env.KERNELCAD_OPENCV_INIT_TIMEOUT_MS = '25';
-    vi.doMock('@techstark/opencv-js', () => ({ default: {} }));
-    const { extractSilhouettePolyline } = await import('./opencvBackend');
-    const png = await readFile(join(FIXTURE_DIR, 'uniform-bg-square.png'));
+  it('does not return the whole frame for the square fixture', async () => {
+    const polyline = await extractSilhouettePolyline(await fixture('uniform-bg-square.png'), 12);
+    const xs = polyline.map(([x]) => x);
+    const ys = polyline.map(([, y]) => y);
+    // None of the corners should touch the image border.
+    expect(Math.min(...xs)).toBeGreaterThan(0.05);
+    expect(Math.max(...xs)).toBeLessThan(0.95);
+    expect(Math.min(...ys)).toBeGreaterThan(0.05);
+    expect(Math.max(...ys)).toBeLessThan(0.95);
+  });
 
-    await expect(withFailFast(extractSilhouettePolyline(png, 12))).rejects.toThrow(
-      /opencv initialization timed out/i,
-    );
-  }, 1000);
+  it('terminates quickly on a cluttered photo (no hang)', async () => {
+    const t0 = Date.now();
+    const polyline = await extractSilhouettePolyline(await fixture('cluttered-photo.png'), 12);
+    expect(Date.now() - t0).toBeLessThan(1000);
+    expect(polyline.length).toBeGreaterThanOrEqual(3);
+    expect(polyline.length).toBeLessThanOrEqual(12);
+  }, 5000);
+
+  it('rejects maxWaypoints < 3', async () => {
+    await expect(
+      extractSilhouettePolyline(await fixture('uniform-bg-square.png'), 2),
+    ).rejects.toThrow(/maxWaypoints must be >= 3/);
+  });
+
+  it('throws no-foreground for a solid single-color image', async () => {
+    // 16×16 solid white PNG (1×1 won't decode to a usable mask).
+    const sharp = (await import('sharp')).default;
+    const white = await sharp({
+      create: { width: 16, height: 16, channels: 3, background: { r: 255, g: 255, b: 255 } },
+    })
+      .png()
+      .toBuffer();
+    await expect(extractSilhouettePolyline(white, 12)).rejects.toThrow(/no foreground contour/);
+  });
 });
 
-async function runExtractorInNode(fixtureName: string, maxWaypoints: number): Promise<[number, number][]> {
-  const script = `
-    import { readFile } from 'node:fs/promises';
-    import { join } from 'node:path';
-    import { extractSilhouettePolyline } from './src/agent/vision/opencvBackend.ts';
+describe('otsuThreshold', () => {
+  it('returns a between-class-maximizing threshold for a bimodal histogram', () => {
+    const hist = new Array(256).fill(0);
+    hist[10] = 1000;
+    hist[200] = 1000;
+    const t = otsuThreshold(hist);
+    // Threshold should sit between the two modes.
+    expect(t).toBeGreaterThanOrEqual(10);
+    expect(t).toBeLessThan(200);
+  });
 
-    const png = await readFile(join(${JSON.stringify(FIXTURE_DIR)}, ${JSON.stringify(fixtureName)}));
-    const polyline = await extractSilhouettePolyline(png, ${JSON.stringify(maxWaypoints)});
-    console.log(JSON.stringify(polyline));
-  `;
-  return runNodeExtractorScript(script);
-}
+  it('handles an empty histogram gracefully', () => {
+    expect(otsuThreshold(new Array(256).fill(0))).toBe(127);
+  });
+});
 
-async function runNodeExtractorScript(script: string): Promise<[number, number][]> {
-  try {
-    const { stdout } = await execFileAsync(
-      process.execPath,
-      ['--import', 'tsx', '--input-type=module', '-e', script],
-      {
-        cwd: join(__dirname, '../../..'),
-        timeout: FAIL_FAST_MS,
-        killSignal: 'SIGKILL',
-      },
-    );
-    return JSON.parse(stdout.trim()) as [number, number][];
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    throw new Error(message);
-  }
-}
+describe('arcLength', () => {
+  it('sums closed-loop segment lengths of a unit square', () => {
+    const square = [
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+      { x: 10, y: 10 },
+      { x: 0, y: 10 },
+    ];
+    expect(arcLength(square, true)).toBeCloseTo(40, 6);
+  });
+
+  it('drops the closing segment when open', () => {
+    const square = [
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+      { x: 10, y: 10 },
+      { x: 0, y: 10 },
+    ];
+    expect(arcLength(square, false)).toBeCloseTo(30, 6);
+  });
+});
+
+describe('douglasPeucker', () => {
+  it('collapses a straight run to its endpoints', () => {
+    const line = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 2, y: 0 },
+      { x: 3, y: 0 },
+      { x: 4, y: 0 },
+    ];
+    const out = douglasPeucker(line, 0.1);
+    expect(out).toEqual([
+      { x: 0, y: 0 },
+      { x: 4, y: 0 },
+    ]);
+  });
+
+  it('keeps a vertex that deviates beyond epsilon', () => {
+    const bend = [
+      { x: 0, y: 0 },
+      { x: 5, y: 5 },
+      { x: 10, y: 0 },
+    ];
+    const out = douglasPeucker(bend, 1);
+    expect(out).toHaveLength(3);
+  });
+});
