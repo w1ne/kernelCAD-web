@@ -265,7 +265,7 @@ function countMouths(
     // ~2r exists (either the part has no channel, or it is too wide for the
     // closing; the orchestrator's mismatch hint covers the wide case). No
     // channel component → no channelSeed to point at.
-    return { found: 0, partOpenings: 0, channelVolumeMm3: 0, mouthLocations: [], partMouthLocations: [] };
+    return { found: 0, partOpenings: 0, channelVolumeMm3: 0, partChannelVolumeMm3: 0, mouthLocations: [], partMouthLocations: [] };
   }
 
   // Mouth voxels: channel voxels 6-adjacent to open air beyond the closed hull
