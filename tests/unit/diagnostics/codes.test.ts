@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 235 codes', () => {
+  it('emits exactly 237 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -26,11 +26,13 @@ describe('diagnostic catalogue invariants', () => {
     //   feature.draft.failed, feature.draft.neutral-plane-derived. = 233.
     // + 1 feature.subtractive-noop (subtractive boolean/hole/cutout that
     //   removes no material). = 234.
+    // + 2 feature.intersection-empty, feature.empty-result (additive/primitive
+    //   no-op: empty intersection, degenerate solid create). = 236.
     // + 1 mechanism.unverified-budget-exceeded (this PR — T3 post-condition
     //   gate: the over-budget BREP pose-sweep skip is now a LOUD structured
-    //   diagnostic instead of a silent console.warn). = 235.
-    expect(DIAGNOSTIC_CODES).toHaveLength(235);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(235);
+    //   diagnostic instead of a silent console.warn). = 237.
+    expect(DIAGNOSTIC_CODES).toHaveLength(237);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(237);
   });
 
   it('every code has a non-empty hint template', () => {

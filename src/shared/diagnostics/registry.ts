@@ -133,6 +133,22 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'A boolean difference / hole / cutout produced a result whose volume equals the input volume; the cut had no effect.',
   },
+  'feature.intersection-empty': {
+    hintTemplate:
+      'A boolean intersection produced an empty result — the two bodies do not overlap, so the requested common volume is empty. Check the operands share a region of space (same coordinate frame, overlapping positions) and that they intersect as a solid, not merely touch on a face or edge.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'reposition or resize the operands so their solids overlap before intersecting' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A boolean intersection produced an empty / zero-volume result; the operands do not share a common solid volume.',
+  },
+  'feature.empty-result': {
+    hintTemplate:
+      'A solid create (box, cylinder, sphere, extrude, revolve, loft, or sweep) produced an empty or zero-volume shape. Check the dimensions are positive and finite, the profile is a closed non-degenerate sketch, and the sweep/revolve path actually generates volume.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'give the create non-degenerate, positive dimensions or a valid closed profile so it produces a solid with volume' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A solid primitive or sweep-family create lowered to an empty or zero-volume shape; the result has no material.',
+  },
   'feature.project-curve.no-intersection': {
     hintTemplate:
       'projectCurve could not intersect the source curve with the target face. For closed-curve mode, ensure the curve overlaps the face bounds. asEdge:true is currently deferred — use closed-curve projection or pre-tessellate the open wire into a closed sketch.',
