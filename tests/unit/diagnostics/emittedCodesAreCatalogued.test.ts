@@ -75,7 +75,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     ).toEqual([]);
   });
 
-  it('catalogue has exactly 233 codes', () => {
+  it('catalogue has exactly 235 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -156,10 +156,10 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       feature.surface-trim.no-intersection, feature.surface-trim.non-planar,
     //       feature.surface-trim.split-deferred, feature.surface-sew.open-shell,
     //       feature.draft.failed, feature.draft.neutral-plane-derived = 233.
-    //  +  1 mechanism.unverified-budget-exceeded (T3 post-condition gate: the
-    //       over-budget BREP pose-sweep skip is now a LOUD structured
-    //       diagnostic instead of a silent console.warn) = 234.
-    expect(catalogue.size).toBe(234);
+    //  +  1 feature.subtractive-noop = 234.
+    //  +  1 mechanism.unverified-budget-exceeded (this PR — T3 over-budget
+    //       BREP pose-sweep skip is now a LOUD structured diagnostic) = 235.
+    expect(catalogue.size).toBe(235);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

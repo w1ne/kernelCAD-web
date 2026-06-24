@@ -125,6 +125,14 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'embossText boolean produced a result whose volume equals the parent volume; the feature had no effect.',
   },
+  'feature.subtractive-noop': {
+    hintTemplate:
+      'A subtractive op (boolean difference, hole, or cutout) removed no material — the tool never intersected the body. Check the cutter/hole position overlaps the target solid, the depth reaches the material, and the operands are in the same coordinate frame.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'reposition or resize the cutting tool so it overlaps the target solid' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A boolean difference / hole / cutout produced a result whose volume equals the input volume; the cut had no effect.',
+  },
   'feature.project-curve.no-intersection': {
     hintTemplate:
       'projectCurve could not intersect the source curve with the target face. For closed-curve mode, ensure the curve overlaps the face bounds. asEdge:true is currently deferred — use closed-curve projection or pre-tessellate the open wire into a closed sketch.',
