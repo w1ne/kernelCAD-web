@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { SurfaceId, SurfaceTrimData } from '../../shared/intent/surfaceRecord';
 import type { CaptureSession } from './captureSession';
+import type { Shape } from './proxy';
 import { KernelError } from '../../shared/intent/kernelError';
 import { toParam } from '../../shared/runtime/editableHelpers';
 import { isParamRef, type Editable } from '../../shared/runtime/paramRef';

@@ -152,6 +152,7 @@ export function lowerSurfaceTrim(
   cutter: replicad.Face,
   // `op` is accepted for API symmetry; both trim and split currently return
   // the larger surviving piece (split-into-both-halves deferred to Slice F).
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _op: 'trim' | 'split',
 ): SurfaceTrimLowerResult {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
