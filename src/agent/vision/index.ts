@@ -51,6 +51,38 @@ export type {
   VisionResponse,
 } from './anthropicVisionClient';
 
+/**
+ * Hard cap on any single backend dispatch. A backend must never hang the tool
+ * forever (the original prod bug was opencv-js WASM init never settling). On
+ * expiry the orchestrator returns a structured `trace_timeout` failure.
+ */
+const DEFAULT_BACKEND_TIMEOUT_MS = 20_000;
+
+function backendTimeoutMs(): number {
+  const configured = Number(process.env.KERNELCAD_TRACE_BACKEND_TIMEOUT_MS);
+  if (Number.isFinite(configured) && configured > 0) return configured;
+  return DEFAULT_BACKEND_TIMEOUT_MS;
+}
+
+/** Symbol thrown when a backend dispatch exceeds {@link backendTimeoutMs}. */
+const TRACE_TIMEOUT = Symbol('trace_timeout');
+
+async function withBackendTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  let timer: NodeJS.Timeout | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(TRACE_TIMEOUT), timeoutMs);
+        // Don't keep the event loop alive solely for this timer.
+        if (typeof timer.unref === 'function') timer.unref();
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
 /** Options for callers that need to inject test seams. */
 export interface TraceFromImageOptions {
   /** Override the vision-LLM client (test seam). */
@@ -60,6 +92,8 @@ export interface TraceFromImageOptions {
     pngBytes: Buffer,
     maxWaypoints: number,
   ) => Promise<Vec2Normalized[]>;
+  /** Override the per-backend hard timeout in ms (test seam). */
+  backendTimeoutMs?: number;
 }
 
 /**
@@ -124,8 +158,10 @@ export async function traceFromImage(
   const extract = opts.extractSilhouettePolyline ?? defaultExtractSilhouettePolyline;
   const diagnostics: TraceDiagnostic[] = [];
 
-  // Step 5: dispatch.
+  // Step 5: dispatch (under a hard timeout so a backend can never hang).
+  const timeoutMs = opts.backendTimeoutMs ?? backendTimeoutMs();
   try {
+    const dispatch = async (): Promise<TraceFeatureResult[]> => {
     let results: TraceFeatureResult[];
     switch (backend) {
       case 'opencv': {
@@ -180,12 +216,13 @@ export async function traceFromImage(
         break;
       }
       default: {
-        return failOutput(
-          'tool.trace-from-image.backend-failed',
-          `unknown backend "${String(backend)}"`,
-        );
+        throw new Error(`unknown backend "${String(backend)}"`);
       }
     }
+    return results;
+    };
+
+    const results = await withBackendTimeout(dispatch(), timeoutMs);
 
     return {
       ok: results.length > 0,
@@ -194,6 +231,21 @@ export async function traceFromImage(
       diagnostics,
     };
   } catch (err) {
+    if (err === TRACE_TIMEOUT) {
+      return {
+        ok: false,
+        features: [],
+        imageDims,
+        diagnostics: [
+          ...diagnostics,
+          makeDiag(
+            'tool.trace-from-image.trace-timeout',
+            'error',
+            `${backend} backend timed out after ${timeoutMs}ms`,
+          ),
+        ],
+      };
+    }
     return {
       ok: false,
       features: [],
