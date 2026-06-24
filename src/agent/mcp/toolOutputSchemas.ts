@@ -52,6 +52,19 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
       dryRun: { type: 'boolean', description: 'True when the result came from a fast dry run.' },
       parts: { type: 'object', additionalProperties: true, description: 'Assembly parts summary { count, names } when the scene is assembly-built.' },
+      featureHealth: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            featureId: { type: 'string' },
+            status: { type: 'string', enum: ['warning', 'error'] },
+          },
+          required: ['featureId', 'status'],
+          additionalProperties: false,
+        },
+        description: 'Per-feature health degradations — ONLY features that fell back to a passthrough (warning) or failed to lower (error). Empty when every feature is healthy. Surfaces which feature degraded even when ok is true.',
+      },
     },
     required: ['ok', 'featureCount', 'diagnostics'],
     additionalProperties: true,
@@ -164,9 +177,11 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     type: 'object',
     properties: {
       ok: { type: 'boolean' },
-      entities: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Solved sketch entities.' },
+      converged: { type: 'boolean', description: 'Whether the constraint solve converged below tolerance. ok is false when this is false.' },
+      residual: { type: 'number', description: 'Final aggregate constraint residual when the solver ran.' },
+      entities: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Solved sketch entities (best-effort on a non-converging solve).' },
       constraints: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'The constraints applied.' },
-      errors: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Solver errors (present on failure).' },
+      errors: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Solver/validation errors (present on failure, including non-convergence).' },
     },
     required: ['ok', 'entities', 'constraints'],
     additionalProperties: true,

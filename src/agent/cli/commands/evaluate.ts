@@ -47,10 +47,39 @@ export function applyEvaluateDefaults(): void {
   }
 }
 
+/** A single non-healthy feature surfaced from the RecomputeEngine health
+ *  map. Only features that degraded to `warning` (e.g. a silent passthrough
+ *  fallback) or `error` are listed — healthy features are omitted to keep the
+ *  agent-facing payload lean. */
+export interface FeatureHealthEntry {
+  featureId: string;
+  status: 'warning' | 'error';
+}
+
+/** Project the RecomputeEngine health map down to the lean non-healthy list.
+ *  Returns `[]` when every feature is healthy. */
+export function nonHealthyFeatures(
+  health: ReadonlyMap<string, 'healthy' | 'warning' | 'error'>,
+): FeatureHealthEntry[] {
+  const out: FeatureHealthEntry[] = [];
+  for (const [featureId, status] of health) {
+    if (status === 'warning' || status === 'error') out.push({ featureId, status });
+  }
+  return out;
+}
+
 export interface EvaluateResult {
   exitCode: number;
   featureCount: number;
   diagnostics: CompilerDiagnostic[];
+  /** Per-feature health degradations from the recompute pass — ONLY the
+   *  features that fell back to a passthrough (`warning`) or failed to lower
+   *  (`error`). Empty when every feature is healthy. Lets an agent see WHICH
+   *  feature degraded even when `exitCode` is still 0 (e.g. a gated-off
+   *  upstream that turned a downstream feature into a no-op passthrough).
+   *  A full build always populates this (possibly `[]`); a dry run leaves it
+   *  `[]` since no geometry is lowered. */
+  featureHealth: FeatureHealthEntry[];
 }
 
 export interface EvaluateAndBuildResult {
@@ -84,7 +113,7 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
     }
     const diag = kernelErrorToDiagnostic(e);
     return {
-      evaluation: { exitCode: 1, featureCount: 0, diagnostics: [diag] },
+      evaluation: { exitCode: 1, featureCount: 0, diagnostics: [diag], featureHealth: [] },
     };
   }
   const fatal = model.diagnostics.some(d => d.severity === 'error');
@@ -119,6 +148,7 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
       exitCode: fatalAfterDfm ? 1 : 0,
       featureCount: model.records.length,
       diagnostics: withNextActions(model.diagnostics),
+      featureHealth: nonHealthyFeatures(model.health),
     },
     model,
     ...(dfmReport !== undefined ? { dfmReport } : {}),
@@ -187,7 +217,7 @@ export async function dryRunScript(input: EvaluateInput): Promise<DryRunScriptRe
       return { evaluation: fileReadEvaluation(e) };
     }
     return {
-      evaluation: { exitCode: 1, featureCount: 0, diagnostics: [kernelErrorToDiagnostic(e)] },
+      evaluation: { exitCode: 1, featureCount: 0, diagnostics: [kernelErrorToDiagnostic(e)], featureHealth: [] },
     };
   }
 
@@ -200,6 +230,8 @@ export async function dryRunScript(input: EvaluateInput): Promise<DryRunScriptRe
       exitCode: 0,
       featureCount: run.records.length,
       diagnostics: withNextActions(diagnostics),
+      // Dry runs skip lowering, so there is no recompute health map to report.
+      featureHealth: [],
     },
     returnValue: run.returnValue,
   };
@@ -207,7 +239,7 @@ export async function dryRunScript(input: EvaluateInput): Promise<DryRunScriptRe
 
 function invalidArgsEvaluation(): EvaluateResult {
   return {
-    exitCode: 2, featureCount: 0,
+    exitCode: 2, featureCount: 0, featureHealth: [],
     diagnostics: withNextActions([{
       target: 'export-occt', code: 'cli.invalid-args', severity: 'error',
       message: 'evaluateScript: must provide either { file } or { code }.',
@@ -219,7 +251,7 @@ function invalidArgsEvaluation(): EvaluateResult {
 function fileReadEvaluation(e: unknown): EvaluateResult {
   const msg = e instanceof Error ? e.message : String(e);
   return {
-    exitCode: 2, featureCount: 0,
+    exitCode: 2, featureCount: 0, featureHealth: [],
     diagnostics: withNextActions([{
       target: 'export-occt', code: 'cli.file-read', severity: 'error',
       message: `Cannot read file: ${msg}`,
