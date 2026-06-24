@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { ConstraintSolver, CONSTRAINT_RESIDUAL_TOL } from '../../../modeling/constraints/solver';
+import { ConstraintSolver, SKETCH_CONVERGENCE_RESIDUAL_TOL } from '../../../modeling/constraints/solver';
 import type { Constraint, ConstraintType, SketchEntity } from '../../../modeling/constraints/types';
 
 export const SUPPORTED_CONSTRAINT_TYPES: ConstraintType[] = [
@@ -112,7 +112,7 @@ export async function solveSketchTool(input: SolveSketchInput = {}): Promise<Sol
       converged: false,
       residual: result.residual,
       errors: [
-        `Constraint solve did not converge: aggregate residual ${result.residual.toFixed(4)} after ${result.iterations} iterations (tolerance ${CONSTRAINT_RESIDUAL_TOL}). The constraint set is likely contradictory or over-constrained — remove or relax a conflicting constraint, or unfix an entity so the solver has a degree of freedom to satisfy it.`,
+        `Constraint solve did not converge: aggregate residual ${result.residual.toFixed(4)} after ${result.iterations} iterations (tolerance ${SKETCH_CONVERGENCE_RESIDUAL_TOL}). The constraint set is likely contradictory or over-constrained — remove or relax a conflicting constraint, or unfix an entity so the solver has a degree of freedom to satisfy it.`,
       ],
       entities: solvedEntities,
       constraints,

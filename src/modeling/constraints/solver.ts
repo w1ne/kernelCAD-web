@@ -3,14 +3,41 @@
 import type { Constraint, Point, SketchEntity, SolverState, Line, Circle } from "./types";
 // import type { EntityType } from "./types";
 
-/** Aggregate-residual tolerance below which the constraint solve is
- *  considered converged. Mirrors the per-iteration early-out threshold. */
+/** Per-iteration EARLY-OUT threshold: the relaxation loop stops once the
+ *  aggregate residual drops this low (the solve has settled). This is an
+ *  optimization to avoid running the full iteration cap, NOT the convergence
+ *  verdict — see `SKETCH_CONVERGENCE_RESIDUAL_TOL`. */
 export const CONSTRAINT_RESIDUAL_TOL = 0.0001;
 
+/** Aggregate-residual tolerance for the CONVERGENCE VERDICT (`converged`).
+ *
+ *  Deliberately looser than the early-out. The per-constraint residuals this
+ *  relaxation solver sums are HETEROGENEOUS and unnormalized — coincident
+ *  returns distance² (mm²), distance returns mm, tangent/perpendicular return
+ *  cross/dot products that scale with the operand line lengths. So a sketch
+ *  whose geometry is fully satisfied still carries a small non-zero aggregate
+ *  (e.g. the rocket-keychain fixture settles to its exact target coordinates
+ *  with residual ≈ 0.018, dominated by a geometrically-negligible tangent
+ *  term). A `1e-4` verdict would mis-report that perfectly-solved sketch as
+ *  non-converged — a false negative as bad as the silent-`ok:true` this gate
+ *  set out to kill, just in the other direction.
+ *
+ *  Known data points bracket the threshold with wide margin: a satisfiable
+ *  sketch lands at ≈ 0 – 0.02; a genuinely contradictory set (two fixed
+ *  points 10 apart demanding a DISTANCE of 20) plateaus at ≈ 10. `0.5` sits
+ *  ~25× above the satisfied case and ~20× below the contradictory one.
+ *
+ *  This is a coarse heuristic on a heterogeneous metric; robust per-constraint
+ *  (type-normalized) convergence + DOF analysis is deferred (the engine has no
+ *  Jacobian/DOF accounting). It is biased to avoid FALSE NEGATIVES on real
+ *  sketches while still catching gross contradictions. */
+export const SKETCH_CONVERGENCE_RESIDUAL_TOL = 0.5;
+
 export interface ConstraintSolveResult {
-    /** True when the aggregate residual fell below `CONSTRAINT_RESIDUAL_TOL`
-     *  within the iteration cap. False means the constraints could not be
-     *  satisfied (contradictory / over-constrained / stalled). */
+    /** True when the aggregate residual settled below
+     *  `SKETCH_CONVERGENCE_RESIDUAL_TOL` within the iteration cap. False means
+     *  the constraints could not be satisfied (contradictory / over-
+     *  constrained / stalled at a high residual). */
     converged: boolean;
     /** The aggregate residual on the final iteration (sum of per-constraint
      *  error magnitudes). 0 when there are no constraints. */
@@ -35,7 +62,7 @@ export class ConstraintSolver {
             if (totalError < CONSTRAINT_RESIDUAL_TOL) break;
         }
         return {
-            converged: totalError < CONSTRAINT_RESIDUAL_TOL,
+            converged: totalError < SKETCH_CONVERGENCE_RESIDUAL_TOL,
             residual: totalError,
             iterations: ran,
         };
