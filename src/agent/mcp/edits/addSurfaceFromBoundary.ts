@@ -8,6 +8,7 @@
 
 import { addFeature } from './addFeature';
 import type { AddFeatureResult } from './addFeature';
+import { isValidIdentifier, bindingExists } from './sourceEditUtils';
 
 /**
  * Inputs for `add_surface_from_boundary`. `curve_bindings` is a tuple of 4
@@ -106,17 +107,6 @@ export function addSurfaceFromBoundary(input: AddSurfaceFromBoundaryInput): AddF
     : `const ${binding} = surfaceFromBoundary(${curveLiteral});`;
 
   return addFeature(input.code, feature_code);
-}
-
-const IDENTIFIER_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
-function isValidIdentifier(s: string): boolean {
-  return IDENTIFIER_RE.test(s);
-}
-
-function bindingExists(code: string, name: string): boolean {
-  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re = new RegExp(`(?:^|[^A-Za-z0-9_$])(?:const|let|var)\\s+${escaped}\\b`);
-  return re.test(code);
 }
 
 /**

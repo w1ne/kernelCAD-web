@@ -281,17 +281,20 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'add_surface',
       description:
-        'Use this when you need an organic, freeform, or swept shape — a body shell, panel, fairing, ergonomic curve, lens, or sculpted form — authored as a NURBS Surface into the user\'s .kcad.ts. One authoring path, selected by `kind`:\n' +
-        "- 'nurbs' — insert a nurbsSurface(...) / surfaceFromCurves(...) call. Pass either { controls, degree, weights?, knots?, periodic? } for direct construction, OR { section_sketch_ids } for skinning. Slice-1 limitation: weights are accepted but currently ignored (TColStd_Array2OfReal not exposed in WASM bindings); surfaces are non-rational.\n" +
+        'Use this when you need an organic, freeform, or swept shape — a body shell, panel, fairing, ergonomic curve, lens, or sculpted form — authored as a NURBS Surface into the user\'s .kcad.ts, OR when you need to finish surfaces into a watertight solid or taper faces for moldability. One authoring/finishing path, selected by `kind`:\n' +
+        "- 'nurbs' — insert a nurbsSurface(...) / surfaceFromCurves(...) call. Pass either { controls, degree, weights?, knots?, periodic? } for direct construction, OR { section_sketch_ids } for skinning. Weights are honored: supply rational weights to build exact circles/cylinders/spheres/conics (the surface becomes rational); omit weights for a non-rational surface.\n" +
         "- 'boundary' — insert a surfaceFromBoundary([c1,c2,c3,c4], opts?) call: one NURBS face through 4 boundary Curve3D refs (bottom, right, top, left in loop order; adjacent endpoints must coincide within 1e-6 mm) via OCCT BRepOffsetAPI_MakeFilling.\n" +
+        "- 'trim' — insert a `<surface>.trimTo(<by>)` or `<surface>.split(<by>)` call. Pass `surface_binding` (the Surface variable name), `by_binding` (the cutter Surface variable name; Shape/Curve3D cutters are deferred to a later slice), and `op: 'trim'` (discard smaller half) or `op: 'split'` (returns larger piece; full split-into-N deferred, emits `feature.surface-trim.split-deferred`).\n" +
+        "- 'sew' — insert a `sew([s0, s1, ...], opts?)` call to stitch N surfaces into a closed watertight solid via OCCT BRepBuilderAPI_Sewing. Pass `surface_bindings` (array of Surface variable names). Use after trim/boundary to close patches into a solid: trim → sew → solid pipeline. Optional `tolerance` (mm, default 1e-6) and `require_closed` (emits feature.surface-sew.open-shell if result is not watertight).\n" +
+        "- 'draft' — insert a `<shape>.draft(angleDeg, { face, neutralPlane?, pullDir? })` call to taper the selected face(s) for mold release. Pass `shape_binding`, `angle_deg` (0–90), and `face` (canonical name, label, or FaceQuery descriptor). Lowering emits feature.draft.failed on invalid geometry.\n" +
         'The returned Surface produces no Shape until you chain .thicken(t) or .toShape() (do that via add_feature on the binding name). Returns the modified code + diagnostics. Each kind fails closed on its own missing required params.',
       inputSchema: {
         type: 'object',
         properties: {
           kind: {
             type: 'string',
-            enum: ['nurbs', 'boundary'],
-            description: 'Which surface-construction path to use.',
+            enum: ['nurbs', 'boundary', 'trim', 'sew', 'draft'],
+            description: "Which surface-construction or surface-finishing path to use: 'nurbs' | 'boundary' | 'trim' | 'sew' | 'draft'.",
           },
           code: { type: 'string', description: 'Current .kcad.ts source.' },
           controls: {
@@ -350,7 +353,62 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           sampling: { type: 'integer', minimum: 1, description: "kind:'boundary' — OCCT NbPtsOnCur sampling parameter (default 15)." },
           binding_name: {
             type: 'string',
-            description: "JS const name for the new Surface binding (kind:'nurbs' default surface_<N>; kind:'boundary' default _surface_<N>).",
+            description: "JS const name for the new binding (kind:'nurbs' default surface_<N>; kind:'boundary' default _surface_<N>; kind:'trim' default _trimmed_<N>; kind:'sew' default _sewn_<N>; kind:'draft' default _drafted_<N>).",
+          },
+          // kind:'trim' params
+          surface_binding: {
+            type: 'string',
+            description: "kind:'trim' — JS variable name of the Surface to trim/split (must be declared in source).",
+          },
+          by_binding: {
+            type: 'string',
+            description: "kind:'trim' — JS variable name of the cutter (another Surface, a solid Shape, or a Curve3D; must be declared in source).",
+          },
+          op: {
+            type: 'string',
+            enum: ['trim', 'split'],
+            description: "kind:'trim' — 'trim' discards the smaller half (calls .trimTo()); 'split' retains both halves (calls .split()).",
+          },
+          // kind:'sew' params
+          surface_bindings: {
+            type: 'array',
+            description: "kind:'sew' — JS variable names of the surfaces to stitch into a solid (each must be declared in source).",
+            items: { type: 'string' },
+            minItems: 1,
+          },
+          tolerance: {
+            type: 'number',
+            description: "kind:'sew' — edge-merging tolerance in mm (default 1e-6). Edges within this distance are merged.",
+          },
+          require_closed: {
+            type: 'boolean',
+            description: "kind:'sew' — when true the lowerer emits feature.surface-sew.open-shell if the stitched result is not a watertight solid.",
+          },
+          // kind:'draft' params
+          shape_binding: {
+            type: 'string',
+            description: "kind:'draft' — JS variable name of the Shape to taper (must be declared in source).",
+          },
+          angle_deg: {
+            type: 'number',
+            minimum: 0,
+            maximum: 90,
+            description: "kind:'draft' — draft angle in degrees [0, 90]. The face is tapered outward by this angle relative to the pull direction.",
+          },
+          face: {
+            type: 'string',
+            description: "kind:'draft' — face selector for the face(s) to taper. Accepts a canonical name (top/bottom/front/back/left/right), a user label declared via faceLabels, or a FaceQuery descriptor string.",
+          },
+          neutral_plane: {
+            type: 'string',
+            description: "kind:'draft' — parting-line face (the plane where drafted faces remain fixed). Defaults to `face` if omitted.",
+          },
+          pull_dir: {
+            type: 'array',
+            items: { type: 'number' },
+            minItems: 3,
+            maxItems: 3,
+            description: "kind:'draft' — demoulding direction as [x, y, z]. Defaults to the face normal at lower time.",
           },
         },
         required: ['kind', 'code'],
