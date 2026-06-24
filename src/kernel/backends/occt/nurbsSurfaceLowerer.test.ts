@@ -86,10 +86,10 @@ describe('nurbsSurfaceLowerer OCCT-direct', () => {
     expect(face).toBeTruthy();
   });
 
-  it('buildNurbsFace: weights argument is accepted (silently degraded to non-rational in slice-1)', () => {
-    // TColStd_Array2OfReal isn't exposed in the WASM bindings; the
-    // implementation logs a warning and falls back to Geom_BSplineSurface_1.
-    // Verified non-fatal here so callers that pass weights still get a face.
+  it('buildNurbsFace: weights argument is accepted and builds a rational Face', () => {
+    // Weights are now honored (Geom_BSplineSurface_2). A constant-weight grid
+    // is mathematically identical to the non-rational surface, but exercises
+    // the rational construction path end-to-end.
     const face = buildNurbsFace({
       controls: [
         [[0, 0, 0], [0, 10, 0]],
@@ -102,5 +102,46 @@ describe('nurbsSurfaceLowerer OCCT-direct', () => {
       degree: { u: 1, v: 1 },
     });
     expect(face).toBeTruthy();
+  });
+
+  it('builds an EXACT (rational) cylinder when weights are supplied', () => {
+    // A degree-(2,1) rational patch using the standard 9-control-point unit
+    // circle in U (corner weights 1, mid-edge weights √2/2) extruded in Z.
+    // Only the RATIONAL surface reproduces the circle exactly; a non-rational
+    // polynomial of the same control net bulges off the circle by ~1e-2.
+    const w = Math.SQRT1_2;
+    // 9 control points tracing the unit circle (square-corner control polygon).
+    const ring: Array<[number, number]> = [
+      [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0],
+      [-1, -1], [0, -1], [1, -1], [1, 0],
+    ];
+    // Extrude each U-pole in Z (v=0 → z=0, v=1 → z=2) → a cylinder of height 2.
+    const controls = ring.map(([x, y]) => [[x, y, 0], [x, y, 2]] as [number, number, number][]);
+    // Odd-indexed poles are the square corners → weight √2/2; even are on-circle.
+    const weights = ring.map((_, i) => (i % 2 === 1 ? [w, w] : [1, 1]));
+    // Standard rational-circle knot vector: 4 quarter-arcs, each clamped deg-2.
+    const uKnots = [0, 0, 0, 0.25, 0.25, 0.5, 0.5, 0.75, 0.75, 1, 1, 1];
+    const vKnots = [0, 0, 1, 1];
+
+    const face = buildNurbsFace({
+      controls,
+      weights,
+      degree: { u: 2, v: 1 },
+      knots: { u: uKnots, v: vKnots },
+    });
+    expect(face).toBeTruthy();
+
+    // Sample the surface directly via OCCT's evaluator (no tessellation error)
+    // at mid-height and across the full U span; assert |xy| == 1.0 ± 1e-6.
+    const { uMin, uMax } = face.UVBounds;
+    let maxRadiusErr = 0;
+    const N = 64;
+    for (let k = 0; k <= N; k++) {
+      const u = uMin + ((uMax - uMin) * k) / N;
+      const p = face.pointOnSurface(u, 0.5); // v=0.5 → mid-height
+      const r = Math.hypot(p.x, p.y);
+      maxRadiusErr = Math.max(maxRadiusErr, Math.abs(r - 1));
+    }
+    expect(maxRadiusErr).toBeLessThan(1e-6);
   });
 });

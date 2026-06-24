@@ -366,6 +366,9 @@ dfmSpec(spec: {
 
 // Face features:
 .shell(thickness: number, { face: FaceSelector }): Shape  // face REQUIRED
+// Draft — taper faces for mold release (Slice E). angleDeg: 0–90.
+// neutralPlane defaults to the selected face; pullDir defaults to face normal.
+.draft(angleDeg: Editable<number>, opts: { face: FaceSelector | string; neutralPlane?: string; pullDir?: [number, number, number] }): Shape
 
 // Symmetry operations:
 // Pure reflection across a cardinal plane (no union — volume unchanged, handedness flipped):
@@ -686,11 +689,10 @@ These return errors today; do not generate code that uses them:
 
 - Tracked face/edge refs (only canonical refs and inline queries work) — deferred
 - Asymmetric chamfer (only symmetric 45° supported) — deferred
-- Draft features — deferred
 - Dynamic assembly solving / motion simulation — deferred; static assembly parts, fixed connector placement, revolute joint metadata, and fused `assembly.model()` output are supported.
 - BOM, dimensions, BREP, multi-view PDF — deferred
 - Rational NURBS (control-net `weights`) — accepted at the API but ignored in slice-1; rational support pending WASM bindings.
-- NURBS surface trim/extend/untrim/blend, surface-surface intersection, lattice/quilt — deferred
+- NURBS surface extend/untrim/blend, surface-surface intersection, lattice/quilt — deferred
 
 <!-- COOKBOOK:START -->
 ## Cookbook (snippet index)
@@ -800,6 +802,45 @@ const half = box(20, 40, 10)
   .fillet(2);
 
 return half.mirror('yz');
+```
+
+### Surfaces → solid (Slice E finishing ops)
+
+Two Coons patches trimmed to a shared edge, sewn into a closed solid, drafted for mold release, then exported as STEP.
+
+```typescript
+// Build two complementary 4-boundary patches that share the bottom edge.
+const sharedBottom = nurbsCurve([[0, 0, 0], [25, 0, 1], [50, 0, 0]]);
+const right   = nurbsCurve([[50, 0, 0], [50, 12, 0.5], [50, 25, 0]]);
+const top     = nurbsCurve([[50, 25, 0], [25, 25, 1], [0, 25, 0]]);
+const left    = nurbsCurve([[0, 25, 0], [0, 12, 0.5], [0, 0, 0]]);
+
+const bottom2 = nurbsCurve([[0, 0, 0], [25, 0, -1], [50, 0, 0]]);
+const right2  = nurbsCurve([[50, 0, 0], [50, 12, -0.5], [50, 25, 0]]);
+const top2    = nurbsCurve([[50, 25, 0], [25, 25, -1], [0, 25, 0]]);
+const left2   = nurbsCurve([[0, 25, 0], [0, 12, -0.5], [0, 0, 0]]);
+
+const patchA = surfaceFromBoundary([sharedBottom, right, top, left]);
+const patchB = surfaceFromBoundary([bottom2, right2, top2, left2]);
+
+// Trim each patch at their shared boundary curve so the sewn edges align.
+const trimmedA = patchA.trimTo(sharedBottom);
+const trimmedB = patchB.trimTo(sharedBottom);
+
+// Sew into a closed solid (requireClosed catches authoring mistakes early).
+const solid = sew([trimmedA, trimmedB], { requireClosed: true });
+
+// Apply draft to one face for mold release.
+const molded = solid.draft(3, { face: 'top' });
+
+return molded;
+```
+
+Export as STEP after verifying:
+
+```bash
+kernelcad evaluate surfaces-to-solid.kcad.ts   # exits 0, no open-shell diagnostic
+kernelcad export step surfaces-to-solid.kcad.ts -o out.step
 ```
 
 ## Verification gates
