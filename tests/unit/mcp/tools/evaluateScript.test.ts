@@ -1,4 +1,5 @@
 // tests/unit/mcp/tools/evaluateScript.test.ts
+import { resolve } from 'node:path';
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { evaluateScriptTool } from '../../../../src/agent/mcp/tools/evaluateScript';
 import { paramsListTool } from '../../../../src/agent/mcp/tools/paramsList';
@@ -63,6 +64,12 @@ describe('evaluateScriptTool', () => {
 
   it('includes a parts summary for an assembly-built scene', async () => {
     const result = await evaluateScriptTool({
+      // This assembly declares no mates (the two parts are disconnected in
+      // the mate graph), so the default mechanism gate would correctly flag
+      // it as broken (mechanism.orphan-part). This test is about the parts
+      // roster, not mechanism validity — opt out so the assertion stays
+      // focused.
+      skipMechanismCheck: true,
       code: `
         const arm = assembly('rig');
         arm.part('base', box(10, 10, 10));
@@ -155,6 +162,56 @@ describe('evaluateScriptTool', () => {
     const result = await evaluateScriptTool({ dryRun: true });
     expect(result.ok).toBe(false);
     expect(result.diagnostics[0].code).toBe('cli.invalid-args');
+  });
+
+  // ── T3: mechanism verify runs BY DEFAULT on the agent path ──────────────
+  //
+  // An agent calling evaluate_script on an assembly used to get ok:true even
+  // when the mechanism self-disconnects/collides. `ok` is now a function of
+  // the verified post-state: a broken mechanism makes ok:false and surfaces
+  // the mechanism verdict + diagnostics.
+
+  // Canonical fixtures (also used by the CLI/Studio physics-loop parity
+  // tests): vec3-spring-broken self-collides / disconnects under motion;
+  // clevis-hinge-real is a physically-grounded hinge that holds at every
+  // sampled pose.
+  const BROKEN_FIXTURE = resolve(__dirname, '../../../fixtures/mechanism/vec3-spring-broken.kcad.ts');
+  const CLEAN_FIXTURE = resolve(__dirname, '../../../fixtures/mechanism/clevis-hinge-real.kcad.ts');
+
+  it('runs mechanism verify by default: a broken assembly reports mechanism:broken and ok:false', async () => {
+    const result = await evaluateScriptTool({ file: BROKEN_FIXTURE });
+    expect(result.mechanism).toBe('broken');
+    expect(result.ok).toBe(false);
+    // Mechanism failure diagnostics are merged into `diagnostics`.
+    expect(result.diagnostics.some(d => d.code?.startsWith('mechanism.'))).toBe(true);
+  }, 120_000);
+
+  it('runs mechanism verify by default: a clean assembly reports mechanism:real and ok:true', async () => {
+    const result = await evaluateScriptTool({ file: CLEAN_FIXTURE });
+    expect(result.mechanism).toBe('real');
+    expect(result.ok).toBe(true);
+    expect(result.diagnostics.some(d => d.code?.startsWith('mechanism.'))).toBe(false);
+  }, 120_000);
+
+  it('skipMechanismCheck:true opts out — no mechanism field, broken assembly is not gated', async () => {
+    const result = await evaluateScriptTool({ file: BROKEN_FIXTURE, skipMechanismCheck: true });
+    expect(result.mechanism).toBeUndefined();
+    // Without the mechanism gate, the broken mechanism is not surfaced and
+    // ok reflects only the build/dfm outcome (ok:true here).
+    expect(result.ok).toBe(true);
+    expect(result.diagnostics.some(d => d.code?.startsWith('mechanism.'))).toBe(false);
+  }, 120_000);
+
+  it('non-assembly scripts are unaffected (no mechanism field, no cost)', async () => {
+    const result = await evaluateScriptTool({ code: `return box(10, 10, 10);` });
+    expect(result.ok).toBe(true);
+    expect(result.mechanism).toBeUndefined();
+  });
+
+  it('dryRun never runs the mechanism gate (no mechanism field even for an assembly)', async () => {
+    const result = await evaluateScriptTool({ file: BROKEN_FIXTURE, dryRun: true });
+    expect(result.dryRun).toBe(true);
+    expect(result.mechanism).toBeUndefined();
   });
 
   it('non-dfm build failure still clears the session', async () => {

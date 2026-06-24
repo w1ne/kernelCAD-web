@@ -41,7 +41,9 @@ describe('removeFeatureTool', () => {
     ].join('\n');
     // Removing the const w line makes 'w' undefined.
     const r = await removeFeatureTool({ code, match: `const w = box` });
-    expect(r.ok).toBe(true); // edit succeeded
+    // The removal succeeded, but it breaks re-evaluation — ok reflects
+    // evaluation, not the edit. new_code + diagnostics stay available to repair.
+    expect(r.ok).toBe(false);
     expect(r.new_code).not.toContain(`const w = box`);
     // Re-eval should produce an error diagnostic
     expect(r.diagnostics?.some(d => d.severity === 'error')).toBe(true);

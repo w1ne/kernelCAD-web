@@ -2,143 +2,303 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/vision/opencvBackend.ts
 //
-// Pure-JS opencv silhouette extractor for the `trace_from_image` tool.
-// `@techstark/opencv-js` is ~1.5 MB and slow to initialize (~2 s on first
-// call), so it is **lazy-imported** here — the MCP server cold-start path
-// must never load opencv. We cache the init promise so subsequent calls in
-// the same process pay no extra cost.
+// Pure-JS silhouette extractor for the `trace_from_image` tool.
+//
+// Historically this used `@techstark/opencv-js` for grayscale conversion, Otsu
+// threshold, findContours and approxPolyDP. That dependency is a browser WASM
+// build whose runtime never signals ready under the hosted server's Node/ESM
+// context — importing it hangs forever, which is exactly the prod bug this file
+// fixes. The pipeline is now implemented in plain TypeScript:
+//
+//   1. Decode + RGBA via sharp (already a dep; no WASM contour kernel).
+//   2. Luma grayscale: 0.299R + 0.587G + 0.114B.
+//   3. Otsu threshold (256-bin histogram). Inverted (THRESH_BINARY_INV
+//      semantics): foreground = pixels darker than the threshold, i.e. a dark
+//      subject on a bright background.
+//   4. Largest 4-connected foreground component, then Moore-neighbour boundary
+//      tracing (with Jacob's stopping criterion) of its outer boundary.
+//   5. arcLength = summed closed-loop segment lengths.
+//   6. Douglas-Peucker simplify with epsilon ramped up until the polyline has
+//      at most `maxWaypoints` vertices.
+//   7. Normalize to `[0..1]` with top-left origin.
+//
+// Deterministic, fast (<1s for typical fixtures), no WASM, no hang.
 
 import sharp from 'sharp';
 import type { Vec2Normalized } from './types';
 
-let cvInitPromise: Promise<typeof import('@techstark/opencv-js')> | null = null;
-const DEFAULT_OPENCV_INIT_TIMEOUT_MS = 5000;
-
-type OpenCvModule = typeof import('@techstark/opencv-js');
-type OpenCvRuntime = OpenCvModule & {
-  ready?: Promise<unknown>;
-  Mat?: unknown;
-  onRuntimeInitialized?: () => void;
-  then?: (onReady: (cv: OpenCvRuntime) => void) => unknown;
-};
+/** Pixel-space point used internally before normalization. */
+type Point = { x: number; y: number };
 
 /**
- * Lazy-load `@techstark/opencv-js` and wait for its asynchronous WASM init.
- * Returns the cached `cv` namespace on subsequent calls.
+ * Compute an Otsu threshold from a 256-bin grayscale histogram.
+ * Returns the grayscale value `t` that maximizes between-class variance.
+ * Foreground (object) is taken as pixels with `grey < t` (inverted), matching
+ * OpenCV's `THRESH_BINARY_INV + THRESH_OTSU` for a dark-on-light subject.
  */
-async function getCv(): Promise<typeof import('@techstark/opencv-js')> {
-  if (!cvInitPromise) {
-    cvInitPromise = (async () => {
-      const mod = await import('@techstark/opencv-js');
-      const cv = ((mod as { default?: OpenCvModule }).default ?? mod) as OpenCvRuntime;
-      await waitForOpenCvReady(cv, openCvInitTimeoutMs());
-      // Emscripten exposes `then` for callback-style readiness. If an async
-      // function returns that same thenable object, native Promise resolution
-      // keeps assimilating it and never settles.
-      delete cv.then;
-      return cv as OpenCvModule;
-    })();
+export function otsuThreshold(histogram: number[] | Uint32Array): number {
+  let total = 0;
+  for (let i = 0; i < 256; i++) total += histogram[i];
+  if (total === 0) return 127;
+
+  let sum = 0;
+  for (let i = 0; i < 256; i++) sum += i * histogram[i];
+
+  let sumB = 0;
+  let wB = 0;
+  let maxVar = -1;
+  let threshold = 0;
+  for (let t = 0; t < 256; t++) {
+    wB += histogram[t];
+    if (wB === 0) continue;
+    const wF = total - wB;
+    if (wF === 0) break;
+    sumB += t * histogram[t];
+    const mB = sumB / wB;
+    const mF = (sum - sumB) / wF;
+    const between = wB * wF * (mB - mF) * (mB - mF);
+    if (between > maxVar) {
+      maxVar = between;
+      threshold = t;
+    }
   }
-  return cvInitPromise;
+  return threshold;
 }
 
-async function waitForOpenCvReady(cv: OpenCvRuntime, timeoutMs: number): Promise<void> {
-  if (cv.Mat) return;
-
-  if (cv.ready && typeof cv.ready.then === 'function') {
-    await withTimeout(
-      cv.ready.then(() => undefined),
-      timeoutMs,
-    );
-  } else if (typeof cv.then === 'function') {
-    await withTimeout(
-      new Promise<void>((resolve) => {
-        cv.then?.(() => resolve());
-      }),
-      timeoutMs,
-    );
-  } else {
-    await waitForRuntimeCallbackOrMat(cv, timeoutMs);
+/**
+ * Sum of consecutive segment lengths around a closed polyline (the OpenCV
+ * `arcLength(curve, closed=true)` equivalent).
+ */
+export function arcLength(points: Point[], closed = true): number {
+  if (points.length < 2) return 0;
+  let len = 0;
+  for (let i = 0; i < points.length - 1; i++) {
+    len += dist(points[i], points[i + 1]);
   }
-
-  if (!cv.Mat) {
-    throw new Error('opencvBackend: OpenCV initialized without Mat constructor');
-  }
+  if (closed) len += dist(points[points.length - 1], points[0]);
+  return len;
 }
 
-async function waitForRuntimeCallbackOrMat(cv: OpenCvRuntime, timeoutMs: number): Promise<void> {
-  await new Promise<void>((resolve, reject) => {
-    const previous = cv.onRuntimeInitialized;
-    let settled = false;
-    const cleanup = () => {
-      clearInterval(interval);
-      clearTimeout(timer);
-    };
-    const finish = () => {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      resolve();
-    };
-    const fail = () => {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      reject(new Error(`opencvBackend: OpenCV initialization timed out after ${timeoutMs}ms`));
-    };
-    const interval = setInterval(() => {
-      if (cv.Mat) finish();
-    }, 25);
-    const timer = setTimeout(fail, timeoutMs);
-    cv.onRuntimeInitialized = () => {
-      previous?.();
-      finish();
-    };
-  });
+function dist(a: Point, b: Point): number {
+  const dx = a.x - b.x;
+  const dy = a.y - b.y;
+  return Math.sqrt(dx * dx + dy * dy);
 }
 
-async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
-  let timer: NodeJS.Timeout | undefined;
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<never>((_, reject) => {
-        timer = setTimeout(
-          () => reject(new Error(`opencvBackend: OpenCV initialization timed out after ${timeoutMs}ms`)),
-          timeoutMs,
-        );
-      }),
-    ]);
-  } finally {
-    if (timer) clearTimeout(timer);
-  }
+/** Perpendicular distance from point `p` to the line through `a` and `b`. */
+function perpDistance(p: Point, a: Point, b: Point): number {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const segLenSq = dx * dx + dy * dy;
+  if (segLenSq === 0) return dist(p, a);
+  // Distance from point to infinite line a→b.
+  const cross = Math.abs(dy * p.x - dx * p.y + b.x * a.y - b.y * a.x);
+  return cross / Math.sqrt(segLenSq);
 }
 
-function openCvInitTimeoutMs(): number {
-  const configured = Number(process.env.KERNELCAD_OPENCV_INIT_TIMEOUT_MS);
-  if (Number.isFinite(configured) && configured > 0) {
-    return configured;
+/**
+ * Douglas-Peucker polyline simplification (the OpenCV `approxPolyDP`
+ * equivalent). `epsilon` is the max perpendicular deviation allowed before a
+ * vertex is kept. Operates on an open polyline; callers handle closure.
+ */
+export function douglasPeucker(points: Point[], epsilon: number): Point[] {
+  if (points.length < 3) return points.slice();
+
+  let maxDist = 0;
+  let index = 0;
+  const end = points.length - 1;
+  for (let i = 1; i < end; i++) {
+    const d = perpDistance(points[i], points[0], points[end]);
+    if (d > maxDist) {
+      maxDist = d;
+      index = i;
+    }
   }
-  return DEFAULT_OPENCV_INIT_TIMEOUT_MS;
+
+  if (maxDist > epsilon) {
+    const left = douglasPeucker(points.slice(0, index + 1), epsilon);
+    const right = douglasPeucker(points.slice(index), epsilon);
+    // Drop the duplicated junction vertex.
+    return left.slice(0, -1).concat(right);
+  }
+  return [points[0], points[end]];
+}
+
+/**
+ * Find the largest 4-connected foreground component in a binary mask and return
+ * its label set as a fast membership predicate plus the component's pixel count.
+ * Foreground pixels are `mask[y*width+x] === 1`.
+ */
+function largestComponent(
+  mask: Uint8Array,
+  width: number,
+  height: number,
+): { member: Uint8Array; size: number; seed: Point | null } {
+  const labels = new Int32Array(width * height).fill(-1);
+  const stack: number[] = [];
+  let bestLabel = -1;
+  let bestSize = 0;
+  let bestSeed: Point | null = null;
+  let nextLabel = 0;
+
+  for (let start = 0; start < mask.length; start++) {
+    if (mask[start] === 0 || labels[start] !== -1) continue;
+    const label = nextLabel++;
+    let size = 0;
+    let seedIdx = start;
+    stack.length = 0;
+    stack.push(start);
+    labels[start] = label;
+    while (stack.length > 0) {
+      const idx = stack.pop() as number;
+      size++;
+      // Track the top-most, left-most pixel of this component as a trace seed.
+      if (idx < seedIdx) seedIdx = idx;
+      const x = idx % width;
+      const y = (idx - x) / width;
+      // 4-connectivity.
+      if (x > 0) pushIf(idx - 1);
+      if (x < width - 1) pushIf(idx + 1);
+      if (y > 0) pushIf(idx - width);
+      if (y < height - 1) pushIf(idx + width);
+    }
+    if (size > bestSize) {
+      bestSize = size;
+      bestLabel = label;
+      const sx = seedIdx % width;
+      bestSeed = { x: sx, y: (seedIdx - sx) / width };
+    }
+
+    function pushIf(n: number): void {
+      if (mask[n] === 1 && labels[n] === -1) {
+        labels[n] = label;
+        stack.push(n);
+      }
+    }
+  }
+
+  const member = new Uint8Array(width * height);
+  if (bestLabel >= 0) {
+    for (let i = 0; i < labels.length; i++) {
+      if (labels[i] === bestLabel) member[i] = 1;
+    }
+  }
+  return { member, size: bestSize, seed: bestSeed };
+}
+
+// Moore-neighbour offsets, clockwise starting from the west neighbour. The
+// canonical Moore order is the 8 neighbours walked clockwise; we start the
+// search from the pixel we entered the boundary from (backtrack) per Jacob's
+// criterion.
+const MOORE: ReadonlyArray<readonly [number, number]> = [
+  [-1, 0], // W
+  [-1, -1], // NW
+  [0, -1], // N
+  [1, -1], // NE
+  [1, 0], // E
+  [1, 1], // SE
+  [0, 1], // S
+  [-1, 1], // SW
+];
+
+function isForeground(member: Uint8Array, width: number, height: number, x: number, y: number): boolean {
+  if (x < 0 || y < 0 || x >= width || y >= height) return false;
+  return member[y * width + x] === 1;
+}
+
+/**
+ * Moore-neighbour boundary tracing with Jacob's stopping criterion. `seed` is a
+ * foreground pixel guaranteed to be on the boundary (the top-most/left-most
+ * pixel of the component). Returns the ordered outer-boundary pixels (closed
+ * loop, first vertex not repeated at the end).
+ */
+function mooreTrace(
+  member: Uint8Array,
+  width: number,
+  height: number,
+  seed: Point,
+): Point[] {
+  const boundary: Point[] = [];
+  const start = seed;
+
+  // Direction index in MOORE we came FROM (backtrack). The seed is the
+  // top-left-most pixel; we entered it conceptually from the west.
+  let current = start;
+  // The pixel we were on before stepping onto `current`.
+  let backtrack: Point = { x: start.x - 1, y: start.y };
+
+  // Jacob's criterion: stop when we re-enter the start pixel AND the next pixel
+  // visited would be the same as the second pixel of the boundary.
+  let firstStep: Point | null = null;
+  const maxSteps = width * height * 8 + 8; // hard safety bound
+  let steps = 0;
+
+  do {
+    boundary.push({ x: current.x, y: current.y });
+
+    // Start scanning clockwise from the neighbour just after the backtrack
+    // direction.
+    const backDir = neighbourIndex(current, backtrack);
+    let found: Point | null = null;
+    let foundBack: Point = backtrack;
+    for (let i = 1; i <= 8; i++) {
+      const dirIdx = (backDir + i) % 8;
+      const nx = current.x + MOORE[dirIdx][0];
+      const ny = current.y + MOORE[dirIdx][1];
+      if (isForeground(member, width, height, nx, ny)) {
+        found = { x: nx, y: ny };
+        // The backtrack for the next step is the previous neighbour we checked.
+        const prevIdx = (dirIdx + 7) % 8; // dirIdx - 1
+        foundBack = { x: current.x + MOORE[prevIdx][0], y: current.y + MOORE[prevIdx][1] };
+        break;
+      }
+    }
+
+    if (!found) {
+      // Isolated pixel — single-pixel component.
+      break;
+    }
+
+    if (firstStep === null) {
+      firstStep = found;
+    } else if (
+      current.x === start.x &&
+      current.y === start.y &&
+      found.x === firstStep.x &&
+      found.y === firstStep.y
+    ) {
+      // Jacob's stopping criterion met: drop the duplicated start we just pushed.
+      boundary.pop();
+      break;
+    }
+
+    backtrack = foundBack;
+    current = found;
+    steps++;
+  } while (steps < maxSteps);
+
+  return boundary;
+}
+
+/** Index into MOORE of `neighbour` relative to `center`, or 0 if not adjacent. */
+function neighbourIndex(center: Point, neighbour: Point): number {
+  const dx = neighbour.x - center.x;
+  const dy = neighbour.y - center.y;
+  for (let i = 0; i < 8; i++) {
+    if (MOORE[i][0] === dx && MOORE[i][1] === dy) return i;
+  }
+  return 0;
 }
 
 /**
  * Extract a normalized silhouette polyline from `pngBytes`.
  *
- * Pipeline:
- * 1. Decode + grayscale via sharp (no opencv decoder dep).
- * 2. Otsu threshold (inverted — assumes bright background, dark subject).
- *    This matches the common "product photo on white" case the opencv backend
- *    is designed for. The router refuses opencv when the corner-color stddev
- *    suggests the background is non-uniform.
- * 3. `findContours(RETR_EXTERNAL)`, pick largest by `arcLength`.
- * 4. `approxPolyDP` with epsilon ramped up to 6× until the polyline has at
- *    most `maxWaypoints` vertices.
- * 5. Normalize to `[0..1]` with top-left origin.
+ * Pipeline (see file header). Throws `'opencvBackend: no foreground contour
+ * found'` when Otsu cannot split the image into figure/ground (e.g. a pure
+ * solid-color image).
  *
- * Throws `'opencvBackend: no foreground contour found'` if no contour is
- * detected (e.g. pure-white image, all-black image, or anything Otsu can't
- * split into figure/ground).
+ * @param pngBytes  Encoded image bytes (any sharp-decodable format).
+ * @param maxWaypoints  Cap on output vertices (>= 3). Epsilon ramps until met.
  */
 export async function extractSilhouettePolyline(
   pngBytes: Buffer,
@@ -147,100 +307,75 @@ export async function extractSilhouettePolyline(
   if (maxWaypoints < 3) {
     throw new Error(`opencvBackend: maxWaypoints must be >= 3 (got ${maxWaypoints})`);
   }
-  const cv = await getCv();
 
   const { data, info } = await sharp(pngBytes)
     .ensureAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true });
   const { width, height } = info;
-
-  // matFromImageData needs an ImageData-like { data, width, height }. `ImageData`
-  // itself is a DOM type and not present under `tsconfig.cli.json` (no DOM lib),
-  // so use a structural type that satisfies opencv's runtime expectations.
-  type ImageDataLike = { data: Uint8ClampedArray; width: number; height: number; colorSpace?: string };
-  const src = cv.matFromImageData({
-    data: new Uint8ClampedArray(data.buffer, data.byteOffset, data.byteLength),
-    width,
-    height,
-    colorSpace: 'srgb',
-  } as ImageDataLike as unknown as Parameters<typeof cv.matFromImageData>[0]);
-
-  const grey = new cv.Mat();
-  cv.cvtColor(src, grey, cv.COLOR_RGBA2GRAY);
-
-  const binary = new cv.Mat();
-  // INV: dark subject on bright bg → subject pixels become 255 after threshold.
-  cv.threshold(grey, binary, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
-
-  const contours = new cv.MatVector();
-  const hierarchy = new cv.Mat();
-  cv.findContours(binary, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-
-  // Pick largest contour by perimeter.
-  let bestIdx = -1;
-  let bestLen = -1;
-  for (let i = 0; i < contours.size(); i++) {
-    const c = contours.get(i);
-    const len = cv.arcLength(c, true);
-    if (len > bestLen) {
-      bestLen = len;
-      bestIdx = i;
-    }
-    c.delete();
+  const channels = info.channels; // 4 after ensureAlpha
+  if (width === 0 || height === 0) {
+    throw new Error('opencvBackend: image has zero dimension');
   }
 
-  if (bestIdx < 0 || bestLen <= 0) {
-    src.delete();
-    grey.delete();
-    binary.delete();
-    contours.delete();
-    hierarchy.delete();
+  // 1+2: grayscale via luma, build histogram.
+  const grey = new Uint8Array(width * height);
+  const histogram = new Uint32Array(256);
+  for (let p = 0, g = 0; g < grey.length; g++, p += channels) {
+    const r = data[p];
+    const gg = data[p + 1];
+    const b = data[p + 2];
+    const lum = (0.299 * r + 0.587 * gg + 0.114 * b) | 0;
+    grey[g] = lum;
+    histogram[lum]++;
+  }
+
+  // 3: Otsu threshold, inverted mask (foreground = darker than threshold).
+  const t = otsuThreshold(histogram);
+  const mask = new Uint8Array(width * height);
+  // OpenCV THRESH_BINARY_INV: dst = (src > t) ? 0 : maxval, i.e. foreground is
+  // `src <= t`. Using `<=` (not `<`) is what makes a perfectly bimodal mask
+  // (Otsu returns t=0 for black-on-white) still capture the dark subject.
+  for (let i = 0; i < grey.length; i++) {
+    mask[i] = grey[i] <= t ? 1 : 0;
+  }
+
+  // 4: largest 4-connected foreground component → outer boundary trace.
+  const { member, size, seed } = largestComponent(mask, width, height);
+  if (size <= 0 || !seed) {
     throw new Error('opencvBackend: no foreground contour found');
   }
 
-  const best = contours.get(bestIdx);
+  const boundary = mooreTrace(member, width, height, seed);
+  if (boundary.length < 3) {
+    throw new Error('opencvBackend: no foreground contour found');
+  }
 
-  // approxPolyDP — ramp epsilon up to 6× until <= maxWaypoints.
-  let approx = new cv.Mat();
-  let epsilonRatio = 0.01; // 1% of perimeter to start.
+  // 5: arcLength of the closed boundary.
+  const perimeter = arcLength(boundary, true);
+  if (perimeter <= 0) {
+    throw new Error('opencvBackend: no foreground contour found');
+  }
+
+  // 6: Douglas-Peucker, ramp epsilon up to 6× until <= maxWaypoints. We close
+  // the boundary by appending the first point so DP keeps the closing corner,
+  // then drop the duplicate.
+  const closedBoundary = boundary.concat([boundary[0]]);
+  let simplified: Point[] = closedBoundary;
+  let epsilonRatio = 0.01; // 1% of perimeter to start (matches prior call).
   for (let attempt = 0; attempt < 7; attempt++) {
-    if (attempt > 0) {
-      approx.delete();
-      approx = new cv.Mat();
-    }
-    cv.approxPolyDP(best, approx, epsilonRatio * bestLen, true);
-    if (approx.rows <= maxWaypoints) break;
+    const eps = epsilonRatio * perimeter;
+    const dp = douglasPeucker(closedBoundary, eps);
+    // Drop the duplicated closing vertex appended above.
+    simplified = dp.length > 1 && samePoint(dp[0], dp[dp.length - 1]) ? dp.slice(0, -1) : dp;
+    if (simplified.length <= maxWaypoints) break;
     epsilonRatio *= Math.sqrt(2);
   }
 
-  // Extract (x, y) pairs and normalize.
-  const polyline: Vec2Normalized[] = [];
-  for (let i = 0; i < approx.rows; i++) {
-    // approxPolyDP returns a CV_32SC2 Mat (int32 x, int32 y per row).
-    const x = approx.data32S[i * 2];
-    const y = approx.data32S[i * 2 + 1];
-    polyline.push([x / width, y / height]);
-  }
-
-  best.delete();
-  approx.delete();
-  src.delete();
-  grey.delete();
-  binary.delete();
-  contours.delete();
-  hierarchy.delete();
-
-  return polyline;
+  // 7: normalize to [0..1], top-left origin.
+  return simplified.map(({ x, y }) => [x / width, y / height] as Vec2Normalized);
 }
 
-/**
- * Test-only export — resets the cached opencv init promise. Lets tests verify
- * the lazy-import contract by inspecting `cvInitPromise` after a deliberate
- * reset. Not part of the public surface.
- *
- * @internal
- */
-export function _resetCvInitForTests(): void {
-  cvInitPromise = null;
+function samePoint(a: Point, b: Point): boolean {
+  return a.x === b.x && a.y === b.y;
 }

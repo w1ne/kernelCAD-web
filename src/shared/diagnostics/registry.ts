@@ -125,6 +125,30 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'embossText boolean produced a result whose volume equals the parent volume; the feature had no effect.',
   },
+  'feature.subtractive-noop': {
+    hintTemplate:
+      'A subtractive op (boolean difference, hole, or cutout) removed no material — the tool never intersected the body. Check the cutter/hole position overlaps the target solid, the depth reaches the material, and the operands are in the same coordinate frame.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'reposition or resize the cutting tool so it overlaps the target solid' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A boolean difference / hole / cutout produced a result whose volume equals the input volume; the cut had no effect.',
+  },
+  'feature.intersection-empty': {
+    hintTemplate:
+      'A boolean intersection produced an empty result — the two bodies do not overlap, so the requested common volume is empty. Check the operands share a region of space (same coordinate frame, overlapping positions) and that they intersect as a solid, not merely touch on a face or edge.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'reposition or resize the operands so their solids overlap before intersecting' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A boolean intersection produced an empty / zero-volume result; the operands do not share a common solid volume.',
+  },
+  'feature.empty-result': {
+    hintTemplate:
+      'A solid create (box, cylinder, sphere, extrude, revolve, loft, or sweep) produced an empty or zero-volume shape. Check the dimensions are positive and finite, the profile is a closed non-degenerate sketch, and the sweep/revolve path actually generates volume.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'give the create non-degenerate, positive dimensions or a valid closed profile so it produces a solid with volume' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A solid primitive or sweep-family create lowered to an empty or zero-volume shape; the result has no material.',
+  },
   'feature.project-curve.no-intersection': {
     hintTemplate:
       'projectCurve could not intersect the source curve with the target face. For closed-curve mode, ensure the curve overlaps the face bounds. asEdge:true is currently deferred — use closed-curve projection or pre-tessellate the open wire into a closed sketch.',
@@ -1121,6 +1145,22 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'mechanism',
     description: 'A part declared on the assembly is not reachable from any other part via mate edges — the mate graph is disconnected.',
   },
+  // Physics-grounded loop — T3 slice (post-condition trust gate). Emitted by
+  // `mechanismTruth.ts` when the BREP pose-sweep work estimate exceeds the
+  // (auto-scaled) budget and criteria 2/3/7/8 are SKIPPED, degrading the
+  // verdict to 'unverified'. Replaces the old silent console.warn: the
+  // 'unverified' verdict now carries machine-readable evidence (work
+  // estimate, budget, part count) so an agent can react instead of mistaking
+  // it for a clean 'real'. Non-fatal (severity 'warn') — "could not verify"
+  // is not "broken".
+  'mechanism.unverified-budget-exceeded': {
+    hintTemplate:
+      "The articulated collision/pose sweep was skipped because its estimated work exceeded the budget, so the mechanism is 'unverified' (NOT certified collision-free). Verify a tractable subset of the assembly, reduce the part/pose count, or pass a larger sweepBudget to force a full sweep. The cheap criteria (orphan-part, fastened-rigidity) still ran.",
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'mechanism',
+    description: 'The deterministic BREP pose-sweep work estimate exceeded the (auto-scaled) budget; the articulated overlap criteria were skipped and the mechanism verdict degraded to unverified rather than running an intractable sweep.',
+  },
   'mechanism.joint-mesh-gap': {
     hintTemplate:
       'Extend the parent body geometry so its OCCT solid reaches the joint origin at rest pose. Most commonly: increase the height of the column / boss that hosts the joint, or move the part-local connector origin onto an actual face/edge of the body. A pivot deliberately in open space (annular rim seat, spindle riding in the bore of a fastened block) passes when the mated rigid groups maintain bearing contact within tolerance somewhere away from the axis.',
@@ -1542,6 +1582,14 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'warn',
     group: 'tool',
     description: 'A point/bbox feature was requested but the opencv backend was forced, so only the silhouette polyline could be returned.',
+  },
+  'tool.trace-from-image.trace-timeout': {
+    hintTemplate:
+      "The selected backend did not return within the hard time budget and was aborted to avoid hanging the tool. Retry with a smaller image, a different `backend`, or check that the vision-LLM credentials/network are reachable.",
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'error',
+    group: 'tool',
+    description: 'A trace_from_image backend exceeded the hard per-call timeout and was aborted.',
   },
   // K1 watertight gap enrichment — STL export tessellation self-intersects on revolved cones.
   'mesher.cone-self-intersection': {

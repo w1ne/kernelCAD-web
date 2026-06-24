@@ -111,6 +111,22 @@ export const POSE_SAMPLE_COUNT_PER_MATE = 3;
 export const BREP_SWEEP_BUDGET = 300;
 
 /**
+ * Resolve the BREP-sweep budget. The fixed {@link BREP_SWEEP_BUDGET} is NOT
+ * auto-scaled to part count: the per-work-unit cost is ~0.9 s (a 24-part
+ * Gearfinity-class sweep is ~600–900 work units ≈ 5–13 min), so 300 is
+ * deliberately calibrated to the largest sweep that completes in tractable
+ * time. Raising it to "verify bigger assemblies" instead makes the sweep
+ * RUN for 10+ minutes and hang the caller / CI — heavy assemblies must skip
+ * LOUDLY (via `mechanism.unverified-budget-exceeded`), not grind. The proper
+ * lever for verifying larger assemblies is caching the lowered scene across
+ * poses (v2), not a bigger budget. A caller `override` is the escape hatch /
+ * test seam (e.g. `Infinity` forces a full sweep, `0` forces the skip path).
+ */
+export function effectiveSweepBudget(override?: number): number {
+  return override ?? BREP_SWEEP_BUDGET;
+}
+
+/**
  * Position tolerance (mm) for the fastened-mate invariant check. If a
  * fastened-tracked test point's world-space distance to its rest-pose
  * counterpart in the anchor part's frame exceeds this floor at a sampled
@@ -266,18 +282,21 @@ export async function checkMechanismTruth(
   // micro-poses ≈ 600 work units, > 5 min). Estimate the work from the
   // assembly graph (no lowering) and skip the sweep when it's intractable;
   // the verdict then degrades to 'unverified' rather than timing out.
-  const sweepBudget = opts.sweepBudget ?? BREP_SWEEP_BUDGET;
+  const partCount = arm.__parts().length;
+  const sweepBudget = effectiveSweepBudget(opts.sweepBudget);
   const sweepWork = estimateSweepWork(arm, solved.length);
   const sweepSkipped = sweepWork > sweepBudget;
 
   if (sweepSkipped) {
-    console.warn(
-      `[mechanism-truth] BREP pose-sweep skipped (issue #348): estimated work ${sweepWork} ` +
-        `exceeds budget ${sweepBudget} (${arm.__parts().length} parts × ${solved.length} pose ` +
-        `samples + revolute dof micro-poses). Criteria 2/3/7/8 not run; mechanism verdict ` +
-        `degrades to 'unverified'. Rest-pose interference is still checked by the validate ` +
-        `interference surface. Pass a larger sweepBudget to force a full sweep.`,
-    );
+    // LOUD skip (T3): the over-budget skip used to emit ONLY a console.warn
+    // and push nothing into `failures`, so the resulting 'unverified'
+    // verdict carried no machine-readable signal — an agent saw "not
+    // broken" and moved on. Push a structured, non-fatal diagnostic
+    // carrying the work estimate, the (auto-scaled) budget, and the part
+    // count so 'unverified' is evidence, not silence. Severity 'warn':
+    // "couldn't verify" must NOT make `ok: false` on its own (that's
+    // reserved for a definitive 'broken').
+    failures.push(makeBudgetExceeded(sweepWork, sweepBudget, partCount, solved.length));
   } else {
     // Criterion 2 (mechanism.interpenetration) — per-pose BREP sweep.
     failures.push(...(await checkInterpenetration(arm, solved)));
@@ -315,8 +334,14 @@ export async function checkMechanismTruth(
   // Precedence: a definitive failure (broken) dominates; otherwise a
   // skipped sweep leaves us unable to certify (unverified); otherwise
   // every criterion held (real).
+  //
+  // The budget-exceeded diagnostic is a non-fatal carrier (severity 'warn')
+  // that lives in `failures` so consumers surface it — but it must NOT make
+  // the verdict 'broken'. Only an error-severity criterion failure means
+  // 'broken'.
+  const hasDefinitiveFailure = failures.some((d) => d.severity === 'error');
   const mechanism: 'real' | 'broken' | 'unverified' =
-    failures.length > 0 ? 'broken' : sweepSkipped ? 'unverified' : 'real';
+    hasDefinitiveFailure ? 'broken' : sweepSkipped ? 'unverified' : 'real';
   return { mechanism, failures };
 }
 
@@ -1196,6 +1221,37 @@ function formatTorque(v: number): string {
 
 function pairKey(a: string, b: string): string {
   return a < b ? `${a}\t${b}` : `${b}\t${a}`;
+}
+
+/**
+ * Build the LOUD non-fatal diagnostic for a skipped (over-budget) BREP
+ * pose-sweep. Severity 'warn' so it carries the 'unverified' verdict with
+ * evidence without flipping the verdict to 'broken' (see precedence in
+ * {@link checkMechanismTruth}).
+ */
+function makeBudgetExceeded(
+  sweepWork: number,
+  sweepBudget: number,
+  partCount: number,
+  poseSampleCount: number,
+): CompilerDiagnostic {
+  const code = 'mechanism.unverified-budget-exceeded';
+  return {
+    target: 'export-occt',
+    code,
+    severity: 'warn',
+    message:
+      `The articulated BREP pose-sweep (collision/dof/joint-mesh/tendon criteria) was SKIPPED: ` +
+      `estimated work ${sweepWork} exceeds the budget ${sweepBudget} ` +
+      `(${partCount} part${partCount === 1 ? '' : 's'} × ${poseSampleCount} solved pose ` +
+      `sample${poseSampleCount === 1 ? '' : 's'} + revolute dof micro-poses). The mechanism ` +
+      `verdict is 'unverified' — it is NOT certified collision-free across its travel; the ` +
+      `cheap criteria (orphan-part, fastened-rigidity) still ran and found no defect. ` +
+      `Reduce the part/pose count, verify a tractable sub-assembly, or pass a larger ` +
+      `sweepBudget to force the full sweep.`,
+    hint: HINT_TEMPLATES[code].template,
+    nextAction: HINT_TEMPLATES[code].nextAction,
+  };
 }
 
 function makeFailure(
