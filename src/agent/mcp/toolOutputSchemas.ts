@@ -178,9 +178,11 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     type: 'object',
     properties: {
       ok: { type: 'boolean' },
-      entities: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Solved sketch entities.' },
+      converged: { type: 'boolean', description: 'Whether the constraint solve converged below tolerance. ok is false when this is false.' },
+      residual: { type: 'number', description: 'Final aggregate constraint residual when the solver ran.' },
+      entities: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Solved sketch entities (best-effort on a non-converging solve).' },
       constraints: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'The constraints applied.' },
-      errors: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Solver errors (present on failure).' },
+      errors: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Solver/validation errors (present on failure, including non-convergence).' },
     },
     required: ['ok', 'entities', 'constraints'],
     additionalProperties: true,
