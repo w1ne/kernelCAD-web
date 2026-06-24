@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/evaluateScript.ts
-import { dryRunScript, evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/evaluate';
+import {
+  dryRunScript,
+  evaluateAndBuildScript,
+  type EvaluateInput,
+  type FeatureHealthEntry,
+} from '../../cli/commands/evaluate';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
@@ -34,6 +39,18 @@ export interface EvaluateScriptOutput {
    * non-assembly scripts.
    */
   parts?: { count: number; names: string[] };
+  /**
+   * Per-feature health degradations from the recompute pass — a lean list of
+   * ONLY the features that degraded. Each entry is
+   * `{ featureId, status: 'warning' | 'error' }`. A fully-healthy model
+   * returns `[]` (healthy features are never listed). This lets an agent see
+   * WHICH feature degraded — e.g. a feature that silently fell back to a
+   * passthrough because a gated-off upstream removed its target face — even
+   * when the overall `ok` is still `true`. Walk a flagged feature with
+   * `why_did_this_fail` for the upstream root cause. Dry runs skip lowering,
+   * so this is always `[]` for `dryRun: true`.
+   */
+  featureHealth: FeatureHealthEntry[];
 }
 
 /**
@@ -65,6 +82,7 @@ export async function evaluateScriptTool(
       dryRun: true,
       featureCount: r.featureCount,
       diagnostics: withNextActions(r.diagnostics),
+      featureHealth: r.featureHealth,
       ...(parts !== undefined ? { parts } : {}),
     };
   }
@@ -113,6 +131,7 @@ export async function evaluateScriptTool(
     // today but ensures the contract holds if a future caller bypasses
     // the eval helper.
     diagnostics: withNextActions(r.diagnostics),
+    featureHealth: r.featureHealth,
     ...(parts !== undefined ? { parts } : {}),
   };
 }
