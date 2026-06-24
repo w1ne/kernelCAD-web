@@ -8,6 +8,7 @@
 
 import { addFeature } from './addFeature';
 import type { AddFeatureResult } from './addFeature';
+import { isValidIdentifier, bindingExists } from './sourceEditUtils';
 
 /**
  * One varying section reference: `t` is the spine parameter in [0, 1];
@@ -109,18 +110,6 @@ export function addVariableSweep(input: AddVariableSweepInput): AddFeatureResult
     : `const ${binding} = variableSweep(${input.spine_binding}, ${sectionsLiteral});`;
 
   return addFeature(input.code, feature_code);
-}
-
-const IDENTIFIER_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
-function isValidIdentifier(s: string): boolean {
-  return IDENTIFIER_RE.test(s);
-}
-
-/** Regex check for `const <name>` or `let <name>` declaration anywhere in source. */
-function bindingExists(code: string, name: string): boolean {
-  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re = new RegExp(`(?:^|[^A-Za-z0-9_$])(?:const|let|var)\\s+${escaped}\\b`);
-  return re.test(code);
 }
 
 function deriveDefaultBinding(code: string): string {

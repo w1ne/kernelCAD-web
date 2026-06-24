@@ -590,6 +590,23 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: '.flattenPattern() was called on a Shape with more than 2 bends, exceeding the slice-1 limit.',
   },
+  // Draft (1) — Slice E Task 6/7
+  'feature.draft.failed': {
+    hintTemplate:
+      'Draft failed on the selected face(s). Drafts need a planar neutral plane and a consistent pull direction; check that the face is planar and the angle is < 90°.',
+    nextAction: { kind: 'fix-arg', field: 'face' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'BRepOffsetAPI_DraftAngle could not taper the requested faces.',
+  },
+  'feature.draft.neutral-plane-derived': {
+    hintTemplate:
+      'A named neutralPlane different from the drafted face is not yet honored; the parting plane was derived from the face geometry. Full named-neutral-plane support lands in a later slice.',
+    nextAction: { kind: 'fix-arg', field: 'neutralPlane' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'A draft was given a named neutralPlane distinct from the drafted face; the plane was derived from face geometry instead of the named plane.',
+  },
   // SDF (2) — W2.3
   'feature.sdf.field-undefined': {
     hintTemplate:
@@ -1399,6 +1416,40 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'feature',
     description: 'BRepOffsetAPI_MakeFilling returned no face for the supplied boundary curves.',
+  },
+  // NURBS Slice E (1) — surfaceTrim / split.
+  'feature.surface-trim.no-intersection': {
+    hintTemplate:
+      'Surface trim found no intersection between the surface and the cutter. Ensure they actually cross.',
+    nextAction: { kind: 'fix-arg', field: 'by' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A surface trim/split produced no section curve — surfaces do not intersect.',
+  },
+  'feature.surface-trim.non-planar': {
+    hintTemplate:
+      'Surface trim currently supports near-planar patches only — the slab/half-space path would mis-trim a curved base or cutter, so it refused. Trim a planar (degree-1, flat) nurbsSurface / coonsPatch by a planar cutter, or wait for the curved-surface trim slice.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'use a near-planar base and cutter, or defer to the curved-surface trim slice' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A surface trim/split was attempted where the base or cutter patch is not near-planar; the planar-only lowerer refused rather than silently mis-trim a curved surface.',
+  },
+  'feature.surface-trim.split-deferred': {
+    hintTemplate:
+      'surface.split(by) currently returns only the larger piece (identical to trim) — full split-into-both-halves is deferred to a later slice. If you only need the larger piece, ignore this warning; otherwise re-author so the half you keep is the larger one, or wait for the split slice.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'rely on the larger returned piece for now; full split is deferred' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'surface.split(by) was lowered but full split-into-N is deferred; only the larger piece is returned (a warning, not a failure).',
+  },
+  // NURBS Slice E (2) — sew() surface stitching.
+  'feature.surface-sew.open-shell': {
+    hintTemplate:
+      'sew() produced an open shell (some edges have no matching neighbour within tolerance). Either increase opts.tolerance so adjacent edge pairs close, add the missing patch to seal the gap, or set requireClosed: false to accept an open shell.',
+    nextAction: { kind: 'fix-arg', field: 'surfaces' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'BRepBuilderAPI_Sewing produced an open shell — one or more boundary edges are unmatched within the stitching tolerance.',
   },
   'feature.fillet.continuity-not-applicable': {
     hintTemplate:
