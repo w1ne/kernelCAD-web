@@ -1,0 +1,11 @@
+{
+  "taskId": "enclosure-half",
+  "module": "v0.14",
+  "capturedAt": "2026-06-24T00:00:00Z",
+  "durationMs": null,
+  "truncated": false,
+  "gitSha": null,
+  "heroArtifact": "enclosure-half",
+  "catalogSource": "reference: rectangular enclosure half-shell — six trimmed planar patches sewn into a watertight solid with a rational-NURBS boss cylinder",
+  "overrideApprovedBy": null
+}
