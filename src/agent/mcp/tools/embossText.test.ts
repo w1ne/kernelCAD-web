@@ -25,15 +25,19 @@ describe('emboss_text MCP tool', () => {
     });
     expect(out.ok).toBe(true);
     expect(out.new_code).toContain(`const engraved = plate.embossText({`);
-    expect(out.new_code).toContain(`text: "Ray-Ban"`);
+    // Proxy API key is `textContent`, not `text` — see edits/embossText.ts.
+    expect(out.new_code).toContain(`textContent: "Ray-Ban"`);
     expect(out.new_code).toContain(`face: 'top'`);
   });
 
   it('serializes a negative depth (engrave) and a custom anchor', async () => {
-    const src = `return box(10, 10, 10);`;
+    const src = [
+      'const part = box(10, 10, 10);',
+      'return part;',
+    ].join('\n');
     const out = await embossTextTool({
       code: src,
-      target: 'box',
+      target: 'part',
       textContent: 'CE',
       size: 2,
       depth: -0.3,

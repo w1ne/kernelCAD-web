@@ -278,7 +278,9 @@ describe('durable assembly source-edit MCP tools', () => {
       assembly_binding: 'rig',
       mode: 'model',
     });
-    expect(result).toMatchObject({ ok: true });
+    // The edit splices cleanly, but the assembly has no parts, so re-evaluation
+    // emits a `requires at least one part` error → ok reflects that failure.
+    expect(result).toMatchObject({ ok: false });
     expect((result as { diagnostics?: Array<{ message: string; severity: string }> }).diagnostics).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
