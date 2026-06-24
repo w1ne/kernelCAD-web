@@ -450,7 +450,7 @@ export class CaptureSession {
    *  lowerer (Task 3) runs BRepAlgoAPI_Section against `byRef` at build time. */
   addSurfaceTrim(surfaceId: SurfaceId, byRef: SurfaceTrimData['byRef'], op: 'trim' | 'split'): SurfaceProxy {
     const id = this.surfaceIdGen.next();
-    const data: SurfaceTrimData = { surfaceId, byRef, op };
+    const data: SurfaceTrimData = { kind: 'surfaceTrim', surfaceId, byRef, op };
     this.surfaceRecords.push({ id, kind: 'surfaceTrim', params: {}, data });
     return new SurfaceProxy(id, this);
   }

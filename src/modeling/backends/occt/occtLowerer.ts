@@ -583,15 +583,13 @@ export class OcctLowerer implements FeatureLowerer {
         }
         const { face } = lowerCoonsPatch(surfRec.data, allRecords, this.importedGeometry);
         surface = { kind: 'face', face };
-      } else if (surfRec.kind === 'surfaceTrim') {
+      } else if (surfRec.data.kind === 'surfaceTrim') {
         // NURBS Slice E (E2): trim/split a surface against a cutter. Resolve the
         // base surface and the cutter, then cut via BRepAlgoAPI_Section + a
         // half-space prism (BRepFeat_SplitShape is not bound in this wasm —
         // see surfaceTrimLowerer.ts header). Both base and a sibling-surface
-        // cutter resolve through this same method (recursion). NB:
-        // `SurfaceTrimData` (unlike the other data unions) carries no `kind`
-        // discriminant, so branch on the *record* kind here.
-        const trimData = surfRec.data as import('../../../shared/intent/surfaceRecord').SurfaceTrimData;
+        // cutter resolve through this same method (recursion).
+        const trimData = surfRec.data;
         const baseBuilt = this.buildSurfaceById(trimData.surfaceId, r, inputs, diagnostics, allRecords);
         if (!baseBuilt) return undefined;
         if (baseBuilt.kind !== 'face') {
@@ -714,7 +712,12 @@ export class OcctLowerer implements FeatureLowerer {
     }
 
     // featureRef cutter: find the lowered shape and extract its first face.
-    const fid = byRef.featureRef.id;
+    // FeatureRef is a discriminated union; the cutter authoring contract
+    // (surfaceTrim byRef = a Shape feature) implies kind='feature' carrying `.id`,
+    // but we fall back to `.featureId` for face/edge/vertex refs so the lookup
+    // still resolves the owning feature's lowered shape.
+    const featureRef = byRef.featureRef;
+    const fid = featureRef.kind === 'feature' ? featureRef.id : featureRef.kind === 'surface' ? featureRef.surfaceId : featureRef.featureId;
     const back =
       this.importedGeometry.get(fid) ??
       (inputs.byKey[fid] as OcctBackend | undefined) ??
@@ -733,8 +736,11 @@ export class OcctLowerer implements FeatureLowerer {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const oc = (replicad as any).getOC();
+      // `back` is always an OcctBackend at this call site — importedGeometry
+      // and inputs.byKey are both keyed on OcctBackend instances; the union
+      // type is wider than necessary because the accessor type is ShapeBackend.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const raw = (back.getReplicadShape() as any).wrapped;
+      const raw = ((back as OcctBackend).getReplicadShape() as any).wrapped;
       const exp = new oc.TopExp_Explorer_2(
         raw,
         oc.TopAbs_ShapeEnum.TopAbs_FACE,

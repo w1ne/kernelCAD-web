@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 227 codes', () => {
+  it('emits exactly 233 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -19,9 +19,13 @@ describe('diagnostic catalogue invariants', () => {
     // + 1 animation.bake.geometry-param (Studio bake refuses geometry-driving
     //   track params — only pose-only mate timelines bake to rigid transforms).
     // + 1 export.sdf-gazebo.pose-unsolved (simulator-verified SDF export:
-    //   mate graph unsolvable -> links emitted at the model origin).
-    expect(DIAGNOSTIC_CODES).toHaveLength(227);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(227);
+    //   mate graph unsolvable -> links emitted at the model origin). = 227.
+    // + 6 NURBS Slice E surface-finishing:
+    //   feature.surface-trim.no-intersection, feature.surface-trim.non-planar,
+    //   feature.surface-trim.split-deferred, feature.surface-sew.open-shell,
+    //   feature.draft.failed, feature.draft.neutral-plane-derived. = 233.
+    expect(DIAGNOSTIC_CODES).toHaveLength(233);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(233);
   });
 
   it('every code has a non-empty hint template', () => {

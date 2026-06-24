@@ -74,6 +74,7 @@ export interface CoonsPatchData {
  * slice; the lowerer does not fabricate a compound today.
  */
 export interface SurfaceTrimData {
+  kind: 'surfaceTrim';
   surfaceId: SurfaceId;
   byRef: { surfaceId: SurfaceId } | { featureRef: FeatureRef };
   op: 'trim' | 'split';

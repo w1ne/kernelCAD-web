@@ -150,7 +150,9 @@ function isNearPlanar(oc: any, faceShape: any, tolDeg = 2): boolean {
 export function lowerSurfaceTrim(
   baseFace: replicad.Face,
   cutter: replicad.Face,
-  op: 'trim' | 'split',
+  // `op` is accepted for API symmetry; both trim and split currently return
+  // the larger surviving piece (split-into-both-halves deferred to Slice F).
+  _op: 'trim' | 'split',
 ): SurfaceTrimLowerResult {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
