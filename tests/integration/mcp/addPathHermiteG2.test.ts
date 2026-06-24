@@ -10,7 +10,10 @@ import { addPathHermiteG2Tool } from '../../../src/agent/mcp/tools/addPathHermit
 
 const SEED_CODE = [
   'const bridge = path().moveTo(-10, 0);',
-  'const sk = bridge.lineTo(10, 0).close();',
+  // The injected .hermiteG2(...) lands on `bridge` and ends at (10,0); close()
+  // straight back to (-10,0) forms a valid extrudable profile. (A redundant
+  // .lineTo(10,0) here would inject a zero-length edge → invalid wire.)
+  'const sk = bridge.close();',
   'return sk.extrude(2);',
 ].join('\n');
 

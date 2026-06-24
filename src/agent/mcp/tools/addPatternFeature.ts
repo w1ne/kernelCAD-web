@@ -89,5 +89,5 @@ export async function addPatternFeatureTool(
   const edit = addFeature(input.code, feature_code);
   if (!edit.ok || !edit.new_code) return { ok: false, error: edit.error };
   const evalResult = await evaluateScriptTool({ code: edit.new_code });
-  return { ok: true, new_code: edit.new_code, diagnostics: evalResult.diagnostics };
+  return { ok: evalResult.ok, new_code: edit.new_code, diagnostics: evalResult.diagnostics };
 }
