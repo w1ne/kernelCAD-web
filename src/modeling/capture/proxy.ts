@@ -743,6 +743,41 @@ export class Shape {
   }
 
   /**
+   * Slice E Task 6: taper the selected face(s) for moldability.
+   *
+   * @param angleDeg  Draft angle in degrees. Must be in (0, 90).
+   *                  Positive = taper outward from the pull direction.
+   * @param opts.face      Face(s) to draft. Accepts a canonical name
+   *                       (`'front'`, `'top'`, …), a face label, or a
+   *                       `FaceSelector` query. Same selector shape as
+   *                       `.shell()` and `.hole()`.
+   * @param opts.neutralPlane  The plane where drafted faces meet the
+   *                       un-tapered geometry (the "parting line"). Defaults
+   *                       to `opts.face` when omitted. Task 7 resolves this
+   *                       via `pickFace` and passes it to
+   *                       `BRepOffsetAPI_DraftAngle`.
+   * @param opts.pullDir   Pull (demoulding) direction as a unit [x, y, z]
+   *                       vector. Defaults to the face normal at lower time
+   *                       when not supplied.
+   *
+   * Lowering errors emit `feature.draft.failed` (Task 7).
+   */
+  draft(
+    angleDeg: Editable<number>,
+    opts: {
+      face: FaceSelector | CanonicalFace | string;
+      neutralPlane?: CanonicalFace | string;
+      pullDir?: [number, number, number];
+    },
+  ): Shape {
+    return this.session.draftFeature(this, angleDeg, {
+      face: opts.face,
+      neutralPlane: opts.neutralPlane,
+      pullDir: opts.pullDir,
+    });
+  }
+
+  /**
    * W2.2: Add a sheet-metal bend along a linear edge. The Shape must trace
    * its lineage to a `sheetMetal(...)` record (validated at lowering time;
    * non-sheet-metal callers see `feature.invalid-args`).
