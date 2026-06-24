@@ -200,13 +200,13 @@ export const SURFACE_METHODS: ApiEntry[] = [
   },
   {
     name: 'trimTo',
-    signature: '(by: Surface | Shape | Curve3D) => Surface',
-    description: 'Trim this surface at its intersection with `by` (another Surface, a solid Shape, or a Curve3D) and return a new Surface representing the kept half. No geometry is computed at capture time — the lowerer runs BRepAlgoAPI_Section and discards the unwanted half. Emits `feature.surface-trim.no-intersection` when the cutter produces no section curve.',
+    signature: '(by: Surface) => Surface',
+    description: 'Trim this surface at its intersection with `by` (a Surface cutter) and return a new Surface representing the kept half. No geometry is computed at capture time — the lowerer runs BRepAlgoAPI_Section and discards the unwanted half. Emits `feature.surface-trim.no-intersection` when the cutter produces no section curve. Shape/Curve3D cutters are deferred to a later slice.',
   },
   {
     name: 'split',
-    signature: '(by: Surface | Shape | Curve3D) => Surface',
-    description: 'Split this surface at its intersection with `by` and return a new Surface that represents both halves as a compound. Differs from `.trimTo()` only in that both pieces are kept. Emits `feature.surface-trim.no-intersection` when the cutter produces no section curve.',
+    signature: '(by: Surface) => Surface',
+    description: 'Split this surface at its intersection with `by` (a Surface cutter) and return the larger surviving piece. Full split-into-both-halves is deferred; the lowerer emits `feature.surface-trim.split-deferred` always. Emits `feature.surface-trim.no-intersection` when the cutter produces no section curve. Shape/Curve3D cutters are deferred to a later slice.',
   },
 ];
 

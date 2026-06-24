@@ -4,7 +4,6 @@ import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { SurfaceProxy } from '../../../src/modeling/capture/surfaceProxy';
 import type { SurfaceTrimData } from '../../../src/shared/intent/surfaceRecord';
-import type { FeatureRef } from '../../../src/shared/intent/types';
 
 const UNIT_PATCH = {
   kind: 'nurbsSurface' as const,
@@ -41,17 +40,13 @@ describe('SurfaceProxy.trimTo', () => {
     expect((data.byRef as { surfaceId: string }).surfaceId).toBe(cutter.id);
   });
 
-  it('trimTo with a Shape cutter uses featureRef', () => {
+  it('trimTo requires a Surface cutter (Shape/Curve3D cutters deferred to a later slice)', () => {
     const session = new CaptureSession();
     const s = session.addNurbsSurface(UNIT_PATCH);
     const shape = session.createShape({ kind: 'box', inputs: {}, params: { x: { expression: '10', unit: 'mm', evaluated: 10 }, y: { expression: '10', unit: 'mm', evaluated: 10 }, z: { expression: '10', unit: 'mm', evaluated: 10 } } });
-    const trimmed = s.trimTo(shape);
-    const rec = session.getSurfaceRecord(trimmed.id);
-    expect(rec?.kind).toBe('surfaceTrim');
-    const data = rec?.data as SurfaceTrimData;
-    const ref = (data.byRef as { featureRef: FeatureRef }).featureRef;
-    expect((ref as { kind: string; id: string }).kind).toBe('feature');
-    expect((ref as { kind: string; id: string }).id).toBe(shape.id);
+    // @ts-expect-error — Shape cutters are deferred; trimTo only accepts a SurfaceProxy.
+    // If the type widens to accept Shape again, TS will flag this @ts-expect-error as unused.
+    s.trimTo(shape);
   });
 
   it('trimTo returns a fresh SurfaceProxy with a new incremented id', () => {

@@ -20,8 +20,8 @@ const panel = surfaceFromCurves([s0, s1]).thicken(2);
 |---|---|---|
 | `.thicken(t)` | `Shape` (closed solid) | Offsets both sides by `t` mm via `BRepOffsetAPI_MakeThickSolid.MakeThickSolidBySimple`. `t` accepts `Editable<number>`. |
 | `.toShape()` | `Shape` (zero-volume shell) | Single-face Shape; use as profile placeholder for future face-aware features. |
-| `.trimTo(by)` | `Surface` | Trim this surface at its intersection with `by` (Surface, Shape, or Curve3D) and return the kept half. No geometry computed at capture time — the lowerer runs BRepAlgoAPI_Section. Use before `sew` to align adjacent patch edges. Emits `feature.surface-trim.no-intersection` when the cutter misses. |
-| `.split(by)` | `Surface` | Like `.trimTo()` but for splitting; this slice returns the larger piece and emits a `feature.surface-trim.split-deferred` warning (full split-into-N is deferred to a later slice). Emits `feature.surface-trim.no-intersection` when the cutter misses. |
+| `.trimTo(by)` | `Surface` | Trim this surface at its intersection with `by` (a `Surface` cutter) and return the kept half. No geometry computed at capture time — the lowerer runs BRepAlgoAPI_Section. Use before `sew` to align adjacent patch edges. Emits `feature.surface-trim.no-intersection` when the cutter misses. Shape/Curve3D cutters are deferred to a later slice. |
+| `.split(by)` | `Surface` | Like `.trimTo()` but for splitting; this slice returns the larger piece and emits a `feature.surface-trim.split-deferred` warning (full split-into-N is deferred to a later slice). The cutter must be a `Surface`; Shape/Curve3D cutters are deferred. Emits `feature.surface-trim.no-intersection` when the cutter misses. |
 
 Top-level finishing ops that consume `Surface` instances:
 
@@ -30,7 +30,7 @@ Top-level finishing ops that consume `Surface` instances:
 
 `surfaceFromCurves(sections)` skins through 2+ closed `Sketch` cross-sections in declaration order. Section order = skin direction.
 
-Slice-1 caveat: `weights` is accepted but silently ignored — every surface is built as a non-rational B-spline today. For an "exact circle" tube you currently need either a fine polygonal approximation (16+ control points around the circumference, degree 1 in U) or a section-skinned approach with explicit circle sketches per section.
+Rational NURBS surface weights are honored (v0.14.0). Supplying `weights` builds an exact rational surface — use them for exact circles, cylinders, spheres, and conics rather than approximating with control points. (3D `nurbsCurve` weights are still non-rational; that lane is deferred.)
 
 ### NURBS diagnostic codes
 

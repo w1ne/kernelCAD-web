@@ -2,18 +2,17 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { SurfaceId, SurfaceTrimData } from '../../shared/intent/surfaceRecord';
 import type { CaptureSession } from './captureSession';
-import { Shape } from './proxy';
 import { KernelError } from '../../shared/intent/kernelError';
 import { toParam } from '../../shared/runtime/editableHelpers';
 import { isParamRef, type Editable } from '../../shared/runtime/paramRef';
 import { formatScalarForError } from '../../shared/intent/types';
-import type { Curve3DProxy } from './curveProxy';
 
-/** Map a cutter argument to the `byRef` discriminant stored on `SurfaceTrimData`.
- *  SurfaceProxy → { surfaceId }; Shape / Curve3DProxy → { featureRef }. */
-function refOf(by: SurfaceProxy | Shape | Curve3DProxy): SurfaceTrimData['byRef'] {
-  if (by instanceof SurfaceProxy) return { surfaceId: by.id };
-  return { featureRef: { kind: 'feature', id: (by as Shape | Curve3DProxy).id } };
+/** Map a Surface cutter to the `byRef` discriminant stored on `SurfaceTrimData`.
+ *  Shape / Curve3D cutters are deferred to a later slice; the public API accepts
+ *  only `SurfaceProxy` here. The lowerer's featureRef path is left in place
+ *  for future use but is unreachable from the public capture API. */
+function refOf(by: SurfaceProxy): SurfaceTrimData['byRef'] {
+  return { surfaceId: by.id };
 }
 
 /**
@@ -96,37 +95,35 @@ export class SurfaceProxy {
   }
 
   /**
-   * Trim this surface by `by` (another surface, solid Shape, or Curve3D) and
-   * return a new `SurfaceProxy` representing the trimmed result. No geometry is
-   * computed at capture time — the OCCT lowerer (Task 3) runs
-   * `BRepAlgoAPI_Section` and discards the unwanted half at build time.
+   * Trim this surface by `by` (another Surface) and return a new
+   * `SurfaceProxy` representing the trimmed result. No geometry is computed
+   * at capture time — the OCCT lowerer runs `BRepAlgoAPI_Section` and
+   * discards the unwanted half at build time. Shape/Curve3D cutters are
+   * deferred to a later slice.
    *
    * @emits feature.surface-trim.no-intersection when the cutter produces no
    *  section curve against this surface.
    * @emits feature.surface-trim.non-planar when the base or cutter is not
    *  near-planar (the planar-only lowerer refuses rather than mis-trim).
    */
-  trimTo(by: SurfaceProxy | Shape | Curve3DProxy): SurfaceProxy {
+  trimTo(by: SurfaceProxy): SurfaceProxy {
     return this.session.addSurfaceTrim(this.id, refOf(by), 'trim');
   }
 
   /**
-   * Split this surface at the intersection with `by`, returning a new
-   * `SurfaceProxy`. Differs from `.trimTo()` only in the stored `op` field.
+   * Split this surface at the intersection with `by` (a Surface), returning a
+   * new `SurfaceProxy`. Current behavior: returns ONLY the larger surviving
+   * piece and emits `feature.surface-trim.split-deferred`. Full
+   * split-into-both-halves is deferred to a later slice. Shape/Curve3D
+   * cutters are also deferred.
    *
-   * Current behavior: split returns ONLY the larger surviving piece (the same
-   * as `.trimTo()`) and the lowerer emits a `feature.surface-trim.split-deferred`
-   * warning. Full split-into-both-halves (both pieces as a compound) is deferred
-   * to a later slice — no compound is fabricated today.
-   *
-   * @emits feature.surface-trim.split-deferred always (split is deferred to the
-   *  larger-piece path for this slice).
+   * @emits feature.surface-trim.split-deferred always (full split deferred).
    * @emits feature.surface-trim.no-intersection when the cutter produces no
    *  section curve against this surface.
    * @emits feature.surface-trim.non-planar when the base or cutter is not
    *  near-planar (the planar-only lowerer refuses rather than mis-trim).
    */
-  split(by: SurfaceProxy | Shape | Curve3DProxy): SurfaceProxy {
+  split(by: SurfaceProxy): SurfaceProxy {
     return this.session.addSurfaceTrim(this.id, refOf(by), 'split');
   }
 
