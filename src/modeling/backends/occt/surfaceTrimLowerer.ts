@@ -20,7 +20,6 @@ export interface SurfaceTrimLowerResult {
 export function faceArea(face: replicad.Face): number {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const props = new oc.GProp_GProps_1();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   oc.BRepGProp.SurfaceProperties_1((face as any).wrapped, props, false, false);
@@ -60,6 +59,7 @@ function collectSectionEdges(oc: any, baseShape: any, cutterShape: any): any[] {
       throw new Error('surfaceTrim: BRepAlgoAPI_Section failed to build');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const edges: any[] = [];
     const sectionShape = section.Shape();
     const exp = new oc.TopExp_Explorer_2(
