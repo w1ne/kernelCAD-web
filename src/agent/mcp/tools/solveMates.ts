@@ -31,7 +31,27 @@ export type SolveMatesOutput =
       poses: Record<string, SerializedPose>;
       iterations?: number;
     }
-  | { ok: false; error: string; errorCode?: string; errorHint?: string };
+  | {
+      ok: false;
+      /** Present on a solver-result failure ('over-constrained' /
+       *  'did-not-converge'); absent when we bailed before the solver ran
+       *  (no session, no assembly, bad ref, thrown error). */
+      status?: SolveStatus;
+      /** Best-effort poses are still returned on a non-converging solve so
+       *  the agent can diagnose which part landed where. */
+      poses?: Record<string, SerializedPose>;
+      iterations?: number;
+      error: string;
+      errorCode?: string;
+      errorHint?: string;
+    };
+
+/** A solve is honest-successful only when the solver actually converged.
+ *  'over-constrained' and 'did-not-converge' are FAILURES — returning them
+ *  as ok:true is the silent-wrong path this gate closes. */
+function isConverged(status: SolveStatus): boolean {
+  return status === 'solved' || status === 'redundant-ok';
+}
 
 export async function solveMatesTool(input: SolveMatesInput): Promise<SolveMatesOutput> {
   const active = getActiveMcpSession();
@@ -71,6 +91,30 @@ export async function solveMatesTool(input: SolveMatesInput): Promise<SolveMates
         translation: [translate[0], translate[1], translate[2]],
         rotateAxis: [rotateAxis[0], rotateAxis[1], rotateAxis[2]],
         rotateDeg,
+      };
+    }
+    if (!isConverged(r.status)) {
+      // The solver did NOT converge. Report ok:false so the agent never
+      // mistakes a wrong configuration for an assembled one — but still
+      // carry status + best-effort poses/iterations for diagnosis.
+      const isOver = r.status === 'over-constrained';
+      const errorCode = isOver
+        ? 'assembly.mate.over-constrained'
+        : 'assembly.solver.did-not-converge';
+      const error = isOver
+        ? 'solve_mates: assembly is over-constrained — at least one mate in a closed loop contradicts the others.'
+        : `solve_mates: solver did not converge (status '${r.status}').`;
+      const errorHint = isOver
+        ? 'assembly.mate.over-constrained — remove or relax a mate in the closed loop, or adjust a connector origin so the geometry agrees.'
+        : 'assembly.solver.did-not-converge — articulated closed loops are not yet solved; restrict closed loops to fastened-only mates or split into open chains.';
+      return {
+        ok: false,
+        status: r.status,
+        poses: serialized,
+        ...(r.iterations !== undefined ? { iterations: r.iterations } : {}),
+        error,
+        errorCode,
+        errorHint,
       };
     }
     return {
