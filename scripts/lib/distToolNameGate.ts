@@ -105,6 +105,17 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   // local TOOL_REGISTRY — referenced in prose to redirect hosted/remote
   // clients ("hosted clients should use `open_in_studio` instead").
   'open_in_studio',
+  // add_surface({ kind: 'trim'|'sew'|'draft' }) parameter names documented
+  // in kernelcad-mcp/SKILL.md alongside the real add_surface tool name,
+  // which DOES resolve in the registry — these are its input fields.
+  'surface_binding',
+  'by_binding',
+  'surface_bindings',
+  'target_binding',
+  'neutral_plane',
+  'pull_dir',
+  'angle_deg',
+  'require_closed',
 ]);
 
 export interface ToolNameHit {

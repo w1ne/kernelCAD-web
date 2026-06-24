@@ -100,14 +100,12 @@ export function decomposeKnots(
  *     (the constructor taking a `Geom_Surface*`).
  *
  *  3. Rational weights: `TColStd_Array2OfReal` (required by
- *     `Geom_BSplineSurface_2`) is not exposed in the WASM exports —
- *     only the 1D `TColStd_Array1OfReal_*` variants are constructable.
- *     Slice-1 therefore ships **non-rational** NURBS surfaces only;
- *     `weights` on `NurbsSurfaceInputs` is accepted at the API surface
- *     for forward compatibility but ignored by this builder with a
- *     warning thrown (caller maps to diagnostic). A future iteration
- *     can add rational support once the binding lands upstream or via
- *     a post-construction `SetWeight` walk.
+ *     `Geom_BSplineSurface_2`) is now exposed in the WASM exports
+ *     (fork kcad-v0.23.2+). When `weights` are supplied, this builder
+ *     constructs a **rational** `Geom_BSplineSurface_2`, so exact
+ *     circles/cylinders/spheres/conics are representable. When `weights`
+ *     are absent the non-rational `Geom_BSplineSurface_1` path is used
+ *     unchanged.
  *
  *  4. `BRep_Builder` is not exposed; we use `TopoDS_Builder` (its
  *     concrete subclass) for the same `MakeShell` / `Add` API.
@@ -159,21 +157,33 @@ export function buildNurbsFace(opts: NurbsSurfaceInputs): replicad.Face {
   const uPeriodic = opts.periodic?.u ?? false;
   const vPeriodic = opts.periodic?.v ?? false;
 
+  let surf: unknown;
   if (opts.weights) {
-    // Deviation #3: TColStd_Array2OfReal is not bound — non-rational only
-    // in slice-1. We silently drop weights and emit a warning that the
-    // caller can choose to surface. Validators upstream may reject weights
-    // outright; here we degrade gracefully.
-    console.warn(
-      'nurbsSurfaceLowerer: weights are accepted but ignored in slice-1 ' +
-      '(TColStd_Array2OfReal not exposed in WASM bindings). ' +
-      'Surface will be built as non-rational.',
+    // Rational path: weights bound as TColStd_Array2OfReal (fork
+    // kcad-v0.23.2+ exposes TColStd_Array2OfReal_2(lowerRow, upperRow,
+    // lowerCol, upperCol)). 1-indexed SetValue mirrors the poles array.
+    const weightsArr = new oc.TColStd_Array2OfReal_2(1, nU, 1, nV);
+    for (let i = 0; i < nU; i++) {
+      if (opts.weights[i].length !== nV) {
+        throw new Error(
+          `buildNurbsFace: weights grid is jagged: row ${i} has ` +
+          `${opts.weights[i].length} cols, expected ${nV}`,
+        );
+      }
+      for (let j = 0; j < nV; j++) {
+        weightsArr.SetValue(i + 1, j + 1, opts.weights[i][j]);
+      }
+    }
+    surf = new oc.Geom_BSplineSurface_2(
+      poles, weightsArr, uKnotsArr, vKnotsArr, uMultsArr, vMultsArr,
+      du, dv, uPeriodic, vPeriodic,
+    );
+  } else {
+    surf = new oc.Geom_BSplineSurface_1(
+      poles, uKnotsArr, vKnotsArr, uMultsArr, vMultsArr,
+      du, dv, uPeriodic, vPeriodic,
     );
   }
-  const surf = new oc.Geom_BSplineSurface_1(
-    poles, uKnotsArr, vKnotsArr, uMultsArr, vMultsArr,
-    du, dv, uPeriodic, vPeriodic,
-  );
 
   // BRepBuilderAPI_MakeFace_8 wants Handle_Geom_Surface (base class), not the
   // specialized Handle_Geom_BSplineSurface. Use Handle_Geom_Surface_2.
