@@ -111,43 +111,19 @@ export const POSE_SAMPLE_COUNT_PER_MATE = 3;
 export const BREP_SWEEP_BUDGET = 300;
 
 /**
- * Per-part allowance (work units) used to AUTO-SCALE the effective sweep
- * budget to the assembly's part count. The fixed {@link BREP_SWEEP_BUDGET}
- * (300) was sized for the densest live example at the time (~143 work
- * units) but silently dropped realistic mid-size assemblies: a ~33-part
- * mechanism with a few articulated mates blows past 300 on pose-sample
- * count alone and degraded to 'unverified' with no signal. The effective
- * budget is therefore the LARGER of the fixed floor and `partCount ×
- * BREP_SWEEP_PER_PART_ALLOWANCE`, so the sweep scales with the geometry it
- * has to lower. 60 work units/part ≈ the cost of lowering that part across
- * a typical single-mate pose fan (rest + a 3-sample sweep + dof
- * micro-poses) without the Cartesian cross-term dominating.
+ * Resolve the BREP-sweep budget. The fixed {@link BREP_SWEEP_BUDGET} is NOT
+ * auto-scaled to part count: the per-work-unit cost is ~0.9 s (a 24-part
+ * Gearfinity-class sweep is ~600–900 work units ≈ 5–13 min), so 300 is
+ * deliberately calibrated to the largest sweep that completes in tractable
+ * time. Raising it to "verify bigger assemblies" instead makes the sweep
+ * RUN for 10+ minutes and hang the caller / CI — heavy assemblies must skip
+ * LOUDLY (via `mechanism.unverified-budget-exceeded`), not grind. The proper
+ * lever for verifying larger assemblies is caching the lowered scene across
+ * poses (v2), not a bigger budget. A caller `override` is the escape hatch /
+ * test seam (e.g. `Infinity` forces a full sweep, `0` forces the skip path).
  */
-export const BREP_SWEEP_PER_PART_ALLOWANCE = 60;
-
-/**
- * Hard ceiling on the auto-scaled sweep budget. Auto-scaling must NOT turn
- * into "always sweep" — a pathological dense mechanism (e.g. 100 parts ×
- * 13 pose samples ≈ 1300 lowers/part → 130k work units) would hang for
- * minutes. The effective budget is clamped to this ceiling, so a
- * genuinely intractable assembly still bails LOUDLY (via
- * `mechanism.unverified-budget-exceeded`) rather than grinding. Sized so a
- * ~50-part assembly with a single articulated mate still sweeps in full
- * while the 100-part × 13-pose blow-up degrades.
- */
-export const BREP_SWEEP_BUDGET_CEILING = 4000;
-
-/**
- * Compute the effective BREP-sweep budget for an assembly, auto-scaled to
- * its part count and clamped to {@link BREP_SWEEP_BUDGET_CEILING}. A
- * caller-supplied `sweepBudget` override (test seam / escape hatch) wins
- * outright and is NOT clamped — passing `Infinity` still forces a full
- * sweep, passing `0` still forces the degrade path.
- */
-export function effectiveSweepBudget(partCount: number, override?: number): number {
-  if (override !== undefined) return override;
-  const scaled = partCount * BREP_SWEEP_PER_PART_ALLOWANCE;
-  return Math.min(Math.max(BREP_SWEEP_BUDGET, scaled), BREP_SWEEP_BUDGET_CEILING);
+export function effectiveSweepBudget(override?: number): number {
+  return override ?? BREP_SWEEP_BUDGET;
 }
 
 /**
@@ -307,7 +283,7 @@ export async function checkMechanismTruth(
   // assembly graph (no lowering) and skip the sweep when it's intractable;
   // the verdict then degrades to 'unverified' rather than timing out.
   const partCount = arm.__parts().length;
-  const sweepBudget = effectiveSweepBudget(partCount, opts.sweepBudget);
+  const sweepBudget = effectiveSweepBudget(opts.sweepBudget);
   const sweepWork = estimateSweepWork(arm, solved.length);
   const sweepSkipped = sweepWork > sweepBudget;
 

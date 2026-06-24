@@ -21,7 +21,6 @@ import {
   checkMechanismTruth,
   effectiveSweepBudget,
   BREP_SWEEP_BUDGET,
-  BREP_SWEEP_BUDGET_CEILING,
 } from '../../../src/modeling/runtime/mechanismTruth';
 
 function makeHinge() {
@@ -65,30 +64,18 @@ describe('checkMechanismTruth — BREP-sweep budget gate (issue #348)', () => {
     expect(budgetDiags[0].message).toContain('2'); // 2 parts in the hinge
   });
 
-  describe('effectiveSweepBudget — auto-scale to part count, clamped to a ceiling', () => {
-    it('keeps the fixed floor for small assemblies', () => {
-      // 2 parts × 60 = 120 < 300 floor, so the fixed budget wins.
-      expect(effectiveSweepBudget(2)).toBe(BREP_SWEEP_BUDGET);
+  describe('effectiveSweepBudget — fixed, tractable-time budget (NOT auto-scaled)', () => {
+    it('returns the fixed budget regardless of part count', () => {
+      // The budget is calibrated to the largest sweep that completes in
+      // tractable time (~0.9 s/work-unit), NOT scaled to part count — a
+      // bigger budget would let a 600–900-work-unit sweep RUN for 5–13 min
+      // and hang the caller. Heavy assemblies skip LOUDLY instead.
+      expect(effectiveSweepBudget()).toBe(BREP_SWEEP_BUDGET);
     });
 
-    it('scales above the fixed floor as part count grows', () => {
-      // A ~33-part assembly would blow past the old fixed 300 on pose
-      // samples alone; the auto-scaled budget tracks part count so it is
-      // actually swept rather than silently dropped.
-      expect(effectiveSweepBudget(33)).toBeGreaterThan(BREP_SWEEP_BUDGET);
-      expect(effectiveSweepBudget(33)).toBe(33 * 60);
-    });
-
-    it('clamps to the ceiling so a pathological dense assembly still bails LOUDLY', () => {
-      // 100 parts × 60 = 6000 would exceed the ceiling; clamp to it so a
-      // 100-part × 13-pose blow-up (work ≫ ceiling) still degrades to
-      // unverified rather than hanging.
-      expect(effectiveSweepBudget(100)).toBe(BREP_SWEEP_BUDGET_CEILING);
-    });
-
-    it('honours a caller override verbatim (no clamp) as the escape hatch / test seam', () => {
-      expect(effectiveSweepBudget(100, Infinity)).toBe(Infinity);
-      expect(effectiveSweepBudget(2, 0)).toBe(0);
+    it('honours a caller override as the escape hatch / test seam', () => {
+      expect(effectiveSweepBudget(Infinity)).toBe(Infinity);
+      expect(effectiveSweepBudget(0)).toBe(0);
     });
   });
 
