@@ -204,8 +204,9 @@ that together enclose a volume (front panel + back panel, top cap + side wall,
 etc.), you must close them into a watertight solid before exporting or
 boolean-ing:
 
-1. **trimTo shared edges** — call `.trimTo(sharedCurve)` on each patch so
-   adjacent edges are cut to the same boundary, eliminating seam gaps.
+1. **trimTo shared cutter surfaces** — call `.trimTo(cutterSurface)` on each
+   patch so adjacent edges are cut to the same imprinted boundary, eliminating
+   seam gaps. Use `.split(cutterSurface)` when both sides of a patch are needed.
 2. **sew** — call `sew([...trimmedSurfaces], { requireClosed: true })` to fuse
    the coincident edges into one closed shell. `requireClosed: true` throws
    `feature.surface-sew.open-shell` immediately if the result is still open,
@@ -220,7 +221,7 @@ boolean-ing:
 Do NOT call `.thicken()` on each patch individually and then union the
 resulting solids — the seam discontinuity at the join creates visible shading
 artifacts and the export mesher will sometimes fail the watertight gate. Use
-`trimTo` + `sew` so the surfaces share topological edges.
+`trimTo` / `split` + `sew` so the surfaces share topological edges.
 
 ## When NOT to apply a rule
 

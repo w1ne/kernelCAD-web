@@ -201,12 +201,12 @@ export const SURFACE_METHODS: ApiEntry[] = [
   {
     name: 'trimTo',
     signature: '(by: Surface) => Surface',
-    description: 'Trim this surface at its intersection with `by` (a Surface cutter) and return a new Surface representing the kept half. No geometry is computed at capture time — the lowerer runs BRepAlgoAPI_Section and discards the unwanted half. Emits `feature.surface-trim.no-intersection` when the cutter produces no section curve. Shape/Curve3D cutters are deferred to a later slice.',
+    description: 'Trim this surface at its intersection with `by` (a Surface cutter) and return a new Surface representing the kept half. No geometry is computed at capture time — the lowerer runs BRepAlgoAPI_Section, imprints the section curve with BRepFeat_SplitShape, and keeps the largest resulting face. Emits `feature.surface-trim.no-intersection` when the cutter produces no section curve. Shape/Curve3D cutters are deferred to a later slice.',
   },
   {
     name: 'split',
-    signature: '(by: Surface) => Surface',
-    description: 'Split this surface at its intersection with `by` (a Surface cutter) and return the larger surviving piece. Full split-into-both-halves is deferred; the lowerer emits `feature.surface-trim.split-deferred` always. Emits `feature.surface-trim.no-intersection` when the cutter produces no section curve. Shape/Curve3D cutters are deferred to a later slice.',
+    signature: '(by: Surface) => [Surface, Surface]',
+    description: 'Split this surface at its intersection with `by` (a Surface cutter) and return both resulting Surface halves as `[first, second]`, ordered by descending face area. The lowerer uses BRepFeat_SplitShape, so curved base/cutter patches are supported for clean intersections. Emits `feature.surface-trim.no-intersection` when the cutter produces no section curve. Shape/Curve3D cutters are deferred to a later slice.',
   },
 ];
 

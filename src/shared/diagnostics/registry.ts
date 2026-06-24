@@ -1433,7 +1433,7 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'BRepOffsetAPI_MakeFilling returned no face for the supplied boundary curves.',
   },
-  // NURBS Slice E (1) — surfaceTrim / split.
+  // NURBS Slice E/F — surfaceTrim / split.
   'feature.surface-trim.no-intersection': {
     hintTemplate:
       'Surface trim found no intersection between the surface and the cutter. Ensure they actually cross.',
@@ -1444,19 +1444,19 @@ export const DIAGNOSTIC_REGISTRY = {
   },
   'feature.surface-trim.non-planar': {
     hintTemplate:
-      'Surface trim currently supports near-planar patches only — the slab/half-space path would mis-trim a curved base or cutter, so it refused. Trim a planar (degree-1, flat) nurbsSurface / coonsPatch by a planar cutter, or wait for the curved-surface trim slice.',
-    nextAction: { kind: 'rewrite-feature', guidance: 'use a near-planar base and cutter, or defer to the curved-surface trim slice' },
+      'Legacy surface trim refused a non-planar base or cutter. Current curved trim uses BRepFeat_SplitShape; if you still see this diagnostic, refresh the runtime bundle and retry with cleanly intersecting single-face surfaces.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'use cleanly intersecting single-face surfaces, or refresh to the curved-trim runtime bundle' },
     defaultSeverity: 'error',
     group: 'feature',
-    description: 'A surface trim/split was attempted where the base or cutter patch is not near-planar; the planar-only lowerer refused rather than silently mis-trim a curved surface.',
+    description: 'Legacy diagnostic for the former planar-only surface trim path.',
   },
   'feature.surface-trim.split-deferred': {
     hintTemplate:
-      'surface.split(by) currently returns only the larger piece (identical to trim) — full split-into-both-halves is deferred to a later slice. If you only need the larger piece, ignore this warning; otherwise re-author so the half you keep is the larger one, or wait for the split slice.',
-    nextAction: { kind: 'rewrite-feature', guidance: 'rely on the larger returned piece for now; full split is deferred' },
+      'Legacy surface.split(by) warning from the former one-piece split path. Current split returns both halves as [Surface, Surface]; refresh the runtime bundle if this appears in new work.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'refresh to the curved-trim runtime bundle and destructure the two returned split surfaces' },
     defaultSeverity: 'warn',
     group: 'feature',
-    description: 'surface.split(by) was lowered but full split-into-N is deferred; only the larger piece is returned (a warning, not a failure).',
+    description: 'Legacy diagnostic for the former one-piece split path.',
   },
   // NURBS Slice E (2) — sew() surface stitching.
   'feature.surface-sew.open-shell': {

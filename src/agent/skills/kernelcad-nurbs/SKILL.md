@@ -20,8 +20,8 @@ const panel = surfaceFromCurves([s0, s1]).thicken(2);
 |---|---|---|
 | `.thicken(t)` | `Shape` (closed solid) | Offsets both sides by `t` mm via `BRepOffsetAPI_MakeThickSolid.MakeThickSolidBySimple`. `t` accepts `Editable<number>`. |
 | `.toShape()` | `Shape` (zero-volume shell) | Single-face Shape; use as profile placeholder for future face-aware features. |
-| `.trimTo(by)` | `Surface` | Trim this surface at its intersection with `by` (a `Surface` cutter) and return the kept half. No geometry computed at capture time — the lowerer runs BRepAlgoAPI_Section. Use before `sew` to align adjacent patch edges. Emits `feature.surface-trim.no-intersection` when the cutter misses. Shape/Curve3D cutters are deferred to a later slice. |
-| `.split(by)` | `Surface` | Like `.trimTo()` but for splitting; this slice returns the larger piece and emits a `feature.surface-trim.split-deferred` warning (full split-into-N is deferred to a later slice). The cutter must be a `Surface`; Shape/Curve3D cutters are deferred. Emits `feature.surface-trim.no-intersection` when the cutter misses. |
+| `.trimTo(by)` | `Surface` | Trim this surface at its intersection with `by` (a `Surface` cutter) and return the kept half. No geometry computed at capture time — the lowerer runs `BRepAlgoAPI_Section` and imprints the section curve with `BRepFeat_SplitShape`. Use before `sew` to align adjacent patch edges. Emits `feature.surface-trim.no-intersection` when the cutter misses. Shape/Curve3D cutters are deferred. |
+| `.split(by)` | `[Surface, Surface]` | Split this surface at its intersection with `by` (a `Surface` cutter) and return both resulting halves, ordered by descending area. The cutter must be a `Surface`; Shape/Curve3D cutters are deferred. Emits `feature.surface-trim.no-intersection` when the cutter misses. |
 
 Top-level finishing ops that consume `Surface` instances:
 
@@ -351,9 +351,10 @@ waypoints never converge. Derive the curves from a reference photo:
   `weights` builds an exact rational surface — use them for exact circles,
   cylinders, spheres, and conics rather than approximating with control points.
   (3D `nurbsCurve` weights are still non-rational; that lane is deferred.)
-- **Trim and sew freeform NURBS surfaces into a watertight solid** (Slice E).
-  `.trimTo(cutter)` aligns a patch to a shared boundary (planar patches only —
-  curved patches are refused with `feature.surface-trim.non-planar`), then
+- **Trim and sew freeform NURBS surfaces into a watertight solid** (Slice E/F).
+  `.trimTo(cutter)` aligns a patch to a shared boundary by imprinting the
+  section curve; clean curved NURBS/Coons patches are supported. `.split(cutter)`
+  returns both halves as `[Surface, Surface]` when you need both sides. Then
   `sew([...], { requireClosed: true })` fuses coincident-edged patches into a
   closed solid, then optionally `.draft(angle, { face })` tapers a face for mold
   release (analytic faces only; OCCT refuses to draft spline faces, emitting

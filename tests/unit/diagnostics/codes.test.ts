@@ -21,8 +21,8 @@ describe('diagnostic catalogue invariants', () => {
     // + 1 export.sdf-gazebo.pose-unsolved (simulator-verified SDF export:
     //   mate graph unsolvable -> links emitted at the model origin). = 227.
     // + 6 NURBS Slice E surface-finishing:
-    //   feature.surface-trim.no-intersection, feature.surface-trim.non-planar,
-    //   feature.surface-trim.split-deferred, feature.surface-sew.open-shell,
+    //   feature.surface-trim.no-intersection, legacy surface-trim non-planar/split-deferred,
+    //   feature.surface-sew.open-shell,
     //   feature.draft.failed, feature.draft.neutral-plane-derived. = 233.
     // + 1 feature.subtractive-noop (subtractive boolean/hole/cutout that
     //   removes no material). = 234.
