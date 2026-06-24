@@ -112,20 +112,19 @@ export class SurfaceProxy {
   }
 
   /**
-   * Split this surface at the intersection with `by` (a Surface), returning a
-   * new `SurfaceProxy`. Current behavior: returns ONLY the larger surviving
-   * piece and emits `feature.surface-trim.split-deferred`. Full
-   * split-into-both-halves is deferred to a later slice. Shape/Curve3D
-   * cutters are also deferred.
+   * Split this surface at the intersection with `by` (a Surface), returning
+   * both resulting surface halves. Shape/Curve3D cutters are deferred.
    *
-   * @emits feature.surface-trim.split-deferred always (full split deferred).
    * @emits feature.surface-trim.no-intersection when the cutter produces no
    *  section curve against this surface.
-   * @emits feature.surface-trim.non-planar when the base or cutter is not
-   *  near-planar (the planar-only lowerer refuses rather than mis-trim).
+   * @emits feature.kernel-failed when OCCT cannot imprint a clean section
+   *  curve into two valid face pieces.
    */
-  split(by: SurfaceProxy): SurfaceProxy {
-    return this.session.addSurfaceTrim(this.id, refOf(by), 'split');
+  split(by: SurfaceProxy): [SurfaceProxy, SurfaceProxy] {
+    return [
+      this.session.addSurfaceTrim(this.id, refOf(by), 'split', 0),
+      this.session.addSurfaceTrim(this.id, refOf(by), 'split', 1),
+    ];
   }
 
   /**
