@@ -137,6 +137,19 @@ describe('traceFromImage orchestrator', () => {
     expect(out.diagnostics.some((d) => d.code === 'tool.trace-from-image.backend-failed')).toBe(true);
   });
 
+  it('emits trace-timeout when a backend hangs past the hard timeout', async () => {
+    const hangingExtract = vi.fn(
+      () => new Promise<Vec2Normalized[]>(() => {}), // never resolves
+    );
+    const out = await traceFromImage(
+      { imageUrl: UNIFORM_FILE_URL, backend: 'opencv' },
+      { extractSilhouettePolyline: hangingExtract, backendTimeoutMs: 25 },
+    );
+    expect(out.ok).toBe(false);
+    expect(out.features).toEqual([]);
+    expect(out.diagnostics.some((d) => d.code === 'tool.trace-from-image.trace-timeout')).toBe(true);
+  });
+
   it('emits image-fetch-failed when a file:// path does not exist', async () => {
     const out = await traceFromImage({
       imageUrl: `file://${FIXTURE_DIR}/does-not-exist.png`,

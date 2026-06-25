@@ -183,7 +183,10 @@ export type FeatureKind =
   // is captured but deferred at lower time pending OCCT binding for
   // `BRepProj_Projection`.
   | 'embossText'
-  | 'projectCurve';
+  | 'projectCurve'
+  // NURBS Slice E (2) — sew N surfaces into a solid Shell/Solid via
+  // BRepBuilderAPI_Sewing (Task 5 lowerer). Returns a Shape.
+  | 'surfaceSew';
 
 /**
  * Runtime guard for PlaneSpec. Returns true for cardinal strings

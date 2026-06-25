@@ -51,7 +51,11 @@ describe('Q6 cookbook snippets — smoke test', () => {
   for (const snippet of snippets) {
     it(`${snippet.name} evaluates clean via evaluate_script (ok:true)`, async () => {
       const code = readFileSync(snippet.path, 'utf8');
-      const r = await evaluateScriptTool({ code });
+      // These snippets demonstrate part/connector QUERIES; some use a loose
+      // bracket+servo blockout that isn't a mated mechanism. Opt out of the
+      // default T3 mechanism gate — the smoke test asserts the query
+      // snippets evaluate, not that they form a valid mechanism.
+      const r = await evaluateScriptTool({ code, skipMechanismCheck: true });
       if (!r.ok) {
         const summary = r.diagnostics.slice(0, 3).map((d) => `${d.code}: ${d.message}`).join('\n');
         throw new Error(`Snippet ${snippet.name} failed:\n${summary}`);

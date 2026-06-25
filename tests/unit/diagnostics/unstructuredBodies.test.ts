@@ -54,6 +54,11 @@ describe('assembly.structure.unstructured-bodies', () => {
 
   it('is silent on an assembly-built scene', async () => {
     const r = await evaluateScriptTool({
+      // This assembly declares no mates, so the default T3 mechanism gate
+      // would correctly flag it broken (mechanism.orphan-part). This test
+      // is about the unstructured-bodies discipline diagnostic, not
+      // mechanism validity — opt out so the assertion stays focused.
+      skipMechanismCheck: true,
       code: `
         const arm = assembly('rig');
         arm.part('base', box(10, 10, 10));

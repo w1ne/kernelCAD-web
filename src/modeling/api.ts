@@ -149,9 +149,9 @@ export interface KernelCadApi {
    * Returns a `Surface` peer to `Shape`. Use `.thicken(t)` to get a
    * closed solid, or `.toShape()` to get a zero-volume single-face shell.
    *
-   * Slice-1 limitation: `weights` is accepted but silently degraded to
-   * non-rational (the underlying OCCT `TColStd_Array2OfReal` binding isn't
-   * exposed in `replicad-opencascadejs`). See decision doc 2026-05-14.
+   * `weights` are honored: when supplied, the surface is built rational
+   * (OCCT `Geom_BSplineSurface_2`), so exact circles/cylinders/spheres/
+   * conics are representable. Omit `weights` for a non-rational surface.
    */
   nurbsSurface(opts: {
     controls: Vec3[][];
@@ -251,6 +251,24 @@ export interface KernelCadApi {
       sampling?: number;
     },
   ): SurfaceProxy;
+
+  /**
+   * NURBS Slice E: stitch N surfaces into a shell or closed solid.
+   * Lowers to OCCT `BRepBuilderAPI_Sewing` (Task 5). Returns a `Shape` so
+   * the result flows directly into boolean ops, export, and fillet pipelines.
+   *
+   * Edges within `opts.tolerance` mm of each other are stitched together.
+   * If `opts.requireClosed` is true and the result is still an open shell
+   * at lower time, the lowerer emits `feature.surface-sew.open-shell`
+   * (severity 'error') instead of returning a partial solid.
+   *
+   * @throws KernelError('feature.invalid-args') if `surfaces` is not an
+   *  array of at least 1 Surface.
+   */
+  sew(
+    surfaces: SurfaceProxy[],
+    opts?: { tolerance?: number; requireClosed?: boolean },
+  ): Shape;
 
   /** 2D sketch primitives namespace. Currently: `sketch.text(content, opts)`. */
   sketch: SketchModule;
@@ -1054,6 +1072,31 @@ export function createApi(ctx: ApiContext): KernelCadApi {
         curveIds: [curves[0].id, curves[1].id, curves[2].id, curves[3].id],
         continuity: contArr,
         ...(opts?.sampling !== undefined ? { sampling: opts.sampling } : {}),
+      });
+    },
+
+    sew(surfaces, opts) {
+      if (!Array.isArray(surfaces) || surfaces.length < 1) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `sew: need at least 1 surface; got ${Array.isArray(surfaces) ? surfaces.length : String(surfaces)}.`,
+          undefined,
+          'invalid-args.sew.surfaces — pass an array of at least 1 Surface returned by nurbsSurface() / surfaceFromCurves() / surfaceFromBoundary().',
+        );
+      }
+      const inputs: Record<string, import('../shared/intent/types').FeatureRef> = {};
+      for (let i = 0; i < surfaces.length; i++) {
+        inputs[`surface_${i}`] = { kind: 'surface', surfaceId: surfaces[i].id };
+      }
+      const tolerance = opts?.tolerance ?? 1e-6;
+      const requireClosed = opts?.requireClosed ?? false;
+      return session.createShape({
+        kind: 'surfaceSew',
+        inputs,
+        params: {
+          tolerance: { expression: String(tolerance), unit: 'mm', evaluated: tolerance },
+        },
+        metadata: { requireClosed },
       });
     },
 

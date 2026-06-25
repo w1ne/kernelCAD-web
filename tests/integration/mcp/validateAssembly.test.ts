@@ -46,6 +46,11 @@ describe('validate_assembly MCP tool', () => {
 
   it('returns status=warning with a floating-part diagnostic when a part has no joint or mate', async () => {
     const ev = await evaluateScriptTool({
+      // Intentionally floating/unmated parts — the point is to exercise the
+      // validate_assembly floating-part warning. The default T3 mechanism
+      // gate would (correctly) flag this as broken (orphan-part); opt out so
+      // the setup evaluates and the validate_assembly assertion stays focused.
+      skipMechanismCheck: true,
       code: `
         const arm = assembly('rig');
         arm.part('a', box(1, 1, 1));

@@ -17,6 +17,11 @@ describe('solve_mates MCP tool', () => {
 
   it('returns status=solved with serialized per-part transforms on a simple two-part fastened mate', async () => {
     const ev = await evaluateScriptTool({
+      // These are abstract solver fixtures (coincident-origin boxes), not
+      // physically-grounded mechanisms — opt out of the default T3
+      // mechanism gate so the setup evaluates cleanly. The test's contract
+      // is solve_mates pose math, not mechanism validity.
+      skipMechanismCheck: true,
       code: `
         const arm = assembly('rig');
         arm.part('a', box(1, 1, 1))
@@ -43,6 +48,11 @@ describe('solve_mates MCP tool', () => {
 
   it('honors per-mate pose overrides', async () => {
     const ev = await evaluateScriptTool({
+      // These are abstract solver fixtures (coincident-origin boxes), not
+      // physically-grounded mechanisms — opt out of the default T3
+      // mechanism gate so the setup evaluates cleanly. The test's contract
+      // is solve_mates pose math, not mechanism validity.
+      skipMechanismCheck: true,
       code: `
         const arm = assembly('rig');
         arm.part('base', box(10, 10, 10))
@@ -64,6 +74,11 @@ describe('solve_mates MCP tool', () => {
 
   it('expands coupled mate poses from one grip actuator', async () => {
     const ev = await evaluateScriptTool({
+      // These are abstract solver fixtures (coincident-origin boxes), not
+      // physically-grounded mechanisms — opt out of the default T3
+      // mechanism gate so the setup evaluates cleanly. The test's contract
+      // is solve_mates pose math, not mechanism validity.
+      skipMechanismCheck: true,
       code: `
         const arm = assembly('hand');
         arm.part('base', box(10, 10, 2))
@@ -98,6 +113,11 @@ describe('solve_mates MCP tool', () => {
 
   it('expands coupled mate poses from a source ParamRef pose', async () => {
     const ev = await evaluateScriptTool({
+      // These are abstract solver fixtures (coincident-origin boxes), not
+      // physically-grounded mechanisms — opt out of the default T3
+      // mechanism gate so the setup evaluates cleanly. The test's contract
+      // is solve_mates pose math, not mechanism validity.
+      skipMechanismCheck: true,
       code: `
         const gripDeg = param('gripDeg', 25, { min: 0, max: 40 });
         const arm = assembly('hand');
@@ -133,6 +153,11 @@ describe('solve_mates MCP tool', () => {
 
   it('returns ok:false when a scalar mate receives a triple pose override', async () => {
     const ev = await evaluateScriptTool({
+      // These are abstract solver fixtures (coincident-origin boxes), not
+      // physically-grounded mechanisms — opt out of the default T3
+      // mechanism gate so the setup evaluates cleanly. The test's contract
+      // is solve_mates pose math, not mechanism validity.
+      skipMechanismCheck: true,
       code: `
         const arm = assembly('rig');
         arm.part('base', box(10, 10, 10))
