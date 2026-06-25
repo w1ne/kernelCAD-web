@@ -14,16 +14,23 @@ const s0 = path().moveTo(-30, -10).lineTo(30, -10).lineTo(30, 10).lineTo(-30, 10
 const panel = surfaceFromCurves([s0, s1]).thicken(2);
 ```
 
-`nurbsSurface({ controls, degree, weights?, knots?, periodic? })` returns a `Surface` peer to `Shape`. The `Surface` exposes exactly two escape methods:
+`nurbsSurface({ controls, degree, weights?, knots?, periodic? })` returns a `Surface` peer to `Shape`. The `Surface` exposes these escape methods:
 
 | Method | Returns | Notes |
 |---|---|---|
 | `.thicken(t)` | `Shape` (closed solid) | Offsets both sides by `t` mm via `BRepOffsetAPI_MakeThickSolid.MakeThickSolidBySimple`. `t` accepts `Editable<number>`. |
 | `.toShape()` | `Shape` (zero-volume shell) | Single-face Shape; use as profile placeholder for future face-aware features. |
+| `.trimTo(by)` | `Surface` | Trim this surface at its intersection with `by` (a `Surface` cutter) and return the kept half. No geometry computed at capture time — the lowerer runs `BRepAlgoAPI_Section` and imprints the section curve with `BRepFeat_SplitShape`. Use before `sew` to align adjacent patch edges. Emits `feature.surface-trim.no-intersection` when the cutter misses. Shape/Curve3D cutters are deferred. |
+| `.split(by)` | `[Surface, Surface]` | Split this surface at its intersection with `by` (a `Surface` cutter) and return both resulting halves, ordered by descending area. The cutter must be a `Surface`; Shape/Curve3D cutters are deferred. Emits `feature.surface-trim.no-intersection` when the cutter misses. |
+
+Top-level finishing ops that consume `Surface` instances:
+
+- `sew(surfaces, opts?)` — stitch N surfaces into a shell or closed solid via OCCT `BRepBuilderAPI_Sewing`. Edges within `tolerance` mm (default 1e-6) are merged. `requireClosed: true` emits `feature.surface-sew.open-shell` instead of a partial shell when the result is still open. Returns a `Shape`.
+- The workflow for a multi-patch body: `trimTo` each patch to shared boundary curves → `sew([...], { requireClosed: true })` → optionally `.draft(angleDeg, { face })` for mold release.
 
 `surfaceFromCurves(sections)` skins through 2+ closed `Sketch` cross-sections in declaration order. Section order = skin direction.
 
-Slice-1 caveat: `weights` is accepted but silently ignored — every surface is built as a non-rational B-spline today. For an "exact circle" tube you currently need either a fine polygonal approximation (16+ control points around the circumference, degree 1 in U) or a section-skinned approach with explicit circle sketches per section.
+Rational NURBS surface weights are honored (v0.14.0). Supplying `weights` builds an exact rational surface — use them for exact circles, cylinders, spheres, and conics rather than approximating with control points. (3D `nurbsCurve` weights are still non-rational; that lane is deferred.)
 
 ### NURBS diagnostic codes
 
@@ -340,14 +347,19 @@ waypoints never converge. Derive the curves from a reference photo:
   `surfaceFromCurves`/`variableSweep`/revolve result has no `'top'`/`'bottom'`
   faces. Select its faces with the query DSL (`kc.q.face({ ... })`) or list them
   via `inspect` — never the cardinal-name shortcuts.
-- **Rational NURBS weights are accepted but ignored.** Every surface and curve
-  is built non-rational today; `weights` does not change the result. For an
-  exact conic, approximate with control points, not weights.
-- **You cannot trim / blend / stitch multiple freeform NURBS surfaces into one
-  watertight body yet.** Either `.thicken()` a SINGLE surface to a solid, or
-  boolean-`union` several thickened surfaces (accepting a seam discontinuity at
-  the join). Continuous multi-surface body finishing (G2 trim/stitch into one
-  shell) is a deferred kernel slice — see the handoff workflow below.
+- **Rational NURBS surface weights are honored** (Slice E, v0.14.0). Supplying
+  `weights` builds an exact rational surface — use them for exact circles,
+  cylinders, spheres, and conics rather than approximating with control points.
+  (3D `nurbsCurve` weights are still non-rational; that lane is deferred.)
+- **Trim and sew freeform NURBS surfaces into a watertight solid** (Slice E/F).
+  `.trimTo(cutter)` aligns a patch to a shared boundary by imprinting the
+  section curve; clean curved NURBS/Coons patches are supported. `.split(cutter)`
+  returns both halves as `[Surface, Surface]` when you need both sides. Then
+  `sew([...], { requireClosed: true })` fuses coincident-edged patches into a
+  closed solid, then optionally `.draft(angle, { face })` tapers a face for mold
+  release (analytic faces only; OCCT refuses to draft spline faces, emitting
+  `feature.draft.failed`). A single patch can still `.thicken()` to a solid.
+  Face-face blends and standalone surface offset are deferred to a later slice.
 
 ## Blockout → export → finish in a DCC tool
 

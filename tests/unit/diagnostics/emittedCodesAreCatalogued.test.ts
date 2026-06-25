@@ -75,7 +75,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     ).toEqual([]);
   });
 
-  it('catalogue has exactly 227 codes', () => {
+  it('catalogue has exactly 237 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -152,7 +152,16 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       track params — only pose-only mate timelines bake) = 226.
     //  +  1 export.sdf-gazebo.pose-unsolved (simulator-verified SDF export:
     //       mate graph unsolvable -> links emitted at the model origin) = 227.
-    expect(catalogue.size).toBe(227);
+    //  +  6 NURBS Slice E surface-finishing:
+    //       feature.surface-trim.no-intersection, legacy surface-trim non-planar/split-deferred,
+    //       feature.surface-sew.open-shell,
+    //       feature.draft.failed, feature.draft.neutral-plane-derived = 233.
+    //  +  1 feature.subtractive-noop = 234.
+    //  +  2 feature.intersection-empty, feature.empty-result = 236.
+    //  +  1 mechanism.unverified-budget-exceeded (this PR — T3 over-budget
+    //       BREP pose-sweep skip is now a LOUD structured diagnostic) = 237.
+    //  +  1 tool.trace-from-image.trace-timeout (forward-ported) = 238.
+    expect(catalogue.size).toBe(238);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

@@ -35,19 +35,25 @@
 //      out-volume a small declared channel and win the pick —
 //      `channelOpenings.channelSeed` exposes which component was chosen so
 //      such misbinding is visible downstream. found = the number of
-//      26-connected clusters of channel voxels that are 6-adjacent to
+//      26-connected clusters of that channel's voxels 6-adjacent to
 //      O ∧ ¬closed (open air beyond the closed hull) — each cluster is one
-//      mouth.
+//      mouth. `partOpenings` additionally reports the count across ALL such
+//      components (the whole part's openings), for parts whose openings are
+//      disjoint (an enclosure's separate ports) and so cannot be one channel.
 //
 // Scope limits (this slice):
-//   - ONE declared non-sealed channel per part: the first non-sealed entry
-//     in `channels` selects the mouth phase; the largest V component is
-//     assumed to be that channel. Additional non-sealed declarations are
-//     ignored here (the Task 7 orchestrator enforces the one-channel rule).
+//   - ONE declared non-sealed channel per part drives `found`: the first
+//     non-sealed entry in `channels` selects the mouth phase; the largest V
+//     component is assumed to be that channel. Additional non-sealed
+//     declarations are ignored (the Task 7 orchestrator enforces the
+//     one-channel rule). `partOpenings` is part-level and declaration-free —
+//     it sums mouths over every component ≥ MIN_VOID_VOXELS. Convex faces
+//     yield no candidates and concave internal edges are absorbed into the
+//     cavity component, so it does not over-count.
 //   - Channels wider than ~2× the closing radius (≈ 16 mm) are NOT sealed
-//     by the closing: V comes back empty and the result reports found: 0.
-//     The openings-mismatch hint (Task 7) names this case so authors don't
-//     chase a phantom blockage.
+//     by the closing: V comes back empty and the result reports found: 0
+//     (and partOpenings: 0). The openings-mismatch hint (Task 7) names this
+//     case so authors don't chase a phantom blockage.
 //   - Caller passes only the channels addressed to THIS part's mesh; no
 //     part-name filtering happens here.
 
@@ -81,12 +87,27 @@ export interface VoidTopologyResult {
   /** Mouth-cluster count for the part's declared channel (undefined when no
    *  non-sealed channel is declared — mouth phase skipped). */
   channelOpenings?: {
+    /** Mouths of the DECLARED channel (the largest outside-connected neck
+     *  component). Single-channel semantics: "does this channel have N
+     *  mouths?". The orchestrator compares this to the channel's declared
+     *  `openings`. */
     found: number;
+    /** Total mouths across EVERY narrow opening of the part (all neck
+     *  components above the noise floor), not just the declared channel. For
+     *  one connected channel this equals `found`; for a part with disjoint
+     *  openings (an enclosure's separate port cutouts) it is the sum. Read
+     *  this to gate "the enclosure has at least N external openings". */
+    partOpenings: number;
     channelVolumeMm3: number;
+    /** Summed interior volume of all counted opening components (the
+     *  part-level analogue of channelVolumeMm3). */
+    partChannelVolumeMm3: number;
     /** Sampled position of each mouth cluster's seed voxel (scan-order
      *  first voxel of the cluster — on the mouth, at the part surface).
      *  One entry per counted mouth; mismatch diagnostics can point here. */
     mouthLocations: [number, number, number][];
+    /** Mouth seed positions for the part-level count (one per partOpenings). */
+    partMouthLocations: [number, number, number][];
     /** Sampled position of the chosen channel component's seed voxel —
      *  always inside the channel the largest-component heuristic picked.
      *  Undefined when the closing sealed nothing (found: 0): there is no
@@ -208,51 +229,83 @@ function countMouths(
     if (closed[idx] && !solid[idx] && isOutsideVoxel(idx)) candidates[idx] = 1;
   }
 
-  // Declared channel = largest 6-connected component of V. Components come
-  // back in scan order (ascending seed), so keeping the FIRST maximum makes
-  // ties deterministic (lowest seed wins).
+  // Channel candidates split into 6-connected components. `found` keeps the
+  // SINGLE-CHANNEL contract — the declared channel binds to the largest
+  // component and `found` is that one channel's mouths (verifying "does THIS
+  // channel have N mouths?"). But a part can also carry SEVERAL independent
+  // narrow openings that are not one connected channel — an enclosure's
+  // separate port cutouts, two unrelated bores. `partOpenings` answers the
+  // distinct part-level question "how many narrow openings does the WHOLE part
+  // have?" by counting mouths across every component above the noise floor.
+  // The two differ when openings are disjoint: an enclosure with 3 ports that
+  // do not merge through its wide cavity has found:1 (largest neck) but
+  // partOpenings:3. Enclosure-opening gates read partOpenings; single-channel
+  // checks read found. Components below MIN_VOID_VOXELS are tessellation
+  // specks; convex faces yield no candidates and concave internal edges are
+  // absorbed into the cavity component, so partOpenings does not over-count.
   const vComps = components(candidates, grid, 6);
+  const counted = new Uint8Array(vComps.components.length);
+  let partVoxels = 0;
   let channelId = -1;
   let channelVoxels = 0;
   for (let id = 0; id < vComps.components.length; id++) {
-    if (vComps.components[id].voxelCount > channelVoxels) {
+    const vox = vComps.components[id].voxelCount;
+    if (vox < MIN_VOID_VOXELS) continue;
+    counted[id] = 1;
+    partVoxels += vox;
+    // Largest counted component is the declared channel; scan-order (ascending
+    // seed) breaks ties deterministically (lowest seed wins).
+    if (vox > channelVoxels) {
+      channelVoxels = vox;
       channelId = id;
-      channelVoxels = vComps.components[id].voxelCount;
     }
   }
   if (channelId < 0) {
-    // Closing sealed nothing — no channel narrower than ~2r exists (either
-    // the part has no channel, or it is too wide for the closing; the
-    // orchestrator's mismatch hint covers the wide case). No channel
-    // component → no channelSeed to point at.
-    return { found: 0, channelVolumeMm3: 0, mouthLocations: [] };
+    // Closing sealed nothing above the noise floor — no channel narrower than
+    // ~2r exists (either the part has no channel, or it is too wide for the
+    // closing; the orchestrator's mismatch hint covers the wide case). No
+    // channel component → no channelSeed to point at.
+    return { found: 0, partOpenings: 0, channelVolumeMm3: 0, partChannelVolumeMm3: 0, mouthLocations: [], partMouthLocations: [] };
   }
 
-  // Mouth voxels: channel voxels 6-adjacent to open air beyond the closed
-  // hull (O ∧ ¬closed). Each 26-connected cluster of them is one mouth.
+  // Mouth voxels: channel voxels 6-adjacent to open air beyond the closed hull
+  // (O ∧ ¬closed); each 26-connected cluster is one mouth. Built twice over the
+  // same adjacency rule: once restricted to the declared (largest) channel for
+  // `found`, once over all counted components for `partOpenings`. Mouths of
+  // distinct openings are spatially separate, so global clustering for the
+  // part-level count yields the correct total.
   const sliceStride = nx * ny;
-  const mouth = new Uint8Array(n);
   const openAir = (idx: number): boolean => !closed[idx] && !solid[idx] && isOutsideVoxel(idx);
-  for (let idx = 0; idx < n; idx++) {
-    if (vComps.labels[idx] !== channelId) continue;
+  const adjacentToOpenAir = (idx: number): boolean => {
     const i = idx % nx;
     const rest = (idx / nx) | 0;
     const j = rest % ny;
     const k = (rest / ny) | 0;
-    if (
+    return (
       (i > 0 && openAir(idx - 1)) || (i + 1 < nx && openAir(idx + 1)) ||
       (j > 0 && openAir(idx - nx)) || (j + 1 < ny && openAir(idx + nx)) ||
       (k > 0 && openAir(idx - sliceStride)) || (k + 1 < nz && openAir(idx + sliceStride))
-    ) {
-      mouth[idx] = 1;
-    }
+    );
+  };
+  const channelMouth = new Uint8Array(n);
+  const partMouth = new Uint8Array(n);
+  for (let idx = 0; idx < n; idx++) {
+    const label = vComps.labels[idx];
+    if (label < 0 || !counted[label]) continue;
+    if (!adjacentToOpenAir(idx)) continue;
+    partMouth[idx] = 1;
+    if (label === channelId) channelMouth[idx] = 1;
   }
-  const mouthClusters = components(mouth, grid, 26);
+  const channelClusters = components(channelMouth, grid, 26);
+  const partClusters = components(partMouth, grid, 26);
 
   return {
-    found: mouthClusters.components.length,
+    found: channelClusters.components.length,
+    partOpenings: partClusters.components.length,
     channelVolumeMm3: channelVoxels * voxelVolMm3,
-    mouthLocations: mouthClusters.components.map(c => seedPoint(grid, c.seed)),
+    partChannelVolumeMm3: partVoxels * voxelVolMm3,
+    mouthLocations: channelClusters.components.map(c => seedPoint(grid, c.seed)),
+    partMouthLocations: partClusters.components.map(c => seedPoint(grid, c.seed)),
     channelSeed: seedPoint(grid, vComps.components[channelId].seed),
   };
 }

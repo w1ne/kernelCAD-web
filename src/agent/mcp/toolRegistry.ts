@@ -50,6 +50,9 @@ export interface McpToolDefinition {
     type: 'object';
     properties: Record<string, unknown>;
     required?: string[];
+    /** Optional JSON Schema conditional blocks (if/then/else) for
+     *  required-by-discriminator fields. */
+    allOf?: unknown[];
   };
   /** MCP behavioral hints (readOnly/destructive/openWorld). Required for ChatGPT
    *  app-directory submission; merged from TOOL_ANNOTATIONS at build time. */
@@ -82,7 +85,10 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
         'Use this when you need to run a script and check it compiles. ' +
         'Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics. ' +
         'When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), ' +
-        'also returns a parts summary { count, names }. ' +
+        'also returns a parts summary { count, names } AND runs the mechanism-truth gate by ' +
+        'default: the `mechanism` field reports real/broken/unverified and a broken mechanism ' +
+        '(self-collision, fastened drift, dof-mismatch) makes ok:false with the failures in ' +
+        'diagnostics. Pass { skipMechanismCheck: true } to opt out. ' +
         'Pass either { file: "<path>" } or { code: "<inline source>" }. ' +
         'Set { dryRun: true } for fast validation while iterating: transpile + capture + ' +
         'capture-light checks WITHOUT OCCT lowering, DFM gates, or meshing — milliseconds ' +
@@ -100,6 +106,15 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
             description:
               'Fast validation only: skip OCCT lowering, DFM gates, and meshing. ' +
               'Does not set or clear the active session.',
+          },
+          skipMechanismCheck: {
+            type: 'boolean',
+            description:
+              'Opt out of the default mechanism-truth gate. By default a full ' +
+              'evaluation of an assembly-built scene runs checkMechanismTruth and ' +
+              'returns a `mechanism` verdict (real/broken/unverified); a broken ' +
+              "mechanism makes ok:false. Set true to skip the sweep entirely (no " +
+              '`mechanism` field, no cost). Ignored for dryRun and non-assembly scripts.',
           },
         },
       },
@@ -281,17 +296,20 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'add_surface',
       description:
-        'Use this when you need an organic, freeform, or swept shape — a body shell, panel, fairing, ergonomic curve, lens, or sculpted form — authored as a NURBS Surface into the user\'s .kcad.ts. One authoring path, selected by `kind`:\n' +
-        "- 'nurbs' — insert a nurbsSurface(...) / surfaceFromCurves(...) call. Pass either { controls, degree, weights?, knots?, periodic? } for direct construction, OR { section_sketch_ids } for skinning. Slice-1 limitation: weights are accepted but currently ignored (TColStd_Array2OfReal not exposed in WASM bindings); surfaces are non-rational.\n" +
+        'Use this when you need an organic, freeform, or swept shape — a body shell, panel, fairing, ergonomic curve, lens, or sculpted form — authored as a NURBS Surface into the user\'s .kcad.ts, OR when you need to finish surfaces into a watertight solid or taper faces for moldability. One authoring/finishing path, selected by `kind`:\n' +
+        "- 'nurbs' — insert a nurbsSurface(...) / surfaceFromCurves(...) call. Pass either { controls, degree, weights?, knots?, periodic? } for direct construction, OR { section_sketch_ids } for skinning. Weights are honored: supply rational weights to build exact circles/cylinders/spheres/conics (the surface becomes rational); omit weights for a non-rational surface.\n" +
         "- 'boundary' — insert a surfaceFromBoundary([c1,c2,c3,c4], opts?) call: one NURBS face through 4 boundary Curve3D refs (bottom, right, top, left in loop order; adjacent endpoints must coincide within 1e-6 mm) via OCCT BRepOffsetAPI_MakeFilling.\n" +
+        "- 'trim' — insert a `<surface>.trimTo(<by>)` or `<surface>.split(<by>)` call. Pass `surface_binding` (the Surface variable name), `by_binding` (the cutter Surface variable name; Shape/Curve3D cutters are deferred to a later slice), and `op: 'trim'` (keep the largest imprinted piece) or `op: 'split'` (return both halves as a `[Surface, Surface]` tuple).\n" +
+        "- 'sew' — insert a `sew([s0, s1, ...], opts?)` call to stitch N surfaces into a closed watertight solid via OCCT BRepBuilderAPI_Sewing. Pass `surface_bindings` (array of Surface variable names). Use after trim/boundary to close patches into a solid: trim → sew → solid pipeline. Optional `tolerance` (mm, default 1e-6) and `require_closed` (emits feature.surface-sew.open-shell if result is not watertight).\n" +
+        "- 'draft' — insert a `<shape>.draft(angleDeg, { face, neutralPlane?, pullDir? })` call to taper the selected face(s) for mold release. Pass `shape_binding`, `angle_deg` (0–90), and `face` (canonical name, label, or FaceQuery descriptor). Lowering emits feature.draft.failed on invalid geometry.\n" +
         'The returned Surface produces no Shape until you chain .thicken(t) or .toShape() (do that via add_feature on the binding name). Returns the modified code + diagnostics. Each kind fails closed on its own missing required params.',
       inputSchema: {
         type: 'object',
         properties: {
           kind: {
             type: 'string',
-            enum: ['nurbs', 'boundary'],
-            description: 'Which surface-construction path to use.',
+            enum: ['nurbs', 'boundary', 'trim', 'sew', 'draft'],
+            description: "Which surface-construction or surface-finishing path to use: 'nurbs' | 'boundary' | 'trim' | 'sew' | 'draft'.",
           },
           code: { type: 'string', description: 'Current .kcad.ts source.' },
           controls: {
@@ -345,12 +363,71 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
             maxItems: 4,
           },
           continuity: {
-            description: "kind:'boundary' — continuity grade applied to every edge ('C0' | 'C1' | 'C2'), or an array of 4 grades (one per edge). Default 'C0'.",
+            description: "kind:'boundary' — continuity grade applied to every edge ('C0' | 'C1' | 'C2'), or an array of 4 grades (one per edge, bottom/right/top/left order). Default 'C0'.",
+            oneOf: [
+              { type: 'string', enum: ['C0', 'C1', 'C2'] },
+              { type: 'array', items: { type: 'string', enum: ['C0', 'C1', 'C2'] }, minItems: 4, maxItems: 4 },
+            ],
           },
           sampling: { type: 'integer', minimum: 1, description: "kind:'boundary' — OCCT NbPtsOnCur sampling parameter (default 15)." },
           binding_name: {
             type: 'string',
-            description: "JS const name for the new Surface binding (kind:'nurbs' default surface_<N>; kind:'boundary' default _surface_<N>).",
+            description: "JS const name for the new binding (kind:'nurbs' default surface_<N>; kind:'boundary' default _surface_<N>; kind:'trim' default _trimmed_<N>; kind:'sew' default _sewn_<N>; kind:'draft' default _drafted_<N>).",
+          },
+          // kind:'trim' params
+          surface_binding: {
+            type: 'string',
+            description: "kind:'trim' — JS variable name of the Surface to trim/split (must be declared in source).",
+          },
+          by_binding: {
+            type: 'string',
+            description: "kind:'trim' — JS variable name of the cutter Surface (must be declared in source). Shape/Curve3D cutters are deferred.",
+          },
+          op: {
+            type: 'string',
+            enum: ['trim', 'split'],
+            description: "kind:'trim' — 'trim' discards the smaller half (calls .trimTo()); 'split' retains both halves (calls .split()).",
+          },
+          // kind:'sew' params
+          surface_bindings: {
+            type: 'array',
+            description: "kind:'sew' — JS variable names of the surfaces to stitch into a solid (each must be declared in source).",
+            items: { type: 'string' },
+            minItems: 1,
+          },
+          tolerance: {
+            type: 'number',
+            description: "kind:'sew' — edge-merging tolerance in mm (default 1e-6). Edges within this distance are merged.",
+          },
+          require_closed: {
+            type: 'boolean',
+            description: "kind:'sew' — when true the lowerer emits feature.surface-sew.open-shell if the stitched result is not a watertight solid.",
+          },
+          // kind:'draft' params
+          shape_binding: {
+            type: 'string',
+            description: "kind:'draft' — JS variable name of the Shape to taper (must be declared in source).",
+          },
+          angle_deg: {
+            type: 'number',
+            minimum: 0,
+            maximum: 90,
+            description: "kind:'draft' — draft angle in degrees [0, 90]. The face is tapered outward by this angle relative to the pull direction.",
+          },
+          face: {
+            type: 'string',
+            description: "kind:'draft' — face selector for the face(s) to taper. Accepts a canonical name (top/bottom/front/back/left/right), a user label declared via faceLabels, or a FaceQuery descriptor string.",
+          },
+          neutral_plane: {
+            type: 'string',
+            description: "kind:'draft' — parting-line face (the plane where drafted faces remain fixed). Defaults to `face` if omitted.",
+          },
+          pull_dir: {
+            type: 'array',
+            items: { type: 'number' },
+            minItems: 3,
+            maxItems: 3,
+            description: "kind:'draft' — demoulding direction as [x, y, z]. Defaults to the face normal at lower time.",
           },
         },
         required: ['kind', 'code'],
@@ -415,6 +492,10 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           binding_name: { type: 'string', description: 'JS const name for the new Curve3D binding (default: _curve_<N>).' },
         },
         required: ['kind', 'code'],
+        allOf: [
+          { if: { properties: { kind: { const: 'nurbs' } } }, then: { required: ['controlPoints'] } },
+          { if: { properties: { kind: { const: 'hermite' } } }, then: { required: ['a', 'b'] } },
+        ],
       },
     },
     handler: input => addCurveTool(input as unknown as Parameters<typeof addCurveTool>[0]),
@@ -498,6 +579,11 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           binding_name: { type: 'string', description: 'Reserved for future use; the segment injection mutates the chain anchor in place.' },
         },
         required: ['kind', 'code', 'chain_anchor'],
+        allOf: [
+          { if: { properties: { kind: { const: 'spline' } } }, then: { required: ['points'] } },
+          { if: { properties: { kind: { const: 'nurbs' } } }, then: { required: ['controlPoints'] } },
+          { if: { properties: { kind: { const: 'hermite' } } }, then: { required: ['a', 'b'] } },
+        ],
       },
     },
     handler: input => addPathSegmentTool(input as unknown as Parameters<typeof addPathSegmentTool>[0]),
@@ -628,19 +714,31 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'project_curve',
-      description: 'Use this when you need to wrap a 2D curve onto a 3D face. Insert a `<shape>.projectCurve({ curve, face, scaleMode?, asEdge? })` chained call into a kernelCAD script. Wraps a 2D closed curve onto a 3D face along the face normal; pair with `.extrude(d)` / `.cut(...)` for engraved logos or label inserts on curved bodies. `asEdge: true` is captured but currently deferred at lower time (BRepProj_Projection not bundled). Side-effect-free; returns modified code plus diagnostics.',
+      description: 'Use this when you need to wrap a 2D closed curve onto a 3D face. Insert a `<shape>.projectCurve({ source, face, scaleMode? })` chained call into a kernelCAD script. The `source` is the structured `{ kind: "sketchCommands", commands: [...] }` wire format the runtime API accepts. Wraps the curve onto the face along the face normal; pair with `.extrude(d)` / `.cut(...)` for raised or engraved logos on curved bodies. Open-wire projection (`asEdge: true`) is deferred (BRepProj_Projection not bundled) and is rejected at edit time. Side-effect-free; returns modified code plus diagnostics.',
       inputSchema: {
         type: 'object',
         properties: {
-          code:            { type: 'string', description: 'The .kcad.ts source code.' },
-          target:          { type: 'string', description: 'Variable name of the Shape to chain onto.' },
-          curveExpression: { type: 'string', description: 'JS expression returning a closed sketch (e.g. `path().moveTo(0,0).lineTo(2,0).lineTo(2,2).close().build()`). Inserted verbatim as the `curve:` field.' },
-          face:            { type: 'string', description: "Target face — canonical name or label." },
-          scaleMode:       { type: 'string', enum: ['original', 'native', 'bounds'], description: 'Drawing.sketchOnFace scaling mode. Default original.' },
-          asEdge:          { type: 'boolean', description: 'Project as an open edge instead of a closed face-bound sketch. Currently deferred.' },
-          bindAs:          { type: 'string', description: 'Optional local variable name; emits `const <bindAs> = <target>.projectCurve(...);`.' },
+          code:      { type: 'string', description: 'The .kcad.ts source code.' },
+          target:    { type: 'string', description: 'Variable name of the Shape to chain onto.' },
+          commands:  {
+            type: 'array',
+            description: 'Closed 2D path to wrap onto the face, as plain-number commands. Must start with a `moveTo` and end with a `close` (e.g. [{kind:"moveTo",x:0,y:0},{kind:"lineTo",x:2,y:0},{kind:"lineTo",x:2,y:2},{kind:"close"}]).',
+            items: {
+              type: 'object',
+              properties: {
+                kind: { type: 'string', enum: ['moveTo', 'lineTo', 'close'] },
+                x:    { type: 'number' },
+                y:    { type: 'number' },
+              },
+              required: ['kind'],
+            },
+          },
+          face:      { type: 'string', description: 'Target face — canonical name or label.' },
+          scaleMode: { type: 'string', enum: ['original', 'native', 'bounds'], description: 'Drawing.sketchOnFace scaling mode. Default original.' },
+          asEdge:    { type: 'boolean', description: 'Open-wire (edge) projection. DEFERRED — rejected at edit time (BRepProj_Projection not bundled).' },
+          bindAs:    { type: 'string', description: 'Optional local variable name; emits `const <bindAs> = <target>.projectCurve(...);`.' },
         },
-        required: ['code', 'target', 'curveExpression', 'face'],
+        required: ['code', 'target', 'commands', 'face'],
       },
     },
     handler: input => projectCurveTool(input as unknown as Parameters<typeof projectCurveTool>[0]),
@@ -666,11 +764,25 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
             angleDeg: { type: 'number', description: 'Optional; defaults to 360.' },
           }, required: ['count', 'axis'] },
           grid:      { type: 'object', description: 'Required when kind=grid.', properties: {
-            x: { type: 'object' }, y: { type: 'object' },
+            x: { type: 'object', description: 'First grid axis.', properties: {
+              count: { type: 'integer', minimum: 2 },
+              direction: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+              spacing: { type: 'number' },
+            }, required: ['count', 'direction', 'spacing'] },
+            y: { type: 'object', description: 'Second grid axis.', properties: {
+              count: { type: 'integer', minimum: 2 },
+              direction: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+              spacing: { type: 'number' },
+            }, required: ['count', 'direction', 'spacing'] },
           }, required: ['x', 'y'] },
           assign_to: { type: 'string', description: "Optional const-binding name; emits `const <assign_to> = <target>.patternX(...);`. Omit for statement form." },
         },
         required: ['code', 'target', 'kind'],
+        allOf: [
+          { if: { properties: { kind: { const: 'linear' } } }, then: { required: ['linear'] } },
+          { if: { properties: { kind: { const: 'circular' } } }, then: { required: ['circular'] } },
+          { if: { properties: { kind: { const: 'grid' } } }, then: { required: ['grid'] } },
+        ],
       },
     },
     handler: input => addPatternFeatureTool(input as unknown as Parameters<typeof addPatternFeatureTool>[0]),
@@ -884,12 +996,37 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           entities: {
             type: 'array',
             description: 'Sketch entities to solve. Lines reference point ids; circles reference a center point id.',
-            items: { type: 'object' },
+            items: {
+              oneOf: [
+                { type: 'object', description: 'POINT — a 2D point.', properties: {
+                  id: { type: 'string' }, type: { type: 'string', enum: ['POINT'] },
+                  x: { type: 'number' }, y: { type: 'number' },
+                  fixed: { type: 'boolean', description: "If true, the solver won't move this point." },
+                }, required: ['id', 'type', 'x', 'y'] },
+                { type: 'object', description: 'LINE — references two point ids.', properties: {
+                  id: { type: 'string' }, type: { type: 'string', enum: ['LINE'] },
+                  p1: { type: 'string' }, p2: { type: 'string' },
+                }, required: ['id', 'type', 'p1', 'p2'] },
+                { type: 'object', description: 'CIRCLE — references a center point id.', properties: {
+                  id: { type: 'string' }, type: { type: 'string', enum: ['CIRCLE'] },
+                  center: { type: 'string' }, radius: { type: 'number' },
+                }, required: ['id', 'type', 'center', 'radius'] },
+              ],
+            },
           },
           constraints: {
             type: 'array',
             description: 'Constraints to apply to the entities.',
-            items: { type: 'object' },
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                type: { type: 'string', enum: ['COINCIDENT', 'DISTANCE', 'HORIZONTAL', 'VERTICAL', 'PARALLEL', 'PERPENDICULAR', 'EQUAL_LENGTH', 'TANGENT', 'RADIUS', 'ANGLE', 'CONCENTRIC', 'SYMMETRIC'] },
+                entities: { type: 'array', items: { type: 'string' }, description: 'Ids of the entities the constraint relates.' },
+                value: { type: 'number', description: 'Required for DISTANCE, RADIUS, and ANGLE.' },
+              },
+              required: ['id', 'type', 'entities'],
+            },
           },
         },
         required: ['entities', 'constraints'],
@@ -906,8 +1043,31 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       inputSchema: {
         type: 'object',
         properties: {
-          constraints: { type: 'array', items: { type: 'object' } },
-          constraint: { type: 'object' },
+          constraints: {
+            type: 'array',
+            description: 'Existing constraint list to append to (omit for an empty list).',
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                type: { type: 'string', enum: ['COINCIDENT', 'DISTANCE', 'HORIZONTAL', 'VERTICAL', 'PARALLEL', 'PERPENDICULAR', 'EQUAL_LENGTH', 'TANGENT', 'RADIUS', 'ANGLE', 'CONCENTRIC', 'SYMMETRIC'] },
+                entities: { type: 'array', items: { type: 'string' } },
+                value: { type: 'number' },
+              },
+              required: ['id', 'type', 'entities'],
+            },
+          },
+          constraint: {
+            type: 'object',
+            description: 'The constraint to append.',
+            properties: {
+              id: { type: 'string' },
+              type: { type: 'string', enum: ['COINCIDENT', 'DISTANCE', 'HORIZONTAL', 'VERTICAL', 'PARALLEL', 'PERPENDICULAR', 'EQUAL_LENGTH', 'TANGENT', 'RADIUS', 'ANGLE', 'CONCENTRIC', 'SYMMETRIC'] },
+              entities: { type: 'array', items: { type: 'string' }, description: 'Ids of the entities the constraint relates.' },
+              value: { type: 'number', description: 'Required for DISTANCE, RADIUS, and ANGLE.' },
+            },
+            required: ['id', 'type', 'entities'],
+          },
         },
         required: ['constraint'],
       },
@@ -946,7 +1106,23 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           part_binding: { type: 'string', description: 'JS identifier bound to an AssemblyPartRef, e.g. "basePart".' },
           name: { type: 'string', description: 'Connector name unique within the part.' },
           type: { type: 'string', enum: ['frame', 'axis', 'planar', 'ball'] },
-          origin: { description: 'Origin as [x, y, z] shorthand or structured ConnectorOrigin.' },
+          origin: {
+            description: 'Origin as [x, y, z] shorthand, or a structured ConnectorOrigin.',
+            oneOf: [
+              { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: '[x, y, z] shorthand.' },
+              { type: 'object', description: 'Explicit numeric origin.', properties: {
+                kind: { type: 'string', enum: ['vec3'] },
+                value: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+              }, required: ['kind', 'value'] },
+              { type: 'object', description: 'Topology-derived origin.', properties: {
+                kind: { type: 'string', enum: ['topology'] },
+                query: { type: 'object', properties: {
+                  kind: { type: 'string', enum: ['face-center', 'face-normal', 'vertex', 'edge-axis'] },
+                  name: { type: 'string' },
+                }, required: ['kind', 'name'] },
+              }, required: ['kind', 'query'] },
+            ],
+          },
           axis: { type: 'array', items: { type: 'number' }, description: 'Optional [x, y, z] axis.' },
           normal: { type: 'array', items: { type: 'number' }, description: 'Optional [x, y, z] normal.' },
         },
@@ -991,6 +1167,11 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           notes: { type: 'string', description: "relation:'transmission' — optional notes." },
         },
         required: ['code', 'assembly_binding'],
+        allOf: [
+          { if: { properties: { relation: { const: 'coupling' } }, required: ['relation'] }, then: { required: ['driven', 'source', 'ratio'] } },
+          { if: { properties: { relation: { const: 'transmission' } }, required: ['relation'] }, then: { required: ['name', 'kind', 'sourceMate', 'drivenMates', 'path'] } },
+          { if: { properties: { relation: { enum: ['coupling', 'transmission'] } }, required: ['relation'] }, then: {}, else: { required: ['name', 'a', 'b', 'type'] } },
+        ],
       },
     },
     handler: input => addMateAuthoringTool(input as unknown as Parameters<typeof addMateAuthoringTool>[0]),
