@@ -48,4 +48,62 @@ describe('packageReleaseAudit', () => {
       message: 'package.json version 0.11.0 is ahead of highest local stable tag v0.8.0',
     });
   });
+
+  it('blocks package versions that outrun the remote stable release tags', () => {
+    const result = auditPackageReleaseState({
+      packageJsonText: JSON.stringify({
+        version: '0.15.0',
+        bin: { kernelcad: 'dist/cli/index.js' },
+        files: ['dist/cli', 'README.md', 'LICENSE'],
+        scripts: { prepack: 'npm run build:cli && npm run build:player' },
+      }),
+      tagNames: ['v0.15.0'],
+      remoteTagNames: ['v0.12.0'],
+    });
+
+    expect(result.blockers).toContainEqual({
+      kind: 'package-version-ahead-of-remote-tag',
+      message: 'package.json version 0.15.0 is ahead of highest remote stable tag v0.12.0',
+    });
+  });
+
+  it('blocks a missing GitHub release for the package version', () => {
+    const result = auditPackageReleaseState({
+      packageJsonText: JSON.stringify({
+        version: '0.15.0',
+        bin: { kernelcad: 'dist/cli/index.js' },
+        files: ['dist/cli', 'README.md', 'LICENSE'],
+        scripts: { prepack: 'npm run build:cli && npm run build:player' },
+      }),
+      tagNames: ['v0.15.0'],
+      remoteTagNames: ['v0.15.0'],
+      githubRelease: null,
+      latestGithubReleaseTag: 'v0.12.0',
+    });
+
+    expect(result.blockers).toContainEqual({
+      kind: 'github-release-missing',
+      message: 'GitHub Release v0.15.0 must exist before the release is complete',
+    });
+  });
+
+  it('blocks when GitHub latest release does not match the package version', () => {
+    const result = auditPackageReleaseState({
+      packageJsonText: JSON.stringify({
+        version: '0.15.0',
+        bin: { kernelcad: 'dist/cli/index.js' },
+        files: ['dist/cli', 'README.md', 'LICENSE'],
+        scripts: { prepack: 'npm run build:cli && npm run build:player' },
+      }),
+      tagNames: ['v0.15.0'],
+      remoteTagNames: ['v0.15.0'],
+      githubRelease: { tagName: 'v0.15.0', isDraft: false, isPrerelease: false },
+      latestGithubReleaseTag: 'v0.12.0',
+    });
+
+    expect(result.blockers).toContainEqual({
+      kind: 'github-release-not-latest',
+      message: 'GitHub latest release is v0.12.0, expected v0.15.0',
+    });
+  });
 });

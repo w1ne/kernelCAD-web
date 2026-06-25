@@ -208,4 +208,16 @@ const currentBranch = getOutput('git branch --show-current');
 run(`git push origin ${currentBranch}`, 'Git push branch failed');
 run(`git push origin v${newVersion}`, 'Git push tag failed');
 
+// 8. Publish and verify the GitHub Release. A pushed git tag is not a
+// completed release: GitHub's Latest release marker is what users see.
+console.log('\n📣 Publishing GitHub Release...');
+run(
+    `gh release create v${newVersion} --title "v${newVersion} — kernelCAD release" --notes-file ${RELEASE_NOTES_PATH} --latest`,
+    'GitHub Release creation failed.',
+);
+run(
+    'KERNELCAD_RELEASE_AUDIT_TAGS=1 KERNELCAD_RELEASE_AUDIT_REMOTE=1 KERNELCAD_RELEASE_AUDIT_GITHUB=1 npm run test:package',
+    'Release hygiene audit failed.',
+);
+
 console.log(`\n🎉 Release v${newVersion} Completed Successfully!`);
