@@ -68,16 +68,16 @@ export interface CoonsPatchData {
  * and returns the trimmed/split result. `op: 'trim'` keeps the portion chosen
  * by the keep-side heuristic (the larger surviving piece).
  *
- * `op: 'split'` currently returns ONLY the larger piece too — identical to
- * `trim` — and emits a `feature.surface-trim.split-deferred` warning. Full
- * split-into-both-halves (a compound of both sides) is deferred to a later
- * slice; the lowerer does not fabricate a compound today.
+ * `op: 'split'` records one requested output piece from the imprinted split.
+ * `surface.split(by)` creates two records with `piece: 0` and `piece: 1` and
+ * returns both `SurfaceProxy`s as a tuple.
  */
 export interface SurfaceTrimData {
   kind: 'surfaceTrim';
   surfaceId: SurfaceId;
   byRef: { surfaceId: SurfaceId } | { featureRef: FeatureRef };
   op: 'trim' | 'split';
+  piece?: 0 | 1;
 }
 
 /**

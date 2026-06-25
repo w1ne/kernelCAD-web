@@ -41,13 +41,14 @@ function expectFetchSignal(fetchMock: ReturnType<typeof vi.spyOn>, callIndex: nu
  * variable-length async chain, so the next fetch hadn't fired when the test
  * asserted — intermittent '' / wrong-count failures, especially under CI load.
  */
-async function flushUntil(predicate: () => boolean, maxRounds = 80): Promise<void> {
+async function flushUntil(predicate: () => boolean, maxRounds = 240): Promise<void> {
   for (let round = 0; round < maxRounds; round++) {
     if (predicate()) return;
     await act(async () => {
       await vi.advanceTimersByTimeAsync(10);
     });
   }
+  throw new Error(`flushUntil timed out after ${maxRounds} rounds`);
 }
 
 const mockEngine = {

@@ -3,8 +3,8 @@
 // src/agent/mcp/edits/surfaceTrim.ts
 //
 // Insert a `const <binding> = <surface>.trimTo(<by>)` or
-// `const <binding> = <surface>.split(<by>)` statement into a .kcad.ts script
-// immediately before the last top-level return.
+// `const <binding> = <surface>.split(<by>)` statement into a .kcad.ts script.
+// For split, the binding is a `[Surface, Surface]` tuple.
 
 import { addFeature } from './addFeature';
 import type { AddFeatureResult } from './addFeature';
@@ -15,11 +15,11 @@ export interface SurfaceTrimInput {
   code: string;
   /** JS variable name of the surface to trim/split (must be declared in source). */
   surface_binding: string;
-  /** JS variable name of the cutter (Surface, Shape, or Curve3D; must be declared in source). */
+  /** JS variable name of the cutter Surface (must be declared in source). */
   by_binding: string;
   /** Which op — 'trim' discards the smaller half; 'split' keeps both halves. */
   op: 'trim' | 'split';
-  /** JS const name for the resulting Surface binding. Auto-derived if omitted. */
+  /** JS const name for the resulting Surface or `[Surface, Surface]` binding. Auto-derived if omitted. */
   binding_name?: string;
 }
 

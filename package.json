@@ -2,7 +2,7 @@
   "name": "kernelcad",
   "mcpName": "com.kernelcad/kernelcad",
   "private": false,
-  "version": "0.14.0",
+  "version": "0.15.0",
   "license": "MIT",
   "author": "Andrii Shylenko <andrii@shylenko.com>",
   "type": "module",
@@ -121,7 +121,7 @@
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",
     "replicad": "^0.23.1",
-    "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#kcad-v0.23.2",
+    "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#kcad-v0.24.0",
     "sharp": "^0.33.5",
     "shiki": "^1.29.2",
     "three": "^0.184.0",
@@ -132,7 +132,7 @@
     "zod": "^4.3.6"
   },
   "overrides": {
-    "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#kcad-v0.23.2"
+    "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#kcad-v0.24.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260504.1",

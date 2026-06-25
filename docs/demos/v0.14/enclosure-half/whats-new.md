@@ -32,6 +32,7 @@ now honor rational `weights` for exact conics (E1); `Surface.trimTo(by)` and
 patches into a watertight solid via `BRepBuilderAPI_Sewing` +
 `BRepBuilderAPI_MakeSolid` (E3); and `Shape.draft()` tapers analytic faces
 via `BRepOffsetAPI_DraftAngle` (E4). `add_surface` gains kinds `trim`, `sew`,
-and `draft`. Six new diagnostic codes cover the honest limitations: curved-patch
-trim refused, split-into-both-halves deferred, named neutral-plane not yet
-resolved. Full notes in `CHANGELOG.md`.
+and `draft`. In v0.15, curved-patch trim moves to `BRepFeat_SplitShape` and
+`Surface.split(by)` returns both halves as `[Surface, Surface]`; v0.14 demos
+may still mention the earlier planar-only limitation. Full notes in
+`CHANGELOG.md`.

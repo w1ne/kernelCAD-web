@@ -1,7 +1,9 @@
-# kernelCAD v0.14.0
+# kernelCAD v0.15.0
 
 ## Unreleased
 
+- **NURBS Slice F curved-patch trim (#528).** `Surface.trimTo(by)` now sections the base/cutter surfaces and imprints the section edge with `BRepFeat_SplitShape` from the `replicad-opencascadejs` `kcad-v0.24.0` wasm build. Clean curved NURBS/Coons patches no longer fail with the Slice-E planar-only `feature.surface-trim.non-planar` guard; missed cutters still emit `feature.surface-trim.no-intersection`.
+- **`Surface.split(by)` now returns both halves.** The public return type is `[Surface, Surface]`, ordered by descending face area. The old one-piece larger-half behavior and `feature.surface-trim.split-deferred` warning are legacy only.
 - **`render_preview` MCP tool (#440).** First-class inline visual feedback: `{ code | file }` → deterministic PNG views on disk, **no studio / dev-server precondition**. Renders the canonical engineering views (`front`/`right`/`top`/`iso`, subset via `views`) plus an optional `pose: '<az>,<el>'`, honors `focus`/`hide` part isolation, and returns absolute image paths with per-view camera descriptions (`{ ok, images, out_dir, bounds, mechanism, render_source, render_ms, diagnostics }`). Pixels come from the same headless pipeline as `kernelcad render`; what's new is provisioning — a prebuilt static demo-player bundle (`npm run build:player`, shipped in the npm package at `dist/headless-player/`) is served from an ephemeral local port automatically, with a running studio dev server honored as fallback and `base_url` as an explicit override. Mechanism truth runs with full `kernelcad render` parity: broken mechanisms render watermarked MECHANISM BROKEN (refused under `KERNELCAD_RENDER_STRICT=1`). `no_mechanism_check: true` skips the (potentially expensive) probe for fast iteration and reports `mechanism: 'unverified'`; ignored under strict mode. Paths are local to the MCP server machine — hosted/remote clients should use `open_in_studio` instead.
 
 ## v0.14.0 — 2026-06-24 — NURBS Slice E: surface finishing

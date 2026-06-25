@@ -609,22 +609,8 @@ export class OcctLowerer implements FeatureLowerer {
         const cutterFace = this.resolveTrimCutter(trimData, r, inputs, diagnostics, allRecords);
         if (!cutterFace) return undefined;
 
-        // split-into-N is deferred: the lowerer returns only the larger piece
-        // (identical to trim). Surface that honestly as a warning rather than
-        // silently masquerading the larger half as the promised compound.
-        if (trimData.op === 'split') {
-          diagnostics.push({
-            target: this.target,
-            code: 'feature.surface-trim.split-deferred',
-            featureId: r.id,
-            severity: 'warn',
-            message: `surfaceTrim ${sid}: split currently returns only the larger piece; full split-into-both-halves is deferred to a later slice.`,
-            hint: HINT_TEMPLATES['feature.surface-trim.split-deferred'].template,
-          });
-        }
-
         try {
-          const { face } = lowerSurfaceTrim(baseBuilt.face, cutterFace, trimData.op);
+          const { face } = lowerSurfaceTrim(baseBuilt.face, cutterFace, trimData.op, trimData.piece);
           surface = { kind: 'face', face };
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
