@@ -20,8 +20,9 @@
 // inspect electronics alone.
 
 import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync, copyFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
+import { execFileSync } from 'node:child_process';
 import { ingestDirectory, type CatalogRecord } from './ingestParts';
 
 interface ManifestPart {
@@ -29,11 +30,16 @@ interface ManifestPart {
   name: string;
   family: string;
   mpn: string;
-  /** Path appended to the manifest baseModelUrl. Ignored if `url` is set. */
+  /** Path appended to the manifest baseModelUrl. Ignored if `url` or `kcad_source` is set. */
   model?: string;
   /** Full model URL (overrides baseModelUrl + model) — for parts from a
    *  different CC-licensed source than the default catalog base. */
   url?: string;
+  /** Path to a kernelCAD `.kcad.ts` authored source (relative to repo root).
+   *  When set, the ingest step compiles the script and exports it to STEP using
+   *  the bundled kernelCAD CLI (`node dist/cli/index.js export -f step …`).
+   *  Takes priority over `url` and `model`. */
+  kcad_source?: string;
   tags?: string[];
   /** Per-part license / attribution override (e.g. an MIT Adafruit STEP in an
    *  otherwise CC-BY-SA KiCad manifest). Falls back to the manifest defaults. */
@@ -73,22 +79,51 @@ export async function ingestElectronics(
   const src = mkdtempSync(join(tmpdir(), 'kc-electronics-'));
   mkdirSync(src, { recursive: true });
 
+  // Resolve the kernelCAD CLI so authored parts can be compiled to STEP.
+  // The CLI is built into dist/cli/index.js relative to the repo root.
+  const repoRoot = resolve(dirname(manifestPath), '..');
+  const cliPath = join(repoRoot, 'dist', 'cli', 'index.js');
+
   let ok = 0;
   for (const part of manifest.parts) {
-    // Full per-part URL wins (different CC source); else baseModelUrl + model.
-    const url = part.url ?? `${manifest.baseModelUrl.replace(/\/$/, '')}/${part.model}`;
-    const res = await fetch(url);
-    if (!res.ok) {
-      console.warn(`SKIP ${part.id}: fetch ${url} -> HTTP ${res.status}`);
-      continue;
+    let buf: Buffer;
+
+    if (part.kcad_source) {
+      // Authored model: compile the .kcad.ts script to STEP using the kernelCAD CLI.
+      const scriptPath = resolve(repoRoot, part.kcad_source);
+      const stepOut = join(src, `${part.id}.step`);
+      try {
+        execFileSync(
+          process.execPath,
+          [cliPath, 'export', '-f', 'step', '-o', stepOut, scriptPath],
+          { stdio: ['ignore', 'pipe', 'pipe'], timeout: 120_000 },
+        );
+      } catch (e) {
+        console.warn(`SKIP ${part.id}: kernelcad export failed — ${String(e)}`);
+        continue;
+      }
+      buf = readFileSync(stepOut);
+      if (!buf.subarray(0, 64).toString('latin1').includes('ISO-10303-21')) {
+        console.warn(`SKIP ${part.id}: exported file is not a STEP file`);
+        continue;
+      }
+      // Step file is already written to src by the CLI; skip the writeFileSync below.
+    } else {
+      // Remote URL (full per-part URL wins; else baseModelUrl + model path).
+      const url = part.url ?? `${manifest.baseModelUrl.replace(/\/$/, '')}/${part.model}`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        console.warn(`SKIP ${part.id}: fetch ${url} -> HTTP ${res.status}`);
+        continue;
+      }
+      buf = Buffer.from(await res.arrayBuffer());
+      // Guard against an HTML 404 page slipping through as a "200" on some CDNs.
+      if (!buf.subarray(0, 64).toString('latin1').includes('ISO-10303-21')) {
+        console.warn(`SKIP ${part.id}: ${url} did not return a STEP file`);
+        continue;
+      }
+      writeFileSync(join(src, `${part.id}.step`), buf);
     }
-    const buf = Buffer.from(await res.arrayBuffer());
-    // Guard against an HTML 404 page slipping through as a "200" on some CDNs.
-    if (!buf.subarray(0, 64).toString('latin1').includes('ISO-10303-21')) {
-      console.warn(`SKIP ${part.id}: ${url} did not return a STEP file`);
-      continue;
-    }
-    writeFileSync(join(src, `${part.id}.step`), buf);
     writeFileSync(
       join(src, `${part.id}.meta.json`),
       JSON.stringify(
