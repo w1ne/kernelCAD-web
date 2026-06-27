@@ -63,7 +63,7 @@ describe('static gallery landing page', () => {
   it('places the prompt handoff before the built-with-kernelCAD gallery', () => {
     const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
 
-    expect(html).toContain('action="https://app.kernelcad.com/generate"');
+    expect(html).toContain('action="/app/generate"');
     expect(html).toContain('name="prompt"');
     expect(html).toContain('Describe the part you want');
 

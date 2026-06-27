@@ -113,7 +113,7 @@
         <span class="section-kicker">Start with words</span>
         <h2 class="prompt-handoff-headline">Describe the part you want.</h2>
       </div>
-      <form class="prompt-handoff-form" action="https://app.kernelcad.com/generate" method="GET">
+      <form class="prompt-handoff-form" action="/app/generate" method="GET" autocomplete="off">
         <label class="sr-only" for="prompt-input">CAD prompt</label>
         <textarea
           id="prompt-input"
@@ -121,6 +121,7 @@
           rows="3"
           placeholder="60x40x5 mm bracket with 4 M3 mounting holes"
           required
+          autocomplete="off"
         ></textarea>
         <button class="btn btn-primary" type="submit">Generate in app</button>
       </form>
@@ -380,8 +381,10 @@
           `;
           tile.__entry = entry;
           armGalleryTileUpgrade(tile, entry, galleryCacheKey);
+          tile.querySelector('.tile-studio-link')?.addEventListener('pointerdown', clearPromptDraftBeforeNavigation);
           tile.querySelector('.tile-studio-link')?.addEventListener('click', (event) => {
             event.stopPropagation();
+            clearPromptDraftBeforeNavigation();
           });
           tile.addEventListener('click', () => {
             upgradeGalleryTile(tile, entry, galleryCacheKey);
@@ -427,7 +430,16 @@
           dialog.querySelector('.lightbox-stage').textContent = '';
           dialog.close();
         }
+        function clearPromptDraftBeforeNavigation() {
+          const form = document.querySelector('.prompt-handoff-form');
+          if (!(form instanceof HTMLFormElement)) return;
+          form.reset();
+        }
         closeBtn.addEventListener('click', closeLightbox);
+        studioLink.addEventListener('pointerdown', clearPromptDraftBeforeNavigation);
+        studioLink.addEventListener('click', clearPromptDraftBeforeNavigation);
+        appLink.addEventListener('pointerdown', clearPromptDraftBeforeNavigation);
+        appLink.addEventListener('click', clearPromptDraftBeforeNavigation);
         dialog.addEventListener('click', (e) => {
           if (e.target === dialog) closeLightbox();
         });
