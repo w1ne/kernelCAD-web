@@ -23,21 +23,9 @@ const cap = cylinder(BTN_CAP_H, 1.75, 32)
   .color(CAP_GRAY)
   .translate(BTN_L / 2, BTN_W / 2, BTN_BODY_H);
 
-// J-shaped legs at all four corners (simplified as flat metal tabs)
-// Each leg: a small rectangular tab that extends slightly beyond the body footprint
+// Four J-legs at the corners, simplified as small flat metal pads that
+// extend slightly beyond the body footprint.
 const legs: Shape[] = [];
-const legL = 1.5;
-const legW = 0.8;
-const legT = 0.3;
-// corner offsets: [x, y] relative to button corner, with the tab protruding outward
-const legDefs: [number, number, number, number][] = [
-  // [x, y, tab extends in x(-1=neg,+1=pos), tab extends in y]
-  [0, 0, -1, 0],
-  [BTN_L - legL, 0, 1, 0],
-  [0, BTN_W - legW, -1, 0],
-  [BTN_L - legL, BTN_W - legW, 1, 0],
-];
-// Simplified: just small rectangular flat pads at each corner
 const padL = 1.5;
 const padW = 0.8;
 const padH = 0.3;

@@ -12,7 +12,6 @@ const STRIP_W = 10.0;
 const STRIP_T = 1.6;
 
 const PCB_GREEN = '#1a3020';
-const LED_WHITE = '#e0e0e4';
 const COPPER    = '#b8763a';
 const LED_LENS  = '#dde8dd';  // diffused white lens
 
@@ -24,7 +23,6 @@ const ledCount = 3;
 const ledL = 5.0;
 const ledW = 5.0;
 const ledT = 1.7;
-const ledPitch = (STRIP_L - ledL) / (ledCount - 1);
 
 const leds: Shape[] = [];
 const lenses: Shape[] = [];

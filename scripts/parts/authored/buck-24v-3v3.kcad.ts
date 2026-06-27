@@ -16,7 +16,6 @@ const INDUCTOR   = '#4a4a4a';  // ferrite-shielded inductor
 const IC_DARK    = '#1c1c24';
 const CAP_YELLOW = '#c8aa20';  // ceramic MLCC (large, yellow-ish)
 const ELEC_BLUE  = '#204070';  // electrolytic cap
-const PIN_METAL  = '#b8b8b0';
 const TERM_GRAY  = '#505060';
 
 // PCB slab

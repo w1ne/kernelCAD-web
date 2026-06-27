@@ -28,7 +28,7 @@ const slotHousingW = 13.0;
 const slotHousingH = 2.0;
 const slotX = (PCB_L - slotHousingL) / 2;
 const slotY = PCB_W - slotHousingW;
-let sdSlot = box(slotHousingL, slotHousingW, slotHousingH)
+const sdSlot = box(slotHousingL, slotHousingW, slotHousingH)
   .color(SD_SILVER)
   .translate(slotX, slotY, PCB_T);
 // Card opening at the +Y end (1.4mm tall, card slides in)
