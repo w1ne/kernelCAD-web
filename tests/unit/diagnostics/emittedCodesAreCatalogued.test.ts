@@ -161,7 +161,9 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  +  1 mechanism.unverified-budget-exceeded (this PR — T3 over-budget
     //       BREP pose-sweep skip is now a LOUD structured diagnostic) = 237.
     //  +  1 tool.trace-from-image.trace-timeout (forward-ported) = 238.
-    expect(catalogue.size).toBe(238);
+    //  +  1 kinematic.pose.out-of-limits (#537 — advisory warning when a
+    //       solve()/solvedModel() pose exceeds a joint's declared limits) = 239.
+    expect(catalogue.size).toBe(239);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

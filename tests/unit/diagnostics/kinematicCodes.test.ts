@@ -1,8 +1,9 @@
 // tests/unit/diagnostics/kinematicCodes.test.ts
 //
 // Per-code shape gate for the kinematic-grounding slice (T1).
-// Asserts the 9 K1-K9 codes are registered with non-empty hint + valid
-// nextAction + group: 'kinematic' + severity in the canonical set.
+// Asserts the kinematic.* codes (K1-K9 plus #537 pose.out-of-limits) are
+// registered with non-empty hint + valid nextAction + group: 'kinematic' +
+// severity in the canonical set.
 
 import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_REGISTRY } from '../../../src/shared/diagnostics/registry';
@@ -17,6 +18,9 @@ const KINEMATIC_CODES = [
   'kinematic.load.beam-not-applicable',
   'kinematic.no-material-declared',
   'kinematic.mounting-hole.diameter-mismatch',
+  // #537 — advisory warning when a solve()/solvedModel() pose exceeds a
+  // joint's declared limitsDeg/limitsMm.
+  'kinematic.pose.out-of-limits',
 ] as const;
 
 // Per the cumulative-findings discipline (item #56), every nextAction kind
@@ -37,7 +41,7 @@ const CANONICAL_NEXT_ACTION_KINDS = new Set([
 ]);
 
 describe('kinematic-grounding diagnostic codes', () => {
-  it('registers exactly 9 kinematic.* codes', () => {
+  it('registers exactly 10 kinematic.* codes', () => {
     const kinCodes = Object.keys(DIAGNOSTIC_REGISTRY).filter((c) =>
       c.startsWith('kinematic.'),
     );

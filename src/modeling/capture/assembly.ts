@@ -37,7 +37,7 @@ import {
   type PoseEnvelopeDiagnostic,
 } from '../mates/poseEnvelope';
 import { solveMates } from '../mates/solver';
-import { validateAssemblyWithMates } from '../mates/validator';
+import { validateAssemblyWithMates, type ValidatorDiagnostic } from '../mates/validator';
 import {
   validateWorkspaceTargetOpts,
   type WorkspaceTargetOpts,
@@ -1697,9 +1697,17 @@ export class Assembly {
       part.originalShape.transform(T);
     }
 
-    // 6. Build SolvedKinematics handle. Hand it the already-resolved numeric
+    // 6. Issue #537 — advisory out-of-limits warnings for poses beyond a
+    //    joint's declared limitsDeg/limitsMm. Computed (not thrown) so solve()
+    //    still applies the pose; surfaced on the SolvedKinematics handle and
+    //    its toScene() Scene.warnings.
+    const limitWarnings = checkPoseLimits(this.joints, poses, this.session);
+
+    // 7. Build SolvedKinematics handle. Hand it the already-resolved numeric
     //    pose record so the snapshot can never accidentally re-resolve.
-    return new SolvedKinematics(this.name, this.parts, this.joints, worldT, numericPoses, this.session);
+    return new SolvedKinematics(
+      this.name, this.parts, this.joints, worldT, numericPoses, this.session, limitWarnings,
+    );
   }
 
   /**
@@ -1944,6 +1952,14 @@ export class Assembly {
       mateMetadata,
     );
 
+    // Issue #537 — advisory out-of-limits warnings for body-tree joint poses
+    // beyond their declared limitsDeg/limitsMm. Computed here (after the
+    // capture-time pose-shape validation in `solvedAssembly` has run) and
+    // folded into the warn-mode `scene.warnings` aggregate below. The pose is
+    // still applied; these never throw (they stay severity 'warning', so the
+    // 'error'-mode error-find skips them and the 'off' branch drops them).
+    const limitWarnings = checkPoseLimits(this.joints, poses, this.session);
+
     // Mode resolution: explicit opts win; otherwise read the env override
     // (T10 sets this from `kernelcad evaluate`). Default for everything else
     // is `'warn'` — never breaking, never silent.
@@ -2097,6 +2113,7 @@ export class Assembly {
         const aggregated: readonly SceneDiagnostic[] = [
           ...result.diagnostics,
           ...envelopeDiagnostics,
+          ...limitWarnings,
         ];
         return this.makeScene(sceneShape, aggregated, mateT);
       },
@@ -2252,6 +2269,13 @@ export class SolvedKinematics {
   private readonly poses: Record<string, number | [number, number, number]>;
   private readonly joints: readonly AssemblyJointStored[];
   private readonly session: CaptureSession;
+  /**
+   * Issue #537 — advisory out-of-limits diagnostics for poses that exceed a
+   * joint's declared `limitsDeg`/`limitsMm`. Always present (possibly empty).
+   * Propagated onto `toScene().warnings` so the snapshot Scene reports them
+   * identically to `solvedModel(...)`.
+   */
+  readonly warnings: readonly SceneDiagnostic[];
 
   /**
    * Process-scoped warn-once flag for the deprecated `.toShape()` alias.
@@ -2276,6 +2300,7 @@ export class SolvedKinematics {
     worldT: Map<FeatureId, Transform>,
     poses: Record<string, number | [number, number, number]>,
     session: CaptureSession,
+    warnings: readonly SceneDiagnostic[] = [],
   ) {
     this.assemblyName = assemblyName;
     this.partsByName = new Map(parts.map(p => [p.name, p]));
@@ -2283,6 +2308,7 @@ export class SolvedKinematics {
     this.poses = poses;
     this.joints = joints;
     this.session = session;
+    this.warnings = Object.freeze([...warnings]);
     Object.freeze(this);
   }
 
@@ -2401,6 +2427,10 @@ export class SolvedKinematics {
           'invalid-args.scene.compound-not-supported-on-snapshot — call Assembly.solvedModel(poses).toCompound() for a Scene whose lowerer preserves per-part identity.',
         );
       },
+      undefined, // sourceFeatureId — snapshot Scene has no upstream feature.
+      undefined, // mates — snapshot Scene does not carry the mate graph.
+      // Issue #537 — propagate out-of-limits warnings onto the snapshot Scene.
+      this.warnings,
     );
   }
 
@@ -2467,6 +2497,56 @@ function isValidJointLimits(value: [number, number]): boolean {
     value.every((n) => typeof n === 'number' && Number.isFinite(n)) &&
     value[0] < value[1]
   );
+}
+
+/**
+ * Issue #537 — advisory out-of-limits check for the body-tree joint poses
+ * passed to `Assembly.solve()` / `Assembly.solvedModel()`.
+ *
+ * For each revolute / prismatic joint that declares `limitsDeg` / `limitsMm`,
+ * resolves the supplied pose to a numeric value (snapshot via the param table)
+ * and emits one `kinematic.pose.out-of-limits` WARNING when the value falls
+ * outside the closed `[min, max]` range. The pose is still applied by FK — the
+ * diagnostic is advisory, closing the false-pass gap where a knee with
+ * `limitsDeg:[-150,0]` posed to `+140` was accepted silently.
+ *
+ * Skips: joints with no declared limits, fixed joints, ball joints, joints with
+ * no pose supplied, and any pose that cannot be resolved to a finite number
+ * (shape errors are surfaced by the throwing validators upstream).
+ *
+ * Pure: joints + poses in, diagnostics out — shared by both solve() and
+ * solvedModel() so the two surfaces report identically.
+ */
+function checkPoseLimits(
+  joints: readonly AssemblyJointStored[],
+  poses: Poses,
+  session: CaptureSession,
+): ValidatorDiagnostic[] {
+  const out: ValidatorDiagnostic[] = [];
+  for (const j of joints) {
+    if (j.kind !== 'revolute' && j.kind !== 'prismatic') continue;
+    const limits = j.kind === 'revolute' ? j.limitsDeg : j.limitsMm;
+    if (limits === undefined) continue;
+    const raw = poses[j.name];
+    if (raw === undefined || Array.isArray(raw)) continue;
+    if (!isParamRef(raw) && typeof raw !== 'number') continue;
+    const value = currentValue(raw as Editable<number>, session.paramTable);
+    if (typeof value !== 'number' || !Number.isFinite(value)) continue;
+    const [min, max] = limits;
+    if (value >= min && value <= max) continue;
+    const unit = j.kind === 'revolute' ? '°' : 'mm';
+    const field = j.kind === 'revolute' ? 'limitsDeg' : 'limitsMm';
+    out.push({
+      code: 'kinematic.pose.out-of-limits',
+      severity: 'warning',
+      message: `joint '${j.name}' pose ${value}${unit} exceeds declared ${field} [${min}, ${max}]`,
+      hint: `invalid-args.kinematic.pose-out-of-limits — clamp '${j.name}' to [${min}, ${max}], or widen ${field} on the joint if the mechanism is intended to travel that far.`,
+      mateName: j.name,
+      pose: value,
+      limits,
+    });
+  }
+  return out;
 }
 
 function isScalarCouplingMate(type: MateType): boolean {

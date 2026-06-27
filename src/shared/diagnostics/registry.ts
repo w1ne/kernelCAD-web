@@ -1980,6 +1980,19 @@ export const DIAGNOSTIC_REGISTRY = {
     description:
       'A fastened mate binds two connectors whose hole diameters disagree beyond the diameter-match tolerance; the underlying assembly.mounting-hole.mismatch code also fires from the v0.7.4 substrate.',
   },
+  'kinematic.pose.out-of-limits': {
+    hintTemplate:
+      'A pose value supplied to assembly.solve()/solvedModel() falls outside the joint\'s declared limitsDeg/limitsMm. Clamp the pose into the declared range, or widen the joint limits if the mechanism is intended to travel that far.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance:
+        'clamp the joint pose into the declared limits, or widen limitsDeg/limitsMm on the joint if the travel is intended',
+    },
+    defaultSeverity: 'warn',
+    group: 'kinematic',
+    description:
+      'A revolute/prismatic joint pose passed to assembly.solve() or assembly.solvedModel() exceeds the closed limitsDeg/limitsMm range declared on that joint; the pose is still applied (advisory warning, not a hard failure).',
+  },
 
   // Slice Q (Query DSL) — Q3 evaluator codes (7 of the v1 11-code core;
   // remaining 4 ship in Q4/Q5/Q7 alongside their evaluator entry points).
