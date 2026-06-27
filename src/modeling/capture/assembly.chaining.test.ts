@@ -47,3 +47,67 @@ describe('Assembly.part(...) fluent chaining', () => {
     expect(arm.__parts().map((p) => p.name)).toEqual(['base', 'link', 'tip']);
   });
 });
+
+// Issue #535: `assembly.revolute(...)` was removed in v0.5 and the only way to
+// declare a drivable revolute was reaching into internals. The public method is
+// restored — it must capture the joint on the body-tree graph and drive FK.
+describe('Assembly.revolute(...) capture', () => {
+  it('captures a revolute joint with kind/axis/origin/limitsDeg', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('arm');
+
+    const base = arm.part('base', kcad.box(10, 10, 10));
+    const link = arm.part('link', kcad.box(10, 10, 10), { at: [0, 0, 10] });
+
+    const ref = arm.revolute('hinge', base, link, {
+      axis: [0, 1, 0],
+      origin: [0, 0, 0],
+      limitsDeg: [-90, 90],
+    });
+
+    expect(ref).toEqual({ id: ref.id, name: 'hinge', kind: 'revolute' });
+
+    const joints = arm.__joints();
+    expect(joints).toHaveLength(1);
+    expect(joints[0]).toMatchObject({
+      name: 'hinge',
+      kind: 'revolute',
+      parentPartId: base.id,
+      childPartId: link.id,
+      axis: [0, 1, 0],
+      origin: [0, 0, 0],
+      limitsDeg: [-90, 90],
+    });
+  });
+
+  it('drives forward kinematics via solve({ hinge })', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('arm');
+
+    const base = arm.part('base', kcad.box(10, 10, 10));
+    const link = arm.part('link', kcad.box(10, 10, 10), { at: [0, 0, 10] });
+    arm.revolute('hinge', base, link, { axis: [0, 1, 0], origin: [0, 0, 0] });
+
+    const solved = arm.solve({ hinge: 60 });
+    expect(solved.value('hinge')).toBe(60);
+    // The driven child part has a defined world transform under the pose.
+    expect(solved.transform('link')).toBeDefined();
+  });
+
+  it('rejects a non-finite axis', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('arm');
+    const base = arm.part('base', kcad.box(10, 10, 10));
+    const link = arm.part('link', kcad.box(10, 10, 10));
+
+    expect(() =>
+      arm.revolute('hinge', base, link, {
+        axis: [Number.NaN, 0, 0],
+        origin: [0, 0, 0],
+      }),
+    ).toThrow(/revolute joint axis must be a finite Vec3/);
+  });
+});
