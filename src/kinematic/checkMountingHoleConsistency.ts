@@ -43,6 +43,15 @@ export async function checkMountingHoleConsistency(
 ): Promise<MountingHoleResult> {
   const raw: ValidatorDiagnostic[] = validateMountingHoleConsistency(arm);
   const diagnostics: KinematicDiagnostic[] = raw.map(translateDiagnostic);
+  // Coverage count: how many fastened-mate interfaces the substrate had to
+  // examine. The substrate gates exactly the `type === 'fastened'` mates, so
+  // this mirrors its loop. When it is 0 there was nothing to verify and a
+  // green `ok` would be vacuous — emit an explicit no-coverage signal so the
+  // caller can tell "0 interfaces checked" apart from "all interfaces pass".
+  const checked = arm.__mates().filter((m) => m.type === 'fastened').length;
+  if (checked === 0) {
+    diagnostics.push(noCoverageDiagnostic());
+  }
   // P3 (2026-06-01): assembly.mounting-hole.mismatch was demoted from
   // 'error' to 'info' severity (it's now advisory; the merge gate is
   // mechanism.disconnect). The mismatches view still wants to surface
@@ -66,7 +75,28 @@ export async function checkMountingHoleConsistency(
   return {
     ok: mismatches.length === 0,
     mismatches,
+    checked,
     diagnostics,
+    source: 'local',
+  };
+}
+
+/**
+ * Build the zero-coverage info diagnostic. Stamped from the registry the same
+ * way as the substrate-derived ones (canonical severity + nextAction), with
+ * source: 'local' provenance. `ok` is deliberately left untouched (a clean
+ * assembly with no fastened mates still reports ok:true); this diagnostic is
+ * the signal that the green carries no verification behind it.
+ */
+function noCoverageDiagnostic(): KinematicDiagnostic {
+  const code: DiagnosticCode = 'kinematic.mounting-holes.no-coverage';
+  const registryEntry = DIAGNOSTIC_REGISTRY[code];
+  return {
+    code,
+    severity: 'info',
+    message: 'No fastened mates found; nothing was checked.',
+    hint: registryEntry.hintTemplate,
+    nextAction: registryEntry.nextAction,
     source: 'local',
   };
 }

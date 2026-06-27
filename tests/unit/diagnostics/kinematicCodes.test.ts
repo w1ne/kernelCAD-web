@@ -21,6 +21,9 @@ const KINEMATIC_CODES = [
   // #537 — advisory warning when a solve()/solvedModel() pose exceeds a
   // joint's declared limitsDeg/limitsMm.
   'kinematic.pose.out-of-limits',
+  // #541 — info diagnostic when checkMountingHoleConsistency examined zero
+  // fastened mates, so the green result verifies nothing.
+  'kinematic.mounting-holes.no-coverage',
 ] as const;
 
 // Per the cumulative-findings discipline (item #56), every nextAction kind
@@ -41,7 +44,7 @@ const CANONICAL_NEXT_ACTION_KINDS = new Set([
 ]);
 
 describe('kinematic-grounding diagnostic codes', () => {
-  it('registers exactly 10 kinematic.* codes', () => {
+  it('registers exactly 11 kinematic.* codes', () => {
     const kinCodes = Object.keys(DIAGNOSTIC_REGISTRY).filter((c) =>
       c.startsWith('kinematic.'),
     );

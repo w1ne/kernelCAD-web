@@ -79,6 +79,10 @@ export interface MountingHoleSideState {
 
 export interface MountingHoleResult extends KinematicResultBase {
   readonly mismatches: ReadonlyArray<MountingHoleMismatch>;
+  /** Number of fastened-mate interfaces actually examined by the gate. When
+   *  0 the result is vacuous — a green `ok` verifies nothing, so the gate
+   *  also emits a `kinematic.mounting-holes.no-coverage` info diagnostic. */
+  readonly checked: number;
 }
 
 // ===== checkSweptCollision =====

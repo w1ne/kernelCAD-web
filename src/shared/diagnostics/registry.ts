@@ -1993,6 +1993,19 @@ export const DIAGNOSTIC_REGISTRY = {
     description:
       'A revolute/prismatic joint pose passed to assembly.solve() or assembly.solvedModel() exceeds the closed limitsDeg/limitsMm range declared on that joint; the pose is still applied (advisory warning, not a hard failure).',
   },
+  'kinematic.mounting-holes.no-coverage': {
+    hintTemplate:
+      'The mounting-hole consistency check found no fastened mates to examine, so a green result verifies nothing. Add at least one arm.mate(..., \'fastened\') between connectors bound to face-center holes, or stop relying on this gate for fastener coverage.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance:
+        'add a fastened mate between connectors bound to face-center holes so the mounting-hole gate has something to verify',
+    },
+    defaultSeverity: 'info',
+    group: 'kinematic',
+    description:
+      'checkMountingHoleConsistency ran on an assembly with zero fastened mates; nothing was checked, so the otherwise-green result is vacuous (no coverage).',
+  },
 
   // Slice Q (Query DSL) — Q3 evaluator codes (7 of the v1 11-code core;
   // remaining 4 ship in Q4/Q5/Q7 alongside their evaluator entry points).
