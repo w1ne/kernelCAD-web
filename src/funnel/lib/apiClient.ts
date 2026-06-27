@@ -5,7 +5,8 @@ import type { Artifact } from './generateClient';
 
 export interface GenerationRow {
   id: string;
-  status: 'running' | 'done' | 'eval_failed' | 'llm_failed' | 'timeout';
+  // 'gate_failed' is the live server status; 'eval_failed' kept for historical rows.
+  status: 'running' | 'done' | 'gate_failed' | 'eval_failed' | 'llm_failed' | 'timeout';
   code: string | null;
   prompt: string;
   suggestions: string[];
