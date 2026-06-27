@@ -19,11 +19,17 @@ describe('diagnostic catalogue invariants', () => {
     // + 1 animation.bake.geometry-param (Studio bake refuses geometry-driving
     //   track params — only pose-only mate timelines bake to rigid transforms).
     // + 1 export.sdf-gazebo.pose-unsolved (simulator-verified SDF export:
-    //   mate graph unsolvable -> links emitted at the model origin).
+    //   mate graph unsolvable -> links emitted at the model origin). = 227.
     // + 1 tool.trace-from-image.trace-timeout (pure-JS tracer: hard per-call
-    //   backend timeout so trace_from_image can never hang).
-    expect(DIAGNOSTIC_CODES).toHaveLength(228);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(228);
+    //   backend timeout so trace_from_image can never hang). = 228.
+    // + 1 kinematic.pose.out-of-limits (#537 — advisory warning when a
+    //   solve()/solvedModel() pose value exceeds a joint's declared
+    //   limitsDeg/limitsMm; the pose is still applied). = 229.
+    // + 1 kinematic.mounting-hole.no-coverage (#541 — info diagnostic when
+    //   checkMountingHoleConsistency examined zero fastened mates, so the
+    //   green result verifies nothing). = 230.
+    expect(DIAGNOSTIC_CODES).toHaveLength(230);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(230);
   });
 
   it('every code has a non-empty hint template', () => {

@@ -82,7 +82,9 @@ describe('resolveMaterialProps — T6.2', () => {
       youngsModulusGPa: 200,
     });
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.missingField).toBe('yieldStressMPa');
+    if (!r.ok && r.reason === 'missing-custom-field') {
+      expect(r.missingField).toBe('yieldStressMPa');
+    }
   });
 
   it('refuses custom without youngsModulusGPa', () => {
@@ -91,7 +93,23 @@ describe('resolveMaterialProps — T6.2', () => {
       yieldStressMPa: 300,
     });
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.missingField).toBe('youngsModulusGPa');
+    if (!r.ok && r.reason === 'missing-custom-field') {
+      expect(r.missingField).toBe('youngsModulusGPa');
+    }
+  });
+
+  it('returns unknown-material (no throw) for a bare/typo SKU not in the catalog', () => {
+    // Issue #540 part A: a value that is neither 'custom' nor a catalog key
+    // must not crash reading yieldStressPa off an undefined catalog row.
+    const r = resolveMaterialProps({
+      material: 'aluminum-6061' as never,
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok && r.reason === 'unknown-material') {
+      expect(r.material).toBe('aluminum-6061');
+    } else {
+      throw new Error('expected unknown-material failure');
+    }
   });
 
   it('honours catalog override of density / modulus when the agent passes it', () => {
