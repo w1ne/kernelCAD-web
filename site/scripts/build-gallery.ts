@@ -47,7 +47,7 @@ interface PublishedEntry extends Omit<GalleryEntry, 'video' | 'codeLocal'> {
 // spice-dispenser carousel under it (~452 KB). Next lever if tiles ever grow:
 // mesh quantization / Draco.
 const GLB_SIZE_HARD_CAP = 500_000;
-const STUDIO_ORIGIN = 'https://app.kernelcad.com';
+const STUDIO_BASE_PATH = '/app';
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 /**
  * Builds the `ScriptReviewSummary` the hosted Studio consumes (see
@@ -145,7 +145,7 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
       ? entry.codeLocal.split(path.sep).join('/')
       : null;
     const studioUrl = entry.source === 'curated'
-      ? `${STUDIO_ORIGIN}/studio?gallery=${encodeURIComponent(entry.slug)}`
+      ? `${STUDIO_BASE_PATH}/studio?gallery=${encodeURIComponent(entry.slug)}`
       : entry.appUrl;
 
     copyFileSync(srcVideo, dstVideo);
