@@ -2389,6 +2389,17 @@ export class SolvedKinematics {
    * is intentionally unsupported on snapshot Scenes — call
    * `Assembly.solvedModel(poses).toCompound()` for a TopoDS_Compound that
    * preserves per-part identity through the lowerer.
+   *
+   * Rendering note (issue #538): this snapshot Scene carries NO upstream
+   * feature id (`__sourceFeatureId()` is undefined), so RETURNING it from a
+   * script does not route to the SceneBackend mesh fan-out — `resolveRootId`
+   * falls back to the chain tail (the last `assemblyJoint`/part record) and
+   * the viewport renders that single record, not a posed multi-part scene.
+   * For a posed AND per-part-colored scene that renders, return
+   * `Assembly.solvedModel(poses)` directly (the reactive Scene whose lowerer
+   * emits a colored, FK-posed SceneBackend); use this snapshot handle for
+   * in-script analysis (`transform(part)`, `bodies()`) or `.toUnion()` for a
+   * fused single Shape.
    */
   toScene(): Scene {
     if (this.partsByName.size === 0) {
