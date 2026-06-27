@@ -93,13 +93,17 @@ export async function ingestElectronics(
       const scriptPath = resolve(repoRoot, part.kcad_source);
       const stepOut = join(src, `${part.id}.step`);
       try {
+        // CLI signature is positional: `export <format> <file> -o <out>`
+        // (there is no `-f` flag). Capture stderr into the warning on failure.
         execFileSync(
           process.execPath,
-          [cliPath, 'export', '-f', 'step', '-o', stepOut, scriptPath],
+          [cliPath, 'export', 'step', scriptPath, '-o', stepOut],
           { stdio: ['ignore', 'pipe', 'pipe'], timeout: 120_000 },
         );
       } catch (e) {
-        console.warn(`SKIP ${part.id}: kernelcad export failed — ${String(e)}`);
+        const err = e as { stderr?: Buffer; message?: string };
+        const detail = err.stderr?.toString().trim() || err.message || String(e);
+        console.warn(`SKIP ${part.id}: kernelcad export failed — ${detail}`);
         continue;
       }
       buf = readFileSync(stepOut);
