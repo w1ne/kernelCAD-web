@@ -32,8 +32,14 @@ describe('diagnostic catalogue invariants', () => {
     //   gate: the over-budget BREP pose-sweep skip is now a LOUD structured
     //   diagnostic instead of a silent console.warn). = 237.
     // + 1 tool.trace-from-image.trace-timeout (forward-ported: pure-JS tracer hard per-call timeout). = 238.
-    expect(DIAGNOSTIC_CODES).toHaveLength(238);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(238);
+    // + 1 kinematic.pose.out-of-limits (#537 — advisory warning when a
+    //   solve()/solvedModel() pose value exceeds a joint's declared
+    //   limitsDeg/limitsMm; the pose is still applied). = 239.
+    // + 1 kinematic.mounting-hole.no-coverage (#541 — info diagnostic when
+    //   checkMountingHoleConsistency examined zero fastened mates, so the
+    //   green result verifies nothing). = 240.
+    expect(DIAGNOSTIC_CODES).toHaveLength(240);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(240);
   });
 
   it('every code has a non-empty hint template', () => {
