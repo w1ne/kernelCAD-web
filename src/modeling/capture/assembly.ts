@@ -1616,17 +1616,31 @@ export class Assembly {
    * same Assembly compounds transforms; build a fresh assembly per query.
    */
   solve(poses: Poses): SolvedKinematics {
-    // 1. Validate joint names supplied in poses.
+    // 1. Validate joint names supplied in poses. A pose key must resolve to a
+    //    drivable joint declared via assembly.revolute/prismatic/fixed/ball
+    //    (i.e. present in `this.joints` / `arm.__joints()`). Reject anything
+    //    else BEFORE forwardKinematics reads `.kind` off the (undefined)
+    //    lookup — that raw `TypeError: Cannot read properties of undefined
+    //    (reading 'kind')` was issue #536. A *mate* (a constraint, not a
+    //    posable DOF) gets a tailored hint pointing at the joint API.
     for (const name of Object.keys(poses)) {
-      if (!this.joints.find(j => j.name === name)) {
-        const known = this.joints.map(j => j.name);
+      if (this.joints.find(j => j.name === name)) continue;
+      const mate = this.mates.find(m => m.name === name);
+      if (mate) {
         throw new KernelError(
           'feature.invalid-args',
-          `assembly.solve: unknown joint '${name}'. Defined joints: ${known.length === 0 ? '(none)' : known.join(', ')}.`,
+          `assembly.solve: '${name}' is not a drivable joint. A ${mate.type} *mate* is a constraint, not a posable DOF — declare the joint with assembly.revolute(name, parent, child, { axis, origin }) (or .prismatic/.ball) to pose it.`,
           undefined,
-          'invalid-args.solve.unknown-joint — pass only joint names declared via assembly.revolute/prismatic/fixed/ball.',
+          'invalid-args.solve.mate-not-joint — mates constrain DOFs; only joints declared via assembly.revolute/prismatic/fixed/ball are posable by solve(). To articulate the existing mate graph instead, call assembly.solvedModel(poses).',
         );
       }
+      const known = this.joints.map(j => j.name);
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.solve: '${name}' is not a drivable joint. Defined joints: ${known.length === 0 ? '(none)' : known.join(', ')}.`,
+        undefined,
+        'invalid-args.solve.unknown-joint — pass only joint names declared via assembly.revolute/prismatic/fixed/ball.',
+      );
     }
 
     // 2. Validate pose value shapes per joint kind, then resolve any ParamRef
