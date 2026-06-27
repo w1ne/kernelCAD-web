@@ -23,7 +23,7 @@ const KINEMATIC_CODES = [
   'kinematic.pose.out-of-limits',
   // #541 — info diagnostic when checkMountingHoleConsistency examined zero
   // fastened mates, so the green result verifies nothing.
-  'kinematic.mounting-holes.no-coverage',
+  'kinematic.mounting-hole.no-coverage',
 ] as const;
 
 // Per the cumulative-findings discipline (item #56), every nextAction kind

@@ -66,7 +66,10 @@ describe('Assembly.revolute(...) capture', () => {
       limitsDeg: [-90, 90],
     });
 
-    expect(ref).toEqual({ id: ref.id, name: 'hinge', kind: 'revolute' });
+    expect(typeof ref.id).toBe('string');
+    expect(ref.id.length).toBeGreaterThan(0);
+    expect(ref.name).toBe('hinge');
+    expect(ref.kind).toBe('revolute');
 
     const joints = arm.__joints();
     expect(joints).toHaveLength(1);
@@ -109,6 +112,37 @@ describe('Assembly.revolute(...) capture', () => {
         origin: [0, 0, 0],
       }),
     ).toThrow(/revolute joint axis must be a finite Vec3/);
+  });
+
+  it('rejects a non-finite origin', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('arm');
+    const base = arm.part('base', kcad.box(10, 10, 10));
+    const link = arm.part('link', kcad.box(10, 10, 10));
+
+    expect(() =>
+      arm.revolute('hinge', base, link, {
+        axis: [0, 1, 0],
+        origin: [0, Number.POSITIVE_INFINITY, 0],
+      }),
+    ).toThrow(/revolute joint origin must be a finite Vec3/);
+  });
+
+  it('rejects limitsDeg with min >= max', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('arm');
+    const base = arm.part('base', kcad.box(10, 10, 10));
+    const link = arm.part('link', kcad.box(10, 10, 10));
+
+    expect(() =>
+      arm.revolute('hinge', base, link, {
+        axis: [0, 1, 0],
+        origin: [0, 0, 0],
+        limitsDeg: [90, -90],
+      }),
+    ).toThrow(/revolute joint limitsDeg/);
   });
 });
 

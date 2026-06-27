@@ -163,7 +163,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  +  1 tool.trace-from-image.trace-timeout (forward-ported) = 238.
     //  +  1 kinematic.pose.out-of-limits (#537 — advisory warning when a
     //       solve()/solvedModel() pose exceeds a joint's declared limits) = 239.
-    //  +  1 kinematic.mounting-holes.no-coverage (#541 — info diagnostic when
+    //  +  1 kinematic.mounting-hole.no-coverage (#541 — info diagnostic when
     //       checkMountingHoleConsistency examined zero fastened mates) = 240.
     expect(catalogue.size).toBe(240);
   });

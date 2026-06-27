@@ -50,7 +50,7 @@ describe('kc.kinematic.checkMountingHoleConsistency', () => {
     expect(r.checked).toBeGreaterThanOrEqual(1);
     expect(
       r.diagnostics.some(
-        (d) => d.code === 'kinematic.mounting-holes.no-coverage',
+        (d) => d.code === 'kinematic.mounting-hole.no-coverage',
       ),
     ).toBe(false);
   });
@@ -83,7 +83,7 @@ describe('kc.kinematic.checkMountingHoleConsistency', () => {
     expect(r.checked).toBe(0);
     expect(r.mismatches).toHaveLength(0);
     const noCoverage = r.diagnostics.filter(
-      (d) => d.code === 'kinematic.mounting-holes.no-coverage',
+      (d) => d.code === 'kinematic.mounting-hole.no-coverage',
     );
     expect(noCoverage).toHaveLength(1);
     expect(noCoverage[0].severity).toBe('info');

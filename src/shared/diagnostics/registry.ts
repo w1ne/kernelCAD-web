@@ -1993,7 +1993,7 @@ export const DIAGNOSTIC_REGISTRY = {
     description:
       'A revolute/prismatic joint pose passed to assembly.solve() or assembly.solvedModel() exceeds the closed limitsDeg/limitsMm range declared on that joint; the pose is still applied (advisory warning, not a hard failure).',
   },
-  'kinematic.mounting-holes.no-coverage': {
+  'kinematic.mounting-hole.no-coverage': {
     hintTemplate:
       'The mounting-hole consistency check found no fastened mates to examine, so a green result verifies nothing. Add at least one arm.mate(..., \'fastened\') between connectors bound to face-center holes, or stop relying on this gate for fastener coverage.',
     nextAction: {

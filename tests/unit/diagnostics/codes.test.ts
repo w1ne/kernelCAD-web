@@ -35,7 +35,7 @@ describe('diagnostic catalogue invariants', () => {
     // + 1 kinematic.pose.out-of-limits (#537 — advisory warning when a
     //   solve()/solvedModel() pose value exceeds a joint's declared
     //   limitsDeg/limitsMm; the pose is still applied). = 239.
-    // + 1 kinematic.mounting-holes.no-coverage (#541 — info diagnostic when
+    // + 1 kinematic.mounting-hole.no-coverage (#541 — info diagnostic when
     //   checkMountingHoleConsistency examined zero fastened mates, so the
     //   green result verifies nothing). = 240.
     expect(DIAGNOSTIC_CODES).toHaveLength(240);

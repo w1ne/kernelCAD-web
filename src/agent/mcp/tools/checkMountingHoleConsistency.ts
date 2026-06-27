@@ -24,7 +24,7 @@ export type CheckMountingHoleConsistencyOutput =
       ok: boolean;
       source: 'local';
       /** Fastened-mate interfaces actually examined. 0 => vacuous green;
-       *  the diagnostics carry a kinematic.mounting-holes.no-coverage note. */
+       *  the diagnostics carry a kinematic.mounting-hole.no-coverage note. */
       checked: number;
       mismatches: ReadonlyArray<MountingHoleMismatch>;
       diagnostics: ReadonlyArray<KinematicDiagnostic>;

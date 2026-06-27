@@ -89,7 +89,7 @@ export async function checkMountingHoleConsistency(
  * the signal that the green carries no verification behind it.
  */
 function noCoverageDiagnostic(): KinematicDiagnostic {
-  const code: DiagnosticCode = 'kinematic.mounting-holes.no-coverage';
+  const code: DiagnosticCode = 'kinematic.mounting-hole.no-coverage';
   const registryEntry = DIAGNOSTIC_REGISTRY[code];
   return {
     code,
