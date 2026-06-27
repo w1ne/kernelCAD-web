@@ -90,6 +90,7 @@ export type ValidatorDiagnosticCode = Extract<
   | 'assembly.joint.not-visible'
   | 'assembly.mate.not-physically-realized'
   | 'assembly.workspace.unreachable'
+  | 'kinematic.pose.out-of-limits'
 >;
 
 export interface ValidatorDiagnostic {

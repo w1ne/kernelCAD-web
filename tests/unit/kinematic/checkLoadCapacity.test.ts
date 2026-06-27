@@ -24,6 +24,33 @@ import { beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { checkLoadCapacity } from '../../../src/kinematic/checkLoadCapacity';
 import { buildCantileverBracket } from './fixtures/cantileverBracket';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
+import { createApi } from '../../../src/modeling/api';
+import type { AssemblyCrossSection } from '../../../src/modeling/capture/assembly';
+
+/** Build a cantilever anchored by a single directly-registered revolute
+ *  joint (no mate) — issue #540 part B. Returns the assembly + the loaded
+ *  part name. */
+function buildJointAnchoredCantilever(): {
+  arm: ReturnType<ReturnType<typeof createApi>['assembly']>;
+  partName: 'cantilever';
+} {
+  const session = new CaptureSession();
+  const kc = createApi({ session });
+  const arm = kc.assembly('joint-cantilever');
+  const cs: AssemblyCrossSection = {
+    kind: 'rectangle',
+    widthMm: 50,
+    heightMm: 5,
+    lengthMm: 200,
+  };
+  const wall = arm.part('wall', kc.box(40, 40, 40, true));
+  const beam = arm.part('cantilever', kc.box(200, 50, 5, true).translate(100, 0, 0), {
+    crossSection: cs,
+  });
+  arm.revolute('rootJoint', wall, beam, { axis: [0, 1, 0], origin: [0, 0, 0] });
+  return { arm, partName: 'cantilever' };
+}
 
 describe('checkLoadCapacity — T6 closed-form Euler-Bernoulli', () => {
   beforeAll(async () => {
@@ -135,6 +162,49 @@ describe('checkLoadCapacity — T6 closed-form Euler-Bernoulli', () => {
     expect(r.ok).toBe(true);
     expect(r.elements[0]!.yieldPa).toBe(6e8);
     expect(r.elements[0]!.safetyFactor).toBeCloseTo(600 / 48, 2);
+  });
+
+  it('unknown material SKU → clean K8 diagnostic naming the bad material, no throw', async () => {
+    // Issue #540 part A: a typo / bare SKU like 'aluminum-6061' must not
+    // crash on an undefined catalog row — the check returns and the
+    // diagnostic names the offending value.
+    const { arm, partName } = buildCantileverBracket();
+    const r = await checkLoadCapacity(
+      arm,
+      { [partName]: { force: [0, 0, 50] } },
+      { materials: { [partName]: { material: 'aluminum-6061' as never } } },
+    );
+    expect(r.source).toBe('local');
+    expect(r.elements).toHaveLength(0);
+    expect(r.failures).toHaveLength(0);
+    const k8 = r.diagnostics.find(
+      (d) => d.code === 'kinematic.no-material-declared',
+    );
+    expect(k8).toBeDefined();
+    expect(k8?.severity).toBe('error');
+    expect(k8?.element).toBe(partName);
+    expect(k8?.message).toContain('aluminum-6061');
+    expect(k8?.message).toContain('steel|aluminum|pla|abs|pet');
+  });
+
+  it('part anchored by a single revolute joint (no mate) → computed SF (issue #540 part B)', async () => {
+    const { arm, partName } = buildJointAnchoredCantilever();
+    const r = await checkLoadCapacity(
+      arm,
+      { [partName]: { force: [0, 0, 50] } },
+      { materials: { [partName]: { material: 'steel' } } },
+    );
+    expect(r.ok).toBe(true);
+    expect(r.elements).toHaveLength(1);
+    const el = r.elements[0]!;
+    expect(el.partName).toBe(partName);
+    expect(el.safetyFactor).toBeCloseTo(5.208, 2);
+    expect(r.safetyFactor).toBeCloseTo(5.208, 2);
+    // It must NOT be reported as "no declared mate".
+    const notApplicable = r.diagnostics.find(
+      (d) => d.code === 'kinematic.load.beam-not-applicable',
+    );
+    expect(notApplicable).toBeUndefined();
   });
 
   it('mode: stub re-exports the v0.7.4 substrate (joint-load magnitude)', async () => {

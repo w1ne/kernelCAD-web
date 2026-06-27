@@ -154,7 +154,11 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       mate graph unsolvable -> links emitted at the model origin) = 227.
     //  +  1 tool.trace-from-image.trace-timeout (pure-JS tracer: hard per-call
     //       backend timeout so trace_from_image can never hang) = 228.
-    expect(catalogue.size).toBe(228);
+    //  +  1 kinematic.pose.out-of-limits (#537 — advisory warning when a
+    //       solve()/solvedModel() pose exceeds a joint's declared limits) = 229.
+    //  +  1 kinematic.mounting-hole.no-coverage (#541 — info diagnostic when
+    //       checkMountingHoleConsistency examined zero fastened mates) = 230.
+    expect(catalogue.size).toBe(230);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
