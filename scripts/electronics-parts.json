@@ -117,6 +117,86 @@
       "tags": ["connector", "m12", "iolink", "io-link", "5pin", "a-coded", "phoenix-contact"],
       "license": "OSHW",
       "attribution": "Phoenix Contact via oro-os/link (github.com/oro-os/link), OSHW"
+    },
+    {
+      "id": "ssd1306-oled-096",
+      "name": "SSD1306 0.96\" I2C OLED display module (27×27×4mm)",
+      "family": "Display",
+      "mpn": "generic SSD1306 0.96in OLED breakout",
+      "kcad_source": "scripts/parts/authored/ssd1306-oled-096.kcad.ts",
+      "tags": ["display", "oled", "i2c", "ssd1306", "096inch", "128x64"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "dht22",
+      "name": "DHT22 / AM2302 temperature + humidity sensor (15×25×8mm)",
+      "family": "Sensor",
+      "mpn": "DHT22",
+      "kcad_source": "scripts/parts/authored/dht22.kcad.ts",
+      "tags": ["sensor", "temperature", "humidity", "dht22", "am2302"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "ws2812-strip",
+      "name": "WS2812B NeoPixel LED strip segment — 3 pixels (17×10×3mm)",
+      "family": "LED",
+      "mpn": "WS2812B (3-pixel strip segment)",
+      "kcad_source": "scripts/parts/authored/ws2812-strip.kcad.ts",
+      "tags": ["led", "neopixel", "ws2812b", "rgb", "addressable", "strip"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "bme280",
+      "name": "BME280 environmental sensor breakout (19×18×3mm)",
+      "family": "Sensor",
+      "mpn": "BME280 breakout (Adafruit 2652 / SparkFun)",
+      "kcad_source": "scripts/parts/authored/bme280.kcad.ts",
+      "tags": ["sensor", "temperature", "humidity", "pressure", "bme280", "i2c", "spi"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "microsd-spi",
+      "name": "microSD SPI adapter breakout module (24×30×4mm)",
+      "family": "Storage",
+      "mpn": "generic microSD SPI breakout",
+      "kcad_source": "scripts/parts/authored/microsd-spi.kcad.ts",
+      "tags": ["storage", "microsd", "spi", "sdcard", "module"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "pushbutton-6mm",
+      "name": "6mm tactile pushbutton (6×6×5mm)",
+      "family": "Switch",
+      "mpn": "generic 6mm tact switch",
+      "kcad_source": "scripts/parts/authored/pushbutton-6mm.kcad.ts",
+      "tags": ["switch", "button", "tactile", "pushbutton", "6mm"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "max14827",
+      "name": "MAX14827 IO-Link PHY breakout (12×10×2mm)",
+      "family": "IO-Link",
+      "mpn": "MAX14827",
+      "kcad_source": "scripts/parts/authored/max14827.kcad.ts",
+      "tags": ["iolink", "io-link", "phy", "max14827", "industrial"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "buck-24v-3v3",
+      "name": "24V→3.3V step-down buck regulator module (18×12×4mm)",
+      "family": "Power",
+      "mpn": "generic 24V 3.3V buck module",
+      "kcad_source": "scripts/parts/authored/buck-24v-3v3.kcad.ts",
+      "tags": ["power", "buck", "regulator", "24v", "3v3", "stepdown"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
     }
   ]
 }

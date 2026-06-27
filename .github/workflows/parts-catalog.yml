@@ -36,6 +36,11 @@ jobs:
 
       - run: npm ci
 
+      # The electronics ingest compiles authored .kcad.ts part sources to STEP via
+      # the kernelCAD CLI (dist/cli/index.js); build it first or those parts SKIP.
+      - name: Build kernelCAD CLI
+        run: npm run build:cli
+
       - name: Ingest FreeCAD library
         run: >
           npx tsx scripts/ingestFreecadLibrary.ts
