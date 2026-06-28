@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { SignInButton } from './SignInButton';
 import { EmailPasswordForm } from './EmailPasswordForm';
+import { EmailSignInForm } from './EmailSignInForm';
 
 export interface SignInModalProps {
   open: boolean;
@@ -105,19 +106,17 @@ export function SignInModal({
           <span className="h-px flex-1 bg-rule" />
         </div>
 
-        <div className="flex flex-col gap-2">
-          <SignInButton
-            provider="google"
-            redirectTo={redirectTo ?? window.location.href}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-rule bg-white hover:bg-paper text-ink px-4 py-2 text-sm font-medium disabled:opacity-50 transition-colors font-sans"
-          />
-          {import.meta.env.VITE_GITHUB_AUTH_ENABLED === 'true' && (
-            <SignInButton
-              provider="github"
-              redirectTo={redirectTo ?? window.location.href}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-rule bg-white hover:bg-paper text-ink px-4 py-2 text-sm font-medium disabled:opacity-50 transition-colors font-sans"
-            />
-          )}
+        <div className="mt-6 flex flex-col gap-2">
+          <SignInButton provider="google" redirectTo={redirectTo ?? window.location.href}>
+            Continue with Google
+          </SignInButton>
+          <SignInButton provider="github" redirectTo={redirectTo ?? window.location.href}>
+            Continue with GitHub
+          </SignInButton>
+          <div className="my-1 flex items-center gap-2 text-xs text-ink-faint">
+            <span className="h-px flex-1 bg-rule" /> or <span className="h-px flex-1 bg-rule" />
+          </div>
+          <EmailSignInForm redirectTo={redirectTo ?? window.location.href} />
         </div>
 
         {footer ?? (

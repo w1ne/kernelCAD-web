@@ -4,6 +4,11 @@
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import '@testing-library/jest-dom/vitest';
+
+vi.mock('../../lib/supabaseClient', () => ({
+  getSupabase: () => ({ auth: { signInWithOtp: vi.fn(), signInWithOAuth: vi.fn(), signInWithPassword: vi.fn(), signUp: vi.fn() } }),
+}));
+
 import { SignInModal } from '../SignInModal';
 
 afterEach(() => cleanup());
@@ -24,5 +29,14 @@ describe('SignInModal dismissable', () => {
     expect(screen.getByLabelText('Close')).toBeInTheDocument();
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(onClose).toHaveBeenCalled();
+  });
+});
+
+describe('SignInModal providers', () => {
+  it('offers Google, GitHub, and email magic link', () => {
+    render(<SignInModal open onClose={() => {}} />);
+    expect(screen.getByText(/Continue with Google/i)).toBeInTheDocument();
+    expect(screen.getByText(/Continue with GitHub/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/email/i)).toBeInTheDocument();
   });
 });
