@@ -49,10 +49,10 @@ export function useOptionalSession(): SessionState {
   });
 
   useEffect(() => {
-    if (!isAuthConfigured()) {
-      setState({ session: null, loading: false });
-      return;
-    }
+    // When auth is not configured, the initial state ({ session: null,
+    // loading: false }) is already correct — do NOT setState here (a synchronous
+    // setState in an effect trips the cascading-renders lint rule and is redundant).
+    if (!isAuthConfigured()) return;
 
     const supabase = getSupabase();
     let mounted = true;
