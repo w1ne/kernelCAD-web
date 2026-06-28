@@ -39,8 +39,8 @@ export function useSession(): SessionState {
  * no-ops inside the effect when `isAuthConfigured()` is false, returning
  * `{ session: null, loading: false }` immediately. Use this in components
  * that mount regardless of whether Supabase env vars are present (e.g.
- * StudioShell, StudioAuthGate) so plain local dev and env-less embed hosts
- * do not throw.
+ * StudioShell and the /p, /g viewer routes) so plain local dev and env-less
+ * embed hosts do not throw.
  */
 export function useOptionalSession(): SessionState {
   const [state, setState] = useState<SessionState>({
