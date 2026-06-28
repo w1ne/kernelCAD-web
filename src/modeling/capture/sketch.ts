@@ -55,6 +55,55 @@ export type { SketchCommand };
  * match the advertised array. This guards agent discoverability — methods
  * not in `list_api` are invisible to MCP clients.
  */
+
+/**
+ * Validate a `sweep` rail argument. The rail must be a `Vec3[]` — an array of
+ * `[x, y, z]` numeric points. Without this guard, passing a `path()` /
+ * `PathBuilder` / `Sketch` (the natural mistake, since profiles are paths)
+ * stored a live capture object into `metadata.rail`; the capture layer then
+ * walked it during `collectParamRefs` and blew the stack with an opaque
+ * "Maximum call stack size exceeded". Fail fast with a recoverable diagnostic
+ * that names the fix instead.
+ */
+function validateSweepRail(rail: unknown): void {
+  const looksLikePathOrSketch =
+    rail !== null &&
+    typeof rail === 'object' &&
+    !Array.isArray(rail) &&
+    ('id' in (rail as object) || 'commands' in (rail as object) || 'moveTo' in (rail as object));
+  if (looksLikePathOrSketch) {
+    throw new KernelError(
+      'feature.invalid-args',
+      'sweep(rail): rail must be a Vec3[] (array of [x, y, z] points), not a path()/Sketch.',
+      undefined,
+      "invalid-args.sweep.rail — pass explicit points, e.g. [[0,0,0],[40,0,0],[40,0,30]], or sample a curve with helix(...). To sweep along a 2D profile, build the rail points directly; the profile you call .sweep() on stays a path().",
+    );
+  }
+  if (!Array.isArray(rail) || rail.length < 2) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `sweep(rail): rail must be a Vec3[] with at least 2 points; got ${Array.isArray(rail) ? `${rail.length} point(s)` : typeof rail}.`,
+      undefined,
+      'invalid-args.sweep.rail — pass at least 2 points, e.g. [[0,0,0],[40,0,0],[40,0,30]].',
+    );
+  }
+  for (let i = 0; i < rail.length; i++) {
+    const p = rail[i] as unknown;
+    const ok =
+      Array.isArray(p) &&
+      p.length === 3 &&
+      p.every((c) => typeof c === 'number' && Number.isFinite(c));
+    if (!ok) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `sweep(rail): rail[${i}] must be a [x, y, z] triple of finite numbers; got ${JSON.stringify(p)}.`,
+        undefined,
+        'invalid-args.sweep.rail — every rail point is three finite numbers, e.g. [40, 0, 30]. ParamRefs are not allowed in a rail; resolve them to numbers first.',
+      );
+    }
+  }
+}
+
 export class Sketch {
   readonly id: FeatureId;
   private session: CaptureSession;
@@ -159,6 +208,7 @@ export class Sketch {
     } = {},
   ): Shape {
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'sweep');
+    validateSweepRail(rail);
     const transitionMode = opts.transitionMode ?? 'right';
     const spine = opts.spine ?? 'polyline';
     return this.session.createShape({
