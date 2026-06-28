@@ -9,25 +9,14 @@
 // the freshly-registered sweep record, so `collectParamRefs` walked
 // session → records → record → metadata.rail → session forever.
 //
-// Two complementary guards are asserted here:
-//   1. `collectParamRefs` tolerates cyclic graphs (root robustness).
-//   2. `Sketch.sweep` rejects a non-Vec3[] rail with a recoverable
-//      `feature.invalid-args` diagnostic instead of a RangeError.
+// The fix is a cycle guard in `collectParamRefs`/`walkCollect` (a WeakSet of
+// visited objects). An invalid rail's *shape* (non-array / <2 points / NaN) is
+// reported separately as a `feature.invalid-args` diagnostic at the lowering
+// layer (occtLowerer) — see tests/unit/capture/sketch.test.ts. This file guards
+// only the root cause: param collection must never overflow on a cyclic graph.
 
 import { describe, it, expect } from 'vitest';
-import { CaptureSession } from './captureSession';
-import { createApi } from '../api';
-import { KernelError } from '../../shared/intent/kernelError';
 import { collectParamRefs } from '../../shared/runtime/resolveParams';
-
-function makeApi() {
-  const session = new CaptureSession();
-  return createApi({ session });
-}
-
-function squareProfile(kcad: ReturnType<typeof createApi>) {
-  return kcad.path().moveTo(0, 0).lineTo(6, 0).lineTo(6, 6).lineTo(0, 6).close();
-}
 
 describe('collectParamRefs — cycle safety', () => {
   it('terminates on a self-referential object instead of overflowing the stack', () => {
@@ -38,34 +27,19 @@ describe('collectParamRefs — cycle safety', () => {
     expect(() => collectParamRefs(a)).not.toThrow();
     expect(collectParamRefs(a) instanceof Set).toBe(true);
   });
-});
 
-describe('Sketch.sweep — rail validation', () => {
-  it('throws a recoverable feature.invalid-args (not a stack overflow) for a path() rail', () => {
-    const kcad = makeApi();
-    const profile = squareProfile(kcad);
-    const railPath = kcad.path().moveTo(40, 20).lineTo(70, 25).lineTo(70, 70).lineTo(40, 75);
-    let caught: unknown;
-    try {
-      // @ts-expect-error — deliberately passing a PathBuilder where Vec3[] is expected
-      profile.sweep(railPath);
-    } catch (e) {
-      caught = e;
-    }
-    expect(caught).toBeInstanceOf(KernelError);
-    expect((caught as KernelError).code).toBe('feature.invalid-args');
-    expect((caught as Error).message).not.toMatch(/call stack/i);
-  });
-
-  it('rejects a too-short rail with feature.invalid-args', () => {
-    const kcad = makeApi();
-    const profile = squareProfile(kcad);
-    expect(() => profile.sweep([[0, 0, 0]])).toThrow(KernelError);
-  });
-
-  it('accepts a valid Vec3[] rail at capture time', () => {
-    const kcad = makeApi();
-    const profile = squareProfile(kcad);
-    expect(() => profile.sweep([[40, 20, 0], [70, 25, 0], [70, 70, 0], [40, 75, 0]])).not.toThrow();
+  it('reproduces the sweep cycle shape (record → metadata.rail → session → records → record) without overflowing', () => {
+    // A faithful miniature of the live graph that triggered the crash: a record
+    // whose metadata holds the rail object, which back-references the session,
+    // whose records array contains the record. A Param ref buried inside the
+    // cycle must still be collected exactly once.
+    const turnsParam = { expression: 'turns', unit: 'mm', evaluated: 2, paramRef: 'turns' };
+    const session: Record<string, unknown> = { records: [] };
+    const rail: Record<string, unknown> = { id: 'path_1', session, length: turnsParam };
+    const record: Record<string, unknown> = { id: 'sweep_0', metadata: { rail } };
+    (session.records as unknown[]).push(record);
+    let refs!: Set<string>;
+    expect(() => { refs = collectParamRefs(record); }).not.toThrow();
+    expect(refs.has('turns')).toBe(true);
   });
 });
