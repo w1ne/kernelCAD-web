@@ -27,6 +27,7 @@ describe('StudioAuthGate', () => {
     expect(screen.queryByText('EDITOR')).toBeNull();
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(screen.queryByLabelText('Close')).toBeNull();
+    expect(screen.queryByText(/5 free generations/)).toBeNull();
   });
 
   it('renders children when signed in', () => {

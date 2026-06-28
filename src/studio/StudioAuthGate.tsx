@@ -32,7 +32,7 @@ export function StudioAuthGate({ children }: { children: React.ReactNode }): JSX
           dismissable={false}
           title="Sign in to open kernelCAD Studio"
           description="kernelCAD Studio is where you build and edit models. Sign in to continue."
-          footer={null}
+          footer={false}
         />
       </div>
     );
