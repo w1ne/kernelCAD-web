@@ -47,7 +47,12 @@ interface PublishedEntry extends Omit<GalleryEntry, 'video' | 'codeLocal'> {
 // spice-dispenser carousel under it (~452 KB). Next lever if tiles ever grow:
 // mesh quantization / Draco.
 const GLB_SIZE_HARD_CAP = 500_000;
-const STUDIO_BASE_PATH = '/app';
+// The gallery is served from the marketing site (kernelcad.com); the hosted
+// Studio lives on a separate origin (app.kernelcad.com, deployed at base `/`).
+// "Open in Studio" must therefore be an absolute cross-origin URL — a relative
+// `/app/...` path resolves against kernelcad.com, which has no such route and
+// silently 404s. Keep this in sync with the absolute app links in site/*.html.
+const STUDIO_ORIGIN = 'https://app.kernelcad.com';
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 /**
  * Builds the `ScriptReviewSummary` the hosted Studio consumes (see
@@ -145,7 +150,7 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
       ? entry.codeLocal.split(path.sep).join('/')
       : null;
     const studioUrl = entry.source === 'curated'
-      ? `${STUDIO_BASE_PATH}/studio?gallery=${encodeURIComponent(entry.slug)}`
+      ? `${STUDIO_ORIGIN}/studio?gallery=${encodeURIComponent(entry.slug)}`
       : entry.appUrl;
 
     copyFileSync(srcVideo, dstVideo);
