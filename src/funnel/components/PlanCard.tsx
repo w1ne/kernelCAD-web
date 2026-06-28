@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import type { PlanTier } from '../lib/apiClient';
+import type { PlanTier, PaidTier } from '../lib/apiClient';
 
 export interface PlanCardProps {
   plan: PlanTier;
+  /** Which paid plan, when plan === 'pro' ('standard' $20 | 'pro' $100). */
+  tier?: PaidTier | null;
   generationsRemaining: number;
   /** ISO date string for the end of the current billing period (pro only). */
   currentPeriodEnd: string | null;
@@ -29,6 +31,7 @@ export interface PlanCardProps {
  */
 export function PlanCard({
   plan,
+  tier,
   generationsRemaining,
   currentPeriodEnd,
   onUpgrade,
@@ -36,6 +39,8 @@ export function PlanCard({
   busy = false,
 }: PlanCardProps) {
   if (plan === 'pro') {
+    const planName = tier === 'pro' ? 'Pro plan' : 'Standard plan';
+    const planPrice = tier === 'pro' ? '$100/mo' : '$20/mo';
     const renewsCopy = currentPeriodEnd
       ? `renews ${new Date(currentPeriodEnd).toLocaleDateString()}`
       : 'active subscription';
@@ -46,7 +51,7 @@ export function PlanCard({
       >
         <div>
           <p className="font-serif font-medium text-ink text-base">
-            Pro plan <span className="text-blueprint">·</span> $12/mo
+            {planName} <span className="text-blueprint">·</span> {planPrice}
           </p>
           <p className="font-mono text-[11px] text-ink-faint mt-1.5 tracking-wide">
             {renewsCopy}
@@ -83,7 +88,7 @@ export function PlanCard({
         disabled={busy}
         className="rounded-md bg-blueprint px-4 py-2 font-mono text-xs tracking-wide text-white hover:bg-ink transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {busy ? 'Loading…' : 'Upgrade to Pro — $12/mo'}
+        {busy ? 'Loading…' : 'Upgrade — $20/mo'}
       </button>
     </section>
   );

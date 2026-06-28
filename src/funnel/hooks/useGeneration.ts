@@ -44,7 +44,11 @@ export function useGeneration() {
     if (!res.ok) {
       setPhase({
         state: 'error',
-        code: res.status === 429 ? 'rate_limited' : `http_${res.status}`,
+        // Agent mode requires a connected account. 401 = anonymous (must sign
+        // in); 402 = signed-in but monthly quota exhausted (must upgrade); 429 =
+        // legacy rate limit. All route to the same panel, which shows "sign in"
+        // vs "upgrade" based on whether there's a session.
+        code: res.status === 401 || res.status === 402 || res.status === 429 ? 'rate_limited' : `http_${res.status}`,
         message: await res.text().catch(() => `HTTP ${res.status}`),
       });
       return;

@@ -46,10 +46,16 @@ export function StudioShell() {
     const enableAgentRail = embed.enableAgentRail ?? true;
     const authConfigured = isAuthConfigured();
     const { session } = useOptionalSession();
-    // When auth is not configured (local dev, env-less embed), preserve
-    // pre-branch behavior and follow enableAgentRail directly. When auth is
-    // configured, require a live session before enabling the agent rail.
-    const agentEnabled = enableAgentRail && (!authConfigured || !!session);
+    // The in-Studio agent talks to the hosted, auth'd, metered backend
+    // (api.kernelcad.com /api/v1/generate), so it only belongs in the real
+    // hosted app for a signed-in user. It is therefore hidden when:
+    //   - auth is not configured (local dev / env-less embed) — no backend to
+    //     drive it and nothing to meter against; and
+    //   - the host disables it (embed / MCP-driven shells pass enableAgentRail
+    //     = false, e.g. proto.cat) or there is no live session.
+    // (`open_in_studio` / `/p/<slug>` review pages additionally hide it via
+    // viewerMode below.)
+    const agentEnabled = enableAgentRail && authConfigured && !!session;
     const enableConnect = embed.enableConnect ?? true;
     const { viewerMode } = useStudioChrome();
     const handleToggleMarkingMode = useCallback(() => {
