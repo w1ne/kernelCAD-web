@@ -57,7 +57,10 @@ export default function ProjectManagerDialog({ isOpen, onClose }: ProjectManager
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-4">
                     <button
-                        onClick={() => createProject()}
+                        onClick={() => {
+                            createProject();
+                            onClose();
+                        }}
                         className="w-full py-3 border-2 border-dashed border-[#333] hover:border-blue-500/50 hover:bg-blue-500/5 flex items-center justify-center gap-2 rounded-xl text-gray-400 hover:text-blue-400 transition-all group"
                     >
                         <Plus size={20} className="group-hover:scale-110 transition-transform" />
