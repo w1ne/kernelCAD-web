@@ -6,7 +6,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 
 vi.mock('../../lib/supabaseClient', () => ({
-  getSupabase: () => ({ auth: { signInWithOtp: vi.fn(), signInWithOAuth: vi.fn(), signInWithPassword: vi.fn(), signUp: vi.fn() } }),
+  getSupabase: () => ({ auth: { signInWithOAuth: vi.fn(), signInWithPassword: vi.fn(), signUp: vi.fn() } }),
 }));
 
 import { SignInModal } from '../SignInModal';
@@ -33,10 +33,10 @@ describe('SignInModal dismissable', () => {
 });
 
 describe('SignInModal providers', () => {
-  it('offers Google, GitHub, and email magic link', () => {
+  it('offers Google, GitHub, and email+password sign-in', () => {
     render(<SignInModal open onClose={() => {}} />);
     expect(screen.getByText(/Continue with Google/i)).toBeInTheDocument();
     expect(screen.getByText(/Continue with GitHub/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
   });
 });

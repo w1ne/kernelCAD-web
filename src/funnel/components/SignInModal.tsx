@@ -3,7 +3,6 @@
 import { useEffect, useRef } from 'react';
 import { SignInButton } from './SignInButton';
 import { EmailPasswordForm } from './EmailPasswordForm';
-import { EmailSignInForm } from './EmailSignInForm';
 
 export interface SignInModalProps {
   open: boolean;
@@ -106,17 +105,13 @@ export function SignInModal({
           <span className="h-px flex-1 bg-rule" />
         </div>
 
-        <div className="mt-6 flex flex-col gap-2">
+        <div className="flex flex-col gap-2">
           <SignInButton provider="google" redirectTo={redirectTo ?? window.location.href}>
             Continue with Google
           </SignInButton>
           <SignInButton provider="github" redirectTo={redirectTo ?? window.location.href}>
             Continue with GitHub
           </SignInButton>
-          <div className="my-1 flex items-center gap-2 text-xs text-ink-faint">
-            <span className="h-px flex-1 bg-rule" /> or <span className="h-px flex-1 bg-rule" />
-          </div>
-          <EmailSignInForm redirectTo={redirectTo ?? window.location.href} />
         </div>
 
         {footer ?? (
