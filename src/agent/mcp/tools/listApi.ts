@@ -12,7 +12,39 @@ import { EDGE_QUERY_KEYS, FACE_QUERY_KEYS } from '../../../shared/intent/queryKe
 import { SUPPORTED_CONSTRAINT_TYPES } from './constraints';
 import type { ConstraintType } from '../../../modeling/constraints/types';
 
-export type ListApiInput = Record<string, never>;
+export interface ListApiInput {
+  /**
+   * Optional keyword filter. When provided, only entries whose name, signature,
+   * or description match (token substring, case-insensitive) are returned, WITH
+   * full descriptions. When omitted, every entry is returned in COMPACT form
+   * (name + signature + a short blurb, no full description) — the whole API
+   * surface is ~117 entries / ~14k tokens of prose at full detail, which alone
+   * can exhaust a generation's token budget. Default-compact keeps discovery
+   * cheap; pass a query (e.g. 'sweep handle tube') to drill into a few entries.
+   */
+  query?: string;
+}
+
+const COMPACT_BLURB_CHARS = 90;
+
+function entryMatches(e: ApiEntry, tokens: string[]): boolean {
+  const hay = `${e.name} ${e.signature} ${e.description}`.toLowerCase();
+  return tokens.every((t) => hay.includes(t));
+}
+
+function compactEntry(e: ApiEntry): ApiEntry {
+  const blurb = e.description.split(/(?<=[.!?])\s/)[0] ?? '';
+  return {
+    name: e.name,
+    signature: e.signature,
+    description: blurb.length > COMPACT_BLURB_CHARS ? `${blurb.slice(0, COMPACT_BLURB_CHARS)}…` : blurb,
+  };
+}
+
+/** Project an ApiEntry[] for the response: filtered+full on query, else compact. */
+function projectEntries(entries: ApiEntry[], tokens: string[]): ApiEntry[] {
+  return tokens.length > 0 ? entries.filter((e) => entryMatches(e, tokens)) : entries.map(compactEntry);
+}
 
 export interface ApiEntry {
   name: string;
@@ -318,19 +350,26 @@ export const CONSTRAINT_CAPABILITY: ConstraintCapability = {
 };
 
 export async function listApiTool(input: ListApiInput = {}): Promise<ListApiOutput> {
-  void input;
+  const tokens = (typeof input.query === 'string' ? input.query : '')
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean);
+  const p = (entries: ApiEntry[]): ApiEntry[] => projectEntries(entries, tokens);
+  // The big token cost is the prose descriptions of the ~117 ApiEntry items, so
+  // those are compacted by default and shown in full only for query matches.
+  // The small featureKindFaceLabels / constraints blocks stay present always.
   return {
     ok: true,
-    globals: GLOBALS,
-    shapeMethods: SHAPE_METHODS,
-    sketchMethods: SKETCH_METHODS,
-    pathBuilderMethods: PATH_BUILDER_METHODS,
-    paramRefMethods: PARAM_REF_METHODS,
-    sceneMethods: SCENE_METHODS,
-    scenePartProperties: SCENE_PART_PROPERTIES,
-    surfaceMethods: SURFACE_METHODS,
-    curve3dMethods: CURVE3D_METHODS,
-    curve3dAnalyticsMethods: CURVE3D_ANALYTICS_METHODS,
+    globals: p(GLOBALS),
+    shapeMethods: p(SHAPE_METHODS),
+    sketchMethods: p(SKETCH_METHODS),
+    pathBuilderMethods: p(PATH_BUILDER_METHODS),
+    paramRefMethods: p(PARAM_REF_METHODS),
+    sceneMethods: p(SCENE_METHODS),
+    scenePartProperties: p(SCENE_PART_PROPERTIES),
+    surfaceMethods: p(SURFACE_METHODS),
+    curve3dMethods: p(CURVE3D_METHODS),
+    curve3dAnalyticsMethods: p(CURVE3D_ANALYTICS_METHODS),
     edgeQueryKeys: EDGE_QUERY_KEYS,
     faceQueryKeys: FACE_QUERY_KEYS,
     featureKindFaceLabels: FEATURE_KIND_FACE_LABELS,
