@@ -3,6 +3,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { useSession } from '../../funnel/hooks/useSession';
+import { getSupabase } from '../../funnel/lib/supabaseClient';
 import {
   createCheckoutSession,
   fetchMyPlan,
@@ -130,7 +131,20 @@ function MePage() {
           </svg>
           <span>kernel<span className="text-blueprint">CAD</span></span>
         </a>
-        <span className="font-mono text-xs text-ink-soft tracking-wide">{session.user.email}</span>
+        <div className="flex items-center gap-4">
+          <span className="font-mono text-xs text-ink-soft tracking-wide">{session.user.email}</span>
+          <button
+            type="button"
+            onClick={() => {
+              // onAuthStateChange clears the session; the !session effect above
+              // then redirects to /signin.
+              void getSupabase().auth.signOut();
+            }}
+            className="rounded-md border border-rule px-3 py-1.5 font-mono text-xs tracking-wide text-ink-soft hover:border-ink hover:text-ink transition-colors"
+          >
+            Sign out
+          </button>
+        </div>
       </header>
 
       <section className="px-6 py-10 max-w-4xl mx-auto">
