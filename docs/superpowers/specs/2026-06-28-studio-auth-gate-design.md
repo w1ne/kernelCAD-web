@@ -3,24 +3,6 @@
 Date: 2026-06-28
 Branch: `feat/studio-auth-gate` (off `develop`)
 
-## Update 2026-06-28 — narrowed to cost-protection (agent-only)
-
-The full-Studio wall below was shipped first, then narrowed per a clarified
-policy: anonymous users are blocked only from services that incur inference
-**cost** for us, not from the editor itself. Net behavior now:
-
-- `/` and `/studio` are NOT gated — anonymous users can open the editor and
-  view/hand-edit (no cost to us). The `StudioAuthGate` wrapper was removed.
-- The cost-bearing in-app agent stays gated: `StudioShell` hides the AgentRail +
-  toggle when there is no session. The header `UserMenu` offers the sign-in
-  entry point ("Sign in to use the agent and save projects").
-- `/generate` already required sign-in before generating (`handleSubmit` opens
-  the sign-in modal for anon) — unchanged.
-- MCP-driven builds are intentionally free (bring-your-own-model, no cost to us)
-  and remain fully open; they surface results as anonymous `/p/<slug>` links.
-
-The sections below describe the original full-Studio gate for history.
-
 ## Problem
 
 The authoring Web Studio is wide open. Anyone can load `/` or `/studio`, edit
