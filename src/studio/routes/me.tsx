@@ -176,6 +176,7 @@ function MePage() {
         {plan && (
           <PlanCard
             plan={plan.plan}
+            tier={plan.tier}
             generationsRemaining={plan.generationsRemaining}
             currentPeriodEnd={plan.currentPeriodEnd}
             onUpgrade={handleUpgrade}

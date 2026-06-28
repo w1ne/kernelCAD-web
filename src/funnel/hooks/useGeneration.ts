@@ -44,7 +44,9 @@ export function useGeneration() {
     if (!res.ok) {
       setPhase({
         state: 'error',
-        code: res.status === 429 ? 'rate_limited' : `http_${res.status}`,
+        // 429 = anonymous IP limit; 402 = signed-in monthly quota exhausted.
+        // Both surface the same "upgrade to keep generating" panel.
+        code: res.status === 429 || res.status === 402 ? 'rate_limited' : `http_${res.status}`,
         message: await res.text().catch(() => `HTTP ${res.status}`),
       });
       return;
