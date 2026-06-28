@@ -60,13 +60,11 @@ function SignInPage() {
               redirectTo={`${window.location.origin}${next}`}
               className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-rule bg-white hover:bg-paper text-ink px-4 py-2 text-sm font-medium disabled:opacity-50 transition-colors font-sans"
             />
-            {import.meta.env.VITE_GITHUB_AUTH_ENABLED === 'true' && (
-              <SignInButton
-                provider="github"
-                redirectTo={`${window.location.origin}${next}`}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-rule bg-white hover:bg-paper text-ink px-4 py-2 text-sm font-medium disabled:opacity-50 transition-colors font-sans"
-              />
-            )}
+            <SignInButton
+              provider="github"
+              redirectTo={`${window.location.origin}${next}`}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-rule bg-white hover:bg-paper text-ink px-4 py-2 text-sm font-medium disabled:opacity-50 transition-colors font-sans"
+            />
           </div>
         </div>
       </div>

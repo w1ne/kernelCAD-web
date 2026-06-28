@@ -15,6 +15,10 @@ export interface SignInModalProps {
   /** Override where Google redirects after auth completes (defaults to the
    * current href so the user lands back where they were). */
   redirectTo?: string;
+  /** When false, the modal cannot be dismissed (no ×, no Esc, no backdrop close). Default true. */
+  dismissable?: boolean;
+  /** Footer line under the buttons. Default: the 5-free-generations note. */
+  footer?: React.ReactNode;
 }
 
 /**
@@ -30,17 +34,19 @@ export function SignInModal({
   title = 'Sign in to generate',
   description = '5 free generations to start — your prompt resumes automatically after sign-in.',
   redirectTo,
+  dismissable = true,
+  footer,
 }: SignInModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !dismissable) return;
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose();
     }
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+  }, [open, dismissable, onClose]);
 
   // Move focus into the dialog when it opens.
   useEffect(() => {
@@ -56,7 +62,7 @@ export function SignInModal({
       aria-modal="true"
       aria-labelledby="signin-modal-title"
       className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/40 backdrop-blur-sm p-4"
-      onClick={onClose}
+      onClick={dismissable ? onClose : undefined}
     >
       <div
         ref={dialogRef}
@@ -64,14 +70,16 @@ export function SignInModal({
         onClick={e => e.stopPropagation()}
         className="relative max-w-sm w-full rounded-xl border border-rule bg-vellum p-8 text-center shadow-xl focus:outline-none"
       >
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="absolute top-3 right-3 text-ink-faint hover:text-ink transition-colors text-xl leading-none"
-        >
-          ×
-        </button>
+        {dismissable && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="absolute top-3 right-3 text-ink-faint hover:text-ink transition-colors text-xl leading-none"
+          >
+            ×
+          </button>
+        )}
 
         <div className="flex items-center justify-center gap-2 mb-5">
           <svg className="w-5 h-5 text-ink" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
@@ -98,23 +106,19 @@ export function SignInModal({
         </div>
 
         <div className="flex flex-col gap-2">
-          <SignInButton
-            provider="google"
-            redirectTo={redirectTo ?? window.location.href}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-rule bg-white hover:bg-paper text-ink px-4 py-2 text-sm font-medium disabled:opacity-50 transition-colors font-sans"
-          />
-          {import.meta.env.VITE_GITHUB_AUTH_ENABLED === 'true' && (
-            <SignInButton
-              provider="github"
-              redirectTo={redirectTo ?? window.location.href}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-rule bg-white hover:bg-paper text-ink px-4 py-2 text-sm font-medium disabled:opacity-50 transition-colors font-sans"
-            />
-          )}
+          <SignInButton provider="google" redirectTo={redirectTo ?? window.location.href}>
+            Continue with Google
+          </SignInButton>
+          <SignInButton provider="github" redirectTo={redirectTo ?? window.location.href}>
+            Continue with GitHub
+          </SignInButton>
         </div>
 
-        <p className="mt-5 text-xs text-ink-faint font-mono tracking-wide">
-          5 free generations · upgrade after to keep generating
-        </p>
+        {footer ?? (
+          <p className="mt-5 text-xs text-ink-faint font-mono tracking-wide">
+            5 free generations · upgrade after to keep generating
+          </p>
+        )}
       </div>
     </div>
   );

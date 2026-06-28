@@ -54,6 +54,14 @@ vi.mock('../context/ProjectContext', () => ({
     useProject: () => ({ activeProject: null }),
 }));
 
+vi.mock('../../funnel/hooks/useSession', () => ({
+    useOptionalSession: () => ({ session: { user: { id: 'test-user' } }, loading: false }),
+}));
+
+vi.mock('../../funnel/lib/supabaseClient', () => ({
+    isAuthConfigured: () => true,
+}));
+
 vi.mock('../components/Layout/Header', () => ({ Header: () => <div data-testid="header" /> }));
 vi.mock('../Toolbar', () => ({ Toolbar: () => <div data-testid="toolbar" /> }));
 vi.mock('../Viewport', () => ({ Viewport: () => <div data-testid="viewport" /> }));

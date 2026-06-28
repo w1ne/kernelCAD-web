@@ -26,6 +26,8 @@ import type { StagedEdit } from './store/shellStore';
 import { useRecomputeResult } from './hooks/useRecomputeResult';
 import { useProject } from './context/ProjectContext';
 import { useStudioChrome } from './context/StudioChromeContext';
+import { useOptionalSession } from '../funnel/hooks/useSession';
+import { isAuthConfigured } from '../funnel/lib/supabaseClient';
 
 /**
  * Top-level Studio shell. Composes the six slots — Toolbar / Viewport /
@@ -42,6 +44,12 @@ export function StudioShell() {
     // both to drive a stripped viewport+inspector+toolbar shell.
     const showHeader = embed.showHeader ?? true;
     const enableAgentRail = embed.enableAgentRail ?? true;
+    const authConfigured = isAuthConfigured();
+    const { session } = useOptionalSession();
+    // When auth is not configured (local dev, env-less embed), preserve
+    // pre-branch behavior and follow enableAgentRail directly. When auth is
+    // configured, require a live session before enabling the agent rail.
+    const agentEnabled = enableAgentRail && (!authConfigured || !!session);
     const enableConnect = embed.enableConnect ?? true;
     const { viewerMode } = useStudioChrome();
     const handleToggleMarkingMode = useCallback(() => {
@@ -197,7 +205,7 @@ export function StudioShell() {
                 onRun={handleRun}
                 agentRailOpen={agentRailOpen}
                 onToggleAgentRail={handleToggleAgentRail}
-                enableAgentRail={enableAgentRail}
+                enableAgentRail={agentEnabled}
                 enableConnect={enableConnect}
                 agentRailHidden={viewerMode}
                 referenceImagesPresent={referenceImagesPresent}
@@ -216,7 +224,7 @@ export function StudioShell() {
             />
 
             <div className="flex-1 flex overflow-hidden relative">
-                {enableAgentRail && agentRailOpen && !viewerMode && <AgentRail />}
+                {agentEnabled && agentRailOpen && !viewerMode && <AgentRail />}
                 <div className="flex-1 relative">
                     <Viewport />
                     <MarkingOverlay visible={markingMode} />
