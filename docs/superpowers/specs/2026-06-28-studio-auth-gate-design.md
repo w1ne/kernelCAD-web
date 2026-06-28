@@ -3,6 +3,15 @@
 Date: 2026-06-28
 Branch: `feat/studio-auth-gate` (off `develop`)
 
+## Current decision (2026-06-28, latest)
+
+The full-Studio gate described below is the live behavior: signing in is required
+to enter `/` and `/studio`, to **collect users** (lead-gen), not only for cost.
+The only exemption is MCP — clients connecting via the MCP server authenticate
+through its own OAuth and are never sent to the web sign-in wall; MCP-produced
+builds surface as anonymous `/p/<slug>` links, which stay viewable. (A brief
+agent-only loosening, PR #557, was reverted to restore this gate.)
+
 ## Problem
 
 The authoring Web Studio is wide open. Anyone can load `/` or `/studio`, edit
