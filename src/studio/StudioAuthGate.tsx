@@ -10,7 +10,7 @@ import { SignInModal } from '../funnel/components/SignInModal';
  * editor until a Supabase session exists. Read-only viewer routes (`/p`, `/g`)
  * are NOT wrapped in this gate.
  */
-export function StudioAuthGate({ children }: { children: React.ReactNode }): JSX.Element {
+export function StudioAuthGate({ children }: { children: React.ReactNode }): React.JSX.Element {
   const { session, loading } = useSession();
 
   if (loading) {
