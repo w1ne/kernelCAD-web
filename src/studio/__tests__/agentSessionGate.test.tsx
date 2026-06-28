@@ -14,7 +14,9 @@ describe('agent rail requires a session', () => {
     expect(src).toMatch(/useOptionalSession/);
   });
   it('derives agentEnabled from session and gates the rail with it', () => {
-    expect(src).toMatch(/const\s+agentEnabled\s*=\s*enableAgentRail\s*&&\s*\(!authConfigured\s*\|\|\s*!!session\)/);
+    // Agent mode requires a configured-auth backend AND a live session, so the
+    // rail is hidden locally (no auth) and in MCP/embed shells (enableAgentRail=false).
+    expect(src).toMatch(/const\s+agentEnabled\s*=\s*enableAgentRail\s*&&\s*authConfigured\s*&&\s*!!session/);
     expect(src).toMatch(/agentEnabled\s*&&\s*agentRailOpen\s*&&\s*!viewerMode\s*&&\s*<AgentRail/);
   });
 });

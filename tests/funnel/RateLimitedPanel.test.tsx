@@ -11,7 +11,7 @@ describe('RateLimitedPanel', () => {
     render(<RateLimitedPanel authenticated onUpgrade={onUpgrade} />);
 
     expect(screen.getByText(/used your free generations/i)).toBeDefined();
-    const btn = screen.getByRole('button', { name: /Upgrade to Pro/i });
+    const btn = screen.getByRole('button', { name: /Upgrade/i });
     fireEvent.click(btn);
     expect(onUpgrade).toHaveBeenCalledTimes(1);
   });
