@@ -113,6 +113,9 @@ function mapToEvent(name: string, p: Record<string, unknown>): GenerateEvent | n
 
 export interface GenerateRequest {
   prompt: string;
+  /** Edit mode: the current editor source the agent should modify (Studio agent
+   *  loop). Omit for a fresh generation (funnel/landing). */
+  currentCode?: string;
 }
 
 export async function startGeneration(req: GenerateRequest): Promise<Response> {
