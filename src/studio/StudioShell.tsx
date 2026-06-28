@@ -26,6 +26,7 @@ import type { StagedEdit } from './store/shellStore';
 import { useRecomputeResult } from './hooks/useRecomputeResult';
 import { useProject } from './context/ProjectContext';
 import { useStudioChrome } from './context/StudioChromeContext';
+import { useSession } from '../funnel/hooks/useSession';
 
 /**
  * Top-level Studio shell. Composes the six slots — Toolbar / Viewport /
@@ -42,6 +43,8 @@ export function StudioShell() {
     // both to drive a stripped viewport+inspector+toolbar shell.
     const showHeader = embed.showHeader ?? true;
     const enableAgentRail = embed.enableAgentRail ?? true;
+    const { session } = useSession();
+    const agentEnabled = enableAgentRail && !!session;
     const enableConnect = embed.enableConnect ?? true;
     const { viewerMode } = useStudioChrome();
     const handleToggleMarkingMode = useCallback(() => {
@@ -197,7 +200,7 @@ export function StudioShell() {
                 onRun={handleRun}
                 agentRailOpen={agentRailOpen}
                 onToggleAgentRail={handleToggleAgentRail}
-                enableAgentRail={enableAgentRail}
+                enableAgentRail={agentEnabled}
                 enableConnect={enableConnect}
                 agentRailHidden={viewerMode}
                 referenceImagesPresent={referenceImagesPresent}
@@ -216,7 +219,7 @@ export function StudioShell() {
             />
 
             <div className="flex-1 flex overflow-hidden relative">
-                {enableAgentRail && agentRailOpen && !viewerMode && <AgentRail />}
+                {agentEnabled && agentRailOpen && !viewerMode && <AgentRail />}
                 <div className="flex-1 relative">
                     <Viewport />
                     <MarkingOverlay visible={markingMode} />

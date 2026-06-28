@@ -54,6 +54,10 @@ vi.mock('../context/ProjectContext', () => ({
     useProject: () => ({ activeProject: null }),
 }));
 
+vi.mock('../../funnel/hooks/useSession', () => ({
+    useSession: () => ({ session: { user: { id: 'test-user' } }, loading: false }),
+}));
+
 vi.mock('../components/Layout/Header', () => ({ Header: () => <div data-testid="header" /> }));
 vi.mock('../Toolbar', () => ({ Toolbar: () => <div data-testid="toolbar" /> }));
 vi.mock('../Viewport', () => ({ Viewport: () => <div data-testid="viewport" /> }));
