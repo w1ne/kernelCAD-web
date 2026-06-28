@@ -8,7 +8,10 @@ import { StudioAuthGate } from '../StudioAuthGate';
 
 const mockSession = vi.fn();
 vi.mock('../../funnel/hooks/useSession', () => ({
-  useSession: () => mockSession(),
+  useOptionalSession: () => mockSession(),
+}));
+vi.mock('../../funnel/lib/supabaseClient', () => ({
+  isAuthConfigured: () => true,
 }));
 
 afterEach(() => cleanup());

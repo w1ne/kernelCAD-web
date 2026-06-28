@@ -10,11 +10,11 @@ const src = readFileSync(
 );
 
 describe('agent rail requires a session', () => {
-  it('imports useSession', () => {
-    expect(src).toMatch(/useSession/);
+  it('imports useOptionalSession', () => {
+    expect(src).toMatch(/useOptionalSession/);
   });
   it('derives agentEnabled from session and gates the rail with it', () => {
-    expect(src).toMatch(/const\s+agentEnabled\s*=\s*enableAgentRail\s*&&\s*!!session/);
+    expect(src).toMatch(/const\s+agentEnabled\s*=\s*enableAgentRail\s*&&\s*\(!authConfigured\s*\|\|\s*!!session\)/);
     expect(src).toMatch(/agentEnabled\s*&&\s*agentRailOpen\s*&&\s*!viewerMode\s*&&\s*<AgentRail/);
   });
 });

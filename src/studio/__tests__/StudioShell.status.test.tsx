@@ -55,7 +55,11 @@ vi.mock('../context/ProjectContext', () => ({
 }));
 
 vi.mock('../../funnel/hooks/useSession', () => ({
-    useSession: () => ({ session: { user: { id: 'test-user' } }, loading: false }),
+    useOptionalSession: () => ({ session: { user: { id: 'test-user' } }, loading: false }),
+}));
+
+vi.mock('../../funnel/lib/supabaseClient', () => ({
+    isAuthConfigured: () => true,
 }));
 
 vi.mock('../components/Layout/Header', () => ({ Header: () => <div data-testid="header" /> }));

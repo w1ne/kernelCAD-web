@@ -26,7 +26,8 @@ import type { StagedEdit } from './store/shellStore';
 import { useRecomputeResult } from './hooks/useRecomputeResult';
 import { useProject } from './context/ProjectContext';
 import { useStudioChrome } from './context/StudioChromeContext';
-import { useSession } from '../funnel/hooks/useSession';
+import { useOptionalSession } from '../funnel/hooks/useSession';
+import { isAuthConfigured } from '../funnel/lib/supabaseClient';
 
 /**
  * Top-level Studio shell. Composes the six slots — Toolbar / Viewport /
@@ -43,8 +44,12 @@ export function StudioShell() {
     // both to drive a stripped viewport+inspector+toolbar shell.
     const showHeader = embed.showHeader ?? true;
     const enableAgentRail = embed.enableAgentRail ?? true;
-    const { session } = useSession();
-    const agentEnabled = enableAgentRail && !!session;
+    const authConfigured = isAuthConfigured();
+    const { session } = useOptionalSession();
+    // When auth is not configured (local dev, env-less embed), preserve
+    // pre-branch behavior and follow enableAgentRail directly. When auth is
+    // configured, require a live session before enabling the agent rail.
+    const agentEnabled = enableAgentRail && (!authConfigured || !!session);
     const enableConnect = embed.enableConnect ?? true;
     const { viewerMode } = useStudioChrome();
     const handleToggleMarkingMode = useCallback(() => {
