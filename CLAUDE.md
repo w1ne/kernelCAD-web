@@ -1,5 +1,14 @@
 # Repo conventions for Claude Code agents working in kernelCAD-web
 
+## Deployment
+
+Before deploying anything, read `docs/DEPLOY.md`. Short version: one trunk
+(`develop`, no `main`); the Studio (`src/`) auto-deploys to app.kernelcad.com on
+push to `develop`; the marketing site (`site/`, kernelcad.com) ships ONLY via a
+manual `gh workflow run deploy-kernelcad-com.yml -R w1ne/kernelCAD-server -f
+web_ref=develop`; a `v*` tag is a full npm release, not a per-surface deploy.
+Don't guess the deploy path — match the changed surface to the runbook.
+
 ## CAD authoring discipline
 
 For any task that creates or modifies CAD output, use the bundled
