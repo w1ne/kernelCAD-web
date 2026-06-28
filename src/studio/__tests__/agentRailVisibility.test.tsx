@@ -62,7 +62,7 @@ vi.mock('../../funnel/hooks/useSession', () => ({
 }));
 
 vi.mock('../../funnel/lib/supabaseClient', () => ({
-    isAuthConfigured: () => true,
+    isAuthConfigured: vi.fn(() => true),
 }));
 
 vi.mock('../components/Layout/Header', () => ({ Header: () => <div data-testid="header" /> }));
@@ -78,19 +78,21 @@ vi.mock('../components/Layout/StatusBar', () => ({
 }));
 
 import { StudioShell } from '../StudioShell';
+import { isAuthConfigured } from '../../funnel/lib/supabaseClient';
+
+const mockIsAuthConfigured = vi.mocked(isAuthConfigured);
 
 afterEach(() => cleanup());
 
 beforeEach(() => {
     agentRailOpen = true;
     sessionState = { session: null, loading: false };
+    mockIsAuthConfigured.mockReturnValue(true);
 });
 
 describe('agent rail visibility by session state', () => {
+    // agentEnabled = enableAgentRail && authConfigured && !!session
     it('hides the agent rail when auth is configured but no session exists', () => {
-        // isAuthConfigured() → true, session → null
-        // agentEnabled = enableAgentRail && (!authConfigured || !!session)
-        //              = true && (false || false) = false → rail NOT rendered
         sessionState = { session: null, loading: false };
 
         render(<StudioShell />);
@@ -99,12 +101,21 @@ describe('agent rail visibility by session state', () => {
     });
 
     it('shows the agent rail when auth is configured and a session exists', () => {
-        // isAuthConfigured() → true, session → {user:{id:'u1'}}
-        // agentEnabled = true && (false || true) = true, agentRailOpen = true → rail rendered
         sessionState = { session: { user: { id: 'u1' } }, loading: false };
 
         render(<StudioShell />);
 
         expect(screen.queryByLabelText('Agent rail')).not.toBeNull();
+    });
+
+    it('hides the agent rail in local dev (auth not configured), even with a session', () => {
+        // Local run: no Supabase env → isAuthConfigured() false. The in-Studio
+        // agent has no hosted/metered backend locally, so the rail stays hidden.
+        mockIsAuthConfigured.mockReturnValue(false);
+        sessionState = { session: { user: { id: 'u1' } }, loading: false };
+
+        render(<StudioShell />);
+
+        expect(screen.queryByLabelText('Agent rail')).toBeNull();
     });
 });
