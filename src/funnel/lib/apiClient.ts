@@ -5,7 +5,8 @@ import type { Artifact } from './generateClient';
 
 export interface GenerationRow {
   id: string;
-  status: 'running' | 'done' | 'eval_failed' | 'llm_failed' | 'timeout';
+  // 'gate_failed' is the live server status; 'eval_failed' kept for historical rows.
+  status: 'running' | 'done' | 'gate_failed' | 'eval_failed' | 'llm_failed' | 'timeout';
   code: string | null;
   prompt: string;
   suggestions: string[];
@@ -92,6 +93,19 @@ export async function claimProject(slug: string): Promise<{ claimed: boolean }> 
   return authedFetch<{ claimed: boolean }>('POST', `/api/v1/projects/${encodeURIComponent(slug)}/claim`, {});
 }
 
+/** POST a viewer-captured PNG (base64, no `data:` prefix) to the backend render
+ *  endpoint. The hosted backend has no browser, so the user's open Studio tab
+ *  captures its own WebGL canvas and uploads it here; an agent then fetches the
+ *  stored image. Anonymous-capable: the slug is the capability (same pattern as
+ *  claimProject). Returns the URL the agent can read the image from. */
+export async function postProjectRender(slug: string, pngBase64: string): Promise<{ url: string }> {
+  return authedFetch<{ ok: true; url: string }>(
+    'POST',
+    `/api/v1/projects/${encodeURIComponent(slug)}/render`,
+    { png: pngBase64 },
+  );
+}
+
 /** Thrown when a free user tries to make a project private — the body text
  *  authedFetch surfaces on a 403 carries this code. Lets the UI show an
  *  upgrade CTA instead of a generic failure. */
@@ -130,6 +144,41 @@ export async function fetchProjectBySlug(slug: string): Promise<ProjectRow | nul
     .maybeSingle();
   if (error) throw new Error(error.message);
   return (data as ProjectRow | null) ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Server-side revision history (Supabase-backed, owner-or-slug auth).
+//   GET  /api/v1/projects/:slug/revisions            -> { revisions: [...] }
+//   POST /api/v1/projects/:slug/revisions/:v/restore -> { version }
+// ---------------------------------------------------------------------------
+
+export interface ProjectRevision {
+  version: number;
+  created_at: string;
+}
+
+/** Newest-first list of saved server revisions for a slug-backed project.
+ *  Unwraps the `{ revisions: [...] }` envelope; returns `[]` when missing. */
+export async function listProjectRevisions(slug: string): Promise<ProjectRevision[]> {
+  const res = await authedFetch<{ revisions?: ProjectRevision[] }>(
+    'GET',
+    `/api/v1/projects/${encodeURIComponent(slug)}/revisions`,
+  );
+  return res.revisions ?? [];
+}
+
+/** Restore the project's code to a prior revision; returns the restored
+ *  version. The displayed model is refreshed by the caller via
+ *  fetchProjectBySlug. */
+export async function restoreProjectRevision(
+  slug: string,
+  version: number,
+): Promise<{ version: number }> {
+  return authedFetch<{ version: number }>(
+    'POST',
+    `/api/v1/projects/${encodeURIComponent(slug)}/revisions/${version}/restore`,
+    {},
+  );
 }
 
 export async function listMyProjects(): Promise<ProjectRow[]> {

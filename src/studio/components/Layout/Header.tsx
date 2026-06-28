@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { useEffect, useRef, useState } from 'react';
 import { useWorkbench } from '../../context/WorkbenchContext';
-import { Loader2, Download, FileDown, Undo2, Redo2, Box, Grid as GridIcon, Grid3x3, Circle, FolderOpen, Moon, Sun, LayoutGrid } from 'lucide-react';
+import { Loader2, Download, FileDown, Undo2, Redo2, Box, Grid as GridIcon, Grid3x3, Circle, FolderOpen, Moon, Sun, LayoutGrid, History, RotateCcw } from 'lucide-react';
 import { exportSTEP, exportSTL } from '../../../shared/worker/geometryEngine';
 import { formatTooltip, SHORTCUT_HINTS } from '../../../shared/constants/shortcuts';
 import { useProject } from '../../context/ProjectContext';
 import { useStudioChrome } from '../../context/StudioChromeContext';
 import { useUI } from '../../context/UIContext';
+import UserMenu from './UserMenu';
 
 export function Header() {
     const { headerLeft, headerRight } = useStudioChrome();
@@ -16,7 +18,43 @@ export function Header() {
     } = useWorkbench();
     const { viewportBackground, setViewportBackground, gridVisible, setGridVisible } = useUI();
 
-    const { activeProject } = useProject();
+    const { activeProject, revisions, restoreRevision } = useProject();
+
+    const [historyOpen, setHistoryOpen] = useState(false);
+    const historyRef = useRef<HTMLDivElement>(null);
+
+    // Close the history menu on outside click / Escape.
+    useEffect(() => {
+        if (!historyOpen) return;
+        const onPointerDown = (e: MouseEvent) => {
+            if (historyRef.current && !historyRef.current.contains(e.target as Node)) {
+                setHistoryOpen(false);
+            }
+        };
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setHistoryOpen(false);
+        };
+        document.addEventListener('mousedown', onPointerDown);
+        document.addEventListener('keydown', onKeyDown);
+        return () => {
+            document.removeEventListener('mousedown', onPointerDown);
+            document.removeEventListener('keydown', onKeyDown);
+        };
+    }, [historyOpen]);
+
+    // History is only meaningful once there are at least two distinct revisions
+    // to move between; ephemeral funnel projects report zero revisions.
+    const historyAvailable = revisions.length >= 2;
+
+    const formatRevisionTime = (ts: string) => {
+        const date = new Date(ts);
+        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
+
+    const handleRestore = (v: number) => {
+        restoreRevision(v);
+        setHistoryOpen(false);
+    };
 
     const handleExport = async (type: 'step' | 'stl') => {
         try {
@@ -40,7 +78,7 @@ export function Header() {
     };
 
     return (
-        <div className="h-10 bg-[#111] border-b border-[#333] flex items-center px-4 justify-between select-none shrink-0" data-testid="header">
+        <div className="h-10 bg-[#111] border-b border-[#333] flex items-center px-4 gap-2 select-none shrink-0 bar-scroll-x" data-testid="header">
             <div className="flex items-center gap-3 min-w-0">
                 <button
                     onClick={() => setActiveDialog('projectManager')}
@@ -61,7 +99,7 @@ export function Header() {
                 )}
             </div>
 
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-2 items-center ml-auto shrink-0">
                 {headerRight && (
                     <>
                         <div className="flex items-center gap-2">{headerRight}</div>
@@ -160,6 +198,53 @@ export function Header() {
                     <Redo2 className="w-4 h-4" />
                 </button>
 
+                {historyAvailable && (
+                    <div className="relative" ref={historyRef} data-testid="history-menu">
+                        <button
+                            onClick={() => setHistoryOpen(o => !o)}
+                            className={`p-1 rounded transition-colors ${historyOpen ? 'bg-[#333] text-white' : 'text-gray-400 hover:text-white hover:bg-[#333]'}`}
+                            aria-label="Revision history"
+                            aria-haspopup="menu"
+                            aria-expanded={historyOpen}
+                            title="Revision history"
+                            data-testid="history-button"
+                        >
+                            <History className="w-4 h-4" />
+                        </button>
+                        {historyOpen && (
+                            <div
+                                role="menu"
+                                className="absolute right-0 top-full mt-1 w-64 max-h-80 overflow-y-auto bg-[#1a1a1a] border border-[#333] rounded shadow-lg z-50 py-1"
+                                data-testid="history-dropdown"
+                            >
+                                <div className="px-3 py-1.5 text-[10px] uppercase tracking-wide text-gray-500 font-medium">
+                                    Revision history
+                                </div>
+                                {[...revisions].reverse().map((rev) => (
+                                    <div
+                                        key={rev.v}
+                                        className="group flex items-center justify-between gap-2 px-3 py-1.5 hover:bg-[#222]"
+                                    >
+                                        <div className="min-w-0">
+                                            <div className="text-xs text-gray-300">v{rev.v}</div>
+                                            <div className="text-[10px] text-gray-500 truncate">{formatRevisionTime(rev.ts)}</div>
+                                        </div>
+                                        <button
+                                            onClick={() => handleRestore(rev.v)}
+                                            className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-white px-1.5 py-1 rounded hover:bg-[#333] transition-colors shrink-0"
+                                            aria-label={`Restore revision v${rev.v}`}
+                                            title={`Restore v${rev.v}`}
+                                        >
+                                            <RotateCcw className="w-3 h-3" />
+                                            Restore
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 <div className="h-6 w-px bg-[#333] mx-2" />
 
                 <button
@@ -181,6 +266,9 @@ export function Header() {
                     <Download className="w-4 h-4" />
                 </button>
                 {isComputing && <Loader2 className="w-3 h-3 animate-spin text-gray-500" />}
+
+                <div className="h-6 w-px bg-[#333] mx-2" />
+                <UserMenu />
             </div>
             <div className="absolute bottom-0 right-0 p-1 text-[9px] text-gray-700 pointer-events-none opacity-50 font-mono">
                 {typeof (window as unknown as { __COMMIT_HASH__: string }).__COMMIT_HASH__ !== 'undefined'

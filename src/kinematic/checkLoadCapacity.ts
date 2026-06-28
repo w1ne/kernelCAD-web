@@ -25,8 +25,12 @@
 // Out-of-applicability triggers (each fires K7, severity 'warn', and the
 // part is not added to `result.elements` — its data would be unreliable):
 //   - no declared `crossSection` on the part;
-//   - more than one mate on the part (so the cantilever assumption fails);
-//   - zero mates on the part (no root reference for the moment arm).
+//   - more than one anchor on the part (so the cantilever assumption fails);
+//   - zero anchors on the part (no root reference for the moment arm).
+//
+// An "anchor" is a single mate OR a directly-registered joint
+// (`arm.revolute()` / `arm.prismatic()` / `arm.fixed()`, first-class since
+// issue #535) — both pin the part's root frame for the moment-arm reference.
 //
 // Real FEA (multi-mate, swept volumes, non-uniform sections, NURBS
 // cross-section beams, deflection limit gates) is deferred to a v2
@@ -44,7 +48,7 @@ import type {
 } from './types';
 import { DIAGNOSTIC_REGISTRY, type DiagnosticCode } from '../shared/diagnostics/registry';
 import { sectionProperties } from './beamGeometry';
-import { resolveMaterialProps, type MaterialProps } from './beamMaterials';
+import { resolveMaterialProps, CATALOG_KINDS, type MaterialProps } from './beamMaterials';
 import { validateJointLoadCapacity } from '../modeling/mates/jointLoadCapacity';
 
 const DEFAULT_SF_THRESHOLD = 1.5;
@@ -186,15 +190,27 @@ function runBeamMode(
 
   const parts = arm.__parts();
   const mates = arm.__mates();
+  const joints = arm.__joints();
   const partByName = new Map(parts.map((p) => [p.name, p]));
-  // Mate-count per part — single-mate parts satisfy the cantilever boundary
-  // condition; >1 mate is multi-supported (beam-not-applicable in v1).
-  const mateCount = new Map<string, number>();
+  const partNameById = new Map(parts.map((p) => [p.id, p.name]));
+  // Anchor-count per part — a single anchor (mate OR directly-registered
+  // joint) satisfies the cantilever boundary condition (one root reference
+  // for the moment arm); >1 anchor is multi-supported (beam-not-applicable
+  // in v1), 0 anchors has no root. Joints from `arm.revolute()` /
+  // `arm.prismatic()` / `arm.fixed()` (first-class since #535) anchor a part
+  // the same way a mate does — each has a parent/child and an origin — so a
+  // part held only by a joint is still a valid cantilever root (issue #540).
+  const anchorCount = new Map<string, number>();
+  const bump = (name: string | undefined): void => {
+    if (name !== undefined) anchorCount.set(name, (anchorCount.get(name) ?? 0) + 1);
+  };
   for (const m of mates) {
-    const aPart = m.a.split('.')[0];
-    const bPart = m.b.split('.')[0];
-    if (aPart !== undefined) mateCount.set(aPart, (mateCount.get(aPart) ?? 0) + 1);
-    if (bPart !== undefined) mateCount.set(bPart, (mateCount.get(bPart) ?? 0) + 1);
+    bump(m.a.split('.')[0]);
+    bump(m.b.split('.')[0]);
+  }
+  for (const j of joints) {
+    bump(partNameById.get(j.parentPartId));
+    bump(partNameById.get(j.childPartId));
   }
 
   let worstSF = Number.POSITIVE_INFINITY;
@@ -204,13 +220,12 @@ function runBeamMode(
     const matEntry: MaterialDeclarationEntry = opts!.materials![partName]!;
     const matResolved = resolveMaterialProps(matEntry);
     if (!matResolved.ok) {
+      const message =
+        matResolved.reason === 'unknown-material'
+          ? `Material declaration for '${partName}' names unknown material '${matResolved.material}' (valid: ${CATALOG_KINDS.join('|')}, or material: 'custom' with yieldStressMPa + youngsModulusGPa).`
+          : `Material declaration for '${partName}' uses material: 'custom' but is missing ${matResolved.missingField}. Both yieldStressMPa and youngsModulusGPa are required for custom materials.`;
       diagnostics.push(
-        buildDiag(
-          'kinematic.no-material-declared',
-          'error',
-          `Material declaration for '${partName}' uses material: 'custom' but is missing ${matResolved.missingField}. Both yieldStressMPa and youngsModulusGPa are required for custom materials.`,
-          partName,
-        ),
+        buildDiag('kinematic.no-material-declared', 'error', message, partName),
       );
       continue;
     }
@@ -240,24 +255,24 @@ function runBeamMode(
       continue;
     }
 
-    const partMateCount = mateCount.get(partName) ?? 0;
-    if (partMateCount === 0) {
+    const partAnchorCount = anchorCount.get(partName) ?? 0;
+    if (partAnchorCount === 0) {
       diagnostics.push(
         buildDiag(
           'kinematic.load.beam-not-applicable',
           'warn',
-          `Part '${partName}' has no declared mate; the cantilever boundary requires exactly one root mate.`,
+          `Part '${partName}' has no declared mate or anchoring joint; the cantilever boundary requires exactly one root anchor.`,
           partName,
         ),
       );
       continue;
     }
-    if (partMateCount > 1) {
+    if (partAnchorCount > 1) {
       diagnostics.push(
         buildDiag(
           'kinematic.load.beam-not-applicable',
           'warn',
-          `Part '${partName}' is bound by ${partMateCount} mates; the v1 cantilever approximation requires exactly one. Decompose the part into single-mate segments or wait for v2 FEA.`,
+          `Part '${partName}' is bound by ${partAnchorCount} anchors (mates + joints); the v1 cantilever approximation requires exactly one. Decompose the part into single-anchor segments or wait for v2 FEA.`,
           partName,
         ),
       );

@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useEffect, useRef } from 'react';
 import { SignInButton } from './SignInButton';
+import { EmailPasswordForm } from './EmailPasswordForm';
 
 export interface SignInModalProps {
   open: boolean;
@@ -86,10 +87,29 @@ export function SignInModal({
         </h2>
         <p className="text-ink-soft text-sm mt-2 leading-relaxed">{description}</p>
 
-        <div className="mt-6 flex justify-center">
-          <SignInButton redirectTo={redirectTo ?? window.location.href}>
-            Continue with Google
-          </SignInButton>
+        <div className="mt-6">
+          <EmailPasswordForm redirectTo={redirectTo ?? window.location.href} />
+        </div>
+
+        <div className="my-5 flex items-center gap-3">
+          <span className="h-px flex-1 bg-rule" />
+          <span className="text-xs text-ink-faint">or</span>
+          <span className="h-px flex-1 bg-rule" />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <SignInButton
+            provider="google"
+            redirectTo={redirectTo ?? window.location.href}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-rule bg-white hover:bg-paper text-ink px-4 py-2 text-sm font-medium disabled:opacity-50 transition-colors font-sans"
+          />
+          {import.meta.env.VITE_GITHUB_AUTH_ENABLED === 'true' && (
+            <SignInButton
+              provider="github"
+              redirectTo={redirectTo ?? window.location.href}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-rule bg-white hover:bg-paper text-ink px-4 py-2 text-sm font-medium disabled:opacity-50 transition-colors font-sans"
+            />
+          )}
         </div>
 
         <p className="mt-5 text-xs text-ink-faint font-mono tracking-wide">

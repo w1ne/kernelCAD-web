@@ -125,6 +125,30 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'embossText boolean produced a result whose volume equals the parent volume; the feature had no effect.',
   },
+  'feature.subtractive-noop': {
+    hintTemplate:
+      'A subtractive op (boolean difference, hole, or cutout) removed no material — the tool never intersected the body. Check the cutter/hole position overlaps the target solid, the depth reaches the material, and the operands are in the same coordinate frame.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'reposition or resize the cutting tool so it overlaps the target solid' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A boolean difference / hole / cutout produced a result whose volume equals the input volume; the cut had no effect.',
+  },
+  'feature.intersection-empty': {
+    hintTemplate:
+      'A boolean intersection produced an empty result — the two bodies do not overlap, so the requested common volume is empty. Check the operands share a region of space (same coordinate frame, overlapping positions) and that they intersect as a solid, not merely touch on a face or edge.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'reposition or resize the operands so their solids overlap before intersecting' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A boolean intersection produced an empty / zero-volume result; the operands do not share a common solid volume.',
+  },
+  'feature.empty-result': {
+    hintTemplate:
+      'A solid create (box, cylinder, sphere, extrude, revolve, loft, or sweep) produced an empty or zero-volume shape. Check the dimensions are positive and finite, the profile is a closed non-degenerate sketch, and the sweep/revolve path actually generates volume.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'give the create non-degenerate, positive dimensions or a valid closed profile so it produces a solid with volume' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A solid primitive or sweep-family create lowered to an empty or zero-volume shape; the result has no material.',
+  },
   'feature.project-curve.no-intersection': {
     hintTemplate:
       'projectCurve could not intersect the source curve with the target face. For closed-curve mode, ensure the curve overlaps the face bounds. asEdge:true is currently deferred — use closed-curve projection or pre-tessellate the open wire into a closed sketch.',
@@ -565,6 +589,23 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'feature',
     description: '.flattenPattern() was called on a Shape with more than 2 bends, exceeding the slice-1 limit.',
+  },
+  // Draft (1) — Slice E Task 6/7
+  'feature.draft.failed': {
+    hintTemplate:
+      'Draft failed on the selected face(s). Drafts need a planar neutral plane and a consistent pull direction; check that the face is planar and the angle is < 90°.',
+    nextAction: { kind: 'fix-arg', field: 'face' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'BRepOffsetAPI_DraftAngle could not taper the requested faces.',
+  },
+  'feature.draft.neutral-plane-derived': {
+    hintTemplate:
+      'A named neutralPlane different from the drafted face is not yet honored; the parting plane was derived from the face geometry. Full named-neutral-plane support lands in a later slice.',
+    nextAction: { kind: 'fix-arg', field: 'neutralPlane' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'A draft was given a named neutralPlane distinct from the drafted face; the plane was derived from face geometry instead of the named plane.',
   },
   // SDF (2) — W2.3
   'feature.sdf.field-undefined': {
@@ -1104,6 +1145,22 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'mechanism',
     description: 'A part declared on the assembly is not reachable from any other part via mate edges — the mate graph is disconnected.',
   },
+  // Physics-grounded loop — T3 slice (post-condition trust gate). Emitted by
+  // `mechanismTruth.ts` when the BREP pose-sweep work estimate exceeds the
+  // (auto-scaled) budget and criteria 2/3/7/8 are SKIPPED, degrading the
+  // verdict to 'unverified'. Replaces the old silent console.warn: the
+  // 'unverified' verdict now carries machine-readable evidence (work
+  // estimate, budget, part count) so an agent can react instead of mistaking
+  // it for a clean 'real'. Non-fatal (severity 'warn') — "could not verify"
+  // is not "broken".
+  'mechanism.unverified-budget-exceeded': {
+    hintTemplate:
+      "The articulated collision/pose sweep was skipped because its estimated work exceeded the budget, so the mechanism is 'unverified' (NOT certified collision-free). Verify a tractable subset of the assembly, reduce the part/pose count, or pass a larger sweepBudget to force a full sweep. The cheap criteria (orphan-part, fastened-rigidity) still ran.",
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'mechanism',
+    description: 'The deterministic BREP pose-sweep work estimate exceeded the (auto-scaled) budget; the articulated overlap criteria were skipped and the mechanism verdict degraded to unverified rather than running an intractable sweep.',
+  },
   'mechanism.joint-mesh-gap': {
     hintTemplate:
       'Extend the parent body geometry so its OCCT solid reaches the joint origin at rest pose. Most commonly: increase the height of the column / boss that hosts the joint, or move the part-local connector origin onto an actual face/edge of the body. A pivot deliberately in open space (annular rim seat, spindle riding in the bore of a fastened block) passes when the mated rigid groups maintain bearing contact within tolerance somewhere away from the axis.',
@@ -1375,6 +1432,40 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'feature',
     description: 'BRepOffsetAPI_MakeFilling returned no face for the supplied boundary curves.',
+  },
+  // NURBS Slice E/F — surfaceTrim / split.
+  'feature.surface-trim.no-intersection': {
+    hintTemplate:
+      'Surface trim found no intersection between the surface and the cutter. Ensure they actually cross.',
+    nextAction: { kind: 'fix-arg', field: 'by' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A surface trim/split produced no section curve — surfaces do not intersect.',
+  },
+  'feature.surface-trim.non-planar': {
+    hintTemplate:
+      'Legacy surface trim refused a non-planar base or cutter. Current curved trim uses BRepFeat_SplitShape; if you still see this diagnostic, refresh the runtime bundle and retry with cleanly intersecting single-face surfaces.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'use cleanly intersecting single-face surfaces, or refresh to the curved-trim runtime bundle' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'Legacy diagnostic for the former planar-only surface trim path.',
+  },
+  'feature.surface-trim.split-deferred': {
+    hintTemplate:
+      'Legacy surface.split(by) warning from the former one-piece split path. Current split returns both halves as [Surface, Surface]; refresh the runtime bundle if this appears in new work.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'refresh to the curved-trim runtime bundle and destructure the two returned split surfaces' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'Legacy diagnostic for the former one-piece split path.',
+  },
+  // NURBS Slice E (2) — sew() surface stitching.
+  'feature.surface-sew.open-shell': {
+    hintTemplate:
+      'sew() produced an open shell (some edges have no matching neighbour within tolerance). Either increase opts.tolerance so adjacent edge pairs close, add the missing patch to seal the gap, or set requireClosed: false to accept an open shell.',
+    nextAction: { kind: 'fix-arg', field: 'surfaces' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'BRepBuilderAPI_Sewing produced an open shell — one or more boundary edges are unmatched within the stitching tolerance.',
   },
   'feature.fillet.continuity-not-applicable': {
     hintTemplate:
@@ -1888,6 +1979,32 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'kinematic',
     description:
       'A fastened mate binds two connectors whose hole diameters disagree beyond the diameter-match tolerance; the underlying assembly.mounting-hole.mismatch code also fires from the v0.7.4 substrate.',
+  },
+  'kinematic.pose.out-of-limits': {
+    hintTemplate:
+      'A pose value supplied to assembly.solve()/solvedModel() falls outside the joint\'s declared limitsDeg/limitsMm. Clamp the pose into the declared range, or widen the joint limits if the mechanism is intended to travel that far.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance:
+        'clamp the joint pose into the declared limits, or widen limitsDeg/limitsMm on the joint if the travel is intended',
+    },
+    defaultSeverity: 'warn',
+    group: 'kinematic',
+    description:
+      'A revolute/prismatic joint pose passed to assembly.solve() or assembly.solvedModel() exceeds the closed limitsDeg/limitsMm range declared on that joint; the pose is still applied (advisory warning, not a hard failure).',
+  },
+  'kinematic.mounting-hole.no-coverage': {
+    hintTemplate:
+      'The mounting-hole consistency check found no fastened mates to examine, so a green result verifies nothing. Add at least one arm.mate(..., \'fastened\') between connectors bound to face-center holes, or stop relying on this gate for fastener coverage.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance:
+        'add a fastened mate between connectors bound to face-center holes so the mounting-hole gate has something to verify',
+    },
+    defaultSeverity: 'info',
+    group: 'kinematic',
+    description:
+      'checkMountingHoleConsistency ran on an assembly with zero fastened mates; nothing was checked, so the otherwise-green result is vacuous (no coverage).',
   },
 
   // Slice Q (Query DSL) — Q3 evaluator codes (7 of the v1 11-code core;

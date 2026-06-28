@@ -25,7 +25,7 @@ import {
 } from '../../render/headlessRender';
 import { buildModelFromFile } from '../../../modeling/buildModel';
 import type { Assembly } from '../../../modeling/capture/assembly';
-import { checkMechanismTruth } from '../../../modeling/runtime/mechanismTruth';
+import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export interface RenderInput {
@@ -158,20 +158,11 @@ export async function runRenderMechanismProbe(absScriptPath: string): Promise<{
       return { mechanism: 'unverified', failures: [] };
     }
     // Verdict precedence across assemblies: broken > unverified > real.
-    // A skipped BREP sweep (issue #348) surfaces as 'unverified'.
-    let anyBroken = false;
-    let anyUnverified = false;
-    const aggregated: CompilerDiagnostic[] = [];
-    for (const arm of assemblies) {
-      const verdict = await checkMechanismTruth(arm);
-      if (verdict.mechanism === 'broken') anyBroken = true;
-      else if (verdict.mechanism === 'unverified') anyUnverified = true;
-      aggregated.push(...verdict.failures);
-    }
-    return {
-      mechanism: anyBroken ? 'broken' : anyUnverified ? 'unverified' : 'real',
-      failures: aggregated,
-    };
+    // A skipped BREP sweep (issue #348) surfaces as 'unverified'. The
+    // aggregation lives in the shared `probeAssemblies` helper so the CLI
+    // render gate and the MCP `evaluate_script` gate stay byte-for-byte
+    // consistent.
+    return await probeAssemblies(assemblies);
   } catch {
     return { mechanism: 'unverified', failures: [] };
   }

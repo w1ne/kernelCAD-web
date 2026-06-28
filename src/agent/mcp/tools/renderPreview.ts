@@ -39,6 +39,7 @@ import { resolveRenderBaseUrl, type ResolvedRenderBase } from '../../render/play
 import {
   buildObjectFilter,
   isRenderStrictMode,
+  parseSectionFlag,
   runRenderMechanismProbe,
   watermarkBrokenMechanism,
 } from '../../cli/commands/render';
@@ -88,6 +89,12 @@ export interface RenderPreviewInput {
   /** Advanced: force a specific render server base URL (e.g. a running
    *  studio dev server) instead of the bundled static player. */
   base_url?: string;
+  /** Cut the model with a single axis-aligned section plane so the captures
+   *  show interior structure (wall thickness, pockets, whether a bore runs
+   *  through) instead of only the outer shell. `position` is in mm along the
+   *  axis in kernelCAD's Z-up frame; `flip` keeps the positive-axis side
+   *  (default keeps the negative-axis side). */
+  section?: { axis: 'x' | 'y' | 'z'; position: number; flip?: boolean };
 }
 
 export interface RenderPreviewImage {
@@ -251,6 +258,23 @@ export async function renderPreviewTool(
     );
   }
 
+  // Section plane: reuse the CLI's parseSectionFlag so positionRaw carries the
+  // digits verbatim (stringifying the Number would emit exponent notation the
+  // page-side `?section=` regex silently rejects → an unclipped render).
+  let section: { axis: 'x' | 'y' | 'z'; position: number; positionRaw: string; flip: boolean } | undefined;
+  if (input.section !== undefined) {
+    try {
+      const parsed = parseSectionFlag(`${input.section.axis}=${input.section.position}`);
+      section = { ...parsed, flip: input.section.flip ?? false };
+    } catch {
+      return refusal(
+        'cli.invalid-args',
+        `render_preview: invalid section ${JSON.stringify(input.section)} — axis must be 'x', 'y', or 'z' and position a finite decimal.`,
+        "Pass section as { axis: 'x'|'y'|'z', position: <number>, flip?: boolean }, e.g. { axis: 'z', position: 10 }.",
+      );
+    }
+  }
+
   // --- Session dir + code-mode temp script. ---
   let outDir: string;
   let scriptPath: string;
@@ -275,7 +299,7 @@ export async function renderPreviewTool(
     );
   }
 
-  const work = renderPreviewWork({ input, deps, scriptPath, outDir, views, pose, objectFilter, width, height });
+  const work = renderPreviewWork({ input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section });
   // Swallow the losing chain's rejection if the timeout wins (same pattern as
   // capture_animation) so it never surfaces as an unhandled rejection.
   work.catch(() => undefined);
@@ -312,8 +336,9 @@ async function renderPreviewWork(args: {
   objectFilter: ReturnType<typeof buildObjectFilter>;
   width: number;
   height: number;
+  section?: { axis: 'x' | 'y' | 'z'; position: number; positionRaw: string; flip: boolean };
 }): Promise<RenderPreviewOutput> {
-  const { input, deps, scriptPath, outDir, views, pose, objectFilter, width, height } = args;
+  const { input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section } = args;
   const t0 = Date.now();
 
   // Physics-loop probe — identical protocol to the render CLI: strict mode
@@ -365,6 +390,7 @@ async function renderPreviewWork(args: {
       ...(input.environment !== undefined ? { environment: input.environment } : {}),
       ...(input.no_watermark === true ? { noWatermark: true } : {}),
       ...(objectFilter !== undefined ? { objectFilter } : {}),
+      ...(section !== undefined ? { section } : {}),
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);

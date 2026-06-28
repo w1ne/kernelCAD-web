@@ -22,7 +22,7 @@ export type GenerateEvent =
   | { kind: 'tool_call'; name: string; args: unknown }
   | { kind: 'tool_result'; name: string; ok: boolean }
   | { kind: 'done'; artifact: Artifact; generationId: string; anonId: string; durationMs: number }
-  | { kind: 'error'; code: 'llm_failed' | 'eval_failed' | 'timeout'; message: string; generationId: string };
+  | { kind: 'error'; code: 'llm_failed' | 'gate_failed' | 'eval_failed' | 'timeout'; message: string; generationId: string };
 
 /**
  * Parse a Server-Sent Events stream from POST /api/v1/generate into typed events.
@@ -102,7 +102,7 @@ function mapToEvent(name: string, p: Record<string, unknown>): GenerateEvent | n
     case 'error':
       return {
         kind: 'error',
-        code: p.code as 'llm_failed' | 'eval_failed' | 'timeout',
+        code: p.code as 'llm_failed' | 'gate_failed' | 'eval_failed' | 'timeout',
         message: asString(p.message),
         generationId: asString(p.generationId),
       };
@@ -113,6 +113,9 @@ function mapToEvent(name: string, p: Record<string, unknown>): GenerateEvent | n
 
 export interface GenerateRequest {
   prompt: string;
+  /** Edit mode: the current editor source the agent should modify (Studio agent
+   *  loop). Omit for a fresh generation (funnel/landing). */
+  currentCode?: string;
 }
 
 export async function startGeneration(req: GenerateRequest): Promise<Response> {

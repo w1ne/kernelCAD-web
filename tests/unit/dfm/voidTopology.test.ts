@@ -243,4 +243,66 @@ describe('analyzeVoids — OCCT export meshes', () => {
     expect(res.detectedSealedVoidCount).toBe(0);
     expect(res.crackedColumns).toBe(0);
   }, 30000);
+
+  // ── Multiple INDEPENDENT openings ─────────────────────────────────────────
+  // A part can have several narrow openings that are NOT one connected channel
+  // (an enclosure's separate port cutouts, two unrelated bores). Each is its
+  // own outside-connected neck component; the count must be the TOTAL across
+  // all of them, not the mouths of whichever single component is largest.
+
+  it('partOpenings counts 2 separate blind holes (found, the single channel, stays 1)', async () => {
+    // Two Ø4 blind holes into a solid block from the top — disjoint necks.
+    // `found` binds to ONE channel (the largest neck) and is 1; the part-level
+    // count sees both openings.
+    const mesh = await exportMesh(
+      'return box(40, 20, 20)' +
+        '.subtract(cylinder(11, 2).translate(10, 10, 10))' +
+        '.subtract(cylinder(11, 2).translate(30, 10, 10));',
+    );
+    const res = analyzeVoids(mesh, new TriangleBvh(mesh), [bore(2)]);
+    expect(res.phases).toEqual({ sealedVoids: true, mouthCount: true });
+    expect(res.channelOpenings!.found).toBe(1);
+    expect(res.channelOpenings!.partOpenings).toBe(2);
+    expect(res.channelOpenings!.partMouthLocations).toHaveLength(2);
+  }, 30000);
+
+  it('partOpenings counts every port of a hollow enclosure tray (3 ports → 3)', async () => {
+    // The proto.cat enclosure case: a SHELLED tray (open top) with three
+    // narrow external ports — a USB-C slot, an M12 panel bore, an IR aperture.
+    // The wide cavity is not one ≤16mm channel, so found (largest neck) is 1;
+    // the real opening count is 3, reported by partOpenings.
+    const mesh = await exportMesh(
+      'let b = box(74, 49, 30).shell(2.4, { face: { byNormal: "Z" } });' +
+        'const usb = box(10, 6, 4).translate(16, 44, 7);' +
+        'const m12 = cylinder(7, 6.25).rotateY(90).translate(-1, 24, 14);' +
+        'const mlx = box(13, 6, 13).translate(44, 44, 9);' +
+        'return b.subtract(usb, m12, mlx);',
+    );
+    const res = analyzeVoids(mesh, new TriangleBvh(mesh), [bore(3)]);
+    expect(res.phases).toEqual({ sealedVoids: true, mouthCount: true });
+    expect(res.channelOpenings!.partOpenings).toBe(3);
+  }, 30000);
+
+  it('a port-less hollow tray reports partOpenings 1, NOT inflated by internal corners', async () => {
+    // Regression guard for the part-level sum: the 8mm closing fills fillets
+    // along the tray's internal edges, but those are absorbed into the one
+    // cavity component (the open top) — they must NOT each become a mouth.
+    const mesh = await exportMesh(
+      'return box(74, 49, 30).shell(2.4, { face: { byNormal: "Z" } });',
+    );
+    const res = analyzeVoids(mesh, new TriangleBvh(mesh), [bore(1)]);
+    expect(res.channelOpenings!.found).toBe(1);
+    expect(res.channelOpenings!.partOpenings).toBe(1);
+  }, 30000);
+
+  it('partOpenings equals found for a single connected channel (through-hole)', async () => {
+    // No regression of the single-channel contract: one channel, two mouths —
+    // found and partOpenings agree.
+    const mesh = await exportMesh(
+      'return box(20, 20, 20).subtract(cylinder(22, 2).translate(10, 10, -1));',
+    );
+    const res = analyzeVoids(mesh, new TriangleBvh(mesh), [bore(2)]);
+    expect(res.channelOpenings!.found).toBe(2);
+    expect(res.channelOpenings!.partOpenings).toBe(2);
+  }, 30000);
 });

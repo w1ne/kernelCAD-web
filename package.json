@@ -2,7 +2,7 @@
   "name": "kernelcad",
   "mcpName": "com.kernelcad/kernelcad",
   "private": false,
-  "version": "0.13.0",
+  "version": "0.15.0",
   "license": "MIT",
   "author": "Andrii Shylenko <andrii@shylenko.com>",
   "type": "module",
@@ -21,8 +21,18 @@
   "bin": {
     "kernelcad": "dist/cli/index.js"
   },
+  "exports": {
+    "./studio": {
+      "types": "./dist/studio/index.d.ts",
+      "import": "./dist/studio/index.js"
+    },
+    "./studio.css": "./src/index.css",
+    "./package.json": "./package.json"
+  },
   "files": [
     "dist/cli",
+    "dist/studio",
+    "src/index.css",
     "dist/headless-player",
     "README.md",
     "LICENSE",
@@ -34,6 +44,7 @@
     "prebuild": "tsr generate",
     "build": "tsc -b && vite build",
     "build:cli": "tsc --noEmit -p tsconfig.cli.json && node scripts/build-cli.mjs",
+    "build:studio": "vite build --config vite.studio.config.ts",
     "build:player": "vite build -c vite.player.config.ts",
     "dist:skills": "npx tsx scripts/distGenerate.mjs",
     "eval": "npx tsx eval/run.ts",
@@ -46,7 +57,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "release": "npx tsx scripts/release.ts",
-    "prepack": "npm run build:cli && npm run build:player",
+    "prepack": "npm run build:cli && npm run build:studio && npm run build:player",
+    "prepare": "git config core.hooksPath .githooks || true; npm run build:studio",
     "generate:parts": "npx tsx scripts/generateSeedCatalog.ts assets/parts",
     "prepublishOnly": "npm run generate:parts",
     "pretest": "npm run generate:parts",
@@ -54,6 +66,7 @@
     "test:audit": "npx tsx scripts/testQualityAudit.ts",
     "test:hygiene": "npm test -- scripts/repoHygieneAudit.test.ts",
     "test:package": "npx tsx scripts/packageReleaseAudit.ts",
+    "test:release-hygiene": "KERNELCAD_RELEASE_AUDIT_TAGS=1 KERNELCAD_RELEASE_AUDIT_REMOTE=1 KERNELCAD_RELEASE_AUDIT_GITHUB=1 npm run test:package",
     "proof:foundation": "npm run typecheck && npm run test:audit && npm run test:hygiene && npm run test:package && npm test -- src/modeling/constraints/solver.test.ts src/modeling/constraints/advanced_constraints.test.ts tests/integration/diagnostics/hint-mandatory.test.ts tests/integration/diagnostics/next-action-mandatory.test.ts scripts/lib/whatsNewTemplate.test.ts tests/integration/mcp/listApi.driftSentinel.test.ts tests/unit/skill/skillShapeMethodsDrift.test.ts tests/unit/patterns/patternCapture.test.ts tests/unit/backends/occt/patternLowerer.test.ts tests/integration/examples/patternExamples.test.ts && npm run proof:dist-skills",
     "proof:dist-skills": "npm test -- tests/unit/cli/walkSkillTree.test.ts tests/unit/cli/skillInstallRecursion.test.ts tests/unit/cli/skillInstallDeprecation.test.ts tests/unit/scripts/distGenerate.test.ts tests/unit/scripts/distSkillManifest.test.ts tests/unit/scripts/distHarnessAuthor.test.ts tests/unit/scripts/distGrepGate.test.ts tests/unit/scripts/distToolNameGate.test.ts tests/unit/scripts/distFsDiscoverySentinel.test.ts tests/unit/scripts/distReadme.test.ts tests/unit/scripts/distPostinstallScript.test.ts",
     "proof:assembly-contract": "npm run proof:foundation && npm test -- tests/unit/assemblies/assemblyCapture.test.ts tests/unit/backends/occt/assemblyLowerer.test.ts tests/integration/examples/assemblyExamples.test.ts tests/unit/skill/skillGlobalsDrift.test.ts",
@@ -109,7 +122,7 @@
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",
     "replicad": "^0.23.1",
-    "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#kcad-v0.23.1",
+    "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#kcad-v0.24.0",
     "sharp": "^0.33.5",
     "shiki": "^1.29.2",
     "three": "^0.184.0",
@@ -120,7 +133,7 @@
     "zod": "^4.3.6"
   },
   "overrides": {
-    "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#kcad-v0.23.1"
+    "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#kcad-v0.24.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260504.1",
@@ -153,6 +166,7 @@
     "tsx": "^4.21.0",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
+    "vite-plugin-dts": "^5.0.2",
     "vitest": "^4.0.18"
   },
   "optionalDependencies": {

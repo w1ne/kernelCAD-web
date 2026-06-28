@@ -85,7 +85,10 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
         'Use this when you need to run a script and check it compiles. ' +
         'Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics. ' +
         'When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), ' +
-        'also returns a parts summary { count, names }. ' +
+        'also returns a parts summary { count, names } AND runs the mechanism-truth gate by ' +
+        'default: the `mechanism` field reports real/broken/unverified and a broken mechanism ' +
+        '(self-collision, fastened drift, dof-mismatch) makes ok:false with the failures in ' +
+        'diagnostics. Pass { skipMechanismCheck: true } to opt out. ' +
         'Pass either { file: "<path>" } or { code: "<inline source>" }. ' +
         'Set { dryRun: true } for fast validation while iterating: transpile + capture + ' +
         'capture-light checks WITHOUT OCCT lowering, DFM gates, or meshing — milliseconds ' +
@@ -103,6 +106,15 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
             description:
               'Fast validation only: skip OCCT lowering, DFM gates, and meshing. ' +
               'Does not set or clear the active session.',
+          },
+          skipMechanismCheck: {
+            type: 'boolean',
+            description:
+              'Opt out of the default mechanism-truth gate. By default a full ' +
+              'evaluation of an assembly-built scene runs checkMechanismTruth and ' +
+              'returns a `mechanism` verdict (real/broken/unverified); a broken ' +
+              "mechanism makes ok:false. Set true to skip the sweep entirely (no " +
+              '`mechanism` field, no cost). Ignored for dryRun and non-assembly scripts.',
           },
         },
       },
@@ -284,17 +296,20 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'add_surface',
       description:
-        'Use this when you need to author a NURBS Surface into the user\'s .kcad.ts. One authoring path, selected by `kind`:\n' +
-        "- 'nurbs' — insert a nurbsSurface(...) / surfaceFromCurves(...) call. Pass either { controls, degree, weights?, knots?, periodic? } for direct construction, OR { section_sketch_ids } for skinning. Slice-1 limitation: weights are accepted but currently ignored (TColStd_Array2OfReal not exposed in WASM bindings); surfaces are non-rational.\n" +
+        'Use this when you need an organic, freeform, or swept shape — a body shell, panel, fairing, ergonomic curve, lens, or sculpted form — authored as a NURBS Surface into the user\'s .kcad.ts, OR when you need to finish surfaces into a watertight solid or taper faces for moldability. One authoring/finishing path, selected by `kind`:\n' +
+        "- 'nurbs' — insert a nurbsSurface(...) / surfaceFromCurves(...) call. Pass either { controls, degree, weights?, knots?, periodic? } for direct construction, OR { section_sketch_ids } for skinning. Weights are honored: supply rational weights to build exact circles/cylinders/spheres/conics (the surface becomes rational); omit weights for a non-rational surface.\n" +
         "- 'boundary' — insert a surfaceFromBoundary([c1,c2,c3,c4], opts?) call: one NURBS face through 4 boundary Curve3D refs (bottom, right, top, left in loop order; adjacent endpoints must coincide within 1e-6 mm) via OCCT BRepOffsetAPI_MakeFilling.\n" +
+        "- 'trim' — insert a `<surface>.trimTo(<by>)` or `<surface>.split(<by>)` call. Pass `surface_binding` (the Surface variable name), `by_binding` (the cutter Surface variable name; Shape/Curve3D cutters are deferred to a later slice), and `op: 'trim'` (keep the largest imprinted piece) or `op: 'split'` (return both halves as a `[Surface, Surface]` tuple).\n" +
+        "- 'sew' — insert a `sew([s0, s1, ...], opts?)` call to stitch N surfaces into a closed watertight solid via OCCT BRepBuilderAPI_Sewing. Pass `surface_bindings` (array of Surface variable names). Use after trim/boundary to close patches into a solid: trim → sew → solid pipeline. Optional `tolerance` (mm, default 1e-6) and `require_closed` (emits feature.surface-sew.open-shell if result is not watertight).\n" +
+        "- 'draft' — insert a `<shape>.draft(angleDeg, { face, neutralPlane?, pullDir? })` call to taper the selected face(s) for mold release. Pass `shape_binding`, `angle_deg` (0–90), and `face` (canonical name, label, or FaceQuery descriptor). Lowering emits feature.draft.failed on invalid geometry.\n" +
         'The returned Surface produces no Shape until you chain .thicken(t) or .toShape() (do that via add_feature on the binding name). Returns the modified code + diagnostics. Each kind fails closed on its own missing required params.',
       inputSchema: {
         type: 'object',
         properties: {
           kind: {
             type: 'string',
-            enum: ['nurbs', 'boundary'],
-            description: 'Which surface-construction path to use.',
+            enum: ['nurbs', 'boundary', 'trim', 'sew', 'draft'],
+            description: "Which surface-construction or surface-finishing path to use: 'nurbs' | 'boundary' | 'trim' | 'sew' | 'draft'.",
           },
           code: { type: 'string', description: 'Current .kcad.ts source.' },
           controls: {
@@ -357,7 +372,62 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           sampling: { type: 'integer', minimum: 1, description: "kind:'boundary' — OCCT NbPtsOnCur sampling parameter (default 15)." },
           binding_name: {
             type: 'string',
-            description: "JS const name for the new Surface binding (kind:'nurbs' default surface_<N>; kind:'boundary' default _surface_<N>).",
+            description: "JS const name for the new binding (kind:'nurbs' default surface_<N>; kind:'boundary' default _surface_<N>; kind:'trim' default _trimmed_<N>; kind:'sew' default _sewn_<N>; kind:'draft' default _drafted_<N>).",
+          },
+          // kind:'trim' params
+          surface_binding: {
+            type: 'string',
+            description: "kind:'trim' — JS variable name of the Surface to trim/split (must be declared in source).",
+          },
+          by_binding: {
+            type: 'string',
+            description: "kind:'trim' — JS variable name of the cutter Surface (must be declared in source). Shape/Curve3D cutters are deferred.",
+          },
+          op: {
+            type: 'string',
+            enum: ['trim', 'split'],
+            description: "kind:'trim' — 'trim' discards the smaller half (calls .trimTo()); 'split' retains both halves (calls .split()).",
+          },
+          // kind:'sew' params
+          surface_bindings: {
+            type: 'array',
+            description: "kind:'sew' — JS variable names of the surfaces to stitch into a solid (each must be declared in source).",
+            items: { type: 'string' },
+            minItems: 1,
+          },
+          tolerance: {
+            type: 'number',
+            description: "kind:'sew' — edge-merging tolerance in mm (default 1e-6). Edges within this distance are merged.",
+          },
+          require_closed: {
+            type: 'boolean',
+            description: "kind:'sew' — when true the lowerer emits feature.surface-sew.open-shell if the stitched result is not a watertight solid.",
+          },
+          // kind:'draft' params
+          shape_binding: {
+            type: 'string',
+            description: "kind:'draft' — JS variable name of the Shape to taper (must be declared in source).",
+          },
+          angle_deg: {
+            type: 'number',
+            minimum: 0,
+            maximum: 90,
+            description: "kind:'draft' — draft angle in degrees [0, 90]. The face is tapered outward by this angle relative to the pull direction.",
+          },
+          face: {
+            type: 'string',
+            description: "kind:'draft' — face selector for the face(s) to taper. Accepts a canonical name (top/bottom/front/back/left/right), a user label declared via faceLabels, or a FaceQuery descriptor string.",
+          },
+          neutral_plane: {
+            type: 'string',
+            description: "kind:'draft' — parting-line face (the plane where drafted faces remain fixed). Defaults to `face` if omitted.",
+          },
+          pull_dir: {
+            type: 'array',
+            items: { type: 'number' },
+            minItems: 3,
+            maxItems: 3,
+            description: "kind:'draft' — demoulding direction as [x, y, z]. Defaults to the face normal at lower time.",
           },
         },
         required: ['kind', 'code'],
@@ -369,7 +439,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'add_curve',
       description:
-        "Use this when you need to author a 3D Curve3D into the user's .kcad.ts immediately before the last top-level return. One authoring path, selected by `kind`:\n" +
+        "Use this when you need a freeform/organic 3D curve — a body feature line, brow, spine rail, or G2 blend between panels — authored as a Curve3D into the user's .kcad.ts immediately before the last top-level return. One authoring path, selected by `kind`:\n" +
         "- 'nurbs' — insert a `nurbsCurve(controlPoints, opts?)` declaration. Pass `controlPoints` as a Vec3[] (mm, at least 2 points). Optional NURBS knobs: `degree` (default 3), rational `weights`, explicit `knots`, `closed`.\n" +
         "- 'hermite' — insert a `hermiteG2(a, b)` declaration: a quintic Hermite curve interpolating two endpoints with matching positions, tangents, and (optional) curvatures — bridges two curves with G2 continuity. Each endpoint is `{ point: Vec3, tangent: Vec3, curvature?: Vec3 }` in mm; tangent magnitude ~ chord length; curvature defaults to [0,0,0] (G1-only).\n" +
         "The returned binding has type Curve3D (peer to Shape / Surface) — consume it via `add_variable_sweep` (spine input), `add_surface({ kind: 'boundary' })` (boundary curve), or downstream Curve3D-accepting features. Returns the modified code + diagnostics from re-evaluating. Side-effect-free. Each kind fails closed on its own missing required params.",
@@ -434,7 +504,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'add_path_segment',
       description:
-        "Use this when you need to append a curved segment to an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()`. One segment kind, selected by `kind`:\n" +
+        "Use this when you need a freeform/organic 2D outline — an eyewear brow, ergonomic grip, sneaker midsole, or body silhouette — by appending a curved segment to an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()`. One segment kind, selected by `kind`:\n" +
         "- 'spline' — `.spline(points, opts?)`: interpolates through every `points` waypoint (Vec2[] mm, >= 2 entries; points[0] must match current pen position). Optional `tension`, and `startTangent`/`endTangent` 2D direction vectors that constrain the first-derivative direction at the endpoints (magnitude normalised internally). Use for organic 2D outlines (eyewear brow, ergonomic handle, sneaker midsole).\n" +
         "- 'nurbs' — `.nurbsSegment(controlPoints, opts?)`: explicit B-spline net (Vec2[] mm, >= degree+1 entries; controlPoints[0] must match pen; pen ends at controlPoints[N-1]). Optional `degree` (default 3), rational `weights` (strictly positive), explicit `knots` (length = controlPoints.length + degree + 1).\n" +
         "- 'hermite' — `.hermiteG2(a, b)`: each endpoint `{ point: Vec2, tangent: Vec2, curvature?: Vec2 }` in mm (a.point must match pen; pen ends at b.point). `curvature` defaults to [0,0] (G1); pass matching curvatures for G2 blends. Tangent magnitude is the first derivative (~ chord length), NOT unit length.\n" +
@@ -575,7 +645,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'add_variable_sweep',
       description:
-        "Use this when you need to author a variable-section sweep along a spine. " +
+        "Use this when you need an organic swept solid whose cross-section changes along its length — a tapering body, horn, bottle, fairing, or duct — authored as a variable-section sweep along a spine. " +
         "Insert a `variableSweep(spine, sections, opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. The result is a Shape — chain `.translate(...)`, `.union(...)`, etc. via `add_feature`. `spine_binding` references an existing variable (Curve3D / Sketch / Vec3[]) in the source; each `sections[i].profile_binding` references an existing Sketch. Sections must be strictly increasing in `t` and span [0, 1]; first t=0, last t=1. Orientation is not exposed by this MCP tool until runtime orientation support is wired. Validates every binding exists in the source via regex before inserting (fast structured error vs capture-time stack). Returns the modified code + diagnostics. Side-effect-free.",
       inputSchema: {
         type: 'object',
@@ -644,19 +714,31 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'project_curve',
-      description: 'Use this when you need to wrap a 2D curve onto a 3D face. Insert a `<shape>.projectCurve({ curve, face, scaleMode?, asEdge? })` chained call into a kernelCAD script. Wraps a 2D closed curve onto a 3D face along the face normal; pair with `.extrude(d)` / `.cut(...)` for engraved logos or label inserts on curved bodies. `asEdge: true` is captured but currently deferred at lower time (BRepProj_Projection not bundled). Side-effect-free; returns modified code plus diagnostics.',
+      description: 'Use this when you need to wrap a 2D closed curve onto a 3D face. Insert a `<shape>.projectCurve({ source, face, scaleMode? })` chained call into a kernelCAD script. The `source` is the structured `{ kind: "sketchCommands", commands: [...] }` wire format the runtime API accepts. Wraps the curve onto the face along the face normal; pair with `.extrude(d)` / `.cut(...)` for raised or engraved logos on curved bodies. Open-wire projection (`asEdge: true`) is deferred (BRepProj_Projection not bundled) and is rejected at edit time. Side-effect-free; returns modified code plus diagnostics.',
       inputSchema: {
         type: 'object',
         properties: {
-          code:            { type: 'string', description: 'The .kcad.ts source code.' },
-          target:          { type: 'string', description: 'Variable name of the Shape to chain onto.' },
-          curveExpression: { type: 'string', description: 'JS expression returning a closed sketch (e.g. `path().moveTo(0,0).lineTo(2,0).lineTo(2,2).close().build()`). Inserted verbatim as the `curve:` field.' },
-          face:            { type: 'string', description: "Target face — canonical name or label." },
-          scaleMode:       { type: 'string', enum: ['original', 'native', 'bounds'], description: 'Drawing.sketchOnFace scaling mode. Default original.' },
-          asEdge:          { type: 'boolean', description: 'Project as an open edge instead of a closed face-bound sketch. Currently deferred.' },
-          bindAs:          { type: 'string', description: 'Optional local variable name; emits `const <bindAs> = <target>.projectCurve(...);`.' },
+          code:      { type: 'string', description: 'The .kcad.ts source code.' },
+          target:    { type: 'string', description: 'Variable name of the Shape to chain onto.' },
+          commands:  {
+            type: 'array',
+            description: 'Closed 2D path to wrap onto the face, as plain-number commands. Must start with a `moveTo` and end with a `close` (e.g. [{kind:"moveTo",x:0,y:0},{kind:"lineTo",x:2,y:0},{kind:"lineTo",x:2,y:2},{kind:"close"}]).',
+            items: {
+              type: 'object',
+              properties: {
+                kind: { type: 'string', enum: ['moveTo', 'lineTo', 'close'] },
+                x:    { type: 'number' },
+                y:    { type: 'number' },
+              },
+              required: ['kind'],
+            },
+          },
+          face:      { type: 'string', description: 'Target face — canonical name or label.' },
+          scaleMode: { type: 'string', enum: ['original', 'native', 'bounds'], description: 'Drawing.sketchOnFace scaling mode. Default original.' },
+          asEdge:    { type: 'boolean', description: 'Open-wire (edge) projection. DEFERRED — rejected at edit time (BRepProj_Projection not bundled).' },
+          bindAs:    { type: 'string', description: 'Optional local variable name; emits `const <bindAs> = <target>.projectCurve(...);`.' },
         },
-        required: ['code', 'target', 'curveExpression', 'face'],
+        required: ['code', 'target', 'commands', 'face'],
       },
     },
     handler: input => projectCurveTool(input as unknown as Parameters<typeof projectCurveTool>[0]),
@@ -749,7 +831,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'lookup_api',
       description:
-        'Use this when you need to list the kernelCAD script-runtime surface: global functions (box, path, selectEdges, helix, etc), Shape methods (fillet, sweep, lower, etc), Sketch methods (extrude, revolve, sweep), PathBuilder methods, EdgeQuery/FaceQuery key sets, and featureKindFaceLabels (which globals accept opts.faceLabels and valid value shapes). Use this to discover what is callable from a .kcad.ts script.',
+        'Use this when you need to list the kernelCAD script-runtime surface: global functions (box, path, selectEdges, helix, etc), Shape methods (fillet, sweep, lower, etc), Sketch methods (extrude, revolve, sweep), PathBuilder methods, EdgeQuery/FaceQuery key sets, and featureKindFaceLabels (which globals accept opts.faceLabels and valid value shapes). Use this to discover what is callable from a .kcad.ts script.' +
+        ' Call this BEFORE concluding kernelCAD lacks a capability — its NURBS freeform surfacing (loft, sweep, boundary-fill, G2 blend) is easy to miss from tool names alone.',
       inputSchema: {
         type: 'object',
         properties: {},
@@ -1205,7 +1288,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
         'over the 3D viewport; this tool scans the known kernelCAD-web checkouts and returns the ' +
         'freshest one within a configurable freshness window (default 30 minutes). Returns base64 ' +
         'PNGs of the screenshot + mask in-band so any MCP client can see the marked regions ' +
-        'without local-disk Read access. Call this whenever the user says "look at my mark", ' +
+        'without local-disk Read access. The packet also carries the user\'s intent — an optional ' +
+        'one-line note and preset tags (e.g. "too thick", "missing", "wrong angle") describing ' +
+        'WHAT is wrong, not just where. Call this whenever the user says "look at my mark", ' +
         '"check what I painted", or any equivalent.',
       inputSchema: {
         type: 'object',
@@ -1415,7 +1500,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
         '(dist/headless-player) is served from an ephemeral local port automatically; a running studio dev server is used ' +
         'as fallback, and { base_url } forces one. The only environment dependency is playwright chromium ' +
         '(npx playwright install chromium). Pass { focus } or { hide } (arrays of feature ids or assembly part names, ' +
-        'mutually exclusive) to isolate parts — same semantics as `kernelcad render --focus/--hide`. PNGs are written to ' +
+        'mutually exclusive) to isolate parts — same semantics as `kernelcad render --focus/--hide`. Pass ' +
+        '{ section: { axis, position, flip? } } to cut a cross-section and inspect INTERIOR geometry (wall thickness, ' +
+        'internal pockets, whether a bore runs through) rather than only the outer shell. PNGs are written to ' +
         '{ out_dir } (default: a fresh temp session directory) and returned as absolute paths with per-view camera ' +
         'descriptions (kernelCAD is Z-up). Mechanism truth runs first, same protocol as `kernelcad render`: a broken ' +
         'mechanism still renders but every tile is watermarked MECHANISM BROKEN (KERNELCAD_RENDER_STRICT=1 refuses ' +
@@ -1440,6 +1527,17 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           no_watermark: { type: 'boolean', description: 'Suppress the kernelCAD version watermark.', default: false },
           no_mechanism_check: { type: 'boolean', description: "Skip the mechanism-truth probe for fast iteration on large assemblies; the preview reports mechanism: 'unverified'. Ignored under KERNELCAD_RENDER_STRICT=1.", default: false },
           base_url: { type: 'string', description: 'Advanced: force a specific render server (e.g. a running studio dev server) instead of the bundled static player.' },
+          section: {
+            type: 'object',
+            description: "Cut the model with one axis-aligned section plane to inspect INTERIOR structure (wall thickness, internal pockets, whether a bore runs through) instead of only the outer shell. position is in mm along the axis (kernelCAD Z-up frame); flip keeps the +axis side (default keeps the -axis side).",
+            properties: {
+              axis: { type: 'string', enum: ['x', 'y', 'z'] },
+              position: { type: 'number' },
+              flip: { type: 'boolean', default: false },
+            },
+            required: ['axis', 'position'],
+            additionalProperties: false,
+          },
         },
       },
     },

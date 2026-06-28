@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="kernelCAD — editable .kcad.ts source, deterministic review, OpenCASCADE kernel, MCP server, and standard CAD exports." />
-  <meta property="og:title" content="kernelCAD — CAD for agents" />
-  <meta property="og:description" content="Author editable .kcad.ts, run deterministic review_cad checks, and export STEP/STL." />
+  <meta name="description" content="Describe what you need and kernelCAD designs the part, checks it holds together, and hands you a file your shop can manufacture." />
+  <meta property="og:title" content="kernelCAD — from a description to a part you can build" />
+  <meta property="og:description" content="Describe what you need. kernelCAD designs the part, checks it holds together, and hands you a file your shop can manufacture." />
   <meta property="og:image" content="https://kernelcad.com/og-image.png" />
   <meta property="og:url" content="https://kernelcad.com" />
   <meta name="twitter:card" content="summary_large_image" />
@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;1,500&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/style.css?v=2026-05-23-gallery-lightbox-model" />
-  <title>kernelCAD — CAD for agents</title>
+  <title>kernelCAD — from a description to a part you can build</title>
   <!--
     Cloudflare Web Analytics — anonymous beacon (no cookies, no IP storage).
     The token is the public site-token from the Cloudflare Web Analytics
@@ -43,9 +43,8 @@
 
     <header class="hero">
       <div class="hero-copy">
-        <div class="proof-line">.kcad.ts · review_cad · STEP/STL</div>
-        <h1 class="headline">CAD for <span class="accent">agents</span>.</h1>
-        <p class="subhead">A scriptable CAD runtime for editable .kcad.ts source, deterministic review, and physical part exports.</p>
+        <h1 class="headline">From a description to a part you can <span class="accent">build</span>.</h1>
+        <p class="subhead">Describe what you need. kernelCAD designs the part, checks it holds together, and hands you a file your shop can manufacture.</p>
         <div class="modes" aria-label="Supported agent surfaces">
           <span class="mode">Claude Desktop</span><span class="sep">·</span>
           <span class="mode">Codex</span><span class="sep">·</span>
@@ -92,7 +91,7 @@
     <section class="capabilities" aria-label="kernelCAD capabilities">
       <div class="capability">
         <span class="capability-name">Editable Source</span>
-        <span class="capability-copy">.kcad.ts files with params, assemblies, NURBS, SDF, and sheet metal APIs</span>
+        <span class="capability-copy">editable .kcad.ts files with params, assemblies, NURBS, SDF, and sheet metal APIs</span>
       </div>
       <div class="capability">
         <span class="capability-name">review_cad</span>
@@ -113,7 +112,7 @@
         <span class="section-kicker">Start with words</span>
         <h2 class="prompt-handoff-headline">Describe the part you want.</h2>
       </div>
-      <form class="prompt-handoff-form" action="https://app.kernelcad.com/generate" method="GET">
+      <form class="prompt-handoff-form" action="/app/generate" method="GET" autocomplete="off">
         <label class="sr-only" for="prompt-input">CAD prompt</label>
         <textarea
           id="prompt-input"
@@ -121,6 +120,7 @@
           rows="3"
           placeholder="60x40x5 mm bracket with 4 M3 mounting holes"
           required
+          autocomplete="off"
         ></textarea>
         <button class="btn btn-primary" type="submit">Generate in app</button>
       </form>
@@ -380,8 +380,10 @@
           `;
           tile.__entry = entry;
           armGalleryTileUpgrade(tile, entry, galleryCacheKey);
+          tile.querySelector('.tile-studio-link')?.addEventListener('pointerdown', clearPromptDraftBeforeNavigation);
           tile.querySelector('.tile-studio-link')?.addEventListener('click', (event) => {
             event.stopPropagation();
+            clearPromptDraftBeforeNavigation();
           });
           tile.addEventListener('click', () => {
             upgradeGalleryTile(tile, entry, galleryCacheKey);
@@ -427,7 +429,16 @@
           dialog.querySelector('.lightbox-stage').textContent = '';
           dialog.close();
         }
+        function clearPromptDraftBeforeNavigation() {
+          const form = document.querySelector('.prompt-handoff-form');
+          if (!(form instanceof HTMLFormElement)) return;
+          form.reset();
+        }
         closeBtn.addEventListener('click', closeLightbox);
+        studioLink.addEventListener('pointerdown', clearPromptDraftBeforeNavigation);
+        studioLink.addEventListener('click', clearPromptDraftBeforeNavigation);
+        appLink.addEventListener('pointerdown', clearPromptDraftBeforeNavigation);
+        appLink.addEventListener('click', clearPromptDraftBeforeNavigation);
         dialog.addEventListener('click', (e) => {
           if (e.target === dialog) closeLightbox();
         });

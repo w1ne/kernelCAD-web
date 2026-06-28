@@ -32,6 +32,12 @@ import { SelectionOutline } from "./viewer/overlays/SelectionOutline";
 import { SceneBackground } from "./viewer/SceneBackground";
 import { ViewGizmo } from "./viewer/overlays/ViewGizmo";
 import type { ViewTarget } from "./viewer/controllers/cameraPose";
+import { CAPTURE_HIDDEN_FLAG } from "./viewer/captureViewerPng";
+
+// Tag value for scene furniture (origin construction planes + ground grid) that
+// render-to-image capture hides so the PNG shows the clean framed model, not the
+// authoring view. Read by captureViewerPngBase64; see captureViewerPng.ts.
+const CAPTURE_HIDDEN_USERDATA = { [CAPTURE_HIDDEN_FLAG]: true } as const;
 
 // Constants
 export const SKETCH_FOV = 40;
@@ -171,17 +177,19 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                 <SelectionOutline geometries={geometries} itemNames={itemNames} selectedItemIds={selectedItemIds} />
 
                 {!sketchMode.active && gridVisible && (
-                    <Grid
-                        position={[0, 0, gridPlacement.z]}
-                        rotation={[Math.PI / 2, 0, 0]}
-                        infiniteGrid
-                        cellSize={5}
-                        sectionSize={25}
-                        cellColor="#404040"
-                        sectionColor="#606060"
-                        fadeDistance={gridPlacement.fade}
-                        fadeStrength={1.5}
-                    />
+                    <group userData={CAPTURE_HIDDEN_USERDATA}>
+                        <Grid
+                            position={[0, 0, gridPlacement.z]}
+                            rotation={[Math.PI / 2, 0, 0]}
+                            infiniteGrid
+                            cellSize={5}
+                            sectionSize={25}
+                            cellColor="#404040"
+                            sectionColor="#606060"
+                            fadeDistance={gridPlacement.fade}
+                            fadeStrength={1.5}
+                        />
+                    </group>
                 )}
 
                 <group>
@@ -254,7 +262,9 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     </group>
                 )}
 
-                <PlaneLayer planes={planes} />
+                <group userData={CAPTURE_HIDDEN_USERDATA}>
+                    <PlaneLayer planes={planes} />
+                </group>
                 {sketchMode.active && <ParametricLayer />}
                 <OrbitControls
                     makeDefault

@@ -197,6 +197,32 @@ THIS, not the photo composite, when you have an STL to compare against.
 The 2D-photo scorer remains useful as a sanity check (does it look like the
 photo?) but should not be the primary optimization target.
 
+## Rule 10 — Patches that bound a volume → trimTo + sew + draft
+
+If you have authored multiple `surfaceFromBoundary` or `nurbsSurface` patches
+that together enclose a volume (front panel + back panel, top cap + side wall,
+etc.), you must close them into a watertight solid before exporting or
+boolean-ing:
+
+1. **trimTo shared cutter surfaces** — call `.trimTo(cutterSurface)` on each
+   patch so adjacent edges are cut to the same imprinted boundary, eliminating
+   seam gaps. Use `.split(cutterSurface)` when both sides of a patch are needed.
+2. **sew** — call `sew([...trimmedSurfaces], { requireClosed: true })` to fuse
+   the coincident edges into one closed shell. `requireClosed: true` throws
+   `feature.surface-sew.open-shell` immediately if the result is still open,
+   letting you catch authoring gaps early rather than at export.
+3. **check the result is closed** — run `kernelcad evaluate` and confirm there
+   are no open-shell or watertight diagnostics.
+4. **draft for mold release** — if the finished solid must release from a mold,
+   call `.draft(angleDeg, { face, neutralPlane?, pullDir? })` on the face(s)
+   parallel to the pull direction. Default `neutralPlane` is the named face;
+   default `pullDir` is the face normal at lower time.
+
+Do NOT call `.thicken()` on each patch individually and then union the
+resulting solids — the seam discontinuity at the join creates visible shading
+artifacts and the export mesher will sometimes fail the watertight gate. Use
+`trimTo` / `split` + `sew` so the surfaces share topological edges.
+
 ## When NOT to apply a rule
 
 These rules are defaults — they steer the author toward the kernel surface that

@@ -166,8 +166,11 @@ const acetateBlank = frontBody(acetateOutline);
 
 const leftLensCut = frontBody(lensOpening(-1), FRAME_DEPTH + 6, -3);
 const rightLensCut = frontBody(lensOpening(1), FRAME_DEPTH + 6, -3);
-const leftLensSeat = frontBody(lensOpening(-1, 1.55), 1.0, 0.05);
-const rightLensSeat = frontBody(lensOpening(1, 1.55), 1.0, 0.05);
+// NOTE: the lens "seats" were inset (smaller) openings cut at y∈[0.05,1.05],
+// fully inside the region the deep lens through-cut already removes — so they
+// subtracted zero material (a no-op the subtractive-noop gate flags). Removed
+// here (behavior-preserving: the frame renders identically). A real lens
+// rebate would be a slightly LARGER, shallow recess on the front face.
 
 const noseNotch = path()
   .moveTo(-NOSE_NOTCH_W / 2, FRAME_BOT_Z - 0.8)
@@ -200,8 +203,6 @@ const browRelief = frontBody(
 const frame = acetateBlank
   .subtract(leftLensCut)
   .subtract(rightLensCut)
-  .subtract(leftLensSeat)
-  .subtract(rightLensSeat)
   .subtract(noseCut)
   .subtract(cameraCounterbore)
   .subtract(cameraInnerPocket)
