@@ -4,19 +4,9 @@ import React, { useMemo, useState } from 'react';
 import { DiffEditor } from '@monaco-editor/react';
 import { useGeneration } from '../funnel/hooks/useGeneration';
 import type { GenerateEvent } from '../funnel/lib/generateClient';
+import { inAppAgentEnabled } from './agentAvailability';
 import { useCode } from './context/CodeContext';
 import { useGeometry } from './context/GeometryContext';
-
-/**
- * The in-app agent exists ONLY on the hosted web build (which sets a generation
- * backend via VITE_API_BASE_URL). The npm-distributed / local-MCP Studio has no
- * backend env → the panel is hidden there; locally the agent is the developer's
- * own Claude via the `kernelcad` MCP.
- */
-function inAppAgentEnabled(): boolean {
-    const base = import.meta.env?.VITE_API_BASE_URL;
-    return typeof base === 'string' && base.length > 0;
-}
 
 /** Web-only gate. No hooks here, so the conditional return is safe. */
 export const StudioGenerate: React.FC = () => {
