@@ -70,7 +70,7 @@ export async function authedFetch<T>(
 export type ProjectPrivacy = 'public_unlisted' | 'public_featured' | 'private';
 
 export interface SaveProjectInput {
-  generationId: string;
+  generationId?: string;
   anonId?: string;
   title: string;
   code: string;

@@ -227,6 +227,8 @@ export function StudioShell() {
                 onToggleSectionMode={handleToggleSectionMode}
                 inspectorOpen={inspectorOpen}
                 onToggleInspector={handleToggleInspector}
+                code={workbench.code}
+                projectName={activeProject?.name}
             />
 
             <div className="flex-1 flex overflow-hidden relative">
