@@ -28,9 +28,14 @@ export function hostedAgentEnabled(): boolean {
 // off → 503 { error: 'agent_disabled', message: 'Hosted generation is disabled. Use kernelCAD through MCP.' }
 ```
 
-**And nobody can pay.** Stripe checkout is not wired, so a free user who hits the
-`402` upgrade panel has no working path to become `pro_active`. This — not a
-missing paywall — is the actual revenue blocker.
+**And nobody can pay — but the Stripe *code* already exists.** `src/routes/billing.ts`
+already has create-checkout + customer portal + a signature-verified idempotent
+webhook, with a click-through guide at `docs/stripe-setup.md`. What's missing is
+the prod **config**: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and the two
+price IDs (`STRIPE_PRICE_ID_STANDARD`=$20, `STRIPE_PRICE_ID_PRO`=$100). Until those
+are set, a free user who hits the `402` upgrade panel can't actually convert. This
+config gap — not a missing paywall and not missing checkout code — is the real
+revenue blocker.
 
 Earlier confusion came from a stale local branch (`chore/deploy-artifact-discipline`)
 that forked before the paywall merged. Source of truth = `origin/main`.
@@ -76,19 +81,26 @@ cost-bearing run lands against a plan):
 
 ## Part A — Monetize what exists
 
-### A1. Stripe checkout + webhook (the real money gate)
-- `billing.ts` exposes a checkout-session create endpoint the upgrade panel calls.
-  When the user supplies Stripe keys: create a Checkout Session for the `$20`/`$100`
-  price IDs; on success the Stripe **webhook** sets `users.sub_status = pro_active`
-  (and clears it on cancel/expiry). The read path (`getUserBilling`) already
-  consumes `sub_status`, so no gating changes.
-- Guard with `BILLING_CHECKOUT_ENABLED`: off → the panel shows a "joining waitlist"
-  / coming-soon state instead of a dead button (no crash, no 500). On → real
-  Stripe. This is the single flag the user flips when hooks arrive.
+### A1. Configure Stripe (code already exists — do NOT rebuild billing.ts)
+- `billing.ts` already implements create-checkout, customer portal, and the
+  signature-verified idempotent webhook that sets `users.sub_status = pro_active`
+  on `checkout.session.completed` (and clears it on cancel/expire). The read path
+  (`getUserBilling`) already consumes `sub_status`. So gating needs **zero** new
+  code.
+- The work is **prod config** per `docs/stripe-setup.md`: create the two Products
+  ($20/$100), set `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
+  `STRIPE_PRICE_ID_STANDARD`, `STRIPE_PRICE_ID_PRO`, point the webhook at
+  `https://api.kernelcad.com/api/v1/billing/webhook`, enable the Customer Portal.
+  The user supplies these keys.
+- Implementation task here = **verify** the existing flow end-to-end with Stripe
+  test mode (card 4242…) and confirm the upgrade panel reaches the real checkout;
+  fix any drift. No greenfield build.
 
 ### A2. Turn the agent on
-- Set `ENABLE_IN_APP_AGENT=true` in prod **once A1 can convert** (so a `402` leads
-  somewhere). Until then the agent stays behind the kill-switch — by design.
+- Set `ENABLE_IN_APP_AGENT=true` in prod **once A1 converts** (so a `402` leads
+  somewhere real). Until then the agent stays behind the kill-switch — by design.
+  Order matters: agent-on before checkout-works = free users hit a dead upgrade
+  button.
 
 ### A3. Web upgrade panel
 - `RateLimitedPanel` already distinguishes anon vs authed and handles the `402`
