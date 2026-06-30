@@ -1,22 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTextTo3dPreview } from '../../funnel/hooks/useTextTo3dPreview';
-
-const MODEL_VIEWER_CDN = 'https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js';
-
-/** Lazy-load the model-viewer web component (keeps the ~1MB pkg out of the main bundle).
- *  Mirrors useModelViewer in GallerySection.tsx. */
-function useModelViewer(enabled: boolean): void {
-  useEffect(() => {
-    if (!enabled || typeof window === 'undefined') return;
-    if (window.customElements?.get('model-viewer')) return;
-    if (document.querySelector(`script[src="${MODEL_VIEWER_CDN}"]`)) return;
-    const s = document.createElement('script');
-    s.type = 'module'; s.src = MODEL_VIEWER_CDN;
-    try { document.head.appendChild(s); } catch { /* graceful degrade in test/SSR envs */ }
-  }, [enabled]);
-}
+import { useModelViewer } from '../../funnel/hooks/useModelViewer';
 
 export function PreviewConceptPanel() {
   const { phase, submit } = useTextTo3dPreview();
@@ -24,6 +10,18 @@ export function PreviewConceptPanel() {
   const busy = phase.state === 'running';
 
   useModelViewer(phase.state === 'done');
+
+  // The feature is dark until the server has a provider key (503). Render a
+  // quiet "not available" state instead of a scary red error, and hide the
+  // input so the user can't keep retrying into a wall.
+  if (phase.state === 'unavailable') {
+    return (
+      <section aria-label="Generate concept preview" className="flex flex-col gap-2 border-t border-[#2a2e38] pt-3 mt-1">
+        <div className="uppercase tracking-wide text-[10px] text-gray-500">3D Concept Preview</div>
+        <p className="text-[11px] text-gray-500">Not available yet — coming soon.</p>
+      </section>
+    );
+  }
 
   return (
     <section aria-label="Generate concept preview" className="flex flex-col gap-2 border-t border-[#2a2e38] pt-3 mt-1">
