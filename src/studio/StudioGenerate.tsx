@@ -7,6 +7,7 @@ import type { GenerateEvent } from '../funnel/lib/generateClient';
 import { inAppAgentEnabled } from './agentAvailability';
 import { useCode } from './context/CodeContext';
 import { useGeometry } from './context/GeometryContext';
+import { PreviewConceptPanel } from './components/PreviewConceptPanel';
 
 /** Web-only gate. No hooks here, so the conditional return is safe. */
 export const StudioGenerate: React.FC = () => {
@@ -160,6 +161,8 @@ const StudioGenerateInner: React.FC = () => {
                         : `Didn't finish: ${phase.message.slice(0, 140)}`}
                 </div>
             )}
+
+            <PreviewConceptPanel />
         </div>
     );
 };
