@@ -177,12 +177,11 @@ git commit -m "feat(text3d): add Tripo provider client + env vars"
 - Consumes: `requireUser` (`../lib/auth.js`), `getUserBilling` (`../lib/usersRepo.js`), `SseWriter` (`../lib/sse.js`), `generatePreview`/`tripoConfigured` (`../lib/tripoClient.js`), `logger` (`../logger.js`).
 - Produces: `export const previewRouter: Router`. SSE events on success path: `event: status` `{ progress }`, `event: preview_done` `{ glbUrl, costUsd, taskId }`, `event: error` `{ code, message }`. Pre-stream JSON failures: `401` (anon, written by `requireUser`), `402 { error:'not_paid' }` (free), `503 { error:'feature_unavailable' }` (no key), `400 { error:'bad_request' }` (empty prompt).
 
-- [ ] **Step 1: Write the failing test.** Create `kernelCAD-server/src/routes/preview.test.ts`. Mock auth, billing, and the tripo client (hoisted mocks, mirror `render.test.ts:11-24`). Drive the router with `supertest` (already a dev dep — confirm with `grep supertest kernelCAD-server/package.json`; the existing route tests use it).
+- [ ] **Step 1: Write the failing test.** Create `kernelCAD-server/src/routes/preview.test.ts`. Mock auth, billing, and the tripo client (hoisted mocks, mirror `render.test.ts:11-24`). **Drive the router with a real ephemeral express server (`app.listen(0)`) + `fetch()` — this is the existing route-test pattern (`render.test.ts`); there is NO `supertest` dependency, do not add one.**
 
 ```ts
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import express from 'express';
-import request from 'supertest';
+import { describe, it, expect, vi, beforeAll, afterAll, beforeEach } from 'vitest';
+import type { Server } from 'node:http';
 
 const { requireUserMock, getUserBillingMock, generatePreviewMock, tripoConfiguredMock } = vi.hoisted(() => ({
   requireUserMock: vi.fn(),
@@ -194,18 +193,35 @@ vi.mock('../lib/auth.js', () => ({ requireUser: requireUserMock }));
 vi.mock('../lib/usersRepo.js', () => ({ getUserBilling: getUserBillingMock }));
 vi.mock('../lib/tripoClient.js', () => ({ generatePreview: generatePreviewMock, tripoConfigured: tripoConfiguredMock }));
 
+import express from 'express';
 import { previewRouter } from './preview.js';
 
-function app() {
-  const a = express();
-  a.use(express.json());
-  a.use(previewRouter);
-  return a;
+let server: Server;
+let baseUrl: string;
+
+beforeAll(async () => {
+  const app = express();
+  app.use(express.json());
+  app.use(previewRouter);
+  await new Promise<void>(r => { server = app.listen(0, () => r()); });
+  const addr = server.address();
+  if (!addr || typeof addr === 'string') throw new Error('no addr');
+  baseUrl = `http://127.0.0.1:${addr.port}`;
+});
+afterAll(() => { server?.close(); });
+
+function post(body: unknown): Promise<Response> {
+  return fetch(`${baseUrl}/api/v1/preview/text-to-3d`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
   tripoConfiguredMock.mockReturnValue(true);
+  // requireUser writes nothing here (handler treats a truthy return as the user).
   requireUserMock.mockImplementation(async () => ({ userId: 'u1', email: 'a@b.c' }));
   getUserBillingMock.mockResolvedValue({ subStatus: 'pro_active', stripeCustomerId: 'cus_1' });
   generatePreviewMock.mockResolvedValue({ glbUrl: 'https://t/out.glb', costUsd: 0.2, taskId: 'task_1' });
@@ -214,41 +230,44 @@ beforeEach(() => {
 describe('POST /api/v1/preview/text-to-3d', () => {
   it('503 when tripo not configured', async () => {
     tripoConfiguredMock.mockReturnValue(false);
-    const res = await request(app()).post('/api/v1/preview/text-to-3d').send({ prompt: 'x' });
+    const res = await post({ prompt: 'x' });
     expect(res.status).toBe(503);
-    expect(res.body.error).toBe('feature_unavailable');
+    expect((await res.json()).error).toBe('feature_unavailable');
   });
 
   it('402 for a free (non-paid) user — and does NOT call tripo', async () => {
     getUserBillingMock.mockResolvedValue({ subStatus: 'free', stripeCustomerId: null });
-    const res = await request(app()).post('/api/v1/preview/text-to-3d').send({ prompt: 'x' });
+    const res = await post({ prompt: 'x' });
     expect(res.status).toBe(402);
-    expect(res.body.error).toBe('not_paid');
+    expect((await res.json()).error).toBe('not_paid');
     expect(generatePreviewMock).not.toHaveBeenCalled();
   });
 
   it('400 for an empty prompt', async () => {
-    const res = await request(app()).post('/api/v1/preview/text-to-3d').send({ prompt: '   ' });
+    const res = await post({ prompt: '   ' });
     expect(res.status).toBe(400);
   });
 
   it('streams preview_done with the glb url for a paid user', async () => {
-    const res = await request(app()).post('/api/v1/preview/text-to-3d').send({ prompt: 'a bracket' });
+    const res = await post({ prompt: 'a bracket' });
     expect(res.status).toBe(200);
-    expect(res.headers['content-type']).toContain('text/event-stream');
-    expect(res.text).toContain('event: preview_done');
-    expect(res.text).toContain('https://t/out.glb');
+    expect(res.headers.get('content-type')).toContain('text/event-stream');
+    const text = await res.text();
+    expect(text).toContain('event: preview_done');
+    expect(text).toContain('https://t/out.glb');
     expect(generatePreviewMock).toHaveBeenCalledWith('a bracket', expect.any(Function));
   });
 
   it('streams an error event when the provider throws', async () => {
     generatePreviewMock.mockRejectedValue(new Error('tripo: task failed'));
-    const res = await request(app()).post('/api/v1/preview/text-to-3d').send({ prompt: 'a bracket' });
+    const res = await post({ prompt: 'a bracket' });
     expect(res.status).toBe(200); // SSE opened before the failure
-    expect(res.text).toContain('event: error');
+    expect(await res.text()).toContain('event: error');
   });
 });
 ```
+
+Note: `requireUser` is mocked to return a user object directly. Because the handler does `const user = await requireUser(req, res); if (!user) return;`, the mock returning a truthy object is sufficient — the 401-writing path isn't exercised in these tests (an anonymous-path test would need the mock to write the response and return null; out of scope here).
 
 - [ ] **Step 2: Run the test to verify it fails.** Run: `cd kernelCAD-server && npx vitest run src/routes/preview.test.ts`. Expected: FAIL with "Cannot find module './preview.js'".
 
@@ -326,7 +345,7 @@ import { previewRouter } from './routes/preview.js';
 app.use(previewRouter);
 ```
 
-- [ ] **Step 5: Run the test to verify it passes.** Run: `cd kernelCAD-server && npx vitest run src/routes/preview.test.ts`. Expected: PASS (5 tests). If `supertest` is missing, `npm i -D supertest @types/supertest` first (confirm in Step 1).
+- [ ] **Step 5: Run the test to verify it passes.** Run: `cd kernelCAD-server && npx vitest run src/routes/preview.test.ts`. Expected: PASS (5 tests). Uses only `express` + `fetch` (no `supertest`).
 
 - [ ] **Step 6: Typecheck + commit.**
 
@@ -705,4 +724,4 @@ git commit -m "feat(text3d): Studio preview panel + model-viewer + stubbed param
 
 - Spec coverage: paid-gate (Task 2, server-side before spend) ✓; Tripo provider (Task 1) ✓; SSE streaming (Tasks 2–4) ✓; viewer (Task 5) ✓; stubbed rebuild button (Task 5) ✓; feature-dark-without-key 503 (Tasks 1–2) ✓; no trials / no metering rationale (Global Constraints + Deferred) ✓.
 - Type consistency: `PreviewEvent`/`PreviewPhase` shapes match across `previewClient` → `useTextTo3dPreview` → `PreviewConceptPanel`; server `preview_done` payload `{ glbUrl, costUsd, taskId }` matches the web `parseBlock` mapping.
-- Known verification points flagged inline: exact Tripo API field names (Task 1 Step 4), `supertest` availability (Task 2 Step 1), the `model-viewer` import line + Studio host file (Task 5).
+- Known verification points flagged inline: exact Tripo API field names (Task 1 Step 4), the `model-viewer` import line + Studio host file (Task 5). Route tests use `express` + `app.listen(0)` + `fetch` (the existing `render.test.ts` pattern), no `supertest`.
