@@ -30,4 +30,11 @@ describe('useTextTo3dPreview', () => {
     await act(async () => { await result.current.submit('x'); });
     expect(result.current.phase.state).toBe('upgrade');
   });
+
+  it('maps 503 (no provider key) to the unavailable state, not an error', async () => {
+    vi.spyOn(client, 'startPreview').mockResolvedValue(new Response('{"error":"feature_unavailable"}', { status: 503 }));
+    const { result } = renderHook(() => useTextTo3dPreview());
+    await act(async () => { await result.current.submit('x'); });
+    expect(result.current.phase.state).toBe('unavailable');
+  });
 });

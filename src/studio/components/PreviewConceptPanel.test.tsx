@@ -30,6 +30,15 @@ describe('PreviewConceptPanel', () => {
     expect(screen.getByText(/upgrade/i)).toBeInTheDocument();
   });
 
+  it('shows a quiet "not available" state on unavailable, with no prompt input', () => {
+    vi.spyOn(hook, 'useTextTo3dPreview').mockReturnValue({ phase: { state: 'unavailable' }, submit: vi.fn() });
+    render(<PreviewConceptPanel />);
+    expect(screen.getByText(/not available yet/i)).toBeInTheDocument();
+    // The input is hidden so the user can't retry into a wall.
+    expect(screen.queryByPlaceholderText(/describe/i)).toBeNull();
+    expect(screen.queryByRole('button', { name: /generate concept/i })).toBeNull();
+  });
+
   it('calls submit with the typed prompt', () => {
     const submit = vi.fn();
     vi.spyOn(hook, 'useTextTo3dPreview').mockReturnValue({ phase: { state: 'idle' }, submit });

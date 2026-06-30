@@ -7,7 +7,8 @@ export type PreviewPhase =
   | { state: 'running'; progress: number }
   | { state: 'done'; glbUrl: string; costUsd: number | null }
   | { state: 'error'; code: string; message: string }
-  | { state: 'upgrade' };
+  | { state: 'upgrade' }
+  | { state: 'unavailable' };
 
 export function useTextTo3dPreview() {
   const [phase, setPhase] = useState<PreviewPhase>({ state: 'idle' });
@@ -21,9 +22,11 @@ export function useTextTo3dPreview() {
       setPhase({ state: 'error', code: 'network', message: err instanceof Error ? err.message : String(err) });
       return;
     }
-    // 401 = anonymous (sign in), 402 = signed-in free user (upgrade), 403/503 also
-    // surface as an actionable state. Both 401/402 route to the same upgrade panel.
+    // 401 = anonymous (sign in), 402 = signed-in free user — both route to the
+    // upgrade panel. 503 = the server has no provider key yet (feature dark) —
+    // surface a quiet "unavailable" state, not a raw error.
     if (res.status === 401 || res.status === 402) { setPhase({ state: 'upgrade' }); return; }
+    if (res.status === 503) { setPhase({ state: 'unavailable' }); return; }
     if (!res.ok || !res.body) {
       setPhase({ state: 'error', code: `http_${res.status}`, message: await res.text().catch(() => `HTTP ${res.status}`) });
       return;
