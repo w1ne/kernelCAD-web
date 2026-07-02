@@ -44,6 +44,10 @@ jobs:
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
           # GitHub OAuth provider is registered and enabled in Supabase Auth.
           VITE_GITHUB_AUTH_ENABLED: 'true'
+          # Paid launch 2026-07-02: server-side ENABLE_IN_APP_AGENT is on and
+          # billing is live; without this build flag inAppAgentEnabled() hides
+          # the whole StudioGenerate UI (agent prompt + 3D concept preview).
+          VITE_ENABLE_IN_APP_AGENT: 'true'
         run: npm run build
 
       - name: Deploy to Cloudflare Pages (kernelcad-app)
