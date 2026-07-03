@@ -63,7 +63,7 @@ function PricingPage() {
       <section className="mx-auto max-w-5xl px-6 pb-20 pt-10">
         <h1 className="text-center font-serif text-5xl font-bold tracking-tight">Pricing</h1>
         <p className="mx-auto mt-4 max-w-xl text-center text-gray-400">
-          Start free. Upgrade when you want unlimited generations and the parametric build agent.
+          Unlimited hosted generation and the parametric build agent. Cancel anytime.
         </p>
 
         {/* Billing cadence toggle. */}

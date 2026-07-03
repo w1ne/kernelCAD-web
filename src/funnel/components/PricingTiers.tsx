@@ -8,9 +8,19 @@ import type { BillingPeriod, PaidTier, PlanTier } from '../lib/apiClient';
  * colored emoji feature badges, an orange gradient CTA, and a highlighted
  * "Most popular" tier). Data-driven so copy is easy to tune. Supports a
  * monthly/yearly billing toggle (yearly = 2 months free).
+ *
+ * Tiers come in three shapes:
+ *  - free      (`tier: null`)            → CTA calls onFree
+ *  - paid      (`tier: 'standard'|...`)  → CTA calls onSelect (Stripe checkout)
+ *  - contact   (`contact: true`)         → CTA is a mailto link, no self-serve
+ *    checkout. Used for Enterprise: seats / SSO / centralized billing are sold
+ *    through a conversation, not charged self-serve.
  */
 
 type BadgeColor = 'emerald' | 'violet' | 'amber' | 'sky' | 'slate';
+
+/** Where the Enterprise "Contact sales" CTA points. */
+const CONTACT_HREF = 'mailto:support@kernelcad.com?subject=kernelCAD%20for%20teams';
 
 interface Feature {
   text: string;
@@ -21,11 +31,13 @@ interface Feature {
 
 interface Tier {
   name: string;
-  /** Checkout tier id; null for the free tier. */
+  /** Checkout tier id; null for the free and contact-sales tiers. */
   tier: PaidTier | null;
-  /** Monthly sticker price, e.g. '$20'. */
+  /** Contact-sales tier: CTA is a mailto link, never a checkout or "current". */
+  contact?: boolean;
+  /** Monthly sticker price, e.g. '$20'. Contact tiers use 'Custom'. */
   monthly: string;
-  /** Total billed once per year, e.g. '$200' (2 months free). Null = free. */
+  /** Total billed once per year, e.g. '$200' (2 months free). Null = free/contact. */
   yearly: string | null;
   /** Effective per-month price when billed yearly, e.g. '$16.67'. */
   yearlyPerMonth?: string;
@@ -37,20 +49,6 @@ interface Tier {
 
 const TIERS: Tier[] = [
   {
-    name: 'Free',
-    tier: null,
-    monthly: '$0',
-    yearly: '$0',
-    blurb: 'Model and view in the browser, and bring your own agent over MCP.',
-    features: [
-      { text: '5 generations / month' },
-      { text: 'Full 3D editor & viewer' },
-      { text: 'MCP access — bring your own agent', emoji: '🔌', badge: 'sky' },
-      { text: 'STEP / STL export' },
-      { text: 'Public share links' },
-    ],
-  },
-  {
     name: 'Standard',
     tier: 'standard',
     monthly: '$20',
@@ -58,8 +56,10 @@ const TIERS: Tier[] = [
     yearlyPerMonth: '$16.67',
     popular: true,
     blurb: 'Unlimited hosted generation and the parametric build agent.',
-    inherits: 'Free',
     features: [
+      { text: 'Full 3D editor & viewer' },
+      { text: 'MCP access — bring your own agent', emoji: '🔌', badge: 'sky' },
+      { text: 'STEP / STL export' },
       { text: 'Unlimited generations', emoji: '♾️', badge: 'emerald' },
       { text: 'Build as parametric CAD (mesh-conditioned)', emoji: '🧠', badge: 'violet' },
       { text: 'Image → 3D concept previews', emoji: '🖼️', badge: 'amber' },
@@ -68,18 +68,18 @@ const TIERS: Tier[] = [
     ],
   },
   {
-    name: 'Team',
-    tier: 'pro',
-    monthly: '$100',
-    yearly: '$1000',
-    yearlyPerMonth: '$83.33',
-    blurb: 'For teams and enterprises sharing a workspace and a single bill.',
+    name: 'Enterprise',
+    tier: null,
+    contact: true,
+    monthly: 'Custom',
+    yearly: null,
+    blurb: 'Seats, one invoice, and a security review for your whole team.',
     inherits: 'Standard',
     features: [
-      { text: 'Team seats & shared projects', emoji: '👥', note: 'coming soon' },
-      { text: 'Centralized billing & invoicing', emoji: '🧾', note: 'coming soon' },
-      { text: 'SSO / SAML', emoji: '🔐', note: 'coming soon' },
-      { text: 'Priority support', emoji: '🎧' },
+      { text: 'Team seats & shared projects', emoji: '👥' },
+      { text: 'Centralized billing & invoicing', emoji: '🧾' },
+      { text: 'SSO / SAML', emoji: '🔐' },
+      { text: 'Priority support & onboarding', emoji: '🎧' },
     ],
   },
 ];
@@ -133,12 +133,13 @@ export function PricingTiers({ period, currentPlan, currentTier, onSelect, onFre
   const yearly = period === 'yearly';
 
   const isCurrent = (t: Tier): boolean => {
+    if (t.contact) return false;
     if (t.tier === null) return currentPlan === 'free' || currentPlan === undefined ? currentPlan === 'free' : false;
     return currentPlan === 'pro' && (currentTier ?? 'standard') === t.tier;
   };
 
   return (
-    <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+    <div className="mx-auto grid max-w-3xl grid-cols-1 gap-5 md:grid-cols-2">
       {TIERS.map(t => {
         const current = isCurrent(t);
         const highlight = t.popular;
@@ -164,7 +165,7 @@ export function PricingTiers({ period, currentPlan, currentTier, onSelect, onFre
                 {showYearly ? t.yearlyPerMonth : t.monthly}
               </span>
               <span className="mb-1.5 text-sm text-gray-400">
-                {paid ? (showYearly ? '/mo · billed yearly' : 'per month') : t.monthly === '$0' ? 'forever' : ''}
+                {t.contact ? "let's talk" : paid ? (showYearly ? '/mo · billed yearly' : 'per month') : t.monthly === '$0' ? 'forever' : ''}
               </span>
             </div>
             {showYearly ? (
@@ -174,7 +175,15 @@ export function PricingTiers({ period, currentPlan, currentTier, onSelect, onFre
             )}
             <p className="mt-3 min-h-[40px] text-sm text-gray-400">{t.blurb}</p>
 
-            {t.tier === null ? (
+            {t.contact ? (
+              <a
+                href={CONTACT_HREF}
+                aria-label="Contact sales about Enterprise"
+                className="mt-5 w-full rounded-lg bg-[#26262b] py-3 text-center text-sm font-semibold text-white no-underline transition-colors hover:bg-[#31313a]"
+              >
+                Contact sales
+              </a>
+            ) : t.tier === null ? (
               <button
                 type="button"
                 onClick={onFree}
