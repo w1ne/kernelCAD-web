@@ -69,3 +69,21 @@ export async function startPreview(prompt: string): Promise<Response> {
   }
   return fetch(`${base}/api/v1/preview/text-to-3d`, { method: 'POST', headers, body: JSON.stringify({ prompt }) });
 }
+
+/**
+ * Tripo's CDN allows localhost origins but sends no CORS headers for real
+ * domains, so <model-viewer> cannot fetch the signed GLB directly in prod.
+ * Route Tripo asset URLs through the API's relay (which our CORS covers);
+ * anything else passes through untouched.
+ */
+export function proxiedAssetUrl(url: string): string {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return url;
+  }
+  if (!parsed.hostname.endsWith('.data.tripo3d.com')) return url;
+  const base = import.meta.env.VITE_API_BASE_URL;
+  return `${base}/api/v1/preview/asset?src=${encodeURIComponent(url)}`;
+}
