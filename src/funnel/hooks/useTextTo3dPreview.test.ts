@@ -24,6 +24,22 @@ describe('useTextTo3dPreview', () => {
     expect(result.current.phase).toMatchObject({ state: 'done', glbUrl: 'https://t/out.glb' });
   });
 
+  it('rewrites Tripo glb urls through the API asset relay', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    const glb = 'https://tripo-data.rg1.data.tripo3d.com/a/model.glb?sig=x';
+    vi.spyOn(client, 'startPreview').mockResolvedValue(
+      sseResponse(`event: preview_done\ndata: ${JSON.stringify({ glbUrl: glb, costUsd: null, taskId: 't2' })}\n\n`),
+    );
+    const { result } = renderHook(() => useTextTo3dPreview());
+    await act(async () => { await result.current.submit('a bracket'); });
+    await waitFor(() => expect(result.current.phase.state).toBe('done'));
+    expect(result.current.phase).toMatchObject({
+      state: 'done',
+      glbUrl: `https://api.example.com/api/v1/preview/asset?src=${encodeURIComponent(glb)}`,
+    });
+    vi.unstubAllEnvs();
+  });
+
   it('maps 402 to the upgrade state', async () => {
     vi.spyOn(client, 'startPreview').mockResolvedValue(new Response('{"error":"not_paid"}', { status: 402 }));
     const { result } = renderHook(() => useTextTo3dPreview());
