@@ -16,7 +16,14 @@ describe('parsePreviewStream', () => {
     const events = [];
     for await (const e of parsePreviewStream(streamOf(sse))) events.push(e);
     expect(events[0]).toEqual({ kind: 'status', progress: 40 });
-    expect(events[1]).toEqual({ kind: 'preview_done', glbUrl: 'https://t/out.glb', costUsd: 0.2, taskId: 'task_1' });
+    expect(events[1]).toEqual({
+      kind: 'preview_done',
+      glbUrl: 'https://t/out.glb',
+      costUsd: 0.2,
+      taskId: 'task_1',
+      renderImageUrl: null,
+      proportions: null,
+    });
   });
 
   it('parses an error event', async () => {

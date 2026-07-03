@@ -5,7 +5,7 @@ import { parsePreviewStream, proxiedAssetUrl, startPreview } from '../lib/previe
 export type PreviewPhase =
   | { state: 'idle' }
   | { state: 'running'; progress: number }
-  | { state: 'done'; glbUrl: string; costUsd: number | null }
+  | { state: 'done'; glbUrl: string; costUsd: number | null; renderImageUrl: string | null; proportions: number[] | null }
   | { state: 'error'; code: string; message: string }
   | { state: 'upgrade' }
   | { state: 'unavailable' };
@@ -33,7 +33,7 @@ export function useTextTo3dPreview() {
     }
     for await (const e of parsePreviewStream(res.body)) {
       if (e.kind === 'status') setPhase({ state: 'running', progress: e.progress });
-      else if (e.kind === 'preview_done') { setPhase({ state: 'done', glbUrl: proxiedAssetUrl(e.glbUrl), costUsd: e.costUsd }); return; }
+      else if (e.kind === 'preview_done') { setPhase({ state: 'done', glbUrl: proxiedAssetUrl(e.glbUrl), costUsd: e.costUsd, renderImageUrl: e.renderImageUrl, proportions: e.proportions }); return; }
       else if (e.kind === 'error') { setPhase({ state: 'error', code: e.code, message: e.message }); return; }
     }
     setPhase({ state: 'error', code: 'stream_closed', message: 'Connection closed before the preview finished.' });

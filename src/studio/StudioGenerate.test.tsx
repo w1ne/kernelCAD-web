@@ -67,10 +67,10 @@ describe('StudioGenerate — unified prompt', () => {
     const { rerender } = render(<StudioGenerate />);
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'a hex planter' } });
     fireEvent.click(screen.getByRole('button', { name: /3d concept/i }));
-    previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null };
+    previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null, renderImageUrl: null, proportions: null };
     rerender(<StudioGenerate />);
     fireEvent.click(screen.getByRole('button', { name: /build as parametric cad/i }));
-    expect(generationSubmit).toHaveBeenCalledWith('a hex planter', undefined);
+    expect(generationSubmit).toHaveBeenCalledWith('a hex planter', undefined, { renderImageUrl: null, proportions: null });
   });
 
   it('Build-as-CAD is a FRESH generation even when the editor holds code (not an edit of it)', () => {
@@ -78,9 +78,19 @@ describe('StudioGenerate — unified prompt', () => {
     const { rerender } = render(<StudioGenerate />);
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'a hex planter' } });
     fireEvent.click(screen.getByRole('button', { name: /3d concept/i }));
-    previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null };
+    previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null, renderImageUrl: null, proportions: null };
     rerender(<StudioGenerate />);
     fireEvent.click(screen.getByRole('button', { name: /build as parametric cad/i }));
-    expect(generationSubmit).toHaveBeenCalledWith('a hex planter', undefined);
+    expect(generationSubmit).toHaveBeenCalledWith('a hex planter', undefined, { renderImageUrl: null, proportions: null });
+  });
+
+  it('Build-as-CAD passes the concept mesh context into the agent submit', () => {
+    const { rerender } = render(<StudioGenerate />);
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'a bracket' } });
+    fireEvent.click(screen.getByRole('button', { name: /3d concept/i }));
+    previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null, renderImageUrl: 'https://t/r.png', proportions: [1, 0.7, 0.6] };
+    rerender(<StudioGenerate />);
+    fireEvent.click(screen.getByRole('button', { name: /build as parametric cad/i }));
+    expect(generationSubmit).toHaveBeenCalledWith('a bracket', undefined, { renderImageUrl: 'https://t/r.png', proportions: [1, 0.7, 0.6] });
   });
 });

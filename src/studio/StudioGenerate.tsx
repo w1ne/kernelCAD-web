@@ -86,7 +86,14 @@ const StudioGenerateInner: React.FC = () => {
         // review diff still uses the current editor code as its baseline, so
         // nothing is overwritten without the user accepting.
         setBaseline(code);
-        void submit(conceptPrompt, undefined);
+        // Read the concept mesh directly from the live preview phase (no mirrored
+        // state). A done preview with no Tripo render/fingerprint yields
+        // {renderImageUrl:null, proportions:null} — intentional and distinct from
+        // "no mesh" (undefined); the server's nullish schema accepts it.
+        const mesh = preview.phase.state === 'done'
+            ? { renderImageUrl: preview.phase.renderImageUrl, proportions: preview.phase.proportions }
+            : undefined;
+        void submit(conceptPrompt, undefined, mesh);
     };
 
     const accept = () => {

@@ -40,6 +40,16 @@ describe('useTextTo3dPreview', () => {
     vi.unstubAllEnvs();
   });
 
+  it('surfaces renderImageUrl and proportions from preview_done', async () => {
+    vi.spyOn(client, 'startPreview').mockResolvedValue(
+      sseResponse('event: preview_done\ndata: {"glbUrl":"https://t/o.glb","costUsd":null,"taskId":"t1","renderImageUrl":"https://t/r.png","proportions":[1,0.7,0.6]}\n\n'),
+    );
+    const { result } = renderHook(() => useTextTo3dPreview());
+    await act(async () => { await result.current.submit('a bracket'); });
+    await waitFor(() => expect(result.current.phase.state).toBe('done'));
+    expect(result.current.phase).toMatchObject({ renderImageUrl: 'https://t/r.png', proportions: [1, 0.7, 0.6] });
+  });
+
   it('maps 402 to the upgrade state', async () => {
     vi.spyOn(client, 'startPreview').mockResolvedValue(new Response('{"error":"not_paid"}', { status: 402 }));
     const { result } = renderHook(() => useTextTo3dPreview());

@@ -117,6 +117,10 @@ export interface GenerateRequest {
   /** Edit mode: the current editor source the agent should modify (Studio agent
    *  loop). Omit for a fresh generation (funnel/landing). */
   currentCode?: string;
+  /** Mesh-conditioned build context: a rendered preview image + normalized
+   *  bounding-box proportions of an in-progress mesh-first build. Omit when
+   *  there is no mesh context (text-only funnel/landing generation). */
+  mesh?: { renderImageUrl?: string | null; proportions?: number[] | null };
 }
 
 export async function startGeneration(req: GenerateRequest): Promise<Response> {
