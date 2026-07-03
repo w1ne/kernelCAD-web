@@ -6,13 +6,15 @@ import path from 'node:path';
 describe('landing page app navigation', () => {
   const html = () => readFileSync(path.resolve(__dirname, '../../../site/index.html'), 'utf8');
 
-  it('keeps prompt handoff same-origin and disables browser draft restoration', () => {
+  it('links the landing pricing CTAs to the app and sales, not a generate form', () => {
     const source = html();
 
-    expect(source).toContain('class="prompt-handoff-form" action="/app/generate" method="GET" autocomplete="off"');
-    expect(source).toContain('name="prompt"');
-    expect(source).toContain('autocomplete="off"');
-    expect(source).not.toContain('action="https://app.kernelcad.com/generate"');
+    // Standard → app pricing page (real checkout lives there); Enterprise → sales.
+    expect(source).toContain('href="https://app.kernelcad.com/pricing"');
+    expect(source).toContain('href="mailto:support@kernelcad.com');
+    // The prompt-handoff form was replaced by the pricing section.
+    expect(source).not.toContain('class="prompt-handoff-form"');
+    expect(source).not.toContain('action="/app/generate"');
   });
 
   it('clears prompt draft state before gallery app navigation', () => {

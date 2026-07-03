@@ -60,17 +60,25 @@ describe('static gallery landing page', () => {
     expect(readme).not.toContain('build-demo.ts && node site/scripts/render-brand.mjs');
   });
 
-  it('places the prompt handoff before the built-with-kernelCAD gallery', () => {
+  it('places the pricing section before the built-with-kernelCAD gallery', () => {
     const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
 
-    expect(html).toContain('action="/app/generate"');
-    expect(html).toContain('name="prompt"');
-    expect(html).toContain('Describe the part you want');
+    // Pricing section (mirrors app.kernelcad.com/pricing): Standard + Enterprise.
+    expect(html).toContain('class="pricing"');
+    expect(html).toContain('>Standard<');
+    expect(html).toContain('>Enterprise<');
+    // Standard deep-links to the app pricing page; Enterprise is contact-sales.
+    expect(html).toContain('href="https://app.kernelcad.com/pricing"');
+    expect(html).toContain('mailto:support@kernelcad.com');
 
-    const promptIdx = html.indexOf('class="prompt-handoff"');
+    // The old "Describe the part you want" prompt handoff is gone.
+    expect(html).not.toContain('class="prompt-handoff"');
+    expect(html).not.toContain('Describe the part you want');
+
+    const pricingIdx = html.indexOf('class="pricing"');
     const galleryIdx = html.indexOf('class="gallery"');
-    expect(promptIdx).toBeGreaterThan(-1);
-    expect(galleryIdx).toBeGreaterThan(promptIdx);
+    expect(pricingIdx).toBeGreaterThan(-1);
+    expect(galleryIdx).toBeGreaterThan(pricingIdx);
   });
 
   it('renders gallery tiles as posters before upgrading them to rotating model-viewer elements', () => {
