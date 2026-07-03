@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { CheckCircle2 } from 'lucide-react';
-import type { PaidTier, PlanTier } from '../lib/apiClient';
+import type { BillingPeriod, PaidTier, PlanTier } from '../lib/apiClient';
 
 /**
  * PhotoAI-style pricing tiers (dark cards, huge prices, green check-circles,
  * colored emoji feature badges, an orange gradient CTA, and a highlighted
- * "Most popular" tier). Data-driven so copy is easy to tune.
+ * "Most popular" tier). Data-driven so copy is easy to tune. Supports a
+ * monthly/yearly billing toggle (yearly = 2 months free).
  */
 
 type BadgeColor = 'emerald' | 'violet' | 'amber' | 'sky' | 'slate';
@@ -14,21 +15,21 @@ type BadgeColor = 'emerald' | 'violet' | 'amber' | 'sky' | 'slate';
 interface Feature {
   text: string;
   emoji?: string;
-  /** Render the label as a colored pill (PhotoAI's standout-feature style). */
   badge?: BadgeColor;
-  /** Small muted note after the feature, e.g. "coming soon". */
   note?: string;
 }
 
 interface Tier {
-  /** Display name. */
   name: string;
   /** Checkout tier id; null for the free tier. */
   tier: PaidTier | null;
-  price: string;
-  period: string;
+  /** Monthly sticker price, e.g. '$20'. */
+  monthly: string;
+  /** Total billed once per year, e.g. '$200' (2 months free). Null = free. */
+  yearly: string | null;
+  /** Effective per-month price when billed yearly, e.g. '$16.67'. */
+  yearlyPerMonth?: string;
   blurb: string;
-  /** "Everything in X, plus:" divider label. */
   inherits?: string;
   popular?: boolean;
   features: Feature[];
@@ -38,8 +39,8 @@ const TIERS: Tier[] = [
   {
     name: 'Free',
     tier: null,
-    price: '$0',
-    period: 'forever',
+    monthly: '$0',
+    yearly: '$0',
     blurb: 'Model and view in the browser, and bring your own agent over MCP.',
     features: [
       { text: '5 generations / month' },
@@ -52,8 +53,9 @@ const TIERS: Tier[] = [
   {
     name: 'Standard',
     tier: 'standard',
-    price: '$20',
-    period: 'per month',
+    monthly: '$20',
+    yearly: '$200',
+    yearlyPerMonth: '$16.67',
     popular: true,
     blurb: 'Unlimited hosted generation and the parametric build agent.',
     inherits: 'Free',
@@ -66,15 +68,17 @@ const TIERS: Tier[] = [
     ],
   },
   {
-    name: 'Pro',
+    name: 'Team',
     tier: 'pro',
-    price: '$100',
-    period: 'per month',
-    blurb: 'For teams sharing a workspace and a single bill.',
+    monthly: '$100',
+    yearly: '$1000',
+    yearlyPerMonth: '$83.33',
+    blurb: 'For teams and enterprises sharing a workspace and a single bill.',
     inherits: 'Standard',
     features: [
       { text: 'Team seats & shared projects', emoji: '👥', note: 'coming soon' },
-      { text: 'Centralized billing', emoji: '🧾', note: 'coming soon' },
+      { text: 'Centralized billing & invoicing', emoji: '🧾', note: 'coming soon' },
+      { text: 'SSO / SAML', emoji: '🔐', note: 'coming soon' },
       { text: 'Priority support', emoji: '🎧' },
     ],
   },
@@ -89,12 +93,14 @@ const BADGE_CLASS: Record<BadgeColor, string> = {
 };
 
 export interface PricingTiersProps {
+  /** Selected billing cadence. */
+  period: BillingPeriod;
   /** Current plan tier ('free' | 'pro') to render a "Current plan" state. */
   currentPlan?: PlanTier;
   /** Which paid tier is active, when currentPlan === 'pro'. */
   currentTier?: PaidTier | null;
   /** Fired when a paid tier's Subscribe button is clicked. */
-  onSelect: (tier: PaidTier) => void;
+  onSelect: (tier: PaidTier, period: BillingPeriod) => void;
   /** Fired when the free tier CTA is clicked. */
   onFree: () => void;
   /** Disables the CTAs while a checkout redirect is being fetched. */
@@ -123,7 +129,9 @@ function FeatureRow({ f }: { f: Feature }) {
   );
 }
 
-export function PricingTiers({ currentPlan, currentTier, onSelect, onFree, busy = false }: PricingTiersProps) {
+export function PricingTiers({ period, currentPlan, currentTier, onSelect, onFree, busy = false }: PricingTiersProps) {
+  const yearly = period === 'yearly';
+
   const isCurrent = (t: Tier): boolean => {
     if (t.tier === null) return currentPlan === 'free' || currentPlan === undefined ? currentPlan === 'free' : false;
     return currentPlan === 'pro' && (currentTier ?? 'standard') === t.tier;
@@ -134,14 +142,14 @@ export function PricingTiers({ currentPlan, currentTier, onSelect, onFree, busy 
       {TIERS.map(t => {
         const current = isCurrent(t);
         const highlight = t.popular;
+        const paid = t.tier !== null;
+        const showYearly = yearly && paid && !!t.yearly;
         return (
           <section
             key={t.name}
             aria-label={`${t.name} plan`}
             className={`relative flex flex-col rounded-2xl border p-6 ${
-              highlight
-                ? 'border-orange-500/60 bg-[#17151a]'
-                : 'border-[#26262b] bg-[#141416]'
+              highlight ? 'border-orange-500/60 bg-[#17151a]' : 'border-[#26262b] bg-[#141416]'
             }`}
           >
             {highlight && (
@@ -152,9 +160,18 @@ export function PricingTiers({ currentPlan, currentTier, onSelect, onFree, busy 
 
             <h3 className="text-2xl font-bold text-white">{t.name}</h3>
             <div className="mt-2 flex items-end gap-2">
-              <span className="text-5xl font-extrabold tracking-tight text-white">{t.price}</span>
-              <span className="mb-1.5 text-sm text-gray-400">{t.period}</span>
+              <span className="text-5xl font-extrabold tracking-tight text-white">
+                {showYearly ? t.yearlyPerMonth : t.monthly}
+              </span>
+              <span className="mb-1.5 text-sm text-gray-400">
+                {paid ? (showYearly ? '/mo · billed yearly' : 'per month') : t.monthly === '$0' ? 'forever' : ''}
+              </span>
             </div>
+            {showYearly ? (
+              <p className="mt-1 text-xs text-emerald-400">{t.yearly}/year — 2 months free</p>
+            ) : (
+              <p className="mt-1 text-xs text-transparent select-none" aria-hidden="true">.</p>
+            )}
             <p className="mt-3 min-h-[40px] text-sm text-gray-400">{t.blurb}</p>
 
             {t.tier === null ? (
@@ -170,7 +187,7 @@ export function PricingTiers({ currentPlan, currentTier, onSelect, onFree, busy 
             ) : (
               <button
                 type="button"
-                onClick={() => onSelect(t.tier as PaidTier)}
+                onClick={() => onSelect(t.tier as PaidTier, period)}
                 disabled={current || busy}
                 aria-label={current ? `Current plan (${t.name})` : `Subscribe to ${t.name}`}
                 className={`mt-5 w-full rounded-lg py-3 text-sm font-semibold text-white transition-colors disabled:cursor-default disabled:opacity-70 ${

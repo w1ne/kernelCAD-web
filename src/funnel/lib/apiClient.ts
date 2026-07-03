@@ -200,6 +200,9 @@ export type PlanTier = 'free' | 'pro';
 /** The two paid plans. 'standard' = $20/mo solo, 'pro' = $100/mo team. */
 export type PaidTier = 'standard' | 'pro';
 
+/** Billing cadence. 'yearly' = 2 months free vs monthly. */
+export type BillingPeriod = 'monthly' | 'yearly';
+
 export interface MyPlan {
   plan: PlanTier;
   /** Which paid plan, when plan === 'pro'; null on free. */
@@ -223,9 +226,13 @@ export async function fetchMyPlan(): Promise<MyPlan> {
 
 /** POST /api/v1/billing/create-checkout — returns a Stripe Checkout URL
  * the caller should redirect to (window.location.href = url). `tier` selects
- * the plan ($20 Standard by default; 'pro' for the $100 team plan). */
-export async function createCheckoutSession(tier: PaidTier = 'standard'): Promise<CheckoutSession> {
-  return authedFetch<CheckoutSession>('POST', '/api/v1/billing/create-checkout', { tier });
+ * the plan ($20 Standard by default; 'pro' for the $100 team plan); `period`
+ * selects monthly (default) or yearly (2 months free) billing. */
+export async function createCheckoutSession(
+  tier: PaidTier = 'standard',
+  period: BillingPeriod = 'monthly',
+): Promise<CheckoutSession> {
+  return authedFetch<CheckoutSession>('POST', '/api/v1/billing/create-checkout', { tier, period });
 }
 
 /** POST /api/v1/billing/portal — returns a Stripe Customer Portal URL

@@ -3,7 +3,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { useOptionalSession } from '../../funnel/hooks/useSession';
-import { createCheckoutSession, fetchMyPlan, type MyPlan, type PaidTier } from '../../funnel/lib/apiClient';
+import { createCheckoutSession, fetchMyPlan, type BillingPeriod, type MyPlan, type PaidTier } from '../../funnel/lib/apiClient';
 import { PricingTiers } from '../../funnel/components/PricingTiers';
 
 export const Route = createFileRoute('/pricing')({
@@ -14,6 +14,7 @@ function PricingPage() {
   const { session } = useOptionalSession();
   const navigate = useNavigate();
   const [plan, setPlan] = useState<MyPlan | null>(null);
+  const [period, setPeriod] = useState<BillingPeriod>('monthly');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -21,7 +22,7 @@ function PricingPage() {
     if (session) fetchMyPlan().then(setPlan).catch(() => {});
   }, [session]);
 
-  const handleSelect = async (tier: PaidTier) => {
+  const handleSelect = async (tier: PaidTier, selectedPeriod: BillingPeriod) => {
     if (!session) {
       navigate({ to: '/signin', search: { next: '/pricing' } });
       return;
@@ -29,7 +30,7 @@ function PricingPage() {
     setBusy(true);
     setErr(null);
     try {
-      const { url } = await createCheckoutSession(tier);
+      const { url } = await createCheckoutSession(tier, selectedPeriod);
       window.location.href = url;
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
@@ -65,13 +66,29 @@ function PricingPage() {
           Start free. Upgrade when you want unlimited generations and the parametric build agent.
         </p>
 
-        {/* Billing cadence — monthly only for now (mirrors the PhotoAI toggle). */}
+        {/* Billing cadence toggle. */}
         <div className="mt-8 flex items-center justify-center">
           <div className="inline-flex rounded-full bg-[#141416] p-1 ring-1 ring-[#26262b]">
-            <span className="rounded-full bg-[#2a2a30] px-4 py-1.5 text-sm font-medium text-white">Monthly</span>
-            <span className="cursor-not-allowed rounded-full px-4 py-1.5 text-sm text-gray-500" title="Yearly billing coming soon">
-              Yearly · soon
-            </span>
+            <button
+              type="button"
+              onClick={() => setPeriod('monthly')}
+              aria-pressed={period === 'monthly'}
+              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                period === 'monthly' ? 'bg-[#2a2a30] text-white' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              type="button"
+              onClick={() => setPeriod('yearly')}
+              aria-pressed={period === 'yearly'}
+              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                period === 'yearly' ? 'bg-[#2a2a30] text-white' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Yearly <span className="ml-1 text-emerald-400">· 2 months free</span>
+            </button>
           </div>
         </div>
 
@@ -81,6 +98,7 @@ function PricingPage() {
 
         <div className="mt-12">
           <PricingTiers
+            period={period}
             currentPlan={plan?.plan}
             currentTier={plan?.tier}
             onSelect={handleSelect}
