@@ -43,4 +43,14 @@ describe('useGeneration edit mode', () => {
     });
     expect(startGeneration).toHaveBeenCalledWith({ prompt: 'a 20mm cube', currentCode: undefined });
   });
+
+  it('forwards mesh context to startGeneration', async () => {
+    const { result } = renderHook(() => useGeneration());
+    await act(async () => {
+      await result.current.submit('a bracket', undefined, { renderImageUrl: 'https://t/r.png', proportions: [1, 0.7, 0.6] });
+    });
+    expect(startGeneration).toHaveBeenCalledWith(
+      expect.objectContaining({ prompt: 'a bracket', mesh: { renderImageUrl: 'https://t/r.png', proportions: [1, 0.7, 0.6] } }),
+    );
+  });
 });
