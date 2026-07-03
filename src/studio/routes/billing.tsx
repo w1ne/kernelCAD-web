@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import { useSession } from '../../funnel/hooks/useSession';
 import { getSupabase } from '../../funnel/lib/supabaseClient';
 import {
-  createCheckoutSession,
   fetchMyPlan,
   openBillingPortal,
   type MyPlan,
@@ -55,16 +54,9 @@ function BillingPage() {
     navigate({ to: '/billing', search: {}, replace: true });
   };
 
-  const handleUpgrade = async () => {
-    setBillingBusy(true);
-    setBillingErr(null);
-    try {
-      const { url } = await createCheckoutSession();
-      window.location.href = url;
-    } catch (e) {
-      setBillingErr(e instanceof Error ? e.message : String(e));
-      setBillingBusy(false);
-    }
+  // Free users pick a tier on the dedicated /pricing comparison page.
+  const handleUpgrade = () => {
+    navigate({ to: '/pricing' });
   };
 
   const handleManage = async () => {
@@ -119,7 +111,12 @@ function BillingPage() {
       </header>
 
       <section className="px-6 py-10 max-w-2xl mx-auto">
-        <h1 className="font-serif text-3xl font-medium text-ink">Usage &amp; billing</h1>
+        <div className="flex items-baseline justify-between gap-4">
+          <h1 className="font-serif text-3xl font-medium text-ink">Usage &amp; billing</h1>
+          <a href="/pricing" className="font-mono text-xs text-blueprint hover:text-ink no-underline shrink-0">
+            Compare all plans →
+          </a>
+        </div>
         <p className="text-ink-soft mt-2 mb-8">
           Your plan, generation usage, and payment settings.
         </p>
