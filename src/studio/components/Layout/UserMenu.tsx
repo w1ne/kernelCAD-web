@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import { useSession } from '../../../funnel/hooks/useSession';
 import { getSupabase, isAuthConfigured } from '../../../funnel/lib/supabaseClient';
@@ -22,24 +23,47 @@ export default function UserMenu() {
 function UserMenuInner() {
     const { session, loading } = useSession();
     const [open, setOpen] = useState(false);
-    const menuRef = useRef<HTMLDivElement>(null);
+    const triggerRef = useRef<HTMLButtonElement>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    // Fixed-position anchor for the dropdown. The dropdown is rendered in a
+    // portal on <body> (see below) because the header toolbar is a
+    // `bar-scroll-x` container (overflow-x:auto → overflow-y:hidden), which
+    // would otherwise CLIP the dropdown to the 40px toolbar height — the menu
+    // rendered "under the toolbar" and was unclickable. A portal + fixed
+    // positioning escapes the clip and any stacking context.
+    const [anchor, setAnchor] = useState<{ top: number; right: number } | null>(null);
 
-    // Close the dropdown on outside click / Escape.
+    const positionDropdown = () => {
+        const r = triggerRef.current?.getBoundingClientRect();
+        if (r) setAnchor({ top: r.bottom + 4, right: Math.max(0, window.innerWidth - r.right) });
+    };
+
+    // Place the dropdown under the trigger the moment it opens, before paint.
+    useLayoutEffect(() => {
+        if (open) positionDropdown();
+    }, [open]);
+
+    // Close on outside click / Escape; reposition while open on resize/scroll.
     useEffect(() => {
         if (!open) return;
         const onPointerDown = (e: MouseEvent) => {
-            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-                setOpen(false);
-            }
+            const t = e.target as Node;
+            if (triggerRef.current?.contains(t) || dropdownRef.current?.contains(t)) return;
+            setOpen(false);
         };
         const onKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') setOpen(false);
         };
+        const reposition = () => positionDropdown();
         document.addEventListener('mousedown', onPointerDown);
         document.addEventListener('keydown', onKeyDown);
+        window.addEventListener('resize', reposition);
+        window.addEventListener('scroll', reposition, true);
         return () => {
             document.removeEventListener('mousedown', onPointerDown);
             document.removeEventListener('keydown', onKeyDown);
+            window.removeEventListener('resize', reposition);
+            window.removeEventListener('scroll', reposition, true);
         };
     }, [open]);
 
@@ -70,9 +94,52 @@ function UserMenuInner() {
         setOpen(false);
     };
 
-    return (
-        <div className="relative" ref={menuRef} data-testid="user-menu">
+    const dropdown = open ? (
+        <div
+            ref={dropdownRef}
+            role="menu"
+            style={{
+                position: 'fixed',
+                top: anchor?.top ?? 0,
+                right: anchor?.right ?? 0,
+            }}
+            className="w-56 bg-[#1a1a1a] border border-[#333] rounded shadow-lg z-[1000] py-1"
+            data-testid="user-menu-dropdown"
+        >
+            <div className="px-3 py-1.5 text-xs text-gray-400 truncate" data-testid="user-menu-email">
+                {email}
+            </div>
+            <div className="h-px bg-[#333] my-1" />
+            <a
+                href="/me"
+                className="block px-3 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-[#222] no-underline transition-colors"
+                role="menuitem"
+            >
+                Your projects
+            </a>
+            <a
+                href="/billing"
+                className="block px-3 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-[#222] no-underline transition-colors"
+                role="menuitem"
+            >
+                Usage &amp; billing
+            </a>
+            <div className="h-px bg-[#333] my-1" />
             <button
+                type="button"
+                onClick={handleSignOut}
+                className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-[#222] transition-colors"
+                role="menuitem"
+            >
+                Sign out
+            </button>
+        </div>
+    ) : null;
+
+    return (
+        <div className="relative" data-testid="user-menu">
+            <button
+                ref={triggerRef}
                 type="button"
                 onClick={() => setOpen((o) => !o)}
                 className="flex items-center gap-1 rounded-full bg-[#2b2b2b] hover:bg-[#3a3a3a] pl-0.5 pr-1.5 py-0.5 text-gray-200 hover:text-white transition-colors ring-1 ring-[#444]"
@@ -87,41 +154,10 @@ function UserMenuInner() {
                 </span>
                 <ChevronDown size={12} className="text-gray-400" />
             </button>
-            {open && (
-                <div
-                    role="menu"
-                    className="absolute right-0 top-full mt-1 w-56 bg-[#1a1a1a] border border-[#333] rounded shadow-lg z-50 py-1"
-                    data-testid="user-menu-dropdown"
-                >
-                    <div className="px-3 py-1.5 text-xs text-gray-400 truncate" data-testid="user-menu-email">
-                        {email}
-                    </div>
-                    <div className="h-px bg-[#333] my-1" />
-                    <a
-                        href="/me"
-                        className="block px-3 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-[#222] no-underline transition-colors"
-                        role="menuitem"
-                    >
-                        Your projects
-                    </a>
-                    <a
-                        href="/billing"
-                        className="block px-3 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-[#222] no-underline transition-colors"
-                        role="menuitem"
-                    >
-                        Usage &amp; billing
-                    </a>
-                    <div className="h-px bg-[#333] my-1" />
-                    <button
-                        type="button"
-                        onClick={handleSignOut}
-                        className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-[#222] transition-colors"
-                        role="menuitem"
-                    >
-                        Sign out
-                    </button>
-                </div>
-            )}
+            {/* Portaled to <body> so the header toolbar's overflow clip can't hide it. */}
+            {dropdown && typeof document !== 'undefined'
+                ? createPortal(dropdown, document.body)
+                : null}
         </div>
     );
 }

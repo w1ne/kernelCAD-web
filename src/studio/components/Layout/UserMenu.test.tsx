@@ -92,6 +92,19 @@ describe('UserMenu', () => {
         expect(billing.getAttribute('href')).toBe('/billing');
     });
 
+    it('renders the dropdown in a body portal so the toolbar overflow cannot clip it', () => {
+        mockUseSession.mockReturnValue({ session: fakeSession('jane@example.com'), loading: false });
+        const { container } = render(<UserMenu />);
+
+        fireEvent.click(screen.getByTestId('user-menu-avatar'));
+        const dropdown = screen.getByTestId('user-menu-dropdown');
+
+        // Portaled onto <body>, not nested inside the header-bound component tree.
+        expect(container.contains(dropdown)).toBe(false);
+        expect(dropdown.closest('[data-testid="user-menu"]')).toBeNull();
+        expect(dropdown.style.position).toBe('fixed');
+    });
+
     it('closes the dropdown on Escape', () => {
         mockUseSession.mockReturnValue({ session: fakeSession('jane@example.com'), loading: false });
         render(<UserMenu />);
