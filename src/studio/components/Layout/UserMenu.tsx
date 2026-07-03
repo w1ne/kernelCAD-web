@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useEffect, useRef, useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { useSession } from '../../../funnel/hooks/useSession';
 import { getSupabase, isAuthConfigured } from '../../../funnel/lib/supabaseClient';
 import { SignInButton } from '../../../funnel/components/SignInButton';
@@ -74,14 +75,17 @@ function UserMenuInner() {
             <button
                 type="button"
                 onClick={() => setOpen((o) => !o)}
-                className="flex items-center justify-center w-6 h-6 rounded-full bg-[#222] hover:bg-[#333] text-gray-300 hover:text-white text-xs font-medium transition-colors"
+                className="flex items-center gap-1 rounded-full bg-[#2b2b2b] hover:bg-[#3a3a3a] pl-0.5 pr-1.5 py-0.5 text-gray-200 hover:text-white transition-colors ring-1 ring-[#444]"
                 aria-label="Account menu"
                 aria-haspopup="menu"
                 aria-expanded={open}
                 title={email}
                 data-testid="user-menu-avatar"
             >
-                {initial}
+                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-[11px] font-semibold">
+                    {initial}
+                </span>
+                <ChevronDown size={12} className="text-gray-400" />
             </button>
             {open && (
                 <div
@@ -92,6 +96,21 @@ function UserMenuInner() {
                     <div className="px-3 py-1.5 text-xs text-gray-400 truncate" data-testid="user-menu-email">
                         {email}
                     </div>
+                    <div className="h-px bg-[#333] my-1" />
+                    <a
+                        href="/me"
+                        className="block px-3 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-[#222] no-underline transition-colors"
+                        role="menuitem"
+                    >
+                        Your projects
+                    </a>
+                    <a
+                        href="/billing"
+                        className="block px-3 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-[#222] no-underline transition-colors"
+                        role="menuitem"
+                    >
+                        Usage &amp; billing
+                    </a>
                     <div className="h-px bg-[#333] my-1" />
                     <button
                         type="button"
