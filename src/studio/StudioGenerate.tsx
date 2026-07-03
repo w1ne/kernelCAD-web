@@ -47,15 +47,6 @@ const StudioGenerateInner: React.FC = () => {
     // The prompt the last concept was generated from — Build-as-CAD uses what
     // the user actually previewed even if they edited the box afterwards.
     const [conceptPrompt, setConceptPrompt] = useState('');
-    // The mesh context of the last completed concept preview — conditions the
-    // parametric build so it matches what the user actually saw.
-    const [conceptMesh, setConceptMesh] = useState<{ renderImageUrl: string | null; proportions: number[] | null } | null>(null);
-
-    React.useEffect(() => {
-        if (preview.phase.state === 'done') {
-            setConceptMesh({ renderImageUrl: preview.phase.renderImageUrl, proportions: preview.phase.proportions });
-        }
-    }, [preview.phase]);
 
     const agentBusy = phase.state === 'running';
     const conceptBusy = preview.phase.state === 'running';
@@ -95,7 +86,14 @@ const StudioGenerateInner: React.FC = () => {
         // review diff still uses the current editor code as its baseline, so
         // nothing is overwritten without the user accepting.
         setBaseline(code);
-        void submit(conceptPrompt, undefined, conceptMesh ?? undefined);
+        // Read the concept mesh directly from the live preview phase (no mirrored
+        // state). A done preview with no Tripo render/fingerprint yields
+        // {renderImageUrl:null, proportions:null} — intentional and distinct from
+        // "no mesh" (undefined); the server's nullish schema accepts it.
+        const mesh = preview.phase.state === 'done'
+            ? { renderImageUrl: preview.phase.renderImageUrl, proportions: preview.phase.proportions }
+            : undefined;
+        void submit(conceptPrompt, undefined, mesh);
     };
 
     const accept = () => {
