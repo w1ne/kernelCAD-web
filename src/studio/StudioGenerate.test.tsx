@@ -22,7 +22,8 @@ vi.mock('../funnel/hooks/useTextTo3dPreview', () => ({
   useTextTo3dPreview: () => ({ phase: previewPhase, submit: previewSubmit }),
 }));
 
-vi.mock('./context/CodeContext', () => ({ useCode: () => ({ code: '', setCode: vi.fn() }) }));
+let mockCode = '';
+vi.mock('./context/CodeContext', () => ({ useCode: () => ({ code: mockCode, setCode: vi.fn() }) }));
 vi.mock('./context/GeometryContext', () => ({ useGeometry: () => ({ executeGeometry: vi.fn() }) }));
 vi.mock('../funnel/hooks/useModelViewer', () => ({ useModelViewer: () => {} }));
 
@@ -31,6 +32,7 @@ import { StudioGenerate } from './StudioGenerate';
 beforeEach(() => {
   vi.clearAllMocks();
   previewPhase = { state: 'idle' };
+  mockCode = '';
 });
 afterEach(() => cleanup());
 
@@ -62,6 +64,17 @@ describe('StudioGenerate — unified prompt', () => {
   });
 
   it('Build-as-CAD feeds the concept prompt into the agent submit', () => {
+    const { rerender } = render(<StudioGenerate />);
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'a hex planter' } });
+    fireEvent.click(screen.getByRole('button', { name: /3d concept/i }));
+    previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null };
+    rerender(<StudioGenerate />);
+    fireEvent.click(screen.getByRole('button', { name: /build as parametric cad/i }));
+    expect(generationSubmit).toHaveBeenCalledWith('a hex planter', undefined);
+  });
+
+  it('Build-as-CAD is a FRESH generation even when the editor holds code (not an edit of it)', () => {
+    mockCode = 'const base = box(60, 40, 5); return base;';
     const { rerender } = render(<StudioGenerate />);
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'a hex planter' } });
     fireEvent.click(screen.getByRole('button', { name: /3d concept/i }));
