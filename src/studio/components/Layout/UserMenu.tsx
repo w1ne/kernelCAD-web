@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import { useSession } from '../../../funnel/hooks/useSession';
@@ -38,10 +38,12 @@ function UserMenuInner() {
         if (r) setAnchor({ top: r.bottom + 4, right: Math.max(0, window.innerWidth - r.right) });
     };
 
-    // Place the dropdown under the trigger the moment it opens, before paint.
-    useLayoutEffect(() => {
-        if (open) positionDropdown();
-    }, [open]);
+    // Toggle open, computing the anchor up-front in the click handler (an event
+    // handler — not an effect body — so we avoid the set-state-in-effect rule).
+    const toggleOpen = () => {
+        if (!open) positionDropdown(); // opening → anchor under the trigger first
+        setOpen((o) => !o);
+    };
 
     // Close on outside click / Escape; reposition while open on resize/scroll.
     useEffect(() => {
@@ -141,7 +143,7 @@ function UserMenuInner() {
             <button
                 ref={triggerRef}
                 type="button"
-                onClick={() => setOpen((o) => !o)}
+                onClick={toggleOpen}
                 className="flex items-center gap-1 rounded-full bg-[#2b2b2b] hover:bg-[#3a3a3a] pl-0.5 pr-1.5 py-0.5 text-gray-200 hover:text-white transition-colors ring-1 ring-[#444]"
                 aria-label="Account menu"
                 aria-haspopup="menu"
