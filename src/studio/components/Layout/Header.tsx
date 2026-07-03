@@ -266,8 +266,18 @@ export function Header() {
                     <Download className="w-4 h-4" />
                 </button>
                 {isComputing && <Loader2 className="w-3 h-3 animate-spin text-gray-500" />}
+            </div>
 
-                <div className="h-6 w-px bg-[#333] mx-2" />
+            {/* Account menu — pinned to the right edge so it never scrolls out of
+                the horizontally-scrollable toolbar. It used to be the last item
+                inside the scrolling instrument cluster, so on narrow viewports it
+                slid off-screen (the scrollbar is hidden) and users couldn't find
+                sign-out / billing. */}
+            <div
+                className="sticky right-0 z-20 shrink-0 self-stretch flex items-center gap-2 pl-3 bg-[#111] shadow-[-8px_0_8px_-4px_rgba(0,0,0,0.55)]"
+                data-testid="account-slot"
+            >
+                <div className="h-6 w-px bg-[#333]" />
                 <UserMenu />
             </div>
             <div className="absolute bottom-0 right-0 p-1 text-[9px] text-gray-700 pointer-events-none opacity-50 font-mono">

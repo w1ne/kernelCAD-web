@@ -79,6 +79,19 @@ describe('UserMenu', () => {
         expect(signOut).toHaveBeenCalled();
     });
 
+    it('links to the projects and billing pages from the dropdown', () => {
+        mockUseSession.mockReturnValue({ session: fakeSession('jane@example.com'), loading: false });
+        render(<UserMenu />);
+
+        fireEvent.click(screen.getByTestId('user-menu-avatar'));
+
+        const projects = screen.getByRole('menuitem', { name: /your projects/i });
+        expect(projects.getAttribute('href')).toBe('/me');
+
+        const billing = screen.getByRole('menuitem', { name: /usage.*billing/i });
+        expect(billing.getAttribute('href')).toBe('/billing');
+    });
+
     it('closes the dropdown on Escape', () => {
         mockUseSession.mockReturnValue({ session: fakeSession('jane@example.com'), loading: false });
         render(<UserMenu />);
