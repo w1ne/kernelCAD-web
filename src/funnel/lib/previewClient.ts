@@ -3,7 +3,7 @@ import { getSupabase, isAuthConfigured } from './supabaseClient';
 
 export type PreviewEvent =
   | { kind: 'status'; progress: number }
-  | { kind: 'preview_done'; glbUrl: string; costUsd: number | null; taskId: string }
+  | { kind: 'preview_done'; glbUrl: string; costUsd: number | null; taskId: string; renderImageUrl: string | null; proportions: number[] | null }
   | { kind: 'error'; code: string; message: string };
 
 export async function* parsePreviewStream(
@@ -48,6 +48,8 @@ function parseBlock(raw: string): PreviewEvent | null {
       glbUrl: typeof p['glbUrl'] === 'string' ? p['glbUrl'] : '',
       costUsd: typeof p['costUsd'] === 'number' ? p['costUsd'] : null,
       taskId: typeof p['taskId'] === 'string' ? p['taskId'] : '',
+      renderImageUrl: typeof p['renderImageUrl'] === 'string' ? p['renderImageUrl'] : null,
+      proportions: Array.isArray(p['proportions']) ? (p['proportions'] as number[]) : null,
     };
     case 'error': return {
       kind: 'error',
