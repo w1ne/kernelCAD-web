@@ -107,23 +107,41 @@
       </div>
     </section>
 
-    <section class="prompt-handoff" aria-label="Generate a CAD model from a prompt">
-      <div class="prompt-handoff-copy">
-        <span class="section-kicker">Start with words</span>
-        <h2 class="prompt-handoff-headline">Describe the part you want.</h2>
+    <section class="pricing" id="pricing" aria-label="Pricing">
+      <div class="pricing-head">
+        <span class="section-kicker">Pricing</span>
+        <h2 class="pricing-headline">Simple pricing. Unlimited parts.</h2>
+        <p class="pricing-sub">Unlimited hosted generation and the parametric build agent. Cancel anytime.</p>
       </div>
-      <form class="prompt-handoff-form" action="/app/generate" method="GET" autocomplete="off">
-        <label class="sr-only" for="prompt-input">CAD prompt</label>
-        <textarea
-          id="prompt-input"
-          name="prompt"
-          rows="3"
-          placeholder="60x40x5 mm bracket with 4 M3 mounting holes"
-          required
-          autocomplete="off"
-        ></textarea>
-        <button class="btn btn-primary" type="submit">Generate in app</button>
-      </form>
+      <div class="pricing-grid">
+        <article class="price-card price-card--featured">
+          <span class="price-badge">Most popular</span>
+          <h3 class="price-name">Standard</h3>
+          <p class="price-amount"><span class="price-num">$20</span><span class="price-per">/ month</span></p>
+          <p class="price-blurb">Unlimited hosted generation and the parametric build agent.</p>
+          <a class="btn btn-primary price-cta" href="https://app.kernelcad.com/pricing">Subscribe</a>
+          <ul class="price-features">
+            <li>Unlimited generations</li>
+            <li>Build as parametric CAD (mesh-conditioned)</li>
+            <li>Image &rarr; 3D concept previews</li>
+            <li>STEP / STL export &amp; MCP access</li>
+            <li>Commercial use license</li>
+          </ul>
+        </article>
+        <article class="price-card">
+          <h3 class="price-name">Enterprise</h3>
+          <p class="price-amount"><span class="price-num">Custom</span><span class="price-per">let&rsquo;s talk</span></p>
+          <p class="price-blurb">Seats, one invoice, and a security review for your whole team.</p>
+          <a class="btn btn-secondary price-cta" href="mailto:support@kernelcad.com?subject=kernelCAD%20for%20teams">Contact sales</a>
+          <ul class="price-features">
+            <li>Everything in Standard, plus:</li>
+            <li>Team seats &amp; shared projects</li>
+            <li>Centralized billing &amp; invoicing</li>
+            <li>SSO / SAML</li>
+            <li>Priority support &amp; onboarding</li>
+          </ul>
+        </article>
+      </div>
     </section>
 
     <section class="gallery" id="gallery" hidden>
