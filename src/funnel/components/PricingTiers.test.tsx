@@ -18,8 +18,8 @@ describe('PricingTiers', () => {
   it('passes the yearly period through to onSelect', () => {
     const onSelect = vi.fn();
     render(<PricingTiers period="yearly" onSelect={onSelect} onFree={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: /subscribe to team/i }));
-    expect(onSelect).toHaveBeenCalledWith('pro', 'yearly');
+    fireEvent.click(screen.getByRole('button', { name: /subscribe to standard/i }));
+    expect(onSelect).toHaveBeenCalledWith('standard', 'yearly');
   });
 
   it('shows the yearly total and "2 months free" when period is yearly', () => {
@@ -27,11 +27,10 @@ describe('PricingTiers', () => {
     expect(screen.getByText(/\$200\/year — 2 months free/i)).toBeDefined();
   });
 
-  it('calls onFree when the free tier CTA is clicked', () => {
-    const onFree = vi.fn();
-    render(<PricingTiers period="monthly" onSelect={vi.fn()} onFree={onFree} />);
-    fireEvent.click(screen.getByRole('button', { name: /get started with free/i }));
-    expect(onFree).toHaveBeenCalled();
+  it('offers no Free plan card', () => {
+    render(<PricingTiers period="monthly" onSelect={vi.fn()} onFree={vi.fn()} />);
+    expect(screen.queryByRole('button', { name: /get started with free/i })).toBeNull();
+    expect(screen.queryByLabelText(/free plan/i)).toBeNull();
   });
 
   it('marks the active tier as the current plan instead of offering to subscribe', () => {
@@ -42,9 +41,22 @@ describe('PricingTiers', () => {
     expect(onSelect).not.toHaveBeenCalled();
   });
 
-  it('renders a Team tier for enterprises', () => {
-    render(<PricingTiers period="monthly" onSelect={vi.fn()} onFree={vi.fn()} />);
-    expect(screen.getByRole('button', { name: /subscribe to team/i })).toBeDefined();
+  it('renders an Enterprise tier as a contact-sales link, never a checkout', () => {
+    const onSelect = vi.fn();
+    render(<PricingTiers period="monthly" onSelect={onSelect} onFree={vi.fn()} />);
+    // No self-serve Subscribe button for Enterprise.
+    expect(screen.queryByRole('button', { name: /subscribe to enterprise/i })).toBeNull();
+    // Instead, a mailto "Contact sales" link.
+    const contact = screen.getByRole('link', { name: /contact sales about enterprise/i });
+    expect(contact.getAttribute('href')).toMatch(/^mailto:/);
+    fireEvent.click(contact);
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it('does not mark Enterprise as the current plan for free users', () => {
+    render(<PricingTiers period="monthly" currentPlan="free" onSelect={vi.fn()} onFree={vi.fn()} />);
+    // Enterprise CTA stays a contact link (not a disabled "Current plan").
+    expect(screen.getByRole('link', { name: /contact sales about enterprise/i })).toBeDefined();
   });
 
   it('highlights Standard as the most popular tier', () => {
