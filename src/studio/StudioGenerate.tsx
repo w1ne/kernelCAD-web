@@ -80,7 +80,13 @@ const StudioGenerateInner: React.FC = () => {
 
     const buildConceptAsCad = () => {
         if (!conceptPrompt || busy) return;
-        runAgent(conceptPrompt);
+        // Fresh generation, never an edit: framing the concept prompt as an
+        // edit of whatever happens to sit in the editor (often the untouched
+        // starter sample) lets the model return that code unchanged. The
+        // review diff still uses the current editor code as its baseline, so
+        // nothing is overwritten without the user accepting.
+        setBaseline(code);
+        void submit(conceptPrompt, undefined);
     };
 
     const accept = () => {
