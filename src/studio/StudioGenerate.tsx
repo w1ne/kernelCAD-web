@@ -7,7 +7,8 @@ import type { GenerateEvent } from '../funnel/lib/generateClient';
 import { inAppAgentEnabled } from './agentAvailability';
 import { useCode } from './context/CodeContext';
 import { useGeometry } from './context/GeometryContext';
-import { PreviewConceptPanel } from './components/PreviewConceptPanel';
+import { useTextTo3dPreview } from '../funnel/hooks/useTextTo3dPreview';
+import { ConceptResult } from './components/ConceptResult';
 
 /** Web-only gate. No hooks here, so the conditional return is safe. */
 export const StudioGenerate: React.FC = () => {
@@ -41,20 +42,45 @@ const StudioGenerateInner: React.FC = () => {
     // (so the diff is stable even though `code` changes once we apply).
     const [baseline, setBaseline] = useState('');
 
-    const busy = phase.state === 'running';
+    // The single prompt box also drives the paid 3D concept preview.
+    const preview = useTextTo3dPreview();
+    // The prompt the last concept was generated from — Build-as-CAD uses what
+    // the user actually previewed even if they edited the box afterwards.
+    const [conceptPrompt, setConceptPrompt] = useState('');
+
+    const agentBusy = phase.state === 'running';
+    const conceptBusy = preview.phase.state === 'running';
+    // One operation at a time: the rail is too narrow to narrate two runs.
+    const busy = agentBusy || conceptBusy;
     // A finished, not-yet-resolved proposal → show the review (diff + accept/reject).
     const reviewing = phase.state === 'done' && resolvedId !== phase.generationId;
 
     const steps = useMemo(() => events.map(stepLabel).filter(Boolean) as string[], [events]);
 
+    const runAgent = (text: string) => {
+        // Edit mode: hand the agent the current model so it iterates instead of
+        // replacing. Empty editor → fresh generation.
+        setBaseline(code);
+        void submit(text, code.trim() ? code : undefined);
+    };
+
     const onSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const trimmed = prompt.trim();
         if (!trimmed || busy) return;
-        // Edit mode: hand the agent the current model so it iterates instead of
-        // replacing. Empty editor → fresh generation.
-        setBaseline(code);
-        void submit(trimmed, code.trim() ? code : undefined);
+        runAgent(trimmed);
+    };
+
+    const onConcept = () => {
+        const trimmed = prompt.trim();
+        if (!trimmed || busy) return;
+        setConceptPrompt(trimmed);
+        void preview.submit(trimmed);
+    };
+
+    const buildConceptAsCad = () => {
+        if (!conceptPrompt || busy) return;
+        runAgent(conceptPrompt);
     };
 
     const accept = () => {
@@ -83,17 +109,30 @@ const StudioGenerateInner: React.FC = () => {
                     placeholder={code.trim() ? 'Edit this model… e.g. add two 4mm mounting holes' : 'Describe a part… e.g. a 20mm cube'}
                     className="w-full rounded bg-[#111] border border-[#2a2e38] text-gray-100 p-2 text-[11px] placeholder:text-gray-600 focus:border-blue-500 focus:outline-none disabled:opacity-50 resize-none font-sans"
                 />
-                <button
-                    type="submit"
-                    disabled={busy || !prompt.trim()}
-                    className="rounded bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 text-[11px] font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                    {busy ? 'Working…' : code.trim() ? 'Edit with agent →' : 'Generate →'}
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        type="submit"
+                        disabled={busy || !prompt.trim()}
+                        className="flex-1 rounded bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 text-[11px] font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        {agentBusy ? 'Working…' : code.trim() ? 'Edit with agent →' : 'Build →'}
+                    </button>
+                    {preview.phase.state !== 'unavailable' && (
+                        <button
+                            type="button"
+                            onClick={onConcept}
+                            disabled={busy || !prompt.trim()}
+                            title="Quick visual 3D concept of this description (paid feature)"
+                            className="rounded bg-[#1a1d24] hover:bg-[#222630] text-gray-300 border border-[#2a2e38] px-3 py-1.5 text-[11px] font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                        >
+                            {conceptBusy ? `Concept… ${preview.phase.state === 'running' ? preview.phase.progress : 0}%` : '3D concept'}
+                        </button>
+                    )}
+                </div>
             </form>
 
             {/* Live plan / tool-calls while the agent works. */}
-            {busy && (
+            {agentBusy && (
                 <div className="flex flex-col gap-0.5 max-h-28 overflow-auto" aria-live="polite">
                     {steps.length === 0 && <div className="text-[10px] text-gray-500">starting…</div>}
                     {steps.slice(-6).map((s, i) => (
@@ -162,7 +201,7 @@ const StudioGenerateInner: React.FC = () => {
                 </div>
             )}
 
-            <PreviewConceptPanel />
+            <ConceptResult phase={preview.phase} onBuildAsCad={buildConceptAsCad} buildDisabled={busy} />
         </div>
     );
 };
