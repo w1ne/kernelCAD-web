@@ -30,6 +30,7 @@ import { validateAssemblyWithMates } from '../../../modeling/mates/validator';
 import type { InterferencePair } from '../../../modeling/runtime/detectInterferences';
 import { detectInterferences } from '../../../modeling/runtime/detectInterferences';
 import { isSceneBackend } from '../../../kernel/backends/sceneBackend';
+import { analyzeContactGraph, type ContactGraphResult } from '../../../modeling/runtime/contactGraph';
 import type { BuiltModel } from '../../../modeling/buildModel';
 import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
 
@@ -114,6 +115,11 @@ export type ReviewCadOutput =
       /** Structured failure list when `mechanism === 'broken'`. Empty
        *  otherwise. */
       mechanismFailures: readonly CompilerDiagnostic[];
+      /** Deterministic geometric contact graph of the returned scene:
+       *  distinct connected bodies and floating/disconnected parts. Drives
+       *  the design-loop's floating-geometry gate. Undefined when the scene
+       *  could not be analyzed. */
+      geometry?: ContactGraphResult;
     }
   | {
       ok: false;
@@ -142,6 +148,9 @@ export type ReviewCadOutput =
        *  where no assembly reached the probe. */
       mechanism?: MechanismVerdict;
       mechanismFailures?: readonly CompilerDiagnostic[];
+      /** Deterministic geometric contact graph (see the `ok: true` variant).
+       *  Present whenever a scene was built, even when `ok: false`. */
+      geometry?: ContactGraphResult;
     };
 
 type ReviewDiagnostic =
@@ -216,6 +225,7 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
   const rawInterferencePairs: InterferencePair[] = wantInterference
     ? safeDetectDefaultPoseInterferences(model, input.epsilonMm3)
     : [];
+  const geometry = safeAnalyzeContactGraph(model);
   const validator = await validateAssemblyWithMates(
     arm,
     wantInterference ? rawInterferencePairs : undefined,
@@ -321,6 +331,7 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
       rawInterferencePairs,
       mechanism,
       mechanismFailures,
+      ...(geometry !== undefined ? { geometry } : {}),
     };
   }
 
@@ -344,7 +355,25 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
     rawInterferencePairs,
     mechanism,
     mechanismFailures,
+    ...(geometry !== undefined ? { geometry } : {}),
   };
+}
+
+/**
+ * Deterministic geometric contact graph of the script's returned scene.
+ * Mirrors safeDetectDefaultPoseInterferences: reads the lowered scene of the
+ * script's return value and never lets a kernel failure sink the whole review
+ * — geometry is simply reported as undefined in that case.
+ */
+function safeAnalyzeContactGraph(model: BuiltModel): ContactGraphResult | undefined {
+  try {
+    const tail = model.rootShape ?? model.tailShape;
+    if (!tail || !isSceneBackend(tail)) return undefined;
+    if (tail.parts.length < 2) return undefined;
+    return analyzeContactGraph(tail);
+  } catch {
+    return undefined;
+  }
 }
 
 /**
