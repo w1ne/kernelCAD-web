@@ -13,3 +13,14 @@
 @source './LandingPricing.tsx';
 /* The SSR fallback markup + dark-band wrapper classes live in index.html. */
 @source '../index.html';
+
+/* Because we omit Tailwind's preflight (above), UA <button> chrome leaks in —
+ * notably a 2px outset border. Re-supply just the button-border normalization,
+ * scoped to the pricing subtree so it can never touch the landing's own
+ * buttons. Background and font-size stay on the utility classes (this rule
+ * deliberately doesn't set them), so it can't override bg-[…]/text-… states. */
+#pricing-root button {
+  border-width: 0;
+  border-style: solid;
+  cursor: pointer;
+}

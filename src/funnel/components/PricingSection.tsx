@@ -47,21 +47,21 @@ export function PricingSection({
     <div className="mx-auto max-w-5xl">
       {!hideHeading && (
         <div className="text-center">
-          <span className="text-sm font-semibold uppercase tracking-wide text-orange-400">{PRICING_COPY.kicker}</span>
-          <h2 className="mt-2 font-serif text-4xl font-bold tracking-tight text-white sm:text-5xl">{PRICING_COPY.headline}</h2>
-          <p className="mx-auto mt-4 max-w-xl text-gray-400">{PRICING_COPY.sub}</p>
+          <span className="text-sm font-semibold uppercase tracking-wide text-[#1E5FA8]">{PRICING_COPY.kicker}</span>
+          <h2 className="mt-2 font-serif text-4xl font-bold tracking-tight text-[#0A1628] sm:text-5xl">{PRICING_COPY.headline}</h2>
+          <p className="mx-auto mt-4 max-w-xl text-[#3F4C5E]">{PRICING_COPY.sub}</p>
         </div>
       )}
 
       {/* Billing cadence toggle. */}
       <div className="mt-8 flex items-center justify-center">
-        <div className="inline-flex rounded-full bg-[#141416] p-1 ring-1 ring-[#26262b]">
+        <div className="inline-flex rounded-full bg-[#FFFDF7] p-1 ring-1 ring-[#D6CDB4]">
           <button
             type="button"
             onClick={() => setPeriod('monthly')}
             aria-pressed={period === 'monthly'}
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-              period === 'monthly' ? 'bg-[#2a2a30] text-white' : 'text-gray-400 hover:text-white'
+              period === 'monthly' ? 'bg-[#1E5FA8] text-white' : 'bg-transparent text-[#3F4C5E] hover:text-[#0A1628]'
             }`}
           >
             Monthly
@@ -71,10 +71,10 @@ export function PricingSection({
             onClick={() => setPeriod('yearly')}
             aria-pressed={period === 'yearly'}
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-              period === 'yearly' ? 'bg-[#2a2a30] text-white' : 'text-gray-400 hover:text-white'
+              period === 'yearly' ? 'bg-[#1E5FA8] text-white' : 'bg-transparent text-[#3F4C5E] hover:text-[#0A1628]'
             }`}
           >
-            Yearly <span className="ml-1 text-emerald-400">· 2 months free</span>
+            Yearly <span className="ml-1 text-[#B87333]">· 2 months free</span>
           </button>
         </div>
       </div>

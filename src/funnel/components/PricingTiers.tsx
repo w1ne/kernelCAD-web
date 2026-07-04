@@ -21,11 +21,13 @@ import { CONTACT_HREF, TIERS, type BadgeColor, type Feature, type Tier } from '.
  */
 
 const BADGE_CLASS: Record<BadgeColor, string> = {
-  emerald: 'bg-emerald-500/15 text-emerald-300',
-  violet: 'bg-violet-500/15 text-violet-300',
-  amber: 'bg-amber-500/15 text-amber-300',
-  sky: 'bg-sky-500/15 text-sky-300',
-  slate: 'bg-slate-500/15 text-slate-300',
+  // On-brand tints (kernelCAD light palette): blueprint blue + copper + slate,
+  // so the pricing surface matches the vellum marketing site.
+  emerald: 'bg-[#1E5FA8]/12 text-[#174E8B]',
+  sky: 'bg-[#1E5FA8]/12 text-[#174E8B]',
+  violet: 'bg-[#B87333]/15 text-[#8A551F]',
+  amber: 'bg-[#B87333]/15 text-[#8A551F]',
+  slate: 'bg-[#3F4C5E]/12 text-[#3F4C5E]',
 };
 
 export interface PricingTiersProps {
@@ -46,8 +48,8 @@ export interface PricingTiersProps {
 function FeatureRow({ f }: { f: Feature }) {
   return (
     <li className="flex items-start gap-2.5">
-      <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-emerald-500" />
-      <span className="text-sm text-gray-200 leading-snug">
+      <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-[#1E5FA8]" />
+      <span className="text-sm text-[#3F4C5E] leading-snug">
         {f.badge ? (
           <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${BADGE_CLASS[f.badge]}`}>
             {f.emoji && <span>{f.emoji}</span>}
@@ -59,7 +61,7 @@ function FeatureRow({ f }: { f: Feature }) {
             {f.text}
           </>
         )}
-        {f.note && <span className="ml-1.5 text-[11px] uppercase tracking-wide text-gray-500">{f.note}</span>}
+        {f.note && <span className="ml-1.5 text-[11px] uppercase tracking-wide text-[#97A0AC]">{f.note}</span>}
       </span>
     </li>
   );
@@ -85,37 +87,37 @@ export function PricingTiers({ period, currentPlan, currentTier, onSelect, onFre
           <section
             key={t.name}
             aria-label={`${t.name} plan`}
-            className={`relative flex flex-col rounded-2xl border p-6 ${
-              highlight ? 'border-orange-500/60 bg-[#17151a]' : 'border-[#26262b] bg-[#141416]'
+            className={`relative flex flex-col rounded-2xl p-6 bg-[#FFFDF7] ${
+              highlight ? 'ring-2 ring-[#1E5FA8]' : 'ring-1 ring-[#D6CDB4]'
             }`}
           >
             {highlight && (
-              <span className="absolute -top-3 left-6 rounded-full bg-gradient-to-r from-orange-500 to-red-500 px-3 py-0.5 text-xs font-semibold text-white shadow">
+              <span className="absolute -top-3 left-6 rounded-full bg-[#1E5FA8] px-3 py-0.5 text-xs font-semibold text-white shadow">
                 Most popular
               </span>
             )}
 
-            <h3 className="text-2xl font-bold text-white">{t.name}</h3>
+            <h3 className="text-2xl font-bold text-[#0A1628]">{t.name}</h3>
             <div className="mt-2 flex items-end gap-2">
-              <span className="text-5xl font-extrabold tracking-tight text-white">
+              <span className="text-5xl font-extrabold tracking-tight text-[#0A1628]">
                 {showYearly ? t.yearlyPerMonth : t.monthly}
               </span>
-              <span className="mb-1.5 text-sm text-gray-400">
+              <span className="mb-1.5 text-sm text-[#97A0AC]">
                 {t.contact ? "let's talk" : paid ? (showYearly ? '/mo · billed yearly' : 'per month') : t.monthly === '$0' ? 'forever' : ''}
               </span>
             </div>
             {showYearly ? (
-              <p className="mt-1 text-xs text-emerald-400">{t.yearly}/year — 2 months free</p>
+              <p className="mt-1 text-xs text-[#B87333]">{t.yearly}/year — 2 months free</p>
             ) : (
               <p className="mt-1 text-xs text-transparent select-none" aria-hidden="true">.</p>
             )}
-            <p className="mt-3 min-h-[40px] text-sm text-gray-400">{t.blurb}</p>
+            <p className="mt-3 min-h-[40px] text-sm text-[#3F4C5E]">{t.blurb}</p>
 
             {t.contact ? (
               <a
                 href={CONTACT_HREF}
                 aria-label="Contact sales about Enterprise"
-                className="mt-5 w-full rounded-lg bg-[#26262b] py-3 text-center text-sm font-semibold text-white no-underline transition-colors hover:bg-[#31313a]"
+                className="mt-5 w-full rounded-lg bg-[#EFE5C9] py-3 text-center text-sm font-semibold text-[#0A1628] no-underline transition-colors hover:bg-[#E3D6B4]"
               >
                 Contact sales
               </a>
@@ -125,7 +127,7 @@ export function PricingTiers({ period, currentPlan, currentTier, onSelect, onFre
                 onClick={onFree}
                 disabled={current}
                 aria-label={current ? 'Current plan (Free)' : 'Get started with Free'}
-                className="mt-5 w-full rounded-lg bg-[#26262b] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#31313a] disabled:cursor-default disabled:opacity-60"
+                className="mt-5 w-full rounded-lg bg-[#EFE5C9] py-3 text-sm font-semibold text-[#0A1628] transition-colors hover:bg-[#E3D6B4] disabled:cursor-default disabled:opacity-60"
               >
                 {current ? 'Current plan' : 'Get started'}
               </button>
@@ -135,10 +137,10 @@ export function PricingTiers({ period, currentPlan, currentTier, onSelect, onFre
                 onClick={() => onSelect(t.tier as PaidTier, period)}
                 disabled={current || busy}
                 aria-label={current ? `Current plan (${t.name})` : `Subscribe to ${t.name}`}
-                className={`mt-5 w-full rounded-lg py-3 text-sm font-semibold text-white transition-colors disabled:cursor-default disabled:opacity-70 ${
+                className={`mt-5 w-full rounded-lg py-3 text-sm font-semibold transition-colors disabled:cursor-default disabled:opacity-70 ${
                   highlight
-                    ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400'
-                    : 'bg-[#26262b] hover:bg-[#31313a]'
+                    ? 'bg-[#1E5FA8] text-white hover:bg-[#174E8B]'
+                    : 'bg-[#EFE5C9] text-[#0A1628] hover:bg-[#E3D6B4]'
                 }`}
               >
                 {current ? 'Current plan' : busy ? 'Loading…' : 'Subscribe →'}
@@ -147,7 +149,7 @@ export function PricingTiers({ period, currentPlan, currentTier, onSelect, onFre
 
             <ul className="mt-6 space-y-3">
               {t.inherits && (
-                <li className="text-sm font-medium text-gray-300 underline decoration-dotted underline-offset-4">
+                <li className="text-sm font-medium text-[#3F4C5E] underline decoration-dotted underline-offset-4">
                   ← Everything in {t.inherits}, plus:
                 </li>
               )}

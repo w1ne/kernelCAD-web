@@ -68,26 +68,26 @@ function PricingPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#0b0b0d] text-white font-sans">
+    <main className="min-h-screen bg-[#F4ECD7] text-[#0A1628] font-sans">
       {/* Nav */}
       <header className="flex items-center justify-between px-6 py-4">
-        <a href="/" className="flex items-center gap-2 font-serif text-base font-medium no-underline text-white">
-          <svg className="w-4 h-4 text-white" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
+        <a href="/" className="flex items-center gap-2 font-serif text-base font-medium no-underline text-[#0A1628]">
+          <svg className="w-4 h-4 text-[#0A1628]" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
             <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
           </svg>
-          <span>kernel<span className="text-blue-400">CAD</span></span>
+          <span>kernel<span className="text-[#1E5FA8]">CAD</span></span>
         </a>
         <a
           href={session ? '/billing' : '/signin'}
-          className="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-300 hover:text-white no-underline transition-colors"
+          className="rounded-lg px-3 py-1.5 text-xs font-medium text-[#3F4C5E] hover:text-[#0A1628] no-underline transition-colors"
         >
           {session ? 'Billing' : 'Log in'}
         </a>
       </header>
 
       <section className="mx-auto max-w-5xl px-6 pb-20 pt-10">
-        <h1 className="text-center font-serif text-5xl font-bold tracking-tight">Pricing</h1>
-        <p className="mx-auto mt-4 max-w-xl text-center text-gray-400">
+        <h1 className="text-center font-serif text-5xl font-bold tracking-tight text-[#0A1628]">Pricing</h1>
+        <p className="mx-auto mt-4 max-w-xl text-center text-[#3F4C5E]">
           A monthly token allowance for the parametric build agent — a tiny cube costs a sliver, a big assembly costs more. Cancel anytime.
         </p>
 
@@ -104,7 +104,7 @@ function PricingPage() {
           />
         </div>
 
-        <p className="mt-10 text-center text-xs text-gray-500">
+        <p className="mt-10 text-center text-xs text-[#97A0AC]">
           Prices in USD. Cancel anytime. Failed generations don't count against your quota.
         </p>
       </section>

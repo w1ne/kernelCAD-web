@@ -40,9 +40,9 @@ export function renderPricingSection(): string {
     // Tailwind utilities for the island (theme + utilities, no preflight so the
     // landing's own base styles survive).
     '      <link rel="stylesheet" href="/pricing-island.css" />',
-    // Dark band so the app-themed dark cards read as an intentional section on
-    // the light marketing page.
-    `      <div id="pricing-root" class="mx-auto max-w-6xl rounded-3xl bg-[#0b0b0d] px-6 py-16 text-white">${ssr}</div>`,
+    // No band — the pricing section sits directly on the vellum landing, in the
+    // kernelCAD light palette, so it reads as part of the same page.
+    `      <div id="pricing-root" class="mx-auto max-w-6xl px-2 text-[#0A1628]">${ssr}</div>`,
     // Hydrates #pricing-root into the live PricingSection component.
     '      <script type="module" src="/pricing-island.js"></script>',
     '    </section>',
