@@ -6,17 +6,28 @@ import { useOptionalSession } from '../../funnel/hooks/useSession';
 import { createCheckoutSession, fetchMyPlan, type BillingPeriod, type MyPlan, type PaidTier } from '../../funnel/lib/apiClient';
 import { PricingTiers } from '../../funnel/components/PricingTiers';
 
+const PAID_TIERS: readonly PaidTier[] = ['basic', 'pro'];
+
 export const Route = createFileRoute('/pricing')({
   component: PricingPage,
+  // `?buy=basic|pro` (optionally `&period=yearly`) lets the marketing landing
+  // deep-link straight into checkout — one click from kernelcad.com to Stripe,
+  // instead of re-showing the pricing wall. Unknown values are ignored.
+  validateSearch: (s: Record<string, unknown>): { buy?: PaidTier; period?: BillingPeriod } => ({
+    buy: PAID_TIERS.includes(s.buy as PaidTier) ? (s.buy as PaidTier) : undefined,
+    period: s.period === 'yearly' || s.period === 'monthly' ? (s.period as BillingPeriod) : undefined,
+  }),
 });
 
 function PricingPage() {
-  const { session } = useOptionalSession();
+  const { session, loading } = useOptionalSession();
   const navigate = useNavigate();
+  const { buy, period: buyPeriod } = Route.useSearch();
   const [plan, setPlan] = useState<MyPlan | null>(null);
-  const [period, setPeriod] = useState<BillingPeriod>('monthly');
+  const [period, setPeriod] = useState<BillingPeriod>(buyPeriod ?? 'monthly');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [autoBuyFired, setAutoBuyFired] = useState(false);
 
   useEffect(() => {
     if (session) fetchMyPlan().then(setPlan).catch(() => {});
@@ -24,7 +35,10 @@ function PricingPage() {
 
   const handleSelect = async (tier: PaidTier, selectedPeriod: BillingPeriod) => {
     if (!session) {
-      navigate({ to: '/signin', search: { next: '/pricing' } });
+      // Preserve the intent across sign-in so the round-trip lands back here and
+      // auto-fires checkout, rather than dropping the user on a bare pricing page.
+      const next = `/pricing?buy=${tier}&period=${selectedPeriod}`;
+      navigate({ to: '/signin', search: { next } });
       return;
     }
     setBusy(true);
@@ -37,6 +51,18 @@ function PricingPage() {
       setBusy(false);
     }
   };
+
+  // Deep-link from the landing: auto-start checkout for `?buy=`. Fires once.
+  useEffect(() => {
+    // Wait for the session to resolve so a logged-in user isn't bounced to
+    // sign-in just because auth hadn't loaded yet.
+    if (buy && !autoBuyFired && !loading) {
+      setAutoBuyFired(true);
+      void handleSelect(buy, buyPeriod ?? 'monthly');
+    }
+    // handleSelect is stable enough for this one-shot trigger; deps kept minimal.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [buy, buyPeriod, autoBuyFired, session, loading]);
 
   const handleFree = () => {
     navigate({ to: session ? '/' : '/signin', ...(session ? {} : { search: { next: '/' } }) });

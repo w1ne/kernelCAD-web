@@ -2,12 +2,15 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { CheckCircle2 } from 'lucide-react';
 import type { BillingPeriod, PaidTier, PlanTier } from '../lib/apiClient';
+import { CONTACT_HREF, TIERS, type BadgeColor, type Feature, type Tier } from '../lib/pricingTiers';
 
 /**
  * PhotoAI-style pricing tiers (dark cards, huge prices, green check-circles,
  * colored emoji feature badges, an orange gradient CTA, and a highlighted
- * "Most popular" tier). Data-driven so copy is easy to tune. Supports a
- * monthly/yearly billing toggle (yearly = 2 months free).
+ * "Most popular" tier). Tier data comes from the shared `pricingTiers` module
+ * (the single source of truth also used to codegen the landing page) so numbers
+ * can never drift. Supports a monthly/yearly billing toggle (yearly = 2 months
+ * free).
  *
  * Tiers come in three shapes:
  *  - free      (`tier: null`)            → CTA calls onFree
@@ -16,86 +19,6 @@ import type { BillingPeriod, PaidTier, PlanTier } from '../lib/apiClient';
  *    checkout. Used for Enterprise: seats / SSO / centralized billing are sold
  *    through a conversation, not charged self-serve.
  */
-
-type BadgeColor = 'emerald' | 'violet' | 'amber' | 'sky' | 'slate';
-
-/** Where the Enterprise "Contact sales" CTA points. */
-const CONTACT_HREF = 'mailto:support@kernelcad.com?subject=kernelCAD%20for%20teams';
-
-interface Feature {
-  text: string;
-  emoji?: string;
-  badge?: BadgeColor;
-  note?: string;
-}
-
-interface Tier {
-  name: string;
-  /** Checkout tier id; null for the free and contact-sales tiers. */
-  tier: PaidTier | null;
-  /** Contact-sales tier: CTA is a mailto link, never a checkout or "current". */
-  contact?: boolean;
-  /** Monthly sticker price, e.g. '$20'. Contact tiers use 'Custom'. */
-  monthly: string;
-  /** Total billed once per year, e.g. '$200' (2 months free). Null = free/contact. */
-  yearly: string | null;
-  /** Effective per-month price when billed yearly, e.g. '$16.67'. */
-  yearlyPerMonth?: string;
-  blurb: string;
-  inherits?: string;
-  popular?: boolean;
-  features: Feature[];
-}
-
-const TIERS: Tier[] = [
-  {
-    name: 'Basic',
-    tier: 'basic',
-    monthly: '$19',
-    yearly: '$190',
-    yearlyPerMonth: '$15.83',
-    blurb: 'A generous monthly token allowance for hobby and side-project builds.',
-    features: [
-      { text: '5M tokens / month', emoji: '🎟️', badge: 'emerald' },
-      { text: 'Full 3D editor & viewer' },
-      { text: 'MCP access — bring your own agent', emoji: '🔌', badge: 'sky' },
-      { text: 'Build as parametric CAD (mesh-conditioned)', emoji: '🧠', badge: 'violet' },
-      { text: 'Image → 3D concept previews', emoji: '🖼️', badge: 'amber' },
-      { text: 'STEP / STL export' },
-      { text: 'Commercial use license' },
-    ],
-  },
-  {
-    name: 'Pro',
-    tier: 'pro',
-    monthly: '$39',
-    yearly: '$390',
-    yearlyPerMonth: '$32.50',
-    popular: true,
-    blurb: 'Almost-unlimited tokens for daily, professional CAD work.',
-    inherits: 'Basic',
-    features: [
-      { text: '12M tokens / month — almost unlimited', emoji: '🚀', badge: 'emerald' },
-      { text: 'Priority generation', emoji: '⚡' },
-      { text: 'Every feature, no build counting' },
-    ],
-  },
-  {
-    name: 'Enterprise',
-    tier: null,
-    contact: true,
-    monthly: 'Custom',
-    yearly: null,
-    blurb: 'Seats, one invoice, and a security review for your whole team.',
-    inherits: 'Pro',
-    features: [
-      { text: 'Team seats & shared projects', emoji: '👥' },
-      { text: 'Centralized billing & invoicing', emoji: '🧾' },
-      { text: 'SSO / SAML', emoji: '🔐' },
-      { text: 'Priority support & onboarding', emoji: '🎧' },
-    ],
-  },
-];
 
 const BADGE_CLASS: Record<BadgeColor, string> = {
   emerald: 'bg-emerald-500/15 text-emerald-300',
