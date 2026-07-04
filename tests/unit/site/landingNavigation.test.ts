@@ -6,12 +6,17 @@ import path from 'node:path';
 describe('landing page app navigation', () => {
   const html = () => readFileSync(path.resolve(__dirname, '../../../site/index.html'), 'utf8');
 
-  it('links the landing pricing CTAs to the app and sales, not a generate form', () => {
+  it('mounts the shared pricing component island, not a generate form', () => {
     const source = html();
 
-    // Basic/Pro → app checkout directly (?buy=<tier>); Enterprise → sales.
-    expect(source).toContain('href="https://app.kernelcad.com/pricing?buy=basic"');
-    expect(source).toContain('href="https://app.kernelcad.com/pricing?buy=pro"');
+    // The landing renders the SAME PricingSection component as app.kernelcad.com
+    // (SSR fallback + hydrated island), so layout/data can never drift. The
+    // paid CTAs deep-link into app checkout with the selected billing period —
+    // that intent is wired in the island bundle (see build-pricing.test.ts).
+    expect(source).toContain('id="pricing-root"');
+    expect(source).toContain('src="/pricing-island.js"');
+    expect(source).toContain('href="/pricing-island.css"');
+    // Enterprise stays contact-sales in the SSR'd markup.
     expect(source).toContain('href="mailto:support@kernelcad.com');
     // The prompt-handoff form was replaced by the pricing section.
     expect(source).not.toContain('class="prompt-handoff-form"');

@@ -8,5 +8,9 @@
   Cache-Control: public, max-age=60
 /style.css
   Cache-Control: public, max-age=3600
+/pricing-island.js
+  Cache-Control: public, max-age=3600
+/pricing-island.css
+  Cache-Control: public, max-age=3600
 /og-image.png
   Cache-Control: public, max-age=86400
