@@ -32,6 +32,17 @@ commits without a sign-off. To fix existing commits:
 git rebase --signoff develop && git push --force-with-lease
 ```
 
+## Release Hygiene
+
+See [docs/release-hygiene.md](docs/release-hygiene.md) before publishing a
+release. A pushed tag is not enough; `package.json`, the local tag, the remote
+tag, the GitHub Release, and GitHub's `Latest` marker must all agree. The final
+verification command is:
+
+```bash
+npm run test:release-hygiene
+```
+
 ## Trademark
 
 The MIT license covers the code only. Use of the kernelCAD name and logo is

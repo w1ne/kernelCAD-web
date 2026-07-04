@@ -3,13 +3,17 @@
 import React from 'react';
 import { useShellStore } from './store/useShellStore';
 import { StagedEditSlot } from './StagedEditSlot';
-import { AgentActivityLog } from './AgentActivityLog';
 import { StudioGenerate } from './StudioGenerate';
 
 /**
  * Left-side rail. Width animates between 0 and 240px based on
- * `agentRailOpen` in the shell store. Two stacked panes: staged-edit slot
- * on top, agent activity log below.
+ * `agentRailOpen` in the shell store. Two stacked panes: the in-Studio agent
+ * (prompt → plan → diff/apply, verified) on top, staged-edit slot below.
+ *
+ * The old "Cloud MCP connector" + "Studio Agent Mode: coming later" cards were
+ * removed 2026-06-28: the in-Studio agent is now live (StudioGenerate), so the
+ * "coming later" copy was false; and external-agent MCP onboarding has a proper
+ * home on the /connect route (claude/codex/cursor install via http transport).
  */
 export const AgentRail: React.FC = () => {
     const { agentRailOpen } = useShellStore();
@@ -25,11 +29,8 @@ export const AgentRail: React.FC = () => {
             <div className="flex-shrink-0 border-b border-[#2d2d2d]">
                 <StudioGenerate />
             </div>
-            <div className="flex-shrink-0 border-b border-[#2d2d2d]">
-                <StagedEditSlot />
-            </div>
             <div className="flex-1 min-h-0">
-                <AgentActivityLog />
+                <StagedEditSlot />
             </div>
         </aside>
     );

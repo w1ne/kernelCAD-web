@@ -25,6 +25,7 @@
 // worked; this module now matches it, so there is ONE routing convention.
 
 import { getSupabase } from '../../funnel/lib/supabaseClient';
+import { getEmbedConfig } from '../config/embedConfigRef';
 
 export interface ApiCallContext {
   /** URL prefix to prepend to legacy `/__kernelcad/...` paths. Empty
@@ -48,6 +49,17 @@ export interface ApiCallContext {
  *  scriptSource.ts), else `''` (local same-origin vite middleware).
  */
 export async function apiCall(): Promise<ApiCallContext> {
+  // Embed mode takes precedence: when a host (e.g. proto.cat) wraps Studio in
+  // `<StudioConfigProvider value={{ backendUrl }}>`, every backend fetch goes
+  // to that base. We still attempt to attach a Supabase JWT below in case the
+  // host shares the kernelCAD auth session; if Supabase is absent (typical
+  // embed) the headers stay empty and the kernelCAD backend must be reachable
+  // unauthenticated from the host — same trust boundary as the standalone
+  // local-dev path. Per-call host auth (e.g. proto.cat's own JWT) would be a
+  // future `embedConfig.authHeaders` field; out of scope for phase 1.
+  const embed = getEmbedConfig();
+  const embedBase = embed?.backendUrl;
+
   // Plain local dev has no Supabase env, so `getSupabase()` throws. That is
   // exactly the unsigned-in case: relative paths should hit the local vite
   // middleware. Swallow the missing-config throw and fall through to the
@@ -58,16 +70,18 @@ export async function apiCall(): Promise<ApiCallContext> {
   try {
     supabase = getSupabase();
   } catch {
-    return { base: '', headers: {} };
+    return { base: embedBase ?? '', headers: {} };
   }
   const {
     data: { session },
   } = await supabase.auth.getSession();
   const token = session?.access_token;
-  if (!token) return { base: '', headers: {} };
-  // Same base resolution as scriptSource.ts's hosted mesh path → ONE host for
-  // all Studio backend traffic (api.kernelcad.com, the direct Hetzner origin).
-  const base = import.meta.env.VITE_KERNELCAD_API_BASE
+  if (!token) return { base: embedBase ?? '', headers: {} };
+  // Embed config wins; otherwise same base resolution as scriptSource.ts's
+  // hosted mesh path → ONE host for all Studio backend traffic
+  // (api.kernelcad.com, the direct Hetzner origin).
+  const base = embedBase
+    ?? import.meta.env.VITE_KERNELCAD_API_BASE
     ?? import.meta.env.VITE_API_BASE_URL
     ?? '';
   return { base, headers: { Authorization: `Bearer ${token}` } };

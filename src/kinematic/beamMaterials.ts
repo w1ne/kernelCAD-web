@@ -57,9 +57,28 @@ export const MATERIAL_CATALOG: Readonly<
   pet: { yieldStressPa: 55e6, youngsModulusPa: 2.7e9, densityKgPerM3: 1380 },
 });
 
+/** Catalog keys (everything except `custom`) — the runtime-valid bulk kinds. */
+export const CATALOG_KINDS: ReadonlyArray<Exclude<MaterialKind, 'custom'>> = [
+  'steel',
+  'aluminum',
+  'pla',
+  'abs',
+  'pet',
+];
+
 export type ResolveMaterialResult =
   | { readonly ok: true; readonly props: MaterialProps }
-  | { readonly ok: false; readonly missingField: 'yieldStressMPa' | 'youngsModulusGPa' };
+  | {
+      readonly ok: false;
+      readonly reason: 'missing-custom-field';
+      readonly missingField: 'yieldStressMPa' | 'youngsModulusGPa';
+    }
+  | {
+      readonly ok: false;
+      readonly reason: 'unknown-material';
+      /** The offending value as the caller passed it, for the diagnostic. */
+      readonly material: string;
+    };
 
 /**
  * Resolve a per-part `MaterialDeclarationEntry` to its numeric SI props.
@@ -72,17 +91,23 @@ export type ResolveMaterialResult =
  *   default density.
  * - `material: 'custom'` requires both `yieldStressMPa` and
  *   `youngsModulusGPa`. Missing either field returns
- *   `{ ok: false, missingField }` and the caller emits K8.
+ *   `{ ok: false, reason: 'missing-custom-field', missingField }` and the
+ *   caller emits K8.
+ * - An unrecognised `material` value (a typo or bare SKU like
+ *   `'aluminum-6061'` that is neither `'custom'` nor a catalog key) returns
+ *   `{ ok: false, reason: 'unknown-material', material }` instead of crashing
+ *   on an undefined catalog row — the caller turns this into a clear
+ *   diagnostic naming the offending value.
  */
 export function resolveMaterialProps(
   entry: MaterialDeclarationEntry,
 ): ResolveMaterialResult {
   if (entry.material === 'custom') {
     if (entry.yieldStressMPa === undefined || !Number.isFinite(entry.yieldStressMPa)) {
-      return { ok: false, missingField: 'yieldStressMPa' };
+      return { ok: false, reason: 'missing-custom-field', missingField: 'yieldStressMPa' };
     }
     if (entry.youngsModulusGPa === undefined || !Number.isFinite(entry.youngsModulusGPa)) {
-      return { ok: false, missingField: 'youngsModulusGPa' };
+      return { ok: false, reason: 'missing-custom-field', missingField: 'youngsModulusGPa' };
     }
     return {
       ok: true,
@@ -93,7 +118,12 @@ export function resolveMaterialProps(
       },
     };
   }
-  const catalog = MATERIAL_CATALOG[entry.material];
+  // Guard the catalog lookup: a value outside the known kinds (a typo or a
+  // bare SKU string) would otherwise read `yieldStressPa` off `undefined`.
+  const catalog = MATERIAL_CATALOG[entry.material as Exclude<MaterialKind, 'custom'>];
+  if (catalog === undefined) {
+    return { ok: false, reason: 'unknown-material', material: String(entry.material) };
+  }
   return {
     ok: true,
     props: {

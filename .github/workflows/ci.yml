@@ -31,12 +31,18 @@ on:
       - 'doc/**'
       - 'archive/**'
   workflow_dispatch:
+  # Required so the branch-protection merge queue gets its checks: the queue
+  # tests a speculative merge on a temporary `merge_group` ref and waits for the
+  # same required checks (lint / build-and-checks / test) to report there.
+  merge_group:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  # Keyed per-PR (a new push cancels the prior run) but per-run for merge_group
+  # so queued entries never cancel one another.
+  group: ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
 # Three independent QC jobs run in parallel; e2e (master-only) gates on all
@@ -67,7 +73,11 @@ jobs:
   # green only when ALL shards pass.
   test-shard:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # 15 (not 10) gives headroom for the shard that draws the heavy physics
+    # example-sweep tests (a single example can run ~6 min) so a legitimately
+    # slow run is never cancelled mid-test. Setup itself is now near-instant
+    # (ffmpeg preinstalled; apt fallback bounded) so this is pure test headroom.
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:

@@ -4,38 +4,64 @@
 //
 // W3: insert a `<shape>.projectCurve({...})` chained call into a .kcad.ts
 // script before the last top-level `return`. Pure-string AST edit.
+//
+// The emitted call matches the runtime `Shape.projectCurve` API exactly: it
+// takes a STRUCTURED `source` of type `ProjectCurveSource`
+// (`{ kind: 'sketchCommands', commands: SketchCommand[] }`), NOT a bare
+// `curve:` expression. The serializer turns the agent's plain-number 2D path
+// commands into the Param-shaped SketchCommand[] wire format that the lowerer
+// (projectCurveLowerer.ts -> drawingFromCommands) consumes.
 
 import { addFeature } from './addFeature';
 import type { AddFeatureResult } from './addFeature';
+
+/** A single 2D path command, agent-facing (plain numbers). Mirrors the
+ *  closed-curve subset of `SketchCommand` that the projectCurve lowerer
+ *  supports today: `moveTo` (required first) + `lineTo` + `close`. */
+export type ProjectCurveCommand =
+  | { kind: 'moveTo'; x: number; y: number }
+  | { kind: 'lineTo'; x: number; y: number }
+  | { kind: 'close' };
 
 export interface AddProjectCurveInput {
   /** The .kcad.ts source code to edit. */
   code: string;
   /** Variable name of the Shape to chain onto. */
   target: string;
-  /** JS expression returning a closed Sketch / closed path (e.g.
-   *  `path().moveTo(0,0).lineTo(10,0).lineTo(10,10).close().build()`).
-   *  Inserted verbatim into the emitted call as the `curve:` field. */
-  curveExpression: string;
+  /** Closed 2D path to wrap onto the face, as plain-number commands. Must
+   *  start with `moveTo` and end with `close`. Serialized into the runtime
+   *  `source: { kind: 'sketchCommands', commands: [...] }` wire format. */
+  commands: readonly ProjectCurveCommand[];
   /** Target face: canonical name or label. */
   face: string;
   /** `Drawing.sketchOnFace` scaling mode; defaults to 'original'. */
   scaleMode?: 'original' | 'native' | 'bounds';
   /** Project as an open edge instead of a closed face-bound sketch.
-   *  Currently deferred — the lowerer emits a deferred-feature diagnostic. */
+   *  DEFERRED — the lowerer cannot synthesize an open-wire projection
+   *  (BRepProj_Projection is not bundled in the current OCCT build), so the
+   *  serializer rejects it rather than emitting code that fails to evaluate. */
   asEdge?: boolean;
   /** Optional local variable name. Emits `const <bindAs> = <target>.projectCurve(...);`. */
   bindAs?: string;
 }
 
+/** Serialize a plain number as a Param literal `{ expression, unit, evaluated }`,
+ *  the shape `toParam(n, 'mm')` produces at capture time and the shape the
+ *  lowerer's `drawingFromCommands` reads via `.evaluated`. */
+function paramLiteral(n: number): string {
+  return `{ expression: '${n}', unit: 'mm', evaluated: ${n} }`;
+}
+
+function serializeCommand(cmd: ProjectCurveCommand): string {
+  if (cmd.kind === 'close') return `{ kind: 'close' }`;
+  return `{ kind: '${cmd.kind}', x: ${paramLiteral(cmd.x)}, y: ${paramLiteral(cmd.y)} }`;
+}
+
 function serializeOpts(input: AddProjectCurveInput): string {
-  const fields: string[] = [];
-  // curveExpression is inserted verbatim — the caller is responsible for
-  // providing a syntactically valid JS expression.
-  fields.push(`curve: ${input.curveExpression}`);
-  fields.push(`face: '${input.face}'`);
+  const commandsLiteral = input.commands.map(serializeCommand).join(', ');
+  const source = `source: { kind: 'sketchCommands', commands: [${commandsLiteral}] }`;
+  const fields: string[] = [source, `face: '${input.face}'`];
   if (input.scaleMode !== undefined) fields.push(`scaleMode: '${input.scaleMode}'`);
-  if (input.asEdge !== undefined) fields.push(`asEdge: ${input.asEdge}`);
   return `{ ${fields.join(', ')} }`;
 }
 
@@ -43,8 +69,29 @@ export function addProjectCurve(input: AddProjectCurveInput): AddFeatureResult {
   if (typeof input.target !== 'string' || input.target.length === 0) {
     return { ok: false, error: 'add_project_curve: target Shape variable name is required.' };
   }
-  if (typeof input.curveExpression !== 'string' || input.curveExpression.trim().length === 0) {
-    return { ok: false, error: 'add_project_curve: curveExpression must be a non-empty JS expression.' };
+  if (!Array.isArray(input.commands) || input.commands.length === 0) {
+    return {
+      ok: false,
+      error: 'add_project_curve: commands must be a non-empty 2D path (e.g. [{kind:"moveTo",x:0,y:0},{kind:"lineTo",x:2,y:0},...,{kind:"close"}]).',
+    };
+  }
+  if (input.commands[0]?.kind !== 'moveTo') {
+    return { ok: false, error: 'add_project_curve: commands must start with a moveTo.' };
+  }
+  if (input.commands[input.commands.length - 1]?.kind !== 'close') {
+    return { ok: false, error: 'add_project_curve: commands must end with a close (closed-curve projection only).' };
+  }
+  if (typeof input.face !== 'string' || input.face.length === 0) {
+    return { ok: false, error: 'add_project_curve: face name is required.' };
+  }
+  if (input.asEdge === true) {
+    // Open-wire projection is unimplemented in the lowerer (BRepProj_Projection
+    // not bundled). Reject at edit time rather than emit code that the lowerer
+    // would reject with feature.project-curve.no-intersection.
+    return {
+      ok: false,
+      error: 'add_project_curve: asEdge:true (open-wire projection) is deferred — BRepProj_Projection is not bundled in the current OCCT build. Use a closed-curve projection (omit asEdge).',
+    };
   }
   const optsLiteral = serializeOpts(input);
   const callExpr = `${input.target}.projectCurve(${optsLiteral})`;

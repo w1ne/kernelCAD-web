@@ -160,7 +160,9 @@ describe('list_api drift sentinels', () => {
   });
 
   it('documents surfaceFromBoundary as the shipped filling-surface primitive with exact curve order', async () => {
-    const r = await listApiTool({});
+    // Full descriptions are returned for query matches; the default response is
+    // compacted (signatures + short blurb) to keep the generation token budget small.
+    const r = await listApiTool({ query: 'surfaceFromBoundary' });
     const entry = r.globals!.find(g => g.name === 'surfaceFromBoundary');
     expect(entry).toBeDefined();
     expect(entry!.description).toMatch(/filling surface/i);

@@ -146,14 +146,24 @@ function walkResolve(node: unknown, table: ParamTable): unknown {
 
 export function collectParamRefs(blob: unknown): Set<string> {
   const refs = new Set<string>();
-  walkCollect(blob, refs);
+  walkCollect(blob, refs, new WeakSet<object>());
   return refs;
 }
 
-function walkCollect(node: unknown, refs: Set<string>): void {
+// `seen` breaks reference cycles. Capture-layer objects (PathBuilder, Sketch,
+// Shape) hold a back-reference to the session, whose `records` array contains
+// the very feature whose metadata we are walking — so an object that lands in
+// metadata (e.g. a PathBuilder mistakenly passed as a sweep rail) would recurse
+// session → records → record → metadata → object forever and blow the stack.
+// A visited set bounds the walk; param refs are still collected exactly once.
+function walkCollect(node: unknown, refs: Set<string>, seen: WeakSet<object>): void {
   if (node === null || node === undefined) return;
+  if (typeof node === 'object') {
+    if (seen.has(node)) return;
+    seen.add(node);
+  }
   if (Array.isArray(node)) {
-    for (const item of node) walkCollect(item, refs);
+    for (const item of node) walkCollect(item, refs, seen);
     return;
   }
   if (typeof node !== 'object') return;
@@ -167,5 +177,5 @@ function walkCollect(node: unknown, refs: Set<string>): void {
     return;
   }
   const obj = node as Record<string, unknown>;
-  for (const k of Object.keys(obj)) walkCollect(obj[k], refs);
+  for (const k of Object.keys(obj)) walkCollect(obj[k], refs, seen);
 }

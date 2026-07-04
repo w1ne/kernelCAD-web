@@ -25,7 +25,7 @@ export function RateLimitedPanel({
   const buttonCopy = authenticated
     ? busy
       ? 'Loading…'
-      : 'Upgrade to Pro — $12/mo'
+      : 'Upgrade — $19/mo'
     : 'Sign in to upgrade';
   return (
     <div
@@ -33,10 +33,14 @@ export function RateLimitedPanel({
       className="mt-6 mx-auto max-w-2xl rounded-lg border border-blueprint bg-vellum-soft p-5 text-ink text-left"
     >
       <p className="font-serif font-medium text-lg">
-        You've used your free generations this month
+        {authenticated
+          ? "You've used your free generations this month"
+          : 'Sign in to build with the agent'}
       </p>
       <p className="text-sm text-ink-soft mt-2">
-        Upgrade to Pro to keep generating — $12/mo, cancel anytime.
+        {authenticated
+          ? 'Upgrade to keep generating — $19/mo, cancel anytime.'
+          : 'The build agent is free to start once you sign in — 5 builds a month, no card needed.'}
       </p>
       <div className="mt-4">
         <button

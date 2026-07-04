@@ -20,7 +20,7 @@ describe('PlanCard', () => {
 
     expect(screen.getByText(/Free plan/i)).toBeDefined();
     expect(screen.getByText(/3 generations remaining/i)).toBeDefined();
-    const btn = screen.getByRole('button', { name: /Upgrade to Pro/i });
+    const btn = screen.getByRole('button', { name: /Upgrade/i });
     fireEvent.click(btn);
     expect(onUpgrade).toHaveBeenCalledTimes(1);
   });
@@ -43,6 +43,7 @@ describe('PlanCard', () => {
     render(
       <PlanCard
         plan="pro"
+        tier="pro"
         generationsRemaining={9999}
         currentPeriodEnd="2026-06-15T00:00:00.000Z"
         onUpgrade={() => {}}

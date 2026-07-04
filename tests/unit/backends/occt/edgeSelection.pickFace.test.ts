@@ -51,7 +51,7 @@ describe('pickFace', () => {
     const box = OcctBackend.box(20, 20, 20).translate(5, 0, 0);
     const result = pickFace(shellWithFace('box_1', 'top'), box, undefined);
     if (!('error' in result)) throw new Error('expected error, got face');
-    expect(result.error.code).toBe('feature.face-ref.not-resolvable');
+    expect(result.error.code).toBe('feature.face-ref.not-applicable');
   });
 
   it('returns face-ref-not-resolvable on a non-primitive (boolean result)', () => {
@@ -60,7 +60,7 @@ describe('pickFace', () => {
     const bool = box.subtract(cyl);
     const result = pickFace(shellWithFace('bool_1', 'top'), bool, undefined);
     if (!('error' in result)) throw new Error('expected error, got face');
-    expect(result.error.code).toBe('feature.face-ref.not-resolvable');
+    expect(result.error.code).toBe('feature.face-ref.not-applicable');
   });
 
   it('returns face-ref-not-applicable for cylinder side face', () => {

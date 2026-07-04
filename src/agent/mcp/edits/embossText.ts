@@ -40,7 +40,10 @@ export interface AddEmbossTextInput {
 
 function serializeOpts(input: AddEmbossTextInput): string {
   const fields: string[] = [];
-  fields.push(`text: ${JSON.stringify(input.textContent)}`);
+  // Proxy API key is `textContent` (capture/proxy.ts embossText). Emitting
+  // `text:` left textContent undefined → a `sketch.text.empty-content` error
+  // at evaluation that the old hardcoded `ok: true` masked.
+  fields.push(`textContent: ${JSON.stringify(input.textContent)}`);
   fields.push(`size: ${input.size}`);
   fields.push(`depth: ${input.depth}`);
   fields.push(`face: '${input.face}'`);

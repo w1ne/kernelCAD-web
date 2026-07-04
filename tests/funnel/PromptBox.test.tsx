@@ -38,4 +38,14 @@ describe('PromptBox', () => {
     const btn = screen.getByRole('button', { name: /Generating/i }) as HTMLButtonElement;
     expect(btn.disabled).toBe(true);
   });
+
+  it('disables browser autocomplete for prompt draft fields', () => {
+    render(<PromptBox onSubmit={() => {}} />);
+
+    const form = screen.getByLabelText(/CAD prompt/).closest('form');
+    const textarea = screen.getByLabelText(/CAD prompt/) as HTMLTextAreaElement;
+
+    expect(form?.getAttribute('autocomplete')).toBe('off');
+    expect(textarea.autocomplete).toBe('off');
+  });
 });

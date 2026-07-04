@@ -93,9 +93,18 @@ describe('Gearfinity-inspired planetary stage gallery example', () => {
     // dishonestly claim the articulated overlap was checked, and NOT
     // 'broken', since the probe found no defect).
     expect(validateResult.mechanism).toBe('unverified');
-    // The skipped sweep emits no probe diagnostics — degradation is
-    // explicit in the verdict + a console.warn, not hidden in failures.
-    expect(validateResult.mechanismFailures ?? []).toEqual([]);
+    // T3: the skipped sweep is now LOUD — it emits exactly one structured,
+    // non-fatal `mechanism.unverified-budget-exceeded` diagnostic carrying
+    // the work estimate / budget / part count, instead of the old silent
+    // console.warn. 'unverified' must be evidence, not silence.
+    const failures = validateResult.mechanismFailures ?? [];
+    const budgetDiags = failures.filter(
+      (d) => d.code === 'mechanism.unverified-budget-exceeded',
+    );
+    expect(budgetDiags).toHaveLength(1);
+    expect(budgetDiags[0].severity).toBe('warn');
+    // No OTHER (e.g. error-severity) probe diagnostics — the cheap criteria found nothing.
+    expect(failures.filter((d) => d.severity === 'error')).toEqual([]);
   });
 
   // Example-sweep-gate entry for this example (delegated here from

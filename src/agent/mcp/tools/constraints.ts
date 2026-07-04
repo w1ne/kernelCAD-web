@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { ConstraintSolver } from '../../../modeling/constraints/solver';
+import { ConstraintSolver, SKETCH_CONVERGENCE_RESIDUAL_TOL } from '../../../modeling/constraints/solver';
 import type { Constraint, ConstraintType, SketchEntity } from '../../../modeling/constraints/types';
 
 export const SUPPORTED_CONSTRAINT_TYPES: ConstraintType[] = [
@@ -43,11 +43,22 @@ export interface SolveSketchInput {
 export type SolveSketchOutput =
   | {
     ok: true;
+    /** The solve converged: aggregate residual fell below tolerance. */
+    converged: true;
+    /** Final aggregate residual on the converged solve. */
+    residual: number;
     entities: SketchEntity[];
     constraints: Constraint[];
   }
   | {
     ok: false;
+    /** False when the solve did not converge (contradictory / over-
+     *  constrained set); undefined when validation rejected the input
+     *  before the solver ran. */
+    converged?: boolean;
+    /** Final aggregate residual when the solver ran; undefined when
+     *  validation rejected the input first. */
+    residual?: number;
     errors: string[];
     entities: SketchEntity[];
     constraints: Constraint[];
@@ -88,11 +99,31 @@ export async function solveSketchTool(input: SolveSketchInput = {}): Promise<Sol
   }
 
   const entityMap = new Map(entities.map(entity => [entity.id, entity]));
-  new ConstraintSolver().solve({ entities: entityMap, constraints });
+  const result = new ConstraintSolver().solve({ entities: entityMap, constraints });
+  const solvedEntities = entities.map(entity => entityMap.get(entity.id) ?? entity);
+
+  if (!result.converged) {
+    // The solve did not converge: at least one constraint cannot be
+    // satisfied (contradictory / over-constrained). Reporting ok:true here
+    // would ship a WRONG sketch as a success, so refuse — but still return
+    // the best-effort solved entities so the agent can diagnose.
+    return {
+      ok: false,
+      converged: false,
+      residual: result.residual,
+      errors: [
+        `Constraint solve did not converge: aggregate residual ${result.residual.toFixed(4)} after ${result.iterations} iterations (tolerance ${SKETCH_CONVERGENCE_RESIDUAL_TOL}). The constraint set is likely contradictory or over-constrained — remove or relax a conflicting constraint, or unfix an entity so the solver has a degree of freedom to satisfy it.`,
+      ],
+      entities: solvedEntities,
+      constraints,
+    };
+  }
 
   return {
     ok: true,
-    entities: entities.map(entity => entityMap.get(entity.id) ?? entity),
+    converged: true,
+    residual: result.residual,
+    entities: solvedEntities,
     constraints,
   };
 }

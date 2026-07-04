@@ -10,6 +10,7 @@ import { RateLimitedPanel } from '../../funnel/components/RateLimitedPanel';
 import { useGeneration } from '../../funnel/hooks/useGeneration';
 import { useSession } from '../../funnel/hooks/useSession';
 import { createCheckoutSession } from '../../funnel/lib/apiClient';
+import { inAppAgentEnabled } from '../agentAvailability';
 
 export const Route = createFileRoute('/generate')({
   component: GeneratePage,
@@ -25,6 +26,7 @@ function readInitialPrompt(): string {
 }
 
 function GeneratePage() {
+  const agentEnabled = inAppAgentEnabled();
   const { phase, events, submit } = useGeneration();
   const { session, loading: sessionLoading } = useSession();
   const navigate = useNavigate();
@@ -51,6 +53,7 @@ function GeneratePage() {
 
   const handleSubmit = useCallback(
     (prompt: string) => {
+      if (!agentEnabled) return;
       if (!session) {
         // Stash so the post-OAuth landing can pick it up and auto-submit.
         try {
@@ -63,12 +66,13 @@ function GeneratePage() {
       }
       void submit(prompt);
     },
-    [session, submit],
+    [agentEnabled, session, submit],
   );
 
   // After OAuth returns with a session, auto-resume the stashed prompt.
   useEffect(() => {
     if (sessionLoading || !session) return;
+    if (!agentEnabled) return;
     if (phase.state !== 'idle') return;
     let pending: string | null = null;
     try {
@@ -80,7 +84,7 @@ function GeneratePage() {
       window.localStorage.removeItem(PENDING_PROMPT_KEY);
       void submit(pending);
     }
-  }, [sessionLoading, session, phase.state, submit]);
+  }, [agentEnabled, sessionLoading, session, phase.state, submit]);
 
   useEffect(() => {
     if (phase.state === 'done') {
@@ -126,10 +130,26 @@ function GeneratePage() {
           </div>
 
           <div className="mt-2 max-w-2xl mx-auto">
-            <PromptBox onSubmit={handleSubmit} disabled={isBusy} initialValue={initialPrompt} />
+            <PromptBox onSubmit={handleSubmit} disabled={isBusy || !agentEnabled} initialValue={initialPrompt} />
+            {!agentEnabled && (
+              <div className="mt-4 rounded-lg border border-rule bg-vellum-soft p-4 text-left">
+                <p className="font-serif font-medium text-lg">Built-in generation is paused</p>
+                <p className="mt-2 text-sm text-ink-soft leading-relaxed">
+                  Use kernelCAD through MCP while the hosted agent is behind a feature flag.
+                </p>
+                <a
+                  href="/connect"
+                  className="mt-3 inline-flex rounded-lg bg-blueprint hover:bg-blueprint-hover text-white px-4 py-2 text-sm font-medium no-underline transition-colors"
+                >
+                  Connect MCP
+                </a>
+              </div>
+            )}
             {!session && !sessionLoading && (
               <p className="mt-3 text-xs text-ink-faint font-mono tracking-wide">
-                Sign in when you generate - agents build live in the app.
+                {agentEnabled
+                  ? 'Sign in when you generate - agents build live in the app.'
+                  : 'The hosted agent can be re-enabled with VITE_ENABLE_IN_APP_AGENT=true.'}
               </p>
             )}
             {session && (

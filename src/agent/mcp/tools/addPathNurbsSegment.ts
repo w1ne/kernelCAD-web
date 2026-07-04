@@ -27,7 +27,7 @@ export async function addPathNurbsSegmentTool(input: AddPathNurbsSegmentInput): 
   }
   const evalResult = await evaluateScriptTool({ code: edit.new_code });
   return {
-    ok: true,
+    ok: evalResult.ok,
     new_code: edit.new_code,
     diagnostics: evalResult.diagnostics,
   };

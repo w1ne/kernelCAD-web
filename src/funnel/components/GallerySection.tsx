@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useModelViewer } from '../hooks/useModelViewer';
 
 interface GalleryAuthor {
   handle: string;
@@ -29,30 +30,8 @@ interface GalleryJson {
   entries: GalleryEntry[];
 }
 
-const MODEL_VIEWER_CDN =
-  'https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js';
-
-/** Lazy-load the model-viewer web component only after a tile needs it. Match the
- * static landing page's CDN script-tag approach — keeps it out of the main
- * Vite bundle (the npm package is ~1MB minified) and shares the CDN cache
- * with any other page on kernelcad.com that loads it. */
-function useModelViewer(enabled: boolean): void {
-  useEffect(() => {
-    if (!enabled) return;
-    if (typeof window === 'undefined') return;
-    if (window.customElements?.get('model-viewer')) return;
-    if (document.querySelector(`script[src="${MODEL_VIEWER_CDN}"]`)) return;
-    const script = document.createElement('script');
-    script.type = 'module';
-    script.src = MODEL_VIEWER_CDN;
-    script.onerror = () => {
-      // Graceful degrade — tiles fall back to the <model-viewer> poster
-      // attribute, which renders as an <img> until the script registers
-      // the custom element.
-    };
-    document.head.appendChild(script);
-  }, [enabled]);
-}
+// useModelViewer (lazy CDN load of the <model-viewer> web component) is shared
+// with the Studio 3D-concept preview — see ../hooks/useModelViewer.
 
 function useNearViewport<T extends Element>(): [RefObject<T | null>, boolean, () => void] {
   const ref = useRef<T>(null);

@@ -1,0 +1,202 @@
+{
+  "_comment": "Declarative manifest of electronic parts for the kernelCAD catalog. Each entry maps a real, CC-licensed 3D model (fetched at ingest time, NOT committed) to a stable catalog id that LabWired chip/peripheral configs reference. Source: KiCad packages3D (CC-BY-SA 4.0 with the library exception). LabWired sims the silicon; the model placed in a design is the package/module a user actually solders. Where a part has no faithful off-the-shelf model yet, it is OMITTED here (not faked) so the coverage gate flags it.",
+  "baseModelUrl": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/master",
+  "license": "CC-BY-SA-4.0",
+  "attribution": "KiCad Libraries (kicad-packages3D), CC-BY-SA 4.0 with the KiCad library exception",
+  "parts": [
+    {
+      "id": "esp32-wroom-32",
+      "name": "ESP32-WROOM-32 module",
+      "family": "ESP32",
+      "mpn": "ESP32-WROOM-32",
+      "model": "RF_Module.3dshapes/ESP32-WROOM-32.step",
+      "tags": ["mcu", "module", "wifi", "ble", "esp32", "xtensa"]
+    },
+    {
+      "id": "esp32-s3-wroom-1",
+      "name": "ESP32-S3-WROOM-1 module",
+      "family": "ESP32",
+      "mpn": "ESP32-S3-WROOM-1",
+      "model": "RF_Module.3dshapes/ESP32-S3-WROOM-1.step",
+      "tags": ["mcu", "module", "wifi", "ble", "esp32", "esp32s3", "xtensa"]
+    },
+    {
+      "id": "esp32-c3-wroom-02",
+      "name": "ESP32-C3-WROOM-02 module",
+      "family": "ESP32",
+      "mpn": "ESP32-C3-WROOM-02",
+      "model": "RF_Module.3dshapes/ESP32-C3-WROOM-02.step",
+      "tags": ["mcu", "module", "wifi", "ble", "esp32", "esp32c3", "riscv"]
+    },
+    {
+      "id": "ic-lqfp-48",
+      "name": "LQFP-48 (7x7mm, 0.5mm pitch)",
+      "family": "IC package",
+      "mpn": "LQFP-48",
+      "model": "Package_QFP.3dshapes/LQFP-48_7x7mm_P0.5mm.step",
+      "tags": ["ic", "package", "lqfp", "stm32"]
+    },
+    {
+      "id": "ic-lqfp-64",
+      "name": "LQFP-64 (10x10mm, 0.5mm pitch)",
+      "family": "IC package",
+      "mpn": "LQFP-64",
+      "model": "Package_QFP.3dshapes/LQFP-64_10x10mm_P0.5mm.step",
+      "tags": ["ic", "package", "lqfp", "stm32"]
+    },
+    {
+      "id": "ic-lqfp-100",
+      "name": "LQFP-100 (14x14mm, 0.5mm pitch)",
+      "family": "IC package",
+      "mpn": "LQFP-100",
+      "model": "Package_QFP.3dshapes/LQFP-100_14x14mm_P0.5mm.step",
+      "tags": ["ic", "package", "lqfp", "stm32"]
+    },
+    {
+      "id": "ic-lqfp-144",
+      "name": "LQFP-144 (20x20mm, 0.5mm pitch)",
+      "family": "IC package",
+      "mpn": "LQFP-144",
+      "model": "Package_QFP.3dshapes/LQFP-144_20x20mm_P0.5mm.step",
+      "tags": ["ic", "package", "lqfp", "stm32"]
+    },
+    {
+      "id": "ic-qfn-56-7x7",
+      "name": "QFN-56 (7x7mm, 0.4mm pitch)",
+      "family": "IC package",
+      "mpn": "QFN-56",
+      "model": "Package_DFN_QFN.3dshapes/QFN-56-1EP_7x7mm_P0.4mm_EP3.2x3.2mm.step",
+      "tags": ["ic", "package", "qfn", "rp2040", "esp32s3"]
+    },
+    {
+      "id": "epaper-29-tricolor",
+      "name": "2.9\" tri-color e-paper panel",
+      "family": "Display",
+      "mpn": "Adafruit 4086",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/4086%20TriColor%20ePaper%20Display/4086-tricolor-epaper-display.step",
+      "tags": ["display", "epaper", "eink", "tricolor", "2.9inch"],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT"
+    },
+    {
+      "id": "lipo-1200mah-pouch",
+      "name": "LiPo pouch cell (~1200mAh, 53x37x5mm)",
+      "family": "Battery",
+      "mpn": "Adafruit 258",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/258%201200mAh%20lipo/258%201200mAh%20lipo.step",
+      "tags": ["battery", "lipo", "pouch", "power"],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT"
+    },
+    {
+      "id": "esp32-c3-supermini",
+      "name": "ESP32-C3 SuperMini board",
+      "family": "ESP32",
+      "mpn": "ESP32-C3-SuperMini",
+      "url": "https://raw.githubusercontent.com/mrtnvgr/KiCad_ESP32-C3-SuperMini/master/ESP32-C3-SuperMini.stp",
+      "tags": ["mcu", "module", "wifi", "ble", "esp32", "esp32c3", "riscv", "usb-c", "supermini"],
+      "license": "OSHW-attribution",
+      "attribution": "KiCad_ESP32-C3-SuperMini by mrtnvgr (github.com/mrtnvgr/KiCad_ESP32-C3-SuperMini)"
+    },
+    {
+      "id": "mlx90640",
+      "name": "MLX90640 thermal camera (Adafruit STEMMA)",
+      "family": "Sensor",
+      "mpn": "Adafruit 4469",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/4469%20MLX90640%20Stemma/4469%20MLX90640%20Stemma.step",
+      "tags": ["sensor", "thermal", "ir", "camera", "mlx90640", "i2c", "stemma"],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT"
+    },
+    {
+      "id": "m12-iolink-5pin",
+      "name": "M12 IO-Link connector (5-pin, A-coded, male)",
+      "family": "Connector",
+      "mpn": "Phoenix Contact 1694211",
+      "url": "https://raw.githubusercontent.com/oro-os/link/HEAD/pcb/link/lib/step/pxc_1694211_02_00_SACC-DSIV-M12MS-5CON-L180_3D.stp",
+      "tags": ["connector", "m12", "iolink", "io-link", "5pin", "a-coded", "phoenix-contact"],
+      "license": "OSHW",
+      "attribution": "Phoenix Contact via oro-os/link (github.com/oro-os/link), OSHW"
+    },
+    {
+      "id": "ssd1306-oled-096",
+      "name": "SSD1306 0.96\" I2C OLED display module (27×27×4mm)",
+      "family": "Display",
+      "mpn": "generic SSD1306 0.96in OLED breakout",
+      "kcad_source": "scripts/parts/authored/ssd1306-oled-096.kcad.ts",
+      "tags": ["display", "oled", "i2c", "ssd1306", "096inch", "128x64"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "dht22",
+      "name": "DHT22 / AM2302 temperature + humidity sensor (15×25×8mm)",
+      "family": "Sensor",
+      "mpn": "DHT22",
+      "kcad_source": "scripts/parts/authored/dht22.kcad.ts",
+      "tags": ["sensor", "temperature", "humidity", "dht22", "am2302"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "ws2812-strip",
+      "name": "WS2812B NeoPixel LED strip segment — 3 pixels (17×10×3mm)",
+      "family": "LED",
+      "mpn": "WS2812B (3-pixel strip segment)",
+      "kcad_source": "scripts/parts/authored/ws2812-strip.kcad.ts",
+      "tags": ["led", "neopixel", "ws2812b", "rgb", "addressable", "strip"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "bme280",
+      "name": "BME280 environmental sensor breakout (19×18×3mm)",
+      "family": "Sensor",
+      "mpn": "BME280 breakout (Adafruit 2652 / SparkFun)",
+      "kcad_source": "scripts/parts/authored/bme280.kcad.ts",
+      "tags": ["sensor", "temperature", "humidity", "pressure", "bme280", "i2c", "spi"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "microsd-spi",
+      "name": "microSD SPI adapter breakout module (24×30×4mm)",
+      "family": "Storage",
+      "mpn": "generic microSD SPI breakout",
+      "kcad_source": "scripts/parts/authored/microsd-spi.kcad.ts",
+      "tags": ["storage", "microsd", "spi", "sdcard", "module"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "pushbutton-6mm",
+      "name": "6mm tactile pushbutton (6×6×5mm)",
+      "family": "Switch",
+      "mpn": "generic 6mm tact switch",
+      "kcad_source": "scripts/parts/authored/pushbutton-6mm.kcad.ts",
+      "tags": ["switch", "button", "tactile", "pushbutton", "6mm"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "max14827",
+      "name": "MAX14827 IO-Link PHY breakout (12×10×2mm)",
+      "family": "IO-Link",
+      "mpn": "MAX14827",
+      "kcad_source": "scripts/parts/authored/max14827.kcad.ts",
+      "tags": ["iolink", "io-link", "phy", "max14827", "industrial"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "buck-24v-3v3",
+      "name": "24V→3.3V step-down buck regulator module (18×12×4mm)",
+      "family": "Power",
+      "mpn": "generic 24V 3.3V buck module",
+      "kcad_source": "scripts/parts/authored/buck-24v-3v3.kcad.ts",
+      "tags": ["power", "buck", "regulator", "24v", "3v3", "stepdown"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    }
+  ]
+}

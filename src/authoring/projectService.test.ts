@@ -3,7 +3,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { projectService } from './projectService';
 
 describe('projectService', () => {
@@ -103,5 +103,87 @@ describe('projectService', () => {
         expect(mockLink.href).toBe('blob:test');
         expect(mockLink.click).toHaveBeenCalled();
         expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:test');
+    });
+
+    describe('revisions', () => {
+        const id = 'rev-proj';
+        const make = (code: string) => projectService.createProject(code, mockViewState, 'Rev Project');
+
+        afterEach(() => {
+            vi.useRealTimers();
+        });
+
+        it('snapshots a revision on first save', () => {
+            projectService.saveProject(id, make('code A'));
+            const revs = projectService.listRevisions(id);
+            expect(revs).toHaveLength(1);
+            expect(revs[0]).toMatchObject({ v: 1, code: 'code A' });
+        });
+
+        it('dedupes when code is unchanged across saves', () => {
+            vi.useFakeTimers();
+            vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+            projectService.saveProject(id, make('same'));
+            // Advance well beyond the coalesce window so dedupe (not coalesce) applies.
+            vi.setSystemTime(new Date('2026-01-01T00:01:00.000Z'));
+            projectService.saveProject(id, make('same'));
+
+            const revs = projectService.listRevisions(id);
+            expect(revs).toHaveLength(1);
+            expect(revs[0].code).toBe('same');
+        });
+
+        it('coalesces two code changes within 10s into one revision', () => {
+            vi.useFakeTimers();
+            vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+            projectService.saveProject(id, make('first'));
+            vi.setSystemTime(new Date('2026-01-01T00:00:05.000Z'));
+            projectService.saveProject(id, make('second'));
+
+            const revs = projectService.listRevisions(id);
+            expect(revs).toHaveLength(1);
+            expect(revs[0]).toMatchObject({ v: 1, code: 'second' });
+        });
+
+        it('appends a new revision when saves are more than 10s apart', () => {
+            vi.useFakeTimers();
+            vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+            projectService.saveProject(id, make('first'));
+            vi.setSystemTime(new Date('2026-01-01T00:00:11.000Z'));
+            projectService.saveProject(id, make('second'));
+
+            const revs = projectService.listRevisions(id);
+            expect(revs).toHaveLength(2);
+            expect(revs[0]).toMatchObject({ v: 1, code: 'first' });
+            expect(revs[1]).toMatchObject({ v: 2, code: 'second' });
+        });
+
+        it('caps at 50 revisions, dropping the oldest', () => {
+            vi.useFakeTimers();
+            // Each save 11s apart (past coalesce window) and unique code -> a new revision.
+            for (let i = 0; i < 60; i++) {
+                vi.setSystemTime(new Date(Date.UTC(2026, 0, 1, 0, 0, 0) + i * 11000));
+                projectService.saveProject(id, make(`code ${i}`));
+            }
+
+            const revs = projectService.listRevisions(id);
+            expect(revs).toHaveLength(50);
+            // Oldest 10 (code 0..9) dropped; first retained is code 10.
+            expect(revs[0].code).toBe('code 10');
+            expect(revs[revs.length - 1].code).toBe('code 59');
+        });
+
+        it('clears revisions when the project is deleted', () => {
+            projectService.saveProject(id, make('code A'));
+            expect(projectService.listRevisions(id)).toHaveLength(1);
+            projectService.deleteProject(id);
+            expect(projectService.listRevisions(id)).toHaveLength(0);
+        });
+
+        it('returns [] for an unknown project or corrupt data', () => {
+            expect(projectService.listRevisions('nope')).toEqual([]);
+            localStorage.setItem('kernelcad_project_revisions_bad', 'not json');
+            expect(projectService.listRevisions('bad')).toEqual([]);
+        });
     });
 });

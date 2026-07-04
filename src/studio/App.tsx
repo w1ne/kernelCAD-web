@@ -8,6 +8,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
 import { parseCode } from '../shared/codeGeneration/ast';
 import { StudioChromeProvider, useStudioChrome } from './context/StudioChromeContext';
+import { useStudioConfig } from './config/StudioConfigContext';
 
 const LazyDevLab = lazy(() =>
   import('./devlab/DevLab').then(({ DevLab }) => ({
@@ -53,8 +54,13 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
   // the loading-gate in commit 95dc75a3. Keeping the setter, ignoring the value.
   const [, setLoadedSourceRouteKey] = useState<string | null>(null);
   const [sourceLoadError, setSourceLoadError] = useState<{ routeKey: string; message: string } | null>(null);
-  const scriptParam = readScriptParam();
-  const galleryParam = readGalleryParam();
+  // Embed mode (a `code` prop on <StudioApp>) takes precedence over the
+  // URL-driven `?script=` / `?gallery=` deep-links: a host may mount Studio
+  // on its own route whose query string is unrelated to kernelCAD, and we
+  // must not race-load a gallery script over the host-supplied source.
+  const { hasControlledCode } = useWorkbench();
+  const scriptParam = hasControlledCode ? null : readScriptParam();
+  const galleryParam = hasControlledCode ? null : readGalleryParam();
   const isSourceRoute = !isDevLab && Boolean(scriptParam || galleryParam);
   const sourceRouteKey = isSourceRoute
     ? (galleryParam ? `gallery:${galleryParam}` : `script:${scriptParam}`)
@@ -197,6 +203,11 @@ interface AppProps {
    * routes (/g/$genId, /p/$slug) to open generated/saved artifacts inside
    * the full Studio shell rather than a stripped viewer. */
   initialCode?: string;
+  /** Embed-mode controlled source: when set, the host owns the canonical
+   * `.kcad.ts` string. Studio mirrors it, emits user edits via
+   * `StudioConfig.onCodeChange`, and suppresses `?script=`/`?gallery=`
+   * URL deep-links. */
+  code?: string;
   /** Funnel-route chrome injected into the Studio Header (left of toolbar).
    * Use for prompt context or saved-project metadata pills. */
   headerLeft?: ReactNode;
@@ -214,15 +225,34 @@ interface AppProps {
 
 function AppProviders({
   initialCode,
+  code,
   isDevLab,
   headerLeft,
   headerRight,
   viewerMode,
   liveCode,
 }: AppProps & { isDevLab: boolean }) {
+  // Embed mode: pull controlled props from StudioConfig context. Standalone
+  // app never wraps StudioConfigProvider, so useStudioConfig() returns {} and
+  // both fields are undefined — preserving today's uncontrolled behavior.
+  const embed = useStudioConfig();
+  // Direct `code` prop on <StudioApp> wins over config.onCodeChange's pair;
+  // this lets host code use the simpler `<StudioApp code={...} />` form
+  // when chrome injection isn't needed.
+  const controlledCode = code;
+  const onCodeChange = embed.onCodeChange;
+  // Header chrome slots: prop-passed (funnel routes today) wins; otherwise
+  // fall back to embed config slots.
+  const effectiveHeaderLeft = headerLeft ?? embed.chrome?.headerLeft;
+  const effectiveHeaderRight = headerRight ?? embed.chrome?.headerRight;
   return (
-    <WorkbenchProvider initialCode={initialCode}>
-      <StudioChromeProvider value={{ headerLeft, headerRight, viewerMode }}>
+    <WorkbenchProvider
+      initialCode={initialCode}
+      controlledCode={controlledCode}
+      onCodeChange={onCodeChange}
+    >
+      <StudioChromeProvider value={{ headerLeft: effectiveHeaderLeft, headerRight: effectiveHeaderRight, viewerMode }}>
+
         <ErrorBoundary>
           <AppContent isDevLab={isDevLab} />
         </ErrorBoundary>
@@ -265,7 +295,14 @@ function DevLabApp({ headerLeft, headerRight }: Pick<AppProps, 'headerLeft' | 'h
   );
 }
 
-export default function App({ initialCode: initialCodeProp, headerLeft, headerRight, viewerMode, liveCode }: AppProps = {}) {
+export function StudioApp({
+  initialCode: initialCodeProp,
+  code,
+  headerLeft,
+  headerRight,
+  viewerMode,
+  liveCode,
+}: AppProps = {}) {
   const isDevLab = typeof window !== 'undefined' && window.location.pathname.startsWith('/dev-lab');
 
   if (isDevLab && initialCodeProp === undefined) {
@@ -275,6 +312,7 @@ export default function App({ initialCode: initialCodeProp, headerLeft, headerRi
   return (
     <AppProviders
       initialCode={initialCodeProp}
+      code={code}
       isDevLab={isDevLab}
       headerLeft={headerLeft}
       headerRight={headerRight}
@@ -283,3 +321,7 @@ export default function App({ initialCode: initialCodeProp, headerLeft, headerRi
     />
   );
 }
+
+// Default export preserved so `main.tsx` and any other importer of the
+// pre-rename `import App from './App'` keep working.
+export default StudioApp;
