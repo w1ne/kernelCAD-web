@@ -253,10 +253,11 @@ body {
 .pricing-sub { color: var(--ink-soft); font-size: 16px; line-height: 1.5; max-width: 520px; margin: 0; }
 .pricing-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
   align-items: start;
 }
+.price-yearly { color: var(--blueprint); font-size: 12px; margin: 0 0 12px; }
 .price-card {
   position: relative;
   border: 1px solid var(--rule);

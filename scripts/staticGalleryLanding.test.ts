@@ -63,11 +63,14 @@ describe('static gallery landing page', () => {
   it('places the pricing section before the built-with-kernelCAD gallery', () => {
     const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
 
-    // Pricing section (mirrors app.kernelcad.com/pricing): Standard + Enterprise.
+    // Pricing section (mirrors app.kernelcad.com/pricing): Basic + Pro + Enterprise.
     expect(html).toContain('class="pricing"');
-    expect(html).toContain('>Standard<');
+    expect(html).toContain('>Basic<');
+    expect(html).toContain('>Pro<');
     expect(html).toContain('>Enterprise<');
-    // Standard deep-links to the app pricing page; Enterprise is contact-sales.
+    expect(html).toContain('5M tokens / month');
+    expect(html).toContain('12M tokens / month');
+    // Basic/Pro deep-link to the app pricing page; Enterprise is contact-sales.
     expect(html).toContain('href="https://app.kernelcad.com/pricing"');
     expect(html).toContain('mailto:support@kernelcad.com');
 

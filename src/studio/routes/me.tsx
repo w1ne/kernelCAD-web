@@ -169,13 +169,15 @@ function MePage() {
                 {plan.plan === 'pro'
                   ? plan.tier === 'pro'
                     ? 'Pro plan'
-                    : 'Standard plan'
+                    : 'Basic plan'
                   : 'Free plan'}
               </p>
               <p className="font-mono text-[11px] text-ink-faint mt-1 tracking-wide">
                 {plan.plan === 'pro'
-                  ? 'Unlimited generations'
-                  : `${plan.generationsRemaining} generation${plan.generationsRemaining === 1 ? '' : 's'} remaining`}
+                  ? plan.tokensBudget
+                    ? `${((plan.tokensRemaining ?? 0) / 1_000_000).toFixed(1)}M tokens left this month`
+                    : 'Token-metered plan'
+                  : `${plan.generationsRemaining ?? 0} generation${(plan.generationsRemaining ?? 0) === 1 ? '' : 's'} remaining`}
               </p>
             </div>
             <span className="font-mono text-xs text-blueprint shrink-0">Usage &amp; billing →</span>
