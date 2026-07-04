@@ -1,0 +1,14 @@
+/* Tailwind utilities for the landing pricing island. We import theme +
+ * utilities but NOT preflight — the marketing landing has its own global
+ * reset/base styles (site/style.css) and Tailwind's preflight would clobber
+ * them. The pricing island is a self-contained dark card grid that only needs
+ * utility classes, so this is sufficient. */
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+/* Tailwind v4 scans for class usage; make sure it sees the component sources. */
+@source '../../src/funnel/components/PricingSection.tsx';
+@source '../../src/funnel/components/PricingTiers.tsx';
+@source './pricing-island.tsx';
+/* The SSR fallback markup + dark-band wrapper classes live in index.html. */
+@source '../index.html';

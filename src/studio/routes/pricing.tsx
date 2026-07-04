@@ -4,7 +4,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { useOptionalSession } from '../../funnel/hooks/useSession';
 import { createCheckoutSession, fetchMyPlan, type BillingPeriod, type MyPlan, type PaidTier } from '../../funnel/lib/apiClient';
-import { PricingTiers } from '../../funnel/components/PricingTiers';
+import { PricingSection } from '../../funnel/components/PricingSection';
 
 const PAID_TIERS: readonly PaidTier[] = ['basic', 'pro'];
 
@@ -24,7 +24,6 @@ function PricingPage() {
   const navigate = useNavigate();
   const { buy, period: buyPeriod } = Route.useSearch();
   const [plan, setPlan] = useState<MyPlan | null>(null);
-  const [period, setPeriod] = useState<BillingPeriod>(buyPeriod ?? 'monthly');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [autoBuyFired, setAutoBuyFired] = useState(false);
@@ -92,44 +91,16 @@ function PricingPage() {
           A monthly token allowance for the parametric build agent — a tiny cube costs a sliver, a big assembly costs more. Cancel anytime.
         </p>
 
-        {/* Billing cadence toggle. */}
-        <div className="mt-8 flex items-center justify-center">
-          <div className="inline-flex rounded-full bg-[#141416] p-1 ring-1 ring-[#26262b]">
-            <button
-              type="button"
-              onClick={() => setPeriod('monthly')}
-              aria-pressed={period === 'monthly'}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                period === 'monthly' ? 'bg-[#2a2a30] text-white' : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              Monthly
-            </button>
-            <button
-              type="button"
-              onClick={() => setPeriod('yearly')}
-              aria-pressed={period === 'yearly'}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                period === 'yearly' ? 'bg-[#2a2a30] text-white' : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              Yearly <span className="ml-1 text-emerald-400">· 2 months free</span>
-            </button>
-          </div>
-        </div>
-
-        {err && (
-          <p className="mt-6 text-center font-mono text-xs text-red-400">Checkout error: {err}</p>
-        )}
-
-        <div className="mt-12">
-          <PricingTiers
-            period={period}
+        <div className="mt-8">
+          <PricingSection
+            hideHeading
+            initialPeriod={buyPeriod ?? 'monthly'}
             currentPlan={plan?.plan}
             currentTier={plan?.tier}
             onSelect={handleSelect}
             onFree={handleFree}
             busy={busy}
+            error={err}
           />
         </div>
 
