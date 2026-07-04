@@ -9,7 +9,7 @@ import { INDEX_HTML_PATH, injectPricing, renderPricingSection } from './build-pr
 
 const ISLAND_SRC = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
-  '../island/pricing-island.tsx',
+  '../island/LandingPricing.tsx',
 );
 
 describe('landing pricing codegen', () => {

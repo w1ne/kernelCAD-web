@@ -10,5 +10,6 @@
 @source '../../src/funnel/components/PricingSection.tsx';
 @source '../../src/funnel/components/PricingTiers.tsx';
 @source './pricing-island.tsx';
+@source './LandingPricing.tsx';
 /* The SSR fallback markup + dark-band wrapper classes live in index.html. */
 @source '../index.html';
