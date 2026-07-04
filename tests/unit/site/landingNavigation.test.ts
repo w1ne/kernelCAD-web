@@ -9,8 +9,9 @@ describe('landing page app navigation', () => {
   it('links the landing pricing CTAs to the app and sales, not a generate form', () => {
     const source = html();
 
-    // Standard → app pricing page (real checkout lives there); Enterprise → sales.
-    expect(source).toContain('href="https://app.kernelcad.com/pricing"');
+    // Basic/Pro → app checkout directly (?buy=<tier>); Enterprise → sales.
+    expect(source).toContain('href="https://app.kernelcad.com/pricing?buy=basic"');
+    expect(source).toContain('href="https://app.kernelcad.com/pricing?buy=pro"');
     expect(source).toContain('href="mailto:support@kernelcad.com');
     // The prompt-handoff form was replaced by the pricing section.
     expect(source).not.toContain('class="prompt-handoff-form"');
