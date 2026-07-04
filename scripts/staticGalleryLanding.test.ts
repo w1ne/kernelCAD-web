@@ -70,8 +70,10 @@ describe('static gallery landing page', () => {
     expect(html).toContain('>Enterprise<');
     expect(html).toContain('5M tokens / month');
     expect(html).toContain('12M tokens / month');
-    // Basic/Pro deep-link to the app pricing page; Enterprise is contact-sales.
-    expect(html).toContain('href="https://app.kernelcad.com/pricing"');
+    // Basic/Pro deep-link straight into app checkout (?buy=<tier>), not a
+    // second pricing wall; Enterprise is contact-sales.
+    expect(html).toContain('href="https://app.kernelcad.com/pricing?buy=basic"');
+    expect(html).toContain('href="https://app.kernelcad.com/pricing?buy=pro"');
     expect(html).toContain('mailto:support@kernelcad.com');
 
     // The old "Describe the part you want" prompt handoff is gone.
