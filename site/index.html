@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;1,500&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/style.css?v=2026-07-04-pricing" />
+  <link rel="stylesheet" href="/style.css?v=2026-07-04-tokentiers" />
   <title>kernelCAD — from a description to a part you can build</title>
   <!--
     Cloudflare Web Analytics — anonymous beacon (no cookies, no IP storage).
@@ -110,31 +110,44 @@
     <section class="pricing" id="pricing" aria-label="Pricing">
       <div class="pricing-head">
         <span class="section-kicker">Pricing</span>
-        <h2 class="pricing-headline">Simple pricing. Unlimited parts.</h2>
-        <p class="pricing-sub">Unlimited hosted generation and the parametric build agent. Cancel anytime.</p>
+        <h2 class="pricing-headline">Simple, token-based pricing.</h2>
+        <p class="pricing-sub">A monthly token allowance for the build agent &mdash; a tiny cube costs a sliver, a big assembly costs more. Yearly billing is 2 months free. Cancel anytime.</p>
       </div>
       <div class="pricing-grid">
-        <article class="price-card price-card--featured">
-          <span class="price-badge">Most popular</span>
-          <h3 class="price-name">Standard</h3>
-          <p class="price-amount"><span class="price-num">$20</span><span class="price-per">/ month</span></p>
-          <p class="price-blurb">Unlimited hosted generation and the parametric build agent.</p>
-          <a class="btn btn-primary price-cta" href="https://app.kernelcad.com/pricing">Subscribe</a>
+        <article class="price-card">
+          <h3 class="price-name">Basic</h3>
+          <p class="price-amount"><span class="price-num">$19</span><span class="price-per">/ month</span></p>
+          <p class="price-yearly">or $190/yr &mdash; 2 months free</p>
+          <p class="price-blurb">A generous monthly token allowance for hobby and side-project builds.</p>
+          <a class="btn btn-secondary price-cta" href="https://app.kernelcad.com/pricing">Get Basic</a>
           <ul class="price-features">
-            <li>Unlimited generations</li>
+            <li>5M tokens / month</li>
             <li>Build as parametric CAD (mesh-conditioned)</li>
             <li>Image &rarr; 3D concept previews</li>
             <li>STEP / STL export &amp; MCP access</li>
             <li>Commercial use license</li>
           </ul>
         </article>
+        <article class="price-card price-card--featured">
+          <span class="price-badge">Most popular</span>
+          <h3 class="price-name">Pro</h3>
+          <p class="price-amount"><span class="price-num">$39</span><span class="price-per">/ month</span></p>
+          <p class="price-yearly">or $390/yr &mdash; 2 months free</p>
+          <p class="price-blurb">Almost-unlimited tokens for daily, professional CAD work.</p>
+          <a class="btn btn-primary price-cta" href="https://app.kernelcad.com/pricing">Get Pro</a>
+          <ul class="price-features">
+            <li>12M tokens / month &mdash; almost unlimited</li>
+            <li>Everything in Basic</li>
+            <li>Priority generation</li>
+          </ul>
+        </article>
         <article class="price-card">
           <h3 class="price-name">Enterprise</h3>
           <p class="price-amount"><span class="price-num">Custom</span><span class="price-per">let&rsquo;s talk</span></p>
+          <p class="price-yearly">&nbsp;</p>
           <p class="price-blurb">Seats, one invoice, and a security review for your whole team.</p>
           <a class="btn btn-secondary price-cta" href="mailto:support@kernelcad.com?subject=kernelCAD%20for%20teams">Contact sales</a>
           <ul class="price-features">
-            <li>Everything in Standard, plus:</li>
             <li>Team seats &amp; shared projects</li>
             <li>Centralized billing &amp; invoicing</li>
             <li>SSO / SAML</li>

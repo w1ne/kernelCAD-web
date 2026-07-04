@@ -141,6 +141,8 @@ function BillingPage() {
             plan={plan.plan}
             tier={plan.tier}
             generationsRemaining={plan.generationsRemaining}
+            tokensUsed={plan.tokensUsed}
+            tokensBudget={plan.tokensBudget}
             currentPeriodEnd={plan.currentPeriodEnd}
             onUpgrade={handleUpgrade}
             onManage={handleManage}

@@ -49,22 +49,35 @@ interface Tier {
 
 const TIERS: Tier[] = [
   {
-    name: 'Standard',
-    tier: 'standard',
-    monthly: '$20',
-    yearly: '$200',
-    yearlyPerMonth: '$16.67',
-    popular: true,
-    blurb: 'Unlimited hosted generation and the parametric build agent.',
+    name: 'Basic',
+    tier: 'basic',
+    monthly: '$19',
+    yearly: '$190',
+    yearlyPerMonth: '$15.83',
+    blurb: 'A generous monthly token allowance for hobby and side-project builds.',
     features: [
+      { text: '5M tokens / month', emoji: '🎟️', badge: 'emerald' },
       { text: 'Full 3D editor & viewer' },
       { text: 'MCP access — bring your own agent', emoji: '🔌', badge: 'sky' },
-      { text: 'STEP / STL export' },
-      { text: 'Unlimited generations', emoji: '♾️', badge: 'emerald' },
       { text: 'Build as parametric CAD (mesh-conditioned)', emoji: '🧠', badge: 'violet' },
       { text: 'Image → 3D concept previews', emoji: '🖼️', badge: 'amber' },
-      { text: 'Priority generation', emoji: '⚡' },
+      { text: 'STEP / STL export' },
       { text: 'Commercial use license' },
+    ],
+  },
+  {
+    name: 'Pro',
+    tier: 'pro',
+    monthly: '$39',
+    yearly: '$390',
+    yearlyPerMonth: '$32.50',
+    popular: true,
+    blurb: 'Almost-unlimited tokens for daily, professional CAD work.',
+    inherits: 'Basic',
+    features: [
+      { text: '12M tokens / month — almost unlimited', emoji: '🚀', badge: 'emerald' },
+      { text: 'Priority generation', emoji: '⚡' },
+      { text: 'Every feature, no build counting' },
     ],
   },
   {
@@ -74,7 +87,7 @@ const TIERS: Tier[] = [
     monthly: 'Custom',
     yearly: null,
     blurb: 'Seats, one invoice, and a security review for your whole team.',
-    inherits: 'Standard',
+    inherits: 'Pro',
     features: [
       { text: 'Team seats & shared projects', emoji: '👥' },
       { text: 'Centralized billing & invoicing', emoji: '🧾' },
@@ -135,11 +148,11 @@ export function PricingTiers({ period, currentPlan, currentTier, onSelect, onFre
   const isCurrent = (t: Tier): boolean => {
     if (t.contact) return false;
     if (t.tier === null) return currentPlan === 'free' || currentPlan === undefined ? currentPlan === 'free' : false;
-    return currentPlan === 'pro' && (currentTier ?? 'standard') === t.tier;
+    return currentPlan === 'pro' && (currentTier ?? 'pro') === t.tier;
   };
 
   return (
-    <div className="mx-auto grid max-w-3xl grid-cols-1 gap-5 md:grid-cols-2">
+    <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
       {TIERS.map(t => {
         const current = isCurrent(t);
         const highlight = t.popular;

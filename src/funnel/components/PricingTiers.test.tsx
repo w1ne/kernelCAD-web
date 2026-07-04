@@ -8,23 +8,36 @@ import { PricingTiers } from './PricingTiers';
 afterEach(cleanup);
 
 describe('PricingTiers', () => {
-  it('calls onSelect with the tier and the current period when Subscribe is clicked', () => {
+  it('calls onSelect with the Basic tier and the current period when Subscribe is clicked', () => {
     const onSelect = vi.fn();
     render(<PricingTiers period="monthly" onSelect={onSelect} onFree={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: /subscribe to standard/i }));
-    expect(onSelect).toHaveBeenCalledWith('standard', 'monthly');
+    fireEvent.click(screen.getByRole('button', { name: /subscribe to basic/i }));
+    expect(onSelect).toHaveBeenCalledWith('basic', 'monthly');
+  });
+
+  it('calls onSelect with the Pro tier', () => {
+    const onSelect = vi.fn();
+    render(<PricingTiers period="monthly" onSelect={onSelect} onFree={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: /subscribe to pro/i }));
+    expect(onSelect).toHaveBeenCalledWith('pro', 'monthly');
   });
 
   it('passes the yearly period through to onSelect', () => {
     const onSelect = vi.fn();
     render(<PricingTiers period="yearly" onSelect={onSelect} onFree={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: /subscribe to standard/i }));
-    expect(onSelect).toHaveBeenCalledWith('standard', 'yearly');
+    fireEvent.click(screen.getByRole('button', { name: /subscribe to basic/i }));
+    expect(onSelect).toHaveBeenCalledWith('basic', 'yearly');
   });
 
   it('shows the yearly total and "2 months free" when period is yearly', () => {
     render(<PricingTiers period="yearly" onSelect={vi.fn()} onFree={vi.fn()} />);
-    expect(screen.getByText(/\$200\/year — 2 months free/i)).toBeDefined();
+    expect(screen.getByText(/\$190\/year — 2 months free/i)).toBeDefined();
+  });
+
+  it('surfaces the token allowances', () => {
+    render(<PricingTiers period="monthly" onSelect={vi.fn()} onFree={vi.fn()} />);
+    expect(screen.getByText(/5M tokens \/ month/i)).toBeDefined();
+    expect(screen.getByText(/12M tokens \/ month/i)).toBeDefined();
   });
 
   it('offers no Free plan card', () => {
@@ -35,9 +48,9 @@ describe('PricingTiers', () => {
 
   it('marks the active tier as the current plan instead of offering to subscribe', () => {
     const onSelect = vi.fn();
-    render(<PricingTiers period="monthly" currentPlan="pro" currentTier="standard" onSelect={onSelect} onFree={vi.fn()} />);
-    expect(screen.getByRole('button', { name: /current plan \(standard\)/i })).toBeDefined();
-    fireEvent.click(screen.getByRole('button', { name: /current plan \(standard\)/i }));
+    render(<PricingTiers period="monthly" currentPlan="pro" currentTier="basic" onSelect={onSelect} onFree={vi.fn()} />);
+    expect(screen.getByRole('button', { name: /current plan \(basic\)/i })).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: /current plan \(basic\)/i }));
     expect(onSelect).not.toHaveBeenCalled();
   });
 
@@ -59,7 +72,7 @@ describe('PricingTiers', () => {
     expect(screen.getByRole('link', { name: /contact sales about enterprise/i })).toBeDefined();
   });
 
-  it('highlights Standard as the most popular tier', () => {
+  it('highlights Pro as the most popular tier', () => {
     render(<PricingTiers period="monthly" onSelect={vi.fn()} onFree={vi.fn()} />);
     expect(screen.getByText(/most popular/i)).toBeDefined();
   });
