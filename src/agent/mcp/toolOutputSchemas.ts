@@ -309,7 +309,11 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       assembly: { type: 'string' },
       validator: { type: 'object', additionalProperties: true, description: 'Assembly/mate-graph validator result.' },
       poseEnvelope: { type: 'object', additionalProperties: true, description: 'Sampled mate-limit pose envelope.' },
-      connectorWorkspace: { type: 'object', additionalProperties: true, description: 'Connector workspace bounds.' },
+      connectorWorkspace: {
+        type: 'array',
+        items: { type: 'object', additionalProperties: true },
+        description: 'Connector workspace bounds.',
+      },
       gripperAperture: { type: 'object', additionalProperties: true },
       fitness: { type: 'object', additionalProperties: true, description: 'Mechanism fitness verdict incl. repairMode.' },
       repairContext: { type: 'object', additionalProperties: true },
