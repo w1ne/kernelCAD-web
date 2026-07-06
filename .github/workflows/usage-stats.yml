@@ -1,14 +1,12 @@
-name: Usage stats daily report
+name: Usage stats report
 
-# Pulls GitHub traffic + npm download counts daily and appends a row to
+# Pulls GitHub traffic + npm download counts and appends a row to
 # docs/usage/daily.md. Auto-commits to develop. Idempotent: re-running on
 # the same day overwrites the most recent row for that date.
 
 on:
-  schedule:
-    # 03:30 UTC daily — well after midnight in UTC, before working hours
-    # in EU; gives GitHub time to finalize the prior day's traffic counts.
-    - cron: '30 3 * * *'
+  # Manual until the collector is fixed. It failed every scheduled run in the
+  # July billing sample, so running it daily only burns Actions minutes.
   workflow_dispatch:
 
 permissions:
@@ -79,7 +77,7 @@ jobs:
             cat > "$file" <<'EOF'
           # kernelCAD daily usage stats
 
-          Auto-collected by `.github/workflows/usage-stats.yml` daily at 03:30 UTC.
+          Auto-collected by `.github/workflows/usage-stats.yml`.
           GitHub traffic counts cover the last 14 days (rolling). npm downloads cover the prior calendar day.
 
           | Date | Clones (uniq) | Views (uniq) | Stars | Forks | Watchers | npm DL |
