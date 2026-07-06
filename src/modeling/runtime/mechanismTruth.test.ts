@@ -334,6 +334,32 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
     expect(interps[0].message).toMatch(/overlap/);
   }, 90000);
 
+  it('honors solvedModel ignore pairs during the mechanism interpenetration sweep', async () => {
+    const { arm, kcad } = makeArm('ignored-overlap');
+    const boxA = kcad.box(20, 20, 20, true);
+    const boxB = kcad.box(20, 20, 20, true).translate(15, 0, 0);
+    const partA = arm.part('a', boxA);
+    partA.connector('frame', {
+      type: 'frame',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+    });
+    const partB = arm.part('b', boxB);
+    partB.connector('frame', {
+      type: 'frame',
+      origin: { kind: 'vec3', value: [15, 0, 0] },
+    });
+    arm.mate('weld', 'a.frame', 'b.frame', 'fastened');
+
+    await arm.solvedModel({}, {
+      validate: 'warn',
+      ignore: [['a', 'b']],
+    });
+
+    const result = await checkMechanismTruth(arm);
+    expect(result.failures.filter((f) => f.code === 'mechanism.interpenetration')).toEqual([]);
+    expect(result.mechanism).toBe('real');
+  }, 90000);
+
   it('6. spring with connector ON rotation axis but body offset elsewhere (P2 Luxo pattern) → broken with mechanism.disconnect at a bbox corner', async () => {
     // P0.1 regression test: a part can be fastened with a vec3 connector
     // that coincidentally sits ON the rotation axis where the single-

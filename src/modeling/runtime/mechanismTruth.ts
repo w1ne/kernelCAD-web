@@ -234,6 +234,7 @@ export async function checkMechanismTruth(
 
   // Pose sampling: rest + per-articulated-mate single-joint sweep.
   const samples = buildPoseSamples(arm);
+  const ignoredPairs = ignoredInterferencePairs(arm);
 
   // Solve mates at every sample (Pattern A FK, no BREP). The mate-graph
   // edge list and per-part transforms are everything criteria 1 + 4 need;
@@ -280,14 +281,14 @@ export async function checkMechanismTruth(
     );
   } else {
     // Criterion 2 (mechanism.interpenetration) — per-pose BREP sweep.
-    failures.push(...(await checkInterpenetration(arm, solved)));
+    failures.push(...(await checkInterpenetration(arm, solved, ignoredPairs)));
 
     // Criterion 3 (mechanism.dof-mismatch) — pragmatic micro-pose check.
     // Note: this is the spec's open-question #2 ("DoF-mismatch is
     // geometric"); the pragmatic shape used here is connected-component
     // count stability under ±ε around the declared axis. Skipped when the
     // assembly has no revolute mates.
-    failures.push(...(await checkDofMismatch(arm)));
+    failures.push(...(await checkDofMismatch(arm, ignoredPairs)));
 
     // Criterion 7 (mechanism.joint-mesh-gap) — at REST pose, every joint
     // pivot must lie inside both its parent and child body meshes. P8
@@ -569,6 +570,7 @@ async function getOrComputeBboxCorners(
 async function checkInterpenetration(
   arm: Assembly,
   solved: SolvedSample[],
+  ignoredPairs: ReadonlySet<string>,
 ): Promise<CompilerDiagnostic[]> {
   const out: CompilerDiagnostic[] = [];
   const mates = arm.__mates();
@@ -586,7 +588,7 @@ async function checkInterpenetration(
     const scene = await lowerSceneForSample(arm, s);
     if (scene === undefined) continue;
 
-    const result = detectInterferences(scene, INTERPENETRATION_EPSILON_MM3, new Set());
+    const result = detectInterferences(scene, INTERPENETRATION_EPSILON_MM3, ignoredPairs);
     if (result.pairs.length === 0) continue;
 
     for (const pair of result.pairs) {
@@ -646,7 +648,10 @@ async function checkInterpenetration(
  * infinitesimal rotation about the declared axis — which is what
  * dof-mismatch means in BREP terms.
  */
-async function checkDofMismatch(arm: Assembly): Promise<CompilerDiagnostic[]> {
+async function checkDofMismatch(
+  arm: Assembly,
+  ignoredPairs: ReadonlySet<string>,
+): Promise<CompilerDiagnostic[]> {
   const revoluteMates = arm.__mates().filter((m) => m.type === 'revolute');
   if (revoluteMates.length === 0) return [];
 
@@ -671,7 +676,7 @@ async function checkDofMismatch(arm: Assembly): Promise<CompilerDiagnostic[]> {
           continue;
         }
         const result = detectInterferences(
-          scene, INTERPENETRATION_EPSILON_MM3, new Set(),
+          scene, INTERPENETRATION_EPSILON_MM3, ignoredPairs,
         );
         overlapCounts.push(result.pairs.length);
       } catch {
@@ -1196,6 +1201,14 @@ function formatTorque(v: number): string {
 
 function pairKey(a: string, b: string): string {
   return a < b ? `${a}\t${b}` : `${b}\t${a}`;
+}
+
+function ignoredInterferencePairs(arm: Assembly): ReadonlySet<string> {
+  const ignored = new Set<string>();
+  for (const [a, b] of arm.__ignoreInterference()) {
+    ignored.add(pairKey(a, b));
+  }
+  return ignored;
 }
 
 function makeFailure(
