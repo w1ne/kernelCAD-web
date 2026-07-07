@@ -277,7 +277,7 @@ interface JointVisuals {
  * Closed-form measurement of (a) the fork-plate gap ratio and (b) the
  * pin-stickout, both from the joint-axis-projected face/AABB data.
  *
- * **Gap ratio** = `min(daylight_+, daylight_-) / parent_perp_extent` where:
+ * **Gap ratio** = `min(daylight_+, daylight_-) / local_plate_extent` where:
  *
  *   - `daylight_+` = nearest parent fork-plate-inner-face position along
  *     `+a` (axial), MINUS the child's outermost extent along `+a`.
@@ -288,9 +288,10 @@ interface JointVisuals {
  *     lateral cylindrical face (which spans the whole axis range) is
  *     excluded — only flat plate-like faces contribute to the daylight
  *     signal.
- *   - `parent_perp_extent` = the larger of the two perpendicular AABB
- *     dimensions of the parent's world AABB. For a typical clevis fork
- *     that's the plate Z extent (FORK_PLATE_Z = 30 mm).
+ *   - `local_plate_extent` = detected fork-plate extent bounded by local pin
+ *     scale. This deliberately ignores the full parent link length; long beams
+ *     with small distal clevises must be judged at joint scale, not whole-part
+ *     scale.
  *
  * **Pin stickout** = `average over both axial sides of max(0,
  * (child_axis_extent) − (parent_axis_outermost_plate_extent))`. The pin
@@ -339,7 +340,8 @@ function measureJointVisuals(
   const platePerpThreshold = PLATE_PERP_FACTOR * pinRadius;
   const { u, v } = buildPerpendicularFrame(axisDir);
   const parentInterval = axisInterval(parent, axisOrigin, axisDir);
-  const childInterval = axisInterval(child, axisOrigin, axisDir);
+  const childInterval = localAxisIntervalNearOrigin(child, axisOrigin, axisDir, u, v)
+    ?? axisInterval(child, axisOrigin, axisDir);
   const childBox = child.boundingBox();
   const childPerpProj = perpendicularProjection(childBox.min, childBox.max, u, v);
   const childPerpArea = (childPerpProj.uMax - childPerpProj.uMin)
@@ -442,10 +444,13 @@ function measureJointVisuals(
   }
   const minDaylight = Math.min(daylightPositive, daylightNegative);
 
-  const perpExtent = parentPerpendicularExtent(parent, axisDir);
-  const gapRatio = perpExtent < PARALLEL_DIRECTION_EPSILON
+  const detectedPlateExtent = Math.min(
+    ...[...plateFacesPositive, ...plateFacesNegative].map((f) => f.perpMax),
+  );
+  const localPlateExtent = Math.min(detectedPlateExtent, 6 * pinRadius);
+  const gapRatio = localPlateExtent < PARALLEL_DIRECTION_EPSILON
     ? 1.0 // defensive: parent has no perpendicular extent
-    : minDaylight / perpExtent;
+    : minDaylight / localPlateExtent;
 
   // Pin stickout: how far the pin tip protrudes BEYOND the outermost
   // fork-plate face. Pin tip on each side = max(child, parent)
@@ -531,34 +536,29 @@ function axisInterval(
   return projectAabbToAxis(bb.min, bb.max, origin, axisDir);
 }
 
-/**
- * Parent's perpendicular extent — the larger of the two perpendicular
- * AABB dimensions. For a typical clevis fork lying along the joint
- * axis, this is the fork plate's vertical extent (FORK_PLATE_Z in the
- * Luxo example).
- */
-function parentPerpendicularExtent(parent: OcctBackend, axisDir: Vec3): number {
-  const { u, v } = buildPerpendicularFrame(axisDir);
-  const bb = parent.boundingBox();
-  let uMin = Infinity, uMax = -Infinity, vMin = Infinity, vMax = -Infinity;
-  for (let i = 0; i < 8; i++) {
-    const p: Vec3 = [
-      ((i & 1) === 0 ? bb.min[0] : bb.max[0]),
-      ((i & 2) === 0 ? bb.min[1] : bb.max[1]),
-      ((i & 4) === 0 ? bb.min[2] : bb.max[2]),
-    ];
-    const uu = p[0] * u[0] + p[1] * u[1] + p[2] * u[2];
-    const vv = p[0] * v[0] + p[1] * v[1] + p[2] * v[2];
-    if (uu < uMin) uMin = uu;
-    if (uu > uMax) uMax = uu;
-    if (vv < vMin) vMin = vv;
-    if (vv > vMax) vMax = vv;
+function localAxisIntervalNearOrigin(
+  shape: OcctBackend,
+  origin: Vec3,
+  axisDir: Vec3,
+  u: Vec3,
+  v: Vec3,
+): { min: number; max: number } | undefined {
+  let min = Infinity;
+  let max = -Infinity;
+  const originU = origin[0] * u[0] + origin[1] * u[1] + origin[2] * u[2];
+  const originV = origin[0] * v[0] + origin[1] * v[1] + origin[2] * v[2];
+  const replicadShape = shape.getReplicadShape();
+  for (const face of replicadShape.faces) {
+    const bb = face.boundingBox.bounds;
+    const aabbMin = bb[0] as Vec3;
+    const aabbMax = bb[1] as Vec3;
+    const perp = perpendicularProjection(aabbMin, aabbMax, u, v);
+    if (perp.uMin > originU || perp.uMax < originU || perp.vMin > originV || perp.vMax < originV) continue;
+    const range = projectAabbToAxis(aabbMin, aabbMax, origin, axisDir);
+    min = Math.min(min, range.min);
+    max = Math.max(max, range.max);
   }
-  // The fork plate's "vertical" extent (FORK_PLATE_Z) is the LARGER of
-  // the two perpendicular dimensions for a Luxo-style fork (plate Z=30,
-  // plate X=22). We pick the larger so the ratio uses the more
-  // generous denominator.
-  return Math.max(uMax - uMin, vMax - vMin);
+  return min < Infinity ? { min, max } : undefined;
 }
 
 /**
