@@ -8,16 +8,19 @@
 // parent, one tongue on the child, a pin drilled through both knuckles)
 // guaranteed-correct by construction:
 //
-//   1. Bridge tabs at y = ±(forkGapY/2 + plateT/2) — outside the tongue's
-//      Y range, so the rotating tongue can never collide with them.
+//   1. Lifted forks are supported by two plate-local webs that overlap the
+//      fork plates and parent body. The primitive never uses a cosmetic
+//      cross-gap tab as a substitute for a load path.
 //   2. Pivot lifted out of the parent body by max rotated-tongue reach,
 //      computed from `style + axis + limitsDeg`, never hardcoded.
-//   3. Pin drilled through both knuckles in ONE subtract AFTER the fork and
+//   3. Parent tongue-clearance pocket is cut between fork plates so a solid
+//      parent body cannot occupy the child tongue's swing volume.
+//   4. Pin drilled through both knuckles in ONE subtract AFTER the fork and
 //      tongue have been unioned into their respective parts — so the
 //      through-hole is co-located in every solid it passes through.
-//   4. Pin cap heads sit flush against the outer fork faces. Cap thickness
+//   5. Pin cap heads sit flush against the outer fork faces. Cap thickness
 //      derived from pin shaft length, not a magic constant.
-//   5. Connectors returned by reference — caller binds the mate to them and
+//   6. Connectors returned by reference — caller binds the mate to them and
 //      lets `arm.mate(...)` do the coordinate math.
 //
 // Spec: `docs/specs/2026-05-30-kinematic-grounding-mechanism-delivery-design.md`
@@ -52,8 +55,10 @@ import type {
  *    leading cause of "every gate green, mechanism falls apart" failures.
  *  - The pivot is lifted ALONG `liftDir` by the maximum rotated-tongue reach
  *    so the swept tongue stays clear of the parent body.
- *  - Bridge tabs at y = ±(forkGapY/2 + plateT/2) lock the fork plates to
- *    the parent body without ever entering the tongue's swing volume.
+ *  - Plate-local webs lock lifted fork plates to the parent body without
+ *    entering the tongue gap or relying on edge-only contact.
+ *  - The parent body is pocketed between the fork plates so continuous link
+ *    material can reach the pivot without colliding with the child tongue.
  *
  * @see ClevisJointOptions for the input shape.
  * @see ClevisJoint for the output shape.
@@ -178,6 +183,14 @@ export function withDefaults(style: ClevisStyle | undefined): ResolvedClevisStyl
       `joint.clevis: style.tongueY (${tongueY} mm) must be < style.forkGapY (${forkGapY} mm); otherwise the tongue does not slip between the fork plates.`,
       'joint.clevis',
       'Make tongueY smaller than forkGapY by at least 0.5 mm of running clearance.',
+    );
+  }
+  if (forkGapY <= 0.2) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `joint.clevis: style.forkGapY must be greater than 0.2 mm so the tongue clearance pocket has positive span; got ${forkGapY} mm.`,
+      'joint.clevis',
+      'Increase style.forkGapY or omit it to use the scale-derived default.',
     );
   }
   if (pinR + holeClearance >= knuckleR) {
@@ -305,7 +318,7 @@ function buildClevis(kc: KernelCadApi, opts: ClevisJointOptions): ClevisJoint {
   ];
 
   // 2. Build the fork (two plates straddling the pivot along the pin axis,
-  //    plus bridge tabs that anchor the plates to the parent body).
+  //    with plate-local webs only when the lifted plate would otherwise float).
   const fork = buildFork(kc, style, axis, pivotParentLifted, opts.pivotParent, liftDir, liftZ);
 
   // 3. Build the tongue (single plate centred on the child-local pivot).
@@ -315,9 +328,16 @@ function buildClevis(kc: KernelCadApi, opts: ClevisJointOptions): ClevisJoint {
   const parentWithFork = opts.parentBody.union(fork);
   const childWithTongue = opts.childBody.union(tongue);
 
-  // 5. Drill the pin clearance bore through BOTH the parent fork and the
+  // 5. Cut a tongue-clearance pocket through the parent side between the fork
+  //    plates. For lifted pivots, the cutter reaches back toward and below the
+  //    original pivot so embedded parent bodies still get a real tongue slot
+  //    instead of interpenetrating the child tongue.
+  const parentPocket = makeTongueClearancePocket(kc, style, axis, pivotParentLifted, liftDir, liftZ);
+  const parentWithClearance = parentWithFork.subtract(parentPocket);
+
+  // 6. Drill the pin clearance bore through BOTH the parent fork and the
   //    child tongue (ISO 286 H8/f7 running fit). The hole is co-located in
-  //    every solid it passes through (fork plates + bridge tabs + parent
+  //    every solid it passes through (fork plates + parent pocket walls
   //    body on the parent side; tongue + child body on the child side).
   //    The pin floats in a `pinR + holeClearance` clearance bore in the
   //    tongue rather than embedding into solid material, so pin-in-tongue
@@ -330,7 +350,7 @@ function buildClevis(kc: KernelCadApi, opts: ClevisJointOptions): ClevisJoint {
   const drillR = style.pinR + style.holeClearance;
   const drillSpan = style.forkGapY + 2 * style.plateT + 40; // large margin clears any reasonable yoke
   const parentDrill = makeAxisCylinder(kc, drillSpan, drillR, axis, pivotParentLifted);
-  const parentDrilled = parentWithFork.subtract(parentDrill);
+  const parentDrilled = parentWithClearance.subtract(parentDrill);
 
   // The child tongue is drilled at the CHILD-local pivot (the tongue was
   // built centred there). At rest pose the solver co-locates the child
@@ -339,16 +359,16 @@ function buildClevis(kc: KernelCadApi, opts: ClevisJointOptions): ClevisJoint {
   const childDrill = makeAxisCylinder(kc, drillSpan, drillR, axis, pivotChild);
   const childDrilled = childWithTongue.subtract(childDrill);
 
-  // 6. Build pin shaft + caps. Shaft spans from outer face to outer face;
+  // 7. Build pin shaft + caps. Shaft spans from outer face to outer face;
   //    caps overlap the shaft by capThickness so the boolean union merges.
   const shaftLen = style.forkGapY + 2 * style.plateT;
   const pin = buildPin(kc, style, axis, pivotParentLifted, shaftLen);
 
-  // 7. Pin goes on the PARENT side (so removing the pin leaves the child
+  // 8. Pin goes on the PARENT side (so removing the pin leaves the child
   //    geometrically free — the test for Gate 6 mate physical realization).
   const parentFinal = parentDrilled.union(pin);
 
-  // 8. Build the connector specs. Each side carries its OWN PART-LOCAL
+  // 9. Build the connector specs. Each side carries its OWN PART-LOCAL
   //    pivot (the lifted parent pivot in the parent's frame; the unmodified
   //    pivotChild in the child's frame).
   const clearanceRadius = style.pinR + style.holeClearance;
@@ -371,10 +391,10 @@ function buildClevis(kc: KernelCadApi, opts: ClevisJointOptions): ClevisJoint {
 
 /**
  * Build the fork: two parallel plates of size `plateX × plateZ × plateT`
- * straddling the pivot along the pin axis, plus a single bridge tab that
- * connects the two plates ACROSS the pivot — running along the pin axis at
- * a position OUTSIDE the tongue's swing envelope (y = -(forkGapY/2 + plateT/2)
- * for the tab side away from the lift direction).
+ * straddling the pivot along the pin axis. If the pivot is lifted, each
+ * plate gets its own integral web back to the parent body; there is no
+ * cross-gap tab because that visually and mechanically reads as a loose
+ * rectangle instead of a load-bearing bracket.
  *
  * The plates are rounded extrudes (knuckleR corner radius) extruded along
  * the pin axis. The whole assembly is centred at the SUPPLIED LIFTED PIVOT
@@ -436,58 +456,27 @@ function buildFork(
   const plateA = buildPlateAt(+plateOffset);
   const plateB = buildPlateAt(-plateOffset);
 
-  // Bridge tab: a single slab BELOW the tongue's swing envelope, connecting
-  // the two fork plates at their lower edges. The tab sits at Z = pivot -
-  // (knuckleR + tabHeight/2 + 1) — outside the tongue's swing envelope
-  // (tongue extends ±knuckleR off the pin axis at any rotation) — and spans
-  // the full Y between the outer fork plate faces (forkGapY + 2*plateT), so
-  // both plates' lower edges are anchored into it.
-  const tabFullSpan = forkGapY + 2 * plateT; // Y span between outer plate faces
-  const tabHeight = plateT;                    // thin slab in the lift direction
-  const tabXSpan = knuckleR;                   // small footprint along the perpendicular
-  const tabBelowOffset = knuckleR + tabHeight / 2 + 1; // sit a safety pad below the swing envelope
-
-  // The tab is built in the canonical (X=tabXSpan, Y=tabHeight, Z=tabFullSpan)
-  // frame, then alongAxis(pin axis) maps canonical Z → pin axis, canonical X
-  // stays X, canonical Y → -liftDir (per the rotation about (Z × axis)). After
-  // mapping:
-  //   - world along pin axis: tabFullSpan (spans both plates' outer faces)
-  //   - world along -liftDir: tabHeight (THIN — only plate thickness)
-  //   - world along X (perpendicular to axis and lift): tabXSpan
-  let tab = kc.box(tabXSpan, tabHeight, tabFullSpan, true).alongAxis(axis);
-  // Shift the tab DOWN along -liftDir by tabBelowOffset, so its top face sits
-  // at pivot - knuckleR - 1 — that's safely below the tongue's swept envelope.
-  tab = tab.translate(
-    -liftDir[0] * tabBelowOffset,
-    -liftDir[1] * tabBelowOffset,
-    -liftDir[2] * tabBelowOffset,
-  );
-  tab = tab.translate(pivotLifted[0], pivotLifted[1], pivotLifted[2]);
-
-  let fork = plateA.union(plateB).union(tab);
-  // Hold the parent-side bridge geometry that LIFTS the parent body up to
-  // the lifted pivot when `liftZ > 0` — without it the plates would float
-  // above the parent body when the lift is significant. We extend a
-  // post-shaped column from the original pivot to the lifted pivot.
-  if (liftZ > 0.5) {
-    // The post connects the user's parent body (which terminates at
-    // `pivotOriginal`) up to the lifted pivot where the fork plates sit.
-    // It must NOT enter the tongue's swing volume, which is centered at
-    // the lifted pivot and extends radially by `knuckleR`. We use TWO
-    // narrow columns on either side of the tongue (along the pin axis,
-    // between the fork plates and the outer fork-plate edge) so the post
-    // material is OUTSIDE the gap-between-plates region the tongue swings
-    // through. Each column sits at the OUTER face of a fork plate, with
-    // radius matching plate thickness — this is the "mounting flange"
-    // pattern of real-world clevis brackets.
-    const postR = plateT / 2;
-    const postYOffset = forkGapY / 2 + plateT + postR + 0.5; // sit OUTSIDE the outer fork plate face
+  let fork = plateA.union(plateB);
+  // Hold the parent-side fork geometry only when the lifted plate would
+  // otherwise start above the parent surface. The web reaches from 1 mm
+  // inside the parent to 1 mm inside the plate bottom; it never climbs up
+  // near the pin center where it would hide the hinge.
+  const plateLowerClearance = liftZ - knuckleR;
+  if (plateLowerClearance > 0.1) {
+    const webWidth = knuckleR * 0.9;
+    const webHeight = plateLowerClearance + 2;
+    const webAxisSpan = plateT + 1;
+    const webLiftCenter: Vec3 = [
+      _pivotOriginal[0] + liftDir[0] * (plateLowerClearance / 2),
+      _pivotOriginal[1] + liftDir[1] * (plateLowerClearance / 2),
+      _pivotOriginal[2] + liftDir[2] * (plateLowerClearance / 2),
+    ];
     for (const yDir of [+1, -1]) {
-      const post = kc.cylinder(liftZ, postR)
-        .alongAxis(liftDir)
-        .translate(_pivotOriginal[0], _pivotOriginal[1], _pivotOriginal[2])
-        .translate(axis[0] * yDir * postYOffset, axis[1] * yDir * postYOffset, axis[2] * yDir * postYOffset);
-      fork = fork.union(post);
+      const web = kc.box(webWidth, webHeight, webAxisSpan, true)
+        .alongAxis(axis)
+        .translate(axis[0] * yDir * plateOffset, axis[1] * yDir * plateOffset, axis[2] * yDir * plateOffset)
+        .translate(webLiftCenter[0], webLiftCenter[1], webLiftCenter[2]);
+      fork = fork.union(web);
     }
   }
   if (style.forkMaterial !== undefined) {
@@ -527,6 +516,35 @@ function buildTongue(
     tongue = tongue.material(style.tongueMaterial);
   }
   return tongue;
+}
+
+/**
+ * Clearance pocket for the parent-side body between fork plates. This removes
+ * continuous parent/link material from the child tongue's volume while leaving
+ * the two fork plates intact.
+ */
+function makeTongueClearancePocket(
+  kc: KernelCadApi,
+  style: ResolvedClevisStyle,
+  axis: Vec3,
+  pivot: Vec3,
+  liftDir: Vec3 = [0, 0, 1],
+  liftZ: number = 0,
+): Shape {
+  const runningClearance = Math.max(1, style.holeClearance * 2);
+  const pocketX = 2 * style.knuckleR + runningClearance;
+  const basePocketLift = 2 * style.knuckleR + runningClearance;
+  const liftBackfill = liftZ > 0.5 ? liftZ + 2 * style.knuckleR : 0;
+  const pocketLift = basePocketLift + liftBackfill;
+  const pocketAxisSpan = style.forkGapY - 0.2;
+  const centre: Vec3 = [
+    pivot[0] - liftDir[0] * liftBackfill / 2,
+    pivot[1] - liftDir[1] * liftBackfill / 2,
+    pivot[2] - liftDir[2] * liftBackfill / 2,
+  ];
+  return kc.box(pocketX, pocketLift, pocketAxisSpan, true)
+    .alongAxis(axis)
+    .translate(centre[0], centre[1], centre[2]);
 }
 
 /**
