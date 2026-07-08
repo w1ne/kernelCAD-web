@@ -1,14 +1,20 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { MechanismFitnessResult } from '../../../src/modeling/mates/mechanismFitness';
-import type { ReviewCadInput, ReviewCadOutput } from '../../../src/agent/mcp/tools/reviewCad';
+import type { ReviewCadInput, ReviewCadOutput } from '../../../src/agent/review/reviewPipeline';
 
-const mockReviewCadTool = vi.fn<(input: ReviewCadInput) => Promise<ReviewCadOutput>>();
+const runReviewPipeline = vi.fn<(input: ReviewCadInput) => Promise<ReviewCadOutput>>();
 
-vi.mock('../../../src/agent/mcp/tools/reviewCad', () => ({
-  reviewCadTool: (input: ReviewCadInput) => mockReviewCadTool(input),
-}));
+vi.mock('../../../src/agent/review/reviewPipeline', async () => {
+  const actual = await vi.importActual<typeof import('../../../src/agent/review/reviewPipeline')>(
+    '../../../src/agent/review/reviewPipeline',
+  );
+  return {
+    ...actual,
+    runReviewPipeline: (input: ReviewCadInput) => runReviewPipeline(input),
+  };
+});
 
-// Imported after the mock so designLoopTool's reviewCadTool reference is the mock.
+// Imported after the mock so designLoopTool's review-pipeline reference is the mock.
 import { designLoopTool } from '../../../src/agent/mcp/tools/designLoop';
 
 function failingFitness(): MechanismFitnessResult {
@@ -106,8 +112,8 @@ function cleanReviewOutput(): ReviewCadOutput {
 
 describe('design_loop nextActionPrompt rendering from RepairContext', () => {
   it('nextActionPrompt cites blockingReasons from RepairContext on failure', async () => {
-    mockReviewCadTool.mockReset();
-    mockReviewCadTool.mockResolvedValue(failingReviewOutput());
+    runReviewPipeline.mockReset();
+    runReviewPipeline.mockResolvedValue(failingReviewOutput());
 
     const result = await designLoopTool({
       goal: 'Test hinge widening repair flow.',
@@ -122,8 +128,8 @@ describe('design_loop nextActionPrompt rendering from RepairContext', () => {
   });
 
   it('nextActionPrompt cites top diagnostics with suggestedDelta when present', async () => {
-    mockReviewCadTool.mockReset();
-    mockReviewCadTool.mockResolvedValue(failingReviewOutput());
+    runReviewPipeline.mockReset();
+    runReviewPipeline.mockResolvedValue(failingReviewOutput());
 
     const result = await designLoopTool({
       goal: 'Test hinge widening repair flow.',
@@ -137,9 +143,9 @@ describe('design_loop nextActionPrompt rendering from RepairContext', () => {
   });
 
   it('nextActionPrompt does not duplicate suggestedRepairPrompt verbatim', async () => {
-    mockReviewCadTool.mockReset();
+    runReviewPipeline.mockReset();
     const review = failingReviewOutput();
-    mockReviewCadTool.mockResolvedValue(review);
+    runReviewPipeline.mockResolvedValue(review);
 
     const result = await designLoopTool({
       goal: 'Test hinge widening repair flow.',
@@ -156,8 +162,8 @@ describe('design_loop nextActionPrompt rendering from RepairContext', () => {
   });
 
   it('nextActionPrompt happy path still says "no interferences" on ok:true', async () => {
-    mockReviewCadTool.mockReset();
-    mockReviewCadTool.mockResolvedValue(cleanReviewOutput());
+    runReviewPipeline.mockReset();
+    runReviewPipeline.mockResolvedValue(cleanReviewOutput());
 
     const result = await designLoopTool({
       goal: 'Test clean pass.',
@@ -173,8 +179,8 @@ describe('design_loop nextActionPrompt rendering from RepairContext', () => {
   });
 
   it('does not allow allowReviewWarnings to suppress required visual evidence gates', async () => {
-    mockReviewCadTool.mockReset();
-    mockReviewCadTool.mockResolvedValue(cleanReviewOutput());
+    runReviewPipeline.mockReset();
+    runReviewPipeline.mockResolvedValue(cleanReviewOutput());
 
     const result = await designLoopTool({
       goal: 'Require screenshot-backed visual review for a release model.',
