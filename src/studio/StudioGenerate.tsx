@@ -2,19 +2,11 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import React, { useEffect, useRef, useState } from 'react';
 import { useGeneration } from '../funnel/hooks/useGeneration';
+import { inAppAgentEnabled } from './agentAvailability';
 import { useCode } from './context/CodeContext';
 import { useGeometry } from './context/GeometryContext';
-
-/**
- * The in-app generate agent exists ONLY on the hosted web build (which sets a
- * generation backend via VITE_API_BASE_URL). The npm-distributed / local-MCP
- * Studio has no backend env → the box is hidden there; locally the agent is the
- * developer's own Claude via the `kernelcad` MCP.
- */
-function inAppAgentEnabled(): boolean {
-    const base = import.meta.env?.VITE_API_BASE_URL;
-    return typeof base === 'string' && base.length > 0;
-}
+import { useFeatureSelection } from './hooks/useFeatureSelection';
+import { useShellStore } from './store/useShellStore';
 
 /**
  * In-Studio generation. Type a prompt → the hosted agent builds a model and
@@ -38,8 +30,14 @@ const StudioGenerateInner: React.FC = () => {
     const { phase, events, submit } = useGeneration();
     const { setCode } = useCode();
     const { executeGeometry } = useGeometry();
+    const { selectedFeatureId } = useFeatureSelection();
+    const { agentDraftPrompt, agentDraftPromptVersion } = useShellStore();
     const [prompt, setPrompt] = useState('');
     const loadedRef = useRef<string | null>(null);
+
+    useEffect(() => {
+        if (agentDraftPrompt !== null) setPrompt(agentDraftPrompt);
+    }, [agentDraftPrompt, agentDraftPromptVersion]);
 
     // When a generation finishes, load the model into the editor AND render it.
     // setCode updates the editor text; executeGeometry meshes it into the viewer
@@ -58,13 +56,20 @@ const StudioGenerateInner: React.FC = () => {
         e.preventDefault();
         const trimmed = prompt.trim();
         if (!trimmed || busy) return;
-        void submit(trimmed);
+        if (selectedFeatureId === null) {
+            void submit(trimmed);
+            return;
+        }
+        void submit(`Edit selected target "${selectedFeatureId}": ${trimmed}`);
     };
 
     return (
         <div className="p-3 flex flex-col gap-2">
             <div className="uppercase tracking-wide text-[10px] text-gray-500">Generate</div>
             <form onSubmit={onSubmit} className="flex flex-col gap-2">
+                <div className="text-[10px] text-gray-500 truncate" data-testid="studio-generate-target">
+                    Target: {selectedFeatureId ?? 'whole model'}
+                </div>
                 <textarea
                     aria-label="Generate prompt"
                     value={prompt}

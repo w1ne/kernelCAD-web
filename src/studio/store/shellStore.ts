@@ -31,6 +31,8 @@ export interface StagedEdit {
 export interface ShellState {
     readonly selectedFeatureId: SelectedFeatureId;
     readonly agentRailOpen: boolean;
+    readonly agentDraftPrompt: string | null;
+    readonly agentDraftPromptVersion: number;
     readonly inspectorOpen: boolean;
     readonly previousValidity: ValidatorResult | null;
     readonly currentValidity: ValidatorResult | null;
@@ -78,6 +80,8 @@ const INITIAL_STATE: ShellState = {
     // agent lives), so it's the first thing a visitor sees. Local/MCP Studio
     // keeps it closed — the agent there is the developer's own via MCP.
     agentRailOpen: Boolean(import.meta.env?.VITE_API_BASE_URL),
+    agentDraftPrompt: null,
+    agentDraftPromptVersion: 0,
     inspectorOpen: true,
     previousValidity: null,
     currentValidity: null,
@@ -120,6 +124,19 @@ export class ShellStore {
     setAgentRailOpen = (open: boolean): void => {
         if (this.state.agentRailOpen === open) return;
         this.state = { ...this.state, agentRailOpen: open };
+        this.emit();
+    };
+
+    setAgentDraftPrompt = (prompt: string | null): void => {
+        if (this.state.agentDraftPrompt === prompt && prompt === null) return;
+        this.state = {
+            ...this.state,
+            agentDraftPrompt: prompt,
+            agentDraftPromptVersion:
+                prompt === null
+                    ? this.state.agentDraftPromptVersion
+                    : this.state.agentDraftPromptVersion + 1,
+        };
         this.emit();
     };
 

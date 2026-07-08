@@ -65,6 +65,11 @@ export function useRecomputeResult(): StudioRecomputeResult {
         [workbench.scriptReview],
     );
 
+    const suggestedRepairPrompt = useMemo(
+        () => normalizePrompt(workbench.scriptReview?.suggestedRepairPrompt),
+        [workbench.scriptReview],
+    );
+
     const joints = useMemo(
         () => extractJointSnapshots(workbench.featureRecords ?? [], paramTable),
         [workbench.featureRecords, paramTable],
@@ -94,6 +99,7 @@ export function useRecomputeResult(): StudioRecomputeResult {
             validity,
             paramTable,
             diagnostics,
+            suggestedRepairPrompt,
             recomputeMs: workbench.recomputeMs ?? 0,
             joints,
             rawInterferencePairs,
@@ -111,6 +117,7 @@ export function useRecomputeResult(): StudioRecomputeResult {
             validity,
             paramTable,
             diagnostics,
+            suggestedRepairPrompt,
             joints,
             rawInterferencePairs,
             mechanismBanner,
@@ -119,4 +126,10 @@ export function useRecomputeResult(): StudioRecomputeResult {
             setViewportDriverLock,
         ],
     );
+}
+
+function normalizePrompt(value: string | undefined): string | null {
+    if (value == null) return null;
+    const trimmed = value.trim();
+    return trimmed === '' ? null : trimmed;
 }

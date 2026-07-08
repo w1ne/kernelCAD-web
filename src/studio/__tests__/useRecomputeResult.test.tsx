@@ -80,7 +80,47 @@ describe('useRecomputeResult — Slice 1.2 data wiring', () => {
         expect(result.current.validity).toBeNull();
         expect(result.current.paramTable).toBeNull();
         expect(result.current.diagnostics).toEqual([]);
+        expect(result.current.suggestedRepairPrompt).toBeNull();
         expect(result.current.recomputeMs).toBe(0);
+    });
+
+    it('exposes a trimmed suggestedRepairPrompt from scriptReview', async () => {
+        workbenchValue.featureRecords = [];
+        workbenchValue.scriptReview = {
+            ok: false,
+            diagnostics: [],
+            suggestedRepairPrompt: '  Anchor the output horn to the base with a revolute mate.  ',
+        };
+
+        const { useRecomputeResult } = await import('../hooks/useRecomputeResult');
+        const { result } = renderHook(() => useRecomputeResult());
+
+        expect(result.current.suggestedRepairPrompt).toBe(
+            'Anchor the output horn to the base with a revolute mate.',
+        );
+    });
+
+    it('normalizes blank and missing suggestedRepairPrompt values to null', async () => {
+        workbenchValue.featureRecords = [];
+        workbenchValue.scriptReview = {
+            ok: false,
+            diagnostics: [],
+            suggestedRepairPrompt: '   ',
+        };
+
+        const { useRecomputeResult } = await import('../hooks/useRecomputeResult');
+        const blank = renderHook(() => useRecomputeResult());
+
+        expect(blank.result.current.suggestedRepairPrompt).toBeNull();
+
+        workbenchValue.scriptReview = {
+            ok: false,
+            diagnostics: [],
+        };
+
+        const missing = renderHook(() => useRecomputeResult());
+
+        expect(missing.result.current.suggestedRepairPrompt).toBeNull();
     });
 
     it('forwards rawInterferencePairs from scriptReview unchanged', async () => {

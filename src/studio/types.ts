@@ -45,6 +45,7 @@ export interface StudioRecomputeResult {
     readonly validity: ValidatorResult | null;
     readonly paramTable: ParamTable | null;
     readonly diagnostics: readonly CompilerDiagnostic[];
+    readonly suggestedRepairPrompt: string | null;
     readonly recomputeMs: number;
     /**
      * Raw pairwise interference pairs at the current pose, BEFORE any `ignore`

@@ -21,6 +21,7 @@ vi.mock('../../hooks/useFeatureSelection', () => ({
 }));
 
 import { ValidityTab } from '../../tabs/ValidityTab';
+import { shellStore } from '../../store/shellStore';
 
 function emptyResult(): StudioRecomputeResult {
     return {
@@ -30,6 +31,10 @@ function emptyResult(): StudioRecomputeResult {
         paramTable: null,
         diagnostics: [],
         recomputeMs: 0,
+        rawInterferencePairs: [],
+        joints: [],
+        mechanismBanner: null,
+        suggestedRepairPrompt: null,
     };
 }
 
@@ -48,11 +53,13 @@ function makeValidity(
 
 afterEach(() => {
     cleanup();
+    shellStore.reset();
 });
 
 beforeEach(() => {
     mockUseRecomputeResult.mockReset();
     mockSelectFeature.mockReset();
+    shellStore.reset();
 });
 
 describe('ValidityTab', () => {
@@ -143,6 +150,178 @@ describe('ValidityTab', () => {
 
         expect(mockSelectFeature).toHaveBeenCalledTimes(1);
         expect(mockSelectFeature).toHaveBeenCalledWith('output-horn');
+    });
+
+    it('renders a suggestion card above diagnostic rows for an error diagnostic', () => {
+        const diag: ValidatorDiagnostic = {
+            code: 'assembly.part.floating',
+            severity: 'error',
+            message: 'output-horn floats',
+            hint: 'add a mate to output-horn',
+            partName: 'output-horn',
+        };
+
+        mockUseRecomputeResult.mockReturnValue(
+            withValidity(makeValidity('error', [diag], 1, 0)),
+        );
+
+        render(<ValidityTab />);
+
+        const card = screen.getByTestId('validity-suggestion-card');
+        const row = screen.getByTestId('diagnostic-row');
+        expect(card.textContent).toContain('assembly.part.floating');
+        expect(card.textContent).toContain('output-horn');
+        expect(card.textContent).toContain('output-horn floats');
+        expect(card.textContent).toContain('add a mate to output-horn');
+        expect(card.compareDocumentPosition(row) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it('clicking a suggestion card Jump button calls selectFeature with the target id', () => {
+        const diag: ValidatorDiagnostic = {
+            code: 'assembly.part.floating',
+            severity: 'error',
+            message: 'output-horn floats',
+            hint: 'add a mate to output-horn',
+            partName: 'output-horn',
+        };
+
+        mockUseRecomputeResult.mockReturnValue(
+            withValidity(makeValidity('error', [diag], 1, 0)),
+        );
+
+        render(<ValidityTab />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Jump' }));
+
+        expect(mockSelectFeature).toHaveBeenCalledTimes(1);
+        expect(mockSelectFeature).toHaveBeenCalledWith('output-horn');
+    });
+
+    it('clicking Use prompt drafts a repair prompt, selects the target, and opens the agent rail', () => {
+        const diag: ValidatorDiagnostic = {
+            code: 'assembly.part.floating',
+            severity: 'error',
+            message: 'output-horn floats',
+            hint: 'add a mate to output-horn',
+            partName: 'output-horn',
+        };
+
+        mockUseRecomputeResult.mockReturnValue(
+            withValidity(makeValidity('error', [diag], 1, 0)),
+        );
+
+        render(<ValidityTab />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Use prompt' }));
+
+        expect(shellStore.getSnapshot().agentDraftPrompt).toBe(
+            'Fix assembly.part.floating: output-horn floats Action: add a mate to output-horn',
+        );
+        expect(shellStore.getSnapshot().agentRailOpen).toBe(true);
+        expect(mockSelectFeature).toHaveBeenCalledTimes(1);
+        expect(mockSelectFeature).toHaveBeenCalledWith('output-horn');
+    });
+
+    it('clicking Use prompt drafts the backend suggested prompt and still selects the target', () => {
+        const diag: ValidatorDiagnostic = {
+            code: 'assembly.part.floating',
+            severity: 'error',
+            message: 'output-horn floats',
+            hint: 'add a mate to output-horn',
+            partName: 'output-horn',
+        };
+
+        mockUseRecomputeResult.mockReturnValue({
+            ...withValidity(makeValidity('error', [diag], 1, 0)),
+            suggestedRepairPrompt: 'Rebuild the horn support from deterministic review evidence.',
+        });
+
+        render(<ValidityTab />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Use prompt' }));
+
+        expect(shellStore.getSnapshot().agentDraftPrompt).toBe(
+            'Rebuild the horn support from deterministic review evidence.',
+        );
+        expect(shellStore.getSnapshot().agentRailOpen).toBe(true);
+        expect(mockSelectFeature).toHaveBeenCalledTimes(1);
+        expect(mockSelectFeature).toHaveBeenCalledWith('output-horn');
+    });
+
+    it('renders mechanism suggestion cards before diagnostic cards', () => {
+        const diag: ValidatorDiagnostic = {
+            code: 'assembly.part.floating',
+            severity: 'error',
+            message: 'output-horn floats',
+            hint: 'add a mate to output-horn',
+            partName: 'output-horn',
+        };
+
+        mockUseRecomputeResult.mockReturnValue({
+            ...withValidity(makeValidity('error', [diag], 1, 0)),
+            mechanismBanner: {
+                entries: [
+                    {
+                        code: 'mechanism.disconnect',
+                        message: 'drive chain is disconnected',
+                        hint: 'connect the actuator to the output link',
+                    },
+                ],
+            },
+        });
+
+        render(<ValidityTab />);
+
+        const cards = screen.getAllByTestId('validity-suggestion-card');
+        expect(cards).toHaveLength(2);
+        expect(cards[0].textContent).toContain('mechanism.disconnect');
+        expect(cards[0].textContent).toContain('Fix broken mechanism');
+        expect(cards[1].textContent).toContain('assembly.part.floating');
+        expect(cards[1].textContent).toContain('Fix output-horn');
+    });
+
+    it('renders mechanism suggestion cards as informational, non-button cards', () => {
+        mockUseRecomputeResult.mockReturnValue({
+            ...withValidity(makeValidity('error', [], 1, 0)),
+            mechanismBanner: {
+                entries: [
+                    {
+                        code: 'mechanism.disconnect',
+                        message: 'drive chain is disconnected',
+                        hint: 'connect the actuator to the output link',
+                    },
+                ],
+            },
+        });
+
+        render(<ValidityTab />);
+
+        const card = screen.getByTestId('validity-suggestion-card');
+        expect(card.tagName).toBe('DIV');
+
+        expect(mockSelectFeature).not.toHaveBeenCalled();
+    });
+
+    it('renders mechanism suggestion evidence and action text', () => {
+        mockUseRecomputeResult.mockReturnValue({
+            ...withValidity(makeValidity('error', [], 1, 0)),
+            mechanismBanner: {
+                entries: [
+                    {
+                        code: 'mechanism.disconnect',
+                        message: 'drive chain is disconnected',
+                        hint: 'connect the actuator to the output link',
+                    },
+                ],
+            },
+        });
+
+        render(<ValidityTab />);
+
+        const card = screen.getByTestId('validity-suggestion-card');
+        expect(card.textContent).toContain('mechanism.disconnect');
+        expect(card.textContent).toContain('drive chain is disconnected');
+        expect(card.textContent).toContain('connect the actuator to the output link');
     });
 
     it('renders the MECHANISM BROKEN banner with one entry per failure', () => {
