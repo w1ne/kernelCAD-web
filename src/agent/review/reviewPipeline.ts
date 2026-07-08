@@ -161,8 +161,20 @@ type ReviewDiagnostic =
   | MechanicalIntentDiagnostic
   | MechanicalTransmissionDiagnostic;
 
+export const REVIEW_PIPELINE_STAGES = [
+  'evaluate-source',
+  'select-assembly',
+  'default-pose-geometry',
+  'mechanical-review',
+  'pose-envelope',
+  'mechanism-truth',
+  'fitness-and-repair',
+] as const;
+
+export type ReviewPipelineStageName = typeof REVIEW_PIPELINE_STAGES[number];
+
 export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCadOutput> {
-  const { evaluation, model } = await evaluateForReview(input as EvaluateInput);
+  const { evaluation, model } = await runEvaluateSourceStage(input);
   if (evaluation.exitCode !== 0 || !model) {
     clearActiveMcpSession();
     const diagnostics = withNextActions(evaluation.diagnostics);
@@ -175,6 +187,93 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     };
   }
 
+  activateReviewSession(model);
+
+  const { arm, missingAssemblyMessage } = runSelectAssemblyStage(model, input);
+  if (!arm) {
+    return {
+      ok: false,
+      featureCount: evaluation.featureCount,
+      diagnostics: [],
+      repairContext: await buildRepairContext(undefined, [], undefined, input),
+      suggestedRepairPrompt: `${missingAssemblyMessage} Return arm.model() or arm.solvedModel(...) from a script that calls assembly(...).`,
+    };
+  }
+
+  const defaultPoseGeometry = runDefaultPoseGeometryStage(model, input);
+  const mechanicalReview = await runMechanicalReviewStage(
+    arm,
+    input,
+    defaultPoseGeometry.rawInterferencePairs,
+    defaultPoseGeometry.wantInterference,
+  );
+  const poseEnvelope = await runPoseEnvelopeStage(arm, input, mechanicalReview.includePoseEnvelope);
+
+  const diagnostics = collectReviewDiagnostics(evaluation, mechanicalReview, poseEnvelope);
+  const { mechanism, mechanismFailures } = await runMechanismTruthStage(arm, input);
+
+  const { fitness, ok, repairContext } = await runFitnessAndRepairStage({
+    arm,
+    diagnostics,
+    input,
+    mechanism,
+    mechanicalReview,
+    poseEnvelope,
+  });
+
+  if (ok) {
+    return {
+      ok: true,
+      featureCount: evaluation.featureCount,
+      diagnostics,
+      assembly: arm.name,
+      validator: {
+        status: mechanicalReview.validator.status,
+        diagnostics: [...mechanicalReview.validator.diagnostics],
+        partCount: mechanicalReview.validator.partCount,
+        jointCount: mechanicalReview.validator.jointCount,
+      },
+      ...(poseEnvelope !== undefined ? { poseEnvelope } : {}),
+      ...(poseEnvelope !== undefined ? { connectorWorkspace: poseEnvelope.connectorWorkspace } : {}),
+      ...(poseEnvelope?.gripperAperture !== undefined ? { gripperAperture: poseEnvelope.gripperAperture } : {}),
+      fitness,
+      repairContext,
+      rawInterferencePairs: defaultPoseGeometry.rawInterferencePairs,
+      mechanism,
+      mechanismFailures,
+      ...(defaultPoseGeometry.geometry !== undefined ? { geometry: defaultPoseGeometry.geometry } : {}),
+    };
+  }
+
+  return {
+    ok: false,
+    featureCount: evaluation.featureCount,
+    diagnostics,
+    assembly: arm.name,
+    validator: {
+      status: mechanicalReview.validator.status,
+      diagnostics: [...mechanicalReview.validator.diagnostics],
+      partCount: mechanicalReview.validator.partCount,
+      jointCount: mechanicalReview.validator.jointCount,
+    },
+    ...(poseEnvelope !== undefined ? { poseEnvelope } : {}),
+    ...(poseEnvelope !== undefined ? { connectorWorkspace: poseEnvelope.connectorWorkspace } : {}),
+    ...(poseEnvelope?.gripperAperture !== undefined ? { gripperAperture: poseEnvelope.gripperAperture } : {}),
+    fitness,
+    repairContext,
+    suggestedRepairPrompt: buildSuggestedRepairPrompt(diagnostics, fitness, input),
+    rawInterferencePairs: defaultPoseGeometry.rawInterferencePairs,
+    mechanism,
+    mechanismFailures,
+    ...(defaultPoseGeometry.geometry !== undefined ? { geometry: defaultPoseGeometry.geometry } : {}),
+  };
+}
+
+async function runEvaluateSourceStage(input: ReviewCadInput) {
+  return evaluateForReview(input as EvaluateInput);
+}
+
+function activateReviewSession(model: BuiltModel): void {
   setActiveMcpSession({
     session: model.session,
     tailId: model.tailId,
@@ -182,21 +281,27 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     rootId: model.rootId,
     rootShape: model.rootShape,
   });
+}
 
+function runSelectAssemblyStage(
+  model: BuiltModel,
+  input: Pick<ReviewCadInput, 'assembly'>,
+): { arm?: Assembly; missingAssemblyMessage: string } {
   const arm = selectAssembly(model.session.assemblies as Map<string, Assembly>, input.assembly);
-  if (!arm) {
-    const message = input.assembly
-      ? `review_cad: assembly '${input.assembly}' not found.`
-      : 'review_cad: no assembly captured by the script.';
-    return {
-      ok: false,
-      featureCount: evaluation.featureCount,
-      diagnostics: [],
-      repairContext: await buildRepairContext(undefined, [], undefined, input),
-      suggestedRepairPrompt: `${message} Return arm.model() or arm.solvedModel(...) from a script that calls assembly(...).`,
-    };
-  }
+  const missingAssemblyMessage = input.assembly
+    ? `review_cad: assembly '${input.assembly}' not found.`
+    : 'review_cad: no assembly captured by the script.';
+  return { arm, missingAssemblyMessage };
+}
 
+function runDefaultPoseGeometryStage(
+  model: BuiltModel,
+  input: Pick<ReviewCadInput, 'includeInterference' | 'includePoseEnvelope' | 'epsilonMm3'>,
+): {
+  wantInterference: boolean;
+  rawInterferencePairs: InterferencePair[];
+  geometry?: ContactGraphResult;
+} {
   // Raw default-pose interferences are surfaced separately so interactive
   // surfaces (the Studio status-bar HUD) can show the user what's actually
   // overlapping right now, even when the script silences specific pairs via
@@ -222,10 +327,21 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     input.includeInterference !== undefined
       ? input.includeInterference
       : input.includePoseEnvelope !== false;
-  const rawInterferencePairs: InterferencePair[] = wantInterference
-    ? safeDetectDefaultPoseInterferences(model, input.epsilonMm3)
-    : [];
-  const geometry = safeAnalyzeContactGraph(model);
+  return {
+    wantInterference,
+    rawInterferencePairs: wantInterference
+      ? safeDetectDefaultPoseInterferences(model, input.epsilonMm3)
+      : [],
+    geometry: safeAnalyzeContactGraph(model),
+  };
+}
+
+async function runMechanicalReviewStage(
+  arm: Assembly,
+  input: Pick<ReviewCadInput, 'includePoseEnvelope'>,
+  rawInterferencePairs: readonly InterferencePair[],
+  wantInterference: boolean,
+) {
   const validator = await validateAssemblyWithMates(
     arm,
     wantInterference ? rawInterferencePairs : undefined,
@@ -238,8 +354,22 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
   const mechanicalIntent = await reviewMechanicalIntent(arm);
   const includePoseEnvelope = input.includePoseEnvelope ?? true;
   const mechanicalTransmission = await reviewMechanicalTransmission(arm, { includePoseEnvelope });
-  const poseEnvelope = includePoseEnvelope
-    ? await reviewPoseEnvelope(arm, {
+  return {
+    validator,
+    mechanicalPlausibility,
+    mechanicalIntent,
+    mechanicalTransmission,
+    includePoseEnvelope,
+  };
+}
+
+async function runPoseEnvelopeStage(
+  arm: Assembly,
+  input: Pick<ReviewCadInput, 'includeInterference' | 'epsilonMm3' | 'trackConnectors' | 'gripperAperture' | 'samplesPerMate' | 'combinatorial'>,
+  includePoseEnvelope: boolean,
+): Promise<PoseEnvelopeReviewResult | undefined> {
+  return includePoseEnvelope
+    ? reviewPoseEnvelope(arm, {
         includeInterference: input.includeInterference ?? true,
         epsilonMm3: input.epsilonMm3,
         trackConnectors: input.trackConnectors,
@@ -248,15 +378,27 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
         combinatorial: input.combinatorial,
       })
     : undefined;
+}
 
-  const diagnostics = [
+function collectReviewDiagnostics(
+  evaluation: Awaited<ReturnType<typeof evaluateForReview>>['evaluation'],
+  mechanicalReview: Awaited<ReturnType<typeof runMechanicalReviewStage>>,
+  poseEnvelope: PoseEnvelopeReviewResult | undefined,
+): ReviewDiagnostic[] {
+  return [
     ...withNextActions(evaluation.diagnostics),
-    ...validator.diagnostics,
-    ...mechanicalPlausibility.diagnostics,
-    ...mechanicalIntent.diagnostics,
-    ...mechanicalTransmission.diagnostics,
+    ...mechanicalReview.validator.diagnostics,
+    ...mechanicalReview.mechanicalPlausibility.diagnostics,
+    ...mechanicalReview.mechanicalIntent.diagnostics,
+    ...mechanicalReview.mechanicalTransmission.diagnostics,
     ...(poseEnvelope?.diagnostics ?? []),
   ];
+}
+
+async function runMechanismTruthStage(
+  arm: Assembly,
+  input: Pick<ReviewCadInput, 'includeInterference' | 'includePoseEnvelope' | 'includePhysics'>,
+): Promise<{ mechanism: MechanismVerdict; mechanismFailures: readonly CompilerDiagnostic[] }> {
   // Physics-loop probe (P1 surface convergence). Same gating shape as
   // wantInterference above — opt-out only when the caller explicitly
   // disables heavy work (includePoseEnvelope: false defaults the
@@ -270,92 +412,58 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     input.includeInterference !== undefined
       ? input.includeInterference
       : input.includePoseEnvelope !== false;
-  let mechanism: MechanismVerdict = 'unverified';
-  let mechanismFailures: readonly CompilerDiagnostic[] = [];
-  if (wantMechanism) {
-    // Physics opt-in mirrors interference opt-in by default. The Studio
-    // recompute layer can override by passing `includePhysics: false`
-    // explicitly to keep the keystroke-rate path off MuJoCo even when
-    // it asks for the kinematic check.
-    const physicsCheck = input.includePhysics === undefined
-      ? wantMechanism
-      : input.includePhysics;
-    try {
-      const verdict = await checkMechanismTruth(arm, { physicsCheck });
-      // Preserve 'unverified' (e.g. a skipped BREP sweep, issue #348) —
-      // don't collapse it to 'real'.
-      mechanism = verdict.mechanism;
-      mechanismFailures = verdict.failures;
-    } catch {
-      // Probe-side throw — surface as unverified so the legacy review
-      // path still produces actionable output; the CLI handles the same
-      // case symmetrically.
-      mechanism = 'unverified';
-      mechanismFailures = [];
-    }
+  if (!wantMechanism) {
+    return { mechanism: 'unverified', mechanismFailures: [] };
   }
 
+  // Physics opt-in mirrors interference opt-in by default. The Studio
+  // recompute layer can override by passing `includePhysics: false`
+  // explicitly to keep the keystroke-rate path off MuJoCo even when
+  // it asks for the kinematic check.
+  const physicsCheck = input.includePhysics === undefined
+    ? wantMechanism
+    : input.includePhysics;
+  try {
+    const verdict = await checkMechanismTruth(arm, { physicsCheck });
+    // Preserve 'unverified' (e.g. a skipped BREP sweep, issue #348) —
+    // don't collapse it to 'real'.
+    return {
+      mechanism: verdict.mechanism,
+      mechanismFailures: verdict.failures,
+    };
+  } catch {
+    // Probe-side throw — surface as unverified so the legacy review
+    // path still produces actionable output; the CLI handles the same
+    // case symmetrically.
+    return { mechanism: 'unverified', mechanismFailures: [] };
+  }
+}
+
+async function runFitnessAndRepairStage(input: {
+  arm: Assembly;
+  diagnostics: readonly ReviewDiagnostic[];
+  input: ReviewCadInput;
+  mechanism: MechanismVerdict;
+  mechanicalReview: Awaited<ReturnType<typeof runMechanicalReviewStage>>;
+  poseEnvelope: PoseEnvelopeReviewResult | undefined;
+}): Promise<{ fitness: MechanismFitnessResult; ok: boolean; repairContext: RepairContext }> {
   const fitness = summarizeMechanismFitness({
-    validatorDiagnostics: validator.diagnostics,
-    mechanicalPlausibilityDiagnostics: mechanicalPlausibility.diagnostics,
-    mechanicalIntentDiagnostics: mechanicalIntent.diagnostics,
-    mechanicalTransmissionDiagnostics: mechanicalTransmission.diagnostics,
-    poseEnvelope,
-    trackConnectors: poseEnvelope !== undefined ? input.trackConnectors : undefined,
+    validatorDiagnostics: input.mechanicalReview.validator.diagnostics,
+    mechanicalPlausibilityDiagnostics: input.mechanicalReview.mechanicalPlausibility.diagnostics,
+    mechanicalIntentDiagnostics: input.mechanicalReview.mechanicalIntent.diagnostics,
+    mechanicalTransmissionDiagnostics: input.mechanicalReview.mechanicalTransmission.diagnostics,
+    poseEnvelope: input.poseEnvelope,
+    trackConnectors: input.poseEnvelope !== undefined ? input.input.trackConnectors : undefined,
   });
   // A broken mechanism overrides a "functional" fitness summary —
   // the loop's truth criterion is the merge gate, not the legacy
   // advisory aggregate. Spec §"the recompute is what defines the
   // passing state".
-  const ok = fitness.functional && mechanism !== 'broken';
-
-  const repairContext = await buildRepairContext(arm, diagnostics, fitness, input);
-
-  if (ok) {
-    return {
-      ok: true,
-      featureCount: evaluation.featureCount,
-      diagnostics,
-      assembly: arm.name,
-      validator: {
-        status: validator.status,
-        diagnostics: [...validator.diagnostics],
-        partCount: validator.partCount,
-        jointCount: validator.jointCount,
-      },
-      ...(poseEnvelope !== undefined ? { poseEnvelope } : {}),
-      ...(poseEnvelope !== undefined ? { connectorWorkspace: poseEnvelope.connectorWorkspace } : {}),
-      ...(poseEnvelope?.gripperAperture !== undefined ? { gripperAperture: poseEnvelope.gripperAperture } : {}),
-      fitness,
-      repairContext,
-      rawInterferencePairs,
-      mechanism,
-      mechanismFailures,
-      ...(geometry !== undefined ? { geometry } : {}),
-    };
-  }
-
+  const ok = fitness.functional && input.mechanism !== 'broken';
   return {
-    ok: false,
-    featureCount: evaluation.featureCount,
-    diagnostics,
-    assembly: arm.name,
-    validator: {
-      status: validator.status,
-      diagnostics: [...validator.diagnostics],
-      partCount: validator.partCount,
-      jointCount: validator.jointCount,
-    },
-    ...(poseEnvelope !== undefined ? { poseEnvelope } : {}),
-    ...(poseEnvelope !== undefined ? { connectorWorkspace: poseEnvelope.connectorWorkspace } : {}),
-    ...(poseEnvelope?.gripperAperture !== undefined ? { gripperAperture: poseEnvelope.gripperAperture } : {}),
     fitness,
-    repairContext,
-    suggestedRepairPrompt: buildSuggestedRepairPrompt(diagnostics, fitness, input),
-    rawInterferencePairs,
-    mechanism,
-    mechanismFailures,
-    ...(geometry !== undefined ? { geometry } : {}),
+    ok,
+    repairContext: await buildRepairContext(input.arm, input.diagnostics, fitness, input.input),
   };
 }
 
