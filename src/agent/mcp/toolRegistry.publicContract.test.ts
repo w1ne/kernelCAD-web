@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
 import {
   TOOL_REGISTRY,
   TOOLS,
@@ -11,6 +12,56 @@ import {
   defaultBuildRepairPrompt,
   type McpToolDefinition,
 } from './toolRegistry';
+
+const EXPECTED_TOOL_NAMES = [
+  'evaluate_script',
+  'diff_scripts',
+  'inspect',
+  'verify',
+  'why_did_this_fail',
+  'set_param',
+  'add_feature',
+  'add_surface',
+  'add_curve',
+  'add_path_segment',
+  'trace_from_image',
+  'add_variable_sweep',
+  'add_text',
+  'project_curve',
+  'add_pattern_feature',
+  'remove_feature',
+  'query',
+  'lookup_api',
+  'lookup_diagnostics',
+  'export',
+  'lookup_cookbook',
+  'find_part',
+  'fetch_part',
+  'solve_sketch',
+  'add_constraint',
+  'add_part',
+  'add_connector',
+  'add_mate',
+  'add_workspace_target',
+  'set_scene_return',
+  'solve_mates',
+  'review_cad',
+  'review_paint_peek_latest',
+  'design_loop',
+  'flatten_pattern',
+  'evaluate_sdf',
+  'capture_animation',
+  'render_preview',
+] as const;
+
+const PUBLIC_CONTRACT_FIXTURE = new URL(
+  '../../../tests/fixtures/mcp/toolRegistry.publicContract.json',
+  import.meta.url,
+);
+
+function serializedPublicTools(): unknown {
+  return JSON.parse(JSON.stringify(TOOLS));
+}
 
 describe('toolRegistry public contract', () => {
   // 'lookup_api' is a stable, always-registered tool used as a contract anchor below.
@@ -31,6 +82,16 @@ describe('toolRegistry public contract', () => {
     for (let i = 0; i < TOOLS.length; i++) {
       expect(TOOLS[i].name).toBe(TOOL_REGISTRY[i].definition.name);
     }
+  });
+
+  it('keeps the public tool order stable', () => {
+    expect(TOOL_REGISTRY.map(entry => entry.definition.name)).toEqual(EXPECTED_TOOL_NAMES);
+    expect(TOOLS.map(tool => tool.name)).toEqual(EXPECTED_TOOL_NAMES);
+  });
+
+  it('keeps merged public tool metadata stable', () => {
+    const fixture = JSON.parse(readFileSync(PUBLIC_CONTRACT_FIXTURE, 'utf8'));
+    expect(serializedPublicTools()).toEqual(fixture);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {
