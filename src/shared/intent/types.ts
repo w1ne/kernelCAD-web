@@ -81,7 +81,7 @@ export type FaceRef =
   // Q8 — Query DSL value (kc.q.face(...) etc). Serialized as the AST so
   // the FeatureRecord stays JSON-round-trippable; the lowerer dispatches
   // through the Q3 evaluator at consume time.
-  | { kind: 'queryDsl'; queryAst: import('../../kernel/naming/query').QueryAst; queryTarget: import('../../kernel/naming/query').QueryKind | 'any'; lenient?: boolean };
+  | { kind: 'queryDsl'; queryAst: import('../naming/queryAst').QueryAst; queryTarget: import('../naming/queryAst').QueryKind | 'any'; lenient?: boolean };
 
 export type EdgeRef =
   | { kind: 'tracked'; edgeName: string; selector: 'edge'|'start'|'end'|'midpoint' }
@@ -93,7 +93,7 @@ export type EdgeRef =
   | { kind: 'segment'; segmentId: string }
   | { kind: 'segments'; segmentIds: string[] }
   // Q8 — Query DSL value (kc.q.edge(...) etc).
-  | { kind: 'queryDsl'; queryAst: import('../../kernel/naming/query').QueryAst; queryTarget: import('../../kernel/naming/query').QueryKind | 'any'; lenient?: boolean };
+  | { kind: 'queryDsl'; queryAst: import('../naming/queryAst').QueryAst; queryTarget: import('../naming/queryAst').QueryKind | 'any'; lenient?: boolean };
 
 export type VertexRef =
   | { kind: 'tracked'; vertexName: string }

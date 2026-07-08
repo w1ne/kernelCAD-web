@@ -8,7 +8,7 @@
 // collide with the @kc[...] grammar fails AT BUILD TIME, not at runtime.
 
 import { readFileSync } from 'node:fs';
-import { assertTopoRefSafeName } from '../../kernel/naming';
+import { assertTopoRefSafeName } from '../naming/topoRefName';
 
 export type ConnectorType = 'frame' | 'axis';
 
