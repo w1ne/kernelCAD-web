@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { DiffEditor } from '@monaco-editor/react';
 import { useGeneration } from '../funnel/hooks/useGeneration';
 import type { GenerateEvent } from '../funnel/lib/generateClient';
@@ -35,10 +35,12 @@ function stepLabel(e: GenerateEvent): string | null {
 const StudioGenerateInner: React.FC = () => {
     const { phase, events, submit } = useGeneration();
     const { code, setCode } = useCode();
+    const currentCode = code ?? '';
     const { executeGeometry } = useGeometry();
     const { selectedFeatureId } = useFeatureSelection();
     const { agentDraftPrompt, agentDraftPromptVersion } = useShellStore();
-    const [prompt, setPrompt] = useState('');
+    const [editedPrompt, setEditedPrompt] = useState('');
+    const [acknowledgedDraftVersion, setAcknowledgedDraftVersion] = useState(-1);
     // The generationId we've already accepted/rejected — gates the review panel
     // so an applied/dismissed proposal doesn't reappear.
     const [resolvedId, setResolvedId] = useState<string | null>(null);
@@ -46,9 +48,15 @@ const StudioGenerateInner: React.FC = () => {
     // (so the diff is stable even though `code` changes once we apply).
     const [baseline, setBaseline] = useState('');
 
-    useEffect(() => {
-        if (agentDraftPrompt !== null) setPrompt(agentDraftPrompt);
-    }, [agentDraftPrompt, agentDraftPromptVersion]);
+    const prompt =
+        agentDraftPrompt !== null && agentDraftPromptVersion !== acknowledgedDraftVersion
+            ? agentDraftPrompt
+            : editedPrompt;
+
+    const setPrompt = (nextPrompt: string) => {
+        setAcknowledgedDraftVersion(agentDraftPromptVersion);
+        setEditedPrompt(nextPrompt);
+    };
 
     // The single prompt box also drives the paid 3D concept preview.
     const preview = useTextTo3dPreview();
@@ -68,8 +76,12 @@ const StudioGenerateInner: React.FC = () => {
     const runAgent = (text: string) => {
         // Edit mode: hand the agent the current model so it iterates instead of
         // replacing. Empty editor → fresh generation.
-        setBaseline(code);
-        void submit(text, code.trim() ? code : undefined);
+        setBaseline(currentCode);
+        if (currentCode.trim()) {
+            void submit(text, currentCode);
+            return;
+        }
+        void submit(text);
     };
 
     const onSubmit = (e: React.FormEvent) => {
@@ -94,7 +106,7 @@ const StudioGenerateInner: React.FC = () => {
         // starter sample) lets the model return that code unchanged. The
         // review diff still uses the current editor code as its baseline, so
         // nothing is overwritten without the user accepting.
-        setBaseline(code);
+        setBaseline(currentCode);
         // Read the concept mesh directly from the live preview phase (no mirrored
         // state). A done preview with no Tripo render/fingerprint yields
         // {renderImageUrl:null, proportions:null} — intentional and distinct from
@@ -126,12 +138,12 @@ const StudioGenerateInner: React.FC = () => {
                     Target: {selectedFeatureId ?? 'whole model'}
                 </div>
                 <textarea
-                    aria-label="Agent prompt"
+                    aria-label="Generate prompt"
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
                     rows={3}
                     disabled={busy}
-                    placeholder={code.trim() ? 'Edit this model… e.g. add two 4mm mounting holes' : 'Describe a part… e.g. a 20mm cube'}
+                    placeholder={currentCode.trim() ? 'Edit this model… e.g. add two 4mm mounting holes' : 'Describe a part… e.g. a 20mm cube'}
                     className="w-full rounded bg-[#111] border border-[#2a2e38] text-gray-100 p-2 text-[11px] placeholder:text-gray-600 focus:border-blue-500 focus:outline-none disabled:opacity-50 resize-none font-sans"
                 />
                 <div className="flex gap-2">
@@ -140,7 +152,7 @@ const StudioGenerateInner: React.FC = () => {
                         disabled={busy || !prompt.trim()}
                         className="flex-1 rounded bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 text-[11px] font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
-                        {agentBusy ? 'Working…' : code.trim() ? 'Edit with agent →' : 'Build →'}
+                        {agentBusy ? 'Working…' : currentCode.trim() ? 'Edit with agent →' : 'Build →'}
                     </button>
                     {preview.phase.state !== 'unavailable' && (
                         <button
