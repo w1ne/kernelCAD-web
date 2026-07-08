@@ -110,6 +110,10 @@ describe('buildValiditySuggestions', () => {
             'Rebuild the linkage as one connected revolute chain.',
             'Rebuild the linkage as one connected revolute chain.',
         ]);
+        expect(suggestions.map((suggestion) => suggestion.promptSource)).toEqual([
+            'review',
+            'review',
+        ]);
     });
 
     it('falls back to prompt text built from fallback-resolved evidence and action', () => {
@@ -131,6 +135,7 @@ describe('buildValiditySuggestions', () => {
             action: 'Review deterministic validation evidence.',
             promptText:
                 'Fix assembly.loop.unclosed: assembly.loop.unclosed Action: Review deterministic validation evidence.',
+            promptSource: 'fallback',
         });
     });
 

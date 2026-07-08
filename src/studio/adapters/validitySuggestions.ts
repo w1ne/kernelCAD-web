@@ -13,6 +13,7 @@ export interface ValiditySuggestionCard {
     readonly targetId: string | null;
     readonly code: string;
     readonly promptText: string;
+    readonly promptSource: 'review' | 'fallback';
 }
 
 export function buildValiditySuggestions(input: {
@@ -29,6 +30,7 @@ export function buildValiditySuggestions(input: {
 }): ValiditySuggestionCard[] {
     const limit = input.limit ?? 3;
     const backendPrompt = normalizePrompt(input.suggestedRepairPrompt);
+    const promptSource = backendPrompt == null ? 'fallback' : 'review';
     const mechanismCards =
         input.mechanismBanner?.entries.map((entry, index): ValiditySuggestionCard => {
             const evidence = textOrFallback(entry.message, entry.code);
@@ -44,6 +46,7 @@ export function buildValiditySuggestions(input: {
                 targetId: null,
                 code: entry.code,
                 promptText: backendPrompt ?? fallbackPrompt(entry.code, evidence, action),
+                promptSource,
             };
         }) ?? [];
     const diagnosticCards =
@@ -63,6 +66,7 @@ export function buildValiditySuggestions(input: {
                 targetId,
                 code: diag.code,
                 promptText: backendPrompt ?? fallbackPrompt(diag.code, evidence, action),
+                promptSource,
             };
         }) ?? [];
 

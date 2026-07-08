@@ -222,6 +222,30 @@ describe('ValidityTab', () => {
         expect(mockSelectFeature).toHaveBeenCalledWith('output-horn');
     });
 
+    it('renders fallback prompt preview and source on a suggestion card', () => {
+        const diag: ValidatorDiagnostic = {
+            code: 'assembly.part.floating',
+            severity: 'error',
+            message: 'output-horn floats',
+            hint: 'add a mate to output-horn',
+            partName: 'output-horn',
+        };
+
+        mockUseRecomputeResult.mockReturnValue(
+            withValidity(makeValidity('error', [diag], 1, 0)),
+        );
+
+        render(<ValidityTab />);
+
+        const card = screen.getByTestId('validity-suggestion-card');
+        const preview = screen.getByTestId('validity-suggestion-prompt-preview');
+        expect(card.getAttribute('data-prompt-source')).toBe('fallback');
+        expect(preview.textContent).toContain('Fallback prompt');
+        expect(preview.textContent).toContain(
+            'Fix assembly.part.floating: output-horn floats Action: add a mate to output-horn',
+        );
+    });
+
     it('clicking Use prompt drafts the backend suggested prompt and still selects the target', () => {
         const diag: ValidatorDiagnostic = {
             code: 'assembly.part.floating',
@@ -246,6 +270,60 @@ describe('ValidityTab', () => {
         expect(shellStore.getSnapshot().agentRailOpen).toBe(true);
         expect(mockSelectFeature).toHaveBeenCalledTimes(1);
         expect(mockSelectFeature).toHaveBeenCalledWith('output-horn');
+    });
+
+    it('renders review prompt preview and source on a suggestion card', () => {
+        const diag: ValidatorDiagnostic = {
+            code: 'assembly.part.floating',
+            severity: 'error',
+            message: 'output-horn floats',
+            hint: 'add a mate to output-horn',
+            partName: 'output-horn',
+        };
+
+        mockUseRecomputeResult.mockReturnValue({
+            ...withValidity(makeValidity('error', [diag], 1, 0)),
+            suggestedRepairPrompt: 'Rebuild the horn support from deterministic review evidence.',
+        });
+
+        render(<ValidityTab />);
+
+        const card = screen.getByTestId('validity-suggestion-card');
+        const preview = screen.getByTestId('validity-suggestion-prompt-preview');
+        expect(card.getAttribute('data-prompt-source')).toBe('review');
+        expect(preview.textContent).toContain('Review prompt');
+        expect(preview.textContent).toContain(
+            'Rebuild the horn support from deterministic review evidence.',
+        );
+    });
+
+    it('preserves and bounds multi-line review prompt previews', () => {
+        const diag: ValidatorDiagnostic = {
+            code: 'assembly.part.floating',
+            severity: 'error',
+            message: 'output-horn floats',
+            hint: 'add a mate to output-horn',
+            partName: 'output-horn',
+        };
+        const prompt = [
+            'Repair deterministic review findings:',
+            '- Rebuild output-horn as a connected support.',
+            '- Preserve the driven linkage path.',
+            'Verification: rerun review and keep all prompt text available.',
+        ].join('\n');
+
+        mockUseRecomputeResult.mockReturnValue({
+            ...withValidity(makeValidity('error', [diag], 1, 0)),
+            suggestedRepairPrompt: prompt,
+        });
+
+        render(<ValidityTab />);
+
+        const preview = screen.getByTestId('validity-suggestion-prompt-preview');
+        expect(preview.textContent).toContain(prompt);
+        expect(preview.className).toContain('whitespace-pre-wrap');
+        expect(preview.className).toContain('max-h-24');
+        expect(preview.className).toContain('overflow-y-auto');
     });
 
     it('renders mechanism suggestion cards before diagnostic cards', () => {

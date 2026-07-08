@@ -112,6 +112,7 @@ function SuggestionCard({
             data-testid="validity-suggestion-card"
             data-code={card.code}
             data-kind={card.kind}
+            data-prompt-source={card.promptSource}
         >
             <div className="flex items-center gap-2">
                 <span
@@ -128,6 +129,16 @@ function SuggestionCard({
             </div>
             <div className="mt-1 text-[11px] text-gray-400">{card.evidence}</div>
             <div className="mt-0.5 text-[11px] text-gray-500">{card.action}</div>
+            <div
+                className="mt-1.5 max-h-24 overflow-y-auto whitespace-pre-wrap break-words rounded border border-[#252525] bg-[#101010] px-2 py-1 text-[10px] text-gray-400"
+                data-testid="validity-suggestion-prompt-preview"
+            >
+                <span className="font-medium text-gray-300">
+                    {card.promptSource === 'review' ? 'Review prompt' : 'Fallback prompt'}
+                </span>
+                <span className="mx-1 text-gray-600">·</span>
+                <span className="break-words">{card.promptText}</span>
+            </div>
             <div className="mt-2 flex items-center gap-1.5">
                 <button
                     type="button"
