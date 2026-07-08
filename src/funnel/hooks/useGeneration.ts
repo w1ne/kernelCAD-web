@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useState } from 'react';
-import { parseSseStream, startGeneration, type Artifact, type GenerateEvent } from '../lib/generateClient';
+import { parseSseStream, startGeneration, type Artifact, type GenerateEvent, type GenerateRequest } from '../lib/generateClient';
 
 /** Codes emitted by the client when generation fails outside the server's
  *  own error stream. Server-relayed `error` events carry their own codes
@@ -25,7 +25,7 @@ export function useGeneration() {
   const [phase, setPhase] = useState<GenerationPhase>({ state: 'idle' });
   const [events, setEvents] = useState<GenerateEvent[]>([]);
 
-  const submit = useCallback(async (prompt: string, currentCode?: string) => {
+  const submit = useCallback(async (prompt: string, currentCode?: string, mesh?: GenerateRequest['mesh']) => {
     setEvents([]);
     setPhase({
       state: 'running',
@@ -34,7 +34,7 @@ export function useGeneration() {
 
     let res: Response;
     try {
-      res = await startGeneration({ prompt, currentCode });
+      res = await startGeneration({ prompt, currentCode, mesh });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setPhase({ state: 'error', code: 'network', message });
@@ -44,7 +44,11 @@ export function useGeneration() {
     if (!res.ok) {
       setPhase({
         state: 'error',
-        code: res.status === 429 ? 'rate_limited' : `http_${res.status}`,
+        // Agent mode requires a connected account. 401 = anonymous (must sign
+        // in); 402 = signed-in but monthly quota exhausted (must upgrade); 429 =
+        // legacy rate limit. All route to the same panel, which shows "sign in"
+        // vs "upgrade" based on whether there's a session.
+        code: res.status === 401 || res.status === 402 || res.status === 429 ? 'rate_limited' : `http_${res.status}`,
         message: await res.text().catch(() => `HTTP ${res.status}`),
       });
       return;

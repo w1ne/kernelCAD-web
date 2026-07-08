@@ -1,8 +1,6 @@
-name: dist-skills-eval-cron
+name: dist-skills-eval
 
 on:
-  schedule:
-    - cron: '0 4 * * 1' # Mondays 04:00 UTC
   workflow_dispatch: {}
   # Also runs whenever dist-skills publishes, via repository_dispatch fired
   # by the publish job's "fan-out on success" final step.

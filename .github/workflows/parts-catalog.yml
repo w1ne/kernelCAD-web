@@ -6,8 +6,8 @@ name: Parts Catalog
 # as kernelCAD's remote source instead of a third-party API.
 
 on:
-  schedule:
-    - cron: '0 4 * * 1' # weekly, Monday 04:00 UTC
+  # Manual because this is a long ingest/deploy job and the catalog does not
+  # need to refresh on every calendar week while Actions quota is tight.
   workflow_dispatch:
     inputs:
       subdir:
@@ -20,7 +20,7 @@ permissions:
 
 concurrency:
   group: parts-catalog
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   ingest-and-deploy:

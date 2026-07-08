@@ -15,12 +15,26 @@ import { StudioConfigProvider } from '../config/StudioConfigContext';
 import { getEmbedConfig, setEmbedConfig } from '../config/embedConfigRef';
 import type { BrushReport, StudioConfig } from '../config/types';
 
+// Toolbar now calls useNavigate; stub the router so tests stay router-free.
+vi.mock('@tanstack/react-router', () => ({
+    useNavigate: () => () => {},
+}));
+
+// Toolbar calls useOptionalSession. Return a stable no-session value so the
+// Toolbar renders without hitting the real Supabase client.
+vi.mock('../../funnel/hooks/useSession', () => ({
+    useOptionalSession: () => ({ session: null, loading: false }),
+}));
+
 // Supabase is read by `apiCall()`. Stub it the same way scriptSource.test.ts
 // does so the "unsigned-in" branch is exercised consistently.
+// isAuthConfigured is also stubbed because Toolbar now calls useOptionalSession
+// which reads this function at hook initialisation time.
 vi.mock('../../funnel/lib/supabaseClient', () => ({
     getSupabase: () => ({
         auth: { getSession: async () => ({ data: { session: null } }) },
     }),
+    isAuthConfigured: () => false,
 }));
 
 afterEach(() => {
@@ -213,6 +227,7 @@ describe('Toolbar enableAgentRail gating', () => {
                 onToggleSectionMode={() => {}}
                 inspectorOpen={false}
                 onToggleInspector={() => {}}
+                code=""
             />,
         );
         expect(queryByLabelText(/agent rail/i)).not.toBeNull();
@@ -237,6 +252,7 @@ describe('Toolbar enableAgentRail gating', () => {
                 onToggleSectionMode={() => {}}
                 inspectorOpen={false}
                 onToggleInspector={() => {}}
+                code=""
             />,
         );
         expect(queryByLabelText(/agent rail/i)).toBeNull();

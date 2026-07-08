@@ -6,7 +6,7 @@ import App from '../App';
 import { SignInButton } from '../../funnel/components/SignInButton';
 import { ProjectViewerActions } from './-ProjectViewerActions';
 import { ServerRevisionHistory } from './-ServerRevisionHistory';
-import { useSession } from '../../funnel/hooks/useSession';
+import { useOptionalSession } from '../../funnel/hooks/useSession';
 import {
   fetchProjectBySlug,
   claimProject,
@@ -31,7 +31,7 @@ function formatPrivacyLabel(privacy: ProjectRow['privacy']): string {
 
 function ProjectPage() {
   const { slug } = Route.useParams();
-  const { session } = useSession();
+  const { session } = useOptionalSession();
   const [project, setProject] = useState<ProjectRow | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [claimed, setClaimed] = useState(false);

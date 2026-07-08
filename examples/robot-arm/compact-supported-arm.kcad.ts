@@ -406,6 +406,7 @@ arm.mate('shoulder-shaft-fix', 'yaw-turret.shoulder-shaft-mount', 'shoulder-pitc
 arm.mate('shoulder-pitch', 'yaw-turret.shoulder-out', 'upper-link.shoulder-in', 'revolute', {
   pose: shoulderPitchDeg,
   limitsDeg: [12, 40],
+  exposure: 'concealed',
 });
 arm.mate('elbow-servo-fix', 'upper-link.elbow-servo-mount', 'elbow-pitch-servo.mount', 'fastened');
 arm.mate('elbow-shaft-fix', 'upper-link.elbow-shaft-mount', 'elbow-pitch-shaft.mount', 'fastened');

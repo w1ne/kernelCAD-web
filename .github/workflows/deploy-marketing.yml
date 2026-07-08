@@ -1,0 +1,61 @@
+name: Deploy kernelcad.com (on merge to develop)
+
+# The kernelcad.com marketing site is built + deployed by a workflow in the
+# PRIVATE kernelCAD-server repo (deploy-kernelcad-com.yml), which keeps the
+# Cloudflare project name and build details out of this public repo. That
+# workflow was manual-only (workflow_dispatch), so the live site lagged merged
+# source until someone remembered to run it.
+#
+# This workflow closes that gap: every push to develop — which, per branch
+# protection (required checks: lint, build-and-checks, test), means a PR that
+# passed CI was merged — automatically triggers the marketing deploy against the
+# freshly-merged develop. app.kernelcad.com already auto-deploys on develop push
+# (deploy-cloudflare.yml); this gives kernelcad.com the same behaviour.
+#
+# ONE-TIME SETUP (only a repo admin can do this):
+#   Add a repo secret MARKETING_DEPLOY_TOKEN = a fine-grained PAT (or GitHub App
+#   token) with "Actions: Read and write" permission on w1ne/kernelCAD-server.
+#   The default GITHUB_TOKEN cannot trigger workflows in another repository.
+#
+# Note: develop's branch protection does not enforce admins, so a direct admin
+# push that bypasses a PR would deploy without a fresh CI run. Normal PR merges
+# always pass CI first. Manual re-deploys remain available via workflow_dispatch
+# here or directly in kernelCAD-server.
+
+on:
+  push:
+    branches: [develop]
+    paths-ignore:
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+      - 'CHANGELOG.md'
+      - 'LICENSE'
+      - 'RELEASE_NOTES.md'
+      - 'docs/**'
+      - 'doc/**'
+      - 'archive/**'
+  workflow_dispatch:
+
+concurrency:
+  # Never run two marketing deploys at once; let an in-flight one finish so we
+  # don't cancel a deploy that's mid-publish.
+  group: deploy-marketing
+  cancel-in-progress: false
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger kernelcad.com marketing deploy (private kernelCAD-server)
+        env:
+          GH_TOKEN: ${{ secrets.MARKETING_DEPLOY_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::MARKETING_DEPLOY_TOKEN is not set. Add a fine-grained PAT with Actions: read/write on w1ne/kernelCAD-server so this repo can trigger the marketing deploy."
+            exit 1
+          fi
+          gh workflow run deploy-kernelcad-com.yml \
+            --repo w1ne/kernelCAD-server \
+            --ref main \
+            -f web_ref=develop
+          echo "Dispatched deploy-kernelcad-com.yml (web_ref=develop) in kernelCAD-server."

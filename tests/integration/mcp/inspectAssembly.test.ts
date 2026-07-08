@@ -46,6 +46,99 @@ describe('inspect_assembly MCP tool', () => {
     }
   });
 
+  it('reports visible sub-10mm air gaps between solids as disconnected geometry', async () => {
+    const result = await inspectAssemblyTool({
+      code: `
+        const arm = assembly('small broken inventory');
+        arm.part('gapped-link',
+          box(20, 10, 8, true)
+            .union(box(10, 10, 8, true).translate(22, 0, 0))
+        );
+        return arm.model();
+      `,
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.parts[0]).toMatchObject({
+        name: 'gapped-link',
+        disconnected: expect.objectContaining({
+          componentCount: 2,
+        }),
+      });
+      expect(result.unexplainedGeometry).toEqual([
+        expect.objectContaining({
+          code: 'assembly.mechanical.part-disconnected',
+          partName: 'gapped-link',
+        }),
+      ]);
+    }
+  });
+
+  it('reports sub-millimeter clearance gaps inside a single functional part', async () => {
+    const result = await inspectAssemblyTool({
+      code: `
+        const arm = assembly('clearance-gap inventory');
+        arm.part('loose-pin-as-one-part',
+          box(20, 10, 8, true)
+            .union(box(10, 10, 8, true).translate(15.25, 0, 0))
+        );
+        return arm.model();
+      `,
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.parts[0]).toMatchObject({
+        name: 'loose-pin-as-one-part',
+        disconnected: expect.objectContaining({
+          componentCount: 2,
+        }),
+      });
+      expect(result.unexplainedGeometry).toEqual([
+        expect.objectContaining({
+          code: 'assembly.mechanical.part-disconnected',
+          partName: 'loose-pin-as-one-part',
+        }),
+      ]);
+    }
+  });
+
+  it('reports disconnected solids even when their bounding boxes overlap', async () => {
+    const result = await inspectAssemblyTool({
+      code: `
+        const arm = assembly('bbox-overlap inventory');
+        const leftPost = box(2, 2, 12, true).translate(-5, 0, 0);
+        const rightPost = box(2, 2, 12, true).translate(5, 0, 0);
+        const topBridge = box(12, 2, 2, true).translate(0, 0, 5);
+        const floatingBlock = box(2, 2, 2, true).translate(0, 0, -4);
+        arm.part('bbox-hidden-floater',
+          leftPost
+            .union(rightPost)
+            .union(topBridge)
+            .union(floatingBlock)
+        );
+        return arm.model();
+      `,
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.parts[0]).toMatchObject({
+        name: 'bbox-hidden-floater',
+        disconnected: expect.objectContaining({
+          componentCount: 2,
+        }),
+      });
+      expect(result.unexplainedGeometry).toEqual([
+        expect.objectContaining({
+          code: 'assembly.mechanical.part-disconnected',
+          partName: 'bbox-hidden-floater',
+        }),
+      ]);
+    }
+  });
+
   it('is advertised and dispatchable through the registry', async () => {
     expect(TOOL_REGISTRY.map((entry) => entry.definition.name)).toContain('inspect');
 

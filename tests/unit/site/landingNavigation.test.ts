@@ -6,13 +6,21 @@ import path from 'node:path';
 describe('landing page app navigation', () => {
   const html = () => readFileSync(path.resolve(__dirname, '../../../site/index.html'), 'utf8');
 
-  it('keeps prompt handoff same-origin and disables browser draft restoration', () => {
+  it('mounts the shared pricing component island, not a generate form', () => {
     const source = html();
 
-    expect(source).toContain('class="prompt-handoff-form" action="/app/generate" method="GET" autocomplete="off"');
-    expect(source).toContain('name="prompt"');
-    expect(source).toContain('autocomplete="off"');
-    expect(source).not.toContain('action="https://app.kernelcad.com/generate"');
+    // The landing renders the SAME PricingSection component as app.kernelcad.com
+    // (SSR fallback + hydrated island), so layout/data can never drift. The
+    // paid CTAs deep-link into app checkout with the selected billing period —
+    // that intent is wired in the island bundle (see build-pricing.test.ts).
+    expect(source).toContain('id="pricing-root"');
+    expect(source).toContain('src="/pricing-island.js"');
+    expect(source).toContain('href="/pricing-island.css"');
+    // Enterprise stays contact-sales in the SSR'd markup.
+    expect(source).toContain('href="mailto:support@kernelcad.com');
+    // The prompt-handoff form was replaced by the pricing section.
+    expect(source).not.toContain('class="prompt-handoff-form"');
+    expect(source).not.toContain('action="/app/generate"');
   });
 
   it('clears prompt draft state before gallery app navigation', () => {

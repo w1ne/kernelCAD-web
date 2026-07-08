@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { getSupabase, isAuthConfigured } from './supabaseClient';
 export interface Artifact {
   title: string;
   code: string;
@@ -116,13 +117,30 @@ export interface GenerateRequest {
   /** Edit mode: the current editor source the agent should modify (Studio agent
    *  loop). Omit for a fresh generation (funnel/landing). */
   currentCode?: string;
+  /** Mesh-conditioned build context: a rendered preview image + normalized
+   *  bounding-box proportions of an in-progress mesh-first build. Omit when
+   *  there is no mesh context (text-only funnel/landing generation). */
+  mesh?: { renderImageUrl?: string | null; proportions?: number[] | null };
 }
 
 export async function startGeneration(req: GenerateRequest): Promise<Response> {
   const base = import.meta.env.VITE_API_BASE_URL;
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  // Agent mode requires a connected account (every run lands against a plan), so
+  // forward the Supabase session token when there is one. Without it the server
+  // returns 401 and the UI prompts sign-in. Guarded so an env-less/local build
+  // (no auth) doesn't throw — it just sends no token.
+  if (isAuthConfigured()) {
+    try {
+      const { data: { session } } = await getSupabase().auth.getSession();
+      if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
+    } catch {
+      // no session / auth unavailable → anonymous → server will 401
+    }
+  }
   return fetch(`${base}/api/v1/generate`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(req),
   });
 }

@@ -60,17 +60,32 @@ describe('static gallery landing page', () => {
     expect(readme).not.toContain('build-demo.ts && node site/scripts/render-brand.mjs');
   });
 
-  it('places the prompt handoff before the built-with-kernelCAD gallery', () => {
+  it('places the pricing section before the built-with-kernelCAD gallery', () => {
     const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
 
-    expect(html).toContain('action="/app/generate"');
-    expect(html).toContain('name="prompt"');
-    expect(html).toContain('Describe the part you want');
+    // Pricing section (mirrors app.kernelcad.com/pricing): Basic + Pro + Enterprise.
+    expect(html).toContain('class="pricing"');
+    expect(html).toContain('>Basic<');
+    expect(html).toContain('>Pro<');
+    expect(html).toContain('>Enterprise<');
+    expect(html).toContain('5M tokens / month');
+    expect(html).toContain('12M tokens / month');
+    // The landing mounts the SAME PricingSection component as
+    // app.kernelcad.com/pricing (SSR fallback + hydrated island); paid CTAs
+    // deep-link into checkout from the island bundle. Enterprise is
+    // contact-sales in the SSR'd markup.
+    expect(html).toContain('id="pricing-root"');
+    expect(html).toContain('src="/pricing-island.js"');
+    expect(html).toContain('mailto:support@kernelcad.com');
 
-    const promptIdx = html.indexOf('class="prompt-handoff"');
+    // The old "Describe the part you want" prompt handoff is gone.
+    expect(html).not.toContain('class="prompt-handoff"');
+    expect(html).not.toContain('Describe the part you want');
+
+    const pricingIdx = html.indexOf('class="pricing"');
     const galleryIdx = html.indexOf('class="gallery"');
-    expect(promptIdx).toBeGreaterThan(-1);
-    expect(galleryIdx).toBeGreaterThan(promptIdx);
+    expect(pricingIdx).toBeGreaterThan(-1);
+    expect(galleryIdx).toBeGreaterThan(pricingIdx);
   });
 
   it('renders gallery tiles as posters before upgrading them to rotating model-viewer elements', () => {

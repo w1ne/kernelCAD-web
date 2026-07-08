@@ -1,10 +1,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import type { JSX } from 'react';
+import type { JSX, MouseEvent } from 'react';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useFeatureSelection } from '../hooks/useFeatureSelection';
 import { routeDiagnosticToSelection } from '../logic/diagnosticRouter';
 import type { ValidatorDiagnostic, ValidatorStatus } from '../../modeling/mates/validator';
+import {
+    buildValiditySuggestions,
+    type ValiditySuggestionCard,
+} from '../adapters/validitySuggestions';
+import { shellStore } from '../store/shellStore';
 
 /**
  * Always-visible inspector view of the validator result. Peer to the
@@ -12,7 +17,7 @@ import type { ValidatorDiagnostic, ValidatorStatus } from '../../modeling/mates/
  * the same content so a reviewer can read it without expanding the drawer.
  */
 export function ValidityTab(): JSX.Element {
-    const { validity, mechanismBanner } = useRecomputeResult();
+    const { validity, mechanismBanner, suggestedRepairPrompt, repairEvidence } = useRecomputeResult();
     const { selectFeature } = useFeatureSelection();
 
     if (validity === null) {
@@ -28,6 +33,12 @@ export function ValidityTab(): JSX.Element {
 
     const { status, diagnostics, partCount, jointCount } = validity;
     const color = statusColor(status);
+    const suggestionCards = buildValiditySuggestions({
+        validity,
+        mechanismBanner,
+        suggestedRepairPrompt,
+        repairEvidence,
+    });
 
     return (
         <div className="flex flex-col" data-testid="validity-tab">
@@ -47,6 +58,21 @@ export function ValidityTab(): JSX.Element {
                     {partCount} parts · {jointCount} joints · {diagnostics.length} diagnostics
                 </span>
             </div>
+            {suggestionCards.length > 0 && (
+                <div className="flex flex-col gap-1.5 px-3 pb-2">
+                    {suggestionCards.map((card) => (
+                        <SuggestionCard
+                            key={card.id}
+                            card={card}
+                            onSelect={
+                                card.targetId == null
+                                    ? undefined
+                                    : () => selectFeature(card.targetId)
+                            }
+                        />
+                    ))}
+                </div>
+            )}
             {diagnostics.length > 0 && (
                 <ul
                     className="flex flex-col divide-y divide-[#1f1f1f] max-h-72 overflow-y-auto"
@@ -61,6 +87,115 @@ export function ValidityTab(): JSX.Element {
                     ))}
                 </ul>
             )}
+        </div>
+    );
+}
+
+function SuggestionCard({
+    card,
+    onSelect,
+}: {
+    card: ValiditySuggestionCard;
+    onSelect?: () => void;
+}): JSX.Element {
+    const className =
+        'w-full rounded border border-[#2a2a2a] bg-[#141414] px-2.5 py-2 text-left text-xs text-gray-300';
+    const usePrompt = (event: MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation();
+        onSelect?.();
+        shellStore.setAgentDraftPrompt(card.promptText);
+        shellStore.setAgentRailOpen(true);
+    };
+
+    return (
+        <div
+            className={className}
+            data-testid="validity-suggestion-card"
+            data-code={card.code}
+            data-kind={card.kind}
+            data-prompt-source={card.promptSource}
+        >
+            <div className="flex items-center gap-2">
+                <span
+                    className={`inline-block h-1.5 w-1.5 rounded-full shrink-0 ${severityDotColor(card.severity)}`}
+                    aria-label={`severity ${card.severity}`}
+                />
+                <span className="font-medium text-gray-100">{card.title}</span>
+                <span className="font-mono text-[10px] text-gray-500">{card.code}</span>
+                {card.targetLabel != null && (
+                    <span className="ml-auto max-w-[8rem] truncate text-[11px] text-gray-300" title={card.targetLabel}>
+                        {card.targetLabel}
+                    </span>
+                )}
+            </div>
+            <div className="mt-1 text-[11px] text-gray-400">{card.evidence}</div>
+            <div className="mt-0.5 text-[11px] text-gray-500">{card.action}</div>
+            {card.repairEvidence != null && (
+                <RepairEvidenceBlock repairEvidence={card.repairEvidence} />
+            )}
+            <div
+                className="mt-1.5 max-h-24 overflow-y-auto whitespace-pre-wrap break-words rounded border border-[#252525] bg-[#101010] px-2 py-1 text-[10px] text-gray-400"
+                data-testid="validity-suggestion-prompt-preview"
+            >
+                <span className="font-medium text-gray-300">
+                    {card.promptSource === 'review' ? 'Review prompt' : 'Fallback prompt'}
+                </span>
+                <span className="mx-1 text-gray-600">·</span>
+                <span className="break-words">{card.promptText}</span>
+            </div>
+            <div className="mt-2 flex items-center gap-1.5">
+                <button
+                    type="button"
+                    onClick={usePrompt}
+                    className="rounded border border-[#343a46] bg-[#1b1f27] px-2 py-1 text-[10px] font-medium text-gray-200 hover:bg-[#242a35] transition-colors"
+                >
+                    Use prompt
+                </button>
+                {onSelect != null && (
+                    <button
+                        type="button"
+                        onClick={onSelect}
+                        className="rounded border border-[#2b3340] px-2 py-1 text-[10px] text-gray-300 hover:bg-[#1a1a1a] transition-colors"
+                    >
+                        Jump
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+}
+
+function RepairEvidenceBlock({
+    repairEvidence,
+}: {
+    repairEvidence: NonNullable<ValiditySuggestionCard['repairEvidence']>;
+}): JSX.Element {
+    return (
+        <div
+            className="mt-1.5 rounded border border-[#30281a] bg-[#16120b] px-2 py-1 text-[10px] text-amber-200/80"
+            data-testid="validity-suggestion-repair-evidence"
+        >
+            {repairEvidence.repairMode != null && (
+                <div>
+                    Repair mode: {repairEvidence.repairMode}
+                </div>
+            )}
+            {repairEvidence.blockingReasons.slice(0, 2).map((reason, index) => (
+                <div
+                    key={`${reason.code}-${reason.message}-${index}`}
+                    className="mt-0.5"
+                >
+                    {reason.code !== '' && (
+                        <span className="font-mono text-amber-100">{reason.code}</span>
+                    )}
+                    {reason.message !== '' && (
+                        <span className="ml-1">{reason.message}</span>
+                    )}
+                    {reason.repairHint !== '' && (
+                        <span className="ml-1 text-amber-200/70">Hint: {reason.repairHint}</span>
+                    )}
+                </div>
+            ))}
         </div>
     );
 }

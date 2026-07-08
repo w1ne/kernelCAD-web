@@ -26,6 +26,8 @@ import type { StagedEdit } from './store/shellStore';
 import { useRecomputeResult } from './hooks/useRecomputeResult';
 import { useProject } from './context/ProjectContext';
 import { useStudioChrome } from './context/StudioChromeContext';
+import { useOptionalSession } from '../funnel/hooks/useSession';
+import { isAuthConfigured } from '../funnel/lib/supabaseClient';
 
 /**
  * Top-level Studio shell. Composes the six slots — Toolbar / Viewport /
@@ -42,6 +44,18 @@ export function StudioShell() {
     // both to drive a stripped viewport+inspector+toolbar shell.
     const showHeader = embed.showHeader ?? true;
     const enableAgentRail = embed.enableAgentRail ?? true;
+    const authConfigured = isAuthConfigured();
+    const { session } = useOptionalSession();
+    // The in-Studio agent talks to the hosted, auth'd, metered backend
+    // (api.kernelcad.com /api/v1/generate), so it only belongs in the real
+    // hosted app for a signed-in user. It is therefore hidden when:
+    //   - auth is not configured (local dev / env-less embed) — no backend to
+    //     drive it and nothing to meter against; and
+    //   - the host disables it (embed / MCP-driven shells pass enableAgentRail
+    //     = false, e.g. proto.cat) or there is no live session.
+    // (`open_in_studio` / `/p/<slug>` review pages additionally hide it via
+    // viewerMode below.)
+    const agentEnabled = enableAgentRail && authConfigured && !!session;
     const enableConnect = embed.enableConnect ?? true;
     const { viewerMode } = useStudioChrome();
     const handleToggleMarkingMode = useCallback(() => {
@@ -197,7 +211,7 @@ export function StudioShell() {
                 onRun={handleRun}
                 agentRailOpen={agentRailOpen}
                 onToggleAgentRail={handleToggleAgentRail}
-                enableAgentRail={enableAgentRail}
+                enableAgentRail={agentEnabled}
                 enableConnect={enableConnect}
                 agentRailHidden={viewerMode}
                 referenceImagesPresent={referenceImagesPresent}
@@ -213,10 +227,12 @@ export function StudioShell() {
                 onToggleSectionMode={handleToggleSectionMode}
                 inspectorOpen={inspectorOpen}
                 onToggleInspector={handleToggleInspector}
+                code={workbench.code}
+                projectName={activeProject?.name}
             />
 
             <div className="flex-1 flex overflow-hidden relative">
-                {enableAgentRail && agentRailOpen && !viewerMode && <AgentRail />}
+                {agentEnabled && agentRailOpen && !viewerMode && <AgentRail />}
                 <div className="flex-1 relative">
                     <Viewport />
                     <MarkingOverlay visible={markingMode} />

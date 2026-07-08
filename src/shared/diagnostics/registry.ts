@@ -993,9 +993,9 @@ export const DIAGNOSTIC_REGISTRY = {
   },
   'assembly.mate.not-physically-realized': {
     hintTemplate:
-      "Use joint.clevis(...) (or the pattern equivalent for prismatic/cylindrical) to ensure a real pin or shaft is unioned into both parts and a through-hole is drilled in one pass. See kernelcad-kinematic SKILL.md \"Mechanism delivery\". This is an authoring-time signal; the merge gates are mechanism.disconnect and mechanism.interpenetration which fire under motion at validate-time.",
+      "Use joint.clevis(...) (or the pattern equivalent for prismatic/cylindrical) to ensure a real pin or shaft constrains both parts and the through-hole is aligned through the bearing geometry. See kernelcad-kinematic SKILL.md \"Mechanism delivery\". This is an authoring-time signal; the merge gates are mechanism.disconnect and mechanism.interpenetration which fire under motion at validate-time.",
     nextAction: { kind: 'fix-arg', field: 'mateGeometry' },
-    defaultSeverity: 'info',
+    defaultSeverity: 'error',
     group: 'assembly',
     description: "An articulated mate (revolute/prismatic) is declared but not realised by part geometry — no shared pin/shaft feature constrains both parts, or the pin escapes the hole at a sampled pose, or the bearing surfaces are not coplanar (Gate 6 — mate physical realization).",
   },

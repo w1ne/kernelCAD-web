@@ -91,15 +91,15 @@ describe('joint.clevis — G1 design locks', () => {
     // Find the lineage of subtract operations that lead into the parent and
     // child final shapes. The session records every boolean as a feature
     // record of kind 'boolean' with params.op carrying 'union' /
-    // 'difference' / 'intersection'. There should be EXACTLY two difference
-    // (subtract) operations — the parent through-hole and the child tongue
-    // bore (decision #2: both knuckles drilled to a clearance fit).
+    // 'difference' / 'intersection'. There should be EXACTLY three difference
+    // operations — the parent tongue-clearance pocket, the parent through-hole,
+    // and the child tongue bore.
     const subtracts = records.filter((r) => {
       if (r.kind !== 'boolean') return false;
       const expr = (r as { params?: { op?: { expression?: string } } }).params?.op?.expression;
       return expr === "'difference'";
     });
-    expect(subtracts.length).toBe(2);
+    expect(subtracts.length).toBe(3);
 
     // Confirm the pin shaft span matches the design lock:
     //   shaftLen = forkGapY + 2 * plateT
@@ -262,6 +262,41 @@ describe('joint.clevis — G1 design locks', () => {
     expect(jB.parentGeometry.id.length).toBeGreaterThan(0);
   });
 
+  it('7. lifted fork support uses plate-local webs, not a cross-gap floating tab', () => {
+    const session = new CaptureSession();
+    const kc = createApi({ session });
+    const style = withDefaults({ knuckleR: 10, forkGapY: 8, plateT: 4 });
+    const lift = computePivotLift(style, [-90, 90]);
+
+    kc.joint.clevis({
+      parentBody: kc.box(80, 80, 40, true),
+      childBody: kc.box(80, 16, 16, true).translate(40, 0, 0),
+      axis: 'Y',
+      pivotParent: [0, 0, 20],
+      pivotChild: [0, 0, 0],
+      limitsDeg: [-90, 90],
+      style: { knuckleR: 10, forkGapY: 8, plateT: 4 },
+    });
+
+    const boxDims = session.getRecords()
+      .filter((record) => record.kind === 'box')
+      .map((record) => {
+        const params = record.params as {
+          x?: { evaluated?: number };
+          y?: { evaluated?: number };
+          z?: { evaluated?: number };
+        };
+        return [params.x?.evaluated, params.y?.evaluated, params.z?.evaluated];
+      });
+
+    expect(boxDims).not.toContainEqual([style.knuckleR, style.plateT, style.forkGapY + 2 * style.plateT]);
+    expect(boxDims.filter((dims) =>
+      dims[0] === style.knuckleR * 0.9 &&
+      dims[1] === lift - style.knuckleR + 2 &&
+      dims[2] === style.plateT + 1
+    )).toHaveLength(2);
+  });
+
   // ---------------------------------------------------------------------------
   // Validation gates
   // ---------------------------------------------------------------------------
@@ -294,6 +329,10 @@ describe('joint.clevis — G1 design locks', () => {
 
   it('rejects style with tongueY >= forkGapY (tongue would not slip in)', () => {
     expect(() => withDefaults({ tongueY: 10, forkGapY: 8 })).toThrow(/tongueY/);
+  });
+
+  it('rejects style with forkGapY too small for a positive tongue clearance pocket', () => {
+    expect(() => withDefaults({ tongueY: 0.05, forkGapY: 0.1 })).toThrow(/forkGapY/);
   });
 
   it('rejects style with pinR + clearance >= knuckleR (drill would consume the knuckle)', () => {

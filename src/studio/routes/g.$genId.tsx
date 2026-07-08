@@ -4,7 +4,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import App from '../App';
 import { SignInButton } from '../../funnel/components/SignInButton';
-import { useSession } from '../../funnel/hooks/useSession';
+import { useOptionalSession } from '../../funnel/hooks/useSession';
 import { fetchGeneration, saveProject, type GenerationRow } from '../../funnel/lib/apiClient';
 
 export const Route = createFileRoute('/g/$genId')({
@@ -19,7 +19,7 @@ function isUuid(s: string | undefined): boolean {
 function AnonGenPage() {
   const { genId } = Route.useParams();
   const navigate = useNavigate();
-  const { session } = useSession();
+  const { session } = useOptionalSession();
   const [gen, setGen] = useState<GenerationRow | null>(null);
   const [loadErr, setLoadErr] = useState<string | null>(() =>
     isUuid(genId)

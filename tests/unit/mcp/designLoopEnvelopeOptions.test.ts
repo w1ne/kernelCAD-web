@@ -1,14 +1,20 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { MechanismFitnessResult } from '../../../src/modeling/mates/mechanismFitness';
-import type { ReviewCadInput, ReviewCadOutput } from '../../../src/agent/mcp/tools/reviewCad';
+import type { ReviewCadInput, ReviewCadOutput } from '../../../src/agent/review/reviewPipeline';
 
-const mockReviewCadTool = vi.fn<(input: ReviewCadInput) => Promise<ReviewCadOutput>>();
+const runReviewPipeline = vi.fn<(input: ReviewCadInput) => Promise<ReviewCadOutput>>();
 
-vi.mock('../../../src/agent/mcp/tools/reviewCad', () => ({
-  reviewCadTool: (input: ReviewCadInput) => mockReviewCadTool(input),
-}));
+vi.mock('../../../src/agent/review/reviewPipeline', async () => {
+  const actual = await vi.importActual<typeof import('../../../src/agent/review/reviewPipeline')>(
+    '../../../src/agent/review/reviewPipeline',
+  );
+  return {
+    ...actual,
+    runReviewPipeline: (input: ReviewCadInput) => runReviewPipeline(input),
+  };
+});
 
-// Imported after the mock so designLoopTool's reviewCadTool reference is the mock.
+// Imported after the mock so designLoopTool's review-pipeline reference is the mock.
 import { designLoopTool } from '../../../src/agent/mcp/tools/designLoop';
 
 function cleanFitness(): MechanismFitnessResult {
@@ -45,8 +51,8 @@ function cleanReviewOutput(): ReviewCadOutput {
 
 describe('design_loop envelope-option pass-through', () => {
   it('designLoopTool forwards samplesPerMate per attempt', async () => {
-    mockReviewCadTool.mockReset();
-    mockReviewCadTool.mockResolvedValue(cleanReviewOutput());
+    runReviewPipeline.mockReset();
+    runReviewPipeline.mockResolvedValue(cleanReviewOutput());
 
     await designLoopTool({
       goal: 'Test samplesPerMate plumbing.',
@@ -55,14 +61,14 @@ describe('design_loop envelope-option pass-through', () => {
       attempts: [{ id: '01', title: 'attempt-1', code: 'return undefined;' }],
     });
 
-    expect(mockReviewCadTool).toHaveBeenCalledTimes(1);
-    const reviewInput = mockReviewCadTool.mock.calls[0]?.[0];
+    expect(runReviewPipeline).toHaveBeenCalledTimes(1);
+    const reviewInput = runReviewPipeline.mock.calls[0]?.[0];
     expect(reviewInput?.samplesPerMate).toBe(5);
   });
 
   it('designLoopTool forwards combinatorial per attempt', async () => {
-    mockReviewCadTool.mockReset();
-    mockReviewCadTool.mockResolvedValue(cleanReviewOutput());
+    runReviewPipeline.mockReset();
+    runReviewPipeline.mockResolvedValue(cleanReviewOutput());
 
     await designLoopTool({
       goal: 'Test combinatorial plumbing.',
@@ -71,8 +77,8 @@ describe('design_loop envelope-option pass-through', () => {
       attempts: [{ id: '01', title: 'attempt-1', code: 'return undefined;' }],
     });
 
-    expect(mockReviewCadTool).toHaveBeenCalledTimes(1);
-    const reviewInput = mockReviewCadTool.mock.calls[0]?.[0];
+    expect(runReviewPipeline).toHaveBeenCalledTimes(1);
+    const reviewInput = runReviewPipeline.mock.calls[0]?.[0];
     expect(reviewInput?.combinatorial).toBe(true);
   });
 });

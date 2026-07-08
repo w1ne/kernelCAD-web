@@ -70,7 +70,7 @@ export async function authedFetch<T>(
 export type ProjectPrivacy = 'public_unlisted' | 'public_featured' | 'private';
 
 export interface SaveProjectInput {
-  generationId: string;
+  generationId?: string;
   anonId?: string;
   title: string;
   code: string;
@@ -197,9 +197,22 @@ export async function listMyProjects(): Promise<ProjectRow[]> {
 
 export type PlanTier = 'free' | 'pro';
 
+/** The two paid plans. 'basic' = $19/mo (5M tokens), 'pro' = $39/mo (12M tokens). */
+export type PaidTier = 'basic' | 'pro';
+
+/** Billing cadence. 'yearly' = 2 months free vs monthly. */
+export type BillingPeriod = 'monthly' | 'yearly';
+
 export interface MyPlan {
   plan: PlanTier;
-  generationsRemaining: number;
+  /** Which paid plan, when plan === 'pro'; null on free. */
+  tier?: PaidTier | null;
+  /** Free plan only: builds left this month. Paid plans are token-metered. */
+  generationsRemaining: number | null;
+  /** Paid plans: monthly token budget usage. Null on free. */
+  tokensUsed?: number | null;
+  tokensBudget?: number | null;
+  tokensRemaining?: number | null;
   currentPeriodEnd: string | null;
 }
 
@@ -217,9 +230,14 @@ export async function fetchMyPlan(): Promise<MyPlan> {
 }
 
 /** POST /api/v1/billing/create-checkout — returns a Stripe Checkout URL
- * the caller should redirect to (window.location.href = url). */
-export async function createCheckoutSession(): Promise<CheckoutSession> {
-  return authedFetch<CheckoutSession>('POST', '/api/v1/billing/create-checkout');
+ * the caller should redirect to (window.location.href = url). `tier` selects
+ * the plan ($19 Basic by default; 'pro' for the $39 plan); `period`
+ * selects monthly (default) or yearly (2 months free) billing. */
+export async function createCheckoutSession(
+  tier: PaidTier = 'basic',
+  period: BillingPeriod = 'monthly',
+): Promise<CheckoutSession> {
+  return authedFetch<CheckoutSession>('POST', '/api/v1/billing/create-checkout', { tier, period });
 }
 
 /** POST /api/v1/billing/portal — returns a Stripe Customer Portal URL
