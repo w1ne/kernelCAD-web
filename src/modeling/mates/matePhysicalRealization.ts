@@ -13,7 +13,9 @@
 // the two parts, does that pin stay in both holes at every pose in the
 // mate's limits, and do the bearing surfaces align?* If not, the gate emits
 // `assembly.mate.not-physically-realized` with a hint naming the failure
-// mode.
+// mode. Under the physics-grounded loop this remains an authoring-time
+// advisory; validate-time merge gates such as `mechanism.disconnect` and
+// `mechanism.interpenetration` are the hard blockers.
 //
 // `fastened` mates skip the gate. `ball` / `planar` / `pin_slot` /
 // `cylindrical` mates are out of scope for the G2 slice (revolute +
@@ -208,11 +210,6 @@ export async function validateMatePhysicalRealization(
     if (result.failure) {
       out.push({
         code: 'assembly.mate.not-physically-realized',
-        // Demoted to 'info' under the physics-grounded loop (P3,
-        // 2026-06-01): this is an authoring-time signal that no pin
-        // geometry realises the mate; the merge gates are
-        // mechanism.disconnect and mechanism.interpenetration which
-        // fire under motion at validate-time.
         severity: 'info',
         mateName: mate.name,
         message: `Mate '${mate.name}' (${mate.type}) is declared but not realised by part geometry: ${result.failure}.`,

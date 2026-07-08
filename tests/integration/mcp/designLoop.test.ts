@@ -183,16 +183,16 @@ describe('design_loop MCP tool', () => {
       const base = arm.part('base',
         box(80, 50, 6, true)
           .union(box(20, 20, 20, true).translate(0, 0, 13))
-          .union(box(16, 8, 16, true).translate(0, 18, 32))
-          .union(box(16, 8, 16, true).translate(0, -18, 32))
+          .union(box(16, 8, 16, true).translate(0, 10, 30.5))
+          .union(box(16, 8, 16, true).translate(0, -10, 30.5))
       ).connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 24] }, axis: [0, 0, 1] });
       const link = arm.part('link',
         box(60, 10, 8, true).translate(30, 0, 0)
           .union(box(8, 8, 12, true).translate(0, 0, 0))
-          .union(box(8, 4, 12, true).translate(60, 10, 0))
-          .union(box(8, 4, 12, true).translate(60, -10, 0))
-          .union(box(20, 4, 4, true).translate(30, 0, 8))
-          .union(box(8, 8, 8, true).translate(70, 0, 0))
+          .union(box(8, 4, 12, true).translate(60, 6, 0))
+          .union(box(8, 4, 12, true).translate(60, -6, 0))
+          .union(box(20, 4, 4, true).translate(30, 0, 5.5))
+          .union(box(8, 8, 8, true).translate(63, 0, 0))
       ).connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
       arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-20, 20] });
       return arm.model();

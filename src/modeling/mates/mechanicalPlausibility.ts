@@ -124,8 +124,13 @@ const REVOLUTE_BEARING_AXIAL_GAP_TOL_MM = 3;
 const REVOLUTE_BEARING_RADIAL_SAMPLE_RADIUS_MM = 24;
 const FASTENED_CONTACT_GAP_TOL_MM = 0.5;
 const MIN_FASTENED_CONTACT_AREA_MM2 = 0.25;
-const DISCONNECTED_COMPONENT_GAP_TOL_MM = 10;
+// Treat visible/mechanical clearance gaps inside a single named part as
+// disconnected. The remaining tolerance is only for mesh/OCCT numeric noise;
+// separate hardware with a 0.2-0.5 mm running clearance must be modeled as
+// its own part/mate, not hidden inside one part as "connected" geometry.
+const DISCONNECTED_COMPONENT_GAP_TOL_MM = 0.05;
 const MAX_COMPONENTS_FOR_EXACT_CLUSTERING = 1000;
+const MAX_VERTICES_FOR_EXACT_CLUSTERING = 50_000;
 
 export async function reviewMechanicalPlausibility(
   arm: Assembly,
@@ -386,7 +391,7 @@ function analyzeDisconnectedMesh(mesh: ReturnType<ShapeBackend['getMesh']>): {
   }
 
   const visited = new Uint8Array(triangleCount);
-  const components: Array<{ triangleCount: number; bbox: Bbox }> = [];
+  const components: MeshComponent[] = [];
   for (let start = 0; start < triangleCount; start++) {
     if (visited[start]) continue;
     const stack = [start];
@@ -395,6 +400,7 @@ function analyzeDisconnectedMesh(mesh: ReturnType<ShapeBackend['getMesh']>): {
       min: [Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY],
       max: [Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY],
     };
+    const vertices = new Map<string, Vec3>();
     let componentTriangleCount = 0;
 
     while (stack.length > 0) {
@@ -404,6 +410,8 @@ function analyzeDisconnectedMesh(mesh: ReturnType<ShapeBackend['getMesh']>): {
       for (let corner = 0; corner < 3; corner++) {
         const vertexIndex = mesh.indices[tri * 3 + corner];
         expandBboxWithVertex(bbox, mesh.positions, vertexIndex);
+        const key = vertexKey(mesh.positions, vertexIndex);
+        if (!vertices.has(key)) vertices.set(key, readVertex(mesh.positions, vertexIndex));
       }
       for (const key of triangleVertexKeys[tri]) {
         for (const neighbor of trianglesByVertexKey.get(key) ?? []) {
@@ -414,21 +422,23 @@ function analyzeDisconnectedMesh(mesh: ReturnType<ShapeBackend['getMesh']>): {
       }
     }
 
-    components.push({ triangleCount: componentTriangleCount, bbox });
+    components.push({ triangleCount: componentTriangleCount, bbox, vertices: [...vertices.values()] });
   }
 
   // Some OCCT triangulations do not share exact vertex coordinates across
   // adjacent faces, which can make a single complex solid look like thousands
-  // of triangle components. Exact bbox clustering is quadratic in component
-  // count, so keep the review bounded and let simpler/floating parts still
+  // of triangle components. Exact bbox clustering has pairwise vertex-distance
+  // checks, so keep the review bounded and let simpler/floating parts still
   // receive the strict disconnected-solid check.
   if (components.length > MAX_COMPONENTS_FOR_EXACT_CLUSTERING) return undefined;
+  const totalVertexCount = components.reduce((sum, component) => sum + component.vertices.length, 0);
+  if (totalVertexCount > MAX_VERTICES_FOR_EXACT_CLUSTERING) return undefined;
 
   const clusters = clusterTouchingComponents(components);
   if (clusters.length <= 1) return undefined;
   clusters.sort((a, b) => b.triangleCount - a.triangleCount);
   const largest = clusters[0];
-  const maxComponentGapMm = Math.max(...clusters.slice(1).map((component) => bboxGap(largest.bbox, component.bbox)));
+  const maxComponentGapMm = Math.max(...clusters.slice(1).map((component) => componentSeparationMm(largest, component)));
   if (maxComponentGapMm <= DISCONNECTED_COMPONENT_GAP_TOL_MM) return undefined;
 
   return {
@@ -439,9 +449,9 @@ function analyzeDisconnectedMesh(mesh: ReturnType<ShapeBackend['getMesh']>): {
 }
 
 function clusterTouchingComponents(
-  components: Array<{ triangleCount: number; bbox: Bbox }>,
-): Array<{ triangleCount: number; bbox: Bbox }> {
-  const clustered: Array<{ triangleCount: number; bbox: Bbox }> = [];
+  components: MeshComponent[],
+): MeshComponent[] {
+  const clustered: MeshComponent[] = [];
   const consumed = new Uint8Array(components.length);
 
   for (let start = 0; start < components.length; start++) {
@@ -449,6 +459,7 @@ function clusterTouchingComponents(
     consumed[start] = 1;
     const cluster = {
       triangleCount: 0,
+      vertices: [] as Vec3[],
       bbox: {
         min: [Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY] as Vec3,
         max: [Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY] as Vec3,
@@ -461,10 +472,12 @@ function clusterTouchingComponents(
       const component = components[index];
       cluster.triangleCount += component.triangleCount;
       mergeBbox(cluster.bbox, component.bbox);
+      cluster.vertices.push(...component.vertices);
 
       for (let candidate = 0; candidate < components.length; candidate++) {
         if (consumed[candidate]) continue;
         if (bboxGap(cluster.bbox, components[candidate].bbox) > DISCONNECTED_COMPONENT_GAP_TOL_MM) continue;
+        if (!componentsHaveNearVertices(cluster, components[candidate])) continue;
         consumed[candidate] = 1;
         stack.push(candidate);
       }
@@ -473,6 +486,12 @@ function clusterTouchingComponents(
   }
 
   return clustered;
+}
+
+interface MeshComponent {
+  triangleCount: number;
+  bbox: Bbox;
+  vertices: Vec3[];
 }
 
 function mergeBbox(target: Bbox, source: Bbox): void {
@@ -489,6 +508,37 @@ function vertexKey(positions: Float32Array, vertexIndex: number): string {
     Math.round(positions[i + 1] * 1000),
     Math.round(positions[i + 2] * 1000),
   ].join(',');
+}
+
+function readVertex(positions: Float32Array, vertexIndex: number): Vec3 {
+  const i = vertexIndex * 3;
+  return [positions[i], positions[i + 1], positions[i + 2]];
+}
+
+function componentsHaveNearVertices(a: MeshComponent, b: MeshComponent): boolean {
+  return minVertexDistanceMm(a, b) <= DISCONNECTED_COMPONENT_GAP_TOL_MM;
+}
+
+function componentSeparationMm(a: MeshComponent, b: MeshComponent): number {
+  const boxGap = bboxGap(a.bbox, b.bbox);
+  if (boxGap > DISCONNECTED_COMPONENT_GAP_TOL_MM) return boxGap;
+  return minVertexDistanceMm(a, b);
+}
+
+function minVertexDistanceMm(a: MeshComponent, b: MeshComponent): number {
+  const smaller = a.vertices.length <= b.vertices.length ? a.vertices : b.vertices;
+  const larger = smaller === a.vertices ? b.vertices : a.vertices;
+  let minSq = Number.POSITIVE_INFINITY;
+  for (const va of smaller) {
+    for (const vb of larger) {
+      const dx = va[0] - vb[0];
+      const dy = va[1] - vb[1];
+      const dz = va[2] - vb[2];
+      const distSq = dx * dx + dy * dy + dz * dz;
+      if (distSq < minSq) minSq = distSq;
+    }
+  }
+  return Math.sqrt(minSq);
 }
 
 function expandBboxWithVertex(bbox: Bbox, positions: Float32Array, vertexIndex: number): void {

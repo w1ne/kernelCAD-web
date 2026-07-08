@@ -35,6 +35,21 @@ describe('arm.mate(name, aRef, bRef, type)', () => {
     expect(scene.mates![0].b).toBe('b.bottom');
   });
 
+  it('records maxLoad on the mate record for load-capacity validation', () => {
+    const { arm, kcad } = makeArm();
+    const a = kcad.box(10, 10, 10);
+    const b = kcad.box(5, 5, 5);
+    arm.part('a', a).connector('shaft', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.part('b', b).connector('shaft', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+
+    arm.mate('hinge', 'a.shaft', 'b.shaft', 'revolute', {
+      limitsDeg: [-45, 45],
+      maxLoad: { torque: 0.05 },
+    });
+
+    expect(arm.model().mates![0].maxLoad).toEqual({ torque: 0.05 });
+  });
+
   it('throws at capture time on type-mismatched pair', () => {
     const { arm, kcad } = makeArm();
     const a = kcad.box(10, 10, 10);
