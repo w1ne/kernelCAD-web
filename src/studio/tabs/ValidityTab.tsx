@@ -9,7 +9,8 @@ import {
     buildValiditySuggestions,
     type ValiditySuggestionCard,
 } from '../adapters/validitySuggestions';
-import { shellStore } from '../store/shellStore';
+import { useShellStore, shellStore } from '../store/useShellStore';
+import type { AgentRepairWorkflow } from '../store/shellStore';
 
 /**
  * Always-visible inspector view of the validator result. Peer to the
@@ -19,6 +20,7 @@ import { shellStore } from '../store/shellStore';
 export function ValidityTab(): JSX.Element {
     const { validity, mechanismBanner, suggestedRepairPrompt, repairEvidence } = useRecomputeResult();
     const { selectFeature } = useFeatureSelection();
+    const { agentRepairWorkflow } = useShellStore();
 
     if (validity === null) {
         return (
@@ -38,6 +40,20 @@ export function ValidityTab(): JSX.Element {
         mechanismBanner,
         suggestedRepairPrompt,
         repairEvidence,
+    });
+    const validityFingerprint = fingerprintValidity({
+        status,
+        diagnostics,
+        mechanismBanner,
+    });
+    const workflowView = resolveWorkflowView({
+        workflow: agentRepairWorkflow,
+        suggestionCards,
+        failureStillPresent:
+            agentRepairWorkflow == null
+                ? false
+                : workflowFailureStillPresent(agentRepairWorkflow, diagnostics, mechanismBanner),
+        validityFingerprint,
     });
 
     return (
@@ -64,6 +80,8 @@ export function ValidityTab(): JSX.Element {
                         <SuggestionCard
                             key={card.id}
                             card={card}
+                            workflowState={workflowView.cardStates.get(card.id) ?? null}
+                            validityFingerprint={validityFingerprint}
                             onSelect={
                                 card.targetId == null
                                     ? undefined
@@ -72,6 +90,9 @@ export function ValidityTab(): JSX.Element {
                         />
                     ))}
                 </div>
+            )}
+            {workflowView.summary != null && (
+                <WorkflowSummary summary={workflowView.summary} />
             )}
             {diagnostics.length > 0 && (
                 <ul
@@ -93,9 +114,13 @@ export function ValidityTab(): JSX.Element {
 
 function SuggestionCard({
     card,
+    workflowState,
+    validityFingerprint,
     onSelect,
 }: {
     card: ValiditySuggestionCard;
+    workflowState: SuggestionWorkflowState | null;
+    validityFingerprint: string;
     onSelect?: () => void;
 }): JSX.Element {
     const className =
@@ -104,6 +129,15 @@ function SuggestionCard({
         event.stopPropagation();
         onSelect?.();
         shellStore.setAgentDraftPrompt(card.promptText);
+        shellStore.setAgentRepairWorkflow({
+            cardId: card.id,
+            code: card.code,
+            promptText: card.promptText,
+            targetId: card.targetId,
+            promptSource: card.promptSource,
+            validityFingerprint,
+            state: 'drafted',
+        });
         shellStore.setAgentRailOpen(true);
     };
 
@@ -114,6 +148,7 @@ function SuggestionCard({
             data-code={card.code}
             data-kind={card.kind}
             data-prompt-source={card.promptSource}
+            data-workflow-state={workflowState ?? undefined}
         >
             <div className="flex items-center gap-2">
                 <span
@@ -126,6 +161,9 @@ function SuggestionCard({
                     <span className="ml-auto max-w-[8rem] truncate text-[11px] text-gray-300" title={card.targetLabel}>
                         {card.targetLabel}
                     </span>
+                )}
+                {workflowState != null && (
+                    <WorkflowBadge state={workflowState} />
                 )}
             </div>
             <div className="mt-1 text-[11px] text-gray-400">{card.evidence}</div>
@@ -163,6 +201,155 @@ function SuggestionCard({
             </div>
         </div>
     );
+}
+
+type SuggestionWorkflowState = 'drafted' | 'running' | 'still-failing';
+
+type WorkflowSummaryState = 'fixed' | 'still-failing';
+
+function WorkflowBadge({ state }: { state: SuggestionWorkflowState }): JSX.Element {
+    const label = state === 'still-failing' ? 'Rechecked · Still failing' : workflowLabel(state);
+    return (
+        <span
+            className={`rounded border px-1.5 py-0.5 text-[10px] ${workflowBadgeClass(state)}`}
+            data-testid="validity-suggestion-workflow-badge"
+        >
+            {label}
+        </span>
+    );
+}
+
+function WorkflowSummary({
+    summary,
+}: {
+    summary: { state: WorkflowSummaryState; code: string };
+}): JSX.Element {
+    const fixed = summary.state === 'fixed';
+    return (
+        <div
+            className={`mx-3 mb-2 rounded border px-2 py-1 text-[11px] ${fixed ? 'border-emerald-900/50 bg-emerald-950/30 text-emerald-200' : 'border-red-900/50 bg-red-950/30 text-red-200'}`}
+            data-testid="validity-suggestion-workflow-summary"
+            data-workflow-state={summary.state}
+        >
+            Rechecked · {fixed ? 'Fixed' : 'Still failing'} {summary.code}
+        </div>
+    );
+}
+
+function workflowLabel(state: SuggestionWorkflowState): string {
+    switch (state) {
+        case 'drafted':
+            return 'Drafted';
+        case 'running':
+            return 'Running';
+        case 'still-failing':
+            return 'Still failing';
+    }
+}
+
+function workflowBadgeClass(state: SuggestionWorkflowState): string {
+    switch (state) {
+        case 'drafted':
+            return 'border-blue-800/70 bg-blue-950/40 text-blue-200';
+        case 'running':
+            return 'border-amber-800/70 bg-amber-950/40 text-amber-200';
+        case 'still-failing':
+            return 'border-red-800/70 bg-red-950/40 text-red-200';
+    }
+}
+
+function resolveWorkflowView(input: {
+    workflow: AgentRepairWorkflow | null;
+    suggestionCards: ReadonlyArray<ValiditySuggestionCard>;
+    failureStillPresent: boolean;
+    validityFingerprint: string;
+}): {
+    cardStates: Map<string, SuggestionWorkflowState>;
+    summary: { state: WorkflowSummaryState; code: string } | null;
+} {
+    const cardStates = new Map<string, SuggestionWorkflowState>();
+    const { workflow } = input;
+    if (workflow == null) return { cardStates, summary: null };
+
+    const matchingCard = input.suggestionCards.find((card) => cardMatchesWorkflow(card, workflow));
+    const rechecked =
+        workflow.state === 'running' &&
+        input.validityFingerprint !== workflow.validityFingerprint;
+    if (!rechecked && matchingCard != null) {
+        cardStates.set(matchingCard.id, workflow.state);
+        return { cardStates, summary: null };
+    }
+
+    if (matchingCard != null) {
+        cardStates.set(matchingCard.id, 'still-failing');
+        return { cardStates, summary: null };
+    }
+
+    if (rechecked && input.failureStillPresent) {
+        return { cardStates, summary: { state: 'still-failing', code: workflow.code } };
+    }
+
+    if (rechecked) {
+        return { cardStates, summary: { state: 'fixed', code: workflow.code } };
+    }
+
+    return { cardStates, summary: null };
+}
+
+function cardMatchesWorkflow(card: ValiditySuggestionCard, workflow: AgentRepairWorkflow): boolean {
+    if (card.id === workflow.cardId) return true;
+    return card.code === workflow.code && card.targetId === workflow.targetId;
+}
+
+function workflowFailureStillPresent(
+    workflow: AgentRepairWorkflow,
+    diagnostics: ReadonlyArray<ValidatorDiagnostic>,
+    mechanismBanner: {
+        readonly entries: ReadonlyArray<{
+            readonly code: string;
+            readonly message: string;
+            readonly hint: string;
+        }>;
+    } | null,
+): boolean {
+    if (mechanismBanner?.entries.some((entry) => entry.code === workflow.code) === true) {
+        return true;
+    }
+    return diagnostics.some((diagnostic) => (
+        diagnostic.code === workflow.code &&
+        diagnosticTargetId(diagnostic) === workflow.targetId
+    ));
+}
+
+function fingerprintValidity(input: {
+    status: ValidatorStatus;
+    diagnostics: ReadonlyArray<ValidatorDiagnostic>;
+    mechanismBanner: {
+        readonly entries: ReadonlyArray<{
+            readonly code: string;
+            readonly message: string;
+            readonly hint: string;
+        }>;
+    } | null;
+}): string {
+    return JSON.stringify({
+        status: input.status,
+        mechanism: input.mechanismBanner?.entries.map((entry) => ({
+            code: entry.code,
+            message: entry.message,
+            hint: entry.hint,
+        })) ?? [],
+        diagnostics: input.diagnostics.map((diagnostic) => ({
+            code: diagnostic.code,
+            severity: diagnostic.severity,
+            message: diagnostic.message,
+            hint: diagnostic.hint,
+            partName: diagnostic.partName,
+            mateName: diagnostic.mateName,
+            partA: diagnostic.partA,
+            partB: diagnostic.partB,
+        })),
+    });
 }
 
 function RepairEvidenceBlock({
@@ -297,6 +484,13 @@ function diagnosticTargetLabel(d: ValidatorDiagnostic): string | null {
     if (d.partName) return d.partName;
     if (d.mateName) return d.mateName;
     if (d.partA && d.partB) return `${d.partA} ↔ ${d.partB}`;
+    if (d.partA) return d.partA;
+    return null;
+}
+
+function diagnosticTargetId(d: ValidatorDiagnostic): string | null {
+    if (d.partName) return d.partName;
+    if (d.mateName) return d.mateName;
     if (d.partA) return d.partA;
     return null;
 }

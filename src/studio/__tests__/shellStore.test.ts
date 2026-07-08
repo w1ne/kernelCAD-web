@@ -22,6 +22,7 @@ describe('ShellStore', () => {
         expect(typeof s.agentRailOpen).toBe('boolean');
         expect(s.agentDraftPrompt).toBeNull();
         expect(s.agentDraftPromptVersion).toBe(0);
+        expect(s.agentRepairWorkflow).toBeNull();
         expect(s.previousValidity).toBeNull();
         expect(s.currentValidity).toBeNull();
     });
@@ -92,6 +93,33 @@ describe('ShellStore', () => {
         expect(listener).toHaveBeenCalledTimes(3);
         expect(store.getSnapshot().agentDraftPrompt).toBeNull();
         expect(store.getSnapshot().agentDraftPromptVersion).toBe(2);
+    });
+
+    it('setAgentRepairWorkflow tracks the active validity repair workflow', () => {
+        store = new ShellStore();
+        const listener = vi.fn();
+        store.subscribe(listener);
+        const workflow = {
+            cardId: 'diagnostic:assembly.part.floating:output-horn:0',
+            code: 'assembly.part.floating',
+            promptText: 'Fix assembly.part.floating',
+            targetId: 'output-horn',
+            promptSource: 'fallback' as const,
+            validityFingerprint: 'before',
+            state: 'drafted' as const,
+        };
+
+        store.setAgentRepairWorkflow(workflow);
+        expect(store.getSnapshot().agentRepairWorkflow).toBe(workflow);
+
+        store.setAgentRepairWorkflow({ ...workflow, state: 'running' });
+        expect(store.getSnapshot().agentRepairWorkflow?.state).toBe('running');
+
+        store.setAgentRepairWorkflow(null);
+        store.setAgentRepairWorkflow(null);
+
+        expect(listener).toHaveBeenCalledTimes(3);
+        expect(store.getSnapshot().agentRepairWorkflow).toBeNull();
     });
 
     it('publishValidity rotates current → previous', () => {
