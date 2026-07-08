@@ -7,7 +7,8 @@ import { serializedParamsToTable } from '../adapters/serializedParamsToTable';
 import { reviewDiagnosticsToCompiler } from '../adapters/reviewDiagnosticsToCompiler';
 import { extractJointSnapshots } from '../adapters/featureRecordsToMates';
 import { shellStore } from '../store/shellStore';
-import type { StudioRecomputeResult } from '../types';
+import type { ScriptReviewSummary } from '../context/GeometryContext';
+import type { StudioRecomputeResult, StudioRepairEvidence } from '../types';
 
 /**
  * Single source of truth for shell consumers. Adapts the bits the
@@ -70,6 +71,11 @@ export function useRecomputeResult(): StudioRecomputeResult {
         [workbench.scriptReview],
     );
 
+    const repairEvidence = useMemo(
+        () => reviewToRepairEvidence(workbench.scriptReview ?? null),
+        [workbench.scriptReview],
+    );
+
     const joints = useMemo(
         () => extractJointSnapshots(workbench.featureRecords ?? [], paramTable),
         [workbench.featureRecords, paramTable],
@@ -100,6 +106,7 @@ export function useRecomputeResult(): StudioRecomputeResult {
             paramTable,
             diagnostics,
             suggestedRepairPrompt,
+            repairEvidence,
             recomputeMs: workbench.recomputeMs ?? 0,
             joints,
             rawInterferencePairs,
@@ -118,6 +125,7 @@ export function useRecomputeResult(): StudioRecomputeResult {
             paramTable,
             diagnostics,
             suggestedRepairPrompt,
+            repairEvidence,
             joints,
             rawInterferencePairs,
             mechanismBanner,
@@ -132,4 +140,35 @@ function normalizePrompt(value: string | undefined): string | null {
     if (value == null) return null;
     const trimmed = value.trim();
     return trimmed === '' ? null : trimmed;
+}
+
+function reviewToRepairEvidence(review: ScriptReviewSummary | null): StudioRepairEvidence | null {
+    const fitness = review?.fitness;
+    const repairMode = normalizeRepairMode(fitness?.repairMode);
+    const blockingReasons =
+        fitness?.blockingReasons
+            ?.map((reason) => ({
+                code: normalizeEvidenceField(reason.code),
+                message: normalizeEvidenceField(reason.message),
+                repairHint: normalizeEvidenceField(reason.repairHint),
+            }))
+            .filter(
+                (reason) =>
+                    reason.code !== '' ||
+                    reason.message !== '' ||
+                    reason.repairHint !== '',
+            ) ?? [];
+
+    if (repairMode == null && blockingReasons.length === 0) return null;
+    return { repairMode, blockingReasons };
+}
+
+function normalizeRepairMode(value: string | undefined): string | null {
+    const normalized = normalizePrompt(value);
+    if (normalized == null) return null;
+    return normalized.toLowerCase() === 'none' ? null : normalized;
+}
+
+function normalizeEvidenceField(value: string | undefined): string {
+    return value?.trim() ?? '';
 }

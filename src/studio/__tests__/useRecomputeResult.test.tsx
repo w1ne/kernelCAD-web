@@ -81,6 +81,7 @@ describe('useRecomputeResult — Slice 1.2 data wiring', () => {
         expect(result.current.paramTable).toBeNull();
         expect(result.current.diagnostics).toEqual([]);
         expect(result.current.suggestedRepairPrompt).toBeNull();
+        expect(result.current.repairEvidence).toBeNull();
         expect(result.current.recomputeMs).toBe(0);
     });
 
@@ -121,6 +122,96 @@ describe('useRecomputeResult — Slice 1.2 data wiring', () => {
         const missing = renderHook(() => useRecomputeResult());
 
         expect(missing.result.current.suggestedRepairPrompt).toBeNull();
+    });
+
+    it('exposes normalized repairEvidence from scriptReview fitness', async () => {
+        workbenchValue.featureRecords = [];
+        workbenchValue.scriptReview = {
+            ok: false,
+            diagnostics: [],
+            fitness: {
+                repairMode: '  topology-redesign  ',
+                blockingReasons: [
+                    {
+                        code: '  mechanism.disconnect  ',
+                        message: '  drive chain is disconnected  ',
+                        repairHint: '  connect the actuator to the output link  ',
+                    },
+                    {
+                        code: '   ',
+                        message: '',
+                        repairHint: undefined,
+                    },
+                    {
+                        message: '  missing a code and hint still has evidence  ',
+                    },
+                ],
+            },
+        };
+
+        const { useRecomputeResult } = await import('../hooks/useRecomputeResult');
+        const { result } = renderHook(() => useRecomputeResult());
+
+        expect(result.current.repairEvidence).toEqual({
+            repairMode: 'topology-redesign',
+            blockingReasons: [
+                {
+                    code: 'mechanism.disconnect',
+                    message: 'drive chain is disconnected',
+                    repairHint: 'connect the actuator to the output link',
+                },
+                {
+                    code: '',
+                    message: 'missing a code and hint still has evidence',
+                    repairHint: '',
+                },
+            ],
+        });
+    });
+
+    it('normalizes repairEvidence to null when scriptReview fitness is missing or unusable', async () => {
+        workbenchValue.featureRecords = [];
+        workbenchValue.scriptReview = null;
+
+        const { useRecomputeResult } = await import('../hooks/useRecomputeResult');
+        const missingReview = renderHook(() => useRecomputeResult());
+
+        expect(missingReview.result.current.repairEvidence).toBeNull();
+
+        workbenchValue.scriptReview = {
+            ok: false,
+            diagnostics: [],
+            fitness: {
+                repairMode: '   ',
+                blockingReasons: [
+                    { code: ' ', message: '', repairHint: undefined },
+                    {},
+                ],
+            },
+        };
+
+        const unusable = renderHook(() => useRecomputeResult());
+
+        expect(unusable.result.current.repairEvidence).toBeNull();
+    });
+
+    it('normalizes repairEvidence to null when repairMode is none with no usable blockers', async () => {
+        workbenchValue.featureRecords = [];
+        workbenchValue.scriptReview = {
+            ok: true,
+            diagnostics: [],
+            fitness: {
+                repairMode: ' none ',
+                blockingReasons: [
+                    { code: ' ', message: '', repairHint: undefined },
+                ],
+            },
+        };
+
+        const { useRecomputeResult } = await import('../hooks/useRecomputeResult');
+        const { result } = renderHook(() => useRecomputeResult());
+
+        expect(result.current.repairEvidence).toBeNull();
     });
 
     it('forwards rawInterferencePairs from scriptReview unchanged', async () => {

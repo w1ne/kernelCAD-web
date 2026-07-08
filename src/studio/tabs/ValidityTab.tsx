@@ -17,7 +17,7 @@ import { shellStore } from '../store/shellStore';
  * the same content so a reviewer can read it without expanding the drawer.
  */
 export function ValidityTab(): JSX.Element {
-    const { validity, mechanismBanner, suggestedRepairPrompt } = useRecomputeResult();
+    const { validity, mechanismBanner, suggestedRepairPrompt, repairEvidence } = useRecomputeResult();
     const { selectFeature } = useFeatureSelection();
 
     if (validity === null) {
@@ -37,6 +37,7 @@ export function ValidityTab(): JSX.Element {
         validity,
         mechanismBanner,
         suggestedRepairPrompt,
+        repairEvidence,
     });
 
     return (
@@ -129,6 +130,9 @@ function SuggestionCard({
             </div>
             <div className="mt-1 text-[11px] text-gray-400">{card.evidence}</div>
             <div className="mt-0.5 text-[11px] text-gray-500">{card.action}</div>
+            {card.repairEvidence != null && (
+                <RepairEvidenceBlock repairEvidence={card.repairEvidence} />
+            )}
             <div
                 className="mt-1.5 max-h-24 overflow-y-auto whitespace-pre-wrap break-words rounded border border-[#252525] bg-[#101010] px-2 py-1 text-[10px] text-gray-400"
                 data-testid="validity-suggestion-prompt-preview"
@@ -157,6 +161,41 @@ function SuggestionCard({
                     </button>
                 )}
             </div>
+        </div>
+    );
+}
+
+function RepairEvidenceBlock({
+    repairEvidence,
+}: {
+    repairEvidence: NonNullable<ValiditySuggestionCard['repairEvidence']>;
+}): JSX.Element {
+    return (
+        <div
+            className="mt-1.5 rounded border border-[#30281a] bg-[#16120b] px-2 py-1 text-[10px] text-amber-200/80"
+            data-testid="validity-suggestion-repair-evidence"
+        >
+            {repairEvidence.repairMode != null && (
+                <div>
+                    Repair mode: {repairEvidence.repairMode}
+                </div>
+            )}
+            {repairEvidence.blockingReasons.slice(0, 2).map((reason, index) => (
+                <div
+                    key={`${reason.code}-${reason.message}-${index}`}
+                    className="mt-0.5"
+                >
+                    {reason.code !== '' && (
+                        <span className="font-mono text-amber-100">{reason.code}</span>
+                    )}
+                    {reason.message !== '' && (
+                        <span className="ml-1">{reason.message}</span>
+                    )}
+                    {reason.repairHint !== '' && (
+                        <span className="ml-1 text-amber-200/70">Hint: {reason.repairHint}</span>
+                    )}
+                </div>
+            ))}
         </div>
     );
 }

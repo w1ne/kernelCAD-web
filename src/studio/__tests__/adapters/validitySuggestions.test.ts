@@ -116,6 +116,64 @@ describe('buildValiditySuggestions', () => {
         ]);
     });
 
+    it('attaches normalized repair evidence only to suggestion cards with matching blocker codes', () => {
+        const diagnostic: ValidatorDiagnostic = {
+            code: 'assembly.part.floating',
+            severity: 'warning',
+            message: 'output-horn floats',
+            hint: 'add a mate to output-horn',
+            partName: 'output-horn',
+        };
+
+        const suggestions = buildValiditySuggestions({
+            validity: makeValidity('warning', [diagnostic]),
+            mechanismBanner: {
+                entries: [
+                    {
+                        code: 'mechanism.disconnect',
+                        message: 'drive chain is disconnected',
+                        hint: 'connect the actuator to the output link',
+                    },
+                ],
+            },
+            repairEvidence: {
+                repairMode: '  topology-redesign  ',
+                blockingReasons: [
+                    {
+                        code: ' mechanism.disconnect ',
+                        message: ' drive chain is disconnected ',
+                        repairHint: ' connect the actuator to the output link ',
+                    },
+                    {
+                        code: ' ',
+                        message: '',
+                        repairHint: ' ',
+                    },
+                    {
+                        code: ' unrelated.blocker ',
+                        message: ' unrelated blocker ',
+                        repairHint: ' leave unrelated cards alone ',
+                    },
+                ],
+            },
+        });
+
+        expect(suggestions).toHaveLength(2);
+        expect(suggestions.map((suggestion) => suggestion.repairEvidence)).toEqual([
+            {
+                repairMode: 'topology-redesign',
+                blockingReasons: [
+                    {
+                        code: 'mechanism.disconnect',
+                        message: 'drive chain is disconnected',
+                        repairHint: 'connect the actuator to the output link',
+                    },
+                ],
+            },
+            null,
+        ]);
+    });
+
     it('falls back to prompt text built from fallback-resolved evidence and action', () => {
         const suggestions = buildValiditySuggestions({
             validity: makeValidity('error', [

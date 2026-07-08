@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ValidatorDiagnostic, ValidatorResult } from '../../modeling/mates/validator';
+import type { StudioRepairEvidence } from '../types';
 
 export interface ValiditySuggestionCard {
     readonly id: string;
@@ -14,6 +15,7 @@ export interface ValiditySuggestionCard {
     readonly code: string;
     readonly promptText: string;
     readonly promptSource: 'review' | 'fallback';
+    readonly repairEvidence: StudioRepairEvidence | null;
 }
 
 export function buildValiditySuggestions(input: {
@@ -27,10 +29,12 @@ export function buildValiditySuggestions(input: {
     } | null;
     readonly limit?: number;
     readonly suggestedRepairPrompt?: string | null;
+    readonly repairEvidence?: StudioRepairEvidence | null;
 }): ValiditySuggestionCard[] {
     const limit = input.limit ?? 3;
     const backendPrompt = normalizePrompt(input.suggestedRepairPrompt);
     const promptSource = backendPrompt == null ? 'fallback' : 'review';
+    const repairEvidence = normalizeRepairEvidence(input.repairEvidence);
     const mechanismCards =
         input.mechanismBanner?.entries.map((entry, index): ValiditySuggestionCard => {
             const evidence = textOrFallback(entry.message, entry.code);
@@ -47,6 +51,7 @@ export function buildValiditySuggestions(input: {
                 code: entry.code,
                 promptText: backendPrompt ?? fallbackPrompt(entry.code, evidence, action),
                 promptSource,
+                repairEvidence: repairEvidenceForCardCode(repairEvidence, entry.code),
             };
         }) ?? [];
     const diagnosticCards =
@@ -67,6 +72,7 @@ export function buildValiditySuggestions(input: {
                 code: diag.code,
                 promptText: backendPrompt ?? fallbackPrompt(diag.code, evidence, action),
                 promptSource,
+                repairEvidence: repairEvidenceForCardCode(repairEvidence, diag.code),
             };
         }) ?? [];
 
@@ -96,6 +102,48 @@ function normalizePrompt(value: string | null | undefined): string | null {
     if (value == null) return null;
     const trimmed = value.trim();
     return trimmed === '' ? null : trimmed;
+}
+
+function normalizeRepairEvidence(value: StudioRepairEvidence | null | undefined): StudioRepairEvidence | null {
+    const repairMode = normalizeRepairMode(value?.repairMode);
+    const blockingReasons =
+        value?.blockingReasons
+            .map((reason) => ({
+                code: normalizeEvidenceField(reason.code),
+                message: normalizeEvidenceField(reason.message),
+                repairHint: normalizeEvidenceField(reason.repairHint),
+            }))
+            .filter(
+                (reason) =>
+                    reason.code !== '' ||
+                    reason.message !== '' ||
+                    reason.repairHint !== '',
+            ) ?? [];
+
+    if (repairMode == null && blockingReasons.length === 0) return null;
+    return { repairMode, blockingReasons };
+}
+
+function repairEvidenceForCardCode(
+    value: StudioRepairEvidence | null,
+    cardCode: string,
+): StudioRepairEvidence | null {
+    const blockingReasons = value?.blockingReasons.filter((reason) => reason.code === cardCode) ?? [];
+    if (value == null || blockingReasons.length === 0) return null;
+    return {
+        repairMode: value.repairMode,
+        blockingReasons,
+    };
+}
+
+function normalizeRepairMode(value: string | null | undefined): string | null {
+    const normalized = normalizePrompt(value);
+    if (normalized == null) return null;
+    return normalized.toLowerCase() === 'none' ? null : normalized;
+}
+
+function normalizeEvidenceField(value: string | null | undefined): string {
+    return value?.trim() ?? '';
 }
 
 function fallbackPrompt(code: string, evidence: string, action: string): string {

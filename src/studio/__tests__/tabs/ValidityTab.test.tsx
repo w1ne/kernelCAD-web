@@ -35,6 +35,7 @@ function emptyResult(): StudioRecomputeResult {
         joints: [],
         mechanismBanner: null,
         suggestedRepairPrompt: null,
+        repairEvidence: null,
     };
 }
 
@@ -295,6 +296,82 @@ describe('ValidityTab', () => {
         expect(preview.textContent).toContain(
             'Rebuild the horn support from deterministic review evidence.',
         );
+    });
+
+    it('renders compact repair evidence only on the card with matching blocker content', () => {
+        const diag: ValidatorDiagnostic = {
+            code: 'assembly.part.floating',
+            severity: 'error',
+            message: 'output-horn floats',
+            hint: 'add a mate to output-horn',
+            partName: 'output-horn',
+        };
+
+        mockUseRecomputeResult.mockReturnValue({
+            ...withValidity(makeValidity('error', [diag], 1, 0)),
+            mechanismBanner: {
+                entries: [
+                    {
+                        code: 'mechanism.disconnect',
+                        message: 'drive chain is disconnected',
+                        hint: 'connect the actuator to the output link',
+                    },
+                ],
+            },
+            repairEvidence: {
+                repairMode: 'topology-redesign',
+                blockingReasons: [
+                    {
+                        code: 'mechanism.disconnect',
+                        message: 'drive chain is disconnected',
+                        repairHint: 'connect the actuator to the output link',
+                    },
+                    {
+                        code: 'unrelated.blocker',
+                        message: 'unrelated blocker should stay hidden',
+                        repairHint: 'do not render unrelated rows',
+                    },
+                ],
+            },
+        });
+
+        render(<ValidityTab />);
+
+        const cards = screen.getAllByTestId('validity-suggestion-card');
+        const evidenceBlocks = screen.getAllByTestId('validity-suggestion-repair-evidence');
+        expect(cards).toHaveLength(2);
+        expect(evidenceBlocks).toHaveLength(1);
+        expect(cards[0].textContent).toContain('mechanism.disconnect');
+        expect(cards[0].contains(evidenceBlocks[0])).toBe(true);
+        expect(cards[1].textContent).toContain('assembly.part.floating');
+        expect(cards[1].textContent).not.toContain('Repair mode: topology-redesign');
+
+        const evidence = evidenceBlocks[0];
+        expect(evidence.textContent).toContain('Repair mode: topology-redesign');
+        expect(evidence.textContent).toContain('mechanism.disconnect');
+        expect(evidence.textContent).toContain('drive chain is disconnected');
+        expect(evidence.textContent).toContain('connect the actuator to the output link');
+        expect(evidence.textContent).not.toContain('unrelated.blocker');
+        expect(evidence.textContent).not.toContain('unrelated blocker should stay hidden');
+    });
+
+    it('omits compact repair evidence when repairEvidence is null', () => {
+        const diag: ValidatorDiagnostic = {
+            code: 'assembly.part.floating',
+            severity: 'error',
+            message: 'output-horn floats',
+            hint: 'add a mate to output-horn',
+            partName: 'output-horn',
+        };
+
+        mockUseRecomputeResult.mockReturnValue({
+            ...withValidity(makeValidity('error', [diag], 1, 0)),
+            repairEvidence: null,
+        });
+
+        render(<ValidityTab />);
+
+        expect(screen.queryByTestId('validity-suggestion-repair-evidence')).toBeNull();
     });
 
     it('preserves and bounds multi-line review prompt previews', () => {
