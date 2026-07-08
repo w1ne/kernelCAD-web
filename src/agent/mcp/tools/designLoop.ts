@@ -5,7 +5,12 @@ import { dirname, relative, resolve } from 'node:path';
 import type { GripperApertureRequest } from '../../../modeling/mates/gripperAperture';
 import type { MechanismFitnessResult } from '../../../modeling/mates/mechanismFitness';
 import type { ContactGraphResult } from '../../../modeling/runtime/contactGraph';
-import { reviewCadTool, type RepairContext, type ReviewCadInput, type ReviewCadOutput } from './reviewCad';
+import {
+  runReviewPipeline,
+  type RepairContext,
+  type ReviewCadInput,
+  type ReviewCadOutput,
+} from '../../review/reviewPipeline';
 
 export interface DesignLoopAttemptInput {
   id?: string;
@@ -180,7 +185,7 @@ export async function designLoopTool(input: DesignLoopInput): Promise<DesignLoop
       samplesPerMate: input.samplesPerMate,
       combinatorial: input.combinatorial,
     };
-    const review = await reviewCadTool(reviewInput);
+    const review = await runReviewPipeline(reviewInput);
     const source = attempt.code ?? (attempt.file !== undefined ? await readFile(attempt.file, 'utf-8') : '');
     const attemptResult = toAttemptResult({
       id,
