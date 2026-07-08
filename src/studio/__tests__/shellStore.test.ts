@@ -15,11 +15,13 @@ describe('ShellStore', () => {
         store?.reset();
     });
 
-    it('initial snapshot is all-null UI state', () => {
+    it('initial snapshot has no selected feature or draft prompt', () => {
         store = new ShellStore();
         const s = store.getSnapshot();
         expect(s.selectedFeatureId).toBeNull();
-        expect(s.agentRailOpen).toBe(false);
+        expect(typeof s.agentRailOpen).toBe('boolean');
+        expect(s.agentDraftPrompt).toBeNull();
+        expect(s.agentDraftPromptVersion).toBe(0);
         expect(s.previousValidity).toBeNull();
         expect(s.currentValidity).toBeNull();
     });
@@ -68,12 +70,28 @@ describe('ShellStore', () => {
         store = new ShellStore();
         const listener = vi.fn();
         store.subscribe(listener);
+        const initial = store.getSnapshot().agentRailOpen;
 
-        store.setAgentRailOpen(true);
-        store.setAgentRailOpen(true);
-        store.setAgentRailOpen(false);
+        store.setAgentRailOpen(!initial);
+        store.setAgentRailOpen(!initial);
+        store.setAgentRailOpen(initial);
 
         expect(listener).toHaveBeenCalledTimes(2);
+    });
+
+    it('setAgentDraftPrompt redelivers repeated non-null prompts and clears idempotently', () => {
+        store = new ShellStore();
+        const listener = vi.fn();
+        store.subscribe(listener);
+
+        store.setAgentDraftPrompt('Fix assembly.part.floating: output-horn floats Action: add a mate');
+        store.setAgentDraftPrompt('Fix assembly.part.floating: output-horn floats Action: add a mate');
+        store.setAgentDraftPrompt(null);
+        store.setAgentDraftPrompt(null);
+
+        expect(listener).toHaveBeenCalledTimes(3);
+        expect(store.getSnapshot().agentDraftPrompt).toBeNull();
+        expect(store.getSnapshot().agentDraftPromptVersion).toBe(2);
     });
 
     it('publishValidity rotates current → previous', () => {

@@ -13,6 +13,15 @@ import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
 import type { ParamTable } from '../shared/runtime/paramTable';
 import type { JointPoseSnapshot } from './adapters/featureRecordsToMates';
 
+export interface StudioRepairEvidence {
+    readonly repairMode: string | null;
+    readonly blockingReasons: ReadonlyArray<{
+        readonly code: string;
+        readonly message: string;
+        readonly repairHint: string;
+    }>;
+}
+
 /**
  * All inspector tabs the shell knows about. Phase 1 surfaces `scene` and
  * `code` unconditionally, `params` and `validity` adaptively (see
@@ -45,6 +54,8 @@ export interface StudioRecomputeResult {
     readonly validity: ValidatorResult | null;
     readonly paramTable: ParamTable | null;
     readonly diagnostics: readonly CompilerDiagnostic[];
+    readonly suggestedRepairPrompt: string | null;
+    readonly repairEvidence: StudioRepairEvidence | null;
     readonly recomputeMs: number;
     /**
      * Raw pairwise interference pairs at the current pose, BEFORE any `ignore`

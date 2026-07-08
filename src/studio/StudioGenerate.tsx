@@ -4,11 +4,13 @@ import React, { useMemo, useState } from 'react';
 import { DiffEditor } from '@monaco-editor/react';
 import { useGeneration } from '../funnel/hooks/useGeneration';
 import type { GenerateEvent } from '../funnel/lib/generateClient';
+import { useTextTo3dPreview } from '../funnel/hooks/useTextTo3dPreview';
 import { inAppAgentEnabled } from './agentAvailability';
+import { ConceptResult } from './components/ConceptResult';
 import { useCode } from './context/CodeContext';
 import { useGeometry } from './context/GeometryContext';
-import { useTextTo3dPreview } from '../funnel/hooks/useTextTo3dPreview';
-import { ConceptResult } from './components/ConceptResult';
+import { useFeatureSelection } from './hooks/useFeatureSelection';
+import { useShellStore } from './store/useShellStore';
 
 /** Web-only gate. No hooks here, so the conditional return is safe. */
 export const StudioGenerate: React.FC = () => {
@@ -33,14 +35,28 @@ function stepLabel(e: GenerateEvent): string | null {
 const StudioGenerateInner: React.FC = () => {
     const { phase, events, submit } = useGeneration();
     const { code, setCode } = useCode();
+    const currentCode = code ?? '';
     const { executeGeometry } = useGeometry();
-    const [prompt, setPrompt] = useState('');
+    const { selectedFeatureId } = useFeatureSelection();
+    const { agentDraftPrompt, agentDraftPromptVersion } = useShellStore();
+    const [editedPrompt, setEditedPrompt] = useState('');
+    const [acknowledgedDraftVersion, setAcknowledgedDraftVersion] = useState(-1);
     // The generationId we've already accepted/rejected — gates the review panel
     // so an applied/dismissed proposal doesn't reappear.
     const [resolvedId, setResolvedId] = useState<string | null>(null);
     // The editor source captured at submit time — the "before" side of the diff
     // (so the diff is stable even though `code` changes once we apply).
     const [baseline, setBaseline] = useState('');
+
+    const prompt =
+        agentDraftPrompt !== null && agentDraftPromptVersion !== acknowledgedDraftVersion
+            ? agentDraftPrompt
+            : editedPrompt;
+
+    const setPrompt = (nextPrompt: string) => {
+        setAcknowledgedDraftVersion(agentDraftPromptVersion);
+        setEditedPrompt(nextPrompt);
+    };
 
     // The single prompt box also drives the paid 3D concept preview.
     const preview = useTextTo3dPreview();
@@ -60,15 +76,20 @@ const StudioGenerateInner: React.FC = () => {
     const runAgent = (text: string) => {
         // Edit mode: hand the agent the current model so it iterates instead of
         // replacing. Empty editor → fresh generation.
-        setBaseline(code);
-        void submit(text, code.trim() ? code : undefined);
+        setBaseline(currentCode);
+        if (currentCode.trim()) {
+            void submit(text, currentCode);
+            return;
+        }
+        void submit(text);
     };
 
     const onSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const trimmed = prompt.trim();
         if (!trimmed || busy) return;
-        runAgent(trimmed);
+        const agentPrompt = selectedFeatureId === null ? trimmed : `Edit selected target "${selectedFeatureId}": ${trimmed}`;
+        runAgent(agentPrompt);
     };
 
     const onConcept = () => {
@@ -85,7 +106,7 @@ const StudioGenerateInner: React.FC = () => {
         // starter sample) lets the model return that code unchanged. The
         // review diff still uses the current editor code as its baseline, so
         // nothing is overwritten without the user accepting.
-        setBaseline(code);
+        setBaseline(currentCode);
         // Read the concept mesh directly from the live preview phase (no mirrored
         // state). A done preview with no Tripo render/fingerprint yields
         // {renderImageUrl:null, proportions:null} — intentional and distinct from
@@ -113,13 +134,16 @@ const StudioGenerateInner: React.FC = () => {
         <div className="p-3 flex flex-col gap-2">
             <div className="uppercase tracking-wide text-[10px] text-gray-500">Agent</div>
             <form onSubmit={onSubmit} className="flex flex-col gap-2">
+                <div className="text-[10px] text-gray-500 truncate" data-testid="studio-generate-target">
+                    Target: {selectedFeatureId ?? 'whole model'}
+                </div>
                 <textarea
-                    aria-label="Agent prompt"
+                    aria-label="Generate prompt"
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
                     rows={3}
                     disabled={busy}
-                    placeholder={code.trim() ? 'Edit this model… e.g. add two 4mm mounting holes' : 'Describe a part… e.g. a 20mm cube'}
+                    placeholder={currentCode.trim() ? 'Edit this model… e.g. add two 4mm mounting holes' : 'Describe a part… e.g. a 20mm cube'}
                     className="w-full rounded bg-[#111] border border-[#2a2e38] text-gray-100 p-2 text-[11px] placeholder:text-gray-600 focus:border-blue-500 focus:outline-none disabled:opacity-50 resize-none font-sans"
                 />
                 <div className="flex gap-2">
@@ -128,7 +152,7 @@ const StudioGenerateInner: React.FC = () => {
                         disabled={busy || !prompt.trim()}
                         className="flex-1 rounded bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 text-[11px] font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
-                        {agentBusy ? 'Working…' : code.trim() ? 'Edit with agent →' : 'Build →'}
+                        {agentBusy ? 'Working…' : currentCode.trim() ? 'Edit with agent →' : 'Build →'}
                     </button>
                     {preview.phase.state !== 'unavailable' && (
                         <button
