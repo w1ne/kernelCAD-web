@@ -4,7 +4,13 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
 import type { GripperApertureRequest } from '../../../modeling/mates/gripperAperture';
 import type { MechanismFitnessResult } from '../../../modeling/mates/mechanismFitness';
-import { reviewCadTool, type RepairContext, type ReviewCadInput, type ReviewCadOutput } from './reviewCad';
+import type { ContactGraphResult } from '../../../modeling/runtime/contactGraph';
+import {
+  runReviewPipeline,
+  type RepairContext,
+  type ReviewCadInput,
+  type ReviewCadOutput,
+} from '../../review/reviewPipeline';
 
 export interface DesignLoopAttemptInput {
   id?: string;
@@ -74,6 +80,56 @@ export interface DesignLoopOutput {
   outputRecordPath?: string;
   recordUrl?: string;
   nextActionPrompt?: string;
+  convergence?: ConvergenceStall;
+}
+
+export interface ConvergenceStall {
+  /** True when successive failing attempts repeat the same failure signature
+   *  — the loop is not converging and needs a different strategy, not one
+   *  more nudge. */
+  readonly escalate: boolean;
+  /** How many trailing attempts shared the repeated failure signature. */
+  readonly repeatCount: number;
+  /** Human-readable escalation reason for the repair prompt. */
+  readonly reason: string;
+}
+
+/**
+ * Detect a non-converging loop: two or more trailing failing attempts that
+ * share an identical failure signature (repair mode + the set of unresolved
+ * review-fact codes). Returns undefined when the loop is making progress, the
+ * final attempt passed, or there is only one attempt. No silent caps — the
+ * caller surfaces this so an agent stops nudging a design that keeps failing
+ * the same way and instead changes strategy.
+ */
+export function detectConvergenceStall(
+  attempts: readonly DesignLoopAttemptResult[],
+): ConvergenceStall | undefined {
+  if (attempts.length < 2) return undefined;
+  const last = attempts[attempts.length - 1];
+  if (last.ok) return undefined;
+
+  const signature = (a: DesignLoopAttemptResult): string =>
+    `${a.repairMode ?? 'unknown'}::${[...a.reviewFacts.map((f) => f.code)].sort().join(',')}`;
+
+  const target = signature(last);
+  let repeatCount = 0;
+  for (let i = attempts.length - 1; i >= 0; i--) {
+    if (signature(attempts[i]) !== target) break;
+    repeatCount++;
+  }
+  if (repeatCount < 2) return undefined;
+
+  const mode = last.repairMode ?? 'unknown';
+  return {
+    escalate: true,
+    repeatCount,
+    reason:
+      `Loop stalled: ${repeatCount} consecutive attempts failed with the same ${mode} signature ` +
+      `and identical unresolved facts (${last.reviewFacts.map((f) => f.code).join(', ') || 'none'}). ` +
+      `Local nudges are not converging — change strategy: redesign the affected module from the original ` +
+      `goal, or explicitly justify and allow-list a warning code if the flagged geometry has a real physical role.`,
+  };
 }
 
 interface BuildRecordStep {
@@ -129,7 +185,7 @@ export async function designLoopTool(input: DesignLoopInput): Promise<DesignLoop
       samplesPerMate: input.samplesPerMate,
       combinatorial: input.combinatorial,
     };
-    const review = await reviewCadTool(reviewInput);
+    const review = await runReviewPipeline(reviewInput);
     const source = attempt.code ?? (attempt.file !== undefined ? await readFile(attempt.file, 'utf-8') : '');
     const attemptResult = toAttemptResult({
       id,
@@ -147,6 +203,7 @@ export async function designLoopTool(input: DesignLoopInput): Promise<DesignLoop
   }
 
   const finalPass = attempts.find((attempt) => attempt.ok);
+  const convergence = detectConvergenceStall(attempts);
   const record = buildRecord(input, attempts);
   const outputRecordPath = input.outputRecordPath !== undefined
     ? resolve(input.outputRecordPath)
@@ -164,7 +221,10 @@ export async function designLoopTool(input: DesignLoopInput): Promise<DesignLoop
     record,
     outputRecordPath,
     ...(outputRecordPath !== undefined ? { recordUrl: publicRecordUrl(outputRecordPath) } : {}),
-    nextActionPrompt: finalPass === undefined ? attempts.at(-1)?.nextActionPrompt : undefined,
+    ...(convergence !== undefined ? { convergence } : {}),
+    nextActionPrompt: finalPass === undefined
+      ? [convergence?.reason, attempts.at(-1)?.nextActionPrompt].filter(Boolean).join('\n\n')
+      : undefined,
   };
 }
 
@@ -195,6 +255,7 @@ function toAttemptResult(input: {
       hint: diagnostic.hint,
     })),
     ...scriptQualityFacts(input.source, input.allowReviewWarnings),
+    ...geometryReviewFacts(input.review.geometry, input.allowReviewWarnings),
     ...visualReviewFacts(input.requireVisualReview, input.visualReview, input.allowReviewWarnings),
   ];
   const functional = input.review.ok;
@@ -338,6 +399,33 @@ function scriptQualityFacts(
     severity: 'warning',
     message: `Script uses ${boxCount} box primitives and ${boxUnionCount} box unions; this often produces visually arbitrary cuboid fragments instead of an explainable mechanical load path.`,
     hint: 'quality.box-fragment-clutter — replace decorative cuboids with continuous brackets, cylinders/shafts/bearing washers, or fewer purpose-named bodies. Each visible sub-shape should have an obvious role in the mechanism.',
+  }];
+}
+
+/**
+ * Deterministic floating-geometry gate.
+ *
+ * The visual `no-stray-or-floating-geometry` / `main-object-count` checks are
+ * graded on the agent's own prose. This grades them on the geometry: the
+ * contact-graph analysis (dfm surface-distance sweep → connected components)
+ * reports how many disconnected bodies the scene actually contains and which
+ * parts are the stray islands. Any floating body is a warning the loop cannot
+ * be talked out of. It is allow-listable only by its explicit named code,
+ * because a genuinely multi-body deliverable is occasionally intended.
+ */
+export function geometryReviewFacts(
+  geometry: ContactGraphResult | undefined,
+  allowReviewWarnings: readonly string[],
+): Array<{ code: string; severity: string; message: string; hint?: string }> {
+  const code = 'assembly.geometry.floating-body';
+  if (geometry === undefined || geometry.floatingParts.length === 0) return [];
+  if (allowReviewWarnings.includes(code)) return [];
+  const parts = geometry.floatingParts.join(', ');
+  return [{
+    code,
+    severity: 'warning',
+    message: `Deterministic contact graph found ${geometry.objectCount} disconnected bodies; parts float free of the main body (gap > ${geometry.gapMm} mm): ${parts}.`,
+    hint: 'geometry.floating-body — the named parts have no surface contact or near-contact with the main body. Move or extend them so they seat against the structure they belong to (mate-graph connectivity is not geometric contact), then rerun review_cad. Allow-list assembly.geometry.floating-body only when the design is genuinely meant to ship as separate bodies.',
   }];
 }
 

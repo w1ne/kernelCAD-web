@@ -743,6 +743,41 @@ export class Shape {
   }
 
   /**
+   * Slice E Task 6: taper the selected face(s) for moldability.
+   *
+   * @param angleDeg  Draft angle in degrees. Must be in (0, 90).
+   *                  Positive = taper outward from the pull direction.
+   * @param opts.face      Face(s) to draft. Accepts a canonical name
+   *                       (`'front'`, `'top'`, …), a face label, or a
+   *                       `FaceSelector` query. Same selector shape as
+   *                       `.shell()` and `.hole()`.
+   * @param opts.neutralPlane  The plane where drafted faces meet the
+   *                       un-tapered geometry (the "parting line"). Defaults
+   *                       to `opts.face` when omitted. Task 7 resolves this
+   *                       via `pickFace` and passes it to
+   *                       `BRepOffsetAPI_DraftAngle`.
+   * @param opts.pullDir   Pull (demoulding) direction as a unit [x, y, z]
+   *                       vector. Defaults to the face normal at lower time
+   *                       when not supplied.
+   *
+   * Lowering errors emit `feature.draft.failed` (Task 7).
+   */
+  draft(
+    angleDeg: Editable<number>,
+    opts: {
+      face: FaceSelector | CanonicalFace | string;
+      neutralPlane?: CanonicalFace | string;
+      pullDir?: [number, number, number];
+    },
+  ): Shape {
+    return this.session.draftFeature(this, angleDeg, {
+      face: opts.face,
+      neutralPlane: opts.neutralPlane,
+      pullDir: opts.pullDir,
+    });
+  }
+
+  /**
    * W2.2: Add a sheet-metal bend along a linear edge. The Shape must trace
    * its lineage to a `sheetMetal(...)` record (validated at lowering time;
    * non-sheet-metal callers see `feature.invalid-args`).
@@ -993,6 +1028,102 @@ export class Shape {
       asEdge: opts.asEdge,
     });
     return this.session.sketchFromId(id);
+  }
+
+  /**
+   * Axis-aligned bounding box of this Shape in its CURRENT world frame —
+   * i.e. AFTER every transform appended so far (translate / rotate / scale)
+   * is applied. Lowers the Shape (via `.lower()`, cached) and reads the OCCT
+   * backend's AABB, then folds in the derived `size` and `center`.
+   *
+   * This is the query an agent needs to place a fetched catalog part. A
+   * `lib.fetchPart(ref)` STEP arrives at its own arbitrary native origin;
+   * call `await part.boundingBox()` to learn where it actually sits before
+   * translating it, or use `.recenter()` / `.seatOnFloor()` which do the
+   * arithmetic for you.
+   *
+   * @param opts.exact  Fold the tessellation vertex AABB (tight on curved
+   *                    B-spline faces) instead of OCCT's gap-corrected
+   *                    `Bnd_Box` (slightly padded on curves). Default false.
+   * @returns `{ min, max, size, center }`, all in mm, all `[x, y, z]`.
+   */
+  async boundingBox(
+    opts?: { exact?: boolean },
+  ): Promise<{
+    min: [number, number, number];
+    max: [number, number, number];
+    size: [number, number, number];
+    center: [number, number, number];
+  }> {
+    const backend = await this.lower();
+    const { min, max } = backend.boundingBox(opts);
+    const size: [number, number, number] = [
+      max[0] - min[0],
+      max[1] - min[1],
+      max[2] - min[2],
+    ];
+    const center: [number, number, number] = [
+      (min[0] + max[0]) / 2,
+      (min[1] + max[1]) / 2,
+      (min[2] + max[2]) / 2,
+    ];
+    return {
+      min: [min[0], min[1], min[2]],
+      max: [max[0], max[1], max[2]],
+      size,
+      center,
+    };
+  }
+
+  /**
+   * Translate this Shape so its bounding-box center lands on the world
+   * origin. The single most useful normalizer for a freshly-fetched catalog
+   * part — a STEP body authored at an arbitrary native offset becomes
+   * origin-centered, so a subsequent `.translate(x, y, z)` places its CENTER
+   * exactly at `(x, y, z)` instead of nudging it from wherever the STEP file
+   * happened to put it.
+   *
+   * Async (must lower to read the current bbox) and appends a single
+   * `translate` transform, so it composes with prior transforms and returns
+   * the same Shape for continued chaining:
+   *
+   *   const part = (await lib.fetchPart('servo/sg90'));
+   *   (await part.recenter()).translate(20, 0, 0);  // center now at (20,0,0)
+   *
+   * @param opts.x/y/z  Recenter only the named axes (default: all three).
+   *                    e.g. `recenter({ z: false })` centers x/y, leaves z.
+   */
+  async recenter(opts?: { x?: boolean; y?: boolean; z?: boolean }): Promise<Shape> {
+    const { center } = await this.boundingBox();
+    const dx = (opts?.x ?? true) ? -center[0] : 0;
+    const dy = (opts?.y ?? true) ? -center[1] : 0;
+    const dz = (opts?.z ?? true) ? -center[2] : 0;
+    if (dx !== 0 || dy !== 0 || dz !== 0) {
+      this.translate(dx, dy, dz);
+    }
+    return this;
+  }
+
+  /**
+   * Translate this Shape so it sits ON the z = 0 floor (bbox `min.z` → 0),
+   * centered in x and y over the origin. Use for parts that must rest on a
+   * build plate / table / PCB plane in their natural upright pose. Pass
+   * `{ center: false }` to seat on the floor WITHOUT moving x/y (keep the
+   * part's existing footprint position, only drop it onto z = 0).
+   *
+   * Async + appends one `translate`, same composition/chaining contract as
+   * `.recenter()`.
+   */
+  async seatOnFloor(opts?: { center?: boolean }): Promise<Shape> {
+    const { min, center } = await this.boundingBox();
+    const recenterXy = opts?.center ?? true;
+    const dx = recenterXy ? -center[0] : 0;
+    const dy = recenterXy ? -center[1] : 0;
+    const dz = -min[2];
+    if (dx !== 0 || dy !== 0 || dz !== 0) {
+      this.translate(dx, dy, dz);
+    }
+    return this;
   }
 
   /**

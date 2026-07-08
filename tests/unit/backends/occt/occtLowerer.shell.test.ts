@@ -54,7 +54,7 @@ describe('OcctLowerer shell', () => {
     const result = await new OcctLowerer().lower(r, { byKey: { base } });
     const errs = result.diagnostics.filter(d => d.severity === 'error');
     expect(errs).toHaveLength(1);
-    expect(errs[0].code).toBe('feature.face-ref.not-resolvable');
+    expect(errs[0].code).toBe('feature.face-ref.not-applicable');
   });
 
   it('emits feature.shell.failed when thickness is too large', async () => {

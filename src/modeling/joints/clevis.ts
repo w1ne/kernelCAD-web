@@ -185,6 +185,14 @@ export function withDefaults(style: ClevisStyle | undefined): ResolvedClevisStyl
       'Make tongueY smaller than forkGapY by at least 0.5 mm of running clearance.',
     );
   }
+  if (forkGapY <= 0.2) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `joint.clevis: style.forkGapY must be greater than 0.2 mm so the tongue clearance pocket has positive span; got ${forkGapY} mm.`,
+      'joint.clevis',
+      'Increase style.forkGapY or omit it to use the scale-derived default.',
+    );
+  }
   if (pinR + holeClearance >= knuckleR) {
     throw new KernelError(
       'feature.invalid-args',
@@ -321,9 +329,10 @@ function buildClevis(kc: KernelCadApi, opts: ClevisJointOptions): ClevisJoint {
   const childWithTongue = opts.childBody.union(tongue);
 
   // 5. Cut a tongue-clearance pocket through the parent side between the fork
-  //    plates. This lets a continuous parent body/link reach the pivot without
-  //    interpenetrating the child tongue.
-  const parentPocket = makeTongueClearancePocket(kc, style, axis, pivotParentLifted);
+  //    plates. For lifted pivots, the cutter reaches back toward and below the
+  //    original pivot so embedded parent bodies still get a real tongue slot
+  //    instead of interpenetrating the child tongue.
+  const parentPocket = makeTongueClearancePocket(kc, style, axis, pivotParentLifted, liftDir, liftZ);
   const parentWithClearance = parentWithFork.subtract(parentPocket);
 
   // 6. Drill the pin clearance bore through BOTH the parent fork and the
@@ -519,14 +528,23 @@ function makeTongueClearancePocket(
   style: ResolvedClevisStyle,
   axis: Vec3,
   pivot: Vec3,
+  liftDir: Vec3 = [0, 0, 1],
+  liftZ: number = 0,
 ): Shape {
   const runningClearance = Math.max(1, style.holeClearance * 2);
   const pocketX = 2 * style.knuckleR + runningClearance;
-  const pocketLift = 2 * style.knuckleR + runningClearance;
+  const basePocketLift = 2 * style.knuckleR + runningClearance;
+  const liftBackfill = liftZ > 0.5 ? liftZ + 2 * style.knuckleR : 0;
+  const pocketLift = basePocketLift + liftBackfill;
   const pocketAxisSpan = style.forkGapY - 0.2;
+  const centre: Vec3 = [
+    pivot[0] - liftDir[0] * liftBackfill / 2,
+    pivot[1] - liftDir[1] * liftBackfill / 2,
+    pivot[2] - liftDir[2] * liftBackfill / 2,
+  ];
   return kc.box(pocketX, pocketLift, pocketAxisSpan, true)
     .alongAxis(axis)
-    .translate(pivot[0], pivot[1], pivot[2]);
+    .translate(centre[0], centre[1], centre[2]);
 }
 
 /**

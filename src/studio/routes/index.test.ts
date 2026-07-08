@@ -55,6 +55,7 @@ describe('Generate page (src/studio/routes/generate.tsx)', () => {
   const source = readFileSync('src/studio/routes/generate.tsx', 'utf8');
 
   it('imports the prompt app and sign-in modal components', () => {
+    expect(source).toMatch(/from\s+['"]\.\.\/agentAvailability['"]/);
     expect(source).toMatch(/from\s+['"]\.\.\/\.\.\/funnel\/components\/PromptBox['"]/);
     expect(source).toMatch(/from\s+['"]\.\.\/\.\.\/funnel\/components\/GallerySection['"]/);
     expect(source).toMatch(/from\s+['"]\.\.\/\.\.\/funnel\/components\/EmailSignup['"]/);
@@ -69,6 +70,8 @@ describe('Generate page (src/studio/routes/generate.tsx)', () => {
   });
 
   it('gates generation by stashing the prompt and opening sign-in', () => {
+    expect(source).toContain('const agentEnabled = inAppAgentEnabled()');
+    expect(source).toContain('if (!agentEnabled) return');
     expect(source).toContain("const PENDING_PROMPT_KEY = 'kc:pendingPrompt'");
     expect(source).toContain('window.localStorage.setItem(PENDING_PROMPT_KEY, prompt)');
     expect(source).toContain('setSignInOpen(true)');

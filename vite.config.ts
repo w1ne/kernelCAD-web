@@ -269,7 +269,7 @@ function kernelCadMeshEndpoint(): Plugin {
             // runScript carries no extra trust boundary.
             const chunks: Buffer[] = [];
             for await (const chunk of req) chunks.push(chunk as Buffer);
-            let parsedBody: { source?: unknown };
+            let parsedBody: { source?: unknown; params?: unknown };
             try {
               parsedBody = JSON.parse(Buffer.concat(chunks).toString('utf-8') || '{}');
             } catch {
@@ -295,6 +295,19 @@ function kernelCadMeshEndpoint(): Plugin {
             });
             records = run.records;
             paramTable = run.paramTable;
+            // Stateless param recompute: apply any `{ params: { name: value } }`
+            // overrides to the freshly-built param table BEFORE meshing, so a
+            // slider edit re-runs the script with the new value baked in (the
+            // path used when there is no live kernel session). ParamRefs in the
+            // records resolve against this table at lower time, so the override
+            // flows into the geometry. The echoed `params` below reflects them.
+            if (parsedBody.params && typeof parsedBody.params === 'object') {
+              for (const [name, value] of Object.entries(parsedBody.params as Record<string, unknown>)) {
+                if (typeof value === 'number' || typeof value === 'boolean') {
+                  paramTable.set(name, value);
+                }
+              }
+            }
             meshSession = run.session as unknown as typeof meshSession;
           } else if (sessionToken) {
             const bundle = await getPoolBundle();

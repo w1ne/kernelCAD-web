@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { CheckCircle2, Play, MessageSquare, Image as ImageIcon, Plug, Brush, Scissors, PanelRight } from 'lucide-react';
+import { useState } from 'react';
+import { CheckCircle2, Play, MessageSquare, Image as ImageIcon, Plug, Brush, Scissors, PanelRight, Share2 } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
+import { useOptionalSession } from '../funnel/hooks/useSession';
+import { saveProject } from '../funnel/lib/apiClient';
 
 interface ToolbarProps {
     isModified: boolean;
@@ -8,6 +12,15 @@ interface ToolbarProps {
     onRun: () => void;
     agentRailOpen: boolean;
     onToggleAgentRail: () => void;
+    /** Embed-mode opt-out: when false, the Agent toggle button is hidden
+     *  entirely (the rail itself is also unmounted in `StudioShell`).
+     *  Default true (standalone). */
+    enableAgentRail?: boolean;
+    /** Embed-mode opt-out for the "Connect to Claude Desktop" link. The
+     *  target route (`/connect`) only exists in the standalone kernelcad.app
+     *  deploy, so hosts (proto.cat) hide it to avoid dead links. Default
+     *  true (standalone). */
+    enableConnect?: boolean;
     /** True iff at least one referenceImage record is present in the current
      *  scene. The toggle button only renders when this is true; otherwise the
      *  toolbar slot stays empty so casual scripts don't see a dead button. */
@@ -37,6 +50,11 @@ interface ToolbarProps {
     /** When true the agent-rail toggle button is not rendered. Used in
      * viewer mode where the model is driven by an external agent. */
     agentRailHidden?: boolean;
+    /** Current editor code — passed to saveProject on publish. */
+    code: string;
+    /** Active project name — used as the publish title (falls back to first
+     *  60 chars of code, then "Untitled"). */
+    projectName?: string;
 }
 
 export function Toolbar({
@@ -45,6 +63,8 @@ export function Toolbar({
     onRun,
     agentRailOpen,
     onToggleAgentRail,
+    enableAgentRail = true,
+    enableConnect = true,
     referenceImagesPresent,
     referenceImagesVisible,
     onToggleReferenceImages,
@@ -59,14 +79,49 @@ export function Toolbar({
     inspectorOpen,
     onToggleInspector,
     agentRailHidden = false,
+    code,
+    projectName,
 }: ToolbarProps) {
+    const { session } = useOptionalSession();
+    const navigate = useNavigate();
+    const [publishState, setPublishState] = useState<'idle' | 'saving' | 'done' | 'error'>('idle');
+    const [publishedLink, setPublishedLink] = useState<string | null>(null);
+
+    async function handlePublish() {
+        if (!session) {
+            void navigate({ to: '/signin', search: { next: window.location.pathname } });
+            return;
+        }
+        setPublishState('saving');
+        setPublishedLink(null);
+        try {
+            const title = projectName?.slice(0, 60) || code.slice(0, 60) || 'Untitled';
+            const result = await saveProject({
+                title,
+                code,
+                parameters: [],
+                privacy: 'public_unlisted',
+            });
+            const link = `${window.location.origin}/p/${result.slug}`;
+            await navigator.clipboard.writeText(link).catch(() => {});
+            setPublishedLink(link);
+            setPublishState('done');
+            window.setTimeout(() => {
+                setPublishState('idle');
+                setPublishedLink(null);
+            }, 4000);
+        } catch {
+            setPublishState('error');
+        }
+    }
+
     return (
         <div
             data-testid="studio-toolbar"
-            className="h-8 shrink-0 border-b border-[#2b313c] bg-[#111] flex items-center justify-between px-3 text-xs text-gray-300 select-none"
+            className="h-8 shrink-0 border-b border-[#2b313c] bg-[#111] flex items-center gap-2 px-3 text-xs text-gray-300 select-none bar-scroll-x"
         >
-            <div className="flex items-center gap-2 min-w-0">
-                {!agentRailHidden && (
+            <div className="flex items-center gap-2 shrink-0">
+                {enableAgentRail && !agentRailHidden && (
                     <button
                         type="button"
                         onClick={onToggleAgentRail}
@@ -82,15 +137,49 @@ export function Toolbar({
                         Agent
                     </button>
                 )}
-                <a
-                    href="/connect"
-                    data-testid="toolbar-connect-link"
-                    aria-label="Connect to Claude Desktop"
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded text-gray-300 hover:text-white hover:bg-[#222] transition-colors"
+                {enableConnect && (
+                    <a
+                        href="/connect"
+                        data-testid="toolbar-connect-link"
+                        aria-label="Connect to Claude Desktop"
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded text-gray-300 hover:text-white hover:bg-[#222] transition-colors"
+                    >
+                        <Plug size={12} />
+                        Connect
+                    </a>
+                )}
+                {session && (
+                    <a
+                        href="/me"
+                        data-testid="toolbar-my-designs"
+                        aria-label="My Designs"
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded text-gray-300 hover:text-white hover:bg-[#222] transition-colors"
+                    >
+                        My Designs
+                    </a>
+                )}
+                <button
+                    type="button"
+                    data-testid="toolbar-publish"
+                    onClick={() => void handlePublish()}
+                    disabled={publishState === 'saving'}
+                    aria-label="Publish and share"
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded text-gray-300 hover:text-white hover:bg-[#222] transition-colors disabled:opacity-50"
                 >
-                    <Plug size={12} />
-                    Connect
-                </a>
+                    <Share2 size={12} />
+                    {publishState === 'saving' ? 'Publishing…' : publishState === 'error' ? 'Retry' : 'Publish & Share'}
+                </button>
+                {publishedLink && (
+                    <a
+                        href={publishedLink}
+                        data-testid="toolbar-publish-link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded text-emerald-400 hover:text-emerald-300 text-xs transition-colors"
+                    >
+                        Link copied — {publishedLink}
+                    </a>
+                )}
                 {isModified && (
                     <span
                         data-testid="toolbar-modified-dot"
@@ -100,7 +189,7 @@ export function Toolbar({
                 )}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 ml-auto shrink-0">
                 <button
                     type="button"
                     onClick={onValidate}

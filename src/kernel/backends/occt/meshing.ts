@@ -16,6 +16,38 @@ const DEBUG = false;
 
 type UnknownRecord = Record<string, unknown>;
 
+/**
+ * Linear + angular deflection passed to replicad's `mesh()` / `meshEdges()`.
+ * Smaller values produce finer (slower) tessellation.
+ *
+ * The historical fixed quality used everywhere is `{ tolerance: 0.1,
+ * angularTolerance: 30 }` — exported as {@link FINE_MESH_OPTIONS} and used as
+ * the default for every existing caller, so behavior is unchanged unless a
+ * caller explicitly opts into a coarser preset.
+ */
+export interface MeshOptions {
+  /** Linear deflection in model units (OCCT `BRepMesh` `theLinDeflection`). */
+  tolerance: number;
+  /** Angular deflection in degrees (replicad converts to radians). */
+  angularTolerance: number;
+}
+
+/**
+ * Default fine mesh quality — the exact constants used by every caller before
+ * the two-tier path existed. Keeping this as the default preserves byte-for-byte
+ * output for the single-pass callers.
+ */
+export const FINE_MESH_OPTIONS: MeshOptions = { tolerance: 0.1, angularTolerance: 30 };
+
+/**
+ * Coarse mesh quality for an immediate-preview fast path. Much looser linear
+ * AND angular deflection so large imported STEP parts tessellate quickly enough
+ * to show *something* in Studio while the fine pass runs. Visually rougher
+ * (faceted curves) but topologically valid and positive-volume — never used as
+ * the final mesh, only as a first paint before a refine pass replaces it.
+ */
+export const COARSE_MESH_OPTIONS: MeshOptions = { tolerance: 1.0, angularTolerance: 60 };
+
 export function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === 'object' && value !== null;
 }
@@ -377,58 +409,19 @@ export function meshWireToSketch(wire: unknown, id: string, name: string): Sketc
   return { id, name, vertices: new Float32Array(mesh.vertices as number[]) };
 }
 
-// Display tessellation is size-relative (screen-space-error style). A fixed
-// 0.1 mm linear deflection is export-grade and explodes triangle counts on
-// large models (a 4 m car or an 800 mm sphere meshes to tens of MB), which is
-// pure waste for the VIEWPORT — the chord error is invisible at that scale.
-// We scale the deflection with the shape's bounding-box diagonal, floored at
-// the previous 0.1 mm so small/medium parts are byte-for-byte unchanged (zero
-// regression) and only large parts coarsen. Export (replicad exportSTLAsync)
-// uses its own mesher and is unaffected. If the bbox can't be read, we fall
-// back to the floor — i.e. current behaviour.
-export const DISPLAY_TOLERANCE_FLOOR_MM = 0.1;
-const DISPLAY_TOLERANCE_CEIL_MM = 3.0;
-const DISPLAY_TOLERANCE_FACTOR = 5e-4; // ~ diagonal / 2000
-
-function shapeBBoxDiagonalMm(shape: Record<string, unknown>): number | null {
-  try {
-    const bbRaw = getFn(shape, 'boundingBox');
-    const bb = bbRaw ? bbRaw.call(shape) : (shape as { boundingBox?: unknown }).boundingBox;
-    if (!isRecord(bb)) return null;
-    // replicad BoundingBox exposes `.bounds = [[xmin,ymin,zmin],[xmax,ymax,zmax]]`.
-    const bounds = (bb as { bounds?: unknown }).bounds;
-    if (Array.isArray(bounds) && bounds.length === 2 && Array.isArray(bounds[0]) && Array.isArray(bounds[1])) {
-      const mn = bounds[0] as number[];
-      const mx = bounds[1] as number[];
-      const dx = (mx[0] ?? 0) - (mn[0] ?? 0);
-      const dy = (mx[1] ?? 0) - (mn[1] ?? 0);
-      const dz = (mx[2] ?? 0) - (mn[2] ?? 0);
-      const d = Math.sqrt(dx * dx + dy * dy + dz * dz);
-      return Number.isFinite(d) && d > 0 ? d : null;
-    }
-  } catch {
-    // fall through to floor
-  }
-  return null;
-}
-
-/** Viewport tessellation deflection for a shape: floored at the export-grade
- *  0.1 mm (small/medium parts unchanged), scaled up for large parts, capped. */
-export function displayToleranceForShape(shape: Record<string, unknown>): number {
-  const diag = shapeBBoxDiagonalMm(shape);
-  if (diag == null) return DISPLAY_TOLERANCE_FLOOR_MM;
-  return Math.min(
-    DISPLAY_TOLERANCE_CEIL_MM,
-    Math.max(DISPLAY_TOLERANCE_FLOOR_MM, diag * DISPLAY_TOLERANCE_FACTOR),
-  );
-}
-
-export function meshFaceToGeometry(face: unknown, faceId: number, tolerance = DISPLAY_TOLERANCE_FLOOR_MM): FaceGeometry | null {
+export function meshFaceToGeometry(
+  face: unknown,
+  faceId: number,
+  options: MeshOptions = FINE_MESH_OPTIONS,
+): FaceGeometry | null {
   if (!isRecord(face)) return null;
   const meshFn = getFn(face, 'mesh');
   if (!meshFn) return null;
 
-  const mesh = meshFn.call(face, { tolerance, angularTolerance: 30 }) as UnknownRecord;
+  const mesh = meshFn.call(face, {
+    tolerance: options.tolerance,
+    angularTolerance: options.angularTolerance,
+  }) as UnknownRecord;
   if (!isRecord(mesh)) return null;
 
   const vertices = Array.isArray(mesh.vertices) ? (mesh.vertices as number[]) : null;
@@ -502,8 +495,15 @@ function tryGetVolume(shape: unknown): number | undefined {
  *
  * Returns null if the shape has no valid face geometries (e.g. deleted,
  * non-record, or all faces fail to mesh).
+ *
+ * `options` controls tessellation quality. Defaults to {@link FINE_MESH_OPTIONS}
+ * so existing single-pass callers are unchanged. Pass {@link COARSE_MESH_OPTIONS}
+ * (or any looser {@link MeshOptions}) for a fast preview mesh.
  */
-export function meshShape(shape: unknown): GeometryResult | null {
+export function meshShape(
+  shape: unknown,
+  options: MeshOptions = FINE_MESH_OPTIONS,
+): GeometryResult | null {
   if (!isRecord(shape)) return null;
   if (shape.isDeleted) return null;
 
@@ -516,15 +516,11 @@ export function meshShape(shape: unknown): GeometryResult | null {
     return Array.from(facesRaw as unknown as ArrayLike<unknown>);
   })();
 
-  // Size-relative viewport deflection (see displayToleranceForShape): unchanged
-  // (0.1 mm) for small/medium parts, coarser for large ones where it's invisible.
-  const displayTolerance = displayToleranceForShape(shape);
-
   const faceGeometries: FaceGeometry[] = [];
   if (Array.isArray(faces)) {
     faces.forEach((face, faceId) => {
       try {
-        const geometry = meshFaceToGeometry(face, faceId, displayTolerance);
+        const geometry = meshFaceToGeometry(face, faceId, options);
         if (geometry) faceGeometries.push(geometry);
       } catch {
         // ignore per-face mesh errors — match worker behavior
@@ -539,7 +535,10 @@ export function meshShape(shape: unknown): GeometryResult | null {
   try {
     const meshEdgesFn = getFn(shape, 'meshEdges');
     if (meshEdgesFn) {
-      const edgeRes = meshEdgesFn.call(shape, { tolerance: displayTolerance, angularTolerance: 30 }) as Record<string, unknown>;
+      const edgeRes = meshEdgesFn.call(shape, {
+        tolerance: options.tolerance,
+        angularTolerance: options.angularTolerance,
+      }) as Record<string, unknown>;
       if (isRecord(edgeRes) && Array.isArray(edgeRes.lines)) {
         const lines = edgeRes.lines as number[];
         if (lines.length > 0) edges = new Float32Array(lines);

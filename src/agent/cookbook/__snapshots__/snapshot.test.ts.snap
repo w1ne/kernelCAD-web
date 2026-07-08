@@ -27,8 +27,8 @@ exports[`cookbook snapshot — top-3 IDs per query > ranks: "pocket cut into the
 exports[`cookbook snapshot — top-3 IDs per query > ranks: "symmetric part using mirror" 1`] = `
 [
   "mirror-half-part",
+  "loft-body-shell-from-profiles",
   "parametric-bolt-pattern-skeleton",
-  "fillet-face-after-subtract",
 ]
 `;
 

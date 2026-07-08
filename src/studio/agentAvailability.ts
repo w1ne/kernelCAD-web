@@ -1,7 +1,9 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+
 /**
- * The built-in Studio agent UI only makes sense on the hosted build, where a
- * generation backend is configured. Local Studio is driven by the developer's
- * external agent through MCP, so the in-app rail should stay out of the shell.
+ * Built-in hosted generation is expensive and still maturing. Keep it behind an
+ * explicit opt-in flag so live Studio defaults to MCP-first operation.
  */
 export function inAppAgentEnabled(): boolean {
     if (typeof window !== 'undefined') {

@@ -118,6 +118,14 @@ Verify the install with `kernelcad --version` (should print `0.1.0` or higher).
 
 ## API Surface
 
+### Before you say "kernelCAD can't make that"
+
+NEVER tell a user a shape is impossible, or that it needs other software, without first calling `lookup_api` and `lookup_cookbook`. kernelCAD does NURBS freeform surfacing — lofts, sweeps, boundary-fill patches, G2 Hermite blends, and variable-section sweeps — so organic forms (body shells, panels, fairings, ergonomic curves, bottles, horns) ARE in scope. Its two real limits, state them precisely and do not overgeneralize past them:
+- It is a **solid/NURBS** kernel, not a **polygon/subdivision sculptor** (Blender/Maya).
+- Its viewer renders clean CAD, not **photoreal** images — for a photoreal hero shot, export STEP/GLB and finish in a render tool.
+
+For an organic solid body, reach for the `loft-body-shell-from-profiles` cookbook recipe (`lookup_cookbook("loft a body shell")`).
+
 ### Top-level functions
 
 ```typescript
@@ -310,6 +318,29 @@ dfmSpec(spec: {
 // [0, 0, -1] is a deterministic 180° around X. Zero vector throws feature.invalid-args.
 .alongAxis(axis: [number, number, number]): Shape
 
+// Bounding-box query + placement normalizers — ESSENTIAL for placing fetched
+// catalog parts. A `lib.fetchPart(ref)` STEP arrives at its own arbitrary
+// native origin; box(l,w,h) is corner-origin (min corner at 0,0,0). Without
+// normalizing, .translate(x,y,z) just nudges a part from wherever the STEP
+// authored it, so real parts scatter/overlap. These three fix that. All async
+// (they lower the shape to read its real AABB) — `await` them.
+//
+// AABB in the CURRENT world frame (after every transform appended so far), mm:
+.boundingBox(opts?: { exact?: boolean }): Promise<{ min: [number,number,number]; max: [number,number,number]; size: [number,number,number]; center: [number,number,number] }>
+// Translate so bbox center → world origin; returns this Shape for chaining.
+// After recenter(), a following .translate(x,y,z) places the part's CENTER at
+// (x,y,z). Pass { z:false } etc to recenter only the named axes.
+.recenter(opts?: { x?: boolean; y?: boolean; z?: boolean }): Promise<Shape>
+// Seat on the z=0 floor (bbox min.z → 0), centered in x/y; returns this Shape.
+// { center:false } drops onto z=0 without moving x/y.
+.seatOnFloor(opts?: { center?: boolean }): Promise<Shape>
+//
+//   // Place a fetched servo so its CENTER lands at (20, 0, 0):
+//   const servo = await lib.fetchPart('servo/sg90');
+//   (await servo.recenter()).translate(20, 0, 0);
+//   // Stand a part upright on the build plate:
+//   (await bracket.seatOnFloor());
+
 // Tag this shape with a render-time role color (geometry unchanged). Booleans drop
 // the color so identity lives at leaf parts: a `.color()` call applied to a
 // composed/unioned shape silently has NO effect on the underlying leaf parts —
@@ -335,6 +366,9 @@ dfmSpec(spec: {
 
 // Face features:
 .shell(thickness: number, { face: FaceSelector }): Shape  // face REQUIRED
+// Draft — taper faces for mold release (Slice E). angleDeg: 0–90.
+// neutralPlane defaults to the selected face; pullDir defaults to face normal.
+.draft(angleDeg: Editable<number>, opts: { face: FaceSelector | string; neutralPlane?: string; pullDir?: [number, number, number] }): Shape
 
 // Symmetry operations:
 // Pure reflection across a cardinal plane (no union — volume unchanged, handedness flipped):
@@ -386,7 +420,7 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 // opts.spacing z-stacks sections axially; opts.planes overrides with explicit per-section placement.
 .loft(other: Sketch | Sketch[], opts?: {
   spacing?: number;
-  planes?: { normal: [number, number, number]; origin: [number, number, number] }[];
+  planes?: { plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number] }[];
   ruled?: boolean;
   startPoint?: [number, number];
   endPoint?: [number, number];
@@ -655,11 +689,10 @@ These return errors today; do not generate code that uses them:
 
 - Tracked face/edge refs (only canonical refs and inline queries work) — deferred
 - Asymmetric chamfer (only symmetric 45° supported) — deferred
-- Draft features — deferred
 - Dynamic assembly solving / motion simulation — deferred; static assembly parts, fixed connector placement, revolute joint metadata, and fused `assembly.model()` output are supported.
 - BOM, dimensions, BREP, multi-view PDF — deferred
 - Rational NURBS (control-net `weights`) — accepted at the API but ignored in slice-1; rational support pending WASM bindings.
-- NURBS surface trim/extend/untrim/blend, surface-surface intersection, lattice/quilt — deferred
+- NURBS surface extend/untrim/blend, surface-surface intersection, lattice/quilt — deferred
 
 <!-- COOKBOOK:START -->
 ## Cookbook (snippet index)
@@ -675,6 +708,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 | fillet-face-after-subtract | After subtracting a hole or pocket, you want to round only the rim of the resulting opening — not every edge in the part. |
 | fillet-translated-shape | You translated a primitive and now want to fillet one of its canonical faces by name (canonical face refs survive translate). |
 | hermite-g2-blend | You have a pair of existing NURBS curves whose tangents and curvatures match at the join point and you want a G2-continuous compound spine (so a downstream variableSweep does not kink at the join). Author the flanks via nurbsCurve, then drop a hermiteG2 between them with matching endpoint tangents and curvatures. |
+| loft-body-shell-from-profiles | You need a recognizable, printable stylized solid body (car body, boat hull, fuselage, casing) that primitives can't express. Define cross-section profiles at stations along an axis, loft a solid through them, then shell + fillet. This is NURBS surfacing for organic bodies — not a polygon sculpt and not a photoreal render. |
 | mirror-half-part | The part is symmetric across a cardinal plane; build only one half and call mirror to produce the complete symmetric part. |
 | non-overlapping-l-bracket | You're building two perpendicular plates joined at a right angle; both plates have the same thickness; volumes must not overlap at the joint. |
 | parametric-bolt-pattern-skeleton | You want a compact bolt-hole part with an editable bolt-diameter parameter that can be changed later. |
@@ -768,6 +802,45 @@ const half = box(20, 40, 10)
   .fillet(2);
 
 return half.mirror('yz');
+```
+
+### Surfaces → solid (Slice E finishing ops)
+
+Two Coons patches trimmed to a shared edge, sewn into a closed solid, drafted for mold release, then exported as STEP.
+
+```typescript
+// Build two complementary 4-boundary patches that share the bottom edge.
+const sharedBottom = nurbsCurve([[0, 0, 0], [25, 0, 1], [50, 0, 0]]);
+const right   = nurbsCurve([[50, 0, 0], [50, 12, 0.5], [50, 25, 0]]);
+const top     = nurbsCurve([[50, 25, 0], [25, 25, 1], [0, 25, 0]]);
+const left    = nurbsCurve([[0, 25, 0], [0, 12, 0.5], [0, 0, 0]]);
+
+const bottom2 = nurbsCurve([[0, 0, 0], [25, 0, -1], [50, 0, 0]]);
+const right2  = nurbsCurve([[50, 0, 0], [50, 12, -0.5], [50, 25, 0]]);
+const top2    = nurbsCurve([[50, 25, 0], [25, 25, -1], [0, 25, 0]]);
+const left2   = nurbsCurve([[0, 25, 0], [0, 12, -0.5], [0, 0, 0]]);
+
+const patchA = surfaceFromBoundary([sharedBottom, right, top, left]);
+const patchB = surfaceFromBoundary([bottom2, right2, top2, left2]);
+
+// Trim each patch at their shared boundary curve so the sewn edges align.
+const trimmedA = patchA.trimTo(sharedBottom);
+const trimmedB = patchB.trimTo(sharedBottom);
+
+// Sew into a closed solid (requireClosed catches authoring mistakes early).
+const solid = sew([trimmedA, trimmedB], { requireClosed: true });
+
+// Apply draft to one face for mold release.
+const molded = solid.draft(3, { face: 'top' });
+
+return molded;
+```
+
+Export as STEP after verifying:
+
+```bash
+kernelcad evaluate surfaces-to-solid.kcad.ts   # exits 0, no open-shell diagnostic
+kernelcad export step surfaces-to-solid.kcad.ts -o out.step
 ```
 
 ## Verification gates

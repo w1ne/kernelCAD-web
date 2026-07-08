@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /** @vitest-environment jsdom */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -20,7 +22,7 @@ afterEach(() => {
 });
 
 describe('inAppAgentEnabled', () => {
-    it('is disabled on localhost even when an API backend is configured', async () => {
+    it('is disabled on localhost even when the flag and API backend are configured', async () => {
         vi.stubEnv('VITE_API_BASE_URL', 'https://api.kernelcad.com');
         vi.stubEnv('VITE_ENABLE_IN_APP_AGENT', 'true');
         setHost('localhost');

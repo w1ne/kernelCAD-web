@@ -17,6 +17,7 @@ import type { MateCouplingRecord } from '../mates/coupledPoses';
 import {
   parseConnectorRef,
   type MateLimitRange,
+  type MateLoadLimit,
   type MatePose,
   type MateRecord,
 } from '../mates/mate';
@@ -37,7 +38,7 @@ import {
   type PoseEnvelopeDiagnostic,
 } from '../mates/poseEnvelope';
 import { solveMates } from '../mates/solver';
-import { validateAssemblyWithMates } from '../mates/validator';
+import { validateAssemblyWithMates, type ValidatorDiagnostic } from '../mates/validator';
 import {
   validateWorkspaceTargetOpts,
   type WorkspaceTargetOpts,
@@ -317,10 +318,16 @@ export interface AssemblyConnectRef {
   kind: 'fixed';
 }
 
-// RevoluteJointOpts / FixedJointOpts removed in G0 (2026-05-31): the v0.5
-// `arm.revolute(...)` / `arm.fixed(...)` methods no longer exist. Use
-// `arm.mate(name, a, b, 'revolute'|'fastened', opts?)` instead — limits and
-// pose are carried on the MateRecord directly.
+// FixedJointOpts removed in G0 (2026-05-31): the v0.5 `arm.fixed(...)` method
+// no longer exists. Use `arm.mate(name, a, b, 'fastened')` instead — pose is
+// carried on the MateRecord directly. `arm.revolute(...)` was restored (see
+// issue #535) so the body-tree-FK surface has a public drivable revolute again.
+
+export interface RevoluteJointOpts {
+  axis: Vec3;
+  origin: Vec3;
+  limitsDeg?: [number, number];
+}
 
 export interface PrismaticJointOpts {
   axis: Vec3;
@@ -645,12 +652,54 @@ export class Assembly {
     };
   }
 
-  // arm.revolute(...) was the v0.5 body-tree-FK API. Removed in G0
-  // (2026-05-31, mechanism-delivery workstream) because it bypassed
-  // `arm.__mates()` — every v0.7 kinematic-grounding gate (Gates 1-4) reads
-  // the mate graph and silently early-exited on legacy-only assemblies.
-  // Use `arm.connector(...)` + `arm.mate(name, a, b, 'revolute', { ... })`
-  // instead. See examples/robot-arm/desktop-3axis-mates.kcad.ts.
+  // arm.revolute(...) is the body-tree-FK API for a single-DOF rotational
+  // joint (restored per issue #535). It declares a drivable revolute directly
+  // on the joint graph that solve()/solvedModel() walk — no need to reach into
+  // `session.assemblyJoint(...)` + `joints.push(...)` internals. For mate-graph
+  // gated mechanisms prefer `arm.connector(...)` + `arm.mate(name, a, b,
+  // 'revolute', { ... })`; both surfaces coexist.
+  revolute(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: RevoluteJointOpts): AssemblyJointRef {
+    if (!isValidVec3(opts.axis)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `revolute joint axis must be a finite Vec3; got ${formatScalarForError(opts.axis)}.`,
+        undefined,
+        'Pass axis: [x, y, z].',
+      );
+    }
+    if (!isValidVec3(opts.origin)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `revolute joint origin must be a finite Vec3; got ${formatScalarForError(opts.origin)}.`,
+        undefined,
+        'Pass origin: [x, y, z] in the parent part local frame.',
+      );
+    }
+    if (opts.limitsDeg !== undefined && !isValidJointLimits(opts.limitsDeg)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `revolute joint limitsDeg must be [minDeg, maxDeg] finite numbers with min < max; got ${formatScalarForError(opts.limitsDeg)}.`,
+        undefined,
+        'Pass limitsDeg: [minDeg, maxDeg], or omit it.',
+      );
+    }
+    const record = this.session.assemblyJoint(this.name, name, 'revolute', a, b, {
+      axis: opts.axis,
+      origin: opts.origin,
+      ...(opts.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
+    });
+    this.joints.push({
+      id: record.id,
+      name,
+      kind: 'revolute',
+      parentPartId: a.id,
+      childPartId: b.id,
+      axis: opts.axis,
+      origin: opts.origin,
+      ...(opts.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
+    });
+    return { id: record.id, name, kind: 'revolute' };
+  }
 
   prismatic(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: PrismaticJointOpts): AssemblyJointRef {
     if (!isValidVec3(opts.axis)) {
@@ -781,7 +830,13 @@ export class Assembly {
     aRef: string,
     bRef: string,
     type: MateType,
-    opts?: { pose?: MatePose; limitsDeg?: MateLimitRange; limitsMm?: MateLimitRange; exposure?: 'exposed' | 'concealed' },
+    opts?: {
+      pose?: MatePose;
+      limitsDeg?: MateLimitRange;
+      limitsMm?: MateLimitRange;
+      maxLoad?: MateLoadLimit;
+      exposure?: 'exposed' | 'concealed';
+    },
   ): this {
     const a = this.resolveMateConnector(aRef);
     const b = this.resolveMateConnector(bRef);
@@ -810,6 +865,7 @@ export class Assembly {
       ...(opts?.pose !== undefined ? { pose: opts.pose } : {}),
       ...(opts?.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
       ...(opts?.limitsMm !== undefined ? { limitsMm: opts.limitsMm } : {}),
+      ...(opts?.maxLoad !== undefined ? { maxLoad: opts.maxLoad } : {}),
       ...(opts?.exposure !== undefined ? { exposure: opts.exposure } : {}),
     });
     return this;
@@ -1568,17 +1624,31 @@ export class Assembly {
    * same Assembly compounds transforms; build a fresh assembly per query.
    */
   solve(poses: Poses): SolvedKinematics {
-    // 1. Validate joint names supplied in poses.
+    // 1. Validate joint names supplied in poses. A pose key must resolve to a
+    //    drivable joint declared via assembly.revolute/prismatic/fixed/ball
+    //    (i.e. present in `this.joints` / `arm.__joints()`). Reject anything
+    //    else BEFORE forwardKinematics reads `.kind` off the (undefined)
+    //    lookup — that raw `TypeError: Cannot read properties of undefined
+    //    (reading 'kind')` was issue #536. A *mate* (a constraint, not a
+    //    posable DOF) gets a tailored hint pointing at the joint API.
     for (const name of Object.keys(poses)) {
-      if (!this.joints.find(j => j.name === name)) {
-        const known = this.joints.map(j => j.name);
+      if (this.joints.find(j => j.name === name)) continue;
+      const mate = this.mates.find(m => m.name === name);
+      if (mate) {
         throw new KernelError(
           'feature.invalid-args',
-          `assembly.solve: unknown joint '${name}'. Defined joints: ${known.length === 0 ? '(none)' : known.join(', ')}.`,
+          `assembly.solve: '${name}' is not a drivable joint. A ${mate.type} *mate* is a constraint, not a posable DOF — declare the joint with assembly.revolute(name, parent, child, { axis, origin }) (or .prismatic/.ball) to pose it.`,
           undefined,
-          'invalid-args.solve.unknown-joint — pass only joint names declared via assembly.revolute/prismatic/fixed/ball.',
+          'invalid-args.solve.mate-not-joint — mates constrain DOFs; only joints declared via assembly.revolute/prismatic/fixed/ball are posable by solve(). To articulate the existing mate graph instead, call assembly.solvedModel(poses).',
         );
       }
+      const known = this.joints.map(j => j.name);
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.solve: '${name}' is not a drivable joint. Defined joints: ${known.length === 0 ? '(none)' : known.join(', ')}.`,
+        undefined,
+        'invalid-args.solve.unknown-joint — pass only joint names declared via assembly.revolute/prismatic/fixed/ball.',
+      );
     }
 
     // 2. Validate pose value shapes per joint kind, then resolve any ParamRef
@@ -1649,9 +1719,17 @@ export class Assembly {
       part.originalShape.transform(T);
     }
 
-    // 6. Build SolvedKinematics handle. Hand it the already-resolved numeric
+    // 6. Issue #537 — advisory out-of-limits warnings for poses beyond a
+    //    joint's declared limitsDeg/limitsMm. Computed (not thrown) so solve()
+    //    still applies the pose; surfaced on the SolvedKinematics handle and
+    //    its toScene() Scene.warnings.
+    const limitWarnings = checkPoseLimits(this.joints, poses, this.session);
+
+    // 7. Build SolvedKinematics handle. Hand it the already-resolved numeric
     //    pose record so the snapshot can never accidentally re-resolve.
-    return new SolvedKinematics(this.name, this.parts, this.joints, worldT, numericPoses, this.session);
+    return new SolvedKinematics(
+      this.name, this.parts, this.joints, worldT, numericPoses, this.session, limitWarnings,
+    );
   }
 
   /**
@@ -1896,6 +1974,14 @@ export class Assembly {
       mateMetadata,
     );
 
+    // Issue #537 — advisory out-of-limits warnings for body-tree joint poses
+    // beyond their declared limitsDeg/limitsMm. Computed here (after the
+    // capture-time pose-shape validation in `solvedAssembly` has run) and
+    // folded into the warn-mode `scene.warnings` aggregate below. The pose is
+    // still applied; these never throw (they stay severity 'warning', so the
+    // 'error'-mode error-find skips them and the 'off' branch drops them).
+    const limitWarnings = checkPoseLimits(this.joints, poses, this.session);
+
     // Mode resolution: explicit opts win; otherwise read the env override
     // (T10 sets this from `kernelcad evaluate`). Default for everything else
     // is `'warn'` — never breaking, never silent.
@@ -2049,6 +2135,7 @@ export class Assembly {
         const aggregated: readonly SceneDiagnostic[] = [
           ...result.diagnostics,
           ...envelopeDiagnostics,
+          ...limitWarnings,
         ];
         return this.makeScene(sceneShape, aggregated, mateT);
       },
@@ -2204,6 +2291,13 @@ export class SolvedKinematics {
   private readonly poses: Record<string, number | [number, number, number]>;
   private readonly joints: readonly AssemblyJointStored[];
   private readonly session: CaptureSession;
+  /**
+   * Issue #537 — advisory out-of-limits diagnostics for poses that exceed a
+   * joint's declared `limitsDeg`/`limitsMm`. Always present (possibly empty).
+   * Propagated onto `toScene().warnings` so the snapshot Scene reports them
+   * identically to `solvedModel(...)`.
+   */
+  readonly warnings: readonly SceneDiagnostic[];
 
   /**
    * Process-scoped warn-once flag for the deprecated `.toShape()` alias.
@@ -2228,6 +2322,7 @@ export class SolvedKinematics {
     worldT: Map<FeatureId, Transform>,
     poses: Record<string, number | [number, number, number]>,
     session: CaptureSession,
+    warnings: readonly SceneDiagnostic[] = [],
   ) {
     this.assemblyName = assemblyName;
     this.partsByName = new Map(parts.map(p => [p.name, p]));
@@ -2235,6 +2330,7 @@ export class SolvedKinematics {
     this.poses = poses;
     this.joints = joints;
     this.session = session;
+    this.warnings = Object.freeze([...warnings]);
     Object.freeze(this);
   }
 
@@ -2301,6 +2397,17 @@ export class SolvedKinematics {
    * is intentionally unsupported on snapshot Scenes — call
    * `Assembly.solvedModel(poses).toCompound()` for a TopoDS_Compound that
    * preserves per-part identity through the lowerer.
+   *
+   * Rendering note (issue #538): this snapshot Scene carries NO upstream
+   * feature id (`__sourceFeatureId()` is undefined), so RETURNING it from a
+   * script does not route to the SceneBackend mesh fan-out — `resolveRootId`
+   * falls back to the chain tail (the last `assemblyJoint`/part record) and
+   * the viewport renders that single record, not a posed multi-part scene.
+   * For a posed AND per-part-colored scene that renders, return
+   * `Assembly.solvedModel(poses)` directly (the reactive Scene whose lowerer
+   * emits a colored, FK-posed SceneBackend); use this snapshot handle for
+   * in-script analysis (`transform(part)`, `bodies()`) or `.toUnion()` for a
+   * fused single Shape.
    */
   toScene(): Scene {
     if (this.partsByName.size === 0) {
@@ -2353,6 +2460,10 @@ export class SolvedKinematics {
           'invalid-args.scene.compound-not-supported-on-snapshot — call Assembly.solvedModel(poses).toCompound() for a Scene whose lowerer preserves per-part identity.',
         );
       },
+      undefined, // sourceFeatureId — snapshot Scene has no upstream feature.
+      undefined, // mates — snapshot Scene does not carry the mate graph.
+      // Issue #537 — propagate out-of-limits warnings onto the snapshot Scene.
+      this.warnings,
     );
   }
 
@@ -2419,6 +2530,56 @@ function isValidJointLimits(value: [number, number]): boolean {
     value.every((n) => typeof n === 'number' && Number.isFinite(n)) &&
     value[0] < value[1]
   );
+}
+
+/**
+ * Issue #537 — advisory out-of-limits check for the body-tree joint poses
+ * passed to `Assembly.solve()` / `Assembly.solvedModel()`.
+ *
+ * For each revolute / prismatic joint that declares `limitsDeg` / `limitsMm`,
+ * resolves the supplied pose to a numeric value (snapshot via the param table)
+ * and emits one `kinematic.pose.out-of-limits` WARNING when the value falls
+ * outside the closed `[min, max]` range. The pose is still applied by FK — the
+ * diagnostic is advisory, closing the false-pass gap where a knee with
+ * `limitsDeg:[-150,0]` posed to `+140` was accepted silently.
+ *
+ * Skips: joints with no declared limits, fixed joints, ball joints, joints with
+ * no pose supplied, and any pose that cannot be resolved to a finite number
+ * (shape errors are surfaced by the throwing validators upstream).
+ *
+ * Pure: joints + poses in, diagnostics out — shared by both solve() and
+ * solvedModel() so the two surfaces report identically.
+ */
+function checkPoseLimits(
+  joints: readonly AssemblyJointStored[],
+  poses: Poses,
+  session: CaptureSession,
+): ValidatorDiagnostic[] {
+  const out: ValidatorDiagnostic[] = [];
+  for (const j of joints) {
+    if (j.kind !== 'revolute' && j.kind !== 'prismatic') continue;
+    const limits = j.kind === 'revolute' ? j.limitsDeg : j.limitsMm;
+    if (limits === undefined) continue;
+    const raw = poses[j.name];
+    if (raw === undefined || Array.isArray(raw)) continue;
+    if (!isParamRef(raw) && typeof raw !== 'number') continue;
+    const value = currentValue(raw as Editable<number>, session.paramTable);
+    if (typeof value !== 'number' || !Number.isFinite(value)) continue;
+    const [min, max] = limits;
+    if (value >= min && value <= max) continue;
+    const unit = j.kind === 'revolute' ? '°' : 'mm';
+    const field = j.kind === 'revolute' ? 'limitsDeg' : 'limitsMm';
+    out.push({
+      code: 'kinematic.pose.out-of-limits',
+      severity: 'warning',
+      message: `joint '${j.name}' pose ${value}${unit} exceeds declared ${field} [${min}, ${max}]`,
+      hint: `invalid-args.kinematic.pose-out-of-limits — clamp '${j.name}' to [${min}, ${max}], or widen ${field} on the joint if the mechanism is intended to travel that far.`,
+      mateName: j.name,
+      pose: value,
+      limits,
+    });
+  }
+  return out;
 }
 
 function isScalarCouplingMate(type: MateType): boolean {

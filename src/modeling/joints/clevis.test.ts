@@ -331,6 +331,10 @@ describe('joint.clevis — G1 design locks', () => {
     expect(() => withDefaults({ tongueY: 10, forkGapY: 8 })).toThrow(/tongueY/);
   });
 
+  it('rejects style with forkGapY too small for a positive tongue clearance pocket', () => {
+    expect(() => withDefaults({ tongueY: 0.05, forkGapY: 0.1 })).toThrow(/forkGapY/);
+  });
+
   it('rejects style with pinR + clearance >= knuckleR (drill would consume the knuckle)', () => {
     expect(() => withDefaults({ knuckleR: 5, pinR: 5 })).toThrow(/knuckleR/);
   });

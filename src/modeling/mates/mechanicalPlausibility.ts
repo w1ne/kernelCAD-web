@@ -130,6 +130,7 @@ const MIN_FASTENED_CONTACT_AREA_MM2 = 0.25;
 // its own part/mate, not hidden inside one part as "connected" geometry.
 const DISCONNECTED_COMPONENT_GAP_TOL_MM = 0.05;
 const MAX_COMPONENTS_FOR_EXACT_CLUSTERING = 1000;
+const MAX_VERTICES_FOR_EXACT_CLUSTERING = 50_000;
 
 export async function reviewMechanicalPlausibility(
   arm: Assembly,
@@ -426,10 +427,12 @@ function analyzeDisconnectedMesh(mesh: ReturnType<ShapeBackend['getMesh']>): {
 
   // Some OCCT triangulations do not share exact vertex coordinates across
   // adjacent faces, which can make a single complex solid look like thousands
-  // of triangle components. Exact bbox clustering is quadratic in component
-  // count, so keep the review bounded and let simpler/floating parts still
+  // of triangle components. Exact bbox clustering has pairwise vertex-distance
+  // checks, so keep the review bounded and let simpler/floating parts still
   // receive the strict disconnected-solid check.
   if (components.length > MAX_COMPONENTS_FOR_EXACT_CLUSTERING) return undefined;
+  const totalVertexCount = components.reduce((sum, component) => sum + component.vertices.length, 0);
+  if (totalVertexCount > MAX_VERTICES_FOR_EXACT_CLUSTERING) return undefined;
 
   const clusters = clusterTouchingComponents(components);
   if (clusters.length <= 1) return undefined;

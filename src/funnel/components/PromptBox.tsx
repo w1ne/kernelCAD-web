@@ -26,7 +26,7 @@ export function PromptBox({ onSubmit, disabled, examples = DEFAULT_EXAMPLES, ini
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto">
+    <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto" autoComplete="off">
       <label htmlFor="prompt" className="sr-only">CAD prompt</label>
       <textarea
         id="prompt"
@@ -35,6 +35,7 @@ export function PromptBox({ onSubmit, disabled, examples = DEFAULT_EXAMPLES, ini
         rows={3}
         disabled={disabled}
         placeholder="Describe the part you want…"
+        autoComplete="off"
         className="w-full rounded-lg bg-white border border-rule text-ink p-4 text-base placeholder:text-ink-faint focus:border-blueprint focus:outline-none disabled:opacity-50 font-sans"
       />
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">

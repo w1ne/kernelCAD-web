@@ -1,0 +1,26 @@
+/* Tailwind utilities for the landing pricing island. We import theme +
+ * utilities but NOT preflight — the marketing landing has its own global
+ * reset/base styles (site/style.css) and Tailwind's preflight would clobber
+ * them. The pricing island is a self-contained dark card grid that only needs
+ * utility classes, so this is sufficient. */
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+/* Tailwind v4 scans for class usage; make sure it sees the component sources. */
+@source '../../src/funnel/components/PricingSection.tsx';
+@source '../../src/funnel/components/PricingTiers.tsx';
+@source './pricing-island.tsx';
+@source './LandingPricing.tsx';
+/* The SSR fallback markup + dark-band wrapper classes live in index.html. */
+@source '../index.html';
+
+/* Because we omit Tailwind's preflight (above), UA <button> chrome leaks in —
+ * notably a 2px outset border. Re-supply just the button-border normalization,
+ * scoped to the pricing subtree so it can never touch the landing's own
+ * buttons. Background and font-size stay on the utility classes (this rule
+ * deliberately doesn't set them), so it can't override bg-[…]/text-… states. */
+#pricing-root button {
+  border-width: 0;
+  border-style: solid;
+  cursor: pointer;
+}

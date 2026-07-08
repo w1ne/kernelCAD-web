@@ -5,7 +5,8 @@ import type { Artifact } from './generateClient';
 
 export interface GenerationRow {
   id: string;
-  status: 'running' | 'done' | 'eval_failed' | 'llm_failed' | 'timeout';
+  // 'gate_failed' is the live server status; 'eval_failed' kept for historical rows.
+  status: 'running' | 'done' | 'gate_failed' | 'eval_failed' | 'llm_failed' | 'timeout';
   code: string | null;
   prompt: string;
   suggestions: string[];
@@ -69,7 +70,7 @@ export async function authedFetch<T>(
 export type ProjectPrivacy = 'public_unlisted' | 'public_featured' | 'private';
 
 export interface SaveProjectInput {
-  generationId: string;
+  generationId?: string;
   anonId?: string;
   title: string;
   code: string;
@@ -90,6 +91,19 @@ export async function saveProject(input: SaveProjectInput): Promise<SaveProjectR
  *  user. `claimed` is false if it was already owned. */
 export async function claimProject(slug: string): Promise<{ claimed: boolean }> {
   return authedFetch<{ claimed: boolean }>('POST', `/api/v1/projects/${encodeURIComponent(slug)}/claim`, {});
+}
+
+/** POST a viewer-captured PNG (base64, no `data:` prefix) to the backend render
+ *  endpoint. The hosted backend has no browser, so the user's open Studio tab
+ *  captures its own WebGL canvas and uploads it here; an agent then fetches the
+ *  stored image. Anonymous-capable: the slug is the capability (same pattern as
+ *  claimProject). Returns the URL the agent can read the image from. */
+export async function postProjectRender(slug: string, pngBase64: string): Promise<{ url: string }> {
+  return authedFetch<{ ok: true; url: string }>(
+    'POST',
+    `/api/v1/projects/${encodeURIComponent(slug)}/render`,
+    { png: pngBase64 },
+  );
 }
 
 /** Thrown when a free user tries to make a project private — the body text
@@ -132,6 +146,41 @@ export async function fetchProjectBySlug(slug: string): Promise<ProjectRow | nul
   return (data as ProjectRow | null) ?? null;
 }
 
+// ---------------------------------------------------------------------------
+// Server-side revision history (Supabase-backed, owner-or-slug auth).
+//   GET  /api/v1/projects/:slug/revisions            -> { revisions: [...] }
+//   POST /api/v1/projects/:slug/revisions/:v/restore -> { version }
+// ---------------------------------------------------------------------------
+
+export interface ProjectRevision {
+  version: number;
+  created_at: string;
+}
+
+/** Newest-first list of saved server revisions for a slug-backed project.
+ *  Unwraps the `{ revisions: [...] }` envelope; returns `[]` when missing. */
+export async function listProjectRevisions(slug: string): Promise<ProjectRevision[]> {
+  const res = await authedFetch<{ revisions?: ProjectRevision[] }>(
+    'GET',
+    `/api/v1/projects/${encodeURIComponent(slug)}/revisions`,
+  );
+  return res.revisions ?? [];
+}
+
+/** Restore the project's code to a prior revision; returns the restored
+ *  version. The displayed model is refreshed by the caller via
+ *  fetchProjectBySlug. */
+export async function restoreProjectRevision(
+  slug: string,
+  version: number,
+): Promise<{ version: number }> {
+  return authedFetch<{ version: number }>(
+    'POST',
+    `/api/v1/projects/${encodeURIComponent(slug)}/revisions/${version}/restore`,
+    {},
+  );
+}
+
 export async function listMyProjects(): Promise<ProjectRow[]> {
   const supabase = getSupabase();
   const { data, error } = await supabase
@@ -148,9 +197,22 @@ export async function listMyProjects(): Promise<ProjectRow[]> {
 
 export type PlanTier = 'free' | 'pro';
 
+/** The two paid plans. 'basic' = $19/mo (5M tokens), 'pro' = $39/mo (12M tokens). */
+export type PaidTier = 'basic' | 'pro';
+
+/** Billing cadence. 'yearly' = 2 months free vs monthly. */
+export type BillingPeriod = 'monthly' | 'yearly';
+
 export interface MyPlan {
   plan: PlanTier;
-  generationsRemaining: number;
+  /** Which paid plan, when plan === 'pro'; null on free. */
+  tier?: PaidTier | null;
+  /** Free plan only: builds left this month. Paid plans are token-metered. */
+  generationsRemaining: number | null;
+  /** Paid plans: monthly token budget usage. Null on free. */
+  tokensUsed?: number | null;
+  tokensBudget?: number | null;
+  tokensRemaining?: number | null;
   currentPeriodEnd: string | null;
 }
 
@@ -168,9 +230,14 @@ export async function fetchMyPlan(): Promise<MyPlan> {
 }
 
 /** POST /api/v1/billing/create-checkout — returns a Stripe Checkout URL
- * the caller should redirect to (window.location.href = url). */
-export async function createCheckoutSession(): Promise<CheckoutSession> {
-  return authedFetch<CheckoutSession>('POST', '/api/v1/billing/create-checkout');
+ * the caller should redirect to (window.location.href = url). `tier` selects
+ * the plan ($19 Basic by default; 'pro' for the $39 plan); `period`
+ * selects monthly (default) or yearly (2 months free) billing. */
+export async function createCheckoutSession(
+  tier: PaidTier = 'basic',
+  period: BillingPeriod = 'monthly',
+): Promise<CheckoutSession> {
+  return authedFetch<CheckoutSession>('POST', '/api/v1/billing/create-checkout', { tier, period });
 }
 
 /** POST /api/v1/billing/portal — returns a Stripe Customer Portal URL

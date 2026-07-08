@@ -856,6 +856,12 @@ export async function meshFeaturesPerFeature(
       // by changing group matrices instead of remeshing on every joint tick.
       if (isSceneBackend(event.shape)) {
         let partCache = cachedAssemblyPartMeshes?.get(event.featureId);
+        // Track part-meshing outcomes so an assembly whose parts ALL fail to
+        // mesh is surfaced as a failure rather than returning a silently-empty
+        // (but "successful") build. A partial assembly — at least one part
+        // meshed — must still render, so we only fail when nothing was emitted.
+        const partCount = event.shape.parts.length;
+        let emittedPartCount = 0;
         for (const part of event.shape.parts) {
           // Pose-cache fast path: when the assembly is being re-lowered for a
           // pose-only edit, the per-part LOCAL shape is unchanged (same OCCT
@@ -873,9 +879,14 @@ export async function meshFeaturesPerFeature(
           } else {
             const meshed = meshShape(extractRawShape(part.shape));
             if (!meshed) {
-              // Per-part shape failed to mesh; skip silently — the lowerer
-              // already populated the part shape, and the SceneBackend itself
-              // is not a single-shape unit so we don't fail the whole assembly.
+              // Per-part shape failed to mesh. Skip THIS part — the lowerer
+              // already populated the part shape, and a single bad part must
+              // not sink an otherwise-renderable assembly. Surface a soft
+              // warning so the skip is not silently lost; the post-loop check
+              // below escalates to a hard failure only when EVERY part skips.
+              console.warn(
+                `meshFeaturesPerFeature: assembly '${event.featureId}' part '${part.name}' compiled but produced no mesh — skipping part`,
+              );
               continue;
             }
             faces = meshed.faces;
@@ -914,6 +925,7 @@ export async function meshFeaturesPerFeature(
             ...(part.color !== undefined ? { color: part.color } : {}),
             ...(part.material !== undefined ? { material: part.material } : {}),
           });
+          emittedPartCount += 1;
           // Aggregate bounds from FK-transformed vertices while keeping the
           // emitted mesh local for viewport-side transforms.
           const transformed = transformFeatureMesh(local, part.worldTransform);
@@ -925,6 +937,20 @@ export async function meshFeaturesPerFeature(
               if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
             }
           }
+        }
+        // Escalate an all-parts-skipped assembly to a hard failure. When the
+        // assembly declared at least one part but NONE produced a mesh, the
+        // build would otherwise return a successful-but-empty result (zero
+        // part-meshes, assembly absent from `failedFeatureIds`). Surface it so
+        // the mesh endpoint turns it into a 500 the client can report instead
+        // of silently rendering nothing. Partial assemblies (emittedPartCount
+        // > 0) still render and are intentionally NOT failed here.
+        if (partCount > 0 && emittedPartCount === 0) {
+          console.warn(
+            `meshFeaturesPerFeature: assembly '${event.featureId}' produced no part meshes (all ${partCount} part(s) failed to mesh)`,
+          );
+          failedFeatureIds.push(event.featureId);
+          return;
         }
         // P7 — emit one synthetic tendon FeatureMesh per declared
         // `arm.tendon(...)` record on the owning Assembly. The cylinder
