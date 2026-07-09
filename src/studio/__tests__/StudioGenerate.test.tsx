@@ -26,6 +26,16 @@ const mockSelection = vi.hoisted(() => ({
 const mockShell = vi.hoisted(() => ({
     agentDraftPrompt: null as string | null,
     agentDraftPromptVersion: 0,
+    agentRepairWorkflow: null as {
+        cardId: string;
+        code: string;
+        promptText: string;
+        targetId: string | null;
+        promptSource: 'review' | 'fallback';
+        validityFingerprint: string;
+        state: 'drafted' | 'running';
+    } | null,
+    setAgentRepairWorkflow: vi.fn(),
 }));
 
 vi.mock('../agentAvailability', () => ({
@@ -55,7 +65,11 @@ vi.mock('../store/useShellStore', () => ({
     useShellStore: () => ({
         agentDraftPrompt: mockShell.agentDraftPrompt,
         agentDraftPromptVersion: mockShell.agentDraftPromptVersion,
+        agentRepairWorkflow: mockShell.agentRepairWorkflow,
     }),
+    shellStore: {
+        setAgentRepairWorkflow: mockShell.setAgentRepairWorkflow,
+    },
 }));
 
 import { StudioGenerate } from '../StudioGenerate';
@@ -69,6 +83,8 @@ beforeEach(() => {
     mockSelection.selectedFeatureId = null;
     mockShell.agentDraftPrompt = null;
     mockShell.agentDraftPromptVersion = 0;
+    mockShell.agentRepairWorkflow = null;
+    mockShell.setAgentRepairWorkflow.mockReset();
 });
 
 afterEach(() => cleanup());
@@ -104,6 +120,81 @@ describe('StudioGenerate', () => {
         expect(mockGeneration.submit).toHaveBeenCalledWith(
             'Edit selected target "hinge-pin": add 2 mm clearance',
         );
+    });
+
+    it('marks the active repair workflow running when the drafted prompt is submitted', () => {
+        mockSelection.selectedFeatureId = 'output-horn';
+        mockShell.agentDraftPrompt = 'Fix assembly.part.floating: output-horn floats Action: add a mate';
+        mockShell.agentDraftPromptVersion = 1;
+        mockShell.agentRepairWorkflow = {
+            cardId: 'diagnostic:assembly.part.floating:output-horn:0',
+            code: 'assembly.part.floating',
+            promptText: 'Fix assembly.part.floating: output-horn floats Action: add a mate',
+            targetId: 'output-horn',
+            promptSource: 'fallback',
+            validityFingerprint: 'before',
+            state: 'drafted',
+        };
+        render(<StudioGenerate />);
+
+        const prompt = screen.getByLabelText('Generate prompt');
+        fireEvent.submit(prompt.closest('form')!);
+
+        expect(mockShell.setAgentRepairWorkflow).toHaveBeenCalledWith({
+            ...mockShell.agentRepairWorkflow,
+            state: 'running',
+        });
+        expect(mockGeneration.submit).toHaveBeenCalledWith(
+            'Edit selected target "output-horn": Fix assembly.part.floating: output-horn floats Action: add a mate',
+        );
+    });
+
+    it('does not mark a drafted repair running when the selected target changed', () => {
+        mockSelection.selectedFeatureId = 'hinge-pin';
+        mockShell.agentDraftPrompt = 'Fix assembly.part.floating: output-horn floats Action: add a mate';
+        mockShell.agentDraftPromptVersion = 1;
+        mockShell.agentRepairWorkflow = {
+            cardId: 'diagnostic:assembly.part.floating:output-horn:0',
+            code: 'assembly.part.floating',
+            promptText: 'Fix assembly.part.floating: output-horn floats Action: add a mate',
+            targetId: 'output-horn',
+            promptSource: 'fallback',
+            validityFingerprint: 'before',
+            state: 'drafted',
+        };
+        render(<StudioGenerate />);
+
+        const prompt = screen.getByLabelText('Generate prompt');
+        fireEvent.submit(prompt.closest('form')!);
+
+        expect(mockShell.setAgentRepairWorkflow).not.toHaveBeenCalled();
+        expect(mockGeneration.submit).toHaveBeenCalledWith(
+            'Edit selected target "hinge-pin": Fix assembly.part.floating: output-horn floats Action: add a mate',
+        );
+    });
+
+    it('rolls a running repair workflow back to drafted when generation errors', () => {
+        mockGeneration.phase = {
+            state: 'error',
+            code: 'network',
+            message: 'stream failed',
+        };
+        mockShell.agentRepairWorkflow = {
+            cardId: 'diagnostic:assembly.part.floating:output-horn:0',
+            code: 'assembly.part.floating',
+            promptText: 'Fix assembly.part.floating: output-horn floats Action: add a mate',
+            targetId: 'output-horn',
+            promptSource: 'fallback',
+            validityFingerprint: 'before',
+            state: 'running',
+        };
+
+        render(<StudioGenerate />);
+
+        expect(mockShell.setAgentRepairWorkflow).toHaveBeenCalledWith({
+            ...mockShell.agentRepairWorkflow,
+            state: 'drafted',
+        });
     });
 
     it('loads the agent draft prompt into the textarea', () => {

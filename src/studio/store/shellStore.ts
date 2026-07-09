@@ -28,11 +28,24 @@ export interface StagedEdit {
     readonly source?: { kind: 'agent' | 'human' | 'test'; label?: string };
 }
 
+export type AgentRepairWorkflowState = 'drafted' | 'running';
+
+export interface AgentRepairWorkflow {
+    readonly cardId: string;
+    readonly code: string;
+    readonly promptText: string;
+    readonly targetId: SelectedFeatureId;
+    readonly promptSource: 'review' | 'fallback';
+    readonly validityFingerprint: string;
+    readonly state: AgentRepairWorkflowState;
+}
+
 export interface ShellState {
     readonly selectedFeatureId: SelectedFeatureId;
     readonly agentRailOpen: boolean;
     readonly agentDraftPrompt: string | null;
     readonly agentDraftPromptVersion: number;
+    readonly agentRepairWorkflow: AgentRepairWorkflow | null;
     readonly inspectorOpen: boolean;
     readonly previousValidity: ValidatorResult | null;
     readonly currentValidity: ValidatorResult | null;
@@ -82,6 +95,7 @@ const INITIAL_STATE: ShellState = {
     agentRailOpen: Boolean(import.meta.env?.VITE_API_BASE_URL),
     agentDraftPrompt: null,
     agentDraftPromptVersion: 0,
+    agentRepairWorkflow: null,
     inspectorOpen: true,
     previousValidity: null,
     currentValidity: null,
@@ -137,6 +151,12 @@ export class ShellStore {
                     ? this.state.agentDraftPromptVersion
                     : this.state.agentDraftPromptVersion + 1,
         };
+        this.emit();
+    };
+
+    setAgentRepairWorkflow = (workflow: AgentRepairWorkflow | null): void => {
+        if (this.state.agentRepairWorkflow === workflow) return;
+        this.state = { ...this.state, agentRepairWorkflow: workflow };
         this.emit();
     };
 
