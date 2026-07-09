@@ -32,9 +32,6 @@ import { toParam } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import { KernelError } from '../../shared/intent/kernelError';
-import type { Connector } from '../mates/connector';
-import type { MateCouplingRecord } from '../mates/coupledPoses';
-import type { MateType } from '../mates/mateTypes';
 import {
   buildAnimationViewFeatureSpec,
   buildCameraTargetFeatureSpec,
@@ -58,47 +55,19 @@ import {
   type SurfaceFromBoundaryCaptureArgs,
   type VariableSweepCaptureArgs,
 } from './surfaceSweepRecords';
+import {
+  buildAssemblyConnectFeatureSpec,
+  buildAssemblyExportFeatureSpec,
+  buildAssemblyJointFeatureSpec,
+  buildAssemblyModelFeatureSpec,
+  buildAssemblyPartFeatureSpec,
+  buildSolvedAssemblyFeatureSpec,
+  type AssemblyJointKind,
+  type SolvedAssemblyJointRef,
+  type SolvedAssemblyMateMetadata,
+} from './assemblyFeatureRecords';
 
-/**
- * Encoded mate / connector data attached to `solvedAssembly` metadata so the
- * OCCT lowerer can run mate-FK at recompute time. Connectors here have their
- * origins pre-resolved to numeric `vec3` (topology queries resolved upstream
- * in `Assembly.solvedModel` before this method runs). Mate poses are encoded
- * as `Param` (just like joint poses) so studio-driven param edits re-pose
- * the rendered scene reactively.
- *
- * - `connectorsByPartId` — keyed by part FeatureId; each entry holds the
- *   pre-resolved Connector list referenced by mates on this assembly.
- *   Parts with no mate connectors may be omitted.
- * - `mates` — every MateRecord declared on the assembly, with `pose`
- *   replaced by a `Param`-shaped encoding when present.
- */
-export interface SolvedAssemblyMateMetadata {
-  readonly connectorsByPartId: Record<FeatureId, readonly Connector[]>;
-  readonly mates: readonly EncodedMateRecord[];
-  readonly couplings?: readonly MateCouplingRecord[];
-}
-
-/** Mate record with `pose` encoded for the recompute pipeline. Mirrors
- *  `EncodedPose` on joints — scalar Params for revolute/prismatic/etc.,
- *  triple for ball.
- *
- *  Slice 2C — `limitsDeg`/`limitsMm` round-trip from the live `MateRecord`
- *  through the encoded metadata onto the `solvedAssembly` FeatureRecord so
- *  the Studio's JointsTab can draw slider limit marks against the same
- *  numbers the validator gates use. Drops gracefully on legacy records
- *  (the fields are optional). */
-export interface EncodedMateRecord {
-  readonly name: string;
-  readonly a: string;
-  readonly b: string;
-  readonly type: MateType;
-  readonly pose?:
-    | { kind: 'scalar'; value: Param }
-    | { kind: 'ball'; value: [Param, Param, Param] };
-  readonly limitsDeg?: readonly [number, number];
-  readonly limitsMm?: readonly [number, number];
-}
+export type { EncodedMateRecord, SolvedAssemblyMateMetadata } from './assemblyFeatureRecords';
 
 export { validateFaceLabels } from './faceLabels';
 
@@ -693,29 +662,7 @@ export class CaptureSession {
     if (!this.records.some(r => r.id === shape.id)) {
       throw new Error(`assembly.part: shape '${shape.id}' is not from this CaptureSession`);
     }
-    return this.register({
-      kind: 'assemblyPart',
-      params: {},
-      inputs: {
-        shape: { kind: 'feature', id: shape.id },
-      },
-      metadata: {
-        assemblyName,
-        partName,
-        ...(opts.at !== undefined ? { at: opts.at } : {}),
-        ...(opts.connectors !== undefined ? { connectors: opts.connectors } : {}),
-        ...(opts.placedBy !== undefined ? {
-          placedBy: {
-            connector: opts.placedBy.connector,
-            to: {
-              partId: opts.placedBy.to.partId,
-              partName: opts.placedBy.to.partName,
-              connector: opts.placedBy.to.connector,
-            },
-          },
-        } : {}),
-      },
-    });
+    return this.register(buildAssemblyPartFeatureSpec(assemblyName, partName, shape.id, opts));
   }
 
   assemblyConnect(
@@ -730,33 +677,7 @@ export class CaptureSession {
         throw new Error(`assembly.connect: part '${connector.partId}' is not an assembly part in this CaptureSession`);
       }
     }
-    return this.register({
-      kind: 'assemblyConnect',
-      params: {},
-      inputs: {
-        a: { kind: 'feature', id: a.partId },
-        b: { kind: 'feature', id: b.partId },
-      },
-      metadata: {
-        assemblyName,
-        connectName,
-        kind: 'fixed',
-        a: {
-          partName: a.partName,
-          connector: a.connector,
-          origin: a.origin,
-          worldOrigin: a.worldOrigin,
-          ...(a.axis !== undefined ? { axis: a.axis } : {}),
-        },
-        b: {
-          partName: b.partName,
-          connector: b.connector,
-          origin: b.origin,
-          worldOrigin: b.worldOrigin,
-          ...(b.axis !== undefined ? { axis: b.axis } : {}),
-        },
-      },
-    });
+    return this.register(buildAssemblyConnectFeatureSpec(assemblyName, connectName, a, b));
   }
 
   assemblyJoint(
@@ -779,24 +700,7 @@ export class CaptureSession {
         throw new Error(`assembly.${jointKind}: part '${part.id}' is not an assembly part in this CaptureSession`);
       }
     }
-    return this.register({
-      kind: 'assemblyJoint',
-      params: {},
-      inputs: {
-        a: { kind: 'feature', id: a.id },
-        b: { kind: 'feature', id: b.id },
-      },
-      metadata: {
-        assemblyName,
-        jointName,
-        jointKind,
-        ...(opts.axis !== undefined ? { axis: opts.axis } : {}),
-        origin: opts.origin,
-        ...(opts.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
-        ...(opts.limitsMm !== undefined ? { limitsMm: opts.limitsMm } : {}),
-        ...(opts.ballLimitsDeg !== undefined ? { ballLimitsDeg: opts.ballLimitsDeg } : {}),
-      },
-    });
+    return this.register(buildAssemblyJointFeatureSpec(assemblyName, jointName, jointKind, a, b, opts));
   }
 
   assemblyModel(
@@ -804,34 +708,13 @@ export class CaptureSession {
     parts: readonly AssemblyPartRef[],
     mateMetadata?: SolvedAssemblyMateMetadata,
   ): Shape {
-    if (parts.length === 0) {
-      throw new Error('assembly.model requires at least one part');
-    }
-    const inputs: Record<string, FeatureRef> = {};
-    for (let i = 0; i < parts.length; i++) {
-      const part = parts[i];
+    for (const part of parts) {
       const record = this.records.find(r => r.id === part.id);
       if (!record || record.kind !== 'assemblyPart') {
         throw new Error(`assembly.model: part '${part.id}' is not an assembly part in this CaptureSession`);
       }
-      inputs[`part_${i}`] = { kind: 'feature', id: part.id };
     }
-    return this.createShape({
-      kind: 'assemblyModel',
-      params: {},
-      inputs,
-      metadata: {
-        assemblyName,
-        partIds: parts.map(part => part.id),
-        ...(mateMetadata !== undefined && mateMetadata.mates.length > 0
-          ? {
-              mates: mateMetadata.mates,
-              couplings: mateMetadata.couplings ?? [],
-              connectorsByPartId: mateMetadata.connectorsByPartId,
-            }
-          : {}),
-      },
-    });
+    return this.createShape(buildAssemblyModelFeatureSpec(assemblyName, parts, mateMetadata));
   }
 
   /**
@@ -859,133 +742,32 @@ export class CaptureSession {
     if (parts.length === 0) {
       throw new Error('assembly.solvedModel requires at least one part');
     }
-    const inputs: Record<string, FeatureRef> = {};
-    for (let i = 0; i < parts.length; i++) {
-      const part = parts[i];
+    for (const part of parts) {
       const record = this.records.find(r => r.id === part.id);
       if (!record || record.kind !== 'assemblyPart') {
         throw new Error(`assembly.solvedModel: part '${part.id}' is not an assembly part in this CaptureSession`);
       }
-      inputs[`part_${i}`] = { kind: 'feature', id: part.id };
     }
-    // Build joint-name -> kind map from the joint records so capture-time
-    // pose validation can match each pose entry against its declared joint.
-    const jointKindByName = new Map<string, 'revolute' | 'prismatic' | 'fixed' | 'ball'>();
-    for (let j = 0; j < joints.length; j++) {
-      const joint = joints[j];
+    const solvedJoints: SolvedAssemblyJointRef[] = [];
+    for (const joint of joints) {
       const record = this.records.find(r => r.id === joint.id);
       if (!record || record.kind !== 'assemblyJoint') {
         throw new Error(`assembly.solvedModel: joint '${joint.id}' is not an assembly joint in this CaptureSession`);
       }
-      inputs[`joint_${j}`] = { kind: 'feature', id: joint.id };
-      const m = record.metadata as { jointName?: string; jointKind?: 'revolute' | 'prismatic' | 'fixed' | 'ball' };
-      if (m.jointName !== undefined && m.jointKind !== undefined) {
-        jointKindByName.set(m.jointName, m.jointKind);
-      }
+      const m = record.metadata as { jointName?: string; jointKind?: AssemblyJointKind };
+      solvedJoints.push({
+        id: joint.id,
+        name: m.jointName ?? joint.name,
+        kind: m.jointName !== undefined ? m.jointKind : undefined,
+      });
     }
-    const mateKindByName = new Map<string, MateType>();
-    for (const mate of mateMetadata?.mates ?? []) {
-      mateKindByName.set(mate.name, mate.type);
-    }
-
-    // Capture-time pose validation: catch unknown-joint and pose-shape
-    // mismatches before encoding. Missing-pose / non-finite are deferred to
-    // the lowerer per spec — capture allows partial / Editable poses, the
-    // recompute pipeline emits structured diagnostics for the rest.
-    for (const [name, val] of Object.entries(poses)) {
-      const kind = jointKindByName.get(name);
-      const mateKind = mateKindByName.get(name);
-      if (kind === undefined && mateKind !== undefined) {
-        if (mateKind === 'ball' && !Array.isArray(val)) {
-          throw new KernelError(
-            'feature.invalid-args',
-            `assembly.solvedModel: ball mate '${name}' requires [x, y, z] pose; got ${typeof val}.`,
-            undefined,
-            `invalid-args.solvedModel.pose-shape — mate ${name} is a ball mate; pose must be [x, y, z].`,
-          );
-        }
-        if (mateKind !== 'ball' && Array.isArray(val)) {
-          throw new KernelError(
-            'feature.invalid-args',
-            `assembly.solvedModel: scalar mate '${name}' (${mateKind}) requires a number pose; got [x, y, z].`,
-            undefined,
-            `invalid-args.solvedModel.pose-shape — mate ${name} is a ${mateKind} mate; pose must be a single number.`,
-          );
-        }
-        continue;
-      }
-      if (kind === undefined) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.solvedModel: joint '${name}' not declared on assembly '${assemblyName}'.`,
-          undefined,
-          `invalid-args.solvedModel.unknown-joint — joint ${name} not declared.`,
-        );
-      }
-      if (kind === 'ball' && !Array.isArray(val)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.solvedModel: ball joint '${name}' requires [x, y, z] pose; got ${typeof val}.`,
-          undefined,
-          `invalid-args.solvedModel.pose-shape — joint ${name} is a ball joint; pose must be [x, y, z].`,
-        );
-      }
-      if (kind !== 'ball' && Array.isArray(val)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.solvedModel: scalar joint '${name}' (${kind}) requires a number pose; got [x, y, z].`,
-          undefined,
-          `invalid-args.solvedModel.pose-shape — joint ${name} is a ${kind} joint; pose must be a single number.`,
-        );
-      }
-    }
-
-    type EncodedPose =
-      | { kind: 'scalar'; value: Param }
-      | { kind: 'ball'; value: [Param, Param, Param] };
-    const encodedPoses: Record<string, EncodedPose> = {};
-    for (const [name, val] of Object.entries(poses)) {
-      if (Array.isArray(val)) {
-        encodedPoses[name] = {
-          kind: 'ball',
-          value: [
-            toParam(val[0], 'deg'),
-            toParam(val[1], 'deg'),
-            toParam(val[2], 'deg'),
-          ],
-        };
-      } else {
-        encodedPoses[name] = { kind: 'scalar', value: toParam(val, 'deg') };
-      }
-    }
-
-    return this.createShape({
-      kind: 'solvedAssembly',
-      params: {},
-      inputs,
-      metadata: {
-        assemblyName,
-        partIds: parts.map(part => part.id),
-        jointIds: joints.map(j => j.id),
-        poses: encodedPoses,
-        // v0.6 T17 (mate-FK at lower-time): mate metadata flows here when the
-        // assembly declares mates, so the lowerer can run `mateFk` and put the
-        // mate-derived world transforms on the SceneBackend. Without this
-        // metadata the lowerer falls back to v0.5 body-tree FK only and parts
-        // mated via .connector/.mate sit at the LOCAL origin in the rendered
-        // output. The `connectorsByPartId` map holds connectors whose origins
-        // are already resolved to numeric `vec3` (topology queries lowered
-        // upstream in `Assembly.solvedModel`); `mates[].pose` is encoded as
-        // `Param` so reactive param edits re-pose without rerunning capture.
-        ...(mateMetadata !== undefined && mateMetadata.mates.length > 0
-          ? {
-              mates: mateMetadata.mates,
-              couplings: mateMetadata.couplings ?? [],
-              connectorsByPartId: mateMetadata.connectorsByPartId,
-            }
-          : {}),
-      },
-    });
+    return this.createShape(buildSolvedAssemblyFeatureSpec({
+      assemblyName,
+      parts,
+      joints: solvedJoints,
+      poses,
+      mateMetadata,
+    }));
   }
 
   /**
@@ -1011,17 +793,7 @@ export class CaptureSession {
     if (sourceRecord.kind !== 'solvedAssembly' && sourceRecord.kind !== 'assemblyModel') {
       throw new Error(`assemblyExport: source feature '${sceneFeatureId}' is kind '${sourceRecord.kind}'; expected 'solvedAssembly' or 'assemblyModel'.`);
     }
-    const opLabel: Param = {
-      expression: `'${op}'`, unit: 'unitless', evaluated: 0,
-    };
-    return this.createShape({
-      kind: 'assemblyExport',
-      params: { op: opLabel },
-      inputs: {
-        scene: { kind: 'feature', id: sceneFeatureId },
-      },
-      metadata: { op },
-    });
+    return this.createShape(buildAssemblyExportFeatureSpec(sceneFeatureId, op));
   }
 
   edgeFeature(
