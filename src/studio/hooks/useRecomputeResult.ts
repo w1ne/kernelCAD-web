@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useWorkbench } from '../context/WorkbenchContext';
 import { reviewToValidity, reviewToMechanismBanner } from '../adapters/reviewToValidity';
 import { serializedParamsToTable } from '../adapters/serializedParamsToTable';
@@ -31,6 +31,7 @@ import type { StudioRecomputeResult, StudioRepairEvidence } from '../types';
  */
 export function useRecomputeResult(): StudioRecomputeResult {
     const workbench = useWorkbench();
+    const lastPublishedReviewRef = useRef<ScriptReviewSummary | null | typeof UNPUBLISHED_REVIEW>(UNPUBLISHED_REVIEW);
 
     const validity = useMemo(
         () => reviewToValidity(workbench.scriptReview ?? null),
@@ -88,8 +89,12 @@ export function useRecomputeResult(): StudioRecomputeResult {
     // Publish validity into the shell store so BottomDrawer +
     // ValidityDeltaHeader see the delta (current ↔ previous).
     useEffect(() => {
-        shellStore.publishValidity(validity, { scriptFingerprint });
-    }, [scriptFingerprint, validity]);
+        const reviewChanged = lastPublishedReviewRef.current !== workbench.scriptReview;
+        lastPublishedReviewRef.current = workbench.scriptReview ?? null;
+        shellStore.publishValidity(validity, {
+            scriptFingerprint: reviewChanged ? scriptFingerprint : undefined,
+        });
+    }, [scriptFingerprint, validity, workbench.scriptReview]);
 
     const updateParam = (workbench as { updateParam?: StudioRecomputeResult['updateParam'] }).updateParam;
     const setGeometryTransformOverride =
@@ -139,6 +144,8 @@ export function useRecomputeResult(): StudioRecomputeResult {
         ],
     );
 }
+
+const UNPUBLISHED_REVIEW = Symbol('kernelcad.unpublishedReview');
 
 function normalizePrompt(value: string | undefined): string | null {
     if (value == null) return null;

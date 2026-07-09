@@ -304,4 +304,42 @@ describe('useRecomputeResult — Slice 1.2 data wiring', () => {
             recheckedScriptFingerprint: fingerprintStudioScript(approvedCode),
         });
     });
+
+    it('does not recheck an approved edit with stale review output when only code changed', async () => {
+        const oldCode = 'const part = box(10);\nreturn part;';
+        const approvedCode = 'const part = box(20);\nreturn part;';
+        shellStore.recordStagedEditOutcome(
+            {
+                id: 'approved-stale-review',
+                intent: 'approved stale review',
+                fromCode: oldCode,
+                toCode: approvedCode,
+            },
+            'approved',
+        );
+        const oldReview: ScriptReviewSummary = { ok: true, diagnostics: [] };
+        workbenchValue.code = oldCode;
+        workbenchValue.scriptReview = oldReview;
+
+        const { useRecomputeResult } = await import('../hooks/useRecomputeResult');
+        const { rerender } = renderHook(() => useRecomputeResult());
+
+        workbenchValue.code = approvedCode;
+        workbenchValue.scriptReview = oldReview;
+        rerender();
+
+        expect(shellStore.getSnapshot().appliedEditHistory[0]).toMatchObject({
+            editId: 'approved-stale-review',
+            recheckStatus: 'pending-recheck',
+        });
+
+        workbenchValue.scriptReview = { ok: true, diagnostics: [] };
+        rerender();
+
+        expect(shellStore.getSnapshot().appliedEditHistory[0]).toMatchObject({
+            editId: 'approved-stale-review',
+            recheckStatus: 'rechecked-solved',
+            recheckedScriptFingerprint: fingerprintStudioScript(approvedCode),
+        });
+    });
 });

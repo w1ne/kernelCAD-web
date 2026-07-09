@@ -45,7 +45,7 @@ const StudioGenerateInner: React.FC = () => {
     const { code } = useCode();
     const currentCode = code ?? '';
     const { selectedFeatureId } = useFeatureSelection();
-    const { agentDraftPrompt, agentDraftPromptVersion, agentRepairWorkflow } = useShellStore();
+    const { agentDraftPrompt, agentDraftPromptVersion, agentRepairWorkflow, stagedEdit } = useShellStore();
     const [editedPrompt, setEditedPrompt] = useState('');
     const [acknowledgedDraftVersion, setAcknowledgedDraftVersion] = useState(-1);
     // The generationId we've already staged/rejected — gates the review panel
@@ -102,13 +102,19 @@ const StudioGenerateInner: React.FC = () => {
         e.preventDefault();
         const trimmed = prompt.trim();
         if (!trimmed || busy) return;
-        const agentPrompt = selectedFeatureId === null ? trimmed : `Edit selected target "${selectedFeatureId}": ${trimmed}`;
-        let repairWorkflowForRun = agentRepairWorkflow;
-        if (
+        const matchesDraftedRepair =
             agentRepairWorkflow != null &&
             agentRepairWorkflow.state === 'drafted' &&
-            agentRepairWorkflow.promptText === trimmed &&
-            agentRepairWorkflow.targetId === selectedFeatureId
+            agentRepairWorkflow.promptText === trimmed;
+        const runTargetId =
+            matchesDraftedRepair && agentRepairWorkflow.targetId === null
+                ? null
+                : selectedFeatureId;
+        const agentPrompt = runTargetId === null ? trimmed : `Edit selected target "${runTargetId}": ${trimmed}`;
+        let repairWorkflowForRun = agentRepairWorkflow;
+        if (
+            matchesDraftedRepair &&
+            agentRepairWorkflow.targetId === runTargetId
         ) {
             repairWorkflowForRun = { ...agentRepairWorkflow, state: 'running' };
             shellStore.setAgentRepairWorkflow(repairWorkflowForRun);
@@ -116,7 +122,7 @@ const StudioGenerateInner: React.FC = () => {
         runAgent(agentPrompt, {
             fromCode: currentCode,
             promptText: trimmed,
-            selectedFeatureId,
+            selectedFeatureId: runTargetId,
             repairWorkflow: repairWorkflowForRun,
         });
     };
@@ -154,6 +160,7 @@ const StudioGenerateInner: React.FC = () => {
 
     const stageGeneratedEdit = () => {
         if (phase.state !== 'done') return;
+        if (stagedEdit != null) return;
         const snapshot = reviewSnapshot ?? {
             fromCode: currentCode,
             promptText: prompt.trim(),
@@ -177,6 +184,9 @@ const StudioGenerateInner: React.FC = () => {
     };
     const reject = () => {
         if (phase.state !== 'done') return;
+        if (agentRepairWorkflow?.state === 'running') {
+            shellStore.setAgentRepairWorkflow({ ...agentRepairWorkflow, state: 'drafted' });
+        }
         setResolution({ generationId: phase.generationId, action: 'discarded' });
     };
 
@@ -229,7 +239,7 @@ const StudioGenerateInner: React.FC = () => {
             )}
 
             {/* Review gate: diff + verified badge + accept/reject. Never auto-applies. */}
-            {reviewing && phase.state === 'done' && (
+            {reviewing && phase.state === 'done' && stagedEdit == null && (
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
                         <div className="text-[10px] text-gray-300 truncate" title={phase.artifact.title}>
@@ -272,6 +282,11 @@ const StudioGenerateInner: React.FC = () => {
                             Discard
                         </button>
                     </div>
+                </div>
+            )}
+            {reviewing && phase.state === 'done' && stagedEdit != null && (
+                <div className="rounded border border-amber-900/60 bg-amber-950/30 px-2 py-1 text-[10px] text-amber-200">
+                    Review the current staged edit before staging another proposal.
                 </div>
             )}
 

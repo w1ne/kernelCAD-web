@@ -36,6 +36,7 @@ const mockShell = vi.hoisted(() => ({
         validityFingerprint: string;
         state: 'drafted' | 'running';
     } | null,
+    stagedEdit: null as { id: string } | null,
     setAgentRepairWorkflow: vi.fn(),
     proposeStagedEdit: vi.fn(),
 }));
@@ -72,6 +73,7 @@ vi.mock('../store/useShellStore', () => ({
         agentDraftPrompt: mockShell.agentDraftPrompt,
         agentDraftPromptVersion: mockShell.agentDraftPromptVersion,
         agentRepairWorkflow: mockShell.agentRepairWorkflow,
+        stagedEdit: mockShell.stagedEdit,
     }),
     shellStore: {
         setAgentRepairWorkflow: mockShell.setAgentRepairWorkflow,
@@ -92,6 +94,7 @@ beforeEach(() => {
     mockShell.agentDraftPrompt = null;
     mockShell.agentDraftPromptVersion = 0;
     mockShell.agentRepairWorkflow = null;
+    mockShell.stagedEdit = null;
     mockShell.setAgentRepairWorkflow.mockReset();
     mockShell.proposeStagedEdit.mockReset();
 });
@@ -179,6 +182,33 @@ describe('StudioGenerate', () => {
         expect(mockShell.setAgentRepairWorkflow).not.toHaveBeenCalled();
         expect(mockGeneration.submit).toHaveBeenCalledWith(
             'Edit selected target "hinge-pin": Fix assembly.part.floating: output-horn floats Action: add a mate',
+        );
+    });
+
+    it('submits a drafted whole-model repair without stale selected-feature prefix', () => {
+        mockSelection.selectedFeatureId = 'hinge-pin';
+        mockShell.agentDraftPrompt = 'Repair deterministic mechanism failures.';
+        mockShell.agentDraftPromptVersion = 1;
+        mockShell.agentRepairWorkflow = {
+            cardId: 'mechanism:mechanism.disconnect:0',
+            code: 'mechanism.disconnect',
+            promptText: 'Repair deterministic mechanism failures.',
+            targetId: null,
+            promptSource: 'review',
+            validityFingerprint: 'before',
+            state: 'drafted',
+        };
+        render(<StudioGenerate />);
+
+        const prompt = screen.getByLabelText('Generate prompt');
+        fireEvent.submit(prompt.closest('form')!);
+
+        expect(mockShell.setAgentRepairWorkflow).toHaveBeenCalledWith({
+            ...mockShell.agentRepairWorkflow,
+            state: 'running',
+        });
+        expect(mockGeneration.submit).toHaveBeenCalledWith(
+            'Repair deterministic mechanism failures.',
         );
     });
 
@@ -312,6 +342,15 @@ describe('StudioGenerate', () => {
     });
 
     it('does not show staged status after discarding a generated artifact', () => {
+        mockShell.agentRepairWorkflow = {
+            cardId: 'diagnostic:assembly.part.floating:output-horn:0',
+            code: 'assembly.part.floating',
+            promptText: 'Fix output horn',
+            targetId: 'output-horn',
+            promptSource: 'fallback',
+            validityFingerprint: 'before',
+            state: 'running',
+        };
         mockGeneration.phase = {
             state: 'done',
             generationId: 'gen-discard',
@@ -329,8 +368,34 @@ describe('StudioGenerate', () => {
         fireEvent.click(screen.getByRole('button', { name: /discard/i }));
 
         expect(mockShell.proposeStagedEdit).not.toHaveBeenCalled();
+        expect(mockShell.setAgentRepairWorkflow).toHaveBeenCalledWith({
+            ...mockShell.agentRepairWorkflow,
+            state: 'drafted',
+        });
         expect(screen.queryByText(/staged for review/i)).toBeNull();
         expect(screen.getByText(/discarded — Throwaway proposal/i)).toBeTruthy();
+    });
+
+    it('does not overwrite an existing staged edit with a new generated proposal', () => {
+        mockShell.stagedEdit = { id: 'existing-edit' };
+        mockCode.code = 'return box(10);';
+        mockGeneration.phase = {
+            state: 'done',
+            generationId: 'gen-overwrite',
+            anonId: 'anon-overwrite',
+            artifact: {
+                title: 'New proposal',
+                code: 'return box(20);',
+                parameters: [],
+                suggestions: [],
+            },
+        };
+
+        render(<StudioGenerate />);
+
+        expect(screen.queryByRole('button', { name: /stage edit/i })).toBeNull();
+        expect(screen.getByText(/review the current staged edit before staging another/i)).toBeTruthy();
+        expect(mockShell.proposeStagedEdit).not.toHaveBeenCalled();
     });
 
     it('preserves prompt, target, and repair workflow context on staged generated edits', () => {

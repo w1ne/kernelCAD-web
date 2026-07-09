@@ -235,6 +235,15 @@ export function StagedEditSlot() {
     const handleReject = useCallback(() => {
         if (stagedEdit != null) {
             shellStore.recordStagedEditOutcome(stagedEdit, 'rejected');
+            const workflow = stagedEdit.context?.repairWorkflow;
+            const currentWorkflow = shellStore.getSnapshot().agentRepairWorkflow;
+            if (
+                workflow?.state === 'running' &&
+                currentWorkflow?.state === 'running' &&
+                currentWorkflow.cardId === workflow.cardId
+            ) {
+                shellStore.setAgentRepairWorkflow({ ...currentWorkflow, state: 'drafted' });
+            }
         }
         setStaleWarning(null);
         shellStore.clearStagedEdit();
