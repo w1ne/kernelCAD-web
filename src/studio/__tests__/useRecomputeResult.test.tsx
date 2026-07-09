@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // @vitest-environment happy-dom
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { ScriptReviewSummary } from '../context/GeometryContext';
 import type { SerializedParamEntry } from '../../shared/runtime/paramTable';
+import { fingerprintStudioScript, shellStore } from '../store/shellStore';
 
 const workbenchValue: {
+    code: string;
     geometries: never[];
     featureRecords: FeatureRecord[];
     recomputeMs: number;
@@ -15,6 +17,7 @@ const workbenchValue: {
     scriptParams: SerializedParamEntry[];
     updateParam?: (edits: { name: string; value: number | boolean }[]) => Promise<void>;
 } = {
+    code: '',
     geometries: [],
     featureRecords: [],
     recomputeMs: 0,
@@ -27,6 +30,17 @@ vi.mock('../context/WorkbenchContext', () => ({
 }));
 
 describe('useRecomputeResult — Slice 1.2 data wiring', () => {
+    beforeEach(() => {
+        shellStore.reset();
+        workbenchValue.code = '';
+        workbenchValue.geometries = [];
+        workbenchValue.featureRecords = [];
+        workbenchValue.recomputeMs = 0;
+        workbenchValue.scriptReview = null;
+        workbenchValue.scriptParams = [];
+        workbenchValue.updateParam = undefined;
+    });
+
     it('passes featureRecords through unchanged', async () => {
         const records: FeatureRecord[] = [
             {
@@ -265,5 +279,29 @@ describe('useRecomputeResult — Slice 1.2 data wiring', () => {
         expect(result.current.updateParam).toBe(updateParam);
         await result.current.updateParam?.([{ name: 'w', value: 70 }]);
         expect(updateParam).toHaveBeenCalledWith([{ name: 'w', value: 70 }]);
+    });
+
+    it('publishes validity with the current workbench code fingerprint', async () => {
+        const approvedCode = 'const part = box(20);\nreturn part;';
+        shellStore.recordStagedEditOutcome(
+            {
+                id: 'approved-from-hook',
+                intent: 'approved from hook',
+                fromCode: 'return box(10);',
+                toCode: approvedCode,
+            },
+            'approved',
+        );
+        workbenchValue.code = approvedCode;
+        workbenchValue.scriptReview = { ok: true, diagnostics: [] };
+
+        const { useRecomputeResult } = await import('../hooks/useRecomputeResult');
+        renderHook(() => useRecomputeResult());
+
+        expect(shellStore.getSnapshot().appliedEditHistory[0]).toMatchObject({
+            editId: 'approved-from-hook',
+            recheckStatus: 'rechecked-solved',
+            recheckedScriptFingerprint: fingerprintStudioScript(approvedCode),
+        });
     });
 });

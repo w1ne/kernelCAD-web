@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ShellStore } from '../store/shellStore';
+import { fingerprintStudioScript, ShellStore } from '../store/shellStore';
 import type { ValidatorResult } from '../../modeling/mates/validator';
 
 function makeValidity(status: ValidatorResult['status']): ValidatorResult {
@@ -261,6 +261,7 @@ describe('ShellStore', () => {
             addedLines: 2,
             removedLines: 1,
             recheckStatus: 'pending-recheck',
+            approvedScriptFingerprint: fingerprintStudioScript(edit.toCode),
         });
 
         for (let i = 0; i < 8; i++) {
@@ -273,24 +274,37 @@ describe('ShellStore', () => {
         expect(history.at(-1)?.editId).toBe('e-2');
     });
 
-    it('publishValidity updates only pending approved ledger entries', () => {
+    it('publishValidity updates only pending approved ledger entries with matching script fingerprints', () => {
         store = new ShellStore();
         const approved = { id: 'approved', intent: 'approved', fromCode: 'a', toCode: 'b' };
         const rejected = { id: 'rejected', intent: 'rejected', fromCode: 'a', toCode: 'b' };
         store.recordStagedEditOutcome(approved, 'approved');
         store.recordStagedEditOutcome(rejected, 'rejected');
 
-        store.publishValidity(makeValidity('warning'));
+        store.publishValidity(makeValidity('warning'), { scriptFingerprint: fingerprintStudioScript('unrelated') });
         expect(store.getSnapshot().appliedEditHistory[0]).toMatchObject({
             editId: 'rejected',
             recheckStatus: 'not-applicable',
         });
         expect(store.getSnapshot().appliedEditHistory[1]).toMatchObject({
             editId: 'approved',
-            recheckStatus: 'rechecked-issues',
+            recheckStatus: 'pending-recheck',
         });
 
         store.publishValidity(makeValidity('solved'));
+        expect(store.getSnapshot().appliedEditHistory[1]).toMatchObject({
+            editId: 'approved',
+            recheckStatus: 'pending-recheck',
+        });
+
+        store.publishValidity(makeValidity('warning'), { scriptFingerprint: fingerprintStudioScript(approved.toCode) });
+        expect(store.getSnapshot().appliedEditHistory[1]).toMatchObject({
+            editId: 'approved',
+            recheckStatus: 'rechecked-issues',
+            recheckedScriptFingerprint: fingerprintStudioScript(approved.toCode),
+        });
+
+        store.publishValidity(makeValidity('solved'), { scriptFingerprint: fingerprintStudioScript(approved.toCode) });
         expect(store.getSnapshot().appliedEditHistory[1]).toMatchObject({
             editId: 'approved',
             recheckStatus: 'rechecked-issues',
@@ -298,7 +312,7 @@ describe('ShellStore', () => {
 
         store = new ShellStore();
         store.recordStagedEditOutcome(approved, 'approved');
-        store.publishValidity(makeValidity('solved'));
+        store.publishValidity(makeValidity('solved'), { scriptFingerprint: fingerprintStudioScript(approved.toCode) });
         expect(store.getSnapshot().appliedEditHistory[0]).toMatchObject({
             editId: 'approved',
             recheckStatus: 'rechecked-solved',
@@ -306,10 +320,29 @@ describe('ShellStore', () => {
 
         store = new ShellStore();
         store.recordStagedEditOutcome(approved, 'approved');
-        store.publishValidity(makeValidity('error'));
+        store.publishValidity(makeValidity('error'), { scriptFingerprint: fingerprintStudioScript(approved.toCode) });
         expect(store.getSnapshot().appliedEditHistory[0]).toMatchObject({
             editId: 'approved',
             recheckStatus: 'recheck-error',
+        });
+    });
+
+    it('updates matching ledger rechecks without rotating identical validity references', () => {
+        store = new ShellStore();
+        const approved = { id: 'approved', intent: 'approved', fromCode: 'a', toCode: 'b' };
+        const validity = makeValidity('solved');
+        store.recordStagedEditOutcome(approved, 'approved');
+
+        store.publishValidity(validity, { scriptFingerprint: fingerprintStudioScript('unrelated') });
+        expect(store.getSnapshot().previousValidity).toBeNull();
+        expect(store.getSnapshot().currentValidity).toBe(validity);
+
+        store.publishValidity(validity, { scriptFingerprint: fingerprintStudioScript(approved.toCode) });
+        expect(store.getSnapshot().previousValidity).toBeNull();
+        expect(store.getSnapshot().currentValidity).toBe(validity);
+        expect(store.getSnapshot().appliedEditHistory[0]).toMatchObject({
+            editId: 'approved',
+            recheckStatus: 'rechecked-solved',
         });
     });
 });

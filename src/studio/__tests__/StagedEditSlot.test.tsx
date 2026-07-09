@@ -4,7 +4,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render } from '@testing-library/react';
 import { StagedEditSlot } from '../StagedEditSlot';
-import { shellStore } from '../store/shellStore';
+import { fingerprintStudioScript, shellStore } from '../store/shellStore';
 
 const setCodeMock = vi.fn();
 let workbenchCode = '';
@@ -61,6 +61,9 @@ describe('StagedEditSlot', () => {
         expect(setCodeMock).toHaveBeenCalledTimes(1);
         expect(setCodeMock).toHaveBeenCalledWith(toCode);
         expect(shellStore.getSnapshot().stagedEdit).toBeNull();
+        expect(shellStore.getSnapshot().appliedEditHistory[0]).toMatchObject({
+            approvedScriptFingerprint: fingerprintStudioScript(toCode),
+        });
         expect(getByTestId('applied-edit-history').textContent).toContain('Approved');
         expect(getByTestId('applied-edit-history').textContent).toContain('demo');
         expect(getByTestId('applied-edit-history').textContent).toContain('Studio Generate');

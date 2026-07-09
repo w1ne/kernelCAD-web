@@ -36,6 +36,7 @@ export interface StagedEdit {
 }
 
 export type StagedEditOutcome = 'approved' | 'rejected' | 'rerun';
+export type StudioScriptFingerprint = `script:${number}:${string}:${string}`;
 export type AppliedEditRecheckStatus =
     | 'not-applicable'
     | 'pending-recheck'
@@ -56,6 +57,12 @@ export interface AppliedEditHistoryEntry {
     readonly addedLines: number;
     readonly removedLines: number;
     readonly recheckStatus: AppliedEditRecheckStatus;
+    readonly approvedScriptFingerprint?: StudioScriptFingerprint;
+    readonly recheckedScriptFingerprint?: StudioScriptFingerprint;
+}
+
+export interface PublishValidityOptions {
+    readonly scriptFingerprint?: StudioScriptFingerprint;
 }
 
 export type AgentRepairWorkflowState = 'drafted' | 'running';
@@ -166,6 +173,21 @@ function countChangedNonEmptyLines(from: string, to: string): { addedLines: numb
         if (right?.trim()) addedLines++;
     }
     return { addedLines, removedLines };
+}
+
+export function fingerprintStudioScript(code: string): StudioScriptFingerprint {
+    const normalized = code.replace(/\r\n?/g, '\n');
+    let fnv = 0x811c9dc5;
+    let djb = 0x1505;
+    for (let i = 0; i < normalized.length; i++) {
+        const char = normalized.charCodeAt(i);
+        fnv ^= char;
+        fnv = Math.imul(fnv, 0x01000193);
+        djb = Math.imul(djb, 33) ^ char;
+    }
+    return `script:${normalized.length}:${(fnv >>> 0).toString(16).padStart(8, '0')}:${(djb >>> 0)
+        .toString(16)
+        .padStart(8, '0')}`;
 }
 
 export class ShellStore {
@@ -330,15 +352,20 @@ export class ShellStore {
     /**
      * Publish a new validator result. Rotates current → previous so the
      * `<ValidityDelta>` component can diff the two without storing its own
-     * history. Identity check on the validity reference: republishing the
-     * same `ValidatorResult` is a no-op.
+     * history. Republishing the same `ValidatorResult` only updates ledger
+     * recheck evidence; it does not rotate the validity delta pair.
      */
-    publishValidity = (next: ValidatorResult | null): void => {
-        if (this.state.currentValidity === next) return;
+    publishValidity = (next: ValidatorResult | null, options: PublishValidityOptions = {}): void => {
         const appliedEditHistory =
             next == null
                 ? this.state.appliedEditHistory
-                : this.updateNewestPendingApprovedRecheck(next);
+                : this.updateNewestPendingApprovedRecheck(next, options.scriptFingerprint);
+        if (this.state.currentValidity === next) {
+            if (appliedEditHistory === this.state.appliedEditHistory) return;
+            this.state = { ...this.state, appliedEditHistory };
+            this.emit();
+            return;
+        }
         this.state = {
             ...this.state,
             previousValidity: this.state.currentValidity,
@@ -366,6 +393,7 @@ export class ShellStore {
             ...(context?.promptText ? { promptText: context.promptText } : {}),
             ...(workflow?.promptSource ? { repairPromptSource: workflow.promptSource } : {}),
             ...(context?.generationId ? { generationId: context.generationId } : {}),
+            ...(outcome === 'approved' ? { approvedScriptFingerprint: fingerprintStudioScript(edit.toCode) } : {}),
         };
         this.state = {
             ...this.state,
@@ -398,9 +426,16 @@ export class ShellStore {
         this.emit();
     };
 
-    private updateNewestPendingApprovedRecheck(next: ValidatorResult): readonly AppliedEditHistoryEntry[] {
+    private updateNewestPendingApprovedRecheck(
+        next: ValidatorResult,
+        scriptFingerprint: StudioScriptFingerprint | undefined,
+    ): readonly AppliedEditHistoryEntry[] {
+        if (scriptFingerprint == null) return this.state.appliedEditHistory;
         const index = this.state.appliedEditHistory.findIndex(
-            (entry) => entry.outcome === 'approved' && entry.recheckStatus === 'pending-recheck'
+            (entry) =>
+                entry.outcome === 'approved' &&
+                entry.recheckStatus === 'pending-recheck' &&
+                entry.approvedScriptFingerprint === scriptFingerprint
         );
         if (index < 0) return this.state.appliedEditHistory;
         const recheckStatus: AppliedEditRecheckStatus =
@@ -410,7 +445,11 @@ export class ShellStore {
                     ? 'recheck-error'
                     : 'rechecked-issues';
         const nextHistory = [...this.state.appliedEditHistory];
-        nextHistory[index] = { ...nextHistory[index], recheckStatus };
+        nextHistory[index] = {
+            ...nextHistory[index],
+            recheckStatus,
+            recheckedScriptFingerprint: scriptFingerprint,
+        };
         return nextHistory;
     }
 
