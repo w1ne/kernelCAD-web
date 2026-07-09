@@ -12,14 +12,8 @@ import type {
 import type { RenderEnvironmentSpec } from '../../shared/intent/renderEnvironmentRecord';
 import type { CameraTargetSpec } from '../../shared/intent/cameraTargetRecord';
 import type { AnimationViewSpec } from '../../shared/intent/animationViewRecord';
-import type { DfmSpec, DfmSpecMetadata } from '../../shared/intent/dfmSpecRecord';
+import type { DfmSpec } from '../../shared/intent/dfmSpecRecord';
 import type { Curve3DMetadata } from '../../shared/intent/curve3dRecord';
-import type {
-  EmbossTextMetadata, EmbossTextAlign, EmbossTextScaleMode,
-} from '../../shared/intent/embossTextRecord';
-import type {
-  ProjectCurveMetadata, ProjectCurveSource, ProjectCurveScaleMode,
-} from '../../shared/intent/projectCurveRecord';
 import { Curve3DProxy } from './curveProxy';
 import { lazyEvalCurve } from '../backends/occt/curve3dEval';
 import type { VariableSweepMetadata, VariableSweepSection } from '../../shared/intent/variableSweepRecord';
@@ -52,6 +46,15 @@ import {
   buildRenderEnvironmentFeatureSpec,
   type ReferenceImageCaptureArgs,
 } from './virtualFeatureRecords';
+import {
+  buildCurve3DFeatureSpec,
+  buildDfmSpecFeatureSpec,
+  buildEmbossTextFeatureSpec,
+  buildProjectCurveFeatureSpec,
+  type Curve3DCaptureArgs,
+  type EmbossTextCaptureArgs,
+  type ProjectCurveCaptureArgs,
+} from './authoringFeatureRecords';
 
 /**
  * Encoded mate / connector data attached to `solvedAssembly` metadata so the
@@ -540,104 +543,7 @@ export class CaptureSession {
    * last one (same convention as setRenderEnvironment).
    */
   addDfmSpec(args: DfmSpec): FeatureId {
-    const bad = (field: string, why: string): never => {
-      throw new KernelError(
-        'feature.invalid-args',
-        `dfmSpec: ${field} ${why}.`,
-        undefined,
-        `invalid-args.dfm-spec.${field} — fix the field; dfmSpec is an enforcement gate, malformed declarations fail the build rather than silently disabling checks.`,
-      );
-    };
-
-    if (args.minWall === undefined && args.minClearance === undefined && !(args.channels?.length)) {
-      bad('spec', 'declares no checks; pass minWall, minClearance, and/or channels');
-    }
-    if (args.minWall !== undefined && !(Number.isFinite(args.minWall) && args.minWall > 0)) {
-      bad('minWall', `must be a positive finite number; got ${args.minWall}`);
-    }
-    if (args.minClearance !== undefined && !(Number.isFinite(args.minClearance) && args.minClearance > 0)) {
-      bad('minClearance', `must be a positive finite number; got ${args.minClearance}`);
-    }
-    // Sandbox scripts are untyped — guard the array shapes so a wrong-shaped
-    // field surfaces as a named KernelError, not a raw TypeError.
-    if (args.ignore !== undefined && !Array.isArray(args.ignore)) {
-      bad('ignore', `must be an array of [partA, partB] pairs; got ${JSON.stringify(args.ignore)}`);
-    }
-    if (args.exclude !== undefined && !Array.isArray(args.exclude)) {
-      bad('exclude', `must be an array of part-name strings; got ${JSON.stringify(args.exclude)}`);
-    }
-    if (args.channels !== undefined && !Array.isArray(args.channels)) {
-      bad('channels', `must be an array of { part, name, openings, sealed? } entries; got ${JSON.stringify(args.channels)}`);
-    }
-    for (const [i, pair] of (args.ignore ?? []).entries()) {
-      const isPair = Array.isArray(pair) && pair.length === 2 &&
-        pair.every(p => typeof p === 'string' && p.length > 0);
-      if (!isPair) {
-        bad(`ignore[${i}]`, `must be a [partA, partB] pair of non-empty strings; got ${JSON.stringify(pair)}`);
-      }
-      if (pair[0] === pair[1]) {
-        bad(`ignore[${i}]`, `must name two different parts; ['${pair[0]}', '${pair[1]}'] can never match a distinct-part pair`);
-      }
-    }
-    for (const [i, name] of (args.exclude ?? []).entries()) {
-      if (typeof name !== 'string' || name.length === 0) {
-        bad(`exclude[${i}]`, `must be a non-empty part-name string; got ${JSON.stringify(name)}`);
-      }
-      // Glob shape: literal name or trailing-'*' prefix glob only. A bare '*'
-      // would silently exclude every part while the spec claims the checks.
-      const star = name.indexOf('*');
-      if (star !== -1 && (star !== name.length - 1 || name.length === 1)) {
-        bad(`exclude[${i}]`, `must be a literal part name or a trailing-'*' prefix glob (e.g. 'servo-*'); got ${JSON.stringify(name)}`);
-      }
-    }
-    for (const [i, c] of (args.channels ?? []).entries()) {
-      if (typeof c !== 'object' || c === null) {
-        bad(`channels[${i}]`, `must be a { part, name, openings, sealed? } object; got ${JSON.stringify(c)}`);
-      }
-      if (typeof c.part !== 'string' || c.part.length === 0) {
-        bad(`channels[${i}].part`, `must be a non-empty part-name string; got ${JSON.stringify(c.part)}`);
-      }
-      if (typeof c.name !== 'string' || c.name.length === 0) {
-        bad(`channels[${i}].name`, `must be a non-empty label string; got ${JSON.stringify(c.name)}`);
-      }
-      if (!Number.isInteger(c.openings) || c.openings < 0) {
-        bad(`channels[${i}].openings`, `must be a non-negative integer; got ${c.openings}`);
-      }
-      if (c.openings === 0 && c.sealed !== true) {
-        bad(`channels[${i}].openings`, `is 0 but the channel is not declared sealed; pass sealed: true for an intentionally sealed void`);
-      }
-      if (c.sealed === true && c.openings !== 0) {
-        bad(`channels[${i}].openings`, `must be 0 when sealed: true; got ${c.openings}`);
-      }
-    }
-    // Downstream matching is by (part, name) — two entries with the same key
-    // are unresolvable contradictory declarations, not a refinement.
-    const channelKeys = new Set<string>();
-    for (const [i, c] of (args.channels ?? []).entries()) {
-      const key = JSON.stringify([c.part, c.name]);
-      if (channelKeys.has(key)) {
-        bad(`channels[${i}]`, `duplicates part '${c.part}' + name '${c.name}' declared at an earlier index`);
-      }
-      channelKeys.add(key);
-    }
-
-    const metadata: DfmSpecMetadata = {
-      virtual: true,
-      ...(args.minWall !== undefined ? { minWall: args.minWall } : {}),
-      ...(args.minClearance !== undefined ? { minClearance: args.minClearance } : {}),
-      ignore: (args.ignore ?? []).map(([a, b]) => [a, b] as const),
-      exclude: [...(args.exclude ?? [])],
-      channels: (args.channels ?? []).map(c => ({
-        part: c.part, name: c.name, openings: c.openings, sealed: c.sealed ?? false,
-      })),
-    };
-
-    const r = this.register({
-      kind: 'dfmSpec',
-      params: {},
-      inputs: {},
-      metadata: metadata as unknown as Record<string, unknown>,
-    });
+    const r = this.register(buildDfmSpecFeatureSpec(args));
     return r.id;
   }
 
@@ -658,94 +564,9 @@ export class CaptureSession {
    * evaluation methods (`sample`, `pointAt`, `tangentAt`, `length`) lower
    * the curve through `lazyEvalCurve` on first use.
    */
-  addCurve3D(args: { metadata: Curve3DMetadata }): Curve3DProxy {
-    const m = args.metadata;
-    const diagnostics: CompilerDiagnostic[] = [];
-
-    // Validation 1: degenerate control net (controlPoints.length < degree + 1).
-    if (m.controlPoints.length < m.degree + 1) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.curve3d.degenerate-controls',
-        severity: 'error',
-        message: `nurbsCurve: need at least ${m.degree + 1} control points for degree=${m.degree}; got ${m.controlPoints.length}.`,
-        hint: HINT_TEMPLATES['feature.curve3d.degenerate-controls'].template,
-      });
-    }
-
-    // Validation 2: weights length must match controlPoints length.
-    if (m.weights !== undefined) {
-      if (m.weights.length !== m.controlPoints.length) {
-        diagnostics.push({
-          target: 'export-occt',
-          code: 'feature.curve3d.weights-length-mismatch',
-          severity: 'error',
-          message: `nurbsCurve: weights.length (${m.weights.length}) does not match controlPoints.length (${m.controlPoints.length}).`,
-          hint: HINT_TEMPLATES['feature.curve3d.weights-length-mismatch'].template,
-        });
-      } else if (!m.weights.every((w) => Number.isFinite(w) && w > 0)) {
-        diagnostics.push({
-          target: 'export-occt',
-          code: 'feature.curve3d.weights-non-positive',
-          severity: 'error',
-          message: `nurbsCurve: all weights must be finite and > 0; got ${JSON.stringify(m.weights)}.`,
-          hint: HINT_TEMPLATES['feature.curve3d.weights-non-positive'].template,
-        });
-      }
-    }
-
-    // Validation 3: knot vector length.
-    if (m.knots !== undefined) {
-      const expected = m.controlPoints.length + m.degree + 1;
-      if (m.knots.length !== expected) {
-        diagnostics.push({
-          target: 'export-occt',
-          code: 'feature.curve3d.knots-length-mismatch',
-          severity: 'error',
-          message: `nurbsCurve: knot vector length should be ${expected} (controlPoints.length + degree + 1); got ${m.knots.length}.`,
-          hint: HINT_TEMPLATES['feature.curve3d.knots-length-mismatch'].template,
-        });
-      }
-    }
-
-    // Validation 4: closed=true but endpoints differ (info — OCCT closes
-    // internally, but the user-visible control net is misleading).
-    if (m.closed === true && m.controlPoints.length >= 2) {
-      const first = m.controlPoints[0];
-      const last = m.controlPoints[m.controlPoints.length - 1];
-      const eps = 1e-6;
-      if (
-        Math.abs(first[0] - last[0]) > eps ||
-        Math.abs(first[1] - last[1]) > eps ||
-        Math.abs(first[2] - last[2]) > eps
-      ) {
-        diagnostics.push({
-          target: 'export-occt',
-          code: 'feature.curve3d.closed-endpoints-mismatch',
-          severity: 'warn',
-          message: `nurbsCurve: closed=true but first (${first.join(',')}) and last (${last.join(',')}) control points differ.`,
-          hint: HINT_TEMPLATES['feature.curve3d.closed-endpoints-mismatch'].template,
-        });
-      }
-    }
-
-    const metadata: Record<string, unknown> = {
-      curve3d: m,
-      // Mark virtual so the lowerer / mesher / serializer can skip this
-      // record when iterating user-visible geometry. The OCCT edge still
-      // lowers — it's just not a `Shape` and doesn't render as a mesh.
-      virtual: true,
-      ...(diagnostics.length > 0 ? { diagnostics } : {}),
-    };
-
-    const record = this.register({
-      kind: 'curve3d',
-      params: {},
-      inputs: {},
-      metadata,
-    });
-
-    return new Curve3DProxy(record.id, m, this);
+  addCurve3D(args: Curve3DCaptureArgs): Curve3DProxy {
+    const record = this.register(buildCurve3DFeatureSpec(args));
+    return new Curve3DProxy(record.id, args.metadata, this);
   }
 
   /**
@@ -846,92 +667,10 @@ export class CaptureSession {
    */
   addEmbossText(
     parentFeatureId: FeatureId,
-    args: {
-      textContent: string;
-      fontFamily?: string;
-      size: Editable<number>;
-      depth: Editable<number>;
-      align?: EmbossTextAlign;
-      anchorU?: Editable<number>;
-      anchorV?: Editable<number>;
-      rotation?: Editable<number>;
-      scaleMode?: EmbossTextScaleMode;
-      face: import('./proxy').FaceSelector | string;
-    },
+    args: EmbossTextCaptureArgs & { face: import('./proxy').FaceSelector | string },
   ): FeatureId {
-    const diagnostics: CompilerDiagnostic[] = [];
-
-    // 1. Text content guard (mirrors sketch.text behaviour).
-    if (typeof args.textContent !== 'string' || args.textContent.trim().length === 0) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'sketch.text.empty-content',
-        severity: 'error',
-        message: `embossText: textContent must be a non-empty string with at least one printable glyph; got ${JSON.stringify(args.textContent)}.`,
-        hint: HINT_TEMPLATES['sketch.text.empty-content'].template,
-      });
-    }
-
-    // 2. Depth must be non-zero (sign selects fuse vs cut).
-    const depthParam = toParam(args.depth, 'mm');
-    if (depthParam.evaluated === 0) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.emboss-text.depth-zero',
-        severity: 'error',
-        message: `embossText: depth must be non-zero (positive=emboss out, negative=engrave in); got 0.`,
-        hint: HINT_TEMPLATES['feature.emboss-text.depth-zero'].template,
-      });
-    }
-
-    // 3. UV anchors in [0, 1].
-    const anchorUParam = toParam(args.anchorU ?? 0.5, 'unitless');
-    const anchorVParam = toParam(args.anchorV ?? 0.5, 'unitless');
-    const outOfRangeU = !(anchorUParam.evaluated >= 0 && anchorUParam.evaluated <= 1);
-    const outOfRangeV = !(anchorVParam.evaluated >= 0 && anchorVParam.evaluated <= 1);
-    if (outOfRangeU || outOfRangeV) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.face.invalid-uv-anchor',
-        severity: 'error',
-        message: `embossText: anchor must lie in [0, 1]; got anchorU=${anchorUParam.evaluated}, anchorV=${anchorVParam.evaluated}.`,
-        hint: HINT_TEMPLATES['feature.face.invalid-uv-anchor'].template,
-      });
-    }
-
-    const sizeParam = toParam(args.size, 'mm');
-    const rotationParam = toParam(args.rotation ?? 0, 'deg');
-
-    // Normalize face selector to FaceRef (mirror buildFaceInputRef path).
     const faceInputRef = buildFaceInputRef(parentFeatureId, args.face);
-    const faceRef =
-      faceInputRef.kind === 'face'
-        ? faceInputRef.ref
-        : { kind: 'canonical' as const, face: 'top' as const };
-
-    const metadata: EmbossTextMetadata & { diagnostics?: CompilerDiagnostic[] } = {
-      textContent: args.textContent,
-      ...(args.fontFamily !== undefined ? { fontFamily: args.fontFamily } : {}),
-      size: sizeParam,
-      depth: depthParam,
-      align: args.align ?? 'center',
-      anchorU: anchorUParam,
-      anchorV: anchorVParam,
-      rotation: rotationParam,
-      scaleMode: args.scaleMode ?? 'original',
-      faceRef,
-      ...(diagnostics.length > 0 ? { diagnostics } : {}),
-    };
-
-    const r = this.register({
-      kind: 'embossText',
-      params: {},
-      inputs: {
-        parent: { kind: 'feature', id: parentFeatureId },
-        face: faceInputRef,
-      },
-      metadata: metadata as unknown as Record<string, unknown>,
-    });
+    const r = this.register(buildEmbossTextFeatureSpec(parentFeatureId, args, faceInputRef));
     return r.id;
   }
 
@@ -945,52 +684,10 @@ export class CaptureSession {
    */
   addProjectCurve(
     parentFeatureId: FeatureId,
-    args: {
-      source: ProjectCurveSource;
-      face: import('./proxy').FaceSelector | string;
-      scaleMode?: ProjectCurveScaleMode;
-      asEdge?: boolean;
-    },
+    args: ProjectCurveCaptureArgs & { face: import('./proxy').FaceSelector | string },
   ): FeatureId {
-    const diagnostics: CompilerDiagnostic[] = [];
-
-    if (args.source.kind === 'sketchCommands') {
-      if (args.source.commands.length === 0) {
-        diagnostics.push({
-          target: 'export-occt',
-          code: 'feature.project-curve.curve-empty',
-          severity: 'error',
-          message: 'projectCurve: source.commands is empty; nothing to project.',
-          hint: HINT_TEMPLATES['feature.project-curve.curve-empty'].template,
-        });
-      }
-    } else if (args.source.kind === 'drawing') {
-      // Validation deferred to lowerer (deserialization step).
-    }
-
     const faceInputRef = buildFaceInputRef(parentFeatureId, args.face);
-    const faceRef =
-      faceInputRef.kind === 'face'
-        ? faceInputRef.ref
-        : { kind: 'canonical' as const, face: 'top' as const };
-
-    const metadata: ProjectCurveMetadata & { diagnostics?: CompilerDiagnostic[] } = {
-      source: args.source,
-      scaleMode: args.scaleMode ?? 'original',
-      asEdge: args.asEdge ?? false,
-      faceRef,
-      ...(diagnostics.length > 0 ? { diagnostics } : {}),
-    };
-
-    const r = this.register({
-      kind: 'projectCurve',
-      params: {},
-      inputs: {
-        parent: { kind: 'feature', id: parentFeatureId },
-        face: faceInputRef,
-      },
-      metadata: metadata as unknown as Record<string, unknown>,
-    });
+    const r = this.register(buildProjectCurveFeatureSpec(parentFeatureId, args, faceInputRef));
     return r.id;
   }
 
