@@ -6,7 +6,7 @@ import { reviewToValidity, reviewToMechanismBanner } from '../adapters/reviewToV
 import { serializedParamsToTable } from '../adapters/serializedParamsToTable';
 import { reviewDiagnosticsToCompiler } from '../adapters/reviewDiagnosticsToCompiler';
 import { extractJointSnapshots } from '../adapters/featureRecordsToMates';
-import { shellStore } from '../store/shellStore';
+import { fingerprintStudioScript, shellStore } from '../store/shellStore';
 import type { ScriptReviewSummary } from '../context/GeometryContext';
 import type { StudioRecomputeResult, StudioRepairEvidence } from '../types';
 
@@ -80,12 +80,16 @@ export function useRecomputeResult(): StudioRecomputeResult {
         () => extractJointSnapshots(workbench.featureRecords ?? [], paramTable),
         [workbench.featureRecords, paramTable],
     );
+    const scriptFingerprint = useMemo(
+        () => fingerprintStudioScript(workbench.code ?? ''),
+        [workbench.code],
+    );
 
     // Publish validity into the shell store so BottomDrawer +
     // ValidityDeltaHeader see the delta (current ↔ previous).
     useEffect(() => {
-        shellStore.publishValidity(validity);
-    }, [validity]);
+        shellStore.publishValidity(validity, { scriptFingerprint });
+    }, [scriptFingerprint, validity]);
 
     const updateParam = (workbench as { updateParam?: StudioRecomputeResult['updateParam'] }).updateParam;
     const setGeometryTransformOverride =
