@@ -13,6 +13,7 @@ import {
   type McpToolDefinition,
 } from './toolRegistry';
 import { catalogToolEntries } from './registry/catalogTools';
+import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -100,6 +101,24 @@ describe('toolRegistry public contract', () => {
 
     expect(names).toEqual(['lookup_cookbook', 'find_part', 'fetch_part']);
     expect(TOOL_REGISTRY.slice(20, 23)).toEqual(catalogToolEntries);
+  });
+
+  it('composes geometry-authoring tools from the geometry registry module', () => {
+    const names = geometryAuthoringToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual([
+      'add_feature',
+      'add_surface',
+      'add_curve',
+      'add_path_segment',
+      'trace_from_image',
+      'add_variable_sweep',
+      'add_text',
+      'project_curve',
+      'add_pattern_feature',
+      'remove_feature',
+    ]);
+    expect(TOOL_REGISTRY.slice(6, 16)).toEqual(geometryAuthoringToolEntries);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {
