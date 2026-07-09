@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import { Check, RotateCcw, X } from 'lucide-react';
 import { useShellStore, shellStore } from './store/useShellStore';
 import { useWorkbench } from './context/WorkbenchContext';
-import type { StagedEdit } from './store/shellStore';
+import type { AppliedEditHistoryEntry, StagedEdit } from './store/shellStore';
 
 // Slice 1.5: real body. Reads stagedEdit from the shell store. When
 // populated, renders the intent, a minimal line-by-line diff, and
@@ -128,8 +128,89 @@ function StagedEditContextDetails({ edit }: { edit: StagedEdit }) {
     );
 }
 
+function AppliedEditHistory({ entries }: { entries: readonly AppliedEditHistoryEntry[] }) {
+    if (entries.length === 0) return null;
+
+    return (
+        <div
+            className="mt-1 border-t border-[#252a33] pt-2 space-y-1"
+            data-testid="applied-edit-history"
+            aria-label="Recent staged edit outcomes"
+        >
+            <div className="uppercase tracking-wide text-[10px] text-gray-500">
+                Recent edits
+            </div>
+            {entries.map((entry) => {
+                const metadata = formatHistoryMetadata(entry);
+                return (
+                    <div
+                        key={entry.id}
+                        className="min-w-0 rounded border border-[#252a33] bg-[#111318] px-2 py-1.5 text-[10px] text-gray-400 space-y-1"
+                    >
+                        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                            <span className="font-medium text-gray-200">{formatOutcome(entry.outcome)}</span>
+                            <span className="font-mono text-emerald-300">
+                                +{entry.addedLines} / -{entry.removedLines}
+                            </span>
+                            {entry.recheckStatus !== 'not-applicable' && (
+                                <span className="text-gray-500">{formatRecheckStatus(entry.recheckStatus)}</span>
+                            )}
+                        </div>
+                        <div className="line-clamp-1 text-gray-300" title={entry.intent}>
+                            {entry.intent}
+                        </div>
+                        {entry.promptText && (
+                            <div className="line-clamp-2 break-words text-gray-500">{entry.promptText}</div>
+                        )}
+                        {metadata.length > 0 && (
+                            <div className="line-clamp-1 break-words text-gray-500">
+                                {metadata.join(' · ')}
+                            </div>
+                        )}
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
+function formatHistoryMetadata(entry: AppliedEditHistoryEntry): string[] {
+    const metadata: string[] = [];
+    if (entry.sourceLabel) metadata.push(entry.sourceLabel);
+    if (entry.selectedFeatureId) metadata.push(entry.selectedFeatureId);
+    if (entry.repairPromptSource) metadata.push(`${entry.repairPromptSource} repair`);
+    if (entry.generationId) metadata.push(entry.generationId);
+    return metadata;
+}
+
+function formatOutcome(outcome: AppliedEditHistoryEntry['outcome']): string {
+    switch (outcome) {
+        case 'approved':
+            return 'Approved';
+        case 'rejected':
+            return 'Rejected';
+        case 'rerun':
+            return 'Rerun';
+    }
+}
+
+function formatRecheckStatus(status: AppliedEditHistoryEntry['recheckStatus']): string {
+    switch (status) {
+        case 'pending-recheck':
+            return 'pending recheck';
+        case 'rechecked-solved':
+            return 'rechecked solved';
+        case 'rechecked-issues':
+            return 'rechecked issues';
+        case 'recheck-error':
+            return 'recheck error';
+        case 'not-applicable':
+            return '';
+    }
+}
+
 export function StagedEditSlot() {
-    const { stagedEdit } = useShellStore();
+    const { stagedEdit, appliedEditHistory } = useShellStore();
     const { code, setCode } = useWorkbench();
     const [staleWarning, setStaleWarning] = useState<{ editId: string; message: string } | null>(null);
     const visibleStaleWarning =
@@ -147,16 +228,21 @@ export function StagedEditSlot() {
             return;
         }
         setCode(stagedEdit.toCode);
+        shellStore.recordStagedEditOutcome(stagedEdit, 'approved');
         shellStore.clearStagedEdit();
     }, [code, stagedEdit, setCode]);
 
     const handleReject = useCallback(() => {
+        if (stagedEdit != null) {
+            shellStore.recordStagedEditOutcome(stagedEdit, 'rejected');
+        }
         setStaleWarning(null);
         shellStore.clearStagedEdit();
-    }, []);
+    }, [stagedEdit]);
 
     const handleRerunPrompt = useCallback(() => {
-        const context = stagedEdit?.context;
+        if (stagedEdit == null) return;
+        const context = stagedEdit.context;
         if (context == null) return;
 
         const prompt = context.promptText.trim();
@@ -168,6 +254,7 @@ export function StagedEditSlot() {
             context.repairWorkflow == null ? null : { ...context.repairWorkflow, state: 'drafted' }
         );
         shellStore.setAgentRailOpen(true);
+        shellStore.recordStagedEditOutcome(stagedEdit, 'rerun');
         shellStore.clearStagedEdit();
         setStaleWarning(null);
     }, [stagedEdit]);
@@ -232,6 +319,7 @@ export function StagedEditSlot() {
                     </div>
                 </>
             )}
+            <AppliedEditHistory entries={appliedEditHistory} />
         </div>
     );
 }
