@@ -56,14 +56,14 @@ import {
   type VariableSweepCaptureArgs,
 } from './surfaceSweepRecords';
 import {
-  buildAssemblyConnectFeatureSpec,
-  buildAssemblyExportFeatureSpec,
-  buildAssemblyJointFeatureSpec,
-  buildAssemblyModelFeatureSpec,
-  buildAssemblyPartFeatureSpec,
-  buildSolvedAssemblyFeatureSpec,
-  type AssemblyJointKind,
-  type SolvedAssemblyJointRef,
+  createAssemblyConnectCaptureSpec,
+  createAssemblyExportCaptureSpec,
+  createAssemblyJointCaptureSpec,
+  createAssemblyModelCaptureSpec,
+  createAssemblyPartCaptureSpec,
+  createSolvedAssemblyCaptureSpec,
+} from './assemblyCaptureValidation';
+import {
   type SolvedAssemblyMateMetadata,
 } from './assemblyFeatureRecords';
 
@@ -659,10 +659,7 @@ export class CaptureSession {
       placedBy?: AssemblyPartOpts['connect'];
     } = {},
   ): FeatureRecord {
-    if (!this.records.some(r => r.id === shape.id)) {
-      throw new Error(`assembly.part: shape '${shape.id}' is not from this CaptureSession`);
-    }
-    return this.register(buildAssemblyPartFeatureSpec(assemblyName, partName, shape.id, opts));
+    return this.register(createAssemblyPartCaptureSpec(this.records, assemblyName, partName, shape.id, opts));
   }
 
   assemblyConnect(
@@ -671,13 +668,7 @@ export class CaptureSession {
     a: AssemblyConnectorRef,
     b: AssemblyConnectorRef,
   ): FeatureRecord {
-    for (const connector of [a, b]) {
-      const record = this.records.find(r => r.id === connector.partId);
-      if (!record || record.kind !== 'assemblyPart') {
-        throw new Error(`assembly.connect: part '${connector.partId}' is not an assembly part in this CaptureSession`);
-      }
-    }
-    return this.register(buildAssemblyConnectFeatureSpec(assemblyName, connectName, a, b));
+    return this.register(createAssemblyConnectCaptureSpec(this.records, assemblyName, connectName, a, b));
   }
 
   assemblyJoint(
@@ -694,13 +685,7 @@ export class CaptureSession {
       ballLimitsDeg?: [[number, number], [number, number], [number, number]];
     },
   ): FeatureRecord {
-    for (const part of [a, b]) {
-      const record = this.records.find(r => r.id === part.id);
-      if (!record || record.kind !== 'assemblyPart') {
-        throw new Error(`assembly.${jointKind}: part '${part.id}' is not an assembly part in this CaptureSession`);
-      }
-    }
-    return this.register(buildAssemblyJointFeatureSpec(assemblyName, jointName, jointKind, a, b, opts));
+    return this.register(createAssemblyJointCaptureSpec(this.records, assemblyName, jointName, jointKind, a, b, opts));
   }
 
   assemblyModel(
@@ -708,13 +693,7 @@ export class CaptureSession {
     parts: readonly AssemblyPartRef[],
     mateMetadata?: SolvedAssemblyMateMetadata,
   ): Shape {
-    for (const part of parts) {
-      const record = this.records.find(r => r.id === part.id);
-      if (!record || record.kind !== 'assemblyPart') {
-        throw new Error(`assembly.model: part '${part.id}' is not an assembly part in this CaptureSession`);
-      }
-    }
-    return this.createShape(buildAssemblyModelFeatureSpec(assemblyName, parts, mateMetadata));
+    return this.createShape(createAssemblyModelCaptureSpec(this.records, assemblyName, parts, mateMetadata));
   }
 
   /**
@@ -739,32 +718,11 @@ export class CaptureSession {
     poses: Record<string, Editable<number> | [Editable<number>, Editable<number>, Editable<number>]>,
     mateMetadata?: SolvedAssemblyMateMetadata,
   ): Shape {
-    if (parts.length === 0) {
-      throw new Error('assembly.solvedModel requires at least one part');
-    }
-    for (const part of parts) {
-      const record = this.records.find(r => r.id === part.id);
-      if (!record || record.kind !== 'assemblyPart') {
-        throw new Error(`assembly.solvedModel: part '${part.id}' is not an assembly part in this CaptureSession`);
-      }
-    }
-    const solvedJoints: SolvedAssemblyJointRef[] = [];
-    for (const joint of joints) {
-      const record = this.records.find(r => r.id === joint.id);
-      if (!record || record.kind !== 'assemblyJoint') {
-        throw new Error(`assembly.solvedModel: joint '${joint.id}' is not an assembly joint in this CaptureSession`);
-      }
-      const m = record.metadata as { jointName?: string; jointKind?: AssemblyJointKind };
-      solvedJoints.push({
-        id: joint.id,
-        name: m.jointName ?? joint.name,
-        kind: m.jointName !== undefined ? m.jointKind : undefined,
-      });
-    }
-    return this.createShape(buildSolvedAssemblyFeatureSpec({
+    return this.createShape(createSolvedAssemblyCaptureSpec({
+      records: this.records,
       assemblyName,
       parts,
-      joints: solvedJoints,
+      joints,
       poses,
       mateMetadata,
     }));
@@ -786,14 +744,7 @@ export class CaptureSession {
    * `.fillet()`, `.exportSTL()`, etc. on it.
    */
   assemblyExport(sceneFeatureId: FeatureId, op: 'compound' | 'union'): Shape {
-    const sourceRecord = this.records.find(r => r.id === sceneFeatureId);
-    if (!sourceRecord) {
-      throw new Error(`assemblyExport: source scene feature '${sceneFeatureId}' is not from this CaptureSession`);
-    }
-    if (sourceRecord.kind !== 'solvedAssembly' && sourceRecord.kind !== 'assemblyModel') {
-      throw new Error(`assemblyExport: source feature '${sceneFeatureId}' is kind '${sourceRecord.kind}'; expected 'solvedAssembly' or 'assemblyModel'.`);
-    }
-    return this.createShape(buildAssemblyExportFeatureSpec(sceneFeatureId, op));
+    return this.createShape(createAssemblyExportCaptureSpec(this.records, sceneFeatureId, op));
   }
 
   edgeFeature(
