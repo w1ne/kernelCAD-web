@@ -262,6 +262,105 @@ describe('buildValiditySuggestions', () => {
         ]);
     });
 
+    it('groups duplicate diagnostics with the same code and target into one suggestion', () => {
+        const suggestions = buildValiditySuggestions({
+            validity: makeValidity('error', [
+                {
+                    code: 'assembly.part.floating',
+                    severity: 'warning',
+                    message: 'link floats',
+                    hint: 'anchor link',
+                    partName: 'link',
+                },
+                {
+                    code: 'assembly.part.floating',
+                    severity: 'error',
+                    message: 'link still has no grounded mate',
+                    hint: 'add a grounded mate to link',
+                    partName: 'link',
+                },
+            ]),
+            mechanismBanner: null,
+        });
+
+        expect(suggestions).toHaveLength(1);
+        expect(suggestions[0]).toMatchObject({
+            id: 'diagnostic:assembly.part.floating:link:0',
+            severity: 'error',
+            targetLabel: 'link',
+            targetId: 'link',
+            diagnosticCount: 2,
+            evidence: 'link floats',
+            action: 'anchor link',
+        });
+    });
+
+    it('keeps diagnostics with the same code but different targets as separate suggestions', () => {
+        const suggestions = buildValiditySuggestions({
+            validity: makeValidity('error', [
+                {
+                    code: 'assembly.part.floating',
+                    severity: 'error',
+                    message: 'link floats',
+                    hint: 'anchor link',
+                    partName: 'link',
+                },
+                {
+                    code: 'assembly.part.floating',
+                    severity: 'error',
+                    message: 'cover floats',
+                    hint: 'anchor cover',
+                    partName: 'cover',
+                },
+            ]),
+            mechanismBanner: null,
+        });
+
+        expect(suggestions.map((suggestion) => suggestion.targetId)).toEqual(['link', 'cover']);
+        expect(suggestions.map((suggestion) => suggestion.diagnosticCount)).toEqual([1, 1]);
+    });
+
+    it('applies the visible card limit after grouping duplicate diagnostics', () => {
+        const suggestions = buildValiditySuggestions({
+            validity: makeValidity('error', [
+                {
+                    code: 'assembly.part.floating',
+                    severity: 'error',
+                    message: 'link floats',
+                    hint: 'anchor link',
+                    partName: 'link',
+                },
+                {
+                    code: 'assembly.part.floating',
+                    severity: 'error',
+                    message: 'link still floats',
+                    hint: 'anchor link again',
+                    partName: 'link',
+                },
+                {
+                    code: 'assembly.part.floating',
+                    severity: 'error',
+                    message: 'cover floats',
+                    hint: 'anchor cover',
+                    partName: 'cover',
+                },
+                {
+                    code: 'assembly.loop.unclosed',
+                    severity: 'warning',
+                    message: 'loop is open',
+                    hint: 'close loop',
+                },
+            ]),
+            mechanismBanner: null,
+            limit: 2,
+        });
+
+        expect(suggestions.map((suggestion) => suggestion.id)).toEqual([
+            'diagnostic:assembly.part.floating:link:0',
+            'diagnostic:assembly.part.floating:cover:1',
+        ]);
+    });
+
     it('maps target precedence for partName, mateName, partA, and no target', () => {
         const suggestions = buildValiditySuggestions({
             validity: makeValidity('error', [
