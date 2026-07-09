@@ -5,7 +5,7 @@ import { isValidVec3, isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, f
 import { KernelError } from '../../shared/intent/kernelError';
 import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
-import { buildFaceInputRef } from './captureSession';
+import { buildFaceInputRef } from './shapeOperationFeatureRecords';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../../kernel/backends/occt/edgeQueries';
 import type { Query, FaceMarker, EdgeMarker } from '../../kernel/naming/query';
 import {

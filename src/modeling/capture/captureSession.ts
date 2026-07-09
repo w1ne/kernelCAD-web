@@ -24,11 +24,9 @@ import type {
   AssemblyPartOpts,
   AssemblyPartRef,
 } from './assembly';
-import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../../shared/intent/queryKeys';
 import { ParamTable, type SerializedParamTable } from '../../shared/runtime/paramTable';
 import type { SoftWarning } from '../../shared/runtime/softWarning';
 import { collectParamRefs } from '../../shared/runtime/resolveParams';
-import { toParam } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import { KernelError } from '../../shared/intent/kernelError';
@@ -66,92 +64,22 @@ import {
 import {
   type SolvedAssemblyMateMetadata,
 } from './assemblyFeatureRecords';
+import {
+  createBendFeatureCaptureSpec,
+  createDraftFeatureCaptureSpec,
+  createScalarEdgeFeatureCaptureSpec,
+  createVariableEdgeFeatureCaptureSpec,
+} from './shapeOperationCaptureValidation';
+import {
+  buildFaceInputRef,
+  type ShapeOperationEdgeSelector,
+  type ShapeOperationFaceSelector,
+} from './shapeOperationFeatureRecords';
 
 export type { EncodedMateRecord, SolvedAssemblyMateMetadata } from './assemblyFeatureRecords';
 
 export { validateFaceLabels } from './faceLabels';
-
-/** Build an `inputs.face` FeatureRef from a FaceSelector. Mirrors the
- *  face-handling branches of `buildEdgeFeatureRef` but specialized to
- *  callers (hole/holes/cutout) that always want a face ref, never an
- *  edges ref. */
-export function buildFaceInputRef(
-  baseId: import('../../shared/intent/types').FeatureId,
-  face: import('./proxy').FaceSelector | string,
-): FeatureRef {
-  // Q8 — Query DSL value (kc.q.face(...)). Detect duck-type-shape and
-  // serialize as a queryDsl FaceRef so the lowerer dispatches through
-  // the Q3 evaluator at consume time.
-  if (isQueryValue(face)) {
-    return {
-      kind: 'face',
-      featureId: baseId,
-      ref: {
-        kind: 'queryDsl',
-        queryAst: face.ast,
-        queryTarget: face.target,
-        ...(face.lenient ? { lenient: true } : {}),
-      },
-    };
-  }
-  // `{ face: <something> }` wrapper form
-  if (typeof face === 'object' && face !== null && 'face' in face) {
-    const faceVal = (face as { face: unknown }).face;
-    if (typeof faceVal === 'string') {
-      if (CANONICAL_FACES.has(faceVal)) {
-        return {
-          kind: 'face',
-          featureId: baseId,
-          ref: { kind: 'canonical', face: faceVal as 'top' },
-        };
-      }
-      return {
-        kind: 'face',
-        featureId: baseId,
-        ref: { kind: 'label', name: faceVal },
-      };
-    }
-    // Wrapped Query value: { face: kc.q.face(...) }.
-    if (isQueryValue(faceVal)) {
-      return {
-        kind: 'face',
-        featureId: baseId,
-        ref: {
-          kind: 'queryDsl',
-          queryAst: faceVal.ast,
-          queryTarget: faceVal.target,
-          ...(faceVal.lenient ? { lenient: true } : {}),
-        },
-      };
-    }
-    return {
-      kind: 'face',
-      featureId: baseId,
-      ref: { kind: 'query', query: faceVal as import('../../kernel/backends/occt/edgeQueries').FaceQuery },
-    };
-  }
-  // Bare FaceQuery object (no { face: ... } wrapper)
-  return {
-    kind: 'face',
-    featureId: baseId,
-    ref: { kind: 'query', query: face as import('../../kernel/backends/occt/edgeQueries').FaceQuery },
-  };
-}
-
-/** Q8 duck-type check: detect the Query DSL value (kc.q.face(...) etc).
- *  Reuses the same `_kind: 'kc.query'` runtime tag set by makeQuery, so a
- *  selector argument that already crossed a JSON boundary still matches. */
-function isQueryValue(v: unknown): v is import('../../kernel/naming/query').Query<unknown> {
-  return (
-    typeof v === 'object' &&
-    v !== null &&
-    (v as { _kind?: unknown })._kind === 'kc.query' &&
-    typeof (v as { target?: unknown }).target === 'string' &&
-    typeof (v as { ast?: unknown }).ast === 'object' &&
-    (v as { ast: { op?: unknown } }).ast !== null &&
-    typeof (v as { ast: { op?: unknown } }).ast.op === 'string'
-  );
-}
+export { buildFaceInputRef } from './shapeOperationFeatureRecords';
 
 export interface FeatureSpec {
   kind: FeatureKind;
@@ -755,31 +683,15 @@ export class CaptureSession {
     selector?: import('./proxy').EdgeSelector | { face: import('./proxy').FaceSelector | string },
     opts?: { continuity?: import('../../shared/intent/filletContinuityRecord').FilletContinuity },
   ): Shape {
-    if (!this.records.some(r => r.id === base.id)) {
-      throw new Error(`${kind}: base shape '${base.id}' is not from this CaptureSession`);
-    }
-    const inputs: Record<string, FeatureRef> = {
-      base: { kind: 'feature', id: base.id },
-    };
-
-    if (selector !== undefined) {
-      const ref = buildEdgeFeatureRef(base.id, selector);
-      if (ref.key === 'face') inputs.face = ref.value;
-      if (ref.key === 'edges') inputs.edges = ref.value;
-    }
-
-    // Slice C Task 6: only `fillet` consumes continuity today; chamfer/shell ignore it.
-    const metadata: import('../../shared/intent/featureRecord').FeatureMetadata | undefined =
-      (kind === 'fillet' && opts?.continuity !== undefined)
-        ? { continuity: opts.continuity }
-        : undefined;
-
-    return this.createShape({
+    return this.createShape(createScalarEdgeFeatureCaptureSpec(
+      this.records,
       kind,
-      params: { [valueParamName]: toParam(value, 'mm') },
-      inputs,
-      ...(metadata !== undefined ? { metadata } : {}),
-    });
+      base.id,
+      valueParamName,
+      value,
+      selector as ShapeOperationEdgeSelector,
+      opts,
+    ));
   }
 
   /**
@@ -789,7 +701,7 @@ export class CaptureSession {
    * resolves each group's edges via `pickEdges`-style dispatch and builds a
    * Replicad function-form RadiusConfig.
    */
-  /** W2.2: capture a `kind: 'sheetMetalBend'` FeatureRecord with the same
+  /** W2.2: capture a sheet-metal bend FeatureRecord with the same
    *  selector-handling as `.fillet()` / `.chamfer()`. The lowerer validates
    *  the bend root + edge linearity; this capture method does no edge
    *  resolution. */
@@ -799,32 +711,19 @@ export class CaptureSession {
     radiusParam: Param,
     selector: import('./proxy').EdgeSelector | { face: import('./proxy').FaceSelector | string },
   ): Shape {
-    if (!this.records.some(r => r.id === base.id)) {
-      throw new Error(`bend: base shape '${base.id}' is not from this CaptureSession`);
-    }
-    const inputs: Record<string, FeatureRef> = {
-      base: { kind: 'feature', id: base.id },
-    };
-    if (selector !== undefined) {
-      const ref = buildEdgeFeatureRef(base.id, selector);
-      if (ref.key === 'face') inputs.face = ref.value;
-      if (ref.key === 'edges') inputs.edges = ref.value;
-    }
-    return this.createShape({
-      kind: 'sheetMetalBend',
-      params: { angle: angleParam, radius: radiusParam },
-      inputs,
-    });
+    return this.createShape(createBendFeatureCaptureSpec(
+      this.records,
+      base.id,
+      angleParam,
+      radiusParam,
+      selector as ShapeOperationEdgeSelector,
+    ));
   }
 
   /**
    * Slice E Task 6: capture a `kind: 'draft'` FeatureRecord.
-   * The taper `angle` (degrees) goes into `params.angle`; the target face
-   * selector is stored in `inputs.face` via the same `buildEdgeFeatureRef`
-   * path as `shell`. The optional `neutralPlane` (string canonical face or
-   * label) and `pullDir` ([x, y, z] vector) are stored in `metadata` so the
-   * Task-7 lowerer (`BRepOffsetAPI_DraftAngle`) can read them back without
-   * needing a new FeatureRecord field.
+   * The shape-operation record builder owns selector serialization and
+   * metadata defaults; this method only enforces session ownership.
    */
   draftFeature(
     base: Shape,
@@ -835,36 +734,16 @@ export class CaptureSession {
       pullDir?: [number, number, number];
     },
   ): Shape {
-    if (!this.records.some(r => r.id === base.id)) {
-      throw new Error(`draft: base shape '${base.id}' is not from this CaptureSession`);
-    }
-    const inputs: Record<string, FeatureRef> = {
-      base: { kind: 'feature', id: base.id },
-    };
-    // Reuse the face-selector path from buildEdgeFeatureRef by wrapping the
-    // face value in the { face: ... } envelope that buildEdgeFeatureRef expects.
-    const faceSelector = typeof opts.face === 'string' || (typeof opts.face === 'object' && opts.face !== null && !('face' in opts.face))
-      ? { face: opts.face }
-      : (opts.face as { face: import('./proxy').FaceSelector | string });
-    const ref = buildEdgeFeatureRef(base.id, faceSelector as Parameters<typeof buildEdgeFeatureRef>[1]);
-    if (ref.key === 'face') inputs.face = ref.value;
-
-    // neutralPlane defaults to the face string when it is a plain canonical/label
-    // name (Task 7 reads metadata.neutralPlane to locate the neutral plane).
-    const neutralPlane: string =
-      opts.neutralPlane ?? (typeof opts.face === 'string' ? opts.face : '');
-
-    const metadata: import('../../shared/intent/featureRecord').FeatureMetadata = {
-      neutralPlane,
-      ...(opts.pullDir !== undefined ? { pullDir: opts.pullDir } : {}),
-    };
-
-    return this.createShape({
-      kind: 'draft',
-      params: { angle: toParam(angleDeg, 'deg') },
-      inputs,
-      metadata,
-    });
+    return this.createShape(createDraftFeatureCaptureSpec(
+      this.records,
+      base.id,
+      angleDeg,
+      opts as {
+        face: ShapeOperationFaceSelector | string;
+        neutralPlane?: string;
+        pullDir?: [number, number, number];
+      },
+    ));
   }
 
   variableEdgeFeature(
@@ -877,35 +756,17 @@ export class CaptureSession {
       distance?: Editable<number>;
     }>,
   ): Shape {
-    if (!this.records.some(r => r.id === base.id)) {
-      throw new Error(`${kind}: base shape '${base.id}' is not from this CaptureSession`);
-    }
-    const inputs: Record<string, FeatureRef> = {
-      base: { kind: 'feature', id: base.id },
-    };
-    const metadataGroups: Array<{ radius?: number; distance?: number }> = [];
-    for (let i = 0; i < groups.length; i++) {
-      const g = groups[i];
-      const ref = buildEdgeFeatureRef(base.id, g.edges);
-      // The buildEdgeFeatureRef helper returns either { key: 'face', value }
-      // (for canonical/label/query face wrappers) or { key: 'edges', value }
-      // (for direct edge selectors). For variable-radius, we always store
-      // under `edge_group_${i}` — the lowerer reads ref.kind to dispatch.
-      inputs[`edge_group_${i}`] = ref.value;
-      const value = g[valueKey];
-      metadataGroups.push({ [valueKey]: value });
-    }
-    return this.createShape({
+    return this.createShape(createVariableEdgeFeatureCaptureSpec(
+      this.records,
       kind,
-      params: {
-        // Empty params block — lowerer reads metadata.groups for radii/distances.
-      },
-      inputs,
-      metadata: {
-        variable: true,
-        groups: metadataGroups,
-      },
-    });
+      base.id,
+      valueKey,
+      groups as Array<{
+        edges: ShapeOperationEdgeSelector;
+        radius?: Editable<number>;
+        distance?: Editable<number>;
+      }>,
+    ));
   }
 
   getRecords(): readonly FeatureRecord[] {
@@ -1001,158 +862,4 @@ export class CaptureSession {
 
 function cloneJson<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
-}
-
-const CANONICAL_FACES = new Set(['top', 'bottom', 'left', 'right', 'front', 'back']);
-
-const EDGE_QUERY_KEYS = new Set<string>(EDGE_QUERY_KEYS_ARR);
-
-/**
- * Translate the user-facing EdgeSelector (or face wrapper) into either an
- * `inputs.face` or `inputs.edges` FeatureRef. The lowerer (Task 3) dispatches
- * on the resulting ref kind.
- *
- * Dispatch order:
- *   1. { face: <canonical> } → FaceRef.canonical (existing path; back-compat)
- *   2. { face: <other-string> } → FaceRef.label (resolved at lowering by Task 4)
- *   3. { face: <FaceQuery object> } → FaceRef.query
- *   4. EdgeSegment (object with `id` AND `midpoint`) → EdgeRef.segment
- *   5. EdgeSegment[] (array) → EdgeRef.segments
- *   6. Otherwise (object with EdgeQuery keys) → EdgeRef.query
- */
-function buildEdgeFeatureRef(
-  baseId: string,
-  selector: import('./proxy').EdgeSelector | { face: import('./proxy').FaceSelector | string },
-): { key: 'face' | 'edges'; value: FeatureRef } {
-  // Q8 — Query DSL value (kc.q.edge(...) / kc.q.face(...)). Dispatch by
-  // target kind so the lowerer sees the right slot key (edges for edge
-  // queries, face for face queries).
-  if (isQueryValue(selector)) {
-    const key: 'face' | 'edges' = selector.target === 'face' ? 'face' : 'edges';
-    return {
-      key,
-      value: {
-        kind: key === 'face' ? 'face' : 'edge',
-        featureId: baseId,
-        ref: {
-          kind: 'queryDsl',
-          queryAst: selector.ast,
-          queryTarget: selector.target,
-          ...(selector.lenient ? { lenient: true } : {}),
-        },
-      },
-    };
-  }
-  // Case 1-3: { face: ... } wrapper. We detect this by: object with `face`
-  // property and NOT having the EdgeSegment full-schema markers.
-  if (typeof selector === 'object' && selector !== null && 'face' in selector &&
-      !('id' in selector && 'midpoint' in selector && 'direction' in selector && 'curveType' in selector)) {
-    const faceVal = (selector as { face: unknown }).face;
-    // Q8 — { face: kc.q.face(...) } wrapper form on an edge feature.
-    if (isQueryValue(faceVal)) {
-      return {
-        key: 'face',
-        value: {
-          kind: 'face',
-          featureId: baseId,
-          ref: {
-            kind: 'queryDsl',
-            queryAst: faceVal.ast,
-            queryTarget: faceVal.target,
-            ...(faceVal.lenient ? { lenient: true } : {}),
-          },
-        },
-      };
-    }
-    if (typeof faceVal === 'string') {
-      if (CANONICAL_FACES.has(faceVal)) {
-        return {
-          key: 'face',
-          value: {
-            kind: 'face',
-            featureId: baseId,
-            ref: { kind: 'canonical', face: faceVal as 'top' },
-          },
-        };
-      }
-      // Non-canonical string → label
-      return {
-        key: 'face',
-        value: {
-          kind: 'face',
-          featureId: baseId,
-          ref: { kind: 'label', name: faceVal },
-        },
-      };
-    }
-    // Object form → FaceQuery
-    return {
-      key: 'face',
-      value: {
-        kind: 'face',
-        featureId: baseId,
-        ref: { kind: 'query', query: faceVal as import('../../kernel/backends/occt/edgeQueries').FaceQuery },
-      },
-    };
-  }
-  // Case 4: EdgeSegment (object with id + midpoint + direction + curveType — full schema)
-  if (typeof selector === 'object' && selector !== null &&
-      'id' in selector && 'midpoint' in selector && 'direction' in selector && 'curveType' in selector) {
-    return {
-      key: 'edges',
-      value: {
-        kind: 'edge',
-        featureId: baseId,
-        ref: { kind: 'segment', segmentId: (selector as { id: string }).id },
-      },
-    };
-  }
-  // Case 5: EdgeSegment[]
-  if (Array.isArray(selector)) {
-    const segmentIds = selector.map(s => s.id);
-    return {
-      key: 'edges',
-      value: {
-        kind: 'edge',
-        featureId: baseId,
-        ref: { kind: 'segments', segmentIds },
-      },
-    };
-  }
-  // Case 6: EdgeQuery — verify all keys are in the whitelist. If any keys are
-  // unknown we still build a query ref so the lowerer can diagnose with the
-  // `feature.invalid-args` code; that keeps the error path on
-  // the lowering side where diagnostics are aggregated.
-  if (typeof selector === 'object' && selector !== null) {
-    const keys = Object.keys(selector);
-    if (keys.length > 0 && keys.every(k => EDGE_QUERY_KEYS.has(k))) {
-      return {
-        key: 'edges',
-        value: {
-          kind: 'edge',
-          featureId: baseId,
-          ref: { kind: 'query', query: selector as import('../../kernel/backends/occt/edgeQueries').EdgeQuery },
-        },
-      };
-    }
-    // Unknown shape — store as a query so the lowerer can diagnose
-    // `feature.invalid-args` against it.
-    return {
-      key: 'edges',
-      value: {
-        kind: 'edge',
-        featureId: baseId,
-        ref: { kind: 'query', query: selector as import('../../kernel/backends/occt/edgeQueries').EdgeQuery },
-      },
-    };
-  }
-  // Empty or non-object selector — fall through to the existing default.
-  return {
-    key: 'edges',
-    value: {
-      kind: 'edge',
-      featureId: baseId,
-      ref: { kind: 'query', query: selector as unknown as import('../../kernel/backends/occt/edgeQueries').EdgeQuery },
-    },
-  };
 }
