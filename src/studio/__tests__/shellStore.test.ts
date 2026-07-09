@@ -23,6 +23,8 @@ describe('ShellStore', () => {
         expect(s.agentDraftPrompt).toBeNull();
         expect(s.agentDraftPromptVersion).toBe(0);
         expect(s.agentRepairWorkflow).toBeNull();
+        expect(s.viewportFocusTarget).toBeNull();
+        expect(s.viewportFocusTargetVersion).toBe(0);
         expect(s.previousValidity).toBeNull();
         expect(s.currentValidity).toBeNull();
     });
@@ -120,6 +122,21 @@ describe('ShellStore', () => {
 
         expect(listener).toHaveBeenCalledTimes(3);
         expect(store.getSnapshot().agentRepairWorkflow).toBeNull();
+    });
+
+    it('setViewportFocusTarget redelivers repeated non-null targets and clears idempotently', () => {
+        store = new ShellStore();
+        const listener = vi.fn();
+        store.subscribe(listener);
+
+        store.setViewportFocusTarget({ ids: ['bracket', 'cover'], source: 'validity-diagnostic' });
+        store.setViewportFocusTarget({ ids: ['bracket', 'cover'], source: 'validity-diagnostic' });
+        store.setViewportFocusTarget(null);
+        store.setViewportFocusTarget(null);
+
+        expect(listener).toHaveBeenCalledTimes(3);
+        expect(store.getSnapshot().viewportFocusTarget).toBeNull();
+        expect(store.getSnapshot().viewportFocusTargetVersion).toBe(2);
     });
 
     it('publishValidity rotates current → previous', () => {

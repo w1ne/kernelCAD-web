@@ -5,8 +5,10 @@ import * as THREE from "three";
 import { useEffect, useRef } from "react";
 import { useWorkbench } from "../../../context/WorkbenchContext";
 import type { GeometryResult } from "../../../../shared/worker/geometryEngine";
+import type { ViewportFocusTarget } from "../../../store/shellStore";
 import { computeGeometryBounds } from "./cameraBounds";
 import { buildCameraPose, buildFitCameraPose, type ViewTarget } from "./cameraPose";
+import { filterGeometriesForFocusTarget } from "./focusTarget";
 
 // Using the exported constants if needed, but they are defined in Viewer.tsx conventionally.
 // For now I will hardcode or use the same values.
@@ -15,9 +17,11 @@ const SKETCH_DISTANCE = 20;
 export function CameraHandler({
     geometries,
     navigationRequest,
+    focusRequest,
 }: {
     geometries: GeometryResult[];
     navigationRequest?: { target: ViewTarget; id: number } | null;
+    focusRequest?: { target: ViewportFocusTarget; id: number } | null;
 }) {
     const { selectedFace, sketchMode } = useWorkbench();
     const { camera, controls } = useThree();
@@ -79,6 +83,24 @@ export function CameraHandler({
         cameraRef.current.updateProjectionMatrix();
         targetState.current = { position: pose.position, lookAt: pose.lookAt };
     }, [navigationRequest, geometries, sketchMode.active]);
+
+    useEffect(() => {
+        if (!focusRequest || geometries.length === 0 || sketchMode.active) return;
+
+        const focusedGeometries = filterGeometriesForFocusTarget(geometries, focusRequest.target);
+        if (focusedGeometries.length === 0) return;
+
+        const bounds = computeGeometryBounds(focusedGeometries);
+        if (!bounds) return;
+
+        const distance = Math.max(bounds.radius * 2.8, SKETCH_DISTANCE);
+        const pose = buildFitCameraPose(bounds.center, distance);
+        cameraRef.current.up.copy(pose.up);
+        cameraRef.current.near = Math.max(distance / 500, 0.01);
+        cameraRef.current.far = Math.max(distance * 20, 1000);
+        cameraRef.current.updateProjectionMatrix();
+        targetState.current = { position: pose.position, lookAt: pose.lookAt };
+    }, [focusRequest, geometries, sketchMode.active]);
 
     useEffect(() => {
         const isSketching = sketchMode.active;

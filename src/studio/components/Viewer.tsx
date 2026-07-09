@@ -84,7 +84,13 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
     }, [geometries]);
 
     const {
-        sectionMode, sectionAxesEnabled, sectionSides, sectionOffsets, sectionKeepWhole,
+        sectionMode,
+        sectionAxesEnabled,
+        sectionSides,
+        sectionOffsets,
+        sectionKeepWhole,
+        viewportFocusTarget,
+        viewportFocusTargetVersion,
     } = useShellStore();
     // Three stable plane instances, mutated in place so slider/side changes
     // never rebuild materials (only mode/axis-count switches do — see ShapeGeometry).
@@ -113,6 +119,14 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
     const [hoveredItem, setHoveredItem] = useState<HoverResult | null>(null);
     const [snapPoint, setSnapPoint] = useState<SnapResult | null>(null);
     const [navigationRequest, setNavigationRequest] = useState<{ target: ViewTarget; id: number } | null>(null);
+    const focusRequest = useMemo(
+        () => (
+            viewportFocusTarget == null
+                ? null
+                : { target: viewportFocusTarget, id: viewportFocusTargetVersion }
+        ),
+        [viewportFocusTarget, viewportFocusTargetVersion],
+    );
 
     useEffect(() => {
         if (hoveredItem?.object?.userData?.ownerId) {
@@ -282,7 +296,11 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     enableDamping
                     dampingFactor={0.12}
                 />
-                <CameraHandler geometries={geometries} navigationRequest={navigationRequest} />
+                <CameraHandler
+                    geometries={geometries}
+                    navigationRequest={navigationRequest}
+                    focusRequest={focusRequest}
+                />
             </Canvas>
             <ViewGizmo
                 onNavigate={(target) => setNavigationRequest((prev) => ({
