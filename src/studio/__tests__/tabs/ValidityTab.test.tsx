@@ -219,8 +219,183 @@ describe('ValidityTab', () => {
             'Fix assembly.part.floating: output-horn floats Action: add a mate to output-horn',
         );
         expect(shellStore.getSnapshot().agentRailOpen).toBe(true);
+        expect(shellStore.getSnapshot().agentRepairWorkflow).toMatchObject({
+            cardId: 'diagnostic:assembly.part.floating:output-horn:0',
+            code: 'assembly.part.floating',
+            promptText: 'Fix assembly.part.floating: output-horn floats Action: add a mate to output-horn',
+            targetId: 'output-horn',
+            state: 'drafted',
+        });
         expect(mockSelectFeature).toHaveBeenCalledTimes(1);
         expect(mockSelectFeature).toHaveBeenCalledWith('output-horn');
+    });
+
+    it('labels the active suggestion card as drafted after Use prompt', () => {
+        const diag: ValidatorDiagnostic = {
+            code: 'assembly.part.floating',
+            severity: 'error',
+            message: 'output-horn floats',
+            hint: 'add a mate to output-horn',
+            partName: 'output-horn',
+        };
+
+        mockUseRecomputeResult.mockReturnValue(
+            withValidity(makeValidity('error', [diag], 1, 0)),
+        );
+
+        render(<ValidityTab />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Use prompt' }));
+
+        const card = screen.getByTestId('validity-suggestion-card');
+        expect(card.getAttribute('data-workflow-state')).toBe('drafted');
+        expect(card.textContent).toContain('Drafted');
+    });
+
+    it('labels the active suggestion card as running when Studio Generate submits the drafted prompt', () => {
+        const diag: ValidatorDiagnostic = {
+            code: 'assembly.part.floating',
+            severity: 'error',
+            message: 'output-horn floats',
+            hint: 'add a mate to output-horn',
+            partName: 'output-horn',
+        };
+
+        mockUseRecomputeResult.mockReturnValue(
+            withValidity(makeValidity('error', [diag], 1, 0)),
+        );
+
+        const { rerender } = render(<ValidityTab />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Use prompt' }));
+        const workflow = shellStore.getSnapshot().agentRepairWorkflow;
+        shellStore.setAgentRepairWorkflow(workflow == null ? null : { ...workflow, state: 'running' });
+        rerender(<ValidityTab />);
+
+        const card = screen.getByTestId('validity-suggestion-card');
+        expect(card.getAttribute('data-workflow-state')).toBe('running');
+        expect(card.textContent).toContain('Running');
+    });
+
+    it('marks the drafted card still failing after a recheck with the same diagnostic', () => {
+        const diag: ValidatorDiagnostic = {
+            code: 'assembly.part.floating',
+            severity: 'error',
+            message: 'output-horn floats',
+            hint: 'add a mate to output-horn',
+            partName: 'output-horn',
+        };
+        const firstResult = withValidity(makeValidity('error', [diag], 1, 0));
+        const secondResult = withValidity(makeValidity('error', [
+            { ...diag, message: 'output-horn still floats' },
+        ], 1, 0));
+        mockUseRecomputeResult.mockReturnValue(firstResult);
+        const { rerender } = render(<ValidityTab />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Use prompt' }));
+        const workflow = shellStore.getSnapshot().agentRepairWorkflow;
+        shellStore.setAgentRepairWorkflow(workflow == null ? null : { ...workflow, state: 'running' });
+        mockUseRecomputeResult.mockReturnValue(secondResult);
+        rerender(<ValidityTab />);
+
+        const card = screen.getByTestId('validity-suggestion-card');
+        expect(card.getAttribute('data-workflow-state')).toBe('still-failing');
+        expect(card.textContent).toContain('Rechecked');
+        expect(card.textContent).toContain('Still failing');
+    });
+
+    it('does not mark drafted cards rechecked before the repair has been submitted', () => {
+        const diag: ValidatorDiagnostic = {
+            code: 'assembly.part.floating',
+            severity: 'error',
+            message: 'output-horn floats',
+            hint: 'add a mate to output-horn',
+            partName: 'output-horn',
+        };
+        mockUseRecomputeResult.mockReturnValue(
+            withValidity(makeValidity('error', [diag], 1, 0)),
+        );
+        const { rerender } = render(<ValidityTab />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Use prompt' }));
+        mockUseRecomputeResult.mockReturnValue(
+            withValidity(makeValidity('error', [
+                { ...diag, message: 'output-horn wording changed' },
+            ], 1, 0)),
+        );
+        rerender(<ValidityTab />);
+
+        const card = screen.getByTestId('validity-suggestion-card');
+        expect(card.getAttribute('data-workflow-state')).toBe('drafted');
+        expect(card.textContent).toContain('Drafted');
+        expect(card.textContent).not.toContain('Still failing');
+        expect(screen.queryByTestId('validity-suggestion-workflow-summary')).toBeNull();
+    });
+
+    it('keeps a compact fixed recheck summary when the drafted card disappears', () => {
+        const diag: ValidatorDiagnostic = {
+            code: 'assembly.part.floating',
+            severity: 'error',
+            message: 'output-horn floats',
+            hint: 'add a mate to output-horn',
+            partName: 'output-horn',
+        };
+
+        mockUseRecomputeResult.mockReturnValue(
+            withValidity(makeValidity('error', [diag], 1, 0)),
+        );
+        const { rerender } = render(<ValidityTab />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Use prompt' }));
+        const workflow = shellStore.getSnapshot().agentRepairWorkflow;
+        shellStore.setAgentRepairWorkflow(workflow == null ? null : { ...workflow, state: 'running' });
+        mockUseRecomputeResult.mockReturnValue(
+            withValidity(makeValidity('solved', [], 1, 1)),
+        );
+        rerender(<ValidityTab />);
+
+        const summary = screen.getByTestId('validity-suggestion-workflow-summary');
+        expect(summary.getAttribute('data-workflow-state')).toBe('fixed');
+        expect(summary.textContent).toContain('Rechecked');
+        expect(summary.textContent).toContain('Fixed');
+    });
+
+    it('does not report fixed when the same failure remains outside the visible card limit', () => {
+        const diag: ValidatorDiagnostic = {
+            code: 'assembly.part.floating',
+            severity: 'error',
+            message: 'output-horn floats',
+            hint: 'add a mate to output-horn',
+            partName: 'output-horn',
+        };
+
+        mockUseRecomputeResult.mockReturnValue(
+            withValidity(makeValidity('error', [diag], 1, 0)),
+        );
+        const { rerender } = render(<ValidityTab />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Use prompt' }));
+        const workflow = shellStore.getSnapshot().agentRepairWorkflow;
+        shellStore.setAgentRepairWorkflow(workflow == null ? null : { ...workflow, state: 'running' });
+        mockUseRecomputeResult.mockReturnValue({
+            ...withValidity(makeValidity('error', [
+                { ...diag, message: 'output-horn still floats' },
+            ], 1, 0)),
+            mechanismBanner: {
+                entries: [
+                    { code: 'mechanism.disconnect', message: 'drive chain disconnected', hint: 'connect drive' },
+                    { code: 'mechanism.orphan-part', message: 'orphan part', hint: 'add mate' },
+                    { code: 'mechanism.no-actuator', message: 'no actuator', hint: 'add actuator' },
+                ],
+            },
+        });
+        rerender(<ValidityTab />);
+
+        const summary = screen.getByTestId('validity-suggestion-workflow-summary');
+        expect(summary.getAttribute('data-workflow-state')).toBe('still-failing');
+        expect(summary.textContent).toContain('Rechecked');
+        expect(summary.textContent).toContain('Still failing');
+        expect(summary.textContent).not.toContain('Fixed');
     });
 
     it('renders fallback prompt preview and source on a suggestion card', () => {

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { DiffEditor } from '@monaco-editor/react';
 import { useGeneration } from '../funnel/hooks/useGeneration';
 import type { GenerateEvent } from '../funnel/lib/generateClient';
@@ -10,7 +10,7 @@ import { ConceptResult } from './components/ConceptResult';
 import { useCode } from './context/CodeContext';
 import { useGeometry } from './context/GeometryContext';
 import { useFeatureSelection } from './hooks/useFeatureSelection';
-import { useShellStore } from './store/useShellStore';
+import { useShellStore, shellStore } from './store/useShellStore';
 
 /** Web-only gate. No hooks here, so the conditional return is safe. */
 export const StudioGenerate: React.FC = () => {
@@ -38,7 +38,7 @@ const StudioGenerateInner: React.FC = () => {
     const currentCode = code ?? '';
     const { executeGeometry } = useGeometry();
     const { selectedFeatureId } = useFeatureSelection();
-    const { agentDraftPrompt, agentDraftPromptVersion } = useShellStore();
+    const { agentDraftPrompt, agentDraftPromptVersion, agentRepairWorkflow } = useShellStore();
     const [editedPrompt, setEditedPrompt] = useState('');
     const [acknowledgedDraftVersion, setAcknowledgedDraftVersion] = useState(-1);
     // The generationId we've already accepted/rejected — gates the review panel
@@ -73,6 +73,11 @@ const StudioGenerateInner: React.FC = () => {
 
     const steps = useMemo(() => events.map(stepLabel).filter(Boolean) as string[], [events]);
 
+    useEffect(() => {
+        if (phase.state !== 'error' || agentRepairWorkflow?.state !== 'running') return;
+        shellStore.setAgentRepairWorkflow({ ...agentRepairWorkflow, state: 'drafted' });
+    }, [agentRepairWorkflow, phase.state]);
+
     const runAgent = (text: string) => {
         // Edit mode: hand the agent the current model so it iterates instead of
         // replacing. Empty editor → fresh generation.
@@ -89,6 +94,14 @@ const StudioGenerateInner: React.FC = () => {
         const trimmed = prompt.trim();
         if (!trimmed || busy) return;
         const agentPrompt = selectedFeatureId === null ? trimmed : `Edit selected target "${selectedFeatureId}": ${trimmed}`;
+        if (
+            agentRepairWorkflow != null &&
+            agentRepairWorkflow.state === 'drafted' &&
+            agentRepairWorkflow.promptText === trimmed &&
+            agentRepairWorkflow.targetId === selectedFeatureId
+        ) {
+            shellStore.setAgentRepairWorkflow({ ...agentRepairWorkflow, state: 'running' });
+        }
         runAgent(agentPrompt);
     };
 
