@@ -14,6 +14,7 @@ import {
 } from './toolRegistry';
 import { catalogToolEntries } from './registry/catalogTools';
 import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools';
+import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -119,6 +120,22 @@ describe('toolRegistry public contract', () => {
       'remove_feature',
     ]);
     expect(TOOL_REGISTRY.slice(6, 16)).toEqual(geometryAuthoringToolEntries);
+  });
+
+  it('composes sketch and assembly authoring tools from the sketch assembly registry module', () => {
+    const names = sketchAssemblyToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual([
+      'solve_sketch',
+      'add_constraint',
+      'add_part',
+      'add_connector',
+      'add_mate',
+      'add_workspace_target',
+      'set_scene_return',
+      'solve_mates',
+    ]);
+    expect(TOOL_REGISTRY.slice(23, 31)).toEqual(sketchAssemblyToolEntries);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {
