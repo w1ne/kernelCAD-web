@@ -103,4 +103,93 @@ describe('StagedEditSlot', () => {
         const { getByText } = render(<StagedEditSlot />);
         expect(getByText(/agent.*set_param_value/i)).toBeDefined();
     });
+
+    it('renders captured generation context for staged agent edits', () => {
+        shellStore.proposeStagedEdit({
+            id: 'e-context',
+            intent: 'Repair output horn',
+            fromCode: 'return box(10);',
+            toCode: 'return box(20);',
+            source: { kind: 'agent', label: 'Studio Generate' },
+            context: {
+                promptText: 'Fix assembly.part.floating: output-horn floats Action: add a mate',
+                selectedFeatureId: 'output-horn',
+                repairWorkflow: {
+                    cardId: 'diagnostic:assembly.part.floating:output-horn:0',
+                    code: 'assembly.part.floating',
+                    promptText: 'Fix assembly.part.floating: output-horn floats Action: add a mate',
+                    targetId: 'output-horn',
+                    promptSource: 'review',
+                    validityFingerprint: 'before',
+                    state: 'running',
+                },
+                generationId: 'gen-context',
+            },
+        });
+
+        const { getByTestId } = render(<StagedEditSlot />);
+        const context = getByTestId('staged-edit-context');
+
+        expect(context.textContent).toContain('Studio Generate');
+        expect(context.textContent).toContain('output-horn');
+        expect(context.textContent).toContain('review repair');
+        expect(context.textContent).toContain('gen-context');
+        expect(context.textContent).toContain('Fix assembly.part.floating');
+    });
+
+    it('stale conflicts can rerun the captured prompt without applying code', () => {
+        shellStore.setSelectedFeatureId('old-target');
+        shellStore.setAgentRailOpen(false);
+        shellStore.setAgentRepairWorkflow({
+            cardId: 'diagnostic:old',
+            code: 'assembly.part.floating',
+            promptText: 'Old diagnostic prompt',
+            targetId: 'old-target',
+            promptSource: 'review',
+            validityFingerprint: 'old',
+            state: 'running',
+        });
+        shellStore.proposeStagedEdit({
+            id: 'e-rerun',
+            intent: 'Repair output horn',
+            fromCode: 'return box(10);',
+            toCode: 'return box(20);',
+            context: {
+                promptText: 'Fix output-horn floating mate',
+                selectedFeatureId: 'output-horn',
+                repairWorkflow: null,
+                generationId: 'gen-rerun',
+            },
+        });
+        workbenchCode = 'return box(15);';
+
+        const { getByTestId } = render(<StagedEditSlot />);
+        fireEvent.click(getByTestId('staged-edit-approve'));
+        fireEvent.click(getByTestId('staged-edit-rerun-prompt'));
+
+        const snapshot = shellStore.getSnapshot();
+        expect(setCodeMock).not.toHaveBeenCalled();
+        expect(snapshot.stagedEdit).toBeNull();
+        expect(snapshot.agentRailOpen).toBe(true);
+        expect(snapshot.agentDraftPrompt).toBe('Fix output-horn floating mate');
+        expect(snapshot.selectedFeatureId).toBe('output-horn');
+        expect(snapshot.agentRepairWorkflow).toBeNull();
+    });
+
+    it('stale conflicts omit rerun prompt when no prompt context exists', () => {
+        shellStore.proposeStagedEdit({
+            id: 'e-no-rerun',
+            intent: 'Manual edit',
+            fromCode: 'return box(10);',
+            toCode: 'return box(20);',
+        });
+        workbenchCode = 'return box(15);';
+
+        const { getByRole, getByTestId, queryByTestId } = render(<StagedEditSlot />);
+        fireEvent.click(getByTestId('staged-edit-approve'));
+
+        expect(getByTestId('staged-edit-stale-warning').textContent).toContain('changed since this edit was staged');
+        expect(getByRole('alert')).toBe(getByTestId('staged-edit-stale-warning'));
+        expect(queryByTestId('staged-edit-rerun-prompt')).toBeNull();
+    });
 });
