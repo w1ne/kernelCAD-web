@@ -14,6 +14,7 @@ import {
 } from './toolRegistry';
 import { catalogToolEntries } from './registry/catalogTools';
 import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools';
+import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
 import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
 
 const EXPECTED_TOOL_NAMES = [
@@ -136,6 +137,21 @@ describe('toolRegistry public contract', () => {
       'solve_mates',
     ]);
     expect(TOOL_REGISTRY.slice(23, 31)).toEqual(sketchAssemblyToolEntries);
+  });
+
+  it('composes review and rendering pipeline tools from the review pipeline registry module', () => {
+    const names = reviewPipelineToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual([
+      'review_cad',
+      'review_paint_peek_latest',
+      'design_loop',
+      'flatten_pattern',
+      'evaluate_sdf',
+      'capture_animation',
+      'render_preview',
+    ]);
+    expect(TOOL_REGISTRY.slice(31, 38)).toEqual(reviewPipelineToolEntries);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {
