@@ -13,6 +13,7 @@ export interface ValiditySuggestionCard {
     readonly targetLabel: string | null;
     readonly targetId: string | null;
     readonly targetIds: readonly string[];
+    readonly diagnosticCount: number;
     readonly code: string;
     readonly promptText: string;
     readonly promptSource: 'review' | 'fallback';
@@ -50,6 +51,7 @@ export function buildValiditySuggestions(input: {
                 targetLabel: null,
                 targetId: null,
                 targetIds: [],
+                diagnosticCount: 1,
                 code: entry.code,
                 promptText: backendPrompt ?? fallbackPrompt(entry.code, evidence, action),
                 promptSource,
@@ -57,7 +59,8 @@ export function buildValiditySuggestions(input: {
             };
         }) ?? [];
     const diagnosticCards =
-        input.validity?.diagnostics.map((diag, index): ValiditySuggestionCard => {
+        groupDiagnostics(input.validity?.diagnostics ?? []).map((group, index): ValiditySuggestionCard => {
+            const diag = group.diagnostics[0]!;
             const targetLabel = diagnosticTargetLabel(diag);
             const targetId = diagnosticTargetId(diag);
             const targetIds = diagnosticTargetIds(diag);
@@ -66,13 +69,14 @@ export function buildValiditySuggestions(input: {
             return {
                 id: `diagnostic:${diag.code}:${targetId ?? 'global'}:${index}`,
                 kind: 'diagnostic',
-                severity: diag.severity,
+                severity: group.severity,
                 title: targetLabel != null ? `Fix ${targetLabel}` : `Resolve ${diag.code}`,
                 evidence,
                 action,
                 targetLabel,
                 targetId,
                 targetIds,
+                diagnosticCount: group.diagnostics.length,
                 code: diag.code,
                 promptText: backendPrompt ?? fallbackPrompt(diag.code, evidence, action),
                 promptSource,
@@ -81,6 +85,52 @@ export function buildValiditySuggestions(input: {
         }) ?? [];
 
     return [...mechanismCards, ...diagnosticCards].slice(0, limit);
+}
+
+function groupDiagnostics(
+    diagnostics: ReadonlyArray<ValidatorDiagnostic>,
+): Array<{ diagnostics: ValidatorDiagnostic[]; severity: ValidatorDiagnostic['severity'] }> {
+    const groups = new Map<string, ValidatorDiagnostic[]>();
+    for (const diagnostic of diagnostics) {
+        const key = diagnosticGroupKey(diagnostic);
+        const group = groups.get(key);
+        if (group == null) {
+            groups.set(key, [diagnostic]);
+        } else {
+            group.push(diagnostic);
+        }
+    }
+    return [...groups.values()].map((group) => ({
+        diagnostics: group,
+        severity: highestSeverity(group),
+    }));
+}
+
+function diagnosticGroupKey(d: ValidatorDiagnostic): string {
+    const targetId = diagnosticTargetId(d) ?? 'global';
+    const targetIds = diagnosticTargetIds(d).join('|');
+    return `${d.code}:${targetId}:${targetIds}`;
+}
+
+function highestSeverity(diagnostics: ReadonlyArray<ValidatorDiagnostic>): ValidatorDiagnostic['severity'] {
+    return diagnostics.reduce<ValidatorDiagnostic['severity']>(
+        (highest, diagnostic) =>
+            severityRank(diagnostic.severity) > severityRank(highest)
+                ? diagnostic.severity
+                : highest,
+        'info',
+    );
+}
+
+function severityRank(severity: ValidatorDiagnostic['severity']): number {
+    switch (severity) {
+        case 'error':
+            return 3;
+        case 'warning':
+            return 2;
+        case 'info':
+            return 1;
+    }
 }
 
 function diagnosticTargetLabel(d: ValidatorDiagnostic): string | null {

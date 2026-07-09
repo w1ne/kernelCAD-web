@@ -203,6 +203,33 @@ describe('ValidityTab', () => {
         expect(card.compareDocumentPosition(row) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
+    it('groups duplicate diagnostic suggestions while keeping every raw diagnostic row', () => {
+        const first: ValidatorDiagnostic = {
+            code: 'assembly.part.floating',
+            severity: 'error',
+            message: 'output-horn floats',
+            hint: 'add a mate to output-horn',
+            partName: 'output-horn',
+        };
+        const duplicate: ValidatorDiagnostic = {
+            code: 'assembly.part.floating',
+            severity: 'warning',
+            message: 'output-horn still has no grounded mate',
+            hint: 'ground output-horn',
+            partName: 'output-horn',
+        };
+
+        mockUseRecomputeResult.mockReturnValue(
+            withValidity(makeValidity('error', [first, duplicate], 1, 0)),
+        );
+
+        render(<ValidityTab />);
+
+        expect(screen.getAllByTestId('validity-suggestion-card')).toHaveLength(1);
+        expect(screen.getByTestId('validity-suggestion-count').textContent).toBe('2 findings');
+        expect(screen.getAllByTestId('diagnostic-row')).toHaveLength(2);
+    });
+
     it('clicking a suggestion card Jump button calls selectFeature with the target id', () => {
         const diag: ValidatorDiagnostic = {
             code: 'assembly.part.floating',

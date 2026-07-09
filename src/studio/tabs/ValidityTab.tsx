@@ -181,6 +181,14 @@ function SuggestionCard({
                 />
                 <span className="font-medium text-gray-100">{card.title}</span>
                 <span className="font-mono text-[10px] text-gray-500">{card.code}</span>
+                {card.diagnosticCount > 1 && (
+                    <span
+                        className="rounded border border-[#343434] bg-[#1b1b1b] px-1.5 py-0.5 text-[10px] text-gray-300"
+                        data-testid="validity-suggestion-count"
+                    >
+                        {card.diagnosticCount} findings
+                    </span>
+                )}
                 {card.targetLabel != null && (
                     <span className="ml-auto max-w-[8rem] truncate text-[11px] text-gray-300" title={card.targetLabel}>
                         {card.targetLabel}
