@@ -218,6 +218,7 @@ describe('buildValiditySuggestions', () => {
             id: 'diagnostic:assembly.interference.overlap:bracket:0',
             targetLabel: 'bracket ↔ cover',
             targetId: 'bracket',
+            targetIds: ['bracket', 'cover'],
         });
     });
 
