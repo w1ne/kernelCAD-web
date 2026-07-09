@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useState } from 'react';
-import { Check, X } from 'lucide-react';
+import { Check, RotateCcw, X } from 'lucide-react';
 import { useShellStore, shellStore } from './store/useShellStore';
 import { useWorkbench } from './context/WorkbenchContext';
 import type { StagedEdit } from './store/shellStore';
@@ -84,6 +84,50 @@ function PlaceholderBody() {
     );
 }
 
+function StagedEditContextDetails({ edit }: { edit: StagedEdit }) {
+    const context = edit.context;
+    if (context == null && edit.source?.label == null) return null;
+
+    const prompt = context?.promptText.trim();
+    const target = context?.selectedFeatureId ?? null;
+    const workflow = context?.repairWorkflow ?? null;
+
+    return (
+        <div
+            className="min-w-0 rounded border border-[#252a33] bg-[#111318] px-2 py-1.5 text-[10px] text-gray-400 space-y-1 break-words"
+            data-testid="staged-edit-context"
+        >
+            {edit.source?.label && (
+                <div className="min-w-0">
+                    <span className="text-gray-500">Source:</span> {edit.source.kind} · {edit.source.label}
+                </div>
+            )}
+            {prompt && (
+                <div className="line-clamp-2 min-w-0" title={prompt}>
+                    <span className="text-gray-500">Prompt:</span> {prompt}
+                </div>
+            )}
+            {context != null && (
+                <div className="flex min-w-0 flex-wrap gap-x-2 gap-y-1">
+                    <span className="min-w-0">
+                        <span className="text-gray-500">Target:</span> {target ?? 'whole model'}
+                    </span>
+                    {workflow != null && (
+                        <span className="min-w-0">
+                            <span className="text-gray-500">Workflow:</span> {workflow.promptSource} repair
+                        </span>
+                    )}
+                    {context.generationId && (
+                        <span className="min-w-0">
+                            <span className="text-gray-500">Generation:</span> {context.generationId}
+                        </span>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}
+
 export function StagedEditSlot() {
     const { stagedEdit } = useShellStore();
     const { code, setCode } = useWorkbench();
@@ -111,6 +155,23 @@ export function StagedEditSlot() {
         shellStore.clearStagedEdit();
     }, []);
 
+    const handleRerunPrompt = useCallback(() => {
+        const context = stagedEdit?.context;
+        if (context == null) return;
+
+        const prompt = context.promptText.trim();
+        if (!prompt) return;
+
+        shellStore.setSelectedFeatureId(context.selectedFeatureId);
+        shellStore.setAgentDraftPrompt(prompt);
+        shellStore.setAgentRepairWorkflow(
+            context.repairWorkflow == null ? null : { ...context.repairWorkflow, state: 'drafted' }
+        );
+        shellStore.setAgentRailOpen(true);
+        shellStore.clearStagedEdit();
+        setStaleWarning(null);
+    }, [stagedEdit]);
+
     return (
         <div className="p-3 flex flex-col gap-2" data-testid="staged-edit-slot">
             <div className="uppercase tracking-wide text-[10px] text-gray-500">
@@ -127,18 +188,27 @@ export function StagedEditSlot() {
                     >
                         "{stagedEdit.intent}"
                     </div>
+                    <StagedEditContextDetails edit={stagedEdit} />
                     <DiffCard edit={stagedEdit} />
-                    {stagedEdit.source?.label && (
-                        <div className="text-[10px] text-gray-500">
-                            {stagedEdit.source.kind} · {stagedEdit.source.label}
-                        </div>
-                    )}
                     {visibleStaleWarning != null && (
                         <div
-                            className="rounded border border-amber-800/70 bg-amber-950/40 px-2 py-1 text-[10px] text-amber-200"
+                            className="rounded border border-amber-800/70 bg-amber-950/40 px-2 py-1 text-[10px] text-amber-200 space-y-1.5"
                             data-testid="staged-edit-stale-warning"
+                            role="alert"
+                            aria-live="polite"
+                            aria-atomic="true"
                         >
-                            {visibleStaleWarning}
+                            <div>{visibleStaleWarning}</div>
+                            {stagedEdit.context?.promptText.trim() && (
+                                <button
+                                    type="button"
+                                    onClick={handleRerunPrompt}
+                                    data-testid="staged-edit-rerun-prompt"
+                                    className="inline-flex items-center gap-1 rounded border border-amber-700/70 bg-amber-900/30 px-2 py-1 text-[10px] text-amber-100 hover:bg-amber-900/50"
+                                >
+                                    <RotateCcw className="h-3 w-3" /> Rerun prompt
+                                </button>
+                            )}
                         </div>
                     )}
                     <div className="flex gap-2">
