@@ -12,6 +12,7 @@ const mockGeneration = vi.hoisted(() => ({
 }));
 
 const mockCode = vi.hoisted(() => ({
+    code: '',
     setCode: vi.fn(),
 }));
 
@@ -36,10 +37,15 @@ const mockShell = vi.hoisted(() => ({
         state: 'drafted' | 'running';
     } | null,
     setAgentRepairWorkflow: vi.fn(),
+    proposeStagedEdit: vi.fn(),
 }));
 
 vi.mock('../agentAvailability', () => ({
     inAppAgentEnabled: () => true,
+}));
+
+vi.mock('@monaco-editor/react', () => ({
+    DiffEditor: () => <div data-testid="studio-generate-diff" />,
 }));
 
 vi.mock('../../funnel/hooks/useGeneration', () => ({
@@ -69,6 +75,7 @@ vi.mock('../store/useShellStore', () => ({
     }),
     shellStore: {
         setAgentRepairWorkflow: mockShell.setAgentRepairWorkflow,
+        proposeStagedEdit: mockShell.proposeStagedEdit,
     },
 }));
 
@@ -78,6 +85,7 @@ beforeEach(() => {
     mockGeneration.phase = { state: 'idle' };
     mockGeneration.events = [];
     mockGeneration.submit.mockReset();
+    mockCode.code = '';
     mockCode.setCode.mockReset();
     mockGeometry.executeGeometry.mockReset();
     mockSelection.selectedFeatureId = null;
@@ -85,6 +93,7 @@ beforeEach(() => {
     mockShell.agentDraftPromptVersion = 0;
     mockShell.agentRepairWorkflow = null;
     mockShell.setAgentRepairWorkflow.mockReset();
+    mockShell.proposeStagedEdit.mockReset();
 });
 
 afterEach(() => cleanup());
@@ -241,5 +250,182 @@ describe('StudioGenerate', () => {
         expect((screen.getByLabelText('Generate prompt') as HTMLTextAreaElement).value).toBe(
             'Fix assembly.part.floating: output-horn floats Action: add a mate',
         );
+    });
+
+    it('stages a generated artifact instead of applying it directly', () => {
+        mockCode.code = 'const oldPart = box(10, 10, 10);\nreturn oldPart;';
+        mockGeneration.phase = {
+            state: 'done',
+            generationId: 'gen-1',
+            anonId: 'anon-1',
+            artifact: {
+                title: 'Add mounting holes',
+                code: 'const newPart = box(10, 10, 10);\nreturn newPart;',
+                parameters: [],
+                suggestions: [],
+            },
+        };
+
+        render(<StudioGenerate />);
+
+        fireEvent.click(screen.getByRole('button', { name: /stage edit/i }));
+
+        expect(mockShell.proposeStagedEdit).toHaveBeenCalledWith(expect.objectContaining({
+            id: 'agent:gen-1',
+            intent: 'Add mounting holes',
+            fromCode: 'const oldPart = box(10, 10, 10);\nreturn oldPart;',
+            toCode: 'const newPart = box(10, 10, 10);\nreturn newPart;',
+            source: { kind: 'agent', label: 'Studio Generate' },
+        }));
+        expect(mockCode.setCode).not.toHaveBeenCalled();
+        expect(mockGeometry.executeGeometry).not.toHaveBeenCalled();
+    });
+
+    it('preserves an empty submit baseline when staging after editor code changes', () => {
+        const { rerender } = render(<StudioGenerate />);
+        const prompt = screen.getByLabelText('Generate prompt');
+
+        fireEvent.change(prompt, { target: { value: 'make a cube' } });
+        fireEvent.submit(prompt.closest('form')!);
+
+        mockCode.code = 'return box(99);';
+        mockGeneration.phase = {
+            state: 'done',
+            generationId: 'gen-empty',
+            anonId: 'anon-empty',
+            artifact: {
+                title: 'Make a cube',
+                code: 'return box(10);',
+                parameters: [],
+                suggestions: [],
+            },
+        };
+        rerender(<StudioGenerate />);
+
+        fireEvent.click(screen.getByRole('button', { name: /stage edit/i }));
+
+        expect(mockShell.proposeStagedEdit).toHaveBeenCalledWith(expect.objectContaining({
+            id: 'agent:gen-empty',
+            fromCode: '',
+            toCode: 'return box(10);',
+        }));
+    });
+
+    it('does not show staged status after discarding a generated artifact', () => {
+        mockGeneration.phase = {
+            state: 'done',
+            generationId: 'gen-discard',
+            anonId: 'anon-discard',
+            artifact: {
+                title: 'Throwaway proposal',
+                code: 'return box(20);',
+                parameters: [],
+                suggestions: [],
+            },
+        };
+
+        render(<StudioGenerate />);
+
+        fireEvent.click(screen.getByRole('button', { name: /discard/i }));
+
+        expect(mockShell.proposeStagedEdit).not.toHaveBeenCalled();
+        expect(screen.queryByText(/staged for review/i)).toBeNull();
+        expect(screen.getByText(/discarded — Throwaway proposal/i)).toBeTruthy();
+    });
+
+    it('preserves prompt, target, and repair workflow context on staged generated edits', () => {
+        mockCode.code = 'return box(10);';
+        mockSelection.selectedFeatureId = 'output-horn';
+        mockShell.agentDraftPrompt = 'Fix assembly.part.floating: output-horn floats Action: add a mate';
+        mockShell.agentDraftPromptVersion = 1;
+        mockShell.agentRepairWorkflow = {
+            cardId: 'diagnostic:assembly.part.floating:output-horn:0',
+            code: 'assembly.part.floating',
+            promptText: 'Fix assembly.part.floating: output-horn floats Action: add a mate',
+            targetId: 'output-horn',
+            promptSource: 'fallback',
+            validityFingerprint: 'before',
+            state: 'running',
+        };
+        mockGeneration.phase = {
+            state: 'done',
+            generationId: 'gen-2',
+            anonId: 'anon-2',
+            artifact: {
+                title: 'Repair output-horn',
+                code: 'return box(20);',
+                parameters: [],
+                suggestions: [],
+            },
+        };
+
+        render(<StudioGenerate />);
+
+        fireEvent.click(screen.getByRole('button', { name: /stage edit/i }));
+
+        expect(mockShell.proposeStagedEdit).toHaveBeenCalledWith(expect.objectContaining({
+            context: {
+                promptText: 'Fix assembly.part.floating: output-horn floats Action: add a mate',
+                selectedFeatureId: 'output-horn',
+                repairWorkflow: mockShell.agentRepairWorkflow,
+                generationId: 'gen-2',
+            },
+        }));
+    });
+
+    it('uses submit-time prompt, target, and workflow context when staging later', () => {
+        mockCode.code = 'return box(10);';
+        mockSelection.selectedFeatureId = 'output-horn';
+        const draftedWorkflow = {
+            cardId: 'diagnostic:assembly.part.floating:output-horn:0',
+            code: 'assembly.part.floating',
+            promptText: 'add a mate',
+            targetId: 'output-horn',
+            promptSource: 'fallback' as const,
+            validityFingerprint: 'before',
+            state: 'drafted' as const,
+        };
+        mockShell.agentRepairWorkflow = draftedWorkflow;
+
+        const { rerender } = render(<StudioGenerate />);
+        const prompt = screen.getByLabelText('Generate prompt');
+        fireEvent.change(prompt, { target: { value: 'add a mate' } });
+        fireEvent.submit(prompt.closest('form')!);
+
+        fireEvent.change(prompt, { target: { value: 'wrong later prompt' } });
+        mockSelection.selectedFeatureId = 'hinge-pin';
+        mockShell.agentRepairWorkflow = {
+            ...draftedWorkflow,
+            promptText: 'wrong later prompt',
+            targetId: 'hinge-pin',
+            state: 'running',
+        };
+        mockGeneration.phase = {
+            state: 'done',
+            generationId: 'gen-context',
+            anonId: 'anon-context',
+            artifact: {
+                title: 'Repair original target',
+                code: 'return box(20);',
+                parameters: [],
+                suggestions: [],
+            },
+        };
+        rerender(<StudioGenerate />);
+
+        fireEvent.click(screen.getByRole('button', { name: /stage edit/i }));
+
+        expect(mockShell.proposeStagedEdit).toHaveBeenCalledWith(expect.objectContaining({
+            fromCode: 'return box(10);',
+            context: {
+                promptText: 'add a mate',
+                selectedFeatureId: 'output-horn',
+                repairWorkflow: {
+                    ...draftedWorkflow,
+                    state: 'running',
+                },
+                generationId: 'gen-context',
+            },
+        }));
     });
 });

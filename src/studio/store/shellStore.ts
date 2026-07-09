@@ -22,6 +22,13 @@ export interface StagedEdit {
     readonly intent: string;
     readonly fromCode: string;
     readonly toCode: string;
+    /** Agent context captured when the edit was proposed. */
+    readonly context?: {
+        readonly promptText: string;
+        readonly selectedFeatureId: SelectedFeatureId;
+        readonly repairWorkflow: AgentRepairWorkflow | null;
+        readonly generationId?: string;
+    };
     /** Optional snapshot of validateAssembly predicted output post-edit. */
     readonly expectedDiagnostics?: ReadonlyArray<{ code: string; severity: string; message: string }>;
     /** Where the proposal came from. */
