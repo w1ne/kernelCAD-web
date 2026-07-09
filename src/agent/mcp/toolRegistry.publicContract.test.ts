@@ -13,7 +13,10 @@ import {
   type McpToolDefinition,
 } from './toolRegistry';
 import { catalogToolEntries } from './registry/catalogTools';
+import { coreRuntimeToolEntries } from './registry/coreRuntimeTools';
 import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools';
+import { inspectionVerificationToolEntries } from './registry/inspectionVerificationTools';
+import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
 import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
 
@@ -62,6 +65,7 @@ const PUBLIC_CONTRACT_FIXTURE = new URL(
   '../../../tests/fixtures/mcp/toolRegistry.publicContract.json',
   import.meta.url,
 );
+const TOOL_REGISTRY_SOURCE = new URL('./toolRegistry.ts', import.meta.url);
 
 function serializedPublicTools(): unknown {
   return JSON.parse(JSON.stringify(TOOLS));
@@ -96,6 +100,94 @@ describe('toolRegistry public contract', () => {
   it('keeps merged public tool metadata stable', () => {
     const fixture = JSON.parse(readFileSync(PUBLIC_CONTRACT_FIXTURE, 'utf8'));
     expect(serializedPublicTools()).toEqual(fixture);
+  });
+
+  it('keeps toolRegistry as the composition and dispatch boundary', () => {
+    expect(readFileSync(TOOL_REGISTRY_SOURCE, 'utf8')).not.toContain('definition: {');
+  });
+
+  it('composes core runtime tools from the core runtime registry module', () => {
+    const names = coreRuntimeToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual(['evaluate_script', 'diff_scripts', 'set_param']);
+    expect([TOOL_REGISTRY[0], TOOL_REGISTRY[1], TOOL_REGISTRY[5]]).toEqual(coreRuntimeToolEntries);
+  });
+
+  it('composes inspection and verification tools from the inspection verification registry module', () => {
+    const names = inspectionVerificationToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual(['inspect', 'verify', 'why_did_this_fail', 'query']);
+    expect([TOOL_REGISTRY[2], TOOL_REGISTRY[3], TOOL_REGISTRY[4], TOOL_REGISTRY[16]]).toEqual(
+      inspectionVerificationToolEntries,
+    );
+  });
+
+  it('composes reference and export tools from the reference export registry module', () => {
+    const names = referenceExportToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual(['lookup_api', 'lookup_diagnostics', 'export']);
+    expect(TOOL_REGISTRY.slice(17, 20)).toEqual(referenceExportToolEntries);
+  });
+
+  it('wires the moved core runtime handlers through the public dispatcher', async () => {
+    const evalResult = await callMcpTool('evaluate_script', {
+      code: 'return box(10, 10, 10);',
+      dryRun: true,
+    });
+    expect(evalResult).toMatchObject({ ok: true, dryRun: true, featureCount: 1 });
+
+    const diffResult = await callMcpTool('diff_scripts', {});
+    expect(diffResult).toMatchObject({
+      ok: false,
+      side: 'base',
+      errorCode: 'cli.invalid-args',
+    });
+
+    const setParamResult = await callMcpTool('set_param', {
+      code: "const width = param('width', 1);\nreturn box(width, 1, 1);",
+      param_name: 'missing',
+      new_value: 2,
+    });
+    expect(setParamResult).toMatchObject({ ok: false });
+    expect((setParamResult as { error?: string }).error).toContain('missing');
+  });
+
+  it('wires the moved inspection and verification handlers through the public dispatcher', async () => {
+    await expect(callMcpTool('inspect', { of: 'nope' })).rejects.toThrow(
+      /Unknown inspect subject: nope/,
+    );
+
+    await expect(callMcpTool('verify', { check: 'nope' })).rejects.toThrow(
+      /Unknown verify check: nope/,
+    );
+
+    const whyResult = await callMcpTool('why_did_this_fail', {
+      code: 'return box(10, 10, 10);',
+    });
+    expect(whyResult).toMatchObject({
+      ok: true,
+      chain: [{ feature_id: 'box_1', kind: 'box', health: 'healthy' }],
+    });
+
+    await expect(callMcpTool('query', { mode: 'nope' })).rejects.toThrow(
+      /Unknown query mode: nope/,
+    );
+  });
+
+  it('wires the moved reference and export handlers through the public dispatcher', async () => {
+    const apiResult = await callMcpTool('lookup_api', {});
+    expect((apiResult as { globals?: Array<{ name: string }> }).globals).toContainEqual(
+      expect.objectContaining({ name: 'box' }),
+    );
+
+    const diagnosticResult = await callMcpTool('lookup_diagnostics', {});
+    expect((diagnosticResult as { codes?: Array<{ code: string }> }).codes).toContainEqual(
+      expect.objectContaining({ code: 'cli.invalid-args' }),
+    );
+
+    await expect(callMcpTool('export', { target: 'nope' })).rejects.toThrow(
+      /Unknown export target: nope/,
+    );
   });
 
   it('composes catalog tools from the catalog registry module', () => {
