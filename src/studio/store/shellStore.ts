@@ -35,6 +35,29 @@ export interface StagedEdit {
     readonly source?: { kind: 'agent' | 'human' | 'test'; label?: string };
 }
 
+export type StagedEditOutcome = 'approved' | 'rejected' | 'rerun';
+export type AppliedEditRecheckStatus =
+    | 'not-applicable'
+    | 'pending-recheck'
+    | 'rechecked-solved'
+    | 'rechecked-issues'
+    | 'recheck-error';
+
+export interface AppliedEditHistoryEntry {
+    readonly id: string;
+    readonly editId: string;
+    readonly outcome: StagedEditOutcome;
+    readonly intent: string;
+    readonly sourceLabel?: string;
+    readonly promptText?: string;
+    readonly selectedFeatureId: SelectedFeatureId;
+    readonly repairPromptSource?: 'review' | 'fallback';
+    readonly generationId?: string;
+    readonly addedLines: number;
+    readonly removedLines: number;
+    readonly recheckStatus: AppliedEditRecheckStatus;
+}
+
 export type AgentRepairWorkflowState = 'drafted' | 'running';
 
 export interface AgentRepairWorkflow {
@@ -64,6 +87,7 @@ export interface ShellState {
     readonly previousValidity: ValidatorResult | null;
     readonly currentValidity: ValidatorResult | null;
     readonly stagedEdit: StagedEdit | null;
+    readonly appliedEditHistory: readonly AppliedEditHistoryEntry[];
     readonly markingMode: boolean;
     readonly sectionMode: boolean;
     /**
@@ -116,6 +140,7 @@ const INITIAL_STATE: ShellState = {
     previousValidity: null,
     currentValidity: null,
     stagedEdit: null,
+    appliedEditHistory: [],
     markingMode: false,
     sectionMode: false,
     sectionAxesEnabled: { x: false, y: false, z: true },
@@ -125,12 +150,30 @@ const INITIAL_STATE: ShellState = {
 };
 
 type Listener = () => void;
+const MAX_APPLIED_EDIT_HISTORY = 6;
+
+function countChangedNonEmptyLines(from: string, to: string): { addedLines: number; removedLines: number } {
+    const a = from.split('\n');
+    const b = to.split('\n');
+    let addedLines = 0;
+    let removedLines = 0;
+    const max = Math.max(a.length, b.length);
+    for (let i = 0; i < max; i++) {
+        const left = a[i];
+        const right = b[i];
+        if (left === right) continue;
+        if (left?.trim()) removedLines++;
+        if (right?.trim()) addedLines++;
+    }
+    return { addedLines, removedLines };
+}
 
 export class ShellStore {
     // Inspector visibility persists across reloads (mirrors the validity
     // drawer's localStorage pattern); everything else starts from defaults.
     private state: ShellState = { ...INITIAL_STATE, inspectorOpen: readStoredInspectorOpen() };
     private readonly listeners = new Set<Listener>();
+    private appliedEditSequence = 0;
 
     getSnapshot = (): ShellState => this.state;
 
@@ -292,10 +335,41 @@ export class ShellStore {
      */
     publishValidity = (next: ValidatorResult | null): void => {
         if (this.state.currentValidity === next) return;
+        const appliedEditHistory =
+            next == null
+                ? this.state.appliedEditHistory
+                : this.updateNewestPendingApprovedRecheck(next);
         this.state = {
             ...this.state,
             previousValidity: this.state.currentValidity,
             currentValidity: next,
+            appliedEditHistory,
+        };
+        this.emit();
+    };
+
+    recordStagedEditOutcome = (edit: StagedEdit, outcome: StagedEditOutcome): void => {
+        const context = edit.context;
+        const workflow = context?.repairWorkflow;
+        const diff = countChangedNonEmptyLines(edit.fromCode, edit.toCode);
+        const sequence = ++this.appliedEditSequence;
+        const entry: AppliedEditHistoryEntry = {
+            id: `${edit.id}:${outcome}:${sequence}`,
+            editId: edit.id,
+            outcome,
+            intent: edit.intent,
+            selectedFeatureId: context?.selectedFeatureId ?? null,
+            addedLines: diff.addedLines,
+            removedLines: diff.removedLines,
+            recheckStatus: outcome === 'approved' ? 'pending-recheck' : 'not-applicable',
+            ...(edit.source?.label ? { sourceLabel: edit.source.label } : {}),
+            ...(context?.promptText ? { promptText: context.promptText } : {}),
+            ...(workflow?.promptSource ? { repairPromptSource: workflow.promptSource } : {}),
+            ...(context?.generationId ? { generationId: context.generationId } : {}),
+        };
+        this.state = {
+            ...this.state,
+            appliedEditHistory: [entry, ...this.state.appliedEditHistory].slice(0, MAX_APPLIED_EDIT_HISTORY),
         };
         this.emit();
     };
@@ -319,9 +393,26 @@ export class ShellStore {
 
     /** Test helper. Not exposed via React hooks. */
     reset = (): void => {
+        this.appliedEditSequence = 0;
         this.state = INITIAL_STATE;
         this.emit();
     };
+
+    private updateNewestPendingApprovedRecheck(next: ValidatorResult): readonly AppliedEditHistoryEntry[] {
+        const index = this.state.appliedEditHistory.findIndex(
+            (entry) => entry.outcome === 'approved' && entry.recheckStatus === 'pending-recheck'
+        );
+        if (index < 0) return this.state.appliedEditHistory;
+        const recheckStatus: AppliedEditRecheckStatus =
+            next.status === 'solved'
+                ? 'rechecked-solved'
+                : next.status === 'error'
+                    ? 'recheck-error'
+                    : 'rechecked-issues';
+        const nextHistory = [...this.state.appliedEditHistory];
+        nextHistory[index] = { ...nextHistory[index], recheckStatus };
+        return nextHistory;
+    }
 
     private emit(): void {
         for (const listener of this.listeners) listener();

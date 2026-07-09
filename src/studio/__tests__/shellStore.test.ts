@@ -229,4 +229,87 @@ describe('ShellStore', () => {
         expect(store.getSnapshot().stagedEdit).toBeNull();
         expect(listener).toHaveBeenCalledTimes(1);
     });
+
+    it('records staged edit outcomes with bounded deterministic diff evidence', () => {
+        store = new ShellStore();
+        const edit = {
+            id: 'e-ledger',
+            intent: 'Repair output horn',
+            fromCode: 'return box(10);\n',
+            toCode: 'const part = box(20);\nreturn part;\n',
+            source: { kind: 'agent' as const, label: 'Studio Generate' },
+            context: {
+                promptText: 'Fix output-horn mate',
+                selectedFeatureId: 'output-horn',
+                repairWorkflow: null,
+                generationId: 'gen-ledger',
+            },
+        };
+
+        store.recordStagedEditOutcome(edit, 'approved');
+
+        const entry = store.getSnapshot().appliedEditHistory[0];
+        expect(entry).toMatchObject({
+            id: 'e-ledger:approved:1',
+            editId: 'e-ledger',
+            outcome: 'approved',
+            intent: 'Repair output horn',
+            sourceLabel: 'Studio Generate',
+            promptText: 'Fix output-horn mate',
+            selectedFeatureId: 'output-horn',
+            generationId: 'gen-ledger',
+            addedLines: 2,
+            removedLines: 1,
+            recheckStatus: 'pending-recheck',
+        });
+
+        for (let i = 0; i < 8; i++) {
+            store.recordStagedEditOutcome({ ...edit, id: `e-${i}`, intent: `edit ${i}` }, 'rejected');
+        }
+
+        const history = store.getSnapshot().appliedEditHistory;
+        expect(history).toHaveLength(6);
+        expect(history[0].editId).toBe('e-7');
+        expect(history.at(-1)?.editId).toBe('e-2');
+    });
+
+    it('publishValidity updates only pending approved ledger entries', () => {
+        store = new ShellStore();
+        const approved = { id: 'approved', intent: 'approved', fromCode: 'a', toCode: 'b' };
+        const rejected = { id: 'rejected', intent: 'rejected', fromCode: 'a', toCode: 'b' };
+        store.recordStagedEditOutcome(approved, 'approved');
+        store.recordStagedEditOutcome(rejected, 'rejected');
+
+        store.publishValidity(makeValidity('warning'));
+        expect(store.getSnapshot().appliedEditHistory[0]).toMatchObject({
+            editId: 'rejected',
+            recheckStatus: 'not-applicable',
+        });
+        expect(store.getSnapshot().appliedEditHistory[1]).toMatchObject({
+            editId: 'approved',
+            recheckStatus: 'rechecked-issues',
+        });
+
+        store.publishValidity(makeValidity('solved'));
+        expect(store.getSnapshot().appliedEditHistory[1]).toMatchObject({
+            editId: 'approved',
+            recheckStatus: 'rechecked-issues',
+        });
+
+        store = new ShellStore();
+        store.recordStagedEditOutcome(approved, 'approved');
+        store.publishValidity(makeValidity('solved'));
+        expect(store.getSnapshot().appliedEditHistory[0]).toMatchObject({
+            editId: 'approved',
+            recheckStatus: 'rechecked-solved',
+        });
+
+        store = new ShellStore();
+        store.recordStagedEditOutcome(approved, 'approved');
+        store.publishValidity(makeValidity('error'));
+        expect(store.getSnapshot().appliedEditHistory[0]).toMatchObject({
+            editId: 'approved',
+            recheckStatus: 'recheck-error',
+        });
+    });
 });

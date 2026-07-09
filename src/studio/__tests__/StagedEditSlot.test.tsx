@@ -54,12 +54,17 @@ describe('StagedEditSlot', () => {
             intent: 'demo',
             fromCode,
             toCode,
+            source: { kind: 'agent', label: 'Studio Generate' },
         });
         const { getByTestId } = render(<StagedEditSlot />);
         fireEvent.click(getByTestId('staged-edit-approve'));
         expect(setCodeMock).toHaveBeenCalledTimes(1);
         expect(setCodeMock).toHaveBeenCalledWith(toCode);
         expect(shellStore.getSnapshot().stagedEdit).toBeNull();
+        expect(getByTestId('applied-edit-history').textContent).toContain('Approved');
+        expect(getByTestId('applied-edit-history').textContent).toContain('demo');
+        expect(getByTestId('applied-edit-history').textContent).toContain('Studio Generate');
+        expect(getByTestId('applied-edit-history').textContent).toContain('+2 / -1');
     });
 
     it('Approve blocks stale staged edits when the editor changed since proposal', () => {
@@ -71,11 +76,12 @@ describe('StagedEditSlot', () => {
         });
         workbenchCode = 'return box(15);';
 
-        const { getByTestId } = render(<StagedEditSlot />);
+        const { getByTestId, queryByTestId } = render(<StagedEditSlot />);
         fireEvent.click(getByTestId('staged-edit-approve'));
 
         expect(setCodeMock).not.toHaveBeenCalled();
         expect(shellStore.getSnapshot().stagedEdit?.id).toBe('e-stale');
+        expect(queryByTestId('applied-edit-history')).toBeNull();
         expect(getByTestId('staged-edit-stale-warning').textContent).toContain('changed since this edit was staged');
     });
 
@@ -90,6 +96,8 @@ describe('StagedEditSlot', () => {
         fireEvent.click(getByTestId('staged-edit-reject'));
         expect(setCodeMock).not.toHaveBeenCalled();
         expect(shellStore.getSnapshot().stagedEdit).toBeNull();
+        expect(getByTestId('applied-edit-history').textContent).toContain('Rejected');
+        expect(getByTestId('applied-edit-history').textContent).toContain('demo');
     });
 
     it('source label renders when provided', () => {
@@ -174,6 +182,9 @@ describe('StagedEditSlot', () => {
         expect(snapshot.agentDraftPrompt).toBe('Fix output-horn floating mate');
         expect(snapshot.selectedFeatureId).toBe('output-horn');
         expect(snapshot.agentRepairWorkflow).toBeNull();
+        expect(getByTestId('applied-edit-history').textContent).toContain('Rerun');
+        expect(getByTestId('applied-edit-history').textContent).toContain('Fix output-horn floating mate');
+        expect(getByTestId('applied-edit-history').textContent).toContain('gen-rerun');
     });
 
     it('stale conflicts omit rerun prompt when no prompt context exists', () => {
