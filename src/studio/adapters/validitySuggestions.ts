@@ -12,6 +12,7 @@ export interface ValiditySuggestionCard {
     readonly action: string;
     readonly targetLabel: string | null;
     readonly targetId: string | null;
+    readonly targetIds: readonly string[];
     readonly code: string;
     readonly promptText: string;
     readonly promptSource: 'review' | 'fallback';
@@ -48,6 +49,7 @@ export function buildValiditySuggestions(input: {
                 action,
                 targetLabel: null,
                 targetId: null,
+                targetIds: [],
                 code: entry.code,
                 promptText: backendPrompt ?? fallbackPrompt(entry.code, evidence, action),
                 promptSource,
@@ -58,6 +60,7 @@ export function buildValiditySuggestions(input: {
         input.validity?.diagnostics.map((diag, index): ValiditySuggestionCard => {
             const targetLabel = diagnosticTargetLabel(diag);
             const targetId = diagnosticTargetId(diag);
+            const targetIds = diagnosticTargetIds(diag);
             const evidence = textOrFallback(diag.message, diag.code);
             const action = textOrFallback(diag.hint, 'Review deterministic validation evidence.');
             return {
@@ -69,6 +72,7 @@ export function buildValiditySuggestions(input: {
                 action,
                 targetLabel,
                 targetId,
+                targetIds,
                 code: diag.code,
                 promptText: backendPrompt ?? fallbackPrompt(diag.code, evidence, action),
                 promptSource,
@@ -92,6 +96,21 @@ function diagnosticTargetId(d: ValidatorDiagnostic): string | null {
     if (d.mateName) return d.mateName;
     if (d.partA) return d.partA;
     return null;
+}
+
+function diagnosticTargetIds(d: ValidatorDiagnostic): string[] {
+    return uniqueNonEmpty([d.partName, d.partA, d.partB]);
+}
+
+function uniqueNonEmpty(values: ReadonlyArray<string | undefined>): string[] {
+    const seen = new Set<string>();
+    const ids: string[] = [];
+    for (const value of values) {
+        if (!value || seen.has(value)) continue;
+        seen.add(value);
+        ids.push(value);
+    }
+    return ids;
 }
 
 function textOrFallback(value: string, fallback: string): string {

@@ -153,6 +153,32 @@ describe('ValidityTab', () => {
         expect(mockSelectFeature).toHaveBeenCalledWith('output-horn');
     });
 
+    it('clicking a pair diagnostic row selects the primary part and focuses both parts', () => {
+        const diag: ValidatorDiagnostic = {
+            code: 'assembly.interference.overlap',
+            severity: 'error',
+            message: 'bracket collides with cover',
+            hint: 'move the cover clear of the bracket',
+            partA: 'bracket',
+            partB: 'cover',
+        };
+
+        mockUseRecomputeResult.mockReturnValue(
+            withValidity(makeValidity('error', [diag], 2, 0)),
+        );
+
+        render(<ValidityTab />);
+
+        fireEvent.click(screen.getByTestId('diagnostic-row'));
+
+        expect(mockSelectFeature).toHaveBeenCalledTimes(1);
+        expect(mockSelectFeature).toHaveBeenCalledWith('bracket');
+        expect(shellStore.getSnapshot().viewportFocusTarget).toEqual({
+            ids: ['bracket', 'cover'],
+            source: 'validity-diagnostic',
+        });
+    });
+
     it('renders a suggestion card above diagnostic rows for an error diagnostic', () => {
         const diag: ValidatorDiagnostic = {
             code: 'assembly.part.floating',
@@ -198,6 +224,32 @@ describe('ValidityTab', () => {
         expect(mockSelectFeature).toHaveBeenCalledWith('output-horn');
     });
 
+    it('clicking a pair suggestion card Jump button focuses both pair parts', () => {
+        const diag: ValidatorDiagnostic = {
+            code: 'assembly.interference.overlap',
+            severity: 'error',
+            message: 'bracket collides with cover',
+            hint: 'move the cover clear of the bracket',
+            partA: 'bracket',
+            partB: 'cover',
+        };
+
+        mockUseRecomputeResult.mockReturnValue(
+            withValidity(makeValidity('error', [diag], 2, 0)),
+        );
+
+        render(<ValidityTab />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Jump' }));
+
+        expect(mockSelectFeature).toHaveBeenCalledTimes(1);
+        expect(mockSelectFeature).toHaveBeenCalledWith('bracket');
+        expect(shellStore.getSnapshot().viewportFocusTarget).toEqual({
+            ids: ['bracket', 'cover'],
+            source: 'validity-suggestion',
+        });
+    });
+
     it('clicking Use prompt drafts a repair prompt, selects the target, and opens the agent rail', () => {
         const diag: ValidatorDiagnostic = {
             code: 'assembly.part.floating',
@@ -228,6 +280,37 @@ describe('ValidityTab', () => {
         });
         expect(mockSelectFeature).toHaveBeenCalledTimes(1);
         expect(mockSelectFeature).toHaveBeenCalledWith('output-horn');
+    });
+
+    it('clicking Use prompt on a pair diagnostic preserves primary workflow target and focuses both parts', () => {
+        const diag: ValidatorDiagnostic = {
+            code: 'assembly.interference.overlap',
+            severity: 'error',
+            message: 'bracket collides with cover',
+            hint: 'move the cover clear of the bracket',
+            partA: 'bracket',
+            partB: 'cover',
+        };
+
+        mockUseRecomputeResult.mockReturnValue(
+            withValidity(makeValidity('error', [diag], 2, 0)),
+        );
+
+        render(<ValidityTab />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Use prompt' }));
+
+        expect(shellStore.getSnapshot().agentRepairWorkflow).toMatchObject({
+            cardId: 'diagnostic:assembly.interference.overlap:bracket:0',
+            targetId: 'bracket',
+            state: 'drafted',
+        });
+        expect(mockSelectFeature).toHaveBeenCalledTimes(1);
+        expect(mockSelectFeature).toHaveBeenCalledWith('bracket');
+        expect(shellStore.getSnapshot().viewportFocusTarget).toEqual({
+            ids: ['bracket', 'cover'],
+            source: 'validity-suggestion',
+        });
     });
 
     it('labels the active suggestion card as drafted after Use prompt', () => {

@@ -40,12 +40,19 @@ export interface AgentRepairWorkflow {
     readonly state: AgentRepairWorkflowState;
 }
 
+export interface ViewportFocusTarget {
+    readonly ids: readonly string[];
+    readonly source: 'validity-diagnostic' | 'validity-suggestion';
+}
+
 export interface ShellState {
     readonly selectedFeatureId: SelectedFeatureId;
     readonly agentRailOpen: boolean;
     readonly agentDraftPrompt: string | null;
     readonly agentDraftPromptVersion: number;
     readonly agentRepairWorkflow: AgentRepairWorkflow | null;
+    readonly viewportFocusTarget: ViewportFocusTarget | null;
+    readonly viewportFocusTargetVersion: number;
     readonly inspectorOpen: boolean;
     readonly previousValidity: ValidatorResult | null;
     readonly currentValidity: ValidatorResult | null;
@@ -96,6 +103,8 @@ const INITIAL_STATE: ShellState = {
     agentDraftPrompt: null,
     agentDraftPromptVersion: 0,
     agentRepairWorkflow: null,
+    viewportFocusTarget: null,
+    viewportFocusTargetVersion: 0,
     inspectorOpen: true,
     previousValidity: null,
     currentValidity: null,
@@ -157,6 +166,19 @@ export class ShellStore {
     setAgentRepairWorkflow = (workflow: AgentRepairWorkflow | null): void => {
         if (this.state.agentRepairWorkflow === workflow) return;
         this.state = { ...this.state, agentRepairWorkflow: workflow };
+        this.emit();
+    };
+
+    setViewportFocusTarget = (target: ViewportFocusTarget | null): void => {
+        if (target === null && this.state.viewportFocusTarget === null) return;
+        this.state = {
+            ...this.state,
+            viewportFocusTarget: target,
+            viewportFocusTargetVersion:
+                target === null
+                    ? this.state.viewportFocusTargetVersion
+                    : this.state.viewportFocusTargetVersion + 1,
+        };
         this.emit();
     };
 

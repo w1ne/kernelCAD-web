@@ -3,7 +3,7 @@
 import type { JSX, MouseEvent } from 'react';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useFeatureSelection } from '../hooks/useFeatureSelection';
-import { routeDiagnosticToSelection } from '../logic/diagnosticRouter';
+import { routeDiagnosticToFocusTarget, routeDiagnosticToSelection } from '../logic/diagnosticRouter';
 import type { ValidatorDiagnostic, ValidatorStatus } from '../../modeling/mates/validator';
 import {
     buildValiditySuggestions,
@@ -82,11 +82,7 @@ export function ValidityTab(): JSX.Element {
                             card={card}
                             workflowState={workflowView.cardStates.get(card.id) ?? null}
                             validityFingerprint={validityFingerprint}
-                            onSelect={
-                                card.targetId == null
-                                    ? undefined
-                                    : () => selectFeature(card.targetId)
-                            }
+                            onSelect={makeSuggestionSelectHandler(card, selectFeature)}
                         />
                     ))}
                 </div>
@@ -103,13 +99,41 @@ export function ValidityTab(): JSX.Element {
                         <DiagnosticRowInline
                             key={`${diag.code}-${diagnosticTargetKey(diag)}-${i}`}
                             diagnostic={diag}
-                            onSelect={() => selectFeature(routeDiagnosticToSelection(diag))}
+                            onSelect={() => selectDiagnostic(diag, selectFeature)}
                         />
                     ))}
                 </ul>
             )}
         </div>
     );
+}
+
+function selectDiagnostic(
+    diagnostic: ValidatorDiagnostic,
+    selectFeature: (id: string | null) => void,
+): void {
+    selectFeature(routeDiagnosticToSelection(diagnostic));
+    const focusTarget = routeDiagnosticToFocusTarget(diagnostic);
+    if (focusTarget == null) return;
+    shellStore.setViewportFocusTarget({
+        ids: focusTarget.ids,
+        source: 'validity-diagnostic',
+    });
+}
+
+function makeSuggestionSelectHandler(
+    card: ValiditySuggestionCard,
+    selectFeature: (id: string | null) => void,
+): (() => void) | undefined {
+    if (card.targetId == null && card.targetIds.length === 0) return undefined;
+    return () => {
+        selectFeature(card.targetId);
+        if (card.targetIds.length === 0) return;
+        shellStore.setViewportFocusTarget({
+            ids: card.targetIds,
+            source: 'validity-suggestion',
+        });
+    };
 }
 
 function SuggestionCard({
