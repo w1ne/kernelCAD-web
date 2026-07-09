@@ -21,9 +21,6 @@ import { evaluateSdfTool } from './tools/evaluateSdf';
 import { exportTool } from './tools/export';
 import { listApiTool } from './tools/listApi';
 import { listDiagnosticCodesTool } from './tools/listDiagnosticCodes';
-import { lookupCookbookTool } from './tools/lookupCookbook';
-import { findPartTool } from './tools/findPart';
-import { fetchPartTool } from './tools/fetchPart';
 import { removeFeatureTool } from './tools/removeFeature';
 import { designLoopTool } from './tools/designLoop';
 import { reviewCadTool } from './tools/reviewCad';
@@ -35,39 +32,16 @@ import { flattenPatternTool } from './tools/flattenPattern';
 import { verifyTool } from './tools/verify';
 import { inspectTool } from './tools/inspect';
 import { queryTool } from './tools/query';
-import { TOOL_ANNOTATIONS, type ToolAnnotations } from './toolAnnotations';
-import { TOOL_OUTPUT_SCHEMAS, type JSONSchemaObject } from './toolOutputSchemas';
+import { TOOL_ANNOTATIONS } from './toolAnnotations';
+import { TOOL_OUTPUT_SCHEMAS } from './toolOutputSchemas';
 import { captureAnimationTool } from './tools/captureAnimation';
 import { renderPreviewTool } from './tools/renderPreview';
+import { catalogToolEntries } from './registry/catalogTools';
+import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
 export { runClosedLoop } from '../loop/closedLoop.js';
 export { buildRepairPrompt } from '../loop/repairPrompt.js';
 export * from '../loop/types.js';
-
-export interface McpToolDefinition {
-  name: string;
-  description: string;
-  inputSchema: {
-    type: 'object';
-    properties: Record<string, unknown>;
-    required?: string[];
-    /** Optional JSON Schema conditional blocks (if/then/else) for
-     *  required-by-discriminator fields. */
-    allOf?: unknown[];
-  };
-  /** MCP behavioral hints (readOnly/destructive/openWorld). Required for ChatGPT
-   *  app-directory submission; merged from TOOL_ANNOTATIONS at build time. */
-  annotations?: ToolAnnotations;
-  /** MCP structured-output schema (JSON Schema for the tool's return value).
-   *  Merged from TOOL_OUTPUT_SCHEMAS at build time. */
-  outputSchema?: JSONSchemaObject;
-}
-
-type ToolHandler = (input: Record<string, unknown>) => Promise<unknown>;
-
-interface ToolRegistryEntry {
-  definition: McpToolDefinition;
-  handler: ToolHandler;
-}
+export type { McpToolDefinition } from './registry/types';
 
 /**
  * Registry of every MCP tool — pairs each definition with its handler.
@@ -911,79 +885,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     },
     handler: input => exportTool(input as unknown as Parameters<typeof exportTool>[0]),
   },
-  {
-    definition: {
-      name: 'lookup_cookbook',
-      description:
-        'Use this when you need a canonical pattern snippet for a CAD task. ' +
-        'Search the kernelCAD cookbook for canonical pattern snippets. ' +
-        'Returns top-k snippets matching the natural-language query, ' +
-        'ranked by BM25 over title/tags/keywords/trigger. ' +
-        'Use when you need a canonical pattern for fillet-after-subtract, ' +
-        'non-overlapping booleans, sketch-to-extrude flows, etc. ' +
-        'Returns empty if no snippet scores above the relevance floor — ' +
-        'proceed without cookbook help in that case.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          query: {
-            type: 'string',
-            description:
-              'Natural-language description of what you want to do (e.g. "round the rim of a hole", "build an L-bracket").',
-          },
-          k: {
-            type: 'number',
-            description: 'Max snippets to return. Default 3, max 5.',
-            default: 3,
-          },
-        },
-        required: ['query'],
-      },
-    },
-    handler: input => lookupCookbookTool(input as unknown as Parameters<typeof lookupCookbookTool>[0]),
-  },
-  {
-    definition: {
-      name: 'find_part',
-      description:
-        'Use this when you need to find a part in the catalog. ' +
-        'Discover bundled (and optionally remote) part-catalog records by fuzzy query and faceted filters. Tokens AND-combine; cross-facet filters AND-combine. Pass partsBaseUrl (or set KERNELCAD_PARTS_BASE_URL) to enable the remote tier; otherwise results are bundled-only.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          query: { type: 'string' },
-          category: { type: 'string' },
-          family: { type: 'string' },
-          standard: { type: 'string' },
-          tag: { type: 'string' },
-          limit: { type: 'number' },
-          source: { type: 'string', enum: ['local', 'remote', 'auto'] },
-          partsBaseUrl: { type: 'string', description: 'Opt-in remote endpoint; no default value ships with kernelCAD.' },
-        },
-      },
-    },
-    handler: input => findPartTool(input as Parameters<typeof findPartTool>[0]),
-  },
-  {
-    definition: {
-      name: 'fetch_part',
-      description:
-        'Use this when you need to download a catalog part as a STEP file. ' +
-        'Resolve an id (or single-match query) to a part record and write its STEP file to the local cache. Bundled ids resolve offline; non-bundled ids require partsBaseUrl (or KERNELCAD_PARTS_BASE_URL). Returns the cache path plus a sha256 fingerprint.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          id: { type: 'string' },
-          query: { type: 'string' },
-          category: { type: 'string' },
-          family: { type: 'string' },
-          standard: { type: 'string' },
-          partsBaseUrl: { type: 'string', description: 'Opt-in remote endpoint; no default value ships with kernelCAD.' },
-        },
-      },
-    },
-    handler: input => fetchPartTool(input as Parameters<typeof fetchPartTool>[0]),
-  },
+  ...catalogToolEntries,
   {
     definition: {
       name: 'solve_sketch',
