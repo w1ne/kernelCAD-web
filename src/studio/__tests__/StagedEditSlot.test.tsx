@@ -103,6 +103,40 @@ describe('StagedEditSlot', () => {
         expect(getByTestId('applied-edit-history').textContent).toContain('demo');
     });
 
+    it('Reject rolls a running staged repair workflow back to drafted', () => {
+        const repairWorkflow = {
+            cardId: 'diagnostic:assembly.part.floating:output-horn:0',
+            code: 'assembly.part.floating',
+            promptText: 'Fix output horn',
+            targetId: 'output-horn',
+            promptSource: 'fallback' as const,
+            validityFingerprint: 'before',
+            state: 'running' as const,
+        };
+        shellStore.setAgentRepairWorkflow(repairWorkflow);
+        shellStore.proposeStagedEdit({
+            id: 'e-reject-workflow',
+            intent: 'Reject repair',
+            fromCode: 'return box(10);',
+            toCode: 'return box(20);',
+            context: {
+                promptText: 'Fix output horn',
+                selectedFeatureId: 'output-horn',
+                repairWorkflow,
+                generationId: 'gen-reject',
+            },
+        });
+
+        const { getByTestId } = render(<StagedEditSlot />);
+        fireEvent.click(getByTestId('staged-edit-reject'));
+
+        expect(shellStore.getSnapshot().agentRepairWorkflow).toEqual({
+            ...repairWorkflow,
+            state: 'drafted',
+        });
+        expect(getByTestId('applied-edit-history').textContent).toContain('Rejected');
+    });
+
     it('source label renders when provided', () => {
         shellStore.proposeStagedEdit({
             id: 'e4',

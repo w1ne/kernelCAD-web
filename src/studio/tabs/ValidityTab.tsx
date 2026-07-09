@@ -158,6 +158,7 @@ function SuggestionCard({
             code: card.code,
             promptText: card.promptText,
             targetId: card.targetId,
+            targetIds: card.targetIds,
             promptSource: card.promptSource,
             validityFingerprint,
             state: 'drafted',
@@ -330,7 +331,9 @@ function resolveWorkflowView(input: {
 
 function cardMatchesWorkflow(card: ValiditySuggestionCard, workflow: AgentRepairWorkflow): boolean {
     if (card.id === workflow.cardId) return true;
-    return card.code === workflow.code && card.targetId === workflow.targetId;
+    if (card.code !== workflow.code) return false;
+    if (sameTargetSet(card.targetIds, workflow.targetIds ?? [])) return true;
+    return card.targetId === workflow.targetId;
 }
 
 function workflowFailureStillPresent(
@@ -347,10 +350,33 @@ function workflowFailureStillPresent(
     if (mechanismBanner?.entries.some((entry) => entry.code === workflow.code) === true) {
         return true;
     }
-    return diagnostics.some((diagnostic) => (
-        diagnostic.code === workflow.code &&
-        diagnosticTargetId(diagnostic) === workflow.targetId
-    ));
+    return diagnostics.some((diagnostic) => {
+        if (diagnostic.code !== workflow.code) return false;
+        if (sameTargetSet(diagnosticTargetIds(diagnostic), workflow.targetIds ?? [])) return true;
+        return diagnosticTargetId(diagnostic) === workflow.targetId;
+    });
+}
+
+function sameTargetSet(a: readonly string[], b: readonly string[]): boolean {
+    if (a.length === 0 || b.length === 0 || a.length !== b.length) return false;
+    const left = [...a].sort();
+    const right = [...b].sort();
+    return left.every((value, index) => value === right[index]);
+}
+
+function diagnosticTargetIds(diagnostic: ValidatorDiagnostic): string[] {
+    return uniqueNonEmpty([diagnostic.partName, diagnostic.partA, diagnostic.partB]);
+}
+
+function uniqueNonEmpty(values: ReadonlyArray<string | undefined>): string[] {
+    const seen = new Set<string>();
+    const ids: string[] = [];
+    for (const value of values) {
+        if (!value || seen.has(value)) continue;
+        seen.add(value);
+        ids.push(value);
+    }
+    return ids;
 }
 
 function fingerprintValidity(input: {

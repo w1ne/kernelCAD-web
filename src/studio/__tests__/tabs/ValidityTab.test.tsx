@@ -414,6 +414,40 @@ describe('ValidityTab', () => {
         expect(card.textContent).toContain('Still failing');
     });
 
+    it('marks a pair repair still failing when the validator reverses part order', () => {
+        const first: ValidatorDiagnostic = {
+            code: 'assembly.interference.overlap',
+            severity: 'error',
+            message: 'bracket collides with cover',
+            hint: 'move the cover clear of the bracket',
+            partA: 'bracket',
+            partB: 'cover',
+        };
+        const reversed: ValidatorDiagnostic = {
+            ...first,
+            message: 'cover still collides with bracket',
+            partA: 'cover',
+            partB: 'bracket',
+        };
+        mockUseRecomputeResult.mockReturnValue(
+            withValidity(makeValidity('error', [first], 2, 0)),
+        );
+        const { rerender } = render(<ValidityTab />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Use prompt' }));
+        const workflow = shellStore.getSnapshot().agentRepairWorkflow;
+        shellStore.setAgentRepairWorkflow(workflow == null ? null : { ...workflow, state: 'running' });
+        mockUseRecomputeResult.mockReturnValue(
+            withValidity(makeValidity('error', [reversed], 2, 0)),
+        );
+        rerender(<ValidityTab />);
+
+        const card = screen.getByTestId('validity-suggestion-card');
+        expect(card.getAttribute('data-workflow-state')).toBe('still-failing');
+        expect(card.textContent).toContain('Still failing');
+        expect(screen.queryByTestId('validity-suggestion-workflow-summary')).toBeNull();
+    });
+
     it('does not mark drafted cards rechecked before the repair has been submitted', () => {
         const diag: ValidatorDiagnostic = {
             code: 'assembly.part.floating',

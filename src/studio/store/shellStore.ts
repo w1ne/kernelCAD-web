@@ -72,6 +72,7 @@ export interface AgentRepairWorkflow {
     readonly code: string;
     readonly promptText: string;
     readonly targetId: SelectedFeatureId;
+    readonly targetIds?: readonly string[];
     readonly promptSource: 'review' | 'fallback';
     readonly validityFingerprint: string;
     readonly state: AgentRepairWorkflowState;
