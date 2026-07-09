@@ -8,9 +8,10 @@ import { useTextTo3dPreview } from '../funnel/hooks/useTextTo3dPreview';
 import { inAppAgentEnabled } from './agentAvailability';
 import { ConceptResult } from './components/ConceptResult';
 import { useCode } from './context/CodeContext';
-import { useGeometry } from './context/GeometryContext';
 import { useFeatureSelection } from './hooks/useFeatureSelection';
 import { useShellStore, shellStore } from './store/useShellStore';
+import type { AgentRepairWorkflow } from './store/shellStore';
+import type { SelectedFeatureId } from './types';
 
 /** Web-only gate. No hooks here, so the conditional return is safe. */
 export const StudioGenerate: React.FC = () => {
@@ -32,21 +33,28 @@ function stepLabel(e: GenerateEvent): string | null {
     }
 }
 
+interface GenerationReviewSnapshot {
+    readonly fromCode: string;
+    readonly promptText: string;
+    readonly selectedFeatureId: SelectedFeatureId;
+    readonly repairWorkflow: AgentRepairWorkflow | null;
+}
+
 const StudioGenerateInner: React.FC = () => {
     const { phase, events, submit } = useGeneration();
-    const { code, setCode } = useCode();
+    const { code } = useCode();
     const currentCode = code ?? '';
-    const { executeGeometry } = useGeometry();
     const { selectedFeatureId } = useFeatureSelection();
     const { agentDraftPrompt, agentDraftPromptVersion, agentRepairWorkflow } = useShellStore();
     const [editedPrompt, setEditedPrompt] = useState('');
     const [acknowledgedDraftVersion, setAcknowledgedDraftVersion] = useState(-1);
-    // The generationId we've already accepted/rejected — gates the review panel
-    // so an applied/dismissed proposal doesn't reappear.
-    const [resolvedId, setResolvedId] = useState<string | null>(null);
+    // The generationId we've already staged/rejected — gates the review panel
+    // so a resolved proposal doesn't reappear.
+    const [resolution, setResolution] = useState<{ generationId: string; action: 'staged' | 'discarded' } | null>(null);
     // The editor source captured at submit time — the "before" side of the diff
     // (so the diff is stable even though `code` changes once we apply).
     const [baseline, setBaseline] = useState('');
+    const [reviewSnapshot, setReviewSnapshot] = useState<GenerationReviewSnapshot | null>(null);
 
     const prompt =
         agentDraftPrompt !== null && agentDraftPromptVersion !== acknowledgedDraftVersion
@@ -69,7 +77,7 @@ const StudioGenerateInner: React.FC = () => {
     // One operation at a time: the rail is too narrow to narrate two runs.
     const busy = agentBusy || conceptBusy;
     // A finished, not-yet-resolved proposal → show the review (diff + accept/reject).
-    const reviewing = phase.state === 'done' && resolvedId !== phase.generationId;
+    const reviewing = phase.state === 'done' && resolution?.generationId !== phase.generationId;
 
     const steps = useMemo(() => events.map(stepLabel).filter(Boolean) as string[], [events]);
 
@@ -78,12 +86,13 @@ const StudioGenerateInner: React.FC = () => {
         shellStore.setAgentRepairWorkflow({ ...agentRepairWorkflow, state: 'drafted' });
     }, [agentRepairWorkflow, phase.state]);
 
-    const runAgent = (text: string) => {
+    const runAgent = (text: string, snapshot: GenerationReviewSnapshot) => {
         // Edit mode: hand the agent the current model so it iterates instead of
         // replacing. Empty editor → fresh generation.
-        setBaseline(currentCode);
-        if (currentCode.trim()) {
-            void submit(text, currentCode);
+        setBaseline(snapshot.fromCode);
+        setReviewSnapshot(snapshot);
+        if (snapshot.fromCode.trim()) {
+            void submit(text, snapshot.fromCode);
             return;
         }
         void submit(text);
@@ -94,15 +103,22 @@ const StudioGenerateInner: React.FC = () => {
         const trimmed = prompt.trim();
         if (!trimmed || busy) return;
         const agentPrompt = selectedFeatureId === null ? trimmed : `Edit selected target "${selectedFeatureId}": ${trimmed}`;
+        let repairWorkflowForRun = agentRepairWorkflow;
         if (
             agentRepairWorkflow != null &&
             agentRepairWorkflow.state === 'drafted' &&
             agentRepairWorkflow.promptText === trimmed &&
             agentRepairWorkflow.targetId === selectedFeatureId
         ) {
-            shellStore.setAgentRepairWorkflow({ ...agentRepairWorkflow, state: 'running' });
+            repairWorkflowForRun = { ...agentRepairWorkflow, state: 'running' };
+            shellStore.setAgentRepairWorkflow(repairWorkflowForRun);
         }
-        runAgent(agentPrompt);
+        runAgent(agentPrompt, {
+            fromCode: currentCode,
+            promptText: trimmed,
+            selectedFeatureId,
+            repairWorkflow: repairWorkflowForRun,
+        });
     };
 
     const onConcept = () => {
@@ -120,6 +136,12 @@ const StudioGenerateInner: React.FC = () => {
         // review diff still uses the current editor code as its baseline, so
         // nothing is overwritten without the user accepting.
         setBaseline(currentCode);
+        setReviewSnapshot({
+            fromCode: currentCode,
+            promptText: conceptPrompt,
+            selectedFeatureId,
+            repairWorkflow: agentRepairWorkflow,
+        });
         // Read the concept mesh directly from the live preview phase (no mirrored
         // state). A done preview with no Tripo render/fingerprint yields
         // {renderImageUrl:null, proportions:null} — intentional and distinct from
@@ -130,18 +152,33 @@ const StudioGenerateInner: React.FC = () => {
         void submit(conceptPrompt, undefined, mesh);
     };
 
-    const accept = () => {
+    const stageGeneratedEdit = () => {
         if (phase.state !== 'done') return;
-        setCode(phase.artifact.code);
-        void executeGeometry(phase.artifact.code);
-        setResolvedId(phase.generationId);
+        const snapshot = reviewSnapshot ?? {
+            fromCode: currentCode,
+            promptText: prompt.trim(),
+            selectedFeatureId,
+            repairWorkflow: agentRepairWorkflow,
+        };
+        shellStore.proposeStagedEdit({
+            id: `agent:${phase.generationId}`,
+            intent: phase.artifact.title,
+            fromCode: snapshot.fromCode,
+            toCode: phase.artifact.code,
+            source: { kind: 'agent', label: 'Studio Generate' },
+            context: {
+                promptText: snapshot.promptText,
+                selectedFeatureId: snapshot.selectedFeatureId,
+                repairWorkflow: snapshot.repairWorkflow,
+                generationId: phase.generationId,
+            },
+        });
+        setResolution({ generationId: phase.generationId, action: 'staged' });
     };
     const reject = () => {
         if (phase.state !== 'done') return;
-        setResolvedId(phase.generationId);
+        setResolution({ generationId: phase.generationId, action: 'discarded' });
     };
-
-    const isEdit = baseline.trim().length > 0;
 
     return (
         <div className="p-3 flex flex-col gap-2">
@@ -222,10 +259,10 @@ const StudioGenerateInner: React.FC = () => {
                     <div className="flex gap-2">
                         <button
                             type="button"
-                            onClick={accept}
+                            onClick={stageGeneratedEdit}
                             className="flex-1 rounded bg-green-600 hover:bg-green-500 text-white px-3 py-1.5 text-[11px] font-medium transition-colors"
                         >
-                            {isEdit ? 'Apply changes' : 'Use this'}
+                            Stage edit
                         </button>
                         <button
                             type="button"
@@ -238,9 +275,14 @@ const StudioGenerateInner: React.FC = () => {
                 </div>
             )}
 
-            {phase.state === 'done' && !reviewing && (
+            {phase.state === 'done' && !reviewing && resolution?.action === 'staged' && (
                 <div className="text-[10px] text-green-500 truncate" aria-live="polite">
-                    ✓ applied — {phase.artifact.title}
+                    ✓ staged for review — {phase.artifact.title}
+                </div>
+            )}
+            {phase.state === 'done' && !reviewing && resolution?.action === 'discarded' && (
+                <div className="text-[10px] text-gray-500 truncate" aria-live="polite">
+                    discarded — {phase.artifact.title}
                 </div>
             )}
             {phase.state === 'error' && (

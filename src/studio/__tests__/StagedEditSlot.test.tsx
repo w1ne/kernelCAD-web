@@ -7,14 +7,16 @@ import { StagedEditSlot } from '../StagedEditSlot';
 import { shellStore } from '../store/shellStore';
 
 const setCodeMock = vi.fn();
+let workbenchCode = '';
 
 vi.mock('../context/WorkbenchContext', () => ({
-    useWorkbench: () => ({ setCode: setCodeMock }),
+    useWorkbench: () => ({ code: workbenchCode, setCode: setCodeMock }),
 }));
 
 beforeEach(() => {
     shellStore.reset();
     setCodeMock.mockReset();
+    workbenchCode = '';
 });
 
 afterEach(() => {
@@ -45,10 +47,12 @@ describe('StagedEditSlot', () => {
 
     it('Approve calls workbench.setCode(toCode) and clears the slot', () => {
         const toCode = 'const a = box(10);\nreturn a;';
+        const fromCode = 'return box(10);';
+        workbenchCode = fromCode;
         shellStore.proposeStagedEdit({
             id: 'e2',
             intent: 'demo',
-            fromCode: 'return box(10);',
+            fromCode,
             toCode,
         });
         const { getByTestId } = render(<StagedEditSlot />);
@@ -56,6 +60,23 @@ describe('StagedEditSlot', () => {
         expect(setCodeMock).toHaveBeenCalledTimes(1);
         expect(setCodeMock).toHaveBeenCalledWith(toCode);
         expect(shellStore.getSnapshot().stagedEdit).toBeNull();
+    });
+
+    it('Approve blocks stale staged edits when the editor changed since proposal', () => {
+        shellStore.proposeStagedEdit({
+            id: 'e-stale',
+            intent: 'demo',
+            fromCode: 'return box(10);',
+            toCode: 'return box(20);',
+        });
+        workbenchCode = 'return box(15);';
+
+        const { getByTestId } = render(<StagedEditSlot />);
+        fireEvent.click(getByTestId('staged-edit-approve'));
+
+        expect(setCodeMock).not.toHaveBeenCalled();
+        expect(shellStore.getSnapshot().stagedEdit?.id).toBe('e-stale');
+        expect(getByTestId('staged-edit-stale-warning').textContent).toContain('changed since this edit was staged');
     });
 
     it('Reject leaves the script unchanged and clears the slot', () => {

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { Check, X } from 'lucide-react';
 import { useShellStore, shellStore } from './store/useShellStore';
 import { useWorkbench } from './context/WorkbenchContext';
@@ -10,10 +10,9 @@ import type { StagedEdit } from './store/shellStore';
 // populated, renders the intent, a minimal line-by-line diff, and
 // approve/reject buttons. When empty, renders the auto-apply placeholder.
 //
-// Approve writes stagedEdit.toCode through workbench.setCode, which
-// flows through the normal recompute pipeline (AST-edit primacy
-// preserved — the proposed text IS the AST-edited result; we just
-// hand the canonical script to the existing setter).
+// Approve writes stagedEdit.toCode through workbench.setCode only if the
+// editor still matches the staged baseline. That keeps generated edits from
+// overwriting intervening human changes.
 
 function computeLineDiff(from: string, to: string): Array<{ kind: 'context' | 'add' | 'del'; text: string }> {
     // Trivial line diff: walk both, mark non-matching lines as add/del.
@@ -87,15 +86,28 @@ function PlaceholderBody() {
 
 export function StagedEditSlot() {
     const { stagedEdit } = useShellStore();
-    const { setCode } = useWorkbench();
+    const { code, setCode } = useWorkbench();
+    const [staleWarning, setStaleWarning] = useState<{ editId: string; message: string } | null>(null);
+    const visibleStaleWarning =
+        stagedEdit != null && staleWarning?.editId === stagedEdit.id
+            ? staleWarning.message
+            : null;
 
     const handleApprove = useCallback(() => {
         if (stagedEdit == null) return;
+        if (code !== stagedEdit.fromCode) {
+            setStaleWarning({
+                editId: stagedEdit.id,
+                message: 'The editor changed since this edit was staged. Review the current code before applying this proposal.',
+            });
+            return;
+        }
         setCode(stagedEdit.toCode);
         shellStore.clearStagedEdit();
-    }, [stagedEdit, setCode]);
+    }, [code, stagedEdit, setCode]);
 
     const handleReject = useCallback(() => {
+        setStaleWarning(null);
         shellStore.clearStagedEdit();
     }, []);
 
@@ -119,6 +131,14 @@ export function StagedEditSlot() {
                     {stagedEdit.source?.label && (
                         <div className="text-[10px] text-gray-500">
                             {stagedEdit.source.kind} · {stagedEdit.source.label}
+                        </div>
+                    )}
+                    {visibleStaleWarning != null && (
+                        <div
+                            className="rounded border border-amber-800/70 bg-amber-950/40 px-2 py-1 text-[10px] text-amber-200"
+                            data-testid="staged-edit-stale-warning"
+                        >
+                            {visibleStaleWarning}
                         </div>
                     )}
                     <div className="flex gap-2">
