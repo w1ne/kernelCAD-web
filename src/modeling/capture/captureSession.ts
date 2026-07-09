@@ -6,29 +6,12 @@ import {
 } from '../../shared/intent/featureId';
 import type { FeatureRecord, ShapeTransform } from '../../shared/intent/featureRecord';
 import type { FeatureId, FeatureKind, FeatureRef, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../../shared/intent/types';
-import { isValidPlaneSpec } from '../../shared/intent/types';
 import type {
   SurfaceRecord, SurfaceId, NurbsSurfaceData, CoonsPatchData, SurfaceTrimData,
 } from '../../shared/intent/surfaceRecord';
-import type { ReferenceImageMetadata, ReferenceImageScale } from '../../shared/intent/referenceImageRecord';
-import type {
-  RenderEnvironmentMetadata,
-  RenderEnvironmentSpec,
-} from '../../shared/intent/renderEnvironmentRecord';
-import { isHdriPresetKey } from '../../shared/intent/renderEnvironmentRecord';
-import type {
-  CameraTargetMetadata,
-  CameraTargetSpec,
-} from '../../shared/intent/cameraTargetRecord';
-import {
-  type AnimationViewMetadata,
-  type AnimationViewSpec,
-  type AnimationViewSweepSpec,
-  type AnimationViewTracksSpec,
-  ANIMATION_EASES,
-  isAnimationViewTracksSpec,
-  normalizeAnimationView,
-} from '../../shared/intent/animationViewRecord';
+import type { RenderEnvironmentSpec } from '../../shared/intent/renderEnvironmentRecord';
+import type { CameraTargetSpec } from '../../shared/intent/cameraTargetRecord';
+import type { AnimationViewSpec } from '../../shared/intent/animationViewRecord';
 import type { DfmSpec, DfmSpecMetadata } from '../../shared/intent/dfmSpecRecord';
 import type { Curve3DMetadata } from '../../shared/intent/curve3dRecord';
 import type {
@@ -40,10 +23,6 @@ import type {
 import { Curve3DProxy } from './curveProxy';
 import { lazyEvalCurve } from '../backends/occt/curve3dEval';
 import type { VariableSweepMetadata, VariableSweepSection } from '../../shared/intent/variableSweepRecord';
-import { imageDimensions } from './imageDimensions';
-import { existsSync } from 'node:fs';
-import { extname } from 'node:path';
-import { resolveScriptRelativePath } from '../../shared/runtime/scriptRelativePath';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
 import { Shape } from './proxy';
@@ -66,6 +45,13 @@ import { KernelError } from '../../shared/intent/kernelError';
 import type { Connector } from '../mates/connector';
 import type { MateCouplingRecord } from '../mates/coupledPoses';
 import type { MateType } from '../mates/mateTypes';
+import {
+  buildAnimationViewFeatureSpec,
+  buildCameraTargetFeatureSpec,
+  buildReferenceImageFeatureSpec,
+  buildRenderEnvironmentFeatureSpec,
+  type ReferenceImageCaptureArgs,
+} from './virtualFeatureRecords';
 
 /**
  * Encoded mate / connector data attached to `solvedAssembly` metadata so the
@@ -469,109 +455,8 @@ export class CaptureSession {
    * Returns the assigned `FeatureId` (the caller in `api.ts` wraps it as a
    * `ReferenceImageHandle`).
    */
-  addReferenceImage(args: {
-    path: string;
-    plane: PlaneSpec;
-    anchor?: 'origin' | Vec3;
-    scale?: ReferenceImageScale;
-    opacity?: number;
-    flipU?: boolean;
-    flipV?: boolean;
-  }): FeatureId {
-    const diagnostics: CompilerDiagnostic[] = [];
-
-    // ── 1. Validate format extension ─────────────────────────────────────────
-    const ext = extname(args.path).toLowerCase();
-    const validExts = new Set(['.png', '.jpg', '.jpeg', '.webp']);
-    if (!validExts.has(ext)) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.reference-image.format-unsupported',
-        severity: 'error',
-        message: `referenceImage: unsupported file format '${ext || '(no extension)'}'. Supported: .png, .jpg, .jpeg, .webp.`,
-        hint: HINT_TEMPLATES['feature.reference-image.format-unsupported'].template,
-      });
-    }
-
-    // ── 2. Resolve and validate path existence ───────────────────────────────
-    const resolvedPath = resolveScriptRelativePath(this.scriptDir, args.path);
-    let fileExists = false;
-    if (validExts.has(ext)) {
-      // Only check existence when format is valid (avoid spurious second error).
-      fileExists = existsSync(resolvedPath);
-      if (!fileExists) {
-        diagnostics.push({
-          target: 'export-occt',
-          code: 'feature.reference-image.path-not-found',
-          severity: 'error',
-          message: `referenceImage: file not found at '${resolvedPath}'.`,
-          hint: HINT_TEMPLATES['feature.reference-image.path-not-found'].template,
-        });
-      }
-    }
-
-    // ── 3. Validate plane ────────────────────────────────────────────────────
-    if (!isValidPlaneSpec(args.plane)) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.reference-image.invalid-plane',
-        severity: 'error',
-        message: `referenceImage: invalid plane '${JSON.stringify(args.plane)}'. Must be 'xy', 'xz', 'yz', or { plane, offset? }.`,
-        hint: HINT_TEMPLATES['feature.reference-image.invalid-plane'].template,
-      });
-    }
-
-    // ── 4. Read pixel dimensions ─────────────────────────────────────────────
-    let pixelWidth = 0;
-    let pixelHeight = 0;
-    if (fileExists) {
-      const dims = imageDimensions(resolvedPath);
-      pixelWidth = dims.width;
-      pixelHeight = dims.height;
-    }
-
-    // ── 5. Validate scale ────────────────────────────────────────────────────
-    const scale: ReferenceImageScale = args.scale ?? 'fit-bbox';
-    if (typeof scale === 'number') {
-      if (!Number.isFinite(scale) || scale <= 0 || scale > 10000) {
-        diagnostics.push({
-          target: 'export-occt',
-          code: 'feature.reference-image.scale-out-of-range',
-          severity: 'warn',
-          message: `referenceImage: scale ${scale} is out of range. Must be in (0, 10000] mm.`,
-          hint: HINT_TEMPLATES['feature.reference-image.scale-out-of-range'].template,
-        });
-      }
-    }
-
-    // ── 6. Clamp opacity ─────────────────────────────────────────────────────
-    const opacity = Math.max(0, Math.min(1, args.opacity ?? 0.5));
-
-    // ── 7. Build metadata ────────────────────────────────────────────────────
-    const metadata: ReferenceImageMetadata & { diagnostics?: CompilerDiagnostic[] } = {
-      virtual: true,
-      path: resolvedPath,
-      plane: args.plane,
-      anchor: args.anchor ?? 'origin',
-      scale,
-      opacity,
-      flipU: args.flipU ?? false,
-      flipV: args.flipV ?? false,
-      pixelWidth,
-      pixelHeight,
-      ...(diagnostics.length > 0 ? { diagnostics } : {}),
-    };
-
-    const r = this.register({
-      kind: 'referenceImage',
-      params: {},
-      inputs: {},
-      // ReferenceImageMetadata's typed fields fit FeatureMetadata's
-      // [key: string]: unknown catch-all, but TS doesn't infer the index
-      // signature from a structural-shape interface — cast through unknown.
-      metadata: metadata as unknown as Record<string, unknown>,
-    });
-
+  addReferenceImage(args: ReferenceImageCaptureArgs): FeatureId {
+    const r = this.register(buildReferenceImageFeatureSpec(args, this.scriptDir));
     return r.id;
   }
 
@@ -582,65 +467,7 @@ export class CaptureSession {
    * records — the renderer applies the last one.
    */
   addRenderEnvironment(args: RenderEnvironmentSpec): FeatureId {
-    const diagnostics: CompilerDiagnostic[] = [];
-
-    const hasPreset = args.preset !== undefined;
-    const hasUrl = args.url !== undefined;
-    if (hasPreset && hasUrl) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.render-environment.conflicting-spec',
-        severity: 'error',
-        message: 'setRenderEnvironment: pass either { preset } or { url }, not both.',
-        hint: HINT_TEMPLATES['feature.render-environment.conflicting-spec'].template,
-      });
-    } else if (!hasPreset && !hasUrl) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.render-environment.missing-spec',
-        severity: 'error',
-        message: 'setRenderEnvironment: pass { preset } or { url }.',
-        hint: HINT_TEMPLATES['feature.render-environment.missing-spec'].template,
-      });
-    } else if (hasPreset && !isHdriPresetKey(args.preset)) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.render-environment.unknown-preset',
-        severity: 'error',
-        message: `setRenderEnvironment: unknown preset '${String(args.preset)}'.`,
-        hint: HINT_TEMPLATES['feature.render-environment.unknown-preset'].template,
-      });
-    }
-
-    const rawIntensity = args.intensity ?? 1;
-    const intensityValid = Number.isFinite(rawIntensity) && rawIntensity > 0 && rawIntensity <= 100;
-    if (!intensityValid) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.render-environment.intensity-out-of-range',
-        severity: 'warn',
-        message: `setRenderEnvironment: intensity ${rawIntensity} is out of range (0, 100].`,
-        hint: HINT_TEMPLATES['feature.render-environment.intensity-out-of-range'].template,
-      });
-    }
-    const intensity = intensityValid ? rawIntensity : 1;
-    const rotation = Number.isFinite(args.rotation) ? Number(args.rotation) : 0;
-
-    const metadata: RenderEnvironmentMetadata & { diagnostics?: CompilerDiagnostic[] } = {
-      virtual: true,
-      ...(hasPreset && isHdriPresetKey(args.preset) ? { preset: args.preset } : {}),
-      ...(hasUrl ? { url: args.url } : {}),
-      intensity,
-      rotation,
-      ...(diagnostics.length > 0 ? { diagnostics } : {}),
-    };
-
-    const r = this.register({
-      kind: 'renderEnvironment',
-      params: {},
-      inputs: {},
-      metadata: metadata as unknown as Record<string, unknown>,
-    });
+    const r = this.register(buildRenderEnvironmentFeatureSpec(args));
     return r.id;
   }
 
@@ -653,54 +480,7 @@ export class CaptureSession {
    * one.
    */
   addCameraTarget(args: CameraTargetSpec): FeatureId {
-    const diagnostics: CompilerDiagnostic[] = [];
-
-    const xValid = Number.isFinite(args.x);
-    const yValid = Number.isFinite(args.y);
-    const zValid = Number.isFinite(args.z);
-    if (!xValid || !yValid || !zValid) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.camera-target.non-finite-target',
-        severity: 'error',
-        message: `setCameraTarget: x, y, z must be finite numbers; got (${args.x}, ${args.y}, ${args.z}).`,
-        hint: HINT_TEMPLATES['feature.camera-target.non-finite-target'].template,
-      });
-    }
-
-    let distance: number | undefined;
-    if (args.distance !== undefined) {
-      if (!Number.isFinite(args.distance) || args.distance <= 0) {
-        diagnostics.push({
-          target: 'export-occt',
-          code: 'feature.camera-target.invalid-distance',
-          severity: 'warn',
-          message: `setCameraTarget: distance ${args.distance} is not a positive finite number; ignoring override.`,
-          hint: HINT_TEMPLATES['feature.camera-target.invalid-distance'].template,
-        });
-      } else {
-        distance = args.distance;
-      }
-    }
-
-    const target: [number, number, number] = [
-      xValid ? args.x : 0,
-      yValid ? args.y : 0,
-      zValid ? args.z : 0,
-    ];
-    const metadata: CameraTargetMetadata & { diagnostics?: CompilerDiagnostic[] } = {
-      virtual: true,
-      target,
-      ...(distance !== undefined ? { distance } : {}),
-      ...(diagnostics.length > 0 ? { diagnostics } : {}),
-    };
-
-    const r = this.register({
-      kind: 'cameraTarget',
-      params: {},
-      inputs: {},
-      metadata: metadata as unknown as Record<string, unknown>,
-    });
+    const r = this.register(buildCameraTargetFeatureSpec(args));
     return r.id;
   }
 
@@ -738,223 +518,12 @@ export class CaptureSession {
    * the last one when more than one is declared.
    */
   addAnimationView(args: AnimationViewSpec): FeatureId {
-    const diagnostics: CompilerDiagnostic[] = [];
-
-    // Last-wins shadowing: warn on the NEW record, naming the records it
-    // shadows, so the agent sees stale animationView calls.
     const shadowedIds = this.records.filter((r) => r.kind === 'animationView').map((r) => r.id);
-    if (shadowedIds.length > 0) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'animation.view.shadowed',
-        severity: 'warn',
-        message: `animationView: this call shadows earlier animationView record(s) ${shadowedIds.join(', ')}; capture uses only the LAST record.`,
-        hint: HINT_TEMPLATES['animation.view.shadowed'].template,
-      });
-    }
-
-    let fps = 30;
-    if (args.fps !== undefined) {
-      if (!Number.isFinite(args.fps) || args.fps <= 0) {
-        diagnostics.push({
-          target: 'export-occt',
-          code: 'feature.invalid-args',
-          severity: 'warn',
-          message: `animationView: 'fps' ${args.fps} is not a positive finite number; defaulting to 30.`,
-          hint: `invalid-args.animation-view.bad-fps — pass fps > 0 or omit for the 30 default.`,
-        });
-      } else {
-        fps = args.fps;
-      }
-    }
-
-    // Clamps key values into the param's declared min/max range (when the
-    // param() declared one), pushing an animation.value.clamped warn per
-    // clamped key. Mutates the normalized tracks in place.
-    const clampToParamRange = (tracks: AnimationViewMetadata['tracks']): void => {
-      for (const track of tracks) {
-        if (!this.paramTable.has(track.param)) continue; // legacy default-safe '' param
-        const meta = this.paramTable.get(track.param).meta;
-        const min = meta?.min;
-        const max = meta?.max;
-        if (min === undefined && max === undefined) continue;
-        for (const key of track.keys) {
-          let clamped = key.value;
-          if (min !== undefined && clamped < min) clamped = min;
-          if (max !== undefined && clamped > max) clamped = max;
-          if (clamped !== key.value) {
-            diagnostics.push({
-              target: 'export-occt',
-              code: 'animation.value.clamped',
-              severity: 'warn',
-              message: `animationView: track '${track.param}' key at ${key.atMs}ms has value ${key.value} outside the param's declared range [${min ?? '-inf'}, ${max ?? '+inf'}]; stored value clamped to ${clamped}.`,
-              hint: HINT_TEMPLATES['animation.value.clamped'].template,
-            });
-            key.value = clamped;
-          }
-        }
-      }
-    };
-
-    let metadata: AnimationViewMetadata & { diagnostics?: CompilerDiagnostic[] };
-
-    if (isAnimationViewTracksSpec(args)) {
-      metadata = this.validateAnimationTracks(args, fps);
-    } else {
-      metadata = this.validateAnimationSweep(args, fps, diagnostics);
-    }
-
-    clampToParamRange(metadata.tracks);
-    if (diagnostics.length > 0) metadata.diagnostics = diagnostics;
-
-    const r = this.register({
-      kind: 'animationView',
-      params: {},
-      inputs: {},
-      metadata: metadata as unknown as Record<string, unknown>,
-    });
+    const r = this.register(buildAnimationViewFeatureSpec(args, {
+      paramTable: this.paramTable,
+      shadowedIds,
+    }));
     return r.id;
-  }
-
-  /** Throws animation.param.unknown unless `name` is declared by a prior
-   *  param() call on this session AND that declaration is numeric — boolean
-   *  params cannot be keyframed (updateModelParams would reject the
-   *  interpolated number values mid-capture). Shared by both the track and
-   *  legacy sweep forms of addAnimationView. */
-  private requireDeclaredNumericParam(name: unknown, where: string): void {
-    if (typeof name !== 'string' || name.length === 0 || !this.paramTable.has(name)) {
-      throw new KernelError(
-        'animation.param.unknown',
-        `animationView: ${where} names param ${JSON.stringify(name)} which is not declared by a prior param() call.`,
-        undefined,
-        HINT_TEMPLATES['animation.param.unknown'].template,
-      );
-    }
-    const declaredType = this.paramTable.get(name).type;
-    if (declaredType !== 'number') {
-      throw new KernelError(
-        'animation.param.unknown',
-        `animationView: ${where} names param '${name}' which is declared as ${declaredType}; animation tracks require numeric params.`,
-        undefined,
-        HINT_TEMPLATES['animation.param.unknown'].template,
-      );
-    }
-  }
-
-  /** Keyframe-track form of addAnimationView: throwing validation, then
-   *  normalization. See addAnimationView for the mechanics rationale. */
-  private validateAnimationTracks(
-    args: AnimationViewTracksSpec,
-    fps: number,
-  ): AnimationViewMetadata {
-    const badKeys = (why: string): never => {
-      throw new KernelError(
-        'animation.keys.invalid',
-        `animationView: ${why}.`,
-        undefined,
-        HINT_TEMPLATES['animation.keys.invalid'].template,
-      );
-    };
-
-    if (!Array.isArray(args.tracks) || args.tracks.length === 0) {
-      badKeys(`'tracks' must be a non-empty array; got ${JSON.stringify(args.tracks)}`);
-    }
-    const seenParams = new Set<string>();
-    for (let i = 0; i < args.tracks.length; i += 1) {
-      const track = args.tracks[i];
-      if (typeof track !== 'object' || track === null) {
-        badKeys(`tracks[${i}] must be an object { param, keys }; got ${JSON.stringify(track)}`);
-      }
-      this.requireDeclaredNumericParam(track.param, `tracks[${i}].param`);
-      if (seenParams.has(track.param)) {
-        throw new KernelError(
-          'animation.track.duplicate-param',
-          `animationView: tracks[${i}] targets param '${track.param}' which an earlier track already animates; merge the keys into one track per param.`,
-          undefined,
-          HINT_TEMPLATES['animation.track.duplicate-param'].template,
-        );
-      }
-      seenParams.add(track.param);
-      if (!Array.isArray(track.keys) || track.keys.length === 0) {
-        badKeys(`tracks[${i}] ('${track.param}') has an empty keys array; declare at least one key`);
-      }
-      const seenAtMs = new Set<number>();
-      for (let j = 0; j < track.keys.length; j += 1) {
-        const key = track.keys[j];
-        if (typeof key !== 'object' || key === null) {
-          badKeys(`tracks[${i}].keys[${j}] must be an object { atMs, value, ease? }; got ${JSON.stringify(key)}`);
-        }
-        if (!Number.isFinite(key.atMs) || !Number.isFinite(key.value)) {
-          badKeys(`tracks[${i}].keys[${j}] atMs and value must be finite numbers; got (atMs: ${key.atMs}, value: ${key.value})`);
-        }
-        if (key.atMs < 0) {
-          badKeys(`tracks[${i}].keys[${j}] atMs must be >= 0; got ${key.atMs}`);
-        }
-        if (seenAtMs.has(key.atMs)) {
-          badKeys(`tracks[${i}] ('${track.param}') has duplicate atMs ${key.atMs}; key timestamps must be unique within a track`);
-        }
-        seenAtMs.add(key.atMs);
-        if (key.ease !== undefined && !(ANIMATION_EASES as readonly string[]).includes(key.ease as string)) {
-          badKeys(`tracks[${i}].keys[${j}] has unknown ease ${JSON.stringify(key.ease)}; expected one of ${ANIMATION_EASES.join(' | ')}`);
-        }
-      }
-    }
-    return normalizeAnimationView(args, fps);
-  }
-
-  /** Legacy sweep form of addAnimationView: historic stash-on-metadata
-   *  validation (default-safe record), plus the throwing param-declared
-   *  check, normalized to the track shape. */
-  private validateAnimationSweep(
-    args: AnimationViewSweepSpec,
-    fps: number,
-    diagnostics: CompilerDiagnostic[],
-  ): AnimationViewMetadata {
-    const paramOk = typeof args.param === 'string' && args.param.length > 0;
-    if (!paramOk) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.invalid-args',
-        severity: 'error',
-        message: `animationView: 'param' must be a non-empty string; got ${JSON.stringify(args.param)}.`,
-        hint: `invalid-args.animation-view.param-empty — name a param('...') declared earlier in the script.`,
-      });
-    } else {
-      this.requireDeclaredNumericParam(args.param, `'param'`);
-    }
-
-    const fromOk = Number.isFinite(args.from);
-    const toOk = Number.isFinite(args.to);
-    if (!fromOk || !toOk) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.invalid-args',
-        severity: 'error',
-        message: `animationView: 'from' and 'to' must be finite numbers; got (${args.from}, ${args.to}).`,
-        hint: `invalid-args.animation-view.non-finite-range — pass finite numeric bounds for the sweep.`,
-      });
-    }
-
-    const durOk = Number.isFinite(args.durationMs) && args.durationMs > 0;
-    if (!durOk) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.invalid-args',
-        severity: 'error',
-        message: `animationView: 'durationMs' must be a positive finite number; got ${args.durationMs}.`,
-        hint: `invalid-args.animation-view.bad-duration — pass durationMs > 0 (e.g. 4000 for a 4-second sweep).`,
-      });
-    }
-
-    return normalizeAnimationView(
-      {
-        param: paramOk ? args.param : '',
-        from: fromOk ? args.from : 0,
-        to: toOk ? args.to : 0,
-        durationMs: durOk ? args.durationMs : 1000,
-      },
-      fps,
-    );
   }
 
   /**
