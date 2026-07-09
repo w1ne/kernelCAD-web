@@ -12,6 +12,7 @@ import {
   defaultBuildRepairPrompt,
   type McpToolDefinition,
 } from './toolRegistry';
+import { catalogToolEntries } from './registry/catalogTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -92,6 +93,13 @@ describe('toolRegistry public contract', () => {
   it('keeps merged public tool metadata stable', () => {
     const fixture = JSON.parse(readFileSync(PUBLIC_CONTRACT_FIXTURE, 'utf8'));
     expect(serializedPublicTools()).toEqual(fixture);
+  });
+
+  it('composes catalog tools from the catalog registry module', () => {
+    const names = catalogToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual(['lookup_cookbook', 'find_part', 'fetch_part']);
+    expect(TOOL_REGISTRY.slice(20, 23)).toEqual(catalogToolEntries);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {
