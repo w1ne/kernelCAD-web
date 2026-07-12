@@ -223,6 +223,43 @@ hand.mate('index-dip', 'index-middle.dip', 'index-distal.dip', 'revolute', {
   maxLoad: { torque: 0.12 },
 });
 
+hand.jointSupport('index-mcp-support', {
+  mate: 'index-mcp',
+  shaft: 'palm',
+  supports: ['palm'],
+  output: 'index-proximal',
+  requiredSupport: {
+    kind: 'hinge-bracket',
+    around: 'palm.indexMcp',
+    supports: ['palm'],
+    minBearingLengthMm: 6,
+  },
+});
+hand.jointSupport('index-pip-support', {
+  mate: 'index-pip',
+  shaft: 'index-proximal',
+  supports: ['index-proximal'],
+  output: 'index-middle',
+  requiredSupport: {
+    kind: 'hinge-bracket',
+    around: 'index-proximal.pip',
+    supports: ['index-proximal'],
+    minBearingLengthMm: 6,
+  },
+});
+hand.jointSupport('index-dip-support', {
+  mate: 'index-dip',
+  shaft: 'index-middle',
+  supports: ['index-middle'],
+  output: 'index-distal',
+  requiredSupport: {
+    kind: 'hinge-bracket',
+    around: 'index-middle.dip',
+    supports: ['index-middle'],
+    minBearingLengthMm: 6,
+  },
+});
+
 void palm;
 void proximal;
 void middle;

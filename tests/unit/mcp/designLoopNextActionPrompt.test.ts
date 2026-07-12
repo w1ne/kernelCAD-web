@@ -200,8 +200,8 @@ describe('design_loop nextActionPrompt rendering from RepairContext', () => {
   });
 
   it('nextActionPrompt preserves physical use case contact reachability facts', async () => {
-    mockReviewCadTool.mockReset();
-    mockReviewCadTool.mockResolvedValue({
+    runReviewPipeline.mockReset();
+    runReviewPipeline.mockResolvedValue({
       ok: false,
       featureCount: 1,
       diagnostics: [

@@ -769,22 +769,48 @@ function buildSuggestedRepairPrompt(
   if (diagnostics.length === 0 && blockingReasons.length === 0) {
     return 'No structured diagnostics were produced. Re-run review_cad after returning an assembly scene from the script.';
   }
-  // v0.7.4 — filter out info-severity diagnostics (documented v0.7.x
-  // deferrals from Gate 1's vec3-origin face-inference path). They are not
-  // actionable repair facts and would otherwise crowd out higher-priority
-  // fitness blocking reasons given the 8-slot cap below.
+  // Filter out non-actionable informational diagnostics. The prompt has a
+  // bounded evidence budget, so make room for every distinct blocker before
+  // repeating lower-level instances of the same diagnostic code.
   const actionableDiagnostics = diagnostics.filter((d) =>
     'severity' in d ? d.severity !== 'info' : true,
   );
-  const diagnosticFacts = actionableDiagnostics.slice(0, 8).map((d) => {
-    const scoped = 'sampleName' in d && d.sampleName ? ` [${d.sampleName}]` : '';
-    return `- ${d.code}${scoped}: ${d.message} Hint: ${d.hint}`;
-  });
-  const remaining = Math.max(0, 8 - diagnosticFacts.length);
-  const fitnessFacts = blockingReasons.slice(0, remaining).map((reason) =>
-    `- ${reason.code}: ${reason.message} Hint: ${reason.repairHint}`,
-  );
-  const facts = [...diagnosticFacts, ...fitnessFacts].join('\n');
+  const factCandidates = [
+    ...blockingReasons.map((reason) => ({
+      code: reason.code,
+      fact: `- ${reason.code}: ${reason.message} Hint: ${reason.repairHint}`,
+    })),
+    ...actionableDiagnostics.map((diagnostic) => {
+      const scoped = 'sampleName' in diagnostic && diagnostic.sampleName
+        ? ` [${diagnostic.sampleName}]`
+        : '';
+      return {
+        code: diagnostic.code,
+        fact: `- ${diagnostic.code}${scoped}: ${diagnostic.message} Hint: ${diagnostic.hint}`,
+      };
+    }),
+  ];
+  const facts: string[] = [];
+  const includedCodes = new Set<string>();
+  const includedFacts = new Set<string>();
+
+  // First pass: a concise causal map. A missing transmission, for example,
+  // must remain visible even when several support diagnostics precede it.
+  for (const candidate of factCandidates) {
+    if (facts.length === 8) break;
+    if (includedCodes.has(candidate.code)) continue;
+    facts.push(candidate.fact);
+    includedCodes.add(candidate.code);
+    includedFacts.add(candidate.fact);
+  }
+  // Second pass: add mate- or pose-specific detail when the bounded prompt
+  // still has room, without repeating the same evidence verbatim.
+  for (const candidate of factCandidates) {
+    if (facts.length === 8) break;
+    if (includedFacts.has(candidate.fact)) continue;
+    facts.push(candidate.fact);
+    includedFacts.add(candidate.fact);
+  }
   const repairDirective = fitness === undefined
     ? ''
     : `\nRepair mode: ${fitness.repairMode}\nDirective: ${fitness.repairDirective}\n`;
@@ -793,5 +819,5 @@ function buildSuggestedRepairPrompt(
     input?.preserveInterfaces?.length ? `Preserve interfaces: ${input.preserveInterfaces.join(', ')}` : undefined,
   ].filter((line): line is string => line !== undefined);
   const designBlock = designContext.length === 0 ? '' : `\n${designContext.join('\n')}\n`;
-  return `Repair the kernelCAD script using these deterministic review facts:${repairDirective}${designBlock}\n${facts}`;
+  return `Repair the kernelCAD script using these deterministic review facts:${repairDirective}${designBlock}\n${facts.join('\n')}`;
 }

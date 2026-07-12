@@ -270,7 +270,7 @@ function buildDefaultServo(kc: KernelCadApi, opts: SupportedServoRevoluteOptions
       roughness: 0.25,
     });
   const horn = kc.box(18, 2, 4, true)
-    .translate(0, y / 2 + 6.5, z * 0.25)
+    .translate(0, y / 2 + 2.5, z * 0.25)
     .material({
       baseColor: '#d9dde2',
       metalness: 0.35,
