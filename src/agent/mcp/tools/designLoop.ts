@@ -49,6 +49,7 @@ export interface DesignLoopInput {
   stopOnPass?: boolean;
   allowReviewWarnings?: string[];
   requireVisualReview?: boolean;
+  requirePhysicalAcceptance?: boolean;
   outputRecordPath?: string;
   recordTitle?: string;
 }
@@ -171,6 +172,10 @@ export async function designLoopTool(input: DesignLoopInput): Promise<DesignLoop
 
     const id = attempt.id ?? String(index + 1).padStart(2, '0');
     const title = attempt.title ?? `Attempt ${id}`;
+    const source = attempt.code ?? (attempt.file !== undefined ? await readFile(attempt.file, 'utf-8') : '');
+    const requirePhysicalAcceptance =
+      input.requirePhysicalAcceptance === true ||
+      containsPhysicalUseCaseDeclaration(source);
     const reviewInput: ReviewCadInput = {
       ...(attempt.file !== undefined ? { file: attempt.file } : {}),
       ...(attempt.code !== undefined ? { code: attempt.code } : {}),
@@ -184,9 +189,17 @@ export async function designLoopTool(input: DesignLoopInput): Promise<DesignLoop
       gripperAperture: input.gripperAperture,
       samplesPerMate: input.samplesPerMate,
       combinatorial: input.combinatorial,
+      ...(requirePhysicalAcceptance
+        ? {
+            includePhysicalUseCaseReachability: true,
+            includePhysicalUseCaseStatics: true,
+            includePhysicalUseCaseJointReactions: true,
+            includePhysicalUseCaseJointStructure: true,
+            requirePhysicalUseCase: true,
+          }
+        : {}),
     };
     const review = await runReviewPipeline(reviewInput);
-    const source = attempt.code ?? (attempt.file !== undefined ? await readFile(attempt.file, 'utf-8') : '');
     const attemptResult = toAttemptResult({
       id,
       title,
@@ -247,7 +260,11 @@ function toAttemptResult(input: {
     // (which are also excluded from `reviewFacts`). Keep `warning` so quality
     // signals continue to gate the loop.
     .filter((diagnostic) => diagnostic.severity === 'warning')
-    .filter((diagnostic) => !input.allowReviewWarnings.includes(diagnostic.code))
+    .concat(input.review.diagnostics.filter(isPreservedReviewFactDiagnostic))
+    .filter((diagnostic) =>
+      isPreservedReviewFactDiagnostic(diagnostic) ||
+      !input.allowReviewWarnings.includes(diagnostic.code),
+    )
     .map((diagnostic) => ({
       code: diagnostic.code,
       severity: diagnostic.severity,
@@ -280,17 +297,56 @@ function toAttemptResult(input: {
       ? buildQualityRepairPrompt(reviewFacts)
       : input.review.ok
       ? fitness?.repairDirective ?? 'No repair needed. Preserve the current design and rerun review_cad after changes.'
-      : buildFailureRepairPrompt(input.review),
+      : buildFailureRepairPrompt(input.review, reviewFacts),
   };
 }
 
-function buildFailureRepairPrompt(review: Extract<ReviewCadOutput, { ok: false }>): string {
+function containsPhysicalUseCaseDeclaration(source: string): boolean {
+  return /\bphysicalUseCase\s*\(/.test(source);
+}
+
+function isPreservedPhysicalAcceptanceDiagnostic(
+  diagnostic: ReviewCadOutput['diagnostics'][number],
+): boolean {
+  return isPhysicalAcceptanceCode(diagnostic.code);
+}
+
+function isPhysicalAcceptanceCode(code: string): boolean {
+  return (
+    code === 'assembly.physical-use-case.contact-unreachable' ||
+    code === 'assembly.physical-use-case.simultaneous-contacts-unreachable' ||
+    code === 'assembly.physical-use-case.static-input-incomplete' ||
+    code === 'assembly.physical-use-case.static-equilibrium-unmet' ||
+    code === 'assembly.physical-use-case.static-actuator-torque-insufficient' ||
+    code.startsWith('assembly.physical-use-case.joint-')
+  );
+}
+
+function isPreservedTopologyDiagnostic(
+  diagnostic: ReviewCadOutput['diagnostics'][number],
+): boolean {
+  return (
+    diagnostic.code.startsWith('assembly.connectivity.') ||
+    diagnostic.code.startsWith('assembly.joint-topology.')
+  );
+}
+
+function isPreservedReviewFactDiagnostic(
+  diagnostic: ReviewCadOutput['diagnostics'][number],
+): boolean {
+  return isPreservedPhysicalAcceptanceDiagnostic(diagnostic) || isPreservedTopologyDiagnostic(diagnostic);
+}
+
+function buildFailureRepairPrompt(
+  review: Extract<ReviewCadOutput, { ok: false }>,
+  reviewFacts: readonly DesignLoopAttemptResult['reviewFacts'][number][] = [],
+): string {
   const context = review.repairContext;
   if (context === undefined) {
     // Defensive fallback: predecessor commits guarantee repairContext on every
     // review output, but keep the prior string for callers that injected an
     // older ReviewCadOutput shape (unit tests, fixtures).
-    return review.suggestedRepairPrompt;
+    return appendPreservedReviewFacts(review.suggestedRepairPrompt, reviewFacts);
   }
   const severityByKey = indexDiagnosticSeverity(review.diagnostics);
   const blockingLines = context.blockingReasons.map((reason) => `- ${reason}`);
@@ -321,9 +377,24 @@ function buildFailureRepairPrompt(review: Extract<ReviewCadOutput, { ok: false }
     sections.push(designLines.join('\n'));
   }
   if (sections.length === 0) {
-    return review.suggestedRepairPrompt;
+    return appendPreservedReviewFacts(review.suggestedRepairPrompt, reviewFacts);
   }
-  return sections.join('\n\n');
+  return appendPreservedReviewFacts(sections.join('\n\n'), reviewFacts);
+}
+
+function appendPreservedReviewFacts(
+  prompt: string,
+  reviewFacts: readonly DesignLoopAttemptResult['reviewFacts'][number][],
+): string {
+  const preservedFacts = reviewFacts.filter((fact) =>
+    isPhysicalAcceptanceCode(fact.code) ||
+    fact.code.startsWith('assembly.connectivity.') ||
+    fact.code.startsWith('assembly.joint-topology.'));
+  if (preservedFacts.length === 0) return prompt;
+  const lines = preservedFacts.map((fact) =>
+    `- ${fact.code}: ${fact.message}${fact.hint ? ` Hint: ${fact.hint}` : ''}`,
+  );
+  return `${prompt}\n\nPreserved acceptance facts:\n${lines.join('\n')}`;
 }
 
 function renderTopDiagnostic(

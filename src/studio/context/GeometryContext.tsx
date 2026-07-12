@@ -40,17 +40,22 @@ export interface ScriptReviewSummary {
     /**
      * Raw pairwise interference results at the script's current/default pose,
      * BEFORE any `ignore` filtering applied by `assembly.solvedModel`. The
-     * Studio status-bar HUD reads `.length` of this for the interferences
-     * counter so users see what's overlapping right now even when the script
-     * silences a known-acceptable pair (e.g. an elbow knuckle). The validator's
-     * filtered diagnostics still flow through `diagnostics` above for the
-     * Validity tab and the `validate: 'error'` throw path.
+     * Studio uses this as the live raw channel and pairs it with
+     * `interferenceSummary` for the actionable footer count/tooltip. The
+     * validator's filtered diagnostics still flow through `diagnostics` above
+     * for the Validity tab and the `validate: 'error'` throw path.
      */
     rawInterferencePairs?: Array<{
         a: string;
         b: string;
         volumeMm3: number;
     }>;
+    interferenceSummary?: {
+        rawCount: number;
+        contactNoiseCount: number;
+        actionableCount: number;
+        capMm3: number;
+    };
     /**
      * Physics-grounded loop verdict (P1 surface convergence).
      *
@@ -75,6 +80,7 @@ export interface ScriptReviewSummary {
         message?: string;
         hint?: string;
     }>;
+    livePhysicalUseCaseReview?: boolean;
 }
 
 /**
@@ -106,6 +112,67 @@ function detectEmptyBuild(
         return `Model produced no visible geometry: ${firstError.message}`;
     }
     return 'Model compiled but produced no visible geometry. Open the Validity panel for diagnostics.';
+}
+
+function overlayLiveReview(
+    previous: ScriptReviewSummary | null,
+    live: ScriptReviewSummary,
+): ScriptReviewSummary {
+    if (!previous) return live;
+    const liveDiagnostics = live.diagnostics ?? [];
+    const hasLiveDiagnostics = liveDiagnostics.length > 0;
+    const hasLiveFitness = live.fitness !== undefined;
+    const hasLivePhysicalUseCaseReview = live.livePhysicalUseCaseReview === true;
+    if (hasLivePhysicalUseCaseReview) {
+        const nonPhysicalDiagnostics = (previous.diagnostics ?? []).filter((diagnostic) =>
+            !isPhysicalUseCaseReviewCode(diagnostic.code),
+        );
+        const nonPhysicalBlockingReasons = (previous.fitness?.blockingReasons ?? []).filter((reason) =>
+            !isPhysicalUseCaseReviewCode(reason.code),
+        );
+        const liveBlockingReasons = live.fitness?.blockingReasons ?? liveDiagnostics.map((diagnostic) => ({
+            code: diagnostic.code,
+            message: diagnostic.message,
+            repairHint: diagnostic.hint,
+        }));
+        const mergedBlockingReasons = [...nonPhysicalBlockingReasons, ...liveBlockingReasons];
+        const mergedFitness = previous.fitness !== undefined || live.fitness !== undefined
+            ? mergedBlockingReasons.length > 0
+                ? {
+                    ...(previous.fitness ?? {}),
+                    ...(live.fitness ?? {}),
+                    functional: false,
+                    repairMode: nonPhysicalBlockingReasons.length > 0
+                        ? previous.fitness?.repairMode
+                        : liveDiagnostics.length > 0
+                            ? live.fitness?.repairMode ?? 'physical-use-case'
+                            : previous.fitness?.repairMode,
+                    blockingReasons: mergedBlockingReasons,
+                }
+                : undefined
+            : undefined;
+        return {
+            ...previous,
+            ok: nonPhysicalDiagnostics.length === 0 && nonPhysicalBlockingReasons.length === 0
+                ? live.ok
+                : false,
+            diagnostics: [...nonPhysicalDiagnostics, ...liveDiagnostics],
+            fitness: mergedFitness,
+            rawInterferencePairs: live.rawInterferencePairs,
+            interferenceSummary: live.interferenceSummary,
+        };
+    }
+    return {
+        ...previous,
+        ...(hasLiveDiagnostics ? { ok: live.ok, diagnostics: liveDiagnostics } : {}),
+        ...(hasLiveFitness ? { ok: live.ok, fitness: live.fitness } : {}),
+        rawInterferencePairs: live.rawInterferencePairs,
+        interferenceSummary: live.interferenceSummary,
+    };
+}
+
+function isPhysicalUseCaseReviewCode(code: string | undefined): boolean {
+    return code?.startsWith('assembly.physical-use-case.') === true;
 }
 
 export interface GeometryContextType {
@@ -420,11 +487,9 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                         if (revision !== mainRevisionRef.current) return;
                         if (opts?.liveReview) {
                             // Live payload carries only the fresh interference
-                            // pairs — keep the last FULL review's validator and
+                            // data — keep the last FULL review's validator and
                             // envelope output and overlay the live channel.
-                            setScriptReview((prev) => prev
-                                ? { ...prev, rawInterferencePairs: reviewPayload.rawInterferencePairs }
-                                : reviewPayload);
+                            setScriptReview((prev) => overlayLiveReview(prev, reviewPayload));
                             return;
                         }
                         setScriptReview(reviewPayload);
@@ -617,9 +682,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             const response = await fetch(url, { headers });
             const payload = await response.json() as ScriptReviewSummary;
             if (!response.ok) return;
-            setScriptReview((prev) => prev
-                ? { ...prev, rawInterferencePairs: payload.rawInterferencePairs }
-                : payload);
+            setScriptReview((prev) => overlayLiveReview(prev, payload));
         } catch {
             // A failed LIVE refresh keeps the last review — dropping it would
             // blank the Validity tab mid-drag.

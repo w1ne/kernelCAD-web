@@ -22,6 +22,9 @@ describe('review_cad MCP tool', () => {
           pose: 120,
           limitsDeg: [-90, 90],
         });
+        arm.jointSupport('yaw-support', {
+          mate: 'yaw', shaft: 'base', supports: ['base'], output: 'link',
+        });
         return arm.model();
       `,
     });
@@ -54,6 +57,9 @@ describe('review_cad MCP tool', () => {
           .connector('tool', { type: 'frame', origin: { kind: 'vec3', value: [20, 0, 0] } });
         arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', {
           limitsDeg: [0, 90],
+        });
+        arm.jointSupport('yaw-support', {
+          mate: 'yaw', shaft: 'base', supports: ['base'], output: 'link',
         });
         return arm.model();
       `,
@@ -347,10 +353,19 @@ describe('review_cad MCP tool', () => {
           .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] })
           .connector('tip', { type: 'frame', origin: { kind: 'vec3', value: [-40, 0, 0] } });
         arm.mate('grip', 'base.driver', 'driver.axis', 'revolute', { pose: 0, limitsDeg: [0, 40] });
-        arm.mate('left-curl', 'base.left', 'left.axis', 'revolute');
-        arm.mate('right-curl', 'base.right', 'right.axis', 'revolute');
+        arm.mate('left-curl', 'base.left', 'left.axis', 'revolute', { limitsDeg: [0, 40] });
+        arm.mate('right-curl', 'base.right', 'right.axis', 'revolute', { limitsDeg: [-40, 0] });
         arm.coupleMates('left-curl', { source: 'grip', ratio: 1 });
         arm.coupleMates('right-curl', { source: 'grip', ratio: -1 });
+        arm.jointSupport('grip-support', {
+          mate: 'grip', shaft: 'base', supports: ['base'], output: 'driver',
+        });
+        arm.jointSupport('left-support', {
+          mate: 'left-curl', shaft: 'base', supports: ['base'], output: 'left',
+        });
+        arm.jointSupport('right-support', {
+          mate: 'right-curl', shaft: 'base', supports: ['base'], output: 'right',
+        });
         arm.transmission('left-drive', {
           kind: 'link-rod',
           sourceMate: 'grip',
@@ -395,6 +410,9 @@ describe('review_cad MCP tool', () => {
           .connector('tool', { type: 'frame', origin: { kind: 'vec3', value: [20, 0, 0] } });
         arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', {
           limitsDeg: [0, 90],
+        });
+        arm.jointSupport('yaw-support', {
+          mate: 'yaw', shaft: 'base', supports: ['base'], output: 'link',
         });
         return arm.model();
       `,
@@ -454,6 +472,9 @@ describe('review_cad MCP tool', () => {
           .connector('tool', { type: 'frame', origin: { kind: 'vec3', value: [20, 0, 0] } });
         arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', {
           limitsDeg: [0, 90],
+        });
+        arm.jointSupport('yaw-support', {
+          mate: 'yaw', shaft: 'base', supports: ['base'], output: 'link',
         });
         return arm.model();
       `,

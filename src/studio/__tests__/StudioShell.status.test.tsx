@@ -7,6 +7,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 let workbenchComputing = false;
 let agentRailOpen = false;
 let recomputeRawPairs: Array<{ a: string; b: string; volumeMm3: number }> = [];
+let recomputeInterferenceSummary: {
+    rawCount: number;
+    contactNoiseCount: number;
+    actionableCount: number;
+    capMm3: number;
+} | null = null;
 let recomputeValidity: { diagnostics: { code: string; severity: string }[] } | null = null;
 
 vi.mock('../context/WorkbenchContext', () => ({
@@ -47,6 +53,7 @@ vi.mock('../hooks/useRecomputeResult', () => ({
         recomputeMs: 0,
         joints: [],
         rawInterferencePairs: recomputeRawPairs,
+        interferenceSummary: recomputeInterferenceSummary,
     }),
 }));
 
@@ -86,6 +93,7 @@ beforeEach(() => {
     workbenchComputing = false;
     agentRailOpen = false;
     recomputeRawPairs = [];
+    recomputeInterferenceSummary = null;
     recomputeValidity = null;
 });
 
@@ -108,21 +116,39 @@ describe('StudioShell status plumbing', () => {
         expect(rail.compareDocumentPosition(viewport) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
-    it('HUD interference count reads RAW pairs (pre-filter), not validator diagnostics', () => {
-        // Simulate the lamp scenario: the script silences 3 known-acceptable
-        // pairs via `ignore`, so the validator's diagnostic stream is empty
-        // for `assembly.interference.overlap` — but the raw detection found
-        // 3 contacts. The HUD MUST show 3, not 0.
+    it('HUD interference count excludes contact-noise pairs below the mechanism cap', () => {
+        // Simulate a jointed mechanism: raw detection still reports tiny
+        // adjacent-joint contacts, but the footer should only count actionable
+        // interferences above the same 20 mm3 cap used by validator/mechanism
+        // truth. The raw pairs remain available to the Params tab.
         recomputeRawPairs = [
             { a: 'base', b: 'lower-arm', volumeMm3: 12 },
             { a: 'lower-arm', b: 'upper-arm', volumeMm3: 14 },
             { a: 'upper-arm', b: 'lamp-head', volumeMm3: 8 },
+            { a: 'servo', b: 'palm', volumeMm3: 22 },
         ];
         recomputeValidity = { diagnostics: [] };
 
         render(<StudioShell />);
 
-        expect(screen.getByTestId('status-interferences').textContent).toBe('3');
+        expect(screen.getByTestId('status-interferences').textContent).toBe('1');
+    });
+
+    it('uses actionable interference summary for footer count', () => {
+        recomputeRawPairs = [
+            { a: 'raw-a', b: 'raw-b', volumeMm3: 1 },
+            { a: 'real-a', b: 'real-b', volumeMm3: 30 },
+        ];
+        recomputeInterferenceSummary = {
+            rawCount: 2,
+            contactNoiseCount: 1,
+            actionableCount: 1,
+            capMm3: 20,
+        };
+
+        render(<StudioShell />);
+
+        expect(screen.getByTestId('status-interferences').textContent).toBe('1');
     });
 
     it('HUD shows 0 when raw pairs is empty, even if validator has unrelated diagnostics', () => {

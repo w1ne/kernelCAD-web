@@ -110,6 +110,10 @@ function Probe() {
       <span data-testid="script-param-name">{scriptParams[0]?.name ?? ''}</span>
       <span data-testid="script-review-ok">{String(scriptReview?.ok ?? '')}</span>
       <span data-testid="script-review-repair">{scriptReview?.suggestedRepairPrompt ?? ''}</span>
+      <span data-testid="script-review-raw-count">{String(scriptReview?.rawInterferencePairs?.length ?? 0)}</span>
+      <span data-testid="script-review-summary-actionable">{String(scriptReview?.interferenceSummary?.actionableCount ?? '')}</span>
+      <span data-testid="script-review-diagnostic-codes">{scriptReview?.diagnostics?.map((d) => d.code).join(',') ?? ''}</span>
+      <span data-testid="script-review-fitness-mode">{scriptReview?.fitness?.repairMode ?? ''}</span>
       <span data-testid="error">{error ?? ''}</span>
       <button data-testid="trigger-preview" onClick={() => setPreviewCode('return makeBox(1,1,1);')}>Trigger</button>
       <button data-testid="trigger-preview-2" onClick={() => setPreviewCode('return makeBox(2,2,2);')}>Trigger2</button>
@@ -695,8 +699,20 @@ describe('GeometryContext latest-intent-wins', () => {
         ok: true,
         json: async () => ({
           ok: true,
-          diagnostics: [],
+          diagnostics: [{ code: 'assembly.part.floating', severity: 'error' }],
+          fitness: {
+            functional: false,
+            repairMode: 'full-review',
+            blockingReasons: [{ code: 'assembly.part.floating' }],
+          },
           suggestedRepairPrompt: 'initial review',
+          rawInterferencePairs: [{ a: 'old-a', b: 'old-b', volumeMm3: 50 }],
+          interferenceSummary: {
+            rawCount: 1,
+            contactNoiseCount: 0,
+            actionableCount: 99,
+            capMm3: 20,
+          },
         }),
       } as Response)
       .mockResolvedValueOnce({
@@ -719,8 +735,53 @@ describe('GeometryContext latest-intent-wins', () => {
         ok: true,
         json: async () => ({
           ok: true,
-          diagnostics: [],
+          livePhysicalUseCaseReview: true,
+          diagnostics: [{ code: 'assembly.physical-use-case.contact-unreachable', severity: 'error' }],
+          fitness: { functional: false, repairMode: 'physical-use-case' },
           suggestedRepairPrompt: 'post-relower review',
+          rawInterferencePairs: [
+            { a: 'raw-a', b: 'raw-b', volumeMm3: 1 },
+            { a: 'real-a', b: 'real-b', volumeMm3: 30 },
+          ],
+          interferenceSummary: {
+            rawCount: 2,
+            contactNoiseCount: 1,
+            actionableCount: 1,
+            capMm3: 20,
+          },
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          features: [],
+          bounds: { min: [0, 0, 0], max: [0, 0, 0] },
+          params: {
+            heightAdjustMm: {
+              name: 'heightAdjustMm',
+              type: 'number',
+              value: 4,
+              defaultValue: 0,
+              meta: { min: 0, max: 6.12 },
+            },
+          },
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          livePhysicalUseCaseReview: true,
+          diagnostics: [],
+          rawInterferencePairs: [
+            { a: 'raw-a', b: 'raw-b', volumeMm3: 1 },
+          ],
+          interferenceSummary: {
+            rawCount: 1,
+            contactNoiseCount: 1,
+            actionableCount: 0,
+            capMm3: 20,
+          },
         }),
       } as Response);
 
@@ -746,10 +807,25 @@ describe('GeometryContext latest-intent-wins', () => {
     expect(screen.getByTestId('script-param-name').textContent).toBe('heightAdjustMm');
     // 5th fetch is the live-channel review re-run that refreshes the HUD
     // interference count. The live payload overlays rawInterferencePairs
-    // onto the last full review — validator output (including the repair
-    // prompt) is intentionally kept from the initial review.
+    // and interferenceSummary onto the last full review — validator output
+    // (including the repair prompt) is intentionally kept from the initial
+    // review.
     expect(fetchUrl(fetchMock, 5)).toBe('/__kernelcad/review?session=tok-abc&script=examples%2Frobot-arm%2Fdesktop-3axis-mates.kcad.ts&live=1');
     expect(screen.getByTestId('script-review-repair').textContent).toBe('initial review');
+    expect(screen.getByTestId('script-review-raw-count').textContent).toBe('2');
+    expect(screen.getByTestId('script-review-summary-actionable').textContent).toBe('1');
+    expect(screen.getByTestId('script-review-diagnostic-codes').textContent).toBe('assembly.part.floating,assembly.physical-use-case.contact-unreachable');
+    expect(screen.getByTestId('script-review-fitness-mode').textContent).toBe('full-review');
+
+    await act(async () => {
+      relowerHandler?.();
+    });
+    await flushUntil(() => fetchMock.mock.calls.length >= 7);
+
+    expect(fetchUrl(fetchMock, 7)).toBe('/__kernelcad/review?session=tok-abc&script=examples%2Frobot-arm%2Fdesktop-3axis-mates.kcad.ts&live=1');
+    expect(screen.getByTestId('script-review-summary-actionable').textContent).toBe('0');
+    expect(screen.getByTestId('script-review-diagnostic-codes').textContent).toBe('assembly.part.floating');
+    expect(screen.getByTestId('script-review-fitness-mode').textContent).toBe('full-review');
   });
 
   it('viewport-driver lock suppresses the pose-only /transforms fast path (no fetch while animation drives)', async () => {

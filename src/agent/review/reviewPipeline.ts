@@ -25,10 +25,25 @@ import {
   reviewMechanicalTransmission,
   type MechanicalTransmissionDiagnostic,
 } from '../../modeling/mates/mechanicalTransmission';
+import {
+  reviewPhysicalUseCasesWithReachability,
+  type PhysicalUseCaseDiagnostic,
+  type PhysicalUseCaseJointStructuralCertificate,
+} from '../../modeling/mates/physicalUseCase';
+import type { PhysicalUseCaseStaticCertificate } from '../../modeling/mates/physicalUseCaseStatics';
+import type { PhysicalUseCaseJointReactionCertificate } from '../../modeling/mates/physicalUseCaseJointReactions';
+import {
+  reviewJointTopology,
+  type JointTopologyDiagnostic,
+} from '../../modeling/mates/jointTopology';
 import type { ValidatorDiagnostic, ValidatorStatus } from '../../modeling/mates/validator';
 import { validateAssemblyWithMates } from '../../modeling/mates/validator';
 import type { InterferencePair } from '../../modeling/runtime/detectInterferences';
 import { detectInterferences } from '../../modeling/runtime/detectInterferences';
+import {
+  summarizeInterferencePairs,
+  type InterferenceSummary,
+} from '../../modeling/runtime/interferenceClassification';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { analyzeContactGraph, type ContactGraphResult } from '../../modeling/runtime/contactGraph';
 import type { BuiltModel } from '../../modeling/buildModel';
@@ -55,6 +70,12 @@ export interface ReviewCadInput {
   gripperAperture?: GripperApertureRequest;
   samplesPerMate?: number;
   combinatorial?: boolean;
+  requirePhysicalUseCase?: boolean;
+  includePhysicalUseCaseReachability?: boolean;
+  includePhysicalUseCaseStatics?: boolean;
+  includePhysicalUseCaseJointReactions?: boolean;
+  includePhysicalUseCaseJointStructure?: boolean;
+  physicalUseCaseReachabilitySamplesPerMate?: number;
 }
 
 export interface RepairContext {
@@ -86,7 +107,7 @@ export type ReviewCadOutput =
   | {
       ok: true;
       featureCount: number;
-      diagnostics: Array<CompilerDiagnostic | ValidatorDiagnostic | PoseEnvelopeDiagnostic | MechanicalPlausibilityDiagnostic | MechanicalIntentDiagnostic | MechanicalTransmissionDiagnostic>;
+      diagnostics: Array<CompilerDiagnostic | ValidatorDiagnostic | PoseEnvelopeDiagnostic | MechanicalPlausibilityDiagnostic | MechanicalIntentDiagnostic | MechanicalTransmissionDiagnostic | PhysicalUseCaseDiagnostic | JointTopologyDiagnostic>;
       assembly: string;
       validator: {
         status: ValidatorStatus;
@@ -97,6 +118,9 @@ export type ReviewCadOutput =
       poseEnvelope?: PoseEnvelopeReviewResult;
       connectorWorkspace?: PoseEnvelopeReviewResult['connectorWorkspace'];
       gripperAperture?: PoseEnvelopeReviewResult['gripperAperture'];
+      physicalUseCaseStaticCertificates?: readonly PhysicalUseCaseStaticCertificate[];
+      physicalUseCaseJointReactionCertificates?: readonly PhysicalUseCaseJointReactionCertificate[];
+      physicalUseCaseJointStructuralCertificates?: readonly PhysicalUseCaseJointStructuralCertificate[];
       fitness: MechanismFitnessResult;
       repairContext: RepairContext;
       /**
@@ -109,6 +133,7 @@ export type ReviewCadOutput =
        * Validity tab + throw path.
        */
       rawInterferencePairs: ReadonlyArray<InterferencePair>;
+      interferenceSummary: InterferenceSummary;
       /** Physics-loop verdict (P1). Always present when an assembly was
        *  selected. `'unverified'` when the mechanism probe didn't run. */
       mechanism: MechanismVerdict;
@@ -124,7 +149,7 @@ export type ReviewCadOutput =
   | {
       ok: false;
       featureCount: number;
-      diagnostics: Array<CompilerDiagnostic | ValidatorDiagnostic | PoseEnvelopeDiagnostic | MechanicalPlausibilityDiagnostic | MechanicalIntentDiagnostic | MechanicalTransmissionDiagnostic>;
+      diagnostics: Array<CompilerDiagnostic | ValidatorDiagnostic | PoseEnvelopeDiagnostic | MechanicalPlausibilityDiagnostic | MechanicalIntentDiagnostic | MechanicalTransmissionDiagnostic | PhysicalUseCaseDiagnostic | JointTopologyDiagnostic>;
       assembly?: string;
       validator?: {
         status: ValidatorStatus;
@@ -135,6 +160,9 @@ export type ReviewCadOutput =
       poseEnvelope?: PoseEnvelopeReviewResult;
       connectorWorkspace?: PoseEnvelopeReviewResult['connectorWorkspace'];
       gripperAperture?: PoseEnvelopeReviewResult['gripperAperture'];
+      physicalUseCaseStaticCertificates?: readonly PhysicalUseCaseStaticCertificate[];
+      physicalUseCaseJointReactionCertificates?: readonly PhysicalUseCaseJointReactionCertificate[];
+      physicalUseCaseJointStructuralCertificates?: readonly PhysicalUseCaseJointStructuralCertificate[];
       fitness?: MechanismFitnessResult;
       repairContext: RepairContext;
       suggestedRepairPrompt: string;
@@ -144,6 +172,7 @@ export type ReviewCadOutput =
        * `ok: false`, so the Studio HUD can still report the count.
        */
       rawInterferencePairs?: ReadonlyArray<InterferencePair>;
+      interferenceSummary?: InterferenceSummary;
       /** Physics-loop verdict (P1). `'unverified'` for pre-build failures
        *  where no assembly reached the probe. */
       mechanism?: MechanismVerdict;
@@ -159,7 +188,9 @@ type ReviewDiagnostic =
   | PoseEnvelopeDiagnostic
   | MechanicalPlausibilityDiagnostic
   | MechanicalIntentDiagnostic
-  | MechanicalTransmissionDiagnostic;
+  | MechanicalTransmissionDiagnostic
+  | JointTopologyDiagnostic
+  | PhysicalUseCaseDiagnostic;
 
 export const REVIEW_PIPELINE_STAGES = [
   'evaluate-source',
@@ -167,6 +198,7 @@ export const REVIEW_PIPELINE_STAGES = [
   'default-pose-geometry',
   'mechanical-review',
   'pose-envelope',
+  'physical-use-case',
   'mechanism-truth',
   'fitness-and-repair',
 ] as const;
@@ -208,8 +240,9 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     defaultPoseGeometry.wantInterference,
   );
   const poseEnvelope = await runPoseEnvelopeStage(arm, input, mechanicalReview.includePoseEnvelope);
+  const physicalUseCases = await runPhysicalUseCaseStage(arm, input, poseEnvelope);
 
-  const diagnostics = collectReviewDiagnostics(evaluation, mechanicalReview, poseEnvelope);
+  const diagnostics = collectReviewDiagnostics(evaluation, mechanicalReview, physicalUseCases, poseEnvelope);
   const { mechanism, mechanismFailures } = await runMechanismTruthStage(arm, input);
 
   const { fitness, ok, repairContext } = await runFitnessAndRepairStage({
@@ -218,6 +251,7 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     input,
     mechanism,
     mechanicalReview,
+    physicalUseCases,
     poseEnvelope,
   });
 
@@ -236,9 +270,13 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
       ...(poseEnvelope !== undefined ? { poseEnvelope } : {}),
       ...(poseEnvelope !== undefined ? { connectorWorkspace: poseEnvelope.connectorWorkspace } : {}),
       ...(poseEnvelope?.gripperAperture !== undefined ? { gripperAperture: poseEnvelope.gripperAperture } : {}),
+      physicalUseCaseStaticCertificates: physicalUseCases.staticCertificates,
+      physicalUseCaseJointReactionCertificates: physicalUseCases.jointReactionCertificates,
+      physicalUseCaseJointStructuralCertificates: physicalUseCases.jointStructuralCertificates,
       fitness,
       repairContext,
       rawInterferencePairs: defaultPoseGeometry.rawInterferencePairs,
+      interferenceSummary: defaultPoseGeometry.interferenceSummary,
       mechanism,
       mechanismFailures,
       ...(defaultPoseGeometry.geometry !== undefined ? { geometry: defaultPoseGeometry.geometry } : {}),
@@ -259,10 +297,14 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     ...(poseEnvelope !== undefined ? { poseEnvelope } : {}),
     ...(poseEnvelope !== undefined ? { connectorWorkspace: poseEnvelope.connectorWorkspace } : {}),
     ...(poseEnvelope?.gripperAperture !== undefined ? { gripperAperture: poseEnvelope.gripperAperture } : {}),
+    physicalUseCaseStaticCertificates: physicalUseCases.staticCertificates,
+    physicalUseCaseJointReactionCertificates: physicalUseCases.jointReactionCertificates,
+    physicalUseCaseJointStructuralCertificates: physicalUseCases.jointStructuralCertificates,
     fitness,
     repairContext,
     suggestedRepairPrompt: buildSuggestedRepairPrompt(diagnostics, fitness, input),
     rawInterferencePairs: defaultPoseGeometry.rawInterferencePairs,
+    interferenceSummary: defaultPoseGeometry.interferenceSummary,
     mechanism,
     mechanismFailures,
     ...(defaultPoseGeometry.geometry !== undefined ? { geometry: defaultPoseGeometry.geometry } : {}),
@@ -300,6 +342,7 @@ function runDefaultPoseGeometryStage(
 ): {
   wantInterference: boolean;
   rawInterferencePairs: InterferencePair[];
+  interferenceSummary: InterferenceSummary;
   geometry?: ContactGraphResult;
 } {
   // Raw default-pose interferences are surfaced separately so interactive
@@ -327,11 +370,13 @@ function runDefaultPoseGeometryStage(
     input.includeInterference !== undefined
       ? input.includeInterference
       : input.includePoseEnvelope !== false;
+  const rawInterferencePairs = wantInterference
+    ? safeDetectDefaultPoseInterferences(model, input.epsilonMm3)
+    : [];
   return {
     wantInterference,
-    rawInterferencePairs: wantInterference
-      ? safeDetectDefaultPoseInterferences(model, input.epsilonMm3)
-      : [],
+    rawInterferencePairs,
+    interferenceSummary: summarizeInterferencePairs(rawInterferencePairs),
     geometry: safeAnalyzeContactGraph(model),
   };
 }
@@ -354,11 +399,13 @@ async function runMechanicalReviewStage(
   const mechanicalIntent = await reviewMechanicalIntent(arm);
   const includePoseEnvelope = input.includePoseEnvelope ?? true;
   const mechanicalTransmission = await reviewMechanicalTransmission(arm, { includePoseEnvelope });
+  const jointTopology = reviewJointTopology(arm);
   return {
     validator,
     mechanicalPlausibility,
     mechanicalIntent,
     mechanicalTransmission,
+    jointTopology,
     includePoseEnvelope,
   };
 }
@@ -372,7 +419,7 @@ async function runPoseEnvelopeStage(
     ? reviewPoseEnvelope(arm, {
         includeInterference: input.includeInterference ?? true,
         epsilonMm3: input.epsilonMm3,
-        trackConnectors: input.trackConnectors,
+        trackConnectors: mergeConnectorRefs(input.trackConnectors, physicalUseCaseConnectorRefs(arm)),
         gripperAperture: input.gripperAperture,
         samplesPerMate: input.samplesPerMate,
         combinatorial: input.combinatorial,
@@ -380,17 +427,46 @@ async function runPoseEnvelopeStage(
     : undefined;
 }
 
+async function runPhysicalUseCaseStage(
+  arm: Assembly,
+  input: Pick<
+    ReviewCadInput,
+    | 'requirePhysicalUseCase'
+    | 'includePhysicalUseCaseReachability'
+    | 'includePhysicalUseCaseStatics'
+    | 'includePhysicalUseCaseJointReactions'
+    | 'includePhysicalUseCaseJointStructure'
+    | 'physicalUseCaseReachabilitySamplesPerMate'
+  >,
+  poseEnvelope: PoseEnvelopeReviewResult | undefined,
+) {
+  const includeReachability =
+    input.includePhysicalUseCaseReachability ?? input.requirePhysicalUseCase === true;
+  return reviewPhysicalUseCasesWithReachability(arm, {
+    requirePhysicalUseCase: input.requirePhysicalUseCase,
+    poseEnvelope,
+    includeReachability,
+    includeStatics: input.includePhysicalUseCaseStatics,
+    includeJointReactions: input.includePhysicalUseCaseJointReactions,
+    includeJointStructure: input.includePhysicalUseCaseJointStructure,
+    reachabilitySamplesPerMate: input.physicalUseCaseReachabilitySamplesPerMate,
+  });
+}
+
 function collectReviewDiagnostics(
   evaluation: Awaited<ReturnType<typeof evaluateForReview>>['evaluation'],
   mechanicalReview: Awaited<ReturnType<typeof runMechanicalReviewStage>>,
+  physicalUseCases: Awaited<ReturnType<typeof runPhysicalUseCaseStage>>,
   poseEnvelope: PoseEnvelopeReviewResult | undefined,
 ): ReviewDiagnostic[] {
   return [
     ...withNextActions(evaluation.diagnostics),
+    ...mechanicalReview.jointTopology.diagnostics,
     ...mechanicalReview.validator.diagnostics,
     ...mechanicalReview.mechanicalPlausibility.diagnostics,
     ...mechanicalReview.mechanicalIntent.diagnostics,
     ...mechanicalReview.mechanicalTransmission.diagnostics,
+    ...physicalUseCases.diagnostics,
     ...(poseEnvelope?.diagnostics ?? []),
   ];
 }
@@ -445,6 +521,7 @@ async function runFitnessAndRepairStage(input: {
   input: ReviewCadInput;
   mechanism: MechanismVerdict;
   mechanicalReview: Awaited<ReturnType<typeof runMechanicalReviewStage>>;
+  physicalUseCases: Awaited<ReturnType<typeof runPhysicalUseCaseStage>>;
   poseEnvelope: PoseEnvelopeReviewResult | undefined;
 }): Promise<{ fitness: MechanismFitnessResult; ok: boolean; repairContext: RepairContext }> {
   const fitness = summarizeMechanismFitness({
@@ -452,6 +529,9 @@ async function runFitnessAndRepairStage(input: {
     mechanicalPlausibilityDiagnostics: input.mechanicalReview.mechanicalPlausibility.diagnostics,
     mechanicalIntentDiagnostics: input.mechanicalReview.mechanicalIntent.diagnostics,
     mechanicalTransmissionDiagnostics: input.mechanicalReview.mechanicalTransmission.diagnostics,
+    jointTopologyDiagnostics: input.mechanicalReview.jointTopology.diagnostics,
+    physicalUseCaseDiagnostics: input.physicalUseCases.diagnostics,
+    physicalUseCaseCount: input.physicalUseCases.checkedUseCaseCount,
     poseEnvelope: input.poseEnvelope,
     trackConnectors: input.poseEnvelope !== undefined ? input.input.trackConnectors : undefined,
   });
@@ -482,6 +562,25 @@ function safeAnalyzeContactGraph(model: BuiltModel): ContactGraphResult | undefi
   } catch {
     return undefined;
   }
+}
+
+function physicalUseCaseConnectorRefs(arm: Assembly): string[] {
+  const refs = new Set<string>();
+  for (const useCase of arm.__physicalUseCases()) {
+    for (const contact of useCase.contacts) {
+      refs.add(contact.a);
+      refs.add(contact.b);
+    }
+  }
+  return [...refs];
+}
+
+function mergeConnectorRefs(
+  explicitRefs: readonly string[] | undefined,
+  inferredRefs: readonly string[],
+): string[] | undefined {
+  if (explicitRefs === undefined && inferredRefs.length === 0) return undefined;
+  return [...new Set([...(explicitRefs ?? []), ...inferredRefs])];
 }
 
 /**
@@ -662,7 +761,7 @@ async function buildRepairContext(
 }
 
 function buildSuggestedRepairPrompt(
-  diagnostics: readonly (CompilerDiagnostic | ValidatorDiagnostic | PoseEnvelopeDiagnostic | MechanicalPlausibilityDiagnostic | MechanicalIntentDiagnostic | MechanicalTransmissionDiagnostic)[],
+  diagnostics: readonly ReviewDiagnostic[],
   fitness?: MechanismFitnessResult,
   input?: Pick<ReviewCadInput, 'designGoal' | 'preserveInterfaces'>,
 ): string {
@@ -670,22 +769,48 @@ function buildSuggestedRepairPrompt(
   if (diagnostics.length === 0 && blockingReasons.length === 0) {
     return 'No structured diagnostics were produced. Re-run review_cad after returning an assembly scene from the script.';
   }
-  // v0.7.4 — filter out info-severity diagnostics (documented v0.7.x
-  // deferrals from Gate 1's vec3-origin face-inference path). They are not
-  // actionable repair facts and would otherwise crowd out higher-priority
-  // fitness blocking reasons given the 8-slot cap below.
+  // Filter out non-actionable informational diagnostics. The prompt has a
+  // bounded evidence budget, so make room for every distinct blocker before
+  // repeating lower-level instances of the same diagnostic code.
   const actionableDiagnostics = diagnostics.filter((d) =>
     'severity' in d ? d.severity !== 'info' : true,
   );
-  const diagnosticFacts = actionableDiagnostics.slice(0, 8).map((d) => {
-    const scoped = 'sampleName' in d && d.sampleName ? ` [${d.sampleName}]` : '';
-    return `- ${d.code}${scoped}: ${d.message} Hint: ${d.hint}`;
-  });
-  const remaining = Math.max(0, 8 - diagnosticFacts.length);
-  const fitnessFacts = blockingReasons.slice(0, remaining).map((reason) =>
-    `- ${reason.code}: ${reason.message} Hint: ${reason.repairHint}`,
-  );
-  const facts = [...diagnosticFacts, ...fitnessFacts].join('\n');
+  const factCandidates = [
+    ...blockingReasons.map((reason) => ({
+      code: reason.code,
+      fact: `- ${reason.code}: ${reason.message} Hint: ${reason.repairHint}`,
+    })),
+    ...actionableDiagnostics.map((diagnostic) => {
+      const scoped = 'sampleName' in diagnostic && diagnostic.sampleName
+        ? ` [${diagnostic.sampleName}]`
+        : '';
+      return {
+        code: diagnostic.code,
+        fact: `- ${diagnostic.code}${scoped}: ${diagnostic.message} Hint: ${diagnostic.hint}`,
+      };
+    }),
+  ];
+  const facts: string[] = [];
+  const includedCodes = new Set<string>();
+  const includedFacts = new Set<string>();
+
+  // First pass: a concise causal map. A missing transmission, for example,
+  // must remain visible even when several support diagnostics precede it.
+  for (const candidate of factCandidates) {
+    if (facts.length === 8) break;
+    if (includedCodes.has(candidate.code)) continue;
+    facts.push(candidate.fact);
+    includedCodes.add(candidate.code);
+    includedFacts.add(candidate.fact);
+  }
+  // Second pass: add mate- or pose-specific detail when the bounded prompt
+  // still has room, without repeating the same evidence verbatim.
+  for (const candidate of factCandidates) {
+    if (facts.length === 8) break;
+    if (includedFacts.has(candidate.fact)) continue;
+    facts.push(candidate.fact);
+    includedFacts.add(candidate.fact);
+  }
   const repairDirective = fitness === undefined
     ? ''
     : `\nRepair mode: ${fitness.repairMode}\nDirective: ${fitness.repairDirective}\n`;
@@ -694,5 +819,5 @@ function buildSuggestedRepairPrompt(
     input?.preserveInterfaces?.length ? `Preserve interfaces: ${input.preserveInterfaces.join(', ')}` : undefined,
   ].filter((line): line is string => line !== undefined);
   const designBlock = designContext.length === 0 ? '' : `\n${designContext.join('\n')}\n`;
-  return `Repair the kernelCAD script using these deterministic review facts:${repairDirective}${designBlock}\n${facts}`;
+  return `Repair the kernelCAD script using these deterministic review facts:${repairDirective}${designBlock}\n${facts.join('\n')}`;
 }

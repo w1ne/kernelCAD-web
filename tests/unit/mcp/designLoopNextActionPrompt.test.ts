@@ -198,4 +198,71 @@ describe('design_loop nextActionPrompt rendering from RepairContext', () => {
       expect.objectContaining({ code: 'assembly.visual.review-required' }),
     ]));
   });
+
+  it('nextActionPrompt preserves physical use case contact reachability facts', async () => {
+    runReviewPipeline.mockReset();
+    runReviewPipeline.mockResolvedValue({
+      ok: false,
+      featureCount: 1,
+      diagnostics: [
+        {
+          code: 'assembly.physical-use-case.contact-unreachable',
+          severity: 'error',
+          useCaseName: 'touch-target',
+          contactA: 'finger.tip',
+          contactB: 'base.target',
+          minDistanceMm: 78,
+          toleranceMm: 2,
+          message: "Physical use case 'touch-target' contact 'finger.tip' to 'base.target' cannot be reached by the declared actuator limits; closest targeted sample is 78.00 mm away with tolerance 2.00 mm.",
+          hint: "physical-use-case.contact-unreachable — repair the target connector, move 'finger.tip' or 'base.target', or widen the declared actuatorLimits so the contact can get within maxSlipMm 2.00.",
+        },
+      ],
+      assembly: 'targeted reachability rig',
+      validator: { status: 'ok', diagnostics: [], partCount: 4, jointCount: 4 },
+      fitness: {
+        functional: false,
+        repairMode: 'parameter-tune',
+        repairDirective: 'Move the target connector or widen the declared actuator limits.',
+        passedChecks: ['validator-no-errors'],
+        blockingReasons: [
+          {
+            code: 'assembly.physical-use-case.contact-unreachable',
+            message: "Physical use case 'touch-target' contact 'finger.tip' to 'base.target' cannot be reached by the declared actuator limits; closest targeted sample is 78.00 mm away with tolerance 2.00 mm.",
+            repairHint: "physical-use-case.contact-unreachable — repair the target connector, move 'finger.tip' or 'base.target', or widen the declared actuatorLimits so the contact can get within maxSlipMm 2.00.",
+          },
+        ],
+        mechanismSummary: {
+          sampleCount: 0,
+          interferenceCount: 0,
+          trackedConnectorCount: 0,
+        },
+      },
+      repairContext: {
+        blockingReasons: [
+          "assembly.physical-use-case.contact-unreachable: Physical use case 'touch-target' contact 'finger.tip' to 'base.target' cannot be reached by the declared actuator limits; closest targeted sample is 78.00 mm away with tolerance 2.00 mm.",
+        ],
+        topDiagnostics: [
+          {
+            code: 'assembly.physical-use-case.contact-unreachable',
+          },
+        ],
+        preserveInterfaces: [],
+        designGoal: 'Build a servo-driven finger that can touch the declared base target.',
+      },
+      suggestedRepairPrompt: 'Repair the physical use case reachability.',
+    });
+
+    const result = await designLoopTool({
+      goal: 'Build a servo-driven finger that can touch the declared base target.',
+      includePoseEnvelope: false,
+      includeInterference: false,
+      requirePhysicalAcceptance: true,
+      attempts: [{ id: '01', title: 'Unreachable contact', code: 'return undefined;' }],
+    });
+
+    const prompt = result.attempts[0].nextActionPrompt;
+    expect(prompt).toContain('assembly.physical-use-case.contact-unreachable');
+    expect(prompt).toContain('closest');
+    expect(prompt).toContain('maxSlipMm');
+  });
 });

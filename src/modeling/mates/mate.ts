@@ -10,6 +10,7 @@
 // `Assembly.model()` / `Assembly.solvedModel()`.
 
 import type { Editable } from '../../shared/runtime/paramRef';
+import type { ClevisStructuralModel } from '../joints/types';
 import type { MateType } from './mateTypes';
 
 /**
@@ -29,21 +30,20 @@ export type MatePose =
 
 export type MateLimitRange = readonly [number, number];
 
+export interface MateCapacityEnvelope {
+  readonly maxResultantForceN: number;
+  readonly maxResultantMomentNmm: number;
+}
+
+/** Declared mate ratings. An envelope comparison is not structural proof. */
+export interface MateCapacity {
+  readonly envelope?: MateCapacityEnvelope;
+  readonly structure?: ClevisStructuralModel;
+}
+
 /**
- * Optional declared load capacity for a mate. v0.7.4 adds this as a stable
- * agent-facing surface for Gate 3 (joint-load static check).
- *
- * Unit semantics per mate type (see spec
- * `2026-05-15-v0.7-kinematic-grounding-design.md` §Gate 3):
- *  - `revolute`: only `torque` is meaningful (N·m). `force` is ignored if set.
- *  - `prismatic`: only `force` is meaningful (N). `torque` is ignored if set.
- *  - `cylindrical`: both `force` (N) and `torque` (N·m) may be set.
- *  - `ball`: only `force` (N).
- *  - `fastened` / `planar` / `pin_slot`: `maxLoad` is permitted but **not
- *    gated** in v0.7.4 — the type accepts it so the agent surface is stable
- *    for the v0.7.x extension, but the validator does not run summation. This
- *    is silent acceptance per the spec's open-question 4 resolution (no
- *    warning at every script run).
+ * @deprecated Legacy manual-load API. Use the unit-bearing
+ * `MateCapacity.envelope` ratings for reaction comparisons.
  */
 export interface MateLoadLimit {
   /** Maximum allowable applied force in Newtons. */
@@ -67,9 +67,9 @@ export interface MateRecord {
   readonly limitsDeg?: MateLimitRange;
   /** Linear scalar pose limits in mm for prismatic mates. */
   readonly limitsMm?: MateLimitRange;
-  /** Optional static-load capacity. Read by the v0.7.4 Gate 3 stub
-   *  (`validateJointLoadCapacity`). Per the field's unit semantics, see
-   *  `MateLoadLimit` JSDoc. */
+  /** Declared resultant rating; comparison against it is not structural proof. */
+  readonly capacity?: MateCapacity;
+  /** @deprecated legacy manual-load API */
   readonly maxLoad?: MateLoadLimit;
   /** Visual-exposure declaration read by Gate 4 (`jointVisualExposure`).
    *  Default `'exposed'`: the joint must read as a hinge (fork daylight +

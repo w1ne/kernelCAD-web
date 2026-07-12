@@ -352,6 +352,37 @@ describe('validateAssembly — v0.6 mate-aware codes', () => {
     expect(info?.severity).toBe('info');
   });
 
+  it('does not report used contact-target parts as floating structure', async () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('frame', kcad.box(1, 1, 1))
+      .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm
+      .part('palm', kcad.box(10, 10, 2))
+      .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } })
+      .connector('pad', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 1] } });
+    arm
+      .part('target-bar', kcad.cylinder(20, 3), { role: 'contact-target' })
+      .connector('contact', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 1] } });
+    arm.part('stray', kcad.box(1, 1, 1));
+    arm.mate('palm-frame', 'frame.mount', 'palm.mount', 'fastened');
+    arm.physicalUseCase('touch-target', {
+      stableParts: ['palm'],
+      loads: [{ part: 'target-bar', force: [0, 0, -1] }],
+      contacts: [
+        { a: 'palm.pad', b: 'target-bar.contact', normal: [0, 0, 1], friction: 0.5, normalForceN: 1 },
+      ],
+      actuatorLimits: [],
+    });
+
+    const result = await validateAssemblyWithMates(arm);
+
+    const floatingPartNames = result.diagnostics
+      .filter((diagnostic) => diagnostic.code === 'assembly.part.floating')
+      .map((diagnostic) => diagnostic.partName);
+    expect(floatingPartNames).toEqual(['stray']);
+  });
+
   it('type-system accepts the 17 v0.6 + v0.6.2 + v0.7.4 diagnostic codes', () => {
     // Capture-time codes (`type-mismatch`, `connector-not-found`) are thrown
     // as `KernelError` by `arm.mate(...)` and never surface through the

@@ -9,6 +9,7 @@ describe('review pipeline stage structure', () => {
       'default-pose-geometry',
       'mechanical-review',
       'pose-envelope',
+      'physical-use-case',
       'mechanism-truth',
       'fitness-and-repair',
     ]);

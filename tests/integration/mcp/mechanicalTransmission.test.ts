@@ -61,7 +61,22 @@ describe('mechanical transmission review', () => {
       expect(result.fitness?.blockingReasons).toEqual(expect.arrayContaining([
         expect.objectContaining({ code: 'assembly.transmission.missing-for-coupled-mate' }),
       ]));
-      expect(result.suggestedRepairPrompt).toMatch(/assembly\.transmission\.missing-for-coupled-mate/);
+      const prompt = result.suggestedRepairPrompt;
+      const factCodes = prompt
+        .split('\n')
+        .filter((line) => line.startsWith('- '))
+        .map((line) => line.slice(2).split(':', 1)[0]);
+
+      expect(prompt).toMatch(/assembly\.transmission\.missing-for-coupled-mate/);
+      expect(factCodes).toHaveLength(8);
+      expect(factCodes.slice(0, 5)).toEqual(expect.arrayContaining([
+        'assembly.joint-topology.unsupported-axis',
+        'assembly.joint-topology.missing-limit',
+        'assembly.mate.limit-missing',
+        'assembly.mechanical.part-disconnected',
+        'assembly.transmission.missing-for-coupled-mate',
+      ]));
+      expect(factCodes).not.toContain('assembly.mounting-hole.mismatch');
     }
   });
 

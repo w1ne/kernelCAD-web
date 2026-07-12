@@ -47,13 +47,16 @@ export function useRecomputeResult(): StudioRecomputeResult {
     );
 
     // Raw interference pairs are read directly from the script review payload
-    // (filtering is applied at the validator layer, not here). Empty array
-    // when scriptReview is null OR when the server omitted the field — the
-    // Studio HUD treats that as "interferences: 0" rather than a missing
-    // signal. See StudioRecomputeResult.rawInterferencePairs JSDoc for why
-    // the HUD reads this and not validity.diagnostics.
+    // for detail surfaces. The footer prefers the server-classified
+    // interferenceSummary, with raw pairs retained as compatibility fallback
+    // for older review payloads.
     const rawInterferencePairs = useMemo(
         () => workbench.scriptReview?.rawInterferencePairs ?? [],
+        [workbench.scriptReview],
+    );
+
+    const interferenceSummary = useMemo(
+        () => workbench.scriptReview?.interferenceSummary ?? null,
         [workbench.scriptReview],
     );
 
@@ -119,6 +122,7 @@ export function useRecomputeResult(): StudioRecomputeResult {
             recomputeMs: workbench.recomputeMs ?? 0,
             joints,
             rawInterferencePairs,
+            interferenceSummary,
             mechanismBanner,
             updateParam,
             setGeometryTransformOverride,
@@ -137,6 +141,7 @@ export function useRecomputeResult(): StudioRecomputeResult {
             repairEvidence,
             joints,
             rawInterferencePairs,
+            interferenceSummary,
             mechanismBanner,
             setGeometryTransformOverride,
             clearGeometryTransformOverrides,

@@ -16,12 +16,14 @@ import {
 import type { MateCouplingRecord } from '../mates/coupledPoses';
 import {
   parseConnectorRef,
+  type MateCapacity,
   type MateLimitRange,
   type MateLoadLimit,
   type MatePose,
   type MateRecord,
 } from '../mates/mate';
 import { isCompatiblePair, type MateType } from '../mates/mateTypes';
+import type { ClevisStructuralModel, StructuralMaterial } from '../joints/types';
 import {
   TENDON_DEFAULT_COIL_DIAMETER_MM,
   TENDON_DEFAULT_COIL_TURNS,
@@ -44,6 +46,11 @@ import {
   type WorkspaceTargetOpts,
   type WorkspaceTargetRecord,
 } from '../mates/workspaceTarget';
+import {
+  makePhysicalUseCaseRecord,
+  type PhysicalUseCaseOptions,
+  type PhysicalUseCaseRecord,
+} from '../mates/physicalUseCase';
 import { currentValue, toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
 import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../../shared/runtime/paramRef';
 import { Transform } from '../../shared/runtime/se3';
@@ -153,6 +160,224 @@ function validateLimitRange(
   }
 }
 
+const NMM_PER_NM = 1000;
+
+function validateMateCapacityOptions(
+  mateName: string,
+  mateType: MateType,
+  opts: { capacity?: MateCapacity; maxLoad?: MateLoadLimit } | undefined,
+): void {
+  const capacity: unknown = opts?.capacity;
+  const maxLoad: unknown = opts?.maxLoad;
+  if (capacity !== undefined && maxLoad !== undefined) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `assembly.mate.capacity-conflict: mate '${mateName}' cannot declare both capacity.envelope (N and Nmm) and deprecated maxLoad (N and Nm); use capacity.envelope only.`,
+      undefined,
+      `invalid-args.assembly.mate-capacity-conflict — replace maxLoad with capacity: { envelope: { maxResultantForceN, maxResultantMomentNmm } } using N and Nmm.`,
+    );
+  }
+
+  if (capacity !== undefined) {
+    if (!isMateOptionObject(capacity)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.mate.invalid-capacity: mate '${mateName}' capacity must be an object with an optional envelope.`,
+        undefined,
+        `invalid-args.assembly.mate-invalid-capacity — pass capacity: {} or capacity: { envelope: { maxResultantForceN, maxResultantMomentNmm } } using N and Nmm.`,
+      );
+    }
+    const envelope = capacity.envelope;
+    if (envelope !== undefined) {
+      if (!isMateOptionObject(envelope)) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.mate.invalid-capacity: mate '${mateName}' capacity.envelope must be an object containing force and moment ratings.`,
+          undefined,
+          `invalid-args.assembly.mate-invalid-capacity — pass capacity.envelope: { maxResultantForceN, maxResultantMomentNmm } using positive finite N and Nmm values.`,
+        );
+      }
+      validatePositiveFiniteMateValue(
+        mateName,
+        'capacity.envelope.maxResultantForceN',
+        envelope.maxResultantForceN,
+        'N',
+      );
+      validatePositiveFiniteMateValue(
+        mateName,
+        'capacity.envelope.maxResultantMomentNmm',
+        envelope.maxResultantMomentNmm,
+        'Nmm',
+      );
+    }
+    const structure = capacity.structure;
+    if (structure !== undefined) {
+      if (mateType !== 'revolute') {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.mate.invalid-capacity: mate '${mateName}' capacity.structure is a clevis revolute model but mate type is '${mateType}'.`,
+          undefined,
+          `invalid-args.assembly.mate-invalid-capacity — attach joint.clevis(...).structural only to its revolute mate.`,
+        );
+      }
+      validateClevisStructuralModel(mateName, structure);
+    }
+  }
+
+  if (maxLoad !== undefined) {
+    if (!isMateOptionObject(maxLoad)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.mate.invalid-capacity: mate '${mateName}' maxLoad must be an object with optional force and torque ratings.`,
+        undefined,
+        `invalid-args.assembly.mate-invalid-capacity — pass maxLoad: {} or maxLoad: { force, torque } using positive finite N and Nm values.`,
+      );
+    }
+    if (maxLoad.force !== undefined) {
+      validatePositiveFiniteMateValue(mateName, 'maxLoad.force', maxLoad.force, 'N');
+    }
+    if (maxLoad.torque !== undefined) {
+      const torqueNm = maxLoad.torque;
+      validatePositiveFiniteMateValue(mateName, 'maxLoad.torque', torqueNm, 'Nm');
+      if (typeof torqueNm === 'number' && !Number.isFinite(torqueNm * NMM_PER_NM)) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.mate.invalid-capacity: mate '${mateName}' maxLoad.torque=${torqueNm} Nm converts to Nmm as a non-finite value.`,
+          undefined,
+          `invalid-args.assembly.mate-invalid-capacity — reduce maxLoad.torque so its Nm-to-Nmm conversion remains finite, or use capacity.envelope.maxResultantMomentNmm directly.`,
+        );
+      }
+    }
+  }
+}
+
+function validateClevisStructuralModel(mateName: string, value: unknown): asserts value is ClevisStructuralModel {
+  if (!isMateOptionObject(value)) {
+    throwInvalidStructuralModel(mateName, 'capacity.structure must be an object emitted by joint.clevis().');
+  }
+  if (value.kind !== 'clevis-double-shear-v1' || value.source !== 'joint.clevis') {
+    throwInvalidStructuralModel(mateName, "capacity.structure must have kind 'clevis-double-shear-v1' and source 'joint.clevis'.");
+  }
+  if (value.forkPlateCount !== 2) {
+    throwInvalidStructuralModel(mateName, 'capacity.structure.forkPlateCount must equal 2.');
+  }
+  for (const field of [
+    'pinDiameterMm',
+    'boreDiameterMm',
+    'forkPlateThicknessMm',
+    'tongueThicknessMm',
+    'forkGapMm',
+    'supportSpanMm',
+    'edgeDistanceMm',
+  ] as const) {
+    if (typeof value[field] !== 'number' || !Number.isFinite(value[field]) || value[field] <= 0) {
+      throwInvalidStructuralModel(mateName, `capacity.structure.${field} must be a positive finite mm value.`);
+    }
+  }
+  if (value.materials !== undefined) {
+    if (!isMateOptionObject(value.materials)) {
+      throwInvalidStructuralModel(mateName, 'capacity.structure.materials must be an object when declared.');
+    }
+    for (const role of ['pin', 'fork', 'tongue'] as const) {
+      validateStructuralMaterialDeclaration(mateName, role, value.materials[role]);
+    }
+  }
+}
+
+function validateStructuralMaterialDeclaration(
+  mateName: string,
+  role: 'pin' | 'fork' | 'tongue',
+  value: unknown,
+): asserts value is StructuralMaterial {
+  if (!isMateOptionObject(value)) {
+    throwInvalidStructuralModel(mateName, `capacity.structure.materials.${role} must be an object.`);
+  }
+  if (
+    typeof value.name !== 'string' || value.name.trim() === '' ||
+    value.model !== 'isotropic-ductile' ||
+    typeof value.yieldStrengthMPa !== 'number' || !Number.isFinite(value.yieldStrengthMPa) || value.yieldStrengthMPa <= 0 ||
+    typeof value.bearingStrengthMPa !== 'number' || !Number.isFinite(value.bearingStrengthMPa) || value.bearingStrengthMPa <= 0 ||
+    (value.shearStrengthMPa !== undefined &&
+      (typeof value.shearStrengthMPa !== 'number' || !Number.isFinite(value.shearStrengthMPa) || value.shearStrengthMPa <= 0))
+  ) {
+    throwInvalidStructuralModel(mateName, `capacity.structure.materials.${role} has invalid engineering strength evidence.`);
+  }
+}
+
+function throwInvalidStructuralModel(mateName: string, detail: string): never {
+  throw new KernelError(
+    'feature.invalid-args',
+    `assembly.mate.invalid-capacity: mate '${mateName}' ${detail}`,
+    undefined,
+    `invalid-args.assembly.mate-invalid-capacity — pass the structural descriptor returned by joint.clevis() without modifying its geometry or material fields.`,
+  );
+}
+
+function copyStructuralMaterial(material: StructuralMaterial): StructuralMaterial {
+  return {
+    name: material.name,
+    model: material.model,
+    yieldStrengthMPa: material.yieldStrengthMPa,
+    bearingStrengthMPa: material.bearingStrengthMPa,
+    ...(material.shearStrengthMPa === undefined ? {} : { shearStrengthMPa: material.shearStrengthMPa }),
+  };
+}
+
+function copyClevisStructuralModel(model: ClevisStructuralModel): ClevisStructuralModel {
+  return {
+    kind: model.kind,
+    source: model.source,
+    pinDiameterMm: model.pinDiameterMm,
+    boreDiameterMm: model.boreDiameterMm,
+    forkPlateThicknessMm: model.forkPlateThicknessMm,
+    forkPlateCount: 2,
+    tongueThicknessMm: model.tongueThicknessMm,
+    forkGapMm: model.forkGapMm,
+    supportSpanMm: model.supportSpanMm,
+    edgeDistanceMm: model.edgeDistanceMm,
+    ...(model.materials === undefined ? {} : {
+      materials: {
+        pin: copyStructuralMaterial(model.materials.pin),
+        fork: copyStructuralMaterial(model.materials.fork),
+        tongue: copyStructuralMaterial(model.materials.tongue),
+      },
+    }),
+  };
+}
+
+function copyMateCapacity(capacity: MateCapacity): MateCapacity {
+  return {
+    ...(capacity.envelope === undefined ? {} : {
+      envelope: {
+        maxResultantForceN: capacity.envelope.maxResultantForceN,
+        maxResultantMomentNmm: capacity.envelope.maxResultantMomentNmm,
+      },
+    }),
+    ...(capacity.structure === undefined ? {} : {
+      structure: copyClevisStructuralModel(capacity.structure),
+    }),
+  };
+}
+
+function isMateOptionObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function validatePositiveFiniteMateValue(
+  mateName: string,
+  field: string,
+  value: unknown,
+  unit: 'N' | 'Nm' | 'Nmm',
+): void {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return;
+  throw new KernelError(
+    'feature.invalid-args',
+    `assembly.mate.invalid-capacity: mate '${mateName}' ${field} must be a positive finite ${unit} value.`,
+    undefined,
+    `invalid-args.assembly.mate-invalid-capacity — pass ${field} as a positive finite value in ${unit}.`,
+  );
+}
+
 function validateMechanicalIntentName(field: string, value: string): void {
   if (typeof value === 'string' && value.trim().length > 0) return;
   throw new KernelError(
@@ -224,6 +449,8 @@ export type AssemblyCrossSection =
       readonly lengthMm: number;
     };
 
+export type AssemblyPartRole = 'structure' | 'contact-target';
+
 export interface AssemblyPartOpts {
   at?: EditableVec3;
   connectors?: Record<string, AssemblyConnectorFrame>;
@@ -243,6 +470,10 @@ export interface AssemblyPartOpts {
    *  declaration the beam path fires K7 `kinematic.load.beam-not-applicable`
    *  on any load applied to the part. */
   crossSection?: AssemblyCrossSection;
+  /** Topology role. Defaults to `structure`; `contact-target` marks external
+   *  objects used for contact/load scenarios that are not structural members
+   *  of the mechanism graph. */
+  role?: AssemblyPartRole;
 }
 
 export interface MechanicalJointIntentOpts {
@@ -255,6 +486,18 @@ export interface MechanicalJointIntentOpts {
 }
 
 export interface MechanicalJointIntentRecord extends MechanicalJointIntentOpts {
+  readonly name: string;
+}
+
+export interface JointSupportIntentOpts {
+  readonly mate: string;
+  readonly shaft: string;
+  readonly supports: readonly string[];
+  readonly output: string;
+  readonly requiredSupport?: MechanicalJointSupportRequirement;
+}
+
+export interface JointSupportIntentRecord extends JointSupportIntentOpts {
   readonly name: string;
 }
 
@@ -372,6 +615,7 @@ export interface AssemblyJointStored {
 export interface AssemblyPartStored extends AssemblyPartRef {
   readonly originalShape: Shape;
   readonly connectParentId?: FeatureId;
+  readonly role?: AssemblyPartRole;
   /** Per-part material density in kg/m^3, copied from `AssemblyPartOpts.density`.
    *  Read by the URDF / SDF export inertial-block emitters. Undefined when
    *  the script did not declare a density on `arm.part(...)`. */
@@ -444,7 +688,9 @@ export class Assembly {
    */
   private readonly tendons: TendonRecord[] = [];
   private readonly mechanicalJointIntents: MechanicalJointIntentRecord[] = [];
+  private readonly jointSupportIntents: JointSupportIntentRecord[] = [];
   private readonly transmissionIntents: TransmissionIntentRecord[] = [];
+  private readonly physicalUseCases: PhysicalUseCaseRecord[] = [];
   /**
    * v0.7 Slice 1 — declarative workspace-reachability targets from
    * `arm.workspace(connectorRef, opts)`. Consumed by
@@ -497,6 +743,14 @@ export class Assembly {
     if (opts.crossSection !== undefined) {
       validateCrossSection(name, shape.id, opts.crossSection);
     }
+    if (opts.role !== undefined && opts.role !== 'structure' && opts.role !== 'contact-target') {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.part.invalid-role: part '${name}' role must be 'structure' or 'contact-target'; got ${formatScalarForError(opts.role)}.`,
+        shape.id,
+        `invalid-args.assembly.part-invalid-role — pass role: 'contact-target' only for external contact/load targets, or omit role for structural parts.`,
+      );
+    }
     const connectors = normalizeConnectors(name, shape.id, opts.connectors);
     const at = resolvePartPlacement(this.name, name, shape.id, opts.at, connectors, opts.connect);
     const record = this.session.assemblyPart(this.name, name, shape, { at, connectors, placedBy: opts.connect });
@@ -530,6 +784,7 @@ export class Assembly {
       ...(opts.connect !== undefined ? { connectParentId: opts.connect.to.partId } : {}),
       ...(opts.density !== undefined ? { density: opts.density } : {}),
       ...(opts.crossSection !== undefined ? { crossSection: opts.crossSection } : {}),
+      ...(opts.role !== undefined ? { role: opts.role } : {}),
     };
     this.parts.push(stored);
     if (opts.connect) {
@@ -624,6 +879,15 @@ export class Assembly {
         ...(om.pose !== undefined ? { pose: om.pose } : {}),
         ...(om.limitsDeg !== undefined ? { limitsDeg: om.limitsDeg } : {}),
         ...(om.limitsMm !== undefined ? { limitsMm: om.limitsMm } : {}),
+        ...(om.capacity !== undefined ? { capacity: copyMateCapacity(om.capacity) } : {}),
+        ...(om.maxLoad !== undefined
+          ? {
+              maxLoad: {
+                ...(om.maxLoad.force !== undefined ? { force: om.maxLoad.force } : {}),
+                ...(om.maxLoad.torque !== undefined ? { torque: om.maxLoad.torque } : {}),
+              },
+            }
+          : {}),
       });
     }
     const requireImportedPart = (origPartName: string, method: 'ref' | 'part'): AssemblyPartRef => {
@@ -834,8 +1098,10 @@ export class Assembly {
       pose?: MatePose;
       limitsDeg?: MateLimitRange;
       limitsMm?: MateLimitRange;
-      maxLoad?: MateLoadLimit;
       exposure?: 'exposed' | 'concealed';
+      capacity?: MateCapacity;
+      /** @deprecated legacy manual-load API */
+      maxLoad?: MateLoadLimit;
     },
   ): this {
     const a = this.resolveMateConnector(aRef);
@@ -857,6 +1123,7 @@ export class Assembly {
       );
     }
     this.validateMateLimits(name, type, opts);
+    validateMateCapacityOptions(name, type, opts);
     this.mates.push({
       name,
       a: aRef,
@@ -865,8 +1132,16 @@ export class Assembly {
       ...(opts?.pose !== undefined ? { pose: opts.pose } : {}),
       ...(opts?.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
       ...(opts?.limitsMm !== undefined ? { limitsMm: opts.limitsMm } : {}),
-      ...(opts?.maxLoad !== undefined ? { maxLoad: opts.maxLoad } : {}),
       ...(opts?.exposure !== undefined ? { exposure: opts.exposure } : {}),
+      ...(opts?.capacity !== undefined ? { capacity: copyMateCapacity(opts.capacity) } : {}),
+      ...(opts?.maxLoad !== undefined
+        ? {
+            maxLoad: {
+              ...(opts.maxLoad.force !== undefined ? { force: opts.maxLoad.force } : {}),
+              ...(opts.maxLoad.torque !== undefined ? { torque: opts.maxLoad.torque } : {}),
+            },
+          }
+        : {}),
     });
     return this;
   }
@@ -1114,6 +1389,25 @@ export class Assembly {
   }
 
   /**
+   * Declare the physical task this assembly must be able to survive or perform.
+   * This is intentionally generic: loads, contacts, stable parts, and actuator
+   * limits are evidence consumed by review gates before task-specific statics
+   * or MuJoCo simulations are added.
+   */
+  physicalUseCase(name: string, opts: PhysicalUseCaseOptions): this {
+    if (this.physicalUseCases.some((useCase) => useCase.name === name)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.physicalUseCase.duplicate-name: physical use case '${name}' is already declared.`,
+        undefined,
+        `invalid-args.assembly.physical-use-case-duplicate-name — use a unique physicalUseCase name.`,
+      );
+    }
+    this.physicalUseCases.push(makePhysicalUseCaseRecord(name, opts));
+    return this;
+  }
+
+  /**
    * Declare an SRDF planning group. Either a chain form (base->tip) or an
    * enumeration of joint / link names. Consumed by `export_model({
    * format: 'srdf' })`.
@@ -1270,6 +1564,76 @@ export class Assembly {
       name,
       mate: opts.mate,
       actuator: opts.actuator,
+      shaft: opts.shaft,
+      supports: [...opts.supports],
+      output: opts.output,
+      ...(opts.requiredSupport !== undefined ? {
+        requiredSupport: {
+          ...opts.requiredSupport,
+          ...(opts.requiredSupport.supports !== undefined ? { supports: [...opts.requiredSupport.supports] } : {}),
+        },
+      } : {}),
+    });
+    return this;
+  }
+
+  jointSupport(name: string, opts: JointSupportIntentOpts): this {
+    validateMechanicalIntentName('name', name);
+    if (this.jointSupportIntents.some((intent) => intent.name === name)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.jointSupport.duplicate-name: joint support intent '${name}' is already declared.`,
+        undefined,
+        `invalid-args.assembly.joint-support-duplicate-name — use a unique jointSupport name.`,
+      );
+    }
+    validateMechanicalIntentName('mate', opts.mate);
+    validateMechanicalIntentName('shaft', opts.shaft);
+    validateMechanicalIntentName('output', opts.output);
+    if (!Array.isArray(opts.supports) || opts.supports.length === 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.jointSupport.invalid-ref: joint support intent '${name}' requires at least one support part.`,
+        undefined,
+        `invalid-args.assembly.joint-support-invalid-ref — pass supports: ['support-part-name', ...].`,
+      );
+    }
+    for (const support of opts.supports) {
+      validateMechanicalIntentName('supports[]', support);
+    }
+    if (opts.requiredSupport !== undefined) {
+      validateMechanicalIntentName('requiredSupport.kind', opts.requiredSupport.kind);
+      validateMechanicalIntentName('requiredSupport.around', opts.requiredSupport.around);
+      for (const support of opts.requiredSupport.supports ?? []) {
+        validateMechanicalIntentName('requiredSupport.supports[]', support);
+      }
+      if (
+        opts.requiredSupport.minBearingLengthMm !== undefined &&
+        (!Number.isFinite(opts.requiredSupport.minBearingLengthMm) || opts.requiredSupport.minBearingLengthMm <= 0)
+      ) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.jointSupport.invalid-required-support: minBearingLengthMm must be a positive finite number.`,
+          undefined,
+          `invalid-args.assembly.joint-support-invalid-required-support — pass minBearingLengthMm > 0, or omit it.`,
+        );
+      }
+      if (
+        opts.requiredSupport.clearanceMm !== undefined &&
+        (!Number.isFinite(opts.requiredSupport.clearanceMm) || opts.requiredSupport.clearanceMm < 0)
+      ) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.jointSupport.invalid-required-support: clearanceMm must be a non-negative finite number.`,
+          undefined,
+          `invalid-args.assembly.joint-support-invalid-required-support — pass clearanceMm >= 0, or omit it.`,
+        );
+      }
+    }
+
+    this.jointSupportIntents.push({
+      name,
+      mate: opts.mate,
       shaft: opts.shaft,
       supports: [...opts.supports],
       output: opts.output,
@@ -1521,6 +1885,10 @@ export class Assembly {
     return this.workspaceTargets;
   }
 
+  __physicalUseCases(): readonly PhysicalUseCaseRecord[] {
+    return this.physicalUseCases;
+  }
+
   /** SRDF planning groups declared via `arm.planningGroup(...)`. */
   __planningGroups(): readonly PlanningGroupRecord[] {
     return this.planningGroups;
@@ -1560,6 +1928,10 @@ export class Assembly {
 
   __mechanicalJointIntents(): readonly MechanicalJointIntentRecord[] {
     return this.mechanicalJointIntents;
+  }
+
+  __jointSupportIntents(): readonly JointSupportIntentRecord[] {
+    return this.jointSupportIntents;
   }
 
   __transmissionIntents(): readonly TransmissionIntentRecord[] {

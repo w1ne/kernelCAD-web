@@ -437,9 +437,13 @@ export async function validateAssemblyWithMates(
     if (a) matePartNames.add(a);
     if (b) matePartNames.add(b);
   }
+  const usedContactTargetPartNames = collectUsedContactTargetPartNames(arm);
   const diagnostics: ValidatorDiagnostic[] = base.diagnostics.filter((d) => {
     if (d.code === 'assembly.part.floating' && d.partName && matePartNames.has(d.partName)) {
       return false; // part is connected via a mate; v0.5 just couldn't see it.
+    }
+    if (d.code === 'assembly.part.floating' && d.partName && usedContactTargetPartNames.has(d.partName)) {
+      return false; // external physical-use-case target; intentionally not structural.
     }
     return true;
   });
@@ -641,6 +645,32 @@ function safeParse(ref: string): string | undefined {
   } catch {
     return undefined;
   }
+}
+
+function collectUsedContactTargetPartNames(arm: Assembly): Set<string> {
+  const contactTargetPartNames = new Set(
+    arm.__parts()
+      .filter((part) => part.role === 'contact-target')
+      .map((part) => part.name),
+  );
+  const used = new Set<string>();
+  if (contactTargetPartNames.size === 0) return used;
+
+  const maybeAdd = (partName: string | undefined): void => {
+    if (partName !== undefined && contactTargetPartNames.has(partName)) used.add(partName);
+  };
+
+  for (const useCase of arm.__physicalUseCases()) {
+    for (const load of useCase.loads) {
+      maybeAdd(load.part);
+    }
+    for (const contact of useCase.contacts) {
+      maybeAdd(safeParse(contact.a));
+      maybeAdd(safeParse(contact.b));
+    }
+  }
+
+  return used;
 }
 
 /**

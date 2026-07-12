@@ -54,7 +54,12 @@ import * as kinematic from '../kinematic';
 import type { KinematicFacade } from '../kinematic/types';
 import { q as queryNamespace } from '../kernel/naming/queryConstructors';
 import { makeJointNamespace } from './joints';
-import type { ClevisJoint, ClevisJointOptions } from './joints/types';
+import type {
+  ClevisJoint,
+  ClevisJointOptions,
+  SupportedServoRevoluteOptions,
+  SupportedServoRevoluteResult,
+} from './joints';
 
 export interface ApiContext {
   session: CaptureSession;
@@ -429,7 +434,7 @@ export interface KernelCadApi {
   kinematic: KinematicFacade;
 
   /**
-   * G1 (mechanism delivery): constructive joint-hardware primitives.
+   * Mechanism-delivery joint helpers.
    *
    * `joint.clevis({ parentBody, childBody, axis, pivotParent, ... })` builds
    * the canonical revolute-joint hardware (two fork plates on the parent,
@@ -447,9 +452,19 @@ export interface KernelCadApi {
    * `box`/`cylinder`/`union` — hand-rolled clevises are the leading cause
    * of mechanism-delivery failures (see `kernelcad-kinematic` SKILL.md
    * "Mechanism delivery — non-bypassable").
+   *
+   * `joint.supportedServoRevolute(arm, { name, mate, support, supportMount,
+   * output, axis, ... })` adds a seated servo actuator part, fastens its
+   * mount to a frame connector on the support part, and declares the
+   * `mechanicalJoint(...)` support contract for the driven revolute mate.
+   * The helper preflights names, refs, mate type, support/output presence,
+   * supportMount frame type, `axis` as the support-side axis connector of
+   * the named revolute mate, and body dimensions before mutating the
+   * assembly.
    */
   joint: {
     clevis(opts: ClevisJointOptions): ClevisJoint;
+    supportedServoRevolute(arm: Assembly, opts: SupportedServoRevoluteOptions): SupportedServoRevoluteResult;
   };
 }
 

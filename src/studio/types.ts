@@ -59,19 +59,23 @@ export interface StudioRecomputeResult {
     readonly recomputeMs: number;
     /**
      * Raw pairwise interference pairs at the current pose, BEFORE any `ignore`
-     * filtering done by `assembly.solvedModel({ ignore: [...] })`. The status
-     * bar HUD reads `.length` of this so users see the real overlap count
-     * even when the script silences specific known-acceptable contacts. The
-     * `validity` field (above) carries the validator's FILTERED diagnostic
-     * stream — i.e. ignored pairs do not appear there. The two channels are
-     * deliberately decoupled: validator runs filtered (Validity tab + throw
-     * path), HUD shows raw (so authors can never accidentally blind the user).
+     * filtering done by `assembly.solvedModel({ ignore: [...] })`. Inspector
+     * surfaces keep this raw channel for detail, while the status footer
+     * prefers `interferenceSummary.actionableCount` and only falls back to
+     * locally classifying raw pairs when older review payloads omit the
+     * summary.
      */
     readonly rawInterferencePairs: ReadonlyArray<{
         readonly a: string;
         readonly b: string;
         readonly volumeMm3: number;
     }>;
+    readonly interferenceSummary: {
+        readonly rawCount: number;
+        readonly contactNoiseCount: number;
+        readonly actionableCount: number;
+        readonly capMm3: number;
+    } | null;
     /**
      * Slice 2C — assembly joints with declared pose, extracted from
      * `solvedAssembly` FeatureRecords. Empty array when the script doesn't

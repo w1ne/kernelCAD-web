@@ -69,6 +69,39 @@ export interface ResolvedClevisStyle {
   pinMaterial?: { baseColor: string; metalness?: number; roughness?: number };
 }
 
+/** Engineering strength evidence. This is intentionally separate from PBR
+ * material and part density; neither visual appearance nor mass proves
+ * structural capacity. */
+export interface StructuralMaterial {
+  readonly name: string;
+  readonly model: 'isotropic-ductile';
+  readonly yieldStrengthMPa: number;
+  readonly bearingStrengthMPa: number;
+  readonly shearStrengthMPa?: number;
+}
+
+export interface ClevisEngineeringMaterials {
+  readonly pin: StructuralMaterial;
+  readonly fork: StructuralMaterial;
+  readonly tongue: StructuralMaterial;
+}
+
+/** Nominal double-shear clevis dimensions emitted by joint.clevis from the
+ * same resolved style that constructs the geometry. */
+export interface ClevisStructuralModel {
+  readonly kind: 'clevis-double-shear-v1';
+  readonly source: 'joint.clevis';
+  readonly pinDiameterMm: number;
+  readonly boreDiameterMm: number;
+  readonly forkPlateThicknessMm: number;
+  readonly forkPlateCount: 2;
+  readonly tongueThicknessMm: number;
+  readonly forkGapMm: number;
+  readonly supportSpanMm: number;
+  readonly edgeDistanceMm: number;
+  readonly materials?: ClevisEngineeringMaterials;
+}
+
 /**
  * Connector spec returned by `joint.clevis(...)`. Each side carries the
  * `origin` in its OWN PART-LOCAL FRAME (URDF/MuJoCo convention) plus a shared
@@ -121,6 +154,9 @@ export interface ClevisJointOptions {
   pivotChild?: Vec3;
   limitsDeg?: [number, number];
   style?: ClevisStyle;
+  /** Optional engineering strength evidence copied into the returned
+   * structural model. Visual style materials are never used as a fallback. */
+  engineering?: ClevisEngineeringMaterials;
   liftPivot?: boolean;
   liftDir?: Vec3;
 }
@@ -148,4 +184,5 @@ export interface ClevisJoint {
   childConnector: ClevisConnectorSpec;
   pivot: Vec3;
   style: ResolvedClevisStyle;
+  structural: ClevisStructuralModel;
 }

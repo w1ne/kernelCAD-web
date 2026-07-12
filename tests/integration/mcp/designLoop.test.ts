@@ -129,10 +129,16 @@ describe('design_loop MCP tool', () => {
               box(20, 20, 4, true)
                 .union(box(10, 10, 10, true).translate(80, 0, 0))
             )
-              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 2] }, axis: [0, 0, 1] });
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 2] }, axis: [0, 0, 1] })
+              .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 2] } });
             arm.part('link', box(30, 8, 6, true))
               .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+            arm.part('root', box(8, 8, 8, true).translate(0, 0, 2))
+            .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 2] } })
+            .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 2] }, axis: [0, 0, 1] });
+            arm.mate('base-root', 'root.mount', 'base.mount', 'fastened');
             arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-20, 20] });
+            arm.mechanicalJoint('yaw-support', { mate: 'yaw', actuator: 'root', shaft: 'root', supports: ['root'], output: 'link' });
             return arm.model();
           `,
         },
@@ -142,10 +148,16 @@ describe('design_loop MCP tool', () => {
           code: `
             const arm = assembly('clean-bracket');
             arm.part('base', box(30, 20, 6, true))
-              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] })
+              .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 3] } });
             arm.part('link', box(30, 8, 6, true))
               .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+            arm.part('root', box(8, 8, 8, true).translate(0, 0, 3))
+            .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 3] } })
+            .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+            arm.mate('base-root', 'root.mount', 'base.mount', 'fastened');
             arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-20, 20] });
+            arm.mechanicalJoint('yaw-support', { mate: 'yaw', actuator: 'root', shaft: 'root', supports: ['root'], output: 'link' });
             return arm.model();
           `,
           visualReview: {
@@ -185,7 +197,8 @@ describe('design_loop MCP tool', () => {
           .union(box(20, 20, 20, true).translate(0, 0, 13))
           .union(box(16, 8, 16, true).translate(0, 10, 30.5))
           .union(box(16, 8, 16, true).translate(0, -10, 30.5))
-      ).connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 24] }, axis: [0, 0, 1] });
+      ).connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 24] }, axis: [0, 0, 1] })
+        .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 24] } });
       const link = arm.part('link',
         box(60, 10, 8, true).translate(30, 0, 0)
           .union(box(8, 8, 12, true).translate(0, 0, 0))
@@ -194,7 +207,12 @@ describe('design_loop MCP tool', () => {
           .union(box(20, 4, 4, true).translate(30, 0, 5.5))
           .union(box(8, 8, 8, true).translate(63, 0, 0))
       ).connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.part('root', box(8, 8, 8, true).translate(0, 0, 24))
+            .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 24] } })
+            .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 24] }, axis: [0, 0, 1] });
+      arm.mate('base-root', 'root.mount', 'base.mount', 'fastened');
       arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-20, 20] });
+      arm.mechanicalJoint('yaw-support', { mate: 'yaw', actuator: 'root', shaft: 'root', supports: ['root'], output: 'link' });
       return arm.model();
     `;
 
@@ -203,11 +221,17 @@ describe('design_loop MCP tool', () => {
       const base = arm.part('base',
         cylinder(18, 22, 32).translate(0, 0, 9)
           .union(cylinder(8, 10, 32).translate(0, 0, 22))
-      ).connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 24] }, axis: [0, 0, 1] });
+      ).connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 24] }, axis: [0, 0, 1] })
+        .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 24] } });
       const link = arm.part('link',
         cylinder(60, 5, 24).alongAxis([1, 0, 0]).translate(30, 0, 0)
       ).connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [30, 0, 0] }, axis: [0, 0, 1] });
+      arm.part('root', box(8, 8, 8, true).translate(0, 0, 24))
+            .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 24] } })
+            .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 24] }, axis: [0, 0, 1] });
+      arm.mate('base-root', 'root.mount', 'base.mount', 'fastened');
       arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-20, 20] });
+      arm.mechanicalJoint('yaw-support', { mate: 'yaw', actuator: 'root', shaft: 'root', supports: ['root'], output: 'link' });
       return arm.model();
     `;
 
@@ -241,17 +265,281 @@ describe('design_loop MCP tool', () => {
     expect(result.attempts[0].reviewFacts.some((fact) => fact.code === 'assembly.quality.box-fragment-clutter')).toBe(true);
   });
 
+  it('rejects visual acceptance when physical use case contacts are physically unreachable', async () => {
+    const result = await designLoopTool({
+      goal: 'Build a servo-driven finger that can touch the declared base target.',
+      includePoseEnvelope: false,
+      includeInterference: false,
+      requirePhysicalAcceptance: true,
+      attempts: [
+        {
+          id: '01',
+          title: 'Visually accepted unreachable finger',
+          code: `
+            const arm = assembly('targeted reachability rig');
+            arm.part('base', box(40, 40, 4, true))
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 2] }, axis: [0, 0, 1] })
+              .connector('support', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 2] } })
+              .connector('target', { type: 'frame', origin: { kind: 'vec3', value: [120, 0, 2] } });
+            arm.part('finger', box(40, 8, 6, true).translate(20, 0, 0))
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] })
+              .connector('tip', { type: 'frame', origin: { kind: 'vec3', value: [40, 0, 0] } });
+            arm.part('support', box(12, 12, 8, true))
+              .connector('base', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -4] } })
+              .connector('servo', { type: 'frame', origin: { kind: 'vec3', value: [0, 6, 0] } })
+              .connector('shaft', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+            arm.part('servo', box(16, 10, 12, true))
+              .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, -5, 0] } });
+            arm.part('shaft', cylinder(8, 2).translate(0, 0, -4))
+              .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } })
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+            arm.mate('support-fix', 'base.support', 'support.base', 'fastened');
+            arm.mate('servo-fix', 'support.servo', 'servo.mount', 'fastened');
+            arm.mate('shaft-fix', 'support.shaft', 'shaft.mount', 'fastened');
+            arm.mate('yaw', 'base.axis', 'finger.axis', 'revolute', { limitsDeg: [0, 30] });
+            arm.mechanicalJoint('yaw-drive', {
+              mate: 'yaw',
+              actuator: 'servo',
+              shaft: 'shaft',
+              supports: ['support'],
+              output: 'finger',
+            });
+            arm.physicalUseCase('touch-target', {
+              stableParts: ['base'],
+              loads: [{ part: 'finger', force: [0, 0, -2] }],
+              contacts: [{ a: 'finger.tip', b: 'base.target', normal: [1, 0, 0], friction: 0.5 }],
+              actuatorLimits: [{ mate: 'yaw', maxTorqueNmm: 120 }],
+              criteria: { maxSlipMm: 2 },
+            });
+            return arm.model();
+          `,
+          visualReview: {
+            accepted: true,
+            screenshotPath: '/tmp/visually-accepted-unreachable-finger.png',
+            findings: ['Screenshot shows one coherent base-mounted finger, servo, shaft, and support with no visible floating pieces.'],
+            checks: passingVisualChecks,
+          },
+        },
+      ],
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.attempts[0]).toMatchObject({
+      functional: false,
+      qualityOk: false,
+      ok: false,
+    });
+    expect(result.attempts[0].reviewFacts).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'assembly.physical-use-case.contact-unreachable' }),
+    ]));
+    expect(result.attempts[0].nextActionPrompt).toContain('assembly.physical-use-case.contact-unreachable');
+  });
+
+  it('carries simultaneous-contact reachability failures into the repair prompt', async () => {
+    const result = await designLoopTool({
+      goal: 'Build a one-axis gripper whose declared contacts close on both targets at the same pose.',
+      includePoseEnvelope: false,
+      includeInterference: false,
+      requirePhysicalAcceptance: true,
+      requireVisualReview: false,
+      attempts: [
+        {
+          id: '01',
+          title: 'Contacts split across open and closed poses',
+          code: `
+            const arm = assembly('split-pose grasp');
+            arm.part('base', box(10, 10, 10, true))
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] })
+              .connector('target-a', { type: 'frame', origin: { kind: 'vec3', value: [10, 0, 0] } })
+              .connector('target-b', { type: 'frame', origin: { kind: 'vec3', value: [0, 10, 0] } });
+            arm.part('finger', box(10, 2, 2, true))
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] })
+              .connector('a', { type: 'frame', origin: { kind: 'vec3', value: [10, 0, 0] } })
+              .connector('b', { type: 'frame', origin: { kind: 'vec3', value: [10, 0, 0] } });
+            arm.mate('yaw', 'base.axis', 'finger.axis', 'revolute', { limitsDeg: [0, 90] });
+            arm.mechanicalJoint('yaw-drive', {
+              mate: 'yaw',
+              actuator: 'base',
+              shaft: 'base',
+              supports: ['base'],
+              output: 'finger',
+            });
+            arm.physicalUseCase('split-pose-grasp', {
+              stableParts: ['base'],
+              loads: [{ part: 'finger', force: [0, 0, -1] }],
+              contacts: [
+                { a: 'finger.a', b: 'base.target-a', normal: [1, 0, 0], friction: 0.5 },
+                { a: 'finger.b', b: 'base.target-b', normal: [0, 1, 0], friction: 0.5 },
+              ],
+              actuatorLimits: [{ mate: 'yaw', maxTorqueNmm: 10 }],
+              criteria: { maxSlipMm: 0.1 },
+            });
+            return arm.model();
+          `,
+        },
+      ],
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.attempts[0].reviewFacts).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        code: 'assembly.physical-use-case.simultaneous-contacts-unreachable',
+        severity: 'error',
+      }),
+    ]));
+    expect(result.attempts[0].nextActionPrompt).toContain(
+      'assembly.physical-use-case.simultaneous-contacts-unreachable',
+    );
+    expect(result.attempts[0].nextActionPrompt).toContain('independent per-contact poses do not form a grasp');
+  });
+
+  it('enables and preserves pose-bound statics failures for physical attempts', async () => {
+    const result = await designLoopTool({
+      goal: 'Build a finger that can statically hold a loaded target.',
+      includePoseEnvelope: false,
+      includeInterference: false,
+      requirePhysicalAcceptance: true,
+      requireVisualReview: false,
+      attempts: [{
+        id: '01',
+        title: 'Missing load application point',
+        code: `
+          const arm = assembly('static input incomplete');
+          arm.part('base', box(20, 20, 8))
+            .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+          arm.part('finger', box(10, 4, 4))
+            .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] })
+            .connector('tip', { type: 'frame', origin: { kind: 'vec3', value: [10, 0, 0] } });
+          arm.part('held', box(4, 4, 4), { role: 'contact-target' })
+            .connector('contact', { type: 'frame', origin: { kind: 'vec3', value: [10, 0, 0] } });
+          arm.mate('curl', 'base.axis', 'finger.axis', 'revolute', { limitsDeg: [0, 1] });
+          arm.mechanicalJoint('curl-drive', {
+            mate: 'curl', actuator: 'base', shaft: 'base', supports: ['base'], output: 'finger',
+          });
+          arm.physicalUseCase('hold-target', {
+            stableParts: ['base'],
+            loads: [{ part: 'held', force: [-1, 0, 0] }],
+            contacts: [{
+              a: 'finger.tip', b: 'held.contact', normal: [-1, 0, 0], friction: 0.5, normalForceN: 2,
+            }],
+            actuatorLimits: [{ mate: 'curl', maxTorqueNmm: 20 }],
+            criteria: { maxSlipMm: 0.01 },
+          });
+          return arm.model();
+        `,
+      }],
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.attempts[0].reviewFacts).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        code: 'assembly.physical-use-case.static-input-incomplete',
+        severity: 'error',
+      }),
+    ]));
+    expect(result.attempts[0].nextActionPrompt).toContain(
+      'assembly.physical-use-case.static-input-incomplete',
+    );
+  });
+
+  it('automatically requires joint ratings and structural evidence for physical attempts', async () => {
+    const result = await designLoopTool({
+      goal: 'Build a rated finger that statically holds a loaded target.',
+      includePoseEnvelope: false,
+      includeInterference: false,
+      requireVisualReview: false,
+      attempts: [{
+        id: '01',
+        title: 'Static grasp with an unrated hand-built hinge',
+        code: `
+          const arm = assembly('unrated physical hinge');
+          arm.part('base', box(20, 20, 8))
+            .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+          arm.part('finger', box(50, 6, 6, true).translate(25, 0, 0))
+            .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] })
+            .connector('tip', { type: 'frame', origin: { kind: 'vec3', value: [50, 0, 0] } });
+          arm.part('held', box(6, 6, 6, true), { role: 'contact-target' })
+            .connector('contact', { type: 'frame', origin: { kind: 'vec3', value: [50, 0, 0] } })
+            .connector('load-point', { type: 'frame', origin: { kind: 'vec3', value: [50, 0, 0] } });
+          arm.mate('hinge', 'base.axis', 'finger.axis', 'revolute', { pose: 0, limitsDeg: [-1, 1] });
+          arm.mechanicalJoint('hinge-drive', {
+            mate: 'hinge', actuator: 'base', shaft: 'base', supports: ['base'], output: 'finger',
+          });
+          arm.physicalUseCase('hold-load', {
+            stableParts: ['base'],
+            loads: [{ part: 'held', at: 'held.load-point', force: [0, -10, 0] }],
+            contacts: [{
+              a: 'finger.tip', b: 'held.contact', normal: [0, -1, 0], normalFrame: 'world',
+              friction: 0.5, normalForceN: 20,
+            }],
+            actuatorLimits: [{ mate: 'hinge', maxTorqueNmm: 1000 }],
+            criteria: { maxSlipMm: 0.001, maxForceResidualN: 0.01, maxTorqueResidualNmm: 0.1 },
+          });
+          return arm.model();
+        `,
+      }],
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.attempts[0].reviewFacts).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'assembly.physical-use-case.joint-capacity-undeclared' }),
+      expect.objectContaining({ code: 'assembly.physical-use-case.joint-structure-input-incomplete' }),
+    ]));
+  });
+
+  it('carries joint topology diagnostics into review facts and repair prompts', async () => {
+    const result = await designLoopTool({
+      goal: 'Build a finger hinge with declared bearing support before visual review.',
+      includePoseEnvelope: false,
+      includeInterference: false,
+      requireVisualReview: false,
+      attempts: [
+        {
+          id: '01',
+          title: 'Bare unsupported hinge',
+          code: `
+            const arm = assembly('bare finite hinge');
+            arm.part('base', box(20, 20, 10, true))
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+            arm.part('link', box(30, 6, 6, true).translate(15, 0, 0))
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+            arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-20, 20] });
+            return arm.model();
+          `,
+        },
+      ],
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.attempts[0]).toMatchObject({
+      functional: false,
+      ok: false,
+    });
+    expect(result.attempts[0].reviewFacts).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'assembly.joint-topology.unsupported-axis', severity: 'error' }),
+    ]));
+    expect(result.attempts[0].nextActionPrompt).toContain('assembly.joint-topology.unsupported-axis');
+    expect(result.attempts[0].nextActionPrompt).toContain('[error] assembly.joint-topology.unsupported-axis');
+    expect(result.attempts[0].nextActionPrompt).toContain('mechanicalJoint');
+  });
+
   it('requires explicit screenshot review before accepting visual-sensitive mechanism attempts', async () => {
     const clean = `
       const arm = assembly('clean-cylinder-arm');
       const base = arm.part('base',
         cylinder(18, 22, 32).translate(0, 0, 9)
           .union(cylinder(8, 10, 32).translate(0, 0, 22))
-      ).connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 24] }, axis: [0, 0, 1] });
+      ).connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 24] }, axis: [0, 0, 1] })
+        .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 24] } });
       const link = arm.part('link',
         cylinder(60, 5, 24).alongAxis([1, 0, 0]).translate(30, 0, 0)
       ).connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [30, 0, 0] }, axis: [0, 0, 1] });
+      arm.part('root', box(8, 8, 8, true).translate(0, 0, 24))
+            .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 24] } })
+            .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 24] }, axis: [0, 0, 1] });
+      arm.mate('base-root', 'root.mount', 'base.mount', 'fastened');
       arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-20, 20] });
+      arm.mechanicalJoint('yaw-support', { mate: 'yaw', actuator: 'root', shaft: 'root', supports: ['root'], output: 'link' });
       return arm.model();
     `;
 
@@ -308,10 +596,16 @@ describe('design_loop MCP tool', () => {
           code: `
             const arm = assembly('clean-bracket');
             arm.part('base', box(30, 20, 6, true))
-              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] })
+              .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 3] } });
             arm.part('link', box(30, 8, 6, true))
               .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+            arm.part('root', box(8, 8, 8, true).translate(0, 0, 3))
+            .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 3] } })
+            .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+            arm.mate('base-root', 'root.mount', 'base.mount', 'fastened');
             arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-20, 20] });
+            arm.mechanicalJoint('yaw-support', { mate: 'yaw', actuator: 'root', shaft: 'root', supports: ['root'], output: 'link' });
             return arm.model();
           `,
           visualReview: {
@@ -345,10 +639,16 @@ describe('design_loop MCP tool', () => {
           code: `
             const arm = assembly('clean-bracket');
             arm.part('base', box(30, 20, 6, true))
-              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] })
+              .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 3] } });
             arm.part('link', box(30, 8, 6, true))
               .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+            arm.part('root', box(8, 8, 8, true).translate(0, 0, 3))
+            .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 3] } })
+            .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+            arm.mate('base-root', 'root.mount', 'base.mount', 'fastened');
             arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-20, 20] });
+            arm.mechanicalJoint('yaw-support', { mate: 'yaw', actuator: 'root', shaft: 'root', supports: ['root'], output: 'link' });
             return arm.model();
           `,
           visualReview: {
@@ -378,10 +678,16 @@ describe('design_loop MCP tool', () => {
           code: `
             const arm = assembly('clean-bracket');
             arm.part('base', box(30, 20, 6, true))
-              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] })
+              .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 3] } });
             arm.part('link', box(30, 8, 6, true))
               .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+            arm.part('root', box(8, 8, 8, true).translate(0, 0, 3))
+            .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 3] } })
+            .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+            arm.mate('base-root', 'root.mount', 'base.mount', 'fastened');
             arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-20, 20] });
+            arm.mechanicalJoint('yaw-support', { mate: 'yaw', actuator: 'root', shaft: 'root', supports: ['root'], output: 'link' });
             return arm.model();
           `,
           visualReview: {
@@ -416,10 +722,16 @@ describe('design_loop MCP tool', () => {
           code: `
             const arm = assembly('clean-bracket');
             arm.part('base', box(30, 20, 6, true))
-              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] })
+              .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 3] } });
             arm.part('link', box(30, 8, 6, true))
               .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+            arm.part('root', box(8, 8, 8, true).translate(0, 0, 3))
+            .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 3] } })
+            .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+            arm.mate('base-root', 'root.mount', 'base.mount', 'fastened');
             arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-20, 20] });
+            arm.mechanicalJoint('yaw-support', { mate: 'yaw', actuator: 'root', shaft: 'root', supports: ['root'], output: 'link' });
             return arm.model();
           `,
           visualReview: {
@@ -453,10 +765,16 @@ describe('design_loop MCP tool', () => {
           code: `
             const arm = assembly('clean-bracket');
             arm.part('base', box(30, 20, 6, true))
-              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] })
+              .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 3] } });
             arm.part('link', box(30, 8, 6, true))
               .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+            arm.part('root', box(8, 8, 8, true).translate(0, 0, 3))
+            .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 3] } })
+            .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+            arm.mate('base-root', 'root.mount', 'base.mount', 'fastened');
             arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-20, 20] });
+            arm.mechanicalJoint('yaw-support', { mate: 'yaw', actuator: 'root', shaft: 'root', supports: ['root'], output: 'link' });
             return arm.model();
           `,
           visualReview: {
@@ -491,10 +809,16 @@ describe('design_loop MCP tool', () => {
           code: `
             const arm = assembly('clean-bracket');
             arm.part('base', box(30, 20, 6, true))
-              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] })
+              .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 3] } });
             arm.part('link', box(30, 8, 6, true))
               .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+            arm.part('root', box(8, 8, 8, true).translate(0, 0, 3))
+            .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 3] } })
+            .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+            arm.mate('base-root', 'root.mount', 'base.mount', 'fastened');
             arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-20, 20] });
+            arm.mechanicalJoint('yaw-support', { mate: 'yaw', actuator: 'root', shaft: 'root', supports: ['root'], output: 'link' });
             return arm.model();
           `,
           visualReview: {
@@ -529,10 +853,16 @@ describe('design_loop MCP tool', () => {
           code: `
             const arm = assembly('clean-bracket');
             arm.part('base', box(30, 20, 6, true))
-              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] })
+              .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 3] } });
             arm.part('link', box(30, 8, 6, true))
               .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+            arm.part('root', box(8, 8, 8, true).translate(0, 0, 3))
+            .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 3] } })
+            .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+            arm.mate('base-root', 'root.mount', 'base.mount', 'fastened');
             arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-20, 20] });
+            arm.mechanicalJoint('yaw-support', { mate: 'yaw', actuator: 'root', shaft: 'root', supports: ['root'], output: 'link' });
             return arm.model();
           `,
           visualReview: {
@@ -568,10 +898,16 @@ describe('design_loop MCP tool', () => {
           code: `
             const arm = assembly('clean-bracket');
             arm.part('base', box(30, 20, 6, true))
-              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] })
+              .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 3] } });
             arm.part('link', box(30, 8, 6, true))
               .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+            arm.part('root', box(8, 8, 8, true).translate(0, 0, 3))
+            .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 3] } })
+            .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+            arm.mate('base-root', 'root.mount', 'base.mount', 'fastened');
             arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-20, 20] });
+            arm.mechanicalJoint('yaw-support', { mate: 'yaw', actuator: 'root', shaft: 'root', supports: ['root'], output: 'link' });
             return arm.model();
           `,
         },
