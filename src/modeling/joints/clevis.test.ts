@@ -297,6 +297,99 @@ describe('joint.clevis — G1 design locks', () => {
     )).toHaveLength(2);
   });
 
+  it('emits structural dimensions from the same resolved style used by geometry', () => {
+    const session = new CaptureSession();
+    const kc = createApi({ session });
+    const steel = {
+      name: 'test steel',
+      model: 'isotropic-ductile' as const,
+      yieldStrengthMPa: 250,
+      bearingStrengthMPa: 400,
+    };
+
+    const result = kc.joint.clevis({
+      parentBody: kc.box(40, 40, 20, true),
+      childBody: kc.box(50, 20, 20, true),
+      axis: 'Y',
+      pivotParent: [0, 0, 10],
+      pivotChild: [0, 0, 0],
+      liftPivot: false,
+      style: {
+        pinR: 3,
+        holeClearance: 0.2,
+        plateT: 4,
+        tongueY: 5,
+        forkGapY: 6,
+        knuckleR: 10,
+      },
+      engineering: { pin: steel, fork: steel, tongue: steel },
+    });
+
+    expect(result.structural).toEqual({
+      kind: 'clevis-double-shear-v1',
+      source: 'joint.clevis',
+      pinDiameterMm: 6,
+      boreDiameterMm: 6.4,
+      forkPlateThicknessMm: 4,
+      forkPlateCount: 2,
+      tongueThicknessMm: 5,
+      forkGapMm: 6,
+      supportSpanMm: 10,
+      edgeDistanceMm: 10,
+      materials: { pin: steel, fork: steel, tongue: steel },
+    });
+    expect(result.structural.materials?.pin).not.toBe(steel);
+  });
+
+  it('emits structural geometry without inventing engineering material', () => {
+    const session = new CaptureSession();
+    const kc = createApi({ session });
+    const result = kc.joint.clevis({
+      parentBody: kc.box(40, 40, 20, true),
+      childBody: kc.box(50, 20, 20, true),
+      axis: 'Y',
+      pivotParent: [0, 0, 10],
+      liftPivot: false,
+    });
+
+    expect(result.structural.source).toBe('joint.clevis');
+    expect(result.structural.materials).toBeUndefined();
+  });
+
+  it.each([
+    ['empty name', { name: '', model: 'isotropic-ductile', yieldStrengthMPa: 250, bearingStrengthMPa: 400 }],
+    ['bad model', { name: 'steel', model: 'unknown', yieldStrengthMPa: 250, bearingStrengthMPa: 400 }],
+    ['zero yield', { name: 'steel', model: 'isotropic-ductile', yieldStrengthMPa: 0, bearingStrengthMPa: 400 }],
+    ['bad bearing', { name: 'steel', model: 'isotropic-ductile', yieldStrengthMPa: 250, bearingStrengthMPa: Number.NaN }],
+    ['bad shear', { name: 'steel', model: 'isotropic-ductile', yieldStrengthMPa: 250, bearingStrengthMPa: 400, shearStrengthMPa: -1 }],
+  ])('rejects invalid structural material: %s', (_label, material) => {
+    const session = new CaptureSession();
+    const kc = createApi({ session });
+    expect(() => kc.joint.clevis({
+      parentBody: kc.box(40, 40, 20, true),
+      childBody: kc.box(50, 20, 20, true),
+      axis: 'Y',
+      pivotParent: [0, 0, 10],
+      engineering: {
+        pin: material,
+        fork: { name: 'steel', model: 'isotropic-ductile', yieldStrengthMPa: 250, bearingStrengthMPa: 400 },
+        tongue: { name: 'steel', model: 'isotropic-ductile', yieldStrengthMPa: 250, bearingStrengthMPa: 400 },
+      },
+    } as Parameters<typeof kc.joint.clevis>[0])).toThrow(/engineering|material|strength|model|name/i);
+  });
+
+  it('rejects a null engineering declaration with a kernel argument error', () => {
+    const session = new CaptureSession();
+    const kc = createApi({ session });
+    expect(() => kc.joint.clevis({
+      parentBody: kc.box(40, 40, 20, true),
+      childBody: kc.box(50, 20, 20, true),
+      axis: 'Y',
+      pivotParent: [0, 0, 10],
+      engineering: null,
+    } as unknown as Parameters<typeof kc.joint.clevis>[0])).toThrow(/engineering.*object/i);
+  });
+
   // ---------------------------------------------------------------------------
   // Validation gates
   // ---------------------------------------------------------------------------

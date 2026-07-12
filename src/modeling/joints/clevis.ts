@@ -36,7 +36,9 @@ import type {
   ClevisJoint,
   ClevisJointOptions,
   ClevisStyle,
+  ClevisStructuralModel,
   ResolvedClevisStyle,
+  StructuralMaterial,
 } from './types';
 
 // =============================================================================
@@ -100,6 +102,102 @@ function assertPositive(name: string, value: number): void {
       `Pick a positive value for ${name} (mm).`,
     );
   }
+}
+
+function validateStructuralMaterial(role: 'pin' | 'fork' | 'tongue', material: unknown): asserts material is StructuralMaterial {
+  if (typeof material !== 'object' || material === null || Array.isArray(material)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `joint.clevis: engineering.${role} must be a structural material object.`,
+      'joint.clevis',
+      `Pass engineering.${role}: { name, model: 'isotropic-ductile', yieldStrengthMPa, bearingStrengthMPa, shearStrengthMPa? }.`,
+    );
+  }
+  const candidate = material as Partial<StructuralMaterial>;
+  if (typeof candidate.name !== 'string' || candidate.name.trim() === '') {
+    throw new KernelError(
+      'feature.invalid-args',
+      `joint.clevis: engineering.${role}.name must be a non-empty material name.`,
+      'joint.clevis',
+      `Name the ${role} engineering material used for the strength declaration.`,
+    );
+  }
+  if (candidate.model !== 'isotropic-ductile') {
+    throw new KernelError(
+      'feature.invalid-args',
+      `joint.clevis: engineering.${role}.model must be 'isotropic-ductile'.`,
+      'joint.clevis',
+      `Only the explicit isotropic-ductile closed-form model is supported for ${role}.`,
+    );
+  }
+  for (const field of ['yieldStrengthMPa', 'bearingStrengthMPa'] as const) {
+    if (typeof candidate[field] !== 'number' || !Number.isFinite(candidate[field]) || candidate[field] <= 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `joint.clevis: engineering.${role}.${field} must be a positive finite MPa value.`,
+        'joint.clevis',
+        `Pass measured or datasheet ${field} for the ${role} material in MPa.`,
+      );
+    }
+  }
+  if (
+    candidate.shearStrengthMPa !== undefined &&
+    (typeof candidate.shearStrengthMPa !== 'number' ||
+      !Number.isFinite(candidate.shearStrengthMPa) ||
+      candidate.shearStrengthMPa <= 0)
+  ) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `joint.clevis: engineering.${role}.shearStrengthMPa must be a positive finite MPa value when declared.`,
+      'joint.clevis',
+      `Omit engineering.${role}.shearStrengthMPa to derive yield/sqrt(3), or pass a positive measured value.`,
+    );
+  }
+}
+
+function copyStructuralMaterial(material: StructuralMaterial): StructuralMaterial {
+  return {
+    name: material.name,
+    model: material.model,
+    yieldStrengthMPa: material.yieldStrengthMPa,
+    bearingStrengthMPa: material.bearingStrengthMPa,
+    ...(material.shearStrengthMPa === undefined ? {} : { shearStrengthMPa: material.shearStrengthMPa }),
+  };
+}
+
+function makeStructuralModel(opts: ClevisJointOptions, style: ResolvedClevisStyle): ClevisStructuralModel {
+  let materials: ClevisStructuralModel['materials'];
+  if (opts.engineering !== undefined) {
+    if (typeof opts.engineering !== 'object' || opts.engineering === null || Array.isArray(opts.engineering)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        'joint.clevis: engineering must be an object containing pin, fork, and tongue structural materials.',
+        'joint.clevis',
+        `Pass engineering: { pin, fork, tongue }, with explicit material strengths for each role.`,
+      );
+    }
+    validateStructuralMaterial('pin', opts.engineering.pin);
+    validateStructuralMaterial('fork', opts.engineering.fork);
+    validateStructuralMaterial('tongue', opts.engineering.tongue);
+    materials = {
+      pin: copyStructuralMaterial(opts.engineering.pin),
+      fork: copyStructuralMaterial(opts.engineering.fork),
+      tongue: copyStructuralMaterial(opts.engineering.tongue),
+    };
+  }
+  return {
+    kind: 'clevis-double-shear-v1',
+    source: 'joint.clevis',
+    pinDiameterMm: 2 * style.pinR,
+    boreDiameterMm: 2 * (style.pinR + style.holeClearance),
+    forkPlateThicknessMm: style.plateT,
+    forkPlateCount: 2,
+    tongueThicknessMm: style.tongueY,
+    forkGapMm: style.forkGapY,
+    supportSpanMm: style.forkGapY + style.plateT,
+    edgeDistanceMm: style.knuckleR,
+    ...(materials === undefined ? {} : { materials }),
+  };
 }
 
 function normalizeAxis(hint: AxisHint): Vec3 {
@@ -306,6 +404,9 @@ function buildClevis(kc: KernelCadApi, opts: ClevisJointOptions): ClevisJoint {
     );
   }
   const style = withDefaults(opts.style);
+  // Validate and copy engineering evidence before capturing any geometry so
+  // an invalid declaration cannot leave a partially built clevis in session.
+  const structural = makeStructuralModel(opts, style);
   const liftDir = normalizeLiftDir(opts.liftDir);
   const liftPivot = opts.liftPivot ?? true;
 
@@ -382,6 +483,7 @@ function buildClevis(kc: KernelCadApi, opts: ClevisJointOptions): ClevisJoint {
     childConnector,
     pivot: pivotParentLifted,
     style,
+    structural,
   };
 }
 

@@ -5,17 +5,12 @@
 // v0.7.4 Gate 3 — joint-load capacity STUB. Each mate of the four gated
 // types (prismatic, revolute, cylindrical, ball) with a declared
 // `maxLoad` checks the summed `externalLoads` on its two bound parts
-// against the declared capacity. The module is dead code until Phase 6
-// wires it into `validateAssemblyWithMates`; these tests pin the
-// diagnostic shape and the per-mate-type behaviour per spec
+// against the declared capacity. These tests pin the legacy diagnostic shape
+// and the per-mate-type behaviour per spec
 // `2026-05-15-v0.7-kinematic-grounding-design.md` §Gate 3.
 //
-// Test-only `maxLoad` injection: `arm.mate(...)` opts does NOT yet accept
-// `maxLoad` (the v0.7.4 wiring lands in Phase 6 alongside `solvedModel`
-// integration). Tests reach into `arm.__mates()` and patch the just-pushed
-// record. Cast through `MateRecord[]` because the public accessor returns
-// a `readonly` view; the underlying array is mutable. This pattern stays
-// local to the test file — production code never patches mate records.
+// Tests inject `maxLoad` directly into captured records to isolate this
+// deprecated manual-load checker from the public capture-time validation.
 
 import { describe, it, expect } from 'vitest';
 import { validateJointLoadCapacity } from './jointLoadCapacity';
@@ -32,19 +27,15 @@ function makeArm() {
 }
 
 /**
- * Patch `maxLoad` onto the last-declared mate. Cast through `MateRecord[]`
- * is intentional — `__mates()` returns `readonly MateRecord[]` for the
- * public surface, but the underlying array is mutable and Gate 3 reads
- * `mate.maxLoad` directly off each record. This helper isolates the cast
- * so individual tests stay readable.
+ * Patch `maxLoad` onto a declared mate. Cast through `MateRecord[]` is
+ * intentional because `__mates()` exposes a readonly view while this legacy
+ * checker reads the captured records directly.
  */
 function setMaxLoad(arm: Assembly, mateName: string, maxLoad: MateLoadLimit): void {
   const mates = arm.__mates() as MateRecord[];
   const mate = mates.find((m) => m.name === mateName);
   if (!mate) throw new Error(`test fixture error: mate '${mateName}' not found on arm '${arm.name}'`);
-  // Field is declared `readonly` for the public surface; this test-only
-  // mutation matches what Phase 6's `arm.mate(..., { maxLoad })` opts-extension
-  // will do under the hood once it lands.
+  // Field is readonly on the public record; this mutation is test-only.
   (mate as { maxLoad?: MateLoadLimit }).maxLoad = maxLoad;
 }
 
@@ -247,15 +238,13 @@ describe('validateJointLoadCapacity', () => {
     expect(torqueDiag?.hint).toMatch(/torque/);
   });
 
-  it('revolute with topology-origin side: emits 1 info-severity deferred note, skips load summation', () => {
+  it('revolute with topology-origin side silently skips load summation', () => {
     const { arm, kcad } = makeArm();
     // Side A's connector uses a topology query origin — Gate 3 in v0.7.4
-    // does not support sync topology resolution and surfaces an
-    // info-severity deferred note for that side; side B uses a vec3
-    // origin. The mate's load summation is silently SKIPPED, so even
-    // with externalLoads that would otherwise blow past the declared
-    // torque cap there is no error-severity diagnostic — only the one
-    // info note from the topology side.
+    // does not support sync topology resolution; side B uses a vec3 origin.
+    // The mate's load summation is silently skipped, so external loads that
+    // would otherwise exceed the declaration must not produce a false
+    // load-exceeded diagnostic.
     const a = kcad.box(20, 20, 5).hole('top', { u: 0, v: 0, diameter: 5, depth: 'through' });
     arm
       .part('a', a, { at: [50, 0, 0] })
@@ -271,17 +260,7 @@ describe('validateJointLoadCapacity', () => {
     };
     const diags = validateJointLoadCapacity(arm, externalLoads);
 
-    expect(diags).toHaveLength(1);
-    expect(diags[0].code).toBe('assembly.joint.load-exceeded');
-    expect(diags[0].severity).toBe('info');
-    expect(diags[0].mateName).toBe('hinge');
-    expect(diags[0].partA).toBe('a');
-    // The deferred-note builder for side 'a' sets `partA` only (not `partB`).
-    expect(diags[0].partB).toBeUndefined();
-    expect(diags[0].hint).toMatch(/topology connector origin/);
-    expect(diags[0].hint).toMatch(/v0\.7\.4/);
-    // No error-severity diagnostic — load summation was skipped.
-    expect(diags.filter((d) => d.severity === 'error')).toHaveLength(0);
+    expect(diags).toEqual([]);
   });
 
   it('ball with maxLoad.force AND maxLoad.torque declared: only force checked, torque silently ignored', () => {

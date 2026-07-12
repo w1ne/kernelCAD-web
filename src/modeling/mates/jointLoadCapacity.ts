@@ -2,21 +2,17 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/lib/mates/jointLoadCapacity.ts
 //
-// v0.7.4 Gate 3 — joint-load capacity STUB.
+// Deprecated v0.7.4 Gate 3 — manual external-load capacity STUB.
 //
 // Spec: `2026-05-15-v0.7-kinematic-grounding-design.md` §Gate 3.
 // Plan : `2026-05-15-v0.7-kinematic-grounding.md` §Phase 5.
 //
-// For each mate that DECLARED a `maxLoad` and whose type is one of the four
+// This checker does not propagate reactions across joints. For each mate that
+// DECLARED a `maxLoad` and whose type is one of the four
 // gated types (`prismatic`, `revolute`, `cylindrical`, `ball`), verify that
 // the per-side `externalLoads` applied to the bound parts do not exceed the
 // declared capacity. On exceed, emit `assembly.joint.load-exceeded`
 // (severity `error`).
-//
-// Dead code in this slice — Phase 6 wires it into
-// `validateAssemblyWithMates`. Keeping it import-isolated lets the
-// validator stitch all three Gate 1/2/3 modules together once Task 0's
-// envelope auto-wiring lands.
 //
 // ## STUB CAVEATS — read before touching this module
 //
@@ -47,10 +43,9 @@
 // Resolving a `topology` connector origin to a numeric Vec3 requires lowering
 // the part shape (`resolveConnectorOrigin` is async). Gate 3 is sync. For
 // `maxLoad`-declared mates whose connectors use topology origins on either
-// side, the gate emits one `assembly.joint.load-exceeded`-coded info-severity
-// note per side and SKIPS the mate (no false-positive error from a missing
-// origin). This matches spec open-question 5/2 resolution: vec3-origin
-// requirement for v0.7.4, topology support is a v0.7.x followup.
+// side are silently skipped because no comparison can run. This matches spec
+// open-question 5/2 resolution: vec3-origin requirement for v0.7.4, topology
+// support is a v0.7.x followup.
 
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
 import type { Vec3 } from '../../shared/intent/types';
@@ -90,8 +85,12 @@ const MM_PER_M = 1000;
  * independently on a `cylindrical` mate, so a single mate may emit two
  * diagnostics).
  *
- * Dead code in this slice — Phase 6 of the v0.7.4 plan wires it into
- * `validateAssemblyWithMates`.
+ * Retained for legacy validator callers that still provide manual
+ * `externalLoads`.
+ *
+ * @deprecated This manual `externalLoads` stub is not reaction propagation.
+ * Use physical-use-case joint reactions and `reviewJointReactionCapacity` for
+ * unit-bearing resultant-envelope comparisons.
  */
 export function validateJointLoadCapacity(
   arm: Assembly,
@@ -115,16 +114,8 @@ export function validateJointLoadCapacity(
     const aSide = resolveSide(mate.a, partsByName);
     const bSide = resolveSide(mate.b, partsByName);
 
-    // Topology-origin sides: surface a capability-not-supported note per
-    // affected side (info severity — this is a documented v0.7.x deferral,
-    // not an error in the agent's input). Skip the mate's load summation
-    // when either side is unresolvable.
-    if (aSide.kind === 'deferred') {
-      out.push(makeTopologyDeferredDiag(mate, aSide.partName, aSide.connectorName, 'a'));
-    }
-    if (bSide.kind === 'deferred') {
-      out.push(makeTopologyDeferredDiag(mate, bSide.partName, bSide.connectorName, 'b'));
-    }
+    // Topology-origin or missing sides cannot be compared synchronously.
+    // Skip silently rather than emitting a false load-exceeded diagnostic.
     if (aSide.kind !== 'resolved' || bSide.kind !== 'resolved') continue;
 
     // Per-mate-type force/torque check. Each branch reads `externalLoads`
@@ -185,8 +176,8 @@ type SideResolution = ResolvedSide | DeferredSide | MissingSide;
  *   - `'resolved'` when the connector has a `vec3` origin (the gate's
  *     supported shape).
  *   - `'deferred'` when the connector uses a `topology` origin — Gate 3
- *     in v0.7.4 does not support sync topology resolution; surfaced as an
- *     info-severity note upstream.
+ *     in v0.7.4 does not support sync topology resolution and is silently
+ *     skipped upstream.
  *   - `'missing'` defensively, when the part/connector ref doesn't
  *     resolve (shouldn't happen — `arm.mate(...)` validates names at
  *     capture time).
@@ -370,31 +361,3 @@ function makeLoadExceededDiag(
       `an additional joint.`,
   };
 }
-
-function makeTopologyDeferredDiag(
-  mate: MateRecord,
-  partName: string,
-  connectorName: string,
-  side: 'a' | 'b',
-): ValidatorDiagnostic {
-  // Info severity — this is a documented v0.7.x deferral, not an error
-  // in the agent's input. The mate's load summation is silently skipped
-  // when either side is topology-bound; this note tells the agent why
-  // the gate didn't fire on a `maxLoad`-tagged mate.
-  return {
-    code: 'assembly.joint.load-exceeded',
-    severity: 'info',
-    mateName: mate.name,
-    ...(side === 'a' ? { partA: partName } : { partB: partName }),
-    message:
-      `Mate '${mate.name}' (${mate.type}) side '${partName}.${connectorName}': ` +
-      `topology connector origin not supported by Gate 3 in v0.7.4; load capacity check skipped for this side.`,
-    hint:
-      `invalid-args.assembly.joint-load-exceeded — mate '${mate.name}' (${mate.type}) ` +
-      `side '${partName}.${connectorName}' uses a topology connector origin; v0.7.4 joint-load ` +
-      `capacity only gates vec3-origin connectors. Switch the connector origin to ` +
-      `{ kind: 'vec3', value: [x, y, z] } to enable the gate on this side, or accept that ` +
-      `this mate is ungated.`,
-  };
-}
-

@@ -32,7 +32,7 @@ describe('two-finger coupled gripper example', () => {
     expect(scene.part('right-finger').connectors?.some((connector) => connector.name === 'tip')).toBe(true);
   }, 120_000);
 
-  it('passes review_cad with gripper aperture travel', async () => {
+  it('is rejected until its legacy pin-axis joints model finite supported hinges', async () => {
     const result = await reviewCadTool({
       file: EXAMPLE_PATH,
       includeInterference: false,
@@ -40,12 +40,11 @@ describe('two-finger coupled gripper example', () => {
       gripperAperture: { left: 'left-finger.tip', right: 'right-finger.tip' },
     });
 
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.gripperAperture?.travelMm).toBeGreaterThan(10);
-      expect(result.fitness.passedChecks).toContain('gripper-aperture-moves');
-      expect(result.fitness.mechanismSummary.gripperApertureTravelMm).toBeGreaterThan(10);
-    }
+    expect(result.ok).toBe(false);
+    expect(result.diagnostics).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'assembly.joint-topology.missing-limit' }),
+      expect.objectContaining({ code: 'assembly.joint-topology.unsupported-axis' }),
+    ]));
   }, 180_000);
 
   // P3 physics-loop sweep (2026-06-01): two-finger-coupled-gripper

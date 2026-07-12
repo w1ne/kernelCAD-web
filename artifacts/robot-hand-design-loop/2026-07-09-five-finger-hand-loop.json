@@ -1,0 +1,155 @@
+{
+  "title": "kernelCAD robot hand design loop",
+  "goal": "Produce a robot hand artifact, not a flat grasp fixture, with visible palm, thumb, fingers, supported joints, connected distal fingertips, and deterministic validation evidence.",
+  "source": "tests/fixtures/robot-hand/rejected-five-finger-kinematic-hand.kcad.ts",
+  "attempts": [
+    {
+      "id": "01",
+      "title": "Planar three-finger grasp fixture",
+      "source": "tests/fixtures/robot-hand/rejected-function-first-three-finger-hand.kcad.ts",
+      "status": "rejected",
+      "evidence": {
+        "iso": "/tmp/function-first-hand-preview/iso.png"
+      },
+      "visualFindings": [
+        "Reads as a flat test fixture with a target cylinder, not as a hand.",
+        "Palm is slab-like and the fingers are side-mounted bars rather than recognizable digits.",
+        "Functional aperture evidence was not enough to satisfy the visual and physical hand brief."
+      ],
+      "decision": "Reject as the user-facing robot hand artifact. Keep only as a narrow grasp-test fixture if needed."
+    },
+    {
+      "id": "02",
+      "title": "Five-finger kinematic hand before fingertip repair",
+      "source": "tests/fixtures/robot-hand/rejected-five-finger-kinematic-hand.kcad.ts",
+      "status": "rejected",
+      "evidence": {
+        "front": "/tmp/five-finger-hand-preview/front.png",
+        "iso": "/tmp/five-finger-hand-preview/iso.png"
+      },
+      "visualFindings": [
+        "Reads as a robot hand from the front: palm, four fingers, angled thumb, visible clevis joints, and wrist block are present.",
+        "Black fingertip pads visibly float above the distal links in front and iso views.",
+        "Floating fingertip pads violate the no-stray-or-floating-geometry and attachment-plausibility checks."
+      ],
+      "decision": "Repair the distal phalanx construction before accepting."
+    },
+    {
+      "id": "03",
+      "title": "Five-finger kinematic hand with connected distal fingertips",
+      "source": "tests/fixtures/robot-hand/rejected-five-finger-kinematic-hand.kcad.ts",
+      "status": "rejected-as-working-hand",
+      "evidence": {
+        "front": "/tmp/five-finger-hand-preview-fixed/front.png",
+        "top": "/tmp/five-finger-hand-preview-fixed/top.png",
+        "iso": "/tmp/five-finger-hand-preview-fixed/iso.png"
+      },
+      "visualFindings": [
+        "Front and iso views now show fingertip ends attached to continuous distal links instead of floating black blocks.",
+        "The model reads as a robot hand: palm plate, wrist block, four vertical fingers, angled thumb, visible clevis joints, screws, tendon rods, and distal fingertip pads.",
+        "Canonical views still show a constructed mechanism rather than a single visual mesh or disconnected decorative fragments.",
+        "The model still lacks declared grasp-task evidence: no physicalUseCase contacts, loads, stable parts, or actuator limits prove that it can hold an object."
+      ],
+      "deterministicChecks": [
+        "npx vitest run tests/integration/examples/fiveFingerKinematicHand.test.ts -t \"not accepted as a working hand\" --reporter=dot"
+      ],
+      "remainingCaveats": [
+        "The render preview used no_mechanism_check:true for speed, so the preview images themselves are visual evidence only.",
+        "The example now explicitly fails the working-hand acceptance gate with assembly.physical-use-case.missing until grasp-task evidence is added.",
+        "Next slices should replace decorative/unexplained hardware with load-bearing grasp components, then add physicalUseCase contacts and force/torque limits before any acceptance claim."
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Five-finger hand with declared cylinder grasp task",
+      "source": "tests/fixtures/robot-hand/rejected-five-finger-kinematic-hand.kcad.ts",
+      "status": "rejected-for-unreached-grasp-and-unsupported-actuation",
+      "evidence": {
+        "front": "/tmp/five-finger-hand-grasp-thumb-opposed/front.png",
+        "top": "/tmp/five-finger-hand-grasp-thumb-opposed/top.png",
+        "iso": "/tmp/five-finger-hand-grasp-thumb-opposed/iso.png",
+        "maxCloseFront": "/tmp/five-finger-hand-grasp-max-close/front.png"
+      },
+      "visualFindings": [
+        "The model now declares a grasp-cylinder part and a power-cylinder-grasp physicalUseCase with target load, contacts, actuator limits, and palm reaction path.",
+        "The default and max-close rendered views still show the blue cylinder near the hand rather than actually captured between thumb and opposing fingers.",
+        "The thumb does not visually participate in the grasp, so the declared contact task is not satisfied by the current kinematic geometry.",
+        "The physical-use-case gate now rejects every thumb/index/middle actuatorLimit because those revolute mates have no mechanicalJoint support contract."
+      ],
+      "deterministicChecks": [
+        "npx vitest run tests/integration/examples/fiveFingerKinematicHand.test.ts -t \"declares a cylinder-grasp\" --reporter=dot",
+        "npx tsx -e \"evaluateAndBuildScript(...)\""
+      ],
+      "remainingCaveats": [
+        "Fast physicalUseCase declaration review now fails with assembly.physical-use-case.actuator-support-missing until supported mechanicalJoint contracts exist for driven grasp joints.",
+        "The correct pose-envelope reachability review is currently too slow on this 15-mate model for the interactive loop and was interrupted after several minutes.",
+        "The next implementation should either redesign the thumb/index/middle kinematics around the cylinder workspace or add a fast targeted reachability gate for declared physicalUseCase contacts."
+      ]
+    },
+    {
+      "id": "05",
+      "title": "Five-finger hand with supported MCP grasp-drive slice",
+      "source": "tests/fixtures/robot-hand/rejected-five-finger-kinematic-hand.kcad.ts",
+      "status": "partial-pass-supported-mcp-slice-not-complete-hand",
+      "evidence": {
+        "studioScreenshot": "/tmp/five-finger-supported-mcp-hand-v2.png",
+        "studioUrl": "http://127.0.0.1:5175/studio?script=tests/fixtures/robot-hand/rejected-five-finger-kinematic-hand.kcad.ts"
+      },
+      "visualFindings": [
+        "The model still reads as the five-finger robot hand with palm, four fingers, angled thumb, clevis joints, wrist block, and blue grasp cylinder.",
+        "Three black MCP servo blocks for middle, index, and thumb are now seated against explicit palm-root mounting pads rather than floating in front of the hand.",
+        "The physical use case no longer claims PIP/DIP actuation. Only the three supported MCP mates are listed in actuatorLimits.",
+        "The cylinder is still not visually captured by a convincing thumb/opposing-finger grasp, so this is not accepted as a complete working hand."
+      ],
+      "deterministicChecks": [
+        "npx vitest run tests/integration/examples/fiveFingerKinematicHand.test.ts -t \"supported base knuckle\" --reporter=dot",
+        "npx vitest run tests/integration/examples/fiveFingerKinematicHand.test.ts --reporter=dot",
+        "npx vitest run tests/integration/mcp/physicalUseCaseGate.test.ts --reporter=dot",
+        "npm run typecheck"
+      ],
+      "remainingCaveats": [
+        "Studio initially reported interferences: 16 because the footer counted raw contact-noise pairs. Attempt 06 classifies and filters those pairs against the shared mechanism cap.",
+        "The supported-drive evidence is limited to middle/index/thumb MCP joints. PIP/DIP joints remain visual kinematic joints until real transmission/support paths are modeled.",
+        "Contact reachability against the declared cylinder is still not proven by a fast gate."
+      ]
+    },
+    {
+      "id": "06",
+      "title": "Interference footer classification for supported MCP hand",
+      "source": "tests/fixtures/robot-hand/rejected-five-finger-kinematic-hand.kcad.ts",
+      "status": "partial-pass-actionable-interference-count-clean",
+      "evidence": {
+        "studioScreenshot": "/tmp/five-finger-supported-mcp-hand-interference-filter.png",
+        "studioUrl": "http://127.0.0.1:5176/studio?script=tests/fixtures/robot-hand/rejected-five-finger-kinematic-hand.kcad.ts"
+      },
+      "visualFindings": [
+        "The rendered hand remains visually the same supported-MCP slice: palm, five fingers, seated middle/index/thumb MCP servo blocks, and blue grasp cylinder.",
+        "Studio footer now reports interferences: 0 because the footer counts only pairs above the shared 20 mm3 actionable interference cap.",
+        "The raw default-pose detector still sees 16 tiny overlap pairs, all below the cap. They are documented as joint/contact-noise inventory rather than hidden."
+      ],
+      "deterministicChecks": [
+        "npx vitest run src/studio/__tests__/StudioShell.status.test.tsx --reporter=dot",
+        "npx vitest run tests/integration/examples/fiveFingerKinematicHand.test.ts --reporter=dot",
+        "npm run typecheck"
+      ],
+      "remainingCaveats": [
+        "This slice fixes false-positive actionable interference reporting; it does not prove the grasp captures the cylinder.",
+        "The raw 16 below-cap pairs should shrink in future geometry cleanup, but they are no longer blocking under the existing mechanism-truth threshold.",
+        "PIP/DIP transmission and fast contact reachability remain unresolved."
+      ]
+    },
+    {
+      "id": "07",
+      "title": "Tooling gate: targeted grasp reachability",
+      "source": "tests/fixtures/robot-hand/rejected-five-finger-kinematic-hand.kcad.ts",
+      "status": "rejected-by-physical-use-case-contact-reachability",
+      "deterministicChecks": [
+        "npx vitest run tests/integration/examples/fiveFingerKinematicHand.test.ts -t \"physical use case reachability\" --reporter=dot"
+      ],
+      "remainingCaveats": [
+        "The model remains visually inspectable but is rejected because declared contacts do not reach the cylinder within maxSlipMm.",
+        "Next geometry slice must redesign thumb/index/middle placement or actuator travel using this diagnostic, not visual guesswork."
+      ]
+    }
+  ]
+}

@@ -28,6 +28,31 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
           },
           includePoseEnvelope: { type: 'boolean', description: 'Whether to sample declared mate limits. Default true.' },
           includeInterference: { type: 'boolean', description: 'Whether sampled poses run BREP interference checks. Default true.' },
+          requirePhysicalUseCase: {
+            type: 'boolean',
+            description: 'When true, articulated assemblies must declare arm.physicalUseCase(...) evidence: loads, contacts, stable parts, and actuator limits.',
+          },
+          includePhysicalUseCaseReachability: {
+            type: 'boolean',
+            description: 'Run targeted physical-use-case reachability sampling over scalar-limited mates named in actuatorLimits. Reject contacts that cannot get within criteria.maxSlipMm and multi-contact use cases that cannot satisfy every contact in the same sampled actuator pose. Samples revolute/cylindrical/pin-slot limitsDeg and prismatic limitsMm. Defaults to requirePhysicalUseCase.',
+          },
+          includePhysicalUseCaseStatics: {
+            type: 'boolean',
+            description: 'Run opt-in pose-bound quasi-static certification at the exact common-contact samples: conservative friction/capacity, world force and moment balance, and finite-difference revolute actuator torque. Returns physicalUseCaseStaticCertificates on success; sampled linearized failures remain blocking diagnostics.',
+          },
+          includePhysicalUseCaseJointReactions: {
+            type: 'boolean',
+            description: 'Derive exact-pose reaction wrenches through uniquely rooted articulated trees and compare every loaded mate against a complete declared resultant force/moment envelope. Implies physical-use-case reachability and statics.',
+          },
+          includePhysicalUseCaseJointStructure: {
+            type: 'boolean',
+            description: 'Run geometry/material clevis double-shear, pin-bending, bearing, tear-out, and net-section checks with minimum factor of safety 2. Unsupported axial or perpendicular-moment load cases remain blockers. Implies joint reactions, statics, and reachability.',
+          },
+          physicalUseCaseReachabilitySamplesPerMate: {
+            type: 'integer',
+            minimum: 1,
+            description: 'Samples per scalar-limited actuator mate for physical-use-case contact reachability. Samples revolute/cylindrical/pin-slot limitsDeg and prismatic limitsMm. Default 3; total targeted combinations are capped.',
+          },
           samplesPerMate: {
             type: 'integer',
             minimum: 1,
@@ -166,6 +191,10 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
           gripperAperture: { type: 'object', description: 'Optional gripper aperture request forwarded to review_cad.' },
           stopOnPass: { type: 'boolean', description: 'Stop after the first attempt that is functional and passes the quality gate. Default true.' },
           requireVisualReview: { type: 'boolean', description: 'Require screenshot-backed visualReview with structured checks before accepting an attempt. Default true; set false only for explicit non-visual batch checks.' },
+          requirePhysicalAcceptance: {
+            type: 'boolean',
+            description: 'Require declared physicalUseCase common-pose reachability and pose-bound quasi-static certification before accepting an attempt. Design-loop also enables this automatically when an attempt script calls physicalUseCase(...).',
+          },
           allowReviewWarnings: {
             type: 'array',
             items: { type: 'string' },

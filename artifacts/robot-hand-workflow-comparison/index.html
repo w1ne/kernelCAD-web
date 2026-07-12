@@ -1,0 +1,186 @@
+<h2>Robot Hand Workflow Benchmark</h2>
+    <p class="subtitle">Thin prototypes scored against the same target: a reference-matched, physically valid parametric robot hand.</p>
+    <div style="padding:14px;border:1px solid #bbf7d0;background:#f0fdf4;border-radius:8px;margin-bottom:14px">
+      <h3 style="margin:0 0 6px">Recommended path: reference-conditioned + master-skeleton + validation-loop</h3>
+      <p style="margin:0;color:#166534">Reference-conditioned CAD preserves visible fit, master skeletons provide stable parametrics, and the validation loop supplies physical acceptance.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(260px,1fr));gap:12px">
+    <section style="border:1px solid #d4d4d8;border-radius:8px;background:#fff;padding:14px">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:start">
+        <div>
+          <div style="font-size:12px;text-transform:uppercase;color:#64748b;font-weight:700">#1 evidence-to-generator</div>
+          <h3 style="margin:4px 0 6px">Reference-Conditioned CAD</h3>
+        </div>
+        <div style="font-size:28px;font-weight:800;color:#0f172a">81</div>
+      </div>
+      <svg viewBox="0 0 280 150" style="width:100%;height:150px;background:#f8fafc;border-radius:6px;margin:8px 0 12px">
+
+    <path d="M108 72 h74 v58 h-74 z M60 16 h18 v68 M94 8 h18 v76 M128 6 h18 v78 M162 18 h18 v66 M178 92 l48 -24" fill="none" stroke="#94a3b8" stroke-width="3" stroke-dasharray="6 4"/>
+    <rect x="110" y="76" width="68" height="50" rx="4" fill="#d8d3c9" stroke="#334155" stroke-width="2"/>
+    <rect x="62" y="20" width="16" height="62" rx="5" fill="#d8d3c9" stroke="#334155" stroke-width="2"/>
+    <rect x="96" y="12" width="16" height="70" rx="5" fill="#d8d3c9" stroke="#334155" stroke-width="2"/>
+    <rect x="130" y="10" width="16" height="72" rx="5" fill="#d8d3c9" stroke="#334155" stroke-width="2"/>
+    <rect x="164" y="22" width="16" height="60" rx="5" fill="#d8d3c9" stroke="#334155" stroke-width="2"/>
+    <line x1="48" y1="86" x2="188" y2="86" stroke="#2563eb" stroke-width="2" stroke-dasharray="4 3"/>
+
+
+
+
+      </svg>
+      <p style="margin:0 0 8px;color:#334155"><b>Inputs:</b> reference image or mesh landmarks plus mechanism family</p>
+      <p style="margin:0 0 8px;color:#334155"><b>Builds:</b> landmark-driven visible proportions with mechanical completion</p>
+      <p style="margin:0 0 8px;color:#334155"><b>Failure caught:</b> visual drift, wrong thumb angle, lost palm/wrist language</p>
+      <p style="margin:0 0 12px;color:#7c2d12"><b>Caveat:</b> Landmarks are manual until mesh or image extraction is added.</p>
+      <div style="display:grid;grid-template-columns:120px 1fr;gap:6px 10px;font-size:12px;color:#475569">
+        <span>Physics</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:88%;height:8px;background:#2563eb"></div></div>
+        <span>Reference fit</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:91%;height:8px;background:#2563eb"></div></div>
+        <span>Stability</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:76%;height:8px;background:#2563eb"></div></div>
+        <span>Automation</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:66%;height:8px;background:#2563eb"></div></div>
+        <span>Validation</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:72%;height:8px;background:#2563eb"></div></div>
+      </div>
+    </section>
+
+    <section style="border:1px solid #d4d4d8;border-radius:8px;background:#fff;padding:14px">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:start">
+        <div>
+          <div style="font-size:12px;text-transform:uppercase;color:#64748b;font-weight:700">#2 validator</div>
+          <h3 style="margin:4px 0 6px">Validation Loop</h3>
+        </div>
+        <div style="font-size:28px;font-weight:800;color:#0f172a">78</div>
+      </div>
+      <svg viewBox="0 0 280 150" style="width:100%;height:150px;background:#f8fafc;border-radius:6px;margin:8px 0 12px">
+
+
+
+
+
+    <rect x="110" y="76" width="68" height="50" rx="4" fill="#d8d3c9" stroke="#334155" stroke-width="2"/>
+    <rect x="62" y="20" width="16" height="62" rx="5" fill="#d8d3c9" stroke="#334155" stroke-width="2"/>
+    <rect x="96" y="12" width="16" height="70" rx="5" fill="#d8d3c9" stroke="#334155" stroke-width="2"/>
+    <rect x="202" y="28" width="24" height="24" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <path d="M207 33 l14 14 M221 33 l-14 14" stroke="#dc2626" stroke-width="3"/>
+    <rect x="42" y="112" width="24" height="24" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <path d="M47 124 l7 7 l10 -15" fill="none" stroke="#16a34a" stroke-width="3"/>
+    <path d="M70 126 C108 144 166 144 202 122" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="4 3"/>
+      </svg>
+      <p style="margin:0 0 8px;color:#334155"><b>Inputs:</b> candidate assembly, reference evidence, physical requirements</p>
+      <p style="margin:0 0 8px;color:#334155"><b>Builds:</b> acceptance gates, scoring, repair hints, reject/pass decision</p>
+      <p style="margin:0 0 8px;color:#334155"><b>Failure caught:</b> floating parts, invalid mates, collisions, weak loads, visual drift</p>
+      <p style="margin:0 0 12px;color:#7c2d12"><b>Caveat:</b> This is not a generator; it decides whether a generated model is acceptable.</p>
+      <div style="display:grid;grid-template-columns:120px 1fr;gap:6px 10px;font-size:12px;color:#475569">
+        <span>Physics</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:78%;height:8px;background:#2563eb"></div></div>
+        <span>Reference fit</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:72%;height:8px;background:#2563eb"></div></div>
+        <span>Stability</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:70%;height:8px;background:#2563eb"></div></div>
+        <span>Automation</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:76%;height:8px;background:#2563eb"></div></div>
+        <span>Validation</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:96%;height:8px;background:#2563eb"></div></div>
+      </div>
+    </section>
+
+    <section style="border:1px solid #d4d4d8;border-radius:8px;background:#fff;padding:14px">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:start">
+        <div>
+          <div style="font-size:12px;text-transform:uppercase;color:#64748b;font-weight:700">#3 skeleton</div>
+          <h3 style="margin:4px 0 6px">Master Skeleton</h3>
+        </div>
+        <div style="font-size:28px;font-weight:800;color:#0f172a">77</div>
+      </div>
+      <svg viewBox="0 0 280 150" style="width:100%;height:150px;background:#f8fafc;border-radius:6px;margin:8px 0 12px">
+
+
+
+
+    <rect x="110" y="76" width="68" height="50" rx="4" fill="#d8d3c9" stroke="#334155" stroke-width="2" opacity=".6"/>
+    <line x1="144" y1="132" x2="144" y2="10" stroke="#2563eb" stroke-width="2" stroke-dasharray="4 3"/>
+    <line x1="48" y1="86" x2="196" y2="86" stroke="#ef4444" stroke-width="3"/>
+    <path d="M70 86 C60 58 62 34 70 16" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="4 3"/>
+    <path d="M104 86 C94 52 96 28 104 8" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="4 3"/>
+    <path d="M138 86 C128 50 130 26 138 6" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="4 3"/>
+    <circle cx="70" cy="86" r="5" fill="#e5e7eb" stroke="#475569" stroke-width="2"/>
+    <circle cx="104" cy="86" r="5" fill="#e5e7eb" stroke="#475569" stroke-width="2"/>
+    <circle cx="138" cy="86" r="5" fill="#e5e7eb" stroke="#475569" stroke-width="2"/>
+
+      </svg>
+      <p style="margin:0 0 8px;color:#334155"><b>Inputs:</b> datums, joint centers, axes, envelopes, motion arcs</p>
+      <p style="margin:0 0 8px;color:#334155"><b>Builds:</b> stable parametric skeleton that downstream solids follow</p>
+      <p style="margin:0 0 8px;color:#334155"><b>Failure caught:</b> sideways hands, broken axes, unstable edits, impossible motion</p>
+      <p style="margin:0 0 12px;color:#7c2d12"><b>Caveat:</b> Best as a control layer; still needs either templates or reference evidence for solids.</p>
+      <div style="display:grid;grid-template-columns:120px 1fr;gap:6px 10px;font-size:12px;color:#475569">
+        <span>Physics</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:84%;height:8px;background:#2563eb"></div></div>
+        <span>Reference fit</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:64%;height:8px;background:#2563eb"></div></div>
+        <span>Stability</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:94%;height:8px;background:#2563eb"></div></div>
+        <span>Automation</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:62%;height:8px;background:#2563eb"></div></div>
+        <span>Validation</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:74%;height:8px;background:#2563eb"></div></div>
+      </div>
+    </section>
+
+    <section style="border:1px solid #d4d4d8;border-radius:8px;background:#fff;padding:14px">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:start">
+        <div>
+          <div style="font-size:12px;text-transform:uppercase;color:#64748b;font-weight:700">#4 generator</div>
+          <h3 style="margin:4px 0 6px">Mechanism Templates</h3>
+        </div>
+        <div style="font-size:28px;font-weight:800;color:#0f172a">76</div>
+      </div>
+      <svg viewBox="0 0 280 150" style="width:100%;height:150px;background:#f8fafc;border-radius:6px;margin:8px 0 12px">
+
+
+    <rect x="110" y="76" width="68" height="50" rx="4" fill="#d8d3c9" stroke="#334155" stroke-width="2"/>
+    <rect x="62" y="20" width="16" height="62" rx="5" fill="#d8d3c9" stroke="#334155" stroke-width="2"/>
+    <rect x="96" y="12" width="16" height="70" rx="5" fill="#d8d3c9" stroke="#334155" stroke-width="2"/>
+    <rect x="130" y="8" width="16" height="74" rx="5" fill="#d8d3c9" stroke="#334155" stroke-width="2"/>
+    <rect x="164" y="20" width="16" height="62" rx="5" fill="#d8d3c9" stroke="#334155" stroke-width="2"/>
+    <circle cx="70" cy="82" r="6" fill="#e5e7eb" stroke="#475569" stroke-width="2"/>
+    <circle cx="104" cy="82" r="6" fill="#e5e7eb" stroke="#475569" stroke-width="2"/>
+    <circle cx="138" cy="82" r="6" fill="#e5e7eb" stroke="#475569" stroke-width="2"/>
+    <circle cx="172" cy="82" r="6" fill="#e5e7eb" stroke="#475569" stroke-width="2"/>
+
+
+
+      </svg>
+      <p style="margin:0 0 8px;color:#334155"><b>Inputs:</b> mechanism family, target DOF, rough envelope</p>
+      <p style="margin:0 0 8px;color:#334155"><b>Builds:</b> known-good palm, clevis, pin, tendon, and finger modules</p>
+      <p style="margin:0 0 8px;color:#334155"><b>Failure caught:</b> missing joints, unsupported pins, floating visual parts</p>
+      <p style="margin:0 0 12px;color:#7c2d12"><b>Caveat:</b> Reliable mechanically, but can drift visually when the reference has strong style cues.</p>
+      <div style="display:grid;grid-template-columns:120px 1fr;gap:6px 10px;font-size:12px;color:#475569">
+        <span>Physics</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:92%;height:8px;background:#2563eb"></div></div>
+        <span>Reference fit</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:58%;height:8px;background:#2563eb"></div></div>
+        <span>Stability</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:82%;height:8px;background:#2563eb"></div></div>
+        <span>Automation</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:72%;height:8px;background:#2563eb"></div></div>
+        <span>Validation</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:68%;height:8px;background:#2563eb"></div></div>
+      </div>
+    </section>
+
+    <section style="border:1px solid #d4d4d8;border-radius:8px;background:#fff;padding:14px">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:start">
+        <div>
+          <div style="font-size:12px;text-transform:uppercase;color:#64748b;font-weight:700">#5 evidence-to-generator</div>
+          <h3 style="margin:4px 0 6px">Mesh Feature Fitting</h3>
+        </div>
+        <div style="font-size:28px;font-weight:800;color:#0f172a">66</div>
+      </div>
+      <svg viewBox="0 0 280 150" style="width:100%;height:150px;background:#f8fafc;border-radius:6px;margin:8px 0 12px">
+
+
+
+    <path d="M106 74 C98 86 102 124 112 132 C132 140 164 140 182 130 C190 116 188 84 180 74 C158 66 126 66 106 74Z" fill="#cbd5e1" opacity=".7"/>
+    <path d="M62 16 C50 46 56 72 70 88 C82 70 82 34 76 18Z" fill="#cbd5e1" opacity=".7"/>
+    <path d="M96 8 C86 44 92 74 106 90 C118 70 118 28 110 10Z" fill="#cbd5e1" opacity=".7"/>
+    <rect x="110" y="76" width="68" height="50" rx="4" fill="none" stroke="#f59e0b" stroke-width="3"/>
+    <rect x="62" y="20" width="16" height="62" rx="5" fill="none" stroke="#f59e0b" stroke-width="3"/>
+    <rect x="96" y="12" width="16" height="70" rx="5" fill="none" stroke="#f59e0b" stroke-width="3"/>
+
+
+      </svg>
+      <p style="margin:0 0 8px;color:#334155"><b>Inputs:</b> segmented mesh regions, fitted planes, cylinders, boxes, axes</p>
+      <p style="margin:0 0 8px;color:#334155"><b>Builds:</b> CAD primitives fitted to visible mesh features</p>
+      <p style="margin:0 0 8px;color:#334155"><b>Failure caught:</b> bad primitive fit, missing shaft axes, repeated-module mismatch</p>
+      <p style="margin:0 0 12px;color:#7c2d12"><b>Caveat:</b> Promising for automation, but bad segmentation can create false confidence.</p>
+      <div style="display:grid;grid-template-columns:120px 1fr;gap:6px 10px;font-size:12px;color:#475569">
+        <span>Physics</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:58%;height:8px;background:#2563eb"></div></div>
+        <span>Reference fit</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:86%;height:8px;background:#2563eb"></div></div>
+        <span>Stability</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:54%;height:8px;background:#2563eb"></div></div>
+        <span>Automation</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:88%;height:8px;background:#2563eb"></div></div>
+        <span>Validation</span><div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="width:50%;height:8px;background:#2563eb"></div></div>
+      </div>
+    </section>
+  </div>

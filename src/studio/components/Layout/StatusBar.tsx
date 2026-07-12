@@ -13,6 +13,12 @@ interface StatusBarProps {
     layoutMode: StudioLayoutMode;
     activeCommandLabel: string | null;
     interferences?: number;
+    interferenceSummary?: {
+        rawCount: number;
+        contactNoiseCount: number;
+        actionableCount: number;
+        capMm3: number;
+    } | null;
     recomputeMs?: number;
 }
 
@@ -42,11 +48,15 @@ export function StatusBar({
     layoutMode,
     activeCommandLabel,
     interferences,
+    interferenceSummary,
     recomputeMs,
 }: StatusBarProps) {
     const stateLabel = error ? 'Error' : isComputing ? 'Computing...' : 'Ready';
     const bodyLabel = geometryCount === 1 ? '1 body' : `${geometryCount} bodies`;
     const selectionLabel = selectedCount === 1 ? '1 selected' : `${selectedCount} selected`;
+    const interferenceTitle = interferenceSummary
+        ? `actionable: ${interferenceSummary.actionableCount}, contact-noise: ${interferenceSummary.contactNoiseCount}, raw: ${interferenceSummary.rawCount}, cap: ${interferenceSummary.capMm3} mm3`
+        : undefined;
 
     return (
         <footer
@@ -79,7 +89,7 @@ export function StatusBar({
                     {selectionLabel}
                 </span>
                 {typeof interferences === 'number' && (
-                    <span data-testid="status-interferences">interferences: {interferences}</span>
+                    <span data-testid="status-interferences" title={interferenceTitle}>interferences: {interferences}</span>
                 )}
                 {typeof recomputeMs === 'number' && recomputeMs > 0 && (
                     <span data-testid="status-recompute-ms">Last compute {recomputeMs} ms</span>

@@ -195,6 +195,10 @@ export interface SolveMatesOptions {
    *  so it is opt-in per call site. Robot-description export uses it to
    *  stamp real per-link poses on closed-loop mechanisms. */
   acceptConsistentArticulatedLoops?: boolean;
+  /** Solve each disconnected mate component from its first declared part.
+   *  The default preserves the historical behavior: only the component
+   *  containing parts[0] is traversed and all other parts are identity-filled. */
+  solveDisconnectedComponents?: boolean;
 }
 
 export async function solveMates(
@@ -225,7 +229,14 @@ export async function solveMates(
   // 2. Build a spanning tree via BFS from the first declared part. Mates not
   //    in the tree become loop-closure constraints — passed to `loopSolve`.
   const partByName = new Map(parts.map((p) => [p.name, p]));
-  const { worldT, loopMates } = await walkSpanningTree(parts, adjacency, partByName, arm, expandedPoses);
+  const { worldT, loopMates } = await walkSpanningTree(
+    parts,
+    adjacency,
+    partByName,
+    arm,
+    expandedPoses,
+    opts?.solveDisconnectedComponents === true,
+  );
 
   if (loopMates.length === 0) {
     return { status: 'solved', poses: worldT };
@@ -440,43 +451,51 @@ interface SpanningTreeResult {
   loopMates: MateRecord[];
 }
 
-/** BFS from `parts[0]`. Visited neighbors compose their world transform from
- *  the parent through the connecting mate. Mates that would connect already-
- *  visited parts are deferred to `loopMates`. Disconnected parts default to
- *  identity. */
+/** BFS from `parts[0]`, optionally continuing from the first unvisited part
+ *  in each disconnected component. Visited neighbors compose their world
+ *  transform from the parent through the connecting mate. Mates that would
+ *  connect already-visited parts are deferred to `loopMates`. */
 async function walkSpanningTree(
   parts: readonly AssemblyPartStored[],
   adjacency: ReadonlyMap<string, MateEdge[]>,
   partByName: ReadonlyMap<string, AssemblyPartStored>,
   arm: Assembly,
   poses: NumericPoses | undefined,
+  solveDisconnectedComponents: boolean,
 ): Promise<SpanningTreeResult> {
   const worldT = new Map<string, Transform>();
   const loopMates: MateRecord[] = [];
   const seenMate = new Set<string>();
 
-  const root = parts[0];
-  worldT.set(root.name, Transform.identity());
+  const queue: string[] = [];
+  const visited = new Set<string>();
+  let nextRoot: AssemblyPartStored | undefined = parts[0];
+  while (nextRoot !== undefined) {
+    worldT.set(nextRoot.name, Transform.identity());
+    visited.add(nextRoot.name);
+    queue.push(nextRoot.name);
 
-  const queue: string[] = [root.name];
-  const visited = new Set<string>([root.name]);
-
-  while (queue.length > 0) {
-    const parentName = queue.shift()!;
-    const parentT = worldT.get(parentName)!;
-    for (const edge of adjacency.get(parentName) ?? []) {
-      if (seenMate.has(edge.mate.name)) continue;
-      seenMate.add(edge.mate.name);
-      if (visited.has(edge.neighbor)) {
-        // Loop-closure mate: both endpoints already placed by the tree.
-        loopMates.push(edge.mate);
-        continue;
+    while (queue.length > 0) {
+      const parentName = queue.shift()!;
+      const parentT = worldT.get(parentName)!;
+      for (const edge of adjacency.get(parentName) ?? []) {
+        if (seenMate.has(edge.mate.name)) continue;
+        seenMate.add(edge.mate.name);
+        if (visited.has(edge.neighbor)) {
+          // Loop-closure mate: both endpoints already placed by the tree.
+          loopMates.push(edge.mate);
+          continue;
+        }
+        visited.add(edge.neighbor);
+        const childT = await composeChildTransform(parentT, edge, partByName, arm, poses);
+        worldT.set(edge.neighbor, childT);
+        queue.push(edge.neighbor);
       }
-      visited.add(edge.neighbor);
-      const childT = await composeChildTransform(parentT, edge, partByName, arm, poses);
-      worldT.set(edge.neighbor, childT);
-      queue.push(edge.neighbor);
     }
+
+    nextRoot = solveDisconnectedComponents
+      ? parts.find((part) => !visited.has(part.name))
+      : undefined;
   }
 
   // Disconnected parts default to identity so callers always see one

@@ -27,6 +27,16 @@ describe('toolRegistry pose-envelope schema options', () => {
     expect(prop.type).toBe('boolean');
   });
 
+  it('review_cad schema declares reaction and clevis structure review flags', () => {
+    const def = findTool('review_cad');
+    expect(def.inputSchema.properties.includePhysicalUseCaseJointReactions).toMatchObject({
+      type: 'boolean',
+    });
+    expect(def.inputSchema.properties.includePhysicalUseCaseJointStructure).toMatchObject({
+      type: 'boolean',
+    });
+  });
+
   it('review_cad schema declares gripperAperture refs', () => {
     const def = findTool('review_cad');
     const prop = def.inputSchema.properties.gripperAperture as {

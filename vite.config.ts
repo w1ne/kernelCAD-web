@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { isAbsolute, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { summarizeInterferencePairs } from './src/modeling/runtime/interferenceClassification';
 
 const repoRoot = fileURLToPath(new URL('.', import.meta.url));
 const require = createRequire(import.meta.url);
@@ -36,11 +37,14 @@ function isPathInside(parent: string, child: string): boolean {
 
 function resolveExampleScript(script: string | null): string | null {
   if (!script) return null;
-  const examplesRoot = resolve(repoRoot, 'examples');
+  const allowedRoots = [
+    resolve(repoRoot, 'examples'),
+    resolve(repoRoot, 'tests/fixtures'),
+  ];
   const scriptPath = resolve(repoRoot, script);
   if (
     !script.endsWith('.kcad.ts') ||
-    !isPathInside(examplesRoot, scriptPath)
+    !allowedRoots.some((root) => isPathInside(root, scriptPath))
   ) {
     return null;
   }
@@ -558,30 +562,56 @@ function kernelCadMeshEndpoint(): Plugin {
           const { detectInterferences } = await import('./src/modeling/runtime/detectInterferences');
           const { isSceneBackend } = await import('./src/kernel/backends/sceneBackend');
 
-          // When a session token is present, recompute raw interferences
+          // When a session token is present, recompute interferences
           // against the LIVE pooled session's tail scene — that captures the
           // user's current Params-tab edits via the SSE relower path. The
           // base reviewCadTool still re-evaluates from the script source so
           // its validator + envelope output stays comparable across reloads;
-          // we overlay the live raw count on top for the Studio HUD's
-          // slider-drag responsiveness.
+          // we overlay the live raw pairs and actionable summary on top for
+          // the Studio HUD's slider-drag responsiveness.
           const sessionToken = url.searchParams.get('session');
 
           // `live=1` (sent by the client's relower-triggered refresh): skip
           // the FULL review — reviewCadTool re-evaluates the script from
           // source and runs the pose-envelope sweep, which on a jointed
-          // assembly takes MINUTES — and return only the live raw
-          // interference pairs from the pooled session. The full review
-          // still runs on initial load and on an explicit Validate press;
-          // the client merges this lighter payload over the last full one.
+          // assembly takes MINUTES — and return only the live interference
+          // channel from the pooled session. Session-backed initial load
+          // also uses this cheap path; explicit Validate still runs the full
+          // review, and the client merges the lighter payload over the last
+          // full one when available.
           const liveOnly = url.searchParams.get('live') === '1' && Boolean(sessionToken);
-          const review = liveOnly
+          const review: {
+            ok: boolean;
+            diagnostics: unknown[];
+            fitness?: {
+              functional?: boolean;
+              repairMode?: string;
+              blockingReasons?: readonly unknown[];
+            };
+            live?: boolean;
+            livePhysicalUseCaseReview?: boolean;
+            [key: string]: unknown;
+          } = liveOnly
             ? { ok: true, diagnostics: [], live: true }
             : await reviewCadTool({
                 file: scriptPath,
                 includePoseEnvelope: true,
                 includeInterference: true,
-              });
+              }) as unknown as {
+                ok: boolean;
+                diagnostics: unknown[];
+                fitness?: {
+                  functional?: boolean;
+                  repairMode?: string;
+                  blockingReasons?: readonly unknown[];
+                };
+                live?: boolean;
+                livePhysicalUseCaseReview?: boolean;
+                [key: string]: unknown;
+              };
+          const sourceDeclaresPhysicalUseCase = liveOnly
+            ? readFileSync(scriptPath, 'utf-8').includes('physicalUseCase(')
+            : false;
 
           if (sessionToken) {
             try {
@@ -605,7 +635,43 @@ function kernelCadMeshEndpoint(): Plugin {
                   0.01,
                   new Set<string>(),
                 ).pairs;
-                (review as { rawInterferencePairs?: unknown }).rawInterferencePairs = livePairs;
+                Object.assign(review, {
+                  rawInterferencePairs: livePairs,
+                  interferenceSummary: summarizeInterferencePairs(livePairs),
+                });
+              }
+              if (sourceDeclaresPhysicalUseCase) {
+                review.livePhysicalUseCaseReview = true;
+                const { reviewPhysicalUseCasesWithReachability } = await import('./src/modeling/mates/physicalUseCase');
+                const session = entry?.model.session as unknown as {
+                  assemblies?: Map<string, Parameters<typeof reviewPhysicalUseCasesWithReachability>[0]>;
+                } | undefined;
+                const assemblies = [...(session?.assemblies?.values() ?? [])];
+                const diagnostics = [];
+                for (const assembly of assemblies) {
+                  const physical = await reviewPhysicalUseCasesWithReachability(assembly, {
+                    requirePhysicalUseCase: true,
+                    includeReachability: true,
+                    reachabilitySamplesPerMate: 3,
+                  });
+                  diagnostics.push(...physical.diagnostics);
+                }
+                if (diagnostics.length > 0) {
+                  review.diagnostics = [...review.diagnostics, ...diagnostics];
+                  const hasError = diagnostics.some((diagnostic) => diagnostic.severity === 'error');
+                  if (hasError) {
+                    review.ok = false;
+                    review.fitness = {
+                      ...(review.fitness ?? {}),
+                      functional: false,
+                      repairMode: 'physical-use-case',
+                      blockingReasons: [
+                        ...(review.fitness?.blockingReasons ?? []),
+                        ...diagnostics,
+                      ],
+                    };
+                  }
+                }
               }
             } catch {
               // Session-side overlay failed; fall back to the script-eval pairs

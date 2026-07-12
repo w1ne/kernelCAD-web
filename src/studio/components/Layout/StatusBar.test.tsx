@@ -116,6 +116,32 @@ describe('StatusBar', () => {
         expect(screen.getByText('interferences: 3')).toBeDefined();
     });
 
+    it('renders actionable interference count with summary title', () => {
+        render(
+            <StatusBar
+                isComputing={false}
+                error={null}
+                geometryCount={22}
+                selectedCount={0}
+                viewMode3D="shaded"
+                layoutMode="split"
+                activeCommandLabel={null}
+                interferences={1}
+                interferenceSummary={{
+                    rawCount: 16,
+                    contactNoiseCount: 15,
+                    actionableCount: 1,
+                    capMm3: 20,
+                }}
+            />
+        );
+
+        const text = screen.getByText(/interferences: 1/);
+        const title = text.getAttribute('title') ?? '';
+        expect(title).toContain('raw: 16');
+        expect(title).toContain('contact-noise: 15');
+    });
+
     it('omits interferences when prop is undefined', () => {
         render(
             <StatusBar

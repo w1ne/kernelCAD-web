@@ -57,6 +57,35 @@ describe('solveMates — tree topology', () => {
     expect(cT.decomposeToTranslateAndRotate().translate[2]).toBeCloseTo(15);
   });
 
+  it('solves every disconnected mate component only when the forest option is enabled', async () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('unrelated', kcad.box(1, 1, 1))
+      .connector('origin', {
+        type: 'frame',
+        origin: { kind: 'vec3', value: [0, 0, 0] },
+      });
+    arm
+      .part('support', kcad.box(10, 10, 10))
+      .connector('out', {
+        type: 'frame',
+        origin: { kind: 'vec3', value: [100, 0, 0] },
+      });
+    arm
+      .part('mounted', kcad.box(5, 5, 5))
+      .connector('in', {
+        type: 'frame',
+        origin: { kind: 'vec3', value: [0, 0, 0] },
+      });
+    arm.mate('mount', 'support.out', 'mounted.in', 'fastened');
+
+    const legacy = await solveMates(arm);
+    const forest = await solveMates(arm, undefined, { solveDisconnectedComponents: true });
+
+    expect(legacy.poses.get('mounted')!.point([0, 0, 0])[0]).toBeCloseTo(0);
+    expect(forest.poses.get('mounted')!.point([0, 0, 0])[0]).toBeCloseTo(100);
+  });
+
 });
 
 describe('solveMates — closed loop (Newton-Raphson)', () => {

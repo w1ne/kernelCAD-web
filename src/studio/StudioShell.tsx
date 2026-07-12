@@ -28,6 +28,7 @@ import { useProject } from './context/ProjectContext';
 import { useStudioChrome } from './context/StudioChromeContext';
 import { useOptionalSession } from '../funnel/hooks/useSession';
 import { isAuthConfigured } from '../funnel/lib/supabaseClient';
+import { jointContactCapMm3 } from '../modeling/runtime/jointContactCap';
 
 /**
  * Top-level Studio shell. Composes the six slots — Toolbar / Viewport /
@@ -190,14 +191,14 @@ export function StudioShell() {
         animation: <AnimationTab />,
     };
 
-    // HUD reads RAW interference pairs (pre-filter), not the validator's
-    // diagnostics. Scripts can silence known-acceptable contacts via
-    // `assembly.solvedModel({ ignore: [...] })` — that hides them from the
-    // validator throw path and the Validity tab, but the user must still see
-    // every live overlap on the status bar (especially when they drag a
-    // Studio param slider into a colliding pose). The two channels are
-    // wired separately on `useRecomputeResult` for exactly this reason.
-    const interferenceCount = recompute.rawInterferencePairs?.length ?? 0;
+    // HUD counts actionable interferences, not contact-noise slivers. Raw
+    // pairs stay available to diagnostic tabs, but the footer follows the same
+    // absolute cap used by validator/mechanism-truth so clearance-fit clevis
+    // contacts do not make a plausible mechanism look broken.
+    const interferenceCount = recompute.interferenceSummary?.actionableCount
+        ?? (recompute.rawInterferencePairs ?? [])
+            .filter((pair) => pair.volumeMm3 > jointContactCapMm3())
+            .length;
 
     return (
         <div
@@ -263,6 +264,7 @@ export function StudioShell() {
                 layoutMode={workbench.layoutMode}
                 activeCommandLabel={null}
                 interferences={interferenceCount}
+                interferenceSummary={recompute.interferenceSummary}
                 recomputeMs={workbench.recomputeMs}
             />
 

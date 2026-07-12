@@ -5,6 +5,8 @@ import type { ValidatorDiagnostic } from './validator';
 import type { MechanicalPlausibilityDiagnostic } from './mechanicalPlausibility';
 import type { MechanicalIntentDiagnostic } from './mechanicalIntent';
 import type { MechanicalTransmissionDiagnostic } from './mechanicalTransmission';
+import type { PhysicalUseCaseDiagnostic } from './physicalUseCase';
+import type { JointTopologyDiagnostic } from './jointTopology';
 
 export interface MechanismBlockingReason {
   readonly code: string;
@@ -30,6 +32,9 @@ export interface MechanismSummary {
   readonly mechanicalPlausibilityIssueCount?: number;
   readonly mechanicalIntentIssueCount?: number;
   readonly mechanicalTransmissionIssueCount?: number;
+  readonly jointTopologyIssueCount?: number;
+  readonly physicalUseCaseCount?: number;
+  readonly physicalUseCaseIssueCount?: number;
 }
 
 export interface MechanismFitnessResult {
@@ -46,6 +51,9 @@ export interface MechanismFitnessInput {
   readonly mechanicalPlausibilityDiagnostics?: readonly MechanicalPlausibilityDiagnostic[];
   readonly mechanicalIntentDiagnostics?: readonly MechanicalIntentDiagnostic[];
   readonly mechanicalTransmissionDiagnostics?: readonly MechanicalTransmissionDiagnostic[];
+  readonly jointTopologyDiagnostics?: readonly JointTopologyDiagnostic[];
+  readonly physicalUseCaseDiagnostics?: readonly PhysicalUseCaseDiagnostic[];
+  readonly physicalUseCaseCount?: number;
   readonly poseEnvelope?: PoseEnvelopeReviewResult;
   readonly trackConnectors?: readonly string[];
 }
@@ -56,6 +64,7 @@ const PASSED_CHECKS = {
   poseEnvelopeNoInterference: 'pose-envelope-no-interference',
   trackedConnectorsMove: 'tracked-connectors-move',
   gripperApertureMoves: 'gripper-aperture-moves',
+  physicalUseCaseDeclared: 'physical-use-case-declared',
 } as const;
 
 export function summarizeMechanismFitness(
@@ -65,6 +74,9 @@ export function summarizeMechanismFitness(
   const mechanicalPlausibilityDiagnostics = input.mechanicalPlausibilityDiagnostics ?? [];
   const mechanicalIntentDiagnostics = input.mechanicalIntentDiagnostics ?? [];
   const mechanicalTransmissionDiagnostics = input.mechanicalTransmissionDiagnostics ?? [];
+  const jointTopologyDiagnostics = input.jointTopologyDiagnostics ?? [];
+  const physicalUseCaseDiagnostics = input.physicalUseCaseDiagnostics ?? [];
+  const physicalUseCaseCount = input.physicalUseCaseCount ?? 0;
   const poseEnvelope = input.poseEnvelope;
   const trackConnectors = input.trackConnectors ?? [];
 
@@ -121,6 +133,28 @@ export function summarizeMechanismFitness(
       diagnostic.hint,
       diagnostic,
     );
+  }
+
+  for (const diagnostic of jointTopologyDiagnostics) {
+    addBlockingReason(
+      diagnostic.code,
+      diagnostic.message,
+      diagnostic.hint,
+      diagnostic,
+    );
+  }
+
+  for (const diagnostic of physicalUseCaseDiagnostics) {
+    addBlockingReason(
+      diagnostic.code,
+      diagnostic.message,
+      diagnostic.hint,
+      diagnostic,
+    );
+  }
+
+  if (physicalUseCaseCount > 0 && physicalUseCaseDiagnostics.length === 0) {
+    passedChecks.push(PASSED_CHECKS.physicalUseCaseDeclared);
   }
 
   const hasPoseEnvelopeErrors = poseEnvelope?.diagnostics.some((diagnostic) => diagnostic.severity === 'error') ?? false;
@@ -206,6 +240,8 @@ export function summarizeMechanismFitness(
   const mechanicalPlausibilityIssueCount = mechanicalPlausibilityDiagnostics.length;
   const mechanicalIntentIssueCount = mechanicalIntentDiagnostics.length;
   const mechanicalTransmissionIssueCount = mechanicalTransmissionDiagnostics.length;
+  const jointTopologyIssueCount = jointTopologyDiagnostics.length;
+  const physicalUseCaseIssueCount = physicalUseCaseDiagnostics.length;
   const repairMode = chooseRepairMode(blockingReasons);
 
   return {
@@ -227,6 +263,9 @@ export function summarizeMechanismFitness(
       ...(mechanicalPlausibilityIssueCount === 0 ? {} : { mechanicalPlausibilityIssueCount }),
       ...(mechanicalIntentIssueCount === 0 ? {} : { mechanicalIntentIssueCount }),
       ...(mechanicalTransmissionIssueCount === 0 ? {} : { mechanicalTransmissionIssueCount }),
+      ...(jointTopologyIssueCount === 0 ? {} : { jointTopologyIssueCount }),
+      ...(physicalUseCaseCount === 0 ? {} : { physicalUseCaseCount }),
+      ...(physicalUseCaseIssueCount === 0 ? {} : { physicalUseCaseIssueCount }),
     },
   };
 }
@@ -237,6 +276,13 @@ function chooseRepairMode(
   if (blockingReasons.length === 0) return 'none';
 
   if (blockingReasons.some((reason) => reason.code === 'assembly.mechanism.layout-conflict')) {
+    return 'topology-redesign';
+  }
+
+  if (blockingReasons.some((reason) =>
+    reason.code.startsWith('assembly.connectivity.') ||
+    reason.code.startsWith('assembly.joint-topology.')
+  )) {
     return 'topology-redesign';
   }
 

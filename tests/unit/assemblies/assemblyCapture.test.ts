@@ -271,6 +271,62 @@ describe('assembly capture contract', () => {
     ]);
   });
 
+  it('captures passive joint support intent records', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('passive support');
+
+    const returned = arm.jointSupport('pip-bearing', {
+      mate: 'index-pip',
+      shaft: 'index-proximal',
+      supports: ['index-proximal'],
+      output: 'index-middle',
+      requiredSupport: {
+        kind: 'hinge-bracket',
+        around: 'index-proximal.pip',
+        supports: ['index-proximal'],
+        minBearingLengthMm: 6,
+      },
+    });
+
+    expect(returned).toBe(arm);
+    expect(arm.__jointSupportIntents()).toEqual([
+      {
+        name: 'pip-bearing',
+        mate: 'index-pip',
+        shaft: 'index-proximal',
+        supports: ['index-proximal'],
+        output: 'index-middle',
+        requiredSupport: {
+          kind: 'hinge-bracket',
+          around: 'index-proximal.pip',
+          supports: ['index-proximal'],
+          minBearingLengthMm: 6,
+        },
+      },
+    ]);
+  });
+
+  it('stores contact target part roles', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('contact target');
+
+    arm.part('grasp-cylinder', kcad.cylinder(20, 10), { role: 'contact-target' });
+
+    expect(arm.__parts().find((part) => part.name === 'grasp-cylinder')?.role).toBe('contact-target');
+  });
+
+  it('rejects unknown part roles', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('bad role');
+
+    expect(() => arm.part('mystery', kcad.box(1, 1, 1), {
+      role: 'decorative' as never,
+    })).toThrow(/assembly.part.invalid-role/);
+  });
+
   it('rejects duplicate or empty mechanical joint intent fields', () => {
     const session = new CaptureSession();
     const kcad = createApi({ session });

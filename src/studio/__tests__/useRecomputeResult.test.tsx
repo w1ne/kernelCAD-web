@@ -229,10 +229,8 @@ describe('useRecomputeResult — Slice 1.2 data wiring', () => {
     });
 
     it('forwards rawInterferencePairs from scriptReview unchanged', async () => {
-        // The HUD reads `.length` of this directly. It's the RAW detection
-        // output — populated regardless of whether the script's
-        // `solvedModel` set an `ignore` list. Validator filtering happens
-        // upstream and lands on `validity.diagnostics`, NOT here.
+        // Raw detection output remains available for detail surfaces even
+        // when the footer uses the classified interferenceSummary.
         workbenchValue.featureRecords = [];
         workbenchValue.scriptReview = {
             ok: false,

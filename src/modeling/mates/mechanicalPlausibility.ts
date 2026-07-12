@@ -260,7 +260,8 @@ export async function reviewMechanicalPlausibility(
       const partB = partsByName.get(b.partName);
       const connectorA = partA?.mateConnectors.find((c) => c.name === a.connectorName);
       const connectorB = partB?.mateConnectors.find((c) => c.name === b.connectorName);
-      const hasDeclaredDriveSupport = arm.__mechanicalJointIntents().some((intent) => intent.mate === mate.name);
+      const hasDeclaredDriveSupport = arm.__mechanicalJointIntents().some((intent) => intent.mate === mate.name) ||
+        arm.__jointSupportIntents().some((intent) => intent.mate === mate.name);
       if (
         !hasDeclaredDriveSupport &&
         partA !== undefined &&
