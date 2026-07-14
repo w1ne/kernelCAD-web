@@ -383,16 +383,17 @@ describe('validateAssembly — v0.6 mate-aware codes', () => {
     expect(floatingPartNames).toEqual(['stray']);
   });
 
-  it('type-system accepts the 17 v0.6 + v0.6.2 + v0.7.4 diagnostic codes', () => {
+  it('type-system accepts the 19 v0.6 + v0.6.2 + v0.7.4 diagnostic codes', () => {
     // Capture-time codes (`type-mismatch`, `connector-not-found`) are thrown
     // as `KernelError` by `arm.mate(...)` and never surface through the
     // validator — but external consumers (lowerer, MCP error-chain echoes)
     // still need them in the union. This test pins the union shape so a
     // future refactor can't silently drop them.
     //
-    // v0.6.2 grew the union by 5: 4 envelope-folded codes
+    // v0.6.2 grew the union by 7: 6 envelope-folded codes
     // (assembly.pose.out-of-limits, assembly.pose-envelope.{solve-failed,
-    // interference, connector-unresolved}) + 1 new code
+    // interference, clearance-violated, clearance-unresolved,
+    // connector-unresolved}) + 1 new code
     // (assembly.mate.limit-missing).
     //
     // v0.7.4 grew the union by 3 kinematic-grounding gates:
@@ -411,6 +412,8 @@ describe('validateAssembly — v0.6 mate-aware codes', () => {
       'assembly.pose.out-of-limits',
       'assembly.pose-envelope.solve-failed',
       'assembly.pose-envelope.interference',
+      'assembly.pose-envelope.clearance-violated',
+      'assembly.pose-envelope.clearance-unresolved',
       'assembly.pose-envelope.connector-unresolved',
       'assembly.mate.limit-missing',
       'assembly.mounting-hole.mismatch',
@@ -422,7 +425,7 @@ describe('validateAssembly — v0.6 mate-aware codes', () => {
     expect(
       codes.length,
       'ValidatorDiagnosticCode union changed — update count, it() title, and member-list comment together',
-    ).toBe(17);
+    ).toBe(19);
     // Smoke-check that the capture-time codes survive on a hand-crafted
     // `ValidatorDiagnostic` (compile-time check; runtime is trivial).
     const typeMismatch: ValidatorDiagnostic = {
@@ -465,8 +468,13 @@ describe('validateAssemblyWithMates — v0.6.2 envelope fold + limit-missing', (
           sampleName: 'm:max', mateName: 'm', partA: 'p', partB: 'q', volumeMm3: 50 },
         { code: 'assembly.pose-envelope.solve-failed', severity: 'error',
           message: 'solver fail', hint: 'hint-solve', sampleName: 'm:min' },
+        { code: 'assembly.pose-envelope.clearance-violated', severity: 'error',
+          message: 'clearance fail', hint: 'hint-clear', sampleName: 'm:max', partA: 'p', partB: 'q' },
+        { code: 'assembly.pose-envelope.clearance-unresolved', severity: 'warning',
+          message: 'clearance unknown', hint: 'hint-unknown', sampleName: 'm:min', partA: 'p', partB: 'q' },
       ],
       interferencePairs: [],
+      clearancePairs: [],
       connectorPoses: [],
       connectorWorkspace: [],
     };
@@ -475,6 +483,8 @@ describe('validateAssemblyWithMates — v0.6.2 envelope fold + limit-missing', (
     const codes = result.diagnostics.map((d) => d.code);
     expect(codes).toContain('assembly.pose-envelope.interference');
     expect(codes).toContain('assembly.pose-envelope.solve-failed');
+    expect(codes).toContain('assembly.pose-envelope.clearance-violated');
+    expect(codes).toContain('assembly.pose-envelope.clearance-unresolved');
   });
 
   it('emits assembly.mate.limit-missing warning per articulated mate without declared limits', async () => {

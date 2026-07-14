@@ -87,4 +87,12 @@ describe('list_api MCP tool', () => {
     expect(r.constraints!.tools).toEqual(['list_constraints', 'add_constraint', 'solve_sketch']);
     expect(r.constraints!.supportedTypes).toEqual(SUPPORTED_CONSTRAINT_TYPES);
   });
+
+  it('advertises the articulated rest-pose clearance option to agents', () => {
+    const dfm = GLOBALS.find((entry) => entry.name === 'dfmSpec');
+
+    expect(dfm?.signature).toContain('includeArticulatedMates?: boolean');
+    expect(dfm?.description).toContain('non-fastened mate pairs');
+    expect(dfm?.description).toContain('rest pose');
+  });
 });

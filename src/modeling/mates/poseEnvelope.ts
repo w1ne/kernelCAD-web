@@ -4,21 +4,22 @@ import type { Assembly } from '../capture/assembly';
 import type { NumericPoses } from '../capture/forwardKinematics';
 import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
-import { isSceneBackend } from '../../kernel/backends/sceneBackend';
+import { isSceneBackend, type SceneBackend } from '../../kernel/backends/sceneBackend';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import type { Vec3 } from '../../shared/intent/types';
 import type { DiagnosticCode } from '../../shared/diagnostics/registry';
 import { currentValue } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
-import { detectInterferences } from '../runtime/detectInterferences';
-import type { InterferencePair } from '../runtime/detectInterferences';
+import { detectInterferences, type InterferencePair, pairKey } from '../runtime/detectInterferences';
+import { checkClearance, type ClearancePairReport } from '../runtime/dfm/clearance';
 import { expandCoupledPoses } from './coupledPoses';
+import { reposedLoweredAssemblyScene } from './loweredAssemblyScene';
 import {
   computeGripperAperture,
   type GripperApertureRequest,
   type GripperApertureSummary,
 } from './gripperAperture';
-import type { MatePose, MateRecord } from './mate';
+import { parseConnectorRef, type MatePose, type MateRecord } from './mate';
 import { solveMates } from './solver';
 
 /**
@@ -35,6 +36,8 @@ export type PoseEnvelopeDiagnosticCode = Extract<
   | 'assembly.pose.out-of-limits'
   | 'assembly.pose-envelope.solve-failed'
   | 'assembly.pose-envelope.interference'
+  | 'assembly.pose-envelope.clearance-violated'
+  | 'assembly.pose-envelope.clearance-unresolved'
   | 'assembly.pose-envelope.connector-unresolved'
   | 'assembly.gripper-aperture.connector-missing'
 >;
@@ -52,6 +55,7 @@ export interface PoseEnvelopeDiagnostic {
   readonly partA?: string;
   readonly partB?: string;
   readonly volumeMm3?: number;
+  readonly minClearanceMm?: number;
   readonly connectorRef?: string;
 }
 
@@ -89,12 +93,25 @@ export interface PoseEnvelopeReviewOptions extends PoseEnvelopeSamplingOptions {
   readonly epsilonMm3?: number;
   readonly trackConnectors?: readonly string[];
   readonly gripperAperture?: GripperApertureRequest;
+  /** Minimum BREP-to-BREP clearance required at every solved sample. */
+  readonly minClearanceMm?: number;
+  /** Measure articulated mate pairs too. Fastened mate pairs stay exempt. */
+  readonly includeArticulatedMateClearance?: boolean;
+  /** pairKey()-encoded part pairs exempt from the clearance check. */
+  readonly ignoredPairs?: ReadonlySet<string>;
+  /**
+   * A fully lowered scene from the same evaluated assembly. When its part set
+   * matches, pose review reuses each LOCAL-frame BREP and replaces only the
+   * solved world transforms for every sampled pose.
+   */
+  readonly loweredScene?: SceneBackend;
 }
 
 export interface PoseEnvelopeReviewResult {
   readonly samples: PoseEnvelopeSample[];
   readonly diagnostics: PoseEnvelopeDiagnostic[];
   readonly interferencePairs: Array<InterferencePair & { sampleName: string }>;
+  readonly clearancePairs: Array<ClearancePairReport & { sampleName: string }>;
   readonly connectorPoses: TrackedConnectorPose[];
   readonly connectorWorkspace: ConnectorWorkspace[];
   readonly gripperApertureRequest?: GripperApertureRequest;
@@ -235,6 +252,25 @@ export async function reviewPoseEnvelope(
   });
   const diagnostics: PoseEnvelopeDiagnostic[] = [];
   const interferencePairs: Array<InterferencePair & { sampleName: string }> = [];
+  const clearancePairs: Array<ClearancePairReport & { sampleName: string }> = [];
+  const reportedInterferences = new Set<string>();
+  const reportInterference = (sampleName: string, pair: InterferencePair): void => {
+    const key = `${sampleName}\u0000${pairKey(pair.a, pair.b)}`;
+    if (reportedInterferences.has(key)) return;
+    reportedInterferences.add(key);
+    interferencePairs.push({ ...pair, sampleName });
+    diagnostics.push({
+      code: 'assembly.pose-envelope.interference',
+      severity: 'error',
+      sampleName,
+      sampleStrategy: classifySampleStrategy(sampleName),
+      partA: pair.a,
+      partB: pair.b,
+      volumeMm3: pair.volumeMm3,
+      message: `Pose-envelope sample '${sampleName}' makes parts '${pair.a}' and '${pair.b}' overlap by ${pair.volumeMm3.toFixed(2)} mm³.`,
+      hint: `invalid-args.assembly.pose-envelope-interference — add clearance, reduce mate travel, or move the connector/mount geometry so the swept pose stays collision-free.`,
+    });
+  };
   const connectorPoses: TrackedConnectorPose[] = [];
   const trackConnectors = opts.trackConnectors !== undefined || opts.gripperAperture !== undefined
     ? new Set([
@@ -243,11 +279,17 @@ export async function reviewPoseEnvelope(
       ])
     : undefined;
   const unresolvedConnectorRefs = new Set<string>();
+  const clearanceMatePairs = opts.minClearanceMm === undefined
+    ? undefined
+    : clearanceExemptMatedPairs(arm, opts.includeArticulatedMateClearance ?? false);
+  const ignoredPairs = opts.ignoredPairs ?? new Set<string>();
 
   for (const sample of samples) {
     diagnostics.push(...validateMatePoseLimits(arm, sample.poses, sample.name));
+    let solvedPoses: ReadonlyMap<string, import('../../shared/runtime/se3').Transform> | undefined;
     try {
       const solved = await solveMates(arm, sample.poses);
+      solvedPoses = solved.poses;
       collectConnectorPoses(
         arm,
         solved.poses,
@@ -280,21 +322,56 @@ export async function reviewPoseEnvelope(
       });
     }
 
+    if (opts.minClearanceMm !== undefined && clearanceMatePairs !== undefined) {
+      const reports = await checkClearanceAtPose(
+        arm,
+        sample.poses,
+        opts.minClearanceMm,
+        ignoredPairs,
+        clearanceMatePairs,
+        opts.loweredScene,
+        solvedPoses,
+      );
+      for (const report of reports) {
+        clearancePairs.push({ ...report, sampleName: sample.name });
+        if (report.status === 'violated') {
+          diagnostics.push({
+            code: 'assembly.pose-envelope.clearance-violated',
+            severity: 'error',
+            sampleName: sample.name,
+            sampleStrategy: classifySampleStrategy(sample.name),
+            partA: report.a,
+            partB: report.b,
+            minClearanceMm: opts.minClearanceMm,
+            message: `Pose-envelope sample '${sample.name}' leaves ${report.distanceMm.toFixed(3)} mm between parts '${report.a}' and '${report.b}', below the required ${opts.minClearanceMm} mm clearance.`,
+            hint: `invalid-args.assembly.pose-envelope-clearance-violated — increase clearance between '${report.a}' and '${report.b}', reduce mate travel, or declare the pair in dfmSpec.ignore only when the contact is intentional.`,
+          });
+        } else if (report.status === 'unknown') {
+          diagnostics.push({
+            code: 'assembly.pose-envelope.clearance-unresolved',
+            severity: 'warning',
+            sampleName: sample.name,
+            sampleStrategy: classifySampleStrategy(sample.name),
+            partA: report.a,
+            partB: report.b,
+            minClearanceMm: opts.minClearanceMm,
+            message: `Pose-envelope sample '${sample.name}' could not resolve exact BREP clearance between parts '${report.a}' and '${report.b}' against the required ${opts.minClearanceMm} mm threshold.`,
+            hint: `invalid-args.assembly.pose-envelope-clearance-unresolved — repair degenerate geometry or the lowering path, then re-run clearance review; declare dfmSpec.ignore only when another verified constraint establishes this pair's clearance.`,
+          });
+        } else if (report.status === 'interfering') {
+          reportInterference(sample.name, {
+            a: report.a,
+            b: report.b,
+            volumeMm3: report.interferenceVolumeMm3 ?? 0,
+          });
+        }
+      }
+    }
+
     if (!includeInterference) continue;
     const pairs = await detectInterferencesForPoses(arm, sample.poses, epsilon);
     for (const pair of pairs) {
-      interferencePairs.push({ ...pair, sampleName: sample.name });
-      diagnostics.push({
-        code: 'assembly.pose-envelope.interference',
-        severity: 'error',
-        sampleName: sample.name,
-        sampleStrategy: classifySampleStrategy(sample.name),
-        partA: pair.a,
-        partB: pair.b,
-        volumeMm3: pair.volumeMm3,
-        message: `Pose-envelope sample '${sample.name}' makes parts '${pair.a}' and '${pair.b}' overlap by ${pair.volumeMm3.toFixed(2)} mm³.`,
-        hint: `invalid-args.assembly.pose-envelope-interference — add clearance, reduce mate travel, or move the connector/mount geometry so the swept pose stays collision-free.`,
-      });
+      reportInterference(sample.name, pair);
     }
   }
 
@@ -325,11 +402,26 @@ export async function reviewPoseEnvelope(
     samples,
     diagnostics,
     interferencePairs,
+    clearancePairs,
     connectorPoses,
     connectorWorkspace: buildConnectorWorkspace(connectorPoses),
     ...(opts.gripperAperture !== undefined ? { gripperApertureRequest: opts.gripperAperture } : {}),
     ...(aperture?.summary !== undefined ? { gripperAperture: aperture.summary } : {}),
   };
+}
+
+function clearanceExemptMatedPairs(
+  arm: Assembly,
+  includeArticulatedMateClearance: boolean,
+): Set<string> {
+  const pairs = new Set<string>();
+  for (const mate of arm.__mates()) {
+    if (mate.type !== 'fastened' && includeArticulatedMateClearance) continue;
+    const a = parseConnectorRef(mate.a).partName;
+    const b = parseConnectorRef(mate.b).partName;
+    if (a !== b) pairs.add(pairKey(a, b));
+  }
+  return pairs;
 }
 
 function collectConnectorPoses(
@@ -449,4 +541,65 @@ export async function detectInterferencesForPoses(
   const lowered = result.shapes.get(sourceId);
   if (!lowered || !isSceneBackend(lowered)) return [];
   return detectInterferences(lowered, epsilonMm3, new Set<string>(), result.diagnostics).pairs;
+}
+
+async function checkClearanceAtPose(
+  arm: Assembly,
+  poses: NumericPoses,
+  minClearanceMm: number,
+  ignoredPairs: ReadonlySet<string>,
+  matedPairs: ReadonlySet<string>,
+  loweredScene: SceneBackend | undefined,
+  solvedPoses: ReadonlyMap<string, import('../../shared/runtime/se3').Transform> | undefined,
+): Promise<ClearancePairReport[]> {
+  const reposedScene = solvedPoses === undefined
+    ? undefined
+    : reposedLoweredAssemblyScene(arm, loweredScene, solvedPoses);
+  if (reposedScene !== undefined) {
+    try {
+      return checkClearance(reposedScene, minClearanceMm, ignoredPairs, matedPairs, [], { forceExact: true });
+    } catch {
+      return unresolvedClearancePairs(arm, ignoredPairs, matedPairs);
+    }
+  }
+
+  try {
+    await initOcct();
+    const scene = await arm.solvedModel(poses, { validate: 'off' });
+    const engine = new RecomputeEngine(createOcctLowerer(arm.__session()));
+    const result = await engine.run(arm.__session().getRecords(), {
+      paramTable: arm.__session().paramTable,
+      gatedFeatureNames: arm.__session().gatedFeatureNames,
+    });
+    const sourceId = scene.__sourceFeatureId();
+    const lowered = sourceId === undefined ? undefined : result.shapes.get(sourceId);
+    if (!isSceneBackend(lowered)) return unresolvedClearancePairs(arm, ignoredPairs, matedPairs);
+    return checkClearance(lowered, minClearanceMm, ignoredPairs, matedPairs, [], { forceExact: true });
+  } catch {
+    return unresolvedClearancePairs(arm, ignoredPairs, matedPairs);
+  }
+}
+
+function unresolvedClearancePairs(
+  arm: Assembly,
+  ignoredPairs: ReadonlySet<string>,
+  matedPairs: ReadonlySet<string>,
+): ClearancePairReport[] {
+  const parts = arm.__parts();
+  const reports: ClearancePairReport[] = [];
+  for (let i = 0; i < parts.length; i++) {
+    for (let j = i + 1; j < parts.length; j++) {
+      const a = parts[i].name;
+      const b = parts[j].name;
+      const key = pairKey(a, b);
+      reports.push({
+        a,
+        b,
+        distanceMm: Number.NaN,
+        exact: false,
+        status: ignoredPairs.has(key) ? 'ignored' : matedPairs.has(key) ? 'mated' : 'unknown',
+      });
+    }
+  }
+  return reports;
 }

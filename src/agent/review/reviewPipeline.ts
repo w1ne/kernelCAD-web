@@ -39,7 +39,8 @@ import {
 import type { ValidatorDiagnostic, ValidatorStatus } from '../../modeling/mates/validator';
 import { validateAssemblyWithMates } from '../../modeling/mates/validator';
 import type { InterferencePair } from '../../modeling/runtime/detectInterferences';
-import { detectInterferences } from '../../modeling/runtime/detectInterferences';
+import { detectInterferences, pairKey } from '../../modeling/runtime/detectInterferences';
+import { findDfmSpec } from '../../modeling/runtime/dfm/runDfmChecks';
 import {
   summarizeInterferencePairs,
   type InterferenceSummary,
@@ -239,7 +240,7 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     defaultPoseGeometry.rawInterferencePairs,
     defaultPoseGeometry.wantInterference,
   );
-  const poseEnvelope = await runPoseEnvelopeStage(arm, input, mechanicalReview.includePoseEnvelope);
+  const poseEnvelope = await runPoseEnvelopeStage(arm, model, input, mechanicalReview.includePoseEnvelope);
   const physicalUseCases = await runPhysicalUseCaseStage(arm, input, poseEnvelope);
 
   const diagnostics = collectReviewDiagnostics(evaluation, mechanicalReview, physicalUseCases, poseEnvelope);
@@ -412,9 +413,13 @@ async function runMechanicalReviewStage(
 
 async function runPoseEnvelopeStage(
   arm: Assembly,
+  model: BuiltModel,
   input: Pick<ReviewCadInput, 'includeInterference' | 'epsilonMm3' | 'trackConnectors' | 'gripperAperture' | 'samplesPerMate' | 'combinatorial'>,
   includePoseEnvelope: boolean,
 ): Promise<PoseEnvelopeReviewResult | undefined> {
+  const dfm = findDfmSpec(model.records);
+  const candidateScene = model.rootShape ?? model.tailShape;
+  const loweredScene = isSceneBackend(candidateScene) ? candidateScene : undefined;
   return includePoseEnvelope
     ? reviewPoseEnvelope(arm, {
         includeInterference: input.includeInterference ?? true,
@@ -423,6 +428,14 @@ async function runPoseEnvelopeStage(
         gripperAperture: input.gripperAperture,
         samplesPerMate: input.samplesPerMate,
         combinatorial: input.combinatorial,
+        loweredScene,
+        ...(dfm?.minClearance !== undefined
+          ? {
+              minClearanceMm: dfm.minClearance,
+              includeArticulatedMateClearance: dfm.includeArticulatedMates,
+              ignoredPairs: new Set(dfm.ignore.map(([a, b]) => pairKey(a, b))),
+            }
+          : {}),
       })
     : undefined;
 }

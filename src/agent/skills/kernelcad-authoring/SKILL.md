@@ -282,6 +282,7 @@ animationView(spec: {
 dfmSpec(spec: {
   minWall?: number;       // mm — min printed wall thickness per non-excluded part
   minClearance?: number;  // mm — min distance between distinct parts
+  includeArticulatedMates?: boolean; // also measure non-fastened mates at rest; requires minClearance
   ignore?: [string, string][];  // part-name pairs exempt from clearance (design-intent contacts)
   exclude?: string[];     // non-printed parts (vendor STEP, electronics); trailing-'*' glob per entry
   channels?: Array<{
@@ -869,6 +870,7 @@ undeclared sealed voids + channel mouth counting).
 dfmSpec({
   minWall: 0.8,                       // thinnest wall the DESIGN intends to print
   minClearance: 0.45,                 // fit gap between distinct parts
+  includeArticulatedMates: true,      // moving links must also clear at the rest pose
   ignore: [['lid', 'hinge-pin']],     // design-intent contact: clearance-exempt pair
   exclude: ['servo-*', 'pcb'],        // not printed: skips minWall + voids
   channels: [
@@ -884,6 +886,12 @@ Semantics that matter when authoring the declaration:
   record is present, EVERY `evaluate` / `evaluate_script` run enforces the
   gates — there is no flag to skip them. A failing gate exits 1 with
   error-severity `dfm.*` diagnostics.
+- **Moving mates are opt-in.** By default, all declared mate pairs are exempt
+  from the clearance check so seated/fastened interfaces do not create false
+  failures. Set `includeArticulatedMates: true` on a mechanism to measure every
+  non-fastened mate pair at its declared rest pose. Fastened mates remain
+  exempt because their physical contact is checked by the mechanical
+  plausibility gate. This is a rest-pose screen, not a swept-motion proof.
 - **Malformed declarations THROW at capture** (`feature.invalid-args`
   KernelError) instead of stashing warnings — dfmSpec is an enforcement gate,
   and a silently-disabled gate is worse than a build failure. At least one of

@@ -12,8 +12,10 @@
 //     `detectInterferences` — this check tags such pairs 'interfering' and
 //     emits NO clearance violation for them, so one defect never produces
 //     two findings.
-//   - Mated pairs (joined by a declared mate) and `ignore`d pairs are
-//     design-intent contacts: recorded with their status, never measured.
+//   - Pairs the DFM orchestrator explicitly marks as mate-exempt and `ignore`d
+//     pairs are design-intent contacts: recorded with their status, never
+//     measured. The orchestrator keeps fastened mates exempt and may include
+//     articulated mates in measurement when the declaration requests it.
 //   - Pairs the kernel cannot measure are NOT silently passed: they are
 //     recorded as 'unknown' so downstream consumers filtering on status see
 //     them and can route the pair for manual attention.
@@ -58,6 +60,17 @@ export interface ClearancePairReport {
   /** false when the bbox lower bound already cleared the threshold (no
    *  BRepExtrema run), and on skipped / kernel-failed pairs. */
   exact: boolean;
+  /** Intersection volume when `status` is `'interfering'`, so callers can
+   *  preserve the shared interference evidence without repeating the BREP
+   *  boolean operation. */
+  interferenceVolumeMm3?: number;
+}
+
+export interface ClearanceCheckOptions {
+  /** Measure every non-exempt pair with BRepExtrema, including pairs whose
+   *  bbox lower bound already clears the threshold. Rest-pose DFM keeps the
+   *  default false; sampled pose envelopes require exact distances. */
+  forceExact?: boolean;
 }
 
 /** One scene part, cloned into the world frame for measurement. `shape` and
@@ -85,10 +98,10 @@ const OVERLAP_EPSILON_MM3 = 0.01;
  * 'interfering' or 'violated'; same for 'mated'.
  *
  * - `ignoredPairs` / `matedPairs` are `pairKey()`-encoded part-name pairs
- *   (from `dfmSpec.ignore` and `Assembly.__mates()` respectively); both are
- *   recorded with their status and skipped without measurement
+ *   (from `dfmSpec.ignore` and the DFM orchestrator's mate-exemption policy
+ *   respectively); both are recorded with their status and skipped without measurement
  *   (`distanceMm: NaN`, `exact: false`).
- * - Pairs whose per-axis bbox gap (Euclidean lower bound on the true
+ * - Unless `options.forceExact` is set, pairs whose per-axis bbox gap (Euclidean lower bound on the true
  *   distance) already meets the threshold are passed through as
  *   `{ status: 'ok', exact: false }` with the bound as `distanceMm` — no
  *   BRepExtrema run.
@@ -106,6 +119,7 @@ export function checkClearance(
   ignoredPairs: ReadonlySet<string>,
   matedPairs: ReadonlySet<string>,
   diagnostics: CompilerDiagnostic[] = [],
+  options: ClearanceCheckOptions = {},
 ): ClearancePairReport[] {
   // Clone + apply each part's worldTransform once, up front (the
   // detectInterferences / STEP-exporter pattern). Guarded per part: a
@@ -159,7 +173,7 @@ export function checkClearance(
       }
 
       const lowerBound = bboxGap(a.bbox, b.bbox);
-      if (lowerBound >= minClearance) {
+      if (!options.forceExact && lowerBound >= minClearance) {
         reports.push({ a: a.name, b: b.name, distanceMm: lowerBound, status: 'ok', exact: false });
         continue;
       }
@@ -206,7 +220,14 @@ export function checkClearance(
           continue;
         }
         if (volume > OVERLAP_EPSILON_MM3) {
-          reports.push({ a: a.name, b: b.name, distanceMm: 0, status: 'interfering', exact: true });
+          reports.push({
+            a: a.name,
+            b: b.name,
+            distanceMm: 0,
+            status: 'interfering',
+            exact: true,
+            interferenceVolumeMm3: volume,
+          });
         } else {
           reports.push({ a: a.name, b: b.name, distanceMm: 0, status: 'violated', exact: true });
         }

@@ -417,6 +417,9 @@ export interface KernelCadApi {
    * when violated.
    *
    * At least one of `minWall`, `minClearance`, or `channels` is required.
+   * `includeArticulatedMates: true` also measures non-fastened mate pairs at
+   * the declared rest pose; fastened mates stay exempt because their contact
+   * is checked separately.
    * Malformed declarations THROW `KernelError` (`feature.invalid-args`)
    * rather than stashing diagnostics — dfmSpec is an enforcement gate, and
    * a silently-disabled gate is worse than a build failure.

@@ -82,6 +82,8 @@ export type ValidatorDiagnosticCode = Extract<
   | 'assembly.pose.out-of-limits'
   | 'assembly.pose-envelope.solve-failed'
   | 'assembly.pose-envelope.interference'
+  | 'assembly.pose-envelope.clearance-violated'
+  | 'assembly.pose-envelope.clearance-unresolved'
   | 'assembly.pose-envelope.connector-unresolved'
   | 'assembly.mate.limit-missing'
   | 'assembly.mounting-hole.mismatch'

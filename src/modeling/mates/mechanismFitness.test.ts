@@ -15,6 +15,7 @@ function mkPoseEnvelope(overrides: Partial<PoseEnvelopeReviewResult> = {}): Pose
     samples: [{ name: 'current', poses: {}, reason: 'capture pose' }],
     diagnostics: [],
     interferencePairs: [],
+    clearancePairs: [],
     connectorPoses: [],
     connectorWorkspace: [],
     ...overrides,
@@ -113,6 +114,31 @@ describe('summarizeMechanismFitness', () => {
     expect(result.mechanismSummary.interferenceCount).toBe(1);
     expect(result.passedChecks).toEqual(['validator-no-errors']);
     expect(result.passedChecks).not.toContain('pose-envelope-no-interference');
+  });
+
+  it('blocks an unresolved requested clearance measurement', () => {
+    const result = summarizeMechanismFitness({
+      poseEnvelope: mkPoseEnvelope({
+        diagnostics: [
+          {
+            code: 'assembly.pose-envelope.clearance-unresolved',
+            severity: 'warning',
+            message: 'exact clearance was not measured',
+            hint: 'repair the lowering path',
+            sampleName: 'yaw:max',
+            partA: 'base',
+            partB: 'link',
+          },
+        ],
+      }),
+      trackConnectors: [],
+    });
+
+    expect(result.functional).toBe(false);
+    expect(result.blockingReasons.map((reason) => reason.code)).toContain(
+      'assembly.pose-envelope.clearance-unresolved',
+    );
+    expect(result.passedChecks).not.toContain('pose-envelope-solved');
   });
 
   it('adds a layout-conflict blocker when the same parts collide across most pose samples', () => {
