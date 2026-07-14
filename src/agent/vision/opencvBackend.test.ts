@@ -88,6 +88,27 @@ describe('extractSilhouettePolyline', () => {
       .toBuffer();
     await expect(extractSilhouettePolyline(white, 12)).rejects.toThrow(/no foreground contour/);
   });
+
+  it('fails closed when a compact dark interior is nested in a light foreground that reaches the frame', async () => {
+    const sharp = (await import('sharp')).default;
+    const paleBody = await sharp({
+      create: { width: 220, height: 220, channels: 3, background: { r: 232, g: 232, b: 232 } },
+    }).png().toBuffer();
+    const darkScreen = await sharp({
+      create: { width: 100, height: 100, channels: 3, background: { r: 24, g: 24, b: 24 } },
+    }).png().toBuffer();
+    const ambiguous = await sharp({
+      create: { width: 256, height: 256, channels: 3, background: { r: 255, g: 255, b: 255 } },
+    })
+      .composite([
+        { input: paleBody, left: 0, top: 18 },
+        { input: darkScreen, left: 68, top: 70 },
+      ])
+      .png()
+      .toBuffer();
+
+    await expect(extractSilhouettePolyline(ambiguous, 12)).rejects.toThrow(/ambiguous outer silhouette/);
+  });
 });
 
 describe('otsuThreshold', () => {
