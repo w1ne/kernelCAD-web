@@ -43,4 +43,23 @@ describe('photo-to-device skill operating contract', () => {
     expect(child).toMatch(/proto\.cat/i);
     expect(child).toMatch(/handoff.*(?:managed reference|provenance|known dimension)|(?:managed reference|provenance|known dimension).*handoff/i);
   });
+
+  it('keeps an active Studio upload out of generated source while a checked-in asset may use an overlay', () => {
+    const parent = readSkill(PARENT_SKILL);
+    const child = readSkill(PHOTO_TO_DEVICE_SKILL);
+
+    // Consumer-device photo work must load its asset policy before the generic
+    // blockout overlay advice is applied.
+    expect(parent.indexOf('photo-to-device/SKILL.md')).toBeLessThan(parent.indexOf('blockout-model/SKILL.md'));
+    expect(parent).toMatch(/photo-to-device[\s\S]*before[\s\S]*blockout/i);
+    expect(parent).toMatch(/photo-to-device[\s\S]*(?:hosted|Studio)[\s\S]*(?:local|source-owned)[\s\S]*(?:control|override)/i);
+
+    // A managed asset disappears after the hosted run, so its path cannot be
+    // copied into a portable .kcad.ts file or a referenceImage() overlay.
+    expect(child).toMatch(/active Studio[\s\S]*uploaded[\s\S]*never[\s\S]*emit[\s\S]*referenceImage[\s\S]*(?:temporary|managed)[\s\S]*\.kcad\.ts/i);
+    expect(child).toMatch(/source comment[\s\S]*SHA-256[\s\S]*validated photo brief/i);
+
+    // A durable project asset is different: the usual overlay remains useful.
+    expect(child).toMatch(/(?:checked-in|local source-owned)[\s\S]*referenceImage/i);
+  });
 });
