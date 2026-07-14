@@ -8,14 +8,15 @@
 //
 // Usage: portfolioAttempt --slug <slug> --model <model> [--notes <notes>]
 // The prompt and harness are read from eval/portfolio/_tasks/<slug>/.
-import { resolve, join } from 'node:path';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
 import { runTask } from '../eval/runner';
 import { appendPortfolioAttempt } from '../eval/portfolio/portfolioAttemptsLog';
 import type { PortfolioAttempt, PortfolioAttemptStatus } from '../eval/portfolio/portfolioAttemptsLog';
 import type { FailureModeTag } from '../eval/portfolio/failureMode';
 import type { DiagnosticCode } from '../src/shared/diagnostics/codes';
 import { makeAgent } from '../eval/run';
+import { loadCombinedSkillMd } from '../eval/skillContext';
 
 interface Args { slug: string; model: string; notes: string; }
 
@@ -55,13 +56,7 @@ async function main(): Promise<void> {
   const runDir = resolve('eval/runs', `portfolio-${a.slug}-${startedAt}`);
 
   const agent = makeAgent(a.model);
-  const skillsRoot = resolve('src/agent/skills');
-  const skillMd = readdirSync(skillsRoot, { withFileTypes: true })
-    .filter((e) => e.isDirectory() && existsSync(join(skillsRoot, e.name, 'SKILL.md')))
-    .map((e) => e.name)
-    .sort()
-    .map((name) => readFileSync(join(skillsRoot, name, 'SKILL.md'), 'utf8'))
-    .join('\n\n---\n\n');
+  const skillMd = loadCombinedSkillMd();
 
   // runTask writes score.json + transcript.md into runDir; we read score.json
   // back to classify the attempt rather than relying on the in-memory return

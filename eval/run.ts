@@ -6,22 +6,13 @@ import { join, resolve } from 'node:path';
 import { runTask, BEST_OF_N } from './runner';
 import { AnthropicAgentClient, MockAgentClient } from './agent';
 import { isKernelcadAvailable } from './oracle/kernelcad-client';
+import { loadCombinedSkillMd } from './skillContext';
 import type { AgentClient, AgentResponse, TaskResult } from './types';
 
 const MODEL = process.env.EVAL_MODEL ?? 'claude-sonnet-4-6';
 const TASKS_DIR = resolve('eval/tasks');
 const RUNS_DIR = resolve('eval/runs');
 const SKILLS_ROOT = resolve('src/agent/skills');
-
-function loadCombinedSkillMd(): string {
-  const dirs = readdirSync(SKILLS_ROOT, { withFileTypes: true })
-    .filter((e) => e.isDirectory() && existsSync(join(SKILLS_ROOT, e.name, 'SKILL.md')))
-    .map((e) => e.name)
-    .sort();
-  return dirs
-    .map((name) => readFileSync(join(SKILLS_ROOT, name, 'SKILL.md'), 'utf8'))
-    .join('\n\n---\n\n');
-}
 
 function timestamp(): string {
   // YYYY-MM-DDTHH-MM-SS — filesystem-safe ISO.
