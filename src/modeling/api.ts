@@ -57,6 +57,8 @@ import { makeJointNamespace } from './joints';
 import type {
   ClevisJoint,
   ClevisJointOptions,
+  ArticulatedDigitOptions,
+  ArticulatedDigitResult,
   SupportedServoRevoluteOptions,
   SupportedServoRevoluteResult,
 } from './joints';
@@ -415,6 +417,9 @@ export interface KernelCadApi {
    * when violated.
    *
    * At least one of `minWall`, `minClearance`, or `channels` is required.
+   * `includeArticulatedMates: true` also measures non-fastened mate pairs at
+   * the declared rest pose; fastened mates stay exempt because their contact
+   * is checked separately.
    * Malformed declarations THROW `KernelError` (`feature.invalid-args`)
    * rather than stashing diagnostics — dfmSpec is an enforcement gate, and
    * a silently-disabled gate is worse than a build failure.
@@ -461,10 +466,25 @@ export interface KernelCadApi {
    * supportMount frame type, `axis` as the support-side axis connector of
    * the named revolute mate, and body dimensions before mutating the
    * assembly.
+   *
+   * `joint.articulatedDigit(arm, { name, parentMount, frame, segments,
+   * joints, clearanceMm, ... })` builds a planar chain directly in the
+   * supplied assembly. Its full 3D base frame maps canonical +X forward,
+   * +Y lift, and +Z pin axes before registration; every generated revolute
+   * package is a physical `joint.clevis(...)` with a support intent and
+   * clearance-bounded structural link. Omitted clevis dimensions use
+   * `joint.clevis`'s standard `withDefaults()` resolution unchanged. Fit options are soft reference checks
+   * only and never reduce the physical package. The root mount is an exterior
+   * plane: the generated base extends along local +X to its distal root pivot,
+   * so callers place the frame on an exterior palm surface with palm material
+   * behind that plane. Arbitrary interior mount clearance remains a candidate
+   * assembly review responsibility. This helper does not certify payload
+   * capacity or actuation.
    */
   joint: {
     clevis(opts: ClevisJointOptions): ClevisJoint;
     supportedServoRevolute(arm: Assembly, opts: SupportedServoRevoluteOptions): SupportedServoRevoluteResult;
+    articulatedDigit(arm: Assembly, opts: ArticulatedDigitOptions): ArticulatedDigitResult;
   };
 }
 

@@ -127,6 +127,12 @@ describe('joint.clevis — G1 design locks', () => {
     expect(liftNarrow).toBeCloseTo(expectedNarrow, 6);
   });
 
+  it('3b. scans arbitrary finite angle intervals for the full |sin| reach', () => {
+    const style = withDefaults({ knuckleR: 10 });
+    expect(computePivotLift(style, [100, 280])).toBeCloseTo(style.knuckleR + 1, 6);
+    expect(computePivotLift(style, [-280, -100])).toBeCloseTo(style.knuckleR + 1, 6);
+  });
+
   it('4. fork plates are SYMMETRIC about the pivot along the pin axis (regression: 2026-05-30 Luxo Y-alignment misread)', () => {
     // The Luxo failure had the two fork plates at y=±(forkGapY/2 + plateT/2)
     // (correct), but author-time arithmetic let one drift. The primitive
@@ -147,13 +153,13 @@ describe('joint.clevis — G1 design locks', () => {
       style: { knuckleR: 10 },
     });
     // The plate offsets are computed by `buildFork` from `forkGapY/2 + plateT/2`.
-    // With knuckleR=10: tongueY = 6, forkGapY = 8, plateT = 4 → plateOffset = 6.
+    // With knuckleR=10: tongueY = 6, forkGapY = 12.5, plateT = 4 → plateOffset = 8.25.
     // We can't directly inspect the alongAxis transforms (they're hidden in
     // the record's transform stack), but we can confirm the canonical
     // formula stays internally consistent across two independent calls.
     const style = withDefaults({ knuckleR: 10 });
     const expectedPlateOffset = style.forkGapY / 2 + style.plateT / 2;
-    expect(expectedPlateOffset).toBeCloseTo(6, 6);
+    expect(expectedPlateOffset).toBeCloseTo(8.25, 6);
     // And the formula must produce a positive offset (sanity).
     expect(expectedPlateOffset).toBeGreaterThan(0);
     // Most importantly: the offset is computed ONCE from `(forkGapY, plateT)`
@@ -219,6 +225,10 @@ describe('joint.clevis — G1 design locks', () => {
       expect(style.knuckleR).toBe(knuckleR);
       // tongueY < forkGapY (tongue slips in)
       expect(style.tongueY).toBeLessThan(style.forkGapY);
+      // The 15% hinge-visibility floor requires each side's daylight to be
+      // at least 0.3R across a 2R fork plate. Defaults reserve 0.325R per
+      // side, leaving a small BREP-rounding margin above that floor.
+      expect(style.forkGapY - style.tongueY).toBeCloseTo(0.65 * knuckleR, 6);
       // pinR + clearance < knuckleR (drill leaves wall thickness)
       expect(style.pinR + style.holeClearance).toBeLessThan(style.knuckleR);
       // pinCapR > pinR (the cap actually caps)
@@ -226,6 +236,9 @@ describe('joint.clevis — G1 design locks', () => {
       // pinCapThickness >= 1mm floor (hard minimum so OCCT mesher has enough
       // material at the cap-shaft transition).
       expect(style.pinCapThickness).toBeGreaterThanOrEqual(1.0);
+      // After the fixed 0.5 mm union overlap, the cap still projects by at
+      // least one shaft radius beyond the fork outer face.
+      expect(style.pinCapThickness - 0.5).toBeGreaterThanOrEqual(style.pinR);
     }
     // Out-of-range knuckleR is clamped, not rejected.
     const tooSmall = withDefaults({ knuckleR: 0.1 });
@@ -430,6 +443,27 @@ describe('joint.clevis — G1 design locks', () => {
 
   it('rejects style with pinR + clearance >= knuckleR (drill would consume the knuckle)', () => {
     expect(() => withDefaults({ knuckleR: 5, pinR: 5 })).toThrow(/knuckleR/);
+  });
+
+  it('rejects a cap thinner than the fixed shaft-overlap inset', () => {
+    const style = {
+      knuckleR: 6,
+      pinR: 1,
+      pinCapR: 2,
+      holeClearance: 0.2,
+      pinCapThickness: 0.49,
+    };
+    expect(() => withDefaults(style)).toThrow(/pinCapThickness.*0\.5/i);
+
+    const session = new CaptureSession();
+    const kc = createApi({ session });
+    expect(() => kc.joint.clevis({
+      parentBody: kc.box(30, 30, 20, true),
+      childBody: kc.box(40, 12, 12, true).translate(20, 0, 0),
+      axis: 'Y',
+      pivotParent: [0, 0, 10],
+      style,
+    })).toThrow(/pinCapThickness.*0\.5/i);
   });
 
   it('accepts limitsDeg defaulting to [-90, 90] when omitted', () => {

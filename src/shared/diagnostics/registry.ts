@@ -922,6 +922,25 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'assembly',
     description: 'Two parts interfere at one or more sampled poses inside the declared envelope.',
   },
+  'assembly.pose-envelope.clearance-violated': {
+    hintTemplate:
+      'A sampled pose falls below the declared inter-part clearance. Increase the geometric gap, reduce mate travel, or declare an intentional contact in dfmSpec.ignore.',
+    nextAction: { kind: 'fix-arg', field: 'minClearance' },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'Two non-exempt parts are closer than the declared DFM clearance at a sampled pose.',
+  },
+  'assembly.pose-envelope.clearance-unresolved': {
+    hintTemplate:
+      'Exact BREP clearance could not be measured at a sampled pose. Repair degenerate geometry or the lowering path and re-run; do not treat an unresolved pair as passing.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'repair the geometry or lowering path until exact BREP clearance can be measured',
+    },
+    defaultSeverity: 'warn',
+    group: 'assembly',
+    description: 'Exact BREP clearance for a requested pose-envelope pair could not be resolved.',
+  },
   'assembly.pose-envelope.connector-unresolved': {
     hintTemplate:
       "A tracked connector ref could not be resolved at a sampled pose — usually a topology-bound origin the envelope sampler does not yet support. Use { kind: 'vec3', value: [x, y, z] } for the connector origin.",

@@ -26,6 +26,9 @@ export interface DfmSpec {
   minWall?: number;
   /** mm — minimum distance between distinct parts. Omit to skip. */
   minClearance?: number;
+  /** Also apply minClearance to mates with remaining degrees of freedom.
+   *  Fastened mates remain exempt because their contact is checked separately. */
+  includeArticulatedMates?: boolean;
   /** Part-name pairs exempt from the clearance check (design-intent contacts). */
   ignore?: ReadonlyArray<readonly [string, string]>;
   /** Non-printed parts (vendor STEP imports, electronics). Skip minWall + void
@@ -45,6 +48,7 @@ export interface DfmChannelMetadata {
 export interface DfmSpecMetadata {
   minWall?: number;
   minClearance?: number;
+  includeArticulatedMates: boolean;
   ignore: ReadonlyArray<readonly [string, string]>;
   exclude: readonly string[];
   channels: readonly DfmChannelMetadata[];

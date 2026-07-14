@@ -487,4 +487,32 @@ describe('review_cad MCP tool', () => {
       expect(r.fitness.mechanismSummary.trackedConnectorCount).toBe(0);
     }
   });
+
+  it('forwards declared DFM clearance policy across pose-envelope samples', async () => {
+    const r = await reviewCadTool({
+      includeInterference: false,
+      code: `
+        dfmSpec({ minClearance: 1, includeArticulatedMates: true });
+        const arm = assembly('review-clearance-policy');
+        arm
+          .part('base', box(10, 10, 10, true).translate(0, 20, 0))
+          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        arm
+          .part('link', box(10, 10, 10, true).translate(9.6, 0, 0))
+          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-90, 90] });
+        return arm.model();
+      `,
+    });
+
+    expect(r.poseEnvelope?.clearancePairs.map((pair) => pair.sampleName)).toEqual([
+      'current', 'yaw:min', 'yaw:max',
+    ]);
+    expect(r.poseEnvelope?.clearancePairs).toContainEqual(expect.objectContaining({
+      sampleName: 'yaw:max', a: 'base', b: 'link', status: 'violated',
+    }));
+    expect(r.diagnostics).toContainEqual(expect.objectContaining({
+      code: 'assembly.pose-envelope.clearance-violated', sampleName: 'yaw:max',
+    }));
+  });
 });

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { evaluateAndBuildScript } from '../../agent/cli/commands/evaluate';
+import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { CaptureSession } from '../capture/captureSession';
 import { createApi } from '../api';
 import {
@@ -9,6 +11,18 @@ import {
   reviewPoseEnvelope,
   validateMatePoseLimits,
 } from './poseEnvelope';
+
+const clearanceKernel = vi.hoisted(() => ({ failDistance: false }));
+vi.mock('../runtime/brepDistance', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../runtime/brepDistance')>();
+  return {
+    ...actual,
+    brepExtremaDistance: (...args: Parameters<typeof actual.brepExtremaDistance>) => {
+      if (clearanceKernel.failDistance) throw new Error('injected BRepExtrema failure');
+      return actual.brepExtremaDistance(...args);
+    },
+  };
+});
 
 function makeArm() {
   const session = new CaptureSession();
@@ -144,6 +158,201 @@ describe('pose-envelope review helpers', () => {
     expect(result.connectorWorkspace[0].ref).toBe('link.tool');
     expect(result.connectorWorkspace[0].travelMm).toBeGreaterThan(20);
     expect(result.connectorPoses.map((p) => p.sampleName)).toEqual(['current', 'yaw:min', 'yaw:max']);
+  });
+
+  it('measures articulated mate pairs only when clearance policy enables them', async () => {
+    const built = await evaluateAndBuildScript({
+      code: `
+        const rig = assembly('articulated-clearance');
+        rig
+          .part('base', box(10, 10, 10, true))
+          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [5, 0, 0] }, axis: [0, 0, 1] });
+        rig
+          .part('link', box(10, 10, 10, true))
+          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [-5.4, 0, 0] }, axis: [0, 0, 1] });
+        rig.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-90, 90] });
+        return rig.model();
+      `,
+    });
+    const arm = built.model?.session.assemblies.get('articulated-clearance');
+    const scene = built.model?.rootShape ?? built.model?.tailShape;
+    if (arm === undefined || !isSceneBackend(scene)) throw new Error('expected articulated clearance scene');
+
+    const exempt = await reviewPoseEnvelope(arm, {
+      includeInterference: false,
+      minClearanceMm: 1,
+      loweredScene: scene,
+    });
+    expect(exempt.clearancePairs).toHaveLength(3);
+    expect(exempt.clearancePairs.every((pair) => pair.status === 'mated')).toBe(true);
+
+    const measured = await reviewPoseEnvelope(arm, {
+      includeInterference: false,
+      minClearanceMm: 1,
+      includeArticulatedMateClearance: true,
+      loweredScene: scene,
+    });
+    expect(measured.clearancePairs).toContainEqual(expect.objectContaining({
+      sampleName: 'current', a: 'base', b: 'link', status: 'violated', exact: true,
+    }));
+    expect(measured.diagnostics).toContainEqual(expect.objectContaining({
+      code: 'assembly.pose-envelope.clearance-violated', sampleName: 'current', partA: 'base', partB: 'link',
+    }));
+  });
+
+  it('keeps fastened mate pairs exempt from pose-envelope clearance', async () => {
+    const built = await evaluateAndBuildScript({
+      code: `
+        const rig = assembly('fastened-clearance');
+        rig
+          .part('base', box(10, 10, 10, true))
+          .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [5, 0, 0] } });
+        rig
+          .part('link', box(10, 10, 10, true))
+          .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [-5.4, 0, 0] } });
+        rig.mate('fix', 'base.mount', 'link.mount', 'fastened');
+        return rig.model();
+      `,
+    });
+    const arm = built.model?.session.assemblies.get('fastened-clearance');
+    const scene = built.model?.rootShape ?? built.model?.tailShape;
+    if (arm === undefined || !isSceneBackend(scene)) throw new Error('expected fastened clearance scene');
+
+    const result = await reviewPoseEnvelope(arm, {
+      includeInterference: false,
+      minClearanceMm: 1,
+      includeArticulatedMateClearance: true,
+      loweredScene: scene,
+    });
+
+    expect(result.clearancePairs).toEqual([
+      expect.objectContaining({ sampleName: 'current', a: 'base', b: 'link', status: 'mated', exact: false }),
+    ]);
+    expect(result.diagnostics.map((diagnostic) => diagnostic.code)).not.toContain(
+      'assembly.pose-envelope.clearance-violated',
+    );
+  });
+
+  it('reports kernel distance failures as unresolved clearance warnings', async () => {
+    const built = await evaluateAndBuildScript({
+      code: `
+        const rig = assembly('unresolved-clearance');
+        rig.part('left', box(10, 10, 10, true), { at: [0, 0, 0] });
+        rig.part('right', box(10, 10, 10, true), { at: [10.4, 0, 0] });
+        return rig.model();
+      `,
+    });
+    const arm = built.model?.session.assemblies.get('unresolved-clearance');
+    const scene = built.model?.rootShape ?? built.model?.tailShape;
+    if (arm === undefined || !isSceneBackend(scene)) throw new Error('expected unresolved clearance scene');
+
+    clearanceKernel.failDistance = true;
+    try {
+      const result = await reviewPoseEnvelope(arm, {
+        includeInterference: false,
+        minClearanceMm: 1,
+        loweredScene: scene,
+      });
+      expect(result.clearancePairs).toEqual([
+        expect.objectContaining({ sampleName: 'current', a: 'left', b: 'right', status: 'unknown', exact: false }),
+      ]);
+      expect(result.diagnostics).toContainEqual(expect.objectContaining({
+        code: 'assembly.pose-envelope.clearance-unresolved', severity: 'warning', sampleName: 'current',
+      }));
+      expect(result.diagnostics.map((diagnostic) => diagnostic.code)).not.toContain(
+        'assembly.pose-envelope.clearance-violated',
+      );
+    } finally {
+      clearanceKernel.failDistance = false;
+    }
+  });
+
+  it('measures non-exempt clearance pairs exactly at every sampled pose', async () => {
+    const built = await evaluateAndBuildScript({
+      code: `
+        const rig = assembly('exact-clearance-sweep');
+        rig
+          .part('base', box(10, 10, 10, true))
+          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        rig
+          .part('link', box(10, 10, 10, true).translate(30, 0, 0))
+          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        rig.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-90, 90] });
+        return rig.model();
+      `,
+    });
+    const arm = built.model?.session.assemblies.get('exact-clearance-sweep');
+    const scene = built.model?.rootShape ?? built.model?.tailShape;
+    if (arm === undefined || !isSceneBackend(scene)) throw new Error('expected exact clearance scene');
+
+    const result = await reviewPoseEnvelope(arm, {
+      includeInterference: false,
+      minClearanceMm: 1,
+      includeArticulatedMateClearance: true,
+      loweredScene: scene,
+    });
+
+    expect(result.clearancePairs.map((pair) => pair.sampleName)).toEqual(['current', 'yaw:min', 'yaw:max']);
+    expect(result.clearancePairs.every((pair) => pair.status === 'ok' && pair.exact)).toBe(true);
+  });
+
+  it('emits one interference diagnostic for clearance-detected overlap when interference is disabled', async () => {
+    const built = await evaluateAndBuildScript({
+      code: `
+        const rig = assembly('clearance-overlap');
+        rig.part('left', box(10, 10, 10, true), { at: [0, 0, 0] });
+        rig.part('right', box(10, 10, 10, true), { at: [9, 0, 0] });
+        return rig.model();
+      `,
+    });
+    const arm = built.model?.session.assemblies.get('clearance-overlap');
+    const scene = built.model?.rootShape ?? built.model?.tailShape;
+    if (arm === undefined || !isSceneBackend(scene)) throw new Error('expected clearance overlap scene');
+
+    const clearanceOnly = await reviewPoseEnvelope(arm, {
+      includeInterference: false,
+      minClearanceMm: 1,
+      loweredScene: scene,
+    });
+    expect(clearanceOnly.clearancePairs).toContainEqual(expect.objectContaining({
+      a: 'left', b: 'right', status: 'interfering',
+    }));
+    expect(clearanceOnly.diagnostics.filter((diagnostic) =>
+      diagnostic.code === 'assembly.pose-envelope.interference',
+    )).toHaveLength(1);
+    expect(clearanceOnly.diagnostics.map((diagnostic) => diagnostic.code)).not.toContain(
+      'assembly.pose-envelope.clearance-violated',
+    );
+
+    const withInterference = await reviewPoseEnvelope(arm, {
+      includeInterference: true,
+      minClearanceMm: 1,
+      loweredScene: scene,
+    });
+    expect(withInterference.interferencePairs).toHaveLength(1);
+    expect(withInterference.diagnostics.filter((diagnostic) =>
+      diagnostic.code === 'assembly.pose-envelope.interference',
+    )).toHaveLength(1);
+  });
+
+  it('does not silently pass requested clearance without a cached lowered scene', async () => {
+    const { arm, kcad } = makeArm();
+    arm.part('left', kcad.box(10, 10, 10), { at: [0, 0, 0] });
+    arm.part('right', kcad.box(10, 10, 10), { at: [30, 0, 0] });
+
+    const result = await reviewPoseEnvelope(arm, {
+      includeInterference: false,
+      minClearanceMm: 1,
+    });
+
+    expect(result.clearancePairs).toHaveLength(1);
+    const [pair] = result.clearancePairs;
+    expect(pair.exact || pair.status === 'unknown').toBe(true);
+    if (pair.status === 'unknown') {
+      expect(result.diagnostics).toContainEqual(expect.objectContaining({
+        code: 'assembly.pose-envelope.clearance-unresolved', sampleName: 'current',
+      }));
+    }
   });
 
   it('reviewPoseEnvelope honors samplesPerMate and produces interior pose samples', async () => {

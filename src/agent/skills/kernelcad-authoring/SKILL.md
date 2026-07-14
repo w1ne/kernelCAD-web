@@ -65,6 +65,49 @@ two-feature placement math, subtract-chain reliability, JSON-`ok`-is-not-visual-
 
 ## Assembly and mechanism loop
 
+### Articulated-digit workflow (non-bypassable)
+
+For an articulated digit, use the structural joint helper and complete every gate below:
+
+<!-- ARTICULATED_DIGIT_EXAMPLE:START -->
+```typescript
+const arm = assembly('index-digit');
+const minClearance = 0.1;
+const parentMount = 'palm.index-mount';
+const frame = { origin: [0, 0, 10], pinAxis: [0, 0, 1], forward: [1, 0, 0] };
+const segments = [
+  { name: 'proximal', lengthMm: 54, widthMm: 14, depthMm: 14, terminal: true },
+];
+const joints = [
+  { name: 'mcp', limitsDeg: [0, 27], style: { knuckleR: 5.4, forkGapY: 10, pinCapThickness: 3 } },
+];
+
+arm.part('palm', box(20, 50, 20, true).translate(-10, 0, 0))
+  .connector('index-mount', {
+    type: 'frame',
+    origin: { kind: 'vec3', value: [0, 0, 10] },
+  });
+
+joint.articulatedDigit(arm, {
+  name: 'index',
+  parentMount,
+  frame,
+  clearanceMm: minClearance + 0.1,
+  segments,
+  joints,
+});
+
+dfmSpec({ minClearance, includeArticulatedMates: true });
+
+return arm.solvedModel({}, { validate: 'error' });
+```
+<!-- ARTICULATED_DIGIT_EXAMPLE:END -->
+
+- Run the full `review_cad` review, including pose-envelope clearance and interference checks.
+- Confirm visual fit separately: every digit link and moving mate must remain outside package keepouts across the reviewed pose envelope.
+- Dynamics, load, and actuation claims are unverified without explicit evidence; articulated-digit geometry and clearance review do not certify payloads or actuation.
+- These steps are mandatory. Do not bypass the helper, DFM declaration, pose-envelope review, keepout fit check, or evidence requirement by substituting raw offsets or a visual-only pass.
+
 ### Think in parts
 
 - Every physically distinct component is a named `assembly().part(name, shape)` — one body per part unless the component is genuinely monolithic.
@@ -282,6 +325,7 @@ animationView(spec: {
 dfmSpec(spec: {
   minWall?: number;       // mm — min printed wall thickness per non-excluded part
   minClearance?: number;  // mm — min distance between distinct parts
+  includeArticulatedMates?: boolean; // also measure non-fastened mates at rest; requires minClearance
   ignore?: [string, string][];  // part-name pairs exempt from clearance (design-intent contacts)
   exclude?: string[];     // non-printed parts (vendor STEP, electronics); trailing-'*' glob per entry
   channels?: Array<{
@@ -869,6 +913,7 @@ undeclared sealed voids + channel mouth counting).
 dfmSpec({
   minWall: 0.8,                       // thinnest wall the DESIGN intends to print
   minClearance: 0.45,                 // fit gap between distinct parts
+  includeArticulatedMates: true,      // moving links must also clear at the rest pose
   ignore: [['lid', 'hinge-pin']],     // design-intent contact: clearance-exempt pair
   exclude: ['servo-*', 'pcb'],        // not printed: skips minWall + voids
   channels: [
@@ -884,6 +929,12 @@ Semantics that matter when authoring the declaration:
   record is present, EVERY `evaluate` / `evaluate_script` run enforces the
   gates — there is no flag to skip them. A failing gate exits 1 with
   error-severity `dfm.*` diagnostics.
+- **Moving mates are opt-in.** By default, all declared mate pairs are exempt
+  from the clearance check so seated/fastened interfaces do not create false
+  failures. Set `includeArticulatedMates: true` on a mechanism to measure every
+  non-fastened mate pair at its declared rest pose. Fastened mates remain
+  exempt because their physical contact is checked by the mechanical
+  plausibility gate. This is a rest-pose screen, not a swept-motion proof.
 - **Malformed declarations THROW at capture** (`feature.invalid-args`
   KernelError) instead of stashing warnings — dfmSpec is an enforcement gate,
   and a silently-disabled gate is worse than a build failure. At least one of

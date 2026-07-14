@@ -178,9 +178,9 @@ describe('runDfmChecksOnModel', () => {
     expect(d[0].message).toMatch(/0\.45/);
   }, 60000);
 
-  it("derives mated pairs from __mates(): a fastened pair 0.30 mm apart is 'mated', not violated", async () => {
+  it("keeps fastened pairs exempt when articulated mate clearance is enabled", async () => {
     const { report } = await run(`
-      dfmSpec({ minClearance: 0.45 });
+      dfmSpec({ minClearance: 0.45, includeArticulatedMates: true });
       const asm = assembly('dfm-mated');
       const parent = asm.part('parent', box(10, 10, 10));
       parent.connector('out', { type: 'frame', origin: { kind: 'vec3', value: [10.3, 0, 0] } });
@@ -193,6 +193,61 @@ describe('runDfmChecksOnModel', () => {
     expect(pairKey(report.clearance[0].a, report.clearance[0].b)).toBe(pairKey('parent', 'child'));
     expect(report.clearance[0].status).toBe('mated');
     expect(report.diagnostics.filter(d => d.code === 'dfm.clearance.violated')).toEqual([]);
+  }, 60000);
+
+  it('measures an articulated mate when includeArticulatedMates is true', async () => {
+    const { report } = await run(`
+      dfmSpec({ minClearance: 0.45, includeArticulatedMates: true });
+      const asm = assembly('dfm-articulated-mate');
+      const parent = asm.part('parent', box(10, 10, 10));
+      parent.connector('pivot', {
+        type: 'axis',
+        origin: { kind: 'vec3', value: [10.3, 0, 0] },
+        axis: [0, 0, 1],
+      });
+      const child = asm.part('child', box(10, 10, 10));
+      child.connector('pivot', {
+        type: 'axis',
+        origin: { kind: 'vec3', value: [0, 0, 0] },
+        axis: [0, 0, 1],
+      });
+      asm.mate('hinge', 'parent.pivot', 'child.pivot', 'revolute', { limitsDeg: [0, 20] });
+      return asm.solvedModel({}, { validate: 'off' });
+    `);
+    const pair = report.clearance.find((entry) =>
+      pairKey(entry.a, entry.b) === pairKey('parent', 'child'),
+    );
+    expect(pair).toMatchObject({ status: 'violated', exact: true });
+    expect(pair?.distanceMm).toBeCloseTo(0.3, 2);
+    expect(report.diagnostics).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'dfm.clearance.violated', severity: 'error' }),
+    ]));
+  }, 60000);
+
+  it('keeps the bbox fast path for a comfortably-clear articulated mate', async () => {
+    const { report } = await run(`
+      dfmSpec({ minClearance: 0.45, includeArticulatedMates: true });
+      const asm = assembly('dfm-clear-articulated-mate');
+      const parent = asm.part('parent', box(10, 10, 10));
+      parent.connector('pivot', {
+        type: 'axis',
+        origin: { kind: 'vec3', value: [10.5, 0, 0] },
+        axis: [0, 0, 1],
+      });
+      const child = asm.part('child', box(10, 10, 10));
+      child.connector('pivot', {
+        type: 'axis',
+        origin: { kind: 'vec3', value: [0, 0, 0] },
+        axis: [0, 0, 1],
+      });
+      asm.mate('hinge', 'parent.pivot', 'child.pivot', 'revolute', { limitsDeg: [0, 20] });
+      return asm.solvedModel({}, { validate: 'off' });
+    `);
+    const pair = report.clearance.find((entry) =>
+      pairKey(entry.a, entry.b) === pairKey('parent', 'child'),
+    );
+    expect(pair).toMatchObject({ status: 'ok', exact: false });
+    expect(pair?.distanceMm).toBeCloseTo(0.5, 2);
   }, 60000);
 
   it('exclude glob skips min-wall + void for the part but keeps it in clearance', async () => {

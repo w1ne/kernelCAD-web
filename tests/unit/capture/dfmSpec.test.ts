@@ -41,6 +41,7 @@ describe('dfmSpec capture', () => {
     expect(meta.virtual).toBe(true);
     expect(meta.minWall).toBe(1.5);
     expect(meta.minClearance).toBe(0.45);
+    expect(meta.includeArticulatedMates).toBe(false);
     expect(meta.ignore).toEqual([]);
     expect(meta.exclude).toEqual([]);
     expect(meta.channels).toEqual([]);
@@ -68,6 +69,16 @@ describe('dfmSpec capture', () => {
     expect(meta.exclude).toEqual(['servo-*']);
   });
 
+  it('records an explicit request to measure articulated mate clearance', () => {
+    const { session, api } = makeApi();
+    api.dfmSpec({
+      minClearance: 0.8,
+      includeArticulatedMates: true,
+    });
+    const meta = getMeta(session);
+    expect(meta.includeArticulatedMates).toBe(true);
+  });
+
   it('throws KernelError naming minWall for a negative minWall', () => {
     const { api } = makeApi();
     expect(() => api.dfmSpec({ minWall: -1 })).toThrow(KernelError);
@@ -75,6 +86,18 @@ describe('dfmSpec capture', () => {
     catch (e) {
       expect((e as KernelError).code).toBe('feature.invalid-args');
       expect((e as KernelError).message).toMatch(/minWall/);
+    }
+  });
+
+  it('rejects articulated mate clearance without a clearance threshold', () => {
+    const { api } = makeApi();
+    const spec = { minWall: 1, includeArticulatedMates: true };
+    expect(() => api.dfmSpec(spec)).toThrow(KernelError);
+    try { api.dfmSpec(spec); }
+    catch (e) {
+      expect((e as KernelError).code).toBe('feature.invalid-args');
+      expect((e as KernelError).message).toMatch(/includeArticulatedMates/);
+      expect((e as KernelError).message).toMatch(/minClearance/);
     }
   });
 

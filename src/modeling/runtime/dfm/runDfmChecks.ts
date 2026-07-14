@@ -7,8 +7,10 @@
 // the three enforcement primitives:
 //
 //   - `checkClearance` (Task 4): every unordered part pair of the resolved
-//     assembly scene vs `minClearance`, with `ignore`d pairs and mated
-//     pairs (derived from `Assembly.__mates()`) exempt. Runs ONLY for
+//     assembly scene vs `minClearance`, with `ignore`d pairs and fastened
+//     mate pairs (derived from `Assembly.__mates()`) exempt. Articulated
+//     mates are also exempt unless the declaration opts into measuring them.
+//     Runs ONLY for
 //     assembly models — a single shape has no part pairs.
 //   - `checkMinWall` (Task 5): per printed part, when `minWall` is set.
 //   - `analyzeVoids` (Task 6): per printed part, ALWAYS — undeclared
@@ -132,7 +134,7 @@ export async function runDfmChecksOnModel(model: BuiltModel): Promise<DfmCheckRe
   if (scene !== undefined && spec.minClearance !== undefined) {
     const t0 = performance.now();
     const ignored = new Set(spec.ignore.map(([a, b]) => pairKey(a, b)));
-    const mated = matedPairsFor(model, scene);
+    const mated = clearanceExemptMatedPairsFor(model, scene, spec.includeArticulatedMates);
     // checkClearance appends its own warn diagnostics for 'unknown' pairs.
     clearance = checkClearance(scene, spec.minClearance, ignored, mated, diagnostics);
     timings.clearance = performance.now() - t0;
@@ -323,13 +325,20 @@ function resolveParts(model: BuiltModel): { scene?: SceneBackend; parts: Resolve
   return { parts: [] };
 }
 
-/** pairKey()-encoded part pairs joined by a declared mate on the assembly
- *  that produced `scene` (matched by name via `session.assemblies`). */
-function matedPairsFor(model: BuiltModel, scene: SceneBackend): Set<string> {
+/** pairKey()-encoded part pairs joined by a mate that is intentionally exempt
+ *  from the rest-pose clearance gate. Fastened mates are always exempt: their
+ *  contact is checked by mechanical plausibility. A declaration can request
+ *  that every non-fastened mate be measured instead. */
+function clearanceExemptMatedPairsFor(
+  model: BuiltModel,
+  scene: SceneBackend,
+  includeArticulatedMates: boolean,
+): Set<string> {
   const pairs = new Set<string>();
   const assemblies = Array.from(model.session.assemblies.values()) as Assembly[];
   const arm = assemblies.find(a => a.name === scene.assemblyName);
   for (const m of arm?.__mates() ?? []) {
+    if (includeArticulatedMates && m.type !== 'fastened') continue;
     const a = parseConnectorRef(m.a).partName;
     const b = parseConnectorRef(m.b).partName;
     if (a !== b) pairs.add(pairKey(a, b));

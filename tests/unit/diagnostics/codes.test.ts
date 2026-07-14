@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 237 codes', () => {
+  it('emits exactly 242 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -38,8 +38,11 @@ describe('diagnostic catalogue invariants', () => {
     // + 1 kinematic.mounting-hole.no-coverage (#541 — info diagnostic when
     //   checkMountingHoleConsistency examined zero fastened mates, so the
     //   green result verifies nothing). = 240.
-    expect(DIAGNOSTIC_CODES).toHaveLength(240);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(240);
+    // + 2 articulated pose-envelope DFM clearance diagnostics:
+    //   assembly.pose-envelope.clearance-violated,
+    //   assembly.pose-envelope.clearance-unresolved. = 242.
+    expect(DIAGNOSTIC_CODES).toHaveLength(242);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(242);
   });
 
   it('every code has a non-empty hint template', () => {

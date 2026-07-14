@@ -157,10 +157,13 @@ export function summarizeMechanismFitness(
     passedChecks.push(PASSED_CHECKS.physicalUseCaseDeclared);
   }
 
-  const hasPoseEnvelopeErrors = poseEnvelope?.diagnostics.some((diagnostic) => diagnostic.severity === 'error') ?? false;
+  const isBlockingPoseDiagnostic = (diagnostic: PoseEnvelopeReviewResult['diagnostics'][number]): boolean =>
+    diagnostic.severity === 'error'
+    || diagnostic.code === 'assembly.pose-envelope.clearance-unresolved';
+  const hasBlockingPoseDiagnostics = poseEnvelope?.diagnostics.some(isBlockingPoseDiagnostic) ?? false;
   if (poseEnvelope) {
     for (const diagnostic of poseEnvelope.diagnostics) {
-      if (diagnostic.severity !== 'error') continue;
+      if (!isBlockingPoseDiagnostic(diagnostic)) continue;
       addBlockingReason(
         diagnostic.code,
         diagnostic.message,
@@ -179,7 +182,7 @@ export function summarizeMechanismFitness(
     }
   }
 
-  if (poseEnvelope && !hasPoseEnvelopeErrors) {
+  if (poseEnvelope && !hasBlockingPoseDiagnostics) {
     passedChecks.push(PASSED_CHECKS.poseEnvelopeSolved);
   }
 

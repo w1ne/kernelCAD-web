@@ -1,7 +1,27 @@
 // tests/integration/mcp/listApi.test.ts
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { evaluateAndBuildScript } from '../../../src/agent/cli/commands/evaluate';
 import { listApiTool, GLOBALS } from '../../../src/agent/mcp/tools/listApi';
 import { SUPPORTED_CONSTRAINT_TYPES } from '../../../src/agent/mcp/tools/constraints';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const AUTHORING_SKILL = readFileSync(resolve(__dirname, '../../../src/agent/skills/kernelcad-authoring/SKILL.md'), 'utf8');
+const ARTICULATED_DIGIT_EXAMPLE_START = '<!-- ARTICULATED_DIGIT_EXAMPLE:START -->';
+const ARTICULATED_DIGIT_EXAMPLE_END = '<!-- ARTICULATED_DIGIT_EXAMPLE:END -->';
+
+function extractArticulatedDigitExample(skill: string): string | undefined {
+  const start = skill.indexOf(ARTICULATED_DIGIT_EXAMPLE_START);
+  const end = skill.indexOf(ARTICULATED_DIGIT_EXAMPLE_END, start + ARTICULATED_DIGIT_EXAMPLE_START.length);
+  if (start < 0 || end < 0) return undefined;
+
+  const markedBlock = skill.slice(start + ARTICULATED_DIGIT_EXAMPLE_START.length, end).trim();
+  return markedBlock.match(/^```typescript\r?\n([\s\S]*?)\r?\n```$/)?.[1];
+}
+
+const ARTICULATED_DIGIT_EXAMPLE = extractArticulatedDigitExample(AUTHORING_SKILL);
 
 describe('list_api MCP tool', () => {
   it('returns globals including box, path, selectEdges, helix', async () => {
@@ -86,5 +106,29 @@ describe('list_api MCP tool', () => {
     expect(r.constraints).toBeDefined();
     expect(r.constraints!.tools).toEqual(['list_constraints', 'add_constraint', 'solve_sketch']);
     expect(r.constraints!.supportedTypes).toEqual(SUPPORTED_CONSTRAINT_TYPES);
+  });
+
+  it('advertises the articulated rest-pose clearance option to agents', () => {
+    const dfm = GLOBALS.find((entry) => entry.name === 'dfmSpec');
+
+    expect(dfm?.signature).toContain('includeArticulatedMates?: boolean');
+    expect(dfm?.description).toContain('non-fastened mate pairs');
+    expect(dfm?.description).toContain('rest pose');
+  });
+
+  it('advertises the constraint-first articulated digit generator to agents', async () => {
+    const jointEntry = GLOBALS.find(g => g.name === 'joint');
+    expect(jointEntry?.signature).toContain('articulatedDigit(arm: Assembly, opts: ArticulatedDigitOptions): ArticulatedDigitResult');
+    expect(jointEntry?.description).toContain('clearance-bounded structural links');
+    expect(jointEntry?.description).toContain('does not certify payloads or actuation');
+    expect(AUTHORING_SKILL).toContain("name: 'index',");
+    expect(AUTHORING_SKILL).toContain('dfmSpec({ minClearance, includeArticulatedMates: true });');
+    expect(AUTHORING_SKILL).toContain('full `review_cad` review, including pose-envelope clearance');
+    expect(AUTHORING_SKILL).toContain('remain outside package keepouts');
+    expect(AUTHORING_SKILL).toContain('Dynamics, load, and actuation claims are unverified without explicit evidence');
+
+    expect(ARTICULATED_DIGIT_EXAMPLE).toBeDefined();
+    const evaluated = await evaluateAndBuildScript({ code: ARTICULATED_DIGIT_EXAMPLE! });
+    expect(evaluated.evaluation.exitCode, JSON.stringify(evaluated.evaluation.diagnostics, null, 2)).toBe(0);
   });
 });

@@ -67,6 +67,12 @@ export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
   if (args.minClearance !== undefined && !(Number.isFinite(args.minClearance) && args.minClearance > 0)) {
     bad('minClearance', `must be a positive finite number; got ${args.minClearance}`);
   }
+  if (args.includeArticulatedMates !== undefined && typeof args.includeArticulatedMates !== 'boolean') {
+    bad('includeArticulatedMates', `must be a boolean; got ${JSON.stringify(args.includeArticulatedMates)}`);
+  }
+  if (args.includeArticulatedMates === true && args.minClearance === undefined) {
+    bad('includeArticulatedMates', 'requires minClearance because it only changes which pairs that distance gate measures');
+  }
   if (args.ignore !== undefined && !Array.isArray(args.ignore)) {
     bad('ignore', `must be an array of [partA, partB] pairs; got ${JSON.stringify(args.ignore)}`);
   }
@@ -129,6 +135,7 @@ export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
     virtual: true,
     ...(args.minWall !== undefined ? { minWall: args.minWall } : {}),
     ...(args.minClearance !== undefined ? { minClearance: args.minClearance } : {}),
+    includeArticulatedMates: args.includeArticulatedMates ?? false,
     ignore: (args.ignore ?? []).map(([a, b]) => [a, b] as const),
     exclude: [...(args.exclude ?? [])],
     channels: (args.channels ?? []).map(c => ({

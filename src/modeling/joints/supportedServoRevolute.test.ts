@@ -215,7 +215,10 @@ describe('joint.supportedServoRevolute', () => {
           pivotParent: [0, 0, 5],
           pivotChild: [0, 0, 0],
           limitsDeg: [-45, 45],
-          style: { knuckleR: 5 },
+          // The child body is 8 mm across the pin axis at the pivot, so it
+          // must declare an 8 mm tongue rather than relying on overlapping
+          // fork geometry to make the reviewer accept it.
+          style: { knuckleR: 5, tongueY: 8 },
         });
         arm.part('base', clevis.parentGeometry)
           .connector('axis', {

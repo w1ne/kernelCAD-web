@@ -10,7 +10,7 @@
 // module provides a one-call primitive that emits both pieces of geometry AND
 // the two connector specs needed to wire a `revolute` mate — by construction
 // guaranteeing knuckle alignment, bridge tabs outside the tongue's swing
-// envelope, a single one-pass through-hole, and a flush-cap pin.
+// envelope, a single one-pass through-hole, and a proud-cap pin.
 
 import type { Shape } from '../capture/proxy';
 import type { Vec3 } from '../../shared/intent/types';
@@ -27,13 +27,14 @@ export type AxisHint = Vec3 | 'X' | 'Y' | 'Z';
  * All dimensions are millimetres.
  *
  *  - `knuckleR`: radius of the knuckle (rounded plate corner) at the pivot
- *  - `forkGapY`: distance between inner faces of the two fork plates
+ *  - `forkGapY`: distance between inner faces of the two fork plates; when
+ *      omitted, `tongueY + 0.65 * knuckleR` leaves visible running clearance
  *  - `tongueY`: tongue plate thickness (must be < forkGapY so it slips in)
  *  - `plateT`: thickness of each fork plate
  *  - `pinR`: pin shaft radius
- *  - `pinCapR`: pin-cap (bolt-head) radius; flush against outer fork face
- *  - `pinCapThickness`: cap thickness; if absent, derived from shaft span so
- *      both caps sit flush against the outer faces of the two fork plates
+ *  - `pinCapR`: pin-cap (bolt-head) radius; projects beyond outer fork face
+ *  - `pinCapThickness`: cap thickness; if absent, derived so both caps
+ *      project by at least one shaft radius past the fork plates
  *  - `holeClearance`: extra radius added to the drilled-through hole so the
  *      pin shaft slips through without an interference fit (default 0.2 mm)
  */

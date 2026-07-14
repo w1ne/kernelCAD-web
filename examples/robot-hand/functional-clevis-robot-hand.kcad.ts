@@ -90,7 +90,7 @@ const pipStyle = {
   forkGapY: 18,
   tongueY: 8,
   plateT: 3.2,
-  pinR: 1.6,
+  pinR: 1.8,
   pinCapR: 3.4,
   pinCapThickness: 4.5,
 };
@@ -100,8 +100,9 @@ const dipStyle = {
   forkGapY: 8,
   tongueY: 4.2,
   plateT: 3.0,
-  pinR: 0.8,
+  pinR: 1.7,
   pinCapR: 3.2,
+  pinCapThickness: 2.3,
   holeClearance: 0.4,
 };
 

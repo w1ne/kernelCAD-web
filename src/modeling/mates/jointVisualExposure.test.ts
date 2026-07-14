@@ -37,10 +37,16 @@ interface SyntheticHingeOpts {
   readonly pinLen: number;
   /** Pin radius. Default 3.5 mm. */
   readonly pinR?: number;
+  /** Optional retaining-head radius. When present, heads overlap the shaft. */
+  readonly pinCapR?: number;
+  /** Retaining-head axial thickness. Required with pinCapR. */
+  readonly pinCapThickness?: number;
   /** Fork plate vertical extent (perpendicular to axis). Default 30 mm. */
   readonly forkPlateZ?: number;
   /** Fork plate horizontal extent (perpendicular to axis). Default 22 mm. */
   readonly forkPlateX?: number;
+  /** Translation applied to both hinge bodies and their mating connectors. */
+  readonly offset?: readonly [number, number, number];
   /** Mate type. Default 'revolute'. Use 'prismatic' for the non-revolute scope test. */
   readonly mateType?: 'revolute' | 'prismatic';
 }
@@ -61,6 +67,7 @@ function buildSyntheticHinge(opts: SyntheticHingeOpts): { arm: Assembly; session
   const forkPlateZ = opts.forkPlateZ ?? 30;
   const forkPlateX = opts.forkPlateX ?? 22;
   const mateType = opts.mateType ?? 'revolute';
+  const offset = opts.offset ?? [0, 0, 0];
   const { forkGapY, tongueY, pinLen } = opts;
 
   const session = new CaptureSession();
@@ -77,24 +84,33 @@ function buildSyntheticHinge(opts: SyntheticHingeOpts): { arm: Assembly; session
   // +Z → +Y (the rotation sends (x, y, z) → (x, z, -y)) so the cylinder
   // ends up at Y=[0, h]. Translate -pinLen/2 along Y to centre on the
   // joint origin.
-  const pin = kcad.cylinder(pinLen, pinR, 32)
+  let pin = kcad.cylinder(pinLen, pinR, 32)
     .rotate([1, 0, 0], -90)
     .translate(0, -pinLen / 2, 0);
-  const parentShape = platePos.union(plateNeg).union(pin);
-  const childShape = kcad.box(forkPlateX, tongueY, forkPlateZ, true);
+  if (opts.pinCapR !== undefined && opts.pinCapThickness !== undefined) {
+    const capOffset = pinLen / 2 + opts.pinCapThickness / 2 - 0.5;
+    const cap = (sign: number) => kcad.cylinder(opts.pinCapThickness!, opts.pinCapR!, 32)
+      .rotate([1, 0, 0], -90)
+      .translate(0, sign * capOffset - opts.pinCapThickness! / 2, 0);
+    pin = pin.union(cap(1)).union(cap(-1));
+  }
+  const parentShape = platePos.union(plateNeg).union(pin)
+    .translate(offset[0], offset[1], offset[2]);
+  const childShape = kcad.box(forkPlateX, tongueY, forkPlateZ, true)
+    .translate(offset[0], offset[1], offset[2]);
 
   const parent = arm
     .part('parent', parentShape)
     .connector('hinge', {
       type: 'axis',
-      origin: { kind: 'vec3', value: [0, 0, 0] },
+      origin: { kind: 'vec3', value: offset },
       axis: [0, 1, 0],
     });
   const child = arm
     .part('child', childShape)
     .connector('hinge', {
       type: 'axis',
-      origin: { kind: 'vec3', value: [0, 0, 0] },
+      origin: { kind: 'vec3', value: offset },
       axis: [0, 1, 0],
     });
   arm.mate('hinge', `${parent.name}.hinge`, `${child.name}.hinge`, mateType);
@@ -124,6 +140,51 @@ describe('validateJointVisualExposure (Gate 4)', () => {
     const { arm } = buildSyntheticHinge({ forkGapY: 18, tongueY: 6, pinLen: 34 });
     const diags = await runGate4(arm);
     expect(diags).toHaveLength(0);
+  });
+
+  it('accepts a hinge exactly at the 15% visual-gap floor despite BREP rounding', async () => {
+    // The compact hinge's local plate extent is capped at 6 * pinR = 9 mm.
+    // forkGapY=8.7 and tongueY=6 gives 1.35 mm daylight per side: exactly
+    // 1.35 / 9 = 0.15. The boundary is valid by the declared gate contract.
+    const { arm } = buildSyntheticHinge({
+      forkGapY: 8.7,
+      tongueY: 6,
+      pinLen: 21,
+      pinR: 1.5,
+      forkPlateX: 12,
+      forkPlateZ: 10,
+    });
+    const diags = await runGate4(arm);
+    expect(diags).toEqual([]);
+  });
+
+  it('keeps a compact visible hinge valid after translation away from the world origin', async () => {
+    const { arm } = buildSyntheticHinge({
+      forkGapY: 9,
+      tongueY: 6,
+      pinLen: 21,
+      pinR: 1.5,
+      forkPlateZ: 16,
+      forkPlateX: 12,
+      offset: [73, -41, 119],
+    });
+    const diags = await runGate4(arm);
+    expect(diags).toEqual([]);
+  });
+
+  it('does not mistake a compact retaining head for a fork cheek', async () => {
+    const { arm } = buildSyntheticHinge({
+      forkGapY: 11,
+      tongueY: 5,
+      pinLen: 17,
+      pinR: 1.3,
+      pinCapR: 2.3,
+      pinCapThickness: 4.5,
+      forkPlateX: 10,
+      forkPlateZ: 12,
+    });
+    const diags = await runGate4(arm);
+    expect(diags).toEqual([]);
   });
 
   it('case 2 — fail (gap only): gapRatio≈0.04 with passing pin stickout', async () => {
