@@ -12,7 +12,10 @@ import type { TraceFromImageInput, TraceFromImageOutput } from '../../../src/age
 
 const FIXTURE = join(__dirname, '../../../tests/fixtures/vision/uniform-bg-square.png');
 const E_READER_REFERENCE = join(__dirname, '../../../examples/from-reference/e-reader/kindle-2-reference.jpg');
-const FAIL_FAST_MS = 5000;
+// A cold Node + sharp process has taken 4.6s on the CI runner for the 6 MP
+// e-reader reference. Keep the subprocess bounded so the old WASM-hang bug is
+// still caught, but leave enough headroom for a real product photo.
+const FAIL_FAST_MS = 15_000;
 const execFileAsync = promisify(execFile);
 
 describe('trace_from_image smoke', () => {
@@ -73,7 +76,7 @@ describe('trace_from_image smoke', () => {
       expect(Math.min(...ys)).toBeLessThan(0.1);
       expect(Math.max(...ys)).toBeGreaterThan(0.9);
     },
-    5000,
+    FAIL_FAST_MS + 1_000,
   );
 });
 
