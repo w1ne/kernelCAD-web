@@ -65,6 +65,7 @@ describe('authoring feature capture records', () => {
           virtual: true,
           minWall: 1.2,
           minClearance: 0.4,
+          includeArticulatedMates: false,
           ignore: [['lid', 'base']],
           exclude: ['servo-*'],
           channels: [{ part: 'body', name: 'drain', openings: 2, sealed: false }],
