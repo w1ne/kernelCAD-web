@@ -153,13 +153,13 @@ describe('joint.clevis — G1 design locks', () => {
       style: { knuckleR: 10 },
     });
     // The plate offsets are computed by `buildFork` from `forkGapY/2 + plateT/2`.
-    // With knuckleR=10: tongueY = 6, forkGapY = 8, plateT = 4 → plateOffset = 6.
+    // With knuckleR=10: tongueY = 6, forkGapY = 12.5, plateT = 4 → plateOffset = 8.25.
     // We can't directly inspect the alongAxis transforms (they're hidden in
     // the record's transform stack), but we can confirm the canonical
     // formula stays internally consistent across two independent calls.
     const style = withDefaults({ knuckleR: 10 });
     const expectedPlateOffset = style.forkGapY / 2 + style.plateT / 2;
-    expect(expectedPlateOffset).toBeCloseTo(6, 6);
+    expect(expectedPlateOffset).toBeCloseTo(8.25, 6);
     // And the formula must produce a positive offset (sanity).
     expect(expectedPlateOffset).toBeGreaterThan(0);
     // Most importantly: the offset is computed ONCE from `(forkGapY, plateT)`
@@ -225,6 +225,10 @@ describe('joint.clevis — G1 design locks', () => {
       expect(style.knuckleR).toBe(knuckleR);
       // tongueY < forkGapY (tongue slips in)
       expect(style.tongueY).toBeLessThan(style.forkGapY);
+      // The 15% hinge-visibility floor requires each side's daylight to be
+      // at least 0.3R across a 2R fork plate. Defaults reserve 0.325R per
+      // side, leaving a small BREP-rounding margin above that floor.
+      expect(style.forkGapY - style.tongueY).toBeCloseTo(0.65 * knuckleR, 6);
       // pinR + clearance < knuckleR (drill leaves wall thickness)
       expect(style.pinR + style.holeClearance).toBeLessThan(style.knuckleR);
       // pinCapR > pinR (the cap actually caps)
@@ -232,6 +236,9 @@ describe('joint.clevis — G1 design locks', () => {
       // pinCapThickness >= 1mm floor (hard minimum so OCCT mesher has enough
       // material at the cap-shaft transition).
       expect(style.pinCapThickness).toBeGreaterThanOrEqual(1.0);
+      // After the fixed 0.5 mm union overlap, the cap still projects by at
+      // least one shaft radius beyond the fork outer face.
+      expect(style.pinCapThickness - 0.5).toBeGreaterThanOrEqual(style.pinR);
     }
     // Out-of-range knuckleR is clamped, not rejected.
     const tooSmall = withDefaults({ knuckleR: 0.1 });

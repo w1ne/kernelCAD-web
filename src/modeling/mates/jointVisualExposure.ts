@@ -89,6 +89,13 @@ import type { ValidatorDiagnostic } from './validator';
 const MIN_GAP_RATIO = 0.15;
 
 /**
+ * Face AABBs are BREP-derived floating-point measurements. Treat a value
+ * within this ratio as being on the inclusive 15% contract boundary rather
+ * than reporting a formatted "15.0%" failure caused by representation noise.
+ */
+const GAP_RATIO_NUMERIC_EPSILON = 1e-7;
+
+/**
  * Minimum pivot-pin stickout, expressed as a multiplier on the pin
  * radius. With a typical Ø7 mm pin (`PIN_R = 3.5`), the threshold is
  * 3.5 mm of pin sticking out beyond the outer fork-plate face on each
@@ -217,7 +224,7 @@ export async function validateJointVisualExposure(
     );
     const minPinStickout = MIN_PIN_STICKOUT_FACTOR * inferredPinR;
 
-    const gapFails = measurements.gapRatio < MIN_GAP_RATIO;
+    const gapFails = measurements.gapRatio < MIN_GAP_RATIO - GAP_RATIO_NUMERIC_EPSILON;
     const pinFails = measurements.pinStickout < minPinStickout;
     if (!gapFails && !pinFails) continue;
 

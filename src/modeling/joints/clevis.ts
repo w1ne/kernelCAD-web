@@ -18,8 +18,8 @@
 //   4. Pin drilled through both knuckles in ONE subtract AFTER the fork and
 //      tongue have been unioned into their respective parts — so the
 //      through-hole is co-located in every solid it passes through.
-//   5. Pin cap heads sit flush against the outer fork faces. Cap thickness
-//      derived from pin shaft length, not a magic constant.
+//   5. Default pin cap heads protrude by one shaft radius beyond the outer
+//      fork faces, so the joint reads as serviceable hinge hardware.
 //   6. Connectors returned by reference — caller binds the mate to them and
 //      lets `arm.mate(...)` do the coordinate math.
 //
@@ -41,8 +41,15 @@ import type {
   StructuralMaterial,
 } from './types';
 
-/** Axial shaft/cap overlap used to keep each cap fused and flush. */
+/** Axial shaft/cap overlap used to keep each cap fused. */
 const PIN_CAP_SHAFT_OVERLAP_MM = 0.5;
+
+/**
+ * Total fork clearance relative to knuckle radius. Gate 4 requires 0.6R:
+ * two 0.3R daylight intervals against a 2R fork plate. The remaining 0.05R
+ * keeps scale-derived defaults clear of BREP rounding at that visual floor.
+ */
+const DEFAULT_FORK_CLEARANCE_RATIO = 0.65;
 
 // =============================================================================
 // Public surface — the namespace exposed as `kc.joint`.
@@ -250,7 +257,7 @@ function normalizeLiftDir(hint: Vec3 | undefined): Vec3 {
  * Defaults (documented in `types.ts`):
  *  - knuckleR = 12 mm (clamped to [3, 25])
  *  - tongueY = 0.6 * knuckleR
- *  - forkGapY = tongueY + 2 mm (so tongue is free to rotate without rubbing)
+ *  - forkGapY = tongueY + 0.65 * knuckleR (visible daylight on both fork sides)
  *  - plateT = 0.4 * knuckleR
  *  - pinR = 0.35 * knuckleR
  *  - pinCapR = pinR + 1.5 mm
@@ -259,7 +266,7 @@ function normalizeLiftDir(hint: Vec3 | undefined): Vec3 {
 export function withDefaults(style: ClevisStyle | undefined): ResolvedClevisStyle {
   const knuckleR = clamp(style?.knuckleR ?? 12, 3, 25);
   const tongueY = style?.tongueY ?? 0.6 * knuckleR;
-  const forkGapY = style?.forkGapY ?? tongueY + 2;
+  const forkGapY = style?.forkGapY ?? tongueY + DEFAULT_FORK_CLEARANCE_RATIO * knuckleR;
   const plateT = style?.plateT ?? 0.4 * knuckleR;
   const pinR = style?.pinR ?? 0.35 * knuckleR;
   const pinCapR = style?.pinCapR ?? pinR + 1.5;
@@ -303,16 +310,19 @@ export function withDefaults(style: ClevisStyle | undefined): ResolvedClevisStyl
     );
   }
 
-  // Cap thickness — chosen so the shaft span (forkGapY + 2*plateT) plus two
-  // caps reaches a small overhang past the outer fork faces (the cap heads
-  // sit flush against the outer fork face but overlap the shaft by a small
-  // amount so the boolean union merges into one connected solid).
-  // Default: 0.7 * plateT, with a hard floor of 1mm so the OCCT mesher has
-  // enough material to build a clean fillet at the cap-shaft transition.
+  // Cap thickness — choose enough material for a cap to project by at least
+  // one shaft radius beyond the outer fork face after the fixed union overlap.
+  // That makes the default clevis legible as serviceable hardware and keeps
+  // it compatible with the hinge-visibility gate. The 0.7 * plateT floor
+  // still avoids a fragile cap-shaft transition on unusually thick forks.
   // Caller can override; values above plateT are accepted (caps overhang the
   // outer fork face by capThickness − plateT, which is fine for hardware
   // that should READ as a bolt-head proud of the bracket).
-  const derivedCapThickness = Math.max(0.7 * plateT, 1.0);
+  const derivedCapThickness = Math.max(
+    0.7 * plateT,
+    pinR + PIN_CAP_SHAFT_OVERLAP_MM,
+    1.0,
+  );
   const pinCapThickness = style?.pinCapThickness ?? derivedCapThickness;
   assertPositive('style.pinCapThickness', pinCapThickness);
   if (pinCapThickness < PIN_CAP_SHAFT_OVERLAP_MM) {
@@ -678,15 +688,13 @@ function buildPin(
   shaftLen: number,
 ): Shape {
   const shaft = makeAxisCylinder(kc, shaftLen, style.pinR, axis, pivot);
-  // Caps: cylinders of radius pinCapR, length pinCapThickness, placed
-  // flush against the outer fork faces (i.e., shifted ±(shaftLen/2 + capT/2)
-  // along the pin axis from the pivot, then nudged inward by the fixed shaft
-  // overlap so their outer face reaches the outer fork face).
+  // Caps: cylinders of radius pinCapR, length pinCapThickness, shifted beyond
+  // the outer fork faces and overlapped into the shaft by a fixed amount so
+  // the boolean union remains one solid.
   //
-  // The flush condition: cap centre = pivot + axis * (shaftLen/2 + capT/2 - overlap)
-  // where the fixed overlap merges the boolean. Actually a cleaner
-  // formulation: cap overlaps the shaft by `overlap`, so its inner face is
-  // inset from the outer fork face by that amount. Cap centre at
+  // Cap placement: cap centre = pivot + axis * (shaftLen/2 + capT/2 - overlap).
+  // Its inner face is inset from the outer fork face by `overlap`; its outer
+  // face projects by `capT - overlap`. Cap centre at
   // z = ±(shaftLen/2 + capT/2 - overlap).
   const capT = style.pinCapThickness;
   const capOffset = shaftLen / 2 + capT / 2 - PIN_CAP_SHAFT_OVERLAP_MM;

@@ -142,6 +142,22 @@ describe('validateJointVisualExposure (Gate 4)', () => {
     expect(diags).toHaveLength(0);
   });
 
+  it('accepts a hinge exactly at the 15% visual-gap floor despite BREP rounding', async () => {
+    // The compact hinge's local plate extent is capped at 6 * pinR = 9 mm.
+    // forkGapY=8.7 and tongueY=6 gives 1.35 mm daylight per side: exactly
+    // 1.35 / 9 = 0.15. The boundary is valid by the declared gate contract.
+    const { arm } = buildSyntheticHinge({
+      forkGapY: 8.7,
+      tongueY: 6,
+      pinLen: 21,
+      pinR: 1.5,
+      forkPlateX: 12,
+      forkPlateZ: 10,
+    });
+    const diags = await runGate4(arm);
+    expect(diags).toEqual([]);
+  });
+
   it('keeps a compact visible hinge valid after translation away from the world origin', async () => {
     const { arm } = buildSyntheticHinge({
       forkGapY: 9,
