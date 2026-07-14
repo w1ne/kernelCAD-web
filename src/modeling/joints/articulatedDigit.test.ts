@@ -330,6 +330,57 @@ describe('joint.articulatedDigit', () => {
     expect(arm.__mates()).toHaveLength(matesBefore);
   });
 
+  it.each([
+    ['a segment colliding with the generated base name', digitOptions({
+      segments: [{ ...digitOptions().segments[0], name: 'base' }, ...digitOptions().segments.slice(1)],
+    })],
+    ['a joint colliding with the generated root-mount mate name', digitOptions({
+      joints: [{ ...digitOptions().joints[0], name: 'base-mount' }, ...digitOptions().joints.slice(1)],
+    })],
+  ])('rejects %s before adding parts or mates', (_label, opts) => {
+    const { kc, arm } = makeArm();
+    const partsBefore = arm.__parts().length;
+    const matesBefore = arm.__mates().length;
+
+    expectInvalidArgs(() => kc.joint.articulatedDigit(arm, opts));
+    expect(arm.__parts()).toHaveLength(partsBefore);
+    expect(arm.__mates()).toHaveLength(matesBefore);
+  });
+
+  it.each([
+    ['the first joint colliding with the generated base mount connector', digitOptions({
+      joints: [{ ...digitOptions().joints[0], name: 'mount' }, ...digitOptions().joints.slice(1)],
+    })],
+    ['the terminal joint colliding with the generated tip frame connector', digitOptions({
+      joints: [...digitOptions().joints.slice(0, -1), { ...digitOptions().joints.at(-1)!, name: 'tip-frame' }],
+    })],
+  ])('rejects %s before adding parts or mates', (_label, opts) => {
+    const { kc, arm } = makeArm();
+    const partsBefore = arm.__parts().length;
+    const matesBefore = arm.__mates().length;
+
+    expectInvalidArgs(() => kc.joint.articulatedDigit(arm, opts));
+    expect(arm.__parts()).toHaveLength(partsBefore);
+    expect(arm.__mates()).toHaveLength(matesBefore);
+  });
+
+  it.each([
+    ['a null segment', digitOptions({
+      segments: [null as unknown as never, ...digitOptions().segments.slice(1)],
+    })],
+    ['a null joint', digitOptions({
+      joints: [null as unknown as never, ...digitOptions().joints.slice(1)],
+    })],
+  ])('rejects %s with a KernelError before adding parts or mates', (_label, opts) => {
+    const { kc, arm } = makeArm();
+    const partsBefore = arm.__parts().length;
+    const matesBefore = arm.__mates().length;
+
+    expectInvalidArgs(() => kc.joint.articulatedDigit(arm, opts));
+    expect(arm.__parts()).toHaveLength(partsBefore);
+    expect(arm.__mates()).toHaveLength(matesBefore);
+  });
+
   it('rejects an inadequate fully omitted R=12 clevis style before capture', () => {
     const { kc, arm } = makeArm();
     const partsBefore = arm.__parts().length;

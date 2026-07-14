@@ -213,11 +213,17 @@ function validatePreflight(arm: Assembly, opts: ArticulatedDigitOptions): Prefli
     }
   }
   const jointNames = new Set<string>();
-  for (const joint of opts.joints) {
+  for (const [index, joint] of opts.joints.entries()) {
     assertName('joints[].name', joint?.name);
     assertTopoRefSafeName(joint.name, 'connector-name');
     if (jointNames.has(joint.name)) invalidArgs(`joints contain duplicate name '${joint.name}'.`);
     jointNames.add(joint.name);
+    if (index === 0 && joint.name === 'mount') {
+      invalidArgs("first joint name 'mount' conflicts with the generated base mount connector.");
+    }
+    if (index === opts.joints.length - 1 && joint.name === 'tip-frame') {
+      invalidArgs("terminal joint name 'tip-frame' conflicts with the generated tip frame connector.");
+    }
     if (!Array.isArray(joint.limitsDeg) || joint.limitsDeg.length !== 2 ||
       !Number.isFinite(joint.limitsDeg[0]) || !Number.isFinite(joint.limitsDeg[1]) ||
       joint.limitsDeg[0] > joint.limitsDeg[1]) {
@@ -248,6 +254,8 @@ function validatePreflight(arm: Assembly, opts: ArticulatedDigitOptions): Prefli
   }
   const partNames = [`${opts.name}-base`, ...opts.segments.map((segment) => `${opts.name}-${segment.name}`)];
   const mateNames = [`${opts.name}-base-mount`, ...opts.joints.map((joint) => `${opts.name}-${joint.name}`)];
+  assertUniqueGeneratedNames(partNames, 'part');
+  assertUniqueGeneratedNames(mateNames, 'mate');
   for (const name of partNames) {
     if (parts.some((part) => part.name === name)) invalidArgs(`generated part name '${name}' already exists in assembly '${arm.name}'.`);
   }
@@ -258,6 +266,14 @@ function validatePreflight(arm: Assembly, opts: ArticulatedDigitOptions): Prefli
     }
   }
   return { transform, styles, webLengths };
+}
+
+function assertUniqueGeneratedNames(names: readonly string[], kind: 'part' | 'mate'): void {
+  const seen = new Set<string>();
+  for (const name of names) {
+    if (seen.has(name)) invalidArgs(`generated ${kind} name '${name}' collides with another generated ${kind}.`);
+    seen.add(name);
+  }
 }
 
 function buildBaseBody(kc: KernelCadApi, first: ArticulatedDigitSegmentSpec, style: ResolvedClevisStyle): Shape {
