@@ -50,4 +50,25 @@ describe('referenceImage record routes through recompute', () => {
       rmSync(dir, { recursive: true, force: true });
     }
   });
+
+  it('captures a dynamically addressed kc referenceImage call from a real script', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'kcad-ref-recompute-dynamic-'));
+    writeFileSync(join(dir, 'test.png'), PNG_1X1);
+
+    try {
+      const model = await buildModel({
+        fileName: 'dynamic-reference.kcad.ts',
+        scriptDir: dir,
+        code: `
+          kc['reference' + 'Image']('./test.png', { plane: 'xz' });
+          return box(10, 10, 10);
+        `,
+      });
+
+      expect(model.records.some(record => record.kind === 'referenceImage')).toBe(true);
+      expect(model.diagnostics.filter(diagnostic => diagnostic.severity === 'error')).toEqual([]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });
