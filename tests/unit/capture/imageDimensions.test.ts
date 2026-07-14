@@ -37,13 +37,37 @@ function jpegWithDimensions(
 }
 
 describe('imageDimensions', () => {
-  it('decodes JPEG dimensions after metadata headers longer than 64 KiB', () => {
+  it('decodes JPEG dimensions after more than 80 KiB of metadata headers', () => {
     const tmpDir = mkdtempSync(join(tmpdir(), 'kernelcad-image-dimensions-'));
     try {
       const imagePath = join(tmpDir, 'large-header.jpg');
-      writeFileSync(imagePath, jpegWithDimensions(2100, 3000, [40_000, 40_000]));
+      writeFileSync(imagePath, jpegWithDimensions(2100, 3000, [42_000, 42_000]));
 
       expect(imageDimensions(imagePath)).toEqual({ width: 2100, height: 3000 });
+    } finally {
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it('fails closed when the Start Of Frame is beyond the finite JPEG header scan budget', () => {
+    const tmpDir = mkdtempSync(join(tmpdir(), 'kernelcad-image-dimensions-'));
+    try {
+      const imagePath = join(tmpDir, 'scan-budget.jpg');
+      writeFileSync(imagePath, jpegWithDimensions(2100, 3000, Array.from({ length: 36 }, () => 60_000)));
+
+      expect(imageDimensions(imagePath)).toEqual({ width: 0, height: 0 });
+    } finally {
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it('fails closed after a finite number of crafted JPEG marker segments', () => {
+    const tmpDir = mkdtempSync(join(tmpdir(), 'kernelcad-image-dimensions-'));
+    try {
+      const imagePath = join(tmpDir, 'marker-budget.jpg');
+      writeFileSync(imagePath, jpegWithDimensions(2100, 3000, Array.from({ length: 5_000 }, () => 0)));
+
+      expect(imageDimensions(imagePath)).toEqual({ width: 0, height: 0 });
     } finally {
       rmSync(tmpDir, { recursive: true, force: true });
     }

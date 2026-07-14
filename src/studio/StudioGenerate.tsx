@@ -110,6 +110,7 @@ const StudioGenerateInner: React.FC = () => {
         () => photoReferenceFrom(pendingReferenceImage, knownDimensionLabel, knownDimensionMm),
         [knownDimensionLabel, knownDimensionMm, pendingReferenceImage],
     );
+    const photoReferenceSelected = pendingReferenceImage != null;
     const referenceNeedsDimension = pendingReferenceImage != null && referenceImage == null;
 
     useEffect(() => {
@@ -222,7 +223,7 @@ const StudioGenerateInner: React.FC = () => {
 
     const onConcept = () => {
         const trimmed = prompt.trim();
-        if (!trimmed || busy) return;
+        if (!trimmed || busy || photoReferenceSelected) return;
         setConceptPrompt(trimmed);
         void preview.submit(trimmed);
     };
@@ -249,11 +250,13 @@ const StudioGenerateInner: React.FC = () => {
         // state). A done preview with no Tripo render/fingerprint yields
         // {renderImageUrl:null, proportions:null} — intentional and distinct from
         // "no mesh" (undefined); the server's nullish schema accepts it.
-        const mesh = preview.phase.state === 'done'
+        const mesh = referenceImage == null && preview.phase.state === 'done'
             ? { renderImageUrl: preview.phase.renderImageUrl, proportions: preview.phase.proportions }
             : undefined;
         if (referenceImage) {
-            void submit(conceptPrompt, undefined, mesh, referenceImage);
+            // A photo is its own evidence mode. A preview that completed before
+            // the photo was selected must not make the request ambiguous.
+            void submit(conceptPrompt, undefined, undefined, referenceImage);
         } else {
             void submit(conceptPrompt, undefined, mesh);
         }
@@ -375,8 +378,10 @@ const StudioGenerateInner: React.FC = () => {
                         <button
                             type="button"
                             onClick={onConcept}
-                            disabled={busy || !prompt.trim()}
-                            title="Quick visual 3D concept of this description (paid feature)"
+                            disabled={busy || photoReferenceSelected || !prompt.trim()}
+                            title={photoReferenceSelected
+                                ? 'Remove the reference photo to use the mesh concept workflow'
+                                : 'Quick visual 3D concept of this description (paid feature)'}
                             className="rounded bg-[#1a1d24] hover:bg-[#222630] text-gray-300 border border-[#2a2e38] px-3 py-1.5 text-[11px] font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
                         >
                             {conceptBusy ? `Concept… ${preview.phase.state === 'running' ? preview.phase.progress : 0}%` : '3D concept'}

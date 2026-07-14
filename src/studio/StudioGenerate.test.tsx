@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // @vitest-environment happy-dom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import type { PreviewPhase } from '../funnel/hooks/useTextTo3dPreview';
 
@@ -92,5 +92,50 @@ describe('StudioGenerate — unified prompt', () => {
     rerender(<StudioGenerate />);
     fireEvent.click(screen.getByRole('button', { name: /build as parametric cad/i }));
     expect(generationSubmit).toHaveBeenCalledWith('a bracket', undefined, { renderImageUrl: 'https://t/r.png', proportions: [1, 0.7, 0.6] });
+  });
+
+  it('disables 3D concept mode when a reference photo is selected', async () => {
+    render(<StudioGenerate />);
+    fireEvent.change(screen.getByLabelText('Generate prompt'), { target: { value: 'an e-reader enclosure' } });
+    fireEvent.change(screen.getByLabelText('Reference photo'), {
+      target: { files: [new File(['photo-bytes'], 'e-reader.png', { type: 'image/png' })] },
+    });
+
+    await waitFor(() => expect(screen.getByText('e-reader.png')).toBeInTheDocument());
+
+    expect(screen.getByRole('button', { name: /3d concept/i })).toBeDisabled();
+  });
+
+  it('Build-as-CAD sends a selected photo without a stale concept mesh', async () => {
+    const { rerender } = render(<StudioGenerate />);
+    fireEvent.change(screen.getByLabelText('Generate prompt'), { target: { value: 'an e-reader enclosure' } });
+    fireEvent.click(screen.getByRole('button', { name: /3d concept/i }));
+    previewPhase = {
+      state: 'done',
+      glbUrl: 'https://t/x.glb',
+      costUsd: null,
+      renderImageUrl: 'https://t/r.png',
+      proportions: [1, 0.7, 0.6],
+    };
+    rerender(<StudioGenerate />);
+
+    fireEvent.change(screen.getByLabelText('Reference photo'), {
+      target: { files: [new File(['photo-bytes'], 'e-reader.png', { type: 'image/png' })] },
+    });
+    await waitFor(() => expect(screen.getByText('e-reader.png')).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText('Known dimension label'), { target: { value: 'overall height' } });
+    fireEvent.change(screen.getByLabelText('Known dimension (mm)'), { target: { value: '203' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /build as parametric cad/i }));
+
+    expect(generationSubmit).toHaveBeenCalledWith(
+      'an e-reader enclosure',
+      undefined,
+      undefined,
+      expect.objectContaining({
+        fileName: 'e-reader.png',
+        knownDimension: { label: 'overall height', valueMm: 203 },
+      }),
+    );
   });
 });

@@ -16,12 +16,17 @@ export interface ImageDimensions {
 }
 
 const FAIL: ImageDimensions = { width: 0, height: 0 };
+// JPEG APP/COM metadata can legitimately be large, but this synchronous parser
+// is called on user-controlled files. Bound both bytes skipped and individual
+// marker headers so a crafted stream cannot monopolize the event loop.
+const MAX_JPEG_HEADER_SCAN_BYTES = 1024 * 1024;
+const MAX_JPEG_MARKERS = 4096;
 
 /**
  * Read pixel dimensions from a PNG / JPEG / WEBP file without loading the
  * full image bytes. Reads at most ~128 bytes for PNG/WEBP; for JPEG it walks
  * segment headers until it reaches a Start Of Frame marker, without loading
- * image payloads.
+ * image payloads, subject to a generous finite header budget.
  */
 export function imageDimensions(filePath: string): ImageDimensions {
   let fd = -1;
@@ -128,22 +133,28 @@ function parseWebp(fd: number): ImageDimensions {
 function parseJpeg(fd: number): ImageDimensions {
   // JPEG dimensions live in a Start Of Frame segment before the SOS marker.
   // Walk segment headers directly so a valid file with large EXIF/ICC metadata
-  // does not require loading that metadata or stopping at an arbitrary cutoff.
+  // does not require loading that metadata. Keep both byte and marker limits:
+  // this code is synchronous and a hostile stream can otherwise create an
+  // unbounded sequence of tiny marker segments or marker fill bytes.
   let position = 2; // skip SOI
+  let markersRead = 0;
 
-  while (true) {
+  while (position < MAX_JPEG_HEADER_SCAN_BYTES && markersRead < MAX_JPEG_MARKERS) {
     const prefix = readExact(fd, position, 2);
     if (!prefix || prefix[0] !== 0xff) return FAIL;
 
     let marker = prefix[1];
     position += 2;
+    markersRead += 1;
 
     // JPEG permits any number of 0xff fill bytes before a marker code.
     while (marker === 0xff) {
+      if (markersRead >= MAX_JPEG_MARKERS || position >= MAX_JPEG_HEADER_SCAN_BYTES) return FAIL;
       const fill = readExact(fd, position, 1);
       if (!fill) return FAIL;
       marker = fill[0];
       position += 1;
+      markersRead += 1;
     }
 
     // A stuffed zero is valid only in entropy-coded scan data. We never scan
@@ -162,6 +173,7 @@ function parseJpeg(fd: number): ImageDimensions {
 
     if (isJpegStartOfFrame(marker)) {
       // SOF payload: precision (1), height (2), width (2), components (1)...
+      if (payloadStart + 5 > MAX_JPEG_HEADER_SCAN_BYTES) return FAIL;
       const frame = readExact(fd, payloadStart, 5);
       if (!frame) return FAIL;
       const height = frame.readUInt16BE(1);
@@ -173,6 +185,8 @@ function parseJpeg(fd: number): ImageDimensions {
     // Skip exactly this segment's payload. The next loop starts at its marker.
     position = payloadStart + payloadLength;
   }
+
+  return FAIL;
 }
 
 function readExact(fd: number, position: number, length: number): Buffer | undefined {
