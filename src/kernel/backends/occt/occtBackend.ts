@@ -1225,6 +1225,35 @@ export class OcctBackend implements ShapeBackend {
     return this.shape.faces.length === 0;
   }
 
+  /**
+   * Enumerate the actual TopAbs_SOLID children of this BREP. This is the
+   * authoritative part-connectivity fact: a compound with two solids is two
+   * disconnected manufactured bodies even when their preview triangles happen
+   * to touch or overlap numerically.
+   */
+  solidComponents(): readonly OcctBackend[] {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const oc = getOC() as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wrapped = (this.shape as any).wrapped;
+    const components: OcctBackend[] = [];
+    const explorer = new oc.TopExp_Explorer_2(
+      wrapped,
+      oc.TopAbs_ShapeEnum.TopAbs_SOLID,
+      oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
+    );
+    try {
+      while (explorer.More()) {
+        const solid = oc.TopoDS.Solid_1(explorer.Current());
+        components.push(new OcctBackend(replicad.cast(solid) as ReplicadShape3D));
+        explorer.Next();
+      }
+    } finally {
+      explorer.delete();
+    }
+    return components;
+  }
+
   getMesh(): RuntimeMesh {
     // Viewport/preview mesh — keep coarse for fast interactive render.
     const meshed = this.shape.mesh({ tolerance: 0.05, angularTolerance: 0.3 });

@@ -38,6 +38,12 @@ export interface ShapeBackend {
   volume(): number;
   surfaceArea(): number;
   isEmpty(): boolean;
+  /**
+   * Split a BREP compound into its top-level physical solids. A correctly
+   * manufactured single part must return exactly one component; callers use
+   * this instead of inferring connectivity from preview tessellation.
+   */
+  solidComponents(): readonly ShapeBackend[];
   getMesh(): RuntimeMesh;
   exportSTL(): Uint8Array;
   exportSTEP(): Uint8Array;
