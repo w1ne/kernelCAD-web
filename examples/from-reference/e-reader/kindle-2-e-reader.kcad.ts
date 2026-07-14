@@ -2,10 +2,14 @@
 // Artifact: neutral front-facing e-reader benchmark — a four-part parametric
 //   consumer-device reconstruction informed by the supplied Kindle 2 photo.
 // Reference: ./kindle-2-reference.jpg (front-facing public-domain photograph).
-// Scale: millimetres. Defensible category estimate: exterior approximately
-//   134 mm wide x 203 mm high x 9.1 mm thick (Kindle 2 class); all dimensions
-//   and internals are inferred from the photo/category and are not a
-//   manufacturing claim.
+// Scale: millimetres. Amazon's Kindle User's Guide, 2nd Edition, lists model
+//   D00701 at 203.2 mm high × 134.6 mm wide × 9.1 mm thick:
+//   https://kindle.s3.amazonaws.com/Kindle%20User%E2%80%99s%20Guide%2C%202nd%20Ed.-%20English.pdf
+// Scale anchor: the 2100 px × 3000 px source photo's device envelope measures
+//   1843 px × 2774 px. REFERENCE_MM_PER_PIXEL balances the published width and
+//   height against that envelope, then expands the entire image plane while
+//   preserving the photo's native aspect ratio. The photo remains a visual aid,
+//   not a claim about hidden internal dimensions.
 // Visible facts (from reference photo):
 //   - The front is a tall, pale rounded-rectangle enclosure with a much larger
 //     height than width and a shallow case depth.
@@ -30,20 +34,33 @@
 //   - Assembly gate: exactly four named parts have modest clearances and zero
 //     interference pairs.
 
-const bodyWidth = param('bodyWidth', 134, {
+const REFERENCE_WIDTH_MM = 134.6;
+const REFERENCE_HEIGHT_MM = 203.2;
+const REFERENCE_THICKNESS_MM = 9.1;
+const REFERENCE_IMAGE_PIXEL_WIDTH = 2100;
+const REFERENCE_IMAGE_PIXEL_HEIGHT = 3000;
+const REFERENCE_DEVICE_PIXEL_WIDTH = 1843;
+const REFERENCE_DEVICE_PIXEL_HEIGHT = 2774;
+const REFERENCE_MM_PER_PIXEL = (
+  (REFERENCE_WIDTH_MM / REFERENCE_DEVICE_PIXEL_WIDTH)
+  + (REFERENCE_HEIGHT_MM / REFERENCE_DEVICE_PIXEL_HEIGHT)
+) / 2;
+const REFERENCE_IMAGE_WIDTH_MM = REFERENCE_IMAGE_PIXEL_WIDTH * REFERENCE_MM_PER_PIXEL;
+
+const bodyWidth = param('bodyWidth', REFERENCE_WIDTH_MM, {
   min: 120,
   max: 150,
-  description: 'inferred exterior width in mm',
+  description: 'published exterior width in mm; photo scale anchor',
 });
-const bodyHeight = param('bodyHeight', 203, {
+const bodyHeight = param('bodyHeight', REFERENCE_HEIGHT_MM, {
   min: 185,
   max: 220,
-  description: 'inferred exterior height in mm',
+  description: 'published exterior height in mm',
 });
-const bodyThickness = param('bodyThickness', 9.1, {
+const bodyThickness = param('bodyThickness', REFERENCE_THICKNESS_MM, {
   min: 7,
   max: 13,
-  description: 'inferred enclosure thickness in mm',
+  description: 'published exterior thickness in mm',
 });
 const cornerRadius = param('cornerRadius', 11, {
   min: 6,
@@ -91,7 +108,7 @@ const usbPortHeight = param('usbPortHeight', 4, {
 referenceImage('./kindle-2-reference.jpg', {
   plane: { plane: 'xz', offset: 8 },
   anchor: 'origin',
-  scale: 'fit-bbox',
+  scale: REFERENCE_IMAGE_WIDTH_MM,
   opacity: 0.24,
 });
 
@@ -136,6 +153,9 @@ const navigationCenterZ = screenCenterZ
 const ledCenterZ = navigationCenterZ
   .subtract(controlDiameter.divide(2))
   .subtract(bezelWidth.divide(2));
+const displayCenterY = frontY.add(screenRecess.multiply(0.5));
+const navigationCenterY = frontY.add(0.58);
+const ledCenterY = frontY.add(0.64);
 
 // The rounded XZ extrusion is centred after rotation; its PBR material is on
 // the leaf before every sequential boolean below.
@@ -195,7 +215,7 @@ const display = extrudeRoundedRect(
 )
   .material(DISPLAY_MATERIAL)
   .rotateX(-90)
-  .translate(0, frontY.add(screenRecess.multiply(0.5)), screenCenterZ);
+  .translate(0, displayCenterY, screenCenterZ);
 
 const navigationControl = cylinder(
   screenRecess.multiply(0.42),
@@ -204,48 +224,79 @@ const navigationControl = cylinder(
 )
   .material(CONTROL_MATERIAL)
   .alongAxis([0, 1, 0])
-  .translate(0, frontY.add(0.58), navigationCenterZ);
+  .translate(0, navigationCenterY, navigationCenterZ);
 
 const statusLed = cylinder(screenRecess.multiply(0.28), 1.15, 32)
   .material(LED_MATERIAL)
   .alongAxis([0, 1, 0])
-  .translate(0, frontY.add(0.64), ledCenterZ);
+  .translate(0, ledCenterY, ledCenterZ);
+
+// Mate-style connectors currently use numeric Vec3 origins. These three
+// default-state points are deliberately just inside each retained component's
+// edge and within 1 mm of the matching housing pocket wall, so the solved
+// fastened graph describes a physical retention relationship rather than an
+// arbitrary origin-to-origin graph. The legacy seats below remain ParamRef
+// expressions: editable dimensions move their inspectable placement metadata
+// together with the visible geometry.
+const DEFAULT_DISPLAY_FASTENER = [46.8, -4.1, 25.1];
+const DEFAULT_NAVIGATION_FASTENER = [9.3, -3.97, -60.9];
+const DEFAULT_LED_FASTENER = [0.95, -3.91, -77.4];
 
 const reader = assembly('photo-reference-e-reader');
-// These are static retention-frame mates: they document that each inset is
-// installed in the housing while leaving the authored clearances unchanged.
-// Their numeric origins are the default-param local frame centres.
-reader.part('housing', housing)
-  .connector('display-seat', {
-    type: 'frame',
-    origin: { kind: 'vec3', value: [0, -3.8975, 25] },
-  })
-  .connector('navigation-seat', {
-    type: 'frame',
-    origin: { kind: 'vec3', value: [0, -3.781, -61] },
-  })
-  .connector('led-seat', {
-    type: 'frame',
-    origin: { kind: 'vec3', value: [0, -3.784, -77.5] },
-  });
-reader.part('display', display)
-  .connector('mount', {
-    type: 'frame',
-    origin: { kind: 'vec3', value: [0, -3.8975, 25] },
-  });
-reader.part('navigation-control', navigationControl)
-  .connector('mount', {
-    type: 'frame',
-    origin: { kind: 'vec3', value: [0, -3.781, -61] },
-  });
-reader.part('status-led', statusLed)
-  .connector('mount', {
-    type: 'frame',
-    origin: { kind: 'vec3', value: [0, -3.784, -77.5] },
-  });
+// Static retention connectors share the same ParamRef expressions as their
+// visible inset geometry. A body/screen edit therefore moves both the model
+// and its inspectable assembly metadata instead of leaving stale numbers.
+const housingPart = reader.part('housing', housing, {
+  connectors: {
+    displaySeat: { origin: [0, displayCenterY, screenCenterZ] },
+    navigationSeat: { origin: [0, navigationCenterY, navigationCenterZ] },
+    ledSeat: { origin: [0, ledCenterY, ledCenterZ] },
+  },
+});
+const displayPart = reader.part('display', display, {
+  connectors: { mount: { origin: [0, displayCenterY, screenCenterZ] } },
+  connect: {
+    connector: 'mount',
+    to: housingPart.connector('displaySeat'),
+    name: 'display-retained',
+  },
+});
+const navigationPart = reader.part('navigation-control', navigationControl, {
+  connectors: { mount: { origin: [0, navigationCenterY, navigationCenterZ] } },
+  connect: {
+    connector: 'mount',
+    to: housingPart.connector('navigationSeat'),
+    name: 'navigation-retained',
+  },
+});
+const ledPart = reader.part('status-led', statusLed, {
+  connectors: { mount: { origin: [0, ledCenterY, ledCenterZ] } },
+  connect: {
+    connector: 'mount',
+    to: housingPart.connector('ledSeat'),
+    name: 'led-retained',
+  },
+});
 
-reader.mate('display-retained', 'housing.display-seat', 'display.mount', 'fastened');
-reader.mate('navigation-retained', 'housing.navigation-seat', 'navigation-control.mount', 'fastened');
-reader.mate('led-retained', 'housing.led-seat', 'status-led.mount', 'fastened');
+// The ParamRef-backed seats above preserve editable placement intent; these
+// fastened frame pairs are the solver-facing graph that keeps the four parts
+// connected for mechanism checks and downstream assembly consumers.
+housingPart
+  .connector('display-fastener', { type: 'frame', origin: { kind: 'vec3', value: DEFAULT_DISPLAY_FASTENER } })
+  .connector('navigation-fastener', { type: 'frame', origin: { kind: 'vec3', value: DEFAULT_NAVIGATION_FASTENER } })
+  .connector('led-fastener', { type: 'frame', origin: { kind: 'vec3', value: DEFAULT_LED_FASTENER } });
+displayPart.connector('housing-fastener', {
+  type: 'frame', origin: { kind: 'vec3', value: DEFAULT_DISPLAY_FASTENER },
+});
+navigationPart.connector('housing-fastener', {
+  type: 'frame', origin: { kind: 'vec3', value: DEFAULT_NAVIGATION_FASTENER },
+});
+ledPart.connector('housing-fastener', {
+  type: 'frame', origin: { kind: 'vec3', value: DEFAULT_LED_FASTENER },
+});
 
-return reader.model();
+reader.mate('display-fastened', 'housing.display-fastener', 'display.housing-fastener', 'fastened');
+reader.mate('navigation-fastened', 'housing.navigation-fastener', 'navigation-control.housing-fastener', 'fastened');
+reader.mate('led-fastened', 'housing.led-fastener', 'status-led.housing-fastener', 'fastened');
+
+return reader.solvedModel({});
