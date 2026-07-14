@@ -3,6 +3,7 @@ import { dirname, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { evaluateAndBuildScript } from '../../../src/agent/cli/commands/evaluate';
+import { checkInterference } from '../../../src/agent/script-runtime/checkInterference';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const EXAMPLE = resolvePath(__dirname, '../../..', 'examples/from-reference/e-reader/kindle-2-e-reader.kcad.ts');
@@ -30,5 +31,15 @@ describe('photo-reference Kindle 2 e-reader example', () => {
     expect(referenceImage).toBeDefined();
     expect(referenceImage?.metadata?.path).toEqual(expect.stringMatching(/kindle-2-reference\.jpg$/));
     expect(referenceImage?.metadata?.diagnostics ?? []).toEqual([]);
+
+    const interference = await checkInterference({
+      code: source,
+      fileName: 'examples/from-reference/e-reader/kindle-2-e-reader.kcad.ts',
+      scriptDir: dirname(EXAMPLE),
+      epsilonMm3: 0.01,
+      ignorePairs: new Set<string>(),
+    });
+    expect(interference.partCount).toBe(4);
+    expect(interference.pairs).toEqual([]);
   });
 });
