@@ -11,6 +11,7 @@ import { promisify } from 'node:util';
 import type { TraceFromImageInput, TraceFromImageOutput } from '../../../src/agent/vision';
 
 const FIXTURE = join(__dirname, '../../../tests/fixtures/vision/uniform-bg-square.png');
+const E_READER_REFERENCE = join(__dirname, '../../../examples/from-reference/e-reader/kindle-2-reference.jpg');
 const FAIL_FAST_MS = 5000;
 const execFileAsync = promisify(execFile);
 
@@ -50,6 +51,30 @@ describe('trace_from_image smoke', () => {
     expect(out.ok).toBe(true);
     expect(out.features[0].backend).toBe('opencv');
   }, 5000);
+
+  it.each(['auto', 'opencv'] as const)(
+    '%s traces the broad light e-reader housing instead of its dark internal screen',
+    async (backend) => {
+      const out = await runTraceFromImageInNode({
+        imageUrl: `file://${E_READER_REFERENCE}`,
+        backend,
+        features: [{ label: 'outer_housing', kind: 'silhouette' }],
+      });
+
+      expect(out.ok).toBe(true);
+      expect(out.features).toHaveLength(1);
+      expect(out.features[0].backend).toBe('opencv');
+      const xs = out.features[0].waypoints.map(([x]) => x);
+      const ys = out.features[0].waypoints.map(([, y]) => y);
+      // The dark screen spans ~59% × 55% of the photo. A valid outer-device
+      // trace must instead cover the pale housing's broad, inset silhouette.
+      expect(Math.min(...xs)).toBeLessThan(0.12);
+      expect(Math.max(...xs)).toBeGreaterThan(0.88);
+      expect(Math.min(...ys)).toBeLessThan(0.1);
+      expect(Math.max(...ys)).toBeGreaterThan(0.9);
+    },
+    5000,
+  );
 });
 
 async function runTraceFromImageInNode(input: TraceFromImageInput): Promise<TraceFromImageOutput> {
