@@ -65,6 +65,49 @@ two-feature placement math, subtract-chain reliability, JSON-`ok`-is-not-visual-
 
 ## Assembly and mechanism loop
 
+### Articulated-digit workflow (non-bypassable)
+
+For an articulated digit, use the structural joint helper and complete every gate below:
+
+<!-- ARTICULATED_DIGIT_EXAMPLE:START -->
+```typescript
+const arm = assembly('index-digit');
+const minClearance = 0.1;
+const parentMount = 'palm.index-mount';
+const frame = { origin: [0, 0, 10], pinAxis: [0, 0, 1], forward: [1, 0, 0] };
+const segments = [
+  { name: 'proximal', lengthMm: 54, widthMm: 14, depthMm: 14, terminal: true },
+];
+const joints = [
+  { name: 'mcp', limitsDeg: [0, 27], style: { knuckleR: 5.4, forkGapY: 10, pinCapThickness: 3 } },
+];
+
+arm.part('palm', box(20, 50, 20, true).translate(-10, 0, 0))
+  .connector('index-mount', {
+    type: 'frame',
+    origin: { kind: 'vec3', value: [0, 0, 10] },
+  });
+
+joint.articulatedDigit(arm, {
+  name: 'index',
+  parentMount,
+  frame,
+  clearanceMm: minClearance + 0.1,
+  segments,
+  joints,
+});
+
+dfmSpec({ minClearance, includeArticulatedMates: true });
+
+return arm.solvedModel({}, { validate: 'error' });
+```
+<!-- ARTICULATED_DIGIT_EXAMPLE:END -->
+
+- Run the full `review_cad` review, including pose-envelope clearance and interference checks.
+- Confirm visual fit separately: every digit link and moving mate must remain outside package keepouts across the reviewed pose envelope.
+- Dynamics, load, and actuation claims are unverified without explicit evidence; articulated-digit geometry and clearance review do not certify payloads or actuation.
+- These steps are mandatory. Do not bypass the helper, DFM declaration, pose-envelope review, keepout fit check, or evidence requirement by substituting raw offsets or a visual-only pass.
+
 ### Think in parts
 
 - Every physically distinct component is a named `assembly().part(name, shape)` — one body per part unless the component is genuinely monolithic.
