@@ -14,7 +14,9 @@
 //   2. Luma grayscale: 0.299R + 0.587G + 0.114B.
 //   3. Otsu threshold (256-bin histogram). Inverted (THRESH_BINARY_INV
 //      semantics): foreground = pixels darker than the threshold, i.e. a dark
-//      subject on a bright background.
+//      subject on a bright background. Prefer a background-relative foreground
+//      mask when it isolates a pale device, so an internal dark screen is not
+//      mistaken for the outer housing.
 //   4. Largest 4-connected foreground component, then Moore-neighbour boundary
 //      tracing (with Jacob's stopping criterion) of its outer boundary.
 //   5. arcLength = summed closed-loop segment lengths.
@@ -29,6 +31,20 @@ import type { Vec2Normalized } from './types';
 
 /** Pixel-space point used internally before normalization. */
 type Point = { x: number; y: number };
+
+type Bounds = { minX: number; maxX: number; minY: number; maxY: number };
+
+type ContourCandidate = {
+  boundary: Point[];
+  bounds: Bounds;
+};
+
+/** A pale device must differ from a uniform white background by at least this
+ * much luma before we consider it as a broader outer-silhouette candidate. */
+const LIGHT_SUBJECT_LUMA_DELTA = 20;
+const COMPACT_DARK_BBOX_AREA = 0.5;
+const BROAD_OVER_DARK_BBOX_RATIO = 1.6;
+const MAX_TRUSTED_BBOX_AREA = 0.95;
 
 /**
  * Compute an Otsu threshold from a 256-bin grayscale histogram.
@@ -186,6 +202,86 @@ function largestComponent(
   return { member, size: bestSize, seed: bestSeed };
 }
 
+function traceLargestContour(
+  mask: Uint8Array,
+  width: number,
+  height: number,
+): ContourCandidate | null {
+  const { member, size, seed } = largestComponent(mask, width, height);
+  if (size <= 0 || !seed) return null;
+
+  const boundary = mooreTrace(member, width, height, seed);
+  if (boundary.length < 3) return null;
+
+  return { boundary, bounds: boundsOf(boundary) };
+}
+
+function boundsOf(points: Point[]): Bounds {
+  let minX = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+  for (const point of points) {
+    minX = Math.min(minX, point.x);
+    maxX = Math.max(maxX, point.x);
+    minY = Math.min(minY, point.y);
+    maxY = Math.max(maxY, point.y);
+  }
+  return { minX, maxX, minY, maxY };
+}
+
+function bboxArea(candidate: ContourCandidate, width: number, height: number): number {
+  const { minX, maxX, minY, maxY } = candidate.bounds;
+  return ((maxX - minX + 1) / width) * ((maxY - minY + 1) / height);
+}
+
+function touchesFrame(candidate: ContourCandidate, width: number, height: number): boolean {
+  const { minX, maxX, minY, maxY } = candidate.bounds;
+  return minX === 0 || minY === 0 || maxX === width - 1 || maxY === height - 1;
+}
+
+function cornerBackgroundLuma(grey: Uint8Array, width: number, height: number): number {
+  const side = Math.max(1, Math.min(32, Math.floor(Math.min(width, height) / 8)));
+  const samples: number[] = [];
+  const corners: ReadonlyArray<readonly [number, number]> = [
+    [0, 0],
+    [width - side, 0],
+    [0, height - side],
+    [width - side, height - side],
+  ];
+  for (const [startX, startY] of corners) {
+    for (let y = startY; y < startY + side; y++) {
+      for (let x = startX; x < startX + side; x++) samples.push(grey[y * width + x]);
+    }
+  }
+  samples.sort((a, b) => a - b);
+  return samples[Math.floor(samples.length / 2)] ?? 0;
+}
+
+function darkMaskAtOrBelow(grey: Uint8Array, threshold: number): Uint8Array {
+  const mask = new Uint8Array(grey.length);
+  for (let i = 0; i < grey.length; i++) mask[i] = grey[i] <= threshold ? 1 : 0;
+  return mask;
+}
+
+function isIsolatedForegroundCandidate(
+  candidate: ContourCandidate,
+  width: number,
+  height: number,
+): boolean {
+  return !touchesFrame(candidate, width, height) && bboxArea(candidate, width, height) <= MAX_TRUSTED_BBOX_AREA;
+}
+
+function looksLikeUnisolatedLightOuterCandidate(
+  dark: ContourCandidate,
+  light: ContourCandidate | null,
+  width: number,
+  height: number,
+): boolean {
+  if (light == null || bboxArea(dark, width, height) >= COMPACT_DARK_BBOX_AREA) return false;
+  return bboxArea(light, width, height) >= bboxArea(dark, width, height) * BROAD_OVER_DARK_BBOX_RATIO;
+}
+
 // Moore-neighbour offsets, clockwise starting from the west neighbour. The
 // canonical Moore order is the 8 neighbours walked clockwise; we start the
 // search from the pixel we entered the boundary from (backtrack) per Jacob's
@@ -332,24 +428,39 @@ export async function extractSilhouettePolyline(
 
   // 3: Otsu threshold, inverted mask (foreground = darker than threshold).
   const t = otsuThreshold(histogram);
-  const mask = new Uint8Array(width * height);
   // OpenCV THRESH_BINARY_INV: dst = (src > t) ? 0 : maxval, i.e. foreground is
   // `src <= t`. Using `<=` (not `<`) is what makes a perfectly bimodal mask
   // (Otsu returns t=0 for black-on-white) still capture the dark subject.
-  for (let i = 0; i < grey.length; i++) {
-    mask[i] = grey[i] <= t ? 1 : 0;
+  // 4: Trace a background-relative foreground first. On a white product photo
+  // this includes a pale outer enclosure as well as dark details, while a
+  // dark-on-light square remains the same single component. It avoids spending
+  // a second full-image connected-component pass just to discover that an
+  // internal screen was the Otsu result.
+  const backgroundLuma = cornerBackgroundLuma(grey, width, height);
+  const lightThreshold = backgroundLuma - LIGHT_SUBJECT_LUMA_DELTA;
+  const lightCandidate = lightThreshold > t
+    ? traceLargestContour(darkMaskAtOrBelow(grey, lightThreshold), width, height)
+    : null;
+
+  let candidate = lightCandidate != null && isIsolatedForegroundCandidate(lightCandidate, width, height)
+    ? lightCandidate
+    : null;
+
+  if (candidate == null) {
+    const darkCandidate = traceLargestContour(darkMaskAtOrBelow(grey, t), width, height);
+    if (darkCandidate == null) {
+      throw new Error('opencvBackend: no foreground contour found');
+    }
+    if (looksLikeUnisolatedLightOuterCandidate(darkCandidate, lightCandidate, width, height)) {
+      // Do not present a compact dark interior as a confident outer silhouette
+      // when a larger light foreground leaks into the image frame or otherwise
+      // cannot be isolated safely.
+      throw new Error('opencvBackend: ambiguous outer silhouette; broad light foreground cannot be isolated from the image background');
+    }
+    candidate = darkCandidate;
   }
 
-  // 4: largest 4-connected foreground component → outer boundary trace.
-  const { member, size, seed } = largestComponent(mask, width, height);
-  if (size <= 0 || !seed) {
-    throw new Error('opencvBackend: no foreground contour found');
-  }
-
-  const boundary = mooreTrace(member, width, height, seed);
-  if (boundary.length < 3) {
-    throw new Error('opencvBackend: no foreground contour found');
-  }
+  const boundary = candidate.boundary;
 
   // 5: arcLength of the closed boundary.
   const perimeter = arcLength(boundary, true);
