@@ -16,6 +16,10 @@ work through the stages.
 Have a written spec with numeric dimensions? → just read kernelcad-authoring
                                                 + use-the-available-kernel,
                                                 build single-pass, score.
+Simple front-on consumer electronics or passive enclosures with a photo and a
+known dimension? → read `photo-to-device/SKILL.md` before blockout. Keep this
+                   as the typed Studio/server photo path; it is not a mesh
+                   concept or mechanism workflow.
 Have a reference photo only? ──┬─ Extract numeric dimensions FIRST
                                │  (measure visually OR if STL available
                                │   use trimesh to extract bbox+landmarks),
@@ -44,10 +48,11 @@ Iteration mode: visual > scored > spec+photo (R1-R6 empirical).
 
 1. `use-the-available-kernel/SKILL.md` — **the most important sub-skill.** Hard rules for which primitive to reach for.
 2. `prepare-prompt/SKILL.md` — turn the user's ask into a Real Object Brief.
-3. `blockout-model/SKILL.md` — coarse parametric blockout in canonical views.
-4. `kernelcad-trace-from-image/SKILL.md` — convert pixel-space curves on a reference photo into normalized waypoints. Load only when an organic-curve outline (eyewear brow, ergonomic handle, sneaker midsole) would take more than ~60 seconds to eyeball off the photo.
-5. `image-replicator/SKILL.md` — the render→score→iterate loop (caveat: see Rule 9).
-6. `render-inspect/SKILL.md` — interpret diagnostic hints from `kernelcad evaluate`.
+3. `photo-to-device/SKILL.md` — only for a scaled, simple front-on consumer device or passive enclosure. It owns the current Studio/server handoff, photo-only limits, and real-part rules.
+4. `blockout-model/SKILL.md` — coarse parametric blockout in canonical views.
+5. `kernelcad-trace-from-image/SKILL.md` — convert pixel-space curves on a reference photo into normalized waypoints. Load only when an organic-curve outline (eyewear brow, ergonomic handle, sneaker midsole) would take more than ~60 seconds to eyeball off the photo.
+6. `image-replicator/SKILL.md` — the render→score→iterate loop (caveat: see Rule 9).
+7. `render-inspect/SKILL.md` — interpret diagnostic hints from `kernelcad evaluate`.
 
 ## Hard rules across all sub-skills
 
