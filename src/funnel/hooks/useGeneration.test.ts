@@ -3,6 +3,7 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
+import type { GenerateRequest } from '../lib/generateClient';
 
 const startGeneration = vi.fn();
 const parseSseStream = vi.fn();
@@ -52,5 +53,29 @@ describe('useGeneration edit mode', () => {
     expect(startGeneration).toHaveBeenCalledWith(
       expect.objectContaining({ prompt: 'a bracket', mesh: { renderImageUrl: 'https://t/r.png', proportions: [1, 0.7, 0.6] } }),
     );
+  });
+
+  it('forwards a structured photo reference to startGeneration', async () => {
+    const { result } = renderHook(() => useGeneration());
+    const referenceImage: NonNullable<GenerateRequest['referenceImage']> = {
+      dataUrl: 'data:image/png;base64,cGhvdG8=',
+      fileName: 'e-reader.png',
+      mimeType: 'image/png',
+      knownDimension: { label: 'overall height', valueMm: 203 },
+    };
+
+    await act(async () => {
+      await result.current.submit(
+        'model this simple e-reader',
+        undefined,
+        undefined,
+        referenceImage,
+      );
+    });
+
+    expect(startGeneration).toHaveBeenCalledWith(expect.objectContaining({
+      prompt: 'model this simple e-reader',
+      referenceImage,
+    }));
   });
 });

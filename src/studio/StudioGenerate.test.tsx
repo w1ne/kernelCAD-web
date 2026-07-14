@@ -37,15 +37,15 @@ beforeEach(() => {
 afterEach(() => cleanup());
 
 describe('StudioGenerate — unified prompt', () => {
-  it('renders exactly ONE textarea driving both actions', () => {
+  it('renders exactly ONE prompt textarea driving both actions', () => {
     render(<StudioGenerate />);
-    expect(screen.getAllByRole('textbox')).toHaveLength(1);
+    expect(document.querySelectorAll('textarea')).toHaveLength(1);
     expect(screen.getByRole('button', { name: /3d concept/i })).toBeInTheDocument();
   });
 
   it('sends the shared prompt to the concept preview', () => {
     render(<StudioGenerate />);
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'a hex planter' } });
+    fireEvent.change(screen.getByLabelText('Generate prompt'), { target: { value: 'a hex planter' } });
     fireEvent.click(screen.getByRole('button', { name: /3d concept/i }));
     expect(previewSubmit).toHaveBeenCalledWith('a hex planter');
   });
@@ -60,12 +60,12 @@ describe('StudioGenerate — unified prompt', () => {
     previewPhase = { state: 'running', progress: 42 };
     render(<StudioGenerate />);
     expect(screen.getByRole('button', { name: /concept… 42%/i })).toBeDisabled();
-    expect(screen.getByRole('textbox')).toBeDisabled();
+    expect(screen.getByLabelText('Generate prompt')).toBeDisabled();
   });
 
   it('Build-as-CAD feeds the concept prompt into the agent submit', () => {
     const { rerender } = render(<StudioGenerate />);
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'a hex planter' } });
+    fireEvent.change(screen.getByLabelText('Generate prompt'), { target: { value: 'a hex planter' } });
     fireEvent.click(screen.getByRole('button', { name: /3d concept/i }));
     previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null, renderImageUrl: null, proportions: null };
     rerender(<StudioGenerate />);
@@ -76,7 +76,7 @@ describe('StudioGenerate — unified prompt', () => {
   it('Build-as-CAD is a FRESH generation even when the editor holds code (not an edit of it)', () => {
     mockCode = 'const base = box(60, 40, 5); return base;';
     const { rerender } = render(<StudioGenerate />);
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'a hex planter' } });
+    fireEvent.change(screen.getByLabelText('Generate prompt'), { target: { value: 'a hex planter' } });
     fireEvent.click(screen.getByRole('button', { name: /3d concept/i }));
     previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null, renderImageUrl: null, proportions: null };
     rerender(<StudioGenerate />);
@@ -86,7 +86,7 @@ describe('StudioGenerate — unified prompt', () => {
 
   it('Build-as-CAD passes the concept mesh context into the agent submit', () => {
     const { rerender } = render(<StudioGenerate />);
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'a bracket' } });
+    fireEvent.change(screen.getByLabelText('Generate prompt'), { target: { value: 'a bracket' } });
     fireEvent.click(screen.getByRole('button', { name: /3d concept/i }));
     previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null, renderImageUrl: 'https://t/r.png', proportions: [1, 0.7, 0.6] };
     rerender(<StudioGenerate />);
