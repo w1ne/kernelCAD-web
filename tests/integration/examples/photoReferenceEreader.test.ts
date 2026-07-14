@@ -1,9 +1,12 @@
 import { existsSync, readFileSync } from 'node:fs';
+import { dirname, resolve as resolvePath } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { evaluateAndBuildScript } from '../../../src/agent/cli/commands/evaluate';
 
-const EXAMPLE = 'examples/from-reference/e-reader/kindle-2-e-reader.kcad.ts';
-const REFERENCE = 'examples/from-reference/e-reader/kindle-2-reference.jpg';
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const EXAMPLE = resolvePath(__dirname, '../../..', 'examples/from-reference/e-reader/kindle-2-e-reader.kcad.ts');
+const REFERENCE = resolvePath(__dirname, '../../..', 'examples/from-reference/e-reader/kindle-2-reference.jpg');
 
 describe('photo-reference Kindle 2 e-reader example', () => {
   it('preserves the real-object brief, reference image, and parametric device dimensions', async () => {
