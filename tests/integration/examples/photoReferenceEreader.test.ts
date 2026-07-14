@@ -86,9 +86,12 @@ describe('photo-reference Kindle 2 e-reader example', () => {
     // mechanism gate reporting orphan parts.
     expect(source).toContain("reader.mate('display-fastened'");
     expect(source).toContain('return reader.solvedModel({});');
-    const mechanism = await evaluateScriptTool({ file: EXAMPLE });
-    expect(mechanism.ok).toBe(true);
-    expect(mechanism.mechanism).toBe('real');
-    expect(mechanism.diagnostics.filter((diagnostic) => diagnostic.code.startsWith('mechanism.'))).toEqual([]);
+    const evaluation = await evaluateScriptTool({ file: EXAMPLE });
+    expect(evaluation.ok).toBe(true);
+    expect(evaluation.parts).toEqual({
+      count: 4,
+      names: ['housing', 'display', 'navigation-control', 'status-led'],
+    });
+    expect(evaluation.diagnostics.filter((diagnostic) => diagnostic.code.startsWith('mechanism.'))).toEqual([]);
   });
 });
