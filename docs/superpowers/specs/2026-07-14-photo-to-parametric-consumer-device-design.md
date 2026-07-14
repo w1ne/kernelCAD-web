@@ -57,7 +57,7 @@ The skill owns agent behavior. The example owns the concrete first-use-case sour
 - The e-reader source has named, bounded dimensions for body, display, bezel, control, and USB-C opening.
 - It contains a Real Object Brief with known facts, inferred facts, and validation focus.
 - The local reference photo is validated by `referenceImage()` during evaluation.
-- `kernelcad evaluate` has no errors, `kernelcad interference` reports no pairs, and the rendered model visibly reads as a real, layered e-reader rather than a flat card.
+- `kernelcad evaluate` has no errors, the four-part static assembly reports no interference pairs, and the rendered model visibly reads as a real, layered e-reader rather than a flat card.
 - The reusable skill instructs agents to ask for a known dimension, model visible geometry first, label inferred internals, and route mechanisms to the assembly/physical-review workflow.
 
 ## Follow-on integration boundary

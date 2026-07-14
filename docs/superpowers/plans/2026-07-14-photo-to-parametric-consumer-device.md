@@ -22,8 +22,10 @@
 
 ```ts
 import { existsSync, readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { evaluateScript } from '../../../src/agent/cli/commands/evaluate';
+import { evaluateAndBuildScript } from '../../../src/agent/cli/commands/evaluate';
+import { checkInterference } from '../../../src/agent/script-runtime/checkInterference';
 
 const EXAMPLE = 'examples/from-reference/e-reader/kindle-2-e-reader.kcad.ts';
 const REFERENCE = 'examples/from-reference/e-reader/kindle-2-reference.jpg';
@@ -38,10 +40,23 @@ describe('photo-reference e-reader example', () => {
       expect(source).toContain(`param('${name}'`);
     }
 
-    const result = await evaluateScript({ file: EXAMPLE });
-    expect(result.exitCode).toBe(0);
-    expect(result.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
-    expect(result.featureCount).toBeGreaterThanOrEqual(7);
+    const built = await evaluateAndBuildScript({ file: EXAMPLE });
+    expect(built.evaluation.exitCode).toBe(0);
+    expect(built.evaluation.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    expect(built.evaluation.featureCount).toBeGreaterThanOrEqual(7);
+    const referenceRecord = built.model?.records.find((record) => record.kind === 'referenceImage');
+    expect(referenceRecord).toBeDefined();
+    expect((referenceRecord?.metadata?.path as string | undefined)?.endsWith('kindle-2-reference.jpg')).toBe(true);
+    expect(referenceRecord?.metadata?.diagnostics ?? []).toEqual([]);
+
+    const interference = await checkInterference({
+      code: source,
+      fileName: EXAMPLE,
+      scriptDir: dirname(resolve(EXAMPLE)),
+      epsilonMm3: 0.01,
+    });
+    expect(interference.partCount).toBe(4);
+    expect(interference.pairs).toEqual([]);
   });
 });
 ```
@@ -86,7 +101,7 @@ Include the Wikimedia file page, author Evan-Amos, public-domain license, downlo
 
 - [ ] **Step 3: Implement the minimal parameterized model**
 
-Use a Real Object Brief followed by these named parameters: `bodyWidth`, `bodyHeight`, `bodyThickness`, `cornerRadius`, `bezelWidth`, `screenWidth`, `screenHeight`, `screenRecess`, `controlDiameter`, `usbPortWidth`, and `usbPortHeight`. Use `referenceImage()` on the XY plane, an `extrudeRoundedRect()` body, a shallow screen recess, a seated display plate, a recessed circular control, status LED, and a through USB-C opening. Apply PBR material to leaf geometry before every boolean or union. Return one composite shape.
+Use a Real Object Brief followed by these named parameters: `bodyWidth`, `bodyHeight`, `bodyThickness`, `cornerRadius`, `bezelWidth`, `screenWidth`, `screenHeight`, `screenRecess`, `controlDiameter`, `usbPortWidth`, and `usbPortHeight`. Use `referenceImage()` on the XZ plane, an `extrudeRoundedRect()` body, a shallow screen recess, a seated display plate, a recessed circular control, status LED, and a through USB-C opening. Apply PBR material to leaf geometry before every boolean or union. Return `assembly('photo-reference-e-reader').model()` with exactly four named, non-overlapping parts: housing, display, navigation control, and status LED.
 
 - [ ] **Step 4: Run the test and make it pass**
 
@@ -182,7 +197,7 @@ git commit -m "feat: guide photo-to-parametric device builds"
 /home/andrii/.nvm/versions/node/v22.22.0/bin/node dist/cli/index.js interference examples/from-reference/e-reader/kindle-2-e-reader.kcad.ts --json
 ```
 
-Expected: zero error diagnostics and zero interference pairs.
+Expected: zero error diagnostics, four assembly parts, and zero interference pairs.
 
 - [ ] **Step 3: Create and inspect the render packet**
 
