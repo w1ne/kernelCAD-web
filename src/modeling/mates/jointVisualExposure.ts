@@ -207,7 +207,7 @@ export async function validateJointVisualExposure(
     const axisDir = normalize(sideA.direction);
     if (axisDir === undefined) continue; // degenerate axis — out of scope
 
-    const inferredPinR = inferPinRadius(parentShape, childShape, axisDir);
+    const inferredPinR = inferPinRadius(parentShape, childShape, axisOrigin, axisDir);
     const measurements = measureJointVisuals(
       parentShape,
       childShape,
@@ -334,7 +334,10 @@ function measureJointVisuals(
   // exclude pin geometry, regardless of whether the pin lives on the
   // parent or the child.
   const AXIS_THICK_FACTOR = 2.0;
-  const PLATE_PERP_FACTOR = 3.0;
+  // A retaining head can be roughly 1.5-2x the shaft diameter. Requiring
+  // four shaft radii keeps it out of the fork-plate set while leaving a
+  // compact clevis cheek (normally many shaft radii across) measurable.
+  const PLATE_PERP_FACTOR = 4.0;
   const PERP_OVERLAP_MIN_FRACTION = 0.5;
   const axisThickThreshold = AXIS_THICK_FACTOR * pinRadius;
   const platePerpThreshold = PLATE_PERP_FACTOR * pinRadius;
@@ -611,8 +614,15 @@ function combinedBoundingSphereRadius(a: OcctBackend, b: OcctBackend): number {
  * near-zero on a degenerate geometry. The spec calls 3.5 mm out
  * explicitly as the reference for `MIN_PIN_STICKOUT_FACTOR × PIN_R`.
  */
-function inferPinRadius(parent: OcctBackend, child: OcctBackend, axisDir: Vec3): number {
+function inferPinRadius(
+  parent: OcctBackend,
+  child: OcctBackend,
+  axisOrigin: Vec3,
+  axisDir: Vec3,
+): number {
   const { u, v } = buildPerpendicularFrame(axisDir);
+  const originU = axisOrigin[0] * u[0] + axisOrigin[1] * u[1] + axisOrigin[2] * u[2];
+  const originV = axisOrigin[0] * v[0] + axisOrigin[1] * v[1] + axisOrigin[2] * v[2];
   let smallestHalf = Infinity;
   for (const shape of [parent, child]) {
     const replicadShape = shape.getReplicadShape();
@@ -647,7 +657,7 @@ function inferPinRadius(parent: OcctBackend, child: OcctBackend, axisDir: Vec3):
       // Only consider faces whose perpendicular AABB straddles the
       // joint origin in BOTH perpendicular directions — the pin sits on
       // the joint axis, so its perpendicular AABB encloses the origin.
-      if (uMin > 0 || uMax < 0 || vMin > 0 || vMax < 0) continue;
+      if (uMin > originU || uMax < originU || vMin > originV || vMax < originV) continue;
       if (halfMax < smallestHalf) smallestHalf = halfMax;
     }
   }
