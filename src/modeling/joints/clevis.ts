@@ -41,6 +41,9 @@ import type {
   StructuralMaterial,
 } from './types';
 
+/** Axial shaft/cap overlap used to keep each cap fused and flush. */
+const PIN_CAP_SHAFT_OVERLAP_MM = 0.5;
+
 // =============================================================================
 // Public surface — the namespace exposed as `kc.joint`.
 // =============================================================================
@@ -312,6 +315,15 @@ export function withDefaults(style: ClevisStyle | undefined): ResolvedClevisStyl
   const derivedCapThickness = Math.max(0.7 * plateT, 1.0);
   const pinCapThickness = style?.pinCapThickness ?? derivedCapThickness;
   assertPositive('style.pinCapThickness', pinCapThickness);
+  if (pinCapThickness < PIN_CAP_SHAFT_OVERLAP_MM) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `joint.clevis: style.pinCapThickness (${pinCapThickness} mm) must be at least ` +
+      `${PIN_CAP_SHAFT_OVERLAP_MM} mm so the cap reaches the outer fork face.`,
+      'joint.clevis',
+      `Increase style.pinCapThickness to at least ${PIN_CAP_SHAFT_OVERLAP_MM} mm.`,
+    );
+  }
 
   return {
     knuckleR,
@@ -359,15 +371,19 @@ export function computePivotLift(
   limitsDeg: [number, number],
 ): number {
   const radial = style.knuckleR; // tongue's furthest off-axis reach
-  const a = (limitsDeg[0] * Math.PI) / 180;
-  const b = (limitsDeg[1] * Math.PI) / 180;
-  // Largest |sin| over the closed interval [a, b]. If the interval crosses
-  // ±π/2, |sin| reaches 1; otherwise it's max(|sin a|, |sin b|).
-  const crossesPlus = a <= Math.PI / 2 && b >= Math.PI / 2;
-  const crossesMinus = a <= -Math.PI / 2 && b >= -Math.PI / 2;
-  const sinMax = crossesPlus || crossesMinus
+  const [minDeg, maxDeg] = limitsDeg;
+  // |sin(theta)| peaks at every 90 + 180k degrees. An interval at least
+  // 180 degrees wide contains a peak; narrower intervals need only test the
+  // first such critical point at or after its lower bound.
+  const spanDeg = maxDeg - minDeg;
+  const firstPeakDeg = 90 + 180 * Math.ceil((minDeg - 90) / 180);
+  const reachesFullRadius = spanDeg >= 180 || firstPeakDeg <= maxDeg;
+  const sinMax = reachesFullRadius
     ? 1
-    : Math.max(Math.abs(Math.sin(a)), Math.abs(Math.sin(b)));
+    : Math.max(
+      Math.abs(Math.sin((minDeg * Math.PI) / 180)),
+      Math.abs(Math.sin((maxDeg * Math.PI) / 180)),
+    );
   const safety = 1; // 1 mm pad so the tongue's edge doesn't graze the parent
   return radial * sinMax + safety;
 }
@@ -652,7 +668,7 @@ function makeTongueClearancePocket(
 /**
  * Build the pin (shaft + two cap heads), centred at the pivot, axis along
  * the pin axis. Shaft length = `shaftLen` (outer-to-outer fork face span).
- * Caps overlap the shaft by `capThickness` so the boolean union merges.
+ * Caps overlap the shaft by a fixed axial amount so the boolean union merges.
  */
 function buildPin(
   kc: KernelCadApi,
@@ -664,15 +680,16 @@ function buildPin(
   const shaft = makeAxisCylinder(kc, shaftLen, style.pinR, axis, pivot);
   // Caps: cylinders of radius pinCapR, length pinCapThickness, placed
   // flush against the outer fork faces (i.e., shifted ±(shaftLen/2 + capT/2)
-  // along the pin axis from the pivot, then nudged inward by capT/2 so
-  // their inner face sits AT the outer fork face — i.e., flush.
+  // along the pin axis from the pivot, then nudged inward by the fixed shaft
+  // overlap so their outer face reaches the outer fork face).
   //
-  // The flush condition: cap centre = pivot + axis * (shaftLen/2 + capT/2 - 0.5)
-  // where the -0.5 mm overlap merges the boolean. Actually a cleaner
-  // formulation: cap sits with inner face at z = ±shaftLen/2 (outer fork
-  // face) extending OUTWARD by capT. Cap centre at z = ±(shaftLen/2 + capT/2 - 0.5).
+  // The flush condition: cap centre = pivot + axis * (shaftLen/2 + capT/2 - overlap)
+  // where the fixed overlap merges the boolean. Actually a cleaner
+  // formulation: cap overlaps the shaft by `overlap`, so its inner face is
+  // inset from the outer fork face by that amount. Cap centre at
+  // z = ±(shaftLen/2 + capT/2 - overlap).
   const capT = style.pinCapThickness;
-  const capOffset = shaftLen / 2 + capT / 2 - 0.5; // 0.5 mm overlap merges union
+  const capOffset = shaftLen / 2 + capT / 2 - PIN_CAP_SHAFT_OVERLAP_MM;
   const capCentreA: Vec3 = [
     pivot[0] + axis[0] * capOffset,
     pivot[1] + axis[1] * capOffset,

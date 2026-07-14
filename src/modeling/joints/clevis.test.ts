@@ -127,6 +127,12 @@ describe('joint.clevis — G1 design locks', () => {
     expect(liftNarrow).toBeCloseTo(expectedNarrow, 6);
   });
 
+  it('3b. scans arbitrary finite angle intervals for the full |sin| reach', () => {
+    const style = withDefaults({ knuckleR: 10 });
+    expect(computePivotLift(style, [100, 280])).toBeCloseTo(style.knuckleR + 1, 6);
+    expect(computePivotLift(style, [-280, -100])).toBeCloseTo(style.knuckleR + 1, 6);
+  });
+
   it('4. fork plates are SYMMETRIC about the pivot along the pin axis (regression: 2026-05-30 Luxo Y-alignment misread)', () => {
     // The Luxo failure had the two fork plates at y=±(forkGapY/2 + plateT/2)
     // (correct), but author-time arithmetic let one drift. The primitive
@@ -430,6 +436,27 @@ describe('joint.clevis — G1 design locks', () => {
 
   it('rejects style with pinR + clearance >= knuckleR (drill would consume the knuckle)', () => {
     expect(() => withDefaults({ knuckleR: 5, pinR: 5 })).toThrow(/knuckleR/);
+  });
+
+  it('rejects a cap thinner than the fixed shaft-overlap inset', () => {
+    const style = {
+      knuckleR: 6,
+      pinR: 1,
+      pinCapR: 2,
+      holeClearance: 0.2,
+      pinCapThickness: 0.49,
+    };
+    expect(() => withDefaults(style)).toThrow(/pinCapThickness.*0\.5/i);
+
+    const session = new CaptureSession();
+    const kc = createApi({ session });
+    expect(() => kc.joint.clevis({
+      parentBody: kc.box(30, 30, 20, true),
+      childBody: kc.box(40, 12, 12, true).translate(20, 0, 0),
+      axis: 'Y',
+      pivotParent: [0, 0, 10],
+      style,
+    })).toThrow(/pinCapThickness.*0\.5/i);
   });
 
   it('accepts limitsDeg defaulting to [-90, 90] when omitted', () => {
