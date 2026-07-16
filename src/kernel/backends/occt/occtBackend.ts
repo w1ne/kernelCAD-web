@@ -46,27 +46,75 @@ export function meshShapeForExport(shape: replicad.Shape3D): { vertices: number[
   // marked dirty.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (oc as any).BRepTools.Clean(wrapped, true);
+
+  // Whole-shape mesher escape hatch for pathologically dense imported packages.
+  //
+  // OCCT's shape-level BRepMesh ABORTS (throws a raw exception pointer) on some
+  // very dense multi-face imported STEP — notably KiCad's LQFP-144 (2195 faces).
+  // Worse, the aborted pass irreversibly damages the shape's geometry: a later
+  // per-face retry (or even a STEP round-trip) then yields nothing. Recovery
+  // after the fact is impossible, so the only safe path is to NOT run the
+  // shape-level mesher on shapes dense enough to risk it, and mesh every face
+  // independently instead (proven to succeed face-by-face where the whole-shape
+  // pass fails). Every board component we currently ship meshes cleanly at the
+  // shape level up to 1275 faces (ESP32-S3-WROOM-1); the LQFP-144 outlier is at
+  // 2195. A 1600-face gate cleanly separates them, so every existing export
+  // keeps its byte-identical shape-level triangulation and only the outliers
+  // take the per-face path.
+  const WHOLE_SHAPE_FACE_LIMIT = 1600;
+  let faceCount = 0;
+  for (const _f of shape.faces) faceCount++;
+
   // Fresh tessellation with relative-deflection mode. The ctor performs the
   // meshing and stamps each face's triangulation in-place.
   // BRepMesh_IncrementalMesh_2(theShape, theLinDeflection, isRelative,
   //                            theAngDeflection, isInParallel)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mesher = new (oc as any).BRepMesh_IncrementalMesh_2(
-    wrapped,
-    0.01, // linear deflection — scaled per-edge because isRelative=true,
-          //   so absolute deflection is ~0.01 * edgeLength (e.g. 0.3 mm on a
-          //   30 mm slant; 0.6 mm on a 60 mm radius) — finer than the
-          //   absolute-mode 0.05 default, with uniform refinement across
-          //   face boundaries.
-    true, // isRelative — tolerance is fraction of edge length
-    0.05, // angular deflection (rad). Replicad's default is 0.1; halving to
-          //   0.05 reduces chord error on curved surfaces. Note: tightening
-          //   further does not eliminate OCCT-mesher self-intersection on
-          //   adjacent cone rings (a known mesher limitation, not tolerance
-          //   sensitivity) — see cqe-task14 follow-up for the welding +
-          //   self-intersection fix.
-    false, // isInParallel
-  );
+  let mesher: any = null;
+  if (faceCount <= WHOLE_SHAPE_FACE_LIMIT) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mesher = new (oc as any).BRepMesh_IncrementalMesh_2(
+        wrapped,
+        0.01, // linear deflection — scaled per-edge because isRelative=true,
+              //   so absolute deflection is ~0.01 * edgeLength (e.g. 0.3 mm on a
+              //   30 mm slant; 0.6 mm on a 60 mm radius) — finer than the
+              //   absolute-mode 0.05 default, with uniform refinement across
+              //   face boundaries.
+        true, // isRelative — tolerance is fraction of edge length
+        0.05, // angular deflection (rad). Replicad's default is 0.1; halving to
+              //   0.05 reduces chord error on curved surfaces. Note: tightening
+              //   further does not eliminate OCCT-mesher self-intersection on
+              //   adjacent cone rings (a known mesher limitation, not tolerance
+              //   sensitivity) — see cqe-task14 follow-up for the welding +
+              //   self-intersection fix.
+        false, // isInParallel
+      );
+    } catch {
+      // A shape below the gate still aborted: best-effort per-face below rather
+      // than crash the whole export (the aborted pass may have damaged this
+      // shape, so its part can come out empty — the watertight verify reports it).
+      mesher = null;
+    }
+  }
+  if (mesher === null) {
+    // No shape-level triangulation: mesh every face independently in ABSOLUTE
+    // mode so the read-back loop finds populated triangulations.
+    for (const face of shape.faces) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fw = (face as any).wrapped;
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (oc as any).BRepTools.Clean(fw, true);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const fm = new (oc as any).BRepMesh_IncrementalMesh_2(fw, 0.02, false, 0.1, false);
+        fm.delete();
+      } catch {
+        // Face left untriangulated; the read-back loop's fallback + the
+        // watertight verify will surface any resulting hole.
+      }
+    }
+  }
   try {
     // Read per-face triangulation directly. This is the same loop as
     // replicad's `Shape3D.mesh()` minus the redundant _mesh() call that
@@ -142,7 +190,7 @@ export function meshShapeForExport(shape: replicad.Shape3D): { vertices: number[
     welded.triangles = dropDegenerateTriangles(welded.triangles);
     return welded;
   } finally {
-    mesher.delete();
+    if (mesher) mesher.delete();
   }
 }
 

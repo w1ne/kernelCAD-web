@@ -63,7 +63,12 @@ export interface CatalogRecord {
   standard?: string;
   tags: string[];
   attributes: Record<string, number | string>;
-  stepUrl: string;
+  /** URL of the served STEP. Optional because authored dev-board records serve
+   *  a web-ready GLB instead (buildBoardGlbs drops stepUrl + adds glbUrl). */
+  stepUrl?: string;
+  /** URL of a web-ready decimated GLB. Set only for authored `*-board` records
+   *  whose heavy STEP is not served (see buildBoardGlbs). */
+  glbUrl?: string;
   sha256: string;
   byteSize: number;
   license: string;

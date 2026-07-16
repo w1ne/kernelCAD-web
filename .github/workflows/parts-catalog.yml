@@ -57,10 +57,24 @@ jobs:
           --manifest scripts/electronics-parts.json
           --base-url https://kernelcad-parts.pages.dev
 
+      - name: Build web-ready board GLBs (and drop oversized board STEPs)
+        # For every authored dev-board (kcad_source id ending in -board), compile
+        # a GLB, decimate it to a few hundred KB (uncompressed, colors preserved),
+        # write catalog/glb/<id>.glb, add glbUrl + drop stepUrl on the record, and
+        # delete the board's oversized catalog/step/<id>.step. This keeps every
+        # deployed file under Cloudflare Pages' 25 MiB limit and serves the web a
+        # browser-loadable mesh. Non-authored parts keep their STEP untouched.
+        run: >
+          npx tsx scripts/buildBoardGlbs.ts catalog
+          --manifest scripts/electronics-parts.json
+          --base-url https://kernelcad-parts.pages.dev
+
       - name: Summarize
         run: |
           COUNT=$(node -e "console.log(require('./catalog/v1/catalog/parts.index.json').catalog.partCount)")
           echo "Ingested **$COUNT** parts." >> "$GITHUB_STEP_SUMMARY"
+          GLBS=$(ls catalog/glb/*.glb 2>/dev/null | wc -l | tr -d ' ')
+          echo "Built **$GLBS** web-ready board GLB(s)." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Ensure Cloudflare Pages project exists
         run: npx wrangler@4.94.0 pages project create kernelcad-parts --production-branch=main || true
