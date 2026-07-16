@@ -1,39 +1,48 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: CC-BY-SA-4.0
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/parts/authored/esp32-devkit-board.kcad.ts
 //
-// ESP32 DevKitC / DevKit V1 development board — ORIGINAL kernelCAD model.
-// Authored from public mechanical dimensions (the vendor STEP is unlicensed),
-// so this geometry is ours outright.
+// ESP32 DevKitC / DevKit V1 development board — kernelCAD model composed from
+// REAL component STEP geometry (KiCad packages3D) on an original modeled PCB.
 //
-// Overall footprint: ~52 (X, length) x 28 (Y, width) x 1.6mm PCB, with the
-// ESP32-WROOM-32 module + USB + headers standing on the +Z face and the header
-// pins protruding to -Z (through-hole). Z is the thin axis (board lies flat in
-// XY) — LabWired expects boards thin-on-Z.
+// This is the TEMPLATE every other authored board follows: the PCB is our own
+// primitive slab; every populated component is a real vendor STEP loaded with
+// `lib.fromSTEP(...)`, measured, then rotated/translated onto the board.
+//
+// LICENSE NOTE: because this model embeds KiCad component geometry, the model as
+// a whole is distributed under CC-BY-SA-4.0 (with the KiCad library exception),
+// NOT the repo's MIT. See scripts/parts/authored/components/ATTRIBUTION.md.
+//
+// Frame convention: board lies flat in XY, Z is the thin axis (thickness).
+//   X = length (0..52), Y = width (0..28), Z = thickness (0..1.6 PCB).
+// Each imported KiCad component uses Z=0 as its board-mount plane, so we seat it
+// by translating Z += PCB_T. Component length axes (local Y) are turned onto the
+// board X axis with a ±90° rotation about Z.
 //
 // Layout (X = length 0..52, Y = width 0..28):
-//   - Micro-USB at the X=0 short end (overhangs the edge).
-//   - EN + BOOT tactile buttons + AMS1117 regulator + LEDs/passives near USB.
-//   - ESP32-WROOM-32 module near the X=52 end; its PCB-trace antenna strip
-//     overhangs the far short edge by ~6mm.
-//   - Two 19-pin 2.54mm header rows down both long edges, ~2mm in from each edge.
+//   - Micro-USB at the X=0 short end (shell overhangs the edge).
+//   - EN + BOOT tactile buttons + AMS1117 regulator + crystal + LEDs near USB.
+//   - ESP32-WROOM-32 module near the X=52 end; its antenna overhangs the far
+//     short edge by ~6mm.
+//   - Two 19-pin 2.54mm header rows down both long edges, ~2mm in from the edge,
+//     pins protruding through the board to -Z.
 
-// ---- PCB substrate -------------------------------------------------------
+// ---- PCB substrate (our own geometry) ------------------------------------
 const PCB_L = 52.0; // X  (length)
 const PCB_W = 28.0; // Y  (width)
 const PCB_T = 1.6;  // Z  (thickness — the thin axis)
 
+// Explicit part colors — the kernelCAD render and LabWired both key off these,
+// so every composed component is tinted (imported STEP would otherwise be gray).
+// NOTE: .color() takes a '#RRGGBB' STRING; a numeric 0xRRGGBB is NOT honored
+// (the imported STEP falls back to gray). Keep every color a string.
 const PCB_GREEN   = '#14653a'; // solder-mask green
-const CAN_SILVER  = '#c6cace'; // WROOM metal shield can
-const MOD_PCB     = '#242428'; // module fiberglass substrate
-const ANT_COPPER  = '#b0803a'; // PCB-trace antenna meander
-const HDR_BLACK   = '#18181c'; // header plastic
-const PIN_GOLD    = '#c8a848'; // header pins
-const USB_SILVER  = '#b8bcc0'; // micro-USB shell
-const BTN_BODY    = '#28282c'; // tact-switch body
-const BTN_CAP     = '#4c4c54'; // tact-switch actuator
-const IC_DARK     = '#1a1a1e'; // AMS1117 / ICs
-const PASSIVE_TAN = '#7a6038'; // 0805 passives
+const WROOM_STEEL = '#b8bcc0'; // brushed-steel shield can
+const HDR_BLACK   = '#18181a'; // header plastic (dominates the top view)
+const USB_SILVER  = '#c8ccd0'; // micro-USB shell
+const BTN_BLACK   = '#1c1c1e'; // tactile switch body
+const IC_BLACK    = '#1a1a1a'; // SOT-223 (AMS1117)
+const XTAL_METAL  = '#b0b4b8'; // crystal SMD can
 const LED_RED     = '#d02424';
 const LED_BLUE    = '#2a52d8';
 
@@ -42,85 +51,115 @@ const parts: [string, Shape][] = [];
 // PCB slab (corner-anchored: spans [0,52] x [0,28] x [0,1.6]).
 parts.push(['pcb', box(PCB_L, PCB_W, PCB_T).color(PCB_GREEN)]);
 
-// ---- ESP32-WROOM-32 module ----------------------------------------------
-// Module substrate: 25.5 (X) x 18 (Y) x 0.9, overhanging the X=52 edge by 6mm
-// so its antenna strip hangs off the board (as on the real DevKitC).
-const MOD_LEN = 25.5; // X
-const MOD_W   = 18.0; // Y
-const MOD_SUB_T = 0.9;
-const CAN_LEN = 18.0; // metal shield covers the inner 18mm; the rest is antenna
-const CAN_T   = 2.2;
-const modY = (PCB_W - MOD_W) / 2;      // 5.0 — centered across the width
-const modX = PCB_L + 6 - MOD_LEN;      // 32.5 — antenna end at X=58, 6mm overhang
-
-parts.push(['wroom-substrate',
-  box(MOD_LEN, MOD_W, MOD_SUB_T).color(MOD_PCB).translate(modX, modY, PCB_T)]);
-parts.push(['wroom-shield-can',
-  box(CAN_LEN, MOD_W, CAN_T).color(CAN_SILVER).translate(modX, modY, PCB_T + MOD_SUB_T)]);
-// PCB-trace antenna: the exposed copper strip on the overhanging end.
-parts.push(['wroom-antenna',
-  box(MOD_LEN - CAN_LEN - 0.5, MOD_W - 4, 0.2)
-    .color(ANT_COPPER)
-    .translate(modX + CAN_LEN + 0.5, modY + 2, PCB_T + MOD_SUB_T)]);
-
-// ---- Header rows (19 pins x 2 sides, 2.54mm pitch) -----------------------
-const PIN_COUNT = 19;
-const PITCH = 2.54;
-const rowSpan = (PIN_COUNT - 1) * PITCH;              // 45.72
-const rowStartX = (PCB_L - rowSpan) / 2;              // 3.14 — centered on length
-const HDR_BODY_W = 2.4;                               // Y extent of plastic strip
-const HDR_BODY_H = 2.5;
-const rowYs = [2.0, PCB_W - 2.0];                     // ~2mm in from each long edge
-
-rowYs.forEach((rowY, r) => {
-  // black plastic strip
-  parts.push([`header-${r}-body`,
-    box(rowSpan + 3, HDR_BODY_W, HDR_BODY_H)
-      .color(HDR_BLACK)
-      .translate(rowStartX - 1.5, rowY - HDR_BODY_W / 2, PCB_T)]);
-  // gold pins — square posts through the board, protruding ~3mm to -Z
-  for (let i = 0; i < PIN_COUNT; i++) {
-    const px = rowStartX + i * PITCH;
-    parts.push([`header-${r}-pin-${i}`,
-      box(0.64, 0.64, 8.0)
-        .color(PIN_GOLD)
-        .translate(px - 0.32, rowY - 0.32, -3.0)]);
-  }
-});
-
-// ---- Micro-USB connector (X=0 end, slight overhang) ----------------------
-const USB_DEPTH = 5.5; // X
-const USB_WIDTH = 7.5; // Y
-const USB_H = 2.6;
-parts.push(['micro-usb',
-  box(USB_DEPTH, USB_WIDTH, USB_H)
-    .color(USB_SILVER)
-    .translate(-1.5, (PCB_W - USB_WIDTH) / 2, PCB_T)]);
-
-// ---- EN + BOOT tactile buttons near the USB end --------------------------
-function tactSwitch(id: string, x: number, y: number): void {
-  parts.push([`${id}-body`, box(4.0, 3.0, 1.8).color(BTN_BODY).translate(x, y, PCB_T)]);
-  parts.push([`${id}-cap`,
-    box(2.0, 1.8, 0.8).color(BTN_CAP).translate(x + 1.0, y + 0.6, PCB_T + 1.8)]);
+// ---- ESP32-WROOM-32 module (real STEP) -----------------------------------
+// Local: X -9..9 (width 18), Y -9.8..15.7 (length 25.5, antenna at +Y), Z 0..3.1.
+// rotate([0,0,1],-90): local +Y (length/antenna) -> world +X; local X -> world Y.
+// After rotation world X spans -9.8..15.7, world Y spans -9..9.
+// Translate so antenna tip (world X 15.7) lands at X=58 (6mm overhang past 52),
+// and width centers across the board (world Y -> 5..23).
+{
+  const wroom = (await lib.fromSTEP('components/esp32_wroom32.step'))
+    .rotate([0, 0, 1], -90)
+    .color(WROOM_STEEL)
+    .translate(58 - 15.7, PCB_W / 2, PCB_T);
+  parts.push(['esp32-wroom-32', wroom]);
 }
-tactSwitch('en-button', 6.5, 4.0);    // EN — lower edge side
-tactSwitch('boot-button', 6.5, 21.0); // BOOT/IO0 — upper edge side
 
-// ---- AMS1117 3.3V regulator (SOT-223) ------------------------------------
-parts.push(['ams1117',
-  box(6.5, 3.5, 1.6).color(IC_DARK).translate(16.0, 12.5, PCB_T)]);
+// ---- Header rows: two 1x19 2.54mm (real STEP) ----------------------------
+// Local: X -1.3..1.3 (body width 2.6), Y 0..-47 (19 pins), Z -3..8.5 (8.5mm long
+// mating pins one side, 3mm tail the other, 2.5mm plastic strip at the base).
+// DevKitC ships with the LONG pins pointing DOWN (breadboard style), so flip the
+// header 180° about X to send the 8.5mm pins to -Z (below the board) and leave
+// mostly the black plastic strip on top.
+//   rotate([1,0,0],180): (x,y,z) -> (x,-y,-z)   [long pins now at -Z]
+//   rotate([0,0,1],-90): (x,y,z) -> (y,-x,z)
+//   combined:            (x,y,z) -> (-y,-x,-z)   then translate(rowStartX, rowY, tz)
+//     world X = -local Y  -> pins run 0..+45.7 in X (centered on the 52mm board)
+//     world Y = -local X  -> 2.6mm-wide strip
+//     world Z = -local Z + tz
+// The 2.5mm plastic insulator is at local Z 0..2.5 (KiCad seats the insulator on
+// the Z=0 plane), so after the flip it lands at world Z [tz-2.5, tz]. Raise the
+// header by PLASTIC_H above the board top (tz = PCB_T + PLASTIC_H = 4.1) so the
+// plastic body's BOTTOM is flush with the PCB top (Z=1.6) and it stands proud to
+// Z=4.1 — a visible ~2.5mm black strip above the green. The long mating pins
+// (local Z 2.5..8.5) then run from Z=1.6 DOWN to Z=-4.4 (through and below the
+// board); the short solder tails (local Z -3..0) poke up to Z=7.1.
+{
+  const PLASTIC_H = 2.5;                      // insulator height (local Z 0..2.5)
+  const headerZ = PCB_T + PLASTIC_H;          // 4.1 — plastic bottom flush at 1.6
+  const rowStartX = (PCB_L - 18 * 2.54) / 2;  // 3.14, centered on length
+  const rowYs = [2.0, PCB_W - 2.0];           // ~2mm in from each long edge
+  for (let r = 0; r < rowYs.length; r++) {
+    const hdr = (await lib.fromSTEP('components/pinheader_1x19.step'))
+      .rotate([1, 0, 0], 180)
+      .rotate([0, 0, 1], -90)
+      .color(HDR_BLACK)
+      .translate(rowStartX, rowYs[r], headerZ);
+    parts.push([`header-row-${r}`, hdr]);
+  }
+}
 
-// ---- Indicator LEDs (red power, blue user) -------------------------------
-parts.push(['led-power', box(1.6, 0.9, 0.75).color(LED_RED).translate(12.0, 20.5, PCB_T)]);
-parts.push(['led-user',  box(1.6, 0.9, 0.75).color(LED_BLUE).translate(12.0, 6.5, PCB_T)]);
+// ---- Micro-USB connector (real STEP) -------------------------------------
+// Local: X -4..4 (width 8), Y -3.8..1.6 (depth), Z -0.2..2.7 (height; body already
+// lies flat with mounting tabs at the low-Z side). The receptacle MOUTH (the open
+// shroud) faces local -Y. To aim it off the X=0 short edge we send local -Y to
+// world -X with rotate([0,0,1],-90): (x,y,z) -> (y,-x,z):
+//   world X = local Y  -> mouth (local Y -3.8) lands at world X -3.8 (off the edge)
+//   world Y = -local X -> 8mm shell width across the board, centered
+//   world Z = local Z  -> body stays flat on the +Z face (no up/into-board tilt)
+// Translate +2 in X so the mounting body sits on the PCB while the mouth overhangs.
+{
+  const usb = (await lib.fromSTEP('components/usb_micro_b.step'))
+    .rotate([0, 0, 1], -90)
+    .color(USB_SILVER)
+    .translate(2.0, PCB_W / 2, PCB_T);
+  parts.push(['micro-usb', usb]);
+}
 
-// ---- A few 0805 passives around the regulator ----------------------------
-const passivePositions: [number, number][] = [
-  [24.0, 10.5], [24.0, 15.5], [27.0, 12.5], [20.5, 18.0], [20.5, 7.0],
-];
-passivePositions.forEach(([cx, cy], i) => {
-  parts.push([`passive-${i}`, box(1.6, 0.9, 0.55).color(PASSIVE_TAN).translate(cx, cy, PCB_T)]);
-});
+// ---- EN + BOOT tactile buttons (real STEP) -------------------------------
+// Local: X -0.4..6.7, Y -5.3..0.8, Z -3.5..4.3 (legs down, cap up). Z0 = plane.
+// Place both near the USB end, on opposite long edges.
+{
+  const en = (await lib.fromSTEP('components/button_tht_6mm.step'))
+    .color(BTN_BLACK)
+    .translate(4.0, 8.0, PCB_T);
+  parts.push(['en-button', en]);
+  const boot = (await lib.fromSTEP('components/button_tht_6mm.step'))
+    .color(BTN_BLACK)
+    .translate(4.0, 24.0, PCB_T);
+  parts.push(['boot-button', boot]);
+}
+
+// ---- AMS1117 3.3V regulator (SOT-223, real STEP) -------------------------
+// Local: X -3.5..3.5, Y -3.3..3.3, Z 0..1.7 (centered).
+{
+  const ams = (await lib.fromSTEP('components/sot223.step'))
+    .color(IC_BLACK)
+    .translate(17.0, 14.0, PCB_T);
+  parts.push(['ams1117', ams]);
+}
+
+// ---- Crystal (SMD 3225, real STEP) ---------------------------------------
+// Local: X -1.6..1.6, Y -1.3..1.2, Z 0..0.6 (centered).
+{
+  const xtal = (await lib.fromSTEP('components/crystal_smd_3225.step'))
+    .color(XTAL_METAL)
+    .translate(24.0, 14.0, PCB_T);
+  parts.push(['crystal', xtal]);
+}
+
+// ---- Indicator LEDs (0805, real STEP; tinted red power / blue user) ------
+// Local: X -1..1, Y -0.6..0.6, Z 0..1.1 (centered).
+{
+  const ledPwr = (await lib.fromSTEP('components/led_0805.step'))
+    .color(LED_RED)
+    .translate(12.0, 21.0, PCB_T);
+  parts.push(['led-power', ledPwr]);
+  const ledUsr = (await lib.fromSTEP('components/led_0805.step'))
+    .color(LED_BLUE)
+    .translate(12.0, 7.0, PCB_T);
+  parts.push(['led-user', ledUsr]);
+}
 
 // ---- Assemble ------------------------------------------------------------
 const asm = assembly('esp32-devkit-board');

@@ -110,13 +110,93 @@
     },
     {
       "id": "esp32-devkit-board",
-      "name": "ESP32 DevKitC / DevKit V1 development board (52×28mm, 38-pin)",
+      "name": "ESP32 DevKitC",
       "family": "ESP32",
       "mpn": "ESP32-DevKitC-V4",
       "kcad_source": "scripts/parts/authored/esp32-devkit-board.kcad.ts",
       "tags": ["board", "esp32", "devkit", "devkitc", "wroom-32", "mcu"],
-      "license": "MIT",
-      "attribution": "kernelCAD (original model)"
+      "license": "CC-BY-SA-4.0",
+      "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception)"
+    },
+    {
+      "id": "nucleo64-board",
+      "name": "ST Nucleo-64 (MB1136)",
+      "family": "STM32",
+      "mpn": "NUCLEO-64",
+      "kcad_source": "scripts/parts/authored/nucleo64-board.kcad.ts",
+      "tags": ["nucleo", "stm32", "mb1136", "dev-board"],
+      "license": "CC-BY-SA-4.0",
+      "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception)"
+    },
+    {
+      "id": "nucleo-h563zi-board",
+      "name": "ST Nucleo-144 H563ZI",
+      "family": "STM32",
+      "mpn": "NUCLEO-H563ZI",
+      "kcad_source": "scripts/parts/authored/h563zi-board.kcad.ts",
+      "tags": ["nucleo", "stm32", "h563", "dev-board"],
+      "license": "CC-BY-SA-4.0",
+      "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception)"
+    },
+    {
+      "id": "blackpill-board",
+      "name": "WeAct STM32 BlackPill F4x1",
+      "family": "STM32",
+      "mpn": "WeAct-BlackPill-F401",
+      "kcad_source": "scripts/parts/authored/blackpill-board.kcad.ts",
+      "tags": ["blackpill", "stm32", "weact", "dev-board"],
+      "license": "CC-BY-SA-4.0",
+      "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception)"
+    },
+    {
+      "id": "arduino-uno-board",
+      "name": "Arduino Uno R3",
+      "family": "Arduino",
+      "mpn": "A000066",
+      "kcad_source": "scripts/parts/authored/arduino-uno-board.kcad.ts",
+      "tags": ["arduino", "uno", "atmega328", "dev-board"],
+      "license": "CC-BY-SA-4.0",
+      "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception); USB-B placeholder"
+    },
+    {
+      "id": "esp32-c3-supermini-board",
+      "name": "ESP32-C3 SuperMini",
+      "family": "ESP32",
+      "mpn": "ESP32-C3-SuperMini",
+      "kcad_source": "scripts/parts/authored/esp32-c3-supermini-board.kcad.ts",
+      "tags": ["esp32", "c3", "supermini", "dev-board"],
+      "license": "CC-BY-SA-4.0",
+      "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception)"
+    },
+    {
+      "id": "esp32-s3-zero-board",
+      "name": "Waveshare ESP32-S3-Zero",
+      "family": "ESP32",
+      "mpn": "ESP32-S3-Zero",
+      "kcad_source": "scripts/parts/authored/esp32-s3-zero-board.kcad.ts",
+      "tags": ["esp32", "s3", "zero", "waveshare", "dev-board"],
+      "license": "CC-BY-SA-4.0",
+      "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception)"
+    },
+    {
+      "id": "nrf52840-dk-board",
+      "name": "Nordic nRF52840-DK",
+      "family": "Nordic",
+      "mpn": "nRF52840-DK",
+      "kcad_source": "scripts/parts/authored/nrf52840-dk-board.kcad.ts",
+      "tags": ["nordic", "nrf52840", "dk", "dev-board"],
+      "license": "CC-BY-SA-4.0",
+      "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception); nRF52840 package stand-in"
+    },
+    {
+      "id": "kw41z-board",
+      "name": "NXP FRDM-KW41Z",
+      "family": "NXP",
+      "mpn": "FRDM-KW41Z",
+      "kcad_source": "scripts/parts/authored/kw41z-board.kcad.ts",
+      "tags": ["nxp", "kw41z", "frdm", "dev-board"],
+      "license": "CC-BY-SA-4.0",
+      "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception)"
     },
     {
       "id": "mlx90640",
