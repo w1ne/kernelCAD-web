@@ -20,24 +20,61 @@ type UnknownRecord = Record<string, unknown>;
  * Linear + angular deflection passed to replicad's `mesh()` / `meshEdges()`.
  * Smaller values produce finer (slower) tessellation.
  *
- * The historical fixed quality used everywhere is `{ tolerance: 0.1,
- * angularTolerance: 30 }` — exported as {@link FINE_MESH_OPTIONS} and used as
- * the default for every existing caller, so behavior is unchanged unless a
- * caller explicitly opts into a coarser preset.
+ * BOTH fields are forwarded verbatim to OCCT — replicad's `_mesh` is a straight
+ * passthrough to `BRepMesh_IncrementalMesh_2(shape, tolerance, false,
+ * angularTolerance, false)`, whose 4th argument is `theAngDeflection` in
+ * RADIANS. There is no unit conversion anywhere in the chain.
  */
 export interface MeshOptions {
-  /** Linear deflection in model units (OCCT `BRepMesh` `theLinDeflection`). */
+  /** Linear deflection in model units / mm (OCCT `BRepMesh` `theLinDeflection`). */
   tolerance: number;
-  /** Angular deflection in degrees (replicad converts to radians). */
+  /**
+   * Angular deflection in RADIANS (OCCT `BRepMesh` `theAngDeflection`).
+   *
+   * NOT degrees. This docstring used to claim degrees "(replicad converts to
+   * radians)" — it does not convert, and the claim cost us every curved surface
+   * in the viewer. See {@link FINE_MESH_OPTIONS}.
+   *
+   * Reference points: replicad default 0.1 (~5.7°), OCCT default 0.5 (~28.6°).
+   * Any value above ~6.28 (2π) disables the criterion entirely.
+   */
   angularTolerance: number;
 }
 
 /**
- * Default fine mesh quality — the exact constants used by every caller before
- * the two-tier path existed. Keeping this as the default preserves byte-for-byte
- * output for the single-pass callers.
+ * Default fine mesh quality.
+ *
+ * `angularTolerance` was `30` here for a long time. Because the value is radians,
+ * not degrees, 30 rad (~1719°) is far beyond 2π — the angular criterion never
+ * bound, and curved surfaces were tessellated by linear deflection ALONE. That
+ * is what made small curves look faceted: a ⌀4mm cylinder meshed to 56
+ * triangles, because 0.1mm of sag on a 2mm radius permits a very coarse angular
+ * step.
+ *
+ * Proof the criterion was off: a r=2mm cylinder meshes IDENTICALLY at 30, 60 and
+ * 6.3 rad (56 tris) — all exceed 2π, so only linear deflection bound.
+ *
+ * 0.3 rad (~17°) is chosen from measurement, not from the doc. Sweep at
+ * tolerance 0.1, triangles / mesh-ms:
+ *
+ *            ang=30(off)   ang=0.5    ang=0.3    ang=0.2     ang=0.1
+ *   fillet    372 / 14.6   628/14.8  1380/19.8  2804/29.0   9460/90.4
+ *   sphere    520 /  3.5   516/ 3.2   868/ 6.3  2022/15.2   8002/75.7
+ *   cyl r=2    56 /  5.0   100/ 5.0   164/ 5.9   248/ 7.2    500/11.4
+ *
+ * Cost is ~flat to 0.35 and cliffs below 0.15. At 0.3 a filleted box gets 3.7x
+ * the triangles for 1.36x the mesh time — the visual win lands on exactly the
+ * doubly-curved surfaces (fillets, spheres) that looked worst, while a
+ * r=200mm cylinder is unchanged at 560 tris because linear deflection already
+ * binds there.
+ *
+ * NOTE: OCCT_PERFORMANCE.md §9.1 targets 0.1 rad for `display`. That doc is
+ * architecture-phase and was never measured — 0.1 costs 6-21x mesh time here
+ * and would trade one complaint (faceting) for another (edit latency). 0.3 also
+ * matches OcctBackend.getMesh's long-standing value, the one call site whose
+ * author clearly knew these were radians.
  */
-export const FINE_MESH_OPTIONS: MeshOptions = { tolerance: 0.1, angularTolerance: 30 };
+export const FINE_MESH_OPTIONS: MeshOptions = { tolerance: 0.1, angularTolerance: 0.3 };
 
 /**
  * Coarse mesh quality for an immediate-preview fast path. Much looser linear
@@ -45,8 +82,17 @@ export const FINE_MESH_OPTIONS: MeshOptions = { tolerance: 0.1, angularTolerance
  * to show *something* in Studio while the fine pass runs. Visually rougher
  * (faceted curves) but topologically valid and positive-volume — never used as
  * the final mesh, only as a first paint before a refine pass replaces it.
+ *
+ * `angularTolerance` was `60` (i.e. 60 radians — same disabled-criterion bug as
+ * FINE above). 0.5 rad is OCCT's own default: visibly coarser than FINE's 0.1
+ * while still actually constraining curvature.
+ *
+ * NOTE: this preset has no production caller — the two-tier preview path was
+ * scaffolded up to this constant and never built (OCCT_PERFORMANCE.md §9.2).
+ * It is kept because the units fix belongs with its sibling; wire it or delete
+ * it deliberately, don't let it rot as decoration.
  */
-export const COARSE_MESH_OPTIONS: MeshOptions = { tolerance: 1.0, angularTolerance: 60 };
+export const COARSE_MESH_OPTIONS: MeshOptions = { tolerance: 1.0, angularTolerance: 0.5 };
 
 export function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === 'object' && value !== null;
@@ -388,11 +434,22 @@ function tryExtractCylinderFromFace(face: unknown): FaceGeometry['cylinder'] {
   return undefined;
 }
 
-export function meshWireToSketch(wire: unknown, id: string, name: string): SketchGeometry | null {
+export function meshWireToSketch(
+  wire: unknown,
+  id: string,
+  name: string,
+  options: MeshOptions = FINE_MESH_OPTIONS,
+): SketchGeometry | null {
   if (!isRecord(wire)) return null;
   const meshEdgesFn = getFn(wire, 'meshEdges');
   if (meshEdgesFn) {
-    const meshEdges = meshEdgesFn.call(wire, { tolerance: 0.1, angularTolerance: 30 }) as UnknownRecord;
+    // Was a hardcoded `{ tolerance: 0.1, angularTolerance: 30 }` that ignored the
+    // shared presets entirely — so sketch curves carried the same disabled
+    // angular criterion as FINE did. Take the preset.
+    const meshEdges = meshEdgesFn.call(wire, {
+      tolerance: options.tolerance,
+      angularTolerance: options.angularTolerance,
+    }) as UnknownRecord;
     const lines = isRecord(meshEdges) && Array.isArray((meshEdges as UnknownRecord).lines)
       ? ((meshEdges as UnknownRecord).lines as number[])
       : null;
@@ -404,7 +461,14 @@ export function meshWireToSketch(wire: unknown, id: string, name: string): Sketc
   const meshFn = getFn(wire, 'mesh');
   if (!meshFn) return null;
 
-  const mesh = meshFn.call(wire, { tolerance: 0.1 }) as UnknownRecord;
+  // Fallback path. Passing only `tolerance` leaves replicad's own
+  // angularTolerance default (0.1 rad) in play — which is why this call was
+  // never part of the faceting bug. Pass the preset explicitly so both branches
+  // agree instead of agreeing by accident.
+  const mesh = meshFn.call(wire, {
+    tolerance: options.tolerance,
+    angularTolerance: options.angularTolerance,
+  }) as UnknownRecord;
   if (!isRecord(mesh) || !Array.isArray(mesh.vertices)) return null;
   return { id, name, vertices: new Float32Array(mesh.vertices as number[]) };
 }
