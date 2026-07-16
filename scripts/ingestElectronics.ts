@@ -23,7 +23,28 @@ import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync, copyFi
 import { join, resolve, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
+import { unzipSync } from 'fflate';
 import { ingestDirectory, type CatalogRecord } from './ingestParts';
+
+/**
+ * Some vendors (e.g. Raspberry Pi) serve their STEP model inside a ZIP rather
+ * than as a bare `.step`. If `buf` is a ZIP (PK\x03\x04 local-file signature),
+ * extract the first entry whose name ends in `.step` (case-insensitive) and is
+ * not a macOS resource-fork entry (`__MACOSX/`), and return those bytes. If it
+ * is not a ZIP, `buf` is returned unchanged. Returns `null` only when the input
+ * IS a ZIP but contains no usable `.step` entry (caller SKIPs with a warning).
+ * Kept generic (any zipped STEP), not vendor-specific.
+ */
+function extractStepFromZip(buf: Buffer): Buffer | null {
+  const isZip = buf.length >= 4 && buf[0] === 0x50 && buf[1] === 0x4b && buf[2] === 0x03 && buf[3] === 0x04;
+  if (!isZip) return buf;
+  const entries = unzipSync(new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength));
+  const name = Object.keys(entries).find(
+    (n) => n.toLowerCase().endsWith('.step') && !n.startsWith('__MACOSX/'),
+  );
+  if (!name) return null;
+  return Buffer.from(entries[name]);
+}
 
 interface ManifestPart {
   id: string;
@@ -121,6 +142,14 @@ export async function ingestElectronics(
         continue;
       }
       buf = Buffer.from(await res.arrayBuffer());
+      // Some vendors ship the STEP inside a ZIP (e.g. Raspberry Pi's Pico model
+      // is served as a redirect to a .zip). Transparently extract it if so.
+      const unzipped = extractStepFromZip(buf);
+      if (unzipped === null) {
+        console.warn(`SKIP ${part.id}: ${url} is a ZIP with no .step entry`);
+        continue;
+      }
+      buf = unzipped;
       // Guard against an HTML 404 page slipping through as a "200" on some CDNs.
       if (!buf.subarray(0, 64).toString('latin1').includes('ISO-10303-21')) {
         console.warn(`SKIP ${part.id}: ${url} did not return a STEP file`);
