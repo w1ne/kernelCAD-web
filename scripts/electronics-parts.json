@@ -99,6 +99,16 @@
       "attribution": "KiCad_ESP32-C3-SuperMini by mrtnvgr (github.com/mrtnvgr/KiCad_ESP32-C3-SuperMini)"
     },
     {
+      "id": "rpi-pico-board",
+      "name": "Raspberry Pi Pico (RP2040) board",
+      "family": "RaspberryPi",
+      "mpn": "SC0915",
+      "url": "https://pip.raspberrypi.com/documents/RP-008311-DS",
+      "tags": ["board", "mcu", "rp2040", "raspberry-pi", "pico"],
+      "license": "Raspberry Pi design-files permission grant (permissive)",
+      "attribution": "Raspberry Pi Ltd — Pico mechanical model (RP-008311), redistributed under the Raspberry Pi design-files permission grant"
+    },
+    {
       "id": "mlx90640",
       "name": "MLX90640 thermal camera (Adafruit STEMMA)",
       "family": "Sensor",
