@@ -15,6 +15,7 @@ const inspectToolEntry: ToolRegistryEntry = {
       "- 'robot' — URDF/SDFormat export preview (links, joints, planning groups, end-effectors, issues).\n" +
       "- 'step' — inspect an imported STEP file.\n" +
       "- 'shape' — volume / surfaceArea / bbox for one feature ({ feature_id? }).\n" +
+      "- 'mass' — mass, centre of mass, and centroidal inertia tensor ({ feature_id?, density? }); density in kg/m^3, defaults to 1000 (water).\n" +
       "- 'features' — features captured by the script (kind, id, params, transforms, suppression).\n" +
       "- 'assemblies' — assembly intent (assemblies, parts, connectors, joints).\n" +
       "- 'topology' — canonical face names + edge count for a feature ({ feature_id? }).\n" +
@@ -35,13 +36,14 @@ const inspectToolEntry: ToolRegistryEntry = {
       properties: {
         of: {
           type: 'string',
-          enum: ['assembly', 'robot', 'step', 'shape', 'features', 'assemblies', 'topology', 'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints', 'part-stats', 'bend-table', 'params', 'part-categories', 'part-families'],
+          enum: ['assembly', 'robot', 'step', 'shape', 'mass', 'features', 'assemblies', 'topology', 'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints', 'part-stats', 'bend-table', 'params', 'part-categories', 'part-families'],
           description: 'Which facts to read.',
         },
         file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
         code: { type: 'string', description: 'Inline kernelCAD script source.' },
         assembly: { type: 'string', description: "of:'assembly'|'robot' — assembly name; defaults to the first captured assembly." },
-        feature_id: { type: 'string', description: "of:'shape'|'topology'|'edges'|'faces'|'face-edges'|'face-labels' — FeatureId; defaults to the last returned shape." },
+        feature_id: { type: 'string', description: "of:'shape'|'mass'|'topology'|'edges'|'faces'|'face-edges'|'face-labels' — FeatureId; defaults to the last returned shape." },
+        density: { type: 'number', description: "of:'mass' — material density in kg/m^3 (steel 7850, aluminium 2700, ABS 1050). Defaults to 1000 (water); the response echoes the value used and flags when it was defaulted." },
         face_name: { type: 'string', enum: ['top', 'bottom', 'left', 'right', 'front', 'back'], description: "of:'face-edges' — canonical face name (required for that subject)." },
         query: { type: 'object', description: "of:'edges'|'faces' — optional EdgeQuery/FaceQuery filter." },
         category: { type: 'string', description: "of:'part-families' — optional top-level category to filter families by." },

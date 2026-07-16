@@ -727,16 +727,19 @@ drive needs a server-pool session (the model opened via `?script=`); the
 editor-only mode previews sampled values. Offline `kernelcad animate` remains
 the full-fidelity, verified MP4 capture.
 
+<!-- OUT-OF-SCOPE:START -->
 ## Out of Scope
 
-These return errors today; do not generate code that uses them:
+These are not available today; do not generate code that uses them. Anything not listed here is fair game — call `lookup_api` / `lookup_cookbook` before concluding kernelCAD lacks a capability.
 
-- Tracked face/edge refs (only canonical refs and inline queries work) — deferred
 - Asymmetric chamfer (only symmetric 45° supported) — deferred
-- Dynamic assembly solving / motion simulation — deferred; static assembly parts, fixed connector placement, revolute joint metadata, and fused `assembly.model()` output are supported.
-- BOM, dimensions, BREP, multi-view PDF — deferred
-- Rational NURBS (control-net `weights`) — accepted at the API but ignored in slice-1; rational support pending WASM bindings.
+- BOM extraction — deferred
+- Feature-level dimensioning on `svg-drawing` (hole callouts, param-bound dims, section views) — deferred; overall bounding-box dimensions and the title block do ship
+- Multi-view PDF sheets — deferred; `export({ format: 'svg-drawing' })` ships an SVG sheet instead
 - NURBS surface extend/untrim/blend, surface-surface intersection, lattice/quilt — deferred
+- Tracked face/edge refs (only canonical refs and inline queries work) — deferred
+
+<!-- OUT-OF-SCOPE:END -->
 
 <!-- COOKBOOK:START -->
 ## Cookbook (snippet index)

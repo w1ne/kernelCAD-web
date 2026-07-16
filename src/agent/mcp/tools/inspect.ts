@@ -4,6 +4,7 @@ import { inspectAssemblyTool } from './inspectAssembly';
 import { inspectRobotTool } from './inspectRobot';
 import { inspectStepTool } from './inspectStep';
 import { getShapeInfoTool } from './getShapeInfo';
+import { getMassPropertiesTool } from './getMassProperties';
 import { listFeaturesTool } from './listFeatures';
 import { listAssembliesTool } from './listAssemblies';
 import { listTopologyTool } from './listTopology';
@@ -25,6 +26,7 @@ export type InspectOf =
   | 'robot'
   | 'step'
   | 'shape'
+  | 'mass'
   | 'features'
   | 'assemblies'
   | 'topology'
@@ -73,6 +75,8 @@ export function inspectTool(input: InspectInput): Promise<unknown> {
       return inspectStepTool(rest as unknown as Parameters<typeof inspectStepTool>[0]);
     case 'shape':
       return getShapeInfoTool(rest as unknown as Parameters<typeof getShapeInfoTool>[0]);
+    case 'mass':
+      return getMassPropertiesTool(rest as unknown as Parameters<typeof getMassPropertiesTool>[0]);
     case 'features':
       return listFeaturesTool(rest as unknown as Parameters<typeof listFeaturesTool>[0]);
     case 'assemblies':
@@ -104,7 +108,7 @@ export function inspectTool(input: InspectInput): Promise<unknown> {
     default:
       return Promise.reject(
         new Error(
-          `Unknown inspect subject: ${String(of)}. Valid: assembly, robot, step, shape, ` +
+          `Unknown inspect subject: ${String(of)}. Valid: assembly, robot, step, shape, mass, ` +
             `features, assemblies, topology, edges, face-edges, faces, face-labels, mates, ` +
             `constraints, part-stats, bend-table, params, part-categories, part-families.`,
         ),
