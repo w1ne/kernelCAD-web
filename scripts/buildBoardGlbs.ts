@@ -137,7 +137,6 @@ export async function buildBoardGlbs(
   manifestPath: string,
   outDir: string,
   baseUrl: string,
-  opts: { seed?: boolean } = {},
 ): Promise<BoardGlbResult[]> {
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as Manifest;
   const repoRoot = resolve(dirname(manifestPath), '..');
@@ -323,7 +322,7 @@ if (invokedDirectly) {
   }
   (async () => {
     if (seed) seedBoardRecords(manifest, outDir, baseUrl);
-    const results = await buildBoardGlbs(manifest, outDir, baseUrl, { seed });
+    const results = await buildBoardGlbs(manifest, outDir, baseUrl);
     console.log(`built ${results.length} board GLB(s) -> ${join(outDir, 'glb')}`);
     for (const r of results) {
       const kb = (r.glbBytes / 1024).toFixed(1);

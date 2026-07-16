@@ -63,6 +63,7 @@ export function meshShapeForExport(shape: replicad.Shape3D): { vertices: number[
   // take the per-face path.
   const WHOLE_SHAPE_FACE_LIMIT = 1600;
   let faceCount = 0;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for (const _f of shape.faces) faceCount++;
 
   // Fresh tessellation with relative-deflection mode. The ctor performs the
