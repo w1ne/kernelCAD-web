@@ -2,11 +2,12 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mock all sixteen readers — this is a routing layer.
+// Mock every reader — this is a routing layer.
 vi.mock('./inspectAssembly', () => ({ inspectAssemblyTool: vi.fn(async () => 'assembly') }));
 vi.mock('./inspectRobot', () => ({ inspectRobotTool: vi.fn(async () => 'robot') }));
 vi.mock('./inspectStep', () => ({ inspectStepTool: vi.fn(async () => 'step') }));
 vi.mock('./getShapeInfo', () => ({ getShapeInfoTool: vi.fn(async () => 'shape') }));
+vi.mock('./getMassProperties', () => ({ getMassPropertiesTool: vi.fn(async () => 'mass') }));
 vi.mock('./listFeatures', () => ({ listFeaturesTool: vi.fn(async () => 'features') }));
 vi.mock('./listAssemblies', () => ({ listAssembliesTool: vi.fn(async () => 'assemblies') }));
 vi.mock('./listTopology', () => ({ listTopologyTool: vi.fn(async () => 'topology') }));
@@ -29,7 +30,7 @@ import { getEdgesOfTool } from './getEdgesOf';
 
 // of → expected sentinel returned by the mocked reader
 const SUBJECTS: InspectOf[] = [
-  'assembly', 'robot', 'step', 'shape', 'features', 'assemblies', 'topology',
+  'assembly', 'robot', 'step', 'shape', 'mass', 'features', 'assemblies', 'topology',
   'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints',
   'part-stats', 'bend-table', 'params', 'part-categories', 'part-families',
 ];

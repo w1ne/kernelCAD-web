@@ -3,6 +3,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { readFileSync, writeFileSync } from 'node:fs';
 import { loadSnippets, type Snippet } from '../src/agent/cookbook/index';
+import { rewriteMarkedSection } from './lib/rewriteMarkedSection';
 
 const SKILL_PATH = 'src/agent/skills/kernelcad-authoring/SKILL.md';
 const START_MARKER = '<!-- COOKBOOK:START -->';
@@ -35,20 +36,14 @@ export function renderCookbookSection(snippets: Snippet[]): string {
 
 function rewriteSkillMd(generated: string): { changed: boolean; before: string; after: string } {
   const before = readFileSync(SKILL_PATH, 'utf8');
-  const startIdx = before.indexOf(START_MARKER);
-  const endIdx = before.indexOf(END_MARKER);
-  if (startIdx === -1 || endIdx === -1) {
-    throw new Error(
-      `${SKILL_PATH} is missing ${START_MARKER} / ${END_MARKER} markers. Insert them before running this generator.`,
-    );
-  }
-  if (endIdx < startIdx) {
-    throw new Error(`${SKILL_PATH}: ${END_MARKER} appears before ${START_MARKER}`);
-  }
-  const head = before.slice(0, startIdx + START_MARKER.length);
-  const tail = before.slice(endIdx);
-  const after = `${head}\n${generated}\n${tail}`;
-  return { changed: after !== before, before, after };
+  const { changed, after } = rewriteMarkedSection(
+    before,
+    generated,
+    START_MARKER,
+    END_MARKER,
+    SKILL_PATH,
+  );
+  return { changed, before, after };
 }
 
 function main(): void {
