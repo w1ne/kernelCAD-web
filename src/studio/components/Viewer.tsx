@@ -150,7 +150,13 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
             <Canvas
                 camera={{ position: [40, 40, 40], fov: SKETCH_FOV }}
                 gl={{
-                    toneMapping: THREE.ACESFilmicToneMapping,
+                    // Neutral, not ACES Filmic. ACES crushes saturated
+                    // coral/pink/orange baseColors toward desaturated dark —
+                    // CAD palettes prize accurate hue over film-emulation
+                    // roll-off. This is the same conclusion demoPlayer/
+                    // ViewerPane.tsx:43-51 reached and documented; the Studio
+                    // canvas was simply never brought in line with it.
+                    toneMapping: THREE.NeutralToneMapping,
                     outputColorSpace: THREE.SRGBColorSpace,
                     // Marking-tool requires reading the WebGL canvas via
                     // toDataURL after the user paints. Without this, the

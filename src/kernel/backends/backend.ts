@@ -4,6 +4,7 @@ import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { FeatureKind, Vec3 } from '../../shared/intent/types';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { RuntimeMesh } from './runtimeMesh';
+import type { MassProperties } from '../../modeling/properties/massProperties';
 
 // BackendTarget moved to shared/types/backendTarget so shared/diagnostics can
 // depend on it without breaking shared-stays-leaf. Re-exported here for
@@ -37,6 +38,18 @@ export interface ShapeBackend {
   boundingBox(opts?: { exact?: boolean }): { min: Vec3; max: Vec3 };
   volume(): number;
   surfaceArea(): number;
+  /**
+   * Mass, centre of mass, and the centroidal inertia tensor for a given
+   * density (kg/m^3; default 1000 = water). Returns SI: mass in kg, CoM in
+   * shape-local mm, inertia6 in kg*m^2.
+   *
+   * Backed by OCCT BRepGProp::VolumeProperties. Declared here rather than only
+   * on OcctBackend so readers holding a ShapeBackend (the recompute engine
+   * hands those out) can reach it without a cast — URDF/SDF/MJCF export types
+   * against the concrete class, which is why this stayed off the interface and
+   * out of the agent's reach for so long.
+   */
+  massProperties(density?: number): MassProperties;
   isEmpty(): boolean;
   /**
    * Split a BREP compound into its top-level physical solids. A correctly

@@ -1304,7 +1304,19 @@ export class OcctBackend implements ShapeBackend {
   }
 
   getMesh(): RuntimeMesh {
-    // Viewport/preview mesh — keep coarse for fast interactive render.
+    // NOT the viewport mesh, despite what this comment used to say. The Studio
+    // viewer renders `meshShape()` output from the worker; nothing in the render
+    // path calls getMesh(). Its real consumers are ANALYSIS:
+    // mechanicalPlausibility (disconnected-solid detection), mates/
+    // mechanicalTransmission, and boundingBox({ exact: true }).
+    //
+    // So these tolerances are oracle inputs, not cosmetics — changing them moves
+    // verification verdicts and exact-bbox numbers. They are deliberately left
+    // at their historical values while FINE_MESH_OPTIONS was corrected; do not
+    // "unify" them with the render presets without re-baselining the mates and
+    // plausibility suites.
+    //
+    // angularTolerance is RADIANS (see meshing.ts MeshOptions): 0.3 rad ~ 17°.
     const meshed = this.shape.mesh({ tolerance: 0.05, angularTolerance: 0.3 });
     const positions = new Float32Array(meshed.vertices);
     const normalsSrc = meshed.normals ?? new Array(meshed.vertices.length).fill(0);
