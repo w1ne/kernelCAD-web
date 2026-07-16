@@ -109,6 +109,16 @@
       "attribution": "Raspberry Pi Ltd — Pico mechanical model (RP-008311), redistributed under the Raspberry Pi design-files permission grant"
     },
     {
+      "id": "esp32-devkit-board",
+      "name": "ESP32 DevKitC / DevKit V1 development board (52×28mm, 38-pin)",
+      "family": "ESP32",
+      "mpn": "ESP32-DevKitC-V4",
+      "kcad_source": "scripts/parts/authored/esp32-devkit-board.kcad.ts",
+      "tags": ["board", "esp32", "devkit", "devkitc", "wroom-32", "mcu"],
+      "license": "MIT",
+      "attribution": "kernelCAD (original model)"
+    },
+    {
       "id": "mlx90640",
       "name": "MLX90640 thermal camera (Adafruit STEMMA)",
       "family": "Sensor",
