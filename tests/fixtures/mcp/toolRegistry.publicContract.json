@@ -189,7 +189,7 @@
   },
   {
     "name": "inspect",
-    "description": "Use this when you need to read facts about a model. One reader, selected by `of`:\n- 'assembly' — physical assembly inventory (parts, bboxes, connectors, mates, disconnected solids).\n- 'robot' — URDF/SDFormat export preview (links, joints, planning groups, end-effectors, issues).\n- 'step' — inspect an imported STEP file.\n- 'shape' — volume / surfaceArea / bbox for one feature ({ feature_id? }).\n- 'features' — features captured by the script (kind, id, params, transforms, suppression).\n- 'assemblies' — assembly intent (assemblies, parts, connectors, joints).\n- 'topology' — canonical face names + edge count for a feature ({ feature_id? }).\n- 'edges' — edges of a shape with optional EdgeQuery ({ feature_id?, query? }); returns @kc[...] refs.\n- 'face-edges' — boundary edges of a named canonical face ({ feature_id?, face_name }).\n- 'faces' — faces of a shape with optional FaceQuery ({ feature_id?, query? }); returns @kc[...] refs.\n- 'face-labels' — user-applied labels visible in the script.\n- 'mates' — mates captured by the script.\n- 'constraints' — sketch constraints captured by the script.\n- 'part-stats' — bundled parts-catalog statistics.\n- 'bend-table' — sheet-metal bend table for a flattened pattern.\n- 'params' — declared model parameters.\n- 'part-categories' — top-level part-catalog categories available in the bundled (and configured remote) catalog.\n- 'part-families' — part families within a category ({ category? }); count + exemplar ids per family.\nAll params except `of` are subject-specific and forwarded verbatim. Most subjects accept { file | code }.",
+    "description": "Use this when you need to read facts about a model. One reader, selected by `of`:\n- 'assembly' — physical assembly inventory (parts, bboxes, connectors, mates, disconnected solids).\n- 'robot' — URDF/SDFormat export preview (links, joints, planning groups, end-effectors, issues).\n- 'step' — inspect an imported STEP file.\n- 'shape' — volume / surfaceArea / bbox for one feature ({ feature_id? }).\n- 'mass' — mass, centre of mass, and centroidal inertia tensor ({ feature_id?, density? }); density in kg/m^3, defaults to 1000 (water).\n- 'features' — features captured by the script (kind, id, params, transforms, suppression).\n- 'assemblies' — assembly intent (assemblies, parts, connectors, joints).\n- 'topology' — canonical face names + edge count for a feature ({ feature_id? }).\n- 'edges' — edges of a shape with optional EdgeQuery ({ feature_id?, query? }); returns @kc[...] refs.\n- 'face-edges' — boundary edges of a named canonical face ({ feature_id?, face_name }).\n- 'faces' — faces of a shape with optional FaceQuery ({ feature_id?, query? }); returns @kc[...] refs.\n- 'face-labels' — user-applied labels visible in the script.\n- 'mates' — mates captured by the script.\n- 'constraints' — sketch constraints captured by the script.\n- 'part-stats' — bundled parts-catalog statistics.\n- 'bend-table' — sheet-metal bend table for a flattened pattern.\n- 'params' — declared model parameters.\n- 'part-categories' — top-level part-catalog categories available in the bundled (and configured remote) catalog.\n- 'part-families' — part families within a category ({ category? }); count + exemplar ids per family.\nAll params except `of` are subject-specific and forwarded verbatim. Most subjects accept { file | code }.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -200,6 +200,7 @@
             "robot",
             "step",
             "shape",
+            "mass",
             "features",
             "assemblies",
             "topology",
@@ -231,7 +232,11 @@
         },
         "feature_id": {
           "type": "string",
-          "description": "of:'shape'|'topology'|'edges'|'faces'|'face-edges'|'face-labels' — FeatureId; defaults to the last returned shape."
+          "description": "of:'shape'|'mass'|'topology'|'edges'|'faces'|'face-edges'|'face-labels' — FeatureId; defaults to the last returned shape."
+        },
+        "density": {
+          "type": "number",
+          "description": "of:'mass' — material density in kg/m^3 (steel 7850, aluminium 2700, ABS 1050). Defaults to 1000 (water); the response echoes the value used and flags when it was defaulted."
         },
         "face_name": {
           "type": "string",
