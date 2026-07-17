@@ -28,10 +28,24 @@ export const PAGES_WORKER = `// SPDX-License-Identifier: MIT
 //   GET /v1/parts/{id}      detail (never filtered — explicit fetch)
 //   GET /v1/categories      [{ category, count }] for browsing
 //   GET /v1/families?category=   [{ family, category, count }] for browsing
+//
+// Every /v1 response carries Access-Control-Allow-Origin: * — this is a public,
+// read-only catalog of openly-licensed parts, and its own /glb/ and /step/ blobs
+// are already served with ACAO: *. Without it the API is unusable from any
+// browser app on another origin: the fetch rejects, and callers that swallow the
+// error (app.labwired.com's fetchPartRecord -> null) silently lose every real
+// model and fall back to placeholder geometry with nothing in the console.
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const p = url.pathname;
+
+    const cors = (res) => {
+      res.headers.set('Access-Control-Allow-Origin', '*');
+      return res;
+    };
+    const json = (data) => cors(Response.json(data));
+    const fail = (body, status) => cors(new Response(body, { status }));
 
     const loadItems = async () => {
       const res = await env.ASSETS.fetch(new Request(url.origin + '/v1/catalog/parts.index.json'));
@@ -42,20 +56,20 @@ export default {
     // --- Browse: categories ---
     if (p === '/v1/categories') {
       const items = await loadItems();
-      if (!items) return new Response('catalog index unavailable', { status: 502 });
+      if (!items) return fail('catalog index unavailable', 502);
       const counts = {};
       for (const r of items) {
         if ((r.tags || []).includes('legal-hold')) continue;
         counts[r.category] = (counts[r.category] || 0) + 1;
       }
       const categories = Object.keys(counts).sort().map((c) => ({ category: c, count: counts[c] }));
-      return Response.json({ categories, total: categories.length });
+      return json({ categories, total: categories.length });
     }
 
     // --- Browse: families (optionally within a category) ---
     if (p === '/v1/families') {
       const items = await loadItems();
-      if (!items) return new Response('catalog index unavailable', { status: 502 });
+      if (!items) return fail('catalog index unavailable', 502);
       const cat = (url.searchParams.get('category') || '').toLowerCase();
       const counts = {};
       for (const r of items) {
@@ -68,19 +82,19 @@ export default {
         const [category, family] = k.split('\\u0000');
         return { family, category, count: counts[k] };
       });
-      return Response.json({ families, total: families.length });
+      return json({ families, total: families.length });
     }
 
     const m = p.match(/^\\/v1\\/parts(?:\\/(.+))?$/);
     if (!m) return env.ASSETS.fetch(request);
 
     const items = await loadItems();
-    if (!items) return new Response('catalog index unavailable', { status: 502 });
+    if (!items) return fail('catalog index unavailable', 502);
 
     const id = m[1] ? m[1].replace(/\\.json$/, '') : '';
     if (id) {
       const rec = items.find((r) => r.id === id);
-      return rec ? Response.json(rec) : new Response('not found', { status: 404 });
+      return rec ? json(rec) : fail('not found', 404);
     }
 
     const sp = url.searchParams;
@@ -105,7 +119,7 @@ export default {
 
     const total = hits.length;
     if (pageSize > 0) hits = hits.slice(0, pageSize);
-    return Response.json({ items: hits, total });
+    return json({ items: hits, total });
   },
 };
 `;
