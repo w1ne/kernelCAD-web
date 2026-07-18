@@ -6,18 +6,29 @@
 // form factor, 8-pin SPI/I2C header).
 //
 // DIMENSION SOURCES
-//   PCB outline 44.5 x 37.0 mm — CONFIRMED, Waveshare 1.5inch OLED Module User
-//     Manual p.1, corroborated by the Waveshare product page and two resellers:
-//     https://files.waveshare.com/upload/8/80/1.5inch_OLED_Module_User_Manual_EN.pdf
-//   8-pin single-row header on the right edge (3.3V, GND, NC, DIN, CLK, CS,
-//     DC, RST) — CONFIRMED, same manual p.1 pin table + p.2 board photo.
-//   Bare panel outline 33.80 x 36.50 x 2.05 mm — CONFIRMED, Crystalfontz
-//     CFAL128128A0-015W (the underlying 1.5" 128x128 panel):
+//   PCB outline 47.0 x 34.0 mm — MEASURED by the maintainer with calipers on
+//     a physical module, 2026-07-19. This SUPERSEDES the 44.5 x 37.0 figure
+//     previously cited here from the Waveshare 1.5inch OLED Module User Manual
+//     and two resellers. Those numbers are both wrong for this part AND
+//     roughly transposed, which is how the panel below came to be modelled in
+//     portrait when the real module is landscape. Treat the manual's outline
+//     as describing a different variant, not this one.
+//   Glass (panel) 36.5 x 33.8 mm LANDSCAPE — DATASHEET, Crystalfontz
+//     CFAL128128A0-015W bare-panel outline. Maintainer calipers read ~38 x 34
+//     on the assembled module; the datasheet is used here because calipering
+//     glass picks up the bezel lip and the adhesive edge, and the two agree
+//     within that error. The ORIENTATION is the load-bearing correction: this
+//     panel is landscape on a landscape board, and was previously modelled
+//     portrait. On the 34 mm axis the glass is very nearly flush with the PCB
+//     (~0.1 mm each side), which the calipers confirm.
+//   Panel thickness 2.05 mm — CONFIRMED, Crystalfontz CFAL128128A0-015W:
 //     https://www.crystalfontz.com/product/cfal128128a0015w-128x128-square-oled-display
 //   Active area  26.86 x 26.86 mm (square) — CONFIRMED, Crystalfontz,
 //     corroborated by DisplayModule. Consistent with 0.21 mm dot pitch x 128.
 //   Viewing area 28.86 x 28.86 mm — CONFIRMED, Crystalfontz.
 //   Dot pitch 0.21 mm, dot 0.19 x 0.19 mm — CONFIRMED, Crystalfontz.
+//   8-pin single-row header on the long free edge (3.3V, GND, NC, DIN, CLK,
+//     CS, DC, RST) — CONFIRMED, Waveshare manual p.1 pin table + p.2 photo.
 //
 //   NOTE: one search snippet circulates "26.855 x 25.864" (non-square) for the
 //   active area. That contradicts both the panel datasheet and the pixel
@@ -28,25 +39,25 @@
 //     them; its wiki outline drawing is on a host that refuses automated
 //     fetches (403). PCB taken as 1.6 mm — a conventional assumption, NOT a
 //     citation. Marked PCB_T_ASSUMED below.
-//   - MOUNTING HOLES ARE DELIBERATELY NOT MODELLED. Four corner holes are
-//     clearly VISIBLE in the manual's board photo, so they certainly exist,
-//     but neither their diameter nor their positions are published anywhere
-//     reachable. Enclosures get designed against mounting holes, so guessing
-//     them would be worse than leaving them out. Confirm from the Waveshare
-//     wiki outline drawing in a real browser before adding them.
+//   - MOUNTING HOLES ARE DELIBERATELY NOT MODELLED, and on the measured
+//     outline they cannot exist as commonly quoted. A 29 x 42 mm pattern was
+//     considered; it does not fit. With the glass flush on the 34 mm axis
+//     there is no board material outside it for a hole at ~2.5 mm from either
+//     edge, and on the 47 mm axis the only uncovered strip is the ~9 mm
+//     header land — far too narrow to hold two holes 42 mm apart. That
+//     pattern therefore belongs to some other module or to a carrier bracket,
+//     not to this part. If holes are added later, they need a caliper
+//     measurement of THIS board, not a datasheet figure.
 //   - Header pitch 2.54 mm is an INFERENCE (Waveshare standard), not a citation.
-//   - The left-edge FPC/JST connector's pitch is unpublished; it is modelled
-//     as a plain block of the right footprint, not a detailed connector.
-//   - Exact panel placement on the carrier PCB is not published; the layout
-//     below (panel to the left, header strip on the right) matches the photo
-//     but is not from a drawing.
+//   - The FPC/JST connector's pitch is unpublished; it is modelled as a plain
+//     block of the right footprint, not a detailed connector.
 
-const PCB_L = 44.5; // X, CONFIRMED
-const PCB_W = 37.0; // Y, CONFIRMED
+const PCB_L = 47.0; // X, MEASURED 2026-07-19
+const PCB_W = 34.0; // Y, MEASURED 2026-07-19
 const PCB_T_ASSUMED = 1.6; // see header note — assumption, not a spec
 
-const PANEL_L = 33.8; // CONFIRMED (bare panel outline)
-const PANEL_W = 36.5; // CONFIRMED
+const PANEL_L = 36.5; // X, DATASHEET (Crystalfontz bare panel), landscape
+const PANEL_W = 33.8; // Y, DATASHEET (Crystalfontz bare panel)
 const PANEL_T = 2.05; // CONFIRMED
 
 const VA = 28.86; // viewing area, square, CONFIRMED
@@ -62,12 +73,39 @@ const CONN_IVORY = '#c8c2b0';
 const PASSIVE_TAN = '#8a7050';
 
 // --- PCB -------------------------------------------------------------------
-const pcb = box(PCB_L, PCB_W, PCB_T_ASSUMED).color(PCB_BLACK);
+// Mounting holes: 42.0 x 29.0 mm pattern, MEASURED by the maintainer, who
+// confirms four holes are present on the physical module. Centred on the
+// outline, which puts every centre 2.5 mm from its nearest edges -- a
+// conventional margin, and self-consistent on both axes.
+//
+// DIAMETER IS ASSUMED, not measured: 2.2 mm (M2 clearance). Waveshare uses
+// M2 and M2.5 on modules this size; 2.5 mm of edge margin carries either.
+// This is the one number an enclosure is designed against, so measure it
+// before relying on it.
+const HOLE_PITCH_X = 42.0;
+const HOLE_PITCH_Y = 29.0;
+const HOLE_D_ASSUMED = 2.2;
+
+const holeCentres: [number, number][] = [
+  [(PCB_L - HOLE_PITCH_X) / 2, (PCB_W - HOLE_PITCH_Y) / 2],
+  [(PCB_L + HOLE_PITCH_X) / 2, (PCB_W - HOLE_PITCH_Y) / 2],
+  [(PCB_L - HOLE_PITCH_X) / 2, (PCB_W + HOLE_PITCH_Y) / 2],
+  [(PCB_L + HOLE_PITCH_X) / 2, (PCB_W + HOLE_PITCH_Y) / 2],
+];
+
+const pcb = box(PCB_L, PCB_W, PCB_T_ASSUMED)
+  .subtract(
+    ...holeCentres.map(([cx, cy]) =>
+      cylinder(PCB_T_ASSUMED + 2, HOLE_D_ASSUMED / 2, 32).translate(cx, cy, -1),
+    ),
+  )
+  .color(PCB_BLACK);
 
 // --- OLED panel: left-hand side, centred in Y ------------------------------
-// Panel starts at x=3.0 to leave clear space for the left-edge FPC connector
-// (which occupies 0.3..2.5); at x=1.0 the two solids overlapped.
-const panelX = 3.0;
+// Panel starts at x=3.7 so the left mounting-hole pair clears the glass: a
+// 2.2 mm hole centred at x=2.5 spans 1.4..3.6, which the previous panelX=3.0
+// overhung by 0.6 mm. The FPC connector (0.3..2.5) still clears.
+const panelX = 3.7;
 const panelY = (PCB_W - PANEL_W) / 2; // 0.25
 const panel = box(PANEL_L, PANEL_W, PANEL_T)
   .color(PANEL_DARK)
@@ -128,11 +166,14 @@ const leftConn = box(2.2, 12.0, 1.4)
   .translate(0.3, (PCB_W - 12.0) / 2, PCB_T_ASSUMED);
 
 const passives: Shape[] = [];
+// On the corrected 47 x 34 outline the panel occupies x 3.0..39.5, so the
+// previous x=36.5/38.6 positions are now UNDER the glass. Relocated into the
+// free land between the panel edge and the header shroud (39.5..42.46).
 const passivePositions: [number, number][] = [
-  [36.5, 6.0],
-  [38.6, 6.0],
-  [36.5, 30.0],
-  [38.6, 30.0],
+  [40.4, 4.0],
+  [41.4, 4.0],
+  [40.4, 29.0],
+  [41.4, 29.0],
 ];
 for (const [cx, cy] of passivePositions) {
   passives.push(box(1.0, 0.5, 0.45).color(PASSIVE_TAN).translate(cx, cy, PCB_T_ASSUMED));
