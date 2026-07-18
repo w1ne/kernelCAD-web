@@ -213,6 +213,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       ok: { type: 'boolean' },
       globals: { type: 'array', items: { type: 'object', additionalProperties: true } },
       shapeMethods: { type: 'array', items: { type: 'object', additionalProperties: true } },
+      shapeListMethods: { type: 'array', items: { type: 'object', additionalProperties: true } },
       sketchMethods: { type: 'array', items: { type: 'object', additionalProperties: true } },
       pathBuilderMethods: { type: 'array', items: { type: 'object', additionalProperties: true } },
       paramRefMethods: { type: 'array', items: { type: 'object', additionalProperties: true } },

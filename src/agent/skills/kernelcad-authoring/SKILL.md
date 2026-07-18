@@ -213,8 +213,15 @@ assembly(name?: string): Assembly;
 helix({ radius, pitch, turns, axis?, pointsPerTurn?, startAngle? }): [number, number, number][];
 
 // Edge selection — lowers the shape lazily (awaitable).
-selectEdges(shape: Shape, query?: EdgeQuery): Promise<EdgeSegment[]>;
+// selectEdges returns a ShapeList: still an EdgeSegment[] (fillet/chamfer accept
+// it directly), plus the selector algebra described under "Selector algebra" below.
+selectEdges(shape: Shape, query?: EdgeQuery): Promise<ShapeList<EdgeSegment>>;
 selectEdge(shape: Shape, query: EdgeQuery): Promise<EdgeSegment>;  // throws if zero or multiple match
+
+// Selector algebra — wrap ANY array of topology query results (face summaries,
+// q.face(...).evaluate(scene) results, a hand-built list) so the sort/group/filter
+// methods apply. selectEdges already returns one.
+select<T>(items: Iterable<T>): ShapeList<T>;
 
 // Parts library — STEP import for vendor catalog components.
 // Resolved relative to the calling .kcad.ts file; absolute paths also accepted.
@@ -336,6 +343,51 @@ dfmSpec(spec: {
   }>;
 }): DfmSpecHandle;
 ```
+
+### Selector algebra (ShapeList)
+
+`EdgeQuery` / `FaceQuery` are flat predicate bags: they answer *"which entities
+match these constraints?"*. They cannot answer *"the highest three faces"*,
+*"the largest bore"*, or *"one group per Z level"*. `ShapeList` is the other
+half — sort / group / filter over results the kernel has ALREADY resolved.
+
+Compose the two, don't substitute one for the other: let the declarative query
+filter inside OCCT first, then rank or bucket the resolved list in TypeScript.
+
+```typescript
+// selectEdges returns a ShapeList; select(...) wraps any other result array.
+const edges = await selectEdges(body, { convex: true });
+
+edges.sortBy('Z').last                       // topmost edge
+edges.sortBy('Z', { descending: true }).take(3)   // highest three
+edges.filterBy('CIRCLE').sortBy('radius').last    // largest circular edge
+edges.filterBy('Z')                          // edges running parallel to +Z
+edges.filterByPosition('Z', 8, 10)           // edges in the top 2 mm slab
+edges.sortByDistance([0, 0, 20]).first       // nearest to a point
+edges.filterBy((e) => e.length > 5)          // arbitrary predicate
+
+const levels = edges.groupBy('Z', { tolerance: 0.01 });  // one group per Z level
+levels.length; levels.keys;                  // 3, [0, 5, 10]
+levels.at(-1);                               // top level (ShapeList)
+levels.byKey(10);                            // same group, looked up by value
+```
+
+Contracts worth knowing:
+
+- **Immutable.** Every method returns a NEW list; nothing sorts in place.
+- **Identity survives.** The algebra reorders the SAME descriptor objects — it
+  never re-derives one — so `EdgeSegment.id` and the `@kc[...]` ref plus OCCT
+  handle on a `ResolvedEntity` are intact after any sort or group.
+- **Float-noise tolerant.** Both `sortBy` and `groupBy` compare on a quantized
+  metric (1e-6 by default, or an explicit `tolerance` in mm) with the incoming
+  position as tiebreak, so kernel noise cannot flip an order or split one Z
+  level into two groups. `byKey` quantizes the request identically.
+- **It is still an array.** `ShapeList` extends `Array`, so `.length`,
+  indexing, spread, `for..of` and `.map` / `.filter` all work, and a
+  `ShapeList<EdgeSegment>` passes straight into `fillet` / `chamfer`.
+- **`radius` is CIRCLE-only.** `sortBy('radius')` needs `EdgeSegment.radius`,
+  which is populated for `curveType === 'CIRCLE'` and deliberately absent
+  otherwise; asking for it elsewhere throws rather than approximating.
 
 ### Shape methods (chainable)
 

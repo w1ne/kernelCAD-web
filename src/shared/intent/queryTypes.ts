@@ -58,6 +58,15 @@ export type EdgeSegment = {
   direction: Vec3;
   length: number;
   curveType: string;
+  /**
+   * Circumradius in mm, present ONLY when `curveType === 'CIRCLE'` (full
+   * circles and arcs alike). Derived from three points sampled on the edge,
+   * so it is exact for circular geometry and deliberately absent for every
+   * other curve type rather than approximated. Consumed by the selector
+   * algebra (`ShapeList.sortBy('radius')` / `groupBy('radius')`) to rank
+   * bore lips, fillet rims, and hole mouths by size.
+   */
+  radius?: number;
   convex: boolean | null;
   dihedralAngleDeg: number | null;
   normalA: Vec3 | null;

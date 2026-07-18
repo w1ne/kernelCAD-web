@@ -348,14 +348,55 @@ function signedAxisVec(axis: 'X' | '-X' | 'Y' | '-Y' | 'Z' | '-Z'): Vec3 {
  * Convert an Edge to an EdgeSegment (the agent-facing summary).
  * The `id` is a stable index within this lowering — derived from edge order.
  */
+/**
+ * Circumradius of a CIRCLE edge, in mm.
+ *
+ * Read off three points sampled at t = 0, 1/3, 2/3 of the edge's parametric
+ * domain and solved as a triangle circumradius: R = abc / 4A. Exact for
+ * circular geometry (any three distinct points on a circle determine it), and
+ * it needs no OCCT symbol beyond the `pointAt` replicad already exposes.
+ *
+ * Returns undefined for every non-CIRCLE curve type — an approximate radius
+ * for a spline or a line would be a lie the selector algebra would then sort
+ * on. Absent is honest; wrong is not.
+ */
+function circleRadius(edge: Edge): number | undefined {
+  if ((edge as unknown as { geomType?: string }).geomType !== 'CIRCLE') return undefined;
+  try {
+    const a = edge.pointAt(0);
+    const b = edge.pointAt(1 / 3);
+    const c = edge.pointAt(2 / 3);
+    const ab: Vec3 = [b.x - a.x, b.y - a.y, b.z - a.z];
+    const ac: Vec3 = [c.x - a.x, c.y - a.y, c.z - a.z];
+    const cross: Vec3 = [
+      ab[1] * ac[2] - ab[2] * ac[1],
+      ab[2] * ac[0] - ab[0] * ac[2],
+      ab[0] * ac[1] - ab[1] * ac[0],
+    ];
+    const twiceArea = Math.hypot(cross[0], cross[1], cross[2]);
+    if (twiceArea < 1e-12) return undefined; // collinear samples — degenerate
+    const lenAB = Math.hypot(ab[0], ab[1], ab[2]);
+    const lenAC = Math.hypot(ac[0], ac[1], ac[2]);
+    const lenBC = Math.hypot(c.x - b.x, c.y - b.y, c.z - b.z);
+    const r = (lenAB * lenAC * lenBC) / (2 * twiceArea);
+    return Number.isFinite(r) ? r : undefined;
+  } catch {
+    // Same defensive posture as computeDihedral: replicad/OCCT throws raw
+    // Standard_Failure pointers on degenerate curves.
+    return undefined;
+  }
+}
+
 export function toEdgeSegment(edge: Edge, index: number, shape: { faces: Face[] }): EdgeSegment {
   const dihedral = computeDihedral(shape, edge);
+  const radius = circleRadius(edge);
   return {
     id: `e${index}`,
     midpoint: edgeMidpoint(edge),
     direction: edgeDirection(edge),
     length: edge.length ?? 0,
     curveType: (edge as unknown as { geomType?: string }).geomType ?? 'UNKNOWN',
+    ...(radius !== undefined ? { radius } : {}),
     convex: dihedral?.convex ?? null,
     dihedralAngleDeg: dihedral?.angleDeg ?? null,
     normalA: dihedral?.normalA ?? null,

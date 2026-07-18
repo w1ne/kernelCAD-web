@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // scripts/parts/authored/blackpill-board.kcad.ts

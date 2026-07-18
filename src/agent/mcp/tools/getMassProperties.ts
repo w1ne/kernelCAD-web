@@ -14,6 +14,7 @@ import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { resolveRootId } from '../../../modeling/buildModel';
 import { runMcpScript } from '../runMcpScript';
+import type { Vec3 } from '../../../shared/intent/types';
 
 /** Water. Same default as OcctBackend.massProperties and URDF's linkInertialBlock. */
 const DEFAULT_DENSITY = 1000;
@@ -24,6 +25,11 @@ export interface GetMassPropertiesInput {
   feature_id?: string;
   /** kg/m^3. Steel ~7850, aluminium ~2700, ABS ~1050. Defaults to water. */
   density?: number;
+  /**
+   * Optional arbitrary axis (shape-local mm) to additionally report the
+   * radius of gyration about. Omit to get only the centroidal quantities.
+   */
+  gyration_axis?: { origin: [number, number, number]; direction: [number, number, number] };
 }
 
 export interface MassPropertiesInfo {
@@ -38,6 +44,17 @@ export interface MassPropertiesInfo {
   com: [number, number, number];
   /** [ixx, ixy, ixz, iyy, iyz, izz] in kg*m^2, about the CoM. */
   inertia6: [number, number, number, number, number, number];
+  /** Full symmetric 3x3 centroidal inertia tensor, row-major, kg*m^2. */
+  inertiaMatrix: [Vec3, Vec3, Vec3];
+  /** Principal moments in kg*m^2; principalMoments[i] pairs with principalAxes[i]. Not sorted. */
+  principalMoments: [number, number, number];
+  /** Unit direction of each principal axis, shape-local. */
+  principalAxes: [Vec3, Vec3, Vec3];
+  /** True when the mass distribution is rotationally / spherically symmetric. */
+  hasSymmetryAxis: boolean;
+  hasSymmetryPoint: boolean;
+  /** mm, about the requested `gyration_axis`. Present only when that input was given. */
+  radiusOfGyration?: number;
   /** mm^3. Included because mass is only as good as the density guess; volume is not. */
   volume: number;
 }
@@ -60,6 +77,26 @@ export async function getMassPropertiesTool(
       error: `density must be a positive number (kg/m^3); got ${input.density}.`,
       errorCode: 'feature.invalid-args',
     };
+  }
+
+  const axis = input.gyration_axis;
+  if (axis !== undefined) {
+    const triple = (v: unknown): v is [number, number, number] =>
+      Array.isArray(v) && v.length === 3 && v.every(n => typeof n === 'number' && Number.isFinite(n));
+    if (!triple(axis.origin) || !triple(axis.direction)) {
+      return {
+        ok: false,
+        error: 'gyration_axis requires { origin: [x,y,z], direction: [x,y,z] } of finite numbers.',
+        errorCode: 'feature.invalid-args',
+      };
+    }
+    if (Math.hypot(...axis.direction) === 0) {
+      return {
+        ok: false,
+        error: 'gyration_axis.direction must be a non-zero vector; got [0, 0, 0].',
+        errorCode: 'feature.invalid-args',
+      };
+    }
   }
 
   const script = await runMcpScript(input);
@@ -93,7 +130,7 @@ export async function getMassPropertiesTool(
 
   const densityDefaulted = input.density === undefined;
   const density = input.density ?? DEFAULT_DENSITY;
-  const mp = shape.massProperties(density);
+  const mp = shape.massProperties(density, input.gyration_axis);
 
   return {
     ok: true,
@@ -104,6 +141,14 @@ export async function getMassPropertiesTool(
       densityDefaulted,
       com: mp.com,
       inertia6: mp.inertia6,
+      inertiaMatrix: mp.inertiaMatrix,
+      principalMoments: mp.principalMoments,
+      principalAxes: mp.principalAxes,
+      hasSymmetryAxis: mp.hasSymmetryAxis,
+      hasSymmetryPoint: mp.hasSymmetryPoint,
+      ...(mp.radiusOfGyration !== undefined
+        ? { radiusOfGyration: mp.radiusOfGyration }
+        : {}),
       volume: shape.volume(),
     },
     ...(densityDefaulted

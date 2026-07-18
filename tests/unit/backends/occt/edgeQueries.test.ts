@@ -260,3 +260,45 @@ describe('resolveFaceQuery — v0.2-finish polish keys', () => {
     expect(faces).toHaveLength(1);
   });
 });
+
+// ---------------------------------------------------------------------------
+// EdgeSegment.radius — the metric backing `ShapeList.sortBy('radius')`.
+// Verified against real OCCT geometry, not a fixture, because the whole point
+// is that the three-point circumradius solve agrees with the kernel.
+// ---------------------------------------------------------------------------
+describe('EdgeSegment.radius', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it('reports the exact radius on the circular edges of a cylinder', () => {
+    const cyl = OcctBackend.cylinder(10, 4);
+    const circles = selectEdges(cyl, {}).filter(e => e.curveType === 'CIRCLE');
+    expect(circles.length).toBeGreaterThan(0);
+    for (const c of circles) {
+      expect(c.radius).toBeCloseTo(4, 6);
+    }
+  });
+
+  it('distinguishes two different bore sizes on one solid', () => {
+    const plate = OcctBackend.box(40, 20, 5);
+    const smallBore = OcctBackend.cylinder(20, 2).translate(10, 10, -5);
+    const bigBore = OcctBackend.cylinder(20, 5).translate(30, 10, -5);
+    const drilled = plate.subtract(smallBore).subtract(bigBore);
+
+    const radii = selectEdges(drilled, {})
+      .filter(e => e.curveType === 'CIRCLE')
+      .map(e => e.radius)
+      .filter((r): r is number => r !== undefined)
+      .map(r => Math.round(r * 1e6) / 1e6);
+
+    expect(radii).toContain(2);
+    expect(radii).toContain(5);
+  });
+
+  it('is absent (not approximated) on non-circular edges', () => {
+    const box = OcctBackend.box(10, 10, 5);
+    for (const e of selectEdges(box, {})) {
+      expect(e.curveType).toBe('LINE');
+      expect(e.radius).toBeUndefined();
+    }
+  });
+});
