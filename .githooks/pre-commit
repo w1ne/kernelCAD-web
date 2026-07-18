@@ -34,7 +34,12 @@ if ! command -v node >/dev/null 2>&1; then
 fi
 
 # Staged added/copied/modified files (renames/deletes excluded by --diff-filter).
-mapfile -t staged < <(git diff --cached --name-only --diff-filter=ACM)
+# NB: not `mapfile` -- that is a bash 4 builtin and macOS ships bash 3.2, where
+# this hook would abort with "mapfile: command not found" and block every commit.
+staged=()
+while IFS= read -r staged_line; do
+  staged+=("$staged_line")
+done < <(git diff --cached --name-only --diff-filter=ACM)
 if [ "${#staged[@]}" -eq 0 ]; then
   exit 0
 fi
