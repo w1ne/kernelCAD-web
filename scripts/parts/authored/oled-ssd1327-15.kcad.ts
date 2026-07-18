@@ -73,12 +73,39 @@ const CONN_IVORY = '#c8c2b0';
 const PASSIVE_TAN = '#8a7050';
 
 // --- PCB -------------------------------------------------------------------
-const pcb = box(PCB_L, PCB_W, PCB_T_ASSUMED).color(PCB_BLACK);
+// Mounting holes: 42.0 x 29.0 mm pattern, MEASURED by the maintainer, who
+// confirms four holes are present on the physical module. Centred on the
+// outline, which puts every centre 2.5 mm from its nearest edges -- a
+// conventional margin, and self-consistent on both axes.
+//
+// DIAMETER IS ASSUMED, not measured: 2.2 mm (M2 clearance). Waveshare uses
+// M2 and M2.5 on modules this size; 2.5 mm of edge margin carries either.
+// This is the one number an enclosure is designed against, so measure it
+// before relying on it.
+const HOLE_PITCH_X = 42.0;
+const HOLE_PITCH_Y = 29.0;
+const HOLE_D_ASSUMED = 2.2;
+
+const holeCentres: [number, number][] = [
+  [(PCB_L - HOLE_PITCH_X) / 2, (PCB_W - HOLE_PITCH_Y) / 2],
+  [(PCB_L + HOLE_PITCH_X) / 2, (PCB_W - HOLE_PITCH_Y) / 2],
+  [(PCB_L - HOLE_PITCH_X) / 2, (PCB_W + HOLE_PITCH_Y) / 2],
+  [(PCB_L + HOLE_PITCH_X) / 2, (PCB_W + HOLE_PITCH_Y) / 2],
+];
+
+const pcb = box(PCB_L, PCB_W, PCB_T_ASSUMED)
+  .subtract(
+    ...holeCentres.map(([cx, cy]) =>
+      cylinder(PCB_T_ASSUMED + 2, HOLE_D_ASSUMED / 2, 32).translate(cx, cy, -1),
+    ),
+  )
+  .color(PCB_BLACK);
 
 // --- OLED panel: left-hand side, centred in Y ------------------------------
-// Panel starts at x=3.0 to leave clear space for the left-edge FPC connector
-// (which occupies 0.3..2.5); at x=1.0 the two solids overlapped.
-const panelX = 3.0;
+// Panel starts at x=3.7 so the left mounting-hole pair clears the glass: a
+// 2.2 mm hole centred at x=2.5 spans 1.4..3.6, which the previous panelX=3.0
+// overhung by 0.6 mm. The FPC connector (0.3..2.5) still clears.
+const panelX = 3.7;
 const panelY = (PCB_W - PANEL_W) / 2; // 0.25
 const panel = box(PANEL_L, PANEL_W, PANEL_T)
   .color(PANEL_DARK)
@@ -143,10 +170,10 @@ const passives: Shape[] = [];
 // previous x=36.5/38.6 positions are now UNDER the glass. Relocated into the
 // free land between the panel edge and the header shroud (39.5..42.46).
 const passivePositions: [number, number][] = [
-  [40.0, 4.0],
-  [41.2, 4.0],
-  [40.0, 29.0],
-  [41.2, 29.0],
+  [40.4, 4.0],
+  [41.4, 4.0],
+  [40.4, 29.0],
+  [41.4, 29.0],
 ];
 for (const [cx, cy] of passivePositions) {
   passives.push(box(1.0, 0.5, 0.45).color(PASSIVE_TAN).translate(cx, cy, PCB_T_ASSUMED));
