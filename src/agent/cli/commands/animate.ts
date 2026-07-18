@@ -32,8 +32,12 @@
 // under --json stdout carries exactly the envelope, so stderr is the only
 // safe progress channel. `--quiet` suppresses them.
 //
-// Requires a studio dev server reachable on VITE_PORT (or the default
-// render base URL); honors PW_CDP_URL to attach to an existing Chrome.
+// The render surface is provisioned automatically by resolveRenderBaseUrl()
+// (src/agent/render/playerServer.ts): the bundled static player
+// (dist/headless-player) is served from an ephemeral 127.0.0.1 port, so no
+// running studio dev server is required. `--base-url` remains an optional
+// override that bypasses provisioning entirely. Honors PW_CDP_URL to attach
+// to an existing Chrome.
 
 import { Command } from 'commander';
 import { captureAnimation, type CaptureAnimationResult } from '../../render/captureAnimation';
@@ -61,6 +65,9 @@ export interface AnimateCliInput {
   /** Hide matching objects by feature/part name (`--hide <names>`).
    *  Mutually exclusive with `focus`. */
   hide?: string[];
+  /** Optional render-surface override (`--base-url <url>`). When omitted,
+   *  the capture engine provisions the bundled static player. */
+  baseUrl?: string;
   /** Progress sink forwarded to the capture engine. The command wires a
    *  timestamped stderr writer here unless --quiet. */
   onProgress?: (msg: string) => void;
@@ -190,6 +197,10 @@ export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResu
     ...(input.skipVerify === true ? { skipVerify: true } : {}),
     ...(input.verifyEvery !== undefined ? { verifyEveryNthFrame: input.verifyEvery } : {}),
     ...(objectFilter !== undefined ? { objectFilter } : {}),
+    // Only forwarded when actually provided — an always-present value would
+    // take resolveRenderBaseUrl's 'explicit' lane and silently bypass
+    // static-player provisioning (exactly the defect #625 fixed for render).
+    ...(input.baseUrl !== undefined ? { baseUrl: input.baseUrl } : {}),
     ...(input.onProgress !== undefined ? { onProgress: input.onProgress } : {}),
   });
 
@@ -237,6 +248,10 @@ export function animateCommand(): Command {
     )
     .option('--focus <names>', 'show only comma-separated feature ids or assembly part names (mutually exclusive with --hide)')
     .option('--hide <names>', 'hide comma-separated feature ids or assembly part names (mutually exclusive with --focus)')
+    .option(
+      '--base-url <url>',
+      'optional render-surface override (e.g. a running studio dev server); default is the bundled static player',
+    )
     .option('--json', 'structured report to stdout (progress still goes to stderr)')
     .option('--quiet', 'suppress the stderr progress lines')
     .addHelpText(
@@ -250,8 +265,10 @@ Exit codes:
      record, an unsolvable pose, ffmpeg missing in MP4 mode, browser
      bootstrap failure, frame output write failure)
 
-Requires a studio dev server (run \`npm run dev\` first); honors VITE_PORT and
-PW_CDP_URL (attach to an existing Chrome over CDP).`,
+No studio dev server is required: the bundled static player
+(dist/headless-player) is served on an ephemeral port. Pass --base-url to
+render against a server you control instead. Honors VITE_PORT (dev-server
+fallback) and PW_CDP_URL (attach to an existing Chrome over CDP).`,
     )
     .action(async (file: string, out: string | undefined, opts: {
       frames?: string;
@@ -261,6 +278,7 @@ PW_CDP_URL (attach to an existing Chrome over CDP).`,
       verifyEvery?: number;
       focus?: string;
       hide?: string;
+      baseUrl?: string;
       json?: boolean;
       quiet?: boolean;
     }) => {
@@ -273,6 +291,10 @@ PW_CDP_URL (attach to an existing Chrome over CDP).`,
         ...(opts.verifyEvery !== undefined ? { verifyEvery: opts.verifyEvery } : {}),
         ...(opts.focus !== undefined ? { focus: [opts.focus] } : {}),
         ...(opts.hide !== undefined ? { hide: [opts.hide] } : {}),
+        // NOTE: --base-url deliberately has NO commander default. A
+        // materialized default would always take the 'explicit' lane and
+        // defeat static-player provisioning (#625).
+        ...(opts.baseUrl !== undefined ? { baseUrl: opts.baseUrl } : {}),
         // Progress always goes to stderr (even under --json — stdout must
         // stay pure JSON) unless --quiet.
         ...(opts.quiet ? {} : { onProgress: stderrProgressSink }),

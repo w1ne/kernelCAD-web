@@ -1,16 +1,30 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { renderCommand } from '../../../src/agent/cli/commands/render';
-import { DEFAULT_RENDER_BASE_URL } from '../../../src/agent/render/headlessRender';
 
-describe('render base-url single source of truth', () => {
-  it('render and render inspect both default --base-url to the shared constant', () => {
+describe('render base-url provisioning contract', () => {
+  // `--base-url` must NOT carry a default: commander would materialize it on
+  // every invocation, which sends resolveRenderBaseUrl() down the `explicit`
+  // lane and permanently bypasses the bundled static player. Leaving it
+  // undefined is what makes headless rendering work without `npm run dev`.
+  it('render and render inspect both leave --base-url undefined by default', () => {
     const cmd = renderCommand();
     const baseOpt = cmd.options.find(o => o.long === '--base-url');
-    expect(baseOpt?.defaultValue).toBe(DEFAULT_RENDER_BASE_URL);
+    expect(baseOpt).toBeDefined();
+    expect(baseOpt?.defaultValue).toBeUndefined();
     const inspect = cmd.commands.find(c => c.name() === 'inspect');
     const inspectOpt = inspect?.options.find(o => o.long === '--base-url');
-    expect(inspectOpt?.defaultValue).toBe(DEFAULT_RENDER_BASE_URL);
+    expect(inspectOpt).toBeDefined();
+    expect(inspectOpt?.defaultValue).toBeUndefined();
+  });
+
+  it('both render paths provision their base URL through resolveRenderBaseUrl', () => {
+    const renderSrc = readFileSync('src/agent/cli/commands/render.ts', 'utf8');
+    expect(renderSrc).toContain('resolveRenderBaseUrl');
+    // renderScript + renderInspectBundle each wrap headlessRender.
+    expect(renderSrc.match(/withRenderBase\(input\.baseUrl/g) ?? []).toHaveLength(2);
+    // The ephemeral static-player server must be torn down on every exit path.
+    expect(renderSrc).toContain('await surface.close()');
   });
 
   it('no port literal outside the constant definition', () => {

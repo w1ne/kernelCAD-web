@@ -27,7 +27,7 @@
 import type { Edge, Face } from 'replicad';
 import type { FeatureRecord, FaceLabelsMap } from '../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
-import type { CanonicalFace, EdgeRef } from '../../../shared/intent/types';
+import type { CanonicalFace, EdgeRef, FeatureId, FeatureRef } from '../../../shared/intent/types';
 import { OcctBackend } from './occtBackend';
 import { resolveEdgeQuery, resolveFaceQuery, computeDihedralPublic } from './edgeQueries';
 import type { FaceQuery } from './edgeQueries';
@@ -830,21 +830,82 @@ interface MetadataLabelHit {
   resolved: CanonicalFace | FaceQuery;
 }
 
+/** Pull the referenced feature id out of a `FeatureRef`, if it has one.
+ *  `surface` refs point into the Surface table, not the feature-record
+ *  array, so they contribute no lineage edge here. */
+function featureRefTargetId(ref: FeatureRef): FeatureId | undefined {
+  switch (ref.kind) {
+    case 'feature': return ref.id;
+    case 'face':
+    case 'edge':
+    case 'vertex': return ref.featureId;
+    default: return undefined;
+  }
+}
+
 /**
- * Walk upstream records and look for any `metadata.faceLabels` entry that
- * declares `label`. Returns a three-way discriminated union:
- *   - `{ hit }` — exactly one upstream source found.
- *   - `{ collision }` — two or more upstream sources conflict (fatal).
- *   - `{ miss }` — no upstream source found (fall through to sketch path).
+ * Transitive closure of `consumer.inputs` — every record the consumer is
+ * actually built from (boolean operands `base`/`cutter_N`, pattern & mirror
+ * `base`, sketch `profile`, assembly part `shape`, face/edge ref owners),
+ * excluding the consumer itself.
+ *
+ * This is the scope a consumer legitimately "sees". Two independent shape
+ * subtrees produced by the same factory helper share no ancestors, so each
+ * may declare the same `faceLabels` name without colliding.
+ *
+ * Cycle-safe: the `ancestors` set doubles as the visited guard, so a
+ * malformed graph cannot hang the walk.
+ */
+function collectAncestorIds(
+  records: readonly FeatureRecord[],
+  consumer: FeatureRecord,
+): Set<FeatureId> {
+  const byId = new Map<FeatureId, FeatureRecord>();
+  for (const rec of records) byId.set(rec.id, rec);
+
+  const ancestors = new Set<FeatureId>();
+  const queue: FeatureId[] = [];
+  const pushInputs = (rec: FeatureRecord): void => {
+    for (const ref of Object.values(rec.inputs)) {
+      const id = featureRefTargetId(ref);
+      if (id !== undefined && id !== consumer.id && !ancestors.has(id)) {
+        ancestors.add(id);
+        queue.push(id);
+      }
+    }
+  };
+
+  pushInputs(consumer);
+  while (queue.length > 0) {
+    const next = byId.get(queue.pop() as FeatureId);
+    if (next) pushInputs(next);
+  }
+  return ancestors;
+}
+
+/**
+ * Walk the consumer's lineage (the transitive closure of its inputs) and look
+ * for any `metadata.faceLabels` entry that declares `label`. Returns a
+ * three-way discriminated union:
+ *   - `{ hit }` — exactly one ancestor declares it.
+ *   - `{ collision }` — two or more ancestors in the SAME lineage conflict (fatal).
+ *   - `{ miss }` — no ancestor declares it (fall through to sketch path).
+ *
+ * Scoping by lineage rather than by script order is what makes a reusable
+ * factory safe: `makeBase()` called three times stamps
+ * `faceLabels: { lid: 'top' }` on three unrelated records, and each consumer
+ * only ever sees the one in its own subtree.
  */
 function findFaceLabelInMetadata(
   records: readonly FeatureRecord[],
   consumer: FeatureRecord,
   label: string,
 ): { hit: MetadataLabelHit } | { collision: CompilerDiagnostic } | { miss: true } {
+  const ancestors = collectAncestorIds(records, consumer);
   const hits: MetadataLabelHit[] = [];
   for (const rec of records) {
     if (rec.id === consumer.id) break; // only upstream
+    if (!ancestors.has(rec.id)) continue; // ...and only within this lineage
     const fl = (rec.metadata as { faceLabels?: FaceLabelsMap } | undefined)?.faceLabels;
     if (fl && Object.prototype.hasOwnProperty.call(fl, label)) {
       const resolved = fl[label];

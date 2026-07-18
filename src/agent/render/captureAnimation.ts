@@ -68,13 +68,13 @@ import type { AnimationViewMetadata } from '../../shared/intent/animationViewRec
 import { keyframeSampleSet, sampleTracks } from './animationSampler';
 import { verifyAnimation, type AnimationCollision } from './verifyAnimation';
 import {
-  DEFAULT_RENDER_BASE_URL,
   HEADLESS_VIEWPORT,
   loadFeatureMeshesIntoPage,
   openDemoPlayerPage,
   type DemoPlayerPageHandle,
   type HeadlessObjectFilter,
 } from './headlessRender';
+import { resolveRenderBaseUrl, type ResolvedRenderBase } from './playerServer';
 
 // `page.evaluate(...)` callbacks execute inside the browser. The CLI
 // tsconfig (lib: ES2022, no DOM) doesn't know that, so declare the narrow
@@ -129,6 +129,13 @@ export interface CaptureAnimationOpts {
    *  concern — it does NOT affect the animation-pose interference
    *  verification, which always runs against the FULL model. */
   objectFilter?: HeadlessObjectFilter;
+  /** Optional render-surface override (e.g. `http://localhost:5173` for a
+   *  running studio dev server). When omitted, resolveRenderBaseUrl()
+   *  provisions the bundled static player (dist/headless-player) on an
+   *  ephemeral 127.0.0.1 port, so a capture needs NO running dev server.
+   *  An explicit value takes resolveRenderBaseUrl's 'explicit' lane and
+   *  bypasses provisioning entirely. */
+  baseUrl?: string;
 }
 
 /** Which side is at fault when a capture refuses or aborts. Lets CLI/MCP
@@ -433,6 +440,10 @@ export async function captureAnimation(
   }
 
   let pageHandle: DemoPlayerPageHandle | undefined;
+  /** Provisioned render surface (bundled static player unless opts.baseUrl
+   *  overrides it). Torn down in the same `finally` as the page so a failed
+   *  capture never leaks a listening socket. */
+  let renderSurface: ResolvedRenderBase | undefined;
   let ffmpeg: FfmpegProcessLike | undefined;
   let written = 0;
 
@@ -487,11 +498,19 @@ export async function captureAnimation(
     // 6. Demo-player page via the shared bootstrap — CDP attach to an
     //    existing Chrome first (PW_CDP_URL ?? 127.0.0.1:9222), fresh
     //    chromium fallback.
-    // VITE_PORT keeps the same host as DEFAULT_RENDER_BASE_URL (localhost) —
-    // vite may bind ::1 only, where a 127.0.0.1 URL never connects.
-    const port = process.env.VITE_PORT;
+    //    The base URL is PROVISIONED, not assumed: resolveRenderBaseUrl
+    //    serves the bundled static player (dist/headless-player) on an
+    //    ephemeral 127.0.0.1 port, falling back to a live dev-server probe
+    //    (DEFAULT_RENDER_BASE_URL / VITE_PORT) and finally to a typed error
+    //    naming the fix. `opts.baseUrl` takes the 'explicit' lane and skips
+    //    provisioning. Mirrors `kernelcad render` (#625) — one source of
+    //    truth for how a render surface is obtained.
+    renderSurface = await resolveRenderBaseUrl(opts.baseUrl);
+    if (renderSurface.source !== 'explicit') {
+      onProgress(`render surface = ${renderSurface.source} (${renderSurface.baseUrl})`);
+    }
     pageHandle = await openPage({
-      baseUrl: port !== undefined ? `http://localhost:${port}` : DEFAULT_RENDER_BASE_URL,
+      baseUrl: renderSurface.baseUrl,
       // DemoPlayer's headless ViewerPane is fixed at 1920×1080; any other
       // viewport clips the canvas (headlessRender captures the full pane and
       // crops afterwards). Animation capture always emits 1920×1080 frames,
@@ -659,10 +678,14 @@ export async function captureAnimation(
       diagnostics: [...stashedWarns, diag(
         'cli.export-exception',
         `captureAnimation: ${errMsg(e)}`,
-        'Read the diagnostic message; common causes are a missing studio dev server (run `npm run dev`) or a missing playwright chromium.',
+        'Read the diagnostic message; common causes are a missing playwright chromium or an unavailable render surface (run `npm run build:player` once to bundle the static player, or start `npm run dev`).',
       )],
     };
   } finally {
     if (pageHandle) await pageHandle.close();
+    // Tear the ephemeral static-player server down on EVERY exit path
+    // (success, typed refusal, throw) — a no-op for the explicit/dev-server
+    // lanes.
+    if (renderSurface) await renderSurface.close();
   }
 }
