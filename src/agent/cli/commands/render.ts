@@ -7,9 +7,11 @@
 // Default: 2×2 composite PNG (front, right, top, iso) saved next to the
 // script. Use `--separate` to emit four individual files.
 //
-// Requires a studio dev server reachable at the configured base URL
-// (see --base-url; default DEFAULT_RENDER_BASE_URL). For development run `npm run dev` first;
-// a bundled-static-dist mode is on the v2 list.
+// The render surface is provisioned automatically by resolveRenderBaseUrl()
+// (src/agent/render/playerServer.ts): the bundled static player
+// (dist/headless-player) is served from an ephemeral 127.0.0.1 port, so no
+// running studio dev server is required. `--base-url` remains an optional
+// override that bypasses provisioning entirely.
 
 import { Command } from 'commander';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -19,10 +21,10 @@ import {
   headlessRender,
   composite2x2,
   ALL_VIEWS,
-  DEFAULT_RENDER_BASE_URL,
   type HeadlessObjectFilter,
   type HeadlessInspectionChannel,
 } from '../../render/headlessRender';
+import { resolveRenderBaseUrl } from '../../render/playerServer';
 import { buildModelFromFile } from '../../../modeling/buildModel';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
@@ -34,7 +36,9 @@ export interface RenderInput {
   separate: boolean;
   width: number;
   height: number;
-  baseUrl: string;
+  /** Optional render-surface override. When omitted, resolveRenderBaseUrl()
+   *  provisions the bundled static player (or falls back to a dev server). */
+  baseUrl?: string;
   hideReferenceImages: boolean;
   /** Additional `--pose <az,el>` captures, repeatable on the CLI. */
   poses?: string[];
@@ -66,7 +70,8 @@ export interface RenderInspectInput {
   outDir: string;
   width: number;
   height: number;
-  baseUrl: string;
+  /** Optional render-surface override; see RenderInput.baseUrl. */
+  baseUrl?: string;
   hideReferenceImages: boolean;
   environment?: string;
   noWatermark?: boolean;
@@ -249,6 +254,26 @@ function normalizeInspectChannels(values: readonly string[] | undefined): Headle
   return [...new Set(requested)] as HeadlessInspectionChannel[];
 }
 
+/**
+ * Provision a render surface, run `fn` against it, and ALWAYS tear the
+ * ephemeral static-player server down — including when the render throws, so
+ * a failed capture never leaks a listening socket.
+ */
+async function withRenderBase<T>(
+  explicit: string | undefined,
+  fn: (baseUrl: string) => Promise<T>,
+): Promise<T> {
+  const surface = await resolveRenderBaseUrl(explicit);
+  if (surface.source !== 'explicit') {
+    console.error(`kernelcad render: render surface = ${surface.source} (${surface.baseUrl})`);
+  }
+  try {
+    return await fn(surface.baseUrl);
+  } finally {
+    await surface.close();
+  }
+}
+
 export async function renderScript(input: RenderInput): Promise<RenderCliResult> {
   const filePath = resolve(input.file);
   let objectFilter: HeadlessObjectFilter | undefined;
@@ -273,19 +298,21 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
 
   let result;
   try {
-    result = await headlessRender({
-      scriptPath: filePath,
-      viewportWidth: input.width,
-      viewportHeight: input.height,
-      views: ALL_VIEWS,
-      poses: input.poses,
-      baseUrl: input.baseUrl,
-      hideReferenceImages: input.hideReferenceImages,
-      environment: input.environment,
-      noWatermark: input.noWatermark,
-      objectFilter,
-      section,
-    });
+    result = await withRenderBase(input.baseUrl, (baseUrl) =>
+      headlessRender({
+        scriptPath: filePath,
+        viewportWidth: input.width,
+        viewportHeight: input.height,
+        views: ALL_VIEWS,
+        poses: input.poses,
+        baseUrl,
+        hideReferenceImages: input.hideReferenceImages,
+        environment: input.environment,
+        noWatermark: input.noWatermark,
+        objectFilter,
+        section,
+      }),
+    );
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
     return { exitCode: 1, outputPaths: [] };
@@ -374,18 +401,20 @@ export async function renderInspectBundle(input: RenderInspectInput): Promise<Re
 
   let result;
   try {
-    result = await headlessRender({
-      scriptPath: filePath,
-      viewportWidth: input.width,
-      viewportHeight: input.height,
-      views: ALL_VIEWS,
-      baseUrl: input.baseUrl,
-      hideReferenceImages: input.hideReferenceImages,
-      environment: input.environment,
-      noWatermark: input.noWatermark,
-      objectFilter,
-      inspectionChannels: requestedChannels,
-    });
+    result = await withRenderBase(input.baseUrl, (baseUrl) =>
+      headlessRender({
+        scriptPath: filePath,
+        viewportWidth: input.width,
+        viewportHeight: input.height,
+        views: ALL_VIEWS,
+        baseUrl,
+        hideReferenceImages: input.hideReferenceImages,
+        environment: input.environment,
+        noWatermark: input.noWatermark,
+        objectFilter,
+        inspectionChannels: requestedChannels,
+      }),
+    );
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
     return { exitCode: 1, outputPaths: [] };
@@ -531,8 +560,7 @@ export function renderCommand(): Command {
     .option('--height <n>', 'per-tile height in pixels', (v) => parseInt(v, 10), 1024)
     .option(
       '--base-url <url>',
-      'studio dev server URL (run `npm run dev` first)',
-      DEFAULT_RENDER_BASE_URL,
+      'optional render-surface override (e.g. a running studio dev server); default is the bundled static player',
     )
     .option('--hide-reference-images', 'hide referenceImage() overlays in rendered output (default false)', false)
     .option(
@@ -550,7 +578,7 @@ export function renderCommand(): Command {
     .action(async (file: string, outDir: string, opts: {
       width: number;
       height: number;
-      baseUrl: string;
+      baseUrl?: string;
       hideReferenceImages: boolean;
       environment?: string;
       watermark: boolean;
@@ -583,8 +611,7 @@ export function renderCommand(): Command {
     .option('--height <n>', 'per-tile height in pixels', (v) => parseInt(v, 10), 1024)
     .option(
       '--base-url <url>',
-      'studio dev server URL (run `npm run dev` first)',
-      DEFAULT_RENDER_BASE_URL,
+      'optional render-surface override (e.g. a running studio dev server); default is the bundled static player',
     )
     .option('--hide-reference-images', 'hide referenceImage() overlays in rendered output (default false)', false)
     .option(
@@ -614,7 +641,7 @@ export function renderCommand(): Command {
       separate: boolean;
       width: number;
       height: number;
-      baseUrl: string;
+      baseUrl?: string;
       hideReferenceImages: boolean;
       pose: string[];
       environment?: string;
