@@ -75,7 +75,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     ).toEqual([]);
   });
 
-  it('catalogue has exactly 242 codes', () => {
+  it('catalogue has exactly 243 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -168,7 +168,9 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  +  2 articulated pose-envelope DFM clearance diagnostics:
     //       assembly.pose-envelope.clearance-violated,
     //       assembly.pose-envelope.clearance-unresolved = 242.
-    expect(catalogue.size).toBe(242);
+    //  +  1 parts.fetch.geometry-not-brep (GLB-only authored `*-board` catalog
+    //       records: glbUrl present, stepUrl absent by design) = 243.
+    expect(catalogue.size).toBe(243);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

@@ -13,6 +13,9 @@ import { OcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { computeBendAllowance } from '../../../modeling/sheetMetal';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import type { Vec3 } from '../../../shared/intent/types';
+import {
+  FILE_READ_CODE, FILE_READ_HINT, fileReadErrorMessage,
+} from '../../../shared/diagnostics/fileReadError';
 
 export interface GetBendTableInput {
   file?: string;
@@ -35,7 +38,21 @@ export interface GetBendTableOutput {
 }
 
 export async function getBendTableTool(input: GetBendTableInput): Promise<GetBendTableOutput> {
-  const code = input.code ?? (input.file ? readFileSync(input.file, 'utf-8') : undefined);
+  let code: string | undefined;
+  try {
+    code = input.code ?? (input.file ? readFileSync(input.file, 'utf-8') : undefined);
+  } catch (e) {
+    return {
+      ok: false, bends: [],
+      diagnostics: [{
+        target: 'export-occt',
+        code: FILE_READ_CODE,
+        severity: 'error',
+        message: fileReadErrorMessage(e),
+        hint: FILE_READ_HINT,
+      }],
+    };
+  }
   if (!code) {
     return {
       ok: false, bends: [],
