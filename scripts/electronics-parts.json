@@ -297,6 +297,26 @@
       "tags": ["power", "buck", "regulator", "24v", "3v3", "stepdown"],
       "license": "MIT",
       "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "cherry-mx-switch",
+      "name": "Cherry MX keyboard switch (PCB mount, 15.6×15.6mm)",
+      "family": "Switch",
+      "mpn": "Cherry MX",
+      "url": "https://raw.githubusercontent.com/ConstantinoSchillebeeckx/cherry-mx-switch/master/switch.step",
+      "tags": ["switch", "keyboard", "cherry", "mx", "keyswitch", "tactile"],
+      "license": "MIT",
+      "attribution": "ConstantinoSchillebeeckx/cherry-mx-switch (github.com/ConstantinoSchillebeeckx/cherry-mx-switch), MIT"
+    },
+    {
+      "id": "ec11-rotary-encoder",
+      "name": "EC11-class rotary encoder with push switch (Bourns PEC11R, Ø6 shaft)",
+      "family": "Encoder",
+      "mpn": "PEC11R-4220F-S0024",
+      "url": "https://raw.githubusercontent.com/ubiqueIoT/rotary-encoder-PEC11R/main/Bourns_-_PEC11R-4220F-S0024.step",
+      "tags": ["encoder", "rotary", "ec11", "pec11r", "bourns", "knob", "switch"],
+      "license": "UNVERIFIED",
+      "attribution": "ubiqueIoT/rotary-encoder-PEC11R (github.com/ubiqueIoT/rotary-encoder-PEC11R) — NO LICENSE FILE in repo; verify permission before redistributing this catalog entry"
     }
   ]
 }
