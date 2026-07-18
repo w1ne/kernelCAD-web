@@ -70,6 +70,8 @@ export interface ListApiOutput {
   ok: boolean;
   globals?: ApiEntry[];
   shapeMethods?: ApiEntry[];
+  /** Selector-algebra methods on the `ShapeList` returned by `selectEdges()` / `select()`. */
+  shapeListMethods?: ApiEntry[];
   sketchMethods?: ApiEntry[];
   pathBuilderMethods?: ApiEntry[];
   paramRefMethods?: ApiEntry[];
@@ -108,8 +110,9 @@ export const GLOBALS: ApiEntry[] = [
   { name: 'union', signature: '(...shapes) => Shape', description: 'Boolean union of two or more shapes.' },
   { name: 'assembly', signature: '(name?) => Assembly', description: 'Start an inspectable mechanical assembly. Use `.part(name, shape, { at?, connectors?, connect? })` to wrap modeled solids, `.connect(name, aConnector, bConnector)` for fixed connector metadata, joint primitives `.revolute/.prismatic/.fixed/.ball(name, parentPart, childPart, opts)` to declare DOF + joint origins (numeric Vec3 in parent local frame), `.solve(poses)` to run body-tree forward kinematics returning a SolvedKinematics handle (with `.transform(partName)`, `.value(jointName)`, `.bodies()`, `.toScene()`; `.toShape()` is deprecated — use `.toScene().toUnion()`), `.solvedModel(poses, opts?)` to return the posed `Scene` (opts: `{ validate: "warn" | "error" | "off" }` — default `warn`, attaches mate-aware validator diagnostics to `scene.warnings`), and `.model()` for the kinematic-zero `Scene`. v0.6 adds `partRef.connector(name, opts)` for mate-style connector frames and `.mate(name, aRef, bRef, type)` for typed mates. Physical mechanism intent can be declared with `.mechanicalJoint(name, { mate, actuator, shaft, supports, output, requiredSupport? })`; `requiredSupport` may name a hinge/bearing/bracket contract such as `{ kind: "hinge-bracket", around: "palm.left-hinge", supports: ["palm"], minBearingLengthMm: 8 }`. Drive transmission intent can be declared with `.transmission(name, { kind, sourceMate, drivenMates, actuator?, input?, output?, path, ratio?, notes?, springRateNPerMm?, freeLengthMm?, installedLengthMm?, preloadN?, momentArmMm?, requiredTorqueNmm?, anchorA?, anchorB? })`, where `kind` is `direct-horn`, `link-rod`, `four-bar`, `gear-pair`, `belt`, `tendon`, or `spring`; spring transmissions let `review_cad` reject decorative coils with no positive installed force, insufficient static torque budget, or anchors whose distance does not change across joint travel. `review_cad` requires every `coupleMates(...)` driven mate to have a matching physical transmission path, and consecutive `path` parts must stay near-contact adjacent across sampled mate travel. `design_loop` requires screenshot review by default so visually bad but structurally passing attempts are rejected; accepted visual reviews must include screenshotPath and non-empty findings from the vision-capable agent, and `requireVisualReview: false` is only for explicit non-visual batch checks. `review_cad` checks that declared actuators are mounted, shafts lie on revolute axes, support parts are fixed, outputs are connected by the mate, generic revolute connectors sit on modeled support material, declared support contracts reach their connector, and coupled mates are backed by adjacent transmission intent. Pose values accept `Editable<number>` — passing ParamRef poses to `.solvedModel` makes the rendered Scene reactive (param updates re-pose → fresh frozen Scene); `.solve` resolves ParamRefs at call time and returns a snapshot. The `Scene` return exposes `.parts`, `.bbox`, `.assemblyName`, `.warnings`, `.toCompound()` (lossless OCCT group, default for STEP), `.toUnion()` (lossy boolean fuse, antipattern), `.part(name)`, and iteration via `for (const p of scene)`.' },
   { name: 'helix', signature: '({ radius, pitch, turns, axis?, pointsPerTurn?, startAngle? }) => [number, number, number][]', description: 'Polyline helix rail for `Sketch.sweep`. Default axis Z, 32 points per turn.' },
-  { name: 'selectEdges', signature: '(shape, query?) => Promise<EdgeSegment[]>', description: 'Pre-select edges by EdgeQuery. Awaitable; lowers the shape lazily.' },
+  { name: 'selectEdges', signature: '(shape, query?) => Promise<ShapeList<EdgeSegment>>', description: 'Pre-select edges by EdgeQuery. Awaitable; lowers the shape lazily. Returns a `ShapeList` — an `EdgeSegment[]` (accepted anywhere fillet/chamfer take one) carrying the selector algebra on top: `.sortBy` / `.groupBy` / `.filterBy` / `.filterByPosition` / `.sortByDistance`, and the `.first` / `.last` / `.at(i)` / `.take(n)` accessors. Each `EdgeSegment` also carries `radius` when `curveType === "CIRCLE"`.' },
   { name: 'selectEdge', signature: '(shape, query) => Promise<EdgeSegment>', description: 'Like selectEdges but throws if zero or multiple edges match. Use for unambiguous single-edge selection.' },
+  { name: 'select', signature: '<T>(items: Iterable<T>) => ShapeList<T>', description: 'Wrap any array of topology query results in a `ShapeList` so the selector algebra applies — face summaries from `list_faces`, `ResolvedEntity[]` from `q.face(...).evaluate(scene)`, or a hand-assembled list. `selectEdges` already returns a ShapeList, so `select` is for every other result source. The algebra is pure TypeScript over already-resolved descriptors: it reorders and partitions the SAME objects, so `EdgeSegment.id` and the `@kc[...]` ref / OCCT handle on a `ResolvedEntity` survive a sort or a group untouched. Compose it with (do not replace) EdgeQuery/FaceQuery: let the declarative query filter inside OCCT first, then rank or bucket the resolved list here.' },
   { name: 'lib', signature: '{ fromSTEP(path: string): Promise<Shape> }', description: 'Parts library namespace. `lib.fromSTEP(path)` imports a STEP file as a Shape — path is resolved relative to the calling .kcad.ts script (absolute paths also accepted). Returned Shape composes with translate/rotate/color/arm.part(...) like any primitive. Use for vendor catalog parts (servos, bearings, fasteners) so geometric fidelity matches the real component instead of being hand-authored from box/cylinder.' },
   { name: 'nurbsSurface', signature: '({ controls, degree, weights?, knots?, periodic? }) => Surface', description: 'Build a NURBS surface from an explicit control net + degree. `controls` is a U-major V-minor rectangular Vec3 grid (mm). Returns a Surface (peer to Shape) — use `.thicken(t)` or `.toShape()` to enter the Shape pipeline. `weights` produces an exact rational surface (circles, cylinders, spheres, conics) as of v0.14.0.' },
   { name: 'surfaceFromCurves', signature: '(sections: Sketch[]) => Surface', description: 'Skin a NURBS surface through 2+ closed Sketch cross-sections in declaration order. Returns a Surface — chain `.thicken(t)` or `.toShape()`. Use for free-form panels and lofted shells.' },
@@ -168,6 +171,64 @@ export const SHAPE_METHODS: ApiEntry[] = [
   { name: 'recenter', signature: '(opts?: { x?: boolean; y?: boolean; z?: boolean }) => Promise<Shape>', description: 'Translate this Shape so its bounding-box center lands on the world origin, then return it for chaining. The key normalizer for a freshly-fetched catalog part: after `await part.recenter()`, a subsequent `.translate(x, y, z)` places the part\'s CENTER exactly at (x, y, z) instead of nudging it from the STEP file\'s arbitrary native offset. Async (lowers to read the bbox) and appends one translate, so it composes with prior transforms. Pass `{ z: false }` etc to recenter only the named axes.' },
   { name: 'seatOnFloor', signature: '(opts?: { center?: boolean }) => Promise<Shape>', description: 'Translate this Shape so it rests on the z = 0 floor (bbox min.z → 0), centered in x/y over the origin; returns it for chaining. Use for parts that must sit on a build plate / table / PCB plane in their upright pose. Pass `{ center: false }` to drop onto z = 0 without moving x/y. Async + appends one translate, same chaining contract as recenter().' },
   { name: 'lower', signature: '() => Promise<OcctBackend>', description: 'Eagerly lower this Shape for inspection. Used internally by selectEdges; agents rarely call directly.' },
+];
+
+/**
+ * Selector-algebra methods on the `ShapeList` returned by `selectEdges(...)`
+ * and `select(...)`. `ShapeList` extends `Array`, so every built-in array
+ * method is available too and is not re-advertised here.
+ *
+ * Drift-sentinel contract: adding a method to `ShapeList` REQUIRES updating
+ * this array — the test at
+ * `tests/integration/mcp/listApi.driftSentinel.test.ts` fails CI if they
+ * disagree.
+ */
+export const SHAPE_LIST_METHODS: ApiEntry[] = [
+  {
+    name: 'sortBy',
+    signature: "(criterion: 'X' | 'Y' | 'Z' | Vec3 | 'area' | 'length' | 'radius', opts?: { descending?: boolean; tolerance?: number }) => ShapeList<T>",
+    description: "Order the list by a criterion, ascending by default. An axis name or a Vec3 direction measures the projection of the entity's position onto that direction; 'area' / 'length' / 'radius' measure an intrinsic property ('radius' is populated on CIRCLE edges only). Comparison runs on the metric quantized to `tolerance` (default 1e-6) with the pre-sort position as tiebreak, so entities whose metrics differ only by kernel float noise keep their incoming relative order instead of swapping between runs. Returns a new list; entity identity is preserved.",
+  },
+  {
+    name: 'sortByDistance',
+    signature: '(point: Vec3, opts?: { descending?: boolean; tolerance?: number }) => ShapeList<T>',
+    description: 'Order by straight-line distance from each entity position to `point`, nearest first. Same quantization and stable-tiebreak contract as `sortBy`. Use to disambiguate "the hole nearest this mounting boss" without a `near` re-query.',
+  },
+  {
+    name: 'groupBy',
+    signature: "(criterion: 'X' | 'Y' | 'Z' | Vec3 | 'area' | 'length' | 'radius', opts?: { tolerance?: number; descending?: boolean }) => ShapeGroups<T>",
+    description: "Partition into groups sharing a quantized criterion value — one group per Z level, per hole diameter, per face area. Keys are rounded to 6 decimal digits by default, or snapped onto a `tolerance`-wide lattice, so near-coincident geometry lands in ONE bucket instead of two adjacent ones. Groups come back ordered by key and entities keep their incoming order within a group. The returned `ShapeGroups` exposes `.groups`, `.length`, `.keys`, `.at(i)` (negative indexes count from the end), `.byKey(v)` (quantizes the request the same way, so `byKey(5)` finds a bucket built from 4.999999999998), `.flat()`, and iteration yielding `{ key, items }`.",
+  },
+  {
+    name: 'filterBy',
+    signature: '(spec: ((item: T) => boolean) | Axis | string, opts?: { angleTolerance?: number }) => ShapeList<T>',
+    description: "Keep matching entities. Three forms picked by the argument's shape: a predicate for arbitrary logic; an axis ('X' | 'Y' | 'Z' | Vec3) to keep entities whose characteristic direction — an edge's tangent, a face's normal — is parallel to it within `angleTolerance` degrees (default 10); or any other string to match the geometry type case-insensitively ('CIRCLE' / 'LINE' for edges, 'PLANE' / 'CYLINDRE' for faces). Composes with EdgeQuery/FaceQuery rather than replacing them — query against the shape first so OCCT does the bulk filtering, then refine here.",
+  },
+  {
+    name: 'filterByPosition',
+    signature: "(axis: 'X' | 'Y' | 'Z' | Vec3, min: number, max: number, opts?: { inclusive?: boolean }) => ShapeList<T>",
+    description: 'Keep entities whose position projected onto `axis` falls within [min, max] (mm). Bounds are inclusive by default; pass `{ inclusive: false }` for a strict interval. `min` and `max` may be given in either order. Use for slab selections ("every edge in the top 2 mm") that `within` cannot express along an arbitrary direction.',
+  },
+  {
+    name: 'take',
+    signature: '(n: number) => ShapeList<T>',
+    description: 'First `n` entities, clamped to the list length. `n` must be a non-negative integer. Pair with `sortBy` for "the highest three faces": `faces.sortBy("Z", { descending: true }).take(3)`.',
+  },
+  {
+    name: 'first',
+    signature: 'T | undefined',
+    description: 'Getter — the first entity, or `undefined` when the list is empty. Empty is returned rather than thrown so a chain can be probed; use `selectEdge(...)` when a missing match should be a hard failure.',
+  },
+  {
+    name: 'last',
+    signature: 'T | undefined',
+    description: 'Getter — the last entity, or `undefined` when the list is empty. `list.sortBy("Z").last` is the topmost entity.',
+  },
+  {
+    name: 'at',
+    signature: '(i: number) => T | undefined',
+    description: 'Entity at index `i`; negative indexes count from the end. Inherited from `Array.prototype.at` — standard JS semantics, `undefined` when out of range.',
+  },
 ];
 
 export const SKETCH_METHODS: ApiEntry[] = [
@@ -377,6 +438,7 @@ export async function listApiTool(input: ListApiInput = {}): Promise<ListApiOutp
     ok: true,
     globals: p(GLOBALS),
     shapeMethods: p(SHAPE_METHODS),
+    shapeListMethods: p(SHAPE_LIST_METHODS),
     sketchMethods: p(SKETCH_METHODS),
     pathBuilderMethods: p(PATH_BUILDER_METHODS),
     paramRefMethods: p(PARAM_REF_METHODS),

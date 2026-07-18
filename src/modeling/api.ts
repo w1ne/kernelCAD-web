@@ -40,6 +40,7 @@ import {
   type FindPartResult,
 } from './parts/findPart';
 import { createStandardParts, type StandardParts } from './parts/standardParts';
+import { select, type ShapeList } from './selection/shapeList';
 import { sphere as sdfSphere, box as sdfBox, cylinder as sdfCylinder, torus as sdfTorus } from './sdf/primitives';
 import { smoothBlend as sdfSmoothBlend } from './sdf/smoothBlend';
 import { materialize as sdfMaterialize, type MaterializeOpts } from './sdf/materialize';
@@ -145,8 +146,20 @@ export interface KernelCadApi {
 
   path(): PathBuilder;
   helix(opts: HelixOptions): RailPoint[];
-  selectEdges(shape: Shape, query?: EdgeQuery): Promise<EdgeSegment[]>;
+  /**
+   * Pre-select edges by EdgeQuery. Returns a `ShapeList` — still an
+   * `EdgeSegment[]` everywhere one is expected, plus the selector algebra
+   * (`sortBy` / `groupBy` / `filterBy` / `filterByPosition` / `sortByDistance`
+   * and the `first` / `last` / `at` / `take` accessors).
+   */
+  selectEdges(shape: Shape, query?: EdgeQuery): Promise<ShapeList<EdgeSegment>>;
   selectEdge(shape: Shape, query: EdgeQuery): Promise<EdgeSegment>;
+  /**
+   * Wrap any array of topology query results in a `ShapeList` so the selector
+   * algebra applies — face summaries, `Query.evaluate(scene)` results, or a
+   * hand-assembled list. `selectEdges` already returns one.
+   */
+  select<T>(items: Iterable<T>): ShapeList<T>;
 
   /** Parts library — STEP-import + (future) parametric component wrappers. */
   lib: PartsLib;
@@ -860,8 +873,9 @@ export function createApi(ctx: ApiContext): KernelCadApi {
     helix,
     selectEdges: async (shape, query = {}) => {
       const lowered = await shape.lower();
-      return selectEdgesBackend(lowered, query);
+      return select(selectEdgesBackend(lowered, query));
     },
+    select,
     selectEdge: async (shape, query) => {
       const lowered = await shape.lower();
       return selectEdgeBackend(lowered, query);

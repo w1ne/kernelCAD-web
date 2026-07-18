@@ -16,6 +16,7 @@ import { Scene } from '../../../src/modeling/validation/scene';
 import { SurfaceProxy } from '../../../src/modeling/capture/surfaceProxy';
 import { Curve3DProxy } from '../../../src/modeling/capture/curveProxy';
 import { Curve3DAnalyticsImpl } from '../../../src/modeling/capture/curveAnalyticsProxy';
+import { ShapeList } from '../../../src/modeling/selection/shapeList';
 
 describe('list_api drift sentinels', () => {
   it('GLOBALS matches the keys returned by createApi(ctx)', async () => {
@@ -39,6 +40,30 @@ describe('list_api drift sentinels', () => {
 
     for (const name of shapeMethodNames) {
       expect(advertised.has(name)).toBe(true);
+    }
+  });
+
+  it('SHAPE_LIST_METHODS lists every public ShapeList selector-algebra member', async () => {
+    const r = await listApiTool({});
+    const advertised = new Set(r.shapeListMethods!.map((m) => m.name));
+
+    // ShapeList extends Array; only its OWN prototype members are the selector
+    // algebra. Inherited array methods are standard JS and not re-advertised,
+    // except `at`, which is documented because it is a named terminal accessor.
+    const proto = ShapeList.prototype as unknown as Record<string, unknown>;
+    const own = Object.getOwnPropertyNames(proto).filter((n) => n !== 'constructor' && !n.startsWith('_'));
+
+    for (const name of own) {
+      expect(
+        advertised.has(name),
+        `SHAPE_LIST_METHODS missing entry for ShapeList.prototype.${name}`,
+      ).toBe(true);
+    }
+    // And nothing advertised may be absent from the runtime surface.
+    for (const name of advertised) {
+      const onOwn = own.includes(name);
+      const inherited = name in ([] as unknown as Record<string, unknown>);
+      expect(onOwn || inherited, `SHAPE_LIST_METHODS advertises ${name}, which ShapeList does not expose`).toBe(true);
     }
   });
 
