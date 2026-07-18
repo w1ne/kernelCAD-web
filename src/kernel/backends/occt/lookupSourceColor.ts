@@ -21,6 +21,12 @@
 //     coloured leaf hidden behind a fillet/hole is reachable but a leaf
 //     hidden behind a boolean's cutter chain is intentionally NOT reachable
 //     unless the user explicitly recolours the boolean result.
+//
+// The same walk is exported as `lookupColorFromLineage` /
+// `lookupMaterialFromLineage` (inclusive of the start record, any record
+// kind) for the single-shape GLB export path, whose "part" is the script's
+// tail FeatureRecord rather than an `assemblyPart`. Both callers share one
+// precedence rule on purpose — see runAndExport's `case 'glb'`.
 
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { FeatureId, FeatureRef } from '../../../shared/intent/types';
@@ -54,26 +60,87 @@ export function lookupSourceColor(
   allRecords: readonly FeatureRecord[],
 ): string | undefined {
   if (partRecord.kind !== 'assemblyPart') return undefined;
+  // Start at the *source shape*, not the assemblyPart node itself — the part
+  // node's own metadata is not a colour attribution site.
+  const source = sourceShapeRecord(partRecord, allRecords);
+  return source && lookupColorFromLineage(source, allRecords);
+}
 
+/** Resolve an `assemblyPart`'s `inputs.shape` to its FeatureRecord. */
+function sourceShapeRecord(
+  partRecord: FeatureRecord,
+  allRecords: readonly FeatureRecord[],
+): FeatureRecord | undefined {
+  const shapeInput = partRecord.inputs.shape as FeatureRef | undefined;
+  if (!shapeInput || shapeInput.kind !== 'feature') return undefined;
+  return allRecords.find((r) => r.id === shapeInput.id);
+}
+
+/**
+ * Walk a record's own metadata, then its upstream chain, for the nearest
+ * `metadata.color`. Unlike `lookupSourceColor` this starts *at* `record`
+ * (inclusive) and accepts any record kind, so a returned Shape's own colour
+ * always wins over anything inherited from its ancestors.
+ *
+ * Used by the single-shape GLB export path, where the "part" is the tail
+ * FeatureRecord of the script rather than an `assemblyPart` node. Sharing the
+ * walker keeps ONE colour-precedence convention across assembly fan-out and
+ * single-shape export: follow only the primary upstream pointer
+ * (shape > base > target), so a colour hidden behind a fillet/hole/transform
+ * is reachable but a colour on a boolean's *cutter* is intentionally not.
+ */
+export function lookupColorFromLineage(
+  record: FeatureRecord,
+  allRecords: readonly FeatureRecord[],
+): string | undefined {
+  return walkLineage(record, allRecords, (r) => {
+    const color = (r.metadata as { color?: unknown } | undefined)?.color;
+    return typeof color === 'string' ? color : undefined;
+  });
+}
+
+/**
+ * `lookupColorFromLineage`'s counterpart for `metadata.material` — same
+ * inclusive start, same primary-pointer rule.
+ */
+export function lookupMaterialFromLineage(
+  record: FeatureRecord,
+  allRecords: readonly FeatureRecord[],
+): PBRMaterial | undefined {
+  return walkLineage(record, allRecords, (r) => {
+    const material = (r.metadata as { material?: unknown } | undefined)?.material;
+    return isPBRMaterial(material) ? material : undefined;
+  });
+}
+
+/**
+ * Shared lineage walker: apply `pick` to `start`, then to each record along
+ * the primary upstream pointer, returning the first defined result.
+ *
+ * Cycle-safe via a `seen` set (records are captured in dependency order by
+ * construction, but the guard keeps the walk terminating against future
+ * record-graph rewrites).
+ */
+function walkLineage<T>(
+  start: FeatureRecord,
+  allRecords: readonly FeatureRecord[],
+  pick: (record: FeatureRecord) => T | undefined,
+): T | undefined {
   const recordById = new Map<FeatureId, FeatureRecord>(
     allRecords.map((r) => [r.id, r]),
   );
 
-  const shapeInput = partRecord.inputs.shape as FeatureRef | undefined;
-  if (!shapeInput || shapeInput.kind !== 'feature') return undefined;
-
   const seen = new Set<FeatureId>();
-  let cursor: FeatureId | undefined = shapeInput.id;
+  let record: FeatureRecord | undefined = start;
 
-  while (cursor !== undefined && !seen.has(cursor)) {
-    seen.add(cursor);
-    const record = recordById.get(cursor);
-    if (record === undefined) return undefined;
+  while (record !== undefined && !seen.has(record.id)) {
+    seen.add(record.id);
 
-    const color = (record.metadata as { color?: unknown } | undefined)?.color;
-    if (typeof color === 'string') return color;
+    const found = pick(record);
+    if (found !== undefined) return found;
 
-    cursor = nextUpstreamId(record);
+    const next = nextUpstreamId(record);
+    record = next === undefined ? undefined : recordById.get(next);
   }
 
   return undefined;
@@ -101,29 +168,8 @@ export function lookupSourceMaterial(
   allRecords: readonly FeatureRecord[],
 ): PBRMaterial | undefined {
   if (partRecord.kind !== 'assemblyPart') return undefined;
-
-  const recordById = new Map<FeatureId, FeatureRecord>(
-    allRecords.map((r) => [r.id, r]),
-  );
-
-  const shapeInput = partRecord.inputs.shape as FeatureRef | undefined;
-  if (!shapeInput || shapeInput.kind !== 'feature') return undefined;
-
-  const seen = new Set<FeatureId>();
-  let cursor: FeatureId | undefined = shapeInput.id;
-
-  while (cursor !== undefined && !seen.has(cursor)) {
-    seen.add(cursor);
-    const record = recordById.get(cursor);
-    if (record === undefined) return undefined;
-
-    const material = (record.metadata as { material?: unknown } | undefined)?.material;
-    if (isPBRMaterial(material)) return material;
-
-    cursor = nextUpstreamId(record);
-  }
-
-  return undefined;
+  const source = sourceShapeRecord(partRecord, allRecords);
+  return source && lookupMaterialFromLineage(source, allRecords);
 }
 
 /**

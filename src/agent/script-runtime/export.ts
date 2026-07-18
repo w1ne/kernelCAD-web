@@ -3,7 +3,8 @@
 import { runScript } from '../../modeling/runtime/runScript';
 import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
-import { exportSceneToSTEPAsync, pbrFromMetadata, meshShapeForExport, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { exportSceneToSTEPAsync, meshShapeForExport, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { lookupColorFromLineage, lookupMaterialFromLineage } from '../../kernel/backends/occt/lookupSourceColor';
 import { encodeBinaryStl } from '../../kernel/backends/occt/exportStlBinary';
 import { verifyWatertight, type WatertightReport } from '../../kernel/backends/occt/meshHeal';
 import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exportDxf';
@@ -476,15 +477,28 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
     }
     case 'glb': {
       // Single-shape GLB: wrap in a one-part `WorldFramePart[]` so the
-      // writer can mesh + emit identically to the Scene path. Pull
-      // material / color attribution from the target FeatureRecord's
-      // metadata so a script that ends with `.material({...})` exports the
-      // expected PBR fields without going through an assembly.
+      // writer can mesh + emit identically to the Scene path.
+      //
+      // Colour/material attribution is resolved by walking the target
+      // record's *lineage*, not just the target record itself. `.color()`
+      // mutates the metadata of the record that was current when it was
+      // called, so `box(...).color('#f00').fillet(1)` attributes the colour
+      // to the box while the export target is the fillet — reading only the
+      // tail silently dropped the colour.
+      //
+      // Precedence (identical to `lookupSourceColor`, used by the assembly
+      // fan-out — one convention, not two): the tail's own attribution wins,
+      // otherwise follow the primary upstream pointer (shape > base >
+      // target). A boolean therefore inherits from its base but NEVER from
+      // its cutters; recolour the boolean result to override.
       const optsGlb = (input.options as ExportGlbOptions | undefined) ?? { format: 'glb' };
       const tailRecord = run.records.find((rec) => rec.id === targetId);
-      const meta = tailRecord?.metadata as Record<string, unknown> | undefined;
-      const partColor = typeof meta?.color === 'string' ? meta.color : undefined;
-      const partMaterial = pbrFromMetadata(meta);
+      const partColor = tailRecord
+        ? lookupColorFromLineage(tailRecord, run.records)
+        : undefined;
+      const partMaterial = tailRecord
+        ? lookupMaterialFromLineage(tailRecord, run.records)
+        : undefined;
       const part: WorldFramePart = {
         name: 'part',
         shape,
