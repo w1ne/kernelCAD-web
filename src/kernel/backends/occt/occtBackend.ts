@@ -15,7 +15,7 @@ import { verifyWatertight, stitchCracks, dropDegenerateTriangles, type Watertigh
 import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
 import { sceneToWorldFrameParts } from './sceneToWorldFrame';
-import { computeMassProperties, type MassProperties } from '../../../modeling/properties/massProperties';
+import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../../modeling/properties/massProperties';
 
 type ReplicadEdge = replicad.Edge;
 type ReplicadFace = replicad.Face;
@@ -1256,10 +1256,10 @@ export class OcctBackend implements ShapeBackend {
    * Backed by OCCT's `BRepGProp::VolumeProperties`. Mirrors the access
    * pattern in `curve3dEval.ts` for `LinearProperties`.
    */
-  massProperties(density: number = 1000): MassProperties {
+  massProperties(density: number = 1000, gyrationAxis?: GyrationAxis): MassProperties {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapped = (this.shape as any).wrapped;
-    return computeMassProperties(wrapped, density);
+    return computeMassProperties(wrapped, density, gyrationAxis);
   }
 
   volume(): number {
