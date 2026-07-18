@@ -220,3 +220,31 @@ describe('validateOutputPath — credential-dir patterns', () => {
     expect(r.ok).toBe(false);
   });
 });
+
+// The three canonicalize() defects fixed alongside these tests were all
+// macOS-only in their SYMPTOM (/etc, /tmp, /var are symlinks there; /proc,
+// /sys, /root do not exist), so the deny-list failed open on darwin while
+// Linux CI stayed green. These cases exercise the same code paths using a
+// top-level directory that exists on NO platform, so they fail on Linux too
+// if the path-walk regresses — a green CI run means something here.
+describe('validateOutputPath — canonicalize path-walk (platform independent)', () => {
+  it('does not mangle a path whose top-level directory does not exist', () => {
+    const r = validateOutputPath('/kcad-no-such-top-dir/sub/model.stl');
+    // Pre-fix this produced '//cad-no-such-top-dir/sub/model.stl': the first
+    // character eaten by slice(parent.length + 1) against a root parent, and
+    // a doubled leading slash from string interpolation onto '/'.
+    expect(r.resolved).toBe('/kcad-no-such-top-dir/sub/model.stl');
+  });
+
+  it('never returns a path with a doubled leading slash', () => {
+    for (const p of ['/kcad-no-such-top-dir/a.stl', '/kcad-missing/deep/nest/b.stl']) {
+      expect(validateOutputPath(p).resolved?.startsWith('//')).toBe(false);
+    }
+  });
+
+  it('still rejects a dangerous prefix when the directory does not exist', () => {
+    // The deny-list must not depend on the target existing on this host.
+    expect(validateOutputPath('/proc/self/environ').ok).toBe(false);
+    expect(validateOutputPath('/root/foo.stl').ok).toBe(false);
+  });
+});
