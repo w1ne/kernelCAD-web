@@ -11,6 +11,7 @@ describe('parts.* diagnostic codes (Slice C)', () => {
     'parts.fetch.checksum-drift',
     'parts.fetch.api-error',
     'parts.fetch.remote-disabled',
+    'parts.fetch.geometry-not-brep',
   ] as const;
 
   for (const code of PARTS_CODES) {

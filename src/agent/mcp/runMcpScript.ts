@@ -5,6 +5,7 @@ import { dirname, resolve } from 'node:path';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { kernelErrorToDiagnostic } from '../script-runtime/kernelErrorToDiagnostic';
 import { runScript, type RunScriptResult } from '../../modeling/runtime/runScript';
+import { FILE_READ_CODE, fileReadErrorMessage } from '../../shared/diagnostics/fileReadError';
 
 export interface McpScriptInput {
   file?: string;
@@ -46,7 +47,7 @@ export async function runMcpScript(input: McpScriptInput): Promise<RunMcpScriptR
 
 export type LoadMcpScriptSourceResult =
   | { ok: true; code: string; fileName: string }
-  | { ok: false; error: string };
+  | { ok: false; error: string; errorCode?: string };
 
 export async function loadMcpScriptSource(input: McpScriptInput): Promise<LoadMcpScriptSourceResult> {
   if (input.code !== undefined) {
@@ -71,7 +72,8 @@ export async function loadMcpScriptSource(input: McpScriptInput): Promise<LoadMc
   } catch (e) {
     return {
       ok: false,
-      error: `Cannot read file: ${e instanceof Error ? e.message : String(e)}`,
+      error: fileReadErrorMessage(e),
+      errorCode: FILE_READ_CODE,
     };
   }
 }

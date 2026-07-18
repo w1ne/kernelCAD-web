@@ -104,30 +104,41 @@ export interface PerFaceMaterialWarning {
   detail: string;
 }
 
-/** Diagnostic emitted when a leaf record with its own explicit material is
- *  consumed by a downstream boolean.fuse (union/intersect) whose head record
- *  also has its own material. The kernel's boolean operation produces a single
- *  post-fuse mesh whose faces inherit the head record's material — the leaf's
- *  material is therefore invisible on the static silhouette (post-fuse render
+/** Which display attribute a shadowing warning is about. `.material()` and
+ *  `.color()` are attributed by the SAME record-metadata mechanism and are
+ *  therefore shadowed by the same DAG rule — one detector serves both. */
+export type ShadowedAttribute = 'material' | 'color';
+
+/** Diagnostic emitted when a leaf record with its own explicit material/color
+ *  is consumed by a downstream boolean.fuse (union/intersect) whose head record
+ *  also has its own material/color. The kernel's boolean operation produces a
+ *  single post-fuse mesh whose faces inherit the head record's attribution —
+ *  the leaf's is therefore invisible on the static silhouette (post-fuse render
  *  in `kernelcad render` and after the build animation settles in
- *  `npm run capture-demo`). The leaf material IS visible during the staged
+ *  `npm run capture-demo`). The leaf attribution IS visible during the staged
  *  build animation while predecessor groups are still fading.
  *
- *  Authors who want a multi-material static render today must either:
- *    (a) split the construction so the material-bearing leaf is not unioned
- *        into a parent that also has its own material, OR
+ *  Authors who want a multi-material/multi-color static render today must
+ *  either:
+ *    (a) split the construction so the attributed leaf is not unioned
+ *        into a parent that also carries its own attribution, OR
  *    (b) author the leaf as a separate `assemblyPart` (assembly fan-out path
- *        preserves per-part materials in the static render).
+ *        preserves per-part attribution in the static render).
  *
  *  Tracked as a follow-up code fix in
  *  `docs/specs/per-leaf-material-survives-static-render.md`. */
-export interface MaterialShadowingWarning {
+export interface AttributeShadowingWarning {
+  /** Which attribute was shadowed. Lets a single consumer render both. */
+  attribute: ShadowedAttribute;
   leafFeatureId: FeatureId;
   leafFeatureKind: FeatureKind;
   shadowingFeatureId: FeatureId;
   shadowingFeatureKind: FeatureKind;
   message: string;
 }
+
+/** Back-compat alias: the material flavour of `AttributeShadowingWarning`. */
+export type MaterialShadowingWarning = AttributeShadowingWarning;
 
 export interface MeshFeaturesResult {
   features: FeatureMesh[];
@@ -136,8 +147,13 @@ export interface MeshFeaturesResult {
   /** Soft warnings collected during per-face material label resolution.
    *  Optional — absent when no labels were referenced. */
   perFaceMaterialWarnings?: PerFaceMaterialWarning[];
-  /** Multi-material diagnostic. See `MaterialShadowingWarning` for context. */
-  materialShadowingWarnings: MaterialShadowingWarning[];
+  /** Multi-material diagnostic. See `AttributeShadowingWarning` for context. */
+  materialShadowingWarnings: AttributeShadowingWarning[];
+  /** Multi-color diagnostic — same DAG rule as `materialShadowingWarnings`,
+   *  applied to `metadata.color`. This is the answer to "`.color()` after a
+   *  boolean is silent": it is NOT a no-op on the per-feature meshing path,
+   *  but a leaf color IS discarded when the fuse head recolors the result. */
+  colorShadowingWarnings: AttributeShadowingWarning[];
 }
 
 /**
@@ -733,6 +749,12 @@ export async function meshFeaturesPerFeature(
   const colorByFeatureId = new Map<FeatureId, string>();
   // Lookup table for full PBR material derived from record metadata.
   const materialByFeatureId = new Map<FeatureId, PBRMaterial>();
+  // Materials the author wrote EXPLICITLY via `.material({...})`. Distinct
+  // from `materialByFeatureId`, which also contains materials *promoted* from
+  // `metadata.color` by `pbrFromMetadata`. Shadowing diagnostics must use this
+  // map: otherwise a pure-`.color()` script is reported as "material
+  // shadowing" and told to fix a `.material()` call it never made.
+  const explicitMaterialByFeatureId = new Map<FeatureId, PBRMaterial>();
   // Lookup table for per-face PBR overrides (label → PBR). Resolution into
   // face-index keys happens at feature.compiled time when we hold the OCCT
   // shape.
@@ -749,6 +771,10 @@ export async function meshFeaturesPerFeature(
     if (typeof color === 'string') colorByFeatureId.set(r.id, color);
     const pbr = pbrFromMetadata(r.metadata as Record<string, unknown> | undefined);
     if (pbr !== undefined) materialByFeatureId.set(r.id, pbr);
+    const explicitMaterial = (r.metadata as { material?: unknown } | undefined)?.material;
+    if (explicitMaterial !== undefined && typeof explicitMaterial === 'object') {
+      explicitMaterialByFeatureId.set(r.id, explicitMaterial as PBRMaterial);
+    }
     const perFace = (r.metadata as { materialByLabel?: Record<string, PBRMaterial> } | undefined)
       ?.materialByLabel;
     if (perFace !== undefined && Object.keys(perFace).length > 0) {
@@ -1129,12 +1155,25 @@ export async function meshFeaturesPerFeature(
     max: features.length > 0 ? [maxX, maxY, maxZ] : [0, 0, 0],
   };
 
-  const materialShadowingWarnings = detectMaterialShadowing(
+  const materialShadowingWarnings = detectAttributeShadowing(
     features,
-    materialByFeatureId,
+    explicitMaterialByFeatureId,
+    'material',
   );
   for (const w of materialShadowingWarnings) {
     console.warn(`meshFeaturesPerFeature: material shadowing — ${w.message}`);
+  }
+
+  // Same detector, same DAG rule, applied to `.color()`. Color is attributed
+  // by the identical metadata mechanism, so forking a parallel detector here
+  // would be two sources of truth for one rule.
+  const colorShadowingWarnings = detectAttributeShadowing(
+    features,
+    colorByFeatureId,
+    'color',
+  );
+  for (const w of colorShadowingWarnings) {
+    console.warn(`meshFeaturesPerFeature: color shadowing — ${w.message}`);
   }
 
   return {
@@ -1142,32 +1181,41 @@ export async function meshFeaturesPerFeature(
     bounds,
     failedFeatureIds,
     materialShadowingWarnings,
+    colorShadowingWarnings,
     ...(warnings.length > 0 ? { perFaceMaterialWarnings: warnings } : {}),
   };
 }
 
 /**
- * Walk the post-mesh DAG forward from each material-bearing leaf. Emit a
- * warning for every (leaf, shadowing-boolean) pair where the leaf is reachable
- * via a chain of union/intersect predecessors from a downstream record that
- * also carries its own material. The leaf's material survives only on the
- * intermediate group during the build animation; the post-fuse silhouette
- * carries the head record's material.
+ * Walk the post-mesh DAG forward from each attributed leaf. Emit a warning for
+ * every (leaf, shadowing-boolean) pair where the leaf is reachable via a chain
+ * of union/intersect predecessors from a downstream record that ALSO carries
+ * its own attribution of the same kind. The leaf's attribution survives only on
+ * the intermediate group during the build animation; the post-fuse silhouette
+ * carries the head record's.
+ *
+ * Generic over the attribute (`material` | `color`) because both are attributed
+ * by the same `FeatureRecord.metadata` mechanism and therefore obey the same
+ * shadowing rule. One detector, one source of truth.
  *
  * Walk semantics:
- *   - Visit each leaf with a material exactly once.
+ *   - Visit each attributed leaf exactly once.
  *   - Reverse-adjacency lookup is built from `feature.predecessors`.
  *   - We follow boolean fuse-style edges only (op === 'union' | 'intersect').
  *     subtract edges represent cutters that DON'T enter the post-fuse mesh,
  *     so a leaf consumed only as a `subtract` cutter never produces a
  *     shadowing warning.
- *   - The first material-bearing descendant on each forward path is the
- *     "shadowing" record reported.
+ *   - The first attributed descendant on each forward path is the "shadowing"
+ *     record reported.
+ *   - A head with NO attribution of its own is NOT a shadower: nothing
+ *     competes for the silhouette, so warning there would be a false positive
+ *     on the common single-color-on-leaf pattern.
  */
-function detectMaterialShadowing(
+function detectAttributeShadowing(
   features: readonly FeatureMesh[],
-  materialByFeatureId: ReadonlyMap<FeatureId, PBRMaterial>,
-): MaterialShadowingWarning[] {
+  attributeByFeatureId: ReadonlyMap<FeatureId, PBRMaterial | string>,
+  attribute: ShadowedAttribute,
+): AttributeShadowingWarning[] {
   const featureById = new Map<FeatureId, FeatureMesh>();
   for (const f of features) featureById.set(f.featureId, f);
 
@@ -1190,15 +1238,15 @@ function detectMaterialShadowing(
     }
   }
 
-  const out: MaterialShadowingWarning[] = [];
+  const out: AttributeShadowingWarning[] = [];
   for (const leaf of features) {
     if (leaf.virtual) continue;
-    if (!materialByFeatureId.has(leaf.featureId)) continue;
+    if (!attributeByFeatureId.has(leaf.featureId)) continue;
 
-    // BFS forward; stop at the first material-bearing descendant on each
+    // BFS forward; stop at the first attributed descendant on each
     // branch. We only need one shadower per leaf for the diagnostic; if
     // there's a chain (.union().union().union()), the FIRST one with its
-    // own material is the load-bearing one.
+    // own attribution is the load-bearing one.
     const visited = new Set<FeatureId>([leaf.featureId]);
     const queue: FeatureId[] = [];
     const seedDescendants = descendantsByPredecessor.get(leaf.featureId);
@@ -1209,7 +1257,7 @@ function detectMaterialShadowing(
       const id = queue.shift()!;
       if (visited.has(id)) continue;
       visited.add(id);
-      if (materialByFeatureId.has(id)) {
+      if (attributeByFeatureId.has(id)) {
         shadower = featureById.get(id);
         break;
       }
@@ -1219,17 +1267,18 @@ function detectMaterialShadowing(
 
     if (shadower) {
       out.push({
+        attribute,
         leafFeatureId: leaf.featureId,
         leafFeatureKind: leaf.featureKind,
         shadowingFeatureId: shadower.featureId,
         shadowingFeatureKind: shadower.featureKind,
         message:
-          `leaf '${leaf.featureId}' (${leaf.featureKind}) has its own material but is unioned into ` +
-          `'${shadower.featureId}' (${shadower.featureKind}) which also has its own material. ` +
-          `The leaf material is visible during the build animation only; the static render ` +
-          `(kernelcad render, post-rotate capture-demo) shows the head material on the fused silhouette. ` +
-          `To preserve per-leaf material in the static render, split the construction so the leaf is not ` +
-          `unioned into a material-bearing parent, or author the leaf as a separate assemblyPart.`,
+          `leaf '${leaf.featureId}' (${leaf.featureKind}) has its own ${attribute} but is unioned into ` +
+          `'${shadower.featureId}' (${shadower.featureKind}) which also has its own ${attribute}. ` +
+          `The leaf ${attribute} is visible during the build animation only; the static render ` +
+          `(kernelcad render, post-rotate capture-demo) shows the head ${attribute} on the fused silhouette. ` +
+          `To preserve per-leaf ${attribute} in the static render, split the construction so the leaf is not ` +
+          `unioned into a ${attribute}-bearing parent, or author the leaf as a separate assemblyPart.`,
       });
     }
   }

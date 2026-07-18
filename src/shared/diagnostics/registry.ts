@@ -339,11 +339,12 @@ export const DIAGNOSTIC_REGISTRY = {
     description: 'The user script raised an uncaught JavaScript exception during execution.',
   },
   'cli.file-read': {
-    hintTemplate: 'kernelCAD could not read the script file. Check the path exists and is readable.',
+    hintTemplate:
+      'kernelCAD could not read the script file. Either the path does not exist locally, or this server is hosted/remote and cannot see your filesystem — pass the script inline via `code` instead of `file`.',
     nextAction: { kind: 'check-file-path' },
     defaultSeverity: 'error',
     group: 'cli',
-    description: 'kernelCAD could not read the script file at the given path.',
+    description: 'kernelCAD could not read the script file at the given path (missing locally, or the server is remote and has no access to the caller\'s filesystem).',
   },
   'cli.file-write': {
     hintTemplate:
@@ -1667,6 +1668,15 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'parts',
     description: 'A tool call required a remote round-trip but partsBaseUrl was unset, so the remote tier was dormant.',
+  },
+  'parts.fetch.geometry-not-brep': {
+    hintTemplate:
+      'This catalog record exposes only a display mesh (glbUrl) and no stepUrl, so there is no BREP body to import. The authored dev-board records are GLB-only because their STEP exceeds the catalog per-file size limit. Compile the authored scripts/parts/authored/<board>.kcad.ts to STEP and load it with lib.fromSTEP(path), or choose a catalog part that exposes stepUrl.',
+    nextAction: { kind: 'call-tool', tool: 'find_part', args: { source: 'local' } },
+    defaultSeverity: 'error',
+    group: 'parts',
+    description:
+      'fetch_part resolved a remote record whose only geometry is a GLB display mesh; kernelCAD has no mesh-import lowerer, so no Shape can be built.',
   },
   // DFM preflight (23) — Slice E
   'dfm.input.vendor-required': {

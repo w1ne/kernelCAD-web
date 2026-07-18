@@ -42,6 +42,11 @@ export interface StepPartsRecord {
   standard?: { body?: string; number?: string; designation?: string } | string | null;
   attributes?: Record<string, unknown>;
   stepUrl?: string;
+  /** Display-mesh URL. kernelCAD's own catalog serves the authored `*-board`
+   *  records as GLB-only (no `stepUrl`) — see PartRecord.glbUrl. Must survive
+   *  the mapping so fetchPartHost can explain *why* there is no BREP instead of
+   *  reporting a bare "no stepUrl". */
+  glbUrl?: string;
   pngUrl?: string;
   byteSize?: number;
   sha256?: string;
@@ -99,5 +104,6 @@ export function mapStepPartsRecord(raw: StepPartsRecord): PartRecord {
   if (standard !== undefined) record.standard = standard;
   if (raw.pageUrl) record.attribution = raw.pageUrl;
   if (raw.stepUrl) record.stepUrl = raw.stepUrl;
+  if (raw.glbUrl) record.glbUrl = raw.glbUrl;
   return record;
 }

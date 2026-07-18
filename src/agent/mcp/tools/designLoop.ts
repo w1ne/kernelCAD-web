@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
+import { fileReadErrorMessage } from '../../../shared/diagnostics/fileReadError';
 import type { GripperApertureRequest } from '../../../modeling/mates/gripperAperture';
 import type { MechanismFitnessResult } from '../../../modeling/mates/mechanismFitness';
 import type { ContactGraphResult } from '../../../modeling/runtime/contactGraph';
@@ -172,7 +173,14 @@ export async function designLoopTool(input: DesignLoopInput): Promise<DesignLoop
 
     const id = attempt.id ?? String(index + 1).padStart(2, '0');
     const title = attempt.title ?? `Attempt ${id}`;
-    const source = attempt.code ?? (attempt.file !== undefined ? await readFile(attempt.file, 'utf-8') : '');
+    // design_loop signals misuse by throwing (see the guards above), so a
+    // failed read re-throws with the shared message rather than a raw ENOENT.
+    let source: string;
+    try {
+      source = attempt.code ?? (attempt.file !== undefined ? await readFile(attempt.file, 'utf-8') : '');
+    } catch (e) {
+      throw new Error(`design_loop attempt ${index + 1}: ${fileReadErrorMessage(e)}`);
+    }
     const requirePhysicalAcceptance =
       input.requirePhysicalAcceptance === true ||
       containsPhysicalUseCaseDeclaration(source);
