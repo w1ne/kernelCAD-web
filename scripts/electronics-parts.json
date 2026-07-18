@@ -29,6 +29,16 @@
       "tags": ["mcu", "module", "wifi", "ble", "esp32", "esp32c3", "riscv"]
     },
     {
+      "id": "ic-pdip-16",
+      "name": "PDIP-16 (300 mil, 2.54mm pitch)",
+      "family": "IC package",
+      "mpn": "PDIP-16",
+      "kcad_source": "scripts/parts/authored/ic-pdip-16.kcad.ts",
+      "tags": ["ic", "package", "dip", "pdip", "l293d", "74hc595", "74hc165"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
       "id": "ic-lqfp-48",
       "name": "LQFP-48 (7x7mm, 0.5mm pitch)",
       "family": "IC package",
@@ -309,14 +319,82 @@
       "attribution": "ConstantinoSchillebeeckx/cherry-mx-switch (github.com/ConstantinoSchillebeeckx/cherry-mx-switch), MIT"
     },
     {
-      "id": "ec11-rotary-encoder",
-      "name": "EC11-class rotary encoder with push switch (Bourns PEC11R, Ø6 shaft)",
+      "id": "rotary-encoder-ec11",
+      "name": "EC11 rotary encoder, 12mm, knurled D-shaft + pushbutton",
       "family": "Encoder",
-      "mpn": "PEC11R-4220F-S0024",
-      "url": "https://raw.githubusercontent.com/ubiqueIoT/rotary-encoder-PEC11R/main/Bourns_-_PEC11R-4220F-S0024.step",
-      "tags": ["encoder", "rotary", "ec11", "pec11r", "bourns", "knob", "switch"],
-      "license": "UNVERIFIED",
-      "attribution": "ubiqueIoT/rotary-encoder-PEC11R (github.com/ubiqueIoT/rotary-encoder-PEC11R) — NO LICENSE FILE in repo; verify permission before redistributing this catalog entry"
+      "mpn": "PEC11R / EC11E",
+      "kcad_source": "scripts/parts/authored/rotary-encoder-ec11.kcad.ts",
+      "tags": ["encoder", "rotary", "rotary encoder", "ec11", "incremental", "quadrature", "knob", "shaft", "d-shaft", "switch", "pushbutton", "panel", "input", "maker"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "keyswitch-mx",
+      "name": "Cherry MX-compatible keyswitch (14mm plate cutout)",
+      "family": "Switch",
+      "mpn": "MX1A",
+      "kcad_source": "scripts/parts/authored/keyswitch-mx.kcad.ts",
+      "tags": ["keyswitch", "key switch", "cherry", "mx", "cherry mx", "mechanical", "keyboard", "keycap", "switch", "button", "cross stem", "plate", "input", "maker"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "oled-sh1106-13",
+      "name": "1.3\" SH1106 128x64 I2C OLED module",
+      "family": "Display",
+      "mpn": "1.3in SH1106 OLED",
+      "kcad_source": "scripts/parts/authored/oled-sh1106-13.kcad.ts",
+      "tags": [
+        "oled",
+        "display",
+        "screen",
+        "sh1106",
+        "ssd1306",
+        "i2c",
+        "128x64",
+        "1.3inch",
+        "1.3\"",
+        "monochrome",
+        "module",
+        "maker"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "oled-ssd1327-15",
+      "name": "1.5\" SSD1327 128x128 greyscale OLED module",
+      "family": "Display",
+      "mpn": "1.5in SSD1327 OLED",
+      "kcad_source": "scripts/parts/authored/oled-ssd1327-15.kcad.ts",
+      "tags": [
+        "oled",
+        "display",
+        "screen",
+        "ssd1327",
+        "ssd1351",
+        "spi",
+        "i2c",
+        "128x128",
+        "1.5inch",
+        "1.5\"",
+        "greyscale",
+        "square",
+        "module",
+        "maker"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "tactile-12mm",
+      "name": "12mm tactile pushbutton with round cap (12x12x7.3mm)",
+      "family": "Switch",
+      "mpn": "Omron B3F-4050 + B32-16x0",
+      "kcad_source": "scripts/parts/authored/tactile-12mm.kcad.ts",
+      "tags": ["switch", "button", "tactile", "pushbutton", "12mm", "keycap", "cap", "b3f", "panel", "input", "maker"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
     }
   ]
 }
