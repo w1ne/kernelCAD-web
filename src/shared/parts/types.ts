@@ -41,6 +41,20 @@ export interface PartRecord {
   attribution?: string;
   connectors: string[];
   stepUrl?: string;
+  /**
+   * Display-mesh URL (GLB), when the catalog serves this part as a mesh instead
+   * of BREP. The authored dev-board records (`*-board`, built by
+   * scripts/buildBoardGlbs.ts) are GLB-only *by design*: their STEP is 4–27 MB
+   * and the biggest exceeds Cloudflare Pages' 25 MiB per-file limit, so the
+   * catalog drops `stepUrl` and serves `glbUrl`.
+   *
+   * A GLB is a triangle mesh, NOT a BREP body — kernelCAD's OCCT kernel has no
+   * mesh-import lowerer, so a record with only `glbUrl` cannot be turned into a
+   * Shape. `fetchPartHost` detects that case and fails with
+   * `parts.fetch.geometry-not-brep` naming this field, rather than reporting a
+   * generic "no stepUrl" API error.
+   */
+  glbUrl?: string;
   /** License class governing redistribution. Optional for back-compat with the
    *  pre-ingestion bundled catalog (those records are implicitly 'permissive'). */
   licenseClass?: LicenseClass;

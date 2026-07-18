@@ -13,6 +13,9 @@ import { flattenPattern } from '../../../kernel/backends/occt/flattenPattern';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import type { Vec3 } from '../../../shared/intent/types';
 import type { Vec2 } from '../../../shared/intent/region';
+import {
+  FILE_READ_CODE, FILE_READ_HINT, fileReadErrorMessage,
+} from '../../../shared/diagnostics/fileReadError';
 
 export interface FlattenPatternInput {
   /** Path to a .kcad.ts script. Either `file` or `code` is required. */
@@ -41,7 +44,21 @@ export interface FlattenPatternOutput {
 }
 
 export async function flattenPatternTool(input: FlattenPatternInput): Promise<FlattenPatternOutput> {
-  const code = input.code ?? (input.file ? readFileSync(input.file, 'utf-8') : undefined);
+  let code: string | undefined;
+  try {
+    code = input.code ?? (input.file ? readFileSync(input.file, 'utf-8') : undefined);
+  } catch (e) {
+    return {
+      ok: false,
+      diagnostics: [{
+        target: 'export-occt',
+        code: FILE_READ_CODE,
+        severity: 'error',
+        message: fileReadErrorMessage(e),
+        hint: FILE_READ_HINT,
+      }],
+    };
+  }
   if (!code) {
     return {
       ok: false,

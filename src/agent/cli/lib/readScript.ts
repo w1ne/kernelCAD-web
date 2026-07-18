@@ -11,6 +11,9 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
+import {
+  FILE_READ_CODE, FILE_READ_HINT, fileReadErrorMessage,
+} from '../../../shared/diagnostics/fileReadError';
 
 export type ReadScriptResult =
   | { ok: true; filePath: string; code: string }
@@ -26,9 +29,9 @@ export async function readScriptOrDiagnostic(file: string): Promise<ReadScriptRe
     return {
       ok: false,
       diagnostics: withNextActions([{
-        target: 'export-occt', code: 'cli.file-read', severity: 'error',
-        message: e instanceof Error ? e.message : String(e),
-        hint: 'Check that the file path exists and is readable.',
+        target: 'export-occt', code: FILE_READ_CODE, severity: 'error',
+        message: fileReadErrorMessage(e),
+        hint: FILE_READ_HINT,
       }]),
     };
   }

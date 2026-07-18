@@ -43,6 +43,7 @@ import type { PBRMaterial } from '../../../shared/intent/material';
 import {
   meshShapeForExport,
 } from './occtBackend';
+import { resolveColor } from '../../../shared/render/palette';
 import type { MeshData } from './exportStlBinary';
 import type { WorldFramePart } from './sceneToWorldFrame';
 
@@ -252,7 +253,13 @@ function buildMaterial(
   color: string | undefined,
 ): THREE.MeshPhysicalMaterial {
   const mat = new THREE.MeshPhysicalMaterial();
-  const baseColor = pbr?.baseColor ?? color ?? '#cccccc';
+  const authored = pbr?.baseColor ?? color;
+  // Role tokens ('plate', 'servo', …) are authoring intent, not CSS colour
+  // names — resolve them through the shared ROLE_PALETTE first. Handing a
+  // token straight to THREE.Color logs "Unknown color plate" and silently
+  // leaves the material white, which the exporter then omits entirely
+  // (baseColorFactor [1,1,1,1] is the glTF default).
+  const baseColor = resolveColor(authored) ?? authored ?? '#cccccc';
   try {
     mat.color = new THREE.Color(baseColor);
   } catch {
