@@ -415,6 +415,8 @@ export class OcctLowerer implements FeatureLowerer {
     'mirror',    // NEW (v0.13.0-rc.13)
     'pattern',
     'importedStep',  // v0.5: lib.fromSTEP(path)
+    'importedBrep',  // lib.fromBREP(path) — OCCT native, exact B-rep
+    'importedStl',   // lib.fromSTL(path)  — sewn triangle mesh (faceted)
     'assemblyPart',
     'assemblyJoint',
     'assemblyConnect',
@@ -831,11 +833,14 @@ export class OcctLowerer implements FeatureLowerer {
         }
         break;
       }
-      case 'importedStep': {
-        // `lib.fromSTEP(path)` ran the import at capture time (host-side
-        // fs read + replicad.importSTEP); the resulting OcctBackend was
-        // parked in `lowerer.importedGeometry` keyed by feature id.
-        // Lowering is a hand-back — the geometry is already a Shape3D.
+      case 'importedStep':
+      case 'importedBrep':
+      case 'importedStl': {
+        // `lib.fromSTEP` / `lib.fromBREP` / `lib.fromSTL` all ran their import
+        // at capture time (host-side fs read + the format's OCCT reader); the
+        // resulting OcctBackend was parked in `lowerer.importedGeometry` keyed
+        // by feature id. Lowering is a hand-back — the geometry is already a
+        // Shape3D, so all three formats share one arm.
         const backend = this.importedGeometry.get(r.id);
         if (!backend) {
           diagnostics.push({
@@ -843,8 +848,8 @@ export class OcctLowerer implements FeatureLowerer {
             code: 'feature.invalid-args',
             featureId: r.id,
             severity: 'error',
-            message: `importedStep record '${r.id}' has no pre-lowered geometry registered on the lowerer.`,
-            hint: "invalid-args.importedStep.missing-backend — wire the session's importedGeometry map into the lowerer before calling engine.run().",
+            message: `${r.kind} record '${r.id}' has no pre-lowered geometry registered on the lowerer.`,
+            hint: `invalid-args.${r.kind}.missing-backend — wire the session's importedGeometry map into the lowerer before calling engine.run().`,
           });
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }

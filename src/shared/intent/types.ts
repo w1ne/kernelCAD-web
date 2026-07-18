@@ -141,7 +141,7 @@ export type FeatureKind =
   // symmetric (v0.13+)
   | 'mirror'
   // imports (v0.3+)
-  | 'importedMesh' | 'importedStep'
+  | 'importedMesh' | 'importedStep' | 'importedBrep' | 'importedStl'
   // sketch (v0.2+)
   | 'sketch' | 'constrainedSketch'
   // assembly (v0.6+)
