@@ -50,6 +50,30 @@ vi.mock('../../../src/modeling/buildModel', async (importOriginal) => {
   };
 });
 
+// Render-surface provisioning is mocked at the MODULE seam rather than
+// side-stepped per test by passing an explicit `baseUrl`. Two reasons:
+//   1. one 6-line stub covers all ~22 existing call sites, instead of an
+//      unrelated `baseUrl:` argument bolted onto every one of them;
+//   2. the default (no-override) path is what production takes, so mocking
+//      keeps the tests exercising the real branch — passing an explicit URL
+//      everywhere would pin every test to the 'explicit' lane and no test
+//      would cover provisioning at all.
+// Either way NO real HTTP server is started: the stub never touches
+// dist/headless-player. `renderBase.close` doubles as the leak assertion.
+const renderBase = vi.hoisted(() => ({
+  resolve: vi.fn(),
+  close: vi.fn(async () => undefined),
+}));
+
+vi.mock('../../../src/agent/render/playerServer', () => ({
+  resolveRenderBaseUrl: vi.fn(async (explicit?: string) => {
+    renderBase.resolve(explicit);
+    return explicit !== undefined && explicit !== ''
+      ? { baseUrl: explicit, source: 'explicit', close: renderBase.close }
+      : { baseUrl: 'http://127.0.0.1:45999', source: 'static-player', close: renderBase.close };
+  }),
+}));
+
 // Import after mock registration. buildModelFromFile comes through the mock
 // (which spreads the actual module), so it is the REAL implementation.
 import { captureAnimation } from '../../../src/agent/render/captureAnimation';
@@ -178,6 +202,8 @@ let buildErrorScript: string;
 beforeEach(() => {
   paramCtl.failAtCall = -1;
   paramCtl.calls = [];
+  renderBase.resolve.mockClear();
+  renderBase.close.mockClear();
   tmp = mkdtempSync(join(tmpdir(), 'captureAnimation-'));
   animScript = join(tmp, 'anim-box.kcad.ts');
   noAnimScript = join(tmp, 'no-anim.kcad.ts');
@@ -278,6 +304,39 @@ describe('captureAnimation', () => {
     const result = await captureAnimation({ scriptPath: animScript }, deps);
     expect(result.ok).toBe(true);
     expect(result.outPath).toBe(join(tmp, 'anim-box-animation.mp4'));
+  });
+
+  it('no baseUrl → the render surface is PROVISIONED (no dev server assumed) and its URL drives the page', async () => {
+    const { deps, openPage } = makeDeps();
+    const framesDir = join(tmp, 'frames-provision');
+    const result = await captureAnimation({ scriptPath: animScript, framesDir, skipVerify: true }, deps);
+    expect(result.ok).toBe(true);
+    // Provisioning was asked for with no override → static-player lane.
+    expect(renderBase.resolve).toHaveBeenCalledWith(undefined);
+    expect(openPage.mock.calls[0][0].baseUrl).toBe('http://127.0.0.1:45999');
+    // ...and the ephemeral server is always torn down.
+    expect(renderBase.close).toHaveBeenCalledTimes(1);
+  });
+
+  it('explicit baseUrl overrides provisioning and is forwarded verbatim', async () => {
+    const { deps, openPage } = makeDeps();
+    const framesDir = join(tmp, 'frames-explicit');
+    const result = await captureAnimation(
+      { scriptPath: animScript, framesDir, skipVerify: true, baseUrl: 'http://localhost:5173' },
+      deps,
+    );
+    expect(result.ok).toBe(true);
+    expect(renderBase.resolve).toHaveBeenCalledWith('http://localhost:5173');
+    expect(openPage.mock.calls[0][0].baseUrl).toBe('http://localhost:5173');
+  });
+
+  it('render surface is closed even when the capture throws mid-frame', async () => {
+    paramCtl.failAtCall = 2;
+    const framesDir = join(tmp, 'frames-leak');
+    const { deps } = makeDeps();
+    const result = await captureAnimation({ scriptPath: animScript, framesDir, skipVerify: true }, deps);
+    expect(result.ok).toBe(false);
+    expect(renderBase.close).toHaveBeenCalledTimes(1);
   });
 
   it('mid-frame solve failure → abort: ffmpeg killed, partial mp4 deleted, ok:false names tMs', async () => {
