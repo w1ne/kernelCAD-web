@@ -142,6 +142,16 @@ export interface AssemblyPartRef {
    *  chaining: `assembly.part(a, ...).part(b, ...).part(c, ...)`. Identical to
    *  calling `assembly.part(...)` again on the assembly. */
   part(name: string, shape: Shape, opts?: AssemblyPartOpts): AssemblyPartRef;
+  /** Terminate the fluent chain: identical to calling `model()` on the owning
+   *  assembly. Lets `assembly.part(a, ...).part(b, ...).model()` work without
+   *  hoisting the assembly into a variable. */
+  model(): Scene;
+  /** Terminate the fluent chain with forward kinematics: identical to calling
+   *  `solve(poses)` on the owning assembly. */
+  solve(poses: Poses): SolvedKinematics;
+  /** Terminate the fluent chain with a solved scene: identical to calling
+   *  `solvedModel(...)` on the owning assembly. */
+  solvedModel(...args: Parameters<Assembly['solvedModel']>): Promise<Scene>;
 }
 
 function validateLimitRange(
@@ -777,6 +787,7 @@ export class Assembly {
       // Fluent chaining: `arm.part(a).part(b)` — the ref's `.part(...)` adds
       // another part to this same assembly (delegates straight to this method).
       (chainName, chainShape, chainOpts) => this.part(chainName, chainShape, chainOpts),
+      this,
     );
     const stored: AssemblyPartStored = {
       ...part,
@@ -3133,6 +3144,10 @@ function makePartRef(
   mateConnectors: Connector[],
   wrapGeoms: WrapGeomRecord[],
   addPart: (name: string, shape: Shape, opts?: AssemblyPartOpts) => AssemblyPartRef,
+  // Owning assembly — the ref's chain terminators (`model` / `solve` /
+  // `solvedModel`) delegate straight to it so there is exactly one
+  // implementation of each.
+  owner: Assembly,
 ): AssemblyPartRef {
   // Overload: `connector(name)` returns the v0.5 kinematic AssemblyConnectorRef;
   // `connector(name, opts)` registers a v0.6 mate-style Connector and returns
@@ -3262,6 +3277,9 @@ function makePartRef(
     connector: connector as AssemblyPartRef['connector'],
     wrapGeom,
     part: addPart,
+    model: () => owner.model(),
+    solve: (poses) => owner.solve(poses),
+    solvedModel: (...args) => owner.solvedModel(...args),
   };
   return ref;
 }

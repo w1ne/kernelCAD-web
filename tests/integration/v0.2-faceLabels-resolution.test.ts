@@ -111,4 +111,38 @@ describe('faceLabels resolution from upstream feature metadata (Task 4)', () => 
     const r = await run(code);
     expect(r.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
   });
+
+  // ── H. Label scope is the consumer's lineage, not script order ─────────────
+  it('H: a factory called 3x stamping the same label does not collide', async () => {
+    // Each makeBase() call produces an independent subtree. `lid` is declared
+    // three times in the flat record array, but no consumer has more than one
+    // of them as an ancestor, so each must resolve cleanly.
+    const code = `
+      const makeBase = (s) => box(s, s, 5, false, { faceLabels: { lid: 'top' } });
+      const a = makeBase(10).fillet(1, { face: 'lid' });
+      const b = makeBase(12).fillet(1, { face: 'lid' }).translate(30, 0, 0);
+      const c = makeBase(14).fillet(1, { face: 'lid' }).translate(60, 0, 0);
+      return a.union(b).union(c);
+    `;
+    const r = await run(code);
+    expect(r.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+  });
+
+  // ── I. A genuine same-lineage duplicate still errors ──────────────────────
+  it('I: two labels declared in the SAME lineage still emit feature.label.collision', async () => {
+    // Both boxes are ancestors of the consumer (union operands), so this is a
+    // real ambiguity and must keep failing.
+    const code = `
+      const makeBase = (s) => box(s, s, 5, false, { faceLabels: { lid: 'top' } });
+      return makeBase(20).union(makeBase(10).translate(2, 2, 0))
+        .fillet(0.5, { face: 'lid' });
+    `;
+    const r = await run(code);
+    const errorCodes = r.diagnostics
+      .filter(d => d.severity === 'error')
+      .map(d => d.code);
+    expect(errorCodes).toContain('feature.label.collision');
+    const collision = r.diagnostics.find(d => d.code === 'feature.label.collision');
+    expect(collision?.message).toContain('is declared by multiple upstream features');
+  });
 });
