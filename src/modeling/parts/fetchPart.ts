@@ -342,6 +342,28 @@ export async function fetchPartHost(
         : {}),
     });
     if (!meta.stepUrl) {
+      // GLB-only record. The authored dev-board catalog entries (`*-board`) ship
+      // `glbUrl` and NO `stepUrl` by design (scripts/buildBoardGlbs.ts drops the
+      // 4–27 MB STEP so the catalog stays under Cloudflare Pages' 25 MiB
+      // per-file limit). Fail with a code that says *that*, not a generic
+      // "no stepUrl" API error, so the agent stops re-fetching a record that
+      // will never carry BREP.
+      //
+      // We deliberately do NOT route these into the `importedMesh` escape hatch:
+      // `importedMesh` has no lowerer (occtLowerer's switch falls through to
+      // `default:` → "Feature kind 'importedMesh' is not supported"), and the
+      // boards are multi-component meshes that OCCT cannot sew into a solid
+      // anyway (nucleo-h563zi-board = 10 disjoint meshes → sewing yields a
+      // COMPOUND, and fromTriangleMesh rejects it). A mesh Shape here would fail
+      // later, further from the cause.
+      if (meta.glbUrl) {
+        throw new KernelError(
+          'parts.fetch.geometry-not-brep',
+          `Catalog record ${idOrQuery} is GLB-only: it has glbUrl (${meta.glbUrl}) but no stepUrl, so there is no BREP geometry to import.`,
+          undefined,
+          'parts.fetch.geometry-not-brep — the authored dev-board records are served as display meshes (GLB) because their STEP exceeds the catalog file-size limit. kernelCAD has no mesh-import lowerer, so fetch_part cannot build a Shape from a GLB. Use the authored source instead: compile scripts/parts/authored/<board>.kcad.ts to STEP and load it with lib.fromSTEP(path), or pick a catalog part that exposes stepUrl.',
+        );
+      }
       throw new KernelError(
         'parts.fetch.api-error',
         `Remote record ${idOrQuery} has no stepUrl.`,

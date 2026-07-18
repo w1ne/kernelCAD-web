@@ -47,6 +47,29 @@ describe('assembly capture contract', () => {
     });
   });
 
+  it('terminates the fluent part-chain: part(a).part(b).model() equals assembly.model()', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+
+    const lamp = kcad.assembly('desk lamp');
+    const chained = lamp
+      .part('base', kcad.box(40, 40, 6), { at: [0, 0, 0] })
+      .part('arm', kcad.box(80, 8, 8), { at: [35, 16, 20] })
+      .model();
+
+    expect(chained.assemblyName).toBe('desk lamp');
+    expect(chained.parts.map(p => p.name)).toEqual(['base', 'arm']);
+    // Same Scene as calling model() on the owning assembly — the ref
+    // delegates, it does not reimplement. `_sourceFeatureId` is the only
+    // legitimate difference: each model() call mints its own
+    // `assemblyModel` FeatureRecord.
+    const direct = lamp.model();
+    expect(chained.assemblyName).toBe(direct.assemblyName);
+    expect(chained.mates).toEqual(direct.mates);
+    expect(chained.parts.map(p => [p.name, p.id])).toEqual(direct.parts.map(p => [p.name, p.id]));
+    expect(chained.parts.map(p => p.at)).toEqual(direct.parts.map(p => p.at));
+  });
+
   it('captures posed mate metadata on assembly.model() for Studio joint controls', () => {
     const session = new CaptureSession();
     const kcad = createApi({ session });

@@ -7,6 +7,9 @@ import { Command } from 'commander';
 import { formatHuman } from '../../../shared/diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
+import {
+  FILE_READ_CODE, FILE_READ_HINT, fileReadErrorMessage,
+} from '../../../shared/diagnostics/fileReadError';
 import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 import { buildModel, buildModelFromFile, type BuiltModel } from '../../../modeling/buildModel';
 import { initOcct } from '../../../kernel/backends/occt/occtBackend';
@@ -249,13 +252,12 @@ function invalidArgsEvaluation(): EvaluateResult {
 }
 
 function fileReadEvaluation(e: unknown): EvaluateResult {
-  const msg = e instanceof Error ? e.message : String(e);
   return {
     exitCode: 2, featureCount: 0, featureHealth: [],
     diagnostics: withNextActions([{
-      target: 'export-occt', code: 'cli.file-read', severity: 'error',
-      message: `Cannot read file: ${msg}`,
-      hint: 'Check that the file path exists and is readable.',
+      target: 'export-occt', code: FILE_READ_CODE, severity: 'error',
+      message: fileReadErrorMessage(e),
+      hint: FILE_READ_HINT,
     }]),
   };
 }

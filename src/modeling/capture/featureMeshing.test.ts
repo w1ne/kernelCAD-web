@@ -224,6 +224,105 @@ describe('meshFeaturesPerFeature', () => {
     });
   });
 
+  describe('color shadowing diagnostic', () => {
+    // THE FALSE-POSITIVE GUARD. The reported complaint was "`.color()` on a
+    // post-boolean root is a silent no-op". On THIS path that claim is false:
+    // colorByFeatureId is built from every record's metadata, booleans
+    // included, so the boolean root's color reaches the fused mesh. Warning
+    // here would be noise on working code, which is worse than silence.
+    it('does NOT warn for .color() on a boolean root when no leaf is colored', async () => {
+      const code = `
+        const body = box(20, 20, 10);
+        const boss = box(10, 10, 2).translate(5, 5, 8);
+        return body.union(boss).color('#808080');
+      `;
+      const { records } = await runScript({ code, fileName: 'root-color.kcad.ts' });
+      const { features, colorShadowingWarnings } = await meshFeaturesPerFeature(records);
+
+      expect(colorShadowingWarnings).toEqual([]);
+      // And prove the color is genuinely honored — i.e. the silence is correct,
+      // not merely a detector that never fires.
+      const fused = features.find((f) => f.featureKind === 'boolean');
+      expect(fused?.color).toBe('#808080');
+    });
+
+    it('does NOT warn when only the leaf is colored and the head is not', async () => {
+      const code = `
+        const body = box(20, 20, 10);
+        const insert = box(10, 10, 2).translate(5, 5, 8).color('#3050a0');
+        return body.union(insert);
+      `;
+      const { records } = await runScript({ code, fileName: 'leaf-color.kcad.ts' });
+      const { colorShadowingWarnings } = await meshFeaturesPerFeature(records);
+      expect(colorShadowingWarnings).toEqual([]);
+    });
+
+    it('does NOT warn when a subtract cutter is colored', async () => {
+      const code = `
+        const plate = box(20, 20, 5);
+        const hole = cylinder(8, 3).translate(10, 10, -1).color('#ff0000');
+        return plate.subtract(hole).color('#00ff00');
+      `;
+      const { records } = await runScript({ code, fileName: 'cutter-color.kcad.ts' });
+      const { colorShadowingWarnings } = await meshFeaturesPerFeature(records);
+      expect(colorShadowingWarnings).toEqual([]);
+    });
+
+    it('warns when a colored leaf is unioned into a colored head', async () => {
+      const code = `
+        const body = box(20, 20, 10).color('#101010');
+        const lensInsert = box(10, 10, 2).translate(5, 5, 8).color('#3050a0');
+        return body.union(lensInsert).color('#808080');
+      `;
+      const { records } = await runScript({ code, fileName: 'color-shadow.kcad.ts' });
+      const { colorShadowingWarnings } = await meshFeaturesPerFeature(records);
+
+      expect(colorShadowingWarnings.length).toBeGreaterThan(0);
+      const w = colorShadowingWarnings.find(
+        (x) => x.leafFeatureKind === 'box' && x.shadowingFeatureKind === 'boolean',
+      );
+      expect(w).toBeDefined();
+      expect(w!.attribute).toBe('color');
+      expect(w!.message).toMatch(/build animation/);
+      expect(w!.message).toMatch(/color/);
+    });
+
+    it('keeps color and material shadowing independent', async () => {
+      // Material only — the color detector must stay quiet, proving the two
+      // channels are not cross-wired by the shared detector.
+      const code = `
+        const body = box(20, 20, 10).material({ baseColor: '#101010' });
+        const insert = box(10, 10, 2).translate(5, 5, 8).material({ baseColor: '#3050a0' });
+        return body.union(insert).material({ baseColor: '#808080' });
+      `;
+      const { records } = await runScript({ code, fileName: 'mat-only.kcad.ts' });
+      const { materialShadowingWarnings, colorShadowingWarnings } =
+        await meshFeaturesPerFeature(records);
+
+      expect(materialShadowingWarnings.length).toBeGreaterThan(0);
+      expect(materialShadowingWarnings.every((w) => w.attribute === 'material')).toBe(true);
+      expect(colorShadowingWarnings).toEqual([]);
+    });
+
+    it('reports a pure-.color() script as color shadowing ONLY, not material', async () => {
+      // `pbrFromMetadata` promotes `metadata.color` into `{ baseColor }`, so a
+      // naive material detector fires on colour-only scripts and tells the
+      // author to fix a `.material()` call they never wrote. Shadowing must key
+      // off EXPLICIT `.material()` metadata.
+      const code = `
+        const body = box(20, 20, 10).color('#101010');
+        const insert = box(10, 10, 2).translate(5, 5, 8).color('#3050a0');
+        return body.union(insert).color('#808080');
+      `;
+      const { records } = await runScript({ code, fileName: 'color-only.kcad.ts' });
+      const { materialShadowingWarnings, colorShadowingWarnings } =
+        await meshFeaturesPerFeature(records);
+
+      expect(materialShadowingWarnings).toEqual([]);
+      expect(colorShadowingWarnings.length).toBeGreaterThan(0);
+    });
+  });
+
   it('does not fail valid renderless sketch profiles used by cutouts', async () => {
     const code = `
       const profile = path()

@@ -27,6 +27,21 @@ const REAL: StepPartsRecord = {
   pageUrl: 'https://www.step.parts/parts/din913_set_screw_m3x3',
 };
 
+/** A GLB-only authored dev-board record, verbatim from kernelCAD's own catalog
+ *  (https://kernelcad-parts.pages.dev/v1/parts/nucleo-h563zi-board, July 2026).
+ *  buildBoardGlbs.ts deliberately strips `stepUrl` from these and serves
+ *  `glbUrl` instead — the mapper must not drop it. */
+const GLB_ONLY_BOARD: StepPartsRecord = {
+  id: 'nucleo-h563zi-board',
+  name: 'ST Nucleo-144 H563ZI',
+  category: 'Electronics',
+  family: 'STM32',
+  tags: ['nucleo', 'stm32', 'h563', 'dev-board'],
+  attributes: { bboxXmm: 147, bboxYmm: 70, bboxZmm: 1.6 },
+  sha256: '29b087a46fc778ebd727c6de57ba053638eae9dfecb1c14180e43ee45322842e',
+  glbUrl: 'https://kernelcad-parts.pages.dev/glb/nucleo-h563zi-board.glb',
+};
+
 describe('mapStepPartsRecord', () => {
   it('produces a valid PartRecord from a real step.parts detail record', () => {
     const r = mapStepPartsRecord(REAL);
@@ -71,5 +86,20 @@ describe('mapStepPartsRecord', () => {
     expect(r.standard).toBe('ISO 4762');
     expect(r.sha256).toBe('');
     expect(r.attributes).toEqual({});
+  });
+
+  // Regression: the mapper used to copy only `stepUrl`, silently dropping
+  // `glbUrl`. fetchPartHost then saw a record with neither and reported a bare
+  // "Remote record X has no stepUrl", hiding the real (by-design) reason.
+  it('preserves glbUrl on a GLB-only authored board record', () => {
+    const r = mapStepPartsRecord(GLB_ONLY_BOARD);
+    expect(r.glbUrl).toBe(GLB_ONLY_BOARD.glbUrl);
+    expect(r.stepUrl).toBeUndefined();
+    expect(isPartRecord(r)).toBe(true);
+  });
+
+  it('leaves glbUrl undefined for a STEP-backed record', () => {
+    expect(mapStepPartsRecord(REAL).glbUrl).toBeUndefined();
+    expect(mapStepPartsRecord(REAL).stepUrl).toBe(REAL.stepUrl);
   });
 });
