@@ -17,7 +17,7 @@
 // 6. Symlink resolution: canonicalize via parent-chain realpath before
 //    deny-list checks, so symlinks pointing at dangerous targets are caught.
 
-import { resolve as resolvePath, isAbsolute, dirname } from 'node:path';
+import { resolve as resolvePath, isAbsolute, dirname, basename } from 'node:path';
 import { homedir } from 'node:os';
 import { realpathSync, existsSync } from 'node:fs';
 
@@ -91,7 +91,7 @@ export function validateOutputPath(rawPath: string): ValidateOutputPathResult {
   // Symlink resolution: walk the parent chain to find the deepest existing
   // ancestor, realpath it, then append the remaining suffix. This catches
   // the case where ~/safe-link symlinks to /etc/passwd.
-  const resolved = canonicalize(resolvedAbsolute);
+  const resolved = stripPrivatePrefix(canonicalize(resolvedAbsolute));
 
   // Check resolved path against deny-list patterns.
   for (const prefix of DANGEROUS_SYSTEM_PREFIXES) {
@@ -117,6 +117,31 @@ export function validateOutputPath(rawPath: string): ValidateOutputPathResult {
 }
 
 /**
+ * Undo macOS's `/private` indirection.
+ *
+ * On darwin, /etc, /tmp and /var are symlinks into /private. canonicalize()
+ * therefore turns `/etc/passwd` into `/private/etc/passwd`, which matches
+ * NONE of the DANGEROUS_SYSTEM_PREFIXES — so the deny-list silently failed
+ * OPEN on every macOS host, and the symlink resolution added as defense in
+ * depth was the very thing defeating it. Linux CI has no such symlinks, so
+ * the whole class was invisible there.
+ *
+ * Mapping back to the canonical spelling is safe because the two paths name
+ * the same inode: /private/etc/passwd IS /etc/passwd. Doing it here (rather
+ * than widening the deny-list with /private/... twins) keeps ONE spelling
+ * flowing into both the deny-list checks and the returned `resolved`.
+ */
+function stripPrivatePrefix(absolutePath: string): string {
+  if (process.platform !== 'darwin') return absolutePath;
+  for (const dir of ['etc', 'tmp', 'var']) {
+    if (absolutePath === `/private/${dir}` || absolutePath.startsWith(`/private/${dir}/`)) {
+      return absolutePath.slice('/private'.length);
+    }
+  }
+  return absolutePath;
+}
+
+/**
  * Walk the parent chain to the deepest existing ancestor; realpath it;
  * append the remaining (not-yet-existing) suffix. Handles the legitimate
  * case where the agent specifies a path inside a tree that hasn't been
@@ -132,12 +157,21 @@ function canonicalize(absolutePath: string): string {
   while (current !== '/' && current !== '.' && !existsSync(current)) {
     const parent = dirname(current);
     if (parent === current) break; // reached root
-    trailingParts.unshift(current.slice(parent.length + 1)); // segment after parent's slash
+    // basename(), NOT slice(parent.length + 1): when the parent IS root the
+    // arithmetic is off by one ('/proc'.slice(2) === 'roc'), which mangled
+    // every path whose top-level dir does not exist — so '/proc/self/environ'
+    // canonicalized to '//roc/self/environ' and matched no deny-list prefix.
+    // Invisible on Linux, where /proc, /sys and /root all exist.
+    trailingParts.unshift(basename(current));
     current = parent;
   }
   if (existsSync(current)) {
     const realParent = realpathSync(current);
-    return trailingParts.length > 0 ? `${realParent}/${trailingParts.join('/')}` : realParent;
+    // resolvePath(), NOT template interpolation: when the deepest existing
+    // ancestor IS root, `${'/'}/${parts}` yields a DOUBLE leading slash
+    // ('//proc/self/environ'), which startsWith('/proc/') rejects — the second
+    // way this walk could hand the deny-list a path it could not recognise.
+    return trailingParts.length > 0 ? resolvePath(realParent, ...trailingParts) : realParent;
   }
   // No existing ancestor found; fallback to the input (should not happen on a real FS).
   return absolutePath;
