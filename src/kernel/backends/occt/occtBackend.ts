@@ -1368,6 +1368,27 @@ export class OcctBackend implements ShapeBackend {
   }
 
   /**
+   * Serialize to OCCT's native BREP text (`BRepTools::Write`).
+   *
+   * Unlike STEP this needs no async Blob detour — the binding is a plain
+   * string round-trip — so it satisfies the synchronous `exportBREP?()` slot
+   * on `ShapeBackend`, which had been declared but never implemented until
+   * `lib.fromBREP` needed a round-trip partner.
+   *
+   * BREP is lossless (exact surfaces + full topology, no schema translation
+   * and no tessellation), which is what makes it the honest format for
+   * moving kernel state between kernelCAD processes. It is OCCT-specific:
+   * for interchange with other CAD systems, use STEP.
+   */
+  exportBREP(): Uint8Array {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const oc = getOC() as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const text = oc.BRepToolsWrapper.Write((this.shape as any).wrapped) as string;
+    return new TextEncoder().encode(text);
+  }
+
+  /**
    * Slice A DXF entry path: extract a single planar outer wire (with optional
    * hole wires) from this shape, projected to the wire's plane and returned
    * as 2D vertex polylines. Returns `null` when the shape has no planar face

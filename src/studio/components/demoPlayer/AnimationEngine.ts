@@ -11,7 +11,8 @@ function classify(kind: FeatureKind, op?: 'subtract' | 'union' | 'intersect'): T
   switch (kind) {
     case 'box': case 'cylinder': case 'sphere': case 'torus':
     case 'extrude': case 'revolve': case 'loft': case 'sweep':
-    case 'importedMesh': case 'importedStep': case 'sdfMaterialize':
+    case 'importedMesh': case 'importedStep': case 'importedBrep': case 'importedStl':
+    case 'sdfMaterialize':
       return 'add';
     case 'hole': case 'holes': case 'cutout':
       return 'boolean.cut';

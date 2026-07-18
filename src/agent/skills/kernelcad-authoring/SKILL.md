@@ -138,6 +138,7 @@ Use `lib.fromSTEP(...)` for off-the-shelf components whenever physical fit matte
 - Before placing a vendor STEP, run `kernelcad inspect step <file.step>` (or the `inspect({ of: 'step' })` MCP tool) to read the solid tree, per-solid exact bbox + volume, and detected cylindrical holes (axis, diameter, depth, blind/through) — find mounting-hole positions and verify the part-local frame from exact geometry instead of measuring renders.
 - Build modeled brackets, mounts, clearances, cable paths, and keepouts around the imported part rather than approximating the part with generic boxes/cylinders.
 - Placeholder geometry is acceptable for early blockouts, but final review must label it as a placeholder or replace it with catalog geometry.
+- Format choice when the vendor offers several: STEP (`lib.fromSTEP`) is the default and the most portable. OCCT `.brep` (`lib.fromBREP`) is lossless and the fastest to load, but only kernelCAD/OCCT writes it — it is for round-tripping our own geometry, not vendor interchange. Reach for `.stl` (`lib.fromSTL`) only when nothing better exists: it is a triangle mesh, so you keep bbox/volume/booleans but lose analytic surfaces, which means no reliable fillet/chamfer on curved edges, no canonical face refs, and no hole detection. If a part is STL-only and you need mounting-hole geometry, model the interface yourself rather than trusting facet normals.
 
 > For off-the-shelf fasteners, bearings, motors, headers, and connectors, prefer the bundled parts catalog: load the `kernelcad-parts` skill. The catalog exposes `lib.findPart`, `lib.fetchPart`, and a typed `lib.standard.*` namespace, plus four MCP tools for discovery. Bundled parts ship with pre-defined connector frames so they participate in mates without any `partRef.connector(...)` boilerplate.
 
@@ -223,11 +224,34 @@ selectEdge(shape: Shape, query: EdgeQuery): Promise<EdgeSegment>;  // throws if 
 // methods apply. selectEdges already returns one.
 select<T>(items: Iterable<T>): ShapeList<T>;
 
-// Parts library — STEP import for vendor catalog components.
-// Resolved relative to the calling .kcad.ts file; absolute paths also accepted.
-// Returns the standard capture-proxy Shape — composes with translate/rotate/color
-// and arm.part(...) like any primitive.
+// Parts library — geometry import. Every from* call resolves the path relative
+// to the calling .kcad.ts file (absolute paths also accepted) and returns the
+// standard capture-proxy Shape — composes with translate/rotate/color and
+// arm.part(...) like any primitive.
+
+// STEP — the default for vendor catalog components.
 lib.fromSTEP(path: string): Promise<Shape>;
+
+// OCCT native BREP — lossless (exact analytic surfaces + full topology, no
+// schema translation, no tessellation). Every downstream op is valid on the
+// result. OCCT-specific: use STEP to interchange with other CAD systems.
+lib.fromBREP(path: string): Promise<Shape>;
+
+// STL (ASCII or binary) — THIS IS A MESH, NOT ANALYTIC B-REP. Triangles are
+// sewn back into topology and promoted to a solid when they close, so
+// booleans / volume / mass properties / bbox / export all work. But the faces
+// stay planar facets: a hole that was a cylinder in the source CAD is now a
+// fan of quads, so fillet/chamfer on a "curved" edge, canonical face refs and
+// hole detection will NOT behave as they do on STEP/BREP input. Prefer
+// fromSTEP/fromBREP whenever the source is available.
+// A non-watertight mesh is REFUSED by default rather than silently returned as
+// an open shell whose volume and booleans would be meaningless.
+lib.fromSTL(path: string, opts?: {
+  tolerance?: number;     // vertex-merge distance, mm (default 1e-6); raise for
+                          // third-party meshes with non-bit-identical vertices
+  allowOpen?: boolean;    // accept a non-watertight mesh as an open shell
+  maxTriangles?: number;  // cost cap (default 200000; import is ~0.45 ms/triangle)
+}): Promise<Shape>;
 
 // Reference-image overlay — virtual node (no OCCT geometry). The renderer draws
 // the image on the chosen plane for tracing or design review. Path resolved
