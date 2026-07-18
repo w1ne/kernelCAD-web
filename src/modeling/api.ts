@@ -33,6 +33,11 @@ import { solveHermiteG2, type HermiteEndpoint } from './capture/hermiteG2';
 import { createSketchModule, type SketchModule } from './sketch/index';
 import { fontPath, type FontPath } from '../shared/fonts/index';
 import { fromSTEP as libFromSTEP } from './parts/fromSTEP';
+import {
+  fromBREP as libFromBREP,
+  fromSTL as libFromSTL,
+  type FromSTLOptions,
+} from './parts/fromMeshFormats';
 import { fetchPartHost, type FetchPartOpts } from './parts/fetchPart';
 import {
   findPartHost,
@@ -73,6 +78,23 @@ export interface ApiContext {
 
 export interface PartsLib {
   fromSTEP(path: string): Promise<Shape>;
+  /**
+   * Import an OCCT native BREP file. Exact analytic surfaces + full topology
+   * (no schema translation, no tessellation) — the result is a true B-rep
+   * body, so fillet/chamfer/shell/face-queries are all valid on it.
+   */
+  fromBREP(path: string): Promise<Shape>;
+  /**
+   * Import an STL mesh (ASCII or binary). The triangles are sewn back into
+   * topology and promoted to a solid when they close, so booleans, volume,
+   * bbox and export work — but the faces stay planar facets, so operations
+   * that need analytic surfaces (fillet on a "curved" edge, canonical face
+   * refs, hole detection) will not behave as they do on STEP/BREP input.
+   * Prefer `fromSTEP`/`fromBREP` when the source is available.
+   *
+   * A non-watertight mesh is refused unless `opts.allowOpen` is set.
+   */
+  fromSTL(path: string, opts?: FromSTLOptions): Promise<Shape>;
   findPart(query: string, opts?: FindPartOpts): Promise<FindPartResult>;
   fetchPart(idOrQuery: string, opts?: FetchPartOpts): Promise<Shape>;
   standard: StandardParts;
@@ -882,6 +904,8 @@ export function createApi(ctx: ApiContext): KernelCadApi {
     },
     lib: {
       fromSTEP: (path) => libFromSTEP({ session, scriptDir: ctx.scriptDir }, path),
+      fromBREP: (path) => libFromBREP({ session, scriptDir: ctx.scriptDir }, path),
+      fromSTL: (path, opts) => libFromSTL({ session, scriptDir: ctx.scriptDir }, path, opts ?? {}),
       findPart: (query, opts) => findPartHost(query, opts ?? {}),
       fetchPart: (idOrQuery, opts) =>
         fetchPartHost(
