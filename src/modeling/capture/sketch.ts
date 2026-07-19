@@ -11,6 +11,12 @@ import type { FaceLabelsMap } from '../../shared/intent/featureRecord';
 import { type Editable } from '../../shared/runtime/paramRef';
 import { toParam } from '../../shared/runtime/editableHelpers';
 import type { SketchCommand } from '../../shared/capture/sketchCommand';
+import {
+  TANGENT_SIDES,
+  type TangentEntity2D,
+  type TangentEntitySpec,
+  type TangentNearSpec,
+} from '../../shared/capture/tangency';
 
 /**
  * 2D-Hermite endpoint shape — analogue of the 3D `HermiteEndpoint` used by
@@ -325,6 +331,28 @@ export class Sketch {
     // tangentArc has no explicit direction parameter — the tangent is inherited
     // from the prior segment, which will also be reflected, so no flip needed.
     // threePointsArc is fully determined by three reflected points — no flip needed.
+    // Tangency entities reflect like any other geometry, with one twist: a
+    // mirror reverses handedness, so a solution that was on the RIGHT of a
+    // directed line is on the LEFT of the mirrored line. `side: 'outside'`
+    // is defined relative to that direction, so reflecting the endpoints AND
+    // swapping from/to restores the original left/right relationship and
+    // keeps the qualifier meaning what the author wrote. Circle qualifiers
+    // (inside/outside the circle) are mirror-invariant and need no fix-up.
+    const reflectEntity = (e: TangentEntitySpec): TangentEntitySpec => {
+      if (e.kind === 'line') {
+        const [x1, y1] = reflectXY(e.x1, e.y1);
+        const [x2, y2] = reflectXY(e.x2, e.y2);
+        return { ...e, x1: x2, y1: y2, x2: x1, y2: y1 };
+      }
+      const [cx, cy] = reflectXY(e.cx, e.cy);
+      return { ...e, cx, cy };
+    };
+    const reflectNear = (n: TangentNearSpec | undefined): TangentNearSpec | undefined => {
+      if (!n) return undefined;
+      const [x, y] = reflectXY(n.x, n.y);
+      return { x, y };
+    };
+
     const record = this.session.getRecords().find(r => r.id === this.id);
     const commands: SketchCommand[] = (record?.metadata as { commands?: SketchCommand[] })?.commands ?? [];
 
@@ -404,6 +432,10 @@ export class Sketch {
             acx, acy, bcx, bcy,
           };
         }
+        case 'tangentCircle':
+          return { ...cmd, entities: cmd.entities.map(reflectEntity), near: reflectNear(cmd.near) };
+        case 'tangentLine':
+          return { ...cmd, a: reflectEntity(cmd.a), b: reflectEntity(cmd.b), near: reflectNear(cmd.near) };
         case 'close':
           return cmd;
         default: {
@@ -1049,6 +1081,170 @@ export class PathBuilder {
   }
 
   /**
+   * Closed circle tangent to other 2D geometry, solved by OCCT's
+   * `Geom2dGcc_*` constructors. The classic sketch move: a fillet arc tangent
+   * to two lines, a circle nestled against three others.
+   *
+   * Two forms, chosen by how many entities you pass:
+   * - **2 entities + `opts.radius`** — `Geom2dGcc_Circ2d2TanRad`. The
+   *   sketch-fillet construction.
+   * - **3 entities, no `radius`** — `Geom2dGcc_Circ2d3Tan`. The radius falls
+   *   out of the three tangency conditions.
+   *
+   * Entities are lines (infinite, through `from`->`to`) and circles. Points
+   * are NOT accepted: OCCT's point overloads need `Handle_Geom2d_Point`,
+   * which the bundled wasm does not bind (see shared/capture/tangency.ts).
+   *
+   * **Which solution you get.** These constructions have several answers — a
+   * circle of radius r tangent to two perpendicular lines has four, one per
+   * quadrant. The `side` qualifier on each entity is the primary control and
+   * usually enough (`outside`/`outside` on two perpendicular lines yields
+   * exactly one). If more than one survives, pass `opts.near` and the
+   * solution whose CENTRE is closest to it wins. If several still survive,
+   * this FAILS at lowering time with `sketch.tangency.ambiguous` listing every
+   * candidate — it will not pick one for you.
+   *
+   * **When no such circle exists** (radius too small to bridge two parallel
+   * lines, contradictory qualifiers) lowering fails with
+   * `sketch.tangency.no-solution` naming the geometric reason. No approximate
+   * arc is substituted.
+   *
+   * Terminal, like `circle()`: it expands to a whole closed loop, so it must
+   * be the only operation on a fresh path and returns a `Sketch` directly.
+   * The loop is two exact semicircular arcs, not a polyline.
+   *
+   * @example
+   *   // Radius-5 fillet circle tucked into the corner of the +X/+Y axes.
+   *   path().tangentCircle(
+   *     [{ kind: 'line', from: [0, 0], to: [1, 0], side: 'enclosed' },
+   *      { kind: 'line', from: [0, 0], to: [0, 1], side: 'outside' }],
+   *     { radius: 5 },
+   *   )
+   */
+  tangentCircle(
+    entities: TangentEntity2D[],
+    opts?: { radius?: Editable<number>; near?: [Editable<number>, Editable<number>] },
+  ): Sketch {
+    if (this.commands.length > 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        'path.tangentCircle(): the path already has other commands. tangentCircle() must be the only operation on a fresh path.',
+        undefined,
+        'Call path().tangentCircle([...]) without prior moveTo / lineTo / etc.',
+      );
+    }
+    if (!Array.isArray(entities) || (entities.length !== 2 && entities.length !== 3)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `path.tangentCircle: expected 2 or 3 tangency entities; got ${Array.isArray(entities) ? entities.length : typeof entities}.`,
+        undefined,
+        'Pass 2 entities together with opts.radius (Geom2dGcc_Circ2d2TanRad), or 3 entities and no radius (Geom2dGcc_Circ2d3Tan).',
+      );
+    }
+    const hasRadius = opts?.radius !== undefined;
+    // The two forms take DIFFERENT OCCT solvers, so "2 entities and no radius"
+    // and "3 entities plus a radius" are not under-specified requests we could
+    // fill in — they name no constructor at all.
+    if (entities.length === 2 && !hasRadius) {
+      throw new KernelError(
+        'feature.invalid-args',
+        'path.tangentCircle: a two-entity construction needs opts.radius — two tangencies alone do not determine a circle.',
+        undefined,
+        'Pass opts.radius, or add a third entity and omit the radius.',
+      );
+    }
+    if (entities.length === 3 && hasRadius) {
+      throw new KernelError(
+        'feature.invalid-args',
+        'path.tangentCircle: a three-entity construction determines its own radius; opts.radius over-constrains it.',
+        undefined,
+        'Drop opts.radius for the three-entity form, or drop one entity to use the radius form.',
+      );
+    }
+    const radius = hasRadius ? toParam(opts!.radius!, 'mm') : undefined;
+    if (radius !== undefined && !(radius.evaluated > 0)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `path.tangentCircle: opts.radius must be > 0; got ${radius.evaluated}.`,
+        undefined,
+        'Pass a positive radius.',
+      );
+    }
+
+    this.commands.push({
+      kind: 'tangentCircle',
+      entities: entities.map((e, i) => validateTangentEntity(e, `path.tangentCircle entities[${i}]`)),
+      radius,
+      near: toNearSpec(opts?.near, 'path.tangentCircle'),
+    });
+    this.commands.push({ kind: 'close' });
+    return this.session.createSketch({
+      kind: 'sketch',
+      inputs: {},
+      params: {},
+      metadata: { commands: this.commands },
+    });
+  }
+
+  /**
+   * Straight segment along the line tangent to two circles
+   * (`Geom2dGcc_Lin2d2Tan`) — the belt/pulley move. The segment spans the two
+   * tangency points, so chaining `tangentLine` with arcs around each pulley
+   * builds a closed belt profile.
+   *
+   * Both entities must be circles. A "line tangent to a line" is either that
+   * same line or nothing, so it is rejected rather than silently accepted.
+   *
+   * If the path is fresh this emits the tangent span alone (pen starts at the
+   * first tangency point). If the pen already exists, a straight connecting
+   * line is inserted from the pen to the first tangency point first — it does
+   * not teleport, and the connector is a real segment of your profile.
+   *
+   * **Which solution you get.** Two circles admit up to four tangent lines
+   * (two external, two internal). `side` is the primary control:
+   * `outside`/`outside` selects an external tangent. Where more than one
+   * survives, `opts.near` picks the one whose infinite line passes closest to
+   * that point (perpendicular distance — you are pointing at a side of the
+   * pulley pair, not at a contact point). Still ambiguous ⇒ lowering fails
+   * with `sketch.tangency.ambiguous` rather than guessing.
+   *
+   * @example
+   *   // Upper external tangent between two equal pulleys.
+   *   path().tangentLine(
+   *     { kind: 'circle', center: [0, 0], radius: 5 },
+   *     { kind: 'circle', center: [40, 0], radius: 5 },
+   *   )
+   */
+  tangentLine(
+    a: TangentEntity2D,
+    b: TangentEntity2D,
+    opts?: { near?: [Editable<number>, Editable<number>] },
+  ): PathBuilder {
+    const specA = validateTangentEntity(a, 'path.tangentLine(a)');
+    const specB = validateTangentEntity(b, 'path.tangentLine(b)');
+    for (const [spec, label] of [[specA, 'a'], [specB, 'b']] as const) {
+      if (spec.kind !== 'circle') {
+        throw new KernelError(
+          'feature.invalid-args',
+          `path.tangentLine(${label}): tangency entities must be circles; got a line.`,
+          undefined,
+          'Geom2dGcc_Lin2d2Tan takes two circles. A line tangent to a line is that same line — use lineTo instead.',
+        );
+      }
+    }
+    this.commands.push({
+      kind: 'tangentLine',
+      a: specA,
+      b: specB,
+      near: toNearSpec(opts?.near, 'path.tangentLine'),
+      // Recorded at capture time because the resolver runs after the fact and
+      // cannot otherwise tell whether a pen existed when the author called.
+      startsPath: this.commands.length === 0,
+    });
+    return this;
+  }
+
+  /**
    * Author a closed circle at `(cx, cy)` of radius `r` as a polyline-
    * approximated profile. Returns the resulting `Sketch` directly — there
    * is no current pen position to reuse, and chaining further segments
@@ -1134,6 +1330,99 @@ export class PathBuilder {
       metadata: { commands: this.commands },
     });
   }
+}
+
+/**
+ * Validate an authored tangency entity and box it into the `Param`-shaped
+ * wire form. Runs at capture time so a malformed entity is rejected at the
+ * call site rather than surfacing as an opaque OCCT failure three layers down.
+ *
+ * `side` defaults to `'outside'` — the sketch-fillet reading, and the value
+ * that most often makes the construction unique on its own.
+ */
+function validateTangentEntity(e: TangentEntity2D, where: string): TangentEntitySpec {
+  if (!e || typeof e !== 'object' || (e.kind !== 'line' && e.kind !== 'circle')) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `${where}: expected { kind: 'line', from, to } or { kind: 'circle', center, radius }; got ${JSON.stringify(e)}.`,
+      undefined,
+      "Tangency entities are lines and circles only. Point tangency is unavailable — the bundled OCCT does not bind Handle_Geom2d_Point.",
+    );
+  }
+  const side = e.side ?? 'outside';
+  if (!TANGENT_SIDES.includes(side)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `${where}: side must be one of ${TANGENT_SIDES.join(' | ')}; got '${side}'.`,
+      undefined,
+      "side maps to OCCT's GccEnt_Position and is the primary control over which solution you get.",
+    );
+  }
+  const finite = (v: unknown, field: string): number => {
+    if (typeof v !== 'number' || !Number.isFinite(v)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `${where}.${field}: expected a finite number; got ${JSON.stringify(v)}.`,
+        undefined,
+        'Tangency entity coordinates must be numeric literals in this slice.',
+      );
+    }
+    return v;
+  };
+  if (e.kind === 'line') {
+    const from = e.from ?? ([] as unknown as [number, number]);
+    const to = e.to ?? ([] as unknown as [number, number]);
+    const x1 = finite(from[0], 'from[0]'), y1 = finite(from[1], 'from[1]');
+    const x2 = finite(to[0], 'to[0]'), y2 = finite(to[1], 'to[1]');
+    if (Math.hypot(x2 - x1, y2 - y1) < 1e-9) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `${where}: from and to are coincident at (${x1}, ${y1}) — they define no line.`,
+        undefined,
+        'Give two distinct points. Their order also sets the line direction, which is what side:"outside" is relative to.',
+      );
+    }
+    return { kind: 'line', x1: toParam(x1, 'mm'), y1: toParam(y1, 'mm'), x2: toParam(x2, 'mm'), y2: toParam(y2, 'mm'), side };
+  }
+  const center = e.center ?? ([] as unknown as [number, number]);
+  const cx = finite(center[0], 'center[0]'), cy = finite(center[1], 'center[1]');
+  const r = finite(e.radius, 'radius');
+  if (!(r > 0)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `${where}: circle radius must be > 0; got ${r}.`,
+      undefined,
+      'Pass a positive radius.',
+    );
+  }
+  return { kind: 'circle', cx: toParam(cx, 'mm'), cy: toParam(cy, 'mm'), r: toParam(r, 'mm'), side };
+}
+
+/** Box the optional `near` disambiguation hint. */
+function toNearSpec(
+  near: [Editable<number>, Editable<number>] | undefined,
+  where: string,
+): TangentNearSpec | undefined {
+  if (near === undefined) return undefined;
+  if (!Array.isArray(near) || near.length !== 2) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `${where}: opts.near must be a [x, y] pair; got ${JSON.stringify(near)}.`,
+      undefined,
+      'Pass opts.near as [x, y] near the solution you want.',
+    );
+  }
+  const x = toParam(near[0], 'mm');
+  const y = toParam(near[1], 'mm');
+  if (!Number.isFinite(x.evaluated) || !Number.isFinite(y.evaluated)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `${where}: opts.near coordinates must be finite; got [${x.evaluated}, ${y.evaluated}].`,
+      undefined,
+      'Pass finite numbers for opts.near.',
+    );
+  }
+  return { x, y };
 }
 
 export function makePath(session: CaptureSession): PathBuilder {
