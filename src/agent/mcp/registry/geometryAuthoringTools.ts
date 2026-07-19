@@ -450,7 +450,7 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'project_curve',
-      description: 'Use this when you need to wrap a 2D closed curve onto a 3D face. Insert a `<shape>.projectCurve({ source, face, scaleMode? })` chained call into a kernelCAD script. The `source` is the structured `{ kind: "sketchCommands", commands: [...] }` wire format the runtime API accepts. Wraps the curve onto the face along the face normal; pair with `.extrude(d)` / `.cut(...)` for raised or engraved logos on curved bodies. Open-wire projection (`asEdge: true`) is deferred (BRepProj_Projection not bundled) and is rejected at edit time. Side-effect-free; returns modified code plus diagnostics.',
+      description: 'Use this when you need to wrap a 2D closed curve onto a 3D face. Insert a `<shape>.projectCurve({ source, face, scaleMode? })` chained call into a kernelCAD script. The `source` is the structured `{ kind: "sketchCommands", commands: [...] }` wire format the runtime API accepts. Wraps the curve onto the face along the face normal; pair with `.extrude(d)` / `.cut(...)` for raised or engraved logos on curved bodies. Open-wire projection (`asEdge: true`) is not implemented and is rejected at edit time. Side-effect-free; returns modified code plus diagnostics.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -471,7 +471,7 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
           },
           face:      { type: 'string', description: 'Target face — canonical name or label.' },
           scaleMode: { type: 'string', enum: ['original', 'native', 'bounds'], description: 'Drawing.sketchOnFace scaling mode. Default original.' },
-          asEdge:    { type: 'boolean', description: 'Open-wire (edge) projection. DEFERRED — rejected at edit time (BRepProj_Projection not bundled).' },
+          asEdge:    { type: 'boolean', description: 'Open-wire (edge) projection. NOT IMPLEMENTED — rejected at edit time. Use a closed-curve projection (omit asEdge).' },
           bindAs:    { type: 'string', description: 'Optional local variable name; emits `const <bindAs> = <target>.projectCurve(...);`.' },
         },
         required: ['code', 'target', 'commands', 'face'],

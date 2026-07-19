@@ -151,11 +151,11 @@ export const DIAGNOSTIC_REGISTRY = {
   },
   'feature.project-curve.no-intersection': {
     hintTemplate:
-      'projectCurve could not intersect the source curve with the target face. For closed-curve mode, ensure the curve overlaps the face bounds. asEdge:true is currently deferred — use closed-curve projection or pre-tessellate the open wire into a closed sketch.',
+      'projectCurve could not intersect the source curve with the target face. For closed-curve mode, ensure the curve overlaps the face bounds. asEdge:true is not implemented — use closed-curve projection or pre-tessellate the open wire into a closed sketch.',
     nextAction: { kind: 'rewrite-feature', guidance: 'use closed-curve projection or shift the curve into the face bounds' },
     defaultSeverity: 'error',
     group: 'feature',
-    description: 'projectCurve found no intersection between the supplied 2D curve and the target face, or the asEdge:true path is deferred.',
+    description: 'projectCurve found no intersection between the supplied 2D curve and the target face, or the asEdge:true path was requested (not implemented).',
   },
   'feature.project-curve.curve-empty': {
     hintTemplate:
