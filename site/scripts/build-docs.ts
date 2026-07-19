@@ -147,8 +147,11 @@ const BOOTSTRAP = `
       }
       if (examples.length) {
         var idle = window.requestIdleCallback || function (fn) { return setTimeout(fn, 1); };
-        if (document.readyState === 'complete') idle(activate);
-        else window.addEventListener('load', function () { idle(activate); });
+        // The { timeout } bounds the wait: without it a backgrounded or idle-
+        // starved tab can defer activate() indefinitely, so the model never
+        // appears until the tab is focused. 2s guarantees boot regardless.
+        if (document.readyState === 'complete') idle(activate, { timeout: 2000 });
+        else window.addEventListener('load', function () { idle(activate, { timeout: 2000 }); });
       }
     })();
 `;

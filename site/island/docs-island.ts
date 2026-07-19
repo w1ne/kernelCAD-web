@@ -25,12 +25,11 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { decodeDocsMesh } from './docsMesh';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
-import { docsMaterial } from './docsMaterial';
+import { buildPrebakedBody, buildLiveFeature, disposeBodyTree } from './docsBody';
 import type { DocsAppearance } from './docsAppearance';
 import type {
   DocsRunRequest,
   DocsRunResponse,
-  DocsMeshFeature,
   DocsReadyMessage,
 } from './docs-worker';
 
@@ -214,33 +213,8 @@ function ensureStage(root: HTMLElement): Stage | null {
 }
 
 function disposeBodies(stage: Stage): void {
-  stage.bodies.traverse((node) => {
-    if (node instanceof THREE.Mesh) {
-      node.geometry.dispose();
-      const material = node.material;
-      if (Array.isArray(material)) material.forEach((m) => m.dispose());
-      else material.dispose();
-    }
-  });
+  disposeBodyTree(stage.bodies);
   stage.bodies.clear();
-}
-
-function buildFeature(feature: DocsMeshFeature): THREE.Group {
-  const group = new THREE.Group();
-  const material = docsMaterial(feature.appearance);
-  for (const face of feature.faces) {
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(face.vertices, 3));
-    geometry.setAttribute('normal', new THREE.BufferAttribute(face.normals, 3));
-    geometry.setIndex(new THREE.BufferAttribute(face.indices, 1));
-    group.add(new THREE.Mesh(geometry, material));
-  }
-  if (feature.transform) {
-    // Column-major 4x4 from the assembly solver, which is three's own layout.
-    group.matrixAutoUpdate = false;
-    group.matrix.fromArray(feature.transform as number[]);
-  }
-  return group;
 }
 
 function frame(stage: Stage, bounds: Bounds): void {
@@ -329,16 +303,7 @@ async function showPrebaked(root: HTMLElement): Promise<void> {
   const stage = ensureStage(root);
   if (!stage) return;
   features.forEach((feature, i) => {
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(feature.positions, 3));
-    geometry.setAttribute('normal', new THREE.BufferAttribute(feature.normals, 3));
-    geometry.setIndex(new THREE.BufferAttribute(feature.indices, 1));
-    const mesh = new THREE.Mesh(geometry, docsMaterial(model.appearances[i]));
-    if (feature.transform) {
-      mesh.matrixAutoUpdate = false;
-      mesh.matrix.fromArray(feature.transform);
-    }
-    stage.bodies.add(mesh);
+    stage.bodies.add(buildPrebakedBody(feature, model.appearances[i]));
   });
   frame(stage, { min: model.bounds.min as Bounds['min'], max: model.bounds.max as Bounds['max'] });
 }
@@ -373,7 +338,7 @@ async function run(root: HTMLElement): Promise<void> {
 
   disposeBodies(stage);
   for (const feature of response.features) {
-    stage.bodies.add(buildFeature(feature));
+    stage.bodies.add(buildLiveFeature(feature));
   }
   if (boundsDiffer(stage.framedOn, response.bounds)) frame(stage, response.bounds);
   setStatus(
