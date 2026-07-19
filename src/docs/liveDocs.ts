@@ -92,7 +92,7 @@ return plate.union(rib).color('frame');`,
 
   'Add material': {
     caption:
-      'A revolved knob. Draw half the section as a closed path, then spin it. material() sets the finish — high metalness and low roughness read as anodised aluminium.',
+      'A revolved knob. Draw half the section as a closed path, then spin it. finish() names the material; the color option tints the anodised surface.',
     code: `const section = path()
   .moveTo(4, 0)
   .lineTo(16, 0)
@@ -101,11 +101,7 @@ return plate.union(rib).color('frame');`,
   .lineTo(4, 22)
   .close();
 
-return section.revolve().material({
-  baseColor: '#2F6F63',
-  metalness: 0.7,
-  roughness: 0.35,
-});`,
+return section.revolve().finish('anodized', { color: '#2F6F63' });`,
   },
 
   'Remove material': {
@@ -122,7 +118,7 @@ return plate
     depth: 'through',
     counterbore: { diameter: 12, depth: 4 },
   })
-  .material({ baseColor: '#A9B4BF', metalness: 0.45, roughness: 0.4 });`,
+  .finish('aluminium');`,
   },
 
   'Combine shapes': {
@@ -139,13 +135,9 @@ return block.intersect(ball).color('beam');`,
       'Order matters. Shelling first leaves the wall a constant thickness; filleting first would round the outside and then hollow the rounded body.',
     code: `const body = box(60, 40, 24).shell(2, { face: 'top' });
 
-// Light anodise: the shell wall and the rounded corners are only legible
-// if the colour leaves room for a highlight.
-return body.fillet(3, { atZ: 0 }).material({
-  baseColor: '#7FA6C4',
-  metalness: 0.35,
-  roughness: 0.45,
-});`,
+// A light anodised blue; the shell wall and rounded corners read cleanly
+// against it.
+return body.fillet(3, { atZ: 0 }).finish('anodized', { color: '#7FA6C4' });`,
   },
 
   'Select geometry': {
@@ -251,16 +243,12 @@ return box(width, 40, 12).subtract(
 
   'Annotate & present': {
     caption:
-      'Colour and material change how a model reads without changing what it is; both survive export. metalness near 1 with low roughness is what makes this read as copper rather than as brown plastic — drop metalness to 0.1 and run it again.',
+      'finish() names a material — here copper — and sets its colour and surface together, so you write the material, not the shader. Swap in finish(\'abs\') to read the same shape as black plastic. Raw material({...}) stays for glass and clearcoat.',
     code: `const bracket = box(60, 40, 12)
   .fillet(2)
   .hole('top', { u: 0, v: 0, diameter: 12, depth: 'through' });
 
-return bracket.material({
-  baseColor: '#B87333',
-  metalness: 0.9,
-  roughness: 0.35,
-});`,
+return bracket.finish('copper');`,
   },
 };
 
