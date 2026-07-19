@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { evaluateAndBuildScript } from '../../../src/agent/cli/commands/evaluate';
+import { TOOLS } from '../../../src/agent/mcp/toolRegistry';
 import { listApiTool, GLOBALS } from '../../../src/agent/mcp/tools/listApi';
 import { SUPPORTED_CONSTRAINT_TYPES } from '../../../src/agent/mcp/tools/constraints';
 
@@ -104,7 +105,12 @@ describe('list_api MCP tool', () => {
   it('returns constrained-sketch MCP tool discovery with supported constraint types', async () => {
     const r = await listApiTool({});
     expect(r.constraints).toBeDefined();
-    expect(r.constraints!.tools).toEqual(['list_constraints', 'add_constraint', 'solve_sketch']);
+    // Every name here must be a LIVE tool. This assertion previously pinned the
+    // retired per-entity constraint lister, so it was not protecting agents from
+    // a stale name — it was requiring one. Reading folded into `inspect`.
+    expect(r.constraints!.tools).toEqual(['inspect', 'add_constraint', 'solve_sketch']);
+    const live = new Set(TOOLS.map((t) => t.name));
+    for (const name of r.constraints!.tools) expect(live).toContain(name);
     expect(r.constraints!.supportedTypes).toEqual(SUPPORTED_CONSTRAINT_TYPES);
   });
 
