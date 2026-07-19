@@ -1060,17 +1060,68 @@ report via `kernelcad dfm <file>` (`--json`) and MCP `verify({ check: 'dfm' })`.
 
 ## Materials
 
-`Shape.material(opts)` applies a PBR material to a shape. Use it instead of
-`.color()` when the reference shows gloss, specular highlights, or translucency.
+There are three ways to set surface character. Reach for them in this order:
 
-**Critical rule:** apply `.material()` to leaf parts BEFORE they enter a boolean.
-A `.material()` call on a post-union root is a no-op — the kernel cannot
+1. **`.color(token | '#hex')`** — HUE ONLY. Cheapest. Role tokens (servo, gear,
+   beam, shaft, plate, pin, frame, tool) or a literal hex. Right for schematic
+   assembly renders where photo-accuracy is not the point.
+2. **`.finish(name, { color? })`** — a NAMED material finish: hue plus surface
+   character (metalness / roughness / clearcoat). This is the primary verb when
+   you know the material. You name "brass" or "matte ABS", not BRDF floats.
+3. **`.material({...})`** — the raw-PBR escape hatch. Only for glass, clearcoat,
+   anisotropy, or image textures that no finish token covers (see below).
+
+**How they compose on one leaf:** a `.finish()`/`.material()` PBR record
+overrides a `.color()` hue at render time. `.finish()` and `.material()` write
+the same slot, so on one leaf it is last-write-wins between them. To TINT a
+finish, pass `{ color }` to `.finish()` — do not layer `.color()` under it, the
+hue would be shadowed.
+
+**Critical rule:** apply `.finish()` / `.material()` to leaf parts BEFORE they
+enter a boolean. A call on a post-union root is a no-op — the kernel cannot
 retroactively assign material to the input leaves of a boolean.
 
-Common presets:
+### `.finish(name, opts?)` — named finishes
 
 ```typescript
-// Glossy acetate (eyewear, cases)
+bracket.finish('anodized-black');                 // matte black anodised alu
+crownGear.finish('brass');                        // brass, intrinsic colour
+housing.finish('abs', { color: '#c0392b' });      // red ABS housing
+knob.finish('paint-gloss', { color: '#0a3d62' }); // glossy navy paint
+lens.finish('glass-tinted');                       // real refraction, no floats
+bezel.finish('brass', { face: 'ring' });           // per-face, like .material({ face })
+```
+
+The vocabulary (small and curated — pick the closest, override the hue if you
+need a different colour). This table is the source the finish-drift gate checks
+against `FINISH_TOKENS`; keep the two in sync.
+
+<!-- FINISH-VOCABULARY:START -->
+| group | finishes |
+|---|---|
+| metals | `aluminium`, `aluminium-brushed`, `anodized-black`, `anodized`, `steel`, `stainless`, `brass`, `copper`, `titanium` |
+| plastics | `abs`, `pla`, `nylon`, `delrin`, `polycarbonate`, `rubber`, `plastic-glossy` |
+| glass | `glass`, `glass-tinted`, `acrylic` |
+| paint / neutral | `paint-matte`, `paint-gloss`, `default` |
+<!-- FINISH-VOCABULARY:END -->
+
+
+`opts.color` overrides the hue while keeping the finish. It is meaningful for
+the paints, `abs`, `plastic-glossy`, and `anodized` (dyed anodising); for raw
+metals the colour is intrinsic, so an override is accepted but rarely wanted.
+An unknown finish name throws `feature.finish.unknown-token` and lists the valid
+finishes — it does not fall back to a default.
+
+### Advanced: raw PBR via `.material()`
+
+`Shape.material(opts)` is the escape hatch when no finish token fits — glass with
+a specific attenuation, brushed anisotropy, a bespoke clearcoat, or image
+textures. The fields are three.js `MeshPhysicalMaterial` floats; a finish token
+expands to exactly this record, so anything a finish does, `.material()` can do
+by hand. Prefer the named finish unless you need one of the fields below.
+
+```typescript
+// Bespoke glossy acetate — clearcoat + ior a finish token does not name exactly
 part.material({
   baseColor: '#0a0a0a',
   metalness: 0.0,
@@ -1079,34 +1130,7 @@ part.material({
   clearcoatRoughness: 0.05,
   ior: 1.55,
 });
-
-// Brushed aluminum (enclosures, brackets)
-part.material({
-  baseColor: '#b0b0b0',
-  metalness: 1.0,
-  roughness: 0.3,
-});
-
-// Clear glass (lenses, domes)
-part.material({
-  baseColor: '#ffffff',
-  metalness: 0.0,
-  roughness: 0.0,
-  transmission: 0.95,
-  ior: 1.5,
-});
-
-// Matte plastic (housings, brackets)
-part.material({
-  baseColor: '#2a2a2a',
-  metalness: 0.0,
-  roughness: 0.65,
-});
 ```
-
-For schematic coloring (servo, frame, gear, beam, shaft, plate, pin, tool) where
-photo-accuracy is not required, the role-token shortcut `.color('servo')` etc.
-is sufficient and cleaner. Use `.material()` only when the reference demands it.
 
 ### Glass, brushed metal, textured surfaces
 

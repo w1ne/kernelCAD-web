@@ -799,6 +799,15 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'A texture image was loaded with a dimension greater than 8192 px; the kernel rejects it as oversized.',
   },
+  // Finish (1) — named-finish front door over raw .material()
+  'feature.finish.unknown-token': {
+    hintTemplate:
+      'Shape.finish() was called with a name that is not in the finish table. Pass one of the named finishes (metals: aluminium, anodized-black, brass, copper, …; plastics: abs, pla, delrin, …; glass: glass, glass-tinted, acrylic; paints: paint-matte, paint-gloss), or drop to .material({...}) for raw PBR.',
+    nextAction: { kind: 'fix-arg', field: 'name' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'Shape.finish() received a finish name that the curated finish table does not define; the kernel rejects it rather than silently substituting a default.',
+  },
   // Edge-feature partial success (1) — M2
   'feature.edge-feature.short-edges-skipped': {
     hintTemplate:

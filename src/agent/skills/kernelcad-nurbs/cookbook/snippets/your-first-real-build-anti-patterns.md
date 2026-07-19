@@ -50,8 +50,8 @@ the canonical trap:
 ```ts
 // ❌ This silently hides the tinted lens insert.
 const glasses = body.subtract(lensHole)
-  .union(lensInsert.material({ baseColor: '#101418' }))  // glass-dark
-  .material({ baseColor: '#1a1a1a' });                   // frame-black
+  .union(lensInsert.finish('glass-tinted'))              // glass-dark
+  .finish('abs', { color: '#1a1a1a' });                  // frame-black
 
 // kernelcad render emits a "material shadowing — leaf <X> has its own
 // material but is unioned into <Y> which also has its own material" warning.

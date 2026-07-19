@@ -96,10 +96,17 @@ edge of a sculpted panel), USE `surfaceFromBoundary([top, right, bottom, left])`
 to get a Coons patch. Do NOT approximate with extrude +
 boolean trim; the resulting surface is faceted, not smooth, and SSIM detects it.
 
-## Rule 6 — Glossy products → PBR material
+## Rule 6 — Glossy products → named finish
 
 Real consumer products read as "real" largely because of specular reflections.
-USE `Shape.material()` with `clearcoat` and `roughness`:
+USE `Shape.finish(name)` — name the material, not the BRDF floats:
+
+```ts
+shape.finish('plastic-glossy', { color: '#0a0a0a' });  // glossy black shell
+```
+
+For glass, brushed metal, or a bespoke clearcoat/ior a finish token does not
+name, drop to the `.material({...})` escape hatch:
 
 ```ts
 shape.material({
