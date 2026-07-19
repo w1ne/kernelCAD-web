@@ -11,6 +11,8 @@ import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exp
 import { export3mfAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occt/exportGlb';
 import { exportSvgDrawing, type SvgDrawingOptions } from '../../kernel/backends/occt/exportSvgDrawing';
+import type { DrawingAnnotation } from '../../kernel/backends/occt/drawingAnnotations';
+export type { DrawingAnnotation, DrawingAnchor } from '../../kernel/backends/occt/drawingAnnotations';
 import { sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { flattenPattern } from '../../kernel/backends/occt/flattenPattern';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
@@ -31,7 +33,14 @@ export type ExportOptions =
   | { format: 'dxf'; layers?: DxfLayerSpec[]; unit?: 'mm' | 'cm' | 'in'; tolerance?: number }
   | { format: '3mf'; printUnit?: 'mm' | 'cm' | 'in'; embedSource?: boolean }
   | { format: 'glb'; axis?: 'y-up' | 'z-up'; draco?: false }
-  | { format: 'svg-drawing'; sheet?: 'a4' | 'a3'; modelName?: string; date?: string }
+  | {
+      format: 'svg-drawing';
+      sheet?: 'a4' | 'a3';
+      modelName?: string;
+      date?: string;
+      /** Authored dimensions / notes; replaces the automatic bbox dimensions. */
+      annotations?: readonly DrawingAnnotation[];
+    }
   | { format: 'urdf' }
   | { format: 'srdf' }
   | { format: 'sdf-gazebo' };
