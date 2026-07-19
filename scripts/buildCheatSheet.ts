@@ -21,8 +21,9 @@ const HEADER = [
   '',
   '# kernelCAD cheat sheet',
   '',
-  'The script API grouped by what you are trying to DO. Every row is generated from',
-  '`src/agent/mcp/tools/listApi.ts`; call `lookup_api(query)` for the full description of any entry.',
+  'The script API, grouped by the job you are doing rather than by the object you',
+  'call it on. Rows come from `src/agent/mcp/tools/listApi.ts`; for the full',
+  'description of any entry, call `lookup_api(query)`.',
   '',
 ];
 

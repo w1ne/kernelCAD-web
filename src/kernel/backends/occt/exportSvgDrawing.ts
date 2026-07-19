@@ -17,8 +17,11 @@
 //     hidden edges dashed half-weight, tangent (smooth-transition) edges
 //     thin solid. Hidden tangent edges are omitted — they carry no contour
 //     information and only add noise.
-//   - overall bounding-box dimensions: width under the front view, height
-//     right of the front view, depth left of the top view.
+//   - dimensions: by default the overall bounding box — width under the front
+//     view, height right of the front view, depth left of the top view. Pass
+//     `options.annotations` to dimension actual features instead (see
+//     drawingAnnotations.ts); authored annotations REPLACE the bbox set, and
+//     view captions move down to clear whatever stacks beneath them.
 //
 // Coincident projected segments (e.g. a through-bore's front and back rims
 // landing on the same 2D arc) are deduplicated visible-first, so a segment
@@ -44,6 +47,13 @@ import {
   type ViewBox2,
   type ViewPlacement,
 } from './drawingLayout';
+import {
+  renderAnnotations,
+  DIM_BASE,
+  type DrawingAnnotation,
+} from './drawingAnnotations';
+
+export type { DrawingAnnotation, DrawingAnchor } from './drawingAnnotations';
 
 export interface SvgDrawingOptions {
   format: 'svg-drawing';
@@ -54,6 +64,16 @@ export interface SvgDrawingOptions {
   /** Title-block date text. Defaults to a blank placeholder so the output
    *  stays byte-deterministic; pass an ISO date to stamp it. */
   date?: string;
+  /**
+   * Authored dimensions and notes. When absent (or empty) the sheet falls back
+   * to the automatic overall bounding-box dimensions, so existing drawings are
+   * unchanged. When present they REPLACE the bbox dimensions — a sheet that
+   * carried both would double-dimension the outline, which is a drafting
+   * error, and the author has already said what they want measured.
+   *
+   * Unresolvable annotations throw rather than silently vanishing.
+   */
+  annotations?: readonly DrawingAnnotation[];
 }
 
 interface StyledView {
@@ -219,13 +239,62 @@ export function exportSvgDrawing(
   );
   const s = layout.scale;
 
+  // --- dimensions: authored if the caller supplied any, else automatic ----
+  // Computed before the view groups because bottom-stacked dimensions decide
+  // how far down each view's caption has to move to clear them.
+  const authored = options.annotations ?? [];
+  const f = layout.views.front.box;
+  const t = layout.views.top.box;
+  let dimBodies: string[];
+  let bottomReserve: Record<DrawingViewName, number>;
+
+  if (authored.length > 0) {
+    const rendered = renderAnnotations({
+      parts,
+      annotations: authored,
+      placements: layout.views,
+      scale: s,
+    });
+    dimBodies = rendered.svg;
+    bottomReserve = rendered.bottomReserve;
+  } else {
+    const dimSpecs: LinearDimension[] = [
+      {
+        kind: 'horizontal',
+        from: [f.x, f.y + f.h],
+        to: [f.x + f.w, f.y + f.h],
+        linePos: f.y + f.h + DIM_BASE,
+        label: formatDimValue(dims.w),
+      },
+      {
+        kind: 'vertical',
+        from: [f.x + f.w, f.y],
+        to: [f.x + f.w, f.y + f.h],
+        linePos: f.x + f.w + DIM_BASE,
+        label: formatDimValue(dims.h),
+      },
+      {
+        kind: 'vertical',
+        from: [t.x, t.y],
+        to: [t.x, t.y + t.h],
+        linePos: t.x - DIM_BASE,
+        label: formatDimValue(dims.d),
+      },
+    ];
+    dimBodies = dimSpecs.map(d => dimensionToSvg(d));
+    // Only the front view carries a bottom-stacked (width) dimension.
+    bottomReserve = { front: DIM_BASE, top: 0, left: 0, iso: 0 };
+  }
+
   // --- view groups -------------------------------------------------------
   const viewGroups = VIEW_NAMES.map(name => {
     const v = styled[name];
     const p = layout.views[name];
-    // The front view carries the width dimension underneath (at +8 mm) —
-    // push its label below the dimension band so they never collide.
-    const labelOffset = name === 'front' ? 13 : 5;
+    // A view carrying dimensions underneath must push its caption below the
+    // deepest of them, or the two collide. With the automatic bbox dimensions
+    // this reserves the front view's single 8 mm band (label at 13 mm), which
+    // is exactly where the caption sat before annotations existed.
+    const labelOffset = 5 + bottomReserve[name];
     const label =
       `<text class="view-label" x="${round3(p.box.x + p.box.w / 2)}" ` +
       `y="${round3(p.box.y + p.box.h + labelOffset)}" font-size="2.6" text-anchor="middle" ` +
@@ -241,34 +310,7 @@ export function exportSvgDrawing(
     );
   });
 
-  // --- overall bounding-box dimensions ------------------------------------
-  const f = layout.views.front.box;
-  const t = layout.views.top.box;
-  const dimSpecs: LinearDimension[] = [
-    {
-      kind: 'horizontal',
-      from: [f.x, f.y + f.h],
-      to: [f.x + f.w, f.y + f.h],
-      linePos: f.y + f.h + 8,
-      label: formatDimValue(dims.w),
-    },
-    {
-      kind: 'vertical',
-      from: [f.x + f.w, f.y],
-      to: [f.x + f.w, f.y + f.h],
-      linePos: f.x + f.w + 8,
-      label: formatDimValue(dims.h),
-    },
-    {
-      kind: 'vertical',
-      from: [t.x, t.y],
-      to: [t.x, t.y + t.h],
-      linePos: t.x - 8,
-      label: formatDimValue(dims.d),
-    },
-  ];
-  const dimensions =
-    `<g id="dimensions">` + dimSpecs.map(d => dimensionToSvg(d)).join('') + `</g>`;
+  const dimensions = `<g id="dimensions">` + dimBodies.join('') + `</g>`;
 
   // --- sheet ---------------------------------------------------------------
   const frame =

@@ -810,7 +810,7 @@ These are not available today; do not generate code that uses them. Anything not
 
 - Asymmetric chamfer (only symmetric 45° supported) — deferred
 - BOM extraction — deferred
-- Feature-level dimensioning on `svg-drawing` (hole callouts, param-bound dims, section views) — deferred; overall bounding-box dimensions and the title block do ship
+- Section views and param-bound (auto-updating) dimensions on `svg-drawing` — deferred; authored feature dimensioning DOES ship (`options.annotations`: linear / radius / diameter / angular / leader notes, anchored by EdgeQuery / FaceQuery or an explicit point), as do the automatic bounding-box dimensions and the title block
 - Multi-view PDF sheets — deferred; `export({ format: 'svg-drawing' })` ships an SVG sheet instead
 - NURBS surface extend/untrim/blend, surface-surface intersection, lattice/quilt — deferred
 - Tracked face/edge refs (only canonical refs and inline queries work) — deferred

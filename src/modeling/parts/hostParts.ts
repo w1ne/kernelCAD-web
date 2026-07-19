@@ -23,8 +23,10 @@
 
 import { requireHostFs } from '../../shared/runtime/hostFs';
 import type { Shape } from '../capture/proxy';
+import type { Sketch } from '../capture/sketch';
 import type { CaptureSession } from '../capture/captureSession';
 import type { FromSTLOptions } from './fromMeshFormats';
+import type { FromDXFOptions, FromSVGOptions } from './fromVectorFormats';
 import type { FetchPartOpts } from './fetchPart';
 import type { FindPartOpts, FindPartResult } from './findPart';
 import type { StandardParts } from './standardParts';
@@ -54,6 +56,26 @@ export async function fromSTLViaHost(
   requireHostFs('lib.fromSTL()');
   const { fromSTL } = await import('./fromMeshFormats');
   return fromSTL(ctx, path, opts);
+}
+
+export async function fromDXFViaHost(
+  ctx: HostPartsCtx,
+  path: string,
+  opts: FromDXFOptions,
+): Promise<Sketch[]> {
+  requireHostFs('lib.fromDXF()');
+  const { fromDXF } = await import('./fromVectorFormats');
+  return fromDXF(ctx, path, opts);
+}
+
+export async function fromSVGViaHost(
+  ctx: HostPartsCtx,
+  path: string,
+  opts: FromSVGOptions,
+): Promise<Sketch[]> {
+  requireHostFs('lib.fromSVG()');
+  const { fromSVG } = await import('./fromVectorFormats');
+  return fromSVG(ctx, path, opts);
 }
 
 export async function findPartViaHost(

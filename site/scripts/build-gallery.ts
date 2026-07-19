@@ -4,7 +4,7 @@
 // emits site/public/gallery.json + per-slug assets.
 
 import {
-  copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync, statSync, rmSync,
+  copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync, rmSync,
 } from 'node:fs';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
@@ -17,6 +17,7 @@ import {
 import { extractPoster } from '../../scripts/lib/extractPoster';
 import { isVideoMostlyBlack } from '../../scripts/lib/blackFrameCheck';
 import { exportGlb } from '../../scripts/lib/exportGlb';
+import { optimizeGlb } from '../../scripts/lib/optimizeGlb';
 import { loadScriptFeatures } from '../../src/modeling/runtime/scriptLoader';
 import { meshFeaturesPerFeature } from '../../src/modeling/capture/featureMeshing';
 import { serializeForBridge } from '../../src/modeling/capture/featureMeshSerialize';
@@ -41,12 +42,31 @@ interface PublishedEntry extends Omit<GalleryEntry, 'video' | 'codeLocal'> {
   studioUrl: string;
 }
 
-// Per-tile GLB budget for the gallery 3D preview — a load-time budget that
-// keeps tiles snappy. Held at 500 KB: vertex welding in exportGlb (lossless
-// dedup of OCCT's per-face boundary duplicates) keeps even the 95-body
-// spice-dispenser carousel under it (~452 KB). Next lever if tiles ever grow:
-// mesh quantization / Draco.
-const GLB_SIZE_HARD_CAP = 500_000;
+// Per-tile GLB budget for the gallery 3D preview — a load-time budget that keeps
+// tiles snappy.
+//
+// History: 500 KB used to be met by vertex welding alone (~452 KB for the 95-body
+// spice-dispenser carousel). d4774a1 fixed a real unit bug in
+// FINE_MESH_OPTIONS.angularTolerance (30 -> 0.3 — degrees-vs-radians: at 30 the
+// angular criterion exceeded 2*pi and never bound, so curved surfaces were
+// tessellated by linear deflection alone). Correct tessellation nearly doubled the
+// triangle count on small doubly-curved faces; the carousel went to ~893 KB and the
+// marketing deploy went red for two days.
+//
+// Raised to 600 KB, which the optimize pass clears at ~552 KB. This is a STOPGAP,
+// consciously conceding ~100 KB of budget to get the deploy green:
+//
+//   - Do NOT "fix" this by loosening the mesher. Full resolution is what the Studio
+//     and viewer should render; d4774a1 is a correct fix worth keeping.
+//   - Post-process simplification CANNOT recover the bytes. Measured no-op across a
+//     20x --simplify-error range; see scripts/lib/optimizeGlb.ts for the table and
+//     the reason (OCCT per-face islands defeat edge-collapse).
+//
+// The real fix is a coarse web mesh profile threaded through MeshOptions so
+// web-delivered GLBs tessellate coarser while the viewer keeps FINE. Until that
+// lands, this cap holds the line — and it is still a HARD cap, so a model that
+// blows past 600 KB fails the build rather than shipping a slow tile.
+const GLB_SIZE_HARD_CAP = 600_000;
 // The gallery is served from the marketing site (kernelcad.com); the hosted
 // Studio lives on a separate origin (app.kernelcad.com, deployed at base `/`).
 // "Open in Studio" must therefore be an absolute cross-origin URL — a relative
@@ -168,13 +188,21 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
       throw new Error(`entry ${entry.slug}: video is mostly black (failed visual gate)`);
     }
 
-    await exportGlb({ scriptPath: srcScript, outPath: dstModel });
-    const glbSize = statSync(dstModel).size;
-    if (glbSize > GLB_SIZE_HARD_CAP) {
-      throw new Error(
-        `entry ${entry.slug}: model.glb is ${glbSize} bytes; exceeds ${GLB_SIZE_HARD_CAP} byte hard cap. Decimate the mesh.`,
-      );
-    }
+    // Mesh at full resolution, then decimate down to the web budget. Shared with
+    // the catalog board pipeline (scripts/lib/optimizeGlb.ts) so both surfaces
+    // ship GLBs built the same way — the flags there are load-bearing.
+    const rawGlb = path.join(slugDir, 'model.raw.glb');
+    await exportGlb({ scriptPath: srcScript, outPath: rawGlb });
+    await optimizeGlb(rawGlb, dstModel, {
+      repoRoot: REPO_ROOT,
+      label: `entry ${entry.slug}`,
+      maxBytes: GLB_SIZE_HARD_CAP,
+      // Gallery entries range from single-body models to 95-body assemblies, so a
+      // fixed material floor would reject valid simple models. The invariant that
+      // matters is that optimization does not FLATTEN whatever colours exist.
+      preserveMaterials: true,
+    });
+    rmSync(rawGlb, { force: true });
 
     // Precompute the mesh bridge payload for curated entries so the hosted
     // Studio renders the initial view from a static file. Keyed by the

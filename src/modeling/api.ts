@@ -48,7 +48,12 @@ import {
   findPartViaHost,
   fetchPartViaHost,
   standardPartsViaHost,
+  fromDXFViaHost,
+  fromSVGViaHost,
 } from './parts/hostParts';
+// Type-only: the runtime side of these loaders is reached through
+// fromDXFViaHost / fromSVGViaHost so the browser graph never pulls node:fs.
+import type { FromDXFOptions, FromSVGOptions } from './parts/fromVectorFormats';
 import { select, type ShapeList } from './selection/shapeList';
 import { sphere as sdfSphere, box as sdfBox, cylinder as sdfCylinder, torus as sdfTorus } from './sdf/primitives';
 import { smoothBlend as sdfSmoothBlend } from './sdf/smoothBlend';
@@ -99,6 +104,30 @@ export interface PartsLib {
    * A non-watertight mesh is refused unless `opts.allowOpen` is set.
    */
   fromSTL(path: string, opts?: FromSTLOptions): Promise<Shape>;
+  /**
+   * Import a 2D DXF drawing as closed profiles.
+   *
+   * Returns `Sketch[]` ALWAYS — largest enclosed area first — because a
+   * drawing routinely holds an outline plus its holes, and nothing in the
+   * file says which loop is which. Chain `.extrude(d)` on the one you want:
+   * `const [outline, ...holes] = await lib.fromDXF('plate.dxf')`.
+   *
+   * Reads LINE, ARC, CIRCLE, LWPOLYLINE, POLYLINE. SPLINE/ELLIPSE/INSERT are
+   * refused with a diagnostic naming the entity and line number rather than
+   * dropped. `$INSUNITS` sets the scale; absent or Unitless means mm.
+   */
+  fromDXF(path: string, opts?: FromDXFOptions): Promise<Sketch[]>;
+  /**
+   * Import an SVG drawing as closed profiles. Same `Sketch[]` contract as
+   * `fromDXF`.
+   *
+   * SVG's Y axis points down and is reflected about the viewBox top so the
+   * profile lands upright in positive Y. Scale comes from `viewBox` plus a
+   * physically-dimensioned `width`; without one a user unit is a CSS pixel
+   * (1/96 in). Béziers and true ellipses are chord-approximated within
+   * `opts.curveTolerance` mm; lines and circular arcs are exact.
+   */
+  fromSVG(path: string, opts?: FromSVGOptions): Promise<Sketch[]>;
   findPart(query: string, opts?: FindPartOpts): Promise<FindPartResult>;
   fetchPart(idOrQuery: string, opts?: FetchPartOpts): Promise<Shape>;
   standard: StandardParts;
@@ -911,6 +940,10 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       fromBREP: (path) => fromBREPViaHost({ session, scriptDir: ctx.scriptDir }, path),
       fromSTL: (path, opts) =>
         fromSTLViaHost({ session, scriptDir: ctx.scriptDir }, path, opts ?? {}),
+      fromDXF: (path, opts) =>
+        fromDXFViaHost({ session, scriptDir: ctx.scriptDir }, path, opts ?? {}),
+      fromSVG: (path, opts) =>
+        fromSVGViaHost({ session, scriptDir: ctx.scriptDir }, path, opts ?? {}),
       findPart: (query, opts) => findPartViaHost(query, opts ?? {}),
       fetchPart: (idOrQuery, opts) =>
         fetchPartViaHost(
