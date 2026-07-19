@@ -25,11 +25,17 @@
 import * as replicad from 'replicad';
 import { createHash } from 'node:crypto';
 import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
+import { describeOcctThrow, isOcctOutOfMemory } from '../../kernel/backends/occt/occtException';
 
 /** Why a STEP byte buffer could not be turned into a 3D solid. Reported so
  *  callers map to their own KernelError code/hint — the cache stays free of
- *  caller-specific diagnostics. */
-export type StepParseFailure = 'parse' | 'no-solid';
+ *  caller-specific diagnostics.
+ *
+ *  `out-of-memory` is deliberately distinct from `parse`: it says nothing about
+ *  the bytes. The OCCT wasm heap filled up, the same bytes parse fine on a
+ *  healthy heap, and telling the caller their file is malformed sends them to
+ *  debug the wrong thing. See occtException.ts for how we identify it. */
+export type StepParseFailure = 'parse' | 'no-solid' | 'out-of-memory';
 
 export class StepParseError extends Error {
   // erasableSyntaxOnly forbids constructor parameter properties — declare explicitly.
@@ -76,12 +82,33 @@ export async function importStepCached(bytes: Buffer | Uint8Array): Promise<Occt
 
   await initOcct();
   // replicad.importSTEP wants a Blob. The bytes copy is unavoidable.
-  const blob = new Blob([new Uint8Array(bytes)]);
   let imported: replicad.AnyShape;
   try {
-    imported = await replicad.importSTEP(blob);
+    imported = await replicad.importSTEP(new Blob([new Uint8Array(bytes)]));
   } catch (e) {
-    throw new StepParseError('parse', e instanceof Error ? e.message : String(e));
+    if (!isOcctOutOfMemory(e)) {
+      throw new StepParseError('parse', describeOcctThrow(e));
+    }
+    // Self-heal: the masters this cache pins are, by design, the largest
+    // long-lived consumers of the OCCT wasm heap (MAX_ENTRIES of them, each a
+    // fully reconstructed BREP). In a long-lived host — the MCP server, a
+    // Studio session — they are the reason the heap reached its ceiling, and
+    // once it does EVERY subsequent import fails, permanently, until the
+    // process restarts. Drop them and retry once with the same bytes.
+    //
+    // Outstanding clones handed to callers are independent OCCT handles, so
+    // disposing the masters cannot invalidate geometry already in use.
+    purgeMasters();
+    try {
+      imported = await replicad.importSTEP(new Blob([new Uint8Array(bytes)]));
+    } catch (retryErr) {
+      // Still out of memory after reclaiming every master: the heap pressure is
+      // coming from outside this cache and we have nothing left to give back.
+      throw new StepParseError(
+        isOcctOutOfMemory(retryErr) ? 'out-of-memory' : 'parse',
+        describeOcctThrow(retryErr),
+      );
+    }
   }
   // Duck-type the Shape3D check: `meshShape` lives on replicad's `_3DShape`
   // prototype only, so a 2D Sketch import correctly fails here.
@@ -112,10 +139,17 @@ export function __stepParseCacheStats(): { hits: number; misses: number; size: n
   return { hits, misses, size: cache.size };
 }
 
-/** Test-only: drop all cached masters (disposing their OCCT handles) and reset counters. */
-export function __resetStepParseCache(): void {
+/** Drop every cached master, returning its BREP to the OCCT wasm heap. Leaves
+ *  the hit/miss counters alone — this runs on the OOM recovery path, where the
+ *  instrumentation is what tells us reclamation happened. */
+function purgeMasters(): void {
   for (const v of cache.values()) v.dispose();
   cache.clear();
+}
+
+/** Test-only: drop all cached masters (disposing their OCCT handles) and reset counters. */
+export function __resetStepParseCache(): void {
+  purgeMasters();
   hits = 0;
   misses = 0;
 }
