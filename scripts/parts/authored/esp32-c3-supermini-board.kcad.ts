@@ -78,7 +78,24 @@ parts.push(['pcb', box(PCB_L, PCB_W, PCB_T).color(PCB_BLUE)]);
 // +PCB_T translate would sink it below the top face. Lift by the plastic height
 // (HDR_PLASTIC_H) so the plastic bottom seats flush ON the PCB top (min Z=PCB_T),
 // the long mating pins reach through to -Z, and the short tail stubs sit proud.
-{
+// FIT_HEADERS — headers are a BUILD CHOICE, not intrinsic to the board.
+//
+// The SuperMini ships as a bare PCB with castellated pads; whether you solder
+// 2.54mm headers on is up to the build. Modelling them by default made the part
+// 11.54mm tall instead of 3.04mm, and 8.5mm of that is mating pin hanging BELOW
+// the PCB. That is right for a breadboard render and wrong for every enclosure:
+// in the nodulo 50x50 modules those pins drove straight through the encoder can
+// and the MX switch pins, and no sealed 22mm box would ever fit them.
+//
+// Default false: the catalog's job is "will this part fit", and the bare board is
+// the honest answer to that. Set true for a breadboard-style render.
+//
+// Deliberately a flag in THIS ONE FILE rather than a second -bare part id: the
+// ingest supports no per-entry params and .kcad.ts scripts cannot import shared
+// modules (imports are stripped by the loader — verified), so a second entry
+// would mean forking this model. One source, one board.
+const FIT_HEADERS = false;
+if (FIT_HEADERS) {
   const HDR_PLASTIC_H = 2.5; // plastic strip height (local Z 0..2.5)
   const rowStartX = (PCB_L - 7 * 2.54) / 2 - 1.3; // center the 8-pin span on X
   const rowYs = [2.5, PCB_W - 2.5]; // ~2.5mm in from each long edge
