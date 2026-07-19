@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import type { IsolationOptions, IsolationResult } from './isolation';
+import type { IsolationOptions, IsolationResult } from './isolationTypes';
 
 /**
  * Browser-safe sibling of `runIsolated` (isolation.ts) that runs a user script

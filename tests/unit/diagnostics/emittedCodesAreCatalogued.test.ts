@@ -170,9 +170,11 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       assembly.pose-envelope.clearance-unresolved = 242.
     //  +  1 parts.fetch.geometry-not-brep (GLB-only authored `*-board` catalog
     //       records: glbUrl present, stepUrl absent by design) = 243.
+    //  +  1 cli.host-fs-unavailable (filesystem-backed feature invoked from a
+    //       runtime with no filesystem — the in-browser script engine)
     //  +  2 Geom2dGcc tangency outcomes: sketch.tangency.no-solution and
-    //       sketch.tangency.ambiguous = 245.
-    expect(catalogue.size).toBe(245);
+    //       sketch.tangency.ambiguous = 246.
+    expect(catalogue.size).toBe(246);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

@@ -13,16 +13,11 @@ import { loadFont, getFont } from 'replicad';
 import { KernelError } from '../intent/kernelError';
 import type { DiagnosticCode } from '../diagnostics/registry';
 
-/** Branded path type — distinguishes a font file path from a logical font name. */
-export type FontPath = string & { readonly _brand: 'FontPath' };
-export function fontPath(p: string): FontPath {
-  return p as FontPath;
-}
-export function isFontPath(v: unknown): v is FontPath {
-  // Branding is at the type level only; runtime detection is via "looks like a
-  // file path" + extension. `.ttf` is the only format we accept today.
-  return typeof v === 'string' && v.endsWith('.ttf');
-}
+// The `FontPath` brand lives in the pure sibling module so consumers that only
+// need the type (the modeling API surface) don't drag `node:fs` in with it.
+// Re-exported here so every existing import site keeps working unchanged.
+export { fontPath, isFontPath, type FontPath } from './fontPath';
+import { isFontPath, type FontPath } from './fontPath';
 
 let bundledLoaded = false;
 

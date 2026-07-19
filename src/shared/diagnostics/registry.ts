@@ -357,6 +357,15 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'cli',
     description: 'The user script raised an uncaught JavaScript exception during execution.',
   },
+  'cli.host-fs-unavailable': {
+    hintTemplate:
+      'This feature reads files from disk and is unavailable in the browser runtime. Run the script through the kernelCAD CLI or MCP server, or drop the call.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'error',
+    group: 'cli',
+    description:
+      'The script called a feature that needs filesystem access (referenceImage, lib.fromSTEP/fromSTL, fontPath fonts, parts catalog) from a runtime that has no filesystem — typically the in-browser script engine.',
+  },
   'cli.file-read': {
     hintTemplate:
       'kernelCAD could not read the script file. Either the path does not exist locally, or this server is hosted/remote and cannot see your filesystem — pass the script inline via `code` instead of `file`.',

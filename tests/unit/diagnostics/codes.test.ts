@@ -44,11 +44,16 @@ describe('diagnostic catalogue invariants', () => {
     // + 1 parts.fetch.geometry-not-brep (fetch_part hit a catalog record whose
     //   only geometry is a GLB display mesh — the authored `*-board` entries,
     //   which drop stepUrl by design). = 243.
+    // + 1 cli.host-fs-unavailable (a script called a filesystem-backed feature
+    //   — referenceImage, lib.fromSTEP/fromSTL/fromDXF/fromSVG, fontPath fonts,
+    //   parts catalog — from a runtime with no filesystem, i.e. the in-browser
+    //   script engine).
     // + 2 Geom2dGcc tangency outcomes: sketch.tangency.no-solution (no circle
     //   or line satisfies the requested tangencies) and
-    //   sketch.tangency.ambiguous (several do, and no hint said which). = 245.
-    expect(DIAGNOSTIC_CODES).toHaveLength(245);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(245);
+    //   sketch.tangency.ambiguous (several do, and no hint said which).
+    //   = 246.
+    expect(DIAGNOSTIC_CODES).toHaveLength(246);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(246);
   });
 
   it('every code has a non-empty hint template', () => {
