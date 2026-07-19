@@ -49,7 +49,7 @@ import {
 import { join, resolve, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
-import { NodeIO } from '@gltf-transform/core';
+import { optimizeGlb, gltfTransformBin } from './lib/optimizeGlb';
 
 /** Upper bound for a web-served board GLB. The decimation lands each board in
  *  the hundreds of KB; 1 MB is a generous ceiling that still stays far under
@@ -109,25 +109,8 @@ function parseArgs(argv: string[]) {
   return out;
 }
 
-/** Resolve the gltf-transform CLI binary installed as a devDependency. */
-function gltfTransformBin(repoRoot: string): string {
-  const bin = join(repoRoot, 'node_modules', '.bin', 'gltf-transform');
-  if (!existsSync(bin)) {
-    throw new Error(
-      `gltf-transform CLI not found at ${bin}. Install it: npm i -D @gltf-transform/cli`,
-    );
-  }
-  return bin;
-}
-
-/** Read a GLB and count its distinct materials — the proxy for "colors kept".
- *  The decimation preserves one material per component (palette merging is
- *  disabled), so a board keeps multiple materials. */
-async function countMaterials(glbPath: string): Promise<number> {
-  const io = new NodeIO();
-  const doc = await io.read(glbPath);
-  return doc.getRoot().listMaterials().length;
-}
+// Optimization lives in scripts/lib/optimizeGlb.ts — ONE path shared with the
+// marketing gallery build, so both surfaces ship GLBs built identically.
 
 /**
  * Compile + decimate every authored board to a web-ready GLB under
@@ -144,7 +127,7 @@ export async function buildBoardGlbs(
   if (!existsSync(cliPath)) {
     throw new Error(`kernelCAD CLI not built at ${cliPath}. Run: npm run build:cli`);
   }
-  const gltfBin = gltfTransformBin(repoRoot);
+  gltfTransformBin(repoRoot); // fail fast before compiling any board
 
   const glbDir = join(outDir, 'glb');
   mkdirSync(glbDir, { recursive: true });
@@ -164,38 +147,14 @@ export async function buildBoardGlbs(
       timeout: 300_000,
     });
 
-    // 2. Decimate — uncompressed, distinct materials preserved (no palette merge).
-    execFileSync(
-      gltfBin,
-      [
-        'optimize',
-        rawGlb,
-        finalGlb,
-        '--simplify-error',
-        '0.0005',
-        '--compress',
-        'false',
-        '--texture-compress',
-        'false',
-        '--palette',
-        'false',
-      ],
-      { stdio: ['ignore', 'pipe', 'pipe'], timeout: 120_000 },
-    );
-
-    // 3. Verify size + materials.
-    const glbBytes = statSync(finalGlb).size;
-    if (glbBytes >= MAX_GLB_BYTES) {
-      throw new Error(
-        `${board.id}: decimated GLB is ${(glbBytes / 1024).toFixed(0)} KB (>= ${MAX_GLB_BYTES / 1024} KB limit).`,
-      );
-    }
-    const materials = await countMaterials(finalGlb);
-    if (materials < 2) {
-      throw new Error(
-        `${board.id}: decimated GLB has ${materials} material(s); expected multiple (colors lost).`,
-      );
-    }
+    // 2-3. Decimate (uncompressed, per-component materials preserved), then
+    // verify size + materials. Shared implementation; flags are load-bearing.
+    const { bytes: glbBytes, materials } = await optimizeGlb(rawGlb, finalGlb, {
+      repoRoot,
+      label: board.id,
+      maxBytes: MAX_GLB_BYTES,
+      minMaterials: 2,
+    });
 
     // 4. Serve GLB, not STEP: patch the record, drop stepUrl, remove the STEP.
     const glbUrl = `${baseUrl.replace(/\/$/, '')}/glb/${board.id}.glb`;
