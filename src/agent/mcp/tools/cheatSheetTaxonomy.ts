@@ -90,6 +90,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
       'sheetMetal', 'sdf',
       'path', 'moveTo', 'lineTo', 'close', 'label', 'circle',
       'tangentArc', 'threePointsArc', 'sagittaArc', 'bulgeArc', 'radiusArc',
+      'tangentCircle', 'tangentLine',
       'smoothSpline', 'spline', 'nurbsSegment', 'hermiteG2',
     ],
   },

@@ -61,6 +61,8 @@ import { propagateTransformHistory } from '../../../kernel/naming/evolutionRecor
 import type { HistoryMap, FaceLineage } from '../../../kernel/naming/evolutionRecord';
 import { retagInstance } from '../../../kernel/backends/occt/patternHistory';
 import { HINT_TEMPLATES } from '../../../shared/diagnostics/registry';
+import type { DiagnosticCode } from '../../../shared/diagnostics/registry';
+import { TANGENCY_ERROR_PREFIX } from '../../../kernel/backends/occt/tangencySolver';
 
 // ---------------------------------------------------------------------------
 // Shared helpers: Vec3Param resolution + axis normalization
@@ -910,14 +912,28 @@ export class OcctLowerer implements FeatureLowerer {
           shape = OcctBackend.fromSketchCommands(commands as import('../../capture/sketch').SketchCommand[]);
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
-          // Narrow degenerate-arc cases (radiusArc-only for now) to the kept
-          // specific code; everything else collapses into the generic
-          // kernel-failed bucket.
+          // Narrow degenerate-arc cases (radiusArc-only for now) and the
+          // Geom2dGcc tangency failures to their specific codes; everything
+          // else collapses into the generic kernel-failed bucket. The
+          // tangency solver tags its own messages (see TANGENCY_ERROR_PREFIX)
+          // precisely so a "no such circle exists" answer reaches the agent as
+          // a named geometric outcome rather than an anonymous kernel crash.
           const isDegenerateArc = msg.startsWith('radiusArc:');
-          const code = isDegenerateArc ? 'feature.sketch.degenerate-arc' : 'feature.kernel-failed';
-          const hint = isDegenerateArc
-            ? 'The arc segment is degenerate. Try a larger radius, different endpoints, or another arc constructor (threePointsArc/sagittaArc).'
-            : 'Sketch construction failed — read the diagnostic message for the underlying error.';
+          const isTangency = msg.startsWith(TANGENCY_ERROR_PREFIX);
+          let code: DiagnosticCode;
+          let hint: string;
+          if (isTangency) {
+            code = msg.startsWith(`${TANGENCY_ERROR_PREFIX} ambiguous:`)
+              ? 'sketch.tangency.ambiguous'
+              : 'sketch.tangency.no-solution';
+            hint = HINT_TEMPLATES[code].template;
+          } else if (isDegenerateArc) {
+            code = 'feature.sketch.degenerate-arc';
+            hint = 'The arc segment is degenerate. Try a larger radius, different endpoints, or another arc constructor (threePointsArc/sagittaArc).';
+          } else {
+            code = 'feature.kernel-failed';
+            hint = 'Sketch construction failed — read the diagnostic message for the underlying error.';
+          }
           diagnostics.push({
             target: 'export-occt',
             code,

@@ -83,6 +83,25 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'An arc segment in a sketch is degenerate (radius too small, collinear endpoints, etc.).',
   },
+  // 2D tangency constructions (2)
+  'sketch.tangency.no-solution': {
+    hintTemplate:
+      'No circle or line satisfies the requested tangencies. Enlarge the radius so it can bridge the entities, move the entities closer, or relax the side qualifiers.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'enlarge the tangency radius, move the entities closer together, or relax the side qualifiers' },
+    defaultSeverity: 'error',
+    group: 'sketch',
+    description:
+      'A Geom2dGcc tangency construction has no solution — e.g. no circle of the given radius is tangent to two lines further apart than twice that radius, or the side qualifiers describe a configuration that cannot exist.',
+  },
+  'sketch.tangency.ambiguous': {
+    hintTemplate:
+      "Several solutions satisfy the tangency conditions. Pass opts.near: [x, y] beside the one you want, or tighten the entities' side qualifiers (outside / enclosed / enclosing).",
+    nextAction: { kind: 'fix-arg', field: 'near' },
+    defaultSeverity: 'error',
+    group: 'sketch',
+    description:
+      'A tangency construction resolved to more than one solution and no disambiguating hint was supplied, so the kernel refused to pick one.',
+  },
   // Text (2)
   'sketch.text.font-not-found': {
     hintTemplate:

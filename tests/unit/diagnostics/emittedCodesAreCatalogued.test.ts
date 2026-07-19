@@ -75,7 +75,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     ).toEqual([]);
   });
 
-  it('catalogue has exactly 243 codes', () => {
+  it('catalogue has exactly 245 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -171,8 +171,10 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  +  1 parts.fetch.geometry-not-brep (GLB-only authored `*-board` catalog
     //       records: glbUrl present, stepUrl absent by design) = 243.
     //  +  1 cli.host-fs-unavailable (filesystem-backed feature invoked from a
-    //       runtime with no filesystem — the in-browser script engine) = 244.
-    expect(catalogue.size).toBe(244);
+    //       runtime with no filesystem — the in-browser script engine)
+    //  +  2 Geom2dGcc tangency outcomes: sketch.tangency.no-solution and
+    //       sketch.tangency.ambiguous = 246.
+    expect(catalogue.size).toBe(246);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

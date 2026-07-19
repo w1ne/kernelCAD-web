@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 243 codes', () => {
+  it('emits exactly 245 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -45,11 +45,15 @@ describe('diagnostic catalogue invariants', () => {
     //   only geometry is a GLB display mesh — the authored `*-board` entries,
     //   which drop stepUrl by design). = 243.
     // + 1 cli.host-fs-unavailable (a script called a filesystem-backed feature
-    //   — referenceImage, lib.fromSTEP/fromSTL, fontPath fonts, parts catalog —
-    //   from a runtime with no filesystem, i.e. the in-browser script engine).
-    //   = 244.
-    expect(DIAGNOSTIC_CODES).toHaveLength(244);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(244);
+    //   — referenceImage, lib.fromSTEP/fromSTL/fromDXF/fromSVG, fontPath fonts,
+    //   parts catalog — from a runtime with no filesystem, i.e. the in-browser
+    //   script engine).
+    // + 2 Geom2dGcc tangency outcomes: sketch.tangency.no-solution (no circle
+    //   or line satisfies the requested tangencies) and
+    //   sketch.tangency.ambiguous (several do, and no hint said which).
+    //   = 246.
+    expect(DIAGNOSTIC_CODES).toHaveLength(246);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(246);
   });
 
   it('every code has a non-empty hint template', () => {
