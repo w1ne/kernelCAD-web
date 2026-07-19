@@ -53,6 +53,7 @@
     "cookbook:validate": "npx tsx scripts/cookbookValidate.ts",
     "cookbook:evaluate": "npx tsx scripts/cookbookEvaluate.ts",
     "cookbook:build": "npx tsx scripts/buildCookbookIndex.ts",
+    "docs:cheatsheet": "npx tsx scripts/buildCheatSheet.ts",
     "skill:out-of-scope": "npx tsx scripts/buildOutOfScopeSection.ts",
     "shopcheck:refresh": "npx tsx scripts/refreshCatalog.ts",
     "lint": "eslint .",
