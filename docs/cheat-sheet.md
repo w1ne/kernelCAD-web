@@ -49,6 +49,8 @@ The first call of any model: a solid primitive, or a 2D profile you will extrude
 | `PathBuilder.sagittaArc(x: Editable<number>, y: Editable<number>, sagitta: Editable<number>) => PathBuilder` | Arc by chord + perpendicular bulge height. |
 | `PathBuilder.bulgeArc(x: Editable<number>, y: Editable<number>, bulge: Editable<number>) => PathBuilder` | Arc by chord + DXF bulge factor (tan(angle/4)). |
 | `PathBuilder.radiusArc(x: Editable<number>, y: Editable<number>, radius: Editable<number>) => PathBuilder` | Arc by chord + explicit radius. |
+| `PathBuilder.tangentCircle(entities: TangentEntity2D[], opts?: { radius?: Editable<number>; near?: [Editable<number>, Editable<number>] }) => Sketch` | Closed circle TANGENT to other 2D geometry, solved by OCCT Geom2dGcc. |
+| `PathBuilder.tangentLine(a: TangentEntity2D, b: TangentEntity2D, opts?: { near?: [Editable<number>, Editable<number>] }) => PathBuilder` | Straight segment along the line TANGENT to two circles (OCCT Geom2dGcc_Lin2d2Tan) — the belt/pulley move. |
 | `PathBuilder.smoothSpline(x: Editable<number>, y: Editable<number>) => PathBuilder` | C1-smooth spline segment from current position to (x, y); inherits start tangent from prior segment. |
 | `PathBuilder.spline(points: Array<[Editable<number>, Editable<number>]>, opts?: { tension?: Editable<number> }) => PathBuilder` | NURBS Slice D — N-waypoint B-spline interpolation. |
 | `PathBuilder.nurbsSegment(controlPoints: Array<[Editable<number>, Editable<number>]>, opts?: { degree?: number; weights?: number[]; knots?: number[] }) => PathBuilder` | NURBS Slice D — explicit B-spline segment defined by a control polygon. |

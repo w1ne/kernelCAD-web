@@ -14,6 +14,7 @@
 // (PathBuilder, Sketch) and the `makePath` factory stay in
 // modeling/capture/sketch.ts; only the data-shape type lives here.
 import type { Param } from '../intent/types';
+import type { TangentEntitySpec, TangentNearSpec } from './tangency';
 
 export type SketchCommand =
   | { kind: 'moveTo'; x: Param; y: Param }
@@ -69,5 +70,34 @@ export type SketchCommand =
       kind: 'hermiteG2_2d';
       ax: Param; ay: Param; atx: Param; aty: Param; acx?: Param; acy?: Param;
       bx: Param; by: Param; btx: Param; bty: Param; bcx?: Param; bcy?: Param;
+    }
+  // 2D tangency constructions (OCCT Geom2dGcc_*). Both commands carry only a
+  // SPEC — the geometry is solved at lowering time by
+  // `kernel/backends/occt/tangencySolver.ts`, which rewrites them into
+  // primitive commands (`moveTo`/`lineTo`/`threePointsArc`) before any other
+  // consumer sees the list. Nothing downstream of `resolveTangency` should
+  // ever encounter these kinds; the consumers that could (fromSketchCommands,
+  // drawingFromCommands) call the resolver first and throw loudly otherwise.
+  //
+  // `tangentCircle` — closed circle tangent to `entities`. Two entities plus
+  // `radius` runs Geom2dGcc_Circ2d2TanRad (the sketch-fillet move); three
+  // entities with no `radius` runs Geom2dGcc_Circ2d3Tan. It is terminal, like
+  // `circle`: it expands to a full closed loop.
+  | {
+      kind: 'tangentCircle';
+      entities: TangentEntitySpec[];
+      radius?: Param;
+      near?: TangentNearSpec;
+    }
+  // `tangentLine` — straight segment along the line tangent to two circles
+  // (Geom2dGcc_Lin2d2Tan), spanning the two tangency points. The belt/pulley
+  // move. `startsPath` records whether the pen existed at capture time, which
+  // decides whether the resolver emits `moveTo`+`lineTo` or `lineTo`+`lineTo`.
+  | {
+      kind: 'tangentLine';
+      a: TangentEntitySpec;
+      b: TangentEntitySpec;
+      near?: TangentNearSpec;
+      startsPath: boolean;
     }
   | { kind: 'close' };

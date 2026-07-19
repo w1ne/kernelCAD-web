@@ -19,6 +19,7 @@
 
 import * as replicad from 'replicad';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
+import { resolveTangency } from './tangencySolver';
 
 /**
  * Build a `replicad.Drawing` from a SketchCommand[]. The array must start
@@ -29,7 +30,12 @@ import type { SketchCommand } from '../../../shared/capture/sketchCommand';
  * @throws {Error} If the command list does not begin with `moveTo`, has no
  *   `close`, or includes a segment kind unsupported by the replicad 2D pen.
  */
-export function drawingFromCommands(commands: readonly SketchCommand[]): replicad.Drawing {
+export function drawingFromCommands(input: readonly SketchCommand[]): replicad.Drawing {
+  // Solve any tangency construction FIRST, so the pen below only ever sees
+  // primitive segment kinds. A no-solution / ambiguous construction throws a
+  // `tangency:`-prefixed error here, which the lowerer maps to the
+  // `sketch.tangency.*` diagnostics.
+  const commands = resolveTangency(input);
   const closeIdx = commands.findIndex(c => c.kind === 'close');
   if (closeIdx === -1) throw new Error('drawingFromCommands: missing close');
   const first = commands[0];

@@ -10,6 +10,7 @@ import type { RuntimeMesh } from '../runtimeMesh';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { isSameEdge } from './edgeQueries';
 import { buildNurbsSketchOnPlane, hasNurbsSegments } from './pathNurbsLowerer';
+import { resolveTangency } from './tangencySolver';
 import { encodeBinaryStl } from './exportStlBinary';
 import { verifyWatertight, stitchCracks, dropDegenerateTriangles, type WatertightReport } from './meshHeal';
 import { resolveColor } from '../../../shared/render/palette';
@@ -412,7 +413,13 @@ export class OcctBackend implements ShapeBackend {
    *
    * @throws {Error} If commands is empty, has no close command, or first command is not moveTo.
    */
-  static fromSketchCommands(commands: SketchCommand[]): OcctBackend {
+  static fromSketchCommands(input: SketchCommand[]): OcctBackend {
+    // Solve tangency constructions before ANY other inspection: the NURBS
+    // detection below, the stored `_commands`, and the replicad pen must all
+    // see a list of primitive segment kinds only. Doing it here rather than
+    // in each branch is what keeps tangency geometry computed in exactly one
+    // place (see kernel/backends/occt/tangencySolver.ts).
+    const commands = resolveTangency(input);
     if (commands.length === 0) {
       throw new Error('OcctBackend.fromSketchCommands: empty commands array.');
     }
