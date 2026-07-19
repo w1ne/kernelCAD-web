@@ -113,7 +113,7 @@ ${body}
  *
  * It reveals the Run button, then pulls in the island once the page has
  * finished loading so each example can draw its prebaked model. That import is
- * three.js and a GLTF loader; the 10.8 MB engine is a separate module the
+ * three.js and OrbitControls; the 10.8 MB engine is a separate module the
  * island does not touch until someone presses Run, so "show the model" and
  * "download the kernel" stay on different schedules.
  *
@@ -291,7 +291,7 @@ function readManifest(): DocsModelManifest | null {
 }
 
 async function main(): Promise<void> {
-  // The staleness gate. A page whose GLB was baked from older source is a page
+  // The staleness gate. A page whose model was baked from older source is a page
   // that shows geometry which does not match the code beside it, and looks
   // completely fine doing it. Refusing to build is the only honest response.
   const manifest = readManifest();

@@ -7,10 +7,12 @@
 // Two things load on two different schedules, and keeping them apart is the
 // point of this file:
 //
-//   - This module (three.js + a GLTF loader, a few hundred KB) is imported
-//     after the page has painted, so every example already shows its geometry.
-//     The model itself is a build artifact — see
-//     site/scripts/prebake-docs-models.ts — of the same source printed above it.
+//   - This module (three.js and OrbitControls) is imported after the page has
+//     painted, so every example already shows its geometry and can be rotated
+//     straight away. The model itself is a build artifact — see
+//     site/scripts/prebake-docs-models.ts — of the same source printed above it,
+//     in this repo's own mesh format rather than GLB, because a glTF parser cost
+//     more than everything else here put together.
 //   - The engine (site/island/docs-worker.ts, ~11 MB of OCCT wasm) is not
 //     touched until someone presses Run. Prebaking exists precisely so nobody
 //     pays for that just to look at a page.
@@ -20,8 +22,8 @@
 // runs and nothing above is missing.
 
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { decodeDocsMesh } from './docsMesh';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { docsMaterial } from './docsMaterial';
 import type { DocsAppearance } from './docsAppearance';
@@ -159,6 +161,12 @@ function ensureStage(root: HTMLElement): Stage | null {
   // #2b3137 at metalness 0.28 came out as a featureless charcoal wedge with the
   // fillet and the shell wall both invisible. Lights cannot fix that; only
   // something to reflect can.
+  //
+  // Replacing it with a generated gradient was tried, to save the 1.7 KB
+  // gzipped this import costs. Both an 8-bit and a float equirect rendered the
+  // parts materially darker than this does — the 8-bit one by 2.7x — and the
+  // shell-and-fillet example went back to being an unreadable wedge. 1% of the
+  // bundle is not worth re-introducing the bug this branch exists to fix.
   const pmrem = new THREE.PMREMGenerator(renderer);
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
   pmrem.dispose();
@@ -307,31 +315,31 @@ async function showPrebaked(root: HTMLElement): Promise<void> {
   const model = JSON.parse(raw) as PrebakedModel;
   const response = await fetch(model.url);
   if (!response.ok) throw new Error(`${model.url} — HTTP ${response.status}`);
-  const gltf = await new GLTFLoader().parseAsync(await response.arrayBuffer(), '');
+  const features = decodeDocsMesh(await response.arrayBuffer());
 
-  // Node order is bake order, and `feature-N` is stamped at bake time, so the
-  // appearance list lines up with the meshes by name rather than by traversal
-  // luck.
-  const meshes: THREE.Mesh[] = [];
-  gltf.scene.traverse((node) => {
-    if (node instanceof THREE.Mesh) meshes.push(node);
-  });
-  meshes.sort((a, b) => a.name.localeCompare(b.name, 'en', { numeric: true }));
-  if (meshes.length !== model.appearances.length) {
+  // File order is bake order, so the appearance list lines up by index. The GLB
+  // version had to stamp `feature-N` names and sort by them, because a glTF
+  // scene graph gives no traversal-order guarantee worth relying on.
+  if (features.length !== model.appearances.length) {
     throw new Error(
-      `${model.url} has ${meshes.length} bodies, manifest describes ${model.appearances.length}`,
+      `${model.url} has ${features.length} bodies, manifest describes ${model.appearances.length}`,
     );
   }
-  meshes.forEach((mesh, i) => {
-    const old = mesh.material;
-    mesh.material = docsMaterial(model.appearances[i]);
-    if (Array.isArray(old)) old.forEach((m) => m.dispose());
-    else old.dispose();
-  });
 
   const stage = ensureStage(root);
   if (!stage) return;
-  stage.bodies.add(gltf.scene);
+  features.forEach((feature, i) => {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(feature.positions, 3));
+    geometry.setAttribute('normal', new THREE.BufferAttribute(feature.normals, 3));
+    geometry.setIndex(new THREE.BufferAttribute(feature.indices, 1));
+    const mesh = new THREE.Mesh(geometry, docsMaterial(model.appearances[i]));
+    if (feature.transform) {
+      mesh.matrixAutoUpdate = false;
+      mesh.matrix.fromArray(feature.transform);
+    }
+    stage.bodies.add(mesh);
+  });
   frame(stage, { min: model.bounds.min as Bounds['min'], max: model.bounds.max as Bounds['max'] });
 }
 

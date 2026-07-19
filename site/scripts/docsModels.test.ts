@@ -3,7 +3,7 @@
 //
 // The gate on prebaked geometry.
 //
-// A GLB is a copy of an example's output, and the dangerous failure is not a
+// A prebaked model is a copy of an example's output, and the dangerous failure is not a
 // crash — it is a page that renders a model built from source the reader is no
 // longer looking at. Nothing about that looks wrong. So this file does two
 // things: it proves `staleModels` actually detects the drift (with fixtures, so
@@ -17,6 +17,7 @@ import { fileURLToPath } from 'node:url';
 import { buildDocsPages } from '../../src/docs/liveDocs';
 import {
   DOCS_MODEL_DIR,
+  DOCS_MODEL_EXT,
   DOCS_MODEL_MANIFEST,
   hashExampleCode,
   staleModels,
@@ -33,7 +34,7 @@ function freshManifest(): DocsModelManifest {
   return {
     models: withExamples.map((page): DocsModel => ({
       slug: page.slug,
-      url: `/${DOCS_MODEL_DIR}/${page.slug}.glb`,
+      url: `/${DOCS_MODEL_DIR}/${page.slug}${DOCS_MODEL_EXT}`,
       codeHash: hashExampleCode(page.example!.code),
       bytes: 2048,
       bounds: { min: [0, 0, 0], max: [1, 1, 1] },
@@ -52,7 +53,7 @@ describe('prebaked model staleness gate', () => {
   });
 
   it('rejects a model built from different source', () => {
-    // The whole reason this file exists: an example edited after its GLB was
+    // The whole reason this file exists: an example edited after its model was
     // baked. The bytes are fine, the page renders, the picture is a lie.
     const manifest = freshManifest();
     const drifted = {
@@ -102,8 +103,8 @@ describe('the prebaked models on disk', () => {
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as DocsModelManifest;
     expect(staleModels(pages, manifest)).toEqual([]);
     for (const model of manifest.models) {
-      const glb = path.join(SITE, DOCS_MODEL_DIR, `${model.slug}.glb`);
-      expect(existsSync(glb), `${model.slug}.glb is in the manifest but not on disk`).toBe(true);
+      const file = path.join(SITE, DOCS_MODEL_DIR, `${model.slug}${DOCS_MODEL_EXT}`);
+      expect(existsSync(file), `${model.slug}${DOCS_MODEL_EXT} is in the manifest but not on disk`).toBe(true);
     }
   });
 });

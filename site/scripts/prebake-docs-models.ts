@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
-// Builds one GLB per docs example so a reader sees the model on page load
-// instead of an empty canvas with a Run button under it.
+// Builds one model file per docs example so a reader sees the geometry on page
+// load instead of an empty canvas with a Run button under it.
 //
 // Why not just run the engine on load: the OCCT wasm is ~11 MB. Downloading it
 // before first paint would make every docs page slower in exchange for a
@@ -18,16 +18,22 @@
 // mesh and bakes PBR materials the live path does not use. Same selection rule
 // in, same picture out.
 //
-// Colours are NOT baked into the GLB. They travel as tokens in the manifest and
-// the page resolves them with the same `resolveColor` the live renderer calls,
-// so a prebaked body and a re-run body cannot come out different shades.
+// The output is site/island/docsMesh.ts's format, not GLB. Nothing in glTF was
+// being used and the reader cost 26.5 KB gzipped — 17% of the island bundle —
+// which readers paid on every docs page to parse a file this repo also writes.
+// Writing the arrays down directly deletes both the loader and a format
+// conversion.
+//
+// Colours are NOT baked into the model. They travel as tokens in the manifest
+// and the page resolves them with the same `resolveColor` the live renderer
+// calls, so a prebaked body and a re-run body cannot come out different shades.
 
 import { mkdirSync, mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BufferAttribute, BufferGeometry, Matrix4, Mesh, Scene } from 'three';
-import { GLTFExporter, mergeVertices } from 'three-stdlib';
+import { BufferAttribute, BufferGeometry } from 'three';
+import { mergeVertices } from 'three-stdlib';
 import { buildDocsPages, type DocsPage } from '../../src/docs/liveDocs';
 import { loadScriptFeatures } from '../../src/modeling/runtime/scriptLoader';
 import {
@@ -35,8 +41,10 @@ import {
   selectTerminalFeatures,
 } from '../../src/modeling/capture/featureMeshing';
 import { appearanceOf, type DocsAppearance } from '../island/docsAppearance';
+import { encodeDocsMesh, type DocsMeshData } from '../island/docsMesh';
 import {
   DOCS_MODEL_DIR,
+  DOCS_MODEL_EXT,
   DOCS_MODEL_MANIFEST,
   hashExampleCode,
   staleModels,
@@ -47,13 +55,13 @@ import {
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
 interface Baked {
-  glb: Buffer;
+  mesh: Buffer;
   bounds: { min: number[]; max: number[] };
   appearances: DocsAppearance[];
 }
 
 /**
- * Evaluate one example and turn its drawn features into a GLB.
+ * Evaluate one example and turn its drawn features into a model file.
  *
  * The script runs from a temp file because the node script loader reads source
  * off disk. Examples import nothing, so the directory it sits in is irrelevant.
@@ -73,7 +81,7 @@ async function bake(page: DocsPage, code: string): Promise<Baked> {
       throw new Error(`features failed to mesh: ${meshed.failedFeatureIds.join(', ')}`);
     }
 
-    const scene = new Scene();
+    const drawn: DocsMeshData[] = [];
     const min = [Infinity, Infinity, Infinity];
     const max = [-Infinity, -Infinity, -Infinity];
     const appearances: DocsAppearance[] = [];
@@ -116,31 +124,25 @@ async function bake(page: DocsPage, code: string): Promise<Baked> {
       // OCCT meshes every face on its own, so shared edges carry duplicate
       // coordinate-equal vertices. Welding is lossless — differing normals keep
       // hard edges split — and it is most of the reason these files are small.
-      const mesh = new Mesh(mergeVertices(geometry));
-      mesh.name = `feature-${appearances.length}`;
-      if (feature.transform) mesh.applyMatrix4(new Matrix4().fromArray([...feature.transform]));
-      scene.add(mesh);
+      const welded = mergeVertices(geometry);
+      // The transform travels with the feature rather than being applied here.
+      // The live path builds a Group and sets its matrix from the same 16
+      // numbers, so leaving it unapplied is what keeps the two paths identical
+      // instead of merely close.
+      drawn.push({
+        positions: welded.getAttribute('position').array as Float32Array,
+        normals: welded.getAttribute('normal').array as Float32Array,
+        indices: welded.getIndex()!.array as Uint16Array | Uint32Array,
+        transform: feature.transform ? Float32Array.from(feature.transform) : null,
+      });
       appearances.push(appearanceOf(feature.color, feature.material));
     }
 
-    if (scene.children.length === 0) {
+    if (drawn.length === 0) {
       throw new Error('example produced no drawable geometry');
     }
 
-    const exporter = new GLTFExporter();
-    const buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
-      exporter.parse(
-        scene,
-        (result) => {
-          if (result instanceof ArrayBuffer) resolve(result);
-          else reject(new Error('GLTFExporter returned a non-binary result'));
-        },
-        reject,
-        { binary: true },
-      );
-    });
-
-    return { glb: Buffer.from(buffer), bounds: { min, max }, appearances };
+    return { mesh: Buffer.from(encodeDocsMesh(drawn)), bounds: { min, max }, appearances };
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -155,8 +157,8 @@ export async function prebakeDocsModels(): Promise<DocsModel[]> {
   for (const page of pages) {
     const code = page.example!.code;
     const baked = await bake(page, code);
-    const file = `${page.slug}.glb`;
-    writeFileSync(path.join(outDir, file), baked.glb);
+    const file = `${page.slug}${DOCS_MODEL_EXT}`;
+    writeFileSync(path.join(outDir, file), baked.mesh);
     models.push({
       slug: page.slug,
       url: `/${DOCS_MODEL_DIR}/${file}`,
@@ -165,7 +167,7 @@ export async function prebakeDocsModels(): Promise<DocsModel[]> {
       bounds: baked.bounds,
       appearances: baked.appearances,
     });
-    console.log(`  ${page.slug}.glb — ${baked.glb.length.toLocaleString()} bytes`);
+    console.log(`  ${file} — ${baked.mesh.length.toLocaleString()} bytes`);
   }
 
   const manifest: DocsModelManifest = { models };
