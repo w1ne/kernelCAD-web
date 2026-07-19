@@ -28,6 +28,9 @@ export default defineConfig({
             'scripts/**/*.test.ts',
             'site/functions/**/*.test.ts',
             'site/scripts/**/*.test.ts',
+            // Without this the island tests are collected by nothing and report
+            // no failures because they never run.
+            'site/island/**/*.test.ts',
         ],
         exclude: ['**/node_modules/**', '**/dist/**', 'tests/playwright/**', 'playwright-report/**', 'test-results/**'],
         deps: {

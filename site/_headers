@@ -14,3 +14,14 @@
   Cache-Control: public, max-age=3600
 /og-image.png
   Cache-Control: public, max-age=86400
+/docs-island.js
+  Cache-Control: public, max-age=3600
+/docs-worker.js
+  Cache-Control: public, max-age=3600
+/docs.css
+  Cache-Control: public, max-age=3600
+# NOT immutable: the path has no content hash, so a kernel rebuild reuses this
+# URL. `immutable` would pin readers to a stale 10.8 MB wasm with no way to
+# invalidate it short of renaming the file.
+/replicad_single.wasm
+  Cache-Control: public, max-age=86400

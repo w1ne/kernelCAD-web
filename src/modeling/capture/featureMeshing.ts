@@ -673,6 +673,29 @@ function meshIdentityFields(args: {
   };
 }
 
+/**
+ * The features that ARE the result: those no other feature consumes.
+ *
+ * `meshFeaturesPerFeature` returns a mesh for every node in the intent DAG,
+ * intermediates included — `box(…).shell(…).fillet(…)` yields box_1, shell_1
+ * AND fillet_1. A viewer that draws all of them stacks the original box on top
+ * of the finished body, and the model stops responding to edits while still
+ * looking plausible. Drawing only the terminal features is what "render the
+ * model" means.
+ *
+ * It is a set, not "the last record": a solved assembly terminates in one
+ * feature per part.
+ */
+export function selectTerminalFeatures(
+  features: readonly FeatureMesh[],
+): FeatureMesh[] {
+  const consumed = new Set<FeatureId>();
+  for (const feature of features) {
+    for (const predecessor of feature.predecessors) consumed.add(predecessor);
+  }
+  return features.filter((feature) => !consumed.has(feature.featureId));
+}
+
 export async function meshFeaturesPerFeature(
   records: readonly FeatureRecord[],
   paramTable?: import('../../shared/runtime/paramTable').ParamTable,

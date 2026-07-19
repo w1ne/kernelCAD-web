@@ -74,8 +74,8 @@
     "proof:assembly-contract": "npm run proof:foundation && npm test -- tests/unit/assemblies/assemblyCapture.test.ts tests/unit/backends/occt/assemblyLowerer.test.ts tests/integration/examples/assemblyExamples.test.ts tests/unit/skill/skillGlobalsDrift.test.ts",
     "proof:mates": "npm run proof:assembly-contract && npm test -- src/modeling/mates/ src/shared/numeric/ tests/unit/assemblies/solvedModelValidate.test.ts tests/unit/assemblies/solvedModelGroundingGates.test.ts tests/integration/examples/desktop3axisMates.test.ts tests/integration/examples/desktop3axisMates.interference.test.ts tests/integration/mcp/addConnector.test.ts tests/integration/mcp/addMate.test.ts tests/integration/mcp/listMates.test.ts tests/integration/mcp/validateAssembly.test.ts tests/integration/mcp/solveMates.test.ts tests/unit/cli/evaluateValidateGate.test.ts",
     "test:e2e": "playwright test",
-    "site:dev": "npx tsx --tsconfig tsconfig.app.json site/scripts/build-pricing.ts && npm run site:build-island && npx tsx site/scripts/build-demo.ts && npx tsx site/scripts/build-gallery.ts && bash site/scripts/link-public.sh && cd site && python3 -m http.server 8000",
-    "site:build": "npx tsx --tsconfig tsconfig.app.json site/scripts/build-pricing.ts && npm run site:build-island && npx tsx site/scripts/build-demo.ts && npx tsx site/scripts/build-gallery.ts && node site/scripts/render-brand.mjs",
+    "site:dev": "npx tsx --tsconfig tsconfig.app.json site/scripts/build-pricing.ts && npm run site:build-island && npx tsx site/scripts/build-demo.ts && npx tsx site/scripts/build-gallery.ts && npm run site:build-docs && bash site/scripts/link-public.sh && cd site && python3 -m http.server 8000",
+    "site:build": "npx tsx --tsconfig tsconfig.app.json site/scripts/build-pricing.ts && npm run site:build-island && npx tsx site/scripts/build-demo.ts && npx tsx site/scripts/build-gallery.ts && npm run site:build-docs && node site/scripts/render-brand.mjs",
     "site:build-pricing": "npx tsx --tsconfig tsconfig.app.json site/scripts/build-pricing.ts",
     "site:build-island": "vite build --config vite.pricing-island.config.ts",
     "site:render-brand": "node site/scripts/render-brand.mjs",
@@ -98,7 +98,9 @@
     "capture-demo:v0.7.1-patterns": "npx tsx scripts/captureDemo.ts --script eval/tasks/grid-heat-sink-fin-array/solution-expert.kcad.ts --prompt scripts/demo-prompts/v0.7.1-grid-heat-sink-fin-array.md --module v0.7.1 --output docs/demos/v0.7.1/grid-heat-sink-fin-array/ --hero-artifact grid-heat-sink-fin-array",
     "lint-demos": "npx tsx scripts/lint-demos.ts",
     "portfolio:validate": "npm test -- tests/integration/portfolio/portfolioBundle.test.ts tests/unit/portfolio/portfolioMeta.test.ts",
-    "portfolio:capture": "npx tsx scripts/capturePortfolioEntry.ts"
+    "portfolio:capture": "npx tsx scripts/capturePortfolioEntry.ts",
+    "site:build-docs": "npx tsx site/scripts/build-docs.ts && vite build --config vite.docs-island.config.ts && npx tsx site/scripts/verify-docs-bundle.ts",
+    "docs:site": "npm run site:build-docs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.92.0",
