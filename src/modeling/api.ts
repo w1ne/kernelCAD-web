@@ -38,6 +38,12 @@ import {
   fromSTL as libFromSTL,
   type FromSTLOptions,
 } from './parts/fromMeshFormats';
+import {
+  fromDXF as libFromDXF,
+  fromSVG as libFromSVG,
+  type FromDXFOptions,
+  type FromSVGOptions,
+} from './parts/fromVectorFormats';
 import { fetchPartHost, type FetchPartOpts } from './parts/fetchPart';
 import {
   findPartHost,
@@ -95,6 +101,30 @@ export interface PartsLib {
    * A non-watertight mesh is refused unless `opts.allowOpen` is set.
    */
   fromSTL(path: string, opts?: FromSTLOptions): Promise<Shape>;
+  /**
+   * Import a 2D DXF drawing as closed profiles.
+   *
+   * Returns `Sketch[]` ALWAYS — largest enclosed area first — because a
+   * drawing routinely holds an outline plus its holes, and nothing in the
+   * file says which loop is which. Chain `.extrude(d)` on the one you want:
+   * `const [outline, ...holes] = await lib.fromDXF('plate.dxf')`.
+   *
+   * Reads LINE, ARC, CIRCLE, LWPOLYLINE, POLYLINE. SPLINE/ELLIPSE/INSERT are
+   * refused with a diagnostic naming the entity and line number rather than
+   * dropped. `$INSUNITS` sets the scale; absent or Unitless means mm.
+   */
+  fromDXF(path: string, opts?: FromDXFOptions): Promise<Sketch[]>;
+  /**
+   * Import an SVG drawing as closed profiles. Same `Sketch[]` contract as
+   * `fromDXF`.
+   *
+   * SVG's Y axis points down and is reflected about the viewBox top so the
+   * profile lands upright in positive Y. Scale comes from `viewBox` plus a
+   * physically-dimensioned `width`; without one a user unit is a CSS pixel
+   * (1/96 in). Béziers and true ellipses are chord-approximated within
+   * `opts.curveTolerance` mm; lines and circular arcs are exact.
+   */
+  fromSVG(path: string, opts?: FromSVGOptions): Promise<Sketch[]>;
   findPart(query: string, opts?: FindPartOpts): Promise<FindPartResult>;
   fetchPart(idOrQuery: string, opts?: FetchPartOpts): Promise<Shape>;
   standard: StandardParts;
@@ -906,6 +936,8 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       fromSTEP: (path) => libFromSTEP({ session, scriptDir: ctx.scriptDir }, path),
       fromBREP: (path) => libFromBREP({ session, scriptDir: ctx.scriptDir }, path),
       fromSTL: (path, opts) => libFromSTL({ session, scriptDir: ctx.scriptDir }, path, opts ?? {}),
+      fromDXF: (path, opts) => libFromDXF({ session, scriptDir: ctx.scriptDir }, path, opts ?? {}),
+      fromSVG: (path, opts) => libFromSVG({ session, scriptDir: ctx.scriptDir }, path, opts ?? {}),
       findPart: (query, opts) => findPartHost(query, opts ?? {}),
       fetchPart: (idOrQuery, opts) =>
         fetchPartHost(
