@@ -572,9 +572,13 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 .spline(points: Array<[Editable<number>, Editable<number>]>, opts?: { tension?: Editable<number> }): PathBuilder    // (Slice D) N-waypoint B-spline interpolation through every point. See kernelcad-nurbs.
 .nurbsSegment(controlPoints: Array<[Editable<number>, Editable<number>]>, opts?: { degree?: number; weights?: number[]; knots?: number[] }): PathBuilder  // (Slice D) Explicit B-spline control polygon — controlPoints[0] must match current pen. See kernelcad-nurbs.
 .hermiteG2(a: HermiteEndpoint2D, b: HermiteEndpoint2D): PathBuilder  // (Slice D) 2D quintic-Hermite G2 transition. See kernelcad-nurbs.
+.tangentCircle(entities: TangentEntity2D[], opts?: { radius?: Editable<number>; near?: [Editable<number>, Editable<number>] }): Sketch  // Circle TANGENT to other geometry. 2 entities + opts.radius = sketch-fillet; 3 entities, no radius = through-three. Terminal, like circle().
+.tangentLine(a: TangentEntity2D, b: TangentEntity2D, opts?: { near?: [Editable<number>, Editable<number>] }): PathBuilder  // Segment along the line tangent to two circles — the belt/pulley move. Both entities must be circles.
 .label(name: string): PathBuilder               // Tag the prior segment for fillet/chamfer/shell by name.
 .close(): Sketch                                // Close path; returns a Sketch.
 ```
+
+`tangentCircle` / `tangentLine` take entities of the form `{ kind: 'line', from: [x,y], to: [x,y] }` (an INFINITE line; `from`->`to` sets direction) or `{ kind: 'circle', center: [x,y], radius }`, each with an optional `side: 'outside'` (default) `| 'enclosed' | 'enclosing' | 'unqualified'`. Points are not supported — the bundled OCCT does not bind `Handle_Geom2d_Point`. These constructions have SEVERAL solutions (a radius-r circle tangent to two perpendicular lines has four, one per quadrant). `side` filters first, `opts.near: [x,y]` then picks the closest solution, and if more than one still survives the build FAILS with `sketch.tangency.ambiguous` listing every candidate rather than guessing. No such construction existing fails with `sketch.tangency.no-solution` naming the geometric reason.
 
 Every PathBuilder coord and scalar accepts `Editable<number>` (`number | ParamRef<number>`), so symbolic params survive into capture and the dispatcher's pre-resolve substitutes them at lower time. Build derived dimensions with the ParamRef arithmetic methods (`.add`, `.subtract`, `.multiply`, `.divide`, `.negate`).
 
