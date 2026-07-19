@@ -11,6 +11,23 @@ const ROOT = resolve(__dirname, '../../../');
 
 /** Directories whose files reference MCP tool names by bare/backticked string. */
 const REFERENCE_DIRS = ['src/agent/skills', 'eval', 'docs'];
+
+/**
+ * Individual teaching-prose files outside REFERENCE_DIRS.
+ *
+ * `listApi.ts` is the prose `lookup_api` hands straight to agents, and it sat
+ * unscanned while carrying a retired tool name (`list_faces`). That only
+ * surfaced when `docs/cheat-sheet.md` — GENERATED from this very prose — landed
+ * in an already-scanned directory. The gate was checking the copy and not the
+ * original.
+ *
+ * Scoped to specific files rather than all of `src/agent/mcp/tools`: the sibling
+ * implementations (`inspect.ts`, `verify.ts`, `query.ts`, `export.ts`) carry
+ * legitimate "Replaces inspect_assembly, list_faces, …" headers naming exactly
+ * what they superseded. Scanning the whole directory produced 28 such false
+ * positives — a gate everyone learns to ignore is worse than no gate.
+ */
+const REFERENCE_FILES = ['src/agent/mcp/tools/listApi.ts'];
 const REFERENCE_EXTS = ['.md', '.ts', '.json'];
 
 function walk(dir: string, acc: string[] = []): string[] {
@@ -30,7 +47,10 @@ function walk(dir: string, acc: string[] = []): string[] {
 }
 
 function referenceFiles(): string[] {
-  return REFERENCE_DIRS.flatMap(d => walk(join(ROOT, d)));
+  return [
+    ...REFERENCE_DIRS.flatMap(d => walk(join(ROOT, d))),
+    ...REFERENCE_FILES.map(f => join(ROOT, f)),
+  ];
 }
 
 describe('tool-name consistency', () => {

@@ -18,9 +18,11 @@ export interface ListApiInput {
    * or description match (token substring, case-insensitive) are returned, WITH
    * full descriptions. When omitted, every entry is returned in COMPACT form
    * (name + signature + a short blurb, no full description) — the whole API
-   * surface is ~117 entries / ~14k tokens of prose at full detail, which alone
-   * can exhaust a generation's token budget. Default-compact keeps discovery
-   * cheap; pass a query (e.g. 'sweep handle tube') to drill into a few entries.
+   * surface is `API_ENTRY_COUNT` entries (see that const — deliberately derived,
+   * because the figure written here was stale for months) / ~14k tokens of prose
+   * at full detail, which alone can exhaust a generation's token budget.
+   * Default-compact keeps discovery cheap; pass a query (e.g. 'sweep handle
+   * tube') to drill into a few entries.
    */
   query?: string;
 }
@@ -62,7 +64,7 @@ export interface FeatureKindFaceLabels {
 export interface ConstraintCapability {
   /** MCP tools that operate on side-effect-free sketch constraint payloads. */
   tools: readonly string[];
-  /** Constraint type vocabulary accepted by list_constraints/add_constraint/solve_sketch. */
+  /** Constraint type vocabulary accepted by inspect({ of: 'constraints' })/add_constraint/solve_sketch. */
   supportedTypes: readonly ConstraintType[];
 }
 
@@ -112,7 +114,7 @@ export const GLOBALS: ApiEntry[] = [
   { name: 'helix', signature: '({ radius, pitch, turns, axis?, pointsPerTurn?, startAngle? }) => [number, number, number][]', description: 'Polyline helix rail for `Sketch.sweep`. Default axis Z, 32 points per turn.' },
   { name: 'selectEdges', signature: '(shape, query?) => Promise<ShapeList<EdgeSegment>>', description: 'Pre-select edges by EdgeQuery. Awaitable; lowers the shape lazily. Returns a `ShapeList` — an `EdgeSegment[]` (accepted anywhere fillet/chamfer take one) carrying the selector algebra on top: `.sortBy` / `.groupBy` / `.filterBy` / `.filterByPosition` / `.sortByDistance`, and the `.first` / `.last` / `.at(i)` / `.take(n)` accessors. Each `EdgeSegment` also carries `radius` when `curveType === "CIRCLE"`.' },
   { name: 'selectEdge', signature: '(shape, query) => Promise<EdgeSegment>', description: 'Like selectEdges but throws if zero or multiple edges match. Use for unambiguous single-edge selection.' },
-  { name: 'select', signature: '<T>(items: Iterable<T>) => ShapeList<T>', description: 'Wrap any array of topology query results in a `ShapeList` so the selector algebra applies — face summaries from `list_faces`, `ResolvedEntity[]` from `q.face(...).evaluate(scene)`, or a hand-assembled list. `selectEdges` already returns a ShapeList, so `select` is for every other result source. The algebra is pure TypeScript over already-resolved descriptors: it reorders and partitions the SAME objects, so `EdgeSegment.id` and the `@kc[...]` ref / OCCT handle on a `ResolvedEntity` survive a sort or a group untouched. Compose it with (do not replace) EdgeQuery/FaceQuery: let the declarative query filter inside OCCT first, then rank or bucket the resolved list here.' },
+  { name: 'select', signature: '<T>(items: Iterable<T>) => ShapeList<T>', description: 'Wrap any array of topology query results in a `ShapeList` so the selector algebra applies — face summaries from `inspect({ of: \'faces\' })`, `ResolvedEntity[]` from `q.face(...).evaluate(scene)`, or a hand-assembled list. `selectEdges` already returns a ShapeList, so `select` is for every other result source. The algebra is pure TypeScript over already-resolved descriptors: it reorders and partitions the SAME objects, so `EdgeSegment.id` and the `@kc[...]` ref / OCCT handle on a `ResolvedEntity` survive a sort or a group untouched. Compose it with (do not replace) EdgeQuery/FaceQuery: let the declarative query filter inside OCCT first, then rank or bucket the resolved list here.' },
   { name: 'lib', signature: '{ fromSTEP(path: string): Promise<Shape>; fromBREP(path: string): Promise<Shape>; fromSTL(path: string, opts?: { tolerance?: number; allowOpen?: boolean; maxTriangles?: number }): Promise<Shape> }', description: 'Parts library namespace. Every `from*` call resolves `path` relative to the calling .kcad.ts script (absolute paths also accepted) and returns a Shape that composes with translate/rotate/color/arm.part(...) like any primitive. `lib.fromSTEP(path)` imports STEP — the default for vendor catalog parts (servos, bearings, fasteners) so geometric fidelity matches the real component instead of being hand-authored from box/cylinder. `lib.fromBREP(path)` imports OCCT native .brep: exact analytic surfaces plus full topology with no schema translation and no tessellation, so it is lossless and every downstream op (fillet, chamfer, shell, face queries) is valid — it is the right format for round-tripping kernelCAD geometry between processes, but it is OCCT-specific, so use STEP to interchange with other CAD systems. `lib.fromSTL(path, opts?)` imports an ASCII or binary STL: BE AWARE THIS IS A MESH, NOT ANALYTIC B-REP. The triangles are sewn back into topology and promoted to a solid when they close, so booleans, volume, mass properties, bbox and export all work — but the faces remain planar facets, so a hole that was a cylinder in the source CAD is now a fan of quads, and operations needing analytic surfaces (fillet/chamfer on a "curved" edge, canonical face refs, hole detection) will not behave as they do on STEP/BREP input. Prefer fromSTEP/fromBREP whenever the source is available. A non-watertight mesh is REFUSED with `kernel-failed.lib.fromSTL.open-mesh` rather than silently returned as an open shell whose volume and booleans would be undefined; pass `{ allowOpen: true }` to accept the shell deliberately. `{ tolerance }` (default 1e-6 mm) is the vertex-merge distance for sewing — raise it for third-party meshes whose shared vertices are not bit-identical. `{ maxTriangles }` (default 250000) caps import cost, which is roughly linear with a large constant (~10ms at 12 triangles, ~49s at 100k); past the budget the call fails fast with an actionable error rather than stalling.' },
   { name: 'nurbsSurface', signature: '({ controls, degree, weights?, knots?, periodic? }) => Surface', description: 'Build a NURBS surface from an explicit control net + degree. `controls` is a U-major V-minor rectangular Vec3 grid (mm). Returns a Surface (peer to Shape) — use `.thicken(t)` or `.toShape()` to enter the Shape pipeline. `weights` produces an exact rational surface (circles, cylinders, spheres, conics) as of v0.14.0.' },
   { name: 'surfaceFromCurves', signature: '(sections: Sketch[]) => Surface', description: 'Skin a NURBS surface through 2+ closed Sketch cross-sections in declaration order. Returns a Surface — chain `.thicken(t)` or `.toShape()`. Use for free-form panels and lofted shells.' },
@@ -400,6 +402,30 @@ export const SCENE_PART_PROPERTIES: ApiEntry[] = [
   { name: 'metadata', signature: 'Readonly<Record<string, unknown>> | undefined', description: 'Forward-compat container for material, mass, BOM tags. Frozen.' },
 ];
 
+/**
+ * Number of callable ApiEntry records, DERIVED rather than written down.
+ *
+ * The doc comment on `ListApiInput.query` used to hardcode "~117 entries". The
+ * real figure had reached 128 without anyone noticing, because no test read the
+ * prose. Counting it here means the number cannot be wrong; `cheatSheetTaxonomy`
+ * consumes the same arrays, so its drift gate covers this too.
+ *
+ * `SCENE_PART_PROPERTIES` is excluded on purpose: those are fields on a returned
+ * object, not things a script can call.
+ */
+export const API_ENTRY_COUNT: number = [
+  GLOBALS,
+  SHAPE_METHODS,
+  SHAPE_LIST_METHODS,
+  SKETCH_METHODS,
+  PARAM_REF_METHODS,
+  PATH_BUILDER_METHODS,
+  SCENE_METHODS,
+  SURFACE_METHODS,
+  CURVE3D_METHODS,
+  CURVE3D_ANALYTICS_METHODS,
+].reduce((n, arr) => n + arr.length, 0);
+
 /** Which global primitive/extrude functions accept an opts.faceLabels map,
  *  and the description of valid values for that map. */
 export const FEATURE_KIND_FACE_LABELS: FeatureKindFaceLabels = {
@@ -416,12 +442,18 @@ export const FEATURE_KIND_FACE_LABELS: FeatureKindFaceLabels = {
     '(one of: top, bottom, left, right, front, back) or a FaceQuery descriptor object. ' +
     'Example: `box(10, 10, 5, false, { faceLabels: { lid: \'top\', floor: \'bottom\' } })`. ' +
     'Labels declared here are resolved later by fillet/chamfer/shell via `{ face: \'<label>\' }`. ' +
-    'Use `list_face_labels` to inspect labels on an existing script. ' +
+    'Use `inspect({ of: \'face-labels\' })` to inspect labels on an existing script. ' +
     'Sphere does not accept faceLabels (no canonical face names; no meaningful FaceQuery targets).',
 };
 
 export const CONSTRAINT_CAPABILITY: ConstraintCapability = {
-  tools: ['list_constraints', 'add_constraint', 'solve_sketch'] as const,
+  // This array is DATA returned to agents as the callable tool list, not prose.
+  // It used to name the retired per-entity constraint lister, so an agent that
+  // trusted it was routed into a tool that no longer exists. Reading is now
+  // folded into `inspect({ of: 'constraints' })`; the tool name alone belongs
+  // here. (Naming the retired tool outright, even in a comment, re-trips
+  // toolNameConsistency — the check is a word-boundary match on the whole file.)
+  tools: ['inspect', 'add_constraint', 'solve_sketch'] as const,
   supportedTypes: SUPPORTED_CONSTRAINT_TYPES,
 };
 
@@ -431,7 +463,7 @@ export async function listApiTool(input: ListApiInput = {}): Promise<ListApiOutp
     .split(/\s+/)
     .filter(Boolean);
   const p = (entries: ApiEntry[]): ApiEntry[] => projectEntries(entries, tokens);
-  // The big token cost is the prose descriptions of the ~117 ApiEntry items, so
+  // The big token cost is the prose descriptions of the ApiEntry items, so
   // those are compacted by default and shown in full only for query matches.
   // The small featureKindFaceLabels / constraints blocks stay present always.
   return {
