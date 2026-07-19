@@ -55,9 +55,32 @@ export function gltfTransformBin(repoRoot: string): string {
   return bin;
 }
 
-/** Read a GLB and count its distinct materials — the proxy for "colors kept".
- *  Optimization preserves one material per component (palette merging is
- *  disabled), so a multi-component model keeps multiple materials. */
+/** Count DISTINCT BASE COLOURS in a GLB — the real proxy for "colours kept".
+ *
+ *  Counting material OBJECTS is the wrong measure and produced a false failure
+ *  that blocked the marketing deploy: royal-pop-pocket-watch carries 93 material
+ *  instances that share only 10 distinct colours, so `optimize`'s (lossless)
+ *  `dedup` pass collapses 93 -> 10 with the rendered result byte-identical in
+ *  appearance. Measured:
+ *
+ *      BEFORE materials=93 uniqueColors=10
+ *      AFTER  materials=10 uniqueColors=10
+ *
+ *  What we actually care about is that no distinct colour disappears — that is
+ *  what palette merging would destroy. Deduplicating identical materials is a
+ *  win, not a regression, so gate on the colour set instead. */
+export async function countDistinctColors(glbPath: string): Promise<number> {
+  const io = new NodeIO();
+  const doc = await io.read(glbPath);
+  const seen = new Set<string>();
+  for (const m of doc.getRoot().listMaterials()) {
+    seen.add(JSON.stringify(m.getBaseColorFactor()));
+  }
+  return seen.size;
+}
+
+/** Raw material-object count. Retained for diagnostics only — do NOT gate on it;
+ *  see countDistinctColors for why. */
 export async function countMaterials(glbPath: string): Promise<number> {
   const io = new NodeIO();
   const doc = await io.read(glbPath);
@@ -69,14 +92,15 @@ export interface OptimizeOptions {
   repoRoot: string;
   /** Passed through to gltf-transform; see DEFAULT_SIMPLIFY_ERROR. */
   simplifyError?: string;
-  /** Fail if the result has fewer materials than this. Pass 0 to skip. Prefer
-   *  `preserveMaterials` unless you know the model's component count: a
-   *  single-material model is perfectly legitimate, so a fixed floor of 2 would
+  /** Fail if the result has fewer DISTINCT COLOURS than this. Pass 0 to skip.
+   *  Prefer `preserveMaterials` unless you know the model's component count: a
+   *  single-colour model is perfectly legitimate, so a fixed floor of 2 would
    *  reject valid simple models. */
   minMaterials?: number;
-  /** Fail if optimization DROPPED materials relative to the input. This is the
-   *  invariant that actually matters — palette merging flattening per-feature
-   *  colours — and unlike a fixed floor it holds for models of any complexity. */
+  /** Fail if optimization dropped a DISTINCT COLOUR relative to the input. This
+   *  is the invariant that actually matters — palette merging flattening
+   *  per-feature colours. It deliberately tolerates `dedup` collapsing duplicate
+   *  material objects, which is lossless. */
   preserveMaterials?: boolean;
   /** Fail if the result is >= this many bytes. Pass 0 to skip. */
   maxBytes?: number;
@@ -87,6 +111,7 @@ export interface OptimizeOptions {
 
 export interface OptimizeResult {
   bytes: number;
+  /** DISTINCT COLOURS in the output, not raw material-object count. */
   materials: number;
 }
 
@@ -102,7 +127,7 @@ export async function optimizeGlb(
 ): Promise<OptimizeResult> {
   const label = opts.label ?? outPath;
   const bin = gltfTransformBin(opts.repoRoot);
-  const before = opts.preserveMaterials ? await countMaterials(inPath) : 0;
+  const before = opts.preserveMaterials ? await countDistinctColors(inPath) : 0;
 
   execFileSync(
     bin,
@@ -132,17 +157,17 @@ export async function optimizeGlb(
     );
   }
 
-  const materials = await countMaterials(outPath);
+  const materials = await countDistinctColors(outPath);
   if (opts.preserveMaterials && materials < before) {
     throw new Error(
-      `${label}: optimization DROPPED materials ${before} -> ${materials} ` +
-        `(colors flattened — check --palette false).`,
+      `${label}: optimization DROPPED distinct colours ${before} -> ${materials} ` +
+        `(palette flattened — check --palette false).`,
     );
   }
   if (opts.minMaterials && materials < opts.minMaterials) {
     throw new Error(
-      `${label}: optimized GLB has ${materials} material(s); ` +
-        `expected >= ${opts.minMaterials} (colors lost — check --palette false).`,
+      `${label}: optimized GLB has ${materials} distinct colour(s); ` +
+        `expected >= ${opts.minMaterials} (colours lost — check --palette false).`,
     );
   }
 
