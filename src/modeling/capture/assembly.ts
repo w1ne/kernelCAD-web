@@ -58,6 +58,7 @@ import type { PartLineage, PartLineageMap } from '../../kernel/naming/evolutionR
 import type { CaptureSession } from './captureSession';
 import { forwardKinematics, type NumericPoses } from './forwardKinematics';
 import { Shape } from './proxy';
+import { resolveMaterial, type ResolvedMaterial } from '../properties/materialLibrary';
 
 /**
  * Public pose surface for `Assembly.solve(poses)` and (Tasks 3-5)
@@ -475,6 +476,16 @@ export interface AssemblyPartOpts {
    *  the dynamics will be off for any non-water material. Typical values:
    *  steel 7850, aluminum 2700, ABS 1050, brass 8500, titanium 4500. */
   density?: number;
+  /** Named engineering material. Assigning one seeds BOTH the part's density
+   *  default (from the material's catalog density) AND a default surface finish
+   *  on the shape (appearance) — the Fusion/Onshape model where a material name
+   *  carries mass AND looks. Both are DEFAULTS: an explicit `density` here wins
+   *  for mass, and an explicit `.finish()` / `.color()` / `.material()` already
+   *  on the shape wins for appearance. Valid: `steel`, `aluminum` (alias
+   *  `aluminium`), `pla`, `abs`, `pet`. An unknown name throws
+   *  `feature.invalid-args` naming the valid materials — never a silent
+   *  fallback to water density or a default finish. */
+  material?: string;
   /** Beam cross-section for closed-form Euler-Bernoulli load checking via
    *  `kc.kinematic.checkLoadCapacity({ mode: 'beam' })`. Without this
    *  declaration the beam path fires K7 `kinematic.load.beam-not-applicable`
@@ -630,6 +641,12 @@ export interface AssemblyPartStored extends AssemblyPartRef {
    *  Read by the URDF / SDF export inertial-block emitters. Undefined when
    *  the script did not declare a density on `arm.part(...)`. */
   readonly density?: number;
+  /** Canonical name of the engineering material assigned via
+   *  `arm.part(..., { material })`, when one was. The `density` above is the
+   *  EFFECTIVE density (an explicit `density` opt overrides the material's);
+   *  this field records which named material was assigned, for BOM / export
+   *  provenance. Undefined when no material name was given. */
+  readonly material?: string;
   /** Beam cross-section, copied from `AssemblyPartOpts.crossSection`. Read
    *  by `kc.kinematic.checkLoadCapacity({ mode: 'beam' })`. Undefined when
    *  the script did not declare a cross-section on `arm.part(...)`. */
@@ -750,6 +767,34 @@ export class Assembly {
         );
       }
     }
+    // Named material: seeds a density default AND a default finish. Resolve it
+    // FIRST — an unknown name throws here (naming the valid materials) before
+    // any part record is minted, so a typo never silently produces a
+    // water-density part with no appearance.
+    let resolvedMaterial: ResolvedMaterial | undefined;
+    if (opts.material !== undefined) {
+      resolvedMaterial = resolveMaterial(opts.material, shape.id);
+    }
+    // Density precedence: an explicit `density` opt wins over the material's
+    // catalog density; the material only seeds the DEFAULT.
+    const effectiveDensity =
+      opts.density !== undefined ? opts.density : resolvedMaterial?.density;
+    // Finish precedence: apply the material's default finish ONLY when the
+    // shape carries no explicit appearance yet (explicit `.finish()` /
+    // `.color()` / `.material()` on the shape always wins). Go through the same
+    // `shape.finish(...)` proxy the author would call — one source of truth for
+    // the appearance write, its validation, and its per-face plumbing.
+    if (resolvedMaterial?.finish !== undefined) {
+      const record = this.session.getRecords().find((r) => r.id === shape.id);
+      const md = record?.metadata;
+      const hasExplicitAppearance =
+        md?.material !== undefined ||
+        md?.color !== undefined ||
+        (md?.materialByLabel !== undefined && Object.keys(md.materialByLabel).length > 0);
+      if (!hasExplicitAppearance) {
+        shape.finish(resolvedMaterial.finish);
+      }
+    }
     if (opts.crossSection !== undefined) {
       validateCrossSection(name, shape.id, opts.crossSection);
     }
@@ -793,7 +838,8 @@ export class Assembly {
       ...part,
       originalShape: shape,
       ...(opts.connect !== undefined ? { connectParentId: opts.connect.to.partId } : {}),
-      ...(opts.density !== undefined ? { density: opts.density } : {}),
+      ...(effectiveDensity !== undefined ? { density: effectiveDensity } : {}),
+      ...(resolvedMaterial !== undefined ? { material: resolvedMaterial.name } : {}),
       ...(opts.crossSection !== undefined ? { crossSection: opts.crossSection } : {}),
       ...(opts.role !== undefined ? { role: opts.role } : {}),
     };

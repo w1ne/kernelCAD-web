@@ -123,6 +123,71 @@ describe('inspect({ of: "mass" })', () => {
     );
   });
 
+  it('accepts a named material as an alternative to a raw density', async () => {
+    const r = await getMassPropertiesTool({
+      code: `return box(${SIDE_MM}, ${SIDE_MM}, ${SIDE_MM}, true);`,
+      material: 'steel',
+    });
+    expect(r.ok, r.error).toBe(true);
+    const mp = r.massProperties!;
+    // Same mass as passing density: 7850 directly.
+    const sideM = SIDE_MM * 1e-3;
+    expect(mp.mass).toBeCloseTo(sideM ** 3 * STEEL, 6);
+    expect(mp.density).toBe(STEEL);
+    // A material-seeded density is a REAL number, not a default.
+    expect(mp.densitySource).toBe('material');
+    expect(mp.densityDefaulted).toBe(false);
+    expect(mp.material).toBe('steel');
+    expect(r.warning).toBeUndefined();
+  });
+
+  it('resolves the aluminium (UK) spelling to the canonical material + density', async () => {
+    const r = await getMassPropertiesTool({ code: 'return box(10, 10, 10);', material: 'aluminium' });
+    expect(r.ok, r.error).toBe(true);
+    expect(r.massProperties!.density).toBe(2700);
+    expect(r.massProperties!.material).toBe('aluminum');
+    expect(r.massProperties!.densityDefaulted).toBe(false);
+  });
+
+  it('marks a raw density as source "raw", not defaulted', async () => {
+    const r = await getMassPropertiesTool({ code: 'return box(10, 10, 10);', density: STEEL });
+    expect(r.massProperties!.densitySource).toBe('raw');
+    expect(r.massProperties!.densityDefaulted).toBe(false);
+    expect(r.massProperties!.material).toBeUndefined();
+  });
+
+  it('marks the water fallback as source "default" and still warns', async () => {
+    const r = await getMassPropertiesTool({ code: 'return box(10, 10, 10);' });
+    expect(r.massProperties!.densitySource).toBe('default');
+    expect(r.massProperties!.densityDefaulted).toBe(true);
+    expect(r.warning).toMatch(/default density/i);
+  });
+
+  it('rejects an unknown material naming the valid ones, never silently water', async () => {
+    const r = await getMassPropertiesTool({ code: 'return box(10, 10, 10);', material: 'kryptonite' });
+    expect(r.ok).toBe(false);
+    expect(r.errorCode).toBe('feature.invalid-args');
+    expect(r.error).toMatch(/kryptonite.*not a known material/i);
+    expect(r.error).toMatch(/steel/);
+  });
+
+  it('rejects a finish-only token as a material with a .finish hint', async () => {
+    const r = await getMassPropertiesTool({ code: 'return box(10, 10, 10);', material: 'brass' });
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/\.finish\('brass'\)/);
+  });
+
+  it('rejects passing both density and material', async () => {
+    const r = await getMassPropertiesTool({
+      code: 'return box(10, 10, 10);',
+      density: STEEL,
+      material: 'steel',
+    });
+    expect(r.ok).toBe(false);
+    expect(r.errorCode).toBe('feature.invalid-args');
+    expect(r.error).toMatch(/either.*density.*or.*material|not both/i);
+  });
+
   it('rejects a malformed or zero-length gyration axis', async () => {
     const code = 'return box(10, 10, 10);';
     const zero = await getMassPropertiesTool({

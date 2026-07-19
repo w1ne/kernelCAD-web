@@ -14,6 +14,7 @@ import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { resolveRootId } from '../../../modeling/buildModel';
 import { runMcpScript } from '../runMcpScript';
+import { tryResolveMaterial } from '../../../modeling/properties/materialLibrary';
 import type { Vec3 } from '../../../shared/intent/types';
 
 /** Water. Same default as OcctBackend.massProperties and URDF's linkInertialBlock. */
@@ -25,6 +26,15 @@ export interface GetMassPropertiesInput {
   feature_id?: string;
   /** kg/m^3. Steel ~7850, aluminium ~2700, ABS ~1050. Defaults to water. */
   density?: number;
+  /**
+   * Named engineering material used INSTEAD of a raw `density` — say
+   * `material: 'steel'` rather than `density: 7850`. Resolves to the catalog
+   * density. Valid: `steel`, `aluminum` (alias `aluminium`), `pla`, `abs`,
+   * `pet`. An unknown name is rejected naming the valid materials; it never
+   * silently falls back to water. Passing both `density` and `material` is an
+   * error (they both set the density).
+   */
+  material?: string;
   /**
    * Optional arbitrary axis (shape-local mm) to additionally report the
    * radius of gyration about. Omit to get only the centroidal quantities.
@@ -38,8 +48,16 @@ export interface MassPropertiesInfo {
   mass: number;
   /** kg/m^3 actually used — echoed so a defaulted value can't be mistaken for a declared one. */
   density: number;
-  /** True when `density` was defaulted rather than supplied. */
+  /** Where the density came from: 'raw' (an explicit `density`), 'material' (a
+   *  named material's catalog density), or 'default' (the water fallback). An
+   *  agent must be able to tell a real number from a guess. */
+  densitySource: 'raw' | 'material' | 'default';
+  /** True ONLY when `density` was defaulted to water — i.e. `densitySource` is
+   *  'default'. A material-seeded density is a real number, not a default. */
   densityDefaulted: boolean;
+  /** Canonical name of the material whose density was used, when `material` was
+   *  supplied. Absent for a raw or defaulted density. */
+  material?: string;
   /** mm, shape-local. */
   com: [number, number, number];
   /** [ixx, ixy, ixz, iyy, iyz, izz] in kg*m^2, about the CoM. */
@@ -78,6 +96,40 @@ export async function getMassPropertiesTool(
       errorCode: 'feature.invalid-args',
     };
   }
+  if (input.density !== undefined && input.material !== undefined) {
+    return {
+      ok: false,
+      error: 'Pass either `density` or `material`, not both — they both set the density.',
+      errorCode: 'feature.invalid-args',
+    };
+  }
+  // Resolve the density and record its provenance up front. A named material
+  // resolves to a REAL catalog density (densityDefaulted = false); an unknown
+  // material is rejected here naming the valid ones — never a silent water
+  // fallback. Only the true no-input case defaults to water.
+  let density: number;
+  let densitySource: MassPropertiesInfo['densitySource'];
+  let materialName: string | undefined;
+  if (input.density !== undefined) {
+    density = input.density;
+    densitySource = 'raw';
+  } else if (input.material !== undefined) {
+    const resolved = tryResolveMaterial(input.material);
+    if (!resolved.ok) {
+      return {
+        ok: false,
+        error: resolved.hint ? `${resolved.message} ${resolved.hint}` : resolved.message,
+        errorCode: 'feature.invalid-args',
+      };
+    }
+    density = resolved.material.density;
+    densitySource = 'material';
+    materialName = resolved.material.name;
+  } else {
+    density = DEFAULT_DENSITY;
+    densitySource = 'default';
+  }
+  const densityDefaulted = densitySource === 'default';
 
   const axis = input.gyration_axis;
   if (axis !== undefined) {
@@ -128,8 +180,6 @@ export async function getMassPropertiesTool(
     };
   }
 
-  const densityDefaulted = input.density === undefined;
-  const density = input.density ?? DEFAULT_DENSITY;
   const mp = shape.massProperties(density, input.gyration_axis);
 
   return {
@@ -138,7 +188,9 @@ export async function getMassPropertiesTool(
       id: targetId,
       mass: mp.mass,
       density,
+      densitySource,
       densityDefaulted,
+      ...(materialName !== undefined ? { material: materialName } : {}),
       com: mp.com,
       inertia6: mp.inertia6,
       inertiaMatrix: mp.inertiaMatrix,
