@@ -31,7 +31,10 @@ export interface GetOrFetchOpts {
   ext: string;
   /** Milliseconds; `null` = no TTL (bytes never expire). */
   ttlMs: number | null;
-  /** Hex sha256. When provided, downloaded bytes are verified BEFORE writing. */
+  /** Hex sha256 of the expected CONTENT. When provided it is enforced twice:
+   *  downloaded bytes are verified before writing, AND an existing cache entry
+   *  whose content no longer matches is treated as a miss and re-fetched.
+   *  Without it, entries keyed by sha256(URL) can never notice a republish. */
   expectedSha256?: string;
   /** Bytes fetcher — typically Node's built-in fetch. Pure-function shape so
    *  tests can stub without spinning up a server. */
@@ -89,15 +92,45 @@ function sha256(input: Buffer | string): string {
   return createHash('sha256').update(input).digest('hex');
 }
 
+/** True when a cache entry exists but its CONTENT no longer matches what the
+ *  caller expects.
+ *
+ *  Entries are keyed by sha256(URL), which says nothing about the bytes behind
+ *  that URL. A republished artifact reuses the same key, so the stale copy is
+ *  served forever. `expectedSha256` is the only signal that the content moved —
+ *  so when the caller supplies it, it has to gate the cache HIT, not merely the
+ *  download. */
+function cachedContentIsStale(path: string, expectedSha256?: string): boolean {
+  if (expectedSha256 === undefined) return false;
+  try {
+    return sha256(readFileSync(path)) !== expectedSha256.toLowerCase();
+  } catch {
+    return true; // unreadable entry — treat as a miss and re-fetch
+  }
+}
+
 export async function getOrFetchAsync(opts: GetOrFetchOpts): Promise<string> {
   const key = `${opts.consumer}:${opts.url}`;
   const memoed = memo.get(key);
-  if (memoed && existsSync(memoed)) return memoed;
+  if (
+    memoed &&
+    existsSync(memoed) &&
+    !cachedContentIsStale(memoed, opts.expectedSha256)
+  ) {
+    return memoed;
+  }
 
   ensureConsumerDir(opts.consumer);
   const path = cachePathFor(opts.consumer, sha256(opts.url), opts.ext);
 
-  if (existsSync(path)) {
+  // Content check comes FIRST: a stale entry must miss regardless of TTL policy.
+  // Parts pass ttlMs: null, so previously an existing file was returned with no
+  // validation whatsoever, and every catalog rebuild was invisible to any
+  // consumer that had fetched the part once. Observed in the wild: after a
+  // rebuild the ESP32-C3 board kept serving 11.54mm-tall geometry instead of the
+  // republished 5.56mm bare board, and the 1.5" OLED served 44.5x37 instead of
+  // the corrected 47x34 — silently invalidating fit checks made against them.
+  if (existsSync(path) && !cachedContentIsStale(path, opts.expectedSha256)) {
     if (opts.ttlMs === null) {
       memo.set(key, path);
       return path;
