@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { existsSync } from 'node:fs';
-import { extname } from 'node:path';
+import { extname } from '../../shared/runtime/pathUtils';
+import { getHostFs } from '../../shared/runtime/hostFs';
 import type { FeatureRef, PlaneSpec, Vec3 } from '../../shared/intent/types';
 import { isValidPlaneSpec } from '../../shared/intent/types';
 import type { ReferenceImageMetadata, ReferenceImageScale } from '../../shared/intent/referenceImageRecord';
@@ -25,8 +25,6 @@ import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
 import { KernelError } from '../../shared/intent/kernelError';
 import type { ParamTable } from '../../shared/runtime/paramTable';
-import { resolveScriptRelativePath } from '../../shared/runtime/scriptRelativePath';
-import { imageDimensions } from './imageDimensions';
 
 export interface VirtualFeatureSpec {
   kind: 'referenceImage' | 'renderEnvironment' | 'cameraTarget' | 'animationView';
@@ -68,10 +66,25 @@ export function buildReferenceImageFeatureSpec(
     });
   }
 
-  const resolvedPath = resolveScriptRelativePath(scriptDir, args.path);
+  // Existence + pixel-dimension probing needs a real filesystem. On node the
+  // host-fs port is installed and this behaves exactly as it always has; in the
+  // browser there is no filesystem, so we say so explicitly rather than
+  // silently reporting "file not found" for a check that never ran.
+  const hostFs = getHostFs();
+  const resolvedPath = hostFs ? hostFs.resolveScriptRelative(scriptDir, args.path) : args.path;
   let fileExists = false;
-  if (validExts.has(ext)) {
-    fileExists = existsSync(resolvedPath);
+  if (validExts.has(ext) && hostFs === null) {
+    diagnostics.push({
+      target: 'export-occt',
+      code: 'cli.host-fs-unavailable',
+      severity: 'error',
+      message:
+        `referenceImage('${args.path}'): this runtime has no filesystem, so the image cannot be read. ` +
+        `referenceImage() works in the kernelCAD CLI and MCP server, not in the in-browser script engine.`,
+      hint: HINT_TEMPLATES['cli.host-fs-unavailable'].template,
+    });
+  } else if (validExts.has(ext) && hostFs !== null) {
+    fileExists = hostFs.fileExists(resolvedPath);
     if (!fileExists) {
       diagnostics.push({
         target: 'export-occt',
@@ -95,8 +108,8 @@ export function buildReferenceImageFeatureSpec(
 
   let pixelWidth = 0;
   let pixelHeight = 0;
-  if (fileExists) {
-    const dims = imageDimensions(resolvedPath);
+  if (fileExists && hostFs !== null) {
+    const dims = hostFs.imageDimensions(resolvedPath);
     pixelWidth = dims.width;
     pixelHeight = dims.height;
   }

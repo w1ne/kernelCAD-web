@@ -1,23 +1,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/backends/occt/exportStlBinary.ts
-import { createRequire } from 'node:module';
-
-const requireFromHere = createRequire(import.meta.url);
-// At source: src/kernel/backends/occt/exportStlBinary.ts → ../../../../package.json (4 up)
-// At bundle: dist/cli/index.js → ../../package.json (2 up)
-function loadPkg(): { version: string } {
-  for (const rel of ['../../../../package.json', '../../package.json']) {
-    try {
-      return requireFromHere(rel) as { version: string };
-    } catch {
-      // try next
-    }
-  }
-  return { version: 'unknown' };
-}
-const pkg = loadPkg();
-const KERNELCAD_VERSION = pkg.version;
+// The version is read through the registry in shared/runtime, not with
+// `createRequire` here — see kernelcadVersion.ts for why (this module is in the
+// modeling API's import graph, so a `node:module` import here reached the
+// browser bundle). Read it lazily at call time: node entries install it on
+// import, which may happen after this module is evaluated.
+import { kernelcadVersion } from '../../../shared/runtime/kernelcadVersion';
 
 const HEADER_SIZE = 80;
 const TRIANGLE_COUNT_SIZE = 4;
@@ -59,7 +48,7 @@ export interface MeshData {
  */
 function buildDefaultHeader(): string {
   const isoDate = new Date().toISOString().slice(0, 10);
-  return `kernelcad ${KERNELCAD_VERSION} ${isoDate}`;
+  return `kernelcad ${kernelcadVersion()} ${isoDate}`;
 }
 
 export function encodeBinaryStl(

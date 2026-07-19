@@ -44,8 +44,12 @@ describe('diagnostic catalogue invariants', () => {
     // + 1 parts.fetch.geometry-not-brep (fetch_part hit a catalog record whose
     //   only geometry is a GLB display mesh — the authored `*-board` entries,
     //   which drop stepUrl by design). = 243.
-    expect(DIAGNOSTIC_CODES).toHaveLength(243);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(243);
+    // + 1 cli.host-fs-unavailable (a script called a filesystem-backed feature
+    //   — referenceImage, lib.fromSTEP/fromSTL, fontPath fonts, parts catalog —
+    //   from a runtime with no filesystem, i.e. the in-browser script engine).
+    //   = 244.
+    expect(DIAGNOSTIC_CODES).toHaveLength(244);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(244);
   });
 
   it('every code has a non-empty hint template', () => {

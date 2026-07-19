@@ -10,6 +10,22 @@
 // partsBaseUrl) and mock `fetch`. See src/modeling/parts/remoteClient.ts.
 process.env.KERNELCAD_PARTS_BASE_URL ??= 'off';
 
+// Install the node host capabilities for the whole suite.
+//
+// Filesystem-backed modeling features (referenceImage existence + pixel-size
+// probing, lib.fromSTEP/fromSTL, TTF fonts, the parts catalog) now reach node
+// through explicit ports rather than bare `node:fs` imports, so that the
+// modeling API can also be bundled for a browser. Node ENTRY POINTS install the
+// implementation; `runScript.ts` does it for anything that runs a user script.
+// Tests, though, frequently poke `CaptureSession` / `createApi` directly without
+// going through an entry point, so install here too — otherwise those tests
+// would silently observe browser-shaped behaviour.
+//
+// Tests that WANT browser-shaped behaviour opt out explicitly with
+// `__setHostFsForTest(null)` — see src/modeling/runtime/browserRuntime.test.ts.
+import '../src/modeling/runtime/hostFsNode';
+import '../src/shared/runtime/kernelcadVersionNode';
+
 // --- Global test-isolation teardown ------------------------------------------
 // vitest runs many test FILES in the same worker process. Global mutations made
 // by one file — a `vi.stubGlobal`, a stubbed `fetch`/`window`, leftover fake

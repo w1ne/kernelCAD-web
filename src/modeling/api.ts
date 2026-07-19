@@ -31,20 +31,24 @@ import type { DfmSpec, DfmSpecHandle } from '../shared/intent/dfmSpecRecord';
 import { helix, type RailPoint, type HelixOptions } from './helix';
 import { solveHermiteG2, type HermiteEndpoint } from './capture/hermiteG2';
 import { createSketchModule, type SketchModule } from './sketch/index';
-import { fontPath, type FontPath } from '../shared/fonts/index';
-import { fromSTEP as libFromSTEP } from './parts/fromSTEP';
+import { fontPath, type FontPath } from '../shared/fonts/fontPath';
+// Parts features (fromSTEP/fromBREP/fromSTL/findPart/fetchPart/standard) are
+// node-only: they read files and the parts catalog cache. They are reached
+// through the capability-guarded façade so this module stays importable in a
+// browser — see parts/hostParts.ts. Type-only imports are erased and are
+// therefore safe to keep pointing at the real modules.
+import type { FromSTLOptions } from './parts/fromMeshFormats';
+import type { FetchPartOpts } from './parts/fetchPart';
+import type { FindPartOpts, FindPartResult } from './parts/findPart';
+import type { StandardParts } from './parts/standardParts';
 import {
-  fromBREP as libFromBREP,
-  fromSTL as libFromSTL,
-  type FromSTLOptions,
-} from './parts/fromMeshFormats';
-import { fetchPartHost, type FetchPartOpts } from './parts/fetchPart';
-import {
-  findPartHost,
-  type FindPartOpts,
-  type FindPartResult,
-} from './parts/findPart';
-import { createStandardParts, type StandardParts } from './parts/standardParts';
+  fromSTEPViaHost,
+  fromBREPViaHost,
+  fromSTLViaHost,
+  findPartViaHost,
+  fetchPartViaHost,
+  standardPartsViaHost,
+} from './parts/hostParts';
 import { select, type ShapeList } from './selection/shapeList';
 import { sphere as sdfSphere, box as sdfBox, cylinder as sdfCylinder, torus as sdfTorus } from './sdf/primitives';
 import { smoothBlend as sdfSmoothBlend } from './sdf/smoothBlend';
@@ -903,17 +907,18 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       return selectEdgeBackend(lowered, query);
     },
     lib: {
-      fromSTEP: (path) => libFromSTEP({ session, scriptDir: ctx.scriptDir }, path),
-      fromBREP: (path) => libFromBREP({ session, scriptDir: ctx.scriptDir }, path),
-      fromSTL: (path, opts) => libFromSTL({ session, scriptDir: ctx.scriptDir }, path, opts ?? {}),
-      findPart: (query, opts) => findPartHost(query, opts ?? {}),
+      fromSTEP: (path) => fromSTEPViaHost({ session, scriptDir: ctx.scriptDir }, path),
+      fromBREP: (path) => fromBREPViaHost({ session, scriptDir: ctx.scriptDir }, path),
+      fromSTL: (path, opts) =>
+        fromSTLViaHost({ session, scriptDir: ctx.scriptDir }, path, opts ?? {}),
+      findPart: (query, opts) => findPartViaHost(query, opts ?? {}),
       fetchPart: (idOrQuery, opts) =>
-        fetchPartHost(
+        fetchPartViaHost(
           { session, ...(ctx.scriptDir !== undefined ? { scriptDir: ctx.scriptDir } : {}) },
           idOrQuery,
           opts ?? {},
-        ).then((r) => r.shape),
-      standard: createStandardParts({
+        ),
+      standard: standardPartsViaHost({
         session,
         ...(ctx.scriptDir !== undefined ? { scriptDir: ctx.scriptDir } : {}),
       }),

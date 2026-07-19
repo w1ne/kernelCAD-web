@@ -3,14 +3,11 @@
 /// <reference types="node" />
 import vm from 'node:vm';
 
-export interface IsolationOptions {
-  /** Wrap script in `(function() { ... })()` so a top-level `return` works. */
-  wrapReturn?: boolean;
-}
-
-export interface IsolationResult {
-  returnValue: unknown;
-}
+// The runner contract lives in `isolationTypes.ts` so the isomorphic core and
+// the browser runner can reference it without pulling `node:vm` in. Re-exported
+// here so every existing `from './isolation'` import keeps working.
+export type { IsolationOptions, IsolationResult } from './isolationTypes';
+import type { IsolationOptions, IsolationResult } from './isolationTypes';
 
 /**
  * Globals that must NEVER be reachable from inside a sandboxed user script,

@@ -11,7 +11,7 @@ import * as replicad from 'replicad';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
-import { resolveAndLoadFont } from '../../../shared/fonts/index';
+import { loadFontViaHost } from '../../../shared/fonts/loadFontHost';
 import { KernelError } from '../../../shared/intent/kernelError';
 
 export interface TextMetadata {
@@ -41,7 +41,7 @@ export async function lowerSketchText(
   const meta = r.metadata as unknown as TextMetadata;
   const diagnostics: CompilerDiagnostic[] = [];
   try {
-    const { fontFamily } = await resolveAndLoadFont(meta.fontFamily, scriptDir);
+    const { fontFamily } = await loadFontViaHost(meta.fontFamily, scriptDir);
     const drawing = replicad.drawText(meta.textContent, {
       fontSize: meta.textOpts.size.evaluated,
       fontFamily,

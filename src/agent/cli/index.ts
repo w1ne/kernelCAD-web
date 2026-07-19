@@ -1,6 +1,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/cli/index.ts
+// Install the node host capabilities (filesystem port + package version) for
+// the CLI process. Modeling features that read files reach node through these
+// ports rather than bare node:fs imports, so the modeling API can also be
+// bundled for a browser (see src/shared/runtime/hostFs.ts). Every node entry
+// point installs them; this is the CLI's.
+import '../../modeling/runtime/hostFsNode';
+import '../../shared/runtime/kernelcadVersionNode';
+
 import { Command } from 'commander';
 import { createRequire } from 'node:module';
 import { animateCommand } from './commands/animate';

@@ -31,7 +31,7 @@ import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { pickFace } from '../../../kernel/backends/occt/edgeSelection';
-import { resolveAndLoadFont } from '../../../shared/fonts/index';
+import { loadFontViaHost } from '../../../shared/fonts/loadFontHost';
 import { isEmbossTextMetadata, type EmbossTextMetadata } from '../../../shared/intent/embossTextRecord';
 import { HINT_TEMPLATES } from '../../../shared/diagnostics/registry';
 import { cutWithHistory, fuseWithHistory, mergeBooleanHistory } from '../../../kernel/backends/occt/historyAwareBooleans';
@@ -90,7 +90,7 @@ export async function lowerEmbossText(
   // 2-4. Build the glyph drawing.
   let drawing: replicad.Drawing;
   try {
-    const { fontFamily } = await resolveAndLoadFont(meta.fontFamily, scriptDir);
+    const { fontFamily } = await loadFontViaHost(meta.fontFamily, scriptDir);
     drawing = replicad.drawText(meta.textContent, {
       fontSize: meta.size.evaluated,
       fontFamily,
