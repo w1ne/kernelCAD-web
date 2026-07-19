@@ -66,6 +66,14 @@ export async function fromSTEP(ctx: FromSTEPContext, path: string): Promise<Shap
         'kernel-failed.lib.fromSTEP.no-solid — the STEP file must contain at least one closed solid body.',
       );
     }
+    if (e instanceof StepParseError && e.reason === 'out-of-memory') {
+      throw new KernelError(
+        'feature.kernel-failed',
+        `lib.fromSTEP: ran out of OCCT wasm heap importing ${absPath}: ${e.message}`,
+        undefined,
+        'kernel-failed.lib.fromSTEP.out-of-memory — the file is NOT invalid; the geometry kernel exhausted its 2 GiB wasm heap. Import fewer/smaller parts in one session, or restart the host process.',
+      );
+    }
     const msg = e instanceof Error ? e.message : String(e);
     throw new KernelError(
       'feature.kernel-failed',
@@ -121,6 +129,14 @@ export async function fromStepBytes(
         `lib.fetchPart: ${sourceLabel} did not contain a 3D solid.`,
         undefined,
         'kernel-failed.lib.fetchPart.no-solid.',
+      );
+    }
+    if (e instanceof StepParseError && e.reason === 'out-of-memory') {
+      throw new KernelError(
+        'feature.kernel-failed',
+        `lib.fetchPart: ran out of OCCT wasm heap importing ${sourceLabel}: ${e.message}`,
+        undefined,
+        'kernel-failed.lib.fetchPart.out-of-memory — the catalog STEP is NOT invalid; the geometry kernel exhausted its 2 GiB wasm heap. Import fewer/smaller parts in one session, or restart the host process.',
       );
     }
     const msg = e instanceof Error ? e.message : String(e);
