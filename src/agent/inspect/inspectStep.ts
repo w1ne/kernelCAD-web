@@ -19,6 +19,10 @@ import {
   type CylindricalHole,
 } from '../../kernel/backends/occt/holeDetection';
 import { KernelError } from '../../shared/intent/kernelError';
+import {
+  describeOcctThrow,
+  isOcctOutOfMemory,
+} from '../../kernel/backends/occt/occtException';
 
 export interface StepSolidReport {
   /** Stable index in TopExp_Explorer traversal order. */
@@ -78,7 +82,18 @@ export async function inspectStepFile(path: string): Promise<StepInspectReport> 
   try {
     imported = await replicad.importSTEP(blob);
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
+    const msg = describeOcctThrow(e);
+    // An exhausted wasm heap is a host condition, not bad input. Saying "not a
+    // valid STEP model" here is what made the parts-catalog OOM look like two
+    // corrupt files for weeks — keep the two stories separate.
+    if (isOcctOutOfMemory(e)) {
+      throw new KernelError(
+        'feature.kernel-failed',
+        `inspectStepFile: ran out of OCCT wasm heap reading ${path}: ${msg}`,
+        undefined,
+        'kernel-failed.inspect.step.out-of-memory — the file is NOT invalid; the geometry kernel exhausted its 2 GiB wasm heap. Restart the host process and retry.',
+      );
+    }
     throw new KernelError(
       'feature.kernel-failed',
       `inspectStepFile: replicad failed to parse STEP at ${path}: ${msg}`,
