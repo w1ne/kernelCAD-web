@@ -99,7 +99,7 @@
     "lint-demos": "npx tsx scripts/lint-demos.ts",
     "portfolio:validate": "npm test -- tests/integration/portfolio/portfolioBundle.test.ts tests/unit/portfolio/portfolioMeta.test.ts",
     "portfolio:capture": "npx tsx scripts/capturePortfolioEntry.ts",
-    "site:build-docs": "npx tsx site/scripts/build-docs.ts && vite build --config vite.docs-island.config.ts && npx tsx site/scripts/verify-docs-bundle.ts",
+    "site:build-docs": "npx tsx site/scripts/prebake-docs-models.ts && npx tsx site/scripts/build-docs.ts && vite build --config vite.docs-island.config.ts && npx tsx site/scripts/verify-docs-bundle.ts",
     "docs:site": "npm run site:build-docs"
   },
   "dependencies": {

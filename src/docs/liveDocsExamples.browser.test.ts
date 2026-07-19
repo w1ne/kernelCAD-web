@@ -16,7 +16,16 @@
 // like a broken page rather than a broken example.
 
 import { describe, it, expect } from 'vitest';
+import { existsSync, readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { buildDocsPages } from './liveDocs';
+import { appearanceOf } from '../../site/island/docsAppearance';
+import {
+  DOCS_MODEL_DIR,
+  DOCS_MODEL_MANIFEST,
+  type DocsModelManifest,
+} from '../../site/scripts/docsModels';
 import { runScriptInBrowser } from '../modeling/runtime/browserRuntime';
 import {
   meshFeaturesPerFeature,
@@ -26,6 +35,22 @@ import { initOcct } from '../kernel/backends/occt/occtBackend';
 import { detectTypeScriptSyntax } from '../modeling/runtime/browserTranspile';
 
 const pagesWithExamples = buildDocsPages().filter((p) => p.example !== null);
+
+// The prebaked models, when a docs build has produced them. They are build
+// artifacts (site/docs/ is gitignored), so on a clean checkout there is nothing
+// to compare against and the hash gate in site/scripts/docsModels.test.ts is
+// what holds. Where they DO exist, comparing them here is the strongest check
+// available: it runs the example through the browser path and asserts the model
+// the page shows has the same extent and the same shading as what Run produces.
+const MANIFEST_PATH = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../site',
+  DOCS_MODEL_DIR,
+  DOCS_MODEL_MANIFEST,
+);
+const manifest: DocsModelManifest | null = existsSync(MANIFEST_PATH)
+  ? (JSON.parse(readFileSync(MANIFEST_PATH, 'utf8')) as DocsModelManifest)
+  : null;
 
 describe('docs examples run in the browser runtime', () => {
   it('there is more than one example, so the loop below is not vacuous', () => {
@@ -76,6 +101,41 @@ describe('docs examples run in the browser runtime', () => {
         .flatMap((f) => f.faces)
         .reduce((n, face) => n + face.indices.length / 3, 0);
       expect(triangles, `${page.task} example meshed to nothing`).toBeGreaterThan(0);
+
+      const model = manifest?.models.find((m) => m.slug === page.slug);
+      if (model) {
+        // Body count and shading must match, or pressing Run visibly changes
+        // the picture — the exact thing prebaking is supposed to avoid.
+        expect(
+          drawn.map((f) => appearanceOf(f.color, f.material)),
+          `${page.task}: prebaked shading differs from what Run produces`,
+        ).toEqual(model.appearances);
+
+        // Same extent, so the camera lands in the same place. Computed the way
+        // docs-worker.ts computes it: raw vertices, before any transform.
+        const min = [Infinity, Infinity, Infinity];
+        const max = [-Infinity, -Infinity, -Infinity];
+        for (const face of drawn.flatMap((f) => f.faces)) {
+          for (let i = 0; i < face.vertices.length; i += 3) {
+            for (let axis = 0; axis < 3; axis++) {
+              const v = face.vertices[i + axis];
+              if (v < min[axis]) min[axis] = v;
+              if (v > max[axis]) max[axis] = v;
+            }
+          }
+        }
+        const span = Math.max(1, ...max.map(Math.abs), ...min.map(Math.abs));
+        for (let axis = 0; axis < 3; axis++) {
+          expect(
+            Math.abs(min[axis] - model.bounds.min[axis]),
+            `${page.task}: prebaked model starts somewhere else on axis ${axis}`,
+          ).toBeLessThan(span * 1e-4);
+          expect(
+            Math.abs(max[axis] - model.bounds.max[axis]),
+            `${page.task}: prebaked model ends somewhere else on axis ${axis}`,
+          ).toBeLessThan(span * 1e-4);
+        }
+      }
     }, 120_000);
   }
 });

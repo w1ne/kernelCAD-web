@@ -88,6 +88,44 @@ describe('build-docs', () => {
     expect(html).not.toContain('</textarea><');
   });
 
+  it('carries the prebaked model on the stage, and nothing when there is none', () => {
+    // Rendered above without a manifest, which is how the harness runs it: no
+    // model attribute rather than a broken URL. main() is what refuses to ship
+    // a page in that state.
+    for (const [file, html] of byFile) {
+      expect(html, `${file} invented a model reference`).not.toContain('data-docs-model');
+    }
+  });
+
+  it('inlines the model so showing it costs no second request', async () => {
+    const page = pages.find((p) => p.slug === 'finish-edges')!;
+    const withModel = await renderDocsSite(
+      new Map([
+        [
+          page.slug,
+          {
+            slug: page.slug,
+            url: '/docs/models/finish-edges.glb',
+            codeHash: 'x',
+            bytes: 1,
+            bounds: { min: [0, 0, 0], max: [1, 2, 3] },
+            appearances: [{ color: 'servo' }],
+          },
+        ],
+      ]),
+    );
+    const html = new Map(withModel.map((p) => [p.file, p.html])).get('docs/finish-edges.html')!;
+    expect(html).toContain('data-docs-model=');
+    expect(html).toContain('/docs/models/finish-edges.glb');
+    // Bounds and colours travel in the attribute, so the page frames the camera
+    // and shades the body without fetching a manifest.
+    expect(html).toContain('servo');
+    expect(html).toContain('&quot;bounds&quot;');
+    // Still not on the page-load path: the GLB is fetched by the island, and
+    // the island is still reached through a dynamic import.
+    expect(html).not.toMatch(/<link[^>]+\.glb/);
+  });
+
   it('authors no API text of its own', () => {
     // Every signature and description on the page comes from listApi via
     // liveDocs.ts. The generator holds layout, nothing else.

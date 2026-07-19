@@ -1,23 +1,30 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
-// Main-thread half of the live docs. Loaded by a dynamic import the first time
-// a reader touches an example, never on page load — everything here plus the
-// worker it spawns is a few hundred KB of three.js in front of a 10.8 MB wasm,
-// and most readers are here to read.
+// Main-thread half of the live docs: the editor, the canvas, and the prebaked
+// model a reader sees before they touch anything.
 //
-// The page is complete before this file arrives: build-docs.ts emits the code,
-// the caption and the API table as static HTML. This adds the editor and the
-// canvas on top. With JavaScript off, nothing below runs and nothing above is
-// missing.
+// Two things load on two different schedules, and keeping them apart is the
+// point of this file:
 //
-// Contract with the page (site/scripts/build-docs.ts writes the markup, and an
-// inline bootstrap there owns the Run clicks so a click that arrives before
-// this module loads is not dropped).
+//   - This module (three.js + a GLTF loader, a few hundred KB) is imported
+//     after the page has painted, so every example already shows its geometry.
+//     The model itself is a build artifact — see
+//     site/scripts/prebake-docs-models.ts — of the same source printed above it.
+//   - The engine (site/island/docs-worker.ts, ~11 MB of OCCT wasm) is not
+//     touched until someone presses Run. Prebaking exists precisely so nobody
+//     pays for that just to look at a page.
+//
+// The page is complete before either arrives: build-docs.ts emits the code, the
+// caption and the API table as static HTML. With JavaScript off, nothing here
+// runs and nothing above is missing.
 
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { resolveColor } from '../../src/shared/render/palette';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { docsMaterial } from './docsMaterial';
+import type { DocsAppearance } from './docsAppearance';
 import type {
   DocsRunRequest,
   DocsRunResponse,
@@ -36,15 +43,31 @@ import type {
  */
 export const DOCS_RUN_TIMEOUT_MS = 30_000;
 
+interface Bounds {
+  min: [number, number, number];
+  max: [number, number, number];
+}
+
+/** The `data-docs-model` payload build-docs.ts writes onto each stage. */
+interface PrebakedModel {
+  url: string;
+  bounds: { min: number[]; max: number[] };
+  appearances: DocsAppearance[];
+}
+
 interface Stage {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
   controls: OrbitControls;
   bodies: THREE.Group;
+  /** Bounds the camera was last framed on; null until something is drawn. */
+  framedOn: Bounds | null;
 }
 
 const stages = new WeakMap<HTMLElement, Stage>();
+/** Examples with a Run in flight, so the engine-ready broadcast skips them. */
+const running = new WeakSet<HTMLElement>();
 
 let worker: Worker | null = null;
 let nextRequestId = 1;
@@ -56,8 +79,10 @@ function spawnWorker(): Worker {
   w.addEventListener('message', (event: MessageEvent<DocsRunResponse | DocsReadyMessage>) => {
     const data = event.data;
     if ('kind' in data) {
-      document.querySelectorAll('[data-docs-example]').forEach((root) => {
-        setStatus(root as HTMLElement, 'Ready', 'idle');
+      document.querySelectorAll('[data-docs-example]').forEach((node) => {
+        const root = node as HTMLElement;
+        if (running.has(root)) return; // its own run will report the real status
+        setStatus(root, 'Ready', 'idle');
       });
       return;
     }
@@ -117,19 +142,35 @@ function ensureStage(root: HTMLElement): Stage | null {
   const host = root.querySelector('.docs-stage');
   const canvas = root.querySelector('canvas');
   if (!(host instanceof HTMLElement) || !(canvas instanceof HTMLCanvasElement)) return null;
+  // Revealed only when there is something to put in it. An empty canvas that
+  // fills 380px reads as a broken page.
   host.hidden = false;
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
   const scene = new THREE.Scene();
-  // Two lights and an ambient: enough to read a form, cheap enough that the
-  // canvas is never the reason the page feels slow.
-  scene.add(new THREE.AmbientLight(0xffffff, 1.6));
-  const key = new THREE.DirectionalLight(0xffffff, 2.2);
+
+  // An environment map, and it is not optional.
+  //
+  // A MeshStandardMaterial with metalness > 0 has no diffuse term — every bit
+  // of a metal's colour is reflected environment. With lights alone there is
+  // nothing to reflect, so any metalness at all drags the render toward black:
+  // #2b3137 at metalness 0.28 came out as a featureless charcoal wedge with the
+  // fillet and the shell wall both invisible. Lights cannot fix that; only
+  // something to reflect can.
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  pmrem.dispose();
+
+  // A warm key and a cool fill from opposite sides, on top of the environment.
+  // Lighting a coloured part from one white lamp flattens it back to the grey
+  // this viewer used to be: the two tints are what separate a curved face from
+  // a flat one, and what makes a fillet read as a highlight band.
+  const key = new THREE.DirectionalLight(0xFFF4E0, 1.6);
   key.position.set(1, 1.4, 1.2);
   scene.add(key);
-  const fill = new THREE.DirectionalLight(0xffffff, 0.8);
+  const fill = new THREE.DirectionalLight(0xC8D8F0, 0.7);
   fill.position.set(-1, -0.6, -0.8);
   scene.add(fill);
 
@@ -140,7 +181,7 @@ function ensureStage(root: HTMLElement): Stage | null {
   const bodies = new THREE.Group();
   scene.add(bodies);
 
-  const stage: Stage = { renderer, scene, camera, controls, bodies };
+  const stage: Stage = { renderer, scene, camera, controls, bodies, framedOn: null };
   stages.set(root, stage);
 
   const resize = (): void => {
@@ -178,20 +219,12 @@ function disposeBodies(stage: Stage): void {
 
 function buildFeature(feature: DocsMeshFeature): THREE.Group {
   const group = new THREE.Group();
-  const color = new THREE.Color(resolveColor(feature.color));
+  const material = docsMaterial(feature.appearance);
   for (const face of feature.faces) {
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(face.vertices, 3));
     geometry.setAttribute('normal', new THREE.BufferAttribute(face.normals, 3));
     geometry.setIndex(new THREE.BufferAttribute(face.indices, 1));
-    const material = new THREE.MeshStandardMaterial({
-      color,
-      metalness: 0.1,
-      roughness: 0.62,
-      // OCCT emits per-face islands with outward normals; without this the
-      // inside of a shelled body reads as a hole.
-      side: THREE.DoubleSide,
-    });
     group.add(new THREE.Mesh(geometry, material));
   }
   if (feature.transform) {
@@ -200,11 +233,6 @@ function buildFeature(feature: DocsMeshFeature): THREE.Group {
     group.matrix.fromArray(feature.transform as number[]);
   }
   return group;
-}
-
-interface Bounds {
-  min: [number, number, number];
-  max: [number, number, number];
 }
 
 function frame(stage: Stage, bounds: Bounds): void {
@@ -220,6 +248,24 @@ function frame(stage: Stage, bounds: Bounds): void {
   stage.camera.far = distance * 100;
   stage.camera.updateProjectionMatrix();
   stage.controls.update();
+  stage.framedOn = bounds;
+}
+
+/**
+ * Whether Run should move the camera. Re-framing on every Run would yank the
+ * view out from under a reader who orbited and then re-ran unchanged code; not
+ * re-framing at all would leave an edited model half off-screen. So: move only
+ * when the model actually changed size or place.
+ */
+function boundsDiffer(a: Bounds | null, b: Bounds): boolean {
+  if (a === null) return true;
+  const scale = Math.max(1, ...b.max.map(Math.abs), ...b.min.map(Math.abs));
+  const tolerance = scale * 1e-4;
+  for (let i = 0; i < 3; i++) {
+    if (Math.abs(a.min[i] - b.min[i]) > tolerance) return true;
+    if (Math.abs(a.max[i] - b.max[i]) > tolerance) return true;
+  }
+  return false;
 }
 
 /** Post one script to the worker and resolve when it answers or the deadline hits. */
@@ -243,21 +289,76 @@ function dispatch(code: string): Promise<DocsRunResponse> {
   });
 }
 
+/**
+ * Draw the model this example was built with.
+ *
+ * Loaded and parsed before the canvas is revealed, so the reader goes from
+ * "nothing there" to "the part", never through an empty grey box. A failure
+ * here leaves the page exactly as it was — with the source, the tables, and a
+ * working Run button. It never substitutes a shape: a stand-in the reader
+ * mistakes for the example's output is worse than no picture.
+ */
+async function showPrebaked(root: HTMLElement): Promise<void> {
+  const host = root.querySelector('.docs-stage');
+  if (!(host instanceof HTMLElement)) return;
+  const raw = host.dataset.docsModel;
+  if (raw === undefined) return;
+
+  const model = JSON.parse(raw) as PrebakedModel;
+  const response = await fetch(model.url);
+  if (!response.ok) throw new Error(`${model.url} — HTTP ${response.status}`);
+  const gltf = await new GLTFLoader().parseAsync(await response.arrayBuffer(), '');
+
+  // Node order is bake order, and `feature-N` is stamped at bake time, so the
+  // appearance list lines up with the meshes by name rather than by traversal
+  // luck.
+  const meshes: THREE.Mesh[] = [];
+  gltf.scene.traverse((node) => {
+    if (node instanceof THREE.Mesh) meshes.push(node);
+  });
+  meshes.sort((a, b) => a.name.localeCompare(b.name, 'en', { numeric: true }));
+  if (meshes.length !== model.appearances.length) {
+    throw new Error(
+      `${model.url} has ${meshes.length} bodies, manifest describes ${model.appearances.length}`,
+    );
+  }
+  meshes.forEach((mesh, i) => {
+    const old = mesh.material;
+    mesh.material = docsMaterial(model.appearances[i]);
+    if (Array.isArray(old)) old.forEach((m) => m.dispose());
+    else old.dispose();
+  });
+
+  const stage = ensureStage(root);
+  if (!stage) return;
+  stage.bodies.add(gltf.scene);
+  frame(stage, { min: model.bounds.min as Bounds['min'], max: model.bounds.max as Bounds['max'] });
+}
+
 async function run(root: HTMLElement): Promise<void> {
   const editor = root.querySelector('.docs-editor');
   if (!(editor instanceof HTMLTextAreaElement)) return;
+
+  clearError(root);
+  running.add(root);
+  // First Run on the page pays for the engine. Say so rather than sitting on
+  // "Running…" for ten seconds.
+  setStatus(root, worker === null ? 'Loading engine…' : 'Running…', 'busy');
+
+  // The prebaked model stays on screen for the whole run. Clearing it first
+  // would flash an empty canvas for every reader who pressed Run to watch the
+  // same code rebuild.
+  const response = await dispatch(editor.value);
+  running.delete(root);
   const stage = ensureStage(root);
   if (!stage) return;
 
-  clearError(root);
-  setStatus(root, 'Running…', 'busy');
-
-  const response = await dispatch(editor.value);
   if (!response.ok) {
-    // Clear the previous run's model first. Leaving it on screen next to an
-    // error invites the reader to take it as the result of the code they just
+    // Clear the previous model first. Leaving it on screen next to an error
+    // invites the reader to take it as the result of the code they just
     // edited, which is the same lie as rendering a placeholder.
     disposeBodies(stage);
+    stage.framedOn = null;
     showError(root, response.error);
     return;
   }
@@ -266,7 +367,7 @@ async function run(root: HTMLElement): Promise<void> {
   for (const feature of response.features) {
     stage.bodies.add(buildFeature(feature));
   }
-  frame(stage, response.bounds);
+  if (boundsDiffer(stage.framedOn, response.bounds)) frame(stage, response.bounds);
   setStatus(
     root,
     `${response.featureCount} feature${response.featureCount === 1 ? '' : 's'} · ${response.elapsedMs} ms`,
@@ -276,8 +377,10 @@ async function run(root: HTMLElement): Promise<void> {
 
 /**
  * Take over every example on the page: replace the static highlighted listing
- * with an editable copy of the same source, and start the engine downloading.
+ * with an editable copy of the same source, and draw the prebaked model.
  * Idempotent — the bootstrap calls it once, but a double call is harmless.
+ *
+ * Nothing here starts the engine. The worker is constructed by the first Run.
  */
 export function mount(): { run: (root: HTMLElement) => Promise<void> } {
   document.querySelectorAll('[data-docs-example]').forEach((node) => {
@@ -299,9 +402,15 @@ export function mount(): { run: (root: HTMLElement) => Promise<void> } {
         editor.style.height = `${editor.scrollHeight}px`;
       });
     }
-    setStatus(root, 'Loading engine…', 'busy');
+    setStatus(root, '', 'idle');
+
+    void showPrebaked(root).catch((err: unknown) => {
+      // Logged, not shown. The page is still whole and Run still works; a
+      // banner about a missing preview would be noise for a reader who came to
+      // read the API.
+      console.warn('docs: prebaked model unavailable', err);
+    });
   });
 
-  worker ??= spawnWorker();
   return { run };
 }
