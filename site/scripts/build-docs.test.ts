@@ -105,7 +105,7 @@ describe('build-docs', () => {
           page.slug,
           {
             slug: page.slug,
-            url: '/docs/models/finish-edges.glb',
+            url: '/docs/models/finish-edges.kcm',
             codeHash: 'x',
             bytes: 1,
             bounds: { min: [0, 0, 0], max: [1, 2, 3] },
@@ -116,14 +116,14 @@ describe('build-docs', () => {
     );
     const html = new Map(withModel.map((p) => [p.file, p.html])).get('docs/finish-edges.html')!;
     expect(html).toContain('data-docs-model=');
-    expect(html).toContain('/docs/models/finish-edges.glb');
+    expect(html).toContain('/docs/models/finish-edges.kcm');
     // Bounds and colours travel in the attribute, so the page frames the camera
     // and shades the body without fetching a manifest.
     expect(html).toContain('servo');
     expect(html).toContain('&quot;bounds&quot;');
-    // Still not on the page-load path: the GLB is fetched by the island, and
-    // the island is still reached through a dynamic import.
-    expect(html).not.toMatch(/<link[^>]+\.glb/);
+    // Still not eagerly linked: the model is fetched by the island in JS, not
+    // preloaded, so it stays off the parser's discovery path.
+    expect(html).not.toMatch(/<link[^>]+\.kcm/);
   });
 
   it('authors no API text of its own', () => {

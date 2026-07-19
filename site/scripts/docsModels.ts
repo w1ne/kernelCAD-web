@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
-// The contract between the prebaked GLBs and the pages that show them.
+// The contract between the prebaked models and the pages that show them.
 //
-// A prebaked GLB is a COPY of an example's output. The failure mode that
+// A prebaked model is a COPY of an example's output. The failure mode that
 // matters is not a broken build — it is a green one that ships a model built
 // from an older version of the code printed next to it. The reader has no way
 // to tell; the page looks perfect and lies.
@@ -17,8 +17,11 @@ import { createHash } from 'node:crypto';
 import type { DocsAppearance } from '../island/docsAppearance';
 import type { DocsPage } from '../../src/docs/liveDocs';
 
-/** Where the prebaked GLBs live, relative to `site/`. */
+/** Where the prebaked models live, relative to `site/`. */
 export const DOCS_MODEL_DIR = 'docs/models';
+
+/** Extension for site/island/docsMesh.ts's format. Not glTF — see that file. */
+export const DOCS_MODEL_EXT = '.kcm';
 
 /** Manifest filename inside `DOCS_MODEL_DIR`. */
 export const DOCS_MODEL_MANIFEST = 'manifest.json';
@@ -26,9 +29,9 @@ export const DOCS_MODEL_MANIFEST = 'manifest.json';
 /** What the page needs to show a model, and what the gate needs to trust it. */
 export interface DocsModel {
   readonly slug: string;
-  /** Site-absolute URL of the GLB. */
+  /** Site-absolute URL of the model file. */
   readonly url: string;
-  /** SHA-256 of the example source this GLB was built from. */
+  /** SHA-256 of the example source this model was built from. */
   readonly codeHash: string;
   readonly bytes: number;
   /**
@@ -39,10 +42,10 @@ export interface DocsModel {
    */
   readonly bounds: { readonly min: readonly number[]; readonly max: readonly number[] };
   /**
-   * How each drawn feature is shaded, in GLB node order. The page turns these
-   * into materials with the same function the live renderer uses, rather than
-   * reading materials baked into the GLB, so a prebaked body and a re-run body
-   * cannot come out different shades.
+   * How each drawn feature is shaded, in file order. The page turns these into
+   * materials with the same function the live renderer uses, rather than
+   * reading materials baked into the model, so a prebaked body and a re-run
+   * body cannot come out different shades.
    */
   readonly appearances: readonly DocsAppearance[];
 }
