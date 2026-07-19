@@ -4,7 +4,7 @@
 // emits site/public/gallery.json + per-slug assets.
 
 import {
-  copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync, statSync, rmSync,
+  copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync, rmSync,
 } from 'node:fs';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
@@ -193,13 +193,14 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
     // ship GLBs built the same way — the flags there are load-bearing.
     const rawGlb = path.join(slugDir, 'model.raw.glb');
     await exportGlb({ scriptPath: srcScript, outPath: rawGlb });
-    const { bytes: glbSize } = await optimizeGlb(rawGlb, dstModel, {
+    await optimizeGlb(rawGlb, dstModel, {
       repoRoot: REPO_ROOT,
       label: `entry ${entry.slug}`,
       maxBytes: GLB_SIZE_HARD_CAP,
-      // Curated entries are multi-body assemblies whose per-feature colours are
-      // the point; a drop to one material means the palette got flattened.
-      minMaterials: 2,
+      // Gallery entries range from single-body models to 95-body assemblies, so a
+      // fixed material floor would reject valid simple models. The invariant that
+      // matters is that optimization does not FLATTEN whatever colours exist.
+      preserveMaterials: true,
     });
     rmSync(rawGlb, { force: true });
 

@@ -69,10 +69,15 @@ export interface OptimizeOptions {
   repoRoot: string;
   /** Passed through to gltf-transform; see DEFAULT_SIMPLIFY_ERROR. */
   simplifyError?: string;
-  /** Fail if the result has fewer materials than this. Pass 0 to skip (a
-   *  single-material model is legitimate; a multi-part assembly losing its
-   *  colours is not). */
+  /** Fail if the result has fewer materials than this. Pass 0 to skip. Prefer
+   *  `preserveMaterials` unless you know the model's component count: a
+   *  single-material model is perfectly legitimate, so a fixed floor of 2 would
+   *  reject valid simple models. */
   minMaterials?: number;
+  /** Fail if optimization DROPPED materials relative to the input. This is the
+   *  invariant that actually matters — palette merging flattening per-feature
+   *  colours — and unlike a fixed floor it holds for models of any complexity. */
+  preserveMaterials?: boolean;
   /** Fail if the result is >= this many bytes. Pass 0 to skip. */
   maxBytes?: number;
   /** Label used in error messages (part id, gallery slug, …). */
@@ -97,6 +102,7 @@ export async function optimizeGlb(
 ): Promise<OptimizeResult> {
   const label = opts.label ?? outPath;
   const bin = gltfTransformBin(opts.repoRoot);
+  const before = opts.preserveMaterials ? await countMaterials(inPath) : 0;
 
   execFileSync(
     bin,
@@ -127,6 +133,12 @@ export async function optimizeGlb(
   }
 
   const materials = await countMaterials(outPath);
+  if (opts.preserveMaterials && materials < before) {
+    throw new Error(
+      `${label}: optimization DROPPED materials ${before} -> ${materials} ` +
+        `(colors flattened — check --palette false).`,
+    );
+  }
   if (opts.minMaterials && materials < opts.minMaterials) {
     throw new Error(
       `${label}: optimized GLB has ${materials} material(s); ` +

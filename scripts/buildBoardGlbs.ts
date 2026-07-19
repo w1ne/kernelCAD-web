@@ -43,7 +43,6 @@ import {
   readFileSync,
   existsSync,
   rmSync,
-  statSync,
   mkdtempSync,
 } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
