@@ -24,6 +24,7 @@ Otherwise prefer URDF — wider tool ecosystem.
 - **Mesh `<scale>0.001 0.001 0.001</scale>`** on every visual/collision: link STLs are kernelCAD-native mm, SDFormat consumes metres, and the scale keeps geometry consistent with the (already-SI) inertials and joint poses.
 - **Companion mesh files**: `meshes/<part>.stl` written next to `output_path` by the MCP tool and the CLI; the written paths are reported in `mesh_files`.
 - **World anchor**: `arm.virtualJoint(name, { type: 'fixed', parentFrame: 'world', childLink })` lowers to a native `<joint type="fixed"><parent>world</parent>...` so the model spawns welded instead of free-falling.
+- **Per-link density**: prefer `arm.part(name, shape, { material })` (`steel`/`aluminum`/`pla`/`abs`/`pet`) — one word seeds the `<inertial>` density from the catalog (and a matching render finish). A raw `{ density }` in kg/m³ still works and overrides the material's; every link with neither inherits water (1000) and the export warns.
 
 ## Quickstart — 4-bar linkage
 

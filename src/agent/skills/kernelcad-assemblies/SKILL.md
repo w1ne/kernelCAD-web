@@ -75,16 +75,28 @@ arm.mate('shoulder', 'base.shoulder', 'link.root', 'revolute', { limitsDeg: [-90
 return arm.model();
 ```
 
-### Per-part density
+### Per-part material and density
 
-`arm.part(name, shape, { density })` accepts a per-part material density in `kg/m^3`. The default is `1000` (water-equivalent), which produces correct silhouettes but unrealistic dynamics for any metallic or plastic part. Declare density when the assembly will be exported to a downstream dynamics-aware format — `export({ target: 'model', format: 'urdf' })` or `export({ target: 'model', format: 'sdf-gazebo' })` emit a warning for any link that inherits the default.
-
-Typical values: steel `7850`, aluminum `2700`, ABS plastic `1050`, brass `8500`, titanium `4500`.
+Prefer naming a **material**: `arm.part(name, shape, { material })` seeds BOTH the part's density default (for mass / inertia) AND a default surface finish (for the render) from one word — a material name carries how the part weighs and how it looks. Valid materials: `steel`, `aluminum` (alias `aluminium`), `pla`, `abs`, `pet`. An unknown name throws, naming the valid materials — never a silent water default.
 
 ```typescript
-arm.part('shoulder-bracket', bracketShape, { density: 2700 });   // aluminum
-arm.part('hub', hubShape, { density: 7850 });                    // steel
+arm.part('shoulder-bracket', bracketShape, { material: 'aluminum' }); // 2700 kg/m³ + aluminium finish
+arm.part('hub', hubShape, { material: 'steel' });                     // 7850 kg/m³ + steel finish
 ```
+
+Both seeds are **defaults, independently overridable**:
+
+- An explicit `{ density }` (kg/m³) overrides the material's density for mass/inertia. Use it for a measured lot, or for a material with no catalog entry.
+- An explicit `.finish()` / `.color()` / `.material()` already on the shape overrides the material's finish — explicit appearance always wins.
+
+```typescript
+arm.part('hub', hubShape, { material: 'steel', density: 8100 });   // steel finish, custom density
+arm.part('trim', shape.finish('brass'), { material: 'steel' });    // brass look kept, steel mass
+```
+
+`arm.part(name, shape, { density })` on its own still works: a raw per-part density in `kg/m^3`, default `1000` (water-equivalent), which produces correct silhouettes but unrealistic dynamics for any metallic or plastic part. Declare a material or density when the assembly will be exported to a downstream dynamics-aware format — `export({ target: 'model', format: 'urdf' })` or `export({ target: 'model', format: 'sdf-gazebo' })` emit a warning for any link that inherits the default.
+
+Typical raw densities: steel `7850`, aluminum `2700`, ABS plastic `1050`, brass `8500`, titanium `4500`.
 
 ```typescript
 interface Assembly {
@@ -92,7 +104,11 @@ interface Assembly {
     at?: [number, number, number];
     connectors?: Record<string, { origin: [number, number, number]; axis?: [number, number, number] }>;
     connect?: { connector: string; to: AssemblyConnectorRef; name?: string };
-    /** Material density in kg/m^3. Default 1000 (water). */
+    /** Named material: seeds the density default AND a default finish.
+     *  steel | aluminum (alias aluminium) | pla | abs | pet. */
+    material?: string;
+    /** Raw material density in kg/m^3. Default 1000 (water). Overrides the
+     *  density seeded by `material`. */
     density?: number;
   }): AssemblyPartRef;
   connect(name: string, a: AssemblyConnectorRef, b: AssemblyConnectorRef): AssemblyConnectRef;

@@ -56,9 +56,13 @@ For lossy mappings switch to `format: 'sdf-gazebo'` if the downstream consumer a
 
 ## Inertia and density
 
-Every link emits an `<inertial>` block computed via analytic mass-properties on the captured shape. Default density is 1000 kg/m³ (water) — wrong by ~8× for steel, ~2.7× for aluminum. Declare per-part density on `arm.part(name, shape, { density })` to get physically meaningful dynamics. The export emits `export.urdf.inertia-density-declared` as a warning for any link that inherits the default.
+Every link emits an `<inertial>` block computed via analytic mass-properties on the captured shape. Default density is 1000 kg/m³ (water) — wrong by ~8× for steel, ~2.7× for aluminum. Prefer naming a **material** on `arm.part(name, shape, { material })` (`steel` | `aluminum`/`aluminium` | `pla` | `abs` | `pet`) — it seeds the density from the catalog (and a matching render finish) in one word. Or pass a raw `{ density }` in kg/m³ for a value outside the catalog; the explicit number overrides the material's. The export emits `export.urdf.inertia-density-declared` as a warning for any link that inherits the default (no material and no density).
 
-Typical values: steel `7850`, aluminum `2700`, ABS `1050`, brass `8500`, titanium `4500`.
+```typescript
+const base = arm.part('base', box(30, 30, 8), { material: 'aluminum' }); // 2700 kg/m³
+```
+
+Typical raw densities: steel `7850`, aluminum `2700`, ABS `1050`, brass `8500`, titanium `4500`.
 
 ## Closed loops
 
