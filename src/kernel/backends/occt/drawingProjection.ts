@@ -28,7 +28,7 @@ import {
   ProjectionCamera,
   type AnyShape,
 } from 'replicad';
-import type { Polyline2, DrawingViewName } from './drawingLayout';
+import type { Polyline2, Pt2, DrawingViewName } from './drawingLayout';
 
 /** Raw OCCT shape handle (TopoDS_Shape), named via `cast`'s signature so we
  *  don't depend on the wasm package's type-export shape. */
@@ -56,20 +56,62 @@ export interface ProjectedViewEdges {
  *            edge lands at the right of the left view, adjacent to front).
  *   - iso:   pictorial from the upper front-left octant.
  */
+type V3 = [number, number, number];
+
+/** Camera definitions, single-sourced so `makeDrawingCamera` (which drives the
+ *  HLR pass) and `viewBasis` (which drives annotation anchoring) can never
+ *  disagree — an annotation projected through a different basis than the
+ *  geometry would silently float off its feature. */
+const VIEW_CAMERAS: Record<DrawingViewName, { direction: V3; xAxis: V3 }> = {
+  front: { direction: [0, -1, 0], xAxis: [1, 0, 0] },
+  top: { direction: [0, 0, 1], xAxis: [1, 0, 0] },
+  left: { direction: [-1, 0, 0], xAxis: [0, -1, 0] },
+  iso: {
+    direction: [-1 / Math.sqrt(3), -1 / Math.sqrt(3), 1 / Math.sqrt(3)],
+    xAxis: [1 / Math.sqrt(2), -1 / Math.sqrt(2), 0],
+  },
+};
+
 export function makeDrawingCamera(view: DrawingViewName): ProjectionCamera {
-  switch (view) {
-    case 'front':
-      return new ProjectionCamera([0, 0, 0], [0, -1, 0], [1, 0, 0]);
-    case 'top':
-      return new ProjectionCamera([0, 0, 0], [0, 0, 1], [1, 0, 0]);
-    case 'left':
-      return new ProjectionCamera([0, 0, 0], [-1, 0, 0], [0, -1, 0]);
-    case 'iso': {
-      const k = 1 / Math.sqrt(3);
-      const h = 1 / Math.sqrt(2);
-      return new ProjectionCamera([0, 0, 0], [-k, -k, k], [h, -h, 0]);
-    }
-  }
+  const c = VIEW_CAMERAS[view];
+  return new ProjectionCamera([0, 0, 0], c.direction, c.xAxis);
+}
+
+const cross = (a: V3, b: V3): V3 => [
+  a[1] * b[2] - a[2] * b[1],
+  a[2] * b[0] - a[0] * b[2],
+  a[0] * b[1] - a[1] * b[0],
+];
+
+const norm = (v: V3): V3 => {
+  const l = Math.hypot(v[0], v[1], v[2]);
+  return l > 0 ? [v[0] / l, v[1] / l, v[2] / l] : v;
+};
+
+/**
+ * Orthonormal screen basis of a drawing view in model space: `x` is screen
+ * right, `y` is screen up. A model point's model-2D coordinate — the same
+ * frame HLR emits — is `[p·x, p·y]`.
+ *
+ * Screen-up is `direction × xAxis`, matching OCCT's projector convention;
+ * the resulting axes are exactly the ones documented on `makeDrawingCamera`
+ * (front → +X/+Z, top → +X/+Y, left → −Y/+Z).
+ */
+export function viewBasis(view: DrawingViewName): { x: V3; y: V3 } {
+  const c = VIEW_CAMERAS[view];
+  return { x: norm(c.xAxis), y: norm(cross(c.direction, c.xAxis)) };
+}
+
+/** Project a model-space point into the view's model-2D frame (y up). */
+export function projectPointForDrawing(
+  p: readonly [number, number, number],
+  view: DrawingViewName,
+): Pt2 {
+  const b = viewBasis(view);
+  return [
+    p[0] * b.x[0] + p[1] * b.x[1] + p[2] * b.x[2],
+    p[0] * b.y[0] + p[1] * b.y[1] + p[2] * b.y[2],
+  ];
 }
 
 export interface ProjectionOptions {

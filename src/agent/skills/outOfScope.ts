@@ -109,15 +109,18 @@ export const OUT_OF_SCOPE_CLAIMS: readonly OutOfScopeClaim[] = [
   {
     id: 'feature-level-dimensioning',
     claim:
-      'Feature-level dimensioning on `svg-drawing` (hole callouts, param-bound dims, section views) — deferred; overall bounding-box dimensions and the title block do ship',
+      'Section views and param-bound (auto-updating) dimensions on `svg-drawing` — deferred; ' +
+      'authored feature dimensioning DOES ship (`options.annotations`: linear / radius / diameter / ' +
+      'angular / leader notes, anchored by EdgeQuery / FaceQuery or an explicit point), as do the ' +
+      'automatic bounding-box dimensions and the title block',
     probes: [
       {
         kind: 'manual',
         justification:
-          "svg-drawing is already in export's format enum and already emits bounding-box dimensions " +
-          '(CHANGELOG v0.8 entry; tool description in referenceExportTools.ts). Richer dimensioning ' +
-          'would arrive inside the per-format `options` bag, not as a new enum value, so no probe ' +
-          'can see it. Re-verify by reading the svg-drawing options in referenceExportTools.ts.',
+          "svg-drawing is already in export's format enum, and its dimensioning lives inside the " +
+          'per-format `options` bag rather than as a new enum value, so no probe can see it. ' +
+          'Re-verify by reading the svg-drawing options in referenceExportTools.ts — `annotations` ' +
+          'is documented there, while `section` and param binding are absent.',
       },
     ],
   },

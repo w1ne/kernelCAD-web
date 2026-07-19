@@ -388,3 +388,192 @@ export function dimensionToSvg(d: LinearDimension, textHeight = 3.2): string {
     `</g>`
   );
 }
+
+// ---------------------------------------------------------------------------
+// Radial / angular dimensions and leader notes
+//
+// All three share the leader idiom: a line out of the measured feature, a
+// horizontal "shoulder" (landing), and the label sitting on the shoulder.
+// Every length below is in SHEET millimetres and is therefore independent of
+// the drawing scale — a 1:5 sheet and a 2:1 sheet get identically sized
+// arrowheads, leaders and text. Only the anchor POSITIONS scale.
+// ---------------------------------------------------------------------------
+
+/** Leader stem length past the arrow tip, sheet mm. */
+const LEADER_STEM = 7;
+/** Horizontal shoulder the label sits on, sheet mm. */
+const LEADER_LAND = 5;
+
+interface Shoulder {
+  /** Elbow: end of the slanted stem, start of the horizontal shoulder. */
+  ex: number;
+  ey: number;
+  /** Outboard end of the shoulder, where the label anchors. */
+  sx: number;
+  /** +1 when the shoulder runs right, −1 when it runs left. */
+  dir: 1 | -1;
+}
+
+/**
+ * Slanted stem + horizontal shoulder from `tip` along the unit vector (ux, uy).
+ * The shoulder always runs away from the feature (right when the leader points
+ * right) so the label never overlaps the geometry it points at.
+ */
+function shoulder(tip: Pt2, ux: number, uy: number, stem: number): Shoulder {
+  const ex = tip[0] + ux * stem;
+  const ey = tip[1] + uy * stem;
+  const dir: 1 | -1 = ux >= 0 ? 1 : -1;
+  return { ex, ey, sx: ex + dir * LEADER_LAND, dir };
+}
+
+/** Label text sitting just above a shoulder, anchored at its outboard end. */
+function shoulderLabel(s: Shoulder, label: string, textHeight: number): string {
+  const anchor = s.dir === 1 ? 'end' : 'start';
+  return (
+    `<text x="${fmt(s.sx)}" y="${fmt(s.ey - 1)}" font-size="${textHeight}" ` +
+    `text-anchor="${anchor}" fill="#000" stroke="none">${label}</text>`
+  );
+}
+
+export interface RadialDimension {
+  kind: 'radius' | 'diameter';
+  /** Circle centre in sheet coords. */
+  center: Pt2;
+  /** Circle radius already converted to sheet mm (model radius × scale). */
+  radius: number;
+  /** Leader direction out of the centre, radians in sheet coords (y down). */
+  angle: number;
+  /** Pre-formatted label including its `R` / `⌀` prefix. */
+  label: string;
+  /** Extra stem length beyond `LEADER_STEM`, sheet mm. */
+  stemExtra?: number;
+}
+
+/**
+ * Render a radius or diameter callout. Both are drawn with the leader running
+ * OUTSIDE the circle — the inside-the-circle form is unreadable once the
+ * feature is small on the sheet, which is the common case for holes at a
+ * reduced drawing scale.
+ *
+ * A radius measures centre → rim (one arrowhead at the rim). A diameter
+ * measures rim → rim through the centre (two arrowheads). In both cases the
+ * measuring line continues past the rim into the leader stem, so the arrow
+ * tip lands exactly on the circle it dimensions.
+ */
+export function radialDimensionToSvg(d: RadialDimension, textHeight = 3.2): string {
+  const ux = Math.cos(d.angle);
+  const uy = Math.sin(d.angle);
+  const [cx, cy] = d.center;
+  const rim: Pt2 = [cx + ux * d.radius, cy + uy * d.radius];
+  const inner: Pt2 =
+    d.kind === 'diameter' ? [cx - ux * d.radius, cy - uy * d.radius] : d.center;
+  const s = shoulder(rim, ux, uy, LEADER_STEM + (d.stemExtra ?? 0));
+
+  const parts: string[] = [
+    // One straight run from the far measuring point out to the elbow: the
+    // measuring line and the leader stem are collinear by construction.
+    `<line x1="${fmt(inner[0])}" y1="${fmt(inner[1])}" x2="${fmt(s.ex)}" y2="${fmt(s.ey)}"/>`,
+    `<line x1="${fmt(s.ex)}" y1="${fmt(s.ey)}" x2="${fmt(s.sx)}" y2="${fmt(s.ey)}"/>`,
+    arrowhead(rim, ux, uy),
+  ];
+  if (d.kind === 'diameter') parts.push(arrowhead(inner, -ux, -uy));
+  parts.push(shoulderLabel(s, d.label, textHeight));
+
+  return (
+    `<g class="dim" fill="none" stroke="#000" stroke-width="0.18">` +
+    parts.join('') +
+    `</g>`
+  );
+}
+
+export interface AngularDimension {
+  /** Corner point where the two measured directions meet, sheet coords. */
+  apex: Pt2;
+  /** Arc endpoints as directions out of the apex, radians in sheet coords. */
+  startAngle: number;
+  endAngle: number;
+  /** Arc radius in sheet mm (constant — angular dimensions do not scale). */
+  radius: number;
+  /** Pre-formatted label including its `°` suffix. */
+  label: string;
+}
+
+/**
+ * Render an angular dimension: two extension lines out of the apex, an arc
+ * between them, tangential arrowheads at both arc ends, and the label on the
+ * bisector just outside the arc.
+ *
+ * `startAngle`/`endAngle` are given in sheet coords (y down), so the sweep
+ * from start to end is the SHORT way round by caller contract — the caller
+ * normalises the pair before handing them over.
+ */
+export function angularDimensionToSvg(d: AngularDimension, textHeight = 3.2): string {
+  const EXT_OVER = 2.5; // extension-line overshoot past the arc, sheet mm
+  const [ax, ay] = d.apex;
+  const at = (ang: number, r: number): Pt2 =>
+    [ax + Math.cos(ang) * r, ay + Math.sin(ang) * r];
+
+  const p0 = at(d.startAngle, d.radius);
+  const p1 = at(d.endAngle, d.radius);
+  const e0 = at(d.startAngle, d.radius + EXT_OVER);
+  const e1 = at(d.endAngle, d.radius + EXT_OVER);
+  const sweep = d.endAngle - d.startAngle;
+
+  const parts: string[] = [
+    `<line x1="${fmt(ax)}" y1="${fmt(ay)}" x2="${fmt(e0[0])}" y2="${fmt(e0[1])}"/>`,
+    `<line x1="${fmt(ax)}" y1="${fmt(ay)}" x2="${fmt(e1[0])}" y2="${fmt(e1[1])}"/>`,
+    `<path d="M ${fmt(p0[0])} ${fmt(p0[1])} A ${fmt(d.radius)} ${fmt(d.radius)} 0 0 ` +
+      `${sweep >= 0 ? 1 : 0} ${fmt(p1[0])} ${fmt(p1[1])}"/>`,
+    // Arrowheads point along the arc tangent, i.e. perpendicular to the radius,
+    // in the direction the sweep travels.
+    arrowhead(p0, Math.sin(d.startAngle) * (sweep >= 0 ? -1 : 1),
+      Math.cos(d.startAngle) * (sweep >= 0 ? 1 : -1)),
+    arrowhead(p1, Math.sin(d.endAngle) * (sweep >= 0 ? 1 : -1),
+      Math.cos(d.endAngle) * (sweep >= 0 ? -1 : 1)),
+  ];
+
+  const mid = (d.startAngle + d.endAngle) / 2;
+  const lp = at(mid, d.radius + EXT_OVER + textHeight * 0.6);
+  parts.push(
+    `<text x="${fmt(lp[0])}" y="${fmt(lp[1])}" font-size="${textHeight}" ` +
+    `text-anchor="middle" fill="#000" stroke="none">${d.label}</text>`,
+  );
+
+  return (
+    `<g class="dim" fill="none" stroke="#000" stroke-width="0.18">` +
+    parts.join('') +
+    `</g>`
+  );
+}
+
+export interface LeaderNote {
+  /** Point the arrow touches, sheet coords. */
+  target: Pt2;
+  /** Leader direction out of the target, radians in sheet coords (y down). */
+  angle: number;
+  text: string;
+  /** Extra stem length beyond `LEADER_STEM`, sheet mm. */
+  stemExtra?: number;
+}
+
+/**
+ * Render a note with a leader line. The arrowhead points AT the target (i.e.
+ * back down the leader), which is the drafting convention that distinguishes
+ * a note leader from a dimension line.
+ */
+export function leaderNoteToSvg(n: LeaderNote, textHeight = 3.2): string {
+  const ux = Math.cos(n.angle);
+  const uy = Math.sin(n.angle);
+  const s = shoulder(n.target, ux, uy, LEADER_STEM + (n.stemExtra ?? 0));
+  const parts = [
+    `<line x1="${fmt(n.target[0])}" y1="${fmt(n.target[1])}" x2="${fmt(s.ex)}" y2="${fmt(s.ey)}"/>`,
+    `<line x1="${fmt(s.ex)}" y1="${fmt(s.ey)}" x2="${fmt(s.sx)}" y2="${fmt(s.ey)}"/>`,
+    arrowhead(n.target, -ux, -uy),
+    shoulderLabel(s, n.text, textHeight),
+  ];
+  return (
+    `<g class="dim note" fill="none" stroke="#000" stroke-width="0.18">` +
+    parts.join('') +
+    `</g>`
+  );
+}
