@@ -75,7 +75,7 @@ These appear in the rendered image, not in `evaluate` output:
 
 | Artefact | Cause | Fix |
 |----------|-------|-----|
-| Flat grey surface (no gloss) | PBR material not applied, or applied after a boolean (no-op). | Apply `.material()` to each leaf part BEFORE it enters a boolean. |
+| Flat grey surface (no gloss) | No finish/material applied, or applied after a boolean (no-op). | Apply `.finish(name)` (or `.material()` for raw PBR) to each leaf part BEFORE it enters a boolean. |
 | Floating sub-component | The part was not translated into contact with its parent. | Re-read the brief's hidden-side inference; verify Y-layer ordering. |
 | Clipped model on the right | `kernelcad render` run without `--width 1920 --height 1080`. | Re-run with the correct resolution flag. |
 | Black render / all-black PNG | Frame sampling gate: output file is valid but content is near-black. | Check that the camera direction is correct and the model is not inside a solid. |

@@ -242,8 +242,9 @@ Change how a model reads without changing what it is: text, color, lighting, cam
 | `sketch : { text(content: string, opts: { size: Editable<number>; align?: "left" \| "center" \| "right"; position?: [Editable<number>, Editable<number>]; rotation?: Editable<number>; font?: string }): Sketch }` | Sketch primitives namespace. |
 | `fontPath(p: string) => FontPath` | Brand a string as a font filesystem path (TTF). |
 | `Shape.embossText(opts: { textContent: string; fontFamily?: string; size: Editable<number>; depth: Editable<number>; align?: 'left' \| 'center' \| 'right'; anchorU?: Editable<number>; anchorV?: Editable<number>; rotation?: Editable<number>; scaleMode?: 'original' \| 'native' \| 'bounds'; face: FaceSelector \| string }) => Shape` | Raise or recess text on a target face. |
-| `Shape.color(name: ColorToken \| `#${string}`) => Shape` | Tag this shape with a role color (servo/gear/beam/shaft/plate/pin/frame/tool) or a literal `#rrggbb` hex. |
-| `Shape.material(opts: PBRMaterial & { face?: string }) => Shape` | Apply a PBR material (baseColor required; optional metalness/roughness/clearcoat/clearcoatRoughness/ior/transmission/sheen/opacity). |
+| `Shape.color(name: ColorToken \| `#${string}`) => Shape` | Set HUE ONLY: a role color (servo/gear/beam/shaft/plate/pin/frame/tool) or a literal `#rrggbb` hex. |
+| `Shape.finish(name: FinishToken, opts?: { color?: string; face?: string }) => Shape` | PREFERRED way to make a part look like a real material. |
+| `Shape.material(opts: PBRMaterial & { face?: string }) => Shape` | ADVANCED / renderer-level escape hatch — raw PBR floats for glass, clearcoat, anisotropy, and image textures when no `.finish()` token fits. |
 | `referenceImage(path: string, opts: { plane, anchor?, scale?, opacity?, flipU?, flipV? }) => ReferenceImageHandle` | Overlay a reference image on a plane for tracing or design review. |
 | `setRenderEnvironment(spec: { preset?: 'studio' \| 'softbox' \| 'neutral' \| 'outdoor' \| 'warehouse'; url?: string; intensity?: number; rotation?: number }) => RenderEnvironmentHandle` | Set the HDRI / image-based-lighting environment for the rendered scene. |
 | `setCameraTarget(x: number, y: number, z: number) => CameraTargetHandle` | Override the camera look-at target for `setRenderPose` and headless engineering renders. |

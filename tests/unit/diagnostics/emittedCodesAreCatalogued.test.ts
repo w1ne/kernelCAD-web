@@ -174,7 +174,8 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       runtime with no filesystem — the in-browser script engine)
     //  +  2 Geom2dGcc tangency outcomes: sketch.tangency.no-solution and
     //       sketch.tangency.ambiguous = 246.
-    expect(catalogue.size).toBe(246);
+    //  +  1 feature.finish.unknown-token (.finish() unknown-name hard error) = 247.
+    expect(catalogue.size).toBe(247);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

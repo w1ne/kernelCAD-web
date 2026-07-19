@@ -24,6 +24,8 @@ import { toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
 import { Transform } from '../../shared/runtime/se3';
 import type { ColorToken } from '../../shared/render/palette';
 import { resolveColor } from '../../shared/render/palette';
+import type { FinishToken } from '../../shared/render/finishes';
+import { expandFinish } from '../../shared/render/finishes';
 import type { PBRMaterial } from '../../shared/intent/material';
 import type { TextureRef, TextureSet } from '../../shared/intent/textureRef';
 import { isTextureRef, normalizeTextureRef } from '../../shared/intent/textureRef';
@@ -473,6 +475,53 @@ export class Shape {
     }
 
     return this;
+  }
+
+  /**
+   * Apply a named surface finish — the front door for making a part look like
+   * a real material. `.finish('anodized-black')` expands a curated token to
+   * concrete PBR floats and writes the SAME `metadata.material` record
+   * `.material({...})` produces, so the renderer and every exporter consume it
+   * unchanged.
+   *
+   * Prefer this over `.material({ metalness, roughness, ... })`: you name the
+   * material ("brass", "matte ABS", "tinted glass"), not the BRDF blend factors.
+   * Reach for `.material()` only for glass/clearcoat/anisotropy/textures that no
+   * finish token covers (see that method's docs — it is the advanced tier).
+   *
+   * The three appearance verbs and how they compose on one leaf:
+   *   - `.color(token | '#hex')` — HUE ONLY. Writes `metadata.color`.
+   *   - `.finish(name, { color? })` — hue + surface character. Writes `metadata.material`.
+   *   - `.material({...})` — raw PBR escape hatch. Also writes `metadata.material`.
+   * Precedence: a `metadata.material` record (from `.finish()` OR `.material()`)
+   * overrides a `.color()` hue at render time. `.finish()` and `.material()`
+   * target the same slot, so on one leaf it is last-write-wins between them. To
+   * TINT a finish, pass `{ color }` here rather than layering `.color()` under
+   * it — the layered hue would be shadowed.
+   *
+   * @param name  a finish token; an unknown name throws
+   *              `feature.finish.unknown-token` listing the valid finishes (no
+   *              silent fallback to a default).
+   * @param opts.color  override the hue while keeping the finish's surface
+   *              character. Meaningful for paints / ABS / anodising; accepted
+   *              but off for raw metals (the metal is its colour).
+   * @param opts.face   apply to faces matching an upstream `faceLabels` entry
+   *              only, exactly like `.material({ face })`.
+   *
+   * Same lifecycle as `.color()` / `.material()`: apply to leaf parts before a
+   * boolean; identity dies at booleans.
+   */
+  finish(name: FinishToken, opts?: { color?: string; face?: string }): Shape {
+    // expandFinish throws `feature.finish.unknown-token` (with this shape's id)
+    // for an unknown name. Valid finishes clamp cleanly, so routing the result
+    // through .material() reuses its validation + per-face plumbing with no
+    // extra clamp warning.
+    const pbr = expandFinish(
+      name,
+      opts?.color !== undefined ? { color: opts.color } : undefined,
+      this.id,
+    );
+    return this.material(opts?.face !== undefined ? { ...pbr, face: opts.face } : pbr);
   }
 
   /**

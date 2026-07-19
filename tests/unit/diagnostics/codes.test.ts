@@ -52,8 +52,11 @@ describe('diagnostic catalogue invariants', () => {
     //   or line satisfies the requested tangencies) and
     //   sketch.tangency.ambiguous (several do, and no hint said which).
     //   = 246.
-    expect(DIAGNOSTIC_CODES).toHaveLength(246);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(246);
+    // + 1 feature.finish.unknown-token (named-finish front door: .finish() with
+    //   a name not in the curated finish table fails loudly, no silent default).
+    //   = 247.
+    expect(DIAGNOSTIC_CODES).toHaveLength(247);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(247);
   });
 
   it('every code has a non-empty hint template', () => {
