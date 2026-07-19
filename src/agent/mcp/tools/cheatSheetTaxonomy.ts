@@ -83,7 +83,7 @@ export interface CheatSheetGroup {
 export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   {
     task: 'Start a shape',
-    blurb: 'The first call of any model: a solid primitive, or a 2D profile you will extrude.',
+    blurb: 'The first call in any model: a solid primitive, or a 2D profile to extrude.',
     names: [
       'box', 'cylinder', 'sphere', 'torus', 'spring',
       'extrudeRect', 'extrudeCircle', 'extrudePolygon', 'extrudeRoundedRect',
@@ -96,12 +96,12 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   },
   {
     task: 'Add material',
-    blurb: 'Turn a profile into a solid, or grow an existing one along a path.',
+    blurb: 'Turn a profile into a solid, or grow one along a path.',
     names: ['extrude', 'revolve', 'sweep', 'loft', 'variableSweep', 'helix'],
   },
   {
     task: 'Remove material',
-    blurb: 'Cut into a solid: bolt holes, pockets, slots, and arbitrary subtractions.',
+    blurb: 'Cut into a solid: bolt holes, pockets, slots, plain subtraction.',
     names: ['subtract', 'hole', 'holes', 'cutout'],
   },
   {
@@ -111,13 +111,13 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   },
   {
     task: 'Finish edges',
-    blurb: 'Manufacturing-facing finishing: break edges, add draft, hollow out, fold sheet.',
+    blurb: 'Break edges, add draft, hollow out a wall, fold sheet metal.',
     names: ['fillet', 'chamfer', 'draft', 'shell', 'bend', 'flattenPattern'],
   },
   {
     task: 'Select geometry',
     blurb:
-      'Name the edges or faces a feature should act on — query inside OCCT first, then rank or bucket the resolved list.',
+      'Pick the edges or faces a feature acts on. Query inside OCCT first, then sort or group what comes back.',
     names: [
       'selectEdges', 'selectEdge', 'select', 'q',
       'sortBy', 'sortByDistance', 'groupBy', 'filterBy', 'filterByPosition',
@@ -126,7 +126,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   },
   {
     task: 'Place & transform',
-    blurb: 'Move a finished body into position, mirror it, or repeat it.',
+    blurb: 'Move a body into position, mirror it, or repeat it.',
     names: [
       'translate', 'rotate', 'rotateX', 'rotateY', 'rotateZ', 'transform',
       'alongAxis', 'scale', 'reflect', 'mirror',
@@ -136,13 +136,13 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   },
   {
     task: 'Assemble',
-    blurb: 'Compose parts into a mechanism with connectors, mates, joints, and posed Scenes.',
+    blurb: 'Build a mechanism from parts: connectors, mates, joints, posed Scenes.',
     names: ['assembly', 'joint', 'part', 'parts', 'assemblyName'],
   },
   {
     task: 'Curves & surfaces',
     blurb:
-      'Free-form work: NURBS curves and surfaces, and the evaluators that let you reason about them before they become solids.',
+      'NURBS curves and surfaces, plus the evaluators for measuring them before they become solids.',
     names: [
       'nurbsCurve', 'spline3d', 'hermiteG2', 'nurbsSurface', 'surfaceFromCurves',
       'surfaceFromBoundary', 'sew', 'thicken', 'toShape', 'trimTo', 'split',
@@ -154,7 +154,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   },
   {
     task: 'Measure & verify',
-    blurb: 'Ask the kernel what you actually built, and gate the answer before shipping it.',
+    blurb: 'Ask the kernel what you actually built, and check it before shipping.',
     names: ['boundingBox', 'bbox', 'length', 'lower', 'kinematic', 'dfmSpec'],
   },
   {
@@ -164,12 +164,12 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   },
   {
     task: 'Import & export',
-    blurb: 'Bring in vendor geometry, and hand a model to the outside world.',
+    blurb: 'Bring in vendor geometry, and write models back out.',
     names: ['lib', 'toCompound'],
   },
   {
     task: 'Annotate & present',
-    blurb: 'Everything that changes how the model reads rather than what it is: text, color, lighting, camera, motion.',
+    blurb: 'Change how a model reads without changing what it is: text, color, lighting, camera, motion.',
     names: [
       'sketch', 'fontPath', 'embossText', 'color', 'material',
       'referenceImage', 'setRenderEnvironment', 'setCameraTarget', 'setCameraDistance',

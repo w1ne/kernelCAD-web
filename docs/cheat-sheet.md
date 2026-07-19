@@ -2,28 +2,29 @@
 
 # kernelCAD cheat sheet
 
-The script API grouped by what you are trying to DO. Every row is generated from
-`src/agent/mcp/tools/listApi.ts`; call `lookup_api(query)` for the full description of any entry.
+The script API, grouped by the job you are doing rather than by the object you
+call it on. Rows come from `src/agent/mcp/tools/listApi.ts`; for the full
+description of any entry, call `lookup_api(query)`.
 
 | Task | What it covers |
 |---|---|
-| [Start a shape](#start-a-shape) | The first call of any model: a solid primitive, or a 2D profile you will extrude. |
-| [Add material](#add-material) | Turn a profile into a solid, or grow an existing one along a path. |
-| [Remove material](#remove-material) | Cut into a solid: bolt holes, pockets, slots, and arbitrary subtractions. |
+| [Start a shape](#start-a-shape) | The first call in any model: a solid primitive, or a 2D profile to extrude. |
+| [Add material](#add-material) | Turn a profile into a solid, or grow one along a path. |
+| [Remove material](#remove-material) | Cut into a solid: bolt holes, pockets, slots, plain subtraction. |
 | [Combine shapes](#combine-shapes) | Merge or intersect solids, or group them without paying for a boolean. |
-| [Finish edges](#finish-edges) | Manufacturing-facing finishing: break edges, add draft, hollow out, fold sheet. |
-| [Select geometry](#select-geometry) | Name the edges or faces a feature should act on — query inside OCCT first, then rank or bucket the resolved list. |
-| [Place & transform](#place--transform) | Move a finished body into position, mirror it, or repeat it. |
-| [Assemble](#assemble) | Compose parts into a mechanism with connectors, mates, joints, and posed Scenes. |
-| [Curves & surfaces](#curves--surfaces) | Free-form work: NURBS curves and surfaces, and the evaluators that let you reason about them before they become solids. |
-| [Measure & verify](#measure--verify) | Ask the kernel what you actually built, and gate the answer before shipping it. |
+| [Finish edges](#finish-edges) | Break edges, add draft, hollow out a wall, fold sheet metal. |
+| [Select geometry](#select-geometry) | Pick the edges or faces a feature acts on. Query inside OCCT first, then sort or group what comes back. |
+| [Place & transform](#place--transform) | Move a body into position, mirror it, or repeat it. |
+| [Assemble](#assemble) | Build a mechanism from parts: connectors, mates, joints, posed Scenes. |
+| [Curves & surfaces](#curves--surfaces) | NURBS curves and surfaces, plus the evaluators for measuring them before they become solids. |
+| [Measure & verify](#measure--verify) | Ask the kernel what you actually built, and check it before shipping. |
 | [Parametrize](#parametrize) | Declare editable dimensions and do arithmetic on them (JS operators throw on a ParamRef). |
-| [Import & export](#import--export) | Bring in vendor geometry, and hand a model to the outside world. |
-| [Annotate & present](#annotate--present) | Everything that changes how the model reads rather than what it is: text, color, lighting, camera, motion. |
+| [Import & export](#import--export) | Bring in vendor geometry, and write models back out. |
+| [Annotate & present](#annotate--present) | Change how a model reads without changing what it is: text, color, lighting, camera, motion. |
 
 ## Start a shape
 
-The first call of any model: a solid primitive, or a 2D profile you will extrude.
+The first call in any model: a solid primitive, or a 2D profile to extrude.
 
 | Call | What it does |
 |---|---|
@@ -59,7 +60,7 @@ The first call of any model: a solid primitive, or a 2D profile you will extrude
 
 ## Add material
 
-Turn a profile into a solid, or grow an existing one along a path.
+Turn a profile into a solid, or grow one along a path.
 
 | Call | What it does |
 |---|---|
@@ -72,7 +73,7 @@ Turn a profile into a solid, or grow an existing one along a path.
 
 ## Remove material
 
-Cut into a solid: bolt holes, pockets, slots, and arbitrary subtractions.
+Cut into a solid: bolt holes, pockets, slots, plain subtraction.
 
 | Call | What it does |
 |---|---|
@@ -97,7 +98,7 @@ Merge or intersect solids, or group them without paying for a boolean.
 
 ## Finish edges
 
-Manufacturing-facing finishing: break edges, add draft, hollow out, fold sheet.
+Break edges, add draft, hollow out a wall, fold sheet metal.
 
 | Call | What it does |
 |---|---|
@@ -110,7 +111,7 @@ Manufacturing-facing finishing: break edges, add draft, hollow out, fold sheet.
 
 ## Select geometry
 
-Name the edges or faces a feature should act on — query inside OCCT first, then rank or bucket the resolved list.
+Pick the edges or faces a feature acts on. Query inside OCCT first, then sort or group what comes back.
 
 | Call | What it does |
 |---|---|
@@ -130,7 +131,7 @@ Name the edges or faces a feature should act on — query inside OCCT first, the
 
 ## Place & transform
 
-Move a finished body into position, mirror it, or repeat it.
+Move a body into position, mirror it, or repeat it.
 
 | Call | What it does |
 |---|---|
@@ -153,7 +154,7 @@ Move a finished body into position, mirror it, or repeat it.
 
 ## Assemble
 
-Compose parts into a mechanism with connectors, mates, joints, and posed Scenes.
+Build a mechanism from parts: connectors, mates, joints, posed Scenes.
 
 | Call | What it does |
 |---|---|
@@ -165,7 +166,7 @@ Compose parts into a mechanism with connectors, mates, joints, and posed Scenes.
 
 ## Curves & surfaces
 
-Free-form work: NURBS curves and surfaces, and the evaluators that let you reason about them before they become solids.
+NURBS curves and surfaces, plus the evaluators for measuring them before they become solids.
 
 | Call | What it does |
 |---|---|
@@ -197,7 +198,7 @@ Free-form work: NURBS curves and surfaces, and the evaluators that let you reaso
 
 ## Measure & verify
 
-Ask the kernel what you actually built, and gate the answer before shipping it.
+Ask the kernel what you actually built, and check it before shipping.
 
 | Call | What it does |
 |---|---|
@@ -225,16 +226,16 @@ Declare editable dimensions and do arithmetic on them (JS operators throw on a P
 
 ## Import & export
 
-Bring in vendor geometry, and hand a model to the outside world.
+Bring in vendor geometry, and write models back out.
 
 | Call | What it does |
 |---|---|
-| `lib : { fromSTEP(path: string): Promise<Shape>; fromBREP(path: string): Promise<Shape>; fromSTL(path: string, opts?: { tolerance?: number; allowOpen?: boolean; maxTriangles?: number }): Promise<Shape> }` | Parts library namespace. |
+| `lib : { fromSTEP(path: string): Promise<Shape>; fromBREP(path: string): Promise<Shape>; fromSTL(path: string, opts?: { tolerance?: number; allowOpen?: boolean; maxTriangles?: number }): Promise<Shape>; fromDXF(path: string, opts?: { units?: LengthUnit; tolerance?: number }): Promise<Sketch[]>; fromSVG(path: string, opts?: { units?: LengthUnit; tolerance?: number; curveTolerance?: number }): Promise<Sketch[]> }` | Parts library namespace. |
 | `Scene.toCompound() => Shape` | OCCT TopoDS_Compound — groups bodies without booleaning. |
 
 ## Annotate & present
 
-Everything that changes how the model reads rather than what it is: text, color, lighting, camera, motion.
+Change how a model reads without changing what it is: text, color, lighting, camera, motion.
 
 | Call | What it does |
 |---|---|
