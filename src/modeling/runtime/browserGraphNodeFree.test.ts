@@ -144,6 +144,7 @@ describe('browser runtime import graph', () => {
   });
 
   it('the NODE entry still does pull node builtins — proving the walker detects them', () => {
+
     // The inverse check. If the walker silently stopped detecting `node:`
     // specifiers, the browser assertion would pass for the wrong reason. The
     // node facade must trip it.
@@ -151,5 +152,37 @@ describe('browser runtime import graph', () => {
     const { violations } = walkGraph(nodeEntry);
     expect(violations.length).toBeGreaterThan(0);
     expect(violations.some((v) => v.spec === 'node:vm')).toBe(true);
+  });
+});
+
+// The docs Run button ships a SECOND browser entry, and it is a superset: it
+// runs the script AND meshes the result. `meshFeaturesPerFeature` was never
+// covered by the assertions above, so nothing stopped the meshing layer from
+// reaching node builtins — and when this guard was first written, it did
+// (scriptRelativePath.ts imported node:path through the capture proxy). The
+// symptom was a Vite build failure, which is the good case; the bad case is a
+// build that succeeds and a page that throws at runtime for every reader.
+describe('docs live-example worker import graph', () => {
+  const ENTRY = resolve(REPO_ROOT, 'site/island/docs-worker.ts');
+
+  it('pulls no node: builtins', () => {
+    const { files, violations } = walkGraph(ENTRY);
+    expect(files.size).toBeGreaterThan(50);
+    expect(
+      violations,
+      violations.length === 0
+        ? ''
+        : `The docs worker's import graph reaches node builtins:\n${formatViolations(violations)}`,
+    ).toEqual([]);
+  });
+
+  it('reaches the runtime AND the mesher, so the graph above is the real one', () => {
+    const { files } = walkGraph(ENTRY);
+    const rel = [...files].map((f) => relative(REPO_ROOT, f));
+    // The mesher is the half the browser-runtime guard above does not cover.
+    // Without it this assertion would be a duplicate of that one.
+    expect(rel).toContain('src/modeling/capture/featureMeshing.ts');
+    expect(rel).toContain('src/modeling/runtime/browserRuntime.ts');
+    expect(rel).toContain('src/kernel/backends/occt/occtBackend.ts');
   });
 });

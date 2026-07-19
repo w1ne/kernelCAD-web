@@ -28,7 +28,8 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"],
+  "//include": "site/island is browser code (docs Run button) and belongs under the same DOM/erasableSyntaxOnly rules as src; without it, `tsc -b` never sees it.",
+  "include": ["src", "site/island"],
   "exclude": [
     "src/**/*.test.*",
     "src/**/*.spec.*",

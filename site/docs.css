@@ -1,0 +1,207 @@
+/* SPDX-License-Identifier: MIT
+ * Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+ *
+ * Docs-only styles. Loaded after /style.css and reuses its custom properties
+ * (--vellum, --ink, --blueprint, …) so the docs read as the same site rather
+ * than a second design.
+ */
+
+/* The docs page hides the editor, the Run button, the canvas and the error box
+ * with the `hidden` attribute and lets the island reveal them. `hidden` only
+ * sets `display: none` at author level, so any `display` rule below would beat
+ * it — which is exactly what happened: `.docs-editor { display: block }` made
+ * the textarea show alongside the static listing. Keep this first. */
+[hidden] { display: none !important; }
+
+.docs-wrap .nav { padding-bottom: 40px; }
+.docs-main { max-width: 760px; }
+
+.docs-crumb {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  margin: 0 0 10px;
+}
+.docs-crumb a { color: var(--ink-soft); text-decoration: none; }
+.docs-crumb a:hover { color: var(--blueprint); }
+
+.docs-title {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 38px;
+  font-weight: 500;
+  line-height: 1.15;
+  margin: 0 0 12px;
+}
+.docs-h2 {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 22px;
+  font-weight: 500;
+  margin: 44px 0 12px;
+}
+.docs-blurb { font-size: 17px; color: var(--ink-soft); margin: 0 0 18px; line-height: 1.55; }
+.docs-note {
+  font-size: 14px;
+  color: var(--ink-soft);
+  background: var(--paper);
+  border-left: 2px solid var(--copper);
+  padding: 12px 14px;
+  margin: 22px 0;
+  line-height: 1.55;
+}
+.docs-note a { color: var(--blueprint); }
+.docs-blurb code, .docs-note code, .docs-caption code {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.88em;
+  background: var(--vellum-soft);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+/* INDEX */
+.docs-cards { list-style: none; padding: 0; margin: 28px 0 0; }
+.docs-card {
+  display: grid;
+  grid-template-columns: minmax(0, 200px) minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: baseline;
+  padding: 14px 0;
+  border-top: 1px solid var(--rule);
+}
+.docs-card:last-child { border-bottom: 1px solid var(--rule); }
+.docs-card a { text-decoration: none; }
+.docs-card-task {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 18px;
+  color: var(--blueprint);
+}
+.docs-card:hover .docs-card-task { text-decoration: underline; }
+.docs-card-blurb { font-size: 14px; color: var(--ink-soft); line-height: 1.5; }
+.docs-card-count {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+/* EXAMPLE */
+.docs-example {
+  margin: 26px 0 34px;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+}
+.docs-caption {
+  margin: 0;
+  padding: 14px 16px;
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  border-bottom: 1px solid var(--rule);
+}
+.docs-code { border-bottom: 1px solid var(--rule); }
+.docs-highlight pre {
+  margin: 0;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.6;
+  background: var(--vellum-soft) !important;
+}
+.docs-highlight code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+.docs-editor {
+  display: block;
+  width: 100%;
+  min-height: 160px;
+  border: 0;
+  resize: vertical;
+  padding: 14px 16px;
+  background: var(--vellum-soft);
+  color: var(--ink);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  tab-size: 2;
+}
+.docs-editor:focus { outline: 2px solid var(--blueprint); outline-offset: -2px; }
+
+.docs-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+}
+.docs-run {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  padding: 7px 16px;
+  border: 1px solid var(--blueprint);
+  background: var(--blueprint);
+  color: #FFF;
+  cursor: pointer;
+}
+.docs-run:hover { background: var(--blueprint-hover); border-color: var(--blueprint-hover); }
+.docs-status {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--ink-faint);
+}
+.docs-status[data-state='busy'] { color: var(--copper); }
+.docs-status[data-state='error'] { color: #B3261E; }
+
+.docs-error {
+  margin: 0;
+  padding: 12px 16px;
+  border-top: 1px solid var(--rule);
+  background: #FBEFEE;
+  color: #7A1C16;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.docs-stage {
+  height: 380px;
+  border-top: 1px solid var(--rule);
+  background: var(--vellum);
+}
+.docs-stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+/* API TABLE */
+.docs-api { width: 100%; border-collapse: collapse; font-size: 14px; }
+.docs-api th {
+  text-align: left;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 0 12px 8px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.docs-api td {
+  padding: 9px 12px 9px 0;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+.docs-api td:first-child { width: 45%; }
+.docs-api code {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 720px) {
+  .docs-card { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .docs-api td:first-child { width: auto; }
+  .docs-api, .docs-api tbody, .docs-api tr, .docs-api td { display: block; }
+  .docs-api thead { display: none; }
+  .docs-api tr { padding: 10px 0; border-bottom: 1px solid var(--rule); }
+  .docs-api td { border: 0; padding: 2px 0; }
+}
