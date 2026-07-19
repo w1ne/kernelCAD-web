@@ -171,7 +171,13 @@ function reverseSegment(seg: ImportSegment): ImportSegment {
  */
 class EndpointIndex {
   private readonly cells = new Map<string, number[]>();
-  constructor(private readonly tol: number) {}
+  private readonly tol: number;
+
+  // Written out rather than declared as a constructor parameter property: the
+  // CLI bundle builds with `erasableSyntaxOnly`, which forbids that syntax.
+  constructor(tol: number) {
+    this.tol = tol;
+  }
 
   private key(x: number, y: number): string {
     return `${Math.round(x / this.tol)},${Math.round(y / this.tol)}`;

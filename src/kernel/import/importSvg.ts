@@ -378,7 +378,15 @@ function parseViewBox(raw: string | undefined): ViewBox | null {
  */
 class PathScanner {
   private i = 0;
-  constructor(private readonly d: string, private readonly where: string) {}
+  private readonly d: string;
+  private readonly where: string;
+
+  // Explicit fields, not constructor parameter properties: the CLI bundle
+  // builds with `erasableSyntaxOnly`, which forbids that syntax.
+  constructor(d: string, where: string) {
+    this.d = d;
+    this.where = where;
+  }
 
   get offset(): number { return this.i; }
   get done(): boolean { this.skipSep(); return this.i >= this.d.length; }
@@ -510,7 +518,13 @@ class ContourBuilder {
   private cur: Pt;
   readonly start: Pt;
 
-  constructor(startUser: Pt, private readonly m: Matrix, private readonly source: string) {
+  private readonly m: Matrix;
+  private readonly source: string;
+
+  // Explicit fields, not constructor parameter properties (`erasableSyntaxOnly`).
+  constructor(startUser: Pt, m: Matrix, source: string) {
+    this.m = m;
+    this.source = source;
     this.start = apply(m, startUser[0], startUser[1]);
     this.cur = this.start;
   }
@@ -704,11 +718,11 @@ function emitCircle(tag: Tag, m: Matrix, sink: ElementSink, tolMm: number): void
     sink.closed.push(b.segments);
     return;
   }
-  emitEllipse(tag, m, sink, tolMm, cx, cy, r, r, where);
+  emitEllipse(m, sink, tolMm, cx, cy, r, r, where);
 }
 
 function emitEllipse(
-  tag: Tag, m: Matrix, sink: ElementSink, tolMm: number,
+  m: Matrix, sink: ElementSink, tolMm: number,
   cx: number, cy: number, rx: number, ry: number, where: string,
 ): void {
   if (rx <= 0 || ry <= 0) {
@@ -1073,7 +1087,7 @@ export function importSvgText(text: string, opts: ImportSvgOptions = {}): SvgImp
       case 'circle': emitCircle(tag, m, sink, tolMm); break;
       case 'ellipse':
         emitEllipse(
-          tag, m, sink, tolMm,
+          m, sink, tolMm,
           attrNum(tag, 'cx', 0), attrNum(tag, 'cy', 0),
           attrNum(tag, 'rx', null), attrNum(tag, 'ry', null),
           `<ellipse> at offset ${tag.offset}`,
