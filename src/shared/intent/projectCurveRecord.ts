@@ -8,10 +8,11 @@
 // produces a face-bound `replicad.Sketch` consumed downstream by `.extrude(d)`
 // / `.cut(...)` for engraved logos and label inserts.
 //
-// Open-curve mode (`asEdge: true`) is currently DEFERRED: the bundled
-// `replicad-opencascadejs@kcad-v0.23.1` does not expose `BRepProj_Projection`,
-// so the lowerer emits `feature.project-curve.no-intersection` with a
-// deferred-feature message rather than attempting a synthesis pass.
+// Open-curve mode (`asEdge: true`) is NOT IMPLEMENTED. Note this is a
+// kernelCAD gap, not an OCCT one: `kcad-v0.25.0` bundles `BRepProj_Projection`
+// and it is verified callable. The lowerer rejects `asEdge` because the result
+// of an open-wire projection is N wires, which `projectCurve`'s `=> Sketch`
+// signature cannot honestly express.
 
 import type { FaceRef } from './types';
 import type { SketchCommand } from '../capture/sketchCommand';

@@ -1012,8 +1012,9 @@ export class Shape {
    * body. The Sketch's underlying OcctBackend is a face-bound sketch, so the
    * extrude direction follows the face normal.
    *
-   * `asEdge: true` is captured but currently deferred at lower time —
-   * `BRepProj_Projection` is not exposed by the bundled OCCT.
+   * `asEdge: true` is captured but rejected at lower time — open-wire
+   * projection is not implemented (the OCCT binding is available; see
+   * `projectCurveLowerer.ts` for why the return type is the open question).
    */
   projectCurve(opts: {
     source: import('../../shared/intent/projectCurveRecord').ProjectCurveSource;

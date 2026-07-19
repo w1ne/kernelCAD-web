@@ -57,7 +57,7 @@ describe('addProjectCurve serializer', () => {
     expect(res.error ?? '').toMatch(/commands/i);
   });
 
-  it('rejects asEdge: true as a deferred feature rather than emitting non-evaluating code', () => {
+  it('rejects asEdge: true as unimplemented rather than emitting non-evaluating code', () => {
     const res = addProjectCurve({
       code: 'return cylinder(20, 5);',
       target: 'body',
@@ -66,6 +66,12 @@ describe('addProjectCurve serializer', () => {
       asEdge: true,
     });
     expect(res.ok).toBe(false);
-    expect(res.error ?? '').toMatch(/asEdge|deferred/i);
+    expect(res.error ?? '').toMatch(/asEdge/i);
+    expect(res.error ?? '').toMatch(/not implemented/i);
+    // The rejection must not blame OCCT. `BRepProj_Projection` ships in
+    // kcad-v0.25.0 and is verified callable by
+    // `tests/unit/backends/occt/projectionBindingAvailable.test.ts`. Telling an
+    // agent the kernel lacks the symbol sends it to rewrite the wrong layer.
+    expect(res.error ?? '').not.toMatch(/not bundled|BRepProj/i);
   });
 });

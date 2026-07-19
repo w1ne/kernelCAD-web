@@ -13,10 +13,18 @@
 //      Downstream `.extrude(d)` / `.cut(...)` consume it via the existing
 //      sketch pipeline.
 //
-// Open-wire mode (`asEdge: true`): deferred. Emit
-// `feature.project-curve.no-intersection` with a deferred-feature message —
-// the bundled `replicad-opencascadejs@kcad-v0.23.1` does not expose
-// `BRepProj_Projection`. Verified at planning time.
+// Open-wire mode (`asEdge: true`): NOT IMPLEMENTED (not "unavailable").
+//
+// This used to read "the bundled OCCT does not expose BRepProj_Projection".
+// That stopped being true in `kcad-v0.25.0`, which bundles the symbol; it is
+// verified callable by `projectionBindingAvailable.test.ts`, which also carries
+// the working recipe. What is missing is the kernelCAD side, and the blocker is
+// a type question rather than a geometry one: cylindrical projection of an open
+// wire yields N wires (2 for a line across a box — it hits the far side too),
+// and `projectCurve` is declared `=> Sketch`. There is no honest Sketch to
+// return. Implementing this means picking a return shape — most likely a
+// separate `projectEdges()` returning wires, plus a rule for which of the N
+// wires the caller wanted. Until that is decided, we reject rather than guess.
 
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -58,14 +66,14 @@ export async function lowerProjectCurve(
   }
   const meta: ProjectCurveMetadata = r.metadata;
 
-  // asEdge:true is deferred — bundled OCCT does not expose BRepProj_Projection.
+  // asEdge:true is deferred — unimplemented here, NOT missing from OCCT.
   if (meta.asEdge) {
     diagnostics.push({
       target: 'export-occt',
       code: 'feature.project-curve.no-intersection',
       featureId: r.id,
       severity: 'error',
-      message: 'projectCurve: asEdge:true is deferred — BRepProj_Projection is not bundled in the current OCCT build.',
+      message: 'projectCurve: asEdge:true (open-wire projection) is not implemented. The OCCT binding (BRepProj_Projection) is available; the kernelCAD lowering is not.',
       hint: HINT_TEMPLATES['feature.project-curve.no-intersection'].template,
     });
     return { ok: false, diagnostics };

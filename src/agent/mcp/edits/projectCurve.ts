@@ -37,9 +37,9 @@ export interface AddProjectCurveInput {
   /** `Drawing.sketchOnFace` scaling mode; defaults to 'original'. */
   scaleMode?: 'original' | 'native' | 'bounds';
   /** Project as an open edge instead of a closed face-bound sketch.
-   *  DEFERRED — the lowerer cannot synthesize an open-wire projection
-   *  (BRepProj_Projection is not bundled in the current OCCT build), so the
-   *  serializer rejects it rather than emitting code that fails to evaluate. */
+   *  NOT IMPLEMENTED — the lowerer does not synthesize an open-wire
+   *  projection, so the serializer rejects it rather than emitting code that
+   *  fails to evaluate. The OCCT binding exists; the lowering does not. */
   asEdge?: boolean;
   /** Optional local variable name. Emits `const <bindAs> = <target>.projectCurve(...);`. */
   bindAs?: string;
@@ -85,12 +85,11 @@ export function addProjectCurve(input: AddProjectCurveInput): AddFeatureResult {
     return { ok: false, error: 'add_project_curve: face name is required.' };
   }
   if (input.asEdge === true) {
-    // Open-wire projection is unimplemented in the lowerer (BRepProj_Projection
-    // not bundled). Reject at edit time rather than emit code that the lowerer
-    // would reject with feature.project-curve.no-intersection.
+    // Open-wire projection is unimplemented in the lowerer. Reject at edit time
+    // rather than emit code that the lowerer would reject anyway.
     return {
       ok: false,
-      error: 'add_project_curve: asEdge:true (open-wire projection) is deferred — BRepProj_Projection is not bundled in the current OCCT build. Use a closed-curve projection (omit asEdge).',
+      error: 'add_project_curve: asEdge:true (open-wire projection) is not implemented. Use a closed-curve projection (omit asEdge).',
     };
   }
   const optsLiteral = serializeOpts(input);
