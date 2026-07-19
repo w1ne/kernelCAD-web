@@ -41,12 +41,54 @@ jobs:
       - name: Build kernelCAD CLI
         run: npm run build:cli
 
-      - name: Ingest FreeCAD library
+      # ---- Incremental: the FreeCAD ingest is the expensive half (~25 min to
+      # sparse-clone + mesh + measure ~2400 parts) and is DETERMINISTIC given
+      # (upstream revision, subdir, ingest code). Cache it on exactly those three
+      # inputs so a change that only touches electronics costs ~5 min, not ~30.
+      #
+      # The cache holds the MECHANICAL BASE ONLY (catalog-freecad/), never the
+      # merged catalog. That is load-bearing: the electronics ingest merges into
+      # whatever it finds, so caching a post-merge catalog would resurrect parts
+      # that were deliberately REMOVED from the manifest (an unlicensed part
+      # would silently reappear). Seeding a fresh catalog/ from the mechanical
+      # base each run keeps electronics a clean rebuild from the manifest.
+      - name: Resolve FreeCAD library revision
+        id: fclib
+        run: |
+          SHA=$(git ls-remote https://github.com/FreeCAD/FreeCAD-library HEAD | cut -f1)
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "FreeCAD-library HEAD: $SHA"
+
+      - name: Restore mechanical catalog base
+        id: mech-cache
+        uses: actions/cache@v4
+        with:
+          path: catalog-freecad
+          key: >-
+            freecad-v1-${{ steps.fclib.outputs.sha }}-${{
+            hashFiles('scripts/ingestFreecadLibrary.ts', 'scripts/ingestParts.ts') }}-${{
+            hashFiles('.nvmrc') }}-${{ github.event.inputs.subdir || 'Mechanical Parts' }}
+
+      - name: Ingest FreeCAD library (cache miss only)
+        if: steps.mech-cache.outputs.cache-hit != 'true'
         run: >
           npx tsx scripts/ingestFreecadLibrary.ts
-          --out catalog
+          --out catalog-freecad
           --subdir "${{ github.event.inputs.subdir || 'Mechanical Parts' }}"
           --base-url https://kernelcad-parts.pages.dev
+
+      # Fail loudly rather than deploying a catalog that silently lost the
+      # mechanical parts — Pages publishes the directory wholesale, so an empty
+      # base here would take 2400 parts off the live site.
+      - name: Seed catalog from mechanical base
+        run: |
+          if [ ! -d catalog-freecad/v1 ]; then
+            echo "::error::catalog-freecad/v1 missing — mechanical base neither cached nor built."
+            exit 1
+          fi
+          rm -rf catalog
+          cp -R catalog-freecad catalog
+          echo "seeded catalog/ from mechanical base (cache-hit=${{ steps.mech-cache.outputs.cache-hit }})"
 
       - name: Ingest electronics (chips, modules, IC packages)
         # Fetches the CC-licensed 3D models declared in scripts/electronics-parts.json
