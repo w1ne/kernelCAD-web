@@ -12,13 +12,35 @@
 // shiki, so a reader with JavaScript disabled gets the complete page: prose,
 // signatures, examples, everything except the ability to press Run.
 
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHighlighter } from 'shiki';
 import { buildDocsPages, type DocsPage } from '../../src/docs/liveDocs';
+import {
+  DOCS_MODEL_DIR,
+  DOCS_MODEL_MANIFEST,
+  staleModels,
+  type DocsModel,
+  type DocsModelManifest,
+} from './docsModels';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+
+/**
+ * Accent hues, in taxonomy order. The taxonomy is ordered as a build — start a
+ * shape, add and remove material, then finish, select, place, assemble — so
+ * neighbouring groups are genuinely related and a hue per run of three reads as
+ * a section rather than as decoration. Deriving it from the index means a new
+ * taxonomy group gets a colour without anyone maintaining a list.
+ *
+ * All four clear WCAG AA (>= 4.5:1) as text on the --vellum page background.
+ */
+const ACCENTS = ['blueprint', 'copper', 'viridian', 'plum'] as const;
+
+function accentFor(index: number): string {
+  return ACCENTS[Math.floor(index / 3) % ACCENTS.length];
+}
 
 /** Escape for HTML text and double-quoted attribute values. */
 export function escapeHtml(s: string): string {
@@ -34,7 +56,7 @@ function inlineCode(s: string): string {
   return escapeHtml(s).replace(/`([^`]+)`/g, '<code>$1</code>');
 }
 
-function shell(title: string, description: string, body: string): string {
+function shell(title: string, description: string, body: string, accent: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -50,7 +72,7 @@ function shell(title: string, description: string, body: string): string {
   <title>${escapeHtml(title)}</title>
 </head>
 <body>
-  <div class="page-wrap docs-wrap">
+  <div class="page-wrap docs-wrap" data-accent="${escapeHtml(accent)}">
 
     <nav class="nav">
       <a class="nav-mark" href="/">
@@ -87,11 +109,21 @@ ${body}
 }
 
 /**
- * The bootstrap. Deliberately inline and dependency-free: its only job is to
- * reveal the Run button and pull in the island on the first interaction, so the
- * 10.8 MB engine is never on the page-load path. It also owns the Run clicks
- * for the lifetime of the page, which means a click that lands while the island
- * is still downloading is queued on the same promise rather than dropped.
+ * The bootstrap. Deliberately inline and dependency-free.
+ *
+ * It reveals the Run button, then pulls in the island once the page has
+ * finished loading so each example can draw its prebaked model. That import is
+ * three.js and a GLTF loader; the 10.8 MB engine is a separate module the
+ * island does not touch until someone presses Run, so "show the model" and
+ * "download the kernel" stay on different schedules.
+ *
+ * Waiting for `load` (and idle after it) is what keeps the picture off the
+ * critical path: text, code and tables are painted from the served HTML before
+ * a byte of three.js is requested.
+ *
+ * It also owns the Run clicks for the lifetime of the page, which means a click
+ * that lands while the island is still downloading is queued on the same
+ * promise rather than dropped.
  */
 const BOOTSTRAP = `
     (function () {
@@ -113,6 +145,11 @@ const BOOTSTRAP = `
           });
         })(examples[i]);
       }
+      if (examples.length) {
+        var idle = window.requestIdleCallback || function (fn) { return setTimeout(fn, 1); };
+        if (document.readyState === 'complete') idle(activate);
+        else window.addEventListener('load', function () { idle(activate); });
+      }
     })();
 `;
 
@@ -131,9 +168,21 @@ ${rows}
       </table>`;
 }
 
-function renderExample(page: DocsPage, highlighted: string): string {
+function renderExample(page: DocsPage, highlighted: string, model: DocsModel | undefined): string {
   const example = page.example;
   if (!example) return '';
+  // The model this example was baked into, inline rather than in a second
+  // fetch. Absent when the pages are rendered without a prebake — the test
+  // harness does that; the build refuses to (see main()).
+  const stageData = model
+    ? ` data-docs-model="${escapeHtml(
+        JSON.stringify({
+          url: model.url,
+          bounds: model.bounds,
+          appearances: model.appearances,
+        }),
+      )}"`
+    : '';
   return `      <section class="docs-example" data-docs-example>
         <p class="docs-caption">${inlineCode(example.caption)}</p>
         <div class="docs-code">
@@ -145,7 +194,7 @@ function renderExample(page: DocsPage, highlighted: string): string {
           <span class="docs-status" data-state="idle">JavaScript is off — the listing above is the whole example.</span>
         </div>
         <p class="docs-error" role="alert" hidden></p>
-        <div class="docs-stage" hidden><canvas></canvas></div>
+        <div class="docs-stage"${stageData} hidden><canvas></canvas></div>
       </section>`;
 }
 
@@ -157,7 +206,12 @@ export interface RenderedPage {
 
 type Highlighter = Awaited<ReturnType<typeof createHighlighter>>;
 
-function renderPage(page: DocsPage, highlighter: Highlighter): RenderedPage {
+function renderPage(
+  page: DocsPage,
+  index: number,
+  highlighter: Highlighter,
+  model: DocsModel | undefined,
+): RenderedPage {
   const highlighted = page.example
     ? highlighter.codeToHtml(page.example.code, { lang: 'javascript', theme: 'github-light' })
     : '';
@@ -169,7 +223,7 @@ function renderPage(page: DocsPage, highlighter: Highlighter): RenderedPage {
       <p class="docs-crumb"><a href="/docs/">docs</a> / ${escapeHtml(page.task)}</p>
       <h1 class="docs-title">${escapeHtml(page.task)}</h1>
       <p class="docs-blurb">${inlineCode(page.blurb)}</p>
-${renderExample(page, highlighted)}
+${renderExample(page, highlighted, model)}
 ${note}
       <h2 class="docs-h2">Calls</h2>
 ${renderEntries(page)}
@@ -179,14 +233,14 @@ ${renderEntries(page)}
 
   return {
     file: `docs/${page.slug}.html`,
-    html: shell(`${page.task} — kernelCAD`, page.blurb, body),
+    html: shell(`${page.task} — kernelCAD`, page.blurb, body, accentFor(index)),
   };
 }
 
 function renderIndex(pages: DocsPage[]): RenderedPage {
   const cards = pages
     .map(
-      (page) => `        <li class="docs-card">
+      (page, index) => `        <li class="docs-card" data-accent="${escapeHtml(accentFor(index))}">
           <a href="/docs/${page.slug}.html"><span class="docs-card-task">${escapeHtml(page.task)}</span></a>
           <span class="docs-card-blurb">${inlineCode(page.blurb)}</span>
           <span class="docs-card-count">${page.entries.length} calls</span>
@@ -206,26 +260,55 @@ ${cards}
         Agents should call <code>lookup_api(query)</code> over the MCP server.</p>
     </main>`;
 
-  return { file: 'docs/index.html', html: shell('Script API — kernelCAD', 'The kernelCAD script API, with runnable examples that rebuild geometry in your browser.', body) };
+  return { file: 'docs/index.html', html: shell('Script API — kernelCAD', 'The kernelCAD script API, with runnable examples that rebuild geometry in your browser.', body, 'blueprint') };
 }
 
-/** Every page the docs site is made of. Pure — main() is what touches disk. */
-export async function renderDocsSite(): Promise<RenderedPage[]> {
+/**
+ * Every page the docs site is made of. Pure — main() is what touches disk.
+ *
+ * `models` is optional so tests can render the markup without a prebake on
+ * disk. The build does not get that freedom: main() below refuses to write a
+ * page whose model is missing or was baked from different source.
+ */
+export async function renderDocsSite(
+  models?: ReadonlyMap<string, DocsModel>,
+): Promise<RenderedPage[]> {
   const pages = buildDocsPages();
   const highlighter = await createHighlighter({
     themes: ['github-light'],
     langs: ['javascript'],
   });
-  return [renderIndex(pages), ...pages.map((page) => renderPage(page, highlighter))];
+  return [
+    renderIndex(pages),
+    ...pages.map((page, index) => renderPage(page, index, highlighter, models?.get(page.slug))),
+  ];
+}
+
+function readManifest(): DocsModelManifest | null {
+  const file = path.join(REPO_ROOT, 'site', DOCS_MODEL_DIR, DOCS_MODEL_MANIFEST);
+  if (!existsSync(file)) return null;
+  return JSON.parse(readFileSync(file, 'utf8')) as DocsModelManifest;
 }
 
 async function main(): Promise<void> {
-  const rendered = await renderDocsSite();
+  // The staleness gate. A page whose GLB was baked from older source is a page
+  // that shows geometry which does not match the code beside it, and looks
+  // completely fine doing it. Refusing to build is the only honest response.
+  const manifest = readManifest();
+  const stale = staleModels(buildDocsPages(), manifest);
+  if (stale.length > 0) {
+    throw new Error(
+      `prebaked models are missing or stale — run site/scripts/prebake-docs-models.ts:\n  - ${stale.join('\n  - ')}`,
+    );
+  }
+
+  const models = new Map(manifest!.models.map((m) => [m.slug, m]));
+  const rendered = await renderDocsSite(models);
   mkdirSync(path.join(REPO_ROOT, 'site/docs'), { recursive: true });
   for (const page of rendered) {
     writeFileSync(path.join(REPO_ROOT, 'site', page.file), page.html);
   }
-  console.log(`✓ site/docs — ${rendered.length} pages`);
+  console.log(`✓ site/docs — ${rendered.length} pages, ${models.size} prebaked models`);
 }
 
 // Run only when invoked directly, not when imported by the generator test.

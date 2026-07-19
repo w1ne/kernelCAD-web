@@ -13,6 +13,22 @@
  * the textarea show alongside the static listing. Keep this first. */
 [hidden] { display: none !important; }
 
+/* ACCENTS
+ *
+ * Four hues, one per run of three taxonomy groups. The taxonomy is ordered as a
+ * build — start a shape, add material, remove it, then finish, select, place —
+ * so a shared hue marks a section of that sequence rather than decorating at
+ * random. build-docs.ts stamps the choice as data-accent.
+ *
+ * Blueprint and copper are the site's existing pair. Copper is darkened from
+ * the decorative --copper (#B87333, 3.2:1 on vellum) because these are used as
+ * TEXT; all four clear WCAG AA at 5.3:1 or better on --vellum, and all four
+ * clear AA against white for the Run button. */
+[data-accent] { --accent: var(--blueprint); --accent-hover: var(--blueprint-hover); }
+[data-accent='copper']   { --accent: #8A5220; --accent-hover: #6E4019; }
+[data-accent='viridian'] { --accent: #146B5E; --accent-hover: #0E5148; }
+[data-accent='plum']     { --accent: #7A3468; --accent-hover: #5E2751; }
+
 .docs-wrap .nav { padding-bottom: 40px; }
 .docs-main { max-width: 760px; }
 
@@ -23,8 +39,8 @@
   color: var(--ink-faint);
   margin: 0 0 10px;
 }
-.docs-crumb a { color: var(--ink-soft); text-decoration: none; }
-.docs-crumb a:hover { color: var(--blueprint); }
+.docs-crumb a { color: var(--accent); text-decoration: none; }
+.docs-crumb a:hover { color: var(--accent-hover); text-decoration: underline; }
 
 .docs-title {
   font-family: 'Source Serif 4', Georgia, serif;
@@ -32,6 +48,16 @@
   font-weight: 500;
   line-height: 1.15;
   margin: 0 0 12px;
+}
+/* Carries the page's hue without colouring the heading itself — a coloured h1
+ * at 38px is louder than anything else on the page deserves. */
+.docs-title::after {
+  content: '';
+  display: block;
+  width: 56px;
+  height: 3px;
+  margin-top: 14px;
+  background: var(--accent);
 }
 .docs-h2 {
   font-family: 'Source Serif 4', Georgia, serif;
@@ -44,12 +70,12 @@
   font-size: 14px;
   color: var(--ink-soft);
   background: var(--paper);
-  border-left: 2px solid var(--copper);
+  border-left: 3px solid var(--accent);
   padding: 12px 14px;
   margin: 22px 0;
   line-height: 1.55;
 }
-.docs-note a { color: var(--blueprint); }
+.docs-note a { color: var(--accent); }
 .docs-blurb code, .docs-note code, .docs-caption code {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 0.88em;
@@ -65,15 +91,19 @@
   grid-template-columns: minmax(0, 200px) minmax(0, 1fr) auto;
   gap: 16px;
   align-items: baseline;
-  padding: 14px 0;
+  /* The bar is what makes the index scannable: three cards in a row share a
+   * hue, so the four stages of a build are visible before you read a word. */
+  padding: 14px 0 14px 14px;
   border-top: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
 }
 .docs-card:last-child { border-bottom: 1px solid var(--rule); }
+.docs-card:hover { background: var(--paper); }
 .docs-card a { text-decoration: none; }
 .docs-card-task {
   font-family: 'Source Serif 4', Georgia, serif;
   font-size: 18px;
-  color: var(--blueprint);
+  color: var(--accent);
 }
 .docs-card:hover .docs-card-task { text-decoration: underline; }
 .docs-card-blurb { font-size: 14px; color: var(--ink-soft); line-height: 1.5; }
@@ -88,6 +118,7 @@
 .docs-example {
   margin: 26px 0 34px;
   border: 1px solid var(--rule);
+  border-top: 3px solid var(--accent);
   background: var(--paper);
 }
 .docs-caption {
@@ -122,7 +153,7 @@
   line-height: 1.6;
   tab-size: 2;
 }
-.docs-editor:focus { outline: 2px solid var(--blueprint); outline-offset: -2px; }
+.docs-editor:focus { outline: 2px solid var(--accent); outline-offset: -2px; }
 
 .docs-bar {
   display: flex;
@@ -135,19 +166,22 @@
   font-size: 12px;
   letter-spacing: 0.04em;
   padding: 7px 16px;
-  border: 1px solid var(--blueprint);
-  background: var(--blueprint);
+  border: 1px solid var(--accent);
+  background: var(--accent);
   color: #FFF;
   cursor: pointer;
 }
-.docs-run:hover { background: var(--blueprint-hover); border-color: var(--blueprint-hover); }
+.docs-run:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+.docs-run:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .docs-status {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 11px;
   color: var(--ink-faint);
 }
-.docs-status[data-state='busy'] { color: var(--copper); }
-.docs-status[data-state='error'] { color: #B3261E; }
+/* Status text is 11px; --copper (#B87333) is 3.5:1 on --paper and fails AA at
+ * that size, so these use darkened forms of the same two hues. */
+.docs-status[data-state='busy'] { color: #8A5220; }
+.docs-status[data-state='error'] { color: #A0201A; }
 
 .docs-error {
   margin: 0;
@@ -162,10 +196,13 @@
   overflow-wrap: anywhere;
 }
 
+/* A light vignette rather than flat vellum. The renderer draws with alpha, so
+ * this IS the viewer background: a gradient gives a coloured part somewhere to
+ * sit, and keeps a pale top face from disappearing into the page. */
 .docs-stage {
   height: 380px;
   border-top: 1px solid var(--rule);
-  background: var(--vellum);
+  background: radial-gradient(ellipse at 50% 38%, #FFFDF7 0%, #EFE5C9 58%, #DFD3B2 100%);
 }
 .docs-stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
 

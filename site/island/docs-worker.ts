@@ -29,6 +29,7 @@ import {
   meshFeaturesPerFeature,
   selectTerminalFeatures,
 } from '../../src/modeling/capture/featureMeshing';
+import { appearanceOf, type DocsAppearance } from './docsAppearance';
 
 /** Sent by the host for every Run. */
 export interface DocsRunRequest {
@@ -47,8 +48,8 @@ export interface DocsMeshFace {
 export interface DocsMeshFeature {
   featureId: string;
   faces: DocsMeshFace[];
-  /** Colour token or `#rrggbb`, whatever the script asked for. */
-  color?: string;
+  /** What the script asked to be drawn in — `.color()` and `.material()`. */
+  appearance: DocsAppearance;
   /** Column-major 4x4, present on assembly parts. */
   transform?: readonly number[];
 }
@@ -153,7 +154,9 @@ async function run(request: DocsRunRequest): Promise<void> {
       features.push({
         featureId: feature.featureId,
         faces,
-        color: feature.color,
+        // Reduced here, with the same function the prebake uses, so the live
+        // result and the prebaked model are shaded from identical inputs.
+        appearance: appearanceOf(feature.color, feature.material),
         transform: feature.transform,
       });
     }

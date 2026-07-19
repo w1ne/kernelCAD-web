@@ -75,7 +75,7 @@ function firstSentence(description: string): string {
 const EXAMPLES: Readonly<Record<string, DocsExample>> = {
   'Start a shape': {
     caption:
-      'Two ways to begin. A primitive gives you a solid immediately; a closed path gives you a profile you extrude into one.',
+      'Two ways to begin. A primitive gives you a solid immediately; a closed path gives you a profile you extrude into one. color() takes a role token or a hex string.',
     code: `const plate = box(60, 40, 8);
 
 const rib = path()
@@ -87,12 +87,12 @@ const rib = path()
   .extrude(6)
   .translate(0, 12, 8);
 
-return plate.union(rib);`,
+return plate.union(rib).color('frame');`,
   },
 
   'Add material': {
     caption:
-      'A revolved knob. Draw half the section as a closed path, then spin it.',
+      'A revolved knob. Draw half the section as a closed path, then spin it. material() sets the finish — high metalness and low roughness read as anodised aluminium.',
     code: `const section = path()
   .moveTo(4, 0)
   .lineTo(16, 0)
@@ -101,7 +101,11 @@ return plate.union(rib);`,
   .lineTo(4, 22)
   .close();
 
-return section.revolve();`,
+return section.revolve().material({
+  baseColor: '#2F6F63',
+  metalness: 0.7,
+  roughness: 0.35,
+});`,
   },
 
   'Remove material': {
@@ -117,7 +121,8 @@ return plate
     diameter: 6,
     depth: 'through',
     counterbore: { diameter: 12, depth: 4 },
-  });`,
+  })
+  .material({ baseColor: '#A9B4BF', metalness: 0.45, roughness: 0.4 });`,
   },
 
   'Combine shapes': {
@@ -126,7 +131,7 @@ return plate
     code: `const block = box(40, 40, 40);
 const ball = sphere(26).translate(20, 20, 20);
 
-return block.intersect(ball);`,
+return block.intersect(ball).color('beam');`,
   },
 
   'Finish edges': {
@@ -134,7 +139,13 @@ return block.intersect(ball);`,
       'Order matters. Shelling first leaves the wall a constant thickness; filleting first would round the outside and then hollow the rounded body.',
     code: `const body = box(60, 40, 24).shell(2, { face: 'top' });
 
-return body.fillet(3, { atZ: 0 });`,
+// Light anodise: the shell wall and the rounded corners are only legible
+// if the colour leaves room for a highlight.
+return body.fillet(3, { atZ: 0 }).material({
+  baseColor: '#7FA6C4',
+  metalness: 0.35,
+  roughness: 0.45,
+});`,
   },
 
   'Select geometry': {
@@ -152,20 +163,22 @@ return plate.fillet(3, { atZ: 10 });`,
 
   'Place & transform': {
     caption:
-      'One boss, patterned around the hub axis. The pattern is a feature, not a loop, so the count stays editable after the fact.',
-    code: `const hub = cylinder(10, 30);
-const boss = cylinder(10, 5).translate(22, 0, 0);
+      'One boss, patterned around the hub axis. The pattern is a feature, not a loop, so the count stays editable after the fact. cylinder() takes height first, then radius — the boss ring has to clear the hub radius or the copies end up inside it.',
+    code: `const hub = cylinder(12, 16);
+const boss = cylinder(12, 5).translate(20, 0, 0);
 
-return hub.union(boss.patternCircular({ count: 6, axis: [0, 0, 1] }));`,
+return hub
+  .union(boss.patternCircular({ count: 6, axis: [0, 0, 1] }))
+  .color('frame');`,
   },
 
   'Assemble': {
     caption:
-      'Two parts, one revolute mate, solved at 35 degrees. The connectors are what the mate refers to; the solver puts the lid where the hinge allows.',
+      'Two parts, one revolute mate, solved at 35 degrees. The connectors are what the mate refers to; the solver puts the lid where the hinge allows. Colouring the parts apart is how you see which one moved.',
     code: `const arm = assembly('clamshell');
 
-const base = arm.part('base', box(60, 40, 10));
-const lid = arm.part('lid', box(60, 40, 6).translate(0, 0, 10));
+const base = arm.part('base', box(60, 40, 10).color('frame'));
+const lid = arm.part('lid', box(60, 40, 6).translate(0, 0, 10).color('tool'));
 
 base.connector('pivot', {
   type: 'axis',
@@ -207,7 +220,7 @@ const panel = nurbsSurface({
   degree: { u: 2, v: 2 },
 });
 
-return panel.thicken(2);`,
+return panel.thicken(2).color('beam');`,
   },
 
   'Measure & verify': {
@@ -238,14 +251,16 @@ return box(width, 40, 12).subtract(
 
   'Annotate & present': {
     caption:
-      'Colour and material change how a model reads without changing what it is. Both survive export.',
-    code: `const body = box(60, 40, 12).fillet(2).color('plate');
+      'Colour and material change how a model reads without changing what it is; both survive export. metalness near 1 with low roughness is what makes this read as copper rather than as brown plastic — drop metalness to 0.1 and run it again.',
+    code: `const bracket = box(60, 40, 12)
+  .fillet(2)
+  .hole('top', { u: 0, v: 0, diameter: 12, depth: 'through' });
 
-const cap = cylinder(6, 14)
-  .translate(30, 20, 12)
-  .material({ baseColor: '#B87333', metalness: 0.9, roughness: 0.35 });
-
-return body.union(cap);`,
+return bracket.material({
+  baseColor: '#B87333',
+  metalness: 0.9,
+  roughness: 0.35,
+});`,
   },
 };
 
