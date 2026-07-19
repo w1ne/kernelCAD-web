@@ -371,7 +371,10 @@ export async function fetchPartHost(
         'Remote catalog response missing stepUrl; cannot download bytes.',
       );
     }
-    // Cache via userCache; sha256 verified inside getOrFetchAsync.
+    // Cache via userCache. `expectedSha256` gates BOTH the download and any
+    // existing cache entry: entries are keyed by sha256(URL), so without the
+    // content check a catalog rebuild that republishes this same URL would keep
+    // serving pre-rebuild geometry indefinitely (see userCache.ts).
     const path = await getOrFetchAsync({
       consumer: 'parts',
       url: meta.stepUrl,
