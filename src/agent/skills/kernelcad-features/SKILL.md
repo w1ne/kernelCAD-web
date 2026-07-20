@@ -51,7 +51,7 @@ Per-primitive canonical face applicability:
 
 Two face-bound features add geometry onto an existing body's face. They author *into* the face's local (u, v) parametric space rather than into the world frame, so the result rides the body through downstream transforms.
 
-Use them whenever a branded consumer product needs raised text, an engraved logo, or a label silhouette: eyewear temples with brand text, bottles with logos, appliance plates with model numbers. Flat-extruding glyphs in world coords reads as a toy — embossed/engraved text or a wrapped silhouette reads as a real product.
+Use them whenever a branded consumer product needs raised text, an engraved logo, or a label silhouette: eyewear temples with brand text, bottles with logos, appliance plates with model numbers. Flat-extruded glyphs in world coordinates look like a toy; embossed, engraved, or surface-wrapped text looks like a real product.
 
 ### `Shape.embossText({...})`
 

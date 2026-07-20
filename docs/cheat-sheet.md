@@ -20,7 +20,7 @@ description of any entry, call `lookup_api(query)`.
 | [Measure & verify](#measure--verify) | Ask the kernel what you actually built, and check it before shipping. |
 | [Parametrize](#parametrize) | Declare editable dimensions and do arithmetic on them (JS operators throw on a ParamRef). |
 | [Import & export](#import--export) | Bring in vendor geometry, and write models back out. |
-| [Annotate & present](#annotate--present) | Change how a model reads without changing what it is: text, color, lighting, camera, motion. |
+| [Annotate & present](#annotate--present) | Adjust a model's appearance without changing its geometry: text, color, lighting, camera, motion. |
 
 ## Start a shape
 
@@ -32,7 +32,7 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `cylinder(h, r, segments?, opts?) => Shape` | Z-axis cylinder; bottom on the XY plane, height h, radius r. |
 | `sphere(r) => Shape` | Sphere centered at the origin, radius r. |
 | `torus(majorR: number, minorR: number, segments?: number) => Shape` | Solid torus centered on world origin, axis along world +Z. |
-| `spring({ length, coilRadius, wireRadius, turns, axis?, pointsPerTurn?, endStyle?, segments? }) => Shape` | Build a helical spring as a circular wire profile swept along a smooth B-spline helix spine — one continuous watertight solid. |
+| `spring({ length, coilRadius, wireRadius, turns, axis?, pointsPerTurn?, endStyle?, segments? }) => Shape` | Build a helical spring as a circular wire profile swept along a smooth B-spline helix spine, producing one continuous watertight solid. |
 | `extrudeRect(w, h, height, opts?) => Shape` | Extrude a w-by-h rectangle (XY) by `height` along Z. |
 | `extrudeCircle(r, height, opts?) => Shape` | Extrude a radius-r circle (XY) by `height` along Z. |
 | `extrudePolygon(points, depth, opts?) => Shape` | Extrude a 2D polygon (array of [x, y] points) by `depth` along Z. |
@@ -235,7 +235,7 @@ Bring in vendor geometry, and write models back out.
 
 ## Annotate & present
 
-Change how a model reads without changing what it is: text, color, lighting, camera, motion.
+Adjust a model's appearance without changing its geometry: text, color, lighting, camera, motion.
 
 | Call | What it does |
 |---|---|
@@ -244,7 +244,7 @@ Change how a model reads without changing what it is: text, color, lighting, cam
 | `Shape.embossText(opts: { textContent: string; fontFamily?: string; size: Editable<number>; depth: Editable<number>; align?: 'left' \| 'center' \| 'right'; anchorU?: Editable<number>; anchorV?: Editable<number>; rotation?: Editable<number>; scaleMode?: 'original' \| 'native' \| 'bounds'; face: FaceSelector \| string }) => Shape` | Raise or recess text on a target face. |
 | `Shape.color(name: ColorToken \| `#${string}`) => Shape` | Set HUE ONLY: a role color (servo/gear/beam/shaft/plate/pin/frame/tool) or a literal `#rrggbb` hex. |
 | `Shape.finish(name: FinishToken, opts?: { color?: string; face?: string }) => Shape` | PREFERRED way to make a part look like a real material. |
-| `Shape.material(opts: PBRMaterial & { face?: string }) => Shape` | ADVANCED / renderer-level escape hatch — raw PBR floats for glass, clearcoat, anisotropy, and image textures when no `.finish()` token fits. |
+| `Shape.material(opts: PBRMaterial & { face?: string }) => Shape` | ADVANCED / renderer-level escape hatch exposing raw PBR floats for glass, clearcoat, anisotropy, and image textures when no `.finish()` token fits. |
 | `referenceImage(path: string, opts: { plane, anchor?, scale?, opacity?, flipU?, flipV? }) => ReferenceImageHandle` | Overlay a reference image on a plane for tracing or design review. |
 | `setRenderEnvironment(spec: { preset?: 'studio' \| 'softbox' \| 'neutral' \| 'outdoor' \| 'warehouse'; url?: string; intensity?: number; rotation?: number }) => RenderEnvironmentHandle` | Set the HDRI / image-based-lighting environment for the rendered scene. |
 | `setCameraTarget(x: number, y: number, z: number) => CameraTargetHandle` | Override the camera look-at target for `setRenderPose` and headless engineering renders. |
