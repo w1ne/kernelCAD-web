@@ -253,8 +253,8 @@ function renderIndex(pages: DocsPage[]): RenderedPage {
 
   const body = `    <main class="docs-main">
       <h1 class="docs-title">Script API</h1>
-      <p class="docs-blurb">The kernelCAD script API, grouped by what you're doing rather than what you call
-        it on. Every page has an example you can edit and run.</p>
+      <p class="docs-blurb">The kernelCAD script API, grouped by the task you're doing. Every page has
+        an example you can edit and run.</p>
       <ul class="docs-cards">
 ${cards}
       </ul>

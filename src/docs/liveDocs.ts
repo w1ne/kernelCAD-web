@@ -75,7 +75,7 @@ function firstSentence(description: string): string {
 const EXAMPLES: Readonly<Record<string, DocsExample>> = {
   'Start a shape': {
     caption:
-      'Two ways to begin. A primitive gives you a solid immediately; a closed path gives you a profile you extrude into one. color() takes a role token or a hex string.',
+      'A primitive gives you a solid straight away; a closed path gives you a profile to extrude. color() takes a role token or a hex string.',
     code: `const plate = box(60, 40, 8);
 
 const rib = path()
@@ -106,7 +106,7 @@ return section.revolve().finish('anodized', { color: '#2F6F63' });`,
 
   'Remove material': {
     caption:
-      'hole() places a bore by position on a named face, so you say where the hole goes rather than where the cutting cylinder goes. u and v are millimetres from the centre of that face.',
+      'hole() places a bore by position on a named face. You give it where the hole goes and it builds the cutting cylinder for you. u and v are millimetres from the centre of that face.',
     code: `const plate = box(80, 50, 10);
 
 return plate
@@ -132,11 +132,10 @@ return block.intersect(ball).color('beam');`,
 
   'Finish edges': {
     caption:
-      'Order matters. Shelling first leaves the wall a constant thickness; filleting first would round the outside and then hollow the rounded body.',
+      'The order of these two steps changes the result. Shelling first leaves the wall a constant thickness; filleting first would round the outside and then hollow the rounded body.',
     code: `const body = box(60, 40, 24).shell(2, { face: 'top' });
 
-// A light anodised blue; the shell wall and rounded corners read cleanly
-// against it.
+// A light anodised blue over the shelled wall and rounded corners.
 return body.fillet(3, { atZ: 0 }).finish('anodized', { color: '#7FA6C4' });`,
   },
 
@@ -155,7 +154,7 @@ return plate.fillet(3, { atZ: 10 });`,
 
   'Place & transform': {
     caption:
-      'One boss, patterned around the hub axis. The pattern is a feature, not a loop, so the count stays editable after the fact. cylinder() takes height first, then radius — the boss ring has to clear the hub radius or the copies end up inside it.',
+      'One boss, patterned around the hub axis. The count stays editable afterwards because the kernel records the pattern as a feature. cylinder() takes height first, then radius; the boss ring has to clear the hub radius or the copies end up inside it.',
     code: `const hub = cylinder(12, 16);
 const boss = cylinder(12, 5).translate(20, 0, 0);
 
@@ -166,7 +165,7 @@ return hub
 
   'Assemble': {
     caption:
-      'Two parts, one revolute mate, solved at 35 degrees. The connectors are what the mate refers to; the solver puts the lid where the hinge allows. Colouring the parts apart is how you see which one moved.',
+      'A base and a lid joined by one revolute mate, solved at 35 degrees. The mate refers to the two connectors, and the solver puts the lid where the hinge allows. The two colours make it easy to see which part moved.',
     code: `const arm = assembly('clamshell');
 
 const base = arm.part('base', box(60, 40, 10).color('frame'));
@@ -243,7 +242,7 @@ return box(width, 40, 12).subtract(
 
   'Annotate & present': {
     caption:
-      'finish() names a material — here copper — and sets its colour and surface together, so you write the material, not the shader. Swap in finish(\'abs\') to read the same shape as black plastic. Raw material({...}) stays for glass and clearcoat.',
+      'finish(\'copper\') gives the bracket copper\'s colour and surface in one call. Change it to finish(\'abs\') and the same bracket looks like black plastic. Glass and clearcoat still go through material({...}).',
     code: `const bracket = box(60, 40, 12)
   .fillet(2)
   .hole('top', { u: 0, v: 0, diameter: 12, depth: 'through' });
