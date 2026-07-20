@@ -169,7 +169,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   },
   {
     task: 'Annotate & present',
-    blurb: 'Change how a model reads without changing what it is: text, color, lighting, camera, motion.',
+    blurb: 'Adjust a model\'s appearance without changing its geometry: text, color, lighting, camera, motion.',
     names: [
       'sketch', 'fontPath', 'embossText', 'color', 'finish', 'material',
       'referenceImage', 'setRenderEnvironment', 'setCameraTarget', 'setCameraDistance',
