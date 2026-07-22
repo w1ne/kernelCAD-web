@@ -53,6 +53,10 @@ export class StepParseError extends Error {
 const MAX_ENTRIES = 32;
 
 const cache = new Map<string, OcctBackend>();
+/** One parse master per content hash while its async import is in progress.
+ *  It must be reserved before `initOcct()` / `importSTEP()` yield so concurrent
+ *  callers do not all observe the cold cache and build duplicate masters. */
+const pending = new Map<string, Promise<OcctBackend>>();
 let hits = 0;
 let misses = 0;
 
@@ -68,18 +72,7 @@ function sha256Hex(bytes: Buffer | Uint8Array): string {
  * @throws StepParseError('parse')    replicad.importSTEP rejected the bytes
  * @throws StepParseError('no-solid') the import held no 3D solid body
  */
-export async function importStepCached(bytes: Buffer | Uint8Array): Promise<OcctBackend> {
-  const key = sha256Hex(bytes);
-
-  const cached = cache.get(key);
-  if (cached) {
-    // LRU bump: re-insert to mark most-recently-used.
-    cache.delete(key);
-    cache.set(key, cached);
-    hits++;
-    return cached.clone();
-  }
-
+async function parseMaster(key: string, bytes: Buffer | Uint8Array): Promise<OcctBackend> {
   await initOcct();
   // replicad.importSTEP wants a Blob. The bytes copy is unavoidable.
   let imported: replicad.AnyShape;
@@ -117,6 +110,17 @@ export async function importStepCached(bytes: Buffer | Uint8Array): Promise<Occt
   }
 
   const master = new OcctBackend(imported as replicad.Shape3D);
+  // A pending entry makes this branch unreachable in normal operation. Keep
+  // the guard because a reset/recovery boundary can retire an in-flight entry:
+  // never overwrite a live master or orphan the just-parsed OCCT handle.
+  const existing = cache.get(key);
+  if (existing) {
+    master.dispose();
+    cache.delete(key);
+    cache.set(key, existing);
+    return existing;
+  }
+
   cache.set(key, master);
   misses++;
 
@@ -131,6 +135,56 @@ export async function importStepCached(bytes: Buffer | Uint8Array): Promise<Occt
     evicted?.dispose();
   }
 
+  return master;
+}
+
+/** Reserve the per-hash promise before parsing can yield. The completion
+ *  handlers clear only their own entry, so a later retry cannot be erased by
+ *  an older failed import finishing afterwards. */
+function reservePendingParse(key: string, bytes: Buffer | Uint8Array): Promise<OcctBackend> {
+  let resolveMaster!: (master: OcctBackend) => void;
+  let rejectMaster!: (reason?: unknown) => void;
+  const inFlight = new Promise<OcctBackend>((resolve, reject) => {
+    resolveMaster = resolve;
+    rejectMaster = reject;
+  });
+  pending.set(key, inFlight);
+
+  void parseMaster(key, bytes).then(
+    (master) => {
+      if (pending.get(key) === inFlight) pending.delete(key);
+      resolveMaster(master);
+    },
+    (error: unknown) => {
+      if (pending.get(key) === inFlight) pending.delete(key);
+      rejectMaster(error);
+    },
+  );
+
+  return inFlight;
+}
+
+export async function importStepCached(bytes: Buffer | Uint8Array): Promise<OcctBackend> {
+  const key = sha256Hex(bytes);
+
+  const cached = cache.get(key);
+  if (cached) {
+    // LRU bump: re-insert to mark most-recently-used.
+    cache.delete(key);
+    cache.set(key, cached);
+    hits++;
+    return cached.clone();
+  }
+
+  const inFlight = pending.get(key);
+  if (inFlight) {
+    // A pending parse is a logical cache hit: it has already reserved the one
+    // master this content hash may create, and each waiter still clones it.
+    hits++;
+    return (await inFlight).clone();
+  }
+
+  const master = await reservePendingParse(key, bytes);
   return master.clone();
 }
 
@@ -150,6 +204,7 @@ function purgeMasters(): void {
 /** Test-only: drop all cached masters (disposing their OCCT handles) and reset counters. */
 export function __resetStepParseCache(): void {
   purgeMasters();
+  pending.clear();
   hits = 0;
   misses = 0;
 }
