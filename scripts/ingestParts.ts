@@ -74,6 +74,17 @@ export class AuthoredManifestError extends Error {
   }
 }
 
+/** Duplicate output IDs would overwrite a STEP and make the catalog ambiguous. */
+export class DuplicateCatalogIdError extends Error {
+  constructor(id: string, firstPath: string, secondPath: string, srcRoot: string) {
+    super(
+      `ingestDirectory: duplicate catalog id '${id}' for ` +
+        `${relative(srcRoot, firstPath)} and ${relative(srcRoot, secondPath)}`,
+    );
+    this.name = 'DuplicateCatalogIdError';
+  }
+}
+
 export interface CatalogRecord {
   id: string;
   name: string;
@@ -148,6 +159,24 @@ function loadSidecar(stepPath: string): IngestSidecar {
     throw new AuthoredManifestError(`ingest: invalid JSON sidecar ${sidecar}`, {
       cause: error,
     });
+  }
+}
+
+/**
+ * Refuse ambiguous output names before creating any catalog files.  The
+ * sidecar is deliberately read here because an explicit id overrides the
+ * filename-derived default used by the emitted STEP and detail paths.
+ */
+function assertUniqueCatalogIds(stepFiles: string[], srcRoot: string): void {
+  const pathsById = new Map<string, string>();
+  for (const stepPath of stepFiles) {
+    const meta = loadSidecar(stepPath);
+    const id = meta.id ?? slugify(basename(stepPath, extname(stepPath)));
+    const firstPath = pathsById.get(id);
+    if (firstPath !== undefined) {
+      throw new DuplicateCatalogIdError(id, firstPath, stepPath, srcRoot);
+    }
+    pathsById.set(id, stepPath);
   }
 }
 
@@ -296,6 +325,7 @@ export async function ingestDirectory(
   opts: IngestOpts,
 ): Promise<CatalogRecord[]> {
   const stepFiles = listStepFiles(srcDir);
+  assertUniqueCatalogIds(stepFiles, srcDir);
   mkdirSync(join(outDir, 'step'), { recursive: true });
   mkdirSync(join(outDir, 'v1', 'parts'), { recursive: true });
   mkdirSync(join(outDir, 'v1', 'catalog'), { recursive: true });

@@ -11,16 +11,19 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { createHash } from 'node:crypto';
 import { OcctBackend, initOcct } from '../src/kernel/backends/occt/occtBackend';
 import { ingestDirectory, measureStepReport } from './ingestParts';
 import type { StepInspectReport } from '../src/agent/inspect/inspectStep';
 
 let tinyStepBytes: Buffer;
+let alternateTinyStepBytes: Buffer;
 const temporaryDirectories: string[] = [];
 
 beforeAll(async () => {
   await initOcct();
   tinyStepBytes = Buffer.from(await OcctBackend.box(4, 3, 2).exportSTEPAsync());
+  alternateTinyStepBytes = Buffer.from(await OcctBackend.box(5, 3, 2).exportSTEPAsync());
 });
 
 afterEach(() => {
@@ -36,15 +39,25 @@ function createTemporaryCatalogDirectories(): { src: string; out: string } {
   return { src, out };
 }
 
-function writeTinyStepFixture(src: string, sidecar?: unknown | string): void {
-  const partDir = join(src, 'electronics', 'driver');
+function writeStepFixture(
+  src: string,
+  pathParts: string[],
+  name: string,
+  bytes: Buffer,
+  sidecar?: unknown | string,
+): void {
+  const partDir = join(src, ...pathParts);
   mkdirSync(partDir, { recursive: true });
-  writeFileSync(join(partDir, 'driver.step'), tinyStepBytes);
+  writeFileSync(join(partDir, `${name}.step`), bytes);
   if (sidecar === undefined) return;
   writeFileSync(
-    join(partDir, 'driver.meta.json'),
+    join(partDir, `${name}.meta.json`),
     typeof sidecar === 'string' ? sidecar : JSON.stringify(sidecar),
   );
+}
+
+function writeTinyStepFixture(src: string, sidecar?: unknown | string): void {
+  writeStepFixture(src, ['electronics', 'driver'], 'driver', tinyStepBytes, sidecar);
 }
 
 const INGEST_OPTS = {
@@ -172,6 +185,10 @@ describe('ingestParts', () => {
       ...connectorManifest,
       geometrySha256: record.sha256,
     });
+    const emittedStepSha256 = createHash('sha256')
+      .update(readFileSync(join(out, 'step', 'driver.step')))
+      .digest('hex');
+    expect(emittedStepSha256).toBe(record.connectorManifest?.geometrySha256);
     expect(record.connectors).toEqual([
       { name: 'mount-face', origin: [1, 2, 3], axis: [0, 0, 1] },
       { name: 'pin-axis', origin: [4, 5, 6], axis: [1, 0, 0] },
@@ -235,5 +252,29 @@ describe('ingestParts', () => {
 
   it('rejects malformed sidecar JSON instead of skipping the part', async () => {
     await expectAuthoredSidecarFailure('{ this is not JSON }');
+  });
+
+  it('fails before writing output when different folders derive the same catalog ID', async () => {
+    const { src, out } = createTemporaryCatalogDirectories();
+    writeStepFixture(src, ['electronics', 'driver-a'], 'shared', tinyStepBytes);
+    writeStepFixture(src, ['mechanical', 'driver-b'], 'shared', alternateTinyStepBytes);
+
+    await expect(ingestDirectory(src, out, INGEST_OPTS)).rejects.toMatchObject({
+      name: 'DuplicateCatalogIdError',
+    });
+    expect(existsSync(join(out, 'step'))).toBe(false);
+    expect(existsSync(join(out, 'v1', 'catalog', 'parts.index.json'))).toBe(false);
+  });
+
+  it('fails before writing output when sidecars assign the same catalog ID', async () => {
+    const { src, out } = createTemporaryCatalogDirectories();
+    writeStepFixture(src, ['electronics', 'driver-a'], 'first', tinyStepBytes, { id: 'shared' });
+    writeStepFixture(src, ['mechanical', 'driver-b'], 'second', alternateTinyStepBytes, { id: 'shared' });
+
+    await expect(ingestDirectory(src, out, INGEST_OPTS)).rejects.toMatchObject({
+      name: 'DuplicateCatalogIdError',
+    });
+    expect(existsSync(join(out, 'step'))).toBe(false);
+    expect(existsSync(join(out, 'v1', 'catalog', 'parts.index.json'))).toBe(false);
   });
 });
