@@ -34,7 +34,7 @@ import {
 } from 'node:fs';
 import { join, relative, basename, extname, dirname } from 'node:path';
 import { createHash } from 'node:crypto';
-import { inspectStepFile } from '../src/agent/inspect/inspectStep';
+import { inspectStepFile, type StepInspectReport } from '../src/agent/inspect/inspectStep';
 import { synthesizeConnectorsFromReport } from '../src/modeling/parts/synthesizeConnectors';
 import { PAGES_WORKER } from './parts/workerTemplate';
 import {
@@ -123,6 +123,44 @@ function loadSidecar(stepPath: string): IngestSidecar {
   }
 }
 
+/**
+ * Measure the complete imported model rather than only its dominant solid.
+ *
+ * STEP assemblies often retain electrically meaningful solids separately —
+ * contacts, lids, optical windows, and pin-one markers.  Catalog dimensions
+ * must describe the extents a user will actually place, so combine every
+ * inspected solid's exact bounds. Volume and hole metadata deliberately keep
+ * the established dominant-solid semantics: presentation solids can overlap
+ * their body, so summing them would falsely inflate material volume. For
+ * conventional one-solid STEP files every field is identical to the prior
+ * measurement behavior.
+ */
+export function measureStepReport(report: StepInspectReport): Record<string, number> {
+  if (report.solids.length === 0) return { solidCount: report.solidCount };
+
+  const min: [number, number, number] = [Infinity, Infinity, Infinity];
+  const max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+  let dominantSolid = report.solids[0];
+
+  for (const solid of report.solids) {
+    for (let axis = 0; axis < 3; axis++) {
+      min[axis] = Math.min(min[axis], solid.bboxExact.min[axis]);
+      max[axis] = Math.max(max[axis], solid.bboxExact.max[axis]);
+    }
+    if (solid.volumeMm3 > dominantSolid.volumeMm3) dominantSolid = solid;
+  }
+
+  const rounded = (value: number) => Math.round(value * 100) / 100;
+  return {
+    bboxXmm: rounded(max[0] - min[0]),
+    bboxYmm: rounded(max[1] - min[1]),
+    bboxZmm: rounded(max[2] - min[2]),
+    volumeMm3: rounded(dominantSolid.volumeMm3),
+    solidCount: report.solidCount,
+    holeCount: dominantSolid.holes.length,
+  };
+}
+
 // -----------------------------------------------------------------------------
 // Ingest one STEP → a catalog record (measured attributes + synthesized frames)
 // -----------------------------------------------------------------------------
@@ -146,19 +184,8 @@ export async function ingestStepFile(
   const family = meta.family ?? relParts[relParts.length - 1] ?? category;
 
   const report = await inspectStepFile(stepPath);
-  const solid = [...report.solids].sort((a, b) => b.volumeMm3 - a.volumeMm3)[0];
   const conns = synthesizeConnectorsFromReport(report, id);
-
-  const measured: Record<string, number> = solid
-    ? {
-        bboxXmm: Math.round((solid.bboxExact.max[0] - solid.bboxExact.min[0]) * 100) / 100,
-        bboxYmm: Math.round((solid.bboxExact.max[1] - solid.bboxExact.min[1]) * 100) / 100,
-        bboxZmm: Math.round((solid.bboxExact.max[2] - solid.bboxExact.min[2]) * 100) / 100,
-        volumeMm3: Math.round(solid.volumeMm3 * 100) / 100,
-        solidCount: report.solidCount,
-        holeCount: solid.holes.length,
-      }
-    : { solidCount: report.solidCount };
+  const measured = measureStepReport(report);
 
   const record: CatalogRecord = {
     id,

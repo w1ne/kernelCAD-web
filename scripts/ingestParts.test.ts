@@ -5,9 +5,53 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from 
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { OcctBackend, initOcct } from '../src/kernel/backends/occt/occtBackend';
-import { ingestDirectory } from './ingestParts';
+import { ingestDirectory, measureStepReport } from './ingestParts';
+import type { StepInspectReport } from '../src/agent/inspect/inspectStep';
 
 describe('ingestParts', () => {
+  it('measures assembly bounds without changing dominant-solid volume semantics', () => {
+    const report: StepInspectReport = {
+      file: 'multi-solid-package.step',
+      solidCount: 2,
+      solids: [
+        {
+          index: 0,
+          name: 'body',
+          bboxExact: { min: [0, 0, 0], max: [5.9, 5.9, 0.79] },
+          volumeMm3: 20,
+          faceCount: 6,
+          holes: [],
+        },
+        {
+          index: 1,
+          name: 'contacts-and-marker',
+          bboxExact: { min: [-0.1, -0.1, 0], max: [6, 6, 0.85] },
+          volumeMm3: 3,
+          faceCount: 12,
+          holes: [
+            {
+              axisOrigin: [3, 3, 0.85],
+              axisDirection: [0, 0, -1],
+              diameterMm: 0.4,
+              depthMm: 0.5,
+              kind: 'through',
+              faceCount: 1,
+            },
+          ],
+        },
+      ],
+    };
+
+    expect(measureStepReport(report)).toEqual({
+      bboxXmm: 6.1,
+      bboxYmm: 6.1,
+      bboxZmm: 0.85,
+      volumeMm3: 20,
+      solidCount: 2,
+      holeCount: 0,
+    });
+  });
+
   it('ingests a STEP dir into a /v1/parts catalog with measured attrs + synthesized connectors', async () => {
     await initOcct();
     const src = mkdtempSync(join(tmpdir(), 'kc-ingest-src-'));

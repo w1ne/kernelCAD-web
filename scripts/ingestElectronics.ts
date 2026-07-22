@@ -62,6 +62,10 @@ interface ManifestPart {
    *  Takes priority over `url` and `model`. */
   kcad_source?: string;
   tags?: string[];
+  /** Package-specific factual metadata retained alongside the measured STEP
+   *  bounds. These values are sourced from the component manufacturer's
+   *  package drawing, while bbox* fields are measured from the generated STEP. */
+  attributes?: Record<string, number | string>;
   /** Per-part license / attribution override (e.g. an MIT Adafruit STEP in an
    *  otherwise CC-BY-SA KiCad manifest). Falls back to the manifest defaults. */
   license?: string;
@@ -166,7 +170,7 @@ export async function ingestElectronics(
           category: 'Electronics',
           family: part.family,
           tags: part.tags ?? ['electronics', part.family],
-          attributes: { mpn: part.mpn },
+          attributes: { mpn: part.mpn, ...(part.attributes ?? {}) },
           license: part.license ?? manifest.license,
           attribution: part.attribution ?? manifest.attribution,
         },
