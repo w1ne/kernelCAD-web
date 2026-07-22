@@ -122,8 +122,8 @@ export async function remoteFetchPartMeta(
     5000,
   );
   // Remote catalog records use their own schema rather than a kernelCAD
-  // PartRecord — map them. Authored hash-bound manifests carry their connector
-  // names; fetchPartHost synthesizes connectors only when no manifest is present.
+  // PartRecord — map them. Mapping preserves authored hash-bound manifest names;
+  // fetch-time connector enrichment is handled separately.
   const raw = (await res.json()) as StepPartsRecord;
   return mapStepPartsRecord(raw);
 }
