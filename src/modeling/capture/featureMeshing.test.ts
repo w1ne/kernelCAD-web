@@ -2,7 +2,8 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/featureMeshing.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct } from '../../kernel/backends/occt/occtBackend';
+import { initOcct, OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import type { ShapeBackend } from '../../kernel/backends/backend';
 import { runScript } from '../runtime/runScript';
 import { meshFeaturesPerFeature } from './featureMeshing';
 
@@ -171,6 +172,35 @@ describe('meshFeaturesPerFeature', () => {
       'link',
       'drive-train',
     ]);
+  });
+
+  it('meshes a SceneBackend part supplied by an export-capable foreign backend', async () => {
+    // Remote catalog code is evaluated in a separate module graph. Its shape
+    // backend is not necessarily `instanceof` this module's OcctBackend, but
+    // it still exposes the public getReplicadShape() capability used by the
+    // mesher. Model that boundary here without a network dependency.
+    const code = `
+      const arm = assembly('foreign-backend-render');
+      arm.part('catalog-part', box(10, 10, 10));
+      return arm.model();
+    `;
+    const { records, paramTable, session } = await runScript({ code, fileName: 'foreign-backend-render.kcad.ts' });
+    const sourceRecord = records.find((record) => record.kind === 'box');
+    if (!sourceRecord) throw new Error('expected assembly source box record');
+
+    const foreignExportBackend = (backend: OcctBackend): ShapeBackend => ({
+      target: 'export-occt',
+      clone: () => foreignExportBackend(backend.clone()),
+      translate: (x: number, y: number, z: number) => foreignExportBackend(backend.translate(x, y, z)),
+      getReplicadShape: () => backend.getReplicadShape(),
+    }) as unknown as ShapeBackend;
+    sourceRecord.kind = 'importedStep';
+    session.importedGeometry.set(sourceRecord.id, foreignExportBackend(OcctBackend.box(10, 10, 10)));
+
+    const result = await meshFeaturesPerFeature(records, paramTable, session);
+
+    expect(result.failedFeatureIds).toEqual([]);
+    expect(result.features.map((feature) => feature.assemblyPartName)).toEqual(['catalog-part']);
   });
 
   describe('material shadowing diagnostic', () => {
