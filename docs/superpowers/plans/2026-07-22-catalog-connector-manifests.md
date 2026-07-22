@@ -240,7 +240,7 @@ IDs, preventing a later STEP from overwriting bytes described by an earlier boun
 - Modify: `src/modeling/parts/fetchPartMetadata.test.ts`
 - Modify: `src/modeling/capture/captureSession.ts`
 
-- [ ] **Step 1: Write the failing remote-fetch tests**
+- [x] **Step 1: Write the failing remote-fetch tests**
 
 Mock a remote record that advertises a valid hash-bound `pwm-contact` manifest, then assert:
 
@@ -256,13 +256,13 @@ expect(synthesizeConnectorsFromReport).not.toHaveBeenCalled();
 
 Add a second case whose manifest hash differs from `meta.sha256` and expect `fetchPartHost` to reject with `geometrySha256` rather than calling synthesis.
 
-- [ ] **Step 2: Run the remote-fetch tests and verify RED**
+- [x] **Step 2: Run the remote-fetch tests and verify RED**
 
 Run: `npx vitest run src/modeling/parts/fetchPartMetadata.test.ts`
 
 Expected: the valid-manifest case receives generic generated frames or none; the mismatch does not reject.
 
-- [ ] **Step 3: Extract a strict attachment helper**
+- [x] **Step 3: Extract a strict attachment helper**
 
 Keep the legacy `AutoConnector` cache unchanged for discovery compatibility. Replace the local sidecar-only conversion with a typed catalog attachment plus the existing lossy auto-connector attachment:
 
@@ -304,13 +304,18 @@ if (meta.connectorManifest !== undefined) {
 }
 ```
 
-- [ ] **Step 4: Run remote-fetch tests and verify GREEN**
+The production branch must validate against a fresh SHA-256 of the raw bytes returned
+from the cache, not only the metadata digest passed into cache lookup. Keep that logic in
+a small helper used immediately before `fromStepBytes`, with a direct differing-bytes
+regression so the post-cache integrity check is covered independently of adapter validation.
+
+- [x] **Step 4: Run remote-fetch tests and verify GREEN**
 
 Run: `npx vitest run src/modeling/parts/fetchPartMetadata.test.ts`
 
 Expected: exact authored frames attach, mismatch rejects, and existing no-manifest metadata tests retain the generic path.
 
-- [ ] **Step 5: Commit the remote-fetch slice**
+- [x] **Step 5: Commit the remote-fetch slice**
 
 ```bash
 git add src/modeling/parts/fetchPart.ts src/modeling/parts/fetchPartMetadata.test.ts src/modeling/capture/captureSession.ts
