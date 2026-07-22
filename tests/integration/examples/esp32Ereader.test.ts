@@ -13,6 +13,10 @@ import { detectInterferences } from '../../../src/modeling/runtime/detectInterfe
 import { runIsolated } from '../../../src/modeling/runtime/isolation';
 import { runScript, type ScriptRunner } from '../../../src/modeling/runtime/runScript';
 import { Scene } from '../../../src/modeling/validation/scene';
+import {
+  HOSTED_IN_DEDICATED_FILE,
+  discoverSweepExamples,
+} from '../physics-loop/exampleSweepShared';
 
 const sourcePath = resolve('examples/community/esp32-ereader.kcad.ts');
 
@@ -95,6 +99,16 @@ async function runCatalogFixtureAssemblyValidation() {
 }
 
 describe('ESP32 E-Reader reference assembly', () => {
+  it('delegates its remote-catalog assembly from the hermetic live sweep to this fixture', () => {
+    const examplePath = 'examples/community/esp32-ereader.kcad.ts';
+
+    expect(HOSTED_IN_DEDICATED_FILE.get(examplePath)).toMatchObject({
+      testFile: 'tests/integration/examples/esp32Ereader.test.ts',
+      coverage: 'catalog-fixture',
+    });
+    expect(discoverSweepExamples()).not.toContain(examplePath);
+  });
+
   describe('offline catalog fixture coverage', () => {
     let fixture: Awaited<ReturnType<typeof runCatalogFixtureAssemblyValidation>>;
 
