@@ -269,6 +269,16 @@
       "attribution": "kernelCAD authored model (kernelCAD contributors)"
     },
     {
+      "id": "precision-microdrives-304-002-erm",
+      "name": "Precision Microdrives 304-002 Pico Vibe ERM vibration motor (4mm body × 8mm)",
+      "family": "Haptic actuator",
+      "mpn": "Precision Microdrives 304-002",
+      "kcad_source": "scripts/parts/authored/precision-microdrives-304-002-erm.kcad.ts",
+      "tags": ["haptic", "erm", "vibration-motor", "motor", "3v", "wearable", "precision-microdrives"],
+      "license": "MIT",
+      "attribution": "Dimensions from Precision Microdrives 304-002 product datasheet R002-V005; authored mechanical-envelope model by kernelCAD contributors"
+    },
+    {
       "id": "microsd-spi",
       "name": "microSD SPI adapter breakout module (24×30×4mm)",
       "family": "Storage",
