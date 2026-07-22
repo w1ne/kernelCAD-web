@@ -1,8 +1,25 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import sharp from 'sharp';
-import { normalizeInspectionTileForTest } from '../../../src/agent/render/headlessRender';
+import {
+  normalizeInspectionTileForTest,
+  resolveDemoPlayerReadyTimeout,
+  waitForDemoPlayerReady,
+} from '../../../src/agent/render/headlessRender';
 
 describe('headlessRender inspection channel normalization', () => {
+  it('allows a cold static demo-player mount up to one minute by default', () => {
+    expect(resolveDemoPlayerReadyTimeout()).toBe(60_000);
+    expect(resolveDemoPlayerReadyTimeout(12_345)).toBe(12_345);
+  });
+
+  it('passes the readiness timeout as Playwright options rather than as the page-function argument', async () => {
+    const waitForFunction = vi.fn().mockResolvedValue(undefined);
+
+    await waitForDemoPlayerReady({ waitForFunction } as never);
+
+    expect(waitForFunction).toHaveBeenCalledWith(expect.any(Function), undefined, { timeout: 60_000 });
+  });
+
   it('center-crops object-id masks to the output aspect with nearest sampling', async () => {
     const source = await sharp({
       create: {

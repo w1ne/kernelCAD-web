@@ -189,6 +189,30 @@ export interface DemoPlayerPageHandle {
   close: () => Promise<void>;
 }
 
+/** A cold static player can take longer than the normal page timeout to mount
+ * its Three/WebGL scene. Keep render inspection deterministic by allowing a
+ * full minute before treating that startup as a failed preview. */
+export const DEFAULT_DEMO_PLAYER_READY_TIMEOUT_MS = 60_000;
+
+export function resolveDemoPlayerReadyTimeout(override?: number): number {
+  return override ?? DEFAULT_DEMO_PLAYER_READY_TIMEOUT_MS;
+}
+
+/** Wait for the player with Playwright's options in its third argument.
+ * `waitForFunction(pageFunction, arg?, options?)` treats a second-argument
+ * options object as the page-function argument and silently falls back to
+ * Playwright's shorter default timeout. */
+export async function waitForDemoPlayerReady(
+  page: Pick<Page, 'waitForFunction'>,
+  readyTimeoutMs?: number,
+): Promise<void> {
+  await page.waitForFunction(
+    () => window.__demoPlayer !== undefined,
+    undefined,
+    { timeout: resolveDemoPlayerReadyTimeout(readyTimeoutMs) },
+  );
+}
+
 /**
  * Shared demo-player browser bootstrap: lazy playwright import, optional
  * CDP attach with launch fallback, context + page, `/demo-player?headless=1`
@@ -256,9 +280,7 @@ export async function openDemoPlayerPage(opts: DemoPlayerPageOpts): Promise<Demo
       waitUntil: 'domcontentloaded',
       timeout: opts.gotoTimeoutMs ?? 30_000,
     });
-    await page.waitForFunction(() => window.__demoPlayer !== undefined, {
-      timeout: opts.readyTimeoutMs ?? 15_000,
-    });
+    await waitForDemoPlayerReady(page, opts.readyTimeoutMs);
     return { page, attachedOverCdp, close: closeHandle };
   } catch (e) {
     await closeHandle();
