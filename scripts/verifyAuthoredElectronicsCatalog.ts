@@ -1,17 +1,21 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
-// Deployment gate for the authored electronic IC packages. The electronics
-// ingest is intentionally tolerant of one bad upstream model, but these five
-// package sources are authored in this repository and must never silently
-// disappear from a deployed catalog. Validate both sides of that contract:
-// source-level component/contact semantics and the emitted catalog artifacts.
+// Deployment gate for required authored electronics. The electronics ingest is
+// intentionally tolerant of a bad third-party upstream model, but the five
+// authored IC packages and the A4988/SG90 universal components must never
+// silently disappear from a deployed catalog. Validate both sides of that
+// contract: source-level package semantics and emitted catalog artifacts.
 
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { FeatureRecord } from '../src/shared/intent/featureRecord';
+import {
+  validateHashBoundConnectorManifest,
+  type HashBoundConnectorManifest,
+} from '../src/shared/parts/connectorManifestSchema';
 import { runScript } from '../src/modeling/runtime/runScript';
 
 type Axis = 0 | 1 | 2;
@@ -150,17 +154,63 @@ export const AUTHORED_ELECTRONIC_PACKAGE_SPECS: readonly AuthoredElectronicPacka
   },
 ];
 
+/**
+ * These universal components are consumed by projects, rather than being
+ * package-only primitives. Their exported STEP and exact authored interfaces
+ * are therefore required deployment artifacts, not best-effort additions.
+ */
+export interface RequiredAuthoredCatalogComponentSpec {
+  readonly id: string;
+  readonly family: string;
+  readonly source: string;
+  readonly connectors: readonly RequiredAuthoredCatalogConnectorSpec[];
+}
+
+export interface RequiredAuthoredCatalogConnectorSpec {
+  readonly name: string;
+  readonly type: 'frame' | 'axis';
+}
+
+export const REQUIRED_AUTHORED_CATALOG_COMPONENT_SPECS: readonly RequiredAuthoredCatalogComponentSpec[] = [
+  {
+    id: 'a4988-stepstick-carrier',
+    family: 'stepper-driver',
+    source: 'scripts/parts/authored/a4988-stepstick-carrier.kcad.ts',
+    connectors: [
+      'carrier-solder-face',
+      'en-contact', 'ms1-contact', 'ms2-contact', 'ms3-contact',
+      'reset-contact', 'sleep-contact', 'step-contact', 'dir-contact',
+      'vmot-contact', 'gnd-motor-contact', 'motor-2b-contact',
+      'motor-2a-contact', 'motor-1a-contact', 'motor-1b-contact',
+      'gnd-logic-contact', 'vdd-contact',
+    ].map((name) => ({ name, type: 'frame' as const })),
+  },
+  {
+    id: 'sg90-micro-servo',
+    family: 'micro-servo',
+    source: 'scripts/parts/authored/sg90-micro-servo.kcad.ts',
+    connectors: [
+      { name: 'ground-contact', type: 'frame' },
+      { name: 'vplus-contact', type: 'frame' },
+      { name: 'pwm-contact', type: 'frame' },
+    ],
+  },
+];
+
 interface ManifestPart {
   readonly id: string;
+  readonly family?: string;
   readonly kcad_source?: string;
   readonly attributes?: Readonly<Record<string, string | number>>;
 }
 
 interface CatalogRecordLike {
   readonly id?: unknown;
+  readonly family?: unknown;
   readonly attributes?: unknown;
   readonly stepUrl?: unknown;
   readonly sha256?: unknown;
+  readonly connectorManifest?: unknown;
 }
 
 interface CatalogIndexLike {
@@ -219,10 +269,31 @@ export async function verifyAuthoredElectronicsCatalog(
     }
   }
 
+  for (const spec of REQUIRED_AUTHORED_CATALOG_COMPONENT_SPECS) {
+    const manifestPart = manifestParts.find((part) => part.id === spec.id);
+    verifyRequiredComponentManifest(spec, manifestPart, errors);
+
+    const detailPath = join(options.catalogDir, 'v1', 'parts', `${spec.id}.json`);
+    const detail = readJson<CatalogRecordLike>(detailPath, errors, `${spec.id}: detail record`);
+    verifyRequiredComponentRecord(spec, detail, detailPath, options.catalogDir, errors);
+
+    const indexed = indexItems.find((record) => record.id === spec.id);
+    if (indexed === undefined) {
+      errors.push(`${spec.id}: missing from catalog index`);
+    } else if (detail !== undefined && indexed.sha256 !== detail.sha256) {
+      errors.push(`${spec.id}: catalog index SHA-256 does not match its detail record`);
+    }
+  }
+
   if (errors.length > 0) {
     throw new Error(`Authored electronics catalog verification failed:\n- ${errors.join('\n- ')}`);
   }
-  return { verifiedIds: AUTHORED_ELECTRONIC_PACKAGE_SPECS.map((spec) => spec.id) };
+  return {
+    verifiedIds: [
+      ...AUTHORED_ELECTRONIC_PACKAGE_SPECS,
+      ...REQUIRED_AUTHORED_CATALOG_COMPONENT_SPECS,
+    ].map((spec) => spec.id),
+  };
 }
 
 function verifyManifestPart(
@@ -246,6 +317,23 @@ function verifyManifestPart(
   }
   if (spec.pinPitchMm !== undefined && attributes?.pinPitchMm !== spec.pinPitchMm) {
     errors.push(`${spec.id}: manifest pinPitchMm is not ${spec.pinPitchMm}`);
+  }
+}
+
+function verifyRequiredComponentManifest(
+  spec: RequiredAuthoredCatalogComponentSpec,
+  part: ManifestPart | undefined,
+  errors: string[],
+): void {
+  if (!part) {
+    errors.push(`${spec.id}: missing from electronics manifest`);
+    return;
+  }
+  if (part.family !== spec.family) {
+    errors.push(`${spec.id}: manifest family is not '${spec.family}'`);
+  }
+  if (part.kcad_source !== spec.source) {
+    errors.push(`${spec.id}: must declare authored source '${spec.source}'`);
   }
 }
 
@@ -487,6 +575,68 @@ function verifyCatalogRecord(
     errors.push(`${spec.id}: detail record SHA-256 does not match its STEP artifact`);
   }
   if (!existsSync(detailPath)) errors.push(`${spec.id}: missing detail record ${detailPath}`);
+}
+
+function verifyRequiredComponentRecord(
+  spec: RequiredAuthoredCatalogComponentSpec,
+  record: CatalogRecordLike | undefined,
+  detailPath: string,
+  catalogDir: string,
+  errors: string[],
+): void {
+  if (!record) return;
+  if (record.id !== spec.id) errors.push(`${spec.id}: detail record id is incorrect`);
+  if (record.family !== spec.family) {
+    errors.push(`${spec.id}: detail record family is not '${spec.family}'`);
+  }
+
+  const stepPath = join(catalogDir, 'step', `${spec.id}.step`);
+  if (!existsSync(stepPath) || statSync(stepPath).size === 0) {
+    errors.push(`${spec.id}: missing STEP artifact ${stepPath}`);
+    return;
+  }
+  if (record.stepUrl !== undefined && !String(record.stepUrl).endsWith(`/step/${spec.id}.step`)) {
+    errors.push(`${spec.id}: detail record stepUrl does not point at its STEP artifact`);
+  }
+  const stepHash = createHash('sha256').update(readFileSync(stepPath)).digest('hex');
+  if (typeof record.sha256 !== 'string' || record.sha256 !== stepHash) {
+    errors.push(`${spec.id}: detail record SHA-256 does not match its STEP artifact`);
+  }
+  if (!existsSync(detailPath)) errors.push(`${spec.id}: missing detail record ${detailPath}`);
+
+  if (!isRecord(record.connectorManifest)) {
+    errors.push(`${spec.id}: detail record has no authored connector manifest`);
+    return;
+  }
+  const manifest = record.connectorManifest as HashBoundConnectorManifest;
+  try {
+    validateHashBoundConnectorManifest(manifest, {
+      partId: spec.id,
+      family: spec.family,
+      geometrySha256: stepHash,
+    });
+  } catch (error) {
+    errors.push(`${spec.id}: invalid authored connector manifest — ${formatError(error)}`);
+    return;
+  }
+
+  const actualByName = new Map(manifest.connectors.map((connector) => [connector.name, connector]));
+  const expectedNames = new Set(spec.connectors.map((connector) => connector.name));
+  for (const expected of spec.connectors) {
+    const actual = actualByName.get(expected.name);
+    if (actual === undefined) {
+      errors.push(`${spec.id}: authored connector manifest is missing '${expected.name}'`);
+    } else if (actual.type !== expected.type) {
+      errors.push(
+        `${spec.id}: authored connector '${expected.name}' is '${actual.type}', expected '${expected.type}'`,
+      );
+    }
+  }
+  for (const actual of manifest.connectors) {
+    if (!expectedNames.has(actual.name)) {
+      errors.push(`${spec.id}: authored connector '${actual.name}' is unexpected`);
+    }
+  }
 }
 
 function readJson<T>(path: string, errors: string[], label: string): T | undefined {

@@ -407,6 +407,26 @@
       "attribution": "kernelCAD authored model (kernelCAD contributors)"
     },
     {
+      "id": "a4988-stepstick-carrier",
+      "name": "A4988 StepStick carrier (Pololu #2128 Black Edition)",
+      "family": "stepper-driver",
+      "mpn": "Pololu #2128",
+      "kcad_source": "scripts/parts/authored/a4988-stepstick-carrier.kcad.ts",
+      "tags": ["stepper-driver", "a4988", "stepstick", "carrier", "motor-control", "pololu"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored mechanical model; dimensions and pinout from Pololu #2128: https://www.pololu.com/product/2128, https://www.pololu.com/file/0J1081/a4988-stepper-motor-driver-carrier-black-edition-dimension-diagram.pdf, and https://www.pololu.com/file/0J1225/a4988-stepper-motor-driver-carrier-black-edition.step"
+    },
+    {
+      "id": "sg90-micro-servo",
+      "name": "SG90 micro servo (Luxor Parts 87897)",
+      "family": "micro-servo",
+      "mpn": "Luxor Parts 87897 (SG90)",
+      "kcad_source": "scripts/parts/authored/sg90-micro-servo.kcad.ts",
+      "tags": ["servo", "micro-servo", "sg90", "pwm", "actuator"],
+      "license": "MIT",
+      "attribution": "kernelCAD authored conservative mechanical envelope and canonical harness-contact proxies; dimensions and cable convention from Luxor Parts 87897 data sheet (which does not establish a shaft or mounting datum): https://www.kjell.com/globalassets/mediaassets/701916_87897_datasheet_en.pdf"
+    },
+    {
       "id": "nrf54l15-qfn48",
       "name": "Nordic nRF54L15 QFN48 (QFAA) SoC package",
       "family": "MCU",

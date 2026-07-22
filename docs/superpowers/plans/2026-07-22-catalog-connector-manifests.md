@@ -576,17 +576,17 @@ connector fallback.
 - Modify: `scripts/electronics-parts.json`
 - Create: `scripts/universalElectronicsParts.test.ts`
 
-- [ ] **Step 1: Write source-level factual-interface tests**
+- [x] **Step 1: Write source-level factual-interface tests**
 
-Assert that A4988 declares `carrier-solder-face`, `en-contact`, `step-contact`, `dir-contact`, `vmot-contact`, and its other actual plated-hole contacts; assert that SG90 declares `ground-contact`, `vplus-contact`, `pwm-contact`, and `output-axis-envelope`; assert neither source declares `mount-hole`, `universal-spline`, `x-motor`, or `y-motor`.
+Assert that A4988 declares `carrier-solder-face`, `en-contact`, `step-contact`, `dir-contact`, `vmot-contact`, and its other actual plated-hole contacts. Assert that SG90 declares only its `ground-contact`, `vplus-contact`, and `pwm-contact` canonical plug-contact proxies; the cited product-specific drawing lacks a shaft XY datum and fastening geometry, so it must not declare an output-axis or mounting interface. Assert neither source declares `mount-hole`, `universal-spline`, `x-motor`, or `y-motor`.
 
-- [ ] **Step 2: Run the source tests and verify RED**
+- [x] **Step 2: Run the source tests and verify RED**
 
 Run: `npx vitest run scripts/universalElectronicsParts.test.ts`
 
 Expected: missing sources/records or missing connector declarations.
 
-- [ ] **Step 3: Model interfaces on real modeled solids**
+- [x] **Step 3: Model interfaces on real modeled solids**
 
 For A4988, call `.connector()` on the PCB/actual pad parts with:
 
@@ -599,24 +599,29 @@ padRef.connector(`${pin.name}-contact`, {
 });
 ```
 
-For SG90, attach the cable contacts to their modeled contact faces and declare only an envelope axis:
+For SG90, model the documented `32.0 × 12.4 × 26.7 mm` mechanical envelope and attach the cable contacts to canonical plug-contact proxy faces. Do not model an output shaft, horn, spline, cable exit, plug housing, or mounting datum without a product-specific source:
 
 ```ts
-housingRef.connector('pwm-contact', {
-  type: 'frame', origin: { kind: 'vec3', value: [cableHousingX + 2.64, pwmY, leadZ] }, normal: [1, 0, 0],
-});
-housingRef.connector('output-axis-envelope', {
-  type: 'axis', origin: { kind: 'vec3', value: [OUTPUT_X, OUTPUT_Y, CASE_H + BOSS_H] }, axis: [0, 0, 1],
+leadRef.connector(`${lead.name}-contact`, {
+  type: 'frame',
+  origin: { kind: 'vec3', value: [CABLE_CONTACT_X, lead.y, CABLE_Z] },
+  normal: [1, 0, 0],
 });
 ```
 
 Add each part to `scripts/electronics-parts.json` using its real manufacturer/source attribution and `kcad_source`; do not add fixture-only board, power, mounting, or project-specific fields.
 
-- [ ] **Step 4: Run source tests and a narrow catalog export test**
+- [x] **Step 4: Run source tests and a narrow catalog export test**
 
 Run: `npx vitest run scripts/universalElectronicsParts.test.ts`
 
 Expected: factual interface declarations pass source-level coverage. If disk headroom is at least 1 GiB, run `npx tsx scripts/ingestElectronics.ts <fresh-temp-out> --manifest scripts/electronics-parts.json`; otherwise defer the generated catalog export to CI.
+
+Completed with the full in-memory STEP/manifest export path for both sources,
+plus zero-interference assembly checks. The SG90 is intentionally a sourced
+outer envelope plus documented canonical harness-contact proxies: the Luxor
+87897 drawing does not locate its output shaft. The generated catalog ingest
+remains deferred to CI because local free disk is below 1 GiB.
 
 - [ ] **Step 5: Commit universal component sources**
 
@@ -636,11 +641,14 @@ Run: `git diff origin/develop...HEAD --check`
 
 Expected: no whitespace errors and no changes outside the manifest pipeline, universal parts, and their tests.
 
-- [ ] **Step 2: Run focused tests without the artifact-generating `pretest` hook**
+- [x] **Step 2: Run focused tests without the artifact-generating `pretest` hook**
 
-Run: `npx vitest run src/shared/parts/connectorManifest.test.ts src/modeling/parts/stepPartsAdapter.test.ts scripts/ingestParts.test.ts src/modeling/parts/fetchPart.test.ts src/modeling/parts/fetchPartMetadata.test.ts src/modeling/capture/assembly.catalogConnectors.test.ts src/agent/script-runtime/connectorManifestExport.test.ts scripts/ingestElectronics.test.ts scripts/universalElectronicsParts.test.ts`
+Run: `npx vitest run src/shared/parts/connectorManifest.test.ts src/modeling/parts/stepPartsAdapter.test.ts scripts/ingestParts.test.ts src/modeling/parts/fetchPart.test.ts src/modeling/parts/fetchPartMetadata.test.ts src/modeling/capture/assembly.catalogConnectors.test.ts src/agent/script-runtime/connectorManifestExport.test.ts scripts/ingestElectronics.test.ts scripts/universalElectronicsParts.test.ts scripts/verifyAuthoredElectronicsCatalog.test.ts`
 
 Expected: all listed focused suites pass.
+
+Completed: 11 files / 110 tests passed with the listed suites plus
+`scripts/electronics-parts.test.ts`.
 
 - [ ] **Step 3: Run type verification if disk capacity permits**
 
@@ -648,9 +656,15 @@ Run: `npm run typecheck`
 
 Expected: exit code 0. If free disk remains below 1 GiB, do not create build artifacts locally; push the tested branch and use required remote CI for the full type/build gate.
 
-- [ ] **Step 4: Perform two reviews**
+Local free space remains below 1 GiB, so artifact-generating `npm run typecheck`
+is deferred to remote CI. `npx tsc --noEmit -p tsconfig.cli.json` passed locally.
+
+- [x] **Step 4: Perform two reviews**
 
 First review against this plan: no manual connector-coordinate copy, no generic synthesis when an authored manifest is present, no fictional universal interfaces. Second review for TypeScript/API quality and compatibility with no-manifest third-party records.
+
+Completed: independent factual/assembly and TypeScript/gate reviews cleared the
+final SG90 envelope/proxy contract and exact-manifest gate.
 
 - [ ] **Step 5: Push and open a draft pull request**
 

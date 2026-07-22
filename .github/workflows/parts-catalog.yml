@@ -99,12 +99,12 @@ jobs:
           --manifest scripts/electronics-parts.json
           --base-url https://kernelcad-parts.pages.dev
 
-      # Authored package sources are a required part of this deploy: unlike
-      # third-party upstream models, a failed authored export must never be
-      # silently skipped and published as a catalog omission. This verifies all
-      # five package artifacts, their measured bounds/metadata, and named
-      # components + contacts before any board conversion or Pages deploy.
-      - name: Verify authored electronic package catalog
+      # Required authored sources are a required part of this deploy: unlike
+      # third-party upstream models, a failed A4988/SG90 export must never be
+      # silently skipped and published as a catalog omission. This verifies the
+      # five package artifacts plus the two motor-control components and their
+      # hash-bound authored interfaces before any board conversion or deploy.
+      - name: Verify required authored electronics catalog
         run: >
           npx tsx scripts/verifyAuthoredElectronicsCatalog.ts catalog
           --manifest scripts/electronics-parts.json
