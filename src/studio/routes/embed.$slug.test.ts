@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
-import { embedPresentationMode } from './embed.$slug';
+import { embedPresentationMode } from '../embedPresentation';
 
 describe('embedPresentationMode', () => {
   it('keeps the default embed model-only', () => {

@@ -22,13 +22,7 @@ import { FunnelViewer } from '../../funnel/components/FunnelViewer';
 import { fetchProjectBySlug, type ProjectRow } from '../../funnel/lib/apiClient';
 import StudioApp from '../App';
 import { StudioConfigProvider } from '../config/StudioConfigContext';
-
-export type EmbedPresentation = 'viewer' | 'studio';
-
-/** The plain embed stays the compatibility default; Studio is opt-in per host. */
-export function embedPresentationMode(value: unknown): EmbedPresentation {
-  return value === 'studio' ? 'studio' : 'viewer';
-}
+import { embedPresentationMode } from '../embedPresentation';
 
 export const Route = createFileRoute('/embed/$slug')({
   validateSearch: (search: Record<string, unknown>) => ({
