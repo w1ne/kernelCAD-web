@@ -20,13 +20,20 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { FunnelViewer } from '../../funnel/components/FunnelViewer';
 import { fetchProjectBySlug, type ProjectRow } from '../../funnel/lib/apiClient';
+import StudioApp from '../App';
+import { StudioConfigProvider } from '../config/StudioConfigContext';
+import { embedPresentationMode } from '../embedPresentation';
 
 export const Route = createFileRoute('/embed/$slug')({
+  validateSearch: (search: Record<string, unknown>) => ({
+    mode: embedPresentationMode(search.mode),
+  }),
   component: EmbedPage,
 });
 
 function EmbedPage() {
   const { slug } = Route.useParams();
+  const { mode } = Route.useSearch();
   const [project, setProject] = useState<ProjectRow | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'missing' | 'error'>('loading');
   const [err, setErr] = useState<string | null>(null);
@@ -46,6 +53,13 @@ function EmbedPage() {
   }, [slug]);
 
   if (state === 'ready' && project) {
+    if (mode === 'studio') {
+      return (
+        <StudioConfigProvider value={{ showHeader: false, enableAgentRail: false, enableConnect: false }}>
+          <StudioApp initialCode={project.current_code} viewerMode />
+        </StudioConfigProvider>
+      );
+    }
     return (
       <div className="fixed inset-0">
         <FunnelViewer code={project.current_code} />
