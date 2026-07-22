@@ -190,6 +190,19 @@ describe('Thermal IO-Link machine-health reference assembly', () => {
       expect(source).not.toMatch(/fallback\s*(?:box|electronics|component)/i);
     });
 
+    it('orients the buck PCB mating face toward its shelf', () => {
+      const { source } = fixture;
+
+      // The deployed buck record declares its mounting face at -Z. With the
+      // rear shelf at +Y, rotateX(90) maps that face onto powerShelfFrontY.
+      expect(source).toMatch(
+        /const buck24v3v3 = \(await \(await lib\.fetchPart\('buck-24v-3v3'\)\)\.recenter\(\)\)\s*\.rotateX\(90\)\s*\.translate\(buckCenterX, buckCenterY, 0\)/,
+      );
+      expect(source).toMatch(
+        /buckPart\.connector\('shelf-mount', \{\s*type: 'frame',\s*origin: \{ kind: 'vec3', value: \[buckCenterX, powerShelfFrontY, 0\] \},\s*\}\);/,
+      );
+    });
+
     // This literal title is checked by exampleSweepGate.test.ts. It replaces
     // the live runValidateCli sweep only because this test explicitly lowers,
     // clash-checks, validates, and probes the same assembly through a

@@ -52,7 +52,9 @@ const esp32RearFaceY = esp32CenterY + esp32C3DepthAlongYmm / 2;
 
 // The buck shares neither the sensor plane nor the crowded rear carrier
 // plane. A right-side enclosure shelf carries it 0.4 mm behind the ESP32
-// envelope and well ahead of the M12's internal body.
+// envelope and well ahead of the M12's internal body. Its catalog -Z mating
+// face is oriented toward that rear shelf, leaving components toward the
+// clearance in front of it.
 const buck24v3v3DepthAlongYmm = 5.6;
 const buck24v3v3WidthMm = 24.0;
 const buckBoardClearanceMm = 0.4;
@@ -250,7 +252,7 @@ const m12 = (await (await lib.fetchPart('m12-iolink-5pin')).recenter())
 // This is only a mechanical placement of the reusable power module. Wiring,
 // thermal derating, isolation, and IO-Link behavior remain out of scope.
 const buck24v3v3 = (await (await lib.fetchPart('buck-24v-3v3')).recenter())
-  .rotateX(-90)
+  .rotateX(90)
   .translate(buckCenterX, buckCenterY, 0)
   .color('#0f766e');
 
