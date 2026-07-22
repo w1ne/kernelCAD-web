@@ -37,6 +37,10 @@ import { createHash } from 'node:crypto';
 import { inspectStepFile } from '../src/agent/inspect/inspectStep';
 import { synthesizeConnectorsFromReport } from '../src/modeling/parts/synthesizeConnectors';
 import { PAGES_WORKER } from './parts/workerTemplate';
+import {
+  isOcctOutOfMemory,
+  isOutOfMemoryMessage,
+} from '../src/kernel/backends/occt/occtException';
 
 // -----------------------------------------------------------------------------
 // Types — the served record matches the remote adapter's StepPartsRecord shape.
@@ -199,6 +203,22 @@ export async function ingestDirectory(
       records.push(record);
       shaManifest[record.id] = record.sha256;
     } catch (e) {
+      // "Skip the bad file and carry on" is right for genuinely bad geometry
+      // and WRONG for an exhausted kernel heap: once OCCT's wasm heap fills,
+      // every remaining import in this process fails too, so a tolerant loop
+      // would quietly publish a catalog missing a run of perfectly good parts
+      // and label them unparseable. That is strictly worse than no catalog —
+      // it looks successful. Fail the whole ingest, loudly.
+      if (isOcctOutOfMemory(e) || isOutOfMemoryMessage(e)) {
+        throw new Error(
+          `ingestDirectory: OCCT wasm heap exhausted while ingesting ` +
+            `${relative(srcDir, stepPath)} (after ${records.length} part(s)). ` +
+            'This is a host memory limit, NOT a bad STEP file — the remaining parts were ' +
+            'never given a fair chance, so the catalog is incomplete and is not being ' +
+            'published. Re-run the ingest with a smaller batch or more memory.',
+          { cause: e },
+        );
+      }
       skipped.push({ file: relative(srcDir, stepPath), reason: e instanceof Error ? e.message : String(e) });
     }
   }

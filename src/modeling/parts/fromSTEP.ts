@@ -8,10 +8,10 @@
 // the lowered shape on the FeatureRecord's metadata so the lowerer can
 // hand it back without re-importing.
 
-import * as replicad from 'replicad';
 import { readFile } from 'node:fs/promises';
 import { resolveScriptRelativePath } from '../../shared/runtime/scriptRelativePath';
-import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
+import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { importStepCached, StepParseError } from './stepParseCache';
 import { Shape } from '../capture/proxy';
 import type { CaptureSession } from '../capture/captureSession';
 import { KernelError } from '../../shared/intent/kernelError';
@@ -48,16 +48,32 @@ export async function fromSTEP(ctx: FromSTEPContext, path: string): Promise<Shap
     );
   }
 
-  await initOcct();
-
-  // replicad.importSTEP wants a Blob. In Node 22+, Blob is global.
-  // The bytes copy is unavoidable: importSTEP reads the blob async.
-  const blob = new Blob([new Uint8Array(buf)]);
-
-  let imported: replicad.AnyShape;
+  // Parse (or reuse a content-hash-cached parse of) the STEP bytes. The cache
+  // is what keeps a Studio rebuild from re-importing an unchanged part on
+  // every code edit. We re-raise its failures as this call's KernelErrors so
+  // the agent-facing diagnostics are unchanged.
+  let backend: OcctBackend;
   try {
-    imported = await replicad.importSTEP(blob);
+    backend = await importStepCached(buf);
   } catch (e) {
+    if (e instanceof StepParseError && e.reason === 'no-solid') {
+      // A Shape3D-class result is required (Solid / CompSolid / Compound);
+      // 2D drawings and empty imports are rejected before the lowerer.
+      throw new KernelError(
+        'feature.kernel-failed',
+        `lib.fromSTEP: ${absPath} did not contain a 3D solid.`,
+        undefined,
+        'kernel-failed.lib.fromSTEP.no-solid — the STEP file must contain at least one closed solid body.',
+      );
+    }
+    if (e instanceof StepParseError && e.reason === 'out-of-memory') {
+      throw new KernelError(
+        'feature.kernel-failed',
+        `lib.fromSTEP: ran out of OCCT wasm heap importing ${absPath}: ${e.message}`,
+        undefined,
+        'kernel-failed.lib.fromSTEP.out-of-memory — the file is NOT invalid; the geometry kernel exhausted its 2 GiB wasm heap. Import fewer/smaller parts in one session, or restart the host process.',
+      );
+    }
     const msg = e instanceof Error ? e.message : String(e);
     throw new KernelError(
       'feature.kernel-failed',
@@ -66,24 +82,6 @@ export async function fromSTEP(ctx: FromSTEPContext, path: string): Promise<Shap
       'kernel-failed.lib.fromSTEP.parse — file is not a valid STEP solid; re-export from the source CAD as AP203/AP214 with solid bodies.',
     );
   }
-
-  // We expect a Shape3D-class result (Solid / CompSolid / Compound). Reject
-  // 2D drawings or empty imports up-front so the lowerer never sees them.
-  // Duck-typed against `meshShape` — the method lives on replicad's `_3DShape`
-  // prototype only, so a 2D `Sketch` import would correctly fail this check.
-  if (
-    !imported ||
-    typeof (imported as { meshShape?: unknown }).meshShape !== 'function'
-  ) {
-    throw new KernelError(
-      'feature.kernel-failed',
-      `lib.fromSTEP: ${absPath} did not contain a 3D solid.`,
-      undefined,
-      'kernel-failed.lib.fromSTEP.no-solid — the STEP file must contain at least one closed solid body.',
-    );
-  }
-
-  const backend = new OcctBackend(imported as replicad.Shape3D);
 
   // Park the lowered shape on the session's `importedGeometry` map (not in
   // metadata): replicad shapes carry circular refs that trip the
@@ -121,12 +119,26 @@ export async function fromStepBytes(
       'parts.fetch.empty-bytes — re-fetch and try again.',
     );
   }
-  await initOcct();
-  const blob = new Blob([new Uint8Array(bytes)]);
-  let imported: replicad.AnyShape;
+  let backend: OcctBackend;
   try {
-    imported = await replicad.importSTEP(blob);
+    backend = await importStepCached(bytes);
   } catch (e) {
+    if (e instanceof StepParseError && e.reason === 'no-solid') {
+      throw new KernelError(
+        'feature.kernel-failed',
+        `lib.fetchPart: ${sourceLabel} did not contain a 3D solid.`,
+        undefined,
+        'kernel-failed.lib.fetchPart.no-solid.',
+      );
+    }
+    if (e instanceof StepParseError && e.reason === 'out-of-memory') {
+      throw new KernelError(
+        'feature.kernel-failed',
+        `lib.fetchPart: ran out of OCCT wasm heap importing ${sourceLabel}: ${e.message}`,
+        undefined,
+        'kernel-failed.lib.fetchPart.out-of-memory — the catalog STEP is NOT invalid; the geometry kernel exhausted its 2 GiB wasm heap. Import fewer/smaller parts in one session, or restart the host process.',
+      );
+    }
     const msg = e instanceof Error ? e.message : String(e);
     throw new KernelError(
       'feature.kernel-failed',
@@ -135,18 +147,6 @@ export async function fromStepBytes(
       'kernel-failed.lib.fetchPart.parse — file is not a valid STEP solid.',
     );
   }
-  if (
-    !imported ||
-    typeof (imported as { meshShape?: unknown }).meshShape !== 'function'
-  ) {
-    throw new KernelError(
-      'feature.kernel-failed',
-      `lib.fetchPart: ${sourceLabel} did not contain a 3D solid.`,
-      undefined,
-      'kernel-failed.lib.fetchPart.no-solid.',
-    );
-  }
-  const backend = new OcctBackend(imported as replicad.Shape3D);
   const shape = ctx.session.createShape({
     kind: 'importedStep',
     params: {},
