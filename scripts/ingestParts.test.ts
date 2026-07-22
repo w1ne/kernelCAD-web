@@ -277,4 +277,16 @@ describe('ingestParts', () => {
     expect(existsSync(join(out, 'step'))).toBe(false);
     expect(existsSync(join(out, 'v1', 'catalog', 'parts.index.json'))).toBe(false);
   });
+
+  it('rejects a numeric sidecar catalog ID before it can collide with a string ID', async () => {
+    const { src, out } = createTemporaryCatalogDirectories();
+    writeStepFixture(src, ['electronics', 'driver-a'], 'first', tinyStepBytes, { id: 1 });
+    writeStepFixture(src, ['mechanical', 'driver-b'], 'second', alternateTinyStepBytes, { id: '1' });
+
+    await expect(ingestDirectory(src, out, INGEST_OPTS)).rejects.toMatchObject({
+      name: 'AuthoredManifestError',
+    });
+    expect(existsSync(join(out, 'step'))).toBe(false);
+    expect(existsSync(join(out, 'v1', 'catalog', 'parts.index.json'))).toBe(false);
+  });
 });

@@ -162,6 +162,17 @@ function loadSidecar(stepPath: string): IngestSidecar {
   }
 }
 
+/** Resolve the exact output ID and reject JSON values TypeScript cannot enforce. */
+function resolveCatalogId(stepPath: string, meta: IngestSidecar): string {
+  if (meta.id === undefined) return slugify(basename(stepPath, extname(stepPath)));
+  if (typeof meta.id !== 'string') {
+    throw new AuthoredManifestError(
+      `ingest: sidecar ${sidecarPathFor(stepPath)} id must be a string when provided`,
+    );
+  }
+  return meta.id;
+}
+
 /**
  * Refuse ambiguous output names before creating any catalog files.  The
  * sidecar is deliberately read here because an explicit id overrides the
@@ -171,7 +182,7 @@ function assertUniqueCatalogIds(stepFiles: string[], srcRoot: string): void {
   const pathsById = new Map<string, string>();
   for (const stepPath of stepFiles) {
     const meta = loadSidecar(stepPath);
-    const id = meta.id ?? slugify(basename(stepPath, extname(stepPath)));
+    const id = resolveCatalogId(stepPath, meta);
     const firstPath = pathsById.get(id);
     if (firstPath !== undefined) {
       throw new DuplicateCatalogIdError(id, firstPath, stepPath, srcRoot);
@@ -265,7 +276,7 @@ export async function ingestStepFile(
   const meta = loadSidecar(stepPath);
 
   const baseName = basename(stepPath, extname(stepPath));
-  const id = meta.id ?? slugify(baseName);
+  const id = resolveCatalogId(stepPath, meta);
   // Derive category/family from the source folder layout when no sidecar:
   // <srcRoot>/<category>/<family>/part.step
   const relParts = relative(srcRoot, dirname(stepPath)).split(/[\\/]/).filter(Boolean);
