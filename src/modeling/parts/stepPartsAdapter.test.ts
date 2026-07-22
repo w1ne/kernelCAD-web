@@ -9,7 +9,8 @@ import {
   STEP_PARTS_LICENSE,
   type StepPartsRecord,
 } from './stepPartsAdapter';
-import { isPartRecord } from '../../shared/parts/types';
+import { isPartRecord, snapshotCatalogPart } from '../../shared/parts/types';
+import type { HashBoundConnectorManifest } from '../../shared/parts/connectorManifestSchema';
 
 const REAL: StepPartsRecord = {
   id: 'din913_set_screw_m3x3',
@@ -42,6 +43,29 @@ const GLB_ONLY_BOARD: StepPartsRecord = {
   glbUrl: 'https://kernelcad-parts.pages.dev/glb/nucleo-h563zi-board.glb',
 };
 
+function testConnectorManifest(geometrySha256: string): HashBoundConnectorManifest {
+  return {
+    schemaVersion: 1,
+    partId: REAL.id,
+    family: REAL.family,
+    geometrySha256,
+    connectors: [
+      {
+        name: 'mount-face',
+        type: 'frame',
+        origin: [0, 0, 0],
+        normal: [0, 0, 1],
+      },
+      {
+        name: 'shaft-axis',
+        type: 'axis',
+        origin: [0, 0, -3],
+        axis: [0, 0, 1],
+      },
+    ],
+  };
+}
+
 describe('mapStepPartsRecord', () => {
   it('produces a valid PartRecord from a real step.parts detail record', () => {
     const r = mapStepPartsRecord(REAL);
@@ -73,6 +97,82 @@ describe('mapStepPartsRecord', () => {
 
   it('emits no connectors — those are synthesized at fetch time', () => {
     expect(mapStepPartsRecord(REAL).connectors).toEqual([]);
+  });
+
+  it('preserves a hash-bound connector manifest and exposes its connector names', () => {
+    const connectorManifest = testConnectorManifest(REAL.sha256!);
+    const r = mapStepPartsRecord({ ...REAL, connectorManifest });
+
+    expect(r.connectorManifest).toEqual(connectorManifest);
+    expect(r.connectors).toEqual(['mount-face', 'shaft-axis']);
+    expect(isPartRecord(r)).toBe(true);
+  });
+
+  it('takes a detached, frozen nested connector-manifest snapshot', () => {
+    const connectorManifest = testConnectorManifest(REAL.sha256!);
+    const raw: StepPartsRecord = { ...REAL, connectorManifest };
+    const snapshot = snapshotCatalogPart(mapStepPartsRecord(raw));
+
+    connectorManifest.connectors[0].origin[0] = 42;
+
+    expect(snapshot.connectorManifest!.connectors[0].origin).toEqual([0, 0, 0]);
+    expect(Object.isFrozen(snapshot.connectorManifest)).toBe(true);
+    expect(Object.isFrozen(snapshot.connectorManifest!.connectors)).toBe(true);
+    expect(Object.isFrozen(snapshot.connectorManifest!.connectors[0])).toBe(true);
+    expect(Object.isFrozen(snapshot.connectorManifest!.connectors[0].origin)).toBe(true);
+  });
+
+  it('rejects a remote connector manifest when the raw record has no SHA-256', () => {
+    expect(() =>
+      mapStepPartsRecord({
+        ...REAL,
+        sha256: undefined,
+        connectorManifest: testConnectorManifest('a'.repeat(64)),
+      }),
+    ).toThrow(/record sha256/i);
+  });
+
+  it('rejects malformed unknown connector data from the remote record', () => {
+    expect(() =>
+      mapStepPartsRecord({
+        ...REAL,
+        connectorManifest: {
+          schemaVersion: 1,
+          partId: REAL.id,
+          family: REAL.family,
+          geometrySha256: REAL.sha256,
+          connectors: [
+            {
+              name: 'mount-face',
+              type: 'frame',
+              origin: [0, 0, 0],
+              axis: [0, 0, 1],
+            },
+          ],
+        },
+      }),
+    ).toThrow(/normal|unexpected field/i);
+  });
+
+  it('rejects records whose connector names contradict the manifest', () => {
+    const record = mapStepPartsRecord({
+      ...REAL,
+      connectorManifest: testConnectorManifest(REAL.sha256!),
+    });
+    record.connectors = ['different-connector'];
+
+    expect(isPartRecord(record)).toBe(false);
+  });
+
+  it('returns false rather than throwing for an invalid connector manifest', () => {
+    const record = mapStepPartsRecord({
+      ...REAL,
+      connectorManifest: testConnectorManifest(REAL.sha256!),
+    });
+    record.connectorManifest!.geometrySha256 = 'a'.repeat(64);
+
+    expect(() => isPartRecord(record)).not.toThrow();
+    expect(isPartRecord(record)).toBe(false);
   });
 
   it('tolerates a legacy string standard and missing optional fields', () => {

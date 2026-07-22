@@ -6,6 +6,14 @@
 // entry (bundled or remote). Geometry lives separately (in the cache);
 // PartRecord is the discovery + provenance handle.
 
+import {
+  validateHashBoundConnectorManifest,
+  type ConnectorAxisEntry,
+  type ConnectorEntry,
+  type ConnectorFrameEntry,
+  type HashBoundConnectorManifest,
+} from './connectorManifestSchema';
+
 export type PartSource = 'local-catalog' | 'remote';
 
 /**
@@ -27,6 +35,25 @@ export interface UpstreamProvenance {
   path: string;
 }
 
+type ReadonlyVector3 = readonly [number, number, number];
+
+/** Deeply immutable connector entry retained on catalog-backed runtime metadata. */
+export type CatalogConnectorEntry =
+  | (Readonly<Omit<ConnectorFrameEntry, 'origin' | 'normal'>> & {
+      readonly origin: ReadonlyVector3;
+      readonly normal: ReadonlyVector3;
+    })
+  | (Readonly<Omit<ConnectorAxisEntry, 'origin' | 'axis'>> & {
+      readonly origin: ReadonlyVector3;
+      readonly axis: ReadonlyVector3;
+    });
+
+/** Deeply immutable manifest snapshot retained on catalog-backed runtime metadata. */
+export type CatalogConnectorManifest =
+  Readonly<Omit<HashBoundConnectorManifest, 'connectors'>> & {
+    readonly connectors: readonly CatalogConnectorEntry[];
+  };
+
 export interface PartRecord {
   id: string;
   name: string;
@@ -40,6 +67,8 @@ export interface PartRecord {
   license: string;
   attribution?: string;
   connectors: string[];
+  /** Authored connector frames, bound to this record's exact geometry digest. */
+  connectorManifest?: HashBoundConnectorManifest;
   stepUrl?: string;
   /**
    * Display-mesh URL (GLB), when the catalog serves this part as a mesh instead
@@ -86,11 +115,59 @@ export interface CatalogPartMetadata {
   readonly license: string;
   readonly attribution?: string;
   readonly connectors: readonly string[];
+  readonly connectorManifest?: CatalogConnectorManifest;
   readonly stepUrl?: string;
   readonly glbUrl?: string;
   readonly licenseClass?: LicenseClass;
   readonly redistribution?: RedistributionMode;
   readonly upstream?: Readonly<UpstreamProvenance>;
+}
+
+function snapshotVector3(vector: [number, number, number]): ReadonlyVector3 {
+  const snapshot: [number, number, number] = [...vector];
+  Object.freeze(snapshot);
+  return snapshot;
+}
+
+function snapshotConnectorEntry(entry: ConnectorEntry): CatalogConnectorEntry {
+  if (entry.type === 'frame') {
+    const snapshot: CatalogConnectorEntry = {
+      name: entry.name,
+      type: 'frame',
+      origin: snapshotVector3(entry.origin),
+      normal: snapshotVector3(entry.normal),
+    };
+    Object.freeze(snapshot);
+    return snapshot;
+  }
+  const snapshot: CatalogConnectorEntry = {
+    name: entry.name,
+    type: 'axis',
+    origin: snapshotVector3(entry.origin),
+    axis: snapshotVector3(entry.axis),
+  };
+  Object.freeze(snapshot);
+  return snapshot;
+}
+
+/** Deep-copy nested connector data so runtime metadata cannot retain raw catalog references. */
+function snapshotConnectorManifest(
+  manifest: HashBoundConnectorManifest,
+): CatalogConnectorManifest {
+  const connectors: CatalogConnectorEntry[] = manifest.connectors.map(snapshotConnectorEntry);
+  Object.freeze(connectors);
+  const snapshot: CatalogConnectorManifest = {
+    schemaVersion: manifest.schemaVersion,
+    partId: manifest.partId,
+    family: manifest.family,
+    geometrySha256: manifest.geometrySha256,
+    connectors,
+    ...(manifest.license === undefined ? {} : { license: manifest.license }),
+    ...(manifest.attribution === undefined ? {} : { attribution: manifest.attribution }),
+    ...(manifest.generatedAt === undefined ? {} : { generatedAt: manifest.generatedAt }),
+  };
+  Object.freeze(snapshot);
+  return snapshot;
 }
 
 /** Create a detached, frozen copy of a catalog record for runtime metadata. */
@@ -108,6 +185,9 @@ export function snapshotCatalogPart(record: PartRecord): CatalogPartMetadata {
     license: record.license,
     ...(record.attribution === undefined ? {} : { attribution: record.attribution }),
     connectors: Object.freeze([...record.connectors]),
+    ...(record.connectorManifest === undefined
+      ? {}
+      : { connectorManifest: snapshotConnectorManifest(record.connectorManifest) }),
     ...(record.stepUrl === undefined ? {} : { stepUrl: record.stepUrl }),
     ...(record.glbUrl === undefined ? {} : { glbUrl: record.glbUrl }),
     ...(record.licenseClass === undefined ? {} : { licenseClass: record.licenseClass }),
@@ -135,7 +215,34 @@ export function isPartRecord(v: unknown): v is PartRecord {
   if (typeof r.sha256 !== 'string') return false;
   if (r.source !== 'local-catalog' && r.source !== 'remote') return false;
   if (typeof r.license !== 'string') return false;
-  if (!Array.isArray(r.connectors)) return false;
+  if (
+    !Array.isArray(r.connectors) ||
+    !r.connectors.every((connector) => typeof connector === 'string')
+  ) {
+    return false;
+  }
+  if (r.connectorManifest !== undefined) {
+    try {
+      const manifest = r.connectorManifest;
+      validateHashBoundConnectorManifest(
+        manifest,
+        {
+          partId: r.id,
+          family: r.family,
+          geometrySha256: r.sha256,
+        },
+      );
+      const manifestConnectorNames = manifest.connectors.map((connector) => connector.name);
+      if (
+        r.connectors.length !== manifestConnectorNames.length ||
+        r.connectors.some((connector, index) => connector !== manifestConnectorNames[index])
+      ) {
+        return false;
+      }
+    } catch {
+      return false;
+    }
+  }
   if (r.licenseClass !== undefined && !isLicenseClass(r.licenseClass)) return false;
   if (
     r.redistribution !== undefined &&
