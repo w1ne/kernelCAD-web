@@ -167,6 +167,13 @@ export const HOSTED_IN_DEDICATED_FILE: ReadonlyMap<string, DedicatedExampleCover
       coverage: 'catalog-fixture',
     },
   ],
+  [
+    'examples/community/thermal-iolink-machine-health.kcad.ts',
+    {
+      testFile: 'tests/integration/examples/thermalIoLinkMachineHealth.test.ts',
+      coverage: 'catalog-fixture',
+    },
+  ],
 ]);
 
 export function walkExamples(dir: string, prefix = ''): string[] {
