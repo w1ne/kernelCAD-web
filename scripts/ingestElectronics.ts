@@ -24,7 +24,11 @@ import { join, resolve, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { unzipSync } from 'fflate';
-import { ingestDirectory, type CatalogRecord } from './ingestParts';
+import {
+  AuthoredManifestError,
+  ingestDirectory,
+  type CatalogRecord,
+} from './ingestParts';
 import {
   loadConnectorManifest,
   type ConnectorManifest,
@@ -155,16 +159,41 @@ export async function ingestElectronics(
           authoredExportArgs(cliPath, scriptPath, stepOut, manifestOut, part),
           { stdio: ['ignore', 'pipe', 'pipe'], timeout: 120_000 },
         );
-        if (!existsSync(manifestOut)) {
-          throw new Error(`kernelcad export did not write connector manifest ${manifestOut}`);
-        }
-        connectorManifest = loadConnectorManifest(manifestOut);
       } catch (e) {
+        if (existsSync(stepOut)) {
+          throw new AuthoredManifestError(
+            `ingestElectronics: authored STEP '${part.id}' was written without a successful connector-manifest export`,
+            { cause: e },
+          );
+        }
         const err = e as { stderr?: Buffer; message?: string };
         const detail = err.stderr?.toString().trim() || err.message || String(e);
         console.warn(`SKIP ${part.id}: kernelcad export failed — ${detail}`);
         continue;
       }
+      if (!existsSync(manifestOut)) {
+        throw new AuthoredManifestError(
+          `ingestElectronics: authored connector manifest missing for '${part.id}'`,
+        );
+      }
+      let loadedManifest: ConnectorManifest;
+      try {
+        loadedManifest = loadConnectorManifest(manifestOut);
+      } catch (e) {
+        throw new AuthoredManifestError(
+          `ingestElectronics: invalid authored connector manifest for '${part.id}'`,
+          { cause: e },
+        );
+      }
+      if (
+        loadedManifest.partId !== part.id ||
+        loadedManifest.family !== part.family
+      ) {
+        throw new AuthoredManifestError(
+          `ingestElectronics: authored connector manifest identity ${loadedManifest.partId}/${loadedManifest.family} does not match catalog identity ${part.id}/${part.family}`,
+        );
+      }
+      connectorManifest = loadedManifest;
       buf = readFileSync(stepOut);
       if (!buf.subarray(0, 64).toString('latin1').includes('ISO-10303-21')) {
         console.warn(`SKIP ${part.id}: exported file is not a STEP file`);

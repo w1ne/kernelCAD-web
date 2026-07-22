@@ -11,7 +11,10 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('node:child_process', () => ({ execFileSync: mocks.execFileSync }));
-vi.mock('./ingestParts', () => ({ ingestDirectory: mocks.ingestDirectory }));
+vi.mock('./ingestParts', () => ({
+  AuthoredManifestError: class AuthoredManifestError extends Error {},
+  ingestDirectory: mocks.ingestDirectory,
+}));
 
 import { authoredExportArgs, ingestElectronics } from './ingestElectronics';
 
@@ -113,5 +116,137 @@ describe('ingestElectronics', () => {
       family: 'stepper-driver',
       connectorManifest: exportedManifest,
     });
+  });
+
+  it('fails the release when an authored STEP lacks its required connector manifest', async () => {
+    const repoRoot = createTemporaryDirectory('kc-electronics-missing-manifest-');
+    const manifestPath = join(repoRoot, 'scripts', 'electronics-parts.json');
+    const outDir = createTemporaryDirectory('kc-electronics-out-');
+    mkdirSync(join(repoRoot, 'scripts'), { recursive: true });
+    writeFileSync(
+      manifestPath,
+      JSON.stringify({
+        baseModelUrl: 'https://parts.example',
+        license: 'CC-BY-4.0',
+        attribution: 'fixture',
+        parts: [{
+          id: 'a4988-stepstick-carrier',
+          name: 'A4988 carrier',
+          family: 'stepper-driver',
+          mpn: 'A4988',
+          kcad_source: 'scripts/parts/authored/a4988-stepstick-carrier.kcad.ts',
+        }],
+      }),
+    );
+    mocks.execFileSync.mockImplementation((_: string, args: string[]) => {
+      const stepOut = args[args.indexOf('-o') + 1];
+      writeFileSync(stepOut, 'ISO-10303-21;\nEND-ISO-10303-21;\n');
+    });
+    mocks.ingestDirectory.mockResolvedValue([]);
+
+    await expect(ingestElectronics(manifestPath, outDir, 'https://catalog.example'))
+      .rejects.toThrow(/authored connector manifest/i);
+    expect(mocks.ingestDirectory).not.toHaveBeenCalled();
+  });
+
+  it('fails the release before ingestion when an authored manifest has another part identity', async () => {
+    const repoRoot = createTemporaryDirectory('kc-electronics-wrong-manifest-');
+    const manifestPath = join(repoRoot, 'scripts', 'electronics-parts.json');
+    const outDir = createTemporaryDirectory('kc-electronics-out-');
+    mkdirSync(join(repoRoot, 'scripts'), { recursive: true });
+    writeFileSync(
+      manifestPath,
+      JSON.stringify({
+        baseModelUrl: 'https://parts.example',
+        license: 'CC-BY-4.0',
+        attribution: 'fixture',
+        parts: [{
+          id: 'a4988-stepstick-carrier',
+          name: 'A4988 carrier',
+          family: 'stepper-driver',
+          mpn: 'A4988',
+          kcad_source: 'scripts/parts/authored/a4988-stepstick-carrier.kcad.ts',
+        }],
+      }),
+    );
+    mocks.execFileSync.mockImplementation((_: string, args: string[]) => {
+      const stepOut = args[args.indexOf('-o') + 1];
+      const sidecarOut = args[args.indexOf('--connector-manifest') + 1];
+      writeFileSync(stepOut, 'ISO-10303-21;\nEND-ISO-10303-21;\n');
+      writeFileSync(sidecarOut, JSON.stringify({
+        schemaVersion: 1,
+        partId: 'different-part',
+        family: 'stepper-driver',
+        connectors: [],
+      }));
+    });
+    mocks.ingestDirectory.mockResolvedValue([]);
+
+    await expect(ingestElectronics(manifestPath, outDir, 'https://catalog.example'))
+      .rejects.toThrow(/does not match catalog identity/i);
+    expect(mocks.ingestDirectory).not.toHaveBeenCalled();
+  });
+
+  it('fails the release when a failed authored CLI export has already written STEP', async () => {
+    const repoRoot = createTemporaryDirectory('kc-electronics-cli-after-step-');
+    const manifestPath = join(repoRoot, 'scripts', 'electronics-parts.json');
+    const outDir = createTemporaryDirectory('kc-electronics-out-');
+    mkdirSync(join(repoRoot, 'scripts'), { recursive: true });
+    writeFileSync(
+      manifestPath,
+      JSON.stringify({
+        baseModelUrl: 'https://parts.example',
+        license: 'CC-BY-4.0',
+        attribution: 'fixture',
+        parts: [{
+          id: 'a4988-stepstick-carrier',
+          name: 'A4988 carrier',
+          family: 'stepper-driver',
+          mpn: 'A4988',
+          kcad_source: 'scripts/parts/authored/a4988-stepstick-carrier.kcad.ts',
+        }],
+      }),
+    );
+    mocks.execFileSync.mockImplementation((_: string, args: string[]) => {
+      const stepOut = args[args.indexOf('-o') + 1];
+      writeFileSync(stepOut, 'ISO-10303-21;\nEND-ISO-10303-21;\n');
+      throw new Error('connector sidecar export failed');
+    });
+
+    await expect(ingestElectronics(manifestPath, outDir, 'https://catalog.example'))
+      .rejects.toThrow(/without a successful connector-manifest export/i);
+    expect(mocks.ingestDirectory).not.toHaveBeenCalled();
+  });
+
+  it('fails the release before ingestion when an authored manifest is malformed', async () => {
+    const repoRoot = createTemporaryDirectory('kc-electronics-malformed-manifest-');
+    const manifestPath = join(repoRoot, 'scripts', 'electronics-parts.json');
+    const outDir = createTemporaryDirectory('kc-electronics-out-');
+    mkdirSync(join(repoRoot, 'scripts'), { recursive: true });
+    writeFileSync(
+      manifestPath,
+      JSON.stringify({
+        baseModelUrl: 'https://parts.example',
+        license: 'CC-BY-4.0',
+        attribution: 'fixture',
+        parts: [{
+          id: 'a4988-stepstick-carrier',
+          name: 'A4988 carrier',
+          family: 'stepper-driver',
+          mpn: 'A4988',
+          kcad_source: 'scripts/parts/authored/a4988-stepstick-carrier.kcad.ts',
+        }],
+      }),
+    );
+    mocks.execFileSync.mockImplementation((_: string, args: string[]) => {
+      const stepOut = args[args.indexOf('-o') + 1];
+      const sidecarOut = args[args.indexOf('--connector-manifest') + 1];
+      writeFileSync(stepOut, 'ISO-10303-21;\nEND-ISO-10303-21;\n');
+      writeFileSync(sidecarOut, '{not JSON');
+    });
+
+    await expect(ingestElectronics(manifestPath, outDir, 'https://catalog.example'))
+      .rejects.toThrow(/invalid authored connector manifest/i);
+    expect(mocks.ingestDirectory).not.toHaveBeenCalled();
   });
 });

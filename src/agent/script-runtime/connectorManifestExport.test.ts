@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import {
+  chmodSync,
   existsSync,
   linkSync,
   mkdirSync,
@@ -543,6 +544,54 @@ describe('connector manifest runtime and CLI integration', () => {
     });
   });
 
+  it('rejects an existing manifest before it can overwrite the STEP output', async () => {
+    const directory = temporaryDirectory('kcad-manifest-existing-');
+    const file = join(directory, 'servo.kcad.ts');
+    const out = join(directory, 'servo.step');
+    const manifestPath = join(directory, 'servo.connector-manifest.json');
+    writeFileSync(file, RUNTIME_CODE);
+    writeFileSync(manifestPath, 'existing manifest');
+
+    const result = await exportScript({
+      file,
+      format: 'step',
+      out,
+      connectorManifest: manifestPath,
+      manifestPartId: 'servo',
+      manifestFamily: 'micro-servo',
+    });
+
+    expect(result.exitCode).toBe(2);
+    expect(result.bytesWritten).toBe(0);
+    expect(readFileSync(manifestPath, 'utf8')).toBe('existing manifest');
+    expect(existsSync(out)).toBe(false);
+    expect(result.diagnostics.map((diagnostic) => diagnostic.code)).toContain('cli.invalid-args');
+  });
+
+  it('rejects an insecure manifest parent before writing the STEP output', async () => {
+    const directory = temporaryDirectory('kcad-manifest-insecure-parent-');
+    const file = join(directory, 'servo.kcad.ts');
+    const out = join(directory, 'servo.step');
+    const manifestPath = join(directory, 'servo.connector-manifest.json');
+    writeFileSync(file, RUNTIME_CODE);
+    chmodSync(directory, 0o777);
+
+    const result = await exportScript({
+      file,
+      format: 'step',
+      out,
+      connectorManifest: manifestPath,
+      manifestPartId: 'servo',
+      manifestFamily: 'micro-servo',
+    });
+
+    expect(result.exitCode).toBe(2);
+    expect(result.bytesWritten).toBe(0);
+    expect(existsSync(out)).toBe(false);
+    expect(existsSync(manifestPath)).toBe(false);
+    expect(result.diagnostics[0]?.message).toMatch(/must not be writable by group or other users/i);
+  });
+
   it('rejects symlink and hard-link aliases before a manifest can overwrite the STEP output', async () => {
     const directory = temporaryDirectory('kcad-manifest-alias-');
     const realDirectory = join(directory, 'real');
@@ -581,7 +630,7 @@ describe('connector manifest runtime and CLI integration', () => {
   });
 
   it.each(['hard link', 'symbolic link'] as const)(
-    'replaces a late %s manifest destination instead of following the STEP inode',
+    'rejects a late %s manifest destination without following the STEP inode',
     async (aliasKind) => {
       const directory = temporaryDirectory('kcad-manifest-late-alias-');
       const stepPath = join(directory, 'servo.step');
@@ -595,10 +644,11 @@ describe('connector manifest runtime and CLI integration', () => {
       if (aliasKind === 'hard link') linkSync(stepPath, manifestPath);
       else symlinkSync(stepPath, manifestPath);
 
-      await writeManifestSidecarAtomically(manifestPath, manifestContents);
+      await expect(writeManifestSidecarAtomically(manifestPath, manifestContents))
+        .rejects.toMatchObject({ code: 'EEXIST' });
 
       expect(readFileSync(stepPath)).toEqual(stepBytes);
-      expect(readFileSync(manifestPath, 'utf8')).toBe(manifestContents);
+      expect(readFileSync(manifestPath)).toEqual(stepBytes);
     },
   );
 });
