@@ -12,13 +12,14 @@
 
 ## File map
 
-- `src/shared/parts/connectorManifest.ts` — authoring and hash-bound manifest types and validation.
+- `src/shared/parts/connectorManifest.ts` — Node-only local-sidecar loader and public re-exports.
+- `src/shared/parts/connectorManifestSchema.ts` — browser-safe manifest schema and validation used by catalog metadata.
 - `src/shared/parts/connectorManifest.test.ts` — manifest contract regression coverage.
 - `src/shared/parts/types.ts` — canonical remote `PartRecord` transport field.
 - `src/modeling/parts/stepPartsAdapter.ts` — raw remote JSON to canonical record mapping.
 - `src/modeling/parts/stepPartsAdapter.test.ts` — mapped-manifest regression coverage.
 - `scripts/ingestParts.ts` and `scripts/ingestParts.test.ts` — bind an authored sidecar to emitted STEP bytes.
-- `src/modeling/parts/fetchPart.ts` and `src/modeling/parts/fetchPart.test.ts` — attach verified manifest frames before generic synthesis.
+- `src/modeling/parts/fetchPart.ts` and `src/modeling/parts/fetchPartMetadata.test.ts` — attach verified manifest frames before generic synthesis.
 - `src/modeling/capture/captureSession.ts` — typed, verified catalog-interface store keyed by fetched Shape id.
 - `src/modeling/capture/assembly.ts` and `src/modeling/capture/assembly.catalogConnectors.test.ts` — promote factual catalog interfaces into both assembly mating APIs.
 - `src/agent/script-runtime/connectorManifestExport.ts` and `.test.ts` — convert numeric authored `Scene` connectors into a portable sidecar.
@@ -32,12 +33,13 @@
 
 **Files:**
 - Modify: `src/shared/parts/connectorManifest.ts`
+- Create: `src/shared/parts/connectorManifestSchema.ts`
 - Modify: `src/shared/parts/connectorManifest.test.ts`
 - Modify: `src/shared/parts/types.ts`
 - Modify: `src/modeling/parts/stepPartsAdapter.ts`
 - Modify: `src/modeling/parts/stepPartsAdapter.test.ts`
 
-- [ ] **Step 1: Write the failing mapper test**
+- [x] **Step 1: Write the failing mapper test**
 
 Append this fixture and assertion to `src/modeling/parts/stepPartsAdapter.test.ts`:
 
@@ -61,13 +63,13 @@ it('preserves a valid hash-bound authored manifest and exposes its names', () =>
 });
 ```
 
-- [ ] **Step 2: Run the focused test and verify RED**
+- [x] **Step 2: Run the focused test and verify RED**
 
 Run: `npx vitest run src/modeling/parts/stepPartsAdapter.test.ts`
 
 Expected: the new assertion fails because `connectorManifest` does not exist on `PartRecord` and the mapper returns `connectors: []`.
 
-- [ ] **Step 3: Write the failing validation test**
+- [x] **Step 3: Write the failing validation test**
 
 Append this test to `src/shared/parts/connectorManifest.test.ts`:
 
@@ -85,15 +87,15 @@ it('rejects a hash-bound manifest whose expected STEP hash differs', () => {
 });
 ```
 
-- [ ] **Step 4: Run the validation test and verify RED**
+- [x] **Step 4: Run the validation test and verify RED**
 
 Run: `npx vitest run src/shared/parts/connectorManifest.test.ts`
 
 Expected: import failure because `validateHashBoundConnectorManifest` is not exported.
 
-- [ ] **Step 5: Implement the minimal shared contract**
+- [x] **Step 5: Implement the minimal shared contract**
 
-In `src/shared/parts/connectorManifest.ts`, add the bound type and helper while retaining `validateConnectorManifest` for bundled sidecars:
+Put the bound type and strict browser-safe helper in `src/shared/parts/connectorManifestSchema.ts`, retaining `connectorManifest.ts` as the Node-only bundled-sidecar loader/re-export:
 
 ```ts
 export interface HashBoundConnectorManifest extends ConnectorManifest {
@@ -118,7 +120,7 @@ export function validateHashBoundConnectorManifest(
 
 Also make `validateConnectorManifest` reject duplicate names, non-finite three-vectors, and a zero frame normal or axis before the new helper invokes it.
 
-- [ ] **Step 6: Add canonical record fields and mapper behavior**
+- [x] **Step 6: Add canonical record fields and mapper behavior**
 
 Import `HashBoundConnectorManifest` into `src/shared/parts/types.ts` and add:
 
@@ -126,13 +128,16 @@ Import `HashBoundConnectorManifest` into `src/shared/parts/types.ts` and add:
 connectorManifest?: HashBoundConnectorManifest;
 ```
 
-to `PartRecord` and `CatalogPartMetadata`; preserve it in `snapshotCatalogPart`. Update `isPartRecord` to call `validateHashBoundConnectorManifest` when that optional field is present and return `false` on validation failure. In `src/modeling/parts/stepPartsAdapter.ts`, declare the optional raw field, validate it against `raw.id`, `raw.family`, and `raw.sha256 ?? ''`, then build the record as:
+to `PartRecord` and `CatalogPartMetadata`; preserve it in `snapshotCatalogPart`. Update `isPartRecord` to call `validateHashBoundConnectorManifest` when that optional field is present and return `false` on validation failure. In `src/modeling/parts/stepPartsAdapter.ts`, declare the optional raw field as `unknown`, require a lowercase 64-hex SHA on every manifest-bearing raw record, and validate it against `raw.id`, `raw.family`, and that exact SHA before building the record as:
 
 ```ts
 const connectorManifest = raw.connectorManifest;
 if (connectorManifest !== undefined) {
+  if (typeof raw.sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(raw.sha256)) {
+    throw new Error('step.parts: connectorManifest requires a lowercase record sha256');
+  }
   validateHashBoundConnectorManifest(connectorManifest, {
-    partId: raw.id, family: raw.family, geometrySha256: raw.sha256 ?? '',
+    partId: raw.id, family: raw.family, geometrySha256: raw.sha256,
   });
 }
 const record: PartRecord = {
@@ -142,16 +147,16 @@ const record: PartRecord = {
 };
 ```
 
-- [ ] **Step 7: Run the focused contract suite and verify GREEN**
+- [x] **Step 7: Run the focused contract suite and verify GREEN**
 
 Run: `npx vitest run src/shared/parts/connectorManifest.test.ts src/modeling/parts/stepPartsAdapter.test.ts`
 
 Expected: both files pass; no-manifest adapter fixtures still produce an empty connector list.
 
-- [ ] **Step 8: Commit the transport slice**
+- [x] **Step 8: Commit the transport slice**
 
 ```bash
-git add src/shared/parts/connectorManifest.ts src/shared/parts/connectorManifest.test.ts src/shared/parts/types.ts src/modeling/parts/stepPartsAdapter.ts src/modeling/parts/stepPartsAdapter.test.ts
+git add src/shared/parts/connectorManifest.ts src/shared/parts/connectorManifestSchema.ts src/shared/parts/connectorManifest.test.ts src/shared/parts/types.ts src/modeling/parts/stepPartsAdapter.ts src/modeling/parts/stepPartsAdapter.test.ts src/modeling/parts/remoteClient.ts
 git commit -m "feat(catalog): transport hash-bound connector manifests"
 ```
 
@@ -161,7 +166,7 @@ git commit -m "feat(catalog): transport hash-bound connector manifests"
 - Modify: `scripts/ingestParts.ts`
 - Modify: `scripts/ingestParts.test.ts`
 
-- [ ] **Step 1: Write the failing ingestion test**
+- [x] **Step 1: Write the failing ingestion test**
 
 Create a fixture `.meta.json` with an unbound manifest and assert the record uses the emitted STEP digest:
 
@@ -176,13 +181,13 @@ expect(record.connectors).toEqual(['carrier-solder-face']);
 
 Also retain the current no-sidecar-manifest assertion that generic connector synthesis creates the prior `mating-face` name.
 
-- [ ] **Step 2: Run the ingestion test and verify RED**
+- [x] **Step 2: Run the ingestion test and verify RED**
 
 Run: `npx vitest run scripts/ingestParts.test.ts`
 
 Expected: `connectorManifest` is absent and generic names are returned even with a supplied authored sidecar.
 
-- [ ] **Step 3: Add a raw sidecar field and validate/bind it**
+- [x] **Step 3: Add a raw sidecar field and validate/bind it**
 
 Add `connectorManifest?: ConnectorManifest` to `IngestSidecar`, and `connectorManifest?: HashBoundConnectorManifest` to `CatalogRecord`. Define an `AuthoredManifestError` subclass and rethrow it from `ingestDirectory` rather than recording it in `skipped.json`; bad authored interface data must stop that catalog release. After computing `sha256`, use:
 
@@ -209,24 +214,31 @@ connectors: connectorManifest === undefined
 ...(connectorManifest === undefined ? {} : { connectorManifest }),
 ```
 
-- [ ] **Step 4: Run the ingestion test and verify GREEN**
+- [x] **Step 4: Run the ingestion test and verify GREEN**
 
 Run: `npx vitest run scripts/ingestParts.test.ts`
 
 Expected: manifest names replace generic names only for the authored fixture and carry the exact computed hash.
 
-- [ ] **Step 5: Commit the ingest slice**
+- [x] **Step 5: Commit the ingest slice**
 
 ```bash
 git add scripts/ingestParts.ts scripts/ingestParts.test.ts
 git commit -m "feat(catalog): bind authored interfaces to STEP bytes"
 ```
 
+Implementation hardening accepted during review: ingestion independently hashes the copied
+`out/step/<id>.step` in its regression, rejects malformed JSON/manifest data as an
+`AuthoredManifestError`, and preflights all resolved catalog IDs before creating output
+directories. The resolver rejects non-string sidecar IDs and duplicate derived or explicit
+IDs, preventing a later STEP from overwriting bytes described by an earlier bound manifest.
+
 ### Task 3: Consume verified manifests during remote fetch
 
 **Files:**
 - Modify: `src/modeling/parts/fetchPart.ts`
-- Modify: `src/modeling/parts/fetchPart.test.ts`
+- Modify: `src/modeling/parts/fetchPartMetadata.test.ts`
+- Modify: `src/modeling/capture/captureSession.ts`
 
 - [ ] **Step 1: Write the failing remote-fetch tests**
 
@@ -246,7 +258,7 @@ Add a second case whose manifest hash differs from `meta.sha256` and expect `fet
 
 - [ ] **Step 2: Run the remote-fetch tests and verify RED**
 
-Run: `npx vitest run src/modeling/parts/fetchPart.test.ts`
+Run: `npx vitest run src/modeling/parts/fetchPartMetadata.test.ts`
 
 Expected: the valid-manifest case receives generic generated frames or none; the mismatch does not reject.
 
@@ -273,6 +285,11 @@ function attachManifestConnectors(
 }
 ```
 
+This task owns the typed prerequisite as well: add `catalogConnectors` and
+`attachCatalogConnectors()` to `CaptureSession` before the fetch helper calls it. Store an
+immutable copy of the already validated entries; do not treat the lossy `autoConnectors`
+projection as the factual interface source.
+
 Keep bundled sidecar attachment best-effort by loading and validating v1 inside its current `try/catch`. For remote data, after `getOrFetchAsync` and before `inspectStepFile`, execute:
 
 ```ts
@@ -289,21 +306,20 @@ if (meta.connectorManifest !== undefined) {
 
 - [ ] **Step 4: Run remote-fetch tests and verify GREEN**
 
-Run: `npx vitest run src/modeling/parts/fetchPart.test.ts src/modeling/parts/fetchPartMetadata.test.ts`
+Run: `npx vitest run src/modeling/parts/fetchPartMetadata.test.ts`
 
 Expected: exact authored frames attach, mismatch rejects, and existing no-manifest metadata tests retain the generic path.
 
 - [ ] **Step 5: Commit the remote-fetch slice**
 
 ```bash
-git add src/modeling/parts/fetchPart.ts src/modeling/parts/fetchPart.test.ts
+git add src/modeling/parts/fetchPart.ts src/modeling/parts/fetchPartMetadata.test.ts src/modeling/capture/captureSession.ts
 git commit -m "feat(catalog): attach verified authored interfaces"
 ```
 
 ### Task 4: Promote factual catalog interfaces into assembly mating
 
 **Files:**
-- Modify: `src/modeling/capture/captureSession.ts`
 - Modify: `src/modeling/capture/assembly.ts`
 - Create: `src/modeling/capture/assembly.catalogConnectors.test.ts`
 
@@ -321,7 +337,7 @@ expect(part.connector('pwm-contact')).toMatchObject({ partName: 'servo', connect
 expect(part.mateConnectors).toContainEqual(expect.objectContaining({ name: 'pwm-contact', type: 'frame' }));
 ```
 
-Add a second assertion that `arm.mate('signal', 'servo.pwm-contact', 'socket.signal', 'fastened')` resolves after a normal explicit `socket.signal` frame is declared. Add a third test that stores only a legacy `session.attachAutoConnectors(... 'mating-face' ...)` value and confirms it is not promoted. Add a rigid-transform test that calls `source.translate(10, 0, 0).rotateZ(90)` before `assembly.part()` and expects the promoted origin/direction to be transformed. Add a scale test that expects a diagnostic rather than a silently distorted catalog interface.
+Add a second assertion that `arm.mate('signal', 'servo.pwm-contact', 'socket.signal', 'fastened')` resolves after a normal explicit `socket.signal` frame is declared. Add a third test that stores only a legacy `session.attachAutoConnectors(... 'mating-face' ...)` value and confirms it is not promoted. Add a rigid-transform test that calls `source.translate(10, 0, 0).rotateZ(90)` before `assembly.part()` and expects the promoted origin/direction to be transformed. Add scale, reflection, and ParamRef-transform tests that reject rather than silently desynchronizing a physical interface. Finally import the catalog part through `subAssembly()` and assert its interfaces are neither duplicated nor rejected.
 
 - [ ] **Step 2: Run the assembly-promotion tests and verify RED**
 
@@ -330,15 +346,6 @@ Run: `npx vitest run src/modeling/capture/assembly.catalogConnectors.test.ts`
 Expected: `part.connector('pwm-contact')` throws because the auto-connector cache is not currently merged into assembly connectors.
 
 - [ ] **Step 3: Add typed authored-interface promotion**
-
-In `CaptureSession`, add:
-
-```ts
-readonly catalogConnectors: Map<string, readonly ConnectorEntry[]> = new Map();
-attachCatalogConnectors(shapeId: string, connectors: readonly ConnectorEntry[]): void {
-  this.catalogConnectors.set(shapeId, connectors);
-}
-```
 
 In `Assembly.part`, read `session.catalogConnectors.get(shape.id)`, validate each exact `ConnectorEntry`, and apply the feature record's rigid transforms in declared order. For a translate use `Transform.translation(...)`; for a rotation use `Transform.rotationAroundPivot(...)`; compose each new transform to the left of the previous total. Reject `scale` and `reflect` for a catalog-attached Shape. Merge the result before `resolvePartPlacement`:
 
@@ -369,6 +376,11 @@ for (const connector of transformedCatalogConnectors) {
 
 Do not read or promote the legacy generic `autoConnectors` map.
 
+Keep catalog-interface promotion private to the first direct `assembly.part()` call. The
+`subAssembly()` copy path already brings forward promoted legacy and mate-style connectors;
+route it through an internal no-repromotion path so an imported subassembly cannot create
+duplicate names or entries.
+
 - [ ] **Step 4: Run the assembly-promotion tests and verify GREEN**
 
 Run: `npx vitest run src/modeling/capture/assembly.catalogConnectors.test.ts src/modeling/capture/assembly.chaining.test.ts tests/integration/parts/partsAutoConnectors.test.ts`
@@ -378,7 +390,7 @@ Expected: factual catalog frames work in `connector()` and `mate()`, while gener
 - [ ] **Step 5: Commit the assembly bridge**
 
 ```bash
-git add src/modeling/capture/captureSession.ts src/modeling/capture/assembly.ts src/modeling/capture/assembly.catalogConnectors.test.ts
+git add src/modeling/capture/assembly.ts src/modeling/capture/assembly.catalogConnectors.test.ts
 git commit -m "feat(assembly): promote authored catalog interfaces"
 ```
 

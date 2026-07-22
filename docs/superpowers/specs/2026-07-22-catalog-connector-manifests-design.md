@@ -23,7 +23,7 @@ authored Scene .connector() frames
   -> catalog detail/index record
   -> remote adapter validation
   -> verified STEP download
-  -> exact session auto-connectors
+  -> exact typed session catalog interfaces (plus a legacy discovery projection)
 ```
 
 If a record has no manifest, the existing geometry inspection and generic connector synthesis remain unchanged. If a manifest is present but invalid, mismatched with the record identity, or bound to a different SHA-256, ingest/fetch must fail rather than silently replace it with guessed frames.
@@ -39,7 +39,7 @@ interface HashBoundConnectorManifest extends ConnectorManifest {
 Validation rules:
 
 - schema version remains exactly `1`;
-- `partId`, `family`, and all connector names are non-empty and safe for the existing topology-reference grammar;
+- `partId` and `family` are non-empty and exactly match the consuming catalog record; all connector names are safe for the existing topology-reference grammar;
 - connector names are unique globally within a manifest;
 - each origin and frame/axis direction is a finite numeric three-vector;
 - every normal/axis is non-zero;
@@ -57,7 +57,7 @@ An attached interface must be more than a display label. The existing session au
 
 Generic STEP-synthesized connectors remain discovery aids and are not promoted automatically. This distinction prevents a guessed bounding-box face from being represented as a factual component interface. A duplicate between an explicit assembly connector and an authored catalog interface is a capture-time error, so neither source silently overrides the other.
 
-The bridge applies any existing rigid `Shape.translate()` and `Shape.rotate()` transforms to catalog frames before registering them. It rejects scale and reflection on a catalog-attached Shape because they would invalidate a universal component's physical interface rather than merely place it. Boolean, mirror, pattern, and other derived shapes have a new feature id and intentionally do not inherit catalog interfaces in this first slice.
+The bridge applies any existing literal rigid `Shape.translate()` and `Shape.rotate()` transforms to catalog frames before registering them. It rejects scale, reflection, and parameter-driven transforms on a catalog-attached Shape because they would invalidate or later desynchronize a universal component's physical interface rather than merely place it. Boolean, mirror, pattern, and other derived shapes have a new feature id and intentionally do not inherit catalog interfaces in this first slice. `subAssembly()` carries already-promoted interfaces forward without attempting a second promotion.
 
 ## Authoring and universal-component policy
 
