@@ -46,7 +46,7 @@ function extractStepFromZip(buf: Buffer): Buffer | null {
   return Buffer.from(entries[name]);
 }
 
-interface ManifestPart {
+export interface ManifestPart {
   id: string;
   name: string;
   family: string;
@@ -62,16 +62,42 @@ interface ManifestPart {
    *  Takes priority over `url` and `model`. */
   kcad_source?: string;
   tags?: string[];
+  /** Stable, source-backed catalog metadata such as package dimensions and
+   * electrical interface facts. These flow into the deployed record rather
+   * than being discarded after source compilation. */
+  attributes?: Record<string, number | string>;
   /** Per-part license / attribution override (e.g. an MIT Adafruit STEP in an
    *  otherwise CC-BY-SA KiCad manifest). Falls back to the manifest defaults. */
   license?: string;
   attribution?: string;
 }
-interface Manifest {
+export interface ElectronicsManifest {
   baseModelUrl: string;
   license: string;
   attribution: string;
   parts: ManifestPart[];
+}
+
+/** Build the sidecar consumed by the generic STEP ingester.  Authored sources
+ * still get their measured geometry and synthesized STEP connectors there;
+ * this helper only preserves explicitly sourced catalog metadata.  In
+ * particular, it does not invent remote mate frames for electrical contacts.
+ */
+export function electronicsPartSidecar(
+  part: ManifestPart,
+  defaults: Pick<ElectronicsManifest, 'license' | 'attribution'>,
+): IngestSidecar {
+  const attribution = part.attribution ?? defaults.attribution;
+  return {
+    id: part.id,
+    name: part.name,
+    category: 'Electronics',
+    family: part.family,
+    tags: part.tags ?? ['electronics', part.family],
+    attributes: { mpn: part.mpn, ...(part.attributes ?? {}) },
+    license: part.license ?? defaults.license,
+    ...(attribution ? { attribution } : {}),
+  };
 }
 
 function parseArgs(argv: string[]) {
@@ -96,7 +122,7 @@ export async function ingestElectronics(
   outDir: string,
   baseUrl: string,
 ): Promise<CatalogRecord[]> {
-  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as Manifest;
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as ElectronicsManifest;
   const src = mkdtempSync(join(tmpdir(), 'kc-electronics-'));
   mkdirSync(src, { recursive: true });
 
@@ -160,16 +186,7 @@ export async function ingestElectronics(
     writeFileSync(
       join(src, `${part.id}.meta.json`),
       JSON.stringify(
-        {
-          id: part.id,
-          name: part.name,
-          category: 'Electronics',
-          family: part.family,
-          tags: part.tags ?? ['electronics', part.family],
-          attributes: { mpn: part.mpn },
-          license: part.license ?? manifest.license,
-          attribution: part.attribution ?? manifest.attribution,
-        },
+        electronicsPartSidecar(part, manifest),
         null,
         2,
       ),
