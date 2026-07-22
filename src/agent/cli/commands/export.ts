@@ -219,11 +219,10 @@ async function trustedManifestPath(destination: string): Promise<string> {
   return join(parent, basename(requestedPath));
 }
 
-function manifestDestinationExistsError(path: string): Error & { code: 'EEXIST' } {
-  return Object.assign(
-    new Error(`connector manifest destination already exists: ${path}`),
-    { code: 'EEXIST' as const },
-  );
+function manifestDestinationExistsError(path: string): Error & { code?: string } {
+  const error = new Error(`connector manifest destination already exists: ${path}`) as Error & { code?: string };
+  error.code = 'EEXIST';
+  return error;
 }
 
 /** Detect lexical, symlink, case-folded, and pre-existing hard-link aliases.
