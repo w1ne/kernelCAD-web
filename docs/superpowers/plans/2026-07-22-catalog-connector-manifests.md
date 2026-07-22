@@ -623,23 +623,28 @@ outer envelope plus documented canonical harness-contact proxies: the Luxor
 87897 drawing does not locate its output shaft. The generated catalog ingest
 remains deferred to CI because local free disk is below 1 GiB.
 
-- [ ] **Step 5: Commit universal component sources**
+- [x] **Step 5: Commit universal component sources**
 
 ```bash
 git add scripts/parts/authored/a4988-stepstick-carrier.kcad.ts scripts/parts/authored/sg90-micro-servo.kcad.ts scripts/electronics-parts.json scripts/universalElectronicsParts.test.ts
 git commit -m "feat(catalog): add universal motor-control components"
 ```
 
+Completed as `542bf61 feat(catalog): add universal motor-control components`.
+
 ### Task 8: Verify, review, publish, and only then use components in projects
 
 **Files:**
 - Verify: files modified in Tasks 1–6
 
-- [ ] **Step 1: Check the exact change set**
+- [x] **Step 1: Check the exact change set**
 
 Run: `git diff origin/develop...HEAD --check`
 
 Expected: no whitespace errors and no changes outside the manifest pipeline, universal parts, and their tests.
+
+Completed after the component commit: `git diff origin/develop...HEAD --check`
+reported no whitespace errors.
 
 - [x] **Step 2: Run focused tests without the artifact-generating `pretest` hook**
 
