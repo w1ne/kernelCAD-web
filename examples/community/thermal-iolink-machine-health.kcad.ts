@@ -16,11 +16,36 @@ const thermal = assembly('Thermal IO-Link machine-health reference assembly');
 const enclosureLengthMm = 64.0;
 const enclosureDepthMm = 48.0;
 const enclosureHeightMm = 28.0;
-const carrierY = -17.0;
-const cameraCenterY = -18.6;
-const cameraCenterZ = 0.0;
+const electronicsCavityDepthMm = 40.0;
 const rearPanelY = enclosureDepthMm / 2;
 const frontPanelY = -enclosureDepthMm / 2;
+const enclosureWallDepthMm = (enclosureDepthMm - electronicsCavityDepthMm) / 2;
+const cavityFrontY = frontPanelY + enclosureWallDepthMm;
+const cameraCenterZ = 0.0;
+
+// The catalog MLX90640 model is 11.7 mm deep after rotateX(90). Keep its
+// viewing face 0.15 mm inside the cavity rather than burying it in the front
+// wall, then land the carrier directly on its rear mounting plane.
+const mlx90640DepthAlongYmm = 11.7;
+const cameraFrontClearanceMm = 0.15;
+const cameraCenterY = cavityFrontY + cameraFrontClearanceMm + mlx90640DepthAlongYmm / 2;
+const cameraRearFaceY = cameraCenterY + mlx90640DepthAlongYmm / 2;
+const carrierThicknessMm = 1.6;
+const carrierFrontFaceY = cameraRearFaceY;
+const carrierY = carrierFrontFaceY + carrierThicknessMm / 2;
+const carrierRearFaceY = carrierY + carrierThicknessMm / 2;
+const carrierSupportDepthMm = carrierFrontFaceY - cavityFrontY;
+const carrierSupportCenterY = cavityFrontY + carrierSupportDepthMm / 2;
+const m12RetainerContactRadiusMm = 8.2;
+const m12PanelBoreRadiusMm = 8.3;
+
+// These are the catalog records' post-rotation depths along Y. Position the
+// controller and PHY so their mounting faces meet the carrier's rear face
+// without passing through it.
+const esp32C3DepthAlongYmm = 5.56;
+const max14827DepthAlongYmm = 5.1;
+const esp32CenterY = carrierRearFaceY + esp32C3DepthAlongYmm / 2;
+const max14827CenterY = carrierRearFaceY + max14827DepthAlongYmm / 2;
 
 // ---------------------------------------------------------------------------
 // INDUSTRIAL ENCLOSURE AND EXTERNAL INTERFACES
@@ -32,10 +57,14 @@ const frontPanelY = -enclosureDepthMm / 2;
 // ---------------------------------------------------------------------------
 const outerBody = box(enclosureLengthMm, enclosureDepthMm, enclosureHeightMm, true)
   .fillet(3.0, { parallel: [0, 0, 1] });
-const electronicsCavity = box(58.0, 40.0, 22.0, true).translate(0, 0, 0);
-const thermalAperture = box(12.0, 7.0, 10.0, true)
+const electronicsCavity = box(58.0, electronicsCavityDepthMm, 22.0, true).translate(0, 0, 0);
+// Run the aperture through the 4 mm wall and 0.4 mm into the cavity so the
+// optical path stays open even after boolean tolerance is applied.
+const thermalAperture = box(12.0, enclosureWallDepthMm + 0.4, 10.0, true)
   .translate(0, frontPanelY, cameraCenterZ);
-const m12PanelBore = cylinder(12.0, 7.0, 64)
+// Clear the catalog connector's 16 mm retained barrel with 0.1 mm radial
+// allowance; its larger coupling shell remains outside the service panel.
+const m12PanelBore = cylinder(12.0, m12PanelBoreRadiusMm, 64)
   .alongAxis([0, 1, 0])
   .translate(0, rearPanelY - 6.0, 0);
 const enclosure = outerBody
@@ -45,7 +74,7 @@ const enclosurePart = thermal.part('industrial-sensor-enclosure', enclosure);
 enclosurePart
   .connector('carrier-support-seat', {
     type: 'frame',
-    origin: { kind: 'vec3', value: [-19.0, carrierY - 3.0, 0] },
+    origin: { kind: 'vec3', value: [-19.0, cavityFrontY, 0] },
   })
   .connector('aperture-bezel-seat', {
     type: 'frame',
@@ -76,7 +105,7 @@ bezelPart.connector('enclosure-mount', {
 const m12ClampOuter = cylinder(4.0, 10.0, 64)
   .alongAxis([0, 1, 0])
   .translate(0, rearPanelY - 8.0, 0);
-const m12ClampBore = cylinder(6.0, 6.2, 64)
+const m12ClampBore = cylinder(6.0, m12RetainerContactRadiusMm, 64)
   .alongAxis([0, 1, 0])
   .translate(0, rearPanelY - 9.0, 0);
 const m12PanelClamp = m12ClampOuter.subtract(m12ClampBore).color('#64748b');
@@ -88,27 +117,28 @@ m12ClampPart
   })
   .connector('m12-retainer-seat', {
     type: 'frame',
-    origin: { kind: 'vec3', value: [0, rearPanelY - 6.0, 0] },
+    // Mate on the annular retaining material, not at the empty bore center.
+    origin: { kind: 'vec3', value: [m12RetainerContactRadiusMm, rearPanelY - 6.0, 0] },
   });
 
 // ---------------------------------------------------------------------------
 // CARRIER
 //
-// This vertical carrier is close to the viewing wall. The camera boards mount
-// against its -Y face, while controller and PHY hardware mount to its +Y face;
-// this prevents a camera board from obstructing the optical opening.
+// This vertical carrier is set behind the MLX90640's actual 11.7 mm package
+// depth. The camera meets its -Y face, while controller and PHY hardware meet
+// its +Y face; no catalog package is embedded in the carrier plate.
 // ---------------------------------------------------------------------------
-// Two rails bridge the 2.2 mm gap between the enclosure's inner front wall and
-// the carrier. They sit outside the MLX90640 board's 25.4 mm width, preserving
-// a clear optical path and a physical load path for the carrier mate.
-const carrierSupportLeft = box(3.0, 2.2, 21.0, true)
-  .translate(-19.0, carrierY - 1.9, 0);
-const carrierSupportRight = box(3.0, 2.2, 21.0, true)
-  .translate(19.0, carrierY - 1.9, 0);
+// Two rails bridge from the enclosure's inner front wall to the carrier. They
+// sit outside the MLX90640 board's 25.4 mm width, preserving a clear optical
+// path and a physical load path for the carrier mate.
+const carrierSupportLeft = box(3.0, carrierSupportDepthMm, 21.0, true)
+  .translate(-19.0, carrierSupportCenterY, 0);
+const carrierSupportRight = box(3.0, carrierSupportDepthMm, 21.0, true)
+  .translate(19.0, carrierSupportCenterY, 0);
 // A crossbar above the 18 mm carrier joins the two rails into one load path
 // without entering the MLX90640 board envelope.
-const carrierSupportCrossbar = box(38.0, 2.2, 1.4, true)
-  .translate(0, carrierY - 1.9, 10.0);
+const carrierSupportCrossbar = box(38.0, carrierSupportDepthMm, 1.4, true)
+  .translate(0, carrierSupportCenterY, 10.0);
 const carrierSupportRails = carrierSupportLeft
   .union(carrierSupportRight)
   .union(carrierSupportCrossbar)
@@ -117,33 +147,33 @@ const carrierSupportPart = thermal.part('carrier-support-rails', carrierSupportR
 carrierSupportPart
   .connector('enclosure-mount', {
     type: 'frame',
-    origin: { kind: 'vec3', value: [-19.0, carrierY - 3.0, 0] },
+    origin: { kind: 'vec3', value: [-19.0, cavityFrontY, 0] },
   })
   .connector('carrier-mount', {
     type: 'frame',
-    origin: { kind: 'vec3', value: [-19.0, carrierY - 0.8, 0] },
+    origin: { kind: 'vec3', value: [-19.0, carrierFrontFaceY, 0] },
   });
 
-const carrier = box(46.0, 1.6, 18.0, true)
+const carrier = box(46.0, carrierThicknessMm, 18.0, true)
   .translate(0, carrierY, 0)
   .color('#166534');
 const carrierPart = thermal.part('electronics-carrier', carrier);
 carrierPart
   .connector('support-mount', {
     type: 'frame',
-    origin: { kind: 'vec3', value: [-19.0, carrierY - 0.8, 0] },
+    origin: { kind: 'vec3', value: [-19.0, carrierFrontFaceY, 0] },
   })
   .connector('mlx90640-seat', {
     type: 'frame',
-    origin: { kind: 'vec3', value: [0, carrierY - 0.8, cameraCenterZ] },
+    origin: { kind: 'vec3', value: [0, carrierFrontFaceY, cameraCenterZ] },
   })
   .connector('esp32-seat', {
     type: 'frame',
-    origin: { kind: 'vec3', value: [-11.5, carrierY + 0.8, 0] },
+    origin: { kind: 'vec3', value: [-11.5, carrierRearFaceY, 0] },
   })
   .connector('max14827-seat', {
     type: 'frame',
-    origin: { kind: 'vec3', value: [12.0, carrierY + 0.8, 0] },
+    origin: { kind: 'vec3', value: [12.0, carrierRearFaceY, 0] },
   });
 
 thermal.mate('carrier-supports-retained-in-enclosure', 'industrial-sensor-enclosure.carrier-support-seat', 'carrier-support-rails.enclosure-mount', 'fastened');
@@ -163,11 +193,11 @@ const mlx90640 = (await (await lib.fetchPart('mlx90640')).recenter())
   .color('#d97706');
 const esp32C3 = (await (await lib.fetchPart('esp32-c3-supermini-board')).recenter())
   .rotateX(-90)
-  .translate(-11.5, carrierY + 1.3, 0)
+  .translate(-11.5, esp32CenterY, 0)
   .color('#1e3a8a');
 const max14827 = (await (await lib.fetchPart('max14827')).recenter())
   .rotateX(-90)
-  .translate(12.0, carrierY + 1.6, 0)
+  .translate(12.0, max14827CenterY, 0)
   .color('#3f3f46');
 // The catalog M12 model is already axial along Y. Its rear portion projects
 // beyond the service face while its mounting barrel passes through the panel
@@ -179,22 +209,22 @@ const m12 = (await (await lib.fetchPart('m12-iolink-5pin')).recenter())
 const mlxPart = thermal.part('mlx90640-thermal-camera', mlx90640);
 mlxPart.connector('carrier-mount', {
   type: 'frame',
-  origin: { kind: 'vec3', value: [0, carrierY - 0.8, cameraCenterZ] },
+  origin: { kind: 'vec3', value: [0, carrierFrontFaceY, cameraCenterZ] },
 });
 const esp32Part = thermal.part('esp32-c3-supermini-controller', esp32C3);
 esp32Part.connector('carrier-mount', {
   type: 'frame',
-  origin: { kind: 'vec3', value: [-11.5, carrierY + 0.8, 0] },
+  origin: { kind: 'vec3', value: [-11.5, carrierRearFaceY, 0] },
 });
 const phyPart = thermal.part('max14827-iolink-phy', max14827);
 phyPart.connector('carrier-mount', {
   type: 'frame',
-  origin: { kind: 'vec3', value: [12.0, carrierY + 0.8, 0] },
+  origin: { kind: 'vec3', value: [12.0, carrierRearFaceY, 0] },
 });
 const m12Part = thermal.part('m12-iolink-5pin-connector', m12);
 m12Part.connector('enclosure-mount', {
   type: 'frame',
-  origin: { kind: 'vec3', value: [0, rearPanelY - 6.0, 0] },
+  origin: { kind: 'vec3', value: [m12RetainerContactRadiusMm, rearPanelY - 6.0, 0] },
 });
 
 thermal.mate('mlx90640-on-carrier', 'electronics-carrier.mlx90640-seat', 'mlx90640-thermal-camera.carrier-mount', 'fastened');
