@@ -19,28 +19,25 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { FunnelViewer } from '../../funnel/components/FunnelViewer';
-import { fetchProjectBySlug, type ProjectRow } from '../../funnel/lib/apiClient';
+import { fetchProjectBySlug, fetchProjectRevisionBySlug } from '../../funnel/lib/apiClient';
 import StudioApp from '../App';
 import { StudioConfigProvider } from '../config/StudioConfigContext';
-
-export type EmbedPresentation = 'viewer' | 'studio';
-
-/** The plain embed stays the compatibility default; Studio is opt-in per host. */
-export function embedPresentationMode(value: unknown): EmbedPresentation {
-  return value === 'studio' ? 'studio' : 'viewer';
-}
+import { embedPresentationMode, embedRevision, loadEmbedCode } from './-embedConfig';
 
 export const Route = createFileRoute('/embed/$slug')({
   validateSearch: (search: Record<string, unknown>) => ({
     mode: embedPresentationMode(search.mode),
+    revision: embedRevision(search.revision),
   }),
   component: EmbedPage,
 });
 
 function EmbedPage() {
   const { slug } = Route.useParams();
-  const { mode } = Route.useSearch();
-  const [project, setProject] = useState<ProjectRow | null>(null);
+  const { mode, revision } = Route.useSearch();
+  const sourceKey = `${slug}\u0000${revision === undefined ? 'current' : revision === null ? 'invalid' : revision}`;
+  const [code, setCode] = useState<string | null>(null);
+  const [loadedSourceKey, setLoadedSourceKey] = useState<string | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'missing' | 'error'>('loading');
   const [err, setErr] = useState<string | null>(null);
 
@@ -48,34 +45,49 @@ function EmbedPage() {
     // `state` starts at 'loading' (initial useState); the fetch resolves it to
     // ready/missing/error. No synchronous setState in the effect body.
     let disposed = false;
-    fetchProjectBySlug(slug)
-      .then((p) => {
+    const source = loadEmbedCode(revision, {
+      loadCurrent: () => fetchProjectBySlug(slug).then((project) => project?.current_code ?? null),
+      loadRevision: (version) => fetchProjectRevisionBySlug(slug, version).then((saved) => saved.code),
+    });
+    source
+      .then((sourceCode) => {
         if (disposed) return;
-        if (p) { setProject(p); setState('ready'); }
-        else { setState('missing'); }
+        if (sourceCode) { setCode(sourceCode); setLoadedSourceKey(sourceKey); setState('ready'); }
+        else { setLoadedSourceKey(sourceKey); setState('missing'); }
       })
-      .catch((e) => { if (!disposed) { setErr(String(e)); setState('error'); } });
+      .catch((e) => {
+        if (disposed) return;
+        // Requested release revisions fail closed: never substitute the live model
+        // when the revision endpoint is unavailable or refuses access.
+        if (revision !== undefined) { setLoadedSourceKey(sourceKey); setState('missing'); return; }
+        setLoadedSourceKey(sourceKey);
+        setErr(String(e));
+        setState('error');
+      });
     return () => { disposed = true; };
-  }, [slug]);
+  }, [slug, revision, sourceKey]);
 
-  if (state === 'ready' && project) {
+  const sourceSettled = loadedSourceKey === sourceKey;
+
+  if (revision !== null && sourceSettled && state === 'ready' && code) {
     if (mode === 'studio') {
       return (
         <StudioConfigProvider value={{ showHeader: false, enableAgentRail: false, enableConnect: false }}>
-          <StudioApp initialCode={project.current_code} viewerMode />
+          <StudioApp initialCode={code} viewerMode />
         </StudioConfigProvider>
       );
     }
     return (
       <div className="fixed inset-0">
-        <FunnelViewer code={project.current_code} />
+        <FunnelViewer code={code} />
       </div>
     );
   }
 
   const message =
-    state === 'error' ? `Failed to load: ${err}`
-    : state === 'missing' ? 'Model not available.'
+    revision === null || (sourceSettled && state === 'missing') ? 'Model not available.'
+    : !sourceSettled ? 'Loading…'
+    : state === 'error' ? `Failed to load: ${err}`
     : 'Loading…';
   return (
     <main className="fixed inset-0 bg-vellum font-sans grid place-items-center p-8">
