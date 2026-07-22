@@ -157,6 +157,28 @@ export interface ProjectRevision {
   created_at: string;
 }
 
+/** Saved source captured for one project version. */
+export interface ProjectRevisionBody {
+  slug: string;
+  version: number;
+  code: string;
+  parameters: Artifact['parameters'];
+}
+
+/**
+ * Fetch an exact saved revision. Consumers that request a pinned revision must
+ * treat a failed read as unavailable rather than use the live project row.
+ */
+export async function fetchProjectRevisionBySlug(
+  slug: string,
+  version: number,
+): Promise<ProjectRevisionBody> {
+  return authedFetch<ProjectRevisionBody>(
+    'GET',
+    `/api/v1/projects/${encodeURIComponent(slug)}/revisions/${version}`,
+  );
+}
+
 /** Newest-first list of saved server revisions for a slug-backed project.
  *  Unwraps the `{ revisions: [...] }` envelope; returns `[]` when missing. */
 export async function listProjectRevisions(slug: string): Promise<ProjectRevision[]> {
