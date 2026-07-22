@@ -11,6 +11,7 @@ import {
   setProjectPrivacy,
   postProjectRender,
   PRIVATE_REQUIRES_PAID,
+  fetchProjectRevisionBySlug,
   listProjectRevisions,
   restoreProjectRevision,
 } from './apiClient';
@@ -162,6 +163,45 @@ describe('listProjectRevisions', () => {
     fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ revisions: [] }) });
     await listProjectRevisions('a/b');
     expect(fetchMock.mock.calls[0]![0]).toBe('https://api.kernelcad.com/api/v1/projects/a%2Fb/revisions');
+  });
+});
+
+describe('fetchProjectRevisionBySlug', () => {
+  const fetchMock = vi.fn();
+
+  beforeEach(() => {
+    getSessionMock.mockReset();
+    getSupabaseMock.mockReturnValue({ auth: { getSession: getSessionMock } });
+    getSessionMock.mockResolvedValue({ data: { session: { access_token: 'tok-1' } } });
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.kernelcad.com');
+    vi.stubGlobal('fetch', fetchMock);
+    fetchMock.mockReset();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it('GETs the exact saved revision through the public project API', async () => {
+    const revision = { slug: 'slug-1', version: 7, code: 'cube(7);', parameters: [] };
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => revision });
+
+    await expect(fetchProjectRevisionBySlug('slug-1', 7)).resolves.toEqual(revision);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe('https://api.kernelcad.com/api/v1/projects/slug-1/revisions/7');
+    expect(init.method).toBe('GET');
+    expect(init.headers.Authorization).toBe('Bearer tok-1');
+  });
+
+  it('url-encodes the slug before requesting the revision', async () => {
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ slug: 'a/b', version: 1, code: 'cube();', parameters: [] }) });
+
+    await fetchProjectRevisionBySlug('a/b', 1);
+
+    expect(fetchMock.mock.calls[0]![0]).toBe('https://api.kernelcad.com/api/v1/projects/a%2Fb/revisions/1');
   });
 });
 
