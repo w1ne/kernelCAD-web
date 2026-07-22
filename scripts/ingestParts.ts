@@ -36,6 +36,11 @@ import { join, relative, basename, extname, dirname } from 'node:path';
 import { createHash } from 'node:crypto';
 import { inspectStepFile, type StepInspectReport } from '../src/agent/inspect/inspectStep';
 import { synthesizeConnectorsFromReport } from '../src/modeling/parts/synthesizeConnectors';
+import {
+  validateConnectorManifest,
+  validateHashBoundConnectorManifest,
+  type HashBoundConnectorManifest,
+} from '../src/shared/parts/connectorManifestSchema';
 import { PAGES_WORKER } from './parts/workerTemplate';
 import {
   isOcctOutOfMemory,
@@ -57,6 +62,16 @@ export interface IngestSidecar {
   attributes?: Record<string, number | string>;
   license?: string;
   attribution?: string;
+  /** Raw authoring-sidecar data; validated only after catalog identity is derived. */
+  connectorManifest?: unknown;
+}
+
+/** A bad authored interface must stop a catalog release instead of becoming a skip. */
+export class AuthoredManifestError extends Error {
+  constructor(message: string, options?: { cause?: unknown }) {
+    super(message, options);
+    this.name = 'AuthoredManifestError';
+  }
 }
 
 export interface CatalogRecord {
@@ -77,9 +92,11 @@ export interface CatalogRecord {
   byteSize: number;
   license: string;
   attribution?: string;
-  /** Pre-synthesized so a consumer can skip re-inspection; the runtime adapter
-   *  still re-synthesizes on fetch, so this is richness, not a contract. */
+  /** Legacy connector shape derived from authored interfaces when present, or
+   *  synthesized from geometry otherwise. */
   connectors: { name: string; origin: [number, number, number]; axis: [number, number, number] }[];
+  /** Authored interfaces bound to the exact emitted STEP bytes. */
+  connectorManifest?: HashBoundConnectorManifest;
 }
 
 export interface IngestOpts {
@@ -113,13 +130,57 @@ function listStepFiles(dir: string): string[] {
   return out;
 }
 
+function sidecarPathFor(stepPath: string): string {
+  return stepPath.replace(/\.(step|stp)$/i, '.meta.json');
+}
+
 function loadSidecar(stepPath: string): IngestSidecar {
-  const sidecar = stepPath.replace(/\.(step|stp)$/i, '.meta.json');
+  const sidecar = sidecarPathFor(stepPath);
   if (!existsSync(sidecar)) return {};
   try {
-    return JSON.parse(readFileSync(sidecar, 'utf8')) as IngestSidecar;
-  } catch {
-    return {};
+    const parsed = JSON.parse(readFileSync(sidecar, 'utf8')) as unknown;
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      throw new AuthoredManifestError(`ingest: sidecar ${sidecar} must contain a JSON object`);
+    }
+    return parsed as IngestSidecar;
+  } catch (error) {
+    if (error instanceof AuthoredManifestError) throw error;
+    throw new AuthoredManifestError(`ingest: invalid JSON sidecar ${sidecar}`, {
+      cause: error,
+    });
+  }
+}
+
+function bindAuthoredConnectorManifest(
+  rawManifest: unknown,
+  stepPath: string,
+  id: string,
+  family: string,
+  sha256: string,
+): HashBoundConnectorManifest | undefined {
+  if (rawManifest === undefined) return undefined;
+  try {
+    validateConnectorManifest(rawManifest);
+    if (rawManifest.partId !== id || rawManifest.family !== family) {
+      throw new Error(
+        `manifest identity ${rawManifest.partId}/${rawManifest.family} does not match ${id}/${family}`,
+      );
+    }
+    const manifest: HashBoundConnectorManifest = {
+      ...rawManifest,
+      geometrySha256: sha256,
+    };
+    validateHashBoundConnectorManifest(manifest, {
+      partId: id,
+      family,
+      geometrySha256: sha256,
+    });
+    return manifest;
+  } catch (error) {
+    throw new AuthoredManifestError(
+      `ingest: invalid authored connector manifest in ${sidecarPathFor(stepPath)}`,
+      { cause: error },
+    );
   }
 }
 
@@ -182,10 +243,27 @@ export async function ingestStepFile(
   const rootName = slugify(basename(srcRoot)) || 'imported';
   const category = meta.category ?? relParts[0] ?? rootName;
   const family = meta.family ?? relParts[relParts.length - 1] ?? category;
+  const connectorManifest = bindAuthoredConnectorManifest(
+    meta.connectorManifest,
+    stepPath,
+    id,
+    family,
+    sha256,
+  );
 
   const report = await inspectStepFile(stepPath);
-  const conns = synthesizeConnectorsFromReport(report, id);
   const measured = measureStepReport(report);
+  const connectors = connectorManifest === undefined
+    ? synthesizeConnectorsFromReport(report, id).map((connector) => ({
+        name: connector.name,
+        origin: connector.origin,
+        axis: connector.axis,
+      }))
+    : connectorManifest.connectors.map((connector) => ({
+        name: connector.name,
+        origin: connector.origin,
+        axis: connector.type === 'axis' ? connector.axis : connector.normal,
+      }));
 
   const record: CatalogRecord = {
     id,
@@ -198,7 +276,8 @@ export async function ingestStepFile(
     sha256,
     byteSize: bytes.length,
     license: meta.license ?? opts.license,
-    connectors: conns.map((c) => ({ name: c.name, origin: c.origin, axis: c.axis })),
+    connectors,
+    ...(connectorManifest === undefined ? {} : { connectorManifest }),
   };
   if (meta.standard) record.standard = meta.standard;
   const attribution = meta.attribution ?? opts.attribution;
@@ -235,6 +314,7 @@ export async function ingestDirectory(
       records.push(record);
       shaManifest[record.id] = record.sha256;
     } catch (e) {
+      if (e instanceof AuthoredManifestError) throw e;
       // "Skip the bad file and carry on" is right for genuinely bad geometry
       // and WRONG for an exhausted kernel heap: once OCCT's wasm heap fills,
       // every remaining import in this process fails too, so a tolerant loop

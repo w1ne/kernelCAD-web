@@ -1,12 +1,57 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { describe, it, expect } from 'vitest';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
+import { afterEach, beforeAll, describe, it, expect } from 'vitest';
+import {
+  mkdtempSync,
+  mkdirSync,
+  writeFileSync,
+  readFileSync,
+  existsSync,
+  rmSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { OcctBackend, initOcct } from '../src/kernel/backends/occt/occtBackend';
 import { ingestDirectory, measureStepReport } from './ingestParts';
 import type { StepInspectReport } from '../src/agent/inspect/inspectStep';
+
+let tinyStepBytes: Buffer;
+const temporaryDirectories: string[] = [];
+
+beforeAll(async () => {
+  await initOcct();
+  tinyStepBytes = Buffer.from(await OcctBackend.box(4, 3, 2).exportSTEPAsync());
+});
+
+afterEach(() => {
+  for (const directory of temporaryDirectories.splice(0)) {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+function createTemporaryCatalogDirectories(): { src: string; out: string } {
+  const src = mkdtempSync(join(tmpdir(), 'kc-ingest-src-'));
+  const out = mkdtempSync(join(tmpdir(), 'kc-ingest-out-'));
+  temporaryDirectories.push(src, out);
+  return { src, out };
+}
+
+function writeTinyStepFixture(src: string, sidecar?: unknown | string): void {
+  const partDir = join(src, 'electronics', 'driver');
+  mkdirSync(partDir, { recursive: true });
+  writeFileSync(join(partDir, 'driver.step'), tinyStepBytes);
+  if (sidecar === undefined) return;
+  writeFileSync(
+    join(partDir, 'driver.meta.json'),
+    typeof sidecar === 'string' ? sidecar : JSON.stringify(sidecar),
+  );
+}
+
+const INGEST_OPTS = {
+  baseUrl: 'https://parts.test',
+  license: 'CC-BY-3.0',
+  attribution: 'fixture',
+};
 
 describe('ingestParts', () => {
   it('measures assembly bounds without changing dominant-solid volume semantics', () => {
@@ -53,9 +98,7 @@ describe('ingestParts', () => {
   });
 
   it('ingests a STEP dir into a /v1/parts catalog with measured attrs + synthesized connectors', async () => {
-    await initOcct();
-    const src = mkdtempSync(join(tmpdir(), 'kc-ingest-src-'));
-    const out = mkdtempSync(join(tmpdir(), 'kc-ingest-out-'));
+    const { src, out } = createTemporaryCatalogDirectories();
 
     // A bored plate (through-hole) so synthesis emits bbox faces + a bore.
     const plate = OcctBackend.box(40, 40, 5).subtract(
@@ -66,11 +109,7 @@ describe('ingestParts', () => {
     mkdirSync(join(src, 'bracket', 'mount'), { recursive: true });
     writeFileSync(join(src, 'bracket', 'mount', 'mount-plate.step'), Buffer.from(bytes));
 
-    const records = await ingestDirectory(src, out, {
-      baseUrl: 'https://parts.test',
-      license: 'CC-BY-3.0',
-      attribution: 'fixture',
-    });
+    const records = await ingestDirectory(src, out, INGEST_OPTS);
 
     expect(records).toHaveLength(1);
     const r = records[0];
@@ -89,6 +128,7 @@ describe('ingestParts', () => {
     expect(r.connectors.map((c) => c.name)).toEqual(
       expect.arrayContaining(['mating-face', 'top-face', 'bore']),
     );
+    expect(r.connectorManifest).toBeUndefined();
 
     // Deployable tree.
     expect(existsSync(join(out, 'step', 'mount-plate.step'))).toBe(true);
@@ -101,5 +141,99 @@ describe('ingestParts', () => {
     expect(index.items[0].id).toBe('mount-plate');
     const sha = JSON.parse(readFileSync(join(out, 'sha256-manifest.json'), 'utf8'));
     expect(sha['mount-plate']).toBe(r.sha256);
+  });
+
+  it('binds an authored connector sidecar to the emitted STEP bytes', async () => {
+    const { src, out } = createTemporaryCatalogDirectories();
+    const connectorManifest = {
+      schemaVersion: 1 as const,
+      partId: 'driver',
+      family: 'driver',
+      connectors: [
+        {
+          name: 'mount-face',
+          type: 'frame' as const,
+          origin: [1, 2, 3] as [number, number, number],
+          normal: [0, 0, 1] as [number, number, number],
+        },
+        {
+          name: 'pin-axis',
+          type: 'axis' as const,
+          origin: [4, 5, 6] as [number, number, number],
+          axis: [1, 0, 0] as [number, number, number],
+        },
+      ],
+    };
+    writeTinyStepFixture(src, { connectorManifest });
+
+    const [record] = await ingestDirectory(src, out, INGEST_OPTS);
+
+    expect(record.connectorManifest).toEqual({
+      ...connectorManifest,
+      geometrySha256: record.sha256,
+    });
+    expect(record.connectors).toEqual([
+      { name: 'mount-face', origin: [1, 2, 3], axis: [0, 0, 1] },
+      { name: 'pin-axis', origin: [4, 5, 6], axis: [1, 0, 0] },
+    ]);
+    expect(record.connectors.map((connector) => connector.name)).not.toContain('mating-face');
+
+    const detail = JSON.parse(
+      readFileSync(join(out, 'v1', 'parts', 'driver.json'), 'utf8'),
+    ) as { connectorManifest?: unknown };
+    const index = JSON.parse(
+      readFileSync(join(out, 'v1', 'catalog', 'parts.index.json'), 'utf8'),
+    ) as { items: Array<{ connectorManifest?: unknown }> };
+    expect(detail.connectorManifest).toEqual(record.connectorManifest);
+    expect(index.items[0].connectorManifest).toEqual(record.connectorManifest);
+  });
+
+  async function expectAuthoredSidecarFailure(sidecar: unknown | string): Promise<void> {
+    const { src, out } = createTemporaryCatalogDirectories();
+    writeTinyStepFixture(src, sidecar);
+
+    await expect(ingestDirectory(src, out, INGEST_OPTS)).rejects.toMatchObject({
+      name: 'AuthoredManifestError',
+    });
+    expect(existsSync(join(out, 'skipped.json'))).toBe(false);
+  }
+
+  it('rejects a malformed authored connector manifest instead of skipping it', async () => {
+    await expectAuthoredSidecarFailure({
+      connectorManifest: {
+        schemaVersion: 1,
+        partId: 'driver',
+        family: 'driver',
+        connectors: [
+          {
+            name: 'mount-face',
+            type: 'frame',
+            origin: [0, 0, 0],
+            normal: [0, 0, 0],
+          },
+        ],
+      },
+    });
+  });
+
+  it.each([
+    ['part id', 'other-driver', 'driver'],
+    ['family', 'driver', 'other-driver'],
+  ])(
+    'rejects an authored connector manifest with a mismatched %s',
+    async (_, partId, family) => {
+      await expectAuthoredSidecarFailure({
+        connectorManifest: {
+          schemaVersion: 1,
+          partId,
+          family,
+          connectors: [],
+        },
+      });
+    },
+  );
+
+  it('rejects malformed sidecar JSON instead of skipping the part', async () => {
+    await expectAuthoredSidecarFailure('{ this is not JSON }');
   });
 });
