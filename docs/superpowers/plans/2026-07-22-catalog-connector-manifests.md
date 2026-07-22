@@ -328,7 +328,7 @@ git commit -m "feat(catalog): attach verified authored interfaces"
 - Modify: `src/modeling/capture/assembly.ts`
 - Create: `src/modeling/capture/assembly.catalogConnectors.test.ts`
 
-- [ ] **Step 1: Write the failing assembly-promotion tests**
+- [x] **Step 1: Write the failing assembly-promotion tests**
 
 Create a `CaptureSession`, attach a factual connector to a box before it enters an assembly, then assert that it is usable by both connector APIs:
 
@@ -344,13 +344,13 @@ expect(part.mateConnectors).toContainEqual(expect.objectContaining({ name: 'pwm-
 
 Add a second assertion that `arm.mate('signal', 'servo.pwm-contact', 'socket.signal', 'fastened')` resolves after a normal explicit `socket.signal` frame is declared. Add a third test that stores only a legacy `session.attachAutoConnectors(... 'mating-face' ...)` value and confirms it is not promoted. Add a rigid-transform test that calls `source.translate(10, 0, 0).rotateZ(90)` before `assembly.part()` and expects the promoted origin/direction to be transformed. Add scale, reflection, and ParamRef-transform tests that reject rather than silently desynchronizing a physical interface. Finally import the catalog part through `subAssembly()` and assert its interfaces are neither duplicated nor rejected.
 
-- [ ] **Step 2: Run the assembly-promotion tests and verify RED**
+- [x] **Step 2: Run the assembly-promotion tests and verify RED**
 
 Run: `npx vitest run src/modeling/capture/assembly.catalogConnectors.test.ts`
 
 Expected: `part.connector('pwm-contact')` throws because the auto-connector cache is not currently merged into assembly connectors.
 
-- [ ] **Step 3: Add typed authored-interface promotion**
+- [x] **Step 3: Add typed authored-interface promotion**
 
 In `Assembly.part`, read `session.catalogConnectors.get(shape.id)`, validate each exact `ConnectorEntry`, and apply the feature record's rigid transforms in declared order. For a translate use `Transform.translation(...)`; for a rotation use `Transform.rotationAroundPivot(...)`; compose each new transform to the left of the previous total. Reject `scale` and `reflect` for a catalog-attached Shape. Merge the result before `resolvePartPlacement`:
 
@@ -386,13 +386,13 @@ Keep catalog-interface promotion private to the first direct `assembly.part()` c
 route it through an internal no-repromotion path so an imported subassembly cannot create
 duplicate names or entries.
 
-- [ ] **Step 4: Run the assembly-promotion tests and verify GREEN**
+- [x] **Step 4: Run the assembly-promotion tests and verify GREEN**
 
 Run: `npx vitest run src/modeling/capture/assembly.catalogConnectors.test.ts src/modeling/capture/assembly.chaining.test.ts tests/integration/parts/partsAutoConnectors.test.ts`
 
 Expected: factual catalog frames work in `connector()` and `mate()`, while generic synthesized frames retain their existing non-mating behavior.
 
-- [ ] **Step 5: Commit the assembly bridge**
+- [x] **Step 5: Commit the assembly bridge**
 
 ```bash
 git add src/modeling/capture/assembly.ts src/modeling/capture/assembly.catalogConnectors.test.ts
@@ -420,7 +420,7 @@ expect(sceneToConnectorManifest(scene, loweredScene, run.records, { partId: 'ser
   });
 ```
 
-Also assert `sceneToWorldFrameParts(loweredScene)[0].shape.boundingBox().min` is `[10, 20, 30]`, proving the geometry and manifest use the same placement. Add cases that reject duplicate names, a topology origin, `planar`, `ball`, mates, and joint-driven source records.
+Also assert `sceneToWorldFrameParts(loweredScene)[0].shape.boundingBox().min` is `[10, 20, 30]`, proving the geometry and manifest use the same placement. Add a ParamRef-driven `at` fixture (the helper must receive resolved records), a synthetic non-identity backend-world-transform case, and cases that reject duplicate names, a topology origin, `planar`, `ball`, mates, and joint-driven source records. Include an unrelated same-named part in a different assembly to prove lookup is scoped to the returned Scene's source feature.
 
 - [ ] **Step 2: Run helper tests and verify RED**
 
@@ -430,7 +430,7 @@ Expected: module-not-found failure.
 
 - [ ] **Step 3: Implement the pure extractor**
 
-Create `sceneToConnectorManifest` using the recomputed `SceneBackend`, the direct `assemblyPart` records, and the existing `Transform.point` and `Transform.axisDir` APIs. For each capture Scene part, find one matching `SceneBackend` part and one `assemblyPart` FeatureRecord by unique part name. Decode `metadata.at` from its evaluated `Vec3Param` values. The exact transform used by STEP export is:
+Create `sceneToConnectorManifest` using the recomputed `SceneBackend`, resolved direct `assemblyPart` records, and the existing `Transform.point` and `Transform.axisDir` APIs. Do not globally match by part name: use `scene.__sourceFeatureId()` to find the exact `assemblyModel` source record, then its `metadata.partIds` to select its matching `assemblyPart` records. Require count, order, and name agreement with `SceneBackend.parts`; fail closed on ambiguity. Pass `resolveParams(run.records, run.paramTable)` into the helper so ParamRef placements use the same values as the lowerer. Decode `metadata.at` from those resolved `Vec3Param` values. The exact transform used by STEP export is:
 
 ```ts
 const transform = backendPart.worldTransform.compose(
@@ -438,23 +438,25 @@ const transform = backendPart.worldTransform.compose(
 );
 ```
 
+Scope the dynamic rejection to the returned Scene's source assembly so an unrelated assembly elsewhere in the script cannot block export. Do not replay arbitrary `Shape.transforms` in this helper: the matching backend shape already contains that geometry; replaying them would double-transform interfaces.
+
 The helper signature and core loop are:
 
 ```ts
 export function sceneToConnectorManifest(
   scene: Scene,
   lowered: SceneBackend,
-  records: readonly FeatureRecord[],
+  resolvedRecords: readonly FeatureRecord[],
   identity: { partId: string; family: string },
 ): ConnectorManifest {
-  if ((scene.mates?.length ?? 0) > 0 || records.some((record) => record.kind === 'assemblyJoint')) {
+  if (sourceRecord.kind !== 'assemblyModel' || (scene.mates?.length ?? 0) > 0 || sourceAssemblyHasJoints(sourceRecord, resolvedRecords)) {
     throw new Error('connector-manifest export requires a mate-free, joint-free assembly');
   }
   const connectors: ConnectorEntry[] = [];
   const names = new Set<string>();
-  for (const part of scene.parts) for (const connector of part.connectors ?? []) {
+  for (const [partIndex, part] of scene.parts.entries()) for (const connector of part.connectors ?? []) {
     const backendPart = singleByName(lowered.parts, part.name, 'lowered scene part');
-    const assemblyPart = singleByName(assemblyPartRecords(records), part.name, 'assembly part record');
+    const assemblyPart = sourceAssemblyPartByIndex(sourceRecord, resolvedRecords, partIndex);
     const at = readAssemblyPartAt(assemblyPart);
     const transform = backendPart.worldTransform.compose(Transform.translation(at[0], at[1], at[2]));
     if (connector.type !== 'frame' && connector.type !== 'axis') throw new Error(...);
@@ -477,7 +479,7 @@ export function sceneToConnectorManifest(
 
 - [ ] **Step 4: Thread an optional manifest request through export and CLI**
 
-Add `connectorManifest?: { partId: string; family: string }` to runtime `ExportInput` and `connectorManifest?: ConnectorManifest` to `ExportResult`. If requested, require `format === 'step'`, a returned `Scene`, and the same successful lowered `SceneBackend` used by `exportSceneToSTEPAsync`; call `sceneToConnectorManifest(scene, lowered, run.records, identity)` and include it in the successful result.
+Add `connectorManifest?: { partId: string; family: string }` to runtime `ExportInput` and `connectorManifest?: ConnectorManifest` to `ExportResult`. If requested, require `format === 'step'`, a returned `Scene`, and the same successful lowered `SceneBackend` used by `exportSceneToSTEPAsync`; call `sceneToConnectorManifest(scene, lowered, resolveParams(run.records, run.paramTable), identity)` and include it in the successful result. If `feature_id` is supplied, require it exactly matches `scene.__sourceFeatureId()` so the STEP and manifest cannot silently describe different features.
 
 Add CLI options:
 
