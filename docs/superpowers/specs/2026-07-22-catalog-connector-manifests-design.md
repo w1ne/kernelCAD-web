@@ -48,9 +48,22 @@ Validation rules:
 
 The initial version deliberately supports only numeric `frame` and `axis` connectors. Topology-backed, `planar`, and `ball` connector origins cannot remain stable outside the originating capture graph and are rejected by authored export.
 
+## Assembly mating bridge
+
+An attached interface must be more than a display label. The existing session auto-connector map is a lossy discovery cache and is not automatically part of an assembly's mate resolver. A separate typed `catalogConnectors` map, keyed by fetched Shape id, stores the verified `ConnectorEntry[]` exactly as declared in the manifest. It keeps `frame` versus `axis` semantics and never mixes a factual catalog interface with a generic generated frame. When `assembly.part(name, fetchedShape)` is called, KernelCAD promotes only that typed payload into both compatible assembly connector forms:
+
+- the legacy inline frame map, so `partRef.connector(name)` can be used for connection placement;
+- the mate-style connector array, so `assembly.mate('...', 'part.interface', 'other.interface', ...)` resolves directly.
+
+Generic STEP-synthesized connectors remain discovery aids and are not promoted automatically. This distinction prevents a guessed bounding-box face from being represented as a factual component interface. A duplicate between an explicit assembly connector and an authored catalog interface is a capture-time error, so neither source silently overrides the other.
+
+The bridge applies any existing rigid `Shape.translate()` and `Shape.rotate()` transforms to catalog frames before registering them. It rejects scale and reflection on a catalog-attached Shape because they would invalidate a universal component's physical interface rather than merely place it. Boolean, mirror, pattern, and other derived shapes have a new feature id and intentionally do not inherit catalog interfaces in this first slice.
+
 ## Authoring and universal-component policy
 
-The export helper reads the returned `Scene`, converts each numeric connector to the exported world coordinate system using `ScenePart.worldTransform`, and writes a manifest with globally unique names. This avoids copying coordinates by hand while preserving the same world frame used in the STEP export.
+The export helper derives coordinates from the recomputed `SceneBackend` and the matching `assemblyPart` records, not from capture-time `ScenePart.worldTransform` alone. `assembly.part(..., { at })` is baked into the lowered part shape before the SceneBackend applies its world transform, so the exact transform used by STEP export is `worldTransform ∘ translate(assemblyPart.at)`. The helper applies that transform to every numeric origin and direction. It rejects a connector that cannot be mapped unambiguously to one direct assembly part.
+
+Version 1 permits direct, mate-free component assemblies only. It rejects scenes with mates or joint-driven source records rather than emitting potentially stale frames. This supports multi-solid universal component models and explicit `at` placements while avoiding a false claim that a dynamic mechanism has one fixed catalog interface pose.
 
 The first universal components that use this path are the A4988 StepStick-compatible carrier and SG90-class micro servo. Their interfaces describe only modeled and source-supported features:
 
