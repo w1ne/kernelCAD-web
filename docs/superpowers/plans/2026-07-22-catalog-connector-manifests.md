@@ -407,7 +407,7 @@ git commit -m "feat(assembly): promote authored catalog interfaces"
 - Modify: `src/agent/script-runtime/export.ts`
 - Modify: `src/agent/cli/commands/export.ts`
 
-- [ ] **Step 1: Write the failing pure-helper tests**
+- [x] **Step 1: Write the failing pure-helper tests**
 
 Run a real `assembly.part(..., { at: [10, 20, 30] })` fixture through `runScript` and `RecomputeEngine`, then assert that the capture Scene and lowerer differ in the intended way and the extracted manifest follows the STEP frame:
 
@@ -422,13 +422,13 @@ expect(sceneToConnectorManifest(scene, loweredScene, run.records, { partId: 'ser
 
 Also assert `sceneToWorldFrameParts(loweredScene)[0].shape.boundingBox().min` is `[10, 20, 30]`, proving the geometry and manifest use the same placement. Add a ParamRef-driven `at` fixture (the helper must receive resolved records), a synthetic non-identity backend-world-transform case, and cases that reject duplicate names, a topology origin, `planar`, `ball`, mates, and joint-driven source records. Include an unrelated same-named part in a different assembly to prove lookup is scoped to the returned Scene's source feature.
 
-- [ ] **Step 2: Run helper tests and verify RED**
+- [x] **Step 2: Run helper tests and verify RED**
 
 Run: `npx vitest run src/agent/script-runtime/connectorManifestExport.test.ts`
 
 Expected: module-not-found failure.
 
-- [ ] **Step 3: Implement the pure extractor**
+- [x] **Step 3: Implement the pure extractor**
 
 Create `sceneToConnectorManifest` using the recomputed `SceneBackend`, resolved direct `assemblyPart` records, and the existing `Transform.point` and `Transform.axisDir` APIs. Do not globally match by part name: use `scene.__sourceFeatureId()` to find the exact `assemblyModel` source record, then its `metadata.partIds` to select its matching `assemblyPart` records. Require count, order, and name agreement with `SceneBackend.parts`; fail closed on ambiguity. Pass `resolveParams(run.records, run.paramTable)` into the helper so ParamRef placements use the same values as the lowerer. Decode `metadata.at` from those resolved `Vec3Param` values. The exact transform used by STEP export is:
 
@@ -477,7 +477,7 @@ export function sceneToConnectorManifest(
 }
 ```
 
-- [ ] **Step 4: Thread an optional manifest request through export and CLI**
+- [x] **Step 4: Thread an optional manifest request through export and CLI**
 
 Add `connectorManifest?: { partId: string; family: string }` to runtime `ExportInput` and `connectorManifest?: ConnectorManifest` to `ExportResult`. If requested, require `format === 'step'`, a returned `Scene`, and the same successful lowered `SceneBackend` used by `exportSceneToSTEPAsync`; call `sceneToConnectorManifest(scene, lowered, resolveParams(run.records, run.paramTable), identity)` and include it in the successful result. If `feature_id` is supplied, require it exactly matches `scene.__sourceFeatureId()` so the STEP and manifest cannot silently describe different features.
 
@@ -491,18 +491,28 @@ Add CLI options:
 
 Require all three options together, write the returned manifest JSON with the existing file-write diagnostic path, and reject their use with formats other than `step`.
 
-- [ ] **Step 5: Run helper and focused CLI tests and verify GREEN**
+- [x] **Step 5: Run helper and focused CLI tests and verify GREEN**
 
 Run: `npx vitest run src/agent/script-runtime/connectorManifestExport.test.ts src/agent/mcp/tools/export.test.ts`
 
 Expected: transformed numeric frames are stable, unsupported connectors reject, and existing export behavior remains unchanged.
 
-- [ ] **Step 6: Commit the export slice**
+- [x] **Step 6: Commit the export slice**
 
 ```bash
 git add src/agent/script-runtime/connectorManifestExport.ts src/agent/script-runtime/connectorManifestExport.test.ts src/agent/script-runtime/export.ts src/agent/cli/commands/export.ts
 git commit -m "feat(export): emit authored connector manifests"
 ```
+
+Implementation hardening: manifest publication resolves a current-user/root-owned
+POSIX ancestry, rejects a group/world-writable final parent, uses a private
+`0700` staging directory and `0600` staged file, and atomically publishes with
+same-filesystem `link` so it never replaces a concurrent sidecar or exposes
+partial JSON. A sticky writable ancestor is allowed only when it is owned by
+the current user or root and its next child is owned by the current user. Node
+does not expose portable ACL inspection, so this boundary is mode/ownership
+based. If publication fails after STEP export, the CLI reports the preserved
+STEP bytes and does not emit a manifest.
 
 ### Task 6: Request manifests for authored electronics catalog parts
 
@@ -510,7 +520,7 @@ git commit -m "feat(export): emit authored connector manifests"
 - Modify: `scripts/ingestElectronics.ts`
 - Create: `scripts/ingestElectronics.test.ts`
 
-- [ ] **Step 1: Write the failing command-construction test**
+- [x] **Step 1: Write the failing command-construction test**
 
 Extract a pure helper and test its exact command line:
 
@@ -524,13 +534,13 @@ expect(authoredExportArgs('/repo/dist/cli/index.js', '/repo/part.kcad.ts', '/tmp
 ]);
 ```
 
-- [ ] **Step 2: Run the test and verify RED**
+- [x] **Step 2: Run the test and verify RED**
 
 Run: `npx vitest run scripts/ingestElectronics.test.ts`
 
 Expected: module export is missing.
 
-- [ ] **Step 3: Implement command construction and sidecar transfer**
+- [x] **Step 3: Implement command construction and sidecar transfer**
 
 For each `kcad_source`, set `manifestOut = join(src, `${part.id}.connector-manifest.json`)`, pass the helper output to `execFileSync`, require that the command created this file, parse it as a `ConnectorManifest`, and include it in the generated `<id>.meta.json`:
 
@@ -540,18 +550,23 @@ connectorManifest: loadConnectorManifest(manifestOut),
 
 Do not add a manifest for downloaded third-party STEP files.
 
-- [ ] **Step 4: Run the test and verify GREEN**
+- [x] **Step 4: Run the test and verify GREEN**
 
 Run: `npx vitest run scripts/ingestElectronics.test.ts scripts/ingestParts.test.ts`
 
 Expected: authored commands request the sidecar, and ingestion binds it to the final STEP hash.
 
-- [ ] **Step 5: Commit the electronics ingest slice**
+- [x] **Step 5: Commit the electronics ingest slice**
 
 ```bash
 git add scripts/ingestElectronics.ts scripts/ingestElectronics.test.ts
 git commit -m "feat(catalog): preserve authored electronics interfaces"
 ```
+
+Hardening accepted during review: an authored source that writes STEP but
+omits, corrupts, mismatches, or fails while exporting its connector manifest
+raises `AuthoredManifestError` before `ingestDirectory` can create a generic
+connector fallback.
 
 ### Task 7: Add universal A4988 and SG90 catalog components
 
