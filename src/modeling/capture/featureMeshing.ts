@@ -33,13 +33,25 @@ function attachPlanarUVs(faces: FaceGeometry[]): void {
   }
 }
 
+/** Shape backends authored by remote catalog code can originate from a
+ * different module graph, making an `instanceof OcctBackend` check unsafe.
+ * The mesher only needs this public capability, so accept any backend that
+ * provides it rather than coupling rendering to one constructor identity. */
+interface ReplicadShapeProvider {
+  getReplicadShape(): unknown;
+}
+
+function isReplicadShapeProvider(backend: ShapeBackend): backend is ShapeBackend & ReplicadShapeProvider {
+  return typeof (backend as Partial<ReplicadShapeProvider>).getReplicadShape === 'function';
+}
+
 /** Extract the raw replicad shape so meshShape() can walk .faces / .meshEdges. */
 function extractRawShape(backend: ShapeBackend): unknown {
-  if (backend instanceof OcctBackend) {
+  if (isReplicadShapeProvider(backend)) {
     return backend.getReplicadShape();
   }
   throw new Error(
-    `meshFeaturesPerFeature: unsupported backend target '${backend.target}' — only OcctBackend is supported`
+    `meshFeaturesPerFeature: unsupported backend target '${backend.target}' — missing getReplicadShape()`
   );
 }
 
