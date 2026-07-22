@@ -29,7 +29,7 @@ import type { Connector } from '../../modeling/mates/connector';
 import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { runScript } from '../../modeling/runtime/runScript';
 import { Scene } from '../../modeling/validation/scene';
-import { exportCommand, exportScript } from '../cli/commands/export';
+import { exportCommand, exportScript, writeManifestSidecarAtomically } from '../cli/commands/export';
 import { runAndExport } from './export';
 import { sceneToConnectorManifest } from './connectorManifestExport';
 
@@ -579,4 +579,26 @@ describe('connector manifest runtime and CLI integration', () => {
     expect(hardLinkAliasResult.exitCode).toBe(2);
     expect(readFileSync(hardLinkStepPath, 'utf8')).toBe('existing STEP bytes');
   });
+
+  it.each(['hard link', 'symbolic link'] as const)(
+    'replaces a late %s manifest destination instead of following the STEP inode',
+    async (aliasKind) => {
+      const directory = temporaryDirectory('kcad-manifest-late-alias-');
+      const stepPath = join(directory, 'servo.step');
+      const manifestPath = join(directory, 'servo.connector-manifest.json');
+      const stepBytes = Buffer.from('STEP bytes that must survive');
+      const manifestContents = '{\n  "partId": "servo"\n}\n';
+      writeFileSync(stepPath, stepBytes);
+
+      // Model an alias created after exportScript's post-STEP check but before
+      // the sidecar writer opens its destination.
+      if (aliasKind === 'hard link') linkSync(stepPath, manifestPath);
+      else symlinkSync(stepPath, manifestPath);
+
+      await writeManifestSidecarAtomically(manifestPath, manifestContents);
+
+      expect(readFileSync(stepPath)).toEqual(stepBytes);
+      expect(readFileSync(manifestPath, 'utf8')).toBe(manifestContents);
+    },
+  );
 });

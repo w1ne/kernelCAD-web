@@ -25,6 +25,10 @@ import { tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { unzipSync } from 'fflate';
 import { ingestDirectory, type CatalogRecord } from './ingestParts';
+import {
+  loadConnectorManifest,
+  type ConnectorManifest,
+} from '../src/shared/parts/connectorManifest';
 
 /**
  * Some vendors (e.g. Raspberry Pi) serve their STEP model inside a ZIP rather
@@ -78,6 +82,30 @@ interface Manifest {
   parts: ManifestPart[];
 }
 
+/** Build the exact CLI request that exports an authored STEP and its interfaces. */
+export function authoredExportArgs(
+  cliPath: string,
+  scriptPath: string,
+  stepOut: string,
+  manifestOut: string,
+  part: { id: string; family: string },
+): string[] {
+  return [
+    cliPath,
+    'export',
+    'step',
+    scriptPath,
+    '-o',
+    stepOut,
+    '--connector-manifest',
+    manifestOut,
+    '--manifest-part-id',
+    part.id,
+    '--manifest-family',
+    part.family,
+  ];
+}
+
 function parseArgs(argv: string[]) {
   const out = { outDir: '', manifest: 'scripts/electronics-parts.json', baseUrl: 'https://kernelcad-parts.pages.dev' };
   const rest: string[] = [];
@@ -112,19 +140,25 @@ export async function ingestElectronics(
   let ok = 0;
   for (const part of manifest.parts) {
     let buf: Buffer;
+    let connectorManifest: ConnectorManifest | undefined;
 
     if (part.kcad_source) {
       // Authored model: compile the .kcad.ts script to STEP using the kernelCAD CLI.
       const scriptPath = resolve(repoRoot, part.kcad_source);
       const stepOut = join(src, `${part.id}.step`);
+      const manifestOut = join(src, `${part.id}.connector-manifest.json`);
       try {
         // CLI signature is positional: `export <format> <file> -o <out>`
         // (there is no `-f` flag). Capture stderr into the warning on failure.
         execFileSync(
           process.execPath,
-          [cliPath, 'export', 'step', scriptPath, '-o', stepOut],
+          authoredExportArgs(cliPath, scriptPath, stepOut, manifestOut, part),
           { stdio: ['ignore', 'pipe', 'pipe'], timeout: 120_000 },
         );
+        if (!existsSync(manifestOut)) {
+          throw new Error(`kernelcad export did not write connector manifest ${manifestOut}`);
+        }
+        connectorManifest = loadConnectorManifest(manifestOut);
       } catch (e) {
         const err = e as { stderr?: Buffer; message?: string };
         const detail = err.stderr?.toString().trim() || err.message || String(e);
@@ -173,6 +207,7 @@ export async function ingestElectronics(
           attributes: { mpn: part.mpn, ...(part.attributes ?? {}) },
           license: part.license ?? manifest.license,
           attribution: part.attribution ?? manifest.attribution,
+          ...(connectorManifest === undefined ? {} : { connectorManifest }),
         },
         null,
         2,

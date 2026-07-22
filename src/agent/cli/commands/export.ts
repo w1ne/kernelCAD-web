@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { Command } from 'commander';
-import { writeFile, mkdir, realpath, stat } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
+import { writeFile, mkdir, open, realpath, rename, rm, stat } from 'node:fs/promises';
 import { resolve, dirname, basename, join } from 'node:path';
 import { initOcct } from '../../../kernel/backends/occt/occtBackend';
 import {
@@ -132,6 +133,50 @@ async function outputPathsAlias(first: string, second: string): Promise<boolean>
     && firstIdentity.ino === secondIdentity.ino;
 }
 
+/**
+ * Replace a sidecar destination without following a late file or symlink
+ * alias. The staging file shares the destination directory, so `rename` is
+ * atomic and replaces the destination entry rather than its target.
+ *
+ * @internal Exported solely for focused filesystem-boundary tests.
+ */
+export async function writeManifestSidecarAtomically(destination: string, contents: string): Promise<void> {
+  const path = resolve(destination);
+  const stagedPath = join(dirname(path), `.${basename(path)}.${randomUUID()}.tmp`);
+  let stagedHandle: Awaited<ReturnType<typeof open>> | undefined;
+  let stagedCreated = false;
+
+  try {
+    stagedHandle = await open(stagedPath, 'wx');
+    stagedCreated = true;
+    await stagedHandle.writeFile(contents, 'utf8');
+    await stagedHandle.close();
+    stagedHandle = undefined;
+    await rename(stagedPath, path);
+  } catch (error) {
+    if (stagedHandle !== undefined) await stagedHandle.close().catch(() => undefined);
+    if (stagedCreated) await rm(stagedPath, { force: true }).catch(() => undefined);
+    throw error;
+  }
+}
+
+function postStepManifestAliasResult(
+  bytes: Uint8Array,
+  diagnostics: readonly CompilerDiagnostic[],
+): ExportCliResult {
+  return {
+    exitCode: 1,
+    bytesWritten: bytes.length,
+    diagnostics: withNextActions([...diagnostics, {
+      target: 'export-occt',
+      code: 'cli.invalid-args',
+      severity: 'error',
+      message: 'The STEP output was written, but --connector-manifest now aliases it; the sidecar was not written.',
+      hint: 'Choose a distinct --connector-manifest path and retry; the STEP output remains intact.',
+    }]),
+  };
+}
+
 export async function exportScript(input: ExportInput): Promise<ExportCliResult> {
   const manifestError = manifestOptionError(input);
   if (manifestError !== undefined) return invalidManifestOptionsResult(manifestError);
@@ -184,12 +229,15 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
     await writeFile(outPath, result.bytes);
     if (manifestPath !== undefined) {
       if (await outputPathsAlias(outPath, manifestPath)) {
-        throw new Error('--connector-manifest must not overwrite the STEP output path.');
+        return postStepManifestAliasResult(result.bytes, result.diagnostics);
       }
       if (result.connectorManifest === undefined) {
         throw new Error('STEP export completed without the requested connector manifest.');
       }
-      await writeFile(manifestPath, `${JSON.stringify(result.connectorManifest, null, 2)}\n`);
+      await writeManifestSidecarAtomically(
+        manifestPath,
+        `${JSON.stringify(result.connectorManifest, null, 2)}\n`,
+      );
     }
     // Robot-description exports (URDF / SDF) reference per-link mesh files
     // by relative path — write them next to the output file so the
