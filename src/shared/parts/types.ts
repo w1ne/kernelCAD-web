@@ -6,6 +6,14 @@
 // entry (bundled or remote). Geometry lives separately (in the cache);
 // PartRecord is the discovery + provenance handle.
 
+import {
+  validateHashBoundConnectorManifest,
+  type ConnectorAxisEntry,
+  type ConnectorEntry,
+  type ConnectorFrameEntry,
+  type HashBoundConnectorManifest,
+} from './connectorManifestSchema';
+
 export type PartSource = 'local-catalog' | 'remote';
 
 /**
@@ -27,6 +35,37 @@ export interface UpstreamProvenance {
   path: string;
 }
 
+type ReadonlyVector3 = readonly [number, number, number];
+
+/** Deeply immutable connector entry retained on catalog-backed runtime metadata. */
+export type CatalogConnectorEntry =
+  | (Readonly<Omit<ConnectorFrameEntry, 'origin' | 'normal'>> & {
+      readonly origin: ReadonlyVector3;
+      readonly normal: ReadonlyVector3;
+    })
+  | (Readonly<Omit<ConnectorAxisEntry, 'origin' | 'axis'>> & {
+      readonly origin: ReadonlyVector3;
+      readonly axis: ReadonlyVector3;
+    });
+
+/** Deeply immutable manifest snapshot retained on catalog-backed runtime metadata. */
+export type CatalogConnectorManifest =
+  Readonly<Omit<HashBoundConnectorManifest, 'connectors'>> & {
+    readonly connectors: readonly CatalogConnectorEntry[];
+  };
+
+declare const validatedConnectorEntry: unique symbol;
+
+/** An entry admitted only after its containing hash-bound manifest is validated. */
+type ValidatedConnectorEntry = ConnectorEntry & {
+  readonly [validatedConnectorEntry]: true;
+};
+
+type ValidatedHashBoundConnectorManifest =
+  Omit<HashBoundConnectorManifest, 'connectors'> & {
+    connectors: ValidatedConnectorEntry[];
+  };
+
 export interface PartRecord {
   id: string;
   name: string;
@@ -40,6 +79,8 @@ export interface PartRecord {
   license: string;
   attribution?: string;
   connectors: string[];
+  /** Authored connector frames, bound to this record's exact geometry digest. */
+  connectorManifest?: HashBoundConnectorManifest;
   stepUrl?: string;
   /**
    * Display-mesh URL (GLB), when the catalog serves this part as a mesh instead
@@ -86,6 +127,7 @@ export interface CatalogPartMetadata {
   readonly license: string;
   readonly attribution?: string;
   readonly connectors: readonly string[];
+  readonly connectorManifest?: CatalogConnectorManifest;
   readonly stepUrl?: string;
   readonly glbUrl?: string;
   readonly licenseClass?: LicenseClass;
@@ -93,8 +135,98 @@ export interface CatalogPartMetadata {
   readonly upstream?: Readonly<UpstreamProvenance>;
 }
 
+function snapshotVector3(vector: [number, number, number]): ReadonlyVector3 {
+  const snapshot: [number, number, number] = [...vector];
+  Object.freeze(snapshot);
+  return snapshot;
+}
+
+function snapshotConnectorEntry(entry: ValidatedConnectorEntry): CatalogConnectorEntry {
+  if (entry.type === 'frame') {
+    const snapshot: CatalogConnectorEntry = {
+      name: entry.name,
+      type: 'frame',
+      origin: snapshotVector3(entry.origin),
+      normal: snapshotVector3(entry.normal),
+    };
+    Object.freeze(snapshot);
+    return snapshot;
+  }
+  const snapshot: CatalogConnectorEntry = {
+    name: entry.name,
+    type: 'axis',
+    origin: snapshotVector3(entry.origin),
+    axis: snapshotVector3(entry.axis),
+  };
+  Object.freeze(snapshot);
+  return snapshot;
+}
+
+/** Deep-copy nested connector data so runtime metadata cannot retain raw catalog references. */
+function snapshotConnectorManifest(
+  manifest: ValidatedHashBoundConnectorManifest,
+): CatalogConnectorManifest {
+  const connectors: CatalogConnectorEntry[] = Array.from(
+    manifest.connectors,
+    snapshotConnectorEntry,
+  );
+  Object.freeze(connectors);
+  const snapshot: CatalogConnectorManifest = {
+    schemaVersion: manifest.schemaVersion,
+    partId: manifest.partId,
+    family: manifest.family,
+    geometrySha256: manifest.geometrySha256,
+    connectors,
+    ...(manifest.license === undefined ? {} : { license: manifest.license }),
+    ...(manifest.attribution === undefined ? {} : { attribution: manifest.attribution }),
+    ...(manifest.generatedAt === undefined ? {} : { generatedAt: manifest.generatedAt }),
+  };
+  Object.freeze(snapshot);
+  return snapshot;
+}
+
+function hasExactManifestConnectorNames(
+  connectors: unknown,
+  manifest: HashBoundConnectorManifest,
+): boolean {
+  if (!Array.isArray(connectors)) return false;
+  const recordConnectorNames = Array.from(connectors);
+  if (!recordConnectorNames.every((connector) => typeof connector === 'string')) {
+    return false;
+  }
+  const manifestConnectorNames = Array.from(
+    manifest.connectors,
+    (connector) => connector.name,
+  );
+  return (
+    recordConnectorNames.length === manifestConnectorNames.length &&
+    recordConnectorNames.every(
+      (connector, index) => connector === manifestConnectorNames[index],
+    )
+  );
+}
+
+function validateSnapshotConnectorManifest(
+  record: PartRecord,
+): ValidatedHashBoundConnectorManifest | undefined {
+  const manifest = record.connectorManifest;
+  if (manifest === undefined) return undefined;
+  validateHashBoundConnectorManifest(manifest, {
+    partId: record.id,
+    family: record.family,
+    geometrySha256: record.sha256,
+  });
+  if (!hasExactManifestConnectorNames(record.connectors, manifest)) {
+    throw new Error(
+      'catalog snapshot: connectors must exactly match the validated connector manifest',
+    );
+  }
+  return manifest as ValidatedHashBoundConnectorManifest;
+}
+
 /** Create a detached, frozen copy of a catalog record for runtime metadata. */
 export function snapshotCatalogPart(record: PartRecord): CatalogPartMetadata {
+  const connectorManifest = validateSnapshotConnectorManifest(record);
   const snapshot: CatalogPartMetadata = {
     id: record.id,
     name: record.name,
@@ -108,6 +240,9 @@ export function snapshotCatalogPart(record: PartRecord): CatalogPartMetadata {
     license: record.license,
     ...(record.attribution === undefined ? {} : { attribution: record.attribution }),
     connectors: Object.freeze([...record.connectors]),
+    ...(connectorManifest === undefined
+      ? {}
+      : { connectorManifest: snapshotConnectorManifest(connectorManifest) }),
     ...(record.stepUrl === undefined ? {} : { stepUrl: record.stepUrl }),
     ...(record.glbUrl === undefined ? {} : { glbUrl: record.glbUrl }),
     ...(record.licenseClass === undefined ? {} : { licenseClass: record.licenseClass }),
@@ -135,7 +270,29 @@ export function isPartRecord(v: unknown): v is PartRecord {
   if (typeof r.sha256 !== 'string') return false;
   if (r.source !== 'local-catalog' && r.source !== 'remote') return false;
   if (typeof r.license !== 'string') return false;
-  if (!Array.isArray(r.connectors)) return false;
+  if (r.connectorManifest !== undefined) {
+    try {
+      const manifest = r.connectorManifest;
+      validateHashBoundConnectorManifest(
+        manifest,
+        {
+          partId: r.id,
+          family: r.family,
+          geometrySha256: r.sha256,
+        },
+      );
+      if (!hasExactManifestConnectorNames(r.connectors, manifest)) {
+        return false;
+      }
+    } catch {
+      return false;
+    }
+  } else if (
+    !Array.isArray(r.connectors) ||
+    !Array.from(r.connectors).every((connector) => typeof connector === 'string')
+  ) {
+    return false;
+  }
   if (r.licenseClass !== undefined && !isLicenseClass(r.licenseClass)) return false;
   if (
     r.redistribution !== undefined &&

@@ -75,6 +75,11 @@ import {
   type ShapeOperationEdgeSelector,
   type ShapeOperationFaceSelector,
 } from './shapeOperationFeatureRecords';
+import {
+  validateConnectorManifest,
+  type ConnectorEntry,
+} from '../../shared/parts/connectorManifestSchema';
+import type { CatalogConnectorEntry } from '../../shared/parts/types';
 
 export type { EncodedMateRecord, SolvedAssemblyMateMetadata } from './assemblyFeatureRecords';
 
@@ -119,6 +124,35 @@ export interface SerializedSession {
   schemaVersion?: number;
   params?: SerializedParamTable;
   records: readonly FeatureRecord[];
+}
+
+function snapshotCatalogVector(
+  vector: [number, number, number],
+): readonly [number, number, number] {
+  const snapshot: [number, number, number] = [...vector];
+  Object.freeze(snapshot);
+  return snapshot;
+}
+
+function snapshotCatalogConnector(entry: ConnectorEntry): CatalogConnectorEntry {
+  if (entry.type === 'frame') {
+    const snapshot: CatalogConnectorEntry = {
+      name: entry.name,
+      type: 'frame',
+      origin: snapshotCatalogVector(entry.origin),
+      normal: snapshotCatalogVector(entry.normal),
+    };
+    Object.freeze(snapshot);
+    return snapshot;
+  }
+  const snapshot: CatalogConnectorEntry = {
+    name: entry.name,
+    type: 'axis',
+    origin: snapshotCatalogVector(entry.origin),
+    axis: snapshotCatalogVector(entry.axis),
+  };
+  Object.freeze(snapshot);
+  return snapshot;
 }
 
 export class CaptureSession {
@@ -191,6 +225,12 @@ export class CaptureSession {
    *  importedStep record. Untyped to avoid a cycle with modeling/parts. */
   readonly autoConnectors: Map<string, ReadonlyArray<unknown>> = new Map();
 
+  /** Factual, authored catalog interfaces. Unlike `autoConnectors`, this
+   *  store preserves frame-vs-axis semantics and only exposes frozen snapshots. */
+  private readonly catalogConnectorStore: Map<string, readonly CatalogConnectorEntry[]> = new Map();
+  readonly catalogConnectors: ReadonlyMap<string, readonly CatalogConnectorEntry[]> =
+    this.catalogConnectorStore;
+
   /** Attach a set of auto-connectors to a feature/shape id. Subsequent calls
    *  on the same id replace any previous entry. */
   attachAutoConnectors(
@@ -198,6 +238,29 @@ export class CaptureSession {
     connectors: ReadonlyArray<unknown>,
   ): void {
     this.autoConnectors.set(shapeId, connectors);
+  }
+
+  /**
+   * Attach exact catalog interfaces without retaining caller-owned objects.
+   * The synthetic manifest validates the public entry array at runtime, then
+   * every nested vector, entry, and array is detached and frozen.
+   */
+  attachCatalogConnectors(
+    shapeId: string,
+    connectors: readonly ConnectorEntry[],
+  ): void {
+    if (!Array.isArray(connectors)) {
+      throw new Error('catalog connectors: entries must be an array');
+    }
+    validateConnectorManifest({
+      schemaVersion: 1,
+      partId: 'catalog-session',
+      family: 'catalog-session',
+      connectors: Array.from(connectors),
+    });
+    const snapshots = Array.from(connectors, snapshotCatalogConnector);
+    Object.freeze(snapshots);
+    this.catalogConnectorStore.set(shapeId, snapshots);
   }
   /** v0.6: absolute directory of the calling `.kcad.ts` script. Used by the
    *  OCCT text lowerer to resolve relative `fontPath(...)` arguments at
