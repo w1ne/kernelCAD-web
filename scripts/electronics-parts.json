@@ -10,7 +10,14 @@
       "family": "ESP32",
       "mpn": "ESP32-WROOM-32",
       "model": "RF_Module.3dshapes/ESP32-WROOM-32.step",
-      "tags": ["mcu", "module", "wifi", "ble", "esp32", "xtensa"]
+      "tags": [
+        "mcu",
+        "module",
+        "wifi",
+        "ble",
+        "esp32",
+        "xtensa"
+      ]
     },
     {
       "id": "esp32-s3-wroom-1",
@@ -18,7 +25,15 @@
       "family": "ESP32",
       "mpn": "ESP32-S3-WROOM-1",
       "model": "RF_Module.3dshapes/ESP32-S3-WROOM-1.step",
-      "tags": ["mcu", "module", "wifi", "ble", "esp32", "esp32s3", "xtensa"]
+      "tags": [
+        "mcu",
+        "module",
+        "wifi",
+        "ble",
+        "esp32",
+        "esp32s3",
+        "xtensa"
+      ]
     },
     {
       "id": "esp32-c3-wroom-02",
@@ -26,7 +41,15 @@
       "family": "ESP32",
       "mpn": "ESP32-C3-WROOM-02",
       "model": "RF_Module.3dshapes/ESP32-C3-WROOM-02.step",
-      "tags": ["mcu", "module", "wifi", "ble", "esp32", "esp32c3", "riscv"]
+      "tags": [
+        "mcu",
+        "module",
+        "wifi",
+        "ble",
+        "esp32",
+        "esp32c3",
+        "riscv"
+      ]
     },
     {
       "id": "ic-pdip-16",
@@ -34,7 +57,15 @@
       "family": "IC package",
       "mpn": "PDIP-16",
       "kcad_source": "scripts/parts/authored/ic-pdip-16.kcad.ts",
-      "tags": ["ic", "package", "dip", "pdip", "l293d", "74hc595", "74hc165"],
+      "tags": [
+        "ic",
+        "package",
+        "dip",
+        "pdip",
+        "l293d",
+        "74hc595",
+        "74hc165"
+      ],
       "license": "MIT",
       "attribution": "kernelCAD authored model (kernelCAD contributors)"
     },
@@ -44,7 +75,12 @@
       "family": "IC package",
       "mpn": "LQFP-48",
       "model": "Package_QFP.3dshapes/LQFP-48_7x7mm_P0.5mm.step",
-      "tags": ["ic", "package", "lqfp", "stm32"]
+      "tags": [
+        "ic",
+        "package",
+        "lqfp",
+        "stm32"
+      ]
     },
     {
       "id": "ic-lqfp-64",
@@ -52,7 +88,12 @@
       "family": "IC package",
       "mpn": "LQFP-64",
       "model": "Package_QFP.3dshapes/LQFP-64_10x10mm_P0.5mm.step",
-      "tags": ["ic", "package", "lqfp", "stm32"]
+      "tags": [
+        "ic",
+        "package",
+        "lqfp",
+        "stm32"
+      ]
     },
     {
       "id": "ic-lqfp-100",
@@ -60,7 +101,12 @@
       "family": "IC package",
       "mpn": "LQFP-100",
       "model": "Package_QFP.3dshapes/LQFP-100_14x14mm_P0.5mm.step",
-      "tags": ["ic", "package", "lqfp", "stm32"]
+      "tags": [
+        "ic",
+        "package",
+        "lqfp",
+        "stm32"
+      ]
     },
     {
       "id": "ic-lqfp-144",
@@ -68,7 +114,12 @@
       "family": "IC package",
       "mpn": "LQFP-144",
       "model": "Package_QFP.3dshapes/LQFP-144_20x20mm_P0.5mm.step",
-      "tags": ["ic", "package", "lqfp", "stm32"]
+      "tags": [
+        "ic",
+        "package",
+        "lqfp",
+        "stm32"
+      ]
     },
     {
       "id": "ic-qfn-56-7x7",
@@ -76,7 +127,13 @@
       "family": "IC package",
       "mpn": "QFN-56",
       "model": "Package_DFN_QFN.3dshapes/QFN-56-1EP_7x7mm_P0.4mm_EP3.2x3.2mm.step",
-      "tags": ["ic", "package", "qfn", "rp2040", "esp32s3"]
+      "tags": [
+        "ic",
+        "package",
+        "qfn",
+        "rp2040",
+        "esp32s3"
+      ]
     },
     {
       "id": "epaper-29-tricolor",
@@ -84,7 +141,13 @@
       "family": "Display",
       "mpn": "Adafruit 4086",
       "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/4086%20TriColor%20ePaper%20Display/4086-tricolor-epaper-display.step",
-      "tags": ["display", "epaper", "eink", "tricolor", "2.9inch"],
+      "tags": [
+        "display",
+        "epaper",
+        "eink",
+        "tricolor",
+        "2.9inch"
+      ],
       "license": "MIT",
       "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT"
     },
@@ -94,7 +157,12 @@
       "family": "Battery",
       "mpn": "Adafruit 258",
       "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/258%201200mAh%20lipo/258%201200mAh%20lipo.step",
-      "tags": ["battery", "lipo", "pouch", "power"],
+      "tags": [
+        "battery",
+        "lipo",
+        "pouch",
+        "power"
+      ],
       "license": "MIT",
       "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT"
     },
@@ -104,7 +172,17 @@
       "family": "ESP32",
       "mpn": "ESP32-C3-SuperMini",
       "url": "https://raw.githubusercontent.com/mrtnvgr/KiCad_ESP32-C3-SuperMini/master/ESP32-C3-SuperMini.stp",
-      "tags": ["mcu", "module", "wifi", "ble", "esp32", "esp32c3", "riscv", "usb-c", "supermini"],
+      "tags": [
+        "mcu",
+        "module",
+        "wifi",
+        "ble",
+        "esp32",
+        "esp32c3",
+        "riscv",
+        "usb-c",
+        "supermini"
+      ],
       "license": "OSHW-attribution",
       "attribution": "KiCad_ESP32-C3-SuperMini by mrtnvgr (github.com/mrtnvgr/KiCad_ESP32-C3-SuperMini)"
     },
@@ -114,9 +192,15 @@
       "family": "RaspberryPi",
       "mpn": "SC0915",
       "url": "https://pip.raspberrypi.com/documents/RP-008311-DS",
-      "tags": ["board", "mcu", "rp2040", "raspberry-pi", "pico"],
+      "tags": [
+        "board",
+        "mcu",
+        "rp2040",
+        "raspberry-pi",
+        "pico"
+      ],
       "license": "Raspberry Pi design-files permission grant (permissive)",
-      "attribution": "Raspberry Pi Ltd — Pico mechanical model (RP-008311), redistributed under the Raspberry Pi design-files permission grant"
+      "attribution": "Raspberry Pi Ltd \u2014 Pico mechanical model (RP-008311), redistributed under the Raspberry Pi design-files permission grant"
     },
     {
       "id": "esp32-devkit-board",
@@ -124,7 +208,14 @@
       "family": "ESP32",
       "mpn": "ESP32-DevKitC-V4",
       "kcad_source": "scripts/parts/authored/esp32-devkit-board.kcad.ts",
-      "tags": ["board", "esp32", "devkit", "devkitc", "wroom-32", "mcu"],
+      "tags": [
+        "board",
+        "esp32",
+        "devkit",
+        "devkitc",
+        "wroom-32",
+        "mcu"
+      ],
       "license": "CC-BY-SA-4.0",
       "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception)"
     },
@@ -134,7 +225,12 @@
       "family": "STM32",
       "mpn": "NUCLEO-64",
       "kcad_source": "scripts/parts/authored/nucleo64-board.kcad.ts",
-      "tags": ["nucleo", "stm32", "mb1136", "dev-board"],
+      "tags": [
+        "nucleo",
+        "stm32",
+        "mb1136",
+        "dev-board"
+      ],
       "license": "CC-BY-SA-4.0",
       "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception)"
     },
@@ -144,7 +240,12 @@
       "family": "STM32",
       "mpn": "NUCLEO-H563ZI",
       "kcad_source": "scripts/parts/authored/h563zi-board.kcad.ts",
-      "tags": ["nucleo", "stm32", "h563", "dev-board"],
+      "tags": [
+        "nucleo",
+        "stm32",
+        "h563",
+        "dev-board"
+      ],
       "license": "CC-BY-SA-4.0",
       "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception)"
     },
@@ -154,7 +255,12 @@
       "family": "STM32",
       "mpn": "WeAct-BlackPill-F401",
       "kcad_source": "scripts/parts/authored/blackpill-board.kcad.ts",
-      "tags": ["blackpill", "stm32", "weact", "dev-board"],
+      "tags": [
+        "blackpill",
+        "stm32",
+        "weact",
+        "dev-board"
+      ],
       "license": "CC-BY-SA-4.0",
       "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception)"
     },
@@ -164,7 +270,12 @@
       "family": "Arduino",
       "mpn": "A000066",
       "kcad_source": "scripts/parts/authored/arduino-uno-board.kcad.ts",
-      "tags": ["arduino", "uno", "atmega328", "dev-board"],
+      "tags": [
+        "arduino",
+        "uno",
+        "atmega328",
+        "dev-board"
+      ],
       "license": "CC-BY-SA-4.0",
       "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception); USB-B placeholder"
     },
@@ -174,7 +285,12 @@
       "family": "ESP32",
       "mpn": "ESP32-C3-SuperMini",
       "kcad_source": "scripts/parts/authored/esp32-c3-supermini-board.kcad.ts",
-      "tags": ["esp32", "c3", "supermini", "dev-board"],
+      "tags": [
+        "esp32",
+        "c3",
+        "supermini",
+        "dev-board"
+      ],
       "license": "CC-BY-SA-4.0",
       "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception)"
     },
@@ -184,7 +300,13 @@
       "family": "ESP32",
       "mpn": "ESP32-S3-Zero",
       "kcad_source": "scripts/parts/authored/esp32-s3-zero-board.kcad.ts",
-      "tags": ["esp32", "s3", "zero", "waveshare", "dev-board"],
+      "tags": [
+        "esp32",
+        "s3",
+        "zero",
+        "waveshare",
+        "dev-board"
+      ],
       "license": "CC-BY-SA-4.0",
       "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception)"
     },
@@ -194,7 +316,12 @@
       "family": "Nordic",
       "mpn": "nRF52840-DK",
       "kcad_source": "scripts/parts/authored/nrf52840-dk-board.kcad.ts",
-      "tags": ["nordic", "nrf52840", "dk", "dev-board"],
+      "tags": [
+        "nordic",
+        "nrf52840",
+        "dk",
+        "dev-board"
+      ],
       "license": "CC-BY-SA-4.0",
       "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception); nRF52840 package stand-in"
     },
@@ -204,7 +331,12 @@
       "family": "NXP",
       "mpn": "FRDM-KW41Z",
       "kcad_source": "scripts/parts/authored/kw41z-board.kcad.ts",
-      "tags": ["nxp", "kw41z", "frdm", "dev-board"],
+      "tags": [
+        "nxp",
+        "kw41z",
+        "frdm",
+        "dev-board"
+      ],
       "license": "CC-BY-SA-4.0",
       "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception)"
     },
@@ -214,7 +346,15 @@
       "family": "Sensor",
       "mpn": "Adafruit 4469",
       "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/4469%20MLX90640%20Stemma/4469%20MLX90640%20Stemma.step",
-      "tags": ["sensor", "thermal", "ir", "camera", "mlx90640", "i2c", "stemma"],
+      "tags": [
+        "sensor",
+        "thermal",
+        "ir",
+        "camera",
+        "mlx90640",
+        "i2c",
+        "stemma"
+      ],
       "license": "MIT",
       "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT"
     },
@@ -224,107 +364,218 @@
       "family": "Connector",
       "mpn": "Phoenix Contact 1694211",
       "url": "https://raw.githubusercontent.com/oro-os/link/HEAD/pcb/link/lib/step/pxc_1694211_02_00_SACC-DSIV-M12MS-5CON-L180_3D.stp",
-      "tags": ["connector", "m12", "iolink", "io-link", "5pin", "a-coded", "phoenix-contact"],
+      "tags": [
+        "connector",
+        "m12",
+        "iolink",
+        "io-link",
+        "5pin",
+        "a-coded",
+        "phoenix-contact"
+      ],
       "license": "OSHW",
       "attribution": "Phoenix Contact via oro-os/link (github.com/oro-os/link), OSHW"
     },
     {
       "id": "ssd1306-oled-096",
-      "name": "SSD1306 0.96\" I2C OLED display module (27×27×4mm)",
+      "name": "SSD1306 0.96\" I2C OLED display module (27\u00d727\u00d74mm)",
       "family": "Display",
       "mpn": "generic SSD1306 0.96in OLED breakout",
       "kcad_source": "scripts/parts/authored/ssd1306-oled-096.kcad.ts",
-      "tags": ["display", "oled", "i2c", "ssd1306", "096inch", "128x64"],
+      "tags": [
+        "display",
+        "oled",
+        "i2c",
+        "ssd1306",
+        "096inch",
+        "128x64"
+      ],
       "license": "MIT",
       "attribution": "kernelCAD authored model (kernelCAD contributors)"
     },
     {
       "id": "dht22",
-      "name": "DHT22 / AM2302 temperature + humidity sensor (15×25×8mm)",
+      "name": "DHT22 / AM2302 temperature + humidity sensor (15\u00d725\u00d78mm)",
       "family": "Sensor",
       "mpn": "DHT22",
       "kcad_source": "scripts/parts/authored/dht22.kcad.ts",
-      "tags": ["sensor", "temperature", "humidity", "dht22", "am2302"],
+      "tags": [
+        "sensor",
+        "temperature",
+        "humidity",
+        "dht22",
+        "am2302"
+      ],
       "license": "MIT",
       "attribution": "kernelCAD authored model (kernelCAD contributors)"
     },
     {
       "id": "ws2812-strip",
-      "name": "WS2812B NeoPixel LED strip segment — 3 pixels (17×10×3mm)",
+      "name": "WS2812B NeoPixel LED strip segment \u2014 3 pixels (17\u00d710\u00d73mm)",
       "family": "LED",
       "mpn": "WS2812B (3-pixel strip segment)",
       "kcad_source": "scripts/parts/authored/ws2812-strip.kcad.ts",
-      "tags": ["led", "neopixel", "ws2812b", "rgb", "addressable", "strip"],
+      "tags": [
+        "led",
+        "neopixel",
+        "ws2812b",
+        "rgb",
+        "addressable",
+        "strip"
+      ],
       "license": "MIT",
       "attribution": "kernelCAD authored model (kernelCAD contributors)"
     },
     {
       "id": "bme280",
-      "name": "BME280 environmental sensor breakout (19×18×3mm)",
+      "name": "BME280 environmental sensor breakout (19\u00d718\u00d73mm)",
       "family": "Sensor",
       "mpn": "BME280 breakout (Adafruit 2652 / SparkFun)",
       "kcad_source": "scripts/parts/authored/bme280.kcad.ts",
-      "tags": ["sensor", "temperature", "humidity", "pressure", "bme280", "i2c", "spi"],
+      "tags": [
+        "sensor",
+        "temperature",
+        "humidity",
+        "pressure",
+        "bme280",
+        "i2c",
+        "spi"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "mq-6",
+      "name": "MQ-6 LPG/propane gas sensor breakout (32\u00d722\u00d720mm)",
+      "family": "Sensor",
+      "mpn": "MQ-6",
+      "kcad_source": "scripts/parts/authored/mq-6.kcad.ts",
+      "tags": [
+        "sensor",
+        "gas",
+        "lpg",
+        "propane",
+        "mq-6",
+        "analog",
+        "mq"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "soil-moisture",
+      "name": "Capacitive soil moisture probe (60\u00d723\u00d76mm)",
+      "family": "Sensor",
+      "mpn": "SOIL-CAP",
+      "kcad_source": "scripts/parts/authored/soil-moisture.kcad.ts",
+      "tags": [
+        "sensor",
+        "soil",
+        "moisture",
+        "capacitive",
+        "humidity",
+        "analog"
+      ],
       "license": "MIT",
       "attribution": "kernelCAD authored model (kernelCAD contributors)"
     },
     {
       "id": "precision-microdrives-304-002-erm",
-      "name": "Precision Microdrives 304-002 Pico Vibe ERM vibration motor (4mm body × 8mm)",
+      "name": "Precision Microdrives 304-002 Pico Vibe ERM vibration motor (4mm body \u00d7 8mm)",
       "family": "Haptic actuator",
       "mpn": "Precision Microdrives 304-002",
       "kcad_source": "scripts/parts/authored/precision-microdrives-304-002-erm.kcad.ts",
-      "tags": ["haptic", "erm", "vibration-motor", "motor", "3v", "wearable", "precision-microdrives"],
+      "tags": [
+        "haptic",
+        "erm",
+        "vibration-motor",
+        "motor",
+        "3v",
+        "wearable",
+        "precision-microdrives"
+      ],
       "license": "MIT",
       "attribution": "Dimensions from Precision Microdrives 304-002 product datasheet R002-V005; authored mechanical-envelope model by kernelCAD contributors"
     },
     {
       "id": "microsd-spi",
-      "name": "microSD SPI adapter breakout module (24×30×4mm)",
+      "name": "microSD SPI adapter breakout module (24\u00d730\u00d74mm)",
       "family": "Storage",
       "mpn": "generic microSD SPI breakout",
       "kcad_source": "scripts/parts/authored/microsd-spi.kcad.ts",
-      "tags": ["storage", "microsd", "spi", "sdcard", "module"],
+      "tags": [
+        "storage",
+        "microsd",
+        "spi",
+        "sdcard",
+        "module"
+      ],
       "license": "MIT",
       "attribution": "kernelCAD authored model (kernelCAD contributors)"
     },
     {
       "id": "pushbutton-6mm",
-      "name": "6mm tactile pushbutton (6×6×5mm)",
+      "name": "6mm tactile pushbutton (6\u00d76\u00d75mm)",
       "family": "Switch",
       "mpn": "generic 6mm tact switch",
       "kcad_source": "scripts/parts/authored/pushbutton-6mm.kcad.ts",
-      "tags": ["switch", "button", "tactile", "pushbutton", "6mm"],
+      "tags": [
+        "switch",
+        "button",
+        "tactile",
+        "pushbutton",
+        "6mm"
+      ],
       "license": "MIT",
       "attribution": "kernelCAD authored model (kernelCAD contributors)"
     },
     {
       "id": "max14827",
-      "name": "MAX14827 IO-Link PHY breakout (12×10×2mm)",
+      "name": "MAX14827 IO-Link PHY breakout (12\u00d710\u00d72mm)",
       "family": "IO-Link",
       "mpn": "MAX14827",
       "kcad_source": "scripts/parts/authored/max14827.kcad.ts",
-      "tags": ["iolink", "io-link", "phy", "max14827", "industrial"],
+      "tags": [
+        "iolink",
+        "io-link",
+        "phy",
+        "max14827",
+        "industrial"
+      ],
       "license": "MIT",
       "attribution": "kernelCAD authored model (kernelCAD contributors)"
     },
     {
       "id": "buck-24v-3v3",
-      "name": "24V→3.3V step-down buck regulator module (18×12×4mm)",
+      "name": "24V\u21923.3V step-down buck regulator module (18\u00d712\u00d74mm)",
       "family": "Power",
       "mpn": "generic 24V 3.3V buck module",
       "kcad_source": "scripts/parts/authored/buck-24v-3v3.kcad.ts",
-      "tags": ["power", "buck", "regulator", "24v", "3v3", "stepdown"],
+      "tags": [
+        "power",
+        "buck",
+        "regulator",
+        "24v",
+        "3v3",
+        "stepdown"
+      ],
       "license": "MIT",
       "attribution": "kernelCAD authored model (kernelCAD contributors)"
     },
     {
       "id": "cherry-mx-switch",
-      "name": "Cherry MX keyboard switch (PCB mount, 15.6×15.6mm)",
+      "name": "Cherry MX keyboard switch (PCB mount, 15.6\u00d715.6mm)",
       "family": "Switch",
       "mpn": "Cherry MX",
       "url": "https://raw.githubusercontent.com/ConstantinoSchillebeeckx/cherry-mx-switch/master/switch.step",
-      "tags": ["switch", "keyboard", "cherry", "mx", "keyswitch", "tactile"],
+      "tags": [
+        "switch",
+        "keyboard",
+        "cherry",
+        "mx",
+        "keyswitch",
+        "tactile"
+      ],
       "license": "MIT",
       "attribution": "ConstantinoSchillebeeckx/cherry-mx-switch (github.com/ConstantinoSchillebeeckx/cherry-mx-switch), MIT"
     },
@@ -334,7 +585,22 @@
       "family": "Encoder",
       "mpn": "PEC11R / EC11E",
       "kcad_source": "scripts/parts/authored/rotary-encoder-ec11.kcad.ts",
-      "tags": ["encoder", "rotary", "rotary encoder", "ec11", "incremental", "quadrature", "knob", "shaft", "d-shaft", "switch", "pushbutton", "panel", "input", "maker"],
+      "tags": [
+        "encoder",
+        "rotary",
+        "rotary encoder",
+        "ec11",
+        "incremental",
+        "quadrature",
+        "knob",
+        "shaft",
+        "d-shaft",
+        "switch",
+        "pushbutton",
+        "panel",
+        "input",
+        "maker"
+      ],
       "license": "MIT",
       "attribution": "kernelCAD authored model (kernelCAD contributors)"
     },
@@ -344,7 +610,22 @@
       "family": "Switch",
       "mpn": "MX1A",
       "kcad_source": "scripts/parts/authored/keyswitch-mx.kcad.ts",
-      "tags": ["keyswitch", "key switch", "cherry", "mx", "cherry mx", "mechanical", "keyboard", "keycap", "switch", "button", "cross stem", "plate", "input", "maker"],
+      "tags": [
+        "keyswitch",
+        "key switch",
+        "cherry",
+        "mx",
+        "cherry mx",
+        "mechanical",
+        "keyboard",
+        "keycap",
+        "switch",
+        "button",
+        "cross stem",
+        "plate",
+        "input",
+        "maker"
+      ],
       "license": "MIT",
       "attribution": "kernelCAD authored model (kernelCAD contributors)"
     },
@@ -402,7 +683,19 @@
       "family": "Switch",
       "mpn": "Omron B3F-4050 + B32-16x0",
       "kcad_source": "scripts/parts/authored/tactile-12mm.kcad.ts",
-      "tags": ["switch", "button", "tactile", "pushbutton", "12mm", "keycap", "cap", "b3f", "panel", "input", "maker"],
+      "tags": [
+        "switch",
+        "button",
+        "tactile",
+        "pushbutton",
+        "12mm",
+        "keycap",
+        "cap",
+        "b3f",
+        "panel",
+        "input",
+        "maker"
+      ],
       "license": "MIT",
       "attribution": "kernelCAD authored model (kernelCAD contributors)"
     },
@@ -412,7 +705,14 @@
       "family": "stepper-driver",
       "mpn": "Pololu #2128",
       "kcad_source": "scripts/parts/authored/a4988-stepstick-carrier.kcad.ts",
-      "tags": ["stepper-driver", "a4988", "stepstick", "carrier", "motor-control", "pololu"],
+      "tags": [
+        "stepper-driver",
+        "a4988",
+        "stepstick",
+        "carrier",
+        "motor-control",
+        "pololu"
+      ],
       "license": "MIT",
       "attribution": "kernelCAD authored mechanical model; dimensions and pinout from Pololu #2128: https://www.pololu.com/product/2128, https://www.pololu.com/file/0J1081/a4988-stepper-motor-driver-carrier-black-edition-dimension-diagram.pdf, and https://www.pololu.com/file/0J1225/a4988-stepper-motor-driver-carrier-black-edition.step"
     },
@@ -422,7 +722,13 @@
       "family": "micro-servo",
       "mpn": "Luxor Parts 87897 (SG90)",
       "kcad_source": "scripts/parts/authored/sg90-micro-servo.kcad.ts",
-      "tags": ["servo", "micro-servo", "sg90", "pwm", "actuator"],
+      "tags": [
+        "servo",
+        "micro-servo",
+        "sg90",
+        "pwm",
+        "actuator"
+      ],
       "license": "MIT",
       "attribution": "kernelCAD authored conservative mechanical envelope and canonical harness-contact proxies; dimensions and cable convention from Luxor Parts 87897 data sheet (which does not establish a shaft or mounting datum): https://www.kjell.com/globalassets/mediaassets/701916_87897_datasheet_en.pdf"
     },
@@ -432,7 +738,15 @@
       "family": "MCU",
       "mpn": "nRF54L15-QFAA",
       "kcad_source": "scripts/parts/authored/nrf54l15-qfn48.kcad.ts",
-      "tags": ["mcu", "nordic", "nrf54l15", "qfn", "qfn48", "bluetooth", "802.15.4"],
+      "tags": [
+        "mcu",
+        "nordic",
+        "nrf54l15",
+        "qfn",
+        "qfn48",
+        "bluetooth",
+        "802.15.4"
+      ],
       "attributes": {
         "package": "QFN48 (QFAA)",
         "packageLengthMm": 6,
@@ -452,7 +766,15 @@
       "family": "Sensor",
       "mpn": "BMI270",
       "kcad_source": "scripts/parts/authored/bmi270-lga14.kcad.ts",
-      "tags": ["sensor", "imu", "accelerometer", "gyroscope", "bmi270", "lga", "lga14"],
+      "tags": [
+        "sensor",
+        "imu",
+        "accelerometer",
+        "gyroscope",
+        "bmi270",
+        "lga",
+        "lga14"
+      ],
       "attributes": {
         "package": "LGA-14",
         "packageLengthMm": 3,
@@ -472,7 +794,15 @@
       "family": "Sensor",
       "mpn": "MAX30102",
       "kcad_source": "scripts/parts/authored/max30102-optical.kcad.ts",
-      "tags": ["sensor", "biosensor", "heart-rate", "pulse-oximeter", "max30102", "optical", "i2c"],
+      "tags": [
+        "sensor",
+        "biosensor",
+        "heart-rate",
+        "pulse-oximeter",
+        "max30102",
+        "optical",
+        "i2c"
+      ],
       "attributes": {
         "package": "optical module",
         "packageLengthMm": 5.6,
@@ -492,7 +822,14 @@
       "family": "Sensor",
       "mpn": "TMP117NAIYBGR",
       "kcad_source": "scripts/parts/authored/tmp117-dsbga.kcad.ts",
-      "tags": ["sensor", "temperature", "tmp117", "i2c", "dsbga", "ybg"],
+      "tags": [
+        "sensor",
+        "temperature",
+        "tmp117",
+        "i2c",
+        "dsbga",
+        "ybg"
+      ],
       "attributes": {
         "package": "DSBGA-6 (YBG)",
         "packageLengthMm": 1.488,
@@ -512,7 +849,15 @@
       "family": "Haptic driver",
       "mpn": "DRV2605YZF",
       "kcad_source": "scripts/parts/authored/drv2605-yzf.kcad.ts",
-      "tags": ["haptic", "haptic-driver", "drv2605", "lra", "erm", "dsbga", "yzf"],
+      "tags": [
+        "haptic",
+        "haptic-driver",
+        "drv2605",
+        "lra",
+        "erm",
+        "dsbga",
+        "yzf"
+      ],
       "attributes": {
         "package": "DSBGA-9 (YZF)",
         "packageLengthMm": 1.44,
