@@ -101,10 +101,10 @@ export async function remoteFindParts(
   if (opts.tag) qs.set('tag', opts.tag);
   if (opts.limit) qs.set('pageSize', String(opts.limit));
   const res = await callRemote(`${base}/v1/parts?${qs.toString()}`, 5000);
-  // step.parts search returns `{ items, total, ... }` where each item is the
-  // same per-part shape as the detail endpoint (stepUrl + sha256 included).
-  // Map each onto a PartRecord; geometry/connectors are resolved later by
-  // fetch_part, so discovery records carry empty connectors.
+  // The catalog search response returns `{ items, total, ... }` where each item
+  // is the same per-part shape as the detail endpoint (stepUrl + sha256 included).
+  // Map each onto a PartRecord. Authored hash-bound manifests preserve their
+  // connector names; records without one leave connectors for fetch-time synthesis.
   const raw = (await res.json()) as {
     items?: StepPartsRecord[];
     total?: number;
@@ -121,9 +121,9 @@ export async function remoteFetchPartMeta(
     `${base}/v1/parts/${encodeURIComponent(opts.id)}`,
     5000,
   );
-  // step.parts (the default source) returns its own schema, not a kernelCAD
-  // PartRecord — map it. `connectors` come back empty; fetchPartHost synthesizes
-  // them from the downloaded STEP.
+  // Remote catalog records use their own schema rather than a kernelCAD
+  // PartRecord — map them. Authored hash-bound manifests carry their connector
+  // names; fetchPartHost synthesizes connectors only when no manifest is present.
   const raw = (await res.json()) as StepPartsRecord;
   return mapStepPartsRecord(raw);
 }

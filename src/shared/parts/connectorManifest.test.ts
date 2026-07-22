@@ -172,6 +172,50 @@ describe('ConnectorManifest validator', () => {
     ).toThrow(/three-vector/i);
   });
 
+  it('rejects a sparse origin vector despite its nominal length', () => {
+    const origin = new Array<number>(3);
+    origin[0] = 0;
+    origin[2] = 0;
+
+    expect(() =>
+      validateConnectorManifest({
+        schemaVersion: 1,
+        partId: 'iso-4762-m3x12',
+        family: 'socket-head-cap-screw',
+        connectors: [
+          {
+            name: 'mount',
+            type: 'frame',
+            origin: origin as unknown as [number, number, number],
+            normal: [0, 0, 1],
+          },
+        ],
+      }),
+    ).toThrow(/finite three-vector/i);
+  });
+
+  it('rejects a sparse direction vector despite its nominal length', () => {
+    const normal = new Array<number>(3);
+    normal[0] = 0;
+    normal[2] = 1;
+
+    expect(() =>
+      validateConnectorManifest({
+        schemaVersion: 1,
+        partId: 'iso-4762-m3x12',
+        family: 'socket-head-cap-screw',
+        connectors: [
+          {
+            name: 'mount',
+            type: 'frame',
+            origin: [0, 0, 0],
+            normal: normal as unknown as [number, number, number],
+          },
+        ],
+      }),
+    ).toThrow(/finite three-vector/i);
+  });
+
   it('rejects a zero frame normal', () => {
     expect(() =>
       validateConnectorManifest({

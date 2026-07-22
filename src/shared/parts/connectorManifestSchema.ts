@@ -55,12 +55,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function validateVector3(value: unknown, label: string): asserts value is [number, number, number] {
-  if (
-    !Array.isArray(value) ||
-    value.length !== 3 ||
-    !value.every((component) => typeof component === 'number' && Number.isFinite(component))
-  ) {
+  if (!Array.isArray(value) || value.length !== 3) {
     throw new Error(`manifest: ${label} must be a finite three-vector`);
+  }
+  for (let index = 0; index < 3; index += 1) {
+    const component = value[index];
+    if (typeof component !== 'number' || !Number.isFinite(component)) {
+      throw new Error(`manifest: ${label} must be a finite three-vector`);
+    }
   }
 }
 

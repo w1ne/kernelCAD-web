@@ -54,6 +54,18 @@ export type CatalogConnectorManifest =
     readonly connectors: readonly CatalogConnectorEntry[];
   };
 
+declare const validatedConnectorEntry: unique symbol;
+
+/** An entry admitted only after its containing hash-bound manifest is validated. */
+type ValidatedConnectorEntry = ConnectorEntry & {
+  readonly [validatedConnectorEntry]: true;
+};
+
+type ValidatedHashBoundConnectorManifest =
+  Omit<HashBoundConnectorManifest, 'connectors'> & {
+    connectors: ValidatedConnectorEntry[];
+  };
+
 export interface PartRecord {
   id: string;
   name: string;
@@ -129,7 +141,7 @@ function snapshotVector3(vector: [number, number, number]): ReadonlyVector3 {
   return snapshot;
 }
 
-function snapshotConnectorEntry(entry: ConnectorEntry): CatalogConnectorEntry {
+function snapshotConnectorEntry(entry: ValidatedConnectorEntry): CatalogConnectorEntry {
   if (entry.type === 'frame') {
     const snapshot: CatalogConnectorEntry = {
       name: entry.name,
@@ -152,9 +164,12 @@ function snapshotConnectorEntry(entry: ConnectorEntry): CatalogConnectorEntry {
 
 /** Deep-copy nested connector data so runtime metadata cannot retain raw catalog references. */
 function snapshotConnectorManifest(
-  manifest: HashBoundConnectorManifest,
+  manifest: ValidatedHashBoundConnectorManifest,
 ): CatalogConnectorManifest {
-  const connectors: CatalogConnectorEntry[] = manifest.connectors.map(snapshotConnectorEntry);
+  const connectors: CatalogConnectorEntry[] = Array.from(
+    manifest.connectors,
+    snapshotConnectorEntry,
+  );
   Object.freeze(connectors);
   const snapshot: CatalogConnectorManifest = {
     schemaVersion: manifest.schemaVersion,
@@ -170,8 +185,48 @@ function snapshotConnectorManifest(
   return snapshot;
 }
 
+function hasExactManifestConnectorNames(
+  connectors: unknown,
+  manifest: HashBoundConnectorManifest,
+): boolean {
+  if (!Array.isArray(connectors)) return false;
+  const recordConnectorNames = Array.from(connectors);
+  if (!recordConnectorNames.every((connector) => typeof connector === 'string')) {
+    return false;
+  }
+  const manifestConnectorNames = Array.from(
+    manifest.connectors,
+    (connector) => connector.name,
+  );
+  return (
+    recordConnectorNames.length === manifestConnectorNames.length &&
+    recordConnectorNames.every(
+      (connector, index) => connector === manifestConnectorNames[index],
+    )
+  );
+}
+
+function validateSnapshotConnectorManifest(
+  record: PartRecord,
+): ValidatedHashBoundConnectorManifest | undefined {
+  const manifest = record.connectorManifest;
+  if (manifest === undefined) return undefined;
+  validateHashBoundConnectorManifest(manifest, {
+    partId: record.id,
+    family: record.family,
+    geometrySha256: record.sha256,
+  });
+  if (!hasExactManifestConnectorNames(record.connectors, manifest)) {
+    throw new Error(
+      'catalog snapshot: connectors must exactly match the validated connector manifest',
+    );
+  }
+  return manifest as ValidatedHashBoundConnectorManifest;
+}
+
 /** Create a detached, frozen copy of a catalog record for runtime metadata. */
 export function snapshotCatalogPart(record: PartRecord): CatalogPartMetadata {
+  const connectorManifest = validateSnapshotConnectorManifest(record);
   const snapshot: CatalogPartMetadata = {
     id: record.id,
     name: record.name,
@@ -185,9 +240,9 @@ export function snapshotCatalogPart(record: PartRecord): CatalogPartMetadata {
     license: record.license,
     ...(record.attribution === undefined ? {} : { attribution: record.attribution }),
     connectors: Object.freeze([...record.connectors]),
-    ...(record.connectorManifest === undefined
+    ...(connectorManifest === undefined
       ? {}
-      : { connectorManifest: snapshotConnectorManifest(record.connectorManifest) }),
+      : { connectorManifest: snapshotConnectorManifest(connectorManifest) }),
     ...(record.stepUrl === undefined ? {} : { stepUrl: record.stepUrl }),
     ...(record.glbUrl === undefined ? {} : { glbUrl: record.glbUrl }),
     ...(record.licenseClass === undefined ? {} : { licenseClass: record.licenseClass }),
@@ -215,12 +270,6 @@ export function isPartRecord(v: unknown): v is PartRecord {
   if (typeof r.sha256 !== 'string') return false;
   if (r.source !== 'local-catalog' && r.source !== 'remote') return false;
   if (typeof r.license !== 'string') return false;
-  if (
-    !Array.isArray(r.connectors) ||
-    !r.connectors.every((connector) => typeof connector === 'string')
-  ) {
-    return false;
-  }
   if (r.connectorManifest !== undefined) {
     try {
       const manifest = r.connectorManifest;
@@ -232,16 +281,17 @@ export function isPartRecord(v: unknown): v is PartRecord {
           geometrySha256: r.sha256,
         },
       );
-      const manifestConnectorNames = manifest.connectors.map((connector) => connector.name);
-      if (
-        r.connectors.length !== manifestConnectorNames.length ||
-        r.connectors.some((connector, index) => connector !== manifestConnectorNames[index])
-      ) {
+      if (!hasExactManifestConnectorNames(r.connectors, manifest)) {
         return false;
       }
     } catch {
       return false;
     }
+  } else if (
+    !Array.isArray(r.connectors) ||
+    !Array.from(r.connectors).every((connector) => typeof connector === 'string')
+  ) {
+    return false;
   }
   if (r.licenseClass !== undefined && !isLicenseClass(r.licenseClass)) return false;
   if (

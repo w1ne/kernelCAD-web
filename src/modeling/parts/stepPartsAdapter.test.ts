@@ -164,6 +164,46 @@ describe('mapStepPartsRecord', () => {
     expect(isPartRecord(record)).toBe(false);
   });
 
+  it('rejects sparse connector-name arrays that only match a manifest by length', () => {
+    const record = mapStepPartsRecord({
+      ...REAL,
+      connectorManifest: testConnectorManifest(REAL.sha256!),
+    });
+    record.connectors = new Array<string>(record.connectorManifest!.connectors.length);
+
+    expect(isPartRecord(record)).toBe(false);
+  });
+
+  it('rejects contradictory connector names before snapshotting catalog metadata', () => {
+    const record = mapStepPartsRecord({
+      ...REAL,
+      connectorManifest: testConnectorManifest(REAL.sha256!),
+    });
+    record.connectors = ['different-connector'];
+
+    expect(() => snapshotCatalogPart(record)).toThrow(/connector/i);
+  });
+
+  it('rejects malformed manifests before snapshotting catalog metadata', () => {
+    const record = mapStepPartsRecord({
+      ...REAL,
+      connectorManifest: testConnectorManifest(REAL.sha256!),
+    });
+    record.connectorManifest = {
+      ...record.connectorManifest!,
+      connectors: [
+        {
+          name: 'mount-face',
+          type: 'frame',
+          origin: [0, 0, 0],
+          normal: 'not-a-vector',
+        },
+      ],
+    } as unknown as HashBoundConnectorManifest;
+
+    expect(() => snapshotCatalogPart(record)).toThrow(/finite three-vector/i);
+  });
+
   it('returns false rather than throwing for an invalid connector manifest', () => {
     const record = mapStepPartsRecord({
       ...REAL,
