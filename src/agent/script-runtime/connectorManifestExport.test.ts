@@ -592,6 +592,30 @@ describe('connector manifest runtime and CLI integration', () => {
     expect(result.diagnostics[0]?.message).toMatch(/must not be writable by group or other users/i);
   });
 
+  it('reports the written STEP when sidecar publication fails after export', async () => {
+    const directory = temporaryDirectory('kcad-manifest-publication-error-');
+    const file = join(directory, 'servo.kcad.ts');
+    const out = join(directory, 'servo.step');
+    // The parent itself is valid, but this basename exceeds the portable
+    // filesystem component limit when the private staging directory is made.
+    const manifestPath = join(directory, 'm'.repeat(300));
+    writeFileSync(file, RUNTIME_CODE);
+
+    const result = await exportScript({
+      file,
+      format: 'step',
+      out,
+      connectorManifest: manifestPath,
+      manifestPartId: 'servo',
+      manifestFamily: 'micro-servo',
+    });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.bytesWritten).toBeGreaterThan(0);
+    expect(existsSync(out)).toBe(true);
+    expect(result.diagnostics.map((diagnostic) => diagnostic.code)).toContain('cli.file-write');
+  });
+
   it('rejects symlink and hard-link aliases before a manifest can overwrite the STEP output', async () => {
     const directory = temporaryDirectory('kcad-manifest-alias-');
     const realDirectory = join(directory, 'real');

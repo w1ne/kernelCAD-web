@@ -310,6 +310,24 @@ function postStepManifestDestinationExistsResult(
   };
 }
 
+function postStepManifestWriteFailureResult(
+  bytes: Uint8Array,
+  diagnostics: readonly CompilerDiagnostic[],
+  error: unknown,
+): ExportCliResult {
+  return {
+    exitCode: 1,
+    bytesWritten: bytes.length,
+    diagnostics: withNextActions([...diagnostics, {
+      target: 'export-occt',
+      code: 'cli.file-write',
+      severity: 'error',
+      message: `The STEP output was written, but --connector-manifest could not be published: ${errorMessage(error)}`,
+      hint: 'Choose a secure, writable, unused connector-manifest path and retry; the STEP output remains intact.',
+    }]),
+  };
+}
+
 export async function exportScript(input: ExportInput): Promise<ExportCliResult> {
   const manifestError = manifestOptionError(input);
   if (manifestError !== undefined) return invalidManifestOptionsResult(manifestError);
@@ -387,7 +405,7 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
         if (isExistingPathError(error)) {
           return postStepManifestDestinationExistsResult(result.bytes, result.diagnostics);
         }
-        throw error;
+        return postStepManifestWriteFailureResult(result.bytes, result.diagnostics, error);
       }
     }
     // Robot-description exports (URDF / SDF) reference per-link mesh files
