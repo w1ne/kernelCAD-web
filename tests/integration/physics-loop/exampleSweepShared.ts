@@ -160,6 +160,13 @@ export const HOSTED_IN_DEDICATED_FILE: ReadonlyMap<string, DedicatedExampleCover
       coverage: 'catalog-fixture',
     },
   ],
+  [
+    'examples/community/esp32-ereader.kcad.ts',
+    {
+      testFile: 'tests/integration/examples/esp32Ereader.test.ts',
+      coverage: 'catalog-fixture',
+    },
+  ],
 ]);
 
 export function walkExamples(dir: string, prefix = ''): string[] {
