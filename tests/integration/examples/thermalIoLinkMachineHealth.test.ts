@@ -21,7 +21,7 @@ import {
 const examplePath = 'examples/community/thermal-iolink-machine-health.kcad.ts';
 const sourcePath = resolve(examplePath);
 
-// Deterministic envelopes for the four exact remote catalog identities. The
+// Deterministic envelopes for the five exact remote catalog identities. The
 // M12 fixture models its retained cylindrical barrel rather than the external
 // coupling shell, so the test exercises the panel/clamp placement without
 // pretending that the whole connector is a solid rectangular block.
@@ -29,6 +29,7 @@ const catalogFixtureBboxMm: Record<string, readonly [number, number, number]> = 
   'esp32-c3-supermini-board': [24.31, 18, 5.56],
   'mlx90640': [25.4, 17.78, 11.7],
   'max14827': [12, 19, 5.1],
+  'buck-24v-3v3': [24, 12, 5.6],
 };
 
 function fixtureCatalogRunner(fetchCalls: string[]): ScriptRunner {
@@ -137,6 +138,7 @@ describe('Thermal IO-Link machine-health reference assembly', () => {
         'esp32-c3-supermini-board',
         'max14827',
         'm12-iolink-5pin',
+        'buck-24v-3v3',
       ]);
       expect(returnValue).toBeInstanceOf(Scene);
       const scene = returnValue as Scene;
@@ -146,12 +148,14 @@ describe('Thermal IO-Link machine-health reference assembly', () => {
         'm12-panel-clamp',
         'carrier-support-rails',
         'electronics-carrier',
+        'power-regulator-shelf',
         'mlx90640-thermal-camera',
         'esp32-c3-supermini-controller',
         'max14827-iolink-phy',
         'm12-iolink-5pin-connector',
+        'buck-24v-3v3-power-regulator',
       ]));
-      expect(scene.parts).toHaveLength(9);
+      expect(scene.parts).toHaveLength(11);
       expect(records.at(-1)?.kind).toBe('solvedAssembly');
       expect(scene.part('electronics-carrier').connectors?.map((connector) => connector.name))
         .toEqual(expect.arrayContaining([
@@ -160,19 +164,28 @@ describe('Thermal IO-Link machine-health reference assembly', () => {
           'esp32-seat',
           'max14827-seat',
         ]));
+      expect(scene.part('power-regulator-shelf').connectors?.map((connector) => connector.name))
+        .toEqual(expect.arrayContaining([
+          'enclosure-mount',
+          'buck-seat',
+        ]));
       expect(scene.mates?.map((mate) => mate.name)).toEqual(expect.arrayContaining([
         'carrier-supports-retained-in-enclosure',
         'carrier-retained-on-supports',
+        'power-regulator-shelf-retained-in-enclosure',
         'mlx90640-on-carrier',
         'esp32-on-carrier',
         'max14827-on-carrier',
         'm12-retained-by-panel-clamp',
+        'buck-24v-3v3-on-power-shelf',
       ]));
 
       expect(source).toContain("await lib.fetchPart('mlx90640')");
       expect(source).toContain("await lib.fetchPart('esp32-c3-supermini-board')");
       expect(source).toContain("await lib.fetchPart('max14827')");
       expect(source).toContain("await lib.fetchPart('m12-iolink-5pin')");
+      expect(source).toContain("await lib.fetchPart('buck-24v-3v3')");
+      expect(source).not.toContain('does not currently serve it');
       expect(source).not.toMatch(/part\(\s*null/);
       expect(source).not.toMatch(/fallback\s*(?:box|electronics|component)/i);
     });
@@ -184,13 +197,13 @@ describe('Thermal IO-Link machine-health reference assembly', () => {
     it('examples/community/thermal-iolink-machine-health.kcad.ts passes the physics-grounded loop', () => {
       expect(fixture.recompute.diagnostics).toEqual([]);
       expect(fixture.interferences).toMatchObject({
-        partCount: 9,
+        partCount: 11,
         pairs: [],
         diagnostics: [],
       });
       expect(fixture.validation).toMatchObject({
         status: 'solved',
-        partCount: 9,
+        partCount: 11,
       });
       expect(fixture.validation.diagnostics).toEqual([]);
       expect(fixture.mechanism).toEqual({ mechanism: 'real', failures: [] });

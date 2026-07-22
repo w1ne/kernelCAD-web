@@ -16,11 +16,13 @@ const thermal = assembly('Thermal IO-Link machine-health reference assembly');
 const enclosureLengthMm = 64.0;
 const enclosureDepthMm = 48.0;
 const enclosureHeightMm = 28.0;
+const electronicsCavityWidthMm = 58.0;
 const electronicsCavityDepthMm = 40.0;
 const rearPanelY = enclosureDepthMm / 2;
 const frontPanelY = -enclosureDepthMm / 2;
 const enclosureWallDepthMm = (enclosureDepthMm - electronicsCavityDepthMm) / 2;
 const cavityFrontY = frontPanelY + enclosureWallDepthMm;
+const cavityRightWallX = electronicsCavityWidthMm / 2;
 const cameraCenterZ = 0.0;
 
 // The catalog MLX90640 model is 11.7 mm deep after rotateX(90). Keep its
@@ -46,6 +48,23 @@ const esp32C3DepthAlongYmm = 5.56;
 const max14827DepthAlongYmm = 5.1;
 const esp32CenterY = carrierRearFaceY + esp32C3DepthAlongYmm / 2;
 const max14827CenterY = carrierRearFaceY + max14827DepthAlongYmm / 2;
+const esp32RearFaceY = esp32CenterY + esp32C3DepthAlongYmm / 2;
+
+// The buck shares neither the sensor plane nor the crowded rear carrier
+// plane. A right-side enclosure shelf carries it 0.4 mm behind the ESP32
+// envelope and well ahead of the M12's internal body.
+const buck24v3v3DepthAlongYmm = 5.6;
+const buck24v3v3WidthMm = 24.0;
+const buckBoardClearanceMm = 0.4;
+const buckFrontFaceY = esp32RearFaceY + buckBoardClearanceMm;
+const buckCenterY = buckFrontFaceY + buck24v3v3DepthAlongYmm / 2;
+const powerShelfFrontY = buckCenterY + buck24v3v3DepthAlongYmm / 2;
+const powerShelfThicknessMm = 1.6;
+const powerShelfY = powerShelfFrontY + powerShelfThicknessMm / 2;
+const powerShelfWidthMm = 28.0;
+const powerShelfX = cavityRightWallX - powerShelfWidthMm / 2;
+const buckRightSideClearanceMm = 4.0;
+const buckCenterX = cavityRightWallX - buckRightSideClearanceMm - buck24v3v3WidthMm / 2;
 
 // ---------------------------------------------------------------------------
 // INDUSTRIAL ENCLOSURE AND EXTERNAL INTERFACES
@@ -57,7 +76,8 @@ const max14827CenterY = carrierRearFaceY + max14827DepthAlongYmm / 2;
 // ---------------------------------------------------------------------------
 const outerBody = box(enclosureLengthMm, enclosureDepthMm, enclosureHeightMm, true)
   .fillet(3.0, { parallel: [0, 0, 1] });
-const electronicsCavity = box(58.0, electronicsCavityDepthMm, 22.0, true).translate(0, 0, 0);
+const electronicsCavity = box(electronicsCavityWidthMm, electronicsCavityDepthMm, 22.0, true)
+  .translate(0, 0, 0);
 // Run the aperture through the 4 mm wall and 0.4 mm into the cavity so the
 // optical path stays open even after boolean tolerance is applied.
 const thermalAperture = box(12.0, enclosureWallDepthMm + 0.4, 10.0, true)
@@ -83,6 +103,10 @@ enclosurePart
   .connector('m12-panel-seat', {
     type: 'frame',
     origin: { kind: 'vec3', value: [0, rearPanelY - 4.0, 0] },
+  })
+  .connector('power-regulator-shelf-seat', {
+    type: 'frame',
+    origin: { kind: 'vec3', value: [cavityRightWallX, powerShelfY, 0] },
   });
 
 // A separate face bezel identifies the optical interface and leaves the 12×10
@@ -176,10 +200,28 @@ carrierPart
     origin: { kind: 'vec3', value: [12.0, carrierRearFaceY, 0] },
   });
 
+// This shelf is a project-specific mechanical interface. It spans from the
+// enclosure's right inner wall to the catalog buck footprint without
+// displacing the universal sensor, controller, PHY, or connector models.
+const powerShelf = box(powerShelfWidthMm, powerShelfThicknessMm, 14.0, true)
+  .translate(powerShelfX, powerShelfY, 0)
+  .color('#475569');
+const powerShelfPart = thermal.part('power-regulator-shelf', powerShelf);
+powerShelfPart
+  .connector('enclosure-mount', {
+    type: 'frame',
+    origin: { kind: 'vec3', value: [cavityRightWallX, powerShelfY, 0] },
+  })
+  .connector('buck-seat', {
+    type: 'frame',
+    origin: { kind: 'vec3', value: [buckCenterX, powerShelfFrontY, 0] },
+  });
+
 thermal.mate('carrier-supports-retained-in-enclosure', 'industrial-sensor-enclosure.carrier-support-seat', 'carrier-support-rails.enclosure-mount', 'fastened');
 thermal.mate('carrier-retained-on-supports', 'carrier-support-rails.carrier-mount', 'electronics-carrier.support-mount', 'fastened');
 thermal.mate('bezel-retained-in-enclosure', 'industrial-sensor-enclosure.aperture-bezel-seat', 'thermal-aperture-bezel.enclosure-mount', 'fastened');
 thermal.mate('m12-clamp-retained-in-enclosure', 'industrial-sensor-enclosure.m12-panel-seat', 'm12-panel-clamp.enclosure-mount', 'fastened');
+thermal.mate('power-regulator-shelf-retained-in-enclosure', 'industrial-sensor-enclosure.power-regulator-shelf-seat', 'power-regulator-shelf.enclosure-mount', 'fastened');
 
 // ---------------------------------------------------------------------------
 // CATALOG ELECTRONICS
@@ -205,6 +247,12 @@ const max14827 = (await (await lib.fetchPart('max14827')).recenter())
 const m12 = (await (await lib.fetchPart('m12-iolink-5pin')).recenter())
   .translate(0, rearPanelY + 4.0, 0)
   .color('#a16207');
+// This is only a mechanical placement of the reusable power module. Wiring,
+// thermal derating, isolation, and IO-Link behavior remain out of scope.
+const buck24v3v3 = (await (await lib.fetchPart('buck-24v-3v3')).recenter())
+  .rotateX(-90)
+  .translate(buckCenterX, buckCenterY, 0)
+  .color('#0f766e');
 
 const mlxPart = thermal.part('mlx90640-thermal-camera', mlx90640);
 mlxPart.connector('carrier-mount', {
@@ -226,16 +274,16 @@ m12Part.connector('enclosure-mount', {
   type: 'frame',
   origin: { kind: 'vec3', value: [m12RetainerContactRadiusMm, rearPanelY - 6.0, 0] },
 });
+const buckPart = thermal.part('buck-24v-3v3-power-regulator', buck24v3v3);
+buckPart.connector('shelf-mount', {
+  type: 'frame',
+  origin: { kind: 'vec3', value: [buckCenterX, powerShelfFrontY, 0] },
+});
 
 thermal.mate('mlx90640-on-carrier', 'electronics-carrier.mlx90640-seat', 'mlx90640-thermal-camera.carrier-mount', 'fastened');
 thermal.mate('esp32-on-carrier', 'electronics-carrier.esp32-seat', 'esp32-c3-supermini-controller.carrier-mount', 'fastened');
 thermal.mate('max14827-on-carrier', 'electronics-carrier.max14827-seat', 'max14827-iolink-phy.carrier-mount', 'fastened');
 thermal.mate('m12-retained-by-panel-clamp', 'm12-panel-clamp.m12-retainer-seat', 'm12-iolink-5pin-connector.enclosure-mount', 'fastened');
-
-// The public device also needs a 24 V→3.3 V power converter. Its authored
-// catalog source exists as `buck-24v-3v3`, but the deployed catalog does not
-// currently serve it. This assembly deliberately does not invent a solid for
-// that missing part; deploy and validate the catalog record before adding its
-// placement and calling this a complete physical BOM.
+thermal.mate('buck-24v-3v3-on-power-shelf', 'power-regulator-shelf.buck-seat', 'buck-24v-3v3-power-regulator.shelf-mount', 'fastened');
 
 return thermal.solvedModel({});
