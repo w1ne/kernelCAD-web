@@ -45,7 +45,10 @@ export interface ScenePart {
   readonly worldTransform: Transform;
   /** Role token or hex; resolved from the source shape's metadata. */
   readonly color?: string;
-  /** Forward-compat container for material, mass, BOM tags, etc. */
+  /** Forward-compat container for material, mass, BOM tags, etc. Fetched
+   * catalog components expose their immutable `catalogPart` package identity
+   * here (id, attributes, provenance) rather than degrading into anonymous
+   * imported STEP solids. */
   readonly metadata?: Readonly<Record<string, unknown>>;
   /** Mate-style connectors declared on this part via
    *  `partRef.connector(name, opts)` (v0.6 Task 4). Carries the structured

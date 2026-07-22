@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { FeatureKind, Param } from '../../../shared/intent/types';
+import type { CatalogPartMetadata } from '../../../shared/parts/types';
 import { runMcpScript } from '../runMcpScript';
 
 export interface ListFeaturesInput {
@@ -15,6 +16,10 @@ export interface FeatureSummary {
   inputs: Record<string, unknown>;
   transformCount: number;
   suppressed: boolean;
+  /** Present for Shapes imported through lib.fetchPart(). Makes package
+   * identity available through inspect({ of: 'features' }) without exposing
+   * arbitrary feature metadata. */
+  catalogPart?: CatalogPartMetadata;
 }
 
 export interface ListFeaturesOutput {
@@ -50,6 +55,7 @@ export async function listFeaturesTool(
     inputs: r.inputs,
     transformCount: r.transforms.length,
     suppressed: r.suppressed,
+    ...(r.metadata?.catalogPart === undefined ? {} : { catalogPart: r.metadata.catalogPart }),
   }));
 
   return { features };

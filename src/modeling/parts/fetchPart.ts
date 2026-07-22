@@ -21,7 +21,7 @@ import {
   RemoteDisabledError,
 } from './remoteClient';
 import { KernelError } from '../../shared/intent/kernelError';
-import type { PartRecord } from '../../shared/parts/types';
+import { snapshotCatalogPart, type PartRecord } from '../../shared/parts/types';
 import { loadConnectorManifest } from '../../shared/parts/connectorManifest';
 import { formatTopoRef } from '../../kernel/naming';
 import { inspectStepFile } from '../../agent/inspect/inspectStep';
@@ -232,6 +232,7 @@ export async function fetchPartFromUrlHost(
       inputs: {},
       metadata: { sourcePath: path, geometryKind: 'mesh' },
     });
+    attachCatalogPartMetadata(ctx, shape, record);
     return { ok: true, kind: 'part', result: { shape, record } };
   }
 
@@ -265,6 +266,7 @@ export async function fetchPartFromUrlHost(
     stepUrl: url,
     redistribution: 'fetch-only',
   };
+  attachCatalogPartMetadata(ctx, shape, record);
   return { ok: true, kind: 'part', result: { shape, record } };
 }
 
@@ -304,6 +306,7 @@ export async function fetchPartHost(
     const bytes = readFileSync(direct.stepPath);
     const shape = await fromStepBytes(ctx, bytes, direct.stepPath);
     attachManifestConnectorsFromSidecar(ctx, shape, direct.stepPath);
+    attachCatalogPartMetadata(ctx, shape, direct.record);
     return { shape, record: direct.record };
   }
 
@@ -319,6 +322,7 @@ export async function fetchPartHost(
     const bytes = readFileSync(r.stepPath);
     const shape = await fromStepBytes(ctx, bytes, r.stepPath);
     attachManifestConnectorsFromSidecar(ctx, shape, r.stepPath);
+    attachCatalogPartMetadata(ctx, shape, r.record);
     return { shape, record: r.record };
   }
   if (matches.length > 1 && opts.strict !== false) {
@@ -390,20 +394,19 @@ export async function fetchPartHost(
     // convention from the geometry itself (bbox faces + detected hole axes).
     // Defensive: a STEP that resists inspection still imports, just without
     // synthesized connectors.
+    let record: PartRecord = { ...meta, source: 'remote' };
     try {
       const report = await inspectStepFile(path);
       const conns = synthesizeConnectorsFromReport(report, shape.id);
       if (conns.length > 0) {
         ctx.session.attachAutoConnectors(shape.id, conns);
-        return {
-          shape,
-          record: { ...meta, source: 'remote', connectors: conns.map((c) => c.name) },
-        };
+        record = { ...record, connectors: conns.map((c) => c.name) };
       }
     } catch {
       // fall through to the unenriched record
     }
-    return { shape, record: { ...meta, source: 'remote' } };
+    attachCatalogPartMetadata(ctx, shape, record);
+    return { shape, record };
   } catch (e) {
     if (e instanceof RemoteDisabledError) throw e;
     throw e;
@@ -442,4 +445,26 @@ function attachManifestConnectorsFromSidecar(
     // A malformed manifest must not break the import; the lowerer survives
     // without the manifest's named connectors.
   }
+}
+
+/**
+ * Retain immutable catalog semantics on the imported feature itself.
+ *
+ * `fetchPartHost()` has a rich `{ shape, record }` result, but the public
+ * `lib.fetchPart()` API intentionally returns only the composable Shape. Put a
+ * frozen record snapshot on the Shape's FeatureRecord before that wrapper is
+ * discarded so assemblies, Studio, and MCP inspection can still identify the
+ * physical package instead of seeing only an imported STEP source path.
+ */
+function attachCatalogPartMetadata(
+  ctx: FetchPartCtx,
+  shape: Shape,
+  record: PartRecord,
+): void {
+  const feature = ctx.session.getRecords().find((candidate) => candidate.id === shape.id);
+  if (!feature) return;
+  feature.metadata = {
+    ...(feature.metadata ?? {}),
+    catalogPart: snapshotCatalogPart(record),
+  };
 }

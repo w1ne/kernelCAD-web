@@ -2669,12 +2669,17 @@ export class Assembly {
   ): Scene {
     const sceneFeatureId = sceneShape.id;
     const session = this.session;
-    const sceneParts: ScenePart[] = this.parts.map((p) => ({
-      name: p.name,
-      shape: p.originalShape,
-      worldTransform: matePartTransforms?.get(p.name) ?? Transform.identity(),
-      ...(p.mateConnectors.length > 0 ? { connectors: [...p.mateConnectors] } : {}),
-    }));
+    const catalogMetadataByShapeId = catalogPartSceneMetadataByShapeId(session);
+    const sceneParts: ScenePart[] = this.parts.map((p) => {
+      const metadata = catalogMetadataByShapeId.get(p.originalShape.id);
+      return {
+        name: p.name,
+        shape: p.originalShape,
+        worldTransform: matePartTransforms?.get(p.name) ?? Transform.identity(),
+        ...(metadata === undefined ? {} : { metadata }),
+        ...(p.mateConnectors.length > 0 ? { connectors: [...p.mateConnectors] } : {}),
+      };
+    });
     return new Scene(
       this.name,
       sceneParts,
@@ -2693,6 +2698,25 @@ export class Assembly {
       this.tendons.length > 0 ? [...this.tendons] : undefined,
     );
   }
+}
+
+/**
+ * Copy catalog identity from a fetched Shape into the public Scene part
+ * metadata.  Other source metadata has its own dedicated Scene fields (for
+ * example color), so only this explicit immutable package snapshot crosses
+ * the assembly boundary.
+ */
+function catalogPartSceneMetadataByShapeId(
+  session: CaptureSession,
+): ReadonlyMap<FeatureId, Readonly<Record<string, unknown>>> {
+  const metadataByShapeId = new Map<FeatureId, Readonly<Record<string, unknown>>>();
+  for (const record of session.getRecords()) {
+    const catalogPart = record.metadata?.catalogPart;
+    if (catalogPart !== undefined) {
+      metadataByShapeId.set(record.id, Object.freeze({ catalogPart }));
+    }
+  }
+  return metadataByShapeId;
 }
 
 export function makeAssembly(name: string | undefined, session: CaptureSession): Assembly {
@@ -2848,15 +2872,18 @@ export class SolvedKinematics {
       );
     }
     const records = this.session.getRecords();
+    const catalogMetadataByShapeId = catalogPartSceneMetadataByShapeId(this.session);
     const sceneParts: ScenePart[] = [];
     for (const part of this.partsByName.values()) {
       const partRecord = records.find(r => r.id === part.id);
       const color = partRecord ? lookupSourceColor(partRecord, records) : undefined;
+      const metadata = catalogMetadataByShapeId.get(part.originalShape.id);
       sceneParts.push({
         name: part.name,
         shape: part.originalShape,
         worldTransform: this.worldT.get(part.id) ?? Transform.identity(),
         ...(color !== undefined ? { color } : {}),
+        ...(metadata === undefined ? {} : { metadata }),
         ...(part.mateConnectors.length > 0 ? { connectors: [...part.mateConnectors] } : {}),
       });
     }

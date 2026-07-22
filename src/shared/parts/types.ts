@@ -64,6 +64,61 @@ export interface PartRecord {
   upstream?: UpstreamProvenance;
 }
 
+/**
+ * Immutable catalog identity retained on an imported Shape's FeatureRecord.
+ *
+ * `lib.fetchPart()` intentionally returns a normal composable Shape, but the
+ * Shape must not become anonymous just because the host facade has consumed
+ * its internal `{ shape, record }` result.  This snapshot carries the package
+ * identity, dimensions and provenance into the feature graph and, from there,
+ * into assembly Scene parts and inspectors.
+ */
+export interface CatalogPartMetadata {
+  readonly id: string;
+  readonly name: string;
+  readonly category: string;
+  readonly family: string;
+  readonly standard?: string;
+  readonly tags: readonly string[];
+  readonly attributes: Readonly<Record<string, number | string>>;
+  readonly sha256: string;
+  readonly source: PartSource;
+  readonly license: string;
+  readonly attribution?: string;
+  readonly connectors: readonly string[];
+  readonly stepUrl?: string;
+  readonly glbUrl?: string;
+  readonly licenseClass?: LicenseClass;
+  readonly redistribution?: RedistributionMode;
+  readonly upstream?: Readonly<UpstreamProvenance>;
+}
+
+/** Create a detached, frozen copy of a catalog record for runtime metadata. */
+export function snapshotCatalogPart(record: PartRecord): CatalogPartMetadata {
+  const snapshot: CatalogPartMetadata = {
+    id: record.id,
+    name: record.name,
+    category: record.category,
+    family: record.family,
+    ...(record.standard === undefined ? {} : { standard: record.standard }),
+    tags: Object.freeze([...record.tags]),
+    attributes: Object.freeze({ ...record.attributes }),
+    sha256: record.sha256,
+    source: record.source,
+    license: record.license,
+    ...(record.attribution === undefined ? {} : { attribution: record.attribution }),
+    connectors: Object.freeze([...record.connectors]),
+    ...(record.stepUrl === undefined ? {} : { stepUrl: record.stepUrl }),
+    ...(record.glbUrl === undefined ? {} : { glbUrl: record.glbUrl }),
+    ...(record.licenseClass === undefined ? {} : { licenseClass: record.licenseClass }),
+    ...(record.redistribution === undefined ? {} : { redistribution: record.redistribution }),
+    ...(record.upstream === undefined
+      ? {}
+      : { upstream: Object.freeze({ ...record.upstream }) }),
+  };
+  return Object.freeze(snapshot);
+}
+
 export function isLicenseClass(v: unknown): v is LicenseClass {
   return v === 'permissive' || v === 'share-alike' || v === 'fetch-only';
 }

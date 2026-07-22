@@ -395,6 +395,106 @@
       "tags": ["switch", "button", "tactile", "pushbutton", "12mm", "keycap", "cap", "b3f", "panel", "input", "maker"],
       "license": "MIT",
       "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "nrf54l15-qfn48",
+      "name": "Nordic nRF54L15 QFN48 (QFAA) SoC package",
+      "family": "MCU",
+      "mpn": "nRF54L15-QFAA",
+      "kcad_source": "scripts/parts/authored/nrf54l15-qfn48.kcad.ts",
+      "tags": ["mcu", "nordic", "nrf54l15", "qfn", "qfn48", "bluetooth", "802.15.4"],
+      "attributes": {
+        "package": "QFN48 (QFAA)",
+        "packageLengthMm": 6,
+        "packageWidthMm": 6,
+        "packageHeightMm": 0.85,
+        "pinCount": 48,
+        "pinPitchMm": 0.4,
+        "pinOneMarker": "top, -X/-Y corner",
+        "dimensionSource": "https://docs.nordicsemi.com/r/bundle/ps_nrf54l15/page/chapters/mec_spec.html-qfn48_package"
+      },
+      "license": "MIT",
+      "attribution": "kernelCAD authored package model; dimensions from Nordic Semiconductor nRF54L15 QFN48 (QFAA) package drawing"
+    },
+    {
+      "id": "bmi270-lga14",
+      "name": "Bosch BMI270 14-pin LGA IMU package",
+      "family": "Sensor",
+      "mpn": "BMI270",
+      "kcad_source": "scripts/parts/authored/bmi270-lga14.kcad.ts",
+      "tags": ["sensor", "imu", "accelerometer", "gyroscope", "bmi270", "lga", "lga14"],
+      "attributes": {
+        "package": "LGA-14",
+        "packageLengthMm": 3,
+        "packageWidthMm": 2.5,
+        "packageHeightMm": 0.83,
+        "pinCount": 14,
+        "pinPitchMm": 0.4,
+        "pinOneMarker": "top, -X/-Y corner",
+        "dimensionSource": "https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmi270-ds000.pdf"
+      },
+      "license": "MIT",
+      "attribution": "kernelCAD authored package model; dimensions from Bosch Sensortec BMI270 datasheet"
+    },
+    {
+      "id": "max30102-optical",
+      "name": "Analog Devices MAX30102 optical biosensor module",
+      "family": "Sensor",
+      "mpn": "MAX30102",
+      "kcad_source": "scripts/parts/authored/max30102-optical.kcad.ts",
+      "tags": ["sensor", "biosensor", "heart-rate", "pulse-oximeter", "max30102", "optical", "i2c"],
+      "attributes": {
+        "package": "optical module",
+        "packageLengthMm": 5.6,
+        "packageWidthMm": 3.3,
+        "packageHeightMm": 1.55,
+        "pinCount": 14,
+        "pinPitchMm": 0.8,
+        "pinOneMarker": "top, -X/-Y corner",
+        "dimensionSource": "https://www.analog.com/media/en/technical-documentation/data-sheets/max30102.pdf"
+      },
+      "license": "MIT",
+      "attribution": "kernelCAD authored package model; dimensions from Analog Devices MAX30102 product data"
+    },
+    {
+      "id": "tmp117-dsbga",
+      "name": "Texas Instruments TMP117 DSBGA-6 (YBG) package",
+      "family": "Sensor",
+      "mpn": "TMP117NAIYBGR",
+      "kcad_source": "scripts/parts/authored/tmp117-dsbga.kcad.ts",
+      "tags": ["sensor", "temperature", "tmp117", "i2c", "dsbga", "ybg"],
+      "attributes": {
+        "package": "DSBGA-6 (YBG)",
+        "packageLengthMm": 1.488,
+        "packageWidthMm": 0.95,
+        "packageHeightMm": 0.531,
+        "pinCount": 6,
+        "pinPitchMm": 0.4,
+        "pinOneMarker": "top, -X/-Y corner",
+        "dimensionSource": "https://www.ti.com/lit/ds/symlink/tmp117.pdf"
+      },
+      "license": "MIT",
+      "attribution": "kernelCAD authored package model; dimensions from Texas Instruments TMP117 YBG package drawing"
+    },
+    {
+      "id": "drv2605-yzf",
+      "name": "Texas Instruments DRV2605 DSBGA-9 (YZF) haptic driver package",
+      "family": "Haptic driver",
+      "mpn": "DRV2605YZF",
+      "kcad_source": "scripts/parts/authored/drv2605-yzf.kcad.ts",
+      "tags": ["haptic", "haptic-driver", "drv2605", "lra", "erm", "dsbga", "yzf"],
+      "attributes": {
+        "package": "DSBGA-9 (YZF)",
+        "packageLengthMm": 1.44,
+        "packageWidthMm": 1.44,
+        "packageHeightMm": 0.625,
+        "pinCount": 9,
+        "pinPitchMm": 0.5,
+        "pinOneMarker": "top, -X/-Y corner",
+        "dimensionSource": "https://www.ti.com/lit/gpn/DRV2605"
+      },
+      "license": "MIT",
+      "attribution": "kernelCAD authored package model; dimensions from Texas Instruments DRV2605 YZF package drawing"
     }
   ]
 }
