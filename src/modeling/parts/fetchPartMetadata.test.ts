@@ -40,10 +40,14 @@ import { listFeaturesTool } from '../../agent/mcp/tools/listFeatures';
 import { createApi } from '../api';
 import { CaptureSession } from '../capture/captureSession';
 import { __resetUserCacheForTests } from '../../shared/cache/userCache';
-import type { ConnectorEntry } from '../../shared/parts/connectorManifestSchema';
+import {
+  validateHashBoundConnectorManifest,
+  type ConnectorEntry,
+} from '../../shared/parts/connectorManifestSchema';
 import { inspectStepFile } from '../../agent/inspect/inspectStep';
 import { synthesizeConnectorsFromReport } from './synthesizeConnectors';
-import { fetchPartHost } from './fetchPart';
+import { fromStepBytes } from './fromSTEP';
+import { fetchPartHost, validateManifestAgainstStepBytes } from './fetchPart';
 
 const PART_ID = 'max30102-optical';
 const PART_FAMILY = 'Sensor';
@@ -261,6 +265,24 @@ describe('lib.fetchPart catalog semantic identity', () => {
         }),
       ]),
     );
+  });
+
+  it('rejects bytes that disagree with an otherwise valid manifest before import or synthesis', () => {
+    validateHashBoundConnectorManifest(AUTHORED_MANIFEST, {
+      partId: PART_ID,
+      family: PART_FAMILY,
+      geometrySha256: STEP_SHA256,
+    });
+    expect(() =>
+      validateManifestAgainstStepBytes(
+        AUTHORED_MANIFEST,
+        { id: PART_ID, family: PART_FAMILY },
+        Buffer.from('different STEP bytes'),
+      ),
+    ).toThrow(/geometrySha256/);
+    expect(fromStepBytes).not.toHaveBeenCalled();
+    expect(inspectStepFile).not.toHaveBeenCalled();
+    expect(synthesizeConnectorsFromReport).not.toHaveBeenCalled();
   });
 
   it('keeps generic synthesis for remote records without an authored manifest', async () => {

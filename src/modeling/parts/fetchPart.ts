@@ -26,6 +26,7 @@ import {
   loadConnectorManifest,
   validateHashBoundConnectorManifest,
   type ConnectorManifest,
+  type HashBoundConnectorManifest,
 } from '../../shared/parts/connectorManifest';
 import { formatTopoRef } from '../../kernel/naming';
 import { inspectStepFile } from '../../agent/inspect/inspectStep';
@@ -143,6 +144,19 @@ const MESH_EXT_RE = /\.(stl|dae|obj)(\?.*)?$/i;
 
 function sha256Hex(bytes: Buffer): string {
   return createHash('sha256').update(bytes).digest('hex');
+}
+
+/** Bind a remote manifest to the exact STEP bytes that passed cache integrity. */
+export function validateManifestAgainstStepBytes(
+  manifest: HashBoundConnectorManifest,
+  identity: Pick<PartRecord, 'id' | 'family'>,
+  bytes: Buffer,
+): void {
+  validateHashBoundConnectorManifest(manifest, {
+    partId: identity.id,
+    family: identity.family,
+    geometrySha256: sha256Hex(bytes),
+  });
 }
 
 /**
@@ -394,11 +408,7 @@ export async function fetchPartHost(
     const bytes = readFileSync(path);
     const manifest = meta.connectorManifest;
     if (manifest !== undefined) {
-      validateHashBoundConnectorManifest(manifest, {
-        partId: meta.id,
-        family: meta.family,
-        geometrySha256: sha256Hex(bytes),
-      });
+      validateManifestAgainstStepBytes(manifest, meta, bytes);
     }
     const shape = await fromStepBytes(ctx, bytes, meta.stepUrl);
     let record: PartRecord = { ...meta, source: 'remote' };
