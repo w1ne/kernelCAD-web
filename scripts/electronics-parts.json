@@ -1308,6 +1308,193 @@
       ],
       "license": "MIT",
       "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "aht20",
+      "name": "AHT20 temp/humidity breakout",
+      "family": "Sensor",
+      "mpn": "AHT20",
+      "kcad_source": "scripts/parts/authored/aht20.kcad.ts",
+      "tags": [
+        "sensor",
+        "aht20",
+        "i2c",
+        "humidity",
+        "temperature"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "bh1750",
+      "name": "BH1750 ambient light sensor",
+      "family": "Sensor",
+      "mpn": "BH1750",
+      "kcad_source": "scripts/parts/authored/bh1750.kcad.ts",
+      "tags": [
+        "sensor",
+        "bh1750",
+        "i2c",
+        "lux",
+        "light"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "pcf8574",
+      "name": "PCF8574 I2C I/O expander",
+      "family": "Interface",
+      "mpn": "PCF8574",
+      "kcad_source": "scripts/parts/authored/pcf8574.kcad.ts",
+      "tags": [
+        "i2c",
+        "expander",
+        "pcf8574"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "ds18b20",
+      "name": "DS18B20 temperature sensor",
+      "family": "Sensor",
+      "mpn": "DS18B20",
+      "kcad_source": "scripts/parts/authored/ds18b20.kcad.ts",
+      "tags": [
+        "sensor",
+        "ds18b20",
+        "1wire",
+        "temperature"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "joystick",
+      "name": "Analog joystick module",
+      "family": "Input",
+      "mpn": "KY-023",
+      "kcad_source": "scripts/parts/authored/joystick.kcad.ts",
+      "tags": [
+        "input",
+        "joystick",
+        "analog"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "uln2003",
+      "name": "ULN2003 stepper driver board",
+      "family": "Motor driver",
+      "mpn": "ULN2003",
+      "kcad_source": "scripts/parts/authored/uln2003.kcad.ts",
+      "tags": [
+        "stepper",
+        "uln2003",
+        "motor"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "mt3608",
+      "name": "MT3608 boost converter",
+      "family": "Power",
+      "mpn": "MT3608",
+      "kcad_source": "scripts/parts/authored/mt3608.kcad.ts",
+      "tags": [
+        "power",
+        "boost",
+        "mt3608"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "ams1117",
+      "name": "AMS1117 LDO module",
+      "family": "Power",
+      "mpn": "AMS1117",
+      "kcad_source": "scripts/parts/authored/ams1117.kcad.ts",
+      "tags": [
+        "power",
+        "ldo",
+        "ams1117"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "flame-sensor",
+      "name": "IR flame sensor module",
+      "family": "Sensor",
+      "mpn": "FLAME",
+      "kcad_source": "scripts/parts/authored/flame-sensor.kcad.ts",
+      "tags": [
+        "sensor",
+        "flame",
+        "ir"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "sound-sensor",
+      "name": "Sound / microphone sensor",
+      "family": "Sensor",
+      "mpn": "KY-037",
+      "kcad_source": "scripts/parts/authored/sound-sensor.kcad.ts",
+      "tags": [
+        "sensor",
+        "sound",
+        "mic"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "water-level",
+      "name": "Water level probe",
+      "family": "Sensor",
+      "mpn": "WATER-LVL",
+      "kcad_source": "scripts/parts/authored/water-level.kcad.ts",
+      "tags": [
+        "sensor",
+        "water",
+        "level"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "rain-sensor",
+      "name": "Rain drop sensor board",
+      "family": "Sensor",
+      "mpn": "RAIN",
+      "kcad_source": "scripts/parts/authored/rain-sensor.kcad.ts",
+      "tags": [
+        "sensor",
+        "rain"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "rc522",
+      "name": "RC522 RFID reader",
+      "family": "Wireless",
+      "mpn": "MFRC522",
+      "kcad_source": "scripts/parts/authored/rc522.kcad.ts",
+      "tags": [
+        "rfid",
+        "rc522",
+        "spi",
+        "nfc"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
     }
   ]
 }
