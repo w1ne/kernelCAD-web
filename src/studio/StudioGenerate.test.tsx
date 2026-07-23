@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // @vitest-environment happy-dom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import type { PreviewPhase } from '../funnel/hooks/useTextTo3dPreview';
 
@@ -37,15 +37,15 @@ beforeEach(() => {
 afterEach(() => cleanup());
 
 describe('StudioGenerate — unified prompt', () => {
-  it('renders exactly ONE textarea driving both actions', () => {
+  it('renders exactly ONE prompt textarea driving both actions', () => {
     render(<StudioGenerate />);
-    expect(screen.getAllByRole('textbox')).toHaveLength(1);
+    expect(document.querySelectorAll('textarea')).toHaveLength(1);
     expect(screen.getByRole('button', { name: /3d concept/i })).toBeInTheDocument();
   });
 
   it('sends the shared prompt to the concept preview', () => {
     render(<StudioGenerate />);
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'a hex planter' } });
+    fireEvent.change(screen.getByLabelText('Generate prompt'), { target: { value: 'a hex planter' } });
     fireEvent.click(screen.getByRole('button', { name: /3d concept/i }));
     expect(previewSubmit).toHaveBeenCalledWith('a hex planter');
   });
@@ -60,12 +60,12 @@ describe('StudioGenerate — unified prompt', () => {
     previewPhase = { state: 'running', progress: 42 };
     render(<StudioGenerate />);
     expect(screen.getByRole('button', { name: /concept… 42%/i })).toBeDisabled();
-    expect(screen.getByRole('textbox')).toBeDisabled();
+    expect(screen.getByLabelText('Generate prompt')).toBeDisabled();
   });
 
   it('Build-as-CAD feeds the concept prompt into the agent submit', () => {
     const { rerender } = render(<StudioGenerate />);
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'a hex planter' } });
+    fireEvent.change(screen.getByLabelText('Generate prompt'), { target: { value: 'a hex planter' } });
     fireEvent.click(screen.getByRole('button', { name: /3d concept/i }));
     previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null, renderImageUrl: null, proportions: null };
     rerender(<StudioGenerate />);
@@ -76,7 +76,7 @@ describe('StudioGenerate — unified prompt', () => {
   it('Build-as-CAD is a FRESH generation even when the editor holds code (not an edit of it)', () => {
     mockCode = 'const base = box(60, 40, 5); return base;';
     const { rerender } = render(<StudioGenerate />);
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'a hex planter' } });
+    fireEvent.change(screen.getByLabelText('Generate prompt'), { target: { value: 'a hex planter' } });
     fireEvent.click(screen.getByRole('button', { name: /3d concept/i }));
     previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null, renderImageUrl: null, proportions: null };
     rerender(<StudioGenerate />);
@@ -86,11 +86,56 @@ describe('StudioGenerate — unified prompt', () => {
 
   it('Build-as-CAD passes the concept mesh context into the agent submit', () => {
     const { rerender } = render(<StudioGenerate />);
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'a bracket' } });
+    fireEvent.change(screen.getByLabelText('Generate prompt'), { target: { value: 'a bracket' } });
     fireEvent.click(screen.getByRole('button', { name: /3d concept/i }));
     previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null, renderImageUrl: 'https://t/r.png', proportions: [1, 0.7, 0.6] };
     rerender(<StudioGenerate />);
     fireEvent.click(screen.getByRole('button', { name: /build as parametric cad/i }));
     expect(generationSubmit).toHaveBeenCalledWith('a bracket', undefined, { renderImageUrl: 'https://t/r.png', proportions: [1, 0.7, 0.6] });
+  });
+
+  it('disables 3D concept mode when a reference photo is selected', async () => {
+    render(<StudioGenerate />);
+    fireEvent.change(screen.getByLabelText('Generate prompt'), { target: { value: 'an e-reader enclosure' } });
+    fireEvent.change(screen.getByLabelText('Reference photo'), {
+      target: { files: [new File(['photo-bytes'], 'e-reader.png', { type: 'image/png' })] },
+    });
+
+    await waitFor(() => expect(screen.getByText('e-reader.png')).toBeInTheDocument());
+
+    expect(screen.getByRole('button', { name: /3d concept/i })).toBeDisabled();
+  });
+
+  it('Build-as-CAD sends a selected photo without a stale concept mesh', async () => {
+    const { rerender } = render(<StudioGenerate />);
+    fireEvent.change(screen.getByLabelText('Generate prompt'), { target: { value: 'an e-reader enclosure' } });
+    fireEvent.click(screen.getByRole('button', { name: /3d concept/i }));
+    previewPhase = {
+      state: 'done',
+      glbUrl: 'https://t/x.glb',
+      costUsd: null,
+      renderImageUrl: 'https://t/r.png',
+      proportions: [1, 0.7, 0.6],
+    };
+    rerender(<StudioGenerate />);
+
+    fireEvent.change(screen.getByLabelText('Reference photo'), {
+      target: { files: [new File(['photo-bytes'], 'e-reader.png', { type: 'image/png' })] },
+    });
+    await waitFor(() => expect(screen.getByText('e-reader.png')).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText('Known dimension label'), { target: { value: 'overall height' } });
+    fireEvent.change(screen.getByLabelText('Known dimension (mm)'), { target: { value: '203' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /build as parametric cad/i }));
+
+    expect(generationSubmit).toHaveBeenCalledWith(
+      'an e-reader enclosure',
+      undefined,
+      undefined,
+      expect.objectContaining({
+        fileName: 'e-reader.png',
+        knownDimension: { label: 'overall height', valueMm: 203 },
+      }),
+    );
   });
 });

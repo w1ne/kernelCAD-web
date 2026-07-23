@@ -8,6 +8,10 @@ import { SidePanel } from './SidePanel';
 const mockDeleteHistoryItem = vi.fn();
 const mockSetSelectedItemId = vi.fn();
 const mockSetHoveredItemId = vi.fn();
+const sidePanelSurfaces = vi.hoisted(() => ({
+    studioGenerate: vi.fn(() => null),
+    legacyAssistant: vi.fn(() => null),
+}));
 
 vi.mock('../../context/WorkbenchContext', () => ({
     useWorkbench: () => ({
@@ -77,13 +81,19 @@ vi.mock('../SceneBrowser', () => ({
     )
 }));
 
+vi.mock('../../StudioGenerate', () => ({
+    StudioGenerate: sidePanelSurfaces.studioGenerate,
+}));
+
 vi.mock('../../features-ui/ai/AIAssistant', () => ({
-    AIAssistant: () => null
+    AIAssistant: sidePanelSurfaces.legacyAssistant,
 }));
 
 describe('SidePanel', () => {
     afterEach(() => {
         cleanup();
+        sidePanelSurfaces.studioGenerate.mockClear();
+        sidePanelSurfaces.legacyAssistant.mockClear();
     });
 
     it('deletes the selected history item and does not clear legacy name-based selection state', () => {
@@ -117,5 +127,14 @@ describe('SidePanel', () => {
 
         expect(screen.getByText('assembly.mechanical.part-disconnected')).toBeDefined();
         expect(screen.getByText(/Part base contains 2 disconnected solids/)).toBeDefined();
+    });
+
+    it('mounts the current generator instead of the legacy assistant from the Generate tab', () => {
+        render(<SidePanel onJumpToLine={vi.fn()} />);
+
+        fireEvent.click(screen.getByRole('button', { name: /^generate$/i }));
+
+        expect(sidePanelSurfaces.studioGenerate).toHaveBeenCalledTimes(1);
+        expect(sidePanelSurfaces.legacyAssistant).not.toHaveBeenCalled();
     });
 });

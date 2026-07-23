@@ -1,22 +1,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect, beforeAll } from 'vitest';
-import { mkdtempSync, readFileSync, readdirSync, existsSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { mkdtempSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { runTask } from './runner';
 import { MockAgentClient } from './agent';
 import { isKernelcadAvailable } from './oracle/kernelcad-client';
 import { injectCookbook } from './cookbook-injector';
-
-function loadCombinedSkillMd(): string {
-  const root = resolve('src/agent/skills');
-  const dirs = readdirSync(root, { withFileTypes: true })
-    .filter((e) => e.isDirectory() && existsSync(join(root, e.name, 'SKILL.md')))
-    .map((e) => e.name)
-    .sort();
-  return dirs.map((name) => readFileSync(join(root, name, 'SKILL.md'), 'utf8')).join('\n\n---\n\n');
-}
+import { loadCombinedSkillMd } from './skillContext';
 
 let kernelcadAvailable = false;
 

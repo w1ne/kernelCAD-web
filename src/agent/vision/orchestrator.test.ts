@@ -137,6 +137,40 @@ describe('traceFromImage orchestrator', () => {
     expect(out.diagnostics.some((d) => d.code === 'tool.trace-from-image.backend-failed')).toBe(true);
   });
 
+  it('fails closed with a diagnostic when an outer light foreground cannot be isolated', async () => {
+    const sharp = (await import('sharp')).default;
+    const paleBody = await sharp({
+      create: { width: 220, height: 220, channels: 3, background: { r: 232, g: 232, b: 232 } },
+    }).png().toBuffer();
+    const darkScreen = await sharp({
+      create: { width: 100, height: 100, channels: 3, background: { r: 24, g: 24, b: 24 } },
+    }).png().toBuffer();
+    const ambiguous = await sharp({
+      create: { width: 256, height: 256, channels: 3, background: { r: 255, g: 255, b: 255 } },
+    })
+      .composite([
+        { input: paleBody, left: 0, top: 18 },
+        { input: darkScreen, left: 68, top: 70 },
+      ])
+      .png()
+      .toBuffer();
+
+    const out = await traceFromImage({
+      imageUrl: `data:image/png;base64,${ambiguous.toString('base64')}`,
+      backend: 'opencv',
+      features: [{ label: 'outer_housing', kind: 'silhouette' }],
+    });
+
+    expect(out.ok).toBe(false);
+    expect(out.features).toEqual([]);
+    expect(out.diagnostics).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        code: 'tool.trace-from-image.backend-failed',
+        message: expect.stringMatching(/ambiguous outer silhouette/),
+      }),
+    ]));
+  });
+
   it('emits trace-timeout when a backend hangs past the hard timeout', async () => {
     const hangingExtract = vi.fn(
       () => new Promise<Vec2Normalized[]>(() => {}), // never resolves

@@ -2,7 +2,8 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/imageDimensions.ts
 //
-// Minimal image-header parser. Reads only the first N bytes of a file to
+// Minimal image-header parser. Reads only the small fixed headers for PNG and
+// WEBP, and walks JPEG segment headers without loading their payloads, to
 // extract pixel dimensions. Supports PNG, JPEG, and WEBP.
 // Returns { width: 0, height: 0 } when parsing fails — callers treat this
 // as "unknown dimensions" and continue; render-time will surface bad files.
@@ -15,11 +16,17 @@ export interface ImageDimensions {
 }
 
 const FAIL: ImageDimensions = { width: 0, height: 0 };
+// JPEG APP/COM metadata can legitimately be large, but this synchronous parser
+// is called on user-controlled files. Bound both bytes skipped and individual
+// marker headers so a crafted stream cannot monopolize the event loop.
+const MAX_JPEG_HEADER_SCAN_BYTES = 1024 * 1024;
+const MAX_JPEG_MARKERS = 4096;
 
 /**
  * Read pixel dimensions from a PNG / JPEG / WEBP file without loading the
- * full image bytes. Reads at most ~128 bytes for PNG/WEBP; scans up to ~64 KB
- * for JPEG SOF markers.
+ * full image bytes. Reads at most ~128 bytes for PNG/WEBP; for JPEG it walks
+ * segment headers until it reaches a Start Of Frame marker, without loading
+ * image payloads, subject to a generous finite header budget.
  */
 export function imageDimensions(filePath: string): ImageDimensions {
   let fd = -1;
@@ -124,51 +131,79 @@ function parseWebp(fd: number): ImageDimensions {
 }
 
 function parseJpeg(fd: number): ImageDimensions {
-  // Scan for SOF0 (FF C0), SOF1 (FF C1), SOF2 (FF C2) markers.
-  // Each marker: FF <type> <2-byte-length> <1-byte-precision> <2-byte-height> <2-byte-width>
-  // Scan up to 64 KB to avoid reading huge files.
-  const MAX_SCAN = 65536;
-  const CHUNK = 4096;
-  let pos = 2; // skip SOI
-  while (pos < MAX_SCAN) {
-    const markerBuf = Buffer.allocUnsafe(CHUNK);
-    const n = readSync(fd, markerBuf, 0, CHUNK, pos);
-    if (n < 2) return FAIL;
-    let i = 0;
-    while (i < n - 1) {
-      if (markerBuf[i] !== 0xff) {
-        // Not aligned; skip forward — shouldn't happen in a well-formed JPEG
-        i++;
-        continue;
-      }
-      const marker = markerBuf[i + 1];
-      if (marker === 0x00 || marker === 0xff) {
-        // Stuffed byte or padding; skip
-        i++;
-        continue;
-      }
-      // SOF markers: C0, C1, C2 (baseline, extended sequential, progressive)
-      if (marker === 0xc0 || marker === 0xc1 || marker === 0xc2) {
-        // Length: 2 bytes at i+2 (big-endian, includes itself but not FF+marker)
-        if (i + 8 >= n) return FAIL;
-        const height = (markerBuf[i + 5] << 8) | markerBuf[i + 6];
-        const width = (markerBuf[i + 7] << 8) | markerBuf[i + 8];
-        if (width === 0 || height === 0) return FAIL;
-        return { width, height };
-      }
-      // Skip this segment: length field at i+2 (2 bytes BE, includes the 2 length bytes)
-      if (i + 3 >= n) return FAIL;
-      const segLen = (markerBuf[i + 2] << 8) | markerBuf[i + 3];
-      if (segLen < 2) return FAIL;
-      // Jump to next marker: current pos + 2 (FF+marker) + segLen
-      pos = pos + i + 2 + segLen;
-      i = n; // exit inner loop — restart outer loop from new pos
+  // JPEG dimensions live in a Start Of Frame segment before the SOS marker.
+  // Walk segment headers directly so a valid file with large EXIF/ICC metadata
+  // does not require loading that metadata. Keep both byte and marker limits:
+  // this code is synchronous and a hostile stream can otherwise create an
+  // unbounded sequence of tiny marker segments or marker fill bytes.
+  let position = 2; // skip SOI
+  let markersRead = 0;
+
+  while (position < MAX_JPEG_HEADER_SCAN_BYTES && markersRead < MAX_JPEG_MARKERS) {
+    const prefix = readExact(fd, position, 2);
+    if (!prefix || prefix[0] !== 0xff) return FAIL;
+
+    let marker = prefix[1];
+    position += 2;
+    markersRead += 1;
+
+    // JPEG permits any number of 0xff fill bytes before a marker code.
+    while (marker === 0xff) {
+      if (markersRead >= MAX_JPEG_MARKERS || position >= MAX_JPEG_HEADER_SCAN_BYTES) return FAIL;
+      const fill = readExact(fd, position, 1);
+      if (!fill) return FAIL;
+      marker = fill[0];
+      position += 1;
+      markersRead += 1;
     }
-    if (i < n) {
-      pos += i + 1;
-    } else {
-      pos += n;
+
+    // A stuffed zero is valid only in entropy-coded scan data. We never scan
+    // that data: dimensions must be declared before SOS.
+    if (marker === 0x00) return FAIL;
+    if (marker === 0xd9 || marker === 0xda) return FAIL;
+    if (isStandaloneJpegMarker(marker)) continue;
+
+    const lengthBuffer = readExact(fd, position, 2);
+    if (!lengthBuffer) return FAIL;
+    const segmentLength = lengthBuffer.readUInt16BE(0);
+    if (segmentLength < 2) return FAIL;
+
+    const payloadStart = position + 2;
+    const payloadLength = segmentLength - 2;
+
+    if (isJpegStartOfFrame(marker)) {
+      // SOF payload: precision (1), height (2), width (2), components (1)...
+      if (payloadStart + 5 > MAX_JPEG_HEADER_SCAN_BYTES) return FAIL;
+      const frame = readExact(fd, payloadStart, 5);
+      if (!frame) return FAIL;
+      const height = frame.readUInt16BE(1);
+      const width = frame.readUInt16BE(3);
+      if (width === 0 || height === 0) return FAIL;
+      return { width, height };
     }
+
+    // Skip exactly this segment's payload. The next loop starts at its marker.
+    position = payloadStart + payloadLength;
   }
+
   return FAIL;
+}
+
+function readExact(fd: number, position: number, length: number): Buffer | undefined {
+  const buffer = Buffer.allocUnsafe(length);
+  let offset = 0;
+  while (offset < length) {
+    const read = readSync(fd, buffer, offset, length - offset, position + offset);
+    if (read <= 0) return undefined;
+    offset += read;
+  }
+  return buffer;
+}
+
+function isStandaloneJpegMarker(marker: number): boolean {
+  return marker === 0x01 || marker === 0xd8 || (marker >= 0xd0 && marker <= 0xd7);
+}
+
+function isJpegStartOfFrame(marker: number): boolean {
+  return marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc;
 }

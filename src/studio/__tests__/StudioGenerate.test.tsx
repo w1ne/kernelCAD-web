@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /** @vitest-environment happy-dom */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { GenerationPhase } from '../../funnel/hooks/useGeneration';
 
 const mockGeneration = vi.hoisted(() => ({
@@ -102,6 +102,101 @@ beforeEach(() => {
 afterEach(() => cleanup());
 
 describe('StudioGenerate', () => {
+    it('forwards a scaled reference photo through the active agent generation path', async () => {
+        render(<StudioGenerate />);
+        const photo = new File(['photo-bytes'], 'e-reader.png', { type: 'image/png' });
+
+        fireEvent.change(screen.getByLabelText('Reference photo'), {
+            target: { files: [photo] },
+        });
+        await waitFor(() => expect(screen.getByText('e-reader.png')).toBeTruthy());
+
+        fireEvent.change(screen.getByLabelText('Known dimension label'), {
+            target: { value: 'overall height' },
+        });
+        fireEvent.change(screen.getByLabelText('Known dimension (mm)'), {
+            target: { value: '203' },
+        });
+        const prompt = screen.getByLabelText('Generate prompt');
+        fireEvent.change(prompt, { target: { value: 'model this e-reader enclosure' } });
+        fireEvent.submit(prompt.closest('form')!);
+
+        expect(mockGeneration.submit).toHaveBeenCalledWith(
+            'model this e-reader enclosure',
+            undefined,
+            undefined,
+            expect.objectContaining({
+                dataUrl: expect.stringMatching(/^data:image\/png;base64,/),
+                fileName: 'e-reader.png',
+                mimeType: 'image/png',
+                knownDimension: { label: 'overall height', valueMm: 203 },
+            }),
+        );
+    });
+
+    it('requires a named positive millimetre dimension before generating from a selected photo', async () => {
+        render(<StudioGenerate />);
+        const photo = new File(['photo-bytes'], 'e-reader.png', { type: 'image/png' });
+        fireEvent.change(screen.getByLabelText('Reference photo'), {
+            target: { files: [photo] },
+        });
+        await waitFor(() => expect(screen.getByText('e-reader.png')).toBeTruthy());
+
+        fireEvent.change(screen.getByLabelText('Generate prompt'), {
+            target: { value: 'model this e-reader enclosure' },
+        });
+
+        expect((screen.getByRole('button', { name: /^build/i }) as HTMLButtonElement).disabled).toBe(true);
+    });
+
+    it('requires a new known dimension when the reference photo changes', async () => {
+        render(<StudioGenerate />);
+        fireEvent.change(screen.getByLabelText('Reference photo'), {
+            target: { files: [new File(['first-photo'], 'first.png', { type: 'image/png' })] },
+        });
+        await waitFor(() => expect(screen.getByText('first.png')).toBeTruthy());
+        fireEvent.change(screen.getByLabelText('Known dimension label'), {
+            target: { value: 'overall height' },
+        });
+        fireEvent.change(screen.getByLabelText('Known dimension (mm)'), {
+            target: { value: '203' },
+        });
+
+        fireEvent.change(screen.getByLabelText('Reference photo'), {
+            target: { files: [new File(['second-photo'], 'second.png', { type: 'image/png' })] },
+        });
+        await waitFor(() => expect(screen.getByText('second.png')).toBeTruthy());
+        fireEvent.change(screen.getByLabelText('Generate prompt'), {
+            target: { value: 'model the second enclosure' },
+        });
+
+        expect((screen.getByRole('button', { name: /^build/i }) as HTMLButtonElement).disabled).toBe(true);
+    });
+
+    it('rejects unsupported photo types before they enter the generation request', () => {
+        render(<StudioGenerate />);
+        const gif = new File(['gif-bytes'], 'e-reader.gif', { type: 'image/gif' });
+
+        fireEvent.change(screen.getByLabelText('Reference photo'), {
+            target: { files: [gif] },
+        });
+
+        expect(screen.getByRole('alert').textContent).toMatch(/PNG, JPEG, or WebP/i);
+        expect(mockGeneration.submit).not.toHaveBeenCalled();
+    });
+
+    it('rejects photo files larger than four MiB before they enter the generation request', () => {
+        render(<StudioGenerate />);
+        const oversized = new File([new Uint8Array(4 * 1024 * 1024 + 1)], 'e-reader.png', { type: 'image/png' });
+
+        fireEvent.change(screen.getByLabelText('Reference photo'), {
+            target: { files: [oversized] },
+        });
+
+        expect(screen.getByRole('alert').textContent).toMatch(/4 MiB/i);
+        expect(mockGeneration.submit).not.toHaveBeenCalled();
+    });
+
     it('renders whole-model target when no feature is selected', () => {
         render(<StudioGenerate />);
         expect(screen.getByTestId('studio-generate-target').textContent).toBe('Target: whole model');

@@ -25,6 +25,30 @@ export type GenerateEvent =
   | { kind: 'done'; artifact: Artifact; generationId: string; anonId: string; durationMs: number }
   | { kind: 'error'; code: 'llm_failed' | 'gate_failed' | 'eval_failed' | 'timeout'; message: string; generationId: string };
 
+/** Source-image limits for the Studio photo-reference request. A 4 MiB source
+ * file expands to roughly 5.4 MiB as a base64 data URL, which keeps the JSON
+ * request bounded while leaving the server responsible for decoding, hashing,
+ * and materializing the authoritative asset. */
+export const REFERENCE_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
+export type ReferenceImageMimeType = typeof REFERENCE_IMAGE_MIME_TYPES[number];
+export const MAX_REFERENCE_IMAGE_BYTES = 4 * 1024 * 1024;
+
+export function isReferenceImageMimeType(value: string): value is ReferenceImageMimeType {
+  return (REFERENCE_IMAGE_MIME_TYPES as readonly string[]).includes(value);
+}
+
+/** A user-supplied, scaled image reference. The server recomputes the SHA-256
+ * from `dataUrl`; no client-provided hash is trusted as provenance. */
+export interface ReferenceImage {
+  dataUrl: string;
+  fileName: string;
+  mimeType: ReferenceImageMimeType;
+  knownDimension: {
+    label: string;
+    valueMm: number;
+  };
+}
+
 /**
  * Parse a Server-Sent Events stream from POST /api/v1/generate into typed events.
  *
@@ -121,6 +145,9 @@ export interface GenerateRequest {
    *  bounding-box proportions of an in-progress mesh-first build. Omit when
    *  there is no mesh context (text-only funnel/landing generation). */
   mesh?: { renderImageUrl?: string | null; proportions?: number[] | null };
+  /** A bounded simple-device reference photo plus a real-world scale anchor.
+   * The hosted route validates, hashes, and materializes it before authoring. */
+  referenceImage?: ReferenceImage;
 }
 
 export async function startGeneration(req: GenerateRequest): Promise<Response> {

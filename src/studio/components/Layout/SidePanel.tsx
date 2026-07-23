@@ -4,7 +4,7 @@ import { useState } from 'react';
 import SceneBrowser from '../SceneBrowser';
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { extractHistoryItems, type HistoryItem } from '../../../shared/codeGeneration/codeAnalysis';
-import { AIAssistant } from '../../features-ui/ai/AIAssistant';
+import { StudioGenerate } from '../../StudioGenerate';
 
 interface SidePanelProps {
     onJumpToLine: (line: number) => void;
@@ -30,7 +30,7 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
         deleteHistoryItem
     } = useWorkbench();
 
-    const [activeTab, setActiveTab] = useState<'scene' | 'loop' | 'ai'>('scene');
+    const [activeTab, setActiveTab] = useState<'scene' | 'loop' | 'generate'>('scene');
     const [showReviewDetails, setShowReviewDetails] = useState(false);
     const reviewOk = scriptReview?.ok ?? null;
     const verdict = reviewOk === null ? 'No Review' : reviewOk ? 'Functional' : 'Needs Repair';
@@ -66,10 +66,10 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
                     BUILD LOOP
                 </button>
                 <button
-                    onClick={() => setActiveTab('ai')}
-                    className={`flex-1 py-2 text-center hover:bg-[#222] ${activeTab === 'ai' ? 'text-blue-400 border-b-2 border-blue-400 bg-[#1e1e1e]' : ''}`}
+                    onClick={() => setActiveTab('generate')}
+                    className={`flex-1 py-2 text-center hover:bg-[#222] ${activeTab === 'generate' ? 'text-blue-400 border-b-2 border-blue-400 bg-[#1e1e1e]' : ''}`}
                 >
-                    AI ASSISTANT
+                    GENERATE
                 </button>
             </div>
 
@@ -191,7 +191,7 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
                         )}
                     </div>
                 ) : (
-                    <AIAssistant />
+                    <StudioGenerate />
                 )}
             </div>
         </div>
