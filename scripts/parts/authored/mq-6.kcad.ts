@@ -42,7 +42,7 @@ const canR = 8.0;
 const canH = 16.0;
 const canX = 20.0;
 const canY = PCB_W / 2;
-const can = cylinder(canR, canH, 48)
+const can = cylinder(canH, canR, 48)
   .color(CAN_METAL)
   .translate(canX, canY, PCB_T);
 // Mesh bands around the can (stacked rings as thin discs on the side look)
@@ -50,22 +50,22 @@ const meshBands: Shape[] = [];
 for (let i = 0; i < 5; i++) {
   const z = PCB_T + 2.0 + i * 2.6;
   meshBands.push(
-    cylinder(canR + 0.15, 0.6, 48).color(CAN_MESH).translate(canX, canY, z),
+    cylinder(0.6, canR + 0.15, 48).color(CAN_MESH).translate(canX, canY, z),
   );
 }
 // Can top cap
-const canTop = cylinder(canR - 0.4, 0.8, 48)
+const canTop = cylinder(0.8, canR - 0.4, 48)
   .color(CAN_MESH)
   .translate(canX, canY, PCB_T + canH);
 
 // Dual op-amp SOIC-8 near the header side
 const soic = box(5.0, 4.0, 1.5).color(IC_DARK).translate(4.0, 3.0, PCB_T);
 // Pin-1 mark
-const pin1 = cylinder(0.3, 0.2, 16).color('#e0e0e8').translate(4.6, 3.6, PCB_T + 1.5);
+const pin1 = cylinder(0.2, 0.3, 16).color('#e0e0e8').translate(4.6, 3.6, PCB_T + 1.5);
 
 // Trim pot for DOUT threshold
-const pot = cylinder(2.2, 2.5, 24).color(POT_BODY).translate(6.0, 14.0, PCB_T);
-const potKnob = cylinder(1.0, 0.6, 16).color('#888890').translate(6.0, 14.0, PCB_T + 2.5);
+const pot = cylinder(2.5, 2.2, 24).color(POT_BODY).translate(6.0, 14.0, PCB_T);
+const potKnob = cylinder(0.6, 1.0, 16).color('#888890').translate(6.0, 14.0, PCB_T + 2.5);
 
 // A few 0805 passives
 const caps: Shape[] = [];

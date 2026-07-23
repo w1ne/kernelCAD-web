@@ -204,10 +204,10 @@
     },
     {
       "id": "esp32-devkit-board",
-      "name": "ESP32 DevKitC",
+      "name": "ESP32 DevKitC / DevKit V1",
       "family": "ESP32",
       "mpn": "ESP32-DevKitC-V4",
-      "kcad_source": "scripts/parts/authored/esp32-devkit-board.kcad.ts",
+      "url": "https://tfvg9prl3arlawj9.public.blob.vercel-storage.com/parts/cad/grabcad/board-esp32-devkit-v1/board-esp32-devkit-v1-source.step",
       "tags": [
         "board",
         "esp32",
@@ -216,8 +216,8 @@
         "wroom-32",
         "mcu"
       ],
-      "license": "CC-BY-SA-4.0",
-      "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception)"
+      "license": "GrabCAD per-model / community FreeCAD export",
+      "attribution": "GrabCAD ESP32 DevKit v1 FreeCAD STEP (community). Authored fallback: scripts/parts/authored/esp32-devkit-board.kcad.ts"
     },
     {
       "id": "nucleo64-board",
@@ -254,52 +254,68 @@
       "name": "WeAct STM32 BlackPill F4x1",
       "family": "STM32",
       "mpn": "WeAct-BlackPill-F401",
-      "kcad_source": "scripts/parts/authored/blackpill-board.kcad.ts",
+      "url": "https://cdn.jsdelivr.net/gh/piit79/Kicad-STM32@master/Packages3d/YAAJ_BlackPill_PinHeaders_V_SWD.zip",
       "tags": [
         "blackpill",
         "stm32",
         "weact",
         "dev-board"
       ],
-      "license": "CC-BY-SA-4.0",
-      "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception)"
+      "license": "upstream-unspecified (community KiCad library; no SPDX on piit79/Kicad-STM32 \u2014 retain attribution; re-review for commercial redistrib)",
+      "attribution": "KiCad-STM32 BlackPill 3D by piit79 / yet-another-average-joe (github.com/piit79/Kicad-STM32), PinHeaders_V_SWD variant. Authored fallback: scripts/parts/authored/blackpill-board.kcad.ts"
+    },
+    {
+      "id": "bluepill-board",
+      "name": "STM32F103 BluePill",
+      "family": "STM32",
+      "mpn": "STM32F103C8T6-BluePill",
+      "url": "https://cdn.jsdelivr.net/gh/piit79/Kicad-STM32@master/Packages3d/YAAJ_BluePill_PinHeaders_V_SWD.zip",
+      "tags": [
+        "bluepill",
+        "stm32",
+        "f103",
+        "dev-board"
+      ],
+      "license": "upstream-unspecified (community KiCad library; no SPDX on piit79/Kicad-STM32 \u2014 retain attribution; re-review for commercial redistrib)",
+      "attribution": "KiCad-STM32 BluePill 3D by piit79 / yet-another-average-joe (github.com/piit79/Kicad-STM32), PinHeaders_V_SWD variant"
     },
     {
       "id": "arduino-uno-board",
-      "name": "Arduino Uno R3",
+      "name": "Arduino Uno R3 (Freeduino-compatible form factor)",
       "family": "Arduino",
       "mpn": "A000066",
-      "kcad_source": "scripts/parts/authored/arduino-uno-board.kcad.ts",
+      "url": "https://raw.githubusercontent.com/FreeCAD/FreeCAD-library/master/Electronics%20Parts/Boards/Arduino/freaduino-uno.step",
       "tags": [
         "arduino",
         "uno",
         "atmega328",
-        "dev-board"
+        "dev-board",
+        "freeduino"
       ],
-      "license": "CC-BY-SA-4.0",
-      "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception); USB-B placeholder"
+      "license": "CC-BY-3.0",
+      "attribution": "FreeCAD parts library \u2014 freaduino-uno.step (CC-BY-3.0). Authored fallback: scripts/parts/authored/arduino-uno-board.kcad.ts"
     },
     {
       "id": "esp32-c3-supermini-board",
       "name": "ESP32-C3 SuperMini",
       "family": "ESP32",
       "mpn": "ESP32-C3-SuperMini",
-      "kcad_source": "scripts/parts/authored/esp32-c3-supermini-board.kcad.ts",
+      "url": "https://raw.githubusercontent.com/mrtnvgr/KiCad_ESP32-C3-SuperMini/master/ESP32-C3-SuperMini.stp",
       "tags": [
         "esp32",
         "c3",
         "supermini",
         "dev-board"
       ],
-      "license": "CC-BY-SA-4.0",
-      "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception)"
+      "license": "OSHW-attribution",
+      "attribution": "KiCad_ESP32-C3-SuperMini by mrtnvgr (github.com/mrtnvgr/KiCad_ESP32-C3-SuperMini). Authored fallback: scripts/parts/authored/esp32-c3-supermini-board.kcad.ts"
     },
     {
       "id": "esp32-s3-zero-board",
       "name": "Waveshare ESP32-S3-Zero",
       "family": "ESP32",
       "mpn": "ESP32-S3-Zero",
-      "kcad_source": "scripts/parts/authored/esp32-s3-zero-board.kcad.ts",
+      "url": "https://files.waveshare.com/wiki/ESP32-S3-Zero/manual/ESP32-S3-Zero%20V2.step",
       "tags": [
         "esp32",
         "s3",
@@ -307,8 +323,23 @@
         "waveshare",
         "dev-board"
       ],
-      "license": "CC-BY-SA-4.0",
-      "attribution": "kernelCAD original PCB; components from KiCad packages3D (CC-BY-SA-4.0 + library exception)"
+      "license": "Waveshare product CAD (vendor resource download)",
+      "attribution": "Waveshare official ESP32-S3-Zero V2 STEP (files.waveshare.com). Authored fallback: scripts/parts/authored/esp32-s3-zero-board.kcad.ts"
+    },
+    {
+      "id": "nrf52840-mdk-board",
+      "name": "makerdiary nRF52840-MDK",
+      "family": "Nordic",
+      "mpn": "nRF52840-MDK",
+      "url": "https://cdn.jsdelivr.net/gh/makerdiary/nrf52840-mdk@master/docs/hardware/nrf52840-mdk-3d-step-v1_0.step",
+      "tags": [
+        "nordic",
+        "nrf52840",
+        "mdk",
+        "dev-board"
+      ],
+      "license": "community open hardware (makerdiary nrf52840-mdk)",
+      "attribution": "makerdiary nRF52840-MDK 3D STEP (github.com/makerdiary/nrf52840-mdk). Note: form factor differs from Nordic nRF52840-DK."
     },
     {
       "id": "nrf52840-dk-board",
@@ -870,6 +901,413 @@
       },
       "license": "MIT",
       "attribution": "kernelCAD authored package model; dimensions from Texas Instruments DRV2605 YZF package drawing"
+    },
+    {
+      "id": "adxl343",
+      "name": "Adafruit ADXL343 accelerometer (stand-in for ADXL345)",
+      "family": "Sensor",
+      "mpn": "ADXL343",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/4097%20ADXL343%20Accelerometer/4097%20ADXL343%20STEMMA%20QT.step",
+      "tags": [
+        "sensor",
+        "accel",
+        "adxl",
+        "i2c"
+      ],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts #4097 (MIT)"
+    },
+    {
+      "id": "vl53l4cd",
+      "name": "Adafruit VL53L4CD ToF (stand-in for VL53L1X)",
+      "family": "Sensor",
+      "mpn": "VL53L4CD",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/5396%20VL53L4CD%20Sensor/5396%20Adafruit%20VL53L4CD.step",
+      "tags": [
+        "sensor",
+        "tof",
+        "vl53",
+        "i2c"
+      ],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts #5396 (MIT)"
+    },
+    {
+      "id": "veml7700",
+      "name": "Adafruit VEML7700 lux sensor",
+      "family": "Sensor",
+      "mpn": "VEML7700",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/5378%20VEML7700%20Lux%20Sensor/5378%20VEML7700%20Lux%20Sensor.step",
+      "tags": [
+        "sensor",
+        "light",
+        "veml7700",
+        "i2c"
+      ],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts #5378 (MIT)"
+    },
+    {
+      "id": "scd40",
+      "name": "Adafruit SCD-40 CO2 sensor (stand-in for SCD41)",
+      "family": "Sensor",
+      "mpn": "SCD40",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/5187%20SCD-40%20C02%20Sensor/5187%20SCD-40%20C02%20Sensor.step",
+      "tags": [
+        "sensor",
+        "co2",
+        "scd40",
+        "scd41",
+        "i2c"
+      ],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts #5187 (MIT)"
+    },
+    {
+      "id": "sgp40",
+      "name": "Adafruit SGP40 VOC sensor (stand-in for SGP41)",
+      "family": "Sensor",
+      "mpn": "SGP40",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/4829%20SGP40%20Sensor/4829%20SGP40%20Sensor.step",
+      "tags": [
+        "sensor",
+        "voc",
+        "sgp40",
+        "sgp41",
+        "i2c"
+      ],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts #4829 (MIT)"
+    },
+    {
+      "id": "servo-micro-mg",
+      "name": "Adafruit micro servo metal gear (SG90-class)",
+      "family": "Actuator",
+      "mpn": "ADA1143",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/1143%20Micro%20Servo%20-%20High%20Torque%20Metal%20Gear/1143%20Micro%20Servo%20High%20Torque%20Metal%20Gear.step",
+      "tags": [
+        "servo",
+        "actuator",
+        "sg90"
+      ],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts #1143 (MIT)"
+    },
+    {
+      "id": "rotary-encoder-qt",
+      "name": "Adafruit QT rotary encoder",
+      "family": "Input",
+      "mpn": "ADA4991",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/4991%20QT%20Rotary%20Encoder/4991%20QT%20Rotary%20Encoder.step",
+      "tags": [
+        "encoder",
+        "rotary",
+        "input"
+      ],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts #4991 (MIT)"
+    },
+    {
+      "id": "gps-pa1010d",
+      "name": "Adafruit Mini GPS PA1010D (stand-in for NEO-6M class)",
+      "family": "Sensor",
+      "mpn": "PA1010D",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/4415%20Mini%20GPS%20PA1010D/4415%20Mini%20GPS%20PA1010D.step",
+      "tags": [
+        "gps",
+        "sensor",
+        "uart"
+      ],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts #4415 (MIT)"
+    },
+    {
+      "id": "oled-091-i2c",
+      "name": "Adafruit 0.91in OLED I2C",
+      "family": "Display",
+      "mpn": "ADA4440",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/4440%200.91%20OLED%20I2C%20Display/4440%200.91%20OLED%20I2C%20Display.step",
+      "tags": [
+        "oled",
+        "display",
+        "ssd1306",
+        "i2c"
+      ],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts #4440 (MIT)"
+    },
+    {
+      "id": "ina219",
+      "name": "INA219 current/power monitor breakout (25\u00d720\u00d75mm)",
+      "family": "Sensor",
+      "mpn": "INA219 breakout",
+      "kcad_source": "scripts/parts/authored/ina219.kcad.ts",
+      "tags": [
+        "sensor",
+        "current",
+        "power",
+        "ina219",
+        "i2c",
+        "shunt"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "ads1115",
+      "name": "ADS1115 16-bit ADC breakout (25\u00d718\u00d74mm)",
+      "family": "Sensor",
+      "mpn": "ADS1115 breakout",
+      "kcad_source": "scripts/parts/authored/ads1115.kcad.ts",
+      "tags": [
+        "sensor",
+        "adc",
+        "ads1115",
+        "i2c"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "ds3231",
+      "name": "DS3231 RTC + CR2032 module (38\u00d722\u00d76mm)",
+      "family": "Sensor",
+      "mpn": "DS3231 ZS-042",
+      "kcad_source": "scripts/parts/authored/ds3231.kcad.ts",
+      "tags": [
+        "sensor",
+        "rtc",
+        "ds3231",
+        "i2c",
+        "clock"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "hx711",
+      "name": "HX711 load-cell amplifier (33\u00d720\u00d74mm)",
+      "family": "Sensor",
+      "mpn": "HX711",
+      "kcad_source": "scripts/parts/authored/hx711.kcad.ts",
+      "tags": [
+        "sensor",
+        "load-cell",
+        "hx711",
+        "weight"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "as5600",
+      "name": "AS5600 magnetic rotary encoder (22\u00d718\u00d74mm)",
+      "family": "Sensor",
+      "mpn": "AS5600",
+      "kcad_source": "scripts/parts/authored/as5600.kcad.ts",
+      "tags": [
+        "sensor",
+        "encoder",
+        "as5600",
+        "magnetic",
+        "angle"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "bno055",
+      "name": "BNO055 9-DOF IMU breakout (20\u00d727\u00d74mm)",
+      "family": "Sensor",
+      "mpn": "BNO055",
+      "kcad_source": "scripts/parts/authored/bno055.kcad.ts",
+      "tags": [
+        "sensor",
+        "imu",
+        "bno055",
+        "orientation",
+        "i2c"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "vl53l0x",
+      "name": "VL53L0X ToF laser ranging breakout (12\u00d718\u00d74mm)",
+      "family": "Sensor",
+      "mpn": "VL53L0X",
+      "kcad_source": "scripts/parts/authored/vl53l0x.kcad.ts",
+      "tags": [
+        "sensor",
+        "tof",
+        "vl53l0x",
+        "distance",
+        "i2c"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "hc-05",
+      "name": "HC-05 Bluetooth SPP module (37\u00d716\u00d76mm)",
+      "family": "Wireless",
+      "mpn": "HC-05",
+      "kcad_source": "scripts/parts/authored/hc-05.kcad.ts",
+      "tags": [
+        "bluetooth",
+        "hc-05",
+        "uart",
+        "wireless"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "nrf24l01",
+      "name": "nRF24L01+ 2.4GHz transceiver (15\u00d729\u00d74mm)",
+      "family": "Wireless",
+      "mpn": "nRF24L01+",
+      "kcad_source": "scripts/parts/authored/nrf24l01.kcad.ts",
+      "tags": [
+        "nrf24",
+        "2.4ghz",
+        "spi",
+        "wireless"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "mcp2515",
+      "name": "MCP2515 CAN bus module (40\u00d728\u00d712mm)",
+      "family": "Interface",
+      "mpn": "MCP2515",
+      "kcad_source": "scripts/parts/authored/mcp2515.kcad.ts",
+      "tags": [
+        "can",
+        "mcp2515",
+        "spi",
+        "tja1050"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "l298n",
+      "name": "L298N dual H-bridge motor driver (43\u00d743\u00d718mm)",
+      "family": "Motor driver",
+      "mpn": "L298N",
+      "kcad_source": "scripts/parts/authored/l298n.kcad.ts",
+      "tags": [
+        "motor",
+        "h-bridge",
+        "l298n"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "relay-4ch",
+      "name": "4-channel 5V relay module (75\u00d755\u00d718mm)",
+      "family": "Actuator",
+      "mpn": "4CH-RELAY",
+      "kcad_source": "scripts/parts/authored/relay-4ch.kcad.ts",
+      "tags": [
+        "relay",
+        "4ch",
+        "opto"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "irf520",
+      "name": "IRF520 MOSFET driver module (33\u00d724\u00d714mm)",
+      "family": "Power",
+      "mpn": "IRF520 module",
+      "kcad_source": "scripts/parts/authored/irf520.kcad.ts",
+      "tags": [
+        "mosfet",
+        "irf520",
+        "driver"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "acs712",
+      "name": "ACS712 Hall current sensor module (31\u00d713\u00d711mm)",
+      "family": "Sensor",
+      "mpn": "ACS712",
+      "kcad_source": "scripts/parts/authored/acs712.kcad.ts",
+      "tags": [
+        "sensor",
+        "current",
+        "acs712",
+        "hall"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "tp4056",
+      "name": "TP4056 Li-ion charger with micro-USB (25\u00d717\u00d74mm)",
+      "family": "Power",
+      "mpn": "TP4056",
+      "kcad_source": "scripts/parts/authored/tp4056.kcad.ts",
+      "tags": [
+        "charger",
+        "lipo",
+        "tp4056",
+        "usb"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "max485",
+      "name": "MAX485 RS-485 transceiver breakout (44\u00d714\u00d712mm)",
+      "family": "Interface",
+      "mpn": "MAX485",
+      "kcad_source": "scripts/parts/authored/max485.kcad.ts",
+      "tags": [
+        "rs485",
+        "max485",
+        "uart"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "mq-2",
+      "name": "MQ-2 smoke/gas sensor breakout (32\u00d720\u00d720mm)",
+      "family": "Sensor",
+      "mpn": "MQ-2",
+      "kcad_source": "scripts/parts/authored/mq-2.kcad.ts",
+      "tags": [
+        "sensor",
+        "gas",
+        "smoke",
+        "mq-2",
+        "analog"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "lm2596",
+      "name": "LM2596 adjustable buck converter (43\u00d721\u00d712mm)",
+      "family": "Power",
+      "mpn": "LM2596 module",
+      "kcad_source": "scripts/parts/authored/lm2596.kcad.ts",
+      "tags": [
+        "power",
+        "buck",
+        "lm2596",
+        "regulator"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
     }
   ]
 }
