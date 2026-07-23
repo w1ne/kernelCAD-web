@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // MT3608 boost converter module 36×17 mm.
 const PCB_L=36.0, PCB_W=17.0, PCB_T=1.6;
-const PCB='#1a1a22', IC='#1a1a22', CU='#c8a040', IND='#2a2a32', CAP='#1e293b';
+const PCB='#1a1a22', IC='#1a1a22', CU='#c8a040', IND='#2a2a32';
 const pcb=box(PCB_L,PCB_W,PCB_T).color(PCB);
 const pads:Shape[]=[];
 for (const [x,y] of [[1.5,2],[1.5,12],[31.5,2],[31.5,12]] as [number,number][]) {

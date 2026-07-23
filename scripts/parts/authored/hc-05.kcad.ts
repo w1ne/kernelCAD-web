@@ -11,7 +11,6 @@ const PCB_T = 1.6;
 
 const CARRIER = '#1565c0';
 const RADIO = '#0d1b2a';
-const IC = '#1a1a22';
 const CU = '#c8a040';
 const HDR = '#1a1a28';
 const LED_R = '#ef4444';

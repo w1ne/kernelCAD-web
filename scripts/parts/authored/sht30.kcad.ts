@@ -3,7 +3,7 @@
 // scripts/parts/authored/sht30.kcad.ts
 // SHT30 temp/humidity
 const PCB_L=16, PCB_W=16, PCB_T=1.6, HOLE_R=1.0;
-const PCB='#1a3a2a', IC='#1a1a22', CU='#c8a040', HDR='#1a1a28', PASS='#8a6a40';
+const PCB='#1a3a2a', IC='#1a1a22', CU='#c8a040', HDR='#1a1a28';
 const holes=[[2,2],[PCB_L-2,2],[2,PCB_W-2],[PCB_L-2,PCB_W-2]].map(([x,y])=>cylinder(PCB_T+2,HOLE_R,20).translate(x,y,-1));
 const pcb=box(PCB_L,PCB_W,PCB_T).subtract(...holes).color(PCB);
 const n=4, pitch=2.54, hdrH=(n-1)*pitch+2.4, hdrY=(PCB_W-hdrH)/2;

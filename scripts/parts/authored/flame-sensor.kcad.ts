@@ -9,10 +9,8 @@ const PCB_W = 14;
 const PCB_T = 1.6;
 const HOLE_R = 1.0;
 const PCB = '#1a6b3a';
-const IC = '#1a1a22';
 const CU = '#c8a040';
 const HDR = '#1a1a28';
-const PASS = '#8a6a40';
 
 const holes = [
   [2.0, 2.0], [PCB_L - 2.0, 2.0], [2.0, PCB_W - 2.0], [PCB_L - 2.0, PCB_W - 2.0],
