@@ -1495,6 +1495,216 @@
       ],
       "license": "MIT",
       "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "sht30",
+      "name": "SHT30 temp/humidity",
+      "family": "Sensor",
+      "mpn": "SHT30",
+      "kcad_source": "scripts/parts/authored/sht30.kcad.ts",
+      "tags": [
+        "sht30",
+        "i2c",
+        "sensor"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "at24c256",
+      "name": "AT24C256 EEPROM",
+      "family": "Storage",
+      "mpn": "AT24C256",
+      "kcad_source": "scripts/parts/authored/at24c256.kcad.ts",
+      "tags": [
+        "eeprom",
+        "i2c"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "pn532",
+      "name": "PN532 NFC",
+      "family": "Wireless",
+      "mpn": "PN532",
+      "kcad_source": "scripts/parts/authored/pn532.kcad.ts",
+      "tags": [
+        "nfc",
+        "pn532"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "lora-sx1278",
+      "name": "LoRa SX1278 RA-02",
+      "family": "Wireless",
+      "mpn": "SX1278",
+      "kcad_source": "scripts/parts/authored/lora-sx1278.kcad.ts",
+      "tags": [
+        "lora",
+        "sx1278",
+        "ra-02"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "sim800l",
+      "name": "SIM800L GSM",
+      "family": "Wireless",
+      "mpn": "SIM800L",
+      "kcad_source": "scripts/parts/authored/sim800l.kcad.ts",
+      "tags": [
+        "gsm",
+        "sim800l"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "tmc2209",
+      "name": "TMC2209 StepStick",
+      "family": "Motor driver",
+      "mpn": "TMC2209",
+      "kcad_source": "scripts/parts/authored/tmc2209.kcad.ts",
+      "tags": [
+        "stepper",
+        "tmc2209"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "tb6612",
+      "name": "TB6612 dual motor driver",
+      "family": "Motor driver",
+      "mpn": "TB6612",
+      "kcad_source": "scripts/parts/authored/tb6612.kcad.ts",
+      "tags": [
+        "motor",
+        "tb6612"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "max98357",
+      "name": "MAX98357 I2S amp",
+      "family": "Audio",
+      "mpn": "MAX98357",
+      "kcad_source": "scripts/parts/authored/max98357.kcad.ts",
+      "tags": [
+        "audio",
+        "i2s"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "inmp441",
+      "name": "INMP441 I2S mic",
+      "family": "Audio",
+      "mpn": "INMP441",
+      "kcad_source": "scripts/parts/authored/inmp441.kcad.ts",
+      "tags": [
+        "audio",
+        "mic",
+        "i2s"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "mp1584",
+      "name": "MP1584 buck",
+      "family": "Power",
+      "mpn": "MP1584",
+      "kcad_source": "scripts/parts/authored/mp1584.kcad.ts",
+      "tags": [
+        "power",
+        "buck"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "xl6009",
+      "name": "XL6009 boost",
+      "family": "Power",
+      "mpn": "XL6009",
+      "kcad_source": "scripts/parts/authored/xl6009.kcad.ts",
+      "tags": [
+        "power",
+        "boost"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "ttp223",
+      "name": "TTP223 touch",
+      "family": "Input",
+      "mpn": "TTP223",
+      "kcad_source": "scripts/parts/authored/ttp223.kcad.ts",
+      "tags": [
+        "touch",
+        "input"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "ir-obstacle",
+      "name": "IR obstacle FC-51",
+      "family": "Sensor",
+      "mpn": "FC-51",
+      "kcad_source": "scripts/parts/authored/ir-obstacle.kcad.ts",
+      "tags": [
+        "ir",
+        "obstacle"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "hall-sensor",
+      "name": "Hall sensor",
+      "family": "Sensor",
+      "mpn": "HALL",
+      "kcad_source": "scripts/parts/authored/hall-sensor.kcad.ts",
+      "tags": [
+        "hall",
+        "sensor"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "vibration-sensor",
+      "name": "Vibration SW-420",
+      "family": "Sensor",
+      "mpn": "SW-420",
+      "kcad_source": "scripts/parts/authored/vibration-sensor.kcad.ts",
+      "tags": [
+        "vibration"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "stepper-28byj48",
+      "name": "28BYJ-48 stepper motor",
+      "family": "Motor",
+      "mpn": "28BYJ-48",
+      "kcad_source": "scripts/parts/authored/stepper-28byj48.kcad.ts",
+      "tags": [
+        "stepper",
+        "motor"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
     }
   ]
 }
