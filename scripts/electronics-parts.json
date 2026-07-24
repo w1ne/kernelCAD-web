@@ -200,7 +200,7 @@
         "pico"
       ],
       "license": "Raspberry Pi design-files permission grant (permissive)",
-      "attribution": "Raspberry Pi Ltd \u2014 Pico mechanical model (RP-008311), redistributed under the Raspberry Pi design-files permission grant"
+      "attribution": "Raspberry Pi Ltd — Pico mechanical model (RP-008311), redistributed under the Raspberry Pi design-files permission grant"
     },
     {
       "id": "esp32-devkit-board",
@@ -261,7 +261,7 @@
         "weact",
         "dev-board"
       ],
-      "license": "upstream-unspecified (community KiCad library; no SPDX on piit79/Kicad-STM32 \u2014 retain attribution; re-review for commercial redistrib)",
+      "license": "upstream-unspecified (community KiCad library; no SPDX on piit79/Kicad-STM32 — retain attribution; re-review for commercial redistrib)",
       "attribution": "KiCad-STM32 BlackPill 3D by piit79 / yet-another-average-joe (github.com/piit79/Kicad-STM32), PinHeaders_V_SWD variant. Authored fallback: scripts/parts/authored/blackpill-board.kcad.ts"
     },
     {
@@ -276,7 +276,7 @@
         "f103",
         "dev-board"
       ],
-      "license": "upstream-unspecified (community KiCad library; no SPDX on piit79/Kicad-STM32 \u2014 retain attribution; re-review for commercial redistrib)",
+      "license": "upstream-unspecified (community KiCad library; no SPDX on piit79/Kicad-STM32 — retain attribution; re-review for commercial redistrib)",
       "attribution": "KiCad-STM32 BluePill 3D by piit79 / yet-another-average-joe (github.com/piit79/Kicad-STM32), PinHeaders_V_SWD variant"
     },
     {
@@ -293,7 +293,7 @@
         "freeduino"
       ],
       "license": "CC-BY-3.0",
-      "attribution": "FreeCAD parts library \u2014 freaduino-uno.step (CC-BY-3.0). Authored fallback: scripts/parts/authored/arduino-uno-board.kcad.ts"
+      "attribution": "FreeCAD parts library — freaduino-uno.step (CC-BY-3.0). Authored fallback: scripts/parts/authored/arduino-uno-board.kcad.ts"
     },
     {
       "id": "esp32-c3-supermini-board",
@@ -409,7 +409,7 @@
     },
     {
       "id": "ssd1306-oled-096",
-      "name": "SSD1306 0.96\" I2C OLED display module (27\u00d727\u00d74mm)",
+      "name": "SSD1306 0.96\" I2C OLED display module (27×27×4mm)",
       "family": "Display",
       "mpn": "generic SSD1306 0.96in OLED breakout",
       "kcad_source": "scripts/parts/authored/ssd1306-oled-096.kcad.ts",
@@ -426,7 +426,7 @@
     },
     {
       "id": "dht22",
-      "name": "DHT22 / AM2302 temperature + humidity sensor (15\u00d725\u00d78mm)",
+      "name": "DHT22 / AM2302 temperature + humidity sensor (15×25×8mm)",
       "family": "Sensor",
       "mpn": "DHT22",
       "kcad_source": "scripts/parts/authored/dht22.kcad.ts",
@@ -442,7 +442,7 @@
     },
     {
       "id": "ws2812-strip",
-      "name": "WS2812B NeoPixel LED strip segment \u2014 3 pixels (17\u00d710\u00d73mm)",
+      "name": "WS2812B NeoPixel LED strip segment — 3 pixels (17×10×3mm)",
       "family": "LED",
       "mpn": "WS2812B (3-pixel strip segment)",
       "kcad_source": "scripts/parts/authored/ws2812-strip.kcad.ts",
@@ -459,10 +459,9 @@
     },
     {
       "id": "bme280",
-      "name": "BME280 environmental sensor breakout (19\u00d718\u00d73mm)",
+      "name": "BME280 environmental sensor breakout (Adafruit 2652)",
       "family": "Sensor",
-      "mpn": "BME280 breakout (Adafruit 2652 / SparkFun)",
-      "kcad_source": "scripts/parts/authored/bme280.kcad.ts",
+      "mpn": "Adafruit 2652",
       "tags": [
         "sensor",
         "temperature",
@@ -470,14 +469,16 @@
         "pressure",
         "bme280",
         "i2c",
-        "spi"
+        "spi",
+        "stemma"
       ],
       "license": "MIT",
-      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/2652%20Adafruit%20BME280/Adafruit%20BME280.step"
     },
     {
       "id": "mq-6",
-      "name": "MQ-6 LPG/propane gas sensor breakout (32\u00d722\u00d720mm)",
+      "name": "MQ-6 LPG/propane gas sensor breakout (32×22×20mm)",
       "family": "Sensor",
       "mpn": "MQ-6",
       "kcad_source": "scripts/parts/authored/mq-6.kcad.ts",
@@ -495,7 +496,7 @@
     },
     {
       "id": "soil-moisture",
-      "name": "Capacitive soil moisture probe (60\u00d723\u00d76mm)",
+      "name": "Capacitive soil moisture probe (60×23×6mm)",
       "family": "Sensor",
       "mpn": "SOIL-CAP",
       "kcad_source": "scripts/parts/authored/soil-moisture.kcad.ts",
@@ -512,7 +513,7 @@
     },
     {
       "id": "precision-microdrives-304-002-erm",
-      "name": "Precision Microdrives 304-002 Pico Vibe ERM vibration motor (4mm body \u00d7 8mm)",
+      "name": "Precision Microdrives 304-002 Pico Vibe ERM vibration motor (4mm body × 8mm)",
       "family": "Haptic actuator",
       "mpn": "Precision Microdrives 304-002",
       "kcad_source": "scripts/parts/authored/precision-microdrives-304-002-erm.kcad.ts",
@@ -530,7 +531,7 @@
     },
     {
       "id": "microsd-spi",
-      "name": "microSD SPI adapter breakout module (24\u00d730\u00d74mm)",
+      "name": "microSD SPI adapter breakout module (24×30×4mm)",
       "family": "Storage",
       "mpn": "generic microSD SPI breakout",
       "kcad_source": "scripts/parts/authored/microsd-spi.kcad.ts",
@@ -546,7 +547,7 @@
     },
     {
       "id": "pushbutton-6mm",
-      "name": "6mm tactile pushbutton (6\u00d76\u00d75mm)",
+      "name": "6mm tactile pushbutton (6×6×5mm)",
       "family": "Switch",
       "mpn": "generic 6mm tact switch",
       "kcad_source": "scripts/parts/authored/pushbutton-6mm.kcad.ts",
@@ -562,7 +563,7 @@
     },
     {
       "id": "max14827",
-      "name": "MAX14827 IO-Link PHY breakout (12\u00d710\u00d72mm)",
+      "name": "MAX14827 IO-Link PHY breakout (12×10×2mm)",
       "family": "IO-Link",
       "mpn": "MAX14827",
       "kcad_source": "scripts/parts/authored/max14827.kcad.ts",
@@ -578,7 +579,7 @@
     },
     {
       "id": "buck-24v-3v3",
-      "name": "24V\u21923.3V step-down buck regulator module (18\u00d712\u00d74mm)",
+      "name": "24V→3.3V step-down buck regulator module (18×12×4mm)",
       "family": "Power",
       "mpn": "generic 24V 3.3V buck module",
       "kcad_source": "scripts/parts/authored/buck-24v-3v3.kcad.ts",
@@ -595,7 +596,7 @@
     },
     {
       "id": "cherry-mx-switch",
-      "name": "Cherry MX keyboard switch (PCB mount, 15.6\u00d715.6mm)",
+      "name": "Cherry MX keyboard switch (PCB mount, 15.6×15.6mm)",
       "family": "Switch",
       "mpn": "Cherry MX",
       "url": "https://raw.githubusercontent.com/ConstantinoSchillebeeckx/cherry-mx-switch/master/switch.step",
@@ -1038,7 +1039,7 @@
     },
     {
       "id": "ina219",
-      "name": "INA219 current/power monitor breakout (25\u00d720\u00d75mm)",
+      "name": "INA219 current/power monitor breakout (25×20×5mm)",
       "family": "Sensor",
       "mpn": "INA219 breakout",
       "kcad_source": "scripts/parts/authored/ina219.kcad.ts",
@@ -1055,7 +1056,7 @@
     },
     {
       "id": "ads1115",
-      "name": "ADS1115 16-bit ADC breakout (25\u00d718\u00d74mm)",
+      "name": "ADS1115 16-bit ADC breakout (25×18×4mm)",
       "family": "Sensor",
       "mpn": "ADS1115 breakout",
       "kcad_source": "scripts/parts/authored/ads1115.kcad.ts",
@@ -1070,7 +1071,7 @@
     },
     {
       "id": "ds3231",
-      "name": "DS3231 RTC + CR2032 module (38\u00d722\u00d76mm)",
+      "name": "DS3231 RTC + CR2032 module (38×22×6mm)",
       "family": "Sensor",
       "mpn": "DS3231 ZS-042",
       "kcad_source": "scripts/parts/authored/ds3231.kcad.ts",
@@ -1086,7 +1087,7 @@
     },
     {
       "id": "hx711",
-      "name": "HX711 load-cell amplifier (33\u00d720\u00d74mm)",
+      "name": "HX711 load-cell amplifier (33×20×4mm)",
       "family": "Sensor",
       "mpn": "HX711",
       "kcad_source": "scripts/parts/authored/hx711.kcad.ts",
@@ -1101,7 +1102,7 @@
     },
     {
       "id": "as5600",
-      "name": "AS5600 magnetic rotary encoder (22\u00d718\u00d74mm)",
+      "name": "AS5600 magnetic rotary encoder (22×18×4mm)",
       "family": "Sensor",
       "mpn": "AS5600",
       "kcad_source": "scripts/parts/authored/as5600.kcad.ts",
@@ -1117,7 +1118,7 @@
     },
     {
       "id": "bno055",
-      "name": "BNO055 9-DOF IMU breakout (20\u00d727\u00d74mm)",
+      "name": "BNO055 9-DOF IMU breakout (20×27×4mm)",
       "family": "Sensor",
       "mpn": "BNO055",
       "kcad_source": "scripts/parts/authored/bno055.kcad.ts",
@@ -1133,7 +1134,7 @@
     },
     {
       "id": "vl53l0x",
-      "name": "VL53L0X ToF laser ranging breakout (12\u00d718\u00d74mm)",
+      "name": "VL53L0X ToF laser ranging breakout (12×18×4mm)",
       "family": "Sensor",
       "mpn": "VL53L0X",
       "kcad_source": "scripts/parts/authored/vl53l0x.kcad.ts",
@@ -1149,7 +1150,7 @@
     },
     {
       "id": "hc-05",
-      "name": "HC-05 Bluetooth SPP module (37\u00d716\u00d76mm)",
+      "name": "HC-05 Bluetooth SPP module (37×16×6mm)",
       "family": "Wireless",
       "mpn": "HC-05",
       "kcad_source": "scripts/parts/authored/hc-05.kcad.ts",
@@ -1164,7 +1165,7 @@
     },
     {
       "id": "nrf24l01",
-      "name": "nRF24L01+ 2.4GHz transceiver (15\u00d729\u00d74mm)",
+      "name": "nRF24L01+ 2.4GHz transceiver (15×29×4mm)",
       "family": "Wireless",
       "mpn": "nRF24L01+",
       "kcad_source": "scripts/parts/authored/nrf24l01.kcad.ts",
@@ -1179,7 +1180,7 @@
     },
     {
       "id": "mcp2515",
-      "name": "MCP2515 CAN bus module (40\u00d728\u00d712mm)",
+      "name": "MCP2515 CAN bus module (40×28×12mm)",
       "family": "Interface",
       "mpn": "MCP2515",
       "kcad_source": "scripts/parts/authored/mcp2515.kcad.ts",
@@ -1194,7 +1195,7 @@
     },
     {
       "id": "l298n",
-      "name": "L298N dual H-bridge motor driver (43\u00d743\u00d718mm)",
+      "name": "L298N dual H-bridge motor driver (43×43×18mm)",
       "family": "Motor driver",
       "mpn": "L298N",
       "kcad_source": "scripts/parts/authored/l298n.kcad.ts",
@@ -1208,7 +1209,7 @@
     },
     {
       "id": "relay-4ch",
-      "name": "4-channel 5V relay module (75\u00d755\u00d718mm)",
+      "name": "4-channel 5V relay module (75×55×18mm)",
       "family": "Actuator",
       "mpn": "4CH-RELAY",
       "kcad_source": "scripts/parts/authored/relay-4ch.kcad.ts",
@@ -1222,7 +1223,7 @@
     },
     {
       "id": "irf520",
-      "name": "IRF520 MOSFET driver module (33\u00d724\u00d714mm)",
+      "name": "IRF520 MOSFET driver module (33×24×14mm)",
       "family": "Power",
       "mpn": "IRF520 module",
       "kcad_source": "scripts/parts/authored/irf520.kcad.ts",
@@ -1236,7 +1237,7 @@
     },
     {
       "id": "acs712",
-      "name": "ACS712 Hall current sensor module (31\u00d713\u00d711mm)",
+      "name": "ACS712 Hall current sensor module (31×13×11mm)",
       "family": "Sensor",
       "mpn": "ACS712",
       "kcad_source": "scripts/parts/authored/acs712.kcad.ts",
@@ -1251,7 +1252,7 @@
     },
     {
       "id": "tp4056",
-      "name": "TP4056 Li-ion charger with micro-USB (25\u00d717\u00d74mm)",
+      "name": "TP4056 Li-ion charger with micro-USB (25×17×4mm)",
       "family": "Power",
       "mpn": "TP4056",
       "kcad_source": "scripts/parts/authored/tp4056.kcad.ts",
@@ -1266,7 +1267,7 @@
     },
     {
       "id": "max485",
-      "name": "MAX485 RS-485 transceiver breakout (44\u00d714\u00d712mm)",
+      "name": "MAX485 RS-485 transceiver breakout (44×14×12mm)",
       "family": "Interface",
       "mpn": "MAX485",
       "kcad_source": "scripts/parts/authored/max485.kcad.ts",
@@ -1280,7 +1281,7 @@
     },
     {
       "id": "mq-2",
-      "name": "MQ-2 smoke/gas sensor breakout (32\u00d720\u00d720mm)",
+      "name": "MQ-2 smoke/gas sensor breakout (32×20×20mm)",
       "family": "Sensor",
       "mpn": "MQ-2",
       "kcad_source": "scripts/parts/authored/mq-2.kcad.ts",
@@ -1296,7 +1297,7 @@
     },
     {
       "id": "lm2596",
-      "name": "LM2596 adjustable buck converter (43\u00d721\u00d712mm)",
+      "name": "LM2596 adjustable buck converter (43×21×12mm)",
       "family": "Power",
       "mpn": "LM2596 module",
       "kcad_source": "scripts/parts/authored/lm2596.kcad.ts",
@@ -1705,6 +1706,152 @@
       ],
       "license": "MIT",
       "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
+      "id": "mpu6050-imu",
+      "name": "MPU-6050 6-axis IMU (GY-521 breakout)",
+      "family": "Sensor",
+      "mpn": "GY-521 (MPU-6050)",
+      "url": "https://raw.githubusercontent.com/SRA-VJTI/sra-board-hardware-design/master/sra_dev_board_2026/component_libraries/MPU/MPU6050/MPU6050%20v2.step",
+      "tags": [
+        "sensor",
+        "imu",
+        "accelerometer",
+        "gyroscope",
+        "mpu6050",
+        "gy-521",
+        "i2c"
+      ],
+      "license": "MIT",
+      "attribution": "SRA-VJTI/sra-board-hardware-design (github.com/SRA-VJTI/sra-board-hardware-design), MIT"
+    },
+    {
+      "id": "vl53l1x-tof",
+      "name": "VL53L1X time-of-flight distance sensor (Adafruit 3967)",
+      "family": "Sensor",
+      "mpn": "Adafruit 3967",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/3967%20VL5SL1X%20TOF%20Sensor/3967%20VL5SL1X%20TOF%20Sensor.step",
+      "tags": [
+        "sensor",
+        "tof",
+        "distance",
+        "lidar",
+        "vl53l1x",
+        "i2c",
+        "stemma"
+      ],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT"
+    },
+    {
+      "id": "veml7700-lux",
+      "name": "VEML7700 ambient light / lux sensor (Adafruit 5378)",
+      "family": "Sensor",
+      "mpn": "Adafruit 5378",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/5378%20VEML7700%20Lux%20Sensor/5378%20VEML7700%20Lux%20Sensor.step",
+      "tags": [
+        "sensor",
+        "light",
+        "lux",
+        "ambient",
+        "veml7700",
+        "i2c",
+        "stemma"
+      ],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT"
+    },
+    {
+      "id": "sht31-humidity",
+      "name": "SHT31-D temperature / humidity sensor (Adafruit 2857)",
+      "family": "Sensor",
+      "mpn": "Adafruit 2857",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/2857%20SHT31-D/2857%20SHT31-D.step",
+      "tags": [
+        "sensor",
+        "temperature",
+        "humidity",
+        "sht31",
+        "i2c",
+        "stemma"
+      ],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT"
+    },
+    {
+      "id": "scd40-co2",
+      "name": "SCD-40 CO2 / temp / humidity sensor (Adafruit 5187)",
+      "family": "Sensor",
+      "mpn": "Adafruit 5187",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/5187%20SCD-40%20C02%20Sensor/5187%20SCD-40%20C02%20Sensor.step",
+      "tags": [
+        "sensor",
+        "co2",
+        "temperature",
+        "humidity",
+        "scd40",
+        "scd41",
+        "i2c",
+        "stemma"
+      ],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT — SCD-40 board (same breakout as SCD41)"
+    },
+    {
+      "id": "sgp40-voc",
+      "name": "SGP40 air-quality / VOC sensor (Adafruit 4829)",
+      "family": "Sensor",
+      "mpn": "Adafruit 4829",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/4829%20SGP40%20Sensor/4829%20SGP40%20Sensor.step",
+      "tags": [
+        "sensor",
+        "voc",
+        "air-quality",
+        "gas",
+        "sgp40",
+        "sgp41",
+        "i2c",
+        "stemma"
+      ],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT — SGP40 board (same breakout as SGP41)"
+    },
+    {
+      "id": "adxl343-accel",
+      "name": "ADXL343 3-axis accelerometer (Adafruit 4097)",
+      "family": "Sensor",
+      "mpn": "Adafruit 4097",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/4097%20ADXL343%20Accelerometer/4097%20ADXL343.step",
+      "tags": [
+        "sensor",
+        "accelerometer",
+        "imu",
+        "adxl343",
+        "adxl345",
+        "i2c",
+        "spi",
+        "stemma"
+      ],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT — ADXL343 board (pin-compatible ADXL345 successor)"
+    },
+    {
+      "id": "ili9341-tft-28",
+      "name": "2.8\" ILI9341 TFT touch display (Adafruit 2090)",
+      "family": "Display",
+      "mpn": "Adafruit 2090",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/2090%202.8in%20TFT%20Cap%20Touch/2090%202.8in%20TFT%20Cap%20Touch.step",
+      "tags": [
+        "display",
+        "tft",
+        "lcd",
+        "ili9341",
+        "touch",
+        "2.8inch",
+        "spi"
+      ],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT"
     }
   ]
 }
