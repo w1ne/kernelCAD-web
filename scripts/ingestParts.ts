@@ -121,7 +121,13 @@ export interface IngestOpts {
 // -----------------------------------------------------------------------------
 
 function slugify(s: string): string {
+  // NFKD first so compatibility glyphs decompose to ASCII before the strip:
+  // vulgar fractions ½ → "1⁄2", ¼ → "1⁄4", ⁵⁄₁₆ → "5⁄16", super/subscripts → digits.
+  // Without this, "…½x¼…" and "…½x⁵⁄₁₆…" both collapse to the SAME slug (every
+  // distinguishing char is stripped), which crashed the FreeCAD ingest with a
+  // DuplicateCatalogIdError on the ANSI sprocket parts.
   return s
+    .normalize('NFKD')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
