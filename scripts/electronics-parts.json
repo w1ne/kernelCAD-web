@@ -269,6 +269,16 @@
       "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT"
     },
     {
+      "id": "mpu6050-imu",
+      "name": "MPU-6050 6-axis IMU (GY-521 breakout)",
+      "family": "Sensor",
+      "mpn": "GY-521 (MPU-6050)",
+      "url": "https://raw.githubusercontent.com/SRA-VJTI/sra-board-hardware-design/master/sra_dev_board_2026/component_libraries/MPU/MPU6050/MPU6050%20v2.step",
+      "tags": ["sensor", "imu", "accelerometer", "gyroscope", "mpu6050", "gy-521", "i2c"],
+      "license": "MIT",
+      "attribution": "SRA-VJTI/sra-board-hardware-design (github.com/SRA-VJTI/sra-board-hardware-design), MIT"
+    },
+    {
       "id": "vl53l1x-tof",
       "name": "VL53L1X time-of-flight distance sensor (Adafruit 3967)",
       "family": "Sensor",
