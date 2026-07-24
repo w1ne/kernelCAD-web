@@ -278,6 +278,26 @@ describe('ingestParts', () => {
     expect(existsSync(join(out, 'v1', 'catalog', 'parts.index.json'))).toBe(false);
   });
 
+  it('skips cross-folder duplicate ids (keeping the first) when onDuplicate is "skip"', async () => {
+    const { src, out } = createTemporaryCatalogDirectories();
+    writeStepFixture(src, ['Bearings', 'linear'], 'lm8uu', tinyStepBytes);
+    writeStepFixture(src, ['Mountings', 'lm8uu'], 'lm8uu', alternateTinyStepBytes);
+
+    const records = await ingestDirectory(src, out, INGEST_OPTS, { onDuplicate: 'skip' });
+    expect(records.filter((r) => r.id === 'lm8uu')).toHaveLength(1);
+    expect(existsSync(join(out, 'v1', 'catalog', 'parts.index.json'))).toBe(true);
+  });
+
+  it('still throws on a duplicate EXPLICIT sidecar id even when onDuplicate is "skip"', async () => {
+    const { src, out } = createTemporaryCatalogDirectories();
+    writeStepFixture(src, ['a'], 'first', tinyStepBytes, { id: 'shared' });
+    writeStepFixture(src, ['b'], 'second', alternateTinyStepBytes, { id: 'shared' });
+
+    await expect(
+      ingestDirectory(src, out, INGEST_OPTS, { onDuplicate: 'skip' }),
+    ).rejects.toMatchObject({ name: 'DuplicateCatalogIdError' });
+  });
+
   it('rejects a numeric sidecar catalog ID before it can collide with a string ID', async () => {
     const { src, out } = createTemporaryCatalogDirectories();
     writeStepFixture(src, ['electronics', 'driver-a'], 'first', tinyStepBytes, { id: 1 });

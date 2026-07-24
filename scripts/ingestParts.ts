@@ -121,7 +121,13 @@ export interface IngestOpts {
 // -----------------------------------------------------------------------------
 
 function slugify(s: string): string {
+  // NFKD first so compatibility glyphs decompose to ASCII before the strip:
+  // vulgar fractions ½ → "1⁄2", ¼ → "1⁄4", ⁵⁄₁₆ → "5⁄16", super/subscripts → digits.
+  // Without this, "…½x¼…" and "…½x⁵⁄₁₆…" both collapse to the SAME slug (every
+  // distinguishing char is stripped), which crashed the FreeCAD ingest with a
+  // DuplicateCatalogIdError on the ANSI sprocket parts.
   return s
+    .normalize('NFKD')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
@@ -173,22 +179,53 @@ function resolveCatalogId(stepPath: string, meta: IngestSidecar): string {
   return meta.id;
 }
 
+export type DuplicateIdPolicy = 'throw' | 'skip';
+
 /**
- * Refuse ambiguous output names before creating any catalog files.  The
- * sidecar is deliberately read here because an explicit id overrides the
+ * Resolve which STEP files to ingest, one per catalog id.
+ *
+ * Default `throw`: refuse ambiguous output names before creating any catalog
+ * files — right for CURATED sources (authored electronics), where a collision is
+ * an authoring bug. The sidecar is read here because an explicit id overrides the
  * filename-derived default used by the emitted STEP and detail paths.
+ *
+ * `skip`: for BULK real-world imports (the CC-BY FreeCAD library) that legitimately
+ * repeat a part across folders — e.g. `LM8UU` under both `Bearings/` and
+ * `Mountings/`. Upstream drift into such a duplicate must not abort the whole
+ * catalog build, so keep the first file for each id and drop the rest (logged).
  */
-function assertUniqueCatalogIds(stepFiles: string[], srcRoot: string): void {
+function resolveIngestFiles(
+  stepFiles: string[],
+  srcRoot: string,
+  onDuplicate: DuplicateIdPolicy,
+): string[] {
   const pathsById = new Map<string, string>();
+  const kept: string[] = [];
+  const dropped: { id: string; path: string; first: string }[] = [];
   for (const stepPath of stepFiles) {
     const meta = loadSidecar(stepPath);
     const id = resolveCatalogId(stepPath, meta);
     const firstPath = pathsById.get(id);
     if (firstPath !== undefined) {
-      throw new DuplicateCatalogIdError(id, firstPath, stepPath, srcRoot);
+      // An explicit sidecar id colliding is ALWAYS an authoring bug — never skip it.
+      if (onDuplicate === 'throw' || meta.id !== undefined) {
+        throw new DuplicateCatalogIdError(id, firstPath, stepPath, srcRoot);
+      }
+      dropped.push({ id, path: stepPath, first: firstPath });
+      continue;
     }
     pathsById.set(id, stepPath);
+    kept.push(stepPath);
   }
+  if (dropped.length > 0) {
+    console.warn(
+      `ingestDirectory: dropped ${dropped.length} duplicate-id file(s):\n` +
+        dropped
+          .map((d) => `  '${d.id}': ${relative(srcRoot, d.path)} (kept ${relative(srcRoot, d.first)})`)
+          .join('\n'),
+    );
+  }
+  return kept;
 }
 
 function bindAuthoredConnectorManifest(
@@ -334,9 +371,13 @@ export async function ingestDirectory(
   srcDir: string,
   outDir: string,
   opts: IngestOpts,
+  config: { onDuplicate?: DuplicateIdPolicy } = {},
 ): Promise<CatalogRecord[]> {
-  const stepFiles = listStepFiles(srcDir);
-  assertUniqueCatalogIds(stepFiles, srcDir);
+  const stepFiles = resolveIngestFiles(
+    listStepFiles(srcDir),
+    srcDir,
+    config.onDuplicate ?? 'throw',
+  );
   mkdirSync(join(outDir, 'step'), { recursive: true });
   mkdirSync(join(outDir, 'v1', 'parts'), { recursive: true });
   mkdirSync(join(outDir, 'v1', 'catalog'), { recursive: true });

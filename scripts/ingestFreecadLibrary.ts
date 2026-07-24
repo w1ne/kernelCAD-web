@@ -54,11 +54,19 @@ async function main(): Promise<void> {
   }
 
   const srcDir = subdir ? join(cloneDir, subdir) : cloneDir;
-  const records = await ingestDirectory(srcDir, outDir, {
-    baseUrl: flags['base-url'] ?? '',
-    license: 'CC-BY-3.0',
-    attribution: ATTRIBUTION,
-  });
+  // The FreeCAD library is a bulk community catalog that repeats some parts
+  // across folders (e.g. LM8UU under both Bearings/ and Mountings/). Skip such
+  // duplicate ids rather than aborting the whole ingest when upstream drifts.
+  const records = await ingestDirectory(
+    srcDir,
+    outDir,
+    {
+      baseUrl: flags['base-url'] ?? '',
+      license: 'CC-BY-3.0',
+      attribution: ATTRIBUTION,
+    },
+    { onDuplicate: 'skip' },
+  );
   console.log(`ingested ${records.length} FreeCAD parts into ${outDir}`);
 }
 

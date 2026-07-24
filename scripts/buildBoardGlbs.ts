@@ -112,6 +112,24 @@ function isAuthoredBoard(p: ManifestPart): boolean {
   return typeof p.kcad_source === 'string' && p.id.endsWith('-board');
 }
 
+/** Any part with a `.kcad.ts` source, board or not. */
+function isAuthored(p: ManifestPart): boolean {
+  return typeof p.kcad_source === 'string';
+}
+
+/**
+ * Every part that carries geometry gets a web-loadable GLB — not just boards.
+ *
+ * The web 3D viewer (labwired's scene3d, kernelCAD/proto.cat 3D tabs) prefers
+ * `glbUrl` and only falls back to parsing raw STEP in-browser via a 7.6 MB OCCT
+ * wasm. Baking a GLB for EVERY geometry part means the browser never needs OCCT:
+ * it loads a small pre-tessellated mesh through three.js. So the target is any
+ * part that is authored (`kcad_source`) or has an ingested STEP on disk.
+ */
+function hasGeometry(p: ManifestPart, outDir: string): boolean {
+  return isAuthored(p) || existsSync(join(outDir, 'step', `${p.id}.step`));
+}
+
 export interface BoardGlbResult {
   id: string;
   glbBytes: number;
@@ -157,58 +175,102 @@ export async function buildBoardGlbs(
   if (!existsSync(cliPath)) {
     throw new Error(`kernelCAD CLI not built at ${cliPath}. Run: npm run build:cli`);
   }
+  // The color-preserving STEP→GLB converter, run per-part in a fresh subprocess
+  // (see the loop) so occt-import-js's wasm heap can't accumulate across parts.
+  const converterScript = resolve(repoRoot, 'scripts', 'stepToColoredGlb.ts');
   gltfTransformBin(repoRoot); // fail fast before compiling any board
 
   const glbDir = join(outDir, 'glb');
   mkdirSync(glbDir, { recursive: true });
   const tmp = mkdtempSync(join(tmpdir(), 'kc-board-glb-'));
 
-  const boards = manifest.parts.filter(isBoard);
+  const targets = manifest.parts.filter((p) => hasGeometry(p, outDir));
   const results: BoardGlbResult[] = [];
+  const skipped: { id: string; reason: string }[] = [];
 
-  for (const board of boards) {
-    const authored = isAuthoredBoard(board);
-    const rawGlb = join(tmp, `${board.id}.raw.glb`);
-    const finalGlb = join(glbDir, `${board.id}.glb`);
+  for (const part of targets) {
+    const authored = isAuthored(part);
+    const board = isBoard(part);
+    const rawGlb = join(tmp, `${part.id}.raw.glb`);
+    const finalGlb = join(glbDir, `${part.id}.glb`);
 
-    // 1. Produce a full-resolution GLB. Authored boards compile from their
-    // `.kcad.ts`; url-sourced boards are wrapped from the STEP the ingest already
-    // downloaded, so they reach the web viewer on the same terms.
-    const scriptPath = authored
-      ? resolve(repoRoot, board.kcad_source!)
-      : wrapStepAsScript(outDir, tmp, board.id);
-    if (!scriptPath) {
-      console.warn(`SKIP ${board.id}: no kcad_source and no ingested STEP to wrap.`);
-      continue;
+    // A single part failing to tessellate or exceeding the web size ceiling must
+    // NOT abort the whole catalog build — it just keeps its STEP and (for the web
+    // viewer) falls back to the procedural stand-in. Boards are the exception:
+    // they are guaranteed below, so a board failure is still fatal.
+    try {
+      // 1. Produce a full-resolution GLB.
+      // - Authored parts compile their `.kcad.ts` (colors come from `.color()`).
+      // - url-sourced BOARDS keep the proven wrap-STEP + kernel export path
+      //   (labwired recolors board solids by shape).
+      // - url-sourced NON-BOARD parts (sensors/displays) go through the
+      //   color-preserving OCCT converter, because the kernel's `fromSTEP` drops
+      //   AP214 face colors — a sensor must keep its real colors, not go grey.
+      if (authored || board) {
+        const scriptPath = authored
+          ? resolve(repoRoot, part.kcad_source!)
+          : wrapStepAsScript(outDir, tmp, part.id);
+        if (!scriptPath) {
+          skipped.push({ id: part.id, reason: 'no kcad_source and no ingested STEP to wrap' });
+          continue;
+        }
+        execFileSync(process.execPath, [cliPath, 'export', 'glb', scriptPath, '-o', rawGlb], {
+          stdio: ['ignore', 'pipe', 'pipe'],
+          timeout: 600_000,
+        });
+      } else {
+        const stepPath = join(outDir, 'step', `${part.id}.step`);
+        if (!existsSync(stepPath)) {
+          skipped.push({ id: part.id, reason: 'no ingested STEP to convert' });
+          continue;
+        }
+        // Run the OCCT color converter in a FRESH subprocess per part. In-process,
+        // occt-import-js's wasm heap accumulates across every conversion and never
+        // frees — after a dozen parts the process is memory-starved and the heavy
+        // board CLI exports that follow time out. A subprocess releases the heap on
+        // exit, keeping each conversion independent.
+        execFileSync(process.execPath, ['--import', 'tsx', converterScript, stepPath, rawGlb], {
+          stdio: ['ignore', 'pipe', 'pipe'],
+          timeout: 600_000,
+          cwd: repoRoot,
+        });
+      }
+
+      // 2-3. Optimize (uncompressed, per-component materials preserved), then
+      // verify size + materials. Authored boards are known multi-component, so a
+      // fixed floor of 2 is a real signal. Imported STEP / non-board parts may
+      // legitimately carry one material, so there we assert only that
+      // optimization did not FLATTEN what was there.
+      const { bytes: glbBytes, materials } = await optimizeGlb(rawGlb, finalGlb, {
+        repoRoot,
+        label: part.id,
+        maxBytes: MAX_GLB_BYTES,
+        ...(authored && board ? { minMaterials: 2 } : { preserveMaterials: true }),
+      });
+
+      // 4. Always serve the GLB. Keep the STEP too unless it is genuinely
+      // oversized, so the CAD path (lib.fetchPart) still works for this part.
+      const glbUrl = `${baseUrl.replace(/\/$/, '')}/glb/${part.id}.glb`;
+      const removedStep = removeDeployedStep(outDir, part.id);
+      const patchedRecord = patchRecordToGlb(outDir, part.id, glbUrl, removedStep);
+
+      results.push({ id: part.id, glbBytes, materials, glbUrl, patchedRecord, removedStep });
+    } catch (e) {
+      if (board) throw e; // boards must always ship a GLB — never silently skip
+      const msg = e instanceof Error ? e.message : String(e);
+      skipped.push({ id: part.id, reason: msg.split('\n')[0] });
+      if (existsSync(finalGlb)) rmSync(finalGlb);
     }
-    execFileSync(process.execPath, [cliPath, 'export', 'glb', scriptPath, '-o', rawGlb], {
-      stdio: ['ignore', 'pipe', 'pipe'],
-      timeout: 300_000,
-    });
-
-    // 2-3. Optimize (uncompressed, per-component materials preserved), then
-    // verify size + materials. Shared implementation; flags are load-bearing.
-    // Authored boards are known multi-component, so a fixed floor of 2 is a real
-    // signal. An imported STEP may legitimately carry one material, so there we
-    // assert only that optimization did not FLATTEN what was there.
-    const { bytes: glbBytes, materials } = await optimizeGlb(rawGlb, finalGlb, {
-      repoRoot,
-      label: board.id,
-      maxBytes: MAX_GLB_BYTES,
-      ...(authored ? { minMaterials: 2 } : { preserveMaterials: true }),
-    });
-
-    // 4. Always serve the GLB. Keep the STEP too unless it is genuinely oversized,
-    // so the CAD path (lib.fetchPart) still works for this board.
-    const glbUrl = `${baseUrl.replace(/\/$/, '')}/glb/${board.id}.glb`;
-    const removedStep = removeDeployedStep(outDir, board.id);
-    const patchedRecord = patchRecordToGlb(outDir, board.id, glbUrl, removedStep);
-
-    results.push({ id: board.id, glbBytes, materials, glbUrl, patchedRecord, removedStep });
   }
 
   rmSync(tmp, { recursive: true, force: true });
-  assertBoardConsistency(outDir, results);
+  if (skipped.length > 0) {
+    console.log(
+      `built ${results.length} GLB(s); ${skipped.length} part(s) kept STEP only:\n` +
+        skipped.map((s) => `  - ${s.id}: ${s.reason}`).join('\n'),
+    );
+  }
+  assertBoardConsistency(outDir, results, manifest);
   return results;
 }
 
@@ -234,8 +296,21 @@ function wrapStepAsScript(outDir: string, tmpDir: string, id: string): string | 
  *  unless its STEP was dropped for size. Enforce it rather than assume it — the
  *  bug this replaces was precisely a rule that held for some boards and not
  *  others, silently, for months. */
-export function assertBoardConsistency(outDir: string, results: BoardGlbResult[]): void {
+export function assertBoardConsistency(
+  outDir: string,
+  results: BoardGlbResult[],
+  manifest?: Manifest,
+): void {
   const problems: string[] = [];
+  // Boards carry the strongest guarantee: every board MUST have produced a GLB.
+  // Non-board geometry parts may fall back to STEP-only, but a missing board GLB
+  // is the regression this whole file exists to prevent.
+  if (manifest) {
+    const built = new Set(results.map((r) => r.id));
+    for (const p of manifest.parts.filter(isBoard)) {
+      if (!built.has(p.id)) problems.push(`${p.id}: board produced no GLB`);
+    }
+  }
   for (const r of results) {
     const detailPath = join(outDir, 'v1', 'parts', `${r.id}.json`);
     if (!existsSync(detailPath)) {
