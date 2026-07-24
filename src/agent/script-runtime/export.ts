@@ -21,6 +21,9 @@ import { NEXT_ACTIONS, HINT_TEMPLATES } from '../../shared/diagnostics/registry'
 import { Shape } from '../../modeling/capture/proxy';
 import { Scene } from '../../modeling/validation/scene';
 import { isRegion } from '../../shared/intent/region';
+import { resolveParams } from '../../shared/runtime/resolveParams';
+import type { ConnectorManifest } from '../../shared/parts/connectorManifestSchema';
+import { sceneToConnectorManifest } from './connectorManifestExport';
 
 export type ExportFormat =
   | 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'svg-drawing'
@@ -64,6 +67,8 @@ export interface ExportInput {
   scriptDir?: string;
   /** Per-format options. Discriminator `options.format` must equal top-level `format`. */
   options?: ExportOptions;
+  /** Request a numeric authored connector sidecar for a static assembly STEP export. */
+  connectorManifest?: { partId: string; family: string };
 }
 
 /** Companion mesh file for robot-description exports (URDF / SDF). The
@@ -82,10 +87,12 @@ export interface ExportResult {
   diagnostics: CompilerDiagnostic[];
   /** Per-link mesh files referenced by the primary output (URDF / SDF). */
   meshes?: CompanionMeshFile[];
+  /** Numeric authored connector sidecar, present only when requested for a STEP Scene export. */
+  connectorManifest?: ConnectorManifest;
 }
 
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
-  const { code, fileName, format, feature_id, scriptDir } = input;
+  const { code, fileName, format, feature_id, scriptDir, connectorManifest: manifestRequest } = input;
 
   if (input.options && input.options.format !== input.format) {
     return {
@@ -102,6 +109,10 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
     };
   }
 
+  if (manifestRequest !== undefined && format !== 'step') {
+    throw new Error('connector-manifest export requires STEP format.');
+  }
+
   const run = await runScript({ code, fileName, scriptDir });
   const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const r = await engine.run(run.records, { paramTable: run.paramTable });
@@ -112,6 +123,22 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   if (fatal.length > 0) {
     return { bytes: new Uint8Array(), featureCount, diagnostics: r.diagnostics };
   }
+
+  const manifestScene = manifestRequest === undefined ? undefined : (() => {
+    if (!(run.returnValue instanceof Scene)) {
+      throw new Error('connector-manifest export requires the script to return an assembly Scene.');
+    }
+    const sourceId = run.returnValue.__sourceFeatureId();
+    if (sourceId === undefined) {
+      throw new Error('connector-manifest export requires a Scene with a source feature.');
+    }
+    if (feature_id !== undefined && feature_id !== sourceId) {
+      throw new Error(
+        `connector-manifest export feature_id '${feature_id}' must match Scene source feature '${sourceId}'.`,
+      );
+    }
+    return run.returnValue;
+  })();
 
   // DXF entry path: a script that returns a `Region` (typically from
   // `Shape.flattenPattern()`) bypasses target-shape lowering — the Region's
@@ -257,6 +284,10 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
     };
   }
 
+  if (manifestScene !== undefined && !isSceneBackend(lowered)) {
+    throw new Error('connector-manifest export requires the Scene source to lower to a SceneBackend.');
+  }
+
   // svg-drawing entry path: the engineering-drawing sheet accepts both a
   // single body and a multi-body Scene — Scene parts ship in world frame so
   // the hidden-line pass sees inter-part occlusion. Dispatched before the
@@ -282,8 +313,21 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   // so fall back to the boolean union via assemblyExport(union).
   if (isSceneBackend(lowered)) {
     if (format === 'step') {
+      const connectorManifest = manifestRequest === undefined
+        ? undefined
+        : sceneToConnectorManifest(
+            manifestScene!,
+            lowered,
+            resolveParams(run.records, run.paramTable),
+            manifestRequest,
+          );
       const bytes = await exportSceneToSTEPAsync(lowered);
-      return { bytes, featureCount, diagnostics: r.diagnostics };
+      return {
+        bytes,
+        featureCount,
+        diagnostics: r.diagnostics,
+        ...(connectorManifest === undefined ? {} : { connectorManifest }),
+      };
     }
     if (format === 'dxf') {
       // DXF needs a single planar wire source; a multi-body Scene cannot

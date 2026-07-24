@@ -25,7 +25,12 @@ export function useGeneration() {
   const [phase, setPhase] = useState<GenerationPhase>({ state: 'idle' });
   const [events, setEvents] = useState<GenerateEvent[]>([]);
 
-  const submit = useCallback(async (prompt: string, currentCode?: string, mesh?: GenerateRequest['mesh']) => {
+  const submit = useCallback(async (
+    prompt: string,
+    currentCode?: string,
+    mesh?: GenerateRequest['mesh'],
+    referenceImage?: GenerateRequest['referenceImage'],
+  ) => {
     setEvents([]);
     setPhase({
       state: 'running',
@@ -34,7 +39,7 @@ export function useGeneration() {
 
     let res: Response;
     try {
-      res = await startGeneration({ prompt, currentCode, mesh });
+      res = await startGeneration({ prompt, currentCode, mesh, referenceImage });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setPhase({ state: 'error', code: 'network', message });

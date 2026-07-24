@@ -10,6 +10,7 @@ import type { PBRMaterial } from './material';
 import type { Curve3DMetadata } from './curve3dRecord';
 import type { VariableSweepMetadata } from './variableSweepRecord';
 import type { FilletContinuity } from './filletContinuityRecord';
+import type { CatalogPartMetadata } from '../parts/types';
 
 export type ShapeTransform =
   | { op: 'translate'; vec: Vec3Param }
@@ -23,6 +24,10 @@ export type ShapeTransform =
 export type FaceLabelsMap = Record<string, CanonicalFace | FaceQuery>;
 
 export interface FeatureMetadata {
+  /** Immutable catalog identity carried by Shapes returned from
+   * `lib.fetchPart()`. This preserves package/dimension/provenance semantics
+   * through the capture graph even though the public call returns a Shape. */
+  catalogPart?: CatalogPartMetadata;
   /** Hex color or CSS color string applied to this feature's mesh. */
   color?: string;
   /** Face-label map for features that support canonical-face naming. */

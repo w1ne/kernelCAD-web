@@ -8,9 +8,9 @@
 // step.parts record onto kernelCAD's canonical `PartRecord`.
 //
 // Two schema gaps are filled here, not at the API:
-//   - `connectors` — step.parts ships none; they are synthesized at fetch time
-//     from the downloaded STEP (see synthesizeConnectors.ts). The mapper emits
-//     an empty list; fetchPartHost fills it.
+//   - `connectors` — records without an authored, hash-bound connector manifest
+//     synthesize them at fetch time from downloaded STEP (see
+//     synthesizeConnectors.ts). The mapper otherwise exposes the authored names.
 //   - `license`    — step.parts exposes no per-part license field, but the
 //     catalog repo (earthtojake/step.parts) is MIT, which covers the geometry.
 //     We stamp `STEP_PARTS_LICENSE` ('MIT') plus `attribution = pageUrl` to
@@ -21,6 +21,7 @@
 // integrity verification (getOrFetchAsync) works unchanged.
 
 import type { PartRecord } from '../../shared/parts/types';
+import { validateHashBoundConnectorManifest } from '../../shared/parts/connectorManifestSchema';
 
 export const STEP_PARTS_BASE_URL = 'https://api.step.parts';
 
@@ -51,6 +52,8 @@ export interface StepPartsRecord {
   byteSize?: number;
   sha256?: string;
   pageUrl?: string;
+  /** Optional authored connector data, bound to this exact geometry digest. */
+  connectorManifest?: unknown;
 }
 
 /** step.parts `standard` is an object `{body, number, designation}`; kernelCAD's
@@ -82,12 +85,25 @@ function coerceAttributes(
 /**
  * Map a step.parts detail record onto a kernelCAD PartRecord.
  *
- * `connectors` is intentionally empty — fetchPartHost synthesizes them from the
- * downloaded STEP. Aliases are folded into `tags` so fuzzy discovery can match
- * the names humans actually type ("M3 set screw").
+ * Authored connector manifests are validated against the raw record and
+ * transported intact; otherwise `connectors` remains empty for fetch-time
+ * synthesis. Aliases are folded into `tags` so fuzzy discovery can match the
+ * names humans actually type ("M3 set screw").
  */
 export function mapStepPartsRecord(raw: StepPartsRecord): PartRecord {
   const tags = [...(raw.tags ?? []), ...(raw.aliases ?? [])];
+  const sha256 = raw.sha256 ?? '';
+  const connectorManifest = raw.connectorManifest;
+  if (connectorManifest !== undefined) {
+    if (typeof raw.sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(raw.sha256)) {
+      throw new Error('step.parts: connectorManifest requires a lowercase record sha256');
+    }
+    validateHashBoundConnectorManifest(connectorManifest, {
+      partId: raw.id,
+      family: raw.family,
+      geometrySha256: sha256,
+    });
+  }
   const record: PartRecord = {
     id: raw.id,
     name: raw.name,
@@ -95,10 +111,11 @@ export function mapStepPartsRecord(raw: StepPartsRecord): PartRecord {
     family: raw.family,
     tags,
     attributes: coerceAttributes(raw.attributes),
-    sha256: raw.sha256 ?? '',
+    sha256,
     source: 'remote',
     license: STEP_PARTS_LICENSE,
-    connectors: [],
+    connectors: connectorManifest?.connectors.map((connector) => connector.name) ?? [],
+    ...(connectorManifest === undefined ? {} : { connectorManifest }),
   };
   const standard = flattenStandard(raw.standard);
   if (standard !== undefined) record.standard = standard;

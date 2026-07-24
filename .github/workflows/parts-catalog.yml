@@ -99,6 +99,16 @@ jobs:
           --manifest scripts/electronics-parts.json
           --base-url https://kernelcad-parts.pages.dev
 
+      # Required authored sources are a required part of this deploy: unlike
+      # third-party upstream models, a failed A4988/SG90 export must never be
+      # silently skipped and published as a catalog omission. This verifies the
+      # five package artifacts plus the two motor-control components and their
+      # hash-bound authored interfaces before any board conversion or deploy.
+      - name: Verify required authored electronics catalog
+        run: >
+          npx tsx scripts/verifyAuthoredElectronicsCatalog.ts catalog
+          --manifest scripts/electronics-parts.json
+
       - name: Build web-ready board GLBs (and drop oversized board STEPs)
         # For every authored dev-board (kcad_source id ending in -board), compile
         # a GLB, decimate it to a few hundred KB (uncompressed, colors preserved),

@@ -58,7 +58,7 @@ describe('Every example under examples/**/*.kcad.ts is classified (structural co
     // CI shard balance delegation: every HOSTED_IN_DEDICATED_FILE entry
     // must point at an existing test file that actually references the
     // example — otherwise the per-example check would silently vanish.
-    for (const [examplePath, { testFile }] of HOSTED_IN_DEDICATED_FILE) {
+    for (const [examplePath, { testFile, coverage }] of HOSTED_IN_DEDICATED_FILE) {
       expect(
         examples,
         `${examplePath} appears in HOSTED_IN_DEDICATED_FILE but the example is missing`,
@@ -74,18 +74,33 @@ describe('Every example under examples/**/*.kcad.ts is classified (structural co
         `${examplePath}: hosting testFile ${testFile} must reference the example path`,
       ).toBe(true);
       // The hosting file must carry the exact per-example it-title this
-      // sweep would have generated AND actually invoke the validate CLI —
-      // otherwise a skip/gut edit to the hosting file would silently drop
-      // the example's loop coverage while this gate stays green.
+      // sweep would have generated. Its required validation surface is
+      // coverage-mode specific, so a remote-catalog example cannot quietly
+      // regress back into the hermetic live sweep (or lose its offline
+      // fixture coverage altogether).
       expect(
         testSrc.includes(`${examplePath} passes the physics-grounded loop`),
         `${examplePath}: hosting testFile ${testFile} must contain the it-title ` +
           `"${examplePath} passes the physics-grounded loop"`,
       ).toBe(true);
-      expect(
-        testSrc.includes('runValidateCli'),
-        `${examplePath}: hosting testFile ${testFile} must call runValidateCli`,
-      ).toBe(true);
+      if (coverage === 'run-validate-cli') {
+        expect(
+          testSrc.includes('runValidateCli'),
+          `${examplePath}: hosting testFile ${testFile} must call runValidateCli`,
+        ).toBe(true);
+      } else {
+        for (const fixtureSurface of [
+          'await runCatalogFixtureAssemblyValidation()',
+          'detectInterferences',
+          'validateAssembly',
+          'probeAssemblies',
+        ]) {
+          expect(
+            testSrc.includes(fixtureSurface),
+            `${examplePath}: catalog-fixture host ${testFile} must exercise ${fixtureSurface}`,
+          ).toBe(true);
+        }
+      }
     }
   });
 

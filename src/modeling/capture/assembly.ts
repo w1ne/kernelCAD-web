@@ -748,6 +748,17 @@ export class Assembly {
   }
 
   part(name: string, shape: Shape, opts: AssemblyPartOpts = {}): AssemblyPartRef {
+    return this.partInternal(name, shape, opts, true);
+  }
+
+  /** Internal part route used by subAssembly() to copy already-promoted
+   * catalog interfaces without registering them a second time. */
+  private partInternal(
+    name: string,
+    shape: Shape,
+    opts: AssemblyPartOpts,
+    promoteCatalogConnectors: boolean,
+  ): AssemblyPartRef {
     assertTopoRefSafeName(name, 'part-name', shape.id);
     if (opts.at !== undefined && !isValidEditableVec3(opts.at)) {
       throw new KernelError(
@@ -807,6 +818,26 @@ export class Assembly {
       );
     }
     const connectors = normalizeConnectors(name, shape.id, opts.connectors);
+    const transformedCatalogConnectors = promoteCatalogConnectors
+      ? transformCatalogConnectors(this.session, shape)
+      : [];
+    for (const connector of transformedCatalogConnectors) {
+      if (Object.hasOwn(connectors, connector.name)) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly connector '${connector.name}' is declared both by the catalog part and assembly.part options.`,
+          shape.id,
+          'Rename the user-declared connector or use the catalog connector as-is.',
+        );
+      }
+      connectors[connector.name] = {
+        origin: toVec3Param(connector.origin, 'mm'),
+        axis: toVec3Param(
+          connector.type === 'frame' ? connector.normal : connector.axis,
+          'unitless',
+        ),
+      };
+    }
     const at = resolvePartPlacement(this.name, name, shape.id, opts.at, connectors, opts.connect);
     const record = this.session.assemblyPart(this.name, name, shape, { at, connectors, placedBy: opts.connect });
     // Q1.5: write the part-lineage entry now that the capture-session has
@@ -834,6 +865,15 @@ export class Assembly {
       (chainName, chainShape, chainOpts) => this.part(chainName, chainShape, chainOpts),
       this,
     );
+    for (const connector of transformedCatalogConnectors) {
+      part.connector(connector.name, {
+        type: connector.type,
+        origin: { kind: 'vec3', value: connector.origin },
+        ...(connector.type === 'frame'
+          ? { normal: connector.normal }
+          : { axis: connector.axis }),
+      });
+    }
     const stored: AssemblyPartStored = {
       ...part,
       originalShape: shape,
@@ -908,9 +948,9 @@ export class Assembly {
     const importedByOriginalName = new Map<string, AssemblyPartRef>();
     for (const op of other.__parts()) {
       const newName = `${prefix}${op.name}`;
-      const newRef = this.part(newName, op.originalShape, {
+      const newRef = this.partInternal(newName, op.originalShape, {
         ...(op.connectors !== undefined ? { connectors: op.connectors } : {}),
-      });
+      }, false);
       // Copy v0.6 mateConnectors (the .connector(name, opts) chain output)
       // by shallow-copying the array contents. The new part already owns an
       // empty mateConnectors array per `part()`; populate it now so post-
@@ -2669,12 +2709,17 @@ export class Assembly {
   ): Scene {
     const sceneFeatureId = sceneShape.id;
     const session = this.session;
-    const sceneParts: ScenePart[] = this.parts.map((p) => ({
-      name: p.name,
-      shape: p.originalShape,
-      worldTransform: matePartTransforms?.get(p.name) ?? Transform.identity(),
-      ...(p.mateConnectors.length > 0 ? { connectors: [...p.mateConnectors] } : {}),
-    }));
+    const catalogMetadataByShapeId = catalogPartSceneMetadataByShapeId(session);
+    const sceneParts: ScenePart[] = this.parts.map((p) => {
+      const metadata = catalogMetadataByShapeId.get(p.originalShape.id);
+      return {
+        name: p.name,
+        shape: p.originalShape,
+        worldTransform: matePartTransforms?.get(p.name) ?? Transform.identity(),
+        ...(metadata === undefined ? {} : { metadata }),
+        ...(p.mateConnectors.length > 0 ? { connectors: [...p.mateConnectors] } : {}),
+      };
+    });
     return new Scene(
       this.name,
       sceneParts,
@@ -2693,6 +2738,25 @@ export class Assembly {
       this.tendons.length > 0 ? [...this.tendons] : undefined,
     );
   }
+}
+
+/**
+ * Copy catalog identity from a fetched Shape into the public Scene part
+ * metadata.  Other source metadata has its own dedicated Scene fields (for
+ * example color), so only this explicit immutable package snapshot crosses
+ * the assembly boundary.
+ */
+function catalogPartSceneMetadataByShapeId(
+  session: CaptureSession,
+): ReadonlyMap<FeatureId, Readonly<Record<string, unknown>>> {
+  const metadataByShapeId = new Map<FeatureId, Readonly<Record<string, unknown>>>();
+  for (const record of session.getRecords()) {
+    const catalogPart = record.metadata?.catalogPart;
+    if (catalogPart !== undefined) {
+      metadataByShapeId.set(record.id, Object.freeze({ catalogPart }));
+    }
+  }
+  return metadataByShapeId;
 }
 
 export function makeAssembly(name: string | undefined, session: CaptureSession): Assembly {
@@ -2848,15 +2912,18 @@ export class SolvedKinematics {
       );
     }
     const records = this.session.getRecords();
+    const catalogMetadataByShapeId = catalogPartSceneMetadataByShapeId(this.session);
     const sceneParts: ScenePart[] = [];
     for (const part of this.partsByName.values()) {
       const partRecord = records.find(r => r.id === part.id);
       const color = partRecord ? lookupSourceColor(partRecord, records) : undefined;
+      const metadata = catalogMetadataByShapeId.get(part.originalShape.id);
       sceneParts.push({
         name: part.name,
         shape: part.originalShape,
         worldTransform: this.worldT.get(part.id) ?? Transform.identity(),
         ...(color !== undefined ? { color } : {}),
+        ...(metadata === undefined ? {} : { metadata }),
         ...(part.mateConnectors.length > 0 ? { connectors: [...part.mateConnectors] } : {}),
       });
     }
@@ -3047,6 +3114,113 @@ function normalizeConnectors(
       : { origin: toVec3Param(frame.origin, 'mm'), axis: toVec3Param(frame.axis, 'unitless') };
   }
   return normalized;
+}
+
+type TransformedCatalogConnector =
+  | {
+      name: string;
+      type: 'frame';
+      origin: Vec3;
+      normal: Vec3;
+    }
+  | {
+      name: string;
+      type: 'axis';
+      origin: Vec3;
+      axis: Vec3;
+    };
+
+function mutableVec3(vector: readonly [number, number, number]): Vec3 {
+  return [vector[0], vector[1], vector[2]];
+}
+
+function literalCatalogTransformParam(
+  value: Param,
+  shapeId: FeatureId,
+  transformLabel: string,
+): number {
+  if (value.paramRef !== undefined) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `assembly.part cannot promote catalog connectors for shape '${shapeId}' because its ${transformLabel} uses a ParamRef.`,
+      shapeId,
+      'Use only literal translate and rotate transforms on catalog-backed shapes before adding them to an assembly.',
+    );
+  }
+  return value.evaluated;
+}
+
+function literalCatalogTransformVec3(
+  value: Vec3Param,
+  shapeId: FeatureId,
+  transformLabel: string,
+): Vec3 {
+  return [
+    literalCatalogTransformParam(value.x, shapeId, `${transformLabel}.x`),
+    literalCatalogTransformParam(value.y, shapeId, `${transformLabel}.y`),
+    literalCatalogTransformParam(value.z, shapeId, `${transformLabel}.z`),
+  ];
+}
+
+/**
+ * Catalog connector manifests describe a shape's untransformed local frame.
+ * Preserve that exact authored meaning through rigid, literal Shape transforms
+ * so the legacy connector-placement and mate connector APIs agree. Generic
+ * autoConnectors deliberately never enter this path.
+ */
+function transformCatalogConnectors(
+  session: CaptureSession,
+  shape: Shape,
+): TransformedCatalogConnector[] {
+  const catalogConnectors = session.catalogConnectors.get(shape.id);
+  if (catalogConnectors === undefined) return [];
+
+  const transforms = session.getRecords().find((record) => record.id === shape.id)?.transforms ?? [];
+  let total = Transform.identity();
+  for (const transform of transforms) {
+    let next: Transform;
+    if (transform.op === 'translate') {
+      const vector = literalCatalogTransformVec3(transform.vec, shape.id, 'translate');
+      next = Transform.translation(vector[0], vector[1], vector[2]);
+    } else if (transform.op === 'rotateAxis') {
+      const axis = literalCatalogTransformVec3(transform.axis, shape.id, 'rotate.axis');
+      const degrees = literalCatalogTransformParam(transform.degrees, shape.id, 'rotate.degrees');
+      const pivot = transform.pivot === undefined
+        ? [0, 0, 0] as Vec3
+        : literalCatalogTransformVec3(transform.pivot, shape.id, 'rotate.pivot');
+      next = Transform.rotationAroundPivot(axis, degrees, pivot);
+    } else {
+      const label = transform.op === 'scale' ? 'scale' : 'reflect';
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.part cannot promote catalog connectors for shape '${shape.id}' through ${label}: catalog interfaces require rigid transforms.`,
+        shape.id,
+        'Use only literal translate and rotate transforms on catalog-backed shapes before adding them to an assembly.',
+      );
+    }
+    // Shape transforms execute in declaration order. Transform.compose reads
+    // "apply other, then this", so each new transform pre-multiplies the
+    // accumulated local-frame transform.
+    total = next.compose(total);
+  }
+
+  return catalogConnectors.map((connector): TransformedCatalogConnector => {
+    const origin = mutableVec3(total.point(connector.origin));
+    if (connector.type === 'frame') {
+      return {
+        name: connector.name,
+        type: 'frame',
+        origin,
+        normal: mutableVec3(total.axisDir(connector.normal)),
+      };
+    }
+    return {
+      name: connector.name,
+      type: 'axis',
+      origin,
+      axis: mutableVec3(total.axisDir(connector.axis)),
+    };
+  });
 }
 
 /** Sanity-check every numeric field on an authored cross-section. Lengths

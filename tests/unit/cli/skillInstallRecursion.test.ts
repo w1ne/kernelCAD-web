@@ -23,11 +23,12 @@ describe('kernelcad skill install (recursion fix)', () => {
       await installCommand(dst);
       // Top-level skill present.
       expect(existsSync(join(dst, 'kernelcad-from-reference/SKILL.md'))).toBe(true);
-      // All six nested from-reference sub-skills must be present.
+      // All seven nested from-reference sub-skills must be present.
       for (const sub of [
         'blockout-model',
         'image-replicator',
         'kernelcad-trace-from-image',
+        'photo-to-device',
         'prepare-prompt',
         'render-inspect',
         'use-the-available-kernel',

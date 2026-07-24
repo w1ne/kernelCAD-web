@@ -21,8 +21,13 @@ import {
   RemoteDisabledError,
 } from './remoteClient';
 import { KernelError } from '../../shared/intent/kernelError';
-import type { PartRecord } from '../../shared/parts/types';
-import { loadConnectorManifest } from '../../shared/parts/connectorManifest';
+import { snapshotCatalogPart, type PartRecord } from '../../shared/parts/types';
+import {
+  loadConnectorManifest,
+  validateHashBoundConnectorManifest,
+  type ConnectorManifest,
+  type HashBoundConnectorManifest,
+} from '../../shared/parts/connectorManifest';
 import { formatTopoRef } from '../../kernel/naming';
 import { inspectStepFile } from '../../agent/inspect/inspectStep';
 import { synthesizeConnectorsFromReport } from './synthesizeConnectors';
@@ -141,6 +146,19 @@ function sha256Hex(bytes: Buffer): string {
   return createHash('sha256').update(bytes).digest('hex');
 }
 
+/** Bind a remote manifest to the exact STEP bytes that passed cache integrity. */
+export function validateManifestAgainstStepBytes(
+  manifest: HashBoundConnectorManifest,
+  identity: Pick<PartRecord, 'id' | 'family'>,
+  bytes: Buffer,
+): void {
+  validateHashBoundConnectorManifest(manifest, {
+    partId: identity.id,
+    family: identity.family,
+    geometrySha256: sha256Hex(bytes),
+  });
+}
+
 /**
  * FETCH-BY-URL entrypoint. Resolves a direct geometry URL on a trusted host to
  * a fetch-only PartRecord (STEP → inspected + connector-synthesized; mesh →
@@ -232,6 +250,7 @@ export async function fetchPartFromUrlHost(
       inputs: {},
       metadata: { sourcePath: path, geometryKind: 'mesh' },
     });
+    attachCatalogPartMetadata(ctx, shape, record);
     return { ok: true, kind: 'part', result: { shape, record } };
   }
 
@@ -265,6 +284,7 @@ export async function fetchPartFromUrlHost(
     stepUrl: url,
     redistribution: 'fetch-only',
   };
+  attachCatalogPartMetadata(ctx, shape, record);
   return { ok: true, kind: 'part', result: { shape, record } };
 }
 
@@ -304,6 +324,7 @@ export async function fetchPartHost(
     const bytes = readFileSync(direct.stepPath);
     const shape = await fromStepBytes(ctx, bytes, direct.stepPath);
     attachManifestConnectorsFromSidecar(ctx, shape, direct.stepPath);
+    attachCatalogPartMetadata(ctx, shape, direct.record);
     return { shape, record: direct.record };
   }
 
@@ -319,6 +340,7 @@ export async function fetchPartHost(
     const bytes = readFileSync(r.stepPath);
     const shape = await fromStepBytes(ctx, bytes, r.stepPath);
     attachManifestConnectorsFromSidecar(ctx, shape, r.stepPath);
+    attachCatalogPartMetadata(ctx, shape, r.record);
     return { shape, record: r.record };
   }
   if (matches.length > 1 && opts.strict !== false) {
@@ -384,26 +406,31 @@ export async function fetchPartHost(
       fetcher: (u) => remoteFetchPartBytes(u),
     });
     const bytes = readFileSync(path);
-    const shape = await fromStepBytes(ctx, bytes, meta.stepUrl);
-    // Catalog STEP ships no connector frames, so a *found* part would arrive as
-    // a dead solid that cannot mate. Recover the bundled-tier auto-connector
-    // convention from the geometry itself (bbox faces + detected hole axes).
-    // Defensive: a STEP that resists inspection still imports, just without
-    // synthesized connectors.
-    try {
-      const report = await inspectStepFile(path);
-      const conns = synthesizeConnectorsFromReport(report, shape.id);
-      if (conns.length > 0) {
-        ctx.session.attachAutoConnectors(shape.id, conns);
-        return {
-          shape,
-          record: { ...meta, source: 'remote', connectors: conns.map((c) => c.name) },
-        };
-      }
-    } catch {
-      // fall through to the unenriched record
+    const manifest = meta.connectorManifest;
+    if (manifest !== undefined) {
+      validateManifestAgainstStepBytes(manifest, meta, bytes);
     }
-    return { shape, record: { ...meta, source: 'remote' } };
+    const shape = await fromStepBytes(ctx, bytes, meta.stepUrl);
+    let record: PartRecord = { ...meta, source: 'remote' };
+    if (manifest !== undefined) {
+      const connectors = attachManifestConnectors(ctx, shape, manifest);
+      record = { ...record, connectors };
+    } else {
+      // Records without authored interfaces retain geometry-derived discovery
+      // connectors. A STEP that resists inspection still imports normally.
+      try {
+        const report = await inspectStepFile(path);
+        const conns = synthesizeConnectorsFromReport(report, shape.id);
+        if (conns.length > 0) {
+          ctx.session.attachAutoConnectors(shape.id, conns);
+          record = { ...record, connectors: conns.map((c) => c.name) };
+        }
+      } catch {
+        // fall through to the unenriched record
+      }
+    }
+    attachCatalogPartMetadata(ctx, shape, record);
+    return { shape, record };
   } catch (e) {
     if (e instanceof RemoteDisabledError) throw e;
     throw e;
@@ -411,11 +438,32 @@ export async function fetchPartHost(
 }
 
 /**
- * Load the per-part `<id>.json` connector manifest sidecar (when present) and
- * attach the manifest's connectors to the captured shape via the session's
- * autoConnectors map. The Slice C bracket-side auto-connector consumers use
- * the same map, so the assembly resolver can mix authored + bundled parts
- * without distinguishing the source.
+ * Attach exact manifest data and retain the legacy discovery projection.
+ */
+function attachManifestConnectors(
+  ctx: FetchPartCtx,
+  shape: Shape,
+  manifest: ConnectorManifest,
+): string[] {
+  ctx.session.attachCatalogConnectors(shape.id, manifest.connectors);
+  const conns = manifest.connectors.map((c) => ({
+    name: c.name,
+    ref: formatTopoRef({
+      owner: shape.id,
+      kind: 'connector',
+      segments: [c.name],
+    }),
+    origin: c.origin,
+    axis: c.type === 'axis' ? c.axis : c.normal,
+    type: 'frame' as const,
+  }));
+  ctx.session.attachAutoConnectors(shape.id, conns);
+  return conns.map((connector) => connector.name);
+}
+
+/**
+ * Load the per-part `<id>.json` connector manifest sidecar (when present).
+ * Local sidecars remain best-effort: a malformed one must not block import.
  */
 function attachManifestConnectorsFromSidecar(
   ctx: FetchPartCtx,
@@ -426,20 +474,31 @@ function attachManifestConnectorsFromSidecar(
   if (!existsSync(manifestPath)) return;
   try {
     const manifest = loadConnectorManifest(manifestPath);
-    const conns = manifest.connectors.map((c) => ({
-      name: c.name,
-      ref: formatTopoRef({
-        owner: shape.id,
-        kind: 'connector',
-        segments: [c.name],
-      }),
-      origin: c.origin,
-      axis: c.type === 'axis' ? c.axis : c.normal,
-      type: 'frame' as const,
-    }));
-    ctx.session.attachAutoConnectors(shape.id, conns);
+    attachManifestConnectors(ctx, shape, manifest);
   } catch {
     // A malformed manifest must not break the import; the lowerer survives
     // without the manifest's named connectors.
   }
+}
+
+/**
+ * Retain immutable catalog semantics on the imported feature itself.
+ *
+ * `fetchPartHost()` has a rich `{ shape, record }` result, but the public
+ * `lib.fetchPart()` API intentionally returns only the composable Shape. Put a
+ * frozen record snapshot on the Shape's FeatureRecord before that wrapper is
+ * discarded so assemblies, Studio, and MCP inspection can still identify the
+ * physical package instead of seeing only an imported STEP source path.
+ */
+function attachCatalogPartMetadata(
+  ctx: FetchPartCtx,
+  shape: Shape,
+  record: PartRecord,
+): void {
+  const feature = ctx.session.getRecords().find((candidate) => candidate.id === shape.id);
+  if (!feature) return;
+  feature.metadata = {
+    ...(feature.metadata ?? {}),
+    catalogPart: snapshotCatalogPart(record),
+  };
 }

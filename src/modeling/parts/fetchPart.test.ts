@@ -25,6 +25,34 @@ describe('fetchPart orchestrator', () => {
     expect(r.record.source).toBe('local-catalog');
   });
 
+  it('retains a bundled sidecar as exact catalog connectors and a discovery projection', async () => {
+    const session = new CaptureSession();
+    const r = await fetchPartHost({ session }, 'spur-gear-m2-z20', {});
+
+    expect(session.catalogConnectors.get(r.shape.id)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: 'bore',
+          type: 'axis',
+          origin: [0, 0, 0],
+          axis: [0, 0, 1],
+        }),
+        expect.objectContaining({
+          name: 'front-face',
+          type: 'frame',
+          origin: [0, 0, 0],
+          normal: [0, 0, -1],
+        }),
+      ]),
+    );
+    expect(session.autoConnectors.get(r.shape.id)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: 'bore', axis: [0, 0, 1], type: 'frame' }),
+        expect.objectContaining({ name: 'front-face', axis: [0, 0, -1], type: 'frame' }),
+      ]),
+    );
+  });
+
   it('returns parts.fetch.remote-disabled when id is unknown and the tier is disabled (off)', async () => {
     const session = new CaptureSession();
     try {

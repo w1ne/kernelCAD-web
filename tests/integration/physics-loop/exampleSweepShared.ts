@@ -122,16 +122,25 @@ export const ISSUE_TRACKED: ReadonlyMap<string, { issue: number; testFile: strin
   // mechanism: 'real' and empty mechanismFailures.
 ]);
 
-// Examples whose per-example loop check lives in a dedicated test file
-// for CI shard balance. The hosting file runs the IDENTICAL
-// `runValidateCli({ includeInterference: true, ... })` check (shared
-// with its own validate-result assertions via beforeAll); this sweep
-// file must not re-register (and re-pay) it. Every entry must name the
-// hosting file so the delegation is auditable.
-export const HOSTED_IN_DEDICATED_FILE: ReadonlyMap<string, { testFile: string }> = new Map([
+// Examples whose per-example loop check lives in a dedicated test file.
+// `run-validate-cli` hosts use the identical live CLI check for CI shard
+// balance. `catalog-fixture` hosts are remote-catalog examples: the suite
+// deliberately disables remote I/O, so their dedicated test must exercise
+// the same assembly, interference, and mechanism surfaces through an
+// explicit offline catalog fixture instead. Every entry names both its host
+// file and coverage mode so the structural gate can reject a silent drop.
+export type DedicatedExampleCoverage = {
+  readonly testFile: string;
+  readonly coverage: 'run-validate-cli' | 'catalog-fixture';
+};
+
+export const HOSTED_IN_DEDICATED_FILE: ReadonlyMap<string, DedicatedExampleCoverage> = new Map([
   [
     'examples/kinematic/luxo-lamp.kcad.ts',
-    { testFile: 'tests/integration/examples/luxoLampClevis.validate.test.ts' },
+    {
+      testFile: 'tests/integration/examples/luxoLampClevis.validate.test.ts',
+      coverage: 'run-validate-cli',
+    },
   ],
   // gearfinity completes the loop with mechanism: 'unverified' after the
   // BREP-sweep budget skip (issue #348 resolved). Its dedicated file runs
@@ -139,7 +148,31 @@ export const HOSTED_IN_DEDICATED_FILE: ReadonlyMap<string, { testFile: string }>
   // ~1-2 minute validate run twice.
   [
     'examples/gallery/gearfinity-planetary-stage.kcad.ts',
-    { testFile: 'tests/integration/examples/gearfinityPlanetaryStage.test.ts' },
+    {
+      testFile: 'tests/integration/examples/gearfinityPlanetaryStage.test.ts',
+      coverage: 'run-validate-cli',
+    },
+  ],
+  [
+    'examples/community/open-source-ring.kcad.ts',
+    {
+      testFile: 'tests/integration/examples/openSourceRing.test.ts',
+      coverage: 'catalog-fixture',
+    },
+  ],
+  [
+    'examples/community/esp32-ereader.kcad.ts',
+    {
+      testFile: 'tests/integration/examples/esp32Ereader.test.ts',
+      coverage: 'catalog-fixture',
+    },
+  ],
+  [
+    'examples/community/thermal-iolink-machine-health.kcad.ts',
+    {
+      testFile: 'tests/integration/examples/thermalIoLinkMachineHealth.test.ts',
+      coverage: 'catalog-fixture',
+    },
   ],
 ]);
 
