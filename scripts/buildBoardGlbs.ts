@@ -58,7 +58,6 @@ import { join, resolve, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { optimizeGlb, gltfTransformBin } from './lib/optimizeGlb';
-import { stepToColoredGlb } from './stepToColoredGlb';
 
 /** Upper bound for a web-served board GLB. The decimation lands each board in
  *  the hundreds of KB; 1 MB is a generous ceiling that still stays far under
@@ -176,6 +175,9 @@ export async function buildBoardGlbs(
   if (!existsSync(cliPath)) {
     throw new Error(`kernelCAD CLI not built at ${cliPath}. Run: npm run build:cli`);
   }
+  // The color-preserving STEP→GLB converter, run per-part in a fresh subprocess
+  // (see the loop) so occt-import-js's wasm heap can't accumulate across parts.
+  const converterScript = resolve(repoRoot, 'scripts', 'stepToColoredGlb.ts');
   gltfTransformBin(repoRoot); // fail fast before compiling any board
 
   const glbDir = join(outDir, 'glb');
@@ -214,7 +216,7 @@ export async function buildBoardGlbs(
         }
         execFileSync(process.execPath, [cliPath, 'export', 'glb', scriptPath, '-o', rawGlb], {
           stdio: ['ignore', 'pipe', 'pipe'],
-          timeout: 300_000,
+          timeout: 600_000,
         });
       } else {
         const stepPath = join(outDir, 'step', `${part.id}.step`);
@@ -222,7 +224,16 @@ export async function buildBoardGlbs(
           skipped.push({ id: part.id, reason: 'no ingested STEP to convert' });
           continue;
         }
-        await stepToColoredGlb(stepPath, rawGlb);
+        // Run the OCCT color converter in a FRESH subprocess per part. In-process,
+        // occt-import-js's wasm heap accumulates across every conversion and never
+        // frees — after a dozen parts the process is memory-starved and the heavy
+        // board CLI exports that follow time out. A subprocess releases the heap on
+        // exit, keeping each conversion independent.
+        execFileSync(process.execPath, ['--import', 'tsx', converterScript, stepPath, rawGlb], {
+          stdio: ['ignore', 'pipe', 'pipe'],
+          timeout: 600_000,
+          cwd: repoRoot,
+        });
       }
 
       // 2-3. Optimize (uncompressed, per-component materials preserved), then
