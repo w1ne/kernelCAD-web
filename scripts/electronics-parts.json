@@ -260,13 +260,83 @@
     },
     {
       "id": "bme280",
-      "name": "BME280 environmental sensor breakout (19×18×3mm)",
+      "name": "BME280 environmental sensor breakout (Adafruit 2652)",
       "family": "Sensor",
-      "mpn": "BME280 breakout (Adafruit 2652 / SparkFun)",
-      "kcad_source": "scripts/parts/authored/bme280.kcad.ts",
-      "tags": ["sensor", "temperature", "humidity", "pressure", "bme280", "i2c", "spi"],
+      "mpn": "Adafruit 2652",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/2652%20Adafruit%20BME280/Adafruit%20BME280.step",
+      "tags": ["sensor", "temperature", "humidity", "pressure", "bme280", "i2c", "spi", "stemma"],
       "license": "MIT",
-      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT"
+    },
+    {
+      "id": "vl53l1x-tof",
+      "name": "VL53L1X time-of-flight distance sensor (Adafruit 3967)",
+      "family": "Sensor",
+      "mpn": "Adafruit 3967",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/3967%20VL5SL1X%20TOF%20Sensor/3967%20VL5SL1X%20TOF%20Sensor.step",
+      "tags": ["sensor", "tof", "distance", "lidar", "vl53l1x", "i2c", "stemma"],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT"
+    },
+    {
+      "id": "veml7700-lux",
+      "name": "VEML7700 ambient light / lux sensor (Adafruit 5378)",
+      "family": "Sensor",
+      "mpn": "Adafruit 5378",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/5378%20VEML7700%20Lux%20Sensor/5378%20VEML7700%20Lux%20Sensor.step",
+      "tags": ["sensor", "light", "lux", "ambient", "veml7700", "i2c", "stemma"],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT"
+    },
+    {
+      "id": "sht31-humidity",
+      "name": "SHT31-D temperature / humidity sensor (Adafruit 2857)",
+      "family": "Sensor",
+      "mpn": "Adafruit 2857",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/2857%20SHT31-D/2857%20SHT31-D.step",
+      "tags": ["sensor", "temperature", "humidity", "sht31", "i2c", "stemma"],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT"
+    },
+    {
+      "id": "scd40-co2",
+      "name": "SCD-40 CO2 / temp / humidity sensor (Adafruit 5187)",
+      "family": "Sensor",
+      "mpn": "Adafruit 5187",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/5187%20SCD-40%20C02%20Sensor/5187%20SCD-40%20C02%20Sensor.step",
+      "tags": ["sensor", "co2", "temperature", "humidity", "scd40", "scd41", "i2c", "stemma"],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT — SCD-40 board (same breakout as SCD41)"
+    },
+    {
+      "id": "sgp40-voc",
+      "name": "SGP40 air-quality / VOC sensor (Adafruit 4829)",
+      "family": "Sensor",
+      "mpn": "Adafruit 4829",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/4829%20SGP40%20Sensor/4829%20SGP40%20Sensor.step",
+      "tags": ["sensor", "voc", "air-quality", "gas", "sgp40", "sgp41", "i2c", "stemma"],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT — SGP40 board (same breakout as SGP41)"
+    },
+    {
+      "id": "adxl343-accel",
+      "name": "ADXL343 3-axis accelerometer (Adafruit 4097)",
+      "family": "Sensor",
+      "mpn": "Adafruit 4097",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/4097%20ADXL343%20Accelerometer/4097%20ADXL343.step",
+      "tags": ["sensor", "accelerometer", "imu", "adxl343", "adxl345", "i2c", "spi", "stemma"],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT — ADXL343 board (pin-compatible ADXL345 successor)"
+    },
+    {
+      "id": "ili9341-tft-28",
+      "name": "2.8\" ILI9341 TFT touch display (Adafruit 2090)",
+      "family": "Display",
+      "mpn": "Adafruit 2090",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/2090%202.8in%20TFT%20Cap%20Touch/2090%202.8in%20TFT%20Cap%20Touch.step",
+      "tags": ["display", "tft", "lcd", "ili9341", "touch", "2.8inch", "spi"],
+      "license": "MIT",
+      "attribution": "Adafruit_CAD_Parts (github.com/adafruit/Adafruit_CAD_Parts), MIT"
     },
     {
       "id": "microsd-spi",
