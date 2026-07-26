@@ -127,6 +127,12 @@ describe('render_preview — input validation', () => {
 });
 
 describe('render_preview — happy path (mocked render)', () => {
+  it('describes canonical views as geometric directions, not product-semantic exterior views', () => {
+    expect(VIEW_DESCRIPTIONS.top).toMatch(/geometric \+Z/i);
+    expect(VIEW_DESCRIPTIONS.top).toMatch(/not necessarily.*exterior/i);
+    expect(VIEW_DESCRIPTIONS.iso).toMatch(/model orientation/i);
+  });
+
   it('writes one PNG per view + pose, with descriptions and metadata', async () => {
     const closed = { value: false };
     const r = await renderPreviewTool(

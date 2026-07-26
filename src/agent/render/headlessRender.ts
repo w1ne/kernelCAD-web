@@ -190,6 +190,23 @@ export interface DemoPlayerPageHandle {
 }
 
 /**
+ * Replace Playwright's verbose missing-browser banner with the exact
+ * one-command recovery path KernelCAD users need. Keep every unrelated launch
+ * failure unchanged so permission, sandbox, and CDP errors remain diagnosable.
+ */
+export function formatPlaywrightLaunchError<T>(error: T): T | Error {
+  if (!(error instanceof Error)) return error;
+  const missingExecutable =
+    error.message.includes("Executable doesn't exist at") &&
+    error.message.includes('playwright install');
+  if (!missingExecutable) return error;
+  return new Error(
+    'KernelCAD rendering requires Playwright Chromium. Install it with: npx playwright install chromium',
+    { cause: error },
+  );
+}
+
+/**
  * Shared demo-player browser bootstrap: lazy playwright import, optional
  * CDP attach with launch fallback, context + page, `/demo-player?headless=1`
  * navigation, and the `window.__demoPlayer` readiness wait. Used by both the
@@ -241,7 +258,11 @@ export async function openDemoPlayerPage(opts: DemoPlayerPageOpts): Promise<Demo
       }
     }
     if (!browser) {
-      browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
+      try {
+        browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
+      } catch (e) {
+        throw formatPlaywrightLaunchError(e);
+      }
       context = await browser.newContext({ viewport: opts.viewport });
     }
     page = await context!.newPage();
