@@ -75,6 +75,15 @@ const MAX_GLB_BYTES = 1_000_000;
  *  a few hundred KB and never came close to the limit that motivated the drop. */
 export const MAX_SERVED_STEP_BYTES = 20 * 1024 * 1024;
 
+/** Above this source-STEP size, tessellating to a web GLB is unreliable — it can
+ *  take many minutes and blow the per-part export timeout. Such heavy parts are
+ *  useful only to the kernelCAD CAD path (B-rep STEP), NOT to the web 3D viewer
+ *  (labwired doesn't render them), so adding a GLB and serving a STEP are
+ *  DECOUPLED: we skip the web GLB for these, and — because their STEP also
+ *  exceeds Cloudflare Pages' 25 MB per-file limit — drop it from the served set
+ *  rather than fail the whole catalog build/deploy. */
+export const MAX_GLB_SOURCE_STEP_BYTES = 40 * 1024 * 1024;
+
 interface ManifestPart {
   id: string;
   name: string;
@@ -187,6 +196,10 @@ export async function buildBoardGlbs(
   const targets = manifest.parts.filter((p) => hasGeometry(p, outDir));
   const results: BoardGlbResult[] = [];
   const skipped: { id: string; reason: string }[] = [];
+  // Parts deliberately skipped because their geometry is too heavy for a web GLB.
+  // A board here is NOT a regression (it's a kernelCAD-only heavy part), so the
+  // consistency check must tolerate it rather than crash the catalog.
+  const skippedOversize = new Set<string>();
 
   for (const part of targets) {
     const authored = isAuthored(part);
@@ -194,10 +207,28 @@ export async function buildBoardGlbs(
     const rawGlb = join(tmp, `${part.id}.raw.glb`);
     const finalGlb = join(glbDir, `${part.id}.glb`);
 
-    // A single part failing to tessellate or exceeding the web size ceiling must
-    // NOT abort the whole catalog build — it just keeps its STEP and (for the web
-    // viewer) falls back to the procedural stand-in. Boards are the exception:
-    // they are guaranteed below, so a board failure is still fatal.
+    // Decouple "add a web GLB" (labwired) from "serve a STEP" (kernelCAD): a part
+    // whose STEP is too large to tessellate in bounded time gets NO web GLB, and
+    // since that STEP also overflows Cloudflare Pages' 25 MB limit we drop it +
+    // its stepUrl so the deploy doesn't choke. The part stays in the catalog as
+    // metadata; the web viewer falls back to the procedural stand-in.
+    const stepPath = join(outDir, 'step', `${part.id}.step`);
+    const stepBytes = existsSync(stepPath) ? statSync(stepPath).size : 0;
+    if (stepBytes > MAX_GLB_SOURCE_STEP_BYTES) {
+      const removedStep = removeDeployedStep(outDir, part.id);
+      patchRecordToGlb(outDir, part.id, '', removedStep);
+      skippedOversize.add(part.id);
+      skipped.push({
+        id: part.id,
+        reason: `STEP ${(stepBytes / 1024 / 1024).toFixed(0)} MB > ${(MAX_GLB_SOURCE_STEP_BYTES / 1024 / 1024).toFixed(0)} MB — too large for a web GLB (kernelCAD-only)`,
+      });
+      continue;
+    }
+
+    // A single part failing to tessellate must NOT abort the whole catalog build —
+    // it just keeps its STEP (for kernelCAD) and, for the web viewer, falls back to
+    // the procedural stand-in. This holds for boards too: labwired renders GLBs, so
+    // one board that can't produce a GLB is a logged gap, not a build-stopping bug.
     try {
       // 1. Produce a full-resolution GLB.
       // - Authored parts compile their `.kcad.ts` (colors come from `.color()`).
@@ -256,9 +287,11 @@ export async function buildBoardGlbs(
 
       results.push({ id: part.id, glbBytes, materials, glbUrl, patchedRecord, removedStep });
     } catch (e) {
-      if (board) throw e; // boards must always ship a GLB — never silently skip
+      // Non-fatal for every part. A board that timed out or failed to tessellate
+      // becomes a logged gap; it must not take the whole catalog down with it.
       const msg = e instanceof Error ? e.message : String(e);
       skipped.push({ id: part.id, reason: msg.split('\n')[0] });
+      if (board) skippedOversize.add(part.id); // tolerate in the board consistency check
       if (existsSync(finalGlb)) rmSync(finalGlb);
     }
   }
@@ -266,11 +299,11 @@ export async function buildBoardGlbs(
   rmSync(tmp, { recursive: true, force: true });
   if (skipped.length > 0) {
     console.log(
-      `built ${results.length} GLB(s); ${skipped.length} part(s) kept STEP only:\n` +
+      `built ${results.length} GLB(s); ${skipped.length} part(s) skipped a web GLB:\n` +
         skipped.map((s) => `  - ${s.id}: ${s.reason}`).join('\n'),
     );
   }
-  assertBoardConsistency(outDir, results, manifest);
+  assertBoardConsistency(outDir, results, manifest, skippedOversize);
   return results;
 }
 
@@ -300,15 +333,18 @@ export function assertBoardConsistency(
   outDir: string,
   results: BoardGlbResult[],
   manifest?: Manifest,
+  skippedOversize: Set<string> = new Set(),
 ): void {
   const problems: string[] = [];
-  // Boards carry the strongest guarantee: every board MUST have produced a GLB.
-  // Non-board geometry parts may fall back to STEP-only, but a missing board GLB
-  // is the regression this whole file exists to prevent.
+  // Boards carry a strong guarantee: every board MUST produce a GLB — UNLESS it was
+  // deliberately skipped because its geometry is too heavy for the web (a
+  // kernelCAD-only part). Such a skip is intentional and logged, not the silent
+  // regression this check exists to catch.
   if (manifest) {
     const built = new Set(results.map((r) => r.id));
     for (const p of manifest.parts.filter(isBoard)) {
-      if (!built.has(p.id)) problems.push(`${p.id}: board produced no GLB`);
+      if (built.has(p.id) || skippedOversize.has(p.id)) continue;
+      problems.push(`${p.id}: board produced no GLB (and was not skipped for size)`);
     }
   }
   for (const r of results) {
@@ -355,7 +391,7 @@ function patchRecordToGlb(
   let patched = false;
   if (existsSync(detailPath)) {
     const rec = JSON.parse(readFileSync(detailPath, 'utf8')) as Record<string, unknown>;
-    rec.glbUrl = glbUrl;
+    if (glbUrl) rec.glbUrl = glbUrl; // empty = skipped part: drop STEP without a GLB
     if (dropStep) delete rec.stepUrl;
     writeFileSync(detailPath, JSON.stringify(rec, null, 2));
     patched = true;
@@ -371,7 +407,7 @@ function patchRecordToGlb(
     };
     const item = index.items.find((r) => r.id === id);
     if (item) {
-      item.glbUrl = glbUrl;
+      if (glbUrl) item.glbUrl = glbUrl;
       if (dropStep) delete item.stepUrl;
       writeFileSync(indexPath, JSON.stringify(index, null, 2));
       patched = true;

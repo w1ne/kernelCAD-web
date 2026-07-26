@@ -106,4 +106,25 @@ describe('assertBoardConsistency', () => {
       assertBoardConsistency(dir, [result('one-board', false), result('two-board', false)]),
     ).toThrow(/one-board[\s\S]*two-board/);
   });
+
+  it('tolerates a board with no GLB when it was deliberately skipped for size', () => {
+    const manifest = {
+      baseModelUrl: '', license: 'MIT', attribution: '',
+      parts: [{ id: 'heavy-board', name: 'H', family: 'Board', mpn: 'x' }],
+    };
+    // No result for heavy-board (it produced no GLB), but it's in skippedOversize.
+    expect(() =>
+      assertBoardConsistency(dir, [], manifest, new Set(['heavy-board'])),
+    ).not.toThrow();
+  });
+
+  it('still REJECTS a board that produced no GLB and was NOT skipped', () => {
+    const manifest = {
+      baseModelUrl: '', license: 'MIT', attribution: '',
+      parts: [{ id: 'heavy-board', name: 'H', family: 'Board', mpn: 'x' }],
+    };
+    expect(() => assertBoardConsistency(dir, [], manifest, new Set())).toThrow(
+      /heavy-board: board produced no GLB/,
+    );
+  });
 });
