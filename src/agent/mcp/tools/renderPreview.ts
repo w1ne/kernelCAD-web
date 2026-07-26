@@ -139,9 +139,9 @@ export const VIEW_DESCRIPTIONS: Record<RenderView, string> = {
   right:
     'Right side elevation — camera on +X; screen right = +Y, screen up = +Z.',
   top:
-    'Top-down plan — camera on +Z looking down; screen right = +X, screen up = +Y.',
+    'Geometric +Z top-down plan — camera on +Z looking down; screen right = +X, screen up = +Y. For imported parts, this is not necessarily the product exterior.',
   iso:
-    'Three-quarter overview — camera above the front-right (+X, -Y, +Z octant); best single view for overall shape.',
+    'Geometric Z-up three-quarter overview — camera in the (+X, -Y, +Z) octant. Product exterior versus underside depends on model orientation.',
 };
 
 function poseDescription(az: number, el: number): string {
