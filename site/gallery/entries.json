@@ -21,7 +21,8 @@
         "text",
         "concave",
         "costar",
-        "3d-printing"
+        "3d-printing",
+        "words-to-geometry"
       ],
       "featured": true,
       "createdAt": "2026-07-27",
