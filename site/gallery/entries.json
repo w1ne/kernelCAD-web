@@ -1,6 +1,33 @@
 {
   "entries": [
     {
+      "slug": "make-no-mistakes-keycap",
+      "title": "MAKE NO MISTAKES — 2.0u Keycap",
+      "author": {
+        "handle": "w1ne",
+        "url": "https://github.com/w1ne"
+      },
+      "version": "v0.15.0",
+      "prompt": "Modify the original 2.0u Costar STEP keycap without replacing its source geometry: give the full touch surface a 1 mm spherical concave dish, engrave MAKE NO / MISTAKES deeply into the cap with large tightly spaced lettering, and add recessed white inlays while preserving a printable manufacturing body.",
+      "source": "studio",
+      "video": "../../docs/demos/gallery/make-no-mistakes-keycap/demo.mp4",
+      "modelLocal": "../../examples/gallery/make-no-mistakes-keycap/model.glb",
+      "codeLocal": "../../examples/gallery/make-no-mistakes-keycap/model.kcad.ts",
+      "code": "https://app.kernelcad.com/p/N2yYiZxy?version=2",
+      "tags": [
+        "keycap",
+        "step-import",
+        "engraving",
+        "text",
+        "concave",
+        "costar",
+        "3d-printing"
+      ],
+      "featured": true,
+      "createdAt": "2026-07-27",
+      "appUrl": "https://app.kernelcad.com/p/N2yYiZxy?version=2"
+    },
+    {
       "slug": "royal-pop-pocket-watch",
       "title": "Royal Pop Pocket Watch",
       "author": {

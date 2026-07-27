@@ -32,7 +32,7 @@ export interface BuildGalleryOptions {
   publicDir: string;
 }
 
-interface PublishedEntry extends Omit<GalleryEntry, 'video' | 'codeLocal'> {
+interface PublishedEntry extends Omit<GalleryEntry, 'video' | 'modelLocal' | 'codeLocal'> {
   videoUrl: string;
   posterUrl: string;
   modelUrl: string;
@@ -192,7 +192,15 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
     // the catalog board pipeline (scripts/lib/optimizeGlb.ts) so both surfaces
     // ship GLBs built the same way — the flags there are load-bearing.
     const rawGlb = path.join(slugDir, 'model.raw.glb');
-    await exportGlb({ scriptPath: srcScript, outPath: rawGlb });
+    if (entry.modelLocal) {
+      const srcModel = path.resolve(entriesDir, entry.modelLocal);
+      if (!existsSync(srcModel)) {
+        throw new Error(`entry ${entry.slug}: modelLocal not found at ${srcModel}`);
+      }
+      copyFileSync(srcModel, rawGlb);
+    } else {
+      await exportGlb({ scriptPath: srcScript, outPath: rawGlb });
+    }
     await optimizeGlb(rawGlb, dstModel, {
       repoRoot: REPO_ROOT,
       label: `entry ${entry.slug}`,
@@ -273,8 +281,8 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
 
     writeFileSync(dstPrompt, entry.prompt + '\n');
 
-    const { video, codeLocal, mechanismReview, ...rest } = entry;
-    void video; void codeLocal; void mechanismReview;
+    const { video, modelLocal, codeLocal, mechanismReview, ...rest } = entry;
+    void video; void modelLocal; void codeLocal; void mechanismReview;
     published.push({
       ...rest,
       videoUrl: `/gallery/${entry.slug}/video.mp4`,

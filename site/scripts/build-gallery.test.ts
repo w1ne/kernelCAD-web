@@ -51,6 +51,48 @@ describe('buildGallery', () => {
     expect(glb.subarray(0, 4).toString('utf8')).toBe('glTF');
   });
 
+  it('publishes a prebuilt project GLB without evaluating its STEP-backed source', { timeout: 60000 }, async () => {
+    tmp = mkdtempSync(path.join(tmpdir(), 'gallery-build-'));
+    const entriesDir = path.join(tmp, 'gallery');
+    const publicDir = path.join(tmp, 'public');
+    mkdirSync(entriesDir, { recursive: true });
+
+    const fixturesRoot = path.resolve(__dirname, '../../tests/fixtures/gallery');
+    const keycapRoot = path.resolve(__dirname, '../../examples/gallery/make-no-mistakes-keycap');
+    copyFileSync(path.join(fixturesRoot, 'short-clip.mp4'), path.join(entriesDir, 'short-clip.mp4'));
+    copyFileSync(path.join(keycapRoot, 'model.glb'), path.join(entriesDir, 'project-model.glb'));
+    writeFileSync(
+      path.join(entriesDir, 'step-backed.kcad.ts'),
+      "throw new Error('source evaluation must be skipped when modelLocal is supplied');\n",
+    );
+    writeFileSync(
+      path.join(entriesDir, 'entries.json'),
+      JSON.stringify({
+        entries: [{
+          slug: 'prebuilt-project', title: 'Prebuilt project',
+          author: { handle: 'k', url: 'https://x.com/k' },
+          version: 'v0.15.0', prompt: 'p', source: 'studio',
+          video: 'short-clip.mp4', codeLocal: 'step-backed.kcad.ts',
+          modelLocal: 'project-model.glb',
+          code: 'https://github.com/w1ne/kernelCAD-web',
+          tags: [], featured: false, createdAt: '2026-07-27',
+          appUrl: 'https://app.kernelcad.com/p/example?version=1',
+        }],
+      }),
+    );
+
+    await buildGallery({
+      entriesPath: path.join(entriesDir, 'entries.json'),
+      publicDir,
+    });
+
+    const glb = readFileSync(path.join(publicDir, 'gallery/prebuilt-project/model.glb'));
+    expect(glb.subarray(0, 4).toString('utf8')).toBe('glTF');
+    const out = JSON.parse(readFileSync(path.join(publicDir, 'gallery.json'), 'utf8'));
+    expect(out.entries[0].modelUrl).toBe('/gallery/prebuilt-project/model.glb');
+    expect(out.entries[0]).not.toHaveProperty('modelLocal');
+  });
+
   it('rejects when an entry video is missing', async () => {
     tmp = mkdtempSync(path.join(tmpdir(), 'gallery-build-'));
     const entriesDir = path.join(tmp, 'gallery');

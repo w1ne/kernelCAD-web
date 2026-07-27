@@ -18,6 +18,7 @@ const galleryEntryBaseSchema = z.object({
   version: z.string().regex(/^v\d+\.\d+(\.\d+)?$/),
   prompt: z.string().min(1),
   video: z.string().min(1),
+  modelLocal: z.string().min(1).nullable().default(null),
   code: z.string().url(),
   tags: z.array(z.string()).default([]),
   featured: z.boolean().default(false),
