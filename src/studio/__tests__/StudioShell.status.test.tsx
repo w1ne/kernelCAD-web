@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /** @vitest-environment jsdom */
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 let workbenchComputing = false;
+let workbenchReady = true;
+let workbenchError: string | null = null;
 let agentRailOpen = false;
 let recomputeRawPairs: Array<{ a: string; b: string; volumeMm3: number }> = [];
 let recomputeInterferenceSummary: {
@@ -18,9 +20,9 @@ let recomputeValidity: { diagnostics: { code: string; severity: string }[] } | n
 vi.mock('../context/WorkbenchContext', () => ({
     useWorkbench: () => ({
         code: '',
-        isReady: true,
+        isReady: workbenchReady,
         isComputing: workbenchComputing,
-        error: null,
+        error: workbenchError,
         geometries: [],
         selectedItemIds: [],
         viewMode3D: 'shadedWithEdges',
@@ -91,6 +93,8 @@ afterEach(() => cleanup());
 
 beforeEach(() => {
     workbenchComputing = false;
+    workbenchReady = true;
+    workbenchError = null;
     agentRailOpen = false;
     recomputeRawPairs = [];
     recomputeInterferenceSummary = null;
@@ -98,6 +102,30 @@ beforeEach(() => {
 });
 
 describe('StudioShell status plumbing', () => {
+    it('replaces kernel progress with its error immediately', () => {
+        workbenchReady = false;
+        workbenchError = 'WASM failed to initialize';
+
+        render(<StudioShell />);
+
+        expect(screen.queryByText('Geometry kernel warming up...')).toBeNull();
+        expect(screen.getByText('Geometry kernel failed: WASM failed to initialize')).toBeTruthy();
+    });
+
+    it('bounds kernel initialization instead of spinning indefinitely', () => {
+        vi.useFakeTimers();
+        workbenchReady = false;
+
+        render(<StudioShell />);
+        expect(screen.getByText('Geometry kernel warming up...')).toBeTruthy();
+
+        act(() => vi.advanceTimersByTime(15_000));
+
+        expect(screen.queryByText('Geometry kernel warming up...')).toBeNull();
+        expect(screen.getByText('Geometry kernel initialization timed out. Reload to retry.')).toBeTruthy();
+        vi.useRealTimers();
+    });
+
     it('passes workbench computing state to the status bar', () => {
         workbenchComputing = true;
 

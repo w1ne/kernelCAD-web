@@ -11,7 +11,14 @@ vi.mock('../funnel/lib/supabaseClient', () => ({
   }),
 }));
 
-import { loadGalleryScriptSource, loadStudioScriptSource, meshSourceDev, meshSourceHosted, needsFullKernel } from './scriptSource';
+import {
+  loadGalleryScriptSource,
+  loadStudioScriptSource,
+  meshSourceDev,
+  meshSourceHosted,
+  needsFullKernel,
+  rootVisibleFeatures,
+} from './scriptSource';
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -112,6 +119,64 @@ describe('param overrides (stateless re-run path)', () => {
       method: 'POST',
       body: JSON.stringify({ source: 'return box(w,1,1);', params: { w: 7 } }),
     }));
+  });
+
+  it('meshes /p projects by slug so hosted complementary files are available', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    vi.stubGlobal('window', {
+      location: { hostname: 'app.kernelcad.com', pathname: '/p/keycap-123' },
+    });
+    const payload = { features: [], featureRecords: [], bounds: { min: [0, 0, 0], max: [1, 1, 1] } };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => payload,
+    } as Response);
+
+    await meshSourceHosted('source ignored for persisted project', { dishDepth: 1 });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.example.com/__kernelcad/mesh',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ projectSlug: 'keycap-123', params: { dishDepth: 1 } }),
+      }),
+    );
+  });
+
+  it('pins a hosted project request to the version in the URL', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    vi.stubGlobal('window', {
+      location: { hostname: 'app.kernelcad.com', pathname: '/p/keycap-123', search: '?version=7' },
+    });
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({ features: [], featureRecords: [], bounds: { min: [0, 0, 0], max: [1, 1, 1] } }),
+    } as Response);
+
+    await meshSourceHosted('ignored', { dishDepth: 1 });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.example.com/__kernelcad/mesh',
+      expect.objectContaining({
+        body: JSON.stringify({ projectSlug: 'keycap-123', projectVersion: 7, params: { dishDepth: 1 } }),
+      }),
+    );
+  });
+});
+
+describe('rootVisibleFeatures', () => {
+  it('hides boolean cutters and predecessor bodies while keeping assembly fan-out', () => {
+    const features = [
+      { featureId: 'box_1', faces: [] },
+      { featureId: 'sphere_1', faces: [] },
+      { featureId: 'boolean_1', faces: [] },
+      { featureId: 'part_a', assemblyFeatureId: 'scene_1', faces: [] },
+    ] as never[];
+
+    expect(rootVisibleFeatures({ features, rootFeatureIds: ['boolean_1'] }).map((f) => f.featureId))
+      .toEqual(['boolean_1']);
+    expect(rootVisibleFeatures({ features, rootFeatureIds: ['scene_1'] }).map((f) => f.featureId))
+      .toEqual(['part_a']);
   });
 });
 
