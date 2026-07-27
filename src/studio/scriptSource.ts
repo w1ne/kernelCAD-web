@@ -77,6 +77,27 @@ export interface BackendMeshPayload {
    *  server mesh endpoint. Drives the adaptive scene tree + Validity tab on the
    *  hosted deploy, which has no separate `/__kernelcad/review` fetch. */
   review?: ScriptReviewSummary;
+  /** Returned/root feature ids. Construction history remains available in
+   * `features` for inspection but is hidden from the default scene. */
+  rootFeatureIds?: string[];
+}
+
+export function rootVisibleFeatures(
+  payload: Pick<BackendMeshPayload, 'features' | 'rootFeatureIds'>,
+): FeatureMeshSerialized[] {
+  const roots = payload.rootFeatureIds;
+  if (!roots || roots.length === 0) return payload.features;
+  const rootSet = new Set(roots);
+  return payload.features.filter((feature) => (
+    rootSet.has(feature.featureId)
+    || (feature.assemblyFeatureId !== undefined && rootSet.has(feature.assemblyFeatureId))
+  ));
+}
+
+function currentHostedProjectSlug(): string | null {
+  if (typeof window === 'undefined') return null;
+  const match = window.location.pathname?.match(/^\/p\/([^/]+)\/?$/);
+  return match ? decodeURIComponent(match[1]!) : null;
 }
 
 /**
@@ -214,10 +235,14 @@ export async function meshSourceHosted(
   // 2. Server mesh endpoint for edited / non-gallery code (and param edits).
   const base = import.meta.env.VITE_API_BASE_URL;
   if (typeof base === 'string' && base.length > 0) {
+    const projectSlug = currentHostedProjectSlug();
     const response = await fetch(`${base}/__kernelcad/mesh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ source, ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}) }),
+      body: JSON.stringify({
+        ...(projectSlug ? { projectSlug } : { source }),
+        ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}),
+      }),
     });
     const payload = await response.json().catch(() => null);
     if (!response.ok) {

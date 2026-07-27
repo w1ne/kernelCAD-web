@@ -7,7 +7,16 @@ import { parseCode } from '../../shared/codeGeneration/ast';
 import { rehydrateFromBridge, type FeatureMeshSerialized } from '../../modeling/capture/featureMeshSerialize';
 import type { SerializedParamEntry, SerializedParamTable } from '../../shared/runtime/paramTable';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
-import { shouldUseHostedMesh, meshSourceHosted, devMeshAvailable, meshSourceDev, needsFullKernel, type BackendMeshPayload, type ParamOverrides } from '../scriptSource';
+import {
+    shouldUseHostedMesh,
+    meshSourceHosted,
+    devMeshAvailable,
+    meshSourceDev,
+    needsFullKernel,
+    rootVisibleFeatures,
+    type BackendMeshPayload,
+    type ParamOverrides,
+} from '../scriptSource';
 import { apiCall, rewritePath, bearerToken, buildEventsUrl } from '../api/apiBase';
 
 export type ExecutionStatus = 'success' | 'error' | 'stale';
@@ -974,7 +983,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                         staleRecorded = true;
                         return;
                     }
-                    const hostedGeometries = featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]);
+                    const hostedGeometries = featureMeshesToGeometries(rootVisibleFeatures(payload));
                     const hostedRecords = (payload.featureRecords as FeatureRecord[]) ?? [];
                     const hostedReview = payload.review ?? { ok: true, diagnostics: [] };
                     const emptyNotice = detectEmptyBuild(hostedGeometries.length, hostedRecords, hostedReview);
@@ -1024,7 +1033,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             // net for any other API the worker happens to lack.
             const useDevKernel = devMeshAvailable() && needsFullKernel(code);
             const applyDevPayload = (payload: BackendMeshPayload) => {
-                const devGeometries = featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]);
+                const devGeometries = featureMeshesToGeometries(rootVisibleFeatures(payload));
                 const devRecords = (payload.featureRecords as FeatureRecord[]) ?? [];
                 const devReview = payload.review ?? { ok: true, diagnostics: [] };
                 const emptyNotice = detectEmptyBuild(devGeometries.length, devRecords, devReview);
