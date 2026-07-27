@@ -93,8 +93,30 @@ const secondLineInlay = sketch
 // keeps the dark printable keycap body intact while making the white lettering
 // visible in Studio, GLB, and multi-material 3MF workflows.
 const finishedKeycap = assembly('MAKE NO MISTAKES 2.0u Costar keycap');
-finishedKeycap.part('keycap-body', engravedKeycap);
-finishedKeycap.part('make-no-inlay', firstLineInlay);
-finishedKeycap.part('mistakes-inlay', secondLineInlay);
+const keycapBodyPart = finishedKeycap.part('keycap-body', engravedKeycap);
+const makeNoInlayPart = finishedKeycap.part('make-no-inlay', firstLineInlay);
+const mistakesInlayPart = finishedKeycap.part('mistakes-inlay', secondLineInlay);
+
+const fixedFrame = {
+  type: 'frame',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+};
+keycapBodyPart
+  .connector('make-no-seat', fixedFrame)
+  .connector('mistakes-seat', fixedFrame);
+makeNoInlayPart.connector('seat', fixedFrame);
+mistakesInlayPart.connector('seat', fixedFrame);
+finishedKeycap.mate(
+  'make-no-fixed-inlay',
+  'keycap-body.make-no-seat',
+  'make-no-inlay.seat',
+  'fastened',
+);
+finishedKeycap.mate(
+  'mistakes-fixed-inlay',
+  'keycap-body.mistakes-seat',
+  'mistakes-inlay.seat',
+  'fastened',
+);
 
 return finishedKeycap.model();
