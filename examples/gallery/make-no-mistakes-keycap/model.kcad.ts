@@ -30,12 +30,14 @@ const dishedKeycap = originalKeycap.subtract(sphericalDishCutter);
 const legendCutStartZ = 0.4;
 const legendCutHeight = 0.9; // ends at Z = 1.3
 
-// sketch.text Y is baseline-only (align is horizontal). Previous baselines
-// [0, 1.6] / [0, -3.5] put the visual block high so "MAKE NO" nearly touched
-// the +Y rim. Re-center the two-line block on Y = 0 with the same ~5.1 mm
-// baseline spacing (cap-height ≈ 0.72×size).
-const makeNoBaselineY = 0.2;
-const mistakesBaselineY = -4.9;
+// sketch.text Y is baseline-only (align is horizontal).
+// Measured glyph boxes at baseline Y=0 (size 6.4 / 6.0):
+//   MAKE NO   y ∈ [-0.0625,  4.46875]
+//   MISTAKES  y ∈ [-0.0586,  4.18945]
+// Keep 5.1 mm baseline gap; place the two-line block so its visual center
+// is on Y=0 → equal margin to the ±9 mm key rims (~4.19 mm each).
+const makeNoBaselineY = 0.345;
+const mistakesBaselineY = -4.755;
 
 const firstLine = sketch
   .text('MAKE NO', {
