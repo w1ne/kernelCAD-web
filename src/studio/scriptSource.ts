@@ -94,10 +94,16 @@ export function rootVisibleFeatures(
   ));
 }
 
-function currentHostedProjectSlug(): string | null {
+function currentHostedProject(): { slug: string; version?: number } | null {
   if (typeof window === 'undefined') return null;
   const match = window.location.pathname?.match(/^\/p\/([^/]+)\/?$/);
-  return match ? decodeURIComponent(match[1]!) : null;
+  if (!match) return null;
+  const rawVersion = new URLSearchParams(window.location.search ?? '').get('version');
+  const version = rawVersion && /^\d+$/.test(rawVersion) ? Number(rawVersion) : undefined;
+  return {
+    slug: decodeURIComponent(match[1]!),
+    ...(version && version > 0 ? { version } : {}),
+  };
 }
 
 /**
@@ -235,12 +241,14 @@ export async function meshSourceHosted(
   // 2. Server mesh endpoint for edited / non-gallery code (and param edits).
   const base = import.meta.env.VITE_API_BASE_URL;
   if (typeof base === 'string' && base.length > 0) {
-    const projectSlug = currentHostedProjectSlug();
+    const project = currentHostedProject();
     const response = await fetch(`${base}/__kernelcad/mesh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        ...(projectSlug ? { projectSlug } : { source }),
+        ...(project
+          ? { projectSlug: project.slug, ...(project.version ? { projectVersion: project.version } : {}) }
+          : { source }),
         ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}),
       }),
     });
