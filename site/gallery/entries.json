@@ -13,7 +13,7 @@
       "video": "../../docs/demos/gallery/make-no-mistakes-keycap/demo.mp4",
       "modelLocal": "../../examples/gallery/make-no-mistakes-keycap/model.glb",
       "codeLocal": "../../examples/gallery/make-no-mistakes-keycap/model.kcad.ts",
-      "code": "https://app.kernelcad.com/p/N2yYiZxy?version=3",
+      "code": "https://app.kernelcad.com/p/N2yYiZxy?version=4",
       "tags": [
         "keycap",
         "step-import",
@@ -26,7 +26,7 @@
       ],
       "featured": true,
       "createdAt": "2026-07-27",
-      "appUrl": "https://app.kernelcad.com/p/N2yYiZxy?version=3"
+      "appUrl": "https://app.kernelcad.com/p/N2yYiZxy?version=4"
     },
     {
       "slug": "royal-pop-pocket-watch",
