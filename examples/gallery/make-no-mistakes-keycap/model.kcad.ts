@@ -21,16 +21,27 @@ const sphericalDishCutter = sphere(dishRadius).translate(0, 0, sphereCenterZ);
 // Single returned body: the imported keycap with its centered dish removed.
 const dishedKeycap = originalKeycap.subtract(sphericalDishCutter);
 
-// Engraving cutters begin outside the negative-Z exterior and end about
-// 0.45 mm inside the dished center surface.
+// Top-shell stack (measured on the Costar blank):
+//   exterior top Z = 0, inner cavity roof ≈ Z = 1.5 → 1.5 mm wall.
+//   After the 1 mm center dish, only ≈ 0.5 mm of wall remains (Z 1.0..1.5).
+// Engraving MUST end before the cavity roof or the legend punches through
+// and is visible from the underside. Target: 0.3 mm into the dish at center,
+// leaving ≈ 0.2 mm of closed shell under the letters.
 const legendCutStartZ = 0.4;
-const legendCutHeight = 1.05;
+const legendCutHeight = 0.9; // ends at Z = 1.3
+
+// sketch.text Y is baseline-only (align is horizontal). Previous baselines
+// [0, 1.6] / [0, -3.5] put the visual block high so "MAKE NO" nearly touched
+// the +Y rim. Re-center the two-line block on Y = 0 with the same ~5.1 mm
+// baseline spacing (cap-height ≈ 0.72×size).
+const makeNoBaselineY = 0.2;
+const mistakesBaselineY = -4.9;
 
 const firstLine = sketch
   .text('MAKE NO', {
     size: 6.4,
     align: 'center',
-    position: [0, 1.6],
+    position: [0, makeNoBaselineY],
   })
   .extrude(legendCutHeight)
   .reflect('yz')
@@ -40,7 +51,7 @@ const secondLine = sketch
   .text('MISTAKES', {
     size: 6.0,
     align: 'center',
-    position: [0, -3.5],
+    position: [0, mistakesBaselineY],
   })
   .extrude(legendCutHeight)
   .reflect('yz')
@@ -54,16 +65,16 @@ const engravedKeycap = dishedKeycap
     roughness: 0.42,
   });
 
-// White inlays sit at the bottoms of the engraved grooves. Their exterior
-// faces remain recessed below the spherical touch surface.
-const inlayStartZ = 1.3;
-const inlayHeight = 0.2;
+// White inlays sit at the bottoms of the engraved grooves, fully inside the
+// remaining top shell (must not extend past the cavity roof at Z ≈ 1.5).
+const inlayStartZ = 1.1;
+const inlayHeight = 0.2; // 1.1..1.3, nested in the groove
 
 const firstLineInlay = sketch
   .text('MAKE NO', {
     size: 6.4,
     align: 'center',
-    position: [0, 1.6],
+    position: [0, makeNoBaselineY],
   })
   .extrude(inlayHeight)
   .reflect('yz')
@@ -78,7 +89,7 @@ const secondLineInlay = sketch
   .text('MISTAKES', {
     size: 6.0,
     align: 'center',
-    position: [0, -3.5],
+    position: [0, mistakesBaselineY],
   })
   .extrude(inlayHeight)
   .reflect('yz')
