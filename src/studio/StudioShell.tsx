@@ -70,6 +70,17 @@ export function StudioShell() {
     }, []);
     const recompute = useRecomputeResult();
     const { activeProject } = useProject();
+    const [kernelInitTimedOut, setKernelInitTimedOut] = useState(false);
+
+    useEffect(() => {
+        if (workbench.isReady || workbench.error) {
+            setKernelInitTimedOut(false);
+            return;
+        }
+        setKernelInitTimedOut(false);
+        const timeout = window.setTimeout(() => setKernelInitTimedOut(true), 15_000);
+        return () => window.clearTimeout(timeout);
+    }, [workbench.isReady, workbench.error]);
 
     const handleValidate = useCallback(() => {
         // Force a re-fetch of /__kernelcad/review by re-running the
@@ -246,8 +257,14 @@ export function StudioShell() {
                         data-testid="kernel-init-banner"
                         className="pointer-events-none absolute left-1/2 top-4 z-30 flex -translate-x-1/2 items-center gap-2 rounded border border-white/10 bg-black/80 px-3 py-2 text-xs text-white/80 shadow-lg"
                     >
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Geometry kernel warming up...</span>
+                        {!workbench.error && !kernelInitTimedOut && <Loader2 className="h-4 w-4 animate-spin" />}
+                        <span>
+                            {workbench.error
+                                ? `Geometry kernel failed: ${workbench.error}`
+                                : kernelInitTimedOut
+                                    ? 'Geometry kernel initialization timed out. Reload to retry.'
+                                    : 'Geometry kernel warming up...'}
+                        </span>
                     </div>
                 )}
 
