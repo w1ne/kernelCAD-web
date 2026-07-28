@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createFileRoute } from '@tanstack/react-router';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Globe, Lock } from 'lucide-react';
 import App from '../App';
 import { SignInButton } from '../../funnel/components/SignInButton';
 import { ProjectViewerActions } from './-ProjectViewerActions';
@@ -195,7 +196,12 @@ function ProjectPage() {
 
   const headerLeft = (
     <div className="flex items-center gap-2 min-w-0">
-      <span className="text-xs text-gray-200 font-medium truncate min-w-[72px] max-w-[160px] md:max-w-[280px]" title={project.title}>
+      {/* The header row is shared with the privacy/share buttons, the overflow
+          menu and the account slot, so on a phone the title truncates down to
+          nothing (`min-w-0`, not a pixel floor) and drops out entirely under
+          400px — otherwise it pushes the live badge past the header's clip and
+          the badge renders as a sliver of green border. */}
+      <span className="hidden min-[400px]:inline text-xs text-gray-200 font-medium truncate min-w-0 max-w-[160px] md:max-w-[280px]" title={project.title}>
         {project.title}
       </span>
       <span className="hidden lg:inline-flex shrink-0 whitespace-nowrap text-[10px] uppercase tracking-widest text-gray-500 font-mono px-1.5 py-0.5 rounded border border-[#333]">
@@ -203,9 +209,10 @@ function ProjectPage() {
       </span>
       <span
         className="shrink-0 whitespace-nowrap text-[10px] uppercase tracking-widest font-mono px-1.5 py-0.5 rounded border border-emerald-700 text-emerald-500"
+        aria-label="live"
         title={lastLiveUpdate ? `last update ${lastLiveUpdate.toLocaleTimeString()}` : 'waiting for agent updates'}
       >
-        ● live
+        ●<span className="hidden md:inline"> live</span>
       </span>
     </div>
   );
@@ -241,8 +248,20 @@ function ProjectPage() {
         Upgrade to keep private
       </button>
     ) : (
-      <button type="button" onClick={handleTogglePrivacy} disabled={privacyBusy} className={btnClass}>
-        {privacyBusy ? '…' : isPrivate ? 'Make public' : 'Make private'}
+      // Icon-only below `md`: spelled out, this button plus Share crowds the
+      // project title off a phone-width header entirely.
+      <button
+        type="button"
+        onClick={handleTogglePrivacy}
+        disabled={privacyBusy}
+        className={btnClass}
+        aria-label={isPrivate ? 'Make public' : 'Make private'}
+        title={isPrivate ? 'Make public' : 'Make private'}
+      >
+        {isPrivate ? <Globe size={12} /> : <Lock size={12} />}
+        <span className="hidden md:inline">
+          {privacyBusy ? '…' : isPrivate ? 'Make public' : 'Make private'}
+        </span>
       </button>
     );
   }
