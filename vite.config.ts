@@ -390,14 +390,7 @@ function kernelCadMeshEndpoint(): Plugin {
       server.middlewares.use('/__kernelcad/export', async (req, res) => {
         try {
           const url = new URL(req.url ?? '', 'http://localhost');
-          const scriptPath = resolveExampleScript(url.searchParams.get('script'));
           const formatParam = url.searchParams.get('format');
-          if (!scriptPath) {
-            res.statusCode = 400;
-            res.setHeader('content-type', 'application/json');
-            res.end(JSON.stringify({ error: 'script must be a repo examples/*.kcad.ts file' }));
-            return;
-          }
           // Slice A export-trio: widened from {stl, step} to the five-format
           // set runAndExport now dispatches. The reserved urdf/srdf/sdf-gazebo
           // slots intentionally stay out of the Studio UI — they ship in a
@@ -415,18 +408,63 @@ function kernelCadMeshEndpoint(): Plugin {
             return;
           }
 
-          const [{ readFile }, { runAndExport }, { dirname, basename }] = await Promise.all([
-            import('node:fs/promises'),
-            import('./src/agent/script-runtime/export'),
-            import('node:path'),
-          ]);
-          const code = await readFile(scriptPath, 'utf-8');
-          const fileName = basename(scriptPath);
+          // POST { source } exports ARBITRARY edited editor code (Studio
+          // without ?script=, or live edits). GET ?script= keeps the
+          // curated-example path for deep-links / tooling.
+          const isPost = (req.method ?? 'GET').toUpperCase() === 'POST';
+          let code: string;
+          let fileName: string;
+          let scriptDir: string;
+
+          if (isPost) {
+            const chunks: Buffer[] = [];
+            for await (const chunk of req) chunks.push(chunk as Buffer);
+            let parsedBody: { source?: unknown };
+            try {
+              parsedBody = JSON.parse(Buffer.concat(chunks).toString('utf-8') || '{}');
+            } catch {
+              res.statusCode = 400;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({ error: 'POST body must be JSON { source: string }' }));
+              return;
+            }
+            if (typeof parsedBody.source !== 'string' || parsedBody.source.trim().length === 0) {
+              res.statusCode = 400;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({ error: 'POST body must include a non-empty "source" string' }));
+              return;
+            }
+            code = parsedBody.source;
+            fileName = 'studio-export.kcad.ts';
+            // Relative asset paths resolve the same way as mesh POST.
+            scriptDir = resolve(repoRoot, 'examples');
+          } else {
+            const scriptPath = resolveExampleScript(url.searchParams.get('script'));
+            if (!scriptPath) {
+              res.statusCode = 400;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({
+                error: 'missing script query parameter (or POST { source })',
+              }));
+              return;
+            }
+            const [{ readFile }, { dirname, basename }] = await Promise.all([
+              import('node:fs/promises'),
+              import('node:path'),
+            ]);
+            code = await readFile(scriptPath, 'utf-8');
+            fileName = basename(scriptPath);
+            scriptDir = dirname(scriptPath);
+          }
+
+          ensureOcctShims();
+
+          const { runAndExport } = await import('./src/agent/script-runtime/export');
           const result = await runAndExport({
             code,
             fileName,
             format: formatParam as StudioFormat,
-            scriptDir: dirname(scriptPath),
+            scriptDir,
           });
 
           if (result.bytes.length === 0) {
