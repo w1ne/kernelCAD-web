@@ -77,17 +77,10 @@ export default async function harness(scriptPath: string): Promise<HarnessResult
   await initOcct();
   const code = readFileSync(scriptPath, 'utf8');
 
-  // STL — STL of a Scene currently requires an explicit Scene.toUnion() /
-  // Scene.toCompound() upstream, so the harness rewrites the candidate's
-  // trailing `return ...;` to fuse the Scene into a single Shape before
-  // shipping to the writer. The rewrite is intentionally local: the 3MF /
-  // GLB paths still see the original Scene return so per-part names + colors
-  // survive the multi-body fan-out.
-  const stlCode = code.replace(
-    /return\s+([^;]+?)\s*;\s*$/,
-    'return ($1).toUnion();',
-  );
-  const stl = await runAndExport({ code: stlCode, fileName: scriptPath, format: 'stl' });
+  // STL — multi-body Scenes are auto-fused in runAndExport (world-frame
+  // union). 3MF / GLB still receive the original Scene so per-part names +
+  // colors survive the multi-body fan-out.
+  const stl = await runAndExport({ code, fileName: scriptPath, format: 'stl' });
   const stlErrors = stl.diagnostics.filter((d) => d.severity === 'error');
   const stlOk = stlErrors.length === 0 && stl.bytes.length >= 84;
 
