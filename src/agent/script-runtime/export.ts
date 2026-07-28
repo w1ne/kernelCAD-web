@@ -307,10 +307,11 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
     return { bytes, featureCount, diagnostics: r.diagnostics };
   }
 
-  // Scene-aware path: STEP export of a SceneBackend ships a STEP file
-  // with one named body per part (replicad.exportSTEP(ShapeConfig[])
-  // writes XCAFDoc names + colors). For STL we still need a single mesh,
-  // so fall back to the boolean union via assemblyExport(union).
+  // Scene-aware path: STEP/3MF/GLB keep per-part identity. STL is a single
+  // triangle mesh, so multi-body Scenes are auto-fused (world-frame boolean
+  // union) — same geometry as an explicit Scene.toUnion() upstream. Studio
+  // header STL/3MF on assembly returns (e.g. multi-material keycaps) must
+  // not fail with "return toUnion()" after the model already viewed fine.
   if (isSceneBackend(lowered)) {
     if (format === 'step') {
       const connectorManifest = manifestRequest === undefined
@@ -378,22 +379,28 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
         throw e;
       }
     }
-    // STL of a Scene: caller must explicitly fuse via Scene.toUnion() /
-    // Scene.toCompound() upstream — surface a structured diagnostic
-    // pointing at the right call.
-    return {
-      bytes: new Uint8Array(),
-      featureCount,
-      diagnostics: [...r.diagnostics, {
-        target: 'export-occt',
-        code: 'export.no-shape',
-        featureId: targetId,
-        severity: 'error',
-        message: 'STL export of a Scene requires an explicit Scene.toUnion() or Scene.toCompound() upstream.',
-        hint: 'Return arm.solvedModel(poses).toUnion() (or .toCompound()) for STL; STEP export accepts the Scene directly and preserves per-part names + colors.',
-        nextAction: NEXT_ACTIONS['export.no-shape'],
-      }],
-    };
+    if (format === 'stl') {
+      // Single-mesh STL: fuse world-frame parts (clone+transform already in
+      // sceneToWorldFrameParts). Mirrors Scene.toUnion() / assemblyExport('union')
+      // without requiring the script author to call it for Studio downloads.
+      const worldParts = sceneToWorldFrameParts(lowered);
+      let fused: OcctBackend = worldParts[0]!.shape;
+      for (let i = 1; i < worldParts.length; i++) {
+        fused = fused.union(worldParts[i]!.shape);
+      }
+      const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
+      const { bytes, report } = await fused.exportSTLWithReportAsync();
+      if (verify && !report.ok) {
+        return {
+          bytes,
+          featureCount,
+          diagnostics: [...r.diagnostics, stlNotWatertightDiagnostic(report, targetId)],
+        };
+      }
+      return { bytes, featureCount, diagnostics: r.diagnostics };
+    }
+    // Remaining formats (urdf/srdf/sdf-gazebo) fall through to the single-shape
+    // path below, which will emit format-specific diagnostics for Scenes.
   }
 
   const shape = lowered as OcctBackend;

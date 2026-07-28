@@ -85,9 +85,9 @@ describe('Scene STEP export preserves part names + colors', () => {
     expect(text).toContain('stator');
   });
 
-  it('STL export of a Scene return surfaces a structured diagnostic pointing at toUnion/toCompound', async () => {
-    // Single-mesh STL of a multi-body Scene needs an explicit fuse — the
-    // export path should not silently fall back. Spec: §5 risk #3.
+  it('STL export of a Scene auto-fuses world-frame parts into one mesh', async () => {
+    // Studio header STL on multi-part assemblies (keycap body + inlays, etc.)
+    // must produce bytes without requiring Scene.toUnion() in the script.
     const code = `
       const arm = assembly('test');
       arm.part('a', box(10, 10, 10));
@@ -96,12 +96,19 @@ describe('Scene STEP export preserves part names + colors', () => {
     `;
     const result = await runAndExport({
       code,
-      fileName: 'scene-stl-fail.kcad.ts',
+      fileName: 'scene-stl-auto-union.kcad.ts',
       format: 'stl',
+      options: { format: 'stl', verify: false },
     });
     const errors = result.diagnostics.filter((d) => d.severity === 'error');
-    expect(errors.length).toBeGreaterThan(0);
-    expect(errors[0].hint).toContain('toUnion');
-    expect(errors[0].hint).toContain('toCompound');
+    expect(errors).toEqual([]);
+    // Binary STL: 80-byte header + 4-byte triangle count + 50 bytes/tri.
+    expect(result.bytes.length).toBeGreaterThanOrEqual(84);
+    const triCount = new DataView(
+      result.bytes.buffer,
+      result.bytes.byteOffset,
+      result.bytes.byteLength,
+    ).getUint32(80, true);
+    expect(triCount).toBeGreaterThan(0);
   });
 });
