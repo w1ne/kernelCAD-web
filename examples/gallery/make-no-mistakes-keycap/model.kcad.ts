@@ -102,13 +102,27 @@ const secondLineInlay = sketch
     roughness: 0.3,
   });
 
+// Costar blank is authored with the touch face at Z=0 and stems toward +Z.
+// Viewers / glTF are Y-up and map CAD +Z → +Y, so without a flip the lettered
+// face sits at the BOTTOM and auto-rotate shows stems. Rotate 180° about X
+// through the blank center so the legend faces +Z (viewer +Y / "up").
+const blankBb = await originalKeycap.boundingBox();
+const flipPivot = [
+  blankBb.center[0],
+  blankBb.center[1],
+  blankBb.center[2],
+];
+const bodyUpright = engravedKeycap.rotate([1, 0, 0], 180, flipPivot);
+const makeNoUpright = firstLineInlay.rotate([1, 0, 0], 180, flipPivot);
+const mistakesUpright = secondLineInlay.rotate([1, 0, 0], 180, flipPivot);
+
 // Return the manufacturing body and both recessed inlays as named parts. This
 // keeps the dark printable keycap body intact while making the white lettering
 // visible in Studio, GLB, and multi-material 3MF workflows.
 const finishedKeycap = assembly('MAKE NO MISTAKES 2.0u Costar keycap');
-const keycapBodyPart = finishedKeycap.part('keycap-body', engravedKeycap);
-const makeNoInlayPart = finishedKeycap.part('make-no-inlay', firstLineInlay);
-const mistakesInlayPart = finishedKeycap.part('mistakes-inlay', secondLineInlay);
+const keycapBodyPart = finishedKeycap.part('keycap-body', bodyUpright);
+const makeNoInlayPart = finishedKeycap.part('make-no-inlay', makeNoUpright);
+const mistakesInlayPart = finishedKeycap.part('mistakes-inlay', mistakesUpright);
 
 const fixedFrame = {
   type: 'frame',
