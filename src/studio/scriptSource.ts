@@ -94,7 +94,9 @@ export function rootVisibleFeatures(
   ));
 }
 
-function currentHostedProject(): { slug: string; version?: number } | null {
+/** Hosted Studio project identity from `/p/<slug>?version=N`. Shared by mesh
+ *  and export so relative project assets resolve against the same bundle. */
+export function currentHostedProject(): { slug: string; version?: number } | null {
   if (typeof window === 'undefined') return null;
   const match = window.location.pathname?.match(/^\/p\/([^/]+)\/?$/);
   if (!match) return null;

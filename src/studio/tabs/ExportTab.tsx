@@ -4,21 +4,15 @@ import { useCallback, useState } from 'react';
 import { Download, Loader2 } from 'lucide-react';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useCode } from '../context/CodeContext';
-import { apiCall, rewritePath } from '../api/apiBase';
-import { shouldUseHostedMesh } from '../scriptSource';
+import { downloadBlob, exportViaServer } from '../exportViaServer';
 import type { JSX } from 'react';
 
 // Studio Export tab. Slice 1.4 + Slice A export-trio.
 //
-// Talks to /__kernelcad/export (server-side middleware in vite.config.ts)
-// which routes to runAndExport(...) from src/agent/script-runtime/export.
+// Talks to /__kernelcad/export via exportViaServer (same path as the Header
+// STL/STEP buttons) which runs runAndExport on the node OCCT kernel.
 // Slice A widens the format set from {stl, step} to the five Slice A
-// targets: stl, step, dxf, 3mf, glb. The middleware threads `format`
-// verbatim through to runAndExport.
-//
-// Export always POSTs the current editor source so it works without a
-// `?script=` deep-link and reflects live edits (not just the on-disk
-// example). The server accepts the same body shape as POST /__kernelcad/mesh.
+// targets: stl, step, dxf, 3mf, glb.
 //
 // Visibility is adaptive: ExportTab is only rendered by Inspector when
 // the recompute result has at least one geometry. See
@@ -62,48 +56,10 @@ export function ExportTab(): JSX.Element {
 
     const handleExport = useCallback(async (format: ExportFormat) => {
         setError(null);
-        const source = code.trim();
-        if (!source) {
-            setError('Export requires script source in the editor.');
-            return;
-        }
         setPending(format);
         try {
-            const { base, headers } = await apiCall();
-            // Hosted static app has no same-origin /__kernelcad/* middleware.
-            // meshSourceHosted uses VITE_API_BASE_URL even when unsigned-in;
-            // mirror that so Export works without a Supabase session.
-            const effectiveBase = base
-                || (shouldUseHostedMesh()
-                    ? (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? ''
-                    : '');
-            const url = rewritePath(
-                `/__kernelcad/export?format=${format}`,
-                effectiveBase,
-            );
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', ...headers },
-                body: JSON.stringify({ source }),
-            });
-            if (!response.ok) {
-                const payload = await response.json().catch(() => ({}));
-                throw new Error(typeof payload?.error === 'string' ? payload.error : response.statusText);
-            }
-            const blob = await response.blob();
-            const downloadName =
-                response.headers
-                    .get('content-disposition')
-                    ?.match(/filename="?([^";]+)"?/)?.[1]
-                ?? `kernelcad-export.${format}`;
-            const objectUrl = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = objectUrl;
-            a.download = downloadName;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(objectUrl);
+            const { blob, downloadName } = await exportViaServer(format, code);
+            downloadBlob(blob, downloadName);
         } catch (err) {
             setError(err instanceof Error ? err.message : String(err));
         } finally {

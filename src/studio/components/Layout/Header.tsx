@@ -3,12 +3,12 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { Loader2, Download, FileDown, Undo2, Redo2, Box, Grid as GridIcon, Grid3x3, Circle, FolderOpen, Moon, Sun, LayoutGrid, History, RotateCcw } from 'lucide-react';
-import { exportSTEP, exportSTL } from '../../../shared/worker/geometryEngine';
 import { formatTooltip, SHORTCUT_HINTS } from '../../../shared/constants/shortcuts';
 import { useProject } from '../../context/ProjectContext';
 import { useStudioChrome } from '../../context/StudioChromeContext';
 import { useUI } from '../../context/UIContext';
 import { COMPACT_HEADER_QUERY, useIsNarrow } from '../../hooks/useIsNarrow';
+import { downloadBlob, exportViaServer } from '../../exportViaServer';
 import { OverflowMenu } from './OverflowMenu';
 import UserMenu from './UserMenu';
 
@@ -73,24 +73,18 @@ export function Header() {
         setHistoryOpen(false);
     };
 
+    // Route through the node OCCT export endpoint (same as ExportTab). The
+    // legacy in-browser worker uses bare `new Function(code)` without an
+    // async wrapper, so top-level await / lib.fromSTEP fail with
+    // "await is only valid in async functions".
     const handleExport = async (type: 'step' | 'stl') => {
         try {
-            let blob: Blob;
-            if (type === 'step') {
-                blob = await exportSTEP(code);
-            } else {
-                blob = await exportSTL(code);
-            }
-
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${(activeProject?.name || 'model').replace(/[^a-z0-9]/gi, '_')}.${type}`;
-            a.click();
-            URL.revokeObjectURL(url);
+            const { blob, downloadName } = await exportViaServer(type, code);
+            const fallback = `${(activeProject?.name || 'model').replace(/[^a-z0-9]/gi, '_')}.${type}`;
+            downloadBlob(blob, downloadName || fallback);
         } catch (err) {
             console.error(err);
-            alert("Export failed: " + (err instanceof Error ? err.message : String(err)));
+            alert('Export failed: ' + (err instanceof Error ? err.message : String(err)));
         }
     };
 

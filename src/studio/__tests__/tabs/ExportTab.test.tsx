@@ -175,7 +175,7 @@ describe('ExportTab', () => {
     it('POSTs current editor source when the script param is missing', async () => {
         Object.defineProperty(window, 'location', {
             configurable: true,
-            value: { ...window.location, search: '' },
+            value: { ...window.location, pathname: '/', search: '', hostname: 'localhost' },
         });
         recompute = { ...recompute, geometries: [{ faces: [] }] };
         mockCode.code = 'return cylinder(5, 20);';
@@ -214,6 +214,15 @@ describe('ExportTab', () => {
     });
 
     it('POSTs editor source even when a ?script= param is present (exports live edits)', async () => {
+        Object.defineProperty(window, 'location', {
+            configurable: true,
+            value: {
+                ...window.location,
+                pathname: '/',
+                search: '?script=examples/foo.kcad.ts',
+                hostname: 'localhost',
+            },
+        });
         recompute = { ...recompute, geometries: [{ faces: [] }] };
         mockCode.code = 'return box(1, 2, 3); // edited';
 
@@ -249,10 +258,54 @@ describe('ExportTab', () => {
         HTMLAnchorElement.prototype.click = originalClick;
     });
 
+    it('POSTs projectSlug for hosted /p/<slug> so complementary STEP assets materialize', async () => {
+        Object.defineProperty(window, 'location', {
+            configurable: true,
+            value: {
+                ...window.location,
+                pathname: '/p/N2yYiZxy',
+                search: '?version=6',
+                hostname: 'app.kernelcad.com',
+            },
+        });
+        recompute = { ...recompute, geometries: [{ faces: [] }] };
+        mockCode.code = 'return await lib.fromSTEP("./2.0u_blank_costar.stp");';
+
+        const blob = new Blob([new Uint8Array([1, 2, 3])], { type: 'model/stl' });
+        const fetchMock = vi.fn().mockResolvedValue({
+            ok: true,
+            blob: async () => blob,
+            headers: new Headers({ 'content-disposition': 'attachment; filename="model.stl"' }),
+        });
+        vi.stubGlobal('fetch', fetchMock);
+
+        const clickSpy = vi.fn();
+        const originalClick = HTMLAnchorElement.prototype.click;
+        HTMLAnchorElement.prototype.click = clickSpy;
+
+        const { ExportTab } = await import('../../tabs/ExportTab');
+        render(<ExportTab />);
+        fireEvent.click(screen.getByTestId('export-stl'));
+
+        await waitFor(() => {
+            expect(fetchMock).toHaveBeenCalledTimes(1);
+        });
+        const call = fetchMock.mock.calls[0]!;
+        expect(call[0] as string).toContain('/__kernelcad/export?format=stl');
+        expect(JSON.parse((call[1] as { body: string }).body)).toEqual({
+            projectSlug: 'N2yYiZxy',
+            projectVersion: 6,
+            source: 'return await lib.fromSTEP("./2.0u_blank_costar.stp");',
+        });
+        expect(clickSpy).toHaveBeenCalled();
+
+        HTMLAnchorElement.prototype.click = originalClick;
+    });
+
     it('shows an error when the editor has no source', async () => {
         Object.defineProperty(window, 'location', {
             configurable: true,
-            value: { ...window.location, search: '' },
+            value: { ...window.location, pathname: '/', search: '', hostname: 'localhost' },
         });
         recompute = { ...recompute, geometries: [{ faces: [] }] };
         mockCode.code = '   ';
