@@ -30,12 +30,14 @@ const dishedKeycap = originalKeycap.subtract(sphericalDishCutter);
 const legendCutStartZ = 0.4;
 const legendCutHeight = 0.9; // ends at Z = 1.3
 
-// sketch.text Y is baseline-only (align is horizontal). Previous baselines
-// [0, 1.6] / [0, -3.5] put the visual block high so "MAKE NO" nearly touched
-// the +Y rim. Re-center the two-line block on Y = 0 with the same ~5.1 mm
-// baseline spacing (cap-height ≈ 0.72×size).
-const makeNoBaselineY = 0.2;
-const mistakesBaselineY = -4.9;
+// sketch.text Y is baseline-only (align is horizontal).
+// Measured glyph boxes at baseline Y=0 (size 6.4 / 6.0):
+//   MAKE NO   y ∈ [-0.0625,  4.46875]
+//   MISTAKES  y ∈ [-0.0586,  4.18945]
+// Keep 5.1 mm baseline gap; place the two-line block so its visual center
+// is on Y=0 → equal margin to the ±9 mm key rims (~4.19 mm each).
+const makeNoBaselineY = 0.345;
+const mistakesBaselineY = -4.755;
 
 const firstLine = sketch
   .text('MAKE NO', {
@@ -100,13 +102,27 @@ const secondLineInlay = sketch
     roughness: 0.3,
   });
 
+// Costar blank is authored with the touch face at Z=0 and stems toward +Z.
+// Viewers / glTF are Y-up and map CAD +Z → +Y, so without a flip the lettered
+// face sits at the BOTTOM and auto-rotate shows stems. Rotate 180° about X
+// through the blank center so the legend faces +Z (viewer +Y / "up").
+const blankBb = await originalKeycap.boundingBox();
+const flipPivot = [
+  blankBb.center[0],
+  blankBb.center[1],
+  blankBb.center[2],
+];
+const bodyUpright = engravedKeycap.rotate([1, 0, 0], 180, flipPivot);
+const makeNoUpright = firstLineInlay.rotate([1, 0, 0], 180, flipPivot);
+const mistakesUpright = secondLineInlay.rotate([1, 0, 0], 180, flipPivot);
+
 // Return the manufacturing body and both recessed inlays as named parts. This
 // keeps the dark printable keycap body intact while making the white lettering
 // visible in Studio, GLB, and multi-material 3MF workflows.
 const finishedKeycap = assembly('MAKE NO MISTAKES 2.0u Costar keycap');
-const keycapBodyPart = finishedKeycap.part('keycap-body', engravedKeycap);
-const makeNoInlayPart = finishedKeycap.part('make-no-inlay', firstLineInlay);
-const mistakesInlayPart = finishedKeycap.part('mistakes-inlay', secondLineInlay);
+const keycapBodyPart = finishedKeycap.part('keycap-body', bodyUpright);
+const makeNoInlayPart = finishedKeycap.part('make-no-inlay', makeNoUpright);
+const mistakesInlayPart = finishedKeycap.part('mistakes-inlay', mistakesUpright);
 
 const fixedFrame = {
   type: 'frame',
