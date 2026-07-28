@@ -15,8 +15,8 @@
 // - Hosted: `base = VITE_API_BASE_URL` (= https://api.kernelcad.com, the Hetzner
 //   backend, direct origin — NOT CF-proxied). The `/__kernelcad` prefix is KEPT,
 //   because that is exactly where the backend mounts every route (mesh, session,
-//   params, transforms, events, animation-bake, source). Signed-in calls add the
-//   Supabase JWT as a bearer header.
+//   params, transforms, events, animation-bake, source, export). Signed-in calls
+//   add the Supabase JWT as a bearer header.
 //
 // History / why no `/api/v1`: an earlier draft sent signed-in calls to
 // `app.kernelcad.com/api/v1/*` and stripped the `/__kernelcad` prefix, relying

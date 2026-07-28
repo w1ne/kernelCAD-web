@@ -14,8 +14,14 @@ let recompute: StudioRecomputeResult = {
     recomputeMs: 0,
 };
 
+const mockCode = { code: 'return box(10, 10, 10);' };
+
 vi.mock('../../hooks/useRecomputeResult', () => ({
     useRecomputeResult: () => recompute,
+}));
+
+vi.mock('../../context/CodeContext', () => ({
+    useCode: () => mockCode,
 }));
 
 // S1: ExportTab now routes through the apiBase helper, which calls
@@ -36,6 +42,7 @@ beforeEach(() => {
         diagnostics: [],
         recomputeMs: 0,
     };
+    mockCode.code = 'return box(10, 10, 10);';
     Object.defineProperty(window, 'location', {
         configurable: true,
         value: { ...window.location, search: '?script=examples/foo.kcad.ts' },
@@ -165,23 +172,50 @@ describe('ExportTab', () => {
         HTMLAnchorElement.prototype.click = originalClick;
     });
 
-    it('shows an error when the script param is missing', async () => {
+    it('POSTs current editor source when the script param is missing', async () => {
         Object.defineProperty(window, 'location', {
             configurable: true,
             value: { ...window.location, search: '' },
         });
         recompute = { ...recompute, geometries: [{ faces: [] }] };
+        mockCode.code = 'return cylinder(5, 20);';
+
+        const blob = new Blob([new Uint8Array([1, 2, 3])], { type: 'model/stl' });
+        const fetchMock = vi.fn().mockResolvedValue({
+            ok: true,
+            blob: async () => blob,
+            headers: new Headers({ 'content-disposition': 'attachment; filename="studio-export.stl"' }),
+        });
+        vi.stubGlobal('fetch', fetchMock);
+
+        const clickSpy = vi.fn();
+        const originalClick = HTMLAnchorElement.prototype.click;
+        HTMLAnchorElement.prototype.click = clickSpy;
 
         const { ExportTab } = await import('../../tabs/ExportTab');
         render(<ExportTab />);
         fireEvent.click(screen.getByTestId('export-stl'));
+
         await waitFor(() => {
-            expect(screen.getByTestId('export-tab-error')).toBeDefined();
+            expect(fetchMock).toHaveBeenCalledTimes(1);
         });
+        expect(fetchMock).toHaveBeenCalledWith(
+            '/__kernelcad/export?format=stl',
+            expect.objectContaining({
+                method: 'POST',
+                headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({ source: 'return cylinder(5, 20);' }),
+            }),
+        );
+        expect(clickSpy).toHaveBeenCalled();
+        expect(screen.queryByTestId('export-tab-error')).toBeNull();
+
+        HTMLAnchorElement.prototype.click = originalClick;
     });
 
-    it('fetches the export endpoint with the right query and triggers a download', async () => {
+    it('POSTs editor source even when a ?script= param is present (exports live edits)', async () => {
         recompute = { ...recompute, geometries: [{ faces: [] }] };
+        mockCode.code = 'return box(1, 2, 3); // edited';
 
         const blob = new Blob([new Uint8Array([1, 2, 3])], { type: 'model/stl' });
         const fetchMock = vi.fn().mockResolvedValue({
@@ -204,11 +238,31 @@ describe('ExportTab', () => {
             expect(fetchMock).toHaveBeenCalledTimes(1);
         });
         expect(fetchMock).toHaveBeenCalledWith(
-            '/__kernelcad/export?script=examples%2Ffoo.kcad.ts&format=stl',
-            expect.objectContaining({ headers: {} }),
+            '/__kernelcad/export?format=stl',
+            expect.objectContaining({
+                method: 'POST',
+                body: JSON.stringify({ source: 'return box(1, 2, 3); // edited' }),
+            }),
         );
         expect(clickSpy).toHaveBeenCalled();
 
         HTMLAnchorElement.prototype.click = originalClick;
+    });
+
+    it('shows an error when the editor has no source', async () => {
+        Object.defineProperty(window, 'location', {
+            configurable: true,
+            value: { ...window.location, search: '' },
+        });
+        recompute = { ...recompute, geometries: [{ faces: [] }] };
+        mockCode.code = '   ';
+
+        const { ExportTab } = await import('../../tabs/ExportTab');
+        render(<ExportTab />);
+        fireEvent.click(screen.getByTestId('export-stl'));
+        await waitFor(() => {
+            expect(screen.getByTestId('export-tab-error')).toBeDefined();
+        });
+        expect(screen.getByTestId('export-tab-error').textContent).toMatch(/script source/i);
     });
 });

@@ -3,7 +3,9 @@
 import { useCallback, useState } from 'react';
 import { Download, Loader2 } from 'lucide-react';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
+import { useCode } from '../context/CodeContext';
 import { apiCall, rewritePath } from '../api/apiBase';
+import { shouldUseHostedMesh } from '../scriptSource';
 import type { JSX } from 'react';
 
 // Studio Export tab. Slice 1.4 + Slice A export-trio.
@@ -13,6 +15,10 @@ import type { JSX } from 'react';
 // Slice A widens the format set from {stl, step} to the five Slice A
 // targets: stl, step, dxf, 3mf, glb. The middleware threads `format`
 // verbatim through to runAndExport.
+//
+// Export always POSTs the current editor source so it works without a
+// `?script=` deep-link and reflects live edits (not just the on-disk
+// example). The server accepts the same body shape as POST /__kernelcad/mesh.
 //
 // Visibility is adaptive: ExportTab is only rendered by Inspector when
 // the recompute result has at least one geometry. See
@@ -38,13 +44,9 @@ const FORMATS: ReadonlyArray<FormatDescriptor> = [
     { id: 'glb', label: 'GLB', help: 'Web / AR viewer; PBR materials' },
 ];
 
-function getCurrentScriptParam(): string | null {
-    if (typeof window === 'undefined') return null;
-    return new URLSearchParams(window.location.search).get('script');
-}
-
 export function ExportTab(): JSX.Element {
     const { geometries } = useRecomputeResult();
+    const { code } = useCode();
     const [pending, setPending] = useState<ExportFormat | null>(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -60,19 +62,30 @@ export function ExportTab(): JSX.Element {
 
     const handleExport = useCallback(async (format: ExportFormat) => {
         setError(null);
-        const script = getCurrentScriptParam();
-        if (!script) {
-            setError('Export requires the studio to be loaded from a script URL (?script=…).');
+        const source = code.trim();
+        if (!source) {
+            setError('Export requires script source in the editor.');
             return;
         }
         setPending(format);
         try {
             const { base, headers } = await apiCall();
+            // Hosted static app has no same-origin /__kernelcad/* middleware.
+            // meshSourceHosted uses VITE_API_BASE_URL even when unsigned-in;
+            // mirror that so Export works without a Supabase session.
+            const effectiveBase = base
+                || (shouldUseHostedMesh()
+                    ? (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? ''
+                    : '');
             const url = rewritePath(
-                `/__kernelcad/export?script=${encodeURIComponent(script)}&format=${format}`,
-                base,
+                `/__kernelcad/export?format=${format}`,
+                effectiveBase,
             );
-            const response = await fetch(url, { headers });
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...headers },
+                body: JSON.stringify({ source }),
+            });
             if (!response.ok) {
                 const payload = await response.json().catch(() => ({}));
                 throw new Error(typeof payload?.error === 'string' ? payload.error : response.statusText);
@@ -96,7 +109,7 @@ export function ExportTab(): JSX.Element {
         } finally {
             setPending(null);
         }
-    }, []);
+    }, [code]);
 
     if (geometries.length === 0) {
         return (
