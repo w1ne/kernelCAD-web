@@ -1149,6 +1149,24 @@
       "attribution": "kernelCAD authored model (kernelCAD contributors)"
     },
     {
+      "id": "gp2y0a21",
+      "name": "Sharp GP2Y0A21 IR distance ranger, 10–80 cm (29.5×13×13.5mm)",
+      "family": "Sensor",
+      "mpn": "GP2Y0A21YK0F",
+      "kcad_source": "scripts/parts/authored/gp2y0a21.kcad.ts",
+      "tags": [
+        "sensor",
+        "distance",
+        "infrared",
+        "ir",
+        "sharp",
+        "gp2y0a21",
+        "analog"
+      ],
+      "license": "MIT",
+      "attribution": "kernelCAD authored model (kernelCAD contributors)"
+    },
+    {
       "id": "hc-05",
       "name": "HC-05 Bluetooth SPP module (37×16×6mm)",
       "family": "Wireless",
