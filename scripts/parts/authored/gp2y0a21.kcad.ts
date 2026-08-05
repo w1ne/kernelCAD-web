@@ -24,6 +24,8 @@ const body = box(BODY_L, BODY_D, BODY_H).color(BODY);
 
 // Two lenses on the front face, emitter/detector pair 20 mm apart, centred at
 // half height. Cylinders are Z-axis natively; rotate about X to face +Y.
+// box() anchors at the origin corner, so all placement is body-relative:
+// body spans X 0..29.5, Y 0..13, Z 0..13.5.
 const lensZ = BODY_H / 2;
 const lensY = BODY_D - 1.0; // proud of the face by ~1 mm
 const mkLens = (x: number): Shape[] => {
@@ -31,16 +33,17 @@ const mkLens = (x: number): Shape[] => {
   const glass = cylinder(1.2, 3.1, 24).color(LENS).rotate([1, 0, 0], -90).translate(x, lensY - 0.4, lensZ);
   return [rim, glass];
 };
-const lenses = [...mkLens(-10), ...mkLens(10)];
+const lenses = [...mkLens(BODY_L / 2 - 10), ...mkLens(BODY_L / 2 + 10)];
 
 // 3-pin JST-PH connector on the back (-Y) face: white shroud + three pins.
-const conn = box(6.0, 2.2, 4.5).color(CONN).translate(-3.0, -1.2, lensZ - 2.25);
+const connX = (BODY_L - 6.0) / 2;
+const conn = box(6.0, 2.2, 4.5).color(CONN).translate(connX, -1.2, lensZ - 2.25);
 const pins: Shape[] = [];
 for (let i = 0; i < 3; i++) {
   pins.push(
     box(0.5, 2.4, 0.5)
       .color(PIN)
-      .translate(-2.54 + i * 2.54, -1.2, lensZ - 0.25),
+      .translate(BODY_L / 2 - 2.54 + i * 2.54, -1.2, lensZ - 0.25),
   );
 }
 
