@@ -13,6 +13,22 @@ import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
 import type { ParamTable } from '../shared/runtime/paramTable';
 import type { JointPoseSnapshot } from './adapters/featureRecordsToMates';
 
+/**
+ * A `ValidatorResult` plus the shell-only provenance flag the panel needs to
+ * stay honest.
+ *
+ * `validated` is `false` when the review payload the shell is holding carries
+ * no evidence a validation actually ran — the `{ ok: true, diagnostics: [] }`
+ * placeholder `GeometryContext` substitutes for a missing `review` block, or
+ * the `live=1` short-circuit the dev review endpoint returns on a
+ * session-backed load. Both read as `ok`, so the derived `status` is
+ * `'solved'`; consumers that paint a verdict MUST check `validated` before
+ * showing that green, or they publish a pass nothing computed.
+ */
+export type StudioValidity = ValidatorResult & {
+    readonly validated: boolean;
+};
+
 export interface StudioRepairEvidence {
     readonly repairMode: string | null;
     readonly blockingReasons: ReadonlyArray<{
@@ -51,7 +67,7 @@ export type TabId =
 export interface StudioRecomputeResult {
     readonly features: readonly FeatureRecord[];
     readonly geometries: readonly GeometryResult[];
-    readonly validity: ValidatorResult | null;
+    readonly validity: StudioValidity | null;
     readonly paramTable: ParamTable | null;
     readonly diagnostics: readonly CompilerDiagnostic[];
     readonly suggestedRepairPrompt: string | null;

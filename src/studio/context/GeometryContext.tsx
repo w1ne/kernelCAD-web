@@ -45,6 +45,22 @@ export interface ScriptReviewSummary {
         repairMode?: string;
         blockingReasons?: Array<{ code?: string; message?: string; repairHint?: string }>;
     };
+    /**
+     * Assembly-validator block. `reviewPipeline` returns this on BOTH its
+     * ok and not-ok branches with the real counts (`validateAssembly`'s own
+     * `partCount` / `jointCount`), but the Studio used to drop it and render
+     * `0 parts · 0 joints` for every model. Absent on the `live=1`
+     * short-circuit and on the placeholder review synthesised below, which is
+     * exactly what `reviewWasValidated` keys off.
+     */
+    validator?: {
+        status?: string;
+        partCount?: number;
+        jointCount?: number;
+    };
+    /** Set by the dev review endpoint's `live=1` short-circuit: interference
+     *  channel only, no validator pass. Never a verdict. */
+    live?: boolean;
     suggestedRepairPrompt?: string;
     /**
      * Raw pairwise interference results at the script's current/default pose,
@@ -985,6 +1001,12 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                     }
                     const hostedGeometries = featureMeshesToGeometries(rootVisibleFeatures(payload));
                     const hostedRecords = (payload.featureRecords as FeatureRecord[]) ?? [];
+                    // Placeholder, NOT a verdict: a mesh response with no
+                    // `review` block means nothing validated this model.
+                    // `reviewWasValidated` recognises the shape (no
+                    // validator / fitness / mechanism / diagnostics) so the
+                    // Validity panel reports "not run" instead of a green
+                    // "solved" over an empty set.
                     const hostedReview = payload.review ?? { ok: true, diagnostics: [] };
                     const emptyNotice = detectEmptyBuild(hostedGeometries.length, hostedRecords, hostedReview);
                     setGeometries(hostedGeometries);

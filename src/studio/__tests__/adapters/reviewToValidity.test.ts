@@ -42,6 +42,42 @@ describe('reviewToValidity', () => {
         expect(v?.diagnostics[0].severity).toBe('error');
     });
 
+    // KC-06: counts and provenance.
+    it('a bare ok:true placeholder is NOT marked validated', () => {
+        // `{ ok: true, diagnostics: [] }` is what GeometryContext substitutes
+        // for a missing `review` block and what the dev endpoint's `live=1`
+        // short-circuit returns. Nothing validated; the flag must say so.
+        expect(reviewToValidity({ ok: true })?.validated).toBe(false);
+        expect(reviewToValidity({ ok: true, diagnostics: [], live: true })?.validated).toBe(false);
+    });
+
+    it('a review carrying validator / fitness / mechanism evidence IS validated', () => {
+        expect(
+            reviewToValidity({ ok: true, validator: { partCount: 2, jointCount: 1 } })?.validated,
+        ).toBe(true);
+        expect(reviewToValidity({ ok: true, fitness: { functional: true } })?.validated).toBe(true);
+        expect(reviewToValidity({ ok: true, mechanism: 'real' })?.validated).toBe(true);
+        expect(reviewToValidity({ ok: true, mechanism: 'unverified' })?.validated).toBe(false);
+        expect(
+            reviewToValidity({ ok: false, diagnostics: [{ message: 'x' }] })?.validated,
+        ).toBe(true);
+    });
+
+    it('counts come from the loaded model when the payload has no validator block', () => {
+        const v = reviewToValidity({ ok: true }, { partCount: 2, jointCount: 1 });
+        expect(v?.partCount).toBe(2);
+        expect(v?.jointCount).toBe(1);
+    });
+
+    it("the server's validator counts win over the local model counts", () => {
+        const v = reviewToValidity(
+            { ok: true, validator: { partCount: 5, jointCount: 4 } },
+            { partCount: 2, jointCount: 1 },
+        );
+        expect(v?.partCount).toBe(5);
+        expect(v?.jointCount).toBe(4);
+    });
+
     it('mechanism: broken overrides ok:true → status=error', () => {
         // P1 surface convergence: the loop's mechanism verdict is the
         // merge gate, so a broken mechanism flips status to error even

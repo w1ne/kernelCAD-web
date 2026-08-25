@@ -16,9 +16,10 @@ import type { ScriptReviewSummary } from '../context/GeometryContext';
 import type {
     ValidatorDiagnostic,
     ValidatorDiagnosticCode,
-    ValidatorResult,
     ValidatorStatus,
 } from '../../modeling/mates/validator';
+import type { StudioValidity } from '../types';
+import { EMPTY_MODEL_TOPOLOGY, type ModelTopologyCounts } from './featureRecordsToCounts';
 
 export interface MechanismBannerEntry {
     code: string;
@@ -50,16 +51,58 @@ export function reviewToMechanismBanner(
     };
 }
 
-export function reviewToValidity(review: ScriptReviewSummary | null): ValidatorResult | null {
+/**
+ * Did a validation actually run for this review payload?
+ *
+ * Not every `ScriptReviewSummary` the shell holds came from a validator.
+ * Three code paths hand the Studio a synthetic pass:
+ *
+ *   - `GeometryContext` falls back to `{ ok: true, diagnostics: [] }` when a
+ *     hosted / dev mesh response carries no `review` block at all.
+ *   - the dev `/__kernelcad/review?live=1` path (also used for the
+ *     session-backed INITIAL load) short-circuits the expensive review and
+ *     returns `{ ok: true, diagnostics: [], live: true }`.
+ *
+ * Both satisfy `review.ok`, so `deriveStatus` used to answer `'solved'` —
+ * a green verdict over an empty set. Rather than trust a flag the server
+ * could forget to set, evidence is derived: a real `reviewCadTool` result
+ * always carries the validator block, a fitness summary and a mechanism
+ * verdict; a review that found something always carries diagnostics.
+ */
+export function reviewWasValidated(review: ScriptReviewSummary): boolean {
+    if (review.validator != null) return true;
+    if (review.fitness !== undefined) return true;
+    if ((review.diagnostics ?? []).length > 0) return true;
+    if (review.mechanism !== undefined && review.mechanism !== 'unverified') return true;
+    return false;
+}
+
+/**
+ * @param review  latest `/__kernelcad/review` (or mesh-embedded) payload.
+ * @param model   part / joint counts of the model actually loaded in the
+ *                shell, derived from `featureRecords`. Used when the review
+ *                payload carries no `validator` block of its own — which is
+ *                every session-backed load. Without it the panel reports
+ *                `0 parts · 0 joints` for a model the Scene tab is listing.
+ */
+export function reviewToValidity(
+    review: ScriptReviewSummary | null,
+    model: ModelTopologyCounts = EMPTY_MODEL_TOPOLOGY,
+): StudioValidity | null {
     if (review == null) return null;
 
     const diagnostics: ValidatorDiagnostic[] = (review.diagnostics ?? []).map(diagnosticFromReview);
+    const validated = reviewWasValidated(review);
 
     return {
         status: deriveStatus(review),
         diagnostics,
-        partCount: 0,
-        jointCount: 0,
+        // The server-side pipeline already returns real counts on its
+        // `validator` block; prefer them, and fall back to the loaded
+        // model's own records when the payload has no validator block.
+        partCount: review.validator?.partCount ?? model.partCount,
+        jointCount: review.validator?.jointCount ?? model.jointCount,
+        validated,
     };
 }
 
