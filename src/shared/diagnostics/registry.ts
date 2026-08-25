@@ -1021,6 +1021,15 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'assembly',
     description: 'A joint axis (mate connector origin + direction) does not intersect the part body it claims to act on.',
   },
+  'assembly.joint.child-modeled-in-place': {
+    hintTemplate:
+      "Pick ONE convention. Joint primitives (.revolute/.prismatic/.ball) use URDF semantics: `origin` is the parent->child frame offset and the child link must be modeled about its OWN origin. Either model the child about its origin and let the joint place it, or keep the placement and switch to connectors + arm.mate(...), which treats the origin as a pivot and preserves the modeled position at pose 0.",
+    nextAction: { kind: 'fix-arg', field: 'origin' },
+    defaultSeverity: 'warn',
+    group: 'assembly',
+    description:
+      'A joint primitive drives a child part that the script also placed in assembly space, mixing the URDF (frame-offset) and mate (pivot) conventions — the child is displaced by the joint origin at every pose, including 0.',
+  },
   'assembly.structure.unstructured-bodies': {
     hintTemplate:
       'Wrap the loose bodies in assembly().part(name, shape) so each part carries identity, per-part stats, and review handles; name every returned shape. This is an authoring-time signal — a multi-body model with no part names loses inspect --focus, list_part_stats, and Studio per-part validity.',

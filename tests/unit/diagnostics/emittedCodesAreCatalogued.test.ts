@@ -75,7 +75,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     ).toEqual([]);
   });
 
-  it('catalogue has exactly 245 codes', () => {
+  it('catalogue has exactly 248 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -175,7 +175,9 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  +  2 Geom2dGcc tangency outcomes: sketch.tangency.no-solution and
     //       sketch.tangency.ambiguous = 246.
     //  +  1 feature.finish.unknown-token (.finish() unknown-name hard error) = 247.
-    expect(catalogue.size).toBe(247);
+    //  +  1 assembly.joint.child-modeled-in-place (URDF/mate convention mix on a
+    //       joint-primitive child the script also placed) = 248.
+    expect(catalogue.size).toBe(248);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

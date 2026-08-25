@@ -31,6 +31,7 @@ import type { Vec3 } from '../../shared/intent/types';
 import type { DiagnosticCode } from '../../shared/diagnostics/registry';
 import type { InterferencePair } from '../runtime/detectInterferences';
 import { validateJointAxisBindingWithCache } from './jointAxisBinding';
+import { validateJointConventionMix } from './jointConventionMix';
 import { validateJointLoadCapacity } from './jointLoadCapacity';
 import { validateJointVisualExposure } from './jointVisualExposure';
 import { parseConnectorRef } from './mate';
@@ -88,6 +89,7 @@ export type ValidatorDiagnosticCode = Extract<
   | 'assembly.mate.limit-missing'
   | 'assembly.mounting-hole.mismatch'
   | 'assembly.joint-axis.unbound'
+  | 'assembly.joint.child-modeled-in-place'
   | 'assembly.joint.load-exceeded'
   | 'assembly.joint.not-visible'
   | 'assembly.mate.not-physically-realized'
@@ -449,6 +451,13 @@ export async function validateAssemblyWithMates(
     }
     return true;
   });
+
+  // 2b. Convention-mix gate. Runs BEFORE the no-mates early exit below:
+  //     an assembly built from joint primitives has zero mates by
+  //     construction, so anything placed after that return never sees a
+  //     joint-primitive scene — which is exactly what this gate is for.
+  //     Pure + cheap (no lowering), so it is safe on the early path.
+  diagnostics.push(...validateJointConventionMix(arm));
 
   // 3. Run the v0.6 mate solver. If there are no mates declared, skip — the
   //    solver returns 'solved' on an empty mate set anyway, but the early
