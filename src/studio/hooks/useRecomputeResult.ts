@@ -6,6 +6,7 @@ import { reviewToValidity, reviewToMechanismBanner } from '../adapters/reviewToV
 import { serializedParamsToTable } from '../adapters/serializedParamsToTable';
 import { reviewDiagnosticsToCompiler } from '../adapters/reviewDiagnosticsToCompiler';
 import { extractJointSnapshots } from '../adapters/featureRecordsToMates';
+import { countModelTopology } from '../adapters/featureRecordsToCounts';
 import { fingerprintStudioScript, shellStore } from '../store/shellStore';
 import type { ScriptReviewSummary } from '../context/GeometryContext';
 import type { StudioRecomputeResult, StudioRepairEvidence } from '../types';
@@ -33,9 +34,18 @@ export function useRecomputeResult(): StudioRecomputeResult {
     const workbench = useWorkbench();
     const lastPublishedReviewRef = useRef<ScriptReviewSummary | null | typeof UNPUBLISHED_REVIEW>(UNPUBLISHED_REVIEW);
 
+    // Part / joint counts of the model the shell actually has loaded. The
+    // review payload only carries its own counts on a full server-side
+    // review; every session-backed load arrives without one, and the panel
+    // used to fall back to a hardcoded zero.
+    const modelCounts = useMemo(
+        () => countModelTopology(workbench.featureRecords),
+        [workbench.featureRecords],
+    );
+
     const validity = useMemo(
-        () => reviewToValidity(workbench.scriptReview ?? null),
-        [workbench.scriptReview],
+        () => reviewToValidity(workbench.scriptReview ?? null, modelCounts),
+        [workbench.scriptReview, modelCounts],
     );
 
     // Physics-loop banner (P1). `null` unless the recompute's mechanism

@@ -33,8 +33,14 @@ export function ValidityTab(): JSX.Element {
         );
     }
 
-    const { status, diagnostics, partCount, jointCount } = validity;
-    const color = statusColor(status);
+    const { status, diagnostics, partCount, jointCount, validated } = validity;
+    // A review payload with no validator evidence behind it derives to
+    // `status: 'solved'` from its `ok: true` alone. Painting that green
+    // would tell the user their mechanism validated when nothing ran, so
+    // the chip reports the absence instead. Only the PASSING verdict is
+    // suppressed — a real failure still shows as itself.
+    const verdict: ValidityVerdict = !validated && isPassingStatus(status) ? 'not run' : status;
+    const color = verdictColor(verdict);
     const suggestionCards = buildValiditySuggestions({
         validity,
         mechanismBanner,
@@ -65,15 +71,26 @@ export function ValidityTab(): JSX.Element {
                 <span
                     className={`px-2 py-0.5 text-[11px] font-medium rounded ${color.bg} ${color.text}`}
                     data-testid="validity-chip"
-                    data-status={status}
+                    data-status={verdict}
+                    data-validated={validated ? 'true' : 'false'}
                     data-color={color.name}
                 >
-                    {status}
+                    {verdict}
                 </span>
                 <span className="text-[11px] text-gray-400" data-testid="validity-counts">
                     {partCount} parts · {jointCount} joints · {diagnostics.length} diagnostics
                 </span>
             </div>
+            {!validated && (
+                <div
+                    className="mx-3 mb-2 rounded border border-[#2a2a2a] bg-[#161616] px-2 py-1 text-[11px] text-gray-400"
+                    data-testid="validity-not-run-notice"
+                >
+                    No validation has run for this model yet — the counts above
+                    are what the model declares, not what was checked. Press
+                    Validate to check it.
+                </div>
+            )}
             {suggestionCards.length > 0 && (
                 <div className="flex flex-col gap-1.5 px-3 pb-2">
                     {suggestionCards.map((card) => (
@@ -558,10 +575,30 @@ function diagnosticTargetKey(d: ValidatorDiagnostic): string {
 }
 
 type StatusColor = {
-    name: 'green' | 'amber' | 'red';
+    name: 'green' | 'amber' | 'red' | 'grey';
     bg: string;
     text: string;
 };
+
+/** What the chip actually reports: the validator's status, or the explicit
+ *  absence of one. `'not run'` is a shell-only verdict — it never comes back
+ *  from the validator, it is what the shell says when nothing validated. */
+export type ValidityVerdict = ValidatorStatus | 'not run';
+
+/** Statuses that read as a pass. Only these are suppressed when unvalidated;
+ *  a failing verdict is reported as itself either way. */
+// eslint-disable-next-line react-refresh/only-export-components
+export function isPassingStatus(status: ValidatorStatus): boolean {
+    return status === 'solved' || status === 'redundant-ok';
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function verdictColor(verdict: ValidityVerdict): StatusColor {
+    if (verdict === 'not run') {
+        return { name: 'grey', bg: 'bg-[#242424]', text: 'text-gray-400' };
+    }
+    return statusColor(verdict);
+}
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function statusColor(status: ValidatorStatus): StatusColor {

@@ -3,7 +3,7 @@
 /** @vitest-environment jsdom */
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { StudioRecomputeResult } from '../../types';
+import type { StudioRecomputeResult, StudioValidity } from '../../types';
 import type { ValidatorDiagnostic, ValidatorResult } from '../../../modeling/mates/validator';
 
 const mockUseRecomputeResult = vi.fn<() => StudioRecomputeResult>();
@@ -39,17 +39,20 @@ function emptyResult(): StudioRecomputeResult {
     };
 }
 
-function withValidity(v: ValidatorResult): StudioRecomputeResult {
+function withValidity(v: StudioValidity): StudioRecomputeResult {
     return { ...emptyResult(), validity: v };
 }
 
+/** `validated: true` — these cases stand for a validation that actually ran,
+ *  which is what makes the verdict paintable. The unvalidated case (the
+ *  KC-06 vacuous green) is covered in `ValidityTabLoadedModel.test.tsx`. */
 function makeValidity(
     status: ValidatorResult['status'],
     diagnostics: ValidatorDiagnostic[] = [],
     partCount = 0,
     jointCount = 0,
-): ValidatorResult {
-    return { status, diagnostics, partCount, jointCount };
+): StudioValidity {
+    return { status, diagnostics, partCount, jointCount, validated: true };
 }
 
 afterEach(() => {

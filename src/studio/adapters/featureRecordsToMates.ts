@@ -125,6 +125,92 @@ function encodedToSnapshot(
   };
 }
 
+/** `Assembly.solvedModel(poses)` stores its pose map on the `solvedAssembly`
+ *  record keyed by joint OR mate name, in the same encoded shape a mate's own
+ *  `pose` uses. Joint primitives carry no pose of their own, so this is the
+ *  only place a primitive's articulation value lives. Later records win, as
+ *  with mates. */
+function solvedAssemblyPoses(
+  records: readonly FeatureRecord[],
+): Map<string, NonNullable<EncodedMateRecord['pose']>> {
+  const out = new Map<string, NonNullable<EncodedMateRecord['pose']>>();
+  for (const rec of records) {
+    if (rec.kind !== 'solvedAssembly') continue;
+    const meta = rec.metadata as
+      | { poses?: Record<string, NonNullable<EncodedMateRecord['pose']>> }
+      | undefined;
+    for (const [name, pose] of Object.entries(meta?.poses ?? {})) {
+      if (pose === undefined) continue;
+      out.set(name, pose);
+    }
+  }
+  return out;
+}
+
+/** Joint kinds `assembly.revolute/prismatic/ball/fixed` capture as, mapped to
+ *  the MateType vocabulary the JointsTab row renderer speaks. */
+const JOINT_KIND_TO_MATE_TYPE: Record<string, MateRecord['type']> = {
+  revolute: 'revolute',
+  prismatic: 'prismatic',
+  ball: 'ball',
+  fixed: 'fastened',
+};
+
+/** A zero Param, used as the resting pose for a declared joint that
+ *  `solvedModel` gave no pose. `evaluated: 0` with no `paramRef` renders the
+ *  row read-only — truthful: the joint exists, nothing drives it. */
+const REST_POSE_PARAM: Param = { expression: '0', unit: 'deg', evaluated: 0 };
+
+function jointPrimitiveToSnapshot(
+  rec: FeatureRecord,
+  namesByPartId: ReadonlyMap<string, string>,
+  posesByJointName: ReadonlyMap<string, NonNullable<EncodedMateRecord['pose']>>,
+  paramTable: ParamTable | null,
+): JointPoseSnapshot | null {
+  const meta = rec.metadata as
+    | {
+        jointName?: string;
+        jointKind?: string;
+        limitsDeg?: readonly [number, number];
+        limitsMm?: readonly [number, number];
+        ballLimitsDeg?: readonly [number, number];
+      }
+    | undefined;
+  const name = meta?.jointName;
+  if (typeof name !== 'string' || name === '') return null;
+  const type = JOINT_KIND_TO_MATE_TYPE[meta?.jointKind ?? ''];
+  // `fixed` has zero articulation — same exclusion the mate path applies to
+  // `fastened` / `planar` (no pose ⇒ no row).
+  if (type === undefined || type === 'fastened') return null;
+
+  const partA = refPartName(rec.inputs?.a, namesByPartId);
+  const partB = refPartName(rec.inputs?.b, namesByPartId);
+  const limits = {
+    ...(meta?.limitsDeg !== undefined ? { limitsDeg: meta.limitsDeg } : {}),
+    ...(meta?.limitsMm !== undefined ? { limitsMm: meta.limitsMm } : {}),
+    ...(meta?.limitsDeg === undefined && meta?.ballLimitsDeg !== undefined
+      ? { limitsDeg: meta.ballLimitsDeg }
+      : {}),
+  };
+  const pose = posesByJointName.get(name)
+    ?? (type === 'ball'
+      ? ({ kind: 'ball', value: [REST_POSE_PARAM, REST_POSE_PARAM, REST_POSE_PARAM] } as const)
+      : ({ kind: 'scalar', value: REST_POSE_PARAM } as const));
+
+  return encodedToSnapshot(
+    { name, a: partA, b: partB, type, pose, ...limits },
+    paramTable,
+  );
+}
+
+function refPartName(
+  ref: FeatureRecord['inputs'][string] | undefined,
+  namesByPartId: ReadonlyMap<string, string>,
+): string {
+  if (ref === undefined || ref.kind !== 'feature') return '';
+  return namesByPartId.get(ref.id) ?? ref.id;
+}
+
 function partNameById(records: readonly FeatureRecord[]): Map<string, string> {
   const out = new Map<string, string>();
   for (const rec of records) {
@@ -184,6 +270,7 @@ export function extractJointSnapshots(
   paramTable: ParamTable | null = null,
 ): readonly JointPoseSnapshot[] {
   const namesByPartId = partNameById(records);
+  const posesByJointName = solvedAssemblyPoses(records);
   // 1. Collect every posed mate, indexed by name. Walking forward means
   //    later records' entries overwrite earlier ones — exactly the
   //    last-wins precedence the lowerer applies for duplicate mate names.
@@ -192,6 +279,19 @@ export function extractJointSnapshots(
   //    declaration order from the FIRST solvedAssembly that introduced
   //    the mate (subsequent overrides update value but not slot).
   const order: string[] = [];
+  // 0. Joint PRIMITIVES first, in declaration order. `asm.revolute(...)` /
+  //    `.prismatic(...)` / `.ball(...)` capture as their own `assemblyJoint`
+  //    records and never appear in `metadata.mates` — a model built with
+  //    primitives instead of `.mate()` produced an empty list here, which
+  //    both emptied the Joints tab and (via `getVisibleTabs`) greyed it out.
+  //    Mates declared under the same name still win: they are applied after.
+  for (const rec of records) {
+    if (rec.kind !== 'assemblyJoint') continue;
+    const snap = jointPrimitiveToSnapshot(rec, namesByPartId, posesByJointName, paramTable);
+    if (snap === null) continue;
+    if (!byName.has(snap.mate.name)) order.push(snap.mate.name);
+    byName.set(snap.mate.name, snap);
+  }
   for (const rec of records) {
     if (rec.kind !== 'solvedAssembly' && rec.kind !== 'assemblyModel') continue;
     const meta = rec.metadata as
