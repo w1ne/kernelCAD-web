@@ -370,6 +370,16 @@ function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
   if (parts.length <= 1) return [];
 
   // Build adjacency: part-name → set of neighbor part-names.
+  //
+  // KC-04: kernelCAD has TWO assembly conventions and BOTH connect parts —
+  // `.mate()` + connectors (`arm.__mates()`) and the joint primitives
+  // `.revolute()/.prismatic()/.ball()` (`arm.__joints()`). This
+  // walk used to read the mate edge list only, so a perfectly sound
+  // joint-primitive mechanism reported every non-first part as
+  // `mechanism.orphan-part` while `summarizeMechanismFitness` — which reads
+  // the validator/envelope stream, not this walk — reported
+  // `functional: true, repairMode: 'none'` in the SAME review_cad response.
+  // Both cannot be right; joint edges are connections, so they belong here.
   const adj = new Map<string, Set<string>>();
   for (const p of parts) adj.set(p.name, new Set());
   for (const m of mates) {
@@ -377,6 +387,31 @@ function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
     const bPart = parseConnectorRef(m.b).partName;
     adj.get(aPart)?.add(bPart);
     adj.get(bPart)?.add(aPart);
+  }
+
+  // Joint-primitive edges. Joints address parts by FeatureId, not by name.
+  const nameByPartId = new Map<FeatureId, string>();
+  for (const p of parts) nameByPartId.set(p.id, p.name);
+  for (const j of arm.__joints()) {
+    const aPart = nameByPartId.get(j.parentPartId);
+    const bPart = nameByPartId.get(j.childPartId);
+    if (aPart === undefined || bPart === undefined) continue;
+    adj.get(aPart)?.add(bPart);
+    adj.get(bPart)?.add(aPart);
+  }
+
+  // `arm.part(name, shape, { connect: { to } })` places a part rigidly on a
+  // parent without declaring either a mate or a joint. That is a structural
+  // connection too — the v0.5 validator has always treated it as one
+  // (`validateAssembly`'s floating/orphan pass) — so the truth walk must
+  // agree rather than call the placed part an orphan.
+  for (const p of parts) {
+    const parentName = p.connectParentId === undefined
+      ? undefined
+      : nameByPartId.get(p.connectParentId);
+    if (parentName === undefined) continue;
+    adj.get(p.name)?.add(parentName);
+    adj.get(parentName)?.add(p.name);
   }
 
   // BFS from parts[0]. Anything unreached is an orphan.
@@ -399,7 +434,7 @@ function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
     if (!visited.has(p.name)) {
       out.push(makeFailure(
         'mechanism.orphan-part',
-        `Part '${p.name}' is not reachable from the mate graph (no mate edge connects it to '${root}' or anything '${root}' reaches).`,
+        `Part '${p.name}' is not reachable from the assembly graph (no mate, joint, or connect edge links it to '${root}' or anything '${root}' reaches).`,
       ));
     }
   }

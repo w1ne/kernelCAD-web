@@ -251,6 +251,7 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     diagnostics,
     input,
     mechanism,
+    mechanismFailures,
     mechanicalReview,
     physicalUseCases,
     poseEnvelope,
@@ -533,6 +534,7 @@ async function runFitnessAndRepairStage(input: {
   diagnostics: readonly ReviewDiagnostic[];
   input: ReviewCadInput;
   mechanism: MechanismVerdict;
+  mechanismFailures: readonly CompilerDiagnostic[];
   mechanicalReview: Awaited<ReturnType<typeof runMechanicalReviewStage>>;
   physicalUseCases: Awaited<ReturnType<typeof runPhysicalUseCaseStage>>;
   poseEnvelope: PoseEnvelopeReviewResult | undefined;
@@ -543,6 +545,7 @@ async function runFitnessAndRepairStage(input: {
     mechanicalIntentDiagnostics: input.mechanicalReview.mechanicalIntent.diagnostics,
     mechanicalTransmissionDiagnostics: input.mechanicalReview.mechanicalTransmission.diagnostics,
     jointTopologyDiagnostics: input.mechanicalReview.jointTopology.diagnostics,
+    mechanismTruthDiagnostics: input.mechanismFailures,
     physicalUseCaseDiagnostics: input.physicalUseCases.diagnostics,
     physicalUseCaseCount: input.physicalUseCases.checkedUseCaseCount,
     poseEnvelope: input.poseEnvelope,
@@ -552,6 +555,15 @@ async function runFitnessAndRepairStage(input: {
   // the loop's truth criterion is the merge gate, not the legacy
   // advisory aggregate. Spec §"the recompute is what defines the
   // passing state".
+  //
+  // KC-04: `ok` alone was never enough. The truth failures are now also fed
+  // INTO `summarizeMechanismFitness` above, so `fitness.functional`,
+  // `fitness.repairMode` and `fitness.repairDirective` move with the verdict
+  // instead of announcing "No repair needed. Preserve the current topology"
+  // in the same response that reports `mechanism: 'broken'`. `mechanism ===
+  // 'broken'` iff at least one failure has severity 'error', which is
+  // exactly the set folded in — so this conjunction is now a redundant
+  // backstop, deliberately kept.
   const ok = fitness.functional && input.mechanism !== 'broken';
   return {
     fitness,

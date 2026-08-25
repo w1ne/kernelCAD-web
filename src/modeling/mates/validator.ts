@@ -459,22 +459,31 @@ export async function validateAssemblyWithMates(
   //     Pure + cheap (no lowering), so it is safe on the early path.
   diagnostics.push(...validateJointConventionMix(arm));
 
-  // 3. Run the v0.6 mate solver. If there are no mates declared, skip — the
-  //    solver returns 'solved' on an empty mate set anyway, but the early
-  //    exit keeps `validateAssemblyWithMates` cheap for v0.5-only scenes
+  // 3. Run the v0.6 mate solver. If there are no mates declared, skip it —
+  //    the solver returns 'solved' on an empty mate set anyway, and skipping
+  //    keeps `validateAssemblyWithMates` cheap for v0.5-only scenes
   //    (regression check: legacy `arm.fixed` callers see identical output).
-  if (arm.__mates().length === 0) {
-    // No mates means no envelope to fold and no articulated mates to
-    // check for limits — but be defensive and still fold the envelope
-    // diagnostics if a caller hands us a result for an empty assembly.
-    foldEnvelopeDiagnostics(diagnostics, poseEnvelopeResult);
-    return finalizeResult(diagnostics, arm.__parts().length, arm.__joints().length, null);
-  }
+  //
+  //    KC-04: this used to be an EARLY RETURN, which silently disabled every
+  //    gate below it for any assembly built from joint primitives
+  //    (`.revolute()/.prismatic()/.fixed()/.ball()`) — those register in
+  //    `arm.__joints()` and have ZERO mates by construction, so "no mates"
+  //    was being read as "nothing left to validate". It is now a skip of the
+  //    SOLVER ONLY; the gates below run on both conventions. Each mate-driven
+  //    gate already loops `arm.__mates()` and is inert on an empty mate set,
+  //    so the no-mates cost is unchanged — but a gate that does NOT depend on
+  //    mates (today: `validateWorkspaceReachability`, and any future one) now
+  //    actually fires on a joint-primitive assembly instead of being dropped.
+  const hasMates = arm.__mates().length > 0;
+  const solveResult = hasMates ? await solveMates(arm) : null;
 
-  const solveResult = await solveMates(arm);
-
-  // 4. Translate SolveStatus → v0.6 diagnostics.
-  switch (solveResult.status) {
+  // 4. Translate SolveStatus → v0.6 diagnostics. `null` means the solver was
+  //    skipped (no mates), so there is nothing solver-derived to say — the
+  //    gates below still run.
+  const solveStatus = solveResult === null ? null : solveResult.status;
+  switch (solveStatus) {
+    case null:
+      break;
     case 'solved':
       // Nothing to add.
       break;
@@ -514,12 +523,12 @@ export async function validateAssemblyWithMates(
       diagnostics.push({
         code: 'assembly.solver.did-not-converge',
         severity: 'error',
-        message: `Assembly '${arm.name}' did not converge within the solver iteration cap (${solveResult.iterations ?? 0} iterations).`,
+        message: `Assembly '${arm.name}' did not converge within the solver iteration cap (${solveResult?.iterations ?? 0} iterations).`,
         hint: `invalid-args.assembly.did-not-converge — articulated closed loops are not yet supported by the v0.6.0 solver (lands in T7.x); for v0.6.0, restrict closed loops to fastened-only mates.`,
       });
       break;
     default: {
-      const _exhaustive: never = solveResult.status;
+      const _exhaustive: never = solveStatus;
       throw new Error(`validateAssemblyWithMates: unhandled SolveStatus '${String(_exhaustive)}'.`);
     }
   }
@@ -608,7 +617,7 @@ export async function validateAssemblyWithMates(
     diagnostics,
     arm.__parts().length,
     arm.__joints().length,
-    solveResult.status,
+    solveStatus,
   );
 }
 
