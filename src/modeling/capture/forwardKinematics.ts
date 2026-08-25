@@ -110,13 +110,20 @@ export function forwardKinematics(
       );
     }
 
-    let jointLocalT: Transform;
+    // Joint motion expressed about the joint origin. Parts are modeled in
+    // assembly coordinates, so the origin is a PIVOT POINT, not a
+    // parent->child frame offset: the motion must be conjugated by it
+    // (T(o) . M . T(-o)), otherwise the origin leaks in as a translation and
+    // the child is displaced by the pivot vector even at pose 0.
+    // Same convention as the mate solver — see composeChildTransform() in
+    // src/modeling/mates/solver.ts, where parent and child connector origins
+    // conjugate the joint frame the same way.
+    let motionT: Transform;
     switch (parentJ.kind) {
       case 'revolute': {
         const deg = (poses[parentJ.name] as number | undefined) ?? 0;
         const ax = parentJ.axis as Se3Vec3;
-        jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2])
-          .compose(Transform.rotationAxisAngleDeg(ax, deg));
+        motionT = Transform.rotationAxisAngleDeg(ax, deg);
         break;
       }
       case 'prismatic': {
@@ -126,21 +133,24 @@ export function forwardKinematics(
         const dx = (ax[0] / len) * stroke;
         const dy = (ax[1] / len) * stroke;
         const dz = (ax[2] / len) * stroke;
-        jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2])
-          .compose(Transform.translation(dx, dy, dz));
+        motionT = Transform.translation(dx, dy, dz);
         break;
       }
       case 'fixed': {
-        jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2]);
+        motionT = Transform.identity();
         break;
       }
       case 'ball': {
         const euler = (poses[parentJ.name] as [number, number, number] | undefined) ?? [0, 0, 0];
-        jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2])
-          .compose(Transform.eulerXYZDeg(euler[0], euler[1], euler[2]));
+        motionT = Transform.eulerXYZDeg(euler[0], euler[1], euler[2]);
         break;
       }
     }
+
+    const [ox, oy, oz] = parentJ.origin;
+    const jointLocalT = Transform.translation(ox, oy, oz)
+      .compose(motionT)
+      .compose(Transform.translation(-ox, -oy, -oz));
     worldT.set(part.id, parentT.compose(jointLocalT));
   }
 
