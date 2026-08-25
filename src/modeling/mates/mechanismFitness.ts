@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { PoseEnvelopeReviewResult } from './poseEnvelope';
 import type { ValidatorDiagnostic } from './validator';
 import type { MechanicalPlausibilityDiagnostic } from './mechanicalPlausibility';
@@ -52,6 +53,18 @@ export interface MechanismFitnessInput {
   readonly mechanicalIntentDiagnostics?: readonly MechanicalIntentDiagnostic[];
   readonly mechanicalTransmissionDiagnostics?: readonly MechanicalTransmissionDiagnostic[];
   readonly jointTopologyDiagnostics?: readonly JointTopologyDiagnostic[];
+  /**
+   * KC-04 — the mechanism-truth criteria (`checkMechanismTruth`). Folding
+   * these in is what makes the "`fitness.functional: true` + `repairMode:
+   * 'none'` + 'No repair needed' ALONGSIDE `mechanism: 'broken'`"
+   * self-contradiction structurally impossible: a definitive (error-severity)
+   * truth failure is now a blocking reason like any other, so `functional`
+   * and the mechanism verdict can no longer disagree in one response.
+   * Non-error entries (e.g. the `mechanism.sweep-budget-exceeded` 'warn'
+   * carrier, which yields `'unverified'`, not `'broken'`) are NOT folded —
+   * "couldn't verify" must not read as "broken".
+   */
+  readonly mechanismTruthDiagnostics?: readonly CompilerDiagnostic[];
   readonly physicalUseCaseDiagnostics?: readonly PhysicalUseCaseDiagnostic[];
   readonly physicalUseCaseCount?: number;
   readonly poseEnvelope?: PoseEnvelopeReviewResult;
@@ -75,6 +88,7 @@ export function summarizeMechanismFitness(
   const mechanicalIntentDiagnostics = input.mechanicalIntentDiagnostics ?? [];
   const mechanicalTransmissionDiagnostics = input.mechanicalTransmissionDiagnostics ?? [];
   const jointTopologyDiagnostics = input.jointTopologyDiagnostics ?? [];
+  const mechanismTruthDiagnostics = input.mechanismTruthDiagnostics ?? [];
   const physicalUseCaseDiagnostics = input.physicalUseCaseDiagnostics ?? [];
   const physicalUseCaseCount = input.physicalUseCaseCount ?? 0;
   const poseEnvelope = input.poseEnvelope;
@@ -145,6 +159,18 @@ export function summarizeMechanismFitness(
   }
 
   for (const diagnostic of physicalUseCaseDiagnostics) {
+    addBlockingReason(
+      diagnostic.code,
+      diagnostic.message,
+      diagnostic.hint,
+      diagnostic,
+    );
+  }
+
+  // KC-04 — a definitive mechanism-truth failure blocks. See the field doc
+  // on `MechanismFitnessInput.mechanismTruthDiagnostics`.
+  for (const diagnostic of mechanismTruthDiagnostics) {
+    if (diagnostic.severity !== 'error') continue;
     addBlockingReason(
       diagnostic.code,
       diagnostic.message,
@@ -284,7 +310,10 @@ function chooseRepairMode(
 
   if (blockingReasons.some((reason) =>
     reason.code.startsWith('assembly.connectivity.') ||
-    reason.code.startsWith('assembly.joint-topology.')
+    reason.code.startsWith('assembly.joint-topology.') ||
+    // KC-04: an unreachable part is a graph-topology defect — nudging local
+    // coordinates cannot connect it.
+    reason.code === 'mechanism.orphan-part'
   )) {
     return 'topology-redesign';
   }

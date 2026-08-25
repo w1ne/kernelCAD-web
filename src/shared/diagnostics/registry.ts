@@ -1205,11 +1205,11 @@ export const DIAGNOSTIC_REGISTRY = {
   },
   'mechanism.orphan-part': {
     hintTemplate:
-      "A part declared via arm.part(...) is unreachable from the mate graph. Add a mate that connects it to another part, or remove the part if it isn't structurally needed.",
-    nextAction: { kind: 'rewrite-feature', guidance: 'add a mate that connects the orphan part to the rest of the mate graph' },
+      "A part declared via arm.part(...) is unreachable from the assembly graph. Connect it to another part — either a mate (arm.mate(...)) or a joint primitive (arm.revolute/.prismatic/.ball) counts — or remove the part if it isn't structurally needed.",
+    nextAction: { kind: 'rewrite-feature', guidance: 'add a mate or joint primitive that connects the orphan part to the rest of the assembly graph' },
     defaultSeverity: 'error',
     group: 'mechanism',
-    description: 'A part declared on the assembly is not reachable from any other part via mate edges — the mate graph is disconnected.',
+    description: 'A part declared on the assembly is not reachable from any other part via mate, joint-primitive, or connect edges — the assembly graph is disconnected.',
   },
   // Physics-grounded loop — T3 slice (post-condition trust gate). Emitted by
   // `mechanismTruth.ts` when the BREP pose-sweep work estimate exceeds the

@@ -606,6 +606,71 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
     90000,
   );
 
+  // ───────────────────────────────────────────────────────────────────
+  // KC-04 — the reachability walk must see BOTH assembly conventions.
+  //
+  // kernelCAD has two, both correct and both load-bearing:
+  //   - `.mate()` + connectors           → `arm.__mates()`
+  //   - `.revolute()/.prismatic()/...`   → `arm.__joints()` (URDF semantics)
+  // The walk used to read the mate edge list ONLY, so every joint-primitive
+  // mechanism was reported as `mechanism.orphan-part` / 'broken' even when
+  // it was perfectly sound.
+  // ───────────────────────────────────────────────────────────────────
+
+  it('KC-04: a joint-primitive hinge is NOT reported as an orphan and is not broken', async () => {
+    const { arm, kcad } = makeArm('hinge');
+    const base = arm.part('base', kcad.box(60, 40, 10));
+    const armPart = arm.part('arm', kcad.box(50, 10, 8));
+    arm.revolute('elbow', base, armPart, {
+      axis: [0, -1, 0],
+      origin: [0, 0, 10],
+      limitsDeg: [0, 90],
+    });
+
+    const result = await checkMechanismTruth(arm);
+    const orphans = result.failures.filter((f) => f.code === 'mechanism.orphan-part');
+    expect(orphans).toEqual([]);
+    expect(result.mechanism).toBe('real');
+  }, 90000);
+
+  it('KC-04: a prismatic + ball joint chain keeps every part reachable', async () => {
+    // Multi-hop: the walk must traverse joint edges transitively, and every
+    // joint KIND is an edge — not just revolute.
+    const { arm, kcad } = makeArm('slider-chain');
+    const rail = arm.part('rail', kcad.box(100, 20, 10));
+    const carriage = arm.part('carriage', kcad.box(20, 20, 10));
+    const tool = arm.part('tool', kcad.box(10, 10, 10));
+    arm.prismatic('slide', rail, carriage, {
+      axis: [1, 0, 0],
+      origin: [0, 0, 10],
+      limitsMm: [0, 40],
+    });
+    arm.ball('wrist', carriage, tool, { origin: [0, 0, 10] });
+
+    const orphans = (await checkMechanismTruth(arm)).failures
+      .filter((f) => f.code === 'mechanism.orphan-part');
+    expect(orphans).toEqual([]);
+  }, 90000);
+
+  it('KC-04: a genuinely unconnected part is STILL flagged in a joint-primitive assembly', async () => {
+    // The negative side of the fix: teaching the walk about joint edges must
+    // not blind it. A part wired by NEITHER a mate nor a joint is an orphan.
+    const { arm, kcad } = makeArm('hinge-plus-floater');
+    const base = arm.part('base', kcad.box(60, 40, 10));
+    const armPart = arm.part('arm', kcad.box(50, 10, 8));
+    arm.revolute('elbow', base, armPart, {
+      axis: [0, -1, 0],
+      origin: [0, 0, 10],
+      limitsDeg: [0, 90],
+    });
+    arm.part('floater', kcad.box(5, 5, 5).translate(0, 200, 0));
+
+    const orphans = (await checkMechanismTruth(arm)).failures
+      .filter((f) => f.code === 'mechanism.orphan-part');
+    expect(orphans).toHaveLength(1);
+    expect(orphans[0].message).toContain("'floater'");
+  }, 90000);
+
   it('integration: RecomputeEngine.run plumbs the mechanism field via the mechanismCheck callback', async () => {
     // Sanity-check the engine wiring: pass a stub probe and confirm the
     // verdict + failures show up on RecomputeResult.
