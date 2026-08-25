@@ -23,5 +23,11 @@
   "joinery",
   "bracket",
   "stacking",
-  "symmetry"
+  "symmetry",
+  "assembly",
+  "connector",
+  "mate",
+  "revolute",
+  "hinge",
+  "joint"
 ]
