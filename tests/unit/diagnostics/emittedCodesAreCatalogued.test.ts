@@ -75,7 +75,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     ).toEqual([]);
   });
 
-  it('catalogue has exactly 227 codes', () => {
+  it('catalogue has exactly 231 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -158,7 +158,8 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       solve()/solvedModel() pose exceeds a joint's declared limits) = 229.
     //  +  1 kinematic.mounting-hole.no-coverage (#541 — info diagnostic when
     //       checkMountingHoleConsistency examined zero fastened mates) = 230.
-    expect(catalogue.size).toBe(230);
+        //  +  1 assembly.joint.child-modeled-in-place = 231.
+    expect(catalogue.size).toBe(231);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
