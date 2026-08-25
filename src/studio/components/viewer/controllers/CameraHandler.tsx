@@ -7,7 +7,7 @@ import { useWorkbench } from "../../../context/WorkbenchContext";
 import type { GeometryResult } from "../../../../shared/worker/geometryEngine";
 import type { ViewportFocusTarget } from "../../../store/shellStore";
 import { computeGeometryBounds } from "./cameraBounds";
-import { buildCameraPose, buildFitCameraPose, type ViewTarget } from "./cameraPose";
+import { buildCameraPose, buildFitCameraPose, fitDistanceForCamera, type ViewTarget } from "./cameraPose";
 import { filterGeometriesForFocusTarget } from "./focusTarget";
 
 // Using the exported constants if needed, but they are defined in Viewer.tsx conventionally.
@@ -26,7 +26,14 @@ export function CameraHandler({
     const { selectedFace, sketchMode } = useWorkbench();
     const { camera, controls } = useThree();
     const cameraRef = useRef(camera);
-    const targetState = useRef<{ position: THREE.Vector3; lookAt: THREE.Vector3; } | null>(null);
+    // `immediate` marks the FIRST framing of a scene: the camera has never
+    // pointed at this model, so there is nothing to animate from and nothing
+    // for a tween to fight. It is applied in one frame and cannot be cancelled.
+    const targetState = useRef<{
+        position: THREE.Vector3;
+        lookAt: THREE.Vector3;
+        immediate?: boolean;
+    } | null>(null);
     const prevSketchActive = useRef(false);
     const savedCameraState = useRef<{ position: THREE.Vector3; target: THREE.Vector3; } | null>(null);
     const lastFitBounds = useRef<{ center: THREE.Vector3; radius: number } | null>(null);
@@ -55,12 +62,20 @@ export function CameraHandler({
             && Math.abs(bounds.radius - last.radius) <= tolerance,
         );
         if (boundsStable) return;
+        // The first framing of a scene has to LAND. `lastFitBounds` is stamped
+        // when the fit is requested, not when the camera arrives, so a fit that
+        // is abandoned mid-flight is never retried — `boundsStable` suppresses
+        // every later run. That is how a published embed ended up showing a
+        // blank viewport until the viewer found the home button: one pointer-
+        // down on the canvas during the ~600ms tween cancelled the only fit
+        // this scene would ever get. So deliver it in a single frame instead.
+        const isFirstFit = lastFitBounds.current === null;
         lastFitBounds.current = { center: bounds.center.clone(), radius: bounds.radius };
 
-        const distance = Math.max(bounds.radius * 2.8, SKETCH_DISTANCE);
+        const distance = Math.max(fitDistanceForCamera(bounds.radius, cameraRef.current), SKETCH_DISTANCE);
         const pose = buildFitCameraPose(bounds.center, distance);
         cameraRef.current.up.copy(pose.up);
-        targetState.current = { position: pose.position, lookAt: pose.lookAt };
+        targetState.current = { position: pose.position, lookAt: pose.lookAt, immediate: isFirstFit };
         cameraRef.current.near = Math.max(distance / 500, 0.01);
         cameraRef.current.far = Math.max(distance * 20, 1000);
         cameraRef.current.updateProjectionMatrix();
@@ -72,7 +87,7 @@ export function CameraHandler({
         const bounds = computeGeometryBounds(geometries);
         if (!bounds) return;
 
-        const distance = Math.max(bounds.radius * 2.8, SKETCH_DISTANCE);
+        const distance = Math.max(fitDistanceForCamera(bounds.radius, cameraRef.current), SKETCH_DISTANCE);
         const pose = navigationRequest.target === 'fit'
             ? buildFitCameraPose(bounds.center, distance)
             : buildCameraPose(navigationRequest.target, bounds.center, distance);
@@ -93,7 +108,7 @@ export function CameraHandler({
         const bounds = computeGeometryBounds(focusedGeometries);
         if (!bounds) return;
 
-        const distance = Math.max(bounds.radius * 2.8, SKETCH_DISTANCE);
+        const distance = Math.max(fitDistanceForCamera(bounds.radius, cameraRef.current), SKETCH_DISTANCE);
         const pose = buildFitCameraPose(bounds.center, distance);
         cameraRef.current.up.copy(pose.up);
         cameraRef.current.near = Math.max(distance / 500, 0.01);
@@ -158,24 +173,37 @@ export function CameraHandler({
             removeEventListener?: (type: string, fn: () => void) => void;
         } | null;
         if (!ctrl?.addEventListener) return;
-        const onUserInteractStart = () => { targetState.current = null; };
+        const onUserInteractStart = () => {
+            // ...but an in-flight FIRST framing is not the user's orbit being
+            // fought — it is the only thing that has ever pointed the camera at
+            // the model, and it is gone for good if dropped (the fit is already
+            // recorded in `lastFitBounds`, so no later run will re-issue it).
+            if (targetState.current?.immediate) return;
+            targetState.current = null;
+        };
         ctrl.addEventListener('start', onUserInteractStart);
         return () => ctrl.removeEventListener?.('start', onUserInteractStart);
     }, [controls]);
 
     useFrame((_state, delta) => {
-        if (!targetState.current) return;
-        const dampFactor = 5.0 * delta;
-        camera.position.lerp(targetState.current.position, dampFactor);
+        const target = targetState.current;
+        if (!target) return;
+        // A first framing is not animated: lerping at 1 sets the pose exactly.
+        const dampFactor = target.immediate ? 1 : 5.0 * delta;
+        camera.position.lerp(target.position, dampFactor);
         const ctrl = controls as unknown as { target: THREE.Vector3, update: () => void };
-        if (ctrl && ctrl.target) {
-            ctrl.target.lerp(targetState.current.lookAt, dampFactor);
-            ctrl.update();
-        } else {
-            camera.lookAt(targetState.current.lookAt);
+        if (!ctrl?.target) {
+            // OrbitControls has not published itself to the store yet. Point the
+            // camera, but KEEP the pose pending: controls initialise their orbit
+            // target to the origin, so a framing retired before they exist gets
+            // silently re-aimed at (0,0,0) on their first update.
+            camera.lookAt(target.lookAt);
+            return;
         }
-        if (camera.position.distanceTo(targetState.current.position) < 0.1 &&
-            (ctrl?.target?.distanceTo(targetState.current.lookAt) || 0) < 0.1) {
+        ctrl.target.lerp(target.lookAt, dampFactor);
+        ctrl.update();
+        if (camera.position.distanceTo(target.position) < 0.1 &&
+            ctrl.target.distanceTo(target.lookAt) < 0.1) {
             targetState.current = null;
         }
     });
