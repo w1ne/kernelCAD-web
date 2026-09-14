@@ -90,3 +90,6 @@ site/docs-worker-*.js
 site/replicad_single.wasm
 # Generated docs pages (source of truth is src/docs/liveDocs.ts + listApi)
 site/docs/
+
+# FEA solver toolchain venv (gmsh); created by the kernelcad-fea setup step
+.fea-venv

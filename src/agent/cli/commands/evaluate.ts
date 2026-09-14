@@ -18,6 +18,10 @@ import {
   runDfmChecksOnModel,
   type DfmCheckReport,
 } from '../../../modeling/runtime/dfm/runDfmChecks';
+import {
+  runFeaGateOnModel,
+  type FeaGateReport,
+} from '../../../modeling/runtime/fea/runFeaGate';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import {
   reviewPoseEnvelope,
@@ -92,6 +96,11 @@ export interface EvaluateAndBuildResult {
    *  had no fatal diagnostics. Undefined otherwise — the gates are opt-in.
    *  Its diagnostics are already merged into `evaluation.diagnostics`. */
   dfmReport?: DfmCheckReport;
+  /** Structural gate report when the script declares a `feaStudy(...)` with a
+   *  `minSafetyFactor` and the build had no fatal diagnostics. Undefined
+   *  otherwise. Its diagnostics are already merged into
+   *  `evaluation.diagnostics`. */
+  feaReport?: FeaGateReport;
 }
 
 export async function evaluateAndBuildScript(input: EvaluateInput): Promise<EvaluateAndBuildResult> {
@@ -145,16 +154,27 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
     dfmReport = await runDfmChecksOnModel(model);
     if (dfmReport) model.diagnostics.push(...dfmReport.diagnostics);
   }
-  const fatalAfterDfm = model.diagnostics.some(d => d.severity === 'error');
+
+  // Structural enforcement: same seam, same opt-in shape as the DFM gate.
+  // Only studies that declare `minSafetyFactor` run here — a study without
+  // one is a report you fetch with `run_fea`, not a gate.
+  let feaReport: FeaGateReport | undefined;
+  if (!fatal) {
+    feaReport = await runFeaGateOnModel(model);
+    if (feaReport) model.diagnostics.push(...feaReport.diagnostics);
+  }
+
+  const fatalAfterGates = model.diagnostics.some(d => d.severity === 'error');
   return {
     evaluation: {
-      exitCode: fatalAfterDfm ? 1 : 0,
+      exitCode: fatalAfterGates ? 1 : 0,
       featureCount: model.records.length,
       diagnostics: withNextActions(model.diagnostics),
       featureHealth: nonHealthyFeatures(model.health),
     },
     model,
     ...(dfmReport !== undefined ? { dfmReport } : {}),
+    ...(feaReport !== undefined ? { feaReport } : {}),
   };
 }
 
