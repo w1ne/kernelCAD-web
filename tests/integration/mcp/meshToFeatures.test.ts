@@ -19,7 +19,7 @@ import { resolveAssumptionsTool } from '../../../src/agent/mcp/tools/resolveAssu
 import { callMcpTool } from '../../../src/agent/mcp/toolRegistry';
 import { reconstructFromSoup, type ReconstructSuccess } from '../../../src/agent/reconstruct/reconstruct';
 import { parseMeshBytes } from '../../../src/agent/reconstruct/meshIO';
-import { blobSoup, jitterSoup } from '../../unit/reconstruct/testMeshes';
+import { blobSoup, boxSoup, jitterSoup } from '../../unit/reconstruct/testMeshes';
 
 const MAX_DEV_BOUND_MM = 0.05;
 
@@ -158,6 +158,20 @@ describe('mesh_to_features round trips', () => {
     expect(r.ledger.facts.some((f) => f.kind === 'missing')).toBe(true);
     // Every pass was measured; the verdict is the metric's, not a claim.
     expect(r.passes.every((p) => p.ok && typeof p.volumeIoU === 'number')).toBe(true);
+  }, 180000);
+
+  it('refuses to call an open (non-watertight) mesh faithful and says why', async () => {
+    const box = boxSoup(40, 30, 10);
+    // Drop the two +z triangles (quads are emitted bottom, top, …).
+    const open = { ...box, positions: Float64Array.from([...box.positions.slice(0, 18), ...box.positions.slice(36)]) };
+    const r = await reconstructFromSoup(open, occtReconstructionEvaluator, { sourceName: 'open box', maxPasses: 1 });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.mesh.watertight).toBe(false);
+    expect(r.mesh.openEdges).toBeGreaterThan(0);
+    expect(r.fidelity.verdict).not.toBe('faithful');
+    expect(r.diagnostics.map((d) => d.code)).toContain('reference.mesh.not-watertight');
+    expect(r.ledger.facts.find((f) => f.id === 'mesh.watertight')).toMatchObject({ kind: 'visible', resolution: 'open' });
   }, 180000);
 
   it('recovers hole diameters from a jittered (scan-like) plate mesh', async () => {
