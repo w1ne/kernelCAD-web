@@ -11,6 +11,7 @@ import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools'
 import {
   inspectionVerificationPreludeToolEntries,
   inspectionVerificationQueryToolEntries,
+  inspectionVerificationRepairToolEntries,
 } from './registry/inspectionVerificationTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
@@ -41,6 +42,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...catalogToolEntries,
   ...sketchAssemblyToolEntries,
   ...reviewPipelineToolEntries,
+  ...inspectionVerificationRepairToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

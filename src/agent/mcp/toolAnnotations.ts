@@ -75,6 +75,9 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   add_workspace_target: AUTHOR,
   set_scene_return: AUTHOR,
 
+  // Authoring — derives and applies a bounded source patch, returns new_code.
+  repair_script: AUTHOR,
+
   // Authoring that removes an existing feature line.
   remove_feature: AUTHOR_DESTRUCTIVE,
 
