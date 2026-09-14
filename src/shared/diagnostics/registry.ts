@@ -27,7 +27,8 @@ export type DiagnosticGroup =
   | 'query'
   | 'kinematic'
   | 'mechanism'
-  | 'animation';
+  | 'animation'
+  | 'drawing';
 
 export type DiagnosticSeverityLevel = 'info' | 'warn' | 'error';
 
@@ -2228,6 +2229,44 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'animation',
     description: 'An animationView track param re-lowers part-local geometry (not just a solvedAssembly mate pose), so Studio baked playback — which only re-applies rigid per-part transforms — cannot represent it; offline MP4 capture is required.',
+  },
+  // Drawings — GD&T + section-view annotation kinds (4). 'hole' / 'fillet' /
+  // 'chamfer' reuse 'feature.selection.no-match' (same failure shape as the
+  // existing radius/diameter/angular kinds); these four are for the parts of
+  // the drawing surface with no existing analogue. plane-misses-body and
+  // annotation.overlap are reserved for the not-yet-shipped section-view and
+  // collision-solver work so a later slice doesn't need a second catalog bump.
+  'drawing.datum.unresolved': {
+    hintTemplate:
+      "A 'datum' annotation's face query matched zero or more than one face. Inspect the model with list_faces / list_face_labels, then tighten the query or add 'near'.",
+    nextAction: { kind: 'call-introspection-tool', tool: 'list_faces' },
+    defaultSeverity: 'error',
+    group: 'drawing',
+    description: "A drawing 'datum' annotation's face query could not be resolved to exactly one face.",
+  },
+  'drawing.tolerance.feature-unresolved': {
+    hintTemplate:
+      "An 'fcf' (feature control frame) annotation's edge/face query could not be resolved. Inspect the model with list_edges / list_faces, then tighten the query or add 'near'.",
+    nextAction: { kind: 'call-introspection-tool', tool: 'list_edges' },
+    defaultSeverity: 'error',
+    group: 'drawing',
+    description: "A drawing 'fcf' annotation's referenced feature (edge or face) could not be resolved to exactly one match.",
+  },
+  'drawing.section.plane-misses-body': {
+    hintTemplate:
+      'The section cutting plane does not intersect the model bounding box. Move the plane origin so it passes through the body, or check the plane normal.',
+    nextAction: { kind: 'fix-arg', field: 'options.sections[i].plane' },
+    defaultSeverity: 'error',
+    group: 'drawing',
+    description: 'A drawing section-view cutting plane does not intersect the body being drawn.',
+  },
+  'drawing.annotation.overlap': {
+    hintTemplate:
+      'Two drawing annotations overlap on the sheet. Reorder the annotations array, pass a different `view`, or add `offset` to push one of them further out.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'reorder annotations, change view, or add offset to separate overlapping callouts' },
+    defaultSeverity: 'warn',
+    group: 'drawing',
+    description: 'Two rendered drawing annotations occupy overlapping sheet-space text/leader regions.',
   },
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 

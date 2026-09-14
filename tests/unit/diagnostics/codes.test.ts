@@ -59,8 +59,13 @@ describe('diagnostic catalogue invariants', () => {
     //   the script also placed — the URDF/mate convention mix, which displaces
     //   the child by the joint origin at every pose).
     //   = 248.
-    expect(DIAGNOSTIC_CODES).toHaveLength(248);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(248);
+    // + 4 drawing.* — svg-drawing GD&T annotation kinds (hole/fillet/chamfer
+    //   reuse feature.selection.no-match; datum/fcf/section/overlap needed
+    //   their own group and codes): drawing.datum.unresolved,
+    //   drawing.tolerance.feature-unresolved, drawing.section.plane-misses-body,
+    //   drawing.annotation.overlap = 252.
+    expect(DIAGNOSTIC_CODES).toHaveLength(252);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(252);
   });
 
   it('every code has a non-empty hint template', () => {

@@ -44,6 +44,7 @@ const EMITTING_FILES = [
   'agent/cli/commands/export.ts',
   'agent/script-runtime/export.ts',
   'kernel/naming/resolveFaceRef.ts',
+  'kernel/backends/occt/drawingAnnotations.ts',
 ];
 
 // Match `code: '<value>'` and `new KernelError('<code>', ...)`.
@@ -177,7 +178,10 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  +  1 feature.finish.unknown-token (.finish() unknown-name hard error) = 247.
     //  +  1 assembly.joint.child-modeled-in-place (URDF/mate convention mix on a
     //       joint-primitive child the script also placed) = 248.
-    expect(catalogue.size).toBe(248);
+    //  +  4 drawing.* GD&T annotation-kind codes on the svg-drawing exporter
+    //       (datum.unresolved, tolerance.feature-unresolved,
+    //       section.plane-misses-body, annotation.overlap) = 252.
+    expect(catalogue.size).toBe(252);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
