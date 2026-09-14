@@ -2,6 +2,12 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { FeatureKind, FeatureId, FeatureRef, Param } from '../../shared/intent/types';
 import type { DfmSpec, DfmSpecMetadata } from '../../shared/intent/dfmSpecRecord';
+import type {
+  FeaLoadMetadata,
+  FeaStudyMetadata,
+  FeaStudySpec,
+} from '../../shared/intent/feaStudyRecord';
+import { resolveFeaMaterial } from '../../kernel/fea/feaMaterials';
 import type { Curve3DMetadata } from '../../shared/intent/curve3dRecord';
 import type {
   EmbossTextAlign,
@@ -336,6 +342,94 @@ export function buildProjectCurveFeatureSpec(
       parent: { kind: 'feature', id: parentFeatureId },
       face: faceInputRef,
     },
+    metadata: metadata as unknown as Record<string, unknown>,
+  };
+}
+
+/** Capture-time validation + normalization for `shape.feaStudy({...})`.
+ *
+ *  Every malformed field THROWS rather than stashing a diagnostic, for the
+ *  same reason `dfmSpec` does: a structural study is an enforcement gate, and
+ *  a gate that quietly disabled itself because a selector was misspelled is
+ *  strictly worse than a build failure. The one thing this validator does NOT
+ *  do is resolve the face selectors — that needs lowered geometry, so it
+ *  happens in the runner and surfaces as `fea.study.*-unresolved`. */
+export function buildFeaStudyFeatureSpec(args: FeaStudySpec, shapeRef: FeatureRef): AuthoringFeatureSpec {
+  const bad = (field: string, why: string): never => {
+    throw new KernelError(
+      'feature.invalid-args',
+      `feaStudy: ${field} ${why}.`,
+      undefined,
+      `invalid-args.fea-study.${field} — fix the field; feaStudy is an enforcement gate, malformed declarations fail the build rather than silently disabling the check.`,
+    );
+  };
+
+  const validSelector = (v: unknown): boolean =>
+    (typeof v === 'string' && v.length > 0) || (typeof v === 'object' && v !== null && !Array.isArray(v));
+
+  if (args === null || typeof args !== 'object') bad('spec', 'must be an object');
+  if (args.material === undefined) {
+    bad('material', 'is required; pass a grade name or { E, nu, yield } in MPa');
+  }
+  const mat = resolveFeaMaterial(args.material);
+  if (!mat.ok) {
+    throw new KernelError('feature.invalid-args', mat.message, undefined, mat.hint);
+  }
+  if (!validSelector(args.fixed)) {
+    bad('fixed', `must be a FaceQuery object or a '@kc[...]' ref string; got ${JSON.stringify(args.fixed)}`);
+  }
+  if (!Array.isArray(args.loads) || args.loads.length === 0) {
+    bad('loads', 'must be a non-empty array — a study with no load reports nothing');
+  }
+  const loads: FeaLoadMetadata[] = [];
+  for (const [i, load] of args.loads.entries()) {
+    if (load === null || typeof load !== 'object') bad(`loads[${i}]`, 'must be an object');
+    if (!validSelector(load.faces)) {
+      bad(`loads[${i}].faces`, `must be a FaceQuery object or a '@kc[...]' ref string; got ${JSON.stringify(load.faces)}`);
+    }
+    const f = load.force;
+    if (!Array.isArray(f) || f.length !== 3 || !f.every(v => typeof v === 'number' && Number.isFinite(v))) {
+      bad(`loads[${i}].force`, `must be three finite numbers [Fx, Fy, Fz] in newtons; got ${JSON.stringify(f)}`);
+    }
+    if (f[0] === 0 && f[1] === 0 && f[2] === 0) {
+      bad(`loads[${i}].force`, 'is the zero vector; a zero load would report an infinite safety factor');
+    }
+    if (load.name !== undefined && (typeof load.name !== 'string' || load.name.length === 0)) {
+      bad(`loads[${i}].name`, `must be a non-empty string; got ${JSON.stringify(load.name)}`);
+    }
+    loads.push({
+      faces: load.faces,
+      force: [f[0], f[1], f[2]],
+      name: load.name ?? `load${i}`,
+    });
+  }
+  if (args.meshSize !== undefined && !(Number.isFinite(args.meshSize) && args.meshSize > 0)) {
+    bad('meshSize', `must be a positive finite number of mm; got ${args.meshSize}`);
+  }
+  if (
+    args.minSafetyFactor !== undefined &&
+    !(Number.isFinite(args.minSafetyFactor) && args.minSafetyFactor > 0)
+  ) {
+    bad('minSafetyFactor', `must be a positive finite number; got ${args.minSafetyFactor}`);
+  }
+  if (args.name !== undefined && (typeof args.name !== 'string' || args.name.length === 0)) {
+    bad('name', `must be a non-empty string; got ${JSON.stringify(args.name)}`);
+  }
+
+  const metadata: FeaStudyMetadata = {
+    virtual: true,
+    name: args.name ?? 'study',
+    material: args.material,
+    fixed: args.fixed,
+    loads,
+    ...(args.meshSize !== undefined ? { meshSize: args.meshSize } : {}),
+    ...(args.minSafetyFactor !== undefined ? { minSafetyFactor: args.minSafetyFactor } : {}),
+  };
+
+  return {
+    kind: 'feaStudy',
+    params: {},
+    inputs: { shape: shapeRef },
     metadata: metadata as unknown as Record<string, unknown>,
   };
 }

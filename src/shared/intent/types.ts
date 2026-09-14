@@ -168,6 +168,9 @@ export type FeatureKind =
   | 'animationView'
   // W3: capture-only print-prep (DFM gate) declaration, no OCCT output.
   | 'dfmSpec'
+  // Capture-only linear-static structural study declaration (shape.feaStudy),
+  // no OCCT output. Enforced by the FEA runner at evaluate time.
+  | 'feaStudy'
   // NURBS Slice B: 3D parametric curve (Geom_BSplineCurve under the hood)
   //   and multi-section sweep (BRepOffsetAPI_MakePipeShell).
   | 'curve3d'
