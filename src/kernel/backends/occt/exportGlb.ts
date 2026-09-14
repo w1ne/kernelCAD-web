@@ -39,6 +39,8 @@ import * as THREE from 'three';
 // is the runtime.
 import { GLTFExporter } from 'three-stdlib';
 import { createRequire } from 'node:module';
+import { Document, NodeIO } from '@gltf-transform/core';
+import sharp from 'sharp';
 import type { PBRMaterial } from '../../../shared/intent/material';
 import {
   meshShapeForExport,
@@ -46,6 +48,8 @@ import {
 import { resolveColor } from '../../../shared/render/palette';
 import type { MeshData } from './exportStlBinary';
 import type { WorldFramePart } from './sceneToWorldFrame';
+import { computeProjectedUVs } from '../../../shared/intent/textureProjection';
+import { resolveAndLoadTextureBytes } from '../../../shared/textures';
 
 const requireFromHere = createRequire(import.meta.url);
 // At source: src/kernel/backends/occt/exportGlb.ts → ../../../../package.json (4 up).
@@ -70,6 +74,11 @@ export interface ExportGlbOptions {
   axis?: 'y-up' | 'z-up';
   /** Reserved for a future slice; runtime throws when `true` today. */
   draco?: false;
+  /** Directory relative-path texture refs resolve against. Mirrors
+   *  `referenceImage()` / material texture-loading convention. Only needed
+   *  when a part carries `material.textureProjection` with a relative
+   *  `textures.albedo.path`. */
+  scriptDir?: string;
 }
 
 /** A world-frame part with a pre-computed triangle mesh. Used when the mesh
@@ -120,6 +129,13 @@ export async function exportGlbAsync(
     root.rotateX(-Math.PI / 2);
   }
 
+  // Parts that wrapped a texture (`material.textureProjection`) — UVs go
+  // onto the three.js geometry now (so GLTFExporter serializes a real
+  // TEXCOORD_0 accessor); the image itself is embedded afterwards via a
+  // gltf-transform post-process (see below) because Node has no Canvas for
+  // GLTFExporter's own image-encoding path.
+  const wrappedParts: Array<{ name: string; projection: NonNullable<PBRMaterial['textureProjection']> }> = [];
+
   for (const p of meshed) {
     const geom = new THREE.BufferGeometry();
     geom.setAttribute(
@@ -128,6 +144,13 @@ export async function exportGlbAsync(
     );
     geom.setIndex(Array.from(p.mesh.triangles));
     geom.computeVertexNormals();
+
+    const projection = p.material?.textureProjection;
+    if (projection !== undefined && p.material?.textures?.albedo !== undefined) {
+      const uv = computeProjectedUVs(p.mesh.vertices, projection);
+      geom.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+      wrappedParts.push({ name: p.name, projection });
+    }
 
     const mat = buildMaterial(p.material, p.color);
     const mesh = new THREE.Mesh(geom, mat);
@@ -166,13 +189,74 @@ export async function exportGlbAsync(
   // post-process the GLB JSON chunk to add the provenance block. The
   // alternative would be a custom writer plugin, but the post-process is
   // simpler and keeps the writer's exporter usage stock.
-  return injectAssetExtras(new Uint8Array(buffer), {
+  let out = injectAssetExtras(new Uint8Array(buffer), {
     kernelcad: {
       version: KERNELCAD_VERSION,
       isoDate,
       axisConvention: axis,
     },
   });
+
+  if (wrappedParts.length > 0) {
+    out = await embedWrappedTextures(out, meshed, wrappedParts, options.scriptDir);
+  }
+
+  return out;
+}
+
+/**
+ * Post-process a written GLB to embed the real texture image for each part
+ * that called `.wrapTexture()`. GLTFExporter (three-stdlib) has no Node
+ * image-encoding path (it expects a browser Canvas for `.map` textures), so
+ * the image is embedded here instead: load the referenced image bytes
+ * (`resolveAndLoadTextureBytes`, same loader `.material({textures})` uses),
+ * add it as a glTF image + texture, and point the matching mesh primitive's
+ * `baseColorTexture` at it. The `TEXCOORD_0` accessor is already present
+ * (written by GLTFExporter from the `uv` BufferAttribute set above) — this
+ * step only adds the image + material texture reference.
+ */
+async function embedWrappedTextures(
+  glb: Uint8Array,
+  meshed: ReadonlyArray<MeshedGlbPart>,
+  wrappedParts: ReadonlyArray<{ name: string }>,
+  scriptDir: string | undefined,
+): Promise<Uint8Array> {
+  const io = new NodeIO();
+  const doc: Document = await io.readBinary(glb);
+  const root = doc.getRoot();
+  const wrappedNames = new Set(wrappedParts.map((w) => w.name));
+
+  // GLTFExporter (three-stdlib) names the glTF NODE after the THREE.Object3D
+  // (`mesh.name = p.name` above), not the glTF MESH — meshes come out
+  // unnamed. Match on node name and follow node → mesh.
+  for (const node of root.listNodes()) {
+    const name = node.getName();
+    if (!wrappedNames.has(name)) continue;
+    const mesh = node.getMesh();
+    if (mesh === null) continue;
+    const part = meshed.find((p) => p.name === name);
+    const albedoRef = part?.material?.textures?.albedo;
+    if (albedoRef === undefined) continue;
+
+    const loaded = await resolveAndLoadTextureBytes(albedoRef, scriptDir);
+    // glTF images must be PNG or JPEG; transcode webp via sharp.
+    const isPngOrJpeg = loaded.contentType === 'image/png' || loaded.contentType === 'image/jpeg';
+    const pngBuffer = isPngOrJpeg ? loaded.buffer : await sharp(loaded.buffer).png().toBuffer();
+    const mimeType = isPngOrJpeg ? loaded.contentType : 'image/png';
+
+    const image = doc.createTexture(name).setImage(new Uint8Array(pngBuffer)).setMimeType(mimeType);
+
+    for (const prim of mesh.listPrimitives()) {
+      let material = prim.getMaterial();
+      if (material === null) {
+        material = doc.createMaterial(`${name}-material`);
+        prim.setMaterial(material);
+      }
+      material.setBaseColorTexture(image);
+    }
+  }
+
+  return await io.writeBinary(doc);
 }
 
 /**

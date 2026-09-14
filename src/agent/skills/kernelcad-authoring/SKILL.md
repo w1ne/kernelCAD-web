@@ -1199,6 +1199,39 @@ frame.material({
 });
 ```
 
+`.material({ textures })` above assumes you already have UVs, or don't care
+where the image lands (the renderer just tiles it 1:1 per `repeat`/`offset`).
+For a wrap that needs to actually LAND somewhere specific — a can label, a
+control-panel decal, a name badge — use **`.wrapTexture(imageRef, projection)`**
+instead: it derives UVs from a projection strategy rather than requiring you
+to author them.
+
+```typescript
+// Can label — wraps around the cylinder's own axis. UVs are derived from
+// the FINAL world-space vertex positions at export/mesh time, so the wrap
+// survives .translate() / .rotate() / a later .fillet() applied after it —
+// unlike UVs baked in at wrap time, which a subsequent transform would leave
+// stale.
+can.wrapTexture(
+  { path: './label.png' },
+  { type: 'cylinder', axis: [0, 0, 1] },
+);
+```
+
+Four projections: `{ type: 'flat', onto? }` (planar onto `'xy'|'xz'|'yz'`,
+default `'xy'`), `{ type: 'cylinder', axis }` (wraps around an axis — labels,
+cans, tubes; `u` = angle, `v` = height), `{ type: 'sphere' }` (longitude /
+latitude), `{ type: 'box' }` (six-sided triplanar — each vertex unwraps on
+the bounding-box face it's nearest to). **Render-only**: `wrapTexture` never
+changes geometry — for an engraved / embossed image use `projectCurve` plus
+a sketch-based emboss/engrave feature instead.
+
+`wrapTexture` writes the same `metadata.material` slot as `.finish()` /
+`.material()` (last-write-wins), keeps a previously-set `baseColor`, but —
+like any `.material()` call — does NOT preserve other PBR floats from an
+earlier `.finish()`. Call `wrapTexture` first, then layer extra PBR fields
+with `.material({...})` if you need both.
+
 Supported texture formats: `.png`, `.jpg`, `.jpeg`, `.webp`. Maximum dimension
 8192px (hard error); textures over 2048px on the longest side surface a
 console warning. Each `TextureRef` accepts optional `repeat: [u, v]`,

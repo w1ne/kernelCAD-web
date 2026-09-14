@@ -29,6 +29,8 @@ import { expandFinish } from '../../shared/render/finishes';
 import type { PBRMaterial } from '../../shared/intent/material';
 import type { TextureRef, TextureSet } from '../../shared/intent/textureRef';
 import { isTextureRef, normalizeTextureRef } from '../../shared/intent/textureRef';
+import type { TextureProjection } from '../../shared/intent/textureProjection';
+import { isTextureProjection } from '../../shared/intent/textureProjection';
 import { validateBendArgs } from '../sheetMetal';
 import { normalizeTopoRefOrString } from './topoRefNormalize';
 import type { Region } from '../../shared/intent/region';
@@ -565,6 +567,85 @@ export class Shape {
       this.id,
     );
     return this.material(opts?.face !== undefined ? { ...pbr, face: opts.face } : pbr);
+  }
+
+  /**
+   * Wrap an image onto this shape's surface as an albedo texture, with UVs
+   * derived from a projection strategy rather than authored by hand.
+   * Render-only: geometry is unchanged (`wrapTexture` never adds material
+   * to the mesh). For an engraved / embossed image use `projectCurve` plus
+   * a sketch-based emboss/engrave feature instead.
+   *
+   * UVs are NOT computed here — `wrapTexture` only records the image
+   * reference and the projection strategy on `metadata.material`. The real
+   * (u, v) pairs are derived downstream, at mesh/export time, from the
+   * shape's FINAL world-space vertex positions (`computeProjectedUVs`), so
+   * the wrap survives any `.translate()` / `.rotate()` / boolean applied
+   * after this call — unlike UVs baked in at wrap time, which a later
+   * transform would leave stale.
+   *
+   * Projections: `{ type: 'flat', onto? }` (planar onto a principal
+   * plane), `{ type: 'cylinder', axis }` (wraps around an axis — labels,
+   * cans, tubes), `{ type: 'sphere' }`, `{ type: 'box' }` (six-sided
+   * triplanar).
+   *
+   * Targets the same `metadata.material` slot as `.finish()` / `.material()`
+   * — last-write-wins, same convention those two already have with each
+   * other. `wrapTexture` keeps a previously-set `baseColor` (so the
+   * texture layers on a tinted base rather than resetting to white) but,
+   * like any `.material()` call, does NOT preserve other PBR floats
+   * (roughness, metalness, ...) from an earlier `.finish()` — call
+   * `wrapTexture` FIRST, then `.material({...})` for extra PBR floats, if
+   * you need both. Identity dies at booleans, same as `.material()`.
+   *
+   * @param imageRef  `{ path, repeat?, offset?, rotation? }` — same
+   *   `TextureRef` shape as `.material({ textures: { albedo } })`. A bad
+   *   path throws `feature.material.texture-not-found` /
+   *   `-unsupported-format` at load time (mesh/export), not here.
+   * @param projection  one of the four projection records above.
+   */
+  wrapTexture(imageRef: TextureRef, projection: TextureProjection): Shape {
+    if (!isTextureRef(imageRef)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Shape.wrapTexture: imageRef must be a TextureRef ({ path, ... }) with a non-empty 'path' string; got ${formatScalarForError(imageRef)}.`,
+        this.id,
+        'Pass { path: "<file-or-url>" } as the first argument.',
+      );
+    }
+    if (!isTextureProjection(projection)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Shape.wrapTexture: projection must be one of flat({onto?}), cylinder({axis}), sphere(), box(); got ${formatScalarForError(projection)}.`,
+        this.id,
+        "Pass { type: 'cylinder', axis: [0,0,1] } or one of the other three projection shapes.",
+      );
+    }
+
+    // Preserve any already-authored baseColor/finish so wrapTexture layers
+    // the albedo texture on top rather than clobbering it (material()
+    // requires baseColor on every call; default to white when none is set
+    // yet, matching the glTF default when a texture supplies the color).
+    const existingRecord = this.session.getRecords().find(r => r.id === this.id);
+    const existingMaterial = (existingRecord?.metadata as { material?: PBRMaterial } | undefined)?.material;
+    this.material({ baseColor: existingMaterial?.baseColor ?? '#ffffff', textures: { albedo: imageRef } });
+
+    const records = this.session.getRecords();
+    const record = records.find(r => r.id === this.id);
+    if (record === undefined) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Shape.wrapTexture: feature record '${this.id}' not found in session.`,
+        this.id,
+        'Call .wrapTexture() on a Shape produced by the current session.',
+      );
+    }
+    const metadata = record.metadata as { material?: PBRMaterial };
+    // .material() above guarantees metadata.material exists with the
+    // albedo texture attached; attach the projection alongside it.
+    (metadata.material as PBRMaterial).textureProjection = projection;
+
+    return this;
   }
 
   /**

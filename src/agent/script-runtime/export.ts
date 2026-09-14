@@ -429,7 +429,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
       // GLB ships multi-body scenes natively — one glTF node per part with
       // per-part name + PBR material. Mesh each part via the shared
       // world-frame walk, then chain through the GLTFExporter writer.
-      const optsGlb = (input.options as ExportGlbOptions | undefined) ?? { format: 'glb' };
+      const optsGlb: ExportGlbOptions = { ...((input.options as ExportGlbOptions | undefined) ?? { format: 'glb' }), scriptDir: (input.options as ExportGlbOptions | undefined)?.scriptDir ?? scriptDir };
       try {
         const worldParts = sceneToWorldFrameParts(lowered);
         const bytes = await exportGlbAsync(worldParts, optsGlb);
@@ -620,7 +620,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
       // otherwise follow the primary upstream pointer (shape > base >
       // target). A boolean therefore inherits from its base but NEVER from
       // its cutters; recolour the boolean result to override.
-      const optsGlb = (input.options as ExportGlbOptions | undefined) ?? { format: 'glb' };
+      const optsGlb: ExportGlbOptions = { ...((input.options as ExportGlbOptions | undefined) ?? { format: 'glb' }), scriptDir: (input.options as ExportGlbOptions | undefined)?.scriptDir ?? scriptDir };
       const tailRecord = run.records.find((rec) => rec.id === targetId);
       const partColor = tailRecord
         ? lookupColorFromLineage(tailRecord, run.records)
