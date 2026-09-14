@@ -438,6 +438,8 @@ export class OcctLowerer implements FeatureLowerer {
     'cameraTarget',     // Script-callable camera look-at override; virtual record; defense-in-depth guard
     'dfmSpec',          // W3: print-prep gate declaration; virtual record; defense-in-depth guard
     'feaStudy',         // structural study declaration; virtual record; defense-in-depth guard
+    'drawingDatum',     // GD&T datum declaration for svg-drawing; virtual record; defense-in-depth guard
+    'drawingTolerance', // GD&T tolerance declaration for svg-drawing; virtual record; defense-in-depth guard
     'curve3d',          // NURBS Slice B: 3D NURBS curve → TopoDS_Edge on session.importedGeometry
     'variableSweep',    // NURBS Slice B Task 8: BRepOffsetAPI_MakePipeShell along a 3D spine
     'embossText',       // W3: emboss/engrave text onto a face (raise or recess via signed depth)
@@ -3219,6 +3221,13 @@ export class OcctLowerer implements FeatureLowerer {
         // Virtual record — no BREP output. The study is a DECLARATION; the
         // solver run happens in the FEA runner, which reads this record's
         // metadata and the shape it points at. Same shape as dfmSpec.
+        return { shape: undefined as unknown as ShapeBackend, diagnostics };
+      }
+      case 'drawingDatum':
+      case 'drawingTolerance': {
+        // Virtual records — no BREP output. GD&T declarations are read by the
+        // svg-drawing exporter, which resolves their queries against the
+        // exported geometry.
         return { shape: undefined as unknown as ShapeBackend, diagnostics };
       }
       case 'cameraTarget': {

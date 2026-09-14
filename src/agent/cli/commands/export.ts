@@ -20,7 +20,9 @@ import {
   runAndExport,
   runAndExportParts,
   stlNotWatertightDiagnostic,
+  type DrawingReport,
   type ExportFormat,
+  type ExportOptions,
 } from '../../script-runtime/export';
 import { formatHuman } from '../../../shared/diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -53,6 +55,9 @@ export interface ExportInput {
   explodeMode?: string;
   balloons?: boolean;
   partsList?: boolean;
+  /** Per-format options bag (the MCP export tool's `options`); `format` is
+   *  filled in from the positional format when omitted. */
+  options?: Record<string, unknown>;
 }
 
 export interface ExportCliResult {
@@ -61,6 +66,28 @@ export interface ExportCliResult {
   diagnostics: CompilerDiagnostic[];
   /** Companion mesh files written next to the output (URDF / SDF exports). */
   meshFiles?: string[];
+  /** svg-drawing placement report. */
+  drawingReport?: DrawingReport;
+}
+
+/** Parse `--options <json>`: a JSON object, `format` defaulted to the
+ *  positional format. Returns an error string for anything else. */
+export function parseExportOptionsFlag(
+  raw: string | undefined,
+  format: string,
+): { ok: true; options?: Record<string, unknown> } | { ok: false; error: string } {
+  if (raw === undefined) return { ok: true };
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (e) {
+    return { ok: false, error: `--options must be a JSON object: ${e instanceof Error ? e.message : String(e)}` };
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    return { ok: false, error: '--options must be a JSON object, e.g. \'{"autoAnnotate":true}\'.' };
+  }
+  const options = parsed as Record<string, unknown>;
+  return { ok: true, options: { format, ...options } };
 }
 
 function manifestOptionError(input: Pick<ExportInput, 'format' | 'connectorManifest' | 'manifestPartId' | 'manifestFamily'>): string | undefined {
@@ -387,6 +414,14 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
         ? { options: { format: 'stl' as const, verify: false } }
         : drawingOptions !== undefined
           ? { options: drawingOptions }
+      ...(input.options !== undefined
+        ? {
+            options: (input.format === 'stl' && input.verify === false
+              ? { ...input.options, verify: false }
+              : input.options) as unknown as ExportOptions,
+          }
+        : input.format === 'stl' && input.verify === false
+          ? { options: { format: 'stl' as const, verify: false } }
           : {}),
     });
   } catch (e) {
@@ -445,6 +480,7 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
     bytesWritten: result.bytes.length,
     diagnostics: withNextActions(result.diagnostics),
     ...(meshFiles.length > 0 ? { meshFiles } : {}),
+    ...(result.drawingReport !== undefined ? { drawingReport: result.drawingReport } : {}),
   };
 }
 
@@ -574,11 +610,13 @@ export function exportCommand(): Command {
     .option('--explode-mode <mode>', "svg-drawing: 'mate-axis' (default) or 'radial'")
     .option('--balloons', 'svg-drawing: item balloons numbered from the BOM', false)
     .option('--parts-list', 'svg-drawing: parts-list table (item, name, qty, material) above the title block', false)
+    .option('--options <json>', 'per-format options as a JSON object, e.g. \'{"autoAnnotate":true}\' for svg-drawing')
     .option('--json', 'emit diagnostics as JSON')
     .action(async (format: string, file: string, opts: {
       out: string; json?: boolean; part?: string[]; parts?: string; verify?: boolean;
       connectorManifest?: string; manifestPartId?: string; manifestFamily?: string;
       explode?: number; explodeMode?: string; balloons?: boolean; partsList?: boolean;
+      options?: string;
     }) => {
       if (!SUPPORTED_FORMATS.has(format as ExportFormat)) {
         console.error(`Unsupported format: ${format}. Use one of ${[...SUPPORTED_FORMATS].join(', ')}.`);
@@ -626,8 +664,14 @@ export function exportCommand(): Command {
         process.exitCode = r.exitCode;
         return;
       }
+      const parsedOptions = parseExportOptionsFlag(opts.options, format);
+      if (!parsedOptions.ok) {
+        console.error(parsedOptions.error);
+        process.exitCode = 2; return;
+      }
       const r = await exportScript({
         file, format: format as ExportFormat, out: opts.out,
+        ...(parsedOptions.options === undefined ? {} : { options: parsedOptions.options }),
         ...(opts.connectorManifest === undefined
           ? {}
           : {
@@ -647,11 +691,16 @@ export function exportCommand(): Command {
           bytesWritten: r.bytesWritten,
           out: opts.out,
           ...(r.meshFiles !== undefined ? { meshFiles: r.meshFiles } : {}),
+          ...(r.drawingReport !== undefined ? { drawingReport: r.drawingReport } : {}),
           diagnostics: r.diagnostics,
         }, null, 2));
       } else {
         if (r.diagnostics.length > 0) console.log(formatHuman(r.diagnostics));
         if (r.exitCode === 0) console.log(`Wrote ${r.bytesWritten} bytes to ${opts.out}`);
+        if (r.drawingReport !== undefined) {
+          const kinds = Object.entries(r.drawingReport.byKind).map(([k, n]) => `${k} ${n}`).join(', ');
+          console.log(`drawing: ${r.drawingReport.placed} annotation(s) placed, ${r.drawingReport.overlapped} overlapped (${kinds})`);
+        }
         for (const m of r.meshFiles ?? []) console.log(`wrote mesh ${m}`);
       }
       process.exitCode = r.exitCode;

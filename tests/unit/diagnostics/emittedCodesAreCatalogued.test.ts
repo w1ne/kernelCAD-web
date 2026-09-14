@@ -48,6 +48,8 @@ const EMITTING_FILES = [
   'agent/script-runtime/bom.ts',
   'agent/mcp/tools/renderPreview.ts',
   'kernel/backends/occt/exportSvgDrawing.ts',
+  'kernel/backends/occt/drawingAuto.ts',
+  'kernel/backends/occt/drawingSections.ts',
 ];
 
 // Match `code: '<value>'` and `new KernelError('<code>', ...)`.
@@ -81,6 +83,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
 
   it('catalogue has exactly 289 codes', () => {
   it('catalogue has exactly 289 codes', () => {
+  it('catalogue has exactly 278 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -219,6 +222,9 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  + 1 feature.async-result.missing-await (un-awaited sectionSketch/
     //       faceSketch/silhouette chained a Sketch method) = 279.
     expect(catalogue.size).toBe(289);
+    //  + 2 automatic drawing annotation: drawing.auto.datum-ambiguous,
+    //       drawing.auto.hole-unclassified = 278.
+    expect(catalogue.size).toBe(278);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

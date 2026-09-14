@@ -2428,6 +2428,25 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'drawing',
     description: 'Two rendered drawing annotations occupy overlapping sheet-space text/leader regions.',
   },
+  // Drawings — automatic dimensioning + GD&T (2). Both warn: the sheet still
+  // exports with every annotation the rules could derive, and the diagnostic
+  // names what the rules could not decide instead of dropping it silently.
+  'drawing.auto.datum-ambiguous': {
+    hintTemplate:
+      "autoAnnotate could not establish one or more datums from the part's planar faces (A = largest planar face, B / C = largest planar faces orthogonal to it). Declare the missing datum with shape.datum('B', faceQuery) or options.autoAnnotate.datums, then re-export.",
+    nextAction: { kind: 'call-introspection-tool', tool: 'list_faces' },
+    defaultSeverity: 'warn',
+    group: 'drawing',
+    description: 'Automatic drawing annotation could not derive a datum reference frame (A/B/C) from the planar faces of the part.',
+  },
+  'drawing.auto.hole-unclassified': {
+    hintTemplate:
+      'autoAnnotate found a bore it cannot express as a simple, counterbored or countersunk hole (stacked bores, an internal duct, or an axis off the principal views), so it has no automatic callout. Dimension it with an options.annotations hole / diameter entry.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'add an options.annotations hole or diameter entry for the named bore' },
+    defaultSeverity: 'warn',
+    group: 'drawing',
+    description: 'Automatic drawing annotation found a cylindrical bore that is not a simple, counterbored or countersunk hole along a principal view axis.',
+  },
   // Slice E — image/photo-reference assumption ledger (2).
   'reference.assumptions.unresolved': {
     hintTemplate:

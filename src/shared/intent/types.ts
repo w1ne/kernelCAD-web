@@ -173,6 +173,10 @@ export type FeatureKind =
   // Capture-only linear-static structural study declaration (shape.feaStudy),
   // no OCCT output. Enforced by the FEA runner at evaluate time.
   | 'feaStudy'
+  // Capture-only GD&T declarations (shape.datum / shape.tolerance), no OCCT
+  // output. Read by the svg-drawing exporter.
+  | 'drawingDatum'
+  | 'drawingTolerance'
   // NURBS Slice B: 3D parametric curve (Geom_BSplineCurve under the hood)
   //   and multi-section sweep (BRepOffsetAPI_MakePipeShell).
   | 'curve3d'

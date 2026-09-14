@@ -14,10 +14,23 @@ import { exportSvgDrawing, type SvgDrawingOptions } from '../../kernel/backends/
 import { explodedPoses, applyExplodedOffsets, parseExplodeInput } from '../../modeling/runtime/explodedPoses';
 import { computeBom } from './bom';
 import type { Assembly } from '../../modeling/capture/assembly';
+import {
+  renderSvgDrawing,
+  type AutoAnnotateOptions,
+  type DrawingReport,
+  type SvgDrawingOptions,
+} from '../../kernel/backends/occt/exportSvgDrawing';
+import { collectDrawingDeclarations } from '../../modeling/runtime/drawingDeclarations';
 import type { DrawingAnnotation } from '../../kernel/backends/occt/drawingAnnotations';
 import type { DrawingSectionSpec } from '../../kernel/backends/occt/drawingSections';
 export type { DrawingAnnotation, DrawingAnchor } from '../../kernel/backends/occt/drawingAnnotations';
 export type { DrawingSectionSpec, SectionPlane } from '../../kernel/backends/occt/drawingSections';
+export type {
+  AutoAnnotateKind,
+  AutoAnnotateOptions,
+  DrawingReport,
+  Iso2768Class,
+} from '../../kernel/backends/occt/exportSvgDrawing';
 import { sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { flattenPattern } from '../../kernel/backends/occt/flattenPattern';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
@@ -64,6 +77,9 @@ export type ExportOptions =
       balloons?: boolean;
       /** Parts-list table (item, name, qty, material) above the title block. */
       partsList?: boolean;
+      /** Derive datums, hole callouts with position frames, positions, overall
+       *  dims, radii, chamfers, flatness and an ISO 2768 note from the B-rep. */
+      autoAnnotate?: boolean | AutoAnnotateOptions;
     }
   | { format: 'urdf' }
   | { format: 'srdf' }
@@ -132,6 +148,9 @@ export interface ExportResult {
   connectorManifest?: ConnectorManifest;
   /** Parsed slicer G-code stats, present only for `format: 'gcode'` exports that reached the slicer. */
   gcodeStats?: GcodeStats;
+  /** `svg-drawing` placement report (placed / overlapped counts, datums,
+   *  every annotation drawn), present whenever the sheet carries annotations. */
+  drawingReport?: DrawingReport;
 }
 
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
@@ -435,6 +454,20 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
       ...(bomRows !== undefined ? { bomRows } : {}),
     }, drawingDiagnostics);
     return { bytes, featureCount, diagnostics: [...r.diagnostics, ...drawingDiagnostics] };
+    // GD&T declared on the feature graph (shape.datum / shape.tolerance) for
+    // this target or anything feeding it.
+    const captured = collectDrawingDeclarations(run.records, targetId);
+    const declarations = {
+      datums: [...(opts.declarations?.datums ?? []), ...captured.datums],
+      tolerances: [...(opts.declarations?.tolerances ?? []), ...captured.tolerances],
+    };
+    const rendered = renderSvgDrawing(drawingParts, { ...opts, modelName, declarations });
+    return {
+      bytes: rendered.bytes,
+      featureCount,
+      diagnostics: [...r.diagnostics, ...rendered.diagnostics],
+      ...(rendered.report === undefined ? {} : { drawingReport: rendered.report }),
+    };
   }
 
   // Scene-aware path: STEP/3MF/GLB keep per-part identity. STL is a single

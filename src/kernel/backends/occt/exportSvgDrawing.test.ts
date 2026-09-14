@@ -217,11 +217,92 @@ describe('exportSvgDrawing sections', () => {
     }
   });
 
-  it('rejects an oblique (non-axis-aligned) cutting plane rather than mis-rendering it', () => {
-    expect(() => exportSvgDrawing(boredBlock(), {
+  /** Signed shoelace areas of every `M … Z` sub-path in a hatch path. */
+  const subpathAreas = (d: string): number[] => d
+    .split('M ')
+    .filter(chunk => chunk.trim().length > 0)
+    .map(chunk => {
+      const nums = chunk.replace(/[LZ]/g, ' ').trim().split(/\s+/).map(Number);
+      let twice = 0;
+      for (let k = 0; k < nums.length; k += 2) {
+        const [x0, y0] = [nums[k], nums[k + 1]];
+        const [x1, y1] = [nums[(k + 2) % nums.length], nums[(k + 3) % nums.length]];
+        twice += x0 * y1 - x1 * y0;
+      }
+      return twice / 2;
+    });
+
+  it('cuts an oblique 30° plane for real: hatch area equals the analytic cross-section', () => {
+    // 60x40x20 block, plane through its centre with the normal tilted 30° from
+    // +X toward +Z. The cut is a rectangle 40 (along Y) by 20 / cos 30° (along
+    // the tilted Z run), i.e. 923.76 mm², seen true-shape in the section cell.
+    const tilt = (30 * Math.PI) / 180;
+    const svg = decode(exportSvgDrawing(
+      [{ name: 'block', shape: OcctBackend.box(60, 40, 20) }],
+      {
+        format: 'svg-drawing',
+        sections: [{ plane: { origin: [30, 20, 10], normal: [Math.cos(tilt), 0, Math.sin(tilt)] }, label: 'A' }],
+      },
+    ));
+    const cell = viewGroup(svg, 'section-A');
+    expect(cell).toContain('data-kc-section-normal="0.866 0 0.5"');
+    const cellScale = Number(cell.match(/data-kc-cell-scale="([^"]+)"/)![1]);
+    const hatch = cell.match(/<path d="([^"]*)" fill="url\(#kc-section-hatch\)"/)?.[1];
+    expect(hatch).toBeDefined();
+    const areas = subpathAreas(hatch!);
+    expect(areas).toHaveLength(1);
+    const modelArea = Math.abs(areas[0]) / (cellScale * cellScale);
+    const analytic = (40 * 20) / Math.cos(tilt);
+    expect(Math.abs(modelArea - analytic) / analytic).toBeLessThan(0.005);
+    // The indicator sits on the standard view closest to edge-on: the plane
+    // contains world Y, so the front view (looking along Y) shows its trace.
+    expect(svg).toContain('class="section-plane-indicator" data-parent-view="front"');
+    expect(svg).toContain('>SECTION A-A</text>');
+  });
+
+  it('keeps a bore the oblique plane slices through as a hole in the hatch', () => {
+    const tilt = (30 * Math.PI) / 180;
+    const svg = decode(exportSvgDrawing(boredBlock(), {
       format: 'svg-drawing',
-      sections: [{ plane: { origin: [30, 20, 10], normal: [1, 1, 1] }, label: 'A' }],
-    })).toThrow(/not axis-aligned/);
+      sections: [{ plane: { origin: [30, 20, 10], normal: [0, -Math.sin(tilt), Math.cos(tilt)] }, label: 'B' }],
+    }));
+    const cell = viewGroup(svg, 'section-B');
+    const cellScale = Number(cell.match(/data-kc-cell-scale="([^"]+)"/)![1]);
+    const hatch = cell.match(/<path d="([^"]*)" fill="url\(#kc-section-hatch\)"/)![1];
+    const areas = subpathAreas(hatch).map(a => Math.abs(a) / (cellScale * cellScale)).sort((a, b) => b - a);
+    expect(areas).toHaveLength(2);
+    // Outer: a plane 30° off horizontal crosses the 20-thick block over a
+    // 20 / sin 30° run, so the strip is 60 × 40. Inner: the vertical ⌀12 bore
+    // cut obliquely is an ellipse with semi-axes 6 and 6 / cos 30°.
+    const outer = (60 * 20) / Math.sin(tilt);
+    const inner = (Math.PI * 6 * 6) / Math.cos(tilt);
+    expect(Math.abs(areas[0] - outer) / outer).toBeLessThan(0.005);
+    expect(Math.abs(areas[1] - inner) / inner).toBeLessThan(0.01);
+    expect(cell).toContain('fill-rule="evenodd"');
+  });
+
+  it('still rejects a zero plane normal', () => {
+    try {
+      exportSvgDrawing(boredBlock(), {
+        format: 'svg-drawing',
+        sections: [{ plane: { origin: [30, 20, 10], normal: [0, 0, 0] }, label: 'A' }],
+      });
+      expect.unreachable();
+    } catch (e) {
+      expect((e as { code?: string }).code).toBe('feature.invalid-args');
+    }
+  });
+
+  it('fails an oblique plane that misses the body with drawing.section.plane-misses-body', () => {
+    try {
+      exportSvgDrawing(boredBlock(), {
+        format: 'svg-drawing',
+        sections: [{ plane: { origin: [500, 500, 500], normal: [1, 1, 1] }, label: 'A' }],
+      });
+      expect.unreachable();
+    } catch (e) {
+      expect((e as { code?: string }).code).toBe('drawing.section.plane-misses-body');
+    }
   });
 
   it('renders more than one section, each with its own letter', () => {
