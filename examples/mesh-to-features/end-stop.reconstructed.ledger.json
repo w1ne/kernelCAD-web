@@ -42,6 +42,28 @@
       "resolution": "open"
     },
     {
+      "id": "length",
+      "statement": "Profile size along X. Measured 60 mm, snapped to 60 mm (grid 1).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 60,
+      "confidence": 0.9880315768720607,
+      "resolution": "open"
+    },
+    {
+      "id": "width",
+      "statement": "Profile size along Y. Measured 40 mm, snapped to 40 mm (grid 1).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 40,
+      "confidence": 0.9933548158615793,
+      "resolution": "open"
+    },
+    {
       "id": "thickness",
       "statement": "Extrusion length of the profile. Measured 12 mm, snapped to 12 mm (grid 1).",
       "kind": "inferred",
@@ -50,28 +72,6 @@
       },
       "value": 12,
       "confidence": 0.9998358226486417,
-      "resolution": "open"
-    },
-    {
-      "id": "width",
-      "statement": "Profile size along X. Measured 59.999 mm, snapped to 60 mm (grid 1).",
-      "kind": "inferred",
-      "evidence": {
-        "source": "mesh"
-      },
-      "value": 60,
-      "confidence": 0.9238567774625608,
-      "resolution": "open"
-    },
-    {
-      "id": "length",
-      "statement": "Profile size along Y. Measured 40.002 mm, snapped to 40 mm (grid 1).",
-      "kind": "inferred",
-      "evidence": {
-        "source": "mesh"
-      },
-      "value": 40,
-      "confidence": 0.7785541486379657,
       "resolution": "open"
     },
     {
@@ -117,12 +117,12 @@
       "value": [
         {
           "what": "origin.x",
-          "measured": 0.000761,
+          "measured": 0.00012,
           "value": 0
         },
         {
           "what": "origin.y",
-          "measured": -0.001128,
+          "measured": -0.003086,
           "value": 0
         },
         {
@@ -216,47 +216,7 @@
       "value": "hole at (20, 30)",
       "confidence": 0.5,
       "resolution": "open"
-    },
-    {
-      "id": "not-represented.1",
-      "statement": "edge blend near (60, 0, 6) not filleted: blend covers only part of the edge (median r 1.926 mm, spread 0.054 mm over 22 samples).",
-      "kind": "missing",
-      "evidence": {
-        "source": "mesh"
-      },
-      "confidence": 0,
-      "resolution": "open"
-    },
-    {
-      "id": "not-represented.2",
-      "statement": "edge blend near (0, 20, 0) not filleted: radius varies along the edge (variable-radius or non-circular blend) (median r 2.843 mm, spread 1.809 mm over 989 samples).",
-      "kind": "missing",
-      "evidence": {
-        "source": "mesh"
-      },
-      "confidence": 0,
-      "resolution": "open"
-    },
-    {
-      "id": "not-represented.3",
-      "statement": "edge blend near (0, 20, 12) not filleted: radius varies along the edge (variable-radius or non-circular blend) (median r 2.838 mm, spread 1.817 mm over 981 samples).",
-      "kind": "missing",
-      "evidence": {
-        "source": "mesh"
-      },
-      "confidence": 0,
-      "resolution": "open"
-    },
-    {
-      "id": "not-represented.4",
-      "statement": "edge blend near (60, 40, 6) not filleted: blend covers only part of the edge (median r 1.928 mm, spread 0.054 mm over 22 samples).",
-      "kind": "missing",
-      "evidence": {
-        "source": "mesh"
-      },
-      "confidence": 0,
-      "resolution": "open"
     }
   ],
-  "unresolvedCount": 16
+  "unresolvedCount": 12
 }

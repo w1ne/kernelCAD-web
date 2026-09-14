@@ -16,8 +16,9 @@
 //    end-stop.reconstructed.ledger.json):
 //      verdict: faithful  volumeIoU=1.0000  maxDeviationMm=0.000  rmsMm=0.000  (faithful needs IoU >= 0.98, max dev <= 0.25 mm; pass 0)
 //      body: extrude (1)  holes: holes1 2x Ø5.5 through  fillets: R5 x2 edges, R2 x1 edges  cutouts: 0  boolean remainders: 0
-//      params: thickness=12, width=60, length=40, holes1Diameter=5.5, fillet1Radius=5, fillet2Radius=2
-//      mesh: 2792 triangles, watertight=true; unmatched regions: 0; open ledger facts: 16
+//      profile: block 1 rectangle, rounds as fillet
+//      params: length=60, width=40, thickness=12, holes1Diameter=5.5, fillet1Radius=5, fillet2Radius=2
+//      mesh: 2792 triangles, watertight=true; unmatched regions: 0; open ledger facts: 12
 //
 //    The script is the sharp 60 x 40 x 12 plate, the two drilled holes, then
 //    one fillet feature with two measured radius groups: R5 on the vertical

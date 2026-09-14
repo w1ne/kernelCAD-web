@@ -16,7 +16,7 @@ import type { AssumptionFact, AssumptionLedger } from '../vision/ledger';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
 import { analyseMesh, type MeshAnalysis, type UnmatchedCandidate, type UnmatchedRegion } from './analysis';
-import { buildPlan, withFillets, type FeaturePlan, type PassParams } from './plan';
+import { buildPlan, withFillets, type FeaturePlan, type OutlineKind, type PassParams, type RoundsKind } from './plan';
 import { detectEdgeBlends, groupBlends, selectorsForGroup } from './blends';
 import { emitScript, num } from './emit';
 import {
@@ -102,6 +102,14 @@ export interface ReconstructSuccess {
     cutouts: number;
     /** Constant-radius edge blends emitted as fillets. */
     fillets: Array<{ radiusMm: number; edges: number }>;
+    /**
+     * How each body block's outline is written: `rectangle` / `rectilinear`
+     * corners and `circle` radii are driven by named params, `literal` keeps
+     * measured coordinates (an irregular outline), `revolve` is a turned
+     * profile. `rounds`: corner rounds as an edge `fillet`, as tangent `arcs`
+     * with a radius param, or `none`.
+     */
+    profiles: Array<{ block: number; outline: OutlineKind | 'revolve'; rounds: RoundsKind }>;
     booleanRemainders: number;
     params: Array<{ name: string; value: number; measured: number; snapped: boolean }>;
     extrusionAxis: [number, number, number];
@@ -236,38 +244,46 @@ export async function reconstructFromSoup(
     }
     const base = await measure(plan, 'sharp', false);
     outcomes.push(base.outcome);
-    if (base.outcome.summary.verdict === 'faithful') {
-      winner = base.outcome;
-      break;
-    }
+    const baseFaithful = base.outcome.summary.verdict === 'faithful';
     // Blends change a part by a thin skin along its edges; a reading that is
     // further off than that (a freeform body, a wrong axis) is not one blend
     // search away from faithful, so do not spend kernel fillets on it.
-    if (!base.outcome.metrics || base.outcome.metrics.volumeIoU < 0.95) continue;
-    // Not faithful: read the sharp model's edges to look for blends.
-    const withEdges = await evaluate(base.outcome.script, { withEdges: true });
-    if (!withEdges.ok || !withEdges.edges) continue;
-    base.edges = withEdges.edges;
-    base.mesh = withEdges.mesh;
-
-    // Edge blends: first on a profile whose tangent corner rounds are made
-    // sharp (so every round, cap edge or corner, becomes one fillet feature
-    // and the kernel builds the corner patches), then on the plain profile.
-    const attempts: Array<{ plan: FeaturePlan; variant: PassSummary['variant'] }> = [];
+    if (!baseFaithful && (!base.outcome.metrics || base.outcome.metrics.volumeIoU < 0.95)) continue;
+    // Tangent corner rounds in the profile: try the design-intent reading, a
+    // sharp profile plus a fillet feature, even when the arcs already fit —
+    // one radius param then drives every round, cap edge or corner, and the
+    // kernel builds the corner patches.
     const sharpened = buildPlan(analysis, { ...pass, sharpenCorners: true });
-    if (sharpened.sharpenedArcs > 0) {
-      const sharp = await measure(sharpened, 'sharpened', true);
-      if (sharp.edges && sharp.mesh) {
+    if (baseFaithful && sharpened.sharpenedArcs === 0) {
+      winner = base.outcome;
+      break;
+    }
+    // Each attempt is built only when the one before it did not verify, so a
+    // part whose rounds are all sharp-profile fillets never pays for reading
+    // the plain model's edges.
+    const attempts: Array<() => Promise<{ plan: FeaturePlan; variant: PassSummary['variant'] } | undefined>> = [
+      async () => {
+        if (sharpened.sharpenedArcs === 0) return undefined;
+        const sharp = await measure(sharpened, 'sharpened', true);
+        if (!sharp.edges || !sharp.mesh) return undefined;
         const f = filletPlan(analysis, sharpened, sharp.edges, sharp.mesh);
         base.outcome.blendNotes = f.notes;
-        if (f.plan) attempts.push({ plan: f.plan, variant: 'sharpened+fillets' });
-      }
-    }
-    const plain = filletPlan(analysis, plan, base.edges, base.mesh);
-    if (!base.outcome.blendNotes) base.outcome.blendNotes = plain.notes;
-    if (plain.plan) attempts.push({ plan: plain.plan, variant: 'fillets' });
+        return f.plan ? { plan: f.plan, variant: 'sharpened+fillets' } : undefined;
+      },
+      async () => {
+        // Not faithful: read the plain model's edges to look for blends too.
+        if (baseFaithful) return undefined;
+        const withEdges = await evaluate(base.outcome.script, { withEdges: true });
+        if (!withEdges.ok || !withEdges.edges) return undefined;
+        const plain = filletPlan(analysis, plan, withEdges.edges, withEdges.mesh);
+        if (!base.outcome.blendNotes) base.outcome.blendNotes = plain.notes;
+        return plain.plan ? { plan: plain.plan, variant: 'fillets' } : undefined;
+      },
+    ];
     let done = false;
-    for (const a of attempts) {
+    for (const build of attempts) {
+      const a = await build();
+      if (!a) continue;
       const r = await measure(a.plan, a.variant, false);
       r.outcome.blendNotes = base.outcome.blendNotes;
       outcomes.push(r.outcome);
@@ -278,6 +294,12 @@ export async function reconstructFromSoup(
       }
     }
     if (done) break;
+    if (baseFaithful) {
+      // The fillet reading did not verify; the arcs in the profile did.
+      base.outcome.blendNotes = undefined;
+      winner = base.outcome;
+      break;
+    }
   }
   if (!winner) {
     const rank = { faithful: 0, approximate: 1, failed: 2 } as const;
@@ -328,7 +350,9 @@ export async function reconstructFromSoup(
   const final = await evaluate(winner.script, { withHoles: true });
   if (final.ok && final.holes) winner.holes = final.holes;
   const unmatched = winner.unmatched ?? [];
-  const notRepresented = [...winner.plan.notRepresented, ...(winner.blendNotes ?? [])];
+  // A blend the detector measured but did not fillet only matters when the
+  // script misses the mesh; on a faithful script it is within the bound.
+  const notRepresented = [...winner.plan.notRepresented, ...(verdict === 'faithful' ? [] : winner.blendNotes ?? [])];
   const ledger = buildMeshLedger(analysis, { ...winner.plan, notRepresented }, soup, unmatched);
   const diagnostics = buildDiagnostics(analysis, fidelity, unmatched);
   const plan = winner.plan;
@@ -345,6 +369,14 @@ export async function reconstructFromSoup(
       holes: plan.holeSummary,
       cutouts: plan.ops.filter((o) => o.kind === 'cutout').length,
       fillets: plan.ops.flatMap((o) => (o.kind === 'fillet' ? o.groups.map((g) => ({ radiusMm: g.radius, edges: g.edgeCount })) : [])),
+      profiles:
+        plan.body.kind === 'revolve'
+          ? [{ block: 1, outline: 'revolve' as const, rounds: 'none' as const }]
+          : plan.body.blocks.map((b, i) => ({
+              block: i + 1,
+              outline: b.outline,
+              rounds: b.rounds === 'fillet' && !plan.ops.some((o) => o.kind === 'fillet') ? ('none' as const) : b.rounds,
+            })),
       booleanRemainders: plan.ops.filter((o) => o.kind === 'subtractCylinder' || o.kind === 'subtractPrism').length,
       params: plan.params.map((p) => ({ name: p.name, value: p.value, measured: round6(p.measured), snapped: p.snapped })),
       extrusionAxis: analysis.frame.axis,

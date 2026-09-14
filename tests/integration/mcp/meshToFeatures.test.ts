@@ -52,7 +52,46 @@ const MODELS = {
   variableBlend: `const a = path().moveTo(0, 0).lineTo(20, 0).lineTo(20, 9).threePointsArc(19, 10, 19.707, 9.707).lineTo(0, 10).close();
     const b = path().moveTo(0, 0).lineTo(20, 0).lineTo(20, 6).threePointsArc(16, 10, 18.828, 8.828).lineTo(0, 10).close();
     return a.loft(b, { planes: [{ plane: 'YZ', origin: [0, 0, 0] }, { plane: 'YZ', origin: [60, 0, 0] }], ruled: true });`,
+  // 80 x 50 x 12 base, 30 x 50 x 10 step flush with its +X end, a through
+  // bore in each, every vertical edge rounded 2 mm.
+  steppedBlock: `const base = box(80, 50, 12);
+    const step = box(30, 50, 10).translate(50, 0, 12);
+    return base.union(step)
+      .hole({ byNormal: 'Z', atZ: 12 }, { u: -5, v: 0, diameter: 6.6, depth: 12 })
+      .hole({ byNormal: 'Z', atZ: 22 }, { u: 0, v: 0, diameter: 16, depth: 22 })
+      .fillet(2, { parallel: [0, 0, 1] });`,
 } as const;
+
+/**
+ * Analytic volume of the stepped block for a length (X) and vertical round
+ * radius r: base + step − the two through bores − the material a 90° round
+ * removes, r²(1 − π/4) per unit length, along 88 mm of vertical edges
+ * (2 x 12 at x = 0, 2 x 22 at the flush x = length end, 2 x 10 at the step).
+ */
+function steppedBlockVolume(length: number, r: number): number {
+  return length * 50 * 12 + 30 * 50 * 10 - Math.PI * 8 ** 2 * 22 - Math.PI * 3.3 ** 2 * 12 - r * r * (1 - Math.PI / 4) * 88;
+}
+
+type ShapeInfo = { volume: number; bbox: { min: number[]; max: number[] } };
+
+async function shapeOf(code: string): Promise<ShapeInfo> {
+  const r = (await callMcpTool('inspect', { of: 'shape', code })) as { ok: boolean; error?: string; shape?: ShapeInfo };
+  expect(r.error).toBeUndefined();
+  expect(r.ok).toBe(true);
+  return r.shape!;
+}
+
+async function withParam(code: string, name: string, value: number): Promise<string> {
+  const r = (await callMcpTool('set_param', { code, param_name: name, new_value: value })) as { ok: boolean; new_code?: string; error?: string };
+  expect(r.error).toBeUndefined();
+  expect(r.ok).toBe(true);
+  return r.new_code!;
+}
+
+function expectBox(s: ShapeInfo, max: [number, number, number]): void {
+  s.bbox.min.forEach((v) => expect(v).toBeCloseTo(0, 6));
+  s.bbox.max.forEach((v, i) => expect(v).toBeCloseTo(max[i], 6));
+}
 
 type ModelName = keyof typeof MODELS;
 const stlPath: Partial<Record<ModelName, string>> = {};
@@ -107,7 +146,8 @@ describe('mesh_to_features round trips', () => {
       expect.objectContaining({ axis: 'Z', count: 4, diameterMm: 5.5, kind: 'through' }),
     ]);
     const params = Object.fromEntries(r.features.params.map((p) => [p.name, p.value]));
-    expect(params).toMatchObject({ thickness: 6, width: 80, length: 50, holes1Diameter: 5.5 });
+    expect(params).toMatchObject({ thickness: 6, length: 80, width: 50, holes1Diameter: 5.5 });
+    expect(r.features.profiles).toEqual([{ block: 1, outline: 'rectangle', rounds: 'none' }]);
     expect(r.script).toContain(".holes({ byNormal: 'Z', atZ: 6 }");
     expect(r.script).toContain("depth: 'through'");
     // The B-rep hole detector sees four through bores on the reconstruction.
@@ -184,6 +224,76 @@ describe('mesh_to_features round trips', () => {
     expect(r.features.fillets).toEqual([]);
     expect(r.notRepresented.some((n) => /radius varies along the edge/.test(n))).toBe(true);
     expect(r.diagnostics.map((d) => d.code)).toContain('reference.mesh.low-fidelity');
+  }, 240000);
+
+  it('rebuilds the stepped block as length/width-driven blocks plus one fillet param, and set_param edits it as designed', async () => {
+    stlPath.steppedBlock ??= await exportStl('steppedBlock');
+    const r = (await callMcpTool('mesh_to_features', { file: stlPath.steppedBlock! })) as ReconstructSuccess;
+    expect(r.ok).toBe(true);
+    expectFaithful(r);
+    const params = Object.fromEntries(r.features.params.map((p) => [p.name, p.value]));
+    expect(params).toEqual({
+      length: 80,
+      width: 50,
+      block1Height: 12,
+      block2Length: 30,
+      block2Height: 10,
+      hole1Diameter: 16,
+      hole1Depth: 22,
+      hole2Diameter: 6.6,
+      hole2Depth: 12,
+      filletRadius: 2,
+    });
+    expect(r.features.profiles).toEqual([
+      { block: 1, outline: 'rectangle', rounds: 'fillet' },
+      { block: 2, outline: 'rectangle', rounds: 'fillet' },
+    ]);
+    expect(r.features.fillets).toHaveLength(1);
+    expect(r.features.fillets[0].radiusMm).toBe(2);
+    // The profile is drawn from the params, and the step stays flush with the
+    // base end: no literal corner coordinates, no arcs in the sketch.
+    expect(r.script).toContain('.lineTo(length, width)');
+    expect(r.script).toContain('.moveTo(length.subtract(block2Length), 0)');
+    expect(r.script).not.toMatch(/threePointsArc|tangentArc/);
+    expect(r.script).toContain('.fillet(filletRadius, { parallel: [0, 0, 1]');
+
+    const base = await shapeOf(r.script);
+    expect(base.volume).toBeCloseTo(steppedBlockVolume(80, 2), 0);
+    expectBox(base, [80, 50, 22]);
+    // Rounds 2 → 4: the fillet skin grows, nothing else moves.
+    const r4 = await shapeOf(await withParam(r.script, 'filletRadius', 4));
+    expect(r4.volume).toBeCloseTo(steppedBlockVolume(80, 4), 0);
+    expect(base.volume - r4.volume).toBeCloseTo((16 - 4) * (1 - Math.PI / 4) * 88, 0);
+    expectBox(r4, [80, 50, 22]);
+    // Length 80 → 100: the base grows 20 mm and the step rides on its end.
+    const l100 = await shapeOf(await withParam(r.script, 'length', 100));
+    expect(l100.volume).toBeCloseTo(steppedBlockVolume(100, 2), 0);
+    expect(l100.volume - base.volume).toBeCloseTo(20 * 50 * 12, 0);
+    expectBox(l100, [100, 50, 22]);
+  }, 240000);
+
+  it('writes the stepped block rounds as param-driven tangent arcs when the fillet reading does not verify', async () => {
+    stlPath.steppedBlock ??= await exportStl('steppedBlock');
+    const soup = parseMeshBytes(new Uint8Array(readFileSync(stlPath.steppedBlock!)), 'stl');
+    // An evaluator whose kernel cannot fillet: the sharp-profile reading fails.
+    const noFillets: typeof occtReconstructionEvaluator = async (script, opts) =>
+      script.includes('.fillet(') ? { ok: false, error: 'fillet unavailable' } : occtReconstructionEvaluator(script, opts);
+    const r = await reconstructFromSoup(soup, noFillets, { sourceName: 'stepped block' });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.fidelity.verdict).toBe('faithful');
+    expect(r.features.fillets).toEqual([]);
+    expect(r.features.profiles).toEqual([
+      { block: 1, outline: 'rectangle', rounds: 'arcs' },
+      { block: 2, outline: 'rectangle', rounds: 'arcs' },
+    ]);
+    expect(r.features.params.find((p) => p.name === 'cornerRadius')?.value).toBe(2);
+    expect(r.script).toContain('.lineTo(length.subtract(cornerRadius), 0)');
+    expect(r.script).toContain('.tangentArc(length, cornerRadius)');
+    expect(r.script).not.toContain('threePointsArc');
+    const r4 = await shapeOf(await withParam(r.script, 'cornerRadius', 4));
+    expect(r4.volume).toBeCloseTo(steppedBlockVolume(80, 4), 0);
+    expectBox(r4, [80, 50, 22]);
   }, 240000);
 
   it('never calls an organic blob faithful and lists what it could not match', async () => {

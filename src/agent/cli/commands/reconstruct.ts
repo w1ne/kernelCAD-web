@@ -46,6 +46,7 @@ export async function runReconstructCli(input: ReconstructCliInput): Promise<{ e
     const holes = r.features.holes.map((h) => `${h.name} ${h.count}x Ø${h.diameterMm} ${h.kind}${h.counterbore ? ` cb Ø${h.counterbore.diameterMm}x${h.counterbore.depthMm}` : ''}`);
     const fillets = r.features.fillets.map((f) => `R${f.radiusMm} x${f.edges} edges`);
     console.log(`body: ${r.features.body} (${r.features.bodyBlocks})  holes: ${holes.length > 0 ? holes.join(', ') : 'none'}  fillets: ${fillets.length > 0 ? fillets.join(', ') : 'none'}  cutouts: ${r.features.cutouts}  boolean remainders: ${r.features.booleanRemainders}`);
+    console.log(`profile: ${r.features.profiles.map((p) => `block ${p.block} ${p.outline}${p.rounds === 'none' ? '' : `, rounds as ${p.rounds}`}`).join('; ')}`);
     console.log(`params: ${r.features.params.map((p) => `${p.name}=${p.value}`).join(', ')}`);
     console.log(`mesh: ${r.mesh.triangles} triangles, watertight=${r.mesh.watertight}; unmatched regions: ${r.unmatchedRegions.length}; open ledger facts: ${r.ledger.unresolvedCount}`);
     if (r.diagnostics.length > 0) console.log(formatHuman(r.diagnostics));

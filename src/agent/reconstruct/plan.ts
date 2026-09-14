@@ -33,6 +33,7 @@ import { pointInsideMesh } from './fidelity';
 import type { MeshAnalysis } from './analysis';
 import type { LoopGuide, RegionSection } from './profileFit';
 import type { EdgeQueryOut } from './blends';
+import { CoordinateBook, paramProfile, rectilinearCorners, type Corner, type CornerExpr } from './profileParams';
 
 export interface PassParams {
   index: number;
@@ -66,6 +67,16 @@ export interface FaceRef {
 
 export type LoopOut = { kind: 'circle'; cx: number; cy: number; r: number } | { kind: 'path'; prims: ProfilePrim[] };
 
+/** How a block's outline is written: param-driven corners, a param circle, or literal coordinates. */
+export type ProfileOut =
+  | { kind: 'corners'; corners: CornerExpr[] }
+  | { kind: 'circle'; cx: string; cy: string; r: string };
+
+export type OutlineKind = 'rectangle' | 'rectilinear' | 'circle' | 'literal';
+
+/** How a block's corner rounds are written: edge fillets, tangent arcs in the profile, or none. */
+export type RoundsKind = 'fillet' | 'arcs' | 'none';
+
 export type BodyPlan =
   | { kind: 'revolve'; steps: Array<{ r: number; z0: number; z1: number; rParam: string; hParam: string }> }
   | {
@@ -75,7 +86,10 @@ export type BodyPlan =
         z1: number;
         loops: LoopOut[];
         hParam: string;
-        rect?: { wParam: string; lParam: string };
+        outline: OutlineKind;
+        rounds: RoundsKind;
+        /** Param-driven outline; absent for a literal one (then `loops` is emitted). */
+        profile?: ProfileOut;
       }>;
     };
 
@@ -128,6 +142,8 @@ interface BandLoops {
   raw: FittedLoop[];
   polys: Float64Array[];
   depth: number[];
+  /** Corner rounds of the outer outline made sharp (sharpenCorners passes). */
+  sharpened: number;
 }
 
 interface RunSeg {
@@ -332,6 +348,7 @@ export function buildPlan(an: MeshAnalysis, pass: PassParams): FeaturePlan {
       return c;
     });
     let polys = snapped.map(loopPolygon);
+    let bandSharpened = 0;
     if (pass.sharpenCorners) {
       const depths = snapped.map((_, i) => nestingDepth(polys, i));
       let changed = 0;
@@ -340,6 +357,7 @@ export function buildPlan(an: MeshAnalysis, pass: PassParams): FeaturePlan {
       });
       if (changed > 0) {
         sharpenedArcs += changed;
+        bandSharpened = changed;
         polys = snapped.map(loopPolygon);
       }
     }
@@ -350,6 +368,7 @@ export function buildPlan(an: MeshAnalysis, pass: PassParams): FeaturePlan {
       raw,
       polys,
       depth: snapped.map((_, i) => nestingDepth(polys, i)),
+      sharpened: bandSharpened,
     };
   });
   const nb = bands.length;
@@ -426,29 +445,65 @@ export function buildPlan(an: MeshAnalysis, pass: PassParams): FeaturePlan {
       }
     }
     const single = blocks.length === 1;
+    const angleTol = Math.max(pass.angleTolDeg, 0.5) * DEG;
+    const coordTol = pass.snapTol > 0 ? 1e-6 : Math.max(1e-6, pass.eps);
+    const coords = new CoordinateBook(coordTol);
+    const cornerSets = blocks.map((blk) => {
+      if (blk.loops.length !== 1 || blk.loops[0].kind !== 'path') return undefined;
+      const corners = rectilinearCorners(loopPrimitives(blk.loops[0]), angleTol, Math.max(2 * tol, 1e-3));
+      if (!corners) return undefined;
+      let first = 0;
+      corners.forEach((c, i) => {
+        if (Math.hypot(c.x, c.y) < Math.hypot(corners[first].x, corners[first].y) - 1e-9) first = i;
+      });
+      return [...corners.slice(first), ...corners.slice(0, first)];
+    });
+    // One radius param per distinct corner-round radius, shared by all blocks.
+    const radiusValues: number[] = [];
+    for (const cs of cornerSets) for (const c of cs ?? []) if (c.r > 0 && !radiusValues.some((r) => Math.abs(r - c.r) <= coordTol)) radiusValues.push(c.r);
+    const radiusNames = new Map<number, string>();
+    const radiusExpr = (r: number, measured: number): string => {
+      const i = radiusValues.findIndex((v) => Math.abs(v - r) <= coordTol);
+      const existing = radiusNames.get(i);
+      if (existing) return existing;
+      const name = radiusValues.length === 1 ? 'cornerRadius' : `corner${i + 1}Radius`;
+      addParam(name, radiusValues[i], measured, 'Radius of the tangent corner rounds in the extruded profile.', snapInfo(radiusValues[i], measured).grid);
+      radiusNames.set(i, name);
+      return name;
+    };
     body = {
       kind: 'extrude',
       blocks: blocks.map((blk, k) => {
         const h = blk.z1 - blk.z0;
         const rawH = rawRel[blk.i1] - rawRel[blk.i0];
         const hName = single ? (h <= 0.5 * minExtent ? 'thickness' : 'height') : `block${k + 1}Height`;
-        addParam(hName, h, rawH, single ? 'Extrusion length of the profile.' : `Extrusion length of block ${k + 1} (from the base).`, snapInfo(h, rawH).grid);
         const loops: LoopOut[] = blk.loops.map((l) =>
           l.kind === 'circle' ? { kind: 'circle', cx: l.cx, cy: l.cy, r: l.r } : { kind: 'path', prims: startNearOrigin(loopPrimitives(l)) },
         );
-        let rect: { wParam: string; lParam: string } | undefined;
-        const r = loops.length === 1 && loops[0].kind === 'path' ? originRectangle(loops[0].prims) : undefined;
-        if (r) {
-          const rawPoly = loopPolygon(blk.raw[0]);
-          const rawW = polyExtent(rawPoly, 0);
-          const rawL = polyExtent(rawPoly, 1);
-          const wName = single ? 'width' : `block${k + 1}Width`;
-          const lName = single ? 'length' : `block${k + 1}Length`;
-          addParam(wName, r.w, rawW, 'Profile size along X.', snapInfo(r.w, rawW).grid);
-          addParam(lName, r.l, rawL, 'Profile size along Y.', snapInfo(r.l, rawL).grid);
-          rect = { wParam: wName, lParam: lName };
+        const sharpened = blk.bands.some((bi) => bands[bi].sharpened > 0);
+        const measured = rawMeasures(blk.raw, 2 * tol + 1e-3);
+        const addDim = (name: string, value: number, meas: number, description: string) => {
+          addParam(name, value, meas, description, snapInfo(value, meas).grid);
+          return name;
+        };
+        let profile: ProfileOut | undefined;
+        let outline: OutlineKind = 'literal';
+        const corners = cornerSets[k];
+        if (corners) {
+          const pp = paramProfile(k + 1, corners, coords, addDim, measured.coordinate, (r) => radiusExpr(r, measured.radius(corners, r)));
+          profile = { kind: 'corners', corners: pp.corners };
+          outline = pp.kind;
+        } else if (loops.length === 1 && loops[0].kind === 'circle') {
+          const c = loops[0];
+          const rawC = blk.raw[0].kind === 'circle' ? blk.raw[0] : undefined;
+          const rName = addDim(single ? 'radius' : `block${k + 1}Radius`, c.r, rawC ? rawC.r : c.r, `Radius of the round profile${single ? '' : ` of block ${k + 1}`}.`);
+          profile = { kind: 'circle', cx: coords.lookup('x', c.cx) ?? num3(c.cx), cy: coords.lookup('y', c.cy) ?? num3(c.cy), r: rName };
+          outline = 'circle';
         }
-        return { z0: blk.z0, z1: blk.z1, loops, hParam: hName, rect };
+        addParam(hName, h, rawH, single ? 'Extrusion length of the profile.' : `Extrusion length of block ${k + 1} (from the base).`, snapInfo(h, rawH).grid);
+        const hasArcs = profile?.kind === 'corners' ? profile.corners.some((c) => c.r !== undefined) : !profile && loops.some((l) => l.kind === 'path' && l.prims.some((p) => p.kind === 'arc'));
+        const rounds: RoundsKind = sharpened ? 'fillet' : hasArcs ? 'arcs' : 'none';
+        return { z0: blk.z0, z1: blk.z1, loops, hParam: hName, outline, rounds, ...(profile ? { profile } : {}) };
       }),
     };
     bands.forEach((_, bi) => {
@@ -875,16 +930,6 @@ function roundUv(v: number): number {
   return Object.is(r, -0) ? 0 : r;
 }
 
-function polyExtent(poly: Float64Array, k: 0 | 1): number {
-  let lo = Infinity;
-  let hi = -Infinity;
-  for (let i = k; i < poly.length; i += 2) {
-    lo = Math.min(lo, poly[i]);
-    hi = Math.max(hi, poly[i]);
-  }
-  return hi - lo;
-}
-
 /** Rotate a closed chain so it starts at the joint nearest the origin — the
  *  corner a reader expects a profile to begin from. */
 function startNearOrigin(prims: ProfilePrim[]): ProfilePrim[] {
@@ -945,18 +990,6 @@ function interiorSamples(poly: Float64Array): V2[] {
     }
   }
   return out;
-}
-
-/** An axis-aligned rectangle with a corner at the origin: {w, l}. */
-function originRectangle(prims: ProfilePrim[]): { w: number; l: number } | undefined {
-  if (prims.length !== 4 || prims.some((p) => p.kind !== 'line')) return undefined;
-  const xs = prims.map((p) => p.a[0]);
-  const ys = prims.map((p) => p.a[1]);
-  const w = Math.max(...xs);
-  const l = Math.max(...ys);
-  const corners = prims.map((p) => `${p.a[0]},${p.a[1]}`).sort();
-  const want = [`0,0`, `0,${l}`, `${w},0`, `${w},${l}`].sort();
-  return corners.every((c, i) => c === want[i]) && w > 0 && l > 0 ? { w, l } : undefined;
 }
 
 function mergeSegs(segs: RunSeg[], pass: PassParams): RunSeg[] {
@@ -1101,4 +1134,48 @@ function decomposeRun(
   }
 }
 
-export const _internal = { decomposeRun, originRectangle, DEG };
+/**
+ * Measured (unsnapped) positions of a block's axis-aligned walls and corner
+ * rounds, read from its raw loops: `coordinate` returns the measured wall
+ * position nearest a snapped one, `radius` the measured round radius nearest
+ * a snapped one.
+ */
+function rawMeasures(raw: FittedLoop[], within: number): {
+  coordinate: (axis: 'x' | 'y', v: number) => number;
+  radius: (corners: Corner[], r: number) => number;
+} {
+  const xs: number[] = [];
+  const ys: number[] = [];
+  const arcs: number[] = [];
+  for (const l of raw) {
+    if (l.kind !== 'path') continue;
+    for (const seg of l.segments) {
+      const g = seg.geom;
+      if (g.kind === 'arc') arcs.push(g.r);
+      else if (Math.abs(g.dx) <= Math.sin(5 * DEG)) xs.push(g.px);
+      else if (Math.abs(g.dy) <= Math.sin(5 * DEG)) ys.push(g.py);
+    }
+  }
+  const nearest = (vals: number[], v: number) => {
+    let best = v;
+    let d = within;
+    for (const x of vals) {
+      if (Math.abs(x - v) <= d) {
+        d = Math.abs(x - v);
+        best = x;
+      }
+    }
+    return best;
+  };
+  return {
+    coordinate: (axis, v) => nearest(axis === 'x' ? xs : ys, v),
+    radius: (_corners, r) => nearest(arcs, r),
+  };
+}
+
+function num3(v: number): string {
+  const r = Math.round(v * 1000) / 1000;
+  return Object.is(r, -0) || r === 0 ? '0' : String(r);
+}
+
+export const _internal = { decomposeRun, DEG };

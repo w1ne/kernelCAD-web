@@ -242,16 +242,27 @@ export function fitLoop(xyIn: ArrayLike<number>, eps: number, guide?: LoopGuide)
         const tx = rotated[2 * (last % n)] - rotated[2 * first];
         const ty = rotated[2 * (last % n) + 1] - rotated[2 * first + 1];
         const sgn = geom.dx * tx + geom.dy * ty >= 0 ? 1 : -1;
-        // Direction from the wall plane; offset from the section points that
-        // lie on it (a plane fit can tilt a little where it borders a round).
+        // Direction from the wall plane; offset from the section it cuts (a
+        // plane fit can tilt a little where it borders a round), weighted by
+        // length: a sparse tessellated wall is one long chord, and the short
+        // chord of a blend facet grown into the region must not pull it.
         let ox = 0;
         let oy = 0;
-        for (let q = first; q <= last; q++) {
-          ox += rotated[2 * (q % n)];
-          oy += rotated[2 * (q % n) + 1];
+        let wsum = 0;
+        for (let q = first; q < last; q++) {
+          const ax = rotated[2 * (q % n)], ay = rotated[2 * (q % n) + 1];
+          const bx = rotated[2 * ((q + 1) % n)], by = rotated[2 * ((q + 1) % n) + 1];
+          const w = Math.hypot(bx - ax, by - ay);
+          ox += (w * (ax + bx)) / 2;
+          oy += (w * (ay + by)) / 2;
+          wsum += w;
         }
-        const cnt = last - first + 1;
-        segments.push({ geom: { kind: 'line', px: ox / cnt, py: oy / cnt, dx: geom.dx * sgn, dy: geom.dy * sgn }, first, last, fixed: true });
+        if (wsum <= 1e-12) {
+          ox = rotated[2 * first];
+          oy = rotated[2 * first + 1];
+          wsum = 1;
+        }
+        segments.push({ geom: { kind: 'line', px: ox / wsum, py: oy / wsum, dx: geom.dx * sgn, dy: geom.dy * sgn }, first, last, fixed: true });
       } else if (geom && geom.kind === 'circle') {
         let sweep = 0;
         let prev = Math.atan2(rotated[2 * first + 1] - geom.cy, rotated[2 * first] - geom.cx);

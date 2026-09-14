@@ -6,19 +6,19 @@
 // Measured fidelity vs the mesh: volume IoU 1.0000, max deviation 0.000 mm,
 // RMS 0.000 mm — verdict faithful (thresholds: IoU >= 0.98, max dev <= 0.25 mm).
 
+const length = param('length', 60, { min: 15, max: 240 }); // measured 59.9999
+const width = param('width', 40, { min: 10, max: 160 }); // measured 39.9999
 const thickness = param('thickness', 12, { min: 3, max: 48 });
-const width = param('width', 60, { min: 15, max: 240 }); // measured 59.9992
-const length = param('length', 40, { min: 10, max: 160 }); // measured 40.0022
 const holes1Diameter = param('holes1Diameter', 5.5, { min: 1.375, max: 22 }); // measured 5.4998
 const fillet1Radius = param('fillet1Radius', 5, { min: 1.25, max: 20 }); // measured 5.0008
 const fillet2Radius = param('fillet2Radius', 2, { min: 0.5, max: 8 }); // measured 2.0004
 
-// Block 1: extruded profile, z 0 → 12.
+// Block 1: rectangle profile (corner rounds are the fillet below), extruded z 0 → 12.
 const body = path()
   .moveTo(0, 0)
-  .lineTo(width, 0)
-  .lineTo(width, length)
-  .lineTo(0, length)
+  .lineTo(length, 0)
+  .lineTo(length, width)
+  .lineTo(0, width)
   .close()
   .extrude(thickness);
 

@@ -42,6 +42,61 @@
       "resolution": "open"
     },
     {
+      "id": "length",
+      "statement": "Profile size along X. Measured 60 mm, used as measured.",
+      "kind": "visible",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 60,
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "profileX1",
+      "statement": "Profile corner coordinate along X. Measured 6 mm, snapped to 6 mm (grid 1).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 6,
+      "confidence": 0.9920784600779378,
+      "resolution": "open"
+    },
+    {
+      "id": "width",
+      "statement": "Profile size along Y. Measured 45 mm, used as measured.",
+      "kind": "visible",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 45,
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "profileY1",
+      "statement": "Profile corner coordinate along Y. Measured 6 mm, snapped to 6 mm (grid 1).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 6,
+      "confidence": 0.9945310106093999,
+      "resolution": "open"
+    },
+    {
+      "id": "cornerRadius",
+      "statement": "Radius of the tangent corner rounds in the extruded profile. Measured 6 mm, snapped to 6 mm (grid 1).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 6,
+      "confidence": 0.9999799323805227,
+      "resolution": "open"
+    },
+    {
       "id": "height",
       "statement": "Extrusion length of the profile. Measured 30 mm, used as measured.",
       "kind": "visible",
@@ -199,5 +254,5 @@
       "resolution": "open"
     }
   ],
-  "unresolvedCount": 10
+  "unresolvedCount": 13
 }

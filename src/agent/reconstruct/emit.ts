@@ -11,8 +11,9 @@
 import { arcMidpoint, type ProfilePrim } from './profileFit';
 import { rotationToAxisAngle, type V3 } from './geom';
 import type { CanonicalFrame } from './frame';
-import type { FaceRef, FeaturePlan, LoopOut, Op } from './plan';
+import type { FaceRef, FeaturePlan, LoopOut, Op, ProfileOut } from './plan';
 import type { EdgeQueryOut } from './blends';
+import { shift, type CornerExpr } from './profileParams';
 
 export interface EmitContext {
   frame: CanonicalFrame;
@@ -65,6 +66,39 @@ function circleChain(cx: number, cy: number, r: number, indent: string): string 
 
 function loopChain(loop: LoopOut, indent: string): string {
   return loop.kind === 'circle' ? circleChain(loop.cx, loop.cy, loop.r, indent) : pathChain(loop.prims, indent);
+}
+
+/**
+ * A param-driven outline. A rounded corner is a line stopping one radius short
+ * of the corner and a tangent arc ending one radius past it, so the radius
+ * param and the dimension params stay independent.
+ */
+function cornersChain(corners: CornerExpr[], indent: string): string {
+  const at = (c: CornerExpr, side: 'in' | 'out'): string => {
+    if (c.r === undefined) return `${c.x}, ${c.y}`;
+    const d = side === 'in' ? [-c.inDir[0], -c.inDir[1]] : c.outDir;
+    return `${shift(c.x, c.r, d[0])}, ${shift(c.y, c.r, d[1])}`;
+  };
+  const lines = ['path()', `${indent}.moveTo(${at(corners[0], 'out')})`];
+  const visit = (c: CornerExpr) => {
+    lines.push(`${indent}.lineTo(${at(c, 'in')})`);
+    if (c.r !== undefined) lines.push(`${indent}.tangentArc(${at(c, 'out')})`);
+  };
+  corners.slice(1).forEach(visit);
+  if (corners[0].r !== undefined) visit(corners[0]);
+  lines.push(`${indent}.close()`);
+  return lines.join('\n');
+}
+
+function profileChain(p: ProfileOut, indent: string): string {
+  if (p.kind === 'corners') return cornersChain(p.corners, indent);
+  return [
+    'path()',
+    `${indent}.moveTo(${shift(p.cx, p.r, 1)}, ${p.cy})`,
+    `${indent}.threePointsArc(${shift(p.cx, p.r, -1)}, ${p.cy}, ${p.cx}, ${shift(p.cy, p.r, 1)})`,
+    `${indent}.threePointsArc(${shift(p.cx, p.r, 1)}, ${p.cy}, ${p.cx}, ${shift(p.cy, p.r, -1)})`,
+    `${indent}.close()`,
+  ].join('\n');
 }
 
 function paramRange(v: number): string {
@@ -123,22 +157,13 @@ export function emitScript(plan: FeaturePlan, ctx: EmitContext): string {
         zExpr.push(zn);
       }
       const varName = body.blocks.length === 1 ? 'body' : `block${k + 1}`;
-      const solids = blk.loops.map((loop) => {
-        if (blk.rect) {
-          return [
-            'path()',
-            '  .moveTo(0, 0)',
-            `  .lineTo(${blk.rect.wParam}, 0)`,
-            `  .lineTo(${blk.rect.wParam}, ${blk.rect.lParam})`,
-            `  .lineTo(0, ${blk.rect.lParam})`,
-            '  .close()',
-            `  .extrude(${blk.hParam})`,
-          ].join('\n');
-        }
-        return `${loopChain(loop, '  ')}\n  .extrude(${blk.hParam})`;
-      });
+      const solids = blk.profile
+        ? [`${profileChain(blk.profile, '  ')}\n  .extrude(${blk.hParam})`]
+        : blk.loops.map((loop) => `${loopChain(loop, '  ')}\n  .extrude(${blk.hParam})`);
       const placed = solids.map((s) => (k === 0 ? s : `${s}\n  .translate(0, 0, ${zExpr[k]})`));
-      out.push(`// Block ${k + 1}: extruded profile, z ${num(blk.z0)} → ${num(blk.z1)}.`);
+      const rounds = blk.rounds === 'arcs' ? ' with tangent corner rounds' : blk.rounds === 'fillet' ? ' (corner rounds are the fillet below)' : '';
+      const what = blk.outline === 'literal' ? 'profile in measured coordinates' : `${blk.outline} profile`;
+      out.push(`// Block ${k + 1}: ${what}${rounds}, extruded z ${num(blk.z0)} → ${num(blk.z1)}.`);
       if (placed.length === 1) out.push(`const ${varName} = ${placed[0]};`);
       else out.push(`const ${varName} = ${placed[0]}\n  .union(\n${placed.slice(1).map((s) => indentBlock(s, '    ')).join(',\n')},\n  );`);
     });

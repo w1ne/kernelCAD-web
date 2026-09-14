@@ -13,10 +13,11 @@
 //
 //    Expected output (committed as angle-bracket.reconstructed.kcad.ts and
 //    angle-bracket.reconstructed.ledger.json):
-//      verdict: faithful  volumeIoU=1.0000  maxDeviationMm=0.001  rmsMm=0.000  (faithful needs IoU >= 0.98, max dev <= 0.25 mm; pass 0)
+//      verdict: faithful  volumeIoU=1.0000  maxDeviationMm=0.000  rmsMm=0.000  (faithful needs IoU >= 0.98, max dev <= 0.25 mm; pass 0)
 //      body: extrude (1)  holes: crossHole1 1x Ø6.5 through, crossHole2 1x Ø6.5 through cb Ø11x3  fillets: none  cutouts: 0  boolean remainders: 0
-//      params: height=30, crossHole1Diameter=6.5, crossHole1Depth=6, crossHole2Diameter=6.5, crossHole2Depth=6, crossHole2CounterboreDiameter=11, crossHole2CounterboreDepth=3
-//      mesh: 3304 triangles, watertight=true; unmatched regions: 0; open ledger facts: 10
+//      profile: block 1 rectilinear, rounds as arcs
+//      params: length=60, profileX1=6, width=45, profileY1=6, cornerRadius=6, height=30, crossHole1Diameter=6.5, crossHole1Depth=6, crossHole2Diameter=6.5, crossHole2Depth=6, crossHole2CounterboreDiameter=11, crossHole2CounterboreDepth=3
+//      mesh: 3304 triangles, watertight=true; unmatched regions: 0; open ledger facts: 13
 //
 //    The mesh carried no feature history, yet the script it wrote has the
 //    L profile with its fillet, a counterbored hole entering the base leg's
