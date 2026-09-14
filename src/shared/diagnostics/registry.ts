@@ -27,7 +27,8 @@ export type DiagnosticGroup =
   | 'query'
   | 'kinematic'
   | 'mechanism'
-  | 'animation';
+  | 'animation'
+  | 'diff';
 
 export type DiagnosticSeverityLevel = 'info' | 'warn' | 'error';
 
@@ -509,13 +510,14 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'export',
     description: 'A link in the USD Isaac stage has a non-finite or non-positive mass and cannot be given a valid UsdPhysics MassAPI.',
   },
+  // Geometric diff (1)
   'diff.body.unmatched': {
     hintTemplate:
-      'A body present in one script evaluation could not be matched to a body in the other by name or position. Rename parts consistently across both scripts, or accept the unmatched body as added/removed in the diff report.',
+      'A body in one model has no counterpart in the other, so no per-body delta could be computed for it. Give the part the same assembly().part(name, ...) name on both sides, or read it from the diff report\'s `unmatched` list as a whole-body addition/removal.',
     nextAction: { kind: 'fix-arg', field: 'file' },
     defaultSeverity: 'warn',
-    group: 'export',
-    description: 'diff_geometry could not pair a body in evaluation A with a body in evaluation B by name or by positional order.',
+    group: 'diff',
+    description: 'diff_geometry could not pair a body in the baseline model with a body in the revised model, by name or by positional fallback.',
   },
   'export.srdf.acm-sparse-sampling': {
     hintTemplate:

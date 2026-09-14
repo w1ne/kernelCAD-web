@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 248 codes', () => {
+  it('emits exactly 251 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -59,8 +59,16 @@ describe('diagnostic catalogue invariants', () => {
     //   the script also placed — the URDF/mate convention mix, which displaces
     //   the child by the joint origin at every pose).
     //   = 248.
-    expect(DIAGNOSTIC_CODES).toHaveLength(248);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(248);
+    //  + 2 USD Isaac export fail-closed gates: export.usd.joint-unsupported
+    //    (a mate kind with no UsdPhysics joint equivalent) and
+    //    export.usd.mass-missing (a link whose mass-properties are non-finite
+    //    or non-positive, which PhysX rejects).
+    //  + 1 diff.body.unmatched (diff_geometry could not pair a body across the
+    //    two models by name or by positional fallback — the first code in the
+    //    new `diff` group).
+    //   = 251.
+    expect(DIAGNOSTIC_CODES).toHaveLength(251);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(251);
   });
 
   it('every code has a non-empty hint template', () => {
