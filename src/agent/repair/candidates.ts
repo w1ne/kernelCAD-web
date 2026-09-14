@@ -153,10 +153,14 @@ function recentreHoleOnFace(ctx: CandidateContext): RepairCandidate[] {
   if (targetBbox === undefined) return [];
   const size = bboxSize(targetBbox);
   const diameter = record.params.diameter?.evaluated ?? 0;
-  // Keep the whole bore inside the face: the anchor may reach the face
-  // half-extent less the bore radius.
-  const halfU = Math.max(0, size[axes[0]] / 2 - diameter / 2);
-  const halfV = Math.max(0, size[axes[1]] / 2 - diameter / 2);
+  // Keep the whole bore inside the face AND leave a wall around it. Clamping
+  // to "half-extent less the bore radius" alone parks the bore tangent to the
+  // face edge, which clears the no-op gate but cuts a notch instead of a hole.
+  // One further bore radius of wall is the smallest margin that still reads as
+  // a hole.
+  const wall = diameter / 2;
+  const halfU = Math.max(0, size[axes[0]] / 2 - diameter / 2 - wall);
+  const halfV = Math.max(0, size[axes[1]] / 2 - diameter / 2 - wall);
 
   const call = callOf(ctx);
   if (call === undefined) return [];
@@ -182,13 +186,14 @@ function recentreHoleOnFace(ctx: CandidateContext): RepairCandidate[] {
         diagnosticId: ctx.diagnosticId,
         code: ctx.diagnostic.code,
         featureId: record.id,
-        summary: `Clamp the hole anchor to the '${faceName}' face extent (u=${formatNumber(clampedU)}, v=${formatNumber(clampedV)}).`,
-        predictedEffect: 'the bore lands on the face and removes material',
+        summary: `Clamp the hole anchor onto the '${faceName}' face, one bore radius clear of its edge (u=${formatNumber(clampedU)}, v=${formatNumber(clampedV)}).`,
+        predictedEffect: 'the bore lands on the face with wall around it and removes material',
         patch,
         evidence: {
           faceName,
-          faceHalfExtentUmm: round(halfU, 4),
-          faceHalfExtentVmm: round(halfV, 4),
+          maxAnchorUmm: round(halfU, 4),
+          maxAnchorVmm: round(halfV, 4),
+          wallAroundBoreMm: round(wall, 4),
           requestedU: round(u, 4),
           requestedV: round(v, 4),
         },

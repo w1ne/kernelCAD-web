@@ -59,7 +59,8 @@ const CASES: RepairCase[] = [
     name: 'hole anchored off its entry face',
     code: "return box(20, 20, 20).hole('top', { u: 80, v: 0, diameter: 4, depth: 10 });",
     code_expected: 'feature.subtractive-noop',
-    expectInNewCode: 'u: 8',
+    // Face half-extent 10, less bore radius 2, less a 2 mm wall.
+    expectInNewCode: 'u: 6',
   },
   {
     name: 'edge selector pointing at a coordinate with no edges',
