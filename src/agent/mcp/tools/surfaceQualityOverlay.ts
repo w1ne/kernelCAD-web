@@ -120,7 +120,6 @@ export async function buildSurfaceQualityOverlay(args: {
   if (args.overlay === 'continuity') {
     const reports = inspectContinuity(loaded.shape);
     const byClass: Record<ContinuityClass, Tri[]> = { G0: [], G1: [], G2: [], broken: [] };
-    const bbox = mesh.faces[0].vertices;
     let minX = Infinity, maxX = -Infinity;
     for (const f of mesh.faces) {
       for (let i = 0; i < f.vertices.length; i += 3) {

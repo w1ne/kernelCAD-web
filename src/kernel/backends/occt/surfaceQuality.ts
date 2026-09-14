@@ -130,6 +130,7 @@ function classify(maxG0: number, maxG1: number, maxG2: number): ContinuityClass 
   return 'G2';
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- replicad-opencascadejs has no exported OC type
 function occtClassFromShape(value: { value?: number } | number | undefined, oc: any): ContinuityClass | undefined {
   if (value === undefined) return undefined;
   const v = typeof value === 'number' ? value : value.value;
@@ -207,19 +208,25 @@ export function evalSurfaceProps(face: Face, u: number, v: number): SurfaceProps
 function pcurveUv(edge: Edge, face: Face, t01: number): [number, number] | null {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
-  let c2d: { FirstParameter: () => number; LastParameter: () => number; Value: (u: number) => { X: () => number; Y: () => number }; delete: () => void } | undefined;
   try {
-    c2d = new oc.BRepAdaptor_Curve2d_2(wrappedOf(edge), wrappedOf(face));
-    const u0 = c2d.FirstParameter();
-    const u1 = c2d.LastParameter();
-    const p2d = c2d.Value(u0 + t01 * (u1 - u0));
-    const uv: [number, number] = [p2d.X(), p2d.Y()];
-    p2d.delete?.();
-    return uv;
+    const c2d = new oc.BRepAdaptor_Curve2d_2(wrappedOf(edge), wrappedOf(face)) as {
+      FirstParameter: () => number;
+      LastParameter: () => number;
+      Value: (u: number) => { X: () => number; Y: () => number; delete?: () => void };
+      delete?: () => void;
+    };
+    try {
+      const u0 = c2d.FirstParameter();
+      const u1 = c2d.LastParameter();
+      const p2d = c2d.Value(u0 + t01 * (u1 - u0));
+      const uv: [number, number] = [p2d.X(), p2d.Y()];
+      p2d.delete?.();
+      return uv;
+    } finally {
+      c2d.delete?.();
+    }
   } catch {
     return null;
-  } finally {
-    c2d?.delete();
   }
 }
 
