@@ -511,6 +511,12 @@ Contracts worth knowing:
 // `.reflect` and every 2D op compose on the result. Circular section curves
 // stay exact bulgeArc commands (a sectioned Ø10 hole is still Ø10).
 //
+// ALWAYS `await` these before chaining a Sketch method:
+//   const sec = await plate.sectionSketch('xy', 5); sec.extrude(3);   // correct
+//   plate.sectionSketch('xy', 5).extrude(3);                          // WRONG
+// The un-awaited form throws `feature.async-result.missing-await` naming
+// the fix, instead of a cryptic "extrude is not a function" TypeError.
+//
 // Exact planar cross-section. plane: 'xy'|'xz'|'yz', { plane, offset }, or
 // { origin, normal }. A boss-with-through-hole returns ONE sketch whose first
 // loop is the outer boundary and the rest are holes — a single .extrude(d)
@@ -868,6 +874,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 | ID | Trigger |
 |---|---|
 | assembly-connector-and-revolute-mate | The model has multiple mechanical parts (not a single fused body) that need a named pivot between them. Declare an axis connector on each part with partRef.connector(name, { type: 'axis', origin: { kind: 'vec3', value: [...] }, axis: [...] }), then join the connectors with arm.mate(name, 'partA.conn', 'partB.conn', 'revolute', { limitsDeg: [min, max] }). This is the canonical assembly-topology vocabulary for hinges, elbows, and any revolute joint — connector origins must use the tagged { kind: 'vec3', value: [...] } form, not a bare [x, y, z] array. |
+| async-sketch-await | You called shape.sectionSketch(...), .faceSketch(...), or .silhouette(...) and chained a Sketch method (.extrude, .revolve, .sweep, .loft, .reflect) directly on the result. All three producers are async and return Promise<Sketch> — chaining without awaiting throws feature.async-result.missing-await instead of silently doing the wrong thing. |
 | blind-pocket-from-top | You want a pocket cut into the top face only — the cylinder is shorter than the plate so it does not reach the bottom face. |
 | chamfer-rotated-face | You rotated a primitive and now want to chamfer one of its canonical faces by name (face-name semantics survive transforms). |
 | clamshell-hinge-two-part-assembly | You are modeling a laptop-lid-style clamshell hinge, or any assembly where one rigid body swings about a fixed pivot line on another rigid body. Declare a matching axis connector on both bodies along the physical hinge line, then join them with a revolute mate and limitsDeg to bound the swing angle. Relevant for hinge, revolute joint, or assembly with connectors and mates. |

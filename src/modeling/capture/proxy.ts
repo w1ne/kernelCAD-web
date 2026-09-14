@@ -1148,13 +1148,14 @@ export class Shape {
    * `feature.section.plane-misses-body` (recorded on the sketch metadata) when
    * the plane does not intersect the body.
    */
-  async sectionSketch(
+  sectionSketch(
     plane:
       | 'xy' | 'xz' | 'yz'
       | { plane: 'xy' | 'xz' | 'yz'; offset?: number }
       | { origin: [number, number, number]; normal: [number, number, number] },
     opts: { curveTolerance?: number } = {},
   ): Promise<import('./sketch').Sketch> {
+    const run = async (): Promise<import('./sketch').Sketch> => {
     const { sectionLoops } = await import('../../kernel/backends/occt/sketchFromShapeOps');
     const { cardinalFrame, makePlaneFrame } = await import('../../kernel/backends/occt/sketchFromShape');
     const backend = await this.lower();
@@ -1181,6 +1182,8 @@ export class Shape {
         sectionAreaMm2: extracted.areas[0] - extracted.areas.slice(1).reduce((acc, a) => acc + a, 0),
       },
     });
+    };
+    return guardAsyncSketchResult(run(), 'sectionSketch');
   }
 
   /**
@@ -1198,10 +1201,11 @@ export class Shape {
    *
    * Async: lowers the Shape and resolves the face at capture time.
    */
-  async faceSketch(
+  faceSketch(
     face: FaceSelector | CanonicalFace | string,
     opts: { curveTolerance?: number } = {},
   ): Promise<import('./sketch').Sketch> {
+    const run = async (): Promise<import('./sketch').Sketch> => {
     const { faceLoops } = await import('../../kernel/backends/occt/sketchFromShapeOps');
     const { makePlaneFrame } = await import('../../kernel/backends/occt/sketchFromShape');
     const { pickFace } = await import('../../kernel/backends/occt/edgeSelection');
@@ -1272,6 +1276,8 @@ export class Shape {
         holeCount: loops.length - 1,
       },
     });
+    };
+    return guardAsyncSketchResult(run(), 'faceSketch');
   }
 
   /**
@@ -1289,10 +1295,11 @@ export class Shape {
    *
    * Async: lowers the Shape at capture time.
    */
-  async silhouette(
+  silhouette(
     direction: [number, number, number] = [0, 0, 1],
     opts: { curveTolerance?: number } = {},
   ): Promise<import('./sketch').Sketch> {
+    const run = async (): Promise<import('./sketch').Sketch> => {
     const { silhouetteLoops } = await import('../../kernel/backends/occt/sketchFromShapeOps');
     const { makePlaneFrame, loopToCommands } = await import('../../kernel/backends/occt/sketchFromShape');
     if (!isValidVec3(direction) || Math.hypot(...direction) < 1e-9) {
@@ -1328,6 +1335,8 @@ export class Shape {
         direction,
       },
     });
+    };
+    return guardAsyncSketchResult(run(), 'silhouette');
   }
 
   /**
@@ -1523,6 +1532,43 @@ function normalizeFaceSelector(face: FaceSelector | CanonicalFace | string): Fac
     return normalizeTopoRefOrString(face, 'face') as FaceSelector;
   }
   return face;
+}
+
+/**
+ * Public method names on `Sketch` (kept in sync with `SKETCH_METHODS` in
+ * `src/agent/mcp/tools/listApi.ts`). Used only to decide which property
+ * accesses on an un-awaited `sectionSketch` / `faceSketch` / `silhouette`
+ * result should raise the actionable "missing await" diagnostic below.
+ */
+const SKETCH_METHOD_NAMES = new Set(['extrude', 'revolve', 'sweep', 'loft', 'reflect']);
+
+/**
+ * Wrap the Promise<Sketch> returned by an async Shape->Sketch producer
+ * (`sectionSketch`, `faceSketch`, `silhouette`) so that the common agent
+ * mistake of chaining a Sketch method directly on the un-awaited result —
+ * `part.sectionSketch('xy', 5).extrude(3)` — fails with an actionable
+ * `feature.async-result.missing-await` diagnostic instead of the cryptic
+ * `TypeError: sec.extrude is not a function`.
+ *
+ * `await`/`.then`/`.catch`/`.finally`/`Promise.all` etc. are untouched —
+ * the Proxy forwards every property that isn't a Sketch method name to the
+ * real Promise, bound to it.
+ */
+function guardAsyncSketchResult(promise: Promise<import('./sketch').Sketch>, methodName: string): Promise<import('./sketch').Sketch> {
+  return new Proxy(promise, {
+    get(target, prop) {
+      if (typeof prop === 'string' && SKETCH_METHOD_NAMES.has(prop)) {
+        return () => {
+          throw new KernelError(
+            'feature.async-result.missing-await',
+            `${methodName}() is async — write \`(await shape.${methodName}(...)).${prop}(...)\`.`,
+          );
+        };
+      }
+      const value = Reflect.get(target, prop, target);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  }) as Promise<import('./sketch').Sketch>;
 }
 
 /** Resolve the `sectionSketch` plane argument into a 2D frame. */

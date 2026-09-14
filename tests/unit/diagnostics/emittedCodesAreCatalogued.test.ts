@@ -203,7 +203,9 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       276.
     //  + 2 sketch-from-shape: feature.section.plane-misses-body,
     //       feature.face-sketch.non-planar = 278.
-    expect(catalogue.size).toBe(278);
+    //  + 1 feature.async-result.missing-await (un-awaited sectionSketch/
+    //       faceSketch/silhouette chained a Sketch method) = 279.
+    expect(catalogue.size).toBe(279);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

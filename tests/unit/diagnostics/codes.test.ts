@@ -82,8 +82,11 @@ describe('diagnostic catalogue invariants', () => {
     //   276.
     // + 2 sketch-from-shape: feature.section.plane-misses-body,
     //   feature.face-sketch.non-planar = 278.
-    expect(DIAGNOSTIC_CODES).toHaveLength(278);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(278);
+    // + 1 feature.async-result.missing-await (agent chained a Sketch method
+    //   directly on the un-awaited Promise<Sketch> from sectionSketch/
+    //   faceSketch/silhouette). = 279.
+    expect(DIAGNOSTIC_CODES).toHaveLength(279);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(279);
   });
 
   it('every code has a non-empty hint template', () => {

@@ -103,6 +103,14 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'A shape.faceSketch target face is non-planar or produced no closed boundary loops.',
   },
+  'feature.async-result.missing-await': {
+    hintTemplate:
+      'This method returns a Promise — chain it directly on the awaited value, e.g. `(await shape.sectionSketch(...)).extrude(...)`.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'await the async Shape method (sectionSketch/faceSketch/silhouette) before chaining a Sketch method on its result' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A Sketch/Shape method was accessed directly on the unresolved Promise returned by an async producer (sectionSketch/faceSketch/silhouette) instead of on the awaited value.',
+  },
   // 2D tangency constructions (2)
   'sketch.tangency.no-solution': {
     hintTemplate:
