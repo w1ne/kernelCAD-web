@@ -182,10 +182,110 @@ function samplePoints(from: RuntimeMesh, soup: TriangleSoup): { pts: Float64Arra
   return { pts, subsampled: vStride > 1 || cStride > 1 };
 }
 
+/**
+ * Uniform grid of triangle AABBs for exact nearest-triangle queries: cells are
+ * searched in growing Chebyshev rings and the search stops once no unvisited
+ * ring can hold anything closer than the best distance found. Same answer as
+ * scanning every triangle, without the O(samples × triangles) cost on dense
+ * meshes.
+ */
+class TriangleGrid {
+  readonly cells: Int32Array[];
+  readonly min: [number, number, number];
+  readonly cell: number;
+  readonly dims: [number, number, number];
+  readonly soup: TriangleSoup;
+  private readonly stamp: Int32Array;
+  private tick = 0;
+
+  constructor(soup: TriangleSoup, lo: [number, number, number], hi: [number, number, number]) {
+    this.soup = soup;
+    const ext = [hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]];
+    const diag = Math.hypot(ext[0], ext[1], ext[2]) || 1;
+    const vol = Math.max(ext[0], diag / 256) * Math.max(ext[1], diag / 256) * Math.max(ext[2], diag / 256);
+    this.cell = Math.max(diag / 256, 1.5 * Math.cbrt(vol / Math.max(1, soup.count)));
+    this.min = lo;
+    this.dims = [0, 1, 2].map((k) => Math.min(256, Math.max(1, Math.ceil(ext[k] / this.cell) + 1))) as [number, number, number];
+    const lists: number[][] = Array.from({ length: this.dims[0] * this.dims[1] * this.dims[2] }, () => []);
+    const b = soup.bounds;
+    for (let t = 0; t < soup.count; t++) {
+      const a0 = this.index(b[t * 6], 0), a1 = this.index(b[t * 6 + 3], 0);
+      const b0 = this.index(b[t * 6 + 1], 1), b1 = this.index(b[t * 6 + 4], 1);
+      const c0 = this.index(b[t * 6 + 2], 2), c1 = this.index(b[t * 6 + 5], 2);
+      for (let i = a0; i <= a1; i++) {
+        for (let j = b0; j <= b1; j++) {
+          for (let k = c0; k <= c1; k++) lists[(k * this.dims[1] + j) * this.dims[0] + i].push(t);
+        }
+      }
+    }
+    this.cells = lists.map((l) => Int32Array.from(l));
+    this.stamp = new Int32Array(soup.count);
+  }
+
+  private index(v: number, axis: 0 | 1 | 2): number {
+    return Math.max(0, Math.min(this.dims[axis] - 1, Math.floor((v - this.min[axis]) / this.cell)));
+  }
+
+  nearestSq(px: number, py: number, pz: number): number {
+    const soup = this.soup;
+    const ci = this.index(px, 0), cj = this.index(py, 1), ck = this.index(pz, 2);
+    const tick = ++this.tick;
+    let bestSq = Infinity;
+    const maxRing = Math.max(this.dims[0], this.dims[1], this.dims[2]);
+    for (let ring = 0; ring <= maxRing; ring++) {
+      for (let i = ci - ring; i <= ci + ring; i++) {
+        if (i < 0 || i >= this.dims[0]) continue;
+        for (let j = cj - ring; j <= cj + ring; j++) {
+          if (j < 0 || j >= this.dims[1]) continue;
+          for (let k = ck - ring; k <= ck + ring; k++) {
+            if (k < 0 || k >= this.dims[2]) continue;
+            if (Math.max(Math.abs(i - ci), Math.abs(j - cj), Math.abs(k - ck)) !== ring) continue;
+            const list = this.cells[(k * this.dims[1] + j) * this.dims[0] + i];
+            for (let n = 0; n < list.length; n++) {
+              const t = list[n];
+              if (this.stamp[t] === tick) continue;
+              this.stamp[t] = tick;
+              if (pointAabbDistanceSq(px, py, pz, soup.bounds, t * 6) >= bestSq) continue;
+              const o = t * 9;
+              const dSq = pointTriangleDistanceSq(
+                px, py, pz,
+                soup.verts[o], soup.verts[o + 1], soup.verts[o + 2],
+                soup.verts[o + 3], soup.verts[o + 4], soup.verts[o + 5],
+                soup.verts[o + 6], soup.verts[o + 7], soup.verts[o + 8],
+              );
+              if (dSq < bestSq) bestSq = dSq;
+            }
+          }
+        }
+      }
+      // Everything outside this ring is at least ring × cell away (the query
+      // point is clamped into the grid, which spans both meshes).
+      const reach = ring * this.cell;
+      if (bestSq <= reach * reach) break;
+    }
+    return bestSq;
+  }
+}
+
+function boundsOf(soups: TriangleSoup[]): { lo: [number, number, number]; hi: [number, number, number] } {
+  const lo: [number, number, number] = [Infinity, Infinity, Infinity];
+  const hi: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+  for (const s of soups) {
+    for (let t = 0; t < s.count; t++) {
+      for (let k = 0; k < 3; k++) {
+        lo[k] = Math.min(lo[k], s.bounds[t * 6 + k]);
+        hi[k] = Math.max(hi[k], s.bounds[t * 6 + 3 + k]);
+      }
+    }
+  }
+  return { lo, hi };
+}
+
 function oneSided(
   from: RuntimeMesh,
   fromSoup: TriangleSoup,
   soup: TriangleSoup,
+  grid: TriangleGrid,
 ): { max: number; sum: number; sumSq: number; samples: number; subsampled: boolean } {
   const { pts, subsampled } = samplePoints(from, fromSoup);
   const pointCount = pts.length / 3;
@@ -193,23 +293,12 @@ function oneSided(
   let sum = 0;
   let sumSq = 0;
   let samples = 0;
+  void soup;
   for (let i = 0; i < pointCount; i++) {
     const px = pts[i * 3];
     const py = pts[i * 3 + 1];
     const pz = pts[i * 3 + 2];
-    let bestSq = Infinity;
-    for (let t = 0; t < soup.count; t++) {
-      if (pointAabbDistanceSq(px, py, pz, soup.bounds, t * 6) >= bestSq) continue;
-      const o = t * 9;
-      const dSq = pointTriangleDistanceSq(
-        px, py, pz,
-        soup.verts[o], soup.verts[o + 1], soup.verts[o + 2],
-        soup.verts[o + 3], soup.verts[o + 4], soup.verts[o + 5],
-        soup.verts[o + 6], soup.verts[o + 7], soup.verts[o + 8],
-      );
-      if (dSq < bestSq) bestSq = dSq;
-      if (bestSq === 0) break;
-    }
+    const bestSq = grid.nearestSq(px, py, pz);
     if (bestSq !== Infinity) {
       const d = Math.sqrt(bestSq);
       if (d > max) max = d;
@@ -234,8 +323,9 @@ export function meshDeviation(a: RuntimeMesh, b: RuntimeMesh): MeshDeviationResu
   }
   const soupA = toSoup(a);
   const soupB = toSoup(b);
-  const ab = oneSided(a, soupA, soupB);
-  const ba = oneSided(b, soupB, soupA);
+  const { lo, hi } = boundsOf([soupA, soupB]);
+  const ab = oneSided(a, soupA, soupB, new TriangleGrid(soupB, lo, hi));
+  const ba = oneSided(b, soupB, soupA, new TriangleGrid(soupA, lo, hi));
   const samples = ab.samples + ba.samples;
   return {
     maxDeviationMm: Math.max(ab.max, ba.max),

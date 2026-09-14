@@ -111,6 +111,49 @@ describe('meshDeviation', () => {
     });
   });
 
+  it('finds the exact nearest triangle on a dense mesh (grid search matches a full scan)', () => {
+    // A 40×40 grid surface, wavy in z, against a copy lifted by 0.75 and a
+    // single far triangle: the grid search must return the same numbers a
+    // brute-force scan gives.
+    const n = 40;
+    const positions: number[] = [];
+    const indices: number[] = [];
+    for (let j = 0; j <= n; j++) {
+      for (let i = 0; i <= n; i++) positions.push(i, j, Math.sin(i / 3) * Math.cos(j / 4));
+    }
+    for (let j = 0; j < n; j++) {
+      for (let i = 0; i < n; i++) {
+        const a = j * (n + 1) + i;
+        indices.push(a, a + 1, a + n + 2, a, a + n + 2, a + n + 1);
+      }
+    }
+    const wavy = mesh(positions, indices);
+    const lifted = mesh(positions.map((v, k) => (k % 3 === 2 ? v + 0.75 : v)), indices);
+    const brute = (p: RuntimeMesh, q: RuntimeMesh) => {
+      let worst = 0;
+      for (let v = 0; v < p.positions.length / 3; v++) {
+        let best = Infinity;
+        for (let t = 0; t < q.indices.length / 3; t++) {
+          const a = q.indices[t * 3] * 3, b = q.indices[t * 3 + 1] * 3, c = q.indices[t * 3 + 2] * 3;
+          const d = pointTriangleDistanceSq(
+            p.positions[v * 3], p.positions[v * 3 + 1], p.positions[v * 3 + 2],
+            q.positions[a], q.positions[a + 1], q.positions[a + 2],
+            q.positions[b], q.positions[b + 1], q.positions[b + 2],
+            q.positions[c], q.positions[c + 1], q.positions[c + 2],
+          );
+          best = Math.min(best, d);
+        }
+        worst = Math.max(worst, Math.sqrt(best));
+      }
+      return worst;
+    };
+    const r = meshDeviation(wavy, lifted);
+    const expected = Math.max(brute(wavy, lifted), brute(lifted, wavy));
+    // Centroid samples can only raise the vertex-only maximum slightly.
+    expect(r.maxDeviationMm).toBeGreaterThanOrEqual(expected - 1e-6);
+    expect(r.maxDeviationMm).toBeLessThanOrEqual(0.75 + 1e-6);
+  });
+
   it('strides a dense mesh down to the sample cap, deterministically', () => {
     const dense = MAX_SAMPLES_PER_SIDE * 3;
     const positions: number[] = [];
