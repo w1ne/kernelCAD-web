@@ -42,6 +42,8 @@ const EMITTING_FILES = [
   'modeling/validation/unstructuredBodies.ts', // agent-parts-discipline
   'agent/cli/commands/evaluate.ts',
   'agent/cli/commands/export.ts',
+  'agent/mcp/tools/inspectContinuity.ts',
+  'agent/mcp/tools/inspectCurvature.ts',
   'agent/script-runtime/export.ts',
   'kernel/naming/resolveFaceRef.ts',
   'kernel/backends/occt/drawingAnnotations.ts',
@@ -76,7 +78,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     ).toEqual([]);
   });
 
-  it('catalogue has exactly 276 codes', () => {
+  it('catalogue has exactly 279 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -201,7 +203,9 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  + 4 USD physics export and geometry diff: export.usd.joint-unsupported,
     //       export.usd.pose-unsolved, export.usd.mass-missing, diff.body.unmatched =
     //       276.
-    expect(catalogue.size).toBe(276);
+    //  + 3 surface-quality inspect: inspect.continuity.g1-break,
+    //       inspect.continuity.broken, inspect.curvature.spike = 279.
+    expect(catalogue.size).toBe(279);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

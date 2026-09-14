@@ -19,6 +19,8 @@ import { getBendTableTool } from './getBendTable';
 import { paramsListTool } from './paramsList';
 import { listPartCategoriesTool } from './listPartCategories';
 import { listPartFamiliesTool } from './listPartFamilies';
+import { inspectContinuityTool } from './inspectContinuity';
+import { inspectCurvatureTool } from './inspectCurvature';
 
 /** The introspection subject. Each value maps 1:1 to a dedicated reader. */
 export type InspectOf =
@@ -40,7 +42,9 @@ export type InspectOf =
   | 'bend-table'
   | 'params'
   | 'part-categories'
-  | 'part-families';
+  | 'part-families'
+  | 'continuity'
+  | 'curvature';
 
 export interface InspectInput {
   of: InspectOf;
@@ -51,6 +55,8 @@ export interface InspectInput {
    * - shape/topology/features/face-labels: { feature_id? }
    * - edges/faces: { feature_id?, query? }   (EdgeQuery / FaceQuery)
    * - face-edges: { feature_id?, face_name }  (canonical face name; required)
+   * - continuity: { feature_id?, edges? }    (EdgeQuery or @kc[...] refs)
+   * - curvature: { feature_id?, faces? }     (FaceQuery or @kc[...] refs)
    */
   [key: string]: unknown;
 }
@@ -105,12 +111,17 @@ export function inspectTool(input: InspectInput): Promise<unknown> {
       return listPartCategoriesTool();
     case 'part-families':
       return listPartFamiliesTool(rest as unknown as Parameters<typeof listPartFamiliesTool>[0]);
+    case 'continuity':
+      return inspectContinuityTool(rest as unknown as Parameters<typeof inspectContinuityTool>[0]);
+    case 'curvature':
+      return inspectCurvatureTool(rest as unknown as Parameters<typeof inspectCurvatureTool>[0]);
     default:
       return Promise.reject(
         new Error(
           `Unknown inspect subject: ${String(of)}. Valid: assembly, robot, step, shape, mass, ` +
             `features, assemblies, topology, edges, face-edges, faces, face-labels, mates, ` +
-            `constraints, part-stats, bend-table, params, part-categories, part-families.`,
+            `constraints, part-stats, bend-table, params, part-categories, part-families, ` +
+            `continuity, curvature.`,
         ),
       );
   }

@@ -155,6 +155,22 @@ const bridge = hermiteG2(
 - `feature.hermite-g2.non-finite-input` (error) — any `NaN`/`Infinity` in `point`, `tangent`, or `curvature`. Hint: confirm every Vec3 entry is a finite number.
 - `feature.hermite-g2.degenerate-tangent` (error) — tangent magnitude < 1e-12 on either endpoint. Hint: pass a non-zero tangent vector; for a unit start direction, scale by chord length.
 
+## Surface quality — continuity, curvature, zebra
+
+Numeric evidence first, visuals second. After a fillet, a G2 blend, or a NURBS thicken, ask:
+
+```
+inspect({ of: 'continuity', file })   // shared edges: G0 / G1 / G2 / broken
+inspect({ of: 'curvature', file })    // per-face Gaussian + mean curvature
+render_preview({ file, overlay: 'zebra', views: ['iso'], width: 512, height: 512 })
+```
+
+`inspect({ of: 'continuity' })` samples each shared edge: position gap (G0, mm), normal angle (G1, deg), curvature difference (G2). A box corner is G0 only (90° normal jump). A default fillet-to-face edge is G1 not G2 (the cylinder's mean curvature 1/(2r) does not match the plane). A G2 blend — `sew(nurbsSurface(...).split(cutter))` of a C2 patch, or `continuity: 'G2'` on NURBS-adjacent fillets — classifies G2. Diagnostics: `inspect.continuity.g1-break`, `inspect.continuity.broken`.
+
+`inspect({ of: 'curvature' })` reports min/max/mean Gaussian and mean curvature, inflections, spikes. Analytic: sphere K = 1/r²; cylinder K = 0 and |H| = 1/(2r). Diagnostic: `inspect.curvature.spike`.
+
+`render_preview({ overlay: 'zebra' | 'curvature' | 'continuity' })` draws those numbers — zebra from vertex normals vs a view-aligned stripe direction, curvature as vertex colours (FEA heatmap path), continuity edges coloured G2 green / G1 yellow / G0 orange / broken red. CLI: `kernelcad inspect continuity <file.kcad.ts>` and `kernelcad inspect curvature <file.kcad.ts>`.
+
 ## G1/G2 fillet continuity (Slice C)
 
 `Shape.fillet(radius, edges?, { continuity })` accepts `'G1'` (default — tangent-continuous polynomial blend, `ChFi3d_Polynomial`) and `'G2'` (curvature-continuous rational blend, `ChFi3d_Rational`). `'G2'` is preferred on edges adjacent to a NURBS surface (from `surfaceFromBoundary` / `nurbsSurface` / `surfaceFromCurves`) so the blend does not introduce a visible curvature crease at the surface-to-fillet boundary.

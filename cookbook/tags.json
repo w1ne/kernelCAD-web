@@ -52,5 +52,6 @@
   "diff",
   "cutout",
   "compare",
-  "revision"
+  "revision",
+  "continuity"
 ]
