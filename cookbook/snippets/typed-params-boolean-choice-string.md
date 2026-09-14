@@ -1,16 +1,15 @@
 ---
 id: typed-params-boolean-choice-string
 title: Boolean, choice, and string script params (beyond numeric param())
-tags: [parameter, hole, typed-params, choice-param, boolean-feature-toggle]
+tags: [parameter, typed-params, choice-param, boolean-feature-toggle]
 keywords:
-  - boolean param toggles a feature
-  - choice param drives a hole diameter lookup
-  - string param drives sketch text
+  - boolean param toggles a feature on and off
+  - choice param with a closed set of named options
+  - string param drives sketch text content
   - param() with choices meta
   - editable text label param
-  - fastener size dropdown
   - HasLid toggle
-  - typed script parameters
+  - typed script parameters beyond numbers
 when_to_use: >-
   A `.kcad.ts` script needs an editable value that isn't a plain number:
   a feature on/off switch (`param('HasLid', true)`), a closed set of

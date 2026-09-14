@@ -137,7 +137,7 @@ describe('paramsEndpoint', () => {
     expect(JSON.parse(res.body).error).toMatch(/edits/);
   });
 
-  it('returns 400 when an edit value is not number or boolean', async () => {
+  it('returns 400 when an edit value is not number, boolean, or string', async () => {
     const pool = createSessionPool({
       build: async () => fakeBuiltModelWithUpdate(async () => ({})),
       ttlMs: 60_000,
@@ -147,11 +147,27 @@ describe('paramsEndpoint', () => {
     const res = createFakeRes();
     await handler(reqWith(
       `/__kernelcad/params?session=${entry.token}`,
-      { edits: [{ name: 'w', value: 'big' }] },
+      { edits: [{ name: 'w', value: { nested: true } }] },
     ), res);
 
     expect(res.statusCode).toBe(400);
     expect(JSON.parse(res.body).error).toMatch(/value/);
+  });
+
+  it('accepts a string edit value (choice/string typed params)', async () => {
+    const pool = createSessionPool({
+      build: async () => fakeBuiltModelWithUpdate(async () => ({})),
+      ttlMs: 60_000,
+    });
+    const entry = await pool.getOrCreate('/abs/x.kcad.ts');
+    const handler = createParamsEndpoint({ pool });
+    const res = createFakeRes();
+    await handler(reqWith(
+      `/__kernelcad/params?session=${entry.token}`,
+      { edits: [{ name: 'Screw', value: 'M5' }] },
+    ), res);
+
+    expect(res.statusCode).not.toBe(400);
   });
 
   it('returns 422 with hint when params.update throws KernelError-shaped error', async () => {
