@@ -147,3 +147,102 @@ describe('exportSvgDrawing', () => {
     expect(decode(mk())).toBe(decode(mk()));
   });
 });
+
+// ---------------------------------------------------------------------------
+// Section views (options.sections)
+// ---------------------------------------------------------------------------
+
+describe('exportSvgDrawing sections', () => {
+  beforeAll(async () => {
+    await initOcct();
+  });
+
+  /** 60x40x20 block with a vertical through-bore centered in plan, so a
+   *  mid-height horizontal section ('xy' plane) slices straight through the
+   *  bore — the cut face is a true annulus (outer rectangle wire + inner
+   *  circular wire), exercising the hole-in-hatch (evenodd) path. */
+  const boredBlock = () => [{
+    name: 'block',
+    shape: OcctBackend.box(60, 40, 20).subtract(OcctBackend.cylinder(22, 6).translate(30, 20, -1)),
+  }];
+
+  it('leaves a no-sections drawing byte-identical to before the feature existed', () => {
+    const golden = decode(exportSvgDrawing(
+      [{ name: 'block', shape: OcctBackend.box(60, 40, 20) }],
+      { format: 'svg-drawing', modelName: 'block' },
+    ));
+    // No section band: standard a4 dimensions, no hatch defs, no section view.
+    expect(golden).toContain('viewBox="0 0 297 210"');
+    expect(golden).not.toContain('kc-section-hatch');
+    expect(golden).not.toContain('id="view-section-');
+  });
+
+  it('grows the sheet, cuts real geometry, and hatches the true cross-section', () => {
+    const svg = decode(exportSvgDrawing(boredBlock(), {
+      format: 'svg-drawing',
+      modelName: 'block',
+      sections: [{ plane: 'xy', label: 'A' }],
+    }));
+    // Sheet grew to fit the reserved section band.
+    expect(svg).toContain('viewBox="0 0 297 280"');
+    expect(svg).toContain('width="297mm" height="280mm"');
+    // Hatch pattern defined once, referenced by the cut face fill.
+    expect(svg).toContain('<pattern id="kc-section-hatch"');
+    expect(svg).toContain('fill="url(#kc-section-hatch)"');
+    // The bore passing through the cut plane leaves a hole in the hatch:
+    // evenodd fill-rule with an outer + inner wire in the same path.
+    expect(svg).toContain('fill-rule="evenodd"');
+    const hatchPath = svg.match(/<path d="([^"]*)" fill="url\(#kc-section-hatch\)"/)?.[1];
+    expect(hatchPath).toBeDefined();
+    expect((hatchPath!.match(/M /g) ?? []).length).toBeGreaterThanOrEqual(2);
+    // Section view cell present with its caption.
+    const sectionView = viewGroup(svg, 'section-A');
+    expect(sectionView).toContain('data-view="section-A"');
+    expect(svg).toContain('>SECTION A-A</text>');
+    // Cutting-plane indicator (dashed line + arrows + letter) on the parent
+    // (front) view — a horizontal 'xy' cut is edge-on there.
+    expect(svg).toContain('class="section-plane-indicator"');
+    expect((svg.match(/>A<\/text>/g) ?? []).length).toBeGreaterThanOrEqual(2); // two arrow-end letters
+  });
+
+  it('fails with drawing.section.plane-misses-body when the plane misses the bounding box', () => {
+    try {
+      exportSvgDrawing(boredBlock(), {
+        format: 'svg-drawing',
+        sections: [{ plane: { origin: [0, 0, 999], normal: [0, 0, 1] }, label: 'A' }],
+      });
+      expect.unreachable();
+    } catch (e) {
+      expect((e as { code?: string }).code).toBe('drawing.section.plane-misses-body');
+    }
+  });
+
+  it('rejects an oblique (non-axis-aligned) cutting plane rather than mis-rendering it', () => {
+    expect(() => exportSvgDrawing(boredBlock(), {
+      format: 'svg-drawing',
+      sections: [{ plane: { origin: [30, 20, 10], normal: [1, 1, 1] }, label: 'A' }],
+    })).toThrow(/not axis-aligned/);
+  });
+
+  it('renders more than one section, each with its own letter', () => {
+    const svg = decode(exportSvgDrawing(boredBlock(), {
+      format: 'svg-drawing',
+      sections: [
+        { plane: 'xy', label: 'A' },
+        { plane: 'yz', label: 'B' },
+      ],
+    }));
+    expect(svg).toContain('id="view-section-A"');
+    expect(svg).toContain('id="view-section-B"');
+    expect(svg).toContain('>SECTION A-A</text>');
+    expect(svg).toContain('>SECTION B-B</text>');
+  });
+
+  it('is byte-deterministic with sections', () => {
+    const mk = () => decode(exportSvgDrawing(boredBlock(), {
+      format: 'svg-drawing',
+      sections: [{ plane: 'xy', label: 'A' }],
+    }));
+    expect(mk()).toBe(mk());
+  });
+});

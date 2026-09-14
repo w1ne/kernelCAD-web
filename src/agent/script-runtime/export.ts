@@ -12,7 +12,9 @@ import { export3mfAsync, type Export3mfOptions } from '../../kernel/backends/occ
 import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occt/exportGlb';
 import { exportSvgDrawing, type SvgDrawingOptions } from '../../kernel/backends/occt/exportSvgDrawing';
 import type { DrawingAnnotation } from '../../kernel/backends/occt/drawingAnnotations';
+import type { DrawingSectionSpec } from '../../kernel/backends/occt/drawingSections';
 export type { DrawingAnnotation, DrawingAnchor } from '../../kernel/backends/occt/drawingAnnotations';
+export type { DrawingSectionSpec, SectionPlane } from '../../kernel/backends/occt/drawingSections';
 import { sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { flattenPattern } from '../../kernel/backends/occt/flattenPattern';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
@@ -43,6 +45,8 @@ export type ExportOptions =
       date?: string;
       /** Authored dimensions / notes; replaces the automatic bbox dimensions. */
       annotations?: readonly DrawingAnnotation[];
+      /** Cutting-plane section views — see the kernelcad-drawings skill. */
+      sections?: readonly DrawingSectionSpec[];
     }
   | { format: 'urdf' }
   | { format: 'srdf' }
@@ -303,8 +307,9 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
     const drawingParts: WorldFramePart[] = isSceneBackend(lowered)
       ? sceneToWorldFrameParts(lowered)
       : [{ name: 'part', shape: lowered as OcctBackend }];
-    const bytes = exportSvgDrawing(drawingParts, { ...opts, modelName });
-    return { bytes, featureCount, diagnostics: r.diagnostics };
+    const drawingDiagnostics: CompilerDiagnostic[] = [];
+    const bytes = exportSvgDrawing(drawingParts, { ...opts, modelName }, drawingDiagnostics);
+    return { bytes, featureCount, diagnostics: [...r.diagnostics, ...drawingDiagnostics] };
   }
 
   // Scene-aware path: STEP/3MF/GLB keep per-part identity. STL is a single
