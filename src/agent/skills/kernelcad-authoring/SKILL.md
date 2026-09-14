@@ -195,7 +195,7 @@ sphere(r: number): Shape;  // faceLabels NOT accepted — sphere has no canonica
 // Extrusion helpers — profile defined inline, extruded along Z.
 extrudeRect(w: number, h: number, height: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
 extrudeCircle(r: number, height: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
-extrudePolygon(points: [number, number][], depth: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
+extrudePolygon(points: Array<[Editable<number>, Editable<number>]>, depth: Editable<number>, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
 extrudeRoundedRect(width: number, height: number, radius: number, depth: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
 
 // Path builder — chain moveTo / lineTo / arcs / .close() to get a Sketch. For
@@ -210,7 +210,9 @@ union(...shapes: Shape[]): Shape;
 // Call .model() to return one fused/exportable Shape of all placed parts.
 assembly(name?: string): Assembly;
 
-// Polyline helix rail for Sketch.sweep.
+// Helix rail for Sketch.sweep. radius / pitch / turns / startAngle accept
+// Editable<number>; the rail remembers them, so a sweep along it follows param
+// changes and sweep(rail, { spine: 'helix' }) can build the exact helix.
 helix({ radius, pitch, turns, axis?, pointsPerTurn?, startAngle? }): [number, number, number][];
 
 // Edge selection — lowers the shape lazily (awaitable).
@@ -518,12 +520,12 @@ Contracts worth knowing:
 A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape` (or another `Sketch` for `reflect`).
 
 ```typescript
-// Extrude closed sketch normal to its plane by `depth` (mm):
-.extrude(depth: number): Shape
+// Extrude closed sketch normal to its plane by `depth` (mm; number or ParamRef):
+.extrude(depth: Editable<number>): Shape
 
-// Revolve 360 degrees around the Z axis.
+// Revolve around the Z axis (360 degrees unless angleDeg; number or ParamRef).
 // Profile coords are (radial-X, axial-Z); all x >= 0.
-.revolve(): Shape
+.revolve(opts?: { angleDeg?: Editable<number> }): Shape
 
 // Sweep this profile along a 3D rail.
 // spine: 'polyline' (default) keeps real corners — pipe runs, L-bends;
@@ -532,28 +534,33 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 //   profile at the rail start — REQUIRED for rails that sample a smooth curve
 //   (helix(...), threads, organic paths). A polyline spine on a dense smooth rail
 //   produces per-segment tubes that do not sew and fail the watertight export verify.
+// spine: 'helix' (rails from helix(...) only) sweeps along the EXACT helix by
+//   screw motion — the mode for threads, worms and helical grooves. The profile is
+//   read in the AXIAL plane through the rail start: profile x = radial offset from
+//   the helix point (+ = away from the axis), profile y = offset along the axis. A
+//   60° ISO V thread section sweeps to a valid solid. Keep the profile's axial
+//   extent below the pitch and off the axis, or lowering fails with
+//   feature.invalid-args. frenet / transitionMode do nothing here.
 // frenet: true rotates the profile with the rail curvature.
-.sweep(rail: [number, number, number][], opts?: { frenet?: boolean; transitionMode?: 'right' | 'transformed' | 'round'; spine?: 'polyline' | 'smooth' }): Shape
+.sweep(rail: [number, number, number][], opts?: { frenet?: boolean; transitionMode?: 'right' | 'transformed' | 'round'; spine?: 'polyline' | 'smooth' | 'helix' }): Shape
 
 // Loft through one or more additional sections to produce a 3D solid.
 // Use for nozzles (round-to-square), wings, fairings, transition pieces.
 // opts.spacing z-stacks sections axially; opts.planes overrides with explicit per-section placement.
 .loft(other: Sketch | Sketch[], opts?: {
-  spacing?: number;
-  planes?: { plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number] }[];
+  spacing?: Editable<number>;
+  planes?: { plane: 'XY' | 'YZ' | 'XZ'; origin: [Editable<number>, Editable<number>, Editable<number>] }[];
   ruled?: boolean;
-  startPoint?: [number, number];
-  endPoint?: [number, number];
+  startPoint?: [Editable<number>, Editable<number>, Editable<number>];
+  endPoint?: [Editable<number>, Editable<number>, Editable<number>];
 }): Shape
 
 // Reflect this sketch's path across an axis, returning a new Sketch.
 // 'x' negates y-coords; 'y' negates x-coords; { axis, offset } reflects across a parallel axis.
-// Arc winding is inverted automatically. Labels are preserved.
-// Limitation: any ParamRef coords in the source path are resolved to numeric
-// values at reflect time, so the reflected sketch does not track param edits
-// for the reflected coords. Author the reflected path directly (or split into
-// halves and union them) when you need full param tracking on both halves.
-.reflect(axis: 'x' | 'y' | { axis: 'x' | 'y'; offset: number }): Sketch
+// Arc winding is inverted automatically. Labels are preserved. Reflection stays
+// symbolic: ParamRef coords (and a ParamRef offset) reflect to ParamRef
+// expressions, so the reflected sketch tracks param edits.
+.reflect(axis: 'x' | 'y' | { axis: 'x' | 'y'; offset: Editable<number> }): Sketch
 ```
 
 ### PathBuilder methods
@@ -580,7 +587,7 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 
 `tangentCircle` / `tangentLine` take entities of the form `{ kind: 'line', from: [x,y], to: [x,y] }` (an INFINITE line; `from`->`to` sets direction) or `{ kind: 'circle', center: [x,y], radius }`, each with an optional `side: 'outside'` (default) `| 'enclosed' | 'enclosing' | 'unqualified'`. Points are not supported — the bundled OCCT does not bind `Handle_Geom2d_Point`. These constructions have SEVERAL solutions (a radius-r circle tangent to two perpendicular lines has four, one per quadrant). `side` filters first, `opts.near: [x,y]` then picks the closest solution, and if more than one still survives the build FAILS with `sketch.tangency.ambiguous` listing every candidate rather than guessing. No such construction existing fails with `sketch.tangency.no-solution` naming the geometric reason.
 
-Every PathBuilder coord and scalar accepts `Editable<number>` (`number | ParamRef<number>`), so symbolic params survive into capture and the dispatcher's pre-resolve substitutes them at lower time — **except `.circle(cx, cy, r, segments?)`, which takes plain numbers**. Passing a ParamRef to `.circle` fails at capture with "all of cx, cy, r must be finite numbers"; build a parametric circle with `.moveTo`/`.tangentArc`, or drive the radius through a param on an enclosing feature. Build derived dimensions with the ParamRef arithmetic methods (`.add`, `.subtract`, `.multiply`, `.divide`, `.negate`).
+Every PathBuilder coord and scalar accepts `Editable<number>` (`number | ParamRef<number>`), so symbolic params survive into capture and the dispatcher's pre-resolve substitutes them at lower time. That includes `.circle(cx, cy, r, segments?)` (each vertex is captured as `cx + r·cos θ`; `segments` stays a plain integer), `tangentCircle` / `tangentLine` entity coordinates and radii, and the `extrude` / `revolve` / `loft` / `reflect` scalars above. Capture-time checks read the param's current value, not a placeholder. Raw `sweep` rail arrays stay numeric; a rail from `helix(...)` is the parametric one. Build derived dimensions with the ParamRef arithmetic methods (`.add`, `.subtract`, `.multiply`, `.divide`, `.negate`).
 
 ### 2D text (sketch.text)
 
@@ -876,7 +883,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 - Always `return` a single shape from the top of the script — the kernelCAD CLI exports whatever you return. Only the returned shape is honored by export / probe / measurement surfaces; "the last thing I created" is NOT a fallback you can rely on — mutating transforms (`.translate()`, `.rotate()`) re-use their record, and any helper shape created after the main body silently becomes the newest record. If a probe reports the same bbox no matter what you edit, you are measuring a stale or decoy record: check what the script returns.
 - For symmetric parts, prefer `.mirror(plane)` (union of source + reflection) over manual duplication. Use `.reflect(plane)` when you only want the reflected geometry without the original.
 - In booleans, prefer ≥0.1 mm of overlap (unions) or offset (subtractions/clearances) over exact tangency or coincidence between solids — exact-tangent junctions stress the export mesher; the export pipeline heals the resulting cracks, but offsets keep meshes clean at the source.
-- For helical features (coils, springs, threads), generate the rail with `helix(...)` and sweep a closed `path()` profile with `spine: 'smooth'` — the dense helix rail needs a single B-spline spine to produce a sewn, watertight tube; the default polyline spine emits per-segment tubes that fail the watertight export verify. `frenet` is unnecessary with a smooth spine.
+- For helical features, generate the rail with `helix(...)`. Threads, worms and helical grooves: sweep the cross-section with `spine: 'helix'` (exact helix, profile in the axial plane, a 60° V builds valid). Coils and springs with a round wire: `spine: 'smooth'` also works — the dense rail needs a single spine to produce a sewn, watertight tube; the default polyline spine emits per-segment tubes that fail the watertight export verify. Internal threads in a nut or tapped hole come from `hole({ thread: { pitch, modeled: true } })` — see kernelcad-features.
 
 ## Interlocking joinery (flat-pack / laser / CNC)
 
@@ -896,12 +903,13 @@ Tab-and-slot and finger joints in flat stock follow a fixed discipline; getting 
 These are cookbook recipes over existing primitives — call `lookup_cookbook`, do not invent a generator tool.
 
 - Involute spur gear pair (module, tooth counts, 20° pressure angle; center distance `m(z1+z2)/2`) — `lookup_cookbook("involute spur gear pair")`
-- ISO metric hex bolt and nut, M3–M12 table, helical thread via `helix` + `sweep` — `lookup_cookbook("ISO metric hex bolt and nut")`
+- ISO metric hex bolt threaded into its nut, M3–M12 table: 60° V-thread via `helix` + `sweep` with `spine: 'helix'`, nut thread via `hole({ thread })` — `lookup_cookbook("ISO metric hex bolt and nut")`
+- Countersunk holes seating ISO 10642 flat-head screws flush (`countersink` on `hole` / `holes`) — `lookup_cookbook("countersunk hole flat head screw flush")`
 - 20×20 B-type T-slot extrusion, slot 6, plus a corner connector — `lookup_cookbook("20x20 T-slot extrusion slot 6")`
 - GT2 timing-belt drive (belt length from pitch diameters, rounded to a 2 mm tooth count) — `lookup_cookbook("GT2 timing belt drive")`
 - Wood dado, rabbet, and mortise-and-tenon with fit clearance — `lookup_cookbook("wood dado rabbet mortise")`
 - Pipe route through 3D waypoints with a bend radius — `lookup_cookbook("pipe route bend radius")`
-- Engineering material presets (`mild-steel` / `aluminum-6061` / `pla`) driving mass — `lookup_cookbook("mild-steel aluminum-6061 pla mass")`
+- Engineering material grades (`mild-steel` / `aluminum-6061` / `pla` / `petg` / `abs` / `nylon`; aliases `steel` / `aluminum` / `pet`) — one name drives mass, finish, the recorded part material and FEA — `lookup_cookbook("mild-steel aluminum-6061 nylon material mass")`
 
 ## Sample
 

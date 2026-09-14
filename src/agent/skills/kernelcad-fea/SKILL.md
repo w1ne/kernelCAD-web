@@ -82,9 +82,12 @@ are not sure which face you mean.
 | `abs` | 2300 | 0.35 | 40 |
 | `nylon` | 1700 | 0.39 | 45 |
 
-`fea_summary({})` returns this table live. An unknown grade is refused with
-the valid list — it is never guessed. For a measured lot, pass
-`{ E, nu, yield }` directly.
+`fea_summary({})` returns this table live. These are the same grade names
+`arm.part({ material })` and `inspect({ of: 'mass', material })` take (one
+material registry), and the bulk aliases `steel`, `aluminum` / `aluminium`
+and `pet` resolve to `mild-steel`, `aluminum-6061` and `petg`. An unknown
+grade is refused with the valid list — it is never guessed. For a measured
+lot, pass `{ E, nu, yield }` directly.
 
 ## Reading the result
 

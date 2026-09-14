@@ -35,7 +35,7 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `spring({ length, coilRadius, wireRadius, turns, axis?, pointsPerTurn?, endStyle?, segments? }) => Shape` | Build a helical spring as a circular wire profile swept along a smooth B-spline helix spine, producing one continuous watertight solid. |
 | `extrudeRect(w, h, height, opts?) => Shape` | Extrude a w-by-h rectangle (XY) by `height` along Z. |
 | `extrudeCircle(r, height, opts?) => Shape` | Extrude a radius-r circle (XY) by `height` along Z. |
-| `extrudePolygon(points, depth, opts?) => Shape` | Extrude a 2D polygon (array of [x, y] points) by `depth` along Z. |
+| `extrudePolygon(points, depth, opts?) => Shape` | Extrude a 2D polygon (array of [x, y] points; coordinates and `depth` accept ParamRefs) by `depth` along Z. |
 | `extrudeRoundedRect(width, height, radius, depth, opts?) => Shape` | Extrude a rounded rectangle (corner radius) by `depth` along Z. |
 | `sheetMetal(profile: Sketch, { thickness, kFactor, faceLabels? }) => Shape` | Build a sheet-metal body from a closed planar Sketch. |
 | `sdf : { sphere(r), box(size), cylinder(r, h), torus(R, r), smoothBlend(a, b, k), materialize(field, opts?), bind(name, field) }` | SDF authoring namespace (W2.3 slice-1). |
@@ -44,7 +44,7 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `PathBuilder.lineTo(x: Editable<number>, y: Editable<number>) => PathBuilder` | Add a straight line segment to (x, y). |
 | `PathBuilder.close() => Sketch` | Close the path; returns a Sketch that can be extruded/revolved/swept. |
 | `PathBuilder.label(name: string) => PathBuilder` | Tag the previous segment so it can be referenced later in fillet/chamfer/shell as `{face: name}`. |
-| `PathBuilder.circle(cx: number, cy: number, r: number, segments?: number) => Sketch` | Closed circle profile centered at (cx, cy) with radius r. |
+| `PathBuilder.circle(cx: Editable<number>, cy: Editable<number>, r: Editable<number>, segments?: number) => Sketch` | Closed circle profile centered at (cx, cy) with radius r. |
 | `PathBuilder.tangentArc(x: Editable<number>, y: Editable<number>) => PathBuilder` | Arc continuing tangent from the previous segment to (x, y). |
 | `PathBuilder.threePointsArc(x: Editable<number>, y: Editable<number>, midX: Editable<number>, midY: Editable<number>) => PathBuilder` | Arc through start, midpoint, and end. |
 | `PathBuilder.sagittaArc(x: Editable<number>, y: Editable<number>, sagitta: Editable<number>) => PathBuilder` | Arc by chord + perpendicular bulge height. |
@@ -65,11 +65,11 @@ Turn a profile into a solid, or grow one along a path.
 | Call | What it does |
 |---|---|
 | `Sketch.extrude(depth: Editable<number>) => Shape` | Extrude this closed sketch normal to its plane by `depth` (mm). |
-| `Sketch.revolve() => Shape` | Revolve 360 degrees around the Z axis. |
+| `Sketch.revolve(opts?: { angleDeg?: Editable<number> }) => Shape` | Revolve around the Z axis, 360 degrees unless `angleDeg` (number or ParamRef). |
 | `Sketch.sweep(rail, opts?: { frenet?, transitionMode?, spine? }) => Shape` | Sweep this profile along a 3D rail. |
 | `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, ruled?, startPoint?, endPoint? }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
 | `variableSweep(spine: Curve3D \| Sketch \| Vec3[], sections: Array<{ t: number; profile: Sketch }>, opts?: { closed?: boolean; continuity?: "C0" \| "C1" \| "C2" }) => Shape` | Multi-section sweep that blends `sections[i].profile` along the spine at the section's `t ∈ [0, 1]` spine parameter. |
-| `helix({ radius, pitch, turns, axis?, pointsPerTurn?, startAngle? }) => [number, number, number][]` | Polyline helix rail for `Sketch.sweep`. |
+| `helix({ radius: Editable<number>, pitch: Editable<number>, turns: Editable<number>, axis?, pointsPerTurn?, startAngle?: Editable<number> }) => [number, number, number][]` | Helix rail for `Sketch.sweep`. |
 
 ## Remove material
 
@@ -79,8 +79,8 @@ Cut into a solid: bolt holes, pockets, slots, plain subtraction.
 |---|---|
 | `Shape.subtract(...others) => Shape` | Boolean difference (this minus others). |
 | `ParamRef.subtract(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef minus `other`. |
-| `Shape.hole(face: FaceSelector \| string, opts: { u, v, diameter, depth?: number \| "through", upToFace?: FaceRef, counterbore?: { diameter, depth }, countersink?: { diameter, angleDeg? } }) => Shape` | Drill a single hole. |
-| `Shape.holes(face: FaceSelector \| string, opts: { positions: Array<{u,v}>, diameter, depth?, upToFace?, counterbore?, countersink? }) => Shape` | Drill N holes in one feature record. |
+| `Shape.hole(face: FaceSelector \| string, opts: { u, v, diameter, depth?: number \| "through", upToFace?: FaceRef, counterbore?: { diameter, depth }, countersink?: { diameter, angleDeg? }, thread?: { pitch, modeled?: boolean, clearance? } }) => Shape` | Drill a single hole. |
+| `Shape.holes(face: FaceSelector \| string, opts: { positions: Array<{u,v}>, diameter, depth?, upToFace?, counterbore?, countersink?, thread? }) => Shape` | Drill N holes in one feature record. |
 | `Shape.cutout(profile: PathBuilder \| Sketch, opts: { face: FaceSelector \| string, depth?: number \| "through", upToFace?: FaceRef, depthMode?: "blind" \| "symmetric" }) => Shape` | Sketch-driven subtractive extrude for irregular shapes hole() can't express (slots, D-shapes, keyhole pockets). |
 
 ## Combine shapes
@@ -144,7 +144,7 @@ Move a body into position, mirror it, or repeat it.
 | `Shape.alongAxis(axis: [number, number, number]) => Shape` | Orient this shape so its current +Z axis aligns with the given direction. |
 | `Shape.scale(factor: number \| [number, number, number]) => Shape` | Scale this shape uniformly (single positive finite number) or per-axis (Vec3 — sx/sy/sz). |
 | `Shape.reflect(plane: 'xy' \| 'xz' \| 'yz' \| { plane: 'xy' \| 'xz' \| 'yz'; offset: number }) => Shape` | Reflect (pure rigid-body transformation) across a cardinal plane or an offset parallel plane. |
-| `Sketch.reflect(axis: 'x' \| 'y' \| { axis: 'x' \| 'y'; offset: number }) => Sketch` | Reflect this sketch's path across an axis, returning a new Sketch. |
+| `Sketch.reflect(axis: 'x' \| 'y' \| { axis: 'x' \| 'y'; offset: Editable<number> }) => Sketch` | Reflect this sketch's path across an axis, returning a new Sketch. |
 | `Shape.mirror(plane: 'xy' \| 'xz' \| 'yz' \| { plane: 'xy' \| 'xz' \| 'yz'; offset: number }) => Shape` | Boolean union of the source and its reflection across a cardinal plane. |
 | `Shape.patternLinear({ count, direction, spacing }) => Shape` | Repeat this shape in a linear array. |
 | `Shape.patternGrid({ x: { count, direction, spacing }, y: { count, direction, spacing } }) => Shape` | Repeat this shape in a two-axis grid. |
@@ -244,7 +244,7 @@ Adjust a model's appearance without changing its geometry: text, color, lighting
 | `fontPath(p: string) => FontPath` | Brand a string as a font filesystem path (TTF). |
 | `Shape.embossText(opts: { textContent: string; fontFamily?: string; size: Editable<number>; depth: Editable<number>; align?: 'left' \| 'center' \| 'right'; anchorU?: Editable<number>; anchorV?: Editable<number>; rotation?: Editable<number>; scaleMode?: 'original' \| 'native' \| 'bounds'; face: FaceSelector \| string }) => Shape` | Raise or recess text on a target face. |
 | `Shape.color(name: ColorToken \| `#${string}`) => Shape` | Set HUE ONLY: a role color (servo/gear/beam/shaft/plate/pin/frame/tool) or a literal `#rrggbb` hex. |
-| `Shape.finish(name: FinishToken, opts?: { color?: string; face?: string }) => Shape` | PREFERRED way to make a part look like a real material. |
+| `Shape.finish(name: FinishToken \| MaterialGrade, opts?: { color?: string; face?: string }) => Shape` | PREFERRED way to make a part look like a real material. |
 | `Shape.material(opts: PBRMaterial & { face?: string }) => Shape` | ADVANCED / renderer-level escape hatch exposing raw PBR floats for glass, clearcoat, anisotropy, and image textures when no `.finish()` token fits. |
 | `referenceImage(path: string, opts: { plane, anchor?, scale?, opacity?, flipU?, flipV? }) => ReferenceImageHandle` | Overlay a reference image on a plane for tracing or design review. |
 | `setRenderEnvironment(spec: { preset?: 'studio' \| 'softbox' \| 'neutral' \| 'outdoor' \| 'warehouse'; url?: string; intensity?: number; rotation?: number }) => RenderEnvironmentHandle` | Set the HDRI / image-based-lighting environment for the rendered scene. |
