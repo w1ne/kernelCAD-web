@@ -21,7 +21,7 @@ import './hostFsNode';
 import '../../shared/runtime/kernelcadVersionNode';
 
 import { transpileTs } from './transpile';
-import { runIsolated } from './isolation';
+import { ISOLATION_WRAP_OFFSET, runIsolated } from './isolation';
 import { runScriptCore, type ScriptRunner, type RunScriptResult } from './runScriptCore';
 
 export type { ScriptRunner, RunScriptResult };
@@ -50,5 +50,14 @@ export interface RunScriptInput {
  */
 export async function runScript(input: RunScriptInput): Promise<RunScriptResult> {
   const { code, fileName, scriptDir, runner = runIsolated } = input;
-  return runScriptCore({ code, fileName, scriptDir, runner, transpile: transpileTs });
+  return runScriptCore({
+    code,
+    fileName,
+    scriptDir,
+    runner,
+    transpile: transpileTs,
+    // Only the default runner's prologue is known here; a caller-supplied
+    // runner wraps differently, so report identity rather than a wrong offset.
+    wrapOffset: runner === runIsolated ? ISOLATION_WRAP_OFFSET : undefined,
+  });
 }

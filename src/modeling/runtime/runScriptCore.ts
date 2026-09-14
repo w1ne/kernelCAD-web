@@ -19,7 +19,8 @@ import { createApi } from '../api';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { ParamTable } from '../../shared/runtime/paramTable';
 import { normalizeUserScript } from '../../shared/runtime/normalizeUserScript';
-import type { IsolationOptions, IsolationResult } from './isolationTypes';
+import { NO_WRAP_OFFSET, type IsolationOptions, type IsolationResult, type ScriptWrapOffset } from './isolationTypes';
+import { ScriptLocationResolver } from './scriptLocationCapture';
 
 /** Pluggable script runner. `runIsolated` (node `vm`) backs the node facade;
  *  `runInRealm` (new Function) backs the browser facade. */
@@ -49,6 +50,10 @@ export interface RunScriptCoreInput {
   scriptDir?: string;
   runner: ScriptRunner;
   transpile: ScriptTranspiler;
+  /** Displacement the chosen runner's `wrapReturn` prologue applies to
+   *  call-site positions. Supplied by the facade that picked the runner;
+   *  defaults to identity so a bare core call still runs. */
+  wrapOffset?: ScriptWrapOffset;
 }
 
 export interface RunScriptResult {
@@ -64,7 +69,7 @@ export interface RunScriptResult {
 }
 
 export async function runScriptCore(input: RunScriptCoreInput): Promise<RunScriptResult> {
-  const { code, fileName, scriptDir, runner, transpile } = input;
+  const { code, fileName, scriptDir, runner, transpile, wrapOffset = NO_WRAP_OFFSET } = input;
   const session = new CaptureSession();
   session.scriptDir = scriptDir;
   const api = createApi({ session, scriptDir });
@@ -78,6 +83,18 @@ export async function runScriptCore(input: RunScriptCoreInput): Promise<RunScrip
   const normalized = normalizeUserScript(code);
 
   const transpiled = transpile(normalized, fileName);
+
+  // Bind every captured feature to the line that authored it. The resolver
+  // owns both rewrites between the agent's file and the text V8 executes
+  // (module-ism normalization, then transpile), so `FeatureRecord.scriptLocation`
+  // comes out in original-file coordinates — the join key trace-guided repair
+  // needs to turn "feature X failed" into "these lines may be edited".
+  session.scriptLocationResolver = new ScriptLocationResolver(
+    fileName,
+    code,
+    transpiled.sourceMap,
+    wrapOffset,
+  );
 
   // Two surface forms are supported inside `.kcad.ts` scripts:
   //   - Top-level globals (`box(...)`, `q.face(...)`) via the api spread.
