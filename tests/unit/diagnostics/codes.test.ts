@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 287 codes', () => {
+  it('emits exactly 289 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -87,8 +87,15 @@ describe('diagnostic catalogue invariants', () => {
     // + 7 FDM printability check (dfmSpec process 'fdm'): dfm.fdm.overhang-unsupported,
     //   dfm.fdm.bridge-too-long, dfm.fdm.wall-below-nozzle, dfm.fdm.feature-too-small,
     //   dfm.fdm.bed-contact-low, dfm.fdm.tip-risk, dfm.fdm.exceeds-bed = 287.
-    expect(DIAGNOSTIC_CODES).toHaveLength(287);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(287);
+    expect(DIAGNOSTIC_CODES).toHaveLength(289);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(289);
+    // + 2 sketch-from-shape: feature.section.plane-misses-body,
+    //   feature.face-sketch.non-planar = 278.
+    // + 1 feature.async-result.missing-await (agent chained a Sketch method
+    //   directly on the un-awaited Promise<Sketch> from sectionSketch/
+    //   faceSketch/silhouette). = 279.
+    expect(DIAGNOSTIC_CODES).toHaveLength(289);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(289);
   });
 
   it('every code has a non-empty hint template', () => {

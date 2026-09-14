@@ -32,13 +32,14 @@ const inspectToolEntry: ToolRegistryEntry = {
       "- 'part-categories' — top-level part-catalog categories available in the bundled (and configured remote) catalog.\n" +
       "- 'part-families' — part families within a category ({ category? }); count + exemplar ids per family.\n" +
       "- 'bom' — bill of materials ({ assembly? }): one row per distinct part (grouped by geometry/catalog identity, not name) with real instance quantity, kind ('fabricated'|'purchased'), material, density, per-unit and total mass, bbox, a fabrication process hint, catalog provenance for purchased parts, and totals; `bom.*` diagnostics flag rows with no density source or missing catalog vendor info instead of guessing.\n" +
+      "- 'section' — numeric cross-section probe of a shape: area, perimeter, loop/hole counts, 2D bbox at a plane ({ feature_id?, plane | at+axis, stack?: { from, to, count, axis? } }). `stack` scans evenly spaced slices and returns `minAreaIndex`/`minAreaPosition` — use it to find the neck/thinnest cross-section along an axis.\n" +
       'All params except `of` are subject-specific and forwarded verbatim. Most subjects accept { file | code }.',
     inputSchema: {
       type: 'object',
       properties: {
         of: {
           type: 'string',
-          enum: ['assembly', 'robot', 'step', 'shape', 'mass', 'features', 'assemblies', 'topology', 'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints', 'part-stats', 'bend-table', 'params', 'part-categories', 'part-families', 'bom'],
+          enum: ['assembly', 'robot', 'step', 'shape', 'mass', 'features', 'assemblies', 'topology', 'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints', 'part-stats', 'bend-table', 'params', 'part-categories', 'part-families', 'bom', 'section'],
           description: 'Which facts to read.',
         },
         file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
@@ -58,6 +59,20 @@ const inspectToolEntry: ToolRegistryEntry = {
         face_name: { type: 'string', enum: ['top', 'bottom', 'left', 'right', 'front', 'back'], description: "of:'face-edges' — canonical face name (required for that subject)." },
         query: { type: 'object', description: "of:'edges'|'faces' — optional EdgeQuery/FaceQuery filter." },
         category: { type: 'string', description: "of:'part-families' — optional top-level category to filter families by." },
+        plane: { type: ['string', 'object'], description: "of:'section' — section plane. Either a cardinal name string 'xy'|'xz'|'yz', { plane: 'xy'|'xz'|'yz', offset? }, or { origin: [x,y,z], normal: [nx,ny,nz] }. Omit to use `at`+`axis`." },
+        at: { type: 'number', description: "of:'section' — single slice position along `axis` (mm)." },
+        axis: { type: 'string', enum: ['x', 'y', 'z'], description: "of:'section' — normal axis for `at` / `stack` (default 'z')." },
+        stack: {
+          type: 'object',
+          description: "of:'section' — dense scan: `count` slices evenly spaced from `from` to `to` along `axis`; response reports minAreaIndex/minAreaPosition.",
+          properties: {
+            from: { type: 'number', description: 'Start position along the axis (mm).' },
+            to: { type: 'number', description: 'End position along the axis (mm).' },
+            count: { type: 'integer', description: 'Number of evenly spaced slices (>= 1).' },
+            axis: { type: 'string', enum: ['x', 'y', 'z'], description: "Scan axis (default 'z')." },
+          },
+          required: ['from', 'to', 'count'],
+        },
       },
       required: ['of'],
     },
