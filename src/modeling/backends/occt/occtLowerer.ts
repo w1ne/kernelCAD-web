@@ -204,7 +204,7 @@ export function applyVariableEdgeFeature(
 
   const meta = feature.metadata as {
     variable?: boolean;
-    groups?: Array<{ radius?: number; distance?: number }>;
+    groups?: Array<{ radius?: number | { evaluated: number }; distance?: number | { evaluated: number } }>;
   } | undefined;
 
   const groups = meta?.groups ?? [];
@@ -249,7 +249,9 @@ export function applyVariableEdgeFeature(
 
   for (let i = 0; i < groups.length; i++) {
     const g = groups[i];
-    const value = g[valueKey];
+    const raw = g[valueKey];
+    // param()-driven values arrive as pre-resolved Params.
+    const value = typeof raw === 'object' && raw !== null ? raw.evaluated : raw;
     if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
       diagnostics.push({
         target: 'export-occt',

@@ -306,12 +306,16 @@ export function buildVariableEdgeFeatureSpec(
   const inputs: Record<string, FeatureRef> = {
     base: { kind: 'feature', id: baseId },
   };
-  const metadataGroups: Array<{ radius?: Editable<number>; distance?: Editable<number> }> = [];
+  const metadataGroups: Array<{ radius?: number | Param; distance?: number | Param }> = [];
   for (let i = 0; i < groups.length; i++) {
     const group = groups[i];
     const ref = buildEdgeFeatureRef(baseId, group.edges);
     inputs[`edge_group_${i}`] = ref.value;
-    metadataGroups.push({ [valueKey]: group[valueKey] });
+    // A param() value is stored as a Param so the recompute pre-resolve
+    // substitutes it (a raw ParamRef object reached the lowerer unresolved);
+    // plain numbers keep the historical record shape.
+    const value = group[valueKey];
+    metadataGroups.push({ [valueKey]: typeof value === 'number' || value === undefined ? value : toParam(value, 'mm') });
   }
   return {
     kind,
