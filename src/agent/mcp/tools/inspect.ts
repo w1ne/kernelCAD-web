@@ -19,6 +19,7 @@ import { getBendTableTool } from './getBendTable';
 import { paramsListTool } from './paramsList';
 import { listPartCategoriesTool } from './listPartCategories';
 import { listPartFamiliesTool } from './listPartFamilies';
+import { inspectSectionTool } from './inspectSection';
 
 /** The introspection subject. Each value maps 1:1 to a dedicated reader. */
 export type InspectOf =
@@ -40,7 +41,8 @@ export type InspectOf =
   | 'bend-table'
   | 'params'
   | 'part-categories'
-  | 'part-families';
+  | 'part-families'
+  | 'section';
 
 export interface InspectInput {
   of: InspectOf;
@@ -51,6 +53,7 @@ export interface InspectInput {
    * - shape/topology/features/face-labels: { feature_id? }
    * - edges/faces: { feature_id?, query? }   (EdgeQuery / FaceQuery)
    * - face-edges: { feature_id?, face_name }  (canonical face name; required)
+   * - section: { feature_id?, plane | at+axis, stack?: { from, to, count, axis? } }
    */
   [key: string]: unknown;
 }
@@ -105,12 +108,14 @@ export function inspectTool(input: InspectInput): Promise<unknown> {
       return listPartCategoriesTool();
     case 'part-families':
       return listPartFamiliesTool(rest as unknown as Parameters<typeof listPartFamiliesTool>[0]);
+    case 'section':
+      return inspectSectionTool(rest as unknown as Parameters<typeof inspectSectionTool>[0]);
     default:
       return Promise.reject(
         new Error(
           `Unknown inspect subject: ${String(of)}. Valid: assembly, robot, step, shape, mass, ` +
             `features, assemblies, topology, edges, face-edges, faces, face-labels, mates, ` +
-            `constraints, part-stats, bend-table, params, part-categories, part-families.`,
+            `constraints, part-stats, bend-table, params, part-categories, part-families, section.`,
         ),
       );
   }

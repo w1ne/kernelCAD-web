@@ -92,6 +92,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
       'tangentArc', 'threePointsArc', 'sagittaArc', 'bulgeArc', 'radiusArc',
       'tangentCircle', 'tangentLine',
       'smoothSpline', 'spline', 'nurbsSegment', 'hermiteG2',
+      'sectionSketch', 'faceSketch', 'silhouette',
     ],
   },
   {

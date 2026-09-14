@@ -194,7 +194,7 @@
   },
   {
     "name": "inspect",
-    "description": "Use this when you need to read facts about a model. One reader, selected by `of`:\n- 'assembly' — physical assembly inventory (parts, bboxes, connectors, mates, disconnected solids).\n- 'robot' — URDF/SDFormat export preview (links, joints, planning groups, end-effectors, issues).\n- 'step' — inspect an imported STEP file.\n- 'shape' — volume / surfaceArea / bbox for one feature ({ feature_id? }).\n- 'mass' — mass, centre of mass, centroidal inertia tensor (inertia6 + 3x3 inertiaMatrix), principalMoments/principalAxes, symmetry flags, and optionally the radius of gyration about an arbitrary axis ({ feature_id?, density?, gyration_axis? }); density in kg/m^3, defaults to 1000 (water).\n- 'features' — features captured by the script (kind, id, params, transforms, suppression).\n- 'assemblies' — assembly intent (assemblies, parts, connectors, joints).\n- 'topology' — canonical face names + edge count for a feature ({ feature_id? }).\n- 'edges' — edges of a shape with optional EdgeQuery ({ feature_id?, query? }); returns @kc[...] refs.\n- 'face-edges' — boundary edges of a named canonical face ({ feature_id?, face_name }).\n- 'faces' — faces of a shape with optional FaceQuery ({ feature_id?, query? }); returns @kc[...] refs.\n- 'face-labels' — user-applied labels visible in the script.\n- 'mates' — mates captured by the script.\n- 'constraints' — sketch constraints captured by the script.\n- 'part-stats' — bundled parts-catalog statistics.\n- 'bend-table' — sheet-metal bend table for a flattened pattern.\n- 'params' — declared model parameters.\n- 'part-categories' — top-level part-catalog categories available in the bundled (and configured remote) catalog.\n- 'part-families' — part families within a category ({ category? }); count + exemplar ids per family.\nAll params except `of` are subject-specific and forwarded verbatim. Most subjects accept { file | code }.",
+    "description": "Use this when you need to read facts about a model. One reader, selected by `of`:\n- 'assembly' — physical assembly inventory (parts, bboxes, connectors, mates, disconnected solids).\n- 'robot' — URDF/SDFormat export preview (links, joints, planning groups, end-effectors, issues).\n- 'step' — inspect an imported STEP file.\n- 'shape' — volume / surfaceArea / bbox for one feature ({ feature_id? }).\n- 'mass' — mass, centre of mass, centroidal inertia tensor (inertia6 + 3x3 inertiaMatrix), principalMoments/principalAxes, symmetry flags, and optionally the radius of gyration about an arbitrary axis ({ feature_id?, density?, gyration_axis? }); density in kg/m^3, defaults to 1000 (water).\n- 'features' — features captured by the script (kind, id, params, transforms, suppression).\n- 'assemblies' — assembly intent (assemblies, parts, connectors, joints).\n- 'topology' — canonical face names + edge count for a feature ({ feature_id? }).\n- 'edges' — edges of a shape with optional EdgeQuery ({ feature_id?, query? }); returns @kc[...] refs.\n- 'face-edges' — boundary edges of a named canonical face ({ feature_id?, face_name }).\n- 'faces' — faces of a shape with optional FaceQuery ({ feature_id?, query? }); returns @kc[...] refs.\n- 'face-labels' — user-applied labels visible in the script.\n- 'mates' — mates captured by the script.\n- 'constraints' — sketch constraints captured by the script.\n- 'part-stats' — bundled parts-catalog statistics.\n- 'bend-table' — sheet-metal bend table for a flattened pattern.\n- 'params' — declared model parameters.\n- 'part-categories' — top-level part-catalog categories available in the bundled (and configured remote) catalog.\n- 'part-families' — part families within a category ({ category? }); count + exemplar ids per family.\n- 'section' — numeric cross-section probe of a shape: area, perimeter, loop/hole counts, 2D bbox at a plane ({ feature_id?, plane | at+axis, stack?: { from, to, count, axis? } }). `stack` scans evenly spaced slices and returns `minAreaIndex`/`minAreaPosition` — use it to find the neck/thinnest cross-section along an axis.\nAll params except `of` are subject-specific and forwarded verbatim. Most subjects accept { file | code }.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -219,7 +219,8 @@
             "bend-table",
             "params",
             "part-categories",
-            "part-families"
+            "part-families",
+            "section"
           ],
           "description": "Which facts to read."
         },
@@ -290,6 +291,58 @@
         "category": {
           "type": "string",
           "description": "of:'part-families' — optional top-level category to filter families by."
+        },
+        "plane": {
+          "type": [
+            "string",
+            "object"
+          ],
+          "description": "of:'section' — section plane. Either a cardinal name string 'xy'|'xz'|'yz', { plane: 'xy'|'xz'|'yz', offset? }, or { origin: [x,y,z], normal: [nx,ny,nz] }. Omit to use `at`+`axis`."
+        },
+        "at": {
+          "type": "number",
+          "description": "of:'section' — single slice position along `axis` (mm)."
+        },
+        "axis": {
+          "type": "string",
+          "enum": [
+            "x",
+            "y",
+            "z"
+          ],
+          "description": "of:'section' — normal axis for `at` / `stack` (default 'z')."
+        },
+        "stack": {
+          "type": "object",
+          "description": "of:'section' — dense scan: `count` slices evenly spaced from `from` to `to` along `axis`; response reports minAreaIndex/minAreaPosition.",
+          "properties": {
+            "from": {
+              "type": "number",
+              "description": "Start position along the axis (mm)."
+            },
+            "to": {
+              "type": "number",
+              "description": "End position along the axis (mm)."
+            },
+            "count": {
+              "type": "integer",
+              "description": "Number of evenly spaced slices (>= 1)."
+            },
+            "axis": {
+              "type": "string",
+              "enum": [
+                "x",
+                "y",
+                "z"
+              ],
+              "description": "Scan axis (default 'z')."
+            }
+          },
+          "required": [
+            "from",
+            "to",
+            "count"
+          ]
         }
       },
       "required": [

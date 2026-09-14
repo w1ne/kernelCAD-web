@@ -87,6 +87,22 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'An arc segment in a sketch is degenerate (radius too small, collinear endpoints, etc.).',
   },
+  'feature.section.plane-misses-body': {
+    hintTemplate:
+      'The section plane does not intersect the body. Move the plane offset/origin so it passes through the solid, or check the normal direction.',
+    nextAction: { kind: 'fix-arg', field: 'sectionSketch.plane' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A shape.sectionSketch / inspect section plane produced no closed section loop because it misses the body.',
+  },
+  'feature.face-sketch.non-planar': {
+    hintTemplate:
+      'The selected face is not planar, so it cannot be unrolled to a 2D sketch. Select a planar face (add { ofSurfaceType: "PLANE" } to the query) or use sectionSketch on a curved body.',
+    nextAction: { kind: 'fix-arg', field: 'faceSketch.face' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A shape.faceSketch target face is non-planar or produced no closed boundary loops.',
+  },
   // 2D tangency constructions (2)
   'sketch.tangency.no-solution': {
     hintTemplate:

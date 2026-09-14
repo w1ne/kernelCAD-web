@@ -76,7 +76,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     ).toEqual([]);
   });
 
-  it('catalogue has exactly 276 codes', () => {
+  it('catalogue has exactly 278 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -201,7 +201,9 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  + 4 USD physics export and geometry diff: export.usd.joint-unsupported,
     //       export.usd.pose-unsolved, export.usd.mass-missing, diff.body.unmatched =
     //       276.
-    expect(catalogue.size).toBe(276);
+    //  + 2 sketch-from-shape: feature.section.plane-misses-body,
+    //       feature.face-sketch.non-planar = 278.
+    expect(catalogue.size).toBe(278);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

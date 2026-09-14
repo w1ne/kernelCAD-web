@@ -57,6 +57,9 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `PathBuilder.nurbsSegment(controlPoints: Array<[Editable<number>, Editable<number>]>, opts?: { degree?: number; weights?: number[]; knots?: number[] }) => PathBuilder` | NURBS Slice D — explicit B-spline segment defined by a control polygon. |
 | `hermiteG2(a: { point: Vec3; tangent: Vec3; curvature?: Vec3 }, b: { point: Vec3; tangent: Vec3; curvature?: Vec3 }) => Curve3D` | Quintic Hermite Curve3D that interpolates the two endpoints with matching positions, first derivatives (tangents), and second derivatives (curvatures). |
 | `PathBuilder.hermiteG2(a: HermiteEndpoint2D, b: HermiteEndpoint2D) => PathBuilder` | NURBS Slice D — 2D quintic-Hermite transition between two endpoints, each with prescribed point + first derivative (tangent) + optional second derivative (curvature). |
+| `Shape.sectionSketch(plane: 'xy' \| 'xz' \| 'yz' \| { plane, offset? } \| { origin, normal }, opts?: { curveTolerance? }) => Promise<Sketch>` | Derive a reusable 2D Sketch from an exact planar cross-section of this solid (OCCT BRepAlgoAPI_Section). |
+| `Shape.faceSketch(face: FaceSelector \| string, opts?: { curveTolerance? }) => Promise<Sketch>` | Derive a Sketch from the boundary of a planar face: its outer wire plus any hole wires, placed in the face's own 2D frame. |
+| `Shape.silhouette(direction?: [number, number, number], opts?: { curveTolerance? }) => Promise<Sketch>` | Derive a closed Sketch outline from this solid's orthographic silhouette viewed along `direction` (OCCT HLR). |
 
 ## Add material
 

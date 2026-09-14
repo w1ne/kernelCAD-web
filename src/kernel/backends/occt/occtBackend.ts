@@ -11,6 +11,7 @@ import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { isSameEdge } from './edgeQueries';
 import { buildNurbsSketchOnPlane, hasNurbsSegments } from './pathNurbsLowerer';
 import { resolveTangency } from './tangencySolver';
+import { drawingFromCommands } from './sketchToDrawing';
 import { encodeBinaryStl } from './exportStlBinary';
 import { verifyWatertight, stitchCracks, dropDegenerateTriangles, type WatertightReport } from './meshHeal';
 import { resolveColor } from '../../../shared/render/palette';
@@ -461,46 +462,10 @@ export class OcctBackend implements ShapeBackend {
       back._hasNurbs = true;
       return back;
     }
-    let pen = replicad.draw([first.x.evaluated, first.y.evaluated]);
-    let currentX = first.x.evaluated;
-    let currentY = first.y.evaluated;
-    for (let i = 1; i < closeIdx; i++) {
-      const c = commands[i];
-      if (c.kind === 'lineTo') {
-        pen = pen.lineTo([c.x.evaluated, c.y.evaluated]) as typeof pen;
-      } else if (c.kind === 'tangentArc') {
-        pen = pen.tangentArcTo([c.x.evaluated, c.y.evaluated]) as typeof pen;
-      } else if (c.kind === 'threePointsArc') {
-        pen = pen.threePointsArcTo([c.x.evaluated, c.y.evaluated], [c.midX.evaluated, c.midY.evaluated]) as typeof pen;
-      } else if (c.kind === 'sagittaArc') {
-        pen = pen.sagittaArcTo([c.x.evaluated, c.y.evaluated], c.sagitta.evaluated) as typeof pen;
-      } else if (c.kind === 'bulgeArc') {
-        pen = pen.bulgeArcTo([c.x.evaluated, c.y.evaluated], c.bulge.evaluated) as typeof pen;
-      } else if (c.kind === 'radiusArc') {
-        const cx = c.x.evaluated;
-        const cy = c.y.evaluated;
-        const cr = c.radius.evaluated;
-        const chord = Math.hypot(cx - currentX, cy - currentY);
-        if (chord < 1e-9) {
-          throw new Error(`radiusArc: degenerate chord (start ≈ end) at point (${cx}, ${cy})`);
-        }
-        if (Math.abs(cr) < chord / 2) {
-          throw new Error(`radiusArc: radius (${cr}) too small for chord length ${chord.toFixed(3)} — needs |radius| >= chord/2`);
-        }
-        const halfChord = chord / 2;
-        const sagittaMagnitude = Math.abs(cr) - Math.sqrt(cr * cr - halfChord * halfChord);
-        const signedSagitta = Math.sign(cr) * sagittaMagnitude;
-        pen = pen.sagittaArcTo([cx, cy], signedSagitta) as typeof pen;
-      } else if (c.kind === 'smoothSpline') {
-        pen = pen.smoothSplineTo([c.x.evaluated, c.y.evaluated]) as typeof pen;
-      }
-      // Update position after every non-close command (all have explicit x/y endpoint)
-      if ('x' in c && 'y' in c) {
-        currentX = c.x.evaluated;
-        currentY = c.y.evaluated;
-      }
-    }
-    const drawing = pen.close();
+    // Multi-loop aware: the first `moveTo … close` group is the outer
+    // boundary, any subsequent group is subtracted as a hole. A single-loop
+    // list (every hand-authored path) lowers exactly as before.
+    const drawing = drawingFromCommands(commands);
     const back = new OcctBackend(undefined as unknown as ReplicadShape3D, 'sketch');
     back._drawing = drawing;
     back._commands = commands;

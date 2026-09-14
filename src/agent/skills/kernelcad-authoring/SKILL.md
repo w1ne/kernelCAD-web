@@ -505,6 +505,35 @@ Contracts worth knowing:
 // Decomposes to translate + rotate via the existing transform pipes; no rebake.
 .transform(t: Transform): Shape
 
+// Derive a sketch FROM a solid — turn an imported STEP or a boolean result
+// back into a reusable 2D profile. All three are async (they lower the shape
+// at capture time) and return a real Sketch, so `.extrude` / `.revolve` /
+// `.reflect` and every 2D op compose on the result. Circular section curves
+// stay exact bulgeArc commands (a sectioned Ø10 hole is still Ø10).
+//
+// Exact planar cross-section. plane: 'xy'|'xz'|'yz', { plane, offset }, or
+// { origin, normal }. A boss-with-through-hole returns ONE sketch whose first
+// loop is the outer boundary and the rest are holes — a single .extrude(d)
+// yields the solid section. Throw feature.section.plane-misses-body when the
+// plane misses the body. This is the tool for "extrude a gasket matching this
+// part's cross-section", "offset the section", or "dimension the waist".
+.sectionSketch(plane: 'xy' | 'xz' | 'yz' | { plane: 'xy' | 'xz' | 'yz'; offset?: number } | { origin: [number, number, number]; normal: [number, number, number] }, opts?: { curveTolerance?: number }): Promise<Sketch>
+// Boundary of a PLANAR face: outer wire + hole wires, in the face's own 2D
+// frame. `face` takes the same selector as .shell()/.hole() — canonical name
+// ('top'), label, FaceQuery ({ atZ: 5 }), or @kc[owner/face/name] ref.
+// Non-planar faces throw feature.face-sketch.non-planar. Round-trips:
+// faceSketch('top').extrude(t) rebuilds the cross-section prism.
+.faceSketch(face: FaceSelector | string, opts?: { curveTolerance?: number }): Promise<Sketch>
+// Orthographic silhouette (OCCT HLR) viewed along `direction`. [0,0,1] = top
+// view, [1,0,0] = right view. A cylinder along its axis silhouettes as a
+// circle, across its axis as a rectangle. For blanking/laser nesting outlines.
+.silhouette(direction?: [number, number, number], opts?: { curveTolerance?: number }): Promise<Sketch>
+//
+//   // Gasket matching a holed plate's cross-section:
+//   const gasket = (await plate.sectionSketch({ plane: 'xy', offset: 6 })).extrude(3);
+//   // Blank outline of an imported body for nesting:
+//   const blank = await lib.fetchPart('bracket/a').then(p => p.silhouette([0, 0, 1]));
+
 // Eager lowering (for inspection; rarely called by agents directly):
 .lower(): Promise<OcctBackend>
 ```
@@ -512,6 +541,16 @@ Contracts worth knowing:
 `EdgeSelector = EdgeQuery | EdgeSegment[] | { face: string | FaceQuery } | undefined`
 `FaceSelector = CanonicalFace | string (label) | FaceQuery`
 `CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back'`
+
+**Section probes (numeric evidence, no geometry).** `inspect({ of: 'section', ... })`
+answers "what is the cross-section area here?" without building a sketch:
+`{ feature_id?, plane }` where `plane` is `'xy'|'xz'|'yz'`, `{ plane, offset }`,
+or `{ origin, normal }`; or the shorthand `{ axis: 'x'|'y'|'z', at }`. It returns
+`area`, `perimeter`, `loopCount`, `holeCount`, and the 2D `bbox` per slice. Pass
+`stack: { from, to, count, axis? }` to scan evenly spaced slices; the response
+includes `minAreaIndex` / `minAreaPosition` — use it to locate a neck, waist, or
+thinnest wall along an axis. It uses the same geometry as `sectionSketch`, so a
+probe and the sketch you derive from it always agree.
 
 ### Sketch methods
 
@@ -852,6 +891,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 | repair-oversized-fillet | evaluate_script reported feature.edge-feature.short-edges-skipped (every target edge is shorter than twice the radius) and you want a bounded fix instead of guessing a new radius. |
 | resolve-photo-trace-assumptions | You called trace_from_image on a reference photo and want to know which returned waypoints are directly measured vs guessed before you feed them into path().spline() — and how to lock down a real-world scale before committing geometry. |
 | revolve-rectangular-profile | You want a thin cylindrical wall, ring, or tube — author the rectangular profile via path() with the inner radius as the x offset, then call .revolve() to sweep it around Z. |
+| section-sketch-gasket | You have a 3D part (an imported STEP or a boolean result) and need a 2D profile from its cross-section to extrude a gasket, spacer, or shim — or to re-dimension the section. sectionSketch returns a real Sketch whose arcs stay exact, with holes as inner loops, so one extrude reproduces the cross-section. |
 | static-hold-actuator-torque-check | A revolute or prismatic joint drives a downstream mass against gravity (a robot arm shoulder, a lift stage) and you need to know whether the declared actuator torque/force is sufficient — not just whether the mechanism is collision-free. Declare actuator: { torqueNm } (revolute) or actuator: { forceN } (prismatic) on the joint, then call kinematic.checkStaticHold(arm, opts). Real mass properties come from the part's geometry + declared density/material; the worst pose across the joint's declared range is reported alongside the margin. Fires assembly.joint.static-hold.exceeded when the actuator is undersized, assembly.joint.static-hold.margin-low when it clears but under the requested safety margin. |
 | subtract-then-fillet-rim | You want a parametric plate, drill a through-hole, and round the rim where the hole meets the top face. |
 | sweep-tolerance-envelope-check | A design has a param() whose real-world value varies (a printed hole that comes out oversized, a clearance gap that shrinks under tolerance) and you need to know whether the mechanism stays buildable across that range, not just at the nominal value. Call kinematic.sweepTolerance({ code\|file, params, gates }) with one or more param names as { values: [...] } or { min, max, steps }; it re-evaluates the script per cartesian-product combo (capped at 64) and runs the interference / mounting-hole / joint-axis gates (default on) plus reachability when declared, returning a pass/fail table and the first failing combo per gate. |
