@@ -16,7 +16,14 @@
 // the first 64 combos in enumeration order and emits
 // `kinematic.sweep-tolerance.combo-cap-exceeded`.
 
-import { evaluateAndBuildScript } from '../agent/cli/commands/evaluate';
+// `evaluateAndBuildScript` lives in the CLI command tree, which pulls
+// node-only modules (file reads, CLI arg parsing) transitively. This module
+// is reachable from the browser runtime via `src/modeling/api.ts` ->
+// `import * as kinematic from '../kinematic'`, so the import is deferred to
+// a dynamic `await import(...)` (code-split, not part of the static browser
+// graph) rather than a top-level import — see
+// `src/modeling/runtime/browserGraphNodeFree.test.ts`.
+import type { evaluateAndBuildScript } from '../agent/cli/commands/evaluate';
 import { setParamValue } from '../agent/mcp/edits/setParamValue';
 import type { Assembly } from '../modeling/capture/assembly';
 import { validateAssemblyWithMates } from '../modeling/mates/validator';
@@ -185,7 +192,8 @@ async function evaluateCombo(
   let evaluation: Awaited<ReturnType<typeof evaluateAndBuildScript>>['evaluation'];
   let model: Awaited<ReturnType<typeof evaluateAndBuildScript>>['model'];
   try {
-    const built = await evaluateAndBuildScript({ code });
+    const mod = await import('../agent/cli/commands/evaluate');
+    const built = await mod.evaluateAndBuildScript({ code });
     evaluation = built.evaluation;
     model = built.model;
   } finally {
