@@ -83,17 +83,11 @@ export type DrawingAnchor =
  */
 export type DimensionTolerance = number | { plus: number; minus: number } | string;
 
-/** The six GD&T characteristics this slice supports (ASME Y14.5 symbols). */
-export type GdtType =
-  | 'position'
-  | 'flatness'
-  | 'perpendicularity'
-  | 'parallelism'
-  | 'concentricity'
-  | 'cylindricity';
-
-/** Diametral / material-condition modifier on an `fcf` tolerance value. */
-export type GdtModifier = '⌀' | 'M' | 'S';
+/** The six GD&T characteristics this slice supports (ASME Y14.5 symbols),
+ *  and the diametral / material-condition modifier on a tolerance value.
+ *  Single-sourced with the `shape.tolerance` capture record. */
+export type { GdtType, GdtModifier } from '../../../shared/intent/drawingGdtRecord';
+import type { GdtType, GdtModifier } from '../../../shared/intent/drawingGdtRecord';
 
 export type DrawingAnnotation =
   | {
@@ -220,6 +214,9 @@ const LEADER_STEP_ANGLE = -Math.PI / 6;
  *  it, which is exactly why the renderer does not escape for us. */
 const esc = (s: string): string =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/** Attribute-safe escaping (adds quotes to the text escaping above). */
+export const escAttr = (s: string): string => esc(s).replace(/"/g, '&quot;');
 
 const isVec3 = (a: DrawingAnchor): a is Vec3 =>
   Array.isArray(a) && a.length === 3 && a.every(n => typeof n === 'number');
@@ -453,7 +450,7 @@ function holeLabel(
   return s;
 }
 
-const GDT_SYMBOL: Record<GdtType, string> = {
+export const GDT_SYMBOL: Record<GdtType, string> = {
   position: '⌖',
   flatness: '⏥',
   perpendicularity: '⟂',
@@ -463,7 +460,7 @@ const GDT_SYMBOL: Record<GdtType, string> = {
 };
 
 /** Feature-control-frame cell text, author order: [symbol][value(+mod)][datums...]. */
-function fcfCells(a: Extract<DrawingAnnotation, { kind: 'fcf' }>): string[] {
+export function fcfCells(a: { type: GdtType; value: number; datums?: readonly string[]; modifier?: GdtModifier }): string[] {
   const modPrefix = a.modifier === '⌀' ? '⌀' : '';
   const modSuffix = a.modifier === 'M' ? ' Ⓜ' : a.modifier === 'S' ? ' Ⓢ' : '';
   const cells = [GDT_SYMBOL[a.type], `${modPrefix}${formatDimValue(a.value)}${modSuffix}`];
@@ -471,15 +468,43 @@ function fcfCells(a: Extract<DrawingAnnotation, { kind: 'fcf' }>): string[] {
   return cells;
 }
 
-/** Fixed sheet-mm cell width per FCF box — a real drafted FCF sizes cells to
- *  their text; this fixed-width simplification keeps output deterministic
- *  and byte-stable across runs without a text-measurement dependency. */
-const FCF_CELL_W = 7;
-const FCF_CELL_H = 5;
+/** FCF cell geometry, sheet mm. Each cell is sized to its text (estimated
+ *  with the same glyph-width factor the overlap check uses) so a `⌀0.05`
+ *  never spills out of its box; the width is a pure function of the text, so
+ *  output stays byte-deterministic. */
+export const FCF_CELL_H = 5;
+const FCF_FONT = 3;
+const FCF_CELL_MIN_W = 5;
+
+export function fcfCellWidth(text: string): number {
+  return Math.max(FCF_CELL_MIN_W, Math.round((text.length * FCF_FONT * 0.62 + 2) * 10) / 10);
+}
+
+/** Total width of a frame with these cells, sheet mm. */
+export function fcfFrameWidth(cells: readonly string[]): number {
+  return cells.reduce((w, c) => w + fcfCellWidth(c), 0);
+}
+
+/** The frame itself (adjoining rectangles + centred cell text), top-left at
+ *  (x, top). No leader. */
+export function fcfFrameSvg(x: number, top: number, cells: readonly string[]): string {
+  const parts: string[] = [];
+  let cx = x;
+  for (const text of cells) {
+    const w = fcfCellWidth(text);
+    parts.push(
+      `<rect x="${round3(cx)}" y="${round3(top)}" width="${round3(w)}" height="${FCF_CELL_H}"/>`,
+      `<text x="${round3(cx + w / 2)}" y="${round3(top + FCF_CELL_H / 2 + 1)}" font-size="${FCF_FONT}" ` +
+        `text-anchor="middle" fill="#000" stroke="none">${esc(text)}</text>`,
+    );
+    cx += w;
+  }
+  return parts.join('');
+}
 
 /** Row of adjoining rectangles (the ASME Y14.5 feature control frame) with a
- *  leader from `target` to the frame's left edge. */
-function fcfToSvg(target: Pt2, angle: number, cells: string[], stemExtra: number): string {
+ *  leader from `target` to the frame's leader-side edge. */
+export function fcfToSvg(target: Pt2, angle: number, cells: string[], stemExtra: number, attrs = ''): string {
   const ux = Math.cos(angle);
   const uy = Math.sin(angle);
   const stem = 7 + stemExtra;
@@ -487,29 +512,19 @@ function fcfToSvg(target: Pt2, angle: number, cells: string[], stemExtra: number
   const ey = target[1] + uy * stem;
   const dir = ux >= 0 ? 1 : -1;
   // Frame's leader-side edge sits at the elbow; cells extend outward from there.
-  const frameLeft = dir === 1 ? ex : ex - cells.length * FCF_CELL_W;
+  const frameLeft = dir === 1 ? ex : ex - fcfFrameWidth(cells);
   const top = ey - FCF_CELL_H / 2;
-  const parts: string[] = [
-    `<line x1="${round3(target[0])}" y1="${round3(target[1])}" x2="${round3(ex)}" y2="${round3(ey)}"/>`,
-  ];
-  cells.forEach((text, i) => {
-    const x = frameLeft + i * FCF_CELL_W;
-    parts.push(
-      `<rect x="${round3(x)}" y="${round3(top)}" width="${FCF_CELL_W}" height="${FCF_CELL_H}"/>`,
-      `<text x="${round3(x + FCF_CELL_W / 2)}" y="${round3(ey + 1)}" font-size="3" ` +
-        `text-anchor="middle" fill="#000" stroke="none">${esc(text)}</text>`,
-    );
-  });
   return (
-    `<g class="dim fcf" fill="none" stroke="#000" stroke-width="0.18">` +
-    parts.join('') +
+    `<g class="dim fcf"${attrs} fill="none" stroke="#000" stroke-width="0.18">` +
+    `<line x1="${round3(target[0])}" y1="${round3(target[1])}" x2="${round3(ex)}" y2="${round3(ey)}"/>` +
+    fcfFrameSvg(frameLeft, top, cells) +
     `</g>`
   );
 }
 
 /** ASME datum-feature symbol: a square box holding the letter, attached to
  *  the referenced face by a leader with a filled triangular base. */
-function datumSymbolToSvg(target: Pt2, angle: number, label: string, stemExtra: number): string {
+export function datumSymbolToSvg(target: Pt2, angle: number, label: string, stemExtra: number, attrs = ''): string {
   const ux = Math.cos(angle);
   const uy = Math.sin(angle);
   const stem = 6 + stemExtra;
@@ -528,7 +543,7 @@ function datumSymbolToSvg(target: Pt2, angle: number, label: string, stemExtra: 
     `L ${round3(target[0] - ux * 2.4 - px * baseW)} ${round3(target[1] - uy * 2.4 - py * baseW)} Z" ` +
     `fill="#000" stroke="none"/>`;
   return (
-    `<g class="dim datum" fill="none" stroke="#000" stroke-width="0.18">` +
+    `<g class="dim datum"${attrs} fill="none" stroke="#000" stroke-width="0.18">` +
     `<line x1="${round3(target[0])}" y1="${round3(target[1])}" x2="${round3(ex)}" y2="${round3(ey)}"/>` +
     triangle +
     `<rect x="${round3(bx)}" y="${round3(by)}" width="${BOX}" height="${BOX}"/>` +
@@ -556,6 +571,9 @@ export interface AnnotationRenderResult {
   /** Sheet-mm depth reserved below each view by bottom-stacked dimensions.
    *  The exporter pushes view labels below this so they never collide. */
   bottomReserve: Record<DrawingViewName, number>;
+  /** Sheet-mm depth reserved to the right of each view by vertical linear
+   *  dimensions, so automatic dimensions can stack beyond them. */
+  rightReserve: Record<DrawingViewName, number>;
   /** Pairs of DIFFERENT annotations whose rendered text bounding boxes
    *  overlap on the sheet — see `detectLabelOverlaps` below. Non-fatal: the
    *  caller surfaces `drawing.annotation.overlap` as a warning, it never
@@ -568,7 +586,7 @@ export interface AnnotationRenderResult {
 // Overlap detection (drawing.annotation.overlap)
 // ---------------------------------------------------------------------------
 
-interface TextBox {
+export interface TextBox {
   x0: number; y0: number; x1: number; y1: number;
   ownerIndex: number;
 }
@@ -589,7 +607,7 @@ const LINE_HEIGHT_FACTOR = 1.15;
  * about what this check covers rather than pretending precision it doesn't
  * have.
  */
-function extractTextBoxes(svgFragment: string, ownerIndex: number): TextBox[] {
+export function extractTextBoxes(svgFragment: string, ownerIndex: number): TextBox[] {
   const boxes: TextBox[] = [];
   const re = /<text x="([-\d.]+)" y="([-\d.]+)" font-size="([\d.]+)"([^>]*)>([^<]*)<\/text>/g;
   let m: RegExpExecArray | null;
@@ -659,6 +677,9 @@ export function renderAnnotations(input: AnnotationRenderInput): AnnotationRende
   const bottomReserve: Record<DrawingViewName, number> = {
     front: 0, top: 0, left: 0, iso: 0,
   };
+  const rightReserve: Record<DrawingViewName, number> = {
+    front: 0, top: 0, left: 0, iso: 0,
+  };
 
   const nextIndex = (view: DrawingViewName, side: string): number => {
     const key = `${view}:${side}`;
@@ -714,6 +735,8 @@ export function renderAnnotations(input: AnnotationRenderInput): AnnotationRende
               };
           if (horizontal) {
             bottomReserve[view] = Math.max(bottomReserve[view], dist);
+          } else {
+            rightReserve[view] = Math.max(rightReserve[view], dist);
           }
           if (a.tol !== undefined && !a.text) {
             dim.label = `${dim.label}${tolText(a.tol)}`;
@@ -888,12 +911,14 @@ export function renderAnnotations(input: AnnotationRenderInput): AnnotationRende
                 return [fc.x, fc.y, fc.z] as Vec3;
               })();
           const target = toSheet(anchor);
+          const cells = fcfCells(a);
           svg.push(
             fcfToSvg(
               target,
               LEADER_BASE_ANGLE + nextIndex(view, 'leader') * LEADER_STEP_ANGLE,
-              fcfCells(a),
+              cells,
               extra,
+              ` data-kc-fcf="${escAttr(cells.join(' '))}"`,
             ),
           );
           break;
@@ -941,5 +966,5 @@ export function renderAnnotations(input: AnnotationRenderInput): AnnotationRende
     );
   }
 
-  return { svg, bottomReserve, overlaps: detectLabelOverlaps(svg) };
+  return { svg, bottomReserve, rightReserve, overlaps: detectLabelOverlaps(svg) };
 }
