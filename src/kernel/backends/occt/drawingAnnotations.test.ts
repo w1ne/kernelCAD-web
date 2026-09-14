@@ -584,4 +584,38 @@ describe('feature-aware annotation kinds', () => {
       annotations: [{ kind: 'fcf', view: 'top', type: 'flatness', value: 0.1 }],
     })).toThrow(/exactly one of 'edge' or 'face'/);
   });
+
+  it('emits a non-fatal drawing.annotation.overlap warning when two labels crowd each other', () => {
+    // 13 `note`s anchored at the SAME point: the shared per-view leader
+    // rotation steps 30° per successive note, so the 13th (index 12) lands
+    // on EXACTLY the same angle as the 1st (index 0) — 12 * 30 = 360°.
+    // Same anchor, same angle, same one-letter text => genuinely identical
+    // rendered position, a real (not staged) overlap. The export still
+    // SUCCEEDS (a crowded callout is still more useful than a silently
+    // dropped one) but a warn diagnostic names the pair.
+    const diagnostics: Array<{ code: string; severity: string }> = [];
+    const annotations: DrawingAnnotation[] = Array.from({ length: 13 }, () => (
+      { kind: 'note', at: [10, 10, -2], text: 'X' } as const
+    ));
+    const bytes = exportSvgDrawing(plate(), {
+      format: 'svg-drawing',
+      annotations,
+    }, diagnostics as never);
+    expect(bytes.length).toBeGreaterThan(0);
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].code).toBe('drawing.annotation.overlap');
+    expect(diagnostics[0].severity).toBe('warn');
+  });
+
+  it('does not warn when the same two labels are separated with offset/view', () => {
+    const diagnostics: Array<{ code: string }> = [];
+    exportSvgDrawing(plate(), {
+      format: 'svg-drawing',
+      annotations: [
+        { kind: 'note', at: [10, 10, -2], text: 'A' },
+        { kind: 'note', at: [10, 10, -2], text: 'B', offset: 40 },
+      ],
+    }, diagnostics as never);
+    expect(diagnostics).toHaveLength(0);
+  });
 });

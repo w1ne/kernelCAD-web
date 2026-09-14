@@ -556,6 +556,85 @@ export interface AnnotationRenderResult {
   /** Sheet-mm depth reserved below each view by bottom-stacked dimensions.
    *  The exporter pushes view labels below this so they never collide. */
   bottomReserve: Record<DrawingViewName, number>;
+  /** Pairs of DIFFERENT annotations whose rendered text bounding boxes
+   *  overlap on the sheet — see `detectLabelOverlaps` below. Non-fatal: the
+   *  caller surfaces `drawing.annotation.overlap` as a warning, it never
+   *  fails the export (an annotation crowding another is still readable
+   *  more often than not; a missing dimension is not). */
+  overlaps: ReadonlyArray<readonly [number, number]>;
+}
+
+// ---------------------------------------------------------------------------
+// Overlap detection (drawing.annotation.overlap)
+// ---------------------------------------------------------------------------
+
+interface TextBox {
+  x0: number; y0: number; x1: number; y1: number;
+  ownerIndex: number;
+}
+
+/** Average glyph width as a fraction of font-size for our sans-serif label
+ *  text — wide enough that this over-estimates rather than under-estimates
+ *  width (a false positive "overlap" warning is far cheaper than a missed
+ *  one for a diagnostic whose whole point is to flag crowding). */
+const CHAR_WIDTH_FACTOR = 0.62;
+const LINE_HEIGHT_FACTOR = 1.15;
+
+/**
+ * Pull an approximate sheet-space bounding box out of every axis-aligned
+ * `<text>` element in one annotation's rendered SVG fragment. Rotated
+ * labels (the vertical `linear` dimension uses `transform="rotate(-90 …)"`)
+ * are skipped — estimating a rotated glyph box needs the pivot and would
+ * otherwise silently mis-flag or miss overlaps; excluding them is honest
+ * about what this check covers rather than pretending precision it doesn't
+ * have.
+ */
+function extractTextBoxes(svgFragment: string, ownerIndex: number): TextBox[] {
+  const boxes: TextBox[] = [];
+  const re = /<text x="([-\d.]+)" y="([-\d.]+)" font-size="([\d.]+)"([^>]*)>([^<]*)<\/text>/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(svgFragment)) !== null) {
+    const [, xs, ys, fs, rest] = m;
+    if (rest.includes('transform=')) continue;
+    const content = m[5];
+    const x = Number(xs);
+    const y = Number(ys);
+    const fontSize = Number(fs);
+    const anchorMatch = /text-anchor="(start|middle|end)"/.exec(rest);
+    const anchor = anchorMatch ? anchorMatch[1] : 'start';
+    const width = Math.max(content.length, 1) * fontSize * CHAR_WIDTH_FACTOR;
+    const height = fontSize * LINE_HEIGHT_FACTOR;
+    const left = anchor === 'middle' ? x - width / 2 : anchor === 'end' ? x - width : x;
+    boxes.push({ x0: left, y0: y - height * 0.8, x1: left + width, y1: y + height * 0.25, ownerIndex });
+  }
+  return boxes;
+}
+
+const boxesOverlap = (a: TextBox, b: TextBox): boolean =>
+  a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
+
+/** Every pair of DIFFERENT annotations (by index into the author's
+ *  `annotations` array) whose rendered label boxes overlap. A label's own
+ *  multi-cell group (an `fcf`'s three boxes) is expected to sit adjacent to
+ *  itself, so only cross-annotation pairs count. */
+export function detectLabelOverlaps(svgByIndex: readonly string[]): Array<readonly [number, number]> {
+  const boxes = svgByIndex.flatMap((svg, i) => extractTextBoxes(svg, i));
+  const pairs = new Set<string>();
+  const out: Array<readonly [number, number]> = [];
+  for (let a = 0; a < boxes.length; a++) {
+    for (let b = a + 1; b < boxes.length; b++) {
+      if (boxes[a].ownerIndex === boxes[b].ownerIndex) continue;
+      if (!boxesOverlap(boxes[a], boxes[b])) continue;
+      const [lo, hi] = boxes[a].ownerIndex < boxes[b].ownerIndex
+        ? [boxes[a].ownerIndex, boxes[b].ownerIndex]
+        : [boxes[b].ownerIndex, boxes[a].ownerIndex];
+      const key = `${lo}:${hi}`;
+      if (pairs.has(key)) continue;
+      pairs.add(key);
+      out.push([lo, hi]);
+    }
+  }
+  return out;
 }
 
 /**
@@ -862,5 +941,5 @@ export function renderAnnotations(input: AnnotationRenderInput): AnnotationRende
     );
   }
 
-  return { svg, bottomReserve };
+  return { svg, bottomReserve, overlaps: detectLabelOverlaps(svg) };
 }
