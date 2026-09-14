@@ -35,6 +35,23 @@ describe('evaluate command', () => {
     expect(result.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
   });
 
+  it('a boolean param() actually gates a feature through the real CLI evaluate path (regression: b.value used to be undefined)', async () => {
+    const codeFor = (hasLid: boolean) => `
+      const hasLid = param('HasLid', ${hasLid});
+      let body = box(20, 20, 10);
+      if (hasLid.value) { body = body.chamfer(1, { face: 'top' }); }
+      return body;
+    `;
+    const withLid = await evaluateScript({ code: codeFor(true) });
+    const withoutLid = await evaluateScript({ code: codeFor(false) });
+
+    expect(withLid.exitCode).toBe(0);
+    expect(withoutLid.exitCode).toBe(0);
+    expect(withLid.featureCount).toBe(2); // box + chamfer
+    expect(withoutLid.featureCount).toBe(1); // box only — the `if` branch is real dead code, not always-false
+    expect(withLid.featureCount).not.toBe(withoutLid.featureCount);
+  });
+
   it('maps missing file to cli.file-read diagnostic', async () => {
     const result = await evaluateScript({ file: '/tmp/kernelcad-no-such-file.kcad.ts' });
 

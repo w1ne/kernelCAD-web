@@ -52,11 +52,24 @@ export class ParamRef<T extends number | boolean = number | boolean> {
   readonly _brand: typeof PARAM_REF_BRAND = PARAM_REF_BRAND;
   readonly _type: T extends number ? 'number' : 'boolean';
   readonly _expr: ParamRefExpr;
+  /**
+   * Eager snapshot of the current value — set ONLY for boolean ParamRefs
+   * (booleans have no arithmetic / composed expressions, so every boolean
+   * ParamRef is a `param()`-declared leaf; there is no derived-boolean case
+   * to keep in sync). Numeric ParamRefs leave this `undefined`: they stay
+   * purely symbolic (`_expr` + `resolveExpr` against a live `ParamTable`)
+   * so a Studio slider can re-lower a dimension without re-running the
+   * whole script — collapsing to a number here would defeat that. Read
+   * `b.value` in script control flow (`if (hasLid.value) {...}`), same as
+   * `TypedParamRef` for choice/string params.
+   */
+  readonly value: T extends boolean ? boolean : undefined;
 
-  constructor(expr: ParamRefExpr, type: T extends number ? 'number' : 'boolean') {
+  constructor(expr: ParamRefExpr, type: T extends number ? 'number' : 'boolean', value?: T) {
     this._expr = expr;
     this._type = type;
     this.$param = paramExprToDebugString(expr);
+    this.value = (type === 'boolean' ? value : undefined) as T extends boolean ? boolean : undefined;
     Object.freeze(this);
   }
 
@@ -181,8 +194,9 @@ export function isParamRef(value: unknown): value is ParamRef {
 export function makeParamRef<T extends number | boolean>(
   name: string,
   type: T extends number ? 'number' : 'boolean',
+  value?: T,
 ): ParamRef<T> {
-  return new ParamRef<T>({ kind: 'param', name }, type);
+  return new ParamRef<T>({ kind: 'param', name }, type, value);
 }
 
 /**

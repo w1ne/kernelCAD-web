@@ -74,4 +74,39 @@ describe('paramsListTool', () => {
       },
     ]);
   });
+
+  // --- Bug regression: inspect({ of: 'params', file | code }) used to
+  // ignore `file`/`code` entirely and only read the active session, so it
+  // returned `{ params: [] }` even for a file/code with plain numeric
+  // params, unless `evaluate_script` had ALREADY been called in the same
+  // process. It must actually evaluate the given file/code, same as every
+  // other `inspect({ of: ... })` reader (`listFeaturesTool` et al.).
+
+  it('evaluates { code } fresh and lists params with NO prior evaluate_script call', async () => {
+    const result = await paramsListTool({
+      code: `const w = param('w', 5, { min: 1, max: 20 }); return box(w, 10, 10);`,
+    });
+    expect(result.params).toEqual([
+      { name: 'w', type: 'number', value: 5, defaultValue: 5, min: 1, max: 20 },
+    ]);
+  });
+
+  it('evaluates { file } fresh and lists params with NO prior evaluate_script call', async () => {
+    const { mkdtempSync, writeFileSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-paramslist-'));
+    const file = join(tmp, 'demo.kcad.ts');
+    writeFileSync(file, `const w = param('w', 5, { min: 1, max: 20 }); return box(w, 10, 10);`);
+
+    const result = await paramsListTool({ file });
+    expect(result.params).toEqual([
+      { name: 'w', type: 'number', value: 5, defaultValue: 5, min: 1, max: 20 },
+    ]);
+  });
+
+  it('{ code } still returns [] on a genuinely empty active session when no file/code is given', async () => {
+    const result = await paramsListTool({});
+    expect(result.params).toEqual([]);
+  });
 });

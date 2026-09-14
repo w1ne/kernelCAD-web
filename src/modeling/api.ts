@@ -933,14 +933,14 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       }
       const type = typeof defaultValue === 'boolean' ? 'boolean' : 'number';
       session.paramTable.declare(name, type, defaultValue, meta);
-      return makeParamRef(name, type as 'number' | 'boolean') as ParamRef<number> | ParamRef<boolean>;
+      return makeParamRef(name, type as 'number' | 'boolean', defaultValue) as ParamRef<number> | ParamRef<boolean>;
     }) as KernelCadApi['param'],
     params(decl) {
       const out: Record<string, ParamRef<number | boolean>> = {};
       for (const [name, value] of Object.entries(decl)) {
         const type = typeof value === 'boolean' ? 'boolean' : 'number';
         session.paramTable.declare(name, type, value);
-        out[name] = makeParamRef(name, type as 'number' | 'boolean');
+        out[name] = makeParamRef(name, type as 'number' | 'boolean', value);
       }
       return out as { [K in keyof typeof decl]: ParamRef<typeof decl[K]> };
     },

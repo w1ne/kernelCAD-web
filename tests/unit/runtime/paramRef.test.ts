@@ -19,6 +19,23 @@ describe('paramRef', () => {
     expect(ref._type).toBe('boolean');
   });
 
+  it('boolean ParamRef eagerly exposes .value (script control-flow reads this)', () => {
+    const on = makeParamRef<boolean>('hasLid', 'boolean', true);
+    expect(on.value).toBe(true);
+    const off = makeParamRef<boolean>('hasLid', 'boolean', false);
+    expect(off.value).toBe(false);
+  });
+
+  it('boolean ParamRef.value defaults to undefined when no value is passed (back-compat)', () => {
+    const ref = makeParamRef<boolean>('hasLid', 'boolean');
+    expect(ref.value).toBeUndefined();
+  });
+
+  it('numeric ParamRef.value stays undefined — numeric params remain purely symbolic', () => {
+    const ref = makeParamRef<number>('boltDia', 'number', 5);
+    expect(ref.value).toBeUndefined();
+  });
+
   it('factory output is frozen (no accidental mutation downstream)', () => {
     const ref = makeParamRef<number>('x', 'number');
     expect(Object.isFrozen(ref)).toBe(true);
