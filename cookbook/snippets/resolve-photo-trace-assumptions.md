@@ -11,33 +11,29 @@ when_to_use: You called trace_from_image on a reference photo and want to know w
 ---
 
 ```typescript
-// trace_from_image returns a `ledger` alongside features/diagnostics. Every
-// fact is classified visible|inferred|assumed|missing — never a fabricated
-// confidence number, always echoing the backend's own signal.
-const traced = await mcp.trace_from_image({
-  imageUrl: 'file:///abs/path/brow.png',
-  features: [{ label: 'brow_top', kind: 'curve' }],
-  // No scaleAnchor supplied here on purpose — see the `scale` fact below.
-});
+// Before this file existed, `trace_from_image` returned a `ledger` alongside
+// features/diagnostics. Every fact is classified visible|inferred|assumed|
+// missing — never a fabricated confidence number, always echoing the
+// backend's own signal. Its `scale` fact came back `missing` (no ruler in
+// the photo), so `resolve_assumptions` was called to override it with a
+// measurement taken from a known hinge-to-hinge width:
+//   resolve_assumptions({
+//     ledgerPath: '/abs/path/brow.ledger.json',
+//     resolutions: [{ id: 'brow_top', confirm: true }, { id: 'scale', value: 0.185 }],
+//   })
+// -> paramOverrides = { brow_top: [...waypoints], scale: 0.185 }
+// `scale` (mm/px) below is that resolved value — never build geometry from a
+// trace while `ledger.unresolvedCount > 0` on a `missing` fact.
+const scale = 0.185; // mm per pixel, from resolve_assumptions' paramOverrides.scale
+const browPointsPx: [number, number][] = [[10, 0], [40, 8], [70, 4]]; // pixel-space waypoints, resolved
+const browPointsMm = browPointsPx.map(([x, y]): [number, number] => [x * scale, y * scale]);
 
-// traced.ledger.facts:
-//   { id: 'brow_top', kind: 'inferred', confidence: 0.81, resolution: 'open' }  // vision-llm-labeled
-//   { id: 'scale', kind: 'missing', confidence: 0, resolution: 'open' }        // no ruler in the photo
+const brow = path()
+  .moveTo(browPointsMm[0][0], browPointsMm[0][1])
+  .spline(browPointsMm)
+  .lineTo(browPointsMm[browPointsMm.length - 1][0], -2)
+  .lineTo(browPointsMm[0][0], -2)
+  .close();
 
-// Resolve the open facts before building geometry: confirm the traced curve,
-// override the scale with a measurement taken from the photo (e.g. a known
-// hinge-to-hinge width).
-const resolved = await mcp.resolve_assumptions({
-  ledgerPath: '/abs/path/brow.ledger.json',
-  resolutions: [
-    { id: 'brow_top', confirm: true },
-    { id: 'scale', value: 0.185 }, // mm per pixel, derived from a measured reference dimension
-  ],
-});
-
-// resolved.paramOverrides = { brow_top: [...waypoints], scale: 0.185 }
-// Feed resolved.paramOverrides.scale into your mm conversion before
-// path().spline(...) — do not build geometry while `unresolvedCount > 0`
-// on a `missing` fact; call trace_from_image with `validate: 'error'` to
-// make that a hard gate instead of a warning.
+return brow.extrude(2);
 ```
