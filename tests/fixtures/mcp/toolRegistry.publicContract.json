@@ -1448,6 +1448,68 @@
             "auto"
           ],
           "description": "Force a specific backend; default `auto` routes by corner-color stddev."
+        },
+        "scaleAnchor": {
+          "type": "object",
+          "description": "Pixel-to-real-world scale anchor: two measured points on the image. Absent -> the returned ledger's `scale` fact is `missing`.",
+          "properties": {
+            "pixelDistance": {
+              "type": "number",
+              "description": "Distance in pixels between the two measured points."
+            },
+            "realDistance": {
+              "type": "number",
+              "description": "The same distance in real-world units."
+            },
+            "unit": {
+              "type": "string",
+              "enum": [
+                "mm",
+                "cm",
+                "in"
+              ]
+            }
+          },
+          "required": [
+            "pixelDistance",
+            "realDistance",
+            "unit"
+          ]
+        },
+        "priors": {
+          "type": "array",
+          "description": "Caller-supplied category-norm defaults (e.g. wall thickness) recorded verbatim as `assumed` ledger facts.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "statement": {
+                "type": "string"
+              },
+              "value": {},
+              "confidence": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            },
+            "required": [
+              "id",
+              "statement",
+              "value",
+              "confidence"
+            ]
+          }
+        },
+        "validate": {
+          "type": "string",
+          "enum": [
+            "warn",
+            "error"
+          ],
+          "description": "Assumption-ledger strictness. `warn` (default) never blocks. `error` fails the call when any `missing` ledger fact (e.g. scale) is still open."
         }
       },
       "required": [
@@ -1486,12 +1548,94 @@
             "type": "object",
             "additionalProperties": true
           }
+        },
+        "ledger": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Assumption ledger: { facts, scale?, unresolvedCount } classifying every fact as visible/inferred/assumed/missing."
         }
       },
       "required": [
         "ok",
         "features",
         "imageDims",
+        "diagnostics",
+        "ledger"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "resolve_assumptions",
+    "description": "Use this after trace_from_image to confirm or override the open facts in its assumption ledger (missing scale, inferred/assumed values) before committing geometry built from a reference photo. Reads the persisted `<model>.ledger.json` at `ledgerPath`, applies each resolution — `{ id, confirm: true }` to accept a fact as-is, or `{ id, value }` to override it — rewrites the ledger file, and returns the updated ledger plus `paramOverrides` (factId -> value) to feed straight into `set_param`. Pair with the `kernelcad-from-reference` skill.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "ledgerPath": {
+          "type": "string",
+          "description": "Path to the `<model>.ledger.json` file persisted alongside the traced source."
+        },
+        "resolutions": {
+          "type": "array",
+          "description": "One resolution per ledger fact id to act on.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Matches a `facts[].id` in the ledger."
+              },
+              "value": {
+                "description": "Overrides the fact's value; marks it `overridden`."
+              },
+              "confirm": {
+                "type": "boolean",
+                "description": "Accepts the fact as-is; marks it `confirmed`."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        }
+      },
+      "required": [
+        "ledgerPath",
+        "resolutions"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "ledger": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "The ledger after applying resolutions (present on success)."
+        },
+        "paramOverrides": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "factId -> value for every resolved fact with a value; feed into set_param."
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "paramOverrides",
         "diagnostics"
       ],
       "additionalProperties": true

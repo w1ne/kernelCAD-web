@@ -32,6 +32,7 @@ const EXPECTED_TOOL_NAMES = [
   'add_curve',
   'add_path_segment',
   'trace_from_image',
+  'resolve_assumptions',
   'add_variable_sweep',
   'add_text',
   'project_curve',
@@ -117,7 +118,7 @@ describe('toolRegistry public contract', () => {
     const names = inspectionVerificationToolEntries.map(entry => entry.definition.name);
 
     expect(names).toEqual(['inspect', 'verify', 'why_did_this_fail', 'query']);
-    expect([TOOL_REGISTRY[2], TOOL_REGISTRY[3], TOOL_REGISTRY[4], TOOL_REGISTRY[16]]).toEqual(
+    expect([TOOL_REGISTRY[2], TOOL_REGISTRY[3], TOOL_REGISTRY[4], TOOL_REGISTRY[17]]).toEqual(
       inspectionVerificationToolEntries,
     );
   });
@@ -126,7 +127,7 @@ describe('toolRegistry public contract', () => {
     const names = referenceExportToolEntries.map(entry => entry.definition.name);
 
     expect(names).toEqual(['lookup_api', 'lookup_diagnostics', 'export']);
-    expect(TOOL_REGISTRY.slice(17, 20)).toEqual(referenceExportToolEntries);
+    expect(TOOL_REGISTRY.slice(18, 21)).toEqual(referenceExportToolEntries);
   });
 
   it('wires the moved core runtime handlers through the public dispatcher', async () => {
@@ -194,7 +195,7 @@ describe('toolRegistry public contract', () => {
     const names = catalogToolEntries.map(entry => entry.definition.name);
 
     expect(names).toEqual(['lookup_cookbook', 'find_part', 'fetch_part']);
-    expect(TOOL_REGISTRY.slice(20, 23)).toEqual(catalogToolEntries);
+    expect(TOOL_REGISTRY.slice(21, 24)).toEqual(catalogToolEntries);
   });
 
   it('composes geometry-authoring tools from the geometry registry module', () => {
@@ -206,13 +207,14 @@ describe('toolRegistry public contract', () => {
       'add_curve',
       'add_path_segment',
       'trace_from_image',
+      'resolve_assumptions',
       'add_variable_sweep',
       'add_text',
       'project_curve',
       'add_pattern_feature',
       'remove_feature',
     ]);
-    expect(TOOL_REGISTRY.slice(6, 16)).toEqual(geometryAuthoringToolEntries);
+    expect(TOOL_REGISTRY.slice(6, 17)).toEqual(geometryAuthoringToolEntries);
   });
 
   it('composes sketch and assembly authoring tools from the sketch assembly registry module', () => {
@@ -228,7 +230,7 @@ describe('toolRegistry public contract', () => {
       'set_scene_return',
       'solve_mates',
     ]);
-    expect(TOOL_REGISTRY.slice(23, 31)).toEqual(sketchAssemblyToolEntries);
+    expect(TOOL_REGISTRY.slice(24, 32)).toEqual(sketchAssemblyToolEntries);
   });
 
   it('composes review and rendering pipeline tools from the review pipeline registry module', () => {
@@ -243,7 +245,7 @@ describe('toolRegistry public contract', () => {
       'capture_animation',
       'render_preview',
     ]);
-    expect(TOOL_REGISTRY.slice(31, 38)).toEqual(reviewPipelineToolEntries);
+    expect(TOOL_REGISTRY.slice(32, 39)).toEqual(reviewPipelineToolEntries);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

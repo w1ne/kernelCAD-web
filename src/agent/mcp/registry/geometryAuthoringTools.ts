@@ -5,6 +5,7 @@ import { addCurveTool } from '../tools/addCurve';
 import { addSurfaceTool } from '../tools/addSurface';
 import { addPathSegmentTool } from '../tools/addPathSegment';
 import { traceFromImageTool } from '../tools/traceFromImage';
+import { resolveAssumptionsTool } from '../tools/resolveAssumptions';
 import { addPatternFeatureTool } from '../tools/addPatternFeature';
 import { addVariableSweepTool } from '../tools/addVariableSweep';
 import { addTextTool } from '../tools/addText';
@@ -371,11 +372,72 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
             enum: ['opencv', 'vision-llm', 'hybrid', 'auto'],
             description: 'Force a specific backend; default `auto` routes by corner-color stddev.',
           },
+          scaleAnchor: {
+            type: 'object',
+            description: 'Pixel-to-real-world scale anchor: two measured points on the image. Absent -> the returned ledger\'s `scale` fact is `missing`.',
+            properties: {
+              pixelDistance: { type: 'number', description: 'Distance in pixels between the two measured points.' },
+              realDistance: { type: 'number', description: 'The same distance in real-world units.' },
+              unit: { type: 'string', enum: ['mm', 'cm', 'in'] },
+            },
+            required: ['pixelDistance', 'realDistance', 'unit'],
+          },
+          priors: {
+            type: 'array',
+            description: 'Caller-supplied category-norm defaults (e.g. wall thickness) recorded verbatim as `assumed` ledger facts.',
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                statement: { type: 'string' },
+                value: {},
+                confidence: { type: 'number', minimum: 0, maximum: 1 },
+              },
+              required: ['id', 'statement', 'value', 'confidence'],
+            },
+          },
+          validate: {
+            type: 'string',
+            enum: ['warn', 'error'],
+            description: 'Assumption-ledger strictness. `warn` (default) never blocks. `error` fails the call when any `missing` ledger fact (e.g. scale) is still open.',
+          },
         },
         required: ['imageUrl'],
       },
     },
     handler: input => traceFromImageTool(input as unknown as Parameters<typeof traceFromImageTool>[0]),
+  },
+  {
+    definition: {
+      name: 'resolve_assumptions',
+      description:
+        "Use this after trace_from_image to confirm or override the open facts in its assumption ledger (missing scale, inferred/assumed values) before committing geometry built from a reference photo. " +
+        "Reads the persisted `<model>.ledger.json` at `ledgerPath`, applies each resolution — `{ id, confirm: true }` to accept a fact as-is, or `{ id, value }` to override it — rewrites the ledger file, and returns the updated ledger plus `paramOverrides` (factId -> value) to feed straight into `set_param`. Pair with the `kernelcad-from-reference` skill.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          ledgerPath: {
+            type: 'string',
+            description: 'Path to the `<model>.ledger.json` file persisted alongside the traced source.',
+          },
+          resolutions: {
+            type: 'array',
+            description: 'One resolution per ledger fact id to act on.',
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'string', description: 'Matches a `facts[].id` in the ledger.' },
+                value: { description: 'Overrides the fact\'s value; marks it `overridden`.' },
+                confirm: { type: 'boolean', description: 'Accepts the fact as-is; marks it `confirmed`.' },
+              },
+              required: ['id'],
+            },
+          },
+        },
+        required: ['ledgerPath', 'resolutions'],
+      },
+    },
+    handler: input => resolveAssumptionsTool(input as unknown as Parameters<typeof resolveAssumptionsTool>[0]),
   },
   {
     definition: {

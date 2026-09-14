@@ -27,6 +27,7 @@ const ALLOWED_GROUPS = new Set([
   'kinematic',
   'mechanism',
   'animation',
+  'reference',
 ]);
 
 // Mirror of the well-formed-shape predicate from nextAction.test.ts so the

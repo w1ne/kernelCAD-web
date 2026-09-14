@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 248 codes', () => {
+  it('emits exactly 251 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -59,8 +59,14 @@ describe('diagnostic catalogue invariants', () => {
     //   the script also placed — the URDF/mate convention mix, which displaces
     //   the child by the joint origin at every pose).
     //   = 248.
-    expect(DIAGNOSTIC_CODES).toHaveLength(248);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(248);
+    // + 3 Slice E image/photo-reference assumption ledger:
+    //   reference.assumptions.unresolved (trace_from_image's ledger has open
+    //   facts), reference.assumptions.ledger-not-found (resolve_assumptions
+    //   given a bad ledgerPath), reference.assumptions.unknown-resolution-id
+    //   (resolve_assumptions given a resolution id absent from the ledger).
+    //   = 251.
+    expect(DIAGNOSTIC_CODES).toHaveLength(251);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(251);
   });
 
   it('every code has a non-empty hint template', () => {

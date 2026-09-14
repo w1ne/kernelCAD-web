@@ -68,6 +68,7 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   project_curve: AUTHOR,
   add_pattern_feature: AUTHOR,
   trace_from_image: AUTHOR,
+  resolve_assumptions: AUTHOR,
   add_constraint: AUTHOR,
   add_part: AUTHOR,
   add_connector: AUTHOR,
