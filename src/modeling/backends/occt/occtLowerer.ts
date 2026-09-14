@@ -1535,7 +1535,13 @@ export class OcctLowerer implements FeatureLowerer {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const sectionWires: any[] = [];
               for (let i = 0; i < sketches.length; i++) {
-                const s = sketches[i];
+                const s = sketches[i] as unknown as {
+                  kind?: string;
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  _drawing?: any;
+                  _hasNurbs?: boolean;
+                  _commands?: unknown;
+                };
                 const p = planes[i];
                 if (s.kind !== 'sketch' || (!s._drawing && !s._hasNurbs)) {
                   diagnostics.push({
@@ -1551,11 +1557,11 @@ export class OcctLowerer implements FeatureLowerer {
                 let lifted: { face: () => { outerWire: () => { wrapped: unknown } } };
                 if (s._hasNurbs && s._commands) {
                   const { buildNurbsSketchOnPlane } = await import('../../../kernel/backends/occt/pathNurbsLowerer');
-                  lifted = buildNurbsSketchOnPlane(s._commands, p.plane) as unknown as typeof lifted;
+                  lifted = buildNurbsSketchOnPlane(s._commands as never, p.plane) as unknown as typeof lifted;
                 } else {
                   lifted = s._drawing!.sketchOnPlane(
                     p.plane,
-                    p.origin as unknown as Parameters<typeof s._drawing.sketchOnPlane>[1],
+                    p.origin,
                   ) as unknown as typeof lifted;
                 }
                 sectionWires.push(lifted.face().outerWire().wrapped);

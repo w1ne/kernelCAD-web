@@ -92,8 +92,8 @@ export function bridgeCurves(
     );
   }
 
-  let tanA = scale(dA[1], flipA ? -tension : tension);
-  let tanB = scale(dB[1], flipB ? -tension : tension);
+  const tanA = scale(dA[1], flipA ? -tension : tension);
+  const tanB = scale(dB[1], flipB ? -tension : tension);
   if (hypot3(tanA) < 1e-12 || hypot3(tanB) < 1e-12) {
     throw new KernelError(
       'feature.curve-bridge.degenerate-end',

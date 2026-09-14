@@ -1112,7 +1112,8 @@ export function createApi(ctx: ApiContext): KernelCadApi {
         './backends/occt/surfaceIntersection'
       );
       const { OcctBackend } = await import('../kernel/backends/occt/occtBackend');
-      const lowerOperand = async (op: Shape | SurfaceProxy, label: string): Promise<OcctBackend> => {
+      type OcctShape = InstanceType<typeof OcctBackend>;
+      const lowerOperand = async (op: Shape | SurfaceProxy, label: string): Promise<OcctShape> => {
         if (op instanceof Shape) {
           const lowered = await op.lower();
           if (!(lowered instanceof OcctBackend)) {
