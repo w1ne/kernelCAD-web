@@ -36,6 +36,9 @@ const EMITTING_FILES = [
   'modeling/capture/faceLabels.ts',
   'shared/fonts/index.ts',
   'modeling/api.ts',
+  'modeling/capture/bridgeCurves.ts',
+  'modeling/backends/occt/surfaceIntersection.ts',
+  'modeling/backends/occt/loftWithRailsLowerer.ts',
   'modeling/sheetMetal.ts',                      // W2.2
   'modeling/sketch/index.ts',
   'modeling/compute/recomputeEngine.ts',
@@ -76,7 +79,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     ).toEqual([]);
   });
 
-  it('catalogue has exactly 276 codes', () => {
+  it('catalogue has exactly 279 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -201,7 +204,9 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  + 4 USD physics export and geometry diff: export.usd.joint-unsupported,
     //       export.usd.pose-unsolved, export.usd.mass-missing, diff.body.unmatched =
     //       276.
-    expect(catalogue.size).toBe(276);
+    //  + 3 curves-surfacing: feature.curve-bridge.degenerate-end,
+    //       feature.surface-intersection.none, feature.loft.rail-miss = 279.
+    expect(catalogue.size).toBe(279);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

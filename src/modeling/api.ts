@@ -5,7 +5,7 @@ import { validateFaceLabels } from './capture/faceLabels';
 import { makeAssembly, type Assembly } from './capture/assembly';
 import { Shape } from './capture/proxy';
 import { Sketch, makePath, type PathBuilder } from './capture/sketch';
-import type { SurfaceProxy } from './capture/surfaceProxy';
+import { SurfaceProxy } from './capture/surfaceProxy';
 import type { Curve3D } from './capture/curveProxy';
 import type { Param, Vec3, PlaneSpec } from '../shared/intent/types';
 import { isValidEditableNumber, formatScalarForError } from '../shared/intent/types';
@@ -30,6 +30,7 @@ import type {
 import type { DfmSpec, DfmSpecHandle } from '../shared/intent/dfmSpecRecord';
 import { helix, type RailPoint, type HelixOptions } from './helix';
 import { solveHermiteG2, type HermiteEndpoint } from './capture/hermiteG2';
+import { bridgeCurves } from './capture/bridgeCurves';
 import { createSketchModule, type SketchModule } from './sketch/index';
 import { fontPath, type FontPath } from '../shared/fonts/fontPath';
 // Parts features (fromSTEP/fromBREP/fromSTL/findPart/fetchPart/standard) are
@@ -284,6 +285,25 @@ export interface KernelCadApi {
    * the curve3d record is not registered in that case.
    */
   hermiteG2(a: HermiteEndpoint, b: HermiteEndpoint): Curve3D;
+
+  /**
+   * Infer end frames from two Curve3Ds and emit a degree-5 Hermite blend.
+   * Same geometry as `a.bridge(b, opts)`.
+   */
+  curveBridge(
+    a: Curve3D,
+    b: Curve3D,
+    opts: { continuity: 'G1' | 'G2'; ends?: 'end-start' | 'end-end' | 'start-start' | 'start-end'; tension?: number },
+  ): Curve3D;
+
+  /**
+   * Exact surface–surface (or face–face) intersection via OCCT
+   * `BRepAlgoAPI_Section`. Returns one Curve3D per section edge.
+   */
+  surfaceIntersection(
+    a: Shape | SurfaceProxy,
+    b: Shape | SurfaceProxy,
+  ): Promise<Curve3D[]>;
 
   /**
    * NURBS Slice B: multi-section sweep. Sweeps each `section.profile` along
@@ -1081,6 +1101,69 @@ export function createApi(ctx: ApiContext): KernelCadApi {
           closed: false,
         },
       });
+    },
+
+    curveBridge(a, b, opts) {
+      return bridgeCurves(session, a, b, opts);
+    },
+
+    async surfaceIntersection(a, b) {
+      const { sectionShapes, edgeToCurve3DMetadata } = await import(
+        './backends/occt/surfaceIntersection'
+      );
+      const { OcctBackend } = await import('../kernel/backends/occt/occtBackend');
+      const lowerOperand = async (op: Shape | SurfaceProxy, label: string): Promise<OcctBackend> => {
+        if (op instanceof Shape) {
+          const lowered = await op.lower();
+          if (!(lowered instanceof OcctBackend)) {
+            throw new KernelError(
+              'feature.kernel-failed',
+              `surfaceIntersection: ${label} did not lower to an OcctBackend.`,
+              op.id,
+              'kernel-failed — check upstream diagnostics on this operand.',
+            );
+          }
+          return lowered;
+        }
+        const shell = op.toShape();
+        const lowered = await shell.lower();
+        if (!(lowered instanceof OcctBackend)) {
+          throw new KernelError(
+            'feature.kernel-failed',
+            `surfaceIntersection: ${label} surface did not lower to an OcctBackend.`,
+            op.id,
+            'kernel-failed — check upstream diagnostics on this operand.',
+          );
+        }
+        return lowered;
+      };
+      const shapeA = await lowerOperand(a, 'a');
+      const shapeB = await lowerOperand(b, 'b');
+      const wrappedA = (shapeA.getReplicadShape() as { wrapped: unknown }).wrapped;
+      const wrappedB = (shapeB.getReplicadShape() as { wrapped: unknown }).wrapped;
+      let edges;
+      try {
+        edges = sectionShapes(wrappedA, wrappedB);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        throw new KernelError(
+          'feature.kernel-failed',
+          `surfaceIntersection: BRepAlgoAPI_Section failed: ${msg}`,
+          undefined,
+          'kernel-failed — verify both operands lower to valid solids or faces.',
+        );
+      }
+      if (edges.length === 0) {
+        throw new KernelError(
+          'feature.surface-intersection.none',
+          'surfaceIntersection: the two operands do not intersect.',
+          undefined,
+          'surface-intersection.none — translate one operand so the faces cut, then retry.',
+        );
+      }
+      return edges.map((edge) =>
+        session.addCurve3D({ metadata: edgeToCurve3DMetadata(edge) }),
+      );
     },
 
     variableSweep(spine, sections, opts) {

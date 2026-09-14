@@ -144,10 +144,11 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
     blurb:
       'NURBS curves and surfaces, plus the evaluators for measuring them before they become solids.',
     names: [
-      'nurbsCurve', 'spline3d', 'hermiteG2', 'nurbsSurface', 'surfaceFromCurves',
+      'nurbsCurve', 'spline3d', 'hermiteG2', 'curveBridge', 'surfaceIntersection',
+      'nurbsSurface', 'surfaceFromCurves',
       'surfaceFromBoundary', 'sew', 'thicken', 'toShape', 'trimTo', 'split',
       'projectCurve',
-      'sample', 'pointAt', 'tangentAt', 'domain',
+      'sample', 'pointAt', 'tangentAt', 'domain', 'bridge',
       'closestPoint', 'closestParam', 'divideByEqualArcLength', 'divideByArcLength',
       'derivatives', 'tessellate', 'intersect',
     ],
