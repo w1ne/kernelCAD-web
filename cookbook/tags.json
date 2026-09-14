@@ -30,5 +30,7 @@
   "revolute",
   "hinge",
   "joint",
-  "export"
+  "export",
+  "diff",
+  "cutout"
 ]

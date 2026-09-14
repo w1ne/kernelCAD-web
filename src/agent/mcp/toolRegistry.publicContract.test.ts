@@ -59,6 +59,9 @@ const EXPECTED_TOOL_NAMES = [
   'evaluate_sdf',
   'capture_animation',
   'render_preview',
+  // Tail-appended: a new tool goes on the END so kernelCAD-server's
+  // index-based consumption of the historical order keeps working.
+  'diff_geometry',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -109,8 +112,10 @@ describe('toolRegistry public contract', () => {
   it('composes core runtime tools from the core runtime registry module', () => {
     const names = coreRuntimeToolEntries.map(entry => entry.definition.name);
 
-    expect(names).toEqual(['evaluate_script', 'diff_scripts', 'set_param']);
-    expect([TOOL_REGISTRY[0], TOOL_REGISTRY[1], TOOL_REGISTRY[5]]).toEqual(coreRuntimeToolEntries);
+    expect(names).toEqual(['evaluate_script', 'diff_scripts', 'set_param', 'diff_geometry']);
+    expect([TOOL_REGISTRY[0], TOOL_REGISTRY[1], TOOL_REGISTRY[5], TOOL_REGISTRY[38]]).toEqual(
+      coreRuntimeToolEntries,
+    );
   });
 
   it('composes inspection and verification tools from the inspection verification registry module', () => {

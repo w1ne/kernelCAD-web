@@ -4,6 +4,7 @@ import { TOOL_ANNOTATIONS } from './toolAnnotations';
 import { TOOL_OUTPUT_SCHEMAS } from './toolOutputSchemas';
 import { catalogToolEntries } from './registry/catalogTools';
 import {
+  coreRuntimeDiffGeometryToolEntries,
   coreRuntimeParameterToolEntries,
   coreRuntimePreludeToolEntries,
 } from './registry/coreRuntimeTools';
@@ -41,6 +42,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...catalogToolEntries,
   ...sketchAssemblyToolEntries,
   ...reviewPipelineToolEntries,
+  ...coreRuntimeDiffGeometryToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

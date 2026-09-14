@@ -34,6 +34,11 @@ const READ_REMOTE: ToolAnnotations = { readOnlyHint: true, destructiveHint: fals
 const AUTHOR: ToolAnnotations = { readOnlyHint: false, destructiveHint: false, openWorldHint: false };
 const AUTHOR_DESTRUCTIVE: ToolAnnotations = { readOnlyHint: false, destructiveHint: true, openWorldHint: false };
 const WRITES_FILE: ToolAnnotations = { readOnlyHint: false, destructiveHint: false, openWorldHint: true };
+/** Analysis that changes nothing about the design but CAN drop artifacts on
+ *  the local filesystem on an opt-in flag (diff_geometry's render overlay).
+ *  Read-only is the honest label for the design; openWorld is the honest
+ *  label for the optional file output. */
+const READ_MAY_WRITE_ARTIFACTS: ToolAnnotations = { readOnlyHint: true, destructiveHint: false, openWorldHint: true };
 
 export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // Read / compute / analysis — no mutation, no external effect.
@@ -52,6 +57,9 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   solve_sketch: READ,
   solve_mates: READ,
   flatten_pattern: READ,
+
+  // Read-only analysis that can write an OPTIONAL local artifact (render: true).
+  diff_geometry: READ_MAY_WRITE_ARTIFACTS,
 
   // Read — but may fetch from a remote parts catalog (KERNELCAD_PARTS_BASE_URL).
   find_part: READ_REMOTE,
