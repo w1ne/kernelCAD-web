@@ -25,6 +25,28 @@ import { extractFeaturesViaLLM, type VisionLlmClient } from './visionLlmBackend'
 import { traceHybrid } from './hybridBackend';
 import { extractSilhouettePolyline as defaultExtractSilhouettePolyline } from './opencvBackend';
 import { decideBackend } from './router';
+import { buildLedger, hasOpenMissingFact, type AssumptionLedger } from './ledger';
+export {
+  buildLedger,
+  factFromPrior,
+  factFromTracedFeature,
+  hasOpenMissingFact,
+  resolveAssumptions,
+  scaleFact,
+} from './ledger';
+export type {
+  AssumptionEvidence,
+  AssumptionEvidenceSource,
+  AssumptionFact,
+  AssumptionKind,
+  AssumptionLedger,
+  AssumptionResolution,
+  AssumptionResolutionInput,
+  BuildLedgerInput,
+  PriorInput,
+  ResolveAssumptionsResult,
+  ScaleAnchor,
+} from './ledger';
 
 export type {
   Vec2Normalized,
@@ -224,11 +246,28 @@ export async function traceFromImage(
 
     const results = await withBackendTimeout(dispatch(), timeoutMs);
 
+    const ledger = buildLedger({
+      features: results,
+      scaleAnchor: input.scaleAnchor,
+      priors: input.priors,
+    });
+    if (ledger.unresolvedCount > 0) {
+      const escalate = input.validate === 'error' && hasOpenMissingFact(ledger);
+      diagnostics.push(
+        makeDiag(
+          'reference.assumptions.unresolved',
+          escalate ? 'error' : 'warn',
+          `${ledger.unresolvedCount} assumption ledger fact(s) remain open (scale/inferred/assumed) — call resolve_assumptions to confirm or override them before committing geometry.`,
+        ),
+      );
+    }
+
     return {
-      ok: results.length > 0,
+      ok: results.length > 0 && !(input.validate === 'error' && hasOpenMissingFact(ledger)),
       features: results,
       imageDims,
       diagnostics,
+      ledger,
     };
   } catch (err) {
     if (err === TRACE_TIMEOUT) {
@@ -244,6 +283,7 @@ export async function traceFromImage(
             `${backend} backend timed out after ${timeoutMs}ms`,
           ),
         ],
+        ledger: emptyLedger(),
       };
     }
     return {
@@ -258,8 +298,13 @@ export async function traceFromImage(
           `${backend} backend failed: ${errMsg(err)}`,
         ),
       ],
+      ledger: emptyLedger(),
     };
   }
+}
+
+function emptyLedger(): AssumptionLedger {
+  return { facts: [], unresolvedCount: 0 };
 }
 
 function failOutput(
@@ -275,6 +320,7 @@ function failOutput(
     features: [],
     imageDims: [0, 0],
     diagnostics: [makeDiag(code, 'error', message)],
+    ledger: emptyLedger(),
   };
 }
 

@@ -12,6 +12,7 @@
 // behind a single orchestrator entry point — `traceFromImage()` in `./index.ts`.
 
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
+import type { AssumptionLedger, PriorInput, ScaleAnchor } from './ledger';
 
 /** Default cap on waypoints emitted per requested feature. */
 export const DEFAULT_MAX_WAYPOINTS_PER_FEATURE = 12;
@@ -91,6 +92,25 @@ export interface TraceFromImageInput {
   maxWaypointsPerFeature?: number;
   /** Force a specific backend. `undefined` is equivalent to `'auto'`. */
   backend?: TraceBackend;
+  /**
+   * Optional pixel-to-real-world scale anchor (two measured points on the
+   * image). Absent → the assumption ledger's `scale` fact is `missing`;
+   * geometry derived from waypoints has no grounded mm conversion.
+   */
+  scaleAnchor?: ScaleAnchor;
+  /**
+   * Optional caller-supplied priors (category-norm defaults such as wall
+   * thickness or hidden depth) recorded verbatim as `assumed` ledger facts.
+   */
+  priors?: PriorInput[];
+  /**
+   * Assumption-ledger validation strictness. `'warn'` (default) always
+   * reports `reference.assumptions.unresolved` as a warning. `'error'`
+   * escalates that diagnostic to an error when any `missing` fact is still
+   * `open` — i.e. geometry cannot be committed on an un-grounded scale
+   * without an explicit override via `resolve_assumptions`.
+   */
+  validate?: 'warn' | 'error';
 }
 
 /** Output of the top-level orchestrator (and the MCP tool). */
@@ -103,6 +123,13 @@ export interface TraceFromImageOutput {
   imageDims: [number, number];
   /** Diagnostics — empty array on the happy path; warnings + errors otherwise. */
   diagnostics: TraceDiagnostic[];
+  /**
+   * Assumption ledger classifying every fact the trace produced as
+   * `visible` / `inferred` / `assumed` / `missing`, derived mechanically
+   * from the backend that produced each feature, its confidence, and
+   * whether a scale anchor / priors were supplied. See `./ledger.ts`.
+   */
+  ledger: AssumptionLedger;
 }
 
 /**

@@ -28,7 +28,8 @@ export type DiagnosticGroup =
   | 'kinematic'
   | 'mechanism'
   | 'animation'
-  | 'drawing';
+  | 'drawing'
+  | 'reference';
 
 export type DiagnosticSeverityLevel = 'info' | 'warn' | 'error';
 
@@ -2267,6 +2268,31 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'warn',
     group: 'drawing',
     description: 'Two rendered drawing annotations occupy overlapping sheet-space text/leader regions.',
+  },
+  // Slice E — image/photo-reference assumption ledger (2).
+  'reference.assumptions.unresolved': {
+    hintTemplate:
+      "The assumption ledger built from this reference has open facts (missing scale, unconfirmed inferred/assumed values). Call `resolve_assumptions` with the ledger path and a resolution ({ id, value } to override or { id, confirm: true } to accept) for each open fact before committing geometry derived from it.",
+    nextAction: { kind: 'call-tool', tool: 'resolve_assumptions', args: {} },
+    defaultSeverity: 'warn',
+    group: 'reference',
+    description: 'trace_from_image (or another reference-ingest path) produced an assumption ledger with at least one open fact; severity escalates to error when validate:"error" is set and a "missing" fact (e.g. scale) is still open.',
+  },
+  'reference.assumptions.ledger-not-found': {
+    hintTemplate:
+      "resolve_assumptions could not read the ledger file at the supplied `ledgerPath`. Verify the path matches the `<model>.ledger.json` file trace_from_image's caller persisted, and that it has not been moved or deleted.",
+    nextAction: { kind: 'check-file-path' },
+    defaultSeverity: 'error',
+    group: 'reference',
+    description: 'resolve_assumptions was called with a ledgerPath that does not exist or does not parse as a valid AssumptionLedger.',
+  },
+  'reference.assumptions.unknown-resolution-id': {
+    hintTemplate:
+      "One or more resolution `id`s did not match any fact in the ledger. Re-read the ledger's `facts[].id` values and re-call resolve_assumptions with matching ids — a typo or a stale ledger snapshot are the usual causes.",
+    nextAction: { kind: 'fix-arg', field: 'resolutions[].id' },
+    defaultSeverity: 'warn',
+    group: 'reference',
+    description: 'resolve_assumptions was called with a resolution id that does not match any fact.id in the ledger.',
   },
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 

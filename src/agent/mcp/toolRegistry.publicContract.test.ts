@@ -17,6 +17,7 @@ import { coreRuntimeToolEntries } from './registry/coreRuntimeTools';
 import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools';
 import { inspectionVerificationToolEntries } from './registry/inspectionVerificationTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
+import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
 import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
 
@@ -59,6 +60,7 @@ const EXPECTED_TOOL_NAMES = [
   'evaluate_sdf',
   'capture_animation',
   'render_preview',
+  'resolve_assumptions',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -244,6 +246,18 @@ describe('toolRegistry public contract', () => {
       'render_preview',
     ]);
     expect(TOOL_REGISTRY.slice(31, 38)).toEqual(reviewPipelineToolEntries);
+  });
+
+  it('appends the reference-ledger tools at the tail of TOOL_REGISTRY', () => {
+    // New tool families are always appended at the very end — never inserted
+    // into an existing family — because TOOL_REGISTRY order is a public
+    // contract kernelCAD-server consumes. This asserts the tail, leaving
+    // every earlier family's slice index untouched.
+    const names = referenceLedgerToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual(['resolve_assumptions']);
+    expect(TOOL_REGISTRY.slice(38)).toEqual(referenceLedgerToolEntries);
+    expect(TOOL_REGISTRY.at(-1)).toEqual(referenceLedgerToolEntries[referenceLedgerToolEntries.length - 1]);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

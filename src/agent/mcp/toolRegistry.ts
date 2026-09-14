@@ -13,6 +13,7 @@ import {
   inspectionVerificationQueryToolEntries,
 } from './registry/inspectionVerificationTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
+import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
 import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
@@ -41,6 +42,10 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...catalogToolEntries,
   ...sketchAssemblyToolEntries,
   ...reviewPipelineToolEntries,
+  // Appended last — new tool families are always appended at the tail of
+  // TOOL_REGISTRY, never inserted into an existing family, because the
+  // registry order is a public contract kernelCAD-server depends on.
+  ...referenceLedgerToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

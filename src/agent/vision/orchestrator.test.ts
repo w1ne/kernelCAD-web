@@ -59,10 +59,52 @@ describe('traceFromImage orchestrator', () => {
     expect(out.features[0].backend).toBe('opencv');
     expect(out.features[0].kind).toBe('silhouette');
     expect(out.features[0].waypoints).toEqual(fakePolyline);
-    expect(out.diagnostics).toEqual([]);
+    // No scale anchor was supplied — the assumption ledger's `scale` fact is
+    // `missing`, so a warn-level `reference.assumptions.unresolved` fires.
+    expect(out.diagnostics).toHaveLength(1);
+    expect(out.diagnostics[0].code).toBe('reference.assumptions.unresolved');
+    expect(out.diagnostics[0].severity).toBe('warn');
     expect(out.imageDims[0]).toBeGreaterThan(0);
     expect(out.imageDims[1]).toBeGreaterThan(0);
     expect(extractStub).toHaveBeenCalledTimes(1);
+
+    expect(out.ledger.unresolvedCount).toBe(1);
+    const silhouetteFact = out.ledger.facts.find((f) => f.id === 'silhouette');
+    expect(silhouetteFact?.kind).toBe('visible');
+    expect(silhouetteFact?.resolution).toBe('confirmed');
+    const scaleFact = out.ledger.facts.find((f) => f.id === 'scale');
+    expect(scaleFact?.kind).toBe('missing');
+    expect(scaleFact?.resolution).toBe('open');
+  });
+
+  it('grounds the ledger scale fact when a scaleAnchor is supplied, leaving zero unresolved', async () => {
+    const fakePolyline: Vec2Normalized[] = [[0.3, 0.3], [0.7, 0.3], [0.7, 0.7], [0.3, 0.7]];
+    const out = await traceFromImage(
+      {
+        imageUrl: UNIFORM_FILE_URL,
+        scaleAnchor: { pixelDistance: 100, realDistance: 20, unit: 'mm' },
+      },
+      { extractSilhouettePolyline: vi.fn(async () => fakePolyline) },
+    );
+
+    expect(out.diagnostics).toEqual([]);
+    expect(out.ledger.unresolvedCount).toBe(0);
+    expect(out.ledger.scale).toEqual({ mmPerPixel: 0.2, source: 'scale-anchor' });
+  });
+
+  it('fails with an error diagnostic when validate:"error" and scale is still missing', async () => {
+    const fakePolyline: Vec2Normalized[] = [[0.3, 0.3], [0.7, 0.3], [0.7, 0.7], [0.3, 0.7]];
+    const out = await traceFromImage(
+      {
+        imageUrl: UNIFORM_FILE_URL,
+        validate: 'error',
+      },
+      { extractSilhouettePolyline: vi.fn(async () => fakePolyline) },
+    );
+
+    expect(out.ok).toBe(false);
+    expect(out.diagnostics[0].code).toBe('reference.assumptions.unresolved');
+    expect(out.diagnostics[0].severity).toBe('error');
   });
 
   it('honours explicit backend: vision-llm even on uniform-bg', async () => {

@@ -89,6 +89,7 @@ Iteration mode: visual > scored > spec+photo (R1-R6 empirical).
 | G-no-protrusions | Sub-components meant to be contained are fully contained on every visible axis |
 | G-front-read | The front view reads as the target object on first glance |
 | G-score-gate | `scoreAgainstReference` silhouette ≥ 0.45, SSIM ≥ 0.25 (task-specific thresholds may be higher) |
+| G-assumption-ledger | Every `trace_from_image` (or other reference-ingest) call's `ledger.unresolvedCount === 0` before the source is finalized — present the `assumed`/`missing` facts to the user or resolve them from another reference view via `resolve_assumptions` first |
 
 ## Forbidden rationalizations
 

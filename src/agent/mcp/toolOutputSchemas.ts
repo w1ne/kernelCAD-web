@@ -145,8 +145,21 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       features: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Traced features with normalized [0..1] waypoints + confidence.' },
       imageDims: { type: 'array', items: { type: 'number' }, description: 'Pixel dimensions [width, height] of the source image.' },
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
+      ledger: { type: 'object', additionalProperties: true, description: 'Assumption ledger: { facts, scale?, unresolvedCount } classifying every fact as visible/inferred/assumed/missing.' },
     },
-    required: ['ok', 'features', 'imageDims', 'diagnostics'],
+    required: ['ok', 'features', 'imageDims', 'diagnostics', 'ledger'],
+    additionalProperties: true,
+  },
+
+  resolve_assumptions: {
+    type: 'object',
+    properties: {
+      ok: { type: 'boolean' },
+      ledger: { type: 'object', additionalProperties: true, description: 'The ledger after applying resolutions (present on success).' },
+      paramOverrides: { type: 'object', additionalProperties: true, description: 'factId -> value for every resolved fact with a value; feed into set_param.' },
+      diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
+    },
+    required: ['ok', 'paramOverrides', 'diagnostics'],
     additionalProperties: true,
   },
 

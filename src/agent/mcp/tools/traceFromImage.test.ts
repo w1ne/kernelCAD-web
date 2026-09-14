@@ -16,6 +16,7 @@ describe('traceFromImageTool', () => {
     expect(out.ok).toBe(false);
     expect(out.diagnostics?.[0].code).toBe('tool.trace-from-image.invalid-image-url');
     expect(out.features).toEqual([]);
+    expect(out.ledger).toEqual({ facts: [], unresolvedCount: 0 });
   });
 
   it('returns the envelope shape on a happy path (via test seam)', async () => {
