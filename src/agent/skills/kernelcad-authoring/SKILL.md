@@ -813,7 +813,6 @@ the full-fidelity, verified MP4 capture.
 These are not available today; do not generate code that uses them. Anything not listed here is fair game — call `lookup_api` / `lookup_cookbook` before concluding kernelCAD lacks a capability.
 
 - Asymmetric chamfer (only symmetric 45° supported) — deferred
-- BOM extraction — deferred
 - Section views and param-bound (auto-updating) dimensions on `svg-drawing` — deferred; authored feature dimensioning DOES ship (`options.annotations`: linear / radius / diameter / angular / leader notes, anchored by EdgeQuery / FaceQuery or an explicit point), as do the automatic bounding-box dimensions and the title block
 - Multi-view PDF sheets — deferred; `export({ format: 'svg-drawing' })` ships an SVG sheet instead
 - NURBS surface extend/untrim/blend, surface-surface intersection, lattice/quilt — deferred
@@ -830,6 +829,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 |---|---|
 | assembly-connector-and-revolute-mate | The model has multiple mechanical parts (not a single fused body) that need a named pivot between them. Declare an axis connector on each part with partRef.connector(name, { type: 'axis', origin: { kind: 'vec3', value: [...] }, axis: [...] }), then join the connectors with arm.mate(name, 'partA.conn', 'partB.conn', 'revolute', { limitsDeg: [min, max] }). This is the canonical assembly-topology vocabulary for hinges, elbows, and any revolute joint — connector origins must use the tagged { kind: 'vec3', value: [...] } form, not a bare [x, y, z] array. |
 | blind-pocket-from-top | You want a pocket cut into the top face only — the cylinder is shorter than the plate so it does not reach the bottom face. |
+| bom-ready-assembly | Before calling inspect({ of 'bom' }) or export({ format 'bom-csv' \| 'bom-json' }), declare material/density on assembly.part(...) so mass rows are real numbers instead of bom.material.unassigned gaps; instances placed in a loop with distinct names group into one BOM row by real quantity. |
 | chamfer-rotated-face | You rotated a primitive and now want to chamfer one of its canonical faces by name (face-name semantics survive transforms). |
 | clamshell-hinge-two-part-assembly | You are modeling a laptop-lid-style clamshell hinge, or any assembly where one rigid body swings about a fixed pivot line on another rigid body. Declare a matching axis connector on both bodies along the physical hinge line, then join them with a revolute mate and limitsDeg to bound the swing angle. Relevant for hinge, revolute joint, or assembly with connectors and mates. |
 | clearance-hole-through-plate | You need a through-hole sized for a bolt with a small clearance margin; cylinder height extends beyond the plate so the cut is unambiguous. |

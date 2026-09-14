@@ -98,6 +98,10 @@ arm.part('trim', shape.finish('brass'), { material: 'steel' });    // brass look
 
 Typical raw densities: steel `7850`, aluminum `2700`, ABS plastic `1050`, brass `8500`, titanium `4500`.
 
+### Bill of materials
+
+`inspect({ of: 'bom' })` / `export({ format: 'bom-csv' | 'bom-json' })` read this same `material`/`density` declaration to build a real bill of materials: one row per DISTINCT part (grouped by geometry/catalog identity, never by name — a `for` loop that places the same source shape under `N` distinct names collapses to one row with `quantity: N`), split into `kind: 'fabricated'` vs `kind: 'purchased'` (purchased = came from `lib.fetchPart`/`fetch_part`, carries `catalog: { id, vendor, partNumber, source, license }`). A part with no `material`/`density` gets `massGPerUnit: null` and a `bom.material.unassigned` diagnostic — never a silently guessed water-density mass. See the `kernelcad-mcp` skill for the full row shape.
+
 ```typescript
 interface Assembly {
   part(name: string, shape: Shape, opts?: {

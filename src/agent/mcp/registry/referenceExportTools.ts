@@ -49,6 +49,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         'PhysicsFixedJoint/PhysicsRevoluteJoint/PhysicsPrismaticJoint per mate with token axis, two-sided joint frames and limits, UsdPreviewSurface materials from the part appearance, ' +
         'and joint drives only when declared in options.drives { <mate>: { stiffness, damping, maxForce?, targetPosition? } }; options.collisionApproximation is convexHull | convexDecomposition; ' +
         'planar/cylindrical/pin_slot/ball mates fail closed with export.usd.joint-unsupported). ' +
+        "bom-csv / bom-json (bill of materials over assembly.model()/solvedModel(): one row per distinct part — grouped by geometry/catalog identity, not name — with real instance quantity, kind, material, density, mass, bbox, process hint, and catalog provenance for purchased parts; same numbers as inspect({ of: 'bom' })). " +
         'urdf and sdf-gazebo also write one meshes/<part>.stl per link, and usd-isaac one meshes/<part>.usda mesh layer per link, next to output_path (reported in mesh_files) — ship the whole directory to the consumer. ' +
         'STL exports run a watertight verify by default; failures return ok: false with export.mesh.not-watertight ' +
         '(open-edge count + up to 5 crack-cluster locations) but the file is still written so the broken mesh can be inspected. ' +
@@ -72,7 +73,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
           output_path: { type: 'string', description: "Destination path. target:'model' — the export file (required). target:'part' — single-part .stl path." },
           format: {
             type: 'string',
-            enum: ['stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'usd-isaac'],
+            enum: ['stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'usd-isaac', 'bom-csv', 'bom-json'],
             description: "target:'model' — output file format (required for that target).",
           },
           feature_id: { type: 'string', description: "target:'model' — optional FeatureId to export; defaults to last." },

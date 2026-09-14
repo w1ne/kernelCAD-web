@@ -80,8 +80,10 @@ describe('diagnostic catalogue invariants', () => {
     // + 4 USD physics export and geometry diff: export.usd.joint-unsupported,
     //   export.usd.pose-unsolved, export.usd.mass-missing, diff.body.unmatched =
     //   276.
-    expect(DIAGNOSTIC_CODES).toHaveLength(276);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(276);
+    // + 2 BOM extraction: bom.material.unassigned,
+    //   bom.purchased.catalog-metadata-missing = 278.
+    expect(DIAGNOSTIC_CODES).toHaveLength(278);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(278);
   });
 
   it('every code has a non-empty hint template', () => {

@@ -96,11 +96,6 @@ export const OUT_OF_SCOPE_CLAIMS: readonly OutOfScopeClaim[] = [
     ],
   },
   {
-    id: 'bom-extraction',
-    claim: 'BOM extraction — deferred',
-    probes: [{ kind: 'enum-absent', tool: 'inspect', property: 'of', value: 'bom' }],
-  },
-  {
     id: 'multi-view-pdf',
     claim:
       "Multi-view PDF sheets — deferred; `export({ format: 'svg-drawing' })` ships an SVG sheet instead",

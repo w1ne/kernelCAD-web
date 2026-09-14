@@ -34,7 +34,8 @@ export type { GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
 
 export type ExportFormat =
   | 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'svg-drawing'
-  | 'urdf' | 'srdf' | 'sdf-gazebo' | 'gcode' | 'usd-isaac';
+  | 'urdf' | 'srdf' | 'sdf-gazebo' | 'gcode' | 'usd-isaac'
+  | 'bom-csv' | 'bom-json';
 
 /** Per-format option payloads. The union member is selected by `format`. */
 export type ExportOptions =
@@ -73,7 +74,9 @@ export type ExportOptions =
       /** Joint drives keyed by mate name; emitted only when declared. */
       drives?: Record<string, { stiffness: number; damping: number; maxForce?: number; targetPosition?: number }>;
       collisionApproximation?: 'convexHull' | 'convexDecomposition';
-    };
+    }
+  | { format: 'bom-csv' }
+  | { format: 'bom-json' };
 
 export interface DxfLayerSpec {
   name: string;
@@ -187,7 +190,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   // + planning metadata). No targetId / lowered-Shape lookup is required;
   // the emitter lowers each part on its own. Resolve the Assembly from
   // the session and dispatch to the per-format serializer.
-  if (format === 'urdf' || format === 'srdf' || format === 'sdf-gazebo' || format === 'usd-isaac') {
+  if (format === 'urdf' || format === 'srdf' || format === 'sdf-gazebo' || format === 'usd-isaac' || format === 'bom-csv' || format === 'bom-json') {
     const ret = run.returnValue;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const assemblies = run.session.assemblies as Map<string, any>;
@@ -243,6 +246,21 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
         featureCount,
         diagnostics: [...r.diagnostics, ...out.diagnostics],
         meshes: out.sdf === '' ? [] : await emitCompanionMeshes(out.meshPaths),
+      };
+    }
+    // bom-csv / bom-json — flat BOM rows, computed by the same computeBom()
+    // that backs inspect({ of: 'bom' }), so the two surfaces cannot drift.
+    if (format === 'bom-csv' || format === 'bom-json') {
+      const { computeBom, bomToCsv } = await import('./bom');
+      const bom = await computeBom(arm, run.session);
+      const encoder = new TextEncoder();
+      const bytes = format === 'bom-json'
+        ? encoder.encode(JSON.stringify({ rows: bom.rows, totals: bom.totals }, null, 2))
+        : encoder.encode(bomToCsv(bom.rows));
+      return {
+        bytes,
+        featureCount,
+        diagnostics: [...r.diagnostics, ...bom.diagnostics],
       };
     }
     // usd-isaac — geometry ships as native .usda mesh layers (an STL cannot

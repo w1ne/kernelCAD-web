@@ -19,6 +19,7 @@ import { getBendTableTool } from './getBendTable';
 import { paramsListTool } from './paramsList';
 import { listPartCategoriesTool } from './listPartCategories';
 import { listPartFamiliesTool } from './listPartFamilies';
+import { inspectBomTool } from './inspectBom';
 
 /** The introspection subject. Each value maps 1:1 to a dedicated reader. */
 export type InspectOf =
@@ -40,7 +41,8 @@ export type InspectOf =
   | 'bend-table'
   | 'params'
   | 'part-categories'
-  | 'part-families';
+  | 'part-families'
+  | 'bom';
 
 export interface InspectInput {
   of: InspectOf;
@@ -105,12 +107,14 @@ export function inspectTool(input: InspectInput): Promise<unknown> {
       return listPartCategoriesTool();
     case 'part-families':
       return listPartFamiliesTool(rest as unknown as Parameters<typeof listPartFamiliesTool>[0]);
+    case 'bom':
+      return inspectBomTool(rest as unknown as Parameters<typeof inspectBomTool>[0]);
     default:
       return Promise.reject(
         new Error(
           `Unknown inspect subject: ${String(of)}. Valid: assembly, robot, step, shape, mass, ` +
             `features, assemblies, topology, edges, face-edges, faces, face-labels, mates, ` +
-            `constraints, part-stats, bend-table, params, part-categories, part-families.`,
+            `constraints, part-stats, bend-table, params, part-categories, part-families, bom.`,
         ),
       );
   }

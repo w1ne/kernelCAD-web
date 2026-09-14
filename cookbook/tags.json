@@ -52,5 +52,10 @@
   "diff",
   "cutout",
   "compare",
-  "revision"
+  "revision",
+  "bom",
+  "material",
+  "density",
+  "fasteners",
+  "catalog"
 ]

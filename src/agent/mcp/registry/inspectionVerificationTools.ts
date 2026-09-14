@@ -31,18 +31,19 @@ const inspectToolEntry: ToolRegistryEntry = {
       "- 'params' — declared model parameters.\n" +
       "- 'part-categories' — top-level part-catalog categories available in the bundled (and configured remote) catalog.\n" +
       "- 'part-families' — part families within a category ({ category? }); count + exemplar ids per family.\n" +
+      "- 'bom' — bill of materials ({ assembly? }): one row per distinct part (grouped by geometry/catalog identity, not name) with real instance quantity, kind ('fabricated'|'purchased'), material, density, per-unit and total mass, bbox, a fabrication process hint, catalog provenance for purchased parts, and totals; `bom.*` diagnostics flag rows with no density source or missing catalog vendor info instead of guessing.\n" +
       'All params except `of` are subject-specific and forwarded verbatim. Most subjects accept { file | code }.',
     inputSchema: {
       type: 'object',
       properties: {
         of: {
           type: 'string',
-          enum: ['assembly', 'robot', 'step', 'shape', 'mass', 'features', 'assemblies', 'topology', 'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints', 'part-stats', 'bend-table', 'params', 'part-categories', 'part-families'],
+          enum: ['assembly', 'robot', 'step', 'shape', 'mass', 'features', 'assemblies', 'topology', 'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints', 'part-stats', 'bend-table', 'params', 'part-categories', 'part-families', 'bom'],
           description: 'Which facts to read.',
         },
         file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
         code: { type: 'string', description: 'Inline kernelCAD script source.' },
-        assembly: { type: 'string', description: "of:'assembly'|'robot' — assembly name; defaults to the first captured assembly." },
+        assembly: { type: 'string', description: "of:'assembly'|'robot'|'bom' — assembly name; defaults to the first captured assembly." },
         feature_id: { type: 'string', description: "of:'shape'|'mass'|'topology'|'edges'|'faces'|'face-edges'|'face-labels' — FeatureId; defaults to the last returned shape." },
         density: { type: 'number', description: "of:'mass' — material density in kg/m^3 (steel 7850, aluminium 2700, ABS 1050). Defaults to 1000 (water); the response echoes the value used and flags when it was defaulted." },
         gyration_axis: {

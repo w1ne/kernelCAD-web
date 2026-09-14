@@ -45,6 +45,7 @@ const EMITTING_FILES = [
   'agent/script-runtime/export.ts',
   'kernel/naming/resolveFaceRef.ts',
   'kernel/backends/occt/drawingAnnotations.ts',
+  'agent/script-runtime/bom.ts',
 ];
 
 // Match `code: '<value>'` and `new KernelError('<code>', ...)`.
@@ -201,7 +202,9 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  + 4 USD physics export and geometry diff: export.usd.joint-unsupported,
     //       export.usd.pose-unsolved, export.usd.mass-missing, diff.body.unmatched =
     //       276.
-    expect(catalogue.size).toBe(276);
+    //  + 2 BOM extraction: bom.material.unassigned,
+    //       bom.purchased.catalog-metadata-missing = 278.
+    expect(catalogue.size).toBe(278);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
