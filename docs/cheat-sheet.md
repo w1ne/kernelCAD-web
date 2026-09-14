@@ -64,7 +64,7 @@ Turn a profile into a solid, or grow one along a path.
 
 | Call | What it does |
 |---|---|
-| `Sketch.extrude(depth) => Shape` | Extrude this closed sketch normal to its plane by `depth` (mm). |
+| `Sketch.extrude(depth: Editable<number>) => Shape` | Extrude this closed sketch normal to its plane by `depth` (mm). |
 | `Sketch.revolve() => Shape` | Revolve 360 degrees around the Z axis. |
 | `Sketch.sweep(rail, opts?: { frenet?, transitionMode?, spine? }) => Shape` | Sweep this profile along a 3D rail. |
 | `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, ruled?, startPoint?, endPoint? }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |

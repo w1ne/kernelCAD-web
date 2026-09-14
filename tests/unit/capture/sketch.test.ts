@@ -45,6 +45,27 @@ describe('path() builder + Sketch capture', () => {
     expect(extrudeRec.params.depth.evaluated).toBe(1);
   });
 
+  it('extrude accepts a ParamRef depth that stays editable at lower time', async () => {
+    const { RecomputeEngine } = await import('../../../src/modeling/compute/recomputeEngine');
+    const { createOcctLowerer } = await import('../../../src/modeling/backends/occt/occtLowerer');
+    const code = `
+      const thickness = param('thickness', 4);
+      return path().moveTo(0, 0).lineTo(10, 0).lineTo(10, 5).lineTo(0, 5).close().extrude(thickness);
+    `;
+    const run = await runScript({ code, fileName: 'test.kcad.ts' });
+    const extrudeRec = run.records.find(r => r.kind === 'extrude')!;
+    expect(extrudeRec.params.depth.paramRef).toBe('thickness');
+
+    const volumeAt = async (value: number) => {
+      run.paramTable.set('thickness', value);
+      const r = await new RecomputeEngine(createOcctLowerer(run.session)).run(run.records, { paramTable: run.paramTable });
+      expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+      return r.shapes.get(extrudeRec.id)!.volume();
+    };
+    expect(await volumeAt(4)).toBeCloseTo(200, 3);
+    expect(await volumeAt(7)).toBeCloseTo(350, 3);
+  });
+
   it('errors at script-runtime when extrude is called on a non-closed path', async () => {
     // Builder enforces close-before-extrude. PathBuilder before .close() has no .extrude() method.
     const code = `return path().moveTo(0, 0).lineTo(10, 0).extrude(2);`;
