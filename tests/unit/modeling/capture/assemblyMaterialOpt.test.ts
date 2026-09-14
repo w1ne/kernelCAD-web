@@ -33,15 +33,16 @@ describe('arm.part(name, shape, { material })', () => {
     const { kcad, arm } = makeArm();
     arm.part('hub', kcad.box(10, 10, 10), { material: 'steel' });
     expect(arm.__parts()[0].density).toBe(7850);
-    expect(arm.__parts()[0].material).toBe('steel');
+    // `steel` is an alias; the part records the canonical grade for BOM use.
+    expect(arm.__parts()[0].material).toBe('mild-steel');
   });
 
   it('seeds density for aluminium (UK spelling) via the alias', () => {
     const { kcad, arm } = makeArm();
     arm.part('bracket', kcad.box(10, 10, 10), { material: 'aluminium' });
     expect(arm.__parts()[0].density).toBe(2700);
-    // Stored under the canonical name regardless of the spelling used.
-    expect(arm.__parts()[0].material).toBe('aluminum');
+    // Stored under the canonical grade regardless of the spelling used.
+    expect(arm.__parts()[0].material).toBe('aluminum-6061');
   });
 
   it('applies the material default finish to a shape with no explicit appearance', () => {
@@ -84,12 +85,28 @@ describe('arm.part(name, shape, { material })', () => {
     expect(arm.__parts()[0].density).toBe(2700);
   });
 
-  it('a material with no finish (pet) seeds density but applies no finish', () => {
+  it('a material with no finish (petg, alias pet) seeds density but applies no finish', () => {
     const { session, kcad, arm } = makeArm();
     const shape = kcad.box(10, 10, 10);
     arm.part('bottle', shape, { material: 'pet' });
     expect(arm.__parts()[0].density).toBe(1380);
     expect(materialOf(session, shape.id)).toBeUndefined();
+  });
+
+  it('engineering grade names seed the same density, finish and recorded grade', () => {
+    const { session, kcad, arm } = makeArm();
+    const steel = kcad.box(10, 10, 10);
+    const alu = kcad.box(10, 10, 10);
+    const nylon = kcad.box(10, 10, 10);
+    arm.part('a', steel, { material: 'mild-steel' });
+    arm.part('b', alu, { material: 'aluminum-6061' });
+    arm.part('c', nylon, { material: 'nylon' });
+    const parts = arm.__parts();
+    expect(parts.map((p) => p.material)).toEqual(['mild-steel', 'aluminum-6061', 'nylon']);
+    expect(parts.map((p) => p.density)).toEqual([7850, 2700, 1010]);
+    expect(materialOf(session, steel.id)?.baseColor).toBe(FINISHES.steel.baseColor);
+    expect(materialOf(session, alu.id)?.baseColor).toBe(FINISHES.aluminium.baseColor);
+    expect(materialOf(session, nylon.id)?.baseColor).toBe(FINISHES.nylon.baseColor);
   });
 
   it('a raw { density } with no material keeps working exactly as before', () => {

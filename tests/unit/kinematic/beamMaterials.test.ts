@@ -98,18 +98,31 @@ describe('resolveMaterialProps — T6.2', () => {
     }
   });
 
-  it('returns unknown-material (no throw) for a bare/typo SKU not in the catalog', () => {
-    // Issue #540 part A: a value that is neither 'custom' nor a catalog key
-    // must not crash reading yieldStressPa off an undefined catalog row.
+  it('returns unknown-material (no throw) for a bare/typo SKU not in the registry', () => {
+    // Issue #540 part A: a value that is neither 'custom' nor an accepted
+    // material name must not crash reading yieldStressPa off an undefined row.
     const r = resolveMaterialProps({
-      material: 'aluminum-6061' as never,
+      material: 'aluminum-7075' as never,
     });
     expect(r.ok).toBe(false);
     if (!r.ok && r.reason === 'unknown-material') {
-      expect(r.material).toBe('aluminum-6061');
+      expect(r.material).toBe('aluminum-7075');
     } else {
       throw new Error('expected unknown-material failure');
     }
+  });
+
+  it('resolves engineering grade names through the shared registry', () => {
+    // The same names mass and FEA take: grade and bulk alias give one row.
+    const grade = resolveMaterialProps({ material: 'aluminum-6061' });
+    const alias = resolveMaterialProps({ material: 'aluminum' });
+    expect(grade.ok && alias.ok).toBe(true);
+    if (grade.ok && alias.ok) expect(grade.props).toEqual(alias.props);
+    const nylon = resolveMaterialProps({ material: 'nylon' });
+    expect(nylon).toEqual({
+      ok: true,
+      props: { yieldStressPa: 45e6, youngsModulusPa: 1.7e9, densityKgPerM3: 1010 },
+    });
   });
 
   it('honours catalog override of density / modulus when the agent passes it', () => {

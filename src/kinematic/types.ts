@@ -14,6 +14,7 @@
 import type { Vec3 } from '../shared/intent/types';
 import type { NextAction } from '../shared/diagnostics/nextAction';
 import type { DiagnosticCode } from '../shared/diagnostics/registry';
+import type { AnyMaterialName } from './engineeringMaterials';
 
 /**
  * Pose record — numeric joint values keyed by joint name (deg for revolute,
@@ -151,16 +152,12 @@ export interface ReachableResult extends KinematicResultBase {
 
 // ===== checkLoadCapacity =====
 
-/** Catalogued bulk material. Closed-form section properties are paired with
- *  the catalog at runtime; 'custom' lets the agent supply yield + modulus
- *  inline for materials not in the catalog. */
-export type MaterialKind =
-  | 'steel'
-  | 'aluminum'
-  | 'pla'
-  | 'abs'
-  | 'pet'
-  | 'custom';
+/** Material name for a loaded part: any accepted engineering-material
+ *  spelling (a grade such as `mild-steel` / `aluminum-6061` / `nylon`, or a
+ *  bulk alias such as `steel` / `aluminum`), resolved through the single
+ *  registry in `engineeringMaterials.ts`; 'custom' lets the agent supply
+ *  yield + modulus inline for materials not in the registry. */
+export type MaterialKind = AnyMaterialName | 'custom';
 
 /** Per-loaded-part material declaration. `material: 'custom'` requires
  *  `yieldStressMPa` + `youngsModulusGPa` set; the catalog kinds default
