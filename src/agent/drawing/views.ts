@@ -126,9 +126,9 @@ type ViewLabel = { name: OrthoViewName | 'pictorial'; text: string };
 
 /**
  * Assign each view-name caption (FRONT, TOP, ISOMETRIC…) to the one island it
- * captions: the nearest island it sits just below (or just above), measured
- * from the island's edge. Nearest wins, so a caption pushed down between two
- * stacked views by a dimension band still labels the view it belongs to.
+ * captions. Drafting puts captions BELOW their view, pushed further down by
+ * any dimension band, so the nearest island the caption sits below wins; a
+ * caption above an island only counts when it sits below none.
  */
 function assignLabels(islands: readonly Island[], notes: readonly PositionedText[]): Map<Island, ViewLabel> {
   const out = new Map<Island, ViewLabel>();
@@ -137,17 +137,19 @@ function assignLabels(islands: readonly Island[], notes: readonly PositionedText
     const name = LABELS[word];
     if (!name) continue;
     const cx = t.x + t.dir[0] * t.widthMm / 2;
-    let best: Island | null = null;
-    let bestGap = Infinity;
-    for (const is of islands) {
-      const box = is.bbox;
-      if (cx < box.x0 - 5 || cx > box.x1 + 5) continue;
-      const below = t.y - box.y1;
-      const above = box.y0 - t.y;
-      const gap = below > 0 && below < 16 ? below : above > 0 && above < 8 ? above + 4 : Infinity;
-      if (gap < bestGap) { bestGap = gap; best = is; }
-    }
-    if (best && !out.has(best)) out.set(best, { name, text: t.text });
+    const nearest = (gapOf: (box: BBox2) => number): Island | null => {
+      let best: Island | null = null;
+      let bestGap = Infinity;
+      for (const is of islands) {
+        if (cx < is.bbox.x0 - 5 || cx > is.bbox.x1 + 5) continue;
+        const gap = gapOf(is.bbox);
+        if (gap < bestGap) { bestGap = gap; best = is; }
+      }
+      return best;
+    };
+    const below = nearest(box => { const g = t.y - box.y1; return g > 0 && g < 30 ? g : Infinity; });
+    const host = below ?? nearest(box => { const g = box.y0 - t.y; return g > 0 && g < 8 ? g : Infinity; });
+    if (host && !out.has(host)) out.set(host, { name, text: t.text });
   }
   return out;
 }
@@ -231,6 +233,9 @@ export function identifyViews(
     };
   }
   const front = top.is;
+  if (front.label && front.label.name !== 'front' && front.label.name !== 'pictorial') {
+    ambiguities.push(`the view aligned with both neighbours (the front view by projection) is labelled '${front.label.text}'`);
+  }
   const views: DrawingView[] = [{
     name: 'front',
     bbox: front.bbox,

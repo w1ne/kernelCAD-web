@@ -62,6 +62,8 @@ describe('drawing_to_cad round trip (svg-drawing sheet → PDF → .kcad.ts)', (
     const r = await drawingToCad({ pdf: pdfOf(PLATE_WITH_HOLES.name), source: 'plate-with-holes.pdf' });
     expect(r.ok).toBe(true);
     expect(r.views.map(v => v.name).sort()).toEqual(['front', 'left', 'top']);
+    // Each view caption lands on the view it names, even when a dimension band pushes it down.
+    for (const v of r.views) expect(v.label ?? v.name.toUpperCase()).toBe(v.name.toUpperCase());
     expect(r.reconstruction).toMatchObject({ kind: 'extrude', profileView: 'top', axis: 'z', holeCount: 5 });
     expect(r.fidelity?.verdict).toBe('match');
     expectMatches(await evaluate(r.script!), PLATE_WITH_HOLES);
@@ -78,6 +80,8 @@ describe('drawing_to_cad round trip (svg-drawing sheet → PDF → .kcad.ts)', (
     const r = await drawingToCad({ pdf: pdfOf(L_BRACKET.name), source: 'l-bracket.pdf' });
     expect(r.ok).toBe(true);
     expect(r.reconstruction).toMatchObject({ kind: 'extrude', profileView: 'front', axis: 'y', holeCount: 1 });
+    for (const v of r.views) expect(v.label ?? v.name.toUpperCase()).toBe(v.name.toUpperCase());
+    expect(r.diagnostics.map(d => d.code)).not.toContain('reference.drawing.view-ambiguous');
     expect(r.fidelity?.verdict).toBe('match');
     expectMatches(await evaluate(r.script!), L_BRACKET);
     expect(r.ledger.unresolvedCount).toBe(0);
