@@ -71,7 +71,7 @@ describe('computeProjectedUVs', () => {
     const translated = base.map((v, i) => v + (i % 3 === 0 ? 100 : i % 3 === 1 ? -50 : 20));
     const projection = { type: 'cylinder' as const, axis: [0, 0, 1] as [number, number, number] };
     const uvBase = computeProjectedUVs(base, projection);
-    const uvTranslated = computeProjectedUVs(translated as Float32Array, projection);
+    const uvTranslated = computeProjectedUVs(translated, projection);
     // Both are re-derived from final positions relative to their own
     // recomputed bounding box, so a uniform translation of the whole part
     // yields the same relative UV layout.

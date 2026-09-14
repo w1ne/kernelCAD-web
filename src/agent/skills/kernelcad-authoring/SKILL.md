@@ -857,6 +857,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 | sweep-tolerance-envelope-check | A design has a param() whose real-world value varies (a printed hole that comes out oversized, a clearance gap that shrinks under tolerance) and you need to know whether the mechanism stays buildable across that range, not just at the nominal value. Call kinematic.sweepTolerance({ code\|file, params, gates }) with one or more param names as { values: [...] } or { min, max, steps }; it re-evaluates the script per cartesian-product combo (capped at 64) and runs the interference / mounting-hole / joint-axis gates (default on) plus reachability when declared, returning a pass/fail table and the first failing combo per gate. |
 | tab-slot-flush-joint | You are joining flat stock (laser/CNC plywood, acrylic, sheet) with an interlocking tab-and-slot. The through-tab must span the full mating wall thickness — flush or slightly proud, never recessed — and the fit clearance belongs on the slot, not on the tab. |
 | union-of-stacked-primitives | You want to compose multiple primitives into one part by translating each into place and unioning them, without volume overlap. |
+| wrap-texture-can-label | You need a bitmap texture (label, decal, logo) wrapped onto a cylinder without hand-authoring UVs. Call `shape.wrapTexture(imageRef, { type: 'cylinder', axis })` so UVs are projected from final world-space vertices; `{ type: 'flat' \| 'sphere' \| 'box' }` cover planar and other wraps. |
 
 <!-- COOKBOOK:END -->
 

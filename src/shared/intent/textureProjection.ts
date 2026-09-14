@@ -75,7 +75,7 @@ interface Bounds {
   minZ: number; maxZ: number;
 }
 
-function boundsOf(vertices: Float32Array): Bounds {
+function boundsOf(vertices: ArrayLike<number>): Bounds {
   let minX = Infinity, maxX = -Infinity;
   let minY = Infinity, maxY = -Infinity;
   let minZ = Infinity, maxZ = -Infinity;
@@ -102,7 +102,7 @@ function safeSpan(min: number, max: number): number {
  * `[0, 1]` (cylinder `u` wraps at the 0/1 seam).
  */
 export function computeProjectedUVs(
-  vertices: Float32Array,
+  vertices: ArrayLike<number>,
   projection: TextureProjection,
 ): Float32Array {
   const n = vertices.length / 3;

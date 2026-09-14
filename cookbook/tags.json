@@ -57,5 +57,7 @@
   "material",
   "density",
   "fasteners",
-  "catalog"
+  "catalog",
+  "texture",
+  "wrap"
 ]

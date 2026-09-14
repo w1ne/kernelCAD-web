@@ -56,4 +56,17 @@ describe('lookupCookbookTool', () => {
       expect(r.hits!.map(h => h.id)).toContain('loft-body-shell-from-profiles');
     }
   });
+
+  it('ranks wrapTexture cylinder recipe first for a wrap query', async () => {
+    for (const q of [
+      'wrap a texture around a cylinder',
+      'cylindrical UV projection wrapTexture',
+    ]) {
+      const r = await lookupCookbookTool({ query: q });
+      expect(r.ok).toBe(true);
+      expect(r.hits![0].id).toBe('wrap-texture-can-label');
+      expect(r.hits![0].body).toContain('wrapTexture');
+      expect(r.hits![0].body).toContain("type: 'cylinder'");
+    }
+  });
 });
