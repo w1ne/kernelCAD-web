@@ -59,5 +59,7 @@
   "fasteners",
   "catalog",
   "texture",
-  "wrap"
+  "wrap",
+  "exploded-view",
+  "balloons"
 ]

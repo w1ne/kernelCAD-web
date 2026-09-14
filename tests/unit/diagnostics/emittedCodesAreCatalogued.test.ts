@@ -46,6 +46,8 @@ const EMITTING_FILES = [
   'kernel/naming/resolveFaceRef.ts',
   'kernel/backends/occt/drawingAnnotations.ts',
   'agent/script-runtime/bom.ts',
+  'agent/mcp/tools/renderPreview.ts',
+  'kernel/backends/occt/exportSvgDrawing.ts',
 ];
 
 // Match `code: '<value>'` and `new KernelError('<code>', ...)`.
@@ -77,7 +79,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     ).toEqual([]);
   });
 
-  it('catalogue has exactly 276 codes', () => {
+  it('catalogue has exactly 280 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -204,7 +206,9 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       276.
     //  + 2 BOM extraction: bom.material.unassigned,
     //       bom.purchased.catalog-metadata-missing = 278.
-    expect(catalogue.size).toBe(278);
+    //  + 2 exploded views: render.explode.no-assembly,
+    //       drawing.balloons.bom-unavailable = 280.
+    expect(catalogue.size).toBe(280);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

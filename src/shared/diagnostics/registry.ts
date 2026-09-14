@@ -32,7 +32,8 @@ export type DiagnosticGroup =
   | 'reference'
   | 'fea'
   | 'diff'
-  | 'bom';
+  | 'bom'
+  | 'render';
 
 export type DiagnosticSeverityLevel = 'info' | 'warn' | 'error';
 
@@ -2503,6 +2504,22 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'warn',
     group: 'bom',
     description: 'inspect({ of: \'bom\' }) / export({ format: \'bom-csv\'|\'bom-json\' }) found a purchased part whose catalogPart carries no standard and no upstream provenance to derive vendor/partNumber from.',
+  },
+  'render.explode.no-assembly': {
+    hintTemplate:
+      'Exploded views need a named assembly. Wrap each body in assembly().part(name, shape) and return arm.model() or arm.solvedModel(), then pass explode again.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'wrap bodies in assembly().part(...) and return arm.model() before requesting explode' },
+    defaultSeverity: 'error',
+    group: 'render',
+    description: 'render_preview / kernelcad render --explode / svg-drawing options.exploded was requested on a script that did not capture an assembly().',
+  },
+  'drawing.balloons.bom-unavailable': {
+    hintTemplate:
+      'Balloons and the parts-list table are filled from inspect({ of: \'bom\' }). Return assembly.model() with named parts, or omit balloons/partsList.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'return assembly.model() so a BOM can be extracted, or omit balloons/partsList' },
+    defaultSeverity: 'warn',
+    group: 'drawing',
+    description: 'svg-drawing balloons or partsList was requested but the script has no assembly, so no BOM rows exist to number balloons or fill the table.',
   },
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 

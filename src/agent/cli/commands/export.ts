@@ -49,6 +49,10 @@ export interface ExportInput {
   manifestPartId?: string;
   /** Catalog family required for a connector-manifest sidecar. */
   manifestFamily?: string;
+  explode?: number;
+  explodeMode?: string;
+  balloons?: boolean;
+  partsList?: boolean;
 }
 
 export interface ExportCliResult {
@@ -354,6 +358,18 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
   const { filePath, code } = read;
   let result;
   try {
+    const drawingOptions = input.format === 'svg-drawing' && (
+      input.explode !== undefined || input.explodeMode !== undefined || input.balloons === true || input.partsList === true
+    )
+      ? {
+          format: 'svg-drawing' as const,
+          ...(input.explode !== undefined || input.explodeMode !== undefined
+            ? { exploded: { factor: input.explode ?? 1, mode: (input.explodeMode as 'radial' | 'mate-axis' | undefined) } }
+            : {}),
+          ...(input.balloons === true ? { balloons: true } : {}),
+          ...(input.partsList === true ? { partsList: true } : {}),
+        }
+      : undefined;
     result = await runAndExport({
       code,
       fileName: filePath,
@@ -369,7 +385,9 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
           }),
       ...(input.format === 'stl' && input.verify === false
         ? { options: { format: 'stl' as const, verify: false } }
-        : {}),
+        : drawingOptions !== undefined
+          ? { options: drawingOptions }
+          : {}),
     });
   } catch (e) {
     const diag = kernelErrorToDiagnostic(e, 'cli.export-exception');
@@ -552,10 +570,15 @@ export function exportCommand(): Command {
     .option('--manifest-part-id <id>', 'catalog part id for --connector-manifest')
     .option('--manifest-family <family>', 'catalog family for --connector-manifest')
     .option('--no-verify', 'skip the watertight verify gate after STL export')
+    .option('--explode <factor>', 'svg-drawing: explode the isometric cell by this factor', (v) => Number(v))
+    .option('--explode-mode <mode>', "svg-drawing: 'mate-axis' (default) or 'radial'")
+    .option('--balloons', 'svg-drawing: item balloons numbered from the BOM', false)
+    .option('--parts-list', 'svg-drawing: parts-list table (item, name, qty, material) above the title block', false)
     .option('--json', 'emit diagnostics as JSON')
     .action(async (format: string, file: string, opts: {
       out: string; json?: boolean; part?: string[]; parts?: string; verify?: boolean;
       connectorManifest?: string; manifestPartId?: string; manifestFamily?: string;
+      explode?: number; explodeMode?: string; balloons?: boolean; partsList?: boolean;
     }) => {
       if (!SUPPORTED_FORMATS.has(format as ExportFormat)) {
         console.error(`Unsupported format: ${format}. Use one of ${[...SUPPORTED_FORMATS].join(', ')}.`);
@@ -613,6 +636,10 @@ export function exportCommand(): Command {
               manifestFamily: opts.manifestFamily,
             }),
         ...(opts.verify === false ? { verify: false } : {}),
+        explode: opts.explode,
+        explodeMode: opts.explodeMode,
+        balloons: opts.balloons,
+        partsList: opts.partsList,
       });
       if (opts.json) {
         console.log(JSON.stringify({

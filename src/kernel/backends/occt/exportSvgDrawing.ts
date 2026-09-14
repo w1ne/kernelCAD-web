@@ -54,8 +54,17 @@ import {
   type DrawingAnnotation,
 } from './drawingAnnotations';
 import { renderSections, type DrawingSectionSpec } from './drawingSections';
+import {
+  balloonAndTraceSvg,
+  partsListSvg,
+  explodeLabelOverlaps,
+  partCentroids,
+  type DrawingBomRow,
+} from './drawingExplode';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
+
+export type { DrawingBomRow } from './drawingExplode';
 
 export type { DrawingAnnotation, DrawingAnchor } from './drawingAnnotations';
 export type { DrawingSectionSpec, SectionPlane } from './drawingSections';
@@ -93,6 +102,17 @@ export interface SvgDrawingOptions {
    * `drawing.section.plane-misses-body`.
    */
   sections?: readonly DrawingSectionSpec[];
+  /** Exploded isometric: factor/mode are applied by the caller; the iso
+   *  cell is drawn from `explodedParts` when provided. */
+  exploded?: { factor: number; mode: 'radial' | 'mate-axis' };
+  /** World-frame parts in the exploded pose, used only for the iso cell. */
+  explodedParts?: readonly WorldFramePart[];
+  /** Item balloons with leaders on the isometric cell. */
+  balloons?: boolean;
+  /** Parts-list table (item, name, qty, material) above the title block. */
+  partsList?: boolean;
+  /** BOM rows feeding balloons and the parts-list table. */
+  bomRows?: readonly DrawingBomRow[];
 }
 
 interface StyledView {
@@ -212,10 +232,21 @@ export function exportSvgDrawing(
   if (parts.length === 0) {
     throw new Error('svg-drawing export requires at least one part.');
   }
+  const assembledCentroids = partCentroids(parts);
+  const explodedCentroids = options.explodedParts !== undefined
+    ? partCentroids(options.explodedParts)
+    : assembledCentroids;
   const shape: AnyShape =
     parts.length === 1
       ? parts[0].shape.getReplicadShape()
       : makeCompound(parts.map(p => p.shape.getReplicadShape()));
+  const explodedParts = options.explodedParts;
+  const explodedShape: AnyShape | undefined =
+    explodedParts === undefined || explodedParts.length === 0
+      ? undefined
+      : explodedParts.length === 1
+        ? explodedParts[0]!.shape.getReplicadShape()
+        : makeCompound(explodedParts.map(p => p.shape.getReplicadShape()));
 
   const sheet = SHEETS[options.sheet ?? 'a4'];
   const [bbMin, bbMax] = shape.boundingBox.bounds;
@@ -227,11 +258,13 @@ export function exportSvgDrawing(
 
   // Project + classify + dedup each view. Class order is the dedup priority:
   // visible full-weight first, then tangent, then hidden — a coincident
-  // segment renders once, in its strongest role.
+  // segment renders once, in its strongest role. Ortho views stay assembled;
+  // the isometric cell uses exploded parts when the caller supplied them.
   const styled = {} as Record<DrawingViewName, StyledView>;
   for (const name of VIEW_NAMES) {
     const camera = makeDrawingCamera(name);
-    const raw = projectShapeForDrawing(shape, camera, {
+    const source = name === 'iso' && explodedShape !== undefined ? explodedShape : shape;
+    const raw = projectShapeForDrawing(source, camera, {
       withHidden: name !== 'iso',
     });
     const [vSharp, vOutline, vSmooth, hSharp, hOutline] = dedupPolylineClasses([
@@ -331,10 +364,13 @@ export function exportSvgDrawing(
     // this reserves the front view's single 8 mm band (label at 13 mm), which
     // is exactly where the caption sat before annotations existed.
     const labelOffset = 5 + bottomReserve[name];
+    const caption = name === 'iso' && explodedShape !== undefined
+      ? 'ISOMETRIC — EXPLODED'
+      : VIEW_LABELS[name];
     const label =
       `<text class="view-label" x="${round3(p.box.x + p.box.w / 2)}" ` +
       `y="${round3(p.box.y + p.box.h + labelOffset)}" font-size="2.6" text-anchor="middle" ` +
-      `fill="#555" stroke="none">${VIEW_LABELS[name]}</text>`;
+      `fill="#555" stroke="none">${caption}</text>`;
     return (
       `<g id="view-${name}" data-view="${name}" fill="none" stroke="#000" ` +
       `stroke-linecap="round" stroke-linejoin="round">` +
@@ -391,16 +427,60 @@ export function exportSvgDrawing(
     `width="${effSheet.w - 2 * effSheet.margin}" height="${effSheet.h - 2 * effSheet.margin}" ` +
     `fill="none" stroke="#000" stroke-width="0.35"/>`;
 
+  const bomRows = options.bomRows ?? [];
+  let explodeSvg = '';
+  const overlapFragments: string[] = [];
+  if (options.balloons === true && bomRows.length > 0) {
+    const drawn = balloonAndTraceSvg({
+      assembledCentroids,
+      explodedCentroids,
+      bomRows,
+      iso: layout.views.iso,
+      scale: s,
+    });
+    explodeSvg += drawn.svg;
+    overlapFragments.push(...drawn.fragments);
+  } else if (explodedParts !== undefined) {
+    const tracesOnly = balloonAndTraceSvg({
+      assembledCentroids,
+      explodedCentroids,
+      bomRows: [],
+      iso: layout.views.iso,
+      scale: s,
+    });
+    explodeSvg += tracesOnly.svg;
+  }
+  if (options.partsList === true && bomRows.length > 0) {
+    const table = partsListSvg({ rows: bomRows, sheet: effSheet });
+    explodeSvg += table.svg;
+    overlapFragments.push(table.fragment);
+  }
+  if (overlapFragments.length > 0 && diagnosticsOut !== undefined) {
+    const overlaps = explodeLabelOverlaps(overlapFragments);
+    if (overlaps.length > 0) {
+      diagnosticsOut.push({
+        target: 'export-occt',
+        code: 'drawing.annotation.overlap',
+        severity: 'warn',
+        message: `svg-drawing: ${overlaps.length} balloon/parts-list label pair(s) overlap on the sheet.`,
+        hint: 'Increase the explode factor, use a larger sheet, or drop balloons/partsList on a crowded assembly.',
+        nextAction: NEXT_ACTIONS['drawing.annotation.overlap'],
+      });
+    }
+  }
+
+  const explodedAttr = explodedShape !== undefined ? ' data-kc-exploded="true"' : '';
   const svg = [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${effSheet.w} ${effSheet.h}" ` +
       `width="${effSheet.w}mm" height="${effSheet.h}mm" font-family="sans-serif" ` +
-      `data-kc-format="svg-drawing" data-kc-scale="${layout.scaleText}" data-kc-units="mm">`,
+      `data-kc-format="svg-drawing" data-kc-scale="${layout.scaleText}" data-kc-units="mm"${explodedAttr}>`,
     ...(hatchDefs === '' ? [] : [hatchDefs]),
     `<rect x="0" y="0" width="${effSheet.w}" height="${effSheet.h}" fill="#fff"/>`,
     frame,
     ...viewGroups,
     dimensions,
     ...(sectionsSvg === '' ? [] : [sectionsSvg]),
+    ...(explodeSvg === '' ? [] : [explodeSvg]),
     titleBlock(effSheet, {
       name: options.modelName ?? 'model',
       scaleText: layout.scaleText,

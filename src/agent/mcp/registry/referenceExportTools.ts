@@ -43,7 +43,8 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         'Supported formats: stl (binary STL mesh), step (BREP CAD interchange), dxf (planar laser/waterjet profile from a Region or planar face), ' +
         '3mf (slicer-friendly mesh with per-part colors), glb (web-viewer / AR with PBR materials), ' +
         'svg-drawing (third-angle engineering-drawing sheet: front/top/left + isometric views, hidden edges dashed, tangent edges thin, ' +
-        'overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box). ' +
+        'overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box; ' +
+        'pass options.exploded { factor, mode } to explode the isometric cell, options.balloons to number parts from the BOM, and options.partsList for an item/name/qty/material table above the title block). ' +
         'Robot descriptions: urdf (tree-topology robot description), srdf (motion-planning semantics layered over the URDF), sdf-gazebo (SDFormat 1.10 with native ball joints, closed loops, and solved per-link poses), ' +
         "usd-isaac (ASCII USD physics stage: PhysicsArticulationRootAPI root, one rigid body per link at its solved pose with mass / centre of mass / principal inertia, " +
         'PhysicsFixedJoint/PhysicsRevoluteJoint/PhysicsPrismaticJoint per mate with token axis, two-sided joint frames and limits, UsdPreviewSurface materials from the part appearance, ' +
@@ -84,7 +85,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
               'dxf: { layers?, unit?: "mm"|"cm"|"in", tolerance? }. ' +
               '3mf: { printUnit?: "mm"|"cm"|"in", embedSource? }. ' +
               'glb: { axis?: "y-up"|"z-up", draco?: false }. ' +
-              'svg-drawing: { sheet?: "a4"|"a3", modelName?, date?, annotations? }. '
+              'svg-drawing: { sheet?: "a4"|"a3", modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList? }. '
               + 'svg-drawing annotations is an array of authored dimensions/notes, each '
               + '{ kind: "linear"|"radius"|"diameter"|"angular"|"note", view?: "front"|"top"|"left"|"iso", text?, offset? } plus '
               + 'kind-specific geometry: linear { from, to }, radius/diameter { edge: EdgeQuery }, angular { from: EdgeQuery, to: EdgeQuery }, note { at, text }. '

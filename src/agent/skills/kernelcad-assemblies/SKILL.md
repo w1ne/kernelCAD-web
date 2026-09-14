@@ -100,6 +100,8 @@ Typical raw densities: steel `7850`, aluminum `2700`, ABS plastic `1050`, brass 
 
 ### Bill of materials
 
+Exploded views reuse that same assembly: `render_preview({ explode: { factor, mode } })` / `kernelcad render --explode` pull parts apart along mate axes (`mate-axis`) or from the centroid (`radial`); `export` svg-drawing with `exploded` + `balloons` + `partsList` numbers those parts from the BOM. There is no `arm.explode()` hook — render and export consume the poses directly.
+
 `inspect({ of: 'bom' })` / `export({ format: 'bom-csv' | 'bom-json' })` read this same `material`/`density` declaration to build a real bill of materials: one row per DISTINCT part (grouped by geometry/catalog identity, never by name — a `for` loop that places the same source shape under `N` distinct names collapses to one row with `quantity: N`), split into `kind: 'fabricated'` vs `kind: 'purchased'` (purchased = came from `lib.fetchPart`/`fetch_part`, carries `catalog: { id, vendor, partNumber, source, license }`). A part with no `material`/`density` gets `massGPerUnit: null` and a `bom.material.unassigned` diagnostic — never a silently guessed water-density mass. See the `kernelcad-mcp` skill for the full row shape.
 
 ```typescript
