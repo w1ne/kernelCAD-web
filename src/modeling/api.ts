@@ -28,7 +28,7 @@ import type {
   AnimationViewSpec,
 } from '../shared/intent/animationViewRecord';
 import type { DfmSpec, DfmSpecHandle } from '../shared/intent/dfmSpecRecord';
-import { helix, type RailPoint, type HelixOptions } from './helix';
+import { helix, tagHelixRail, type RailPoint, type HelixOptions } from './helix';
 import { solveHermiteG2, type HermiteEndpoint } from './capture/hermiteG2';
 import { createSketchModule, type SketchModule } from './sketch/index';
 import { fontPath, type FontPath } from '../shared/fonts/fontPath';
@@ -64,7 +64,7 @@ import { validateThickness, validateKFactor } from './sheetMetal';
 import type { FaceLabelsMap } from '../shared/intent/featureRecord';
 import { makeParamRef, isParamRef, type ParamRef, type Editable } from '../shared/runtime/paramRef';
 import type { ParamMetadata } from '../shared/runtime/paramTable';
-import { toParam } from '../shared/runtime/editableHelpers';
+import { currentValue, toParam } from '../shared/runtime/editableHelpers';
 import * as kinematic from '../kinematic';
 import type { KinematicFacade } from '../kinematic/types';
 import { q as queryNamespace } from '../kernel/naming/queryConstructors';
@@ -200,7 +200,13 @@ export interface KernelCadApi {
   params<R extends Record<string, number | boolean>>(decl: R): { [K in keyof R]: ParamRef<R[K]> };
 
   path(): PathBuilder;
-  helix(opts: HelixOptions): RailPoint[];
+  /**
+   * Helix rail for `Sketch.sweep`. `radius`, `pitch`, `turns` and `startAngle`
+   * accept ParamRefs: the points are sampled from the current values and the
+   * rail remembers the symbolic dimensions, so a sweep along it follows param
+   * changes, and `sweep(rail, { spine: 'helix' })` can build the exact helix.
+   */
+  helix(opts: EditableHelixOptions): RailPoint[];
   /**
    * Pre-select edges by EdgeQuery. Returns a `ShapeList` — still an
    * `EdgeSegment[]` everywhere one is expected, plus the selector algebra
@@ -567,6 +573,16 @@ export interface SpringOptions {
   segments?: number;
 }
 
+/** `helix()` options as scripts pass them: dimensions may be ParamRefs. */
+export interface EditableHelixOptions {
+  radius: Editable<number>;
+  pitch: Editable<number>;
+  turns: Editable<number>;
+  axis?: 'X' | 'Y' | 'Z';
+  pointsPerTurn?: number;
+  startAngle?: Editable<number>;
+}
+
 const mm = (n: Editable<number>): Param => toParam(n, 'mm');
 const ul = (n: Editable<number>): Param => toParam(n, 'unitless');
 
@@ -930,7 +946,25 @@ export function createApi(ctx: ApiContext): KernelCadApi {
     path() {
       return makePath(session);
     },
-    helix,
+    helix(opts) {
+      const table = session.paramTable;
+      const numeric: HelixOptions = {
+        radius: currentValue(opts.radius, table),
+        pitch: currentValue(opts.pitch, table),
+        turns: currentValue(opts.turns, table),
+        axis: opts.axis,
+        pointsPerTurn: opts.pointsPerTurn,
+        startAngle: opts.startAngle === undefined ? undefined : currentValue(opts.startAngle, table),
+      };
+      return tagHelixRail(helix(numeric), {
+        radius: toParam(opts.radius, 'mm'),
+        pitch: toParam(opts.pitch, 'mm'),
+        turns: toParam(opts.turns, 'unitless'),
+        startAngle: toParam(opts.startAngle ?? 0, 'unitless'),
+        axis: opts.axis ?? 'Z',
+        pointsPerTurn: opts.pointsPerTurn ?? 32,
+      });
+    },
     selectEdges: async (shape, query = {}) => {
       const lowered = await shape.lower();
       return select(selectEdgesBackend(lowered, query));

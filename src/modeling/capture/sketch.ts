@@ -8,6 +8,7 @@ import type { CaptureSession } from './captureSession';
 import { validateFaceLabels } from './faceLabels';
 import { Shape } from './proxy';
 import { KernelError } from '../../shared/intent/kernelError';
+import { helix as sampleHelix, helixOptionsFromSpec, helixRailSpecOf, type HelixRailSpec } from '../helix';
 import type { FaceLabelsMap } from '../../shared/intent/featureRecord';
 import { type Editable, type ParamRefExpr } from '../../shared/runtime/paramRef';
 import {
@@ -164,6 +165,20 @@ export class Sketch {
    *   on a dense smooth rail makes the kernel emit per-segment tubes that do
    *   not sew, leaving open rings in the export mesh (`export.mesh.not-watertight`).
    *
+   * - `'helix'`: for rails returned by `helix(...)` — threads, worms, helical
+   *   grooves. The lowerer builds the EXACT helix (not a fit through the
+   *   samples) and moves the profile by pure screw motion. The profile is
+   *   placed in the AXIAL plane through the rail start: profile x = radial
+   *   offset from the helix point (positive = away from the axis), profile
+   *   y = offset along the helix axis. A 60° V thread profile sweeps to a
+   *   valid solid. The profile's axial extent must stay below the pitch
+   *   (adjacent turns may not overlap) and it may not cross the axis;
+   *   `frenet` and `transitionMode` have no effect.
+   *
+   * A rail from `helix(...)` remembers its (possibly ParamRef) dimensions, so a
+   * sweep along it is regenerated from the live param values at lower time
+   * with every spine mode.
+   *
    * Returns a `Shape` (3D solid). Validation (rail length, finite values,
    * transitionMode/spine strings) happens at lowering time and surfaces as
    * `feature.sweep.*` / `feature.invalid-args` diagnostics.
@@ -173,13 +188,22 @@ export class Sketch {
     opts: {
       frenet?: boolean;
       transitionMode?: 'right' | 'transformed' | 'round';
-      spine?: 'polyline' | 'smooth';
+      spine?: 'polyline' | 'smooth' | 'helix';
       faceLabels?: FaceLabelsMap;
     } = {},
   ): Shape {
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'sweep');
     const transitionMode = opts.transitionMode ?? 'right';
     const spine = opts.spine ?? 'polyline';
+    const helixSpec = this.#unmodifiedHelixSpec(rail);
+    if (spine === 'helix' && helixSpec === undefined) {
+      throw new KernelError(
+        'feature.invalid-args',
+        "Sketch.sweep: spine 'helix' needs the unmodified array returned by helix(...); this rail was not produced by helix() or was changed after it.",
+        this.id,
+        "Pass helix({ radius, pitch, turns }) straight to sweep(rail, { spine: 'helix' }). For an arbitrary curved rail use spine: 'smooth'.",
+      );
+    }
     return this.session.createShape({
       kind: 'sweep',
       inputs: {
@@ -193,9 +217,40 @@ export class Sketch {
         rail,
         transitionMode,
         spine,
+        ...(helixSpec ? { helix: helixSpec } : {}),
         ...(faceLabels ? { faceLabels } : {}),
       },
     });
+  }
+
+  /**
+   * The symbolic spec of a rail produced by `helix()`, but only while the
+   * array still holds exactly the points helix() sampled (an edited rail is
+   * just points). Hard-private so the drift sentinel ignores it.
+   */
+  #unmodifiedHelixSpec(rail: Vec3[]): HelixRailSpec | undefined {
+    const spec = helixRailSpecOf(rail);
+    if (spec === undefined) return undefined;
+    const table = this.session.paramTable;
+    const now = (p: Param) => paramValue(p, table);
+    const expected = sampleHelix(
+      helixOptionsFromSpec({
+        ...spec,
+        radius: { ...spec.radius, evaluated: now(spec.radius) },
+        pitch: { ...spec.pitch, evaluated: now(spec.pitch) },
+        turns: { ...spec.turns, evaluated: now(spec.turns) },
+        startAngle: { ...spec.startAngle, evaluated: now(spec.startAngle) },
+      }),
+    );
+    if (expected.length !== rail.length) return undefined;
+    for (let i = 0; i < rail.length; i++) {
+      const p = rail[i];
+      const q = expected[i];
+      if (!Array.isArray(p) || Math.abs(p[0] - q[0]) > 1e-9 || Math.abs(p[1] - q[1]) > 1e-9 || Math.abs(p[2] - q[2]) > 1e-9) {
+        return undefined;
+      }
+    }
+    return spec;
   }
 
   /**
