@@ -100,7 +100,7 @@ export function inspectTool(input: InspectInput): Promise<unknown> {
     case 'bend-table':
       return getBendTableTool(rest as unknown as Parameters<typeof getBendTableTool>[0]);
     case 'params':
-      return paramsListTool();
+      return paramsListTool(rest as unknown as Parameters<typeof paramsListTool>[0]);
     case 'part-categories':
       return listPartCategoriesTool();
     case 'part-families':
