@@ -47,7 +47,13 @@ export interface MeshToFeaturesInput {
   maxPasses?: number;
   /** Vertex weld distance in mm (default max(1e-4, 1e-6 × diagonal)). */
   weldToleranceMm?: number;
+  /** Refuse meshes above this triangle count (default 300000) instead of stalling. */
+  maxTriangles?: number;
 }
+
+/** Surface deviation is point-to-triangle per sample, so cost grows with the
+ *  triangle count; past this budget the call fails fast with a decimation hint. */
+export const DEFAULT_MAX_MESH_TRIANGLES = 300_000;
 
 export type MeshToFeaturesOutput = ReconstructResult & { written?: { script: string; ledger: string } };
 
@@ -123,6 +129,14 @@ export async function meshToFeaturesTool(input: MeshToFeaturesInput): Promise<Me
   } catch (e) {
     if (e instanceof MeshParseError) return fail(`mesh_to_features: ${e.message}`, 'cli.invalid-args');
     throw e;
+  }
+  const budget = input.maxTriangles ?? DEFAULT_MAX_MESH_TRIANGLES;
+  const triangles = soup.positions.length / 9;
+  if (triangles > budget) {
+    return fail(
+      `mesh_to_features: the mesh has ${triangles} triangles, over the ${budget} budget. Decimate it (a prismatic part rarely needs more than a few tens of thousands) or raise maxTriangles.`,
+      'cli.invalid-args',
+    );
   }
   const result = await reconstructFromSoup(soup, occtReconstructionEvaluator, {
     sourceName: name ?? `inline ${soup.format.toUpperCase()} data`,

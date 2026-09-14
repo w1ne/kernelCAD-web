@@ -48,6 +48,7 @@ const meshToFeaturesToolEntry: ToolRegistryEntry = {
         },
         maxPasses: { type: 'number', description: 'Refinement passes, 1–4. Default 4; stops early at the first faithful pass.' },
         weldToleranceMm: { type: 'number', description: 'Vertex weld distance in mm. Default max(1e-4, 1e-6 × bbox diagonal).' },
+        maxTriangles: { type: 'number', description: 'Refuse meshes above this triangle count instead of stalling. Default 300000.' },
       },
     },
   },

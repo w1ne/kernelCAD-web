@@ -221,5 +221,8 @@ describe('mesh_to_features round trips', () => {
     expect(missing).toMatchObject({ ok: false, errorCode: 'cli.file-read' });
     const junk = await meshToFeaturesTool({ data: Buffer.from('not a mesh at all').toString('base64') });
     expect(junk).toMatchObject({ ok: false, errorCode: 'cli.invalid-args' });
+    const overBudget = await meshToFeaturesTool({ data, maxTriangles: 100 });
+    expect(overBudget).toMatchObject({ ok: false, errorCode: 'cli.invalid-args' });
+    if (!overBudget.ok) expect(overBudget.error).toMatch(/over the 100 budget/);
   }, 180000);
 });
