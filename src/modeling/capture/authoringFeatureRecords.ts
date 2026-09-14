@@ -8,6 +8,15 @@ import type {
   FeaStudySpec,
 } from '../../shared/intent/feaStudyRecord';
 import { resolveFeaMaterial } from '../../kernel/fea/feaMaterials';
+import {
+  DATUM_LABEL_RE,
+  GDT_FORM_TYPES,
+  GDT_MODIFIERS,
+  GDT_TYPES,
+  type DrawingDatumMetadata,
+  type DrawingToleranceMetadata,
+  type DrawingToleranceSpec,
+} from '../../shared/intent/drawingGdtRecord';
 import type { Curve3DMetadata } from '../../shared/intent/curve3dRecord';
 import type {
   EmbossTextAlign,
@@ -428,6 +437,109 @@ export function buildFeaStudyFeatureSpec(args: FeaStudySpec, shapeRef: FeatureRe
 
   return {
     kind: 'feaStudy',
+    params: {},
+    inputs: { shape: shapeRef },
+    metadata: metadata as unknown as Record<string, unknown>,
+  };
+}
+
+const isQueryObject = (v: unknown): boolean =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
+
+const invalidGdt = (method: 'datum' | 'tolerance', field: string, why: string): never => {
+  throw new KernelError(
+    'feature.invalid-args',
+    `${method}: ${field} ${why}.`,
+    undefined,
+    `invalid-args.drawing-${method}.${field} — fix the field; a GD&T declaration that silently vanished from the drawing would be worse than a build failure.`,
+  );
+};
+
+/** Capture-time validation for `shape.datum(label, face)`. The face query is
+ *  resolved by the drawing exporter against the exported geometry, where a
+ *  miss surfaces as `drawing.datum.unresolved`. A letter already claimed by
+ *  an earlier declaration fails here, because two faces cannot both be A. */
+export function buildDrawingDatumFeatureSpec(
+  label: unknown,
+  face: unknown,
+  shapeRef: FeatureRef,
+  existingLabels: readonly string[],
+): AuthoringFeatureSpec {
+  if (typeof label !== 'string' || !DATUM_LABEL_RE.test(label)) {
+    invalidGdt('datum', 'label', `must be one or two capital letters other than I, O and Q; got ${JSON.stringify(label)}`);
+  }
+  const letter = label as string;
+  if (existingLabels.includes(letter)) {
+    invalidGdt('datum', 'label', `'${letter}' is already declared by an earlier datum() call`);
+  }
+  if (!isQueryObject(face)) {
+    invalidGdt('datum', 'face', `must be a FaceQuery object such as { atZ: 0 }; got ${JSON.stringify(face)}`);
+  }
+  const metadata: DrawingDatumMetadata = {
+    virtual: true,
+    label: letter,
+    face: face as DrawingDatumMetadata['face'],
+  };
+  return {
+    kind: 'drawingDatum',
+    params: {},
+    inputs: { shape: shapeRef },
+    metadata: metadata as unknown as Record<string, unknown>,
+  };
+}
+
+/** Capture-time validation for `shape.tolerance({...})`. */
+export function buildDrawingToleranceFeatureSpec(
+  spec: DrawingToleranceSpec,
+  shapeRef: FeatureRef,
+): AuthoringFeatureSpec {
+  if (!isQueryObject(spec)) invalidGdt('tolerance', 'spec', 'must be an object');
+  if (!GDT_TYPES.includes(spec.type)) {
+    invalidGdt('tolerance', 'type', `must be one of ${GDT_TYPES.join(' | ')}; got ${JSON.stringify(spec.type)}`);
+  }
+  if (typeof spec.value !== 'number' || !Number.isFinite(spec.value) || spec.value <= 0) {
+    invalidGdt('tolerance', 'value', `must be a positive finite number of mm; got ${JSON.stringify(spec.value)}`);
+  }
+  const hasFace = spec.face !== undefined;
+  const hasEdge = spec.edge !== undefined;
+  if (hasFace === hasEdge) {
+    invalidGdt('tolerance', 'face', 'or edge: exactly one of the two is required');
+  }
+  if (hasFace && !isQueryObject(spec.face)) {
+    invalidGdt('tolerance', 'face', `must be a FaceQuery object; got ${JSON.stringify(spec.face)}`);
+  }
+  if (hasEdge && !isQueryObject(spec.edge)) {
+    invalidGdt('tolerance', 'edge', `must be an EdgeQuery object; got ${JSON.stringify(spec.edge)}`);
+  }
+  const datums = spec.datums ?? [];
+  if (!Array.isArray(datums)) {
+    invalidGdt('tolerance', 'datums', `must be an array of datum letters; got ${JSON.stringify(spec.datums)}`);
+  }
+  for (const d of datums) {
+    if (typeof d !== 'string' || !DATUM_LABEL_RE.test(d)) {
+      invalidGdt('tolerance', 'datums', `entries must be datum letters such as 'A'; got ${JSON.stringify(d)}`);
+    }
+  }
+  if (new Set(datums).size !== datums.length) {
+    invalidGdt('tolerance', 'datums', `must not repeat a letter; got ${JSON.stringify(datums)}`);
+  }
+  if (GDT_FORM_TYPES.includes(spec.type) && datums.length > 0) {
+    invalidGdt('tolerance', 'datums', `must be empty for ${spec.type}: a form tolerance controls the feature on its own`);
+  }
+  if (spec.modifier !== undefined && !GDT_MODIFIERS.includes(spec.modifier)) {
+    invalidGdt('tolerance', 'modifier', `must be one of ${GDT_MODIFIERS.join(' | ')}; got ${JSON.stringify(spec.modifier)}`);
+  }
+  const metadata: DrawingToleranceMetadata = {
+    virtual: true,
+    type: spec.type,
+    value: spec.value,
+    ...(hasFace ? { face: spec.face } : {}),
+    ...(hasEdge ? { edge: spec.edge } : {}),
+    datums: [...datums],
+    ...(spec.modifier !== undefined ? { modifier: spec.modifier } : {}),
+  };
+  return {
+    kind: 'drawingTolerance',
     params: {},
     inputs: { shape: shapeRef },
     metadata: metadata as unknown as Record<string, unknown>,

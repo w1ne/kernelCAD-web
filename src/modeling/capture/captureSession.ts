@@ -14,6 +14,7 @@ import type { CameraTargetSpec } from '../../shared/intent/cameraTargetRecord';
 import type { AnimationViewSpec } from '../../shared/intent/animationViewRecord';
 import type { DfmSpec } from '../../shared/intent/dfmSpecRecord';
 import type { FeaStudySpec } from '../../shared/intent/feaStudyRecord';
+import type { DrawingToleranceSpec } from '../../shared/intent/drawingGdtRecord';
 import { Curve3DProxy } from './curveProxy';
 import { lazyEvalCurve } from '../backends/occt/curve3dEval';
 import { Shape } from './proxy';
@@ -46,6 +47,8 @@ import {
   buildCurve3DFeatureSpec,
   buildDfmSpecFeatureSpec,
   buildFeaStudyFeatureSpec,
+  buildDrawingDatumFeatureSpec,
+  buildDrawingToleranceFeatureSpec,
   buildEmbossTextFeatureSpec,
   buildProjectCurveFeatureSpec,
   type Curve3DCaptureArgs,
@@ -476,6 +479,31 @@ export class CaptureSession {
    */
   addFeaStudy(args: FeaStudySpec, shapeRef: FeatureRef): FeatureId {
     const r = this.register(buildFeaStudyFeatureSpec(args, shapeRef));
+    return r.id;
+  }
+
+  /**
+   * Capture a `drawingDatum` record: datum letter `label` identifies the face
+   * `face` resolves to on the drawn geometry. Virtual (no BREP output) and
+   * validated eagerly — a GD&T declaration that silently vanished from the
+   * drawing is worse than a build failure. Letters are unique per script.
+   */
+  addDrawingDatum(label: unknown, face: unknown, shapeRef: FeatureRef): FeatureId {
+    const taken = this.records
+      .filter(r => r.kind === 'drawingDatum')
+      .map(r => (r.metadata as { label?: string } | undefined)?.label)
+      .filter((l): l is string => typeof l === 'string');
+    const r = this.register(buildDrawingDatumFeatureSpec(label, face, shapeRef, taken));
+    return r.id;
+  }
+
+  /**
+   * Capture a `drawingTolerance` record: a feature control frame on the face
+   * or edge the query resolves to. Virtual and validated eagerly, like
+   * `addDrawingDatum`.
+   */
+  addDrawingTolerance(spec: DrawingToleranceSpec, shapeRef: FeatureRef): FeatureId {
+    const r = this.register(buildDrawingToleranceFeatureSpec(spec, shapeRef));
     return r.id;
   }
 

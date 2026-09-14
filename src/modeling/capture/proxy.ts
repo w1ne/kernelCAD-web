@@ -32,6 +32,7 @@ import { isTextureRef, normalizeTextureRef } from '../../shared/intent/textureRe
 import { validateBendArgs } from '../sheetMetal';
 import { normalizeTopoRefOrString } from './topoRefNormalize';
 import type { Region } from '../../shared/intent/region';
+import type { DrawingToleranceSpec } from '../../shared/intent/drawingGdtRecord';
 import type {
   FeaStudyHandle,
   FeaStudyMetadata,
@@ -236,6 +237,52 @@ export class Shape {
     const id = this.session.addFeaStudy(spec, { kind: 'feature', id: this.id });
     const record = this.session.getRecords().find(r => r.id === id)!;
     return { id, metadata: record.metadata as unknown as FeaStudyMetadata };
+  }
+
+  /**
+   * Declare datum `label` on the face `face` resolves to, for engineering
+   * drawings. Declaration-only: registers a virtual record bound to this shape
+   * and returns this same shape, so it chains without joining the geometry.
+   *
+   * ```ts
+   * const plate = box(80, 50, 10).datum('A', { atZ: 0 });
+   * return plate;
+   * ```
+   *
+   * The `svg-drawing` exporter draws the datum feature symbol. With
+   * `autoAnnotate` on, the letter is pinned to this face and the remaining
+   * datums are derived around it. The query resolves against the exported
+   * geometry; a miss fails the export with `drawing.datum.unresolved`.
+   * A malformed letter or a letter already declared throws
+   * `feature.invalid-args` at capture.
+   */
+  datum(label: string, face: FaceQuery): Shape {
+    this.session.addDrawingDatum(label, face, { kind: 'feature', id: this.id });
+    return this;
+  }
+
+  /**
+   * Declare a geometric tolerance (a feature control frame) on a face or edge,
+   * for engineering drawings. Declaration-only, returns this same shape.
+   *
+   * ```ts
+   * const plate = box(80, 50, 10)
+   *   .subtract(cylinder(12, 3.25).translate(40, 25, -1))
+   *   .tolerance({ type: 'position', value: 0.05, modifier: '⌀',
+   *                edge: { ofCurveType: 'CIRCLE', near: [40, 25, 10] }, datums: ['A', 'B', 'C'] });
+   * return plate;
+   * ```
+   *
+   * With `autoAnnotate` on, a declared tolerance replaces the automatic one of
+   * the same type on the same feature (a grouped hole pattern counts as one
+   * feature). Form tolerances (`flatness`, `cylindricity`) take no datums.
+   * Malformed declarations throw `feature.invalid-args` at capture; a query
+   * that misses the exported geometry fails the export with
+   * `drawing.tolerance.feature-unresolved`.
+   */
+  tolerance(spec: DrawingToleranceSpec): Shape {
+    this.session.addDrawingTolerance(spec, { kind: 'feature', id: this.id });
+    return this;
   }
 
   color(name: ColorToken | `#${string}`): Shape {
