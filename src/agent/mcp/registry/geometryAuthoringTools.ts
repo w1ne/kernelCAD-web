@@ -411,7 +411,7 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
     definition: {
       name: 'resolve_assumptions',
       description:
-        "Use this after trace_from_image to confirm or override the open facts in its assumption ledger (missing scale, inferred/assumed values) before committing geometry built from a reference photo. " +
+        "Use this when you need to confirm or override the open facts in an assumption ledger from trace_from_image (missing scale, inferred/assumed values) before committing geometry built from a reference photo. " +
         "Reads the persisted `<model>.ledger.json` at `ledgerPath`, applies each resolution — `{ id, confirm: true }` to accept a fact as-is, or `{ id, value }` to override it — rewrites the ledger file, and returns the updated ledger plus `paramOverrides` (factId -> value) to feed straight into `set_param`. Pair with the `kernelcad-from-reference` skill.",
       inputSchema: {
         type: 'object',
