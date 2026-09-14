@@ -85,6 +85,9 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   export: WRITES_FILE,
   capture_animation: WRITES_FILE,
 
+  // Uploads a file to, and can start a print on, a real network printer.
+  send_to_printer: WRITES_FILE,
+
   // Renders the model to PNG views on the local filesystem — does not change the
   // design, but writes image files (same class as capture_animation).
   render_preview: WRITES_FILE,

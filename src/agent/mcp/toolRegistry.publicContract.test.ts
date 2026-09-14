@@ -16,6 +16,7 @@ import { catalogToolEntries } from './registry/catalogTools';
 import { coreRuntimeToolEntries } from './registry/coreRuntimeTools';
 import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools';
 import { inspectionVerificationToolEntries } from './registry/inspectionVerificationTools';
+import { printToolEntries } from './registry/printTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
 import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
@@ -41,6 +42,7 @@ const EXPECTED_TOOL_NAMES = [
   'lookup_api',
   'lookup_diagnostics',
   'export',
+  'send_to_printer',
   'lookup_cookbook',
   'find_part',
   'fetch_part',
@@ -129,6 +131,11 @@ describe('toolRegistry public contract', () => {
     expect(TOOL_REGISTRY.slice(17, 20)).toEqual(referenceExportToolEntries);
   });
 
+  it('composes the send_to_printer tool from the print registry module', () => {
+    expect(printToolEntries.map(entry => entry.definition.name)).toEqual(['send_to_printer']);
+    expect(TOOL_REGISTRY.slice(20, 21)).toEqual(printToolEntries);
+  });
+
   it('wires the moved core runtime handlers through the public dispatcher', async () => {
     const evalResult = await callMcpTool('evaluate_script', {
       code: 'return box(10, 10, 10);',
@@ -194,7 +201,7 @@ describe('toolRegistry public contract', () => {
     const names = catalogToolEntries.map(entry => entry.definition.name);
 
     expect(names).toEqual(['lookup_cookbook', 'find_part', 'fetch_part']);
-    expect(TOOL_REGISTRY.slice(20, 23)).toEqual(catalogToolEntries);
+    expect(TOOL_REGISTRY.slice(21, 24)).toEqual(catalogToolEntries);
   });
 
   it('composes geometry-authoring tools from the geometry registry module', () => {
@@ -228,7 +235,7 @@ describe('toolRegistry public contract', () => {
       'set_scene_return',
       'solve_mates',
     ]);
-    expect(TOOL_REGISTRY.slice(23, 31)).toEqual(sketchAssemblyToolEntries);
+    expect(TOOL_REGISTRY.slice(24, 32)).toEqual(sketchAssemblyToolEntries);
   });
 
   it('composes review and rendering pipeline tools from the review pipeline registry module', () => {
@@ -243,7 +250,7 @@ describe('toolRegistry public contract', () => {
       'capture_animation',
       'render_preview',
     ]);
-    expect(TOOL_REGISTRY.slice(31, 38)).toEqual(reviewPipelineToolEntries);
+    expect(TOOL_REGISTRY.slice(32, 39)).toEqual(reviewPipelineToolEntries);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

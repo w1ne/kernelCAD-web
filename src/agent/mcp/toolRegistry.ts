@@ -12,6 +12,7 @@ import {
   inspectionVerificationPreludeToolEntries,
   inspectionVerificationQueryToolEntries,
 } from './registry/inspectionVerificationTools';
+import { printToolEntries } from './registry/printTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
 import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
@@ -38,6 +39,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...geometryAuthoringToolEntries,
   ...inspectionVerificationQueryToolEntries,
   ...referenceExportToolEntries,
+  ...printToolEntries,
   ...catalogToolEntries,
   ...sketchAssemblyToolEntries,
   ...reviewPipelineToolEntries,
