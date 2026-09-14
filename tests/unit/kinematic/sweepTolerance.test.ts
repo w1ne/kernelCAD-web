@@ -136,4 +136,27 @@ describe('sweepTolerance', () => {
     expect(r.combosEvaluated).toBe(0);
     expect(r.results).toHaveLength(0);
   });
+
+  it('rejects sweeping a non-numeric (boolean) param with a clear diagnostic', async () => {
+    const code = `
+      const arm = assembly('sweep-lid');
+      const hasLid = param('HasLid', true);
+      const a = box(20, 20, 20, true);
+      arm.part('a', a);
+      return arm.solvedModel({});
+    `;
+    let err: unknown;
+    try {
+      await sweepTolerance({
+        code,
+        params: { HasLid: { values: [true, false] } as unknown as { values: number[] } },
+        gates: { interference: false, mountingHoles: false, jointAxis: false },
+      });
+    } catch (e) {
+      err = e;
+    }
+    expect(err).toBeInstanceOf(Error);
+    expect((err as { hint?: string }).hint).toContain('invalid-args.param.type-mismatch');
+    expect((err as Error).message).toMatch(/not numeric/);
+  });
 });

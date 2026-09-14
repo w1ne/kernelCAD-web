@@ -83,5 +83,8 @@
   "route",
   "mass",
   "overhang",
-  "print-orientation"
+  "print-orientation",
+  "typed-params",
+  "choice-param",
+  "boolean-feature-toggle"
 ]

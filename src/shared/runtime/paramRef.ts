@@ -52,11 +52,24 @@ export class ParamRef<T extends number | boolean = number | boolean> {
   readonly _brand: typeof PARAM_REF_BRAND = PARAM_REF_BRAND;
   readonly _type: T extends number ? 'number' : 'boolean';
   readonly _expr: ParamRefExpr;
+  /**
+   * Eager snapshot of the current value — set ONLY for boolean ParamRefs
+   * (booleans have no arithmetic / composed expressions, so every boolean
+   * ParamRef is a `param()`-declared leaf; there is no derived-boolean case
+   * to keep in sync). Numeric ParamRefs leave this `undefined`: they stay
+   * purely symbolic (`_expr` + `resolveExpr` against a live `ParamTable`)
+   * so a Studio slider can re-lower a dimension without re-running the
+   * whole script — collapsing to a number here would defeat that. Read
+   * `b.value` in script control flow (`if (hasLid.value) {...}`), same as
+   * `TypedParamRef` for choice/string params.
+   */
+  readonly value: T extends boolean ? boolean : undefined;
 
-  constructor(expr: ParamRefExpr, type: T extends number ? 'number' : 'boolean') {
+  constructor(expr: ParamRefExpr, type: T extends number ? 'number' : 'boolean', value?: T) {
     this._expr = expr;
     this._type = type;
     this.$param = paramExprToDebugString(expr);
+    this.value = (type === 'boolean' ? value : undefined) as T extends boolean ? boolean : undefined;
     Object.freeze(this);
   }
 
@@ -181,6 +194,63 @@ export function isParamRef(value: unknown): value is ParamRef {
 export function makeParamRef<T extends number | boolean>(
   name: string,
   type: T extends number ? 'number' : 'boolean',
+  value?: T,
 ): ParamRef<T> {
-  return new ParamRef<T>({ kind: 'param', name }, type);
+  return new ParamRef<T>({ kind: 'param', name }, type, value);
+}
+
+/**
+ * Typed (non-numeric-arithmetic) parameter kinds. `choice` and `string`
+ * params never participate in the symbolic ParamRef expression AST used by
+ * numbers — there is no meaningful "add 2 to a choice". Instead they resolve
+ * EAGERLY at `param()` call time: the ref simply carries the current value
+ * (the default at declare time, which is what `set_param` rewrites and the
+ * script re-evaluates against). Script bodies read `.value` — e.g.
+ * `if (HasLid.value) { ... }` or `sketch.text(Label.value)` — instead of a
+ * symbolic re-evaluation against a live ParamTable. This is documented in
+ * the typed-params spec: simplest-correct option, since these values drive
+ * control flow / lookups / text content rather than dimensions, and don't
+ * need to re-evaluate downstream geometry expressions the way numeric
+ * ParamRefs do.
+ */
+export type TypedParamKind = 'choice' | 'string';
+
+export class TypedParamRef<T extends string = string> {
+  readonly $param: string;
+  readonly _brand: typeof PARAM_REF_BRAND = PARAM_REF_BRAND;
+  readonly _type: TypedParamKind;
+  readonly value: T;
+
+  constructor(name: string, type: TypedParamKind, value: T) {
+    this.$param = name;
+    this._type = type;
+    this.value = value;
+    Object.freeze(this);
+  }
+
+  toString(): string {
+    return this.value;
+  }
+
+  [Symbol.toPrimitive](hint: string): string {
+    if (hint === 'string' || hint === 'default') return this.value;
+    throw new KernelError(
+      'feature.invalid-args',
+      `A '${this._type}' ParamRef ('${this.$param}') cannot be coerced to a number. Use .value for the string, or String(ref) / template literals.`,
+      undefined,
+      `invalid-args.param.type-mismatch — a '${this._type}' ParamRef cannot be coerced to a number; use .value.`,
+    );
+  }
+}
+
+export function isTypedParamRef(value: unknown): value is TypedParamRef {
+  return isParamRef(value) && ((value as { _type?: unknown })._type === 'choice' || (value as { _type?: unknown })._type === 'string');
+}
+
+export function makeTypedParamRef<T extends string = string>(
+  name: string,
+  type: TypedParamKind,
+  value: T,
+): TypedParamRef<T> {
+  return new TypedParamRef<T>(name, type, value);
 }

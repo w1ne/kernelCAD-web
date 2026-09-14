@@ -100,6 +100,42 @@ describe('ParamsTab', () => {
         expect(screen.getByTestId('param-row-chamfered').textContent).toContain('chamfered');
     });
 
+    it('renders a select for choice params and commits on change', () => {
+        const table = new ParamTable();
+        table.declare('Screw', 'choice', 'M4', { choices: ['M3', 'M4', 'M5'] });
+        const updateParam = vi.fn().mockResolvedValue(undefined);
+        mockUseRecomputeResult.mockReturnValue({ ...withTable(table), updateParam });
+
+        render(<ParamsTab />);
+
+        const select = screen.getByTestId('param-select-Screw') as HTMLSelectElement;
+        expect(select).toBeTruthy();
+        expect(select.value).toBe('M4');
+        const options = Array.from(select.options).map((o) => o.value);
+        expect(options).toEqual(['M3', 'M4', 'M5']);
+
+        fireEvent.change(select, { target: { value: 'M5' } });
+        expect(updateParam).toHaveBeenCalledExactlyOnceWith([{ name: 'Screw', value: 'M5' }]);
+    });
+
+    it('renders a text input for string params and commits on blur', () => {
+        const table = new ParamTable();
+        table.declare('Label', 'string', 'KCAD', { maxLength: 24 });
+        const updateParam = vi.fn().mockResolvedValue(undefined);
+        mockUseRecomputeResult.mockReturnValue({ ...withTable(table), updateParam });
+
+        render(<ParamsTab />);
+
+        const input = screen.getByTestId('param-text-Label') as HTMLInputElement;
+        expect(input).toBeTruthy();
+        expect(input.value).toBe('KCAD');
+        expect(input.maxLength).toBe(24);
+
+        fireEvent.change(input, { target: { value: 'HELLO' } });
+        fireEvent.blur(input);
+        expect(updateParam).toHaveBeenCalledExactlyOnceWith([{ name: 'Label', value: 'HELLO' }]);
+    });
+
     it('keeps joint-bound params visible in the Params tab', () => {
         const table = new ParamTable();
         table.declare('heightAdjustMm', 'number', 0, { min: 0, max: 6.12 });

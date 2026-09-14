@@ -1,6 +1,6 @@
 // tests/unit/mcp/edits/setParamValue.test.ts
 import { describe, it, expect } from 'vitest';
-import { setParamValue } from '../../../../src/agent/mcp/edits/setParamValue';
+import { setParamValue, parseParamDeclaration } from '../../../../src/agent/mcp/edits/setParamValue';
 import { parseCode } from '../../../../src/shared/codeGeneration/ast';
 
 function expectParseable(code: string): void {
@@ -94,5 +94,58 @@ describe('setParamValue (regex AST-edit primitive)', () => {
     expect(r.new_code).toContain(`120`);
     expect(r.new_code).not.toContain(`60`);
     expectParseable(r.new_code);
+  });
+});
+
+describe('parseParamDeclaration (source-text-only param kind reader)', () => {
+  it('classifies a boolean default', () => {
+    const r = parseParamDeclaration(`const b = param('HasLid', true);`, 'HasLid');
+    expect(r).toEqual({ ok: true, declaration: { name: 'HasLid', kind: 'boolean' } });
+  });
+
+  it('classifies a numeric default', () => {
+    const r = parseParamDeclaration(`const w = param('Width', 60, { unit: 'mm' });`, 'Width');
+    expect(r).toEqual({ ok: true, declaration: { name: 'Width', kind: 'number' } });
+  });
+
+  it('classifies a choice default (string default + meta.choices)', () => {
+    const r = parseParamDeclaration(
+      `const s = param('Screw', 'M4', { choices: ['M3', 'M4', 'M5'] });`,
+      'Screw',
+    );
+    expect(r).toEqual({
+      ok: true,
+      declaration: { name: 'Screw', kind: 'choice', choices: ['M3', 'M4', 'M5'] },
+    });
+  });
+
+  it('classifies a plain string default with maxLength', () => {
+    const r = parseParamDeclaration(
+      `const l = param('Label', 'KCAD', { maxLength: 24 });`,
+      'Label',
+    );
+    expect(r).toEqual({
+      ok: true,
+      declaration: { name: 'Label', kind: 'string', maxLength: 24 },
+    });
+  });
+
+  it('returns kind "unknown" for a non-literal default (variable/expression)', () => {
+    const r = parseParamDeclaration(`const h = param('Height', someVar);`, 'Height');
+    expect(r).toEqual({ ok: true, declaration: { name: 'Height', kind: 'unknown' } });
+  });
+
+  it('does NOT require the script to be evaluable — pure text parsing', () => {
+    const code = `
+      const b = param('HasLid', true);
+      body = body.union(thisIdentifierDoesNotExist);
+    `;
+    const r = parseParamDeclaration(code, 'HasLid');
+    expect(r).toEqual({ ok: true, declaration: { name: 'HasLid', kind: 'boolean' } });
+  });
+
+  it('returns ok:false when the param is not found', () => {
+    const r = parseParamDeclaration(`const w = param('Width', 60);`, 'Nope');
+    expect(r.ok).toBe(false);
   });
 });

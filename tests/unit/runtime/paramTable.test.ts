@@ -79,6 +79,51 @@ describe('ParamTable.declare', () => {
       expect(err.hint).toContain('above max');
     }
   });
+
+  it('accepts a valid choice param', () => {
+    const t = new ParamTable();
+    const entry = t.declare('Screw', 'choice', 'M4', { choices: ['M3', 'M4', 'M5'] });
+    expect(entry.type).toBe('choice');
+    expect(entry.value).toBe('M4');
+    expect(entry.meta?.choices).toEqual(['M3', 'M4', 'M5']);
+  });
+
+  it('rejects a choice param with no meta.choices (choice-invalid)', () => {
+    const t = new ParamTable();
+    let err: unknown;
+    try { t.declare('Screw', 'choice', 'M4'); } catch (e) { err = e; }
+    expect(isKernelError(err)).toBe(true);
+    if (isKernelError(err)) {
+      expect(err.hint).toContain('invalid-args.param.choice-invalid');
+    }
+  });
+
+  it('rejects a choice defaultValue not in the declared set (choice-invalid)', () => {
+    const t = new ParamTable();
+    let err: unknown;
+    try { t.declare('Screw', 'choice', 'M6', { choices: ['M3', 'M4', 'M5'] }); } catch (e) { err = e; }
+    expect(isKernelError(err)).toBe(true);
+    if (isKernelError(err)) {
+      expect(err.hint).toContain('invalid-args.param.choice-invalid');
+    }
+  });
+
+  it('accepts a valid string param with maxLength', () => {
+    const t = new ParamTable();
+    const entry = t.declare('Label', 'string', 'KCAD', { maxLength: 24 });
+    expect(entry.type).toBe('string');
+    expect(entry.value).toBe('KCAD');
+  });
+
+  it('rejects a string defaultValue exceeding maxLength', () => {
+    const t = new ParamTable();
+    let err: unknown;
+    try { t.declare('Label', 'string', 'A very long label indeed', { maxLength: 5 }); } catch (e) { err = e; }
+    expect(isKernelError(err)).toBe(true);
+    if (isKernelError(err)) {
+      expect(err.hint).toContain('invalid-args.param.value-out-of-range');
+    }
+  });
 });
 
 describe('ParamTable.get / set / list', () => {
@@ -131,6 +176,34 @@ describe('ParamTable.get / set / list', () => {
     list[0].meta!.min = 999;
     // Internal state untouched
     expect(t.get('a').meta?.min).toBe(0);
+  });
+
+  it('set updates a choice param and rejects an invalid choice', () => {
+    const t = new ParamTable();
+    t.declare('Screw', 'choice', 'M4', { choices: ['M3', 'M4', 'M5'] });
+    t.set('Screw', 'M5');
+    expect(t.get('Screw').value).toBe('M5');
+
+    let err: unknown;
+    try { t.set('Screw', 'M6'); } catch (e) { err = e; }
+    expect(isKernelError(err)).toBe(true);
+    if (isKernelError(err)) {
+      expect(err.hint).toContain('invalid-args.param.choice-invalid');
+    }
+  });
+
+  it('set updates a string param and rejects over maxLength', () => {
+    const t = new ParamTable();
+    t.declare('Label', 'string', 'KCAD', { maxLength: 5 });
+    t.set('Label', 'ABCDE');
+    expect(t.get('Label').value).toBe('ABCDE');
+
+    let err: unknown;
+    try { t.set('Label', 'TOOLONG'); } catch (e) { err = e; }
+    expect(isKernelError(err)).toBe(true);
+    if (isKernelError(err)) {
+      expect(err.hint).toContain('invalid-args.param.value-out-of-range');
+    }
   });
 });
 

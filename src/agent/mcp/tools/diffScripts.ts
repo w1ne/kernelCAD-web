@@ -94,10 +94,11 @@ export interface DiffMateSummary {
 
 export interface DiffParamSummary {
   name: string;
-  type: 'number' | 'boolean';
-  value: number | boolean;
+  type: 'number' | 'boolean' | 'choice' | 'string';
+  value: number | boolean | string;
   min?: number;
   max?: number;
+  choices?: string[];
 }
 
 /** Pointer to the material-level diff, emitted when a textual/structural diff
@@ -282,6 +283,7 @@ async function evaluateSide(input: { file?: string; code?: string }): Promise<Si
     value: entry.value,
     ...(entry.meta?.min !== undefined ? { min: entry.meta.min } : {}),
     ...(entry.meta?.max !== undefined ? { max: entry.meta.max } : {}),
+    ...(entry.meta?.choices !== undefined ? { choices: entry.meta.choices } : {}),
   }));
 
   const ret = run.returnValue;

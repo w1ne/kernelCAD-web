@@ -63,6 +63,7 @@ import { KernelError } from '../shared/intent/kernelError';
 import { validateThickness, validateKFactor } from './sheetMetal';
 import type { FaceLabelsMap } from '../shared/intent/featureRecord';
 import { makeParamRef, isParamRef, type ParamRef, type Editable } from '../shared/runtime/paramRef';
+import { makeTypedParamRef, type TypedParamRef } from '../shared/runtime/paramRef';
 import type { ParamMetadata } from '../shared/runtime/paramTable';
 import { currentValue, toParam } from '../shared/runtime/editableHelpers';
 import * as kinematic from '../kinematic';
@@ -195,8 +196,20 @@ export interface KernelCadApi {
   assembly(name?: string): Assembly;
 
   // Slice-3 symbolic params (replaces slice-1's number-returning param()).
-  // See spec §E.1, §E.2.
-  param<T extends number | boolean>(name: string, defaultValue: T, meta?: ParamMetadata): ParamRef<T>;
+  // See spec §E.1, §E.2. Numeric and boolean params return a ParamRef with
+  // symbolic AST arithmetic (numbers only). A choice param (defaultValue is
+  // a string AND `meta.choices` is given) or a plain string param (no
+  // `choices`) returns a TypedParamRef instead: `.value` reads the current
+  // value eagerly — see spec 2026-09-14-typed-script-params-design.md §2 for
+  // why choice/string don't propagate symbolically.
+  param(name: string, defaultValue: number, meta?: ParamMetadata): ParamRef<number>;
+  param(name: string, defaultValue: boolean, meta?: ParamMetadata): ParamRef<boolean>;
+  param<C extends string>(
+    name: string,
+    defaultValue: C,
+    meta: ParamMetadata & { choices: readonly C[] },
+  ): TypedParamRef<C>;
+  param(name: string, defaultValue: string, meta?: ParamMetadata): TypedParamRef<string>;
   params<R extends Record<string, number | boolean>>(decl: R): { [K in keyof R]: ParamRef<R[K]> };
 
   path(): PathBuilder;
@@ -925,27 +938,36 @@ export function createApi(ctx: ApiContext): KernelCadApi {
     assembly(name) {
       return makeAssembly(name, session);
     },
-    param(name, defaultValue, meta) {
+    param: ((
+      name: string,
+      defaultValue: number | boolean | string,
+      meta?: ParamMetadata,
+    ): ParamRef<number> | ParamRef<boolean> | TypedParamRef<string> => {
       // Prevent re-wrapping if the agent accidentally passes a ParamRef
       // (would otherwise silently shadow a previously declared name).
       if (isParamRef(defaultValue)) {
         throw new KernelError(
           'feature.invalid-args',
-          `param('${name}'): defaultValue cannot be a ParamRef; pass a literal number or boolean.`,
+          `param('${name}'): defaultValue cannot be a ParamRef; pass a literal number, boolean, or string.`,
           undefined,
           `invalid-args.param.invalid-default — param '${name}' default cannot itself be a ParamRef.`,
         );
       }
+      if (typeof defaultValue === 'string') {
+        const type = meta?.choices ? 'choice' : 'string';
+        session.paramTable.declare(name, type, defaultValue, meta);
+        return makeTypedParamRef(name, type, defaultValue);
+      }
       const type = typeof defaultValue === 'boolean' ? 'boolean' : 'number';
       session.paramTable.declare(name, type, defaultValue, meta);
-      return makeParamRef(name, type as 'number' | 'boolean') as ReturnType<KernelCadApi['param']>;
-    },
+      return makeParamRef(name, type as 'number' | 'boolean', defaultValue) as ParamRef<number> | ParamRef<boolean>;
+    }) as KernelCadApi['param'],
     params(decl) {
       const out: Record<string, ParamRef<number | boolean>> = {};
       for (const [name, value] of Object.entries(decl)) {
         const type = typeof value === 'boolean' ? 'boolean' : 'number';
         session.paramTable.declare(name, type, value);
-        out[name] = makeParamRef(name, type as 'number' | 'boolean');
+        out[name] = makeParamRef(name, type as 'number' | 'boolean', value);
       }
       return out as { [K in keyof typeof decl]: ParamRef<typeof decl[K]> };
     },

@@ -29,6 +29,7 @@ import type { Assembly } from '../modeling/capture/assembly';
 import { validateAssemblyWithMates } from '../modeling/mates/validator';
 import { detectInterferencesForPoses } from '../modeling/mates/poseEnvelope';
 import { checkReachable } from './checkReachable';
+import { KernelError } from '../shared/intent/kernelError';
 import { DIAGNOSTIC_REGISTRY, type DiagnosticCode } from '../shared/diagnostics/registry';
 import type {
   SweepComboResult,
@@ -78,6 +79,8 @@ export async function sweepTolerance(
       source: 'local',
     };
   }
+
+  await assertParamsAreNumeric(baseCode, paramNames);
 
   const valueLists = paramNames.map((name) => expandParamSpec(input.params[name]!));
   const allCombos = cartesianProduct(paramNames, valueLists);
@@ -138,6 +141,47 @@ export async function sweepTolerance(
 // ─────────────────────────────────────────────────────────────────────────
 // Helpers.
 // ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * `sweep_tolerance` only makes sense over numeric ranges (min/max/steps or a
+ * value list of numbers) — a boolean/choice/string param has no meaningful
+ * "sweep". Evaluate the base script once and check each declared param's
+ * type up front so a bad request fails loudly with one clear diagnostic
+ * instead of 64 confusing per-combo `set_param` failures.
+ */
+async function assertParamsAreNumeric(baseCode: string, paramNames: string[]): Promise<void> {
+  // Same env-var save/restore dance as `evaluateCombo` below: calling
+  // `evaluateAndBuildScript` runs `applyEvaluateDefaults()`, which sets
+  // `KERNELCAD_VALIDATE_DEFAULT` to `'error'` the first time it's read and
+  // leaves it set for the process. Without restoring it here, this
+  // pre-check call would permanently flip validation to `'error'` and
+  // silently disable `evaluateCombo`'s own 'warn' override for the entire
+  // sweep — every combo's `solvedModel()` would then throw on the first
+  // mechanism-invalid combo instead of surfacing through this function's
+  // own gate classification.
+  const hadValidateDefault = process.env.KERNELCAD_VALIDATE_DEFAULT !== undefined;
+  let built: Awaited<ReturnType<typeof evaluateAndBuildScript>>;
+  try {
+    const mod = await import('../agent/cli/commands/evaluate');
+    built = await mod.evaluateAndBuildScript({ code: baseCode });
+  } finally {
+    if (!hadValidateDefault) delete process.env.KERNELCAD_VALIDATE_DEFAULT;
+  }
+  if (built.evaluation.exitCode !== 0 || !built.model) return; // let the normal per-combo path surface the eval error.
+  const table = built.model.session.paramTable;
+  for (const name of paramNames) {
+    if (!table.has(name)) continue; // unknown-name errors surface per-combo via set_param.
+    const entry = table.get(name);
+    if (entry.type !== 'number') {
+      throw new KernelError(
+        'feature.invalid-args',
+        `sweep_tolerance: param '${name}' is '${entry.type}', not numeric. Only number params can be swept over a range/value list.`,
+        undefined,
+        `invalid-args.param.type-mismatch — sweep_tolerance: param '${name}' is '${entry.type}', not numeric; sweep only number params.`,
+      );
+    }
+  }
+}
 
 async function resolveBaseCode(input: SweepToleranceInput): Promise<string> {
   if (input.code !== undefined) return input.code;

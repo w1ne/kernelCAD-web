@@ -16,27 +16,33 @@
 import { FEATURE_NAME_REGEX } from '../intent/featureName';
 import { KernelError } from '../intent/kernelError';
 
-export type ParamType = 'number' | 'boolean';
+export type ParamType = 'number' | 'boolean' | 'choice' | 'string';
+
+export type ParamValue = number | boolean | string;
 
 export interface ParamMetadata {
   min?: number;
   max?: number;
   description?: string;
+  /** Required for `type: 'choice'`. The closed set of allowed string values. */
+  choices?: string[];
+  /** Optional for `type: 'string'`. Max character length. */
+  maxLength?: number;
 }
 
 export interface ParamEntry {
   name: string;
   type: ParamType;
-  value: number | boolean;
-  defaultValue: number | boolean;
+  value: ParamValue;
+  defaultValue: ParamValue;
   meta?: ParamMetadata;
 }
 
 export interface SerializedParamEntry {
   name: string;
   type: ParamType;
-  value: number | boolean;
-  defaultValue: number | boolean;
+  value: ParamValue;
+  defaultValue: ParamValue;
   meta?: ParamMetadata;
 }
 
@@ -51,7 +57,7 @@ export class ParamTable {
   declare(
     name: string,
     type: ParamType,
-    defaultValue: number | boolean,
+    defaultValue: ParamValue,
     meta?: ParamMetadata,
   ): ParamEntry {
     if (!FEATURE_NAME_REGEX.test(name)) {
@@ -70,16 +76,15 @@ export class ParamTable {
         `invalid-args.param.duplicate-name — param '${name}' already declared`,
       );
     }
-    if (typeof defaultValue !== (type === 'number' ? 'number' : 'boolean')) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `param '${name}' declared as ${type} but defaultValue is ${typeof defaultValue}`,
-        undefined,
-        `invalid-args.param.type-mismatch — param '${name}' declared as ${type} but defaultValue is ${typeof defaultValue}`,
-      );
-    }
+    assertTypeMatches(name, type, defaultValue);
     if (type === 'number') {
       assertWithinBounds(name, defaultValue as number, meta);
+    }
+    if (type === 'choice') {
+      assertValidChoice(name, defaultValue as string, meta);
+    }
+    if (type === 'string') {
+      assertWithinMaxLength(name, defaultValue as string, meta);
     }
     const entry: ParamEntry = {
       name,
@@ -109,18 +114,17 @@ export class ParamTable {
     return entry;
   }
 
-  set(name: string, value: number | boolean): ParamEntry {
+  set(name: string, value: ParamValue): ParamEntry {
     const entry = this.get(name);
-    if (typeof value !== entry.type) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `param '${name}' is ${entry.type}, got ${typeof value}`,
-        undefined,
-        `invalid-args.param.type-mismatch — param '${name}' is ${entry.type}, got ${typeof value}`,
-      );
-    }
+    assertTypeMatches(name, entry.type, value);
     if (entry.type === 'number') {
       assertWithinBounds(name, value as number, entry.meta);
+    }
+    if (entry.type === 'choice') {
+      assertValidChoice(name, value as string, entry.meta);
+    }
+    if (entry.type === 'string') {
+      assertWithinMaxLength(name, value as string, entry.meta);
     }
     entry.value = value;
     return entry;
@@ -179,6 +183,55 @@ export class ParamTable {
       });
     }
     return t;
+  }
+}
+
+function jsTypeOf(type: ParamType): 'number' | 'boolean' | 'string' {
+  if (type === 'number') return 'number';
+  if (type === 'boolean') return 'boolean';
+  return 'string'; // 'choice' and 'string' are both JS strings.
+}
+
+function assertTypeMatches(name: string, type: ParamType, value: ParamValue): void {
+  const expected = jsTypeOf(type);
+  if (typeof value !== expected) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `param '${name}' is ${type}, got ${typeof value}`,
+      undefined,
+      `invalid-args.param.type-mismatch — param '${name}' is ${type}, got ${typeof value}`,
+    );
+  }
+}
+
+function assertValidChoice(name: string, value: string, meta: ParamMetadata | undefined): void {
+  const choices = meta?.choices;
+  if (!choices || choices.length === 0) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `param '${name}' declared as choice but no meta.choices provided`,
+      undefined,
+      `invalid-args.param.choice-invalid — param '${name}' declared as choice but no meta.choices provided; pass { choices: [...] }`,
+    );
+  }
+  if (!choices.includes(value)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `param '${name}' value '${value}' is not one of the declared choices: ${choices.join(', ')}`,
+      undefined,
+      `invalid-args.param.choice-invalid — param '${name}' value '${value}' is not one of [${choices.join(', ')}]`,
+    );
+  }
+}
+
+function assertWithinMaxLength(name: string, value: string, meta: ParamMetadata | undefined): void {
+  if (meta?.maxLength !== undefined && value.length > meta.maxLength) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `param '${name}' value length ${value.length} exceeds maxLength ${meta.maxLength}`,
+      undefined,
+      `invalid-args.param.value-out-of-range — param '${name}' value length ${value.length} exceeds maxLength ${meta.maxLength}`,
+    );
   }
 }
 
