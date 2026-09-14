@@ -132,7 +132,7 @@ describe('toolRegistry public contract', () => {
 
     expect(names).toEqual(['inspect', 'verify', 'why_did_this_fail', 'query', 'repair_script']);
     expect([
-      TOOL_REGISTRY[2], TOOL_REGISTRY[3], TOOL_REGISTRY[4], TOOL_REGISTRY[16], TOOL_REGISTRY[38],
+      TOOL_REGISTRY[2], TOOL_REGISTRY[3], TOOL_REGISTRY[4], TOOL_REGISTRY[16], TOOL_REGISTRY[42],
     ]).toEqual(inspectionVerificationToolEntries);
   });
 
@@ -268,39 +268,46 @@ describe('toolRegistry public contract', () => {
     const names = referenceLedgerToolEntries.map(entry => entry.definition.name);
 
     expect(names).toEqual(['resolve_assumptions']);
-    expect(TOOL_REGISTRY.slice(38)).toEqual(referenceLedgerToolEntries);
-    expect(TOOL_REGISTRY.at(-1)).toEqual(referenceLedgerToolEntries[referenceLedgerToolEntries.length - 1]);
+    expect(TOOL_REGISTRY.slice(38, 39)).toEqual(referenceLedgerToolEntries);
   });
 
   it('composes the structural-FEA tools last, so existing tool indices never shift', () => {
     const names = feaToolEntries.map(entry => entry.definition.name);
 
     expect(names).toEqual(['run_fea', 'fea_summary']);
-    expect(TOOL_REGISTRY.slice(38)).toEqual(feaToolEntries);
+    expect(TOOL_REGISTRY.slice(39, 41)).toEqual(feaToolEntries);
   });
 
   it('composes the send_to_printer tool from the print registry module, appended last', () => {
     expect(printToolEntries.map(entry => entry.definition.name)).toEqual(['send_to_printer']);
-    // New tool families are appended LAST — a tail slice, not a fixed
-    // absolute index, so this test doesn't need updating (and doesn't
-    // renumber every prior family) the next time one is added.
-    expect(TOOL_REGISTRY.slice(-printToolEntries.length)).toEqual(printToolEntries);
+    expect(TOOL_REGISTRY.slice(41, 42)).toEqual(printToolEntries);
   });
 
   it('composes the mechanism-sim tail slice from the mechanism-sim registry module', () => {
     const names = mechanismSimToolEntries.map(entry => entry.definition.name);
 
     expect(names).toEqual(['sweep_tolerance']);
-    expect(TOOL_REGISTRY.slice(38, 39)).toEqual(mechanismSimToolEntries);
+    expect(TOOL_REGISTRY.slice(43, 44)).toEqual(mechanismSimToolEntries);
   });
 
   it('composes the geometry diff family at the registry tail, after every pre-existing family', () => {
     const names = geometryDiffToolEntries.map(entry => entry.definition.name);
 
     expect(names).toEqual(['diff_geometry']);
-    // Tail-appended: the 38 historical entries keep indices 0..37.
-    expect(TOOL_REGISTRY.slice(38)).toEqual(geometryDiffToolEntries);
-    expect(TOOL_REGISTRY).toHaveLength(39);
+    expect(TOOL_REGISTRY.slice(44, 45)).toEqual(geometryDiffToolEntries);
+  });
+
+  it('keeps the 38 historical entries at indices 0..37 and appends new families in merge order', () => {
+    expect(TOOL_REGISTRY.slice(38).map(entry => entry.definition.name)).toEqual([
+      'resolve_assumptions',
+      'run_fea',
+      'fea_summary',
+      'send_to_printer',
+      'repair_script',
+      'sweep_tolerance',
+      'diff_geometry',
+    ]);
+    expect(TOOL_REGISTRY).toHaveLength(45);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

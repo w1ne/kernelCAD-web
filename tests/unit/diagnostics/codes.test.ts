@@ -59,45 +59,27 @@ describe('diagnostic catalogue invariants', () => {
     //   the script also placed — the URDF/mate convention mix, which displaces
     //   the child by the joint origin at every pose).
     //   = 248.
-    // + 4 drawing.* — svg-drawing GD&T annotation kinds (hole/fillet/chamfer
-    //   reuse feature.selection.no-match; datum/fcf/section/overlap needed
-    //   their own group and codes): drawing.datum.unresolved,
+    // + 4 drawing annotations and section views: drawing.datum.unresolved,
     //   drawing.tolerance.feature-unresolved, drawing.section.plane-misses-body,
     //   drawing.annotation.overlap = 252.
-    // + 3 Slice E image/photo-reference assumption ledger:
-    //   reference.assumptions.unresolved (trace_from_image's ledger has open
-    //   facts), reference.assumptions.ledger-not-found (resolve_assumptions
-    //   given a bad ledgerPath), reference.assumptions.unknown-resolution-id
-    //   (resolve_assumptions given a resolution id absent from the ledger).
-    //   = 251.
-    // + 5 structural FEA gate (fea.* — shape.feaStudy declaration + solver
-    //   run): fea.safety-factor.below-min, fea.mesh.quality-low,
-    //   fea.solver.unavailable, fea.study.fixed-unresolved,
-    //   fea.study.load-unresolved. = 253.
-    // + 2 gcode export (Slice B — print loop): export.gcode.slicer-unavailable,
-    //   export.gcode.exceeds-bed. = 250.
-    // + 2 send_to_printer (Slice B — print loop): tool.send-to-printer.unreachable,
-    //   tool.send-to-printer.upload-failed. = 252.
-    // + 4 tool.repair.* (trace-guided repair: repair_script's own failure
-    //   vocabulary — no-candidate, out-of-region, exhausted, source-drift).
-    //   = 252.
-    // + 2 assembly.joint.static-hold.margin-low / .exceeded (checkStaticHold
-    //   — gravitational torque/force vs declared actuator capacity). = 250.
-    // + 2 kinematic.static-hold.no-actuator-declared,
-    //   kinematic.sweep-tolerance.combo-cap-exceeded (checkStaticHold's
-    //   missing-actuator guard + sweepTolerance's 64-combo cartesian cap).
-    //   = 252.
-    //  + 2 USD Isaac export fail-closed gates: export.usd.joint-unsupported
-    //    (a mate kind with no UsdPhysics joint equivalent) and
-    //    export.usd.mass-missing (a link whose mass-properties are non-finite
-    //    or non-positive, which PhysX rejects).
-    //  + 1 diff.body.unmatched (diff_geometry could not pair a body across the
-    //    two models by name or by positional fallback — the first code in the
-    //    new `diff` group).
-    //   = 251.
-    //  + 1 export.usd.pose-unsolved (usd-isaac could not solve the mate graph
-    //    to per-link poses; links spawn at the stage origin — the USD sibling
-    //    of export.sdf-gazebo.pose-unsolved). = 252.
+    // + 3 image/photo reference assumption ledger:
+    //   reference.assumptions.unresolved, reference.assumptions.ledger-not-found,
+    //   reference.assumptions.unknown-resolution-id = 255.
+    // + 5 structural FEA gate: fea.safety-factor.below-min,
+    //   fea.mesh.quality-low, fea.solver.unavailable, fea.study.fixed-unresolved,
+    //   fea.study.load-unresolved = 260.
+    // + 4 print loop: export.gcode.slicer-unavailable,
+    //   export.gcode.exceeds-bed, tool.send-to-printer.unreachable,
+    //   tool.send-to-printer.upload-failed = 264.
+    // + 4 trace-guided repair: tool.repair.exhausted, tool.repair.no-candidate,
+    //   tool.repair.out-of-region, tool.repair.source-drift = 268.
+    // + 4 mechanism checks: assembly.joint.static-hold.exceeded,
+    //   assembly.joint.static-hold.margin-low,
+    //   kinematic.static-hold.no-actuator-declared,
+    //   kinematic.sweep-tolerance.combo-cap-exceeded = 272.
+    // + 4 USD physics export and geometry diff: export.usd.joint-unsupported,
+    //   export.usd.pose-unsolved, export.usd.mass-missing, diff.body.unmatched =
+    //   276.
     expect(DIAGNOSTIC_CODES).toHaveLength(276);
     expect(new Set(DIAGNOSTIC_CODES).size).toBe(276);
   });

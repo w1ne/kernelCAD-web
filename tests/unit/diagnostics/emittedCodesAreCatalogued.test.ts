@@ -178,28 +178,29 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  +  1 feature.finish.unknown-token (.finish() unknown-name hard error) = 247.
     //  +  1 assembly.joint.child-modeled-in-place (URDF/mate convention mix on a
     //       joint-primitive child the script also placed) = 248.
-    //  +  4 drawing.* GD&T annotation-kind codes on the svg-drawing exporter
-    //       (datum.unresolved, tolerance.feature-unresolved,
-    //       section.plane-misses-body, annotation.overlap) = 252.
-    //  +  3 Slice E image/photo-reference assumption ledger:
-    //       reference.assumptions.unresolved, reference.assumptions.ledger-not-found,
-    //       reference.assumptions.unknown-resolution-id = 251.
-    //  +  5 structural FEA gate (fea.safety-factor.below-min,
+    //  + 4 drawing annotations and section views: drawing.datum.unresolved,
+    //       drawing.tolerance.feature-unresolved, drawing.section.plane-misses-body,
+    //       drawing.annotation.overlap = 252.
+    //  + 3 image/photo reference assumption ledger:
+    //       reference.assumptions.unresolved,
+    //       reference.assumptions.ledger-not-found,
+    //       reference.assumptions.unknown-resolution-id = 255.
+    //  + 5 structural FEA gate: fea.safety-factor.below-min,
     //       fea.mesh.quality-low, fea.solver.unavailable,
-    //       fea.study.fixed-unresolved, fea.study.load-unresolved) = 253.
-    //  +  4 tool.repair.* (trace-guided repair: no-candidate, out-of-region,
-    //       exhausted, source-drift) = 252.
-    //  +  4 mechanism checks (assembly.joint.static-hold.exceeded,
+    //       fea.study.fixed-unresolved, fea.study.load-unresolved = 260.
+    //  + 4 print loop: export.gcode.slicer-unavailable,
+    //       export.gcode.exceeds-bed, tool.send-to-printer.unreachable,
+    //       tool.send-to-printer.upload-failed = 264.
+    //  + 4 trace-guided repair: tool.repair.exhausted,
+    //       tool.repair.no-candidate, tool.repair.out-of-region,
+    //       tool.repair.source-drift = 268.
+    //  + 4 mechanism checks: assembly.joint.static-hold.exceeded,
     //       assembly.joint.static-hold.margin-low,
     //       kinematic.static-hold.no-actuator-declared,
-    //       kinematic.sweep-tolerance.combo-cap-exceeded) = 252.
-    //  +  2 USD Isaac export fail-closed gates: export.usd.joint-unsupported
-    //       (mate kind with no UsdPhysics joint equivalent) and
-    //       export.usd.mass-missing (non-finite / non-positive link mass).
-    //  +  1 diff.body.unmatched (diff_geometry could not pair a body across the
-    //       two models — first code in the new `diff` group) = 251.
-    //  +  1 export.usd.pose-unsolved (usd-isaac mate-graph solve failed; links
-    //       emitted at the stage origin) = 252.
+    //       kinematic.sweep-tolerance.combo-cap-exceeded = 272.
+    //  + 4 USD physics export and geometry diff: export.usd.joint-unsupported,
+    //       export.usd.pose-unsolved, export.usd.mass-missing, diff.body.unmatched =
+    //       276.
     expect(catalogue.size).toBe(276);
   });
 
