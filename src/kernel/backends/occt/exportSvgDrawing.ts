@@ -95,12 +95,15 @@ export interface SvgDrawingOptions {
   sections?: readonly DrawingSectionSpec[];
 }
 
-interface StyledView {
+/** One projected view, classified by line role, in the view's model-2D frame (y up). */
+export interface StyledDrawingView {
   visible: Polyline2[];
   tangent: Polyline2[];
   hidden: Polyline2[];
   box: ViewBox2;
 }
+
+type StyledView = StyledDrawingView;
 
 const VIEW_NAMES: readonly DrawingViewName[] = ['front', 'top', 'left', 'iso'];
 
@@ -194,6 +197,45 @@ const VIEW_LABELS: Record<DrawingViewName, string> = {
 };
 
 /**
+ * Project, classify and dedup the sheet's standard views — exactly the view
+ * stage `exportSvgDrawing` draws. Class order is the dedup priority: visible
+ * full-weight first, then tangent, then hidden — a coincident segment lands
+ * once, in its strongest role. Exported so a reader of drawings (the
+ * drawing-to-CAD fidelity check) can re-project a model through the same
+ * cameras and line classes the exporter uses.
+ */
+export function projectDrawingViews(
+  shape: AnyShape,
+  names: readonly DrawingViewName[] = VIEW_NAMES,
+): Record<DrawingViewName, StyledDrawingView> {
+  const styled = {} as Record<DrawingViewName, StyledView>;
+  for (const name of names) {
+    const camera = makeDrawingCamera(name);
+    const raw = projectShapeForDrawing(shape, camera, {
+      withHidden: name !== 'iso',
+    });
+    const [vSharp, vOutline, vSmooth, hSharp, hOutline] = dedupPolylineClasses([
+      raw.visibleSharp,
+      raw.visibleOutline,
+      raw.visibleSmooth,
+      raw.hiddenSharp,
+      raw.hiddenOutline,
+      // hiddenSmooth deliberately dropped — tangent hidden lines are noise.
+    ]);
+    const view: StyledView = {
+      visible: [...vSharp, ...vOutline],
+      tangent: vSmooth,
+      hidden: [...hSharp, ...hOutline],
+      box: { x: 0, y: 0, w: 1, h: 1 },
+    };
+    const box = viewBoxOfPolylines([view.visible, view.tangent, view.hidden]);
+    if (box) view.box = box;
+    styled[name] = view;
+  }
+  return styled;
+}
+
+/**
  * Render `parts` (one entry for a single body; one per assembly part in
  * world frame for a Scene) as a third-angle engineering-drawing sheet.
  * Multi-part inputs are compounded so the hidden-line pass sees inter-part
@@ -225,33 +267,7 @@ export function exportSvgDrawing(
     h: bbMax[2] - bbMin[2],
   };
 
-  // Project + classify + dedup each view. Class order is the dedup priority:
-  // visible full-weight first, then tangent, then hidden — a coincident
-  // segment renders once, in its strongest role.
-  const styled = {} as Record<DrawingViewName, StyledView>;
-  for (const name of VIEW_NAMES) {
-    const camera = makeDrawingCamera(name);
-    const raw = projectShapeForDrawing(shape, camera, {
-      withHidden: name !== 'iso',
-    });
-    const [vSharp, vOutline, vSmooth, hSharp, hOutline] = dedupPolylineClasses([
-      raw.visibleSharp,
-      raw.visibleOutline,
-      raw.visibleSmooth,
-      raw.hiddenSharp,
-      raw.hiddenOutline,
-      // hiddenSmooth deliberately dropped — tangent hidden lines are noise.
-    ]);
-    const view: StyledView = {
-      visible: [...vSharp, ...vOutline],
-      tangent: vSmooth,
-      hidden: [...hSharp, ...hOutline],
-      box: { x: 0, y: 0, w: 1, h: 1 },
-    };
-    const box = viewBoxOfPolylines([view.visible, view.tangent, view.hidden]);
-    if (box) view.box = box;
-    styled[name] = view;
-  }
+  const styled = projectDrawingViews(shape);
 
   const layout = computeSheetLayout(
     {
