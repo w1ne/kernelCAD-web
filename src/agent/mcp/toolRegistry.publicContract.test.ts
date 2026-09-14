@@ -15,6 +15,7 @@ import {
 import { catalogToolEntries } from './registry/catalogTools';
 import { coreRuntimeToolEntries } from './registry/coreRuntimeTools';
 import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools';
+import { feaToolEntries } from './registry/feaTools';
 import { inspectionVerificationToolEntries } from './registry/inspectionVerificationTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
@@ -59,6 +60,8 @@ const EXPECTED_TOOL_NAMES = [
   'evaluate_sdf',
   'capture_animation',
   'render_preview',
+  'run_fea',
+  'fea_summary',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -244,6 +247,13 @@ describe('toolRegistry public contract', () => {
       'render_preview',
     ]);
     expect(TOOL_REGISTRY.slice(31, 38)).toEqual(reviewPipelineToolEntries);
+  });
+
+  it('composes the structural-FEA tools last, so existing tool indices never shift', () => {
+    const names = feaToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual(['run_fea', 'fea_summary']);
+    expect(TOOL_REGISTRY.slice(38)).toEqual(feaToolEntries);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

@@ -522,4 +522,38 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     required: ['ok', 'images', 'diagnostics'],
     additionalProperties: true,
   },
+  run_fea: {
+    type: 'object',
+    properties: {
+      ok: { type: 'boolean', description: 'False when the study violated its declared minSafetyFactor, a selector did not resolve, or the solver toolchain is missing.' },
+      summary: {
+        type: 'object',
+        additionalProperties: true,
+        description: 'Solved evidence: maxVonMisesMPa, maxVonMisesAt, maxDisplacementMm, maxDisplacementAt, minSafetyFactor (+ minSafetyFactorRequired), nodeCount/elementCount/meshSizeMm, quality (minSICN, meanSICN, lowQualityCount), maxStressErrorPercent, trust { meshTrusted, reasons }, hotSpots [{ region, maxVonMisesMPa, nodeId, at, safetyFactor }], appliedForceN / reactionForceN / equilibriumResidual, meshMs / solveMs.',
+      },
+      images: { type: 'array', items: { type: 'string' }, description: 'Absolute PNG paths of the rendered stress heatmap.' },
+      legend: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Heatmap colour bands { color, fromMPa, toMPa } — the scale the PNGs are drawn on.' },
+      out_dir: { type: 'string', description: 'Directory holding the summary JSON, solver deck and heatmap PNGs.' },
+      artifacts: { type: 'object', additionalProperties: true, description: 'Absolute paths of the STEP handoff, .inp deck, .frd results and mesh JSON, for hand reproduction.' },
+      diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'fea.* diagnostics raised by the run.' },
+      error: { type: 'string' },
+      errorCode: { type: 'string' },
+    },
+    required: ['ok'],
+    additionalProperties: true,
+  },
+  fea_summary: {
+    type: 'object',
+    properties: {
+      ok: { type: 'boolean' },
+      summary: { type: 'object', additionalProperties: true, description: 'Stored summary of a previous run_fea in output_dir, when present.' },
+      toolchain: { type: 'object', additionalProperties: true, description: '{ available, ccx?, gmshVersion?, missing[], hint? } — whether a study can run here and how to fix it if not.' },
+      materials: { type: 'object', additionalProperties: true, description: 'Named grade -> { E (MPa), nu, yield (MPa) }.' },
+      material_names: { type: 'array', items: { type: 'string' }, description: 'Accepted material grade names.' },
+      error: { type: 'string' },
+      errorCode: { type: 'string' },
+    },
+    required: ['ok', 'toolchain', 'materials', 'material_names'],
+    additionalProperties: true,
+  },
 };

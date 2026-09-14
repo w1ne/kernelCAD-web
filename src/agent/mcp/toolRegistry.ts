@@ -3,6 +3,7 @@
 import { TOOL_ANNOTATIONS } from './toolAnnotations';
 import { TOOL_OUTPUT_SCHEMAS } from './toolOutputSchemas';
 import { catalogToolEntries } from './registry/catalogTools';
+import { feaToolEntries } from './registry/feaTools';
 import {
   coreRuntimeParameterToolEntries,
   coreRuntimePreludeToolEntries,
@@ -41,6 +42,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...catalogToolEntries,
   ...sketchAssemblyToolEntries,
   ...reviewPipelineToolEntries,
+  // Appended last: the registry order is a public contract, so a new family
+  // goes on the end rather than renumbering the existing ones.
+  ...feaToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints
