@@ -138,7 +138,7 @@ Use `lib.fromSTEP(...)` for off-the-shelf components whenever physical fit matte
 - Before placing a vendor STEP, run `kernelcad inspect step <file.step>` (or the `inspect({ of: 'step' })` MCP tool) to read the solid tree, per-solid exact bbox + volume, and detected cylindrical holes (axis, diameter, depth, blind/through) — find mounting-hole positions and verify the part-local frame from exact geometry instead of measuring renders.
 - Build modeled brackets, mounts, clearances, cable paths, and keepouts around the imported part rather than approximating the part with generic boxes/cylinders.
 - Placeholder geometry is acceptable for early blockouts, but final review must label it as a placeholder or replace it with catalog geometry.
-- Format choice when the vendor offers several: STEP (`lib.fromSTEP`) is the default and the most portable. OCCT `.brep` (`lib.fromBREP`) is lossless and the fastest to load, but only kernelCAD/OCCT writes it — it is for round-tripping our own geometry, not vendor interchange. Reach for `.stl` (`lib.fromSTL`) only when nothing better exists: it is a triangle mesh, so you keep bbox/volume/booleans but lose analytic surfaces, which means no reliable fillet/chamfer on curved edges, no canonical face refs, and no hole detection. If a part is STL-only and you need mounting-hole geometry, model the interface yourself rather than trusting facet normals.
+- Format choice when the vendor offers several: STEP (`lib.fromSTEP`) is the default and the most portable. OCCT `.brep` (`lib.fromBREP`) is lossless and the fastest to load, but only kernelCAD/OCCT writes it — it is for round-tripping our own geometry, not vendor interchange. Reach for `.stl` (`lib.fromSTL`) only when nothing better exists: it is a triangle mesh, so you keep bbox/volume/booleans but lose analytic surfaces, which means no reliable fillet/chamfer on curved edges, no canonical face refs, and no hole detection. If a mostly prismatic part is STL/OBJ/3MF-only and you need editable geometry (mounting holes, params), run `mesh_to_features` (CLI `kernelcad reconstruct`): it emits a feature-tree script and measures it against the mesh — use it when the verdict is faithful, otherwise model the interface yourself from the reported regions rather than trusting facet normals.
 
 > For off-the-shelf fasteners, bearings, motors, headers, and connectors, prefer the bundled parts catalog: load the `kernelcad-parts` skill. The catalog exposes `lib.findPart`, `lib.fetchPart`, and a typed `lib.standard.*` namespace, plus four MCP tools for discovery. Bundled parts ship with pre-defined connector frames so they participate in mates without any `partRef.connector(...)` boilerplate.
 
@@ -519,7 +519,7 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 
 ```typescript
 // Extrude closed sketch normal to its plane by `depth` (mm):
-.extrude(depth: number): Shape
+.extrude(depth: Editable<number>): Shape
 
 // Revolve 360 degrees around the Z axis.
 // Profile coords are (radial-X, axial-Z); all x >= 0.
@@ -699,6 +699,10 @@ kernelcad render path/to/script.kcad.ts -o /tmp/cut.png --section z=10
 # Interrogate an external STEP file before placement: solid tree, per-solid
 # exact bbox + volume, cylindrical holes (axis, diameter, depth, blind/through)
 kernelcad inspect step path/to/part.step
+
+# Rebuild an editable feature-tree script from an STL / OBJ / 3MF mesh, verified
+# against the mesh (volume IoU + surface deviation; --strict exits 1 unless faithful)
+kernelcad reconstruct path/to/part.stl -o /tmp/part.kcad.ts
 
 # Detect BREP interferences between Scene parts (industry-standard clash check)
 kernelcad interference path/to/script.kcad.ts

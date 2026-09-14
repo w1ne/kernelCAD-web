@@ -11,6 +11,7 @@ A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.k
 
 - Authoring or editing `.kcad.ts` geometry → load `kernelcad-authoring`.
 - Building from a reference photo or visual brief → also load `kernelcad-from-reference`.
+- Handed an STL / OBJ / 3MF of a mechanical part and need an editable model of it → call `mesh_to_features` (CLI `kernelcad reconstruct`); it returns a feature-tree script plus a measured fidelity verdict. See `kernelcad-mcp`.
 - Adding fillets, chamfers, shells, holes, cutouts → also load `kernelcad-features`.
 - Editable parameters / set_param / live sliders → also load `kernelcad-params`.
 - Multi-part with joints / mates / connectors → also load `kernelcad-assemblies`.

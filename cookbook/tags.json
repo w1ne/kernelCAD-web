@@ -52,5 +52,7 @@
   "diff",
   "cutout",
   "compare",
-  "revision"
+  "revision",
+  "mesh",
+  "reverse-engineering"
 ]

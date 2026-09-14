@@ -13,6 +13,12 @@ work through the stages.
 ## Decision tree (1 screen — start here)
 
 ```
+Have an STL / OBJ / 3MF of the (mostly prismatic) part itself?
+   → mesh_to_features (CLI: kernelcad reconstruct). It measures the mesh into
+     an editable script and reports volume IoU + surface deviation. Use the
+     script when the verdict is faithful; otherwise model the regions it lists
+     as unmatched. Resolve its ledger like any other reference ledger.
+
 Have a written spec with numeric dimensions? → just read kernelcad-authoring
                                                 + use-the-available-kernel,
                                                 build single-pass, score.
@@ -89,7 +95,7 @@ Iteration mode: visual > scored > spec+photo (R1-R6 empirical).
 | G-no-protrusions | Sub-components meant to be contained are fully contained on every visible axis |
 | G-front-read | The front view reads as the target object on first glance |
 | G-score-gate | `scoreAgainstReference` silhouette ≥ 0.45, SSIM ≥ 0.25 (task-specific thresholds may be higher) |
-| G-assumption-ledger | Every `trace_from_image` (or other reference-ingest) call's `ledger.unresolvedCount === 0` before the source is finalized — present the `assumed`/`missing` facts to the user or resolve them from another reference view via `resolve_assumptions` first |
+| G-assumption-ledger | Every `trace_from_image` / `mesh_to_features` (or other reference-ingest) call's `ledger.unresolvedCount === 0` before the source is finalized — present the `assumed`/`missing` facts to the user or resolve them from another reference view via `resolve_assumptions` first |
 
 ## Forbidden rationalizations
 
