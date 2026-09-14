@@ -16,8 +16,9 @@
 
 import type { TraceFeatureResult } from './types';
 
-/** Evidence source behind a ledger fact — always a real upstream signal. */
-export type AssumptionEvidenceSource = 'image' | 'scale' | 'symmetry' | 'prior';
+/** Evidence source behind a ledger fact — always a real upstream signal.
+ *  `mesh` facts come from measuring a triangle mesh (`mesh_to_features`). */
+export type AssumptionEvidenceSource = 'image' | 'scale' | 'symmetry' | 'prior' | 'mesh';
 
 /** Classification of how a fact was established. */
 export type AssumptionKind = 'visible' | 'inferred' | 'assumed' | 'missing';
@@ -29,6 +30,8 @@ export interface AssumptionEvidence {
   source: AssumptionEvidenceSource;
   /** Pixel-space region the fact was drawn from, `[x, y, w, h]`. */
   region?: [number, number, number, number];
+  /** Model-space (mm) box the fact was drawn from, for mesh-derived facts. */
+  bbox?: { min: [number, number, number]; max: [number, number, number] };
 }
 
 export interface AssumptionFact {
