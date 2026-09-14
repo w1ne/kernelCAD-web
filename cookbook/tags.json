@@ -87,5 +87,7 @@
   "typed-params",
   "choice-param",
   "boolean-feature-toggle",
-  "datum"
+  "datum",
+  "mesh",
+  "reverse-engineering"
 ]

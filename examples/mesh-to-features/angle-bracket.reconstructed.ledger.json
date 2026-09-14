@@ -1,0 +1,258 @@
+{
+  "facts": [
+    {
+      "id": "units",
+      "statement": "STL carries no unit; coordinates were read as millimetres (bbox 60 x 45 x 30).",
+      "kind": "assumed",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": "mm",
+      "confidence": 0.5,
+      "resolution": "open"
+    },
+    {
+      "id": "mesh.watertight",
+      "statement": "The mesh is closed and consistently oriented (3304 triangles).",
+      "kind": "visible",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": {
+        "watertight": true,
+        "openEdges": 0,
+        "nonManifoldEdges": 0
+      },
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "frame.axis",
+      "statement": "Extrusion axis inferred as [0, 0, 1]: it explains 99.6 % of the surface as caps, walls or cross bores in 1 band(s).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": [
+        0,
+        0,
+        1
+      ],
+      "confidence": 0.996206474022097,
+      "resolution": "open"
+    },
+    {
+      "id": "length",
+      "statement": "Profile size along X. Measured 60 mm, used as measured.",
+      "kind": "visible",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 60,
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "profileX1",
+      "statement": "Profile corner coordinate along X. Measured 6 mm, snapped to 6 mm (grid 1).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 6,
+      "confidence": 0.9920784600779378,
+      "resolution": "open"
+    },
+    {
+      "id": "width",
+      "statement": "Profile size along Y. Measured 45 mm, used as measured.",
+      "kind": "visible",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 45,
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "profileY1",
+      "statement": "Profile corner coordinate along Y. Measured 6 mm, snapped to 6 mm (grid 1).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 6,
+      "confidence": 0.9945310106093999,
+      "resolution": "open"
+    },
+    {
+      "id": "cornerRadius",
+      "statement": "Radius of the tangent corner rounds in the extruded profile. Measured 6 mm, snapped to 6 mm (grid 1).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 6,
+      "confidence": 0.9999799323805227,
+      "resolution": "open"
+    },
+    {
+      "id": "height",
+      "statement": "Extrusion length of the profile. Measured 30 mm, used as measured.",
+      "kind": "visible",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 30,
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "crossHole1Diameter",
+      "statement": "Bore diameter of crossHole1. Measured 6.5 mm, snapped to 6.5 mm (grid 0.5).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 6.5,
+      "confidence": 0.9999838643842232,
+      "resolution": "open"
+    },
+    {
+      "id": "crossHole1Depth",
+      "statement": "Wall thickness crossHole1 passes through. Measured 6 mm, used as measured.",
+      "kind": "visible",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 6,
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "crossHole2Diameter",
+      "statement": "Bore diameter of crossHole2. Measured 6.5 mm, snapped to 6.5 mm (grid 0.5).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 6.5,
+      "confidence": 0.9999829318262812,
+      "resolution": "open"
+    },
+    {
+      "id": "crossHole2Depth",
+      "statement": "Wall thickness crossHole2 passes through. Measured 6 mm, used as measured.",
+      "kind": "visible",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 6,
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "crossHole2CounterboreDiameter",
+      "statement": "Counterbore diameter of crossHole2. Measured 11 mm, snapped to 11 mm (grid 1).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 11,
+      "confidence": 0.9999913821469022,
+      "resolution": "open"
+    },
+    {
+      "id": "crossHole2CounterboreDepth",
+      "statement": "Counterbore depth of crossHole2. Measured 3.01 mm, snapped to 3 mm (grid 1).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 3,
+      "confidence": 9.5367431640625e-7,
+      "resolution": "open"
+    },
+    {
+      "id": "profile.snaps",
+      "statement": "7 literal coordinate(s) (profile corners, arc centres, bore positions, origin) were snapped to a round grid within 0.01 mm.",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": [
+        {
+          "what": "band0.loop0.line1.y",
+          "measured": 6.000286,
+          "value": 6
+        },
+        {
+          "what": "band0.loop0.line3.x",
+          "measured": 6.000334,
+          "value": 6
+        },
+        {
+          "what": "band0.loop0.arc2.r",
+          "measured": 6,
+          "value": 6
+        },
+        {
+          "what": "crossBore.X.s",
+          "measured": 30,
+          "value": 30
+        },
+        {
+          "what": "crossBore.X.z",
+          "measured": 15,
+          "value": 15
+        },
+        {
+          "what": "crossBore.Y.z",
+          "measured": 15,
+          "value": 15
+        },
+        {
+          "what": "crossBore.Y.z",
+          "measured": 15,
+          "value": 15
+        }
+      ],
+      "confidence": 0.9665928658316716,
+      "resolution": "open"
+    },
+    {
+      "id": "crossHole1.kind",
+      "statement": "crossHole1: 1 through hole(s), Ø6.5 mm — classified from which bore ends open to air.",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": "through",
+      "confidence": 1,
+      "resolution": "open"
+    },
+    {
+      "id": "crossHole2.kind",
+      "statement": "crossHole2: 1 through counterbored hole(s), Ø6.5 mm — classified from which bore ends open to air.",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": "counterbore",
+      "confidence": 1,
+      "resolution": "open"
+    },
+    {
+      "id": "entry.1",
+      "statement": "cross bore along X at (30, 15): both ends are open and equal in size, so the drilling side is not recoverable from geometry; drilled from the +X face.",
+      "kind": "assumed",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": "cross bore along X at (30, 15)",
+      "confidence": 0.5,
+      "resolution": "open"
+    }
+  ],
+  "unresolvedCount": 13
+}

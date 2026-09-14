@@ -2504,6 +2504,30 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'warn',
     group: 'reference',
     description: 'drawing_to_cad rebuilt an extruded profile whose depth is not stated by any orthogonal view or thickness note.',
+  // Mesh / scan reconstruction (3) — mesh_to_features.
+  'reference.mesh.not-watertight': {
+    hintTemplate:
+      'The mesh handed to mesh_to_features has open, non-manifold or mis-oriented edges, so its sections and volume are unreliable and the result cannot be faithful. Repair or re-export the mesh watertight, then run mesh_to_features again.',
+    nextAction: { kind: 'fix-arg', field: 'file' },
+    defaultSeverity: 'warn',
+    group: 'reference',
+    description: 'mesh_to_features was given a mesh whose edges are not all shared by exactly two consistently oriented triangles.',
+  },
+  'reference.mesh.low-fidelity': {
+    hintTemplate:
+      "The reconstructed script does not match the mesh within the faithful thresholds (volume IoU and max surface deviation are in the message). Treat it as a starting point: fix the features near the largest deviation or model the unmatched regions before relying on its dimensions.",
+    nextAction: { kind: 'rewrite-feature', guidance: 'compare the emitted script against the mesh and correct the features near the largest deviation' },
+    defaultSeverity: 'warn',
+    group: 'reference',
+    description: 'mesh_to_features returned a reconstruction whose measured volume IoU or surface deviation misses the faithful thresholds (verdict approximate or failed).',
+  },
+  'reference.mesh.freeform-region-unmatched': {
+    hintTemplate:
+      'Part of the mesh surface matched no plane, cylinder or supported feature, so it is absent from the emitted script. Model those regions by hand (each has a bbox in unmatchedRegions) or accept the approximation the fidelity numbers describe.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'reference',
+    description: 'mesh_to_features found freeform, tilted-planar or off-axis cylindrical surface regions it could not represent as features.',
   },
   // Structural FEA gate (5) — the linear-static study declared by
   // `shape.feaStudy({...})`. Same contract as the dfm.* gates: the

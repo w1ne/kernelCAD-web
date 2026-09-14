@@ -25,6 +25,7 @@ import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
 import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
 import { mechanismSimToolEntries } from './registry/mechanismSimTools';
+import { meshReconstructToolEntries } from './registry/meshReconstructTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -75,6 +76,7 @@ const EXPECTED_TOOL_NAMES = [
   // index-based consumption of the historical order keeps working.
   'diff_geometry',
   'drawing_to_cad',
+  'mesh_to_features',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -304,6 +306,11 @@ describe('toolRegistry public contract', () => {
 
     expect(names).toEqual(['drawing_to_cad']);
     expect(TOOL_REGISTRY.slice(45, 46)).toEqual(drawingImportToolEntries);
+  it('composes the mesh reconstruction family at the registry tail, after the geometry diff family', () => {
+    const names = meshReconstructToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual(['mesh_to_features']);
+    expect(TOOL_REGISTRY.slice(45, 46)).toEqual(meshReconstructToolEntries);
   });
 
   it('keeps the 38 historical entries at indices 0..37 and appends new families in merge order', () => {
@@ -316,6 +323,7 @@ describe('toolRegistry public contract', () => {
       'sweep_tolerance',
       'diff_geometry',
       'drawing_to_cad',
+      'mesh_to_features',
     ]);
     expect(TOOL_REGISTRY).toHaveLength(46);
   });

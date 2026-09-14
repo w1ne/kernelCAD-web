@@ -60,6 +60,8 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
 
   // Read-only analysis that can write an OPTIONAL local artifact (render: true).
   diff_geometry: READ_MAY_WRITE_ARTIFACTS,
+  // Reads a mesh; writes the emitted script + ledger only when { out } is given.
+  mesh_to_features: READ_MAY_WRITE_ARTIFACTS,
 
   // Read — but may fetch from a remote parts catalog (KERNELCAD_PARTS_BASE_URL).
   find_part: READ_REMOTE,

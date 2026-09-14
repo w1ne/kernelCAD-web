@@ -24,6 +24,7 @@ const CLI_SUBCOMMANDS = new Set<string>([
   'mcp',
   'parts',
   'print',
+  'reconstruct',
   'render',
   'skill',
   'stats',

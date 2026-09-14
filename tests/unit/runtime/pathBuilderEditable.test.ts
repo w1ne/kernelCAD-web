@@ -168,3 +168,31 @@ describe('PathBuilder Editable — params.update reactivity', () => {
     expect(Math.abs(v2 - v1)).toBeGreaterThan(50);
   });
 });
+
+// ---------------------------------------------------------------------------
+// 4. Sketch.extrude accepts an Editable depth: a ParamRef stays symbolic and
+//    re-evaluates on update (a plain number keeps the historical record).
+
+describe('Sketch.extrude — Editable<number> depth', () => {
+  it('stores a paramRef on the extrude depth and keeps a number literal as before', () => {
+    const session = new CaptureSession();
+    const api = createApi({ session });
+    const t = api.param('t', 4);
+    api.path().moveTo(0, 0).lineTo(10, 0).lineTo(10, 5).close().extrude(t);
+    api.path().moveTo(0, 0).lineTo(10, 0).lineTo(10, 5).close().extrude(2);
+    const extrudes = session.getRecords().filter(r => r.kind === 'extrude');
+    expect(extrudes[0].params.depth.paramRef).toBe('t');
+    expect(extrudes[1].params.depth).toEqual({ expression: '2', unit: 'mm', evaluated: 2 });
+  });
+
+  it('updating the depth param changes the extruded volume', async () => {
+    const session = new CaptureSession();
+    session.setEngine(new RecomputeEngine(createOcctLowerer(session)));
+    const api = createApi({ session });
+    const t = api.param('t', 4);
+    const shape = api.path().moveTo(0, 0).lineTo(10, 0).lineTo(10, 5).lineTo(0, 5).close().extrude(t);
+    expect((await shape.lower()).volume()).toBeCloseTo(200, 6);
+    const updated = await session.params.update([{ name: 't', value: 7 }]);
+    expect(updated.shape.volume()).toBeCloseTo(350, 6);
+  });
+});

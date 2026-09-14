@@ -37,6 +37,9 @@ export type AssumptionEvidenceSource =
   | 'linework'
   | 'title-block'
   | 'default';
+/** Evidence source behind a ledger fact — always a real upstream signal.
+ *  `mesh` facts come from measuring a triangle mesh (`mesh_to_features`). */
+export type AssumptionEvidenceSource = 'image' | 'scale' | 'symmetry' | 'prior' | 'mesh';
 
 /** Classification of how a fact was established. */
 export type AssumptionKind = 'visible' | 'inferred' | 'assumed' | 'missing';
@@ -51,6 +54,8 @@ export interface AssumptionEvidence {
    * for photo traces, sheet millimetres (origin top-left) for drawings.
    */
   region?: [number, number, number, number];
+  /** Model-space (mm) box the fact was drawn from, for mesh-derived facts. */
+  bbox?: { min: [number, number, number]; max: [number, number, number] };
 }
 
 export interface AssumptionFact {

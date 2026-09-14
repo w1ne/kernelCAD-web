@@ -90,6 +90,8 @@ export class Sketch {
         // A ParamRef depth stays symbolic and is resolved at lower time, the
         // same contract box/cylinder dimensions already have; a number is
         // captured exactly as before.
+        // toParam keeps a ParamRef symbolic (resolved at lower time) and is
+        // byte-identical to the old literal record for a plain number.
         depth: toParam(depth, 'mm'),
       },
       metadata: faceLabels ? { faceLabels } : undefined,

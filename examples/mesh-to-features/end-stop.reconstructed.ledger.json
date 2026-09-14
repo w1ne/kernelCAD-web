@@ -1,0 +1,222 @@
+{
+  "facts": [
+    {
+      "id": "units",
+      "statement": "STL carries no unit; coordinates were read as millimetres (bbox 60 x 40 x 12).",
+      "kind": "assumed",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": "mm",
+      "confidence": 0.5,
+      "resolution": "open"
+    },
+    {
+      "id": "mesh.watertight",
+      "statement": "The mesh is closed and consistently oriented (2792 triangles).",
+      "kind": "visible",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": {
+        "watertight": true,
+        "openEdges": 0,
+        "nonManifoldEdges": 0
+      },
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "frame.axis",
+      "statement": "Extrusion axis inferred as [0, 0, 1]: it explains 98.6 % of the surface as caps, walls or cross bores in 1 band(s).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": [
+        0,
+        0,
+        1
+      ],
+      "confidence": 0.985734756880796,
+      "resolution": "open"
+    },
+    {
+      "id": "length",
+      "statement": "Profile size along X. Measured 60 mm, snapped to 60 mm (grid 1).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 60,
+      "confidence": 0.9880315768720607,
+      "resolution": "open"
+    },
+    {
+      "id": "width",
+      "statement": "Profile size along Y. Measured 40 mm, snapped to 40 mm (grid 1).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 40,
+      "confidence": 0.9933548158615793,
+      "resolution": "open"
+    },
+    {
+      "id": "thickness",
+      "statement": "Extrusion length of the profile. Measured 12 mm, snapped to 12 mm (grid 1).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 12,
+      "confidence": 0.9998358226486417,
+      "resolution": "open"
+    },
+    {
+      "id": "holes1Diameter",
+      "statement": "Bore diameter of holes1. Measured 5.5 mm, snapped to 5.5 mm (grid 0.5).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 5.5,
+      "confidence": 0.9800738398540112,
+      "resolution": "open"
+    },
+    {
+      "id": "fillet1Radius",
+      "statement": "Constant-radius blend on 2 edge(s). Measured 5.001 mm, snapped to 5 mm (grid 1).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 5,
+      "confidence": 0.9155796027443976,
+      "resolution": "open"
+    },
+    {
+      "id": "fillet2Radius",
+      "statement": "Constant-radius blend on 1 edge(s). Measured 2 mm, snapped to 2 mm (grid 1).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": 2,
+      "confidence": 0.9642875010200882,
+      "resolution": "open"
+    },
+    {
+      "id": "profile.snaps",
+      "statement": "13 literal coordinate(s) (profile corners, arc centres, bore positions, origin) were snapped to a round grid within 0.01 mm.",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": [
+        {
+          "what": "origin.x",
+          "measured": 0.00012,
+          "value": 0
+        },
+        {
+          "what": "origin.y",
+          "measured": -0.003086,
+          "value": 0
+        },
+        {
+          "what": "band0.loop0.line1.x",
+          "measured": 0.004868,
+          "value": 0
+        },
+        {
+          "what": "band0.loop0.line3.y",
+          "measured": 0.003631,
+          "value": 0
+        },
+        {
+          "what": "band0.loop0.line5.y",
+          "measured": 39.996329,
+          "value": 40
+        },
+        {
+          "what": "band0.loop0.arc0.r",
+          "measured": 4.999999,
+          "value": 5
+        },
+        {
+          "what": "band0.loop0.arc2.r",
+          "measured": 5,
+          "value": 5
+        },
+        {
+          "what": "band0.loop1.diameter",
+          "measured": 5.499801,
+          "value": 5.5
+        },
+        {
+          "what": "band0.loop1.cx",
+          "measured": 20,
+          "value": 20
+        },
+        {
+          "what": "band0.loop1.cy",
+          "measured": 10,
+          "value": 10
+        },
+        {
+          "what": "band0.loop2.diameter",
+          "measured": 5.499801,
+          "value": 5.5
+        },
+        {
+          "what": "band0.loop2.cx",
+          "measured": 20,
+          "value": 20
+        },
+        {
+          "what": "band0.loop2.cy",
+          "measured": 30,
+          "value": 30
+        }
+      ],
+      "confidence": 0.5131934713572501,
+      "resolution": "open"
+    },
+    {
+      "id": "holes1.kind",
+      "statement": "holes1: 2 through hole(s), Ø5.5 mm — classified from which bore ends open to air.",
+      "kind": "inferred",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": "through",
+      "confidence": 1,
+      "resolution": "open"
+    },
+    {
+      "id": "entry.1",
+      "statement": "hole at (20, 10): both ends are open and equal in size, so the drilling side is not recoverable from geometry; drilled from the +Z (top) face.",
+      "kind": "assumed",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": "hole at (20, 10)",
+      "confidence": 0.5,
+      "resolution": "open"
+    },
+    {
+      "id": "entry.2",
+      "statement": "hole at (20, 30): both ends are open and equal in size, so the drilling side is not recoverable from geometry; drilled from the +Z (top) face.",
+      "kind": "assumed",
+      "evidence": {
+        "source": "mesh"
+      },
+      "value": "hole at (20, 30)",
+      "confidence": 0.5,
+      "resolution": "open"
+    }
+  ],
+  "unresolvedCount": 12
+}

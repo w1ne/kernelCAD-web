@@ -51,6 +51,7 @@ const EMITTING_FILES = [
   'kernel/backends/occt/drawingAuto.ts',
   'kernel/backends/occt/drawingSections.ts',
   'agent/drawing/reconstruct.ts',
+  'agent/reconstruct/reconstruct.ts', // mesh_to_features fidelity / mesh gates
 ];
 
 // Match `code: '<value>'` and `new KernelError('<code>', ...)`.
@@ -86,6 +87,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   it('catalogue has exactly 289 codes', () => {
   it('catalogue has exactly 278 codes', () => {
   it('catalogue has exactly 280 codes', () => {
+  it('catalogue has exactly 279 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -232,6 +234,9 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       reference.drawing.dimension-unassociated,
     //       reference.drawing.depth-missing = 280.
     expect(catalogue.size).toBe(280);
+    //  + 3 mesh reconstruction: reference.mesh.not-watertight,
+    //       reference.mesh.low-fidelity, reference.mesh.freeform-region-unmatched = 279.
+    expect(catalogue.size).toBe(279);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

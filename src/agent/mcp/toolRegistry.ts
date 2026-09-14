@@ -22,6 +22,7 @@ import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
 import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
 import { mechanismSimToolEntries } from './registry/mechanismSimTools';
+import { meshReconstructToolEntries } from './registry/meshReconstructTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
 export { runClosedLoop } from '../loop/closedLoop.js';
 export { buildRepairPrompt } from '../loop/repairPrompt.js';
@@ -67,6 +68,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...geometryDiffToolEntries,
   // Appended last: engineering-drawing import is its own family at the tail.
   ...drawingImportToolEntries,
+  // Appended at the tail like every family before it (public index order).
+  ...meshReconstructToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints
