@@ -29,5 +29,11 @@
   "mate",
   "revolute",
   "hinge",
-  "joint"
+  "joint",
+  "static-hold",
+  "actuator",
+  "torque",
+  "kinematic",
+  "sweep-tolerance",
+  "tolerance"
 ]

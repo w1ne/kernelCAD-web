@@ -59,8 +59,14 @@ describe('diagnostic catalogue invariants', () => {
     //   the script also placed — the URDF/mate convention mix, which displaces
     //   the child by the joint origin at every pose).
     //   = 248.
-    expect(DIAGNOSTIC_CODES).toHaveLength(248);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(248);
+    // + 2 assembly.joint.static-hold.margin-low / .exceeded (checkStaticHold
+    //   — gravitational torque/force vs declared actuator capacity). = 250.
+    // + 2 kinematic.static-hold.no-actuator-declared,
+    //   kinematic.sweep-tolerance.combo-cap-exceeded (checkStaticHold's
+    //   missing-actuator guard + sweepTolerance's 64-combo cartesian cap).
+    //   = 252.
+    expect(DIAGNOSTIC_CODES).toHaveLength(252);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(252);
   });
 
   it('every code has a non-empty hint template', () => {

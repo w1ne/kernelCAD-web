@@ -24,7 +24,7 @@ A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.k
 - Exporting an assembly with closed kinematic loops or a native ball joint → also load `kernelcad-sdformat`.
 - Producing a 2D engineering-drawing sheet (third-angle views, hidden lines, dimensions, title block) → also load `kernelcad-drawings`.
 - Introspecting a running model via MCP (`inspect({ of: 'features' })`, edit ops, diagnostics) → load `kernelcad-mcp` instead of authoring.
-- Feasibility gates on moving assemblies — collision sweeps across joint ranges, IK reachability, mounting-hole consistency, static-load capacity (`checkSweptCollision`, `checkReachable`, `checkMountingHoleConsistency`, `checkLoadCapacity`) → also load `kernelcad-kinematic`.
+- Feasibility gates on moving assemblies — collision sweeps across joint ranges, IK reachability, mounting-hole consistency, static-load capacity, gravitational actuator-hold checks, tolerance-range sweeps (`checkSweptCollision`, `checkReachable`, `checkMountingHoleConsistency`, `checkLoadCapacity`, `checkStaticHold`, `sweepTolerance`) → also load `kernelcad-kinematic`.
 
 ## Key globals available today
 

@@ -76,16 +76,17 @@ const verifyToolEntry: ToolRegistryEntry = {
       "- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n" +
       "- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n" +
       "- 'load-capacity' — closed-form Euler-Bernoulli beam stress / safety-factor check ({ loads, materials, ... }).\n" +
+      "- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n" +
       'All params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.',
     inputSchema: {
       type: 'object',
       properties: {
         check: {
           type: 'string',
-          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity'],
+          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold'],
           description: 'Which verification to run.',
         },
-        file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity).' },
+        file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold).' },
         code: { type: 'string', description: 'Inline kernelCAD script source (same checks as `file`).' },
         assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
         urdf_path: { type: 'string', description: "check:'urdf' — path to the .urdf file." },
@@ -97,7 +98,7 @@ const verifyToolEntry: ToolRegistryEntry = {
         thicknessMm: { type: 'number', description: "check:'dfm-preflight' — material thickness in millimeters." },
         service: { type: 'string', enum: ['laser', 'cnc-router', 'waterjet', 'bending'], description: "check:'dfm-preflight' — service." },
         refreshCatalog: { type: 'boolean', description: "check:'dfm-preflight' — force vendor catalog refresh." },
-        joint: { type: 'string', description: "check:'swept-collision' — joint to sweep; omit to sweep every declared joint." },
+        joint: { type: 'string', description: "check:'swept-collision' — joint to sweep; omit to sweep every declared joint. check:'static-hold' — joint to evaluate; omit to evaluate every joint with a declared actuator." },
         range: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: "check:'swept-collision' — [lower, upper, step] in joint-native units." },
         collision_tolerance_mm3: { type: 'number', description: "check:'swept-collision' — BREP intersection volume tolerance (mm^3)." },
         tip_link: { type: 'string', description: "check:'reachable' — end-effector part name (required for that check)." },
@@ -112,6 +113,10 @@ const verifyToolEntry: ToolRegistryEntry = {
         materials: { type: 'object', description: "check:'load-capacity' — partName -> material declaration." },
         mode: { type: 'string', enum: ['stub', 'beam'], description: "check:'load-capacity' — 'beam' (default) or 'stub'." },
         safety_factor_threshold: { type: 'number', description: "check:'load-capacity' — pass/fail safety-factor floor (default 1.5)." },
+        pose: { description: "check:'static-hold' — explicit pose (joint name -> deg/mm) or array of poses; omit to sample a grid across the evaluated joint's range." },
+        gravity: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: "check:'static-hold' — gravity vector, m/s^2, world frame (default [0, 0, -9.81])." },
+        min_torque_margin_pct: { type: 'number', description: "check:'static-hold' — safety-margin floor as a percent of actuator capacity (default 20)." },
+        range_samples: { type: 'number', description: "check:'static-hold' — grid density per evaluated joint when `pose` is omitted (default 9)." },
       },
       required: ['check'],
     },
