@@ -57,5 +57,7 @@
   "material",
   "density",
   "fasteners",
-  "catalog"
+  "catalog",
+  "exploded-view",
+  "balloons"
 ]

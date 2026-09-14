@@ -38,6 +38,9 @@ Pass via `options` (MCP) — all optional:
 - `date`: title-block date string; defaults to a placeholder so output stays byte-deterministic (stamp an ISO date when the drawing is released).
 - `annotations`: authored dimensions and notes — see below.
 - `sections`: cutting-plane section views — see "Section views" below.
+- `exploded`: `{ factor, mode }` — explode the isometric cell (`mode` is `mate-axis` or `radial`). Ortho views stay assembled.
+- `balloons`: item balloons on the isometric cell; numbers match BOM item numbers from `inspect({ of: 'bom' })`.
+- `partsList`: parts-list table (item, name, qty, material) above the title block, from the same BOM rows.
 
 ```json
 { "options": { "format": "svg-drawing", "sheet": "a3", "modelName": "Clamp body", "date": "2026-06-10" } }
@@ -131,6 +134,7 @@ An annotation whose query matches **zero** edges/faces, matches **more than one*
 - GD&T (`datum`/`fcf`) and the `hole`/`fillet`/`chamfer` callouts are authored through `options.annotations`, the same surface as every other dimension — there is no `Shape.datum()` / `Shape.tolerance()` capture-graph method. That would need a new capture-graph `FeatureKind` + OCCT lowerer + a way for the lowered `WorldFramePart` (which today carries only the final geometry, not feature records) to reach the exporter — a bigger change than adding an export-time annotation kind, and out of scope for this slice.
 - `chamfer`'s leg `size` is author-supplied — not recoverable from a bare edge query without feature history.
 - Section planes must be axis-aligned; an oblique `{ origin, normal }` fails loudly rather than being approximated (see "Section views" above).
+- Exploded isometric + balloons: pass `exploded` plus `balloons` / `partsList`. A script that is not an `assembly()` fails explode with `render.explode.no-assembly`; balloons without a BOM warn `drawing.balloons.bom-unavailable`. Balloon and table labels share the existing overlap check.
 - `drawing.annotation.overlap` is a REAL, non-fatal check: after rendering, every axis-aligned `<text>` label's approximate bounding box (rotated labels — the vertical `linear` dimension — are skipped, not estimated) is compared pairwise across DIFFERENT annotations. An overlapping pair does not fail the export (a crowded callout is still more useful than a silently dropped one); it emits one `warn` diagnostic naming every overlapping pair. Use `offset`, a different `view`, or reorder the array to separate them. The shared leader-rotation stacking (every leader-based kind — `radius`/`diameter`/`note`/`hole`/`fillet`/`chamfer`/`datum`/`fcf`) already fans successive callouts on the same view apart, which covers the common case; the overlap check is the backstop for when it isn't enough.
 - Dimensions are authored or bounding-box; they do NOT auto-update from `param()` values.
 - Hidden tangent edges are intentionally omitted (noise, no contour information).

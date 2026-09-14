@@ -132,6 +132,9 @@ export interface HeadlessRenderOpts {
    *  stringifying `position` would emit exponent notation for |pos| ≥ 1e21
    *  or < 1e-6, which the page-side `?section=` regex silently rejects. */
   section?: { axis: 'x' | 'y' | 'z'; position: number; positionRaw: string; flip: boolean };
+  /** Explode a multi-part assembly. Offsets are composed onto each part's
+   *  worldTransform in the existing mesher — no new renderer. */
+  explode?: { factor: number; mode: 'radial' | 'mate-axis' };
 }
 
 export interface HeadlessRenderResult {
@@ -318,10 +321,25 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
   // springs render as visible cylinders in the headless CLI inspect path
   // and in any Studio recompute that runs through the same meshing helper.
   const loaded = await loadScriptFeatures(opts.scriptPath);
+  let explodeOffsets: ReadonlyMap<string, readonly [number, number, number]> | undefined;
+  if (opts.explode !== undefined) {
+    if (loaded.session.assemblies.size === 0) {
+      throw new Error(
+        'render.explode.no-assembly: explode requires the script to capture an assembly(). Wrap each body in assembly().part(...) and return arm.model().',
+      );
+    }
+    const { explodedPoses } = await import('../../modeling/runtime/explodedPoses');
+    const arm = loaded.session.assemblies.values().next().value as import('../../modeling/capture/assembly').Assembly;
+    const poses = await explodedPoses(arm, opts.explode);
+    explodeOffsets = poses.offsets;
+  }
+  const meshSession = explodeOffsets === undefined
+    ? loaded.session
+    : Object.assign(Object.create(loaded.session) as typeof loaded.session, { explodeOffsets });
   const meshing = await meshFeaturesPerFeature(
     loaded.features.map((f) => f.record),
     loaded.paramTable,
-    loaded.session,
+    meshSession,
   );
   if (meshing.failedFeatureIds.length > 0) {
     throw new Error(

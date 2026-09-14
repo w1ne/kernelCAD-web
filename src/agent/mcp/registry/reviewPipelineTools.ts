@@ -309,7 +309,9 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
         '(npx playwright install chromium). Pass { focus } or { hide } (arrays of feature ids or assembly part names, ' +
         'mutually exclusive) to isolate parts — same semantics as `kernelcad render --focus/--hide`. Pass ' +
         '{ section: { axis, position, flip? } } to cut a cross-section and inspect INTERIOR geometry (wall thickness, ' +
-        'internal pockets, whether a bore runs through) rather than only the outer shell. PNGs are written to ' +
+        'internal pockets, whether a bore runs through) rather than only the outer shell. Pass ' +
+        '{ explode: { factor, mode? } } to pull a multi-part assembly apart (mode: "mate-axis" default, or "radial") ' +
+        'using the same mesher as `kernelcad render --explode` — requires assembly.model()/solvedModel(). PNGs are written to ' +
         '{ out_dir } (default: a fresh temp session directory) and returned as absolute paths with per-view camera ' +
         'descriptions (kernelCAD is Z-up). Mechanism truth runs first, same protocol as `kernelcad render`: a broken ' +
         'mechanism still renders but every tile is watermarked MECHANISM BROKEN (KERNELCAD_RENDER_STRICT=1 refuses ' +
@@ -343,6 +345,16 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
               flip: { type: 'boolean', default: false },
             },
             required: ['axis', 'position'],
+            additionalProperties: false,
+          },
+          explode: {
+            type: 'object',
+            description: "Pull a multi-part assembly apart for the preview. factor ≥ 0 scales spacing by part size; mode is 'mate-axis' (default, along parent mate/joint axes) or 'radial' (away from the assembly centroid). Requires the script to return assembly.model() / solvedModel().",
+            properties: {
+              factor: { type: 'number', minimum: 0 },
+              mode: { type: 'string', enum: ['radial', 'mate-axis'] },
+            },
+            required: ['factor'],
             additionalProperties: false,
           },
         },

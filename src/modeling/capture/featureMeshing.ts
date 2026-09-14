@@ -20,6 +20,7 @@ import { resolveFaceLabelToFace } from '../../kernel/backends/occt/edgeSelection
 import { faceHashOf } from '../../kernel/backends/occt/createdRefs';
 import { generatePlanarUVs } from './planarUv';
 import { helixPolylineRouted } from '../mates/helixPolyline';
+import { Transform } from '../../shared/runtime/se3';
 
 /** Attach bbox-planar UVs to every face in-place (idempotent — pre-existing
  *  uv arrays are preserved). Called after meshing so any consumer of
@@ -755,6 +756,9 @@ export async function meshFeaturesPerFeature(
      *  instead of waiting for the whole build. Optional — non-streaming callers
      *  omit it and the emitted set / return value are byte-identical. */
     onFeature?: (mesh: FeatureMesh) => void;
+    /** Extra world-space translations keyed by assembly part name, composed
+     *  onto each part's solved worldTransform (exploded views). */
+    explodeOffsets?: ReadonlyMap<string, readonly [number, number, number]>;
   },
 ): Promise<MeshFeaturesResult> {
   await initOcct();
@@ -971,11 +975,15 @@ export async function meshFeaturesPerFeature(
             ...(edges ? { edges } : {}),
           };
           if (!cachedPart) attachPlanarUVs(local.faces);
+          const extra = session?.explodeOffsets?.get(part.name);
+          const worldT = extra !== undefined
+            ? Transform.translation(extra[0], extra[1], extra[2]).compose(part.worldTransform)
+            : part.worldTransform;
           emitFeature({
             ...local,
             assemblyFeatureId: event.featureId,
             assemblyPartName: part.name,
-            transform: part.worldTransform.toMat4(),
+            transform: worldT.toMat4(),
             ...meshIdentityFields({
               featureId: local.featureId,
               featureKind: local.featureKind,
@@ -989,7 +997,7 @@ export async function meshFeaturesPerFeature(
           emittedPartCount += 1;
           // Aggregate bounds from FK-transformed vertices while keeping the
           // emitted mesh local for viewport-side transforms.
-          const transformed = transformFeatureMesh(local, part.worldTransform);
+          const transformed = transformFeatureMesh(local, worldT);
           for (const f of transformed.faces) {
             for (let i = 0; i < f.vertices.length; i += 3) {
               const x = f.vertices[i], y = f.vertices[i + 1], z = f.vertices[i + 2];

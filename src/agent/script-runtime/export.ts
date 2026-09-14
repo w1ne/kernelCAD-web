@@ -11,6 +11,9 @@ import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exp
 import { export3mfAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occt/exportGlb';
 import { exportSvgDrawing, type SvgDrawingOptions } from '../../kernel/backends/occt/exportSvgDrawing';
+import { explodedPoses, applyExplodedOffsets, parseExplodeInput } from '../../modeling/runtime/explodedPoses';
+import { computeBom } from './bom';
+import type { Assembly } from '../../modeling/capture/assembly';
 import type { DrawingAnnotation } from '../../kernel/backends/occt/drawingAnnotations';
 import type { DrawingSectionSpec } from '../../kernel/backends/occt/drawingSections';
 export type { DrawingAnnotation, DrawingAnchor } from '../../kernel/backends/occt/drawingAnnotations';
@@ -53,6 +56,12 @@ export type ExportOptions =
       annotations?: readonly DrawingAnnotation[];
       /** Cutting-plane section views — see the kernelcad-drawings skill. */
       sections?: readonly DrawingSectionSpec[];
+      /** Exploded isometric cell. */
+      exploded?: { factor: number; mode?: 'radial' | 'mate-axis' };
+      /** Item balloons on the isometric cell; numbers match BOM item numbers. */
+      balloons?: boolean;
+      /** Parts-list table (item, name, qty, material) above the title block. */
+      partsList?: boolean;
     }
   | { format: 'urdf' }
   | { format: 'srdf' }
@@ -364,7 +373,65 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
       ? sceneToWorldFrameParts(lowered)
       : [{ name: 'part', shape: lowered as OcctBackend }];
     const drawingDiagnostics: CompilerDiagnostic[] = [];
-    const bytes = exportSvgDrawing(drawingParts, { ...opts, modelName }, drawingDiagnostics);
+    const wantBalloons = opts.balloons === true;
+    const wantPartsList = opts.partsList === true;
+    const explodeRaw = opts.exploded;
+    let explodedParts: WorldFramePart[] | undefined;
+    let bomRows: import('../../kernel/backends/occt/drawingExplode').DrawingBomRow[] | undefined;
+    const assemblies = run.session.assemblies as Map<string, Assembly>;
+    const arm = assemblies.size > 0 ? assemblies.values().next().value as Assembly | undefined : undefined;
+
+    if (explodeRaw !== undefined) {
+      const parsed = parseExplodeInput({ factor: explodeRaw.factor, mode: explodeRaw.mode });
+      if (!parsed.ok) {
+        drawingDiagnostics.push({
+          target: 'export-occt',
+          code: 'cli.invalid-args',
+          severity: 'error',
+          message: `svg-drawing exploded: ${parsed.message}`,
+          hint: "Pass options.exploded as { factor: number, mode?: 'radial'|'mate-axis' }.",
+          nextAction: NEXT_ACTIONS['cli.invalid-args'],
+        });
+        return { bytes: new Uint8Array(), featureCount, diagnostics: [...r.diagnostics, ...drawingDiagnostics] };
+      }
+      if (!isSceneBackend(lowered) || arm === undefined) {
+        drawingDiagnostics.push({
+          target: 'export-occt',
+          code: 'render.explode.no-assembly',
+          severity: 'error',
+          message: 'svg-drawing exploded view requires the script to return assembly.model() or assembly.solvedModel().',
+          hint: 'Wrap the bodies in assembly().part(...) and return arm.model(), then re-export.',
+          nextAction: NEXT_ACTIONS['render.explode.no-assembly'],
+        });
+        return { bytes: new Uint8Array(), featureCount, diagnostics: [...r.diagnostics, ...drawingDiagnostics] };
+      }
+      const poses = await explodedPoses(arm, parsed.value, lowered);
+      explodedParts = sceneToWorldFrameParts(applyExplodedOffsets(lowered, poses.offsets));
+    }
+
+    if ((wantBalloons || wantPartsList) && bomRows === undefined) {
+      if (arm === undefined) {
+        drawingDiagnostics.push({
+          target: 'export-occt',
+          code: 'drawing.balloons.bom-unavailable',
+          severity: 'warn',
+          message: 'svg-drawing balloons/partsList requested but the script has no assembly to extract a BOM from.',
+          hint: 'Return assembly.model() with named parts, or omit balloons/partsList.',
+          nextAction: NEXT_ACTIONS['drawing.balloons.bom-unavailable'],
+        });
+      } else {
+        const bom = await computeBom(arm, run.session);
+        bomRows = bom.rows;
+        drawingDiagnostics.push(...bom.diagnostics);
+      }
+    }
+
+    const bytes = exportSvgDrawing(drawingParts, {
+      ...opts,
+      modelName,
+      ...(explodedParts !== undefined ? { explodedParts } : {}),
+      ...(bomRows !== undefined ? { bomRows } : {}),
+    }, drawingDiagnostics);
     return { bytes, featureCount, diagnostics: [...r.diagnostics, ...drawingDiagnostics] };
   }
 
