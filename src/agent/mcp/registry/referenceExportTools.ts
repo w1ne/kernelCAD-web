@@ -88,9 +88,8 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
               'dxf: { layers?, unit?: "mm"|"cm"|"in", tolerance? }. ' +
               '3mf: { printUnit?: "mm"|"cm"|"in", embedSource? }. ' +
               'glb: { axis?: "y-up"|"z-up", draco?: false }. ' +
-              'svg-drawing: { sheet?: "a4"|"a3", modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList? }. '
-              'svg-drawing: { sheet?: "a4"|"a3", modelName?, date?, annotations?, sections?, autoAnnotate? }. '
-              + 'svg-drawing annotations is an array of authored dimensions/notes, each '
+              'svg-drawing: { sheet?: "a4"|"a3", modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. ' +
+              'svg-drawing annotations is an array of authored dimensions/notes, each '
               + '{ kind: "linear"|"radius"|"diameter"|"angular"|"note", view?: "front"|"top"|"left"|"iso", text?, offset? } plus '
               + 'kind-specific geometry: linear { from, to }, radius/diameter { edge: EdgeQuery }, angular { from: EdgeQuery, to: EdgeQuery }, note { at, text }. '
               + 'from/to/at anchors are an [x,y,z] model point, { edge: EdgeQuery } or { face: FaceQuery }. '

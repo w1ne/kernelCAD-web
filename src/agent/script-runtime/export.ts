@@ -10,16 +10,15 @@ import { verifyWatertight, type WatertightReport } from '../../kernel/backends/o
 import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exportDxf';
 import { export3mfAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occt/exportGlb';
-import { exportSvgDrawing, type SvgDrawingOptions } from '../../kernel/backends/occt/exportSvgDrawing';
-import { explodedPoses, applyExplodedOffsets, parseExplodeInput } from '../../modeling/runtime/explodedPoses';
-import { computeBom } from './bom';
-import type { Assembly } from '../../modeling/capture/assembly';
 import {
   renderSvgDrawing,
   type AutoAnnotateOptions,
   type DrawingReport,
   type SvgDrawingOptions,
 } from '../../kernel/backends/occt/exportSvgDrawing';
+import { explodedPoses, applyExplodedOffsets, parseExplodeInput } from '../../modeling/runtime/explodedPoses';
+import { computeBom } from './bom';
+import type { Assembly } from '../../modeling/capture/assembly';
 import { collectDrawingDeclarations } from '../../modeling/runtime/drawingDeclarations';
 import type { DrawingAnnotation } from '../../kernel/backends/occt/drawingAnnotations';
 import type { DrawingSectionSpec } from '../../kernel/backends/occt/drawingSections';
@@ -447,13 +446,6 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
       }
     }
 
-    const bytes = exportSvgDrawing(drawingParts, {
-      ...opts,
-      modelName,
-      ...(explodedParts !== undefined ? { explodedParts } : {}),
-      ...(bomRows !== undefined ? { bomRows } : {}),
-    }, drawingDiagnostics);
-    return { bytes, featureCount, diagnostics: [...r.diagnostics, ...drawingDiagnostics] };
     // GD&T declared on the feature graph (shape.datum / shape.tolerance) for
     // this target or anything feeding it.
     const captured = collectDrawingDeclarations(run.records, targetId);
@@ -461,11 +453,17 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
       datums: [...(opts.declarations?.datums ?? []), ...captured.datums],
       tolerances: [...(opts.declarations?.tolerances ?? []), ...captured.tolerances],
     };
-    const rendered = renderSvgDrawing(drawingParts, { ...opts, modelName, declarations });
+    const rendered = renderSvgDrawing(drawingParts, {
+      ...opts,
+      modelName,
+      declarations,
+      ...(explodedParts !== undefined ? { explodedParts } : {}),
+      ...(bomRows !== undefined ? { bomRows } : {}),
+    });
     return {
       bytes: rendered.bytes,
       featureCount,
-      diagnostics: [...r.diagnostics, ...rendered.diagnostics],
+      diagnostics: [...r.diagnostics, ...drawingDiagnostics, ...rendered.diagnostics],
       ...(rendered.report === undefined ? {} : { drawingReport: rendered.report }),
     };
   }

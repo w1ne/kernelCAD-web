@@ -33,6 +33,7 @@ const ALLOWED_GROUPS = new Set([
   'diff',
   'bom',
   'render',
+  'inspect',
 ]);
 
 // Mirror of the well-formed-shape predicate from nextAction.test.ts so the

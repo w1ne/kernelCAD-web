@@ -36,10 +36,8 @@ export type AssumptionEvidenceSource =
   | 'dimension'
   | 'linework'
   | 'title-block'
-  | 'default';
-/** Evidence source behind a ledger fact — always a real upstream signal.
- *  `mesh` facts come from measuring a triangle mesh (`mesh_to_features`). */
-export type AssumptionEvidenceSource = 'image' | 'scale' | 'symmetry' | 'prior' | 'mesh';
+  | 'default'
+  | 'mesh';
 
 /** Classification of how a fact was established. */
 export type AssumptionKind = 'visible' | 'inferred' | 'assumed' | 'missing';

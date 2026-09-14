@@ -339,8 +339,7 @@ export async function renderPreviewTool(
     );
   }
 
-  const work = renderPreviewWork({ input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section, explode });
-  const work = renderPreviewWork({ input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section, overlay });
+  const work = renderPreviewWork({ input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section, explode, overlay });
   // Swallow the losing chain's rejection if the timeout wins (same pattern as
   // capture_animation) so it never surfaces as an unhandled rejection.
   work.catch(() => undefined);
@@ -379,11 +378,9 @@ async function renderPreviewWork(args: {
   height: number;
   section?: { axis: 'x' | 'y' | 'z'; position: number; positionRaw: string; flip: boolean };
   explode?: ParsedExplode;
-}): Promise<RenderPreviewOutput> {
-  const { input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section, explode } = args;
   overlay?: SurfaceQualityOverlay;
 }): Promise<RenderPreviewOutput> {
-  const { input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section, overlay } = args;
+  const { input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section, explode, overlay } = args;
   const t0 = Date.now();
 
   // Physics-loop probe — identical protocol to the render CLI: strict mode

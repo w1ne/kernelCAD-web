@@ -41,8 +41,7 @@ const inspectToolEntry: ToolRegistryEntry = {
       properties: {
         of: {
           type: 'string',
-          enum: ['assembly', 'robot', 'step', 'shape', 'mass', 'features', 'assemblies', 'topology', 'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints', 'part-stats', 'bend-table', 'params', 'part-categories', 'part-families', 'bom', 'section'],
-          enum: ['assembly', 'robot', 'step', 'shape', 'mass', 'features', 'assemblies', 'topology', 'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints', 'part-stats', 'bend-table', 'params', 'part-categories', 'part-families', 'continuity', 'curvature'],
+          enum: ['assembly', 'robot', 'step', 'shape', 'mass', 'features', 'assemblies', 'topology', 'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints', 'part-stats', 'bend-table', 'params', 'part-categories', 'part-families', 'bom', 'section', 'continuity', 'curvature'],
           description: 'Which facts to read.',
         },
         file: { type: 'string', description: 'Path to a .kcad.ts script file.' },

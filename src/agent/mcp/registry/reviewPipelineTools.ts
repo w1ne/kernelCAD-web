@@ -359,6 +359,7 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
             },
             required: ['factor'],
             additionalProperties: false,
+          },
           overlay: {
             type: 'string',
             enum: ['zebra', 'curvature', 'continuity'],

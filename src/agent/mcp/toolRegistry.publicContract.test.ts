@@ -306,11 +306,13 @@ describe('toolRegistry public contract', () => {
 
     expect(names).toEqual(['drawing_to_cad']);
     expect(TOOL_REGISTRY.slice(45, 46)).toEqual(drawingImportToolEntries);
-  it('composes the mesh reconstruction family at the registry tail, after the geometry diff family', () => {
+  });
+
+  it('composes the mesh reconstruction family at the registry tail, after the drawing-import family', () => {
     const names = meshReconstructToolEntries.map(entry => entry.definition.name);
 
     expect(names).toEqual(['mesh_to_features']);
-    expect(TOOL_REGISTRY.slice(45, 46)).toEqual(meshReconstructToolEntries);
+    expect(TOOL_REGISTRY.slice(46, 47)).toEqual(meshReconstructToolEntries);
   });
 
   it('keeps the 38 historical entries at indices 0..37 and appends new families in merge order', () => {
@@ -325,7 +327,7 @@ describe('toolRegistry public contract', () => {
       'drawing_to_cad',
       'mesh_to_features',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(46);
+    expect(TOOL_REGISTRY).toHaveLength(47);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

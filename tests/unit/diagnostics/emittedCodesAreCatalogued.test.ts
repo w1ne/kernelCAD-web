@@ -36,12 +36,17 @@ const EMITTING_FILES = [
   'modeling/capture/faceLabels.ts',
   'shared/fonts/index.ts',
   'modeling/api.ts',
+  'modeling/capture/bridgeCurves.ts',
+  'modeling/backends/occt/surfaceIntersection.ts',
+  'modeling/backends/occt/loftWithRailsLowerer.ts',
   'modeling/sheetMetal.ts',                      // W2.2
   'modeling/sketch/index.ts',
   'modeling/compute/recomputeEngine.ts',
   'modeling/validation/unstructuredBodies.ts', // agent-parts-discipline
   'agent/cli/commands/evaluate.ts',
   'agent/cli/commands/export.ts',
+  'agent/mcp/tools/inspectContinuity.ts',
+  'agent/mcp/tools/inspectCurvature.ts',
   'agent/script-runtime/export.ts',
   'kernel/naming/resolveFaceRef.ts',
   'kernel/backends/occt/drawingAnnotations.ts',
@@ -83,11 +88,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     ).toEqual([]);
   });
 
-  it('catalogue has exactly 289 codes', () => {
-  it('catalogue has exactly 289 codes', () => {
-  it('catalogue has exactly 278 codes', () => {
-  it('catalogue has exactly 280 codes', () => {
-  it('catalogue has exactly 279 codes', () => {
+  it('catalogue has exactly 305 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -220,23 +221,23 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       dfm.fdm.bridge-too-long, dfm.fdm.wall-below-nozzle,
     //       dfm.fdm.feature-too-small, dfm.fdm.bed-contact-low, dfm.fdm.tip-risk,
     //       dfm.fdm.exceeds-bed = 287.
-    expect(catalogue.size).toBe(289);
     //  + 2 sketch-from-shape: feature.section.plane-misses-body,
-    //       feature.face-sketch.non-planar = 278.
+    //       feature.face-sketch.non-planar = 289.
     //  + 1 feature.async-result.missing-await (un-awaited sectionSketch/
-    //       faceSketch/silhouette chained a Sketch method) = 279.
-    expect(catalogue.size).toBe(289);
+    //       faceSketch/silhouette chained a Sketch method) = 290.
     //  + 2 automatic drawing annotation: drawing.auto.datum-ambiguous,
-    //       drawing.auto.hole-unclassified = 278.
-    expect(catalogue.size).toBe(278);
+    //       drawing.auto.hole-unclassified = 292.
     //  + 4 engineering-drawing PDF import: reference.drawing.raster-only,
     //       reference.drawing.view-ambiguous,
     //       reference.drawing.dimension-unassociated,
-    //       reference.drawing.depth-missing = 280.
-    expect(catalogue.size).toBe(280);
+    //       reference.drawing.depth-missing = 296.
     //  + 3 mesh reconstruction: reference.mesh.not-watertight,
-    //       reference.mesh.low-fidelity, reference.mesh.freeform-region-unmatched = 279.
-    expect(catalogue.size).toBe(279);
+    //       reference.mesh.low-fidelity, reference.mesh.freeform-region-unmatched = 299.
+    //  + 3 curves-surfacing: feature.curve-bridge.degenerate-end,
+    //       feature.surface-intersection.none, feature.loft.rail-miss = 302.
+    //  + 3 surface-quality inspect: inspect.continuity.g1-break,
+    //       inspect.continuity.broken, inspect.curvature.spike = 305.
+    expect(catalogue.size).toBe(305);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

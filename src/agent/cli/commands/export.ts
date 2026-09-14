@@ -410,15 +410,18 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
               family: input.manifestFamily!,
             },
           }),
-      ...(input.format === 'stl' && input.verify === false
-        ? { options: { format: 'stl' as const, verify: false } }
-        : drawingOptions !== undefined
-          ? { options: drawingOptions }
-      ...(input.options !== undefined
+      ...(input.options !== undefined || drawingOptions !== undefined
         ? {
-            options: (input.format === 'stl' && input.verify === false
-              ? { ...input.options, verify: false }
-              : input.options) as unknown as ExportOptions,
+            options: {
+              ...(input.options !== undefined
+                ? ((input.format === 'stl' && input.verify === false
+                    ? { ...input.options, verify: false }
+                    : input.options) as object)
+                : input.format === 'stl' && input.verify === false
+                  ? { format: 'stl' as const, verify: false }
+                  : {}),
+              ...(drawingOptions ?? {}),
+            } as unknown as ExportOptions,
           }
         : input.format === 'stl' && input.verify === false
           ? { options: { format: 'stl' as const, verify: false } }

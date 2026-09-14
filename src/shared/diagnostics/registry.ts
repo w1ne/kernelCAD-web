@@ -33,7 +33,8 @@ export type DiagnosticGroup =
   | 'fea'
   | 'diff'
   | 'bom'
-  | 'render';
+  | 'render'
+  | 'inspect';
 
 export type DiagnosticSeverityLevel = 'info' | 'warn' | 'error';
 
@@ -2504,6 +2505,7 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'warn',
     group: 'reference',
     description: 'drawing_to_cad rebuilt an extruded profile whose depth is not stated by any orthogonal view or thickness note.',
+  },
   // Mesh / scan reconstruction (3) — mesh_to_features.
   'reference.mesh.not-watertight': {
     hintTemplate:
@@ -2679,7 +2681,7 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'warn',
     group: 'drawing',
     description: 'svg-drawing balloons or partsList was requested but the script has no assembly, so no BOM rows exist to number balloons or fill the table.',
-  // Curves-surfacing slice (3) — G2 blend curve, surface-surface intersection, rail loft.
+  },
   'feature.curve-bridge.degenerate-end': {
     hintTemplate:
       'curveBridge / Curve3D.bridge could not infer a join: the chosen ends coincide (chord < 1e-9 mm) or a tangent vanished. Pick different `ends` (`end-start` / `end-end` / `start-start` / `start-end`), separate the curves, or supply a non-zero tension.',
@@ -2703,6 +2705,30 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'feature',
     description: 'A guide rail missed a loft section, or more than two rails were supplied (OCCT supports one spine plus one auxiliary spine).',
+  },
+  'inspect.continuity.g1-break': {
+    hintTemplate:
+      "The shared edge is only G0 (normals jump). Fillet or blend it; use continuity: 'G2' only on NURBS-adjacent edges, then re-run inspect({ of: 'continuity' }).",
+    nextAction: { kind: 'call-introspection-tool', tool: 'inspect' },
+    defaultSeverity: 'warn',
+    group: 'inspect',
+    description: 'A shared edge between faces fails G1 — the face normals jump by more than the G1 angle tolerance (a box corner is the canonical case).',
+  },
+  'inspect.continuity.broken': {
+    hintTemplate:
+      "Faces do not meet along this edge (G0 gap). Sew or rebuild the join, then re-run inspect({ of: 'continuity' }).",
+    nextAction: { kind: 'call-introspection-tool', tool: 'inspect' },
+    defaultSeverity: 'error',
+    group: 'inspect',
+    description: 'A shared edge fails G0: the adjacent faces have a measurable position gap along the edge.',
+  },
+  'inspect.curvature.spike': {
+    hintTemplate:
+      "A face has a curvature spike versus the rest of that face. Smooth the control net, raise the blend continuity, or split the face, then re-run inspect({ of: 'curvature' }).",
+    nextAction: { kind: 'call-introspection-tool', tool: 'inspect' },
+    defaultSeverity: 'warn',
+    group: 'inspect',
+    description: "A UV sample on a face is an outlier in Gaussian curvature versus that face's own distribution.",
   },
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 

@@ -46,7 +46,7 @@ export type InspectOf =
   | 'part-categories'
   | 'part-families'
   | 'bom'
-  | 'section';
+  | 'section'
   | 'continuity'
   | 'curvature';
 
@@ -129,8 +129,7 @@ export function inspectTool(input: InspectInput): Promise<unknown> {
         new Error(
           `Unknown inspect subject: ${String(of)}. Valid: assembly, robot, step, shape, mass, ` +
             `features, assemblies, topology, edges, face-edges, faces, face-labels, mates, ` +
-            `constraints, part-stats, bend-table, params, part-categories, part-families, bom, section.`,
-            `constraints, part-stats, bend-table, params, part-categories, part-families, ` +
+            `constraints, part-stats, bend-table, params, part-categories, part-families, bom, section, ` +
             `continuity, curvature.`,
         ),
       );

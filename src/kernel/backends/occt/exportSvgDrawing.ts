@@ -386,7 +386,6 @@ export function renderSvgDrawing(
     if (box) view.box = box;
     styled[name] = view;
   }
-  const styled = projectDrawingViews(shape);
 
   const layout = computeSheetLayout(
     {

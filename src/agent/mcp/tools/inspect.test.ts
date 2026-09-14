@@ -37,7 +37,6 @@ const SUBJECTS: InspectOf[] = [
   'assembly', 'robot', 'step', 'shape', 'mass', 'features', 'assemblies', 'topology',
   'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints',
   'part-stats', 'bend-table', 'params', 'part-categories', 'part-families', 'bom', 'section',
-  'part-stats', 'bend-table', 'params', 'part-categories', 'part-families',
   'continuity', 'curvature',
 ];
 

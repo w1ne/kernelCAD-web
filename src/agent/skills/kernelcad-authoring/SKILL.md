@@ -138,7 +138,7 @@ Use `lib.fromSTEP(...)` for off-the-shelf components whenever physical fit matte
 - Before placing a vendor STEP, run `kernelcad inspect step <file.step>` (or the `inspect({ of: 'step' })` MCP tool) to read the solid tree, per-solid exact bbox + volume, and detected cylindrical holes (axis, diameter, depth, blind/through) — find mounting-hole positions and verify the part-local frame from exact geometry instead of measuring renders.
 - Build modeled brackets, mounts, clearances, cable paths, and keepouts around the imported part rather than approximating the part with generic boxes/cylinders.
 - Placeholder geometry is acceptable for early blockouts, but final review must label it as a placeholder or replace it with catalog geometry.
-- Format choice when the vendor offers several: STEP (`lib.fromSTEP`) is the default and the most portable. OCCT `.brep` (`lib.fromBREP`) is lossless and the fastest to load, but only kernelCAD/OCCT writes it — it is for round-tripping our own geometry, not vendor interchange. Reach for `.stl` (`lib.fromSTL`) only when nothing better exists: it is a triangle mesh, so you keep bbox/volume/booleans but lose analytic surfaces, which means no reliable fillet/chamfer on curved edges, no canonical face refs, and no hole detection. If a part is STL-only and you need mounting-hole geometry, model the interface yourself rather than trusting facet normals.
+- Format choice when the vendor offers several: STEP (`lib.fromSTEP`) is the default and the most portable. OCCT `.brep` (`lib.fromBREP`) is lossless and the fastest to load, but only kernelCAD/OCCT writes it — it is for round-tripping our own geometry, not vendor interchange. Reach for `.stl` (`lib.fromSTL`) only when nothing better exists: it is a triangle mesh, so you keep bbox/volume/booleans but lose analytic surfaces, which means no reliable fillet/chamfer on curved edges, no canonical face refs, and no hole detection. If a mostly prismatic part is STL/OBJ/3MF-only and you need editable geometry (mounting holes, params), run `mesh_to_features` (CLI `kernelcad reconstruct`): it emits a feature-tree script and measures it against the mesh — use it when the verdict is faithful, otherwise model the interface yourself from the reported regions rather than trusting facet normals.
 
 > For off-the-shelf fasteners, bearings, motors, headers, and connectors, prefer the bundled parts catalog: load the `kernelcad-parts` skill. The catalog exposes `lib.findPart`, `lib.fetchPart`, and a typed `lib.standard.*` namespace, plus four MCP tools for discovery. Bundled parts ship with pre-defined connector frames so they participate in mates without any `partRef.connector(...)` boilerplate.
 
@@ -707,6 +707,10 @@ kernelcad render path/to/script.kcad.ts -o /tmp/cut.png --section z=10
 # exact bbox + volume, cylindrical holes (axis, diameter, depth, blind/through)
 kernelcad inspect step path/to/part.step
 
+# Rebuild an editable feature-tree script from an STL / OBJ / 3MF mesh, verified
+# against the mesh (volume IoU + surface deviation; --strict exits 1 unless faithful)
+kernelcad reconstruct path/to/part.stl -o /tmp/part.kcad.ts
+
 # Detect BREP interferences between Scene parts (industry-standard clash check)
 kernelcad interference path/to/script.kcad.ts
 
@@ -820,9 +824,9 @@ the full-fidelity, verified MP4 capture.
 These are not available today; do not generate code that uses them. Anything not listed here is fair game — call `lookup_api` / `lookup_cookbook` before concluding kernelCAD lacks a capability.
 
 - Asymmetric chamfer (only symmetric 45° supported) — deferred
-- Section views and param-bound (auto-updating) dimensions on `svg-drawing` — deferred; authored feature dimensioning DOES ship (`options.annotations`: linear / radius / diameter / angular / leader notes, anchored by EdgeQuery / FaceQuery or an explicit point), as do the automatic bounding-box dimensions and the title block
+- Param-bound (auto-updating) dimensions on `svg-drawing` — deferred; dimensions DO ship derived from the geometry (`options.autoAnnotate`: datums, hole callouts with position tolerances, positions, radii, chamfers, flatness, ISO 2768 note), authored (`options.annotations`), and as section views on any plane (`options.sections`)
 - Multi-view PDF sheets — deferred; `export({ format: 'svg-drawing' })` ships an SVG sheet instead
-- NURBS surface extend/untrim/blend, surface-surface intersection, lattice/quilt — deferred
+- NURBS surface extend/untrim/blend, lattice/quilt — deferred (surface-surface intersection ships as `surfaceIntersection`)
 - Tracked face/edge refs (only canonical refs and inline queries work) — deferred
 
 <!-- OUT-OF-SCOPE:END -->
@@ -835,6 +839,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 | ID | Trigger |
 |---|---|
 | assembly-connector-and-revolute-mate | The model has multiple mechanical parts (not a single fused body) that need a named pivot between them. Declare an axis connector on each part with partRef.connector(name, { type: 'axis', origin: { kind: 'vec3', value: [...] }, axis: [...] }), then join the connectors with arm.mate(name, 'partA.conn', 'partB.conn', 'revolute', { limitsDeg: [min, max] }). This is the canonical assembly-topology vocabulary for hinges, elbows, and any revolute joint — connector origins must use the tagged { kind: 'vec3', value: [...] } form, not a bare [x, y, z] array. |
+| async-sketch-await | You called shape.sectionSketch(...), .faceSketch(...), or .silhouette(...) and chained a Sketch method (.extrude, .revolve, .sweep, .loft, .reflect) directly on the result. All three producers are async and return Promise<Sketch> — chaining without awaiting throws feature.async-result.missing-await instead of silently doing the wrong thing. |
 | blind-pocket-from-top | You want a pocket cut into the top face only — the cylinder is shorter than the plate so it does not reach the bottom face. |
 | bom-ready-assembly | Before calling inspect({ of 'bom' }) or export({ format 'bom-csv' \| 'bom-json' }), declare material/density on assembly.part(...) so mass rows are real numbers instead of bom.material.unassigned gaps; instances placed in a loop with distinct names group into one BOM row by real quantity. |
 | chamfer-rotated-face | You rotated a primitive and now want to chamfer one of its canonical faces by name (face-name semantics survive transforms). |
@@ -842,6 +847,482 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 | clearance-hole-through-plate | You need a through-hole sized for a bolt with a small clearance margin; cylinder height extends beyond the plate so the cut is unambiguous. |
 | countersunk-flat-head-screw | You need countersunk holes whose cone matches a flat-head screw so the head sits flush: hole or holes with countersink { diameter, angleDeg } cut a real cone widest at the entry face, and a revolved 90° head of the same diameter fills it with no gap on the cone and no overlap (M3–M6 ISO 10642 table). |
 | diff-two-model-versions-by-material | You edited a script and need to know what physically changed, not just that something did. A signed volume delta is ambiguous — a boss that grew and a pocket that deepened report the same magnitude, and a body that only moved reports zero. Call diff_geometry({ baseFile, params }) to re-lower the SAME script with different param() values, or diff_geometry({ baseFile, file }) to compare separate scripts. Per matched body you get addedMm3 = volume(revised-base), removedMm3 = volume(base-revised), commonMm3, exact bbox/face/edge/hole-count deltas, a surface deviation, and a verdict — identical \| moved \| resized \| topology-changed. Branch on the verdict; quote the numbers. Author the model with named params and named features (as below) so both the override form and the report read cleanly. Reach for this when diff_scripts sets deeperDiffAvailable, instead of re-rendering and eyeballing. |
+| drawing-auto-dimension-gdt | You need a quotable engineering drawing without writing every callout. Export svg-drawing with autoAnnotate to derive datums, grouped bore callouts with position frames, positions from the datums, overall size, radii, chamfers, flatness and an ISO 2768 note from the geometry, and declare the datums or tolerances that are design intent with shape.datum and shape.tolerance. |
 | drawing-hole-and-gdt-callouts | You exported a svg-drawing sheet and need standard fabrication callouts — ⌀ hole diameters with THRU/blind/counterbore/countersink, a pattern count, a fillet radius, a chamfer size, a datum letter, and a feature-control-frame tolerance — instead of only the automatic bounding-box dimensions. |
-
 | engineering-material-presets-mass | You want engineering material presets by grade name (mild-steel, aluminum-6061, pla, petg, abs, nylon) to drive the mass, default finish and recorded material of identical geometry. One registry serves arm.part({ material }), inspect({ of: 'mass', material }), feaStudy({ material }) and .finish(), so the grade name works everywhere; steel / aluminum / pet are aliases for the same grades. |
+| exploded-assembly-drawing | You need an exploded isometric of a multi-body assembly — bodies pulled apart along mate axes or radially from the centroid — with BOM-numbered balloons and a bill table on a svg-drawing sheet, or the same explode on render_preview. |
+| export-two-link-arm-to-usd-isaac | The consumer is a GPU physics / robot-learning stack that imports a UsdPhysics stage directly instead of parsing URDF or SDF. Author parts with a named material (it seeds both mass and appearance), axis connectors, and fastened / revolute / prismatic mates exactly as for urdf, then call export({ target: 'model', format: 'usd-isaac', output_path: 'robot.usda' }). You get an articulation root, one rigid body per link at its solved pose with mass and principal inertia, one PhysicsRevoluteJoint / PhysicsPrismaticJoint / PhysicsFixedJoint per mate with limits, UsdPreviewSurface materials, and a meshes/<link>.usda layer per link. Declare actuator gains with options.drives { <mate>: { stiffness, damping } } — none are invented. Planar, cylindrical, pin_slot and ball mates fail closed with export.usd.joint-unsupported. |
+| extrude-rounded-rect-plate | You want a flat plate with rounded corners; use the dedicated rounded-rect extrude rather than building corners by hand. |
+| fdm-printability-and-print-orientation | You are about to slice or send a model to an FDM printer and want to know first whether it prints cleanly — no unsupported overhangs, no over-long bridges, walls at least 2 x the nozzle, no pins or holes too small for the nozzle, enough bed contact, fits the printer bed. Declare dfmSpec({ process: 'fdm' }) and evaluate; the dfm.fdm.* diagnostics name the overhang area and locus, and the hint gives the axis-aligned rotation that minimises unsupported area ("rotate -90° about Y ... drops from 938.2 to 0.0 mm²"). Apply it by declaring that buildDirection, which the gcode export also slices in. Full report per orientation via verify({ check: 'dfm' }) or kernelcad dfm. |
+| fea-study-safety-factor-gate | The design has to carry a real load and you need evidence, not a guess: peak von Mises stress, peak displacement, and a safety factor against the material's yield. Declare the study on the shape with shape.feaStudy({ material, fixed, loads, meshSize?, minSafetyFactor? }) — `fixed` and `loads[].faces` take the same FaceQuery / @kc[...] selectors as the rest of the API, and `force` is the TOTAL newtons on those faces. Declaring minSafetyFactor makes it an enforcement gate: evaluate_script fails with fea.safety-factor.below-min and names the governing region. Then run run_fea for the full summary, per-region hot spots and heatmap PNGs. Needs the external CalculiX + gmsh toolchain; check with fea_summary({}). Use this instead of verify({ check: 'load-capacity' }) when the geometry is not a plain cantilever beam or when you need to know WHERE it is overloaded. |
+| fillet-face-after-subtract | After subtracting a hole or pocket, you want to round only the rim of the resulting opening — not every edge in the part. |
+| fillet-translated-shape | You translated a primitive and now want to fillet one of its canonical faces by name (canonical face refs survive translate). |
+| g2-bridge-and-intersection-curve | You need a curvature-continuous blend between adjacent 3D curves, or the exact intersection curve of crossing faces (a weld seam, a trim spine) as a Curve3D you can sweep. |
+| gcode-export-and-print | You have a finished, watertight kernelCAD part and want to go straight to a physical print — slice it to G-code with a real slicer (no manual GUI step), then upload it to a network-connected printer and start the print, without a human touching a slicer or a printer's touchscreen. |
+| gt2-timing-belt-drive | You need a GT2 timing-belt drive: two toothed pulleys at a center distance, with belt length computed from pitch diameters and center distance then rounded to a real GT2 tooth count (2 mm pitch). |
+| hermite-g2-blend | You have a pair of existing NURBS curves whose tangents and curvatures match at the join point and you want a G2-continuous compound spine (so a downstream variableSweep does not kink at the join). Author the flanks via nurbsCurve, then drop a hermiteG2 between them with matching endpoint tangents and curvatures. |
+| involute-spur-gear-pair | You need a meshing involute spur gear pair (module, tooth counts, 20° pressure angle, face width) with true involute flanks sampled from the involute curve, not trapezoid teeth. Center distance is m(z1+z2)/2. |
+| iso-metric-bolt-and-nut | You need an ISO metric hex bolt threaded into its hex nut (M3–M12) whose pitch, hex across-flats, and head height come from a params table. The bolt thread is a real 60° V profile swept with sweep(helix(...), { spine: 'helix' }); the nut's internal thread is the thread option of its bore (pitch, modeled, play), seated in phase so the two parts never interfere. A cosmetic thread (modeled: false) keeps only the minor-diameter bore for speed. |
+| loft-body-shell-from-profiles | You need a recognizable, printable stylized solid body (car body, boat hull, fuselage, casing) that primitives can't express. Define cross-section profiles at stations along an axis, loft a solid through them, then shell + fillet. This is NURBS surfacing for organic bodies — not a polygon sculpt and not a photoreal render. |
+| mirror-half-part | The part is symmetric across a cardinal plane; build only one half and call mirror to produce the complete symmetric part. |
+| non-overlapping-l-bracket | You're building two perpendicular plates joined at a right angle; both plates have the same thickness; volumes must not overlap at the joint. |
+| parametric-bolt-pattern-skeleton | You want a compact bolt-hole part with an editable bolt-diameter parameter that can be changed later. |
+| path-hermite-g2-blend-2d | You're authoring a freeform 2D outline that should transition from one prescribed point + tangent (+ curvature) to another with G2 continuity (no visible curvature crease where adjacent neighbours meet). Drop a single .hermiteG2(a, b) call into the chain; a.point must match the current pen position. Tangent magnitude is the first derivative (typical ~ chord length, NOT unit length). |
+| path-nurbs-segment-explicit | You have an explicit B-spline control polygon (programmatic generation, round-tripping from external CAD, when precise shape control beats waypoint convenience) and want a 2D path segment authored from the control net directly. The first control point must match the current pen position within 1e-6 mm; the pen ends at the last control point. |
+| path-spline-organic-outline | You need a freeform 2D outline (eyewear brow, ergonomic grip silhouette, sneaker midsole) authored as a sequence of measured waypoints, and arc primitives + smoothSpline are too rigid. Drop a single .spline([...]) call into the path() chain after moveTo; the path interpolates through every waypoint at degree 3. |
+| pipe-route-swept-tube | You need a pipe or tube that follows 3D waypoints, with a specified bend radius at each corner, by sweeping a circular profile along a rail whose sharp corners are replaced by sampled arcs of that radius. |
+| rebuild-editable-model-from-mesh | You were handed an STL, OBJ or 3MF of a mostly prismatic mechanical component and need named params and real features, not the faceted solid lib.fromSTL gives you. Call mesh_to_features({ file, out }) (CLI: kernelcad reconstruct scan.stl -o rebuilt.kcad.ts). It measures the mesh, emits a script like the one below — a revolve or extruded profile, drilled and counterbored bores placed on face queries relative to the entry face centroid — then evaluates that script and compares it with the mesh. Rely on the dimensions only when fidelity.verdict is faithful; otherwise read unmatchedRegions and the ledger. Snapped values are ledger facts whose ids are the param names, so resolve_assumptions turns a correction straight into set_param overrides. |
+| rebuild-model-from-drawing-pdf | You were handed a vector PDF of an engineering drawing (orthographic views, lettered dimensions, a title block) and need an editable model, not a trace of a picture. Call drawing_to_cad({ path, out }): it reads the linework and dimension text, identifies the views by projection alignment, lets stated dimensions win over drawn lengths, extrudes the silhouette of the one non-rectangular view (or revolves a turned shaft), cuts ⌀ callouts along the axis of the view they are drawn in, and writes a script like the one below plus a ledger. Branch on fidelity.verdict, then settle the open ledger facts (mirrored positions, measured values, disagreements) with resolve_assumptions before relying on the model. A scanned page fails with reference.drawing.raster-only; use trace_from_image for that. |
+| repair-oversized-fillet | evaluate_script reported feature.edge-feature.short-edges-skipped (every target edge is shorter than twice the radius) and you want a bounded fix instead of guessing a new radius. |
+| resolve-photo-trace-assumptions | You called trace_from_image on a reference photo and want to know which returned waypoints are directly measured vs guessed before you feed them into path().spline() — and how to lock down a real-world scale before committing geometry. |
+| revolve-rectangular-profile | You want a thin cylindrical wall, ring, or tube — author the rectangular profile via path() with the inner radius as the x offset, then call .revolve() to sweep it around Z. |
+| section-sketch-gasket | You have a 3D part (an imported STEP or a boolean result) and need a 2D profile from its cross-section to extrude a gasket, spacer, or shim — or to re-dimension the section. sectionSketch returns a real Sketch whose arcs stay exact, with holes as inner loops, so one extrude reproduces the cross-section. |
+| static-hold-actuator-torque-check | A revolute or prismatic joint drives a downstream mass against gravity (a robot arm shoulder, a lift stage) and you need to know whether the declared actuator torque/force is sufficient — not just whether the mechanism is collision-free. Declare actuator: { torqueNm } (revolute) or actuator: { forceN } (prismatic) on the joint, then call kinematic.checkStaticHold(arm, opts). Real mass properties come from the part's geometry + declared density/material; the worst pose across the joint's declared range is reported alongside the margin. Fires assembly.joint.static-hold.exceeded when the actuator is undersized, assembly.joint.static-hold.margin-low when it clears but under the requested safety margin. |
+| subtract-then-fillet-rim | You want a parametric plate, drill a through-hole, and round the rim where the hole meets the top face. |
+| surface-quality-fillet-vs-g2 | You filleted or blended a freeform panel and need numbers, not a guess: is the join G0, G1, or G2? inspect({ of: 'continuity' }) samples each shared edge for position gap, normal jump and curvature difference. inspect({ of: 'curvature' }) reports per-face Gaussian and mean curvature (sphere 1/r², cylinder Gaussian 0 and \|H\|=1/(2r)). render_preview overlay zebra / curvature / continuity is the picture of those numbers. |
+| sweep-tolerance-envelope-check | A design has a param() whose real-world value varies (a printed hole that comes out oversized, a clearance gap that shrinks under tolerance) and you need to know whether the mechanism stays buildable across that range, not just at the nominal value. Call kinematic.sweepTolerance({ code\|file, params, gates }) with one or more param names as { values: [...] } or { min, max, steps }; it re-evaluates the script per cartesian-product combo (capped at 64) and runs the interference / mounting-hole / joint-axis gates (default on) plus reachability when declared, returning a pass/fail table and the first failing combo per gate. |
+| tab-slot-flush-joint | You are joining flat stock (laser/CNC plywood, acrylic, sheet) with an interlocking tab-and-slot. The through-tab must span the full mating wall thickness — flush or slightly proud, never recessed — and the fit clearance belongs on the slot, not on the tab. |
+| tslot-extrusion-and-bracket | You need a 20×20 B-type T-slot extrusion (slot 6, 6 mm slot opening) trimmed to a length param, plus a matching 90-degree corner connector that fastens on the T-slots. |
+| typed-params-boolean-choice-string | A `.kcad.ts` script needs an editable value that isn't a plain number: a feature on/off switch (`param('HasLid', true)`), a closed set of named options like a fastener size (`param('Screw', 'M4', { choices: [...] })`), or free text such as a nameplate/label (`param('Label', 'KCAD', { maxLength })`). All three resolve eagerly — read `.value` in script logic (`if`, object-key lookup, `sketch.text`) instead of the numeric ParamRef's symbolic `.add()`/`.multiply()` chain. |
+| union-of-stacked-primitives | You want to compose multiple primitives into one part by translating each into place and unioning them, without volume overlap. |
+| wood-joinery-dado-rabbet-mortise | You are cutting a dado groove, a rabbet rebate, and a mortise-and-tenon in lumber, with a named fit-clearance param widening the receiving cuts (groove, rebate, mortise) while the male tenon stays nominal. |
+| wrap-texture-can-label | You need a bitmap texture (label, decal, logo) wrapped onto a cylinder without hand-authoring UVs. Call `shape.wrapTexture(imageRef, { type: 'cylinder', axis })` so UVs are projected from final world-space vertices; `{ type: 'flat' \| 'sphere' \| 'box' }` cover planar and other wraps. |
+
+<!-- COOKBOOK:END -->
+
+## Conventions
+
+- Always declare params at the top of the script with units; the kernel evaluates them and surfaces them as live sliders to the studio.
+- Never use JS arithmetic on a `param()` result — `param('w', 18) + 4` coerces the branded ParamRef and throws `feature.invalid-args`. Build derived dimensions with the ParamRef methods: `.add(n)`, `.subtract(n)`, `.multiply(n)`, `.divide(n)`, `.negate()` — e.g. `w.add(4)`, `r.divide(2)`. These return derived ParamRefs that re-evaluate whenever the underlying param changes.
+- Prefer `target.hole(face, opts)` for cylindrical bores (single hole), `target.holes(face, opts)` for bolt patterns, and `target.cutout(profile, opts)` for irregular subtractive shapes (slots, D-pockets) over `subtract(cylinder)` — they emit named created refs (`'wall'`, `'floor'`, `'wall-back'`, `'counterbore-wall'`, `'counterbore-floor'`, `'countersink-cone'`) that downstream `.fillet()` / `.shell()` can address.
+- Apply transforms AFTER edge/face features when the face filter matters; transforms commute with everything except face-ref resolution.
+- Always `return` a single shape from the top of the script — the kernelCAD CLI exports whatever you return. Only the returned shape is honored by export / probe / measurement surfaces; "the last thing I created" is NOT a fallback you can rely on — mutating transforms (`.translate()`, `.rotate()`) re-use their record, and any helper shape created after the main body silently becomes the newest record. If a probe reports the same bbox no matter what you edit, you are measuring a stale or decoy record: check what the script returns.
+- For symmetric parts, prefer `.mirror(plane)` (union of source + reflection) over manual duplication. Use `.reflect(plane)` when you only want the reflected geometry without the original.
+- In booleans, prefer ≥0.1 mm of overlap (unions) or offset (subtractions/clearances) over exact tangency or coincidence between solids — exact-tangent junctions stress the export mesher; the export pipeline heals the resulting cracks, but offsets keep meshes clean at the source.
+- For helical features, generate the rail with `helix(...)`. Threads, worms and helical grooves: sweep the cross-section with `spine: 'helix'` (exact helix, profile in the axial plane, a 60° V builds valid). Coils and springs with a round wire: `spine: 'smooth'` also works — the dense rail needs a single spine to produce a sewn, watertight tube; the default polyline spine emits per-segment tubes that fail the watertight export verify. Internal threads in a nut or tapped hole come from `hole({ thread: { pitch, modeled: true } })` — see kernelcad-features.
+
+## Interlocking joinery (flat-pack / laser / CNC)
+
+Tab-and-slot and finger joints in flat stock follow a fixed discipline; getting it backwards produces joints that read as empty slots and carry no load.
+
+- **Through-tabs sit flush or slightly proud — never recessed.** Model the tab to span the FULL thickness of the mating wall; add 0.2–0.5 mm of proud allowance when the face will be sanded or flush-trimmed after assembly. A tab whose end face stops short of the mating surface — even by 0.2 mm — looks like an empty slot and leaves the glue/bearing area undersized.
+- **Fit clearance goes on the slot/pocket, not the tab.** Keep the tab at nominal width and thickness; widen the slot by a per-side clearance. Shortening or thinning the tab destroys both the flush face and the joint's reference geometry.
+- **Clearance is process-dependent — encode it as a named param (`tabFit`)** so it can be retuned per machine and material without touching geometry:
+  - Laser: the beam removes a kerf (~0.1–0.3 mm depending on material and thickness) that already loosens nominal-drawn joints by roughly one kerf width; `tabFit` of 0–0.1 mm per side usually yields a snug press fit.
+  - CNC router: `tabFit` 0.1–0.25 mm per side, plus dog-bone / T-bone corner relief at internal slot corners (relief radius ≥ endmill radius) so square tab corners can seat fully.
+  - Mating 3D-printed parts: `tabFit` 0.15–0.3 mm per side.
+- **Finger joints (box joints):** finger width 1–2× material thickness; finger depth equals the mating wall thickness exactly (plus the same proud allowance) so finger ends finish flush with the outer face; prefer an odd finger count for a symmetric edge.
+- Canonical pattern: cookbook snippet `tab-slot-flush-joint` — `lookup_cookbook("tab and slot flush joint")`.
+
+## Hardware, belts, and wood joinery
+
+These are cookbook recipes over existing primitives — call `lookup_cookbook`, do not invent a generator tool.
+
+- Involute spur gear pair (module, tooth counts, 20° pressure angle; center distance `m(z1+z2)/2`) — `lookup_cookbook("involute spur gear pair")`
+- ISO metric hex bolt threaded into its nut, M3–M12 table: 60° V-thread via `helix` + `sweep` with `spine: 'helix'`, nut thread via `hole({ thread })` — `lookup_cookbook("ISO metric hex bolt and nut")`
+- Countersunk holes seating ISO 10642 flat-head screws flush (`countersink` on `hole` / `holes`) — `lookup_cookbook("countersunk hole flat head screw flush")`
+- 20×20 B-type T-slot extrusion, slot 6, plus a corner connector — `lookup_cookbook("20x20 T-slot extrusion slot 6")`
+- GT2 timing-belt drive (belt length from pitch diameters, rounded to a 2 mm tooth count) — `lookup_cookbook("GT2 timing belt drive")`
+- Wood dado, rabbet, and mortise-and-tenon with fit clearance — `lookup_cookbook("wood dado rabbet mortise")`
+- Pipe route through 3D waypoints with a bend radius — `lookup_cookbook("pipe route bend radius")`
+- Engineering material grades (`mild-steel` / `aluminum-6061` / `pla` / `petg` / `abs` / `nylon`; aliases `steel` / `aluminum` / `pet`) — one name drives mass, finish, the recorded part material and FEA — `lookup_cookbook("mild-steel aluminum-6061 nylon material mass")`
+
+## Sample
+
+### Parametric bracket with hole
+
+```typescript
+const w = param('width', 60, { min: 30, max: 200 });
+const h = param('height', 40, { min: 20, max: 120 });
+const t = param('thickness', 5, { min: 2, max: 15 });
+const holeRadius = param('holeRadius', 4, { min: 1.5, max: 10 });
+
+const base = box(w, h, t);
+const hole = cylinder(8, holeRadius).translate(30, 20, -1);
+return base.subtract(hole);
+```
+
+### Sketch builder + extrude pipeline
+
+```typescript
+// Arbitrary 2D profile via path builder, then extruded.
+const depth = param('depth', 10, { min: 1, max: 40 });
+
+const profile = path()
+  .moveTo(0, 0)
+  .lineTo(30, 0)
+  .lineTo(30, 20)
+  .sagittaArc(15, 30, 5)
+  .lineTo(0, 20)
+  .close();
+
+return profile.extrude(depth);
+```
+
+### Variable-radius blend
+
+```typescript
+// Different fillet radii on different edge selections.
+const body = box(40, 30, 15);
+
+const topEdges = await selectEdges(body, { face: 'top' });
+const bottomEdges = await selectEdges(body, { face: 'bottom' });
+
+return body.fillet([
+  { edges: topEdges, radius: 5 },
+  { edges: bottomEdges, radius: 1 },
+]);
+```
+
+### Mirror — symmetric part
+
+```typescript
+// Build one half and mirror across the YZ plane.
+const half = box(20, 40, 10)
+  .subtract(cylinder(10, 6).translate(10, 20, -1))
+  .fillet(2);
+
+return half.mirror('yz');
+```
+
+### Surfaces → solid (Slice E finishing ops)
+
+Two Coons patches trimmed to a shared edge, sewn into a closed solid, drafted for mold release, then exported as STEP.
+
+```typescript
+// Build two complementary 4-boundary patches that share the bottom edge.
+const sharedBottom = nurbsCurve([[0, 0, 0], [25, 0, 1], [50, 0, 0]]);
+const right   = nurbsCurve([[50, 0, 0], [50, 12, 0.5], [50, 25, 0]]);
+const top     = nurbsCurve([[50, 25, 0], [25, 25, 1], [0, 25, 0]]);
+const left    = nurbsCurve([[0, 25, 0], [0, 12, 0.5], [0, 0, 0]]);
+
+const bottom2 = nurbsCurve([[0, 0, 0], [25, 0, -1], [50, 0, 0]]);
+const right2  = nurbsCurve([[50, 0, 0], [50, 12, -0.5], [50, 25, 0]]);
+const top2    = nurbsCurve([[50, 25, 0], [25, 25, -1], [0, 25, 0]]);
+const left2   = nurbsCurve([[0, 25, 0], [0, 12, -0.5], [0, 0, 0]]);
+
+const patchA = surfaceFromBoundary([sharedBottom, right, top, left]);
+const patchB = surfaceFromBoundary([bottom2, right2, top2, left2]);
+
+// Trim each patch at their shared boundary curve so the sewn edges align.
+const trimmedA = patchA.trimTo(sharedBottom);
+const trimmedB = patchB.trimTo(sharedBottom);
+
+// Sew into a closed solid (requireClosed catches authoring mistakes early).
+const solid = sew([trimmedA, trimmedB], { requireClosed: true });
+
+// Apply draft to one face for mold release.
+const molded = solid.draft(3, { face: 'top' });
+
+return molded;
+```
+
+Export as STEP after verifying:
+
+```bash
+kernelcad evaluate surfaces-to-solid.kcad.ts   # exits 0, no open-shell diagnostic
+kernelcad export step surfaces-to-solid.kcad.ts -o out.step
+```
+
+## Verification gates
+
+After authoring, run before reporting done:
+
+| Gate | Pass criterion |
+|------|----------------|
+| G-eval | `kernelcad evaluate <script>` exits 0, zero diagnostics |
+| G-return | Script returns a single `Shape` or `Scene` (not undefined, not an array) |
+| G-no-overlap | `kernelcad interference <script>` reports zero overlapping volumes |
+| G-no-floaters | Every named part appears at the intended position in `kernelcad render` output — nothing hovers in empty space |
+| G-conventions | Units mm + degrees, Z-up, all transforms after edge/face features when face-ref names matter |
+
+For visual / reference-driven tasks the gate set extends — see `kernelcad-from-reference`.
+
+## DFM gates (print readiness)
+
+`dfmSpec({...})` declares printability gates in the script; the check engine
+enforces them at evaluate time. Three gates ship: **part-pair clearance**
+(exact BREP minimum distance), **minimum wall thickness** (inward ray sampling
+over the export-grade mesh), and **void/channel topology** (voxel flood-fill:
+undeclared sealed voids + channel mouth counting).
+
+```typescript
+dfmSpec({
+  minWall: 0.8,                       // thinnest wall the DESIGN intends to print
+  minClearance: 0.45,                 // fit gap between distinct parts
+  includeArticulatedMates: true,      // moving links must also clear at the rest pose
+  ignore: [['lid', 'hinge-pin']],     // design-intent contact: clearance-exempt pair
+  exclude: ['servo-*', 'pcb'],        // not printed: skips minWall + voids
+  channels: [
+    { part: 'base', name: 'cable-duct', openings: 2 },               // through-channel
+    { part: 'float', name: 'air-pocket', openings: 0, sealed: true },  // intentional sealed void
+  ],
+});
+```
+
+Semantics that matter when authoring the declaration:
+
+- **Opt-in, then always-on.** Scripts without a `dfmSpec` are untouched. Once a
+  record is present, EVERY `evaluate` / `evaluate_script` run enforces the
+  gates — there is no flag to skip them. A failing gate exits 1 with
+  error-severity `dfm.*` diagnostics.
+- **Moving mates are opt-in.** By default, all declared mate pairs are exempt
+  from the clearance check so seated/fastened interfaces do not create false
+  failures. Set `includeArticulatedMates: true` on a mechanism to measure every
+  non-fastened mate pair at its declared rest pose. Fastened mates remain
+  exempt because their physical contact is checked by the mechanical
+  plausibility gate. This is a rest-pose screen, not a swept-motion proof.
+- **Malformed declarations THROW at capture** (`feature.invalid-args`
+  KernelError) instead of stashing warnings — dfmSpec is an enforcement gate,
+  and a silently-disabled gate is worse than a build failure. At least one of
+  `minWall` / `minClearance` / `channels` is required; `sealed: true` requires
+  `openings: 0` (and vice versa); `exclude` globs are trailing-`*` prefix only.
+- **`exclude` and `ignore` are different exemptions.** `exclude` marks parts as
+  NOT PRINTED (vendor STEP imports, electronics): they skip minWall and void
+  checks but STILL participate in clearance — a vendor part 0.2 mm from a
+  printed part is a real assembly problem. `ignore` is a per-PAIR clearance
+  exemption for design-intent contacts. Pairs joined by a declared mate are
+  clearance-exempt automatically. Overlapping pairs are tagged `interfering`
+  and emit the shared `assembly.interference.overlap` error — overlap analysis
+  belongs to the interference gate, but the DFM gate never passes over it.
+- **Choose `minWall` from the design's intended wall floor**, not a generic
+  printer guideline. Declaring `minWall: 1.5` against a design whose thinnest
+  intentional wall is 0.8 mm just fails everything and tells you nothing about
+  real defects. Also expect near-tangent authoring slivers (a boss grazing a
+  rim, a blend tangent to a bore) to surface as sub-0.1 mm wall findings —
+  those are honest measurements of sliver geometry; fix the tangency or read
+  past them deliberately.
+- **Channel detection limits.** ONE non-sealed channel per part — a second
+  declaration emits `feature.invalid-args` and the mouth count binds to the
+  first. Channels wider than ~16 mm escape the morphological closing and
+  report `found: 0` — that is a detection limit, not a blockage. The declared
+  channel binds to the LARGEST detected internal component, which can misbind
+  on parts with multiple internal voids; the reported `channelSeed` location
+  shows which component was picked (binding the declaration by location is a
+  recorded follow-up).
+- **`'unknown'` clearance status means the measurement FAILED** (kernel error
+  on that pair), not that the pair passed. Unknown pairs and kernel-failed
+  parts stay warn severity: they surface in the report and the CLI summary
+  (`, N unknown`) but never flip the exit code.
+- **Diagnostic locations are world-frame.** Every xyz in a `dfm.*` diagnostic
+  message is mapped through the part's world transform, so findings compose
+  across the parts of a posed assembly. The raw `walls[]` / `voids[]` report
+  structs keep part-local coordinates.
+
+Surfaces: automatic on `kernelcad evaluate` / MCP `evaluate_script`; standalone
+report via `kernelcad dfm <file>` (`--json`) and MCP `verify({ check: 'dfm' })`.
+
+## Materials
+
+There are three ways to set surface character. Reach for them in this order:
+
+1. **`.color(token | '#hex')`** — HUE ONLY. Cheapest. Role tokens (servo, gear,
+   beam, shaft, plate, pin, frame, tool) or a literal hex. Right for schematic
+   assembly renders where photo-accuracy is not the point.
+2. **`.finish(name, { color? })`** — a NAMED material finish: hue plus surface
+   character (metalness / roughness / clearcoat). This is the primary verb when
+   you know the material. You name "brass" or "matte ABS", not BRDF floats.
+3. **`.material({...})`** — the raw-PBR escape hatch. Only for glass, clearcoat,
+   anisotropy, or image textures that no finish token covers (see below).
+
+**How they compose on one leaf:** a `.finish()`/`.material()` PBR record
+overrides a `.color()` hue at render time. `.finish()` and `.material()` write
+the same slot, so on one leaf it is last-write-wins between them. To TINT a
+finish, pass `{ color }` to `.finish()` — do not layer `.color()` under it, the
+hue would be shadowed.
+
+**Critical rule:** apply `.finish()` / `.material()` to leaf parts BEFORE they
+enter a boolean. A call on a post-union root is a no-op — the kernel cannot
+retroactively assign material to the input leaves of a boolean.
+
+### `.finish(name, opts?)` — named finishes
+
+```typescript
+bracket.finish('anodized-black');                 // matte black anodised alu
+crownGear.finish('brass');                        // brass, intrinsic colour
+housing.finish('abs', { color: '#c0392b' });      // red ABS housing
+knob.finish('paint-gloss', { color: '#0a3d62' }); // glossy navy paint
+lens.finish('glass-tinted');                       // real refraction, no floats
+bezel.finish('brass', { face: 'ring' });           // per-face, like .material({ face })
+```
+
+The vocabulary (small and curated — pick the closest, override the hue if you
+need a different colour). This table is the source the finish-drift gate checks
+against `FINISH_TOKENS`; keep the two in sync.
+
+<!-- FINISH-VOCABULARY:START -->
+| group | finishes |
+|---|---|
+| metals | `aluminium`, `aluminium-brushed`, `anodized-black`, `anodized`, `steel`, `stainless`, `brass`, `copper`, `titanium` |
+| plastics | `abs`, `pla`, `nylon`, `delrin`, `polycarbonate`, `rubber`, `plastic-glossy` |
+| glass | `glass`, `glass-tinted`, `acrylic` |
+| paint / neutral | `paint-matte`, `paint-gloss`, `default` |
+<!-- FINISH-VOCABULARY:END -->
+
+
+`opts.color` overrides the hue while keeping the finish. It is meaningful for
+the paints, `abs`, `plastic-glossy`, and `anodized` (dyed anodising); for raw
+metals the colour is intrinsic, so an override is accepted but rarely wanted.
+An unknown finish name throws `feature.finish.unknown-token` and lists the valid
+finishes — it does not fall back to a default.
+
+### Advanced: raw PBR via `.material()`
+
+`Shape.material(opts)` is the escape hatch when no finish token fits — glass with
+a specific attenuation, brushed anisotropy, a bespoke clearcoat, or image
+textures. The fields are three.js `MeshPhysicalMaterial` floats; a finish token
+expands to exactly this record, so anything a finish does, `.material()` can do
+by hand. Prefer the named finish unless you need one of the fields below.
+
+```typescript
+// Bespoke glossy acetate — clearcoat + ior a finish token does not name exactly
+part.material({
+  baseColor: '#0a0a0a',
+  metalness: 0.0,
+  roughness: 0.15,
+  clearcoat: 0.8,
+  clearcoatRoughness: 0.05,
+  ior: 1.55,
+});
+```
+
+### Glass, brushed metal, textured surfaces
+
+Three additional `PBRMaterial` fields cover the common photoreal archetypes:
+
+**Glass (volume absorption).** `transmission > 0` is light passing through;
+`thickness` (mm) and `attenuationColor` + `attenuationDistance` (mm) together
+shade the colored absorption through the body. The renderer auto-loads a
+neutral studio HDRI when any material in the scene has `transmission > 0`, so
+glass renders with realistic refraction without needing `setRenderEnvironment`.
+
+```typescript
+// Dark sunglass lens
+lens.material({
+  baseColor: '#ffffff',
+  transmission: 0.85,
+  ior: 1.5,
+  thickness: 3,
+  attenuationColor: '#1a1a2a',
+  attenuationDistance: 8,
+  roughness: 0.0,
+});
+```
+
+**Brushed / anisotropic metal.** `anisotropy` (0..1) stretches the specular
+highlight; `anisotropyRotation` (degrees, normalized to [0,360)) aligns the
+brush direction with a face axis.
+
+```typescript
+// Brushed aluminum hinge
+hinge.material({
+  baseColor: '#b0b0b0',
+  metalness: 1.0,
+  roughness: 0.3,
+  anisotropy: 0.8,
+  anisotropyRotation: 90,
+});
+```
+
+**Image-texture maps.** `textures` attaches up to six maps — `albedo`,
+`normal`, `roughness`, `metalness`, `anisotropy`, `emissive`. Paths resolve
+relative to the script file (mirrors `referenceImage()`); `https://` URLs are
+fetched once and sha256-cached at `~/.cache/kernelcad/textures/`.
+
+```typescript
+// Matte acetate frame with normal-mapped grain
+frame.material({
+  baseColor: '#1a1a1a',
+  roughness: 0.55,
+  textures: {
+    albedo: { path: './acetate-color.png' },
+    normal: { path: './acetate-normal.png' },
+    roughness: { path: './acetate-rough.png' },
+  },
+});
+```
+
+Supported texture formats: `.png`, `.jpg`, `.jpeg`, `.webp`. Maximum dimension
+8192px (hard error); textures over 2048px on the longest side surface a
+console warning. Each `TextureRef` accepts optional `repeat: [u, v]`,
+`offset: [u, v]`, and `rotation: <degrees>`.
+
+**For reproducible hero builds:** download URL textures and check the files
+into the script's directory before committing. Agent-fetched URLs land in
+`~/.cache/kernelcad/textures/` but that cache is not source-controlled.
+
+### Per-face materials
+
+For parts where different faces need different materials (eyewear rim vs. lens
+vs. temple-hinge boss; brushed body + polished crown; etc.), pass a `face`
+field referencing a face label declared on a creating op:
+
+```typescript
+const frame = box(140, 50, 6, false, {
+  faceLabels: { front: 'front', back: 'back', top: 'top' },
+});
+frame.material({ face: 'front', baseColor: '#0a0a0a', clearcoat: 1, roughness: 0.1 });  // glossy acetate front
+frame.material({ face: 'back',  baseColor: '#1a1a1a', roughness: 0.7 });                // matte interior
+frame.material({ baseColor: '#cccccc', roughness: 0.5 });                                // default for unlabeled faces
+```
+
+Rules:
+- `face` must be a label declared upstream via the creator's `faceLabels` option
+  (or via `path().label(...)` for sketch-derived shapes).
+- Calls accumulate on the shape — multiple `.material({ face: ... })` calls
+  build up per-face entries. A second call with the same `face` overwrites.
+- A call **without** `face` sets the shape-level default (applies to any face
+  not covered by a per-face entry).
+- If a label fails to resolve at mesh time (typo, transform stripped lineage,
+  no upstream `faceLabels` entry), the build continues and a soft
+  `feature.material.face-label-no-match` warning is emitted; the affected faces
+  fall back to the shape-level default.
+- Per-face identity dies at boolean operations (same as `.color()` and the
+  whole-shape `.material()`). Apply per-face materials AFTER all booleans.
+
+## Reference images
+
+`referenceImage(path, opts)` places a reference photo as a plane overlay in the
+Studio viewport. It is a virtual node — no OCCT geometry is created, and the
+image is hidden during scoring (`--hide-reference-images`).
+
+```typescript
+// Front-view overlay (XZ plane) — typical for flat products facing the camera
+referenceImage('./reference.jpg', {
+  plane: 'xz',
+  anchor: 'origin',
+  scale: 'fit-bbox',   // auto-scales to match the model's bounding box
+  opacity: 0.4,        // ghost behind the model; adjust to taste
+});
+
+// Top-down overlay (XY plane) — for PCBs, floor plans, plate layouts
+referenceImage('./top-view.jpg', {
+  plane: 'xy',
+  anchor: 'origin',
+  scale: 'fit-bbox',
+  opacity: 0.3,
+});
+
+// Side overlay (YZ plane) — for profiles, silhouettes from the right
+referenceImage('./side.png', {
+  plane: 'yz',
+  anchor: 'origin',
+  scale: { width: 130 },   // explicit width in mm; height auto-computed
+  opacity: 0.5,
+  flipU: true,             // mirror horizontal if the reference is from the left
+});
+```
+
+Multiple `referenceImage()` calls are allowed — one per view plane. Path is
+resolved relative to the calling `.kcad.ts` file. Supported formats: `.png`,
+`.jpg`, `.jpeg`, `.webp`. Validation errors (missing file, bad format, invalid
+plane) are pushed as diagnostics on the returned handle rather than thrown.
+
+## Related skills
+
+- `kernelcad-features` — load when adding fillets, chamfers, shells, holes, or cutouts.
+- `kernelcad-params` — load when the model needs editable `param()` / `params()` values or live slider support.
+- `kernelcad-assemblies` — load for multi-part models with joints, mates, or connectors.
+- `kernelcad-nurbs` — load for freeform NURBS surfaces that primitives and sketches cannot express.
+- `kernelcad-from-reference` — load when building from a reference photo or visual brief; extends the verification gate set.
+- `kernelcad-mcp` — load instead of this skill when you need to introspect a running model dynamically via MCP tools.

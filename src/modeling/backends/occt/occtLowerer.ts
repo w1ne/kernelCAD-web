@@ -1502,11 +1502,13 @@ export class OcctLowerer implements FeatureLowerer {
             planes?: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: Coord[] }>;
             startPoint?: Coord[];
             endPoint?: Coord[];
+            rails?: string[];
           } | undefined;
           const meta = rawMeta === undefined ? undefined : {
             planes: rawMeta.planes?.map((p) => ({ plane: p.plane, origin: point3(p.origin)! })),
             startPoint: point3(rawMeta.startPoint),
             endPoint: point3(rawMeta.endPoint),
+            rails: rawMeta.rails,
           };
           let planes: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number] }>;
           if (Array.isArray(meta?.planes)) {
