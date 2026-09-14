@@ -48,6 +48,18 @@ export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
   // Emitted by drawing_to_cad; pinned by tests/integration/examples/drawingToCadExample.test.ts.
   'examples/drawing-to-cad/motor-mount-bracket.kcad.ts',
   'examples/fea/shelf-bracket-fea.kcad.ts',
+  // Multi-part display / BOM / catalog layouts — named assembly().part()
+  // rows with no mates or joints, so the mechanism graph is disconnected
+  // by design. Not mechanisms; the physics loop's orphan-part gate does
+  // not apply.
+  'examples/bom/panel-with-fasteners.kcad.ts',
+  'examples/cookbook-parity/countersunk-flat-head-screw.kcad.ts',
+  'examples/cookbook-parity/engineering-material-presets-mass.kcad.ts',
+  'examples/cookbook-parity/gt2-timing-belt-drive.kcad.ts',
+  'examples/cookbook-parity/involute-spur-gear-pair.kcad.ts',
+  'examples/cookbook-parity/iso-metric-bolt-and-nut.kcad.ts',
+  'examples/cookbook-parity/tslot-extrusion-and-bracket.kcad.ts',
+  'examples/cookbook-parity/wood-joinery-dado-rabbet-mortise.kcad.ts',
   'examples/cookbook/wayfarer-temple-ray-ban.kcad.ts',
   'examples/gallery/meta-glasses-experiments/integrated-wayfarer.kcad.ts',
   'examples/gallery/meta-glasses-experiments/product-detail-wayfarer.kcad.ts',

@@ -69,7 +69,10 @@ Turn a profile into a solid, or grow one along a path.
 |---|---|
 | `Sketch.extrude(depth: Editable<number>) => Shape` | Extrude this closed sketch normal to its plane by `depth` (mm). |
 | `Sketch.revolve(opts?: { angleDeg?: Editable<number> }) => Shape` | Revolve around the Z axis, 360 degrees unless `angleDeg` (number or ParamRef). |
+| `Sketch.revolve() => Shape` | Revolve 360 degrees around the Z axis. |
 | `Sketch.sweep(rail, opts?: { frenet?, transitionMode?, spine? }) => Shape` | Sweep this profile along a 3D rail. |
+| `Sketch.sweep(rail, opts?: { frenet?, transitionMode?, spine? }) => Shape` | Sweep this profile along a 3D rail. |
+| `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, ruled?, startPoint?, endPoint? }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
 | `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, ruled?, startPoint?, endPoint?, rails?: Curve3D[] }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
 | `variableSweep(spine: Curve3D \| Sketch \| Vec3[], sections: Array<{ t: number; profile: Sketch }>, opts?: { closed?: boolean; continuity?: "C0" \| "C1" \| "C2" }) => Shape` | Multi-section sweep that blends `sections[i].profile` along the spine at the section's `t ∈ [0, 1]` spine parameter. |
 | `helix({ radius: Editable<number>, pitch: Editable<number>, turns: Editable<number>, axis?, pointsPerTurn?, startAngle?: Editable<number> }) => [number, number, number][]` | Helix rail for `Sketch.sweep`. |
@@ -148,6 +151,7 @@ Move a body into position, mirror it, or repeat it.
 | `Shape.scale(factor: number \| [number, number, number]) => Shape` | Scale this shape uniformly (single positive finite number) or per-axis (Vec3 — sx/sy/sz). |
 | `Shape.reflect(plane: 'xy' \| 'xz' \| 'yz' \| { plane: 'xy' \| 'xz' \| 'yz'; offset: number }) => Shape` | Reflect (pure rigid-body transformation) across a cardinal plane or an offset parallel plane. |
 | `Sketch.reflect(axis: 'x' \| 'y' \| { axis: 'x' \| 'y'; offset: Editable<number> }) => Sketch` | Reflect this sketch's path across an axis, returning a new Sketch. |
+| `Sketch.reflect(axis: 'x' \| 'y' \| { axis: 'x' \| 'y'; offset: number }) => Sketch` | Reflect this sketch's path across an axis, returning a new Sketch. |
 | `Shape.mirror(plane: 'xy' \| 'xz' \| 'yz' \| { plane: 'xy' \| 'xz' \| 'yz'; offset: number }) => Shape` | Boolean union of the source and its reflection across a cardinal plane. |
 | `Shape.patternLinear({ count, direction, spacing }) => Shape` | Repeat this shape in a linear array. |
 | `Shape.patternGrid({ x: { count, direction, spacing }, y: { count, direction, spacing } }) => Shape` | Repeat this shape in a two-axis grid. |
@@ -252,6 +256,7 @@ Adjust a model's appearance without changing its geometry: text, color, lighting
 | `Shape.color(name: ColorToken \| `#${string}`) => Shape` | Set HUE ONLY: a role color (servo/gear/beam/shaft/plate/pin/frame/tool) or a literal `#rrggbb` hex. |
 | `Shape.finish(name: FinishToken \| MaterialGrade, opts?: { color?: string; face?: string }) => Shape` | PREFERRED way to make a part look like a real material. |
 | `Shape.material(opts: PBRMaterial & { face?: string }) => Shape` | ADVANCED / renderer-level escape hatch exposing raw PBR floats for glass, clearcoat, anisotropy, and image textures when no `.finish()` token fits. |
+| `Shape.wrapTexture(imageRef: TextureRef, projection: { type: 'flat'; onto?: 'xy' \| 'xz' \| 'yz' } \| { type: 'cylinder'; axis: [number, number, number] } \| { type: 'sphere' } \| { type: 'box' }) => Shape` | Project a bitmap (label, decal, logo) onto this shape without hand-authoring UVs. |
 | `referenceImage(path: string, opts: { plane, anchor?, scale?, opacity?, flipU?, flipV? }) => ReferenceImageHandle` | Overlay a reference image on a plane for tracing or design review. |
 | `setRenderEnvironment(spec: { preset?: 'studio' \| 'softbox' \| 'neutral' \| 'outdoor' \| 'warehouse'; url?: string; intensity?: number; rotation?: number }) => RenderEnvironmentHandle` | Set the HDRI / image-based-lighting environment for the rendered scene. |
 | `setCameraTarget(x: number, y: number, z: number) => CameraTargetHandle` | Override the camera look-at target for `setRenderPose` and headless engineering renders. |

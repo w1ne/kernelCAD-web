@@ -35,7 +35,7 @@ describe("inspect({ of: 'bom' })", () => {
     expect(bracketRow).toBeDefined();
     expect(bracketRow!.quantity).toBe(3);
     expect(bracketRow!.kind).toBe('fabricated');
-    expect(bracketRow!.material).toBe('aluminum');
+    expect(bracketRow!.material).toBe('aluminum-6061');
     expect(bracketRow!.instancePaths).toEqual(['bracket_0', 'bracket_1', 'bracket_2']);
   }, 60000);
 

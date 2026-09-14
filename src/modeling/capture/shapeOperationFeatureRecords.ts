@@ -5,7 +5,7 @@ import type { FeatureId, FeatureKind, FeatureRef, Param } from '../../shared/int
 import type { FilletContinuity } from '../../shared/intent/filletContinuityRecord';
 import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../../shared/intent/queryKeys';
 import { toParam } from '../../shared/runtime/editableHelpers';
-import type { Editable } from '../../shared/runtime/paramRef';
+import { isParamRef, type Editable } from '../../shared/runtime/paramRef';
 
 export interface ShapeOperationFeatureSpec {
   kind: FeatureKind;
@@ -311,11 +311,17 @@ export function buildVariableEdgeFeatureSpec(
     const group = groups[i];
     const ref = buildEdgeFeatureRef(baseId, group.edges);
     inputs[`edge_group_${i}`] = ref.value;
-    // A param() value is stored as a Param so the recompute pre-resolve
-    // substitutes it (a raw ParamRef object reached the lowerer unresolved);
-    // plain numbers keep the historical record shape.
+    // A param() ParamRef is stored as a Param so the recompute pre-resolve
+    // substitutes it. Plain numbers and already-built Param records keep
+    // the historical record shape.
     const value = group[valueKey];
-    metadataGroups.push({ [valueKey]: typeof value === 'number' || value === undefined ? value : toParam(value, 'mm') });
+    const stored =
+      value === undefined || typeof value === 'number'
+        ? value
+        : isParamRef(value)
+          ? toParam(value, 'mm')
+          : value;
+    metadataGroups.push({ [valueKey]: stored });
   }
   return {
     kind,

@@ -72,9 +72,14 @@ function drawingForLoop(commands: readonly SketchCommand[]): replicad.Drawing {
       const cy = c.y.evaluated;
       const cr = c.radius.evaluated;
       const chord = Math.hypot(cx - currentX, cy - currentY);
+      if (chord < 1e-9) {
+        throw new Error(`radiusArc: degenerate chord (start ≈ end) at point (${cx}, ${cy})`);
+      }
       const halfChord = chord / 2;
       const r = Math.abs(cr);
-      if (r < halfChord) throw new Error(`radiusArc: drawingFromCommands |radius|=${r} < chord/2=${halfChord}`);
+      if (r < halfChord) {
+        throw new Error(`radiusArc: radius (${cr}) too small for chord length ${chord.toFixed(3)} — needs |radius| >= chord/2`);
+      }
       const sagitta = (cr >= 0 ? 1 : -1) * (r - Math.sqrt(r * r - halfChord * halfChord));
       pen = pen.sagittaArcTo([cx, cy], sagitta);
     }

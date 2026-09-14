@@ -334,15 +334,22 @@ export function renderSvgDrawing(
   if (parts.length === 0) {
     throw new Error('svg-drawing export requires at least one part.');
   }
+  // Centroids must be read BEFORE makeCompound / getReplicadShape: those
+  // consume the replicad handles, and a later boundingBox would throw
+  // "This object has been deleted". Skip the read unless balloons,
+  // parts-list, or an exploded iso actually need them — exact bbox
+  // tessellation would otherwise perturb the automatic dimensions.
+  const explodedParts = options.explodedParts;
+  const needCentroids =
+    options.balloons === true || options.partsList === true || explodedParts !== undefined;
+  const assembledCentroids = needCentroids ? partCentroids(parts) : new Map();
+  const explodedCentroids = explodedParts !== undefined
+    ? partCentroids(explodedParts)
+    : assembledCentroids;
   const shape: AnyShape =
     parts.length === 1
       ? parts[0].shape.getReplicadShape()
       : makeCompound(parts.map(p => p.shape.getReplicadShape()));
-  const explodedParts = options.explodedParts;
-  const assembledCentroids = partCentroids(parts);
-  const explodedCentroids = explodedParts !== undefined
-    ? partCentroids(explodedParts)
-    : assembledCentroids;
   const explodedShape: AnyShape | undefined =
     explodedParts === undefined || explodedParts.length === 0
       ? undefined
