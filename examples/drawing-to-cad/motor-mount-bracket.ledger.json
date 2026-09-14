@@ -1,0 +1,245 @@
+{
+  "facts": [
+    {
+      "id": "units",
+      "statement": "Units 'mm' read from the title block.",
+      "kind": "visible",
+      "evidence": {
+        "source": "title-block"
+      },
+      "value": "mm",
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "scale",
+      "statement": "Sheet scale 1:1 read from the title block.",
+      "kind": "visible",
+      "evidence": {
+        "source": "title-block"
+      },
+      "value": "1:1",
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "projection",
+      "statement": "Projection third-angle, read from the title block projection symbol.",
+      "kind": "visible",
+      "evidence": {
+        "source": "title-block"
+      },
+      "value": "third-angle",
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "views",
+      "statement": "Views front, top, left identified by projection alignment; 1 pictorial view(s) ignored.",
+      "kind": "visible",
+      "evidence": {
+        "source": "linework"
+      },
+      "value": [
+        "front",
+        "top",
+        "left"
+      ],
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "width",
+      "statement": "X span of 70 mm stated by dimension '70' (front view).",
+      "kind": "visible",
+      "evidence": {
+        "source": "dimension",
+        "region": [
+          129.01,
+          151.9,
+          4.07,
+          3.2
+        ]
+      },
+      "value": 70,
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "leftThickness",
+      "statement": "X span of 5 mm stated by dimension '5' (front view).",
+      "kind": "visible",
+      "evidence": {
+        "source": "dimension",
+        "region": [
+          97.57,
+          159.9,
+          2.04,
+          3.2
+        ]
+      },
+      "value": 5,
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "hole1X",
+      "statement": "X span of 45 mm stated by dimension '45' (top view).",
+      "kind": "visible",
+      "evidence": {
+        "source": "dimension",
+        "region": [
+          116.6,
+          88.9,
+          4.07,
+          3.2
+        ]
+      },
+      "value": 45,
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "depth",
+      "statement": "Y span of 50 mm stated by dimension '50' (top view).",
+      "kind": "visible",
+      "evidence": {
+        "source": "dimension",
+        "region": [
+          173.07,
+          58.95,
+          4.07,
+          3.2
+        ]
+      },
+      "value": 50,
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "hole1Y",
+      "statement": "Y span of 12 mm stated by dimension '12' (top view).",
+      "kind": "visible",
+      "evidence": {
+        "source": "dimension",
+        "region": [
+          181.07,
+          77.95,
+          4.07,
+          3.2
+        ]
+      },
+      "value": 12,
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "symmetry:hole3Y",
+      "statement": "Y = 25 mm: centred on the part (symmetry about the stated extent; no dimension locates it).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "symmetry"
+      },
+      "value": 25,
+      "confidence": 1,
+      "resolution": "open"
+    },
+    {
+      "id": "symmetry:hole2Y",
+      "statement": "Y = 38 mm: mirror image of a dimensioned position about the part centre (symmetry; no dimension locates it).",
+      "kind": "inferred",
+      "evidence": {
+        "source": "symmetry"
+      },
+      "value": 38,
+      "confidence": 1,
+      "resolution": "open"
+    },
+    {
+      "id": "height",
+      "statement": "Z span of 45 mm stated by dimension '45' (front view).",
+      "kind": "visible",
+      "evidence": {
+        "source": "dimension",
+        "region": [
+          173.07,
+          124.37,
+          4.07,
+          3.2
+        ]
+      },
+      "value": 45,
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "bottomThickness",
+      "statement": "Z span of 5 mm stated by dimension '5' (front view).",
+      "kind": "visible",
+      "evidence": {
+        "source": "dimension",
+        "region": [
+          181.07,
+          143.4,
+          2.04,
+          3.2
+        ]
+      },
+      "value": 5,
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "hole3Z",
+      "statement": "Z span of 27 mm stated by dimension '27' (left view).",
+      "kind": "visible",
+      "evidence": {
+        "source": "dimension",
+        "region": [
+          85.07,
+          133.41,
+          4.07,
+          3.2
+        ]
+      },
+      "value": 27,
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "holeDia1",
+      "statement": "Hole diameter 5.5 mm stated by callout '2× ⌀5.5 THRU' (top view).",
+      "kind": "visible",
+      "evidence": {
+        "source": "dimension",
+        "region": [
+          130.55,
+          62,
+          22.69,
+          3.2
+        ]
+      },
+      "value": 5.5,
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "holeDia2",
+      "statement": "Hole diameter 12 mm stated by callout '⌀12 THRU' (left view).",
+      "kind": "visible",
+      "evidence": {
+        "source": "dimension",
+        "region": [
+          51.6,
+          107.71,
+          15.94,
+          3.2
+        ]
+      },
+      "value": 12,
+      "confidence": 1,
+      "resolution": "confirmed"
+    }
+  ],
+  "unresolvedCount": 2
+}

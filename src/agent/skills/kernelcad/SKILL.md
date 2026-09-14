@@ -11,6 +11,7 @@ A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.k
 
 - Authoring or editing `.kcad.ts` geometry → load `kernelcad-authoring`.
 - Building from a reference photo or visual brief → also load `kernelcad-from-reference`.
+- Building from an engineering drawing PDF → call `drawing_to_cad`, then load `kernelcad-from-reference` for its ledger and fidelity rules.
 - Adding fillets, chamfers, shells, holes, cutouts → also load `kernelcad-features`.
 - Editable parameters / set_param / live sliders → also load `kernelcad-params`.
 - Multi-part with joints / mates / connectors → also load `kernelcad-assemblies`.

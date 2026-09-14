@@ -45,6 +45,8 @@ export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
   'examples/bench/nested-booleans.kcad.ts',
   'examples/bench/two-boxes-fused.kcad.ts',
   'examples/bracket-with-hole.kcad.ts',
+  // Emitted by drawing_to_cad; pinned by tests/integration/examples/drawingToCadExample.test.ts.
+  'examples/drawing-to-cad/motor-mount-bracket.kcad.ts',
   'examples/fea/shelf-bracket-fea.kcad.ts',
   'examples/cookbook/wayfarer-temple-ray-ban.kcad.ts',
   'examples/gallery/meta-glasses-experiments/integrated-wayfarer.kcad.ts',
