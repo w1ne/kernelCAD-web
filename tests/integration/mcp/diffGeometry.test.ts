@@ -7,7 +7,15 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { diffGeometryTool, classify, pairBodies } from '../../../src/agent/mcp/tools/diffGeometry';
 import { ROOT_PART_NAME } from '../../../src/agent/mcp/tools/diffScripts';
-import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
+import { writeDiffOverlayScene } from '../../../src/agent/mcp/tools/diffGeometryRender';
+import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
+import { runMcpScript } from '../../../src/agent/mcp/runMcpScript';
+import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
+import { createOcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 /** Two-part rig with a parametric lid width, so the same source can be
  *  diffed against itself under a param override. */
@@ -165,6 +173,59 @@ describe('diff_geometry MCP tool', () => {
 
     const both = await diffGeometryTool({ baseCode: PLATE, code: PLATE, params: { a: 1 } });
     expect(both).toMatchObject({ ok: false, errorCode: 'cli.invalid-args' });
+  });
+});
+
+describe('diff_geometry overlay scene', () => {
+  beforeAll(async () => { await initOcct(); }, 120000);
+
+  async function solidOf(code: string): Promise<OcctBackend> {
+    const s = await runMcpScript({ code });
+    if (!s.ok) throw new Error(s.error);
+    const r = await new RecomputeEngine(createOcctLowerer(s.run.session)).run(s.run.records, { paramTable: s.run.paramTable });
+    const shape = r.shapes.get(s.run.records[s.run.records.length - 1].id);
+    if (!(shape instanceof OcctBackend)) throw new Error('no solid');
+    return shape;
+  }
+
+  it('writes BREP layers and an assembly script that evaluates cleanly', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'kc-overlay-test-'));
+    try {
+      const base = await solidOf(PLATE);
+      const revised = await solidOf(PLATE_WITH_HOLE.replace('return box(40, 40, 6)', 'return box(40, 40, 8)'));
+      const scene = await writeDiffOverlayScene(
+        [{ base: { name: 'plate', shape: base }, revised: { name: 'plate', shape: revised } }],
+        dir,
+      );
+      expect(scene.addedBodies).toEqual(['plate']);
+      expect(scene.removedBodies).toEqual(['plate']);
+      const script = readFileSync(scene.scriptPath!, 'utf8');
+      expect(script).toContain("lib.fromBREP('./added-plate.brep')");
+      expect(script).toContain("lib.fromBREP('./removed-plate.brep')");
+      expect(script).toContain("lib.fromBREP('./common-plate.brep')");
+      const ev = await evaluateScriptTool({ file: scene.scriptPath!, skipMechanismCheck: true });
+      expect(ev.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+      expect(ev.ok).toBe(true);
+      expect((ev as { parts?: { names: string[] } }).parts?.names.sort()).toEqual(
+        ['added_plate', 'common_plate', 'removed_plate'],
+      );
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('writes no script when nothing changed', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'kc-overlay-test-'));
+    try {
+      const a = await solidOf(PLATE);
+      const b = await solidOf(PLATE);
+      const scene = await writeDiffOverlayScene([{ base: { name: 'p', shape: a }, revised: { name: 'p', shape: b } }], dir);
+      expect(scene.scriptPath).toBeUndefined();
+      expect(scene.addedBodies).toEqual([]);
+      expect(scene.removedBodies).toEqual([]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
 

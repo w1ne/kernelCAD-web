@@ -95,7 +95,8 @@ const diffGeometryToolEntry: ToolRegistryEntry = {
       '(two-sided discrete Hausdorff distance between the two surfaces), and a `verdict` — ' +
       'identical | moved | resized | topology-changed, precedence topology-changed > resized > ' +
       'moved > identical. Branch on the verdict; cite the numbers. Optional { render: true } also ' +
-      'writes an added-green / removed-red overlay PNG through the render_preview pipeline and ' +
+      'writes an overlay PNG (added green, removed red, unchanged material as a translucent ghost; the ' +
+      'scene is a re-runnable .kcad.ts over lossless BREP sidecars) through the render_preview pipeline and ' +
       'fails open (the numeric diff is still returned) when that pipeline is unavailable. ' +
       'Read-only — never touches the active session.',
     inputSchema: {

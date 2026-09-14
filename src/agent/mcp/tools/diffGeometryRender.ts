@@ -6,11 +6,15 @@
 // material red — for the human at the END of the loop. The agent's own
 // evidence is the numeric table; this is the picture it hands a reviewer.
 //
-// It does NOT contain a renderer. The delta solids (B−A and A−B, already
-// computed as OCCT shapes) are written as watertight STL sidecars, a tiny
-// generated `.kcad.ts` re-imports them with `lib.fromSTL` and tags each with
-// a `.finish()` colour, and that script goes through `render_preview`
-// unchanged — the same headless pipeline `kernelcad render` uses.
+// It does NOT contain a renderer. The delta solids (B−A, A−B) and the common
+// material (A∩B) are written as BREP sidecars — lossless, exact topology, the
+// format kernelCAD uses to move kernel state between processes. A tiny
+// generated `.kcad.ts` re-imports them with `lib.fromBREP` as parts of one
+// assembly (added green, removed red, common as a translucent ghost for
+// context), and that script goes through `render_preview` unchanged — the
+// same headless pipeline `kernelcad render` uses. STL is deliberately not
+// the carrier: thin delta shells (a hole widened by 1 mm is a 1 mm-wall tube)
+// do not always re-sew into a closed solid from a triangle soup.
 //
 // Fails OPEN, never silently: if the render pipeline is unavailable (no
 // prebuilt headless player and no dev server), the overlay reports ok:false
@@ -27,6 +31,9 @@ import { renderPreviewTool } from './renderPreview';
 const ADDED_COLOR = '#2ecc71';
 /** Red for material that VANISHED from the baseline. */
 const REMOVED_COLOR = '#e74c3c';
+/** Neutral translucent ghost for material present on both sides. */
+const COMMON_COLOR = '#b8bcc0';
+const COMMON_OPACITY = 0.22;
 
 export interface DiffOverlayRender {
   ok: boolean;
@@ -53,78 +60,103 @@ function slug(name: string): string {
 
 /** Clone-both-operands boolean, matching the diff's own convention. Returns
  *  undefined when the result is empty or the boolean refused. */
-function deltaSolid(a: OcctBackend, b: OcctBackend): OcctBackend | undefined {
+function booleanSolid(a: OcctBackend, b: OcctBackend, op: 'subtract' | 'intersect'): OcctBackend | undefined {
   try {
-    const out = a.clone().subtract(b.clone());
+    const out = op === 'subtract' ? a.clone().subtract(b.clone()) : a.clone().intersect(b.clone());
     return out.isEmpty() ? undefined : out;
   } catch {
     return undefined;
   }
 }
 
-export async function renderDiffOverlay(
+export interface DiffOverlayScene {
+  dir: string;
+  /** Undefined when neither side added nor removed any material. */
+  scriptPath?: string;
+  addedBodies: string[];
+  removedBodies: string[];
+}
+
+/**
+ * Write the overlay scene — BREP sidecars plus the generated assembly script —
+ * without rendering it. Split from the render step so the scene is a
+ * first-class, evaluable artifact (and testable without a browser).
+ */
+export async function writeDiffOverlayScene(
   pairs: readonly OverlayPair[],
   outDir?: string,
-): Promise<{ render: DiffOverlayRender; diagnostics: CompilerDiagnostic[] }> {
-  const diagnostics: CompilerDiagnostic[] = [];
+): Promise<DiffOverlayScene> {
   const dir = outDir !== undefined
     ? resolve(outDir)
     : await mkdtemp(join(tmpdir(), 'kernelcad-diff-overlay-'));
   await mkdir(dir, { recursive: true });
 
   const imports: string[] = [];
-  const terms: string[] = [];
+  const parts: string[] = [];
   const addedBodies: string[] = [];
   const removedBodies: string[] = [];
+  const usedIds = new Set<string>();
 
   for (const pair of pairs) {
-    const id = slug(pair.base.name);
-    const added = deltaSolid(pair.revised.shape, pair.base.shape);
-    const removed = deltaSolid(pair.base.shape, pair.revised.shape);
+    let id = slug(pair.base.name);
+    for (let n = 1; usedIds.has(id); n++) id = `${slug(pair.base.name)}_${n}`;
+    usedIds.add(id);
 
-    if (added !== undefined) {
-      const file = `added-${id}.stl`;
-      await writeFile(join(dir, file), Buffer.from(await added.exportSTLAsync()));
-      const binding = `added_${id}`;
-      imports.push(`const ${binding} = await lib.fromSTL('./${file}');`);
-      terms.push(`${binding}.finish('paint-matte', { color: '${ADDED_COLOR}' })`);
-      addedBodies.push(pair.base.name);
-    }
-    if (removed !== undefined) {
-      const file = `removed-${id}.stl`;
-      await writeFile(join(dir, file), Buffer.from(await removed.exportSTLAsync()));
-      const binding = `removed_${id}`;
-      imports.push(`const ${binding} = await lib.fromSTL('./${file}');`);
-      terms.push(`${binding}.finish('paint-matte', { color: '${REMOVED_COLOR}' })`);
-      removedBodies.push(pair.base.name);
+    const layers: Array<[kind: 'common' | 'added' | 'removed', solid: OcctBackend | undefined]> = [
+      ['common', booleanSolid(pair.base.shape, pair.revised.shape, 'intersect')],
+      ['added', booleanSolid(pair.revised.shape, pair.base.shape, 'subtract')],
+      ['removed', booleanSolid(pair.base.shape, pair.revised.shape, 'subtract')],
+    ];
+    for (const [kind, solid] of layers) {
+      if (solid === undefined) continue;
+      const file = `${kind}-${id}.brep`;
+      await writeFile(join(dir, file), Buffer.from(solid.exportBREP()));
+      const binding = `${kind}_${id}`;
+      imports.push(`const ${binding} = await lib.fromBREP('./${file}');`);
+      const appearance = kind === 'common'
+        ? `.material({ baseColor: '${COMMON_COLOR}', roughness: 0.6, opacity: ${COMMON_OPACITY} })`
+        : `.finish('paint-matte', { color: '${kind === 'added' ? ADDED_COLOR : REMOVED_COLOR}' })`;
+      parts.push(`overlay.part('${binding}', ${binding}${appearance});`);
+      if (kind === 'added') addedBodies.push(pair.base.name);
+      if (kind === 'removed') removedBodies.push(pair.base.name);
     }
   }
 
-  if (terms.length === 0) {
-    return {
-      render: {
-        ok: true,
-        out_dir: dir,
-        images: [],
-        addedBodies: [],
-        removedBodies: [],
-      },
-      diagnostics,
-    };
+  if (addedBodies.length === 0 && removedBodies.length === 0) {
+    return { dir, addedBodies, removedBodies };
   }
 
   const script = [
-    '// Generated by diff_geometry({ render: true }) — added material is green,',
-    `// removed material is red. Re-runnable: kernelcad render inspect <this file> <outDir>.`,
+    '// Generated by diff_geometry({ render: true }). Added material is green,',
+    '// removed material is red, material present on both sides is a translucent',
+    '// ghost. Re-runnable: kernelcad render inspect <this file> <outDir>.',
     ...imports,
-    `return ${terms.join('\n  .union(')}${')'.repeat(terms.length - 1)};`,
+    "const overlay = assembly('diff-overlay');",
+    ...parts,
+    'return overlay.model();',
     '',
   ].join('\n');
 
   const scriptPath = join(dir, 'diff-overlay.kcad.ts');
   await writeFile(scriptPath, script, 'utf8');
+  return { dir, scriptPath, addedBodies, removedBodies };
+}
 
-  const preview = await renderPreviewTool({ file: scriptPath, out_dir: dir, views: ['iso'] });
+export async function renderDiffOverlay(
+  pairs: readonly OverlayPair[],
+  outDir?: string,
+): Promise<{ render: DiffOverlayRender; diagnostics: CompilerDiagnostic[] }> {
+  const scene = await writeDiffOverlayScene(pairs, outDir);
+  const { dir, scriptPath, addedBodies, removedBodies } = scene;
+
+  if (scriptPath === undefined) {
+    // Nothing changed: an empty overlay is the honest picture, not an error.
+    return { render: { ok: true, out_dir: dir, images: [], addedBodies, removedBodies }, diagnostics: [] };
+  }
+
+  // The overlay is a picture of a delta, not a mechanism: skip the
+  // mechanism-truth probe, which would only report unmated parts.
+  const preview = await renderPreviewTool({ file: scriptPath, out_dir: dir, views: ['iso'], no_mechanism_check: true });
   if (!preview.ok) {
     return {
       render: {
@@ -135,7 +167,7 @@ export async function renderDiffOverlay(
         removedBodies,
         error: preview.error ?? 'render_preview did not produce an overlay image.',
       },
-      diagnostics: [...diagnostics, ...(preview.diagnostics ?? [])],
+      diagnostics: preview.diagnostics ?? [],
     };
   }
 
@@ -148,6 +180,6 @@ export async function renderDiffOverlay(
       addedBodies,
       removedBodies,
     },
-    diagnostics,
+    diagnostics: [],
   };
 }
