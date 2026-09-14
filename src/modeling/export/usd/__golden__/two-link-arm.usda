@@ -1,0 +1,121 @@
+#usda 1.0
+(
+    defaultPrim = "two_link_usd_arm"
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+def Xform "two_link_usd_arm" (
+    prepend apiSchemas = ["PhysicsArticulationRootAPI"]
+)
+{
+    def Xform "Links"
+    {
+        def Xform "base" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            double3 xformOp:translate = (0.000000, 0.000000, 0.000000)
+            quatf xformOp:orient = (1.000000, 0.000000, 0.000000, 0.000000)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            float physics:mass = 0.251200
+            point3f physics:centerOfMass = (0.000000, 0.000000, 0.010000)
+            float3 physics:diagonalInertia = (4.186667e-5, 4.186667e-5, 6.698667e-5)
+            quatf physics:principalAxes = (1.000000, 0.000000, 0.000000, 0.000000)
+
+            def Mesh "visual" (
+                prepend apiSchemas = ["MaterialBindingAPI"]
+                prepend references = @./meshes/base.usda@
+            )
+            {
+                rel material:binding = </two_link_usd_arm/Materials/base>
+            }
+
+            def Mesh "collision" (
+                prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+                prepend references = @./meshes/base.usda@
+            )
+            {
+                uniform token physics:approximation = "convexHull"
+                uniform token purpose = "guide"
+            }
+        }
+
+        def Xform "link1" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            double3 xformOp:translate = (0.000000, 0.000000, 0.020000)
+            quatf xformOp:orient = (1.000000, 0.000000, 0.000000, 0.000000)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            float physics:mass = 0.108000
+            point3f physics:centerOfMass = (0.000000, 0.000000, 0.050000)
+            float3 physics:diagonalInertia = (9.360000e-5, 9.360000e-5, 7.200000e-6)
+            quatf physics:principalAxes = (1.000000, 0.000000, 0.000000, 0.000000)
+
+            def Mesh "visual" (
+                prepend apiSchemas = ["MaterialBindingAPI"]
+                prepend references = @./meshes/link1.usda@
+            )
+            {
+                rel material:binding = </two_link_usd_arm/Materials/link1>
+            }
+
+            def Mesh "collision" (
+                prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+                prepend references = @./meshes/link1.usda@
+            )
+            {
+                uniform token physics:approximation = "convexHull"
+                uniform token purpose = "guide"
+            }
+        }
+    }
+
+    def Scope "Joints"
+    {
+        def PhysicsRevoluteJoint "shoulder"
+        {
+            rel physics:body0 = </two_link_usd_arm/Links/base>
+            rel physics:body1 = </two_link_usd_arm/Links/link1>
+            point3f physics:localPos0 = (0.000000, 0.000000, 0.020000)
+            quatf physics:localRot0 = (1.000000, 0.000000, 0.000000, 0.000000)
+            point3f physics:localPos1 = (0.000000, 0.000000, 0.000000)
+            quatf physics:localRot1 = (1.000000, 0.000000, 0.000000, 0.000000)
+            uniform token physics:axis = "Z"
+            float physics:lowerLimit = -90.000000
+            float physics:upperLimit = 90.000000
+        }
+    }
+
+    def Scope "Materials"
+    {
+        def Material "base"
+        {
+            token outputs:surface.connect = </two_link_usd_arm/Materials/base/PreviewSurface.outputs:surface>
+
+            def Shader "PreviewSurface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.254152, 0.266356, 0.278894)
+                float inputs:metallic = 1.000000
+                float inputs:roughness = 0.450000
+                token outputs:surface
+            }
+        }
+
+        def Material "link1"
+        {
+            token outputs:surface.connect = </two_link_usd_arm/Materials/link1/PreviewSurface.outputs:surface>
+
+            def Shader "PreviewSurface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.479320, 0.502886, 0.527115)
+                float inputs:metallic = 1.000000
+                float inputs:roughness = 0.350000
+                token outputs:surface
+            }
+        }
+    }
+}

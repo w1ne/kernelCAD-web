@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 251 codes', () => {
+  it('emits exactly 252 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -67,8 +67,11 @@ describe('diagnostic catalogue invariants', () => {
     //    two models by name or by positional fallback — the first code in the
     //    new `diff` group).
     //   = 251.
-    expect(DIAGNOSTIC_CODES).toHaveLength(251);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(251);
+    //  + 1 export.usd.pose-unsolved (usd-isaac could not solve the mate graph
+    //    to per-link poses; links spawn at the stage origin — the USD sibling
+    //    of export.sdf-gazebo.pose-unsolved). = 252.
+    expect(DIAGNOSTIC_CODES).toHaveLength(252);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(252);
   });
 
   it('every code has a non-empty hint template', () => {

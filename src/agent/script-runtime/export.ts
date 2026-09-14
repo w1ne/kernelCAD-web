@@ -47,7 +47,14 @@ export type ExportOptions =
   | { format: 'urdf' }
   | { format: 'srdf' }
   | { format: 'sdf-gazebo' }
-  | { format: 'usd-isaac'; density?: number; meshPrefix?: string };
+  | {
+      format: 'usd-isaac';
+      density?: number;
+      meshPrefix?: string;
+      /** Joint drives keyed by mate name; emitted only when declared. */
+      drives?: Record<string, { stiffness: number; damping: number; maxForce?: number; targetPosition?: number }>;
+      collisionApproximation?: 'convexHull' | 'convexDecomposition';
+    };
 
 export interface DxfLayerSpec {
   name: string;
@@ -217,16 +224,18 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
         meshes: out.sdf === '' ? [] : await emitCompanionMeshes(out.meshPaths),
       };
     }
-    // usd-isaac
+    // usd-isaac — geometry ships as native .usda mesh layers (an STL cannot
+    // be referenced as a USD layer), through the same companion-file channel.
     {
       const { usdIsaacSerialize } = await import('../../modeling/export/usd/usdIsaacSerializer');
-      const usdOpts = (input.options as { density?: number; meshPrefix?: string } | undefined) ?? {};
+      const usdOpts = (input.options as import('../../modeling/export/usd/usdIsaacSerializer').UsdIsaacSerializeOptions | undefined) ?? {};
       const out = await usdIsaacSerialize(arm, usdOpts);
+      const encoder = new TextEncoder();
       return {
-        bytes: new TextEncoder().encode(out.usda),
+        bytes: encoder.encode(out.usda),
         featureCount,
         diagnostics: [...r.diagnostics, ...out.diagnostics],
-        meshes: out.usda === '' ? [] : await emitCompanionMeshes(out.meshPaths),
+        meshes: out.meshLayers.map((m) => ({ relPath: m.relPath, bytes: encoder.encode(m.usda) })),
       };
     }
   }

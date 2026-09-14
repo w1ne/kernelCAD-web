@@ -12,15 +12,17 @@ keywords:
   - physics simulation stage
   - robot description for isaac
 when_to_use: >-
-  The downstream workflow is a physics-simulation / robot-learning stack that
-  consumes USD directly (UsdPhysics schema) rather than parsing URDF/SDF at
-  import time. Declare the assembly's parts, connectors, and mates exactly as
-  for urdf/sdf-gazebo export, then call export({ target: 'model', format:
-  'usd-isaac' }) — it writes an ASCII USD stage with a PhysicsArticulationRootAPI
-  root, one rigid-body prim per link (mass/inertia/COM), and one
-  PhysicsFixedJoint/PhysicsRevoluteJoint/PhysicsPrismaticJoint per mate, plus a
-  sibling meshes/<part>.stl per link. Mate kinds with no UsdPhysics joint
-  equivalent (planar/cylindrical/pin_slot/ball) fail closed with
+  The consumer is a GPU physics / robot-learning stack that imports a
+  UsdPhysics stage directly instead of parsing URDF or SDF. Author parts with a
+  named material (it seeds both mass and appearance), axis connectors, and
+  fastened / revolute / prismatic mates exactly as for urdf, then call
+  export({ target: 'model', format: 'usd-isaac', output_path: 'robot.usda' }).
+  You get an articulation root, one rigid body per link at its solved pose with
+  mass and principal inertia, one PhysicsRevoluteJoint / PhysicsPrismaticJoint /
+  PhysicsFixedJoint per mate with limits, UsdPreviewSurface materials, and a
+  meshes/<link>.usda layer per link. Declare actuator gains with
+  options.drives { <mate>: { stiffness, damping } } — none are invented. Planar,
+  cylindrical, pin_slot and ball mates fail closed with
   export.usd.joint-unsupported.
 ---
 

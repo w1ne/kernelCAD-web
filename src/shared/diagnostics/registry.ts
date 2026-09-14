@@ -496,11 +496,19 @@ export const DIAGNOSTIC_REGISTRY = {
   },
   'export.usd.joint-unsupported': {
     hintTemplate:
-      'The USD Isaac exporter only lowers fixed, revolute and prismatic mates to PhysicsFixedJoint / PhysicsRevoluteJoint / PhysicsPrismaticJoint. Restructure the mate graph to use one of those kinds, or export format: \'sdf-gazebo\' which supports the full mate vocabulary.',
+      'The usd-isaac exporter only lowers fastened, revolute and prismatic mates to PhysicsFixedJoint / PhysicsRevoluteJoint / PhysicsPrismaticJoint. Restructure the mate graph to use one of those kinds, or export format: \'sdf-gazebo\' which supports the full mate vocabulary.',
     nextAction: { kind: 'fix-arg', field: 'format' },
     defaultSeverity: 'error',
     group: 'export',
-    description: 'A mate kind with no PhysicsJoint equivalent (planar/cylindrical/pin_slot/ball) was found while lowering to the USD Isaac stage.',
+    description: 'A mate kind with no PhysicsJoint equivalent (planar/cylindrical/pin_slot/ball) was found while lowering to a usd-isaac physics stage.',
+  },
+  'export.usd.pose-unsolved': {
+    hintTemplate:
+      'The mate graph could not be solved to per-link world poses, so every link was placed at the stage origin and the simulator will spawn them overlapping. Run solve_mates to find the unsolvable mate, fix the connector geometry, then re-export.',
+    nextAction: { kind: 'call-introspection-tool', tool: 'solve_mates' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A usd-isaac export could not solve the mate graph to per-link poses; links were emitted at the stage origin.',
   },
   'export.usd.mass-missing': {
     hintTemplate:
@@ -508,7 +516,7 @@ export const DIAGNOSTIC_REGISTRY = {
     nextAction: { kind: 'fix-arg', field: 'density' },
     defaultSeverity: 'error',
     group: 'export',
-    description: 'A link in the USD Isaac stage has a non-finite or non-positive mass and cannot be given a valid UsdPhysics MassAPI.',
+    description: 'A link in a usd-isaac physics stage has a non-finite or non-positive mass and cannot be given a valid UsdPhysics MassAPI.',
   },
   // Geometric diff (1)
   'diff.body.unmatched': {
