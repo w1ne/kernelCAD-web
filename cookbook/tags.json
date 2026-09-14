@@ -29,5 +29,8 @@
   "mate",
   "revolute",
   "hinge",
-  "joint"
+  "joint",
+  "fea",
+  "stress",
+  "load"
 ]

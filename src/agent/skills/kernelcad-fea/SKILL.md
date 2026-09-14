@@ -96,7 +96,8 @@ the valid list — it is never guessed. For a measured lot, pass
 - **`trust.meshTrusted`** — `false` means the *stress* number is mesh-limited
   (inverted elements, >1% poor elements, or CalculiX's own nodal stress-error
   estimate above 25%). Displacement converges much faster and stays usable.
-  Re-run with a smaller `mesh_size` before acting on a marginal stress.
+  Re-run with a smaller `meshSize` on the study (or pass mesh_size to
+  run_fea for a one-off) before acting on a marginal stress.
 - **`equilibriumResidual`** — `|reaction + applied| / |applied|`. Near 1e-12 is
   healthy; anything large means the load or the constraint did not land where
   the study said, and the safety factor is meaningless.
@@ -121,7 +122,7 @@ declared margin is UNVERIFIED — a skipped gate never reads as green.
 | Code | What happened | What to do |
 | --- | --- | --- |
 | `fea.safety-factor.below-min` | Solved SF is under the declared floor. | Add material at `hotSpots[0].region`, pick a stronger grade, spread the load, or lower the floor if it was conservative. |
-| `fea.mesh.quality-low` | Stress is mesh-limited, or the mesh has inverted elements / too many slivers. | Re-run with a smaller `mesh_size`; simplify slivers in the geometry. |
+| `fea.mesh.quality-low` | Stress is mesh-limited, or the mesh has inverted elements / too many slivers. | Re-run with a smaller `meshSize`; simplify slivers in the geometry. |
 | `fea.solver.unavailable` | `ccx` or gmsh not found (or the gate was switched off). | Install the toolchain above, or set `KERNELCAD_CCX` / `KERNELCAD_FEA_PYTHON`. |
 | `fea.study.fixed-unresolved` | `fixed` matched no face, or no meshed surface. | `inspect({ of: 'faces' })`, then pass a selector that matches. |
 | `fea.study.load-unresolved` | A load's `faces` matched no face, or no meshed surface. | Same — the force would otherwise land on no node and report a false pass. |

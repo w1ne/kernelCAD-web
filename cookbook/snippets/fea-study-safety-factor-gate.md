@@ -1,9 +1,9 @@
 ---
 id: fea-study-safety-factor-gate
-title: Check a part against a load with FEA and gate on the safety factor
-tags: [bracket, plate, parameter, fillet]
+title: Check a design against a load with FEA and gate on the safety factor
+tags: [fea, stress, load]
 keywords:
-  - will this part hold the load
+  - will this hold the load
   - stress analysis
   - FEA
   - finite element
@@ -11,7 +11,7 @@ keywords:
   - safety factor
   - yield strength
   - deflection
-  - how strong is this bracket
+  - how strong is this design
   - is this wall thickness enough
   - structural check
 when_to_use: >-
@@ -25,8 +25,8 @@ when_to_use: >-
   fails with fea.safety-factor.below-min and names the governing region. Then
   run run_fea for the full summary, per-region hot spots and heatmap PNGs.
   Needs the external CalculiX + gmsh toolchain; check with fea_summary({}).
-  Use this instead of verify({ check: 'load-capacity' }) when the part is not
-  a plain cantilever beam or when you need to know WHERE it is overloaded.
+  Use this instead of verify({ check: 'load-capacity' }) when the geometry is
+  not a plain cantilever beam or when you need to know WHERE it is overloaded.
 ---
 
 ```typescript
