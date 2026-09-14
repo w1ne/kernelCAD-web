@@ -126,6 +126,7 @@
     "isosurface": "1.0.0",
     "lucide-react": "^0.563.0",
     "mqtt": "^5.15.2",
+    "pdfjs-dist": "~5.4.624",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",
