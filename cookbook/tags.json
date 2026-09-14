@@ -29,5 +29,8 @@
   "mate",
   "revolute",
   "hinge",
-  "joint"
+  "joint",
+  "reference-image",
+  "scale-anchor",
+  "assumption-ledger"
 ]
