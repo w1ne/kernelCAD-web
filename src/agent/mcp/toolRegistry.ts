@@ -13,6 +13,7 @@ import {
   inspectionVerificationPreludeToolEntries,
   inspectionVerificationQueryToolEntries,
 } from './registry/inspectionVerificationTools';
+import { printToolEntries } from './registry/printTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
@@ -50,6 +51,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   // Appended last: the registry order is a public contract, so a new family
   // goes on the end rather than renumbering the existing ones.
   ...feaToolEntries,
+  // New tool families are appended LAST — inserting mid-list renumbers
+  // every family after it, breaking the kernelCAD-server public contract.
+  ...printToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

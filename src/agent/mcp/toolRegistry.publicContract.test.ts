@@ -17,6 +17,7 @@ import { coreRuntimeToolEntries } from './registry/coreRuntimeTools';
 import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools';
 import { feaToolEntries } from './registry/feaTools';
 import { inspectionVerificationToolEntries } from './registry/inspectionVerificationTools';
+import { printToolEntries } from './registry/printTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
@@ -64,6 +65,7 @@ const EXPECTED_TOOL_NAMES = [
   'resolve_assumptions',
   'run_fea',
   'fea_summary',
+  'send_to_printer',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -268,6 +270,14 @@ describe('toolRegistry public contract', () => {
 
     expect(names).toEqual(['run_fea', 'fea_summary']);
     expect(TOOL_REGISTRY.slice(38)).toEqual(feaToolEntries);
+  });
+
+  it('composes the send_to_printer tool from the print registry module, appended last', () => {
+    expect(printToolEntries.map(entry => entry.definition.name)).toEqual(['send_to_printer']);
+    // New tool families are appended LAST — a tail slice, not a fixed
+    // absolute index, so this test doesn't need updating (and doesn't
+    // renumber every prior family) the next time one is added.
+    expect(TOOL_REGISTRY.slice(-printToolEntries.length)).toEqual(printToolEntries);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

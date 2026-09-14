@@ -39,5 +39,8 @@
   "assumption-ledger",
   "fea",
   "stress",
-  "load"
+  "load",
+  "gcode",
+  "manufacturing",
+  "printer"
 ]

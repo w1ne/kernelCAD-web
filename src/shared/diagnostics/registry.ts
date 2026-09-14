@@ -552,6 +552,23 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'export',
     description: 'SDFormat export fell back to identity link poses because the mate graph did not solve.',
   },
+  // Print loop (2) — Slice B
+  'export.gcode.slicer-unavailable': {
+    hintTemplate:
+      'No slicer CLI was found. Set KERNELCAD_SLICER to a slicer binary path, or install OrcaSlicer (or PrusaSlicer) and ensure orca-slicer/prusa-slicer/PrusaSlicer is on PATH.',
+    nextAction: { kind: 'check-cli-args' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A gcode export was requested but no slicer CLI binary could be located (env var, or PATH lookup of orca-slicer/prusa-slicer/PrusaSlicer).',
+  },
+  'export.gcode.exceeds-bed': {
+    hintTemplate:
+      'The model bounding box exceeds the selected printer profile\'s bed size. Scale the part down, split it into printable sub-parts, or pass a printer profile with a larger bed.',
+    nextAction: { kind: 'retry-with-smaller-param', param: 'scale', factor: 0.9 },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A gcode export\'s bounding box (in any axis) exceeds the selected printer profile\'s bed size, checked before invoking the slicer.',
+  },
   // NURBS surfaces (2) — W1.3
   'feature.nurbs.degenerate-controls': {
     hintTemplate:
@@ -1659,6 +1676,23 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'tool',
     description: 'A trace_from_image backend exceeded the hard per-call timeout and was aborted.',
+  },
+  // send_to_printer (2) — Slice B
+  'tool.send-to-printer.unreachable': {
+    hintTemplate:
+      'The printer could not be reached with the given protocol/host/port. Verify the printer is on and network-reachable, the port matches the protocol (OctoPrint/Moonraker: HTTP; Bambu LAN mode: FTPS 990 + MQTT 8883), and retry with { dryRun: true } to isolate connectivity from upload.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'error',
+    group: 'tool',
+    description: 'send_to_printer could not connect to, or authenticate against, the target printer (OctoPrint/Moonraker HTTP, or Bambu FTPS/MQTT).',
+  },
+  'tool.send-to-printer.upload-failed': {
+    hintTemplate:
+      'The connection succeeded but the file upload or print-start command failed. Inspect the diagnostic message for the printer\'s own error, check available storage on the printer, and confirm the gcode file exists and is non-empty.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'error',
+    group: 'tool',
+    description: 'send_to_printer connected to the printer but the G-code upload (or, for Bambu, the print-start MQTT command) was rejected or failed mid-transfer.',
   },
   // K1 watertight gap enrichment — STL export tessellation self-intersects on revolved cones.
   'mesher.cone-self-intersection': {

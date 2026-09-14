@@ -26,10 +26,15 @@ import { isRegion } from '../../shared/intent/region';
 import { resolveParams } from '../../shared/runtime/resolveParams';
 import type { ConnectorManifest } from '../../shared/parts/connectorManifestSchema';
 import { sceneToConnectorManifest } from './connectorManifestExport';
+import { sliceStlToGcode, withTempStl } from '../../kernel/export/gcode/slicerCli';
+import { parseGcodeHeader, type GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
+import { resolvePrinterProfile } from '../../kernel/export/gcode/profiles';
+
+export type { GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
 
 export type ExportFormat =
   | 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'svg-drawing'
-  | 'urdf' | 'srdf' | 'sdf-gazebo';
+  | 'urdf' | 'srdf' | 'sdf-gazebo' | 'gcode';
 
 /** Per-format option payloads. The union member is selected by `format`. */
 export type ExportOptions =
@@ -50,7 +55,17 @@ export type ExportOptions =
     }
   | { format: 'urdf' }
   | { format: 'srdf' }
-  | { format: 'sdf-gazebo' };
+  | { format: 'sdf-gazebo' }
+  | {
+      format: 'gcode';
+      /** Bundled printer bed-size/profile name; default 'generic-fdm'. */
+      printer?: string;
+      layerHeight?: number;
+      /** Infill density, 0-100 (percent); default 15. */
+      infill?: number;
+      supports?: boolean;
+      material?: 'pla' | 'petg';
+    };
 
 export interface DxfLayerSpec {
   name: string;
@@ -93,6 +108,8 @@ export interface ExportResult {
   meshes?: CompanionMeshFile[];
   /** Numeric authored connector sidecar, present only when requested for a STEP Scene export. */
   connectorManifest?: ConnectorManifest;
+  /** Parsed slicer G-code stats, present only for `format: 'gcode'` exports that reached the slicer. */
+  gcodeStats?: GcodeStats;
 }
 
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
@@ -384,14 +401,19 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
         throw e;
       }
     }
-    if (format === 'stl') {
-      // Single-mesh STL: fuse world-frame parts (clone+transform already in
+    if (format === 'stl' || format === 'gcode') {
+      // Single-mesh STL (and gcode, which meshes to STL as its slicer
+      // input): fuse world-frame parts (clone+transform already in
       // sceneToWorldFrameParts). Mirrors Scene.toUnion() / assemblyExport('union')
       // without requiring the script author to call it for Studio downloads.
       const worldParts = sceneToWorldFrameParts(lowered);
       let fused: OcctBackend = worldParts[0]!.shape;
       for (let i = 1; i < worldParts.length; i++) {
         fused = fused.union(worldParts[i]!.shape);
+      }
+      if (format === 'gcode') {
+        const gcodeResult = await sliceShapeToGcode(fused, input.options as GcodeOptions | undefined, r.diagnostics, featureCount, targetId);
+        return gcodeResult;
       }
       const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
       const { bytes, report } = await fused.exportSTLWithReportAsync();
@@ -424,6 +446,9 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
         };
       }
       return { bytes, featureCount, diagnostics: r.diagnostics };
+    }
+    case 'gcode': {
+      return sliceShapeToGcode(shape, input.options as GcodeOptions | undefined, r.diagnostics, featureCount, targetId);
     }
     case 'step': {
       const bytes = await shape.exportSTEPAsync();
@@ -754,6 +779,86 @@ export function stlNotWatertightDiagnostic(
     message: `${subject} is not watertight: ${report.openEdgeCount} open edge(s) in ${report.clusters.length} crack cluster(s) at ${spots}.`,
     hint: HINT_TEMPLATES['export.mesh.not-watertight'].template,
     nextAction: NEXT_ACTIONS['export.mesh.not-watertight'],
+  };
+}
+
+type GcodeOptions = Extract<ExportOptions, { format: 'gcode' }>;
+
+/**
+ * `format: 'gcode'` shared dispatch: mesh `shape` to STL, bbox-gate it
+ * against the selected printer profile's bed size *before* invoking the
+ * slicer (cheap, no process spawn), then shell out to the detected slicer
+ * CLI. Shared by the Scene-fused and single-shape dispatch paths — both
+ * end up with one `OcctBackend` to mesh.
+ */
+async function sliceShapeToGcode(
+  shape: OcctBackend,
+  opts: GcodeOptions | undefined,
+  diagnostics: readonly CompilerDiagnostic[],
+  featureCount: number,
+  targetId: string | undefined,
+): Promise<ExportResult> {
+  const printerProfile = resolvePrinterProfile(opts?.printer);
+  const bbox = shape.boundingBox();
+  const size = {
+    x: bbox.max[0] - bbox.min[0],
+    y: bbox.max[1] - bbox.min[1],
+    z: bbox.max[2] - bbox.min[2],
+  };
+  if (
+    size.x > printerProfile.bedSizeMm.x
+    || size.y > printerProfile.bedSizeMm.y
+    || size.z > printerProfile.bedSizeMm.z
+  ) {
+    return {
+      bytes: new Uint8Array(),
+      featureCount,
+      diagnostics: [...diagnostics, {
+        target: 'export-occt',
+        code: 'export.gcode.exceeds-bed',
+        featureId: targetId,
+        severity: 'error',
+        message: `Model bounding box ${size.x.toFixed(1)}x${size.y.toFixed(1)}x${size.z.toFixed(1)}mm exceeds the '${printerProfile.name}' bed (${printerProfile.bedSizeMm.x}x${printerProfile.bedSizeMm.y}x${printerProfile.bedSizeMm.z}mm).`,
+        hint: HINT_TEMPLATES['export.gcode.exceeds-bed'].template,
+        nextAction: NEXT_ACTIONS['export.gcode.exceeds-bed'],
+      }],
+    };
+  }
+
+  const { bytes: stlBytes } = await shape.exportSTLWithReportAsync();
+  const sliceResult = await withTempStl(stlBytes, (path) => sliceStlToGcode(path, {
+    printer: opts?.printer,
+    layerHeight: opts?.layerHeight,
+    infill: opts?.infill,
+    supports: opts?.supports,
+    material: opts?.material,
+  }));
+
+  if (!sliceResult.ok || sliceResult.gcode === undefined) {
+    if (sliceResult.error === 'slicer-unavailable') {
+      return {
+        bytes: new Uint8Array(),
+        featureCount,
+        diagnostics: [...diagnostics, {
+          target: 'export-occt',
+          code: 'export.gcode.slicer-unavailable',
+          featureId: targetId,
+          severity: 'error',
+          message: 'No slicer CLI was found (KERNELCAD_SLICER env var unset/invalid, and none of orca-slicer/prusa-slicer/PrusaSlicer are on PATH).',
+          hint: HINT_TEMPLATES['export.gcode.slicer-unavailable'].template,
+          nextAction: NEXT_ACTIONS['export.gcode.slicer-unavailable'],
+        }],
+      };
+    }
+    throw new Error(`gcode export failed: ${sliceResult.error ?? 'unknown slicer error'}`);
+  }
+
+  const gcodeStats = parseGcodeHeader(sliceResult.gcode);
+  return {
+    bytes: new TextEncoder().encode(sliceResult.gcode),
+    featureCount,
+    diagnostics: [...diagnostics],
+    gcodeStats,
   };
 }
 

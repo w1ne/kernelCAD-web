@@ -536,7 +536,7 @@ function collectParts(value: string, prev: string[]): string[] {
 }
 
 const SUPPORTED_FORMATS = new Set<ExportFormat>([
-  'stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'urdf', 'srdf', 'sdf-gazebo',
+  'stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'gcode',
 ]);
 
 export function exportCommand(): Command {

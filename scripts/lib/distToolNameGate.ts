@@ -23,6 +23,7 @@ const CLI_SUBCOMMANDS = new Set<string>([
   'interference',
   'mcp',
   'parts',
+  'print',
   'render',
   'skill',
   'stats',
@@ -116,6 +117,11 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   'pull_dir',
   'angle_deg',
   'require_closed',
+  // send_to_printer / kernelcad print send parameter names (documented
+  // alongside the real send_to_printer tool name and the print CLI
+  // subcommand, which DO resolve — these are input fields, not calls).
+  'dry_run',
+  'access_code',
 ]);
 
 export interface ToolNameHit {

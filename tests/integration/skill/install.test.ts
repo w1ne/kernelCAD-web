@@ -30,6 +30,8 @@ describe.skipIf(SKIP)('skill install (built CLI)', () => {
     // alias (17 → 16); Slice C adds the `kernelcad-parts` skill (16 → 17);
     // the drawings slice adds `kernelcad-drawings` (17 → 18); the structural
     // FEA slice adds `kernelcad-fea` (18 → 19).
+    // the drawings slice adds `kernelcad-drawings` (17 → 18); the print-loop
+    // slice adds `kernelcad-print` (18 → 19).
     expect(dirs.length).toBe(19);
   });
 
