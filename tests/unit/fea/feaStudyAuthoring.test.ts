@@ -162,8 +162,17 @@ describe('FEA material table', () => {
   });
 
   it('points an unknown name at the valid list instead of guessing', () => {
-    const r = resolveFeaMaterial('steel');
+    const r = resolveFeaMaterial('inconel-718');
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.message).toContain('mild-steel');
+  });
+
+  it('accepts the bulk material aliases mass properties use, resolving to the grade', () => {
+    // One vocabulary: `steel` in arm.part({ material }) and in feaStudy mean
+    // the same row, reported under the canonical grade name.
+    const steel = resolveFeaMaterial('steel');
+    const alu = resolveFeaMaterial('aluminium');
+    expect(steel).toEqual({ ok: true, props: feaMaterialTable()['mild-steel'], name: 'mild-steel' });
+    expect(alu).toEqual({ ok: true, props: feaMaterialTable()['aluminum-6061'], name: 'aluminum-6061' });
   });
 });

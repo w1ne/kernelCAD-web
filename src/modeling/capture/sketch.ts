@@ -2,14 +2,22 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/sketch.ts
 import type { FeatureId, FeatureRef, Vec3, AxisSpec, Param } from '../../shared/intent/types';
-import { isValidAxisSpec } from '../../shared/intent/types';
+import { isValidAxisSpec, isValidEditableNumber } from '../../shared/intent/types';
+import type { ParamTable } from '../../shared/runtime/paramTable';
 import type { CaptureSession } from './captureSession';
 import { validateFaceLabels } from './faceLabels';
 import { Shape } from './proxy';
 import { KernelError } from '../../shared/intent/kernelError';
+import { helix as sampleHelix, helixOptionsFromSpec, helixRailSpecOf, type HelixRailSpec } from '../helix';
 import type { FaceLabelsMap } from '../../shared/intent/featureRecord';
-import { type Editable } from '../../shared/runtime/paramRef';
-import { toParam } from '../../shared/runtime/editableHelpers';
+import { type Editable, type ParamRefExpr } from '../../shared/runtime/paramRef';
+import {
+  currentValue,
+  paramExpr,
+  paramFromExpr,
+  paramValue,
+  toParam,
+} from '../../shared/runtime/editableHelpers';
 import type { SketchCommand } from '../../shared/capture/sketchCommand';
 import {
   TANGENT_SIDES,
@@ -70,7 +78,7 @@ export class Sketch {
     this.session = session;
   }
 
-  extrude(depth: number, opts?: { faceLabels?: FaceLabelsMap }): Shape {
+  extrude(depth: Editable<number>, opts?: { faceLabels?: FaceLabelsMap }): Shape {
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'extrude');
     return this.session.createShape({
       kind: 'extrude',
@@ -79,7 +87,10 @@ export class Sketch {
       },
       params: {
         profileKind: { expression: "'sketch'", unit: 'unitless', evaluated: 0 },
-        depth: { expression: String(depth), unit: 'mm', evaluated: depth },
+        // A ParamRef depth stays symbolic and is resolved at lower time, the
+        // same contract box/cylinder dimensions already have; a number is
+        // captured exactly as before.
+        depth: toParam(depth, 'mm'),
       },
       metadata: faceLabels ? { faceLabels } : undefined,
     });
@@ -90,7 +101,8 @@ export class Sketch {
    * interpreted as `(radial-X, axial-Z)` — first coord = distance from axis,
    * second coord = height along axis. Profile must stay on x ≥ 0.
    *
-   * @param opts.angleDeg sweep angle in degrees (default 360). Use a partial
+   * @param opts.angleDeg sweep angle in degrees (default 360; number or
+   *   ParamRef). Use a partial
    *   revolve (e.g. 180) instead of revolving 360 and subtracting a half-space
    *   box — the kernel-native partial revolve produces cleaner topology and
    *   avoids the boolean-cut tessellation slivers that fail open3d's
@@ -100,7 +112,7 @@ export class Sketch {
    * angle range) happens at lowering time and surfaces as `feature.revolve.*`
    * diagnostics.
    */
-  revolve(opts?: { angleDeg?: number; faceLabels?: FaceLabelsMap }): Shape {
+  revolve(opts?: { angleDeg?: Editable<number>; faceLabels?: FaceLabelsMap }): Shape {
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'revolve');
     const angleDeg = opts?.angleDeg ?? 360;
     return this.session.createShape({
@@ -110,7 +122,9 @@ export class Sketch {
       },
       params: {
         profileKind: { expression: "'sketch'", unit: 'unitless', evaluated: 0 },
-        angleDeg: { expression: String(angleDeg), unit: 'deg', evaluated: angleDeg },
+        // A ParamRef angle stays symbolic; the lowerer range-checks the
+        // resolved value.
+        angleDeg: toParam(angleDeg, 'deg'),
       },
       metadata: faceLabels ? { faceLabels } : undefined,
     });
@@ -151,6 +165,20 @@ export class Sketch {
    *   on a dense smooth rail makes the kernel emit per-segment tubes that do
    *   not sew, leaving open rings in the export mesh (`export.mesh.not-watertight`).
    *
+   * - `'helix'`: for rails returned by `helix(...)` — threads, worms, helical
+   *   grooves. The lowerer builds the EXACT helix (not a fit through the
+   *   samples) and moves the profile by pure screw motion. The profile is
+   *   placed in the AXIAL plane through the rail start: profile x = radial
+   *   offset from the helix point (positive = away from the axis), profile
+   *   y = offset along the helix axis. A 60° V thread profile sweeps to a
+   *   valid solid. The profile's axial extent must stay below the pitch
+   *   (adjacent turns may not overlap) and it may not cross the axis;
+   *   `frenet` and `transitionMode` have no effect.
+   *
+   * A rail from `helix(...)` remembers its (possibly ParamRef) dimensions, so a
+   * sweep along it is regenerated from the live param values at lower time
+   * with every spine mode.
+   *
    * Returns a `Shape` (3D solid). Validation (rail length, finite values,
    * transitionMode/spine strings) happens at lowering time and surfaces as
    * `feature.sweep.*` / `feature.invalid-args` diagnostics.
@@ -160,13 +188,22 @@ export class Sketch {
     opts: {
       frenet?: boolean;
       transitionMode?: 'right' | 'transformed' | 'round';
-      spine?: 'polyline' | 'smooth';
+      spine?: 'polyline' | 'smooth' | 'helix';
       faceLabels?: FaceLabelsMap;
     } = {},
   ): Shape {
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'sweep');
     const transitionMode = opts.transitionMode ?? 'right';
     const spine = opts.spine ?? 'polyline';
+    const helixSpec = this.#unmodifiedHelixSpec(rail);
+    if (spine === 'helix' && helixSpec === undefined) {
+      throw new KernelError(
+        'feature.invalid-args',
+        "Sketch.sweep: spine 'helix' needs the unmodified array returned by helix(...); this rail was not produced by helix() or was changed after it.",
+        this.id,
+        "Pass helix({ radius, pitch, turns }) straight to sweep(rail, { spine: 'helix' }). For an arbitrary curved rail use spine: 'smooth'.",
+      );
+    }
     return this.session.createShape({
       kind: 'sweep',
       inputs: {
@@ -180,9 +217,40 @@ export class Sketch {
         rail,
         transitionMode,
         spine,
+        ...(helixSpec ? { helix: helixSpec } : {}),
         ...(faceLabels ? { faceLabels } : {}),
       },
     });
+  }
+
+  /**
+   * The symbolic spec of a rail produced by `helix()`, but only while the
+   * array still holds exactly the points helix() sampled (an edited rail is
+   * just points). Hard-private so the drift sentinel ignores it.
+   */
+  #unmodifiedHelixSpec(rail: Vec3[]): HelixRailSpec | undefined {
+    const spec = helixRailSpecOf(rail);
+    if (spec === undefined) return undefined;
+    const table = this.session.paramTable;
+    const now = (p: Param) => paramValue(p, table);
+    const expected = sampleHelix(
+      helixOptionsFromSpec({
+        ...spec,
+        radius: { ...spec.radius, evaluated: now(spec.radius) },
+        pitch: { ...spec.pitch, evaluated: now(spec.pitch) },
+        turns: { ...spec.turns, evaluated: now(spec.turns) },
+        startAngle: { ...spec.startAngle, evaluated: now(spec.startAngle) },
+      }),
+    );
+    if (expected.length !== rail.length) return undefined;
+    for (let i = 0; i < rail.length; i++) {
+      const p = rail[i];
+      const q = expected[i];
+      if (!Array.isArray(p) || Math.abs(p[0] - q[0]) > 1e-9 || Math.abs(p[1] - q[1]) > 1e-9 || Math.abs(p[2] - q[2]) > 1e-9) {
+        return undefined;
+      }
+    }
+    return spec;
   }
 
   /**
@@ -214,11 +282,11 @@ export class Sketch {
   loft(
     other: Sketch | Sketch[],
     opts: {
-      spacing?: number;
-      planes?: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number] }>;
+      spacing?: Editable<number>;
+      planes?: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [Editable<number>, Editable<number>, Editable<number>] }>;
       ruled?: boolean;
-      startPoint?: [number, number, number];
-      endPoint?: [number, number, number];
+      startPoint?: [Editable<number>, Editable<number>, Editable<number>];
+      endPoint?: [Editable<number>, Editable<number>, Editable<number>];
       faceLabels?: FaceLabelsMap;
     } = {},
   ): Shape {
@@ -234,14 +302,17 @@ export class Sketch {
       inputs,
       params: {
         profileKind: { expression: "'sketch'", unit: 'unitless', evaluated: 0 },
-        spacing: { expression: String(opts.spacing ?? 10), unit: 'mm', evaluated: opts.spacing ?? 10 },
+        spacing: toParam(opts.spacing ?? 10, 'mm'),
         ruled: { expression: String(opts.ruled ?? false), unit: 'unitless', evaluated: opts.ruled ? 1 : 0 },
         sectionCount: { expression: String(allSketches.length), unit: 'unitless', evaluated: allSketches.length },
       },
       metadata: {
-        planes: opts.planes,
-        startPoint: opts.startPoint,
-        endPoint: opts.endPoint,
+        // Numeric coordinates are stored as plain numbers (unchanged records);
+        // a ParamRef coordinate is boxed as a Param so the dispatcher's
+        // pre-resolve substitutes it at lower time.
+        planes: opts.planes?.map((p) => ({ ...p, origin: editablePoint3(p.origin) })),
+        startPoint: opts.startPoint === undefined ? undefined : editablePoint3(opts.startPoint),
+        endPoint: opts.endPoint === undefined ? undefined : editablePoint3(opts.endPoint),
         ...(faceLabels ? { faceLabels } : {}),
       },
     });
@@ -277,53 +348,42 @@ export class Sketch {
       );
     }
 
-    // Normalize -0 to 0 so reflected coordinates are well-formed.
-    const norm = (n: number): number => n === 0 ? 0 : n;
+    // Reflection is affine, so it stays SYMBOLIC: a ParamRef coordinate
+    // reflects to a ParamRef expression (`-y`, `2·offset − y`) that the
+    // dispatcher re-evaluates at lower time, and a ParamRef offset is carried
+    // the same way. Plain numbers fold back to plain numbers, so a numeric
+    // sketch reflects to exactly the record it always did.
+    const offsetExpr: ParamRefExpr | undefined =
+      typeof axis === 'object' ? paramExpr(toParam(axis.offset ?? 0, 'mm')) : undefined;
+    const mirrorExpr = (e: ParamRefExpr): ParamRefExpr =>
+      offsetExpr === undefined
+        ? { kind: 'neg', expr: e }
+        : {
+            kind: 'binop',
+            op: '-',
+            left: { kind: 'binop', op: '*', left: { kind: 'lit', value: 2 }, right: offsetExpr },
+            right: e,
+          };
+    const axisLetter = typeof axis === 'object' ? axis.axis : axis;
 
-    // Reflection collapses any symbolic ParamRef into its current numeric value:
-    // the reflected coordinate depends on the axis offset and the source coord,
-    // and there's no symbolic-arithmetic path that preserves both. The inputs
-    // are read via `.evaluated` (concrete) and re-wrapped as numeric Params.
     const reflectXY = (x: Param, y: Param): [Param, Param] => {
-      const xv = x.evaluated;
-      const yv = y.evaluated;
-      let nx: number;
-      let ny: number;
-      if (axis === 'x') {
-        nx = norm(xv); ny = norm(-yv);
-      } else if (axis === 'y') {
-        nx = norm(-xv); ny = norm(yv);
-      } else {
-        const off = axis.offset ?? 0;
-        if (axis.axis === 'x') {
-          nx = norm(xv); ny = norm(2 * off - yv);
-        } else { // axis.axis === 'y'
-          nx = norm(2 * off - xv); ny = norm(yv);
-        }
+      if (axisLetter === 'x') {
+        return [paramFromExpr(paramExpr(x), x.unit), paramFromExpr(mirrorExpr(paramExpr(y)), y.unit)];
       }
-      return [toParam(nx, 'mm'), toParam(ny, 'mm')];
+      return [paramFromExpr(mirrorExpr(paramExpr(x)), x.unit), paramFromExpr(paramExpr(y), y.unit)];
     };
 
-    const negateScalar = (p: Param): Param => toParam(-p.evaluated, p.unit);
+    const negateScalar = (p: Param): Param =>
+      paramFromExpr({ kind: 'neg', expr: paramExpr(p) }, p.unit);
 
     // Vector (direction-only) reflection. Same axis as the coordinate
     // reflection above but WITHOUT the offset shift — used for derivatives
     // (tangent, curvature) which carry no absolute-position component.
     const reflectVec = (vx: Param, vy: Param): [Param, Param] => {
-      const xv = vx.evaluated;
-      const yv = vy.evaluated;
-      let nx: number;
-      let ny: number;
-      if (axis === 'x') {
-        nx = norm(xv); ny = norm(-yv);
-      } else if (axis === 'y') {
-        nx = norm(-xv); ny = norm(yv);
-      } else if (axis.axis === 'x') {
-        nx = norm(xv); ny = norm(-yv);
-      } else {
-        nx = norm(-xv); ny = norm(yv);
+      if (axisLetter === 'x') {
+        return [paramFromExpr(paramExpr(vx), vx.unit), negateScalar(vy)];
       }
-      return [toParam(nx, vx.unit), toParam(ny, vy.unit)];
+      return [negateScalar(vx), paramFromExpr(paramExpr(vy), vy.unit)];
     };
 
     // Arc sign-flip: reflection inverts winding. For arcs whose direction is
@@ -480,6 +540,17 @@ export class PathBuilder {
     this.session = session;
   }
 
+  /**
+   * Capture-time numeric view of a captured Param. A symbolic Param's
+   * `evaluated` is a placeholder (0) until lower time, so every capture-time
+   * check (pen position, coincidence, magnitude, sign) reads the CURRENT value
+   * through the session's param table instead. Hard-private so the drift
+   * sentinel does not see it as a public PathBuilder method.
+   */
+  #now(p: Param): number {
+    return paramValue(p, this.session.paramTable);
+  }
+
   moveTo(x: Editable<number>, y: Editable<number>): PathBuilder {
     this.commands.push({ kind: 'moveTo', x: toParam(x, 'mm'), y: toParam(y, 'mm') });
     return this;
@@ -629,7 +700,7 @@ export class PathBuilder {
 
   /**
    * Read the current pen position by walking back through commands to the
-   * most recent endpoint. Returns the numeric (`evaluated`) (x, y) — used
+   * most recent endpoint. Returns the CURRENT numeric (x, y) — used
    * for capture-time geometric validation (.spline / .nurbsSegment /
    * .hermiteG2 start-point checks). Returns `null` when no segment has
    * been emitted yet (only `close` or empty path).
@@ -654,17 +725,17 @@ export class PathBuilder {
         case 'bulgeArc':
         case 'radiusArc':
         case 'smoothSpline':
-          return { x: cmd.x.evaluated, y: cmd.y.evaluated };
+          return { x: this.#now(cmd.x), y: this.#now(cmd.y) };
         case 'spline': {
           const last = cmd.points[cmd.points.length - 1];
-          return { x: last.x.evaluated, y: last.y.evaluated };
+          return { x: this.#now(last.x), y: this.#now(last.y) };
         }
         case 'nurbsSegment': {
           const last = cmd.controlPoints[cmd.controlPoints.length - 1];
-          return { x: last.x.evaluated, y: last.y.evaluated };
+          return { x: this.#now(last.x), y: this.#now(last.y) };
         }
         case 'hermiteG2_2d':
-          return { x: cmd.bx.evaluated, y: cmd.by.evaluated };
+          return { x: this.#now(cmd.bx), y: this.#now(cmd.by) };
         case 'close':
           // `close` is supposed to be terminal — keep scanning back for the
           // last drawing command (defensive; nothing should append after
@@ -744,10 +815,10 @@ export class PathBuilder {
       }
       const x = toParam(pt[0], 'mm');
       const y = toParam(pt[1], 'mm');
-      if (!Number.isFinite(x.evaluated) || !Number.isFinite(y.evaluated)) {
+      if (!Number.isFinite(this.#now(x)) || !Number.isFinite(this.#now(y))) {
         throw new KernelError(
           'feature.path.spline.degenerate-points',
-          `path().spline: waypoint ${i} has non-finite coord (x=${x.evaluated}, y=${y.evaluated}).`,
+          `path().spline: waypoint ${i} has non-finite coord (x=${this.#now(x)}, y=${this.#now(y)}).`,
           undefined,
           'path.spline.degenerate-points — pass at least 2 finite Vec2 waypoints (the path interpolates through every one).',
         );
@@ -756,8 +827,8 @@ export class PathBuilder {
     }
     // Reject consecutive duplicates (closer than 1e-9 mm).
     for (let i = 1; i < paramPoints.length; i++) {
-      const dx = paramPoints[i].x.evaluated - paramPoints[i - 1].x.evaluated;
-      const dy = paramPoints[i].y.evaluated - paramPoints[i - 1].y.evaluated;
+      const dx = this.#now(paramPoints[i].x) - this.#now(paramPoints[i - 1].x);
+      const dy = this.#now(paramPoints[i].y) - this.#now(paramPoints[i - 1].y);
       if (Math.hypot(dx, dy) < 1e-9) {
         throw new KernelError(
           'feature.path.spline.degenerate-points',
@@ -782,12 +853,12 @@ export class PathBuilder {
         'path.spline.degenerate-points — start the path with moveTo(points[0][0], points[0][1]) so the spline has a start position to chain from.',
       );
     }
-    const penDx = paramPoints[0].x.evaluated - pen.x;
-    const penDy = paramPoints[0].y.evaluated - pen.y;
+    const penDx = this.#now(paramPoints[0].x) - pen.x;
+    const penDy = this.#now(paramPoints[0].y) - pen.y;
     if (Math.hypot(penDx, penDy) > 1e-6) {
       throw new KernelError(
         'feature.path.spline.degenerate-points',
-        `path().spline: points[0] = (${paramPoints[0].x.evaluated}, ${paramPoints[0].y.evaluated}) does not match current pen position (${pen.x}, ${pen.y}) within 1e-6 mm.`,
+        `path().spline: points[0] = (${this.#now(paramPoints[0].x)}, ${this.#now(paramPoints[0].y)}) does not match current pen position (${pen.x}, ${pen.y}) within 1e-6 mm.`,
         undefined,
         'path.spline.degenerate-points — the spline starts where the previous segment ended: make points[0] equal the current pen position, or add a lineTo(points[0][0], points[0][1]) before the spline.',
       );
@@ -808,19 +879,21 @@ export class PathBuilder {
       }
       const x = toParam(t[0], 'mm');
       const y = toParam(t[1], 'mm');
-      if (!Number.isFinite(x.evaluated) || !Number.isFinite(y.evaluated)) {
+      const xv = this.#now(x);
+      const yv = this.#now(y);
+      if (!Number.isFinite(xv) || !Number.isFinite(yv)) {
         throw new KernelError(
           'feature.path.spline.tangent-zero-magnitude',
-          `path().spline: ${label} has non-finite coord (x=${x.evaluated}, y=${y.evaluated}).`,
+          `path().spline: ${label} has non-finite coord (x=${xv}, y=${yv}).`,
           undefined,
           'Pass a finite non-zero 2D direction vector. Magnitude is normalised; direction matters.',
         );
       }
-      const mag = Math.hypot(x.evaluated, y.evaluated);
+      const mag = Math.hypot(xv, yv);
       if (mag < 1e-9) {
         throw new KernelError(
           'feature.path.spline.tangent-zero-magnitude',
-          `path().spline: ${label} has magnitude ${mag} (< 1e-9); got [${x.evaluated}, ${y.evaluated}].`,
+          `path().spline: ${label} has magnitude ${mag} (< 1e-9); got [${xv}, ${yv}].`,
           undefined,
           'Pass a non-zero 2D direction vector. Magnitude is normalised; direction matters.',
         );
@@ -899,10 +972,10 @@ export class PathBuilder {
       }
       const x = toParam(cp[0], 'mm');
       const y = toParam(cp[1], 'mm');
-      if (!Number.isFinite(x.evaluated) || !Number.isFinite(y.evaluated)) {
+      if (!Number.isFinite(this.#now(x)) || !Number.isFinite(this.#now(y))) {
         throw new KernelError(
           'feature.path.nurbs-segment.degenerate-controls',
-          `path().nurbsSegment: control point ${i} has non-finite coord (x=${x.evaluated}, y=${y.evaluated}).`,
+          `path().nurbsSegment: control point ${i} has non-finite coord (x=${this.#now(x)}, y=${this.#now(y)}).`,
           undefined,
           'path.nurbs-segment.degenerate-controls — provide at least degree+1 finite Vec2 control points, with the first matching the current pen position within 1e-6 mm.',
         );
@@ -919,12 +992,12 @@ export class PathBuilder {
         'path.nurbs-segment.degenerate-controls — provide at least degree+1 finite Vec2 control points, with the first matching the current pen position within 1e-6 mm.',
       );
     }
-    const dx0 = paramControls[0].x.evaluated - pen.x;
-    const dy0 = paramControls[0].y.evaluated - pen.y;
+    const dx0 = this.#now(paramControls[0].x) - pen.x;
+    const dy0 = this.#now(paramControls[0].y) - pen.y;
     if (Math.hypot(dx0, dy0) > 1e-6) {
       throw new KernelError(
         'feature.path.nurbs-segment.degenerate-controls',
-        `path().nurbsSegment: controlPoints[0] = (${paramControls[0].x.evaluated}, ${paramControls[0].y.evaluated}) does not match current pen position (${pen.x}, ${pen.y}) within 1e-6 mm.`,
+        `path().nurbsSegment: controlPoints[0] = (${this.#now(paramControls[0].x)}, ${this.#now(paramControls[0].y)}) does not match current pen position (${pen.x}, ${pen.y}) within 1e-6 mm.`,
         undefined,
         'path.nurbs-segment.degenerate-controls — provide at least degree+1 finite Vec2 control points, with the first matching the current pen position within 1e-6 mm.',
       );
@@ -1018,17 +1091,17 @@ export class PathBuilder {
     if (pen === null) {
       throw new KernelError(
         'feature.path.hermite-g2.start-mismatch',
-        `path().hermiteG2: no current pen position — call moveTo(${ax.evaluated}, ${ay.evaluated}) before hermiteG2.`,
+        `path().hermiteG2: no current pen position — call moveTo(${this.#now(ax)}, ${this.#now(ay)}) before hermiteG2.`,
         undefined,
         "path.hermite-g2.start-mismatch — align `a.point` with the path's current position, or call moveTo first.",
       );
     }
-    const dx0 = ax.evaluated - pen.x;
-    const dy0 = ay.evaluated - pen.y;
+    const dx0 = this.#now(ax) - pen.x;
+    const dy0 = this.#now(ay) - pen.y;
     if (Math.hypot(dx0, dy0) > 1e-6) {
       throw new KernelError(
         'feature.path.hermite-g2.start-mismatch',
-        `path().hermiteG2: a.point = (${ax.evaluated}, ${ay.evaluated}) does not match current pen position (${pen.x}, ${pen.y}) within 1e-6 mm.`,
+        `path().hermiteG2: a.point = (${this.#now(ax)}, ${this.#now(ay)}) does not match current pen position (${pen.x}, ${pen.y}) within 1e-6 mm.`,
         undefined,
         "path.hermite-g2.start-mismatch — align `a.point` with the path's current position, or call moveTo first.",
       );
@@ -1162,10 +1235,10 @@ export class PathBuilder {
       );
     }
     const radius = hasRadius ? toParam(opts!.radius!, 'mm') : undefined;
-    if (radius !== undefined && !(radius.evaluated > 0)) {
+    if (radius !== undefined && !(this.#now(radius) > 0)) {
       throw new KernelError(
         'feature.invalid-args',
-        `path.tangentCircle: opts.radius must be > 0; got ${radius.evaluated}.`,
+        `path.tangentCircle: opts.radius must be > 0; got ${this.#now(radius)}.`,
         undefined,
         'Pass a positive radius.',
       );
@@ -1173,9 +1246,9 @@ export class PathBuilder {
 
     this.commands.push({
       kind: 'tangentCircle',
-      entities: entities.map((e, i) => validateTangentEntity(e, `path.tangentCircle entities[${i}]`)),
+      entities: entities.map((e, i) => validateTangentEntity(e, `path.tangentCircle entities[${i}]`, this.session.paramTable)),
       radius,
-      near: toNearSpec(opts?.near, 'path.tangentCircle'),
+      near: toNearSpec(opts?.near, 'path.tangentCircle', this.session.paramTable),
     });
     this.commands.push({ kind: 'close' });
     return this.session.createSketch({
@@ -1220,8 +1293,8 @@ export class PathBuilder {
     b: TangentEntity2D,
     opts?: { near?: [Editable<number>, Editable<number>] },
   ): PathBuilder {
-    const specA = validateTangentEntity(a, 'path.tangentLine(a)');
-    const specB = validateTangentEntity(b, 'path.tangentLine(b)');
+    const specA = validateTangentEntity(a, 'path.tangentLine(a)', this.session.paramTable);
+    const specB = validateTangentEntity(b, 'path.tangentLine(b)', this.session.paramTable);
     for (const [spec, label] of [[specA, 'a'], [specB, 'b']] as const) {
       if (spec.kind !== 'circle') {
         throw new KernelError(
@@ -1236,7 +1309,7 @@ export class PathBuilder {
       kind: 'tangentLine',
       a: specA,
       b: specB,
-      near: toNearSpec(opts?.near, 'path.tangentLine'),
+      near: toNearSpec(opts?.near, 'path.tangentLine', this.session.paramTable),
       // Recorded at capture time because the resolver runs after the fact and
       // cannot otherwise tell whether a pen existed when the author called.
       startsPath: this.commands.length === 0,
@@ -1259,24 +1332,29 @@ export class PathBuilder {
    * collapses to zero-area when closing the same chord, and there was
    * no first-class circle primitive at the path level.
    *
-   * **Limitation:** `cx`, `cy`, `r` must be NUMERIC at capture time. The
-   * circle math (cos/sin of segment angles) can't be deferred to runtime
-   * if the inputs are ParamRefs. Param-driven circles can be authored via
-   * a higher-level helper later if needed.
+   * `cx`, `cy` and `r` accept `Editable<number>`. Each vertex is captured as
+   * the expression `cx + r·cos θ`, `cy + r·sin θ` (θ is a fixed constant per
+   * vertex), so a ParamRef centre or radius stays symbolic and the circle
+   * re-evaluates when the param changes. `segments` is a plain integer — it
+   * sets how many vertices exist, which cannot change after capture.
    */
-  circle(cx: number, cy: number, r: number, segments: number = 48): Sketch {
-    if (!Number.isFinite(cx) || !Number.isFinite(cy) || !Number.isFinite(r)) {
+  circle(cx: Editable<number>, cy: Editable<number>, r: Editable<number>, segments: number = 48): Sketch {
+    const table = this.session.paramTable;
+    const cxv = currentValue(cx, table);
+    const cyv = currentValue(cy, table);
+    const rv = currentValue(r, table);
+    if (!Number.isFinite(cxv) || !Number.isFinite(cyv) || !Number.isFinite(rv)) {
       throw new KernelError(
         'feature.invalid-args',
-        `path.circle(cx, cy, r): all of cx (${cx}), cy (${cy}), r (${r}) must be finite numbers.`,
+        `path.circle(cx, cy, r): all of cx (${cxv}), cy (${cyv}), r (${rv}) must be finite.`,
         undefined,
-        'Pass numeric literals for cx, cy, r. ParamRef-driven circles are not supported in this slice.',
+        'Pass finite numbers or numeric ParamRefs for cx, cy, r.',
       );
     }
-    if (r <= 0) {
+    if (rv <= 0) {
       throw new KernelError(
         'feature.invalid-args',
-        `path.circle: radius must be > 0; got ${r}.`,
+        `path.circle: radius must be > 0; got ${rv}.`,
         undefined,
         'Pass a positive radius.',
       );
@@ -1297,15 +1375,26 @@ export class PathBuilder {
         'Call path().circle(cx, cy, r) without prior moveTo / lineTo / etc.',
       );
     }
+    const cxE = paramExpr(toParam(cx, 'mm'));
+    const cyE = paramExpr(toParam(cy, 'mm'));
+    const rE = paramExpr(toParam(r, 'mm'));
+    // centre + r·k, with k = cos θ or sin θ a per-vertex constant. Literal-only
+    // inputs fold back to plain numbers, so a numeric circle captures exactly
+    // the record it always did.
+    const along = (c: ParamRefExpr, k: number): Param =>
+      paramFromExpr(
+        { kind: 'binop', op: '+', left: c, right: { kind: 'binop', op: '*', left: rE, right: { kind: 'lit', value: k } } },
+        'mm',
+      );
     // Start at (cx + r, cy) and walk counterclockwise. Use lineTo for each
     // chord; the final close() closes the loop.
-    this.commands.push({ kind: 'moveTo', x: toParam(cx + r, 'mm'), y: toParam(cy, 'mm') });
+    this.commands.push({ kind: 'moveTo', x: along(cxE, 1), y: paramFromExpr(cyE, 'mm') });
     for (let i = 1; i < segments; i++) {
       const theta = (2 * Math.PI * i) / segments;
       this.commands.push({
         kind: 'lineTo',
-        x: toParam(cx + r * Math.cos(theta), 'mm'),
-        y: toParam(cy + r * Math.sin(theta), 'mm'),
+        x: along(cxE, Math.cos(theta)),
+        y: along(cyE, Math.sin(theta)),
       });
     }
     this.commands.push({ kind: 'close' });
@@ -1340,7 +1429,7 @@ export class PathBuilder {
  * `side` defaults to `'outside'` — the sketch-fillet reading, and the value
  * that most often makes the construction unique on its own.
  */
-function validateTangentEntity(e: TangentEntity2D, where: string): TangentEntitySpec {
+function validateTangentEntity(e: TangentEntity2D, where: string, table: ParamTable): TangentEntitySpec {
   if (!e || typeof e !== 'object' || (e.kind !== 'line' && e.kind !== 'circle')) {
     throw new KernelError(
       'feature.invalid-args',
@@ -1358,50 +1447,64 @@ function validateTangentEntity(e: TangentEntity2D, where: string): TangentEntity
       "side maps to OCCT's GccEnt_Position and is the primary control over which solution you get.",
     );
   }
-  const finite = (v: unknown, field: string): number => {
-    if (typeof v !== 'number' || !Number.isFinite(v)) {
+  // Coordinates may be numbers or numeric ParamRefs. Validation reads the
+  // CURRENT value; the captured Param keeps the ParamRef so the lowerer sees
+  // the live value after a param change.
+  const finite = (v: unknown, field: string): { value: number; param: Param } => {
+    if (!isValidEditableNumber(v)) {
       throw new KernelError(
         'feature.invalid-args',
-        `${where}.${field}: expected a finite number; got ${JSON.stringify(v)}.`,
+        `${where}.${field}: expected a finite number or numeric ParamRef; got ${JSON.stringify(v)}.`,
         undefined,
-        'Tangency entity coordinates must be numeric literals in this slice.',
+        'Tangency entity coordinates must be finite numbers or param() references.',
       );
     }
-    return v;
+    const editable = v as Editable<number>;
+    const value = currentValue(editable, table);
+    if (!Number.isFinite(value)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `${where}.${field}: expected a finite value; got ${value}.`,
+        undefined,
+        'Tangency entity coordinates must resolve to finite numbers.',
+      );
+    }
+    return { value, param: toParam(editable, 'mm') };
   };
   if (e.kind === 'line') {
     const from = e.from ?? ([] as unknown as [number, number]);
     const to = e.to ?? ([] as unknown as [number, number]);
     const x1 = finite(from[0], 'from[0]'), y1 = finite(from[1], 'from[1]');
     const x2 = finite(to[0], 'to[0]'), y2 = finite(to[1], 'to[1]');
-    if (Math.hypot(x2 - x1, y2 - y1) < 1e-9) {
+    if (Math.hypot(x2.value - x1.value, y2.value - y1.value) < 1e-9) {
       throw new KernelError(
         'feature.invalid-args',
-        `${where}: from and to are coincident at (${x1}, ${y1}) — they define no line.`,
+        `${where}: from and to are coincident at (${x1.value}, ${y1.value}) — they define no line.`,
         undefined,
         'Give two distinct points. Their order also sets the line direction, which is what side:"outside" is relative to.',
       );
     }
-    return { kind: 'line', x1: toParam(x1, 'mm'), y1: toParam(y1, 'mm'), x2: toParam(x2, 'mm'), y2: toParam(y2, 'mm'), side };
+    return { kind: 'line', x1: x1.param, y1: y1.param, x2: x2.param, y2: y2.param, side };
   }
   const center = e.center ?? ([] as unknown as [number, number]);
   const cx = finite(center[0], 'center[0]'), cy = finite(center[1], 'center[1]');
   const r = finite(e.radius, 'radius');
-  if (!(r > 0)) {
+  if (!(r.value > 0)) {
     throw new KernelError(
       'feature.invalid-args',
-      `${where}: circle radius must be > 0; got ${r}.`,
+      `${where}: circle radius must be > 0; got ${r.value}.`,
       undefined,
       'Pass a positive radius.',
     );
   }
-  return { kind: 'circle', cx: toParam(cx, 'mm'), cy: toParam(cy, 'mm'), r: toParam(r, 'mm'), side };
+  return { kind: 'circle', cx: cx.param, cy: cy.param, r: r.param, side };
 }
 
 /** Box the optional `near` disambiguation hint. */
 function toNearSpec(
   near: [Editable<number>, Editable<number>] | undefined,
   where: string,
+  table: ParamTable,
 ): TangentNearSpec | undefined {
   if (near === undefined) return undefined;
   if (!Array.isArray(near) || near.length !== 2) {
@@ -1414,15 +1517,26 @@ function toNearSpec(
   }
   const x = toParam(near[0], 'mm');
   const y = toParam(near[1], 'mm');
-  if (!Number.isFinite(x.evaluated) || !Number.isFinite(y.evaluated)) {
+  const xv = paramValue(x, table);
+  const yv = paramValue(y, table);
+  if (!Number.isFinite(xv) || !Number.isFinite(yv)) {
     throw new KernelError(
       'feature.invalid-args',
-      `${where}: opts.near coordinates must be finite; got [${x.evaluated}, ${y.evaluated}].`,
+      `${where}: opts.near coordinates must be finite; got [${xv}, ${yv}].`,
       undefined,
       'Pass finite numbers for opts.near.',
     );
   }
   return { x, y };
+}
+
+/** Box a 3D point for record metadata: plain numbers stay plain numbers (so a
+ *  numeric record is unchanged); a ParamRef coordinate becomes a Param the
+ *  dispatcher pre-resolves at lower time. */
+function editablePoint3(
+  p: [Editable<number>, Editable<number>, Editable<number>],
+): Array<number | Param> {
+  return p.map((v) => (typeof v === 'number' ? v : toParam(v, 'mm')));
 }
 
 export function makePath(session: CaptureSession): PathBuilder {

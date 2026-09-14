@@ -165,14 +165,14 @@ describe('checkLoadCapacity — T6 closed-form Euler-Bernoulli', () => {
   });
 
   it('unknown material SKU → clean K8 diagnostic naming the bad material, no throw', async () => {
-    // Issue #540 part A: a typo / bare SKU like 'aluminum-6061' must not
+    // Issue #540 part A: a typo / bare SKU like 'aluminum-7075' must not
     // crash on an undefined catalog row — the check returns and the
     // diagnostic names the offending value.
     const { arm, partName } = buildCantileverBracket();
     const r = await checkLoadCapacity(
       arm,
       { [partName]: { force: [0, 0, 50] } },
-      { materials: { [partName]: { material: 'aluminum-6061' as never } } },
+      { materials: { [partName]: { material: 'aluminum-7075' as never } } },
     );
     expect(r.source).toBe('local');
     expect(r.elements).toHaveLength(0);
@@ -183,8 +183,8 @@ describe('checkLoadCapacity — T6 closed-form Euler-Bernoulli', () => {
     expect(k8).toBeDefined();
     expect(k8?.severity).toBe('error');
     expect(k8?.element).toBe(partName);
-    expect(k8?.message).toContain('aluminum-6061');
-    expect(k8?.message).toContain('steel|aluminum|pla|abs|pet');
+    expect(k8?.message).toContain('aluminum-7075');
+    expect(k8?.message).toContain('mild-steel|aluminum-6061|pla|petg|abs|nylon|steel|aluminum|aluminium|pet');
   });
 
   it('part anchored by a single revolute joint (no mate) → computed SF (issue #540 part B)', async () => {

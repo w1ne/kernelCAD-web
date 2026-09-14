@@ -63,6 +63,8 @@ import { retagInstance } from '../../../kernel/backends/occt/patternHistory';
 import { HINT_TEMPLATES } from '../../../shared/diagnostics/registry';
 import type { DiagnosticCode } from '../../../shared/diagnostics/registry';
 import { TANGENCY_ERROR_PREFIX } from '../../../kernel/backends/occt/tangencySolver';
+import { HelicalSweepArgsError, helixAxisBasis } from '../../../kernel/backends/occt/helicalSweep';
+import { helix, helixOptionsFromSpec, type HelixRailSpec } from '../../helix';
 
 // ---------------------------------------------------------------------------
 // Shared helpers: Vec3Param resolution + axis normalization
@@ -962,10 +964,20 @@ export class OcctLowerer implements FeatureLowerer {
           shape = OcctBackend.extrudeCircle(r.params.r.evaluated, height);
         } else if (profileKind === 'polygon') {
           const depth = r.params.depth.evaluated;
-          const points = (r.metadata as { points?: unknown } | undefined)?.points;
+          // Each coordinate is a plain number, or a Param (pre-resolved by the
+          // dispatcher) when the author passed a ParamRef.
+          const coord = (c: unknown): number | undefined =>
+            typeof c === 'number'
+              ? c
+              : typeof c === 'object' && c !== null && typeof (c as { evaluated?: unknown }).evaluated === 'number'
+                ? (c as { evaluated: number }).evaluated
+                : undefined;
+          const rawPoints = (r.metadata as { points?: unknown } | undefined)?.points;
+          const points = Array.isArray(rawPoints)
+            ? rawPoints.map(p => (Array.isArray(p) && p.length === 2 ? [coord(p[0]), coord(p[1])] : [undefined, undefined]))
+            : undefined;
           if (!Array.isArray(points) || points.length < 3 ||
-              !points.every(p => Array.isArray(p) && p.length === 2 &&
-                                  typeof p[0] === 'number' && typeof p[1] === 'number')) {
+              !points.every(p => typeof p[0] === 'number' && typeof p[1] === 'number')) {
             diagnostics.push({
               target: 'export-occt',
               code: 'feature.invalid-args',
@@ -1286,7 +1298,13 @@ export class OcctLowerer implements FeatureLowerer {
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
-          const rail = (r.metadata as { rail?: unknown } | undefined)?.rail;
+          // A rail from helix() carries its (pre-resolved) dimensions: regenerate
+          // it from the live values so a ParamRef radius/pitch/turns follows a
+          // param change, whatever the spine mode.
+          const helixSpec = (r.metadata as { helix?: HelixRailSpec } | undefined)?.helix;
+          const rail = helixSpec !== undefined
+            ? helix(helixOptionsFromSpec(helixSpec))
+            : (r.metadata as { rail?: unknown } | undefined)?.rail;
           if (!Array.isArray(rail) || rail.length < 2) {
             diagnostics.push({
               target: 'export-occt',
@@ -1341,26 +1359,60 @@ export class OcctLowerer implements FeatureLowerer {
           }
           const transitionMode = (rawTransition ?? 'right') as 'right' | 'transformed' | 'round';
           const rawSpine = (r.metadata as { spine?: unknown } | undefined)?.spine;
-          const ALLOWED_SPINES = ['polyline', 'smooth'] as const;
+          const ALLOWED_SPINES = ['polyline', 'smooth', 'helix'] as const;
           if (rawSpine !== undefined && !ALLOWED_SPINES.includes(rawSpine as typeof ALLOWED_SPINES[number])) {
             diagnostics.push({
               target: 'export-occt',
               code: 'feature.invalid-args',
               featureId: r.id,
               severity: 'error',
-              message: `sweep.spine must be one of 'polyline' | 'smooth'; got ${JSON.stringify(rawSpine)}.`,
-              hint: "Pass spine: 'polyline' (default — straight rail edges, real corners) or 'smooth' (single B-spline spine through the rail points; use for helix/curved rails).",
+              message: `sweep.spine must be one of 'polyline' | 'smooth' | 'helix'; got ${JSON.stringify(rawSpine)}.`,
+              hint: "Pass spine: 'polyline' (default — straight rail edges, real corners), 'smooth' (single B-spline spine through the rail points; use for curved rails), or 'helix' (exact helix for a helix() rail; threads).",
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
-          const spine = (rawSpine ?? 'polyline') as 'polyline' | 'smooth';
+          const spine = (rawSpine ?? 'polyline') as 'polyline' | 'smooth' | 'helix';
+          if (spine === 'helix' && helixSpec === undefined) {
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.invalid-args',
+              featureId: r.id,
+              severity: 'error',
+              message: "sweep spine 'helix' requires a rail produced by helix(); this record carries no helix dimensions.",
+              hint: "Pass helix({ radius, pitch, turns }) straight to sweep(rail, { spine: 'helix' }), or use spine: 'smooth' for other curved rails.",
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
           try {
-            shape = OcctBackend.sweepFromSketch(
-              sketchInput,
-              rail as [number, number, number][],
-              { frenet, transitionMode, spine },
-            );
+            if (spine === 'helix') {
+              const o = helixOptionsFromSpec(helixSpec!);
+              shape = OcctBackend.sweepSketchAlongHelix(sketchInput, {
+                origin: [0, 0, 0],
+                ...helixAxisBasis(o.axis ?? 'Z'),
+                radius: o.radius,
+                pitch: o.pitch,
+                turns: o.turns,
+                startAngle: o.startAngle ?? 0,
+              });
+            } else {
+              shape = OcctBackend.sweepFromSketch(
+                sketchInput,
+                rail as [number, number, number][],
+                { frenet, transitionMode, spine },
+              );
+            }
           } catch (e) {
+            if (e instanceof HelicalSweepArgsError) {
+              diagnostics.push({
+                target: 'export-occt',
+                code: 'feature.invalid-args',
+                featureId: r.id,
+                severity: 'error',
+                message: e.message,
+                hint: e.hint,
+              });
+              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            }
             const msg = e instanceof Error ? e.message : String(e);
             // All sweep failure modes (multi-face profile, profile too large,
             // spine self-intersection, generic) collapse into kernel-failed.
@@ -1435,11 +1487,22 @@ export class OcctLowerer implements FeatureLowerer {
             sketches.push(s);
           }
           // Resolve planes: explicit metadata.planes wins; else z-stack with spacing.
-          const meta = r.metadata as {
-            planes?: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number] }>;
-            startPoint?: [number, number, number];
-            endPoint?: [number, number, number];
+          // Coordinates are plain numbers, or Params when the author passed a
+          // ParamRef (already pre-resolved by the dispatcher).
+          type Coord = number | { evaluated: number };
+          const num = (c: Coord): number => (typeof c === 'number' ? c : c.evaluated);
+          const point3 = (p: Coord[] | undefined): [number, number, number] | undefined =>
+            p === undefined ? undefined : [num(p[0]), num(p[1]), num(p[2])];
+          const rawMeta = r.metadata as {
+            planes?: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: Coord[] }>;
+            startPoint?: Coord[];
+            endPoint?: Coord[];
           } | undefined;
+          const meta = rawMeta === undefined ? undefined : {
+            planes: rawMeta.planes?.map((p) => ({ plane: p.plane, origin: point3(p.origin)! })),
+            startPoint: point3(rawMeta.startPoint),
+            endPoint: point3(rawMeta.endPoint),
+          };
           let planes: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number] }>;
           if (Array.isArray(meta?.planes)) {
             if (meta.planes.length !== sectionCount) {

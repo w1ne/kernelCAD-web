@@ -2,15 +2,18 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
 // The material library ties a material NAME to an engineering density and a
-// default finish. These tests hold four promises:
-//   - a named material resolves to the RIGHT catalog density (steel → 7850);
-//   - both spellings (aluminum / aluminium) resolve to the SAME material;
-//   - the coverage gaps are handled honestly (pet has density, no finish;
+// default finish, through the single registry every material consumer shares.
+// These tests hold five promises:
+//   - a grade resolves to the RIGHT density (mild-steel → 7850);
+//   - bulk aliases (steel / aluminum / aluminium / pet) resolve to the SAME
+//     grade, so mass, FEA, BOM and finishes speak one vocabulary;
+//   - the coverage gaps are handled honestly (petg has density, no finish;
 //     brass is a finish, not an assignable material) — no invented numbers;
-//   - an unknown name throws, naming the valid materials, never a silent
-//     water/default fallback.
-// The final `describe` is the drift gate: it fails the moment the density
-// catalog and the finish table disagree with what this library claims.
+//   - an unknown name throws, naming the accepted names, never a silent
+//     water/default fallback;
+//   - `.finish(<material>)` applies the same default finish arm.part does.
+// The final `describe` is the drift gate across registry, catalog, finishes
+// and the FEA table.
 
 import { describe, it, expect } from 'vitest';
 import {
@@ -21,59 +24,75 @@ import {
   tryResolveMaterial,
   unknownMaterialMessage,
 } from '../../../../src/modeling/properties/materialLibrary';
-import { MATERIAL_CATALOG, CATALOG_KINDS } from '../../../../src/kinematic/beamMaterials';
-import { isFinishToken } from '../../../../src/shared/render/finishes';
+import {
+  ENGINEERING_MATERIAL_NAMES,
+  catalogRowOf,
+  engineeringMaterialProps,
+} from '../../../../src/kinematic/engineeringMaterials';
+import { MATERIAL_CATALOG } from '../../../../src/kinematic/beamMaterials';
+import { FEA_MATERIAL_NAMES, resolveFeaMaterial } from '../../../../src/kernel/fea/feaMaterials';
+import { FINISHES, isFinishToken } from '../../../../src/shared/render/finishes';
 import { isKernelError } from '../../../../src/shared/intent/kernelError';
+import { CaptureSession } from '../../../../src/modeling/capture/captureSession';
+import { createApi } from '../../../../src/modeling/api';
 
 describe('materialLibrary — name → { density, finish }', () => {
-  it('resolves steel to the catalog density (7850) and the steel finish', () => {
-    const m = resolveMaterial('steel');
-    expect(m.name).toBe('steel');
+  it('resolves mild-steel to the catalog density (7850) and the steel finish', () => {
+    const m = resolveMaterial('mild-steel');
+    expect(m.name).toBe('mild-steel');
     expect(m.density).toBe(7850);
     expect(m.density).toBe(MATERIAL_CATALOG.steel.densityKgPerM3);
     expect(m.finish).toBe('steel');
   });
 
-  it('resolves every catalog material to its catalog density', () => {
-    for (const kind of CATALOG_KINDS) {
-      const m = resolveMaterial(kind);
-      expect(m.name).toBe(kind);
-      expect(m.density).toBe(MATERIAL_CATALOG[kind].densityKgPerM3);
+  it('resolves every grade to its registry density', () => {
+    for (const grade of ENGINEERING_MATERIAL_NAMES) {
+      const m = resolveMaterial(grade);
+      expect(m.name).toBe(grade);
+      expect(m.density).toBe(engineeringMaterialProps(grade).densityKgPerM3);
     }
   });
 
-  it('resolves aluminum and aluminium to the SAME material', () => {
-    const us = resolveMaterial('aluminum');
-    const uk = resolveMaterial('aluminium');
-    expect(us.name).toBe('aluminum');
-    // The alias resolves to the canonical name, not a second material.
-    expect(uk.name).toBe('aluminum');
-    expect(uk.density).toBe(us.density);
-    expect(uk.density).toBe(2700);
-    expect(uk.finish).toBe(us.finish);
-    // `requested` preserves the caller's spelling for provenance.
-    expect(uk.requested).toBe('aluminium');
-    expect(us.requested).toBe('aluminum');
+  it('resolves the bulk aliases to the SAME grade', () => {
+    const cases: Array<[string, string, number]> = [
+      ['steel', 'mild-steel', 7850],
+      ['aluminum', 'aluminum-6061', 2700],
+      ['aluminium', 'aluminum-6061', 2700],
+      ['pet', 'petg', 1380],
+    ];
+    for (const [alias, grade, density] of cases) {
+      const a = resolveMaterial(alias);
+      const g = resolveMaterial(grade);
+      expect(a.name).toBe(grade);
+      expect(a.density).toBe(density);
+      expect(a.density).toBe(g.density);
+      expect(a.finish).toBe(g.finish);
+      // `requested` preserves the caller's spelling for provenance.
+      expect(a.requested).toBe(alias);
+    }
   });
 
-  it('the aluminum finish token is the UK-spelled appearance token', () => {
-    // The reconciliation: US material name maps onto the UK finish token that
-    // actually exists in FINISHES.
-    expect(resolveMaterial('aluminum').finish).toBe('aluminium');
+  it('the aluminum-6061 finish token is the UK-spelled appearance token', () => {
+    expect(resolveMaterial('aluminum-6061').finish).toBe('aluminium');
     expect(isFinishToken('aluminium')).toBe(true);
   });
 
-  it('handles the density-without-finish gap honestly (pet)', () => {
-    const m = resolveMaterial('pet');
+  it('resolves nylon from its own datasheet row (no catalog row)', () => {
+    const m = resolveMaterial('nylon');
+    expect(m.density).toBe(1010);
+    expect(m.finish).toBe('nylon');
+    expect(catalogRowOf('nylon')).toBeNull();
+  });
+
+  it('handles the density-without-finish gap honestly (petg)', () => {
+    const m = resolveMaterial('petg');
     expect(m.density).toBe(1380);
-    // No natural pet finish exists — the library says so rather than inventing
-    // a nearest-looking token.
+    // No natural petg finish exists — the library says so rather than
+    // inventing a nearest-looking token.
     expect(m.finish).toBeUndefined();
   });
 
   it('refuses a finish-without-density token as a material (brass)', () => {
-    // brass is a real FINISH but has no catalog density; the library will not
-    // invent one. It is rejected, with a hint pointing at .finish('brass').
     expect(isFinishToken('brass')).toBe(true);
     const r = tryResolveMaterial('brass');
     expect(r.ok).toBe(false);
@@ -95,15 +114,16 @@ describe('materialLibrary — name → { density, finish }', () => {
     if (isKernelError(thrown)) {
       expect(thrown.code).toBe('feature.invalid-args');
       expect(thrown.message).toContain('unobtanium');
-      // Lists valid materials so the author fixes it without guessing.
-      expect(thrown.message).toContain('steel');
+      expect(thrown.message).toContain('mild-steel');
       expect(thrown.message).toContain('aluminium');
-      expect(thrown.message).toContain('pet');
+      expect(thrown.message).toContain('nylon');
     }
     // A capitalized spelling is a typo, not a silent match.
     expect(() => resolveMaterial('Steel')).toThrow();
     expect(() => resolveMaterial('')).toThrow();
     expect(() => resolveMaterial(undefined)).toThrow();
+    // Object prototype keys are not aliases.
+    expect(() => resolveMaterial('toString')).toThrow();
   });
 
   it('unknownMaterialMessage names the offending value and the valid list', () => {
@@ -113,23 +133,36 @@ describe('materialLibrary — name → { density, finish }', () => {
   });
 });
 
-// --- Drift gate: the library must stay consistent with BOTH source tables. ---
-describe('materialLibrary ↔ catalog / finish drift', () => {
-  it('MATERIAL_FINISH is keyed by exactly the catalog kinds', () => {
-    const finishKeys = new Set(Object.keys(MATERIAL_FINISH));
-    const catalogKeys = new Set<string>(CATALOG_KINDS);
-    const missing = [...catalogKeys].filter((k) => !finishKeys.has(k));
-    const extra = [...finishKeys].filter((k) => !catalogKeys.has(k));
-    expect(
-      missing,
-      `Catalog kinds with no finish mapping: ${missing.join(', ')}. ` +
-        'Add them to MATERIAL_FINISH (map to a finish token or undefined).',
-    ).toEqual([]);
-    expect(
-      extra,
-      `MATERIAL_FINISH names that are not catalog kinds: ${extra.join(', ')}. ` +
-        'A material can only claim a density it has in MATERIAL_CATALOG.',
-    ).toEqual([]);
+describe('Shape.finish(<material name>)', () => {
+  const finishOf = (name: string) => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const shape = kcad.box(1, 1, 1).finish(name as never);
+    return session.getRecords().find((r) => r.id === shape.id)?.metadata?.material;
+  };
+
+  it('applies the material default finish for a grade or alias', () => {
+    expect(finishOf('aluminum-6061')?.baseColor).toBe(FINISHES.aluminium.baseColor);
+    expect(finishOf('aluminum')?.baseColor).toBe(FINISHES.aluminium.baseColor);
+    expect(finishOf('mild-steel')?.baseColor).toBe(FINISHES.steel.baseColor);
+    // A plain finish token still wins where the names coincide.
+    expect(finishOf('steel')?.baseColor).toBe(FINISHES.steel.baseColor);
+  });
+
+  it('refuses a material with no finish and an unknown name', () => {
+    expect(() => finishOf('petg')).toThrow(/not a known finish/);
+    expect(() => finishOf('unobtanium')).toThrow(/not a known finish/);
+  });
+});
+
+// --- Drift gate: registry, catalog, finishes and FEA must agree. ---
+describe('material registry drift', () => {
+  it('MATERIAL_FINISH is keyed by exactly the registry grades', () => {
+    expect(Object.keys(MATERIAL_FINISH).sort()).toEqual([...ENGINEERING_MATERIAL_NAMES].sort());
+  });
+
+  it('the FEA table lists exactly the registry grades', () => {
+    expect([...FEA_MATERIAL_NAMES]).toEqual([...ENGINEERING_MATERIAL_NAMES]);
   });
 
   it('every non-undefined finish mapping resolves to a real FINISHES token', () => {
@@ -143,29 +176,30 @@ describe('materialLibrary ↔ catalog / finish drift', () => {
     }
   });
 
-  it('every alias resolves to a real catalog kind', () => {
-    for (const [alias, canonical] of Object.entries(MATERIAL_ALIASES)) {
-      expect(
-        (CATALOG_KINDS as readonly string[]).includes(canonical),
-        `Alias '${alias}' points at '${canonical}', which is not a catalog kind.`,
-      ).toBe(true);
-      // And the alias actually resolves through resolveMaterial to that kind.
-      expect(resolveMaterial(alias).name).toBe(canonical);
+  it('every grade with a catalog row reads it live', () => {
+    for (const grade of ENGINEERING_MATERIAL_NAMES) {
+      const row = catalogRowOf(grade);
+      if (row === null) continue;
+      expect(engineeringMaterialProps(grade)).toBe(MATERIAL_CATALOG[row]);
     }
   });
 
-  it('every canonical material resolves in both directions it claims', () => {
-    for (const kind of CATALOG_KINDS) {
-      const m = resolveMaterial(kind);
-      // Density direction: always present and positive.
-      expect(m.density).toBeGreaterThan(0);
-      // Finish direction: present iff the library claims one for this kind.
-      if (MATERIAL_FINISH[kind] === undefined) {
-        expect(m.finish).toBeUndefined();
-      } else {
-        expect(m.finish).toBe(MATERIAL_FINISH[kind]);
-        expect(isFinishToken(m.finish!)).toBe(true);
-      }
+  it('every alias resolves to a real grade in mass AND FEA', () => {
+    for (const [alias, canonical] of Object.entries(MATERIAL_ALIASES)) {
+      expect((ENGINEERING_MATERIAL_NAMES as readonly string[]).includes(canonical)).toBe(true);
+      expect(resolveMaterial(alias).name).toBe(canonical);
+      const fea = resolveFeaMaterial(alias);
+      expect(fea.ok && fea.name).toBe(canonical);
+    }
+  });
+
+  it('every accepted name resolves in mass and FEA to the same grade', () => {
+    for (const name of ACCEPTED_MATERIAL_NAMES) {
+      const mass = resolveMaterial(name);
+      const fea = resolveFeaMaterial(name);
+      expect(fea.ok, name).toBe(true);
+      if (fea.ok) expect(fea.name).toBe(mass.name);
+      expect(mass.density).toBeGreaterThan(0);
     }
   });
 });

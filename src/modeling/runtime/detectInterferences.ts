@@ -66,16 +66,22 @@ export function detectInterferences(
       if (ignored.has(key)) continue;
       if (!bboxesOverlap(a.bbox, b.bbox)) continue;
       comparisons++;
-      // Boolean intersect can throw on degenerate inputs; treat as "no
-      // detectable clash" rather than aborting the whole sweep.
-      let inter: OcctBackend;
+      // Volume-only common: no face-unification pass, which on B-spline-heavy
+      // parts (threads) can run for minutes. A probe OCCT cannot complete is
+      // reported, not read as "no clash".
+      let vol: number;
       try {
-        inter = a.shape.clone().intersect(b.shape.clone());
-      } catch {
+        vol = a.shape.intersectionVolume(b.shape);
+      } catch (e) {
+        diagnostics.push({
+          target: 'export-occt',
+          code: 'feature.kernel-failed',
+          severity: 'warn',
+          message: `interference probe failed on pair (${a.name}, ${b.name}): ${e instanceof Error ? e.message : String(e)}; overlap not measured.`,
+          hint: 'Check both parts for degenerate geometry with evaluate_script, or add the pair to the ignore list if its clearance is established another way.',
+        });
         continue;
       }
-      if (inter.isEmpty()) continue;
-      const vol = inter.volume();
       if (vol > epsilonMm3) {
         pairs.push({ a: a.name, b: b.name, volumeMm3: vol });
       }

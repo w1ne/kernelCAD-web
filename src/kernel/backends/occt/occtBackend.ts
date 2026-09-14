@@ -11,6 +11,7 @@ import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { isSameEdge } from './edgeQueries';
 import { buildNurbsSketchOnPlane, hasNurbsSegments } from './pathNurbsLowerer';
 import { resolveTangency } from './tangencySolver';
+import { sweepProfileAlongHelix, type HelicalSweepSpec } from './helicalSweep';
 import { encodeBinaryStl } from './exportStlBinary';
 import { verifyWatertight, stitchCracks, dropDegenerateTriangles, type WatertightReport } from './meshHeal';
 import { resolveColor } from '../../../shared/render/palette';
@@ -775,6 +776,24 @@ export class OcctBackend implements ShapeBackend {
   }
 
   /**
+   * Sweep a sketch-tagged backend's profile along an EXACT helix by screw
+   * motion (see `helicalSweep.ts`). The sketch's XY coordinates are read as
+   * (radial offset from the helix start point, axial offset) and placed in the
+   * axial plane through that point — the thread-profile convention.
+   *
+   * @throws {HelicalSweepArgsError} profile crosses the axis / overlaps the
+   *   next turn / non-positive helix dimensions (author-fixable).
+   * @throws {Error} OCCT could not build a valid solid.
+   */
+  static sweepSketchAlongHelix(sketch: OcctBackend, spec: HelicalSweepSpec): OcctBackend {
+    const { face } = OcctBackend.liftSketchToFace(sketch, 'XY');
+    const profile = face().outerWire();
+    const solid = sweepProfileAlongHelix(profile.wrapped, spec);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new OcctBackend(replicad.cast(solid as any) as ReplicadShape3D);
+  }
+
+  /**
    * Loft a sequence of sketch-tagged backends into a single solid by
    * interpolating between them. Each input sketch is lifted onto its target
    * plane (per the `planes` array, in order), then Replicad's `loftWith`
@@ -1225,6 +1244,44 @@ export class OcctBackend implements ShapeBackend {
     const o = (other as OcctBackend).shape;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new OcctBackend((this.shape as any).intersect(o) as ReplicadShape3D);
+  }
+
+  /**
+   * Volume (mm³) of `this ∩ other`, for clash / overlap probes that only need
+   * the number. Unlike `intersect()` it builds the common ONCE and skips the
+   * `SimplifyResult` face-unification pass: on solids with many B-spline faces
+   * (helical threads) that pass runs for minutes, and a volume does not depend
+   * on how coplanar faces are merged. Neither operand is consumed.
+   *
+   * @throws {Error} when OCCT reports the boolean failed — a failed probe must
+   *   not read as "no overlap".
+   */
+  intersectionVolume(other: OcctBackend): number {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const oc = getOC() as any;
+    const progress = new oc.Message_ProgressRange_1();
+    const common = new oc.BRepAlgoAPI_Common_1();
+    const args = new oc.TopTools_ListOfShape_1();
+    const tools = new oc.TopTools_ListOfShape_1();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    args.Append_1((this.shape as any).wrapped);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tools.Append_1((other.shape as any).wrapped);
+    common.SetArguments(args);
+    common.SetTools(tools);
+    common.Build(progress);
+    try {
+      if (!common.IsDone() || common.HasErrors()) {
+        throw new Error('OcctBackend.intersectionVolume: the common boolean reported a failure.');
+      }
+      const props = new oc.GProp_GProps_1();
+      oc.BRepGProp.VolumeProperties_1(common.Shape(), props, false, false, false);
+      const volume = Math.abs(props.Mass());
+      props.delete();
+      return volume;
+    } finally {
+      common.delete(); args.delete(); tools.delete(); progress.delete();
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

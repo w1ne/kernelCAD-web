@@ -6,14 +6,15 @@ keywords:
   - ISO metric hex bolt M3 M4 M5 M6 M8 M10 M12
   - coarse pitch from the ISO 262 table
   - hex across-flats and head height
-  - helical 60-degree V-thread swept along helix
-  - matching hex nut with clearance bore
+  - 60-degree ISO V-thread swept along an exact helix
+  - hex nut with a modeled internal thread
 when_to_use: >-
-  You need an ISO metric hex bolt and matching nut (M3–M12) whose pitch,
-  hex across-flats, and head height come from a params table, with a
-  helical thread swept along helix() on the shank. The nut uses a
-  documented clearance bore — kernelCAD has helix() but no internal-thread
-  primitive.
+  You need an ISO metric hex bolt threaded into its hex nut (M3–M12) whose
+  pitch, hex across-flats, and head height come from a params table. The bolt
+  thread is a real 60° V profile swept with sweep(helix(...), { spine: 'helix' });
+  the nut's internal thread is the thread option of its bore (pitch, modeled,
+  play), seated in phase so the two parts never interfere. A cosmetic thread
+  (modeled: false) keeps only the minor-diameter bore for speed.
 ---
 
 ```typescript
@@ -28,7 +29,9 @@ const ISO = {
   M12: { d: 12, pitch: 1.75, af: 18.0, head: 7.5,  nut: 10.8 },
 };
 const spec = ISO.M6;
-const turns = 8; // threaded length = turns * pitch
+const P = spec.pitch;
+const turns = 12; // threaded length = turns * pitch
+const threadClearance = param('threadClearance', 0.05); // nut thread play, mm (≤ pitch/8)
 
 function hexPrism(af, height) {
   // Flat-to-flat = af. Vertex radius R = af / √3 for a flat-top hex.
@@ -43,38 +46,49 @@ function hexPrism(af, height) {
   return sk.close().extrude(height);
 }
 
-const head = hexPrism(spec.af, spec.head);
+// ISO 68-1 basic profile: H = √3/2·P, minor radius d/2 − 5H/8, ridge 3P/4 wide
+// at the minor radius and P/8 wide at the crest, flanks at 30°.
+const H = (Math.sqrt(3) / 2) * P;
+const rMinor = spec.d / 2 - (5 / 8) * H;
+const halfWidth = (r) => (3 / 8) * P - (r - rMinor) * Math.tan(Math.PI / 6);
 
-// Helical thread: centered square wire swept along helix() with a
-// smooth spine, unioned with a minor-diameter core. (A 60° V-profile
-// at this radius self-intersects in OCCT; square thread is the
-// helix()-composable form.)
-const w = spec.pitch * 0.2;
-const threadProfile = path()
-  .moveTo(-w, -w)
-  .lineTo(w, -w)
-  .lineTo(w, w)
-  .lineTo(-w, w)
+// Profile in the helix's axial plane: x = radial offset from the helix point,
+// y = axial offset. The root runs 0.15·P into the core with straight sides so
+// the core cylinder crosses the flanks cleanly.
+const kink = -0.05 * P;
+const crest = spec.d / 2 - rMinor;
+const vProfile = path()
+  .moveTo(-0.15 * P, -halfWidth(rMinor + kink))
+  .lineTo(kink, -halfWidth(rMinor + kink))
+  .lineTo(crest, -halfWidth(rMinor + crest))
+  .lineTo(crest, halfWidth(rMinor + crest))
+  .lineTo(kink, halfWidth(rMinor + kink))
+  .lineTo(-0.15 * P, halfWidth(rMinor + kink))
   .close();
-const minorR = spec.d / 2 - 0.54 * spec.pitch;
-const rail = helix({
-  radius: spec.d / 2 - 0.1,
-  pitch: spec.pitch,
-  turns,
-  pointsPerTurn: 24,
+
+// spine: 'helix' sweeps along the exact helix by screw motion, so the 60° V
+// stays a V and the solid is valid.
+const thread = vProfile.sweep(helix({ radius: rMinor, pitch: P, turns }), { spine: 'helix' });
+const shank = cylinder((turns + 1) * P, rMinor).union(thread);
+const bolt = hexPrism(spec.af, spec.head).union(shank.translate(0, 0, spec.head));
+
+// Internal thread: diameter is the nominal size; the hole drills the ISO minor
+// diameter and cuts the matching groove. modeled: false would keep only the
+// bore (a cosmetic thread) for speed.
+const nut = hexPrism(spec.af, spec.nut).hole({ atZ: spec.nut, byNormal: 'Z' }, {
+  u: 0,
+  v: 0,
+  diameter: spec.d,
+  depth: 'through',
+  thread: { pitch: P, modeled: true, clearance: threadClearance },
 });
-const core = cylinder(turns * spec.pitch, minorR);
-const thread = threadProfile.sweep(rail, { spine: 'smooth' });
-const shank = core.union(thread);
 
-// Nut: hex prism minus a clearance bore (no internal-thread primitive).
-const clearanceR = spec.d / 2 + 0.05;
-const nut = hexPrism(spec.af, spec.nut)
-  .subtract(cylinder(spec.nut + 2, clearanceR).translate(0, 0, -1));
-
+// The bolt's thread crosses +X at z = head + k·P; the nut's groove crosses its
+// u direction (+X) at its top face. Seat the top face on a whole pitch so the
+// two threads are in phase.
+const nutTop = spec.head + 10 * P;
 const arm = assembly('iso-metric-bolt-and-nut');
-arm.part('hex-head', head);
-arm.part('threaded-shank', shank, { at: [0, 0, spec.head] });
-arm.part('hex-nut', nut, { at: [spec.af + 12, 0, 0] });
+arm.part('hex-bolt', bolt, { material: 'mild-steel' });
+arm.part('hex-nut', nut, { material: 'mild-steel', at: [0, 0, nutTop - spec.nut] });
 return arm.model();
 ```

@@ -25,7 +25,9 @@ import { Transform } from '../../shared/runtime/se3';
 import type { ColorToken } from '../../shared/render/palette';
 import { resolveColor } from '../../shared/render/palette';
 import type { FinishToken } from '../../shared/render/finishes';
-import { expandFinish } from '../../shared/render/finishes';
+import { expandFinish, isFinishToken, unknownFinishMessage } from '../../shared/render/finishes';
+import { tryResolveMaterial, type MaterialName } from '../properties/materialLibrary';
+import type { AnyMaterialName } from '../../kinematic/engineeringMaterials';
 import type { PBRMaterial } from '../../shared/intent/material';
 import type { TextureRef, TextureSet } from '../../shared/intent/textureRef';
 import { isTextureRef, normalizeTextureRef } from '../../shared/intent/textureRef';
@@ -544,9 +546,12 @@ export class Shape {
    * TINT a finish, pass `{ color }` here rather than layering `.color()` under
    * it — the layered hue would be shadowed.
    *
-   * @param name  a finish token; an unknown name throws
-   *              `feature.finish.unknown-token` listing the valid finishes (no
-   *              silent fallback to a default).
+   * @param name  a finish token, or an engineering material name (`mild-steel`,
+   *              `aluminum-6061`, `nylon`, alias `aluminum`, …) which applies
+   *              that material's default finish — the same name `arm.part({
+   *              material })` and `feaStudy({ material })` take. An unknown
+   *              name, or a material with no finish (`petg`), throws
+   *              `feature.finish.unknown-token` (no silent fallback).
    * @param opts.color  override the hue while keeping the finish's surface
    *              character. Meaningful for paints / ABS / anodising; accepted
    *              but off for raw metals (the metal is its colour).
@@ -556,13 +561,33 @@ export class Shape {
    * Same lifecycle as `.color()` / `.material()`: apply to leaf parts before a
    * boolean; identity dies at booleans.
    */
-  finish(name: FinishToken, opts?: { color?: string; face?: string }): Shape {
+  finish(name: FinishToken | AnyMaterialName, opts?: { color?: string; face?: string }): Shape {
+    // A finish token wins when the name is both (steel, pla, abs, nylon map to
+    // the identically named token anyway). Otherwise an engineering material
+    // name applies its registry default finish, so one material vocabulary
+    // covers mass, FEA and appearance.
+    let token: string = name;
+    if (!isFinishToken(name)) {
+      const resolved = tryResolveMaterial(name);
+      if (resolved.ok) {
+        if (resolved.material.finish === undefined) {
+          throw new KernelError(
+            'feature.finish.unknown-token',
+            unknownFinishMessage(name),
+            this.id,
+            `'${name}' is a material (${resolved.material.name as MaterialName}) with no default finish. ` +
+              'Pass a finish token such as plastic-glossy, or set the look with .color().',
+          );
+        }
+        token = resolved.material.finish;
+      }
+    }
     // expandFinish throws `feature.finish.unknown-token` (with this shape's id)
     // for an unknown name. Valid finishes clamp cleanly, so routing the result
     // through .material() reuses its validation + per-face plumbing with no
     // extra clamp warning.
     const pbr = expandFinish(
-      name,
+      token,
       opts?.color !== undefined ? { color: opts.color } : undefined,
       this.id,
     );

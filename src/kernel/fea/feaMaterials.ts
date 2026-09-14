@@ -7,81 +7,47 @@
 // straight into the CalculiX `*ELASTIC` card with no conversion step that
 // could silently drop a factor of 1e6.
 //
-// This module owns exactly ONE new fact per material: Poisson's ratio. E and
-// yield are read LIVE from `MATERIAL_CATALOG` (src/kinematic/beamMaterials.ts)
-// for every grade that already has a catalog row, so a catalog edit flows
-// through to FEA without a second copy drifting. The same discipline as
-// `modeling/properties/materialLibrary.ts`, which reconciles the catalog's
-// density with the appearance table.
+// Grade names, their aliases, E / yield and Poisson's ratio all come from the
+// single material registry (`src/kinematic/engineeringMaterials.ts`) that mass
+// properties, finishes and the beam check also resolve through — so a part
+// declared `aluminum-6061` weighs, renders and solves as the same material.
+// This module only converts units (Pa -> MPa) for the solver.
 //
-// The grade names here are FEA-facing and more specific than the catalog's
-// bulk kinds, because a structural answer depends on the grade:
-//   mild-steel     -> catalog `steel`     (250 MPa yield, 200 GPa)
-//   aluminum-6061  -> catalog `aluminum`  (270 MPa yield, 70 GPa — 6061-T6)
-//   pla            -> catalog `pla`
-//   petg           -> catalog `pet`       (the catalog's PET row IS the PETG
-//                                          print-grade datasheet composite)
-//   abs            -> catalog `abs`
-//   nylon          -> NO catalog row. This is the one grade whose E and yield
-//                     are declared here, from PA12 SLS/FDM datasheet values.
+// Accepted names are the grades (`mild-steel`, `aluminum-6061`, `pla`, `petg`,
+// `abs`, `nylon`) and the registry's bulk aliases (`steel` -> mild-steel,
+// `aluminum`/`aluminium` -> aluminum-6061, `pet` -> petg). The resolved
+// `name` is always the canonical grade.
 //
-// Poisson's ratio sources (pinned at write time):
-//   - Mild steel 0.29, Al 6061-T6 0.33: MIL-HDBK-5J §3 room-temperature data.
-//   - PLA 0.36 / PETG 0.40 / ABS 0.35 / PA12 0.39: mid-grade FDM/SLS
-//     datasheet composites (Ultimaker / Prusa / EOS), the same provenance as
-//     the catalog's polymer rows.
-//
-// A grade outside this table is NOT guessed: `resolveFeaMaterial` returns a
+// A name outside the registry is NOT guessed: `resolveFeaMaterial` returns a
 // structured failure naming the valid grades, and the caller turns that into
 // a `feature.invalid-args` throw at capture time. Agents with measured
 // properties pass explicit `{ E, nu, yield }` instead.
 
-import { MATERIAL_CATALOG } from '../../kinematic/beamMaterials';
-import type { MaterialKind } from '../../kinematic/types';
+import {
+  ACCEPTED_MATERIAL_NAMES,
+  ENGINEERING_MATERIAL_NAMES,
+  canonicalMaterialName,
+  engineeringMaterialProps,
+  poissonRatio,
+  type EngineeringMaterialName,
+} from '../../kinematic/engineeringMaterials';
 import { isFeaMaterialProps, type FeaMaterialProps } from '../../shared/intent/feaStudyRecord';
 
-type CatalogKind = Exclude<MaterialKind, 'custom'>;
-
-/** One FEA grade: where its stiffness/strength come from, plus its own nu. */
-interface FeaGradeSpec {
-  /** Catalog row supplying E and yield, or `null` when this grade declares
-   *  them itself (no catalog row exists for it). */
-  readonly catalog: CatalogKind | null;
-  /** Poisson's ratio — the fact this table owns. */
-  readonly nu: number;
-  /** MPa — only for grades with `catalog: null`. */
-  readonly yieldMPa?: number;
-  /** MPa — only for grades with `catalog: null`. */
-  readonly eMPa?: number;
-}
-
-const FEA_GRADES: Readonly<Record<string, FeaGradeSpec>> = Object.freeze({
-  'mild-steel': { catalog: 'steel', nu: 0.29 },
-  'aluminum-6061': { catalog: 'aluminum', nu: 0.33 },
-  pla: { catalog: 'pla', nu: 0.36 },
-  petg: { catalog: 'pet', nu: 0.4 },
-  abs: { catalog: 'abs', nu: 0.35 },
-  // PA12: no catalog row, so E and yield are declared here alongside nu.
-  nylon: { catalog: null, nu: 0.39, eMPa: 1700, yieldMPa: 45 },
-});
-
-/** Every grade name the FEA path accepts, in table order. */
-export const FEA_MATERIAL_NAMES: readonly string[] = Object.keys(FEA_GRADES);
+/** Every canonical grade name the FEA path accepts, in table order. Aliases
+ *  are accepted too (see `ACCEPTED_MATERIAL_NAMES`) but not listed here, so
+ *  the table dump has one row per material. */
+export const FEA_MATERIAL_NAMES: readonly string[] = [...ENGINEERING_MATERIAL_NAMES];
 
 export type ResolveFeaMaterialResult =
   | { readonly ok: true; readonly props: FeaMaterialProps; readonly name: string }
   | { readonly ok: false; readonly message: string; readonly hint: string };
 
-/** Expand one grade row into solver-unit props. Catalog-backed grades read E
- *  and yield live (Pa -> MPa); self-declared grades read their own fields. */
-function propsFor(spec: FeaGradeSpec): FeaMaterialProps {
-  if (spec.catalog === null) {
-    return { E: spec.eMPa!, nu: spec.nu, yield: spec.yieldMPa! };
-  }
-  const row = MATERIAL_CATALOG[spec.catalog];
+/** Expand one grade into solver-unit props (Pa -> MPa). */
+function propsFor(name: EngineeringMaterialName): FeaMaterialProps {
+  const row = engineeringMaterialProps(name);
   return {
     E: row.youngsModulusPa / 1e6,
-    nu: spec.nu,
+    nu: poissonRatio(name),
     yield: row.yieldStressPa / 1e6,
   };
 }
@@ -90,7 +56,7 @@ function propsFor(spec: FeaGradeSpec): FeaMaterialProps {
  *  the `kernelcad-fea` skill and `fea_summary`. */
 export function feaMaterialTable(): Record<string, FeaMaterialProps> {
   const out: Record<string, FeaMaterialProps> = {};
-  for (const [name, spec] of Object.entries(FEA_GRADES)) out[name] = propsFor(spec);
+  for (const name of ENGINEERING_MATERIAL_NAMES) out[name] = propsFor(name);
   return out;
 }
 
@@ -130,19 +96,19 @@ export function resolveFeaMaterial(material: unknown): ResolveFeaMaterialResult 
       ok: false,
       message:
         `feaStudy: material must be a grade name or { E, nu, yield }; got ${JSON.stringify(material)}. ` +
-        `Valid grades: ${FEA_MATERIAL_NAMES.join(', ')}.`,
+        `Valid grades: ${ACCEPTED_MATERIAL_NAMES.join(', ')}.`,
       hint: 'invalid-args.fea-study.material — pass one of the named grades, or explicit { E, nu, yield } in MPa.',
     };
   }
-  const spec = FEA_GRADES[material];
-  if (spec === undefined) {
+  const grade = canonicalMaterialName(material);
+  if (grade === undefined) {
     return {
       ok: false,
       message:
         `feaStudy: '${material}' is not a known FEA material grade. ` +
-        `Valid grades: ${FEA_MATERIAL_NAMES.join(', ')}.`,
+        `Valid grades: ${ACCEPTED_MATERIAL_NAMES.join(', ')}.`,
       hint: 'invalid-args.fea-study.material — pass one of the named grades, or explicit { E, nu, yield } in MPa if you have measured properties.',
     };
   }
-  return { ok: true, props: propsFor(spec), name: material };
+  return { ok: true, props: propsFor(grade), name: grade };
 }

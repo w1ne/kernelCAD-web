@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
-// SKILL.md told agents that "every PathBuilder coord and scalar accepts
-// Editable<number>". `.circle` does not — its listApi signature is plain
-// `number`, and passing a ParamRef fails at capture with "all of cx, cy, r must
-// be finite numbers". An agent trusting the blanket claim writes
-// `circle(0, 0, param('R', 3))` and hits a runtime error the docs said could not
-// happen.
+// SKILL.md tells agents that "every PathBuilder coord and scalar accepts
+// Editable<number>". `.circle` used to break that claim (plain `number`
+// signature, ParamRef rejected at capture) and was carved out by name; it now
+// accepts Editable like the rest.
 //
 // This pins the two together: any PathBuilder method that does NOT accept
-// Editable must be named as an exception in the prose. Adding a Editable-less
-// method, or making `.circle` accept Editable without updating the text, fails
-// here rather than in a user's script.
+// Editable must be named as an exception in the prose, and a method that gains
+// Editable support must lose its carve-out.
 
 import { describe, it, expect } from 'vitest';
 import { PATH_BUILDER_METHODS } from '../../../src/agent/mcp/tools/listApi';
@@ -41,13 +38,12 @@ describe('PathBuilder Editable claim matches the signatures', () => {
     ).toEqual([]);
   });
 
-  it('circle is still the known exception, and is called out by name', () => {
-    // Guards the assertion above against becoming vacuous: if `.circle` ever
-    // gains Editable support the exception list empties, the first test passes
-    // trivially, and this one fails to say the prose now needs the carve-out
-    // REMOVED rather than added.
+  it('circle accepts Editable, and the prose no longer carves it out', () => {
+    // `.circle` used to be the one exception. It now captures ParamRef centre
+    // and radius symbolically, so it must not be listed as plain-number, and
+    // the skill must not still tell agents to avoid ParamRefs there.
     const exceptions = methodsWithoutEditable();
-    expect(exceptions).toContain('circle');
-    expect(SKILL_MD).toMatch(/except `?\.?circle/i);
+    expect(exceptions).not.toContain('circle');
+    expect(SKILL_MD).not.toMatch(/except `?\.?circle/i);
   });
 });

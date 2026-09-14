@@ -33,7 +33,7 @@ A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.k
 ## Key globals available today
 
 - `referenceImage(path, opts)` — show a reference photo as a plane overlay in the Studio viewport. No OCCT geometry; hidden during scoring. Supports `.png`, `.jpg`, `.jpeg`, `.webp`. See `kernelcad-authoring` for the full signature.
-- `Shape.finish(name, opts?)` — apply a NAMED material finish (brass, anodized-black, abs, glass-tinted, …). The primary way to make a part look like a real material: you name the material, not BRDF floats. Expands to the same PBR record `.material()` writes. `opts.color` overrides the hue; `opts.face` scopes to a labelled face. Must be called on leaf parts before they enter a boolean. See `kernelcad-authoring` Materials section for the full vocabulary.
+- `Shape.finish(name, opts?)` — apply a NAMED material finish (brass, anodized-black, abs, glass-tinted, …), or an engineering material grade (`aluminum-6061`, `mild-steel`, `nylon`) for that grade's default finish. The primary way to make a part look like a real material: you name the material, not BRDF floats. Expands to the same PBR record `.material()` writes. `opts.color` overrides the hue; `opts.face` scopes to a labelled face. Must be called on leaf parts before they enter a boolean. See `kernelcad-authoring` Materials section for the full vocabulary.
 - `Shape.material(opts)` — ADVANCED escape hatch: raw PBR floats (baseColor, metalness, roughness, clearcoat, clearcoatRoughness, ior, transmission) for glass/anisotropy/textures no `.finish()` token covers. Prefer `.finish()` for a named material. Must be called on leaf parts before they enter a boolean.
 
 ## Universal conventions

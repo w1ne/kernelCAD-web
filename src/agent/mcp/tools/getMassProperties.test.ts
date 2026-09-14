@@ -137,7 +137,8 @@ describe('inspect({ of: "mass" })', () => {
     // A material-seeded density is a REAL number, not a default.
     expect(mp.densitySource).toBe('material');
     expect(mp.densityDefaulted).toBe(false);
-    expect(mp.material).toBe('steel');
+    // `steel` is an alias; the reported material is the canonical grade.
+    expect(mp.material).toBe('mild-steel');
     expect(r.warning).toBeUndefined();
   });
 
@@ -145,8 +146,17 @@ describe('inspect({ of: "mass" })', () => {
     const r = await getMassPropertiesTool({ code: 'return box(10, 10, 10);', material: 'aluminium' });
     expect(r.ok, r.error).toBe(true);
     expect(r.massProperties!.density).toBe(2700);
-    expect(r.massProperties!.material).toBe('aluminum');
+    expect(r.massProperties!.material).toBe('aluminum-6061');
     expect(r.massProperties!.densityDefaulted).toBe(false);
+  });
+
+  it('accepts the same engineering grade names the FEA path takes', async () => {
+    for (const [grade, density] of [['mild-steel', 7850], ['aluminum-6061', 2700], ['petg', 1380], ['nylon', 1010]] as const) {
+      const r = await getMassPropertiesTool({ code: 'return box(10, 10, 10);', material: grade });
+      expect(r.ok, r.error).toBe(true);
+      expect(r.massProperties!.density).toBe(density);
+      expect(r.massProperties!.material).toBe(grade);
+    }
   });
 
   it('marks a raw density as source "raw", not defaulted', async () => {
