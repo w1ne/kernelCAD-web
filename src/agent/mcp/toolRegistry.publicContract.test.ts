@@ -24,6 +24,7 @@ import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
 import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
 import { mechanismSimToolEntries } from './registry/mechanismSimTools';
+import { meshReconstructToolEntries } from './registry/meshReconstructTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -73,6 +74,7 @@ const EXPECTED_TOOL_NAMES = [
   // Tail-appended: a new tool goes on the END so kernelCAD-server's
   // index-based consumption of the historical order keeps working.
   'diff_geometry',
+  'mesh_to_features',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -297,6 +299,13 @@ describe('toolRegistry public contract', () => {
     expect(TOOL_REGISTRY.slice(44, 45)).toEqual(geometryDiffToolEntries);
   });
 
+  it('composes the mesh reconstruction family at the registry tail, after the geometry diff family', () => {
+    const names = meshReconstructToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual(['mesh_to_features']);
+    expect(TOOL_REGISTRY.slice(45, 46)).toEqual(meshReconstructToolEntries);
+  });
+
   it('keeps the 38 historical entries at indices 0..37 and appends new families in merge order', () => {
     expect(TOOL_REGISTRY.slice(38).map(entry => entry.definition.name)).toEqual([
       'resolve_assumptions',
@@ -306,8 +315,9 @@ describe('toolRegistry public contract', () => {
       'repair_script',
       'sweep_tolerance',
       'diff_geometry',
+      'mesh_to_features',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(45);
+    expect(TOOL_REGISTRY).toHaveLength(46);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {
