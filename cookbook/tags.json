@@ -42,5 +42,10 @@
   "load",
   "gcode",
   "manufacturing",
-  "printer"
+  "printer",
+  "static-hold",
+  "actuator",
+  "torque",
+  "kinematic",
+  "sweep-tolerance"
 ]

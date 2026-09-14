@@ -1085,6 +1085,28 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'assembly',
     description: "An articulated mate (revolute/prismatic) is declared but not realised by part geometry — no shared pin/shaft feature constrains both parts, or the pin escapes the hole at a sampled pose, or the bearing surfaces are not coplanar (Gate 6 — mate physical realization).",
   },
+  'assembly.joint.static-hold.margin-low': {
+    hintTemplate:
+      "checkStaticHold's worst-pose required torque/force is within capacity but under the requested safety margin. Increase the actuator torque/force on this joint to the value named in error.message for the desired margin, or shorten the downstream link / reduce its mass.",
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'increase the actuator torque/force, or shorten/lighten the downstream link',
+    },
+    defaultSeverity: 'warn',
+    group: 'assembly',
+    description: 'checkStaticHold found a revolute/prismatic joint whose worst-sampled-pose gravitational holding requirement is within the declared actuator capacity but below the requested minTorqueMarginPct floor.',
+  },
+  'assembly.joint.static-hold.exceeded': {
+    hintTemplate:
+      "checkStaticHold's worst-pose required torque/force exceeds the declared actuator capacity — the mechanism cannot hold its own weight at that pose. Increase the actuator torque/force to the value named in error.message, or shorten/lighten the downstream link.",
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'increase the actuator torque/force, or shorten/lighten the downstream link',
+    },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'checkStaticHold found a revolute/prismatic joint whose worst-sampled-pose gravitational holding requirement exceeds the declared actuator torque/force capacity.',
+  },
   // Assembly validator — v0.7 Slice 1 workspace reachability (1)
   'assembly.workspace.unreachable': {
     hintTemplate:
@@ -2082,6 +2104,22 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'kinematic',
     description:
       'A load-capacity check ran in beam mode but the caller did not declare a material for one or more loaded parts; the check refused to silently substitute a default.',
+  },
+  'kinematic.static-hold.no-actuator-declared': {
+    hintTemplate:
+      "checkStaticHold requires an actuator: { torqueNm } (revolute) / { forceN } (prismatic) declaration on the joint(s) it evaluates. Add actuator to arm.revolute(...)/arm.prismatic(...). No silent default capacity is applied.",
+    nextAction: { kind: 'fix-arg', field: 'actuator' },
+    defaultSeverity: 'error',
+    group: 'kinematic',
+    description: 'checkStaticHold was asked to evaluate a joint (explicitly named, or as the only candidate) that has no declared actuator torque/force capacity; the check refused to silently substitute a default.',
+  },
+  'kinematic.sweep-tolerance.combo-cap-exceeded': {
+    hintTemplate:
+      "The cartesian product of swept param values exceeds the 64-combo cap; only the first 64 (declaration order) were evaluated. Narrow the swept ranges/values, or split the sweep into multiple calls.",
+    nextAction: { kind: 'fix-arg', field: 'params' },
+    defaultSeverity: 'warn',
+    group: 'kinematic',
+    description: 'sweepTolerance declared params whose cartesian product exceeds the 64-combination cap; the sweep truncated to the first 64 combos in declaration order.',
   },
   'kinematic.mounting-hole.diameter-mismatch': {
     hintTemplate:

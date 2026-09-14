@@ -11,6 +11,8 @@ export { checkMountingHoleConsistency } from './checkMountingHoleConsistency';
 export { checkSweptCollision } from './checkSweptCollision';
 export { checkReachable } from './checkReachable';
 export { checkLoadCapacity } from './checkLoadCapacity';
+export { checkStaticHold } from './checkStaticHold';
+export { sweepTolerance } from './sweepTolerance';
 
 export type {
   KinematicDiagnostic,
@@ -31,6 +33,14 @@ export type {
   ReachableOpts,
   ReachableResult,
   ReachableTarget,
+  StaticHoldJointResult,
+  StaticHoldOpts,
+  StaticHoldResult,
+  SweepComboResult,
+  SweepGateSpec,
+  SweepParamSpec,
+  SweepParamsDeclaration,
+  SweepToleranceResult,
   SweptCollidingPose,
   SweptCollisionContact,
   SweptCollisionOpts,

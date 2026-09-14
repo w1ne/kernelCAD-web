@@ -76,7 +76,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     ).toEqual([]);
   });
 
-  it('catalogue has exactly 268 codes', () => {
+  it('catalogue has exactly 272 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -189,7 +189,11 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       fea.study.fixed-unresolved, fea.study.load-unresolved) = 253.
     //  +  4 tool.repair.* (trace-guided repair: no-candidate, out-of-region,
     //       exhausted, source-drift) = 252.
-    expect(catalogue.size).toBe(268);
+    //  +  4 mechanism checks (assembly.joint.static-hold.exceeded,
+    //       assembly.joint.static-hold.margin-low,
+    //       kinematic.static-hold.no-actuator-declared,
+    //       kinematic.sweep-tolerance.combo-cap-exceeded) = 252.
+    expect(catalogue.size).toBe(272);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

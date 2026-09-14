@@ -24,6 +24,10 @@ const KINEMATIC_CODES = [
   // #541 — info diagnostic when checkMountingHoleConsistency examined zero
   // fastened mates, so the green result verifies nothing.
   'kinematic.mounting-hole.no-coverage',
+  // Static-hold guard: an actuated joint has no declared actuator capacity.
+  'kinematic.static-hold.no-actuator-declared',
+  // Tolerance sweep refused a cartesian product above its combo cap.
+  'kinematic.sweep-tolerance.combo-cap-exceeded',
 ] as const;
 
 // Per the cumulative-findings discipline (item #56), every nextAction kind
@@ -44,7 +48,7 @@ const CANONICAL_NEXT_ACTION_KINDS = new Set([
 ]);
 
 describe('kinematic-grounding diagnostic codes', () => {
-  it('registers exactly 11 kinematic.* codes', () => {
+  it('registers exactly 13 kinematic.* codes', () => {
     const kinCodes = Object.keys(DIAGNOSTIC_REGISTRY).filter((c) =>
       c.startsWith('kinematic.'),
     );

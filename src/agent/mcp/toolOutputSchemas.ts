@@ -162,6 +162,21 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   },
 
   set_param: SOURCE_EDIT,
+  sweep_tolerance: {
+    type: 'object',
+    properties: {
+      ok: { type: 'boolean', description: 'Whether every gate passed on every evaluated combo.' },
+      combosEvaluated: { type: 'number', description: 'Number of combos actually evaluated (capped at 64).' },
+      combosCapped: { type: 'boolean', description: 'True when the full cartesian product exceeded the 64-combo cap.' },
+      results: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'One entry per evaluated combo: { combo, gates, diagnostics }.' },
+      firstFailure: { type: 'object', additionalProperties: true, description: 'First failing combo per gate name.' },
+      diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Sweep-level diagnostics (e.g. combo-cap-exceeded).' },
+      error: { type: 'string' },
+      errorCode: { type: 'string' },
+    },
+    required: ['ok'],
+    additionalProperties: true,
+  },
   add_feature: SOURCE_EDIT,
   add_variable_sweep: SOURCE_EDIT,
   project_curve: SOURCE_EDIT,

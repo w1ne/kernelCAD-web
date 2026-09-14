@@ -317,7 +317,7 @@
   },
   {
     "name": "verify",
-    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }).\n- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n- 'load-capacity' — closed-form Euler-Bernoulli beam stress / safety-factor check ({ loads, materials, ... }).\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
+    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }).\n- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n- 'load-capacity' — closed-form Euler-Bernoulli beam stress / safety-factor check ({ loads, materials, ... }).\n- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -331,13 +331,14 @@
             "swept-collision",
             "reachable",
             "mounting-holes",
-            "load-capacity"
+            "load-capacity",
+            "static-hold"
           ],
           "description": "Which verification to run."
         },
         "file": {
           "type": "string",
-          "description": "Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity)."
+          "description": "Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold)."
         },
         "code": {
           "type": "string",
@@ -391,7 +392,7 @@
         },
         "joint": {
           "type": "string",
-          "description": "check:'swept-collision' — joint to sweep; omit to sweep every declared joint."
+          "description": "check:'swept-collision' — joint to sweep; omit to sweep every declared joint. check:'static-hold' — joint to evaluate; omit to evaluate every joint with a declared actuator."
         },
         "range": {
           "type": "array",
@@ -472,6 +473,26 @@
         "safety_factor_threshold": {
           "type": "number",
           "description": "check:'load-capacity' — pass/fail safety-factor floor (default 1.5)."
+        },
+        "pose": {
+          "description": "check:'static-hold' — explicit pose (joint name -> deg/mm) or array of poses; omit to sample a grid across the evaluated joint's range."
+        },
+        "gravity": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "check:'static-hold' — gravity vector, m/s^2, world frame (default [0, 0, -9.81])."
+        },
+        "min_torque_margin_pct": {
+          "type": "number",
+          "description": "check:'static-hold' — safety-margin floor as a percent of actuator capacity (default 20)."
+        },
+        "range_samples": {
+          "type": "number",
+          "description": "check:'static-hold' — grid density per evaluated joint when `pose` is omitted (default 9)."
         }
       },
       "required": [
@@ -5352,6 +5373,134 @@
         "strategy",
         "candidates",
         "attempts"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "sweep_tolerance",
+    "description": "Use this when you need to check whether a mechanism stays buildable across a tolerance/dimension range, not just at one nominal value. Declares one or more param() names with a { values: [...] } list or a { min, max, steps } range, re-evaluates the script once per cartesian-product combination (capped at 64 combos — exceeding it truncates to the first 64 and emits kinematic.sweep-tolerance.combo-cap-exceeded), and runs the standard gates on each combo: interference, mounting-hole diameter agreement, and joint-axis binding (all three, default on); reachability only when gates.reachable names a tip_link + target. Returns the pass/fail envelope table (one row per combo) plus firstFailure per gate — the fastest way to find the first param value at which a design breaks.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "Path to a .kcad.ts script file."
+        },
+        "code": {
+          "type": "string",
+          "description": "Inline kernelCAD script source."
+        },
+        "assembly": {
+          "type": "string",
+          "description": "Assembly name; defaults to the first captured assembly."
+        },
+        "params": {
+          "type": "object",
+          "description": "param() name -> { values: [number|string, ...] } or { min, max, steps }."
+        },
+        "gates": {
+          "type": "object",
+          "description": "Which standard gates to run per combo.",
+          "properties": {
+            "interference": {
+              "type": "boolean",
+              "description": "Default true."
+            },
+            "mountingHoles": {
+              "type": "boolean",
+              "description": "Default true."
+            },
+            "jointAxis": {
+              "type": "boolean",
+              "description": "Default true."
+            },
+            "reachable": {
+              "type": "object",
+              "description": "Runs the reachability gate when set.",
+              "properties": {
+                "tipLink": {
+                  "type": "string"
+                },
+                "targetPosition": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 3,
+                  "maxItems": 3
+                },
+                "targetOrientation": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 3,
+                  "maxItems": 3
+                }
+              },
+              "required": [
+                "tipLink",
+                "targetPosition"
+              ]
+            }
+          }
+        }
+      },
+      "required": [
+        "params"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "description": "Whether every gate passed on every evaluated combo."
+        },
+        "combosEvaluated": {
+          "type": "number",
+          "description": "Number of combos actually evaluated (capped at 64)."
+        },
+        "combosCapped": {
+          "type": "boolean",
+          "description": "True when the full cartesian product exceeded the 64-combo cap."
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "One entry per evaluated combo: { combo, gates, diagnostics }."
+        },
+        "firstFailure": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "First failing combo per gate name."
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Sweep-level diagnostics (e.g. combo-cap-exceeded)."
+        },
+        "error": {
+          "type": "string"
+        },
+        "errorCode": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
       ],
       "additionalProperties": true
     }

@@ -22,6 +22,7 @@ import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
 import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
+import { mechanismSimToolEntries } from './registry/mechanismSimTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -67,6 +68,7 @@ const EXPECTED_TOOL_NAMES = [
   'fea_summary',
   'send_to_printer',
   'repair_script',
+  'sweep_tolerance',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -279,6 +281,13 @@ describe('toolRegistry public contract', () => {
     // absolute index, so this test doesn't need updating (and doesn't
     // renumber every prior family) the next time one is added.
     expect(TOOL_REGISTRY.slice(-printToolEntries.length)).toEqual(printToolEntries);
+  });
+
+  it('composes the mechanism-sim tail slice from the mechanism-sim registry module', () => {
+    const names = mechanismSimToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual(['sweep_tolerance']);
+    expect(TOOL_REGISTRY.slice(38, 39)).toEqual(mechanismSimToolEntries);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

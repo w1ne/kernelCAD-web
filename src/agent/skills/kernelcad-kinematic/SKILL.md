@@ -34,9 +34,9 @@ Load this skill whenever the user asks any of:
 Do NOT load this skill for static CAD authoring (use `kernelcad-authoring`) or
 for visualization (use the renderer). This skill is feasibility-checking only.
 
-## The 4 entry points
+## The 6 entry points
 
-All four live under the `kinematic.*` namespace exposed to every `.kcad.ts`
+All six live under the `kinematic.*` namespace exposed to every `.kcad.ts`
 script. The same surface is reachable from host code via `import * as kinematic from
 'src/kinematic'`. Every entry returns a `Promise<…Result>` envelope carrying
 `source: 'local'`.
@@ -47,6 +47,44 @@ script. The same surface is reachable from host code via `import * as kinematic 
 | `kinematic.checkSweptCollision(arm, opts)` | Does any link pair penetrate across the swept range? | `kinematic.collision.swept` (K1), `kinematic.collision.swept.sample-density-warning` (K2) |
 | `kinematic.checkReachable(arm, opts)` | Can the end-effector reach this target? | `kinematic.unreachable` (K3, axis-discriminated), `kinematic.reachability.iteration-cap-hit` (K4), `kinematic.solver.unsupported-config` (K5) |
 | `kinematic.checkLoadCapacity(arm, loads, opts)` | Will any beam-shaped element exceed yield under these loads? | `kinematic.load-exceeds-yield` (K6), `kinematic.load.beam-not-applicable` (K7), `kinematic.no-material-declared` (K8) |
+| `kinematic.checkStaticHold(arm, opts)` | Can the declared actuator hold this joint against gravity? | `assembly.joint.static-hold.exceeded`, `assembly.joint.static-hold.margin-low`, `kinematic.static-hold.no-actuator-declared` |
+| `kinematic.sweepTolerance({ code\|file, params, gates })` | Does the mechanism still pass the standard gates across a param's tolerance range? | `kinematic.sweep-tolerance.combo-cap-exceeded` (plus whatever the swept gates emit per combo) |
+
+### `checkStaticHold` — gravitational holding torque vs actuator capacity
+
+Per actuated joint (revolute/prismatic with a declared `actuator: { torqueNm
+| forceN }` on `arm.revolute(...)`/`arm.prismatic(...)`), samples a pose grid
+(or an explicit `opts.pose`) and computes the gravitational torque/force the
+actuator must supply to hold the downstream mass still, using real mass
+properties (OCCT volume/CoM via the part's declared `density`/`material`,
+same substrate as `inspect({ of: 'mass' })`). Reports the worst pose,
+required torque/force, declared capacity, and margin percent.
+`opts.minTorqueMarginPct` (default 20) is a floor, not a hard pass/fail — a
+joint that clears capacity but misses the margin still returns `ok: true`
+with a `margin-low` warn diagnostic; only an actually-exceeded joint flips
+`ok: false`. v1 assumes rigid links and a single uniform gravity vector; pair
+with `checkLoadCapacity` for applied external loads.
+
+### `sweepTolerance` — tolerance-stackup gate sweep
+
+Declares one or more `param()` names as `{ values: [...] }` or `{ min, max,
+steps }`, expands the cartesian product (capped at 64 combos —
+`kinematic.sweep-tolerance.combo-cap-exceeded` fires and truncates past the
+cap), and re-evaluates the script per combo via the same `set_param` +
+`evaluate_script` path an agent would use manually. Per combo, runs
+`interference` + `mountingHoles` + `jointAxis` (all default on, fold out of
+one `validateAssemblyWithMates` call) and `reachable` when
+`gates.reachable: { tipLink, targetPosition, targetOrientation? }` is
+declared. Returns `results[]` (one row per combo: `{ combo, gates,
+diagnostics }`) and `firstFailure[gateName]` — the first combo, in
+declaration order, where that gate failed.
+
+Known limitation: a `.hole({ diameter: someParamRef })` feature is not
+resolved by the mounting-hole gate's face-walk today (it reports "no hole
+feature found" regardless of the swept value) — literal hole diameters work
+correctly, and sweeping any other param (position, box dimension, clearance
+offset) through the interference/joint-axis/mounting-hole gates works as
+designed.
 
 ## MCP tools (one per facade entry)
 
@@ -58,7 +96,9 @@ named assembly off the script's session, and dispatch to the facade.
 - `verify({ check: 'swept-collision' })` — wraps the facade; accepts `file|code`, `joint`, `range`, `collision_tolerance_mm3`
 - `verify({ check: 'reachable' })` — wraps the facade; accepts `file|code`, `tip_link`, `target_position`, `target_orientation`, `prefer_solver`, `max_iterations`, `seed`
 - `verify({ check: 'load-capacity' })` — wraps the facade; accepts `file|code`, `loads`, `materials`, `mode`, `safety_factor_threshold`
-- `verify({ check: 'assembly' })` (extended) — composes all four when called with `gates: ['kinematic']`
+- `verify({ check: 'static-hold' })` — wraps the facade; accepts `file|code`, `joint`, `pose`, `gravity`, `min_torque_margin_pct`, `range_samples`
+- `sweep_tolerance` — standalone tool (not a `verify` check — it surveys an envelope rather than gating one state); accepts `file|code`, `params`, `gates`
+- `verify({ check: 'assembly' })` (extended) — composes the four `verify`-routed checks when called with `gates: ['kinematic']`
 
 ## Recovery loop — code → nextAction → repair
 
@@ -78,6 +118,10 @@ call to confirm.
 | K7 `kinematic.load.beam-not-applicable` | `fix-arg` (`crossSection`) | Add the part's `crossSection` declaration; only beam-shaped parts qualify for the closed-form path |
 | K8 `kinematic.no-material-declared` | `fix-arg` (`opts.materials`) | Add `materials: { partName: { material: 'steel' \| 'aluminum' \| 'pla' \| 'abs' \| 'pet' } }` for every loaded part |
 | K9 `kinematic.mounting-hole.diameter-mismatch` | `fix-arg` | Set both connectors' hole diameter to the same value |
+| `assembly.joint.static-hold.exceeded` | `rewrite-feature` | Increase the actuator torque/force to the value named in the message, or shorten/lighten the downstream link |
+| `assembly.joint.static-hold.margin-low` | `rewrite-feature` | Increase the actuator torque/force for the requested margin, or shorten/lighten the downstream link |
+| `kinematic.static-hold.no-actuator-declared` | `fix-arg` (`actuator`) | Add `actuator: { torqueNm }` (revolute) / `{ forceN }` (prismatic) to the joint declaration |
+| `kinematic.sweep-tolerance.combo-cap-exceeded` | `fix-arg` (`params`) | Narrow the swept ranges/values, or split the sweep into multiple calls |
 
 ## Trade-off note on K2 sparse-sampling
 
@@ -197,7 +241,7 @@ Worked example: `examples/kinematic/luxo-lamp.kcad.ts` ships with `joint.clevis(
 
 ## Cookbook
 
-Six runnable snippets live in `cookbook/`. Each begins with a `// expected:`
+Eight runnable snippets live in `cookbook/`. Each begins with a `// expected:`
 header listing the diagnostic codes the run should emit. Snippets are
 self-contained `.kcad.ts` files that build their own fixture, run one or two
 `kinematic.check*` calls, and assert the expected outcome in-script with
@@ -215,3 +259,8 @@ self-contained `.kcad.ts` files that build their own fixture, run one or two
    [0°, 135°]; K1 fires when the lid touches the table
 6. `06-over-center-latch-reachable.kcad.ts` — over-center latch
    locking-pin reachability with self-collision avoidance
+7. `07-static-hold-servo-arm.kcad.ts` — servo-driven shoulder joint;
+   generous actuator passes, undersized actuator fires
+   `assembly.joint.static-hold.exceeded`
+8. `08-sweep-tolerance-clearance.kcad.ts` — swept clearance-gap param;
+   the interference gate flips pass→fail past the closing threshold

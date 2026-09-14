@@ -59,6 +59,7 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
 
   // Authoring — return modified source (side-effect-free, additive).
   set_param: AUTHOR,
+  sweep_tolerance: READ,
   add_feature: AUTHOR,
   add_surface: AUTHOR,
   add_curve: AUTHOR,
