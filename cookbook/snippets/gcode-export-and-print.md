@@ -18,7 +18,7 @@ const width = param('width', 30, { min: 5, max: 200 });
 const height = param('height', 20, { min: 5, max: 200 });
 
 return box(width, width, height)
-  .fillet(2, { edges: 'vertical' });
+  .fillet(2, { parallel: [0, 0, 1] });
 
 // Then, outside the script:
 //   export target:'model' format:'gcode' output_path:'part.gcode'
