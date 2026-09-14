@@ -1,0 +1,47 @@
+{
+  "facts": [
+    {
+      "id": "silhouette",
+      "statement": "silhouette (silhouette): silhouette traced by deterministic contour extraction.",
+      "kind": "visible",
+      "evidence": {
+        "source": "image",
+        "region": [
+          0.3046875,
+          0.3046875,
+          0.38671875,
+          0.38671875
+        ]
+      },
+      "value": [
+        [
+          0.3046875,
+          0.3046875
+        ],
+        [
+          0.69140625,
+          0.3046875
+        ],
+        [
+          0.69140625,
+          0.69140625
+        ],
+        [
+          0.3046875,
+          0.69140625
+        ]
+      ],
+      "confidence": 1,
+      "resolution": "confirmed"
+    },
+    {
+      "id": "scale",
+      "statement": "Pixel-to-real-world scale was not established — no scale anchor was supplied.",
+      "kind": "missing",
+      "confidence": 0,
+      "resolution": "overridden",
+      "value": 0.1548
+    }
+  ],
+  "unresolvedCount": 0
+}
