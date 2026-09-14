@@ -493,6 +493,30 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'export',
     description: 'A link in the exported URDF inherited the default 1000 kg/m^3 density; the user did not declare a per-part value.',
   },
+  'export.usd.joint-unsupported': {
+    hintTemplate:
+      'The USD Isaac exporter only lowers fixed, revolute and prismatic mates to PhysicsFixedJoint / PhysicsRevoluteJoint / PhysicsPrismaticJoint. Restructure the mate graph to use one of those kinds, or export format: \'sdf-gazebo\' which supports the full mate vocabulary.',
+    nextAction: { kind: 'fix-arg', field: 'format' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A mate kind with no PhysicsJoint equivalent (planar/cylindrical/pin_slot/ball) was found while lowering to the USD Isaac stage.',
+  },
+  'export.usd.mass-missing': {
+    hintTemplate:
+      'A link\'s mass-properties computation returned a non-finite or non-positive mass; the rigid body prim cannot carry a physical mass. Pass density on arm.part(name, shape, { density }), or check the part\'s shape is closed and manifold.',
+    nextAction: { kind: 'fix-arg', field: 'density' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A link in the USD Isaac stage has a non-finite or non-positive mass and cannot be given a valid UsdPhysics MassAPI.',
+  },
+  'diff.body.unmatched': {
+    hintTemplate:
+      'A body present in one script evaluation could not be matched to a body in the other by name or position. Rename parts consistently across both scripts, or accept the unmatched body as added/removed in the diff report.',
+    nextAction: { kind: 'fix-arg', field: 'file' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'diff_geometry could not pair a body in evaluation A with a body in evaluation B by name or by positional order.',
+  },
   'export.srdf.acm-sparse-sampling': {
     hintTemplate:
       'ACM derivation used fewer than 4 samples per mate; interior collisions may be missed. Increase options.samplesPerMate on export_model({ format: \'srdf\', ... }) or set combinatorial: true.',

@@ -27,7 +27,7 @@ import { sceneToConnectorManifest } from './connectorManifestExport';
 
 export type ExportFormat =
   | 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'svg-drawing'
-  | 'urdf' | 'srdf' | 'sdf-gazebo';
+  | 'urdf' | 'srdf' | 'sdf-gazebo' | 'usd-isaac';
 
 /** Per-format option payloads. The union member is selected by `format`. */
 export type ExportOptions =
@@ -46,7 +46,8 @@ export type ExportOptions =
     }
   | { format: 'urdf' }
   | { format: 'srdf' }
-  | { format: 'sdf-gazebo' };
+  | { format: 'sdf-gazebo' }
+  | { format: 'usd-isaac'; density?: number; meshPrefix?: string };
 
 export interface DxfLayerSpec {
   name: string;
@@ -158,7 +159,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   // + planning metadata). No targetId / lowered-Shape lookup is required;
   // the emitter lowers each part on its own. Resolve the Assembly from
   // the session and dispatch to the per-format serializer.
-  if (format === 'urdf' || format === 'srdf' || format === 'sdf-gazebo') {
+  if (format === 'urdf' || format === 'srdf' || format === 'sdf-gazebo' || format === 'usd-isaac') {
     const ret = run.returnValue;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const assemblies = run.session.assemblies as Map<string, any>;
@@ -205,8 +206,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
         diagnostics: [...r.diagnostics, ...out.diagnostics],
       };
     }
-    // sdf-gazebo
-    {
+    if (format === 'sdf-gazebo') {
       const { sdfSerialize } = await import('../../modeling/export/sdformat/sdfSerializer');
       const sdfOpts = (input.options as { density?: number; meshPrefix?: string; meshFormat?: 'stl' | 'dae' } | undefined) ?? {};
       const out = await sdfSerialize(arm, sdfOpts);
@@ -215,6 +215,18 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
         featureCount,
         diagnostics: [...r.diagnostics, ...out.diagnostics],
         meshes: out.sdf === '' ? [] : await emitCompanionMeshes(out.meshPaths),
+      };
+    }
+    // usd-isaac
+    {
+      const { usdIsaacSerialize } = await import('../../modeling/export/usd/usdIsaacSerializer');
+      const usdOpts = (input.options as { density?: number; meshPrefix?: string } | undefined) ?? {};
+      const out = await usdIsaacSerialize(arm, usdOpts);
+      return {
+        bytes: new TextEncoder().encode(out.usda),
+        featureCount,
+        diagnostics: [...r.diagnostics, ...out.diagnostics],
+        meshes: out.usda === '' ? [] : await emitCompanionMeshes(out.meshPaths),
       };
     }
   }

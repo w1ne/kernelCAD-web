@@ -536,13 +536,13 @@ function collectParts(value: string, prev: string[]): string[] {
 }
 
 const SUPPORTED_FORMATS = new Set<ExportFormat>([
-  'stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'urdf', 'srdf', 'sdf-gazebo',
+  'stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'usd-isaac',
 ]);
 
 export function exportCommand(): Command {
   const cmd = new Command('export')
     .description('Export a .kcad.ts script to STL, STEP, DXF, 3MF, GLB, or an SVG engineering-drawing sheet')
-    .argument('<format>', 'stl | step | dxf | 3mf | glb | svg-drawing | urdf | srdf | sdf-gazebo')
+    .argument('<format>', 'stl | step | dxf | 3mf | glb | svg-drawing | urdf | srdf | sdf-gazebo | usd-isaac')
     .argument('<file>', 'path to .kcad.ts script')
     .requiredOption('-o, --out <path>', 'output file path (output directory for --parts all and repeated --part)')
     .option('--part <name>', 'export a single named assembly part (STL only); repeat for a subset (-o is then a directory)', collectParts, [] as string[])

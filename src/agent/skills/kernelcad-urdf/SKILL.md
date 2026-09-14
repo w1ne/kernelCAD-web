@@ -84,3 +84,20 @@ Call `inspect({ of: 'robot', file })` to preview what the export will emit befor
 ## Mesh format
 
 Per-link STL by default. Mesh paths default to `package://kernelcad_export/meshes/<part>.stl`; override with `options.meshPrefix` for non-package consumers (e.g. `./meshes/`).
+
+## USD Isaac export (physics-simulation-ready articulation)
+
+When the downstream workflow is a robot-learning or physics-simulation stack that consumes USD directly (rather than parsing URDF/SDF at import time), use `export({ target: 'model', format: 'usd-isaac' })`. It writes an ASCII USD (`.usda`) stage using the UsdPhysics schema, plus the same `meshes/<part>.stl` sidecar directory as `urdf`/`sdf-gazebo`.
+
+```json
+{ "tool": "export", "input": { "target": "model", "file": "two-link.kcad.ts", "format": "usd-isaac", "output_path": "out/robot.usda" } }
+```
+
+What the stage contains:
+
+- One `def Xform "<root>" ( prepend apiSchemas = ["PhysicsArticulationRootAPI"] )` wrapping the whole robot — the articulation root a physics-simulation import expects to find.
+- One rigid-body prim per link (`PhysicsRigidBodyAPI` + `PhysicsMassAPI`) carrying `physics:mass`, `physics:centerOfMass`, and `physics:diagonalInertia`, sourced from the same analytic mass-properties computation as `urdf`/`sdf-gazebo` (see Inertia and density above — density/material rules are identical). Off-diagonal inertia terms are recorded as a comment since `PhysicsMassAPI` only carries the principal diagonal.
+- A `PhysicsFixedJoint` / `PhysicsRevoluteJoint` / `PhysicsPrismaticJoint` prim per `fastened` / `revolute` / `prismatic` mate (and legacy joint of the matching kind), with `physics:body0`/`physics:body1` relationships, `physics:localPos0` origin, and — for revolute/prismatic — `physics:axis` and `physics:lowerLimit`/`physics:upperLimit` when the mate declares `limitsDeg`/`limitsMm`.
+- Visual and collision `Mesh` prims per link referencing the sidecar STL by relative `asset:reference`.
+
+Mate kinds with no UsdPhysics joint equivalent (`planar`, `cylindrical`, `pin_slot`, `ball`) fail closed with `export.usd.joint-unsupported` rather than lowering lossily — restructure the mate graph, or export `format: 'sdf-gazebo'` instead, which supports the full mate vocabulary. A link whose mass-properties come back non-finite or non-positive fails closed with `export.usd.mass-missing`.

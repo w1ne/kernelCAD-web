@@ -29,5 +29,6 @@
   "mate",
   "revolute",
   "hinge",
-  "joint"
+  "joint",
+  "export"
 ]

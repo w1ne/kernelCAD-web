@@ -469,7 +469,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       byte_count: { type: 'number', description: "target:'model' — file size in bytes." },
       feature_count: { type: 'number' },
       format: { type: 'string' },
-      mesh_files: { type: 'array', items: { type: 'string' }, description: 'Per-link mesh files for urdf/sdf-gazebo exports.' },
+      mesh_files: { type: 'array', items: { type: 'string' }, description: 'Per-link mesh files for urdf/sdf-gazebo/usd-isaac exports.' },
       written: { type: 'array', items: { type: 'object', additionalProperties: true }, description: "target:'part' — per-part export records." },
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
       error: { type: 'string' },
