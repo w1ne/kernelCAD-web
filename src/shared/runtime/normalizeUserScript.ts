@@ -57,3 +57,44 @@ export function normalizeUserScript(code: string): string {
 
   return out;
 }
+
+/**
+ * Line map from the NORMALIZED script back to the original file.
+ *
+ * Two of the five transforms above delete whole lines (top-level `import`,
+ * `export { … }`), which shifts every following line. Any surface that reports
+ * a position from the running script — repair regions, AST edit patches,
+ * trace records — must speak original-file coordinates, so it needs to undo
+ * that shift.
+ *
+ * Returns an array whose i-th entry is the 1-based ORIGINAL line number that
+ * produced 1-based normalized line `i + 1`. Returns `undefined` when the
+ * line-anchored reconstruction disagrees with the real normalized output
+ * (multi-line `import` / `export {}` statements, which the normalizer
+ * documents as unsupported) — callers then fall back to identity rather than
+ * reporting a wrong line.
+ */
+export function normalizeUserScriptLineMap(code: string): number[] | undefined {
+  if (typeof code !== 'string' || code.trim() === '') return undefined;
+
+  const originalLines = code.split('\n');
+  const kept: number[] = [];
+  for (let i = 0; i < originalLines.length; i++) {
+    const line = originalLines[i];
+    if (DROPPED_LINE_RES.some(re => re.test(line))) continue;
+    kept.push(i + 1);
+  }
+
+  // Trailing-newline bookkeeping: the drop regexes consume the newline that
+  // follows the dropped line, so a dropped LAST line (no trailing newline)
+  // leaves an empty line behind instead of removing one.
+  const normalizedLineCount = normalizeUserScript(code).split('\n').length;
+  if (kept.length !== normalizedLineCount) return undefined;
+  return kept;
+}
+
+/** Line-anchored forms the normalizer deletes outright (see transforms 1-2). */
+const DROPPED_LINE_RES: readonly RegExp[] = [
+  /^[ \t]*import\b/,
+  /^[ \t]*export\s*\{[^}]*\}/,
+];

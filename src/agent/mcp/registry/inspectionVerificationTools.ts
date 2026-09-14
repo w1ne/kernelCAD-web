@@ -4,6 +4,7 @@ import { inspectTool } from '../tools/inspect';
 import { queryTool } from '../tools/query';
 import { verifyTool } from '../tools/verify';
 import { whyDidThisFailTool } from '../tools/whyDidThisFail';
+import { repairScriptTool } from '../tools/repairScript';
 import type { ToolRegistryEntry } from './types';
 
 const inspectToolEntry: ToolRegistryEntry = {
@@ -135,6 +136,42 @@ const whyDidThisFailToolEntry: ToolRegistryEntry = {
   handler: input => whyDidThisFailTool(input as Parameters<typeof whyDidThisFailTool>[0]),
 };
 
+const repairScriptToolEntry: ToolRegistryEntry = {
+  definition: {
+    name: 'repair_script',
+    description:
+      'Use this when evaluate_script reported an error and you want the fix applied rather than described. ' +
+      'Takes the candidates why_did_this_fail derives for a diagnostic, applies them one at a time, re-evaluates after each, ' +
+      'and keeps the first that clears the diagnostic without introducing new errors. ' +
+      'Never edits outside the repair region (failing feature statement + its input statements + the param() lines it reads) — an out-of-region patch is refused with tool.repair.out-of-region. ' +
+      'Returns the repaired source in `new_code` (the caller persists it), a unified `diff`, and before/after health maps. ' +
+      "Pass { file? | code?, diagnostic?: '<id>'|'first-error', strategy?: 'apply-first'|'try-all'|'dry-run', max_attempts?: number }.",
+    inputSchema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+        code: { type: 'string', description: 'Inline kernelCAD script source.' },
+        diagnostic: {
+          type: 'string',
+          description: "Diagnostic id from why_did_this_fail's `targetDiagnosticId` / `candidates[].diagnosticId`, or 'first-error' (default) for the first error-severity diagnostic.",
+        },
+        strategy: {
+          type: 'string',
+          enum: ['apply-first', 'try-all', 'dry-run'],
+          description: "'try-all' (default) walks candidates until one clears the diagnostic; 'apply-first' applies only the top candidate and reports what it did; 'dry-run' previews every candidate patch without evaluating.",
+        },
+        max_attempts: {
+          type: 'integer',
+          minimum: 1,
+          maximum: 10,
+          description: 'Upper bound on candidates attempted (default 3). Ignored by apply-first and dry-run.',
+        },
+      },
+    },
+  },
+  handler: input => repairScriptTool(input as Parameters<typeof repairScriptTool>[0]),
+};
+
 const queryToolEntry: ToolRegistryEntry = {
   definition: {
     name: 'query',
@@ -169,9 +206,15 @@ export const inspectionVerificationPreludeToolEntries: ToolRegistryEntry[] = [
 
 export const inspectionVerificationQueryToolEntries: ToolRegistryEntry[] = [queryToolEntry];
 
+/** Appended at the tail of the public registry: kernelCAD-server pins the
+ *  historical tool ORDER as part of the registry contract, so a new tool joins
+ *  at the end rather than next to its family. */
+export const inspectionVerificationRepairToolEntries: ToolRegistryEntry[] = [repairScriptToolEntry];
+
 // Aggregate export for tests and family-level audits. Production composition
 // intentionally splits these entries to preserve the historical public order.
 export const inspectionVerificationToolEntries: ToolRegistryEntry[] = [
   ...inspectionVerificationPreludeToolEntries,
   ...inspectionVerificationQueryToolEntries,
+  ...inspectionVerificationRepairToolEntries,
 ];

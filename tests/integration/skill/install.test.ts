@@ -32,6 +32,8 @@ describe.skipIf(SKIP)('skill install (built CLI)', () => {
     // FEA slice adds `kernelcad-fea` (18 → 19).
     // the drawings slice adds `kernelcad-drawings` (17 → 18); the print-loop
     // slice adds `kernelcad-print` (18 → 19).
+    // the drawings slice adds `kernelcad-drawings` (17 → 18); trace-guided
+    // repair adds `kernelcad-repair` (18 → 19).
     expect(dirs.length).toBe(19);
   });
 

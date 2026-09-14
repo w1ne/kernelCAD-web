@@ -12,6 +12,7 @@ import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools'
 import {
   inspectionVerificationPreludeToolEntries,
   inspectionVerificationQueryToolEntries,
+  inspectionVerificationRepairToolEntries,
 } from './registry/inspectionVerificationTools';
 import { printToolEntries } from './registry/printTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
@@ -54,6 +55,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   // New tool families are appended LAST — inserting mid-list renumbers
   // every family after it, breaking the kernelCAD-server public contract.
   ...printToolEntries,
+  ...inspectionVerificationRepairToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

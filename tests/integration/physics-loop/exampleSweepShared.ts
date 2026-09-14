@@ -52,6 +52,13 @@ export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
   'examples/gallery/meta-glasses-experiments/silhouette-wayfarer.kcad.ts',
   'examples/gallery/meta-glasses-experiments/words-to-geometry-wayfarer.kcad.ts',
   'examples/patterns/servo-vented-plate.kcad.ts',
+  // Deliberately broken single-part repair fixtures. They exist to FAIL
+  // evaluation so the trace-guided repair walkthrough has something real to
+  // fix; tests/integration/examples/repairExamples.test.ts pins that each one
+  // starts broken and repairs clean.
+  'examples/repair/cutter-misses-body.kcad.ts',
+  'examples/repair/hole-misses-plate.kcad.ts',
+  'examples/repair/oversized-fillet.kcad.ts',
   'examples/v0.21/donut.kcad.ts',
   'examples/v0.4/rocket-keychain.kcad.ts',
   'examples/v0.8/polished-brass-tube.kcad.ts',

@@ -2382,6 +2382,39 @@ export const DIAGNOSTIC_REGISTRY = {
     description:
       'A feaStudy load face selector resolved to no face (or to a face with no corresponding meshed surface); the declared force would land on no node.',
   },
+  // Trace-guided repair (4) — repair_script's own failure vocabulary.
+  'tool.repair.no-candidate': {
+    hintTemplate:
+      'No mechanical fix is derivable for this diagnostic kind. Edit the returned repairRegion by hand — the lines are already narrowed to the failing feature, its inputs, and the params it reads.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'info',
+    group: 'tool',
+    description: 'repair_script has no candidate generator for the selected diagnostic code, so only the repair region is returned.',
+  },
+  'tool.repair.out-of-region': {
+    hintTemplate:
+      'The patch targets lines outside the repair region and was refused. Re-derive candidates with why_did_this_fail against the failing feature, or edit those lines yourself.',
+    nextAction: { kind: 'call-introspection-tool', tool: 'why_did_this_fail' },
+    defaultSeverity: 'error',
+    group: 'tool',
+    description: 'A repair patch would have rewritten lines outside the computed repair region and was rejected.',
+  },
+  'tool.repair.exhausted': {
+    hintTemplate:
+      'Every candidate was applied and re-evaluated without clearing the diagnostic. Raise max_attempts, or treat the returned attempts as evidence and author the fix yourself.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'error',
+    group: 'tool',
+    description: 'repair_script applied every available candidate and none cleared the target diagnostic without new errors.',
+  },
+  'tool.repair.source-drift': {
+    hintTemplate:
+      'The lines the patch expected no longer match the file. Re-run evaluate_script and why_did_this_fail against the current source, then repair again.',
+    nextAction: { kind: 'call-tool', tool: 'evaluate_script', args: {} },
+    defaultSeverity: 'error',
+    group: 'tool',
+    description: 'A repair patch anchor text did not match the current source, so the patch was refused rather than applied blind.',
+  },
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 
 export type DiagnosticCode = keyof typeof DIAGNOSTIC_REGISTRY;

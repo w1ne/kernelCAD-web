@@ -29,6 +29,10 @@ import { ParamTable, type SerializedParamTable } from '../../shared/runtime/para
 import type { SoftWarning } from '../../shared/runtime/softWarning';
 import { collectParamRefs } from '../../shared/runtime/resolveParams';
 import type { Editable } from '../../shared/runtime/paramRef';
+import {
+  captureCallSite,
+  type ScriptLocationResolver,
+} from '../runtime/scriptLocationCapture';
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import { KernelError } from '../../shared/intent/kernelError';
 import {
@@ -270,6 +274,12 @@ export class CaptureSession {
    *  the API context — but the lowerer pulls it here instead of via the API
    *  context (which doesn't reach lowering). */
   scriptDir?: string;
+  /** Resolver that maps a V8 call-site frame from the running script back to a
+   *  position in the ORIGINAL `.kcad.ts` text. Set by the script runtime for
+   *  the duration of a run; left undefined for sessions built programmatically
+   *  (tests, Studio recompute), where there is no authoring file to point at.
+   *  Presence of this resolver is what switches call-site capture on. */
+  scriptLocationResolver?: ScriptLocationResolver;
   /** v0.6: live `Assembly` instances created via `kcad.assembly(name)` during
    *  this session's script run. Tracked by name so the v0.6 MCP mutator tools
    *  (`add_connector`, `add_mate`) can look up the live Assembly object and
@@ -542,6 +552,7 @@ export class CaptureSession {
 
   register(spec: FeatureSpec): FeatureRecord {
     const id = this.idGen.next(spec.kind);
+    const scriptLocation = this.captureScriptLocation();
     const r: FeatureRecord = {
       id,
       kind: spec.kind,
@@ -550,6 +561,7 @@ export class CaptureSession {
       transforms: [],
       suppressed: false,
       metadata: spec.metadata,
+      ...(scriptLocation !== undefined ? { scriptLocation } : {}),
     };
     // Slice-3: populate metadata.paramRefs (the dependency index Phase 3
     // uses to find the first-affected record on `params.update`). Walks
@@ -564,6 +576,18 @@ export class CaptureSession {
     }
     this.records.push(r);
     return r;
+  }
+
+  /** Bind the record about to be created to the script line that authored it.
+   *  No-op (and no stack cost) when the session has no resolver — the capture
+   *  graph is also built directly by tests and by Studio recompute, neither of
+   *  which has a user-authored file to point at. */
+  private captureScriptLocation(): FeatureRecord['scriptLocation'] {
+    const resolver = this.scriptLocationResolver;
+    if (resolver === undefined) return undefined;
+    const frame = captureCallSite(resolver.fileName, this.captureScriptLocation);
+    if (frame === undefined) return undefined;
+    return resolver.resolve(frame.line, frame.column);
   }
 
   createShape(spec: FeatureSpec): Shape {

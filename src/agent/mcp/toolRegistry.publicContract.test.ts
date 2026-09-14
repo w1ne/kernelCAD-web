@@ -66,6 +66,7 @@ const EXPECTED_TOOL_NAMES = [
   'run_fea',
   'fea_summary',
   'send_to_printer',
+  'repair_script',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -123,10 +124,10 @@ describe('toolRegistry public contract', () => {
   it('composes inspection and verification tools from the inspection verification registry module', () => {
     const names = inspectionVerificationToolEntries.map(entry => entry.definition.name);
 
-    expect(names).toEqual(['inspect', 'verify', 'why_did_this_fail', 'query']);
-    expect([TOOL_REGISTRY[2], TOOL_REGISTRY[3], TOOL_REGISTRY[4], TOOL_REGISTRY[16]]).toEqual(
-      inspectionVerificationToolEntries,
-    );
+    expect(names).toEqual(['inspect', 'verify', 'why_did_this_fail', 'query', 'repair_script']);
+    expect([
+      TOOL_REGISTRY[2], TOOL_REGISTRY[3], TOOL_REGISTRY[4], TOOL_REGISTRY[16], TOOL_REGISTRY[38],
+    ]).toEqual(inspectionVerificationToolEntries);
   });
 
   it('composes reference and export tools from the reference export registry module', () => {

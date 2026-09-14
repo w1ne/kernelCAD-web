@@ -10,17 +10,27 @@
 // vocabulary collapse), so this tool no longer carries an HINTS map.
 // Agents can call list_diagnostic_codes for the full catalogue.
 
-import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
-import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import type { FeatureKind } from '../../../shared/intent/types';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
-import { runMcpScript } from '../runMcpScript';
+import { analyzeScript, planRepair, selectDiagnostic } from '../../repair/analyze';
+import type {
+  CandidateStatus,
+  FeatureTraceEntry,
+  RepairCandidate,
+  RepairRegion,
+} from '../../repair/types';
 
 export interface WhyDidThisFailInput {
   file?: string;
   code?: string;
   feature_id?: string;
+  /**
+   * Which diagnostic to plan a repair for. A diagnostic id from a previous
+   * response, or `'first-error'` (the default) for the first error-severity
+   * diagnostic on the requested feature's chain.
+   */
+  diagnostic?: string;
 }
 
 export interface ChainEntry {
@@ -40,6 +50,34 @@ export interface WhyDidThisFailOutput {
    * the root cause.
    */
   chain?: ChainEntry[];
+  /**
+   * Every captured feature joined to the script that authored it: call-site
+   * location, AST node range, attached diagnostics, upstream inputs and
+   * downstream dependents. This is the link that turns "feature X failed"
+   * into "these lines produced it and these features depend on it".
+   */
+  trace?: FeatureTraceEntry[];
+  /**
+   * The minimal set of line ranges whose edit can address the failure: the
+   * failing feature's statement, the statements that authored its direct
+   * inputs, and the `param(...)` declarations it reads. `repair_script`
+   * refuses any patch that falls outside these ranges.
+   */
+  repairRegion?: RepairRegion;
+  /**
+   * Ordered concrete fixes for the selected diagnostic. Each carries a real
+   * AST-anchored patch plus the geometry it was derived from. Empty when
+   * `candidateStatus` is `'no-automatic-candidate'`.
+   */
+  candidates?: RepairCandidate[];
+  /** `'candidates'` when a mechanical fix was derivable; otherwise
+   *  `'no-automatic-candidate'` and `repairRegion` alone is the answer. */
+  candidateStatus?: CandidateStatus;
+  /** Why no candidate was derivable (only with `'no-automatic-candidate'`). */
+  candidateReason?: string;
+  /** Id of the diagnostic the repair plan targets. Pass it to `repair_script`
+   *  as `diagnostic` to act on exactly this one. */
+  targetDiagnosticId?: string;
   error?: string;
   /**
    * Structured diagnostic code when the underlying script-runtime
@@ -50,18 +88,15 @@ export interface WhyDidThisFailOutput {
 }
 
 export async function whyDidThisFailTool(input: WhyDidThisFailInput): Promise<WhyDidThisFailOutput> {
-  const script = await runMcpScript(input);
-  if (!script.ok) return script;
-  const { run } = script;
+  const analysis = await analyzeScript(input);
+  if (!analysis.ok) return analysis;
+  const { records, diagnostics, health, shapes } = analysis;
 
-  if (run.records.length === 0) return { ok: false, error: 'Script produced no features.' };
+  if (records.length === 0) return { ok: false, error: 'Script produced no features.' };
 
-  const targetId = input.feature_id ?? run.records[run.records.length - 1].id;
-  const targetRecord = run.records.find(r => r.id === targetId);
+  const targetId = input.feature_id ?? records[records.length - 1].id;
+  const targetRecord = records.find(r => r.id === targetId);
   if (!targetRecord) return { ok: false, error: `feature_id '${targetId}' not found.` };
-
-  const engine = new RecomputeEngine(createOcctLowerer(run.session));
-  const result = await engine.run(run.records, { paramTable: run.paramTable });
 
   // Collect upstream feature ids reachable from the target via input edges.
   // The walk is BFS so every transitive predecessor is included; the final
@@ -86,7 +121,7 @@ export async function whyDidThisFailTool(input: WhyDidThisFailInput): Promise<Wh
   }
   while (queue.length > 0) {
     const id = queue.shift()!;
-    const rec = run.records.find(r => r.id === id);
+    const rec = records.find(r => r.id === id);
     if (!rec) continue;
     for (const ref of Object.values(rec.inputs)) {
       // W1.3: 'surface' refs point to a SurfaceRecord (not a FeatureRecord),
@@ -105,20 +140,41 @@ export async function whyDidThisFailTool(input: WhyDidThisFailInput): Promise<Wh
   }
 
   const chain: ChainEntry[] = [];
-  for (const rec of run.records) {
+  for (const rec of records) {
     if (rec.id !== targetId && !upstreamIds.has(rec.id)) continue;
-    const featureDiags = result.diagnostics.filter(d => d.featureId === rec.id);
+    const featureDiags = diagnostics.filter(d => d.featureId === rec.id);
     chain.push({
       feature_id: rec.id,
       kind: rec.kind,
-      health: result.health.get(rec.id) ?? (result.shapes.has(rec.id) ? 'healthy' : 'unknown'),
+      health: health.get(rec.id) ?? (shapes.has(rec.id) ? 'healthy' : 'unknown'),
       diagnostics: withNextActions(featureDiags),
     });
   }
 
+  // Repair planning targets the first error on the chain by default: an agent
+  // reading this response is looking at one failure, and the root cause is
+  // upstream of the requested feature far more often than on it.
+  const chainIds = new Set(chain.map(entry => entry.feature_id));
+  const selected = selectDiagnostic(
+    diagnostics,
+    input.diagnostic,
+    d => d.featureId !== undefined && chainIds.has(d.featureId),
+  );
+
+  if (selected === undefined) {
+    return { ok: true, feature_id: targetId, chain, trace: analysis.trace };
+  }
+
+  const plan = planRepair(analysis, selected);
   return {
     ok: true,
     feature_id: targetId,
     chain,
+    trace: analysis.trace,
+    targetDiagnosticId: plan.diagnosticId,
+    repairRegion: plan.repairRegion,
+    candidates: plan.candidates,
+    candidateStatus: plan.candidateStatus,
+    ...(plan.reason !== undefined ? { candidateReason: plan.reason } : {}),
   };
 }
