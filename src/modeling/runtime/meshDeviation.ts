@@ -40,6 +40,8 @@ export interface MeshDeviationResult {
   maxDeviationMm: number;
   /** Mean of the sampled one-sided distances (A→B and B→A pooled), mm. */
   meanDeviationMm: number;
+  /** Root-mean-square of the same pooled distances, mm. */
+  rmsDeviationMm: number;
   /** Points actually sampled (vertices + triangle centroids, both sides). */
   samples: number;
   /** True when either list on either side was strided down to the cap. */
@@ -184,11 +186,12 @@ function oneSided(
   from: RuntimeMesh,
   fromSoup: TriangleSoup,
   soup: TriangleSoup,
-): { max: number; sum: number; samples: number; subsampled: boolean } {
+): { max: number; sum: number; sumSq: number; samples: number; subsampled: boolean } {
   const { pts, subsampled } = samplePoints(from, fromSoup);
   const pointCount = pts.length / 3;
   let max = 0;
   let sum = 0;
+  let sumSq = 0;
   let samples = 0;
   for (let i = 0; i < pointCount; i++) {
     const px = pts[i * 3];
@@ -211,10 +214,11 @@ function oneSided(
       const d = Math.sqrt(bestSq);
       if (d > max) max = d;
       sum += d;
+      sumSq += bestSq;
       samples++;
     }
   }
-  return { max, sum, samples, subsampled };
+  return { max, sum, sumSq, samples, subsampled };
 }
 
 /**
@@ -226,7 +230,7 @@ function oneSided(
  */
 export function meshDeviation(a: RuntimeMesh, b: RuntimeMesh): MeshDeviationResult {
   if (a.indices.length === 0 || b.indices.length === 0) {
-    return { maxDeviationMm: 0, meanDeviationMm: 0, samples: 0, subsampled: false };
+    return { maxDeviationMm: 0, meanDeviationMm: 0, rmsDeviationMm: 0, samples: 0, subsampled: false };
   }
   const soupA = toSoup(a);
   const soupB = toSoup(b);
@@ -236,6 +240,7 @@ export function meshDeviation(a: RuntimeMesh, b: RuntimeMesh): MeshDeviationResu
   return {
     maxDeviationMm: Math.max(ab.max, ba.max),
     meanDeviationMm: samples === 0 ? 0 : (ab.sum + ba.sum) / samples,
+    rmsDeviationMm: samples === 0 ? 0 : Math.sqrt((ab.sumSq + ba.sumSq) / samples),
     samples,
     subsampled: ab.subsampled || ba.subsampled,
   };

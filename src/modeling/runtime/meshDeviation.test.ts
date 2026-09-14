@@ -76,6 +76,20 @@ describe('meshDeviation', () => {
     const r = meshDeviation(quadAtHeight(0), quadAtHeight(2.5));
     expect(r.maxDeviationMm).toBeCloseTo(2.5, 6);
     expect(r.meanDeviationMm).toBeCloseTo(2.5, 6);
+    expect(r.rmsDeviationMm).toBeCloseTo(2.5, 6);
+  });
+
+  it('weights large deviations harder in the RMS than in the mean', () => {
+    // A sits on B everywhere except the V dip, so RMS > mean > 0.
+    const flat = quadAtHeight(0);
+    const dipped = mesh(
+      [0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0.5, 0.5, -1],
+      [0, 1, 4, 1, 2, 4, 2, 3, 4, 3, 0, 4],
+    );
+    const r = meshDeviation(flat, dipped);
+    expect(r.meanDeviationMm).toBeGreaterThan(0);
+    expect(r.rmsDeviationMm).toBeGreaterThan(r.meanDeviationMm);
+    expect(r.rmsDeviationMm).toBeLessThanOrEqual(r.maxDeviationMm);
   });
 
   it('is symmetric — a one-sided reading would miss the overhang', () => {
@@ -93,7 +107,7 @@ describe('meshDeviation', () => {
   it('returns zero rather than Infinity when a side has no triangles', () => {
     const empty = mesh([], []);
     expect(meshDeviation(quadAtHeight(0), empty)).toEqual({
-      maxDeviationMm: 0, meanDeviationMm: 0, samples: 0, subsampled: false,
+      maxDeviationMm: 0, meanDeviationMm: 0, rmsDeviationMm: 0, samples: 0, subsampled: false,
     });
   });
 
