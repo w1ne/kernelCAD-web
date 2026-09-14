@@ -81,5 +81,7 @@
   "wood",
   "tube",
   "route",
-  "mass"
+  "mass",
+  "overhang",
+  "print-orientation"
 ]

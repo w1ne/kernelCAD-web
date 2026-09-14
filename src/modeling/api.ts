@@ -490,7 +490,13 @@ export interface KernelCadApi {
    * inter-part clearance, internal-channel topology) fail the evaluation
    * when violated.
    *
-   * At least one of `minWall`, `minClearance`, or `channels` is required.
+   * `process: 'fdm'` adds the FDM printability check (overhangs and
+   * bridges relative to `buildDirection`, walls and features relative to
+   * `nozzleMm`, bed contact, bed fit on `printer`, and the six-orientation
+   * ranking); the gcode export slices in the declared `buildDirection`.
+   *
+   * At least one of `minWall`, `minClearance`, `channels`, or `process` is
+   * required.
    * `includeArticulatedMates: true` also measures non-fastened mate pairs at
    * the declared rest pose; fastened mates stay exempt because their contact
    * is checked separately.

@@ -197,6 +197,18 @@ export function resolveBoreExtents(faces: ConcaveCylFace[]): BoreExtent[] {
 }
 
 /**
+ * Full-circle cylindrical features WITHOUT end-probe classification: every
+ * merged co-axial bore (`'hole'`, concave walls) or pin/boss/rod (`'pin'`,
+ * convex walls) with its diameter and axial extent. Partial cylinders
+ * (fillets, rounded slots) are excluded by the same angular-coverage rule as
+ * `detectCylindricalHoles`. Cheap — no boolean probes — so diameter-only
+ * checks (FDM minimum feature size) can run it on every part.
+ */
+export function collectFullCylinders(backend: OcctBackend, kind: 'hole' | 'pin'): BoreExtent[] {
+  return resolveBoreExtents(collectConcaveCylindricalFaces(backend, kind === 'hole' ? 'concave' : 'convex'));
+}
+
+/**
  * Detect cylindrical holes (blind and through bores) on a BREP solid.
  *
  * Returns one entry per merged co-axial bore. Convex cylinders (bosses)
@@ -276,12 +288,16 @@ function isEndClosed(
 
 /**
  * Enumerate all faces; keep cylindrical faces whose solid-outward normal
- * points TOWARD the axis (hole walls). Robust against surface handedness:
- * the natural normal `d1u × d1v` is flipped by face orientation, then
- * compared against the radial vector at the evaluation point — never
- * shortcut to "orientation is REVERSED".
+ * points TOWARD the axis (hole walls) — or, with `want: 'convex'`, AWAY from
+ * it (pins, bosses, rods). Robust against surface handedness: the natural
+ * normal `d1u × d1v` is flipped by face orientation, then compared against
+ * the radial vector at the evaluation point — never shortcut to
+ * "orientation is REVERSED".
  */
-function collectConcaveCylindricalFaces(backend: OcctBackend): ConcaveCylFace[] {
+function collectConcaveCylindricalFaces(
+  backend: OcctBackend,
+  want: 'concave' | 'convex' = 'concave',
+): ConcaveCylFace[] {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -341,7 +357,8 @@ function collectConcaveCylindricalFaces(backend: OcctBackend): ConcaveCylFace[] 
           const tAxial = dot(sub(point, loc), dir);
           const axisPoint = add(loc, scale(dir, tAxial));
           const w = sub(point, axisPoint);
-          if (dot(n, w) < 0) {
+          const concave = dot(n, w) < 0;
+          if (concave === (want === 'concave')) {
             out.push({ loc, dir, radiusMm, du: u2 - u1, v1, v2 });
           }
         }

@@ -79,7 +79,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     ).toEqual([]);
   });
 
-  it('catalogue has exactly 280 codes', () => {
+  it('catalogue has exactly 287 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -208,7 +208,11 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       bom.purchased.catalog-metadata-missing = 278.
     //  + 2 exploded views: render.explode.no-assembly,
     //       drawing.balloons.bom-unavailable = 280.
-    expect(catalogue.size).toBe(280);
+    //  + 7 FDM printability check: dfm.fdm.overhang-unsupported,
+    //       dfm.fdm.bridge-too-long, dfm.fdm.wall-below-nozzle,
+    //       dfm.fdm.feature-too-small, dfm.fdm.bed-contact-low, dfm.fdm.tip-risk,
+    //       dfm.fdm.exceeds-bed = 287.
+    expect(catalogue.size).toBe(287);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

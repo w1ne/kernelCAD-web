@@ -109,9 +109,10 @@ avoids redundant noise.
 
 ### Print-prep gate codes (dfmSpec)
 
-Four further `dfm.*` codes come from the print-readiness gates a model
+Further `dfm.*` codes come from the print-readiness gates a model
 declares with `dfmSpec({...})` — they are emitted by `evaluate` / build,
-not by the `verify({ check: 'dfm-preflight' })` sheet-metal operations above:
+not by the `verify({ check: 'dfm-preflight' })` sheet-metal operations above
+(the `dfm.fdm.*` rows need `process: 'fdm'`; see `kernelcad-print`):
 
 | Code | Severity | Recovery |
 |------|----------|----------|
@@ -119,6 +120,13 @@ not by the `verify({ check: 'dfm-preflight' })` sheet-metal operations above:
 | dfm.clearance.violated | error | Open the part-pair gap to >= `minClearance`, or declare the pair in `dfmSpec.ignore`. |
 | dfm.channel.openings-mismatch | error | Inspect the channel walls; fix breaches/blockages or correct the declared opening count. |
 | dfm.void.undeclared | error | Open a drain channel, or declare the void via `dfmSpec.channels` with `sealed: true`. |
+| dfm.fdm.overhang-unsupported | error | Apply the rotation the hint names, chamfer the overhang to 45°, or slice with supports. |
+| dfm.fdm.bridge-too-long | error | Add a rib under the span or reorient the part. |
+| dfm.fdm.wall-below-nozzle | error | Thicken the wall to >= 2 × `nozzleMm`. |
+| dfm.fdm.exceeds-bed | error | Reorient, split, or pick a printer profile with a larger bed. |
+| dfm.fdm.feature-too-small | warn | Enlarge the hole/pin, drill after printing, or use a finer nozzle. |
+| dfm.fdm.bed-contact-low | warn | Reorient onto a flat face or add a brim. |
+| dfm.fdm.tip-risk | warn | Print lying down, widen the base, or add a brim. |
 
 ## Verification gates
 

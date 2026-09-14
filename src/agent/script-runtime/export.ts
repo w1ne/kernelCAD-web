@@ -31,7 +31,9 @@ import type { ConnectorManifest } from '../../shared/parts/connectorManifestSche
 import { sceneToConnectorManifest } from './connectorManifestExport';
 import { sliceStlToGcode, withTempStl } from '../../kernel/export/gcode/slicerCli';
 import { parseGcodeHeader, type GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
-import { resolvePrinterProfile } from '../../kernel/export/gcode/profiles';
+import { resolvePrinterProfile, exceedsBed } from '../../kernel/export/gcode/profiles';
+import { findDfmSpec } from '../../modeling/runtime/dfm/runDfmChecks';
+import { buildFrameFor, type Vec3 as FdmVec3 } from '../../modeling/runtime/dfm/fdmOrientation';
 
 export type { GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
 
@@ -518,7 +520,10 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
         fused = fused.union(worldParts[i]!.shape);
       }
       if (format === 'gcode') {
-        const gcodeResult = await sliceShapeToGcode(fused, input.options as GcodeOptions | undefined, r.diagnostics, featureCount, targetId);
+        const gcodeResult = await sliceShapeToGcode(
+          fused, input.options as GcodeOptions | undefined, r.diagnostics, featureCount, targetId,
+          findDfmSpec(run.records)?.fdm?.buildDirection,
+        );
         return gcodeResult;
       }
       const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
@@ -554,7 +559,10 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
       return { bytes, featureCount, diagnostics: r.diagnostics };
     }
     case 'gcode': {
-      return sliceShapeToGcode(shape, input.options as GcodeOptions | undefined, r.diagnostics, featureCount, targetId);
+      return sliceShapeToGcode(
+        shape, input.options as GcodeOptions | undefined, r.diagnostics, featureCount, targetId,
+        findDfmSpec(run.records)?.fdm?.buildDirection,
+      );
     }
     case 'step': {
       const bytes = await shape.exportSTEPAsync();
@@ -891,31 +899,39 @@ export function stlNotWatertightDiagnostic(
 type GcodeOptions = Extract<ExportOptions, { format: 'gcode' }>;
 
 /**
- * `format: 'gcode'` shared dispatch: mesh `shape` to STL, bbox-gate it
- * against the selected printer profile's bed size *before* invoking the
- * slicer (cheap, no process spawn), then shell out to the detected slicer
- * CLI. Shared by the Scene-fused and single-shape dispatch paths — both
- * end up with one `OcctBackend` to mesh.
+ * `format: 'gcode'` shared dispatch: place `shape` in the build orientation
+ * declared by `dfmSpec({ process: 'fdm', buildDirection })` (as modeled when
+ * none is declared), bbox-gate it against the selected printer profile's bed
+ * size *before* invoking the slicer (cheap, no process spawn), then shell out
+ * to the detected slicer CLI. Shared by the Scene-fused and single-shape
+ * dispatch paths — both end up with one `OcctBackend` to mesh. The rotation
+ * is the one the FDM printability check analyzed, so a declared orientation
+ * is the orientation that gets sliced.
  */
 async function sliceShapeToGcode(
-  shape: OcctBackend,
+  modeled: OcctBackend,
   opts: GcodeOptions | undefined,
   diagnostics: readonly CompilerDiagnostic[],
   featureCount: number,
   targetId: string | undefined,
+  buildDirection?: FdmVec3,
 ): Promise<ExportResult> {
   const printerProfile = resolvePrinterProfile(opts?.printer);
+  const rotation = buildDirection !== undefined ? buildFrameFor(buildDirection).rotation : undefined;
+  // Clone first: replicad's rotate consumes the source OCCT handle.
+  const shape = rotation !== undefined && rotation.deg !== 0
+    ? modeled.clone().rotate(rotation.axis, rotation.deg)
+    : modeled;
   const bbox = shape.boundingBox();
   const size = {
     x: bbox.max[0] - bbox.min[0],
     y: bbox.max[1] - bbox.min[1],
     z: bbox.max[2] - bbox.min[2],
   };
-  if (
-    size.x > printerProfile.bedSizeMm.x
-    || size.y > printerProfile.bedSizeMm.y
-    || size.z > printerProfile.bedSizeMm.z
-  ) {
+  if (exceedsBed(size, printerProfile)) {
+    const placed = rotation !== undefined && rotation.deg !== 0
+      ? ` in its dfmSpec build orientation (${rotation.apply})`
+      : '';
     return {
       bytes: new Uint8Array(),
       featureCount,
@@ -924,7 +940,7 @@ async function sliceShapeToGcode(
         code: 'export.gcode.exceeds-bed',
         featureId: targetId,
         severity: 'error',
-        message: `Model bounding box ${size.x.toFixed(1)}x${size.y.toFixed(1)}x${size.z.toFixed(1)}mm exceeds the '${printerProfile.name}' bed (${printerProfile.bedSizeMm.x}x${printerProfile.bedSizeMm.y}x${printerProfile.bedSizeMm.z}mm).`,
+        message: `Model bounding box ${size.x.toFixed(1)}x${size.y.toFixed(1)}x${size.z.toFixed(1)}mm${placed} exceeds the '${printerProfile.name}' bed (${printerProfile.bedSizeMm.x}x${printerProfile.bedSizeMm.y}x${printerProfile.bedSizeMm.z}mm).`,
         hint: HINT_TEMPLATES['export.gcode.exceeds-bed'].template,
         nextAction: NEXT_ACTIONS['export.gcode.exceeds-bed'],
       }],

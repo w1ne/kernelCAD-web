@@ -3,12 +3,13 @@
 // src/kernel/export/gcode/profiles.ts
 //
 // Bundled printer bed geometry and filament material profiles for the
-// `gcode` export format. Printer profiles are plain data (bed size + the
-// Marlin-safe layer-change gcode the slicer needs — see slicerCli.ts for
-// why that flag exists); filament profiles are flattened, self-contained
-// OrcaSlicer filament-preset JSON files under `./profiles/`, loaded via
-// `--load-filaments` (the one profile-loading path that does not trip the
-// slicer's printer/process compatibility-check bug — see the design spec).
+// `gcode` export format. Printer profiles are plain data living in the
+// node-free `printerProfiles.ts` (re-exported here) so capture-time
+// validation and the FDM printability check share them; filament profiles
+// are flattened, self-contained OrcaSlicer filament-preset JSON files under
+// `./profiles/`, loaded via `--load-filaments` (the one profile-loading path
+// that does not trip the slicer's printer/process compatibility-check bug —
+// see the design spec).
 
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -16,24 +17,10 @@ import { fileURLToPath } from 'node:url';
 
 const PROFILES_DIR = join(dirname(fileURLToPath(import.meta.url)), 'profiles');
 
-export interface PrinterProfile {
-  /** Selectable name for `options.printer`. */
-  name: string;
-  /** Bed size in mm, used for the pre-slice bbox gate. */
-  bedSizeMm: { x: number; y: number; z: number };
-  /** OrcaSlicer --bed-shape value (list of "x,y" corners). */
-  bedShapeArg: string;
-}
-
-export const PRINTER_PROFILES: Record<string, PrinterProfile> = {
-  'generic-fdm': {
-    name: 'generic-fdm',
-    bedSizeMm: { x: 220, y: 220, z: 250 },
-    bedShapeArg: '0x0,220x0,220x220,0x220',
-  },
-};
-
-export const DEFAULT_PRINTER_PROFILE = 'generic-fdm';
+export {
+  PRINTER_PROFILES, DEFAULT_PRINTER_PROFILE, resolvePrinterProfile, exceedsBed,
+  type PrinterProfile, type BuildVolumeSize,
+} from './printerProfiles';
 
 export type MaterialName = 'pla' | 'petg';
 
@@ -58,13 +45,4 @@ export function isKnownMaterial(value: string): value is MaterialName {
  *  slicer). */
 export function readMaterialProfile(material: MaterialName): Record<string, unknown> {
   return JSON.parse(readFileSync(materialProfilePath(material), 'utf8'));
-}
-
-export function resolvePrinterProfile(name: string | undefined): PrinterProfile {
-  const key = name ?? DEFAULT_PRINTER_PROFILE;
-  const profile = PRINTER_PROFILES[key];
-  if (!profile) {
-    throw new Error(`Unknown printer profile '${key}'. Known profiles: ${Object.keys(PRINTER_PROFILES).join(', ')}.`);
-  }
-  return profile;
 }

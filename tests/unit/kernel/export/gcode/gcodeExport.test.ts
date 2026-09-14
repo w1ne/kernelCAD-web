@@ -29,6 +29,40 @@ describe('gcode export — bed-size gate', () => {
     expect(diag?.message).toMatch(/exceeds the 'generic-fdm' bed/);
   }, 30000);
 
+  it('bed-gates in the dfmSpec FDM build orientation, not as modeled', async () => {
+    // 260 x 20 x 10 lying down exceeds the 220 mm bed in x; standing on its
+    // end ('+x' up, .rotateY(-90)) it is 10 x 20 x 260 and exceeds the 250 mm
+    // build height instead — the gate reports the placed extents.
+    const asModeled = await runAndExport({
+      code: 'return box(260, 20, 10);',
+      fileName: 'long.kcad.ts',
+      format: 'gcode',
+    });
+    expect(asModeled.diagnostics.find(d => d.code === 'export.gcode.exceeds-bed')?.message)
+      .toMatch(/260\.0x20\.0x10\.0mm exceeds/);
+
+    const standing = await runAndExport({
+      code: "dfmSpec({ process: 'fdm', buildDirection: '+x' });\nreturn box(260, 20, 10);",
+      fileName: 'long-standing.kcad.ts',
+      format: 'gcode',
+    });
+    expect(standing.bytes.length).toBe(0);
+    expect(standing.diagnostics.find(d => d.code === 'export.gcode.exceeds-bed')?.message)
+      .toMatch(/10\.0x20\.0x260\.0mm in its dfmSpec build orientation \(\.rotateY\(-90\)\) exceeds/);
+  }, 60000);
+
+  it.skipIf(detectSlicer() === undefined)('slices in the dfmSpec FDM build orientation (real slicer)', async () => {
+    const slice = (header: string) => runAndExport({
+      code: `${header}\nreturn box(60, 20, 10);`,
+      fileName: 'oriented.kcad.ts',
+      format: 'gcode',
+    });
+    const flat = await slice('');
+    const standing = await slice("dfmSpec({ process: 'fdm', buildDirection: '+x' });");
+    expect(flat.gcodeStats?.maxZMm).toBeCloseTo(10, 0);
+    expect(standing.gcodeStats?.maxZMm).toBeCloseTo(60, 0);
+  }, 180000);
+
   it('passes the bed-size gate for a part within bounds (only fails downstream if no slicer is installed)', async () => {
     const result = await runAndExport({
       code: 'return box(20, 20, 20);',
