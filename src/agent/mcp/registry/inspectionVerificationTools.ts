@@ -33,6 +33,8 @@ const inspectToolEntry: ToolRegistryEntry = {
       "- 'part-families' — part families within a category ({ category? }); count + exemplar ids per family.\n" +
       "- 'bom' — bill of materials ({ assembly? }): one row per distinct part (grouped by geometry/catalog identity, not name) with real instance quantity, kind ('fabricated'|'purchased'), material, density, per-unit and total mass, bbox, a fabrication process hint, catalog provenance for purchased parts, and totals; `bom.*` diagnostics flag rows with no density source or missing catalog vendor info instead of guessing.\n" +
       "- 'section' — numeric cross-section probe of a shape: area, perimeter, loop/hole counts, 2D bbox at a plane ({ feature_id?, plane | at+axis, stack?: { from, to, count, axis? } }). `stack` scans evenly spaced slices and returns `minAreaIndex`/`minAreaPosition` — use it to find the neck/thinnest cross-section along an axis.\n" +
+      "- 'continuity' — G0/G1/G2 classification of shared edges ({ feature_id?, edges? }); position gap, normal jump, curvature difference, worst-sample XYZ.\n" +
+      "- 'curvature' — per-face Gaussian and mean curvature min/max/mean, inflections, spikes ({ feature_id?, faces?, spike_factor? }).\n" +
       'All params except `of` are subject-specific and forwarded verbatim. Most subjects accept { file | code }.',
     inputSchema: {
       type: 'object',
@@ -40,6 +42,7 @@ const inspectToolEntry: ToolRegistryEntry = {
         of: {
           type: 'string',
           enum: ['assembly', 'robot', 'step', 'shape', 'mass', 'features', 'assemblies', 'topology', 'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints', 'part-stats', 'bend-table', 'params', 'part-categories', 'part-families', 'bom', 'section'],
+          enum: ['assembly', 'robot', 'step', 'shape', 'mass', 'features', 'assemblies', 'topology', 'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints', 'part-stats', 'bend-table', 'params', 'part-categories', 'part-families', 'continuity', 'curvature'],
           description: 'Which facts to read.',
         },
         file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
@@ -73,6 +76,9 @@ const inspectToolEntry: ToolRegistryEntry = {
           },
           required: ['from', 'to', 'count'],
         },
+        edges: { description: "of:'continuity' — optional EdgeQuery or @kc[...] ref(s) limiting which shared edges are sampled." },
+        faces: { description: "of:'curvature' — optional FaceQuery or @kc[...] ref(s) limiting which faces are sampled." },
+        spike_factor: { type: 'number', description: "of:'curvature' — spike sensitivity as a multiple of the face's Gaussian stddev (default 6)." },
       },
       required: ['of'],
     },

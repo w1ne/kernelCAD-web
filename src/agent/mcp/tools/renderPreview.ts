@@ -46,6 +46,11 @@ import {
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { parseExplodeInput, type ParsedExplode } from '../../../modeling/runtime/explodedPoses';
 import { loadScriptFeatures } from '../../../modeling/runtime/scriptLoader';
+import {
+  buildSurfaceQualityOverlay,
+  SURFACE_QUALITY_OVERLAYS,
+  type SurfaceQualityOverlay,
+} from './surfaceQualityOverlay';
 
 /** Generous request/response deadline for one preview (5 minutes — a cold
  *  render is ~20-30 s; the deadline only catches a wedged browser). */
@@ -101,6 +106,10 @@ export interface RenderPreviewInput {
    *  `'mate-axis'`. Requires the script to return `assembly.model()` /
    *  `solvedModel()`. */
   explode?: { factor: number; mode?: 'radial' | 'mate-axis' };
+  /** Surface-quality overlay: zebra stripes, curvature vertex colours, or
+   *  continuity-class edge colours. Built as coloured STL bands and drawn
+   *  through this same pipeline (FEA heatmap path). */
+  overlay?: 'zebra' | 'curvature' | 'continuity';
 }
 
 export interface RenderPreviewImage {
@@ -294,6 +303,18 @@ export async function renderPreviewTool(
     }
   }
 
+  let overlay: SurfaceQualityOverlay | undefined;
+  if (input.overlay !== undefined) {
+    if (!(SURFACE_QUALITY_OVERLAYS as readonly string[]).includes(input.overlay)) {
+      return refusal(
+        'cli.invalid-args',
+        `render_preview: unknown overlay '${String(input.overlay)}'. Valid: ${SURFACE_QUALITY_OVERLAYS.join(', ')}.`,
+        "Pass overlay as 'zebra', 'curvature', or 'continuity', or omit it for a plain render.",
+      );
+    }
+    overlay = input.overlay;
+  }
+
   // --- Session dir + code-mode temp script. ---
   let outDir: string;
   let scriptPath: string;
@@ -319,6 +340,7 @@ export async function renderPreviewTool(
   }
 
   const work = renderPreviewWork({ input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section, explode });
+  const work = renderPreviewWork({ input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section, overlay });
   // Swallow the losing chain's rejection if the timeout wins (same pattern as
   // capture_animation) so it never surfaces as an unhandled rejection.
   work.catch(() => undefined);
@@ -359,6 +381,9 @@ async function renderPreviewWork(args: {
   explode?: ParsedExplode;
 }): Promise<RenderPreviewOutput> {
   const { input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section, explode } = args;
+  overlay?: SurfaceQualityOverlay;
+}): Promise<RenderPreviewOutput> {
+  const { input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section, overlay } = args;
   const t0 = Date.now();
 
   // Physics-loop probe — identical protocol to the render CLI: strict mode
@@ -404,6 +429,23 @@ async function renderPreviewWork(args: {
     };
   }
 
+  let renderScriptPath = scriptPath;
+  if (overlay !== undefined) {
+    const built = await buildSurfaceQualityOverlay({
+      ...(input.file !== undefined ? { file: scriptPath } : { code: input.code }),
+      overlay,
+      outDir,
+    });
+    if (!built.ok) {
+      return refusal(
+        built.errorCode ?? 'cli.export-exception',
+        `render_preview overlay '${overlay}': ${built.error}`,
+        'Run inspect({ of: \'continuity\' | \'curvature\' }) on the same source; the overlay is a picture of those numbers.',
+      );
+    }
+    renderScriptPath = built.scriptPath;
+  }
+
   // Provision a render surface (static player preferred; see playerServer.ts).
   let base: ResolvedRenderBase;
   try {
@@ -419,7 +461,7 @@ async function renderPreviewWork(args: {
   let result: HeadlessRenderResult;
   try {
     result = await deps.render({
-      scriptPath,
+      scriptPath: renderScriptPath,
       viewportWidth: width,
       viewportHeight: height,
       views,

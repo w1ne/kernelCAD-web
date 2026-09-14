@@ -17,6 +17,8 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import { formatHuman } from '../../../shared/diagnostics/formatter';
 import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 import { isKernelError } from '../../../shared/intent/kernelError';
+import { inspectContinuityTool } from '../../mcp/tools/inspectContinuity';
+import { inspectCurvatureTool } from '../../mcp/tools/inspectCurvature';
 
 export interface InspectStepCliInput {
   file: string;
@@ -80,7 +82,7 @@ export function formatStepReport(report: StepInspectReport): string {
 
 export function inspectCommand(): Command {
   const cmd = new Command('inspect')
-    .description('Inspect external CAD files without evaluating a script');
+    .description('Inspect a STEP file, or a .kcad.ts script\'s surface quality (continuity / curvature)');
   cmd
     .command('step')
     .description('Report solid tree, exact bbox, volume, and cylindrical holes of a STEP file')
@@ -106,6 +108,55 @@ export function inspectCommand(): Command {
         console.log(formatHuman(r.diagnostics));
       }
       process.exitCode = r.exitCode;
+    });
+  cmd
+    .command('continuity')
+    .description('Classify shared face-edges G0/G1/G2/broken with max G0 gap, G1 normal jump, G2 curvature difference')
+    .argument('<file>', 'path to a .kcad.ts script')
+    .option('--json', 'emit the full report as JSON on stdout', false)
+    .action(async (file: string, opts: { json: boolean }) => {
+      const r = await inspectContinuityTool({ file });
+      if (opts.json) {
+        console.log(JSON.stringify(r, null, 2));
+      } else if (!r.ok) {
+        console.log(r.error ?? 'inspect continuity failed');
+      } else {
+        const s = r.summary!;
+        console.log(`shared ${s.shared}  G2 ${s.g2}  G1 ${s.g1}  G0 ${s.g0}  broken ${s.broken}`);
+        for (const e of r.edges ?? []) {
+          console.log(
+            `  ${e.ref}  ${e.class}  G0 ${e.maxPositionGapMm.toExponential(2)} mm  ` +
+              `G1 ${e.maxNormalAngleDeg.toFixed(2)}°  G2 Δ ${e.maxCurvatureDiff.toExponential(2)}  ` +
+              `worst [${e.worstSample.point.map(n => n.toFixed(2)).join(', ')}]`,
+          );
+        }
+        if (r.diagnostics && r.diagnostics.length > 0) console.log(formatHuman(r.diagnostics));
+      }
+      process.exitCode = r.ok ? 0 : 1;
+    });
+  cmd
+    .command('curvature')
+    .description('Per-face Gaussian and mean curvature min/max/mean, inflections, spikes')
+    .argument('<file>', 'path to a .kcad.ts script')
+    .option('--json', 'emit the full report as JSON on stdout', false)
+    .action(async (file: string, opts: { json: boolean }) => {
+      const r = await inspectCurvatureTool({ file });
+      if (opts.json) {
+        console.log(JSON.stringify(r, null, 2));
+      } else if (!r.ok) {
+        console.log(r.error ?? 'inspect curvature failed');
+      } else {
+        for (const f of r.faces ?? []) {
+          console.log(
+            `  ${f.ref}  ${f.surfaceType}  K min/mean/max ` +
+              `${f.gaussian.min.toExponential(2)} / ${f.gaussian.mean.toExponential(2)} / ${f.gaussian.max.toExponential(2)}  ` +
+              `H min/mean/max ${f.mean.min.toExponential(2)} / ${f.mean.mean.toExponential(2)} / ${f.mean.max.toExponential(2)}  ` +
+              `inflections ${f.inflections}  spikes ${f.spikes.length}`,
+          );
+        }
+        if (r.diagnostics && r.diagnostics.length > 0) console.log(formatHuman(r.diagnostics));
+      }
+      process.exitCode = r.ok ? 0 : 1;
     });
   return cmd;
 }

@@ -89,5 +89,6 @@
   "boolean-feature-toggle",
   "datum",
   "mesh",
-  "reverse-engineering"
+  "reverse-engineering",
+  "continuity"
 ]

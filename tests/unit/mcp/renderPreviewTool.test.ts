@@ -124,6 +124,16 @@ describe('render_preview — input validation', () => {
     expect(r.ok).toBe(false);
     expect(r.error).toMatch(/width\/height/);
   });
+
+  it('refuses an unknown overlay', async () => {
+    const r = await renderPreviewTool(
+      { code: 'return box(1,1,1);', overlay: 'heat' as 'zebra' },
+      makeDeps(),
+    );
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/unknown overlay/);
+    expect(r.errorCode).toBe('cli.invalid-args');
+  });
 });
 
 describe('render_preview — happy path (mocked render)', () => {
@@ -291,7 +301,7 @@ describe('render_preview — registry contract', () => {
     expect(def!.description).toMatch(/open_in_studio/);
     expect(def!.description).toMatch(/NO STUDIO \/ DEV-SERVER/);
     const props = def!.inputSchema.properties as Record<string, unknown>;
-    for (const key of ['code', 'file', 'views', 'pose', 'focus', 'hide', 'out_dir', 'width', 'height', 'environment', 'no_watermark', 'no_mechanism_check', 'base_url']) {
+    for (const key of ['code', 'file', 'views', 'pose', 'focus', 'hide', 'out_dir', 'width', 'height', 'environment', 'no_watermark', 'no_mechanism_check', 'base_url', 'overlay']) {
       expect(props[key], `schema property ${key}`).toBeDefined();
     }
     // code|file exclusivity is runtime-enforced, so neither is required.
