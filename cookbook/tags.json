@@ -90,5 +90,8 @@
   "datum",
   "mesh",
   "reverse-engineering",
-  "continuity"
+  "continuity",
+  "tangency",
+  "draft",
+  "emboss"
 ]

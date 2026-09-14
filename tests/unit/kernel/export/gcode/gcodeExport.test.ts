@@ -29,6 +29,35 @@ describe('gcode export — bed-size gate', () => {
     expect(diag?.message).toMatch(/exceeds the 'generic-fdm' bed/);
   }, 30000);
 
+  it('still fails the bed gate for a 300 mm part against generic-fdm (250 mm height)', async () => {
+    const result = await runAndExport({
+      code: 'return box(20, 20, 300);',
+      fileName: 'too-tall.kcad.ts',
+      format: 'gcode',
+    });
+    expect(result.bytes.length).toBe(0);
+    const diag = result.diagnostics.find(d => d.code === 'export.gcode.exceeds-bed');
+    expect(diag).toBeDefined();
+    expect(diag?.message).toMatch(/x300\.0mm exceeds the 'generic-fdm' bed/);
+  }, 30000);
+
+  it('slices a 180 mm tall part with generic-fdm when a slicer is installed', async () => {
+    if (detectSlicer() === undefined) {
+      console.warn('skipping 180 mm gcode slice: no slicer CLI on PATH (set KERNELCAD_SLICER or install orca-slicer)');
+      return;
+    }
+    const result = await runAndExport({
+      code: 'return box(20, 20, 180);',
+      fileName: 'tall.kcad.ts',
+      format: 'gcode',
+      options: { format: 'gcode', printer: 'generic-fdm' },
+    });
+    const exceedsBed = result.diagnostics.find(d => d.code === 'export.gcode.exceeds-bed');
+    expect(exceedsBed).toBeUndefined();
+    expect(result.bytes.length, JSON.stringify(result.diagnostics)).toBeGreaterThan(0);
+    expect(result.gcodeStats?.maxZMm).toBeGreaterThan(170);
+  }, 180000);
+
   it('bed-gates in the dfmSpec FDM build orientation, not as modeled', async () => {
     // 260 x 20 x 10 lying down exceeds the 220 mm bed in x; standing on its
     // end ('+x' up, .rotateY(-90)) it is 10 x 20 x 260 and exceeds the 250 mm

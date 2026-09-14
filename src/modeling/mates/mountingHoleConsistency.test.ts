@@ -77,6 +77,36 @@ describe('validateMountingHoleConsistency', () => {
     expect(diags).toHaveLength(0);
   });
 
+  it('resolves a ParamRef hole diameter to its evaluated value (matching sides pass)', () => {
+    const { arm, kcad } = makeArm();
+    const dia = kcad.param('HoleDia', 5);
+    const a = kcad.box(20, 20, 5).hole('top', { u: 0, v: 0, diameter: dia, depth: 'through' });
+    const b = kcad.box(20, 20, 5).hole('bottom', { u: 0, v: 0, diameter: 5, depth: 'through' });
+    arm.part('a', a).connector('h', { type: 'frame', origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } } });
+    arm.part('b', b).connector('h', { type: 'frame', origin: { kind: 'topology', query: { kind: 'face-center', name: 'bottom' } } });
+    arm.mate('screw', 'a.h', 'b.h', 'fastened');
+
+    const diags = validateMountingHoleConsistency(arm);
+    expect(diags).toHaveLength(0);
+  });
+
+  it('resolves a ParamRef hole diameter and reports a real mismatch (not "no hole")', () => {
+    const { arm, kcad } = makeArm();
+    const dia = kcad.param('HoleDia', 6);
+    const a = kcad.box(20, 20, 5).hole('top', { u: 0, v: 0, diameter: dia, depth: 'through' });
+    const b = kcad.box(20, 20, 5).hole('bottom', { u: 0, v: 0, diameter: 5, depth: 'through' });
+    arm.part('a', a).connector('h', { type: 'frame', origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } } });
+    arm.part('b', b).connector('h', { type: 'frame', origin: { kind: 'topology', query: { kind: 'face-center', name: 'bottom' } } });
+    arm.mate('screw', 'a.h', 'b.h', 'fastened');
+
+    const diags = validateMountingHoleConsistency(arm);
+    expect(diags).toHaveLength(1);
+    expect(diags[0].code).toBe('assembly.mounting-hole.mismatch');
+    expect(diags[0].hint).toMatch(/6.*mm/);
+    expect(diags[0].hint).toMatch(/5.*mm/);
+    expect(diags[0].hint).not.toMatch(/no hole feature/i);
+  });
+
   it('non-fastened mate types are skipped', () => {
     const { arm, kcad } = makeArm();
     const a = kcad.box(20, 20, 5).hole('top', { u: 0, v: 0, diameter: 5, depth: 'through' });

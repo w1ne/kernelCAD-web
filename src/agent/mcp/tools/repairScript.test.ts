@@ -96,6 +96,53 @@ const CASES: RepairCase[] = [
     code_expected: 'feature.face.invalid-uv-anchor',
     expectInNewCode: 'anchorU: 1',
   },
+  {
+    name: 'revolve profile that crosses the rotation axis',
+    code: [
+      'return path()',
+      '  .moveTo(-1, 0)',
+      '  .lineTo(10, 0)',
+      '  .lineTo(10, 5)',
+      '  .lineTo(-1, 5)',
+      '  .close()',
+      '  .revolve();',
+    ].join('\n'),
+    code_expected: 'feature.revolve.crosses-axis',
+    expectInNewCode: '.moveTo(0, 0)',
+  },
+  {
+    name: 'tangent circle whose radius cannot sit outside two circles',
+    code: [
+      'return path().tangentCircle(',
+      "  [{ kind: 'circle', center: [0, 0], radius: 10 },",
+      "   { kind: 'circle', center: [30, 0], radius: 4 }],",
+      '  { radius: 1 },',
+      ').extrude(10);',
+    ].join('\n'),
+    code_expected: 'sketch.tangency.no-solution',
+    expectInNewCode: 'radius: 8',
+  },
+  {
+    name: 'draft angle that is geometrically degenerate',
+    code: "return box(10, 10, 10).draft(90, { face: 'front' });",
+    code_expected: 'feature.draft.failed',
+    expectInNewCode: '.draft(8, { face: \'front\' })',
+  },
+  {
+    name: 'shell thicker than half the solid',
+    code: "return box(10, 10, 10).shell(8, { face: 'top' });",
+    code_expected: 'feature.kernel-failed',
+    expectInNewCode: '.shell(4, { face: \'top\' })',
+  },
+  {
+    name: 'emboss whose glyphs sit over a hole',
+    code: [
+      "return box(40, 40, 6).hole('top', { u: 0, v: 0, diameter: 20, depth: 'through' })",
+      "  .embossText({ textContent: 'HI', face: 'top', size: 4, depth: -0.5, anchorU: 0.5, anchorV: 0.5 });",
+    ].join('\n'),
+    code_expected: 'feature.emboss-text.boolean-noop',
+    expectInNewCode: 'anchorU: 0.2',
+  },
 ];
 
 describe('repair_script — end to end', () => {

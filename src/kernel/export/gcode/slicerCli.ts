@@ -97,11 +97,14 @@ export async function sliceStlToGcode(
     return { ok: false, error: 'slicer-unavailable' };
   }
 
-  // Validate the printer profile name (throws on an unknown profile) even
-  // though only the caller's pre-slice bbox gate uses its bed size — this
-  // keeps an unknown `options.printer` a fast, clear failure rather than a
-  // silent fall-through to the slicer's own default bed.
-  resolvePrinterProfile(opts.printer);
+  // Validate the printer profile name (throws on an unknown profile) and
+  // forward its bed to the slicer CLI. OrcaSlicer's own default
+  // `printable_height` is ~100 mm; without these flags a part that already
+  // passed the pre-slice bbox gate against `generic-fdm` (250 mm) is still
+  // rejected. Real option names (see `orca-slicer --help` + the settings
+  // dump): `--printable-area`, `--printable-height`. `--bed-shape` is not
+  // a recognized Orca flag.
+  const printer = resolvePrinterProfile(opts.printer);
   const material: MaterialName = opts.material && isKnownMaterial(opts.material)
     ? opts.material
     : DEFAULT_MATERIAL;
@@ -115,6 +118,8 @@ export async function sliceStlToGcode(
       '--load-filaments', materialProfilePath(material),
       '--layer-height', String(opts.layerHeight ?? 0.2),
       '--sparse-infill-density', String(opts.infill ?? 15),
+      '--printable-area', printer.bedShapeArg,
+      '--printable-height', String(printer.bedSizeMm.z),
       // `--enable-support` is a bare boolean flag (no value token) —
       // passing "0" gets consumed as the next positional argument (the
       // input file), which fails the slicer with "No such file: 0".

@@ -1,6 +1,6 @@
 # Trace-guided repair
 
-Three models in this directory are **deliberately broken**. The walkthrough
+Eight models in this directory are **deliberately broken**. The walkthrough
 script runs the same MCP calls an agent makes after a failed evaluation, through
 the same dispatcher (`callMcpTool`), and repairs each one:
 
@@ -19,6 +19,11 @@ The broken files are never rewritten, so you can run it as many times as you lik
 | `oversized-fillet.kcad.ts` | 16 mm fillet on an 8 mm-thick block | `feature.edge-feature.short-edges-skipped` | shortest adjacent edge (8 mm → ceiling 4 mm) |
 | `hole-misses-plate.kcad.ts` | hole anchored 70 mm from the centre of a 60 mm plate | `feature.subtractive-noop` | plate extent, less the bore radius, less one radius of wall |
 | `cutter-misses-body.kcad.ts` | cutter translated 200 mm away from the body | `feature.subtractive-noop` | both bounding boxes; the fix lands on the cutter's line, which is an input to the failing boolean |
+| `revolve-crosses-axis.kcad.ts` | washer profile with x = −1 mm | `feature.revolve.crosses-axis` | clamp every numeric path x-coordinate to 0 |
+| `tangency-radius-too-small.kcad.ts` | tangent circle r=1 between circles r=10 and r=4, 30 mm apart | `sketch.tangency.no-solution` | (centre-distance − r1 − r2) / 2 = 8 mm |
+| `draft-angle-degenerate.kcad.ts` | 90° draft on a box face | `feature.draft.failed` | mould-release ladder 8° / 5° / 3° |
+| `shell-too-thick.kcad.ts` | 8 mm wall on a 10 mm cube | `feature.kernel-failed` | half the thinnest bbox dim (5 mm ceiling; 4 mm first) |
+| `emboss-over-hole.kcad.ts` | engrave parked over a centred through-hole | `feature.emboss-text.boolean-noop` | slide UV anchor to (0.2, 0.2) |
 
 ## Run it
 
@@ -178,6 +183,74 @@ summary
   REPAIRED  examples/repair/oversized-fillet.kcad.ts
   REPAIRED  examples/repair/hole-misses-plate.kcad.ts
   REPAIRED  examples/repair/cutter-misses-body.kcad.ts
+  REPAIRED  examples/repair/revolve-crosses-axis.kcad.ts
+  REPAIRED  examples/repair/tangency-radius-too-small.kcad.ts
+  REPAIRED  examples/repair/draft-angle-degenerate.kcad.ts
+  REPAIRED  examples/repair/shell-too-thick.kcad.ts
+  REPAIRED  examples/repair/emboss-over-hole.kcad.ts
+```
+
+New-kind excerpts from the same run:
+
+```text
+==============================================================================
+examples/repair/revolve-crosses-axis.kcad.ts
+==============================================================================
+--- 2. why_did_this_fail — repair region and candidates
+  candidateStatus: candidates
+    - revolve_1:clamp-revolve-x: Clamp 2 path x-coordinate(s) from -1, -1 to 0 so the profile stays on one side of the revolve axis.
+      evidence {"requestedXmm":"-1, -1","clampedXmm":0,"clampedCount":2}
+--- 4. repair_script strategy: apply-first
+  applied: revolve_1:clamp-revolve-x
+  @@ -11,4 +11,4 @@
+  -  .moveTo(-1, 0)
+  -  .lineTo(-1, 5)
+  +  .moveTo(0, 0)
+  +  .lineTo(0, 5)
+
+==============================================================================
+examples/repair/tangency-radius-too-small.kcad.ts
+==============================================================================
+--- 2. why_did_this_fail
+    - sketch_1:enlarge-tangency-radius:8: Increase the tangent-circle radius from 1 mm to 8 mm so it can sit outside both circles.
+      evidence {"requestedRadiusMm":1,"centreDistanceMm":30,"minRadiusMm":8}
+--- 4. apply-first
+  applied: sketch_1:enlarge-tangency-radius:8
+  -  { radius: 1 },
+  +  { radius: 8 },
+
+==============================================================================
+examples/repair/draft-angle-degenerate.kcad.ts
+==============================================================================
+--- 2. why_did_this_fail
+    - draft_1:shrink-draft:8: Reduce the draft angle from 90° to 8°.
+      evidence {"requestedAngleDeg":90,"chosenAngleDeg":8}
+--- 4. apply-first
+  applied: draft_1:shrink-draft:8
+  -return box(10, 10, 10).draft(90, { face: 'front' });
+  +return box(10, 10, 10).draft(8, { face: 'front' });
+
+==============================================================================
+examples/repair/shell-too-thick.kcad.ts
+==============================================================================
+--- 2. why_did_this_fail
+    - shell_1:shrink-thickness:4: Reduce shell thickness from 8 mm to 4 mm.
+      evidence {"thinnestDimensionMm":10,"maxFeasibleThicknessMm":5,"currentThicknessMm":8}
+--- 4. apply-first
+  applied: shell_1:shrink-thickness:4
+  -return box(10, 10, 10).shell(8, { face: 'top' });
+  +return box(10, 10, 10).shell(4, { face: 'top' });
+
+==============================================================================
+examples/repair/emboss-over-hole.kcad.ts
+==============================================================================
+--- 2. why_did_this_fail
+    - embossText_1:emboss-anchor-corner: Move the emboss anchor from (0.5, 0.5) to (0.2, 0.2) so the glyphs land on solid material.
+      evidence {"requestedAnchorU":0.5,"requestedAnchorV":0.5,"chosenAnchorU":0.2,"chosenAnchorV":0.2}
+--- 4. apply-first
+  applied: embossText_1:emboss-anchor-corner
+  -  .embossText({ textContent: 'HI', face: 'top', size: 4, depth: -0.5, anchorU: 0.5, anchorV: 0.5 });
+  +  .embossText({ textContent: 'HI', face: 'top', size: 4, depth: -0.5, anchorU: 0.2, anchorV: 0.2 });
 ```
 
 ## Things worth noticing
