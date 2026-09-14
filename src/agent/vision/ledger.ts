@@ -13,11 +13,30 @@
 // derive param overrides.
 //
 // Spec: kernelCAD-private/docs/specs/2026-09-14-image-ledger-design.md.
+// The same ledger records the facts `drawing_to_cad` reads off an engineering
+// drawing PDF (stated dimensions, symmetry, linework measured at the sheet
+// scale, defaults) — see src/agent/drawing/ and
+// kernelCAD-private/docs/specs/2026-09-14-pdf-to-cad-design.md.
 
 import type { TraceFeatureResult } from './types';
 
-/** Evidence source behind a ledger fact — always a real upstream signal. */
-export type AssumptionEvidenceSource = 'image' | 'scale' | 'symmetry' | 'prior';
+/**
+ * Evidence source behind a ledger fact — always a real upstream signal.
+ * `image` / `scale` / `prior` come from photo tracing; `dimension` (lettered
+ * dimension value), `linework` (drawn geometry measured at the sheet scale),
+ * `title-block` (scale, units, projection read off the sheet) and `default`
+ * (a value the tool chose because the drawing states none) come from
+ * engineering-drawing import; `symmetry` is shared by both.
+ */
+export type AssumptionEvidenceSource =
+  | 'image'
+  | 'scale'
+  | 'symmetry'
+  | 'prior'
+  | 'dimension'
+  | 'linework'
+  | 'title-block'
+  | 'default';
 
 /** Classification of how a fact was established. */
 export type AssumptionKind = 'visible' | 'inferred' | 'assumed' | 'missing';
@@ -27,7 +46,10 @@ export type AssumptionResolution = 'confirmed' | 'overridden' | 'open';
 
 export interface AssumptionEvidence {
   source: AssumptionEvidenceSource;
-  /** Pixel-space region the fact was drawn from, `[x, y, w, h]`. */
+  /**
+   * Region the fact was drawn from, `[x, y, w, h]` — normalized image space
+   * for photo traces, sheet millimetres (origin top-left) for drawings.
+   */
   region?: [number, number, number, number];
 }
 
@@ -43,6 +65,13 @@ export interface AssumptionFact {
   /** 0..1 — always echoes a real upstream signal, never fabricated. */
   confidence: number;
   resolution: AssumptionResolution;
+  /**
+   * Set when two sources state different values for the same fact — e.g. a
+   * lettered dimension that disagrees with the linework measured at the
+   * sheet scale. `value` holds the one that won; the fact stays `open` so the
+   * conflict is confirmed or overridden rather than silently absorbed.
+   */
+  disagreement?: { stated: number; measured: number; unit: 'mm' };
 }
 
 export interface AssumptionLedger {

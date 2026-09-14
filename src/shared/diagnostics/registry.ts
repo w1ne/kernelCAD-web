@@ -2368,6 +2368,39 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'reference',
     description: 'resolve_assumptions was called with a resolution id that does not match any fact.id in the ledger.',
   },
+  // Engineering-drawing PDF import (4) — drawing_to_cad.
+  'reference.drawing.raster-only': {
+    hintTemplate:
+      'This PDF page is a scanned or photographed drawing: it holds raster images and no vector linework or dimension text to read. Render the page to a PNG and call `trace_from_image` with a scaleAnchor taken from a dimension you can read on it, or obtain the vector PDF (or DXF) export from the CAD system that produced the drawing.',
+    nextAction: { kind: 'call-tool', tool: 'trace_from_image', args: {} },
+    defaultSeverity: 'error',
+    group: 'reference',
+    description: 'drawing_to_cad was given a PDF page whose content is raster images rather than vector paths and text.',
+  },
+  'reference.drawing.view-ambiguous': {
+    hintTemplate:
+      "The orthographic views could not be identified unambiguously (no projection alignment, conflicting view labels, or a single view). Check `views` in the result; if the sheet is first-angle, re-run with projection: 'first-angle', and confirm or override the `views` / `projection` ledger facts with resolve_assumptions.",
+    nextAction: { kind: 'fix-arg', field: 'projection' },
+    defaultSeverity: 'warn',
+    group: 'reference',
+    description: 'drawing_to_cad found no orthographic view, only one view, or views whose arrangement and labels disagree about which is front/top/side.',
+  },
+  'reference.drawing.dimension-unassociated': {
+    hintTemplate:
+      "A dimension or callout could not be tied to drawn geometry (it spans no modelled edge or hole centre, or its leader reaches no circle), so its value did not drive the model. Read the ledger's `unapplied:` facts and set the matching param with set_param, or resolve the fact with resolve_assumptions once you have placed the value.",
+    nextAction: { kind: 'call-tool', tool: 'resolve_assumptions', args: {} },
+    defaultSeverity: 'warn',
+    group: 'reference',
+    description: 'drawing_to_cad read a dimension or callout whose extension lines or leader could not be associated with any silhouette edge, hole centre or circle.',
+  },
+  'reference.drawing.depth-missing': {
+    hintTemplate:
+      "No view shows the part along its extrusion axis and no thickness note was found, so the depth in the emitted script is a placeholder. Resolve the `thickness` ledger fact with the real value via resolve_assumptions and feed the returned paramOverrides to set_param.",
+    nextAction: { kind: 'call-tool', tool: 'resolve_assumptions', args: {} },
+    defaultSeverity: 'warn',
+    group: 'reference',
+    description: 'drawing_to_cad rebuilt an extruded profile whose depth is not stated by any orthogonal view or thickness note.',
+  },
   // Structural FEA gate (5) — the linear-static study declared by
   // `shape.feaStudy({...})`. Same contract as the dfm.* gates: the
   // declaration lives in the model, the solver run is the enforcement, and a

@@ -45,6 +45,7 @@ const EMITTING_FILES = [
   'agent/script-runtime/export.ts',
   'kernel/naming/resolveFaceRef.ts',
   'kernel/backends/occt/drawingAnnotations.ts',
+  'agent/drawing/reconstruct.ts',
 ];
 
 // Match `code: '<value>'` and `new KernelError('<code>', ...)`.
@@ -76,7 +77,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     ).toEqual([]);
   });
 
-  it('catalogue has exactly 276 codes', () => {
+  it('catalogue has exactly 280 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -201,7 +202,11 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  + 4 USD physics export and geometry diff: export.usd.joint-unsupported,
     //       export.usd.pose-unsolved, export.usd.mass-missing, diff.body.unmatched =
     //       276.
-    expect(catalogue.size).toBe(276);
+    //  + 4 engineering-drawing PDF import: reference.drawing.raster-only,
+    //       reference.drawing.view-ambiguous,
+    //       reference.drawing.dimension-unassociated,
+    //       reference.drawing.depth-missing = 280.
+    expect(catalogue.size).toBe(280);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

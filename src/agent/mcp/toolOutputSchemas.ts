@@ -244,6 +244,27 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     additionalProperties: true,
   },
 
+  drawing_to_cad: {
+    type: 'object',
+    properties: {
+      ok: { type: 'boolean' },
+      page: { type: 'integer' },
+      pageCount: { type: 'integer' },
+      sheet: { type: 'object', additionalProperties: true, description: '{ widthMm, heightMm, scale: { text, sheetPerModel, source }, units, projection } read off the sheet.' },
+      views: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Identified orthographic views: { name, bboxMm, identifiedBy, label? }.' },
+      reconstruction: { type: 'object', additionalProperties: true, description: '{ kind: extrude | revolve, profileView, axis, holeCount, extents }.' },
+      params: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Role-named params declared by the script: { name, value, description }.' },
+      script: { type: 'string', description: 'The emitted .kcad.ts source.' },
+      scriptPath: { type: 'string', description: 'Where the script was written (when `out` was given).' },
+      ledger: { type: 'object', additionalProperties: true, description: 'Assumption ledger: { facts, unresolvedCount }; facts are visible / inferred / assumed / missing, disagreements recorded on the fact.' },
+      ledgerPath: { type: 'string', description: 'Where the ledger was written (when `out` was given); pass it to resolve_assumptions.' },
+      fidelity: { type: 'object', additionalProperties: true, description: '{ verdict: match | partial | mismatch | failed, extents, holes, silhouettes, reasons } from evaluating and re-projecting the script.' },
+      diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
+    },
+    required: ['ok', 'views', 'params', 'ledger', 'diagnostics'],
+    additionalProperties: true,
+  },
+
   resolve_assumptions: {
     type: 'object',
     properties: {
