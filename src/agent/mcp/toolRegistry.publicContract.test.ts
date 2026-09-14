@@ -15,6 +15,7 @@ import {
 import { catalogToolEntries } from './registry/catalogTools';
 import { coreRuntimeToolEntries } from './registry/coreRuntimeTools';
 import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools';
+import { geometryDiffToolEntries } from './registry/geometryDiffTools';
 import { inspectionVerificationToolEntries } from './registry/inspectionVerificationTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
@@ -112,10 +113,8 @@ describe('toolRegistry public contract', () => {
   it('composes core runtime tools from the core runtime registry module', () => {
     const names = coreRuntimeToolEntries.map(entry => entry.definition.name);
 
-    expect(names).toEqual(['evaluate_script', 'diff_scripts', 'set_param', 'diff_geometry']);
-    expect([TOOL_REGISTRY[0], TOOL_REGISTRY[1], TOOL_REGISTRY[5], TOOL_REGISTRY[38]]).toEqual(
-      coreRuntimeToolEntries,
-    );
+    expect(names).toEqual(['evaluate_script', 'diff_scripts', 'set_param']);
+    expect([TOOL_REGISTRY[0], TOOL_REGISTRY[1], TOOL_REGISTRY[5]]).toEqual(coreRuntimeToolEntries);
   });
 
   it('composes inspection and verification tools from the inspection verification registry module', () => {
@@ -249,6 +248,15 @@ describe('toolRegistry public contract', () => {
       'render_preview',
     ]);
     expect(TOOL_REGISTRY.slice(31, 38)).toEqual(reviewPipelineToolEntries);
+  });
+
+  it('composes the geometry diff family at the registry tail, after every pre-existing family', () => {
+    const names = geometryDiffToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual(['diff_geometry']);
+    // Tail-appended: the 38 historical entries keep indices 0..37.
+    expect(TOOL_REGISTRY.slice(38)).toEqual(geometryDiffToolEntries);
+    expect(TOOL_REGISTRY).toHaveLength(39);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

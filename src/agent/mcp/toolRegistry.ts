@@ -4,11 +4,11 @@ import { TOOL_ANNOTATIONS } from './toolAnnotations';
 import { TOOL_OUTPUT_SCHEMAS } from './toolOutputSchemas';
 import { catalogToolEntries } from './registry/catalogTools';
 import {
-  coreRuntimeDiffGeometryToolEntries,
   coreRuntimeParameterToolEntries,
   coreRuntimePreludeToolEntries,
 } from './registry/coreRuntimeTools';
 import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools';
+import { geometryDiffToolEntries } from './registry/geometryDiffTools';
 import {
   inspectionVerificationPreludeToolEntries,
   inspectionVerificationQueryToolEntries,
@@ -42,7 +42,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...catalogToolEntries,
   ...sketchAssemblyToolEntries,
   ...reviewPipelineToolEntries,
-  ...coreRuntimeDiffGeometryToolEntries,
+  // New families are appended here, never inserted: index order is public.
+  ...geometryDiffToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints
