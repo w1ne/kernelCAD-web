@@ -92,17 +92,14 @@ describe('hole({ countersink })', () => {
   });
 
   describe('a sub-feature that cannot be built', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let saved: any;
     afterEach(() => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (saved !== undefined) (getOC() as any).BRepPrimAPI_MakeRevol_2 = saved;
       saved = undefined;
     });
 
     it('surfaces an error diagnostic instead of cutting a plain bore', async () => {
       // Force the cone build to fail the way a missing wasm binding did.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const oc = getOC() as any;
       saved = oc.BRepPrimAPI_MakeRevol_2;
       oc.BRepPrimAPI_MakeRevol_2 = undefined;

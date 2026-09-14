@@ -53,9 +53,7 @@ async function lower(code: string) {
 }
 
 function brepValid(shape: OcctBackend): boolean {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const analyzer = new oc.BRepCheck_Analyzer((shape.getReplicadShape() as any).wrapped, true, false);
   const valid = analyzer.IsValid_2();
   analyzer.delete();
