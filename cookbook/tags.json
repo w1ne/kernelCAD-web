@@ -29,5 +29,9 @@
   "mate",
   "revolute",
   "hinge",
-  "joint"
+  "joint",
+  "drawing",
+  "dimension",
+  "gdt",
+  "tolerance"
 ]

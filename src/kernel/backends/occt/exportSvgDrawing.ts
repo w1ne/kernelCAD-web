@@ -29,6 +29,7 @@
 
 import { makeCompound, type AnyShape } from 'replicad';
 import type { WorldFramePart } from './sceneToWorldFrame';
+import { OcctBackend } from './occtBackend';
 import {
   makeDrawingCamera,
   projectShapeForDrawing,
@@ -52,8 +53,12 @@ import {
   DIM_BASE,
   type DrawingAnnotation,
 } from './drawingAnnotations';
+import { renderSections, type DrawingSectionSpec } from './drawingSections';
+import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
+import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
 
 export type { DrawingAnnotation, DrawingAnchor } from './drawingAnnotations';
+export type { DrawingSectionSpec, SectionPlane } from './drawingSections';
 
 export interface SvgDrawingOptions {
   format: 'svg-drawing';
@@ -74,6 +79,20 @@ export interface SvgDrawingOptions {
    * Unresolvable annotations throw rather than silently vanishing.
    */
   annotations?: readonly DrawingAnnotation[];
+  /**
+   * Section views: a real half-space cut through the assembled body,
+   * projected through the axis's own camera, with the true cut cross-
+   * section hatched at 45°. A cutting-plane indicator (dashed line, arrows,
+   * letter) is drawn on the view where the plane appears edge-on, and the
+   * section cell is added below the standard 4-view grid (the sheet grows
+   * taller to make room — the standard views are unaffected).
+   *
+   * Only axis-aligned planes are supported (`'xy'|'xz'|'yz'`, or an
+   * `{ origin, normal }` whose normal is within ~2.5° of a world axis). A
+   * plane that misses the body's bounding box fails with
+   * `drawing.section.plane-misses-body`.
+   */
+  sections?: readonly DrawingSectionSpec[];
 }
 
 interface StyledView {
@@ -183,6 +202,12 @@ const VIEW_LABELS: Record<DrawingViewName, string> = {
 export function exportSvgDrawing(
   parts: WorldFramePart[],
   options: SvgDrawingOptions,
+  /** Optional sink for non-fatal (warn-severity) diagnostics — today only
+   *  `drawing.annotation.overlap`. Mutated in place rather than returned so
+   *  the primary Uint8Array return stays unchanged for every existing
+   *  caller; `runAndExport` (the script-runtime entry point) merges these
+   *  into its own diagnostics array. */
+  diagnosticsOut?: CompilerDiagnostic[],
 ): Uint8Array {
   if (parts.length === 0) {
     throw new Error('svg-drawing export requires at least one part.');
@@ -257,6 +282,17 @@ export function exportSvgDrawing(
     });
     dimBodies = rendered.svg;
     bottomReserve = rendered.bottomReserve;
+    if (rendered.overlaps.length > 0 && diagnosticsOut !== undefined) {
+      const pairs = rendered.overlaps.map(([i, j]) => `annotations[${i}] / annotations[${j}]`).join(', ');
+      diagnosticsOut.push({
+        target: 'export-occt',
+        code: 'drawing.annotation.overlap',
+        severity: 'warn',
+        message: `svg-drawing: ${rendered.overlaps.length} annotation pair(s) have overlapping rendered labels: ${pairs}.`,
+        hint: 'Reorder the annotations array, pass a different `view`, or add `offset` to push one of them further out.',
+        nextAction: NEXT_ACTIONS['drawing.annotation.overlap'],
+      });
+    }
   } else {
     const dimSpecs: LinearDimension[] = [
       {
@@ -312,21 +348,60 @@ export function exportSvgDrawing(
 
   const dimensions = `<g id="dimensions">` + dimBodies.join('') + `</g>`;
 
+  // --- section views ---------------------------------------------------
+  // The standard 4-view grid above is computed against the UNMODIFIED
+  // `sheet` spec, so a drawing with no sections is byte-identical to one
+  // from before this feature existed. Sections add a reserved band BELOW
+  // that grid (where the title block used to sit) and push the title block
+  // + frame down into a taller sheet — nothing above the band moves.
+  const sectionSpecs = options.sections ?? [];
+  const SECTION_BAND_H = 70;
+  const hasSections = sectionSpecs.length > 0;
+  const effSheet: SheetSpec = hasSections
+    ? { ...sheet, h: sheet.h + SECTION_BAND_H }
+    : sheet;
+  let sectionsSvg = '';
+  let usesHatchPattern = false;
+  if (hasSections) {
+    const compoundBackend = new OcctBackend(shape as import('replicad').Shape3D);
+    const bandOrigin: [number, number] = [
+      sheet.margin,
+      sheet.h - sheet.margin - sheet.titleBlock.h,
+    ];
+    const rendered = renderSections({
+      compound: compoundBackend,
+      sections: sectionSpecs,
+      mainViewPlacements: layout.views,
+      mainScale: s,
+      bandOrigin,
+      bandWidth: sheet.w - 2 * sheet.margin,
+      bandHeight: SECTION_BAND_H,
+    });
+    sectionsSvg = rendered.svg;
+    usesHatchPattern = rendered.usesHatchPattern;
+  }
+  const hatchDefs = usesHatchPattern
+    ? `<defs><pattern id="kc-section-hatch" width="2" height="2" patternUnits="userSpaceOnUse" ` +
+      `patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="2" stroke="#000" stroke-width="0.2"/></pattern></defs>`
+    : '';
+
   // --- sheet ---------------------------------------------------------------
   const frame =
-    `<rect class="frame" x="${sheet.margin}" y="${sheet.margin}" ` +
-    `width="${sheet.w - 2 * sheet.margin}" height="${sheet.h - 2 * sheet.margin}" ` +
+    `<rect class="frame" x="${effSheet.margin}" y="${effSheet.margin}" ` +
+    `width="${effSheet.w - 2 * effSheet.margin}" height="${effSheet.h - 2 * effSheet.margin}" ` +
     `fill="none" stroke="#000" stroke-width="0.35"/>`;
 
   const svg = [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${sheet.w} ${sheet.h}" ` +
-      `width="${sheet.w}mm" height="${sheet.h}mm" font-family="sans-serif" ` +
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${effSheet.w} ${effSheet.h}" ` +
+      `width="${effSheet.w}mm" height="${effSheet.h}mm" font-family="sans-serif" ` +
       `data-kc-format="svg-drawing" data-kc-scale="${layout.scaleText}" data-kc-units="mm">`,
-    `<rect x="0" y="0" width="${sheet.w}" height="${sheet.h}" fill="#fff"/>`,
+    ...(hatchDefs === '' ? [] : [hatchDefs]),
+    `<rect x="0" y="0" width="${effSheet.w}" height="${effSheet.h}" fill="#fff"/>`,
     frame,
     ...viewGroups,
     dimensions,
-    titleBlock(sheet, {
+    ...(sectionsSvg === '' ? [] : [sectionsSvg]),
+    titleBlock(effSheet, {
       name: options.modelName ?? 'model',
       scaleText: layout.scaleText,
       units: 'mm',
