@@ -50,11 +50,23 @@ Every entry shares four optional fields: `view` (`front` default, or `top` / `le
 
 | `kind` | geometry | label |
 | --- | --- | --- |
-| `linear` | `from`, `to` anchors | distance along the dominant view axis |
+| `linear` | `from`, `to` anchors, optional `tol` | distance along the dominant view axis, optionally `± 0.1` / `+0.2/−0.05` / `H7` |
 | `radius` | `edge` (an EdgeQuery selecting a circular edge) | `R<r>` |
 | `diameter` | `edge` (ditto) | `⌀<d>` |
 | `angular` | `from`, `to` EdgeQueries — the apex is where the two edges cross in that view | `<deg>°` |
 | `note` | `at` anchor + required `text` | your text, on a leader |
+| `hole` | `edge` (rim), one of `through: true` / `depth`, optional `counterbore`/`countersink`/`count` | `⌀6.5 THRU`, blind `⌀6.5 ▾ 10`, `⌴⌀12 ▾ 4` / `⌵⌀12 × 90°` suffixes, `4× ` pattern prefix |
+| `fillet` | `edge` (a circular fillet boundary arc) | `R<r>` |
+| `chamfer` | `edge` (anchor) + required `size`, optional `angleDeg` (default 45) | `<size> × <angle>°` |
+| `datum` | `face` (a FaceQuery) + required `label` | ASME square datum-feature symbol with the letter |
+| `fcf` | one of `edge`/`face` + `type` (`position`\|`flatness`\|`perpendicularity`\|`parallelism`\|`concentricity`\|`cylindricity`) + `value`, optional `datums`/`modifier` | feature control frame: type symbol · value(±modifier) · datum letters |
+
+`chamfer`'s `size` is author-supplied rather than measured — a bare edge query carries no feature history, so the chamfer leg length isn't recoverable from geometry alone at export time. `hole` requires exactly one of `through`/`depth` — the export fails loudly (naming the annotation) if both or neither are set, same honesty contract as every other annotation kind.
+
+```json
+{ "kind": "hole", "view": "top", "edge": { "ofCurveType": "CIRCLE", "near": [10, 10, 0] }, "through": true, "counterbore": { "diameter": 12, "depth": 4 } }
+{ "kind": "fcf", "view": "top", "edge": { "ofCurveType": "CIRCLE", "near": [70, 40, 0] }, "type": "position", "value": 0.1, "datums": ["A"], "modifier": "⌀" }
+```
 
 An **anchor** is an explicit model point `[x, y, z]`, `{ edge: EdgeQuery }` (resolves to the edge's curve midpoint), or `{ face: FaceQuery }` (resolves to the face centre) — the same selector vocabulary `fillet` / `chamfer` / `selectEdge` use.
 
@@ -94,7 +106,10 @@ An annotation whose query matches **zero** edges/faces, matches **more than one*
 
 ## Current limits
 
-- Dimensions are authored or bounding-box; they do NOT auto-update from `param()` values, and section views and per-view scale overrides are not available yet.
+- Section views and per-view scale overrides are not available yet — `drawing.section.plane-misses-body` is a reserved diagnostic code for that future slice, not something you can trigger today.
+- GD&T (`datum`/`fcf`) and the `hole`/`fillet`/`chamfer` callouts are authored through `options.annotations`, the same surface as every other dimension — there is no `Shape.datum()` / `Shape.tolerance()` capture-graph method.
+- `drawing.annotation.overlap` is a reserved diagnostic code; the general text-box collision solver has not shipped, so it is never emitted today. The shared leader-rotation stacking (every leader-based kind — `radius`/`diameter`/`note`/`hole`/`fillet`/`chamfer`/`datum`/`fcf`) still fans successive callouts on the same view apart, which covers the common case.
+- Dimensions are authored or bounding-box; they do NOT auto-update from `param()` values.
 - Annotations are placed by rule, not by a collision solver: two callouts on features that overlap in a view can still crowd each other. Use `offset`, a different `view`, or reorder the array to separate them.
 - Hidden tangent edges are intentionally omitted (noise, no contour information).
 - Partially overlapping collinear duplicates are kept; only exactly coincident segments deduplicate.
