@@ -5,6 +5,31 @@ import { getMassPropertiesTool } from '../../../src/agent/mcp/tools/getMassPrope
 import { listPartStatsTool } from '../../../src/agent/mcp/tools/listPartStats';
 import { lookupCookbookTool } from '../../../src/agent/mcp/tools/lookupCookbook';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { isoInternalGrooveProfile, isoMinorRadius } from '../../../src/kernel/backends/occt/isoThread';
+import { resolveFeaMaterial } from '../../../src/kernel/fea/feaMaterials';
+import { checkInterference } from '../../../src/agent/script-runtime/checkInterference';
+import { readFileSync } from 'node:fs';
+
+/** ∫∫ (R + x) dA over the x ≥ 0 part of a profile polygon. */
+function outerMoment(profile: ReadonlyArray<readonly [number, number]>, R: number): number {
+  const clipped: Array<[number, number]> = [];
+  for (let i = 0; i < profile.length; i++) {
+    const a = profile[i];
+    const b = profile[(i + 1) % profile.length];
+    if (a[0] >= 0) clipped.push([a[0], a[1]]);
+    if ((a[0] >= 0) !== (b[0] >= 0)) clipped.push([0, a[1] + (a[0] / (a[0] - b[0])) * (b[1] - a[1])]);
+  }
+  let area2 = 0;
+  let mx6 = 0;
+  for (let i = 0; i < clipped.length; i++) {
+    const [x0, y0] = clipped[i];
+    const [x1, y1] = clipped[(i + 1) % clipped.length];
+    const c = x0 * y1 - x1 * y0;
+    area2 += c;
+    mx6 += (x0 + x1) * c;
+  }
+  return Math.abs((R * area2) / 2 + mx6 / 6);
+}
 
 const ROOT = 'examples/cookbook-parity';
 
@@ -52,34 +77,68 @@ describe('cookbook parity examples', () => {
     expect(extent(pinion!.bbox)[0]).toBeCloseTo(2 * pinionOuter, 1.5);
   }, 120_000);
 
-  it('ISO metric bolt and nut: M6 pitch, across-flats, head height', async () => {
+  it('ISO metric bolt and nut: M6 V-thread bolt in a threaded nut', async () => {
     const file = `${ROOT}/iso-metric-bolt-and-nut.kcad.ts`;
     const ev = await evaluateScript({ file });
     expect(ev.exitCode, JSON.stringify(ev.diagnostics)).toBe(0);
 
     const stats = await listPartStatsTool({ file });
     expect(stats.ok, stats.error).toBe(true);
-    const head = stats.parts!.find((p) => p.name === 'hex-head');
-    const shank = stats.parts!.find((p) => p.name === 'threaded-shank');
+    const bolt = stats.parts!.find((p) => p.name === 'hex-bolt');
     const nut = stats.parts!.find((p) => p.name === 'hex-nut');
-    expect(head).toBeDefined();
-    expect(shank).toBeDefined();
+    expect(bolt).toBeDefined();
     expect(nut).toBeDefined();
 
+    const d = 6;
     const pitch = 1.0;
     const af = 10;
     const headHeight = 4.0;
-    const turns = 8;
+    const nutHeight = 5.2;
+    const turns = 12;
+    const clearance = 0.05;
 
-    const headXY = extent(head!.bbox);
-    expect(Math.min(headXY[0], headXY[1])).toBeCloseTo(af, 0);
-    expect(extent(head!.bbox)[2]).toBeCloseTo(headHeight, 0);
+    // Head hex across flats; shank core runs (turns + 1) pitches above the head.
+    const boltSize = extent(bolt!.bbox);
+    expect(Math.min(boltSize[0], boltSize[1])).toBeCloseTo(af, 0);
+    expect(bolt!.bbox.max[2]).toBeCloseTo(headHeight + (turns + 1) * pitch, 2);
 
-    // Helix of `turns` at pitch 1.0 mm spans turns*pitch axially, plus the
-    // square-thread wire thickness (~0.4 mm).
-    expect(extent(shank!.bbox)[2]).toBeGreaterThan(turns * pitch - 0.1);
-    expect(extent(shank!.bbox)[2]).toBeLessThan(turns * pitch + 1.0);
-    expect(nut!.volumeMm3).toBeGreaterThan(100);
+    // Nut = hex prism − ISO minor bore (+clearance) − helical groove, exactly.
+    const hexArea = (Math.sqrt(3) / 2) * af * af;
+    const rBore = isoMinorRadius(d, pitch) + clearance;
+    const removed = Math.PI * rBore * rBore * nutHeight
+      + (nutHeight / pitch) * 2 * Math.PI * outerMoment(isoInternalGrooveProfile(d, pitch, clearance), rBore);
+    expect(nut!.volumeMm3 / (hexArea * nutHeight - removed)).toBeCloseTo(1, 4);
+
+    // Seated in phase on the bolt at nominal clearance: no interference.
+    const clash = await checkInterference({ code: readFileSync(file, 'utf8'), fileName: file });
+    expect(clash.comparisonCount).toBe(1);
+    expect(clash.diagnostics.filter((x) => x.code === 'feature.kernel-failed')).toHaveLength(0);
+    expect(clash.pairs).toEqual([]);
+  }, 400_000);
+
+  it('countersunk flat-head screws sit flush without interference', async () => {
+    const file = `${ROOT}/countersunk-flat-head-screw.kcad.ts`;
+    const ev = await evaluateScript({ file });
+    expect(ev.exitCode, JSON.stringify(ev.diagnostics)).toBe(0);
+
+    const stats = await listPartStatsTool({ file });
+    expect(stats.ok, stats.error).toBe(true);
+    const bar = stats.parts!.find((p) => p.name === 'bar')!;
+    // Bar = blank − 2 × (Ø4.5 bore + 90° cone from Ø8.96 at the face).
+    const T = 6;
+    const boreR = 2.25;
+    const rimR = 4.48;
+    const h = rimR - boreR;
+    const frustum = (Math.PI * h / 3) * (rimR * rimR + rimR * boreR + boreR * boreR);
+    const perHole = Math.PI * boreR * boreR * T + frustum - Math.PI * boreR * boreR * h;
+    expect(bar.volumeMm3 / (50 * 20 * T - 2 * perHole)).toBeCloseTo(1, 4);
+    // Heads sit in the faces: the screw tops are at the bar's top face.
+    for (const name of ['screw-a', 'screw-b']) {
+      expect(stats.parts!.find((p) => p.name === name)!.bbox.max[2]).toBeCloseTo(T, 3);
+    }
+
+    const clash = await checkInterference({ code: readFileSync(file, 'utf8'), fileName: file });
+    expect(clash.pairs).toEqual([]);
   }, 180_000);
 
   it('20x20 B-type T-slot: 20 mm envelope, slot-6 opening', async () => {
@@ -199,19 +258,24 @@ describe('cookbook parity examples', () => {
     const stats = await listPartStatsTool({ file });
     expect(stats.ok, stats.error).toBe(true);
     expect(stats.parts!.map((p) => p.name).sort()).toEqual(
-      ['aluminum-6061-cube', 'mild-steel-cube', 'pla-cube'].sort(),
+      ['aluminum-6061-cube', 'mild-steel-cube', 'nylon-cube'].sort(),
     );
     for (const p of stats.parts!) {
       expect(p.volumeMm3).toBeCloseTo(20 * 20 * 20, 1);
     }
 
+    // The recipe's grade names drive mass AND resolve in FEA to the same grade.
     const cube = 'return box(20, 20, 20);';
-    const steel = await getMassPropertiesTool({ code: cube, material: 'steel' });
-    const alu = await getMassPropertiesTool({ code: cube, material: 'aluminum' });
-    const pla = await getMassPropertiesTool({ code: cube, material: 'pla' });
-    expect(steel.ok && alu.ok && pla.ok).toBe(true);
+    const steel = await getMassPropertiesTool({ code: cube, material: 'mild-steel' });
+    const alu = await getMassPropertiesTool({ code: cube, material: 'aluminum-6061' });
+    const nylon = await getMassPropertiesTool({ code: cube, material: 'nylon' });
+    expect(steel.ok && alu.ok && nylon.ok).toBe(true);
     expect(steel.massProperties!.mass / alu.massProperties!.mass).toBeCloseTo(7850 / 2700, 3);
-    expect(steel.massProperties!.mass / pla.massProperties!.mass).toBeCloseTo(7850 / 1240, 3);
+    expect(steel.massProperties!.mass / nylon.massProperties!.mass).toBeCloseTo(7850 / 1010, 3);
+    for (const grade of ['mild-steel', 'aluminum-6061', 'nylon']) {
+      const fea = resolveFeaMaterial(grade);
+      expect(fea.ok && fea.name).toBe(grade);
+    }
   }, 120_000);
 });
 
@@ -219,11 +283,12 @@ describe('cookbook parity lookup_cookbook ranking', () => {
   const cases: Array<{ query: string; id: string }> = [
     { query: 'involute spur gear pair 20 degree pressure angle', id: 'involute-spur-gear-pair' },
     { query: 'ISO metric hex bolt and nut helical thread', id: 'iso-metric-bolt-and-nut' },
+    { query: 'countersunk hole flat head screw flush', id: 'countersunk-flat-head-screw' },
     { query: '20x20 B-type T-slot extrusion slot 6', id: 'tslot-extrusion-and-bracket' },
     { query: 'GT2 timing belt drive pulleys center distance', id: 'gt2-timing-belt-drive' },
     { query: 'wood dado rabbet mortise and tenon fit clearance', id: 'wood-joinery-dado-rabbet-mortise' },
     { query: 'pipe route through 3D waypoints with bend radius', id: 'pipe-route-swept-tube' },
-    { query: 'mild-steel aluminum-6061 pla material mass', id: 'engineering-material-presets-mass' },
+    { query: 'mild-steel aluminum-6061 nylon material mass', id: 'engineering-material-presets-mass' },
   ];
 
   for (const c of cases) {

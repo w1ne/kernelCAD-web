@@ -4,30 +4,27 @@ title: Named engineering material presets driving mass
 tags: [material, mass, density, assembly]
 keywords:
   - mild-steel density driving mass
-  - aluminum-6061 mass properties
-  - pla mass from the catalog
+  - aluminum-6061 mass properties and finish
+  - nylon pla petg abs material grades
+  - same material name for mass FEA and finish
   - named engineering material presets
 when_to_use: >-
-  You want engineering material presets by name (mild-steel, aluminum-6061,
-  pla) to drive mass of identical geometry. kernelCAD's mass catalog spells
-  those grades steel / aluminum / pla; map the engineering name onto the
-  catalog key so inspect({ of: 'mass', material }) and arm.part({ material })
-  both see a real density (7850 / 2700 / 1240 kg/m³).
+  You want engineering material presets by grade name (mild-steel,
+  aluminum-6061, pla, petg, abs, nylon) to drive the mass, default finish and
+  recorded material of identical geometry. One registry serves arm.part({
+  material }), inspect({ of: 'mass', material }), feaStudy({ material }) and
+  .finish(), so the grade name works everywhere; steel / aluminum / pet are
+  aliases for the same grades.
 ---
 
 ```typescript
-// Engineering grade → mass-catalog key. FEA grades use the left-hand
-// names; arm.part({ material }) and inspect({ of: 'mass', material })
-// accept the catalog spelling on the right.
-const PRESETS = {
-  'mild-steel': 'steel',
-  'aluminum-6061': 'aluminum',
-  'pla': 'pla',
-};
-
+// One vocabulary: each grade seeds the part's density (mass / inertia), its
+// default finish, and the material name the part records; feaStudy({ material })
+// takes the same spelling. Bulk aliases (steel, aluminum, pet) resolve to these
+// grades, and an unknown name fails listing the accepted ones.
 const arm = assembly('engineering-material-presets-mass');
-arm.part('mild-steel-cube', box(20, 20, 20), { material: PRESETS['mild-steel'], at: [0, 0, 0] });
-arm.part('aluminum-6061-cube', box(20, 20, 20), { material: PRESETS['aluminum-6061'], at: [40, 0, 0] });
-arm.part('pla-cube', box(20, 20, 20), { material: PRESETS['pla'], at: [80, 0, 0] });
+arm.part('mild-steel-cube', box(20, 20, 20), { material: 'mild-steel', at: [0, 0, 0] });
+arm.part('aluminum-6061-cube', box(20, 20, 20), { material: 'aluminum-6061', at: [40, 0, 0] });
+arm.part('nylon-cube', box(20, 20, 20), { material: 'nylon', at: [80, 0, 0] });
 return arm.model();
 ```
