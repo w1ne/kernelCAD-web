@@ -1,9 +1,9 @@
 ---
 id: diff-two-model-versions-by-material
-title: Find out what material changed between two versions of a part
+title: Find out what material changed between revisions of a model
 tags: [diff, compare, revision]
 keywords:
-  - what changed between two versions
+  - what changed between versions
   - added removed volume
   - diff_geometry
   - material level diff
@@ -11,19 +11,19 @@ keywords:
   - topology changed verdict
   - resized verdict
   - parameter sweep diff
-  - compare two scripts geometrically
+  - compare scripts geometrically
   - surface deviation between revisions
 when_to_use: >-
   You edited a script and need to know what physically changed, not just that
   something did. A signed volume delta is ambiguous — a boss that grew and a
-  pocket that deepened report the same magnitude, and a part that only moved
+  pocket that deepened report the same magnitude, and a body that only moved
   reports zero. Call diff_geometry({ baseFile, params }) to re-lower the SAME
   script with different param() values, or diff_geometry({ baseFile, file }) to
-  compare two separate scripts. Per matched body you get addedMm3 =
+  compare separate scripts. Per matched body you get addedMm3 =
   volume(revised-base), removedMm3 = volume(base-revised), commonMm3, exact
   bbox/face/edge/hole-count deltas, a surface deviation, and a verdict —
   identical | moved | resized | topology-changed. Branch on the verdict; quote
-  the numbers. Author the part with named params and named features (as below)
+  the numbers. Author the model with named params and named features (as below)
   so both the override form and the report read cleanly. Reach for this when
   diff_scripts sets deeperDiffAvailable, instead of re-rendering and eyeballing.
 ---
