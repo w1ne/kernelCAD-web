@@ -326,7 +326,7 @@ describe('exportSvgDrawing annotations', () => {
         to: { ofCurveType: 'LINE', within: { xMin: -0.5, xMax: 0.5, yMin: -0.5, yMax: 0.5, zMin: 1, zMax: 29 } },
       }],
     }));
-    expect(svg).toContain('>90\u00b0</text>');
+    expect(svg).toContain('>90°</text>');
     expect(svg).toMatch(/A 12 12 0 0 [01]/);
   });
 
@@ -471,5 +471,117 @@ describe('exportSvgDrawing annotations', () => {
       ],
     }));
     expect(mk()).toBe(mk());
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Feature-aware annotation kinds: hole / fillet / chamfer / datum / fcf
+// ---------------------------------------------------------------------------
+
+describe('feature-aware annotation kinds', () => {
+  beforeAll(async () => {
+    await initOcct();
+  });
+
+  /** 80x50x10 plate, four through-holes at the corners (⌀6.5), a
+   *  counterbore authored on the first, and the fourth hole's rim doubles as
+   *  a stand-in fillet arc (measuring a circular edge is the same math for
+   *  both kinds — only the default label prefix differs). */
+  function plate(): WorldFramePart[] {
+    let body = OcctBackend.box(80, 50, 10);
+    for (const [x, y] of [[10, 10], [70, 10], [10, 40], [70, 40]] as const) {
+      body = body.subtract(OcctBackend.cylinder(14, 3.25).translate(x, y, -2));
+    }
+    return [{ name: 'plate', shape: body }];
+  }
+
+  const annotations: DrawingAnnotation[] = [
+    // Through-hole with a counterbore.
+    { kind: 'hole', view: 'top', edge: { ofCurveType: 'CIRCLE', near: [10, 10, -2] }, through: true, counterbore: { diameter: 12, depth: 4 } },
+    // Pattern of the remaining plain through-holes (author-declared count).
+    { kind: 'hole', view: 'top', edge: { ofCurveType: 'CIRCLE', near: [70, 10, -2] }, through: true, count: 4 },
+    // Fillet callout on a circular edge.
+    { kind: 'fillet', view: 'top', edge: { ofCurveType: 'CIRCLE', near: [10, 40, -2] } },
+    // Chamfer callout — leg size is author-supplied.
+    { kind: 'chamfer', view: 'top', edge: { ofCurveType: 'LINE', near: [0, 0, 10] }, size: 2 },
+    // Datum feature symbol on the bottom face.
+    { kind: 'datum', view: 'top', face: { atZ: 0 }, label: 'A' },
+    // Position tolerance on the fourth hole's rim, referencing datum A.
+    { kind: 'fcf', view: 'top', edge: { ofCurveType: 'CIRCLE', near: [70, 40, -2] }, type: 'position', value: 0.1, datums: ['A'], modifier: '⌀' },
+    // A toleranced overall width.
+    { kind: 'linear', from: [0, 0, 0], to: [80, 0, 0], tol: 0.1 },
+  ];
+
+  it('renders exact callout strings for every feature-aware kind', () => {
+    const svg = decode(exportSvgDrawing(plate(), { format: 'svg-drawing', annotations }));
+    expect(svg).toContain('>⌀6.5 THRU ⌴⌀12 ▾ 4</text>');
+    expect(svg).toContain('>4× ⌀6.5 THRU</text>');
+    expect(svg).toContain('>R3.25</text>');
+    expect(svg).toContain('>2 × 45°</text>');
+    expect(svg).toContain('>80 ± 0.1</text>');
+    // Datum symbol: box + letter.
+    expect(svg).toContain('class="dim datum"');
+    const datumGroup = svg.match(/<g class="dim datum"[^>]*>.*?<\/g>/)?.[0];
+    expect(datumGroup).toBeDefined();
+    expect(datumGroup).toContain('<rect');
+    expect(datumGroup).toContain('>A</text>');
+    // Feature control frame: three adjoining cells — symbol, ⌀-modified
+    // value, datum reference.
+    expect(svg).toContain('class="dim fcf"');
+    const fcfGroup = svg.match(/<g class="dim fcf"[^>]*>.*?<\/g>/)?.[0];
+    expect(fcfGroup).toBeDefined();
+    expect((fcfGroup!.match(/<rect/g) ?? []).length).toBe(3);
+    expect(fcfGroup).toContain('>⌖</text>'); // position symbol
+    expect(fcfGroup).toContain('>⌀0.1</text>');
+    expect(fcfGroup).toContain('>A</text>');
+  });
+
+  it('rotates the shared leader angle across every feature-aware kind so callouts fan out', () => {
+    // hole/fillet/chamfer/datum/fcf/radius/diameter/note all bucket into the
+    // same (view, 'leader') stack — same mechanism that already keeps two
+    // authored `note`s from landing on top of each other. Assert successive
+    // groups get successive (i.e. non-identical) leader stems.
+    const svg = decode(exportSvgDrawing(plate(), { format: 'svg-drawing', annotations }));
+    const stems = [...svg.matchAll(/<line x1="[^"]+" y1="[^"]+" x2="([^"]+)" y2="([^"]+)"\/>/g)]
+      .map(m => `${m[1]},${m[2]}`);
+    expect(new Set(stems).size).toBe(stems.length);
+  });
+
+  it('requires exactly one of through/depth on a hole annotation', () => {
+    expect(() => exportSvgDrawing(plate(), {
+      format: 'svg-drawing',
+      annotations: [{ kind: 'hole', view: 'top', edge: { ofCurveType: 'CIRCLE', near: [10, 10, -2] } }],
+    })).toThrow(/either 'through: true' or a 'depth'/);
+  });
+
+  it('fails with drawing.datum.unresolved when the datum face query does not resolve', () => {
+    try {
+      exportSvgDrawing(plate(), {
+        format: 'svg-drawing',
+        annotations: [{ kind: 'datum', view: 'top', face: { atZ: 999 }, label: 'A' }],
+      });
+      expect.unreachable();
+    } catch (e) {
+      expect((e as { code?: string }).code).toBe('drawing.datum.unresolved');
+    }
+  });
+
+  it('fails with drawing.tolerance.feature-unresolved when the fcf reference does not resolve', () => {
+    try {
+      exportSvgDrawing(plate(), {
+        format: 'svg-drawing',
+        annotations: [{ kind: 'fcf', view: 'top', edge: { ofCurveType: 'CIRCLE', atZ: 999 }, type: 'flatness', value: 0.1 }],
+      });
+      expect.unreachable();
+    } catch (e) {
+      expect((e as { code?: string }).code).toBe('drawing.tolerance.feature-unresolved');
+    }
+  });
+
+  it('rejects an fcf annotation with both or neither of edge/face', () => {
+    expect(() => exportSvgDrawing(plate(), {
+      format: 'svg-drawing',
+      annotations: [{ kind: 'fcf', view: 'top', type: 'flatness', value: 0.1 }],
+    })).toThrow(/exactly one of 'edge' or 'face'/);
   });
 });
