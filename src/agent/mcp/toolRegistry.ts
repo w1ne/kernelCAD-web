@@ -39,10 +39,12 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...geometryAuthoringToolEntries,
   ...inspectionVerificationQueryToolEntries,
   ...referenceExportToolEntries,
-  ...printToolEntries,
   ...catalogToolEntries,
   ...sketchAssemblyToolEntries,
   ...reviewPipelineToolEntries,
+  // New tool families are appended LAST — inserting mid-list renumbers
+  // every family after it, breaking the kernelCAD-server public contract.
+  ...printToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints
