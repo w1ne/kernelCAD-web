@@ -30,6 +30,13 @@ unrelated geometry.
 
 Repeat from step 1 while errors remain. Each pass targets ONE diagnostic.
 
+**Worked example:** `examples/repair/` has three deliberately broken models (an
+oversized fillet, a hole anchored off its plate, a cutter placed away from its
+body) and a walkthrough that runs this exact loop on them:
+`npx tsx examples/repair/run-repair-example.ts`. Its README includes the
+captured output. `lookup_cookbook({ query: 'repair failing fillet' })` returns
+the repaired fillet pattern.
+
 ## What the trace gives you
 
 `why_did_this_fail().trace` is one entry per captured feature:
@@ -84,7 +91,7 @@ can tell a fix that respects the design from one that merely silences a gate.
 |---|---|
 | `feature.edge-feature.short-edges-skipped` | radius ladder under half the shortest adjacent edge |
 | `feature.subtractive-noop` (boolean) | translate the cutter onto the base bbox centre |
-| `feature.subtractive-noop` (hole) | clamp `u` / `v` into the entry face's extent |
+| `feature.subtractive-noop` (hole) | clamp `u` / `v` onto the entry face, one bore radius clear of its edge |
 | `feature.intersection-empty` | translate one operand into overlap |
 | `feature.selection.no-match` | retarget `atX` / `atY` / `atZ` to the nearest real edge coordinate |
 | `feature.label.unknown-name` | substitute the closest declared label (`faceLabels` or `path().label(...)`) |
