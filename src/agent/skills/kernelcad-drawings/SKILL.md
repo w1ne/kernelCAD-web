@@ -140,6 +140,13 @@ An annotation whose query matches **zero** edges/faces, matches **more than one*
 - Hidden tangent edges are intentionally omitted (noise, no contour information).
 - Partially overlapping collinear duplicates are kept; only exactly coincident segments deduplicate.
 
+## Reading a drawing back
+
+`drawing_to_cad` is the reverse direction: it reads a vector drawing PDF (this
+exporter's sheets included) and rebuilds an editable `.kcad.ts` with an
+assumption ledger, then re-projects the result through the same view stage to
+check it. See `kernelcad-from-reference` § Engineering drawing PDF.
+
 ## Verify before shipping
 
 Render the SVG to PNG and look at it (e.g. `google-chrome --headless --screenshot=sheet.png file://…/drawing.svg`). Check: hidden bores dashed where expected, tangent fillet lines thin, views aligned, dimensions match the model's bbox, title block populated. A drawing with a wrong or unreadable view is not done even if the export succeeded.

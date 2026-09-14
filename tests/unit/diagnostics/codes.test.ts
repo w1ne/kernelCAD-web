@@ -4,6 +4,7 @@ import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostic
 describe('diagnostic catalogue invariants', () => {
   it('emits exactly 289 codes', () => {
   it('emits exactly 278 codes', () => {
+  it('emits exactly 280 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -101,6 +102,11 @@ describe('diagnostic catalogue invariants', () => {
     //   drawing.auto.hole-unclassified = 278.
     expect(DIAGNOSTIC_CODES).toHaveLength(278);
     expect(new Set(DIAGNOSTIC_CODES).size).toBe(278);
+    // + 4 engineering-drawing PDF import: reference.drawing.raster-only,
+    //   reference.drawing.view-ambiguous, reference.drawing.dimension-unassociated,
+    //   reference.drawing.depth-missing = 280.
+    expect(DIAGNOSTIC_CODES).toHaveLength(280);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(280);
   });
 
   it('every code has a non-empty hint template', () => {

@@ -9,6 +9,7 @@ import {
   coreRuntimePreludeToolEntries,
 } from './registry/coreRuntimeTools';
 import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools';
+import { drawingImportToolEntries } from './registry/drawingImportTools';
 import { geometryDiffToolEntries } from './registry/geometryDiffTools';
 import {
   inspectionVerificationPreludeToolEntries,
@@ -64,6 +65,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...mechanismSimToolEntries,
   // New families are appended here, never inserted: index order is public.
   ...geometryDiffToolEntries,
+  // Appended last: engineering-drawing import is its own family at the tail.
+  ...drawingImportToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

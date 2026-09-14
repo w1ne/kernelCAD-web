@@ -96,6 +96,8 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
 
   // Write geometry/animation to a file on disk.
   export: WRITES_FILE,
+  // Reads a local drawing PDF; writes the rebuilt script + ledger on `out`.
+  drawing_to_cad: WRITES_FILE,
   capture_animation: WRITES_FILE,
 
   // Uploads a file to, and can start a print on, a real network printer.

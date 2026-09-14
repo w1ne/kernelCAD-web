@@ -16,6 +16,7 @@ import { catalogToolEntries } from './registry/catalogTools';
 import { coreRuntimeToolEntries } from './registry/coreRuntimeTools';
 import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools';
 import { feaToolEntries } from './registry/feaTools';
+import { drawingImportToolEntries } from './registry/drawingImportTools';
 import { geometryDiffToolEntries } from './registry/geometryDiffTools';
 import { inspectionVerificationToolEntries } from './registry/inspectionVerificationTools';
 import { printToolEntries } from './registry/printTools';
@@ -73,6 +74,7 @@ const EXPECTED_TOOL_NAMES = [
   // Tail-appended: a new tool goes on the END so kernelCAD-server's
   // index-based consumption of the historical order keeps working.
   'diff_geometry',
+  'drawing_to_cad',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -297,6 +299,13 @@ describe('toolRegistry public contract', () => {
     expect(TOOL_REGISTRY.slice(44, 45)).toEqual(geometryDiffToolEntries);
   });
 
+  it('composes the drawing-import family at the registry tail, after every pre-existing family', () => {
+    const names = drawingImportToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual(['drawing_to_cad']);
+    expect(TOOL_REGISTRY.slice(45, 46)).toEqual(drawingImportToolEntries);
+  });
+
   it('keeps the 38 historical entries at indices 0..37 and appends new families in merge order', () => {
     expect(TOOL_REGISTRY.slice(38).map(entry => entry.definition.name)).toEqual([
       'resolve_assumptions',
@@ -306,8 +315,9 @@ describe('toolRegistry public contract', () => {
       'repair_script',
       'sweep_tolerance',
       'diff_geometry',
+      'drawing_to_cad',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(45);
+    expect(TOOL_REGISTRY).toHaveLength(46);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

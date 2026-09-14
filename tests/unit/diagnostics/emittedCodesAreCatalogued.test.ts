@@ -50,6 +50,7 @@ const EMITTING_FILES = [
   'kernel/backends/occt/exportSvgDrawing.ts',
   'kernel/backends/occt/drawingAuto.ts',
   'kernel/backends/occt/drawingSections.ts',
+  'agent/drawing/reconstruct.ts',
 ];
 
 // Match `code: '<value>'` and `new KernelError('<code>', ...)`.
@@ -84,6 +85,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   it('catalogue has exactly 289 codes', () => {
   it('catalogue has exactly 289 codes', () => {
   it('catalogue has exactly 278 codes', () => {
+  it('catalogue has exactly 280 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -225,6 +227,11 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  + 2 automatic drawing annotation: drawing.auto.datum-ambiguous,
     //       drawing.auto.hole-unclassified = 278.
     expect(catalogue.size).toBe(278);
+    //  + 4 engineering-drawing PDF import: reference.drawing.raster-only,
+    //       reference.drawing.view-ambiguous,
+    //       reference.drawing.dimension-unassociated,
+    //       reference.drawing.depth-missing = 280.
+    expect(catalogue.size).toBe(280);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
