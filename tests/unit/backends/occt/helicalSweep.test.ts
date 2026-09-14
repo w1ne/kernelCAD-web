@@ -2,33 +2,20 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
 // `sweep(helix(...), { spine: 'helix' })` — exact-helix screw sweep for thread
-// profiles. The ISO 60° V ridge that self-intersected on the smooth spine must
-// build as a VALID solid (OCCT BRepCheck) whose volume equals the analytic
-// screw-sweep volume θ·∫∫ r dA, for every size in the M3–M12 table, and the
-// swept faces must stay usable by later booleans.
+// profiles. Required-suite checks, kept short: one M3 ISO 60° V ridge over two
+// turns must build as a VALID solid (OCCT BRepCheck) whose volume equals the
+// analytic screw-sweep volume θ·∫∫ r dA, plus orientation, axis, ParamRef and
+// rejection behaviour. The full M3–M12 sweep and the boolean-robustness proof
+// run in tests/integration/modeling/modeledThreadProofs.test.ts.
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { getOC } from 'replicad';
 import { initOcct, type OcctBackend } from '../../../../src/kernel/backends/occt/occtBackend';
 import { runScript } from '../../../../src/modeling/runtime/runScript';
 import { RecomputeEngine } from '../../../../src/modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
-import { callMcpTool } from '../../../../src/agent/mcp/toolRegistry';
 import { analyticHelicalSweepVolume } from '../../../../src/kernel/backends/occt/helicalSweep';
 import { isoExternalRidgeProfile, isoMinorRadius } from '../../../../src/kernel/backends/occt/isoThread';
-
-const ISO_COARSE: Array<[string, number, number]> = [
-  ['M3', 3, 0.5], ['M4', 4, 0.7], ['M5', 5, 0.8], ['M6', 6, 1.0], ['M8', 8, 1.25], ['M10', 10, 1.5], ['M12', 12, 1.75],
-];
-
-function ridgeScript(d: number, pitch: number, turns: number): string {
-  const pts = isoExternalRidgeProfile(d, pitch);
-  const chain = pts.slice(1).map(([x, y]) => `.lineTo(${x}, ${y})`).join('');
-  return `
-    const profile = path().moveTo(${pts[0][0]}, ${pts[0][1]})${chain}.close();
-    return profile.sweep(helix({ radius: ${isoMinorRadius(d, pitch)}, pitch: ${pitch}, turns: ${turns} }), { spine: 'helix' });
-  `;
-}
+import { brepValid, ridgeScript } from '../../../threadGeometryHelpers';
 
 async function lowerTail(code: string) {
   const run = await runScript({ code, fileName: 'thread.kcad.ts' });
@@ -37,49 +24,37 @@ async function lowerTail(code: string) {
   return { run, result: r, shape: r.shapes.get(tail.id) as OcctBackend | undefined };
 }
 
-function brepValid(shape: OcctBackend): boolean {
-  const oc = getOC() as any;
-  const analyzer = new oc.BRepCheck_Analyzer((shape.getReplicadShape() as any).wrapped, true, false);
-  const valid = analyzer.IsValid_2();
-  analyzer.delete();
-  return valid;
-}
-
 describe("Sketch.sweep(helix(), { spine: 'helix' })", () => {
   beforeAll(async () => {
     await initOcct();
   });
 
-  it.each(ISO_COARSE)('%s ISO V ridge is a valid solid with the analytic volume', async (_name, d, pitch) => {
-    const turns = 4;
-    const code = ridgeScript(d, pitch, turns);
+  it('M3 ISO V ridge is a valid solid with the analytic volume', async () => {
+    const turns = 2;
+    const code = ridgeScript(3, 0.5, turns);
     const { result, shape } = await lowerTail(code);
     expect(result.diagnostics.filter((x) => x.severity === 'error')).toHaveLength(0);
     expect(brepValid(shape!)).toBe(true);
 
-    const analytic = analyticHelicalSweepVolume(isoExternalRidgeProfile(d, pitch), isoMinorRadius(d, pitch), turns);
-    // Through the public dispatcher as well.
-    const measured = (await callMcpTool('inspect', { of: 'shape', code })) as { ok: boolean; shape: { volume: number } };
-    expect(measured.ok).toBe(true);
-    expect(Math.abs(measured.shape.volume - analytic) / analytic).toBeLessThan(1e-4);
+    const analytic = analyticHelicalSweepVolume(isoExternalRidgeProfile(3, 0.5), isoMinorRadius(3, 0.5), turns);
     expect(Math.abs(shape!.volume() - analytic) / analytic).toBeLessThan(1e-4);
   });
 
   it('builds a valid solid from a clockwise profile too', async () => {
-    const pts = [...isoExternalRidgeProfile(6, 1)].reverse();
+    const pts = [...isoExternalRidgeProfile(3, 0.5)].reverse();
     const code = `
       const p = path().moveTo(${pts[0][0]}, ${pts[0][1]})${pts.slice(1).map(([x, y]) => `.lineTo(${x}, ${y})`).join('')}.close();
-      return p.sweep(helix({ radius: ${isoMinorRadius(6, 1)}, pitch: 1, turns: 2 }), { spine: 'helix' });
+      return p.sweep(helix({ radius: ${isoMinorRadius(3, 0.5)}, pitch: 0.5, turns: 1 }), { spine: 'helix' });
     `;
     const { shape } = await lowerTail(code);
     expect(brepValid(shape!)).toBe(true);
-    const analytic = analyticHelicalSweepVolume(pts, isoMinorRadius(6, 1), 2);
+    const analytic = analyticHelicalSweepVolume(pts, isoMinorRadius(3, 0.5), 1);
     expect(Math.abs(shape!.volume() - analytic) / analytic).toBeLessThan(1e-4);
   });
 
   it('keeps the helix on the requested axis and start angle', async () => {
-    // A 1×1 square profile on an X-axis helix of radius 5: every point stays
-    // within radius 5 ± 0.5 of the X axis and the sweep advances along +X.
+    // A 0.5 mm square profile on an X-axis helix of radius 5: every point stays
+    // within radius 5 ± 0.25 of the X axis and the sweep advances along +X.
     const code = `
       const sq = path().moveTo(-0.25, -0.25).lineTo(0.25, -0.25).lineTo(0.25, 0.25).lineTo(-0.25, 0.25).close();
       return sq.sweep(helix({ radius: 5, pitch: 2, turns: 3, axis: 'X', startAngle: 1 }), { spine: 'helix' });
@@ -106,31 +81,6 @@ describe("Sketch.sweep(helix(), { spine: 'helix' })", () => {
       const shape = r.shapes.get(run.records[run.records.length - 1].id)!;
       expect(shape.volume()).toBeCloseTo(analyticHelicalSweepVolume(square, radius, 2), 4);
     }
-  });
-
-  it('keeps the swept faces usable by later booleans', async () => {
-    // A block with a bore, intersected with the ridge. A single helix edge
-    // makes faces that wrap every turn and this common came back EMPTY; the
-    // per-half-turn spine gives the value measured in two simple steps.
-    const d = 6;
-    const pitch = 1;
-    const ridge = ridgeScript(d, pitch, 5).replace('return profile.sweep', 'const ridge = profile.sweep');
-    const rBore = isoMinorRadius(d, pitch) + 0.05;
-    const inBlock = `${ridge}
-      const block = box(9.6, 9.6, 2.4).translate(-4.8, -4.8, 1.2).subtract(cylinder(20, ${rBore}).translate(0, 0, -5));
-      return ridge.intersect(block);`;
-    const ringOnly = `${ridge}
-      return ridge.intersect(box(9.6, 9.6, 2.4).translate(-4.8, -4.8, 1.2));`;
-    const inBore = `${ridge}
-      return ridge.intersect(box(9.6, 9.6, 2.4).translate(-4.8, -4.8, 1.2)).intersect(cylinder(20, ${rBore}).translate(0, 0, -5));`;
-    const vol = async (code: string) => {
-      const out = (await callMcpTool('inspect', { of: 'shape', code })) as { ok: boolean; error?: string; shape: { volume: number } };
-      expect(out.ok, out.error).toBe(true);
-      return out.shape.volume;
-    };
-    const expected = (await vol(ringOnly)) - (await vol(inBore));
-    expect(expected).toBeGreaterThan(5);
-    expect(await vol(inBlock)).toBeCloseTo(expected, 3);
   });
 
   it('rejects a profile whose axial extent reaches the pitch (turns would overlap)', async () => {

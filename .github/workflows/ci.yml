@@ -66,6 +66,24 @@ jobs:
       - name: QC — typecheck + build:cli + cookbook + drift check
         run: npm run qc:build
 
+  # Slow modeled-thread geometry proofs (full M3–M12 helical sweep, modeled
+  # tapped holes, bolt-in-nut clearance and interference on the M6 example).
+  # Each modeled thread costs seconds of OCCT booleans, so these stay out of
+  # the required sharded `test` gate and run here instead. Deliberately NOT a
+  # required check and NOT in branch protection. The tests skip unless
+  # KERNELCAD_SLOW_GEOMETRY_TESTS=1, which only this job sets.
+  geometry-proofs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-cad
+      - name: Modeled thread proofs
+        env:
+          KERNELCAD_SLOW_GEOMETRY_TESTS: '1'
+          NODE_OPTIONS: '--max-old-space-size=3072'
+        run: npx vitest run tests/integration/modeling/modeledThreadProofs.test.ts
+
   # The vitest suite is sharded across parallel runners so the merge gate stays
   # responsive. Eight shards keep coverage unchanged while cutting duplicated
   # checkout/setup/build work compared with the previous 12-runner fanout.

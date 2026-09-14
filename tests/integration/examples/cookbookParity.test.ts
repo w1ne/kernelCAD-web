@@ -5,31 +5,9 @@ import { getMassPropertiesTool } from '../../../src/agent/mcp/tools/getMassPrope
 import { listPartStatsTool } from '../../../src/agent/mcp/tools/listPartStats';
 import { lookupCookbookTool } from '../../../src/agent/mcp/tools/lookupCookbook';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import { isoInternalGrooveProfile, isoMinorRadius } from '../../../src/kernel/backends/occt/isoThread';
 import { resolveFeaMaterial } from '../../../src/kernel/fea/feaMaterials';
 import { checkInterference } from '../../../src/agent/script-runtime/checkInterference';
 import { readFileSync } from 'node:fs';
-
-/** ∫∫ (R + x) dA over the x ≥ 0 part of a profile polygon. */
-function outerMoment(profile: ReadonlyArray<readonly [number, number]>, R: number): number {
-  const clipped: Array<[number, number]> = [];
-  for (let i = 0; i < profile.length; i++) {
-    const a = profile[i];
-    const b = profile[(i + 1) % profile.length];
-    if (a[0] >= 0) clipped.push([a[0], a[1]]);
-    if ((a[0] >= 0) !== (b[0] >= 0)) clipped.push([0, a[1] + (a[0] / (a[0] - b[0])) * (b[1] - a[1])]);
-  }
-  let area2 = 0;
-  let mx6 = 0;
-  for (let i = 0; i < clipped.length; i++) {
-    const [x0, y0] = clipped[i];
-    const [x1, y1] = clipped[(i + 1) % clipped.length];
-    const c = x0 * y1 - x1 * y0;
-    area2 += c;
-    mx6 += (x0 + x1) * c;
-  }
-  return Math.abs((R * area2) / 2 + mx6 / 6);
-}
 
 const ROOT = 'examples/cookbook-parity';
 
@@ -77,44 +55,10 @@ describe('cookbook parity examples', () => {
     expect(extent(pinion!.bbox)[0]).toBeCloseTo(2 * pinionOuter, 1.5);
   }, 120_000);
 
-  it('ISO metric bolt and nut: M6 V-thread bolt in a threaded nut', async () => {
-    const file = `${ROOT}/iso-metric-bolt-and-nut.kcad.ts`;
-    const ev = await evaluateScript({ file });
-    expect(ev.exitCode, JSON.stringify(ev.diagnostics)).toBe(0);
-
-    const stats = await listPartStatsTool({ file });
-    expect(stats.ok, stats.error).toBe(true);
-    const bolt = stats.parts!.find((p) => p.name === 'hex-bolt');
-    const nut = stats.parts!.find((p) => p.name === 'hex-nut');
-    expect(bolt).toBeDefined();
-    expect(nut).toBeDefined();
-
-    const d = 6;
-    const pitch = 1.0;
-    const af = 10;
-    const headHeight = 4.0;
-    const nutHeight = 5.2;
-    const turns = 12;
-    const clearance = 0.05;
-
-    // Head hex across flats; shank core runs (turns + 1) pitches above the head.
-    const boltSize = extent(bolt!.bbox);
-    expect(Math.min(boltSize[0], boltSize[1])).toBeCloseTo(af, 0);
-    expect(bolt!.bbox.max[2]).toBeCloseTo(headHeight + (turns + 1) * pitch, 2);
-
-    // Nut = hex prism − ISO minor bore (+clearance) − helical groove, exactly.
-    const hexArea = (Math.sqrt(3) / 2) * af * af;
-    const rBore = isoMinorRadius(d, pitch) + clearance;
-    const removed = Math.PI * rBore * rBore * nutHeight
-      + (nutHeight / pitch) * 2 * Math.PI * outerMoment(isoInternalGrooveProfile(d, pitch, clearance), rBore);
-    expect(nut!.volumeMm3 / (hexArea * nutHeight - removed)).toBeCloseTo(1, 4);
-
-    // Seated in phase on the bolt at nominal clearance: no interference.
-    const clash = await checkInterference({ code: readFileSync(file, 'utf8'), fileName: file });
-    expect(clash.comparisonCount).toBe(1);
-    expect(clash.diagnostics.filter((x) => x.code === 'feature.kernel-failed')).toHaveLength(0);
-    expect(clash.pairs).toEqual([]);
-  }, 400_000);
+  // The M6 bolt-and-nut example (modeled V-thread + threaded nut) costs minutes
+  // to evaluate and interference-check, so its proof lives in the non-required
+  // geometry-proofs job: tests/integration/modeling/modeledThreadProofs.test.ts.
+  // Its snippet body is still evaluated by `npm run qc:build` (cookbook:evaluate).
 
   it('countersunk flat-head screws sit flush without interference', async () => {
     const file = `${ROOT}/countersunk-flat-head-screw.kcad.ts`;
