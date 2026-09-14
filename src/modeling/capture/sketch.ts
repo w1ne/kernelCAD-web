@@ -70,7 +70,7 @@ export class Sketch {
     this.session = session;
   }
 
-  extrude(depth: number, opts?: { faceLabels?: FaceLabelsMap }): Shape {
+  extrude(depth: Editable<number>, opts?: { faceLabels?: FaceLabelsMap }): Shape {
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'extrude');
     return this.session.createShape({
       kind: 'extrude',
@@ -79,7 +79,10 @@ export class Sketch {
       },
       params: {
         profileKind: { expression: "'sketch'", unit: 'unitless', evaluated: 0 },
-        depth: { expression: String(depth), unit: 'mm', evaluated: depth },
+        // A ParamRef depth stays symbolic and is resolved at lower time, the
+        // same contract box/cylinder dimensions already have; a number is
+        // captured exactly as before.
+        depth: toParam(depth, 'mm'),
       },
       metadata: faceLabels ? { faceLabels } : undefined,
     });
