@@ -14,7 +14,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { evaluateScript } from '../../../src/agent/cli/commands/evaluate';
-import { detectFeaToolchain, type FeaToolchain } from '../../../src/kernel/fea/toolchain';
+import { detectFeaToolchain, requireFeaToolchainIfDemanded, type FeaToolchain } from '../../../src/kernel/fea/toolchain';
 
 // 60 x 12 x 3 mm PLA tab, fixed at one end, 250 N on the free end. Root
 // bending stress is far past PLA's 50 MPa yield, so SF is well under 1.
@@ -41,6 +41,7 @@ beforeAll(async () => {
 describe('feaStudy evaluate-time gate', () => {
   it('fails the evaluation when the solved safety factor is below the declared minimum', async () => {
     if (!toolchain.ok) {
+      requireFeaToolchainIfDemanded(toolchain);
       console.warn(`[skipped] FEA gate test needs ${toolchain.missing.join(' and ')}. ${toolchain.hint}`);
       expect(toolchain.missing.length).toBeGreaterThan(0);
       return;

@@ -93,3 +93,7 @@ site/docs/
 
 # FEA solver toolchain venv (gmsh); created by the kernelcad-fea setup step
 .fea-venv
+
+# External-tools CI venv (gmsh + usd-core), created locally / in the
+# external-tools job for FEA + USD validation; never committed.
+.tools-venv
