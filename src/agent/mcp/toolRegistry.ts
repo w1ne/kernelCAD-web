@@ -15,6 +15,7 @@ import {
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
 import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
+import { mechanismSimToolEntries } from './registry/mechanismSimTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
 export { runClosedLoop } from '../loop/closedLoop.js';
 export { buildRepairPrompt } from '../loop/repairPrompt.js';
@@ -41,6 +42,10 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...catalogToolEntries,
   ...sketchAssemblyToolEntries,
   ...reviewPipelineToolEntries,
+  // New tools are appended here — never inserted mid-list, which would
+  // shift existing indices (a kernelCAD-server contract; see the
+  // publicContract test's per-family slice-index assertions).
+  ...mechanismSimToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints
