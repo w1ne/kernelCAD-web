@@ -37,6 +37,7 @@ Pass via `options` (MCP) — all optional:
 - `modelName`: title-block name; defaults to the script's file name.
 - `date`: title-block date string; defaults to a placeholder so output stays byte-deterministic (stamp an ISO date when the drawing is released).
 - `annotations`: authored dimensions and notes — see below.
+- `sections`: cutting-plane section views — see "Section views" below.
 
 ```json
 { "options": { "format": "svg-drawing", "sheet": "a3", "modelName": "Clamp body", "date": "2026-06-10" } }
@@ -104,13 +105,34 @@ An annotation whose query matches **zero** edges/faces, matches **more than one*
 - Curved edges are sampled to polylines at 0.02 mm chord tolerance — invisible at print scale.
 - A drawing is a derived artifact, not source-of-truth: change the `.kcad.ts`, re-export.
 
+## Section views
+
+`options.sections: [{ plane, label }]` cuts the assembled body with a real half-space boolean (not a render-time visual clip) and adds a section-view cell below the standard 4-view grid — the sheet grows taller to make room; the standard views are pixel-for-pixel unaffected.
+
+```json
+{
+  "options": {
+    "format": "svg-drawing",
+    "sections": [{ "plane": "xy", "label": "A" }]
+  }
+}
+```
+
+- `plane`: `'xy'` (cuts along Z), `'xz'` (cuts along Y), `'yz'` (cuts along X) — position defaults to the bounding-box midpoint on that axis — or `{ origin: [x,y,z], normal: [nx,ny,nz] }` for an explicit position. **Only axis-aligned normals are supported** (within ~2.5° of ±X/±Y/±Z); an oblique plane fails with `feature.invalid-args` rather than being approximated.
+- The kept half is the far-from-viewer side (the ASME convention — remove the near material, look straight at the cut). The section view reuses the standard camera for that axis (`'top'` for an `'xy'` cut, `'front'` for `'xz'`, `'left'` for `'yz'`), so it renders through the same HLR pipeline (visible/hidden/tangent styling) as every other view.
+- The true cut cross-section — the face(s) that land exactly on the cutting plane — is filled with a 45° hatch pattern (`fill="url(#kc-section-hatch)"`). A hole the plane slices through renders correctly as a hole in the hatch (outer + inner wire, `fill-rule="evenodd"`), not a solid disk.
+- A cutting-plane indicator (dashed line, arrows, the section letter at both ends) is drawn on the "parent" view where the plane appears edge-on (`'front'` for an `'xy'`/`'yz'` cut, `'top'` for an `'xz'` cut).
+- A plane that doesn't pass through the body's bounding box fails with `drawing.section.plane-misses-body`.
+- The section cell is captioned `SECTION A-A` (from `label`).
+
 ## Current limits
 
-- Section views and per-view scale overrides are not available yet — `drawing.section.plane-misses-body` is a reserved diagnostic code for that future slice, not something you can trigger today.
-- GD&T (`datum`/`fcf`) and the `hole`/`fillet`/`chamfer` callouts are authored through `options.annotations`, the same surface as every other dimension — there is no `Shape.datum()` / `Shape.tolerance()` capture-graph method.
-- `drawing.annotation.overlap` is a reserved diagnostic code; the general text-box collision solver has not shipped, so it is never emitted today. The shared leader-rotation stacking (every leader-based kind — `radius`/`diameter`/`note`/`hole`/`fillet`/`chamfer`/`datum`/`fcf`) still fans successive callouts on the same view apart, which covers the common case.
+- Per-view scale overrides are not available — every view, including section cells, shares one drawing scale (a section cell may use a SMALLER local scale than the main views if it wouldn't otherwise fit the reserved band, but never a larger one).
+- GD&T (`datum`/`fcf`) and the `hole`/`fillet`/`chamfer` callouts are authored through `options.annotations`, the same surface as every other dimension — there is no `Shape.datum()` / `Shape.tolerance()` capture-graph method. That would need a new capture-graph `FeatureKind` + OCCT lowerer + a way for the lowered `WorldFramePart` (which today carries only the final geometry, not feature records) to reach the exporter — a bigger change than adding an export-time annotation kind, and out of scope for this slice.
+- `chamfer`'s leg `size` is author-supplied — not recoverable from a bare edge query without feature history.
+- Section planes must be axis-aligned; an oblique `{ origin, normal }` fails loudly rather than being approximated (see "Section views" above).
+- `drawing.annotation.overlap` is a REAL, non-fatal check: after rendering, every axis-aligned `<text>` label's approximate bounding box (rotated labels — the vertical `linear` dimension — are skipped, not estimated) is compared pairwise across DIFFERENT annotations. An overlapping pair does not fail the export (a crowded callout is still more useful than a silently dropped one); it emits one `warn` diagnostic naming every overlapping pair. Use `offset`, a different `view`, or reorder the array to separate them. The shared leader-rotation stacking (every leader-based kind — `radius`/`diameter`/`note`/`hole`/`fillet`/`chamfer`/`datum`/`fcf`) already fans successive callouts on the same view apart, which covers the common case; the overlap check is the backstop for when it isn't enough.
 - Dimensions are authored or bounding-box; they do NOT auto-update from `param()` values.
-- Annotations are placed by rule, not by a collision solver: two callouts on features that overlap in a view can still crowd each other. Use `offset`, a different `view`, or reorder the array to separate them.
 - Hidden tangent edges are intentionally omitted (noise, no contour information).
 - Partially overlapping collinear duplicates are kept; only exactly coincident segments deduplicate.
 

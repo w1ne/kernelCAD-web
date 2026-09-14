@@ -44,10 +44,11 @@ async function main() {
         { kind: 'datum', view: 'top', face: { atZ: 0 }, label: 'A' },
         {
           kind: 'fcf', view: 'top', edge: { ofCurveType: 'CIRCLE', near: [70, 40, -2] },
-          type: 'position', value: 0.1, datums: ['A'], modifier: '⌀',
+          type: 'position', value: 0.1, datums: ['A'], modifier: '⌀', offset: 12,
         },
         { kind: 'linear', from: [0, 0, 0], to: [80, 0, 0], tol: 0.1 },
       ],
+      sections: [{ plane: 'xy', label: 'A' }],
     },
   });
 
