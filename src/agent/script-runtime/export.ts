@@ -10,11 +10,23 @@ import { verifyWatertight, type WatertightReport } from '../../kernel/backends/o
 import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exportDxf';
 import { export3mfAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occt/exportGlb';
-import { exportSvgDrawing, type SvgDrawingOptions } from '../../kernel/backends/occt/exportSvgDrawing';
+import {
+  renderSvgDrawing,
+  type AutoAnnotateOptions,
+  type DrawingReport,
+  type SvgDrawingOptions,
+} from '../../kernel/backends/occt/exportSvgDrawing';
+import { collectDrawingDeclarations } from '../../modeling/runtime/drawingDeclarations';
 import type { DrawingAnnotation } from '../../kernel/backends/occt/drawingAnnotations';
 import type { DrawingSectionSpec } from '../../kernel/backends/occt/drawingSections';
 export type { DrawingAnnotation, DrawingAnchor } from '../../kernel/backends/occt/drawingAnnotations';
 export type { DrawingSectionSpec, SectionPlane } from '../../kernel/backends/occt/drawingSections';
+export type {
+  AutoAnnotateKind,
+  AutoAnnotateOptions,
+  DrawingReport,
+  Iso2768Class,
+} from '../../kernel/backends/occt/exportSvgDrawing';
 import { sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { flattenPattern } from '../../kernel/backends/occt/flattenPattern';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
@@ -52,6 +64,9 @@ export type ExportOptions =
       annotations?: readonly DrawingAnnotation[];
       /** Cutting-plane section views — see the kernelcad-drawings skill. */
       sections?: readonly DrawingSectionSpec[];
+      /** Derive datums, hole callouts with position frames, positions, overall
+       *  dims, radii, chamfers, flatness and an ISO 2768 note from the B-rep. */
+      autoAnnotate?: boolean | AutoAnnotateOptions;
     }
   | { format: 'urdf' }
   | { format: 'srdf' }
@@ -118,6 +133,9 @@ export interface ExportResult {
   connectorManifest?: ConnectorManifest;
   /** Parsed slicer G-code stats, present only for `format: 'gcode'` exports that reached the slicer. */
   gcodeStats?: GcodeStats;
+  /** `svg-drawing` placement report (placed / overlapped counts, datums,
+   *  every annotation drawn), present whenever the sheet carries annotations. */
+  drawingReport?: DrawingReport;
 }
 
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
@@ -345,9 +363,20 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
     const drawingParts: WorldFramePart[] = isSceneBackend(lowered)
       ? sceneToWorldFrameParts(lowered)
       : [{ name: 'part', shape: lowered as OcctBackend }];
-    const drawingDiagnostics: CompilerDiagnostic[] = [];
-    const bytes = exportSvgDrawing(drawingParts, { ...opts, modelName }, drawingDiagnostics);
-    return { bytes, featureCount, diagnostics: [...r.diagnostics, ...drawingDiagnostics] };
+    // GD&T declared on the feature graph (shape.datum / shape.tolerance) for
+    // this target or anything feeding it.
+    const captured = collectDrawingDeclarations(run.records, targetId);
+    const declarations = {
+      datums: [...(opts.declarations?.datums ?? []), ...captured.datums],
+      tolerances: [...(opts.declarations?.tolerances ?? []), ...captured.tolerances],
+    };
+    const rendered = renderSvgDrawing(drawingParts, { ...opts, modelName, declarations });
+    return {
+      bytes: rendered.bytes,
+      featureCount,
+      diagnostics: [...r.diagnostics, ...rendered.diagnostics],
+      ...(rendered.report === undefined ? {} : { drawingReport: rendered.report }),
+    };
   }
 
   // Scene-aware path: STEP/3MF/GLB keep per-part identity. STL is a single
