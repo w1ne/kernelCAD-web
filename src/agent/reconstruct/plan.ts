@@ -367,7 +367,7 @@ export function buildPlan(an: MeshAnalysis, pass: PassParams): FeaturePlan {
         const hName = single ? (h <= 0.5 * minExtent ? 'thickness' : 'height') : `block${k + 1}Height`;
         addParam(hName, h, rawH, single ? 'Extrusion length of the profile.' : `Extrusion length of block ${k + 1} (from the base).`, snapInfo(h, rawH).grid);
         const loops: LoopOut[] = blk.loops.map((l) =>
-          l.kind === 'circle' ? { kind: 'circle', cx: l.cx, cy: l.cy, r: l.r } : { kind: 'path', prims: loopPrimitives(l) },
+          l.kind === 'circle' ? { kind: 'circle', cx: l.cx, cy: l.cy, r: l.r } : { kind: 'path', prims: startNearOrigin(loopPrimitives(l)) },
         );
         let rect: { wParam: string; lParam: string } | undefined;
         const r = loops.length === 1 && loops[0].kind === 'path' ? originRectangle(loops[0].prims) : undefined;
@@ -768,6 +768,22 @@ function polyExtent(poly: Float64Array, k: 0 | 1): number {
     hi = Math.max(hi, poly[i]);
   }
   return hi - lo;
+}
+
+/** Rotate a closed chain so it starts at the joint nearest the origin — the
+ *  corner a reader expects a profile to begin from. */
+function startNearOrigin(prims: ProfilePrim[]): ProfilePrim[] {
+  if (prims.length === 0) return prims;
+  let best = 0;
+  let bestD = Infinity;
+  prims.forEach((p, i) => {
+    const d = Math.hypot(p.a[0], p.a[1]);
+    if (d < bestD - 1e-9) {
+      bestD = d;
+      best = i;
+    }
+  });
+  return [...prims.slice(best), ...prims.slice(0, best)];
 }
 
 function nestingDepth(polys: Float64Array[], i: number): number {

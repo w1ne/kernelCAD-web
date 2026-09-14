@@ -14,7 +14,7 @@
 //     rib barely moves IoU but shows up here; a slightly offset wall shows up
 //     in both.
 
-import { meshDeviation, type MeshDeviationResult } from '../../modeling/runtime/meshDeviation';
+import { meshDeviation, pointTriangleDistanceSq, type MeshDeviationResult } from '../../modeling/runtime/meshDeviation';
 import type { RuntimeMesh } from '../../kernel/backends/runtimeMesh';
 
 export interface TriMesh {
@@ -215,6 +215,48 @@ function toRuntimeMesh(m: TriMesh): RuntimeMesh {
     normals: new Float32Array(0),
     indices: Uint32Array.from(m.indices),
   };
+}
+
+/**
+ * Max distance from (up to `maxSamples`, strided) points to a triangle mesh.
+ * Used to decide whether a region the feature vocabulary could not name is
+ * nevertheless reproduced by the emitted script (a scan's noisy bore wall is;
+ * a freeform bulge is not).
+ */
+export function maxDistanceToMesh(points: ArrayLike<number>, m: TriMesh, maxSamples = 256): number {
+  const idx = m.indices;
+  const p = m.positions;
+  const triCount = idx.length / 3;
+  const bounds = new Float64Array(triCount * 6);
+  for (let t = 0; t < triCount; t++) {
+    let x0 = Infinity, y0 = Infinity, z0 = Infinity, x1 = -Infinity, y1 = -Infinity, z1 = -Infinity;
+    for (let k = 0; k < 3; k++) {
+      const v = idx[t * 3 + k] * 3;
+      x0 = Math.min(x0, p[v]); x1 = Math.max(x1, p[v]);
+      y0 = Math.min(y0, p[v + 1]); y1 = Math.max(y1, p[v + 1]);
+      z0 = Math.min(z0, p[v + 2]); z1 = Math.max(z1, p[v + 2]);
+    }
+    bounds.set([x0, y0, z0, x1, y1, z1], t * 6);
+  }
+  const count = points.length / 3;
+  const stride = Math.max(1, Math.ceil(count / maxSamples));
+  let worst = 0;
+  for (let i = 0; i < count; i += stride) {
+    const px = points[i * 3], py = points[i * 3 + 1], pz = points[i * 3 + 2];
+    let best = Infinity;
+    for (let t = 0; t < triCount; t++) {
+      const o = t * 6;
+      const dx = px < bounds[o] ? bounds[o] - px : px > bounds[o + 3] ? px - bounds[o + 3] : 0;
+      const dy = py < bounds[o + 1] ? bounds[o + 1] - py : py > bounds[o + 4] ? py - bounds[o + 4] : 0;
+      const dz = pz < bounds[o + 2] ? bounds[o + 2] - pz : pz > bounds[o + 5] ? pz - bounds[o + 5] : 0;
+      if (dx * dx + dy * dy + dz * dz >= best) continue;
+      const a = idx[t * 3] * 3, b = idx[t * 3 + 1] * 3, c = idx[t * 3 + 2] * 3;
+      const d = pointTriangleDistanceSq(px, py, pz, p[a], p[a + 1], p[a + 2], p[b], p[b + 1], p[b + 2], p[c], p[c + 1], p[c + 2]);
+      if (d < best) best = d;
+    }
+    if (best !== Infinity) worst = Math.max(worst, Math.sqrt(best));
+  }
+  return worst;
 }
 
 export type FidelityVerdict = 'faithful' | 'approximate' | 'failed';

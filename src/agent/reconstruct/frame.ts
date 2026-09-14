@@ -80,18 +80,15 @@ export function chooseFrame(seg: Segmentation, levelTolMm: number, mesh?: Indexe
     if (!unique.some((u) => Math.abs(dot3(u, n)) > Math.cos((1 * Math.PI) / 180))) unique.push(n);
   }
 
-  let best: AxisCandidateScore | null = null;
-  for (const axis of unique) {
-    const s = scoreAxis(seg, axis, levelTolMm, mesh);
-    if (
-      best === null ||
-      s.score > best.score + 1e-6 ||
-      (Math.abs(s.score - best.score) <= 1e-6 && s.capArea > best.capArea * (1 + 1e-6))
-    ) {
-      best = s;
-    }
-  }
-  const chosen = best!;
+  // Best score wins; candidates within 0.02 of it are treated as a tie and
+  // the one with the largest cap area is taken — on a noisy scan a couple of
+  // tilted fragments move the scores by that much, while a real extrusion axis
+  // is ahead by at least a band penalty (0.03).
+  const scored = unique.map((axis) => scoreAxis(seg, axis, levelTolMm, mesh));
+  const top = Math.max(...scored.map((s) => s.score));
+  const chosen = scored
+    .filter((s) => s.score >= top - 0.02)
+    .reduce((a, b) => (b.capArea > a.capArea * (1 + 1e-6) ? b : a));
 
   // Snap onto a world axis when within 0.5°.
   let axis = chosen.axis;
@@ -154,7 +151,11 @@ export function scoreAxis(seg: Segmentation, axis: V3, levelTolMm: number, mesh?
       // Only a cap that meets an outer wall changes the body's outline; a
       // counterbore or blind-hole floor (bounded by bores alone) does not
       // split the part into another extrusion band.
-      if (!mesh || touchesWall(seg, mesh, p.tris, axis)) levels.push(dot3(p.centroid, axis));
+      // Specks of cap-facing noise (a few triangles inside a scanned bore) are
+      // not steps either.
+      if (p.area >= 1e-3 * seg.totalArea && (!mesh || touchesWall(seg, mesh, p.tris, axis))) {
+        levels.push(dot3(p.centroid, axis));
+      }
     } else if (d <= WALL_SIN) {
       wall += p.area;
     }

@@ -39,6 +39,8 @@ export interface PlaneRegion {
   area: number;
   centroid: V3;
   rms: number;
+  /** 1.4826 × median absolute deviation of the vertex distances (mm). */
+  robustSigma: number;
   sharpBoundaryFraction: number;
 }
 
@@ -105,22 +107,42 @@ export function segmentMesh(mesh: IndexedMesh, opts: SegmentOptions = {}): Segme
   const loose = growPlanes(mesh, Math.max(floor * 2.5, 0.05), totalArea);
   let wSum = 0;
   let rSum = 0;
-  // Only regions bounded almost entirely by creases are trusted as noise
-  // probes: a loose tolerance can let a facet strip on a large-radius
-  // cylinder pass as a small plane, and its sagitta is not noise.
-  for (const p of loose.filter((q) => q.sharpBoundaryFraction >= 0.75)) {
+  // Noise probes: regions bounded almost entirely by creases, measured by
+  // their robust spread — a loose tolerance lets planes creep onto the first
+  // facets of an adjacent round or large-radius cylinder, and that sagitta is
+  // geometry, not noise.
+  // A probe needs enough vertices for its spread to mean anything: a single
+  // triangle is exactly planar whatever the noise.
+  for (const p of loose.filter((q) => q.sharpBoundaryFraction >= 0.75 && q.tris.length >= 8)) {
     wSum += p.area;
-    rSum += p.area * p.rms * p.rms;
+    rSum += p.area * p.robustSigma * p.robustSigma;
   }
   const noise = wSum > 0 ? Math.sqrt(rSum / wSum) : 0;
   const tol = Math.max(floor, 4 * noise);
   const planes = growPlanes(mesh, tol, totalArea);
 
+  // Small planes may be facet strips of a short or noisy bore (on a scan the
+  // per-triangle normals are too noisy for the crease test to tell). Offer
+  // them to the cylinder fit first: a smooth component that includes them and
+  // fits a cylinder claims them; a genuine small face meets its neighbours at
+  // a crease, never joins such a component, and stays a plane.
+  const soft = new Set(planes.filter((p) => p.area < 0.02 * totalArea));
+  const hardAssigned = new Int8Array(mesh.areas.length);
+  for (const p of planes) if (!soft.has(p)) for (const t of p.tris) hardAssigned[t] = 1;
+  const claimed = claimSoftStrips(mesh, hardAssigned, tol, diag);
+  const consumed = new Set<number>();
+  for (const c of claimed) for (const t of c.tris) consumed.add(t);
+  for (let i = planes.length - 1; i >= 0; i--) {
+    if (soft.has(planes[i]) && planes[i].tris.every((t) => consumed.has(t))) planes.splice(i, 1);
+  }
+
   const assigned = new Int8Array(mesh.areas.length);
   for (const p of planes) for (const t of p.tris) assigned[t] = 1;
+  for (const t of consumed) assigned[t] = 1;
 
-  const { cylinders, freeform } = fitRemaining(mesh, assigned, tol, diag);
-  absorbPlaneStrips(mesh, planes, cylinders, tol, totalArea);
+  const fitted = fitRemaining(mesh, assigned, tol, diag);
+  const { freeform } = fitted;
+  const cylinders = adoptFragments(mesh, planes, mergeCoaxial(mesh, claimed.concat(fitted.cylinders), tol), freeform, tol, totalArea);
   planes.forEach((p, i) => (p.id = i));
   cylinders.forEach((c, i) => (c.id = i));
   freeform.forEach((f, i) => (f.id = i));
@@ -131,51 +153,73 @@ export function segmentMesh(mesh: IndexedMesh, opts: SegmentOptions = {}): Segme
   return { planes, cylinders, freeform, toleranceMm: tol, noiseMm: noise, totalArea, planeOf, cylinderOf };
 }
 
-/** A small plane whose every vertex lies on an adjacent fitted cylinder is a
- *  facet strip of that cylinder, not a face: fold it back in. */
-function absorbPlaneStrips(
+/**
+ * Fold fragments back into the cylinder they belong to. Strips of a short bore
+ * can pass as small planes, and a handful of facets between them can fit as a
+ * spurious little cylinder or fail as freeform; each is adopted by a reliable
+ * cylinder (>= 90° of coverage) when every one of its vertices lies on that
+ * cylinder's surface within its axial extent. Coaxial pieces are merged again
+ * afterwards.
+ */
+function adoptFragments(
   mesh: IndexedMesh,
   planes: PlaneRegion[],
   cylinders: CylinderRegion[],
+  freeform: FreeformRegion[],
   tol: number,
   totalArea: number,
-): void {
-  if (cylinders.length === 0) return;
-  const cylOf = new Int32Array(mesh.areas.length).fill(-1);
-  cylinders.forEach((c, i) => c.tris.forEach((t) => (cylOf[t] = i)));
-  for (let i = planes.length - 1; i >= 0; i--) {
-    const p = planes[i];
-    if (p.area >= 0.02 * totalArea) continue;
-    const touching = new Set<number>();
-    for (const t of p.tris) {
+): CylinderRegion[] {
+  const onSurface = (c: CylinderRegion, tris: number[]): boolean => {
+    for (const t of tris) {
       for (let k = 0; k < 3; k++) {
-        const nb = mesh.neighbors[t * 3 + k];
-        if (nb >= 0 && cylOf[nb] >= 0) touching.add(cylOf[nb]);
+        const v = vertex(mesh, mesh.triangles[t * 3 + k]);
+        const along = dot3([v[0] - c.origin[0], v[1] - c.origin[1], v[2] - c.origin[2]], c.axis);
+        const tAbs = dot3(v, c.axis);
+        if (tAbs < c.tMin - tol || tAbs > c.tMax + tol) return false;
+        const rx = v[0] - c.origin[0] - c.axis[0] * along;
+        const ry = v[1] - c.origin[1] - c.axis[1] * along;
+        const rz = v[2] - c.origin[2] - c.axis[2] * along;
+        if (Math.abs(Math.hypot(rx, ry, rz) - c.radius) > tol) return false;
       }
     }
-    for (const ci of touching) {
-      const c = cylinders[ci];
-      let onSurface = true;
-      for (const t of p.tris) {
-        for (let k = 0; k < 3 && onSurface; k++) {
-          const v = vertex(mesh, mesh.triangles[t * 3 + k]);
-          const along = dot3([v[0] - c.origin[0], v[1] - c.origin[1], v[2] - c.origin[2]], c.axis);
-          const rx = v[0] - c.origin[0] - c.axis[0] * along;
-          const ry = v[1] - c.origin[1] - c.axis[1] * along;
-          const rz = v[2] - c.origin[2] - c.axis[2] * along;
-          if (Math.abs(Math.hypot(rx, ry, rz) - c.radius) > tol) onSurface = false;
-        }
-        if (!onSurface) break;
+    return true;
+  };
+  let changed = true;
+  let pool = cylinders;
+  for (let round = 0; round < 3 && changed; round++) {
+    changed = false;
+    pool = [...pool].sort((a, b) => b.area - a.area);
+    for (let ci = 0; ci < pool.length; ci++) {
+      const c = pool[ci];
+      if (c.coverageRad < Math.PI / 2) continue;
+      let tris = c.tris;
+      for (let i = planes.length - 1; i >= 0; i--) {
+        const p = planes[i];
+        if (p.area >= 0.02 * totalArea || !onSurface(c, p.tris)) continue;
+        tris = tris.concat(p.tris);
+        planes.splice(i, 1);
       }
-      if (!onSurface) continue;
-      const merged = fitCylinder(mesh, c.tris.concat(p.tris), Infinity, Infinity) ?? fitCylinder(mesh, c.tris.concat(p.tris), Infinity, Infinity, c.axis);
-      if (!merged) continue;
-      cylinders[ci] = merged;
-      merged.tris.forEach((t) => (cylOf[t] = ci));
-      planes.splice(i, 1);
-      break;
+      for (let i = freeform.length - 1; i >= 0; i--) {
+        if (!onSurface(c, freeform[i].tris)) continue;
+        tris = tris.concat(freeform[i].tris);
+        freeform.splice(i, 1);
+      }
+      for (let j = pool.length - 1; j > ci; j--) {
+        const other = pool[j];
+        if (other.area >= c.area || !onSurface(c, other.tris)) continue;
+        tris = tris.concat(other.tris);
+        pool.splice(j, 1);
+      }
+      if (tris.length === c.tris.length) continue;
+      const refit = fitCylinder(mesh, tris, Infinity, Infinity) ?? fitCylinder(mesh, tris, Infinity, Infinity, c.axis);
+      if (refit) {
+        pool[ci] = refit;
+        changed = true;
+      }
     }
+    pool = mergeCoaxial(mesh, pool, tol);
   }
+  return pool;
 }
 
 function vertex(mesh: IndexedMesh, v: number): V3 {
@@ -201,11 +245,11 @@ function growPlanes(mesh: IndexedMesh, tol: number, totalArea: number): PlaneReg
   const planes: PlaneRegion[] = [];
   const minSeedArea = tol * tol;
 
-  const withinPlane = (t: number, n: V3, d: number): boolean => {
+  const withinPlane = (t: number, n: V3, d: number, within: number): boolean => {
     for (let k = 0; k < 3; k++) {
       const v = mesh.triangles[t * 3 + k] * 3;
       const dist = mesh.positions[v] * n[0] + mesh.positions[v + 1] * n[1] + mesh.positions[v + 2] * n[2] - d;
-      if (Math.abs(dist) > tol) return false;
+      if (Math.abs(dist) > within) return false;
     }
     return true;
   };
@@ -217,8 +261,11 @@ function growPlanes(mesh: IndexedMesh, tol: number, totalArea: number): PlaneReg
     let n = triNormal(mesh, seed);
     let d = dot3(n, vertex(mesh, mesh.triangles[seed * 3]));
     let region: number[] = [];
-    // Two growth rounds: grow from the seed plane, refit, regrow with the fit.
+    // Two growth rounds: grow loosely from the seed triangle's plane (on a
+    // noisy mesh a single triangle's plane is itself off by the noise), refit,
+    // then regrow from scratch at the real tolerance against the fitted plane.
     for (let round = 0; round < 2; round++) {
+      const roundTol = round === 0 ? 2 * tol : tol;
       const inRegion = new Set<number>([seed]);
       const queue = [seed];
       region = [seed];
@@ -234,7 +281,7 @@ function growPlanes(mesh: IndexedMesh, tol: number, totalArea: number): PlaneReg
           const altitude = longest > 0 ? (2 * mesh.areas[nb]) / longest : 0;
           if (altitude > 10 * tol && dot3(nbN, n) < Math.cos((20 * Math.PI) / 180)) continue;
           if (dot3(nbN, n) < 0) continue;
-          if (!withinPlane(nb, n, d)) continue;
+          if (!withinPlane(nb, n, d, roundTol)) continue;
           inRegion.add(nb);
           region.push(nb);
           queue.push(nb);
@@ -274,13 +321,17 @@ function growPlanes(mesh: IndexedMesh, tol: number, totalArea: number): PlaneReg
       area,
       centroid: fit.centroid,
       rms: fit.rms,
+      robustSigma: fit.robustSigma,
       sharpBoundaryFraction,
     });
   }
   return planes;
 }
 
-function fitPlane(mesh: IndexedMesh, tris: number[]): { normal: V3; offset: number; centroid: V3; rms: number } | null {
+function fitPlane(
+  mesh: IndexedMesh,
+  tris: number[],
+): { normal: V3; offset: number; centroid: V3; rms: number; robustSigma: number } | null {
   let area = 0;
   const nSum: V3 = [0, 0, 0];
   const c: V3 = [0, 0, 0];
@@ -299,16 +350,55 @@ function fitPlane(mesh: IndexedMesh, tris: number[]): { normal: V3; offset: numb
   const centroid: V3 = [c[0] / area, c[1] / area, c[2] / area];
   const offset = dot3(normal, centroid);
   let sq = 0;
-  let cnt = 0;
+  const dists: number[] = [];
+  const seen = new Set<number>();
   for (const t of tris) {
     for (let j = 0; j < 3; j++) {
-      const v = mesh.triangles[t * 3 + j] * 3;
+      const vi = mesh.triangles[t * 3 + j];
+      if (seen.has(vi)) continue;
+      seen.add(vi);
+      const v = vi * 3;
       const dist = mesh.positions[v] * normal[0] + mesh.positions[v + 1] * normal[1] + mesh.positions[v + 2] * normal[2] - offset;
       sq += dist * dist;
-      cnt++;
+      dists.push(dist);
     }
   }
-  return { normal, offset, centroid, rms: Math.sqrt(sq / Math.max(1, cnt)) };
+  // Median absolute deviation: a plane that crept onto a few facets of a
+  // neighbouring round keeps a near-zero robust spread, a noisy scan does not.
+  dists.sort((a, b) => a - b);
+  const med = dists[dists.length >> 1] ?? 0;
+  const abs = dists.map((d) => Math.abs(d - med)).sort((a, b) => a - b);
+  const robustSigma = 1.4826 * (abs[abs.length >> 1] ?? 0);
+  return { normal, offset, centroid, rms: Math.sqrt(sq / Math.max(1, dists.length)), robustSigma };
+}
+
+/** Cylinders fitted to smooth components that span soft (strip-like) planes;
+ *  only fits covering at least 60° are kept, so a plane tangent to a round is
+ *  never swallowed. */
+function claimSoftStrips(mesh: IndexedMesh, hardAssigned: Int8Array, tol: number, diag: number): CylinderRegion[] {
+  const triCount = mesh.areas.length;
+  const visited = new Uint8Array(triCount);
+  const out: CylinderRegion[] = [];
+  for (let s = 0; s < triCount; s++) {
+    if (hardAssigned[s] || visited[s]) continue;
+    const comp: number[] = [];
+    const stack = [s];
+    visited[s] = 1;
+    while (stack.length > 0) {
+      const t = stack.pop()!;
+      comp.push(t);
+      for (let k = 0; k < 3; k++) {
+        const nb = mesh.neighbors[t * 3 + k];
+        if (nb < 0 || hardAssigned[nb] || visited[nb]) continue;
+        if (dot3(triNormal(mesh, t), triNormal(mesh, nb)) < COMPONENT_SPLIT_COS) continue;
+        visited[nb] = 1;
+        stack.push(nb);
+      }
+    }
+    const cyl = fitCylinder(mesh, comp, tol, diag);
+    if (cyl && cyl.coverageRad >= Math.PI / 3) out.push(cyl);
+  }
+  return out;
 }
 
 function fitRemaining(

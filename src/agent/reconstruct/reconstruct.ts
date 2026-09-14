@@ -15,11 +15,12 @@
 import type { AssumptionFact, AssumptionLedger } from '../vision/ledger';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
-import { analyseMesh, type MeshAnalysis, type UnmatchedRegion } from './analysis';
+import { analyseMesh, type MeshAnalysis, type UnmatchedCandidate, type UnmatchedRegion } from './analysis';
 import { buildPlan, type FeaturePlan, type PassParams } from './plan';
 import { emitScript, num } from './emit';
 import {
   classifyFidelity,
+  maxDistanceToMesh,
   surfaceDeviation,
   volumeIoU,
   type FidelityThresholds,
@@ -109,6 +110,7 @@ interface PassOutcome {
   plan: FeaturePlan;
   script: string;
   summary: PassSummary;
+  unmatched?: UnmatchedRegion[];
   metrics?: { volumeIoU: number; maxDeviationMm: number; rmsMm: number; reconVolume: number; meshVolume: number };
   holes?: Array<{ diameterMm: number; depthMm: number; kind: 'blind' | 'through' }>;
 }
@@ -137,11 +139,14 @@ export async function reconstructFromSoup(
   const noise = analysis.seg.noiseMm;
   const eps0 = Math.max(0.02, 3 * noise, 1e-4 * analysis.diagonal);
   const snap0 = Math.max(0.01, 3 * noise);
+  // Pass 0 fits at the measured noise; pass 1 tightens fit and snap; pass 2
+  // loosens both (a noisier mesh than the estimate says); pass 3 snaps nothing
+  // and spells out every depth, the most literal reading of the mesh.
   const schedule: PassParams[] = [
     { index: 0, eps: eps0, snapTol: snap0, angleTolDeg: 2, allowThroughKeyword: true },
     { index: 1, eps: eps0 / 2, snapTol: snap0 / 2, angleTolDeg: 1, allowThroughKeyword: true },
-    { index: 2, eps: eps0 / 4, snapTol: 0, angleTolDeg: 0.5, allowThroughKeyword: true },
-    { index: 3, eps: eps0 / 8, snapTol: 0, angleTolDeg: 0, allowThroughKeyword: false },
+    { index: 2, eps: eps0 * 2.5, snapTol: snap0 * 2, angleTolDeg: 3, allowThroughKeyword: true },
+    { index: 3, eps: eps0 / 4, snapTol: 0, angleTolDeg: 0, allowThroughKeyword: false },
   ].slice(0, maxPasses);
 
   const sourceName = opts.sourceName ?? `a ${soup.format.toUpperCase()} mesh`;
@@ -179,11 +184,13 @@ export async function reconstructFromSoup(
       reconVolume: iou.volumeB,
       meshVolume: iou.volumeA,
     };
-    const verdict = classifyFidelity(metrics, thresholds, analysis.report.watertight, analysis.unmatched.length);
+    const unmatched = unmatchedAgainst(analysis, evaluated.mesh, thresholds.maxDeviationMm);
+    const verdict = classifyFidelity(metrics, thresholds, analysis.report.watertight, unmatched.length);
     const outcome: PassOutcome = {
       plan,
       script,
       metrics,
+      unmatched,
       holes: evaluated.holes,
       summary: {
         pass: pass.index,
@@ -241,15 +248,16 @@ export async function reconstructFromSoup(
     ],
   });
 
-  const ledger = buildMeshLedger(analysis, winner.plan, soup);
-  const diagnostics = buildDiagnostics(analysis, fidelity);
+  const unmatched = winner.unmatched ?? [];
+  const ledger = buildMeshLedger(analysis, winner.plan, soup, unmatched);
+  const diagnostics = buildDiagnostics(analysis, fidelity, unmatched);
   const plan = winner.plan;
   return {
     ok: true,
     script,
     ledger,
     fidelity,
-    unmatchedRegions: analysis.unmatched,
+    unmatchedRegions: unmatched,
     mesh: analysis.report,
     features: {
       body: plan.body.kind,
@@ -271,7 +279,40 @@ function round6(v: number): number {
   return Math.round(v * 1e6) / 1e6;
 }
 
-export function buildMeshLedger(an: MeshAnalysis, plan: FeaturePlan, soup: TriangleSoup): AssumptionLedger {
+/**
+ * The candidate regions (surface no feature type names) that the emitted
+ * script actually misses: a region whose vertices all lie within the faithful
+ * deviation bound of the reconstruction is reproduced, whatever its
+ * segmentation label; the rest are reported.
+ */
+function unmatchedAgainst(an: MeshAnalysis, recon: TriMesh, boundMm: number): UnmatchedRegion[] {
+  const out: UnmatchedRegion[] = [];
+  for (const c of an.unmatched) {
+    const pts = regionPoints(an, c);
+    const dist = maxDistanceToMesh(pts, recon);
+    if (dist <= boundMm) continue;
+    const { tris: _tris, ...summary } = c;
+    void _tris;
+    out.push({ ...summary, distanceToReconstructionMm: Math.round(dist * 1000) / 1000 });
+  }
+  return out;
+}
+
+function regionPoints(an: MeshAnalysis, c: UnmatchedCandidate): Float64Array {
+  const seen = new Set<number>();
+  const pts: number[] = [];
+  for (const t of c.tris) {
+    for (let k = 0; k < 3; k++) {
+      const v = an.mesh.triangles[t * 3 + k];
+      if (seen.has(v)) continue;
+      seen.add(v);
+      pts.push(an.mesh.positions[v * 3], an.mesh.positions[v * 3 + 1], an.mesh.positions[v * 3 + 2]);
+    }
+  }
+  return Float64Array.from(pts);
+}
+
+export function buildMeshLedger(an: MeshAnalysis, plan: FeaturePlan, soup: TriangleSoup, unmatched: UnmatchedRegion[]): AssumptionLedger {
   const facts: AssumptionFact[] = [];
   const bbox = an.report.bbox;
   facts.push(
@@ -371,7 +412,7 @@ export function buildMeshLedger(an: MeshAnalysis, plan: FeaturePlan, soup: Trian
       resolution: 'open',
     });
   });
-  an.unmatched.forEach((u, i) => {
+  unmatched.forEach((u, i) => {
     facts.push({
       id: `unmatched.${i + 1}`,
       statement: `${u.reason} ${num(u.areaMm2)} mm² over ${u.triangleCount} triangles near (${u.centroid.map(num).join(', ')}); not represented in the script.`,
@@ -394,7 +435,7 @@ export function buildMeshLedger(an: MeshAnalysis, plan: FeaturePlan, soup: Trian
   return { facts, unresolvedCount: facts.filter((f) => f.resolution === 'open').length };
 }
 
-function buildDiagnostics(an: MeshAnalysis, f: FidelityReport): CompilerDiagnostic[] {
+function buildDiagnostics(an: MeshAnalysis, f: FidelityReport, unmatched: UnmatchedRegion[]): CompilerDiagnostic[] {
   const out: CompilerDiagnostic[] = [];
   if (!an.report.watertight) {
     const where = an.report.crackClusters.slice(0, 3).map((c) => `(${c.center.map(num).join(', ')})`).join(', ');
@@ -407,7 +448,7 @@ function buildDiagnostics(an: MeshAnalysis, f: FidelityReport): CompilerDiagnost
       nextAction: NEXT_ACTIONS['reference.mesh.not-watertight'],
     });
   }
-  const free = an.unmatched;
+  const free = unmatched;
   if (free.length > 0) {
     const area = free.reduce((s, u) => s + u.areaMm2, 0);
     out.push({

@@ -47,6 +47,13 @@ export interface UnmatchedRegion {
   /** Input-frame centroid. */
   centroid: V3;
   bbox: { min: V3; max: V3 };
+  /** How far (max over sampled vertices) the region lies from the reconstructed surface, mm. */
+  distanceToReconstructionMm?: number;
+}
+
+/** A candidate region with its triangles, before it is checked against a reconstruction. */
+export interface UnmatchedCandidate extends UnmatchedRegion {
+  tris: number[];
 }
 
 export interface MeshAnalysis {
@@ -62,7 +69,8 @@ export interface MeshAnalysis {
   levels: number[];
   bands: BandAnalysis[];
   crossBores: CrossBore[];
-  unmatched: UnmatchedRegion[];
+  /** Regions no feature type covers; each pass keeps those its script misses. */
+  unmatched: UnmatchedCandidate[];
   unmatchedAreaThresholdMm2: number;
   diagonal: number;
 }
@@ -92,7 +100,7 @@ export function analyseMesh(soup: TriangleSoup, weldToleranceMm?: number): MeshA
 
   // Cap levels: area-weighted cluster of cap-plane offsets.
   const caps = seg.planes
-    .filter((p) => Math.abs(dot3(p.normal, frame.axis)) >= CAP_COS)
+    .filter((p) => Math.abs(dot3(p.normal, frame.axis)) >= CAP_COS && p.area >= 1e-3 * seg.totalArea)
     .map((p) => ({ z: dot3(p.centroid, frame.axis), area: p.area }))
     .concat([
       { z: zMin, area: 0 },
@@ -132,7 +140,7 @@ export function analyseMesh(soup: TriangleSoup, weldToleranceMm?: number): MeshA
 
   // Cross-axis bores and regions no feature represents.
   const crossBores: CrossBore[] = [];
-  const unmatched: UnmatchedRegion[] = [];
+  const unmatched: UnmatchedCandidate[] = [];
   const threshold = Math.max(0.5, 0.002 * seg.totalArea);
   const e1 = frame.e1, e2 = frame.e2, axis = frame.axis;
   for (const c of seg.cylinders) {
@@ -209,7 +217,7 @@ function crossBoreOf(mesh: IndexedMesh, c: CylinderRegion, frame: CanonicalFrame
   };
 }
 
-function regionSummary(mesh: IndexedMesh, tris: number[], kind: UnmatchedKind, reason: string): UnmatchedRegion {
+function regionSummary(mesh: IndexedMesh, tris: number[], kind: UnmatchedKind, reason: string): UnmatchedCandidate {
   let area = 0;
   const c: V3 = [0, 0, 0];
   const min: V3 = [Infinity, Infinity, Infinity];
@@ -230,6 +238,7 @@ function regionSummary(mesh: IndexedMesh, tris: number[], kind: UnmatchedKind, r
   return {
     kind,
     reason,
+    tris,
     areaMm2: area,
     triangleCount: tris.length,
     centroid: area > 0 ? [c[0] / area, c[1] / area, c[2] / area] : [0, 0, 0],

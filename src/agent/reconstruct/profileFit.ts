@@ -160,7 +160,9 @@ export function fitLoop(xyIn: ArrayLike<number>, eps: number): FittedLoop {
   const hole = polygonSignedArea(pts) < 0;
   if (n >= 6) {
     const cf = fitCircle2D(pts);
-    if (cf && cf.maxResidual <= eps && angularCoverage(pts, cf.cx, cf.cy) >= 350 * DEG && sagittaOk(cf.r, 2 * Math.PI, eps)) {
+    // RMS within eps and no point beyond 2.5 eps: a noisy scan of a bore is
+    // still a circle, while a polygon's corners stick out well past that.
+    if (cf && cf.rms <= eps && cf.maxResidual <= 2.5 * eps && angularCoverage(pts, cf.cx, cf.cy) >= 350 * DEG && sagittaOk(cf.r, 2 * Math.PI, eps)) {
       return { kind: 'circle', cx: cf.cx, cy: cf.cy, r: cf.r, hole, rms: cf.rms };
     }
   }

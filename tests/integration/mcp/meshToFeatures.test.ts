@@ -172,6 +172,10 @@ describe('mesh_to_features round trips', () => {
     expect(Math.abs(dia.measured - 5.5)).toBeLessThan(0.02);
     expect(dia.value).toBe(5.5);
     expect(r.fidelity.volumeIoU).toBeGreaterThanOrEqual(0.98);
+    // Noise fragments the segmentation, but every fragment lies on the
+    // reconstructed surface, so none is reported as unmatched.
+    expect(r.unmatchedRegions).toEqual([]);
+    expect(r.fidelity.verdict).toBe('faithful');
   }, 180000);
 
   it('writes script + ledger whose param facts resolve straight into set_param overrides', async () => {
