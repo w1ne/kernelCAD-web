@@ -32,6 +32,11 @@ import { isTextureRef, normalizeTextureRef } from '../../shared/intent/textureRe
 import { validateBendArgs } from '../sheetMetal';
 import { normalizeTopoRefOrString } from './topoRefNormalize';
 import type { Region } from '../../shared/intent/region';
+import type {
+  FeaStudyHandle,
+  FeaStudyMetadata,
+  FeaStudySpec,
+} from '../../shared/intent/feaStudyRecord';
 import {
   type FilletContinuity, isFilletContinuity,
 } from '../../shared/intent/filletContinuityRecord';
@@ -195,6 +200,44 @@ export class Shape {
    * for an assembly, color each part individually before the assembly's
    * solvedModel() unions them for export.
    */
+  /**
+   * Declare a linear-static structural study on this shape: where it is held,
+   * what pushes on it, what it is made of, and (optionally) the safety factor
+   * the design has to clear.
+   *
+   * Declaration-only — this registers a virtual record and returns a handle,
+   * not a Shape, so it never joins the geometry chain. The solve happens in
+   * the FEA runner (`run_fea`, and the evaluate-time gate when
+   * `minSafetyFactor` is declared), which reads this record and the shape it
+   * points at.
+   *
+   * ```ts
+   * const beam = box(200, 20, 10);
+   * beam.feaStudy({
+   *   material: 'mild-steel',
+   *   fixed: { atX: 0 },
+   *   loads: [{ faces: { atX: 200 }, force: [0, 0, -250] }],
+   *   minSafetyFactor: 2,
+   * });
+   * return beam;
+   * ```
+   *
+   * `fixed` and `loads[].faces` take the same selectors as the rest of the
+   * API: a `FaceQuery` object, or a `@kc[...]` face ref from `list_faces`.
+   * Forces are TOTALS in newtons over the selected faces, not per node.
+   *
+   * Malformed declarations throw `feature.invalid-args` at capture time; an
+   * unknown material grade throws with the valid grades named. Selectors that
+   * match no face surface as `fea.study.fixed-unresolved` /
+   * `fea.study.load-unresolved` when the study runs, because resolving them
+   * needs lowered geometry.
+   */
+  feaStudy(spec: FeaStudySpec): FeaStudyHandle {
+    const id = this.session.addFeaStudy(spec, { kind: 'feature', id: this.id });
+    const record = this.session.getRecords().find(r => r.id === id)!;
+    return { id, metadata: record.metadata as unknown as FeaStudyMetadata };
+  }
+
   color(name: ColorToken | `#${string}`): Shape {
     const records = this.session.getRecords();
     const record = records.find(r => r.id === this.id);

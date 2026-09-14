@@ -89,4 +89,8 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // Renders the model to PNG views on the local filesystem — does not change the
   // design, but writes image files (same class as capture_animation).
   render_preview: WRITES_FILE,
+  // run_fea shells out to CalculiX/gmsh and writes a solver deck + PNGs to
+  // disk, so it is neither read-only nor sandbox-local.
+  run_fea: WRITES_FILE,
+  fea_summary: READ,
 };

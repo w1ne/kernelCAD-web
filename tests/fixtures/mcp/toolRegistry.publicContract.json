@@ -4926,5 +4926,168 @@
       ],
       "additionalProperties": true
     }
+  },
+  {
+    "name": "run_fea",
+    "description": "Use this when you need to know whether a part will hold a load. Runs the linear-static structural study a script declares with `shape.feaStudy({ material, fixed, loads, meshSize?, minSafetyFactor? })`: meshes the solid with quadratic tetrahedra, solves it with CalculiX, and returns evidence — peak von Mises stress (MPa), peak displacement (mm), the minimum safety factor against the material yield, per-region hot spots named by @kc[...] face ref, mesh-quality trust flags, an equilibrium residual, and stress-heatmap PNG paths.\nRequires the external solver toolchain (CalculiX `ccx` plus the gmsh Python module). When it is absent the call fails with `fea.solver.unavailable` and the exact install command — never a silent pass.\nPass { file | code }, optional `study` (defaults to the last declared study), `output_dir` (keeps the .inp/.frd deck for reproduction), `mesh_size` (mm, overrides the study for this run), and `heatmaps: false` for a fast numbers-only run.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "Path to a .kcad.ts script declaring at least one feaStudy."
+        },
+        "code": {
+          "type": "string",
+          "description": "Inline kernelCAD script source (mutually exclusive with file)."
+        },
+        "study": {
+          "type": "string",
+          "description": "Name of the study to run; defaults to the last declared one."
+        },
+        "output_dir": {
+          "type": "string",
+          "description": "Directory for the solver deck, results, summary JSON and heatmap PNGs."
+        },
+        "mesh_size": {
+          "type": "number",
+          "description": "Target element size in mm, overriding the study for this run."
+        },
+        "heatmaps": {
+          "type": "boolean",
+          "description": "Render stress heatmap PNGs (default true)."
+        },
+        "mesh_timeout_ms": {
+          "type": "number",
+          "description": "Wall-clock budget for meshing (default 120000)."
+        },
+        "solve_timeout_ms": {
+          "type": "number",
+          "description": "Wall-clock budget for the solve (default 300000)."
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": true
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "description": "False when the study violated its declared minSafetyFactor, a selector did not resolve, or the solver toolchain is missing."
+        },
+        "summary": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Solved evidence: maxVonMisesMPa, maxVonMisesAt, maxDisplacementMm, maxDisplacementAt, minSafetyFactor (+ minSafetyFactorRequired), nodeCount/elementCount/meshSizeMm, quality (minSICN, meanSICN, lowQualityCount), maxStressErrorPercent, trust { meshTrusted, reasons }, hotSpots [{ region, maxVonMisesMPa, nodeId, at, safetyFactor }], appliedForceN / reactionForceN / equilibriumResidual, meshMs / solveMs."
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Absolute PNG paths of the rendered stress heatmap."
+        },
+        "legend": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Heatmap colour bands { color, fromMPa, toMPa } — the scale the PNGs are drawn on."
+        },
+        "out_dir": {
+          "type": "string",
+          "description": "Directory holding the summary JSON, solver deck and heatmap PNGs."
+        },
+        "artifacts": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Absolute paths of the BREP geometry handoff, .inp deck, .frd results and mesh JSON, for hand reproduction."
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "fea.* diagnostics raised by the run."
+        },
+        "error": {
+          "type": "string"
+        },
+        "errorCode": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "fea_summary",
+    "description": "Use this when you need a structural check's context without paying for a solve. Read-only: returns the stored summary of a previous run_fea (pass the same `output_dir`), whether the CalculiX + gmsh toolchain is available on this machine (with the install command when it is not), and the FEA material table with real E / Poisson / yield numbers so a grade is chosen against data rather than from memory. Never meshes, solves, or writes.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "output_dir": {
+          "type": "string",
+          "description": "Directory a previous run_fea wrote to; omit for toolchain status + material table only."
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "summary": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Stored summary of a previous run_fea in output_dir, when present."
+        },
+        "toolchain": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "{ available, ccx?, gmshVersion?, missing[], hint? } — whether a study can run here and how to fix it if not."
+        },
+        "materials": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Named grade -> { E (MPa), nu, yield (MPa) }."
+        },
+        "material_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Accepted material grade names."
+        },
+        "error": {
+          "type": "string"
+        },
+        "errorCode": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "toolchain",
+        "materials",
+        "material_names"
+      ],
+      "additionalProperties": true
+    }
   }
 ]

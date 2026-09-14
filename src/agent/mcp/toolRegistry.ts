@@ -3,6 +3,7 @@
 import { TOOL_ANNOTATIONS } from './toolAnnotations';
 import { TOOL_OUTPUT_SCHEMAS } from './toolOutputSchemas';
 import { catalogToolEntries } from './registry/catalogTools';
+import { feaToolEntries } from './registry/feaTools';
 import {
   coreRuntimeParameterToolEntries,
   coreRuntimePreludeToolEntries,
@@ -46,6 +47,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   // TOOL_REGISTRY, never inserted into an existing family, because the
   // registry order is a public contract kernelCAD-server depends on.
   ...referenceLedgerToolEntries,
+  // Appended last: the registry order is a public contract, so a new family
+  // goes on the end rather than renumbering the existing ones.
+  ...feaToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

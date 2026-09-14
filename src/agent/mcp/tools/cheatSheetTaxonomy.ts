@@ -155,7 +155,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   {
     task: 'Measure & verify',
     blurb: 'Ask the kernel what you actually built, and check it before shipping.',
-    names: ['boundingBox', 'bbox', 'length', 'lower', 'kinematic', 'dfmSpec'],
+    names: ['boundingBox', 'bbox', 'length', 'lower', 'kinematic', 'dfmSpec', 'feaStudy'],
   },
   {
     task: 'Parametrize',

@@ -13,6 +13,7 @@ import type { RenderEnvironmentSpec } from '../../shared/intent/renderEnvironmen
 import type { CameraTargetSpec } from '../../shared/intent/cameraTargetRecord';
 import type { AnimationViewSpec } from '../../shared/intent/animationViewRecord';
 import type { DfmSpec } from '../../shared/intent/dfmSpecRecord';
+import type { FeaStudySpec } from '../../shared/intent/feaStudyRecord';
 import { Curve3DProxy } from './curveProxy';
 import { lazyEvalCurve } from '../backends/occt/curve3dEval';
 import { Shape } from './proxy';
@@ -40,6 +41,7 @@ import {
 import {
   buildCurve3DFeatureSpec,
   buildDfmSpecFeatureSpec,
+  buildFeaStudyFeatureSpec,
   buildEmbossTextFeatureSpec,
   buildProjectCurveFeatureSpec,
   type Curve3DCaptureArgs,
@@ -450,6 +452,20 @@ export class CaptureSession {
    */
   addDfmSpec(args: DfmSpec): FeatureId {
     const r = this.register(buildDfmSpecFeatureSpec(args));
+    return r.id;
+  }
+
+  /**
+   * Capture a `feaStudy` record: a linear-static structural study declared on
+   * ONE shape. Virtual (no BREP output), like `addDfmSpec`, and validated
+   * eagerly for the same reason — a structural gate that silently disabled
+   * itself is worse than a build failure.
+   *
+   * `shapeRef` binds the study to the shape it analyses, so the runner never
+   * has to guess which body the declaration meant.
+   */
+  addFeaStudy(args: FeaStudySpec, shapeRef: FeatureRef): FeatureId {
+    const r = this.register(buildFeaStudyFeatureSpec(args, shapeRef));
     return r.id;
   }
 

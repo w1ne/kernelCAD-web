@@ -435,6 +435,7 @@ export class OcctLowerer implements FeatureLowerer {
     'renderEnvironment',// W2: HDRI / IBL virtual record; defense-in-depth guard
     'cameraTarget',     // Script-callable camera look-at override; virtual record; defense-in-depth guard
     'dfmSpec',          // W3: print-prep gate declaration; virtual record; defense-in-depth guard
+    'feaStudy',         // structural study declaration; virtual record; defense-in-depth guard
     'curve3d',          // NURBS Slice B: 3D NURBS curve → TopoDS_Edge on session.importedGeometry
     'variableSweep',    // NURBS Slice B Task 8: BRepOffsetAPI_MakePipeShell along a 3D spine
     'embossText',       // W3: emboss/engrave text onto a face (raise or recess via signed depth)
@@ -3149,6 +3150,12 @@ export class OcctLowerer implements FeatureLowerer {
         // Virtual record — no BREP output. recomputeEngine gates on
         // metadata.virtual === true and skips the lowerer; this arm is
         // defense-in-depth for direct callers.
+        return { shape: undefined as unknown as ShapeBackend, diagnostics };
+      }
+      case 'feaStudy': {
+        // Virtual record — no BREP output. The study is a DECLARATION; the
+        // solver run happens in the FEA runner, which reads this record's
+        // metadata and the shape it points at. Same shape as dfmSpec.
         return { shape: undefined as unknown as ShapeBackend, diagnostics };
       }
       case 'cameraTarget': {

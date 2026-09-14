@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 255 codes', () => {
+  it('emits exactly 260 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -70,8 +70,12 @@ describe('diagnostic catalogue invariants', () => {
     //   given a bad ledgerPath), reference.assumptions.unknown-resolution-id
     //   (resolve_assumptions given a resolution id absent from the ledger).
     //   = 251.
-    expect(DIAGNOSTIC_CODES).toHaveLength(255);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(255);
+    // + 5 structural FEA gate (fea.* — shape.feaStudy declaration + solver
+    //   run): fea.safety-factor.below-min, fea.mesh.quality-low,
+    //   fea.solver.unavailable, fea.study.fixed-unresolved,
+    //   fea.study.load-unresolved. = 253.
+    expect(DIAGNOSTIC_CODES).toHaveLength(260);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(260);
   });
 
   it('every code has a non-empty hint template', () => {

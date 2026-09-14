@@ -36,5 +36,8 @@
   "tolerance",
   "reference-image",
   "scale-anchor",
-  "assumption-ledger"
+  "assumption-ledger",
+  "fea",
+  "stress",
+  "load"
 ]

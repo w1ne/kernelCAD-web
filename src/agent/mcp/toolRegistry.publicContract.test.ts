@@ -15,6 +15,7 @@ import {
 import { catalogToolEntries } from './registry/catalogTools';
 import { coreRuntimeToolEntries } from './registry/coreRuntimeTools';
 import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools';
+import { feaToolEntries } from './registry/feaTools';
 import { inspectionVerificationToolEntries } from './registry/inspectionVerificationTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
@@ -61,6 +62,8 @@ const EXPECTED_TOOL_NAMES = [
   'capture_animation',
   'render_preview',
   'resolve_assumptions',
+  'run_fea',
+  'fea_summary',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -258,6 +261,13 @@ describe('toolRegistry public contract', () => {
     expect(names).toEqual(['resolve_assumptions']);
     expect(TOOL_REGISTRY.slice(38)).toEqual(referenceLedgerToolEntries);
     expect(TOOL_REGISTRY.at(-1)).toEqual(referenceLedgerToolEntries[referenceLedgerToolEntries.length - 1]);
+  });
+
+  it('composes the structural-FEA tools last, so existing tool indices never shift', () => {
+    const names = feaToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual(['run_fea', 'fea_summary']);
+    expect(TOOL_REGISTRY.slice(38)).toEqual(feaToolEntries);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {
