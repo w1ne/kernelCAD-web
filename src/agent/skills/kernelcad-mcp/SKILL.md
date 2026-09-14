@@ -31,7 +31,8 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 
 ### Diagnostics
 
-- `why_did_this_fail({ file? code?, feature_id? })` — walk the upstream chain of a failing feature; returns each upstream feature's id/kind/health/diagnostics in topological order (per-code hints already inline on every diagnostic). Use when `code` is `recompute.input.missing` to find the root cause.
+- `why_did_this_fail({ file? code?, feature_id?, diagnostic? })` — walk the upstream chain of a failing feature; returns each upstream feature's id/kind/health/diagnostics in topological order (per-code hints already inline on every diagnostic). Use when `code` is `recompute.input.missing` to find the root cause. Also returns `trace` (every feature joined to its call site, AST node range, inputs and dependents), `repairRegion` (the only lines an edit may touch), and ordered `candidates` with real patches — or `candidateStatus: 'no-automatic-candidate'` when no mechanical fix exists.
+- `repair_script({ file? code?, diagnostic?, strategy?, max_attempts? })` — apply those candidates one at a time, re-evaluate after each, and keep the first that clears the diagnostic without new errors. `strategy`: `'try-all'` (default), `'apply-first'`, `'dry-run'`. Returns `new_code` + `diff` + before/after health maps. Refuses any patch outside `repairRegion` (`tool.repair.out-of-region`). Load `kernelcad-repair` for the full loop.
 - `lookup_diagnostics({})` — return the full diagnostic catalogue with hint templates, structured next-actions, and per-code metadata (one-shot; useful at session start to pre-populate retry strategies).
 - `lookup_api({})` — full curated API surface (globals, Shape methods, Sketch methods, constrained-sketch capability)
 - `lookup_cookbook({ query, k? })` — retrieve up to k canonical pattern snippets ranked by BM25; returns `{ ok, hits[] }`. Empty hits is a valid success ("no canonical pattern; proceed without cookbook help").
@@ -383,3 +384,4 @@ See `cookbook/snippets/Q-S6-inspect-first-build-after.kcad.ts`.
 - `kernelcad-params` — `set_param({ code, param_name, new_value })` is the source-edit path for symbolic parameters.
 - `kernelcad-features` — face-ref queries and add-feature edits route through MCP.
 - `kernelcad-assemblies` — assembly-specific MCP tools (`inspect({ of: 'assembly' })`, `review_cad`, `design_loop`) and the mechanism build loop.
+- `kernelcad-repair` — the bounded repair loop on top of `why_did_this_fail` + `repair_script`, for when an evaluation failed.
