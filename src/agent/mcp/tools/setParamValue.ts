@@ -8,7 +8,7 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 export interface SetParamValueInput {
   code: string;
   param_name: string;
-  new_value: number | string;
+  new_value: number | string | boolean;
 }
 
 export interface SetParamValueOutput {

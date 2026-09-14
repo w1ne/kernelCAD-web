@@ -120,6 +120,64 @@ function ParamRow({ entry, updater, interference }: ParamRowProps): JSX.Element 
         );
     }
 
+    if (entry.type === 'choice') {
+        const choices = entry.meta?.choices ?? [];
+        return (
+            <li
+                className="flex items-center gap-3 h-6 px-3 text-xs text-gray-300"
+                data-testid={`param-row-${entry.name}`}
+            >
+                <span className="flex-1 truncate" title={entry.name}>
+                    {entry.name}
+                </span>
+                <select
+                    value={entry.value as string}
+                    onChange={(e) => {
+                        updater.commit([{ name: entry.name, value: e.target.value }]);
+                    }}
+                    aria-label={`${entry.name} value`}
+                    data-testid={`param-select-${entry.name}`}
+                    className="bg-[#1f1f1f] border border-[#333] rounded px-1 text-xs text-gray-200"
+                >
+                    {choices.map((choice) => (
+                        <option key={choice} value={choice}>
+                            {choice}
+                        </option>
+                    ))}
+                </select>
+            </li>
+        );
+    }
+
+    if (entry.type === 'string') {
+        return (
+            <li
+                className="flex items-center gap-3 h-6 px-3 text-xs text-gray-300"
+                data-testid={`param-row-${entry.name}`}
+            >
+                <span className="flex-1 truncate" title={entry.name}>
+                    {entry.name}
+                </span>
+                <input
+                    type="text"
+                    defaultValue={entry.value as string}
+                    maxLength={entry.meta?.maxLength}
+                    onBlur={(e) => {
+                        updater.commit([{ name: entry.name, value: e.target.value }]);
+                    }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            updater.commit([{ name: entry.name, value: (e.target as HTMLInputElement).value }]);
+                        }
+                    }}
+                    aria-label={`${entry.name} value`}
+                    data-testid={`param-text-${entry.name}`}
+                    className="bg-[#1f1f1f] border border-[#333] rounded px-1 text-xs text-gray-200 w-24"
+                />
+            </li>
+        );
+    }
+
     const value = entry.value as number;
     const min = entry.meta?.min;
     const max = entry.meta?.max;

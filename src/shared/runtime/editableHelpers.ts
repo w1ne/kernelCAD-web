@@ -4,16 +4,30 @@
 // records / numeric validation views. See spec §E.1, §E.3.
 
 import type { EditableVec3, Param, Unit, Vec3Param } from '../intent/types';
-import { isParamRef, paramExprToDebugString, type Editable } from './paramRef';
+import { isParamRef, isTypedParamRef, paramExprToDebugString, type Editable } from './paramRef';
 import type { ParamTable } from './paramTable';
 import { resolveExpr } from './resolveParams';
+import { KernelError } from '../intent/kernelError';
 
 /** Build a Param from an `Editable<number>` value. When the input is a
  *  ParamRef, the resulting Param carries `paramRef` so the dispatcher
  *  pre-resolve substitutes it at lower time. Leaf ParamRefs store the bare
  *  name string (back-compat with v0.4 captures); composed ParamRefs store
- *  the structured AST so the resolver can walk it. */
+ *  the structured AST so the resolver can walk it.
+ *
+ *  A `choice`/`string` TypedParamRef is not assignable to `Editable<number>`
+ *  in the type system (see `KernelCadApi.param` overloads), so this only
+ *  fires if a script bypasses typing (e.g. `as any`). Fail loudly instead of
+ *  crashing on the missing `_expr` field. */
 export function toParam(value: Editable<number>, unit: Unit): Param {
+  if (isTypedParamRef(value)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `A '${value._type}' ParamRef ('${value.$param}') cannot be used where a number is expected. Use .value for the string, or a numeric param() instead.`,
+      undefined,
+      `invalid-args.param.type-mismatch — a '${value._type}' ParamRef cannot be used as a numeric Editable; use .value.`,
+    );
+  }
   if (isParamRef(value)) {
     const expr = value._expr;
     if (expr.kind === 'param') {

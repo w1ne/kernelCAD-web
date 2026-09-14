@@ -123,7 +123,7 @@ export interface StudioRecomputeResult {
      * been issued yet (e.g. the legacy in-process script path) — UI should
      * fall back to disabling the live-edit controls.
      */
-    readonly updateParam?: (edits: { name: string; value: number | boolean }[]) => Promise<void>;
+    readonly updateParam?: (edits: { name: string; value: number | boolean | string }[]) => Promise<void>;
     readonly setGeometryTransformOverride?: (partName: string, transform: number[]) => void;
     readonly clearGeometryTransformOverrides?: () => void;
     /** Claim/release sole ownership of the part-transform override map for

@@ -112,7 +112,7 @@ export interface SessionRecomputeEngineHandle {
 /** Slice-3: input + result of `session.params.update`. See spec §E.6. */
 export interface ParamUpdateEdit {
   name: string;
-  value: number | boolean;
+  value: number | boolean | string;
 }
 
 export interface ParamUpdateResult {

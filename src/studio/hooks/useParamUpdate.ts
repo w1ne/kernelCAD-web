@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 /** Single param edit accepted by `updateParam` on the geometry context. */
-export type ParamEdit = { name: string; value: number | boolean };
+export type ParamEdit = { name: string; value: number | boolean | string };
 
 /** Shape of the raw `updateParam` plumbed through `GeometryContext` →
  *  `useRecomputeResult`. May be `undefined` before the session token has

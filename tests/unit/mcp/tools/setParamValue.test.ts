@@ -43,4 +43,41 @@ describe('setParamValueTool', () => {
     expect(r.ok).toBe(false);
     expect(r.error).toMatch(/multiple/i);
   });
+
+  it('replaces a boolean param value and re-evaluates successfully', async () => {
+    const code = `
+      const hasLid = param('HasLid', true);
+      let m = box(60, 40, 20);
+      if (hasLid.value) { m = m.chamfer('top', 1); }
+      return m;
+    `;
+    const r = await setParamValueTool({ code, param_name: 'HasLid', new_value: false });
+    expect(r.ok).toBe(true);
+    expect(r.new_code).toContain(`param('HasLid', false)`);
+    expect(r.diagnostics?.filter(d => d.severity === 'error')).toHaveLength(0);
+  });
+
+  it('replaces a choice param with a valid choice and re-evaluates successfully', async () => {
+    const code = `
+      const screw = param('Screw', 'M4', { choices: ['M3', 'M4', 'M5'] });
+      const diameters: Record<string, number> = { M3: 3.4, M4: 4.5, M5: 5.5 };
+      return box(60, 40, 5).hole('top', { u: 0, v: 0, diameter: diameters[screw.value], depth: 'through' });
+    `;
+    const r = await setParamValueTool({ code, param_name: 'Screw', new_value: 'M5' });
+    expect(r.ok).toBe(true);
+    expect(r.new_code).toContain(`param('Screw', 'M5',`);
+    expect(r.diagnostics?.filter(d => d.severity === 'error')).toHaveLength(0);
+  });
+
+  it('surfaces a choice-invalid diagnostic when the new value is not a declared choice', async () => {
+    const code = `
+      const screw = param('Screw', 'M4', { choices: ['M3', 'M4', 'M5'] });
+      const diameters: Record<string, number> = { M3: 3.4, M4: 4.5, M5: 5.5 };
+      return box(60, 40, 5).hole('top', { u: 0, v: 0, diameter: diameters[screw.value], depth: 'through' });
+    `;
+    const r = await setParamValueTool({ code, param_name: 'Screw', new_value: 'M8' });
+    expect(r.ok).toBe(false);
+    expect(r.new_code).toBeDefined();
+    expect(r.diagnostics).toBeDefined();
+  });
 });

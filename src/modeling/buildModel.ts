@@ -65,7 +65,7 @@ export interface BuiltModel {
 
 export interface ParamUpdateEdit {
   name: string;
-  value: number | boolean;
+  value: number | boolean | string;
 }
 
 export interface BuiltModelParamUpdateResult {
@@ -364,12 +364,26 @@ export async function updateModelParams(
 function validateParamEdits(session: CaptureSession, edits: ParamUpdateEdit[]): void {
   for (const edit of edits) {
     const entry = session.paramTable.get(edit.name);
-    if (typeof edit.value !== entry.type) {
+    // 'choice' and 'string' params are both JS strings — only 'number' and
+    // 'boolean' map 1:1 to their JS typeof. Full validation (choice
+    // membership, maxLength, numeric bounds) happens in `paramTable.set`
+    // below; this is a fast pre-check so a bad edit throws before any
+    // re-lower work starts.
+    const expectedJsType = entry.type === 'choice' || entry.type === 'string' ? 'string' : entry.type;
+    if (typeof edit.value !== expectedJsType) {
       throw new KernelError(
         'feature.invalid-args',
         `params.update: param '${edit.name}' is ${entry.type}, got ${typeof edit.value}.`,
         undefined,
         `invalid-args.param.type-mismatch — param '${edit.name}' is ${entry.type}, got ${typeof edit.value}`,
+      );
+    }
+    if (entry.type === 'choice' && entry.meta?.choices && !entry.meta.choices.includes(edit.value as string)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `params.update: param '${edit.name}' value '${edit.value}' is not one of the declared choices: ${entry.meta.choices.join(', ')}.`,
+        undefined,
+        `invalid-args.param.choice-invalid — param '${edit.name}' value '${edit.value}' is not one of [${entry.meta.choices.join(', ')}]`,
       );
     }
     if (entry.type === 'number' && entry.meta) {

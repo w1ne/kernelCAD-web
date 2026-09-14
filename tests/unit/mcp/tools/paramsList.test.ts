@@ -43,4 +43,35 @@ describe('paramsListTool', () => {
     const result = await paramsListTool({});
     expect(result.params).toEqual([]);
   });
+
+  it('lists choice and string params with choices/kind metadata', async () => {
+    const evalResult = await evaluateScriptTool({
+      code: `
+        const screw = param('Screw', 'M4', { choices: ['M3', 'M4', 'M5'] });
+        const label = param('Label', 'KCAD', { maxLength: 24 });
+        const diameters: Record<string, number> = { M3: 3.4, M4: 4.5, M5: 5.5 };
+        return box(60, 40, 5)
+          .hole('top', { u: 0, v: 0, diameter: diameters[screw.value], depth: 'through' });
+      `,
+    });
+    expect(evalResult.ok).toBe(true);
+
+    const result = await paramsListTool({});
+
+    expect(result.params).toEqual([
+      {
+        name: 'Screw',
+        type: 'choice',
+        value: 'M4',
+        defaultValue: 'M4',
+        choices: ['M3', 'M4', 'M5'],
+      },
+      {
+        name: 'Label',
+        type: 'string',
+        value: 'KCAD',
+        defaultValue: 'KCAD',
+      },
+    ]);
+  });
 });

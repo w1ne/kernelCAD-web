@@ -18,7 +18,7 @@ export interface SetParamValueResult {
 export function setParamValue(
   code: string,
   paramName: string,
-  newValue: number | string,
+  newValue: number | string | boolean,
 ): SetParamValueResult {
   // Match: `param(` ... <quoted name match> ... `,` ... <default value capture> ... `,` ... `)` OR `)`
   // Strategy: locate every `param(` call, parse its first arg as the literal name string,
@@ -94,7 +94,7 @@ export function setParamValue(
 
   const m = matches[0];
   const literal =
-    typeof newValue === 'number'
+    typeof newValue === 'number' || typeof newValue === 'boolean'
       ? String(newValue)
       : `'${String(newValue).replace(/'/g, "\\'")}'`;
   const new_code = code.slice(0, m.valueStart) + literal + code.slice(m.valueEnd);

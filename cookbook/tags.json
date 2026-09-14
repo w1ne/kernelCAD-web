@@ -52,5 +52,8 @@
   "diff",
   "cutout",
   "compare",
-  "revision"
+  "revision",
+  "typed-params",
+  "choice-param",
+  "boolean-feature-toggle"
 ]
