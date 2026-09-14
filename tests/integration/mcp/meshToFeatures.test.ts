@@ -41,6 +41,17 @@ const MODELS = {
   counterboredSpacer: `return box(30, 30, 12).hole('top', {
     u: 0, v: 0, diameter: 6.5, depth: 'through', counterbore: { diameter: 11, depth: 5 },
   });`,
+  // examples/bracket-with-hole.kcad.ts, verbatim: box, bore, .fillet(1) on every edge.
+  filletedBracket: readFileSync(new URL('../../../examples/bracket-with-hole.kcad.ts', import.meta.url), 'utf8'),
+  mixedFillets: `return box(80, 50, 8).fillet([
+    { edges: { parallel: [0, 0, 1] }, radius: 3 },
+    { edges: { atZ: 8, tolerance: 0.1 }, radius: 1 },
+  ]);`,
+  // A corner round whose radius grows from 1 mm to 4 mm along the part: a
+  // ruled loft between two rounded sections, not a constant-radius fillet.
+  variableBlend: `const a = path().moveTo(0, 0).lineTo(20, 0).lineTo(20, 9).threePointsArc(19, 10, 19.707, 9.707).lineTo(0, 10).close();
+    const b = path().moveTo(0, 0).lineTo(20, 0).lineTo(20, 6).threePointsArc(16, 10, 18.828, 8.828).lineTo(0, 10).close();
+    return a.loft(b, { planes: [{ plane: 'YZ', origin: [0, 0, 0] }, { plane: 'YZ', origin: [60, 0, 0] }], ruled: true });`,
 } as const;
 
 type ModelName = keyof typeof MODELS;
@@ -143,6 +154,37 @@ describe('mesh_to_features round trips', () => {
     expect(r.script).toContain('counterbore: {');
     await expectScriptEvaluates(r.script);
   }, 180000);
+
+  it('rebuilds the unseen filleted bracket (every edge rounded 1 mm) as a sharp body plus one fillet', async () => {
+    const r = await reconstructModel('filletedBracket');
+    expectFaithful(r);
+    expect(r.features.fillets).toEqual([{ radiusMm: 1, edges: 14 }]);
+    expect(r.features.holes).toEqual([expect.objectContaining({ count: 1, diameterMm: 8, kind: 'through' })]);
+    expect(r.script).toContain('.fillet(filletRadius)');
+    const fact = r.ledger.facts.find((f) => f.id === 'filletRadius');
+    expect(fact).toMatchObject({ kind: 'inferred', value: 1 });
+    await expectScriptEvaluates(r.script);
+  }, 240000);
+
+  it('recovers both radii of a plate with 3 mm vertical rounds and 1 mm top-edge rounds', async () => {
+    const r = await reconstructModel('mixedFillets');
+    expectFaithful(r);
+    expect([...r.features.fillets].sort((a, b) => a.radiusMm - b.radiusMm)).toEqual([
+      { radiusMm: 1, edges: 4 },
+      { radiusMm: 3, edges: 4 },
+    ]);
+    expect(r.script).toContain('{ edges: { parallel: [0, 0, 1] }, radius: fillet1Radius }');
+    expect(r.script).toContain('{ edges: { atZ: 8, tolerance: 0.01 }, radius: fillet2Radius }');
+    await expectScriptEvaluates(r.script);
+  }, 240000);
+
+  it('leaves a variable-radius blend approximate instead of forcing a fillet onto it', async () => {
+    const r = await reconstructModel('variableBlend');
+    expect(r.fidelity.verdict).toBe('approximate');
+    expect(r.features.fillets).toEqual([]);
+    expect(r.notRepresented.some((n) => /radius varies along the edge/.test(n))).toBe(true);
+    expect(r.diagnostics.map((d) => d.code)).toContain('reference.mesh.low-fidelity');
+  }, 240000);
 
   it('never calls an organic blob faithful and lists what it could not match', async () => {
     const r = await reconstructFromSoup(blobSoup(), occtReconstructionEvaluator, { sourceName: 'blob' });

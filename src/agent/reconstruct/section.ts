@@ -16,6 +16,8 @@ import { polygonSignedArea } from './geom';
 export interface SectionLoop {
   /** Flat [x0, y0, x1, y1, …], not repeated at the end. */
   xy: Float64Array;
+  /** Mesh triangle that produced the segment from point i to point i + 1. */
+  tris: Int32Array;
   /** Positive for an outer material boundary, negative for a hole. */
   signedArea: number;
 }
@@ -47,6 +49,7 @@ export function sliceAtZ(positions: Float64Array, triangles: Uint32Array, zReque
 
   const next = new Map<number, number>();
   const point = new Map<number, [number, number]>();
+  const segTri = new Map<number, number>();
   const triCount = triangles.length / 3;
   for (let t = 0; t < triCount; t++) {
     const i0 = triangles[t * 3], i1 = triangles[t * 3 + 1], i2 = triangles[t * 3 + 2];
@@ -81,6 +84,7 @@ export function sliceAtZ(positions: Float64Array, triangles: Uint32Array, zReque
     const to = forward ? q : p;
     if (from.key === to.key) continue;
     next.set(from.key, to.key);
+    segTri.set(from.key, t);
     point.set(from.key, [from.x, from.y]);
     point.set(to.key, [to.x, to.y]);
   }
@@ -91,12 +95,14 @@ export function sliceAtZ(positions: Float64Array, triangles: Uint32Array, zReque
   for (const start of next.keys()) {
     if (used.has(start)) continue;
     const coords: number[] = [];
+    const tris: number[] = [];
     let k = start;
     let closed = false;
     for (let guard = 0; guard <= next.size; guard++) {
       used.add(k);
       const p = point.get(k)!;
       coords.push(p[0], p[1]);
+      tris.push(segTri.get(k) ?? -1);
       const nk = next.get(k);
       if (nk === undefined) break;
       if (nk === start) {
@@ -111,7 +117,7 @@ export function sliceAtZ(positions: Float64Array, triangles: Uint32Array, zReque
       continue;
     }
     const xy = Float64Array.from(coords);
-    loops.push({ xy, signedArea: polygonSignedArea(xy) });
+    loops.push({ xy, tris: Int32Array.from(tris), signedArea: polygonSignedArea(xy) });
   }
   return { z, loops, openChains, materialArea: loops.reduce((s, l) => s + l.signedArea, 0) };
 }

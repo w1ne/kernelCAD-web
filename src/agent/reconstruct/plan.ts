@@ -31,6 +31,8 @@ import {
 import { FaceBook, fromFace2D, oppositeLabel, polygonRegion, type AxisLabel, type FacePiece, type Region } from './faces';
 import { pointInsideMesh } from './fidelity';
 import type { MeshAnalysis } from './analysis';
+import type { LoopGuide, RegionSection } from './profileFit';
+import type { EdgeQueryOut } from './blends';
 
 export interface PassParams {
   index: number;
@@ -42,6 +44,9 @@ export interface PassParams {
   angleTolDeg: number;
   /** Allow `depth: 'through'` where the lowerer's rule resolves it. */
   allowThroughKeyword: boolean;
+  /** Replace tangent corner arcs of outer profiles by sharp corners, so their
+   *  rounds can be re-created as edge fillets together with adjoining blends. */
+  sharpenCorners?: boolean;
 }
 
 export interface ParamDecl {
@@ -89,7 +94,8 @@ export type Op =
     }
   | { kind: 'cutout'; name: string; face: FaceRef; prims: ProfilePrim[]; depth: number; depthParam: string; at: V3 }
   | { kind: 'subtractCylinder'; name: string; axis: 'Z' | 'X' | 'Y'; base: V3; length: number; radius: number }
-  | { kind: 'subtractPrism'; name: string; prims: ProfilePrim[]; z0: number; length: number };
+  | { kind: 'subtractPrism'; name: string; prims: ProfilePrim[]; z0: number; length: number }
+  | { kind: 'fillet'; groups: Array<{ radius: number; radiusParam: string; edgeCount: number; selectors: Array<EdgeQueryOut | undefined> }> };
 
 export interface EntrySideAssumption {
   feature: string;
@@ -109,6 +115,8 @@ export interface FeaturePlan {
   /** Geometry this pass saw but could not express. */
   notRepresented: string[];
   holeSummary: Array<{ name: string; axis: 'Z' | 'X' | 'Y'; count: number; diameterMm: number; kind: 'through' | 'blind'; counterbore?: { diameterMm: number; depthMm: number } }>;
+  /** Tangent corner arcs turned into sharp corners (sharpenCorners passes). */
+  sharpenedArcs: number;
 }
 
 interface BandLoops {
@@ -159,6 +167,53 @@ function loopPolygon(l: FittedLoop): Float64Array {
   return primitivesToPolygon(loopPrimitives(l));
 }
 
+/**
+ * Labels each section segment with the wall plane (label p + 1) or coaxial
+ * cylinder (label −(c + 1)) whose triangle produced it, and resolves a label
+ * to that region's exact trace in the section plane at height `z`.
+ */
+function loopGuide(an: MeshAnalysis, z: number, tris: Int32Array): LoopGuide {
+  const { e1, e2, axis } = an.frame;
+  const rot = (v: readonly number[]) => [
+    v[0] * e1[0] + v[1] * e1[1] + v[2] * e1[2],
+    v[0] * e2[0] + v[1] * e2[1] + v[2] * e2[2],
+    v[0] * axis[0] + v[1] * axis[1] + v[2] * axis[2],
+  ];
+  const labels = Array.from(tris, (t) => {
+    if (t < 0) return 0;
+    const pl = an.seg.planeOf[t];
+    if (pl >= 0) return pl + 1;
+    const cy = an.seg.cylinderOf[t];
+    return cy >= 0 ? -(cy + 1) : 0;
+  });
+  const cache = new Map<number, RegionSection | undefined>();
+  return {
+    labels,
+    geometry(label: number): RegionSection | undefined {
+      if (cache.has(label)) return cache.get(label);
+      let out: RegionSection | undefined;
+      if (label > 0) {
+        const plane = an.seg.planes[label - 1];
+        const n = rot(plane.normal);
+        const nxy = Math.hypot(n[0], n[1]);
+        if (Math.abs(n[2]) <= Math.sin(2 * DEG) && nxy > 0) {
+          const d = plane.offset - n[2] * z;
+          out = { kind: 'line', px: (n[0] * d) / (nxy * nxy), py: (n[1] * d) / (nxy * nxy), dx: -n[1] / nxy, dy: n[0] / nxy };
+        }
+      } else if (label < 0) {
+        const c = an.seg.cylinders[-label - 1];
+        const a = rot(c.axis);
+        if (Math.abs(a[2]) >= Math.cos(2 * DEG) && c.coverageRad >= 10 * DEG) {
+          const o = rot(c.origin);
+          out = { kind: 'circle', cx: o[0], cy: o[1], r: c.radius };
+        }
+      }
+      cache.set(label, out);
+      return out;
+    },
+  };
+}
+
 function circleRegion(cx: number, cy: number, r: number): Region {
   return { poly: circleToPolygon(cx, cy, r, true), area: Math.PI * r * r, cx, cy };
 }
@@ -204,10 +259,11 @@ function cloneLoop(l: FittedLoop): FittedLoop {
 export function buildPlan(an: MeshAnalysis, pass: PassParams): FeaturePlan {
   const notRepresented: string[] = [];
   const literalSnaps: SnapRecord[] = [];
+  let sharpenedArcs = 0;
   const tol = Math.max(pass.eps, pass.snapTol, 1e-3);
 
   // ---- fit loops (canonical, unshifted) ---------------------------------------
-  const fitted = an.bands.map((b) => b.section.loops.map((l) => fitLoop(l.xy, pass.eps)));
+  const fitted = an.bands.map((b) => b.section.loops.map((l) => fitLoop(l.xy, pass.eps, loopGuide(an, b.section.z, l.tris))));
 
   // ---- origin -----------------------------------------------------------------
   const outerCircles = fitted.map((loops) => {
@@ -275,7 +331,18 @@ export function buildPlan(an: MeshAnalysis, pass: PassParams): FeaturePlan {
       literalSnaps.push(...recs);
       return c;
     });
-    const polys = snapped.map(loopPolygon);
+    let polys = snapped.map(loopPolygon);
+    if (pass.sharpenCorners) {
+      const depths = snapped.map((_, i) => nestingDepth(polys, i));
+      let changed = 0;
+      snapped.forEach((l, i) => {
+        if (depths[i] === 0) changed += sharpenFilletArcs(l);
+      });
+      if (changed > 0) {
+        sharpenedArcs += changed;
+        polys = snapped.map(loopPolygon);
+      }
+    }
     return {
       z0: levels[bi],
       z1: levels[bi + 1],
@@ -746,7 +813,55 @@ export function buildPlan(an: MeshAnalysis, pass: PassParams): FeaturePlan {
   remainderCyl.forEach((c, i) => ops.push({ kind: 'subtractCylinder', name: `bore${i + 1}`, axis: c.axis, base: c.base, length: c.length, radius: c.radius }));
   ops.push(...remainderPrisms);
 
-  return { pass, origin, body, ops, params, literalSnaps, entryAssumptions, notRepresented, holeSummary };
+  return { pass, origin, body, ops, params, literalSnaps, entryAssumptions, notRepresented, holeSummary, sharpenedArcs };
+}
+
+/**
+ * Remove tangent line–arc–line corner rounds from a snapped outer profile,
+ * leaving the sharp corner the two lines meet at. Returns how many arcs went.
+ */
+function sharpenFilletArcs(loop: FittedLoop): number {
+  if (loop.kind !== 'path') return 0;
+  let removed = 0;
+  for (let k = loop.segments.length - 1; k >= 0 && loop.segments.length > 3; k--) {
+    const n = loop.segments.length;
+    const seg = loop.segments[k];
+    const prev = loop.segments[(k - 1 + n) % n].geom;
+    const next = loop.segments[(k + 1) % n].geom;
+    if (seg.geom.kind !== 'arc' || prev.kind !== 'line' || next.kind !== 'line') continue;
+    const g = seg.geom;
+    const offset = (l: typeof prev) => Math.abs((g.cx - l.px) * -l.dy + (g.cy - l.py) * l.dx);
+    const tangentTol = Math.max(0.05 * g.r, 0.05);
+    if (Math.abs(offset(prev) - g.r) > tangentTol || Math.abs(offset(next) - g.r) > tangentTol) continue;
+    const cross = prev.dx * next.dy - prev.dy * next.dx;
+    const turn = Math.atan2(cross, prev.dx * next.dx + prev.dy * next.dy);
+    if (Math.abs(cross) < Math.sin(10 * DEG) || Math.abs(turn) > 120 * DEG) continue;
+    loop.segments.splice(k, 1);
+    removed++;
+  }
+  return removed;
+}
+
+/** Append one fillet feature (all radius groups) and its radius params. */
+export function withFillets(
+  plan: FeaturePlan,
+  groups: Array<{ radius: number; measured: number; snapped: boolean; grid: number; edges: number[]; selectors: Array<EdgeQueryOut | undefined> }>,
+): FeaturePlan {
+  const params = [...plan.params];
+  const single = groups.length === 1;
+  const opGroups = groups.map((g, i) => {
+    const name = single ? 'filletRadius' : `fillet${i + 1}Radius`;
+    params.push({
+      name,
+      value: g.radius,
+      measured: g.measured,
+      snapped: g.snapped,
+      grid: g.grid,
+      description: `Constant-radius blend on ${g.edges.length} edge(s).`,
+    });
+    return { radius: g.radius, radiusParam: name, edgeCount: g.edges.length, selectors: g.selectors };
+  });
+  return { ...plan, params, ops: [...plan.ops, { kind: 'fillet', groups: opGroups }] };
 }
 
 // ---------------------------------------------------------------------------

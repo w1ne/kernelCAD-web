@@ -66,7 +66,10 @@ export function cleanMesh(soup: TriangleSoup, opts: CleanOptions = {}): { mesh: 
   const tol = opts.weldToleranceMm ?? Math.max(1e-4, 1e-6 * diag);
 
   // --- weld (spatial hash with 27-cell neighbourhood) -----------------------
-  const cells = new Map<string, number[]>();
+  const cells = new Map<number, number[]>();
+  // Hashed cell key; a collision only adds candidates, which the distance
+  // check below rejects.
+  const cellKey = (ix: number, iy: number, iz: number) => ((ix * 73856093) ^ (iy * 19349663) ^ (iz * 83492791)) | 0;
   const verts: number[] = [];
   const remap = new Uint32Array(inputTriangles * 3);
   const inv = 1 / tol;
@@ -77,7 +80,7 @@ export function cleanMesh(soup: TriangleSoup, opts: CleanOptions = {}): { mesh: 
     for (let dx = -1; dx <= 1 && found < 0; dx++) {
       for (let dy = -1; dy <= 1 && found < 0; dy++) {
         for (let dz = -1; dz <= 1 && found < 0; dz++) {
-          const bucket = cells.get(`${ix + dx},${iy + dy},${iz + dz}`);
+          const bucket = cells.get(cellKey(ix + dx, iy + dy, iz + dz));
           if (!bucket) continue;
           for (const vi of bucket) {
             const ddx = verts[vi * 3] - x, ddy = verts[vi * 3 + 1] - y, ddz = verts[vi * 3 + 2] - z;
@@ -92,7 +95,7 @@ export function cleanMesh(soup: TriangleSoup, opts: CleanOptions = {}): { mesh: 
     if (found < 0) {
       found = verts.length / 3;
       verts.push(x, y, z);
-      const key = `${ix},${iy},${iz}`;
+      const key = cellKey(ix, iy, iz);
       const bucket = cells.get(key);
       if (bucket) bucket.push(found);
       else cells.set(key, [found]);

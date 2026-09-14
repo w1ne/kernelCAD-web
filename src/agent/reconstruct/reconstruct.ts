@@ -16,11 +16,13 @@ import type { AssumptionFact, AssumptionLedger } from '../vision/ledger';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
 import { analyseMesh, type MeshAnalysis, type UnmatchedCandidate, type UnmatchedRegion } from './analysis';
-import { buildPlan, type FeaturePlan, type PassParams } from './plan';
+import { buildPlan, withFillets, type FeaturePlan, type PassParams } from './plan';
+import { detectEdgeBlends, groupBlends, selectorsForGroup } from './blends';
 import { emitScript, num } from './emit';
 import {
   classifyFidelity,
   maxDistanceToMesh,
+  pointInsideMesh,
   surfaceDeviation,
   volumeIoU,
   type FidelityThresholds,
@@ -28,11 +30,22 @@ import {
   type TriMesh,
 } from './fidelity';
 import type { MeshReport } from './meshClean';
+import type { SharpEdge } from './blends';
 import type { TriangleSoup } from './meshIO';
 
 export type ReconstructEvaluator = (
   script: string,
-) => Promise<{ ok: true; mesh: TriMesh; holes?: Array<{ diameterMm: number; depthMm: number; kind: 'blind' | 'through' }> } | { ok: false; error: string; errorCode?: string }>;
+  opts?: { withEdges?: boolean; withHoles?: boolean },
+) => Promise<
+  | {
+      ok: true;
+      mesh: TriMesh;
+      holes?: Array<{ diameterMm: number; depthMm: number; kind: 'blind' | 'through' }>;
+      /** Sharp-model edges with adjacent-face normals, when `withEdges` was asked for. */
+      edges?: SharpEdge[];
+    }
+  | { ok: false; error: string; errorCode?: string }
+>;
 
 export interface ReconstructOptions {
   /** Name shown in the script banner. */
@@ -61,6 +74,9 @@ export interface FidelityReport {
 
 export interface PassSummary {
   pass: number;
+  /** Which reading of the pass this is: the plain profile, the profile with
+   *  corner rounds made sharp, or either one with measured edge fillets. */
+  variant: 'sharp' | 'sharpened' | 'fillets' | 'sharpened+fillets';
   epsMm: number;
   snapToleranceMm: number;
   ok: boolean;
@@ -84,6 +100,8 @@ export interface ReconstructSuccess {
     bodyBlocks: number;
     holes: FeaturePlan['holeSummary'];
     cutouts: number;
+    /** Constant-radius edge blends emitted as fillets. */
+    fillets: Array<{ radiusMm: number; edges: number }>;
     booleanRemainders: number;
     params: Array<{ name: string; value: number; measured: number; snapped: boolean }>;
     extrusionAxis: [number, number, number];
@@ -111,6 +129,8 @@ interface PassOutcome {
   script: string;
   summary: PassSummary;
   unmatched?: UnmatchedRegion[];
+  /** Blend measurements that did not become fillets (variable radius, partial…). */
+  blendNotes?: string[];
   metrics?: { volumeIoU: number; maxDeviationMm: number; rmsMm: number; reconVolume: number; meshVolume: number };
   holes?: Array<{ diameterMm: number; depthMm: number; kind: 'blind' | 'through' }>;
 }
@@ -153,27 +173,19 @@ export async function reconstructFromSoup(
   const meshTri: TriMesh = { positions: analysis.mesh.positions, indices: analysis.mesh.triangles };
   const outcomes: PassOutcome[] = [];
   let winner: PassOutcome | undefined;
-  for (const pass of schedule) {
-    let plan: FeaturePlan;
-    try {
-      plan = buildPlan(analysis, pass);
-    } catch (e) {
-      outcomes.push({
-        plan: undefined as unknown as FeaturePlan,
-        script: '',
-        summary: { pass: pass.index, epsMm: pass.eps, snapToleranceMm: pass.snapTol, ok: false, error: `planning failed: ${e instanceof Error ? e.message : String(e)}` },
-      });
-      continue;
-    }
+
+  const measure = async (plan: FeaturePlan, variant: PassSummary['variant'], withEdges: boolean): Promise<{ outcome: PassOutcome; edges?: SharpEdge[]; mesh?: TriMesh }> => {
+    const pass = plan.pass;
     const script = emitScript(plan, { frame: analysis.frame, sourceName });
-    const evaluated = await evaluate(script);
+    const evaluated = await evaluate(script, { withEdges });
     if (!evaluated.ok) {
-      outcomes.push({
-        plan,
-        script,
-        summary: { pass: pass.index, epsMm: pass.eps, snapToleranceMm: pass.snapTol, ok: false, error: evaluated.error, errorCode: evaluated.errorCode },
-      });
-      continue;
+      return {
+        outcome: {
+          plan,
+          script,
+          summary: { pass: pass.index, variant, epsMm: pass.eps, snapToleranceMm: pass.snapTol, ok: false, error: evaluated.error, errorCode: evaluated.errorCode },
+        },
+      };
     }
     const iou = volumeIoU(meshTri, evaluated.mesh);
     const dev = surfaceDeviation(meshTri, evaluated.mesh);
@@ -186,32 +198,96 @@ export async function reconstructFromSoup(
     };
     const unmatched = unmatchedAgainst(analysis, evaluated.mesh, thresholds.maxDeviationMm);
     const verdict = classifyFidelity(metrics, thresholds, analysis.report.watertight, unmatched.length);
-    const outcome: PassOutcome = {
-      plan,
-      script,
-      metrics,
-      unmatched,
-      holes: evaluated.holes,
-      summary: {
-        pass: pass.index,
-        epsMm: pass.eps,
-        snapToleranceMm: pass.snapTol,
-        ok: true,
-        volumeIoU: metrics.volumeIoU,
-        maxDeviationMm: metrics.maxDeviationMm,
-        rmsMm: metrics.rmsMm,
-        verdict,
+    return {
+      outcome: {
+        plan,
+        script,
+        metrics,
+        unmatched,
+        holes: evaluated.holes,
+        summary: {
+          pass: pass.index,
+          variant,
+          epsMm: pass.eps,
+          snapToleranceMm: pass.snapTol,
+          ok: true,
+          volumeIoU: metrics.volumeIoU,
+          maxDeviationMm: metrics.maxDeviationMm,
+          rmsMm: metrics.rmsMm,
+          verdict,
+        },
       },
+      edges: evaluated.edges,
+      mesh: evaluated.mesh,
     };
-    outcomes.push(outcome);
-    if (verdict === 'faithful') {
-      winner = outcome;
+  };
+
+  for (const pass of schedule) {
+    let plan: FeaturePlan;
+    try {
+      plan = buildPlan(analysis, pass);
+    } catch (e) {
+      outcomes.push({
+        plan: undefined as unknown as FeaturePlan,
+        script: '',
+        summary: { pass: pass.index, variant: 'sharp', epsMm: pass.eps, snapToleranceMm: pass.snapTol, ok: false, error: `planning failed: ${e instanceof Error ? e.message : String(e)}` },
+      });
+      continue;
+    }
+    const base = await measure(plan, 'sharp', false);
+    outcomes.push(base.outcome);
+    if (base.outcome.summary.verdict === 'faithful') {
+      winner = base.outcome;
       break;
     }
+    // Blends change a part by a thin skin along its edges; a reading that is
+    // further off than that (a freeform body, a wrong axis) is not one blend
+    // search away from faithful, so do not spend kernel fillets on it.
+    if (!base.outcome.metrics || base.outcome.metrics.volumeIoU < 0.95) continue;
+    // Not faithful: read the sharp model's edges to look for blends.
+    const withEdges = await evaluate(base.outcome.script, { withEdges: true });
+    if (!withEdges.ok || !withEdges.edges) continue;
+    base.edges = withEdges.edges;
+    base.mesh = withEdges.mesh;
+
+    // Edge blends: first on a profile whose tangent corner rounds are made
+    // sharp (so every round, cap edge or corner, becomes one fillet feature
+    // and the kernel builds the corner patches), then on the plain profile.
+    const attempts: Array<{ plan: FeaturePlan; variant: PassSummary['variant'] }> = [];
+    const sharpened = buildPlan(analysis, { ...pass, sharpenCorners: true });
+    if (sharpened.sharpenedArcs > 0) {
+      const sharp = await measure(sharpened, 'sharpened', true);
+      if (sharp.edges && sharp.mesh) {
+        const f = filletPlan(analysis, sharpened, sharp.edges, sharp.mesh);
+        base.outcome.blendNotes = f.notes;
+        if (f.plan) attempts.push({ plan: f.plan, variant: 'sharpened+fillets' });
+      }
+    }
+    const plain = filletPlan(analysis, plan, base.edges, base.mesh);
+    if (!base.outcome.blendNotes) base.outcome.blendNotes = plain.notes;
+    if (plain.plan) attempts.push({ plan: plain.plan, variant: 'fillets' });
+    let done = false;
+    for (const a of attempts) {
+      const r = await measure(a.plan, a.variant, false);
+      r.outcome.blendNotes = base.outcome.blendNotes;
+      outcomes.push(r.outcome);
+      if (r.outcome.summary.verdict === 'faithful') {
+        winner = r.outcome;
+        done = true;
+        break;
+      }
+    }
+    if (done) break;
   }
   if (!winner) {
+    const rank = { faithful: 0, approximate: 1, failed: 2 } as const;
     const measured = outcomes.filter((o) => o.metrics);
-    measured.sort((a, b) => b.metrics!.volumeIoU - a.metrics!.volumeIoU || a.metrics!.maxDeviationMm - b.metrics!.maxDeviationMm);
+    measured.sort(
+      (a, b) =>
+        rank[a.summary.verdict!] - rank[b.summary.verdict!] ||
+        Math.round(1e4 * (b.metrics!.volumeIoU - a.metrics!.volumeIoU)) ||
+        a.metrics!.maxDeviationMm - b.metrics!.maxDeviationMm,
+    );
     winner = measured[0];
   }
   const passes = outcomes.map((o) => o.summary);
@@ -248,8 +324,12 @@ export async function reconstructFromSoup(
     ],
   });
 
+  // The B-rep hole detector runs once, on the script that is returned.
+  const final = await evaluate(winner.script, { withHoles: true });
+  if (final.ok && final.holes) winner.holes = final.holes;
   const unmatched = winner.unmatched ?? [];
-  const ledger = buildMeshLedger(analysis, winner.plan, soup, unmatched);
+  const notRepresented = [...winner.plan.notRepresented, ...(winner.blendNotes ?? [])];
+  const ledger = buildMeshLedger(analysis, { ...winner.plan, notRepresented }, soup, unmatched);
   const diagnostics = buildDiagnostics(analysis, fidelity, unmatched);
   const plan = winner.plan;
   return {
@@ -264,19 +344,112 @@ export async function reconstructFromSoup(
       bodyBlocks: plan.body.kind === 'revolve' ? plan.body.steps.length : plan.body.blocks.length,
       holes: plan.holeSummary,
       cutouts: plan.ops.filter((o) => o.kind === 'cutout').length,
+      fillets: plan.ops.flatMap((o) => (o.kind === 'fillet' ? o.groups.map((g) => ({ radiusMm: g.radius, edges: g.edgeCount })) : [])),
       booleanRemainders: plan.ops.filter((o) => o.kind === 'subtractCylinder' || o.kind === 'subtractPrism').length,
       params: plan.params.map((p) => ({ name: p.name, value: p.value, measured: round6(p.measured), snapped: p.snapped })),
       extrusionAxis: analysis.frame.axis,
     },
     ...(winner.holes ? { reconstructedHoles: winner.holes } : {}),
     passes,
-    notRepresented: plan.notRepresented,
+    notRepresented,
     diagnostics,
   };
 }
 
 function round6(v: number): number {
   return Math.round(v * 1e6) / 1e6;
+}
+
+/**
+ * Measure constant-radius blends of the mesh on the edges of an evaluated
+ * sharp plan and, when any are found, return the plan with one fillet
+ * feature appended. `edges` / `sharpMesh` are in the mesh's own frame.
+ */
+function filletPlan(
+  an: MeshAnalysis,
+  plan: FeaturePlan,
+  edges: SharpEdge[],
+  sharpMesh: TriMesh,
+): { plan?: FeaturePlan; notes: string[] } {
+  const { e1, e2, axis } = an.frame;
+  const o = plan.origin;
+  const rot = (v: readonly number[]): [number, number, number] => [
+    v[0] * e1[0] + v[1] * e1[1] + v[2] * e1[2],
+    v[0] * e2[0] + v[1] * e2[1] + v[2] * e2[2],
+    v[0] * axis[0] + v[1] * axis[1] + v[2] * axis[2],
+  ];
+  const toEmit = (p: readonly number[]): [number, number, number] => {
+    const r = rot(p);
+    return [r[0] - o[0], r[1] - o[1], r[2] - o[2]];
+  };
+  const canonical: SharpEdge[] = edges.map((e) => {
+    let convex: boolean | undefined;
+    if (e.samples.length >= 2) {
+      const m = e.samples[e.samples.length >> 1];
+      const dir = [m.nA[0] + m.nB[0], m.nA[1] + m.nB[1], m.nA[2] + m.nB[2]];
+      const dl = Math.hypot(dir[0], dir[1], dir[2]);
+      if (dl > 1e-6) {
+        const delta = 0.05;
+        convex = pointInsideMesh(sharpMesh, m.p[0] - (delta * dir[0]) / dl, m.p[1] - (delta * dir[1]) / dl, m.p[2] - (delta * dir[2]) / dl);
+      }
+    }
+    return {
+      ...e,
+      start: toEmit(e.start),
+      end: toEmit(e.end),
+      samples: e.samples.map((smp) => ({ p: toEmit(smp.p), nA: rot(smp.nA), nB: rot(smp.nB) })),
+      ...(convex !== undefined ? { convex } : {}),
+    };
+  });
+  // Surface samples: sub-triangle centroids, finer on long triangles (a ruled
+  // strip spanning a whole edge must be seen along its length), each weighted
+  // by the area it stands for so a densely meshed corner patch cannot outvote
+  // a long, coarsely meshed blend.
+  const step = Math.max(0.5, 0.01 * an.diagonal);
+  const coords: number[] = [];
+  const wts: number[] = [];
+  const tri = an.mesh.triangles;
+  const c = an.canonical;
+  for (let t = 0; t < an.mesh.areas.length; t++) {
+    const ia = tri[t * 3] * 3, ib = tri[t * 3 + 1] * 3, ic = tri[t * 3 + 2] * 3;
+    const longest = Math.max(
+      Math.hypot(c[ia] - c[ib], c[ia + 1] - c[ib + 1], c[ia + 2] - c[ib + 2]),
+      Math.hypot(c[ib] - c[ic], c[ib + 1] - c[ic + 1], c[ib + 2] - c[ic + 2]),
+      Math.hypot(c[ic] - c[ia], c[ic + 1] - c[ia + 1], c[ic + 2] - c[ia + 2]),
+    );
+    const m = Math.min(8, Math.max(1, Math.ceil(longest / step)));
+    const w = an.mesh.areas[t] / (m * m);
+    for (let i = 0; i < m; i++) {
+      for (let j = 0; j < m - i; j++) {
+        // Upward and (when present) downward sub-triangle centroids.
+        for (const [u, v] of [[i + 1 / 3, j + 1 / 3], [i + 2 / 3, j + 2 / 3]] as const) {
+          if (u + v > m) continue;
+          const a = u / m, b = v / m, g = 1 - a - b;
+          for (let k = 0; k < 3; k++) coords.push(g * c[ia + k] + a * c[ib + k] + b * c[ic + k] - o[k]);
+          wts.push(w);
+        }
+      }
+    }
+  }
+  const depthTol = Math.max(0.01, 3 * an.seg.noiseMm);
+  const detection = detectEdgeBlends(Float64Array.from(coords), Float64Array.from(wts), canonical, depthTol, 0.12 * an.diagonal);
+  const notes = detection.rejected.map(
+    (r) => `edge blend near (${edgeMid(canonical[r.edge]).map(num).join(', ')}) not filleted: ${r.reason} (median r ${num(r.medianRadius)} mm, spread ${num(r.spread)} mm over ${r.count} samples).`,
+  );
+  if (detection.blends.length === 0) return { notes };
+  const groups = groupBlends(detection.blends, plan.pass.snapTol)
+    .map((g) => ({ ...g, selectors: selectorsForGroup(canonical, g.edges) }))
+    .filter((g): g is typeof g & { selectors: NonNullable<typeof g.selectors> } => {
+      if (g.selectors) return true;
+      notes.push(`fillet r ${num(g.radius)} mm on ${g.edges.length} edge(s) skipped: no edge query singles those edges out.`);
+      return false;
+    });
+  if (groups.length === 0) return { notes };
+  return { plan: withFillets(plan, groups), notes };
+}
+
+function edgeMid(e: SharpEdge): [number, number, number] {
+  return [(e.start[0] + e.end[0]) / 2, (e.start[1] + e.end[1]) / 2, (e.start[2] + e.end[2]) / 2];
 }
 
 /**

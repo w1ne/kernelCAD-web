@@ -104,7 +104,7 @@ export function segmentMesh(mesh: IndexedMesh, opts: SegmentOptions = {}): Segme
   const floor = opts.toleranceFloorMm ?? Math.max(0.02, 2.5e-4 * diag);
   const totalArea = mesh.areas.reduce((s, a) => s + a, 0);
 
-  const loose = growPlanes(mesh, Math.max(floor * 2.5, 0.05), totalArea);
+  const loose = growPlanes(mesh, Math.max(floor * 2.5, 0.05), totalArea, true);
   let wSum = 0;
   let rSum = 0;
   // Noise probes: regions bounded almost entirely by creases, measured by
@@ -237,13 +237,34 @@ function edgeLength(mesh: IndexedMesh, t: number, k: number): number {
   return Math.hypot(p[a] - p[b], p[a + 1] - p[b + 1], p[a + 2] - p[b + 2]);
 }
 
-function growPlanes(mesh: IndexedMesh, tol: number, totalArea: number): PlaneRegion[] {
+const altitudeCache = new WeakMap<IndexedMesh, Float64Array>();
+
+/** Per-triangle altitude over its longest edge (how far a vertex can move
+ *  before the normal is meaningless). Cached per mesh. */
+function altitudes(mesh: IndexedMesh): Float64Array {
+  let a = altitudeCache.get(mesh);
+  if (a) return a;
+  const n = mesh.areas.length;
+  a = new Float64Array(n);
+  for (let t = 0; t < n; t++) {
+    const longest = Math.max(edgeLength(mesh, t, 0), edgeLength(mesh, t, 1), edgeLength(mesh, t, 2));
+    a[t] = longest > 0 ? (2 * mesh.areas[t]) / longest : 0;
+  }
+  altitudeCache.set(mesh, a);
+  return a;
+}
+
+function growPlanes(mesh: IndexedMesh, tol: number, totalArea: number, robust = false): PlaneRegion[] {
   const triCount = mesh.areas.length;
   const order = Array.from({ length: triCount }, (_, i) => i).sort((a, b) => mesh.areas[b] - mesh.areas[a]);
   const owner = new Int32Array(triCount).fill(-1);
   const tried = new Uint8Array(triCount);
+  const stampOf = new Int32Array(triCount);
+  const alt = altitudes(mesh);
   const planes: PlaneRegion[] = [];
   const minSeedArea = tol * tol;
+  const cos20 = Math.cos((20 * Math.PI) / 180);
+  let stamp = 0;
 
   const withinPlane = (t: number, n: V3, d: number, within: number): boolean => {
     for (let k = 0; k < 3; k++) {
@@ -254,62 +275,86 @@ function growPlanes(mesh: IndexedMesh, tol: number, totalArea: number): PlaneReg
     return true;
   };
 
+  const grow = (seed: number, n: V3, d: number, within: number): number[] => {
+    stamp++;
+    stampOf[seed] = stamp;
+    const queue = [seed];
+    const region = [seed];
+    while (queue.length > 0) {
+      const t = queue.pop()!;
+      for (let k = 0; k < 3; k++) {
+        const nb = mesh.neighbors[t * 3 + k];
+        if (nb < 0 || stampOf[nb] === stamp || owner[nb] >= 0) continue;
+        const dn = mesh.normals[nb * 3] * n[0] + mesh.normals[nb * 3 + 1] * n[1] + mesh.normals[nb * 3 + 2] * n[2];
+        // Normal agreement is required only for triangles tall enough for
+        // their normal to be trustworthy; slivers join on distance alone.
+        if (alt[nb] > 10 * tol && dn < cos20) continue;
+        if (dn < 0) continue;
+        if (!withinPlane(nb, n, d, within)) continue;
+        stampOf[nb] = stamp;
+        region.push(nb);
+        queue.push(nb);
+      }
+    }
+    return region;
+  };
+
   for (const seed of order) {
     if (owner[seed] >= 0 || tried[seed]) continue;
     tried[seed] = 1;
     if (mesh.areas[seed] < minSeedArea) break; // sorted: every later seed is smaller
-    let n = triNormal(mesh, seed);
-    let d = dot3(n, vertex(mesh, mesh.triangles[seed * 3]));
-    let region: number[] = [];
+    const n0 = triNormal(mesh, seed);
+    const d0 = dot3(n0, vertex(mesh, mesh.triangles[seed * 3]));
     // Two growth rounds: grow loosely from the seed triangle's plane (on a
     // noisy mesh a single triangle's plane is itself off by the noise), refit,
     // then regrow from scratch at the real tolerance against the fitted plane.
-    for (let round = 0; round < 2; round++) {
-      const roundTol = round === 0 ? 2 * tol : tol;
-      const inRegion = new Set<number>([seed]);
-      const queue = [seed];
-      region = [seed];
-      while (queue.length > 0) {
-        const t = queue.pop()!;
-        for (let k = 0; k < 3; k++) {
-          const nb = mesh.neighbors[t * 3 + k];
-          if (nb < 0 || inRegion.has(nb) || owner[nb] >= 0) continue;
-          const nbN = triNormal(mesh, nb);
-          // Normal agreement is required only for triangles tall enough for
-          // their normal to be trustworthy; slivers join on distance alone.
-          const longest = Math.max(edgeLength(mesh, nb, 0), edgeLength(mesh, nb, 1), edgeLength(mesh, nb, 2));
-          const altitude = longest > 0 ? (2 * mesh.areas[nb]) / longest : 0;
-          if (altitude > 10 * tol && dot3(nbN, n) < Math.cos((20 * Math.PI) / 180)) continue;
-          if (dot3(nbN, n) < 0) continue;
-          if (!withinPlane(nb, n, d, roundTol)) continue;
-          inRegion.add(nb);
-          region.push(nb);
-          queue.push(nb);
-        }
-      }
-      const fit = fitPlane(mesh, region);
-      if (!fit) break;
-      n = fit.normal;
-      d = fit.offset;
+    let region = grow(seed, n0, d0, 2 * tol);
+    let area0 = 0;
+    for (const t of region) area0 += mesh.areas[t];
+    if (area0 < 25 * tol * tol && area0 < 0.02 * totalArea) {
+      // Even the loose growth is too small to become a plane: skip the refit.
+      for (const t of region) tried[t] = 1;
+      continue;
     }
-    const fit = fitPlane(mesh, region);
-    if (!fit) continue;
-    const area = region.reduce((s, t) => s + mesh.areas[t], 0);
-    const regionSet = new Set(region);
+    if (region.length >= 3) {
+      const first = fitPlane(mesh, region, false);
+      region = first ? grow(seed, first.normal, first.offset, tol) : grow(seed, n0, d0, tol);
+    } else {
+      region = grow(seed, n0, d0, tol);
+    }
+    let area = 0;
+    for (const t of region) area += mesh.areas[t];
+    const big = area >= 0.02 * totalArea;
+    const reject = () => {
+      // Every triangle of a rejected region is a poor seed too (a facet strip
+      // on a round); later seeds can still grow into them.
+      for (const t of region) tried[t] = 1;
+    };
+    if (!big && area < 25 * tol * tol) {
+      reject();
+      continue;
+    }
     let boundary = 0;
     let sharp = 0;
     for (const t of region) {
       for (let k = 0; k < 3; k++) {
         const nb = mesh.neighbors[t * 3 + k];
-        if (nb >= 0 && regionSet.has(nb)) continue;
+        if (nb >= 0 && stampOf[nb] === stamp) continue;
         const len = edgeLength(mesh, t, k);
         boundary += len;
         if (nb < 0 || dot3(triNormal(mesh, t), triNormal(mesh, nb)) < SHARP_COS) sharp += len;
       }
     }
     const sharpBoundaryFraction = boundary > 0 ? sharp / boundary : 1;
-    const big = area >= 0.02 * totalArea;
-    if (!(big || (sharpBoundaryFraction >= 0.25 && area >= 25 * tol * tol))) continue;
+    if (!(big || sharpBoundaryFraction >= 0.25)) {
+      reject();
+      continue;
+    }
+    const fit = fitPlane(mesh, region, robust);
+    if (!fit) {
+      reject();
+      continue;
+    }
     const id = planes.length;
     for (const t of region) owner[t] = id;
     planes.push({
@@ -331,6 +376,7 @@ function growPlanes(mesh: IndexedMesh, tol: number, totalArea: number): PlaneReg
 function fitPlane(
   mesh: IndexedMesh,
   tris: number[],
+  robust = true,
 ): { normal: V3; offset: number; centroid: V3; rms: number; robustSigma: number } | null {
   let area = 0;
   const nSum: V3 = [0, 0, 0];
@@ -345,10 +391,46 @@ function fitPlane(
     }
   }
   if (area <= 0) return null;
-  const normal = normalize3(nSum);
+  let normal = normalize3(nSum);
   if (normal[0] === 0 && normal[1] === 0 && normal[2] === 0) return null;
+  // Refit without triangles tilted more than 3° from the first estimate: a
+  // region that crept onto the first facets of a neighbouring round would
+  // otherwise tilt its plane towards it.
+  const cos3 = Math.cos((3 * Math.PI) / 180);
+  let area2 = 0;
+  const n2: V3 = [0, 0, 0];
+  const c2: V3 = [0, 0, 0];
+  for (const t of tris) {
+    const tn = triNormal(mesh, t);
+    if (dot3(tn, normal) < cos3) continue;
+    const a = mesh.areas[t];
+    area2 += a;
+    for (let k = 0; k < 3; k++) n2[k] += tn[k] * a;
+    for (let j = 0; j < 3; j++) {
+      const v = mesh.triangles[t * 3 + j] * 3;
+      for (let k = 0; k < 3; k++) c2[k] += (mesh.positions[v + k] * a) / 3;
+    }
+  }
+  if (area2 >= 0.5 * area) {
+    normal = normalize3(n2);
+    c[0] = c2[0]; c[1] = c2[1]; c[2] = c2[2];
+    area = area2;
+  }
   const centroid: V3 = [c[0] / area, c[1] / area, c[2] / area];
   const offset = dot3(normal, centroid);
+  if (!robust) {
+    let sq = 0;
+    let cnt = 0;
+    for (const t of tris) {
+      for (let j = 0; j < 3; j++) {
+        const v = mesh.triangles[t * 3 + j] * 3;
+        const dist = mesh.positions[v] * normal[0] + mesh.positions[v + 1] * normal[1] + mesh.positions[v + 2] * normal[2] - offset;
+        sq += dist * dist;
+        cnt++;
+      }
+    }
+    return { normal, offset, centroid, rms: Math.sqrt(sq / Math.max(1, cnt)), robustSigma: 0 };
+  }
   let sq = 0;
   const dists: number[] = [];
   const seen = new Set<number>();

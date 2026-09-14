@@ -12,6 +12,7 @@ import { arcMidpoint, type ProfilePrim } from './profileFit';
 import { rotationToAxisAngle, type V3 } from './geom';
 import type { CanonicalFrame } from './frame';
 import type { FaceRef, FeaturePlan, LoopOut, Op } from './plan';
+import type { EdgeQueryOut } from './blends';
 
 export interface EmitContext {
   frame: CanonicalFrame;
@@ -213,6 +214,17 @@ function emitOp(op: Op): string {
         `  .subtract(cylinder(${num(op.length)}, ${num(op.radius)})${orient}.translate(${op.base.map(num).join(', ')}))`,
       ].join('\n');
     }
+    case 'fillet': {
+      const edgesTotal = op.groups.reduce((n, g) => n + g.edgeCount, 0);
+      const head = `  // Constant-radius edge blends measured on the mesh (${edgesTotal} edge(s)); corner patches come from filleting the meeting edges together.`;
+      if (op.groups.length === 1 && op.groups[0].selectors.length === 1) {
+        const g = op.groups[0];
+        const sel = g.selectors[0];
+        return [head, sel === undefined ? `  .fillet(${g.radiusParam})` : `  .fillet(${g.radiusParam}, ${edgeQuery(sel)})`].join('\n');
+      }
+      const entries = op.groups.flatMap((g) => g.selectors.map((sel) => `    { edges: ${sel === undefined ? '{}' : edgeQuery(sel)}, radius: ${g.radiusParam} },`));
+      return [head, '  .fillet([', ...entries, '  ])'].join('\n');
+    }
     case 'subtractPrism':
       return [
         `  // ${op.name}: pocket whose opening is covered by material, cut as a boolean.`,
@@ -223,6 +235,27 @@ function emitOp(op: Op): string {
         '  )',
       ].join('\n');
   }
+}
+
+function edgeQuery(q: EdgeQueryOut): string {
+  const parts: string[] = [];
+  const vec = (v: readonly number[]) => `[${v.map(num).join(', ')}]`;
+  if (q.atZ !== undefined) parts.push(`atZ: ${num(q.atZ)}`);
+  if (q.atX !== undefined) parts.push(`atX: ${num(q.atX)}`);
+  if (q.atY !== undefined) parts.push(`atY: ${num(q.atY)}`);
+  if (q.within) {
+    const w = q.within;
+    parts.push(
+      `within: { xMin: ${num(w.xMin)}, xMax: ${num(w.xMax)}, yMin: ${num(w.yMin)}, yMax: ${num(w.yMax)}, zMin: ${num(w.zMin)}, zMax: ${num(w.zMax)} }`,
+    );
+  }
+  if (q.parallel) parts.push(`parallel: ${vec(q.parallel)}`);
+  if (q.perpendicular) parts.push(`perpendicular: ${vec(q.perpendicular)}`);
+  if (q.ofCurveType) parts.push(`ofCurveType: '${q.ofCurveType}'`);
+  if (q.convex !== undefined) parts.push(`convex: ${q.convex}`);
+  if (q.concave !== undefined) parts.push(`concave: ${q.concave}`);
+  if (q.tolerance !== undefined) parts.push(`tolerance: ${num(q.tolerance)}`);
+  return `{ ${parts.join(', ')} }`;
 }
 
 function transformChain(plan: FeaturePlan, frame: CanonicalFrame): string[] {

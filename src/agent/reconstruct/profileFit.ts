@@ -33,6 +33,23 @@ export interface ProfileSegment {
   /** Measured point indices [first, last] into the loop's point list (last may wrap). */
   first: number;
   last: number;
+  /** Geometry came from a segmented surface region, not from these points. */
+  fixed?: boolean;
+}
+
+/** Exact section geometry of a segmented surface region, when it has one. */
+export type RegionSection = { kind: 'line'; px: number; py: number; dx: number; dy: number } | { kind: 'circle'; cx: number; cy: number; r: number };
+
+/**
+ * Which surface region produced each section segment. A planar wall's trace is
+ * an exact line and a coaxial cylinder's an exact circle, whatever the point
+ * sampling looks like, so labelled runs are taken from the segmentation and
+ * only unlabelled runs are fitted from points.
+ */
+export interface LoopGuide {
+  /** Region label of the segment from point i to point i + 1 (0 = none). */
+  labels: ArrayLike<number>;
+  geometry(label: number): RegionSection | undefined;
 }
 
 export type FittedLoop =
@@ -53,21 +70,29 @@ export interface SnapRecord {
 
 const DEG = Math.PI / 180;
 
-function dedupe(xy: ArrayLike<number>, minDist: number): Float64Array {
+function dedupe(xy: ArrayLike<number>, minDist: number, labelsIn?: ArrayLike<number>): { pts: Float64Array; labels: number[] } {
   const out: number[] = [];
+  const labels: number[] = [];
   const n = xy.length / 2;
   for (let i = 0; i < n; i++) {
     const x = xy[2 * i], y = xy[2 * i + 1];
+    const lab = labelsIn ? labelsIn[i] : 0;
     if (out.length >= 2) {
       const px = out[out.length - 2], py = out[out.length - 1];
-      if (Math.hypot(x - px, y - py) < minDist) continue;
+      if (Math.hypot(x - px, y - py) < minDist) {
+        // The merged segment keeps whichever label is informative.
+        if (labels[labels.length - 1] === 0) labels[labels.length - 1] = lab;
+        continue;
+      }
     }
     out.push(x, y);
+    labels.push(lab);
   }
   while (out.length >= 4 && Math.hypot(out[0] - out[out.length - 2], out[1] - out[out.length - 1]) < minDist) {
     out.length -= 2;
+    labels.pop();
   }
-  return Float64Array.from(out);
+  return { pts: Float64Array.from(out), labels };
 }
 
 function angularCoverage(xy: ArrayLike<number>, cx: number, cy: number): number {
@@ -153,9 +178,33 @@ function extend(lo: number, hi: number, ok: (e: number) => boolean): number {
   return good;
 }
 
+/** Greedy line/arc segmentation of points [i0, i1] of a (rotated) loop. */
+function greedySegments(pts: Float64Array, i0: number, i1: number, eps: number, maxRadius: number): ProfileSegment[] {
+  const segments: ProfileSegment[] = [];
+  let i = i0;
+  while (i < i1) {
+    const j = extend(i, i1, (e) => chordFits(range(pts, i, e), eps));
+    let k = i;
+    let arc: ReturnType<typeof arcFits> = null;
+    if (i + 3 <= i1) {
+      k = extend(i + 2, i1, (e) => e >= i + 3 && arcFits(range(pts, i, e), eps, maxRadius) !== null);
+      if (k >= i + 3) arc = arcFits(range(pts, i, k), eps, maxRadius);
+    }
+    if (arc && k > j && sagittaOk(arc.r, arc.span, eps)) {
+      segments.push({ geom: { kind: 'arc', cx: arc.cx, cy: arc.cy, r: arc.r, ccw: arc.ccw }, first: i, last: k });
+      i = k;
+    } else {
+      const end = Math.max(j, i + 1);
+      segments.push({ geom: lineGeomOf(range(pts, i, end)), first: i, last: end });
+      i = end;
+    }
+  }
+  return segments;
+}
+
 /** Fit one closed section loop. `eps` is the max point deviation (mm). */
-export function fitLoop(xyIn: ArrayLike<number>, eps: number): FittedLoop {
-  const pts = dedupe(xyIn, Math.max(1e-7, eps * 0.01));
+export function fitLoop(xyIn: ArrayLike<number>, eps: number, guide?: LoopGuide): FittedLoop {
+  const { pts, labels: rawLabels } = dedupe(xyIn, Math.max(1e-7, eps * 0.01), guide?.labels);
   const n = pts.length / 2;
   const hole = polygonSignedArea(pts) < 0;
   if (n >= 6) {
@@ -166,6 +215,66 @@ export function fitLoop(xyIn: ArrayLike<number>, eps: number): FittedLoop {
       return { kind: 'circle', cx: cf.cx, cy: cf.cy, r: cf.r, hole, rms: cf.rms };
     }
   }
+  let bx0 = Infinity, by0 = Infinity, bx1 = -Infinity, by1 = -Infinity;
+  for (let q = 0; q < n; q++) {
+    bx0 = Math.min(bx0, pts[2 * q]);
+    bx1 = Math.max(bx1, pts[2 * q]);
+    by0 = Math.min(by0, pts[2 * q + 1]);
+    by1 = Math.max(by1, pts[2 * q + 1]);
+  }
+  const maxRadius = Math.hypot(bx1 - bx0, by1 - by0);
+  const labels = rawLabels.map((l) => (guide && l !== 0 && guide.geometry(l) ? l : 0));
+  const boundary = labels.findIndex((l, i) => l !== labels[(i - 1 + n) % n]);
+
+  if (guide && boundary >= 0 && labels.some((l) => l !== 0)) {
+    // Walk runs of equally labelled segments, starting on a run boundary.
+    const rotated = range(pts, boundary, boundary + n - 1);
+    const lab = Array.from({ length: n }, (_, i) => labels[(boundary + i) % n]);
+    const segments: ProfileSegment[] = [];
+    let a = 0;
+    while (a < n) {
+      let b = a;
+      while (b + 1 < n && lab[b + 1] === lab[a]) b++;
+      const first = a;
+      const last = b + 1;
+      const geom = lab[a] !== 0 ? guide.geometry(lab[a]) : undefined;
+      if (geom && geom.kind === 'line') {
+        const tx = rotated[2 * (last % n)] - rotated[2 * first];
+        const ty = rotated[2 * (last % n) + 1] - rotated[2 * first + 1];
+        const sgn = geom.dx * tx + geom.dy * ty >= 0 ? 1 : -1;
+        // Direction from the wall plane; offset from the section points that
+        // lie on it (a plane fit can tilt a little where it borders a round).
+        let ox = 0;
+        let oy = 0;
+        for (let q = first; q <= last; q++) {
+          ox += rotated[2 * (q % n)];
+          oy += rotated[2 * (q % n) + 1];
+        }
+        const cnt = last - first + 1;
+        segments.push({ geom: { kind: 'line', px: ox / cnt, py: oy / cnt, dx: geom.dx * sgn, dy: geom.dy * sgn }, first, last, fixed: true });
+      } else if (geom && geom.kind === 'circle') {
+        let sweep = 0;
+        let prev = Math.atan2(rotated[2 * first + 1] - geom.cy, rotated[2 * first] - geom.cx);
+        for (let q = first + 1; q <= last; q++) {
+          const m = q % n;
+          const ang = Math.atan2(rotated[2 * m + 1] - geom.cy, rotated[2 * m] - geom.cx);
+          let d = ang - prev;
+          while (d > Math.PI) d -= 2 * Math.PI;
+          while (d < -Math.PI) d += 2 * Math.PI;
+          sweep += d;
+          prev = ang;
+        }
+        segments.push({ geom: { kind: 'arc', cx: geom.cx, cy: geom.cy, r: geom.r, ccw: sweep >= 0 }, first, last, fixed: true });
+      } else {
+        segments.push(...greedySegments(rotated, first, last, eps, maxRadius));
+      }
+      a = b + 1;
+    }
+    mergeCollinear(rotated, segments, eps);
+    refineSegments(rotated, segments);
+    return { kind: 'path', segments, hole, points: rotated };
+  }
+
   // Start at the sharpest corner so no primitive straddles the seam.
   let start = 0;
   let sharpest = -1;
@@ -180,33 +289,7 @@ export function fitLoop(xyIn: ArrayLike<number>, eps: number): FittedLoop {
     }
   }
   const rotated = range(pts, start, start + n - 1);
-  let bx0 = Infinity, by0 = Infinity, bx1 = -Infinity, by1 = -Infinity;
-  for (let q = 0; q < n; q++) {
-    bx0 = Math.min(bx0, pts[2 * q]);
-    bx1 = Math.max(bx1, pts[2 * q]);
-    by0 = Math.min(by0, pts[2 * q + 1]);
-    by1 = Math.max(by1, pts[2 * q + 1]);
-  }
-  const maxRadius = Math.hypot(bx1 - bx0, by1 - by0);
-  const segments: ProfileSegment[] = [];
-  let i = 0;
-  while (i < n) {
-    const j = extend(i, n, (e) => chordFits(range(rotated, i, e), eps));
-    let k = i;
-    let arc: ReturnType<typeof arcFits> = null;
-    if (i + 3 <= n) {
-      k = extend(i + 2, n, (e) => e >= i + 3 && arcFits(range(rotated, i, e), eps, maxRadius) !== null);
-      if (k >= i + 3) arc = arcFits(range(rotated, i, k), eps, maxRadius);
-    }
-    if (arc && k > j && sagittaOk(arc.r, arc.span, eps)) {
-      segments.push({ geom: { kind: 'arc', cx: arc.cx, cy: arc.cy, r: arc.r, ccw: arc.ccw }, first: i, last: k });
-      i = k;
-    } else {
-      const end = Math.max(j, i + 1);
-      segments.push({ geom: lineGeomOf(range(rotated, i, end)), first: i, last: end });
-      i = end;
-    }
-  }
+  const segments = greedySegments(rotated, 0, n, eps, maxRadius);
   mergeSeam(rotated, segments, eps, maxRadius);
   mergeCollinear(rotated, segments, eps);
   refineSegments(rotated, segments);
@@ -236,7 +319,7 @@ function mergeCollinear(pts: Float64Array, segs: ProfileSegment[], eps: number):
       const a = segs[k];
       const bi = (k + 1) % segs.length;
       const b = segs[bi];
-      if (a.geom.kind !== 'line' || b.geom.kind !== 'line' || bi === k) continue;
+      if (a.geom.kind !== 'line' || b.geom.kind !== 'line' || bi === k || a.fixed || b.fixed) continue;
       const n = pts.length / 2;
       const last = bi === 0 ? b.last + n : b.last;
       if (!chordFits(range(pts, a.first, last), eps)) continue;
@@ -273,6 +356,7 @@ function mergeSeam(pts: Float64Array, segs: ProfileSegment[], eps: number, maxRa
 
 function refineSegments(pts: Float64Array, segs: ProfileSegment[]): void {
   for (const s of segs) {
+    if (s.fixed) continue;
     const r = range(pts, s.first, s.last);
     if (s.geom.kind === 'line') s.geom = lineGeomOf(r);
     else {

@@ -18,6 +18,9 @@ import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { OcctBackend, meshShapeForExport } from '../../../kernel/backends/occt/occtBackend';
 import { detectCylindricalHoles } from '../../../kernel/backends/occt/holeDetection';
+import { isSameEdge, toEdgeSegment } from '../../../kernel/backends/occt/edgeQueries';
+import type { Edge, Face } from 'replicad';
+import type { SharpEdge } from '../../reconstruct/blends';
 import { resolveRootId } from '../../../modeling/buildModel';
 import { withNextActions, type CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
@@ -78,8 +81,56 @@ function fail(error: string, errorCode: CompilerDiagnostic['code']): MeshToFeatu
   };
 }
 
+type V3 = [number, number, number];
+
+/** Every edge of the evaluated shape with normals of its two faces sampled
+ *  along it — the geometry blend detection measures a mesh against. Seam
+ *  edges (one face on both sides) come back with no samples. */
+function sharpEdgesOf(shape: OcctBackend): SharpEdge[] {
+  const rs = shape.getReplicadShape() as unknown as { edges: Edge[]; faces: Face[] };
+  const faces = rs.faces;
+  const faceEdges = faces.map((f) => (f as unknown as { edges: Edge[] }).edges);
+  const out: SharpEdge[] = [];
+  rs.edges.forEach((edge, index) => {
+    const seg = toEdgeSegment(edge, index, rs);
+    const adjacent = faces.filter((_, fi) => faceEdges[fi].some((fe) => isSameEdge(fe, edge)));
+    const sp = edge.startPoint;
+    const ep = edge.endPoint;
+    const samples: SharpEdge['samples'] = [];
+    if (adjacent.length >= 2) {
+      const n = seg.curveType === 'LINE' ? 9 : 65;
+      for (let k = 0; k < n; k++) {
+        try {
+          const p = edge.pointAt(k / (n - 1));
+          const a = adjacent[0].normalAt(p);
+          const b = adjacent[1].normalAt(p);
+          const la = Math.hypot(a.x, a.y, a.z) || 1;
+          const lb = Math.hypot(b.x, b.y, b.z) || 1;
+          samples.push({
+            p: [p.x, p.y, p.z],
+            nA: [a.x / la, a.y / la, a.z / la],
+            nB: [b.x / lb, b.y / lb, b.z / lb],
+          });
+        } catch {
+          // A sample on a periodic face's seam can make normalAt throw; the
+          // neighbouring samples still describe the edge.
+        }
+      }
+    }
+    out.push({
+      curveType: seg.curveType,
+      start: [sp.x, sp.y, sp.z] as V3,
+      end: [ep.x, ep.y, ep.z] as V3,
+      kernelConvex: seg.convex,
+      kernelDihedralDeg: seg.dihedralAngleDeg,
+      samples: samples.length >= 2 ? samples : [],
+    });
+  });
+  return out;
+}
+
 /** Evaluate a reconstruction script and tessellate it with the STL exporter's mesher. */
-export const occtReconstructionEvaluator: ReconstructEvaluator = async (script) => {
+export const occtReconstructionEvaluator: ReconstructEvaluator = async (script, opts) => {
   const s = await runMcpScript({ code: script });
   if (!s.ok) return { ok: false, error: s.error, ...(s.errorCode ? { errorCode: s.errorCode } : {}) };
   const engine = new RecomputeEngine(createOcctLowerer(s.run.session));
@@ -94,16 +145,31 @@ export const occtReconstructionEvaluator: ReconstructEvaluator = async (script) 
   }
   const mesh = meshShapeForExport(shape.getReplicadShape());
   let holes: Array<{ diameterMm: number; depthMm: number; kind: 'blind' | 'through' }> | undefined;
-  try {
-    holes = detectCylindricalHoles(shape).map((h) => ({
-      diameterMm: Math.round(h.diameterMm * 1000) / 1000,
-      depthMm: Math.round(h.depthMm * 1000) / 1000,
-      kind: h.kind,
-    }));
-  } catch {
-    holes = undefined;
+  if (opts?.withHoles) {
+    try {
+      holes = detectCylindricalHoles(shape).map((h) => ({
+        diameterMm: Math.round(h.diameterMm * 1000) / 1000,
+        depthMm: Math.round(h.depthMm * 1000) / 1000,
+        kind: h.kind,
+      }));
+    } catch {
+      holes = undefined;
+    }
   }
-  return { ok: true, mesh: { positions: mesh.vertices, indices: mesh.triangles }, ...(holes ? { holes } : {}) };
+  let edges: SharpEdge[] | undefined;
+  if (opts?.withEdges) {
+    try {
+      edges = sharpEdgesOf(shape);
+    } catch {
+      edges = undefined;
+    }
+  }
+  return {
+    ok: true,
+    mesh: { positions: mesh.vertices, indices: mesh.triangles },
+    ...(holes ? { holes } : {}),
+    ...(edges ? { edges } : {}),
+  };
 };
 
 export async function meshToFeaturesTool(input: MeshToFeaturesInput): Promise<MeshToFeaturesOutput> {
