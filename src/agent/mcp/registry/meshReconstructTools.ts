@@ -20,11 +20,14 @@ const meshToFeaturesToolEntry: ToolRegistryEntry = {
       'lines / arcs / circles, snaps near-round values (each snap recorded), then emits a readable ' +
       '.kcad.ts with named param()s — a revolve for concentric round stacks, extruded profiles ' +
       'otherwise, .hole()/.holes() for through, blind and counterbored bores (axial and side-drilled), ' +
-      '.cutout() for pockets, boolean subtractions for what no drilling feature can reach. It then ' +
+      '.cutout() for pockets, .fillet() for constant-radius edge blends (radius measured on the sharp ' +
+      'edge, edges grouped by radius and picked with the shortest exact edge query), boolean ' +
+      'subtractions for what no drilling feature can reach. It then ' +
       'EVALUATES that script and compares it with the mesh: volume IoU (column ray casting) and ' +
       'symmetric surface deviation (max + RMS), over up to 4 refinement passes. Returns { script, ' +
       'ledger, fidelity: { maxDeviationMm, rmsMm, volumeIoU, verdict: faithful | approximate | failed, ' +
-      'thresholds }, unmatchedRegions, features, passes }. The verdict is computed from the numbers — ' +
+      'thresholds }, unmatchedRegions, features, passes }. A fillet or sharp reading is kept by which ' +
+      'measures better; variable-radius blends and chamfers are reported, not forced. The verdict is computed from the numbers — ' +
       'faithful needs IoU >= minIoU AND max deviation <= maxDeviationMm AND a watertight mesh AND no ' +
       'unmatched region. Freeform surfaces, tilted planes and side bosses are listed in ' +
       'unmatchedRegions (reference.mesh.freeform-region-unmatched), never silently dropped. The ledger ' +

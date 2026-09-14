@@ -253,8 +253,9 @@ export function detectEdgeBlends(
     const lo = closed ? 0 : Math.min(1.2 * rMed, L / 2);
     const hi = closed ? L : Math.max(L - 1.2 * rMed, L / 2);
     const span = hi - lo;
-    const bins = new Set(usable.map((e) => Math.min(4, Math.max(0, Math.floor((5 * (e.arc - lo)) / Math.max(span, 1e-9))))));
-    const coverageChecked = closed || span >= 4 * rMed;
+    const binCount = span >= 4 * rMed ? 5 : 3;
+    const bins = new Set(usable.map((e) => Math.min(binCount - 1, Math.max(0, Math.floor((binCount * (e.arc - lo)) / Math.max(span, 1e-9))))));
+    const coverageChecked = closed || span >= 1.5 * rMed;
     if (rMed < 2 * depthTol) {
       rejected.push({ edge: ei, count: usable.length, medianRadius: rMed, spread, reason: 'blend too small to measure' });
       continue;
@@ -388,6 +389,9 @@ export function selectorsForGroup(edges: SharpEdge[], group: number[]): Array<Ed
   });
   candidates.push(...basics, ...levels);
   for (const l of levels) for (const b of basics) candidates.push({ ...l, ...b });
+  for (let i = 0; i < levels.length; i++) {
+    for (let j = i + 1; j < levels.length; j++) candidates.push({ ...levels[i], ...levels[j] });
+  }
   for (let i = 0; i < basics.length; i++) for (let j = i + 1; j < basics.length; j++) candidates.push({ ...basics[i], ...basics[j] });
   const margin = 0.01;
   const within = {

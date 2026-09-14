@@ -15,9 +15,11 @@ work through the stages.
 ```
 Have an STL / OBJ / 3MF of the (mostly prismatic) part itself?
    → mesh_to_features (CLI: kernelcad reconstruct). It measures the mesh into
-     an editable script and reports volume IoU + surface deviation. Use the
-     script when the verdict is faithful; otherwise model the regions it lists
-     as unmatched. Resolve its ledger like any other reference ledger.
+     an editable script (profile, holes, pockets, constant-radius fillets) and
+     reports volume IoU + surface deviation. Use the script when the verdict is
+     faithful; otherwise model the regions it lists as unmatched (variable
+     blends, chamfers, freeform). Resolve its ledger like any other reference
+     ledger.
 
 Have a written spec with numeric dimensions? → just read kernelcad-authoring
                                                 + use-the-available-kernel,

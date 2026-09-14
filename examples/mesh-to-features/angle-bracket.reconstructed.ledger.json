@@ -38,7 +38,7 @@
         0,
         1
       ],
-      "confidence": 0.9962064740220972,
+      "confidence": 0.996206474022097,
       "resolution": "open"
     },
     {
@@ -60,7 +60,7 @@
         "source": "mesh"
       },
       "value": 6.5,
-      "confidence": 0.9999918848928041,
+      "confidence": 0.9999838643842232,
       "resolution": "open"
     },
     {
@@ -82,7 +82,7 @@
         "source": "mesh"
       },
       "value": 6.5,
-      "confidence": 0.9999914158801696,
+      "confidence": 0.9999829318262812,
       "resolution": "open"
     },
     {
@@ -104,7 +104,7 @@
         "source": "mesh"
       },
       "value": 11,
-      "confidence": 0.9999956658114165,
+      "confidence": 0.9999913821469022,
       "resolution": "open"
     },
     {
@@ -115,12 +115,12 @@
         "source": "mesh"
       },
       "value": 3,
-      "confidence": 0.49706911909025997,
+      "confidence": 9.5367431640625e-7,
       "resolution": "open"
     },
     {
       "id": "profile.snaps",
-      "statement": "6 literal coordinate(s) (profile corners, arc centres, bore positions, origin) were snapped to a round grid within 0.02 mm.",
+      "statement": "7 literal coordinate(s) (profile corners, arc centres, bore positions, origin) were snapped to a round grid within 0.01 mm.",
       "kind": "inferred",
       "evidence": {
         "source": "mesh"
@@ -132,8 +132,13 @@
           "value": 6
         },
         {
+          "what": "band0.loop0.line3.x",
+          "measured": 6.000334,
+          "value": 6
+        },
+        {
           "what": "band0.loop0.arc2.r",
-          "measured": 5.999881,
+          "measured": 6,
           "value": 6
         },
         {
@@ -157,7 +162,7 @@
           "value": 15
         }
       ],
-      "confidence": 0.9855971513277053,
+      "confidence": 0.9665928658316716,
       "resolution": "open"
     },
     {

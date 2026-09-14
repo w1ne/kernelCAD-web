@@ -7,11 +7,11 @@
 // RMS 0.000 mm — verdict faithful (thresholds: IoU >= 0.98, max dev <= 0.25 mm).
 
 const height = param('height', 30, { min: 7.5, max: 120 });
-const crossHole1Diameter = param('crossHole1Diameter', 6.5, { min: 1.625, max: 26 }); // measured 6.5
+const crossHole1Diameter = param('crossHole1Diameter', 6.5, { min: 1.625, max: 26 });
 const crossHole1Depth = param('crossHole1Depth', 6, { min: 1.5, max: 24 });
-const crossHole2Diameter = param('crossHole2Diameter', 6.5, { min: 1.625, max: 26 }); // measured 6.5
+const crossHole2Diameter = param('crossHole2Diameter', 6.5, { min: 1.625, max: 26 });
 const crossHole2Depth = param('crossHole2Depth', 6, { min: 1.5, max: 24 });
-const crossHole2CounterboreDiameter = param('crossHole2CounterboreDiameter', 11, { min: 2.75, max: 44 }); // measured 11
+const crossHole2CounterboreDiameter = param('crossHole2CounterboreDiameter', 11, { min: 2.75, max: 44 });
 const crossHole2CounterboreDepth = param('crossHole2CounterboreDepth', 3, { min: 0.75, max: 12 }); // measured 3.01
 
 // Block 1: extruded profile, z 0 → 30.

@@ -84,7 +84,8 @@ export function emitScript(plan: FeaturePlan, ctx: EmitContext): string {
   out.push('');
 
   for (const p of plan.params) {
-    const note = p.snapped ? ` // measured ${Math.round(p.measured * 1e4) / 1e4}` : '';
+    const shown = Math.round(p.measured * 1e4) / 1e4;
+    const note = p.snapped && shown !== p.value ? ` // measured ${shown}` : '';
     out.push(`const ${p.name} = param('${p.name}', ${num(p.value)}, ${paramRange(p.value)});${note}`);
   }
   out.push('');
@@ -216,7 +217,7 @@ function emitOp(op: Op): string {
     }
     case 'fillet': {
       const edgesTotal = op.groups.reduce((n, g) => n + g.edgeCount, 0);
-      const head = `  // Constant-radius edge blends measured on the mesh (${edgesTotal} edge(s)); corner patches come from filleting the meeting edges together.`;
+      const head = `  // Constant-radius edge blends measured on the mesh: ${edgesTotal} edge(s) in ${op.groups.length} radius group(s).`;
       if (op.groups.length === 1 && op.groups[0].selectors.length === 1) {
         const g = op.groups[0];
         const sel = g.selectors[0];
