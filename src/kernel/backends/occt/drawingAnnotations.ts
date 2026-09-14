@@ -530,27 +530,40 @@ export function datumSymbolToSvg(target: Pt2, angle: number, label: string, stem
   const stem = 6 + stemExtra;
   const ex = target[0] + ux * stem;
   const ey = target[1] + uy * stem;
-  const BOX = 5;
-  const boxCx = ex + (ux >= 0 ? BOX / 2 : -BOX / 2);
-  const bx = boxCx - BOX / 2;
-  const by = ey - BOX / 2;
-  // Filled triangular base at the target, per convention for a datum leader.
+  const { cx: boxCx, cy: boxCy } = datumBoxCentre(ex, ey, ux, uy);
+  const bx = boxCx - DATUM_BOX / 2;
+  const by = boxCy - DATUM_BOX / 2;
+  // Filled datum triangle: base on the feature surface at the target, apex
+  // pointing along the leader toward the frame.
   const px = -uy, py = ux;
   const baseW = 1.2;
   const triangle =
-    `<path d="M ${round3(target[0])} ${round3(target[1])} ` +
-    `L ${round3(target[0] - ux * 2.4 + px * baseW)} ${round3(target[1] - uy * 2.4 + py * baseW)} ` +
-    `L ${round3(target[0] - ux * 2.4 - px * baseW)} ${round3(target[1] - uy * 2.4 - py * baseW)} Z" ` +
+    `<path d="M ${round3(target[0] + px * baseW)} ${round3(target[1] + py * baseW)} ` +
+    `L ${round3(target[0] - px * baseW)} ${round3(target[1] - py * baseW)} ` +
+    `L ${round3(target[0] + ux * 2.4)} ${round3(target[1] + uy * 2.4)} Z" ` +
     `fill="#000" stroke="none"/>`;
   return (
     `<g class="dim datum"${attrs} fill="none" stroke="#000" stroke-width="0.18">` +
     `<line x1="${round3(target[0])}" y1="${round3(target[1])}" x2="${round3(ex)}" y2="${round3(ey)}"/>` +
     triangle +
-    `<rect x="${round3(bx)}" y="${round3(by)}" width="${BOX}" height="${BOX}"/>` +
-    `<text x="${round3(boxCx)}" y="${round3(ey + 1)}" font-size="3.4" text-anchor="middle" ` +
+    `<rect x="${round3(bx)}" y="${round3(by)}" width="${DATUM_BOX}" height="${DATUM_BOX}"/>` +
+    `<text x="${round3(boxCx)}" y="${round3(boxCy + 1.2)}" font-size="3.4" text-anchor="middle" ` +
     `fill="#000" stroke="none">${esc(label)}</text>` +
     `</g>`
   );
+}
+
+/** Datum frame side, sheet mm. */
+export const DATUM_BOX = 5;
+
+/** Centre of the datum frame for a leader ending at (ex, ey) along (ux, uy):
+ *  beside the elbow for a mostly horizontal leader, above / below it
+ *  (centred on the leader) for a mostly vertical one. */
+export function datumBoxCentre(ex: number, ey: number, ux: number, uy: number): { cx: number; cy: number } {
+  if (Math.abs(ux) >= Math.abs(uy)) {
+    return { cx: ex + (ux >= 0 ? DATUM_BOX / 2 : -DATUM_BOX / 2), cy: ey };
+  }
+  return { cx: ex, cy: ey + (uy >= 0 ? DATUM_BOX / 2 : -DATUM_BOX / 2) };
 }
 
 const round3 = (n: number): string => {

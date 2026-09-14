@@ -72,6 +72,8 @@ import {
   DIM_BASE,
   DIM_STEP,
   FCF_CELL_H,
+  datumBoxCentre,
+  DATUM_BOX,
   datumSymbolToSvg,
   escAttr,
   extractTextBoxes,
@@ -402,6 +404,16 @@ class Obstacles {
           if (segmentsCross(s, o.seg)) n++;
         }
       }
+    }
+    return n;
+  }
+
+  /** Labels (not geometry) a leader segment runs through, other than its own. */
+  labelHits(seg: Seg, owner: number): number {
+    let n = 0;
+    for (const o of this.boxes) {
+      if (o.owner === owner || o.owner === GEOMETRY_OWNER) continue;
+      if (segmentHitsBox(seg, o.box)) n++;
     }
     return n;
   }
@@ -1083,7 +1095,8 @@ export function renderAutoDrawing(input: AutoDrawingInput): AutoDrawingResult {
     let best: { r: Rendered; cost: number; score: number; index: number } | null = null;
     for (const [index, c] of candidates.entries()) {
       const r = c.render();
-      const cost = obstacles.cost(r.boxes, owner);
+      const cost = obstacles.cost(r.boxes, owner) +
+        r.segments.reduce((n, seg) => n + obstacles.labelHits(seg, owner) * 5, 0);
       const crossings = r.segments.reduce((n, seg) => n + obstacles.crossings(seg), 0);
       const inside = r.boxes.length > 0 && enclosed(r.boxes[0]) ? 25 : 0;
       const score = cost * 1000 + c.penalty + crossings * 6 + inside;
@@ -1340,11 +1353,11 @@ function datumRendered(tip: Pt2, angle: number, label: string, stem: number, att
   const uy = Math.sin(angle);
   const ex = tip[0] + ux * stem;
   const ey = tip[1] + uy * stem;
-  const BOX = 5;
-  const cx = ex + (ux >= 0 ? BOX / 2 : -BOX / 2);
+  const { cx, cy } = datumBoxCentre(ex, ey, ux, uy);
+  const half = DATUM_BOX / 2;
   return {
     svg: svgText,
-    boxes: [{ x0: cx - BOX / 2, y0: ey - BOX / 2, x1: cx + BOX / 2, y1: ey + BOX / 2 }],
+    boxes: [{ x0: cx - half, y0: cy - half, x1: cx + half, y1: cy + half }],
     segments: [[tip[0], tip[1], ex, ey]],
   };
 }

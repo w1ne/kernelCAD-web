@@ -67,6 +67,8 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   // next to robot-description exports (documented alongside the real
   // export_model tool name, which DOES resolve — a field, not a call).
   'mesh_files',
+  // export result field carrying the svg-drawing placement report.
+  'drawing_report',
   'binding_name',
   'curve_bindings',
   'chain_anchor',

@@ -43,7 +43,9 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         'Supported formats: stl (binary STL mesh), step (BREP CAD interchange), dxf (planar laser/waterjet profile from a Region or planar face), ' +
         '3mf (slicer-friendly mesh with per-part colors), glb (web-viewer / AR with PBR materials), ' +
         'svg-drawing (third-angle engineering-drawing sheet: front/top/left + isometric views, hidden edges dashed, tangent edges thin, ' +
-        'overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box). ' +
+        'overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box, ' +
+        'options.autoAnnotate to derive datums A/B/C, grouped hole callouts with position tolerances, hole positions, overall size, radius and chamfer callouts, flatness and an ISO 2768 note from the geometry ' +
+        '(the result carries drawing_report with placed / overlapped counts), and options.sections for real section views on any cutting plane). ' +
         'Robot descriptions: urdf (tree-topology robot description), srdf (motion-planning semantics layered over the URDF), sdf-gazebo (SDFormat 1.10 with native ball joints, closed loops, and solved per-link poses), ' +
         "usd-isaac (ASCII USD physics stage: PhysicsArticulationRootAPI root, one rigid body per link at its solved pose with mass / centre of mass / principal inertia, " +
         'PhysicsFixedJoint/PhysicsRevoluteJoint/PhysicsPrismaticJoint per mate with token axis, two-sided joint frames and limits, UsdPreviewSurface materials from the part appearance, ' +
@@ -83,12 +85,16 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
               'dxf: { layers?, unit?: "mm"|"cm"|"in", tolerance? }. ' +
               '3mf: { printUnit?: "mm"|"cm"|"in", embedSource? }. ' +
               'glb: { axis?: "y-up"|"z-up", draco?: false }. ' +
-              'svg-drawing: { sheet?: "a4"|"a3", modelName?, date?, annotations? }. '
+              'svg-drawing: { sheet?: "a4"|"a3", modelName?, date?, annotations?, sections?, autoAnnotate? }. '
               + 'svg-drawing annotations is an array of authored dimensions/notes, each '
               + '{ kind: "linear"|"radius"|"diameter"|"angular"|"note", view?: "front"|"top"|"left"|"iso", text?, offset? } plus '
               + 'kind-specific geometry: linear { from, to }, radius/diameter { edge: EdgeQuery }, angular { from: EdgeQuery, to: EdgeQuery }, note { at, text }. '
               + 'from/to/at anchors are an [x,y,z] model point, { edge: EdgeQuery } or { face: FaceQuery }. '
-              + 'Supplying any annotation REPLACES the automatic bounding-box dimensions; an annotation whose query resolves to zero or multiple matches fails the export rather than being dropped.',
+              + 'Supplying any annotation REPLACES the automatic bounding-box dimensions; an annotation whose query resolves to zero or multiple matches fails the export rather than being dropped. '
+              + 'svg-drawing sections is an array of { plane: "xy"|"xz"|"yz"|{ origin, normal }, label } (any non-zero normal). '
+              + 'svg-drawing autoAnnotate is true or { tolerance?: "ISO2768-f"|"ISO2768-m"|"ISO2768-c", datums?: "auto"|[{ label, face: FaceQuery }], '
+              + 'include?: ["datums"|"flatness"|"holes"|"hole-positions"|"overall"|"fillets"|"chamfers"|"general-tolerance"] }; '
+              + 'datums and tolerances declared in the script with shape.datum() / shape.tolerance() override the automatic ones.',
           },
           part: { type: 'string', description: "target:'part' — part name for single-part export, or 'all'." },
           output_dir: { type: 'string', description: "target:'part' — destination directory (all-parts mode); files are <dir>/<part>.stl." },

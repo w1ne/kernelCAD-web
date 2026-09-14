@@ -20,7 +20,7 @@ description of any entry, call `lookup_api(query)`.
 | [Measure & verify](#measure--verify) | Ask the kernel what you actually built, and check it before shipping. |
 | [Parametrize](#parametrize) | Declare editable dimensions and do arithmetic on them (JS operators throw on a ParamRef). |
 | [Import & export](#import--export) | Bring in vendor geometry, and write models back out. |
-| [Annotate & present](#annotate--present) | Adjust a model's appearance without changing its geometry: text, color, lighting, camera, motion. |
+| [Annotate & present](#annotate--present) | Adjust a model's appearance without changing its geometry: text, color, lighting, camera, motion, drawing GD&T. |
 
 ## Start a shape
 
@@ -236,7 +236,7 @@ Bring in vendor geometry, and write models back out.
 
 ## Annotate & present
 
-Adjust a model's appearance without changing its geometry: text, color, lighting, camera, motion.
+Adjust a model's appearance without changing its geometry: text, color, lighting, camera, motion, drawing GD&T.
 
 | Call | What it does |
 |---|---|
@@ -251,3 +251,5 @@ Adjust a model's appearance without changing its geometry: text, color, lighting
 | `setCameraTarget(x: number, y: number, z: number) => CameraTargetHandle` | Override the camera look-at target for `setRenderPose` and headless engineering renders. |
 | `setCameraDistance(distance: number) => CameraTargetHandle` | Override the camera framing distance (mm from target). |
 | `animationView(spec: { param: string; from: number; to: number; durationMs: number; fps?: number } \| { name?: string; tracks: Array<{ param: string; keys: Array<{ atMs: number; value: number; ease?: "linear" \| "step" \| "easeIn" \| "easeOut" \| "easeInOut" }> }>; fps?: number }) => AnimationViewHandle` | Declare an animation timeline for offline kinematic-motion MP4 capture. |
+| `Shape.datum(label: string, face: FaceQuery) => Shape` | Declare datum `label` (one or two capitals, not I/O/Q) on the face `face` resolves to, for `svg-drawing` sheets. |
+| `Shape.tolerance(spec: { type: 'position' \| 'flatness' \| 'perpendicularity' \| 'parallelism' \| 'concentricity' \| 'cylindricity'; value: number; face?: FaceQuery; edge?: EdgeQuery; datums?: string[]; modifier?: '⌀' \| 'M' \| 'S' }) => Shape` | Declare a geometric tolerance (feature control frame) on exactly one of `face` / `edge`, for `svg-drawing` sheets. |
