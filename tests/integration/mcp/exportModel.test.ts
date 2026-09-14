@@ -88,11 +88,11 @@ describe('export_model MCP tool', () => {
     expect(statSync(out).size).toBeGreaterThan(0);
   }, 60000);
 
-  it('rejects URDF / SRDF / SDF-Gazebo with export.no-shape when the script returns a single Shape', async () => {
+  it('rejects URDF / SRDF / SDF-Gazebo / USD with export.no-shape when the script returns a single Shape', async () => {
     // Slice B-rest fills the URDF / SRDF / SDF format slots; a script that
     // returns a raw `box(...)` (no assembly captured) now trips export.no-shape
     // because all three formats consume an Assembly, not a Shape.
-    for (const format of ['urdf', 'srdf', 'sdf-gazebo'] as const) {
+    for (const format of ['urdf', 'srdf', 'sdf-gazebo', 'usd-isaac'] as const) {
       const out = join(tmpDir, `x.${format}`);
       const r = await exportModelTool({
         code: 'return box(10, 10, 10);',
@@ -107,6 +107,41 @@ describe('export_model MCP tool', () => {
       expect(existsSync(out)).toBe(false);
     }
   }, 60000);
+
+  it('writes a usd-isaac stage plus one .usda mesh layer per link, with declared drives', async () => {
+    const out = join(tmpDir, 'robot', 'arm.usda');
+    const r = await exportModelTool({
+      code: `
+        const arm = assembly('usd-arm');
+        const base = arm.part('base', box(40, 40, 20, true).translate(0, 0, 10), { material: 'steel' });
+        const link = arm.part('link', box(20, 20, 80, true).translate(0, 0, 40), { material: 'aluminum' });
+        base.connector('hub', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 20] }, axis: [0, 0, 1] });
+        link.connector('hub', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        arm.mate('yaw', 'base.hub', 'link.hub', 'revolute', { limitsDeg: [-120, 120] });
+        return arm.model();
+      `,
+      output_path: out,
+      format: 'usd-isaac',
+      options: { format: 'usd-isaac', drives: { yaw: { stiffness: 400, damping: 20 } } },
+    });
+    expect(r.diagnostics?.filter((d) => d.severity === 'error')).toEqual([]);
+    expect(r.ok).toBe(true);
+    expect(r.format).toBe('usd-isaac');
+    const stage = readFileSync(out, 'utf8');
+    expect(stage.startsWith('#usda 1.0')).toBe(true);
+    expect(stage).toContain('uniform token physics:axis = "Z"');
+    expect(stage).toContain('float drive:angular:physics:stiffness = 400.000000');
+    expect(r.mesh_files?.map((f) => f.slice(tmpDir.length)).sort()).toEqual([
+      join('/robot', 'meshes', 'base.usda'),
+      join('/robot', 'meshes', 'link.usda'),
+    ]);
+    for (const mesh of r.mesh_files ?? []) {
+      const layer = readFileSync(mesh, 'utf8');
+      expect(layer.startsWith('#usda 1.0')).toBe(true);
+      expect(layer).toMatch(/def Mesh "\w+"/);
+      expect(stage).toContain(`@./meshes/${mesh.split('/').pop()}@`);
+    }
+  }, 120000);
 
   it('returns ok: false when output_path is missing', async () => {
     // @ts-expect-error testing runtime guard

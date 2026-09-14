@@ -30,7 +30,8 @@ export type DiagnosticGroup =
   | 'animation'
   | 'drawing'
   | 'reference'
-  | 'fea';
+  | 'fea'
+  | 'diff';
 
 export type DiagnosticSeverityLevel = 'info' | 'warn' | 'error';
 
@@ -2452,6 +2453,39 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'tool',
     description: 'A repair patch anchor text did not match the current source, so the patch was refused rather than applied blind.',
+  },
+  'export.usd.joint-unsupported': {
+    hintTemplate:
+      'The usd-isaac exporter only lowers fastened, revolute and prismatic mates to PhysicsFixedJoint / PhysicsRevoluteJoint / PhysicsPrismaticJoint. Restructure the mate graph to use one of those kinds, or export format: \'sdf-gazebo\' which supports the full mate vocabulary.',
+    nextAction: { kind: 'fix-arg', field: 'format' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A mate kind with no PhysicsJoint equivalent (planar/cylindrical/pin_slot/ball) was found while lowering to a usd-isaac physics stage.',
+  },
+  'export.usd.pose-unsolved': {
+    hintTemplate:
+      'The mate graph could not be solved to per-link world poses, so every link was placed at the stage origin and the simulator will spawn them overlapping. Run solve_mates to find the unsolvable mate, fix the connector geometry, then re-export.',
+    nextAction: { kind: 'call-introspection-tool', tool: 'solve_mates' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A usd-isaac export could not solve the mate graph to per-link poses; links were emitted at the stage origin.',
+  },
+  'export.usd.mass-missing': {
+    hintTemplate:
+      'A link\'s mass-properties computation returned a non-finite or non-positive mass; the rigid body prim cannot carry a physical mass. Pass density on arm.part(name, shape, { density }), or check the part\'s shape is closed and manifold.',
+    nextAction: { kind: 'fix-arg', field: 'density' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A link in a usd-isaac physics stage has a non-finite or non-positive mass and cannot be given a valid UsdPhysics MassAPI.',
+  },
+  // Geometric diff (1)
+  'diff.body.unmatched': {
+    hintTemplate:
+      'A body in one model has no counterpart in the other, so no per-body delta could be computed for it. Give the part the same assembly().part(name, ...) name on both sides, or read it from the diff report\'s `unmatched` list as a whole-body addition/removal.',
+    nextAction: { kind: 'fix-arg', field: 'file' },
+    defaultSeverity: 'warn',
+    group: 'diff',
+    description: 'diff_geometry could not pair a body in the baseline model with a body in the revised model, by name or by positional fallback.',
   },
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 

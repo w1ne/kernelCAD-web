@@ -47,5 +47,8 @@
   "actuator",
   "torque",
   "kinematic",
-  "sweep-tolerance"
+  "sweep-tolerance",
+  "export",
+  "diff",
+  "cutout"
 ]

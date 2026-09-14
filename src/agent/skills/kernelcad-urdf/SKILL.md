@@ -84,3 +84,27 @@ Call `inspect({ of: 'robot', file })` to preview what the export will emit befor
 ## Mesh format
 
 Per-link STL by default. Mesh paths default to `package://kernelcad_export/meshes/<part>.stl`; override with `options.meshPrefix` for non-package consumers (e.g. `./meshes/`).
+
+## USD physics stage export (`format: 'usd-isaac'`)
+
+When the consumer is a GPU physics / robot-learning stack that imports UsdPhysics directly, skip the URDF round-trip: `export({ target: 'model', format: 'usd-isaac' })` writes an ASCII USD (`.usda`) root layer plus one `meshes/<link>.usda` mesh layer per link, next to `output_path` (reported in `mesh_files` — ship the whole directory). Author the assembly exactly as for URDF: parts, connectors, `fastened` / `revolute` / `prismatic` mates, and a density or named `material` per part.
+
+```json
+{ "tool": "export", "input": { "target": "model", "file": "two-link.kcad.ts", "format": "usd-isaac", "output_path": "out/robot.usda",
+  "options": { "format": "usd-isaac", "drives": { "shoulder": { "stiffness": 1000, "damping": 50 } } } } }
+```
+
+What the stage contains, and where each value comes from:
+
+- `/<robot>` — `PhysicsArticulationRootAPI`. Links under `/<robot>/Links`, joints under `/<robot>/Joints`, materials under `/<robot>/Materials`.
+- **Rigid bodies** (`PhysicsRigidBodyAPI` + `PhysicsMassAPI`), each placed at its mate-solved world pose (`xformOp:translate` / `xformOp:orient`) so links never spawn stacked. `physics:mass`, `physics:centerOfMass`, and inertia as `physics:diagonalInertia` (principal moments) + `physics:principalAxes` (the principal frame) — the same mass-properties and density rules as URDF, run through the MJCF exporter's positive-definite regularization, so a thin-plate link cannot produce a tensor the solver rejects.
+- **Joints** — `PhysicsFixedJoint` / `PhysicsRevoluteJoint` / `PhysicsPrismaticJoint` with `physics:body0` / `physics:body1`, joint frames on BOTH bodies (`localPos0/1`, `localRot0/1`, derived from the solved poses so both sides name the same world frame at rest), `physics:axis` as a token (`"X"` / `"Y"` / `"Z"`; an off-axis connector becomes `"X"` plus a frame rotation), and limits — **degrees** for revolute, **metres** for prismatic.
+- **Drives** — emitted ONLY when declared in `options.drives`, keyed by mate name: `{ stiffness, damping, maxForce?, targetPosition? }`, applied as `PhysicsDriveAPI:angular` (revolute) or `PhysicsDriveAPI:linear` (prismatic). Mates declare kinematics, not actuator gains, so the exporter never invents a drive — a zero-gain drive would silently hold a joint at its target. A drive keyed by a name that is not a revolute/prismatic mate fails with `cli.invalid-args`, listing the drivable joints.
+- **Geometry** — a `visual` and a `collision` Mesh per link, both referencing the link's `.usda` mesh layer (points in metres, body frame). Collision carries `PhysicsMeshCollisionAPI` with `physics:approximation` from `options.collisionApproximation`: `convexHull` (default, fast) or `convexDecomposition` (keeps concave links such as forks and clevises honest).
+- **Materials** — a `UsdPreviewSurface` per link from the part's own appearance: `.finish()`, `.material()`, `.color()`, or the default finish seeded by `arm.part(..., { material })`. A part with no appearance gets no binding rather than an invented grey.
+
+Fail-closed gates:
+
+- `export.usd.joint-unsupported` — a `planar`, `cylindrical`, `pin_slot`, or `ball` mate has no UsdPhysics joint that keeps its DOF count. Nothing is written. Restructure the mates, or export `format: 'sdf-gazebo'`, which carries the full mate vocabulary.
+- `export.usd.mass-missing` — a link's mass came back non-finite or non-positive. Nothing is written. Declare a density or material on the part and check it is a closed solid.
+- `export.usd.pose-unsolved` (warning) — the mate graph did not solve, so links were placed at the stage origin. Run `solve_mates`, fix the connector geometry, re-export.

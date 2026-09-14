@@ -100,6 +100,16 @@ export interface DiffParamSummary {
   max?: number;
 }
 
+/** Pointer to the material-level diff, emitted when a textual/structural diff
+ *  is not enough to say what physically changed. */
+export interface DeeperDiffPointer {
+  tool: 'diff_geometry';
+  /** Why the pointer fired — the geometry-affecting change that was seen. */
+  reason: string;
+  /** Body names worth comparing at material level. */
+  bodies: string[];
+}
+
 export interface DiffSideHeader {
   featureCount: number;
   partCount: number;
@@ -137,6 +147,11 @@ export type DiffScriptsOutput =
         removed: DiffParamSummary[];
         changed: { name: string; base: DiffParamSummary; revised: DiffParamSummary }[];
       };
+      /** Present only when this diff touched geometry-affecting ops. A volume
+       *  delta is ambiguous about WHERE material moved; `diff_geometry` resolves
+       *  it on the same two scripts with added/removed/common volume plus a
+       *  per-body verdict. Absent when nothing geometric changed. */
+      deeperDiffAvailable?: DeeperDiffPointer;
     }
   | {
       ok: false;
@@ -187,11 +202,14 @@ export async function diffScriptsTool(input: DiffScriptsInput): Promise<DiffScri
   const b = base.side;
   const r = revised.side;
 
+  const parts = diffParts(b.parts, r.parts);
+  const deeper = deeperDiffPointer(parts, b.featureCount, r.featureCount);
+
   return {
     ok: true,
     base: { featureCount: b.featureCount, partCount: b.parts.length, isAssembly: b.isAssembly },
     revised: { featureCount: r.featureCount, partCount: r.parts.length, isAssembly: r.isAssembly },
-    parts: diffParts(b.parts, r.parts),
+    parts,
     interference: {
       baseTotalMm3: b.interferenceTotalMm3,
       revisedTotalMm3: r.interferenceTotalMm3,
@@ -201,7 +219,41 @@ export async function diffScriptsTool(input: DiffScriptsInput): Promise<DiffScri
     },
     mates: diffByName(b.mates, r.mates),
     params: diffByName(b.params, r.params),
+    ...(deeper !== undefined ? { deeperDiffAvailable: deeper } : {}),
   };
+}
+
+/** A part whose volume or bbox moved, or whose feature count changed, is a
+ *  GEOMETRY-affecting edit — the class of change where `diff_scripts`'s own
+ *  numbers cannot say whether material was added, removed, or just displaced.
+ *  Point the agent at `diff_geometry` instead of letting it reach for a render.
+ *  Pure add/remove of a whole part needs no pointer: that answer is already
+ *  unambiguous. */
+export function deeperDiffPointer(
+  parts: ReturnType<typeof diffParts>,
+  baseFeatureCount: number,
+  revisedFeatureCount: number,
+): DeeperDiffPointer | undefined {
+  const changedNames = parts.changed.map((p) => p.name);
+  if (changedNames.length > 0) {
+    return {
+      tool: 'diff_geometry',
+      reason:
+        `${changedNames.length} part(s) changed shape in place; a volume/bbox delta cannot say ` +
+        'whether material was added, removed, or only displaced.',
+      bodies: changedNames,
+    };
+  }
+  if (baseFeatureCount !== revisedFeatureCount && parts.unchanged.length > 0) {
+    return {
+      tool: 'diff_geometry',
+      reason:
+        `The feature count changed (${baseFeatureCount} -> ${revisedFeatureCount}) while every part ` +
+        'kept its volume and bbox — a topology-only edit this diff cannot see.',
+      bodies: [...parts.unchanged],
+    };
+  }
+  return undefined;
 }
 
 // ----- Per-side evaluation ---------------------------------------------------

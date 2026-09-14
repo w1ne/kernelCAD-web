@@ -4,7 +4,7 @@
 // revised script: per-part added/removed/renamed/changed, interference
 // totals, mate-graph changes, and param changes.
 import { describe, it, expect, beforeAll } from 'vitest';
-import { diffScriptsTool, ROOT_PART_NAME } from '../../../src/agent/mcp/tools/diffScripts';
+import { diffScriptsTool, deeperDiffPointer, ROOT_PART_NAME } from '../../../src/agent/mcp/tools/diffScripts';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 
 const BASE_RIG = `
@@ -144,5 +144,47 @@ describe('diffScriptsTool', () => {
     if (r.ok) return;
     expect(r.side).toBe('base');
     expect(r.errorCode).toBe('cli.invalid-args');
+  });
+
+  it('points at diff_geometry when a part changed shape in place', async () => {
+    const revised = BASE_RIG.replace(`param('lidW', 10,`, `param('lidW', 20,`);
+    const r = await diffScriptsTool({ baseCode: BASE_RIG, code: revised });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.deeperDiffAvailable).toBeDefined();
+    expect(r.deeperDiffAvailable!.tool).toBe('diff_geometry');
+    expect(r.deeperDiffAvailable!.bodies).toEqual(['lid']);
+    expect(r.deeperDiffAvailable!.reason).toMatch(/added, removed, or only displaced/);
+  });
+
+  it('stays silent about diff_geometry when nothing changed shape in place', async () => {
+    const r = await diffScriptsTool({ baseCode: BASE_RIG, code: BASE_RIG });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.deeperDiffAvailable).toBeUndefined();
+  });
+});
+
+describe('deeperDiffPointer', () => {
+  const emptyParts = { added: [], removed: [], renamed: [], changed: [], unchanged: [] };
+
+  it('fires on an in-place shape change', () => {
+    const p = deeperDiffPointer(
+      { ...emptyParts, changed: [{ name: 'lid' }] } as never,
+      5,
+      5,
+    );
+    expect(p).toMatchObject({ tool: 'diff_geometry', bodies: ['lid'] });
+  });
+
+  it('fires on a topology-only edit that left every volume and bbox alone', () => {
+    const p = deeperDiffPointer({ ...emptyParts, unchanged: ['plate'] } as never, 3, 4);
+    expect(p).toMatchObject({ tool: 'diff_geometry', bodies: ['plate'] });
+    expect(p!.reason).toMatch(/feature count changed/);
+  });
+
+  it('stays silent for a pure whole-part add — that answer is already unambiguous', () => {
+    expect(deeperDiffPointer({ ...emptyParts, added: [{ name: 'knob' }] } as never, 3, 4))
+      .toBeUndefined();
   });
 });

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 272 codes', () => {
+  it('emits exactly 276 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -87,8 +87,19 @@ describe('diagnostic catalogue invariants', () => {
     //   kinematic.sweep-tolerance.combo-cap-exceeded (checkStaticHold's
     //   missing-actuator guard + sweepTolerance's 64-combo cartesian cap).
     //   = 252.
-    expect(DIAGNOSTIC_CODES).toHaveLength(272);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(272);
+    //  + 2 USD Isaac export fail-closed gates: export.usd.joint-unsupported
+    //    (a mate kind with no UsdPhysics joint equivalent) and
+    //    export.usd.mass-missing (a link whose mass-properties are non-finite
+    //    or non-positive, which PhysX rejects).
+    //  + 1 diff.body.unmatched (diff_geometry could not pair a body across the
+    //    two models by name or by positional fallback — the first code in the
+    //    new `diff` group).
+    //   = 251.
+    //  + 1 export.usd.pose-unsolved (usd-isaac could not solve the mate graph
+    //    to per-link poses; links spawn at the stage origin — the USD sibling
+    //    of export.sdf-gazebo.pose-unsolved). = 252.
+    expect(DIAGNOSTIC_CODES).toHaveLength(276);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(276);
   });
 
   it('every code has a non-empty hint template', () => {

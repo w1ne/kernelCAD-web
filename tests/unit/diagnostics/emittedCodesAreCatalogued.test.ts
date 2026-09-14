@@ -76,7 +76,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     ).toEqual([]);
   });
 
-  it('catalogue has exactly 272 codes', () => {
+  it('catalogue has exactly 276 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -193,7 +193,14 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       assembly.joint.static-hold.margin-low,
     //       kinematic.static-hold.no-actuator-declared,
     //       kinematic.sweep-tolerance.combo-cap-exceeded) = 252.
-    expect(catalogue.size).toBe(272);
+    //  +  2 USD Isaac export fail-closed gates: export.usd.joint-unsupported
+    //       (mate kind with no UsdPhysics joint equivalent) and
+    //       export.usd.mass-missing (non-finite / non-positive link mass).
+    //  +  1 diff.body.unmatched (diff_geometry could not pair a body across the
+    //       two models — first code in the new `diff` group) = 251.
+    //  +  1 export.usd.pose-unsolved (usd-isaac mate-graph solve failed; links
+    //       emitted at the stage origin) = 252.
+    expect(catalogue.size).toBe(276);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

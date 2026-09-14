@@ -9,6 +9,7 @@ import {
   coreRuntimePreludeToolEntries,
 } from './registry/coreRuntimeTools';
 import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools';
+import { geometryDiffToolEntries } from './registry/geometryDiffTools';
 import {
   inspectionVerificationPreludeToolEntries,
   inspectionVerificationQueryToolEntries,
@@ -61,6 +62,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   // shift existing indices (a kernelCAD-server contract; see the
   // publicContract test's per-family slice-index assertions).
   ...mechanismSimToolEntries,
+  // New families are appended here, never inserted: index order is public.
+  ...geometryDiffToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

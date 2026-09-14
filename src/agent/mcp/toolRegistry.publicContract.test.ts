@@ -16,6 +16,7 @@ import { catalogToolEntries } from './registry/catalogTools';
 import { coreRuntimeToolEntries } from './registry/coreRuntimeTools';
 import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools';
 import { feaToolEntries } from './registry/feaTools';
+import { geometryDiffToolEntries } from './registry/geometryDiffTools';
 import { inspectionVerificationToolEntries } from './registry/inspectionVerificationTools';
 import { printToolEntries } from './registry/printTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
@@ -69,6 +70,9 @@ const EXPECTED_TOOL_NAMES = [
   'send_to_printer',
   'repair_script',
   'sweep_tolerance',
+  // Tail-appended: a new tool goes on the END so kernelCAD-server's
+  // index-based consumption of the historical order keeps working.
+  'diff_geometry',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -288,6 +292,15 @@ describe('toolRegistry public contract', () => {
 
     expect(names).toEqual(['sweep_tolerance']);
     expect(TOOL_REGISTRY.slice(38, 39)).toEqual(mechanismSimToolEntries);
+  });
+
+  it('composes the geometry diff family at the registry tail, after every pre-existing family', () => {
+    const names = geometryDiffToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual(['diff_geometry']);
+    // Tail-appended: the 38 historical entries keep indices 0..37.
+    expect(TOOL_REGISTRY.slice(38)).toEqual(geometryDiffToolEntries);
+    expect(TOOL_REGISTRY).toHaveLength(39);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {
