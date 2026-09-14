@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { FeatureKind, FeatureId, FeatureRef, Param } from '../../shared/intent/types';
-import type { DfmSpec, DfmSpecMetadata } from '../../shared/intent/dfmSpecRecord';
+import {
+  FDM_DEFAULTS,
+  type DfmFdmMetadata,
+  type DfmSpec,
+  type DfmSpecMetadata,
+} from '../../shared/intent/dfmSpecRecord';
+import { DEFAULT_PRINTER_PROFILE, PRINTER_PROFILES } from '../../kernel/export/gcode/printerProfiles';
 import type {
   FeaLoadMetadata,
   FeaStudyMetadata,
@@ -64,8 +70,14 @@ export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
     );
   };
 
-  if (args.minWall === undefined && args.minClearance === undefined && !(args.channels?.length)) {
-    bad('spec', 'declares no checks; pass minWall, minClearance, and/or channels');
+  // FDM fields first: a stray `nozzleMm` without `process: 'fdm'` deserves
+  // the specific fix, not the generic "declares no checks".
+  const fdm = normalizeFdmSettings(args, bad);
+  if (
+    args.minWall === undefined && args.minClearance === undefined &&
+    !(args.channels?.length) && fdm === undefined
+  ) {
+    bad('spec', "declares no checks; pass minWall, minClearance, channels, and/or process: 'fdm'");
   }
   if (args.minWall !== undefined && !(Number.isFinite(args.minWall) && args.minWall > 0)) {
     bad('minWall', `must be a positive finite number; got ${args.minWall}`);
@@ -147,6 +159,7 @@ export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
     channels: (args.channels ?? []).map(c => ({
       part: c.part, name: c.name, openings: c.openings, sealed: c.sealed ?? false,
     })),
+    ...(fdm !== undefined ? { fdm } : {}),
   };
 
   return {
@@ -155,6 +168,73 @@ export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
     inputs: {},
     metadata: metadata as unknown as Record<string, unknown>,
   };
+}
+
+const FDM_AXIS_TOKENS: Record<string, [number, number, number]> = {
+  '+x': [1, 0, 0], '-x': [-1, 0, 0],
+  '+y': [0, 1, 0], '-y': [0, -1, 0],
+  '+z': [0, 0, 1], '-z': [0, 0, -1],
+};
+
+/** Validate + normalize the `process: 'fdm'` fields. FDM-only fields without
+ *  the process are rejected: silently ignoring a declared nozzle or overhang
+ *  limit would disable the gate the author asked for. */
+function normalizeFdmSettings(
+  args: DfmSpec,
+  bad: (field: string, why: string) => never,
+): DfmFdmMetadata | undefined {
+  const fdmOnly = ['buildDirection', 'nozzleMm', 'maxOverhangDeg', 'maxBridgeMm', 'printer'] as const;
+  if (args.process === undefined) {
+    const stray = fdmOnly.filter(k => args[k] !== undefined);
+    if (stray.length > 0) {
+      bad(stray[0], "is an FDM setting; add process: 'fdm' to run the FDM printability check");
+    }
+    return undefined;
+  }
+  if (args.process !== 'fdm') {
+    bad('process', `must be 'fdm' (the only supported process); got ${JSON.stringify(args.process)}`);
+  }
+
+  let buildDirection: [number, number, number] = [...FDM_DEFAULTS.buildDirection];
+  const dir = args.buildDirection;
+  if (dir !== undefined) {
+    if (typeof dir === 'string') {
+      const token = FDM_AXIS_TOKENS[dir];
+      if (token === undefined) {
+        bad('buildDirection', `must be one of ${Object.keys(FDM_AXIS_TOKENS).join(', ')} or a [x, y, z] vector; got ${JSON.stringify(dir)}`);
+      }
+      buildDirection = [...token];
+    } else {
+      const ok = Array.isArray(dir) && dir.length === 3 && dir.every(c => typeof c === 'number' && Number.isFinite(c));
+      const len = ok ? Math.hypot(dir[0], dir[1], dir[2]) : 0;
+      if (!ok || len < 1e-9) {
+        bad('buildDirection', `must be an axis token or a non-zero finite [x, y, z] vector; got ${JSON.stringify(dir)}`);
+      }
+      buildDirection = [dir[0] / len, dir[1] / len, dir[2] / len];
+    }
+  }
+  const positive = (field: 'nozzleMm' | 'maxBridgeMm', v: number | undefined, dflt: number): number => {
+    if (v === undefined) return dflt;
+    if (!(typeof v === 'number' && Number.isFinite(v) && v > 0)) {
+      bad(field, `must be a positive finite number; got ${v}`);
+    }
+    return v;
+  };
+  const nozzleMm = positive('nozzleMm', args.nozzleMm, FDM_DEFAULTS.nozzleMm);
+  const maxBridgeMm = positive('maxBridgeMm', args.maxBridgeMm, FDM_DEFAULTS.maxBridgeMm);
+  let maxOverhangDeg: number = FDM_DEFAULTS.maxOverhangDeg;
+  if (args.maxOverhangDeg !== undefined) {
+    const v = args.maxOverhangDeg;
+    if (!(typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 90)) {
+      bad('maxOverhangDeg', `must be a finite number of degrees in [0, 90] (0 = vertical wall, 90 = flat ceiling); got ${v}`);
+    }
+    maxOverhangDeg = v;
+  }
+  const printer = args.printer ?? DEFAULT_PRINTER_PROFILE;
+  if (typeof printer !== 'string' || PRINTER_PROFILES[printer] === undefined) {
+    bad('printer', `must name a bundled printer profile (${Object.keys(PRINTER_PROFILES).join(', ')}); got ${JSON.stringify(printer)}`);
+  }
+  return { buildDirection, nozzleMm, maxOverhangDeg, maxBridgeMm, printer };
 }
 
 export function buildCurve3DFeatureSpec(args: Curve3DCaptureArgs): AuthoringFeatureSpec {

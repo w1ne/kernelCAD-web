@@ -6,14 +6,16 @@ describe('dfm.* repair-hint discipline (Slice E)', () => {
     .filter(([code]) => code.startsWith('dfm.'))
     .map(([code, spec]) => ({ code, spec }));
 
-  it('registers exactly 28 dfm.* codes', () => {
+  it('registers exactly 35 dfm.* codes', () => {
     // 24 DFM preflight codes (Slice E: dfm_preflight vendor/material/
     // thickness inputs, hole/slot/web, bend.*, size.*, dxf.*, rule.*)
     // + 4 print-prep gate codes (W3 Task 7: dfm.wall.too-thin,
     // dfm.clearance.violated, dfm.channel.openings-mismatch,
-    // dfm.void.undeclared). Adding a dfm.* code? It must satisfy every
-    // discipline test below, then bump this count.
-    expect(dfmCodes).toHaveLength(28);
+    // dfm.void.undeclared)
+    // + 7 FDM printability codes (dfmSpec process 'fdm': dfm.fdm.*).
+    // Adding a dfm.* code? It must satisfy every discipline test below,
+    // then bump this count.
+    expect(dfmCodes).toHaveLength(35);
   });
 
   it('every dfm.* code has a non-empty hintTemplate', () => {

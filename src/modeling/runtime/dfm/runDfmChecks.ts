@@ -17,6 +17,11 @@
 //     sealed cavities must be caught even when nothing else is declared.
 //     Mouth counting runs only for parts with a declared non-sealed
 //     channel (analyzeVoids' zero-cost path otherwise).
+//   - `checkFdmPrintability`: per printed part, when the spec declares
+//     `process: 'fdm'` — overhangs/bridges, nozzle-relative walls and
+//     features, bed contact, bed fit, and the orientation ranking, in the
+//     part-local frame (the frame the part is printed in). Shares the part's
+//     mesh + BVH with min-wall and voids.
 //
 // Part resolution: the LAST record whose lowered shape is a SceneBackend
 // wins (assembly scripts); single-shape scripts fall back to
@@ -74,6 +79,7 @@ import { checkClearance, type ClearancePairReport } from './clearance';
 import { checkMinWall, MAX_REPORTED_CLUSTERS, type MinWallResult } from './minWall';
 import { analyzeVoids, type VoidTopologyResult } from './voidTopology';
 import { TriangleBvh } from './meshBvh';
+import { checkFdmPrintability, type FdmPartReport } from './fdmCheck';
 
 export interface DfmCheckReport {
   /** Every part pair of the scene with its measured status — including
@@ -91,13 +97,18 @@ export interface DfmCheckReport {
    *  (same convention as `walls`); the matching diagnostics report them in
    *  world frame. */
   voids: { part: string; result: VoidTopologyResult }[];
+  /** FDM printability per printed part; present only when the spec declares
+   *  `process: 'fdm'`. Overhang bboxes, wall and feature locations are
+   *  part-LOCAL (the print frame); the matching diagnostics report world
+   *  frame. */
+  fdm?: { part: string; result: FdmPartReport }[];
   /** ALL locations embedded in diagnostic messages are WORLD-frame: each
    *  part's FK worldTransform is applied before formatting (identity for
    *  single-shape models), so they compose with clearance findings on
    *  transformed assemblies. */
   diagnostics: CompilerDiagnostic[];
-  /** Per-phase wall time (ms): 'clearance', 'mesh', 'walls', 'voids' (each
-   *  present only when the phase ran) and 'total'. Perf evidence, surfaced
+  /** Per-phase wall time (ms): 'clearance', 'mesh', 'walls', 'voids', 'fdm'
+   *  (each present only when the phase ran) and 'total'. Perf evidence, surfaced
    *  in --json by Task 8. */
   timings: Record<string, number>;
 }
@@ -163,10 +174,12 @@ export async function runDfmChecksOnModel(model: BuiltModel): Promise<DfmCheckRe
   // --- Per printed part: mesh ONCE, share one BVH across wall + void -------
   const walls: DfmCheckReport['walls'] = [];
   const voids: DfmCheckReport['voids'] = [];
+  const fdm: NonNullable<DfmCheckReport['fdm']> = [];
   const excluded = excludeMatcher(spec.exclude);
   let meshMs = 0;
   let wallsMs = 0;
   let voidsMs = 0;
+  let fdmMs = 0;
   let meshedAny = false;
 
   for (const part of parts) {
@@ -205,6 +218,22 @@ export async function runDfmChecksOnModel(model: BuiltModel): Promise<DfmCheckRe
               `cluster of ${v.sampleCount} sample(s).${note}`,
           ));
         });
+      }
+
+      // FDM printability (only when declared).
+      if (spec.fdm !== undefined) {
+        const t0 = performance.now();
+        const r = checkFdmPrintability(part.shape as OcctBackend, {
+          settings: spec.fdm,
+          part: part.name,
+          refOwner: part.refOwner,
+          mesh,
+          bvh,
+          toWorld: p => part.worldTransform.point(p),
+        });
+        fdmMs += performance.now() - t0;
+        fdm.push({ part: part.name, result: r.report });
+        diagnostics.push(...r.diagnostics);
       }
 
       // Void/channel topology (always — undeclared cavities must be caught).
@@ -271,7 +300,7 @@ export async function runDfmChecksOnModel(model: BuiltModel): Promise<DfmCheckRe
         severity: 'warn',
         message:
           `dfm: checking part '${part.name}' failed (${e instanceof Error ? e.message : String(e)}); ` +
-          'min-wall and void results for this part are incomplete.',
+          'min-wall, void, and FDM results for this part are incomplete.',
         hint:
           'The OCCT kernel could not process this part — check it for degenerate geometry with ' +
           'evaluate; the remaining parts were still checked.',
@@ -283,10 +312,11 @@ export async function runDfmChecksOnModel(model: BuiltModel): Promise<DfmCheckRe
     timings.mesh = meshMs;
     timings.voids = voidsMs;
     if (spec.minWall !== undefined) timings.walls = wallsMs;
+    if (spec.fdm !== undefined) timings.fdm = fdmMs;
   }
   timings.total = performance.now() - tStart;
 
-  return { clearance, walls, voids, diagnostics, timings };
+  return { clearance, walls, voids, ...(spec.fdm !== undefined ? { fdm } : {}), diagnostics, timings };
 }
 
 // --- Resolution helpers -----------------------------------------------------
@@ -295,6 +325,10 @@ interface ResolvedPart {
   name: string;
   /** LOCAL-frame shape (the SceneBackend convention). */
   shape: ShapeBackend;
+  /** Owner segment of `@kc[...]` face refs: the part name for assemblies,
+   *  the producing feature id for single-shape scripts (list_faces'
+   *  convention). */
+  refOwner: string;
   /** Part-local → world SE(3) from the scene's FK; identity for
    *  single-shape models. Every location REPORTED in diagnostics is mapped
    *  through this so the diagnostics array shares one world frame. */
@@ -313,6 +347,7 @@ function resolveParts(model: BuiltModel): { scene?: SceneBackend; parts: Resolve
         parts: s.parts.map(p => ({
           name: p.name,
           shape: p.shape,
+          refOwner: p.name,
           worldTransform: p.worldTransform,
         })),
       };
@@ -320,7 +355,15 @@ function resolveParts(model: BuiltModel): { scene?: SceneBackend; parts: Resolve
   }
   const single = model.rootShape ?? model.tailShape;
   if (single !== undefined) {
-    return { parts: [{ name: 'shape', shape: single, worldTransform: Transform.identity() }] };
+    const producer = [...model.records].reverse().find(r => model.shapes.get(r.id) === single);
+    return {
+      parts: [{
+        name: 'shape',
+        shape: single,
+        refOwner: producer?.id ?? 'shape',
+        worldTransform: Transform.identity(),
+      }],
+    };
   }
   return { parts: [] };
 }
