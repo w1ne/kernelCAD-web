@@ -2679,6 +2679,30 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'warn',
     group: 'drawing',
     description: 'svg-drawing balloons or partsList was requested but the script has no assembly, so no BOM rows exist to number balloons or fill the table.',
+  // Curves-surfacing slice (3) — G2 blend curve, surface-surface intersection, rail loft.
+  'feature.curve-bridge.degenerate-end': {
+    hintTemplate:
+      'curveBridge / Curve3D.bridge could not infer a join: the chosen ends coincide (chord < 1e-9 mm) or a tangent vanished. Pick different `ends` (`end-start` / `end-end` / `start-start` / `start-end`), separate the curves, or supply a non-zero tension.',
+    nextAction: { kind: 'fix-arg', field: 'ends' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'curveBridge could not build a Hermite blend because the chosen endpoints coincide or a tangent has vanishing magnitude.',
+  },
+  'feature.surface-intersection.none': {
+    hintTemplate:
+      'surfaceIntersection found no curve: the two faces/solids do not meet. Translate one operand so they cut, or pick different faces. A miss is not a tangent-grazing "almost" — the solids must actually cross.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'move the operands so their faces cut, then retry surfaceIntersection' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'BRepAlgoAPI_Section returned no edges — the two surfaces or solids do not intersect.',
+  },
+  'feature.loft.rail-miss': {
+    hintTemplate:
+      'A loft rail does not pass near every section (or more than two rails were given). OCCT MakePipeShell accepts one spine plus one auxiliary spine; each rail must come within 1 mm of every section wire. Shorten the gap, add a section on the rail, or drop extra rails.',
+    nextAction: { kind: 'fix-arg', field: 'opts.rails' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A guide rail missed a loft section, or more than two rails were supplied (OCCT supports one spine plus one auxiliary spine).',
   },
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 

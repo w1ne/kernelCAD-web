@@ -70,7 +70,7 @@ Turn a profile into a solid, or grow one along a path.
 | `Sketch.extrude(depth: Editable<number>) => Shape` | Extrude this closed sketch normal to its plane by `depth` (mm). |
 | `Sketch.revolve(opts?: { angleDeg?: Editable<number> }) => Shape` | Revolve around the Z axis, 360 degrees unless `angleDeg` (number or ParamRef). |
 | `Sketch.sweep(rail, opts?: { frenet?, transitionMode?, spine? }) => Shape` | Sweep this profile along a 3D rail. |
-| `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, ruled?, startPoint?, endPoint? }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
+| `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, ruled?, startPoint?, endPoint?, rails?: Curve3D[] }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
 | `variableSweep(spine: Curve3D \| Sketch \| Vec3[], sections: Array<{ t: number; profile: Sketch }>, opts?: { closed?: boolean; continuity?: "C0" \| "C1" \| "C2" }) => Shape` | Multi-section sweep that blends `sections[i].profile` along the spine at the section's `t ∈ [0, 1]` spine parameter. |
 | `helix({ radius: Editable<number>, pitch: Editable<number>, turns: Editable<number>, axis?, pointsPerTurn?, startAngle?: Editable<number> }) => [number, number, number][]` | Helix rail for `Sketch.sweep`. |
 
@@ -177,6 +177,8 @@ NURBS curves and surfaces, plus the evaluators for measuring them before they be
 | `spline3d(points: Vec3[], opts?: { tension?: number; closed?: boolean }) => Curve3D` | Catmull-Rom-to-cubic-Bezier convenience that interpolates the supplied points through a cubic NURBS curve. |
 | `hermiteG2(a: { point: Vec3; tangent: Vec3; curvature?: Vec3 }, b: { point: Vec3; tangent: Vec3; curvature?: Vec3 }) => Curve3D` | Quintic Hermite Curve3D that interpolates the two endpoints with matching positions, first derivatives (tangents), and second derivatives (curvatures). |
 | `PathBuilder.hermiteG2(a: HermiteEndpoint2D, b: HermiteEndpoint2D) => PathBuilder` | NURBS Slice D — 2D quintic-Hermite transition between two endpoints, each with prescribed point + first derivative (tangent) + optional second derivative (curvature). |
+| `curveBridge(a: Curve3D, b: Curve3D, opts: { continuity: 'G1' \| 'G2'; ends?: 'end-start' \| 'end-end' \| 'start-start' \| 'start-end'; tension?: number }) => Curve3D` | Infer end points, tangents and (G2) curvature from two existing Curve3Ds and build a degree-5 Hermite blend. |
+| `surfaceIntersection(a: Shape \| Surface, b: Shape \| Surface) => Promise<Curve3D[]>` | Exact surface–surface or face–face intersection via OCCT `BRepAlgoAPI_Section`. |
 | `nurbsSurface({ controls, degree, weights?, knots?, periodic? }) => Surface` | Build a NURBS surface from an explicit control net + degree. |
 | `surfaceFromCurves(sections: Sketch[]) => Surface` | Skin a NURBS surface through 2+ closed Sketch cross-sections in declaration order. |
 | `surfaceFromBoundary(curves: [Curve3D, Curve3D, Curve3D, Curve3D], opts?: { continuity?: "C0" \| "C1" \| "C2" \| ("C0" \| "C1" \| "C2")[]; sampling?: number }) => Surface` | Build the shipped filling surface: one NURBS face through 4 boundary curves. |
@@ -190,6 +192,7 @@ NURBS curves and surfaces, plus the evaluators for measuring them before they be
 | `Curve3D.pointAt(t: number) => [number, number, number]` | World-space point on the curve at parameter `t ∈ [0, 1]` (clamped). |
 | `Curve3D.tangentAt(t: number) => [number, number, number]` | Unit tangent vector at parameter `t ∈ [0, 1]` (clamped). |
 | `Curve3D.domain() => [number, number]` | Parametric domain. |
+| `Curve3D.bridge(other: Curve3D, opts: { continuity: 'G1' \| 'G2'; ends?: 'end-start' \| 'end-end' \| 'start-start' \| 'start-end'; tension?: number }) => Curve3D` | Quintic Hermite blend from this curve to `other`. |
 | `Curve3D.analytics.closestPoint(pt: Vec3, opts?: { tolerance?: number }) => Vec3` | World-space closest point on the curve to the query `pt` (Newton-Raphson). |
 | `Curve3D.analytics.closestParam(pt: Vec3, opts?: { tolerance?: number }) => number` | Parametric coordinate `t ∈ [0, 1]` of the closest point on the curve to `pt`. |
 | `Curve3D.analytics.divideByEqualArcLength(n: number) => CurveLengthSample[]` | Divide the curve into `n` equal-arc-length segments; returns `n + 1` `{ t, pt, arcLength }` samples covering both endpoints. |

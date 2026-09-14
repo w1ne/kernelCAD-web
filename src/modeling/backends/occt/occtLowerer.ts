@@ -25,6 +25,7 @@ import {
   buildNurbsFace, buildSkinnedSurface, thickenFace, faceToShape,
 } from '../../../kernel/backends/occt/nurbsSurfaceLowerer';
 import { lowerCurve3D } from './curve3dLowerer';
+import { lowerLoftWithRails, railHitsSections } from './loftWithRailsLowerer';
 import { isCurve3DMetadata } from '../../../shared/intent/curve3dRecord';
 import { lowerVariableSweep, type VariableSweepSectionLowered } from './variableSweepLowerer';
 import { isVariableSweepMetadata } from '../../../shared/intent/variableSweepRecord';
@@ -1529,23 +1530,154 @@ export class OcctLowerer implements FeatureLowerer {
             }));
           }
           const ruled = (r.params.ruled?.evaluated ?? 0) > 0.5;
-          try {
-            shape = OcctBackend.loftFromSketches(sketches, planes, {
-              ruled,
-              startPoint: meta?.startPoint,
-              endPoint: meta?.endPoint,
-            });
-          } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e);
+          const railIds = Array.isArray((meta as { rails?: unknown } | undefined)?.rails)
+            ? ((meta as { rails: string[] }).rails)
+            : [];
+          const railCount = r.params.railCount?.evaluated ?? railIds.length;
+          if (railCount > 2 || railIds.length > 2) {
             diagnostics.push({
               target: 'export-occt',
-              code: 'feature.kernel-failed',
+              code: 'feature.loft.rail-miss',
               featureId: r.id,
               severity: 'error',
-              message: `OCCT loft failed: ${msg}`,
-              hint: 'OCCT could not loft these sections — try ruled: true for sharp transitions, or use sections with similar vertex counts and orientation.',
+              message: `loft rails: OCCT MakePipeShell accepts at most 2 rails (spine + auxiliary); got ${Math.max(railCount, railIds.length)}.`,
+              hint: HINT_TEMPLATES['feature.loft.rail-miss'].template,
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          if (railIds.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const railEdges: any[] = [];
+            for (const railId of railIds) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              let edge: any = this.importedGeometry.get(railId);
+              if (!edge && allRecords) {
+                const upstream = allRecords.find((u) => u.id === railId);
+                if (upstream?.kind === 'curve3d') {
+                  const upMeta = upstream.metadata as { curve3d?: unknown } | undefined;
+                  const cm = upMeta?.curve3d;
+                  if (!isCurve3DMetadata(cm)) {
+                    diagnostics.push({
+                      target: 'export-occt',
+                      code: 'feature.curve3d.degenerate-controls',
+                      featureId: r.id,
+                      severity: 'error',
+                      message: `loft: rail curve3d '${railId}' is missing valid metadata.curve3d.`,
+                      hint: 'Build each rail via nurbsCurve(...) / spline3d(...) / curveBridge(...).',
+                    });
+                    return { shape: undefined as unknown as ShapeBackend, diagnostics };
+                  }
+                  try {
+                    edge = lowerCurve3D(cm).edge;
+                    this.importedGeometry.set(railId, edge as unknown as ShapeBackend);
+                  } catch (e) {
+                    const msg = e instanceof Error ? e.message : String(e);
+                    diagnostics.push({
+                      target: 'export-occt',
+                      code: 'feature.kernel-failed',
+                      featureId: r.id,
+                      severity: 'error',
+                      message: `loft: failed to lower rail '${railId}': ${msg}`,
+                      hint: 'kernel-failed — verify the rail NURBS control net.',
+                    });
+                    return { shape: undefined as unknown as ShapeBackend, diagnostics };
+                  }
+                }
+              }
+              if (!edge) {
+                diagnostics.push({
+                  target: 'export-occt',
+                  code: 'feature.loft.rail-miss',
+                  featureId: r.id,
+                  severity: 'error',
+                  message: `loft: rail '${railId}' could not be resolved to a curve.`,
+                  hint: HINT_TEMPLATES['feature.loft.rail-miss'].template,
+                });
+                return { shape: undefined as unknown as ShapeBackend, diagnostics };
+              }
+              railEdges.push(edge);
+            }
+            try {
+              // Lift each section onto its plane and pull the outer wire.
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const sectionWires: any[] = [];
+              for (let i = 0; i < sketches.length; i++) {
+                const s = sketches[i] as unknown as {
+                  kind?: string;
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  _drawing?: any;
+                  _hasNurbs?: boolean;
+                  _commands?: unknown;
+                };
+                const p = planes[i];
+                if (s.kind !== 'sketch' || (!s._drawing && !s._hasNurbs)) {
+                  diagnostics.push({
+                    target: 'export-occt',
+                    code: 'feature.invalid-args',
+                    featureId: r.id,
+                    severity: 'error',
+                    message: `loft: input ${i} is not a sketch.`,
+                    hint: 'Pass closed Sketch sections to loft.',
+                  });
+                  return { shape: undefined as unknown as ShapeBackend, diagnostics };
+                }
+                let lifted: { face: () => { outerWire: () => { wrapped: unknown } } };
+                if (s._hasNurbs && s._commands) {
+                  const { buildNurbsSketchOnPlane } = await import('../../../kernel/backends/occt/pathNurbsLowerer');
+                  lifted = buildNurbsSketchOnPlane(s._commands as never, p.plane) as unknown as typeof lifted;
+                } else {
+                  lifted = s._drawing!.sketchOnPlane(
+                    p.plane,
+                    p.origin,
+                  ) as unknown as typeof lifted;
+                }
+                sectionWires.push(lifted.face().outerWire().wrapped);
+              }
+              for (let i = 0; i < railEdges.length; i++) {
+                if (!railHitsSections(railEdges[i], sectionWires)) {
+                  diagnostics.push({
+                    target: 'export-occt',
+                    code: 'feature.loft.rail-miss',
+                    featureId: r.id,
+                    severity: 'error',
+                    message: `loft: rail[${i}] does not pass within 1 mm of every section.`,
+                    hint: HINT_TEMPLATES['feature.loft.rail-miss'].template,
+                  });
+                  return { shape: undefined as unknown as ShapeBackend, diagnostics };
+                }
+              }
+              shape = lowerLoftWithRails(railEdges[0], sectionWires, railEdges[1]);
+            } catch (e) {
+              const msg = e instanceof Error ? e.message : String(e);
+              diagnostics.push({
+                target: 'export-occt',
+                code: 'feature.kernel-failed',
+                featureId: r.id,
+                severity: 'error',
+                message: `OCCT rail loft failed: ${msg}`,
+                hint: 'OCCT MakePipeShell could not build a solid from these rails and sections — check that each rail meets every section.',
+              });
+              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            }
+          } else {
+            try {
+              shape = OcctBackend.loftFromSketches(sketches, planes, {
+                ruled,
+                startPoint: meta?.startPoint,
+                endPoint: meta?.endPoint,
+              });
+            } catch (e) {
+              const msg = e instanceof Error ? e.message : String(e);
+              diagnostics.push({
+                target: 'export-occt',
+                code: 'feature.kernel-failed',
+                featureId: r.id,
+                severity: 'error',
+                message: `OCCT loft failed: ${msg}`,
+                hint: 'OCCT could not loft these sections — try ruled: true for sharp transitions, or use sections with similar vertex counts and orientation.',
+              });
+              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            }
           }
         } else {
           return {

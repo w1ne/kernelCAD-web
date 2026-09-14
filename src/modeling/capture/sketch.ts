@@ -19,6 +19,7 @@ import {
   toParam,
 } from '../../shared/runtime/editableHelpers';
 import type { SketchCommand } from '../../shared/capture/sketchCommand';
+import type { Curve3D } from './curveProxy';
 import {
   TANGENT_SIDES,
   type TangentEntity2D,
@@ -277,6 +278,10 @@ export class Sketch {
    *   smooth interpolation — use for polyhedral / faceted lofts.
    * - `opts.startPoint` / `opts.endPoint` optionally extend the loft past the
    *   first / last section to a single point (cone-like terminations).
+   * - `opts.rails: Curve3D[]` constrains the loft to follow guide curves.
+   *   First rail is the spine; a second rail is the auxiliary spine
+   *   (`BRepOffsetAPI_MakePipeShell.SetMode_5`). More than two rails, or a
+   *   rail that misses a section, emit `feature.loft.rail-miss`.
    *
    * Returns a `Shape` (3D solid). Validation (section count, planes length)
    * happens at lowering and surfaces as `feature.loft.*` diagnostics.
@@ -290,6 +295,7 @@ export class Sketch {
       startPoint?: [Editable<number>, Editable<number>, Editable<number>];
       endPoint?: [Editable<number>, Editable<number>, Editable<number>];
       faceLabels?: FaceLabelsMap;
+      rails?: Curve3D[];
     } = {},
   ): Shape {
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'loft');
@@ -299,6 +305,27 @@ export class Sketch {
     for (let i = 0; i < allSketches.length; i++) {
       inputs[`sketch_${i}`] = { kind: 'feature', id: allSketches[i].id };
     }
+    const rails = opts.rails ?? [];
+    if (!Array.isArray(rails)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `loft: opts.rails must be an array of Curve3D; got ${typeof rails}.`,
+        this.id,
+        'invalid-args.loft.rails — pass Curve3D values from nurbsCurve / spline3d / curveBridge.',
+      );
+    }
+    for (let i = 0; i < rails.length; i++) {
+      const rail = rails[i];
+      if (!rail || typeof rail !== 'object' || !('id' in rail) || !('pointAt' in rail)) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `loft: opts.rails[${i}] is not a Curve3D.`,
+          this.id,
+          'invalid-args.loft.rails — each rail must be a Curve3D.',
+        );
+      }
+      inputs[`rail_${i}`] = { kind: 'feature', id: rail.id };
+    }
     return this.session.createShape({
       kind: 'loft',
       inputs,
@@ -307,6 +334,7 @@ export class Sketch {
         spacing: toParam(opts.spacing ?? 10, 'mm'),
         ruled: { expression: String(opts.ruled ?? false), unit: 'unitless', evaluated: opts.ruled ? 1 : 0 },
         sectionCount: { expression: String(allSketches.length), unit: 'unitless', evaluated: allSketches.length },
+        railCount: { expression: String(rails.length), unit: 'unitless', evaluated: rails.length },
       },
       metadata: {
         // Numeric coordinates are stored as plain numbers (unchanged records);
@@ -315,6 +343,10 @@ export class Sketch {
         planes: opts.planes?.map((p) => ({ ...p, origin: editablePoint3(p.origin) })),
         startPoint: opts.startPoint === undefined ? undefined : editablePoint3(opts.startPoint),
         endPoint: opts.endPoint === undefined ? undefined : editablePoint3(opts.endPoint),
+        planes: opts.planes,
+        startPoint: opts.startPoint,
+        endPoint: opts.endPoint,
+        rails: rails.map((c) => c.id),
         ...(faceLabels ? { faceLabels } : {}),
       },
     });

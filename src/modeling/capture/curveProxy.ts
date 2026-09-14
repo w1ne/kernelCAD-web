@@ -7,6 +7,7 @@ import { KernelError } from '../../shared/intent/kernelError';
 import { lazyEvalCurve } from '../backends/occt/curve3dEval';
 import { Curve3DAnalyticsImpl } from './curveAnalyticsProxy';
 import type { SurfaceProxy } from './surfaceProxy';
+import { bridgeCurves } from './bridgeCurves';
 
 /**
  * Capture-time proxy for a 3D parametric curve produced by `nurbsCurve()`.
@@ -49,6 +50,14 @@ export interface Curve3D {
   /** Parametric domain. Always `[0, 1]` today — the evaluator
    *  normalizes the OCCT first/last knot range internally. */
   domain(): [number, number];
+  /**
+   * Quintic Hermite blend from this curve to `other`. Infers point /
+   * tangent / (G2) curvature at the chosen ends.
+   */
+  bridge(
+    other: Curve3D,
+    opts: { continuity: 'G1' | 'G2'; ends?: 'end-start' | 'end-end' | 'start-start' | 'start-end'; tension?: number },
+  ): Curve3D;
 
   // V slice — JS-side analytics namespace. Read-only computed queries.
   // Authoritative geometry stays in the kernel; analytics methods return
@@ -181,5 +190,12 @@ export class Curve3DProxy implements Curve3D {
   }
   domain(): [number, number] {
     return [0, 1];
+  }
+
+  bridge(
+    other: Curve3D,
+    opts: { continuity: 'G1' | 'G2'; ends?: 'end-start' | 'end-end' | 'start-start' | 'start-end'; tension?: number },
+  ): Curve3D {
+    return bridgeCurves(this.session, this, other, opts);
   }
 }
