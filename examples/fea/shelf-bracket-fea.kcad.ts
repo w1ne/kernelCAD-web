@@ -22,16 +22,16 @@
 //
 //   evaluate:
 //     Features: 5
-//     WARN [fea.mesh.quality-low] ... nodal stress-error estimate peaks at 31.5%
+//     WARN [fea.mesh.quality-low] ... nodal stress-error estimate peaks at 32.3%
 //     OK
 //
 //   run_fea summary:
-//     minSafetyFactor     6.34   (required 2)  -> ok: true
-//     maxVonMisesMPa      42.59  against the 270 MPa yield of aluminum-6061
-//     maxDisplacementMm   0.2648
-//     nodes / elements    9559 / 5134 at meshSize 4 mm
-//     equilibriumResidual 1.1e-12  (reaction balances the applied 400 N)
-//     hotSpots[0]         @kc[fillet_1/face/f7] at 42.6 MPa — the ROOT FILLET,
+//     minSafetyFactor     6.27   (required 2)  -> ok: true
+//     maxVonMisesMPa      43.04  against the 270 MPa yield of aluminum-6061
+//     maxDisplacementMm   0.2649
+//     nodes / elements    9731 / 5246 at meshSize 4 mm
+//     equilibriumResidual 5.3e-13  (reaction balances the applied 400 N)
+//     hotSpots[0]         @kc[fillet_1/face/f7] at 43.0 MPa — the ROOT FILLET,
 //                         not the loaded face and not the wall face
 //     images              heatmap/iso.png, heatmap/front.png
 //
@@ -42,8 +42,8 @@
 // TO SEE IT FAIL
 //
 //   Raise the load to 3000 N and the same evaluate command reports:
-//     ERROR [fea.safety-factor.below-min] minimum safety factor 0.85 is below
-//     the declared 2 (peak von Mises 319.4 MPa vs 270 MPa yield for
+//     ERROR [fea.safety-factor.below-min] minimum safety factor 0.84 is below
+//     the declared 2 (peak von Mises 322.8 MPa vs 270 MPa yield for
 //     aluminum-6061, governing region @kc[fillet_1/face/f7]).
 
 const legLength = param('legLength', 90, { min: 40, max: 160 });

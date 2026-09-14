@@ -65,7 +65,7 @@ export interface RunFeaOutput {
    *  unstated is decoration, not evidence. */
   legend?: Array<{ color: string; fromMPa: number; toMPa: number }>;
   out_dir?: string;
-  artifacts?: { stepPath?: string; inpPath?: string; frdPath?: string; meshPath?: string };
+  artifacts?: { geometryPath?: string; inpPath?: string; frdPath?: string; meshPath?: string };
   diagnostics?: CompilerDiagnostic[];
   error?: string;
   errorCode?: string;

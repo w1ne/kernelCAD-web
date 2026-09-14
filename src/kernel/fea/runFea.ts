@@ -7,7 +7,7 @@
 // Pipeline, one stage per external dependency, each with its own wall-clock
 // budget so no agent session can be wedged by a runaway solve:
 //
-//   OCCT shape -> STEP -> gmsh (quadratic tets, per-surface node sets,
+//   OCCT shape -> BREP -> gmsh (quadratic tets, per-surface node sets,
 //   element quality) -> CalculiX .inp -> ccx -> .frd/.dat -> summary
 //
 // Every failure mode that could be mistaken for a pass is an explicit error:
@@ -74,7 +74,7 @@ export interface RunFeaResult {
   summary?: FeaSummary;
   diagnostics: CompilerDiagnostic[];
   /** Absolute paths of the solver artifacts, for reproduction. */
-  artifacts: { stepPath?: string; inpPath?: string; frdPath?: string; meshPath?: string };
+  artifacts: { geometryPath?: string; inpPath?: string; frdPath?: string; meshPath?: string };
   /** Mesh + solved fields, for callers that render the field (the heatmap
    *  builder). Present only on a completed solve. */
   raw?: { mesh: FeaMesh; fields: FeaFieldResult };
@@ -220,12 +220,15 @@ export async function runFeaStudy(
   const jobDir = join(opts.outDir, 'solver');
   await mkdir(jobDir, { recursive: true });
 
-  // 1. Geometry handoff. STEP is the only format both OCCT and gmsh read
-  //    losslessly as a B-rep; a mesh handoff would discard the faces the
-  //    study's selectors name.
-  const stepPath = join(jobDir, 'part.step');
-  await writeFile(stepPath, await shape.exportSTEPAsync());
-  artifacts.stepPath = stepPath;
+  // 1. Geometry handoff as OCCT-native BREP. gmsh's geometry kernel IS OCC,
+  //    so BREP crosses over with exact surfaces and topology and no schema
+  //    translation — and, unlike the STEP writer, it prints no translator
+  //    banner to stdout, which would corrupt `evaluate --json` output and the
+  //    MCP stdio channel. A mesh handoff would discard the faces the study's
+  //    selectors name.
+  const brepPath = join(jobDir, 'part.brep');
+  await writeFile(brepPath, shape.exportBREP());
+  artifacts.geometryPath = brepPath;
 
   // 2. Face resolution, BEFORE meshing, so an unresolvable selector fails
   //    fast rather than after a two-minute mesh.
@@ -262,7 +265,7 @@ export async function runFeaStudy(
   try {
     meshed = await meshStep({
       python: toolchain.python!,
-      stepPath,
+      geometryPath: brepPath,
       jobDir,
       meshSize,
       timeoutMs: opts.meshTimeoutMs ?? DEFAULT_MESH_TIMEOUT_MS,

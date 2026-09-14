@@ -43,17 +43,16 @@ bracket.feaStudy({
   fixed: { atX: 0 },                      // held rigid: the wall face
   loads: [{ faces: { atZ: wall }, force: [0, 0, -400] }],  // 400 N TOTAL, downward
   meshSize: 4,
-  minSafetyFactor: 2,                     // declaring this makes it a GATE
+  // minSafetyFactor: 2,  // uncomment to make evaluate SOLVE and FAIL below SF 2
 });
 
-return bracket;
-```
-
-```
-run_fea({ file: 'bracket.kcad.ts', output_dir: '/tmp/bracket-fea' })
-// → summary.minSafetyFactor 6.34 (required 2), maxVonMisesMPa 42.59,
-//   maxDisplacementMm 0.2648, hotSpots[0].region '@kc[fillet_1/face/f7]'
-//   (the root fillet), equilibriumResidual 1.1e-12, plus heatmap PNGs.
+// Report-only as written: evaluate stays fast and needs no solver. Get the
+// evidence with the run_fea MCP tool:
+//   run_fea({ file: 'bracket.kcad.ts', output_dir: '/tmp/bracket-fea' })
+//   -> summary.minSafetyFactor ~6.3, maxVonMisesMPa ~42.6,
+//      maxDisplacementMm ~0.265, hotSpots[0].region = the root fillet face,
+//      equilibriumResidual ~1e-12, plus heatmap PNGs.
 // Read summary.trust first: meshTrusted false means the STRESS number is
-// mesh-limited — re-run with a smaller mesh_size before acting on it.
+// mesh-limited; lower meshSize before acting on it.
+return bracket;
 ```

@@ -534,7 +534,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       images: { type: 'array', items: { type: 'string' }, description: 'Absolute PNG paths of the rendered stress heatmap.' },
       legend: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Heatmap colour bands { color, fromMPa, toMPa } — the scale the PNGs are drawn on.' },
       out_dir: { type: 'string', description: 'Directory holding the summary JSON, solver deck and heatmap PNGs.' },
-      artifacts: { type: 'object', additionalProperties: true, description: 'Absolute paths of the STEP handoff, .inp deck, .frd results and mesh JSON, for hand reproduction.' },
+      artifacts: { type: 'object', additionalProperties: true, description: 'Absolute paths of the BREP geometry handoff, .inp deck, .frd results and mesh JSON, for hand reproduction.' },
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'fea.* diagnostics raised by the run.' },
       error: { type: 'string' },
       errorCode: { type: 'string' },

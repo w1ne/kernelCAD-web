@@ -4,10 +4,10 @@
 //
 // Binds kernelCAD's face vocabulary to the mesh.
 //
-// The study says "hold the face at minX"; the mesher knows only STEP surface
+// The study says "hold the face at minX"; the mesher knows only its own surface
 // tags. Rather than invent a naming convention that would have to survive the
-// STEP round-trip (STEP does not carry kernelCAD's lineage names), we match on
-// INVARIANTS the round-trip preserves: a face's centre of mass and its area.
+// file handoff (the B-rep file does not carry kernelCAD's lineage names), we
+// match on INVARIANTS the handoff preserves: a face's centre of mass and its area.
 // Both are computed by OCCT on the kernelCAD side and by OCC inside gmsh on
 // the other side, from the same B-rep — so they agree to numerical noise.
 //
@@ -25,8 +25,8 @@ import type { FaceQuery } from '../../shared/intent/queryTypes';
 import type { FeaFaceSelector } from '../../shared/intent/feaStudyRecord';
 import type { FeaSurface } from './types';
 
-/** A kernelCAD face reduced to the two quantities that survive a STEP
- *  round-trip, plus the ref used to name it in results. */
+/** A kernelCAD face reduced to the two quantities that survive the file
+ *  handoff, plus the ref used to name it in results. */
 export interface FaceDescriptor {
   centroid: [number, number, number];
   area: number;
@@ -35,7 +35,7 @@ export interface FaceDescriptor {
 
 /** Matching tolerances. Centroids are compared in mm against a tolerance
  *  scaled by the model size; areas are compared relatively. Both are loose
- *  enough for STEP's ASCII float rounding and tight enough that two distinct
+ *  enough for serialized float rounding and tight enough that two distinct
  *  faces of a real part never collide. */
 export const CENTROID_TOL_MM = 1e-3;
 export const AREA_REL_TOL = 1e-4;

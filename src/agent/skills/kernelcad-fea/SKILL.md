@@ -23,9 +23,9 @@ return bracket;
 
 ```
 run_fea({ file: 'bracket.kcad.ts', output_dir: '/tmp/bracket-fea' })
-// → { ok: true, summary: { minSafetyFactor: 6.34, maxVonMisesMPa: 42.59,
-//     maxDisplacementMm: 0.2648, hotSpots: [{ region: '@kc[fillet_1/face/f7]', ... }],
-//     trust: { meshTrusted: false, reasons: [...] }, equilibriumResidual: 1.1e-12 },
+// → { ok: true, summary: { minSafetyFactor: 6.27, maxVonMisesMPa: 43.04,
+//     maxDisplacementMm: 0.2649, hotSpots: [{ region: '@kc[fillet_1/face/f7]', ... }],
+//     trust: { meshTrusted: false, reasons: [...] }, equilibriumResidual: 5.3e-13 },
 //     images: ['.../heatmap/iso.png', '.../heatmap/front.png'] }
 ```
 
@@ -142,7 +142,7 @@ you need to know *where* the part is overloaded.
 
 ## Reproducing a run by hand
 
-`run_fea({ output_dir })` keeps the whole deck: `solver/part.step` (the
+`run_fea({ output_dir })` keeps the whole deck: `solver/part.brep` (the
 geometry handed to the mesher), `solver/mesh.json`, `solver/job.inp` (the
 CalculiX deck), `solver/job.frd` / `.dat` (raw results), and
 `fea-summary.json`. `cd` into `solver/` and run `ccx job` to reproduce the

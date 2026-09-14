@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/fea/gmshDriver.ts
 //
-// Meshing stage: STEP -> quadratic tetrahedra, via the gmsh Python API.
+// Meshing stage: BREP -> quadratic tetrahedra, via the gmsh Python API.
 //
 // The driver script is embedded as a string and written into the job's temp
 // directory at run time. Deliberate: a .py sitting in src/ would have to be
@@ -13,7 +13,7 @@
 // What the driver hands back is more than a mesh:
 //   - Every SURFACE's centre of mass and area. That is what lets the runner
 //     bind a kernelCAD face query to a gmsh surface without inventing a
-//     STEP-entity naming convention, and it is what turns a node-level stress
+//     geometry-entity naming convention, and it is what turns a node-level stress
 //     peak into a NAMED region an agent can act on.
 //   - Element quality (`minSICN`). A stress answer off a degenerate mesh is
 //     worse than no answer, so the trust flag is computed from real numbers
@@ -31,18 +31,18 @@ const DRIVER_PY = String.raw`
 import json, sys
 import gmsh
 
-step_path, out_path, mesh_size, min_size = sys.argv[1], sys.argv[2], float(sys.argv[3]), float(sys.argv[4])
+geometry_path, out_path, mesh_size, min_size = sys.argv[1], sys.argv[2], float(sys.argv[3]), float(sys.argv[4])
 
 gmsh.initialize()
 try:
     gmsh.option.setNumber("General.Terminal", 0)
     gmsh.model.add("kernelcad")
-    gmsh.model.occ.importShapes(step_path)
+    gmsh.model.occ.importShapes(geometry_path)
     gmsh.model.occ.synchronize()
 
     volumes = gmsh.model.getEntities(3)
     if len(volumes) == 0:
-        raise RuntimeError("the STEP file carries no solid volume to mesh")
+        raise RuntimeError("the geometry file carries no solid volume to mesh")
 
     surface_info = []
     for (dim, tag) in gmsh.model.getEntities(2):
@@ -120,7 +120,8 @@ finally:
 
 export interface MeshStepOpts {
   python: string;
-  stepPath: string;
+  /** OCCT BREP (or STEP) file gmsh's OCC kernel imports. */
+  geometryPath: string;
   jobDir: string;
   /** Target element size in mm. */
   meshSize: number;
@@ -149,7 +150,7 @@ interface RawMesh {
 }
 
 /**
- * Mesh a STEP file into quadratic tets. Throws with the gmsh stderr attached
+ * Mesh a B-rep file into quadratic tets. Throws with the gmsh stderr attached
  * on failure — the driver's own messages ("no solid volume to mesh") are more
  * useful to an agent than a generic exit code.
  */
@@ -162,7 +163,7 @@ export async function meshStep(opts: MeshStepOpts): Promise<MeshStepResult> {
   const started = Date.now();
   const r = await runBounded(
     opts.python,
-    [scriptPath, opts.stepPath, outPath, String(opts.meshSize), String(minSize), String(LOW_QUALITY_SICN)],
+    [scriptPath, opts.geometryPath, outPath, String(opts.meshSize), String(minSize), String(LOW_QUALITY_SICN)],
     { cwd: opts.jobDir, timeoutMs: opts.timeoutMs },
   );
   const meshMs = Date.now() - started;

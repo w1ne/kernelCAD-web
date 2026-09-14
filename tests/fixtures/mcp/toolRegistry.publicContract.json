@@ -4862,7 +4862,7 @@
         "artifacts": {
           "type": "object",
           "additionalProperties": true,
-          "description": "Absolute paths of the STEP handoff, .inp deck, .frd results and mesh JSON, for hand reproduction."
+          "description": "Absolute paths of the BREP geometry handoff, .inp deck, .frd results and mesh JSON, for hand reproduction."
         },
         "diagnostics": {
           "type": "array",
