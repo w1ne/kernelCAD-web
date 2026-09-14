@@ -59,8 +59,12 @@ describe('diagnostic catalogue invariants', () => {
     //   the script also placed — the URDF/mate convention mix, which displaces
     //   the child by the joint origin at every pose).
     //   = 248.
-    expect(DIAGNOSTIC_CODES).toHaveLength(248);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(248);
+    // + 5 structural FEA gate (fea.* — shape.feaStudy declaration + solver
+    //   run): fea.safety-factor.below-min, fea.mesh.quality-low,
+    //   fea.solver.unavailable, fea.study.fixed-unresolved,
+    //   fea.study.load-unresolved. = 253.
+    expect(DIAGNOSTIC_CODES).toHaveLength(253);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(253);
   });
 
   it('every code has a non-empty hint template', () => {

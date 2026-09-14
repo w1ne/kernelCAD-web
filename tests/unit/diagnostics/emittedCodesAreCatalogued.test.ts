@@ -177,7 +177,10 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  +  1 feature.finish.unknown-token (.finish() unknown-name hard error) = 247.
     //  +  1 assembly.joint.child-modeled-in-place (URDF/mate convention mix on a
     //       joint-primitive child the script also placed) = 248.
-    expect(catalogue.size).toBe(248);
+    //  +  5 structural FEA gate (fea.safety-factor.below-min,
+    //       fea.mesh.quality-low, fea.solver.unavailable,
+    //       fea.study.fixed-unresolved, fea.study.load-unresolved) = 253.
+    expect(catalogue.size).toBe(253);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
