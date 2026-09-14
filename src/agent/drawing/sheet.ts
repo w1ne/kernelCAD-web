@@ -10,9 +10,10 @@
 //   projection angle       recognised by geometry, not by a font glyph).
 //   arrowheads            — small filled triangles; their tips anchor every
 //                           dimension association.
-//   dimension / extension — a thin line with an arrow tip at both ends, the
-//   / leader lines          extension lines through those tips, and the
-//                           leader + shoulder of radial callouts.
+//   dimension / extension — a line with an arrow tip at both ends (or two
+//   / leader lines          collinear lines broken around the lettering, one
+//                           tip each), the extension lines through those
+//                           tips, and the leader + shoulder of radial callouts.
 //   visible / thin /      — what is left: full-weight solid geometry, thin
 //   hidden / center         solid geometry (tangent edges), uniform-dash
 //                           hidden lines, long-short-dash center lines.
@@ -235,42 +236,42 @@ export function analyseSheet(page: PdfPageVectors): SheetAnalysis {
 
   // --- linear dimensions -------------------------------------------------------
   const linearDims: LinearDimension[] = [];
-  for (const seg of solid) {
-    const len = dist(seg.a, seg.b);
-    if (len < 0.5) continue;
-    const atA = arrows.find(ar => dist(ar.tip, seg.a) <= 0.35 && tipOn(seg, ar));
-    const atB = arrows.find(ar => dist(ar.tip, seg.b) <= 0.35 && tipOn(seg, ar));
-    if (!atA || !atB || atA === atB) continue;
-    const dir = unit(seg.a, seg.b);
-    const mid: Pt = [(seg.a[0] + seg.b[0]) / 2, (seg.a[1] + seg.b[1]) / 2];
 
+  /** Unused dimension lettering parallel to the line a→b and sitting on it. */
+  const labelFor = (a: Pt, b: Pt): { text: PositionedText; parsed: ParsedDimText } | null => {
+    const len = dist(a, b);
+    const dir = unit(a, b);
+    const mid: Pt = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
     let best: { text: PositionedText; parsed: ParsedDimText; score: number } | null = null;
     for (const { text, parsed } of lettering) {
       if (!parsed || usedText.has(text) || parsed.kind === 'radius') continue;
       if (Math.abs(dot(text.dir, dir)) < 0.98) continue;
       const c = textCenter(text);
-      const perp = pointLine(c, seg.a, seg.b);
+      const perp = pointLine(c, a, b);
       const along = Math.abs(dot([c[0] - mid[0], c[1] - mid[1]], dir));
       if (perp > 1.6 * text.sizeMm + 0.5) continue;
       if (along > len / 2 + text.widthMm / 2 + 3) continue;
       const score = perp + 0.1 * along;
       if (!best || score < best.score) best = { text, parsed, score };
     }
-    if (!best) continue;
-    usedText.add(best.text);
-    claim(seg.pathId, 'dimension');
+    return best;
+  };
 
+  /** Record a dimension measured tip to tip, finding its extension lines. */
+  const addLinear = (a: Pt, b: Pt, linePathIds: number[], label: { text: PositionedText; parsed: ParsedDimText }): void => {
+    usedText.add(label.text);
+    for (const id of linePathIds) claim(id, 'dimension');
+    const dir = unit(a, b);
     // Extension lines are drawn with the dimension line's pen. Where stacked
     // dimensions share a feature edge, several collinear extension lines pass
     // through one tip; the one that belongs to THIS dimension is the one that
     // ends (overshoots) right at its tip.
-    const penWidth = pathById.get(seg.pathId)?.widthMm ?? 0;
-    const feet: [Pt, Pt] = [seg.a, seg.b];
-    [seg.a, seg.b].forEach((tip, k) => {
+    const penWidth = Math.max(...linePathIds.map(id => pathById.get(id)?.widthMm ?? 0));
+    const feet: [Pt, Pt] = [a, b];
+    [a, b].forEach((tip, k) => {
       let chosen: SolidSeg | null = null;
       let chosenOvershoot = Infinity;
       for (const cand of solid) {
-        if (cand === seg) continue;
         if ((pathById.get(cand.pathId)?.widthMm ?? 0) > penWidth + 0.01) continue;
         const cl = dist(cand.a, cand.b);
         if (cl < 0.5 || Math.abs(dot(unit(cand.a, cand.b), dir)) > 0.15) continue;
@@ -282,19 +283,40 @@ export function analyseSheet(page: PdfPageVectors): SheetAnalysis {
       }
       if (chosen) {
         claim(chosen.pathId, 'extension');
-        const far = pointLine(chosen.a, seg.a, seg.b) >= pointLine(chosen.b, seg.a, seg.b) ? chosen.a : chosen.b;
-        feet[k] = far;
+        feet[k] = pointLine(chosen.a, a, b) >= pointLine(chosen.b, a, b) ? chosen.a : chosen.b;
       }
     });
-    linearDims.push({
-      id: `dim${linearDims.length + 1}`,
-      text: best.text,
-      parsed: best.parsed,
-      dir,
-      tips: [seg.a, seg.b],
-      feet,
-      sheetLength: len,
-    });
+    linearDims.push({ id: `dim${linearDims.length + 1}`, text: label.text, parsed: label.parsed, dir, tips: [a, b], feet, sheetLength: dist(a, b) });
+  };
+
+  // One line carrying an arrow tip at each end.
+  for (const seg of solid) {
+    if (dist(seg.a, seg.b) < 0.5) continue;
+    const atA = arrows.find(ar => dist(ar.tip, seg.a) <= 0.35 && tipOn(seg, ar));
+    const atB = arrows.find(ar => dist(ar.tip, seg.b) <= 0.35 && tipOn(seg, ar));
+    if (!atA || !atB || atA === atB) continue;
+    const label = labelFor(seg.a, seg.b);
+    if (label) addLinear(seg.a, seg.b, [seg.pathId], label);
+  }
+
+  // A dimension line broken around its lettering (the usual ANSI style): two
+  // collinear lines, each ending in an arrow tip, the tips pointing apart or
+  // together along one line.
+  const tipTaken = (ar: Arrowhead) => linearDims.some(d => d.tips.some(t => dist(t, ar.tip) <= 0.35));
+  const lineEndingAt = (ar: Arrowhead): SolidSeg | undefined =>
+    solid.find(sg => dist(sg.a, sg.b) >= 0.5 && (dist(sg.a, ar.tip) <= 0.35 || dist(sg.b, ar.tip) <= 0.35) && tipOn(sg, ar) &&
+      pathById.get(sg.pathId)?.cls === 'ignored');
+  for (let i = 0; i < arrows.length; i++) {
+    for (let j = i + 1; j < arrows.length; j++) {
+      const p = arrows[i], q = arrows[j];
+      if (tipTaken(p) || tipTaken(q)) continue;
+      if (dot(p.dir, q.dir) > -0.98) continue;
+      if (pointLine(q.tip, p.tip, [p.tip[0] + p.dir[0], p.tip[1] + p.dir[1]]) > 0.3) continue;
+      const sp = lineEndingAt(p), sq = lineEndingAt(q);
+      if (!sp || !sq || sp === sq) continue;
+      const label = labelFor(p.tip, q.tip);
+      if (label) addLinear(p.tip, q.tip, [sp.pathId, sq.pathId], label);
+    }
   }
   const dimArrowTips = new Set<Arrowhead>();
   for (const d of linearDims) {

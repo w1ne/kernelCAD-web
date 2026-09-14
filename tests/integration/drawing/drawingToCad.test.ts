@@ -129,6 +129,23 @@ describe('drawing_to_cad round trip (svg-drawing sheet → PDF → .kcad.ts)', (
     expectMatches(await evaluate(r.script!), L_BRACKET);
   }, 120_000);
 
+  it('reads a dimension line broken around its lettering (ANSI style)', async () => {
+    // Split the plate's vertical 50 mm dimension line into two strokes with a
+    // gap where the number sits, the way many sheets draw it.
+    const svg = readFileSync(join(FIXTURES, `${PLATE_WITH_HOLES.name}.svg`), 'utf8').replace(
+      /(<g class="dim"(?:(?!<\/g>).)*?)<line x1="([\d.]+)" y1="([\d.]+)" x2="\2" y2="([\d.]+)"\/>((?:(?!<\/g>).)*>50<\/text><\/g>)/,
+      (_m, head: string, x: string, y1: string, y2: string, tail: string) => {
+        const mid = (Number(y1) + Number(y2)) / 2;
+        return `${head}<line x1="${x}" y1="${y1}" x2="${x}" y2="${mid + 4}"/><line x1="${x}" y1="${mid - 4}" x2="${x}" y2="${y2}"/>${tail}`;
+      },
+    );
+    expect(svg).toContain('y2="82.802"');
+    const r = await drawingToCad({ pdf: minimalSvgToPdf(svg), source: 'plate, broken dimension line', verify: false });
+    expect(r.ok).toBe(true);
+    expect(r.ledger.facts.find(f => f.id === 'depth')).toMatchObject({ kind: 'visible', value: 50, resolution: 'confirmed' });
+    expect(r.diagnostics.map(d => d.code)).not.toContain('reference.drawing.dimension-unassociated');
+  }, 120_000);
+
   it('marks the depth missing, and the orphaned dimension unapplied, on a single-view sheet', async () => {
     const svg = readFileSync(join(FIXTURES, `${PLATE_WITH_HOLES.name}.svg`), 'utf8')
       .replace(/<g id="view-front"[\s\S]*?>FRONT<\/text><\/g>/, '')
