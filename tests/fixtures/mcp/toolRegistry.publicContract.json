@@ -1566,82 +1566,6 @@
     }
   },
   {
-    "name": "resolve_assumptions",
-    "description": "Use this when you need to confirm or override the open facts in an assumption ledger from trace_from_image (missing scale, inferred/assumed values) before committing geometry built from a reference photo. Reads the persisted `<model>.ledger.json` at `ledgerPath`, applies each resolution — `{ id, confirm: true }` to accept a fact as-is, or `{ id, value }` to override it — rewrites the ledger file, and returns the updated ledger plus `paramOverrides` (factId -> value) to feed straight into `set_param`. Pair with the `kernelcad-from-reference` skill.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "ledgerPath": {
-          "type": "string",
-          "description": "Path to the `<model>.ledger.json` file persisted alongside the traced source."
-        },
-        "resolutions": {
-          "type": "array",
-          "description": "One resolution per ledger fact id to act on.",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string",
-                "description": "Matches a `facts[].id` in the ledger."
-              },
-              "value": {
-                "description": "Overrides the fact's value; marks it `overridden`."
-              },
-              "confirm": {
-                "type": "boolean",
-                "description": "Accepts the fact as-is; marks it `confirmed`."
-              }
-            },
-            "required": [
-              "id"
-            ]
-          }
-        }
-      },
-      "required": [
-        "ledgerPath",
-        "resolutions"
-      ]
-    },
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": false,
-      "openWorldHint": false
-    },
-    "outputSchema": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "type": "boolean"
-        },
-        "ledger": {
-          "type": "object",
-          "additionalProperties": true,
-          "description": "The ledger after applying resolutions (present on success)."
-        },
-        "paramOverrides": {
-          "type": "object",
-          "additionalProperties": true,
-          "description": "factId -> value for every resolved fact with a value; feed into set_param."
-        },
-        "diagnostics": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": true
-          }
-        }
-      },
-      "required": [
-        "ok",
-        "paramOverrides",
-        "diagnostics"
-      ],
-      "additionalProperties": true
-    }
-  },
-  {
     "name": "add_variable_sweep",
     "description": "Use this when you need an organic swept solid whose cross-section changes along its length — a tapering body, horn, bottle, fairing, or duct — authored as a variable-section sweep along a spine. Insert a `variableSweep(spine, sections, opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. The result is a Shape — chain `.translate(...)`, `.union(...)`, etc. via `add_feature`. `spine_binding` references an existing variable (Curve3D / Sketch / Vec3[]) in the source; each `sections[i].profile_binding` references an existing Sketch. Sections must be strictly increasing in `t` and span [0, 1]; first t=0, last t=1. Orientation is not exposed by this MCP tool until runtime orientation support is wired. Validates every binding exists in the source via regex before inserting (fast structured error vs capture-time stack). Returns the modified code + diagnostics. Side-effect-free.",
     "inputSchema": {
@@ -4922,6 +4846,82 @@
       "required": [
         "ok",
         "images",
+        "diagnostics"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "resolve_assumptions",
+    "description": "Use this when you need to confirm or override the open facts in an assumption ledger from trace_from_image (missing scale, inferred/assumed values) before committing geometry built from a reference photo. Reads the persisted `<model>.ledger.json` at `ledgerPath`, applies each resolution — `{ id, confirm: true }` to accept a fact as-is, or `{ id, value }` to override it — rewrites the ledger file, and returns the updated ledger plus `paramOverrides` (factId -> value) to feed straight into `set_param`. Pair with the `kernelcad-from-reference` skill.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "ledgerPath": {
+          "type": "string",
+          "description": "Path to the `<model>.ledger.json` file persisted alongside the traced source."
+        },
+        "resolutions": {
+          "type": "array",
+          "description": "One resolution per ledger fact id to act on.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Matches a `facts[].id` in the ledger."
+              },
+              "value": {
+                "description": "Overrides the fact's value; marks it `overridden`."
+              },
+              "confirm": {
+                "type": "boolean",
+                "description": "Accepts the fact as-is; marks it `confirmed`."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        }
+      },
+      "required": [
+        "ledgerPath",
+        "resolutions"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "ledger": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "The ledger after applying resolutions (present on success)."
+        },
+        "paramOverrides": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "factId -> value for every resolved fact with a value; feed into set_param."
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "paramOverrides",
         "diagnostics"
       ],
       "additionalProperties": true
