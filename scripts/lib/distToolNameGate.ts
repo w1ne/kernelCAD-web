@@ -57,6 +57,9 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   // Example-variable identifiers used in code prose.
   'new_code',
   'old_code',
+  // set_param's own input field name, referenced standalone in prose
+  // (the tool name `set_param` itself DOES resolve).
+  'new_value',
   // Common parameter names used in MCP tool signatures (documented
   // alongside tool names, not tool calls themselves).
   'feature_id',
