@@ -115,16 +115,18 @@ export type CardinalPlane = 'xy' | 'xz' | 'yz';
 export type PlaneSpec = CardinalPlane | { plane: CardinalPlane; offset?: number };
 
 export type SketchAxis = 'x' | 'y';
-export type AxisSpec = SketchAxis | { axis: SketchAxis; offset?: number };
+export type AxisSpec =
+  | SketchAxis
+  | { axis: SketchAxis; offset?: import('../runtime/paramRef').Editable<number> };
 
 export function isValidAxisSpec(v: unknown): v is AxisSpec {
   if (v === 'x' || v === 'y') return true;
   if (typeof v === 'object' && v !== null) {
     const o = v as { axis?: unknown; offset?: unknown };
     if (o.axis !== 'x' && o.axis !== 'y') return false;
-    // offset is optional; if present, must be finite
+    // offset is optional; if present, must be a finite number or a numeric ParamRef
     if (o.offset === undefined) return true;
-    return typeof o.offset === 'number' && Number.isFinite(o.offset);
+    return isValidEditableNumber(o.offset);
   }
   return false;
 }

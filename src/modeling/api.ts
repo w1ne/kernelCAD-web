@@ -189,7 +189,7 @@ export interface KernelCadApi {
   spring(opts: SpringOptions): Shape;
   extrudeRect(w: Editable<number>, h: Editable<number>, height: Editable<number>, opts?: FaceLabelOpts): Shape;
   extrudeCircle(r: Editable<number>, height: Editable<number>, opts?: FaceLabelOpts): Shape;
-  extrudePolygon(points: [number, number][], depth: Editable<number>, opts?: FaceLabelOpts): Shape;
+  extrudePolygon(points: Array<[Editable<number>, Editable<number>]>, depth: Editable<number>, opts?: FaceLabelOpts): Shape;
   extrudeRoundedRect(width: Editable<number>, height: Editable<number>, radius: Editable<number>, depth: Editable<number>, opts?: FaceLabelOpts): Shape;
   union(...shapes: Shape[]): Shape;
   assembly(name?: string): Assembly;
@@ -875,7 +875,12 @@ export function createApi(ctx: ApiContext): KernelCadApi {
           profileKind: { expression: "'polygon'", unit: 'unitless', evaluated: 0 },
           depth: mm(depth),
         },
-        metadata: { points, ...(faceLabels ? { faceLabels } : {}) },
+        // Plain numbers stay plain; a ParamRef coordinate is boxed as a Param
+        // so the dispatcher's pre-resolve substitutes it at lower time.
+        metadata: {
+          points: points.map((p) => (Array.isArray(p) ? p.map((c) => (typeof c === 'number' ? c : mm(c))) : p)),
+          ...(faceLabels ? { faceLabels } : {}),
+        },
       });
     },
     extrudeRoundedRect(width, height, radius, depth, opts) {

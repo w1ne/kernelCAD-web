@@ -962,10 +962,20 @@ export class OcctLowerer implements FeatureLowerer {
           shape = OcctBackend.extrudeCircle(r.params.r.evaluated, height);
         } else if (profileKind === 'polygon') {
           const depth = r.params.depth.evaluated;
-          const points = (r.metadata as { points?: unknown } | undefined)?.points;
+          // Each coordinate is a plain number, or a Param (pre-resolved by the
+          // dispatcher) when the author passed a ParamRef.
+          const coord = (c: unknown): number | undefined =>
+            typeof c === 'number'
+              ? c
+              : typeof c === 'object' && c !== null && typeof (c as { evaluated?: unknown }).evaluated === 'number'
+                ? (c as { evaluated: number }).evaluated
+                : undefined;
+          const rawPoints = (r.metadata as { points?: unknown } | undefined)?.points;
+          const points = Array.isArray(rawPoints)
+            ? rawPoints.map(p => (Array.isArray(p) && p.length === 2 ? [coord(p[0]), coord(p[1])] : [undefined, undefined]))
+            : undefined;
           if (!Array.isArray(points) || points.length < 3 ||
-              !points.every(p => Array.isArray(p) && p.length === 2 &&
-                                  typeof p[0] === 'number' && typeof p[1] === 'number')) {
+              !points.every(p => typeof p[0] === 'number' && typeof p[1] === 'number')) {
             diagnostics.push({
               target: 'export-occt',
               code: 'feature.invalid-args',
@@ -1435,11 +1445,22 @@ export class OcctLowerer implements FeatureLowerer {
             sketches.push(s);
           }
           // Resolve planes: explicit metadata.planes wins; else z-stack with spacing.
-          const meta = r.metadata as {
-            planes?: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number] }>;
-            startPoint?: [number, number, number];
-            endPoint?: [number, number, number];
+          // Coordinates are plain numbers, or Params when the author passed a
+          // ParamRef (already pre-resolved by the dispatcher).
+          type Coord = number | { evaluated: number };
+          const num = (c: Coord): number => (typeof c === 'number' ? c : c.evaluated);
+          const point3 = (p: Coord[] | undefined): [number, number, number] | undefined =>
+            p === undefined ? undefined : [num(p[0]), num(p[1]), num(p[2])];
+          const rawMeta = r.metadata as {
+            planes?: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: Coord[] }>;
+            startPoint?: Coord[];
+            endPoint?: Coord[];
           } | undefined;
+          const meta = rawMeta === undefined ? undefined : {
+            planes: rawMeta.planes?.map((p) => ({ plane: p.plane, origin: point3(p.origin)! })),
+            startPoint: point3(rawMeta.startPoint),
+            endPoint: point3(rawMeta.endPoint),
+          };
           let planes: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number] }>;
           if (Array.isArray(meta?.planes)) {
             if (meta.planes.length !== sectionCount) {

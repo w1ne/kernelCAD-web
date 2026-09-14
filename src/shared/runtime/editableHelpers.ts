@@ -4,7 +4,7 @@
 // records / numeric validation views. See spec §E.1, §E.3.
 
 import type { EditableVec3, Param, Unit, Vec3Param } from '../intent/types';
-import { isParamRef, paramExprToDebugString, type Editable } from './paramRef';
+import { ParamRef, isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from './paramRef';
 import type { ParamTable } from './paramTable';
 import { resolveExpr } from './resolveParams';
 
@@ -75,6 +75,61 @@ function resolveParamScalar(p: Param, table: ParamTable): number {
     return table.get(p.paramRef).value as number;
   }
   return resolveExpr(p.paramRef, table);
+}
+
+/** Current numeric value of an already-captured Param. A symbolic Param's
+ *  `evaluated` is a capture-time placeholder (0) until the dispatcher
+ *  pre-resolves it, so capture-time VALIDATION must read the value through
+ *  the table instead — never through `.evaluated`. */
+export function paramValue(p: Param, table: ParamTable): number {
+  return resolveParamScalar(p, table);
+}
+
+/** The symbolic view of a captured Param: its ParamRef expression, or a
+ *  literal for a plain number. */
+export function paramExpr(p: Param): ParamRefExpr {
+  if (p.paramRef === undefined) return { kind: 'lit', value: p.evaluated };
+  if (typeof p.paramRef === 'string') return { kind: 'param', name: p.paramRef };
+  return p.paramRef;
+}
+
+/** Fold literal-only subtrees so arithmetic on plain numbers stays a plain
+ *  number (and a record built from numbers is byte-identical to one built by
+ *  `toParam(number)`). */
+function foldExpr(expr: ParamRefExpr): ParamRefExpr {
+  switch (expr.kind) {
+    case 'lit':
+    case 'param':
+      return expr;
+    case 'neg': {
+      const inner = foldExpr(expr.expr);
+      return inner.kind === 'lit' ? { kind: 'lit', value: -inner.value } : { kind: 'neg', expr: inner };
+    }
+    case 'binop': {
+      const left = foldExpr(expr.left);
+      const right = foldExpr(expr.right);
+      if (left.kind === 'lit' && right.kind === 'lit' && !(expr.op === '/' && right.value === 0)) {
+        const l = left.value;
+        const r = right.value;
+        const value = expr.op === '+' ? l + r : expr.op === '-' ? l - r : expr.op === '*' ? l * r : l / r;
+        return { kind: 'lit', value };
+      }
+      return { kind: 'binop', op: expr.op, left, right };
+    }
+  }
+}
+
+/** Build a Param from an expression AST. Literal-only expressions collapse to
+ *  a plain numeric Param (with -0 normalised to 0); anything that references a
+ *  param stays symbolic and is resolved at lower time like any other
+ *  ParamRef. */
+export function paramFromExpr(expr: ParamRefExpr, unit: Unit): Param {
+  const folded = foldExpr(expr);
+  if (folded.kind === 'lit') {
+    const v = folded.value === 0 ? 0 : folded.value;
+    return toParam(v, unit);
+  }
+  return toParam(new ParamRef<number>(folded, 'number'), unit);
 }
 
 /** Resolve an Editable<number> to its current numeric value at capture time

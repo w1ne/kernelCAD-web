@@ -25,6 +25,7 @@
 // rather than approximating a point as a tiny circle.
 
 import type { Param } from '../intent/types';
+import type { Editable } from '../runtime/paramRef';
 
 /**
  * OCCT `GccEnt_Position` qualifier — the PRINCIPAL control over which of the
@@ -56,8 +57,8 @@ export const TANGENT_SIDES: readonly TangentSide[] = ['outside', 'enclosed', 'en
  * circle.
  */
 export type TangentEntity2D =
-  | { kind: 'line'; from: [number, number]; to: [number, number]; side?: TangentSide }
-  | { kind: 'circle'; center: [number, number]; radius: number; side?: TangentSide };
+  | { kind: 'line'; from: [Editable<number>, Editable<number>]; to: [Editable<number>, Editable<number>]; side?: TangentSide }
+  | { kind: 'circle'; center: [Editable<number>, Editable<number>]; radius: Editable<number>; side?: TangentSide };
 
 /** Wire form of `TangentEntity2D` — same shape with `Param`-boxed scalars and
  *  `side` defaulted, so the lowerer reads `.evaluated` uniformly. */
