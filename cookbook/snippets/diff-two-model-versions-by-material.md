@@ -1,7 +1,7 @@
 ---
 id: diff-two-model-versions-by-material
 title: Find out what material changed between two versions of a part
-tags: [diff, parameter, hole, cutout, plate]
+tags: [diff, compare, revision]
 keywords:
   - what changed between two versions
   - added removed volume

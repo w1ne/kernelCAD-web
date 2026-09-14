@@ -50,5 +50,7 @@
   "sweep-tolerance",
   "export",
   "diff",
-  "cutout"
+  "cutout",
+  "compare",
+  "revision"
 ]
