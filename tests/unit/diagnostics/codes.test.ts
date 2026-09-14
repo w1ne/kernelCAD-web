@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 248 codes', () => {
+  it('emits exactly 252 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -59,8 +59,12 @@ describe('diagnostic catalogue invariants', () => {
     //   the script also placed — the URDF/mate convention mix, which displaces
     //   the child by the joint origin at every pose).
     //   = 248.
-    expect(DIAGNOSTIC_CODES).toHaveLength(248);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(248);
+    // + 2 gcode export (Slice B — print loop): export.gcode.slicer-unavailable,
+    //   export.gcode.exceeds-bed. = 250.
+    // + 2 send_to_printer (Slice B — print loop): tool.send-to-printer.unreachable,
+    //   tool.send-to-printer.upload-failed. = 252.
+    expect(DIAGNOSTIC_CODES).toHaveLength(252);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(252);
   });
 
   it('every code has a non-empty hint template', () => {
