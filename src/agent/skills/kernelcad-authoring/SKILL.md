@@ -346,8 +346,8 @@ animationView(spec: {
 // Declare printability (design-for-manufacture) gates for the model.
 // Declaration-only: registers a virtual record (no OCCT geometry);
 // enforcement runs on every `evaluate` / `evaluate_script` once a dfmSpec
-// record is present. At least one of minWall / minClearance / channels is
-// required. Malformed declarations THROW KernelError
+// record is present. At least one of minWall / minClearance / channels /
+// process is required. Malformed declarations THROW KernelError
 // (`feature.invalid-args`) rather than stashing diagnostics — dfmSpec is
 // an enforcement gate, and a silently-disabled gate is worse than a build
 // failure. Multiple calls register multiple records; the last one wins
@@ -365,6 +365,12 @@ dfmSpec(spec: {
     openings: number;     // expected count of distinct mouth openings to the outside
     sealed?: boolean;     // intentionally sealed internal void (openings must be 0)
   }>;
+  process?: 'fdm';        // run the FDM printability check (fields below need it)
+  buildDirection?: '+x' | '-x' | '+y' | '-y' | '+z' | '-z' | [number, number, number]; // part-local axis pointing away from the bed; default '+z'
+  nozzleMm?: number;      // default 0.4 — walls < 2×, holes < 5×, pins < 7.5× are flagged
+  maxOverhangDeg?: number; // degrees from vertical, default 45; 90 = printing with supports
+  maxBridgeMm?: number;   // default 10
+  printer?: string;       // bundled bed profile, default 'generic-fdm'
 }): DfmSpecHandle;
 ```
 
@@ -998,10 +1004,11 @@ For visual / reference-driven tasks the gate set extends — see `kernelcad-from
 ## DFM gates (print readiness)
 
 `dfmSpec({...})` declares printability gates in the script; the check engine
-enforces them at evaluate time. Three gates ship: **part-pair clearance**
+enforces them at evaluate time. Four gates ship: **part-pair clearance**
 (exact BREP minimum distance), **minimum wall thickness** (inward ray sampling
-over the export-grade mesh), and **void/channel topology** (voxel flood-fill:
-undeclared sealed voids + channel mouth counting).
+over the export-grade mesh), **void/channel topology** (voxel flood-fill:
+undeclared sealed voids + channel mouth counting), and the **FDM printability
+check** (`process: 'fdm'` — see below).
 
 ```typescript
 dfmSpec({
@@ -1032,7 +1039,9 @@ Semantics that matter when authoring the declaration:
 - **Malformed declarations THROW at capture** (`feature.invalid-args`
   KernelError) instead of stashing warnings — dfmSpec is an enforcement gate,
   and a silently-disabled gate is worse than a build failure. At least one of
-  `minWall` / `minClearance` / `channels` is required; `sealed: true` requires
+  `minWall` / `minClearance` / `channels` / `process` is required; FDM fields
+  (`buildDirection`, `nozzleMm`, ...) without `process: 'fdm'` throw, as does
+  an unknown `printer`; `sealed: true` requires
   `openings: 0` (and vice versa); `exclude` globs are trailing-`*` prefix only.
 - **`exclude` and `ignore` are different exemptions.** `exclude` marks parts as
   NOT PRINTED (vendor STEP imports, electronics): they skip minWall and void
@@ -1065,6 +1074,49 @@ Semantics that matter when authoring the declaration:
   message is mapped through the part's world transform, so findings compose
   across the parts of a posed assembly. The raw `walls[]` / `voids[]` report
   structs keep part-local coordinates.
+
+### FDM printability (`process: 'fdm'`)
+
+```typescript
+dfmSpec({ process: 'fdm' });                        // defaults: '+z' up, 0.4 nozzle, 45°, 10 mm bridges
+dfmSpec({ process: 'fdm', buildDirection: '+x' });  // print lying on its side
+```
+
+Runs per non-excluded part, in the part-local frame, from the real mesh:
+
+- **Overhangs** — area whose surface is steeper than `maxOverhangDeg` from
+  vertical, relative to `buildDirection`. Faces on the bed are excluded. A
+  steep region still prints (and is not reported) when it is *bridged*
+  (anchored at both ends, span ≤ `maxBridgeMm`), sits within one nozzle of
+  the bed (a small bottom-edge fillet), or reaches no more than one nozzle
+  past its support. Everything else is `dfm.fdm.overhang-unsupported` with
+  the total area, the largest region's `@kc[...]` face and bbox, and the
+  rotation that minimises the area.
+- **Bridges** — an anchored flat ceiling longer than `maxBridgeMm` is
+  `dfm.fdm.bridge-too-long` with its span. A T-arm (one anchored end) is an
+  overhang, not a bridge.
+- **Walls** — the min-wall sampler at 2 × `nozzleMm` →
+  `dfm.fdm.wall-below-nozzle`. Knife edges (faces opening wider than
+  atan 0.5 ≈ 26.6°, e.g. a cone rim) are not counted as walls.
+- **Small features** (warn) — full cylindrical holes under 5 × nozzle and
+  pins under 7.5 × nozzle → `dfm.fdm.feature-too-small`.
+- **Bed contact / tip risk** (warn) — contact area under 10 % of the
+  footprint → `dfm.fdm.bed-contact-low`; height over 8 × the narrowest
+  contact width → `dfm.fdm.tip-risk`.
+- **Bed fit** — extents in the build orientation vs the `printer` profile
+  (the same rule the gcode export gates on) → `dfm.fdm.exceeds-bed`.
+- **Orientation ranking** — all six axis-aligned build directions, ranked by
+  fits bed, then unsupported area, bed contact, height. Each row carries the
+  rotation (`.rotateY(-90)`) and the equivalent `buildDirection`. Take the
+  advice by declaring that `buildDirection`: `export` with `format: 'gcode'`
+  rotates the part into the declared orientation before its bed gate and the
+  slicer, so what passed is what gets sliced. For assemblies the export fuses
+  world-frame parts, so the direction is read in the world frame there.
+
+Areas of planar regions are exact; spans and reach are sampled on the mesh.
+The report (`fdm[]`: per part `orientation`, `ranking`, `walls`,
+`smallFeatures`, `verdict`) is part-local; diagnostic xyz are world-frame.
+Worked example: `examples/print-prep/`.
 
 Surfaces: automatic on `kernelcad evaluate` / MCP `evaluate_script`; standalone
 report via `kernelcad dfm <file>` (`--json`) and MCP `verify({ check: 'dfm' })`.
