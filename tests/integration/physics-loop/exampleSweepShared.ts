@@ -60,6 +60,10 @@ export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
   'examples/cookbook-parity/iso-metric-bolt-and-nut.kcad.ts',
   'examples/cookbook-parity/tslot-extrusion-and-bracket.kcad.ts',
   'examples/cookbook-parity/wood-joinery-dado-rabbet-mortise.kcad.ts',
+  // Stacked exploded/BOM demo: fastened mates exist, but connector origins
+  // sit at assembled stack heights in empty space, so the joint-mesh-gap
+  // gate fires by design. Render/export of this file uses --no-mechanism-check.
+  'examples/exploded/enclosure.kcad.ts',
   'examples/cookbook/wayfarer-temple-ray-ban.kcad.ts',
   'examples/gallery/meta-glasses-experiments/integrated-wayfarer.kcad.ts',
   'examples/gallery/meta-glasses-experiments/product-detail-wayfarer.kcad.ts',
