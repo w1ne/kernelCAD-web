@@ -1,52 +1,55 @@
-# kernelCAD v0.11.0
+# kernelCAD v0.16.0
 
-v0.11.0 is the release-prep line for agent-authored physical CAD. It closes the 2D path-NURBS authoring gap, hardens visual/inspection review, and refreshes the gallery with physically connected watch and ratchet-stool examples.
+## Summary
+
+Steal-list train on `develop`: drawings and GD&T, print loop, FEA gate, mesh-to-features, exploded views, cookbook hardware recipes, and Studio routing so Param arithmetic and TypeScript models run on the full kernel. Hero: drawing PDF → motor-mount (`napkin-sketch-to-3d`).
 
 ## Highlights
 
-- Added 2D NURBS path authoring with `path().spline(...)`, `path().nurbsSegment(...)`, and `path().hermiteG2(...)`.
-- Added MCP edit tools for those path operations: `add_path_spline`, `add_path_nurbs_segment`, and `add_path_hermite_g2`.
-- Added deterministic render-inspection channels for RGB, mask, depth, and normals so visual review can carry machine-readable evidence instead of relying only on screenshots.
-- Hardened the design loop so `assembly.visual.review-incomplete` and `assembly.visual.review-evidence-weak` cannot be bypassed with review-warning allow-lists.
-- Added/updated gallery examples for the Royal Pop pocket watch and the exposed ratchet height-adjust stool.
-- Kept Ray-Ban Meta / Wayfarer as a future benchmark artifact rather than a featured release item until the surface and loop quality are strong enough.
+### Drawings and reconstruct
+- Auto-dimension / GD&T on `svg-drawing`, feature callouts, section views.
+- `drawing_to_cad`: vector PDF → editable `.kcad.ts` + assumption ledger.
+- `mesh_to_features` / `kernelcad reconstruct`: mesh → param-driven feature tree.
 
-## Agent And CAD Authoring
+### Print and FEA
+- FDM `dfmSpec`, G-code export, `send_to_printer`.
+- `feaStudy` / `run_fea` safety-factor gate (CalculiX + gmsh when installed).
 
-- `review_cad` now exposes the current visual checklist and `gripperAperture` schema through the MCP tool registry.
-- Skill docs now advertise the current MCP/tool surface and render-inspection bundle channels.
-- The gallery feature policy is enforced in code: only one entry per calendar quarter can set `featured: true`.
+### Mechanism, repair, sim
+- Static-hold and `sweep_tolerance`.
+- `repair_script` + `why_did_this_fail` (more candidate kinds in this cut).
+- USD-Isaac export, `diff_geometry`.
+
+### Cookbook and Studio
+- Hardware recipes evaluate (ISO fastener, GT2, gears, T-slot, joinery, pipe, materials).
+- Studio: Param `.add`/`.divide` hits the node kernel; TypeScript generics parse; `iso-4762-m2x4` ships in a committed seed catalog.
+
+## Demo
+
+`docs/demos/v0.16/napkin-sketch-to-3d/` — motor-mount rebuilt from its third-angle drawing.
 
 ## Quality Gates
 
-Run these before tagging/publishing:
-
-```bash
-npm run lint
-npx tsc --noEmit -p tsconfig.cli.json
-npx tsc --noEmit -p tsconfig.json
-npm run test:package
-npm run site:test
-npm test
-git diff --check
-```
-
-The package version is intentionally staged at `0.11.0`; the stable `v0.11.0` tag and npm publication should be created only after the release branch is merged and the final full-suite gates pass.
+- Required CI on `develop` (lint, build-and-checks, 8 test shards, test) green through #701–#704.
+- `npm run qc:lint` and `qc:build` (including cookbook:evaluate) passed locally.
+- Local unsharded `npm test` is not the release gate: drawing_to_cad needs `@napi-rs/canvas`; a few long examples timed out on this machine. GitHub Actions is the gate.
+- Non-required `external-tools` job still fails to find gmsh in the CI venv (follow-up).
 
 ## Install And Upgrade
 
-After publish:
-
 ```bash
-npm install -g kernelcad@0.11.0
+npm install -g kernelcad@0.16.0
 ```
-
-For repo development:
 
 ```bash
 git clone https://github.com/w1ne/kernelCAD-web.git
 cd kernelCAD-web
-git checkout v0.11.0
-npm install
-npm run dev
+git checkout v0.16.0
 ```
+
+Studio auto-deploys from `develop` to app.kernelcad.com. Marketing site is a separate `kernelCAD-server` dispatch.
+
+## Links
+
+- Web app: https://app.kernelcad.com
+- Issues: https://github.com/w1ne/kernelCAD-web/issues

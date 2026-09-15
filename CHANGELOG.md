@@ -1,6 +1,6 @@
-# kernelCAD v0.15.0
+# kernelCAD v0.16.0
 
-## Unreleased
+## v0.16.0 — 2026-09-15 — steal-list train
 
 - **CI now exercises the FEA and USD-Isaac external toolchain for real.** New `external-tools` CI job (not part of the required `test` gate) installs `calculix-ccx` and `gmsh==4.15.2`/`usd-core` into a `.tools-venv`, then runs the FEA integration tests and a new USD-Isaac validation test with `KERNELCAD_REQUIRE_FEA_TOOLCHAIN=1` — a new flag (`requireFeaToolchainIfDemanded` in `src/kernel/fea/toolchain.ts`) that turns every "toolchain absent, skip" path into a hard failure instead of a quiet skip. New `tests/integration/export/usdIsaacPxr.test.ts` exports the two-link arm example to usd-isaac and validates the stage with real `pxr` schemas (`Usd.Stage.Open`, `UsdPhysics.ArticulationRootAPI`, per-body `MassAPI`, joint body0/body1/axis, mesh point/face resolution) via the new `scripts/validate/usd_physics_check.py`. No exporter defects found — the stage validated clean against real `pxr`.
 - **Mounting-hole gate resolves ParamRef diameters.** A `.hole({ diameter: someParam })` feature is no longer reported as "no hole feature found": `validateMountingHoleConsistency` resolves hole params against the live param table (the same walk the lowerer uses). `kinematic.sweepTolerance` sweeping that diameter now produces a real pass/fail envelope at the ±0.05 mm mismatch threshold. Example: `examples/kinematic/sweep-tolerance-hole-diameter.kcad.ts`.
