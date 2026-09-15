@@ -1,0 +1,11 @@
+{
+  "taskId": "napkin-sketch-to-3d",
+  "module": "v0.16",
+  "capturedAt": "2026-09-15T02:09:51.077Z",
+  "durationMs": 21500,
+  "truncated": false,
+  "gitSha": "0c240eb6724bf74a180a869c19cbe41e0379145d",
+  "heroArtifact": "napkin-sketch-to-3d",
+  "catalogSource": "memorable-builds-policy/v0.16",
+  "overrideApprovedBy": null
+}
