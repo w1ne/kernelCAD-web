@@ -74,4 +74,18 @@ describe('CodeAnalyzer', () => {
         expect(analyzer.getDeclaredVariables().has('a')).toBe(false);
         expect(analyzer.getDeclaredVariables().has('b')).toBe(true);
     });
+
+    it('analyzes modern .kcad.ts with Array<[number, number]> without throwing', () => {
+        const code = `
+            const arm = assembly('enclosure');
+            const standoffXY: Array<[number, number]> = [[8, 8], [72, 8]];
+            const [x, y] = standoffXY[0]!;
+            return arm;
+        `;
+        expect(() => new CodeAnalyzer(code).createContext()).not.toThrow();
+        const ctx = new CodeAnalyzer(code).createContext();
+        expect(ctx.declaredVariables.has('standoffXY')).toBe(true);
+        expect(ctx.declaredVariables.has('arm')).toBe(true);
+        expect(ctx.getVariableAtIndex(0)).toBe('arm');
+    });
 });

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { readFileSync } from 'node:fs';
 import { describe, it, expect } from 'vitest';
 import { parseCode, getDeclaredVariablesAST, getSketchVariablesAST, generateCode, insertStatementSimple, insertShape, promoteReturnExpressionAtIndexToVariable, insertStatementsAndReplaceReturnAtIndex } from './ast';
 
@@ -34,6 +35,45 @@ describe('AST - Basic Parsing', () => {
     it('should throw on malformed code', () => {
         const code = `const x = ;`; // Syntax error
         expect(() => parseCode(code)).toThrow();
+    });
+
+    // Studio's CodeAnalyzer / Validate path feeds user .kcad.ts through parseCode
+    // (acorn, JS-only). Modern models use TypeScript generics such as
+    // `Array<[number, number]>` (enclosure.kcad.ts:39). That must not surface
+    // "Unexpected token" — the node kernel already meshes those files.
+    it('should parse TypeScript Array<[number, number]> without Unexpected token', () => {
+        const code = 'const standoffXY: Array<[number, number]> = [[1, 2], [3, 4]];';
+        expect(() => parseCode(code)).not.toThrow();
+        const ast = parseCode(code);
+        expect(ast.type).toBe('Program');
+        expect(getDeclaredVariablesAST(code).has('standoffXY')).toBe(true);
+    });
+
+    it('should parse the exploded enclosure example (TS generics + non-null assertions)', () => {
+        const code = `
+            const INSET = 8;
+            const standoffXY: Array<[number, number]> = [
+              [INSET, INSET],
+              [80 - INSET, INSET],
+            ];
+            for (let i = 0; i < 2; i++) {
+              const [x, y] = standoffXY[i]!;
+              use(x, y);
+            }
+        `;
+        expect(() => parseCode(code)).not.toThrow();
+        const vars = getDeclaredVariablesAST(code);
+        expect(vars.has('standoffXY')).toBe(true);
+        expect(vars.has('INSET')).toBe(true);
+    });
+
+    it('should parse examples/exploded/enclosure.kcad.ts', () => {
+        const code = readFileSync(new URL('../../../examples/exploded/enclosure.kcad.ts', import.meta.url), 'utf8');
+        expect(() => parseCode(code)).not.toThrow();
+        const vars = getDeclaredVariablesAST(code);
+        expect(vars.has('standoffXY')).toBe(true);
+        expect(vars.has('plate')).toBe(true);
+        expect(vars.has('arm')).toBe(true);
     });
 });
 
