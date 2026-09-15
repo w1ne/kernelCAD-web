@@ -11,6 +11,7 @@ vi.mock('../funnel/lib/supabaseClient', () => ({
   }),
 }));
 
+import { defaultCode } from '../shared/worker/geometryEngine';
 import {
   loadGalleryScriptSource,
   loadStudioScriptSource,
@@ -35,15 +36,29 @@ describe('needsFullKernel', () => {
     expect(needsFullKernel('const s = lib.fromSTEP(url)')).toBe(true);
   });
 
+  it('matches the default Studio script (Param .add / .divide)', () => {
+    // Worker `param()` returns a plain number, so t.add(2) / w.divide(2) throw
+    // `TypeError: t.add is not a function`. Route these to the node kernel
+    // up front instead of relying on the throw-then-recover mesh fallback.
+    expect(defaultCode).toContain('.add(');
+    expect(defaultCode).toContain('.divide(');
+    expect(needsFullKernel(defaultCode)).toBe(true);
+    expect(needsFullKernel("const t = param('Thickness', 5, { unit: 'mm' }); t.add(2);")).toBe(true);
+    expect(needsFullKernel('cylinder(t.add(2), 4).translate(w.divide(2), h.divide(2), -1)')).toBe(true);
+  });
+
   it('does not match plain v0.1 primitive models the worker can run', () => {
     expect(needsFullKernel('const b = box(10, 20, 5); return b;')).toBe(false);
     expect(needsFullKernel('return cylinder(10, 4).translate(1, 2, 3);')).toBe(false);
     expect(needsFullKernel("const s = sketcher().lineTo([1, 0]); return s.close();")).toBe(false);
+    expect(needsFullKernel("const w = param('Width', 60); return box(w, 10, 5);")).toBe(false);
   });
 
   it('tolerates whitespace between the token and its call/member', () => {
     expect(needsFullKernel('assembly  (\n  "x"\n)')).toBe(true);
     expect(needsFullKernel('joint . clevis({})')).toBe(true);
+    expect(needsFullKernel('t . add (2)')).toBe(true);
+    expect(needsFullKernel('w . divide (2)')).toBe(true);
   });
 });
 

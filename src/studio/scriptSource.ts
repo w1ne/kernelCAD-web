@@ -135,13 +135,17 @@ export function devMeshAvailable(): boolean {
 /**
  * True when `code` is built with the modern assembly / joint / kinematic kernel
  * API that the legacy v0.1 in-browser worker does NOT expose (the worker only
- * has `param`/`box`/`cylinder`/`sphere`/`Sketcher`). Such a model can only run
- * on the full node kernel, so handing it to the worker is a guaranteed
- * `"assembly is not defined"` throw. On localhost dev we use this to route the
- * model straight to the node-backed `/__kernelcad/mesh` endpoint up front —
- * the worker never sees code it can't evaluate, so there is no throw-then-
- * recover "choke". A comment that merely mentions one of these tokens only
- * routes to the (still-correct) node kernel, so over-matching is harmless.
+ * has `param`/`box`/`cylinder`/`sphere`/`Sketcher`). Worker `param()` returns a
+ * plain number, so ParamRef arithmetic (`.add` / `.divide` / `.multiply` /
+ * `.negate`) throws `TypeError: t.add is not a function` — the default Studio
+ * script hits this. Such a model can only run on the full node kernel, so
+ * handing it to the worker is a guaranteed throw. On localhost dev we use this
+ * to route the model straight to the node-backed `/__kernelcad/mesh` endpoint
+ * up front — the worker never sees code it can't evaluate, so there is no
+ * throw-then-recover "choke". A comment that merely mentions one of these
+ * tokens only routes to the (still-correct) node kernel, so over-matching is
+ * harmless. `.subtract(` is omitted: it is also the v0.1 boolean cutter the
+ * worker already implements.
  */
 const FULL_KERNEL_PATTERNS: readonly RegExp[] = [
   /\bassembly\s*\(/,
@@ -149,6 +153,7 @@ const FULL_KERNEL_PATTERNS: readonly RegExp[] = [
   /\blib\s*\.\s*fromSTEP\b/,
   /\.\s*tendon\s*\(/,
   /\.\s*solvedModel\s*\(/,
+  /\.\s*(add|divide|multiply|negate)\s*\(/,
 ];
 
 export function needsFullKernel(code: string): boolean {

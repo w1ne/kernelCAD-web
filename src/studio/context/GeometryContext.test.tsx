@@ -122,6 +122,7 @@ function Probe() {
       <button data-testid="lock-viewport" onClick={() => setViewportDriverLock?.(true)}>Lock</button>
       <button data-testid="trigger-param" onClick={() => { void updateParam([{ name: 'w', value: 9 }]); }}>Param</button>
       <button data-testid="trigger-validate" onClick={() => { void executeGeometry('const ignored = 1;'); }}>Validate</button>
+      <button data-testid="trigger-validate-param" onClick={() => { void executeGeometry("const t = param('t', 5); return box(t.add(2), 1, 1);"); }}>ValidateParam</button>
     </div>
   );
 }
@@ -756,6 +757,52 @@ describe('GeometryContext latest-intent-wins', () => {
     expect(JSON.parse((meshCall![1] as RequestInit).body as string)).toEqual({
       source: 'return box(w, 1, 1);',
       params: { w: 9 },
+    });
+    expect(screen.getByTestId('error').textContent).toBe('');
+  });
+
+  it('Validate without ?script= routes Param-method scripts to the dev mesh, not the worker', async () => {
+    vi.stubEnv('DEV', '1');
+    mockEngine.executeCode.mockResolvedValue({ geometries: [], sketches: [] });
+
+    const meshPayload = {
+      features: [
+        {
+          featureId: 'b',
+          featureKind: 'box',
+          predecessors: [],
+          faces: [{ vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0], indices: [0, 1, 2], normals: [0, 0, 1, 0, 0, 1, 0, 0, 1], faceId: 0 }],
+        },
+      ],
+      featureRecords: [{ id: 'b', kind: 'box' }],
+      bounds: { min: [0, 0, 0], max: [1, 1, 0] },
+      params: {},
+      review: { ok: true, diagnostics: [] },
+    };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => meshPayload,
+    } as Response);
+
+    render(
+      <GeometryProvider code={'const a = 1;'}>
+        <Probe />
+      </GeometryProvider>,
+    );
+
+    await flushUntil(() => screen.getByTestId('execution-count').textContent !== '0');
+    mockEngine.executeCode.mockClear();
+
+    await act(async () => {
+      screen.getByTestId('trigger-validate-param').click();
+    });
+    await flushUntil(() => screen.getByTestId('face-count').textContent === '1');
+
+    expect(mockEngine.executeCode).not.toHaveBeenCalled();
+    const meshCall = fetchMock.mock.calls.find((c) => String(c[0]) === '/__kernelcad/mesh');
+    expect(meshCall).toBeTruthy();
+    expect(JSON.parse((meshCall![1] as RequestInit).body as string)).toEqual({
+      source: "const t = param('t', 5); return box(t.add(2), 1, 1);",
     });
     expect(screen.getByTestId('error').textContent).toBe('');
   });

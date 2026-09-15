@@ -1045,14 +1045,16 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             }
             setIsComputing(true);
             // The in-browser worker is the legacy v0.1 runtime — it only exposes
-            // `param`/`box`/`cylinder`/`sphere`/`Sketcher`. Models built with the
-            // modern assembly/joint/tendon kernel can ONLY run on the node kernel,
-            // so handing them to the worker is a guaranteed "assembly is not
-            // defined" throw. On localhost dev, detect those up front and route
-            // straight to the node-backed dev mesh endpoint — the worker is never
-            // given code it can't evaluate, so there is no throw-then-recover
-            // "choke". The reactive fallback in the catch below stays as a safety
-            // net for any other API the worker happens to lack.
+            // `param`/`box`/`cylinder`/`sphere`/`Sketcher`, and `param()` returns
+            // a plain number. Models built with the modern assembly/joint/tendon
+            // kernel, or ParamRef arithmetic (`.add` / `.divide`), can ONLY run
+            // on the node kernel — handing them to the worker is a guaranteed
+            // throw (`assembly is not defined` / `t.add is not a function`).
+            // On localhost dev, detect those up front and route straight to the
+            // node-backed dev mesh endpoint — the worker is never given code it
+            // can't evaluate, so there is no throw-then-recover "choke". The
+            // reactive fallback in the catch below stays as a safety net for
+            // any other API the worker happens to lack.
             const useDevKernel = devMeshAvailable() && needsFullKernel(code);
             const applyDevPayload = (payload: BackendMeshPayload) => {
                 const devGeometries = featureMeshesToGeometries(rootVisibleFeatures(payload));
@@ -1222,10 +1224,12 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
 
         const revision = ++mainRevisionRef.current;
         setCurrentCodeRevision(revision);
+        const useDevKernel = devMeshAvailable() && needsFullKernel(codeToExecute);
         // Acorn can't parse TypeScript; only the legacy worker path below needs
-        // this pre-check. The hosted server-mesh path transpiles modern .kcad.ts
-        // itself, so acorn must not block it (it throws "Unexpected token" on TS).
-        if (!shouldUseHostedMesh()) {
+        // this pre-check. Hosted and full-kernel paths transpile modern .kcad.ts
+        // themselves, so acorn must not block them (it throws "Unexpected token"
+        // on TS).
+        if (!shouldUseHostedMesh() && !useDevKernel) {
             try {
                 parseCode(codeToExecute);
             } catch (err) {
@@ -1281,30 +1285,56 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             return;
         }
 
-        if (!isReady) return;
+        // Same up-front router as the auto-run path: Param-method / assembly
+        // scripts must not be handed to the worker (Validate on the default
+        // Studio starter has no `?script=`).
+        if (!useDevKernel && !isReady) return;
         setIsComputing(true);
         try {
-            const result = await engine.executeCode(codeToExecute);
-            if (revision !== mainRevisionRef.current) {
-                setStaleMainResponsesDropped((prev) => prev + 1);
+            if (useDevKernel) {
+                const payload = await meshSourceDev(codeToExecute);
+                if (revision !== mainRevisionRef.current) {
+                    setStaleMainResponsesDropped((prev) => prev + 1);
+                    pushExecutionRecord({
+                        revision,
+                        status: 'stale',
+                        executionCountAtRecord: executionCount + 1,
+                    });
+                    return;
+                }
+                setGeometries(featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]));
+                setGeometryTransformOverrides({});
+                setFeatureRecords((payload.featureRecords as FeatureRecord[]) ?? []);
+                setScriptParams(Object.values(payload.params ?? {}));
+                setScriptReview(payload.review ?? { ok: true, diagnostics: [] });
+                setSketchesGeometries([]);
+                setPreviewGeometries([]);
+                setError(null);
+                setLastSuccessfulRevision(revision);
+                pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+            } else {
+                const result = await engine.executeCode(codeToExecute);
+                if (revision !== mainRevisionRef.current) {
+                    setStaleMainResponsesDropped((prev) => prev + 1);
+                    pushExecutionRecord({
+                        revision,
+                        status: 'stale',
+                        executionCountAtRecord: executionCount + 1,
+                    });
+                    return;
+                }
+                setGeometries(result.geometries);
+                setGeometryTransformOverrides({});
+                const remappedSketches = remapSketchNames(result.sketches, codeToExecute);
+                setSketchesGeometries(remappedSketches);
+                setError(null);
+                setLastSuccessfulRevision(revision);
                 pushExecutionRecord({
                     revision,
-                    status: 'stale',
+                    status: 'success',
                     executionCountAtRecord: executionCount + 1,
                 });
-                return;
             }
-            setGeometries(result.geometries);
-            setGeometryTransformOverrides({});
-            const remappedSketches = remapSketchNames(result.sketches, codeToExecute);
-            setSketchesGeometries(remappedSketches);
-            setError(null);
-            setLastSuccessfulRevision(revision);
-            pushExecutionRecord({
-                revision,
-                status: 'success',
-                executionCountAtRecord: executionCount + 1,
-            });
         } catch (err: unknown) {
             if (revision !== mainRevisionRef.current) {
                 setStaleMainResponsesDropped((prev) => prev + 1);
@@ -1316,6 +1346,34 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 return;
             }
             const message = err instanceof Error ? err.message : String(err);
+            if (!useDevKernel && devMeshAvailable() && /is not defined|is not a function/.test(message)) {
+                try {
+                    const payload = await meshSourceDev(codeToExecute);
+                    if (revision !== mainRevisionRef.current) {
+                        setStaleMainResponsesDropped((prev) => prev + 1);
+                        pushExecutionRecord({
+                            revision,
+                            status: 'stale',
+                            executionCountAtRecord: executionCount + 1,
+                        });
+                        return;
+                    }
+                    setGeometries(featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]));
+                    setGeometryTransformOverrides({});
+                    setFeatureRecords((payload.featureRecords as FeatureRecord[]) ?? []);
+                    setScriptParams(Object.values(payload.params ?? {}));
+                    setScriptReview(payload.review ?? { ok: true, diagnostics: [] });
+                    setSketchesGeometries([]);
+                    setPreviewGeometries([]);
+                    setError(null);
+                    setLastSuccessfulRevision(revision);
+                    pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+                    return;
+                } catch {
+                    // Dev fallback also failed — fall through and surface
+                    // the original worker error below.
+                }
+            }
             setError(message);
             pushExecutionRecord({
                 revision,
