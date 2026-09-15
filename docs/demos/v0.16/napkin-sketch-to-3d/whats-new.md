@@ -19,10 +19,10 @@ against the sheet is match on hole diameters and view silhouettes.
 
 ## What's new
 
-v0.16 lands the steal-list train: drawing PDF → CAD, auto GD&T, FEA
-safety-factor gate, G-code print loop, mesh-to-features, exploded views,
-cookbook hardware recipes, and Studio routing so Param arithmetic and
-TypeScript models run on the full kernel. Full notes in `CHANGELOG.md`.
+The hero clip is two beats: the third-angle sheet (`drawing_to_cad` reads
+linework and stated dimensions), then the same motor-mount rebuilt as
+parametric CAD. v0.16 also ships auto GD&T, FEA, G-code, mesh-to-features,
+and cookbook hardware recipes. Full notes in `CHANGELOG.md`.
 
 ![Demo](./demo.mp4)
 ![Panel](./panel.png)
