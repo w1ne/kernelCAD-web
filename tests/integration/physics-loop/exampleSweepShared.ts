@@ -45,12 +45,38 @@ export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
   'examples/bench/nested-booleans.kcad.ts',
   'examples/bench/two-boxes-fused.kcad.ts',
   'examples/bracket-with-hole.kcad.ts',
+  // Emitted by drawing_to_cad; pinned by tests/integration/examples/drawingToCadExample.test.ts.
+  'examples/drawing-to-cad/motor-mount-bracket.kcad.ts',
+  'examples/fea/shelf-bracket-fea.kcad.ts',
+  // Multi-part display / BOM / catalog layouts — named assembly().part()
+  // rows with no mates or joints, so the mechanism graph is disconnected
+  // by design. Not mechanisms; the physics loop's orphan-part gate does
+  // not apply.
+  'examples/bom/panel-with-fasteners.kcad.ts',
+  'examples/cookbook-parity/countersunk-flat-head-screw.kcad.ts',
+  'examples/cookbook-parity/engineering-material-presets-mass.kcad.ts',
+  'examples/cookbook-parity/gt2-timing-belt-drive.kcad.ts',
+  'examples/cookbook-parity/involute-spur-gear-pair.kcad.ts',
+  'examples/cookbook-parity/iso-metric-bolt-and-nut.kcad.ts',
+  'examples/cookbook-parity/tslot-extrusion-and-bracket.kcad.ts',
+  'examples/cookbook-parity/wood-joinery-dado-rabbet-mortise.kcad.ts',
+  // Stacked exploded/BOM demo: fastened mates exist, but connector origins
+  // sit at assembled stack heights in empty space, so the joint-mesh-gap
+  // gate fires by design. Render/export of this file uses --no-mechanism-check.
+  'examples/exploded/enclosure.kcad.ts',
   'examples/cookbook/wayfarer-temple-ray-ban.kcad.ts',
   'examples/gallery/meta-glasses-experiments/integrated-wayfarer.kcad.ts',
   'examples/gallery/meta-glasses-experiments/product-detail-wayfarer.kcad.ts',
   'examples/gallery/meta-glasses-experiments/silhouette-wayfarer.kcad.ts',
   'examples/gallery/meta-glasses-experiments/words-to-geometry-wayfarer.kcad.ts',
   'examples/patterns/servo-vented-plate.kcad.ts',
+  // Deliberately broken single-part repair fixtures. They exist to FAIL
+  // evaluation so the trace-guided repair walkthrough has something real to
+  // fix; tests/integration/examples/repairExamples.test.ts pins that each one
+  // starts broken and repairs clean.
+  'examples/repair/cutter-misses-body.kcad.ts',
+  'examples/repair/hole-misses-plate.kcad.ts',
+  'examples/repair/oversized-fillet.kcad.ts',
   'examples/v0.21/donut.kcad.ts',
   'examples/v0.4/rocket-keychain.kcad.ts',
   'examples/v0.8/polished-brass-tube.kcad.ts',

@@ -23,6 +23,8 @@ const CLI_SUBCOMMANDS = new Set<string>([
   'interference',
   'mcp',
   'parts',
+  'print',
+  'reconstruct',
   'render',
   'skill',
   'stats',
@@ -56,6 +58,9 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   // Example-variable identifiers used in code prose.
   'new_code',
   'old_code',
+  // set_param's own input field name, referenced standalone in prose
+  // (the tool name `set_param` itself DOES resolve).
+  'new_value',
   // Common parameter names used in MCP tool signatures (documented
   // alongside tool names, not tool calls themselves).
   'feature_id',
@@ -66,6 +71,8 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   // next to robot-description exports (documented alongside the real
   // export_model tool name, which DOES resolve — a field, not a call).
   'mesh_files',
+  // export result field carrying the svg-drawing placement report.
+  'drawing_report',
   'binding_name',
   'curve_bindings',
   'chain_anchor',
@@ -87,6 +94,11 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   'prefer_solver',
   'max_iterations',
   'safety_factor_threshold',
+  // check_static_hold / verify({ check: 'static-hold' }) parameter names
+  // (documented alongside the real verify tool name, which DOES resolve —
+  // these are its check-specific params, not tool calls).
+  'min_torque_margin_pct',
+  'range_samples',
   // Referenced in sdformat prose only to state it does NOT exist as a tool
   // ("There is no separate `validate_sdf` MCP tool") — not a tool call.
   'validate_sdf',
@@ -116,6 +128,11 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   'pull_dir',
   'angle_deg',
   'require_closed',
+  // send_to_printer / kernelcad print send parameter names (documented
+  // alongside the real send_to_printer tool name and the print CLI
+  // subcommand, which DO resolve — these are input fields, not calls).
+  'dry_run',
+  'access_code',
 ]);
 
 export interface ToolNameHit {

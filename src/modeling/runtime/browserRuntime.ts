@@ -45,7 +45,7 @@
 //    The multi-tenant server path keeps `node:vm`, and must continue to:
 //    do not swap `runIsolated` for `runInRealm` on any server.
 
-import { runInRealm } from './realmRunner';
+import { REALM_WRAP_OFFSET, runInRealm } from './realmRunner';
 import { transpileBrowser } from './browserTranspile';
 import {
   runScriptCore,
@@ -97,5 +97,14 @@ export async function runScriptInBrowser(
     runner = runInRealm,
     transpile = transpileBrowser,
   } = input;
-  return runScriptCore({ code, fileName, scriptDir, runner, transpile });
+  return runScriptCore({
+    code,
+    fileName,
+    scriptDir,
+    runner,
+    transpile,
+    // Only the default runner's prologue is known here; a caller-supplied
+    // runner wraps differently, so report identity rather than a wrong offset.
+    wrapOffset: runner === runInRealm ? REALM_WRAP_OFFSET : undefined,
+  });
 }

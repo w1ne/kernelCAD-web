@@ -16,6 +16,15 @@ describe('lookupCookbookTool', () => {
     expect(r.hits![0]).toHaveProperty('score');
   });
 
+  it('surfaces the repair-loop snippet for a failing-fillet query', async () => {
+    // Agents reach the trace-guided repair loop by describing the symptom,
+    // not by knowing the tool names — so the symptom query must rank it first.
+    const r = await lookupCookbookTool({ query: 'repair failing fillet' });
+    expect(r.ok).toBe(true);
+    expect(r.hits![0].id).toBe('repair-oversized-fillet');
+    expect(r.hits![0].body).toContain('block.fillet(edgeRound)');
+  });
+
   it('returns empty hits for queries below the floor', async () => {
     const r = await lookupCookbookTool({ query: 'mysterious-magic-token-xyz123' });
     expect(r.ok).toBe(true);
@@ -45,6 +54,19 @@ describe('lookupCookbookTool', () => {
       const r = await lookupCookbookTool({ query: q });
       expect(r.ok).toBe(true);
       expect(r.hits!.map(h => h.id)).toContain('loft-body-shell-from-profiles');
+    }
+  });
+
+  it('ranks wrapTexture cylinder recipe first for a wrap query', async () => {
+    for (const q of [
+      'wrap a texture around a cylinder',
+      'cylindrical UV projection wrapTexture',
+    ]) {
+      const r = await lookupCookbookTool({ query: q });
+      expect(r.ok).toBe(true);
+      expect(r.hits![0].id).toBe('wrap-texture-can-label');
+      expect(r.hits![0].body).toContain('wrapTexture');
+      expect(r.hits![0].body).toContain("type: 'cylinder'");
     }
   });
 });

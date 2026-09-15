@@ -14,6 +14,7 @@
 import type { Vec3 } from '../shared/intent/types';
 import type { NextAction } from '../shared/diagnostics/nextAction';
 import type { DiagnosticCode } from '../shared/diagnostics/registry';
+import type { AnyMaterialName } from './engineeringMaterials';
 
 /**
  * Pose record — numeric joint values keyed by joint name (deg for revolute,
@@ -151,16 +152,12 @@ export interface ReachableResult extends KinematicResultBase {
 
 // ===== checkLoadCapacity =====
 
-/** Catalogued bulk material. Closed-form section properties are paired with
- *  the catalog at runtime; 'custom' lets the agent supply yield + modulus
- *  inline for materials not in the catalog. */
-export type MaterialKind =
-  | 'steel'
-  | 'aluminum'
-  | 'pla'
-  | 'abs'
-  | 'pet'
-  | 'custom';
+/** Material name for a loaded part: any accepted engineering-material
+ *  spelling (a grade such as `mild-steel` / `aluminum-6061` / `nylon`, or a
+ *  bulk alias such as `steel` / `aluminum`), resolved through the single
+ *  registry in `engineeringMaterials.ts`; 'custom' lets the agent supply
+ *  yield + modulus inline for materials not in the registry. */
+export type MaterialKind = AnyMaterialName | 'custom';
 
 /** Per-loaded-part material declaration. `material: 'custom'` requires
  *  `yieldStressMPa` + `youngsModulusGPa` set; the catalog kinds default
@@ -238,6 +235,99 @@ export interface LoadCapacityResult extends KinematicResultBase {
   readonly failures: ReadonlyArray<LoadCapacityFailure>;
 }
 
+// ===== checkStaticHold =====
+
+/** Gravity vector, m/s^2, world frame. Defaults to [0, 0, -9.81]. */
+export type GravityVec3 = Vec3;
+
+export interface StaticHoldOpts {
+  /** Which joint(s) to evaluate. Omit to evaluate every declared joint that
+   *  carries an `actuator` declaration. */
+  readonly joint?: string;
+  /** Explicit pose(s) to check. A single pose checks only that pose; an
+   *  array checks each. Omit to sample a grid across every evaluated
+   *  joint's own declared range (other joints held at their range midpoint,
+   *  or 0 for unbounded joints). */
+  readonly pose?: NumericPoses | ReadonlyArray<NumericPoses>;
+  /** Gravity vector, m/s^2, world frame. Defaults to [0, 0, -9.81]. */
+  readonly gravity?: GravityVec3;
+  /** Safety-margin floor as a percent of actuator capacity — fires
+   *  `assembly.joint.static-hold.margin-low` when the worst-pose margin
+   *  falls below this (but capacity is not exceeded). Defaults to 20. */
+  readonly minTorqueMarginPct?: number;
+  /** Grid density per evaluated joint when `pose` is omitted. Defaults to 9. */
+  readonly rangeSamples?: number;
+}
+
+/** Per-joint static-hold compute record. */
+export interface StaticHoldJointResult {
+  readonly jointName: string;
+  readonly kind: 'revolute' | 'prismatic';
+  /** N·m (revolute) or N (prismatic) — the declared actuator capacity. */
+  readonly actuatorCapacity: number;
+  /** N·m or N — the worst (largest) required holding torque/force seen
+   *  across the sampled poses. */
+  readonly worstRequired: number;
+  /** Percent: (capacity - worstRequired) / capacity * 100. Negative when
+   *  the actuator is exceeded. */
+  readonly marginPct: number;
+  /** The pose at which `worstRequired` occurred. */
+  readonly worstPose: NumericPoses;
+}
+
+export interface StaticHoldResult extends KinematicResultBase {
+  readonly joints: ReadonlyArray<StaticHoldJointResult>;
+  readonly posesSampled: number;
+}
+
+// ===== sweepTolerance =====
+
+/** One swept parameter: an explicit value list, or a {min,max,steps} range. */
+export type SweepParamSpec =
+  | { readonly values: ReadonlyArray<number | string> }
+  | { readonly min: number; readonly max: number; readonly steps: number };
+
+export type SweepParamsDeclaration = Readonly<Record<string, SweepParamSpec>>;
+
+export interface SweepGateSpec {
+  readonly interference?: boolean;
+  readonly mountingHoles?: boolean;
+  readonly jointAxis?: boolean;
+  readonly reachable?: {
+    readonly tipLink: string;
+    readonly targetPosition: Vec3;
+    readonly targetOrientation?: Vec3;
+  };
+}
+
+export interface SweepComboResult {
+  readonly combo: Readonly<Record<string, number | string>>;
+  readonly gates: Readonly<Record<string, 'pass' | 'fail'>>;
+  readonly diagnostics: ReadonlyArray<{
+    readonly gate: string;
+    readonly code: string;
+    readonly severity: string;
+    readonly message: string;
+  }>;
+}
+
+export interface SweepToleranceResult {
+  readonly ok: boolean;
+  readonly combosEvaluated: number;
+  readonly combosCapped: boolean;
+  readonly results: ReadonlyArray<SweepComboResult>;
+  /** First failing combo per gate name — the fast-scan payload an agent
+   *  reads before the full envelope table. */
+  readonly firstFailure: Readonly<Record<string, SweepComboResult | undefined>>;
+  /** Sweep-level diagnostics (currently just the combo-cap warning). */
+  readonly diagnostics: ReadonlyArray<{
+    readonly code: DiagnosticCode;
+    readonly severity: 'info' | 'warn' | 'error';
+    readonly message: string;
+  }>;
+  readonly source: 'local';
+}
+
 // ===== facade type — the kc.kinematic object surface =====
 
 import type { Assembly } from '../modeling/capture/assembly';
@@ -254,4 +344,5 @@ export interface KinematicFacade {
     loads?: LoadDeclaration,
     opts?: LoadCapacityOpts,
   ): Promise<LoadCapacityResult>;
+  checkStaticHold(arm: Assembly, opts?: StaticHoldOpts): Promise<StaticHoldResult>;
 }

@@ -371,6 +371,35 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
             enum: ['opencv', 'vision-llm', 'hybrid', 'auto'],
             description: 'Force a specific backend; default `auto` routes by corner-color stddev.',
           },
+          scaleAnchor: {
+            type: 'object',
+            description: 'Pixel-to-real-world scale anchor: two measured points on the image. Absent -> the returned ledger\'s `scale` fact is `missing`.',
+            properties: {
+              pixelDistance: { type: 'number', description: 'Distance in pixels between the two measured points.' },
+              realDistance: { type: 'number', description: 'The same distance in real-world units.' },
+              unit: { type: 'string', enum: ['mm', 'cm', 'in'] },
+            },
+            required: ['pixelDistance', 'realDistance', 'unit'],
+          },
+          priors: {
+            type: 'array',
+            description: 'Caller-supplied category-norm defaults (e.g. wall thickness) recorded verbatim as `assumed` ledger facts.',
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                statement: { type: 'string' },
+                value: {},
+                confidence: { type: 'number', minimum: 0, maximum: 1 },
+              },
+              required: ['id', 'statement', 'value', 'confidence'],
+            },
+          },
+          validate: {
+            type: 'string',
+            enum: ['warn', 'error'],
+            description: 'Assumption-ledger strictness. `warn` (default) never blocks. `error` fails the call when any `missing` ledger fact (e.g. scale) is still open.',
+          },
         },
         required: ['imageUrl'],
       },

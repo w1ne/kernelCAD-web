@@ -115,16 +115,18 @@ export type CardinalPlane = 'xy' | 'xz' | 'yz';
 export type PlaneSpec = CardinalPlane | { plane: CardinalPlane; offset?: number };
 
 export type SketchAxis = 'x' | 'y';
-export type AxisSpec = SketchAxis | { axis: SketchAxis; offset?: number };
+export type AxisSpec =
+  | SketchAxis
+  | { axis: SketchAxis; offset?: import('../runtime/paramRef').Editable<number> };
 
 export function isValidAxisSpec(v: unknown): v is AxisSpec {
   if (v === 'x' || v === 'y') return true;
   if (typeof v === 'object' && v !== null) {
     const o = v as { axis?: unknown; offset?: unknown };
     if (o.axis !== 'x' && o.axis !== 'y') return false;
-    // offset is optional; if present, must be finite
+    // offset is optional; if present, must be a finite number or a numeric ParamRef
     if (o.offset === undefined) return true;
-    return typeof o.offset === 'number' && Number.isFinite(o.offset);
+    return isValidEditableNumber(o.offset);
   }
   return false;
 }
@@ -168,6 +170,13 @@ export type FeatureKind =
   | 'animationView'
   // W3: capture-only print-prep (DFM gate) declaration, no OCCT output.
   | 'dfmSpec'
+  // Capture-only linear-static structural study declaration (shape.feaStudy),
+  // no OCCT output. Enforced by the FEA runner at evaluate time.
+  | 'feaStudy'
+  // Capture-only GD&T declarations (shape.datum / shape.tolerance), no OCCT
+  // output. Read by the svg-drawing exporter.
+  | 'drawingDatum'
+  | 'drawingTolerance'
   // NURBS Slice B: 3D parametric curve (Geom_BSplineCurve under the hood)
   //   and multi-section sweep (BRepOffsetAPI_MakePipeShell).
   | 'curve3d'

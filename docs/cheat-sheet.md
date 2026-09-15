@@ -20,7 +20,7 @@ description of any entry, call `lookup_api(query)`.
 | [Measure & verify](#measure--verify) | Ask the kernel what you actually built, and check it before shipping. |
 | [Parametrize](#parametrize) | Declare editable dimensions and do arithmetic on them (JS operators throw on a ParamRef). |
 | [Import & export](#import--export) | Bring in vendor geometry, and write models back out. |
-| [Annotate & present](#annotate--present) | Adjust a model's appearance without changing its geometry: text, color, lighting, camera, motion. |
+| [Annotate & present](#annotate--present) | Adjust a model's appearance without changing its geometry: text, color, lighting, camera, motion, drawing GD&T. |
 
 ## Start a shape
 
@@ -35,7 +35,7 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `spring({ length, coilRadius, wireRadius, turns, axis?, pointsPerTurn?, endStyle?, segments? }) => Shape` | Build a helical spring as a circular wire profile swept along a smooth B-spline helix spine, producing one continuous watertight solid. |
 | `extrudeRect(w, h, height, opts?) => Shape` | Extrude a w-by-h rectangle (XY) by `height` along Z. |
 | `extrudeCircle(r, height, opts?) => Shape` | Extrude a radius-r circle (XY) by `height` along Z. |
-| `extrudePolygon(points, depth, opts?) => Shape` | Extrude a 2D polygon (array of [x, y] points) by `depth` along Z. |
+| `extrudePolygon(points, depth, opts?) => Shape` | Extrude a 2D polygon (array of [x, y] points; coordinates and `depth` accept ParamRefs) by `depth` along Z. |
 | `extrudeRoundedRect(width, height, radius, depth, opts?) => Shape` | Extrude a rounded rectangle (corner radius) by `depth` along Z. |
 | `sheetMetal(profile: Sketch, { thickness, kFactor, faceLabels? }) => Shape` | Build a sheet-metal body from a closed planar Sketch. |
 | `sdf : { sphere(r), box(size), cylinder(r, h), torus(R, r), smoothBlend(a, b, k), materialize(field, opts?), bind(name, field) }` | SDF authoring namespace (W2.3 slice-1). |
@@ -44,7 +44,7 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `PathBuilder.lineTo(x: Editable<number>, y: Editable<number>) => PathBuilder` | Add a straight line segment to (x, y). |
 | `PathBuilder.close() => Sketch` | Close the path; returns a Sketch that can be extruded/revolved/swept. |
 | `PathBuilder.label(name: string) => PathBuilder` | Tag the previous segment so it can be referenced later in fillet/chamfer/shell as `{face: name}`. |
-| `PathBuilder.circle(cx: number, cy: number, r: number, segments?: number) => Sketch` | Closed circle profile centered at (cx, cy) with radius r. |
+| `PathBuilder.circle(cx: Editable<number>, cy: Editable<number>, r: Editable<number>, segments?: number) => Sketch` | Closed circle profile centered at (cx, cy) with radius r. |
 | `PathBuilder.tangentArc(x: Editable<number>, y: Editable<number>) => PathBuilder` | Arc continuing tangent from the previous segment to (x, y). |
 | `PathBuilder.threePointsArc(x: Editable<number>, y: Editable<number>, midX: Editable<number>, midY: Editable<number>) => PathBuilder` | Arc through start, midpoint, and end. |
 | `PathBuilder.sagittaArc(x: Editable<number>, y: Editable<number>, sagitta: Editable<number>) => PathBuilder` | Arc by chord + perpendicular bulge height. |
@@ -57,6 +57,9 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `PathBuilder.nurbsSegment(controlPoints: Array<[Editable<number>, Editable<number>]>, opts?: { degree?: number; weights?: number[]; knots?: number[] }) => PathBuilder` | NURBS Slice D — explicit B-spline segment defined by a control polygon. |
 | `hermiteG2(a: { point: Vec3; tangent: Vec3; curvature?: Vec3 }, b: { point: Vec3; tangent: Vec3; curvature?: Vec3 }) => Curve3D` | Quintic Hermite Curve3D that interpolates the two endpoints with matching positions, first derivatives (tangents), and second derivatives (curvatures). |
 | `PathBuilder.hermiteG2(a: HermiteEndpoint2D, b: HermiteEndpoint2D) => PathBuilder` | NURBS Slice D — 2D quintic-Hermite transition between two endpoints, each with prescribed point + first derivative (tangent) + optional second derivative (curvature). |
+| `Shape.sectionSketch(plane: 'xy' \| 'xz' \| 'yz' \| { plane, offset? } \| { origin, normal }, opts?: { curveTolerance? }) => Promise<Sketch>` | AWAIT THIS — returns Promise<Sketch>; chaining a Sketch method (e.g. |
+| `Shape.faceSketch(face: FaceSelector \| string, opts?: { curveTolerance? }) => Promise<Sketch>` | AWAIT THIS — returns Promise<Sketch>; chaining a Sketch method (e.g. |
+| `Shape.silhouette(direction?: [number, number, number], opts?: { curveTolerance? }) => Promise<Sketch>` | AWAIT THIS — returns Promise<Sketch>; chaining a Sketch method (e.g. |
 
 ## Add material
 
@@ -64,12 +67,15 @@ Turn a profile into a solid, or grow one along a path.
 
 | Call | What it does |
 |---|---|
-| `Sketch.extrude(depth) => Shape` | Extrude this closed sketch normal to its plane by `depth` (mm). |
+| `Sketch.extrude(depth: Editable<number>) => Shape` | Extrude this closed sketch normal to its plane by `depth` (mm). |
+| `Sketch.revolve(opts?: { angleDeg?: Editable<number> }) => Shape` | Revolve around the Z axis, 360 degrees unless `angleDeg` (number or ParamRef). |
 | `Sketch.revolve() => Shape` | Revolve 360 degrees around the Z axis. |
 | `Sketch.sweep(rail, opts?: { frenet?, transitionMode?, spine? }) => Shape` | Sweep this profile along a 3D rail. |
+| `Sketch.sweep(rail, opts?: { frenet?, transitionMode?, spine? }) => Shape` | Sweep this profile along a 3D rail. |
 | `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, ruled?, startPoint?, endPoint? }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
+| `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, ruled?, startPoint?, endPoint?, rails?: Curve3D[] }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
 | `variableSweep(spine: Curve3D \| Sketch \| Vec3[], sections: Array<{ t: number; profile: Sketch }>, opts?: { closed?: boolean; continuity?: "C0" \| "C1" \| "C2" }) => Shape` | Multi-section sweep that blends `sections[i].profile` along the spine at the section's `t ∈ [0, 1]` spine parameter. |
-| `helix({ radius, pitch, turns, axis?, pointsPerTurn?, startAngle? }) => [number, number, number][]` | Polyline helix rail for `Sketch.sweep`. |
+| `helix({ radius: Editable<number>, pitch: Editable<number>, turns: Editable<number>, axis?, pointsPerTurn?, startAngle?: Editable<number> }) => [number, number, number][]` | Helix rail for `Sketch.sweep`. |
 
 ## Remove material
 
@@ -79,8 +85,8 @@ Cut into a solid: bolt holes, pockets, slots, plain subtraction.
 |---|---|
 | `Shape.subtract(...others) => Shape` | Boolean difference (this minus others). |
 | `ParamRef.subtract(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef minus `other`. |
-| `Shape.hole(face: FaceSelector \| string, opts: { u, v, diameter, depth?: number \| "through", upToFace?: FaceRef, counterbore?: { diameter, depth }, countersink?: { diameter, angleDeg? } }) => Shape` | Drill a single hole. |
-| `Shape.holes(face: FaceSelector \| string, opts: { positions: Array<{u,v}>, diameter, depth?, upToFace?, counterbore?, countersink? }) => Shape` | Drill N holes in one feature record. |
+| `Shape.hole(face: FaceSelector \| string, opts: { u, v, diameter, depth?: number \| "through", upToFace?: FaceRef, counterbore?: { diameter, depth }, countersink?: { diameter, angleDeg? }, thread?: { pitch, modeled?: boolean, clearance? } }) => Shape` | Drill a single hole. |
+| `Shape.holes(face: FaceSelector \| string, opts: { positions: Array<{u,v}>, diameter, depth?, upToFace?, counterbore?, countersink?, thread? }) => Shape` | Drill N holes in one feature record. |
 | `Shape.cutout(profile: PathBuilder \| Sketch, opts: { face: FaceSelector \| string, depth?: number \| "through", upToFace?: FaceRef, depthMode?: "blind" \| "symmetric" }) => Shape` | Sketch-driven subtractive extrude for irregular shapes hole() can't express (slots, D-shapes, keyhole pockets). |
 
 ## Combine shapes
@@ -144,6 +150,7 @@ Move a body into position, mirror it, or repeat it.
 | `Shape.alongAxis(axis: [number, number, number]) => Shape` | Orient this shape so its current +Z axis aligns with the given direction. |
 | `Shape.scale(factor: number \| [number, number, number]) => Shape` | Scale this shape uniformly (single positive finite number) or per-axis (Vec3 — sx/sy/sz). |
 | `Shape.reflect(plane: 'xy' \| 'xz' \| 'yz' \| { plane: 'xy' \| 'xz' \| 'yz'; offset: number }) => Shape` | Reflect (pure rigid-body transformation) across a cardinal plane or an offset parallel plane. |
+| `Sketch.reflect(axis: 'x' \| 'y' \| { axis: 'x' \| 'y'; offset: Editable<number> }) => Sketch` | Reflect this sketch's path across an axis, returning a new Sketch. |
 | `Sketch.reflect(axis: 'x' \| 'y' \| { axis: 'x' \| 'y'; offset: number }) => Sketch` | Reflect this sketch's path across an axis, returning a new Sketch. |
 | `Shape.mirror(plane: 'xy' \| 'xz' \| 'yz' \| { plane: 'xy' \| 'xz' \| 'yz'; offset: number }) => Shape` | Boolean union of the source and its reflection across a cardinal plane. |
 | `Shape.patternLinear({ count, direction, spacing }) => Shape` | Repeat this shape in a linear array. |
@@ -174,6 +181,8 @@ NURBS curves and surfaces, plus the evaluators for measuring them before they be
 | `spline3d(points: Vec3[], opts?: { tension?: number; closed?: boolean }) => Curve3D` | Catmull-Rom-to-cubic-Bezier convenience that interpolates the supplied points through a cubic NURBS curve. |
 | `hermiteG2(a: { point: Vec3; tangent: Vec3; curvature?: Vec3 }, b: { point: Vec3; tangent: Vec3; curvature?: Vec3 }) => Curve3D` | Quintic Hermite Curve3D that interpolates the two endpoints with matching positions, first derivatives (tangents), and second derivatives (curvatures). |
 | `PathBuilder.hermiteG2(a: HermiteEndpoint2D, b: HermiteEndpoint2D) => PathBuilder` | NURBS Slice D — 2D quintic-Hermite transition between two endpoints, each with prescribed point + first derivative (tangent) + optional second derivative (curvature). |
+| `curveBridge(a: Curve3D, b: Curve3D, opts: { continuity: 'G1' \| 'G2'; ends?: 'end-start' \| 'end-end' \| 'start-start' \| 'start-end'; tension?: number }) => Curve3D` | Infer end points, tangents and (G2) curvature from two existing Curve3Ds and build a degree-5 Hermite blend. |
+| `surfaceIntersection(a: Shape \| Surface, b: Shape \| Surface) => Promise<Curve3D[]>` | Exact surface–surface or face–face intersection via OCCT `BRepAlgoAPI_Section`. |
 | `nurbsSurface({ controls, degree, weights?, knots?, periodic? }) => Surface` | Build a NURBS surface from an explicit control net + degree. |
 | `surfaceFromCurves(sections: Sketch[]) => Surface` | Skin a NURBS surface through 2+ closed Sketch cross-sections in declaration order. |
 | `surfaceFromBoundary(curves: [Curve3D, Curve3D, Curve3D, Curve3D], opts?: { continuity?: "C0" \| "C1" \| "C2" \| ("C0" \| "C1" \| "C2")[]; sampling?: number }) => Surface` | Build the shipped filling surface: one NURBS face through 4 boundary curves. |
@@ -187,6 +196,7 @@ NURBS curves and surfaces, plus the evaluators for measuring them before they be
 | `Curve3D.pointAt(t: number) => [number, number, number]` | World-space point on the curve at parameter `t ∈ [0, 1]` (clamped). |
 | `Curve3D.tangentAt(t: number) => [number, number, number]` | Unit tangent vector at parameter `t ∈ [0, 1]` (clamped). |
 | `Curve3D.domain() => [number, number]` | Parametric domain. |
+| `Curve3D.bridge(other: Curve3D, opts: { continuity: 'G1' \| 'G2'; ends?: 'end-start' \| 'end-end' \| 'start-start' \| 'start-end'; tension?: number }) => Curve3D` | Quintic Hermite blend from this curve to `other`. |
 | `Curve3D.analytics.closestPoint(pt: Vec3, opts?: { tolerance?: number }) => Vec3` | World-space closest point on the curve to the query `pt` (Newton-Raphson). |
 | `Curve3D.analytics.closestParam(pt: Vec3, opts?: { tolerance?: number }) => number` | Parametric coordinate `t ∈ [0, 1]` of the closest point on the curve to `pt`. |
 | `Curve3D.analytics.divideByEqualArcLength(n: number) => CurveLengthSample[]` | Divide the curve into `n` equal-arc-length segments; returns `n + 1` `{ t, pt, arcLength }` samples covering both endpoints. |
@@ -206,8 +216,9 @@ Ask the kernel what you actually built, and check it before shipping.
 | `Scene.bbox : { min: [number, number, number]; max: [number, number, number] }` | Lazy axis-aligned bounding box over all transformed parts. |
 | `Curve3D.length() => number` | Total arc length in mm. |
 | `Shape.lower() => Promise<OcctBackend>` | Eagerly lower this Shape for inspection. |
-| `kinematic : KinematicFacade` | Namespace with four in-process feasibility checks an agent can run before declaring a mechanism design done: `kinematic.checkMountingHoleConsistency(arm)` (fastener-side hole agreement; dispatches to the v0.7.4 substrate), `kinematic.checkSweptCollision(arm, opts?)` (sampled-pose collision sweep across declared joint ranges), `kinematic.checkReachable(arm, opts)` (IK reachability — analytical Pieper first, DLS numeric fallback), `kinematic.checkLoadCapacity(arm, opts?)` (closed-form Euler-Bernoulli beam load check). |
-| `dfmSpec(spec: { minWall?: number; minClearance?: number; includeArticulatedMates?: boolean; ignore?: [string, string][]; exclude?: string[]; channels?: Array<{ part: string; name: string; openings: number; sealed?: boolean }> }) => DfmSpecHandle` | Declare printability (design-for-manufacture) gates for the model. |
+| `kinematic : KinematicFacade` | Namespace with in-process feasibility checks an agent can run before declaring a mechanism design done: `kinematic.checkMountingHoleConsistency(arm)` (fastener-side hole agreement; dispatches to the v0.7.4 substrate), `kinematic.checkSweptCollision(arm, opts?)` (sampled-pose collision sweep across declared joint ranges), `kinematic.checkReachable(arm, opts)` (IK reachability — analytical Pieper first, DLS numeric fallback), `kinematic.checkLoadCapacity(arm, opts?)` (closed-form Euler-Bernoulli beam load check), `kinematic.checkStaticHold(arm, opts?)` (gravitational holding torque/force at a sampled pose grid vs each joint's declared actuator capacity), `kinematic.sweepTolerance({ code\|file, params, gates? |
+| `dfmSpec(spec: { minWall?: number; minClearance?: number; includeArticulatedMates?: boolean; ignore?: [string, string][]; exclude?: string[]; channels?: Array<{ part: string; name: string; openings: number; sealed?: boolean }>; process?: 'fdm'; buildDirection?: '+x' \| '-x' \| '+y' \| '-y' \| '+z' \| '-z' \| [number, number, number]; nozzleMm?: number; maxOverhangDeg?: number; maxBridgeMm?: number; printer?: string }) => DfmSpecHandle` | Declare printability (design-for-manufacture) gates for the model. |
+| `Shape.feaStudy(spec: { material: 'mild-steel' \| 'aluminum-6061' \| 'pla' \| 'petg' \| 'abs' \| 'nylon' \| { E: number; nu: number; yield: number }; fixed: FaceQuery \| string; loads: Array<{ faces: FaceQuery \| string; force: [number, number, number]; name?: string }>; meshSize?: number; minSafetyFactor?: number; name?: string }) => FeaStudyHandle` | Declare a linear-static structural study on this shape: where it is held (`fixed`), what pushes on it (`loads`, force in TOTAL newtons over the selected faces), and what it is made of. |
 
 ## Parametrize
 
@@ -235,7 +246,7 @@ Bring in vendor geometry, and write models back out.
 
 ## Annotate & present
 
-Adjust a model's appearance without changing its geometry: text, color, lighting, camera, motion.
+Adjust a model's appearance without changing its geometry: text, color, lighting, camera, motion, drawing GD&T.
 
 | Call | What it does |
 |---|---|
@@ -243,10 +254,13 @@ Adjust a model's appearance without changing its geometry: text, color, lighting
 | `fontPath(p: string) => FontPath` | Brand a string as a font filesystem path (TTF). |
 | `Shape.embossText(opts: { textContent: string; fontFamily?: string; size: Editable<number>; depth: Editable<number>; align?: 'left' \| 'center' \| 'right'; anchorU?: Editable<number>; anchorV?: Editable<number>; rotation?: Editable<number>; scaleMode?: 'original' \| 'native' \| 'bounds'; face: FaceSelector \| string }) => Shape` | Raise or recess text on a target face. |
 | `Shape.color(name: ColorToken \| `#${string}`) => Shape` | Set HUE ONLY: a role color (servo/gear/beam/shaft/plate/pin/frame/tool) or a literal `#rrggbb` hex. |
-| `Shape.finish(name: FinishToken, opts?: { color?: string; face?: string }) => Shape` | PREFERRED way to make a part look like a real material. |
+| `Shape.finish(name: FinishToken \| MaterialGrade, opts?: { color?: string; face?: string }) => Shape` | PREFERRED way to make a part look like a real material. |
 | `Shape.material(opts: PBRMaterial & { face?: string }) => Shape` | ADVANCED / renderer-level escape hatch exposing raw PBR floats for glass, clearcoat, anisotropy, and image textures when no `.finish()` token fits. |
+| `Shape.wrapTexture(imageRef: TextureRef, projection: { type: 'flat'; onto?: 'xy' \| 'xz' \| 'yz' } \| { type: 'cylinder'; axis: [number, number, number] } \| { type: 'sphere' } \| { type: 'box' }) => Shape` | Project a bitmap (label, decal, logo) onto this shape without hand-authoring UVs. |
 | `referenceImage(path: string, opts: { plane, anchor?, scale?, opacity?, flipU?, flipV? }) => ReferenceImageHandle` | Overlay a reference image on a plane for tracing or design review. |
 | `setRenderEnvironment(spec: { preset?: 'studio' \| 'softbox' \| 'neutral' \| 'outdoor' \| 'warehouse'; url?: string; intensity?: number; rotation?: number }) => RenderEnvironmentHandle` | Set the HDRI / image-based-lighting environment for the rendered scene. |
 | `setCameraTarget(x: number, y: number, z: number) => CameraTargetHandle` | Override the camera look-at target for `setRenderPose` and headless engineering renders. |
 | `setCameraDistance(distance: number) => CameraTargetHandle` | Override the camera framing distance (mm from target). |
 | `animationView(spec: { param: string; from: number; to: number; durationMs: number; fps?: number } \| { name?: string; tracks: Array<{ param: string; keys: Array<{ atMs: number; value: number; ease?: "linear" \| "step" \| "easeIn" \| "easeOut" \| "easeInOut" }> }>; fps?: number }) => AnimationViewHandle` | Declare an animation timeline for offline kinematic-motion MP4 capture. |
+| `Shape.datum(label: string, face: FaceQuery) => Shape` | Declare datum `label` (one or two capitals, not I/O/Q) on the face `face` resolves to, for `svg-drawing` sheets. |
+| `Shape.tolerance(spec: { type: 'position' \| 'flatness' \| 'perpendicularity' \| 'parallelism' \| 'concentricity' \| 'cylindricity'; value: number; face?: FaceQuery; edge?: EdgeQuery; datums?: string[]; modifier?: '⌀' \| 'M' \| 'S' }) => Shape` | Declare a geometric tolerance (feature control frame) on exactly one of `face` / `edge`, for `svg-drawing` sheets. |

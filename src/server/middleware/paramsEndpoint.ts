@@ -33,7 +33,7 @@ export interface ParamsReqLike extends NodeJS.ReadableStream {
   method?: string;
 }
 
-type ParamEdit = { name: string; value: number | boolean };
+type ParamEdit = { name: string; value: number | boolean | string };
 type UpdateResult = { relowered?: string[]; skipped?: string[]; warnings?: unknown[] };
 
 interface CoalescedBatch {
@@ -130,8 +130,8 @@ export function createParamsEndpoint(deps: ParamsEndpointDeps) {
         if (typeof edit.name !== 'string' || edit.name.length === 0) {
           return writeJson(res, 400, { error: 'edit.name must be a non-empty string' });
         }
-        if (typeof edit.value !== 'number' && typeof edit.value !== 'boolean') {
-          return writeJson(res, 400, { error: 'edit.value must be a number or boolean' });
+        if (typeof edit.value !== 'number' && typeof edit.value !== 'boolean' && typeof edit.value !== 'string') {
+          return writeJson(res, 400, { error: 'edit.value must be a number, boolean, or string' });
         }
       }
 

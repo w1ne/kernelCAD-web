@@ -59,7 +59,11 @@ export async function lowerEmbossText(
   // Surface any capture-time diagnostics stashed on metadata.diagnostics.
   const stashed = (r.metadata as { diagnostics?: CompilerDiagnostic[] } | undefined)?.diagnostics;
   if (stashed && stashed.length > 0) {
-    diagnostics.push(...stashed);
+    // Stamp the owning feature id: capture-time validation runs before the
+    // record exists, so these literals carry no `featureId`. Without it the
+    // diagnostic cannot be joined back to the modeling step (or to the script
+    // line that authored it) by any downstream consumer.
+    diagnostics.push(...stashed.map(d => (d.featureId === undefined ? { ...d, featureId: r.id } : d)));
     // If any are errors, refuse to lower (validation was authoritative).
     if (stashed.some((d) => d.severity === 'error')) {
       return { ok: false, diagnostics };

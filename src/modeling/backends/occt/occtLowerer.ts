@@ -25,6 +25,7 @@ import {
   buildNurbsFace, buildSkinnedSurface, thickenFace, faceToShape,
 } from '../../../kernel/backends/occt/nurbsSurfaceLowerer';
 import { lowerCurve3D } from './curve3dLowerer';
+import { lowerLoftWithRails, railHitsSections } from './loftWithRailsLowerer';
 import { isCurve3DMetadata } from '../../../shared/intent/curve3dRecord';
 import { lowerVariableSweep, type VariableSweepSectionLowered } from './variableSweepLowerer';
 import { isVariableSweepMetadata } from '../../../shared/intent/variableSweepRecord';
@@ -63,6 +64,8 @@ import { retagInstance } from '../../../kernel/backends/occt/patternHistory';
 import { HINT_TEMPLATES } from '../../../shared/diagnostics/registry';
 import type { DiagnosticCode } from '../../../shared/diagnostics/registry';
 import { TANGENCY_ERROR_PREFIX } from '../../../kernel/backends/occt/tangencySolver';
+import { HelicalSweepArgsError, helixAxisBasis } from '../../../kernel/backends/occt/helicalSweep';
+import { helix, helixOptionsFromSpec, type HelixRailSpec } from '../../helix';
 
 // ---------------------------------------------------------------------------
 // Shared helpers: Vec3Param resolution + axis normalization
@@ -204,7 +207,7 @@ export function applyVariableEdgeFeature(
 
   const meta = feature.metadata as {
     variable?: boolean;
-    groups?: Array<{ radius?: number; distance?: number }>;
+    groups?: Array<{ radius?: number | { evaluated: number }; distance?: number | { evaluated: number } }>;
   } | undefined;
 
   const groups = meta?.groups ?? [];
@@ -249,7 +252,9 @@ export function applyVariableEdgeFeature(
 
   for (let i = 0; i < groups.length; i++) {
     const g = groups[i];
-    const value = g[valueKey];
+    const raw = g[valueKey];
+    // param()-driven values arrive as pre-resolved Params.
+    const value = typeof raw === 'object' && raw !== null ? raw.evaluated : raw;
     if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
       diagnostics.push({
         target: 'export-occt',
@@ -435,6 +440,9 @@ export class OcctLowerer implements FeatureLowerer {
     'renderEnvironment',// W2: HDRI / IBL virtual record; defense-in-depth guard
     'cameraTarget',     // Script-callable camera look-at override; virtual record; defense-in-depth guard
     'dfmSpec',          // W3: print-prep gate declaration; virtual record; defense-in-depth guard
+    'feaStudy',         // structural study declaration; virtual record; defense-in-depth guard
+    'drawingDatum',     // GD&T datum declaration for svg-drawing; virtual record; defense-in-depth guard
+    'drawingTolerance', // GD&T tolerance declaration for svg-drawing; virtual record; defense-in-depth guard
     'curve3d',          // NURBS Slice B: 3D NURBS curve → TopoDS_Edge on session.importedGeometry
     'variableSweep',    // NURBS Slice B Task 8: BRepOffsetAPI_MakePipeShell along a 3D spine
     'embossText',       // W3: emboss/engrave text onto a face (raise or recess via signed depth)
@@ -961,10 +969,20 @@ export class OcctLowerer implements FeatureLowerer {
           shape = OcctBackend.extrudeCircle(r.params.r.evaluated, height);
         } else if (profileKind === 'polygon') {
           const depth = r.params.depth.evaluated;
-          const points = (r.metadata as { points?: unknown } | undefined)?.points;
+          // Each coordinate is a plain number, or a Param (pre-resolved by the
+          // dispatcher) when the author passed a ParamRef.
+          const coord = (c: unknown): number | undefined =>
+            typeof c === 'number'
+              ? c
+              : typeof c === 'object' && c !== null && typeof (c as { evaluated?: unknown }).evaluated === 'number'
+                ? (c as { evaluated: number }).evaluated
+                : undefined;
+          const rawPoints = (r.metadata as { points?: unknown } | undefined)?.points;
+          const points = Array.isArray(rawPoints)
+            ? rawPoints.map(p => (Array.isArray(p) && p.length === 2 ? [coord(p[0]), coord(p[1])] : [undefined, undefined]))
+            : undefined;
           if (!Array.isArray(points) || points.length < 3 ||
-              !points.every(p => Array.isArray(p) && p.length === 2 &&
-                                  typeof p[0] === 'number' && typeof p[1] === 'number')) {
+              !points.every(p => typeof p[0] === 'number' && typeof p[1] === 'number')) {
             diagnostics.push({
               target: 'export-occt',
               code: 'feature.invalid-args',
@@ -1285,7 +1303,13 @@ export class OcctLowerer implements FeatureLowerer {
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
-          const rail = (r.metadata as { rail?: unknown } | undefined)?.rail;
+          // A rail from helix() carries its (pre-resolved) dimensions: regenerate
+          // it from the live values so a ParamRef radius/pitch/turns follows a
+          // param change, whatever the spine mode.
+          const helixSpec = (r.metadata as { helix?: HelixRailSpec } | undefined)?.helix;
+          const rail = helixSpec !== undefined
+            ? helix(helixOptionsFromSpec(helixSpec))
+            : (r.metadata as { rail?: unknown } | undefined)?.rail;
           if (!Array.isArray(rail) || rail.length < 2) {
             diagnostics.push({
               target: 'export-occt',
@@ -1340,26 +1364,60 @@ export class OcctLowerer implements FeatureLowerer {
           }
           const transitionMode = (rawTransition ?? 'right') as 'right' | 'transformed' | 'round';
           const rawSpine = (r.metadata as { spine?: unknown } | undefined)?.spine;
-          const ALLOWED_SPINES = ['polyline', 'smooth'] as const;
+          const ALLOWED_SPINES = ['polyline', 'smooth', 'helix'] as const;
           if (rawSpine !== undefined && !ALLOWED_SPINES.includes(rawSpine as typeof ALLOWED_SPINES[number])) {
             diagnostics.push({
               target: 'export-occt',
               code: 'feature.invalid-args',
               featureId: r.id,
               severity: 'error',
-              message: `sweep.spine must be one of 'polyline' | 'smooth'; got ${JSON.stringify(rawSpine)}.`,
-              hint: "Pass spine: 'polyline' (default — straight rail edges, real corners) or 'smooth' (single B-spline spine through the rail points; use for helix/curved rails).",
+              message: `sweep.spine must be one of 'polyline' | 'smooth' | 'helix'; got ${JSON.stringify(rawSpine)}.`,
+              hint: "Pass spine: 'polyline' (default — straight rail edges, real corners), 'smooth' (single B-spline spine through the rail points; use for curved rails), or 'helix' (exact helix for a helix() rail; threads).",
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
-          const spine = (rawSpine ?? 'polyline') as 'polyline' | 'smooth';
+          const spine = (rawSpine ?? 'polyline') as 'polyline' | 'smooth' | 'helix';
+          if (spine === 'helix' && helixSpec === undefined) {
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.invalid-args',
+              featureId: r.id,
+              severity: 'error',
+              message: "sweep spine 'helix' requires a rail produced by helix(); this record carries no helix dimensions.",
+              hint: "Pass helix({ radius, pitch, turns }) straight to sweep(rail, { spine: 'helix' }), or use spine: 'smooth' for other curved rails.",
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
           try {
-            shape = OcctBackend.sweepFromSketch(
-              sketchInput,
-              rail as [number, number, number][],
-              { frenet, transitionMode, spine },
-            );
+            if (spine === 'helix') {
+              const o = helixOptionsFromSpec(helixSpec!);
+              shape = OcctBackend.sweepSketchAlongHelix(sketchInput, {
+                origin: [0, 0, 0],
+                ...helixAxisBasis(o.axis ?? 'Z'),
+                radius: o.radius,
+                pitch: o.pitch,
+                turns: o.turns,
+                startAngle: o.startAngle ?? 0,
+              });
+            } else {
+              shape = OcctBackend.sweepFromSketch(
+                sketchInput,
+                rail as [number, number, number][],
+                { frenet, transitionMode, spine },
+              );
+            }
           } catch (e) {
+            if (e instanceof HelicalSweepArgsError) {
+              diagnostics.push({
+                target: 'export-occt',
+                code: 'feature.invalid-args',
+                featureId: r.id,
+                severity: 'error',
+                message: e.message,
+                hint: e.hint,
+              });
+              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            }
             const msg = e instanceof Error ? e.message : String(e);
             // All sweep failure modes (multi-face profile, profile too large,
             // spine self-intersection, generic) collapse into kernel-failed.
@@ -1434,11 +1492,24 @@ export class OcctLowerer implements FeatureLowerer {
             sketches.push(s);
           }
           // Resolve planes: explicit metadata.planes wins; else z-stack with spacing.
-          const meta = r.metadata as {
-            planes?: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number] }>;
-            startPoint?: [number, number, number];
-            endPoint?: [number, number, number];
+          // Coordinates are plain numbers, or Params when the author passed a
+          // ParamRef (already pre-resolved by the dispatcher).
+          type Coord = number | { evaluated: number };
+          const num = (c: Coord): number => (typeof c === 'number' ? c : c.evaluated);
+          const point3 = (p: Coord[] | undefined): [number, number, number] | undefined =>
+            p === undefined ? undefined : [num(p[0]), num(p[1]), num(p[2])];
+          const rawMeta = r.metadata as {
+            planes?: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: Coord[] }>;
+            startPoint?: Coord[];
+            endPoint?: Coord[];
+            rails?: string[];
           } | undefined;
+          const meta = rawMeta === undefined ? undefined : {
+            planes: rawMeta.planes?.map((p) => ({ plane: p.plane, origin: point3(p.origin)! })),
+            startPoint: point3(rawMeta.startPoint),
+            endPoint: point3(rawMeta.endPoint),
+            rails: rawMeta.rails,
+          };
           let planes: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number] }>;
           if (Array.isArray(meta?.planes)) {
             if (meta.planes.length !== sectionCount) {
@@ -1461,23 +1532,154 @@ export class OcctLowerer implements FeatureLowerer {
             }));
           }
           const ruled = (r.params.ruled?.evaluated ?? 0) > 0.5;
-          try {
-            shape = OcctBackend.loftFromSketches(sketches, planes, {
-              ruled,
-              startPoint: meta?.startPoint,
-              endPoint: meta?.endPoint,
-            });
-          } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e);
+          const railIds = Array.isArray((meta as { rails?: unknown } | undefined)?.rails)
+            ? ((meta as { rails: string[] }).rails)
+            : [];
+          const railCount = r.params.railCount?.evaluated ?? railIds.length;
+          if (railCount > 2 || railIds.length > 2) {
             diagnostics.push({
               target: 'export-occt',
-              code: 'feature.kernel-failed',
+              code: 'feature.loft.rail-miss',
               featureId: r.id,
               severity: 'error',
-              message: `OCCT loft failed: ${msg}`,
-              hint: 'OCCT could not loft these sections — try ruled: true for sharp transitions, or use sections with similar vertex counts and orientation.',
+              message: `loft rails: OCCT MakePipeShell accepts at most 2 rails (spine + auxiliary); got ${Math.max(railCount, railIds.length)}.`,
+              hint: HINT_TEMPLATES['feature.loft.rail-miss'].template,
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          if (railIds.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const railEdges: any[] = [];
+            for (const railId of railIds) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              let edge: any = this.importedGeometry.get(railId);
+              if (!edge && allRecords) {
+                const upstream = allRecords.find((u) => u.id === railId);
+                if (upstream?.kind === 'curve3d') {
+                  const upMeta = upstream.metadata as { curve3d?: unknown } | undefined;
+                  const cm = upMeta?.curve3d;
+                  if (!isCurve3DMetadata(cm)) {
+                    diagnostics.push({
+                      target: 'export-occt',
+                      code: 'feature.curve3d.degenerate-controls',
+                      featureId: r.id,
+                      severity: 'error',
+                      message: `loft: rail curve3d '${railId}' is missing valid metadata.curve3d.`,
+                      hint: 'Build each rail via nurbsCurve(...) / spline3d(...) / curveBridge(...).',
+                    });
+                    return { shape: undefined as unknown as ShapeBackend, diagnostics };
+                  }
+                  try {
+                    edge = lowerCurve3D(cm).edge;
+                    this.importedGeometry.set(railId, edge as unknown as ShapeBackend);
+                  } catch (e) {
+                    const msg = e instanceof Error ? e.message : String(e);
+                    diagnostics.push({
+                      target: 'export-occt',
+                      code: 'feature.kernel-failed',
+                      featureId: r.id,
+                      severity: 'error',
+                      message: `loft: failed to lower rail '${railId}': ${msg}`,
+                      hint: 'kernel-failed — verify the rail NURBS control net.',
+                    });
+                    return { shape: undefined as unknown as ShapeBackend, diagnostics };
+                  }
+                }
+              }
+              if (!edge) {
+                diagnostics.push({
+                  target: 'export-occt',
+                  code: 'feature.loft.rail-miss',
+                  featureId: r.id,
+                  severity: 'error',
+                  message: `loft: rail '${railId}' could not be resolved to a curve.`,
+                  hint: HINT_TEMPLATES['feature.loft.rail-miss'].template,
+                });
+                return { shape: undefined as unknown as ShapeBackend, diagnostics };
+              }
+              railEdges.push(edge);
+            }
+            try {
+              // Lift each section onto its plane and pull the outer wire.
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const sectionWires: any[] = [];
+              for (let i = 0; i < sketches.length; i++) {
+                const s = sketches[i] as unknown as {
+                  kind?: string;
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  _drawing?: any;
+                  _hasNurbs?: boolean;
+                  _commands?: unknown;
+                };
+                const p = planes[i];
+                if (s.kind !== 'sketch' || (!s._drawing && !s._hasNurbs)) {
+                  diagnostics.push({
+                    target: 'export-occt',
+                    code: 'feature.invalid-args',
+                    featureId: r.id,
+                    severity: 'error',
+                    message: `loft: input ${i} is not a sketch.`,
+                    hint: 'Pass closed Sketch sections to loft.',
+                  });
+                  return { shape: undefined as unknown as ShapeBackend, diagnostics };
+                }
+                let lifted: { face: () => { outerWire: () => { wrapped: unknown } } };
+                if (s._hasNurbs && s._commands) {
+                  const { buildNurbsSketchOnPlane } = await import('../../../kernel/backends/occt/pathNurbsLowerer');
+                  lifted = buildNurbsSketchOnPlane(s._commands as never, p.plane) as unknown as typeof lifted;
+                } else {
+                  lifted = s._drawing!.sketchOnPlane(
+                    p.plane,
+                    p.origin,
+                  ) as unknown as typeof lifted;
+                }
+                sectionWires.push(lifted.face().outerWire().wrapped);
+              }
+              for (let i = 0; i < railEdges.length; i++) {
+                if (!railHitsSections(railEdges[i], sectionWires)) {
+                  diagnostics.push({
+                    target: 'export-occt',
+                    code: 'feature.loft.rail-miss',
+                    featureId: r.id,
+                    severity: 'error',
+                    message: `loft: rail[${i}] does not pass within 1 mm of every section.`,
+                    hint: HINT_TEMPLATES['feature.loft.rail-miss'].template,
+                  });
+                  return { shape: undefined as unknown as ShapeBackend, diagnostics };
+                }
+              }
+              shape = lowerLoftWithRails(railEdges[0], sectionWires, railEdges[1]);
+            } catch (e) {
+              const msg = e instanceof Error ? e.message : String(e);
+              diagnostics.push({
+                target: 'export-occt',
+                code: 'feature.kernel-failed',
+                featureId: r.id,
+                severity: 'error',
+                message: `OCCT rail loft failed: ${msg}`,
+                hint: 'OCCT MakePipeShell could not build a solid from these rails and sections — check that each rail meets every section.',
+              });
+              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            }
+          } else {
+            try {
+              shape = OcctBackend.loftFromSketches(sketches, planes, {
+                ruled,
+                startPoint: meta?.startPoint,
+                endPoint: meta?.endPoint,
+              });
+            } catch (e) {
+              const msg = e instanceof Error ? e.message : String(e);
+              diagnostics.push({
+                target: 'export-occt',
+                code: 'feature.kernel-failed',
+                featureId: r.id,
+                severity: 'error',
+                message: `OCCT loft failed: ${msg}`,
+                hint: 'OCCT could not loft these sections — try ruled: true for sharp transitions, or use sections with similar vertex counts and orientation.',
+              });
+              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            }
           }
         } else {
           return {
@@ -3149,6 +3351,19 @@ export class OcctLowerer implements FeatureLowerer {
         // Virtual record — no BREP output. recomputeEngine gates on
         // metadata.virtual === true and skips the lowerer; this arm is
         // defense-in-depth for direct callers.
+        return { shape: undefined as unknown as ShapeBackend, diagnostics };
+      }
+      case 'feaStudy': {
+        // Virtual record — no BREP output. The study is a DECLARATION; the
+        // solver run happens in the FEA runner, which reads this record's
+        // metadata and the shape it points at. Same shape as dfmSpec.
+        return { shape: undefined as unknown as ShapeBackend, diagnostics };
+      }
+      case 'drawingDatum':
+      case 'drawingTolerance': {
+        // Virtual records — no BREP output. GD&T declarations are read by the
+        // svg-drawing exporter, which resolves their queries against the
+        // exported geometry.
         return { shape: undefined as unknown as ShapeBackend, diagnostics };
       }
       case 'cameraTarget': {

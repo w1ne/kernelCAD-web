@@ -22,6 +22,22 @@ import type { ParamTable } from '../../shared/runtime/paramTable';
 // (numbers only, for validation) and the original Editable view (for the
 // serializer that writes symbolic refs into Param records).
 
+/**
+ * Internal ISO metric thread on a hole. With `thread` set, the hole's
+ * `diameter` is the NOMINAL (major) thread diameter; the bore is drilled at the
+ * ISO 68-1 minor diameter `diameter − 1.0825·pitch` (plus 2·clearance).
+ * `modeled: true` also cuts the 60° helical groove (right-hand, basic
+ * profile grown by `clearance`); `modeled: false` (default) is a cosmetic
+ * thread: the minor-diameter bore plus the recorded thread params, no helical
+ * geometry.
+ */
+export interface EditableHoleThread {
+  pitch: Editable<number>;
+  modeled?: boolean;
+  clearance?: Editable<number>;
+}
+export interface HoleThread { pitch: number; modeled?: boolean; clearance?: number }
+
 export interface EditableHoleCounterbore { diameter: Editable<number>; depth: Editable<number> }
 export interface EditableHoleCountersink { diameter: Editable<number>; angleDeg?: Editable<number> }
 export interface HoleCounterbore { diameter: number; depth: number }
@@ -35,6 +51,8 @@ export interface EditableHoleOpts {
   upToFace?: FaceRef;
   counterbore?: EditableHoleCounterbore;
   countersink?: EditableHoleCountersink;
+  /** Internal ISO metric thread; `diameter` becomes the nominal size. */
+  thread?: EditableHoleThread;
   /** Optional agent-chosen feature name. When set, downstream selectors can
    *  address the bore as `<name>.wall`, `<name>.floor`, etc. Validated
    *  against `/^[a-zA-Z][a-zA-Z0-9_-]{0,31}$/`. */
@@ -52,6 +70,7 @@ export interface HoleOpts {
   upToFace?: FaceRef;
   counterbore?: HoleCounterbore;
   countersink?: HoleCountersink;
+  thread?: HoleThread;
   name?: string;
   enabled?: boolean;
 }
@@ -63,6 +82,7 @@ export interface EditableHolesOpts {
   upToFace?: FaceRef;
   counterbore?: EditableHoleCounterbore;
   countersink?: EditableHoleCountersink;
+  thread?: EditableHoleThread;
   name?: string;
   enabled?: Editable<boolean>;
 }
@@ -74,8 +94,19 @@ export interface HolesOpts {
   upToFace?: FaceRef;
   counterbore?: HoleCounterbore;
   countersink?: HoleCountersink;
+  thread?: HoleThread;
   name?: string;
   enabled?: boolean;
+}
+
+function resolveThread(thread: EditableHoleThread | undefined, table: ParamTable): HoleThread | undefined {
+  if (thread === undefined) return undefined;
+  if (typeof thread !== 'object' || thread === null) return thread as unknown as HoleThread;
+  return {
+    pitch: currentValue(thread.pitch, table),
+    modeled: thread.modeled,
+    clearance: thread.clearance === undefined ? undefined : currentValue(thread.clearance, table),
+  };
 }
 
 /** Resolve every Editable field in EditableHoleOpts to its current numeric/
@@ -107,6 +138,7 @@ export function resolveHoleOpts(opts: EditableHoleOpts, table: ParamTable): Hole
         : undefined,
     };
   }
+  if (opts.thread !== undefined) out.thread = resolveThread(opts.thread, table);
   if (opts.enabled !== undefined) {
     out.enabled = currentBool(opts.enabled, table);
   }
@@ -140,6 +172,7 @@ export function resolveHolesOpts(opts: EditableHolesOpts, table: ParamTable): Ho
         : undefined,
     };
   }
+  if (opts.thread !== undefined) out.thread = resolveThread(opts.thread, table);
   if (opts.enabled !== undefined) {
     out.enabled = currentBool(opts.enabled, table);
   }
@@ -265,6 +298,54 @@ function validateCommonHoleFields(
       );
     }
   }
+  if (opts.thread !== undefined) validateThread(opts, featureId);
+}
+
+function validateThread(opts: HoleOpts | HolesOpts, featureId: FeatureId | undefined): void {
+  const t = opts.thread;
+  if (typeof t !== 'object' || t === null) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `hole: thread must be { pitch, modeled?, clearance? }; got ${JSON.stringify(t)}.`,
+      featureId,
+      "Pass thread: { pitch: 1 } for an M6 coarse tapped hole (diameter is the nominal size).",
+    );
+  }
+  // Coarsest ISO 261 pitch is D/4 (M1 × 0.25); anything coarser leaves no
+  // meaningful minor diameter.
+  if (!isFiniteNumber(t.pitch) || t.pitch <= 0 || t.pitch > opts.diameter / 4) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `hole: thread.pitch (${t.pitch}) must be > 0 and ≤ diameter / 4 (${opts.diameter / 4}).`,
+      featureId,
+      `thread.pitch is the ISO pitch in mm (M6 → 1, M8 → 1.25) and diameter is the nominal thread size; a pitch above diameter/4 is not a metric thread.`,
+    );
+  }
+  if (t.modeled !== undefined && typeof t.modeled !== 'boolean') {
+    throw new KernelError(
+      'feature.invalid-args',
+      `hole: thread.modeled must be a boolean; got ${JSON.stringify(t.modeled)}.`,
+      featureId,
+      'thread.modeled: true cuts the helical groove; false (default) is a cosmetic thread.',
+    );
+  }
+  const clearance = t.clearance ?? 0;
+  if (!isFiniteNumber(clearance) || clearance < 0 || clearance > t.pitch / 8) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `hole: thread.clearance (${clearance}) must be in [0, pitch/8] = [0, ${t.pitch / 8}] mm.`,
+      featureId,
+      'thread.clearance grows the internal thread outward by that many mm; beyond pitch/8 adjacent groove turns would merge.',
+    );
+  }
+  if (t.modeled === true && typeof opts.depth === 'number' && opts.depth < 2 * t.pitch) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `hole: a modeled thread needs depth ≥ 2 × pitch (${2 * t.pitch} mm); got depth ${opts.depth}.`,
+      featureId,
+      "Deepen the hole, use depth: 'through', or leave the thread cosmetic (modeled: false).",
+    );
+  }
 }
 
 export function validateHoleOpts(opts: HoleOpts, featureId: FeatureId | undefined): void {
@@ -371,6 +452,11 @@ export function serializeHoleParams(_face: FaceSelector, opts: EditableHoleOpts)
     params.countersinkDiameter = paramMm(opts.countersink.diameter);
     params.countersinkAngleDeg = paramDeg(opts.countersink.angleDeg ?? DEFAULT_CSK_ANGLE_DEG);
   }
+  if (opts.thread) {
+    params.threadPitch = paramMm(opts.thread.pitch);
+    params.threadClearance = paramMm(opts.thread.clearance ?? 0);
+    params.threadModeled = paramUnitless(opts.thread.modeled === true ? 1 : 0);
+  }
   const metadata: Record<string, unknown> = {};
   if (opts.upToFace !== undefined) metadata.upToFace = opts.upToFace;
   if (opts.name !== undefined) metadata.name = opts.name;
@@ -399,6 +485,11 @@ export function serializeHolesParams(_face: FaceSelector, opts: EditableHolesOpt
   if (opts.countersink) {
     params.countersinkDiameter = paramMm(opts.countersink.diameter);
     params.countersinkAngleDeg = paramDeg(opts.countersink.angleDeg ?? DEFAULT_CSK_ANGLE_DEG);
+  }
+  if (opts.thread) {
+    params.threadPitch = paramMm(opts.thread.pitch);
+    params.threadClearance = paramMm(opts.thread.clearance ?? 0);
+    params.threadModeled = paramUnitless(opts.thread.modeled === true ? 1 : 0);
   }
   // Positions: preserve the Editable shape under metadata; emit each u/v as
   // a Param so the pre-resolver substitutes paramRefs at lower time.

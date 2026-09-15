@@ -77,11 +77,12 @@ return arm.model();
 
 ### Per-part material and density
 
-Prefer naming a **material**: `arm.part(name, shape, { material })` seeds BOTH the part's density default (for mass / inertia) AND a default surface finish (for the render) from one word — a material name carries how the part weighs and how it looks. Valid materials: `steel`, `aluminum` (alias `aluminium`), `pla`, `abs`, `pet`. An unknown name throws, naming the valid materials — never a silent water default.
+Prefer naming a **material**: `arm.part(name, shape, { material })` seeds BOTH the part's density default (for mass / inertia) AND a default surface finish (for the render) from one word — a material name carries how the part weighs and how it looks. Materials are engineering grades: `mild-steel`, `aluminum-6061`, `pla`, `petg`, `abs`, `nylon`; `steel`, `aluminum` / `aluminium` and `pet` are aliases for the matching grade. The part records the canonical grade (the BOM name), and the same spelling works in `feaStudy({ material })`, `inspect({ of: 'mass', material })`, `verify({ check: 'load-capacity' })` materials and `.finish()`. An unknown name throws, naming the accepted spellings — never a silent water default.
 
 ```typescript
-arm.part('shoulder-bracket', bracketShape, { material: 'aluminum' }); // 2700 kg/m³ + aluminium finish
-arm.part('hub', hubShape, { material: 'steel' });                     // 7850 kg/m³ + steel finish
+arm.part('shoulder-bracket', bracketShape, { material: 'aluminum-6061' }); // 2700 kg/m³ + aluminium finish
+arm.part('hub', hubShape, { material: 'mild-steel' });                     // 7850 kg/m³ + steel finish
+arm.part('bushing', bushingShape, { material: 'nylon' });                  // 1010 kg/m³ + nylon finish
 ```
 
 Both seeds are **defaults, independently overridable**:
@@ -98,14 +99,21 @@ arm.part('trim', shape.finish('brass'), { material: 'steel' });    // brass look
 
 Typical raw densities: steel `7850`, aluminum `2700`, ABS plastic `1050`, brass `8500`, titanium `4500`.
 
+### Bill of materials
+
+Exploded views reuse that same assembly: `render_preview({ explode: { factor, mode } })` / `kernelcad render --explode` pull parts apart along mate axes (`mate-axis`) or from the centroid (`radial`); `export` svg-drawing with `exploded` + `balloons` + `partsList` numbers those parts from the BOM. There is no `arm.explode()` hook — render and export consume the poses directly.
+
+`inspect({ of: 'bom' })` / `export({ format: 'bom-csv' | 'bom-json' })` read this same `material`/`density` declaration to build a real bill of materials: one row per DISTINCT part (grouped by geometry/catalog identity, never by name — a `for` loop that places the same source shape under `N` distinct names collapses to one row with `quantity: N`), split into `kind: 'fabricated'` vs `kind: 'purchased'` (purchased = came from `lib.fetchPart`/`fetch_part`, carries `catalog: { id, vendor, partNumber, source, license }`). A part with no `material`/`density` gets `massGPerUnit: null` and a `bom.material.unassigned` diagnostic — never a silently guessed water-density mass. See the `kernelcad-mcp` skill for the full row shape.
+
 ```typescript
 interface Assembly {
   part(name: string, shape: Shape, opts?: {
     at?: [number, number, number];
     connectors?: Record<string, { origin: [number, number, number]; axis?: [number, number, number] }>;
     connect?: { connector: string; to: AssemblyConnectorRef; name?: string };
-    /** Named material: seeds the density default AND a default finish.
-     *  steel | aluminum (alias aluminium) | pla | abs | pet. */
+    /** Named material grade: seeds the density default AND a default finish.
+     *  mild-steel | aluminum-6061 | pla | petg | abs | nylon
+     *  (aliases steel, aluminum, aluminium, pet). */
     material?: string;
     /** Raw material density in kg/m^3. Default 1000 (water). Overrides the
      *  density seeded by `material`. */

@@ -92,6 +92,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
       'tangentArc', 'threePointsArc', 'sagittaArc', 'bulgeArc', 'radiusArc',
       'tangentCircle', 'tangentLine',
       'smoothSpline', 'spline', 'nurbsSegment', 'hermiteG2',
+      'sectionSketch', 'faceSketch', 'silhouette',
     ],
   },
   {
@@ -144,10 +145,11 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
     blurb:
       'NURBS curves and surfaces, plus the evaluators for measuring them before they become solids.',
     names: [
-      'nurbsCurve', 'spline3d', 'hermiteG2', 'nurbsSurface', 'surfaceFromCurves',
+      'nurbsCurve', 'spline3d', 'hermiteG2', 'curveBridge', 'surfaceIntersection',
+      'nurbsSurface', 'surfaceFromCurves',
       'surfaceFromBoundary', 'sew', 'thicken', 'toShape', 'trimTo', 'split',
       'projectCurve',
-      'sample', 'pointAt', 'tangentAt', 'domain',
+      'sample', 'pointAt', 'tangentAt', 'domain', 'bridge',
       'closestPoint', 'closestParam', 'divideByEqualArcLength', 'divideByArcLength',
       'derivatives', 'tessellate', 'intersect',
     ],
@@ -155,7 +157,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   {
     task: 'Measure & verify',
     blurb: 'Ask the kernel what you actually built, and check it before shipping.',
-    names: ['boundingBox', 'bbox', 'length', 'lower', 'kinematic', 'dfmSpec'],
+    names: ['boundingBox', 'bbox', 'length', 'lower', 'kinematic', 'dfmSpec', 'feaStudy'],
   },
   {
     task: 'Parametrize',
@@ -169,11 +171,11 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   },
   {
     task: 'Annotate & present',
-    blurb: 'Adjust a model\'s appearance without changing its geometry: text, color, lighting, camera, motion.',
+    blurb: 'Adjust a model\'s appearance without changing its geometry: text, color, lighting, camera, motion, drawing GD&T.',
     names: [
-      'sketch', 'fontPath', 'embossText', 'color', 'finish', 'material',
+      'sketch', 'fontPath', 'embossText', 'color', 'finish', 'material', 'wrapTexture',
       'referenceImage', 'setRenderEnvironment', 'setCameraTarget', 'setCameraDistance',
-      'animationView',
+      'animationView', 'datum', 'tolerance',
     ],
   },
 ];

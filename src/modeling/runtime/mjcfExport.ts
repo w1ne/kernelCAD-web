@@ -840,7 +840,7 @@ function finiteOrZero(n: number): number {
  * Converges in a handful of sweeps for 3×3; capped to stay bounded on
  * pathological input.
  */
-function jacobiEigenSymmetric3(
+export function jacobiEigenSymmetric3(
     input: number[][],
 ): { values: [number, number, number]; vectors: number[][] } {
     // Work on a mutable copy.

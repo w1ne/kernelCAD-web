@@ -8,25 +8,31 @@ export interface SetParamValueResult {
   error?: string;
 }
 
-/**
- * Replace the default value of a `param('<name>', <default>, [opts])` call in
- * `.kcad.ts` source. Regex-based — handles single/double quotes, optional opts,
- * multi-line calls, and rejects multiple-match cases.
- *
- * Returns error if the param name is not found or appears more than once.
- */
-export function setParamValue(
-  code: string,
-  paramName: string,
-  newValue: number | string,
-): SetParamValueResult {
-  // Match: `param(` ... <quoted name match> ... `,` ... <default value capture> ... `,` ... `)` OR `)`
-  // Strategy: locate every `param(` call, parse its first arg as the literal name string,
-  // then extract the second-arg span and rewrite it.
-  const matches: { start: number; end: number; valueStart: number; valueEnd: number }[] = [];
+interface ParamCallMatch {
+  start: number;
+  end: number;
+  valueStart: number;
+  valueEnd: number;
+  /** Span of the third (`meta`) argument, when the call has one. */
+  metaStart?: number;
+  metaEnd?: number;
+}
 
-  // Find every `param(` token followed by a quoted name. Use a simple state machine
-  // because regex alone can't reliably parse balanced parens / nested braces.
+type FindParamCallResult =
+  | { ok: true; match: ParamCallMatch }
+  | { ok: false; error: string };
+
+/**
+ * Locate the (unique) `param('<name>', <default>, [meta])` call for
+ * `paramName` in `code`. Shared scanning core for both the source-rewrite
+ * (`setParamValue`) and the read-only declaration parser
+ * (`parseParamDeclaration`) below — a state machine, not a regex, because
+ * regex alone can't reliably track balanced parens/brackets/braces and
+ * string literals across a multi-line call.
+ */
+function findParamCall(code: string, paramName: string): FindParamCallResult {
+  const matches: ParamCallMatch[] = [];
+
   let i = 0;
   while (i < code.length) {
     const j = code.indexOf('param(', i);
@@ -58,7 +64,9 @@ export function setParamValue(
     p++;
     while (p < code.length && /\s/.test(code[p])) p++;
 
-    // Capture the second-arg value. Track nesting of () [] {} and string literals.
+    // Capture the second-arg (default) value span. Track nesting of
+    // () [] {} and string literals so a nested `{ choices: [...] }` in a
+    // LATER arg doesn't confuse this scan.
     const valueStart = p;
     let depth = 0;
     let inStr: '"' | "'" | '`' | null = null;
@@ -81,7 +89,38 @@ export function setParamValue(
     }
     const valueEnd = p;
 
-    matches.push({ start: j, end: valueEnd, valueStart, valueEnd });
+    // Optional third (meta) arg: `, { ... }` up to the closing `)`.
+    let metaStart: number | undefined;
+    let metaEnd: number | undefined;
+    let q = p;
+    while (q < code.length && /\s/.test(code[q])) q++;
+    if (code[q] === ',') {
+      q++;
+      while (q < code.length && /\s/.test(code[q])) q++;
+      metaStart = q;
+      let mdepth = 0;
+      let minStr: '"' | "'" | '`' | null = null;
+      while (q < code.length) {
+        const c = code[q];
+        if (minStr) {
+          if (c === '\\') q += 2;
+          else if (c === minStr) { minStr = null; q++; }
+          else q++;
+          continue;
+        }
+        if (c === '"' || c === "'" || c === '`') { minStr = c as '"' | "'" | '`'; q++; continue; }
+        if (c === '(' || c === '[' || c === '{') { mdepth++; q++; continue; }
+        if (c === ')' || c === ']' || c === '}') {
+          if (mdepth === 0) break;
+          mdepth--; q++; continue;
+        }
+        if (c === ',' && mdepth === 0) break;
+        q++;
+      }
+      metaEnd = q;
+    }
+
+    matches.push({ start: j, end: valueEnd, valueStart, valueEnd, metaStart, metaEnd });
     i = p;
   }
 
@@ -91,12 +130,122 @@ export function setParamValue(
   if (matches.length > 1) {
     return { ok: false, error: `param '${paramName}' has multiple matches (${matches.length}) — refusing to pick one. Disambiguate the source.` };
   }
+  return { ok: true, match: matches[0] };
+}
 
-  const m = matches[0];
+/**
+ * Replace the default value of a `param('<name>', <default>, [opts])` call in
+ * `.kcad.ts` source. Regex-based — handles single/double quotes, optional opts,
+ * multi-line calls, and rejects multiple-match cases.
+ *
+ * Returns error if the param name is not found or appears more than once.
+ */
+export function setParamValue(
+  code: string,
+  paramName: string,
+  newValue: number | string | boolean,
+): SetParamValueResult {
+  const found = findParamCall(code, paramName);
+  if (!found.ok) return { ok: false, error: found.error };
+
+  const m = found.match;
   const literal =
-    typeof newValue === 'number'
+    typeof newValue === 'number' || typeof newValue === 'boolean'
       ? String(newValue)
       : `'${String(newValue).replace(/'/g, "\\'")}'`;
   const new_code = code.slice(0, m.valueStart) + literal + code.slice(m.valueEnd);
   return { ok: true, new_code };
+}
+
+export type DeclaredParamKind = 'number' | 'boolean' | 'choice' | 'string' | 'unknown';
+
+export interface ParamDeclaration {
+  name: string;
+  /** Inferred purely from the SOURCE TEXT of the default-value literal and
+   *  `meta` object — no script evaluation. `'unknown'` when the default is
+   *  not a literal (e.g. a variable/expression), in which case validation
+   *  is skipped rather than guessed. */
+  kind: DeclaredParamKind;
+  choices?: string[];
+  maxLength?: number;
+}
+
+export type ParseParamDeclarationResult =
+  | { ok: true; declaration: ParamDeclaration }
+  | { ok: false; error: string };
+
+/**
+ * Read-only, evaluation-independent counterpart to `setParamValue`: parses
+ * the SOURCE TEXT of a `param('<name>', <default>, [meta])` call to
+ * determine the param's declared kind (from the default literal's syntax)
+ * plus `choices`/`maxLength` from the meta object literal, WITHOUT running
+ * the script.
+ *
+ * This exists so `set_param` can reject a type/choice mismatch even when
+ * the script fails to evaluate for an unrelated reason (a missing font
+ * file, a broken downstream feature, etc.) — evaluation-based validation
+ * alone silently skips the check whenever evaluation itself fails, which
+ * let a mismatched `new_value` slip through untouched into `new_code`.
+ *
+ * Deliberately conservative: only classifies a default that is a literal
+ * (`true`/`false`, a numeric literal, or a quoted string). Anything else
+ * (a variable, a call, a template expression) returns `kind: 'unknown'` —
+ * we do not guess at what an expression evaluates to from source text
+ * alone; the evaluation-based check remains the source of truth for those.
+ */
+export function parseParamDeclaration(code: string, paramName: string): ParseParamDeclarationResult {
+  const found = findParamCall(code, paramName);
+  if (!found.ok) return { ok: false, error: found.error };
+
+  const m = found.match;
+  const defaultLiteral = code.slice(m.valueStart, m.valueEnd).trim();
+  const metaLiteral = m.metaStart !== undefined && m.metaEnd !== undefined
+    ? code.slice(m.metaStart, m.metaEnd)
+    : undefined;
+
+  const kind = classifyDefaultLiteral(defaultLiteral);
+  const declaration: ParamDeclaration = { name: paramName, kind };
+
+  if (metaLiteral !== undefined) {
+    const choices = extractChoices(metaLiteral);
+    if (choices !== undefined) declaration.choices = choices;
+    const maxLength = extractMaxLength(metaLiteral);
+    if (maxLength !== undefined) declaration.maxLength = maxLength;
+  }
+
+  // A string default with a declared `choices` array is a 'choice' param,
+  // not a plain 'string' one — same inference `param()` itself does at
+  // runtime (see `KernelCadApi.param` overloads in `modeling/api.ts`).
+  if (declaration.kind === 'string' && declaration.choices !== undefined) {
+    declaration.kind = 'choice';
+  }
+
+  return { ok: true, declaration };
+}
+
+function classifyDefaultLiteral(literal: string): DeclaredParamKind {
+  if (literal === 'true' || literal === 'false') return 'boolean';
+  if (/^['"].*['"]$/s.test(literal)) return 'string';
+  if (/^-?\d+(\.\d+)?([eE][-+]?\d+)?$/.test(literal)) return 'number';
+  return 'unknown';
+}
+
+/** Extract `choices: ['a', 'b', ...]` from a `meta` object's source text. */
+function extractChoices(metaLiteral: string): string[] | undefined {
+  const m = /choices\s*:\s*\[([^\]]*)\]/.exec(metaLiteral);
+  if (!m) return undefined;
+  const items = m[1]
+    .split(',')
+    .map(s => s.trim())
+    .filter(s => s.length > 0)
+    .map(s => s.replace(/^['"]|['"]$/g, ''));
+  return items;
+}
+
+/** Extract `maxLength: <number>` from a `meta` object's source text. */
+function extractMaxLength(metaLiteral: string): number | undefined {
+  const m = /maxLength\s*:\s*(-?\d+(?:\.\d+)?)/.exec(metaLiteral);
+  if (!m) return undefined;
+  const n = Number(m[1]);
+  return Number.isFinite(n) ? n : undefined;
 }

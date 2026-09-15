@@ -4,8 +4,9 @@
 //
 // `kernelcad dfm <file.kcad.ts>` — run the print-readiness gates declared
 // by the script's dfmSpec(...): part-pair clearance (exact BREP distance),
-// minimum wall thickness (inward ray sampling), and void/channel topology
-// (voxel flood-fill). W3 Task 8 surface over `runDfmChecksOnModel`.
+// minimum wall thickness (inward ray sampling), void/channel topology
+// (voxel flood-fill), and — with `process: 'fdm'` — the FDM printability
+// check. W3 Task 8 surface over `runDfmChecksOnModel`.
 //
 // Exit codes (pipe-friendly: `kernelcad dfm part.kcad.ts && echo ok`):
 //   0 — every declared gate passed,
@@ -51,17 +52,20 @@ export function noDfmSpecDiagnostic(): CompilerDiagnostic {
       'dfm: the script declares no dfmSpec(...) — the DFM gates are opt-in and there is nothing to enforce.',
     hint:
       'Declare the gates in the script, e.g. dfmSpec({ minWall: 1.2, minClearance: 0.45, ' +
-      "channels: [{ part: 'shape', name: 'bore', openings: 2 }] }), then re-run.",
+      "channels: [{ part: 'shape', name: 'bore', openings: 2 }] }) or dfmSpec({ process: 'fdm' }), then re-run.",
   };
 }
 
 /** `DFM: <p> parts, <c> clearance pairs, <w> wall clusters, <v> voids — <PASS|FAIL>`
  *  with `, N unknown` appended before the verdict when any clearance pair
- *  could not be measured (unknowns never flip the exit code). */
+ *  could not be measured (unknowns never flip the exit code), and one
+ *  `, fdm[<part>] '<dir>' up <a> mm² unsupported (best '<dir>' <b> mm²)`
+ *  segment per part when the spec declares `process: 'fdm'`. */
 export function formatDfmSummary(report: DfmCheckReport): string {
   const parts = new Set<string>();
   for (const w of report.walls) parts.add(w.part);
   for (const v of report.voids) parts.add(v.part);
+  for (const f of report.fdm ?? []) parts.add(f.part);
   for (const c of report.clearance) {
     parts.add(c.a);
     parts.add(c.b);
@@ -74,8 +78,21 @@ export function formatDfmSummary(report: DfmCheckReport): string {
     `DFM: ${parts.size} parts, ${report.clearance.length} clearance pairs, ` +
     `${wallClusters} wall clusters, ${sealedVoids} voids` +
     (unknown > 0 ? `, ${unknown} unknown` : '') +
+    (report.fdm ?? []).map(({ part, result }) => {
+      const o = result.orientation;
+      const best = result.ranking[0];
+      return `, fdm[${part}] ${directionLabel(o.label, o.buildDirection)} up ` +
+        `${o.unsupportedAreaMm2.toFixed(1)} mm² unsupported ` +
+        `(best ${directionLabel(best.label, best.buildDirection)} ${best.unsupportedAreaMm2.toFixed(1)} mm²)`;
+    }).join('') +
     ` — ${fail ? 'FAIL' : 'PASS'}`
   );
+}
+
+function directionLabel(label: string | undefined, dir: readonly number[]): string {
+  return label !== undefined && !label.startsWith('[')
+    ? `'${label}'`
+    : `[${dir.map(c => Math.round(c * 1000) / 1000 + 0).join(', ')}]`;
 }
 
 export async function dfmScript(input: DfmCliInput): Promise<DfmCliResult> {
@@ -108,7 +125,7 @@ export async function dfmScript(input: DfmCliInput): Promise<DfmCliResult> {
 
 export function dfmCommand(): Command {
   const cmd = new Command('dfm')
-    .description('Run the print-readiness gates declared by dfmSpec(): clearance, min wall, void/channel topology')
+    .description('Run the print-readiness gates declared by dfmSpec(): clearance, min wall, void/channel topology, FDM printability')
     .argument('<file>', 'path to .kcad.ts script')
     .option('--json', 'emit the full DFM report as JSON')
     .action(async (file: string, opts: { json?: boolean }) => {

@@ -1,6 +1,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { IsolationOptions, IsolationResult } from './isolationTypes';
+import { wrapOffsetOf } from './isolationTypes';
+
+/** Prologue this runner puts in front of the user's script under `wrapReturn`.
+ *  `"use strict";` shares the line with the IIFE header so the user's first
+ *  line lands at a position the wrap offset below describes exactly. */
+const WRAP_PROLOGUE = '"use strict"; return (async function() { ';
+
+/** Displacement `WRAP_PROLOGUE` applies to call-site positions. Consumed by the
+ *  script runtime to map frames back to authored-file coordinates. */
+export const REALM_WRAP_OFFSET = wrapOffsetOf(WRAP_PROLOGUE);
 
 /**
  * Browser-safe sibling of `runIsolated` (isolation.ts) that runs a user script
@@ -71,7 +81,7 @@ export function runInRealm(
   // `//# sourceURL` gives the script a stable name in stack traces/devtools,
   // the realm equivalent of vm.Script's `filename`.
   const body = opts.wrapReturn
-    ? `"use strict";\nreturn (async function() { ${code}\n})();\n//# sourceURL=${fileName}`
+    ? `${WRAP_PROLOGUE}${code}\n})();\n//# sourceURL=${fileName}`
     : `"use strict";\n${code}\n//# sourceURL=${fileName}`;
 
   // eslint-disable-next-line no-new-func -- the one sanctioned realm runner.

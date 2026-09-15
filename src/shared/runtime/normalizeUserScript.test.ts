@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect } from 'vitest';
-import { normalizeUserScript } from './normalizeUserScript';
+import { normalizeUserScript, normalizeUserScriptLineMap } from './normalizeUserScript';
 
 /**
  * Studio runs a .kcad script as the body of `new Function(...)` whose return
@@ -107,5 +107,35 @@ describe('normalizeUserScript', () => {
   it('is a no-op for empty / whitespace input', () => {
     expect(normalizeUserScript('')).toBe('');
     expect(normalizeUserScript('   \n  ')).toBe('   \n  ');
+  });
+});
+
+describe('normalizeUserScriptLineMap', () => {
+  it('is the identity for a script with no module-isms', () => {
+    const code = ['const w = 60;', 'const b = box(w, 40, 5);', 'return b;'].join('\n');
+    expect(normalizeUserScriptLineMap(code)).toEqual([1, 2, 3]);
+  });
+
+  it('reports the original line for every surviving line after drops', () => {
+    const code = [
+      "import { foo } from 'bar';", // 1 — dropped
+      'export const w = 60;',       // 2 — kept, becomes normalized line 1
+      'const b = box(w, 40, 5);',   // 3 — kept, becomes normalized line 2
+      'export default b;',          // 4 — kept, becomes normalized line 3
+    ].join('\n');
+    expect(normalizeUserScriptLineMap(code)).toEqual([2, 3, 4]);
+  });
+
+  it('accounts for dropped re-export statements too', () => {
+    const code = [
+      'const x = box(1, 1, 1);', // 1
+      'export { x };',           // 2 — dropped
+      'return x;',               // 3
+    ].join('\n');
+    expect(normalizeUserScriptLineMap(code)).toEqual([1, 3]);
+  });
+
+  it('returns undefined for empty input rather than an empty map', () => {
+    expect(normalizeUserScriptLineMap('')).toBeUndefined();
   });
 });

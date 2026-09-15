@@ -1209,6 +1209,17 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     }, [code, previewCode, isReady, engine, studioScript]);
 
     const executeGeometry = useCallback(async (codeToExecute: string) => {
+        // `?script=` models already live on the node kernel session. Validate
+        // must re-fetch mesh + the FULL review (no `live=1`), not the legacy
+        // in-browser worker — that runtime lacks `path`/`assembly`/`helix` and
+        // would paint `path is not defined` over a model that already meshed.
+        // Initial load uses the cheap live review; this is the explicit
+        // Validate press the comments above promise.
+        if (studioScript) {
+            requestMeshAndReview(studioScript, sessionToken);
+            return;
+        }
+
         const revision = ++mainRevisionRef.current;
         setCurrentCodeRevision(revision);
         // Acorn can't parse TypeScript; only the legacy worker path below needs
@@ -1318,7 +1329,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 setExecutionCount(prev => prev + 1);
             }
         }
-    }, [engine, isReady, executionCount, pushExecutionRecord]);
+    }, [engine, isReady, executionCount, pushExecutionRecord, studioScript, sessionToken, requestMeshAndReview]);
 
     const value: GeometryContextType = useMemo(() => ({
         geometries: displayGeometries,

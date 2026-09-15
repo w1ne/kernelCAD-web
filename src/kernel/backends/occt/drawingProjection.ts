@@ -77,6 +77,20 @@ export function makeDrawingCamera(view: DrawingViewName): ProjectionCamera {
   return new ProjectionCamera([0, 0, 0], c.direction, c.xAxis);
 }
 
+/**
+ * Camera for an auxiliary view looking along an arbitrary direction (oblique
+ * section cells). `direction` points from the object toward the viewer and
+ * `xAxis` is screen-right; both must be unit length and orthogonal. Screen-up
+ * follows as `direction × xAxis`, the same convention as the standard views,
+ * so `[p·xAxis, p·(direction × xAxis)]` is the model-2D frame HLR emits.
+ */
+export function makeAuxiliaryCamera(
+  direction: readonly [number, number, number],
+  xAxis: readonly [number, number, number],
+): ProjectionCamera {
+  return new ProjectionCamera([0, 0, 0], [direction[0], direction[1], direction[2]], [xAxis[0], xAxis[1], xAxis[2]]);
+}
+
 const cross = (a: V3, b: V3): V3 => [
   a[1] * b[2] - a[2] * b[1],
   a[2] * b[0] - a[0] * b[2],

@@ -182,6 +182,43 @@ Resolution rule when names collide with canonical face names: created refs alway
 
 `holes(...)`'s bare `'wall'` selector is collective sugar — `.fillet(0.2, { face: 'wall' })` rounds every bore lip in one call.
 
+### Countersinks
+
+`countersink: { diameter, angleDeg? }` cuts a real cone (default 90° included
+angle): `diameter` is the rim at the entry face, and the cone narrows into the
+body until it meets the bore. Size it to the screw head (ISO 10642 M4: head
+Ø8.96) and a revolved flat head of that diameter sits flush with zero gap on
+the cone. If a hole sub-feature (cone, counterbore, thread groove) cannot be
+built, the hole fails with an error diagnostic; it is never cut without it.
+
+### Tapped holes (internal threads)
+
+`thread: { pitch, modeled?, clearance? }` turns a hole into an ISO metric
+tapped hole. `diameter` is then the NOMINAL thread size (M6 → 6), and the hole
+drills the ISO 68-1 minor diameter `diameter − 1.0825 × pitch`.
+
+```typescript
+// M6 × 1 nut thread with 0.05 mm of play; modeled: false keeps the bore only
+nutBlank.hole('top', {
+  u: 0, v: 0, diameter: 6, depth: 'through',
+  thread: { pitch: 1, modeled: true, clearance: 0.05 },
+});
+```
+
+| Field | Meaning |
+|---|---|
+| `pitch` | ISO pitch in mm, `0 < pitch ≤ diameter / 4` (M6 coarse → 1). `Editable<number>`. |
+| `modeled` | `true` cuts the 60° helical groove. `false` (default) is a cosmetic thread: only the minor-diameter bore plus the recorded `threadPitch` / `threadClearance` / `threadModeled` params. Pick it for speed; a modeled thread costs seconds per hole. |
+| `clearance` | mm of play, `0 ≤ clearance ≤ pitch / 8` (default 0). Grows the bore radius, the crest radius and each flank (normal to the flank) by that amount. `Editable<number>`. |
+
+The thread is right-handed. Its groove centre crosses the face's `u` direction
+at the entry face, so a bolt threaded with `sweep(helix(...), { spine: 'helix' })`
+mates when the nut's entry face sits a whole number of pitches from the bolt
+helix start. A blind modeled thread stops short of the floor and needs
+`depth ≥ 2 × pitch`. Check the fit with `verify({ check: 'dfm' })` and a
+`dfmSpec({ minClearance })`: the exact distance between bolt and nut equals the
+clearance.
+
 ## Naming features (slice 2)
 
 When two `.hole()` (or `.cutout()`) calls land on the same target, the bare `'wall'` selector resolves to *all* their walls collectively. To address them individually, give each one a `name:` and use `<name>.<ref>`:

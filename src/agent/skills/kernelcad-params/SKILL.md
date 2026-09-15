@@ -65,18 +65,104 @@ const p = params({ plateW: 80, plateD: 50, plateT: 6 });
 return box(p.plateW, p.plateD, p.plateT);
 ```
 
-### MCP: `inspect({ of: 'params' })` / `set_param`
+### Typed params: boolean / choice / string
 
-For post-build edits, use MCP `inspect({ of: 'params' })` to inspect the active evaluated session, then `set_param({ code, param_name: 'boltDia', new_value: 6 })` to rewrite the `param()` default in the source. The edit is source-only and side-effect-free — it returns the modified code plus diagnostics from re-evaluating; the caller persists the returned code. A new value outside `[min, max]` surfaces as a `feature.invalid-args` diagnostic.
+`param()` also infers **choice** and **string** kinds from the default value and `meta`:
 
 ```typescript
-// Via MCP (introspection session):
-inspect({ of: 'params' })
-// → [{ name: 'boltDia', value: 5, min: 3, max: 10, description: '...' }, ...]
+// Boolean — still a ParamRef<boolean> (keeps its symbolic Editable<boolean>
+// use in `enabled: hasLid` opts), but ALSO carries an eager `.value` snapshot
+// for script control flow — see below.
+const hasLid = param('HasLid', true, { description: 'chamfer the top edge as a lid seat' });
+
+// Choice — string default + meta.choices -> TypedParamRef<string>, not a ParamRef.
+const screw = param('Screw', 'M4', { choices: ['M3', 'M4', 'M5'] });
+
+// Plain string — string default, no choices -> TypedParamRef<string>.
+const label = param('Label', 'KCAD', { maxLength: 24 });
+```
+
+`choice`/`string` params return a **`TypedParamRef`**, a different type from
+the numeric/boolean `ParamRef`. It does NOT support `.add()`/`.multiply()`/etc
+(meaningless for strings) and cannot be coerced to a number — read `.value`
+at evaluate time instead. Boolean `ParamRef`s work the same way for `.value`
+(booleans have no arithmetic to preserve, so there's no symbolic-vs-eager
+tension — every boolean `param()` call is a leaf):
+
+```typescript
+if (hasLid.value) { body = body.chamfer(1, { face: 'top' }); }
+
+const diameters: Record<string, number> = { M3: 3.4, M4: 4.5, M5: 5.5 };
+body = body.hole('top', { u: 0, v: 0, diameter: diameters[screw.value], depth: 'through' });
+
+const text = sketch.text(label.value, { size: 6, align: 'center', position: [0, 0] });
+```
+
+A numeric `ParamRef.value` stays `undefined` — numeric params remain purely
+symbolic (`_expr` walked against a live `ParamTable`) so a Studio slider can
+re-lower a dimension without re-running the whole script. Only read
+`.value` on boolean/choice/string params.
+
+Unlike numeric `ParamRef`s, `TypedParamRef`s resolve **eagerly** (the value
+at `param()` call time, not a re-evaluated symbolic AST) — because control
+flow (`if`), object-key lookups, and text content have no meaningful
+partial re-lower; `set_param` re-runs the whole script body with the new
+value, which is exactly what eager resolution gives you.
+
+`set_param({ code, param_name: 'Screw', new_value: 'M5' })` works the same
+way for typed params as for numeric ones — a value outside the declared
+`choices` set (or longer than `maxLength`) surfaces `feature.invalid-args`
+(hint `invalid-args.param.choice-invalid` / `invalid-args.param.value-out-of-range`)
+on re-evaluation. Booleans set via `set_param` take a literal `true`/`false`,
+not a string.
+
+The batched `params({...})` shorthand still only accepts `number | boolean`
+defaults — declare choice/string params individually via `param()`.
+
+### MCP: `inspect({ of: 'params' })` / `set_param`
+
+Use MCP `inspect({ of: 'params' })` to list a model's params, then `set_param({ code, param_name: 'boltDia', new_value: 6 })` to rewrite the `param()` default in the source. The edit is source-only — it returns the modified code plus diagnostics from re-evaluating; the caller persists the returned code.
+
+`inspect({ of: 'params' })` accepts the same `{ file? }` / `{ code? }` input every other `inspect({ of: ... })` reader does — pass one to evaluate that file/code fresh. With neither, it falls back to reading whatever session `evaluate_script` last left active (so a bare `inspect({ of: 'params' })` right after `evaluate_script` still works with no arguments) — it does NOT search for or reuse an unrelated session.
+
+```typescript
+// Via MCP, evaluating a file/code fresh (no prior evaluate_script needed):
+inspect({ of: 'params', file: 'part.kcad.ts' })
+// → { params: [
+//     { name: 'boltDia', type: 'number', value: 5, defaultValue: 5, min: 3, max: 10, description: '...' },
+//     { name: 'HasLid', type: 'boolean', value: true, defaultValue: true },
+//     { name: 'Screw', type: 'choice', value: 'M4', defaultValue: 'M4', choices: ['M3', 'M4', 'M5'] },
+//     { name: 'Label', type: 'string', value: 'KCAD', defaultValue: 'KCAD' },
+//   ] }
 
 set_param({ code, param_name: 'boltDia', new_value: 6 })
-// → { code: '...rewritten source...', diagnostics: [] }
+// → { ok: true, code: '...rewritten source...', diagnostics: [] }
+
+set_param({ code, param_name: 'Screw', new_value: 'M5' })
+// → { ok: true, code: '...rewritten source...', diagnostics: [] }
 ```
+
+`set_param` VALIDATES `new_value` against the param's declared kind BEFORE
+rewriting anything: a value outside `[min, max]`, a non-boolean for a
+boolean param, a non-string for a string param, or a value outside the
+declared `choices` set is REFUSED — `{ ok: false, error }`, no `code` in the
+result, source untouched:
+
+```typescript
+set_param({ code, param_name: 'HasLid', new_value: 'yes' })
+// → { ok: false, error: "param 'HasLid' is boolean, got string (... invalid-args.param.type-mismatch ...)" }
+
+set_param({ code, param_name: 'Screw', new_value: 'M9' })
+// → { ok: false, error: "param 'Screw' value 'M9' is not one of the declared choices: M3, M4, M5 (... invalid-args.param.choice-invalid ...)" }
+```
+
+### `sweep_tolerance` is numeric-only
+
+`kinematic.sweepTolerance({ params: {...} })` only accepts `number` params
+(`{ values: [...] }` or `{ min, max, steps }`) — sweeping a boolean/choice/
+string param has no meaningful range and fails fast with
+`feature.invalid-args` (hint `invalid-args.param.type-mismatch`) before any
+combo is evaluated.
 
 ## Parametric assembly frames
 
@@ -106,6 +192,9 @@ The following diagnostic codes surface in the `diagnostics[]` array returned by 
 |------|---------|
 | `feature.invalid-args` | `param()` default is outside declared `min`/`max`, or a `ParamRef` axis resolves to `[0,0,0]` |
 | `feature.invalid-args` (hint `invalid-args.axis.zero`) | A Vec3 built from params resolves to the zero vector at lower time |
+| `feature.invalid-args` (hint `invalid-args.param.choice-invalid`) | A `choice` param's value is not in its declared `meta.choices`, or a `choice` param is declared without `meta.choices` |
+| `feature.invalid-args` (hint `invalid-args.param.value-out-of-range`) | A `string` param's value exceeds `meta.maxLength` |
+| `feature.invalid-args` (hint `invalid-args.param.type-mismatch`) | A `TypedParamRef` (choice/string) is coerced to a number, used where a numeric `Editable` is expected, swept via `sweep_tolerance`, or `set_param`'s `new_value` doesn't match the param's declared JS type (e.g. a string for a boolean param) |
 
 Boundary errors from `set_param` setting a value outside `[min, max]` also surface as `feature.invalid-args` when the rewritten source is re-evaluated.
 

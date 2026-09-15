@@ -396,6 +396,47 @@ describe('render command', () => {
     expect(mockHeadlessRender).not.toHaveBeenCalled();
   });
 
+  it('renderCommand declares --explode and --explode-mode', () => {
+    const cmd = renderCommand();
+    expect(cmd.options.find((o) => o.long === '--explode')).toBeDefined();
+    expect(cmd.options.find((o) => o.long === '--explode-mode')).toBeDefined();
+  });
+
+  it('threads --explode through to headlessRender opts', async () => {
+    const result = await renderScript({
+      file: scriptPath,
+      out: join(tmp, 'out.png'),
+      separate: false,
+      width: 512,
+      height: 512,
+      baseUrl: 'http://localhost:5173',
+      hideReferenceImages: false,
+      explode: 1.5,
+      explodeMode: 'radial',
+    });
+    expect(result.exitCode).toBe(0);
+    expect(mockHeadlessRender).toHaveBeenCalledOnce();
+    expect(mockHeadlessRender.mock.calls[0][0]).toMatchObject({
+      explode: { factor: 1.5, mode: 'radial' },
+    });
+  });
+
+  it('rejects an invalid --explode-mode with exit code 1 before rendering', async () => {
+    const result = await renderScript({
+      file: scriptPath,
+      out: join(tmp, 'out.png'),
+      separate: false,
+      width: 512,
+      height: 512,
+      baseUrl: 'http://localhost:5173',
+      hideReferenceImages: false,
+      explode: 1,
+      explodeMode: 'sideways',
+    });
+    expect(result.exitCode).toBe(1);
+    expect(mockHeadlessRender).not.toHaveBeenCalled();
+  });
+
   it('rejects simultaneous focus and hide filters', async () => {
     const outDir = join(tmp, 'inspect-invalid');
 

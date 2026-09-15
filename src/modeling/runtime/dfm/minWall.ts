@@ -82,6 +82,36 @@ export interface MinWallResult {
   thinnestMm: number;
 }
 
+export interface MinWallOptions {
+  /** Pre-built BVH over the SAME mesh (see checkMinWall). */
+  bvh?: TriangleBvh;
+  /** Opt-in knife-edge filter, degrees. A thin hit counts only when the
+   *  surface it lands on faces back within this angle of anti-parallel to
+   *  the sampled surface — i.e. the two surfaces open at less than this
+   *  angle. Two faces meeting at a wider angle form a tapered EDGE whose
+   *  tip is thin by construction (a cone rim), not a thin wall. Omit for
+   *  the unfiltered measurement (every thin hit counts). */
+  maxWedgeDeg?: number;
+}
+
+/** Unit normal of triangle `tri` (winding order) dotted with (nx, ny, nz);
+ *  0 for a degenerate triangle. */
+function dotWithTriNormal(
+  vertices: readonly number[],
+  triangles: readonly number[],
+  tri: number,
+  nx: number, ny: number, nz: number,
+): number {
+  const a = triangles[3 * tri] * 3, b = triangles[3 * tri + 1] * 3, c = triangles[3 * tri + 2] * 3;
+  const e1x = vertices[b] - vertices[a], e1y = vertices[b + 1] - vertices[a + 1], e1z = vertices[b + 2] - vertices[a + 2];
+  const e2x = vertices[c] - vertices[a], e2y = vertices[c + 1] - vertices[a + 1], e2z = vertices[c + 2] - vertices[a + 2];
+  const mx = e1y * e2z - e1z * e2y;
+  const my = e1z * e2x - e1x * e2z;
+  const mz = e1x * e2y - e1y * e2x;
+  const len = Math.sqrt(mx * mx + my * my + mz * mz);
+  return len > 0 ? (mx * nx + my * ny + mz * nz) / len : 0;
+}
+
 interface ThinSample {
   t: number;
   location: [number, number, number];
@@ -98,6 +128,9 @@ interface ThinSample {
  * triangle centroid, so resolution is bounded by the tessellation; meshes
  * above 150k triangles are deterministically subsampled at a fixed stride.
  *
+ * `opts.maxWedgeDeg` (opt-in) drops thin hits across a tapered edge — see
+ * MinWallOptions; the declared `minWall` gate leaves it unset.
+ *
  * `opts.bvh` lets several checks over the SAME mesh share one BVH build.
  * The supplied BVH MUST have been constructed from `mesh` itself: nothing
  * here can detect a mismatch, and a BVH built from a different mesh yields
@@ -107,12 +140,13 @@ interface ThinSample {
 export function checkMinWall(
   mesh: DfmMesh,
   minWallMm: number,
-  opts?: { bvh?: TriangleBvh },
+  opts?: MinWallOptions,
 ): MinWallResult {
   const bvh = opts?.bvh ?? new TriangleBvh(mesh);
   const { vertices, triangles } = mesh;
   const numTris = (triangles.length / 3) | 0;
   const stride = numTris > MAX_SAMPLED_TRIANGLES ? Math.ceil(numTris / MAX_SAMPLED_TRIANGLES) : 1;
+  const wedgeCos = opts?.maxWedgeDeg !== undefined ? Math.cos((opts.maxWedgeDeg * Math.PI) / 180) : undefined;
 
   let sampleCount = 0;
   let thinnestMm = Infinity;
@@ -151,6 +185,13 @@ export function checkMinWall(
     // or would lower thinnestMm; anything else never influences the result,
     // so skipping the test there is pure perf with no accuracy cost.
     if (t < minWallMm || t < thinnestMm) {
+      // Knife-edge filter (opt-in): the far surface must face back within
+      // maxWedgeDeg of anti-parallel, else the two faces meet at an edge
+      // (cone rim, sharp chamfer tip) and the short ray measures the taper
+      // of that edge, not a wall.
+      if (wedgeCos !== undefined && -dotWithTriNormal(vertices, triangles, hit.triIndex, nx, ny, nz) < wedgeCos) {
+        continue;
+      }
       const d = RAY_EPS_MM + t / 2;
       const mid: Vec3 = [cx - nx * d, cy - ny * d, cz - nz * d];
       if (!bvh.pointInside(mid)) continue;

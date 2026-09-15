@@ -10,6 +10,7 @@
  * Identity dies at boolean operations (same convention as `metadata.color`).
  */
 import type { TextureSet } from './textureRef';
+import type { TextureProjection } from './textureProjection';
 
 export interface PBRMaterial {
   baseColor: string;              // CSS color or role token
@@ -39,6 +40,12 @@ export interface PBRMaterial {
    *  emissive). Paths resolved by `src/shared/textures/index.ts` at render
    *  time. */
   textures?: TextureSet;
+  /** UV-generation strategy for `textures.albedo`, set by
+   *  `Shape.wrapTexture(imageRef, projection)`. UVs are derived from FINAL
+   *  world-space vertex positions at mesh/export time (survives transforms
+   *  and booleans applied after the wrap call). Render-only — never
+   *  changes geometry. */
+  textureProjection?: TextureProjection;
 }
 
 export function isPBRMaterial(value: unknown): value is PBRMaterial {

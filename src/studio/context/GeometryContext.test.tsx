@@ -89,6 +89,7 @@ function Probe() {
     setPreviewCode,
     setViewportDriverLock,
     updateParam,
+    executeGeometry,
   } = useGeometry();
   const faceCount = geometries[0]?.faces.length ?? 0;
   const firstColor = geometries[0]?.color ?? '';
@@ -120,6 +121,7 @@ function Probe() {
       <button data-testid="clear-preview" onClick={() => setPreviewCode(null)}>Clear</button>
       <button data-testid="lock-viewport" onClick={() => setViewportDriverLock?.(true)}>Lock</button>
       <button data-testid="trigger-param" onClick={() => { void updateParam([{ name: 'w', value: 9 }]); }}>Param</button>
+      <button data-testid="trigger-validate" onClick={() => { void executeGeometry('const ignored = 1;'); }}>Validate</button>
     </div>
   );
 }
@@ -397,6 +399,103 @@ describe('GeometryContext latest-intent-wins', () => {
     expect(screen.getByTestId('script-param-name').textContent).toBe('shoulderDeg');
     expect(screen.getByTestId('script-review-ok').textContent).toBe('false');
     expect(screen.getByTestId('script-review-repair').textContent).toContain('supported clevis');
+  });
+
+  it('Validate on a studio script fetches the full review, not the live channel or the in-browser worker', async () => {
+    window.history.pushState(
+      {},
+      '',
+      '/?script=examples/cookbook-parity/iso-metric-bolt-and-nut.kcad.ts',
+    );
+
+    (globalThis as { EventSource?: unknown }).EventSource = class FakeES {
+      addEventListener() {}
+      removeEventListener() {}
+      close() {}
+      onerror: (() => void) | null = null;
+    };
+
+    const meshPayload = {
+      features: [
+        {
+          featureId: 'hex-bolt',
+          featureKind: 'box',
+          predecessors: [],
+          faces: [
+            {
+              vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
+              indices: [0, 1, 2],
+              normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+              faceId: 0,
+            },
+          ],
+        },
+      ],
+      bounds: { min: [0, 0, 0], max: [1, 1, 0] },
+      params: {},
+    };
+    const liveReview = { ok: true, diagnostics: [], rawInterferencePairs: [] };
+    const fullReview = {
+      ok: true,
+      diagnostics: [],
+      validator: { ok: true, parts: 2, joints: 0 },
+      mechanism: 'real',
+    };
+
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ sessionToken: 'tok-bolt' }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => meshPayload,
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => liveReview,
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => meshPayload,
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => fullReview,
+      } as Response);
+
+    render(
+      <GeometryProvider code={'const ignored = 1;'}>
+        <Probe />
+      </GeometryProvider>,
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(fetchUrl(fetchMock, 3)).toContain('live=1');
+    expect(mockEngine.executeCode).not.toHaveBeenCalled();
+
+    await act(async () => {
+      screen.getByTestId('trigger-validate').click();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(mockEngine.executeCode).not.toHaveBeenCalled();
+    expect(fetchUrl(fetchMock, 4)).toBe('/__kernelcad/mesh?session=tok-bolt');
+    expect(fetchUrl(fetchMock, 5)).toBe(
+      '/__kernelcad/review?session=tok-bolt&script=examples%2Fcookbook-parity%2Fiso-metric-bolt-and-nut.kcad.ts',
+    );
+    expect(fetchUrl(fetchMock, 5)).not.toContain('live=1');
+    expect(screen.getByTestId('error').textContent).toBe('');
+    expect(screen.getByTestId('script-review-ok').textContent).toBe('true');
   });
 
   it('falls back to hosted mesh-by-source when hosted script sessions are unavailable', async () => {

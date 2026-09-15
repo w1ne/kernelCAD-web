@@ -25,13 +25,23 @@ import { Transform } from '../../shared/runtime/se3';
 import type { ColorToken } from '../../shared/render/palette';
 import { resolveColor } from '../../shared/render/palette';
 import type { FinishToken } from '../../shared/render/finishes';
-import { expandFinish } from '../../shared/render/finishes';
+import { expandFinish, isFinishToken, unknownFinishMessage } from '../../shared/render/finishes';
+import { tryResolveMaterial, type MaterialName } from '../properties/materialLibrary';
+import type { AnyMaterialName } from '../../kinematic/engineeringMaterials';
 import type { PBRMaterial } from '../../shared/intent/material';
 import type { TextureRef, TextureSet } from '../../shared/intent/textureRef';
 import { isTextureRef, normalizeTextureRef } from '../../shared/intent/textureRef';
+import type { TextureProjection } from '../../shared/intent/textureProjection';
+import { isTextureProjection } from '../../shared/intent/textureProjection';
 import { validateBendArgs } from '../sheetMetal';
 import { normalizeTopoRefOrString } from './topoRefNormalize';
 import type { Region } from '../../shared/intent/region';
+import type { DrawingToleranceSpec } from '../../shared/intent/drawingGdtRecord';
+import type {
+  FeaStudyHandle,
+  FeaStudyMetadata,
+  FeaStudySpec,
+} from '../../shared/intent/feaStudyRecord';
 import {
   type FilletContinuity, isFilletContinuity,
 } from '../../shared/intent/filletContinuityRecord';
@@ -195,6 +205,90 @@ export class Shape {
    * for an assembly, color each part individually before the assembly's
    * solvedModel() unions them for export.
    */
+  /**
+   * Declare a linear-static structural study on this shape: where it is held,
+   * what pushes on it, what it is made of, and (optionally) the safety factor
+   * the design has to clear.
+   *
+   * Declaration-only — this registers a virtual record and returns a handle,
+   * not a Shape, so it never joins the geometry chain. The solve happens in
+   * the FEA runner (`run_fea`, and the evaluate-time gate when
+   * `minSafetyFactor` is declared), which reads this record and the shape it
+   * points at.
+   *
+   * ```ts
+   * const beam = box(200, 20, 10);
+   * beam.feaStudy({
+   *   material: 'mild-steel',
+   *   fixed: { atX: 0 },
+   *   loads: [{ faces: { atX: 200 }, force: [0, 0, -250] }],
+   *   minSafetyFactor: 2,
+   * });
+   * return beam;
+   * ```
+   *
+   * `fixed` and `loads[].faces` take the same selectors as the rest of the
+   * API: a `FaceQuery` object, or a `@kc[...]` face ref from `list_faces`.
+   * Forces are TOTALS in newtons over the selected faces, not per node.
+   *
+   * Malformed declarations throw `feature.invalid-args` at capture time; an
+   * unknown material grade throws with the valid grades named. Selectors that
+   * match no face surface as `fea.study.fixed-unresolved` /
+   * `fea.study.load-unresolved` when the study runs, because resolving them
+   * needs lowered geometry.
+   */
+  feaStudy(spec: FeaStudySpec): FeaStudyHandle {
+    const id = this.session.addFeaStudy(spec, { kind: 'feature', id: this.id });
+    const record = this.session.getRecords().find(r => r.id === id)!;
+    return { id, metadata: record.metadata as unknown as FeaStudyMetadata };
+  }
+
+  /**
+   * Declare datum `label` on the face `face` resolves to, for engineering
+   * drawings. Declaration-only: registers a virtual record bound to this shape
+   * and returns this same shape, so it chains without joining the geometry.
+   *
+   * ```ts
+   * const plate = box(80, 50, 10).datum('A', { atZ: 0 });
+   * return plate;
+   * ```
+   *
+   * The `svg-drawing` exporter draws the datum feature symbol. With
+   * `autoAnnotate` on, the letter is pinned to this face and the remaining
+   * datums are derived around it. The query resolves against the exported
+   * geometry; a miss fails the export with `drawing.datum.unresolved`.
+   * A malformed letter or a letter already declared throws
+   * `feature.invalid-args` at capture.
+   */
+  datum(label: string, face: FaceQuery): Shape {
+    this.session.addDrawingDatum(label, face, { kind: 'feature', id: this.id });
+    return this;
+  }
+
+  /**
+   * Declare a geometric tolerance (a feature control frame) on a face or edge,
+   * for engineering drawings. Declaration-only, returns this same shape.
+   *
+   * ```ts
+   * const plate = box(80, 50, 10)
+   *   .subtract(cylinder(12, 3.25).translate(40, 25, -1))
+   *   .tolerance({ type: 'position', value: 0.05, modifier: '⌀',
+   *                edge: { ofCurveType: 'CIRCLE', near: [40, 25, 10] }, datums: ['A', 'B', 'C'] });
+   * return plate;
+   * ```
+   *
+   * With `autoAnnotate` on, a declared tolerance replaces the automatic one of
+   * the same type on the same feature (a grouped hole pattern counts as one
+   * feature). Form tolerances (`flatness`, `cylindricity`) take no datums.
+   * Malformed declarations throw `feature.invalid-args` at capture; a query
+   * that misses the exported geometry fails the export with
+   * `drawing.tolerance.feature-unresolved`.
+   */
+  tolerance(spec: DrawingToleranceSpec): Shape {
+    this.session.addDrawingTolerance(spec, { kind: 'feature', id: this.id });
+    return this;
+  }
+
   color(name: ColorToken | `#${string}`): Shape {
     const records = this.session.getRecords();
     const record = records.find(r => r.id === this.id);
@@ -499,9 +593,12 @@ export class Shape {
    * TINT a finish, pass `{ color }` here rather than layering `.color()` under
    * it — the layered hue would be shadowed.
    *
-   * @param name  a finish token; an unknown name throws
-   *              `feature.finish.unknown-token` listing the valid finishes (no
-   *              silent fallback to a default).
+   * @param name  a finish token, or an engineering material name (`mild-steel`,
+   *              `aluminum-6061`, `nylon`, alias `aluminum`, …) which applies
+   *              that material's default finish — the same name `arm.part({
+   *              material })` and `feaStudy({ material })` take. An unknown
+   *              name, or a material with no finish (`petg`), throws
+   *              `feature.finish.unknown-token` (no silent fallback).
    * @param opts.color  override the hue while keeping the finish's surface
    *              character. Meaningful for paints / ABS / anodising; accepted
    *              but off for raw metals (the metal is its colour).
@@ -511,17 +608,116 @@ export class Shape {
    * Same lifecycle as `.color()` / `.material()`: apply to leaf parts before a
    * boolean; identity dies at booleans.
    */
-  finish(name: FinishToken, opts?: { color?: string; face?: string }): Shape {
+  finish(name: FinishToken | AnyMaterialName, opts?: { color?: string; face?: string }): Shape {
+    // A finish token wins when the name is both (steel, pla, abs, nylon map to
+    // the identically named token anyway). Otherwise an engineering material
+    // name applies its registry default finish, so one material vocabulary
+    // covers mass, FEA and appearance.
+    let token: string = name;
+    if (!isFinishToken(name)) {
+      const resolved = tryResolveMaterial(name);
+      if (resolved.ok) {
+        if (resolved.material.finish === undefined) {
+          throw new KernelError(
+            'feature.finish.unknown-token',
+            unknownFinishMessage(name),
+            this.id,
+            `'${name}' is a material (${resolved.material.name as MaterialName}) with no default finish. ` +
+              'Pass a finish token such as plastic-glossy, or set the look with .color().',
+          );
+        }
+        token = resolved.material.finish;
+      }
+    }
     // expandFinish throws `feature.finish.unknown-token` (with this shape's id)
     // for an unknown name. Valid finishes clamp cleanly, so routing the result
     // through .material() reuses its validation + per-face plumbing with no
     // extra clamp warning.
     const pbr = expandFinish(
-      name,
+      token,
       opts?.color !== undefined ? { color: opts.color } : undefined,
       this.id,
     );
     return this.material(opts?.face !== undefined ? { ...pbr, face: opts.face } : pbr);
+  }
+
+  /**
+   * Wrap an image onto this shape's surface as an albedo texture, with UVs
+   * derived from a projection strategy rather than authored by hand.
+   * Render-only: geometry is unchanged (`wrapTexture` never adds material
+   * to the mesh). For an engraved / embossed image use `projectCurve` plus
+   * a sketch-based emboss/engrave feature instead.
+   *
+   * UVs are NOT computed here — `wrapTexture` only records the image
+   * reference and the projection strategy on `metadata.material`. The real
+   * (u, v) pairs are derived downstream, at mesh/export time, from the
+   * shape's FINAL world-space vertex positions (`computeProjectedUVs`), so
+   * the wrap survives any `.translate()` / `.rotate()` / boolean applied
+   * after this call — unlike UVs baked in at wrap time, which a later
+   * transform would leave stale.
+   *
+   * Projections: `{ type: 'flat', onto? }` (planar onto a principal
+   * plane), `{ type: 'cylinder', axis }` (wraps around an axis — labels,
+   * cans, tubes), `{ type: 'sphere' }`, `{ type: 'box' }` (six-sided
+   * triplanar).
+   *
+   * Targets the same `metadata.material` slot as `.finish()` / `.material()`
+   * — last-write-wins, same convention those two already have with each
+   * other. `wrapTexture` keeps a previously-set `baseColor` (so the
+   * texture layers on a tinted base rather than resetting to white) but,
+   * like any `.material()` call, does NOT preserve other PBR floats
+   * (roughness, metalness, ...) from an earlier `.finish()` — call
+   * `wrapTexture` FIRST, then `.material({...})` for extra PBR floats, if
+   * you need both. Identity dies at booleans, same as `.material()`.
+   *
+   * @param imageRef  `{ path, repeat?, offset?, rotation? }` — same
+   *   `TextureRef` shape as `.material({ textures: { albedo } })`. A bad
+   *   path throws `feature.material.texture-not-found` /
+   *   `-unsupported-format` at load time (mesh/export), not here.
+   * @param projection  one of the four projection records above.
+   */
+  wrapTexture(imageRef: TextureRef, projection: TextureProjection): Shape {
+    if (!isTextureRef(imageRef)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Shape.wrapTexture: imageRef must be a TextureRef ({ path, ... }) with a non-empty 'path' string; got ${formatScalarForError(imageRef)}.`,
+        this.id,
+        'Pass { path: "<file-or-url>" } as the first argument.',
+      );
+    }
+    if (!isTextureProjection(projection)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Shape.wrapTexture: projection must be one of flat({onto?}), cylinder({axis}), sphere(), box(); got ${formatScalarForError(projection)}.`,
+        this.id,
+        "Pass { type: 'cylinder', axis: [0,0,1] } or one of the other three projection shapes.",
+      );
+    }
+
+    // Preserve any already-authored baseColor/finish so wrapTexture layers
+    // the albedo texture on top rather than clobbering it (material()
+    // requires baseColor on every call; default to white when none is set
+    // yet, matching the glTF default when a texture supplies the color).
+    const existingRecord = this.session.getRecords().find(r => r.id === this.id);
+    const existingMaterial = (existingRecord?.metadata as { material?: PBRMaterial } | undefined)?.material;
+    this.material({ baseColor: existingMaterial?.baseColor ?? '#ffffff', textures: { albedo: imageRef } });
+
+    const records = this.session.getRecords();
+    const record = records.find(r => r.id === this.id);
+    if (record === undefined) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Shape.wrapTexture: feature record '${this.id}' not found in session.`,
+        this.id,
+        'Call .wrapTexture() on a Shape produced by the current session.',
+      );
+    }
+    const metadata = record.metadata as { material?: PBRMaterial };
+    // .material() above guarantees metadata.material exists with the
+    // albedo texture attached; attach the projection alongside it.
+    (metadata.material as PBRMaterial).textureProjection = projection;
+
+    return this;
   }
 
   /**
@@ -1081,6 +1277,222 @@ export class Shape {
   }
 
   /**
+   * Derive a reusable 2D `Sketch` from an exact planar cross-section of this
+   * solid. Use it to take an imported STEP or a boolean result back to 2D so
+   * you can extrude a matching gasket, offset the section, or dimension it.
+   *
+   * The section is computed with OCCT `BRepAlgoAPI_Section` against a large
+   * face on the chosen plane; resulting wires are chained into closed loops
+   * and placed in the plane's local 2D frame (u, v). Circular section curves
+   * are emitted as exact `bulgeArc` commands, so a sectioned hole keeps its
+   * true radius; only splines/ellipses are chord-flattened.
+   *
+   * Multi-loop sections (a boss with a through-hole, a hollow tube) come back
+   * as ONE sketch whose first loop is the outer boundary and whose remaining
+   * loops are holes — a single `.extrude(d)` then yields the solid section.
+   *
+   * `plane`:
+   * - `'xy' | 'xz' | 'yz'` — the cardinal plane through the origin.
+   * - `{ plane, offset }` — a cardinal plane shifted along its normal.
+   * - `{ origin, normal }` — any plane; the 2D frame's X axis is picked from
+   *   world +X (or +Y when the normal is nearly along X).
+   *
+   * Async: lowers the Shape to OCCT at capture time. Emits
+   * `feature.section.plane-misses-body` (recorded on the sketch metadata) when
+   * the plane does not intersect the body.
+   */
+  sectionSketch(
+    plane:
+      | 'xy' | 'xz' | 'yz'
+      | { plane: 'xy' | 'xz' | 'yz'; offset?: number }
+      | { origin: [number, number, number]; normal: [number, number, number] },
+    opts: { curveTolerance?: number } = {},
+  ): Promise<import('./sketch').Sketch> {
+    const run = async (): Promise<import('./sketch').Sketch> => {
+    const { sectionLoops } = await import('../../kernel/backends/occt/sketchFromShapeOps');
+    const { cardinalFrame, makePlaneFrame } = await import('../../kernel/backends/occt/sketchFromShape');
+    const backend = await this.lower();
+    const frame = resolveSectionFrame(plane, cardinalFrame, makePlaneFrame);
+    const extracted = sectionLoops(backend, frame, { curveTolerance: opts.curveTolerance });
+    if (extracted.loops.length === 0) {
+      throw new KernelError(
+        'feature.section.plane-misses-body',
+        `sectionSketch: the section plane does not intersect this body (no closed loops; ${extracted.openChains.length} open chain(s)).`,
+        this.id,
+        'Move the plane offset/origin so it passes through the solid, or check the normal direction.',
+      );
+    }
+    const commands = extracted.loops.flat();
+    return this.session.createSketch({
+      kind: 'sketch',
+      inputs: { source: { kind: 'feature', id: this.id } },
+      params: {},
+      metadata: {
+        commands,
+        derivedFrom: 'section',
+        loopCount: extracted.loops.length,
+        holeCount: Math.max(0, extracted.loops.length - 1),
+        sectionAreaMm2: extracted.areas[0] - extracted.areas.slice(1).reduce((acc, a) => acc + a, 0),
+      },
+    });
+    };
+    return guardAsyncSketchResult(run(), 'sectionSketch');
+  }
+
+  /**
+   * Derive a `Sketch` from the boundary of a planar face of this solid: the
+   * outer wire plus any inner (hole) wires, placed in the face's own 2D frame.
+   *
+   * `face` takes the same selector as `.shell()` / `.hole()`: a canonical
+   * name (`'top'`), a label, a `FaceQuery` (`{ atZ: 5 }`), or an
+   * `@kc[owner/face/name]` ref. Non-planar faces are refused with
+   * `feature.face-sketch.non-planar`.
+   *
+   * The result round-trips: `faceSketch(face).extrude(t)` re-creates a prism
+   * of the same cross-section (and, when the face is a solid boundary, the
+   * same volume as the solid's slab).
+   *
+   * Async: lowers the Shape and resolves the face at capture time.
+   */
+  faceSketch(
+    face: FaceSelector | CanonicalFace | string,
+    opts: { curveTolerance?: number } = {},
+  ): Promise<import('./sketch').Sketch> {
+    const run = async (): Promise<import('./sketch').Sketch> => {
+    const { faceLoops } = await import('../../kernel/backends/occt/sketchFromShapeOps');
+    const { makePlaneFrame } = await import('../../kernel/backends/occt/sketchFromShape');
+    const { pickFace } = await import('../../kernel/backends/occt/edgeSelection');
+    const backend = await this.lower();
+
+    // Resolve the selector through the same path every face feature uses, by
+    // synthesizing a minimal face-typed record. This keeps canonical/label/
+    // query/Query-DSL resolution in exactly one place.
+    const faceRef = buildFaceInputRef(this.id, normalizeFaceSelector(face) as never);
+    const synthetic = {
+      id: this.id,
+      kind: 'sectionSketch' as const,
+      inputs: { face: faceRef },
+      params: {},
+      transforms: [],
+      suppressed: false,
+    };
+    const resolved = pickFace(synthetic as never, backend, this.session.getRecords());
+    if ('error' in resolved) {
+      throw new KernelError(
+        resolved.error.code as never,
+        resolved.error.message,
+        this.id,
+        resolved.error.hint,
+      );
+    }
+    const replicadFace = resolved as unknown as {
+      geomType?: string;
+      center: { x: number; y: number; z: number };
+      normalAt?: () => { x: number; y: number; z: number };
+    };
+    const surfaceType = (replicadFace.geomType ?? '').toUpperCase();
+    if (surfaceType !== 'PLANE') {
+      throw new KernelError(
+        'feature.face-sketch.non-planar',
+        `faceSketch: the selected face is non-planar (${surfaceType || 'unknown'} surface); only planar faces can be unrolled to a 2D sketch.`,
+        this.id,
+        'Select a planar face (add { ofSurfaceType: "PLANE" } to the query), or use sectionSketch for a curved body.',
+      );
+    }
+    const center: [number, number, number] = [
+      replicadFace.center.x, replicadFace.center.y, replicadFace.center.z,
+    ];
+    // Face normal points out of the solid; the sketch frame can use either
+    // orientation — flip to face inward so an extrude goes into the body.
+    const n = resolved.normalAt?.() ?? { x: 0, y: 0, z: 1 };
+    const normal: [number, number, number] = [n.x, n.y, n.z];
+    const frame = makePlaneFrame(center, normal, [1, 0, 0]);
+    const boundary = faceLoops(resolved as never, frame, { curveTolerance: opts.curveTolerance });
+    const loops = [boundary.outer, ...boundary.holes].filter((l) => l.length > 0);
+    if (loops.length === 0) {
+      throw new KernelError(
+        'feature.face-sketch.non-planar',
+        `faceSketch: the selected face produced no closed boundary loops.`,
+        this.id,
+        'Select a planar face with a closed outer wire.',
+      );
+    }
+    const toCommands = (await import('../../kernel/backends/occt/sketchFromShape')).loopToCommands;
+    return this.session.createSketch({
+      kind: 'sketch',
+      inputs: { source: { kind: 'feature', id: this.id } },
+      params: {},
+      metadata: {
+        commands: loops.flatMap((l) => toCommands(l)),
+        derivedFrom: 'face',
+        loopCount: loops.length,
+        holeCount: loops.length - 1,
+      },
+    });
+    };
+    return guardAsyncSketchResult(run(), 'faceSketch');
+  }
+
+  /**
+   * Derive a closed `Sketch` outline from this solid's orthographic silhouette
+   * viewed along `direction` (OCCT HLR). Use it for blanking outlines, laser
+   * or waterjet nesting, and 2D projection of an imported body.
+   *
+   * `direction` is the view vector: `[0,0,1]` is the top view, `[1,0,0]` the
+   * right view. A cylinder viewed along its axis silhouettes as a circle;
+   * viewed across its axis it silhouettes as a rectangle.
+   *
+   * The outline is recentered so its 2D bounding-box centre is the frame
+   * origin. Straight silhouette edges are exact; curved contours are OCCT
+   * HLR's deterministic discretization (HLR emits 2D polylines).
+   *
+   * Async: lowers the Shape at capture time.
+   */
+  silhouette(
+    direction: [number, number, number] = [0, 0, 1],
+    opts: { curveTolerance?: number } = {},
+  ): Promise<import('./sketch').Sketch> {
+    const run = async (): Promise<import('./sketch').Sketch> => {
+    const { silhouetteLoops } = await import('../../kernel/backends/occt/sketchFromShapeOps');
+    const { makePlaneFrame, loopToCommands } = await import('../../kernel/backends/occt/sketchFromShape');
+    if (!isValidVec3(direction) || Math.hypot(...direction) < 1e-9) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `silhouette: direction must be a non-zero finite Vec3; got ${formatScalarForError(direction)}.`,
+        this.id,
+        'Pass a view direction such as [0, 0, 1] (top) or [1, 0, 0] (right).',
+      );
+    }
+    const backend = await this.lower();
+    const frame = makePlaneFrame([0, 0, 0], direction, [1, 0, 0]);
+    const res = silhouetteLoops(backend, frame, { curveTolerance: opts.curveTolerance });
+    if (res.loops.length === 0) {
+      throw new KernelError(
+        'feature.section.plane-misses-body',
+        `silhouette: no closed outline found along [${direction.join(', ')}].`,
+        this.id,
+        'Try a different direction, or check the direction is not zero-length.',
+      );
+    }
+    // Largest loop first (outer boundary), holes after — same convention as
+    // sectionSketch.
+    res.loops.sort((a, b) => Math.abs(chordArea(b)) - Math.abs(chordArea(a)));
+    return this.session.createSketch({
+      kind: 'sketch',
+      inputs: { source: { kind: 'feature', id: this.id } },
+      params: {},
+      metadata: {
+        commands: res.loops.flatMap((l) => loopToCommands(l)),
+        derivedFrom: 'silhouette',
+        loopCount: res.loops.length,
+        direction,
+      },
+    });
+    };
+    return guardAsyncSketchResult(run(), 'silhouette');
+  }
+
+  /**
    * Axis-aligned bounding box of this Shape in its CURRENT world frame —
    * i.e. AFTER every transform appended so far (translate / rotate / scale)
    * is applied. Lowers the Shape (via `.lower()`, cached) and reads the OCCT
@@ -1273,6 +1685,87 @@ function normalizeFaceSelector(face: FaceSelector | CanonicalFace | string): Fac
     return normalizeTopoRefOrString(face, 'face') as FaceSelector;
   }
   return face;
+}
+
+/**
+ * Public method names on `Sketch` (kept in sync with `SKETCH_METHODS` in
+ * `src/agent/mcp/tools/listApi.ts`). Used only to decide which property
+ * accesses on an un-awaited `sectionSketch` / `faceSketch` / `silhouette`
+ * result should raise the actionable "missing await" diagnostic below.
+ */
+const SKETCH_METHOD_NAMES = new Set(['extrude', 'revolve', 'sweep', 'loft', 'reflect']);
+
+/**
+ * Wrap the Promise<Sketch> returned by an async Shape->Sketch producer
+ * (`sectionSketch`, `faceSketch`, `silhouette`) so that the common agent
+ * mistake of chaining a Sketch method directly on the un-awaited result —
+ * `part.sectionSketch('xy', 5).extrude(3)` — fails with an actionable
+ * `feature.async-result.missing-await` diagnostic instead of the cryptic
+ * `TypeError: sec.extrude is not a function`.
+ *
+ * `await`/`.then`/`.catch`/`.finally`/`Promise.all` etc. are untouched —
+ * the Proxy forwards every property that isn't a Sketch method name to the
+ * real Promise, bound to it.
+ */
+function guardAsyncSketchResult(promise: Promise<import('./sketch').Sketch>, methodName: string): Promise<import('./sketch').Sketch> {
+  return new Proxy(promise, {
+    get(target, prop) {
+      if (typeof prop === 'string' && SKETCH_METHOD_NAMES.has(prop)) {
+        return () => {
+          throw new KernelError(
+            'feature.async-result.missing-await',
+            `${methodName}() is async — write \`(await shape.${methodName}(...)).${prop}(...)\`.`,
+          );
+        };
+      }
+      const value = Reflect.get(target, prop, target);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  }) as Promise<import('./sketch').Sketch>;
+}
+
+/** Resolve the `sectionSketch` plane argument into a 2D frame. */
+function resolveSectionFrame(
+  plane:
+    | 'xy' | 'xz' | 'yz'
+    | { plane: 'xy' | 'xz' | 'yz'; offset?: number }
+    | { origin: [number, number, number]; normal: [number, number, number] },
+  cardinalFrame: (p: 'xy' | 'xz' | 'yz', offset: number) => import('../../kernel/backends/occt/sketchFromShape').PlaneFrame,
+  makePlaneFrame: (
+    origin: [number, number, number],
+    normal: [number, number, number],
+    uHint?: [number, number, number],
+  ) => import('../../kernel/backends/occt/sketchFromShape').PlaneFrame,
+): import('../../kernel/backends/occt/sketchFromShape').PlaneFrame {
+  if (typeof plane === 'string') return cardinalFrame(plane, 0);
+  if ('plane' in plane) {
+    const offset = plane.offset ?? 0;
+    if (!Number.isFinite(offset)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `sectionSketch: plane offset must be a finite number; got ${formatScalarForError(offset)}.`,
+        undefined,
+        'Pass { plane: "xy" | "xz" | "yz", offset: <mm> }.',
+      );
+    }
+    return cardinalFrame(plane.plane, offset);
+  }
+  if (!isValidVec3(plane.origin) || !isValidVec3(plane.normal) || Math.hypot(...plane.normal) < 1e-9) {
+    throw new KernelError(
+      'feature.invalid-args',
+      'sectionSketch: { origin, normal } must be finite Vec3s with a non-zero normal.',
+      undefined,
+      'Pass { origin: [x, y, z], normal: [nx, ny, nz] } in mm.',
+    );
+  }
+  return makePlaneFrame(plane.origin, plane.normal, [1, 0, 0]);
+}
+
+/** Signed chord area of a projected loop, used only to rank outer vs holes. */
+function chordArea(segs: Array<{ x0: number; y0: number; x1: number; y1: number }>): number {
+  let a = 0;
+  for (const s of segs) a += s.x0 * s.y1 - s.x1 * s.y0;
+  return a / 2;
 }
 
 /** Walk records back from `targetId` via `inputs.target` (slice-2 chain

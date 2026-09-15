@@ -34,6 +34,11 @@ const READ_REMOTE: ToolAnnotations = { readOnlyHint: true, destructiveHint: fals
 const AUTHOR: ToolAnnotations = { readOnlyHint: false, destructiveHint: false, openWorldHint: false };
 const AUTHOR_DESTRUCTIVE: ToolAnnotations = { readOnlyHint: false, destructiveHint: true, openWorldHint: false };
 const WRITES_FILE: ToolAnnotations = { readOnlyHint: false, destructiveHint: false, openWorldHint: true };
+/** Analysis that changes nothing about the design but CAN drop artifacts on
+ *  the local filesystem on an opt-in flag (diff_geometry's render overlay).
+ *  Read-only is the honest label for the design; openWorld is the honest
+ *  label for the optional file output. */
+const READ_MAY_WRITE_ARTIFACTS: ToolAnnotations = { readOnlyHint: true, destructiveHint: false, openWorldHint: true };
 
 export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // Read / compute / analysis — no mutation, no external effect.
@@ -53,12 +58,18 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   solve_mates: READ,
   flatten_pattern: READ,
 
+  // Read-only analysis that can write an OPTIONAL local artifact (render: true).
+  diff_geometry: READ_MAY_WRITE_ARTIFACTS,
+  // Reads a mesh; writes the emitted script + ledger only when { out } is given.
+  mesh_to_features: READ_MAY_WRITE_ARTIFACTS,
+
   // Read — but may fetch from a remote parts catalog (KERNELCAD_PARTS_BASE_URL).
   find_part: READ_REMOTE,
   fetch_part: READ_REMOTE,
 
   // Authoring — return modified source (side-effect-free, additive).
   set_param: AUTHOR,
+  sweep_tolerance: READ,
   add_feature: AUTHOR,
   add_surface: AUTHOR,
   add_curve: AUTHOR,
@@ -68,12 +79,16 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   project_curve: AUTHOR,
   add_pattern_feature: AUTHOR,
   trace_from_image: AUTHOR,
+  resolve_assumptions: AUTHOR,
   add_constraint: AUTHOR,
   add_part: AUTHOR,
   add_connector: AUTHOR,
   add_mate: AUTHOR,
   add_workspace_target: AUTHOR,
   set_scene_return: AUTHOR,
+
+  // Authoring — derives and applies a bounded source patch, returns new_code.
+  repair_script: AUTHOR,
 
   // Authoring that removes an existing feature line.
   remove_feature: AUTHOR_DESTRUCTIVE,
@@ -83,9 +98,18 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
 
   // Write geometry/animation to a file on disk.
   export: WRITES_FILE,
+  // Reads a local drawing PDF; writes the rebuilt script + ledger on `out`.
+  drawing_to_cad: WRITES_FILE,
   capture_animation: WRITES_FILE,
+
+  // Uploads a file to, and can start a print on, a real network printer.
+  send_to_printer: WRITES_FILE,
 
   // Renders the model to PNG views on the local filesystem — does not change the
   // design, but writes image files (same class as capture_animation).
   render_preview: WRITES_FILE,
+  // run_fea shells out to CalculiX/gmsh and writes a solver deck + PNGs to
+  // disk, so it is neither read-only nor sandbox-local.
+  run_fea: WRITES_FILE,
+  fea_summary: READ,
 };

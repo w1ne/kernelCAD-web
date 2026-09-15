@@ -59,4 +59,30 @@ describe('variable-radius fillet via face-wrapper selector (I6)', () => {
     // Both fillets remove the same volume (4 edges of length 10, radius 1).
     expect(Math.abs(vTop - vBottom)).toBeLessThan(0.5);
   }, 90000);
+
+  it('resolves param() radii per group and re-evaluates them on update', async () => {
+    const code = `
+      const big = param('big', 3);
+      const small = param('small', 1);
+      return box(20, 20, 8).fillet([
+        { edges: { parallel: [0, 0, 1] }, radius: big },
+        { edges: { atZ: 8, tolerance: 0.01 }, radius: small },
+      ]);
+    `;
+    const run = await runScript({ code, fileName: '<test>' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const base = await engine.run(run.records, { paramTable: run.paramTable });
+    expect(base.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const filletId = run.records[run.records.length - 1].id;
+    const v1 = base.shapes.get(filletId)!.volume();
+    // Only the numbers stay in the record for plain radii; a param becomes a Param.
+    const meta = run.records[run.records.length - 1].metadata as { groups: Array<{ radius: unknown }> };
+    expect(meta.groups[0].radius).toMatchObject({ paramRef: 'big' });
+
+    const table = run.paramTable;
+    table.set('big', 5);
+    const bigger = await new RecomputeEngine(new OcctLowerer()).run(run.records, { paramTable: table });
+    expect(bigger.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    expect(bigger.shapes.get(filletId)!.volume()).toBeLessThan(v1 - 1);
+  });
 });

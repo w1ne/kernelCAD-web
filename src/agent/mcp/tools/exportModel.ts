@@ -16,6 +16,7 @@ import { dirname, resolve } from 'node:path';
 import { initOcct } from '../../../kernel/backends/occt/occtBackend';
 import {
   runAndExport,
+  type DrawingReport,
   type ExportFormat,
   type ExportOptions,
 } from '../../script-runtime/export';
@@ -47,6 +48,9 @@ export interface ExportModelOutput {
   /** Companion mesh files written next to output_path (URDF / SDF exports
    *  reference per-link meshes by relative path). */
   mesh_files?: string[];
+  /** svg-drawing placement report: `placed` / `overlapped` counts, `byKind`,
+   *  the datum reference frame, and every annotation drawn. */
+  drawing_report?: DrawingReport;
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -153,6 +157,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
     feature_count: result.featureCount,
     format,
     ...(meshFiles.length > 0 ? { mesh_files: meshFiles } : {}),
+    ...(result.drawingReport === undefined ? {} : { drawing_report: result.drawingReport }),
     diagnostics: withNextActions(result.diagnostics),
   };
 }

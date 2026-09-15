@@ -4,6 +4,7 @@ import { inspectTool } from '../tools/inspect';
 import { queryTool } from '../tools/query';
 import { verifyTool } from '../tools/verify';
 import { whyDidThisFailTool } from '../tools/whyDidThisFail';
+import { repairScriptTool } from '../tools/repairScript';
 import type { ToolRegistryEntry } from './types';
 
 const inspectToolEntry: ToolRegistryEntry = {
@@ -30,18 +31,22 @@ const inspectToolEntry: ToolRegistryEntry = {
       "- 'params' — declared model parameters.\n" +
       "- 'part-categories' — top-level part-catalog categories available in the bundled (and configured remote) catalog.\n" +
       "- 'part-families' — part families within a category ({ category? }); count + exemplar ids per family.\n" +
+      "- 'bom' — bill of materials ({ assembly? }): one row per distinct part (grouped by geometry/catalog identity, not name) with real instance quantity, kind ('fabricated'|'purchased'), material, density, per-unit and total mass, bbox, a fabrication process hint, catalog provenance for purchased parts, and totals; `bom.*` diagnostics flag rows with no density source or missing catalog vendor info instead of guessing.\n" +
+      "- 'section' — numeric cross-section probe of a shape: area, perimeter, loop/hole counts, 2D bbox at a plane ({ feature_id?, plane | at+axis, stack?: { from, to, count, axis? } }). `stack` scans evenly spaced slices and returns `minAreaIndex`/`minAreaPosition` — use it to find the neck/thinnest cross-section along an axis.\n" +
+      "- 'continuity' — G0/G1/G2 classification of shared edges ({ feature_id?, edges? }); position gap, normal jump, curvature difference, worst-sample XYZ.\n" +
+      "- 'curvature' — per-face Gaussian and mean curvature min/max/mean, inflections, spikes ({ feature_id?, faces?, spike_factor? }).\n" +
       'All params except `of` are subject-specific and forwarded verbatim. Most subjects accept { file | code }.',
     inputSchema: {
       type: 'object',
       properties: {
         of: {
           type: 'string',
-          enum: ['assembly', 'robot', 'step', 'shape', 'mass', 'features', 'assemblies', 'topology', 'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints', 'part-stats', 'bend-table', 'params', 'part-categories', 'part-families'],
+          enum: ['assembly', 'robot', 'step', 'shape', 'mass', 'features', 'assemblies', 'topology', 'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints', 'part-stats', 'bend-table', 'params', 'part-categories', 'part-families', 'bom', 'section', 'continuity', 'curvature'],
           description: 'Which facts to read.',
         },
         file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
         code: { type: 'string', description: 'Inline kernelCAD script source.' },
-        assembly: { type: 'string', description: "of:'assembly'|'robot' — assembly name; defaults to the first captured assembly." },
+        assembly: { type: 'string', description: "of:'assembly'|'robot'|'bom' — assembly name; defaults to the first captured assembly." },
         feature_id: { type: 'string', description: "of:'shape'|'mass'|'topology'|'edges'|'faces'|'face-edges'|'face-labels' — FeatureId; defaults to the last returned shape." },
         density: { type: 'number', description: "of:'mass' — material density in kg/m^3 (steel 7850, aluminium 2700, ABS 1050). Defaults to 1000 (water); the response echoes the value used and flags when it was defaulted." },
         gyration_axis: {
@@ -56,6 +61,23 @@ const inspectToolEntry: ToolRegistryEntry = {
         face_name: { type: 'string', enum: ['top', 'bottom', 'left', 'right', 'front', 'back'], description: "of:'face-edges' — canonical face name (required for that subject)." },
         query: { type: 'object', description: "of:'edges'|'faces' — optional EdgeQuery/FaceQuery filter." },
         category: { type: 'string', description: "of:'part-families' — optional top-level category to filter families by." },
+        plane: { type: ['string', 'object'], description: "of:'section' — section plane. Either a cardinal name string 'xy'|'xz'|'yz', { plane: 'xy'|'xz'|'yz', offset? }, or { origin: [x,y,z], normal: [nx,ny,nz] }. Omit to use `at`+`axis`." },
+        at: { type: 'number', description: "of:'section' — single slice position along `axis` (mm)." },
+        axis: { type: 'string', enum: ['x', 'y', 'z'], description: "of:'section' — normal axis for `at` / `stack` (default 'z')." },
+        stack: {
+          type: 'object',
+          description: "of:'section' — dense scan: `count` slices evenly spaced from `from` to `to` along `axis`; response reports minAreaIndex/minAreaPosition.",
+          properties: {
+            from: { type: 'number', description: 'Start position along the axis (mm).' },
+            to: { type: 'number', description: 'End position along the axis (mm).' },
+            count: { type: 'integer', description: 'Number of evenly spaced slices (>= 1).' },
+            axis: { type: 'string', enum: ['x', 'y', 'z'], description: "Scan axis (default 'z')." },
+          },
+          required: ['from', 'to', 'count'],
+        },
+        edges: { description: "of:'continuity' — optional EdgeQuery or @kc[...] ref(s) limiting which shared edges are sampled." },
+        faces: { description: "of:'curvature' — optional FaceQuery or @kc[...] ref(s) limiting which faces are sampled." },
+        spike_factor: { type: 'number', description: "of:'curvature' — spike sensitivity as a multiple of the face's Gaussian stddev (default 6)." },
       },
       required: ['of'],
     },
@@ -76,16 +98,17 @@ const verifyToolEntry: ToolRegistryEntry = {
       "- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n" +
       "- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n" +
       "- 'load-capacity' — closed-form Euler-Bernoulli beam stress / safety-factor check ({ loads, materials, ... }).\n" +
+      "- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n" +
       'All params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.',
     inputSchema: {
       type: 'object',
       properties: {
         check: {
           type: 'string',
-          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity'],
+          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold'],
           description: 'Which verification to run.',
         },
-        file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity).' },
+        file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold).' },
         code: { type: 'string', description: 'Inline kernelCAD script source (same checks as `file`).' },
         assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
         urdf_path: { type: 'string', description: "check:'urdf' — path to the .urdf file." },
@@ -97,7 +120,7 @@ const verifyToolEntry: ToolRegistryEntry = {
         thicknessMm: { type: 'number', description: "check:'dfm-preflight' — material thickness in millimeters." },
         service: { type: 'string', enum: ['laser', 'cnc-router', 'waterjet', 'bending'], description: "check:'dfm-preflight' — service." },
         refreshCatalog: { type: 'boolean', description: "check:'dfm-preflight' — force vendor catalog refresh." },
-        joint: { type: 'string', description: "check:'swept-collision' — joint to sweep; omit to sweep every declared joint." },
+        joint: { type: 'string', description: "check:'swept-collision' — joint to sweep; omit to sweep every declared joint. check:'static-hold' — joint to evaluate; omit to evaluate every joint with a declared actuator." },
         range: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: "check:'swept-collision' — [lower, upper, step] in joint-native units." },
         collision_tolerance_mm3: { type: 'number', description: "check:'swept-collision' — BREP intersection volume tolerance (mm^3)." },
         tip_link: { type: 'string', description: "check:'reachable' — end-effector part name (required for that check)." },
@@ -112,6 +135,10 @@ const verifyToolEntry: ToolRegistryEntry = {
         materials: { type: 'object', description: "check:'load-capacity' — partName -> material declaration." },
         mode: { type: 'string', enum: ['stub', 'beam'], description: "check:'load-capacity' — 'beam' (default) or 'stub'." },
         safety_factor_threshold: { type: 'number', description: "check:'load-capacity' — pass/fail safety-factor floor (default 1.5)." },
+        pose: { description: "check:'static-hold' — explicit pose (joint name -> deg/mm) or array of poses; omit to sample a grid across the evaluated joint's range." },
+        gravity: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: "check:'static-hold' — gravity vector, m/s^2, world frame (default [0, 0, -9.81])." },
+        min_torque_margin_pct: { type: 'number', description: "check:'static-hold' — safety-margin floor as a percent of actuator capacity (default 20)." },
+        range_samples: { type: 'number', description: "check:'static-hold' — grid density per evaluated joint when `pose` is omitted (default 9)." },
       },
       required: ['check'],
     },
@@ -133,6 +160,42 @@ const whyDidThisFailToolEntry: ToolRegistryEntry = {
     },
   },
   handler: input => whyDidThisFailTool(input as Parameters<typeof whyDidThisFailTool>[0]),
+};
+
+const repairScriptToolEntry: ToolRegistryEntry = {
+  definition: {
+    name: 'repair_script',
+    description:
+      'Use this when evaluate_script reported an error and you want the fix applied rather than described. ' +
+      'Takes the candidates why_did_this_fail derives for a diagnostic, applies them one at a time, re-evaluates after each, ' +
+      'and keeps the first that clears the diagnostic without introducing new errors. ' +
+      'Never edits outside the repair region (failing feature statement + its input statements + the param() lines it reads) — an out-of-region patch is refused with tool.repair.out-of-region. ' +
+      'Returns the repaired source in `new_code` (the caller persists it), a unified `diff`, and before/after health maps. ' +
+      "Pass { file? | code?, diagnostic?: '<id>'|'first-error', strategy?: 'apply-first'|'try-all'|'dry-run', max_attempts?: number }.",
+    inputSchema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+        code: { type: 'string', description: 'Inline kernelCAD script source.' },
+        diagnostic: {
+          type: 'string',
+          description: "Diagnostic id from why_did_this_fail's `targetDiagnosticId` / `candidates[].diagnosticId`, or 'first-error' (default) for the first error-severity diagnostic.",
+        },
+        strategy: {
+          type: 'string',
+          enum: ['apply-first', 'try-all', 'dry-run'],
+          description: "'try-all' (default) walks candidates until one clears the diagnostic; 'apply-first' applies only the top candidate and reports what it did; 'dry-run' previews every candidate patch without evaluating.",
+        },
+        max_attempts: {
+          type: 'integer',
+          minimum: 1,
+          maximum: 10,
+          description: 'Upper bound on candidates attempted (default 3). Ignored by apply-first and dry-run.',
+        },
+      },
+    },
+  },
+  handler: input => repairScriptTool(input as Parameters<typeof repairScriptTool>[0]),
 };
 
 const queryToolEntry: ToolRegistryEntry = {
@@ -169,9 +232,15 @@ export const inspectionVerificationPreludeToolEntries: ToolRegistryEntry[] = [
 
 export const inspectionVerificationQueryToolEntries: ToolRegistryEntry[] = [queryToolEntry];
 
+/** Appended at the tail of the public registry: kernelCAD-server pins the
+ *  historical tool ORDER as part of the registry contract, so a new tool joins
+ *  at the end rather than next to its family. */
+export const inspectionVerificationRepairToolEntries: ToolRegistryEntry[] = [repairScriptToolEntry];
+
 // Aggregate export for tests and family-level audits. Production composition
 // intentionally splits these entries to preserve the historical public order.
 export const inspectionVerificationToolEntries: ToolRegistryEntry[] = [
   ...inspectionVerificationPreludeToolEntries,
   ...inspectionVerificationQueryToolEntries,
+  ...inspectionVerificationRepairToolEntries,
 ];

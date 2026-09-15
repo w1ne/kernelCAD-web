@@ -200,11 +200,10 @@ export function checkClearance(
 
       if (d < CONTACT_EPS_MM) {
         // Touching or crossing: a boolean-intersection volume probe decides
-        // which. Clones — .intersect consumes its operands.
+        // which (volume-only; neither operand is consumed).
         let volume: number | undefined;
         try {
-          const inter = a.shape.clone().intersect(b.shape.clone());
-          volume = inter.isEmpty() ? 0 : inter.volume();
+          volume = a.shape.intersectionVolume(b.shape);
         } catch {
           volume = undefined;
         }

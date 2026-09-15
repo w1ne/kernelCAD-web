@@ -75,6 +75,20 @@ export type DrawingAnchor =
  *   distance for `linear`/`angular`, extra leader-stem length for
  *   `radius`/`diameter`/`note`.
  */
+/**
+ * A dimension tolerance, attached to a `linear` annotation via `tol`.
+ * - `number` — symmetric bilateral, rendered `± <n>`.
+ * - `{ plus, minus }` — asymmetric bilateral, rendered `+<plus>/−<minus>`.
+ * - `string` — a fit class (e.g. `'H7'`), rendered verbatim after the value.
+ */
+export type DimensionTolerance = number | { plus: number; minus: number } | string;
+
+/** The six GD&T characteristics this slice supports (ASME Y14.5 symbols),
+ *  and the diametral / material-condition modifier on a tolerance value.
+ *  Single-sourced with the `shape.tolerance` capture record. */
+export type { GdtType, GdtModifier } from '../../../shared/intent/drawingGdtRecord';
+import type { GdtType, GdtModifier } from '../../../shared/intent/drawingGdtRecord';
+
 export type DrawingAnnotation =
   | {
       kind: 'linear';
@@ -83,6 +97,8 @@ export type DrawingAnnotation =
       view?: DrawingViewName;
       text?: string;
       offset?: number;
+      /** Appended to the label: `± 0.1`, `+0.2/−0.05`, or a fit class like `'H7'`. */
+      tol?: DimensionTolerance;
     }
   | {
       kind: 'radius' | 'diameter';
@@ -105,6 +121,68 @@ export type DrawingAnnotation =
       kind: 'note';
       at: DrawingAnchor;
       text: string;
+      view?: DrawingViewName;
+      offset?: number;
+    }
+  | {
+      kind: 'hole';
+      /** The hole's entry rim — a circular edge. */
+      edge: EdgeQuery;
+      /** Through hole. Mutually exclusive with `depth`; exactly one is required. */
+      through?: boolean;
+      /** Blind-hole depth (mm). Mutually exclusive with `through`. */
+      depth?: number;
+      /** Larger-diameter counterbore, drawn with the `⌴` symbol. */
+      counterbore?: { diameter: number; depth: number };
+      /** Conical countersink, drawn with the `⌵` symbol. */
+      countersink?: { diameter: number; angleDeg: number };
+      /** Pattern count — prefixes the label `<count>× `. */
+      count?: number;
+      view?: DrawingViewName;
+      text?: string;
+      offset?: number;
+    }
+  | {
+      kind: 'fillet';
+      /** The fillet's circular boundary arc. */
+      edge: EdgeQuery;
+      view?: DrawingViewName;
+      text?: string;
+      offset?: number;
+    }
+  | {
+      kind: 'chamfer';
+      /** The chamfer's boundary edge — used only to anchor the leader; the
+       *  leg size is not recoverable from the edge alone (no feature-history
+       *  access at export time), so it is author-supplied via `size`. */
+      edge: EdgeQuery;
+      /** Chamfer leg size (mm). */
+      size: number;
+      /** Chamfer angle, degrees from the adjacent face. Default 45. */
+      angleDeg?: number;
+      view?: DrawingViewName;
+      text?: string;
+      offset?: number;
+    }
+  | {
+      kind: 'datum';
+      /** The face this datum feature symbol identifies. */
+      face: FaceQuery;
+      /** Single-letter (or short) datum reference, e.g. `'A'`. */
+      label: string;
+      view?: DrawingViewName;
+      offset?: number;
+    }
+  | {
+      kind: 'fcf';
+      /** The toleranced feature — an edge or a face. Exactly one is required. */
+      edge?: EdgeQuery;
+      face?: FaceQuery;
+      type: GdtType;
+      value: number;
+      /** Datum references in precedence order, e.g. `['A', 'B']`. */
+      datums?: string[];
+      modifier?: GdtModifier;
       view?: DrawingViewName;
       offset?: number;
     };
@@ -136,6 +214,9 @@ const LEADER_STEP_ANGLE = -Math.PI / 6;
  *  it, which is exactly why the renderer does not escape for us. */
 const esc = (s: string): string =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/** Attribute-safe escaping (adds quotes to the text escaping above). */
+export const escAttr = (s: string): string => esc(s).replace(/"/g, '&quot;');
 
 const isVec3 = (a: DrawingAnchor): a is Vec3 =>
   Array.isArray(a) && a.length === 3 && a.every(n => typeof n === 'number');
@@ -205,6 +286,46 @@ function oneFace(parts: readonly WorldFramePart[], q: FaceQuery, role: string): 
 function edgeMid(e: Edge): Vec3 {
   const p = e.pointAt(0.5);
   return [p.x, p.y, p.z];
+}
+
+class UnresolvedWithCode extends Error {
+  readonly code: 'drawing.datum.unresolved' | 'drawing.tolerance.feature-unresolved';
+  constructor(code: 'drawing.datum.unresolved' | 'drawing.tolerance.feature-unresolved', message: string) {
+    super(message);
+    this.code = code;
+  }
+}
+
+const failCode = (code: UnresolvedWithCode['code'], why: string): never => {
+  throw new UnresolvedWithCode(code, why);
+};
+
+function oneFaceCoded(
+  parts: readonly WorldFramePart[],
+  q: FaceQuery,
+  role: string,
+  code: UnresolvedWithCode['code'],
+): Face {
+  const matches = resolveAcrossParts(parts, q, resolveFaceQuery);
+  if (matches.length === 0) return failCode(code, `${role}: no face matched ${JSON.stringify(q)}`);
+  if (matches.length > 1 && q.near === undefined) {
+    return failCode(code, `${role}: ${matches.length} faces matched ${JSON.stringify(q)} — add 'near' or a tighter query`);
+  }
+  return matches[0];
+}
+
+function oneEdgeCoded(
+  parts: readonly WorldFramePart[],
+  q: EdgeQuery,
+  role: string,
+  code: UnresolvedWithCode['code'],
+): Edge {
+  const matches = resolveAcrossParts(parts, q, resolveEdgeQuery);
+  if (matches.length === 0) return failCode(code, `${role}: no edge matched ${JSON.stringify(q)}`);
+  if (matches.length > 1 && q.near === undefined) {
+    return failCode(code, `${role}: ${matches.length} edges matched ${JSON.stringify(q)} — add 'near' or a tighter query`);
+  }
+  return matches[0];
 }
 
 function resolveAnchor(
@@ -293,6 +414,163 @@ export function modelToSheet(
 // Emission
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Feature-aware labels
+// ---------------------------------------------------------------------------
+
+/** Render a `tol` field into the suffix appended after a dimension value. */
+function tolText(tol: DimensionTolerance): string {
+  if (typeof tol === 'string') return ` ${tol}`;
+  if (typeof tol === 'number') return ` ± ${formatDimValue(tol)}`;
+  return ` +${formatDimValue(tol.plus)}/−${formatDimValue(tol.minus)}`;
+}
+
+/** `⌀6.5 THRU`, blind `⌀6.5 ▾ 10`, with optional `⌴`/`⌵` counterbore /
+ *  countersink suffixes and a leading `<count>× ` pattern prefix. */
+function holeLabel(
+  a: Extract<DrawingAnnotation, { kind: 'hole' }>,
+  diameter: number,
+  role: string,
+): string {
+  if (a.through === undefined && a.depth === undefined) {
+    fail(`${role}: a 'hole' annotation needs either 'through: true' or a 'depth'`);
+  }
+  if (a.through && a.depth !== undefined) {
+    fail(`${role}: a 'hole' annotation cannot set both 'through' and 'depth'`);
+  }
+  let s = `⌀${formatDimValue(diameter)}`;
+  s += a.through ? ' THRU' : ` ▾ ${formatDimValue(a.depth as number)}`;
+  if (a.counterbore) {
+    s += ` ⌴⌀${formatDimValue(a.counterbore.diameter)} ▾ ${formatDimValue(a.counterbore.depth)}`;
+  }
+  if (a.countersink) {
+    s += ` ⌵⌀${formatDimValue(a.countersink.diameter)} × ${formatDimValue(a.countersink.angleDeg)}°`;
+  }
+  if (a.count !== undefined && a.count > 1) s = `${a.count}× ${s}`;
+  return s;
+}
+
+export const GDT_SYMBOL: Record<GdtType, string> = {
+  position: '⌖',
+  flatness: '⏥',
+  perpendicularity: '⟂',
+  parallelism: '∥',
+  concentricity: '⌾',
+  cylindricity: '⌭',
+};
+
+/** Feature-control-frame cell text, author order: [symbol][value(+mod)][datums...]. */
+export function fcfCells(a: { type: GdtType; value: number; datums?: readonly string[]; modifier?: GdtModifier }): string[] {
+  const modPrefix = a.modifier === '⌀' ? '⌀' : '';
+  const modSuffix = a.modifier === 'M' ? ' Ⓜ' : a.modifier === 'S' ? ' Ⓢ' : '';
+  const cells = [GDT_SYMBOL[a.type], `${modPrefix}${formatDimValue(a.value)}${modSuffix}`];
+  for (const d of a.datums ?? []) cells.push(d);
+  return cells;
+}
+
+/** FCF cell geometry, sheet mm. Each cell is sized to its text (estimated
+ *  with the same glyph-width factor the overlap check uses) so a `⌀0.05`
+ *  never spills out of its box; the width is a pure function of the text, so
+ *  output stays byte-deterministic. */
+export const FCF_CELL_H = 5;
+const FCF_FONT = 3;
+const FCF_CELL_MIN_W = 5;
+
+export function fcfCellWidth(text: string): number {
+  return Math.max(FCF_CELL_MIN_W, Math.round((text.length * FCF_FONT * 0.62 + 2) * 10) / 10);
+}
+
+/** Total width of a frame with these cells, sheet mm. */
+export function fcfFrameWidth(cells: readonly string[]): number {
+  return cells.reduce((w, c) => w + fcfCellWidth(c), 0);
+}
+
+/** The frame itself (adjoining rectangles + centred cell text), top-left at
+ *  (x, top). No leader. */
+export function fcfFrameSvg(x: number, top: number, cells: readonly string[]): string {
+  const parts: string[] = [];
+  let cx = x;
+  for (const text of cells) {
+    const w = fcfCellWidth(text);
+    parts.push(
+      `<rect x="${round3(cx)}" y="${round3(top)}" width="${round3(w)}" height="${FCF_CELL_H}"/>`,
+      `<text x="${round3(cx + w / 2)}" y="${round3(top + FCF_CELL_H / 2 + 1)}" font-size="${FCF_FONT}" ` +
+        `text-anchor="middle" fill="#000" stroke="none">${esc(text)}</text>`,
+    );
+    cx += w;
+  }
+  return parts.join('');
+}
+
+/** Row of adjoining rectangles (the ASME Y14.5 feature control frame) with a
+ *  leader from `target` to the frame's leader-side edge. */
+export function fcfToSvg(target: Pt2, angle: number, cells: string[], stemExtra: number, attrs = ''): string {
+  const ux = Math.cos(angle);
+  const uy = Math.sin(angle);
+  const stem = 7 + stemExtra;
+  const ex = target[0] + ux * stem;
+  const ey = target[1] + uy * stem;
+  const dir = ux >= 0 ? 1 : -1;
+  // Frame's leader-side edge sits at the elbow; cells extend outward from there.
+  const frameLeft = dir === 1 ? ex : ex - fcfFrameWidth(cells);
+  const top = ey - FCF_CELL_H / 2;
+  return (
+    `<g class="dim fcf"${attrs} fill="none" stroke="#000" stroke-width="0.18">` +
+    `<line x1="${round3(target[0])}" y1="${round3(target[1])}" x2="${round3(ex)}" y2="${round3(ey)}"/>` +
+    fcfFrameSvg(frameLeft, top, cells) +
+    `</g>`
+  );
+}
+
+/** ASME datum-feature symbol: a square box holding the letter, attached to
+ *  the referenced face by a leader with a filled triangular base. */
+export function datumSymbolToSvg(target: Pt2, angle: number, label: string, stemExtra: number, attrs = ''): string {
+  const ux = Math.cos(angle);
+  const uy = Math.sin(angle);
+  const stem = 6 + stemExtra;
+  const ex = target[0] + ux * stem;
+  const ey = target[1] + uy * stem;
+  const { cx: boxCx, cy: boxCy } = datumBoxCentre(ex, ey, ux, uy);
+  const bx = boxCx - DATUM_BOX / 2;
+  const by = boxCy - DATUM_BOX / 2;
+  // Filled datum triangle: base on the feature surface at the target, apex
+  // pointing along the leader toward the frame.
+  const px = -uy, py = ux;
+  const baseW = 1.2;
+  const triangle =
+    `<path d="M ${round3(target[0] + px * baseW)} ${round3(target[1] + py * baseW)} ` +
+    `L ${round3(target[0] - px * baseW)} ${round3(target[1] - py * baseW)} ` +
+    `L ${round3(target[0] + ux * 2.4)} ${round3(target[1] + uy * 2.4)} Z" ` +
+    `fill="#000" stroke="none"/>`;
+  return (
+    `<g class="dim datum"${attrs} fill="none" stroke="#000" stroke-width="0.18">` +
+    `<line x1="${round3(target[0])}" y1="${round3(target[1])}" x2="${round3(ex)}" y2="${round3(ey)}"/>` +
+    triangle +
+    `<rect x="${round3(bx)}" y="${round3(by)}" width="${DATUM_BOX}" height="${DATUM_BOX}"/>` +
+    `<text x="${round3(boxCx)}" y="${round3(boxCy + 1.2)}" font-size="3.4" text-anchor="middle" ` +
+    `fill="#000" stroke="none">${esc(label)}</text>` +
+    `</g>`
+  );
+}
+
+/** Datum frame side, sheet mm. */
+export const DATUM_BOX = 5;
+
+/** Centre of the datum frame for a leader ending at (ex, ey) along (ux, uy):
+ *  beside the elbow for a mostly horizontal leader, above / below it
+ *  (centred on the leader) for a mostly vertical one. */
+export function datumBoxCentre(ex: number, ey: number, ux: number, uy: number): { cx: number; cy: number } {
+  if (Math.abs(ux) >= Math.abs(uy)) {
+    return { cx: ex + (ux >= 0 ? DATUM_BOX / 2 : -DATUM_BOX / 2), cy: ey };
+  }
+  return { cx: ex, cy: ey + (uy >= 0 ? DATUM_BOX / 2 : -DATUM_BOX / 2) };
+}
+
+const round3 = (n: number): string => {
+  const r = Math.round(n * 1000) / 1000;
+  return Object.is(r, -0) ? '0' : String(r);
+};
+
 export interface AnnotationRenderInput {
   parts: readonly WorldFramePart[];
   annotations: readonly DrawingAnnotation[];
@@ -306,6 +584,88 @@ export interface AnnotationRenderResult {
   /** Sheet-mm depth reserved below each view by bottom-stacked dimensions.
    *  The exporter pushes view labels below this so they never collide. */
   bottomReserve: Record<DrawingViewName, number>;
+  /** Sheet-mm depth reserved to the right of each view by vertical linear
+   *  dimensions, so automatic dimensions can stack beyond them. */
+  rightReserve: Record<DrawingViewName, number>;
+  /** Pairs of DIFFERENT annotations whose rendered text bounding boxes
+   *  overlap on the sheet — see `detectLabelOverlaps` below. Non-fatal: the
+   *  caller surfaces `drawing.annotation.overlap` as a warning, it never
+   *  fails the export (an annotation crowding another is still readable
+   *  more often than not; a missing dimension is not). */
+  overlaps: ReadonlyArray<readonly [number, number]>;
+}
+
+// ---------------------------------------------------------------------------
+// Overlap detection (drawing.annotation.overlap)
+// ---------------------------------------------------------------------------
+
+export interface TextBox {
+  x0: number; y0: number; x1: number; y1: number;
+  ownerIndex: number;
+}
+
+/** Average glyph width as a fraction of font-size for our sans-serif label
+ *  text — wide enough that this over-estimates rather than under-estimates
+ *  width (a false positive "overlap" warning is far cheaper than a missed
+ *  one for a diagnostic whose whole point is to flag crowding). */
+const CHAR_WIDTH_FACTOR = 0.62;
+const LINE_HEIGHT_FACTOR = 1.15;
+
+/**
+ * Pull an approximate sheet-space bounding box out of every axis-aligned
+ * `<text>` element in one annotation's rendered SVG fragment. Rotated
+ * labels (the vertical `linear` dimension uses `transform="rotate(-90 …)"`)
+ * are skipped — estimating a rotated glyph box needs the pivot and would
+ * otherwise silently mis-flag or miss overlaps; excluding them is honest
+ * about what this check covers rather than pretending precision it doesn't
+ * have.
+ */
+export function extractTextBoxes(svgFragment: string, ownerIndex: number): TextBox[] {
+  const boxes: TextBox[] = [];
+  const re = /<text x="([-\d.]+)" y="([-\d.]+)" font-size="([\d.]+)"([^>]*)>([^<]*)<\/text>/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(svgFragment)) !== null) {
+    const [, xs, ys, fs, rest] = m;
+    if (rest.includes('transform=')) continue;
+    const content = m[5];
+    const x = Number(xs);
+    const y = Number(ys);
+    const fontSize = Number(fs);
+    const anchorMatch = /text-anchor="(start|middle|end)"/.exec(rest);
+    const anchor = anchorMatch ? anchorMatch[1] : 'start';
+    const width = Math.max(content.length, 1) * fontSize * CHAR_WIDTH_FACTOR;
+    const height = fontSize * LINE_HEIGHT_FACTOR;
+    const left = anchor === 'middle' ? x - width / 2 : anchor === 'end' ? x - width : x;
+    boxes.push({ x0: left, y0: y - height * 0.8, x1: left + width, y1: y + height * 0.25, ownerIndex });
+  }
+  return boxes;
+}
+
+const boxesOverlap = (a: TextBox, b: TextBox): boolean =>
+  a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
+
+/** Every pair of DIFFERENT annotations (by index into the author's
+ *  `annotations` array) whose rendered label boxes overlap. A label's own
+ *  multi-cell group (an `fcf`'s three boxes) is expected to sit adjacent to
+ *  itself, so only cross-annotation pairs count. */
+export function detectLabelOverlaps(svgByIndex: readonly string[]): Array<readonly [number, number]> {
+  const boxes = svgByIndex.flatMap((svg, i) => extractTextBoxes(svg, i));
+  const pairs = new Set<string>();
+  const out: Array<readonly [number, number]> = [];
+  for (let a = 0; a < boxes.length; a++) {
+    for (let b = a + 1; b < boxes.length; b++) {
+      if (boxes[a].ownerIndex === boxes[b].ownerIndex) continue;
+      if (!boxesOverlap(boxes[a], boxes[b])) continue;
+      const [lo, hi] = boxes[a].ownerIndex < boxes[b].ownerIndex
+        ? [boxes[a].ownerIndex, boxes[b].ownerIndex]
+        : [boxes[b].ownerIndex, boxes[a].ownerIndex];
+      const key = `${lo}:${hi}`;
+      if (pairs.has(key)) continue;
+      pairs.add(key);
+      out.push([lo, hi]);
+    }
+  }
+  return out;
 }
 
 /**
@@ -325,8 +685,12 @@ export function renderAnnotations(input: AnnotationRenderInput): AnnotationRende
   const { parts, annotations, placements, scale } = input;
   const svg: string[] = [];
   const failures: string[] = [];
+  const codedFailures: UnresolvedWithCode[] = [];
   const stack = new Map<string, number>();
   const bottomReserve: Record<DrawingViewName, number> = {
+    front: 0, top: 0, left: 0, iso: 0,
+  };
+  const rightReserve: Record<DrawingViewName, number> = {
     front: 0, top: 0, left: 0, iso: 0,
   };
 
@@ -384,6 +748,11 @@ export function renderAnnotations(input: AnnotationRenderInput): AnnotationRende
               };
           if (horizontal) {
             bottomReserve[view] = Math.max(bottomReserve[view], dist);
+          } else {
+            rightReserve[view] = Math.max(rightReserve[view], dist);
+          }
+          if (a.tol !== undefined && !a.text) {
+            dim.label = `${dim.label}${tolText(a.tol)}`;
           }
           svg.push(dimensionToSvg(dim));
           break;
@@ -476,12 +845,126 @@ export function renderAnnotations(input: AnnotationRenderInput): AnnotationRende
           );
           break;
         }
+
+        case 'hole': {
+          const edge = oneEdge(parts, a.edge, role);
+          const { center, radius } = circleOf(edge, role);
+          const label = a.text ? esc(a.text) : holeLabel(a, radius * 2, role);
+          svg.push(
+            radialDimensionToSvg({
+              kind: 'diameter',
+              center: toSheet(center),
+              radius: radius * scale,
+              angle: LEADER_BASE_ANGLE + nextIndex(view, 'leader') * LEADER_STEP_ANGLE,
+              label,
+              stemExtra: extra,
+            }),
+          );
+          break;
+        }
+
+        case 'fillet': {
+          const edge = oneEdge(parts, a.edge, role);
+          const { center, radius } = circleOf(edge, role);
+          const label = a.text ? esc(a.text) : `R${formatDimValue(radius)}`;
+          svg.push(
+            radialDimensionToSvg({
+              kind: 'radius',
+              center: toSheet(center),
+              radius: radius * scale,
+              angle: LEADER_BASE_ANGLE + nextIndex(view, 'leader') * LEADER_STEP_ANGLE,
+              label,
+              stemExtra: extra,
+            }),
+          );
+          break;
+        }
+
+        case 'chamfer': {
+          const edge = oneEdge(parts, a.edge, role);
+          const target = toSheet(edgeMid(edge));
+          const angleDeg = a.angleDeg ?? 45;
+          const label = a.text
+            ? esc(a.text)
+            : `${formatDimValue(a.size)} × ${formatDimValue(angleDeg)}°`;
+          svg.push(
+            leaderNoteToSvg({
+              target,
+              angle: LEADER_BASE_ANGLE + nextIndex(view, 'leader') * LEADER_STEP_ANGLE,
+              text: label,
+              stemExtra: extra,
+            }),
+          );
+          break;
+        }
+
+        case 'datum': {
+          const faceMatch = oneFaceCoded(parts, a.face, role, 'drawing.datum.unresolved');
+          const c = faceMatch.center;
+          const target = toSheet([c.x, c.y, c.z]);
+          svg.push(
+            datumSymbolToSvg(
+              target,
+              LEADER_BASE_ANGLE + nextIndex(view, 'leader') * LEADER_STEP_ANGLE,
+              a.label,
+              extra,
+            ),
+          );
+          break;
+        }
+
+        case 'fcf': {
+          if ((a.edge === undefined) === (a.face === undefined)) {
+            fail(`${role}: an 'fcf' annotation needs exactly one of 'edge' or 'face'`);
+          }
+          const anchor: Vec3 = a.edge
+            ? edgeMid(oneEdgeCoded(parts, a.edge, role, 'drawing.tolerance.feature-unresolved'))
+            : (() => {
+                const fc = oneFaceCoded(parts, a.face as FaceQuery, role, 'drawing.tolerance.feature-unresolved').center;
+                return [fc.x, fc.y, fc.z] as Vec3;
+              })();
+          const target = toSheet(anchor);
+          const cells = fcfCells(a);
+          svg.push(
+            fcfToSvg(
+              target,
+              LEADER_BASE_ANGLE + nextIndex(view, 'leader') * LEADER_STEP_ANGLE,
+              cells,
+              extra,
+              ` data-kc-fcf="${escAttr(cells.join(' '))}"`,
+            ),
+          );
+          break;
+        }
       }
     } catch (e) {
-      if (e instanceof Unresolved) failures.push(e.message);
+      if (e instanceof UnresolvedWithCode) codedFailures.push(e);
+      else if (e instanceof Unresolved) failures.push(e.message);
       else throw e;
     }
   });
+
+  if (codedFailures.length > 0) {
+    // Coded failures (datum / fcf) get their own diagnostic codes so an agent's
+    // recovery hint names the right introspection tool; group by code so one
+    // KernelError still names every failure of that code.
+    const byCode = new Map<UnresolvedWithCode['code'], string[]>();
+    for (const f of codedFailures) {
+      const list = byCode.get(f.code) ?? [];
+      list.push(f.message);
+      byCode.set(f.code, list);
+    }
+    const [code, msgs] = [...byCode.entries()][0];
+    throw new KernelError(
+      code,
+      `svg-drawing: ${msgs.length} annotation(s) could not be resolved:\n` +
+        msgs.map(m => `  - ${m}`).join('\n'),
+      undefined,
+      'Every authored annotation must resolve, or the drawing would silently ' +
+        'omit a callout. Tighten each query (inspect the model with ' +
+        "inspect({ of: 'edges' }) or list_faces) or pass an explicit anchor.",
+    );
+  }
 
   if (failures.length > 0) {
     throw new KernelError(
@@ -496,5 +979,5 @@ export function renderAnnotations(input: AnnotationRenderInput): AnnotationRende
     );
   }
 
-  return { svg, bottomReserve };
+  return { svg, bottomReserve, rightReserve, overlaps: detectLabelOverlaps(svg) };
 }

@@ -4,8 +4,9 @@ import { useRecomputeResult } from './hooks/useRecomputeResult';
 
 const MAX_VISIBLE = 4;
 
-function formatValue(value: number | boolean): string {
+function formatValue(value: number | boolean | string): string {
     if (typeof value === 'boolean') return value ? 'true' : 'false';
+    if (typeof value === 'string') return value;
     if (Number.isInteger(value)) return String(value);
     return value.toFixed(2);
 }

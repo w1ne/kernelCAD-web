@@ -1,6 +1,6 @@
 ---
 name: kernelcad-nurbs
-description: NURBS surfaces (nurbsSurface, surfaceFromCurves, surfaceFromBoundary, .thicken, .toShape) AND NURBS curves (nurbsCurve, spline3d, hermiteG2) AND multi-section sweeps (variableSweep) AND G1/G2 fillet continuity AND 2D NURBS path segments (path().spline / .nurbsSegment / .hermiteG2). Use for freeform geometry that primitives + sketches cannot express.
+description: NURBS surfaces (nurbsSurface, surfaceFromCurves, surfaceFromBoundary, .thicken, .toShape) AND NURBS curves (nurbsCurve, spline3d, hermiteG2, curveBridge, Curve3D.bridge) AND surfaceIntersection AND rail loft (Sketch.loft rails) AND multi-section sweeps (variableSweep) AND G1/G2 fillet continuity AND 2D NURBS path segments (path().spline / .nurbsSegment / .hermiteG2). Use for freeform geometry that primitives + sketches cannot express.
 ---
 
 # kernelCAD — NURBS surfaces & curves
@@ -155,6 +155,53 @@ const bridge = hermiteG2(
 - `feature.hermite-g2.non-finite-input` (error) — any `NaN`/`Infinity` in `point`, `tangent`, or `curvature`. Hint: confirm every Vec3 entry is a finite number.
 - `feature.hermite-g2.degenerate-tangent` (error) — tangent magnitude < 1e-12 on either endpoint. Hint: pass a non-zero tangent vector; for a unit start direction, scale by chord length.
 
+## Infer a G2 blend — `curveBridge` / `Curve3D.bridge`
+
+When two existing `Curve3D`s should meet with G1 or G2 continuity, do not hand-type Hermite frames. `curveBridge(a, b, { continuity })` (also `a.bridge(b, opts)`) samples point / tangent / curvature at the chosen ends and emits the same degree-5 Hermite as `hermiteG2`.
+
+```ts
+const left = spline3d([[-30, 0, 0], [-15, 8, 0], [0, 0, 0]]);
+const right = spline3d([[20, 0, 0], [35, -8, 0], [50, 0, 0]]);
+const blend = left.bridge(right, { continuity: 'G2' });
+// equivalent: curveBridge(left, right, { continuity: 'G2', ends: 'end-start' })
+```
+
+`ends` is `'end-start'` (default) | `'end-end'` | `'start-start'` | `'start-end'`. `tension` (default 1) scales `C'` by τ and `C''` by τ² so geometric curvature is preserved. Coincident ends or a vanishing tangent throw `feature.curve-bridge.degenerate-end`.
+
+## Surface–surface intersection — `surfaceIntersection`
+
+`await surfaceIntersection(a, b)` returns the exact section of two `Shape`s or `Surface`s as `Curve3D[]` via OCCT `BRepAlgoAPI_Section`. Use a seam as a sweep spine, a `projectCurve` source, or a trim boundary.
+
+```ts
+const run = cylinder(40, 8);
+const branch = cylinder(24, 6).rotateY(90).translate(-4, 0, 20);
+const seams = await surfaceIntersection(run, branch);
+const bead = variableSweep(seams[0], [
+  { t: 0, profile: path().circle(0, 0, 0.8) },
+  { t: 1, profile: path().circle(0, 0, 0.8) },
+]);
+```
+
+No curve → `feature.surface-intersection.none`. Await the call: both operands are lowered first.
+
+## Rail-constrained loft — `Sketch.loft(..., { rails })`
+
+`opts.rails` (one or two `Curve3D`s) switches the loft from ThruSections to `BRepOffsetAPI_MakePipeShell`: first rail = spine, second = auxiliary spine (`SetMode_5`). Each rail must pass within 1 mm of every section; a miss or a third rail emits `feature.loft.rail-miss`.
+
+```ts
+const s0 = path().moveTo(-8, -5).lineTo(8, -5).lineTo(8, 5).lineTo(-8, 5).close();
+const s1 = path().moveTo(-6, -4).lineTo(6, -4).lineTo(6, 4).lineTo(-6, 4).close();
+const railL = nurbsCurve([[-8, -5, 0], [-10, -6, 20], [-6, -4, 40]], { degree: 2 });
+const railR = nurbsCurve([[8, -5, 0], [10, -6, 20], [6, -4, 40]], { degree: 2 });
+const grip = s0.loft(s1, {
+  planes: [
+    { plane: 'XY', origin: [0, 0, 0] },
+    { plane: 'XY', origin: [0, 0, 40] },
+  ],
+  rails: [railL, railR],
+});
+```
+
 ## G1/G2 fillet continuity (Slice C)
 
 `Shape.fillet(radius, edges?, { continuity })` accepts `'G1'` (default — tangent-continuous polynomial blend, `ChFi3d_Polynomial`) and `'G2'` (curvature-continuous rational blend, `ChFi3d_Rational`). `'G2'` is preferred on edges adjacent to a NURBS surface (from `surfaceFromBoundary` / `nurbsSurface` / `surfaceFromCurves`) so the blend does not introduce a visible curvature crease at the surface-to-fillet boundary.
@@ -274,6 +321,7 @@ const bridge = hermiteG2(
   { point: left.pointAt(1), tangent: leftTangent, curvature: leftCurv },
   { point: right.pointAt(0), tangent: rightTangent, curvature: rightCurv },
 );
+// Prefer curveBridge / left.bridge(right, { continuity: 'G2' }) — it infers the same frames.
 ```
 
 ### `path().spline(points, { startTangent, endTangent })`

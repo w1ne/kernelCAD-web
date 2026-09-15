@@ -11,25 +11,30 @@ A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.k
 
 - Authoring or editing `.kcad.ts` geometry → load `kernelcad-authoring`.
 - Building from a reference photo or visual brief → also load `kernelcad-from-reference`.
+- Building from an engineering drawing PDF → call `drawing_to_cad`, then load `kernelcad-from-reference` for its ledger and fidelity rules.
 - Adding fillets, chamfers, shells, holes, cutouts → also load `kernelcad-features`.
 - Editable parameters / set_param / live sliders → also load `kernelcad-params`.
 - Multi-part with joints / mates / connectors → also load `kernelcad-assemblies`.
 - Need an off-the-shelf fastener, bearing, motor, header, or connector → also load `kernelcad-parts`.
+- Checking FDM printability or print orientation (overhangs, bridges, nozzle-relative walls), slicing a model to G-code, or sending G-code to a real network printer (OctoPrint/Moonraker/Bambu) → also load `kernelcad-print`.
 - Freeform NURBS surfaces, NURBS curves, Coons patches, multi-section sweeps, G2 fillet continuity, or freeform 2D path outlines (`nurbsSurface`, `surfaceFromCurves`, `surfaceFromBoundary`, `nurbsCurve`, `spline3d`, `hermiteG2`, `variableSweep`, `fillet({ continuity: 'G2' })`, `path().spline(...)`, `path().nurbsSegment(...)`, `path().hermiteG2(...)`) → also load `kernelcad-nurbs`.
 - Mechanical patterns (linear / circular / grid replication of a sub-feature) → also load `kernelcad-patterns`.
 - Folded sheet-metal parts (brackets, channels, panels, bend tables, flat patterns) → also load `kernelcad-sheet-metal`.
 - Signed-distance fields (smooth-blended primitives, organic shapes via `sdf.*` + `materialize`) → also load `kernelcad-fields`.
 - Exporting an assembly to URDF for a motion planner or simulator → also load `kernelcad-urdf`.
+- Exporting an assembly to a UsdPhysics stage for a GPU physics simulator (`format: 'usd-isaac'`) → also load `kernelcad-urdf` (USD section).
 - Adding planning groups / end-effectors / allowed-collision data on top of a URDF → also load `kernelcad-srdf`.
 - Exporting an assembly with closed kinematic loops or a native ball joint → also load `kernelcad-sdformat`.
 - Producing a 2D engineering-drawing sheet (third-angle views, hidden lines, dimensions, title block) → also load `kernelcad-drawings`.
 - Introspecting a running model via MCP (`inspect({ of: 'features' })`, edit ops, diagnostics) → load `kernelcad-mcp` instead of authoring.
-- Feasibility gates on moving assemblies — collision sweeps across joint ranges, IK reachability, mounting-hole consistency, static-load capacity (`checkSweptCollision`, `checkReachable`, `checkMountingHoleConsistency`, `checkLoadCapacity`) → also load `kernelcad-kinematic`.
+- Feasibility gates on moving assemblies — collision sweeps across joint ranges, IK reachability, mounting-hole consistency, static-load capacity, gravitational actuator-hold checks, tolerance-range sweeps (`checkSweptCollision`, `checkReachable`, `checkMountingHoleConsistency`, `checkLoadCapacity`, `checkStaticHold`, `sweepTolerance`) → also load `kernelcad-kinematic`.
+- An evaluation reported an error, a gate failed, or a feature came back degraded in `featureHealth` → load `kernelcad-repair` for the bounded repair loop (`why_did_this_fail` → `repair_script`).
+- Will this part hold this load? Structural evidence — peak von Mises stress, deflection, safety factor against yield, named hot-spot regions, stress heatmaps — and a gate that fails the build when the margin is not met (`shape.feaStudy({...})`, `run_fea`, `fea_summary`) → also load `kernelcad-fea`.
 
 ## Key globals available today
 
 - `referenceImage(path, opts)` — show a reference photo as a plane overlay in the Studio viewport. No OCCT geometry; hidden during scoring. Supports `.png`, `.jpg`, `.jpeg`, `.webp`. See `kernelcad-authoring` for the full signature.
-- `Shape.finish(name, opts?)` — apply a NAMED material finish (brass, anodized-black, abs, glass-tinted, …). The primary way to make a part look like a real material: you name the material, not BRDF floats. Expands to the same PBR record `.material()` writes. `opts.color` overrides the hue; `opts.face` scopes to a labelled face. Must be called on leaf parts before they enter a boolean. See `kernelcad-authoring` Materials section for the full vocabulary.
+- `Shape.finish(name, opts?)` — apply a NAMED material finish (brass, anodized-black, abs, glass-tinted, …), or an engineering material grade (`aluminum-6061`, `mild-steel`, `nylon`) for that grade's default finish. The primary way to make a part look like a real material: you name the material, not BRDF floats. Expands to the same PBR record `.material()` writes. `opts.color` overrides the hue; `opts.face` scopes to a labelled face. Must be called on leaf parts before they enter a boolean. See `kernelcad-authoring` Materials section for the full vocabulary.
 - `Shape.material(opts)` — ADVANCED escape hatch: raw PBR floats (baseColor, metalness, roughness, clearcoat, clearcoatRoughness, ior, transmission) for glass/anisotropy/textures no `.finish()` token covers. Prefer `.finish()` for a named material. Must be called on leaf parts before they enter a boolean.
 
 ## Universal conventions

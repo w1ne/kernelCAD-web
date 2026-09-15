@@ -48,7 +48,8 @@ import type {
 } from './types';
 import { DIAGNOSTIC_REGISTRY, type DiagnosticCode } from '../shared/diagnostics/registry';
 import { sectionProperties } from './beamGeometry';
-import { resolveMaterialProps, CATALOG_KINDS, type MaterialProps } from './beamMaterials';
+import { resolveMaterialProps, type MaterialProps } from './beamMaterials';
+import { ACCEPTED_MATERIAL_NAMES } from './engineeringMaterials';
 import { validateJointLoadCapacity } from '../modeling/mates/jointLoadCapacity';
 
 const DEFAULT_SF_THRESHOLD = 1.5;
@@ -222,7 +223,7 @@ function runBeamMode(
     if (!matResolved.ok) {
       const message =
         matResolved.reason === 'unknown-material'
-          ? `Material declaration for '${partName}' names unknown material '${matResolved.material}' (valid: ${CATALOG_KINDS.join('|')}, or material: 'custom' with yieldStressMPa + youngsModulusGPa).`
+          ? `Material declaration for '${partName}' names unknown material '${matResolved.material}' (valid: ${ACCEPTED_MATERIAL_NAMES.join('|')}, or material: 'custom' with yieldStressMPa + youngsModulusGPa).`
           : `Material declaration for '${partName}' uses material: 'custom' but is missing ${matResolved.missingField}. Both yieldStressMPa and youngsModulusGPa are required for custom materials.`;
       diagnostics.push(
         buildDiag('kinematic.no-material-declared', 'error', message, partName),

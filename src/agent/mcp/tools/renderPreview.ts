@@ -44,6 +44,13 @@ import {
   watermarkBrokenMechanism,
 } from '../../cli/commands/render';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
+import { parseExplodeInput, type ParsedExplode } from '../../../modeling/runtime/explodedPoses';
+import { loadScriptFeatures } from '../../../modeling/runtime/scriptLoader';
+import {
+  buildSurfaceQualityOverlay,
+  SURFACE_QUALITY_OVERLAYS,
+  type SurfaceQualityOverlay,
+} from './surfaceQualityOverlay';
 
 /** Generous request/response deadline for one preview (5 minutes — a cold
  *  render is ~20-30 s; the deadline only catches a wedged browser). */
@@ -95,6 +102,14 @@ export interface RenderPreviewInput {
    *  axis in kernelCAD's Z-up frame; `flip` keeps the positive-axis side
    *  (default keeps the negative-axis side). */
   section?: { axis: 'x' | 'y' | 'z'; position: number; flip?: boolean };
+  /** Explode a multi-part assembly for the preview. `mode` defaults to
+   *  `'mate-axis'`. Requires the script to return `assembly.model()` /
+   *  `solvedModel()`. */
+  explode?: { factor: number; mode?: 'radial' | 'mate-axis' };
+  /** Surface-quality overlay: zebra stripes, curvature vertex colours, or
+   *  continuity-class edge colours. Built as coloured STL bands and drawn
+   *  through this same pipeline (FEA heatmap path). */
+  overlay?: 'zebra' | 'curvature' | 'continuity';
 }
 
 export interface RenderPreviewImage {
@@ -261,6 +276,19 @@ export async function renderPreviewTool(
   // Section plane: reuse the CLI's parseSectionFlag so positionRaw carries the
   // digits verbatim (stringifying the Number would emit exponent notation the
   // page-side `?section=` regex silently rejects → an unclipped render).
+  let explode: ParsedExplode | undefined;
+  if (input.explode !== undefined) {
+    const parsed = parseExplodeInput(input.explode);
+    if (!parsed.ok) {
+      return refusal(
+        'cli.invalid-args',
+        `render_preview: ${parsed.message}`,
+        "Pass explode as { factor: <number ≥ 0>, mode?: 'radial'|'mate-axis' }.",
+      );
+    }
+    explode = parsed.value;
+  }
+
   let section: { axis: 'x' | 'y' | 'z'; position: number; positionRaw: string; flip: boolean } | undefined;
   if (input.section !== undefined) {
     try {
@@ -273,6 +301,18 @@ export async function renderPreviewTool(
         "Pass section as { axis: 'x'|'y'|'z', position: <number>, flip?: boolean }, e.g. { axis: 'z', position: 10 }.",
       );
     }
+  }
+
+  let overlay: SurfaceQualityOverlay | undefined;
+  if (input.overlay !== undefined) {
+    if (!(SURFACE_QUALITY_OVERLAYS as readonly string[]).includes(input.overlay)) {
+      return refusal(
+        'cli.invalid-args',
+        `render_preview: unknown overlay '${String(input.overlay)}'. Valid: ${SURFACE_QUALITY_OVERLAYS.join(', ')}.`,
+        "Pass overlay as 'zebra', 'curvature', or 'continuity', or omit it for a plain render.",
+      );
+    }
+    overlay = input.overlay;
   }
 
   // --- Session dir + code-mode temp script. ---
@@ -299,7 +339,7 @@ export async function renderPreviewTool(
     );
   }
 
-  const work = renderPreviewWork({ input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section });
+  const work = renderPreviewWork({ input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section, explode, overlay });
   // Swallow the losing chain's rejection if the timeout wins (same pattern as
   // capture_animation) so it never surfaces as an unhandled rejection.
   work.catch(() => undefined);
@@ -337,8 +377,10 @@ async function renderPreviewWork(args: {
   width: number;
   height: number;
   section?: { axis: 'x' | 'y' | 'z'; position: number; positionRaw: string; flip: boolean };
+  explode?: ParsedExplode;
+  overlay?: SurfaceQualityOverlay;
 }): Promise<RenderPreviewOutput> {
-  const { input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section } = args;
+  const { input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section, explode, overlay } = args;
   const t0 = Date.now();
 
   // Physics-loop probe — identical protocol to the render CLI: strict mode
@@ -347,6 +389,25 @@ async function renderPreviewWork(args: {
   // assemblies (capture_animation precedent: full BREP sweeps can take tens
   // of minutes) and honestly reports 'unverified' — but NEVER under strict
   // mode, where the gate always runs.
+  if (explode !== undefined) {
+    try {
+      const loaded = await loadScriptFeatures(scriptPath);
+      if (loaded.session.assemblies.size === 0) {
+        return refusal(
+          'render.explode.no-assembly',
+          'render_preview: explode requires the script to capture an assembly().',
+          'Wrap each body in assembly().part(name, shape) and return arm.model() or arm.solvedModel(), then pass explode again.',
+        );
+      }
+    } catch (e) {
+      return refusal(
+        'cli.script-exception',
+        `render_preview: ${e instanceof Error ? e.message : String(e)}`,
+        'Run evaluate_script on the same source to get per-feature diagnostics, fix the script, then re-render.',
+      );
+    }
+  }
+
   const skipProbe = input.no_mechanism_check === true && !isRenderStrictMode();
   const probe = skipProbe
     ? { mechanism: 'unverified' as const, failures: [] }
@@ -365,6 +426,23 @@ async function renderPreviewWork(args: {
     };
   }
 
+  let renderScriptPath = scriptPath;
+  if (overlay !== undefined) {
+    const built = await buildSurfaceQualityOverlay({
+      ...(input.file !== undefined ? { file: scriptPath } : { code: input.code }),
+      overlay,
+      outDir,
+    });
+    if (!built.ok) {
+      return refusal(
+        built.errorCode ?? 'cli.export-exception',
+        `render_preview overlay '${overlay}': ${built.error}`,
+        'Run inspect({ of: \'continuity\' | \'curvature\' }) on the same source; the overlay is a picture of those numbers.',
+      );
+    }
+    renderScriptPath = built.scriptPath;
+  }
+
   // Provision a render surface (static player preferred; see playerServer.ts).
   let base: ResolvedRenderBase;
   try {
@@ -380,7 +458,7 @@ async function renderPreviewWork(args: {
   let result: HeadlessRenderResult;
   try {
     result = await deps.render({
-      scriptPath,
+      scriptPath: renderScriptPath,
       viewportWidth: width,
       viewportHeight: height,
       views,
@@ -391,6 +469,7 @@ async function renderPreviewWork(args: {
       ...(input.no_watermark === true ? { noWatermark: true } : {}),
       ...(objectFilter !== undefined ? { objectFilter } : {}),
       ...(section !== undefined ? { section } : {}),
+      ...(explode !== undefined ? { explode } : {}),
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);

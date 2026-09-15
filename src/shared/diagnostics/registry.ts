@@ -27,7 +27,14 @@ export type DiagnosticGroup =
   | 'query'
   | 'kinematic'
   | 'mechanism'
-  | 'animation';
+  | 'animation'
+  | 'drawing'
+  | 'reference'
+  | 'fea'
+  | 'diff'
+  | 'bom'
+  | 'render'
+  | 'inspect';
 
 export type DiagnosticSeverityLevel = 'info' | 'warn' | 'error';
 
@@ -82,6 +89,30 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'feature',
     description: 'An arc segment in a sketch is degenerate (radius too small, collinear endpoints, etc.).',
+  },
+  'feature.section.plane-misses-body': {
+    hintTemplate:
+      'The section plane does not intersect the body. Move the plane offset/origin so it passes through the solid, or check the normal direction.',
+    nextAction: { kind: 'fix-arg', field: 'sectionSketch.plane' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A shape.sectionSketch / inspect section plane produced no closed section loop because it misses the body.',
+  },
+  'feature.face-sketch.non-planar': {
+    hintTemplate:
+      'The selected face is not planar, so it cannot be unrolled to a 2D sketch. Select a planar face (add { ofSurfaceType: "PLANE" } to the query) or use sectionSketch on a curved body.',
+    nextAction: { kind: 'fix-arg', field: 'faceSketch.face' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A shape.faceSketch target face is non-planar or produced no closed boundary loops.',
+  },
+  'feature.async-result.missing-await': {
+    hintTemplate:
+      'This method returns a Promise — chain it directly on the awaited value, e.g. `(await shape.sectionSketch(...)).extrude(...)`.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'await the async Shape method (sectionSketch/faceSketch/silhouette) before chaining a Sketch method on its result' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A Sketch/Shape method was accessed directly on the unresolved Promise returned by an async producer (sectionSketch/faceSketch/silhouette) instead of on the awaited value.',
   },
   // 2D tangency constructions (2)
   'sketch.tangency.no-solution': {
@@ -548,6 +579,23 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'warn',
     group: 'export',
     description: 'SDFormat export fell back to identity link poses because the mate graph did not solve.',
+  },
+  // Print loop (2) — Slice B
+  'export.gcode.slicer-unavailable': {
+    hintTemplate:
+      'No slicer CLI was found. Set KERNELCAD_SLICER to a slicer binary path, or install OrcaSlicer (or PrusaSlicer) and ensure orca-slicer/prusa-slicer/PrusaSlicer is on PATH.',
+    nextAction: { kind: 'check-cli-args' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A gcode export was requested but no slicer CLI binary could be located (env var, or PATH lookup of orca-slicer/prusa-slicer/PrusaSlicer).',
+  },
+  'export.gcode.exceeds-bed': {
+    hintTemplate:
+      'The model bounding box exceeds the selected printer profile\'s bed size. Scale the part down, split it into printable sub-parts, or pass a printer profile with a larger bed.',
+    nextAction: { kind: 'retry-with-smaller-param', param: 'scale', factor: 0.9 },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A gcode export\'s bounding box (in any axis) exceeds the selected printer profile\'s bed size, checked before invoking the slicer.',
   },
   // NURBS surfaces (2) — W1.3
   'feature.nurbs.degenerate-controls': {
@@ -1064,6 +1112,28 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'assembly',
     description: "An articulated mate (revolute/prismatic) is declared but not realised by part geometry — no shared pin/shaft feature constrains both parts, or the pin escapes the hole at a sampled pose, or the bearing surfaces are not coplanar (Gate 6 — mate physical realization).",
+  },
+  'assembly.joint.static-hold.margin-low': {
+    hintTemplate:
+      "checkStaticHold's worst-pose required torque/force is within capacity but under the requested safety margin. Increase the actuator torque/force on this joint to the value named in error.message for the desired margin, or shorten the downstream link / reduce its mass.",
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'increase the actuator torque/force, or shorten/lighten the downstream link',
+    },
+    defaultSeverity: 'warn',
+    group: 'assembly',
+    description: 'checkStaticHold found a revolute/prismatic joint whose worst-sampled-pose gravitational holding requirement is within the declared actuator capacity but below the requested minTorqueMarginPct floor.',
+  },
+  'assembly.joint.static-hold.exceeded': {
+    hintTemplate:
+      "checkStaticHold's worst-pose required torque/force exceeds the declared actuator capacity — the mechanism cannot hold its own weight at that pose. Increase the actuator torque/force to the value named in error.message, or shorten/lighten the downstream link.",
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'increase the actuator torque/force, or shorten/lighten the downstream link',
+    },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'checkStaticHold found a revolute/prismatic joint whose worst-sampled-pose gravitational holding requirement exceeds the declared actuator torque/force capacity.',
   },
   // Assembly validator — v0.7 Slice 1 workspace reachability (1)
   'assembly.workspace.unreachable': {
@@ -1657,6 +1727,23 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'tool',
     description: 'A trace_from_image backend exceeded the hard per-call timeout and was aborted.',
   },
+  // send_to_printer (2) — Slice B
+  'tool.send-to-printer.unreachable': {
+    hintTemplate:
+      'The printer could not be reached with the given protocol/host/port. Verify the printer is on and network-reachable, the port matches the protocol (OctoPrint/Moonraker: HTTP; Bambu LAN mode: FTPS 990 + MQTT 8883), and retry with { dryRun: true } to isolate connectivity from upload.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'error',
+    group: 'tool',
+    description: 'send_to_printer could not connect to, or authenticate against, the target printer (OctoPrint/Moonraker HTTP, or Bambu FTPS/MQTT).',
+  },
+  'tool.send-to-printer.upload-failed': {
+    hintTemplate:
+      'The connection succeeded but the file upload or print-start command failed. Inspect the diagnostic message for the printer\'s own error, check available storage on the printer, and confirm the gcode file exists and is non-empty.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'error',
+    group: 'tool',
+    description: 'send_to_printer connected to the printer but the G-code upload (or, for Bambu, the print-start MQTT command) was rejected or failed mid-transfer.',
+  },
   // K1 watertight gap enrichment — STL export tessellation self-intersects on revolved cones.
   'mesher.cone-self-intersection': {
     hintTemplate:
@@ -1951,6 +2038,65 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'dfm',
     description: 'Flood-fill found an enclosed empty region not declared as a sealed channel.',
   },
+  // FDM printability check (7) — dfmSpec({ process: 'fdm' }): overhang and
+  // bridge support, nozzle-relative walls and features, bed contact, tip
+  // risk, and bed fit, with a ranked axis-aligned print orientation.
+  'dfm.fdm.overhang-unsupported': {
+    hintTemplate:
+      'Downward-facing surfaces steeper than maxOverhangDeg have nothing below them to print onto. Reorient the part, add a 45° chamfer or gusset under the overhang, or slice with supports.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'apply the recommended rotation or buildDirection, or chamfer the overhang to 45°' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'An overhang region is neither bridged between supports nor within one nozzle width of its support in the declared FDM build direction.',
+  },
+  'dfm.fdm.bridge-too-long': {
+    hintTemplate:
+      'A flat ceiling spans further between its supports than maxBridgeMm, so the bridge sags. Shorten the span with an intermediate rib, reorient the part, or slice with supports.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'add a rib under the span or reorient the part' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'A horizontal downward face anchored at both ends spans longer than the declared FDM maximum bridge length.',
+  },
+  'dfm.fdm.wall-below-nozzle': {
+    hintTemplate:
+      'A wall thinner than two nozzle widths cannot hold two perimeters; the slicer drops or thins it. Thicken it to at least 2 × nozzleMm.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'thicken the wall at the reported xyz to >= 2 × nozzleMm' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'Inward ray sampling measured a wall thinner than twice the declared FDM nozzle diameter.',
+  },
+  'dfm.fdm.feature-too-small': {
+    hintTemplate:
+      'Holes under 5 × nozzleMm print undersized or close up; pins under 7.5 × nozzleMm are fragile. Enlarge the feature, drill the hole after printing, or use a finer nozzle.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'dfm',
+    description: 'A full cylindrical hole or pin has a diameter below the FDM minimum derived from the nozzle diameter.',
+  },
+  'dfm.fdm.bed-contact-low': {
+    hintTemplate:
+      'The part rests on a small fraction of its footprint, so first-layer adhesion is weak and it can detach mid-print. Reorient onto a flat face or add a brim.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'dfm',
+    description: 'Bed-contact area is below 10% of the convex footprint in the FDM build direction.',
+  },
+  'dfm.fdm.tip-risk': {
+    hintTemplate:
+      'The part is tall relative to its narrowest base width and may tip or wobble as the nozzle drags past. Print it lying down, widen the base, or add a brim.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'dfm',
+    description: 'Height divided by the minimum width of the bed-contact patch exceeds 8 in the FDM build direction.',
+  },
+  'dfm.fdm.exceeds-bed': {
+    hintTemplate:
+      "The part in its FDM build orientation is larger than the printer profile's bed. Reorient it, split it into printable sub-parts, or pick a printer profile with a larger bed.",
+    nextAction: { kind: 'retry-with-smaller-param', param: 'scale', factor: 0.9 },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: "The part's extents in the declared FDM build direction exceed the selected printer profile's bed on some axis.",
+  },
   // Kinematic grounding (9) — K1-K9. Local sampled-pose collision sweep,
   // analytical / numeric IK reachability, closed-form beam load capacity,
   // and fastener-side hole-diameter agreement. Every check runs in-process
@@ -2045,6 +2191,22 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'kinematic',
     description:
       'A load-capacity check ran in beam mode but the caller did not declare a material for one or more loaded parts; the check refused to silently substitute a default.',
+  },
+  'kinematic.static-hold.no-actuator-declared': {
+    hintTemplate:
+      "checkStaticHold requires an actuator: { torqueNm } (revolute) / { forceN } (prismatic) declaration on the joint(s) it evaluates. Add actuator to arm.revolute(...)/arm.prismatic(...). No silent default capacity is applied.",
+    nextAction: { kind: 'fix-arg', field: 'actuator' },
+    defaultSeverity: 'error',
+    group: 'kinematic',
+    description: 'checkStaticHold was asked to evaluate a joint (explicitly named, or as the only candidate) that has no declared actuator torque/force capacity; the check refused to silently substitute a default.',
+  },
+  'kinematic.sweep-tolerance.combo-cap-exceeded': {
+    hintTemplate:
+      "The cartesian product of swept param values exceeds the 64-combo cap; only the first 64 (declaration order) were evaluated. Narrow the swept ranges/values, or split the sweep into multiple calls.",
+    nextAction: { kind: 'fix-arg', field: 'params' },
+    defaultSeverity: 'warn',
+    group: 'kinematic',
+    description: 'sweepTolerance declared params whose cartesian product exceeds the 64-combination cap; the sweep truncated to the first 64 combos in declaration order.',
   },
   'kinematic.mounting-hole.diameter-mismatch': {
     hintTemplate:
@@ -2228,6 +2390,345 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'animation',
     description: 'An animationView track param re-lowers part-local geometry (not just a solvedAssembly mate pose), so Studio baked playback — which only re-applies rigid per-part transforms — cannot represent it; offline MP4 capture is required.',
+  },
+  // Drawings — GD&T + section-view annotation kinds (4). 'hole' / 'fillet' /
+  // 'chamfer' reuse 'feature.selection.no-match' (same failure shape as the
+  // existing radius/diameter/angular kinds); these four are for the parts of
+  // the drawing surface with no existing analogue. plane-misses-body and
+  // annotation.overlap are reserved for the not-yet-shipped section-view and
+  // collision-solver work so a later slice doesn't need a second catalog bump.
+  'drawing.datum.unresolved': {
+    hintTemplate:
+      "A 'datum' annotation's face query matched zero or more than one face. Inspect the model with list_faces / list_face_labels, then tighten the query or add 'near'.",
+    nextAction: { kind: 'call-introspection-tool', tool: 'list_faces' },
+    defaultSeverity: 'error',
+    group: 'drawing',
+    description: "A drawing 'datum' annotation's face query could not be resolved to exactly one face.",
+  },
+  'drawing.tolerance.feature-unresolved': {
+    hintTemplate:
+      "An 'fcf' (feature control frame) annotation's edge/face query could not be resolved. Inspect the model with list_edges / list_faces, then tighten the query or add 'near'.",
+    nextAction: { kind: 'call-introspection-tool', tool: 'list_edges' },
+    defaultSeverity: 'error',
+    group: 'drawing',
+    description: "A drawing 'fcf' annotation's referenced feature (edge or face) could not be resolved to exactly one match.",
+  },
+  'drawing.section.plane-misses-body': {
+    hintTemplate:
+      'The section cutting plane does not intersect the model bounding box. Move the plane origin so it passes through the body, or check the plane normal.',
+    nextAction: { kind: 'fix-arg', field: 'options.sections[i].plane' },
+    defaultSeverity: 'error',
+    group: 'drawing',
+    description: 'A drawing section-view cutting plane does not intersect the body being drawn.',
+  },
+  'drawing.annotation.overlap': {
+    hintTemplate:
+      'Two drawing annotations overlap on the sheet. Reorder the annotations array, pass a different `view`, or add `offset` to push one of them further out.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'reorder annotations, change view, or add offset to separate overlapping callouts' },
+    defaultSeverity: 'warn',
+    group: 'drawing',
+    description: 'Two rendered drawing annotations occupy overlapping sheet-space text/leader regions.',
+  },
+  // Drawings — automatic dimensioning + GD&T (2). Both warn: the sheet still
+  // exports with every annotation the rules could derive, and the diagnostic
+  // names what the rules could not decide instead of dropping it silently.
+  'drawing.auto.datum-ambiguous': {
+    hintTemplate:
+      "autoAnnotate could not establish one or more datums from the part's planar faces (A = largest planar face, B / C = largest planar faces orthogonal to it). Declare the missing datum with shape.datum('B', faceQuery) or options.autoAnnotate.datums, then re-export.",
+    nextAction: { kind: 'call-introspection-tool', tool: 'list_faces' },
+    defaultSeverity: 'warn',
+    group: 'drawing',
+    description: 'Automatic drawing annotation could not derive a datum reference frame (A/B/C) from the planar faces of the part.',
+  },
+  'drawing.auto.hole-unclassified': {
+    hintTemplate:
+      'autoAnnotate found a bore it cannot express as a simple, counterbored or countersunk hole (stacked bores, an internal duct, or an axis off the principal views), so it has no automatic callout. Dimension it with an options.annotations hole / diameter entry.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'add an options.annotations hole or diameter entry for the named bore' },
+    defaultSeverity: 'warn',
+    group: 'drawing',
+    description: 'Automatic drawing annotation found a cylindrical bore that is not a simple, counterbored or countersunk hole along a principal view axis.',
+  },
+  // Slice E — image/photo-reference assumption ledger (2).
+  'reference.assumptions.unresolved': {
+    hintTemplate:
+      "The assumption ledger built from this reference has open facts (missing scale, unconfirmed inferred/assumed values). Call `resolve_assumptions` with the ledger path and a resolution ({ id, value } to override or { id, confirm: true } to accept) for each open fact before committing geometry derived from it.",
+    nextAction: { kind: 'call-tool', tool: 'resolve_assumptions', args: {} },
+    defaultSeverity: 'warn',
+    group: 'reference',
+    description: 'trace_from_image (or another reference-ingest path) produced an assumption ledger with at least one open fact; severity escalates to error when validate:"error" is set and a "missing" fact (e.g. scale) is still open.',
+  },
+  'reference.assumptions.ledger-not-found': {
+    hintTemplate:
+      "resolve_assumptions could not read the ledger file at the supplied `ledgerPath`. Verify the path matches the `<model>.ledger.json` file trace_from_image's caller persisted, and that it has not been moved or deleted.",
+    nextAction: { kind: 'check-file-path' },
+    defaultSeverity: 'error',
+    group: 'reference',
+    description: 'resolve_assumptions was called with a ledgerPath that does not exist or does not parse as a valid AssumptionLedger.',
+  },
+  'reference.assumptions.unknown-resolution-id': {
+    hintTemplate:
+      "One or more resolution `id`s did not match any fact in the ledger. Re-read the ledger's `facts[].id` values and re-call resolve_assumptions with matching ids — a typo or a stale ledger snapshot are the usual causes.",
+    nextAction: { kind: 'fix-arg', field: 'resolutions[].id' },
+    defaultSeverity: 'warn',
+    group: 'reference',
+    description: 'resolve_assumptions was called with a resolution id that does not match any fact.id in the ledger.',
+  },
+  // Engineering-drawing PDF import (4) — drawing_to_cad.
+  'reference.drawing.raster-only': {
+    hintTemplate:
+      'This PDF page is a scanned or photographed drawing: it holds raster images and no vector linework or dimension text to read. Render the page to a PNG and call `trace_from_image` with a scaleAnchor taken from a dimension you can read on it, or obtain the vector PDF (or DXF) export from the CAD system that produced the drawing.',
+    nextAction: { kind: 'call-tool', tool: 'trace_from_image', args: {} },
+    defaultSeverity: 'error',
+    group: 'reference',
+    description: 'drawing_to_cad was given a PDF page whose content is raster images rather than vector paths and text.',
+  },
+  'reference.drawing.view-ambiguous': {
+    hintTemplate:
+      "The orthographic views could not be identified unambiguously (no projection alignment, conflicting view labels, or a single view). Check `views` in the result; if the sheet is first-angle, re-run with projection: 'first-angle', and confirm or override the `views` / `projection` ledger facts with resolve_assumptions.",
+    nextAction: { kind: 'fix-arg', field: 'projection' },
+    defaultSeverity: 'warn',
+    group: 'reference',
+    description: 'drawing_to_cad found no orthographic view, only one view, or views whose arrangement and labels disagree about which is front/top/side.',
+  },
+  'reference.drawing.dimension-unassociated': {
+    hintTemplate:
+      "A dimension or callout could not be tied to drawn geometry (it spans no modelled edge or hole centre, or its leader reaches no circle), so its value did not drive the model. Read the ledger's `unapplied:` facts and set the matching param with set_param, or resolve the fact with resolve_assumptions once you have placed the value.",
+    nextAction: { kind: 'call-tool', tool: 'resolve_assumptions', args: {} },
+    defaultSeverity: 'warn',
+    group: 'reference',
+    description: 'drawing_to_cad read a dimension or callout whose extension lines or leader could not be associated with any silhouette edge, hole centre or circle.',
+  },
+  'reference.drawing.depth-missing': {
+    hintTemplate:
+      "No view shows the part along its extrusion axis and no thickness note was found, so the depth in the emitted script is a placeholder. Resolve the `thickness` ledger fact with the real value via resolve_assumptions and feed the returned paramOverrides to set_param.",
+    nextAction: { kind: 'call-tool', tool: 'resolve_assumptions', args: {} },
+    defaultSeverity: 'warn',
+    group: 'reference',
+    description: 'drawing_to_cad rebuilt an extruded profile whose depth is not stated by any orthogonal view or thickness note.',
+  },
+  // Mesh / scan reconstruction (3) — mesh_to_features.
+  'reference.mesh.not-watertight': {
+    hintTemplate:
+      'The mesh handed to mesh_to_features has open, non-manifold or mis-oriented edges, so its sections and volume are unreliable and the result cannot be faithful. Repair or re-export the mesh watertight, then run mesh_to_features again.',
+    nextAction: { kind: 'fix-arg', field: 'file' },
+    defaultSeverity: 'warn',
+    group: 'reference',
+    description: 'mesh_to_features was given a mesh whose edges are not all shared by exactly two consistently oriented triangles.',
+  },
+  'reference.mesh.low-fidelity': {
+    hintTemplate:
+      "The reconstructed script does not match the mesh within the faithful thresholds (volume IoU and max surface deviation are in the message). Treat it as a starting point: fix the features near the largest deviation or model the unmatched regions before relying on its dimensions.",
+    nextAction: { kind: 'rewrite-feature', guidance: 'compare the emitted script against the mesh and correct the features near the largest deviation' },
+    defaultSeverity: 'warn',
+    group: 'reference',
+    description: 'mesh_to_features returned a reconstruction whose measured volume IoU or surface deviation misses the faithful thresholds (verdict approximate or failed).',
+  },
+  'reference.mesh.freeform-region-unmatched': {
+    hintTemplate:
+      'Part of the mesh surface matched no plane, cylinder or supported feature, so it is absent from the emitted script. Model those regions by hand (each has a bbox in unmatchedRegions) or accept the approximation the fidelity numbers describe.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'reference',
+    description: 'mesh_to_features found freeform, tilted-planar or off-axis cylindrical surface regions it could not represent as features.',
+  },
+  // Structural FEA gate (5) — the linear-static study declared by
+  // `shape.feaStudy({...})`. Same contract as the dfm.* gates: the
+  // declaration lives in the model, the solver run is the enforcement, and a
+  // missing toolchain is reported rather than silently passed.
+  'fea.safety-factor.below-min': {
+    hintTemplate:
+      'The solved minimum safety factor is below the study\'s declared minSafetyFactor (see error.message for the value, the governing region, and the peak von Mises stress). Add material where the hot spot is, switch to a stronger grade, spread the load over more area, or lower minSafetyFactor if the declared margin was conservative.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance:
+        'thicken or rib the geometry at the reported hot-spot region, choose a stronger material grade, or spread the load over more face area',
+    },
+    defaultSeverity: 'error',
+    group: 'fea',
+    description:
+      'A feaStudy declaring minSafetyFactor solved to a minimum safety factor below that floor: the peak von Mises stress is too close to (or past) the material yield.',
+  },
+  'fea.mesh.quality-low': {
+    hintTemplate:
+      'The tetrahedral mesh contains poorly shaped or inverted elements, or CalculiX\'s own nodal stress-error estimate is high, so the stress field should not be trusted as reported (displacement is far less sensitive). Re-run with a smaller meshSize, or simplify slivers and near-zero-width features in the geometry.',
+    nextAction: { kind: 'retry-with-smaller-param', param: 'feaStudy.meshSize', factor: 0.5 },
+    defaultSeverity: 'warn',
+    group: 'fea',
+    description:
+      'Element-quality statistics (minSICN) or the solver\'s nodal stress-error estimator indicate the FEA stress field is mesh-limited rather than geometry-limited.',
+  },
+  'fea.solver.unavailable': {
+    hintTemplate:
+      'The FEA toolchain is not installed on this machine, so no structural evidence could be produced (the result is NOT a pass). Install CalculiX and gmsh — `sudo apt-get install -y calculix-ccx` plus `python3 -m venv .fea-venv && .fea-venv/bin/pip install gmsh==4.15.2` — or point KERNELCAD_CCX / KERNELCAD_FEA_PYTHON at existing installs.',
+    nextAction: { kind: 'check-cli-args' },
+    defaultSeverity: 'error',
+    group: 'fea',
+    description:
+      'run_fea or a declared feaStudy gate could not run because the external CalculiX (ccx) solver or the gmsh Python module was not found.',
+  },
+  'fea.study.fixed-unresolved': {
+    hintTemplate:
+      'The study\'s `fixed` selector matched no face on the built shape, or the matched face did not bind to a meshed surface, so the part would be unconstrained. Call list_faces to see the available faces and refs, then pass a selector that matches one.',
+    nextAction: { kind: 'fix-arg', field: 'feaStudy.fixed' },
+    defaultSeverity: 'error',
+    group: 'fea',
+    description:
+      'A feaStudy `fixed` face selector resolved to no face (or to a face with no corresponding meshed surface); solving would leave the model unconstrained.',
+  },
+  'fea.study.load-unresolved': {
+    hintTemplate:
+      'A study load\'s `faces` selector matched no face on the built shape, or the matched face did not bind to a meshed surface, so the declared force would be applied nowhere and the study would report a false pass. Call list_faces to see the available faces and refs, then pass a selector that matches one.',
+    nextAction: { kind: 'fix-arg', field: 'feaStudy.loads[].faces' },
+    defaultSeverity: 'error',
+    group: 'fea',
+    description:
+      'A feaStudy load face selector resolved to no face (or to a face with no corresponding meshed surface); the declared force would land on no node.',
+  },
+  // Trace-guided repair (4) — repair_script's own failure vocabulary.
+  'tool.repair.no-candidate': {
+    hintTemplate:
+      'No mechanical fix is derivable for this diagnostic kind. Edit the returned repairRegion by hand — the lines are already narrowed to the failing feature, its inputs, and the params it reads.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'info',
+    group: 'tool',
+    description: 'repair_script has no candidate generator for the selected diagnostic code, so only the repair region is returned.',
+  },
+  'tool.repair.out-of-region': {
+    hintTemplate:
+      'The patch targets lines outside the repair region and was refused. Re-derive candidates with why_did_this_fail against the failing feature, or edit those lines yourself.',
+    nextAction: { kind: 'call-introspection-tool', tool: 'why_did_this_fail' },
+    defaultSeverity: 'error',
+    group: 'tool',
+    description: 'A repair patch would have rewritten lines outside the computed repair region and was rejected.',
+  },
+  'tool.repair.exhausted': {
+    hintTemplate:
+      'Every candidate was applied and re-evaluated without clearing the diagnostic. Raise max_attempts, or treat the returned attempts as evidence and author the fix yourself.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'error',
+    group: 'tool',
+    description: 'repair_script applied every available candidate and none cleared the target diagnostic without new errors.',
+  },
+  'tool.repair.source-drift': {
+    hintTemplate:
+      'The lines the patch expected no longer match the file. Re-run evaluate_script and why_did_this_fail against the current source, then repair again.',
+    nextAction: { kind: 'call-tool', tool: 'evaluate_script', args: {} },
+    defaultSeverity: 'error',
+    group: 'tool',
+    description: 'A repair patch anchor text did not match the current source, so the patch was refused rather than applied blind.',
+  },
+  'export.usd.joint-unsupported': {
+    hintTemplate:
+      'The usd-isaac exporter only lowers fastened, revolute and prismatic mates to PhysicsFixedJoint / PhysicsRevoluteJoint / PhysicsPrismaticJoint. Restructure the mate graph to use one of those kinds, or export format: \'sdf-gazebo\' which supports the full mate vocabulary.',
+    nextAction: { kind: 'fix-arg', field: 'format' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A mate kind with no PhysicsJoint equivalent (planar/cylindrical/pin_slot/ball) was found while lowering to a usd-isaac physics stage.',
+  },
+  'export.usd.pose-unsolved': {
+    hintTemplate:
+      'The mate graph could not be solved to per-link world poses, so every link was placed at the stage origin and the simulator will spawn them overlapping. Run solve_mates to find the unsolvable mate, fix the connector geometry, then re-export.',
+    nextAction: { kind: 'call-introspection-tool', tool: 'solve_mates' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A usd-isaac export could not solve the mate graph to per-link poses; links were emitted at the stage origin.',
+  },
+  'export.usd.mass-missing': {
+    hintTemplate:
+      'A link\'s mass-properties computation returned a non-finite or non-positive mass; the rigid body prim cannot carry a physical mass. Pass density on arm.part(name, shape, { density }), or check the part\'s shape is closed and manifold.',
+    nextAction: { kind: 'fix-arg', field: 'density' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A link in a usd-isaac physics stage has a non-finite or non-positive mass and cannot be given a valid UsdPhysics MassAPI.',
+  },
+  // Geometric diff (1)
+  'diff.body.unmatched': {
+    hintTemplate:
+      'A body in one model has no counterpart in the other, so no per-body delta could be computed for it. Give the part the same assembly().part(name, ...) name on both sides, or read it from the diff report\'s `unmatched` list as a whole-body addition/removal.',
+    nextAction: { kind: 'fix-arg', field: 'file' },
+    defaultSeverity: 'warn',
+    group: 'diff',
+    description: 'diff_geometry could not pair a body in the baseline model with a body in the revised model, by name or by positional fallback.',
+  },
+  'bom.material.unassigned': {
+    hintTemplate:
+      'A fabricated BOM row has neither a named `material` nor an explicit `density` on `assembly.part(name, shape, opts)`, so its mass is omitted rather than guessed. Pass opts.material (e.g. \'aluminum\', \'steel\', \'pla\', \'abs\', \'pet\') or opts.density (kg/m^3) on that part.',
+    nextAction: { kind: 'fix-arg', field: 'material' },
+    defaultSeverity: 'warn',
+    group: 'bom',
+    description: 'inspect({ of: \'bom\' }) / export({ format: \'bom-csv\'|\'bom-json\' }) found a fabricated part with no density source, so massG is omitted for that row rather than defaulted to water.',
+  },
+  'bom.purchased.catalog-metadata-missing': {
+    hintTemplate:
+      'A purchased BOM row\'s catalog part has neither `standard` nor `upstream.repo`, so vendor/partNumber could not be populated with confidence. Re-fetch the part with fetch_part against a catalog record that carries provenance, or accept catalog.vendor: null.',
+    nextAction: { kind: 'fix-arg', field: 'catalogPart' },
+    defaultSeverity: 'warn',
+    group: 'bom',
+    description: 'inspect({ of: \'bom\' }) / export({ format: \'bom-csv\'|\'bom-json\' }) found a purchased part whose catalogPart carries no standard and no upstream provenance to derive vendor/partNumber from.',
+  },
+  'render.explode.no-assembly': {
+    hintTemplate:
+      'Exploded views need a named assembly. Wrap each body in assembly().part(name, shape) and return arm.model() or arm.solvedModel(), then pass explode again.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'wrap bodies in assembly().part(...) and return arm.model() before requesting explode' },
+    defaultSeverity: 'error',
+    group: 'render',
+    description: 'render_preview / kernelcad render --explode / svg-drawing options.exploded was requested on a script that did not capture an assembly().',
+  },
+  'drawing.balloons.bom-unavailable': {
+    hintTemplate:
+      'Balloons and the parts-list table are filled from inspect({ of: \'bom\' }). Return assembly.model() with named parts, or omit balloons/partsList.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'return assembly.model() so a BOM can be extracted, or omit balloons/partsList' },
+    defaultSeverity: 'warn',
+    group: 'drawing',
+    description: 'svg-drawing balloons or partsList was requested but the script has no assembly, so no BOM rows exist to number balloons or fill the table.',
+  },
+  'feature.curve-bridge.degenerate-end': {
+    hintTemplate:
+      'curveBridge / Curve3D.bridge could not infer a join: the chosen ends coincide (chord < 1e-9 mm) or a tangent vanished. Pick different `ends` (`end-start` / `end-end` / `start-start` / `start-end`), separate the curves, or supply a non-zero tension.',
+    nextAction: { kind: 'fix-arg', field: 'ends' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'curveBridge could not build a Hermite blend because the chosen endpoints coincide or a tangent has vanishing magnitude.',
+  },
+  'feature.surface-intersection.none': {
+    hintTemplate:
+      'surfaceIntersection found no curve: the two faces/solids do not meet. Translate one operand so they cut, or pick different faces. A miss is not a tangent-grazing "almost" — the solids must actually cross.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'move the operands so their faces cut, then retry surfaceIntersection' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'BRepAlgoAPI_Section returned no edges — the two surfaces or solids do not intersect.',
+  },
+  'feature.loft.rail-miss': {
+    hintTemplate:
+      'A loft rail does not pass near every section (or more than two rails were given). OCCT MakePipeShell accepts one spine plus one auxiliary spine; each rail must come within 1 mm of every section wire. Shorten the gap, add a section on the rail, or drop extra rails.',
+    nextAction: { kind: 'fix-arg', field: 'opts.rails' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A guide rail missed a loft section, or more than two rails were supplied (OCCT supports one spine plus one auxiliary spine).',
+  },
+  'inspect.continuity.g1-break': {
+    hintTemplate:
+      "The shared edge is only G0 (normals jump). Fillet or blend it; use continuity: 'G2' only on NURBS-adjacent edges, then re-run inspect({ of: 'continuity' }).",
+    nextAction: { kind: 'call-introspection-tool', tool: 'inspect' },
+    defaultSeverity: 'warn',
+    group: 'inspect',
+    description: 'A shared edge between faces fails G1 — the face normals jump by more than the G1 angle tolerance (a box corner is the canonical case).',
+  },
+  'inspect.continuity.broken': {
+    hintTemplate:
+      "Faces do not meet along this edge (G0 gap). Sew or rebuild the join, then re-run inspect({ of: 'continuity' }).",
+    nextAction: { kind: 'call-introspection-tool', tool: 'inspect' },
+    defaultSeverity: 'error',
+    group: 'inspect',
+    description: 'A shared edge fails G0: the adjacent faces have a measurable position gap along the edge.',
+  },
+  'inspect.curvature.spike': {
+    hintTemplate:
+      "A face has a curvature spike versus the rest of that face. Smooth the control net, raise the blend continuity, or split the face, then re-run inspect({ of: 'curvature' }).",
+    nextAction: { kind: 'call-introspection-tool', tool: 'inspect' },
+    defaultSeverity: 'warn',
+    group: 'inspect',
+    description: "A UV sample on a face is an outlier in Gaussian curvature versus that face's own distribution.",
   },
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 

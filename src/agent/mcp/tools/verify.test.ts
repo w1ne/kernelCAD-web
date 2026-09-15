@@ -13,6 +13,7 @@ vi.mock('./checkSweptCollision', () => ({ checkSweptCollisionTool: vi.fn(async (
 vi.mock('./checkReachable', () => ({ checkReachableTool: vi.fn(async () => 'reachable') }));
 vi.mock('./checkMountingHoleConsistency', () => ({ checkMountingHoleConsistencyTool: vi.fn(async () => 'mounting') }));
 vi.mock('./checkLoadCapacity', () => ({ checkLoadCapacityTool: vi.fn(async () => 'load') }));
+vi.mock('./checkStaticHold', () => ({ checkStaticHoldTool: vi.fn(async () => 'static-hold') }));
 
 import { verifyTool, type VerifyCheck } from './verify';
 import { validateAssemblyTool } from './validateAssembly';
@@ -23,6 +24,7 @@ import { checkSweptCollisionTool } from './checkSweptCollision';
 import { checkReachableTool } from './checkReachable';
 import { checkMountingHoleConsistencyTool } from './checkMountingHoleConsistency';
 import { checkLoadCapacityTool } from './checkLoadCapacity';
+import { checkStaticHoldTool } from './checkStaticHold';
 
 const ROUTES: Array<[VerifyCheck, ReturnType<typeof vi.fn>, string]> = [
   ['assembly', validateAssemblyTool as never, 'assembly'],
@@ -33,6 +35,7 @@ const ROUTES: Array<[VerifyCheck, ReturnType<typeof vi.fn>, string]> = [
   ['reachable', checkReachableTool as never, 'reachable'],
   ['mounting-holes', checkMountingHoleConsistencyTool as never, 'mounting'],
   ['load-capacity', checkLoadCapacityTool as never, 'load'],
+  ['static-hold', checkStaticHoldTool as never, 'static-hold'],
 ];
 
 describe('verify dispatcher', () => {

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/cli/commands/evaluate.ts
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { Command } from 'commander';
 import { formatHuman } from '../../../shared/diagnostics/formatter';
@@ -18,12 +18,18 @@ import {
   runDfmChecksOnModel,
   type DfmCheckReport,
 } from '../../../modeling/runtime/dfm/runDfmChecks';
+import {
+  runFeaGateOnModel,
+  type FeaGateReport,
+} from '../../../modeling/runtime/fea/runFeaGate';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import {
   reviewPoseEnvelope,
   type PoseEnvelopeDiagnostic,
 } from '../../../modeling/mates/poseEnvelope';
 import { detectUnstructuredBodies } from '../../../modeling/validation/unstructuredBodies';
+import { buildFeatureTrace } from '../../repair/trace';
+import type { FeatureTraceEntry } from '../../repair/types';
 
 export interface EvaluateInput {
   file?: string;
@@ -92,6 +98,11 @@ export interface EvaluateAndBuildResult {
    *  had no fatal diagnostics. Undefined otherwise — the gates are opt-in.
    *  Its diagnostics are already merged into `evaluation.diagnostics`. */
   dfmReport?: DfmCheckReport;
+  /** Structural gate report when the script declares a `feaStudy(...)` with a
+   *  `minSafetyFactor` and the build had no fatal diagnostics. Undefined
+   *  otherwise. Its diagnostics are already merged into
+   *  `evaluation.diagnostics`. */
+  feaReport?: FeaGateReport;
 }
 
 export async function evaluateAndBuildScript(input: EvaluateInput): Promise<EvaluateAndBuildResult> {
@@ -145,16 +156,27 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
     dfmReport = await runDfmChecksOnModel(model);
     if (dfmReport) model.diagnostics.push(...dfmReport.diagnostics);
   }
-  const fatalAfterDfm = model.diagnostics.some(d => d.severity === 'error');
+
+  // Structural enforcement: same seam, same opt-in shape as the DFM gate.
+  // Only studies that declare `minSafetyFactor` run here — a study without
+  // one is a report you fetch with `run_fea`, not a gate.
+  let feaReport: FeaGateReport | undefined;
+  if (!fatal) {
+    feaReport = await runFeaGateOnModel(model);
+    if (feaReport) model.diagnostics.push(...feaReport.diagnostics);
+  }
+
+  const fatalAfterGates = model.diagnostics.some(d => d.severity === 'error');
   return {
     evaluation: {
-      exitCode: fatalAfterDfm ? 1 : 0,
+      exitCode: fatalAfterGates ? 1 : 0,
       featureCount: model.records.length,
       diagnostics: withNextActions(model.diagnostics),
       featureHealth: nonHealthyFeatures(model.health),
     },
     model,
     ...(dfmReport !== undefined ? { dfmReport } : {}),
+    ...(feaReport !== undefined ? { feaReport } : {}),
   };
 }
 
@@ -276,6 +298,10 @@ export interface EvaluateWithEnvelopeInput extends EvaluateInput {
    *  without `envelope: true` is a misuse — sets `exitCode: 1` and
    *  populates `misuseMessage`. */
   combinatorial?: boolean;
+  /** Build the per-feature trace and return it on the result. Off by
+   *  default: it parses the script's syntax tree, which a plain pass/fail
+   *  evaluation has no use for. */
+  trace?: boolean;
 }
 
 export interface EvaluateWithEnvelopeResult {
@@ -294,6 +320,11 @@ export interface EvaluateWithEnvelopeResult {
   /** Set when the caller passed an envelope sampling flag without
    *  `envelope: true`. Triggers `exitCode: 1`. */
   misuseMessage?: string;
+  /** Per-feature trace — every captured feature joined to the script lines
+   *  that authored it, its diagnostics, and its graph neighbours. Populated
+   *  only when the caller asked for it (`trace: true` / `--trace-out`), since
+   *  building it parses the script's syntax tree. */
+  trace?: FeatureTraceEntry[];
 }
 
 /**
@@ -346,12 +377,14 @@ export async function evaluateWithEnvelope(
 
   const built = await evaluateAndBuildScript({ file: input.file, code: input.code });
   const { evaluation, model } = built;
+  const trace = input.trace === true ? traceOfBuiltModel(model, input.file) : undefined;
 
   if (!input.envelope) {
     return {
       exitCode: evaluation.exitCode,
       featureCount: evaluation.featureCount,
       diagnostics: evaluation.diagnostics,
+      ...(trace !== undefined ? { trace } : {}),
     };
   }
 
@@ -409,7 +442,30 @@ export async function evaluateWithEnvelope(
     diagnostics: evaluation.diagnostics,
     envelopeDiagnostics,
     envelopeSampleCount,
+    ...(trace !== undefined ? { trace } : {}),
   };
+}
+
+/**
+ * Project a built model into the feature trace.
+ *
+ * The build already carries every input the trace needs — records, health,
+ * diagnostics, and the script text — so this is a projection, not a second
+ * evaluation. Returns `undefined` when the script failed before a model
+ * existed; there is nothing to trace at that point.
+ */
+function traceOfBuiltModel(
+  model: BuiltModel | undefined,
+  file: string | undefined,
+): FeatureTraceEntry[] | undefined {
+  if (model === undefined || model.code === undefined) return undefined;
+  return buildFeatureTrace({
+    records: model.records,
+    source: model.code,
+    fileName: file ?? '<inline>',
+    health: model.health,
+    diagnostics: model.diagnostics,
+  });
 }
 
 function isFileReadError(e: unknown): boolean {
@@ -430,13 +486,19 @@ export function evaluateCommand(): Command {
     .option('--envelope', 'after the script runs, run reviewPoseEnvelope on every captured assembly; non-zero exit on envelope-error')
     .option('--samples-per-mate <n>', 'interior samples per mate for the envelope sweep (integer ≥ 1)', (v) => parseInt(v, 10))
     .option('--combinatorial', 'enumerate corner combinations across all limited mates (cap: 8 mates)')
-    .action(async (file: string, opts: { json?: boolean; envelope?: boolean; samplesPerMate?: number; combinatorial?: boolean }) => {
+    .option('--trace-out <file>', 'write the per-feature trace (call site, AST node range, diagnostics, inputs, dependents) to a JSON file')
+    .action(async (file: string, opts: { json?: boolean; envelope?: boolean; samplesPerMate?: number; combinatorial?: boolean; traceOut?: string }) => {
       const r = await evaluateWithEnvelope({
         file,
         ...(opts.envelope ? { envelope: true } : {}),
         ...(opts.samplesPerMate !== undefined ? { samplesPerMate: opts.samplesPerMate } : {}),
         ...(opts.combinatorial ? { combinatorial: true } : {}),
+        ...(opts.traceOut !== undefined ? { trace: true } : {}),
       });
+
+      if (opts.traceOut !== undefined && r.trace !== undefined) {
+        await writeFile(opts.traceOut, `${JSON.stringify({ file, trace: r.trace }, null, 2)}\n`, 'utf8');
+      }
 
       if (r.misuseMessage) {
         console.error(r.misuseMessage);

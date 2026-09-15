@@ -16,7 +16,9 @@
 //     distinct thin spots,
 //   - a caller-supplied pre-built BVH (identical to the auto-built path),
 //   - deterministic stride subsampling above 150k triangles (also the
-//     densest-mesh timing reference for the DFM budget).
+//     densest-mesh timing reference for the DFM budget),
+//   - the opt-in maxWedgeDeg knife-edge filter (cone rim dropped, thin
+//     blade kept).
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { checkMinWall } from '../../../src/modeling/runtime/dfm/minWall';
@@ -137,6 +139,21 @@ describe('checkMinWall — OCCT export meshes', () => {
     expect(sorted[1].location[0]).toBeGreaterThan(32);
     expect(sorted[1].location[0]).toBeLessThan(38);
     expect(res.thinnestMm).toBeCloseTo(1.0, 3);
+  });
+
+  it('maxWedgeDeg drops a cone rim (33.7° taper) but keeps a 10° blade', async () => {
+    // Cone r 15, h 10: rim faces open at atan(10/15) = 33.7°.
+    const cone = await exportMesh('return path().moveTo(0, 0).lineTo(15, 0).lineTo(0, 10).close().revolve();');
+    expect(checkMinWall(cone, 3).violations.length).toBeGreaterThan(0);
+    const coneFiltered = checkMinWall(cone, 3, { maxWedgeDeg: 26.57 });
+    expect(coneFiltered.violations).toEqual([]);
+    expect(coneFiltered.thinnestMm).toBe(Infinity);
+
+    // Blade: faces meet at atan(5.29 / 30) = 10.0°, a genuinely thin taper.
+    const blade = await exportMesh('return extrudePolygon([[0, 0], [30, 0], [0, 5.29]], 10);');
+    const bladeFiltered = checkMinWall(blade, 3, { maxWedgeDeg: 26.57 });
+    expect(bladeFiltered.violations.length).toBeGreaterThan(0);
+    expect(bladeFiltered.violations).toEqual(checkMinWall(blade, 3).violations);
   });
 });
 

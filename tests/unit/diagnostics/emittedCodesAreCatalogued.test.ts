@@ -36,14 +36,27 @@ const EMITTING_FILES = [
   'modeling/capture/faceLabels.ts',
   'shared/fonts/index.ts',
   'modeling/api.ts',
+  'modeling/capture/bridgeCurves.ts',
+  'modeling/backends/occt/surfaceIntersection.ts',
+  'modeling/backends/occt/loftWithRailsLowerer.ts',
   'modeling/sheetMetal.ts',                      // W2.2
   'modeling/sketch/index.ts',
   'modeling/compute/recomputeEngine.ts',
   'modeling/validation/unstructuredBodies.ts', // agent-parts-discipline
   'agent/cli/commands/evaluate.ts',
   'agent/cli/commands/export.ts',
+  'agent/mcp/tools/inspectContinuity.ts',
+  'agent/mcp/tools/inspectCurvature.ts',
   'agent/script-runtime/export.ts',
   'kernel/naming/resolveFaceRef.ts',
+  'kernel/backends/occt/drawingAnnotations.ts',
+  'agent/script-runtime/bom.ts',
+  'agent/mcp/tools/renderPreview.ts',
+  'kernel/backends/occt/exportSvgDrawing.ts',
+  'kernel/backends/occt/drawingAuto.ts',
+  'kernel/backends/occt/drawingSections.ts',
+  'agent/drawing/reconstruct.ts',
+  'agent/reconstruct/reconstruct.ts', // mesh_to_features fidelity / mesh gates
 ];
 
 // Match `code: '<value>'` and `new KernelError('<code>', ...)`.
@@ -75,7 +88,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     ).toEqual([]);
   });
 
-  it('catalogue has exactly 248 codes', () => {
+  it('catalogue has exactly 305 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -177,7 +190,54 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  +  1 feature.finish.unknown-token (.finish() unknown-name hard error) = 247.
     //  +  1 assembly.joint.child-modeled-in-place (URDF/mate convention mix on a
     //       joint-primitive child the script also placed) = 248.
-    expect(catalogue.size).toBe(248);
+    //  + 4 drawing annotations and section views: drawing.datum.unresolved,
+    //       drawing.tolerance.feature-unresolved, drawing.section.plane-misses-body,
+    //       drawing.annotation.overlap = 252.
+    //  + 3 image/photo reference assumption ledger:
+    //       reference.assumptions.unresolved,
+    //       reference.assumptions.ledger-not-found,
+    //       reference.assumptions.unknown-resolution-id = 255.
+    //  + 5 structural FEA gate: fea.safety-factor.below-min,
+    //       fea.mesh.quality-low, fea.solver.unavailable,
+    //       fea.study.fixed-unresolved, fea.study.load-unresolved = 260.
+    //  + 4 print loop: export.gcode.slicer-unavailable,
+    //       export.gcode.exceeds-bed, tool.send-to-printer.unreachable,
+    //       tool.send-to-printer.upload-failed = 264.
+    //  + 4 trace-guided repair: tool.repair.exhausted,
+    //       tool.repair.no-candidate, tool.repair.out-of-region,
+    //       tool.repair.source-drift = 268.
+    //  + 4 mechanism checks: assembly.joint.static-hold.exceeded,
+    //       assembly.joint.static-hold.margin-low,
+    //       kinematic.static-hold.no-actuator-declared,
+    //       kinematic.sweep-tolerance.combo-cap-exceeded = 272.
+    //  + 4 USD physics export and geometry diff: export.usd.joint-unsupported,
+    //       export.usd.pose-unsolved, export.usd.mass-missing, diff.body.unmatched =
+    //       276.
+    //  + 2 BOM extraction: bom.material.unassigned,
+    //       bom.purchased.catalog-metadata-missing = 278.
+    //  + 2 exploded views: render.explode.no-assembly,
+    //       drawing.balloons.bom-unavailable = 280.
+    //  + 7 FDM printability check: dfm.fdm.overhang-unsupported,
+    //       dfm.fdm.bridge-too-long, dfm.fdm.wall-below-nozzle,
+    //       dfm.fdm.feature-too-small, dfm.fdm.bed-contact-low, dfm.fdm.tip-risk,
+    //       dfm.fdm.exceeds-bed = 287.
+    //  + 2 sketch-from-shape: feature.section.plane-misses-body,
+    //       feature.face-sketch.non-planar = 289.
+    //  + 1 feature.async-result.missing-await (un-awaited sectionSketch/
+    //       faceSketch/silhouette chained a Sketch method) = 290.
+    //  + 2 automatic drawing annotation: drawing.auto.datum-ambiguous,
+    //       drawing.auto.hole-unclassified = 292.
+    //  + 4 engineering-drawing PDF import: reference.drawing.raster-only,
+    //       reference.drawing.view-ambiguous,
+    //       reference.drawing.dimension-unassociated,
+    //       reference.drawing.depth-missing = 296.
+    //  + 3 mesh reconstruction: reference.mesh.not-watertight,
+    //       reference.mesh.low-fidelity, reference.mesh.freeform-region-unmatched = 299.
+    //  + 3 curves-surfacing: feature.curve-bridge.degenerate-end,
+    //       feature.surface-intersection.none, feature.loft.rail-miss = 302.
+    //  + 3 surface-quality inspect: inspect.continuity.g1-break,
+    //       inspect.continuity.broken, inspect.curvature.spike = 305.
+    expect(catalogue.size).toBe(305);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

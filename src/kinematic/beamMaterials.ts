@@ -24,47 +24,14 @@
 // fires K8 `kinematic.no-material-declared` when a load names a part
 // without a corresponding material entry.
 
-import type { MaterialDeclarationEntry, MaterialKind } from './types';
+import type { MaterialDeclarationEntry } from './types';
+import { MATERIAL_CATALOG, CATALOG_KINDS, type CatalogKind, type MaterialProps } from './materialCatalog';
+import { canonicalMaterialName, engineeringMaterialProps } from './engineeringMaterials';
 
-/** Numeric material properties consumed by the beam math (SI units). */
-export interface MaterialProps {
-  /** Pa — bending-stress comparison fires when σ exceeds this. */
-  readonly yieldStressPa: number;
-  /** Pa — reserved for the follow-up deflection gate. */
-  readonly youngsModulusPa: number;
-  /** kg/m^3 — copied to part-level mass/CoM helpers when needed. */
-  readonly densityKgPerM3: number;
-}
-
-/** Catalog spans the five materials in the spec §5 / T6 numbers; 'custom'
- *  is intentionally not in the table — the resolver builds its props from
- *  the agent's inline yield + modulus values. */
-export const MATERIAL_CATALOG: Readonly<
-  Record<Exclude<MaterialKind, 'custom'>, MaterialProps>
-> = Object.freeze({
-  steel: {
-    yieldStressPa: 250e6,
-    youngsModulusPa: 200e9,
-    densityKgPerM3: 7850,
-  },
-  aluminum: {
-    yieldStressPa: 270e6,
-    youngsModulusPa: 70e9,
-    densityKgPerM3: 2700,
-  },
-  pla: { yieldStressPa: 50e6, youngsModulusPa: 3.5e9, densityKgPerM3: 1240 },
-  abs: { yieldStressPa: 40e6, youngsModulusPa: 2.3e9, densityKgPerM3: 1040 },
-  pet: { yieldStressPa: 55e6, youngsModulusPa: 2.7e9, densityKgPerM3: 1380 },
-});
-
-/** Catalog keys (everything except `custom`) — the runtime-valid bulk kinds. */
-export const CATALOG_KINDS: ReadonlyArray<Exclude<MaterialKind, 'custom'>> = [
-  'steel',
-  'aluminum',
-  'pla',
-  'abs',
-  'pet',
-];
+// The property rows live in the leaf `materialCatalog.ts`; re-exported here so
+// existing `beamMaterials` importers keep working.
+export { MATERIAL_CATALOG, CATALOG_KINDS };
+export type { CatalogKind, MaterialProps };
 
 export type ResolveMaterialResult =
   | { readonly ok: true; readonly props: MaterialProps }
@@ -83,21 +50,23 @@ export type ResolveMaterialResult =
 /**
  * Resolve a per-part `MaterialDeclarationEntry` to its numeric SI props.
  *
- * - Catalog kinds (`steel` / `aluminum` / `pla` / `abs` / `pet`) read from
- *   `MATERIAL_CATALOG`. Optional inline overrides on the same entry
- *   (`yieldStressMPa`, `youngsModulusGPa`, `density`) replace the
- *   corresponding catalog field per-call — useful for measured properties
- *   on a specific lot of PLA, for example, without losing the catalog's
- *   default density.
+ * - Any accepted material name — an engineering grade (`mild-steel`,
+ *   `aluminum-6061`, `pla`, `petg`, `abs`, `nylon`) or one of its bulk aliases
+ *   (`steel`, `aluminum`, `aluminium`, `pet`) — resolves through the single
+ *   registry in `engineeringMaterials.ts`, the same one mass and FEA use.
+ *   Optional inline overrides on the same entry (`yieldStressMPa`,
+ *   `youngsModulusGPa`, `density`) replace the corresponding field per-call —
+ *   useful for measured properties on a specific lot of PLA, for example,
+ *   without losing the registry's default density.
  * - `material: 'custom'` requires both `yieldStressMPa` and
  *   `youngsModulusGPa`. Missing either field returns
  *   `{ ok: false, reason: 'missing-custom-field', missingField }` and the
  *   caller emits K8.
- * - An unrecognised `material` value (a typo or bare SKU like
- *   `'aluminum-6061'` that is neither `'custom'` nor a catalog key) returns
+ * - An unrecognised `material` value (a typo or a bare SKU that is neither
+ *   `'custom'` nor an accepted name) returns
  *   `{ ok: false, reason: 'unknown-material', material }` instead of crashing
- *   on an undefined catalog row — the caller turns this into a clear
- *   diagnostic naming the offending value.
+ *   on an undefined row — the caller turns this into a clear diagnostic
+ *   naming the offending value.
  */
 export function resolveMaterialProps(
   entry: MaterialDeclarationEntry,
@@ -118,12 +87,13 @@ export function resolveMaterialProps(
       },
     };
   }
-  // Guard the catalog lookup: a value outside the known kinds (a typo or a
-  // bare SKU string) would otherwise read `yieldStressPa` off `undefined`.
-  const catalog = MATERIAL_CATALOG[entry.material as Exclude<MaterialKind, 'custom'>];
-  if (catalog === undefined) {
+  // Guard the lookup: a value outside the accepted names (a typo or a bare SKU
+  // string) would otherwise read `yieldStressPa` off `undefined`.
+  const grade = canonicalMaterialName(entry.material);
+  if (grade === undefined) {
     return { ok: false, reason: 'unknown-material', material: String(entry.material) };
   }
+  const catalog = engineeringMaterialProps(grade);
   return {
     ok: true,
     props: {

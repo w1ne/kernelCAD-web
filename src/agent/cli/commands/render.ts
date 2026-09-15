@@ -29,6 +29,7 @@ import { buildModelFromFile } from '../../../modeling/buildModel';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
+import { parseExplodeInput } from '../../../modeling/runtime/explodedPoses';
 
 export interface RenderInput {
   file: string;
@@ -58,6 +59,12 @@ export interface RenderInput {
   /** Keep the positive-axis side of the section plane instead of the
    *  default negative-axis side. */
   sectionFlip?: boolean;
+  /** Explode factor (≥ 0). When set, parts are pulled apart for the render. */
+  explode?: number;
+  /** Explode mode; default `mate-axis`. */
+  explodeMode?: string;
+  /** Skip the mechanism-truth probe (same as render_preview no_mechanism_check). */
+  noMechanismCheck?: boolean;
 }
 
 export interface RenderCliResult {
@@ -278,10 +285,21 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
   const filePath = resolve(input.file);
   let objectFilter: HeadlessObjectFilter | undefined;
   let section: { axis: 'x' | 'y' | 'z'; position: number; positionRaw: string; flip: boolean } | undefined;
+  let explode: { factor: number; mode: 'radial' | 'mate-axis' } | undefined;
   try {
     objectFilter = buildObjectFilter(input);
     if (input.section !== undefined) {
       section = { ...parseSectionFlag(input.section), flip: input.sectionFlip ?? false };
+    }
+    if (input.explode !== undefined || input.explodeMode !== undefined) {
+      const parsed = parseExplodeInput({
+        factor: input.explode ?? 1,
+        mode: input.explodeMode,
+      });
+      if (!parsed.ok) {
+        throw new Error(`render: ${parsed.message}`);
+      }
+      explode = parsed.value;
     }
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
@@ -290,7 +308,10 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
 
   // Physics-loop probe — P1 surface convergence. Same refuse/watermark
   // protocol as renderInspectBundle (see runRenderMechanismProbe).
-  const mechanismProbe = await runRenderMechanismProbe(filePath);
+  const skipProbe = input.noMechanismCheck === true && !isRenderStrictMode();
+  const mechanismProbe = skipProbe
+    ? { mechanism: 'unverified' as const, failures: [] }
+    : await runRenderMechanismProbe(filePath);
   if (mechanismProbe.mechanism === 'broken' && isRenderStrictMode()) {
     reportBrokenMechanismToStderr(mechanismProbe.failures);
     return { exitCode: 2, outputPaths: [] };
@@ -311,6 +332,7 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
         noWatermark: input.noWatermark,
         objectFilter,
         section,
+        explode,
       }),
     );
   } catch (e) {
@@ -636,6 +658,9 @@ export function renderCommand(): Command {
       'clip the model with a section plane, e.g. --section z=10 (keeps the negative-axis side; see --section-flip)',
     )
     .option('--section-flip', 'keep the positive-axis side of the section plane instead', false)
+    .option('--explode <factor>', 'explode a multi-part assembly by this factor (≥ 0); requires assembly.model()', (v) => Number(v))
+    .option('--explode-mode <mode>', "explode direction: 'mate-axis' (default) or 'radial'")
+    .option('--no-mechanism-check', 'skip the mechanism-truth probe (fast iteration; reports unverified)', false)
     .action(async (file: string, opts: {
       out?: string;
       separate: boolean;
@@ -650,6 +675,9 @@ export function renderCommand(): Command {
       hide?: string;
       section?: string;
       sectionFlip: boolean;
+      explode?: number;
+      explodeMode?: string;
+      mechanismCheck?: boolean;
     }) => {
       const r = await renderScript({
         file,
@@ -666,6 +694,9 @@ export function renderCommand(): Command {
         hide: opts.hide ? [opts.hide] : undefined,
         section: opts.section,
         sectionFlip: opts.sectionFlip,
+        explode: opts.explode,
+        explodeMode: opts.explodeMode,
+        noMechanismCheck: opts.mechanismCheck === false,
       });
       for (const p of r.outputPaths) console.log(`Wrote ${p}`);
       process.exitCode = r.exitCode;

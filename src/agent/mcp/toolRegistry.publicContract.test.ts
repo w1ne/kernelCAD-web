@@ -15,10 +15,17 @@ import {
 import { catalogToolEntries } from './registry/catalogTools';
 import { coreRuntimeToolEntries } from './registry/coreRuntimeTools';
 import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools';
+import { feaToolEntries } from './registry/feaTools';
+import { drawingImportToolEntries } from './registry/drawingImportTools';
+import { geometryDiffToolEntries } from './registry/geometryDiffTools';
 import { inspectionVerificationToolEntries } from './registry/inspectionVerificationTools';
+import { printToolEntries } from './registry/printTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
+import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
 import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
+import { mechanismSimToolEntries } from './registry/mechanismSimTools';
+import { meshReconstructToolEntries } from './registry/meshReconstructTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -59,6 +66,17 @@ const EXPECTED_TOOL_NAMES = [
   'evaluate_sdf',
   'capture_animation',
   'render_preview',
+  'resolve_assumptions',
+  'run_fea',
+  'fea_summary',
+  'send_to_printer',
+  'repair_script',
+  'sweep_tolerance',
+  // Tail-appended: a new tool goes on the END so kernelCAD-server's
+  // index-based consumption of the historical order keeps working.
+  'diff_geometry',
+  'drawing_to_cad',
+  'mesh_to_features',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -116,10 +134,10 @@ describe('toolRegistry public contract', () => {
   it('composes inspection and verification tools from the inspection verification registry module', () => {
     const names = inspectionVerificationToolEntries.map(entry => entry.definition.name);
 
-    expect(names).toEqual(['inspect', 'verify', 'why_did_this_fail', 'query']);
-    expect([TOOL_REGISTRY[2], TOOL_REGISTRY[3], TOOL_REGISTRY[4], TOOL_REGISTRY[16]]).toEqual(
-      inspectionVerificationToolEntries,
-    );
+    expect(names).toEqual(['inspect', 'verify', 'why_did_this_fail', 'query', 'repair_script']);
+    expect([
+      TOOL_REGISTRY[2], TOOL_REGISTRY[3], TOOL_REGISTRY[4], TOOL_REGISTRY[16], TOOL_REGISTRY[42],
+    ]).toEqual(inspectionVerificationToolEntries);
   });
 
   it('composes reference and export tools from the reference export registry module', () => {
@@ -244,6 +262,72 @@ describe('toolRegistry public contract', () => {
       'render_preview',
     ]);
     expect(TOOL_REGISTRY.slice(31, 38)).toEqual(reviewPipelineToolEntries);
+  });
+
+  it('appends the reference-ledger tools at the tail of TOOL_REGISTRY', () => {
+    // New tool families are always appended at the very end — never inserted
+    // into an existing family — because TOOL_REGISTRY order is a public
+    // contract kernelCAD-server consumes. This asserts the tail, leaving
+    // every earlier family's slice index untouched.
+    const names = referenceLedgerToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual(['resolve_assumptions']);
+    expect(TOOL_REGISTRY.slice(38, 39)).toEqual(referenceLedgerToolEntries);
+  });
+
+  it('composes the structural-FEA tools last, so existing tool indices never shift', () => {
+    const names = feaToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual(['run_fea', 'fea_summary']);
+    expect(TOOL_REGISTRY.slice(39, 41)).toEqual(feaToolEntries);
+  });
+
+  it('composes the send_to_printer tool from the print registry module, appended last', () => {
+    expect(printToolEntries.map(entry => entry.definition.name)).toEqual(['send_to_printer']);
+    expect(TOOL_REGISTRY.slice(41, 42)).toEqual(printToolEntries);
+  });
+
+  it('composes the mechanism-sim tail slice from the mechanism-sim registry module', () => {
+    const names = mechanismSimToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual(['sweep_tolerance']);
+    expect(TOOL_REGISTRY.slice(43, 44)).toEqual(mechanismSimToolEntries);
+  });
+
+  it('composes the geometry diff family at the registry tail, after every pre-existing family', () => {
+    const names = geometryDiffToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual(['diff_geometry']);
+    expect(TOOL_REGISTRY.slice(44, 45)).toEqual(geometryDiffToolEntries);
+  });
+
+  it('composes the drawing-import family at the registry tail, after every pre-existing family', () => {
+    const names = drawingImportToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual(['drawing_to_cad']);
+    expect(TOOL_REGISTRY.slice(45, 46)).toEqual(drawingImportToolEntries);
+  });
+
+  it('composes the mesh reconstruction family at the registry tail, after the drawing-import family', () => {
+    const names = meshReconstructToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual(['mesh_to_features']);
+    expect(TOOL_REGISTRY.slice(46, 47)).toEqual(meshReconstructToolEntries);
+  });
+
+  it('keeps the 38 historical entries at indices 0..37 and appends new families in merge order', () => {
+    expect(TOOL_REGISTRY.slice(38).map(entry => entry.definition.name)).toEqual([
+      'resolve_assumptions',
+      'run_fea',
+      'fea_summary',
+      'send_to_printer',
+      'repair_script',
+      'sweep_tolerance',
+      'diff_geometry',
+      'drawing_to_cad',
+      'mesh_to_features',
+    ]);
+    expect(TOOL_REGISTRY).toHaveLength(47);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

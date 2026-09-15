@@ -5,7 +5,7 @@ import { validateFaceLabels } from './capture/faceLabels';
 import { makeAssembly, type Assembly } from './capture/assembly';
 import { Shape } from './capture/proxy';
 import { Sketch, makePath, type PathBuilder } from './capture/sketch';
-import type { SurfaceProxy } from './capture/surfaceProxy';
+import { SurfaceProxy } from './capture/surfaceProxy';
 import type { Curve3D } from './capture/curveProxy';
 import type { Param, Vec3, PlaneSpec } from '../shared/intent/types';
 import { isValidEditableNumber, formatScalarForError } from '../shared/intent/types';
@@ -28,8 +28,9 @@ import type {
   AnimationViewSpec,
 } from '../shared/intent/animationViewRecord';
 import type { DfmSpec, DfmSpecHandle } from '../shared/intent/dfmSpecRecord';
-import { helix, type RailPoint, type HelixOptions } from './helix';
+import { helix, tagHelixRail, type RailPoint, type HelixOptions } from './helix';
 import { solveHermiteG2, type HermiteEndpoint } from './capture/hermiteG2';
+import { bridgeCurves } from './capture/bridgeCurves';
 import { createSketchModule, type SketchModule } from './sketch/index';
 import { fontPath, type FontPath } from '../shared/fonts/fontPath';
 // Parts features (fromSTEP/fromBREP/fromSTL/findPart/fetchPart/standard) are
@@ -63,8 +64,9 @@ import { KernelError } from '../shared/intent/kernelError';
 import { validateThickness, validateKFactor } from './sheetMetal';
 import type { FaceLabelsMap } from '../shared/intent/featureRecord';
 import { makeParamRef, isParamRef, type ParamRef, type Editable } from '../shared/runtime/paramRef';
+import { makeTypedParamRef, type TypedParamRef } from '../shared/runtime/paramRef';
 import type { ParamMetadata } from '../shared/runtime/paramTable';
-import { toParam } from '../shared/runtime/editableHelpers';
+import { currentValue, toParam } from '../shared/runtime/editableHelpers';
 import * as kinematic from '../kinematic';
 import type { KinematicFacade } from '../kinematic/types';
 import { q as queryNamespace } from '../kernel/naming/queryConstructors';
@@ -189,18 +191,36 @@ export interface KernelCadApi {
   spring(opts: SpringOptions): Shape;
   extrudeRect(w: Editable<number>, h: Editable<number>, height: Editable<number>, opts?: FaceLabelOpts): Shape;
   extrudeCircle(r: Editable<number>, height: Editable<number>, opts?: FaceLabelOpts): Shape;
-  extrudePolygon(points: [number, number][], depth: Editable<number>, opts?: FaceLabelOpts): Shape;
+  extrudePolygon(points: Array<[Editable<number>, Editable<number>]>, depth: Editable<number>, opts?: FaceLabelOpts): Shape;
   extrudeRoundedRect(width: Editable<number>, height: Editable<number>, radius: Editable<number>, depth: Editable<number>, opts?: FaceLabelOpts): Shape;
   union(...shapes: Shape[]): Shape;
   assembly(name?: string): Assembly;
 
   // Slice-3 symbolic params (replaces slice-1's number-returning param()).
-  // See spec §E.1, §E.2.
-  param<T extends number | boolean>(name: string, defaultValue: T, meta?: ParamMetadata): ParamRef<T>;
+  // See spec §E.1, §E.2. Numeric and boolean params return a ParamRef with
+  // symbolic AST arithmetic (numbers only). A choice param (defaultValue is
+  // a string AND `meta.choices` is given) or a plain string param (no
+  // `choices`) returns a TypedParamRef instead: `.value` reads the current
+  // value eagerly — see spec 2026-09-14-typed-script-params-design.md §2 for
+  // why choice/string don't propagate symbolically.
+  param(name: string, defaultValue: number, meta?: ParamMetadata): ParamRef<number>;
+  param(name: string, defaultValue: boolean, meta?: ParamMetadata): ParamRef<boolean>;
+  param<C extends string>(
+    name: string,
+    defaultValue: C,
+    meta: ParamMetadata & { choices: readonly C[] },
+  ): TypedParamRef<C>;
+  param(name: string, defaultValue: string, meta?: ParamMetadata): TypedParamRef<string>;
   params<R extends Record<string, number | boolean>>(decl: R): { [K in keyof R]: ParamRef<R[K]> };
 
   path(): PathBuilder;
-  helix(opts: HelixOptions): RailPoint[];
+  /**
+   * Helix rail for `Sketch.sweep`. `radius`, `pitch`, `turns` and `startAngle`
+   * accept ParamRefs: the points are sampled from the current values and the
+   * rail remembers the symbolic dimensions, so a sweep along it follows param
+   * changes, and `sweep(rail, { spine: 'helix' })` can build the exact helix.
+   */
+  helix(opts: EditableHelixOptions): RailPoint[];
   /**
    * Pre-select edges by EdgeQuery. Returns a `ShapeList` — still an
    * `EdgeSegment[]` everywhere one is expected, plus the selector algebra
@@ -284,6 +304,25 @@ export interface KernelCadApi {
    * the curve3d record is not registered in that case.
    */
   hermiteG2(a: HermiteEndpoint, b: HermiteEndpoint): Curve3D;
+
+  /**
+   * Infer end frames from two Curve3Ds and emit a degree-5 Hermite blend.
+   * Same geometry as `a.bridge(b, opts)`.
+   */
+  curveBridge(
+    a: Curve3D,
+    b: Curve3D,
+    opts: { continuity: 'G1' | 'G2'; ends?: 'end-start' | 'end-end' | 'start-start' | 'start-end'; tension?: number },
+  ): Curve3D;
+
+  /**
+   * Exact surface–surface (or face–face) intersection via OCCT
+   * `BRepAlgoAPI_Section`. Returns one Curve3D per section edge.
+   */
+  surfaceIntersection(
+    a: Shape | SurfaceProxy,
+    b: Shape | SurfaceProxy,
+  ): Promise<Curve3D[]>;
 
   /**
    * NURBS Slice B: multi-section sweep. Sweeps each `section.profile` along
@@ -484,7 +523,13 @@ export interface KernelCadApi {
    * inter-part clearance, internal-channel topology) fail the evaluation
    * when violated.
    *
-   * At least one of `minWall`, `minClearance`, or `channels` is required.
+   * `process: 'fdm'` adds the FDM printability check (overhangs and
+   * bridges relative to `buildDirection`, walls and features relative to
+   * `nozzleMm`, bed contact, bed fit on `printer`, and the six-orientation
+   * ranking); the gcode export slices in the declared `buildDirection`.
+   *
+   * At least one of `minWall`, `minClearance`, `channels`, or `process` is
+   * required.
    * `includeArticulatedMates: true` also measures non-fastened mate pairs at
    * the declared rest pose; fastened mates stay exempt because their contact
    * is checked separately.
@@ -565,6 +610,16 @@ export interface SpringOptions {
   pointsPerTurn?: number;
   endStyle?: 'open' | 'closed';
   segments?: number;
+}
+
+/** `helix()` options as scripts pass them: dimensions may be ParamRefs. */
+export interface EditableHelixOptions {
+  radius: Editable<number>;
+  pitch: Editable<number>;
+  turns: Editable<number>;
+  axis?: 'X' | 'Y' | 'Z';
+  pointsPerTurn?: number;
+  startAngle?: Editable<number>;
 }
 
 const mm = (n: Editable<number>): Param => toParam(n, 'mm');
@@ -875,7 +930,12 @@ export function createApi(ctx: ApiContext): KernelCadApi {
           profileKind: { expression: "'polygon'", unit: 'unitless', evaluated: 0 },
           depth: mm(depth),
         },
-        metadata: { points, ...(faceLabels ? { faceLabels } : {}) },
+        // Plain numbers stay plain; a ParamRef coordinate is boxed as a Param
+        // so the dispatcher's pre-resolve substitutes it at lower time.
+        metadata: {
+          points: points.map((p) => (Array.isArray(p) ? p.map((c) => (typeof c === 'number' ? c : mm(c))) : p)),
+          ...(faceLabels ? { faceLabels } : {}),
+        },
       });
     },
     extrudeRoundedRect(width, height, radius, depth, opts) {
@@ -898,34 +958,61 @@ export function createApi(ctx: ApiContext): KernelCadApi {
     assembly(name) {
       return makeAssembly(name, session);
     },
-    param(name, defaultValue, meta) {
+    param: ((
+      name: string,
+      defaultValue: number | boolean | string,
+      meta?: ParamMetadata,
+    ): ParamRef<number> | ParamRef<boolean> | TypedParamRef<string> => {
       // Prevent re-wrapping if the agent accidentally passes a ParamRef
       // (would otherwise silently shadow a previously declared name).
       if (isParamRef(defaultValue)) {
         throw new KernelError(
           'feature.invalid-args',
-          `param('${name}'): defaultValue cannot be a ParamRef; pass a literal number or boolean.`,
+          `param('${name}'): defaultValue cannot be a ParamRef; pass a literal number, boolean, or string.`,
           undefined,
           `invalid-args.param.invalid-default — param '${name}' default cannot itself be a ParamRef.`,
         );
       }
+      if (typeof defaultValue === 'string') {
+        const type = meta?.choices ? 'choice' : 'string';
+        session.paramTable.declare(name, type, defaultValue, meta);
+        return makeTypedParamRef(name, type, defaultValue);
+      }
       const type = typeof defaultValue === 'boolean' ? 'boolean' : 'number';
       session.paramTable.declare(name, type, defaultValue, meta);
-      return makeParamRef(name, type as 'number' | 'boolean') as ReturnType<KernelCadApi['param']>;
-    },
+      return makeParamRef(name, type as 'number' | 'boolean', defaultValue) as ParamRef<number> | ParamRef<boolean>;
+    }) as KernelCadApi['param'],
     params(decl) {
       const out: Record<string, ParamRef<number | boolean>> = {};
       for (const [name, value] of Object.entries(decl)) {
         const type = typeof value === 'boolean' ? 'boolean' : 'number';
         session.paramTable.declare(name, type, value);
-        out[name] = makeParamRef(name, type as 'number' | 'boolean');
+        out[name] = makeParamRef(name, type as 'number' | 'boolean', value);
       }
       return out as { [K in keyof typeof decl]: ParamRef<typeof decl[K]> };
     },
     path() {
       return makePath(session);
     },
-    helix,
+    helix(opts) {
+      const table = session.paramTable;
+      const numeric: HelixOptions = {
+        radius: currentValue(opts.radius, table),
+        pitch: currentValue(opts.pitch, table),
+        turns: currentValue(opts.turns, table),
+        axis: opts.axis,
+        pointsPerTurn: opts.pointsPerTurn,
+        startAngle: opts.startAngle === undefined ? undefined : currentValue(opts.startAngle, table),
+      };
+      return tagHelixRail(helix(numeric), {
+        radius: toParam(opts.radius, 'mm'),
+        pitch: toParam(opts.pitch, 'mm'),
+        turns: toParam(opts.turns, 'unitless'),
+        startAngle: toParam(opts.startAngle ?? 0, 'unitless'),
+        axis: opts.axis ?? 'Z',
+        pointsPerTurn: opts.pointsPerTurn ?? 32,
+      });
+    },
     selectEdges: async (shape, query = {}) => {
       const lowered = await shape.lower();
       return select(selectEdgesBackend(lowered, query));
@@ -1081,6 +1168,70 @@ export function createApi(ctx: ApiContext): KernelCadApi {
           closed: false,
         },
       });
+    },
+
+    curveBridge(a, b, opts) {
+      return bridgeCurves(session, a, b, opts);
+    },
+
+    async surfaceIntersection(a, b) {
+      const { sectionShapes, edgeToCurve3DMetadata } = await import(
+        './backends/occt/surfaceIntersection'
+      );
+      const { OcctBackend } = await import('../kernel/backends/occt/occtBackend');
+      type OcctShape = InstanceType<typeof OcctBackend>;
+      const lowerOperand = async (op: Shape | SurfaceProxy, label: string): Promise<OcctShape> => {
+        if (op instanceof Shape) {
+          const lowered = await op.lower();
+          if (!(lowered instanceof OcctBackend)) {
+            throw new KernelError(
+              'feature.kernel-failed',
+              `surfaceIntersection: ${label} did not lower to an OcctBackend.`,
+              op.id,
+              'kernel-failed — check upstream diagnostics on this operand.',
+            );
+          }
+          return lowered;
+        }
+        const shell = op.toShape();
+        const lowered = await shell.lower();
+        if (!(lowered instanceof OcctBackend)) {
+          throw new KernelError(
+            'feature.kernel-failed',
+            `surfaceIntersection: ${label} surface did not lower to an OcctBackend.`,
+            op.id,
+            'kernel-failed — check upstream diagnostics on this operand.',
+          );
+        }
+        return lowered;
+      };
+      const shapeA = await lowerOperand(a, 'a');
+      const shapeB = await lowerOperand(b, 'b');
+      const wrappedA = (shapeA.getReplicadShape() as { wrapped: unknown }).wrapped;
+      const wrappedB = (shapeB.getReplicadShape() as { wrapped: unknown }).wrapped;
+      let edges;
+      try {
+        edges = sectionShapes(wrappedA, wrappedB);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        throw new KernelError(
+          'feature.kernel-failed',
+          `surfaceIntersection: BRepAlgoAPI_Section failed: ${msg}`,
+          undefined,
+          'kernel-failed — verify both operands lower to valid solids or faces.',
+        );
+      }
+      if (edges.length === 0) {
+        throw new KernelError(
+          'feature.surface-intersection.none',
+          'surfaceIntersection: the two operands do not intersect.',
+          undefined,
+          'surface-intersection.none — translate one operand so the faces cut, then retry.',
+        );
+      }
+      return edges.map((edge) =>
+        session.addCurve3D({ metadata: edgeToCurve3DMetadata(edge) }),
+      );
     },
 
     variableSweep(spine, sections, opts) {

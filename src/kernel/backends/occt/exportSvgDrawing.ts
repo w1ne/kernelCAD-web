@@ -29,6 +29,7 @@
 
 import { makeCompound, type AnyShape } from 'replicad';
 import type { WorldFramePart } from './sceneToWorldFrame';
+import { OcctBackend } from './occtBackend';
 import {
   makeDrawingCamera,
   projectShapeForDrawing,
@@ -52,8 +53,33 @@ import {
   DIM_BASE,
   type DrawingAnnotation,
 } from './drawingAnnotations';
+import { renderSections, type DrawingSectionSpec } from './drawingSections';
+import {
+  balloonAndTraceSvg,
+  partsListSvg,
+  explodeLabelOverlaps,
+  partCentroids,
+  type DrawingBomRow,
+} from './drawingExplode';
+import {
+  renderAutoDrawing,
+  type AutoAnnotateOptions,
+  type DrawingReport,
+} from './drawingAuto';
+import type { DrawingDeclarations } from '../../../shared/intent/drawingGdtRecord';
+import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
+import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
 
+export type { DrawingBomRow } from './drawingExplode';
 export type { DrawingAnnotation, DrawingAnchor } from './drawingAnnotations';
+export type { DrawingSectionSpec, SectionPlane } from './drawingSections';
+export type {
+  AutoAnnotateKind,
+  AutoAnnotateOptions,
+  DrawingReport,
+  DrawingReportAnnotation,
+  Iso2768Class,
+} from './drawingAuto';
 
 export interface SvgDrawingOptions {
   format: 'svg-drawing';
@@ -74,14 +100,65 @@ export interface SvgDrawingOptions {
    * Unresolvable annotations throw rather than silently vanishing.
    */
   annotations?: readonly DrawingAnnotation[];
+  /**
+   * Section views: a real half-space cut through the assembled body,
+   * projected through the axis's own camera, with the true cut cross-
+   * section hatched at 45°. A cutting-plane indicator (dashed line, arrows,
+   * letter) is drawn on the view where the plane appears edge-on, and the
+   * section cell is added below the standard 4-view grid (the sheet grows
+   * taller to make room — the standard views are unaffected).
+   *
+   * Any plane: `'xy'|'xz'|'yz'`, or `{ origin, normal }` with any non-zero
+   * normal. Oblique normals get an auxiliary (true-shape) section cell and a
+   * trace indicator on the standard view closest to edge-on. A plane that
+   * misses the body's bounding box fails with
+   * `drawing.section.plane-misses-body`.
+   */
+  sections?: readonly DrawingSectionSpec[];
+  /**
+   * Derive dimensions and GD&T from the B-rep: datums A/B/C, grouped hole
+   * callouts with position frames, hole positions from the datums, overall
+   * dimensions, grouped fillet / chamfer callouts, flatness on A, and an
+   * ISO 2768 general-tolerance cell. See `drawingAuto.ts` for the rules.
+   * Replaces the bounding-box dimensions (it carries its own overall set).
+   */
+  autoAnnotate?: boolean | AutoAnnotateOptions;
+  /**
+   * Datum / tolerance declarations captured from `shape.datum()` /
+   * `shape.tolerance()`. Supplied by the script runtime; they are drawn with
+   * or without `autoAnnotate` and never suppress the bounding-box dimensions.
+   */
+  declarations?: DrawingDeclarations;
+  /** Exploded isometric: factor/mode are applied by the caller; the iso
+   *  cell is drawn from `explodedParts` when provided. */
+  exploded?: { factor: number; mode: 'radial' | 'mate-axis' };
+  /** World-frame parts in the exploded pose, used only for the iso cell. */
+  explodedParts?: readonly WorldFramePart[];
+  /** Item balloons with leaders on the isometric cell. */
+  balloons?: boolean;
+  /** Parts-list table (item, name, qty, material) above the title block. */
+  partsList?: boolean;
+  /** BOM rows feeding balloons and the parts-list table. */
+  bomRows?: readonly DrawingBomRow[];
 }
 
-interface StyledView {
+export interface SvgDrawingResult {
+  bytes: Uint8Array;
+  /** Non-fatal diagnostics (overlap, datum ambiguity, unclassified holes). */
+  diagnostics: CompilerDiagnostic[];
+  /** Placement report; present whenever annotations were rendered. */
+  report?: DrawingReport;
+}
+
+/** One projected view, classified by line role, in the view's model-2D frame (y up). */
+export interface StyledDrawingView {
   visible: Polyline2[];
   tangent: Polyline2[];
   hidden: Polyline2[];
   box: ViewBox2;
 }
+
+type StyledView = StyledDrawingView;
 
 const VIEW_NAMES: readonly DrawingViewName[] = ['front', 'top', 'left', 'iso'];
 
@@ -126,6 +203,21 @@ function thirdAngleSymbol(cx: number, cy: number): string {
     `<circle cx="${round3(cx + 6.5)}" cy="${round3(cy)}" r="3.4"/>` +
     `<circle cx="${round3(cx + 6.5)}" cy="${round3(cy)}" r="1.9"/>`;
   return `<g class="third-angle-symbol" fill="none" stroke="#000" stroke-width="0.25">${trap}${circles}</g>`;
+}
+
+/** General-tolerance cell attached to the left of the title block. */
+function generalToleranceCell(sheet: SheetSpec, note: string): string {
+  const { w: tbW, h } = sheet.titleBlock;
+  const w = 46;
+  const x = sheet.w - sheet.margin - tbW - w;
+  const y = sheet.h - sheet.margin - h;
+  return (
+    `<g id="general-tolerance" fill="none" stroke="#000" stroke-width="0.35">` +
+    `<rect x="${round3(x)}" y="${round3(y)}" width="${w}" height="${h}" fill="#fff"/>` +
+    `<text x="${round3(x + 1.5)}" y="${round3(y + 3)}" font-size="1.8" fill="#555" stroke="none">GENERAL TOLERANCES</text>` +
+    `<text x="${round3(x + 1.5)}" y="${round3(y + h / 2 + 2)}" font-size="3.4" fill="#000" stroke="none">${esc(note)}</text>` +
+    `</g>`
+  );
 }
 
 function titleBlock(
@@ -175,6 +267,45 @@ const VIEW_LABELS: Record<DrawingViewName, string> = {
 };
 
 /**
+ * Project, classify and dedup the sheet's standard views — exactly the view
+ * stage `exportSvgDrawing` draws. Class order is the dedup priority: visible
+ * full-weight first, then tangent, then hidden — a coincident segment lands
+ * once, in its strongest role. Exported so a reader of drawings (the
+ * drawing-to-CAD fidelity check) can re-project a model through the same
+ * cameras and line classes the exporter uses.
+ */
+export function projectDrawingViews(
+  shape: AnyShape,
+  names: readonly DrawingViewName[] = VIEW_NAMES,
+): Record<DrawingViewName, StyledDrawingView> {
+  const styled = {} as Record<DrawingViewName, StyledView>;
+  for (const name of names) {
+    const camera = makeDrawingCamera(name);
+    const raw = projectShapeForDrawing(shape, camera, {
+      withHidden: name !== 'iso',
+    });
+    const [vSharp, vOutline, vSmooth, hSharp, hOutline] = dedupPolylineClasses([
+      raw.visibleSharp,
+      raw.visibleOutline,
+      raw.visibleSmooth,
+      raw.hiddenSharp,
+      raw.hiddenOutline,
+      // hiddenSmooth deliberately dropped — tangent hidden lines are noise.
+    ]);
+    const view: StyledView = {
+      visible: [...vSharp, ...vOutline],
+      tangent: vSmooth,
+      hidden: [...hSharp, ...hOutline],
+      box: { x: 0, y: 0, w: 1, h: 1 },
+    };
+    const box = viewBoxOfPolylines([view.visible, view.tangent, view.hidden]);
+    if (box) view.box = box;
+    styled[name] = view;
+  }
+  return styled;
+}
+
+/**
  * Render `parts` (one entry for a single body; one per assembly part in
  * world frame for a Scene) as a third-angle engineering-drawing sheet.
  * Multi-part inputs are compounded so the hidden-line pass sees inter-part
@@ -183,14 +314,48 @@ const VIEW_LABELS: Record<DrawingViewName, string> = {
 export function exportSvgDrawing(
   parts: WorldFramePart[],
   options: SvgDrawingOptions,
+  /** Optional sink for non-fatal (warn-severity) diagnostics. Mutated in
+   *  place rather than returned so the primary Uint8Array return stays
+   *  unchanged for every existing caller. */
+  diagnosticsOut?: CompilerDiagnostic[],
 ): Uint8Array {
+  const r = renderSvgDrawing(parts, options);
+  if (diagnosticsOut !== undefined) diagnosticsOut.push(...r.diagnostics);
+  return r.bytes;
+}
+
+/** Same sheet as `exportSvgDrawing`, returning diagnostics and the placement
+ *  report alongside the bytes. */
+export function renderSvgDrawing(
+  parts: WorldFramePart[],
+  options: SvgDrawingOptions,
+): SvgDrawingResult {
+  const diagnosticsOut: CompilerDiagnostic[] = [];
   if (parts.length === 0) {
     throw new Error('svg-drawing export requires at least one part.');
   }
+  // Centroids must be read BEFORE makeCompound / getReplicadShape: those
+  // consume the replicad handles, and a later boundingBox would throw
+  // "This object has been deleted". Skip the read unless balloons,
+  // parts-list, or an exploded iso actually need them — exact bbox
+  // tessellation would otherwise perturb the automatic dimensions.
+  const explodedParts = options.explodedParts;
+  const needCentroids =
+    options.balloons === true || options.partsList === true || explodedParts !== undefined;
+  const assembledCentroids = needCentroids ? partCentroids(parts) : new Map();
+  const explodedCentroids = explodedParts !== undefined
+    ? partCentroids(explodedParts)
+    : assembledCentroids;
   const shape: AnyShape =
     parts.length === 1
       ? parts[0].shape.getReplicadShape()
       : makeCompound(parts.map(p => p.shape.getReplicadShape()));
+  const explodedShape: AnyShape | undefined =
+    explodedParts === undefined || explodedParts.length === 0
+      ? undefined
+      : explodedParts.length === 1
+        ? explodedParts[0]!.shape.getReplicadShape()
+        : makeCompound(explodedParts.map(p => p.shape.getReplicadShape()));
 
   const sheet = SHEETS[options.sheet ?? 'a4'];
   const [bbMin, bbMax] = shape.boundingBox.bounds;
@@ -206,7 +371,8 @@ export function exportSvgDrawing(
   const styled = {} as Record<DrawingViewName, StyledView>;
   for (const name of VIEW_NAMES) {
     const camera = makeDrawingCamera(name);
-    const raw = projectShapeForDrawing(shape, camera, {
+    const source = name === 'iso' && explodedShape !== undefined ? explodedShape : shape;
+    const raw = projectShapeForDrawing(source, camera, {
       withHidden: name !== 'iso',
     });
     const [vSharp, vOutline, vSmooth, hSharp, hOutline] = dedupPolylineClasses([
@@ -243,10 +409,16 @@ export function exportSvgDrawing(
   // Computed before the view groups because bottom-stacked dimensions decide
   // how far down each view's caption has to move to clear them.
   const authored = options.annotations ?? [];
+  const declarations = options.declarations ?? { datums: [], tolerances: [] };
+  const autoOn = options.autoAnnotate !== undefined && options.autoAnnotate !== false;
+  const hasDeclarations = declarations.datums.length + declarations.tolerances.length > 0;
   const f = layout.views.front.box;
   const t = layout.views.top.box;
   let dimBodies: string[];
   let bottomReserve: Record<DrawingViewName, number>;
+  let rightReserve: Record<DrawingViewName, number> = { front: 0, top: 0, left: 0, iso: 0 };
+  let report: DrawingReport | undefined;
+  let generalTolerance: string | undefined;
 
   if (authored.length > 0) {
     const rendered = renderAnnotations({
@@ -257,6 +429,37 @@ export function exportSvgDrawing(
     });
     dimBodies = rendered.svg;
     bottomReserve = rendered.bottomReserve;
+    rightReserve = rendered.rightReserve;
+    const crowded = new Set(rendered.overlaps.flat());
+    report = {
+      placed: authored.length - crowded.size,
+      overlapped: crowded.size,
+      byKind: authored.reduce<Record<string, number>>((acc, a) => {
+        acc[a.kind] = (acc[a.kind] ?? 0) + 1;
+        return acc;
+      }, {}),
+      datums: [],
+      annotations: authored.map((a, i) => ({
+        kind: a.kind,
+        view: a.view ?? 'front',
+        text: 'text' in a && a.text !== undefined ? a.text : a.kind === 'datum' ? `datum ${a.label}` : a.kind,
+        overlapped: crowded.has(i),
+      })),
+    };
+    if (rendered.overlaps.length > 0) {
+      const pairs = rendered.overlaps.map(([i, j]) => `annotations[${i}] / annotations[${j}]`).join(', ');
+      diagnosticsOut.push({
+        target: 'export-occt',
+        code: 'drawing.annotation.overlap',
+        severity: 'warn',
+        message: `svg-drawing: ${rendered.overlaps.length} annotation pair(s) have overlapping rendered labels: ${pairs}.`,
+        hint: 'Reorder the annotations array, pass a different `view`, or add `offset` to push one of them further out.',
+        nextAction: NEXT_ACTIONS['drawing.annotation.overlap'],
+      });
+    }
+  } else if (autoOn) {
+    dimBodies = [];
+    bottomReserve = { front: 0, top: 0, left: 0, iso: 0 };
   } else {
     const dimSpecs: LinearDimension[] = [
       {
@@ -286,6 +489,77 @@ export function exportSvgDrawing(
     bottomReserve = { front: DIM_BASE, top: 0, left: 0, iso: 0 };
   }
 
+  // --- section views ---------------------------------------------------
+  // The standard 4-view grid above is computed against the UNMODIFIED
+  // `sheet` spec, so a drawing with no sections is byte-identical to one
+  // from before this feature existed. Sections add a reserved band BELOW
+  // that grid (where the title block used to sit) and push the title block
+  // + frame down into a taller sheet — nothing above the band moves.
+  const sectionSpecs = options.sections ?? [];
+  const SECTION_BAND_H = 70;
+  const hasSections = sectionSpecs.length > 0;
+  const effSheet: SheetSpec = hasSections
+    ? { ...sheet, h: sheet.h + SECTION_BAND_H }
+    : sheet;
+  let sectionsSvg = '';
+  let usesHatchPattern = false;
+  if (hasSections) {
+    const compoundBackend = new OcctBackend(shape as import('replicad').Shape3D);
+    const bandOrigin: [number, number] = [
+      sheet.margin,
+      sheet.h - sheet.margin - sheet.titleBlock.h,
+    ];
+    const rendered = renderSections({
+      compound: compoundBackend,
+      sections: sectionSpecs,
+      mainViewPlacements: layout.views,
+      mainScale: s,
+      bandOrigin,
+      bandWidth: sheet.w - 2 * sheet.margin,
+      bandHeight: SECTION_BAND_H,
+    });
+    sectionsSvg = rendered.svg;
+    usesHatchPattern = rendered.usesHatchPattern;
+  }
+  // --- automatic annotation + declared GD&T ------------------------------
+  if (autoOn || hasDeclarations) {
+    const compoundBackend = parts.length === 1
+      ? (parts[0].shape as OcctBackend)
+      : new OcctBackend(shape as import('replicad').Shape3D);
+    const auto = renderAutoDrawing({
+      parts,
+      compound: compoundBackend,
+      autoAnnotate: options.autoAnnotate,
+      declarations,
+      authoredDatums: authored.flatMap(a => (a.kind === 'datum' ? [{ label: a.label, face: a.face }] : [])),
+      authoredSvg: dimBodies,
+      views: Object.fromEntries(VIEW_NAMES.map(name => [name, {
+        placement: layout.views[name],
+        polylines: [...styled[name].visible, ...styled[name].tangent, ...styled[name].hidden],
+      }])) as Record<DrawingViewName, { placement: ViewPlacement; polylines: Polyline2[] }>,
+      scale: s,
+      sheet,
+      bottomReserve,
+      rightReserve,
+      // Cutting-plane indicators sit on the standard views; keep labels off them.
+      extraObstacleSvg: sectionsSvg,
+    });
+    dimBodies = [...dimBodies, ...auto.svg];
+    bottomReserve = auto.bottomReserve;
+    generalTolerance = auto.generalTolerance;
+    diagnosticsOut.push(...auto.diagnostics);
+    report = report === undefined
+      ? auto.report
+      : {
+          placed: report.placed + auto.report.placed,
+          overlapped: report.overlapped + auto.report.overlapped,
+          byKind: { ...report.byKind, ...Object.fromEntries(Object.entries(auto.report.byKind).map(([k, v]) => [k, v + (report!.byKind[k] ?? 0)])) },
+          datums: auto.report.datums,
+          annotations: [...report.annotations, ...auto.report.annotations],
+          ...(auto.report.generalTolerance ? { generalTolerance: auto.report.generalTolerance } : {}),
+        };
+  }
+
   // --- view groups -------------------------------------------------------
   const viewGroups = VIEW_NAMES.map(name => {
     const v = styled[name];
@@ -298,7 +572,7 @@ export function exportSvgDrawing(
     const label =
       `<text class="view-label" x="${round3(p.box.x + p.box.w / 2)}" ` +
       `y="${round3(p.box.y + p.box.h + labelOffset)}" font-size="2.6" text-anchor="middle" ` +
-      `fill="#555" stroke="none">${VIEW_LABELS[name]}</text>`;
+      `fill="#555" stroke="none">${name === 'iso' && explodedShape !== undefined ? 'ISOMETRIC — EXPLODED' : VIEW_LABELS[name]}</text>`;
     return (
       `<g id="view-${name}" data-view="${name}" fill="none" stroke="#000" ` +
       `stroke-linecap="round" stroke-linejoin="round">` +
@@ -312,21 +586,73 @@ export function exportSvgDrawing(
 
   const dimensions = `<g id="dimensions">` + dimBodies.join('') + `</g>`;
 
+  const hatchDefs = usesHatchPattern
+    ? `<defs><pattern id="kc-section-hatch" width="2" height="2" patternUnits="userSpaceOnUse" ` +
+      `patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="2" stroke="#000" stroke-width="0.2"/></pattern></defs>`
+    : '';
+
   // --- sheet ---------------------------------------------------------------
   const frame =
-    `<rect class="frame" x="${sheet.margin}" y="${sheet.margin}" ` +
-    `width="${sheet.w - 2 * sheet.margin}" height="${sheet.h - 2 * sheet.margin}" ` +
+    `<rect class="frame" x="${effSheet.margin}" y="${effSheet.margin}" ` +
+    `width="${effSheet.w - 2 * effSheet.margin}" height="${effSheet.h - 2 * effSheet.margin}" ` +
     `fill="none" stroke="#000" stroke-width="0.35"/>`;
 
+
+  const bomRows = options.bomRows ?? [];
+  let explodeSvg = '';
+  const overlapFragments: string[] = [];
+  if (options.balloons === true && bomRows.length > 0) {
+    const drawn = balloonAndTraceSvg({
+      assembledCentroids,
+      explodedCentroids,
+      bomRows,
+      iso: layout.views.iso,
+      scale: s,
+    });
+    explodeSvg += drawn.svg;
+    overlapFragments.push(...drawn.fragments);
+  } else if (explodedParts !== undefined) {
+    const tracesOnly = balloonAndTraceSvg({
+      assembledCentroids,
+      explodedCentroids,
+      bomRows: [],
+      iso: layout.views.iso,
+      scale: s,
+    });
+    explodeSvg += tracesOnly.svg;
+  }
+  if (options.partsList === true && bomRows.length > 0) {
+    const table = partsListSvg({ rows: bomRows, sheet: effSheet });
+    explodeSvg += table.svg;
+    overlapFragments.push(table.fragment);
+  }
+  if (overlapFragments.length > 0) {
+    const overlaps = explodeLabelOverlaps(overlapFragments);
+    if (overlaps.length > 0) {
+      diagnosticsOut.push({
+        target: 'export-occt',
+        code: 'drawing.annotation.overlap',
+        severity: 'warn',
+        message: `svg-drawing: ${overlaps.length} balloon/parts-list label pair(s) overlap on the sheet.`,
+        hint: 'Increase the explode factor, use a larger sheet, or drop balloons/partsList on a crowded assembly.',
+        nextAction: NEXT_ACTIONS['drawing.annotation.overlap'],
+      });
+    }
+  }
+
   const svg = [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${sheet.w} ${sheet.h}" ` +
-      `width="${sheet.w}mm" height="${sheet.h}mm" font-family="sans-serif" ` +
-      `data-kc-format="svg-drawing" data-kc-scale="${layout.scaleText}" data-kc-units="mm">`,
-    `<rect x="0" y="0" width="${sheet.w}" height="${sheet.h}" fill="#fff"/>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${effSheet.w} ${effSheet.h}" ` +
+      `width="${effSheet.w}mm" height="${effSheet.h}mm" font-family="sans-serif" ` +
+      `data-kc-format="svg-drawing" data-kc-scale="${layout.scaleText}" data-kc-units="mm"${explodedShape !== undefined ? ' data-kc-exploded="true"' : ''}>`,
+    ...(hatchDefs === '' ? [] : [hatchDefs]),
+    `<rect x="0" y="0" width="${effSheet.w}" height="${effSheet.h}" fill="#fff"/>`,
     frame,
     ...viewGroups,
     dimensions,
-    titleBlock(sheet, {
+    ...(sectionsSvg === '' ? [] : [sectionsSvg]),
+    ...(explodeSvg === '' ? [] : [explodeSvg]),
+    ...(generalTolerance === undefined ? [] : [generalToleranceCell(effSheet, generalTolerance)]),
+    titleBlock(effSheet, {
       name: options.modelName ?? 'model',
       scaleText: layout.scaleText,
       units: 'mm',
@@ -335,5 +661,9 @@ export function exportSvgDrawing(
     `</svg>`,
   ].join('\n');
 
-  return new TextEncoder().encode(svg);
+  return {
+    bytes: new TextEncoder().encode(svg),
+    diagnostics: diagnosticsOut,
+    ...(report === undefined ? {} : { report }),
+  };
 }

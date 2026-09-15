@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 248 codes', () => {
+  it('emits exactly 305 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -59,8 +59,52 @@ describe('diagnostic catalogue invariants', () => {
     //   the script also placed — the URDF/mate convention mix, which displaces
     //   the child by the joint origin at every pose).
     //   = 248.
-    expect(DIAGNOSTIC_CODES).toHaveLength(248);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(248);
+    // + 4 drawing annotations and section views: drawing.datum.unresolved,
+    //   drawing.tolerance.feature-unresolved, drawing.section.plane-misses-body,
+    //   drawing.annotation.overlap = 252.
+    // + 3 image/photo reference assumption ledger:
+    //   reference.assumptions.unresolved, reference.assumptions.ledger-not-found,
+    //   reference.assumptions.unknown-resolution-id = 255.
+    // + 5 structural FEA gate: fea.safety-factor.below-min,
+    //   fea.mesh.quality-low, fea.solver.unavailable, fea.study.fixed-unresolved,
+    //   fea.study.load-unresolved = 260.
+    // + 4 print loop: export.gcode.slicer-unavailable,
+    //   export.gcode.exceeds-bed, tool.send-to-printer.unreachable,
+    //   tool.send-to-printer.upload-failed = 264.
+    // + 4 trace-guided repair: tool.repair.exhausted, tool.repair.no-candidate,
+    //   tool.repair.out-of-region, tool.repair.source-drift = 268.
+    // + 4 mechanism checks: assembly.joint.static-hold.exceeded,
+    //   assembly.joint.static-hold.margin-low,
+    //   kinematic.static-hold.no-actuator-declared,
+    //   kinematic.sweep-tolerance.combo-cap-exceeded = 272.
+    // + 4 USD physics export and geometry diff: export.usd.joint-unsupported,
+    //   export.usd.pose-unsolved, export.usd.mass-missing, diff.body.unmatched =
+    //   276.
+    // + 2 BOM extraction: bom.material.unassigned,
+    //   bom.purchased.catalog-metadata-missing = 278.
+    // + 2 exploded views: render.explode.no-assembly,
+    //   drawing.balloons.bom-unavailable = 280.
+    // + 7 FDM printability check (dfmSpec process 'fdm'): dfm.fdm.overhang-unsupported,
+    //   dfm.fdm.bridge-too-long, dfm.fdm.wall-below-nozzle, dfm.fdm.feature-too-small,
+    //   dfm.fdm.bed-contact-low, dfm.fdm.tip-risk, dfm.fdm.exceeds-bed = 287.
+    // + 2 sketch-from-shape: feature.section.plane-misses-body,
+    //   feature.face-sketch.non-planar = 289.
+    // + 1 feature.async-result.missing-await (agent chained a Sketch method
+    //   directly on the un-awaited Promise<Sketch> from sectionSketch/
+    //   faceSketch/silhouette). = 290.
+    // + 2 automatic drawing annotation: drawing.auto.datum-ambiguous,
+    //   drawing.auto.hole-unclassified = 292.
+    // + 4 engineering-drawing PDF import: reference.drawing.raster-only,
+    //   reference.drawing.view-ambiguous, reference.drawing.dimension-unassociated,
+    //   reference.drawing.depth-missing = 296.
+    // + 3 mesh reconstruction: reference.mesh.not-watertight,
+    //   reference.mesh.low-fidelity, reference.mesh.freeform-region-unmatched = 299.
+    // + 3 curves-surfacing: feature.curve-bridge.degenerate-end,
+    //   feature.surface-intersection.none, feature.loft.rail-miss = 302.
+    // + 3 surface-quality inspect: inspect.continuity.g1-break,
+    //   inspect.continuity.broken, inspect.curvature.spike = 305.
+    expect(DIAGNOSTIC_CODES).toHaveLength(305);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(305);
   });
 
   it('every code has a non-empty hint template', () => {

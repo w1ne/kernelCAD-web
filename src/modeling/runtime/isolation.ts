@@ -8,6 +8,15 @@ import vm from 'node:vm';
 // here so every existing `from './isolation'` import keeps working.
 export type { IsolationOptions, IsolationResult } from './isolationTypes';
 import type { IsolationOptions, IsolationResult } from './isolationTypes';
+import { wrapOffsetOf } from './isolationTypes';
+
+/** Prologue this runner puts in front of the user's script under `wrapReturn`.
+ *  Declared as a constant so the offset it produces is derived, never guessed. */
+const WRAP_PROLOGUE = '__return = (async function() { ';
+
+/** Displacement `WRAP_PROLOGUE` applies to call-site positions. Consumed by the
+ *  script runtime to map frames back to authored-file coordinates. */
+export const ISOLATION_WRAP_OFFSET = wrapOffsetOf(WRAP_PROLOGUE);
 
 /**
  * Globals that must NEVER be reachable from inside a sandboxed user script,
@@ -67,7 +76,7 @@ export function runIsolated(
   });
 
   const wrapped = opts.wrapReturn
-    ? `__return = (async function() { ${code} \n})();`
+    ? `${WRAP_PROLOGUE}${code} \n})();`
     : code;
 
   const script = new vm.Script(wrapped, { filename: fileName });

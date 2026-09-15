@@ -21,7 +21,7 @@ import * as replicad from 'replicad';
 import type { Face } from 'replicad';
 import { OcctBackend } from './occtBackend';
 import { pickFace } from './edgeSelection';
-import { cutWithHistory, fuseWithHistory, mergeBooleanHistory } from './historyAwareBooleans';
+import { assertBooleanSucceeded, cutWithHistory, fuseWithHistory, mergeBooleanHistory } from './historyAwareBooleans';
 import { resolveFaceQuery } from './edgeQueries';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -37,6 +37,8 @@ import {
   type CreatedRefSpec,
 } from './createdRefs';
 import type { FeatureKind } from '../../../shared/intent/types';
+import { HelicalSweepArgsError, polygonWireXY, sweepProfileAlongHelix } from './helicalSweep';
+import { isoInternalGrooveProfile, isoMinorRadius, profileHalfExtent } from './isoThread';
 
 export interface HoleLowerResult {
   backend: OcctBackend;
@@ -212,6 +214,98 @@ interface OneToolBuild {
   bore: BoreFrame;
 }
 
+/**
+ * Fuse two tool solids WITHOUT replicad's `SimplifyResult` pass. On a tool
+ * carrying helical thread faces that pass (UnifySameDomain with history) runs
+ * for minutes; the unsimplified fuse is the same solid, and the tool is
+ * consumed by one cut straight away.
+ */
+function fuseUnsimplified(a: replicad.Shape3D, b: replicad.Shape3D): replicad.Shape3D {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = (replicad as any).getOC();
+  const progress = new oc.Message_ProgressRange_1();
+  const fuse = new oc.BRepAlgoAPI_Fuse_1();
+  const args = new oc.TopTools_ListOfShape_1();
+  const tools = new oc.TopTools_ListOfShape_1();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  args.Append_1((a as any).wrapped);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tools.Append_1((b as any).wrapped);
+  fuse.SetArguments(args);
+  fuse.SetTools(tools);
+  fuse.Build(progress);
+  try {
+    assertBooleanSucceeded(fuse, 'thread-tool fuse');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return replicad.cast(fuse.Shape()) as any as replicad.Shape3D;
+  } finally {
+    fuse.delete(); args.delete(); tools.delete(); progress.delete();
+  }
+}
+
+/** Thread params read back from a hole record (already pre-resolved). */
+interface ThreadParams {
+  pitch: number;
+  clearance: number;
+  modeled: boolean;
+}
+
+function readThread(feature: FeatureRecord): ThreadParams | undefined {
+  const p = feature.params.threadPitch;
+  if (p === undefined) return undefined;
+  return {
+    pitch: p.evaluated,
+    clearance: feature.params.threadClearance?.evaluated ?? 0,
+    modeled: (feature.params.threadModeled?.evaluated ?? 0) > 0.5,
+  };
+}
+
+/** Diameter actually drilled: the ISO minor diameter (plus clearance) for a
+ *  threaded hole, the authored diameter otherwise. */
+function drilledDiameter(nominal: number, thread: ThreadParams | undefined): number {
+  if (thread === undefined) return nominal;
+  return 2 * (isoMinorRadius(nominal, thread.pitch) + thread.clearance);
+}
+
+/**
+ * The internal thread groove for one bore: the ISO basic groove (grown by the
+ * clearance) swept along an exact right-hand helix about the bore axis. The
+ * groove centre crosses the entry face at the face's u direction; it starts
+ * one pitch outside the entry face and runs one pitch past a through hole's
+ * exit, or stops short of a blind hole's floor.
+ */
+function buildThreadGroove(
+  entryPoint: Vec3,
+  axisIntoBody: Vec3,
+  uBasis: Vec3,
+  nominalDiameter: number,
+  effectiveDepth: number,
+  through: boolean,
+  thread: ThreadParams,
+): replicad.Shape3D {
+  const P = thread.pitch;
+  const profile = isoInternalGrooveProfile(nominalDiameter, P, thread.clearance);
+  const helixRadius = isoMinorRadius(nominalDiameter, P) + thread.clearance;
+  // Right-handed frame: refDir × normalDir = axis.
+  const normalDir = cross(axisIntoBody, uBasis);
+  const endAxial = through ? effectiveDepth + P : effectiveDepth - profileHalfExtent(profile) - 0.02 * P;
+  const startAxial = -P;
+  const solid = sweepProfileAlongHelix(polygonWireXY(profile), {
+    origin: add(entryPoint, scale(axisIntoBody, startAxial)),
+    axis: axisIntoBody,
+    refDir: uBasis,
+    normalDir,
+    radius: helixRadius,
+    pitch: P,
+    turns: (endAxial - startAxial) / P,
+    // startAxial is a whole number of pitches before the entry face, so angle
+    // 0 at the start puts the groove centre on uBasis at the entry face too.
+    startAngle: 0,
+  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return replicad.cast(solid as any) as replicad.Shape3D;
+}
+
 /** Build the tool solid for one bore at (u, v) on the entry frame. */
 function buildOneTool(
   entry: ResolvedEntry,
@@ -223,6 +317,7 @@ function buildOneTool(
   throughDepth: number,
   counterbore: { diameter: number; depth: number } | undefined,
   countersink: { diameter: number; angleDeg: number } | undefined,
+  thread?: { params: ThreadParams; nominalDiameter: number },
 ): OneToolBuild {
   const entryPoint: Vec3 = add(
     entry.centroid,
@@ -264,32 +359,22 @@ function buildOneTool(
     tool = (tool as any).fuse(cb) as replicad.Shape3D;
   }
 
-  // Countersink: cone with apex at depth = (csDiameter/2) / tan(csAngle/2),
-  // opening upward toward the entry plane. We approximate by revolving a
-  // triangle profile around the bore axis.
+  // Countersink: a cone widest at the entry face (radius csDiameter/2) that
+  // narrows into the body at the half angle, fused onto the bore.
   if (countersink) {
-    const halfAngle = (countersink.angleDeg / 2) * Math.PI / 180;
-    const csDepth = (countersink.diameter / 2) / Math.tan(halfAngle);
-    // Profile in the (radial, axial) plane: triangle with vertices at
-    //   (0, -OVERSHOOT)  ← apex above entry plane (cleared)
-    //   (csDiameter/2, csDepth - OVERSHOOT)  ← rim at csDepth into body
-    //   (0, csDepth - OVERSHOOT)
-    // Revolved around the bore axis (Z in the local frame) to form the cone.
-    // We build the profile in the world frame using a small drawing in the
-    // XZ plane, then place it at the entry point with the bore axis along Z.
-    // For axis-aligned bores (Z direction), this is straightforward; for
-    // arbitrary axes we'd need a frame transform. Slice-1 cardinal-axis
-    // limitation: countersink works for axis-aligned bores only.
-    // We build the cone via revolving a triangle drawn in the local frame.
-    // Use replicad.makeCylinder for the apex region (zero-radius cylinders
-    // don't exist; instead build the cone via two stacked frusta or via
-    // revolveSolid). For slice-1 simplicity, we construct a cone using the
-    // OCCT BRepPrimAPI_MakeCone primitive directly via the WASM bindings.
-    const csTool = buildConeTool(entryPoint, entry.axisIntoBody, countersink.diameter / 2, csDepth);
-    if (csTool) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      tool = (tool as any).fuse(csTool) as replicad.Shape3D;
-    }
+    const csTool = buildCountersinkCone(entryPoint, entry.axisIntoBody, entry.uBasis, countersink.diameter / 2, countersink.angleDeg, OVERSHOOT);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tool = (tool as any).fuse(csTool) as replicad.Shape3D;
+  }
+
+  // Modeled thread, fused LAST and without simplification: the groove joins
+  // the bore (and any cb / csk) so the hole stays ONE history-tracked cut, and
+  // the cb / csk fuses above keep exactly their pre-thread behaviour.
+  if (thread?.params.modeled) {
+    const groove = buildThreadGroove(
+      entryPoint, entry.axisIntoBody, entry.uBasis, thread.nominalDiameter, effectiveDepth, through, thread.params,
+    );
+    tool = fuseUnsimplified(tool, groove);
   }
 
   const bore: BoreFrame = {
@@ -304,40 +389,65 @@ function buildOneTool(
   return { tool, bore };
 }
 
-/** Build a cone solid via the OCCT BRepPrimAPI_MakeCone bindings. The cone has
- *  its apex at `apexPoint` and opens along `axis` for `height`, with radius
- *  `topRadius` at the open end and 0 at the apex. Returns null on failure. */
-function buildConeTool(
-  apexPoint: Vec3,
-  axis: Vec3,
-  topRadius: number,
-  height: number,
-): replicad.Shape3D | null {
+/**
+ * Countersink cutter: the right triangle (axis, entry rim, apex) revolved a
+ * full turn about the bore axis. The bundled OCCT wasm does not bind
+ * `BRepPrimAPI_MakeCone`, so the cone is built with `BRepPrimAPI_MakeRevol`,
+ * which OCCT turns into an exact conical face for a straight generatrix.
+ *
+ * The profile starts `overshoot` outside the entry face (continuing the cone)
+ * so the cutter crosses the face instead of sharing it, and ends at the apex
+ * `rimRadius / tan(angle/2)` into the body.
+ *
+ * @throws {Error} when the cone cannot be built — the caller turns that into
+ *   an error diagnostic; a hole never silently loses its countersink.
+ */
+export function buildCountersinkCone(
+  entryPoint: Vec3,
+  axisIntoBody: Vec3,
+  uBasis: Vec3,
+  rimRadius: number,
+  angleDeg: number,
+  overshoot: number,
+): replicad.Shape3D {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = (replicad as any).getOC();
+  const halfAngle = (angleDeg / 2) * Math.PI / 180;
+  const apexDepth = rimRadius / Math.tan(halfAngle);
+  const outerRadius = rimRadius + overshoot * Math.tan(halfAngle);
+  const at = (radial: number, axial: number): Vec3 =>
+    add(entryPoint, add(scale(uBasis, radial), scale(axisIntoBody, axial)));
+  const corners: Vec3[] = [at(0, -overshoot), at(outerRadius, -overshoot), at(0, apexDepth)];
+  const created: Array<{ delete(): void }> = [];
+  const keep = <T extends { delete(): void }>(o: T): T => { created.push(o); return o; };
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const oc = (replicad as any).getOC ? (replicad as any).getOC() : null;
-    if (!oc) return null;
-    // gp_Ax2 from origin and axis direction.
-    const apexGp = new oc.gp_Pnt_3(apexPoint[0], apexPoint[1], apexPoint[2]);
-    const axisGp = new oc.gp_Dir_4(axis[0], axis[1], axis[2]);
-    const ax2 = new oc.gp_Ax2_3(apexGp, axisGp);
-    // BRepPrimAPI_MakeCone(ax2, R1, R2, H) — R1 (apex) = 0, R2 (top) = topRadius.
-    const builder = new oc.BRepPrimAPI_MakeCone_4(ax2, 0, topRadius, height);
-    builder.Build(new oc.Message_ProgressRange_1());
-    if (!builder.IsDone()) {
-      builder.delete();
-      return null;
+    if (typeof oc.BRepPrimAPI_MakeRevol_2 !== 'function') {
+      throw new Error('this OCCT build does not provide BRepPrimAPI_MakeRevol, so the countersink cone cannot be built.');
     }
-    const shape = builder.Shape();
-    builder.delete();
-    apexGp.delete();
-    axisGp.delete();
-    ax2.delete();
-    // Cast TopoDS_Shape → replicad.Shape3D via replicad.cast.
+    const wire = keep(new oc.BRepBuilderAPI_MakeWire_1());
+    for (let i = 0; i < corners.length; i++) {
+      const a = corners[i];
+      const b = corners[(i + 1) % corners.length];
+      const pa = keep(new oc.gp_Pnt_3(a[0], a[1], a[2]));
+      const pb = keep(new oc.gp_Pnt_3(b[0], b[1], b[2]));
+      const edge = keep(new oc.BRepBuilderAPI_MakeEdge_3(pa, pb));
+      wire.Add_1(edge.Edge());
+    }
+    const face = keep(new oc.BRepBuilderAPI_MakeFace_15(wire.Wire(), true));
+    if (!face.IsDone()) throw new Error('the countersink profile face could not be built.');
+    const origin = keep(new oc.gp_Pnt_3(entryPoint[0], entryPoint[1], entryPoint[2]));
+    const dir = keep(new oc.gp_Dir_4(axisIntoBody[0], axisIntoBody[1], axisIntoBody[2]));
+    const axis = keep(new oc.gp_Ax1_2(origin, dir));
+    const revol = keep(new oc.BRepPrimAPI_MakeRevol_2(face.Face(), axis, true));
+    if (!revol.IsDone()) throw new Error('BRepPrimAPI_MakeRevol did not build the countersink cone.');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (replicad as any).cast(shape) as replicad.Shape3D;
-  } catch {
-    return null;
+    const cone = (replicad as any).cast(revol.Shape()) as replicad.Shape3D;
+    if (Math.abs(replicad.measureVolume(cone)) < 1e-9) {
+      throw new Error('the countersink cone came out empty.');
+    }
+    return cone;
+  } finally {
+    for (const o of created.reverse()) o.delete();
   }
 }
 
@@ -411,7 +521,9 @@ export function lowerHole(
 
   const u = feature.params.u.evaluated;
   const v = feature.params.v.evaluated;
-  const diameter = feature.params.diameter.evaluated;
+  const thread = readThread(feature);
+  const nominalDiameter = feature.params.diameter.evaluated;
+  const diameter = drilledDiameter(nominalDiameter, thread);
   const through = feature.params.depthMode?.expression === "'through'";
   const numericDepth = feature.params.depth?.evaluated;
   const counterbore = feature.params.counterboreDiameter
@@ -431,9 +543,16 @@ export function lowerHole(
     throughDepth = td;
   }
 
-  const built = buildOneTool(
-    entry, u, v, diameter, numericDepth, through, throughDepth, counterbore, countersink,
-  );
+  let built: OneToolBuild;
+  try {
+    built = buildOneTool(
+      entry, u, v, diameter, numericDepth, through, throughDepth, counterbore, countersink,
+      thread ? { params: thread, nominalDiameter } : undefined,
+    );
+  } catch (e) {
+    diagnostics.push(toolBuildDiagnostic(e, feature.id));
+    return { backend: target, diagnostics };
+  }
 
   const meta = feature.metadata as { name?: string; ordinal?: number } | undefined;
   return runCutAndClassify(target, [built.tool], [built.bore], feature.id, feature.kind, meta?.name, meta?.ordinal, diagnostics);
@@ -474,7 +593,9 @@ export function lowerHoles(
     return { backend: target, diagnostics };
   }
 
-  const diameter = feature.params.diameter.evaluated;
+  const thread = readThread(feature);
+  const nominalDiameter = feature.params.diameter.evaluated;
+  const diameter = drilledDiameter(nominalDiameter, thread);
   const through = feature.params.depthMode?.expression === "'through'";
   const numericDepth = feature.params.depth?.evaluated;
   const counterbore = feature.params.counterboreDiameter
@@ -497,23 +618,59 @@ export function lowerHoles(
   // Build N tools, fuse into one compound for a single boolean cut.
   const tools: replicad.Shape3D[] = [];
   const bores: BoreFrame[] = [];
-  for (const p of positions) {
-    const built = buildOneTool(
-      entry, p.u, p.v, diameter, numericDepth, through, throughDepth, counterbore, countersink,
-    );
-    tools.push(built.tool);
-    bores.push(built.bore);
+  try {
+    for (const p of positions) {
+      const built = buildOneTool(
+        entry, p.u, p.v, diameter, numericDepth, through, throughDepth, counterbore, countersink,
+        thread ? { params: thread, nominalDiameter } : undefined,
+      );
+      tools.push(built.tool);
+      bores.push(built.bore);
+    }
+  } catch (e) {
+    diagnostics.push(toolBuildDiagnostic(e, feature.id));
+    return { backend: target, diagnostics };
   }
 
-  // Fuse all tools into a single solid via sequential .fuse().
+  // Fuse all tools into a single solid via sequential .fuse(). Tools carrying
+  // a modeled thread groove skip replicad's face-unification pass (see
+  // fuseUnsimplified); plain tools keep it exactly as before.
   let fused = tools[0];
   for (let i = 1; i < tools.length; i++) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fused = (fused as any).fuse(tools[i]) as replicad.Shape3D;
+    fused = thread?.modeled
+      ? fuseUnsimplified(fused, tools[i])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      : (fused as any).fuse(tools[i]) as replicad.Shape3D;
   }
 
   const meta2 = feature.metadata as { name?: string; ordinal?: number } | undefined;
   return runCutAndClassify(target, [fused], bores, feature.id, feature.kind, meta2?.name, meta2?.ordinal, diagnostics);
+}
+
+/** Map a tool-building failure (thread groove, countersink cone, sub-tool
+ *  fuse) to an error diagnostic — author-fixable geometry → invalid-args,
+ *  anything OCCT could not build → kernel-failed. A hole never lowers without
+ *  a sub-feature it was asked for. */
+function toolBuildDiagnostic(e: unknown, featureId: string): CompilerDiagnostic {
+  if (e instanceof HelicalSweepArgsError) {
+    return {
+      target: 'export-occt',
+      code: 'feature.invalid-args',
+      featureId,
+      severity: 'error',
+      message: `hole thread: ${e.message}`,
+      hint: e.hint,
+    };
+  }
+  const msg = e instanceof Error ? e.message : String(e);
+  return {
+    target: 'export-occt',
+    code: 'feature.kernel-failed',
+    featureId,
+    severity: 'error',
+    message: `OCCT could not build the hole tool: ${msg}`,
+    hint: 'A hole sub-feature (countersink cone, counterbore, or modeled thread groove) failed to build, so the hole was not cut. Check its dimensions against the bore, or drop the sub-feature (a thread can stay cosmetic with modeled: false).',
+  };
 }
 
 function runCutAndClassify(

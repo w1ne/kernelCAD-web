@@ -309,13 +309,18 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
         '(npx playwright install chromium). Pass { focus } or { hide } (arrays of feature ids or assembly part names, ' +
         'mutually exclusive) to isolate parts — same semantics as `kernelcad render --focus/--hide`. Pass ' +
         '{ section: { axis, position, flip? } } to cut a cross-section and inspect INTERIOR geometry (wall thickness, ' +
-        'internal pockets, whether a bore runs through) rather than only the outer shell. PNGs are written to ' +
+        'internal pockets, whether a bore runs through) rather than only the outer shell. Pass ' +
+        '{ explode: { factor, mode? } } to pull a multi-part assembly apart (mode: "mate-axis" default, or "radial") ' +
+        'using the same mesher as `kernelcad render --explode` — requires assembly.model()/solvedModel(). PNGs are written to ' +
         '{ out_dir } (default: a fresh temp session directory) and returned as absolute paths with per-view camera ' +
         'descriptions (kernelCAD is Z-up). Mechanism truth runs first, same protocol as `kernelcad render`: a broken ' +
         'mechanism still renders but every tile is watermarked MECHANISM BROKEN (KERNELCAD_RENDER_STRICT=1 refuses ' +
         'instead); read { mechanism, mechanism_failure_codes }. The probe runs full BREP interference sweeps and can ' +
         'dominate latency on large assemblies — pass { no_mechanism_check: true } for fast iteration (the preview then ' +
-        'reports mechanism: "unverified"; ignored under strict mode). Returns { ok, images: [{ name, path, description }], ' +
+        'reports mechanism: "unverified"; ignored under strict mode). Pass { overlay: \'zebra\' | \'curvature\' | \'continuity\' } ' +
+        'for a surface-quality visualisation (zebra stripes from vertex normals, curvature as vertex colours, continuity ' +
+        'edges coloured by G0/G1/G2/broken) — numbers come from inspect({ of: \'continuity\' | \'curvature\' }); the overlay ' +
+        'is the picture. Returns { ok, images: [{ name, path, description }], ' +
         'out_dir, bounds, mechanism, render_source, render_ms, diagnostics }. PATHS ARE LOCAL to the machine running the ' +
         'MCP server — local stdio clients read them directly; hosted/remote clients should use open_in_studio instead.',
       inputSchema: {
@@ -344,6 +349,21 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
             },
             required: ['axis', 'position'],
             additionalProperties: false,
+          },
+          explode: {
+            type: 'object',
+            description: "Pull a multi-part assembly apart for the preview. factor ≥ 0 scales spacing by part size; mode is 'mate-axis' (default, along parent mate/joint axes) or 'radial' (away from the assembly centroid). Requires the script to return assembly.model() / solvedModel().",
+            properties: {
+              factor: { type: 'number', minimum: 0 },
+              mode: { type: 'string', enum: ['radial', 'mate-axis'] },
+            },
+            required: ['factor'],
+            additionalProperties: false,
+          },
+          overlay: {
+            type: 'string',
+            enum: ['zebra', 'curvature', 'continuity'],
+            description: "Surface-quality overlay: 'zebra' (reflection stripes), 'curvature' (Gaussian vertex colours), 'continuity' (edges coloured G2 green / G1 yellow / G0 orange / broken red). Built as coloured STL bands through this same pipeline.",
           },
         },
       },

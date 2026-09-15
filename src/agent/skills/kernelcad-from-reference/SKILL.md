@@ -13,6 +13,9 @@ work through the stages.
 ## Decision tree (1 screen — start here)
 
 ```
+Have an engineering drawing as a vector PDF (orthographic views + lettered
+dimensions)? → call `drawing_to_cad` first (see "Engineering drawing PDF"
+below). A scanned / photographed drawing is a photo: use the photo path.
 Have a written spec with numeric dimensions? → just read kernelcad-authoring
                                                 + use-the-available-kernel,
                                                 build single-pass, score.
@@ -44,6 +47,59 @@ Iteration mode: visual > scored > spec+photo (R1-R6 empirical).
    iteration plateaus FAR below single-pass (R2 / R16). Only iterate when
    you have a CLEAR signal pointing at a SPECIFIC defect.
 ```
+
+## Engineering drawing PDF
+
+`drawing_to_cad({ path, out })` (or `{ pdfBase64 }` against a hosted server)
+turns a vector drawing page into a `.kcad.ts` plus `<stem>.ledger.json`. It is
+deterministic: no vision model, the linework and dimension text are read out of
+the PDF.
+
+What it does, in order:
+
+1. Reads paths with their stroke width and dash, and positioned text.
+2. Classifies visible / hidden / center / dimension / extension / leader lines;
+   reads SCALE, UNITS and the projection symbol from the title block.
+3. Identifies front / top / side views by projection alignment (third- or
+   first-angle; pass `projection` to override). Isometric views are ignored.
+4. Ties dimension text to its lines: `⌀`, `R`, `4×`, `±`, `THRU`, `▾ depth`.
+   A stated dimension always wins over the drawn length.
+5. Rebuilds: the silhouette of the one non-rectangular view extruded by the
+   depth an orthogonal view shows, or a turned part (a view of concentric
+   circles) revolved from its half-silhouette; holes from `⌀` circles along
+   the axis of the view they are drawn in, with THRU or hidden-line depth.
+6. Emits role-named params (`width`, `thickness`, `leftThickness`, `holeDia`,
+   `hole1X`, `dia1`, `step1Length`, …).
+7. Evaluates the script, re-projects it through the `svg-drawing` view stage
+   and compares extents, hole diameters and per-view silhouettes.
+
+How to use the result:
+
+- Branch on `fidelity.verdict`: `match` → continue; `partial` / `mismatch` →
+  read `fidelity.reasons` before editing; `failed` → the script did not build.
+- Ledger kinds: stated dimensions are `visible`; positions placed by symmetry
+  (`symmetry:` ids) and values measured from linework are `inferred`; defaults
+  (units, projection, a hole with no depth) are `assumed`; an extrusion depth
+  no view or note gives is `missing`, with a placeholder param and
+  `reference.drawing.depth-missing`.
+- A dimension that disagrees with the linework keeps its stated value; the
+  fact carries `disagreement { stated, measured }` and stays open. Ask the user
+  which is right when the difference matters.
+- Facts whose id is a param name take a value override through
+  `resolve_assumptions` → `set_param`. `symmetry:`, `holeDepth:`,
+  `unapplied:` and sheet facts (`scale`, `units`, `projection`, `views`) are
+  confirmed, or fixed by editing the script.
+- `reference.drawing.dimension-unassociated` means a dimension drove nothing;
+  its `unapplied:` fact holds the value to place by hand.
+- `reference.drawing.raster-only` means the page is a scan: render it to PNG
+  and use `trace_from_image` with a scale anchor taken from a dimension.
+
+Limits: one part per page; prisms with holes and turned parts. Sections,
+threads, counterbore/countersink callouts (kept in the fact text, not
+modelled), slanted (aligned) dimensions, text drawn as outlines, and dashes
+drawn as separate short strokes are not read. A part whose views are not a
+single extrusion or revolve rebuilds as the best prism and says so in an
+`assumed` `prism:` fact.
 
 ## Required reading order (only if the decision tree didn't tell you what to do)
 
@@ -89,6 +145,8 @@ Iteration mode: visual > scored > spec+photo (R1-R6 empirical).
 | G-no-protrusions | Sub-components meant to be contained are fully contained on every visible axis |
 | G-front-read | The front view reads as the target object on first glance |
 | G-score-gate | `scoreAgainstReference` silhouette ≥ 0.45, SSIM ≥ 0.25 (task-specific thresholds may be higher) |
+| G-assumption-ledger | Every `trace_from_image` or `drawing_to_cad` call's `ledger.unresolvedCount === 0` before the source is finalized — present the `assumed`/`missing` facts and any `disagreement` to the user, or resolve them from another reference view via `resolve_assumptions` first |
+| G-drawing-fidelity | A part rebuilt with `drawing_to_cad` has `fidelity.verdict === 'match'`, or the reasons for `partial` are stated in the source header |
 
 ## Forbidden rationalizations
 

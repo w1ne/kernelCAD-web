@@ -64,3 +64,53 @@ export function helix(opts: HelixOptions): RailPoint[] {
 
   return result;
 }
+
+// ---------------------------------------------------------------------------
+// Parametric helix rails
+//
+// `helix()` above is the pure numeric generator. The script-facing `helix()`
+// (modeling/api.ts) accepts ParamRef dimensions, samples the rail from the
+// CURRENT values, and attaches the symbolic spec to the returned array under a
+// non-enumerable symbol. `Sketch.sweep` reads it back so the lowerer can
+// (a) regenerate the rail from the live param values and (b) build an exact
+// helix spine for `spine: 'helix'`. The tag is invisible to JSON, spreads and
+// `.map()` — a derived array is just points again.
+
+import type { Param } from '../shared/intent/types';
+
+/** Symbolic helix dimensions recorded on a sweep. */
+export interface HelixRailSpec {
+  radius: Param;
+  pitch: Param;
+  turns: Param;
+  startAngle: Param;
+  axis: 'X' | 'Y' | 'Z';
+  pointsPerTurn: number;
+}
+
+const HELIX_RAIL_SPEC = Symbol('kernelcad.helixRailSpec');
+
+/** Attach the symbolic spec to a rail produced by `helix()`. */
+export function tagHelixRail(rail: RailPoint[], spec: HelixRailSpec): RailPoint[] {
+  Object.defineProperty(rail, HELIX_RAIL_SPEC, { value: spec, enumerable: false });
+  return rail;
+}
+
+/** The spec a `helix()` rail carries, or undefined for any other array. */
+export function helixRailSpecOf(rail: unknown): HelixRailSpec | undefined {
+  if (!Array.isArray(rail)) return undefined;
+  return (rail as unknown as Record<symbol, HelixRailSpec | undefined>)[HELIX_RAIL_SPEC];
+}
+
+/** Numeric helix options from a resolved spec (every Param already holds its
+ *  current value in `evaluated`). */
+export function helixOptionsFromSpec(spec: HelixRailSpec): HelixOptions {
+  return {
+    radius: spec.radius.evaluated,
+    pitch: spec.pitch.evaluated,
+    turns: spec.turns.evaluated,
+    axis: spec.axis,
+    pointsPerTurn: spec.pointsPerTurn,
+    startAngle: spec.startAngle.evaluated,
+  };
+}

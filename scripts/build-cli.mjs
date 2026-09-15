@@ -25,7 +25,9 @@ await esbuild.build({
   format: 'esm',
   target: 'node20',
   outfile: 'dist/cli/index.js',
-  external: ['commander', 'typescript', 'replicad', 'playwright', 'playwright-core', 'chromium-bidi', 'sharp'],
+  // pdfjs-dist loads its worker module relative to its own file at runtime,
+  // so it must stay a real package import rather than being inlined.
+  external: ['commander', 'typescript', 'replicad', 'playwright', 'playwright-core', 'chromium-bidi', 'sharp', 'pdfjs-dist'],
   alias: {
     'verb-nurbs': verbNurbsPath,
   },

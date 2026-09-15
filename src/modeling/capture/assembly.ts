@@ -587,16 +587,34 @@ export interface AssemblyConnectRef {
 // carried on the MateRecord directly. `arm.revolute(...)` was restored (see
 // issue #535) so the body-tree-FK surface has a public drivable revolute again.
 
+/** Declared actuator capacity for `kc.kinematic.checkStaticHold`. Exactly one
+ *  of `torqueNm` (revolute) / `forceN` (prismatic) applies per joint kind —
+ *  the joint-kind-matching field is read; the other is ignored if present. */
+export interface JointActuatorOpts {
+  /** N·m — revolute joints. */
+  torqueNm?: number;
+  /** N — prismatic joints. */
+  forceN?: number;
+}
+
 export interface RevoluteJointOpts {
   axis: Vec3;
   origin: Vec3;
   limitsDeg?: [number, number];
+  /** Declared actuator torque capacity (N·m). Required for
+   *  `kc.kinematic.checkStaticHold` to evaluate this joint; without it the
+   *  joint is skipped with `kinematic.static-hold.no-actuator-declared`. */
+  actuator?: JointActuatorOpts;
 }
 
 export interface PrismaticJointOpts {
   axis: Vec3;
   origin: Vec3;
   limitsMm?: [number, number];
+  /** Declared actuator force capacity (N). Required for
+   *  `kc.kinematic.checkStaticHold` to evaluate this joint; without it the
+   *  joint is skipped with `kinematic.static-hold.no-actuator-declared`. */
+  actuator?: JointActuatorOpts;
 }
 
 export interface BallJointOpts {
@@ -620,6 +638,10 @@ export interface AssemblyJointStored {
   readonly limitsDeg?: [number, number];            // revolute
   readonly limitsMm?: [number, number];             // prismatic
   readonly ballLimitsDeg?: [[number, number], [number, number], [number, number]]; // ball
+  /** Declared actuator capacity, copied from `RevoluteJointOpts.actuator` /
+   *  `PrismaticJointOpts.actuator`. Read by
+   *  `kc.kinematic.checkStaticHold`. */
+  readonly actuator?: JointActuatorOpts;
 }
 
 /**
@@ -1058,6 +1080,7 @@ export class Assembly {
       axis: opts.axis,
       origin: opts.origin,
       ...(opts.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
+      ...(opts.actuator !== undefined ? { actuator: opts.actuator } : {}),
     });
     return { id: record.id, name, kind: 'revolute' };
   }
@@ -1101,6 +1124,7 @@ export class Assembly {
       axis: opts.axis,
       origin: opts.origin,
       ...(opts.limitsMm !== undefined ? { limitsMm: opts.limitsMm } : {}),
+      ...(opts.actuator !== undefined ? { actuator: opts.actuator } : {}),
     });
     return { id: record.id, name, kind: 'prismatic' };
   }

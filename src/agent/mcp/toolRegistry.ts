@@ -3,18 +3,26 @@
 import { TOOL_ANNOTATIONS } from './toolAnnotations';
 import { TOOL_OUTPUT_SCHEMAS } from './toolOutputSchemas';
 import { catalogToolEntries } from './registry/catalogTools';
+import { feaToolEntries } from './registry/feaTools';
 import {
   coreRuntimeParameterToolEntries,
   coreRuntimePreludeToolEntries,
 } from './registry/coreRuntimeTools';
 import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools';
+import { drawingImportToolEntries } from './registry/drawingImportTools';
+import { geometryDiffToolEntries } from './registry/geometryDiffTools';
 import {
   inspectionVerificationPreludeToolEntries,
   inspectionVerificationQueryToolEntries,
+  inspectionVerificationRepairToolEntries,
 } from './registry/inspectionVerificationTools';
+import { printToolEntries } from './registry/printTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
+import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
 import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
+import { mechanismSimToolEntries } from './registry/mechanismSimTools';
+import { meshReconstructToolEntries } from './registry/meshReconstructTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
 export { runClosedLoop } from '../loop/closedLoop.js';
 export { buildRepairPrompt } from '../loop/repairPrompt.js';
@@ -41,6 +49,27 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...catalogToolEntries,
   ...sketchAssemblyToolEntries,
   ...reviewPipelineToolEntries,
+  // Appended last — new tool families are always appended at the tail of
+  // TOOL_REGISTRY, never inserted into an existing family, because the
+  // registry order is a public contract kernelCAD-server depends on.
+  ...referenceLedgerToolEntries,
+  // Appended last: the registry order is a public contract, so a new family
+  // goes on the end rather than renumbering the existing ones.
+  ...feaToolEntries,
+  // New tool families are appended LAST — inserting mid-list renumbers
+  // every family after it, breaking the kernelCAD-server public contract.
+  ...printToolEntries,
+  ...inspectionVerificationRepairToolEntries,
+  // New tools are appended here — never inserted mid-list, which would
+  // shift existing indices (a kernelCAD-server contract; see the
+  // publicContract test's per-family slice-index assertions).
+  ...mechanismSimToolEntries,
+  // New families are appended here, never inserted: index order is public.
+  ...geometryDiffToolEntries,
+  // Appended last: engineering-drawing import is its own family at the tail.
+  ...drawingImportToolEntries,
+  // Appended at the tail like every family before it (public index order).
+  ...meshReconstructToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

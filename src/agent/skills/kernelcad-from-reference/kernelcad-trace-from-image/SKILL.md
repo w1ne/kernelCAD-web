@@ -128,6 +128,41 @@ Before converting to mm:
 | Waypoint count fits the curve character above | Adjust `maxWaypointsPerFeature` and re-call. |
 | First waypoint sits on the curve's expected start | If not, you cannot just paste — adjust the `moveTo()` argument to match `waypoints[0]`. |
 
+### Step 3.5 — Read the assumption ledger before trusting the response
+
+Every `trace_from_image` response also carries a `ledger`: one fact per
+returned feature (`visible` when opencv measured it deterministically,
+`inferred` when the vision-LLM labeled it), plus a `scale` fact that is
+`missing` unless you passed `scaleAnchor`, plus any `priors` you supplied
+recorded as `assumed`. Do not skip straight to Step 4 while facts are open:
+
+```json
+// ledger.facts (excerpt) — scale is missing because no scaleAnchor was passed:
+[
+  { "id": "frame_brow", "kind": "visible",  "confidence": 1,    "resolution": "confirmed" },
+  { "id": "bridge_top",  "kind": "inferred", "confidence": 0.74, "resolution": "open" },
+  { "id": "scale",       "kind": "missing",  "confidence": 0,    "resolution": "open" }
+]
+```
+
+Resolve open facts with `resolve_assumptions` before committing geometry:
+
+```text
+resolve_assumptions({
+  ledgerPath: "/path/to/build.ledger.json",
+  resolutions: [
+    { id: "bridge_top", confirm: true },
+    { id: "scale", value: 0.1548 }   // mm/px derived from the Real Object Brief's scale anchor
+  ]
+})
+```
+
+`resolve_assumptions` returns `paramOverrides` — feed `paramOverrides.scale`
+straight into the `MM_PER_NORM_X` calculation in Step 4 instead of hand-typing
+the anchor math. If you need a hard stop instead of a warning (e.g. an
+unattended batch trace), pass `validate: 'error'` to `trace_from_image` — the
+call itself fails (`ok: false`) while `scale` is still `missing` and open.
+
 ### Step 4 — Convert normalized → model space
 
 Pick a scale anchor from the Real Object Brief — for example,
@@ -192,6 +227,7 @@ reference outline visually. Only after that is plausible, hand off to
 | G-trace-confidence         | Every feature has `confidence >= 0.6`, OR the script carries a `// confidence N, hand-corrected` comment naming that feature. |
 | G-trace-scale-anchor       | The script contains a comment that names the scale anchor used (e.g. `// Scale anchor: frameWidth = 130 mm spans 0.84 of the image width`). |
 | G-trace-first-waypoint     | The PathBuilder chain begins with `moveTo(<first traced waypoint>)` before any `.spline()` or `.nurbsSegment()` taking traced waypoints. |
+| G-assumption-ledger        | `ledger.unresolvedCount === 0`, OR every open fact was reviewed and either confirmed/overridden via `resolve_assumptions` or explicitly accepted with a `// assumption <id>: <reason>` comment naming it. Never silently ignore an open `missing` (scale) fact. |
 
 ## Hand-off
 
@@ -206,3 +242,6 @@ the gap between the traced outline and the reference photo.
   `'hybrid'`. Cost ~$0.005 per call against Claude Haiku — do **not** loop
   `trace_from_image` inside an outer iteration loop. One call per
   surface/curve is enough.
+- `resolve_assumptions` — confirms/overrides the open facts in the
+  assumption ledger `trace_from_image` returns. Reads/rewrites
+  `<model>.ledger.json`; returns `paramOverrides` to feed into `set_param`.

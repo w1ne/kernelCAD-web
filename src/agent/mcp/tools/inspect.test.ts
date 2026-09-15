@@ -22,6 +22,10 @@ vi.mock('./getBendTable', () => ({ getBendTableTool: vi.fn(async () => 'bend-tab
 vi.mock('./paramsList', () => ({ paramsListTool: vi.fn(async () => 'params') }));
 vi.mock('./listPartCategories', () => ({ listPartCategoriesTool: vi.fn(async () => 'part-categories') }));
 vi.mock('./listPartFamilies', () => ({ listPartFamiliesTool: vi.fn(async () => 'part-families') }));
+vi.mock('./inspectBom', () => ({ inspectBomTool: vi.fn(async () => 'bom') }));
+vi.mock('./inspectSection', () => ({ inspectSectionTool: vi.fn(async () => 'section') }));
+vi.mock('./inspectContinuity', () => ({ inspectContinuityTool: vi.fn(async () => 'continuity') }));
+vi.mock('./inspectCurvature', () => ({ inspectCurvatureTool: vi.fn(async () => 'curvature') }));
 
 import { inspectTool, type InspectOf } from './inspect';
 import { inspectAssemblyTool } from './inspectAssembly';
@@ -32,7 +36,8 @@ import { getEdgesOfTool } from './getEdgesOf';
 const SUBJECTS: InspectOf[] = [
   'assembly', 'robot', 'step', 'shape', 'mass', 'features', 'assemblies', 'topology',
   'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints',
-  'part-stats', 'bend-table', 'params', 'part-categories', 'part-families',
+  'part-stats', 'bend-table', 'params', 'part-categories', 'part-families', 'bom', 'section',
+  'continuity', 'curvature',
 ];
 
 describe('inspect dispatcher', () => {
