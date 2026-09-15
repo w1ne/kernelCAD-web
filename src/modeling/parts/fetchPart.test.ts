@@ -64,6 +64,33 @@ describe('fetchPart orchestrator', () => {
   });
 });
 
+describe('fetchPart iso-4762-m2x4 local catalog', () => {
+  let prevEnv: string | undefined;
+  beforeEach(() => {
+    prevEnv = process.env.KERNELCAD_PARTS_BASE_URL;
+    // Production default is kernelcad-parts.pages.dev. That catalog uses
+    // FreeCAD ids (screw-m2x4-iso4762-8-8-a2k) and 404s this bundled seed id.
+    delete process.env.KERNELCAD_PARTS_BASE_URL;
+  });
+  afterEach(() => {
+    if (prevEnv === undefined) delete process.env.KERNELCAD_PARTS_BASE_URL;
+    else process.env.KERNELCAD_PARTS_BASE_URL = prevEnv;
+    vi.restoreAllMocks();
+  });
+
+  it('resolves iso-4762-m2x4 from the local catalog when the remote CDN 404s', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response('not found', { status: 404, statusText: 'Not Found' }),
+    );
+    const session = new CaptureSession();
+    const r = await fetchPartHost({ session }, 'iso-4762-m2x4', {});
+    expect(r.record.id).toBe('iso-4762-m2x4');
+    expect(r.record.source).toBe('local-catalog');
+    expect(r.shape).toBeDefined();
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+});
+
 // ---------------------------------------------------------------------------
 // GLB-only catalog records (authored `*-board` entries).
 //

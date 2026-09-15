@@ -6,7 +6,14 @@
 // (quantity 4, purchased, grouped by catalog id not name), and one part with
 // no declared material (honest gap, not a guessed mass).
 import { describe, it, expect, beforeAll } from 'vitest';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { inspectBomTool } from '../../../../src/agent/mcp/tools/inspectBom';
+
+const BOM_EXAMPLE = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../../examples/bom/panel-with-fasteners.kcad.ts',
+);
 
 const ASSEMBLY_CODE = `
 const arm = assembly('demo');
@@ -79,6 +86,19 @@ describe("inspect({ of: 'bom' })", () => {
     expect(r.ok).toBe(false);
     if (r.ok) throw new Error('expected not ok');
     expect(r.error).toMatch(/no assembly/i);
+  }, 60000);
+
+  it('inspects examples/bom/panel-with-fasteners.kcad.ts using the local iso-4762-m2x4 catalog part', async () => {
+    const r = await inspectBomTool({ file: BOM_EXAMPLE });
+    if (!r.ok) throw new Error(r.error);
+    expect(r.ok).toBe(true);
+    const screwRow = r.rows.find((row) => row.kind === 'purchased');
+    expect(screwRow).toBeDefined();
+    expect(screwRow!.quantity).toBe(4);
+    expect(screwRow!.catalog?.id).toBe('iso-4762-m2x4');
+    expect(screwRow!.catalog?.license).toBe('MIT');
+    expect(r.totals.partCount).toBe(9);
+    expect(r.totals.uniquePartCount).toBe(4);
   }, 60000);
 
   it('flags a purchased part with no standard/upstream provenance', async () => {

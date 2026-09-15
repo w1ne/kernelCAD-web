@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "records": [
+    {
+      "id": "iso-4762-m2x4",
+      "name": "M2 × 4 socket head cap screw (ISO 4762)",
+      "category": "fastener",
+      "family": "socket-head-cap-screw",
+      "standard": "ISO 4762",
+      "tags": [
+        "screw",
+        "shcs",
+        "metric",
+        "DIN 912",
+        "M2"
+      ],
+      "attributes": {
+        "thread": "M2",
+        "lengthMm": 4,
+        "headDiameterMm": 3.8,
+        "headHeightMm": 2,
+        "shankDiameterMm": 2
+      },
+      "license": "MIT",
+      "connectors": [
+        "head-bearing",
+        "thread-tip",
+        "head-top"
+      ],
+      "sha256": "708e946d54e06d558c050ee442a11ce2d80245dc0a2eea8c79041566f42de60d",
+      "source": "local-catalog"
+    },
+    {
+      "id": "heatset-m2-5-l3-8",
+      "name": "M2.5 heat-set insert L3.8",
+      "category": "fastener",
+      "family": "heat-set-insert",
+      "tags": [
+        "insert",
+        "heatset",
+        "metric",
+        "M2.5"
+      ],
+      "attributes": {
+        "thread": "M2.5",
+        "lengthMm": 3.8,
+        "outerDiameterMm": 3.8
+      },
+      "license": "MIT",
+      "connectors": [
+        "mating-face",
+        "inner-bore",
+        "top-face"
+      ],
+      "sha256": "f21ff5110e21407976611e7f1e79e1b66beca5a4fb27800029f995e528983934",
+      "source": "local-catalog"
+    }
+  ]
+}

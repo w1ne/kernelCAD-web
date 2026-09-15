@@ -3,7 +3,8 @@
 // src/modeling/parts/fetchPart.ts
 //
 // Resolution-order orchestrator. Per spec §4.3:
-//   1. Bundled id → assets/parts/<family>/<id>.step
+//   1. Bundled id → assets/parts/<family>/<id>.step (generated catalog)
+//      or assets/parts-seed/<family>/<id>.step (committed example fallback)
 //   2. Cache hit  → ~/.cache/kernelcad/parts/<sha256>.step
 //   3. Remote     → fetch + verify sha256 + cache
 //   4. Throw `parts.fetch.remote-disabled` when no partsBaseUrl is set.

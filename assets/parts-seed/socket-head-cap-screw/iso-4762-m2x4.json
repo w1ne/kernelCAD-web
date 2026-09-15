@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "partId": "iso-4762-m2x4",
+  "family": "socket-head-cap-screw",
+  "connectors": [
+    {
+      "name": "head-bearing",
+      "type": "frame",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ]
+    },
+    {
+      "name": "thread-tip",
+      "type": "axis",
+      "origin": [
+        0,
+        0,
+        -4
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "head-top",
+      "type": "frame",
+      "origin": [
+        0,
+        0,
+        2
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "license": "MIT",
+  "attribution": null,
+  "generatedAt": "2026-07-14T15:58:45.498Z"
+}

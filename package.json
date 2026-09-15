@@ -36,7 +36,8 @@
     "dist/headless-player",
     "README.md",
     "LICENSE",
-    "assets/parts/**"
+    "assets/parts/**",
+    "assets/parts-seed/**"
   ],
   "scripts": {
     "dev": "vite",
