@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { loadCatalog, resolveById, queryCatalog } from './catalog';
@@ -87,5 +87,24 @@ describe('catalog resolver', () => {
     const cat = loadCatalog(dir);
     const r = queryCatalog(cat, 'din 912 M3 12');
     expect(r.map((x) => x.id)).toContain('iso-4762-m3x12');
+  });
+
+  it('does not merge the committed seed into an explicit catalog dir', () => {
+    const cat = loadCatalog(dir);
+    expect(resolveById(cat, 'iso-4762-m2x4')).toBeUndefined();
+    expect(cat.records.map((r) => r.id)).toEqual(['iso-4762-m3x12', 'iso-4762-m4x16']);
+  });
+});
+
+describe('committed seed catalog fallback', () => {
+  it('resolves iso-4762-m2x4 to a real local STEP without the generated catalog', () => {
+    const cat = loadCatalog();
+    const r = resolveById(cat, 'iso-4762-m2x4');
+    expect(r).toBeDefined();
+    expect(r!.record.id).toBe('iso-4762-m2x4');
+    expect(r!.record.source).toBe('local-catalog');
+    expect(r!.record.family).toBe('socket-head-cap-screw');
+    expect(existsSync(r!.stepPath)).toBe(true);
+    expect(r!.stepPath).toMatch(/iso-4762-m2x4\.step$/);
   });
 });

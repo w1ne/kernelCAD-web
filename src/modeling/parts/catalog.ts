@@ -5,6 +5,11 @@
 // Bundled-tier catalog loader + resolver. Reads <catalogDir>/index.json
 // (produced by scripts/generateSeedCatalog.ts), exposes id and query
 // lookups. No network; this module is the offline-default surface.
+//
+// `assets/parts/` is gitignored and only appears after `npm run generate:parts`
+// (or pretest). A committed seed at `assets/parts-seed/` covers example ids
+// such as `iso-4762-m2x4` so Studio/evaluate do not fall through to the
+// remote CDN, which uses different FreeCAD ids and 404s the seed id.
 
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -19,6 +24,8 @@ export interface CatalogIndex {
 export interface Catalog {
   dir: string;
   records: PartRecord[];
+  /** Directory that holds `<family>/<id>.step` for each record id. */
+  stepDirById: Map<string, string>;
 }
 
 /**
@@ -27,28 +34,46 @@ export interface Catalog {
  * walks up from this module until it finds an assets/parts directory.
  */
 export function defaultCatalogDir(): string {
-  // import.meta.url points at this source file; walk up to find assets/parts.
+  return findAssetsDir('parts') ?? resolve(process.cwd(), 'assets', 'parts');
+}
+
+/**
+ * Committed seed catalog used when `assets/parts/` has not been generated.
+ * Walks up from this module the same way `defaultCatalogDir` does.
+ */
+export function bundledSeedDir(): string {
+  return findAssetsDir('parts-seed') ?? resolve(process.cwd(), 'assets', 'parts-seed');
+}
+
+function findAssetsDir(leaf: string): string | undefined {
   let dir: string;
   try {
     dir = dirname(fileURLToPath(import.meta.url));
   } catch {
     dir = process.cwd();
   }
-  // Try the standard relative locations.
   for (let i = 0; i < 6; i++) {
-    const candidate = resolve(dir, 'assets', 'parts');
+    const candidate = resolve(dir, 'assets', leaf);
     if (existsSync(join(candidate, 'index.json'))) return candidate;
     const parent = dirname(dir);
     if (parent === dir) break;
     dir = parent;
   }
-  return resolve(process.cwd(), 'assets', 'parts');
+  return undefined;
 }
 
-export function loadCatalog(dir: string = defaultCatalogDir()): Catalog {
+export function loadCatalog(dir?: string): Catalog {
+  if (dir !== undefined) return loadCatalogFromDir(dir);
+  return mergeCatalogs(
+    loadCatalogFromDir(defaultCatalogDir()),
+    loadCatalogFromDir(bundledSeedDir()),
+  );
+}
+
+function loadCatalogFromDir(dir: string): Catalog {
   const idxPath = join(dir, 'index.json');
   if (!existsSync(idxPath)) {
-    return { dir, records: [] };
+    return { dir, records: [], stepDirById: new Map() };
   }
   const json = JSON.parse(readFileSync(idxPath, 'utf8')) as CatalogIndex;
   if (json.schemaVersion !== 1) {
@@ -56,7 +81,27 @@ export function loadCatalog(dir: string = defaultCatalogDir()): Catalog {
       `catalog: index.json schemaVersion ${String(json.schemaVersion)} unsupported`,
     );
   }
-  return { dir, records: json.records };
+  const stepDirById = new Map(json.records.map((r) => [r.id, dir] as const));
+  return { dir, records: json.records, stepDirById };
+}
+
+/** `primary` wins on id conflict so a generated catalog overrides the seed. */
+function mergeCatalogs(primary: Catalog, fallback: Catalog): Catalog {
+  const recordsById = new Map<string, PartRecord>();
+  const stepDirById = new Map<string, string>();
+  for (const r of fallback.records) {
+    recordsById.set(r.id, r);
+    stepDirById.set(r.id, fallback.stepDirById.get(r.id) ?? fallback.dir);
+  }
+  for (const r of primary.records) {
+    recordsById.set(r.id, r);
+    stepDirById.set(r.id, primary.stepDirById.get(r.id) ?? primary.dir);
+  }
+  return {
+    dir: primary.dir,
+    records: [...recordsById.values()],
+    stepDirById,
+  };
 }
 
 export function resolveById(
@@ -70,7 +115,8 @@ export function resolveById(
   | undefined {
   const record = cat.records.find((r) => r.id === id);
   if (!record) return undefined;
-  const stepPath = join(cat.dir, record.family, `${id}.step`);
+  const stepDir = cat.stepDirById.get(id) ?? cat.dir;
+  const stepPath = join(stepDir, record.family, `${id}.step`);
   return { record, stepPath };
 }
 

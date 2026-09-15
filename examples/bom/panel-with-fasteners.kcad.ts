@@ -6,8 +6,9 @@
 //   - REAL instance counting: the standoff loop calls arm.part() three times
 //     with distinct names (standoff_0..2) but the same source geometry — the
 //     BOM groups them into ONE row with quantity 3, not three rows.
-//   - purchased vs fabricated: the M2x4 screws are `lib.fetchPart(...)`
-//     catalog parts (kind: 'purchased', a `catalog` block with id/license);
+//   - purchased vs fabricated: the M2x4 screws are `lib.fetchPart('iso-4762-m2x4')`
+//     bundled catalog parts (assets/parts-seed, or assets/parts after
+//     `npm run generate:parts`; kind: 'purchased' with a `catalog` block);
 //     the plate/standoffs/bracket are `kind: 'fabricated'`.
 //   - honest gaps: the bracket has no `material`/`density`, so its row's
 //     `massG*` fields are null and a `bom.material.unassigned` diagnostic
