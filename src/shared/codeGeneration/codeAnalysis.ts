@@ -12,7 +12,7 @@ export interface InsertionContext {
     line?: number; // Line to insert at (1-indexed)
 }
 
-import { getDeclaredVariablesAST } from './ast';
+import { getDeclaredVariablesAST, parseCode } from './ast';
 import * as acorn from 'acorn';
 import * as walk from 'acorn-walk';
 
@@ -84,12 +84,7 @@ function classifyVariable(initSrc: string, init?: { arguments?: unknown[] }): { 
 export function extractHistoryItems(code: string): HistoryItem[] {
     const items: HistoryItem[] = [];
     try {
-        const ast = acorn.parse(code, {
-            ecmaVersion: 'latest',
-            sourceType: 'module',
-            allowReturnOutsideFunction: true,
-            locations: true
-        }) as unknown as acorn.Node;
+        const ast = parseCode(code);
 
         walk.simple(ast, {
             VariableDeclarator(node: acorn.Node) {

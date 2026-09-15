@@ -12,6 +12,7 @@
 import * as acorn from 'acorn';
 import * as walk from 'acorn-walk';
 import { generate } from 'astring';
+import { stripTypeScriptSyntax } from './stripTypeScript';
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -121,19 +122,33 @@ function isArrayExpressionNode(node: unknown): node is ArrayExpressionNode {
     return hasType(node) && node.type === 'ArrayExpression' && Array.isArray((node as UnknownRecord).elements);
 }
 
+const ACORN_OPTIONS: acorn.Options = {
+    ecmaVersion: 'latest',
+    sourceType: 'module',
+    // Allow return outside function (needed for our template code)
+    allowReturnOutsideFunction: true,
+    locations: true,
+};
+
 /**
- * Parse JavaScript code into an AST.
+ * Parse JavaScript or TypeScript (`.kcad.ts`) into an AST.
+ *
+ * Acorn is JS-only, so a first-pass SyntaxError retries after blanking
+ * TypeScript type syntax. Locations stay aligned with the original source.
  */
 export function parseCode(code: string): acorn.Node {
     try {
-        return acorn.parse(code, {
-            ecmaVersion: 'latest',
-            sourceType: 'module',
-            // Allow return outside function (needed for our template code)
-            allowReturnOutsideFunction: true,
-            locations: true
-        });
+        return acorn.parse(code, ACORN_OPTIONS);
     } catch (error) {
+        const stripped = stripTypeScriptSyntax(code);
+        if (stripped !== code) {
+            try {
+                return acorn.parse(stripped, ACORN_OPTIONS);
+            } catch {
+                // Keep the original acorn diagnostic — it points at the
+                // TypeScript token the user wrote, not the blanked source.
+            }
+        }
         if (isDevNonTest()) {
             console.error('Parse error:', error);
         }
