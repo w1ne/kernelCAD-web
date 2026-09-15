@@ -67,7 +67,7 @@ function pythonCandidates(cwd: string): string[] {
   if (process.env.KERNELCAD_FEA_PYTHON) out.push(process.env.KERNELCAD_FEA_PYTHON);
   let dir = cwd;
   for (let up = 0; up < 5; up++) {
-    for (const venv of ['.fea-venv', '.venv', 'venv']) {
+    for (const venv of ['.tools-venv', '.fea-venv', '.venv', 'venv']) {
       const p = join(dir, venv, 'bin', 'python');
       if (existsSync(p)) out.push(p);
     }
