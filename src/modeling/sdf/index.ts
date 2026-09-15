@@ -19,6 +19,9 @@ export interface SdfField {
   readonly aabb: { min: Vec3; max: Vec3 };
   /** Human-readable kind tag for diagnostics + SKILL.md ergonomics. */
   readonly kind: 'sphere' | 'box' | 'cylinder' | 'torus' | 'smoothBlend';
+  /** Direct-edit: return a new field translated by (dx, dy, dz). mm.
+   *  Chained translates compose additively. */
+  translate(dx: number, dy: number, dz: number): SdfField;
 }
 
 export { sphere, box, cylinder, torus } from './primitives';
