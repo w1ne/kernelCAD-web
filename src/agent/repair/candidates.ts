@@ -51,6 +51,11 @@ const GENERATORS: Partial<Record<DiagnosticCode, CandidateGenerator>> = {
   'feature.label.unknown-name': substituteKnownLabel,
   'feature.emboss-text.depth-zero': setNonZeroEmbossDepth,
   'feature.face.invalid-uv-anchor': clampFaceAnchor,
+  'feature.revolve.crosses-axis': clampRevolveProfileX,
+  'sketch.tangency.no-solution': enlargeTangencyRadius,
+  'feature.draft.failed': shrinkDraftAngle,
+  'feature.kernel-failed': shrinkOversizedKernelParam,
+  'feature.emboss-text.boolean-noop': recentreEmbossAnchor,
 };
 
 /** Diagnostic codes this module can produce candidates for. */
@@ -516,12 +521,322 @@ function clampFaceAnchor(ctx: CandidateContext): RepairCandidate[] {
   }];
 }
 
+// --- feature.revolve.crosses-axis --------------------------------------------
+
+/**
+ * A revolve profile must stay on x >= 0 (radial). Negative path x-coords
+ * cross the axis. Clamp every numeric x literal in the profile's path()
+ * chain up to 0 — the number the kernel already named in the diagnostic.
+ */
+function clampRevolveProfileX(ctx: CandidateContext): RepairCandidate[] {
+  const { record, spans } = ctx;
+  const sketchRef = record.inputs.sketch;
+  const sketchRecord =
+    sketchRef !== undefined && sketchRef.kind === 'feature'
+      ? ctx.recordsById.get(sketchRef.id)
+      : record.kind === 'sketch'
+        ? record
+        : undefined;
+  const location = sketchRecord?.scriptLocation ?? record.scriptLocation;
+  if (location === undefined) return [];
+  const seed = spans.callNodeAt(location);
+  if (seed === undefined) return [];
+  const root = outermostCall(seed);
+
+  const edits: Array<{ chars: CharRange; replacement: string }> = [];
+  const requested: number[] = [];
+  const visit = (node: ts.Node): void => {
+    if (ts.isCallExpression(node) && PATH_X_CALLEES.has(calleeName(node))) {
+      const chars = spans.argumentChars(node, 0);
+      if (chars !== undefined) {
+        const text = spans.text.slice(chars.start, chars.end);
+        if (isNumericLiteralText(text)) {
+          const value = Number(text);
+          if (value < 0) {
+            requested.push(value);
+            edits.push({ chars, replacement: '0' });
+          }
+        }
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(root);
+  if (edits.length === 0) return [];
+  const patch = patchFromCharEdits(spans, edits);
+  if (patch === undefined) return [];
+  return [{
+    id: `${record.id}:clamp-revolve-x`,
+    diagnosticId: ctx.diagnosticId,
+    code: ctx.diagnostic.code,
+    featureId: record.id,
+    summary: `Clamp ${edits.length} path x-coordinate(s) from ${requested.map(n => formatNumber(n)).join(', ')} to 0 so the profile stays on one side of the revolve axis.`,
+    predictedEffect: 'the profile no longer crosses the rotation axis and the revolve produces a solid',
+    patch,
+    evidence: {
+      requestedXmm: requested.map(n => formatNumber(n)).join(', '),
+      clampedXmm: 0,
+      clampedCount: edits.length,
+    },
+  }];
+}
+
+const PATH_X_CALLEES = new Set([
+  'moveTo', 'lineTo', 'tangentArc', 'threePointsArc', 'sagittaArc', 'bulgeArc', 'radiusArc',
+]);
+
+// --- sketch.tangency.no-solution ---------------------------------------------
+
+/**
+ * Two circles a centre-distance D apart admit no externally-tangent circle
+ * of radius r < (D - r1 - r2) / 2. OCCT's Circ2d2TanRad reports zero
+ * solutions for parallel *lines* at every radius (a documented solver
+ * limit), so this derivation only fires for the circle-circle case the
+ * kernel can actually satisfy. The patch raises `opts.radius` to that floor.
+ */
+function enlargeTangencyRadius(ctx: CandidateContext): RepairCandidate[] {
+  const { record, spans } = ctx;
+  const commands = record.metadata?.commands;
+  if (!Array.isArray(commands)) return [];
+  const tangent = (commands as Array<{ kind?: string; entities?: unknown; radius?: { evaluated?: number } }>)
+    .find(c => c.kind === 'tangentCircle');
+  if (tangent === undefined || !Array.isArray(tangent.entities)) return [];
+  const circles = tangent.entities.filter(isCircleEntitySpec);
+  if (circles.length < 2) return [];
+  const minRadius = circleCircleMinOutsideRadiusMm(circles[0], circles[1]);
+  if (minRadius === undefined) return [];
+  const current = tangent.radius?.evaluated;
+  if (typeof current !== 'number' || current >= minRadius) return [];
+
+  const call = callOf(ctx) ?? tangentCircleCall(spans, record);
+  if (call === undefined) return [];
+  const chars = findOptionInAnyArgument(spans, call, 'radius');
+  if (chars === undefined) return [];
+  if (!isNumericLiteralText(spans.text.slice(chars.start, chars.end))) return [];
+  const patch = patchFromCharEdit(spans, chars, formatNumber(minRadius));
+  if (patch === undefined) return [];
+  return [{
+    id: `${record.id}:enlarge-tangency-radius:${minRadius}`,
+    diagnosticId: ctx.diagnosticId,
+    code: ctx.diagnostic.code,
+    featureId: record.id,
+    summary: `Increase the tangent-circle radius from ${formatNumber(current)} mm to ${formatNumber(minRadius)} mm so it can sit outside both circles.`,
+    predictedEffect: 'a circle of that radius is tangent to both entities and the sketch lowers',
+    patch,
+    evidence: {
+      requestedRadiusMm: round(current, 4),
+      centreDistanceMm: round(Math.hypot(
+        circles[0].cx.evaluated - circles[1].cx.evaluated,
+        circles[0].cy.evaluated - circles[1].cy.evaluated,
+      ), 4),
+      minRadiusMm: minRadius,
+    },
+  }];
+}
+
+function isCircleEntitySpec(
+  entity: unknown,
+): entity is { kind: 'circle'; cx: { evaluated: number }; cy: { evaluated: number }; r: { evaluated: number } } {
+  if (typeof entity !== 'object' || entity === null) return false;
+  const e = entity as { kind?: unknown; cx?: { evaluated?: unknown }; cy?: { evaluated?: unknown }; r?: { evaluated?: unknown } };
+  return e.kind === 'circle'
+    && typeof e.cx?.evaluated === 'number'
+    && typeof e.cy?.evaluated === 'number'
+    && typeof e.r?.evaluated === 'number';
+}
+
+/** Minimum externally-tangent radius for two circles: (D - r1 - r2) / 2. */
+function circleCircleMinOutsideRadiusMm(
+  a: { cx: { evaluated: number }; cy: { evaluated: number }; r: { evaluated: number } },
+  b: { cx: { evaluated: number }; cy: { evaluated: number }; r: { evaluated: number } },
+): number | undefined {
+  const distance = Math.hypot(a.cx.evaluated - b.cx.evaluated, a.cy.evaluated - b.cy.evaluated);
+  const minRadius = (distance - a.r.evaluated - b.r.evaluated) / 2;
+  if (!(minRadius > 0) || !Number.isFinite(minRadius)) return undefined;
+  return round(minRadius, 4);
+}
+
+function tangentCircleCall(
+  spans: ScriptSpanIndex,
+  record: FeatureRecord,
+): ts.CallExpression | undefined {
+  if (record.scriptLocation === undefined) return undefined;
+  const seed = spans.callNodeAt(record.scriptLocation);
+  if (seed === undefined) return undefined;
+  if (calleeName(seed) === 'tangentCircle') return seed;
+  return spans.chainedCallAfter(seed, 'tangentCircle');
+}
+
+// --- feature.draft.failed ----------------------------------------------------
+
+/**
+ * A 90° (or otherwise geometrically degenerate) draft cannot taper a planar
+ * face. Offer a ladder of mould-release angles under 15°, largest first —
+ * 8° is the angle the draft lowerer test already proves applies to a box.
+ */
+function shrinkDraftAngle(ctx: CandidateContext): RepairCandidate[] {
+  const { record, spans } = ctx;
+  if (record.kind !== 'draft') return [];
+  const current = record.params.angle?.evaluated;
+  if (typeof current !== 'number') return [];
+  const call = callOf(ctx);
+  const chars = call === undefined ? undefined : spans.argumentChars(call, 0);
+  if (chars === undefined) return [];
+  if (!isNumericLiteralText(spans.text.slice(chars.start, chars.end))) return [];
+
+  const candidates: RepairCandidate[] = [];
+  for (const value of [8, 5, 3]) {
+    if (value >= current) continue;
+    const patch = patchFromCharEdit(spans, chars, formatNumber(value));
+    if (patch === undefined) continue;
+    candidates.push({
+      id: `${record.id}:shrink-draft:${value}`,
+      diagnosticId: ctx.diagnosticId,
+      code: ctx.diagnostic.code,
+      featureId: record.id,
+      summary: `Reduce the draft angle from ${formatNumber(current)}° to ${formatNumber(value)}°.`,
+      predictedEffect: `the face tapers ${formatNumber(value)}° from the pull direction instead of a degenerate draft`,
+      patch,
+      evidence: { requestedAngleDeg: round(current, 4), chosenAngleDeg: value },
+    });
+  }
+  return candidates;
+}
+
+// --- feature.kernel-failed (shell thickness) ---------------------------------
+
+/**
+ * OCCT `kernel-failed` is the catch-all. The one derivation we can make
+ * without guessing intent: a shell whose wall is thicker than half the
+ * thinnest bbox dimension. Same ladder as the fillet/chamfer shrink.
+ */
+function shrinkOversizedKernelParam(ctx: CandidateContext): RepairCandidate[] {
+  const { record, spans } = ctx;
+  if (record.kind !== 'shell') return [];
+  const current = record.params.thickness?.evaluated;
+  if (typeof current !== 'number') return [];
+  const baseShape = inputShape(ctx, 'base');
+  const parentBbox = bboxOf(baseShape);
+  if (parentBbox === undefined) return [];
+  const thinnest = Math.min(...bboxSize(parentBbox));
+  if (!(thinnest > 0)) return [];
+  const ceiling = thinnest / 2;
+
+  const call = callOf(ctx);
+  const chars = call === undefined ? undefined : spans.argumentChars(call, 0);
+  if (chars === undefined) return [];
+  if (!isNumericLiteralText(spans.text.slice(chars.start, chars.end))) return [];
+
+  const candidates: RepairCandidate[] = [];
+  for (const fraction of [0.4, 0.25, 0.1]) {
+    const value = round(thinnest * fraction, 3);
+    if (value <= 0 || value >= current || value >= ceiling) continue;
+    const patch = patchFromCharEdit(spans, chars, formatNumber(value));
+    if (patch === undefined) continue;
+    candidates.push({
+      id: `${record.id}:shrink-thickness:${value}`,
+      diagnosticId: ctx.diagnosticId,
+      code: ctx.diagnostic.code,
+      featureId: record.id,
+      summary: `Reduce shell thickness from ${formatNumber(current)} mm to ${formatNumber(value)} mm.`,
+      predictedEffect: 'the wall fits inside the solid and the shell lowers',
+      patch,
+      evidence: {
+        thinnestDimensionMm: round(thinnest, 4),
+        maxFeasibleThicknessMm: round(ceiling, 4),
+        currentThicknessMm: round(current, 4),
+      },
+    });
+  }
+  return candidates;
+}
+
+// --- feature.emboss-text.boolean-noop ----------------------------------------
+
+/**
+ * An emboss/engrave whose glyph prism misses the body (typically parked over
+ * a hole at the face centre) is an anchor problem. Slide the UV anchor toward
+ * a remaining corner of the face; 0.2 is far enough from a centred bore on a
+ * convex plate that the glyphs land on solid.
+ */
+function recentreEmbossAnchor(ctx: CandidateContext): RepairCandidate[] {
+  const { record, spans } = ctx;
+  if (record.kind !== 'embossText') return [];
+  const call = callOf(ctx);
+  if (call === undefined) return [];
+
+  const uChars = findOptionInAnyArgument(spans, call, 'anchorU');
+  const vChars = findOptionInAnyArgument(spans, call, 'anchorV');
+  const u = record.params.anchorU?.evaluated
+    ?? (typeof record.metadata?.anchorU === 'object' && record.metadata.anchorU !== null
+      && 'evaluated' in record.metadata.anchorU
+      ? Number((record.metadata.anchorU as { evaluated: number }).evaluated)
+      : 0.5);
+  const v = record.params.anchorV?.evaluated
+    ?? (typeof record.metadata?.anchorV === 'object' && record.metadata.anchorV !== null
+      && 'evaluated' in record.metadata.anchorV
+      ? Number((record.metadata.anchorV as { evaluated: number }).evaluated)
+      : 0.5);
+
+  const nextU = 0.2;
+  const nextV = 0.2;
+  const edits = buildAnchorEdits(spans, [
+    { chars: uChars, current: u, next: nextU },
+    { chars: vChars, current: v, next: nextV },
+  ]);
+  if (edits.length === 0) return [];
+  const patch = patchFromCharEdits(spans, edits);
+  if (patch === undefined) return [];
+  return [{
+    id: `${record.id}:emboss-anchor-corner`,
+    diagnosticId: ctx.diagnosticId,
+    code: ctx.diagnostic.code,
+    featureId: record.id,
+    summary: `Move the emboss anchor from (${formatNumber(u)}, ${formatNumber(v)}) to (0.2, 0.2) so the glyphs land on solid material.`,
+    predictedEffect: 'the glyph tool intersects the body and the emboss/engrave changes volume',
+    patch,
+    evidence: {
+      requestedAnchorU: round(u, 4),
+      requestedAnchorV: round(v, 4),
+      chosenAnchorU: nextU,
+      chosenAnchorV: nextV,
+    },
+  }];
+}
+
 // --- shared helpers -----------------------------------------------------------
 
 function callOf(ctx: CandidateContext): ts.CallExpression | undefined {
   const location = ctx.record.scriptLocation;
   if (location === undefined) return undefined;
   return ctx.spans.callNodeAt(location);
+}
+
+function calleeName(call: ts.CallExpression): string {
+  const expr = call.expression;
+  if (ts.isIdentifier(expr)) return expr.text;
+  if (ts.isPropertyAccessExpression(expr)) return expr.name.text;
+  return '';
+}
+
+function outermostCall(call: ts.CallExpression): ts.CallExpression {
+  let current: ts.Node = call;
+  while (current.parent !== undefined) {
+    if (ts.isCallExpression(current.parent)) {
+      current = current.parent;
+      continue;
+    }
+    if (
+      ts.isPropertyAccessExpression(current.parent)
+      && current.parent.parent !== undefined
+      && ts.isCallExpression(current.parent.parent)
+    ) {
+      current = current.parent.parent;
+      continue;
+    }
+    break;
+  }
+  return ts.isCallExpression(current) ? current : call;
 }
 
 function inputShape(ctx: CandidateContext, key: string): ShapeBackend | undefined {

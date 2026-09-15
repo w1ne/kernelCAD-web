@@ -118,6 +118,22 @@ export async function detectFeaToolchain(cwd: string = process.cwd()): Promise<F
   };
 }
 
+/**
+ * Turns a missing toolchain from a silent test-skip into a hard failure when
+ * `KERNELCAD_REQUIRE_FEA_TOOLCHAIN=1` — the flag the `external-tools` CI job
+ * sets so a broken apt/pip install fails loudly instead of the FEA
+ * integration tests quietly skipping and reporting green.
+ */
+export function requireFeaToolchainIfDemanded(toolchain: FeaToolchain): void {
+  if (toolchain.ok) return;
+  if (process.env.KERNELCAD_REQUIRE_FEA_TOOLCHAIN === '1') {
+    throw new Error(
+      `KERNELCAD_REQUIRE_FEA_TOOLCHAIN=1 but the FEA toolchain is unavailable: ` +
+        `${toolchain.missing.join(' and ')}. ${toolchain.hint ?? ''}`,
+    );
+  }
+}
+
 /** Spawn a child, capture output, and enforce a hard wall-clock limit.
  *  Every external call in the FEA path goes through here so no solver run can
  *  wedge an agent session. */

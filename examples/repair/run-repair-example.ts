@@ -71,6 +71,11 @@ const DEFAULT_FIXTURES = [
   'oversized-fillet.kcad.ts',
   'hole-misses-plate.kcad.ts',
   'cutter-misses-body.kcad.ts',
+  'revolve-crosses-axis.kcad.ts',
+  'tangency-radius-too-small.kcad.ts',
+  'draft-angle-degenerate.kcad.ts',
+  'shell-too-thick.kcad.ts',
+  'emboss-over-hole.kcad.ts',
 ].map(name => join(HERE, name));
 
 function heading(text: string): void {

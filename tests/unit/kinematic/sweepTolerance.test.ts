@@ -12,10 +12,12 @@
 // Secondary fixture: two fastened parts with a LITERAL (non-swept) hole
 // diameter mismatch, confirming the mounting-holes gate reuse wires
 // through the same combo loop while the swept param (box height, unrelated
-// to the hole) varies — this deliberately keeps the swept quantity off the
-// hole feature itself; see the design spec for the known substrate
-// limitation this sidesteps (a param()-driven `.hole()` diameter is not
-// resolved by the mounting-hole face-walk today).
+// to the hole) varies.
+//
+// Tertiary fixture: the swept quantity IS the hole diameter, bound through
+// a ParamRef (`.hole({ diameter: someParamRef })`). The mounting-hole gate
+// resolves ParamRef diameters against the live param table, so the envelope
+// flips pass→fail once the swept side leaves the ±0.05 mm match window.
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
@@ -36,6 +38,23 @@ const HOLE_MISMATCH_CODE = `
   const h = param('HeightMm', 5);
   const a = box(20, 20, h).hole('top', { u: 0, v: 0, diameter: 5, depth: 'through' });
   const b = box(20, 20, 5).hole('bottom', { u: 0, v: 0, diameter: 6, depth: 'through' });
+  arm.part('a', a).connector('h', {
+    type: 'frame',
+    origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } },
+  });
+  arm.part('b', b).connector('h', {
+    type: 'frame',
+    origin: { kind: 'topology', query: { kind: 'face-center', name: 'bottom' } },
+  });
+  arm.mate('screw', 'a.h', 'b.h', 'fastened');
+  return arm.solvedModel({});
+`;
+
+const HOLE_PARAM_CODE = `
+  const arm = assembly('sweep-hole-dia');
+  const d = param('HoleDia', 5);
+  const a = box(20, 20, 5).hole('top', { u: 0, v: 0, diameter: d, depth: 'through' });
+  const b = box(20, 20, 5).hole('bottom', { u: 0, v: 0, diameter: 5, depth: 'through' });
   arm.part('a', a).connector('h', {
     type: 'frame',
     origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } },
@@ -88,6 +107,30 @@ describe('sweepTolerance', () => {
     expect(r.combosEvaluated).toBe(3);
     const values = r.results.map((row) => row.combo['GapMm']);
     expect(values).toEqual([0, 5, 10]);
+  });
+
+  it('sweeps a ParamRef hole diameter and flips the mounting-holes gate at the mismatch threshold', async () => {
+    const r = await sweepTolerance({
+      code: HOLE_PARAM_CODE,
+      params: { HoleDia: { values: [5, 6] } },
+      gates: { interference: false, mountingHoles: true, jointAxis: false },
+    });
+    expect(r.combosEvaluated).toBe(2);
+    const verdictByDia = new Map(
+      r.results.map((row) => [row.combo['HoleDia'], row.gates['mounting-holes']]),
+    );
+    expect(verdictByDia.get(5)).toBe('pass');
+    expect(verdictByDia.get(6)).toBe('fail');
+    expect(r.ok).toBe(false);
+    const firstFail = r.firstFailure['mounting-holes'];
+    expect(firstFail).toBeDefined();
+    expect(firstFail!.combo['HoleDia']).toBe(6);
+    expect(
+      firstFail!.diagnostics.some((d) => d.code === 'assembly.mounting-hole.mismatch'),
+    ).toBe(true);
+    expect(
+      firstFail!.diagnostics.some((d) => /no hole feature/i.test(d.message)),
+    ).toBe(false);
   });
 
   it('mounting-holes gate fires on every combo of an unrelated sweep, wiring proven', async () => {

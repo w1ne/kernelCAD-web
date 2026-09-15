@@ -70,7 +70,11 @@ env var, then PATH lookup of `orca-slicer`, `prusa-slicer`, `PrusaSlicer`.
 
 Before invoking the slicer, the model's bounding box — in the FDM
 `buildDirection` when one is declared — is checked against the selected
-printer profile's bed size. Result diagnostics:
+printer profile's bed size. The same profile's bed is then passed to the
+slicer CLI as `--printable-area` and `--printable-height` (OrcaSlicer's
+real flags — not `--bed-shape`), so a 180 mm column on `generic-fdm` (250 mm)
+actually slices instead of being rejected at the slicer's ~100 mm default.
+Result diagnostics:
 
 - `export.gcode.exceeds-bed` — the model doesn't fit the bed. Scale down,
   split into sub-parts, or pick a printer profile with a bigger bed.

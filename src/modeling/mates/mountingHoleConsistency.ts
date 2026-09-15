@@ -32,6 +32,8 @@
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { FeatureId, Param } from '../../shared/intent/types';
+import { resolveParams } from '../../shared/runtime/resolveParams';
+import type { ParamTable } from '../../shared/runtime/paramTable';
 import type { Connector } from './connector';
 import { parseConnectorRef } from './mate';
 import type { ValidatorDiagnostic } from './validator';
@@ -91,13 +93,15 @@ interface SideObservation {
 export function validateMountingHoleConsistency(arm: Assembly): ValidatorDiagnostic[] {
   const out: ValidatorDiagnostic[] = [];
   const parts = arm.__parts();
-  const records = arm.__session().getRecords();
+  const session = arm.__session();
+  const records = session.getRecords();
+  const paramTable = session.paramTable;
 
   for (const mate of arm.__mates()) {
     if (mate.type !== 'fastened') continue;
 
-    const aSide = observeSide(mate.a, parts, records);
-    const bSide = observeSide(mate.b, parts, records);
+    const aSide = observeSide(mate.a, parts, records, paramTable);
+    const bSide = observeSide(mate.b, parts, records, paramTable);
 
     // Surface "deferred" notes. vec3-origin sides emit info-severity (the
     // documented v0.7.x deferral path); non-face-center topology kinds
@@ -219,6 +223,7 @@ function observeSide(
   ref: string,
   parts: readonly AssemblyPartStored[],
   records: readonly FeatureRecord[],
+  paramTable: ParamTable,
 ): SideObservation {
   // `parseConnectorRef` already validates shape and throws a structured
   // error if `ref` is malformed; that error is raised at `arm.mate(...)`
@@ -254,7 +259,7 @@ function observeSide(
   // Steps 4 + 5 — walk the records chain from the part's originalShape.id
   // upstream through `inputs.target` to find a hole feature whose
   // `inputs.face` ref matches the bound face name.
-  const hole = findHoleOnFace(part.originalShape.id, bound.faceName, records);
+  const hole = findHoleOnFace(part.originalShape.id, bound.faceName, records, paramTable);
 
   return {
     partName,
@@ -316,6 +321,7 @@ function findHoleOnFace(
   startId: FeatureId,
   boundFaceName: string,
   records: readonly FeatureRecord[],
+  paramTable: ParamTable,
 ): SideObservation['hole'] | undefined {
   const byId = new Map<FeatureId, FeatureRecord>();
   for (const r of records) byId.set(r.id, r);
@@ -327,7 +333,7 @@ function findHoleOnFace(
     const rec: FeatureRecord | undefined = byId.get(currentId);
     if (!rec) return undefined;
     if ((rec.kind === 'hole' || rec.kind === 'holes') && faceRefMatches(rec, boundFaceName)) {
-      return readHoleParams(rec);
+      return readHoleParams(rec, paramTable);
     }
     // Continue walking upstream via inputs.target.id, which the hole / holes
     // / cutout / fillet / chamfer / shell / pattern proxies all set.
@@ -356,17 +362,24 @@ function faceRefMatches(rec: FeatureRecord, boundFaceName: string): boolean {
   return false;
 }
 
-function readHoleParams(rec: FeatureRecord): SideObservation['hole'] | undefined {
-  const diaParam = rec.params.diameter;
+function readHoleParams(
+  rec: FeatureRecord,
+  paramTable: ParamTable,
+): SideObservation['hole'] | undefined {
+  // ParamRef diameters capture with `evaluated: 0` and `paramRef` set;
+  // resolve against the live table so a `.hole({ diameter: someParam })`
+  // feature is a real hole, not "no hole feature found".
+  const params = resolveParams(rec.params, paramTable);
+  const diaParam = params.diameter;
   if (!isFinitePositive(diaParam)) return undefined;
   // Depth: numeric `params.depth` OR through (depthMode param set with
   // expression "'through'"). serializeHoleParams sets exactly one of these.
   // See src/intent/holeValidation.ts:351.
-  const depthMode = rec.params.depthMode;
+  const depthMode = params.depthMode;
   if (depthMode !== undefined && depthMode.expression === "'through'") {
     return { diameterMm: diaParam.evaluated, depth: 'through' };
   }
-  const depthParam = rec.params.depth;
+  const depthParam = params.depth;
   if (isFinitePositive(depthParam)) {
     return { diameterMm: diaParam.evaluated, depth: depthParam.evaluated };
   }

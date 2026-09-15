@@ -30,9 +30,11 @@ unrelated geometry.
 
 Repeat from step 1 while errors remain. Each pass targets ONE diagnostic.
 
-**Worked example:** `examples/repair/` has three deliberately broken models (an
+**Worked example:** `examples/repair/` has deliberately broken models (an
 oversized fillet, a hole anchored off its plate, a cutter placed away from its
-body) and a walkthrough that runs this exact loop on them:
+body, a revolve that crosses its axis, a tangent circle too small to sit
+outside two circles, a 90° draft, a shell thicker than the solid, an emboss parked
+over a hole) and a walkthrough that runs this exact loop on them:
 `npx tsx examples/repair/run-repair-example.ts`. Its README includes the
 captured output. `lookup_cookbook({ query: 'repair failing fillet' })` returns
 the repaired fillet pattern.
@@ -97,6 +99,11 @@ can tell a fix that respects the design from one that merely silences a gate.
 | `feature.label.unknown-name` | substitute the closest declared label (`faceLabels` or `path().label(...)`) |
 | `feature.emboss-text.depth-zero` | signed depth from the base body's thinnest dimension |
 | `feature.face.invalid-uv-anchor` | clamp the anchor into `[0, 1]` |
+| `feature.revolve.crosses-axis` | clamp every numeric path x-coordinate up to 0 |
+| `sketch.tangency.no-solution` | raise `opts.radius` to (centre-distance − r1 − r2) / 2 for two circles |
+| `feature.draft.failed` | mould-release angle ladder 8° / 5° / 3° |
+| `feature.kernel-failed` (shell) | thickness ladder under half the thinnest bbox dimension |
+| `feature.emboss-text.boolean-noop` | slide `anchorU` / `anchorV` to 0.2, onto remaining solid |
 
 Anything else returns `candidateStatus: 'no-automatic-candidate'` with a
 `candidateReason` and the region. That is not a failure of the tool — it means

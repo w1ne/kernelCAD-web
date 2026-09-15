@@ -123,6 +123,53 @@ jobs:
         run: |
           [ "${{ needs.test-shard.result }}" = "success" ] || { echo "shard result: ${{ needs.test-shard.result }}"; exit 1; }
 
+  # Exercises the FEA solve and USD-Isaac export against the REAL external
+  # toolchain (CalculiX, gmsh, usd-core) instead of letting the integration
+  # tests skip when the tools are absent. Deliberately NOT part of the
+  # required `test` gate and NOT added to branch protection: apt/pip installs
+  # here are slower and less reliable than the sandboxed unit suite, and a
+  # flaky external-tool fetch must never block a merge. KERNELCAD_REQUIRE_
+  # FEA_TOOLCHAIN=1 turns every "toolchain absent, skip" path in these tests
+  # into a hard failure, so a broken install shows up as a failing job rather
+  # than a quietly-green skip.
+  external-tools:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-cad
+
+      - name: Install CalculiX (ccx)
+        run: sudo apt-get update && sudo apt-get install -y calculix-ccx
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-gmsh4.15.2-usdcore
+
+      - name: Install gmsh + usd-core into .tools-venv
+        run: |
+          python3 -m venv .tools-venv
+          .tools-venv/bin/pip install --disable-pip-version-check gmsh==4.15.2 usd-core
+
+      - name: FEA integration tests (real toolchain, skip-is-failure)
+        env:
+          KERNELCAD_FEA_PYTHON: ${{ github.workspace }}/.tools-venv/bin/python
+          KERNELCAD_REQUIRE_FEA_TOOLCHAIN: '1'
+        run: |
+          NODE_OPTIONS=--max-old-space-size=3072 npx vitest run \
+            tests/unit/fea/feaGate.integration.test.ts \
+            tests/unit/fea/cantilever.integration.test.ts
+
+      - name: USD-Isaac export validation (real pxr schemas, skip-is-failure)
+        env:
+          KERNELCAD_FEA_PYTHON: ${{ github.workspace }}/.tools-venv/bin/python
+          KERNELCAD_REQUIRE_FEA_TOOLCHAIN: '1'
+        run: |
+          NODE_OPTIONS=--max-old-space-size=3072 npx vitest run \
+            tests/integration/export/usdIsaacPxr.test.ts
+
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 30

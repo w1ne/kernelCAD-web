@@ -77,14 +77,9 @@ one `validateAssemblyWithMates` call) and `reachable` when
 `gates.reachable: { tipLink, targetPosition, targetOrientation? }` is
 declared. Returns `results[]` (one row per combo: `{ combo, gates,
 diagnostics }`) and `firstFailure[gateName]` — the first combo, in
-declaration order, where that gate failed.
-
-Known limitation: a `.hole({ diameter: someParamRef })` feature is not
-resolved by the mounting-hole gate's face-walk today (it reports "no hole
-feature found" regardless of the swept value) — literal hole diameters work
-correctly, and sweeping any other param (position, box dimension, clearance
-offset) through the interference/joint-axis/mounting-hole gates works as
-designed.
+declaration order, where that gate failed. Hole diameters bound through a
+ParamRef (`.hole({ diameter: someParam })`) resolve to the combo's evaluated
+value, so sweeping that diameter produces a real pass/fail envelope.
 
 ## MCP tools (one per facade entry)
 

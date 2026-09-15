@@ -36,7 +36,7 @@ import { createOcctLowerer } from '../../../src/modeling/backends/occt/occtLower
 import { runScript } from '../../../src/modeling/runtime/runScript';
 import { findFeaStudies } from '../../../src/modeling/runtime/fea/findFeaStudies';
 import { runFeaStudy } from '../../../src/kernel/fea/runFea';
-import { detectFeaToolchain, type FeaToolchain } from '../../../src/kernel/fea/toolchain';
+import { detectFeaToolchain, requireFeaToolchainIfDemanded, type FeaToolchain } from '../../../src/kernel/fea/toolchain';
 
 const L = 200;
 const B = 20;
@@ -68,6 +68,7 @@ beforeAll(async () => {
 describe('FEA cantilever vs Euler-Bernoulli', () => {
   it('solves a cantilever within 15% of the closed-form tip deflection and root stress', async () => {
     if (!toolchain.ok) {
+      requireFeaToolchainIfDemanded(toolchain);
       // Not a silent pass: the reason and the fix are printed.
       console.warn(
         `[skipped] FEA integration test needs ${toolchain.missing.join(' and ')}. ${toolchain.hint}`,
@@ -132,6 +133,7 @@ describe('FEA cantilever vs Euler-Bernoulli', () => {
 
   it('refuses to report a pass when the fixed face selector matches nothing', async () => {
     if (!toolchain.ok) {
+      requireFeaToolchainIfDemanded(toolchain);
       console.warn(`[skipped] FEA integration test needs ${toolchain.missing.join(' and ')}.`);
       expect(toolchain.missing.length).toBeGreaterThan(0);
       return;

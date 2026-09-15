@@ -15,6 +15,10 @@
 // tolerance sweep, not a manufacturing DOE; exceeding the cap truncates to
 // the first 64 combos in enumeration order and emits
 // `kinematic.sweep-tolerance.combo-cap-exceeded`.
+//
+// Hole diameters bound through a ParamRef (`.hole({ diameter: someParam })`)
+// are resolved against the live param table by the mounting-hole gate, so
+// sweeping that diameter produces a real pass/fail envelope.
 
 // `evaluateAndBuildScript` lives in the CLI command tree, which pulls
 // node-only modules (file reads, CLI arg parsing) transitively. This module
