@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { Vec3 } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
-import { solveHermiteG2 } from './hermiteG2';
+import { solveHermiteG2 } from '../../kernel/geometry/hermiteG2';
 import type { Curve3D, Curve3DProxy } from './curveProxy';
 import type { CaptureSession } from './captureSession';
 
