@@ -28,10 +28,12 @@ return sdf.materialize(field, { resolution: 30 });
 
 ## Composition rules (slice 1)
 
-- **No `field.translate(...)`.** Slice-1 primitives live in their local
-  frame. To position the result, compose primitives whose origins align
-  (e.g. two coaxial spheres), call `sdf.materialize`, then translate the
-  resulting `Shape` (`.translate(x, y, z)`).
+- **`field.translate(dx, dy, dz)` positions a field before materialize.**
+  Primitives live in their local frame; `.translate(...)` returns a new
+  `SdfField` offset by `(dx, dy, dz)` mm with the `aabb` shifted to match,
+  so the marching-cubes sample region follows. Chained translates compose
+  additively. After `sdf.materialize` the result is a `Shape`, not an
+  `SdfField` — use the Shape's own `.translate(...)`.
 - **`smoothBlend` is union-only.** Smooth-intersect / smooth-difference
   are deferred to slice 2+.
 - **`materialize` is synchronous.** It runs marching-cubes on the host
@@ -91,7 +93,7 @@ After authoring an SDF-rooted Shape, run before reporting done:
 | G-smooth-blend-k-positive | Every `sdf.smoothBlend(_, _, k)` has `k > 0` — `k === 0` emits `feature.sdf.field-undefined` |
 | G-materialize-resolution-in-range | `resolution` is an integer in `[10, 200]`. Default 30; bump to 40-60 for fine blends; reserve 100+ for hero captures |
 | G-no-canonical-face-ref | Materialized output is polyhedral — do not use canonical face refs (`'top'`, `'bottom'`) on a materialize result; use inline queries instead |
-| G-translate-after-materialize | If positioning is needed, call `.translate(...)` on the `Shape` returned by `sdf.materialize`, not on the `SdfField` |
+| G-translate-after-materialize | Position the `SdfField` with `.translate(dx, dy, dz)` before `sdf.materialize`; once materialized the result is a `Shape`, not an `SdfField`, so only transform it with the Shape's own methods |
 | G-bind-name-typo | If using `evaluate_sdf`, the `fieldName` passed in matches a `sdf.bind('<name>', field)` call in the script; mismatch emits `feature.sdf.field-undefined` |
 
 ## Related skills

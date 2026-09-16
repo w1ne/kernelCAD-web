@@ -32,16 +32,15 @@ function assertFiniteOffset(dx: number, dy: number, dz: number): void {
 /** Attach the fluent `.translate` builder to a raw field object. */
 export function withTranslate<T extends RawSdfField>(field: T): SdfField {
   return Object.assign(field, {
-    translate: (dx: number, dy: number, dz: number): SdfField => {
-      assertFiniteOffset(dx, dy, dz);
-      return translateField(field, [dx, dy, dz]);
-    },
+    translate: (dx: number, dy: number, dz: number): SdfField =>
+      translateField(field, [dx, dy, dz]),
   }) as SdfField;
 }
 
 /** Return a new field whose surface is `field`'s surface offset by `offset`. */
 export function translateField(field: RawSdfField, offset: Vec3): SdfField {
   const [dx, dy, dz] = offset;
+  assertFiniteOffset(dx, dy, dz);
   const f = (p: Vec3): number => field([p[0] - dx, p[1] - dy, p[2] - dz]);
   return withTranslate(
     Object.assign(f, {

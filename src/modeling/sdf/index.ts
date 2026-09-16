@@ -20,7 +20,9 @@ export interface SdfField {
   /** Human-readable kind tag for diagnostics + SKILL.md ergonomics. */
   readonly kind: 'sphere' | 'box' | 'cylinder' | 'torus' | 'smoothBlend';
   /** Direct-edit: return a new field translated by (dx, dy, dz). mm.
-   *  Chained translates compose additively. */
+   *  Chained translates compose additively; prefer re-deriving from the
+   *  source field with the total offset rather than accumulating per-frame
+   *  deltas. */
   translate(dx: number, dy: number, dz: number): SdfField;
 }
 

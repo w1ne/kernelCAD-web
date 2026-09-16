@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { sphere } from '../../../../src/modeling/sdf/primitives';
 import { smoothBlend } from '../../../../src/modeling/sdf/smoothBlend';
 import { materialize } from '../../../../src/modeling/sdf/materialize';
+import { translateField } from '../../../../src/modeling/sdf/transform';
 import { CaptureSession } from '../../../../src/modeling/capture/captureSession';
 import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 
@@ -40,6 +41,20 @@ describe('sdf translate transform', () => {
   it('rejects non-finite offsets', () => {
     expect(() => sphere(10).translate(Number.NaN, 0, 0)).toThrow(/sdf\.translate/);
     expect(() => sphere(10).translate(0, Number.POSITIVE_INFINITY, 0)).toThrow(/sdf\.translate/);
+  });
+
+  it('rejects non-finite offsets on translateField directly', () => {
+    expect(() => translateField(sphere(10), [Number.NaN, 0, 0])).toThrow(/sdf\.translate/);
+  });
+
+  it('leaves the source field unaffected', () => {
+    const base = sphere(10);
+    base.translate(5, 0, 0);
+    expect(base([0, 0, 0])).toBeCloseTo(-10, 12);
+  });
+
+  it('preserves the source kind', () => {
+    expect(sphere(10).translate(1, 2, 3).kind).toBe('sphere');
   });
 
   it('materialize samples the translated aabb', () => {
