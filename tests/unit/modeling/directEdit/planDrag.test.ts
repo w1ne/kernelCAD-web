@@ -14,6 +14,7 @@ const BRACKET = { kind: 'variable', name: 'bracket' } as const;
 describe('planDrag', () => {
   it('edits a param-bound axis in place without diagnostics', () => {
     const plan = planDrag({ source: PARAM_SOURCE, anchor: BRACKET, delta: [5, 0, 0] });
+    expect(plan.fromCode).toBe(PARAM_SOURCE);
     expect(plan.toCode).toContain("param('PX', 45, { min: 10, max: 100 })");
     expect(plan.toCode).toContain('.translate(PX, 12, 0)');
     expect(plan.toCode?.split('\n').length).toBe(PARAM_SOURCE.split('\n').length);
@@ -102,7 +103,50 @@ describe('planDrag', () => {
     const source = "const PX = param('PX', 40);\nconst b = box(1,1,1).translate(PX, PX, 0);\nreturn b;\n";
     const plan = planDrag({ source, anchor: { kind: 'variable', name: 'b' }, delta: [5, 0, 0] });
     expect(plan.toCode).toBeNull();
+    expect(plan.diagnostics.map((d) => d.code)).toEqual(['feature.direct-edit.shared-param-conflict']);
+    expect(plan.diagnostics[0].severity).toBe('error');
+    expect(plan.diagnostics[0].nextAction?.kind).toBe('rewrite-feature');
+  });
+
+  it('rejects a non-finite delta on a param axis source', () => {
+    const plan = planDrag({ source: PARAM_SOURCE, anchor: BRACKET, delta: [Number.NaN, 0, 0] });
+    expect(plan.fromCode).toBe(PARAM_SOURCE);
+    expect(plan.toCode).toBeNull();
+    expect(plan.spec).toBeNull();
     expect(plan.diagnostics.map((d) => d.code)).toEqual(['feature.direct-edit.unresolved']);
+    expect(plan.diagnostics[0].message).toContain('finite');
+  });
+
+  it('rejects a non-finite delta on a literal axis source', () => {
+    const source = ['const bracket = box(30, 20, 5).translate(10, 12, 0);', 'return bracket;', ''].join('\n');
+    const plan = planDrag({ source, anchor: BRACKET, delta: [Number.NaN, 0, 0] });
+    expect(plan.toCode).toBeNull();
+    expect(plan.spec).toBeNull();
+    expect(plan.diagnostics.map((d) => d.code)).toEqual(['feature.direct-edit.unresolved']);
+  });
+
+  it('rejects a non-finite delta on a source with no translate call', () => {
+    const source = ['const bracket = box(30, 20, 5);', 'return bracket;', ''].join('\n');
+    const plan = planDrag({ source, anchor: BRACKET, delta: [Number.NaN, 0, 0] });
+    expect(plan.toCode).toBeNull();
+    expect(plan.spec).toBeNull();
+    expect(plan.diagnostics.map((d) => d.code)).toEqual(['feature.direct-edit.unresolved']);
+  });
+
+  it('keeps the delta wrapper stable across a second drag', () => {
+    const source = [
+      "const PX = param('PX', 40);",
+      'const bracket = box(30, 20, 5).translate(PX.divide(2), 12, 0);',
+      'return bracket;',
+      '',
+    ].join('\n');
+    const first = planDrag({ source, anchor: BRACKET, delta: [5, 0, 0] });
+    expect(first.toCode).toContain('.translate(5, 0, 0) /* @direct-edit */');
+    expect(first.diagnostics.map((d) => d.code)).toContain('feature.direct-edit.delta-wrapper');
+
+    const second = planDrag({ source: first.toCode ?? '', anchor: BRACKET, delta: [2, 0, 0] });
+    expect(second.toCode).toContain('.translate(7, 0, 0) /* @direct-edit */');
+    expect(second.diagnostics).toEqual([]);
   });
 
   it('refuses mate-driven entities', () => {
@@ -124,6 +168,7 @@ describe('planDrag', () => {
     });
     expect(plan.toCode).toBeNull();
     expect(plan.spec).toBeNull();
+    expect(plan.fromCode).toBe(PARAM_SOURCE);
     expect(plan.diagnostics.map((d) => d.code)).toContain('feature.direct-edit.unresolved');
     expect(plan.diagnostics[0].message).toContain("'nope'");
   });

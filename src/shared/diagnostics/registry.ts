@@ -64,7 +64,7 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'A feature call received a missing, malformed, or out-of-range argument.',
   },
-  // Direct-edit drag (3)
+  // Direct-edit drag (4)
   'feature.direct-edit.clamped': {
     hintTemplate: 'Accept the clamped value or widen the param bounds, then retry the drag.',
     nextAction: { kind: 'fix-arg', field: 'param-bounds' },
@@ -92,6 +92,16 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'feature',
     description: 'A direct-edit drag could not resolve the dragged entity to a source call site.',
+  },
+  'feature.direct-edit.shared-param-conflict': {
+    hintTemplate: 'Split the shared param into per-axis params, or drag one axis at a time.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'Use distinct params per axis so each drag delta is encodable.',
+    },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'One param drives multiple translated axes with different drag deltas.',
   },
   // Kernel op failed (1)
   'feature.kernel-failed': {

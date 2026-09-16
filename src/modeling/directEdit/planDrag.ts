@@ -16,6 +16,7 @@ import type { NextAction } from '../../shared/diagnostics/nextAction';
 export type DragPlanDiagnosticCode =
   | 'feature.direct-edit.clamped'
   | 'feature.direct-edit.delta-wrapper'
+  | 'feature.direct-edit.shared-param-conflict'
   | 'feature.direct-edit.unresolved';
 
 export interface DragPlanDiagnostic {
@@ -87,12 +88,32 @@ function unresolvedDiagnostic(message: string): DragPlanDiagnostic {
   };
 }
 
+function sharedParamConflictDiagnostic(paramName: string): DragPlanDiagnostic {
+  return {
+    code: 'feature.direct-edit.shared-param-conflict',
+    message: `param '${paramName}' drives multiple axes with different drag deltas; drag cannot encode it`,
+    ...diag('feature.direct-edit.shared-param-conflict'),
+  };
+}
+
 export function planDrag(input: PlanDragInput): DragPlan {
   const { source, anchor, delta } = input;
   const intent =
     `Translate ${anchor.kind} '${anchor.name}' by ` +
     `(${formatNumber(delta[0])}, ${formatNumber(delta[1])}, ${formatNumber(delta[2])}) mm`;
   const base = { fromCode: source, anchor, spec: null, intent } as const;
+
+  if (!delta.every((value) => Number.isFinite(value))) {
+    return {
+      ...base,
+      toCode: null,
+      diagnostics: [
+        unresolvedDiagnostic(
+          `drag delta must be three finite numbers; got [${delta.map(formatNumber).join(', ')}]`,
+        ),
+      ],
+    };
+  }
 
   if (input.mated) {
     return {
@@ -140,11 +161,7 @@ export function planDrag(input: PlanDragInput): DragPlan {
         ...base,
         spec,
         toCode: null,
-        diagnostics: [
-          unresolvedDiagnostic(
-            `param '${group.paramName}' drives multiple axes with different drag deltas; drag cannot encode it`,
-          ),
-        ],
+        diagnostics: [sharedParamConflictDiagnostic(group.paramName)],
       };
     }
   }
