@@ -64,4 +64,13 @@ describe('resolveMotionSpec', () => {
     );
     expect(spec.axes[0]).toMatchObject({ kind: 'delta' });
   });
+
+  it('reads signed and parenthesized numeric literals', () => {
+    const spec = specFor(
+      `const slider = box(1,1,1).translate(-5, (10), 0);\nreturn slider;`,
+      'slider',
+    );
+    expect(spec.axes[0]).toMatchObject({ kind: 'literal', value: -5 });
+    expect(spec.axes[1]).toMatchObject({ kind: 'literal', value: 10 });
+  });
 });

@@ -35,9 +35,19 @@ export interface MotionSpec {
 }
 
 function numericValueOf(node: Node | undefined): number | null {
-  if (!node || !Node.isNumericLiteral(node)) return null;
-  const value = node.getLiteralValue();
-  return Number.isFinite(value) ? value : null;
+  if (!node) return null;
+  if (Node.isNumericLiteral(node)) {
+    const value = node.getLiteralValue();
+    return Number.isFinite(value) ? value : null;
+  }
+  if (Node.isPrefixUnaryExpression(node) && node.getOperatorToken() === SyntaxKind.MinusToken) {
+    const operand = numericValueOf(node.getOperand());
+    return operand === null ? null : -operand;
+  }
+  if (Node.isParenthesizedExpression(node)) {
+    return numericValueOf(node.getExpression());
+  }
+  return null;
 }
 
 function findOutermostTranslateCall(expr: Node): CallExpression | null {
