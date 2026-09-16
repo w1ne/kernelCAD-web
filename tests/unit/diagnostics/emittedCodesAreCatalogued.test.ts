@@ -57,6 +57,7 @@ const EMITTING_FILES = [
   'kernel/backends/occt/drawingSections.ts',
   'agent/drawing/reconstruct.ts',
   'agent/reconstruct/reconstruct.ts', // mesh_to_features fidelity / mesh gates
+  'modeling/directEdit/planDrag.ts', // direct-edit drag diagnostics
 ];
 
 // Match `code: '<value>'` and `new KernelError('<code>', ...)`.
@@ -237,7 +238,10 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       feature.surface-intersection.none, feature.loft.rail-miss = 302.
     //  + 3 surface-quality inspect: inspect.continuity.g1-break,
     //       inspect.continuity.broken, inspect.curvature.spike = 305.
-    expect(catalogue.size).toBe(305);
+    //  + 3 direct-edit drag: feature.direct-edit.clamped,
+    //       feature.direct-edit.delta-wrapper,
+    //       feature.direct-edit.unresolved = 308.
+    expect(catalogue.size).toBe(308);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

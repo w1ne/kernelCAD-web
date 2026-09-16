@@ -103,8 +103,10 @@ describe('diagnostic catalogue invariants', () => {
     //   feature.surface-intersection.none, feature.loft.rail-miss = 302.
     // + 3 surface-quality inspect: inspect.continuity.g1-break,
     //   inspect.continuity.broken, inspect.curvature.spike = 305.
-    expect(DIAGNOSTIC_CODES).toHaveLength(305);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(305);
+    // + 3 direct-edit drag: feature.direct-edit.clamped,
+    //   feature.direct-edit.delta-wrapper, feature.direct-edit.unresolved = 308.
+    expect(DIAGNOSTIC_CODES).toHaveLength(308);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(308);
   });
 
   it('every code has a non-empty hint template', () => {
