@@ -4,7 +4,7 @@ import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { FeatureKind, Vec3 } from '../../shared/intent/types';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { RuntimeMesh } from './runtimeMesh';
-import type { MassProperties, GyrationAxis } from '../../modeling/properties/massProperties';
+import type { MassProperties, GyrationAxis } from '../properties/massProperties';
 
 // BackendTarget moved to shared/types/backendTarget so shared/diagnostics can
 // depend on it without breaking shared-stays-leaf. Re-exported here for

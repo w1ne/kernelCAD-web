@@ -32,8 +32,6 @@ export default defineConfig([
       // Tests may import across layers.
       '**/*.test.{ts,tsx}',
       // Slice-2 allowlist — delete each line as its file is fixed.
-      'src/kernel/backends/backend.ts',
-      'src/kernel/backends/occt/occtBackend.ts',
       'src/kernel/backends/occt/pathNurbsLowerer.ts',
       'src/kernel/backends/verb/curveBridge.ts',
       'src/kernel/backends/occt/importStl.ts',

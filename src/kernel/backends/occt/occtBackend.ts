@@ -18,7 +18,7 @@ import { verifyWatertight, stitchCracks, dropDegenerateTriangles, type Watertigh
 import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
 import { sceneToWorldFrameParts } from './sceneToWorldFrame';
-import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../../modeling/properties/massProperties';
+import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../properties/massProperties';
 
 type ReplicadEdge = replicad.Edge;
 type ReplicadFace = replicad.Face;
