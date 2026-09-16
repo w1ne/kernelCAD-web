@@ -130,6 +130,15 @@ describe('reviewSourceDev', () => {
     await expect(reviewSourceDev('boom', 'examples/demo.kcad.ts')).rejects.toThrow('candidate compile failed');
   });
 
+  it('rejects a 200 response that is not a review payload', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({}),
+    } as Response);
+    await expect(reviewSourceDev('return box(1,1,1);', 'examples/demo.kcad.ts'))
+      .rejects.toThrow(/unexpected payload/i);
+  });
+
   it('throws the error diagnostic message on a 422 candidate failure', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: false,

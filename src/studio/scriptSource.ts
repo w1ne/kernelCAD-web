@@ -234,6 +234,12 @@ export async function reviewSourceDev(
     const message = payload && typeof payload.error === 'string' ? payload.error : `HTTP ${response.status}`;
     throw new Error(message);
   }
+  // Guard against a 200 that is not a review at all — an SPA fallback page or
+  // a missing endpoint would otherwise parse to `{}` and be mistaken for a
+  // review with no interference evidence.
+  if (payload === null || typeof payload !== 'object' || typeof (payload as { ok?: unknown }).ok !== 'boolean') {
+    throw new Error('Review endpoint returned an unexpected payload.');
+  }
   return payload as ScriptReviewSummary;
 }
 
