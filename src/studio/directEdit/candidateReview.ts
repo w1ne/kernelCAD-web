@@ -7,11 +7,15 @@
 // delta against a baseline review. Side-effect free: the caller decides
 // whether to apply.
 //
-// The delta is NEVER fabricated: it is `null` unless the evaluator returned
-// a review that actually carries the interference channel. A review without
-// `rawInterferencePairs` (e.g. a pre-build compile failure, which the review
-// tool emits without an assembly scene) is treated as "no data" — `ok:false`,
-// `delta:null` — never as "zero interferences, valid".
+// Evaluation success is kept separate from interference evidence:
+// - `ok`       — the evaluation call itself succeeded (candidate compiled and
+//                was reviewed). A valid single-body model with no assembly
+//                still yields `ok: true`.
+// - `reviewed` — the review actually carries the `rawInterferencePairs`
+//                channel, so `delta` is meaningful. A review without that
+//                channel (e.g. a model with no assembly scene) yields
+//                `reviewed: false`, `delta: null` — never a fabricated
+//                "zero interferences, valid" delta.
 //
 // This module deliberately defines its own delta shape (rather than
 // importing the shell store's) so the Studio store is not a dependency here.
@@ -29,12 +33,14 @@ export interface CandidateValidityDelta {
 }
 
 export interface CandidateReview {
-    /** True only when the evaluator resolved AND returned interference data. */
+    /** The evaluation call succeeded (candidate compiled and was reviewed). */
     readonly ok: boolean;
+    /** The review supplied an interference channel; delta is only meaningful
+     *  when this is true. */
+    readonly reviewed: boolean;
     readonly error?: string;
     readonly review: ScriptReviewSummary | null;
-    /** Null when there is no baseline/candidate interference data — the six
-     *  fields are populated only when a real candidate review exists. */
+    /** Null unless the candidate review carries the interference channel. */
     readonly delta: CandidateValidityDelta | null;
 }
 
@@ -68,11 +74,15 @@ export async function reviewCandidate(input: {
 
     try {
         const review: ScriptReviewSummary | null = await evaluate(input.source);
-        if (review === null || review.rawInterferencePairs === undefined) {
-            return { ok: false, review, delta: null };
+        // Presence of the channel is an OWN-property check: an absent
+        // `rawInterferencePairs` key means the review ran no interference
+        // pass (e.g. no assembly), which is different from "zero pairs".
+        if (review === null || !Object.prototype.hasOwnProperty.call(review, 'rawInterferencePairs')) {
+            return { ok: true, reviewed: false, review, delta: null };
         }
         return {
             ok: true,
+            reviewed: true,
             review,
             delta: {
                 fromInterferences,
@@ -86,6 +96,7 @@ export async function reviewCandidate(input: {
     } catch (error) {
         return {
             ok: false,
+            reviewed: false,
             error: error instanceof Error ? error.message : String(error),
             review: null,
             delta: null,

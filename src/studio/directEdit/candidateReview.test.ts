@@ -16,6 +16,7 @@ describe('reviewCandidate', () => {
       evaluate,
     });
     expect(result.ok).toBe(true);
+    expect(result.reviewed).toBe(true);
     expect(result.review).not.toBeNull();
     expect(result.delta).toEqual({
       fromInterferences: 2,
@@ -27,21 +28,22 @@ describe('reviewCandidate', () => {
     });
   });
 
-  it('computes a zeroed delta when the candidate has an empty interference channel', async () => {
+  it('computes a zeroed delta from the reviews when the channel is present but empty', async () => {
     const evaluate = vi.fn(async () => review([], true));
     const result = await reviewCandidate({
       source: 'return box(1,1,1);',
       script: 'examples/demo.kcad.ts',
-      baseline: null,
+      baseline: review([], false),
       evaluate,
     });
     expect(result.ok).toBe(true);
+    expect(result.reviewed).toBe(true);
     expect(result.delta).toEqual({
       fromInterferences: 0,
       toInterferences: 0,
       fromVolumeMm3: 0,
       toVolumeMm3: 0,
-      fromOk: true,
+      fromOk: false,
       toOk: true,
     });
   });
@@ -50,15 +52,17 @@ describe('reviewCandidate', () => {
     const evaluate = vi.fn(async () => { throw new Error('worker exploded'); });
     const result = await reviewCandidate({ source: 'x', script: 'examples/demo.kcad.ts', baseline: null, evaluate });
     expect(result.ok).toBe(false);
+    expect(result.reviewed).toBe(false);
     expect(result.error).toMatch(/worker exploded/);
     expect(result.review).toBeNull();
     expect(result.delta).toBeNull();
   });
 
-  it('treats a review without an interference channel as no data', async () => {
+  it('succeeds without evidence when the review has no interference channel', async () => {
     const evaluate = vi.fn(async () => ({ ok: true, diagnostics: [] }) as never);
     const result = await reviewCandidate({ source: 'x', script: 'examples/demo.kcad.ts', baseline: null, evaluate });
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBe(true);
+    expect(result.reviewed).toBe(false);
     expect(result.review).not.toBeNull();
     expect(result.delta).toBeNull();
   });
