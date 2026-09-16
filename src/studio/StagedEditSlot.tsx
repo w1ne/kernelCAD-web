@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import { Check, RotateCcw, X } from 'lucide-react';
 import { useShellStore, shellStore } from './store/useShellStore';
 import { useWorkbench } from './context/WorkbenchContext';
+import { saveSourceToScript } from './directEdit/saveSource';
 import type { AppliedEditHistoryEntry, StagedEdit } from './store/shellStore';
 
 // Slice 1.5: real body. Reads stagedEdit from the shell store. When
@@ -217,8 +218,9 @@ export function StagedEditSlot() {
         stagedEdit != null && staleWarning?.editId === stagedEdit.id
             ? staleWarning.message
             : null;
+    const approveDisabled = stagedEdit?.evaluation?.ok === false;
 
-    const handleApprove = useCallback(() => {
+    const handleApprove = useCallback(async () => {
         if (stagedEdit == null) return;
         if (code !== stagedEdit.fromCode) {
             setStaleWarning({
@@ -226,6 +228,14 @@ export function StagedEditSlot() {
                 message: 'The editor changed since this edit was staged. Review the current code before applying this proposal.',
             });
             return;
+        }
+        if (stagedEdit.targetScript) {
+            try {
+                await saveSourceToScript(stagedEdit.targetScript, stagedEdit.toCode);
+            } catch (error) {
+                console.error('Direct-edit save failed:', error);
+                return;
+            }
         }
         setCode(stagedEdit.toCode);
         shellStore.recordStagedEditOutcome(stagedEdit, 'approved');
@@ -284,6 +294,22 @@ export function StagedEditSlot() {
                     >
                         "{stagedEdit.intent}"
                     </div>
+                    {stagedEdit.specLabel && (
+                        <div data-testid="staged-edit-spec" className="self-start rounded-full border border-violet-900 bg-violet-950/40 px-2 py-0.5 text-[10px] text-violet-200">
+                            {stagedEdit.specLabel}
+                        </div>
+                    )}
+                    {stagedEdit.validityDelta && (
+                        <div data-testid="staged-edit-validity" className="text-[10px] text-gray-400">
+                            interferences {stagedEdit.validityDelta.fromInterferences} → {stagedEdit.validityDelta.toInterferences}
+                            {' · '}Σ volume {stagedEdit.validityDelta.fromVolumeMm3.toFixed(1)} → {stagedEdit.validityDelta.toVolumeMm3.toFixed(1)} mm³
+                        </div>
+                    )}
+                    {stagedEdit.evaluation && !stagedEdit.evaluation.ok && (
+                        <div className="rounded border border-red-900 bg-red-950/30 px-2 py-1 text-[10px] text-red-300">
+                            Candidate failed: {stagedEdit.evaluation.error ?? 'unknown error'}
+                        </div>
+                    )}
                     <StagedEditContextDetails edit={stagedEdit} />
                     <DiffCard edit={stagedEdit} />
                     {visibleStaleWarning != null && (
@@ -312,7 +338,8 @@ export function StagedEditSlot() {
                             type="button"
                             onClick={handleApprove}
                             data-testid="staged-edit-approve"
-                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] rounded border border-emerald-700 bg-emerald-900/40 text-emerald-200 hover:bg-emerald-900/60"
+                            disabled={approveDisabled}
+                            className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] rounded border border-emerald-700 bg-emerald-900/40 text-emerald-200 hover:bg-emerald-900/60 ${approveDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}
                         >
                             <Check className="h-3 w-3" /> Approve
                         </button>

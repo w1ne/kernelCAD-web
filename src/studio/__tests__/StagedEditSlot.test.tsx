@@ -2,20 +2,30 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render } from '@testing-library/react';
+import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { StagedEditSlot } from '../StagedEditSlot';
 import { fingerprintStudioScript, shellStore } from '../store/shellStore';
 
 const setCodeMock = vi.fn();
 let workbenchCode = '';
 
+const { saveSourceToScriptMock } = vi.hoisted(() => ({
+    saveSourceToScriptMock: vi.fn(),
+}));
+
 vi.mock('../context/WorkbenchContext', () => ({
     useWorkbench: () => ({ code: workbenchCode, setCode: setCodeMock }),
+}));
+
+vi.mock('../directEdit/saveSource', () => ({
+    saveSourceToScript: saveSourceToScriptMock,
 }));
 
 beforeEach(() => {
     shellStore.reset();
     setCodeMock.mockReset();
+    saveSourceToScriptMock.mockReset();
+    saveSourceToScriptMock.mockResolvedValue(undefined);
     workbenchCode = '';
 });
 
@@ -43,6 +53,50 @@ describe('StagedEditSlot', () => {
         expect(getByTestId('staged-edit-diff')).toBeDefined();
         expect(getByTestId('staged-edit-approve')).toBeDefined();
         expect(getByTestId('staged-edit-reject')).toBeDefined();
+    });
+
+    it('renders the motion-spec badge and validity delta', () => {
+        shellStore.proposeStagedEdit({
+            id: 'e-spec',
+            intent: 'Nudge output horn +10 mm on X',
+            fromCode: 'return box(10);',
+            toCode: 'return box(20);',
+            specLabel: 'translate X +10 mm',
+            validityDelta: {
+                fromInterferences: 1,
+                toInterferences: 0,
+                fromVolumeMm3: 1234.5,
+                toVolumeMm3: 1240.25,
+                fromOk: false,
+                toOk: true,
+            },
+            evaluation: { ok: true },
+        });
+
+        const { getByTestId } = render(<StagedEditSlot />);
+        expect(getByTestId('staged-edit-spec').textContent).toContain('translate X +10 mm');
+        const validity = getByTestId('staged-edit-validity').textContent ?? '';
+        expect(validity).toContain('1 → 0');
+        expect(validity).toContain('1234.5 → 1240.3 mm³');
+
+        shellStore.clearStagedEdit();
+    });
+
+    it('disables approve when candidate evaluation failed', () => {
+        shellStore.proposeStagedEdit({
+            id: 'e-eval-failed',
+            intent: 'demo',
+            fromCode: 'return box(10);',
+            toCode: 'return box(20);',
+            evaluation: { ok: false, error: 'kernel threw' },
+        });
+
+        const { getByTestId, getByText } = render(<StagedEditSlot />);
+        const approve = getByTestId('staged-edit-approve') as HTMLButtonElement;
+        expect(approve.disabled).toBe(true);
+        expect(getByText(/kernel threw/)).toBeDefined();
+
+        shellStore.clearStagedEdit();
     });
 
     it('Approve calls workbench.setCode(toCode) and clears the slot', () => {
@@ -86,6 +140,56 @@ describe('StagedEditSlot', () => {
         expect(shellStore.getSnapshot().stagedEdit?.id).toBe('e-stale');
         expect(queryByTestId('applied-edit-history')).toBeNull();
         expect(getByTestId('staged-edit-stale-warning').textContent).toContain('changed since this edit was staged');
+    });
+
+    it('Approve saves the target script before applying the code', async () => {
+        const toCode = 'const a = box(30);\nreturn a;';
+        const fromCode = 'return box(10);';
+        workbenchCode = fromCode;
+        shellStore.proposeStagedEdit({
+            id: 'e-target-script',
+            intent: 'demo',
+            fromCode,
+            toCode,
+            targetScript: 'examples/horn.kcad.ts',
+            source: { kind: 'agent', label: 'Studio Generate' },
+        });
+
+        const { getByTestId } = render(<StagedEditSlot />);
+        await act(async () => {
+            fireEvent.click(getByTestId('staged-edit-approve'));
+        });
+
+        expect(saveSourceToScriptMock).toHaveBeenCalledWith('examples/horn.kcad.ts', toCode);
+        expect(saveSourceToScriptMock.mock.invocationCallOrder[0]).toBeLessThan(
+            setCodeMock.mock.invocationCallOrder[0],
+        );
+        expect(setCodeMock).toHaveBeenCalledWith(toCode);
+        expect(shellStore.getSnapshot().stagedEdit).toBeNull();
+    });
+
+    it('Approve leaves the edit staged when the target script save fails', async () => {
+        const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        saveSourceToScriptMock.mockRejectedValueOnce(new Error('save failed (500)'));
+        const fromCode = 'return box(10);';
+        workbenchCode = fromCode;
+        shellStore.proposeStagedEdit({
+            id: 'e-save-fail',
+            intent: 'demo',
+            fromCode,
+            toCode: 'return box(20);',
+            targetScript: 'examples/horn.kcad.ts',
+        });
+
+        const { getByTestId } = render(<StagedEditSlot />);
+        await act(async () => {
+            fireEvent.click(getByTestId('staged-edit-approve'));
+        });
+
+        expect(setCodeMock).not.toHaveBeenCalled();
+        expect(shellStore.getSnapshot().stagedEdit?.id).toBe('e-save-fail');
+        expect(errorSpy).toHaveBeenCalled();
+        errorSpy.mockRestore();
     });
 
     it('Reject leaves the script unchanged and clears the slot', () => {
