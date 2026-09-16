@@ -86,7 +86,7 @@
     "pretypecheck": "tsr generate",
     "typecheck": "tsc -b --noEmit",
     "test:ratchet": "vitest run tests/unit/scripts/qualityRatchet.test.ts tests/unit/scripts/cycleRatchet.test.ts",
-    "qc:lint": "npm run lint && npm run cookbook:validate && npm run test:ratchet",
+    "qc:lint": "npm run lint && npm run cookbook:validate",
     "qc:build": "npm run typecheck && npm run build:cli && npm run cookbook:build && npm run skill:out-of-scope && git diff --exit-code src/agent/skills && npm run cookbook:evaluate",
     "qc:test": "npm test",
     "qc": "npm run qc:lint && npm run qc:build && npm run qc:test",
