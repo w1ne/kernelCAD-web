@@ -1,5 +1,24 @@
+import { readdirSync, statSync } from 'node:fs';
+import { join, relative } from 'node:path';
 import { ESLint } from 'eslint';
 import tseslint from 'typescript-eslint';
+
+export function listSourceFiles(root: string): string[] {
+  const out: string[] = [];
+  const walk = (dir: string) => {
+    for (const name of readdirSync(dir)) {
+      const p = join(dir, name);
+      if (statSync(p).isDirectory()) {
+        if (name !== 'test') walk(p);
+        continue;
+      }
+      if (!/\.(ts|tsx)$/.test(name) || /\.test\.(ts|tsx)$/.test(name) || name.endsWith('.d.ts')) continue;
+      out.push(relative(root, p));
+    }
+  };
+  walk(join(root, 'src'));
+  return out.sort();
+}
 
 export interface Finding {
   rule: 'complexity' | 'max-lines-per-function' | 'max-lines';

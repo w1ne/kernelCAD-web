@@ -78,3 +78,23 @@ describe('qualityRatchet.diffAgainstBaseline', () => {
     expect(r.stale).toEqual([base]);
   });
 });
+
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { listSourceFiles } from '../../../scripts/lib/qualityRatchet';
+
+describe('quality ratchet (real tree)', () => {
+  it('src/** has no complexity/size findings beyond scripts/lib/qualityBaseline.json', async () => {
+    const root = resolve(__dirname, '../../..');
+    const baseline = JSON.parse(readFileSync(resolve(root, 'scripts/lib/qualityBaseline.json'), 'utf8')) as Finding[];
+    const current = await collectFindings(root, listSourceFiles(root));
+    const r = diffAgainstBaseline(current, baseline);
+    const fmt = (f: Finding) => `${f.file} ${f.symbol} (${f.rule}=${f.value})`;
+    const msg = [
+      ...r.added.map((f) => `NEW      ${fmt(f)} — split it or reduce below the threshold`),
+      ...r.grown.map(({ before, after }) => `GREW     ${fmt(after)} (was ${before.value})`),
+      ...r.stale.map((f) => `STALE    ${fmt(f)} — run: npx tsx scripts/qualityBaselineRegen.ts`),
+    ].join('\n');
+    expect(r.ok, msg).toBe(true);
+  }, 120_000);
+});
