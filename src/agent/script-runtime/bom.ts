@@ -17,16 +17,23 @@
 //
 // Grouping is by GEOMETRY IDENTITY, not by name: purchased parts group by
 // `catalogPart.id`; fabricated parts group by a position-invariant geometry
-// fingerprint (volume + surface area + sorted bbox dimensions, rounded).
+// fingerprint (volume + surface area + sorted bbox dimensions, rounded), plus
+// the declared material/density — one row carries one density for all of its
+// quantity, so identically-shaped parts with different declared densities
+// split into separate rows instead of silently re-pricing.
 // Quantity is the real count of `assembly.part(...)` instances that share a
 // group, so a pattern loop that calls `.part()` N times with the same source
 // shape (and N distinct names) collapses to one BOM row with quantity N.
+// Sheet-metal parts whose chain roots at a `sheetMetal` record report the
+// FLAT blank bbox (recovered outline + [0, thickness] z), not the folded body.
 
 import type { Assembly, AssemblyPartStored } from '../../modeling/capture/assembly';
 import type { CaptureSession } from '../../modeling/capture/captureSession';
 import type { CatalogPartMetadata } from '../../shared/parts/types';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
+import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import { tryResolveMaterial } from '../../modeling/properties/materialLibrary';
+import { flattenPattern } from '../../kernel/backends/occt/flattenPattern';
 
 export type BomKind = 'fabricated' | 'purchased';
 export type BomProcessHint = 'sheet-metal' | 'machined' | 'printed';
@@ -100,12 +107,63 @@ function catalogInfo(catalogPart: CatalogPartMetadata): BomCatalogInfo {
   return { id: catalogPart.id, vendor, partNumber, source, license: catalogPart.license };
 }
 
-/** Best-effort fabrication-process hint from the part's own capture-graph
- *  record kind. A hint, not a CAM decision: never blocks the row. */
-function processHintFor(session: CaptureSession, part: AssemblyPartStored): BomProcessHint {
-  const record = session.getRecords().find((r) => r.id === part.originalShape.id);
+/** Walk `inputs.base` from a shape's record back to its `sheetMetal` root
+ *  (the same lineage walk `flattenPattern` performs). Undefined when the
+ *  chain does not root at a `sheetMetal` record. */
+function sheetMetalRoot(records: readonly FeatureRecord[], startId: string): FeatureRecord | undefined {
+  const byId = new Map(records.map((r) => [r.id, r]));
+  let cur = byId.get(startId);
+  for (let i = 0; cur && i <= records.length; i++) {
+    if (cur.kind === 'sheetMetal') return cur;
+    const baseRef = cur.inputs.base;
+    if (!baseRef || baseRef.kind !== 'feature') return undefined;
+    cur = byId.get(baseRef.id);
+  }
+  return undefined;
+}
+
+/** Flat-blank bbox for a sheet-metal part: the recovered Region outline in
+ *  x/y plus [0, thickness] in z — the bbox the un-bent body would have.
+ *  Best-effort: undefined when the chain isn't sheet metal or flattening
+ *  fails (3+ bends, curved sketch), so callers fall back to the lowered
+ *  (folded) bbox rather than losing the row. */
+function flatSheetMetalBbox(records: readonly FeatureRecord[], part: AssemblyPartStored): BomBbox | undefined {
+  const root = sheetMetalRoot(records, part.originalShape.id);
+  if (!root) return undefined;
+  const thickness = root.params.thickness?.evaluated;
+  if (typeof thickness !== 'number' || !Number.isFinite(thickness) || thickness <= 0) return undefined;
+  try {
+    const { outer } = flattenPattern(records, part.originalShape.id);
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const [x, y] of outer) {
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+    if (!Number.isFinite(minX) || !Number.isFinite(minY)) return undefined;
+    return { min: [minX, minY, 0], max: [maxX, maxY, thickness] };
+  } catch {
+    return undefined;
+  }
+}
+
+/** Key suffix keeping identically-shaped parts with different declared
+ *  material/density in separate rows (empty when neither is declared). */
+function declarationKey(part: AssemblyPartStored): string {
+  if (part.material === undefined && part.density === undefined) return '';
+  return `|material:${part.material ?? ''}|density:${part.density ?? ''}`;
+}
+
+/** Best-effort fabrication-process hint from the part's capture-graph chain.
+ *  A hint, not a CAM decision: never blocks the row. */
+function processHintFor(records: readonly FeatureRecord[], part: AssemblyPartStored): BomProcessHint {
+  if (sheetMetalRoot(records, part.originalShape.id) !== undefined) return 'sheet-metal';
+  const record = records.find((r) => r.id === part.originalShape.id);
   const kind = record?.kind;
-  if (kind === 'sheetMetalBend' || kind === 'sheetMetal') return 'sheet-metal';
   if (kind === 'importedStep' || kind === 'importedBrep' || kind === 'importedStl' || kind === 'importedMesh') {
     return 'machined';
   }
@@ -120,19 +178,28 @@ function processHintFor(session: CaptureSession, part: AssemblyPartStored): BomP
 export async function computeBom(arm: Assembly, session: CaptureSession): Promise<BomResult> {
   const diagnostics: CompilerDiagnostic[] = [];
   const groups = new Map<string, BomRow & { __density: number | null }>();
+  const records = session.getRecords();
   let item = 0;
 
   for (const part of arm.__parts()) {
-    const record = session.getRecords().find((r) => r.id === part.originalShape.id);
+    const record = records.find((r) => r.id === part.originalShape.id);
     const catalogPart = record?.metadata?.catalogPart;
     const lowered = await part.originalShape.lower();
     const bb = lowered.boundingBox({ exact: true });
-    const bbox: BomBbox = { min: [bb.min[0], bb.min[1], bb.min[2]], max: [bb.max[0], bb.max[1], bb.max[2]] };
+    const loweredBbox: BomBbox = { min: [bb.min[0], bb.min[1], bb.min[2]], max: [bb.max[0], bb.max[1], bb.max[2]] };
     const volumeMm3 = lowered.volume();
     const surfaceAreaMm2 = lowered.surfaceArea();
 
     const kind: BomKind = catalogPart !== undefined ? 'purchased' : 'fabricated';
-    const groupKey = catalogPart !== undefined ? `catalog:${catalogPart.id}` : fingerprint(volumeMm3, surfaceAreaMm2, bbox);
+    // Sheet-metal fabricated parts report the flat blank bbox (stock size);
+    // every other part reports the lowered body's bbox.
+    const bbox = kind === 'fabricated'
+      ? (flatSheetMetalBbox(records, part) ?? loweredBbox)
+      : loweredBbox;
+    const identityKey = catalogPart !== undefined
+      ? `catalog:${catalogPart.id}`
+      : fingerprint(volumeMm3, surfaceAreaMm2, bbox);
+    const groupKey = identityKey + declarationKey(part);
 
     // Density resolution: explicit density wins, else the named material's
     // catalog density, else no guess (unlike inspect({ of: 'mass' }), which
@@ -200,7 +267,7 @@ export async function computeBom(arm: Assembly, session: CaptureSession): Promis
       massGPerUnit,
       massGTotal: massGPerUnit,
       bboxMm: bbox,
-      ...(kind === 'fabricated' ? { processHint: processHintFor(session, part) } : {}),
+      ...(kind === 'fabricated' ? { processHint: processHintFor(records, part) } : {}),
       ...(catalogPart !== undefined ? { catalog: catalogInfo(catalogPart) } : {}),
       instancePaths: [part.name],
       __density: density,
