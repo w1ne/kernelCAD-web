@@ -101,6 +101,61 @@ describe("inspect({ of: 'bom' })", () => {
     expect(r.totals.uniquePartCount).toBe(4);
   }, 60000);
 
+  it('reports the flat blank bbox for a bent sheet-metal part, not the folded body', async () => {
+    const code = `
+      const s = path().moveTo(0, 0).lineTo(50, 0).lineTo(50, 25).lineTo(0, 25).close();
+      const blank = sheetMetal(s, { thickness: 3.175, kFactor: 0.38 });
+      const bent = blank.bend({ atX: 25 }, 90, 3);
+      const arm = assembly('sheet');
+      arm.part('panel', bent, { material: 'mild-steel' });
+      return arm.model();
+    `;
+    const r = await inspectBomTool({ code });
+    expect(r.ok).toBe(true);
+    if (!r.ok) throw new Error('expected ok');
+    const row = r.rows[0];
+    expect(row.processHint).toBe('sheet-metal');
+    const [minX, minY, minZ] = row.bboxMm.min;
+    const [maxX, maxY, maxZ] = row.bboxMm.max;
+    expect(maxX - minX).toBeCloseTo(50, 3);
+    expect(maxY - minY).toBeCloseTo(25, 3);
+    expect(maxZ - minZ).toBeCloseTo(3.175, 3);
+    expect(minZ).toBeCloseTo(0, 3);
+  }, 60000);
+
+  it('splits identical geometry into separate rows when the declared density differs', async () => {
+    const code = `
+      const arm = assembly('mix');
+      arm.part('alu_a', box(10, 10, 4), { at: [0, 0, 0], material: 'aluminum' });
+      arm.part('alu_b', box(10, 10, 4), { at: [20, 0, 0], material: 'aluminum' });
+      arm.part('steel', box(10, 10, 4), { at: [40, 0, 0], density: 7850 });
+      arm.part('bare', box(10, 10, 4), { at: [60, 0, 0] });
+      return arm.model();
+    `;
+    const r = await inspectBomTool({ code });
+    expect(r.ok).toBe(true);
+    if (!r.ok) throw new Error('expected ok');
+    expect(r.rows).toHaveLength(3);
+
+    const alu = r.rows.find((row) => row.instancePaths.includes('alu_a'))!;
+    expect(alu).toBeDefined();
+    expect(alu.quantity).toBe(2);
+    expect(alu.density).toBeCloseTo(2700, 6);
+    expect(alu.instancePaths).toEqual(['alu_a', 'alu_b']);
+
+    const steel = r.rows.find((row) => row.instancePaths.includes('steel'))!;
+    expect(steel).toBeDefined();
+    expect(steel.quantity).toBe(1);
+    expect(steel.density).toBe(7850);
+    // 10x10x4 mm = 0.4 cm^3; 0.4 * 7.85 g/cm^3 = 3.14 g
+    expect(steel.massGPerUnit).toBeCloseTo(3.14, 3);
+
+    const bare = r.rows.find((row) => row.instancePaths.includes('bare'))!;
+    expect(bare).toBeDefined();
+    expect(bare.quantity).toBe(1);
+    expect(bare.massGPerUnit).toBeNull();
+  }, 60000);
+
   it('flags a purchased part with no standard/upstream provenance', async () => {
     const code = `
       const arm = assembly('demo2');
