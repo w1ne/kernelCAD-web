@@ -91,6 +91,20 @@ describe('planDrag', () => {
     expect(plan.diagnostics).toEqual([]);
   });
 
+  it('applies a shared param once when both axes carry the same delta', () => {
+    const source = "const PX = param('PX', 40);\nconst b = box(1,1,1).translate(PX, PX, 0);\nreturn b;\n";
+    const plan = planDrag({ source, anchor: { kind: 'variable', name: 'b' }, delta: [5, 5, 0] });
+    expect(plan.toCode).toContain("param('PX', 45)");
+    expect(plan.diagnostics).toHaveLength(0);
+  });
+
+  it('fails closed when a shared param carries different deltas', () => {
+    const source = "const PX = param('PX', 40);\nconst b = box(1,1,1).translate(PX, PX, 0);\nreturn b;\n";
+    const plan = planDrag({ source, anchor: { kind: 'variable', name: 'b' }, delta: [5, 0, 0] });
+    expect(plan.toCode).toBeNull();
+    expect(plan.diagnostics.map((d) => d.code)).toEqual(['feature.direct-edit.unresolved']);
+  });
+
   it('refuses mate-driven entities', () => {
     const plan = planDrag({ source: PARAM_SOURCE, anchor: BRACKET, delta: [5, 0, 0], mated: true });
     expect(plan.toCode).toBeNull();

@@ -7,9 +7,9 @@
 // mutation in memory, and returns the rewritten text plus structured
 // diagnostics. Nothing is written or executed here.
 
-import type { Node } from 'ts-morph';
+import type { CallExpression, Node } from 'ts-morph';
 import { AnchorError, parseSource, resolveAnchorExpression, type DirectEditAnchor } from './anchors';
-import { resolveMotionSpec, type MotionSpec } from './motionSpec';
+import { resolveMotionSpec, type Axis, type MotionSpec } from './motionSpec';
 import { DIAGNOSTIC_REGISTRY } from '../../shared/diagnostics/registry';
 import type { NextAction } from '../../shared/diagnostics/nextAction';
 
@@ -51,37 +51,39 @@ export function formatNumber(value: number): string {
   return Object.is(rounded, -0) ? '0' : String(rounded);
 }
 
-function clampedDiagnostic(paramName: string, bound: 'min' | 'max', limit: number): DragPlanDiagnostic {
-  const spec = DIAGNOSTIC_REGISTRY['feature.direct-edit.clamped'];
+function diag(
+  code: DragPlanDiagnosticCode,
+): Pick<DragPlanDiagnostic, 'severity' | 'hint' | 'nextAction'> {
+  const spec = DIAGNOSTIC_REGISTRY[code];
   return {
-    code: 'feature.direct-edit.clamped',
-    severity: 'info',
-    message: `param '${paramName}' clamped to ${bound} ${formatNumber(limit)}`,
+    severity: spec.defaultSeverity === 'warn' ? 'warning' : spec.defaultSeverity,
     hint: spec.hintTemplate,
     nextAction: spec.nextAction,
+  };
+}
+
+function clampedDiagnostic(paramName: string, bound: 'min' | 'max', limit: number): DragPlanDiagnostic {
+  return {
+    code: 'feature.direct-edit.clamped',
+    message: `param '${paramName}' clamped to ${bound} ${formatNumber(limit)}`,
+    ...diag('feature.direct-edit.clamped'),
   };
 }
 
 function deltaWrapperDiagnostic(): DragPlanDiagnostic {
-  const spec = DIAGNOSTIC_REGISTRY['feature.direct-edit.delta-wrapper'];
   return {
     code: 'feature.direct-edit.delta-wrapper',
-    severity: 'warning',
     message:
       'could not invert a computed transform axis; appended a marked .translate(...) delta wrapper',
-    hint: spec.hintTemplate,
-    nextAction: spec.nextAction,
+    ...diag('feature.direct-edit.delta-wrapper'),
   };
 }
 
 function unresolvedDiagnostic(message: string): DragPlanDiagnostic {
-  const spec = DIAGNOSTIC_REGISTRY['feature.direct-edit.unresolved'];
   return {
     code: 'feature.direct-edit.unresolved',
-    severity: 'error',
     message,
-    hint: spec.hintTemplate,
-    nextAction: spec.nextAction,
+    ...diag('feature.direct-edit.unresolved'),
   };
 }
 
@@ -117,12 +119,45 @@ export function planDrag(input: PlanDragInput): DragPlan {
   const diagnostics: DragPlanDiagnostic[] = [];
   const pendingDeltas: [number, number, number] = [0, 0, 0];
 
+  // One `param(...)` declaration can drive several axes. Equal deltas collapse
+  // to a single write; differing deltas cannot be encoded in one param, so the
+  // plan fails closed before touching the source.
+  const paramGroups = new Map<CallExpression, { paramName: string; axes: Axis[] }>();
+  for (const axis of [0, 1, 2] as const) {
+    const axisPlan = spec.axes[axis];
+    if (axisPlan.kind !== 'param') continue;
+    const group = paramGroups.get(axisPlan.paramCall);
+    if (group) {
+      group.axes.push(axis);
+    } else {
+      paramGroups.set(axisPlan.paramCall, { paramName: axisPlan.paramName, axes: [axis] });
+    }
+  }
+  for (const group of paramGroups.values()) {
+    const groupDelta = delta[group.axes[0]];
+    if (group.axes.some((axis) => delta[axis] !== groupDelta)) {
+      return {
+        ...base,
+        spec,
+        toCode: null,
+        diagnostics: [
+          unresolvedDiagnostic(
+            `param '${group.paramName}' drives multiple axes with different drag deltas; drag cannot encode it`,
+          ),
+        ],
+      };
+    }
+  }
+
   // In-place edits first; the delta append below rewrites `expr` wholesale, so
   // its descendants must already be settled when `expr.getText()` is read.
+  const writtenParams = new Set<CallExpression>();
   for (const axis of [0, 1, 2] as const) {
     const axisPlan = spec.axes[axis];
     const axisDelta = delta[axis];
     if (axisPlan.kind === 'param') {
+      if (writtenParams.has(axisPlan.paramCall)) continue;
+      writtenParams.add(axisPlan.paramCall);
       const raw = axisPlan.declaredValue + axisDelta;
       let next = raw;
       if (axisPlan.min !== undefined && next < axisPlan.min) {
