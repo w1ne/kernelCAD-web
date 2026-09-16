@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Check, RotateCcw, X } from 'lucide-react';
 import { useShellStore, shellStore } from './store/useShellStore';
 import { useWorkbench } from './context/WorkbenchContext';
 import { saveSourceToScript } from './directEdit/saveSource';
 import type { AppliedEditHistoryEntry, StagedEdit } from './store/shellStore';
+
+const STALE_EDIT_MESSAGE =
+    'The editor changed since this edit was staged. Review the current code before applying this proposal.';
 
 // Slice 1.5: real body. Reads stagedEdit from the shell store. When
 // populated, renders the intent, a minimal line-by-line diff, and
@@ -214,6 +217,14 @@ export function StagedEditSlot() {
     const { stagedEdit, appliedEditHistory } = useShellStore();
     const { code, setCode } = useWorkbench();
     const [staleWarning, setStaleWarning] = useState<{ editId: string; message: string } | null>(null);
+    const [approving, setApproving] = useState(false);
+    const approvingRef = useRef(false);
+    const codeRef = useRef(code);
+
+    useEffect(() => {
+        codeRef.current = code;
+    }, [code]);
+
     const visibleStaleWarning =
         stagedEdit != null && staleWarning?.editId === stagedEdit.id
             ? staleWarning.message
@@ -222,24 +233,42 @@ export function StagedEditSlot() {
 
     const handleApprove = useCallback(async () => {
         if (stagedEdit == null) return;
+        if (approvingRef.current) return;
         if (code !== stagedEdit.fromCode) {
             setStaleWarning({
                 editId: stagedEdit.id,
-                message: 'The editor changed since this edit was staged. Review the current code before applying this proposal.',
+                message: STALE_EDIT_MESSAGE,
             });
             return;
         }
-        if (stagedEdit.targetScript) {
-            try {
-                await saveSourceToScript(stagedEdit.targetScript, stagedEdit.toCode);
-            } catch (error) {
-                console.error('Direct-edit save failed:', error);
-                return;
+        const edit = stagedEdit;
+        approvingRef.current = true;
+        setApproving(true);
+        try {
+            if (edit.targetScript) {
+                try {
+                    await saveSourceToScript(edit.targetScript, edit.toCode);
+                } catch (error) {
+                    console.error('Direct-edit save failed:', error);
+                    return;
+                }
+                const currentEdit = shellStore.getSnapshot().stagedEdit;
+                if (currentEdit == null || currentEdit.id !== edit.id) return;
+                if (codeRef.current !== edit.fromCode) {
+                    setStaleWarning({
+                        editId: edit.id,
+                        message: STALE_EDIT_MESSAGE,
+                    });
+                    return;
+                }
             }
+            setCode(edit.toCode);
+            shellStore.recordStagedEditOutcome(edit, 'approved');
+            shellStore.clearStagedEdit();
+        } finally {
+            approvingRef.current = false;
+            setApproving(false);
         }
-        setCode(stagedEdit.toCode);
-        shellStore.recordStagedEditOutcome(stagedEdit, 'approved');
-        shellStore.clearStagedEdit();
     }, [code, stagedEdit, setCode]);
 
     const handleReject = useCallback(() => {
@@ -338,8 +367,8 @@ export function StagedEditSlot() {
                             type="button"
                             onClick={handleApprove}
                             data-testid="staged-edit-approve"
-                            disabled={approveDisabled}
-                            className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] rounded border border-emerald-700 bg-emerald-900/40 text-emerald-200 hover:bg-emerald-900/60 ${approveDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}
+                            disabled={approveDisabled || approving}
+                            className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] rounded border border-emerald-700 bg-emerald-900/40 text-emerald-200 hover:bg-emerald-900/60 ${approveDisabled || approving ? 'opacity-40 cursor-not-allowed' : ''}`}
                         >
                             <Check className="h-3 w-3" /> Approve
                         </button>

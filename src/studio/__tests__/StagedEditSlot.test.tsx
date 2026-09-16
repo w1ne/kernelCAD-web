@@ -192,6 +192,120 @@ describe('StagedEditSlot', () => {
         errorSpy.mockRestore();
     });
 
+    it('Approve double-click sends one PUT and applies once', async () => {
+        let resolveSave: () => void = () => {};
+        saveSourceToScriptMock.mockImplementationOnce(
+            () =>
+                new Promise<void>((resolve) => {
+                    resolveSave = resolve;
+                }),
+        );
+        const fromCode = 'return box(10);';
+        const toCode = 'return box(20);';
+        workbenchCode = fromCode;
+        shellStore.proposeStagedEdit({
+            id: 'e-double-click',
+            intent: 'demo',
+            fromCode,
+            toCode,
+            targetScript: 'examples/horn.kcad.ts',
+        });
+
+        const { getByTestId } = render(<StagedEditSlot />);
+        const approve = getByTestId('staged-edit-approve');
+        fireEvent.click(approve);
+        fireEvent.click(approve);
+
+        expect(saveSourceToScriptMock).toHaveBeenCalledTimes(1);
+        expect((approve as HTMLButtonElement).disabled).toBe(true);
+
+        await act(async () => {
+            resolveSave();
+        });
+
+        expect(saveSourceToScriptMock).toHaveBeenCalledTimes(1);
+        expect(setCodeMock).toHaveBeenCalledTimes(1);
+        expect(shellStore.getSnapshot().stagedEdit).toBeNull();
+        expect(shellStore.getSnapshot().appliedEditHistory).toHaveLength(1);
+    });
+
+    it('Approve aborts when the staged edit is replaced while saving', async () => {
+        let resolveSave: () => void = () => {};
+        saveSourceToScriptMock.mockImplementationOnce(
+            () =>
+                new Promise<void>((resolve) => {
+                    resolveSave = resolve;
+                }),
+        );
+        const fromCode = 'return box(10);';
+        workbenchCode = fromCode;
+        shellStore.proposeStagedEdit({
+            id: 'e-old',
+            intent: 'old edit',
+            fromCode,
+            toCode: 'return box(20);',
+            targetScript: 'examples/horn.kcad.ts',
+        });
+
+        const { getByTestId } = render(<StagedEditSlot />);
+        fireEvent.click(getByTestId('staged-edit-approve'));
+
+        act(() => {
+            shellStore.proposeStagedEdit({
+                id: 'e-new',
+                intent: 'new edit',
+                fromCode,
+                toCode: 'return box(99);',
+            });
+        });
+
+        await act(async () => {
+            resolveSave();
+        });
+
+        expect(setCodeMock).not.toHaveBeenCalled();
+        expect(shellStore.getSnapshot().stagedEdit?.id).toBe('e-new');
+        expect(shellStore.getSnapshot().appliedEditHistory).toHaveLength(0);
+    });
+
+    it('Approve re-checks editor staleness after the target save resolves', async () => {
+        let resolveSave: () => void = () => {};
+        saveSourceToScriptMock.mockImplementationOnce(
+            () =>
+                new Promise<void>((resolve) => {
+                    resolveSave = resolve;
+                }),
+        );
+        const fromCode = 'return box(10);';
+        workbenchCode = fromCode;
+        shellStore.proposeStagedEdit({
+            id: 'e-toctou',
+            intent: 'demo',
+            fromCode,
+            toCode: 'return box(20);',
+            targetScript: 'examples/horn.kcad.ts',
+        });
+
+        const { getByTestId } = render(<StagedEditSlot />);
+        fireEvent.click(getByTestId('staged-edit-approve'));
+
+        await act(async () => {
+            workbenchCode = 'return box(15);';
+            shellStore.setSelectedFeatureId('force-rerender');
+        });
+
+        await act(async () => {
+            resolveSave();
+        });
+
+        expect(setCodeMock).not.toHaveBeenCalled();
+        expect(shellStore.getSnapshot().stagedEdit?.id).toBe('e-toctou');
+        expect(shellStore.getSnapshot().appliedEditHistory).toHaveLength(0);
+        expect(getByTestId('staged-edit-stale-warning').textContent).toContain(
+            'changed since this edit was staged',
+        );
+    });
+
     it('Reject leaves the script unchanged and clears the slot', () => {
         shellStore.proposeStagedEdit({
             id: 'e3',

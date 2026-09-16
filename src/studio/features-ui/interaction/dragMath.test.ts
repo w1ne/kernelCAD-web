@@ -10,6 +10,10 @@ describe('snapDelta', () => {
   it('snaps to 0.1 in when unit is in', () => {
     expect(snapDelta([2.6, 0, 0], 'in')).toEqual([2.54, 0, 0]);
   });
+  it('normalizes negative zero produced by rounding', () => {
+    expect(snapDelta([-0.4, -0.5, 0], 'mm')).toEqual([0, 0, 0]);
+    expect(Object.is(snapDelta([-0.4, 0, 0], 'mm')[0], 0)).toBe(true);
+  });
 });
 
 describe('nudgeDelta', () => {
