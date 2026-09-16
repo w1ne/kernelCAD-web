@@ -32,40 +32,78 @@ function unquote(text: string): string {
   return text.replace(/^['"`]/, '').replace(/['"`]$/, '');
 }
 
-function findCallByStringArg(
+function findCallsByStringArg(
   sf: SourceFile,
   expressionPredicate: (text: string) => boolean,
   argIndex: number,
   expected: string,
-): CallExpression | null {
+): CallExpression[] {
+  const matches: CallExpression[] = [];
   const calls = sf.getDescendantsOfKind(SyntaxKind.CallExpression);
   for (const call of calls) {
     if (!expressionPredicate(call.getExpression().getText())) continue;
     const arg = call.getArguments()[argIndex];
-    if (arg && unquote(arg.getText()) === expected) return call;
+    if (arg && unquote(arg.getText()) === expected) matches.push(call);
   }
-  return null;
+  return matches;
+}
+
+function resolveUniqueCall(
+  sf: SourceFile,
+  expressionPredicate: (text: string) => boolean,
+  argIndex: number,
+  expected: string,
+  notFoundMessage: string,
+  ambiguousLabel: string,
+): CallExpression {
+  const matches = findCallsByStringArg(sf, expressionPredicate, argIndex, expected);
+  if (matches.length === 0) throw new AnchorError(notFoundMessage);
+  if (matches.length > 1) {
+    throw new AnchorError(
+      `ambiguous ${ambiguousLabel} '${expected}' (${matches.length} call sites); rename one or qualify the anchor`,
+    );
+  }
+  return matches[0];
 }
 
 export function resolveAnchorExpression(sf: SourceFile, anchor: DirectEditAnchor): Node {
   if (anchor.kind === 'variable') {
-    const decl = sf.getVariableDeclaration(anchor.name);
-    if (!decl) throw new AnchorError(`variable '${anchor.name}' not found`);
-    const init = decl.getInitializer();
+    const decls = sf
+      .getDescendantsOfKind(SyntaxKind.VariableDeclaration)
+      .filter((decl) => decl.getName() === anchor.name);
+    if (decls.length === 0) throw new AnchorError(`variable '${anchor.name}' not found`);
+    if (decls.length > 1) {
+      throw new AnchorError(
+        `ambiguous variable '${anchor.name}' (${decls.length} declarations); rename one or qualify the anchor`,
+      );
+    }
+    const init = decls[0].getInitializer();
     if (!init) throw new AnchorError(`variable '${anchor.name}' has no initializer`);
     return init;
   }
 
   if (anchor.kind === 'part') {
-    const call = findCallByStringArg(sf, (text) => text.endsWith('.part'), 0, anchor.name);
-    if (!call) throw new AnchorError(`assembly part '${anchor.name}' not found`);
+    const call = resolveUniqueCall(
+      sf,
+      (text) => text.endsWith('.part'),
+      0,
+      anchor.name,
+      `assembly part '${anchor.name}' not found`,
+      'assembly part',
+    );
     const shapeArg = call.getArguments()[1];
     if (!shapeArg) throw new AnchorError(`part '${anchor.name}' has no shape argument`);
     return shapeArg;
   }
 
-  const call = findCallByStringArg(sf, (text) => text === 'sdf.bind', 0, anchor.name);
-  if (!call) throw new AnchorError(`sdf binding '${anchor.name}' not found`);
+  const call = resolveUniqueCall(
+    sf,
+    (text) => text === 'sdf.bind',
+    0,
+    anchor.name,
+    `sdf binding '${anchor.name}' not found`,
+    'sdf binding',
+  );
   const fieldArg = call.getArguments()[1];
   if (!fieldArg) throw new AnchorError(`sdf binding '${anchor.name}' has no field argument`);
   return fieldArg;
