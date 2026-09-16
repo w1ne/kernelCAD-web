@@ -43,6 +43,9 @@ const PREFIX_TRANSFORM_PATTERN = /rotate|scale|reflect|mirror|transform/i;
 /** Maximum alias hops when following identifier bases; beyond this we fail closed. */
 const MAX_ALIAS_DEPTH = 3;
 
+/** Injected modeling namespaces: never carry a transform frame of their own. */
+const BENIGN_ROOTS = new Set(['sdf', 'lib']);
+
 function axesAsDeltas(): [AxisPlan, AxisPlan, AxisPlan] {
   return [
     { axis: 0, kind: 'delta' },
@@ -155,6 +158,7 @@ function spineCarriesTransform(node: Node, visited: Set<string>, depth: number):
     return spineCarriesTransform(callee, visited, depth);
   }
   if (Node.isIdentifier(node)) {
+    if (BENIGN_ROOTS.has(node.getText())) return false;
     const initializer = aliasInitializer(node, visited, depth);
     if (!initializer) return true;
     return spineCarriesTransform(initializer, visited, depth + 1);

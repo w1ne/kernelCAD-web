@@ -185,6 +185,22 @@ describe('resolveMotionSpec', () => {
     expect(spec.axes[0]).toMatchObject({ kind: 'literal', value: 10 });
   });
 
+  it('keeps sdf primitive chains in-place editable', () => {
+    const spec = specFor(
+      `const blob = sdf.sphere(8).translate(1, 2, 3);\nconst goop = sdf.bind('goop', blob);\nreturn sdf.materialize(blob);`,
+      'blob',
+    );
+    expect(spec.axes[0]).toMatchObject({ kind: 'literal', value: 1 });
+  });
+
+  it('still downgrades when an alias off a known root rotates', () => {
+    const spec = specFor(
+      `const base = sdf.sphere(8);\nconst blob = base.rotateZ(90).translate(1, 2, 3);\nconst goop = sdf.bind('goop', blob);\nreturn sdf.materialize(blob);`,
+      'blob',
+    );
+    expect(spec.axes.map((a) => a.kind)).toEqual(['delta', 'delta', 'delta']);
+  });
+
   it('ignores a translate nested in call arguments', () => {
     const spec = specFor(
       `const PX = param('PX', 20);\nconst slider = union(box(1,1,1).translate(PX, 0, 0), box(2,2,2).translate(5, 0, 0));\nreturn slider;`,
