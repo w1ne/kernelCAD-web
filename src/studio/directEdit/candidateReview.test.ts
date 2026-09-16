@@ -59,7 +59,10 @@ describe('reviewCandidate', () => {
   });
 
   it('succeeds without evidence when the review has no interference channel', async () => {
-    const evaluate = vi.fn(async () => ({ ok: true, diagnostics: [] }) as never);
+    // The no-assembly shape: the endpoint reports ok:false with NO error
+    // diagnostics (a valid single-body candidate), and there is no
+    // rawInterferencePairs key at all.
+    const evaluate = vi.fn(async () => ({ ok: false, diagnostics: [] }) as never);
     const result = await reviewCandidate({ source: 'x', script: 'examples/demo.kcad.ts', baseline: null, evaluate });
     expect(result.ok).toBe(true);
     expect(result.reviewed).toBe(false);

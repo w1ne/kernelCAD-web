@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { Readable } from 'node:stream';
 import viteConfig from '../../../vite.config';
 import { reviewCadTool } from '../../../src/agent/mcp/tools/reviewCad';
 
@@ -108,16 +109,13 @@ async function getReviewHandler(): Promise<Handler> {
   return handler;
 }
 
-/** A minimal async-iterable req carrying one JSON body chunk — the shape the
- *  inline POST branch consumes via `for await (const chunk of req)`. */
+/** A readable req carrying one JSON body chunk — the shape the inline POST
+ *  branch consumes via the shared `readBody` helper. */
 function createJsonRequest(method: string, url: string, body: string): IncomingMessage {
-  return {
+  return Object.assign(Readable.from([Buffer.from(body, 'utf8')]), {
     method,
     url,
-    async *[Symbol.asyncIterator]() {
-      yield Buffer.from(body, 'utf8');
-    },
-  } as unknown as IncomingMessage;
+  }) as unknown as IncomingMessage;
 }
 
 function createResponse() {
@@ -140,7 +138,8 @@ function createResponse() {
       body,
       json: JSON.parse(body) as {
         rawInterferencePairs?: typeof livePairs;
-        diagnostics?: Array<{ code?: string; severity?: string }>;
+        diagnostics?: Array<{ code?: string; severity?: string; message?: string }>;
+        error?: string;
         ok?: boolean;
         livePhysicalUseCaseReview?: boolean;
         fitness?: { functional?: boolean; repairMode?: string; blockingReasons?: unknown[] };
@@ -234,6 +233,61 @@ describe('Vite /__kernelcad/review POST source review', () => {
     }));
     const calledWith = vi.mocked(reviewCadTool).mock.calls.at(-1)?.[0];
     expect(calledWith?.scriptDir).toMatch(/examples[/\\]robot-arm$/);
+  });
+
+  it('responds 422 when the candidate fails evaluation with an error diagnostic', async () => {
+    const handler = await getReviewHandler();
+    const errorDiagnostic = { code: 'script.compile', severity: 'error', message: 'boom' };
+    vi.mocked(reviewCadTool).mockResolvedValueOnce({
+      ok: false,
+      diagnostics: [errorDiagnostic],
+    } as never);
+    const { res, read } = createResponse();
+
+    await handler(createJsonRequest('POST', '', JSON.stringify({ source: 'return ;' })), res);
+
+    const response = read();
+    expect(response.statusCode).toBe(422);
+    expect(response.contentType).toBe('application/json');
+    expect(response.json.error).toBe('boom');
+    expect(response.json.diagnostics).toEqual([errorDiagnostic]);
+  });
+
+  it('keeps a no-assembly ok:false review at 200 (valid single-body candidate)', async () => {
+    const handler = await getReviewHandler();
+    vi.mocked(reviewCadTool).mockResolvedValueOnce({ ok: false, diagnostics: [] } as never);
+    const { res, read } = createResponse();
+
+    await handler(createJsonRequest('POST', '', JSON.stringify({ source: 'return box(1,1,1);' })), res);
+
+    expect(read().statusCode).toBe(200);
+  });
+
+  it('keeps an ok review with an empty interference channel at 200', async () => {
+    const handler = await getReviewHandler();
+    vi.mocked(reviewCadTool).mockResolvedValueOnce({
+      ok: true,
+      diagnostics: [],
+      rawInterferencePairs: [],
+    } as never);
+    const { res, read } = createResponse();
+
+    await handler(createJsonRequest('POST', '', JSON.stringify({ source: 'return box(1,1,1);' })), res);
+
+    const response = read();
+    expect(response.statusCode).toBe(200);
+    expect(response.json.rawInterferencePairs).toEqual([]);
+  });
+
+  it('rejects an oversized body with 413', async () => {
+    const handler = await getReviewHandler();
+    const { res, read } = createResponse();
+
+    await handler(createJsonRequest('POST', '', JSON.stringify({ source: 'x'.repeat(1_100_000) })), res);
+
+    const response = read();
+    expect(response.statusCode).toBe(413);
+    expect(response.json.error).toMatch(/too large/);
   });
 
   it('falls back to the examples root when the script param is absent', async () => {

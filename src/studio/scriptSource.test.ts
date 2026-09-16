@@ -130,6 +130,18 @@ describe('reviewSourceDev', () => {
     await expect(reviewSourceDev('boom', 'examples/demo.kcad.ts')).rejects.toThrow('candidate compile failed');
   });
 
+  it('throws the error diagnostic message on a 422 candidate failure', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: false,
+      status: 422,
+      json: async () => ({
+        error: 'boom',
+        diagnostics: [{ code: 'script.compile', severity: 'error', message: 'boom' }],
+      }),
+    } as Response);
+    await expect(reviewSourceDev('return ;', 'examples/demo.kcad.ts')).rejects.toThrow('boom');
+  });
+
   it('falls back to the HTTP status when the error body is unparseable', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: false,

@@ -580,12 +580,20 @@ function kernelCadMeshEndpoint(): Plugin {
           // asset resolution, so a missing/unknown script falls back to the
           // examples root instead of 400ing.
           if ((req.method ?? 'GET').toUpperCase() === 'POST') {
-            const chunks: Buffer[] = [];
-            for await (const chunk of req) chunks.push(chunk as Buffer);
+            const { readBody } = await import('./src/server/middleware/httpUtil');
             let parsedBody: { source?: unknown };
             try {
-              parsedBody = JSON.parse(Buffer.concat(chunks).toString('utf-8') || '{}');
-            } catch {
+              parsedBody = JSON.parse(
+                (await readBody(req as unknown as NodeJS.ReadableStream, 1_000_000)) || '{}',
+              );
+            } catch (error) {
+              const message = error instanceof Error ? error.message : String(error);
+              if (/too large/.test(message)) {
+                res.statusCode = 413;
+                res.setHeader('content-type', 'application/json');
+                res.end(JSON.stringify({ error: message }));
+                return;
+              }
               res.statusCode = 400;
               res.setHeader('content-type', 'application/json');
               res.end(JSON.stringify({ error: 'POST body must be JSON { source: string }' }));
@@ -610,6 +618,23 @@ function kernelCadMeshEndpoint(): Plugin {
               includePhysics: false,
               ...(scriptDir ? { scriptDir } : {}),
             });
+            // Compile/runtime failures come back as `ok:false` + error
+            // diagnostics; signal them explicitly so the client never treats
+            // a broken candidate as reviewable. A no-assembly review is also
+            // `ok:false` but carries NO error diagnostics — that is a valid
+            // single-body candidate and must stay 200.
+            const diagnostics = (review as { diagnostics?: Array<{ severity?: string; message?: string }> }).diagnostics ?? [];
+            const failed = (review as { ok?: boolean }).ok === false
+              && diagnostics.some((d) => d.severity === 'error');
+            if (failed) {
+              res.statusCode = 422;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({
+                error: diagnostics.find((d) => d.severity === 'error')?.message ?? 'candidate failed to evaluate',
+                diagnostics,
+              }));
+              return;
+            }
             res.statusCode = 200;
             res.setHeader('content-type', 'application/json');
             res.end(JSON.stringify(review));
