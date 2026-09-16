@@ -188,8 +188,71 @@ describe('StagedEditSlot', () => {
 
         expect(setCodeMock).not.toHaveBeenCalled();
         expect(shellStore.getSnapshot().stagedEdit?.id).toBe('e-save-fail');
+        expect(shellStore.getSnapshot().directEditNotice).toBe(
+            'Save failed; the edit is still staged.',
+        );
         expect(errorSpy).toHaveBeenCalled();
         errorSpy.mockRestore();
+    });
+
+    it('Approve clears a prior save-failure notice on success', async () => {
+        const fromCode = 'return box(10);';
+        const toCode = 'return box(20);';
+        workbenchCode = fromCode;
+        shellStore.setDirectEditNotice('Save failed; the edit is still staged.');
+        shellStore.proposeStagedEdit({
+            id: 'e-retry',
+            intent: 'demo',
+            fromCode,
+            toCode,
+            targetScript: 'examples/horn.kcad.ts',
+        });
+
+        const { getByTestId } = render(<StagedEditSlot />);
+        await act(async () => {
+            fireEvent.click(getByTestId('staged-edit-approve'));
+        });
+
+        expect(shellStore.getSnapshot().directEditNotice).toBeNull();
+        expect(shellStore.getSnapshot().stagedEdit).toBeNull();
+    });
+
+    it('Approve treats the watcher echo of the saved bytes as success', async () => {
+        let resolveSave: () => void = () => {};
+        saveSourceToScriptMock.mockImplementationOnce(
+            () =>
+                new Promise<void>((resolve) => {
+                    resolveSave = resolve;
+                }),
+        );
+        const fromCode = 'return box(10);';
+        const toCode = 'return box(20);';
+        workbenchCode = fromCode;
+        shellStore.proposeStagedEdit({
+            id: 'e-echo',
+            intent: 'demo',
+            fromCode,
+            toCode,
+            targetScript: 'examples/horn.kcad.ts',
+        });
+
+        const { getByTestId, queryByTestId } = render(<StagedEditSlot />);
+        fireEvent.click(getByTestId('staged-edit-approve'));
+
+        // The watcher bridge echoes the just-saved bytes back into the editor.
+        await act(async () => {
+            workbenchCode = toCode;
+            shellStore.setSelectedFeatureId('force-rerender');
+        });
+
+        await act(async () => {
+            resolveSave();
+        });
+
+        expect(setCodeMock).toHaveBeenCalledWith(toCode);
+        expect(shellStore.getSnapshot().stagedEdit).toBeNull();
+        expect(shellStore.getSnapshot().appliedEditHistory).toHaveLength(1);
+        expect(queryByTestId('staged-edit-stale-warning')).toBeNull();
     });
 
     it('Approve double-click sends one PUT and applies once', async () => {
@@ -307,6 +370,7 @@ describe('StagedEditSlot', () => {
     });
 
     it('Reject leaves the script unchanged and clears the slot', () => {
+        shellStore.setDirectEditNotice('Save failed; the edit is still staged.');
         shellStore.proposeStagedEdit({
             id: 'e3',
             intent: 'demo',
@@ -317,6 +381,7 @@ describe('StagedEditSlot', () => {
         fireEvent.click(getByTestId('staged-edit-reject'));
         expect(setCodeMock).not.toHaveBeenCalled();
         expect(shellStore.getSnapshot().stagedEdit).toBeNull();
+        expect(shellStore.getSnapshot().directEditNotice).toBeNull();
         expect(getByTestId('applied-edit-history').textContent).toContain('Rejected');
         expect(getByTestId('applied-edit-history').textContent).toContain('demo');
     });

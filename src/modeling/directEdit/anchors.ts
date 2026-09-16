@@ -6,7 +6,7 @@
 // viewer's existing identity convention: assembly part names, returned
 // variable names, and `sdf.bind` names. Ambiguity fails closed.
 
-import { Project, SyntaxKind, type CallExpression, type Node, type SourceFile } from 'ts-morph';
+import { Node, Project, SyntaxKind, type CallExpression, type SourceFile } from 'ts-morph';
 import { expressionCarriesTransform } from './motionSpec';
 
 export type DirectEditAnchor =
@@ -67,13 +67,44 @@ function resolveUniqueCall(
   return matches[0];
 }
 
-function assertNoTransformReassignment(sf: SourceFile, name: string): void {
+/** True when `expr` contains a value reference to `name` (property keys do
+ *  not count). Used to tell "reassigned from itself" (`u = u.subtract(...)`)
+ *  apart from "replaced by unrelated geometry" (`u = box(2, 2, 2)`). */
+function expressionReferencesName(expr: Node, name: string): boolean {
+  if (Node.isIdentifier(expr)) return expr.getText() === name;
+  return expr.getDescendantsOfKind(SyntaxKind.Identifier).some((identifier) => {
+    if (identifier.getText() !== name) return false;
+    const parent = identifier.getParent();
+    if (parent && Node.isPropertyAccessExpression(parent) && parent.getNameNode() === identifier) {
+      return false;
+    }
+    if (parent && Node.isPropertyAssignment(parent)) return false;
+    return true;
+  });
+}
+
+/**
+ * The planner rewrites the anchor's initializer, so the anchor must be the
+ * one place the target geometry is derived. Fail closed:
+ * - any reassignment whose RHS does not derive from the anchor replaces the
+ *   target with unrelated geometry — the planner would edit a dead
+ *   initializer while the viewport previews the replacement;
+ * - a self-derived reassignment carrying a transform still invalidates the
+ *   initializer's frame (pre-existing rule).
+ */
+function assertNoUnsafeReassignment(sf: SourceFile, name: string): void {
   const assignments = sf.getDescendantsOfKind(SyntaxKind.BinaryExpression).filter((expr) => {
     if (expr.getOperatorToken().getKind() !== SyntaxKind.EqualsToken) return false;
     return expr.getLeft().getText().trim() === name;
   });
   for (const assignment of assignments) {
-    if (expressionCarriesTransform(assignment.getRight())) {
+    const rhs = assignment.getRight();
+    if (!expressionReferencesName(rhs, name)) {
+      throw new AnchorError(
+        `variable '${name}' is reassigned to a value that does not derive from it; drag cannot target it safely`,
+      );
+    }
+    if (expressionCarriesTransform(rhs)) {
       throw new AnchorError(
         `variable '${name}' is reassigned with a transform after its declaration; drag cannot target it safely`,
       );
@@ -94,7 +125,7 @@ export function resolveAnchorExpression(sf: SourceFile, anchor: DirectEditAnchor
     }
     const init = decls[0].getInitializer();
     if (!init) throw new AnchorError(`variable '${anchor.name}' has no initializer`);
-    assertNoTransformReassignment(sf, anchor.name);
+    assertNoUnsafeReassignment(sf, anchor.name);
     return init;
   }
 

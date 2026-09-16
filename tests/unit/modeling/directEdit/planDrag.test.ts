@@ -189,6 +189,22 @@ describe('planDrag', () => {
     expect(plan.diagnostics[0].message).toContain('reassigned');
   });
 
+  it('converts an unrelated reassignment to unresolved instead of editing the dead initializer', () => {
+    const source = [
+      "const PX = param('PX', 20);",
+      'let u = box(1, 1, 1).translate(PX, 0, 0);',
+      'u = box(2, 2, 2);',
+      'return u;',
+      '',
+    ].join('\n');
+    const input = { source, anchor: { kind: 'variable', name: 'u' } as const, delta: [5, 0, 0] as const };
+    expect(() => planDrag(input)).not.toThrow();
+    const plan = planDrag(input);
+    expect(plan.toCode).toBeNull();
+    expect(plan.diagnostics.map((d) => d.code)).toContain('feature.direct-edit.unresolved');
+    expect(plan.diagnostics[0].message).toContain('reassigned');
+  });
+
   it('formats intent numbers with three decimals and no negative zero', () => {
     const plan = planDrag({ source: PARAM_SOURCE, anchor: BRACKET, delta: [-0, 0.0004, 1.23456] });
     expect(plan.intent).toBe("Translate variable 'bracket' by (0, 0, 1.235) mm");

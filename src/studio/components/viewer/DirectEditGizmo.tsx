@@ -16,6 +16,7 @@ import type { DirectEditAnchor } from "../../../modeling/directEdit/anchors";
 import type { DragPlan } from "../../../modeling/directEdit/planDrag";
 import { reviewCandidate } from "../../directEdit/candidateReview";
 import { currentStudioScript } from "../../scriptSource";
+import { makeStudioDiagnostic } from "../../diagnostics";
 import { shellStore } from "../../store/useShellStore";
 import type { StagedEdit } from "../../store/shellStore";
 import { useWorkbench } from "../../context/WorkbenchContext";
@@ -28,7 +29,12 @@ import { isMatedAnchor, resolveAnchor } from "./directEditTarget";
 
 export const REVIEWING_NOTICE = 'Reviewing candidate…';
 export const REVIEW_BUSY_NOTICE = 'A candidate review is already running; wait for it to finish.';
-export const SOURCE_CHANGED_NOTICE = 'Source changed during the drag; redo it.';
+// Route the notice through the catalogued Studio diagnostic so the emitted
+// code/hint stay registry-driven rather than duplicating the entry here.
+export const SOURCE_CHANGED_NOTICE = makeStudioDiagnostic(
+    'studio.direct-edit.source-changed',
+    'Source changed during the drag; redo it.',
+).message;
 const FALLBACK_PLAN_NOTICE = 'Direct edit could not be planned.';
 
 export type DragDelta = [number, number, number];

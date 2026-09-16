@@ -9,6 +9,14 @@ import type { AppliedEditHistoryEntry, StagedEdit } from './store/shellStore';
 
 const STALE_EDIT_MESSAGE =
     'The editor changed since this edit was staged. Review the current code before applying this proposal.';
+const SAVE_FAILED_NOTICE = 'Save failed; the edit is still staged.';
+
+/** Clear only our own failure notice — never clobber an unrelated status. */
+function clearSaveFailureNotice(): void {
+    if (shellStore.getSnapshot().directEditNotice === SAVE_FAILED_NOTICE) {
+        shellStore.setDirectEditNotice(null);
+    }
+}
 
 // Slice 1.5: real body. Reads stagedEdit from the shell store. When
 // populated, renders the intent, a minimal line-by-line diff, and
@@ -250,11 +258,15 @@ export function StagedEditSlot() {
                     await saveSourceToScript(edit.targetScript, edit.toCode);
                 } catch (error) {
                     console.error('Direct-edit save failed:', error);
+                    shellStore.setDirectEditNotice(SAVE_FAILED_NOTICE);
                     return;
                 }
                 const currentEdit = shellStore.getSnapshot().stagedEdit;
                 if (currentEdit == null || currentEdit.id !== edit.id) return;
-                if (codeRef.current !== edit.fromCode) {
+                // The watcher bridge may echo the bytes we just PUT back into
+                // the editor. That exact value is our save succeeding, not an
+                // intervening edit — treat it as fresh.
+                if (codeRef.current !== edit.fromCode && codeRef.current !== edit.toCode) {
                     setStaleWarning({
                         editId: edit.id,
                         message: STALE_EDIT_MESSAGE,
@@ -262,6 +274,7 @@ export function StagedEditSlot() {
                     return;
                 }
             }
+            clearSaveFailureNotice();
             setCode(edit.toCode);
             shellStore.recordStagedEditOutcome(edit, 'approved');
             shellStore.clearStagedEdit();
@@ -285,6 +298,7 @@ export function StagedEditSlot() {
             }
         }
         setStaleWarning(null);
+        clearSaveFailureNotice();
         shellStore.clearStagedEdit();
     }, [stagedEdit]);
 

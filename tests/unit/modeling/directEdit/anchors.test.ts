@@ -63,6 +63,26 @@ u = u.subtract(cylinder(1, 1));
 return u;
 `;
 
+const REASSIGN_UNRELATED = `
+const PX = param('PX', 20);
+let u = box(1, 1, 1).translate(PX, 0, 0);
+u = box(2, 2, 2);
+return u;
+`;
+
+const REASSIGN_UNRELATED_CALL = `
+let u = box(1, 1, 1).translate(0, 0, 0);
+u = makeShape();
+return u;
+`;
+
+const REASSIGN_SELF_TRANSLATE = `
+const PX = param('PX', 20);
+let u = box(1, 1, 1).translate(PX, 0, 0);
+u = u.translate(1, 0, 0);
+return u;
+`;
+
 describe('resolveAnchorExpression', () => {
   it('resolves a variable initializer', () => {
     const sf = parseSource(SOURCE);
@@ -128,8 +148,26 @@ describe('resolveAnchorExpression', () => {
     expect(() => resolveAnchorExpression(sf, { kind: 'variable', name: 'u' })).toThrow(/reassigned/);
   });
 
-  it('allows non-transform reassignment of a variable', () => {
+  it('allows non-transform reassignment derived from the anchor itself', () => {
     const sf = parseSource(REASSIGN_BOOLEAN);
+    const node = resolveAnchorExpression(sf, { kind: 'variable', name: 'u' });
+    expect(node.getText()).toBe('box(1, 1, 1).translate(PX, 0, 0)');
+  });
+
+  it('throws AnchorError when a variable is reassigned to unrelated geometry', () => {
+    const sf = parseSource(REASSIGN_UNRELATED);
+    expect(() => resolveAnchorExpression(sf, { kind: 'variable', name: 'u' })).toThrow(AnchorError);
+    expect(() => resolveAnchorExpression(sf, { kind: 'variable', name: 'u' })).toThrow(/reassigned/);
+  });
+
+  it('throws AnchorError when a variable is reassigned to an unrelated call', () => {
+    const sf = parseSource(REASSIGN_UNRELATED_CALL);
+    expect(() => resolveAnchorExpression(sf, { kind: 'variable', name: 'u' })).toThrow(AnchorError);
+    expect(() => resolveAnchorExpression(sf, { kind: 'variable', name: 'u' })).toThrow(/reassigned/);
+  });
+
+  it('preserves the self-derived translate reassignment behavior', () => {
+    const sf = parseSource(REASSIGN_SELF_TRANSLATE);
     const node = resolveAnchorExpression(sf, { kind: 'variable', name: 'u' });
     expect(node.getText()).toBe('box(1, 1, 1).translate(PX, 0, 0)');
   });
