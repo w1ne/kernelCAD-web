@@ -37,6 +37,9 @@ export interface MotionSpec {
 /** Calls that preserve an entity's world transform when appended after `.translate`. */
 const TRANSPARENT_TRAILING_CALLS = new Set(['color', 'material']);
 
+/** Method names that re-frame later translations when they come before `.translate`. */
+const PREFIX_TRANSFORM_PATTERN = /rotate|scale|reflect|mirror|transform/i;
+
 function axesAsDeltas(): [AxisPlan, AxisPlan, AxisPlan] {
   return [
     { axis: 0, kind: 'delta' },
@@ -113,6 +116,32 @@ function findOutermostTranslateCall(expr: Node): CallExpression | null {
   return candidates.find((candidate) => callsAfterOnSpine(candidate, expr) !== null) ?? null;
 }
 
+/** Calls applied before `call` along the callee spine (its callee chain, outermost first). */
+function prefixSpineCalls(call: CallExpression): CallExpression[] {
+  const calls: CallExpression[] = [];
+  let node: Node = call.getExpression();
+  for (;;) {
+    if (Node.isCallExpression(node)) {
+      calls.push(node);
+      node = node.getExpression();
+      continue;
+    }
+    if (Node.isPropertyAccessExpression(node)) {
+      node = node.getExpression();
+      continue;
+    }
+    break;
+  }
+  return calls;
+}
+
+function hasPrefixTransform(call: CallExpression): boolean {
+  return prefixSpineCalls(call).some((prefixCall) => {
+    const callee = prefixCall.getExpression();
+    return Node.isPropertyAccessExpression(callee) && PREFIX_TRANSFORM_PATTERN.test(callee.getName());
+  });
+}
+
 function paramMetadataFromCall(call: CallExpression): { name: string; value: number; min?: number; max?: number } | null {
   if (call.getExpression().getText() !== 'param') return null;
   const nameArg = call.getArguments()[0];
@@ -187,14 +216,16 @@ export function resolveMotionSpec(expr: Node): MotionSpec {
   }
   const trailing = callsAfterOnSpine(translateCall, expr);
   const editable =
+    !hasPrefixTransform(translateCall) &&
     trailing !== null &&
     trailing.every((call) => {
       const callee = call.getExpression();
       return Node.isPropertyAccessExpression(callee) && TRANSPARENT_TRAILING_CALLS.has(callee.getName());
     });
   if (!editable) {
-    // A transform after `.translate` makes local axes diverge from world axes;
-    // appending a world-axis delta at the end of the chain is correct instead.
+    // A transform before or after `.translate` makes local axes diverge from
+    // world axes; appending a world-axis delta at the end of the chain is
+    // correct instead.
     return { translateCall, hasTranslateCall: true, axes: axesAsDeltas() };
   }
   const sf = expr.getSourceFile();

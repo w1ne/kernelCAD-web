@@ -152,6 +152,23 @@ describe('resolveMotionSpec', () => {
     expect(spec.axes[0]).toMatchObject({ kind: 'param', paramName: 'PX' });
   });
 
+  it('downgrades to delta when a rotation precedes the translate', () => {
+    const spec = specFor(
+      `const slider = box(1,1,1).rotateZ(90).translate(10, 0, 0);\nreturn slider;`,
+      'slider',
+    );
+    expect(spec.hasTranslateCall).toBe(true);
+    expect(spec.axes.map((a) => a.kind)).toEqual(['delta', 'delta', 'delta']);
+  });
+
+  it('still edits in place when only non-transform ops precede the translate', () => {
+    const spec = specFor(
+      `const slider = box(1,1,1).fillet(1).translate(10, 0, 0);\nreturn slider;`,
+      'slider',
+    );
+    expect(spec.axes[0]).toMatchObject({ kind: 'literal', value: 10 });
+  });
+
   it('ignores a translate nested in call arguments', () => {
     const spec = specFor(
       `const PX = param('PX', 20);\nconst slider = union(box(1,1,1).translate(PX, 0, 0), box(2,2,2).translate(5, 0, 0));\nreturn slider;`,
