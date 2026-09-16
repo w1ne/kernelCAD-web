@@ -40,6 +40,9 @@ const TRANSPARENT_TRAILING_CALLS = new Set(['color', 'material']);
 /** Method names that re-frame later translations when they come before `.translate`. */
 const PREFIX_TRANSFORM_PATTERN = /rotate|scale|reflect|mirror|transform/i;
 
+/** Maximum alias hops when following identifier bases; beyond this we fail closed. */
+const MAX_ALIAS_DEPTH = 3;
+
 function axesAsDeltas(): [AxisPlan, AxisPlan, AxisPlan] {
   return [
     { axis: 0, kind: 'delta' },
@@ -116,30 +119,51 @@ function findOutermostTranslateCall(expr: Node): CallExpression | null {
   return candidates.find((candidate) => callsAfterOnSpine(candidate, expr) !== null) ?? null;
 }
 
-/** Calls applied before `call` along the callee spine (its callee chain, outermost first). */
-function prefixSpineCalls(call: CallExpression): CallExpression[] {
-  const calls: CallExpression[] = [];
-  let node: Node = call.getExpression();
-  for (;;) {
-    if (Node.isCallExpression(node)) {
-      calls.push(node);
-      node = node.getExpression();
-      continue;
-    }
-    if (Node.isPropertyAccessExpression(node)) {
-      node = node.getExpression();
-      continue;
-    }
-    break;
+/** Resolves an identifier used as a chain base to its single variable initializer, if unambiguous. */
+function aliasInitializer(identifier: Node, visited: Set<string>, depth: number): Node | null {
+  if (depth >= MAX_ALIAS_DEPTH) return null;
+  const name = identifier.getText();
+  if (visited.has(name)) return null;
+  const declarations = identifier.getSymbol()?.getDeclarations() ?? [];
+  if (declarations.length !== 1) return null;
+  const declaration = declarations[0];
+  if (!Node.isVariableDeclaration(declaration)) return null;
+  const initializer = declaration.getInitializer();
+  if (!initializer) return null;
+  visited.add(name);
+  return initializer;
+}
+
+/**
+ * Walks the callee spine below `node` looking for transform methods. Identifier
+ * bases are followed through variable initializers; unresolvable or ambiguous
+ * identifiers fail closed (treated as transform-containing) because their frame
+ * cannot be proven stable.
+ */
+function spineCarriesTransform(node: Node, visited: Set<string>, depth: number): boolean {
+  if (Node.isParenthesizedExpression(node)) {
+    return spineCarriesTransform(node.getExpression(), visited, depth);
   }
-  return calls;
+  if (Node.isPropertyAccessExpression(node)) {
+    if (PREFIX_TRANSFORM_PATTERN.test(node.getName())) return true;
+    return spineCarriesTransform(node.getExpression(), visited, depth);
+  }
+  if (Node.isCallExpression(node)) {
+    const callee = node.getExpression();
+    // A bare function callee (e.g. `box(...)`) names a constructor, not a frame.
+    if (Node.isIdentifier(callee)) return false;
+    return spineCarriesTransform(callee, visited, depth);
+  }
+  if (Node.isIdentifier(node)) {
+    const initializer = aliasInitializer(node, visited, depth);
+    if (!initializer) return true;
+    return spineCarriesTransform(initializer, visited, depth + 1);
+  }
+  return false;
 }
 
 function hasPrefixTransform(call: CallExpression): boolean {
-  return prefixSpineCalls(call).some((prefixCall) => {
-    const callee = prefixCall.getExpression();
-    return Node.isPropertyAccessExpression(callee) && PREFIX_TRANSFORM_PATTERN.test(callee.getName());
-  });
+  return spineCarriesTransform(call.getExpression(), new Set(), 0);
 }
 
 function paramMetadataFromCall(call: CallExpression): { name: string; value: number; min?: number; max?: number } | null {

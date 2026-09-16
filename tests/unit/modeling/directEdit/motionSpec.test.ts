@@ -169,6 +169,22 @@ describe('resolveMotionSpec', () => {
     expect(spec.axes[0]).toMatchObject({ kind: 'literal', value: 10 });
   });
 
+  it('downgrades when a rotation hides behind an identifier alias', () => {
+    const spec = specFor(
+      `const base = box(1,1,1).rotateZ(90);\nconst slider = base.translate(10, 0, 0);\nreturn slider;`,
+      'slider',
+    );
+    expect(spec.axes.map((a) => a.kind)).toEqual(['delta', 'delta', 'delta']);
+  });
+
+  it('keeps in-place editing when the aliased base has no transforms', () => {
+    const spec = specFor(
+      `const base = box(1,1,1);\nconst slider = base.translate(10, 0, 0);\nreturn slider;`,
+      'slider',
+    );
+    expect(spec.axes[0]).toMatchObject({ kind: 'literal', value: 10 });
+  });
+
   it('ignores a translate nested in call arguments', () => {
     const spec = specFor(
       `const PX = param('PX', 20);\nconst slider = union(box(1,1,1).translate(PX, 0, 0), box(2,2,2).translate(5, 0, 0));\nreturn slider;`,
