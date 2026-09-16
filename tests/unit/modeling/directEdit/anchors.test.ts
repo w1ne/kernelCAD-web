@@ -49,6 +49,20 @@ sdf.bind('goop', sdf.sphere(2));
 return 0;
 `;
 
+const REASSIGN_ROTATE = `
+const PX = param('PX', 20);
+let u = box(1, 1, 1).translate(PX, 0, 0);
+u = u.rotateY(90);
+return u;
+`;
+
+const REASSIGN_BOOLEAN = `
+const PX = param('PX', 20);
+let u = box(1, 1, 1).translate(PX, 0, 0);
+u = u.subtract(cylinder(1, 1));
+return u;
+`;
+
 describe('resolveAnchorExpression', () => {
   it('resolves a variable initializer', () => {
     const sf = parseSource(SOURCE);
@@ -106,5 +120,17 @@ describe('resolveAnchorExpression', () => {
     const sf = parseSource(DUP_SDF_SOURCE);
     expect(() => resolveAnchorExpression(sf, { kind: 'sdfBinding', name: 'goop' })).toThrow(AnchorError);
     expect(() => resolveAnchorExpression(sf, { kind: 'sdfBinding', name: 'goop' })).toThrow(/ambiguous/i);
+  });
+
+  it('throws AnchorError when a variable is reassigned with a transform', () => {
+    const sf = parseSource(REASSIGN_ROTATE);
+    expect(() => resolveAnchorExpression(sf, { kind: 'variable', name: 'u' })).toThrow(AnchorError);
+    expect(() => resolveAnchorExpression(sf, { kind: 'variable', name: 'u' })).toThrow(/reassigned/);
+  });
+
+  it('allows non-transform reassignment of a variable', () => {
+    const sf = parseSource(REASSIGN_BOOLEAN);
+    const node = resolveAnchorExpression(sf, { kind: 'variable', name: 'u' });
+    expect(node.getText()).toBe('box(1, 1, 1).translate(PX, 0, 0)');
   });
 });

@@ -7,6 +7,7 @@
 // variable names, and `sdf.bind` names. Ambiguity fails closed.
 
 import { Project, SyntaxKind, type CallExpression, type Node, type SourceFile } from 'ts-morph';
+import { expressionCarriesTransform } from './motionSpec';
 
 export type DirectEditAnchor =
   | { kind: 'part'; name: string }
@@ -66,6 +67,20 @@ function resolveUniqueCall(
   return matches[0];
 }
 
+function assertNoTransformReassignment(sf: SourceFile, name: string): void {
+  const assignments = sf.getDescendantsOfKind(SyntaxKind.BinaryExpression).filter((expr) => {
+    if (expr.getOperatorToken().getKind() !== SyntaxKind.EqualsToken) return false;
+    return expr.getLeft().getText().trim() === name;
+  });
+  for (const assignment of assignments) {
+    if (expressionCarriesTransform(assignment.getRight())) {
+      throw new AnchorError(
+        `variable '${name}' is reassigned with a transform after its declaration; drag cannot target it safely`,
+      );
+    }
+  }
+}
+
 export function resolveAnchorExpression(sf: SourceFile, anchor: DirectEditAnchor): Node {
   if (anchor.kind === 'variable') {
     const decls = sf
@@ -79,6 +94,7 @@ export function resolveAnchorExpression(sf: SourceFile, anchor: DirectEditAnchor
     }
     const init = decls[0].getInitializer();
     if (!init) throw new AnchorError(`variable '${anchor.name}' has no initializer`);
+    assertNoTransformReassignment(sf, anchor.name);
     return init;
   }
 

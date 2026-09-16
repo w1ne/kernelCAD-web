@@ -170,6 +170,13 @@ function hasPrefixTransform(call: CallExpression): boolean {
   return spineCarriesTransform(call.getExpression(), new Set(), 0);
 }
 
+/** True when evaluating `expr` applies a transform that changes the frame
+ *  of an earlier translate (rotate/scale/reflect/mirror/transform), or when
+ *  a chain base cannot be proven transform-free. */
+export function expressionCarriesTransform(expr: Node): boolean {
+  return spineCarriesTransform(expr, new Set(), 0);
+}
+
 function paramMetadataFromCall(call: CallExpression): { name: string; value: number; min?: number; max?: number } | null {
   if (call.getExpression().getText() !== 'param') return null;
   const nameArg = call.getArguments()[0];
