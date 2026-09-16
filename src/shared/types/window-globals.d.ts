@@ -56,6 +56,18 @@ declare global {
     resetMutationDiagnostics?: () => void;
     isEngineReady?: boolean;
 
+    /**
+     * Dev-only direct-edit automation hook, registered by DirectEditGizmo
+     * under `import.meta.env.DEV`. Drives the same plan → review → propose
+     * path as a pointer drag; resolves to the staged edit (or null when the
+     * edit was refused/not planned). Structural typing only — `shared/` must
+     * not depend on studio types.
+     */
+    __kernelcad_drag_entity?: (request: {
+      anchor: { kind: 'part' | 'variable' | 'sdfBinding'; name: string };
+      delta: [number, number, number];
+    }) => Promise<unknown>;
+
     // Monaco is used in some Playwright suites
     monaco?: unknown;
   }

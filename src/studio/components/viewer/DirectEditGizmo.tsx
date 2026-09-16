@@ -12,7 +12,6 @@ import * as THREE from "three";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TransformControls } from "@react-three/drei/core/TransformControls";
 import type { GeometryResult } from "../../../shared/worker/geometryEngine";
-import type { FeatureRecord } from "../../../shared/intent/featureRecord";
 import type { DirectEditAnchor } from "../../../modeling/directEdit/anchors";
 import type { DragPlan } from "../../../modeling/directEdit/planDrag";
 import { reviewCandidate } from "../../directEdit/candidateReview";
@@ -25,6 +24,7 @@ import { snapDelta } from "../../features-ui/interaction/dragMath";
 import { computeGeometryBox } from "./sectionRange";
 import { matrixFromGeometryTransform } from "./entities/geometryTransform";
 import { GhostShape } from "./entities/ShapeGeometry";
+import { isMatedAnchor, resolveAnchor } from "./directEditTarget";
 
 export const REVIEWING_NOTICE = 'Reviewing candidate…';
 export const REVIEW_BUSY_NOTICE = 'A candidate review is already running; wait for it to finish.';
@@ -43,40 +43,22 @@ interface DirectEditGizmoProps {
     itemNames: (string | null)[];
 }
 
-function isMatedAnchor(features: readonly FeatureRecord[], anchor: DirectEditAnchor): boolean {
-    if (anchor.kind !== 'part') return false;
-    const record = features.find(
-        (entry) => (entry.metadata as { partName?: unknown } | undefined)?.partName === anchor.name,
-    );
-    return (
-        record != null
-        && (record.metadata as { placedBy?: unknown } | undefined)?.placedBy != null
-    );
+/** Staged-edit id: monotonic enough for the single-slot store, collision-proof
+ *  even for same-millisecond proposals. */
+function nextStagedEditId(): string {
+    return `drag-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 export function DirectEditGizmo({ geometries, itemNames }: DirectEditGizmoProps) {
     const { selectedItemIds, code, scriptReview, isComputing } = useWorkbench();
     const { features } = useRecomputeResult();
 
-    // Viewer identity convention (mirrors Viewer.tsx / SelectionOutline):
-    // assembly parts carry `assemblyPartName`, plain shapes their returned
-    // variable name; anonymous geometries cannot anchor a source edit.
-    const selectedIndex = useMemo(() => {
-        const id = selectedItemIds[0];
-        if (id == null) return -1;
-        return geometries.findIndex((g, i) => (g.assemblyPartName ?? itemNames[i]) === id);
-    }, [geometries, itemNames, selectedItemIds]);
-
-    const geometry = selectedIndex >= 0 ? geometries[selectedIndex] : undefined;
-    const resolvedName = geometry
-        ? geometry.assemblyPartName ?? itemNames[selectedIndex]
-        : undefined;
-    const anchor = useMemo<DirectEditAnchor | null>(() => {
-        if (!geometry || resolvedName == null) return null;
-        return geometry.assemblyPartName
-            ? { kind: 'part', name: geometry.assemblyPartName }
-            : { kind: 'variable', name: resolvedName };
-    }, [geometry, resolvedName]);
+    const selection = useMemo(
+        () => resolveAnchor(selectedItemIds[0], geometries, itemNames),
+        [geometries, itemNames, selectedItemIds],
+    );
+    const geometry = selection?.geometry;
+    const anchor = selection?.anchor ?? null;
 
     const center = useMemo(() => {
         if (!geometry) return null;
@@ -92,6 +74,13 @@ export function DirectEditGizmo({ geometries, itemNames }: DirectEditGizmoProps)
         if (center) proxy.position.copy(center);
         else proxy.position.set(0, 0, 0);
     }, [proxy, center]);
+
+    // Live code mirror so the post-review staleness check sees the CURRENT
+    // source, not the render closure the drag started in.
+    const codeRef = useRef(code);
+    useEffect(() => {
+        codeRef.current = code;
+    }, [code]);
 
     const [dragDelta, setDragDelta] = useState<DragDelta | null>(null);
     const [reviewing, setReviewing] = useState(false);
@@ -110,49 +99,67 @@ export function DirectEditGizmo({ geometries, itemNames }: DirectEditGizmoProps)
             baselineCode: string,
             mated: boolean,
         ): Promise<StagedEdit | null> => {
-            // Lazy so the 13MB ts-morph parser stays out of the eager Studio
-            // bundle; it loads once, the first time a drag is committed.
-            let plan: DragPlan;
-            try {
-                const { planDrag } = await import('../../../modeling/directEdit/planDrag');
-                plan = planDrag({
-                    source: baselineCode,
-                    anchor: targetAnchor,
-                    delta: snapDelta(rawDelta, 'mm'),
-                    mated,
-                });
-            } catch (error) {
-                shellStore.setDirectEditNotice(
-                    error instanceof Error ? error.message : String(error),
-                );
+            // Busy state is claimed BEFORE the lazy planDrag import awaits, so
+            // a second release (pointer or dev hook) cannot start a concurrent
+            // plan+review during the chunk load.
+            if (reviewingRef.current) {
+                shellStore.setDirectEditNotice(REVIEW_BUSY_NOTICE);
                 return null;
             }
-            if (plan.toCode == null) {
-                shellStore.setDirectEditNotice(
-                    plan.diagnostics[0]?.message ?? FALLBACK_PLAN_NOTICE,
-                );
-                return null;
-            }
-
-            // Reviews hit the dev kernel and can take seconds: mark busy for
-            // the whole await so re-entrant starts are refused, not queued.
             reviewingRef.current = true;
             setReviewing(true);
             shellStore.setDirectEditNotice(REVIEWING_NOTICE);
-            const targetScript = currentStudioScript();
             try {
+                // Lazy so the 13MB ts-morph parser stays out of the eager
+                // Studio bundle; it loads once, the first time a drag commits.
+                let plan: DragPlan;
+                try {
+                    const { planDrag } = await import('../../../modeling/directEdit/planDrag');
+                    plan = planDrag({
+                        source: baselineCode,
+                        anchor: targetAnchor,
+                        delta: snapDelta(rawDelta, 'mm'),
+                        mated,
+                    });
+                } catch (error) {
+                    shellStore.setDirectEditNotice(
+                        error instanceof Error ? error.message : String(error),
+                    );
+                    return null;
+                }
+                if (plan.toCode == null) {
+                    shellStore.setDirectEditNotice(
+                        plan.diagnostics[0]?.message ?? FALLBACK_PLAN_NOTICE,
+                    );
+                    return null;
+                }
+
+                const targetScript = currentStudioScript();
                 const candidate = await reviewCandidate({
                     source: plan.toCode,
                     script: targetScript ?? '',
                     baseline: scriptReview,
                 });
+
+                // The editor may have moved while the review awaited. The
+                // planned edit no longer targets the live source — refuse and
+                // let the human redo the drag.
+                if (codeRef.current !== baselineCode) {
+                    shellStore.setDirectEditNotice(SOURCE_CHANGED_NOTICE);
+                    return null;
+                }
+
                 const edit: StagedEdit = {
-                    id: `drag-${Date.now()}`,
+                    id: nextStagedEditId(),
                     intent: plan.intent,
                     fromCode: plan.fromCode,
                     toCode: plan.toCode,
                     ...(plan.spec
-                        ? { specLabel: plan.spec.axes.map((axis) => axis.kind).join(', ') }
+                        ? {
+                            specLabel: plan.spec.axes
+                                .map((axis, i) => `${'XYZ'[i]}:${axis.kind}`)
+                                .join(' · '),
+                        }
                         : {}),
                     ...(candidate.delta ? { validityDelta: candidate.delta } : {}),
                     evaluation: candidate.ok
@@ -183,11 +190,11 @@ export function DirectEditGizmo({ geometries, itemNames }: DirectEditGizmoProps)
             return;
         }
         if (!anchor || !center) return;
-        dragStartRef.current = { center: center.clone(), anchor, baselineCode: code };
+        dragStartRef.current = { center: center.clone(), anchor, baselineCode: codeRef.current };
         dragDeltaRef.current = [0, 0, 0];
         setDragDelta([0, 0, 0]);
         shellStore.setDirectEditNotice(null);
-    }, [anchor, code, center]);
+    }, [anchor, center]);
 
     const handleObjectChange = useCallback(() => {
         const start = dragStartRef.current;
@@ -227,7 +234,7 @@ export function DirectEditGizmo({ geometries, itemNames }: DirectEditGizmoProps)
         if (!start || !delta || reviewingRef.current) return;
         // A click on the control without moving is not an edit.
         if (delta[0] === 0 && delta[1] === 0 && delta[2] === 0) return;
-        if (code !== start.baselineCode) {
+        if (codeRef.current !== start.baselineCode) {
             shellStore.setDirectEditNotice(SOURCE_CHANGED_NOTICE);
             return;
         }
@@ -237,16 +244,13 @@ export function DirectEditGizmo({ geometries, itemNames }: DirectEditGizmoProps)
             start.baselineCode,
             isMatedAnchor(features, start.anchor),
         );
-    }, [center, code, commitAnchorDrag, features, proxy]);
+    }, [center, commitAnchorDrag, features, proxy]);
 
     // Dev-only automation hook (Task 11 e2e): drives the exact same
     // plan → review → propose path without synthetic pointer control.
     useEffect(() => {
         if (!import.meta.env.DEV || typeof window === 'undefined') return;
-        const w = window as unknown as {
-            __kernelcad_drag_entity?: (request: DragEntityRequest) => Promise<StagedEdit | null>;
-        };
-        w.__kernelcad_drag_entity = async ({ anchor: requestedAnchor, delta }) => {
+        window.__kernelcad_drag_entity = async ({ anchor: requestedAnchor, delta }) => {
             if (reviewingRef.current) {
                 shellStore.setDirectEditNotice(REVIEW_BUSY_NOTICE);
                 return null;
@@ -254,14 +258,14 @@ export function DirectEditGizmo({ geometries, itemNames }: DirectEditGizmoProps)
             return commitAnchorDrag(
                 requestedAnchor,
                 [delta[0], delta[1], delta[2]],
-                code,
+                codeRef.current,
                 isMatedAnchor(features, requestedAnchor),
             );
         };
         return () => {
-            delete w.__kernelcad_drag_entity;
+            delete window.__kernelcad_drag_entity;
         };
-    }, [code, commitAnchorDrag, features]);
+    }, [commitAnchorDrag, features]);
 
     // GhostShape composes its geometry's own transform, so it gets a
     // transform-free copy here and this wrapper owns the full
