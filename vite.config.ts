@@ -4,12 +4,16 @@ import tailwindcss from '@tailwindcss/vite';
 import { TanStackRouterVite } from '@tanstack/router-vite-plugin';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { isAbsolute, relative, resolve } from 'node:path';
+import { relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { summarizeInterferencePairs } from './src/modeling/runtime/interferenceClassification';
+import { resolveExampleScript as resolveExampleScriptAtRoot } from './src/server/middleware/resolveExampleScript';
 
 const repoRoot = fileURLToPath(new URL('.', import.meta.url));
 const require = createRequire(import.meta.url);
+
+const resolveExampleScript = (script: string | null): string | null =>
+  resolveExampleScriptAtRoot(script, repoRoot);
 
 function getGitCommitHashShort(): string {
   try {
@@ -28,27 +32,6 @@ function getGitCommitHashShort(): string {
   } catch {
     return 'unknown';
   }
-}
-
-function isPathInside(parent: string, child: string): boolean {
-  const rel = relative(parent, child);
-  return rel === '' || (!rel.startsWith('..') && !isAbsolute(rel));
-}
-
-function resolveExampleScript(script: string | null): string | null {
-  if (!script) return null;
-  const allowedRoots = [
-    resolve(repoRoot, 'examples'),
-    resolve(repoRoot, 'tests/fixtures'),
-  ];
-  const scriptPath = resolve(repoRoot, script);
-  if (
-    !script.endsWith('.kcad.ts') ||
-    !allowedRoots.some((root) => isPathInside(root, scriptPath))
-  ) {
-    return null;
-  }
-  return scriptPath;
 }
 
 /**
