@@ -8,7 +8,7 @@
 //   delta   — computed/uninvertible (or no transform call), append a delta
 // Resolution is per axis; plans stay atomic.
 
-import { Node, type CallExpression, type SourceFile } from 'ts-morph';
+import { Node, SyntaxKind, type CallExpression, type SourceFile } from 'ts-morph';
 
 export type Axis = 0 | 1 | 2;
 
@@ -34,6 +34,12 @@ export interface MotionSpec {
   axes: [AxisPlan, AxisPlan, AxisPlan];
 }
 
+function numericValueOf(node: Node | undefined): number | null {
+  if (!node || !Node.isNumericLiteral(node)) return null;
+  const value = node.getLiteralValue();
+  return Number.isFinite(value) ? value : null;
+}
+
 function findOutermostTranslateCall(expr: Node): CallExpression | null {
   if (Node.isCallExpression(expr) && expr.getExpression().getText().endsWith('.translate')) {
     return expr;
@@ -55,8 +61,8 @@ function paramMetadataFromCall(call: CallExpression): { name: string; value: num
   const valueArg = call.getArguments()[1];
   if (!nameArg || !valueArg) return null;
   const name = nameArg.getText().replace(/^['"`]/, '').replace(/['"`]$/, '');
-  const value = Number(valueArg.getText());
-  if (!Number.isFinite(value)) return null;
+  const value = numericValueOf(valueArg);
+  if (value === null) return null;
   const metaArg = call.getArguments()[2];
   let min: number | undefined;
   let max: number | undefined;
@@ -64,8 +70,8 @@ function paramMetadataFromCall(call: CallExpression): { name: string; value: num
     for (const prop of metaArg.getProperties()) {
       if (!Node.isPropertyAssignment(prop)) continue;
       const key = prop.getName();
-      const raw = Number(prop.getInitializer()?.getText());
-      if (!Number.isFinite(raw)) continue;
+      const raw = numericValueOf(prop.getInitializer());
+      if (raw === null) continue;
       if (key === 'min') min = raw;
       if (key === 'max') max = raw;
     }
@@ -75,12 +81,16 @@ function paramMetadataFromCall(call: CallExpression): { name: string; value: num
 
 function resolveAxis(axis: Axis, arg: Node | undefined, sf: SourceFile): AxisPlan {
   if (!arg) return { axis, kind: 'delta' };
-  if (Node.isNumericLiteral(arg)) {
-    return { axis, kind: 'literal', value: Number(arg.getText()), argNode: arg };
+  const literalValue = numericValueOf(arg);
+  if (literalValue !== null) {
+    return { axis, kind: 'literal', value: literalValue, argNode: arg };
   }
   if (Node.isIdentifier(arg)) {
-    const decl = sf.getVariableDeclaration(arg.getText());
-    const init = decl?.getInitializer();
+    const decls = sf
+      .getDescendantsOfKind(SyntaxKind.VariableDeclaration)
+      .filter((decl) => decl.getName() === arg.getText());
+    if (decls.length !== 1) return { axis, kind: 'delta' };
+    const init = decls[0].getInitializer();
     if (init && Node.isCallExpression(init)) {
       const meta = paramMetadataFromCall(init);
       if (meta) {

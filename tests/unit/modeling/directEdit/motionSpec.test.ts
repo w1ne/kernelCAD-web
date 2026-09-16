@@ -43,4 +43,25 @@ describe('resolveMotionSpec', () => {
     expect(spec.hasTranslateCall).toBe(false);
     expect(spec.axes.map((a) => a.kind)).toEqual(['delta', 'delta', 'delta']);
   });
+
+  it('reads a literal axis value with numeric separators', () => {
+    const spec = specFor(`const slider = box(1,1,1).translate(1_000, 3, 0);\nreturn slider;`, 'slider');
+    expect(spec.axes[0]).toMatchObject({ kind: 'literal', value: 1000 });
+  });
+
+  it('reads a param default value with numeric separators', () => {
+    const spec = specFor(
+      `const PX = param('PX', 1_000);\nconst slider = box(1,1,1).translate(PX, 3, 0);\nreturn slider;`,
+      'slider',
+    );
+    expect(spec.axes[0]).toMatchObject({ kind: 'param', declaredValue: 1000 });
+  });
+
+  it('fails closed when a param name is shadowed', () => {
+    const spec = specFor(
+      `const PX = param('PX', 20);\n{ const PX = 5; }\nconst slider = box(1,1,1).translate(PX, 3, 0);\nreturn slider;`,
+      'slider',
+    );
+    expect(spec.axes[0]).toMatchObject({ kind: 'delta' });
+  });
 });
