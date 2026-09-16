@@ -63,6 +63,13 @@ export async function loadGalleryScriptSource(slug: string): Promise<string> {
   return response.text();
 }
 
+/** The `?script=` path Studio was opened with, or null outside the browser /
+ *  on the default (no-script) route. Single source of truth for save-back. */
+export function currentStudioScript(): string | null {
+  if (typeof window === 'undefined') return null;
+  return new URLSearchParams(window.location.search).get('script');
+}
+
 /**
  * Bridge payload returned by the server mesh endpoint — identical shape to
  * the dev-server vite middleware's `/__kernelcad/mesh` response, so the

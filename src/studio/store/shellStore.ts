@@ -11,6 +11,22 @@ import type { SelectedFeatureId } from '../types';
 // future slice needs richer selectors (slice equality, devtools), this
 // store can be swapped for Zustand without changing consumers' signatures.
 
+/** Interference-channel movement a direct edit is expected to cause. */
+export interface StagedEditValidityDelta {
+    readonly fromInterferences: number;
+    readonly toInterferences: number;
+    readonly fromVolumeMm3: number;
+    readonly toVolumeMm3: number;
+    readonly fromOk: boolean;
+    readonly toOk: boolean;
+}
+
+/** Candidate-evaluation verdict attached to a staged direct edit. */
+export interface StagedEditEvaluation {
+    readonly ok: boolean;
+    readonly error?: string;
+}
+
 /**
  * One proposed AST edit awaiting human review. Single-slot (no queue) in
  * Slice 1.5; future slices may extend. Population comes from
@@ -33,6 +49,14 @@ export interface StagedEdit {
     readonly expectedDiagnostics?: ReadonlyArray<{ code: string; severity: string; message: string }>;
     /** Where the proposal came from. */
     readonly source?: { kind: 'agent' | 'human' | 'test'; label?: string };
+    /** Direct-edit UI label for the resolved motion spec (axis/key/values). */
+    readonly specLabel?: string;
+    /** Predicted interference/validity movement from baseline to candidate. */
+    readonly validityDelta?: StagedEditValidityDelta;
+    /** Candidate evaluation verdict (may carry a failure message). */
+    readonly evaluation?: StagedEditEvaluation;
+    /** Example script the edit targets, so approval can save it back. */
+    readonly targetScript?: string;
 }
 
 export type StagedEditOutcome = 'approved' | 'rejected' | 'rerun';
