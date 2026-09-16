@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { TanStackRouterVite } from '@tanstack/router-vite-plugin';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { relative, resolve } from 'node:path';
+import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { summarizeInterferencePairs } from './src/modeling/runtime/interferenceClassification';
 import { resolveExampleScript as resolveExampleScriptAtRoot } from './src/server/middleware/resolveExampleScript';
@@ -571,6 +571,51 @@ function kernelCadMeshEndpoint(): Plugin {
       server.middlewares.use('/__kernelcad/review', async (req, res) => {
         try {
           const url = new URL(req.url ?? '', 'http://localhost');
+
+          // POST { source } reviews ARBITRARY edited code (the Studio direct-edit
+          // candidate path) through the same reviewCadTool the GET path uses.
+          // `includePoseEnvelope: false` keeps this to the cheap default-pose
+          // pass — the envelope sweep takes minutes on jointed assemblies.
+          // The `script` query param is optional here: it only anchors relative
+          // asset resolution, so a missing/unknown script falls back to the
+          // examples root instead of 400ing.
+          if ((req.method ?? 'GET').toUpperCase() === 'POST') {
+            const chunks: Buffer[] = [];
+            for await (const chunk of req) chunks.push(chunk as Buffer);
+            let parsedBody: { source?: unknown };
+            try {
+              parsedBody = JSON.parse(Buffer.concat(chunks).toString('utf-8') || '{}');
+            } catch {
+              res.statusCode = 400;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({ error: 'POST body must be JSON { source: string }' }));
+              return;
+            }
+            if (typeof parsedBody.source !== 'string' || parsedBody.source.length === 0) {
+              res.statusCode = 400;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({ error: 'POST body must include a non-empty "source" string' }));
+              return;
+            }
+            const scriptPath = resolveExampleScript(url.searchParams.get('script'));
+            const scriptDir = scriptPath ? dirname(scriptPath) : resolve(repoRoot, 'examples');
+            // Same Emscripten shim the mesh POST path needs: the review POST
+            // can be the first request hitting the node kernel (eval/lower).
+            ensureOcctShims();
+            const { reviewCadTool } = await import('./src/agent/mcp/tools/reviewCad');
+            const review = await reviewCadTool({
+              code: parsedBody.source,
+              includeInterference: true,
+              includePoseEnvelope: false,
+              includePhysics: false,
+              ...(scriptDir ? { scriptDir } : {}),
+            });
+            res.statusCode = 200;
+            res.setHeader('content-type', 'application/json');
+            res.end(JSON.stringify(review));
+            return;
+          }
+
           const scriptPath = resolveExampleScript(url.searchParams.get('script'));
           if (!scriptPath) {
             res.statusCode = 400;

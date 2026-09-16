@@ -11,13 +11,22 @@
 import { currentStudioScript } from '../scriptSource';
 
 export async function saveSourceToScript(script: string, source: string): Promise<void> {
-  const response = await fetch(`/__kernelcad/source?script=${encodeURIComponent(script)}`, {
-    method: 'PUT',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ source }),
-  });
+  let response: Response;
+  try {
+    response = await fetch(`/__kernelcad/source?script=${encodeURIComponent(script)}`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ source }),
+    });
+  } catch (error) {
+    throw new Error(`save failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
   if (!response.ok) {
-    throw new Error(`save failed (${response.status})`);
+    const payload = await response.json().catch(() => null) as { error?: unknown } | null;
+    const message = payload && typeof payload.error === 'string'
+      ? payload.error
+      : `save failed (${response.status})`;
+    throw new Error(message);
   }
 }
 

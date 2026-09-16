@@ -53,6 +53,10 @@ import { clearActiveMcpSession, setActiveMcpSession } from '../mcp/activeSession
 export interface ReviewCadInput {
   file?: string;
   code?: string;
+  /** Absolute directory to resolve relative asset paths against when
+   *  reviewing an inline `code` string (e.g. `lib.fromSTEP('./x.step')`).
+   *  Ignored when `file` is given — that path derives its own dirname. */
+  scriptDir?: string;
   assembly?: string;
   designGoal?: string;
   preserveInterfaces?: string[];

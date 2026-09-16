@@ -208,6 +208,35 @@ export async function meshSourceDev(
   return payload;
 }
 
+/**
+ * Review arbitrary edited code through the dev server's node kernel
+ * (`POST /__kernelcad/review?script=<script> { source }`). Returns the
+ * `reviewCadTool` payload directly — the candidate-evaluation path used by
+ * direct edit, which needs the interference/validity verdict WITHOUT paying
+ * for a full mesh round-trip. The script query param only anchors relative
+ * asset resolution; it is not required to exist on disk.
+ */
+export async function reviewSourceDev(
+  source: string,
+  script: string,
+): Promise<ScriptReviewSummary> {
+  const { base, headers } = await apiCall();
+  const response = await fetch(
+    rewritePath(`/__kernelcad/review?script=${encodeURIComponent(script)}`, base),
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...headers },
+      body: JSON.stringify({ source }),
+    },
+  );
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    const message = payload && typeof payload.error === 'string' ? payload.error : `HTTP ${response.status}`;
+    throw new Error(message);
+  }
+  return payload as ScriptReviewSummary;
+}
+
 /** sha256 hex of a string via the Web Crypto API (available in https
  *  contexts). Matches the node `crypto.createHash('sha256')` digest the
  *  build uses for precomputed-mesh filenames, so an unedited gallery source

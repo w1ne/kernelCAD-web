@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import viteConfig from '../../../vite.config';
+import { reviewCadTool } from '../../../src/agent/mcp/tools/reviewCad';
 
 const livePairs = [
   { a: 'raw-a', b: 'raw-b', volumeMm3: 1 },
@@ -107,6 +108,18 @@ async function getReviewHandler(): Promise<Handler> {
   return handler;
 }
 
+/** A minimal async-iterable req carrying one JSON body chunk — the shape the
+ *  inline POST branch consumes via `for await (const chunk of req)`. */
+function createJsonRequest(method: string, url: string, body: string): IncomingMessage {
+  return {
+    method,
+    url,
+    async *[Symbol.asyncIterator]() {
+      yield Buffer.from(body, 'utf8');
+    },
+  } as unknown as IncomingMessage;
+}
+
 function createResponse() {
   let body = '';
   const headers = new Map<string, string>();
@@ -184,5 +197,68 @@ describe('Vite /__kernelcad/review live endpoint', () => {
       functional: false,
       repairMode: 'physical-use-case',
     });
+  });
+});
+
+describe('Vite /__kernelcad/review POST source review', () => {
+  beforeEach(() => {
+    vi.mocked(reviewCadTool).mockReset();
+  });
+
+  it('reviews an arbitrary source with the cheap flags and the script dir', async () => {
+    const handler = await getReviewHandler();
+    const candidateReview = {
+      ok: true,
+      diagnostics: [],
+      rawInterferencePairs: [{ a: 'x', b: 'y', volumeMm3: 2 }],
+      interferenceSummary: { rawCount: 1, contactNoiseCount: 0, actionableCount: 1, capMm3: 20 },
+    };
+    vi.mocked(reviewCadTool).mockResolvedValueOnce(candidateReview as never);
+    const { res, read } = createResponse();
+
+    await handler(createJsonRequest(
+      'POST',
+      '?script=examples/robot-arm/desktop-3axis-mates.kcad.ts',
+      JSON.stringify({ source: 'return box(1,1,1);' }),
+    ), res);
+
+    const response = read();
+    expect(response.statusCode).toBe(200);
+    expect(response.contentType).toBe('application/json');
+    expect(response.json.rawInterferencePairs).toEqual(candidateReview.rawInterferencePairs);
+    expect(vi.mocked(reviewCadTool)).toHaveBeenLastCalledWith(expect.objectContaining({
+      code: 'return box(1,1,1);',
+      includeInterference: true,
+      includePoseEnvelope: false,
+      includePhysics: false,
+    }));
+    const calledWith = vi.mocked(reviewCadTool).mock.calls.at(-1)?.[0];
+    expect(calledWith?.scriptDir).toMatch(/examples[/\\]robot-arm$/);
+  });
+
+  it('falls back to the examples root when the script param is absent', async () => {
+    const handler = await getReviewHandler();
+    vi.mocked(reviewCadTool).mockResolvedValueOnce({ ok: true, diagnostics: [] } as never);
+    const { res, read } = createResponse();
+
+    await handler(createJsonRequest('POST', '', JSON.stringify({ source: 'return box(1,1,1);' })), res);
+
+    expect(read().statusCode).toBe(200);
+    const calledWith = vi.mocked(reviewCadTool).mock.calls.at(-1)?.[0];
+    expect(calledWith?.scriptDir).toMatch(/examples$/);
+  });
+
+  it('rejects a non-JSON body and a missing source', async () => {
+    const handler = await getReviewHandler();
+
+    const bad = createResponse();
+    await handler(createJsonRequest('POST', '', 'not json'), bad.res);
+    expect(bad.read().statusCode).toBe(400);
+
+    const empty = createResponse();
+    await handler(createJsonRequest('POST', '', JSON.stringify({ source: '' })), empty.res);
+    const response = empty.read();
+    expect(response.statusCode).toBe(400);
+    expect(response.json).toEqual({ error: 'POST body must include a non-empty "source" string' });
   });
 });

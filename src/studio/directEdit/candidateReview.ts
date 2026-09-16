@@ -2,14 +2,21 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/studio/directEdit/candidateReview.ts
 //
-// Evaluate a candidate source through the dev mesh endpoint WITHOUT
-// committing it. Returns the mesh payload plus a validity delta against a
-// baseline review. Side-effect free: the caller decides whether to apply.
+// Evaluate a candidate source through the dev review endpoint WITHOUT
+// committing it (or meshing it). Returns the review summary plus a validity
+// delta against a baseline review. Side-effect free: the caller decides
+// whether to apply.
+//
+// The delta is NEVER fabricated: it is `null` unless the evaluator returned
+// a review that actually carries the interference channel. A review without
+// `rawInterferencePairs` (e.g. a pre-build compile failure, which the review
+// tool emits without an assembly scene) is treated as "no data" — `ok:false`,
+// `delta:null` — never as "zero interferences, valid".
 //
 // This module deliberately defines its own delta shape (rather than
 // importing the shell store's) so the Studio store is not a dependency here.
 
-import { meshSourceDev, type BackendMeshPayload } from '../scriptSource';
+import { reviewSourceDev } from '../scriptSource';
 import type { ScriptReviewSummary } from '../context/GeometryContext';
 
 export interface CandidateValidityDelta {
@@ -22,11 +29,13 @@ export interface CandidateValidityDelta {
 }
 
 export interface CandidateReview {
+    /** True only when the evaluator resolved AND returned interference data. */
     readonly ok: boolean;
     readonly error?: string;
-    readonly payload?: BackendMeshPayload;
     readonly review: ScriptReviewSummary | null;
-    readonly delta: CandidateValidityDelta;
+    /** Null when there is no baseline/candidate interference data — the six
+     *  fields are populated only when a real candidate review exists. */
+    readonly delta: CandidateValidityDelta | null;
 }
 
 /** Structural subset of a raw interference pair — tolerates malformed
@@ -45,30 +54,33 @@ function volumeSum(pairs: ReadonlyArray<InterferencePairLike> | null | undefined
 
 export async function reviewCandidate(input: {
     readonly source: string;
+    readonly script: string;
     readonly baseline: ScriptReviewSummary | null;
-    readonly evaluate?: (source: string) => Promise<BackendMeshPayload>;
+    readonly evaluate?: (source: string) => Promise<ScriptReviewSummary>;
 }): Promise<CandidateReview> {
-    const evaluate = input.evaluate ?? meshSourceDev;
+    const evaluate = input.evaluate ?? ((source: string) => reviewSourceDev(source, input.script));
     const baselinePairs = input.baseline?.rawInterferencePairs;
     const fromInterferences = pairCount(baselinePairs);
     const fromVolumeMm3 = volumeSum(baselinePairs);
+    // No baseline review means nothing is known to be wrong with the current
+    // state; the candidate verdict below is always the real one.
     const fromOk = input.baseline?.ok ?? true;
 
     try {
-        const payload = await evaluate(input.source);
-        const review = payload.review ?? null;
-        const toPairs = review?.rawInterferencePairs;
+        const review: ScriptReviewSummary | null = await evaluate(input.source);
+        if (review === null || review.rawInterferencePairs === undefined) {
+            return { ok: false, review, delta: null };
+        }
         return {
             ok: true,
-            payload,
             review,
             delta: {
                 fromInterferences,
-                toInterferences: pairCount(toPairs),
+                toInterferences: pairCount(review.rawInterferencePairs),
                 fromVolumeMm3,
-                toVolumeMm3: volumeSum(toPairs),
+                toVolumeMm3: volumeSum(review.rawInterferencePairs),
                 fromOk,
-                toOk: review?.ok ?? true,
+                toOk: review.ok,
             },
         };
     } catch (error) {
@@ -76,14 +88,7 @@ export async function reviewCandidate(input: {
             ok: false,
             error: error instanceof Error ? error.message : String(error),
             review: null,
-            delta: {
-                fromInterferences,
-                toInterferences: 0,
-                fromVolumeMm3,
-                toVolumeMm3: 0,
-                fromOk,
-                toOk: false,
-            },
+            delta: null,
         };
     }
 }

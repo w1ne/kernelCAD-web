@@ -8,13 +8,15 @@ const review = (pairs: Array<{ volumeMm3: number }>, ok = true) =>
 
 describe('reviewCandidate', () => {
   it('computes the validity delta from interference volumes', async () => {
-    const evaluate = vi.fn(async () => ({ features: [], params: {}, review: review([{ volumeMm3: 3.5 }], false) }) as never);
+    const evaluate = vi.fn(async () => review([{ volumeMm3: 3.5 }], false));
     const result = await reviewCandidate({
       source: 'return box(1,1,1);',
+      script: 'examples/demo.kcad.ts',
       baseline: review([{ volumeMm3: 3.5 }, { volumeMm3: 1.5 }], false),
       evaluate,
     });
     expect(result.ok).toBe(true);
+    expect(result.review).not.toBeNull();
     expect(result.delta).toEqual({
       fromInterferences: 2,
       toInterferences: 1,
@@ -25,11 +27,39 @@ describe('reviewCandidate', () => {
     });
   });
 
-  it('reports evaluation failure without a payload', async () => {
+  it('computes a zeroed delta when the candidate has an empty interference channel', async () => {
+    const evaluate = vi.fn(async () => review([], true));
+    const result = await reviewCandidate({
+      source: 'return box(1,1,1);',
+      script: 'examples/demo.kcad.ts',
+      baseline: null,
+      evaluate,
+    });
+    expect(result.ok).toBe(true);
+    expect(result.delta).toEqual({
+      fromInterferences: 0,
+      toInterferences: 0,
+      fromVolumeMm3: 0,
+      toVolumeMm3: 0,
+      fromOk: true,
+      toOk: true,
+    });
+  });
+
+  it('reports evaluation failure without a delta', async () => {
     const evaluate = vi.fn(async () => { throw new Error('worker exploded'); });
-    const result = await reviewCandidate({ source: 'x', baseline: null, evaluate });
+    const result = await reviewCandidate({ source: 'x', script: 'examples/demo.kcad.ts', baseline: null, evaluate });
     expect(result.ok).toBe(false);
     expect(result.error).toMatch(/worker exploded/);
-    expect(result.delta.toInterferences).toBe(0);
+    expect(result.review).toBeNull();
+    expect(result.delta).toBeNull();
+  });
+
+  it('treats a review without an interference channel as no data', async () => {
+    const evaluate = vi.fn(async () => ({ ok: true, diagnostics: [] }) as never);
+    const result = await reviewCandidate({ source: 'x', script: 'examples/demo.kcad.ts', baseline: null, evaluate });
+    expect(result.ok).toBe(false);
+    expect(result.review).not.toBeNull();
+    expect(result.delta).toBeNull();
   });
 });

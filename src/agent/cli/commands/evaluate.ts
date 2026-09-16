@@ -34,6 +34,9 @@ import type { FeatureTraceEntry } from '../../repair/types';
 export interface EvaluateInput {
   file?: string;
   code?: string;
+  /** Absolute directory to resolve relative imports/assets against when
+   *  evaluating an inline `code` string. Unused on the `file` path. */
+  scriptDir?: string;
 }
 
 /**
@@ -119,7 +122,11 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
   let model;
   try {
     model = input.code !== undefined
-      ? await buildModel({ code: input.code, fileName: input.file ?? '<inline>' })
+      ? await buildModel({
+          code: input.code,
+          fileName: input.file ?? '<inline>',
+          ...(input.scriptDir !== undefined ? { scriptDir: input.scriptDir } : {}),
+        })
       : await buildModelFromFile({ file: input.file! });
   } catch (e) {
     if (isFileReadError(e)) {
