@@ -158,6 +158,41 @@ describe('StatusBar', () => {
         expect(screen.queryByTestId('status-interferences')).toBeNull();
     });
 
+    it('renders the direct-edit notice in amber', () => {
+        render(
+            <StatusBar
+                isComputing={false}
+                error={null}
+                geometryCount={1}
+                selectedCount={1}
+                viewMode3D="shaded"
+                layoutMode="split"
+                activeCommandLabel={null}
+                directEditNotice="Source changed during the drag; redo it."
+            />
+        );
+
+        const notice = screen.getByTestId('direct-edit-notice');
+        expect(notice.textContent).toBe('Source changed during the drag; redo it.');
+        expect(notice.className).toContain('text-amber-300');
+    });
+
+    it('omits the direct-edit notice when absent', () => {
+        render(
+            <StatusBar
+                isComputing={false}
+                error={null}
+                geometryCount={1}
+                selectedCount={0}
+                viewMode3D="shaded"
+                layoutMode="split"
+                activeCommandLabel={null}
+            />
+        );
+
+        expect(screen.queryByTestId('direct-edit-notice')).toBeNull();
+    });
+
     it('truncates long first-line errors', () => {
         const firstLine = `OpenCascade Error ${'x'.repeat(100)}`;
         const expected = `${firstLine.slice(0, 93)}...`;

@@ -4,12 +4,16 @@ import tailwindcss from '@tailwindcss/vite';
 import { TanStackRouterVite } from '@tanstack/router-vite-plugin';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { isAbsolute, relative, resolve } from 'node:path';
+import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { summarizeInterferencePairs } from './src/modeling/runtime/interferenceClassification';
+import { resolveExampleScript as resolveExampleScriptAtRoot } from './src/server/middleware/resolveExampleScript';
 
 const repoRoot = fileURLToPath(new URL('.', import.meta.url));
 const require = createRequire(import.meta.url);
+
+const resolveExampleScript = (script: string | null): string | null =>
+  resolveExampleScriptAtRoot(script, repoRoot);
 
 function getGitCommitHashShort(): string {
   try {
@@ -28,27 +32,6 @@ function getGitCommitHashShort(): string {
   } catch {
     return 'unknown';
   }
-}
-
-function isPathInside(parent: string, child: string): boolean {
-  const rel = relative(parent, child);
-  return rel === '' || (!rel.startsWith('..') && !isAbsolute(rel));
-}
-
-function resolveExampleScript(script: string | null): string | null {
-  if (!script) return null;
-  const allowedRoots = [
-    resolve(repoRoot, 'examples'),
-    resolve(repoRoot, 'tests/fixtures'),
-  ];
-  const scriptPath = resolve(repoRoot, script);
-  if (
-    !script.endsWith('.kcad.ts') ||
-    !allowedRoots.some((root) => isPathInside(root, scriptPath))
-  ) {
-    return null;
-  }
-  return scriptPath;
 }
 
 /**
@@ -588,6 +571,76 @@ function kernelCadMeshEndpoint(): Plugin {
       server.middlewares.use('/__kernelcad/review', async (req, res) => {
         try {
           const url = new URL(req.url ?? '', 'http://localhost');
+
+          // POST { source } reviews ARBITRARY edited code (the Studio direct-edit
+          // candidate path) through the same reviewCadTool the GET path uses.
+          // `includePoseEnvelope: false` keeps this to the cheap default-pose
+          // pass — the envelope sweep takes minutes on jointed assemblies.
+          // The `script` query param is optional here: it only anchors relative
+          // asset resolution, so a missing/unknown script falls back to the
+          // examples root instead of 400ing.
+          if ((req.method ?? 'GET').toUpperCase() === 'POST') {
+            const { readBody } = await import('./src/server/middleware/httpUtil');
+            let parsedBody: { source?: unknown };
+            try {
+              parsedBody = JSON.parse(
+                (await readBody(req as unknown as NodeJS.ReadableStream, 1_000_000)) || '{}',
+              );
+            } catch (error) {
+              const message = error instanceof Error ? error.message : String(error);
+              if (/too large/.test(message)) {
+                res.statusCode = 413;
+                res.setHeader('content-type', 'application/json');
+                res.end(JSON.stringify({ error: message }));
+                return;
+              }
+              res.statusCode = 400;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({ error: 'POST body must be JSON { source: string }' }));
+              return;
+            }
+            if (typeof parsedBody.source !== 'string' || parsedBody.source.length === 0) {
+              res.statusCode = 400;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({ error: 'POST body must include a non-empty "source" string' }));
+              return;
+            }
+            const scriptPath = resolveExampleScript(url.searchParams.get('script'));
+            const scriptDir = scriptPath ? dirname(scriptPath) : resolve(repoRoot, 'examples');
+            // Same Emscripten shim the mesh POST path needs: the review POST
+            // can be the first request hitting the node kernel (eval/lower).
+            ensureOcctShims();
+            const { reviewCadTool } = await import('./src/agent/mcp/tools/reviewCad');
+            const review = await reviewCadTool({
+              code: parsedBody.source,
+              includeInterference: true,
+              includePoseEnvelope: false,
+              includePhysics: false,
+              ...(scriptDir ? { scriptDir } : {}),
+            });
+            // Compile/runtime failures come back as `ok:false` + error
+            // diagnostics; signal them explicitly so the client never treats
+            // a broken candidate as reviewable. A no-assembly review is also
+            // `ok:false` but carries NO error diagnostics — that is a valid
+            // single-body candidate and must stay 200.
+            const diagnostics = (review as { diagnostics?: Array<{ severity?: string; message?: string }> }).diagnostics ?? [];
+            const failed = (review as { ok?: boolean }).ok === false
+              && diagnostics.some((d) => d.severity === 'error');
+            if (failed) {
+              res.statusCode = 422;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({
+                error: diagnostics.find((d) => d.severity === 'error')?.message ?? 'candidate failed to evaluate',
+                diagnostics,
+              }));
+              return;
+            }
+            res.statusCode = 200;
+            res.setHeader('content-type', 'application/json');
+            res.end(JSON.stringify(review));
+            return;
+          }
+
           const scriptPath = resolveExampleScript(url.searchParams.get('script'));
           if (!scriptPath) {
             res.statusCode = 400;
@@ -780,13 +833,18 @@ export default defineConfig(({ command }) => ({
     },
   },
   optimizeDeps: {
-    // ts-morph (13MB) and typescript (9.5MB) reach the Studio module graph
-    // only through `import('.../RefactoringManager')` in CodeContext (a
-    // rename-variable codepath users rarely hit). Vite's dep scanner pulls
+    // ts-morph (13MB) and typescript (9.5MB) are heavy. The dep scanner pulls
     // dynamic imports into the cold-start prebundle, which is what makes
-    // `npm run dev` saturate one core for ~60s and keep "Geometry kernel
-    // warming up..." visible. Excluding them defers the bundle work until
-    // (if ever) a user triggers the rename — and keeps cold-start light.
-    exclude: ['ts-morph', 'typescript'],
+    // `npm run dev` saturate one core for ~60s. `typescript` is still excluded:
+    // it only reaches the graph through the rarely-hit rename codepath
+    // (`import('.../RefactoringManager')` in CodeContext), so deferring that
+    // work is fine. `ts-morph` can no longer be deferred — the direct-edit drag
+    // planner (planDrag) runs client-side on every staged drag (lazily imported
+    // by DirectEditGizmo). With `exclude`, Vite serves the raw CJS package to
+    // the browser, where named imports (`Node`, `Project`, ...) fail with
+    // "does not provide an export named 'Node'"; prebundling it is what makes
+    // that lazy chunk load in dev.
+    include: ['ts-morph'],
+    exclude: ['typescript'],
   },
 }))

@@ -52,6 +52,14 @@ export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
   // rows with no mates or joints, so the mechanism graph is disconnected
   // by design. Not mechanisms; the physics loop's orphan-part gate does
   // not apply.
+  //
+  // Direct-edit hero: the two parts MUST stay mate-less — the gizmo refuses
+  // to drag any part that participates in a mate/joint graph (a local
+  // translate would be overwritten by mate-FK) — and the START pose
+  // deliberately interpenetrates by ~800 mm³ so the drag-to-clearance
+  // rewrite has a real 1 → 0 interference to fix. See
+  // docs/demos/direct-edit/README.md and tests/e2e/direct-edit-drag.spec.ts.
+  'examples/direct-edit-drag-to-clearance.kcad.ts',
   'examples/bom/panel-with-fasteners.kcad.ts',
   'examples/cookbook-parity/countersunk-flat-head-screw.kcad.ts',
   'examples/cookbook-parity/engineering-material-presets-mass.kcad.ts',

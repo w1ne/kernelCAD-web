@@ -1,10 +1,22 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Check, RotateCcw, X } from 'lucide-react';
 import { useShellStore, shellStore } from './store/useShellStore';
 import { useWorkbench } from './context/WorkbenchContext';
+import { saveSourceToScript } from './directEdit/saveSource';
 import type { AppliedEditHistoryEntry, StagedEdit } from './store/shellStore';
+
+const STALE_EDIT_MESSAGE =
+    'The editor changed since this edit was staged. Review the current code before applying this proposal.';
+const SAVE_FAILED_NOTICE = 'Save failed; the edit is still staged.';
+
+/** Clear only our own failure notice — never clobber an unrelated status. */
+function clearSaveFailureNotice(): void {
+    if (shellStore.getSnapshot().directEditNotice === SAVE_FAILED_NOTICE) {
+        shellStore.setDirectEditNotice(null);
+    }
+}
 
 // Slice 1.5: real body. Reads stagedEdit from the shell store. When
 // populated, renders the intent, a minimal line-by-line diff, and
@@ -213,23 +225,63 @@ export function StagedEditSlot() {
     const { stagedEdit, appliedEditHistory } = useShellStore();
     const { code, setCode } = useWorkbench();
     const [staleWarning, setStaleWarning] = useState<{ editId: string; message: string } | null>(null);
+    const [approving, setApproving] = useState(false);
+    const approvingRef = useRef(false);
+    const codeRef = useRef(code);
+
+    useEffect(() => {
+        codeRef.current = code;
+    }, [code]);
+
     const visibleStaleWarning =
         stagedEdit != null && staleWarning?.editId === stagedEdit.id
             ? staleWarning.message
             : null;
+    const approveDisabled = stagedEdit?.evaluation?.ok === false;
 
-    const handleApprove = useCallback(() => {
+    const handleApprove = useCallback(async () => {
         if (stagedEdit == null) return;
+        if (approvingRef.current) return;
         if (code !== stagedEdit.fromCode) {
             setStaleWarning({
                 editId: stagedEdit.id,
-                message: 'The editor changed since this edit was staged. Review the current code before applying this proposal.',
+                message: STALE_EDIT_MESSAGE,
             });
             return;
         }
-        setCode(stagedEdit.toCode);
-        shellStore.recordStagedEditOutcome(stagedEdit, 'approved');
-        shellStore.clearStagedEdit();
+        const edit = stagedEdit;
+        approvingRef.current = true;
+        setApproving(true);
+        try {
+            if (edit.targetScript) {
+                try {
+                    await saveSourceToScript(edit.targetScript, edit.toCode);
+                } catch (error) {
+                    console.error('Direct-edit save failed:', error);
+                    shellStore.setDirectEditNotice(SAVE_FAILED_NOTICE);
+                    return;
+                }
+                const currentEdit = shellStore.getSnapshot().stagedEdit;
+                if (currentEdit == null || currentEdit.id !== edit.id) return;
+                // The watcher bridge may echo the bytes we just PUT back into
+                // the editor. That exact value is our save succeeding, not an
+                // intervening edit — treat it as fresh.
+                if (codeRef.current !== edit.fromCode && codeRef.current !== edit.toCode) {
+                    setStaleWarning({
+                        editId: edit.id,
+                        message: STALE_EDIT_MESSAGE,
+                    });
+                    return;
+                }
+            }
+            clearSaveFailureNotice();
+            setCode(edit.toCode);
+            shellStore.recordStagedEditOutcome(edit, 'approved');
+            shellStore.clearStagedEdit();
+        } finally {
+            approvingRef.current = false;
+            setApproving(false);
+        }
     }, [code, stagedEdit, setCode]);
 
     const handleReject = useCallback(() => {
@@ -246,6 +298,7 @@ export function StagedEditSlot() {
             }
         }
         setStaleWarning(null);
+        clearSaveFailureNotice();
         shellStore.clearStagedEdit();
     }, [stagedEdit]);
 
@@ -284,6 +337,22 @@ export function StagedEditSlot() {
                     >
                         "{stagedEdit.intent}"
                     </div>
+                    {stagedEdit.specLabel && (
+                        <div data-testid="staged-edit-spec" className="self-start rounded-full border border-violet-900 bg-violet-950/40 px-2 py-0.5 text-[10px] text-violet-200">
+                            {stagedEdit.specLabel}
+                        </div>
+                    )}
+                    {stagedEdit.validityDelta && (
+                        <div data-testid="staged-edit-validity" className="text-[10px] text-gray-400">
+                            interferences {stagedEdit.validityDelta.fromInterferences} → {stagedEdit.validityDelta.toInterferences}
+                            {' · '}Σ volume {stagedEdit.validityDelta.fromVolumeMm3.toFixed(1)} → {stagedEdit.validityDelta.toVolumeMm3.toFixed(1)} mm³
+                        </div>
+                    )}
+                    {stagedEdit.evaluation && !stagedEdit.evaluation.ok && (
+                        <div className="rounded border border-red-900 bg-red-950/30 px-2 py-1 text-[10px] text-red-300">
+                            Candidate failed: {stagedEdit.evaluation.error ?? 'unknown error'}
+                        </div>
+                    )}
                     <StagedEditContextDetails edit={stagedEdit} />
                     <DiffCard edit={stagedEdit} />
                     {visibleStaleWarning != null && (
@@ -312,7 +381,8 @@ export function StagedEditSlot() {
                             type="button"
                             onClick={handleApprove}
                             data-testid="staged-edit-approve"
-                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] rounded border border-emerald-700 bg-emerald-900/40 text-emerald-200 hover:bg-emerald-900/60"
+                            disabled={approveDisabled || approving}
+                            className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] rounded border border-emerald-700 bg-emerald-900/40 text-emerald-200 hover:bg-emerald-900/60 ${approveDisabled || approving ? 'opacity-40 cursor-not-allowed' : ''}`}
                         >
                             <Check className="h-3 w-3" /> Approve
                         </button>

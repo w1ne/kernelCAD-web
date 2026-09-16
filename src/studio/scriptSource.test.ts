@@ -18,6 +18,7 @@ import {
   meshSourceDev,
   meshSourceHosted,
   needsFullKernel,
+  reviewSourceDev,
   rootVisibleFeatures,
 } from './scriptSource';
 
@@ -98,6 +99,65 @@ describe('meshSourceDev', () => {
       json: async () => ({ notFeatures: true }),
     } as Response);
     await expect(meshSourceDev('x')).rejects.toThrow(/did not return features/);
+  });
+});
+
+describe('reviewSourceDev', () => {
+  it('POSTs { source } to /__kernelcad/review and returns the review summary', async () => {
+    const summary = { ok: true, diagnostics: [], rawInterferencePairs: [] };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => summary,
+    } as Response);
+
+    await expect(reviewSourceDev('return box(1,1,1);', 'examples/demo.kcad.ts')).resolves.toEqual(summary);
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/__kernelcad/review?script=examples%2Fdemo.kcad.ts',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source: 'return box(1,1,1);' }),
+      },
+    );
+  });
+
+  it('throws the endpoint error message on a non-ok response', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => ({ error: 'candidate compile failed' }),
+    } as Response);
+    await expect(reviewSourceDev('boom', 'examples/demo.kcad.ts')).rejects.toThrow('candidate compile failed');
+  });
+
+  it('rejects a 200 response that is not a review payload', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({}),
+    } as Response);
+    await expect(reviewSourceDev('return box(1,1,1);', 'examples/demo.kcad.ts'))
+      .rejects.toThrow(/unexpected payload/i);
+  });
+
+  it('throws the error diagnostic message on a 422 candidate failure', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: false,
+      status: 422,
+      json: async () => ({
+        error: 'boom',
+        diagnostics: [{ code: 'script.compile', severity: 'error', message: 'boom' }],
+      }),
+    } as Response);
+    await expect(reviewSourceDev('return ;', 'examples/demo.kcad.ts')).rejects.toThrow('boom');
+  });
+
+  it('falls back to the HTTP status when the error body is unparseable', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: false,
+      status: 502,
+      json: async () => { throw new Error('not json'); },
+    } as Response);
+    await expect(reviewSourceDev('boom', 'examples/demo.kcad.ts')).rejects.toThrow('HTTP 502');
   });
 });
 

@@ -8,9 +8,9 @@ import {
 } from '../diagnostics';
 
 describe('Studio diagnostics registry', () => {
-    it('exposes exactly 6 codes', () => {
-        expect(STUDIO_DIAGNOSTIC_CODES).toHaveLength(6);
-        expect(new Set(STUDIO_DIAGNOSTIC_CODES).size).toBe(6);
+    it('exposes exactly 7 codes', () => {
+        expect(STUDIO_DIAGNOSTIC_CODES).toHaveLength(7);
+        expect(new Set(STUDIO_DIAGNOSTIC_CODES).size).toBe(7);
     });
 
     it('every code has a non-empty hint', () => {

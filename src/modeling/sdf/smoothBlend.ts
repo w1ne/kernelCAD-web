@@ -18,6 +18,7 @@
 import type { Vec3 } from '../../shared/intent/types';
 import type { SdfField } from './index';
 import { KernelError } from '../../shared/intent/kernelError';
+import { withTranslate } from './transform';
 
 export function smoothBlend(a: SdfField, b: SdfField, k: number): SdfField {
   if (typeof k !== 'number' || !Number.isFinite(k) || k <= 0) {
@@ -48,5 +49,5 @@ export function smoothBlend(a: SdfField, b: SdfField, k: number): SdfField {
     else if (h > 1) h = 1;
     return db * (1 - h) + da * h - k * h * (1 - h);
   };
-  return Object.assign(f, { aabb, kind: 'smoothBlend' as const });
+  return withTranslate(Object.assign(f, { aabb, kind: 'smoothBlend' as const }));
 }

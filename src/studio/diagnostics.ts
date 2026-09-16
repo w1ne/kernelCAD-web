@@ -19,7 +19,8 @@ export type StudioDiagnosticCode =
     | 'studio.script.runtime-threw'
     | 'studio.worker.crashed'
     | 'studio.validator.threw'
-    | 'studio.mcp.disconnected';
+    | 'studio.mcp.disconnected'
+    | 'studio.direct-edit.source-changed';
 
 export const STUDIO_DIAGNOSTIC_CODES: readonly StudioDiagnosticCode[] = [
     'studio.script.parse-failed',
@@ -28,6 +29,7 @@ export const STUDIO_DIAGNOSTIC_CODES: readonly StudioDiagnosticCode[] = [
     'studio.worker.crashed',
     'studio.validator.threw',
     'studio.mcp.disconnected',
+    'studio.direct-edit.source-changed',
 ] as const;
 
 export const STUDIO_HINTS: Record<StudioDiagnosticCode, string> = {
@@ -43,6 +45,8 @@ export const STUDIO_HINTS: Record<StudioDiagnosticCode, string> = {
         'validateAssembly itself threw. The status is unknown; read the stack in the Validity tab.',
     'studio.mcp.disconnected':
         'MCP server is offline. Authoring still works; reconnect happens automatically.',
+    'studio.direct-edit.source-changed':
+        'The source changed while you were dragging (an agent edit landed). Redo the drag on the current source.',
 };
 
 export interface StudioDiagnostic {

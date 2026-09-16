@@ -12,6 +12,7 @@
 import type { Vec3 } from '../../shared/intent/types';
 import type { SdfField } from './index';
 import { KernelError } from '../../shared/intent/kernelError';
+import { withTranslate } from './transform';
 
 function assertPositiveFinite(value: number, label: string): void {
   if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
@@ -31,10 +32,10 @@ export function sphere(r: number): SdfField {
   const f = (p: Vec3): number => {
     return Math.hypot(p[0], p[1], p[2]) - r;
   };
-  return Object.assign(f, {
+  return withTranslate(Object.assign(f, {
     aabb: { min: [-r, -r, -r] as Vec3, max: [r, r, r] as Vec3 },
     kind: 'sphere' as const,
-  });
+  }));
 }
 
 /** Axis-aligned box centred at origin, size = [sx, sy, sz].
@@ -60,10 +61,10 @@ export function box(size: Vec3): SdfField {
     const inside = Math.min(Math.max(qx, qy, qz), 0);
     return outside + inside;
   };
-  return Object.assign(f, {
+  return withTranslate(Object.assign(f, {
     aabb: { min: [-hx, -hy, -hz] as Vec3, max: [hx, hy, hz] as Vec3 },
     kind: 'box' as const,
-  });
+  }));
 }
 
 /** Cylinder with axis = +Z, centred at origin, radius `r`, height `h`.
@@ -80,10 +81,10 @@ export function cylinder(r: number, h: number): SdfField {
     const inside = Math.min(Math.max(dxy, dz), 0);
     return outside + inside;
   };
-  return Object.assign(f, {
+  return withTranslate(Object.assign(f, {
     aabb: { min: [-r, -r, -hh] as Vec3, max: [r, r, hh] as Vec3 },
     kind: 'cylinder' as const,
-  });
+  }));
 }
 
 /** Torus with ring axis = +Z, centred at origin, major radius `R` (ring),
@@ -96,8 +97,8 @@ export function torus(R: number, r: number): SdfField {
     const dxy = Math.hypot(p[0], p[1]) - R;
     return Math.hypot(dxy, p[2]) - r;
   };
-  return Object.assign(f, {
+  return withTranslate(Object.assign(f, {
     aabb: { min: [-(R + r), -(R + r), -r] as Vec3, max: [R + r, R + r, r] as Vec3 },
     kind: 'torus' as const,
-  });
+  }));
 }

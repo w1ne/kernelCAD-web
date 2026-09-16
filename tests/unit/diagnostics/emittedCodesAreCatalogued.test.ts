@@ -57,6 +57,7 @@ const EMITTING_FILES = [
   'kernel/backends/occt/drawingSections.ts',
   'agent/drawing/reconstruct.ts',
   'agent/reconstruct/reconstruct.ts', // mesh_to_features fidelity / mesh gates
+  'modeling/directEdit/planDrag.ts', // direct-edit drag diagnostics
 ];
 
 // Match `code: '<value>'` and `new KernelError('<code>', ...)`.
@@ -88,7 +89,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     ).toEqual([]);
   });
 
-  it('catalogue has exactly 305 codes', () => {
+  it('catalogue has exactly 309 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -237,7 +238,12 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       feature.surface-intersection.none, feature.loft.rail-miss = 302.
     //  + 3 surface-quality inspect: inspect.continuity.g1-break,
     //       inspect.continuity.broken, inspect.curvature.spike = 305.
-    expect(catalogue.size).toBe(305);
+    //  + 3 direct-edit drag: feature.direct-edit.clamped,
+    //       feature.direct-edit.delta-wrapper,
+    //       feature.direct-edit.unresolved = 308.
+    //  + 1 feature.direct-edit.shared-param-conflict (one param drives
+    //       multiple translated axes with different drag deltas) = 309.
+    expect(catalogue.size).toBe(309);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

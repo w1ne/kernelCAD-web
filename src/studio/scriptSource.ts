@@ -63,6 +63,13 @@ export async function loadGalleryScriptSource(slug: string): Promise<string> {
   return response.text();
 }
 
+/** The `?script=` path Studio was opened with, or null outside the browser /
+ *  on the default (no-script) route. Single source of truth for save-back. */
+export function currentStudioScript(): string | null {
+  if (typeof window === 'undefined') return null;
+  return new URLSearchParams(window.location.search).get('script');
+}
+
 /**
  * Bridge payload returned by the server mesh endpoint — identical shape to
  * the dev-server vite middleware's `/__kernelcad/mesh` response, so the
@@ -199,6 +206,41 @@ export async function meshSourceDev(
   }
   if (!isBridgePayload(payload)) throw new Error('Dev mesh endpoint did not return features.');
   return payload;
+}
+
+/**
+ * Review arbitrary edited code through the dev server's node kernel
+ * (`POST /__kernelcad/review?script=<script> { source }`). Returns the
+ * `reviewCadTool` payload directly — the candidate-evaluation path used by
+ * direct edit, which needs the interference/validity verdict WITHOUT paying
+ * for a full mesh round-trip. The script query param only anchors relative
+ * asset resolution; it is not required to exist on disk.
+ */
+export async function reviewSourceDev(
+  source: string,
+  script: string,
+): Promise<ScriptReviewSummary> {
+  const { base, headers } = await apiCall();
+  const response = await fetch(
+    rewritePath(`/__kernelcad/review?script=${encodeURIComponent(script)}`, base),
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...headers },
+      body: JSON.stringify({ source }),
+    },
+  );
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    const message = payload && typeof payload.error === 'string' ? payload.error : `HTTP ${response.status}`;
+    throw new Error(message);
+  }
+  // Guard against a 200 that is not a review at all — an SPA fallback page or
+  // a missing endpoint would otherwise parse to `{}` and be mistaken for a
+  // review with no interference evidence.
+  if (payload === null || typeof payload !== 'object' || typeof (payload as { ok?: unknown }).ok !== 'boolean') {
+    throw new Error('Review endpoint returned an unexpected payload.');
+  }
+  return payload as ScriptReviewSummary;
 }
 
 /** sha256 hex of a string via the Web Crypto API (available in https
