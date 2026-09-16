@@ -29,6 +29,7 @@ import { InteractionHandler } from "./viewer/controllers/InteractionHandler";
 import { SnapIndicator } from "./viewer/overlays/SnapIndicator";
 import { HighlightOverlay } from "./viewer/overlays/HighlightOverlay";
 import { SelectionOutline } from "./viewer/overlays/SelectionOutline";
+import { DirectEditGizmo } from "./viewer/DirectEditGizmo";
 import { SceneBackground } from "./viewer/SceneBackground";
 import { ViewGizmo } from "./viewer/overlays/ViewGizmo";
 import type { ViewTarget } from "./viewer/controllers/cameraPose";
@@ -280,6 +281,10 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                             />
                         ))}
                     </group>
+                )}
+
+                {!sketchMode.active && (
+                    <DirectEditGizmo geometries={geometries} itemNames={itemNames} />
                 )}
 
                 <group userData={CAPTURE_HIDDEN_USERDATA}>

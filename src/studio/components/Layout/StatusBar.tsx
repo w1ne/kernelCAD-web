@@ -12,6 +12,8 @@ interface StatusBarProps {
     viewMode3D: ViewMode3D;
     layoutMode: StudioLayoutMode;
     activeCommandLabel: string | null;
+    /** Transient direct-edit status (refused drag, candidate review, ...). */
+    directEditNotice?: string | null;
     interferences?: number;
     interferenceSummary?: {
         rawCount: number;
@@ -47,6 +49,7 @@ export function StatusBar({
     viewMode3D,
     layoutMode,
     activeCommandLabel,
+    directEditNotice,
     interferences,
     interferenceSummary,
     recomputeMs,
@@ -75,6 +78,15 @@ export function StatusBar({
                 </span>
                 {activeCommandLabel && (
                     <span className="text-blue-300 truncate max-w-[24vw]">{activeCommandLabel}</span>
+                )}
+                {directEditNotice && (
+                    <span
+                        data-testid="direct-edit-notice"
+                        className="text-amber-300 truncate max-w-[36vw]"
+                        title={directEditNotice}
+                    >
+                        {directEditNotice}
+                    </span>
                 )}
                 {error ? (
                     <span className="truncate text-red-200 max-w-[48vw]">{compactError(error)}</span>

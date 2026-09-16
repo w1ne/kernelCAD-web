@@ -64,7 +64,14 @@ function KernelInitBanner({ error }: { error: string | null }) {
  */
 export function StudioShell() {
     const workbench = useWorkbench();
-    const { agentRailOpen, inspectorOpen, selectedFeatureId, markingMode, sectionMode } = useShellStore();
+    const {
+        agentRailOpen,
+        inspectorOpen,
+        selectedFeatureId,
+        markingMode,
+        sectionMode,
+        directEditNotice,
+    } = useShellStore();
     const embed = useStudioConfig();
     // Defaults preserve standalone behavior: show the kernelCAD header and
     // mount the AgentRail. Embed hosts (e.g. proto.cat) pass `false` for
@@ -280,6 +287,7 @@ export function StudioShell() {
                 viewMode3D={workbench.viewMode3D}
                 layoutMode={workbench.layoutMode}
                 activeCommandLabel={null}
+                directEditNotice={directEditNotice}
                 interferences={interferenceCount}
                 interferenceSummary={recompute.interferenceSummary}
                 recomputeMs={workbench.recomputeMs}

@@ -27,6 +27,24 @@ describe('ShellStore', () => {
         expect(s.viewportFocusTargetVersion).toBe(0);
         expect(s.previousValidity).toBeNull();
         expect(s.currentValidity).toBeNull();
+        expect(s.directEditNotice).toBeNull();
+    });
+
+    it('setDirectEditNotice fans out once per distinct value and clears', () => {
+        store = new ShellStore();
+        const listener = vi.fn();
+        store.subscribe(listener);
+
+        store.setDirectEditNotice('Reviewing candidate…');
+        store.setDirectEditNotice('Reviewing candidate…'); // idempotent
+        expect(listener).toHaveBeenCalledTimes(1);
+        expect(store.getSnapshot().directEditNotice).toBe('Reviewing candidate…');
+
+        store.setDirectEditNotice(null);
+        expect(listener).toHaveBeenCalledTimes(2);
+        expect(store.getSnapshot().directEditNotice).toBeNull();
+        store.setDirectEditNotice(null); // idempotent
+        expect(listener).toHaveBeenCalledTimes(2);
     });
 
     it('setSelectedFeatureId fans out exactly once per distinct value', () => {

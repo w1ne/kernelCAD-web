@@ -119,6 +119,9 @@ export interface ShellState {
     readonly previousValidity: ValidatorResult | null;
     readonly currentValidity: ValidatorResult | null;
     readonly stagedEdit: StagedEdit | null;
+    /** Transient direct-edit status surfaced in the status bar (drag
+     *  refusals, "reviewing candidate", candidate errors). Not an edit. */
+    readonly directEditNotice: string | null;
     readonly appliedEditHistory: readonly AppliedEditHistoryEntry[];
     readonly markingMode: boolean;
     readonly sectionMode: boolean;
@@ -172,6 +175,7 @@ const INITIAL_STATE: ShellState = {
     previousValidity: null,
     currentValidity: null,
     stagedEdit: null,
+    directEditNotice: null,
     appliedEditHistory: [],
     markingMode: false,
     sectionMode: false,
@@ -441,6 +445,13 @@ export class ShellStore {
     clearStagedEdit = (): void => {
         if (this.state.stagedEdit === null) return;
         this.state = { ...this.state, stagedEdit: null };
+        this.emit();
+    };
+
+    /** Idempotent: same notice string → no listener fan-out. */
+    setDirectEditNotice = (notice: string | null): void => {
+        if (this.state.directEditNotice === notice) return;
+        this.state = { ...this.state, directEditNotice: notice };
         this.emit();
     };
 
