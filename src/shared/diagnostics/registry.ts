@@ -84,7 +84,7 @@ export const DIAGNOSTIC_REGISTRY = {
   },
   'feature.direct-edit.unresolved': {
     hintTemplate:
-      'Name the dragged entity as an assembly part, returned variable, or sdf.bind; mate-driven parts cannot be dragged.',
+      'Anchor the entity by name: bind it to a returned variable, name it as an assembly part, or drive it via sdf.bind; mate-driven parts can only be edited at the mate.',
     nextAction: {
       kind: 'rewrite-feature',
       guidance: 'Anchor the entity with a name; edit the mate source for mate-driven parts.',
