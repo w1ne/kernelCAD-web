@@ -26,7 +26,7 @@ import { solveMates } from './solver';
  * Codes the pose-envelope review may attach to a `PoseEnvelopeDiagnostic`.
  * Derived from the central `DIAGNOSTIC_REGISTRY` so the envelope pipeline
  * shares a single source of truth with the rest of the assembly validators
- * — see `src/shared/diagnostics/registry.ts`. The four pose / envelope
+ * — see `src/shared/diagnostics/registry/`. The four pose / envelope
  * codes plus the gripper-aperture warning live here because they are
  * emitted only by this module's review pass; the validator folds them in
  * via `foldEnvelopeDiagnostics()`.

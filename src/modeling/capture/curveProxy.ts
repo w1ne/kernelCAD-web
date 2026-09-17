@@ -115,7 +115,7 @@ export interface CurveSurfaceIntersection {
  * data is returned without a kernel round-trip (geometry stays in OCCT).
  *
  * Errors surface as `KernelError` with `feature.curve3d.analytics.*` codes
- * (see `src/shared/diagnostics/registry.ts`).
+ * (see `src/shared/diagnostics/registry/`).
  */
 export interface Curve3DAnalytics {
   /** Closest point on the curve to `pt` (Newton-Raphson). */
