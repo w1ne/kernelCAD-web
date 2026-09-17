@@ -583,12 +583,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/assembly.ts",
-    "symbol": "Method 'tendon'",
-    "value": 30
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/authoringFeatureRecords.ts",
     "symbol": "Function 'buildDfmSpecFeatureSpec'",
     "value": 59
@@ -1503,7 +1497,7 @@
     "rule": "max-lines",
     "file": "src/modeling/capture/assembly.ts",
     "symbol": "(file)",
-    "value": 2320
+    "value": 1668
   },
   {
     "rule": "max-lines",
