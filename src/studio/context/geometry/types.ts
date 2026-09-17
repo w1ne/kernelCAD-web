@@ -128,54 +128,68 @@ function isPhysicalUseCaseReviewCode(code: string | undefined): boolean {
     return code?.startsWith('assembly.physical-use-case.') === true;
 }
 
+/**
+ * `hasLivePhysicalUseCaseReview` branch of `overlayLiveReview`: the live
+ * payload carries a fresh physical-use-case pass, so previous
+ * physical-use-case diagnostics/blocking-reasons are dropped and replaced
+ * wholesale while every other diagnostic is kept. Split out purely to keep
+ * `overlayLiveReview` under the complexity ratchet.
+ */
+function mergePhysicalUseCaseReview(
+    previous: ScriptReviewSummary,
+    live: ScriptReviewSummary,
+    liveDiagnostics: NonNullable<ScriptReviewSummary['diagnostics']>,
+): ScriptReviewSummary {
+    const nonPhysicalDiagnostics = (previous.diagnostics ?? []).filter((diagnostic) =>
+        !isPhysicalUseCaseReviewCode(diagnostic.code),
+    );
+    const nonPhysicalBlockingReasons = (previous.fitness?.blockingReasons ?? []).filter((reason) =>
+        !isPhysicalUseCaseReviewCode(reason.code),
+    );
+    const liveBlockingReasons = live.fitness?.blockingReasons ?? liveDiagnostics.map((diagnostic) => ({
+        code: diagnostic.code,
+        message: diagnostic.message,
+        repairHint: diagnostic.hint,
+    }));
+    const mergedBlockingReasons = [...nonPhysicalBlockingReasons, ...liveBlockingReasons];
+    const mergedFitness = previous.fitness !== undefined || live.fitness !== undefined
+        ? mergedBlockingReasons.length > 0
+            ? {
+                ...(previous.fitness ?? {}),
+                ...(live.fitness ?? {}),
+                functional: false,
+                repairMode: nonPhysicalBlockingReasons.length > 0
+                    ? previous.fitness?.repairMode
+                    : liveDiagnostics.length > 0
+                        ? live.fitness?.repairMode ?? 'physical-use-case'
+                        : previous.fitness?.repairMode,
+                blockingReasons: mergedBlockingReasons,
+            }
+            : undefined
+        : undefined;
+    return {
+        ...previous,
+        ok: nonPhysicalDiagnostics.length === 0 && nonPhysicalBlockingReasons.length === 0
+            ? live.ok
+            : false,
+        diagnostics: [...nonPhysicalDiagnostics, ...liveDiagnostics],
+        fitness: mergedFitness,
+        rawInterferencePairs: live.rawInterferencePairs,
+        interferenceSummary: live.interferenceSummary,
+    };
+}
+
 export function overlayLiveReview(
     previous: ScriptReviewSummary | null,
     live: ScriptReviewSummary,
 ): ScriptReviewSummary {
     if (!previous) return live;
     const liveDiagnostics = live.diagnostics ?? [];
+    if (live.livePhysicalUseCaseReview === true) {
+        return mergePhysicalUseCaseReview(previous, live, liveDiagnostics);
+    }
     const hasLiveDiagnostics = liveDiagnostics.length > 0;
     const hasLiveFitness = live.fitness !== undefined;
-    const hasLivePhysicalUseCaseReview = live.livePhysicalUseCaseReview === true;
-    if (hasLivePhysicalUseCaseReview) {
-        const nonPhysicalDiagnostics = (previous.diagnostics ?? []).filter((diagnostic) =>
-            !isPhysicalUseCaseReviewCode(diagnostic.code),
-        );
-        const nonPhysicalBlockingReasons = (previous.fitness?.blockingReasons ?? []).filter((reason) =>
-            !isPhysicalUseCaseReviewCode(reason.code),
-        );
-        const liveBlockingReasons = live.fitness?.blockingReasons ?? liveDiagnostics.map((diagnostic) => ({
-            code: diagnostic.code,
-            message: diagnostic.message,
-            repairHint: diagnostic.hint,
-        }));
-        const mergedBlockingReasons = [...nonPhysicalBlockingReasons, ...liveBlockingReasons];
-        const mergedFitness = previous.fitness !== undefined || live.fitness !== undefined
-            ? mergedBlockingReasons.length > 0
-                ? {
-                    ...(previous.fitness ?? {}),
-                    ...(live.fitness ?? {}),
-                    functional: false,
-                    repairMode: nonPhysicalBlockingReasons.length > 0
-                        ? previous.fitness?.repairMode
-                        : liveDiagnostics.length > 0
-                            ? live.fitness?.repairMode ?? 'physical-use-case'
-                            : previous.fitness?.repairMode,
-                    blockingReasons: mergedBlockingReasons,
-                }
-                : undefined
-            : undefined;
-        return {
-            ...previous,
-            ok: nonPhysicalDiagnostics.length === 0 && nonPhysicalBlockingReasons.length === 0
-                ? live.ok
-                : false,
-            diagnostics: [...nonPhysicalDiagnostics, ...liveDiagnostics],
-            fitness: mergedFitness,
-            rawInterferencePairs: live.rawInterferencePairs,
-            interferenceSummary: live.interferenceSummary,
-        };
-    }
     return {
         ...previous,
         ...(hasLiveDiagnostics ? { ok: live.ok, diagnostics: liveDiagnostics } : {}),
