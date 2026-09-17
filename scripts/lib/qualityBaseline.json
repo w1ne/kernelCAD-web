@@ -1543,12 +1543,6 @@
   },
   {
     "rule": "max-lines",
-    "file": "src/shared/diagnostics/registry.ts",
-    "symbol": "(file)",
-    "value": 2644
-  },
-  {
-    "rule": "max-lines",
     "file": "src/studio/components/demoPlayer/DemoPlayerPage.tsx",
     "symbol": "(file)",
     "value": 1209
