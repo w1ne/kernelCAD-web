@@ -549,7 +549,7 @@
     "rule": "complexity",
     "file": "src/modeling/backends/occt/occtLowerer.ts",
     "symbol": "Async method 'lower'",
-    "value": 265
+    "value": 168
   },
   {
     "rule": "complexity",
@@ -1167,7 +1167,7 @@
     "rule": "max-lines-per-function",
     "file": "src/modeling/backends/occt/occtLowerer.ts",
     "symbol": "Async method 'lower'",
-    "value": 1327
+    "value": 658
   },
   {
     "rule": "max-lines-per-function",
@@ -1474,12 +1474,6 @@
     "file": "src/modeling/api.ts",
     "symbol": "(file)",
     "value": 973
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/modeling/backends/occt/occtLowerer.ts",
-    "symbol": "(file)",
-    "value": 1467
   },
   {
     "rule": "max-lines",
