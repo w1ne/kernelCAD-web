@@ -3,7 +3,7 @@
 import { KernelError } from '../../shared/intent/kernelError';
 import { Scene } from '../validation/scene';
 import { buildMateMetadata, makeScene } from './assemblySolve';
-import type { AssemblyState } from './assemblyTypes';
+import type { AssemblyState } from './assemblyState';
 
 /**
  * Records an `assemblyModel` FeatureRecord that captures the parts and

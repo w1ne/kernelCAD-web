@@ -19,9 +19,9 @@ import type { Assembly } from './assembly';
 import type {
   AssemblyJointStored,
   AssemblyPartStored,
-  AssemblyState,
   Poses,
 } from './assemblyTypes';
+import type { AssemblyState } from './assemblyState';
 import { catalogPartSceneMetadataByShapeId, SolvedKinematics } from './solvedKinematics';
 
 function resolveScalarPose(
@@ -435,10 +435,60 @@ async function computeInterferencesForGate(
 
 export interface SolvedModelOptions {
   validate?: 'warn' | 'error' | 'off';
+  /**
+   * v0.7.4 — Which poses the validation gate covers. Orthogonal to
+   * `validate` (which controls severity).
+   *
+   * - `'default'` (default) → the existing behavior: gate runs over the
+   *   default/capture-time pose only. (When `validate === 'error'` AND
+   *   at least one mate declares `limitsDeg`/`limitsMm`, the v0.6.2
+   *   safety-net described below auto-runs the envelope review even
+   *   without an explicit `posesGate` opt-in — see the implicit-path
+   *   block further down.)
+   * - `'envelope'` → after the existing default-pose gate, run
+   *   `reviewPoseEnvelope(this, { samplesPerMate, combinatorial,
+   *   includeInterference: true })` and fold the envelope diagnostics
+   *   into the gate. Under `validate: 'error'` any envelope-error fails
+   *   the call; under `validate: 'warn'` they surface on `scene.warnings`
+   *   without throwing.
+   *
+   * Per-mate envelope sweep is configured by `samplesPerMate` /
+   * `combinatorial` below — same semantics as `reviewPoseEnvelope`'s
+   * `PoseEnvelopeSamplingOptions`.
+   */
   posesGate?: 'default' | 'envelope';
+  /** Forwarded to `reviewPoseEnvelope` when `posesGate === 'envelope'`. */
   samplesPerMate?: number;
+  /** Forwarded to `reviewPoseEnvelope` when `posesGate === 'envelope'`. */
   combinatorial?: boolean;
+  /**
+   * v0.7.5 — optional per-part external loads for the Gate 3 stub
+   * (`validateJointLoadCapacity`). Keys are part names already registered
+   * on this Assembly via `arm.part(name, ...)`; values are world-frame
+   * force (N) and/or torque (N·m) vectors. Unknown keys throw
+   * `feature.invalid-args` at capture-entry below — silent ignore would
+   * mask agent typos (per spec open-question 5 resolution). The Gate 3
+   * check runs only under `validate: 'error'`; under `'warn'` / `'off'`
+   * the loads are validated for key membership and otherwise ignored.
+   *
+   * Forwarded as the 4th arg to `validateAssemblyWithMates`, which
+   * composes Gate 3 with the v0.7.5 grounding gates.
+   */
   externalLoads?: Readonly<Record<string, { force?: Vec3; torque?: Vec3 }>>;
+  /**
+   * Known-acceptable interference pairs. Symmetric matching: `[a, b]`
+   * silences both `(a, b)` and `(b, a)`. Pairs in `ignore` are still
+   * DETECTED by the runtime BREP sweep (so a Studio HUD reading the raw
+   * detection output still surfaces them on the status bar), but FILTERED
+   * out of the validator's `assembly.interference.overlap` diagnostic
+   * stream — they don't throw under `validate: 'error'` and don't appear
+   * in `scene.warnings` under `validate: 'warn'`.
+   *
+   * This is the granular alternative to `validate: 'off'`. Use it when a
+   * specific known-acceptable contact (e.g. a knuckle joint where two arm
+   * parts must touch by design) should not block the validator while
+   * still letting the rest of the validation gate run.
+   */
   ignore?: ReadonlyArray<readonly [string, string]>;
 }
 
@@ -495,6 +545,7 @@ function applySolvedModelEntryChecks(state: AssemblyState, opts?: SolvedModelOpt
  *  change. */
 function gatherSolvedModelGateInputs(
   state: AssemblyState,
+  arm: Assembly,
   sceneShape: Shape,
   mode: 'warn' | 'error' | 'off',
   opts?: SolvedModelOptions,
@@ -540,7 +591,7 @@ function gatherSolvedModelGateInputs(
     import('../mates/poseEnvelope').PoseEnvelopeReviewResult | undefined
   > =
     posesGate === 'envelope'
-      ? reviewPoseEnvelope(state as unknown as Assembly, {
+      ? reviewPoseEnvelope(arm, {
           ...(opts?.samplesPerMate !== undefined ? { samplesPerMate: opts.samplesPerMate } : {}),
           ...(opts?.combinatorial !== undefined ? { combinatorial: opts.combinatorial } : {}),
           includeInterference: true,
@@ -555,7 +606,7 @@ function gatherSolvedModelGateInputs(
  *  `recordSolvedModel` for the same complexity-budget reason as
  *  `applySolvedModelEntryChecks`; no behavior change. */
 async function validateSolvedModelGate(
-  state: AssemblyState,
+  arm: Assembly,
   interferencePairs: readonly import('../runtime/detectInterferences').InterferencePair[] | undefined,
   opts: SolvedModelOptions | undefined,
   envelopeResult: import('../mates/poseEnvelope').PoseEnvelopeReviewResult | undefined,
@@ -575,7 +626,7 @@ async function validateSolvedModelGate(
   // envelope diagnostics (avoids double-folding) while still letting
   // `validateWorkspaceReachability` read the connector AABBs.
   const result = await validateAssemblyWithMates(
-    state as unknown as Assembly,
+    arm,
     interferencePairs,
     undefined,
     opts?.externalLoads,
@@ -697,6 +748,7 @@ function finalizeSolvedModelScene(
  */
 export function recordSolvedModel(
   state: AssemblyState,
+  arm: Assembly,
   poses: Poses,
   opts?: SolvedModelOptions,
 ): Promise<Scene> {
@@ -742,7 +794,7 @@ export function recordSolvedModel(
   // skipping the call avoids paying for a tree walk on v0.5 assemblies.
   const mateTransformsPromise: Promise<ReadonlyMap<string, Transform> | undefined> =
     state.mates.length > 0
-      ? solveMates(state as unknown as Assembly, poses as NumericPoses).then((r) => r.poses)
+      ? solveMates(arm, poses as NumericPoses).then((r) => r.poses)
       : Promise.resolve(undefined);
 
   if (mode === 'off') {
@@ -754,14 +806,14 @@ export function recordSolvedModel(
     );
   }
 
-  const { interferencePromise, envelopeResultPromise } = gatherSolvedModelGateInputs(state, sceneShape, mode, opts);
+  const { interferencePromise, envelopeResultPromise } = gatherSolvedModelGateInputs(state, arm, sceneShape, mode, opts);
 
   return Promise.all([
     interferencePromise,
     mateTransformsPromise,
     envelopeResultPromise,
   ]).then(([interferencePairs, mateT, envelopeResult]) =>
-    validateSolvedModelGate(state, interferencePairs, opts, envelopeResult).then(
+    validateSolvedModelGate(arm, interferencePairs, opts, envelopeResult).then(
       ({ result, envelopeDiagnostics }) =>
         finalizeSolvedModelScene(state, sceneShape, mode, result, envelopeDiagnostics, mateT, limitWarnings),
     ),

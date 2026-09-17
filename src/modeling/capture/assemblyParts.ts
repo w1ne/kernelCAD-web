@@ -28,9 +28,9 @@ import type {
   AssemblyPartOpts,
   AssemblyPartRef,
   AssemblyPartStored,
-  AssemblyState,
   SubAssemblyHandle,
 } from './assemblyTypes';
+import type { AssemblyState } from './assemblyState';
 import type { WrapGeomOptions, WrapGeomRecord } from '../mates/tendon';
 
 function normalizeConnectors(
@@ -452,12 +452,10 @@ export function makePartRef(
   return ref;
 }
 
-export function recordPart(state: AssemblyState, name: string, shape: Shape, opts: AssemblyPartOpts = {}): AssemblyPartRef {
-  return recordPartInternal(state, name, shape, opts, true);
+export function recordPart(state: AssemblyState, arm: Assembly, name: string, shape: Shape, opts: AssemblyPartOpts = {}): AssemblyPartRef {
+  return recordPartInternal(state, arm, name, shape, opts, true);
 }
 
-/** Internal part route used by `recordSubAssembly` to copy already-promoted
- * catalog interfaces without registering them a second time. */
 /** Finish precedence: apply the material's default finish ONLY when the
  *  shape carries no explicit appearance yet (explicit `.finish()` /
  *  `.color()` / `.material()` on the shape always wins). Go through the same
@@ -566,8 +564,11 @@ function mergeCatalogConnectors(
   }
 }
 
+/** Internal part route used by `recordSubAssembly` to copy already-promoted
+ * catalog interfaces without registering them a second time. */
 export function recordPartInternal(
   state: AssemblyState,
+  arm: Assembly,
   name: string,
   shape: Shape,
   opts: AssemblyPartOpts,
@@ -604,8 +605,8 @@ export function recordPartInternal(
     state.name, record.id, name, at, connectors, mateConnectors, wrapGeoms,
     // Fluent chaining: `arm.part(a).part(b)` — the ref's `.part(...)` adds
     // another part to this same assembly (delegates straight to this method).
-    (chainName, chainShape, chainOpts) => recordPart(state, chainName, chainShape, chainOpts),
-    state as unknown as Assembly,
+    (chainName, chainShape, chainOpts) => recordPart(state, arm, chainName, chainShape, chainOpts),
+    arm,
   );
   for (const connector of transformedCatalogConnectors) {
     part.connector(connector.name, {
@@ -665,8 +666,8 @@ export function recordPartInternal(
  * (per-sub-assembly root selection, sub-assembly instancing for N
  * identical bolts, cross-assembly mates with their own resolution).
  */
-export function recordSubAssembly(state: AssemblyState, name: string, other: Assembly): SubAssemblyHandle {
-  if ((other as unknown as AssemblyState) === state) {
+export function recordSubAssembly(state: AssemblyState, arm: Assembly, name: string, other: Assembly): SubAssemblyHandle {
+  if (other === arm) {
     throw new KernelError(
       'feature.invalid-args',
       `assembly.subAssembly: cannot import an assembly into itself ('${state.name}').`,
@@ -690,7 +691,7 @@ export function recordSubAssembly(state: AssemblyState, name: string, other: Ass
   const importedByOriginalName = new Map<string, AssemblyPartRef>();
   for (const op of other.__parts()) {
     const newName = `${prefix}${op.name}`;
-    const newRef = recordPartInternal(state, newName, op.originalShape, {
+    const newRef = recordPartInternal(state, arm, newName, op.originalShape, {
       ...(op.connectors !== undefined ? { connectors: op.connectors } : {}),
     }, false);
     // Copy v0.6 mateConnectors (the .connector(name, opts) chain output)

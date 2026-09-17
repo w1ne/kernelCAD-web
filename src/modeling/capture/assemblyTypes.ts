@@ -7,41 +7,6 @@ import type { Editable } from '../../shared/runtime/paramRef';
 import type { Shape } from './proxy';
 import type { Scene } from '../validation/scene';
 import type { Assembly, SolvedKinematics } from './assembly';
-import type { CaptureSession } from './captureSession';
-import type { MateCouplingRecord } from '../mates/coupledPoses';
-import type { MateRecord } from '../mates/mate';
-import type { TendonRecord } from '../mates/tendon';
-import type { WorkspaceTargetRecord } from '../mates/workspaceTarget';
-import type { PhysicalUseCaseRecord } from '../mates/physicalUseCase';
-import type { PartLineageMap } from '../../kernel/naming/evolutionRecord';
-
-/**
- * Internal state surface shared between `Assembly` (the facade class) and
- * the plain functions in `assemblyJoints.ts` / `assemblyIntents.ts` /
- * `assemblySolve.ts` / `assemblyModel.ts` that implement its method bodies.
- * `Assembly` implements this; it is never constructed independently.
- */
-export interface AssemblyState {
-  readonly name: string;
-  readonly session: CaptureSession;
-  readonly parts: AssemblyPartStored[];
-  readonly partLineage: PartLineageMap;
-  readonly joints: AssemblyJointStored[];
-  readonly mates: MateRecord[];
-  readonly mateCouplings: MateCouplingRecord[];
-  readonly tendons: TendonRecord[];
-  readonly mechanicalJointIntents: MechanicalJointIntentRecord[];
-  readonly jointSupportIntents: JointSupportIntentRecord[];
-  readonly transmissionIntents: TransmissionIntentRecord[];
-  readonly physicalUseCases: PhysicalUseCaseRecord[];
-  readonly workspaceTargets: WorkspaceTargetRecord[];
-  readonly planningGroups: PlanningGroupRecord[];
-  readonly endEffectors: EndEffectorRecord[];
-  readonly virtualJoints: VirtualJointRecord[];
-  readonly groupStates: GroupStateRecord[];
-  readonly disabledCollisions: DisabledCollisionRecord[];
-  ignoreInterferenceList: ReadonlyArray<readonly [string, string]>;
-}
 
 /**
  * Public pose surface for `Assembly.solve(poses)` and (Tasks 3-5)

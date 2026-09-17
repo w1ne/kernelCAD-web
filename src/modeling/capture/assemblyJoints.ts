@@ -20,11 +20,11 @@ import type {
   AssemblyJointRef,
   AssemblyPartRef,
   AssemblyPartStored,
-  AssemblyState,
   BallJointOpts,
   PrismaticJointOpts,
   RevoluteJointOpts,
 } from './assemblyTypes';
+import type { AssemblyState } from './assemblyState';
 import { copyMateCapacity, validateLimitRange, validateMateCapacityOptions } from './assemblyMateCapacity';
 
 function isValidJointLimits(value: [number, number]): boolean {
@@ -326,37 +326,6 @@ export function coupleMateRecords(
   });
 }
 
-/**
- * P7 — declare a passive balance spring (tendon) spanning two connectors
- * on different parts. The tendon applies a restoring force
- * `F = stiffness·(L − restLength) + damping·dL/dt` whenever the
- * endpoint-to-endpoint distance L differs from the rest length, where
- * L is recomputed each MuJoCo step from the live world positions of
- * the two referenced connectors.
- *
- * Unlike `mate(...)`, a tendon is NOT a kinematic constraint — it
- * doesn't add or remove DOFs. kernelCAD's spanning-tree FK ignores
- * tendons entirely; they only fire under `validate --include-physics`,
- * which feeds the assembly to MuJoCo via `mjcfExport`.
- *
- * Both endpoints must reference connectors already declared on parts
- * already added to this assembly. The two connectors must be on
- * DIFFERENT parts — mounting both ends to the same body produces zero
- * net moment, which is the bug pattern that motivated P7 in the first
- * place.
- *
- * Errors:
- *   - duplicate tendon name                → feature.invalid-args
- *   - malformed ref / unknown part / unknown connector
- *                                          → assembly.tendon.connector-not-found
- *   - both endpoints on same part          → assembly.tendon.same-body-endpoints
- *   - restLengthMm <= 0 or non-finite      → assembly.tendon.invalid-rest-length
- *   - stiffnessNmm <= 0 or non-finite      → assembly.tendon.invalid-stiffness
- *   - dampingNsmm < 0 or non-finite        → assembly.tendon.invalid-damping
- *   - visualDiameterMm <= 0 or non-finite  → assembly.tendon.invalid-visual-diameter
- *
- * Surfaced via `__tendons()` for the MJCF exporter and Studio renderer.
- */
 /** Validate + normalize a tendon's coil-visual-style fields. Split out of
  *  `normalizeTendonFields` to keep each function's branching complexity
  *  under the quality-ratchet budget; no behavior change from the inline
@@ -496,6 +465,37 @@ function resolveTendonWrapGeoms(state: AssemblyState, name: string, opts: Tendon
   return wrapGeoms;
 }
 
+/**
+ * P7 — declare a passive balance spring (tendon) spanning two connectors
+ * on different parts. The tendon applies a restoring force
+ * `F = stiffness·(L − restLength) + damping·dL/dt` whenever the
+ * endpoint-to-endpoint distance L differs from the rest length, where
+ * L is recomputed each MuJoCo step from the live world positions of
+ * the two referenced connectors.
+ *
+ * Unlike `mate(...)`, a tendon is NOT a kinematic constraint — it
+ * doesn't add or remove DOFs. kernelCAD's spanning-tree FK ignores
+ * tendons entirely; they only fire under `validate --include-physics`,
+ * which feeds the assembly to MuJoCo via `mjcfExport`.
+ *
+ * Both endpoints must reference connectors already declared on parts
+ * already added to this assembly. The two connectors must be on
+ * DIFFERENT parts — mounting both ends to the same body produces zero
+ * net moment, which is the bug pattern that motivated P7 in the first
+ * place.
+ *
+ * Errors:
+ *   - duplicate tendon name                → feature.invalid-args
+ *   - malformed ref / unknown part / unknown connector
+ *                                          → assembly.tendon.connector-not-found
+ *   - both endpoints on same part          → assembly.tendon.same-body-endpoints
+ *   - restLengthMm <= 0 or non-finite      → assembly.tendon.invalid-rest-length
+ *   - stiffnessNmm <= 0 or non-finite      → assembly.tendon.invalid-stiffness
+ *   - dampingNsmm < 0 or non-finite        → assembly.tendon.invalid-damping
+ *   - visualDiameterMm <= 0 or non-finite  → assembly.tendon.invalid-visual-diameter
+ *
+ * Surfaced via `__tendons()` for the MJCF exporter and Studio renderer.
+ */
 export function recordTendon(state: AssemblyState, name: string, opts: TendonOptions): void {
   if (state.tendons.some((t) => t.name === name)) {
     throw new KernelError(

@@ -50,6 +50,7 @@ import { buildMateMetadata, recordSolvedModel, solveJoints, type SolvedModelOpti
 import { recordModel } from './assemblyModel';
 import { SolvedKinematics } from './solvedKinematics';
 import { recordPart, recordSubAssembly } from './assemblyParts';
+import { createAssemblyState, type AssemblyState } from './assemblyState';
 
 export * from './assemblyTypes';
 export { SolvedKinematics } from './solvedKinematics';
@@ -61,7 +62,6 @@ import type {
   AssemblyPartOpts,
   AssemblyPartRef,
   AssemblyPartStored,
-  AssemblyState,
   BallJointOpts,
   DisabledCollisionRecord,
   EndEffectorRecord,
@@ -81,85 +81,55 @@ import type {
 } from './assemblyTypes';
 
 export class Assembly {
-  readonly name: string;
-  private readonly session: CaptureSession;
-  private readonly parts: AssemblyPartStored[] = [];
-  /** Q1.5: per-part lineage map (PartLineageMap) populated on every
-   *  `.part(name, shape, opts?)` capture-site. Mirrors `FaceLineage` /
-   *  `EdgeLineage` for the part scope so part-level Queries resolve
-   *  through the same lineage pathway. Read-only outside this class;
-   *  surfaced via `__partLineage()`. */
-  private readonly partLineage: PartLineageMap = new Map();
-  private readonly joints: AssemblyJointStored[] = [];
-  /** v0.6 Task 5: mate records declared via `arm.mate(name, aRef, bRef, type)`.
-   *  Surfaced on `Scene.mates` returned by `model()` / `solvedModel()`. */
-  private readonly mates: MateRecord[] = [];
-  private readonly mateCouplings: MateCouplingRecord[] = [];
   /**
-   * P7: closed-loop balance-spring records declared via
-   * `arm.tendon(name, opts)`. Each tendon spans two connectors on
-   * different parts; mapped to MJCF `<tendon><spatial>` at physics-gate
-   * export time. The capture-side store is a flat array; uniqueness
-   * (name) + endpoint-connector existence are validated at insert.
+   * All mutable capture-side state lives in one `AssemblyState` value
+   * (declared in `assemblyState.ts`, not re-exported from this module) so
+   * the plain functions in `assemblyJoints.ts` / `assemblyIntents.ts` /
+   * `assemblySolve.ts` / `assemblyModel.ts` / `assemblyParts.ts` that
+   * implement this class's method bodies can take `this.state` directly —
+   * no cast, and no field on this class becomes public.
    */
-  private readonly tendons: TendonRecord[] = [];
-  private readonly mechanicalJointIntents: MechanicalJointIntentRecord[] = [];
-  private readonly jointSupportIntents: JointSupportIntentRecord[] = [];
-  private readonly transmissionIntents: TransmissionIntentRecord[] = [];
-  private readonly physicalUseCases: PhysicalUseCaseRecord[] = [];
-  /**
-   * v0.7 Slice 1 — declarative workspace-reachability targets from
-   * `arm.workspace(connectorRef, opts)`. Consumed by
-   * `validateWorkspaceReachability` against the sampled pose-envelope's
-   * `ConnectorWorkspace[]`. Empty for assemblies that never call workspace().
-   */
-  private readonly workspaceTargets: WorkspaceTargetRecord[] = [];
+  private readonly state: AssemblyState;
 
-  /** SRDF planning groups declared via `arm.planningGroup(...)`. Empty when
-   *  the script did not declare any; SRDF export rejects in that case. */
-  private readonly planningGroups: PlanningGroupRecord[] = [];
-  private readonly endEffectors: EndEffectorRecord[] = [];
-  private readonly virtualJoints: VirtualJointRecord[] = [];
-  private readonly groupStates: GroupStateRecord[] = [];
-  private readonly disabledCollisions: DisabledCollisionRecord[] = [];
-  /**
-   * Latest known-acceptable interference pair list, as captured by the most
-   * recent `solvedModel({ ignore: [...] })` call. Read by external review
-   * surfaces (`reviewCadTool`) so the validator they run respects the same
-   * silencing the script's `solvedModel` did. The raw detection output stays
-   * unfiltered — only the validator's diagnostic emission honors this list.
-   */
-  private ignoreInterferenceList: ReadonlyArray<readonly [string, string]> = [];
+  get name(): string {
+    return this.state.name;
+  }
 
   constructor(name: string, session: CaptureSession) {
-    this.name = name;
-    this.session = session;
+    this.state = createAssemblyState(name, session);
   }
 
   part(name: string, shape: Shape, opts: AssemblyPartOpts = {}): AssemblyPartRef {
-    return recordPart(this as unknown as AssemblyState, name, shape, opts);
+    return recordPart(this.state, this, name, shape, opts);
   }
 
+  /** See `recordSubAssembly` in `assemblyParts.ts` for the full
+   *  sub-assembly-import contract. */
   subAssembly(name: string, other: Assembly): SubAssemblyHandle {
-    return recordSubAssembly(this as unknown as AssemblyState, name, other);
+    return recordSubAssembly(this.state, this, name, other);
   }
 
+  /** See `revoluteJoint` in `assemblyJoints.ts`. */
   revolute(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: RevoluteJointOpts): AssemblyJointRef {
-    return revoluteJoint(this as unknown as AssemblyState, name, a, b, opts);
+    return revoluteJoint(this.state, name, a, b, opts);
   }
 
   prismatic(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: PrismaticJointOpts): AssemblyJointRef {
-    return prismaticJoint(this as unknown as AssemblyState, name, a, b, opts);
+    return prismaticJoint(this.state, name, a, b, opts);
   }
 
+  /** See `ballJoint` in `assemblyJoints.ts`. */
   ball(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: BallJointOpts): AssemblyJointRef {
-    return ballJoint(this as unknown as AssemblyState, name, a, b, opts);
+    return ballJoint(this.state, name, a, b, opts);
   }
 
   connect(name: string, a: AssemblyConnectorRef, b: AssemblyConnectorRef): AssemblyConnectRef {
-    return connectFixed(this as unknown as AssemblyState, name, a, b);
+    return connectFixed(this.state, name, a, b);
   }
 
+  /** See `recordMate` in `assemblyJoints.ts` for the full typed-mate
+   *  contract (per-type pose shape, connector-compatibility errors, and
+   *  how the record is surfaced on `Scene.mates`). */
   mate(
     name: string,
     aRef: string,
@@ -175,7 +145,7 @@ export class Assembly {
       maxLoad?: MateLoadLimit;
     },
   ): this {
-    recordMate(this as unknown as AssemblyState, name, aRef, bRef, type, opts);
+    recordMate(this.state, name, aRef, bRef, type, opts);
     return this;
   }
 
@@ -183,29 +153,37 @@ export class Assembly {
     driven: string,
     opts: { source: string; ratio: number; offset?: number },
   ): this {
-    coupleMateRecords(this as unknown as AssemblyState, driven, opts);
+    coupleMateRecords(this.state, driven, opts);
     return this;
   }
 
+  /** See `recordTendon` in `assemblyJoints.ts` for the full passive
+   *  balance-spring contract. */
   tendon(name: string, opts: TendonOptions): this {
-    recordTendon(this as unknown as AssemblyState, name, opts);
+    recordTendon(this.state, name, opts);
     return this;
   }
 
+  /** See `recordWorkspaceTarget` in `assemblyJoints.ts` for the full
+   *  declarative workspace-reachability contract. */
   workspace(connectorRef: string, opts: WorkspaceTargetOpts): this {
-    recordWorkspaceTarget(this as unknown as AssemblyState, connectorRef, opts);
-    return this;
-  }
-  physicalUseCase(name: string, opts: PhysicalUseCaseOptions): this {
-    recordPhysicalUseCase(this as unknown as AssemblyState, name, opts);
+    recordWorkspaceTarget(this.state, connectorRef, opts);
     return this;
   }
 
+  /** See `recordPhysicalUseCase` in `assemblyIntents.ts`. */
+  physicalUseCase(name: string, opts: PhysicalUseCaseOptions): this {
+    recordPhysicalUseCase(this.state, name, opts);
+    return this;
+  }
+
+  /** See `recordPlanningGroup` in `assemblyIntents.ts` for the full SRDF
+   *  planning-group contract. */
   planningGroup(
     name: string,
     opts: { chain?: { baseLink: string; tipLink: string }; joints?: string[]; links?: string[] },
   ): this {
-    recordPlanningGroup(this as unknown as AssemblyState, name, opts);
+    recordPlanningGroup(this.state, name, opts);
     return this;
   }
 
@@ -214,7 +192,7 @@ export class Assembly {
     name: string,
     opts: { parentLink: string; group: string; parentGroup: string },
   ): this {
-    recordEndEffector(this as unknown as AssemblyState, name, opts);
+    recordEndEffector(this.state, name, opts);
     return this;
   }
 
@@ -223,13 +201,13 @@ export class Assembly {
     name: string,
     opts: { type: 'fixed' | 'floating' | 'planar'; parentFrame: string; childLink: string },
   ): this {
-    recordVirtualJoint(this as unknown as AssemblyState, name, opts);
+    recordVirtualJoint(this.state, name, opts);
     return this;
   }
 
   /** Declare an SRDF named group state (a pose snapshot keyed by joint name). */
   groupState(name: string, group: string, values: Record<string, number>): this {
-    recordGroupState(this as unknown as AssemblyState, name, group, values);
+    recordGroupState(this.state, name, group, values);
     return this;
   }
 
@@ -239,22 +217,22 @@ export class Assembly {
     link2: string,
     opts: { reason: 'Adjacent' | 'Never' | 'Default' | 'User' },
   ): this {
-    recordDisabledCollision(this as unknown as AssemblyState, link1, link2, opts);
+    recordDisabledCollision(this.state, link1, link2, opts);
     return this;
   }
 
   mechanicalJoint(name: string, opts: MechanicalJointIntentOpts): this {
-    recordMechanicalJoint(this as unknown as AssemblyState, name, opts);
+    recordMechanicalJoint(this.state, name, opts);
     return this;
   }
 
   jointSupport(name: string, opts: JointSupportIntentOpts): this {
-    recordJointSupport(this as unknown as AssemblyState, name, opts);
+    recordJointSupport(this.state, name, opts);
     return this;
   }
 
   transmission(name: string, opts: TransmissionIntentOpts): this {
-    recordTransmission(this as unknown as AssemblyState, name, opts);
+    recordTransmission(this.state, name, opts);
     return this;
   }
 
@@ -264,7 +242,7 @@ export class Assembly {
    * the agent-facing surface. Mirrors `Scene.__sourceFeatureId` convention.
    */
   __parts(): readonly AssemblyPartStored[] {
-    return this.parts;
+    return this.state.parts;
   }
 
   /**
@@ -280,7 +258,7 @@ export class Assembly {
    * underscore-prefixed convention; not part of the agent-facing surface.
    */
   __partLineage(): PartLineageMap {
-    return this.partLineage;
+    return this.state.partLineage;
   }
 
   /**
@@ -289,11 +267,11 @@ export class Assembly {
    * `Scene.mates`, but without forcing a `makeScene` round-trip. Not public.
    */
   __mates(): readonly MateRecord[] {
-    return this.mates;
+    return this.state.mates;
   }
 
   __mateCouplings(): readonly MateCouplingRecord[] {
-    return this.mateCouplings;
+    return this.state.mateCouplings;
   }
 
   /**
@@ -303,7 +281,7 @@ export class Assembly {
    * agent-facing surface is `arm.tendon(...)` declaration only.
    */
   __tendons(): readonly TendonRecord[] {
-    return this.tendons;
+    return this.state.tendons;
   }
 
   /**
@@ -314,36 +292,36 @@ export class Assembly {
    * diagnostic surfaced on `scene.warnings` / through the validator throw.
    */
   __workspaceTargets(): readonly WorkspaceTargetRecord[] {
-    return this.workspaceTargets;
+    return this.state.workspaceTargets;
   }
 
   __physicalUseCases(): readonly PhysicalUseCaseRecord[] {
-    return this.physicalUseCases;
+    return this.state.physicalUseCases;
   }
 
   /** SRDF planning groups declared via `arm.planningGroup(...)`. */
   __planningGroups(): readonly PlanningGroupRecord[] {
-    return this.planningGroups;
+    return this.state.planningGroups;
   }
 
   /** SRDF end-effectors declared via `arm.endEffector(...)`. */
   __endEffectors(): readonly EndEffectorRecord[] {
-    return this.endEffectors;
+    return this.state.endEffectors;
   }
 
   /** SRDF virtual joints declared via `arm.virtualJoint(...)`. */
   __virtualJoints(): readonly VirtualJointRecord[] {
-    return this.virtualJoints;
+    return this.state.virtualJoints;
   }
 
   /** SRDF named group states declared via `arm.groupState(...)`. */
   __groupStates(): readonly GroupStateRecord[] {
-    return this.groupStates;
+    return this.state.groupStates;
   }
 
   /** SRDF allowed-collision overrides declared via `arm.disableCollision(...)`. */
   __disabledCollisions(): readonly DisabledCollisionRecord[] {
-    return this.disabledCollisions;
+    return this.state.disabledCollisions;
   }
 
   /**
@@ -355,19 +333,19 @@ export class Assembly {
    * surface.
    */
   __ignoreInterference(): ReadonlyArray<readonly [string, string]> {
-    return this.ignoreInterferenceList;
+    return this.state.ignoreInterferenceList;
   }
 
   __mechanicalJointIntents(): readonly MechanicalJointIntentRecord[] {
-    return this.mechanicalJointIntents;
+    return this.state.mechanicalJointIntents;
   }
 
   __jointSupportIntents(): readonly JointSupportIntentRecord[] {
-    return this.jointSupportIntents;
+    return this.state.jointSupportIntents;
   }
 
   __transmissionIntents(): readonly TransmissionIntentRecord[] {
-    return this.transmissionIntents;
+    return this.state.transmissionIntents;
   }
 
   /**
@@ -377,7 +355,7 @@ export class Assembly {
    * metadata should read it off `Scene` via `model()` / `solvedModel()`.
    */
   __joints(): readonly AssemblyJointStored[] {
-    return this.joints;
+    return this.state.joints;
   }
 
   /**
@@ -388,17 +366,17 @@ export class Assembly {
    * `Assembly.solvedModel()`, both of which already close over the session.
    */
   __session(): CaptureSession {
-    return this.session;
+    return this.state.session;
   }
   __buildMateMetadata(): import('./captureSession').SolvedAssemblyMateMetadata | undefined {
-    if (this.mates.length === 0) return undefined;
-    return buildMateMetadata(this as unknown as AssemblyState);
+    if (this.state.mates.length === 0) return undefined;
+    return buildMateMetadata(this.state);
   }
 
   /** See `solveJoints` in `assemblySolve.ts` for the full body-tree FK
    *  walk and the pose validation it runs before applying transforms. */
   solve(poses: Poses): SolvedKinematics {
-    return solveJoints(this as unknown as AssemblyState, poses);
+    return solveJoints(this.state, poses);
   }
 
   /** See `recordSolvedModel` in `assemblySolve.ts` for the full mate-aware
@@ -407,11 +385,12 @@ export class Assembly {
     poses: Poses,
     opts?: SolvedModelOptions,
   ): Promise<Scene> {
-    return recordSolvedModel(this as unknown as AssemblyState, poses, opts);
+    return recordSolvedModel(this.state, this, poses, opts);
   }
 
+  /** See `recordModel` in `assemblyModel.ts`. */
   model(): Scene {
-    return recordModel(this as unknown as AssemblyState);
+    return recordModel(this.state);
   }
 
 }
@@ -427,4 +406,3 @@ export function makeAssembly(name: string | undefined, session: CaptureSession):
   session.assemblies.set(arm.name, arm);
   return arm;
 }
-
