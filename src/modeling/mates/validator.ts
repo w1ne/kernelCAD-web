@@ -64,7 +64,7 @@ export type ValidatorStatus =
  * Codes the assembly validator pipeline may attach to a `ValidatorDiagnostic`.
  * Derived from the central `DIAGNOSTIC_REGISTRY` so adding/removing an
  * `assembly.*` code goes through a single source of truth — see
- * `src/shared/diagnostics/registry.ts`. Narrower than `DiagnosticCode`:
+ * `src/shared/diagnostics/registry/`. Narrower than `DiagnosticCode`:
  * non-validator codes (visual review, mechanical-plausibility, transmission)
  * stay out of this alias deliberately because the validator does not emit
  * them — they enter the same MCP error-chain through their own pipelines.

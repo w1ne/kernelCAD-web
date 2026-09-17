@@ -1,0 +1,3722 @@
+{
+  "DIAGNOSTIC_CODES": [
+    "feature.invalid-args",
+    "feature.direct-edit.clamped",
+    "feature.direct-edit.delta-wrapper",
+    "feature.direct-edit.unresolved",
+    "feature.direct-edit.shared-param-conflict",
+    "feature.kernel-failed",
+    "feature.revolve.crosses-axis",
+    "feature.sketch.degenerate-arc",
+    "feature.section.plane-misses-body",
+    "feature.face-sketch.non-planar",
+    "feature.async-result.missing-await",
+    "sketch.tangency.no-solution",
+    "sketch.tangency.ambiguous",
+    "sketch.text.font-not-found",
+    "sketch.text.empty-content",
+    "feature.emboss-text.face-too-small",
+    "feature.emboss-text.depth-zero",
+    "feature.emboss-text.boolean-noop",
+    "feature.subtractive-noop",
+    "feature.intersection-empty",
+    "feature.empty-result",
+    "feature.project-curve.no-intersection",
+    "feature.project-curve.curve-empty",
+    "feature.face.invalid-uv-anchor",
+    "feature.face-ref.not-resolvable",
+    "feature.face-ref.not-applicable",
+    "feature.face-ref.not-supported",
+    "feature.face-ref.ambiguous-after-split",
+    "feature.face-ref.removed",
+    "feature.face-ref.snapshot-fallback-used",
+    "feature.hole.no-target-face",
+    "feature.created-ref.fallback-used",
+    "feature.selection.no-match",
+    "feature.selection.ambiguous",
+    "feature.label.unknown-name",
+    "feature.label.no-upstream-sketch",
+    "feature.label.unsupported-base",
+    "feature.label.mixed-convexity",
+    "feature.label.collision",
+    "recompute.input.missing",
+    "recompute.lowering.exception",
+    "cli.invalid-args",
+    "cli.script-exception",
+    "cli.host-fs-unavailable",
+    "cli.file-read",
+    "cli.file-write",
+    "cli.export-exception",
+    "export.feature-not-found",
+    "export.no-shape",
+    "export.options-format-mismatch",
+    "export.dxf.non-planar",
+    "export.3mf.not-watertight",
+    "export.mesh.not-watertight",
+    "export.part.not-found",
+    "export.glb.draco-glass-conflict",
+    "export.urdf.cylindrical-lossy",
+    "export.urdf.pin-slot-lossy",
+    "export.urdf.ball-decomposed",
+    "export.urdf.closed-loop",
+    "export.urdf.inertia-density-declared",
+    "export.srdf.acm-sparse-sampling",
+    "export.srdf.planning-group-missing",
+    "export.sdf-gazebo.cylindrical-lossy",
+    "export.sdf-gazebo.pin-slot-lossy",
+    "export.sdf-gazebo.invalid-version",
+    "export.sdf-gazebo.dangling-link-ref",
+    "export.sdf-gazebo.pose-unsolved",
+    "export.gcode.slicer-unavailable",
+    "export.gcode.exceeds-bed",
+    "feature.nurbs.degenerate-controls",
+    "feature.nurbs.degree-mismatch",
+    "feature.nurbs.bridge-conversion-failed",
+    "feature.pattern.source-not-found",
+    "feature.pattern.count-out-of-range",
+    "feature.sheetMetal.kfactor-invalid",
+    "feature.bend.edge-not-linear",
+    "feature.flattenPattern.multi-bend-unsupported",
+    "feature.draft.failed",
+    "feature.draft.neutral-plane-derived",
+    "feature.sdf.field-undefined",
+    "feature.sdf.materialize-resolution-out-of-range",
+    "feature.reference-image.path-not-found",
+    "feature.reference-image.invalid-plane",
+    "feature.reference-image.scale-out-of-range",
+    "feature.reference-image.format-unsupported",
+    "feature.render-environment.conflicting-spec",
+    "feature.render-environment.missing-spec",
+    "feature.render-environment.unknown-preset",
+    "feature.render-environment.intensity-out-of-range",
+    "feature.camera-target.non-finite-target",
+    "feature.camera-target.invalid-distance",
+    "feature.material.invalid-base-color",
+    "feature.material.value-clamped",
+    "feature.material.face-label-no-match",
+    "feature.material.thickness-negative",
+    "feature.material.attenuation-distance-invalid",
+    "feature.material.anisotropy-rotation-normalized",
+    "feature.material.texture-not-found",
+    "feature.material.texture-unsupported-format",
+    "feature.material.texture-oversize-warning",
+    "feature.material.texture-oversize-error",
+    "feature.finish.unknown-token",
+    "feature.edge-feature.short-edges-skipped",
+    "assembly.placement-ignored-by-mate-fk",
+    "assembly.mates-ignored-by-model-call",
+    "assembly.part.floating",
+    "assembly.part.orphan",
+    "assembly.interference.overlap",
+    "assembly.part.under-constrained",
+    "assembly.mate.over-constrained",
+    "assembly.mate.type-mismatch",
+    "assembly.mate.connector-not-found",
+    "assembly.loop.unclosed",
+    "assembly.solver.did-not-converge",
+    "assembly.pose.out-of-limits",
+    "assembly.pose-envelope.solve-failed",
+    "assembly.pose-envelope.interference",
+    "assembly.pose-envelope.clearance-violated",
+    "assembly.pose-envelope.clearance-unresolved",
+    "assembly.pose-envelope.connector-unresolved",
+    "assembly.gripper-aperture.connector-missing",
+    "assembly.mate.limit-missing",
+    "assembly.mounting-hole.mismatch",
+    "assembly.joint-axis.unbound",
+    "assembly.joint.child-modeled-in-place",
+    "assembly.structure.unstructured-bodies",
+    "assembly.joint.load-exceeded",
+    "assembly.joint.not-visible",
+    "assembly.mate.not-physically-realized",
+    "assembly.joint.static-hold.margin-low",
+    "assembly.joint.static-hold.exceeded",
+    "assembly.workspace.unreachable",
+    "assembly.connector.topology-not-resolvable",
+    "assembly.mechanical.part-disconnected",
+    "assembly.mechanical.connector-not-in-solid",
+    "assembly.mechanical.mate-contact-missing",
+    "assembly.mechanical.fixed-contact-missing",
+    "assembly.mechanical.revolute-unsupported",
+    "assembly.mechanical.revolute-contact-missing",
+    "assembly.transmission.missing-for-coupled-mate",
+    "assembly.transmission.path-disconnected",
+    "mechanism.disconnect",
+    "mechanism.interpenetration",
+    "mechanism.dof-mismatch",
+    "mechanism.orphan-part",
+    "mechanism.unverified-budget-exceeded",
+    "mechanism.joint-mesh-gap",
+    "mechanism.unstable-under-gravity",
+    "mechanism.drops-on-release",
+    "mechanism.tendon-body-intersect",
+    "assembly.visual.review-check-failed",
+    "assembly.visual.review-evidence-weak",
+    "assembly.visual.review-incomplete",
+    "feature.curve3d.degenerate-controls",
+    "feature.curve3d.weights-length-mismatch",
+    "feature.curve3d.weights-non-positive",
+    "feature.curve3d.knots-length-mismatch",
+    "feature.curve3d.closed-endpoints-mismatch",
+    "feature.curve3d.analytics.degenerate-arclength",
+    "feature.curve3d.analytics.closest-point-no-converge",
+    "feature.curve3d.analytics.derivatives-out-of-range",
+    "feature.curve3d.analytics.tessellation-tolerance-invalid",
+    "feature.curve3d.analytics.kernel-failed",
+    "feature.curve3d.analytics.intersect-kernel-failed",
+    "feature.curve3d.analytics.intersect-no-intersection",
+    "feature.variable-sweep.sections-out-of-order",
+    "feature.variable-sweep.sections-not-spanning",
+    "feature.variable-sweep.spine-too-short",
+    "feature.variable-sweep.profile-not-planar",
+    "feature.variable-sweep.profile-empty",
+    "feature.variable-sweep.frenet-degenerate",
+    "feature.surface-from-boundary.corner-mismatch",
+    "feature.surface-from-boundary.too-few-curves",
+    "feature.surface-from-boundary.too-many-curves",
+    "feature.surface-from-boundary.continuity-orphan",
+    "feature.surface-from-boundary.degenerate-patch",
+    "feature.surface-trim.no-intersection",
+    "feature.surface-trim.non-planar",
+    "feature.surface-trim.split-deferred",
+    "feature.surface-sew.open-shell",
+    "feature.fillet.continuity-not-applicable",
+    "feature.hermite-g2.degenerate-tangent",
+    "feature.hermite-g2.non-finite-input",
+    "feature.path.spline.degenerate-points",
+    "feature.path.spline.tangent-zero-magnitude",
+    "feature.path.spline.tangent-on-2d-only",
+    "feature.path.nurbs-segment.degenerate-controls",
+    "feature.path.nurbs-segment.weights-non-positive",
+    "feature.path.hermite-g2.start-mismatch",
+    "tool.trace-from-image.invalid-image-url",
+    "tool.trace-from-image.no-features-requested",
+    "tool.trace-from-image.image-fetch-failed",
+    "tool.trace-from-image.backend-failed",
+    "tool.trace-from-image.opencv-cannot-label",
+    "tool.trace-from-image.trace-timeout",
+    "tool.send-to-printer.unreachable",
+    "tool.send-to-printer.upload-failed",
+    "mesher.cone-self-intersection",
+    "parts.input.id-or-query-required",
+    "parts.fetch.offline-and-uncached",
+    "parts.fetch.checksum-mismatch",
+    "parts.fetch.checksum-drift",
+    "parts.fetch.api-error",
+    "parts.fetch.remote-disabled",
+    "parts.fetch.geometry-not-brep",
+    "dfm.input.vendor-required",
+    "dfm.input.material-required",
+    "dfm.input.thickness-required",
+    "dfm.units.dxf-not-mm",
+    "dfm.material.unknown-sku",
+    "dfm.thickness.not-stocked",
+    "dfm.thickness.out-of-range",
+    "dfm.thickness.out-of-range-for-service",
+    "dfm.hole.below-minimum",
+    "dfm.slot.below-minimum",
+    "dfm.web.below-minimum",
+    "dfm.bend.radius-below-minimum",
+    "dfm.bend.angle-too-acute",
+    "dfm.bend.length-exceeds-max",
+    "dfm.bend.flange-too-short",
+    "dfm.bend.channel-ratio-too-low",
+    "dfm.bend.layer-missing",
+    "dfm.bending.material-unsupported",
+    "dfm.size.below-minimum",
+    "dfm.size.exceeds-instant-quote",
+    "dfm.size.exceeds-max",
+    "dfm.dxf.spline-present",
+    "dfm.dxf.tessellation-near-tolerance",
+    "dfm.rule.threshold-unknown",
+    "dfm.wall.too-thin",
+    "dfm.clearance.violated",
+    "dfm.channel.openings-mismatch",
+    "dfm.void.undeclared",
+    "dfm.fdm.overhang-unsupported",
+    "dfm.fdm.bridge-too-long",
+    "dfm.fdm.wall-below-nozzle",
+    "dfm.fdm.feature-too-small",
+    "dfm.fdm.bed-contact-low",
+    "dfm.fdm.tip-risk",
+    "dfm.fdm.exceeds-bed",
+    "kinematic.collision.swept",
+    "kinematic.collision.swept.sample-density-warning",
+    "kinematic.unreachable",
+    "kinematic.reachability.iteration-cap-hit",
+    "kinematic.solver.unsupported-config",
+    "kinematic.load-exceeds-yield",
+    "kinematic.load.beam-not-applicable",
+    "kinematic.no-material-declared",
+    "kinematic.static-hold.no-actuator-declared",
+    "kinematic.sweep-tolerance.combo-cap-exceeded",
+    "kinematic.mounting-hole.diameter-mismatch",
+    "kinematic.pose.out-of-limits",
+    "kinematic.mounting-hole.no-coverage",
+    "query.empty",
+    "query.over-determined",
+    "query.evaluated-too-early",
+    "query.unknown-id",
+    "query.unknown-label",
+    "query.id-hierarchy-clash",
+    "query.unsupported-entity-type",
+    "query.composition-strict-failure",
+    "query.type-mismatch",
+    "query.invalid-syntax",
+    "animation.param.unknown",
+    "animation.track.duplicate-param",
+    "animation.keys.invalid",
+    "animation.value.clamped",
+    "animation.view.shadowed",
+    "animation.collision",
+    "animation.bake.geometry-param",
+    "drawing.datum.unresolved",
+    "drawing.tolerance.feature-unresolved",
+    "drawing.section.plane-misses-body",
+    "drawing.annotation.overlap",
+    "drawing.auto.datum-ambiguous",
+    "drawing.auto.hole-unclassified",
+    "reference.assumptions.unresolved",
+    "reference.assumptions.ledger-not-found",
+    "reference.assumptions.unknown-resolution-id",
+    "reference.drawing.raster-only",
+    "reference.drawing.view-ambiguous",
+    "reference.drawing.dimension-unassociated",
+    "reference.drawing.depth-missing",
+    "reference.mesh.not-watertight",
+    "reference.mesh.low-fidelity",
+    "reference.mesh.freeform-region-unmatched",
+    "fea.safety-factor.below-min",
+    "fea.mesh.quality-low",
+    "fea.solver.unavailable",
+    "fea.study.fixed-unresolved",
+    "fea.study.load-unresolved",
+    "tool.repair.no-candidate",
+    "tool.repair.out-of-region",
+    "tool.repair.exhausted",
+    "tool.repair.source-drift",
+    "export.usd.joint-unsupported",
+    "export.usd.pose-unsolved",
+    "export.usd.mass-missing",
+    "diff.body.unmatched",
+    "bom.material.unassigned",
+    "bom.purchased.catalog-metadata-missing",
+    "render.explode.no-assembly",
+    "drawing.balloons.bom-unavailable",
+    "feature.curve-bridge.degenerate-end",
+    "feature.surface-intersection.none",
+    "feature.loft.rail-miss",
+    "inspect.continuity.g1-break",
+    "inspect.continuity.broken",
+    "inspect.curvature.spike"
+  ],
+  "HINT_TEMPLATES": {
+    "feature.invalid-args": {
+      "template": "Fix the named field on the call args; check type, sign, and units.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "see-message"
+      }
+    },
+    "feature.direct-edit.clamped": {
+      "template": "Accept the clamped value or widen the param bounds, then retry the drag.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "param-bounds"
+      }
+    },
+    "feature.direct-edit.delta-wrapper": {
+      "template": "Replace the computed transform with a named param, or keep the marked delta wrapper.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "Name the transform expression as a param before editing it directly."
+      }
+    },
+    "feature.direct-edit.unresolved": {
+      "template": "Anchor the entity by name: bind it to a returned variable, name it as an assembly part, or drive it via sdf.bind; mate-driven parts can only be edited at the mate.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "Anchor the entity with a name; edit the mate source for mate-driven parts."
+      }
+    },
+    "feature.direct-edit.shared-param-conflict": {
+      "template": "Split the shared param into per-axis params, or drag one axis at a time.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "Use distinct params per axis so each drag delta is encodable."
+      }
+    },
+    "feature.kernel-failed": {
+      "template": "OCCT rejected the operation. Retry with different params: smaller fillet/chamfer radius, thinner shell wall, translated mirror source, smaller sweep profile, etc.",
+      "nextAction": {
+        "kind": "retry-with-smaller-param",
+        "param": "op-radius-or-thickness",
+        "factor": 0.5
+      }
+    },
+    "feature.revolve.crosses-axis": {
+      "template": "A revolve profile must stay on one side of the rotation axis. Clamp all path coordinates to x >= 0.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "clamp all path coords to x >= 0"
+      }
+    },
+    "feature.sketch.degenerate-arc": {
+      "template": "The arc segment is degenerate. Try a larger radius, different endpoints, or another arc constructor.",
+      "nextAction": {
+        "kind": "retry-with-smaller-param",
+        "param": "arc-radius-or-endpoints",
+        "factor": 0.5
+      }
+    },
+    "feature.section.plane-misses-body": {
+      "template": "The section plane does not intersect the body. Move the plane offset/origin so it passes through the solid, or check the normal direction.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "sectionSketch.plane"
+      }
+    },
+    "feature.face-sketch.non-planar": {
+      "template": "The selected face is not planar, so it cannot be unrolled to a 2D sketch. Select a planar face (add { ofSurfaceType: \"PLANE\" } to the query) or use sectionSketch on a curved body.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "faceSketch.face"
+      }
+    },
+    "feature.async-result.missing-await": {
+      "template": "This method returns a Promise — chain it directly on the awaited value, e.g. `(await shape.sectionSketch(...)).extrude(...)`.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "await the async Shape method (sectionSketch/faceSketch/silhouette) before chaining a Sketch method on its result"
+      }
+    },
+    "sketch.tangency.no-solution": {
+      "template": "No circle or line satisfies the requested tangencies. Enlarge the radius so it can bridge the entities, move the entities closer, or relax the side qualifiers.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "enlarge the tangency radius, move the entities closer together, or relax the side qualifiers"
+      }
+    },
+    "sketch.tangency.ambiguous": {
+      "template": "Several solutions satisfy the tangency conditions. Pass opts.near: [x, y] beside the one you want, or tighten the entities' side qualifiers (outside / enclosed / enclosing).",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "near"
+      }
+    },
+    "sketch.text.font-not-found": {
+      "template": "The font name is not registered. Use fontPath('/path/to/font.ttf') to load a TTF from disk, or omit opts.font to use the bundled Liberation Sans.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "font"
+      }
+    },
+    "sketch.text.empty-content": {
+      "template": "sketch.text(content) requires a non-empty string with at least one printable glyph.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "content"
+      }
+    },
+    "feature.emboss-text.face-too-small": {
+      "template": "The text block does not fit on the target face. Lower size, pick a larger face, or use scaleMode \"bounds\" so the glyphs are normalised to the face extent.",
+      "nextAction": {
+        "kind": "retry-with-smaller-param",
+        "param": "size",
+        "factor": 0.5
+      }
+    },
+    "feature.emboss-text.depth-zero": {
+      "template": "embossText.depth must be non-zero. Use a positive value to emboss out of the face, a negative value to engrave into it.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "depth"
+      }
+    },
+    "feature.emboss-text.boolean-noop": {
+      "template": "The emboss/engrave boolean left the body unchanged — the glyph tool never intersected it. Check the anchor places the text over solid material (not over a hole or off the face) and that the depth sign matches the intent (positive = emboss out, negative = engrave in).",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "anchorU"
+      }
+    },
+    "feature.subtractive-noop": {
+      "template": "A subtractive op (boolean difference, hole, or cutout) removed no material — the tool never intersected the body. Check the cutter/hole position overlaps the target solid, the depth reaches the material, and the operands are in the same coordinate frame.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "reposition or resize the cutting tool so it overlaps the target solid"
+      }
+    },
+    "feature.intersection-empty": {
+      "template": "A boolean intersection produced an empty result — the two bodies do not overlap, so the requested common volume is empty. Check the operands share a region of space (same coordinate frame, overlapping positions) and that they intersect as a solid, not merely touch on a face or edge.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "reposition or resize the operands so their solids overlap before intersecting"
+      }
+    },
+    "feature.empty-result": {
+      "template": "A solid create (box, cylinder, sphere, extrude, revolve, loft, or sweep) produced an empty or zero-volume shape. Check the dimensions are positive and finite, the profile is a closed non-degenerate sketch, and the sweep/revolve path actually generates volume.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "give the create non-degenerate, positive dimensions or a valid closed profile so it produces a solid with volume"
+      }
+    },
+    "feature.project-curve.no-intersection": {
+      "template": "projectCurve could not intersect the source curve with the target face. For closed-curve mode, ensure the curve overlaps the face bounds. asEdge:true is not implemented — use closed-curve projection or pre-tessellate the open wire into a closed sketch.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "use closed-curve projection or shift the curve into the face bounds"
+      }
+    },
+    "feature.project-curve.curve-empty": {
+      "template": "projectCurve received an empty curve source. Build the sketch via path().moveTo(...).lineTo(...).close() so the wire has at least one segment.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "source.commands"
+      }
+    },
+    "feature.face.invalid-uv-anchor": {
+      "template": "UV anchors must lie in [0, 1] (0=umin/vmin, 0.5=face centre, 1=umax/vmax). Clamp the anchor or recompute against the face bounds.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "anchorU-or-anchorV"
+      }
+    },
+    "feature.face-ref.not-resolvable": {
+      "template": "The referenced face was not found on the current shape; lineage returned zero hits and the stored snapshot has no match within tolerance. Pick one of the nearest candidate refs printed in the message (or call list_faces to enumerate every face that still exists), or apply this feature before the upstream op that removed the original.",
+      "nextAction": {
+        "kind": "reorder-pipeline",
+        "guidance": "apply this feature before any transform"
+      }
+    },
+    "feature.face-ref.not-applicable": {
+      "template": "That canonical face doesn't exist on this primitive (sphere has no canonical faces; cylinder has only top/bottom).",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "use a different primitive or inline FaceQuery"
+      }
+    },
+    "feature.face-ref.not-supported": {
+      "template": "Use a canonical face name, a label, or an inline FaceQuery / EdgeQuery instead.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "use a canonical face name, label, or inline FaceQuery / EdgeQuery"
+      }
+    },
+    "feature.face-ref.ambiguous-after-split": {
+      "template": "The referenced face was split into multiple surviving lineage descendants by an upstream op. Pick one of the candidate refs printed in the message, or label the desired piece explicitly via faceLabels({...}) before the splitting op runs.",
+      "nextAction": {
+        "kind": "reorder-pipeline",
+        "guidance": "apply this feature before the splitting boolean"
+      }
+    },
+    "feature.face-ref.removed": {
+      "template": "A named face was removed by an upstream boolean. Reference a face that still exists.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "reference a face that still exists"
+      }
+    },
+    "feature.face-ref.snapshot-fallback-used": {
+      "template": "Lineage returned no hits; the entity was recovered by geometry snapshot. The resolution is provisional — re-emit list_faces or list_edges and update the ref to the lineage-stable form before further edits move the entity beyond tolerance.",
+      "nextAction": {
+        "kind": "rename",
+        "guidance": "update the ref to the lineage-stable form via list_faces / list_edges"
+      }
+    },
+    "feature.hole.no-target-face": {
+      "template": "The hole entry face matched, but no body sits along the bore axis to drill into. Pick an entry face on a different body, or verify the target body extends along the bore axis.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "pick an entry face on a body the bore axis enters"
+      }
+    },
+    "feature.created-ref.fallback-used": {
+      "template": "Geometry-snapshot fallback used. Name the upstream feature with .name() and reference it by `<name>.<slot>` to lock the ref against future history edits.",
+      "nextAction": {
+        "kind": "rename",
+        "guidance": "name the upstream feature with .name() to lock the ref"
+      }
+    },
+    "feature.selection.no-match": {
+      "template": "The query matched no edges/faces. Use list_edges, list_faces, or list_face_labels to inspect what exists, then relax the query.",
+      "nextAction": {
+        "kind": "call-introspection-tool",
+        "tool": "list_edges"
+      }
+    },
+    "feature.selection.ambiguous": {
+      "template": "Multiple edges/faces match. Use the plural selector for all matches, or tighten the query.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "use the plural selector or tighten the query"
+      }
+    },
+    "feature.label.unknown-name": {
+      "template": "Label not found. Call list_face_labels to see available labels.",
+      "nextAction": {
+        "kind": "call-introspection-tool",
+        "tool": "list_face_labels"
+      }
+    },
+    "feature.label.no-upstream-sketch": {
+      "template": "Labels work on shapes built from a path() sketch. For primitives or imported shapes, use an inline face/edge query instead.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "use an inline face/edge query for primitives or imported shapes"
+      }
+    },
+    "feature.label.unsupported-base": {
+      "template": "Labels are supported for extrude only today. Use an inline query as a workaround.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "use an inline query as a workaround"
+      }
+    },
+    "feature.label.mixed-convexity": {
+      "template": "The labeled segment matched a mix of convex and concave edges. Split the label across smaller segments, or refine with an EdgeQuery filtering by convexity.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "split the label or filter by convexity"
+      }
+    },
+    "feature.label.collision": {
+      "template": "Two upstream features declared the same faceLabels name. Rename one.",
+      "nextAction": {
+        "kind": "rename",
+        "guidance": "two upstream features declared the same label name; rename one"
+      }
+    },
+    "recompute.input.missing": {
+      "template": "An upstream feature failed or was suppressed. Call why_did_this_fail on the upstream feature_id to walk the chain.",
+      "nextAction": {
+        "kind": "call-introspection-tool",
+        "tool": "why_did_this_fail"
+      }
+    },
+    "recompute.lowering.exception": {
+      "template": "An exception was raised during lowering. Read the diagnostic message for the OCCT error.",
+      "nextAction": {
+        "kind": "inspect-message"
+      }
+    },
+    "cli.invalid-args": {
+      "template": "CLI was called with missing or malformed arguments. Run `kernelcad --help`.",
+      "nextAction": {
+        "kind": "check-cli-args"
+      }
+    },
+    "cli.script-exception": {
+      "template": "Your script raised an exception during execution. Read the diagnostic message for the JS error.",
+      "nextAction": {
+        "kind": "inspect-message"
+      }
+    },
+    "cli.host-fs-unavailable": {
+      "template": "This feature reads files from disk and is unavailable in the browser runtime. Run the script through the kernelCAD CLI or MCP server, or drop the call.",
+      "nextAction": {
+        "kind": "inspect-message"
+      }
+    },
+    "cli.file-read": {
+      "template": "kernelCAD could not read the script file. Either the path does not exist locally, or this server is hosted/remote and cannot see your filesystem — pass the script inline via `code` instead of `file`.",
+      "nextAction": {
+        "kind": "check-file-path"
+      }
+    },
+    "cli.file-write": {
+      "template": "kernelCAD could not write the output file. Check the output path is writable and that -o points at a directory when exporting multiple parts.",
+      "nextAction": {
+        "kind": "check-file-path"
+      }
+    },
+    "cli.export-exception": {
+      "template": "An exception occurred during export. Read the diagnostic message for details.",
+      "nextAction": {
+        "kind": "inspect-message"
+      }
+    },
+    "export.feature-not-found": {
+      "template": "The feature_id passed to export_model was not found. Use list_features to see available IDs.",
+      "nextAction": {
+        "kind": "call-introspection-tool",
+        "tool": "list_features"
+      }
+    },
+    "export.no-shape": {
+      "template": "The script did not return a shape. End the script with `return <shape>`.",
+      "nextAction": {
+        "kind": "add-return"
+      }
+    },
+    "export.options-format-mismatch": {
+      "template": "options.format must equal the top-level format. Set options.format to the same value, or omit options.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "options.format"
+      }
+    },
+    "export.dxf.non-planar": {
+      "template": "DXF export requires planar input. Call list_faces to pick a planar face, or return a Region via Shape.flattenPattern().",
+      "nextAction": {
+        "kind": "call-introspection-tool",
+        "tool": "list_faces"
+      }
+    },
+    "export.3mf.not-watertight": {
+      "template": "The exported mesh has non-manifold edges (likely a self-intersecting cone tessellation or an open shell). Re-mesh via Manifold, raise OCCT mesh deflection, or re-author the offending surface via nurbsSurfaceLowerer; see the K1 mesher gap.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "remesh via Manifold, raise mesh deflection, or re-author the offending surface via nurbsSurfaceLowerer"
+      }
+    },
+    "export.mesh.not-watertight": {
+      "template": "The exported STL has open edges after the heal pass. Re-author the junctions at the reported crack-cluster locations with >=0.1 mm of overlap or offset instead of exact tangency/coincidence, then re-export. Use --no-verify only to inspect the broken mesh, never to ship it.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "add >=0.1 mm overlap/offset at the reported crack locations instead of exact tangency"
+      }
+    },
+    "export.part.not-found": {
+      "template": "The requested part name is not in the solved assembly. Pick one of the valid names listed in the message, or call list_part_stats to enumerate parts.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "part"
+      }
+    },
+    "export.glb.draco-glass-conflict": {
+      "template": "Draco compression is reserved but not yet implemented. Pass options.draco: false or omit; the encoder ships in a follow-up slice. (The name nods at the most common collision: Draco encoders typically strip the `KHR_materials_transmission` extension on glass parts, which would silently break the GLB.)",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "options.draco"
+      }
+    },
+    "export.urdf.cylindrical-lossy": {
+      "template": "URDF lacks a 2-DOF cylindrical joint; the mate was emitted as a single revolute and the prismatic DOF was dropped. Switch to format: 'sdf-gazebo' if both DOFs are needed.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "format"
+      }
+    },
+    "export.urdf.pin-slot-lossy": {
+      "template": "URDF lacks a pin-slot joint; the mate was emitted as a single revolute and the slot translation DOF was dropped. Switch to format: 'sdf-gazebo' or restructure the mate graph if both DOFs are needed.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "format"
+      }
+    },
+    "export.urdf.ball-decomposed": {
+      "template": "URDF lacks a spherical joint; the mate was decomposed into three chained revolute joints with two synthesised dummy intermediate links. Switch to format: 'sdf-gazebo' for a native ball joint.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "format"
+      }
+    },
+    "export.urdf.closed-loop": {
+      "template": "URDF requires a tree topology (one parent per link); the assembly has a closed kinematic loop. Switch to export_model with format: 'sdf-gazebo' which supports closed loops natively, or restructure the mate graph to a spanning tree.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "format"
+      }
+    },
+    "export.urdf.inertia-density-declared": {
+      "template": "Link inertia uses the default density 1000 kg/m^3 (water). Downstream dynamics simulations will be off by ~8x for steel or ~2.7x for aluminum unless you pass density on arm.part(name, shape, { density }).",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "density"
+      }
+    },
+    "export.srdf.acm-sparse-sampling": {
+      "template": "ACM derivation used fewer than 4 samples per mate; interior collisions may be missed. Increase options.samplesPerMate on export_model({ format: 'srdf', ... }) or set combinatorial: true.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "samplesPerMate"
+      }
+    },
+    "export.srdf.planning-group-missing": {
+      "template": "SRDF export requires at least one arm.planningGroup(...) declaration before export. Declare arm.planningGroup(name, { chain: { baseLink, tipLink } }) or arm.planningGroup(name, { joints: [...] }) in your .kcad.ts.",
+      "nextAction": {
+        "kind": "add-return"
+      }
+    },
+    "export.sdf-gazebo.cylindrical-lossy": {
+      "template": "SDFormat lacks a 2-DOF cylindrical joint; the mate was emitted as a revolute and the prismatic DOF was dropped. Restructure the mate graph if both DOFs are required.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "split cylindrical into a revolute + prismatic chain"
+      }
+    },
+    "export.sdf-gazebo.pin-slot-lossy": {
+      "template": "SDFormat lacks a pin-slot joint; the mate was emitted as a revolute and the slot translation DOF was dropped. Restructure the mate graph if both DOFs are required.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "split pin_slot into a revolute + prismatic chain"
+      }
+    },
+    "export.sdf-gazebo.invalid-version": {
+      "template": "SDFormat version attribute must be a recognised SDF spec version. The emitter writes <sdf version=\"1.10\"> by default — the newest spec current simulator LTS releases parse; do not override.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "version"
+      }
+    },
+    "export.sdf-gazebo.dangling-link-ref": {
+      "template": "A <joint> in the emitted SDF references a <link> that is not declared in the model. Verify every part on the mate-graph is also declared via arm.part(...).",
+      "nextAction": {
+        "kind": "call-introspection-tool",
+        "tool": "inspect_robot"
+      }
+    },
+    "export.sdf-gazebo.pose-unsolved": {
+      "template": "The mate graph could not be solved to per-link world poses, so every <link> was emitted at the model origin. The simulator will see overlapping links at spawn and joints will snap or explode. Run solve_mates to diagnose the unsolvable mate, fix the connector geometry, then re-export.",
+      "nextAction": {
+        "kind": "call-introspection-tool",
+        "tool": "solve_mates"
+      }
+    },
+    "export.gcode.slicer-unavailable": {
+      "template": "No slicer CLI was found. Set KERNELCAD_SLICER to a slicer binary path, or install OrcaSlicer (or PrusaSlicer) and ensure orca-slicer/prusa-slicer/PrusaSlicer is on PATH.",
+      "nextAction": {
+        "kind": "check-cli-args"
+      }
+    },
+    "export.gcode.exceeds-bed": {
+      "template": "The model bounding box exceeds the selected printer profile's bed size. Scale the part down, split it into printable sub-parts, or pass a printer profile with a larger bed.",
+      "nextAction": {
+        "kind": "retry-with-smaller-param",
+        "param": "scale",
+        "factor": 0.9
+      }
+    },
+    "feature.nurbs.degenerate-controls": {
+      "template": "NURBS surface control-net must be a non-empty rectangular Vec3 grid spanning a 2D extent. Fix the controls grid shape (every row must have the same length; every point must be a finite Vec3).",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "controls"
+      }
+    },
+    "feature.nurbs.degree-mismatch": {
+      "template": "NURBS degree must satisfy 1 <= degree.u <= controls.length - 1 and 1 <= degree.v <= controls[0].length - 1. Reduce degree, or add control points.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "degree"
+      }
+    },
+    "feature.nurbs.bridge-conversion-failed": {
+      "template": "nurbs.bridge: JS→kernel conversion failed (the kernel rejected the curve knot vector). Re-author with explicit knots the kernel accepts (non-decreasing; interior multiplicity <= degree+1; clamped ends multiplicity = degree+1). The default clamped-uniform knot vector always works.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "rebuild the curve with the default clamped-uniform knot vector or hand-author a monotonic knot sequence"
+      }
+    },
+    "feature.pattern.source-not-found": {
+      "template": "The pattern source feature was not found. Verify the variable receiving .patternLinear / .patternCircular / .patternGrid is bound from an earlier feature, that the source feature is not suppressed, and that the source FeatureId matches what list_features reports.",
+      "nextAction": {
+        "kind": "call-introspection-tool",
+        "tool": "list_features"
+      }
+    },
+    "feature.pattern.count-out-of-range": {
+      "template": "Pattern count must be an integer >= 2. For grid patterns, both x.count and y.count must be >= 2. If count is a Param, set { min: 2 } on the Param declaration so updates can't lower it below the valid range.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "count"
+      }
+    },
+    "feature.sheetMetal.kfactor-invalid": {
+      "template": "K-factor must be a finite number in [0, 1]; typical mild-steel/aluminum values are 0.33–0.45. Adjust the kFactor argument to sheetMetal().",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "kFactor"
+      }
+    },
+    "feature.bend.edge-not-linear": {
+      "template": ".bend() requires a linear edge; the resolved edge is a curved geometry. Pick an edge that lies on a straight perimeter of the sheet (use list_edges to inspect).",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "pick a linear edge on the sheet perimeter"
+      }
+    },
+    "feature.flattenPattern.multi-bend-unsupported": {
+      "template": ".flattenPattern() supports at most 2 bends in slice 1. Flatten an upstream Shape with two or fewer bends, or wait for slice 2.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "flatten an upstream Shape with <= 2 bends (slice-1 limit)"
+      }
+    },
+    "feature.draft.failed": {
+      "template": "Draft failed on the selected face(s). Drafts need a planar neutral plane and a consistent pull direction; check that the face is planar and the angle is < 90°.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "face"
+      }
+    },
+    "feature.draft.neutral-plane-derived": {
+      "template": "A named neutralPlane different from the drafted face is not yet honored; the parting plane was derived from the face geometry. Full named-neutral-plane support lands in a later slice.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "neutralPlane"
+      }
+    },
+    "feature.sdf.field-undefined": {
+      "template": "The SDF returned NaN/Infinity at a sample point. Check the field composition — smoothBlend with k <= 0 is undefined, and divide-by-zero inside a custom field produces NaN. Use evaluate_sdf to probe a point near the failure before retrying.",
+      "nextAction": {
+        "kind": "call-introspection-tool",
+        "tool": "evaluate_sdf"
+      }
+    },
+    "feature.sdf.materialize-resolution-out-of-range": {
+      "template": "sdf.materialize resolution must be an integer in [10, 200]. Use 30-60 for typical brackets; 80-120 for fine smooth-blends; <30 only when previewing. 200 is the cap to prevent OOM (200^3 = 8M voxels).",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "resolution"
+      }
+    },
+    "feature.reference-image.path-not-found": {
+      "template": "Pass a path that exists relative to the .kcad.ts file.",
+      "nextAction": {
+        "kind": "check-file-path"
+      }
+    },
+    "feature.reference-image.invalid-plane": {
+      "template": "Plane must be 'xy', 'xz', 'yz', or { plane: <cardinal>, offset?: number }.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "plane"
+      }
+    },
+    "feature.reference-image.scale-out-of-range": {
+      "template": "Pass a scale > 0 and ≤ 10000 mm, or use 'fit-bbox'.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "scale"
+      }
+    },
+    "feature.reference-image.format-unsupported": {
+      "template": "Supported formats: .png, .jpg, .jpeg, .webp.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "path"
+      }
+    },
+    "feature.render-environment.conflicting-spec": {
+      "template": "setRenderEnvironment: pass either { preset } or { url }, not both.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "preset"
+      }
+    },
+    "feature.render-environment.missing-spec": {
+      "template": "setRenderEnvironment: pass a preset key (e.g. 'studio') or a custom { url: '/hdri/...hdr' }.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "preset"
+      }
+    },
+    "feature.render-environment.unknown-preset": {
+      "template": "Valid presets: 'studio', 'softbox', 'neutral', 'outdoor', 'warehouse'.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "preset"
+      }
+    },
+    "feature.render-environment.intensity-out-of-range": {
+      "template": "setRenderEnvironment: intensity must be in (0, 100].",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "intensity"
+      }
+    },
+    "feature.camera-target.non-finite-target": {
+      "template": "setCameraTarget: x, y, z must each be finite numbers (no NaN / Infinity).",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "x"
+      }
+    },
+    "feature.camera-target.invalid-distance": {
+      "template": "setCameraTarget: distance must be a positive finite number; omit to use auto-fit.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "distance"
+      }
+    },
+    "feature.material.invalid-base-color": {
+      "template": "Pass a CSS color string or a registered role token to baseColor.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "baseColor"
+      }
+    },
+    "feature.material.value-clamped": {
+      "template": "Numeric PBR fields are clamped to [0, 1] (ior to [1.0, 2.5]).",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "see-message"
+      }
+    },
+    "feature.material.face-label-no-match": {
+      "template": "Shape.material({ face: '<label>', ... }) referenced a label that no upstream feature declares via faceLabels. The whole-shape default material is used for all faces. Declare the label on the creating op (e.g. box(..., { faceLabels: { <label>: 'top' } })) and ensure no transform strips the lineage between the creator and the .material() call. Inspect available labels with list_face_labels.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "face"
+      }
+    },
+    "feature.material.thickness-negative": {
+      "template": "Shape.material.thickness is in mm and must be non-negative. Use 0 for a thin shell or omit the field.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "thickness"
+      }
+    },
+    "feature.material.attenuation-distance-invalid": {
+      "template": "Shape.material.attenuationDistance must be positive finite mm, or Infinity for no attenuation. Use a positive distance like 10 (mm) for typical glass volumes.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "attenuationDistance"
+      }
+    },
+    "feature.material.anisotropy-rotation-normalized": {
+      "template": "anisotropyRotation is in degrees and was normalized to [0, 360). Adjust your call to a value in that range to avoid the soft warning.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "anisotropyRotation"
+      }
+    },
+    "feature.material.texture-not-found": {
+      "template": "Shape.material({ textures: { ...: { path } } }) referenced a path that the texture loader could not resolve. Check the path is correct (absolute, relative-to-script, or https URL) and the file exists.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "textures"
+      }
+    },
+    "feature.material.texture-unsupported-format": {
+      "template": "Supported texture formats are .png, .jpg, .jpeg, .webp. Convert the image to one of these and retry.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "textures"
+      }
+    },
+    "feature.material.texture-oversize-warning": {
+      "template": "Texture dimensions exceed 2048 px on at least one axis; rendering still works but consider downscaling to keep GPU memory and load time bounded.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "textures"
+      }
+    },
+    "feature.material.texture-oversize-error": {
+      "template": "Texture dimensions exceed 8192 px on at least one axis. Downscale the image (8K is the hard cap) and retry.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "textures"
+      }
+    },
+    "feature.finish.unknown-token": {
+      "template": "Shape.finish() was called with a name that is not in the finish table. Pass one of the named finishes (metals: aluminium, anodized-black, brass, copper, …; plastics: abs, pla, delrin, …; glass: glass, glass-tinted, acrylic; paints: paint-matte, paint-gloss), or drop to .material({...}) for raw PBR.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "name"
+      }
+    },
+    "feature.edge-feature.short-edges-skipped": {
+      "template": "OCCT blend solver rejects fillet/chamfer radii larger than half the target edge length. Some edges were below 2 × radius and got skipped so the rest could chamfer. Either reduce the radius, refactor upstream booleans so target edges are longer, or scope your fillet/chamfer to a face/edge query that only matches the long edges.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "radius-or-distance"
+      }
+    },
+    "assembly.placement-ignored-by-mate-fk": {
+      "template": "The part's `at:` placement was dropped because it is positioned by mate FK from its mate parent. Either remove the `at:` and let the mate decide the pose, or place the part's local frame so it sits at the intended pose with its mate connector at the origin (mate FK composes parent_world ∘ trans(parent_conn) ∘ joint ∘ trans(-child_conn)).",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "at"
+      }
+    },
+    "assembly.mates-ignored-by-model-call": {
+      "template": "The assembly declared mates but the script ended with arm.model() (which skips mate FK). Replace with arm.solvedModel({}) so the mate solver runs and parts pose correctly.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "replace arm.model() with arm.solvedModel({}) so the mate solver runs"
+      }
+    },
+    "assembly.part.floating": {
+      "template": "Declare a joint or mate connecting this part to another part so the assembly graph is connected (arm.fixed/.revolute/.prismatic/.ball or arm.mate(...)).",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "declare an arm.fixed/.revolute/.prismatic/.ball joint or arm.mate(...) linking this part to another"
+      }
+    },
+    "assembly.part.orphan": {
+      "template": "Add a joint or mate that links this sub-assembly to a part in the main mechanism so every component shares a single connected graph.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "add a joint linking this sub-assembly to a part in the main mechanism"
+      }
+    },
+    "assembly.interference.overlap": {
+      "template": "Translate one part along its mating direction, or add a coupling part (washer / spacer / bracket) to clear the overlap. Use --ignore '<a>,<b>' on `kernelcad interference` if the contact is intentional.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "translate one part or insert a spacer/bracket to remove the BREP overlap"
+      }
+    },
+    "assembly.part.under-constrained": {
+      "template": "Add a mate (arm.mate('...', 'partA.connector', 'partB.connector', '<type>')) or tighten an existing mate so every part has its 6 DOF removed.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "add or tighten a mate so every part has its 6 DOF removed"
+      }
+    },
+    "assembly.mate.over-constrained": {
+      "template": "Remove or relax one of the mates in the closed loop, or adjust a connector origin so the geometry agrees with the other mates.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "remove or relax a mate in the closed loop, or adjust a connector origin"
+      }
+    },
+    "assembly.mate.type-mismatch": {
+      "template": "The connector types on the two sides of this mate are incompatible. Verify each connector's `type` is one of {frame, axis, plane} and matches what the mate expects.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "connectorType"
+      }
+    },
+    "assembly.mate.connector-not-found": {
+      "template": "The connector ref 'partName.connectorName' did not resolve. Verify the part exists, the connector name matches a registered connector on that part, and the part name is not misspelled.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "connectorRef"
+      }
+    },
+    "assembly.loop.unclosed": {
+      "template": "A closed kinematic loop did not close within tolerance. Verify the connector origins on the loop's mates are geometrically consistent, or relax one mate so the loop has the DOF to close.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "verify loop geometry or relax one mate so the loop can close"
+      }
+    },
+    "assembly.solver.did-not-converge": {
+      "template": "Articulated closed loops are not yet supported by the v0.6 solver. Restrict closed loops to fastened-only mates, or split the mechanism into two open kinematic chains.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "restrict closed loops to fastened-only mates or split into open chains"
+      }
+    },
+    "assembly.pose.out-of-limits": {
+      "template": "A pose-envelope sample was outside the mate's declared limits. Either tighten the sample distribution, or widen limitsDeg/limitsMm on the mate to match the intended travel.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "limitsDeg"
+      }
+    },
+    "assembly.pose-envelope.solve-failed": {
+      "template": "The mate solver failed on a sampled pose inside the envelope. Verify the mate graph is consistent at that pose, then re-run; if it persists, simplify the mechanism or restrict limits to the converging range.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "simplify the mechanism or restrict mate limits to the converging range"
+      }
+    },
+    "assembly.pose-envelope.interference": {
+      "template": "Parts overlap somewhere inside the declared travel range. Either narrow mate limits to avoid the colliding poses, or revise part geometry / connector origins so the mechanism stays self-clear across the full envelope.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "limitsDeg"
+      }
+    },
+    "assembly.pose-envelope.clearance-violated": {
+      "template": "A sampled pose falls below the declared inter-part clearance. Increase the geometric gap, reduce mate travel, or declare an intentional contact in dfmSpec.ignore.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "minClearance"
+      }
+    },
+    "assembly.pose-envelope.clearance-unresolved": {
+      "template": "Exact BREP clearance could not be measured at a sampled pose. Repair degenerate geometry or the lowering path and re-run; do not treat an unresolved pair as passing.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "repair the geometry or lowering path until exact BREP clearance can be measured"
+      }
+    },
+    "assembly.pose-envelope.connector-unresolved": {
+      "template": "A tracked connector ref could not be resolved at a sampled pose — usually a topology-bound origin the envelope sampler does not yet support. Use { kind: 'vec3', value: [x, y, z] } for the connector origin.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "connectorRef"
+      }
+    },
+    "assembly.gripper-aperture.connector-missing": {
+      "template": "Gripper-aperture tracking expects two named connector refs on the gripper jaws. Pass { aRef: 'jaw_a.tip', bRef: 'jaw_b.tip' } (or whatever the connector names are) to gripperAperture.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "gripperAperture"
+      }
+    },
+    "assembly.mate.limit-missing": {
+      "template": "Declare limitsDeg:[min,max] (or limitsMm for prismatic) on this mate so the kernel can verify the mechanism does not self-collide across its declared range.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "limitsDeg"
+      }
+    },
+    "assembly.mounting-hole.mismatch": {
+      "template": "Make the hole features on the two bound faces compatible: same kind (clearance ↔ threaded), same nominal diameter, same depth. Use list_face_labels to inspect available holes. This is an authoring-time signal; the merge gate is mechanism.disconnect which fires under motion at validate-time.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "holeFeatures"
+      }
+    },
+    "assembly.joint-axis.unbound": {
+      "template": "Move the connector origin onto a face/edge of its part, or change the connector axis so the line passes through the part's body. This is an authoring-time signal; the merge gate is mechanism.dof-mismatch which fires under motion at validate-time.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "connectorOrigin"
+      }
+    },
+    "assembly.joint.child-modeled-in-place": {
+      "template": "Pick ONE convention. Joint primitives (.revolute/.prismatic/.ball) use URDF semantics: `origin` is the parent->child frame offset and the child link must be modeled about its OWN origin. Either model the child about its origin and let the joint place it, or keep the placement and switch to connectors + arm.mate(...), which treats the origin as a pivot and preserves the modeled position at pose 0.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "origin"
+      }
+    },
+    "assembly.structure.unstructured-bodies": {
+      "template": "Wrap the loose bodies in assembly().part(name, shape) so each part carries identity, per-part stats, and review handles; name every returned shape. This is an authoring-time signal — a multi-body model with no part names loses inspect --focus, list_part_stats, and Studio per-part validity.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "wrap each loose top-level body in a named assembly().part(name, shape)"
+      }
+    },
+    "assembly.joint.load-exceeded": {
+      "template": "Increase maxLoad on this joint, reduce externalLoads, or split the load path with an additional joint.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "maxLoad"
+      }
+    },
+    "assembly.joint.not-visible": {
+      "template": "Widen the fork-plate gap (FORK_GAP_Y) versus the tongue thickness (TONGUE_Y), and/or extend the pivot pin (PIN_LEN) so the joint hardware is visible at typical viewing distance.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "jointGeometry"
+      }
+    },
+    "assembly.mate.not-physically-realized": {
+      "template": "Use joint.clevis(...) (or the pattern equivalent for prismatic/cylindrical) to ensure a real pin or shaft constrains both parts and the through-hole is aligned through the bearing geometry. See kernelcad-kinematic SKILL.md \"Mechanism delivery\". This is an authoring-time signal; the merge gates are mechanism.disconnect and mechanism.interpenetration which fire under motion at validate-time.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "mateGeometry"
+      }
+    },
+    "assembly.joint.static-hold.margin-low": {
+      "template": "checkStaticHold's worst-pose required torque/force is within capacity but under the requested safety margin. Increase the actuator torque/force on this joint to the value named in error.message for the desired margin, or shorten the downstream link / reduce its mass.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "increase the actuator torque/force, or shorten/lighten the downstream link"
+      }
+    },
+    "assembly.joint.static-hold.exceeded": {
+      "template": "checkStaticHold's worst-pose required torque/force exceeds the declared actuator capacity — the mechanism cannot hold its own weight at that pose. Increase the actuator torque/force to the value named in error.message, or shorten/lighten the downstream link.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "increase the actuator torque/force, or shorten/lighten the downstream link"
+      }
+    },
+    "assembly.workspace.unreachable": {
+      "template": "Widen mate limits so the envelope reaches the target, revise the target, or run the envelope (validate:'error', posesGate:'envelope') if the gate hasn't been sampled yet.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "reachable"
+      }
+    },
+    "assembly.connector.topology-not-resolvable": {
+      "template": "Use a face-center, face-normal, or edge-axis topology query whose target exists on the connector's parent shape; switch to { kind: 'vec3', value: [x, y, z] } if a topology binding isn't required.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "topology"
+      }
+    },
+    "assembly.mechanical.part-disconnected": {
+      "template": "Remove decorative/floating solids from this part, or add real bridge/bracket geometry so every solid in the part shares a physical load path.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "merge or bridge the floating solids in this part so it has one continuous load path"
+      }
+    },
+    "assembly.mechanical.connector-not-in-solid": {
+      "template": "Move this connector onto the part's modeled bearing/bracket/knuckle, or add support geometry around that connector so the mate has a physical load path.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "connectorOrigin"
+      }
+    },
+    "assembly.mechanical.mate-contact-missing": {
+      "template": "Add a bracket, flange, horn, or mounting face so the two fastened parts share a real contact patch near the mate, not just a connector point.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "add a bracket/flange/mounting face so the fastened parts share a real contact patch"
+      }
+    },
+    "assembly.mechanical.fixed-contact-missing": {
+      "template": "Move the fixed child into contact with its parent, or add a bracket, flange, stem, bridge, or mounting face so the fixed joint represents real attached geometry instead of an air gap.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "move or bridge fixed-joint parts so parent and child share a real contact patch"
+      }
+    },
+    "assembly.mechanical.revolute-unsupported": {
+      "template": "Add a hinge knuckle, bearing block, bracket, or shaft support so this connector lies on modeled material, not just near a bounding box.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "add a hinge knuckle / bearing block / bracket so the revolute connector lies on modeled material"
+      }
+    },
+    "assembly.mechanical.revolute-contact-missing": {
+      "template": "Add interleaved hinge knuckles, a clevis tab, spacer, or bearing shoulder so the two parts have modeled support faces near each other along the hinge axis.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "add interleaved hinge knuckles / clevis tab / bearing shoulder along the hinge axis"
+      }
+    },
+    "assembly.transmission.missing-for-coupled-mate": {
+      "template": "Add arm.transmission(name, { sourceMate, drivenMates: [...], kind, path: [...] }) naming the horn/link/gear/belt/tendon parts that transfer motion between the coupled mates.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "declare arm.transmission(...) naming the physical drive path between the coupled mates"
+      }
+    },
+    "assembly.transmission.path-disconnected": {
+      "template": "Add a horn/link/gear/belt/tendon part that physically touches both adjacent parts across the declared travel, or reorder the transmission path so consecutive parts form a continuous load path.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "add or reorder transmission-path parts so consecutive parts touch within tolerance"
+      }
+    },
+    "mechanism.disconnect": {
+      "template": "A fastened mate isn't physically realized: the part declared as fastened drifts when another joint moves. Bind the fastened-mate connector to a topology feature (face center, edge, mounting hole) on the anchor part, or use joint.clevis(...) / a physical pin so the geometry actually rigidifies. See docs/specs/2026-06-01-physics-grounded-loop-design.md §criterion 1.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "mateConnectorOrigin"
+      }
+    },
+    "mechanism.interpenetration": {
+      "template": "Two non-mated parts overlap at a sampled pose. Add clearance, reduce mate travel, or move the mounting geometry so the swept pose stays collision-free. If the contact is intentional, declare a mate between the parts so the loop knows about it.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "partGeometry"
+      }
+    },
+    "mechanism.dof-mismatch": {
+      "template": "A mate's declared kind doesn't match its geometric degrees of freedom under motion. Re-check the mate axis, the connector frames on both parts, and the mate type — micro-poses around the declared axis are changing the component count, which means the geometric constraint is not what was declared.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "mateType"
+      }
+    },
+    "mechanism.orphan-part": {
+      "template": "A part declared via arm.part(...) is unreachable from the assembly graph. Connect it to another part — either a mate (arm.mate(...)) or a joint primitive (arm.revolute/.prismatic/.ball) counts — or remove the part if it isn't structurally needed.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "add a mate or joint primitive that connects the orphan part to the rest of the assembly graph"
+      }
+    },
+    "mechanism.unverified-budget-exceeded": {
+      "template": "The articulated collision/pose sweep was skipped because its estimated work exceeded the budget, so the mechanism is 'unverified' (NOT certified collision-free). Verify a tractable subset of the assembly, reduce the part/pose count, or pass a larger sweepBudget to force a full sweep. The cheap criteria (orphan-part, fastened-rigidity) still ran.",
+      "nextAction": {
+        "kind": "inspect-message"
+      }
+    },
+    "mechanism.joint-mesh-gap": {
+      "template": "Extend the parent body geometry so its OCCT solid reaches the joint origin at rest pose. Most commonly: increase the height of the column / boss that hosts the joint, or move the part-local connector origin onto an actual face/edge of the body. A pivot deliberately in open space (annular rim seat, spindle riding in the bore of a fastened block) passes when the mated rigid groups maintain bearing contact within tolerance somewhere away from the axis.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "partGeometry"
+      }
+    },
+    "mechanism.unstable-under-gravity": {
+      "template": "At a sampled pose, MuJoCo's inverse dynamics couldn't compute a finite holding torque — the mechanism has a singular configuration there. Verify that every part has a declared (or default) density, that joint axes pass through the parts' material, and that the chain doesn't have a redundant constraint. If a real joint actuator is intended (servo, motor), declare it via the planned `arm.mate(..., 'revolute', { capacityNm: <torque> })` API (TODO: capacity API).",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "verify part density / joint axes / chain topology so the mechanism has a finite holding torque at every sampled pose"
+      }
+    },
+    "mechanism.drops-on-release": {
+      "template": "Starting from rest, the mechanism drifted by more than 5° at a joint or 50 mm at a body during a 0.5 s gravity simulation. Add a closed-loop spring / tendon crossing the drifting joint (issue #361 tracks this API), declare the joint as actively driven via the planned capacity API, or restructure the chain so gravity doesn't open it. Single-body 'spring' parts fastened to one arm contribute zero restoring moment and cannot pass this gate.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "add a closed-loop spring or declare the joint as actively driven; single-body springs contribute no joint moment and cannot pass the drop-test"
+      }
+    },
+    "mechanism.tendon-body-intersect": {
+      "template": "A tendon's routed path passes through (or within 0.5 mm of) a part it is not anchored to and does not route around. Declare a wrap geom on the offending part via part.wrapGeom(name, { axis, radius }) and add it to the tendon's wrapGeoms so the cable rides over the body, or relocate the tendon anchors so the straight line stays clear at every sampled pose.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "route the tendon around the body with a wrap geom, or relocate its anchors so the cable stays clear of non-anchor parts at every pose"
+      }
+    },
+    "assembly.visual.review-check-failed": {
+      "template": "Repair the specific failed visual checks, render screenshots again, and only accept when every required check passes.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "repair the failed visual checks and re-render before accepting"
+      }
+    },
+    "assembly.visual.review-evidence-weak": {
+      "template": "Record concrete screenshot evidence — name interfaces, load paths, seated hardware, dial legibility, casing layers — before accepting the attempt.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "record concrete screenshot evidence (interfaces, load paths, legibility) before accepting"
+      }
+    },
+    "assembly.visual.review-incomplete": {
+      "template": "Render or open screenshots, inspect them against the required visualReview.checks checklist, and record screenshotPath plus concrete findings before accepting.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "render screenshots and record screenshotPath + findings + checks before accepting"
+      }
+    },
+    "feature.curve3d.degenerate-controls": {
+      "template": "nurbsCurve needs at least degree+1 control points. Add more control points or reduce the degree.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "controlPoints"
+      }
+    },
+    "feature.curve3d.weights-length-mismatch": {
+      "template": "nurbsCurve weights array must match controlPoints length. Pass one weight per control point.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "weights"
+      }
+    },
+    "feature.curve3d.weights-non-positive": {
+      "template": "nurbsCurve weights must all be strictly positive (zero collapses the basis; negative is undefined for B-splines).",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "weights"
+      }
+    },
+    "feature.curve3d.knots-length-mismatch": {
+      "template": "nurbsCurve knot vector length must equal controlPoints.length + degree + 1.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "knots"
+      }
+    },
+    "feature.curve3d.closed-endpoints-mismatch": {
+      "template": "nurbsCurve closed=true but first and last control points differ; OCCT will close internally but the user-visible control net is misleading. Match the endpoints or drop closed.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "controlPoints"
+      }
+    },
+    "feature.curve3d.analytics.degenerate-arclength": {
+      "template": "Curve3D.analytics.divideBy*: requested n or arcLength is out of range. Pass a positive integer for n (or a positive arcLength less than the curve total length()).",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "n"
+      }
+    },
+    "feature.curve3d.analytics.closest-point-no-converge": {
+      "template": "Curve3D.analytics.closestPoint: solver did not converge to tolerance after the maximum iterations. The curve may be degenerate or the query point may be far outside the curve domain. Sample via .tessellate() and pick the nearest polyline vertex as a coarse fallback; or loosen tolerance.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "opts.tolerance"
+      }
+    },
+    "feature.curve3d.analytics.derivatives-out-of-range": {
+      "template": "Curve3D.analytics.derivatives: requested derivative order exceeds the curve degree; derivatives above order=degree are zero by construction. Lower numDerivs to <= degree (typically 1 for tangent, 2 for curvature).",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "numDerivs"
+      }
+    },
+    "feature.curve3d.analytics.tessellation-tolerance-invalid": {
+      "template": "Curve3D.analytics.tessellate: tolerance must be a positive finite number in mm. Default 0.05 mm; viewport-grade typically 0.01–0.5 mm. Export tessellation uses the kernel mesher independently.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "opts.tolerance"
+      }
+    },
+    "feature.curve3d.analytics.kernel-failed": {
+      "template": "Curve3D.analytics: solver threw on this curve (NaN propagation or degenerate input). Inspect the curve via .sample(10) and .length(); if the curve is degenerate (length ~ 0, control points coincident), re-author it. If the curve is valid, file an issue with the .kcad.ts repro.",
+      "nextAction": {
+        "kind": "inspect-message"
+      }
+    },
+    "feature.curve3d.analytics.intersect-kernel-failed": {
+      "template": "Curve3D.analytics.intersect: solver threw on the operand pair. Loosen tolerance (default 1e-3; try 1e-2 for visibly-crossing curves with rough endpoints); or inspect both operands via .sample(20) to verify they are well-formed. For the curve-surface overload, the surface must be authored via nurbsSurface() — Coons-patch and lofted surfaces do not yet expose JS-side NURBS data.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "opts.tolerance"
+      }
+    },
+    "feature.curve3d.analytics.intersect-no-intersection": {
+      "template": "Curve3D.analytics.intersect: no intersection found within tolerance (operands are skew or non-intersecting at this tolerance). If you expect an intersection, loosen tolerance and re-run; check operand bounding boxes via .sample(10) to verify spatial proximity.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "opts.tolerance"
+      }
+    },
+    "feature.variable-sweep.sections-out-of-order": {
+      "template": "variableSweep sections must be strictly increasing in t. Sort sections by t ascending.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "sections"
+      }
+    },
+    "feature.variable-sweep.sections-not-spanning": {
+      "template": "variableSweep sections must span the full spine: first section at t=0 and last section at t=1 are required.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "sections"
+      }
+    },
+    "feature.variable-sweep.spine-too-short": {
+      "template": "variableSweep spine is shorter than the smallest profile bounding diameter, so the sweep would self-intersect. Lengthen the spine or shrink the profiles.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "spine"
+      }
+    },
+    "feature.variable-sweep.profile-not-planar": {
+      "template": "variableSweep profiles must be planar sketches. Use a 2D path()/close() chain (or surfaceFromBoundary for non-planar sections in a later slice).",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "use a planar path().close() sketch for each section"
+      }
+    },
+    "feature.variable-sweep.profile-empty": {
+      "template": "variableSweep profile sketch is empty. Close the path() before passing it as a profile.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "close the path() before passing as a profile"
+      }
+    },
+    "feature.variable-sweep.frenet-degenerate": {
+      "template": "Frenet orientation is undefined where the spine curvature vanishes (straight segments). Pass orientation: { up: Vec3 } or \"corrected-frenet\" for spines with straight stretches.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "orientation"
+      }
+    },
+    "feature.surface-from-boundary.corner-mismatch": {
+      "template": "surfaceFromBoundary requires adjacent boundary curves to share endpoints within 1e-6 mm (c1.end == c2.start, c2.end == c3.start, c3.end == c4.start, c4.end == c1.start). Snap the endpoints or rebuild the boundary curves so they form a closed loop.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "curveRefs"
+      }
+    },
+    "feature.surface-from-boundary.too-few-curves": {
+      "template": "surfaceFromBoundary requires exactly 4 boundary curves. Pass an array of 4 Curve3D refs in walk order (bottom, right, top, left).",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "curveRefs"
+      }
+    },
+    "feature.surface-from-boundary.too-many-curves": {
+      "template": "surfaceFromBoundary requires exactly 4 boundary curves. Pass an array of 4 Curve3D refs in walk order — if the loop has more than 4 sides, split the patch into adjacent quads.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "curveRefs"
+      }
+    },
+    "feature.surface-from-boundary.continuity-orphan": {
+      "template": "surfaceFromBoundary continuity 'C1' / 'C2' requires the neighbors map to identify which existing surface to be tangent (or curvature-continuous) to on each side. Either drop the continuity flag or supply opts.neighbors so the kernel can resolve the tangency target.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "neighbors"
+      }
+    },
+    "feature.surface-from-boundary.degenerate-patch": {
+      "template": "BRepOffsetAPI_MakeFilling could not produce a face. The boundary curves are likely coincident, self-intersecting, or topologically invalid. Inspect the curve sequence with list_features and visualize each Curve3D before retrying.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "rebuild the 4 boundary curves so they form a non-self-intersecting closed loop, then retry surfaceFromBoundary"
+      }
+    },
+    "feature.surface-trim.no-intersection": {
+      "template": "Surface trim found no intersection between the surface and the cutter. Ensure they actually cross.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "by"
+      }
+    },
+    "feature.surface-trim.non-planar": {
+      "template": "Legacy surface trim refused a non-planar base or cutter. Current curved trim uses BRepFeat_SplitShape; if you still see this diagnostic, refresh the runtime bundle and retry with cleanly intersecting single-face surfaces.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "use cleanly intersecting single-face surfaces, or refresh to the curved-trim runtime bundle"
+      }
+    },
+    "feature.surface-trim.split-deferred": {
+      "template": "Legacy surface.split(by) warning from the former one-piece split path. Current split returns both halves as [Surface, Surface]; refresh the runtime bundle if this appears in new work.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "refresh to the curved-trim runtime bundle and destructure the two returned split surfaces"
+      }
+    },
+    "feature.surface-sew.open-shell": {
+      "template": "sew() produced an open shell (some edges have no matching neighbour within tolerance). Either increase opts.tolerance so adjacent edge pairs close, add the missing patch to seal the gap, or set requireClosed: false to accept an open shell.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "surfaces"
+      }
+    },
+    "feature.fillet.continuity-not-applicable": {
+      "template": "continuity: 'G2' was requested but the adjacent faces along the target edge are themselves only G1-continuous, so the resulting blend can be no smoother than G1. Either accept the G1 result, refit the upstream faces as NURBS so they are G2 internally, or apply a smaller fillet that fits inside a single smooth region.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "drop continuity: 'G2' (adjacent faces are only G1) or refit the upstream faces as NURBS surfaces"
+      }
+    },
+    "feature.hermite-g2.degenerate-tangent": {
+      "template": "hermiteG2 received a tangent with zero magnitude on one or both endpoints. The quintic Hermite scales the tangent into the inner control points; a zero tangent collapses two control points onto the endpoint, producing a cusp rather than a smooth transition. Supply a non-zero tangent (magnitude in the order of the chord length between the endpoints).",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "tangent"
+      }
+    },
+    "feature.hermite-g2.non-finite-input": {
+      "template": "hermiteG2 received NaN / Infinity in one of point, tangent, or curvature. Validate the endpoints upstream — typically caused by a divide-by-zero in a normal/curvature derivation. Recompute the endpoint with finite inputs before retrying.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "see-message"
+      }
+    },
+    "feature.path.spline.degenerate-points": {
+      "template": "path().spline expects at least 2 distinct finite Vec2 waypoints, with points[0] at the current pen position (within 1e-6 mm); the curve interpolates through every one. Remove duplicate consecutive points (closer than 1e-9 mm), replace any NaN / Infinity coords with finite values, ensure the array has length >= 2, and make points[0] equal the previous segment endpoint (or add a lineTo bridging the gap).",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "points"
+      }
+    },
+    "feature.path.spline.tangent-zero-magnitude": {
+      "template": "path().spline: startTangent / endTangent has magnitude < 1e-9 (zero-magnitude tangents are undefined). Pass a non-zero 2D direction vector; magnitude is normalised internally, [1, 0] and [100, 0] produce the same curve.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "opts.startTangent"
+      }
+    },
+    "feature.path.spline.tangent-on-2d-only": {
+      "template": "path().spline: startTangent / endTangent must be a 2D [x, y] tuple; got a 3-element vector. The z component is ignored. For 3D NURBS curves with tangent control, use nurbsCurve(controlPoints, opts) and compose hermiteG2 for endpoint G2 instead.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "opts.startTangent"
+      }
+    },
+    "feature.path.nurbs-segment.degenerate-controls": {
+      "template": "path().nurbsSegment expects at least degree+1 finite Vec2 control points, with the first control point matching the current pen position within 1e-6 mm. Add more control points or reduce the degree, and align controlPoints[0] with the current position (or call moveTo first).",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "controlPoints"
+      }
+    },
+    "feature.path.nurbs-segment.weights-non-positive": {
+      "template": "path().nurbsSegment weights must all be strictly positive (zero collapses the basis; negative is undefined for B-splines). Replace any zero / negative weight with a positive value, and ensure the array length matches controlPoints.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "weights"
+      }
+    },
+    "feature.path.hermite-g2.start-mismatch": {
+      "template": "path().hermiteG2 requires `a.point` to match the path's current pen position within 1e-6 mm. Either align a.point with the prior segment's endpoint, or call moveTo(a.point.x, a.point.y) before hermiteG2.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "a.point"
+      }
+    },
+    "tool.trace-from-image.invalid-image-url": {
+      "template": "Pass a non-empty `imageUrl` — a file:// path, http(s):// URL, data:image/...;base64,... URI, or a bare filesystem path.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "imageUrl"
+      }
+    },
+    "tool.trace-from-image.no-features-requested": {
+      "template": "Pass at least one feature in `features`, or omit the `features` field to fall back to the default silhouette request.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "features"
+      }
+    },
+    "tool.trace-from-image.image-fetch-failed": {
+      "template": "Verify the imageUrl resolves to a readable PNG/JPEG/WebP/GIF — check the path/URL, the file's existence, and network access for http(s) URLs.",
+      "nextAction": {
+        "kind": "check-file-path"
+      }
+    },
+    "tool.trace-from-image.backend-failed": {
+      "template": "The selected backend threw while extracting features. Re-call with a different `backend` (e.g. `vision-llm` if `opencv` failed on a cluttered photo), tighten `region` on the requested features, or inspect the diagnostic message for the underlying error.",
+      "nextAction": {
+        "kind": "inspect-message"
+      }
+    },
+    "tool.trace-from-image.opencv-cannot-label": {
+      "template": "opencv only extracts a single silhouette — it cannot label point/bbox features. Either drop the point/bbox features, or switch backend to `hybrid` so the LLM labels them on top of the opencv silhouette.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "backend"
+      }
+    },
+    "tool.trace-from-image.trace-timeout": {
+      "template": "The selected backend did not return within the hard time budget and was aborted to avoid hanging the tool. Retry with a smaller image, a different `backend`, or check that the vision-LLM credentials/network are reachable.",
+      "nextAction": {
+        "kind": "inspect-message"
+      }
+    },
+    "tool.send-to-printer.unreachable": {
+      "template": "The printer could not be reached with the given protocol/host/port. Verify the printer is on and network-reachable, the port matches the protocol (OctoPrint/Moonraker: HTTP; Bambu LAN mode: FTPS 990 + MQTT 8883), and retry with { dryRun: true } to isolate connectivity from upload.",
+      "nextAction": {
+        "kind": "inspect-message"
+      }
+    },
+    "tool.send-to-printer.upload-failed": {
+      "template": "The connection succeeded but the file upload or print-start command failed. Inspect the diagnostic message for the printer's own error, check available storage on the printer, and confirm the gcode file exists and is non-empty.",
+      "nextAction": {
+        "kind": "inspect-message"
+      }
+    },
+    "mesher.cone-self-intersection": {
+      "template": "Open3d's is_watertight() rejected the STL because OCCT's BRepMesh emits self-intersecting triangles on revolved cone faces (the K1 mesher gap). Geometry is likely correct — only the export tessellation is degenerate. Workarounds: (a) remesh the exported STL via Manifold before scoring, (b) raise mesh deflection on export to merge offending triangles, (c) re-author the cone surface via nurbsSurfaceLowerer instead of .revolve(). Track gap-closure progress under K1.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "remesh STL via Manifold, raise mesh deflection, or re-author the cone via nurbsSurfaceLowerer"
+      }
+    },
+    "parts.input.id-or-query-required": {
+      "template": "Pass either an `id` (for a known catalog record) or a `query` (for fuzzy search). Both are missing in this call.",
+      "nextAction": {
+        "kind": "call-tool",
+        "tool": "list_part_categories",
+        "args": {}
+      }
+    },
+    "parts.fetch.offline-and-uncached": {
+      "template": "No network reachable and the requested id is not in the local cache. Call find_part with source: \"local\" to see similar bundled ids, or restore network.",
+      "nextAction": {
+        "kind": "call-tool",
+        "tool": "find_part",
+        "args": {
+          "source": "local"
+        }
+      }
+    },
+    "parts.fetch.checksum-mismatch": {
+      "template": "Downloaded bytes hashed to a value that disagreed with the record's declared sha256. Discarded the file; do not retry against the same endpoint without verifying upstream integrity.",
+      "nextAction": {
+        "kind": "call-tool",
+        "tool": "find_part",
+        "args": {
+          "source": "local"
+        }
+      }
+    },
+    "parts.fetch.checksum-drift": {
+      "template": "Cached bytes still hash correctly but the remote endpoint now reports a different sha256. Geometry may have changed upstream. Re-fetch explicitly with the refresh flag to opt into the new bytes.",
+      "nextAction": {
+        "kind": "rerun-with-flag",
+        "flag": "--refresh-parts-cache"
+      }
+    },
+    "parts.fetch.api-error": {
+      "template": "The configured remote parts endpoint returned an error status. Retry later, check that partsBaseUrl is reachable, or fall back to the bundled catalog with source: \"local\".",
+      "nextAction": {
+        "kind": "call-tool",
+        "tool": "find_part",
+        "args": {
+          "source": "local"
+        }
+      }
+    },
+    "parts.fetch.remote-disabled": {
+      "template": "No partsBaseUrl configured; the remote parts tier is disabled. Pass partsBaseUrl (programmatic), set the KERNELCAD_PARTS_BASE_URL env var, or use only bundled-catalog ids.",
+      "nextAction": {
+        "kind": "call-tool",
+        "tool": "find_part",
+        "args": {
+          "source": "local"
+        }
+      }
+    },
+    "parts.fetch.geometry-not-brep": {
+      "template": "This catalog record exposes only a display mesh (glbUrl) and no stepUrl, so there is no BREP body to import. The authored dev-board records are GLB-only because their STEP exceeds the catalog per-file size limit. Compile the authored scripts/parts/authored/<board>.kcad.ts to STEP and load it with lib.fromSTEP(path), or choose a catalog part that exposes stepUrl.",
+      "nextAction": {
+        "kind": "call-tool",
+        "tool": "find_part",
+        "args": {
+          "source": "local"
+        }
+      }
+    },
+    "dfm.input.vendor-required": {
+      "template": "dfm_preflight requires a vendor identifier. Pass `vendor: \"sendcutsend\"` (or another supported vendor SKU listed in catalogs/sources-manifest.json).",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "vendor"
+      }
+    },
+    "dfm.input.material-required": {
+      "template": "dfm_preflight requires a material SKU. Pass `material: \"<sku>\"` (use list_part_categories or the vendor catalog.json to enumerate the supported SKUs).",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "material"
+      }
+    },
+    "dfm.input.thickness-required": {
+      "template": "dfm_preflight requires a thickness. Pass `thicknessIn: <inches>` or `thicknessMm: <mm>`; pick a value from catalog[sku].thicknessesIn.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "thicknessMm"
+      }
+    },
+    "dfm.units.dxf-not-mm": {
+      "template": "DXF $INSUNITS header must be 4 (mm). Re-export from kernelCAD with the default unit, or pass `unit: \"mm\"` to export_model.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "unit"
+      }
+    },
+    "dfm.material.unknown-sku": {
+      "template": "Material SKU is not present in the vendor catalog. Pick one from catalogs/vendors/<vendor>/catalog.json, or run `npm run shopcheck:refresh` if the vendor recently added it.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "material"
+      }
+    },
+    "dfm.thickness.not-stocked": {
+      "template": "Thickness is not one of the vendor-stocked gauges for this material. Pick a value from catalog[sku].thicknessesIn.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "thicknessMm"
+      }
+    },
+    "dfm.thickness.out-of-range": {
+      "template": "Thickness is outside the vendor service envelope (e.g. laser cutting). Pick a thickness inside the published min/max for this service.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "thicknessMm"
+      }
+    },
+    "dfm.thickness.out-of-range-for-service": {
+      "template": "Thickness is inside the laser envelope but outside the bending envelope. Either drop the bend (laser-only is fine), pick a thinner material for bending, or split into parts joined post-bend.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "service"
+      }
+    },
+    "dfm.hole.below-minimum": {
+      "template": "Hole diameter is below the vendor minimum for this material + thickness. Enlarge the hole to >= the published minimum, remove the hole, or switch to a thinner material.",
+      "nextAction": {
+        "kind": "retry-with-smaller-param",
+        "param": "thicknessMm",
+        "factor": 0.5
+      }
+    },
+    "dfm.slot.below-minimum": {
+      "template": "Slot width is below the vendor minimum for this material + thickness. Widen the slot or split into multiple slots.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "slot.width"
+      }
+    },
+    "dfm.web.below-minimum": {
+      "template": "Bridge / web width between two cutouts is below the vendor minimum. Increase the bridge width, merge the cutouts, or relocate one.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "web"
+      }
+    },
+    "dfm.bend.radius-below-minimum": {
+      "template": "Inner bend radius is below the vendor minimum for this material + thickness. Increase the radius arg in .bend(edge, angle, radius), or pick a thicker material.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "radius"
+      }
+    },
+    "dfm.bend.angle-too-acute": {
+      "template": "Bend angle exceeds the vendor maximum (typically |angle| <= 130 deg for sheet metal). Reduce the angle in .bend(edge, angle, radius).",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "angle"
+      }
+    },
+    "dfm.bend.length-exceeds-max": {
+      "template": "Bend line is longer than the vendor maximum (typically 44 in / 1117 mm). Split the part along the bend axis, or accept the warning and request a custom quote.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "split the part along the bend axis to keep each segment under the vendor max bend length"
+      }
+    },
+    "dfm.bend.flange-too-short": {
+      "template": "Flange length on one side of the bend is below the vendor minimum. Lengthen the over-short side, or pick a thinner material so the minimum is reduced.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "flangeLength"
+      }
+    },
+    "dfm.bend.channel-ratio-too-low": {
+      "template": "Channel base length is shorter than 2x the flange (3x for polycarbonate). Lengthen the channel base, or shorten the flanges.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "channelBase"
+      }
+    },
+    "dfm.bend.layer-missing": {
+      "template": "DXF input has bend metadata in the source but no BEND layer in the DXF. Re-export with export_model({ format: \"dxf\" }); the writer auto-emits the BEND layer.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "format"
+      }
+    },
+    "dfm.bending.material-unsupported": {
+      "template": "Material is not on the vendor's bend-supported list. Switch material, or split into laser-only flat parts joined post-bend by the customer.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "material"
+      }
+    },
+    "dfm.size.below-minimum": {
+      "template": "Part bounding box is below the vendor minimum part size. Enlarge the part, or switch to a vendor with smaller min-size limits.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "partAabb"
+      }
+    },
+    "dfm.size.exceeds-instant-quote": {
+      "template": "Part bounding box exceeds the vendor instant-quote envelope (typically 44 x 30 in). Part may need a custom quote — split it, or accept the warning.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "split the part to fit within the vendor instant-quote envelope"
+      }
+    },
+    "dfm.size.exceeds-max": {
+      "template": "Part bounding box exceeds the vendor maximum part size. Split the part, or pick a vendor with larger stock.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "split the part to fit within the vendor maximum stock size"
+      }
+    },
+    "dfm.dxf.spline-present": {
+      "template": "DXF contains SPLINE entities on the cut layer. Re-export from kernelCAD (export_model emits LWPOLYLINE only).",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "format"
+      }
+    },
+    "dfm.dxf.tessellation-near-tolerance": {
+      "template": "A tessellated polyline segment is at or below the DXF tessellation tolerance (0.1 mm). Widen the feature, or re-export the DXF with a finer tessellation tolerance.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "tolerance"
+      }
+    },
+    "dfm.rule.threshold-unknown": {
+      "template": "Vendor does not publish a threshold for this rule and material. Verify the feature manually with the vendor before ordering, or pick a material the vendor publishes a value for.",
+      "nextAction": {
+        "kind": "inspect-message"
+      }
+    },
+    "dfm.wall.too-thin": {
+      "template": "A printed wall is thinner than dfmSpec.minWall at the reported location. Thicken the section (offset the cut, widen the rib), or lower minWall only if the target printer resolves it.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "thicken the wall at the reported xyz to >= minWall"
+      }
+    },
+    "dfm.clearance.violated": {
+      "template": "Two distinct parts sit closer than dfmSpec.minClearance. Translate one part along its mating direction, or add the pair to dfmSpec.ignore if the contact is intentional (seated vendor part, fastened printed joint).",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "open the gap to >= minClearance or declare the pair in dfmSpec.ignore"
+      }
+    },
+    "dfm.channel.openings-mismatch": {
+      "template": "A declared channel has a different number of mouth openings than declared — a breach adds openings, a blocked mouth removes them, and found=0 can mean the channel is wider than the ~16mm detection limit. Inspect the channel walls near the part surface.",
+      "nextAction": {
+        "kind": "inspect-message"
+      }
+    },
+    "dfm.void.undeclared": {
+      "template": "A sealed internal void traps powder/resin/support and is unprintable on FDM without declaration. Open a drain channel, or declare it via dfmSpec.channels with sealed: true if intentional.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "open a drain channel or declare the void sealed: true"
+      }
+    },
+    "dfm.fdm.overhang-unsupported": {
+      "template": "Downward-facing surfaces steeper than maxOverhangDeg have nothing below them to print onto. Reorient the part, add a 45° chamfer or gusset under the overhang, or slice with supports.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "apply the recommended rotation or buildDirection, or chamfer the overhang to 45°"
+      }
+    },
+    "dfm.fdm.bridge-too-long": {
+      "template": "A flat ceiling spans further between its supports than maxBridgeMm, so the bridge sags. Shorten the span with an intermediate rib, reorient the part, or slice with supports.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "add a rib under the span or reorient the part"
+      }
+    },
+    "dfm.fdm.wall-below-nozzle": {
+      "template": "A wall thinner than two nozzle widths cannot hold two perimeters; the slicer drops or thins it. Thicken it to at least 2 × nozzleMm.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "thicken the wall at the reported xyz to >= 2 × nozzleMm"
+      }
+    },
+    "dfm.fdm.feature-too-small": {
+      "template": "Holes under 5 × nozzleMm print undersized or close up; pins under 7.5 × nozzleMm are fragile. Enlarge the feature, drill the hole after printing, or use a finer nozzle.",
+      "nextAction": {
+        "kind": "inspect-message"
+      }
+    },
+    "dfm.fdm.bed-contact-low": {
+      "template": "The part rests on a small fraction of its footprint, so first-layer adhesion is weak and it can detach mid-print. Reorient onto a flat face or add a brim.",
+      "nextAction": {
+        "kind": "inspect-message"
+      }
+    },
+    "dfm.fdm.tip-risk": {
+      "template": "The part is tall relative to its narrowest base width and may tip or wobble as the nozzle drags past. Print it lying down, widen the base, or add a brim.",
+      "nextAction": {
+        "kind": "inspect-message"
+      }
+    },
+    "dfm.fdm.exceeds-bed": {
+      "template": "The part in its FDM build orientation is larger than the printer profile's bed. Reorient it, split it into printable sub-parts, or pick a printer profile with a larger bed.",
+      "nextAction": {
+        "kind": "retry-with-smaller-param",
+        "param": "scale",
+        "factor": 0.9
+      }
+    },
+    "kinematic.collision.swept": {
+      "template": "Swept-collision found one or more poses at which two parts interpenetrate. Inspect result.collidingPoses[] for (pose, contacts[]) pairs; narrow joint limits, reshape the colliding parts, or insert clearance and re-run checkSweptCollision.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "narrow joint limits or reshape parts to eliminate the listed colliding poses"
+      }
+    },
+    "kinematic.collision.swept.sample-density-warning": {
+      "template": "Sample density below the safe floor (revolute < 36 samples or prismatic < 25 samples across the requested range). The result may miss mid-range collisions. Tighten opts.range step, or extend the range to span more of the joint limits.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "opts.range"
+      }
+    },
+    "kinematic.unreachable": {
+      "template": "IK could not satisfy the requested target. If axis=position, lengthen a link, change DOF count, or move the target. If axis=orientation, widen target.orientation tolerance or drop the orientation constraint. If axis=both, the target is far outside reachable workspace; restructure the chain.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "see emitted error.axis to choose: lengthen/restructure the chain for position/both, or widen the orientation tolerance"
+      }
+    },
+    "kinematic.reachability.iteration-cap-hit": {
+      "template": "Numeric IK hit opts.maxIterations (default 200) before convergence; the result is inconclusive and closestApproach is the best-error pose seen. Increase opts.maxIterations or widen target tolerances.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "opts.maxIterations"
+      }
+    },
+    "kinematic.solver.unsupported-config": {
+      "template": "v1 does not support closed-loop or parallel-kinematics chains (cycle detected in the mate graph), and analytical IK is rejected when the chain does not satisfy the closed-form solvability condition. Cut the closed-loop cycle in the mate graph, or switch preferSolver to numeric.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "cut the closed-loop cycle in the mate graph, or switch preferSolver to numeric"
+      }
+    },
+    "kinematic.load-exceeds-yield": {
+      "template": "Closed-form beam check shows stress at the named element exceeds material yield (see error.message for stress, yield, safety factor). Thicken the cross-section, switch to a stronger material, or shorten the moment arm.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "thicken the cross-section, change material, or shorten the moment arm"
+      }
+    },
+    "kinematic.load.beam-not-applicable": {
+      "template": "Closed-form beam approximation does not apply: the load is not at the free end, the part has more than one mate, the deflection/length ratio is too large, or the cross-section is unsupported. The result for this element is unreliable. Decompose the part into beam-fitting cantilever segments, or defer to FEA when it ships.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "decompose the part into beam-fitting cantilever segments, or defer the check until FEA support lands"
+      }
+    },
+    "kinematic.no-material-declared": {
+      "template": "checkLoadCapacity({ mode: \"beam\" }) requires opts.materials[partName] for every loaded part. Declare the per-part material (see error.message for the missing parts). No silent default material is applied.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "opts.materials"
+      }
+    },
+    "kinematic.static-hold.no-actuator-declared": {
+      "template": "checkStaticHold requires an actuator: { torqueNm } (revolute) / { forceN } (prismatic) declaration on the joint(s) it evaluates. Add actuator to arm.revolute(...)/arm.prismatic(...). No silent default capacity is applied.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "actuator"
+      }
+    },
+    "kinematic.sweep-tolerance.combo-cap-exceeded": {
+      "template": "The cartesian product of swept param values exceeds the 64-combo cap; only the first 64 (declaration order) were evaluated. Narrow the swept ranges/values, or split the sweep into multiple calls.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "params"
+      }
+    },
+    "kinematic.mounting-hole.diameter-mismatch": {
+      "template": "Fastener-side connectors on this mate have non-matching hole diameters (see error.message for the two values). Adjust the hole diameter on one side so both sides agree.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "connector.hole.diameter"
+      }
+    },
+    "kinematic.pose.out-of-limits": {
+      "template": "A pose value supplied to assembly.solve()/solvedModel() falls outside the joint's declared limitsDeg/limitsMm. Clamp the pose into the declared range, or widen the joint limits if the mechanism is intended to travel that far.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "clamp the joint pose into the declared limits, or widen limitsDeg/limitsMm on the joint if the travel is intended"
+      }
+    },
+    "kinematic.mounting-hole.no-coverage": {
+      "template": "The mounting-hole consistency check found no fastened mates to examine, so a green result verifies nothing. Add at least one arm.mate(..., 'fastened') between connectors bound to face-center holes, or stop relying on this gate for fastener coverage.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "add a fastened mate between connectors bound to face-center holes so the mounting-hole gate has something to verify"
+      }
+    },
+    "query.empty": {
+      "template": "The query resolved to zero entities on the current scene. Narrow the query if over-specified — remove a filter, or rebuild against the current scene. If empty is expected, annotate with .asLenient() to suppress this error and continue with no entities.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "narrow the query or mark it .asLenient()"
+      }
+    },
+    "query.over-determined": {
+      "template": "The query resolved to multiple entities but the consumer expects exactly one. Narrow with .and(closestTo(point)) or .and(geometryType(...)), or pick a specific index with .nth(i).",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "narrow the query to exactly-one entity"
+      }
+    },
+    "query.evaluated-too-early": {
+      "template": "The query references an Id that does not exist in the scene at evaluation time. The op may not have been stamped yet, or the Id was misspelled. Verify with list_features, or move the query construction to after the op is stamped.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "verify the Id or reorder operations"
+      }
+    },
+    "query.unknown-id": {
+      "template": "The createdBy filter references an Id that does not exist. Verify the Id with list_features, or pin the upstream op via kc.id('<name>') so the Id survives across reorderings.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "pin the upstream Id or rename the reference"
+      }
+    },
+    "query.unknown-label": {
+      "template": "The withLabel filter matched zero lineage entries. Declare the label via .faceLabels({ '<label>': '<canonical>' }) on the relevant op, or use a canonical face name (top/bottom/left/right/front/back).",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "declare the label or use a canonical face name"
+      }
+    },
+    "query.id-hierarchy-clash": {
+      "template": "Two ops cannot share the same explicit Id at the same hierarchy level. Rename one of the colliding Ids.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "rename one of the colliding Ids"
+      }
+    },
+    "query.unsupported-entity-type": {
+      "template": "The Query evaluator does not yet resolve this entity kind. Face-kind queries are supported; edge/vertex/connector/part/solid kinds ship in a follow-up slice once the per-lowerer feature-stamp wiring lands. Recast the query to use kc.q.face(...) or wait for the follow-up.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "use kc.q.face(...) until the kind-specific wiring lands"
+      }
+    },
+    "query.composition-strict-failure": {
+      "template": "A composed query (union / intersection / subtraction) short-circuited on the first sub-query error in strict mode. Either fix the failing sub-query, or annotate the composed query with .asLenient() to allow partial success — failed sub-queries then contribute zero entities and the surviving sub-queries are composed as if the failing branch had returned the empty set.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "fix the failing sub-query or annotate the composition with .asLenient()"
+      }
+    },
+    "query.type-mismatch": {
+      "template": "A consumer expecting a specific entity kind received a Query whose target field disagrees. Static narrowing via kc.q.face(...) / kc.q.edge(...) generics catches this at compile time on .kcad.ts source; this runtime fallback fires when the static marker was erased (JSON-AST boundary, fromString, or untyped Query<unknown>). Construct the query with the matching kind: use kc.q.<expected>(...) instead of kc.q.<actual>(...).",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "reconstruct the query with the kind the consumer expects (kc.q.face / kc.q.edge / ...)"
+      }
+    },
+    "query.invalid-syntax": {
+      "template": "The topology input is neither a valid @kc[...] ref nor a valid @kcq[...] Query DSL string nor a JSON-AST object. Check the grammar: use @kc[<owner>/<kind>/<name>] for a single addressed entity, @kcq[<expr>] for a composed query (face(createdBy(\"id\")), union(a, b), intersection(a, b), subtraction(a, b), nothing(), everything(<kind>)). See the kernelcad-mcp SKILL for the full grammar.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "use @kc[owner/kind/name] for simple refs or @kcq[<expr>] for composed queries"
+      }
+    },
+    "animation.param.unknown": {
+      "template": "An animationView track (or the legacy sweep 'param') names a param that no prior param() call declared, or one declared with a non-numeric type. Declare a numeric param first — e.g. const angle = param('angleDeg', 0, { min: 0, max: 360 }) — or fix the spelling in tracks[].param; boolean params cannot be animated.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "tracks[].param"
+      }
+    },
+    "animation.track.duplicate-param": {
+      "template": "Two animationView tracks target the same param; a param may appear in at most one track per call. Merge the keyframes into a single track for that param.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "tracks"
+      }
+    },
+    "animation.keys.invalid": {
+      "template": "Fix the track/key named in the message: tracks must be a non-empty array, every track needs at least one key, atMs and value must be finite with atMs >= 0, atMs must be unique within a track, and ease must be one of linear | step | easeIn | easeOut | easeInOut.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "see-message"
+      }
+    },
+    "animation.value.clamped": {
+      "template": "A keyframe value lies outside the param's declared min/max range; the stored value was clamped to the range boundary. Author key values inside the param() range, or widen the range on the param() declaration if the sweep is intended.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "tracks[].keys[].value"
+      }
+    },
+    "animation.view.shadowed": {
+      "template": "Multiple animationView() calls registered; capture uses only the LAST record. Remove the earlier animationView() calls (record ids in the message), or keep only the intended timeline.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "remove the earlier animationView() calls so only the intended record remains"
+      }
+    },
+    "animation.collision": {
+      "template": "Two parts collide at a sampled timestamp of the animation timeline (the message names the colliding part pair and the time in ms). Adjust the keyframes so the poses stay clear at that time, or reshape / add clearance to the colliding geometry.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "adjust the keyframes or the colliding part geometry so the named pair stays clear at the reported timestamp"
+      }
+    },
+    "animation.bake.geometry-param": {
+      "template": "A track param drives part GEOMETRY (a dimension, extrude depth, hole radius, …) rather than a mate pose, so Studio baked playback — which only re-applies rigid per-part world transforms — would show the wrong shape. Studio playback supports POSE-ONLY (mate-driven) timelines; render geometry-animating timelines with `kernelcad animate` (offline MP4 re-meshes every frame).",
+      "nextAction": {
+        "kind": "call-tool",
+        "tool": "kernelcad animate",
+        "args": {
+          "reason": "geometry-animating timeline"
+        }
+      }
+    },
+    "drawing.datum.unresolved": {
+      "template": "A 'datum' annotation's face query matched zero or more than one face. Inspect the model with list_faces / list_face_labels, then tighten the query or add 'near'.",
+      "nextAction": {
+        "kind": "call-introspection-tool",
+        "tool": "list_faces"
+      }
+    },
+    "drawing.tolerance.feature-unresolved": {
+      "template": "An 'fcf' (feature control frame) annotation's edge/face query could not be resolved. Inspect the model with list_edges / list_faces, then tighten the query or add 'near'.",
+      "nextAction": {
+        "kind": "call-introspection-tool",
+        "tool": "list_edges"
+      }
+    },
+    "drawing.section.plane-misses-body": {
+      "template": "The section cutting plane does not intersect the model bounding box. Move the plane origin so it passes through the body, or check the plane normal.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "options.sections[i].plane"
+      }
+    },
+    "drawing.annotation.overlap": {
+      "template": "Two drawing annotations overlap on the sheet. Reorder the annotations array, pass a different `view`, or add `offset` to push one of them further out.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "reorder annotations, change view, or add offset to separate overlapping callouts"
+      }
+    },
+    "drawing.auto.datum-ambiguous": {
+      "template": "autoAnnotate could not establish one or more datums from the part's planar faces (A = largest planar face, B / C = largest planar faces orthogonal to it). Declare the missing datum with shape.datum('B', faceQuery) or options.autoAnnotate.datums, then re-export.",
+      "nextAction": {
+        "kind": "call-introspection-tool",
+        "tool": "list_faces"
+      }
+    },
+    "drawing.auto.hole-unclassified": {
+      "template": "autoAnnotate found a bore it cannot express as a simple, counterbored or countersunk hole (stacked bores, an internal duct, or an axis off the principal views), so it has no automatic callout. Dimension it with an options.annotations hole / diameter entry.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "add an options.annotations hole or diameter entry for the named bore"
+      }
+    },
+    "reference.assumptions.unresolved": {
+      "template": "The assumption ledger built from this reference has open facts (missing scale, unconfirmed inferred/assumed values). Call `resolve_assumptions` with the ledger path and a resolution ({ id, value } to override or { id, confirm: true } to accept) for each open fact before committing geometry derived from it.",
+      "nextAction": {
+        "kind": "call-tool",
+        "tool": "resolve_assumptions",
+        "args": {}
+      }
+    },
+    "reference.assumptions.ledger-not-found": {
+      "template": "resolve_assumptions could not read the ledger file at the supplied `ledgerPath`. Verify the path matches the `<model>.ledger.json` file trace_from_image's caller persisted, and that it has not been moved or deleted.",
+      "nextAction": {
+        "kind": "check-file-path"
+      }
+    },
+    "reference.assumptions.unknown-resolution-id": {
+      "template": "One or more resolution `id`s did not match any fact in the ledger. Re-read the ledger's `facts[].id` values and re-call resolve_assumptions with matching ids — a typo or a stale ledger snapshot are the usual causes.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "resolutions[].id"
+      }
+    },
+    "reference.drawing.raster-only": {
+      "template": "This PDF page is a scanned or photographed drawing: it holds raster images and no vector linework or dimension text to read. Render the page to a PNG and call `trace_from_image` with a scaleAnchor taken from a dimension you can read on it, or obtain the vector PDF (or DXF) export from the CAD system that produced the drawing.",
+      "nextAction": {
+        "kind": "call-tool",
+        "tool": "trace_from_image",
+        "args": {}
+      }
+    },
+    "reference.drawing.view-ambiguous": {
+      "template": "The orthographic views could not be identified unambiguously (no projection alignment, conflicting view labels, or a single view). Check `views` in the result; if the sheet is first-angle, re-run with projection: 'first-angle', and confirm or override the `views` / `projection` ledger facts with resolve_assumptions.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "projection"
+      }
+    },
+    "reference.drawing.dimension-unassociated": {
+      "template": "A dimension or callout could not be tied to drawn geometry (it spans no modelled edge or hole centre, or its leader reaches no circle), so its value did not drive the model. Read the ledger's `unapplied:` facts and set the matching param with set_param, or resolve the fact with resolve_assumptions once you have placed the value.",
+      "nextAction": {
+        "kind": "call-tool",
+        "tool": "resolve_assumptions",
+        "args": {}
+      }
+    },
+    "reference.drawing.depth-missing": {
+      "template": "No view shows the part along its extrusion axis and no thickness note was found, so the depth in the emitted script is a placeholder. Resolve the `thickness` ledger fact with the real value via resolve_assumptions and feed the returned paramOverrides to set_param.",
+      "nextAction": {
+        "kind": "call-tool",
+        "tool": "resolve_assumptions",
+        "args": {}
+      }
+    },
+    "reference.mesh.not-watertight": {
+      "template": "The mesh handed to mesh_to_features has open, non-manifold or mis-oriented edges, so its sections and volume are unreliable and the result cannot be faithful. Repair or re-export the mesh watertight, then run mesh_to_features again.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "file"
+      }
+    },
+    "reference.mesh.low-fidelity": {
+      "template": "The reconstructed script does not match the mesh within the faithful thresholds (volume IoU and max surface deviation are in the message). Treat it as a starting point: fix the features near the largest deviation or model the unmatched regions before relying on its dimensions.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "compare the emitted script against the mesh and correct the features near the largest deviation"
+      }
+    },
+    "reference.mesh.freeform-region-unmatched": {
+      "template": "Part of the mesh surface matched no plane, cylinder or supported feature, so it is absent from the emitted script. Model those regions by hand (each has a bbox in unmatchedRegions) or accept the approximation the fidelity numbers describe.",
+      "nextAction": {
+        "kind": "inspect-message"
+      }
+    },
+    "fea.safety-factor.below-min": {
+      "template": "The solved minimum safety factor is below the study's declared minSafetyFactor (see error.message for the value, the governing region, and the peak von Mises stress). Add material where the hot spot is, switch to a stronger grade, spread the load over more area, or lower minSafetyFactor if the declared margin was conservative.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "thicken or rib the geometry at the reported hot-spot region, choose a stronger material grade, or spread the load over more face area"
+      }
+    },
+    "fea.mesh.quality-low": {
+      "template": "The tetrahedral mesh contains poorly shaped or inverted elements, or CalculiX's own nodal stress-error estimate is high, so the stress field should not be trusted as reported (displacement is far less sensitive). Re-run with a smaller meshSize, or simplify slivers and near-zero-width features in the geometry.",
+      "nextAction": {
+        "kind": "retry-with-smaller-param",
+        "param": "feaStudy.meshSize",
+        "factor": 0.5
+      }
+    },
+    "fea.solver.unavailable": {
+      "template": "The FEA toolchain is not installed on this machine, so no structural evidence could be produced (the result is NOT a pass). Install CalculiX and gmsh — `sudo apt-get install -y calculix-ccx` plus `python3 -m venv .fea-venv && .fea-venv/bin/pip install gmsh==4.15.2` — or point KERNELCAD_CCX / KERNELCAD_FEA_PYTHON at existing installs.",
+      "nextAction": {
+        "kind": "check-cli-args"
+      }
+    },
+    "fea.study.fixed-unresolved": {
+      "template": "The study's `fixed` selector matched no face on the built shape, or the matched face did not bind to a meshed surface, so the part would be unconstrained. Call list_faces to see the available faces and refs, then pass a selector that matches one.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "feaStudy.fixed"
+      }
+    },
+    "fea.study.load-unresolved": {
+      "template": "A study load's `faces` selector matched no face on the built shape, or the matched face did not bind to a meshed surface, so the declared force would be applied nowhere and the study would report a false pass. Call list_faces to see the available faces and refs, then pass a selector that matches one.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "feaStudy.loads[].faces"
+      }
+    },
+    "tool.repair.no-candidate": {
+      "template": "No mechanical fix is derivable for this diagnostic kind. Edit the returned repairRegion by hand — the lines are already narrowed to the failing feature, its inputs, and the params it reads.",
+      "nextAction": {
+        "kind": "inspect-message"
+      }
+    },
+    "tool.repair.out-of-region": {
+      "template": "The patch targets lines outside the repair region and was refused. Re-derive candidates with why_did_this_fail against the failing feature, or edit those lines yourself.",
+      "nextAction": {
+        "kind": "call-introspection-tool",
+        "tool": "why_did_this_fail"
+      }
+    },
+    "tool.repair.exhausted": {
+      "template": "Every candidate was applied and re-evaluated without clearing the diagnostic. Raise max_attempts, or treat the returned attempts as evidence and author the fix yourself.",
+      "nextAction": {
+        "kind": "inspect-message"
+      }
+    },
+    "tool.repair.source-drift": {
+      "template": "The lines the patch expected no longer match the file. Re-run evaluate_script and why_did_this_fail against the current source, then repair again.",
+      "nextAction": {
+        "kind": "call-tool",
+        "tool": "evaluate_script",
+        "args": {}
+      }
+    },
+    "export.usd.joint-unsupported": {
+      "template": "The usd-isaac exporter only lowers fastened, revolute and prismatic mates to PhysicsFixedJoint / PhysicsRevoluteJoint / PhysicsPrismaticJoint. Restructure the mate graph to use one of those kinds, or export format: 'sdf-gazebo' which supports the full mate vocabulary.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "format"
+      }
+    },
+    "export.usd.pose-unsolved": {
+      "template": "The mate graph could not be solved to per-link world poses, so every link was placed at the stage origin and the simulator will spawn them overlapping. Run solve_mates to find the unsolvable mate, fix the connector geometry, then re-export.",
+      "nextAction": {
+        "kind": "call-introspection-tool",
+        "tool": "solve_mates"
+      }
+    },
+    "export.usd.mass-missing": {
+      "template": "A link's mass-properties computation returned a non-finite or non-positive mass; the rigid body prim cannot carry a physical mass. Pass density on arm.part(name, shape, { density }), or check the part's shape is closed and manifold.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "density"
+      }
+    },
+    "diff.body.unmatched": {
+      "template": "A body in one model has no counterpart in the other, so no per-body delta could be computed for it. Give the part the same assembly().part(name, ...) name on both sides, or read it from the diff report's `unmatched` list as a whole-body addition/removal.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "file"
+      }
+    },
+    "bom.material.unassigned": {
+      "template": "A fabricated BOM row has neither a named `material` nor an explicit `density` on `assembly.part(name, shape, opts)`, so its mass is omitted rather than guessed. Pass opts.material (e.g. 'aluminum', 'steel', 'pla', 'abs', 'pet') or opts.density (kg/m^3) on that part.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "material"
+      }
+    },
+    "bom.purchased.catalog-metadata-missing": {
+      "template": "A purchased BOM row's catalog part has neither `standard` nor `upstream.repo`, so vendor/partNumber could not be populated with confidence. Re-fetch the part with fetch_part against a catalog record that carries provenance, or accept catalog.vendor: null.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "catalogPart"
+      }
+    },
+    "render.explode.no-assembly": {
+      "template": "Exploded views need a named assembly. Wrap each body in assembly().part(name, shape) and return arm.model() or arm.solvedModel(), then pass explode again.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "wrap bodies in assembly().part(...) and return arm.model() before requesting explode"
+      }
+    },
+    "drawing.balloons.bom-unavailable": {
+      "template": "Balloons and the parts-list table are filled from inspect({ of: 'bom' }). Return assembly.model() with named parts, or omit balloons/partsList.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "return assembly.model() so a BOM can be extracted, or omit balloons/partsList"
+      }
+    },
+    "feature.curve-bridge.degenerate-end": {
+      "template": "curveBridge / Curve3D.bridge could not infer a join: the chosen ends coincide (chord < 1e-9 mm) or a tangent vanished. Pick different `ends` (`end-start` / `end-end` / `start-start` / `start-end`), separate the curves, or supply a non-zero tension.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "ends"
+      }
+    },
+    "feature.surface-intersection.none": {
+      "template": "surfaceIntersection found no curve: the two faces/solids do not meet. Translate one operand so they cut, or pick different faces. A miss is not a tangent-grazing \"almost\" — the solids must actually cross.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "move the operands so their faces cut, then retry surfaceIntersection"
+      }
+    },
+    "feature.loft.rail-miss": {
+      "template": "A loft rail does not pass near every section (or more than two rails were given). OCCT MakePipeShell accepts one spine plus one auxiliary spine; each rail must come within 1 mm of every section wire. Shorten the gap, add a section on the rail, or drop extra rails.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "opts.rails"
+      }
+    },
+    "inspect.continuity.g1-break": {
+      "template": "The shared edge is only G0 (normals jump). Fillet or blend it; use continuity: 'G2' only on NURBS-adjacent edges, then re-run inspect({ of: 'continuity' }).",
+      "nextAction": {
+        "kind": "call-introspection-tool",
+        "tool": "inspect"
+      }
+    },
+    "inspect.continuity.broken": {
+      "template": "Faces do not meet along this edge (G0 gap). Sew or rebuild the join, then re-run inspect({ of: 'continuity' }).",
+      "nextAction": {
+        "kind": "call-introspection-tool",
+        "tool": "inspect"
+      }
+    },
+    "inspect.curvature.spike": {
+      "template": "A face has a curvature spike versus the rest of that face. Smooth the control net, raise the blend continuity, or split the face, then re-run inspect({ of: 'curvature' }).",
+      "nextAction": {
+        "kind": "call-introspection-tool",
+        "tool": "inspect"
+      }
+    }
+  },
+  "NEXT_ACTIONS": {
+    "feature.invalid-args": {
+      "kind": "fix-arg",
+      "field": "see-message"
+    },
+    "feature.direct-edit.clamped": {
+      "kind": "fix-arg",
+      "field": "param-bounds"
+    },
+    "feature.direct-edit.delta-wrapper": {
+      "kind": "rewrite-feature",
+      "guidance": "Name the transform expression as a param before editing it directly."
+    },
+    "feature.direct-edit.unresolved": {
+      "kind": "rewrite-feature",
+      "guidance": "Anchor the entity with a name; edit the mate source for mate-driven parts."
+    },
+    "feature.direct-edit.shared-param-conflict": {
+      "kind": "rewrite-feature",
+      "guidance": "Use distinct params per axis so each drag delta is encodable."
+    },
+    "feature.kernel-failed": {
+      "kind": "retry-with-smaller-param",
+      "param": "op-radius-or-thickness",
+      "factor": 0.5
+    },
+    "feature.revolve.crosses-axis": {
+      "kind": "rewrite-feature",
+      "guidance": "clamp all path coords to x >= 0"
+    },
+    "feature.sketch.degenerate-arc": {
+      "kind": "retry-with-smaller-param",
+      "param": "arc-radius-or-endpoints",
+      "factor": 0.5
+    },
+    "feature.section.plane-misses-body": {
+      "kind": "fix-arg",
+      "field": "sectionSketch.plane"
+    },
+    "feature.face-sketch.non-planar": {
+      "kind": "fix-arg",
+      "field": "faceSketch.face"
+    },
+    "feature.async-result.missing-await": {
+      "kind": "rewrite-feature",
+      "guidance": "await the async Shape method (sectionSketch/faceSketch/silhouette) before chaining a Sketch method on its result"
+    },
+    "sketch.tangency.no-solution": {
+      "kind": "rewrite-feature",
+      "guidance": "enlarge the tangency radius, move the entities closer together, or relax the side qualifiers"
+    },
+    "sketch.tangency.ambiguous": {
+      "kind": "fix-arg",
+      "field": "near"
+    },
+    "sketch.text.font-not-found": {
+      "kind": "fix-arg",
+      "field": "font"
+    },
+    "sketch.text.empty-content": {
+      "kind": "fix-arg",
+      "field": "content"
+    },
+    "feature.emboss-text.face-too-small": {
+      "kind": "retry-with-smaller-param",
+      "param": "size",
+      "factor": 0.5
+    },
+    "feature.emboss-text.depth-zero": {
+      "kind": "fix-arg",
+      "field": "depth"
+    },
+    "feature.emboss-text.boolean-noop": {
+      "kind": "fix-arg",
+      "field": "anchorU"
+    },
+    "feature.subtractive-noop": {
+      "kind": "rewrite-feature",
+      "guidance": "reposition or resize the cutting tool so it overlaps the target solid"
+    },
+    "feature.intersection-empty": {
+      "kind": "rewrite-feature",
+      "guidance": "reposition or resize the operands so their solids overlap before intersecting"
+    },
+    "feature.empty-result": {
+      "kind": "rewrite-feature",
+      "guidance": "give the create non-degenerate, positive dimensions or a valid closed profile so it produces a solid with volume"
+    },
+    "feature.project-curve.no-intersection": {
+      "kind": "rewrite-feature",
+      "guidance": "use closed-curve projection or shift the curve into the face bounds"
+    },
+    "feature.project-curve.curve-empty": {
+      "kind": "fix-arg",
+      "field": "source.commands"
+    },
+    "feature.face.invalid-uv-anchor": {
+      "kind": "fix-arg",
+      "field": "anchorU-or-anchorV"
+    },
+    "feature.face-ref.not-resolvable": {
+      "kind": "reorder-pipeline",
+      "guidance": "apply this feature before any transform"
+    },
+    "feature.face-ref.not-applicable": {
+      "kind": "rewrite-feature",
+      "guidance": "use a different primitive or inline FaceQuery"
+    },
+    "feature.face-ref.not-supported": {
+      "kind": "rewrite-feature",
+      "guidance": "use a canonical face name, label, or inline FaceQuery / EdgeQuery"
+    },
+    "feature.face-ref.ambiguous-after-split": {
+      "kind": "reorder-pipeline",
+      "guidance": "apply this feature before the splitting boolean"
+    },
+    "feature.face-ref.removed": {
+      "kind": "rewrite-feature",
+      "guidance": "reference a face that still exists"
+    },
+    "feature.face-ref.snapshot-fallback-used": {
+      "kind": "rename",
+      "guidance": "update the ref to the lineage-stable form via list_faces / list_edges"
+    },
+    "feature.hole.no-target-face": {
+      "kind": "rewrite-feature",
+      "guidance": "pick an entry face on a body the bore axis enters"
+    },
+    "feature.created-ref.fallback-used": {
+      "kind": "rename",
+      "guidance": "name the upstream feature with .name() to lock the ref"
+    },
+    "feature.selection.no-match": {
+      "kind": "call-introspection-tool",
+      "tool": "list_edges"
+    },
+    "feature.selection.ambiguous": {
+      "kind": "rewrite-feature",
+      "guidance": "use the plural selector or tighten the query"
+    },
+    "feature.label.unknown-name": {
+      "kind": "call-introspection-tool",
+      "tool": "list_face_labels"
+    },
+    "feature.label.no-upstream-sketch": {
+      "kind": "rewrite-feature",
+      "guidance": "use an inline face/edge query for primitives or imported shapes"
+    },
+    "feature.label.unsupported-base": {
+      "kind": "rewrite-feature",
+      "guidance": "use an inline query as a workaround"
+    },
+    "feature.label.mixed-convexity": {
+      "kind": "rewrite-feature",
+      "guidance": "split the label or filter by convexity"
+    },
+    "feature.label.collision": {
+      "kind": "rename",
+      "guidance": "two upstream features declared the same label name; rename one"
+    },
+    "recompute.input.missing": {
+      "kind": "call-introspection-tool",
+      "tool": "why_did_this_fail"
+    },
+    "recompute.lowering.exception": {
+      "kind": "inspect-message"
+    },
+    "cli.invalid-args": {
+      "kind": "check-cli-args"
+    },
+    "cli.script-exception": {
+      "kind": "inspect-message"
+    },
+    "cli.host-fs-unavailable": {
+      "kind": "inspect-message"
+    },
+    "cli.file-read": {
+      "kind": "check-file-path"
+    },
+    "cli.file-write": {
+      "kind": "check-file-path"
+    },
+    "cli.export-exception": {
+      "kind": "inspect-message"
+    },
+    "export.feature-not-found": {
+      "kind": "call-introspection-tool",
+      "tool": "list_features"
+    },
+    "export.no-shape": {
+      "kind": "add-return"
+    },
+    "export.options-format-mismatch": {
+      "kind": "fix-arg",
+      "field": "options.format"
+    },
+    "export.dxf.non-planar": {
+      "kind": "call-introspection-tool",
+      "tool": "list_faces"
+    },
+    "export.3mf.not-watertight": {
+      "kind": "rewrite-feature",
+      "guidance": "remesh via Manifold, raise mesh deflection, or re-author the offending surface via nurbsSurfaceLowerer"
+    },
+    "export.mesh.not-watertight": {
+      "kind": "rewrite-feature",
+      "guidance": "add >=0.1 mm overlap/offset at the reported crack locations instead of exact tangency"
+    },
+    "export.part.not-found": {
+      "kind": "fix-arg",
+      "field": "part"
+    },
+    "export.glb.draco-glass-conflict": {
+      "kind": "fix-arg",
+      "field": "options.draco"
+    },
+    "export.urdf.cylindrical-lossy": {
+      "kind": "fix-arg",
+      "field": "format"
+    },
+    "export.urdf.pin-slot-lossy": {
+      "kind": "fix-arg",
+      "field": "format"
+    },
+    "export.urdf.ball-decomposed": {
+      "kind": "fix-arg",
+      "field": "format"
+    },
+    "export.urdf.closed-loop": {
+      "kind": "fix-arg",
+      "field": "format"
+    },
+    "export.urdf.inertia-density-declared": {
+      "kind": "fix-arg",
+      "field": "density"
+    },
+    "export.srdf.acm-sparse-sampling": {
+      "kind": "fix-arg",
+      "field": "samplesPerMate"
+    },
+    "export.srdf.planning-group-missing": {
+      "kind": "add-return"
+    },
+    "export.sdf-gazebo.cylindrical-lossy": {
+      "kind": "rewrite-feature",
+      "guidance": "split cylindrical into a revolute + prismatic chain"
+    },
+    "export.sdf-gazebo.pin-slot-lossy": {
+      "kind": "rewrite-feature",
+      "guidance": "split pin_slot into a revolute + prismatic chain"
+    },
+    "export.sdf-gazebo.invalid-version": {
+      "kind": "fix-arg",
+      "field": "version"
+    },
+    "export.sdf-gazebo.dangling-link-ref": {
+      "kind": "call-introspection-tool",
+      "tool": "inspect_robot"
+    },
+    "export.sdf-gazebo.pose-unsolved": {
+      "kind": "call-introspection-tool",
+      "tool": "solve_mates"
+    },
+    "export.gcode.slicer-unavailable": {
+      "kind": "check-cli-args"
+    },
+    "export.gcode.exceeds-bed": {
+      "kind": "retry-with-smaller-param",
+      "param": "scale",
+      "factor": 0.9
+    },
+    "feature.nurbs.degenerate-controls": {
+      "kind": "fix-arg",
+      "field": "controls"
+    },
+    "feature.nurbs.degree-mismatch": {
+      "kind": "fix-arg",
+      "field": "degree"
+    },
+    "feature.nurbs.bridge-conversion-failed": {
+      "kind": "rewrite-feature",
+      "guidance": "rebuild the curve with the default clamped-uniform knot vector or hand-author a monotonic knot sequence"
+    },
+    "feature.pattern.source-not-found": {
+      "kind": "call-introspection-tool",
+      "tool": "list_features"
+    },
+    "feature.pattern.count-out-of-range": {
+      "kind": "fix-arg",
+      "field": "count"
+    },
+    "feature.sheetMetal.kfactor-invalid": {
+      "kind": "fix-arg",
+      "field": "kFactor"
+    },
+    "feature.bend.edge-not-linear": {
+      "kind": "rewrite-feature",
+      "guidance": "pick a linear edge on the sheet perimeter"
+    },
+    "feature.flattenPattern.multi-bend-unsupported": {
+      "kind": "rewrite-feature",
+      "guidance": "flatten an upstream Shape with <= 2 bends (slice-1 limit)"
+    },
+    "feature.draft.failed": {
+      "kind": "fix-arg",
+      "field": "face"
+    },
+    "feature.draft.neutral-plane-derived": {
+      "kind": "fix-arg",
+      "field": "neutralPlane"
+    },
+    "feature.sdf.field-undefined": {
+      "kind": "call-introspection-tool",
+      "tool": "evaluate_sdf"
+    },
+    "feature.sdf.materialize-resolution-out-of-range": {
+      "kind": "fix-arg",
+      "field": "resolution"
+    },
+    "feature.reference-image.path-not-found": {
+      "kind": "check-file-path"
+    },
+    "feature.reference-image.invalid-plane": {
+      "kind": "fix-arg",
+      "field": "plane"
+    },
+    "feature.reference-image.scale-out-of-range": {
+      "kind": "fix-arg",
+      "field": "scale"
+    },
+    "feature.reference-image.format-unsupported": {
+      "kind": "fix-arg",
+      "field": "path"
+    },
+    "feature.render-environment.conflicting-spec": {
+      "kind": "fix-arg",
+      "field": "preset"
+    },
+    "feature.render-environment.missing-spec": {
+      "kind": "fix-arg",
+      "field": "preset"
+    },
+    "feature.render-environment.unknown-preset": {
+      "kind": "fix-arg",
+      "field": "preset"
+    },
+    "feature.render-environment.intensity-out-of-range": {
+      "kind": "fix-arg",
+      "field": "intensity"
+    },
+    "feature.camera-target.non-finite-target": {
+      "kind": "fix-arg",
+      "field": "x"
+    },
+    "feature.camera-target.invalid-distance": {
+      "kind": "fix-arg",
+      "field": "distance"
+    },
+    "feature.material.invalid-base-color": {
+      "kind": "fix-arg",
+      "field": "baseColor"
+    },
+    "feature.material.value-clamped": {
+      "kind": "fix-arg",
+      "field": "see-message"
+    },
+    "feature.material.face-label-no-match": {
+      "kind": "fix-arg",
+      "field": "face"
+    },
+    "feature.material.thickness-negative": {
+      "kind": "fix-arg",
+      "field": "thickness"
+    },
+    "feature.material.attenuation-distance-invalid": {
+      "kind": "fix-arg",
+      "field": "attenuationDistance"
+    },
+    "feature.material.anisotropy-rotation-normalized": {
+      "kind": "fix-arg",
+      "field": "anisotropyRotation"
+    },
+    "feature.material.texture-not-found": {
+      "kind": "fix-arg",
+      "field": "textures"
+    },
+    "feature.material.texture-unsupported-format": {
+      "kind": "fix-arg",
+      "field": "textures"
+    },
+    "feature.material.texture-oversize-warning": {
+      "kind": "fix-arg",
+      "field": "textures"
+    },
+    "feature.material.texture-oversize-error": {
+      "kind": "fix-arg",
+      "field": "textures"
+    },
+    "feature.finish.unknown-token": {
+      "kind": "fix-arg",
+      "field": "name"
+    },
+    "feature.edge-feature.short-edges-skipped": {
+      "kind": "fix-arg",
+      "field": "radius-or-distance"
+    },
+    "assembly.placement-ignored-by-mate-fk": {
+      "kind": "fix-arg",
+      "field": "at"
+    },
+    "assembly.mates-ignored-by-model-call": {
+      "kind": "rewrite-feature",
+      "guidance": "replace arm.model() with arm.solvedModel({}) so the mate solver runs"
+    },
+    "assembly.part.floating": {
+      "kind": "rewrite-feature",
+      "guidance": "declare an arm.fixed/.revolute/.prismatic/.ball joint or arm.mate(...) linking this part to another"
+    },
+    "assembly.part.orphan": {
+      "kind": "rewrite-feature",
+      "guidance": "add a joint linking this sub-assembly to a part in the main mechanism"
+    },
+    "assembly.interference.overlap": {
+      "kind": "rewrite-feature",
+      "guidance": "translate one part or insert a spacer/bracket to remove the BREP overlap"
+    },
+    "assembly.part.under-constrained": {
+      "kind": "rewrite-feature",
+      "guidance": "add or tighten a mate so every part has its 6 DOF removed"
+    },
+    "assembly.mate.over-constrained": {
+      "kind": "rewrite-feature",
+      "guidance": "remove or relax a mate in the closed loop, or adjust a connector origin"
+    },
+    "assembly.mate.type-mismatch": {
+      "kind": "fix-arg",
+      "field": "connectorType"
+    },
+    "assembly.mate.connector-not-found": {
+      "kind": "fix-arg",
+      "field": "connectorRef"
+    },
+    "assembly.loop.unclosed": {
+      "kind": "rewrite-feature",
+      "guidance": "verify loop geometry or relax one mate so the loop can close"
+    },
+    "assembly.solver.did-not-converge": {
+      "kind": "rewrite-feature",
+      "guidance": "restrict closed loops to fastened-only mates or split into open chains"
+    },
+    "assembly.pose.out-of-limits": {
+      "kind": "fix-arg",
+      "field": "limitsDeg"
+    },
+    "assembly.pose-envelope.solve-failed": {
+      "kind": "rewrite-feature",
+      "guidance": "simplify the mechanism or restrict mate limits to the converging range"
+    },
+    "assembly.pose-envelope.interference": {
+      "kind": "fix-arg",
+      "field": "limitsDeg"
+    },
+    "assembly.pose-envelope.clearance-violated": {
+      "kind": "fix-arg",
+      "field": "minClearance"
+    },
+    "assembly.pose-envelope.clearance-unresolved": {
+      "kind": "rewrite-feature",
+      "guidance": "repair the geometry or lowering path until exact BREP clearance can be measured"
+    },
+    "assembly.pose-envelope.connector-unresolved": {
+      "kind": "fix-arg",
+      "field": "connectorRef"
+    },
+    "assembly.gripper-aperture.connector-missing": {
+      "kind": "fix-arg",
+      "field": "gripperAperture"
+    },
+    "assembly.mate.limit-missing": {
+      "kind": "fix-arg",
+      "field": "limitsDeg"
+    },
+    "assembly.mounting-hole.mismatch": {
+      "kind": "fix-arg",
+      "field": "holeFeatures"
+    },
+    "assembly.joint-axis.unbound": {
+      "kind": "fix-arg",
+      "field": "connectorOrigin"
+    },
+    "assembly.joint.child-modeled-in-place": {
+      "kind": "fix-arg",
+      "field": "origin"
+    },
+    "assembly.structure.unstructured-bodies": {
+      "kind": "rewrite-feature",
+      "guidance": "wrap each loose top-level body in a named assembly().part(name, shape)"
+    },
+    "assembly.joint.load-exceeded": {
+      "kind": "fix-arg",
+      "field": "maxLoad"
+    },
+    "assembly.joint.not-visible": {
+      "kind": "fix-arg",
+      "field": "jointGeometry"
+    },
+    "assembly.mate.not-physically-realized": {
+      "kind": "fix-arg",
+      "field": "mateGeometry"
+    },
+    "assembly.joint.static-hold.margin-low": {
+      "kind": "rewrite-feature",
+      "guidance": "increase the actuator torque/force, or shorten/lighten the downstream link"
+    },
+    "assembly.joint.static-hold.exceeded": {
+      "kind": "rewrite-feature",
+      "guidance": "increase the actuator torque/force, or shorten/lighten the downstream link"
+    },
+    "assembly.workspace.unreachable": {
+      "kind": "fix-arg",
+      "field": "reachable"
+    },
+    "assembly.connector.topology-not-resolvable": {
+      "kind": "fix-arg",
+      "field": "topology"
+    },
+    "assembly.mechanical.part-disconnected": {
+      "kind": "rewrite-feature",
+      "guidance": "merge or bridge the floating solids in this part so it has one continuous load path"
+    },
+    "assembly.mechanical.connector-not-in-solid": {
+      "kind": "fix-arg",
+      "field": "connectorOrigin"
+    },
+    "assembly.mechanical.mate-contact-missing": {
+      "kind": "rewrite-feature",
+      "guidance": "add a bracket/flange/mounting face so the fastened parts share a real contact patch"
+    },
+    "assembly.mechanical.fixed-contact-missing": {
+      "kind": "rewrite-feature",
+      "guidance": "move or bridge fixed-joint parts so parent and child share a real contact patch"
+    },
+    "assembly.mechanical.revolute-unsupported": {
+      "kind": "rewrite-feature",
+      "guidance": "add a hinge knuckle / bearing block / bracket so the revolute connector lies on modeled material"
+    },
+    "assembly.mechanical.revolute-contact-missing": {
+      "kind": "rewrite-feature",
+      "guidance": "add interleaved hinge knuckles / clevis tab / bearing shoulder along the hinge axis"
+    },
+    "assembly.transmission.missing-for-coupled-mate": {
+      "kind": "rewrite-feature",
+      "guidance": "declare arm.transmission(...) naming the physical drive path between the coupled mates"
+    },
+    "assembly.transmission.path-disconnected": {
+      "kind": "rewrite-feature",
+      "guidance": "add or reorder transmission-path parts so consecutive parts touch within tolerance"
+    },
+    "mechanism.disconnect": {
+      "kind": "fix-arg",
+      "field": "mateConnectorOrigin"
+    },
+    "mechanism.interpenetration": {
+      "kind": "fix-arg",
+      "field": "partGeometry"
+    },
+    "mechanism.dof-mismatch": {
+      "kind": "fix-arg",
+      "field": "mateType"
+    },
+    "mechanism.orphan-part": {
+      "kind": "rewrite-feature",
+      "guidance": "add a mate or joint primitive that connects the orphan part to the rest of the assembly graph"
+    },
+    "mechanism.unverified-budget-exceeded": {
+      "kind": "inspect-message"
+    },
+    "mechanism.joint-mesh-gap": {
+      "kind": "fix-arg",
+      "field": "partGeometry"
+    },
+    "mechanism.unstable-under-gravity": {
+      "kind": "rewrite-feature",
+      "guidance": "verify part density / joint axes / chain topology so the mechanism has a finite holding torque at every sampled pose"
+    },
+    "mechanism.drops-on-release": {
+      "kind": "rewrite-feature",
+      "guidance": "add a closed-loop spring or declare the joint as actively driven; single-body springs contribute no joint moment and cannot pass the drop-test"
+    },
+    "mechanism.tendon-body-intersect": {
+      "kind": "rewrite-feature",
+      "guidance": "route the tendon around the body with a wrap geom, or relocate its anchors so the cable stays clear of non-anchor parts at every pose"
+    },
+    "assembly.visual.review-check-failed": {
+      "kind": "rewrite-feature",
+      "guidance": "repair the failed visual checks and re-render before accepting"
+    },
+    "assembly.visual.review-evidence-weak": {
+      "kind": "rewrite-feature",
+      "guidance": "record concrete screenshot evidence (interfaces, load paths, legibility) before accepting"
+    },
+    "assembly.visual.review-incomplete": {
+      "kind": "rewrite-feature",
+      "guidance": "render screenshots and record screenshotPath + findings + checks before accepting"
+    },
+    "feature.curve3d.degenerate-controls": {
+      "kind": "fix-arg",
+      "field": "controlPoints"
+    },
+    "feature.curve3d.weights-length-mismatch": {
+      "kind": "fix-arg",
+      "field": "weights"
+    },
+    "feature.curve3d.weights-non-positive": {
+      "kind": "fix-arg",
+      "field": "weights"
+    },
+    "feature.curve3d.knots-length-mismatch": {
+      "kind": "fix-arg",
+      "field": "knots"
+    },
+    "feature.curve3d.closed-endpoints-mismatch": {
+      "kind": "fix-arg",
+      "field": "controlPoints"
+    },
+    "feature.curve3d.analytics.degenerate-arclength": {
+      "kind": "fix-arg",
+      "field": "n"
+    },
+    "feature.curve3d.analytics.closest-point-no-converge": {
+      "kind": "fix-arg",
+      "field": "opts.tolerance"
+    },
+    "feature.curve3d.analytics.derivatives-out-of-range": {
+      "kind": "fix-arg",
+      "field": "numDerivs"
+    },
+    "feature.curve3d.analytics.tessellation-tolerance-invalid": {
+      "kind": "fix-arg",
+      "field": "opts.tolerance"
+    },
+    "feature.curve3d.analytics.kernel-failed": {
+      "kind": "inspect-message"
+    },
+    "feature.curve3d.analytics.intersect-kernel-failed": {
+      "kind": "fix-arg",
+      "field": "opts.tolerance"
+    },
+    "feature.curve3d.analytics.intersect-no-intersection": {
+      "kind": "fix-arg",
+      "field": "opts.tolerance"
+    },
+    "feature.variable-sweep.sections-out-of-order": {
+      "kind": "fix-arg",
+      "field": "sections"
+    },
+    "feature.variable-sweep.sections-not-spanning": {
+      "kind": "fix-arg",
+      "field": "sections"
+    },
+    "feature.variable-sweep.spine-too-short": {
+      "kind": "fix-arg",
+      "field": "spine"
+    },
+    "feature.variable-sweep.profile-not-planar": {
+      "kind": "rewrite-feature",
+      "guidance": "use a planar path().close() sketch for each section"
+    },
+    "feature.variable-sweep.profile-empty": {
+      "kind": "rewrite-feature",
+      "guidance": "close the path() before passing as a profile"
+    },
+    "feature.variable-sweep.frenet-degenerate": {
+      "kind": "fix-arg",
+      "field": "orientation"
+    },
+    "feature.surface-from-boundary.corner-mismatch": {
+      "kind": "fix-arg",
+      "field": "curveRefs"
+    },
+    "feature.surface-from-boundary.too-few-curves": {
+      "kind": "fix-arg",
+      "field": "curveRefs"
+    },
+    "feature.surface-from-boundary.too-many-curves": {
+      "kind": "fix-arg",
+      "field": "curveRefs"
+    },
+    "feature.surface-from-boundary.continuity-orphan": {
+      "kind": "fix-arg",
+      "field": "neighbors"
+    },
+    "feature.surface-from-boundary.degenerate-patch": {
+      "kind": "rewrite-feature",
+      "guidance": "rebuild the 4 boundary curves so they form a non-self-intersecting closed loop, then retry surfaceFromBoundary"
+    },
+    "feature.surface-trim.no-intersection": {
+      "kind": "fix-arg",
+      "field": "by"
+    },
+    "feature.surface-trim.non-planar": {
+      "kind": "rewrite-feature",
+      "guidance": "use cleanly intersecting single-face surfaces, or refresh to the curved-trim runtime bundle"
+    },
+    "feature.surface-trim.split-deferred": {
+      "kind": "rewrite-feature",
+      "guidance": "refresh to the curved-trim runtime bundle and destructure the two returned split surfaces"
+    },
+    "feature.surface-sew.open-shell": {
+      "kind": "fix-arg",
+      "field": "surfaces"
+    },
+    "feature.fillet.continuity-not-applicable": {
+      "kind": "rewrite-feature",
+      "guidance": "drop continuity: 'G2' (adjacent faces are only G1) or refit the upstream faces as NURBS surfaces"
+    },
+    "feature.hermite-g2.degenerate-tangent": {
+      "kind": "fix-arg",
+      "field": "tangent"
+    },
+    "feature.hermite-g2.non-finite-input": {
+      "kind": "fix-arg",
+      "field": "see-message"
+    },
+    "feature.path.spline.degenerate-points": {
+      "kind": "fix-arg",
+      "field": "points"
+    },
+    "feature.path.spline.tangent-zero-magnitude": {
+      "kind": "fix-arg",
+      "field": "opts.startTangent"
+    },
+    "feature.path.spline.tangent-on-2d-only": {
+      "kind": "fix-arg",
+      "field": "opts.startTangent"
+    },
+    "feature.path.nurbs-segment.degenerate-controls": {
+      "kind": "fix-arg",
+      "field": "controlPoints"
+    },
+    "feature.path.nurbs-segment.weights-non-positive": {
+      "kind": "fix-arg",
+      "field": "weights"
+    },
+    "feature.path.hermite-g2.start-mismatch": {
+      "kind": "fix-arg",
+      "field": "a.point"
+    },
+    "tool.trace-from-image.invalid-image-url": {
+      "kind": "fix-arg",
+      "field": "imageUrl"
+    },
+    "tool.trace-from-image.no-features-requested": {
+      "kind": "fix-arg",
+      "field": "features"
+    },
+    "tool.trace-from-image.image-fetch-failed": {
+      "kind": "check-file-path"
+    },
+    "tool.trace-from-image.backend-failed": {
+      "kind": "inspect-message"
+    },
+    "tool.trace-from-image.opencv-cannot-label": {
+      "kind": "fix-arg",
+      "field": "backend"
+    },
+    "tool.trace-from-image.trace-timeout": {
+      "kind": "inspect-message"
+    },
+    "tool.send-to-printer.unreachable": {
+      "kind": "inspect-message"
+    },
+    "tool.send-to-printer.upload-failed": {
+      "kind": "inspect-message"
+    },
+    "mesher.cone-self-intersection": {
+      "kind": "rewrite-feature",
+      "guidance": "remesh STL via Manifold, raise mesh deflection, or re-author the cone via nurbsSurfaceLowerer"
+    },
+    "parts.input.id-or-query-required": {
+      "kind": "call-tool",
+      "tool": "list_part_categories",
+      "args": {}
+    },
+    "parts.fetch.offline-and-uncached": {
+      "kind": "call-tool",
+      "tool": "find_part",
+      "args": {
+        "source": "local"
+      }
+    },
+    "parts.fetch.checksum-mismatch": {
+      "kind": "call-tool",
+      "tool": "find_part",
+      "args": {
+        "source": "local"
+      }
+    },
+    "parts.fetch.checksum-drift": {
+      "kind": "rerun-with-flag",
+      "flag": "--refresh-parts-cache"
+    },
+    "parts.fetch.api-error": {
+      "kind": "call-tool",
+      "tool": "find_part",
+      "args": {
+        "source": "local"
+      }
+    },
+    "parts.fetch.remote-disabled": {
+      "kind": "call-tool",
+      "tool": "find_part",
+      "args": {
+        "source": "local"
+      }
+    },
+    "parts.fetch.geometry-not-brep": {
+      "kind": "call-tool",
+      "tool": "find_part",
+      "args": {
+        "source": "local"
+      }
+    },
+    "dfm.input.vendor-required": {
+      "kind": "fix-arg",
+      "field": "vendor"
+    },
+    "dfm.input.material-required": {
+      "kind": "fix-arg",
+      "field": "material"
+    },
+    "dfm.input.thickness-required": {
+      "kind": "fix-arg",
+      "field": "thicknessMm"
+    },
+    "dfm.units.dxf-not-mm": {
+      "kind": "fix-arg",
+      "field": "unit"
+    },
+    "dfm.material.unknown-sku": {
+      "kind": "fix-arg",
+      "field": "material"
+    },
+    "dfm.thickness.not-stocked": {
+      "kind": "fix-arg",
+      "field": "thicknessMm"
+    },
+    "dfm.thickness.out-of-range": {
+      "kind": "fix-arg",
+      "field": "thicknessMm"
+    },
+    "dfm.thickness.out-of-range-for-service": {
+      "kind": "fix-arg",
+      "field": "service"
+    },
+    "dfm.hole.below-minimum": {
+      "kind": "retry-with-smaller-param",
+      "param": "thicknessMm",
+      "factor": 0.5
+    },
+    "dfm.slot.below-minimum": {
+      "kind": "fix-arg",
+      "field": "slot.width"
+    },
+    "dfm.web.below-minimum": {
+      "kind": "fix-arg",
+      "field": "web"
+    },
+    "dfm.bend.radius-below-minimum": {
+      "kind": "fix-arg",
+      "field": "radius"
+    },
+    "dfm.bend.angle-too-acute": {
+      "kind": "fix-arg",
+      "field": "angle"
+    },
+    "dfm.bend.length-exceeds-max": {
+      "kind": "rewrite-feature",
+      "guidance": "split the part along the bend axis to keep each segment under the vendor max bend length"
+    },
+    "dfm.bend.flange-too-short": {
+      "kind": "fix-arg",
+      "field": "flangeLength"
+    },
+    "dfm.bend.channel-ratio-too-low": {
+      "kind": "fix-arg",
+      "field": "channelBase"
+    },
+    "dfm.bend.layer-missing": {
+      "kind": "fix-arg",
+      "field": "format"
+    },
+    "dfm.bending.material-unsupported": {
+      "kind": "fix-arg",
+      "field": "material"
+    },
+    "dfm.size.below-minimum": {
+      "kind": "fix-arg",
+      "field": "partAabb"
+    },
+    "dfm.size.exceeds-instant-quote": {
+      "kind": "rewrite-feature",
+      "guidance": "split the part to fit within the vendor instant-quote envelope"
+    },
+    "dfm.size.exceeds-max": {
+      "kind": "rewrite-feature",
+      "guidance": "split the part to fit within the vendor maximum stock size"
+    },
+    "dfm.dxf.spline-present": {
+      "kind": "fix-arg",
+      "field": "format"
+    },
+    "dfm.dxf.tessellation-near-tolerance": {
+      "kind": "fix-arg",
+      "field": "tolerance"
+    },
+    "dfm.rule.threshold-unknown": {
+      "kind": "inspect-message"
+    },
+    "dfm.wall.too-thin": {
+      "kind": "rewrite-feature",
+      "guidance": "thicken the wall at the reported xyz to >= minWall"
+    },
+    "dfm.clearance.violated": {
+      "kind": "rewrite-feature",
+      "guidance": "open the gap to >= minClearance or declare the pair in dfmSpec.ignore"
+    },
+    "dfm.channel.openings-mismatch": {
+      "kind": "inspect-message"
+    },
+    "dfm.void.undeclared": {
+      "kind": "rewrite-feature",
+      "guidance": "open a drain channel or declare the void sealed: true"
+    },
+    "dfm.fdm.overhang-unsupported": {
+      "kind": "rewrite-feature",
+      "guidance": "apply the recommended rotation or buildDirection, or chamfer the overhang to 45°"
+    },
+    "dfm.fdm.bridge-too-long": {
+      "kind": "rewrite-feature",
+      "guidance": "add a rib under the span or reorient the part"
+    },
+    "dfm.fdm.wall-below-nozzle": {
+      "kind": "rewrite-feature",
+      "guidance": "thicken the wall at the reported xyz to >= 2 × nozzleMm"
+    },
+    "dfm.fdm.feature-too-small": {
+      "kind": "inspect-message"
+    },
+    "dfm.fdm.bed-contact-low": {
+      "kind": "inspect-message"
+    },
+    "dfm.fdm.tip-risk": {
+      "kind": "inspect-message"
+    },
+    "dfm.fdm.exceeds-bed": {
+      "kind": "retry-with-smaller-param",
+      "param": "scale",
+      "factor": 0.9
+    },
+    "kinematic.collision.swept": {
+      "kind": "rewrite-feature",
+      "guidance": "narrow joint limits or reshape parts to eliminate the listed colliding poses"
+    },
+    "kinematic.collision.swept.sample-density-warning": {
+      "kind": "fix-arg",
+      "field": "opts.range"
+    },
+    "kinematic.unreachable": {
+      "kind": "rewrite-feature",
+      "guidance": "see emitted error.axis to choose: lengthen/restructure the chain for position/both, or widen the orientation tolerance"
+    },
+    "kinematic.reachability.iteration-cap-hit": {
+      "kind": "fix-arg",
+      "field": "opts.maxIterations"
+    },
+    "kinematic.solver.unsupported-config": {
+      "kind": "rewrite-feature",
+      "guidance": "cut the closed-loop cycle in the mate graph, or switch preferSolver to numeric"
+    },
+    "kinematic.load-exceeds-yield": {
+      "kind": "rewrite-feature",
+      "guidance": "thicken the cross-section, change material, or shorten the moment arm"
+    },
+    "kinematic.load.beam-not-applicable": {
+      "kind": "rewrite-feature",
+      "guidance": "decompose the part into beam-fitting cantilever segments, or defer the check until FEA support lands"
+    },
+    "kinematic.no-material-declared": {
+      "kind": "fix-arg",
+      "field": "opts.materials"
+    },
+    "kinematic.static-hold.no-actuator-declared": {
+      "kind": "fix-arg",
+      "field": "actuator"
+    },
+    "kinematic.sweep-tolerance.combo-cap-exceeded": {
+      "kind": "fix-arg",
+      "field": "params"
+    },
+    "kinematic.mounting-hole.diameter-mismatch": {
+      "kind": "fix-arg",
+      "field": "connector.hole.diameter"
+    },
+    "kinematic.pose.out-of-limits": {
+      "kind": "rewrite-feature",
+      "guidance": "clamp the joint pose into the declared limits, or widen limitsDeg/limitsMm on the joint if the travel is intended"
+    },
+    "kinematic.mounting-hole.no-coverage": {
+      "kind": "rewrite-feature",
+      "guidance": "add a fastened mate between connectors bound to face-center holes so the mounting-hole gate has something to verify"
+    },
+    "query.empty": {
+      "kind": "rewrite-feature",
+      "guidance": "narrow the query or mark it .asLenient()"
+    },
+    "query.over-determined": {
+      "kind": "rewrite-feature",
+      "guidance": "narrow the query to exactly-one entity"
+    },
+    "query.evaluated-too-early": {
+      "kind": "rewrite-feature",
+      "guidance": "verify the Id or reorder operations"
+    },
+    "query.unknown-id": {
+      "kind": "rewrite-feature",
+      "guidance": "pin the upstream Id or rename the reference"
+    },
+    "query.unknown-label": {
+      "kind": "rewrite-feature",
+      "guidance": "declare the label or use a canonical face name"
+    },
+    "query.id-hierarchy-clash": {
+      "kind": "rewrite-feature",
+      "guidance": "rename one of the colliding Ids"
+    },
+    "query.unsupported-entity-type": {
+      "kind": "rewrite-feature",
+      "guidance": "use kc.q.face(...) until the kind-specific wiring lands"
+    },
+    "query.composition-strict-failure": {
+      "kind": "rewrite-feature",
+      "guidance": "fix the failing sub-query or annotate the composition with .asLenient()"
+    },
+    "query.type-mismatch": {
+      "kind": "rewrite-feature",
+      "guidance": "reconstruct the query with the kind the consumer expects (kc.q.face / kc.q.edge / ...)"
+    },
+    "query.invalid-syntax": {
+      "kind": "rewrite-feature",
+      "guidance": "use @kc[owner/kind/name] for simple refs or @kcq[<expr>] for composed queries"
+    },
+    "animation.param.unknown": {
+      "kind": "fix-arg",
+      "field": "tracks[].param"
+    },
+    "animation.track.duplicate-param": {
+      "kind": "fix-arg",
+      "field": "tracks"
+    },
+    "animation.keys.invalid": {
+      "kind": "fix-arg",
+      "field": "see-message"
+    },
+    "animation.value.clamped": {
+      "kind": "fix-arg",
+      "field": "tracks[].keys[].value"
+    },
+    "animation.view.shadowed": {
+      "kind": "rewrite-feature",
+      "guidance": "remove the earlier animationView() calls so only the intended record remains"
+    },
+    "animation.collision": {
+      "kind": "rewrite-feature",
+      "guidance": "adjust the keyframes or the colliding part geometry so the named pair stays clear at the reported timestamp"
+    },
+    "animation.bake.geometry-param": {
+      "kind": "call-tool",
+      "tool": "kernelcad animate",
+      "args": {
+        "reason": "geometry-animating timeline"
+      }
+    },
+    "drawing.datum.unresolved": {
+      "kind": "call-introspection-tool",
+      "tool": "list_faces"
+    },
+    "drawing.tolerance.feature-unresolved": {
+      "kind": "call-introspection-tool",
+      "tool": "list_edges"
+    },
+    "drawing.section.plane-misses-body": {
+      "kind": "fix-arg",
+      "field": "options.sections[i].plane"
+    },
+    "drawing.annotation.overlap": {
+      "kind": "rewrite-feature",
+      "guidance": "reorder annotations, change view, or add offset to separate overlapping callouts"
+    },
+    "drawing.auto.datum-ambiguous": {
+      "kind": "call-introspection-tool",
+      "tool": "list_faces"
+    },
+    "drawing.auto.hole-unclassified": {
+      "kind": "rewrite-feature",
+      "guidance": "add an options.annotations hole or diameter entry for the named bore"
+    },
+    "reference.assumptions.unresolved": {
+      "kind": "call-tool",
+      "tool": "resolve_assumptions",
+      "args": {}
+    },
+    "reference.assumptions.ledger-not-found": {
+      "kind": "check-file-path"
+    },
+    "reference.assumptions.unknown-resolution-id": {
+      "kind": "fix-arg",
+      "field": "resolutions[].id"
+    },
+    "reference.drawing.raster-only": {
+      "kind": "call-tool",
+      "tool": "trace_from_image",
+      "args": {}
+    },
+    "reference.drawing.view-ambiguous": {
+      "kind": "fix-arg",
+      "field": "projection"
+    },
+    "reference.drawing.dimension-unassociated": {
+      "kind": "call-tool",
+      "tool": "resolve_assumptions",
+      "args": {}
+    },
+    "reference.drawing.depth-missing": {
+      "kind": "call-tool",
+      "tool": "resolve_assumptions",
+      "args": {}
+    },
+    "reference.mesh.not-watertight": {
+      "kind": "fix-arg",
+      "field": "file"
+    },
+    "reference.mesh.low-fidelity": {
+      "kind": "rewrite-feature",
+      "guidance": "compare the emitted script against the mesh and correct the features near the largest deviation"
+    },
+    "reference.mesh.freeform-region-unmatched": {
+      "kind": "inspect-message"
+    },
+    "fea.safety-factor.below-min": {
+      "kind": "rewrite-feature",
+      "guidance": "thicken or rib the geometry at the reported hot-spot region, choose a stronger material grade, or spread the load over more face area"
+    },
+    "fea.mesh.quality-low": {
+      "kind": "retry-with-smaller-param",
+      "param": "feaStudy.meshSize",
+      "factor": 0.5
+    },
+    "fea.solver.unavailable": {
+      "kind": "check-cli-args"
+    },
+    "fea.study.fixed-unresolved": {
+      "kind": "fix-arg",
+      "field": "feaStudy.fixed"
+    },
+    "fea.study.load-unresolved": {
+      "kind": "fix-arg",
+      "field": "feaStudy.loads[].faces"
+    },
+    "tool.repair.no-candidate": {
+      "kind": "inspect-message"
+    },
+    "tool.repair.out-of-region": {
+      "kind": "call-introspection-tool",
+      "tool": "why_did_this_fail"
+    },
+    "tool.repair.exhausted": {
+      "kind": "inspect-message"
+    },
+    "tool.repair.source-drift": {
+      "kind": "call-tool",
+      "tool": "evaluate_script",
+      "args": {}
+    },
+    "export.usd.joint-unsupported": {
+      "kind": "fix-arg",
+      "field": "format"
+    },
+    "export.usd.pose-unsolved": {
+      "kind": "call-introspection-tool",
+      "tool": "solve_mates"
+    },
+    "export.usd.mass-missing": {
+      "kind": "fix-arg",
+      "field": "density"
+    },
+    "diff.body.unmatched": {
+      "kind": "fix-arg",
+      "field": "file"
+    },
+    "bom.material.unassigned": {
+      "kind": "fix-arg",
+      "field": "material"
+    },
+    "bom.purchased.catalog-metadata-missing": {
+      "kind": "fix-arg",
+      "field": "catalogPart"
+    },
+    "render.explode.no-assembly": {
+      "kind": "rewrite-feature",
+      "guidance": "wrap bodies in assembly().part(...) and return arm.model() before requesting explode"
+    },
+    "drawing.balloons.bom-unavailable": {
+      "kind": "rewrite-feature",
+      "guidance": "return assembly.model() so a BOM can be extracted, or omit balloons/partsList"
+    },
+    "feature.curve-bridge.degenerate-end": {
+      "kind": "fix-arg",
+      "field": "ends"
+    },
+    "feature.surface-intersection.none": {
+      "kind": "rewrite-feature",
+      "guidance": "move the operands so their faces cut, then retry surfaceIntersection"
+    },
+    "feature.loft.rail-miss": {
+      "kind": "fix-arg",
+      "field": "opts.rails"
+    },
+    "inspect.continuity.g1-break": {
+      "kind": "call-introspection-tool",
+      "tool": "inspect"
+    },
+    "inspect.continuity.broken": {
+      "kind": "call-introspection-tool",
+      "tool": "inspect"
+    },
+    "inspect.curvature.spike": {
+      "kind": "call-introspection-tool",
+      "tool": "inspect"
+    }
+  }
+}
