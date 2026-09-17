@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useState } from 'react';
-import { CheckCircle2, Play, MessageSquare, Image as ImageIcon, Plug, Brush, Scissors, PanelRight, Share2 } from 'lucide-react';
-import { useNavigate } from '@tanstack/react-router';
-import { useOptionalSession } from '../funnel/hooks/useSession';
-import { saveProject } from '../funnel/lib/apiClient';
 import { OverflowMenu } from './components/Layout/OverflowMenu';
 import { useIsNarrow } from './hooks/useIsNarrow';
+import { usePublishAction } from './usePublishAction';
+import {
+    AgentButton, ConnectLink, MyDesignsLink, PublishButton, ValidateButton, RunButton,
+    BrushButton, SectionButton, ReferenceButton, EnvironmentButton, InspectorButton,
+} from './ToolbarButtons';
 
 interface ToolbarProps {
     isModified: boolean;
@@ -84,212 +84,43 @@ export function Toolbar({
     code,
     projectName,
 }: ToolbarProps) {
-    const { session } = useOptionalSession();
-    const navigate = useNavigate();
-    const [publishState, setPublishState] = useState<'idle' | 'saving' | 'done' | 'error'>('idle');
-    const [publishedLink, setPublishedLink] = useState<string | null>(null);
+    const { session, publishState, publishedLink, handlePublish } = usePublishAction(code, projectName);
     // Below `md` only the two act-on-the-model buttons (Validate / Run) stay on
     // the bar; everything else moves into the overflow menu. Previously the
     // whole set stayed inline and Run was pushed past the right edge of a
     // phone screen, into a scroll region with no visible scrollbar.
     const narrow = useIsNarrow();
 
-    async function handlePublish() {
-        if (!session) {
-            void navigate({ to: '/signin', search: { next: window.location.pathname } });
-            return;
-        }
-        setPublishState('saving');
-        setPublishedLink(null);
-        try {
-            const title = projectName?.slice(0, 60) || code.slice(0, 60) || 'Untitled';
-            const result = await saveProject({
-                title,
-                code,
-                parameters: [],
-                privacy: 'public_unlisted',
-            });
-            const link = `${window.location.origin}/p/${result.slug}`;
-            await navigator.clipboard.writeText(link).catch(() => {});
-            setPublishedLink(link);
-            setPublishState('done');
-            window.setTimeout(() => {
-                setPublishState('idle');
-                setPublishedLink(null);
-            }, 4000);
-        } catch {
-            setPublishState('error');
-        }
-    }
-
-    const agentButton = enableAgentRail && !agentRailHidden ? (
-        <button
-            type="button"
-            onClick={onToggleAgentRail}
-            aria-label={agentRailOpen ? 'Close agent rail' : 'Open agent rail'}
-            aria-pressed={agentRailOpen}
-            className={`inline-flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-                agentRailOpen
-                    ? 'bg-[#333] text-white'
-                    : 'text-gray-300 hover:text-white hover:bg-[#222]'
-            }`}
-        >
-            <MessageSquare size={12} />
-            Agent
-        </button>
-    ) : null;
-
-    const connectLink = enableConnect ? (
-        <a
-            href="/connect"
-            data-testid="toolbar-connect-link"
-            aria-label="Connect to Claude Desktop"
-            className="inline-flex items-center gap-1 px-2 py-1 rounded text-gray-300 hover:text-white hover:bg-[#222] transition-colors"
-        >
-            <Plug size={12} />
-            Connect
-        </a>
-    ) : null;
-
-    const myDesignsLink = session ? (
-        <a
-            href="/me"
-            data-testid="toolbar-my-designs"
-            aria-label="My Designs"
-            className="inline-flex items-center gap-1 px-2 py-1 rounded text-gray-300 hover:text-white hover:bg-[#222] transition-colors"
-        >
-            My Designs
-        </a>
-    ) : null;
-
-    const publishButton = (
-        <button
-            type="button"
-            data-testid="toolbar-publish"
-            onClick={() => void handlePublish()}
-            disabled={publishState === 'saving'}
-            aria-label="Publish and share"
-            className="inline-flex items-center gap-1 px-2 py-1 rounded text-gray-300 hover:text-white hover:bg-[#222] transition-colors disabled:opacity-50"
-        >
-            <Share2 size={12} />
-            {publishState === 'saving' ? 'Publishing…' : publishState === 'error' ? 'Retry' : 'Publish & Share'}
-        </button>
+    const agentButton = (
+        <AgentButton
+            show={enableAgentRail && !agentRailHidden}
+            agentRailOpen={agentRailOpen}
+            onToggleAgentRail={onToggleAgentRail}
+        />
     );
-
-    const validateButton = (
-        <button
-            type="button"
-            onClick={onValidate}
-            aria-label="Validate"
-            className="inline-flex items-center gap-1 px-2 py-1 rounded text-gray-300 hover:text-white hover:bg-[#222] transition-colors"
-        >
-            <CheckCircle2 size={12} />
-            Validate
-        </button>
+    const connectLink = <ConnectLink show={enableConnect} />;
+    const myDesignsLink = <MyDesignsLink show={!!session} />;
+    const publishButton = <PublishButton publishState={publishState} onPublish={() => void handlePublish()} />;
+    const validateButton = <ValidateButton onValidate={onValidate} />;
+    const runButton = <RunButton onRun={onRun} />;
+    const brushButton = <BrushButton markingMode={markingMode} onToggleMarkingMode={onToggleMarkingMode} />;
+    const sectionButton = <SectionButton sectionMode={sectionMode} onToggleSectionMode={onToggleSectionMode} />;
+    const referenceButton = (
+        <ReferenceButton
+            show={referenceImagesPresent}
+            referenceImagesVisible={referenceImagesVisible}
+            onToggleReferenceImages={onToggleReferenceImages}
+        />
     );
-
-    const runButton = (
-        <button
-            type="button"
-            onClick={onRun}
-            aria-label="Run"
-            className="inline-flex items-center gap-1 px-2 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
-        >
-            <Play size={12} />
-            Run
-        </button>
+    const environmentButton = (
+        <EnvironmentButton
+            show={renderEnvironmentPresent}
+            renderEnvironmentVisible={renderEnvironmentVisible}
+            renderEnvironmentPresetLabel={renderEnvironmentPresetLabel}
+            onToggleRenderEnvironment={onToggleRenderEnvironment}
+        />
     );
-
-    const brushButton = (
-        <button
-            type="button"
-            data-testid="toolbar-mark"
-            onClick={onToggleMarkingMode}
-            title={markingMode ? 'Save mark & exit (your agent can then pick it up)' : 'Paint over what is wrong, then click again to save'}
-            aria-label={markingMode ? 'Save mark and exit marking mode' : 'Enter marking mode'}
-            aria-pressed={markingMode}
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded font-medium transition-colors ${
-                markingMode
-                    ? 'bg-red-600 text-white ring-2 ring-red-300'
-                    : 'bg-[#2a1313] text-red-300 hover:bg-red-700 hover:text-white border border-red-700'
-            }`}
-        >
-            <Brush size={14} />
-            Brush
-        </button>
-    );
-
-    const sectionButton = (
-        <button
-            type="button"
-            data-testid="toolbar-section"
-            onClick={onToggleSectionMode}
-            title={sectionMode ? 'Exit section view' : 'Slice the model with a plane to see inside'}
-            aria-label={sectionMode ? 'Exit section view' : 'Enter section view'}
-            aria-pressed={sectionMode}
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded font-medium transition-colors ${
-                sectionMode
-                    ? 'bg-sky-600 text-white ring-2 ring-sky-300'
-                    : 'bg-[#13202a] text-sky-300 hover:bg-sky-700 hover:text-white border border-sky-700'
-            }`}
-        >
-            <Scissors size={14} />
-            Section
-        </button>
-    );
-
-    const referenceButton = referenceImagesPresent ? (
-        <button
-            type="button"
-            onClick={onToggleReferenceImages}
-            aria-label={referenceImagesVisible ? 'Hide reference images' : 'Show reference images'}
-            aria-pressed={referenceImagesVisible}
-            className={`inline-flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-                referenceImagesVisible
-                    ? 'bg-[#333] text-white'
-                    : 'text-gray-300 hover:text-white hover:bg-[#222]'
-            }`}
-        >
-            <ImageIcon size={12} />
-            Reference
-        </button>
-    ) : null;
-
-    const environmentButton = renderEnvironmentPresent ? (
-        <button
-            type="button"
-            data-testid="toolbar-render-environment"
-            onClick={onToggleRenderEnvironment}
-            aria-label={renderEnvironmentVisible ? 'Disable HDRI environment' : 'Enable HDRI environment'}
-            aria-pressed={renderEnvironmentVisible}
-            className={`inline-flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-                renderEnvironmentVisible
-                    ? 'bg-[#333] text-white'
-                    : 'text-gray-300 hover:text-white hover:bg-[#222]'
-            }`}
-        >
-            Env: {renderEnvironmentPresetLabel}
-        </button>
-    ) : null;
-
-    const inspectorButton = (
-        <button
-            type="button"
-            data-testid="toolbar-inspector"
-            onClick={onToggleInspector}
-            title={inspectorOpen ? 'Hide the inspector panel' : 'Show the inspector panel'}
-            aria-label={inspectorOpen ? 'Hide inspector panel' : 'Show inspector panel'}
-            aria-pressed={inspectorOpen}
-            className={`inline-flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-                inspectorOpen
-                    ? 'bg-[#333] text-white'
-                    : 'text-gray-300 hover:text-white hover:bg-[#222]'
-            }`}
-        >
-            <PanelRight size={12} />
-            Inspector
-        </button>
-    );
+    const inspectorButton = <InspectorButton inspectorOpen={inspectorOpen} onToggleInspector={onToggleInspector} />;
 
     return (
         <div
