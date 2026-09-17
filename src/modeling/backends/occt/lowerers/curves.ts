@@ -5,6 +5,7 @@ import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import { isCurve3DMetadata } from '../../../../shared/intent/curve3dRecord';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
+import type { FeatureRef } from '../../../../shared/intent/types';
 import { isVariableSweepMetadata } from '../../../../shared/intent/variableSweepRecord';
 import { lowerCurve3D as buildCurve3dEdge } from '../curve3dLowerer';
 import { lowerEmbossText as embossTextOntoFace } from '../embossTextLowerer';
@@ -127,9 +128,8 @@ export function lowerVariableSweep(ctx: LowerContext, r: FeatureRecord): LowerOu
 function resolveVariableSweepSpine(
   ctx: LowerContext,
   r: FeatureRecord,
-  spineRef: { kind: string; id?: string },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): any {
+  spineRef: FeatureRef,
+): unknown {
   // Resolve spine edge. The spine input is a FeatureRef.
   const spineId = spineRef.kind === 'feature' ? spineRef.id : undefined;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

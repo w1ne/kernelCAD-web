@@ -547,12 +547,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/backends/occt/occtLowerer.ts",
-    "symbol": "Async method 'lower'",
-    "value": 168
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/backends/occt/sheetMetalLowerer.ts",
     "symbol": "Function 'resolveBendAxis'",
     "value": 21
@@ -1162,12 +1156,6 @@
     "file": "src/modeling/backends/occt/embossTextLowerer.ts",
     "symbol": "Async function 'lowerEmbossText'",
     "value": 168
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/backends/occt/occtLowerer.ts",
-    "symbol": "Async method 'lower'",
-    "value": 658
   },
   {
     "rule": "max-lines-per-function",

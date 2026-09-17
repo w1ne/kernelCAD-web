@@ -197,8 +197,7 @@ function resolveLoftRails(
   ctx: LowerContext,
   r: FeatureRecord,
   railIds: string[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): any[] | undefined {
+): unknown[] | undefined {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const railEdges: any[] = [];
   for (const railId of railIds) {
@@ -260,8 +259,7 @@ async function buildRailLoft(
   r: FeatureRecord,
   sketches: OcctBackend[],
   planes: LoftPlane[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  railEdges: any[],
+  railEdges: unknown[],
 ): Promise<ShapeBackend | undefined> {
   try {
     // Lift each section onto its plane and pull the outer wire.
