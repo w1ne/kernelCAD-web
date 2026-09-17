@@ -37,6 +37,17 @@ describe('import layering rule is live', () => {
     expect(ids).toContain('no-restricted-imports');
   }, 120_000);
 
+  it('accepts a same-directory sibling named like a layer', async () => {
+    const ids = await ruleIdsFor('src/shared/diagnostics/registry/index.ts', "import { K } from './kinematic';\nexport const k = K;\nexport const load = () => import('./kinematic');\n");
+    expect(ids).not.toContain('no-restricted-imports');
+    expect(ids).not.toContain('no-restricted-syntax');
+  }, 120_000);
+
+  it('rejects a deep upward import', async () => {
+    const ids = await ruleIdsFor('src/kernel/backends/occt/layeringProbe.ts', "import { x } from '../../../modeling/api';\nexport const y = x;\n");
+    expect(ids).toContain('no-restricted-imports');
+  }, 120_000);
+
   it('accepts a downward import', async () => {
     const ids = await ruleIdsFor('src/modeling/layeringProbe.ts', "import type { Vec3 } from '../shared/intent/types';\nexport type V = Vec3;\n");
     expect(ids).not.toContain('no-restricted-imports');

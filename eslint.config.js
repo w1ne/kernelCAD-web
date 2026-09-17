@@ -5,6 +5,12 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
+// A layer is reached either by climbing out of the current directory
+// (`../kinematic`, `../../kinematic/x`) or through an absolute `src/<layer>` path.
+// A same-directory sibling that merely shares a layer's name (`./kinematic`, as in
+// shared/diagnostics/registry/) is not a layer import.
+const layerImportRegex = (layer) => `^(\\.\\./)+${layer}(/|$)|(^|/)src/${layer}(/|$)`;
+
 // Deprecated shim enforcement: the five `@deprecated export *` re-export shims
 // left at their pre-move paths exist only so old imports don't hard-break; new
 // imports must go straight to the moved module. ESLint flat config lets a later
@@ -91,14 +97,14 @@ export default defineConfig([
       'no-restricted-imports': ['error', {
         patterns: [
           ...forbid.map((layer) => ({
-            regex: `(^|/)${layer}(/|$)`,
+            regex: layerImportRegex(layer),
             message: `src/${dir} must not import from src/${layer} (layering: shared -> kernel -> modeling -> kinematic -> agent -> studio).`,
           })),
           ...SHIM_PATTERNS,
         ],
       }],
       'no-restricted-syntax': ['error', ...forbid.map((layer) => ({
-        selector: `ImportExpression[source.value=/(^|\\/)${layer}(\\/|$)/]`,
+        selector: `ImportExpression[source.value=/${layerImportRegex(layer).replace(/\//g, '\\/')}/]`,
         message: `src/${dir} must not import from src/${layer} (layering: shared -> kernel -> modeling -> kinematic -> agent -> studio).`,
       }))],
     },
