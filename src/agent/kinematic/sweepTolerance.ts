@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/kinematic/sweepTolerance.ts
+// src/agent/kinematic/sweepTolerance.ts
 //
 // Parameter-space tolerance sweep. Declares one or more `param()` names with
 // a value list or {min,max,steps} range, re-evaluates the script once per
