@@ -901,9 +901,39 @@
   },
   {
     "rule": "complexity",
+    "file": "src/studio/StudioGenerate.tsx",
+    "symbol": "Arrow function",
+    "value": 48
+  },
+  {
+    "rule": "complexity",
+    "file": "src/studio/StudioShell.tsx",
+    "symbol": "Function 'StudioShell'",
+    "value": 21
+  },
+  {
+    "rule": "complexity",
+    "file": "src/studio/Toolbar.tsx",
+    "symbol": "Function 'Toolbar'",
+    "value": 34
+  },
+  {
+    "rule": "complexity",
     "file": "src/studio/adapters/featureRecordsToCounts.ts",
     "symbol": "Function 'countModelTopology'",
     "value": 23
+  },
+  {
+    "rule": "complexity",
+    "file": "src/studio/components/Layout/Header.tsx",
+    "symbol": "Function 'Header'",
+    "value": 25
+  },
+  {
+    "rule": "complexity",
+    "file": "src/studio/components/Layout/SidePanel.tsx",
+    "symbol": "Function 'SidePanel'",
+    "value": 30
   },
   {
     "rule": "complexity",
@@ -919,14 +949,14 @@
   },
   {
     "rule": "complexity",
-    "file": "src/studio/components/demoPlayer/buildMaterialFromPBR.ts",
-    "symbol": "Function 'buildMaterialFromPBR'",
+    "file": "src/studio/components/demoPlayer/DemoPlayerPage.tsx",
+    "symbol": "Method 'loadFeatureMeshes'",
     "value": 41
   },
   {
     "rule": "complexity",
-    "file": "src/studio/components/demoPlayer/DemoPlayerPage.tsx",
-    "symbol": "Method 'loadFeatureMeshes'",
+    "file": "src/studio/components/demoPlayer/buildMaterialFromPBR.ts",
+    "symbol": "Function 'buildMaterialFromPBR'",
     "value": 41
   },
   {
@@ -934,18 +964,6 @@
     "file": "src/studio/components/inputs/NumericScrubInput.tsx",
     "symbol": "Function 'NumericScrubInput'",
     "value": 31
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/components/Layout/Header.tsx",
-    "symbol": "Function 'Header'",
-    "value": 25
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/components/Layout/SidePanel.tsx",
-    "symbol": "Function 'SidePanel'",
-    "value": 30
   },
   {
     "rule": "complexity",
@@ -994,24 +1012,6 @@
     "file": "src/studio/routes/p.$slug.tsx",
     "symbol": "Function 'ProjectPage'",
     "value": 23
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/StudioGenerate.tsx",
-    "symbol": "Arrow function",
-    "value": 48
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/StudioShell.tsx",
-    "symbol": "Function 'StudioShell'",
-    "value": 21
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/Toolbar.tsx",
-    "symbol": "Function 'Toolbar'",
-    "value": 34
   },
   {
     "rule": "max-lines-per-function",
@@ -1285,6 +1285,54 @@
   },
   {
     "rule": "max-lines-per-function",
+    "file": "src/studio/StagedEditSlot.tsx",
+    "symbol": "Function 'StagedEditSlot'",
+    "value": 169
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/studio/StudioGenerate.tsx",
+    "symbol": "Arrow function",
+    "value": 374
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/studio/StudioShell.tsx",
+    "symbol": "Function 'StudioShell'",
+    "value": 187
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/studio/Toolbar.tsx",
+    "symbol": "Function 'Toolbar'",
+    "value": 279
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/studio/components/Layout/Header.tsx",
+    "symbol": "Function 'Header'",
+    "value": 286
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/studio/components/Layout/SidePanel.tsx",
+    "symbol": "Function 'SidePanel'",
+    "value": 177
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/studio/components/SceneBrowser.tsx",
+    "symbol": "Arrow function",
+    "value": 200
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/studio/components/Viewer.tsx",
+    "symbol": "Function 'Viewer'",
+    "value": 226
+  },
+  {
+    "rule": "max-lines-per-function",
     "file": "src/studio/components/animation/AnimationTab.tsx",
     "symbol": "Function 'AnimationTab'",
     "value": 152
@@ -1318,30 +1366,6 @@
     "file": "src/studio/components/inputs/NumericScrubInput.tsx",
     "symbol": "Function 'NumericScrubInput'",
     "value": 195
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/components/Layout/Header.tsx",
-    "symbol": "Function 'Header'",
-    "value": 286
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/components/Layout/SidePanel.tsx",
-    "symbol": "Function 'SidePanel'",
-    "value": 177
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/components/SceneBrowser.tsx",
-    "symbol": "Arrow function",
-    "value": 200
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/components/Viewer.tsx",
-    "symbol": "Function 'Viewer'",
-    "value": 226
   },
   {
     "rule": "max-lines-per-function",
@@ -1420,30 +1444,6 @@
     "file": "src/studio/routes/p.$slug.tsx",
     "symbol": "Function 'ProjectPage'",
     "value": 209
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/StagedEditSlot.tsx",
-    "symbol": "Function 'StagedEditSlot'",
-    "value": 169
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/StudioGenerate.tsx",
-    "symbol": "Arrow function",
-    "value": 374
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/StudioShell.tsx",
-    "symbol": "Function 'StudioShell'",
-    "value": 187
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/Toolbar.tsx",
-    "symbol": "Function 'Toolbar'",
-    "value": 279
   },
   {
     "rule": "max-lines",

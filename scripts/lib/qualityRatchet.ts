@@ -14,7 +14,13 @@ export function listSourceFiles(root: string): string[] {
         if (name !== 'test') walk(p);
         continue;
       }
-      if (!/\.(ts|tsx)$/.test(name) || /\.test\.(ts|tsx)$/.test(name) || name.endsWith('.d.ts')) continue;
+      if (
+        !/\.(ts|tsx)$/.test(name) ||
+        /\.test\.(ts|tsx)$/.test(name) ||
+        name.endsWith('.d.ts') ||
+        /\.gen\.tsx?$/.test(name)
+      )
+        continue;
       out.push(relative(root, p));
     }
   };
@@ -84,13 +90,18 @@ export async function collectFindings(root: string, files: string[]): Promise<Fi
       out.push({ rule: m.ruleId as Finding['rule'], file, symbol, value: p.value });
     }
   }
-  return out.sort((a, b) => findingKey(a).localeCompare(findingKey(b)));
+  return out.sort((a, b) => codeUnitCompare(findingKey(a), findingKey(b)));
+}
+
+function codeUnitCompare(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
 }
 
 export interface RatchetResult {
   ok: boolean;
   added: Finding[];
   grown: Array<{ before: Finding; after: Finding }>;
+  shrunk: Array<{ before: Finding; after: Finding }>;
   stale: Finding[];
 }
 
@@ -99,11 +110,39 @@ export function diffAgainstBaseline(current: Finding[], baseline: Finding[]): Ra
   const cur = new Map(current.map((f) => [findingKey(f), f]));
   const added: Finding[] = [];
   const grown: RatchetResult['grown'] = [];
+  const shrunk: RatchetResult['shrunk'] = [];
   for (const [k, f] of cur) {
     const b = base.get(k);
     if (!b) added.push(f);
     else if (f.value > b.value) grown.push({ before: b, after: f });
+    else if (f.value < b.value) shrunk.push({ before: b, after: f });
   }
   const stale = [...base.entries()].filter(([k]) => !cur.has(k)).map(([, f]) => f);
-  return { ok: added.length === 0 && grown.length === 0 && stale.length === 0, added, grown, stale };
+  return {
+    ok: added.length === 0 && grown.length === 0 && shrunk.length === 0 && stale.length === 0,
+    added,
+    grown,
+    shrunk,
+    stale,
+  };
+}
+
+export function planRegen(
+  current: Finding[],
+  existing: Finding[] | undefined,
+  allowNew: boolean,
+): { write: boolean; report: string[] } {
+  if (existing === undefined) {
+    return { write: true, report: ['no existing qualityBaseline.json — writing first baseline'] };
+  }
+  const fmt = (f: Finding) => `${f.file} ${f.symbol} (${f.rule}=${f.value})`;
+  const r = diffAgainstBaseline(current, existing);
+  const offenders = [
+    ...r.added.map((f) => `NEW      ${fmt(f)} — split it or reduce below the threshold`),
+    ...r.grown.map(({ before, after }) => `GREW     ${fmt(after)} (was ${before.value})`),
+  ];
+  if (offenders.length > 0 && !allowNew) {
+    return { write: false, report: offenders };
+  }
+  return { write: true, report: [] };
 }
