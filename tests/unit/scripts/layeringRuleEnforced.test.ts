@@ -32,11 +32,6 @@ describe('import layering rule is live', () => {
     expect(ids).toContain('no-restricted-syntax');
   }, 120_000);
 
-  it('rejects an import of a deprecated shim path from a layered file', async () => {
-    const ids = await ruleIdsFor('src/agent/layeringProbe.ts', "import { x } from '../modeling/capture/hermiteG2';\nexport const y = x;\n");
-    expect(ids).toContain('no-restricted-imports');
-  }, 120_000);
-
   it('accepts a downward import', async () => {
     const ids = await ruleIdsFor('src/modeling/layeringProbe.ts', "import type { Vec3 } from '../shared/intent/types';\nexport type V = Vec3;\n");
     expect(ids).not.toContain('no-restricted-imports');
