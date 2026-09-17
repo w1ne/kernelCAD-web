@@ -37,10 +37,9 @@ import type {
   WorkspaceTargetOpts,
   WorkspaceTargetRecord,
 } from '../mates/workspaceTarget';
-import {
-  makePhysicalUseCaseRecord,
-  type PhysicalUseCaseOptions,
-  type PhysicalUseCaseRecord,
+import type {
+  PhysicalUseCaseOptions,
+  PhysicalUseCaseRecord,
 } from '../mates/physicalUseCase';
 import { currentValue, toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
 import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../../shared/runtime/paramRef';
@@ -61,6 +60,17 @@ import {
   revoluteJoint,
 } from './assemblyJoints';
 import { copyMateCapacity } from './assemblyMateCapacity';
+import {
+  recordDisabledCollision,
+  recordEndEffector,
+  recordGroupState,
+  recordJointSupport,
+  recordMechanicalJoint,
+  recordPhysicalUseCase,
+  recordPlanningGroup,
+  recordTransmission,
+  recordVirtualJoint,
+} from './assemblyIntents';
 
 export * from './assemblyTypes';
 import type {
@@ -91,30 +101,9 @@ import type {
   SubAssemblyHandle,
   TransmissionIntentOpts,
   TransmissionIntentRecord,
-  TransmissionKind,
   VirtualJointRecord,
 } from './assemblyTypes';
 
-function validateMechanicalIntentName(field: string, value: string): void {
-  if (typeof value === 'string' && value.trim().length > 0) return;
-  throw new KernelError(
-    'feature.invalid-args',
-    `assembly.mechanicalJoint.invalid-ref: ${field} must be a non-empty string.`,
-    undefined,
-    `invalid-args.assembly.mechanical-joint-invalid-ref — pass non-empty part and mate names in mechanicalJoint(...).`,
-  );
-}
-
-function isTransmissionKind(value: unknown): value is TransmissionKind {
-  return (
-    value === 'direct-horn' ||
-    value === 'link-rod' ||
-    value === 'four-bar' ||
-    value === 'gear-pair' ||
-    value === 'belt' ||
-    value === 'tendon'
-  );
-}
 
 export class Assembly {
   readonly name: string;
@@ -489,61 +478,16 @@ export class Assembly {
     recordWorkspaceTarget(this as unknown as AssemblyState, connectorRef, opts);
     return this;
   }
-
-  /**
-   * Declare the physical task this assembly must be able to survive or perform.
-   * This is intentionally generic: loads, contacts, stable parts, and actuator
-   * limits are evidence consumed by review gates before task-specific statics
-   * or MuJoCo simulations are added.
-   */
   physicalUseCase(name: string, opts: PhysicalUseCaseOptions): this {
-    if (this.physicalUseCases.some((useCase) => useCase.name === name)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `assembly.physicalUseCase.duplicate-name: physical use case '${name}' is already declared.`,
-        undefined,
-        `invalid-args.assembly.physical-use-case-duplicate-name — use a unique physicalUseCase name.`,
-      );
-    }
-    this.physicalUseCases.push(makePhysicalUseCaseRecord(name, opts));
+    recordPhysicalUseCase(this as unknown as AssemblyState, name, opts);
     return this;
   }
 
-  /**
-   * Declare an SRDF planning group. Either a chain form (base->tip) or an
-   * enumeration of joint / link names. Consumed by `export_model({
-   * format: 'srdf' })`.
-   */
   planningGroup(
     name: string,
     opts: { chain?: { baseLink: string; tipLink: string }; joints?: string[]; links?: string[] },
   ): this {
-    if (this.planningGroups.some(g => g.name === name)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `arm.planningGroup: duplicate group name '${name}'.`,
-        undefined,
-        'Each planning group must have a unique name. Pick a different name or remove the earlier declaration.',
-      );
-    }
-    if (!opts.chain
-      && (!opts.joints || opts.joints.length === 0)
-      && (!opts.links || opts.links.length === 0)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `arm.planningGroup '${name}' must declare chain, joints, or links.`,
-        undefined,
-        'Pass { chain: { baseLink, tipLink } } for a serial chain, or { joints: [...] } / { links: [...] } for an enumeration.',
-      );
-    }
-    this.planningGroups.push({
-      name,
-      ...(opts.chain !== undefined
-        ? { chain: { baseLink: opts.chain.baseLink, tipLink: opts.chain.tipLink } }
-        : {}),
-      ...(opts.joints !== undefined ? { joints: [...opts.joints] } : {}),
-      ...(opts.links !== undefined ? { links: [...opts.links] } : {}),
-    });
+    recordPlanningGroup(this as unknown as AssemblyState, name, opts);
     return this;
   }
 
@@ -552,20 +496,7 @@ export class Assembly {
     name: string,
     opts: { parentLink: string; group: string; parentGroup: string },
   ): this {
-    if (!this.parts.some(p => p.name === opts.parentLink)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `arm.endEffector '${name}': parentLink '${opts.parentLink}' is not a known part.`,
-        undefined,
-        `Declare the parent link via arm.part('${opts.parentLink}', ...) before calling arm.endEffector(...).`,
-      );
-    }
-    this.endEffectors.push({
-      name,
-      parentLink: opts.parentLink,
-      group: opts.group,
-      parentGroup: opts.parentGroup,
-    });
+    recordEndEffector(this as unknown as AssemblyState, name, opts);
     return this;
   }
 
@@ -574,26 +505,13 @@ export class Assembly {
     name: string,
     opts: { type: 'fixed' | 'floating' | 'planar'; parentFrame: string; childLink: string },
   ): this {
-    this.virtualJoints.push({
-      name,
-      type: opts.type,
-      parentFrame: opts.parentFrame,
-      childLink: opts.childLink,
-    });
+    recordVirtualJoint(this as unknown as AssemblyState, name, opts);
     return this;
   }
 
   /** Declare an SRDF named group state (a pose snapshot keyed by joint name). */
   groupState(name: string, group: string, values: Record<string, number>): this {
-    if (!this.planningGroups.some(g => g.name === group)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `arm.groupState '${name}' references unknown group '${group}'.`,
-        undefined,
-        `Declare arm.planningGroup('${group}', ...) before referencing it in arm.groupState(...).`,
-      );
-    }
-    this.groupStates.push({ name, group, values: { ...values } });
+    recordGroupState(this as unknown as AssemblyState, name, group, values);
     return this;
   }
 
@@ -603,217 +521,22 @@ export class Assembly {
     link2: string,
     opts: { reason: 'Adjacent' | 'Never' | 'Default' | 'User' },
   ): this {
-    this.disabledCollisions.push({ link1, link2, reason: opts.reason });
+    recordDisabledCollision(this as unknown as AssemblyState, link1, link2, opts);
     return this;
   }
 
   mechanicalJoint(name: string, opts: MechanicalJointIntentOpts): this {
-    validateMechanicalIntentName('name', name);
-    if (this.mechanicalJointIntents.some((intent) => intent.name === name)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `assembly.mechanicalJoint.duplicate-name: mechanical joint intent '${name}' is already declared.`,
-        undefined,
-        `invalid-args.assembly.mechanical-joint-duplicate-name — use a unique mechanicalJoint name.`,
-      );
-    }
-    validateMechanicalIntentName('mate', opts.mate);
-    validateMechanicalIntentName('actuator', opts.actuator);
-    validateMechanicalIntentName('shaft', opts.shaft);
-    validateMechanicalIntentName('output', opts.output);
-    if (!Array.isArray(opts.supports) || opts.supports.length === 0) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `assembly.mechanicalJoint.invalid-ref: mechanical joint intent '${name}' requires at least one support part.`,
-        undefined,
-        `invalid-args.assembly.mechanical-joint-invalid-ref — pass supports: ['support-part-name', ...].`,
-      );
-    }
-    for (const support of opts.supports) {
-      validateMechanicalIntentName('supports[]', support);
-    }
-    if (opts.requiredSupport !== undefined) {
-      validateMechanicalIntentName('requiredSupport.kind', opts.requiredSupport.kind);
-      validateMechanicalIntentName('requiredSupport.around', opts.requiredSupport.around);
-      for (const support of opts.requiredSupport.supports ?? []) {
-        validateMechanicalIntentName('requiredSupport.supports[]', support);
-      }
-      if (
-        opts.requiredSupport.minBearingLengthMm !== undefined &&
-        (!Number.isFinite(opts.requiredSupport.minBearingLengthMm) || opts.requiredSupport.minBearingLengthMm <= 0)
-      ) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.mechanicalJoint.invalid-required-support: minBearingLengthMm must be a positive finite number.`,
-          undefined,
-          `invalid-args.assembly.mechanical-joint-invalid-required-support — pass minBearingLengthMm > 0, or omit it.`,
-        );
-      }
-      if (
-        opts.requiredSupport.clearanceMm !== undefined &&
-        (!Number.isFinite(opts.requiredSupport.clearanceMm) || opts.requiredSupport.clearanceMm < 0)
-      ) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.mechanicalJoint.invalid-required-support: clearanceMm must be a non-negative finite number.`,
-          undefined,
-          `invalid-args.assembly.mechanical-joint-invalid-required-support — pass clearanceMm >= 0, or omit it.`,
-        );
-      }
-    }
-
-    this.mechanicalJointIntents.push({
-      name,
-      mate: opts.mate,
-      actuator: opts.actuator,
-      shaft: opts.shaft,
-      supports: [...opts.supports],
-      output: opts.output,
-      ...(opts.requiredSupport !== undefined ? {
-        requiredSupport: {
-          ...opts.requiredSupport,
-          ...(opts.requiredSupport.supports !== undefined ? { supports: [...opts.requiredSupport.supports] } : {}),
-        },
-      } : {}),
-    });
+    recordMechanicalJoint(this as unknown as AssemblyState, name, opts);
     return this;
   }
 
   jointSupport(name: string, opts: JointSupportIntentOpts): this {
-    validateMechanicalIntentName('name', name);
-    if (this.jointSupportIntents.some((intent) => intent.name === name)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `assembly.jointSupport.duplicate-name: joint support intent '${name}' is already declared.`,
-        undefined,
-        `invalid-args.assembly.joint-support-duplicate-name — use a unique jointSupport name.`,
-      );
-    }
-    validateMechanicalIntentName('mate', opts.mate);
-    validateMechanicalIntentName('shaft', opts.shaft);
-    validateMechanicalIntentName('output', opts.output);
-    if (!Array.isArray(opts.supports) || opts.supports.length === 0) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `assembly.jointSupport.invalid-ref: joint support intent '${name}' requires at least one support part.`,
-        undefined,
-        `invalid-args.assembly.joint-support-invalid-ref — pass supports: ['support-part-name', ...].`,
-      );
-    }
-    for (const support of opts.supports) {
-      validateMechanicalIntentName('supports[]', support);
-    }
-    if (opts.requiredSupport !== undefined) {
-      validateMechanicalIntentName('requiredSupport.kind', opts.requiredSupport.kind);
-      validateMechanicalIntentName('requiredSupport.around', opts.requiredSupport.around);
-      for (const support of opts.requiredSupport.supports ?? []) {
-        validateMechanicalIntentName('requiredSupport.supports[]', support);
-      }
-      if (
-        opts.requiredSupport.minBearingLengthMm !== undefined &&
-        (!Number.isFinite(opts.requiredSupport.minBearingLengthMm) || opts.requiredSupport.minBearingLengthMm <= 0)
-      ) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.jointSupport.invalid-required-support: minBearingLengthMm must be a positive finite number.`,
-          undefined,
-          `invalid-args.assembly.joint-support-invalid-required-support — pass minBearingLengthMm > 0, or omit it.`,
-        );
-      }
-      if (
-        opts.requiredSupport.clearanceMm !== undefined &&
-        (!Number.isFinite(opts.requiredSupport.clearanceMm) || opts.requiredSupport.clearanceMm < 0)
-      ) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.jointSupport.invalid-required-support: clearanceMm must be a non-negative finite number.`,
-          undefined,
-          `invalid-args.assembly.joint-support-invalid-required-support — pass clearanceMm >= 0, or omit it.`,
-        );
-      }
-    }
-
-    this.jointSupportIntents.push({
-      name,
-      mate: opts.mate,
-      shaft: opts.shaft,
-      supports: [...opts.supports],
-      output: opts.output,
-      ...(opts.requiredSupport !== undefined ? {
-        requiredSupport: {
-          ...opts.requiredSupport,
-          ...(opts.requiredSupport.supports !== undefined ? { supports: [...opts.requiredSupport.supports] } : {}),
-        },
-      } : {}),
-    });
+    recordJointSupport(this as unknown as AssemblyState, name, opts);
     return this;
   }
 
   transmission(name: string, opts: TransmissionIntentOpts): this {
-    validateMechanicalIntentName('name', name);
-    if (this.transmissionIntents.some((intent) => intent.name === name)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `assembly.transmission.duplicate-name: transmission intent '${name}' is already declared.`,
-        undefined,
-        `invalid-args.assembly.transmission-duplicate-name — use a unique arm.transmission(...) name.`,
-      );
-    }
-    if (!isTransmissionKind(opts.kind)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `assembly.transmission.invalid-kind: '${String(opts.kind)}' is not a supported transmission kind.`,
-        undefined,
-        `invalid-args.assembly.transmission-invalid-kind — use direct-horn, link-rod, four-bar, gear-pair, belt, or tendon.`,
-      );
-    }
-    validateMechanicalIntentName('sourceMate', opts.sourceMate);
-    if (!Array.isArray(opts.drivenMates) || opts.drivenMates.length === 0) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `assembly.transmission.invalid-driven-mates: transmission '${name}' requires at least one driven mate.`,
-        undefined,
-        `invalid-args.assembly.transmission-invalid-driven-mates — pass drivenMates: ['mate-name', ...].`,
-      );
-    }
-    for (const driven of opts.drivenMates) {
-      validateMechanicalIntentName('drivenMates[]', driven);
-    }
-    if (!Array.isArray(opts.path) || opts.path.length === 0) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `assembly.transmission.invalid-path: transmission '${name}' requires at least one physical path part.`,
-        undefined,
-        `invalid-args.assembly.transmission-invalid-path — pass path: ['input-part', 'linkage-part', 'output-part'].`,
-      );
-    }
-    for (const partName of opts.path) {
-      validateMechanicalIntentName('path[]', partName);
-    }
-    for (const optional of [opts.actuator, opts.input, opts.output]) {
-      if (optional !== undefined) validateMechanicalIntentName('part ref', optional);
-    }
-    if (opts.ratio !== undefined && !Number.isFinite(opts.ratio)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `assembly.transmission.invalid-ratio: transmission '${name}' ratio must be finite.`,
-        undefined,
-        `invalid-args.assembly.transmission-invalid-ratio — pass a finite ratio or omit it.`,
-      );
-    }
-
-    this.transmissionIntents.push({
-      name,
-      kind: opts.kind,
-      sourceMate: opts.sourceMate,
-      drivenMates: [...opts.drivenMates],
-      ...(opts.actuator !== undefined ? { actuator: opts.actuator } : {}),
-      ...(opts.input !== undefined ? { input: opts.input } : {}),
-      ...(opts.output !== undefined ? { output: opts.output } : {}),
-      path: [...opts.path],
-      ...(opts.ratio !== undefined ? { ratio: opts.ratio } : {}),
-      ...(opts.notes !== undefined ? { notes: opts.notes } : {}),
-    });
+    recordTransmission(this as unknown as AssemblyState, name, opts);
     return this;
   }
 
