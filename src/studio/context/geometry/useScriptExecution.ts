@@ -146,7 +146,6 @@ export function useScriptExecution(
         geometries,
         sketchesGeometries,
         error,
-        isReady,
         isComputing,
         executionCount,
         currentCodeRevision,

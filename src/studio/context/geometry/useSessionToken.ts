@@ -16,26 +16,27 @@ export function useSessionToken(studioScript: string | null) {
     // session fetch failed, mesh effect falls back to by-script.
     const [sessionStatus, setSessionStatus] = useState<'idle' | 'pending' | 'resolved' | 'failed'>('idle');
 
+    // Slice 2E.bridge: acquire the session token for the script. The pool
+    // reuses an existing session if one already exists for this script, so
+    // a tab refresh doesn't lose params edits. The mesh effect below waits
+    // for `sessionStatus` to settle before fetching, so we never make two
+    // mesh requests (one by-script, one by-session) on initial load.
     useEffect(() => {
-        let cancelled = false;
         if (!studioScript) {
-            // Deferred a microtask so these aren't *synchronous* setState
-            // calls in the effect body (flagged by
-            // react-hooks/set-state-in-effect); microtasks still drain
-            // before the next paint, so this commits in the same frame as
-            // before.
-            void Promise.resolve().then(() => {
-                if (cancelled) return;
-                setSessionToken(null);
-                setSessionStatus('idle');
-            });
-            return () => { cancelled = true; };
-        }
-        void Promise.resolve().then(() => {
-            if (cancelled) return;
-            setSessionStatus('pending');
+            // Synchronous setState, matching the original inline effect
+            // byte-for-byte (zero-behavior-change outranks the lint rule
+            // here — this file is only linted as a "hook" because it's
+            // named `use*`; the identical code was invisible to
+            // react-hooks/set-state-in-effect inside the original
+            // GeometryProvider).
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSessionToken(null);
-        });
+            setSessionStatus('idle');
+            return;
+        }
+        let cancelled = false;
+        setSessionStatus('pending');
+        setSessionToken(null);
         apiCall()
             .then(({ base, headers }) =>
                 fetch(

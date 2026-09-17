@@ -84,7 +84,7 @@ async function runHostedAutoExecution(
     }
 }
 
-function describeWorkerError(err: unknown): string {
+function logAndDescribeWorkerError(err: unknown): string {
     console.error(err);
     if (err instanceof Error) return err.message;
     if (typeof err === 'object' && err !== null) {
@@ -145,7 +145,7 @@ async function runWorkerOrDevKernelAutoExecution(
             staleRecorded = true;
             return;
         }
-        const message = describeWorkerError(err);
+        const message = logAndDescribeWorkerError(err);
         // Safety net: if the worker path threw because it lacks an API
         // global (and we didn't already route to the node kernel up
         // front), retry once through the dev mesh endpoint before
@@ -191,6 +191,12 @@ export async function runAutoExecutionLoop(
 ): Promise<void> {
     const revision = ++deps.mainRevisionRef.current;
     deps.setCurrentCodeRevision(revision);
+    // These two probes now run inside the 600ms debounce timer instead of
+    // the effect body (the original computed them before scheduling the
+    // timer). Inert: `shouldUseHostedMesh()` reads `window.location.hostname`
+    // and `devMeshAvailable()` reads `import.meta.env.DEV` — both are fixed
+    // for the page's whole lifetime, so evaluating them ~600ms later never
+    // changes the result.
     const hosted = shouldUseHostedMesh();
     // Assembly/kinematic models route to the node kernel and never touch
     // the worker, so they must not be blocked on worker `isReady` —

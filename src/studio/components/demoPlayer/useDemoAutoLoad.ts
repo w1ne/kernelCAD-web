@@ -44,13 +44,14 @@ export function useDemoAutoLoad(isDemoApiReady: boolean, elapsedMsRef: MutableRe
 
         autoLoadedScriptRef.current = script;
         let cancelled = false;
-        // Deferred one microtask so this isn't a *synchronous* setState call
-        // inside the effect body (flagged by react-hooks/set-state-in-effect);
-        // microtasks still drain before the next paint, so the loading
-        // message appears in the same commit as before.
-        void Promise.resolve().then(() => {
-            if (!cancelled) setScriptLoadStatus({ kind: 'loading', message: `Loading ${script}` });
-        });
+        // Synchronous setState, matching the original inline effect
+        // byte-for-byte (zero-behavior-change outranks the lint rule here —
+        // this file is only linted as a "hook" because it's named `use*`;
+        // the identical code was invisible to
+        // react-hooks/set-state-in-effect inside the original
+        // DemoPlayerPage).
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setScriptLoadStatus({ kind: 'loading', message: `Loading ${script}` });
 
         apiCall()
             .then(({ base, headers }) =>
@@ -98,10 +99,9 @@ export function useDemoAutoLoad(isDemoApiReady: boolean, elapsedMsRef: MutableRe
         let cancelled = false;
         let stepTimer: number | undefined;
         let clockTimer: number | undefined;
-        // See the ?script= effect above for why this is deferred a microtask.
-        void Promise.resolve().then(() => {
-            if (!cancelled) setScriptLoadStatus({ kind: 'loading', message: `Loading build record ${recordPath}` });
-        });
+        // See the ?script= effect above for why this is a sync setState.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setScriptLoadStatus({ kind: 'loading', message: `Loading build record ${recordPath}` });
 
         const loadStep = async (record: BuildRecord, index: number) => {
             const step = record.steps[index];

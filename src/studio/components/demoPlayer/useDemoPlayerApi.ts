@@ -83,16 +83,15 @@ export function useDemoPlayerApi() {
             setTitleCard: (spec) => setTitleCard(spec),
             setVersion: (v) => setVersion(v),
         });
-        let tornDown = false;
-        // Deferred a microtask so this isn't a *synchronous* setState call in
-        // the effect body (flagged by react-hooks/set-state-in-effect);
-        // microtasks still drain before the next paint, so consumers see
-        // `isDemoApiReady` flip in the same commit as before.
-        void Promise.resolve().then(() => {
-            if (!tornDown) setIsDemoApiReady(true);
-        });
+        // Synchronous setState, matching the original inline effect
+        // byte-for-byte (zero-behavior-change outranks the lint rule here —
+        // this file is only linted as a "hook" because it's named `use*`;
+        // the identical code was invisible to
+        // react-hooks/set-state-in-effect inside the original
+        // DemoPlayerPage).
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setIsDemoApiReady(true);
         return () => {
-            tornDown = true;
             setIsDemoApiReady(false);
             delete window.__demoPlayer;
         };

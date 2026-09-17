@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useCallback, useEffect, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
+import { useCallback, useEffect, useRef, type MutableRefObject } from 'react';
 import type { FeatureMeshSerialized } from '../../../modeling/capture/featureMeshSerialize';
 import type { SerializedParamTable } from '../../../shared/runtime/paramTable';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
@@ -18,10 +18,10 @@ function fetchHostedMeshAndReview(
     deps: ExecutionApplyDeps,
     code: string,
     revision: number,
+    fetchStart: number,
     opts: MeshFetchOpts | undefined,
+    setRecomputeMs: (ms: number) => void,
 ): Promise<void> {
-    // Note: unlike the dev-kernel branch below, this path does not set
-    // `recomputeMs` — matches the original inline hosted branch.
     return meshSourceHosted(code)
         .then((payload) => {
             if (revision !== deps.mainRevisionRef.current) {
@@ -31,6 +31,7 @@ function fetchHostedMeshAndReview(
             deps.setGeometries(featureMeshesToGeometries(payload.features));
             deps.setGeometryTransformOverrides({});
             deps.setFeatureRecords(payload.featureRecords ?? []);
+            setRecomputeMs(Math.max(0, Math.round(performance.now() - fetchStart)));
             deps.setPreviewGeometries([]);
             deps.setScriptParams(Object.values(payload.params ?? {}));
             deps.setScriptReview(payload.review ?? null);
@@ -197,7 +198,7 @@ function fetchDevMeshAndReview(
 export function useMeshFetch(
     code: string,
     deps: ExecutionApplyDeps,
-    setRecomputeMs: Dispatch<SetStateAction<number>>,
+    setRecomputeMs: (ms: number) => void,
 ) {
     const activeMeshFetchAbortRef = useRef<AbortController | null>(null);
     const meshFetchBusyRef = useRef(false);
@@ -238,7 +239,7 @@ export function useMeshFetch(
             : `/__kernelcad/review?script=${encodeURIComponent(script)}`;
 
         if (!token && shouldUseHostedMesh()) {
-            const promise = fetchHostedMeshAndReview(deps, code, revision, opts);
+            const promise = fetchHostedMeshAndReview(deps, code, revision, fetchStart, opts, setRecomputeMs);
             return { revision, promise };
         }
 
@@ -250,6 +251,14 @@ export function useMeshFetch(
         // This callback reads `code` at call time by design (it's invoked
         // imperatively, not on every keystroke); resubscribing on each `code`
         // change would churn the executor. Intentional omission.
+        //
+        // Invariant this callback depends on: every field of `deps` (an
+        // `ExecutionApplyDeps`) must be render-stable (a raw useState setter
+        // or a `[]`-deps useCallback). This closure pins the FIRST `deps`
+        // object it ever receives — if a future field is added that is not
+        // render-stable (e.g. a value that changes with `executionCount`),
+        // this callback would silently keep reading the stale one with no
+        // lint warning.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [deps.pushExecutionRecord]);
 
@@ -282,5 +291,5 @@ export function useMeshFetch(
         };
     }, []);
 
-    return { fetchMeshAndReview, requestMeshAndReview };
+    return { requestMeshAndReview };
 }

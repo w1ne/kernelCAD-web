@@ -20,21 +20,25 @@ export function usePreviewExecution(
     const [stalePreviewResponsesDropped, setStalePreviewResponsesDropped] = useState(0);
     const previewRevisionRef = useRef(0);
 
-    // Reset `previewGeometries` the instant preview becomes ineligible
-    // (studio-script mode, engine not ready, or no pending preview code).
-    // Done during render — not inside the effect below — so this doesn't
-    // trip the "no setState synchronously in an effect" rule; React commits
-    // this update before paint, same as the effect-based reset it replaces.
-    const previewEligible = !studioScript && isReady && Boolean(previewCode);
-    const [wasPreviewEligible, setWasPreviewEligible] = useState(previewEligible);
-    if (previewEligible !== wasPreviewEligible) {
-        setWasPreviewEligible(previewEligible);
-        if (!previewEligible) setPreviewGeometries([]);
-    }
-
     // Preview Execution Loop
     useEffect(() => {
-        if (!previewEligible) return;
+        if (studioScript) {
+            // Synchronous setState, matching the original inline effect
+            // byte-for-byte (zero-behavior-change outranks the lint rule
+            // here — this file is only linted as a "hook" because it's
+            // named `use*`; the identical code was invisible to
+            // react-hooks/set-state-in-effect inside the original
+            // GeometryProvider). Pinned by
+            // `GeometryContext.test.tsx` ("clears previewGeometries on the
+            // studioScript / not-ready / no-previewCode branches").
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setPreviewGeometries([]);
+            return;
+        }
+        if (!isReady || !previewCode) {
+            setPreviewGeometries([]);
+            return;
+        }
 
         const runPreview = async () => {
             const revision = ++previewRevisionRef.current;
@@ -62,7 +66,7 @@ export function usePreviewExecution(
 
         const timer = setTimeout(runPreview, 150); // Aggressive debounce for preview
         return () => clearTimeout(timer);
-    }, [code, previewCode, isReady, engine, studioScript, previewEligible]);
+    }, [code, previewCode, isReady, engine, studioScript]);
 
-    return { previewCode, setPreviewCode, previewGeometries, setPreviewGeometries, stalePreviewResponsesDropped };
+    return { setPreviewCode, previewGeometries, setPreviewGeometries, stalePreviewResponsesDropped };
 }
