@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/agent/kinematic/sweepTolerance.ts
+// src/kinematic/sweepTolerance.ts
 //
 // Parameter-space tolerance sweep. Declares one or more `param()` names with
 // a value list or {min,max,steps} range, re-evaluates the script once per
@@ -20,26 +20,27 @@
 // are resolved against the live param table by the mounting-hole gate, so
 // sweeping that diameter produces a real pass/fail envelope.
 
-// This module now lives in the agent layer, above the CLI command tree it
-// pulls in, so `evaluateAndBuildScript` is a plain static import — no need
-// for the previous dynamic `await import(...)` code-split that kept
-// node-only modules out of the browser graph (the browser runtime never
-// reaches this module now that `src/modeling/api.ts` no longer imports
-// `../kinematic` directly; see `src/modeling/runtime/browserGraphNodeFree.test.ts`).
-import { evaluateAndBuildScript } from '../cli/commands/evaluate';
-import { setParamValue } from '../mcp/edits/setParamValue';
-import type { Assembly } from '../../modeling/capture/assembly';
-import { validateAssemblyWithMates } from '../../modeling/mates/validator';
-import { detectInterferencesForPoses } from '../../modeling/mates/poseEnvelope';
-import { checkReachable } from '../../kinematic/checkReachable';
-import { KernelError } from '../../shared/intent/kernelError';
-import { DIAGNOSTIC_REGISTRY, type DiagnosticCode } from '../../shared/diagnostics/registry';
+// `evaluateAndBuildScript` lives in the CLI command tree, which pulls
+// node-only modules (file reads, CLI arg parsing) transitively. This module
+// is reachable from the browser runtime via `src/modeling/api.ts` ->
+// `import * as kinematic from '../kinematic'`, so the import is deferred to
+// a dynamic `await import(...)` (code-split, not part of the static browser
+// graph) rather than a top-level import — see
+// `src/modeling/runtime/browserGraphNodeFree.test.ts`.
+import type { evaluateAndBuildScript } from '../agent/cli/commands/evaluate';
+import { setParamValue } from '../agent/mcp/edits/setParamValue';
+import type { Assembly } from '../modeling/capture/assembly';
+import { validateAssemblyWithMates } from '../modeling/mates/validator';
+import { detectInterferencesForPoses } from '../modeling/mates/poseEnvelope';
+import { checkReachable } from './checkReachable';
+import { KernelError } from '../shared/intent/kernelError';
+import { DIAGNOSTIC_REGISTRY, type DiagnosticCode } from '../shared/diagnostics/registry';
 import type {
   SweepComboResult,
   SweepGateSpec,
   SweepParamsDeclaration,
   SweepToleranceResult,
-} from '../../kinematic/types';
+} from './types';
 
 export const SWEEP_COMBO_CAP = 64;
 
@@ -165,7 +166,8 @@ async function assertParamsAreNumeric(baseCode: string, paramNames: string[]): P
   const hadValidateDefault = process.env.KERNELCAD_VALIDATE_DEFAULT !== undefined;
   let built: Awaited<ReturnType<typeof evaluateAndBuildScript>>;
   try {
-    built = await evaluateAndBuildScript({ code: baseCode });
+    const mod = await import('../agent/cli/commands/evaluate');
+    built = await mod.evaluateAndBuildScript({ code: baseCode });
   } finally {
     if (!hadValidateDefault) delete process.env.KERNELCAD_VALIDATE_DEFAULT;
   }
@@ -238,7 +240,8 @@ async function evaluateCombo(
   let evaluation: Awaited<ReturnType<typeof evaluateAndBuildScript>>['evaluation'];
   let model: Awaited<ReturnType<typeof evaluateAndBuildScript>>['model'];
   try {
-    const built = await evaluateAndBuildScript({ code });
+    const mod = await import('../agent/cli/commands/evaluate');
+    const built = await mod.evaluateAndBuildScript({ code });
     evaluation = built.evaluation;
     model = built.model;
   } finally {

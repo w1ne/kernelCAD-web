@@ -26,13 +26,6 @@ process.env.KERNELCAD_PARTS_BASE_URL ??= 'off';
 import '../src/modeling/runtime/hostFsNode';
 import '../src/shared/runtime/kernelcadVersionNode';
 
-// Same reasoning as above: `createApi()` reads `kinematic.*` from a slot that
-// only a node entry point's side-effect import fills (modeling cannot import
-// kinematic directly — layering). Tests exercise `createApi`/`CaptureSession`
-// directly without going through the CLI, so install the full (CLI/MCP-shaped)
-// facade here too. See src/agent/kinematic/register.ts.
-import '../src/agent/kinematic/register';
-
 // --- Global test-isolation teardown ------------------------------------------
 // vitest runs many test FILES in the same worker process. Global mutations made
 // by one file — a `vi.stubGlobal`, a stubbed `fetch`/`window`, leftover fake

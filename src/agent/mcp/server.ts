@@ -3,12 +3,6 @@
 // src/agent/mcp/server.ts
 import { createRequire } from 'node:module';
 import { randomUUID } from 'node:crypto';
-// Registers the `kinematic.*` facade `modeling/api.ts` injects into scripts.
-// The `kernelcad mcp` CLI subcommand already triggers this via
-// `src/agent/cli/index.ts`'s side-effect import, but this module can in
-// principle be loaded on its own (a test, a future standalone MCP bin), so
-// register here too — idempotent, just re-sets the same implementation.
-import '../kinematic/register';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {

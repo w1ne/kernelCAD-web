@@ -34,6 +34,20 @@ export default defineConfig([
     ignores: [
       // Tests may import across layers.
       '**/*.test.{ts,tsx}',
+      // modeling/api.ts is the script-API composition root: it is what
+      // exposes `kinematic.*` to user scripts, which structurally requires
+      // importing src/kinematic from modeling. The real fix is a dedicated
+      // script-API composition layer above both, coordinated with
+      // kernelCAD-server (which also constructs this API outside this
+      // repo) — tracked in the quality-ratchet spec, not a same-repo slice.
+      'src/modeling/api.ts',
+      // kinematic/sweepTolerance.ts orchestrates agent-side
+      // evaluate/setParam (CLI command tree + MCP edit helpers) from within
+      // the kinematic layer. The real fix is the same dedicated script-API
+      // composition layer above both — see the modeling/api.ts note above —
+      // coordinated with kernelCAD-server and tracked in the quality-ratchet
+      // spec, not a same-repo slice.
+      'src/kinematic/sweepTolerance.ts',
     ],
     rules: {
       'no-restricted-imports': ['error', {

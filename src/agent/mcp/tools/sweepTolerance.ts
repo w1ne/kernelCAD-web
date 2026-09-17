@@ -7,11 +7,11 @@
 // values and runs the standard mechanism gates (interference,
 // mounting-hole, joint-axis, plus reachability when declared) on each.
 
-import { sweepTolerance } from '../../kinematic/sweepTolerance';
-import type {
-  SweepGateSpec,
-  SweepParamsDeclaration,
-  SweepToleranceResult,
+import {
+  sweepTolerance,
+  type SweepGateSpec,
+  type SweepParamsDeclaration,
+  type SweepToleranceResult,
 } from '../../../kinematic';
 
 export interface SweepToleranceInput {
