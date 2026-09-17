@@ -65,8 +65,8 @@ import { serializeForBridge } from '../../modeling/capture/featureMeshSerialize'
 import type { CompilerDiagnostic, DiagnosticCode } from '../../shared/diagnostics/diagnostic';
 import { withNextAction, withNextActions } from '../../shared/diagnostics/diagnostic';
 import type { AnimationViewMetadata } from '../../shared/intent/animationViewRecord';
-import { keyframeSampleSet, sampleTracks } from './animationSampler';
-import { verifyAnimation, type AnimationCollision } from './verifyAnimation';
+import { keyframeSampleSet, sampleTracks } from '../../modeling/animation/animationSampler';
+import { verifyAnimation, type AnimationCollision } from '../../modeling/animation/verifyAnimation';
 import {
   HEADLESS_VIEWPORT,
   loadFeatureMeshesIntoPage,

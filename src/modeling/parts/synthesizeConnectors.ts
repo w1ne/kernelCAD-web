@@ -14,7 +14,7 @@
 //   bolt-holes-N ← every detected hole, mouth origin + through-axis,
 //                  deterministically numbered (matches the bundled rule)
 //
-// Input is a StepInspectReport (from inspectStepFile) — bbox + cylindrical holes
+// Input is a StepInspectReport (from inspectStepBuffer / inspectStepFile) — bbox + cylindrical holes
 // already measured. This is a pure function: no I/O, fully unit-testable.
 
 import { formatTopoRef } from '../../kernel/naming';

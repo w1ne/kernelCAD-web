@@ -11,9 +11,11 @@
 // for vendor STEP files.
 //
 // This module is pure with respect to the filesystem: it takes bytes, not
-// a path, so it has no `node:fs` dependency and is safe to reach from the
-// browser runtime. `src/agent/inspect/inspectStep.ts` reads the file off
-// disk and delegates to `inspectStepBuffer` below.
+// a path, so it has no `node:fs` dependency and is importable without
+// `node:` builtins. Callers must still pass a Node `Buffer` — it calls
+// `buf.toString('utf8')` — so it is not yet browser-safe; that would need
+// `Uint8Array` + `TextDecoder`, a later change. `src/agent/inspect/inspectStep.ts`
+// reads the file off disk and delegates to `inspectStepBuffer` below.
 
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
@@ -78,14 +80,14 @@ export async function inspectStepBuffer(
     if (isOcctOutOfMemory(e)) {
       throw new KernelError(
         'feature.kernel-failed',
-        `inspectStepBuffer: ran out of OCCT wasm heap reading ${label}: ${msg}`,
+        `inspectStepFile: ran out of OCCT wasm heap reading ${label}: ${msg}`,
         undefined,
         'kernel-failed.inspect.step.out-of-memory — the file is NOT invalid; the geometry kernel exhausted its 2 GiB wasm heap. Restart the host process and retry.',
       );
     }
     throw new KernelError(
       'feature.kernel-failed',
-      `inspectStepBuffer: replicad failed to parse STEP at ${label}: ${msg}`,
+      `inspectStepFile: replicad failed to parse STEP at ${label}: ${msg}`,
       undefined,
       'kernel-failed.inspect.step.parse — file is not a valid STEP model; re-export from the source CAD as AP203/AP214 with solid bodies.',
     );
@@ -101,7 +103,7 @@ export async function inspectStepBuffer(
   ) {
     throw new KernelError(
       'feature.kernel-failed',
-      `inspectStepBuffer: ${label} did not contain a 3D solid.`,
+      `inspectStepFile: ${label} did not contain a 3D solid.`,
       undefined,
       'kernel-failed.inspect.step.no-solid — the STEP file must contain at least one closed solid body.',
     );
@@ -147,7 +149,7 @@ export async function inspectStepBuffer(
   if (solidBackends.length === 0) {
     throw new KernelError(
       'feature.kernel-failed',
-      `inspectStepBuffer: ${label} did not contain a 3D solid.`,
+      `inspectStepFile: ${label} did not contain a 3D solid.`,
       undefined,
       'kernel-failed.inspect.step.no-solid — the STEP file must contain at least one closed solid body.',
     );
