@@ -10,7 +10,7 @@ import type {
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { FeatureKind } from '../../../shared/intent/types';
 import type { LowerContext } from './lowerers/context';
-import { LOWERER_TABLE, LOWERERS } from './lowerers/index';
+import { LOWERERS } from './lowerers/index';
 import { applyVariableEdgeFeature } from './lowerers/edgeFeatures';
 import { normalizeAxis } from './lowerers/helpers';
 import { finishLowering } from './lowerers/transforms';
@@ -112,7 +112,7 @@ export class OcctLowerer implements FeatureLowerer {
 
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
     const ctx = this.contextFor(inputs);
-    const lowerKind = LOWERER_TABLE[r.kind];
+    const lowerKind = LOWERERS[r.kind];
     if (lowerKind === undefined) {
       return {
         shape: undefined as unknown as ShapeBackend,

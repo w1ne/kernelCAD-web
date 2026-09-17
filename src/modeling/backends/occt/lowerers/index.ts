@@ -31,11 +31,12 @@ import { lowerVirtualRecord } from './virtual';
  *
  * This table IS the supported set — `OcctLowerer.supports` is derived from its
  * keys, so a kind can never be advertised without a lowerer or lowered without
- * being advertised. `satisfies` keeps the keys inside `FeatureKind` and the
- * values shaped like `KindLowerer`; kinds absent here fall through to the
- * unsupported-kind diagnostic in `lower()`.
+ * being advertised. The `Partial<Record<FeatureKind, …>>` annotation keeps the
+ * keys inside `FeatureKind` and the values shaped like `KindLowerer`, and makes
+ * a lookup yield `KindLowerer | undefined`: kinds absent here fall through to
+ * the unsupported-kind diagnostic in `lower()`.
  */
-export const LOWERERS = {
+export const LOWERERS: Partial<Record<FeatureKind, KindLowerer>> = {
   // primitives
   box: lowerBox,
   cylinder: lowerCylinder,
@@ -90,10 +91,4 @@ export const LOWERERS = {
   feaStudy: lowerVirtualRecord,
   drawingDatum: lowerVirtualRecord,
   drawingTolerance: lowerVirtualRecord,
-} satisfies Partial<Record<FeatureKind, KindLowerer>>;
-
-/** The feature kinds `LOWERERS` covers. */
-export type LoweredFeatureKind = keyof typeof LOWERERS;
-
-/** Widened view used for the runtime `r.kind` lookup, which may miss. */
-export const LOWERER_TABLE: Partial<Record<FeatureKind, KindLowerer>> = LOWERERS;
+};

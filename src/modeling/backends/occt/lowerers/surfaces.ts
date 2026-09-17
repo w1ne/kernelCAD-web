@@ -102,12 +102,12 @@ export function lowerSurfaceSew(ctx: LowerContext, r: FeatureRecord): LowerOutco
       });
       return noShape();
     }
-    const built = buildSurfaceById(ctx, ref.surfaceId, r);
-    if (!built) {
+    const builtSurface = buildSurfaceById(ctx, ref.surfaceId, r);
+    if (!builtSurface) {
       // buildSurfaceById already pushed the specific diagnostic.
       return noShape();
     }
-    if (built.kind !== 'face') {
+    if (builtSurface.kind !== 'face') {
       ctx.diagnostics.push({
         target: ctx.target,
         code: 'feature.invalid-args',
@@ -118,7 +118,7 @@ export function lowerSurfaceSew(ctx: LowerContext, r: FeatureRecord): LowerOutco
       });
       return noShape();
     }
-    faces.push(built.face);
+    faces.push(builtSurface.face);
   }
 
   const tolerance = r.params.tolerance.evaluated;

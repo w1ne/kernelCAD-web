@@ -373,8 +373,10 @@ export async function fetchPartHost(
       // will never carry BREP.
       //
       // We deliberately do NOT route these into the `importedMesh` escape hatch:
-      // `importedMesh` has no lowerer (occtLowerer's switch falls through to
-      // `default:` → "Feature kind 'importedMesh' is not supported"), and the
+      // `importedMesh` has no entry in the `LOWERERS` table in
+      // `modeling/backends/occt/lowerers/index.ts`, so it hits the
+      // unsupported-kind diagnostic ("Feature kind 'importedMesh' is not
+      // supported"), and the
       // boards are multi-component meshes that OCCT cannot sew into a solid
       // anyway (nucleo-h563zi-board = 10 disjoint meshes → sewing yields a
       // COMPOUND, and fromTriangleMesh rejects it). A mesh Shape here would fail

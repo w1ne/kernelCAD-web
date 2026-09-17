@@ -13,6 +13,10 @@ import { noShape, type LowerOutcome } from './context';
  * which reads this record's metadata and the shape it points at) and the
  * GD&T declarations `drawingDatum` / `drawingTolerance`, which the
  * svg-drawing exporter resolves against the exported geometry.
+ *
+ * Takes no parameters on purpose: all seven kinds ignore the record and the
+ * context entirely (their old switch arms were byte-identical), and a
+ * zero-argument function is still assignable to `KindLowerer`.
  */
 export function lowerVirtualRecord(): LowerOutcome {
   return noShape();

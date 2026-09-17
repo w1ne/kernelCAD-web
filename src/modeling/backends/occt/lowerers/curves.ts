@@ -123,8 +123,15 @@ export function lowerVariableSweep(ctx: LowerContext, r: FeatureRecord): LowerOu
   }
 }
 
-/** Steps 1-3 of the spine resolution order documented on `lowerVariableSweep`.
- *  Returns undefined once the failing step has pushed its diagnostic. */
+/**
+ * Steps 1-3 of the spine resolution order documented on `lowerVariableSweep`.
+ *
+ * Contract: returns a truthy OCCT edge handle, or `undefined` **after** pushing
+ * the diagnostic that explains why. The caller answers a falsy return with a
+ * bare `noShape()` and pushes nothing, so any new `return undefined` added here
+ * must push first or the failure goes out with an empty diagnostics list. The
+ * return type cannot carry this — `unknown | undefined` collapses to `unknown`.
+ */
 function resolveVariableSweepSpine(
   ctx: LowerContext,
   r: FeatureRecord,
