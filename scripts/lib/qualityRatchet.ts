@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { ESLint } from 'eslint';
