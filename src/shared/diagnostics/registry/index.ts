@@ -11,7 +11,7 @@
 // (docs/plans/2026-09-17-quality-slice-5-diagnostics-registry.md). To add a
 // code: add its entry to the matching `registry/<group>.ts` file only. This
 // file spreads every group file into DIAGNOSTIC_REGISTRY and re-derives all
-// three remaining agent-facing views (DiagnosticCode union, DIAGNOSTIC_CODES
+// four agent-facing views (DiagnosticCode union, DIAGNOSTIC_CODES
 // array, HINT_TEMPLATES, NEXT_ACTIONS) from it automatically — a new code
 // does not need a second edit here. See the LEGACY_CODE_ORDER comment below
 // for how ordering works and tests/unit/diagnostics/registryProjectionSnapshot.test.ts
@@ -90,9 +90,8 @@ export type DiagnosticCode = keyof typeof DIAGNOSTIC_REGISTRY;
 // any registry code missing from this anchor, in registry-spread order, so
 // new codes land in all four projections automatically. The `satisfies`
 // clause makes a typo'd or removed code a compile error naming the
-// offender; see the MissingFromLegacyOrder check further down for the
-// reverse case (a code that exists in the registry but was, by mistake,
-// also added here under the wrong string). See
+// offender; the duplicate check further down throws at module load if a
+// code is listed here twice. See
 // tests/unit/diagnostics/registryProjectionSnapshot.test.ts for what is
 // locked (the first 309 positions) and what isn't (codes appended after).
 const LEGACY_CODE_ORDER = [
