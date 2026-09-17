@@ -577,12 +577,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/assembly.ts",
-    "symbol": "Method 'solvedModel'",
-    "value": 22
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/authoringFeatureRecords.ts",
     "symbol": "Function 'buildDfmSpecFeatureSpec'",
     "value": 59
@@ -1497,7 +1491,7 @@
     "rule": "max-lines",
     "file": "src/modeling/capture/assembly.ts",
     "symbol": "(file)",
-    "value": 1407
+    "value": 868
   },
   {
     "rule": "max-lines",
