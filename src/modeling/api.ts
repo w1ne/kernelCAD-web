@@ -67,7 +67,7 @@ import { makeParamRef, isParamRef, type ParamRef, type Editable } from '../share
 import { makeTypedParamRef, type TypedParamRef } from '../shared/runtime/paramRef';
 import type { ParamMetadata } from '../shared/runtime/paramTable';
 import { currentValue, toParam } from '../shared/runtime/editableHelpers';
-import { getKinematicFacade, registerKinematicFacade, type KinematicFacade } from './kinematic/registry';
+import { getKinematicFacade, registerKinematicFacade, type KinematicFacade } from './kinematicFacade/registry';
 export { registerKinematicFacade };
 import { q as queryNamespace } from '../kernel/naming/queryConstructors';
 import { makeJointNamespace } from './joints';

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/modeling/kinematic/facade.ts
+// src/modeling/kinematicFacade/facade.ts
 //
 // The KinematicFacade interface (and every result/opts type it needs) lives
 // here, in modeling, so `modeling/api.ts` never has to import `src/kinematic`

@@ -5,7 +5,7 @@
 // Result envelopes and option shapes for the kc.kinematic.* facade.
 // checkMountingHoleConsistency / checkSweptCollision / checkReachable /
 // checkLoadCapacity / checkStaticHold and the `KinematicFacade` interface
-// itself now live in `src/modeling/kinematic/facade.ts` (modeling may not
+// itself now live in `src/modeling/kinematicFacade/facade.ts` (modeling may not
 // import kinematic per the layering rule, so the interface the agent layer
 // registers against has to live below kinematic, not in it) — re-exported
 // below so this module's public shape is unchanged for every existing
@@ -48,7 +48,7 @@ export type {
   StaticHoldJointResult,
   StaticHoldResult,
   KinematicFacade,
-} from '../modeling/kinematic/facade';
+} from '../modeling/kinematicFacade/facade';
 
 // ===== sweepTolerance =====
 

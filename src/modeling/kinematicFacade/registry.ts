@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/modeling/kinematic/registry.ts
+// src/modeling/kinematicFacade/registry.ts
 //
 // The kinematic layer sits above modeling (shared -> kernel -> modeling ->
 // kinematic -> agent -> studio), so modeling cannot import `src/kinematic` to
