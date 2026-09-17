@@ -55,11 +55,9 @@ import {
 } from '../../../kernel/backends/occt/historyAwareEdgeFeatures';
 import { draftWithHistory } from '../../../kernel/backends/occt/draftWithHistory';
 import { propagateTransformHistory } from '../../../kernel/naming/evolutionRecord';
-import type { HistoryMap, FaceLineage } from '../../../kernel/naming/evolutionRecord';
+import type { HistoryMap } from '../../../kernel/naming/evolutionRecord';
 import { retagInstance } from '../../../kernel/backends/occt/patternHistory';
 import { HINT_TEMPLATES } from '../../../shared/diagnostics/registry';
-import type { DiagnosticCode } from '../../../shared/diagnostics/registry';
-import { TANGENCY_ERROR_PREFIX } from '../../../kernel/backends/occt/tangencySolver';
 import { HelicalSweepArgsError, helixAxisBasis } from '../../../kernel/backends/occt/helicalSweep';
 import { helix, helixOptionsFromSpec, type HelixRailSpec } from '../../helix';
 import type { LowerContext } from './lowerers/context';
@@ -70,6 +68,11 @@ import {
   readVec3Param,
 } from './lowerers/helpers';
 import { buildSurfaceById, resolveSurfaceFaceForRecord } from './lowerers/surfaceResolve';
+import { lowerImported, lowerSdfMaterialize } from './lowerers/imported';
+import { lowerBox, lowerCylinder, lowerSphere } from './lowerers/primitives';
+import { lowerRevolve } from './lowerers/revolve';
+import { lowerExtrude, lowerSketch } from './lowerers/sketchExtrude';
+import { applyTransforms, finishLowering } from './lowerers/transforms';
 
 // `normalizeAxis` moved to lowerers/helpers.ts; re-exported here so the
 // public import path stays `backends/occt/occtLowerer`.
@@ -400,320 +403,15 @@ export class OcctLowerer implements FeatureLowerer {
     let shape: ShapeBackend;
 
     switch (r.kind) {
-      case 'box': {
-        const x = r.params.x.evaluated;
-        const y = r.params.y.evaluated;
-        const z = r.params.z.evaluated;
-        const centered = (r.params.centered?.evaluated ?? 0) > 0.5;
-        const rawBox = OcctBackend.box(x, y, z, centered);
-        const boxSeedMap: HistoryMap = new Map();
-        const boxFaceNames = ['top', 'bottom', 'left', 'right', 'front', 'back'] as const;
-        for (const name of boxFaceNames) {
-          try {
-            const hash = rawBox.findCanonicalFaceHash(name);
-            const lineage: FaceLineage = { rootHash: hash, canonicalName: name, rootFeatureId: r.id };
-            boxSeedMap.set(hash, lineage);
-          } catch {
-            // defensive: shouldn't happen for box, but skip silently if it does
-          }
-        }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const boxWrapped = (rawBox as OcctBackend).getReplicadShape() as any;
-        shape = new OcctBackend(boxWrapped, 'box', boxSeedMap);
-        {
-          const e = emptyResultDiagnostic({
-            featureId: r.id, opLabel: 'box',
-            volumeAfter: (shape as OcctBackend).volume(), isEmpty: (shape as OcctBackend).isEmpty(),
-          });
-          if (e) ctx.diagnostics.push(e);
-        }
-        break;
-      }
-      case 'cylinder': {
-        const rawCyl = OcctBackend.cylinder(r.params.h.evaluated, r.params.r.evaluated);
-        const cylSeedMap: HistoryMap = new Map();
-        const cylinderFaceNames = ['top', 'bottom'] as const;
-        for (const name of cylinderFaceNames) {
-          try {
-            const hash = rawCyl.findCanonicalFaceHash(name);
-            cylSeedMap.set(hash, { rootHash: hash, canonicalName: name, rootFeatureId: r.id });
-          } catch {
-            // defensive: skip if face not found
-          }
-        }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const cylWrapped = (rawCyl as OcctBackend).getReplicadShape() as any;
-        shape = new OcctBackend(cylWrapped, 'cylinder', cylSeedMap);
-        {
-          const e = emptyResultDiagnostic({
-            featureId: r.id, opLabel: 'cylinder',
-            volumeAfter: (shape as OcctBackend).volume(), isEmpty: (shape as OcctBackend).isEmpty(),
-          });
-          if (e) ctx.diagnostics.push(e);
-        }
-        break;
-      }
-      case 'sphere': {
-        // Sphere has no canonical planar face names — leave historyMap undefined.
-        // Falls back to the legacy !base.kind path in edgeSelection (correct behaviour).
-        shape = OcctBackend.sphere(r.params.r.evaluated);
-        {
-          const e = emptyResultDiagnostic({
-            featureId: r.id, opLabel: 'sphere',
-            volumeAfter: (shape as OcctBackend).volume(), isEmpty: (shape as OcctBackend).isEmpty(),
-          });
-          if (e) ctx.diagnostics.push(e);
-        }
-        break;
-      }
+      case 'box': return finishLowering(ctx, r, lowerBox(ctx, r));
+      case 'cylinder': return finishLowering(ctx, r, lowerCylinder(ctx, r));
+      case 'sphere': return finishLowering(ctx, r, lowerSphere(ctx, r));
       case 'importedStep':
       case 'importedBrep':
-      case 'importedStl': {
-        // `lib.fromSTEP` / `lib.fromBREP` / `lib.fromSTL` all ran their import
-        // at capture time (host-side fs read + the format's OCCT reader); the
-        // resulting OcctBackend was parked in `lowerer.importedGeometry` keyed
-        // by feature id. Lowering is a hand-back — the geometry is already a
-        // Shape3D, so all three formats share one arm.
-        const backend = ctx.importedGeometry.get(r.id);
-        if (!backend) {
-          ctx.diagnostics.push({
-            target: 'export-occt',
-            code: 'feature.invalid-args',
-            featureId: r.id,
-            severity: 'error',
-            message: `${r.kind} record '${r.id}' has no pre-lowered geometry registered on the lowerer.`,
-            hint: `invalid-args.${r.kind}.missing-backend — wire the session's importedGeometry map into the lowerer before calling engine.run().`,
-          });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
-        }
-        // Hand back a clone, never the parked backend itself: replicad's
-        // translate/rotate/mirror/scale destroy their source OCCT handle, so
-        // the post-hoc `r.transforms` loop below (or any destructive
-        // downstream consumer) would invalidate the map entry and the next
-        // lowering pass would throw "This object has been deleted".
-        shape = (backend as OcctBackend).clone();
-        break;
-      }
-      case 'sdfMaterialize': {
-        // `sdf.materialize(field, opts?)` ran the marching-cubes sweep at
-        // capture time (host-side pure JS + OCCT sewing); the resulting
-        // OcctBackend was parked in `session.importedGeometry` keyed by
-        // feature id. Lowering is a hand-back — geometry is already built.
-        const backend = ctx.importedGeometry.get(r.id);
-        if (!backend) {
-          ctx.diagnostics.push({
-            target: 'export-occt',
-            code: 'feature.invalid-args',
-            featureId: r.id,
-            severity: 'error',
-            message: `sdfMaterialize record '${r.id}' has no pre-lowered geometry registered on the lowerer.`,
-            hint: "invalid-args.sdfMaterialize.missing-backend — wire the session's importedGeometry map into the lowerer before calling engine.run().",
-          });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
-        }
-        // Clone for the same reason as `importedStep` above: keep the parked
-        // backend alive across repeated lowering passes.
-        shape = (backend as OcctBackend).clone();
-        break;
-      }
-      case 'sketch': {
-        const meta = r.metadata as { textContent?: unknown; commands?: unknown } | undefined;
-        if (typeof meta?.textContent === 'string') {
-          const res = await (await import('../../../kernel/backends/occt/textLowerer')).lowerSketchText(r, ctx.scriptDir);
-          if (!res.ok) {
-            ctx.diagnostics.push(...res.diagnostics);
-            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
-          }
-          shape = res.backend;
-          break;
-        }
-        const commands = meta?.commands;
-        if (!Array.isArray(commands) || commands.length === 0) {
-          ctx.diagnostics.push({
-            target: 'export-occt',
-            code: 'feature.invalid-args',
-            featureId: r.id,
-            severity: 'error',
-            message: `sketch requires metadata.commands: SketchCommand[] OR metadata.textContent: string.`,
-            hint: 'Construct sketches via path().moveTo(...).lineTo(...).close() OR sketch.text(content, opts).',
-          });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
-        }
-        try {
-          shape = OcctBackend.fromSketchCommands(commands as import('../../capture/sketch').SketchCommand[]);
-        } catch (e) {
-          const msg = e instanceof Error ? e.message : String(e);
-          // Narrow degenerate-arc cases (radiusArc-only for now) and the
-          // Geom2dGcc tangency failures to their specific codes; everything
-          // else collapses into the generic kernel-failed bucket. The
-          // tangency solver tags its own messages (see TANGENCY_ERROR_PREFIX)
-          // precisely so a "no such circle exists" answer reaches the agent as
-          // a named geometric outcome rather than an anonymous kernel crash.
-          const isDegenerateArc = msg.startsWith('radiusArc:');
-          const isTangency = msg.startsWith(TANGENCY_ERROR_PREFIX);
-          let code: DiagnosticCode;
-          let hint: string;
-          if (isTangency) {
-            code = msg.startsWith(`${TANGENCY_ERROR_PREFIX} ambiguous:`)
-              ? 'sketch.tangency.ambiguous'
-              : 'sketch.tangency.no-solution';
-            hint = HINT_TEMPLATES[code].template;
-          } else if (isDegenerateArc) {
-            code = 'feature.sketch.degenerate-arc';
-            hint = 'The arc segment is degenerate. Try a larger radius, different endpoints, or another arc constructor (threePointsArc/sagittaArc).';
-          } else {
-            code = 'feature.kernel-failed';
-            hint = 'Sketch construction failed — read the diagnostic message for the underlying error.';
-          }
-          ctx.diagnostics.push({
-            target: 'export-occt',
-            code,
-            featureId: r.id,
-            severity: 'error',
-            message: `sketch construction failed: ${msg}`,
-            hint,
-          });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
-        }
-        break;
-      }
-      case 'extrude': {
-        // Profile kind is a quoted string in IR (e.g. "'rect'", "'circle'").
-        const profileKind = String(r.params.profileKind.expression).replace(/'/g, '');
-        if (profileKind === 'rect') {
-          const height = r.params.height.evaluated;
-          shape = OcctBackend.extrudeRect(
-            r.params.w.evaluated,
-            r.params.h.evaluated,
-            height,
-          );
-        } else if (profileKind === 'circle') {
-          const height = r.params.height.evaluated;
-          shape = OcctBackend.extrudeCircle(r.params.r.evaluated, height);
-        } else if (profileKind === 'polygon') {
-          const depth = r.params.depth.evaluated;
-          // Each coordinate is a plain number, or a Param (pre-resolved by the
-          // dispatcher) when the author passed a ParamRef.
-          const coord = (c: unknown): number | undefined =>
-            typeof c === 'number'
-              ? c
-              : typeof c === 'object' && c !== null && typeof (c as { evaluated?: unknown }).evaluated === 'number'
-                ? (c as { evaluated: number }).evaluated
-                : undefined;
-          const rawPoints = (r.metadata as { points?: unknown } | undefined)?.points;
-          const points = Array.isArray(rawPoints)
-            ? rawPoints.map(p => (Array.isArray(p) && p.length === 2 ? [coord(p[0]), coord(p[1])] : [undefined, undefined]))
-            : undefined;
-          if (!Array.isArray(points) || points.length < 3 ||
-              !points.every(p => typeof p[0] === 'number' && typeof p[1] === 'number')) {
-            ctx.diagnostics.push({
-              target: 'export-occt',
-              code: 'feature.invalid-args',
-              featureId: r.id,
-              severity: 'error',
-              message: `extrude polygon requires metadata.points: [number, number][] with at least 3 points.`,
-              hint: 'Pass at least 3 [x, y] number pairs as the polygon points.',
-            });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
-          }
-          try {
-            shape = OcctBackend.extrudePolygon(points as [number, number][], depth);
-          } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e);
-            ctx.diagnostics.push({
-              target: 'export-occt',
-              code: 'feature.kernel-failed',
-              featureId: r.id,
-              severity: 'error',
-              message: `OCCT extrude failed: ${msg}`,
-              hint: 'OCCT could not extrude — check for self-intersecting profile, inconsistent polygon winding, or rounded-rect radius exceeding half of width/height.',
-            });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
-          }
-        } else if (profileKind === 'rounded-rect') {
-          const width = r.params.width?.evaluated;
-          const height = r.params.height?.evaluated;
-          const radius = r.params.radius?.evaluated;
-          const depth = r.params.depth?.evaluated;
-          if (width === undefined || height === undefined || radius === undefined || depth === undefined) {
-            ctx.diagnostics.push({
-              target: 'export-occt',
-              code: 'feature.invalid-args',
-              featureId: r.id,
-              severity: 'error',
-              message: `extrude rounded-rect requires width, height, radius, and depth params (positive finite numbers).`,
-              hint: 'Pass width, height, radius, and depth as positive finite numbers.',
-            });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
-          }
-          try {
-            shape = OcctBackend.extrudeRoundedRect(width, height, radius, depth);
-          } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e);
-            ctx.diagnostics.push({
-              target: 'export-occt',
-              code: 'feature.kernel-failed',
-              featureId: r.id,
-              severity: 'error',
-              message: `OCCT extrude failed: ${msg}`,
-              hint: 'OCCT could not extrude — check for self-intersecting profile, inconsistent polygon winding, or rounded-rect radius exceeding half of width/height.',
-            });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
-          }
-        } else if (profileKind === 'sketch') {
-          const depth = r.params.depth.evaluated;
-          const sketchInput = ctx.inputs.byKey.sketch as OcctBackend | undefined;
-          if (!sketchInput) {
-            ctx.diagnostics.push({
-              target: 'export-occt',
-              code: 'feature.invalid-args',
-              featureId: r.id,
-              severity: 'error',
-              message: `extrude with profile='sketch' requires an input named 'sketch'.`,
-              hint: 'Chain extrude from a path()...close() sketch.',
-            });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
-          }
-          try {
-            shape = OcctBackend.extrudeFromSketch(sketchInput, depth);
-          } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e);
-            ctx.diagnostics.push({
-              target: 'export-occt',
-              code: 'feature.kernel-failed',
-              featureId: r.id,
-              severity: 'error',
-              message: `OCCT extrude failed: ${msg}`,
-              hint: 'OCCT could not extrude — check for self-intersecting profile, inconsistent polygon winding, or rounded-rect radius exceeding half of width/height.',
-            });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
-          }
-        } else {
-          return {
-            shape: undefined as unknown as ShapeBackend,
-            diagnostics: [
-              {
-                target: ctx.target,
-                code: 'feature.invalid-args',
-                featureId: r.id,
-                severity: 'error',
-                message: `extrude profile kind '${profileKind}' not supported. Use 'rect', 'circle', 'polygon', 'rounded-rect', or 'sketch'.`,
-                hint: "Use a supported profile kind: 'rect', 'circle', 'polygon', 'rounded-rect', or 'sketch'.",
-              },
-            ],
-          };
-        }
-        // extrude always builds a solid by sweeping a closed profile through a
-        // depth — an empty / zero-volume result is degenerate, never legitimate.
-        {
-          const e = emptyResultDiagnostic({
-            featureId: r.id, opLabel: 'extrude',
-            volumeAfter: (shape as OcctBackend).volume(), isEmpty: (shape as OcctBackend).isEmpty(),
-          });
-          if (e) ctx.diagnostics.push(e);
-        }
-        break;
-      }
+      case 'importedStl': return finishLowering(ctx, r, lowerImported(ctx, r));
+      case 'sdfMaterialize': return finishLowering(ctx, r, lowerSdfMaterialize(ctx, r));
+      case 'sketch': return finishLowering(ctx, r, await lowerSketch(ctx, r));
+      case 'extrude': return finishLowering(ctx, r, lowerExtrude(ctx, r));
       case 'sheetMetal': {
         // Reuse the sketch→extrude pipeline. Sheet metal differs only in:
         //   (a) the record kind is 'sheetMetal' (threaded for face-label
@@ -816,101 +514,7 @@ export class OcctLowerer implements FeatureLowerer {
         shape = result.shape;
         break;
       }
-      case 'revolve': {
-        const sketchInput = ctx.inputs.byKey.sketch as OcctBackend | undefined;
-        if (!sketchInput) {
-          ctx.diagnostics.push({
-            target: 'export-occt',
-            code: 'feature.invalid-args',
-            featureId: r.id,
-            severity: 'error',
-            message: `revolve requires an input named 'sketch'.`,
-            hint: 'Chain revolve from a path()...close() sketch.',
-          });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
-        }
-        const commands = sketchInput.getSketchCommands();
-        if (!commands) {
-          ctx.diagnostics.push({
-            target: 'export-occt',
-            code: 'feature.invalid-args',
-            featureId: r.id,
-            severity: 'error',
-            message: `revolve sketch input has no command history.`,
-            hint: 'Chain revolve from a path()...close() sketch (the sketch must carry its command history).',
-          });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
-        }
-        // Empty profile: only moveTo + close (or even less). No segments means
-        // no area to revolve.
-        const segmentCount = commands.filter(c => c.kind === 'lineTo' || c.kind === 'tangentArc').length;
-        if (segmentCount === 0) {
-          ctx.diagnostics.push({
-            target: 'export-occt',
-            code: 'feature.invalid-args',
-            featureId: r.id,
-            severity: 'error',
-            message: `revolve profile has no line/arc segments — area is zero.`,
-            hint: 'Add at least one lineTo or arc segment to the path before close.',
-          });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
-        }
-        // Axis-cross check: any point with x < 0 means the profile spans the
-        // rotation axis, which yields a self-intersecting revolve.
-        const crossing = commands.find(c => (c.kind === 'moveTo' || c.kind === 'lineTo' || c.kind === 'tangentArc') && c.x.evaluated < 0);
-        if (crossing) {
-          const xv = (crossing as { x: { evaluated: number } }).x.evaluated;
-          ctx.diagnostics.push({
-            target: 'export-occt',
-            code: 'feature.revolve.crosses-axis',
-            featureId: r.id,
-            severity: 'error',
-            message: `revolve profile point (x=${xv}) crosses rotation axis. All points must satisfy x >= 0.`,
-            hint: 'A revolve profile must stay on one side of the rotation axis. Clamp all path coordinates to x >= 0.',
-          });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
-        }
-        // Optional partial-revolve `angleDeg` param. Default 360 (full).
-        // Range: (0, 360]. Out-of-range values are caught here and surfaced
-        // as `feature.invalid-args` rather than letting replicad throw a
-        // less-specific error.
-        const angleDeg = r.params.angleDeg ? Number(r.params.angleDeg.evaluated) : 360;
-        if (!Number.isFinite(angleDeg) || angleDeg <= 0 || angleDeg > 360) {
-          ctx.diagnostics.push({
-            target: 'export-occt',
-            code: 'feature.invalid-args',
-            featureId: r.id,
-            severity: 'error',
-            message: `revolve angleDeg must be in (0, 360]; got ${angleDeg}.`,
-            hint: 'Pass an angle in (0, 360]. Use 360 (default) for a full revolve, e.g. 180 for a half revolve.',
-          });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
-        }
-        try {
-          shape = OcctBackend.revolveFromSketch(sketchInput, angleDeg);
-        } catch (e) {
-          const msg = e instanceof Error ? e.message : String(e);
-          ctx.diagnostics.push({
-            target: 'export-occt',
-            code: 'feature.kernel-failed',
-            featureId: r.id,
-            severity: 'error',
-            message: `OCCT revolve failed: ${msg}`,
-            hint: 'OCCT could not revolve — the profile may self-intersect or be degenerate.',
-          });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
-        }
-        // revolve sweeps a closed profile around an axis into a solid — an
-        // empty / zero-volume result is degenerate, never legitimate.
-        {
-          const e = emptyResultDiagnostic({
-            featureId: r.id, opLabel: 'revolve',
-            volumeAfter: (shape as OcctBackend).volume(), isEmpty: (shape as OcctBackend).isEmpty(),
-          });
-          if (e) ctx.diagnostics.push(e);
-        }
-        break;
-      }
+      case 'revolve': return finishLowering(ctx, r, lowerRevolve(ctx, r));
       case 'sweep': {
         const profileKind = String(r.params.profileKind.expression).replace(/'/g, '');
         if (profileKind === 'sketch') {
@@ -3295,57 +2899,6 @@ export class OcctLowerer implements FeatureLowerer {
         };
     }
 
-    // Apply post-hoc transforms in declared order.
-    for (const t of r.transforms) {
-      const inputBackend = shape as OcctBackend;
-      const inputHashes = inputBackend.faceHashes();
-      const inputMap = inputBackend.historyMap;
-      switch (t.op) {
-        case 'translate':
-          shape = shape.translate(t.vec.x.evaluated, t.vec.y.evaluated, t.vec.z.evaluated);
-          break;
-        case 'rotateAxis': {
-          const ax: Vec3 = [t.axis.x.evaluated, t.axis.y.evaluated, t.axis.z.evaluated];
-          const pv: Vec3 | undefined = t.pivot
-            ? [t.pivot.x.evaluated, t.pivot.y.evaluated, t.pivot.z.evaluated]
-            : undefined;
-          shape = shape.rotate(ax, t.degrees.evaluated, pv);
-          break;
-        }
-        case 'scale':
-          shape = shape.scale([t.sx, t.sy, t.sz]);
-          break;
-        case 'reflect':
-          if (!isValidPlaneSpec(t.plane)) {
-            ctx.diagnostics.push({
-              target: 'export-occt',
-              code: 'feature.invalid-args',
-              featureId: r.id,
-              severity: 'error',
-              message: `reflect transform has invalid plane spec: ${JSON.stringify(t.plane)}.`,
-              hint: "Reflect plane must be 'xy', 'xz', 'yz', or { plane: '<cardinal>', offset?: number }.",
-            });
-            break; // skip applying the transform; preserve the prior shape
-          }
-          shape = (shape as OcctBackend).reflect(t.plane);
-          break;
-      }
-      // Propagate historyMap if input had one. All four transform ops (translate,
-      // rotateAxis, scale, reflect) preserve topology (face count invariant).
-      if (inputMap !== undefined) {
-        const outputBackend = shape as OcctBackend;
-        const outputHashes = outputBackend.faceHashes();
-        if (outputHashes.length === inputHashes.length) {
-          const newMap = propagateTransformHistory(inputMap, inputHashes, outputHashes);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const wrapped = (outputBackend.getReplicadShape() as any);
-          shape = new OcctBackend(wrapped, undefined, newMap);
-        }
-        // else: defensive path — face count mismatch (unexpected for these ops).
-        // Leave shape without historyMap; resolver returns face-ref-not-resolvable.
-      }
-    }
-
-    return { shape, diagnostics: ctx.diagnostics };
+    return { shape: applyTransforms(ctx, shape, r), diagnostics: ctx.diagnostics };
   }
 }
