@@ -407,6 +407,41 @@ describe('assembly capture contract', () => {
     );
   });
 
+  it('jointSupport() requiredSupport.clearanceMm < 0 throws the literal joint-support hint (C2)', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('joint-support hint regression');
+    let thrown: unknown;
+    try {
+      arm.jointSupport('yaw-support', {
+        mate: 'yaw',
+        shaft: 'shaft',
+        supports: ['support'],
+        output: 'link',
+        requiredSupport: {
+          kind: 'hinge-bracket',
+          around: 'base.axis',
+          supports: ['support'],
+          clearanceMm: -1,
+        },
+      });
+    } catch (e) {
+      thrown = e;
+    }
+    expect(isKernelError(thrown)).toBe(true);
+    expect((thrown as KernelError).hint).toBe(
+      'invalid-args.assembly.joint-support-invalid-required-support — pass clearanceMm >= 0, or omit it.',
+    );
+  });
+
+  it('keeps Assembly.name an own enumerable property', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('own-name');
+    expect(Object.keys(arm)).toContain('name');
+    expect(arm.name).toBe('own-name');
+  });
+
   it('stores contact target part roles', () => {
     const session = new CaptureSession();
     const kcad = createApi({ session });

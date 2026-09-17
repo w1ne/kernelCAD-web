@@ -91,11 +91,12 @@ export class Assembly {
    */
   private readonly state: AssemblyState;
 
-  get name(): string {
-    return this.state.name;
-  }
+  /** Own data property, as before the split (spread / Object.keys / JSON
+   *  serialisation see it). `state.name` holds the same immutable value. */
+  readonly name: string;
 
   constructor(name: string, session: CaptureSession) {
+    this.name = name;
     this.state = createAssemblyState(name, session);
   }
 
