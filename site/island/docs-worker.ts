@@ -25,6 +25,12 @@
 import wasmUrl from 'replicad-opencascadejs/src/replicad_single.wasm?url';
 import { initOcct } from '../../src/kernel/backends/occt/occtBackend';
 import { runScriptInBrowser } from '../../src/modeling/runtime/browserRuntime';
+// Registers the `kinematic.*` facade `modeling/api.ts` injects into scripts.
+// Modeling cannot import kinematic directly (layering), so a runtime entry
+// point wires it in — this is the browser one, deliberately the node-free
+// subset (no `sweepTolerance`, which needs the CLI's evaluate path): see
+// src/kinematic/register.ts.
+import '../../src/kinematic/register';
 import {
   meshFeaturesPerFeature,
   selectTerminalFeatures,

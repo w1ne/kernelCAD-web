@@ -34,8 +34,6 @@ export default defineConfig([
     ignores: [
       // Tests may import across layers.
       '**/*.test.{ts,tsx}',
-      // Remaining layering exceptions (kinematic placement, fixed in a follow-up slice).
-      'src/modeling/api.ts',
     ],
     rules: {
       'no-restricted-imports': ['error', {

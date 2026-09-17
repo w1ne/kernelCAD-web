@@ -8,6 +8,11 @@
 // point installs them; this is the CLI's.
 import '../../modeling/runtime/hostFsNode';
 import '../../shared/runtime/kernelcadVersionNode';
+// Registers the `kinematic.*` facade `modeling/api.ts` injects into scripts —
+// modeling cannot import kinematic directly (layering), so the agent layer
+// wires the real implementation in before any script runs. See
+// src/agent/kinematic/register.ts.
+import '../kinematic/register';
 
 import { Command } from 'commander';
 import { createRequire } from 'node:module';

@@ -67,8 +67,8 @@ import { makeParamRef, isParamRef, type ParamRef, type Editable } from '../share
 import { makeTypedParamRef, type TypedParamRef } from '../shared/runtime/paramRef';
 import type { ParamMetadata } from '../shared/runtime/paramTable';
 import { currentValue, toParam } from '../shared/runtime/editableHelpers';
-import * as kinematic from '../kinematic';
-import type { KinematicFacade } from '../kinematic/types';
+import { getKinematicFacade, registerKinematicFacade, type KinematicFacade } from './kinematic/registry';
+export { registerKinematicFacade };
 import { q as queryNamespace } from '../kernel/naming/queryConstructors';
 import { makeJointNamespace } from './joints';
 import type {
@@ -1478,7 +1478,7 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       return { id, metadata };
     },
 
-    kinematic: kinematic satisfies KinematicFacade,
+    kinematic: getKinematicFacade(),
 
     // joint.* is bound below after the api object is fully constructed, so
     // the namespace closes over the FINAL `api` (including box/cylinder/etc.).
