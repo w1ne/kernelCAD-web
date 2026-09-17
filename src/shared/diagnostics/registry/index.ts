@@ -11,49 +11,10 @@
 // HINT_TEMPLATES, NEXT_ACTIONS) are derived as projections of this registry —
 // add a new code here and they all stay consistent automatically.
 
-import type { NextAction } from './nextAction';
+import type { NextAction } from '../nextAction';
+import type { DiagnosticCodeSpec } from './types';
 
-export type DiagnosticGroup =
-  | 'feature'
-  | 'sketch'
-  | 'recompute'
-  | 'cli'
-  | 'export'
-  | 'assembly'
-  | 'mesher'
-  | 'tool'
-  | 'parts'
-  | 'dfm'
-  | 'query'
-  | 'kinematic'
-  | 'mechanism'
-  | 'animation'
-  | 'drawing'
-  | 'reference'
-  | 'fea'
-  | 'diff'
-  | 'bom'
-  | 'render'
-  | 'inspect';
-
-export type DiagnosticSeverityLevel = 'info' | 'warn' | 'error';
-
-export interface DiagnosticCodeSpec {
-  /** Imperative one-sentence agent recovery instruction. */
-  hintTemplate: string;
-  /** Structured form of the recovery instruction. */
-  nextAction: NextAction;
-  /** Dominant severity at emit sites — informational default for callers
-   *  that don't pick a severity explicitly. Some codes are emitted at
-   *  more than one severity (e.g. short-edges-skipped emits 'warn' for
-   *  partial success and 'error' when no edges survive); in that case
-   *  the more serious level is recorded here. */
-  defaultSeverity: DiagnosticSeverityLevel;
-  /** Top-level namespace this code belongs to (derived from the prefix). */
-  group: DiagnosticGroup;
-  /** One-sentence statement of the condition that triggers this code. */
-  description: string;
-}
+export type { DiagnosticGroup, DiagnosticSeverityLevel, DiagnosticCodeSpec } from './types';
 
 export const DIAGNOSTIC_REGISTRY = {
   // Args & validation (1)
