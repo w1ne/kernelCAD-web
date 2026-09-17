@@ -54,6 +54,45 @@ export default defineConfig([
       }))],
     },
   })),
+  // Deprecated shim enforcement: the five `@deprecated export *` re-export
+  // shims left at their pre-move paths exist only so old imports don't hard
+  // -break; new imports must go straight to the moved module.
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: [
+      'src/modeling/properties/massProperties.ts',
+      'src/modeling/capture/hermiteG2.ts',
+      'src/modeling/backends/occt/surfaceSewLowerer.ts',
+      'src/agent/render/animationSampler.ts',
+      'src/agent/render/verifyAnimation.ts',
+    ],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            regex: '/modeling/properties/massProperties$',
+            message: 'moved to src/modeling/properties/massProperties.ts; import from there instead of the deprecated shim.',
+          },
+          {
+            regex: '/modeling/capture/hermiteG2$',
+            message: 'moved to src/modeling/capture/hermiteG2.ts; import from there instead of the deprecated shim.',
+          },
+          {
+            regex: '/modeling/backends/occt/surfaceSewLowerer$',
+            message: 'moved to src/modeling/backends/occt/surfaceSewLowerer.ts; import from there instead of the deprecated shim.',
+          },
+          {
+            regex: '/agent/render/animationSampler$',
+            message: 'moved to src/modeling/animation/animationSampler.ts; import from there instead of the deprecated shim.',
+          },
+          {
+            regex: '/agent/render/verifyAnimation$',
+            message: 'moved to src/modeling/animation/verifyAnimation.ts; import from there instead of the deprecated shim.',
+          },
+        ],
+      }],
+    },
+  },
   {
     files: [
       '**/*.test.{ts,tsx}',
