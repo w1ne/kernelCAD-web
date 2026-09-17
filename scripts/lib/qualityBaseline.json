@@ -1503,7 +1503,7 @@
     "rule": "max-lines",
     "file": "src/modeling/capture/assembly.ts",
     "symbol": "(file)",
-    "value": 2502
+    "value": 2320
   },
   {
     "rule": "max-lines",
