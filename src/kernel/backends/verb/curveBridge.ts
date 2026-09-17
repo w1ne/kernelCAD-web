@@ -22,8 +22,7 @@ import nurbsJs from 'verb-nurbs';
 import type { NurbsCurve, NurbsCurveData, NurbsSurface, Point } from 'verb-nurbs';
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
-import type { Curve3D } from '../../../modeling/capture/curveProxy';
-import type { SurfaceProxy } from '../../../modeling/capture/surfaceProxy';
+import type { Curve3DMetadataCarrier, SurfaceRecordCarrier } from '../../geometry/curveCarriers';
 import { KernelError } from '../../../shared/intent/kernelError';
 import { clampedUniformKnots, decomposeKnots } from '../occt/nurbsSurfaceLowerer';
 
@@ -51,11 +50,11 @@ function expandKnots(distinctKnots: number[], multiplicities: number[]): number[
 }
 
 /**
- * Convert a kernelCAD `Curve3D` into a JS-side analytics curve. Cached on
- * the proxy instance via a `Symbol`; invalidated when the proxy's
- * `__paramVersion` counter bumps.
+ * Convert a kernelCAD `Curve3DMetadataCarrier` into a JS-side analytics
+ * curve. Cached on the proxy instance via a `Symbol`; invalidated when the
+ * proxy's `__paramVersion` counter bumps.
  */
-export function toVerb(curve: Curve3D): NurbsCurve {
+export function toVerb(curve: Curve3DMetadataCarrier): NurbsCurve {
   const carrier = curve as unknown as CacheCarrier;
   const live = carrier[PARAM_VERSION] ?? 0;
   const cached = carrier[VERB_CACHE];
@@ -153,7 +152,7 @@ export function fromVerb(verbCurve: NurbsCurve): replicad.Edge {
 }
 
 /**
- * Convert a kernelCAD `SurfaceProxy` into a JS-side analytics surface.
+ * Convert a kernelCAD `SurfaceRecordCarrier` into a JS-side analytics surface.
  *
  * V3 scope is the bare minimum needed for the `Curve3D.analytics.intersect`
  * curve-surface overload: only `kind: 'nurbsSurface'` SurfaceRecords are
@@ -172,7 +171,7 @@ export function fromVerb(verbCurve: NurbsCurve): replicad.Edge {
  * Geom_BSplineSurface extraction helper or `kind: 'coonsPatch'` records
  * grow a JS-accessible NURBS representation.
  */
-export function surfaceProxyToVerb(surface: SurfaceProxy): NurbsSurface {
+export function surfaceProxyToVerb(surface: SurfaceRecordCarrier): NurbsSurface {
   const record = surface.__getRecord();
   if (record === undefined) {
     throw new KernelError(

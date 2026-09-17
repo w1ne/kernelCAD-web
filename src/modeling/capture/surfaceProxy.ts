@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { SurfaceId, SurfaceTrimData } from '../../shared/intent/surfaceRecord';
+import type { SurfaceRecordCarrier } from '../../kernel/geometry/curveCarriers';
 import type { CaptureSession } from './captureSession';
 import type { Shape } from './proxy';
 import { KernelError } from '../../shared/intent/kernelError';
@@ -29,7 +30,7 @@ function refOf(by: SurfaceProxy): SurfaceTrimData['byRef'] {
  * This guards agent discoverability — methods not in `list_api` are invisible
  * to MCP clients.
  */
-export class SurfaceProxy {
+export class SurfaceProxy implements SurfaceRecordCarrier {
   readonly id: SurfaceId;
   private session: CaptureSession;
 
