@@ -58,11 +58,11 @@ import {
   type BuiltModel,
   type ParamUpdateEdit,
 } from '../../modeling/buildModel';
-import { sampleTracks } from '../../agent/render/animationSampler';
+import { sampleTracks } from '../../modeling/animation/animationSampler';
 import {
   verifyAnimation,
   type AnimationCollision,
-} from '../../agent/render/verifyAnimation';
+} from '../../modeling/animation/verifyAnimation';
 import type {
   AnimationViewMetadata,
   NormalizedAnimationTrack,

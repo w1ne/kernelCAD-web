@@ -24,8 +24,8 @@ import {
   type BuiltModel,
   type ParamUpdateEdit,
 } from '../buildModel';
-import { sampleTracks } from '../../agent/render/animationSampler';
-import { verifyAnimation, type AnimationCollision } from '../../agent/render/verifyAnimation';
+import { sampleTracks } from './animationSampler';
+import { verifyAnimation, type AnimationCollision } from './verifyAnimation';
 import type { AnimationViewMetadata } from '../../shared/intent/animationViewRecord';
 
 /** Hard ceiling on baked frames. A pose-only bake is ~60ms/frame; 600 frames

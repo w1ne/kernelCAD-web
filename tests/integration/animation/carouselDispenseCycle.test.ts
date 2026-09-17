@@ -31,8 +31,8 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { resolve } from 'node:path';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { buildModelFromFile, type BuiltModel } from '../../../src/modeling/buildModel';
-import { verifyAnimation } from '../../../src/agent/render/verifyAnimation';
-import { keyframeSampleSet } from '../../../src/agent/render/animationSampler';
+import { verifyAnimation } from '../../../src/modeling/animation/verifyAnimation';
+import { keyframeSampleSet } from '../../../src/modeling/animation/animationSampler';
 import type {
   AnimationViewMetadata,
   NormalizedAnimationTrack,

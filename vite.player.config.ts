@@ -7,7 +7,7 @@
 // server instead.
 //
 // Deliberately minimal vs vite.config.ts: no TanStack router plugin, no
-// tailwind, no studio middleware — the entry (src/agent/render/headless-player)
+// tailwind, no studio middleware — the entry (src/studio/headless-player)
 // mounts DemoPlayerPage directly and is driven entirely through the
 // window.__demoPlayer bridge. The HDRI presets are copied alongside so
 // setRenderEnvironment('studio'|...) resolves /hdri/<name>.hdr offline.
@@ -19,7 +19,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = fileURLToPath(new URL('.', import.meta.url));
-const playerRoot = resolve(repoRoot, 'src/agent/render/headless-player');
+const playerRoot = resolve(repoRoot, 'src/studio/headless-player');
 const outDir = resolve(repoRoot, 'dist/headless-player');
 
 /** Copy the bundled HDRI environment presets next to the built page so the
