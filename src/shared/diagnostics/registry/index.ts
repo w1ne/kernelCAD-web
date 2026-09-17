@@ -7,20 +7,18 @@
 // Add a new code only when no existing code corresponds to its recovery.
 // Removing or renaming any code is a breaking change to the agent contract.
 //
-// All four agent-facing views (DiagnosticCode union, DIAGNOSTIC_CODES array,
-// HINT_TEMPLATES, NEXT_ACTIONS) are derived as projections of this registry —
-// add a new code here and they all stay consistent automatically.
-//
 // The registry is split per domain group under this directory
-// (docs/plans/2026-09-17-quality-slice-5-diagnostics-registry.md). Each
-// `<group>.ts` owns that group's entries verbatim; this file spreads them
-// together and re-derives the same projections the single-file registry
-// used to produce.
+// (docs/plans/2026-09-17-quality-slice-5-diagnostics-registry.md). To add a
+// code: add its entry to the matching `registry/<group>.ts` file only. This
+// file spreads every group file into DIAGNOSTIC_REGISTRY and re-derives all
+// three remaining agent-facing views (DiagnosticCode union, DIAGNOSTIC_CODES
+// array, HINT_TEMPLATES, NEXT_ACTIONS) from it automatically — a new code
+// does not need a second edit here. See the LEGACY_CODE_ORDER comment below
+// for how ordering works and tests/unit/diagnostics/registryProjectionSnapshot.test.ts
+// for what is and isn't locked.
 
 import type { NextAction } from '../nextAction';
 import type { DiagnosticCodeSpec } from './types';
-
-export type { DiagnosticGroup, DiagnosticSeverityLevel, DiagnosticCodeSpec } from './types';
 
 import { FEATURE_CODES } from './feature';
 import { FEATURE_DIRECT_EDIT_CODES } from './featureDirectEdit';
@@ -45,6 +43,8 @@ import { DIFF_CODES } from './diff';
 import { BOM_CODES } from './bom';
 import { RENDER_CODES } from './render';
 import { INSPECT_CODES } from './inspect';
+
+export type { DiagnosticGroup, DiagnosticSeverityLevel, DiagnosticCodeSpec } from './types';
 
 export const DIAGNOSTIC_REGISTRY = {
   ...FEATURE_CODES,
@@ -74,15 +74,28 @@ export const DIAGNOSTIC_REGISTRY = {
 
 export type DiagnosticCode = keyof typeof DIAGNOSTIC_REGISTRY;
 
-// Grouping the registry per file (above) no longer preserves the original
-// single-file key order for every entry — most groups were already
-// contiguous in the old file, but a few codes (notably several `feature.*`
-// entries) were interleaved between other groups' runs. That original
-// order is the kernelCAD agent-facing contract (DIAGNOSTIC_CODES,
-// HINT_TEMPLATES, NEXT_ACTIONS all derive their order from it), so it is
-// recorded here explicitly rather than left to depend on import/spread
-// order. See tests/unit/diagnostics/registryProjectionSnapshot.test.ts.
-const DIAGNOSTIC_CODE_ORDER: readonly DiagnosticCode[] = [
+// Grouping the registry per file (above) does not reproduce the original
+// single-file key order: the pre-split sequence is 29 runs over the 21
+// domain prefixes (not one contiguous run per prefix), and under this
+// branch's 23-file split it is 33 runs, with `feature`/`featureSurfaces`
+// each occupying 4 non-contiguous runs and `export`/`assembly`/`tool`/
+// `drawing` each 2. Reproducing the order by spread order alone would need
+// positional shard files (e.g. two `tool` files with no domain meaning),
+// which defeats "registry per domain" — so the original order is frozen
+// here as a literal instead. It is the kernelCAD agent-facing contract:
+// DIAGNOSTIC_CODES, HINT_TEMPLATES, NEXT_ACTIONS all derive their order
+// from it. Never edit or reorder this array by hand; it is the published
+// order of the 309 codes that existed before the split. A code added to a
+// group file does NOT need an entry here — DIAGNOSTIC_CODES below appends
+// any registry code missing from this anchor, in registry-spread order, so
+// new codes land in all four projections automatically. The `satisfies`
+// clause makes a typo'd or removed code a compile error naming the
+// offender; see the MissingFromLegacyOrder check further down for the
+// reverse case (a code that exists in the registry but was, by mistake,
+// also added here under the wrong string). See
+// tests/unit/diagnostics/registryProjectionSnapshot.test.ts for what is
+// locked (the first 309 positions) and what isn't (codes appended after).
+const LEGACY_CODE_ORDER = [
   'feature.invalid-args',
   'feature.direct-edit.clamped',
   'feature.direct-edit.delta-wrapper',
@@ -392,9 +405,35 @@ const DIAGNOSTIC_CODE_ORDER: readonly DiagnosticCode[] = [
   'inspect.continuity.g1-break',
   'inspect.continuity.broken',
   'inspect.curvature.spike',
-];
+] as const satisfies readonly DiagnosticCode[];
 
-export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = DIAGNOSTIC_CODE_ORDER;
+// LEGACY_CODE_ORDER may contain each code at most once. A duplicate would
+// let DIAGNOSTIC_CODES.length still equal DIAGNOSTIC_REGISTRY's key count
+// (masking the guard in tests/unit/diagnostics/registry.test.ts) while a
+// real code silently disappears from HINT_TEMPLATES/NEXT_ACTIONS. Checked
+// at module load, not just in tests, so a bad edit fails immediately for
+// any importer, not only whoever runs the test suite next.
+if (new Set(LEGACY_CODE_ORDER).size !== LEGACY_CODE_ORDER.length) {
+  throw new Error('LEGACY_CODE_ORDER contains a duplicate diagnostic code');
+}
+
+const LEGACY_ORDER_SET = new Set<DiagnosticCode>(LEGACY_CODE_ORDER);
+
+// DIAGNOSTIC_CODES is the frozen legacy order followed by any code that
+// exists in DIAGNOSTIC_REGISTRY but not in LEGACY_CODE_ORDER, in
+// registry-spread order. Today the filter yields nothing (the registry
+// holds exactly the 309 legacy codes), so this is byte-identical to
+// `LEGACY_CODE_ORDER` — see registryProjectionSnapshot.test.ts. A code
+// added later to any `registry/<group>.ts` file appears here, in
+// HINT_TEMPLATES and in NEXT_ACTIONS automatically, with no edit to this
+// file required; its position is appended after the legacy 309 rather than
+// interleaved with its domain, which is fine because order here is a
+// stability contract (existing agents/tools rely on stable positions), not
+// a semantic grouping.
+export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
+  ...LEGACY_CODE_ORDER,
+  ...(Object.keys(DIAGNOSTIC_REGISTRY) as DiagnosticCode[]).filter((code) => !LEGACY_ORDER_SET.has(code)),
+];
 
 export interface HintTemplate {
   /** Imperative one-sentence agent recovery instruction. */
