@@ -3,12 +3,12 @@
 import { KernelError } from '../../shared/intent/kernelError';
 import { makePhysicalUseCaseRecord, type PhysicalUseCaseOptions } from '../mates/physicalUseCase';
 import type {
-  AssemblyState,
   JointSupportIntentOpts,
   MechanicalJointIntentOpts,
   TransmissionIntentOpts,
   TransmissionKind,
 } from './assemblyTypes';
+import type { AssemblyState } from './assemblyState';
 
 function validateMechanicalIntentName(field: string, value: string): void {
   if (typeof value === 'string' && value.trim().length > 0) return;
@@ -145,6 +145,7 @@ export function recordDisabledCollision(
  *  under the quality-ratchet budget; no behavior change. */
 function validateRequiredSupport(
   diagnosticPrefix: string,
+  hintCode: string,
   requiredSupport: {
     kind: string;
     around: string;
@@ -167,7 +168,7 @@ function validateRequiredSupport(
       'feature.invalid-args',
       `${diagnosticPrefix}.invalid-required-support: minBearingLengthMm must be a positive finite number.`,
       undefined,
-      `invalid-args.${diagnosticPrefix.replace(/\./g, '-')}-invalid-required-support — pass minBearingLengthMm > 0, or omit it.`,
+      `${hintCode}-invalid-required-support — pass minBearingLengthMm > 0, or omit it.`,
     );
   }
   if (
@@ -178,7 +179,7 @@ function validateRequiredSupport(
       'feature.invalid-args',
       `${diagnosticPrefix}.invalid-required-support: clearanceMm must be a non-negative finite number.`,
       undefined,
-      `invalid-args.${diagnosticPrefix.replace(/\./g, '-')}-invalid-required-support — pass clearanceMm >= 0, or omit it.`,
+      `${hintCode}-invalid-required-support — pass clearanceMm >= 0, or omit it.`,
     );
   }
 }
@@ -208,7 +209,7 @@ export function recordMechanicalJoint(state: AssemblyState, name: string, opts: 
   for (const support of opts.supports) {
     validateMechanicalIntentName('supports[]', support);
   }
-  validateRequiredSupport('assembly.mechanicalJoint', opts.requiredSupport);
+  validateRequiredSupport('assembly.mechanicalJoint', 'invalid-args.assembly.mechanical-joint', opts.requiredSupport);
 
   state.mechanicalJointIntents.push({
     name,
@@ -250,7 +251,7 @@ export function recordJointSupport(state: AssemblyState, name: string, opts: Joi
   for (const support of opts.supports) {
     validateMechanicalIntentName('supports[]', support);
   }
-  validateRequiredSupport('assembly.jointSupport', opts.requiredSupport);
+  validateRequiredSupport('assembly.jointSupport', 'invalid-args.assembly.joint-support', opts.requiredSupport);
 
   state.jointSupportIntents.push({
     name,

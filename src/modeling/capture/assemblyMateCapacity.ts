@@ -170,7 +170,7 @@ function throwInvalidStructuralModel(mateName: string, detail: string): never {
     'feature.invalid-args',
     `assembly.mate.invalid-capacity: mate '${mateName}' ${detail}`,
     undefined,
-    `invalid-args.assembly.mate-invalid-capacity — ${detail}`,
+    `invalid-args.assembly.mate-invalid-capacity — pass the structural descriptor returned by joint.clevis() without modifying its geometry or material fields.`,
   );
 }
 
