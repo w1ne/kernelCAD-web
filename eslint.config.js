@@ -35,7 +35,6 @@ export default defineConfig([
       // Tests may import across layers.
       '**/*.test.{ts,tsx}',
       // Remaining layering exceptions (kinematic placement, fixed in a follow-up slice).
-      'src/kinematic/sweepTolerance.ts',
       'src/modeling/api.ts',
     ],
     rules: {

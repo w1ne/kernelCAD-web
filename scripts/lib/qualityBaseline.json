@@ -91,6 +91,12 @@
   },
   {
     "rule": "complexity",
+    "file": "src/agent/kinematic/sweepTolerance.ts",
+    "symbol": "Async function 'evaluateCombo'",
+    "value": 31
+  },
+  {
+    "rule": "complexity",
     "file": "src/agent/loop/closedLoop.ts",
     "symbol": "Async function 'runClosedLoop'",
     "value": 25
@@ -526,12 +532,6 @@
     "file": "src/kinematic/inverseKinematicsNumeric.ts",
     "symbol": "Function 'solveNumeric'",
     "value": 24
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kinematic/sweepTolerance.ts",
-    "symbol": "Async function 'evaluateCombo'",
-    "value": 31
   },
   {
     "rule": "complexity",

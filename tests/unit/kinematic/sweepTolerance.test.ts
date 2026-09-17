@@ -21,7 +21,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import { sweepTolerance, SWEEP_COMBO_CAP } from '../../../src/kinematic/sweepTolerance';
+import { sweepTolerance, SWEEP_COMBO_CAP } from '../../../src/agent/kinematic/sweepTolerance';
 
 const CLEARANCE_CODE = `
   const arm = assembly('sweep-clearance');

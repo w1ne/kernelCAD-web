@@ -12,7 +12,6 @@ export { checkSweptCollision } from './checkSweptCollision';
 export { checkReachable } from './checkReachable';
 export { checkLoadCapacity } from './checkLoadCapacity';
 export { checkStaticHold } from './checkStaticHold';
-export { sweepTolerance } from './sweepTolerance';
 
 export type {
   KinematicDiagnostic,
