@@ -571,12 +571,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/assembly.ts",
-    "symbol": "Method 'partInternal'",
-    "value": 36
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/authoringFeatureRecords.ts",
     "symbol": "Function 'buildDfmSpecFeatureSpec'",
     "value": 59
@@ -1486,12 +1480,6 @@
     "file": "src/modeling/backends/occt/occtLowerer.ts",
     "symbol": "(file)",
     "value": 3118
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/modeling/capture/assembly.ts",
-    "symbol": "(file)",
-    "value": 868
   },
   {
     "rule": "max-lines",

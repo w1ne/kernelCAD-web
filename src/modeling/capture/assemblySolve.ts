@@ -695,7 +695,7 @@ function finalizeSolvedModelScene(
  * this file exceeds the quality-ratchet line budget; no behavior change
  * from the single-method version it replaces.
  */
-export async function recordSolvedModel(
+export function recordSolvedModel(
   state: AssemblyState,
   poses: Poses,
   opts?: SolvedModelOptions,
@@ -756,11 +756,14 @@ export async function recordSolvedModel(
 
   const { interferencePromise, envelopeResultPromise } = gatherSolvedModelGateInputs(state, sceneShape, mode, opts);
 
-  const [interferencePairs, mateT, envelopeResult] = await Promise.all([
+  return Promise.all([
     interferencePromise,
     mateTransformsPromise,
     envelopeResultPromise,
-  ]);
-  const { result, envelopeDiagnostics } = await validateSolvedModelGate(state, interferencePairs, opts, envelopeResult);
-  return finalizeSolvedModelScene(state, sceneShape, mode, result, envelopeDiagnostics, mateT, limitWarnings);
+  ]).then(([interferencePairs, mateT, envelopeResult]) =>
+    validateSolvedModelGate(state, interferencePairs, opts, envelopeResult).then(
+      ({ result, envelopeDiagnostics }) =>
+        finalizeSolvedModelScene(state, sceneShape, mode, result, envelopeDiagnostics, mateT, limitWarnings),
+    ),
+  );
 }
