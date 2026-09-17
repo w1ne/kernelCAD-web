@@ -62,6 +62,26 @@ export default defineConfig([
       }))],
     },
   })),
+  // The two composition-root exceptions are exempt only from the ONE edge their
+  // comment above documents; every other upward import is still an error.
+  ...[
+    { file: 'src/modeling/api.ts', dir: 'modeling', forbid: ['agent', 'studio', 'server'] },
+    { file: 'src/kinematic/sweepTolerance.ts', dir: 'kinematic', forbid: ['studio'] },
+  ].map(({ file, dir, forbid }) => ({
+    files: [file],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: forbid.map((layer) => ({
+          regex: `(^|/)${layer}(/|$)`,
+          message: `src/${dir} must not import from src/${layer} (layering: shared -> kernel -> modeling -> kinematic -> agent -> studio).`,
+        })),
+      }],
+      'no-restricted-syntax': ['error', ...forbid.map((layer) => ({
+        selector: `ImportExpression[source.value=/(^|\\/)${layer}(\\/|$)/]`,
+        message: `src/${dir} must not import from src/${layer} (layering: shared -> kernel -> modeling -> kinematic -> agent -> studio).`,
+      }))],
+    },
+  })),
   {
     files: [
       '**/*.test.{ts,tsx}',

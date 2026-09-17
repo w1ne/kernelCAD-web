@@ -32,6 +32,15 @@ describe('import layering rule is live', () => {
     expect(ids).toContain('no-restricted-syntax');
   }, 120_000);
 
+  it('keeps the composition-root exceptions narrow', async () => {
+    const api = await ruleIdsFor('src/modeling/api.ts', "import { x } from '../agent/cli/index';\nexport const y = x;\n");
+    expect(api).toContain('no-restricted-imports');
+    const sweep = await ruleIdsFor('src/kinematic/sweepTolerance.ts', "import { x } from '../studio/App';\nexport const y = x;\n");
+    expect(sweep).toContain('no-restricted-imports');
+    const allowed = await ruleIdsFor('src/modeling/api.ts', "import * as kinematic from '../kinematic';\nexport const k = kinematic;\n");
+    expect(allowed).not.toContain('no-restricted-imports');
+  }, 120_000);
+
   it('accepts a downward import', async () => {
     const ids = await ruleIdsFor('src/modeling/layeringProbe.ts', "import type { Vec3 } from '../shared/intent/types';\nexport type V = Vec3;\n");
     expect(ids).not.toContain('no-restricted-imports');

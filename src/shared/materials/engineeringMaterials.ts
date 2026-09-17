@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/kinematic/engineeringMaterials.ts
+// src/shared/materials/engineeringMaterials.ts
 //
 // The ONE material vocabulary. Every consumer that turns a material NAME into
 // numbers or an appearance resolves through this table:
