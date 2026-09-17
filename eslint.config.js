@@ -36,10 +36,7 @@ export default defineConfig([
       '**/*.test.{ts,tsx}',
       // Remaining layering exceptions (kinematic placement, fixed in a follow-up slice).
       'src/kinematic/sweepTolerance.ts',
-      'src/kernel/fea/feaMaterials.ts',
       'src/modeling/api.ts',
-      'src/modeling/capture/proxy.ts',
-      'src/modeling/properties/materialLibrary.ts',
     ],
     rules: {
       'no-restricted-imports': ['error', {

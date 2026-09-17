@@ -27,7 +27,7 @@ import { resolveColor } from '../../shared/render/palette';
 import type { FinishToken } from '../../shared/render/finishes';
 import { expandFinish, isFinishToken, unknownFinishMessage } from '../../shared/render/finishes';
 import { tryResolveMaterial, type MaterialName } from '../properties/materialLibrary';
-import type { AnyMaterialName } from '../../kinematic/engineeringMaterials';
+import type { AnyMaterialName } from '../../shared/materials/engineeringMaterials';
 import type { PBRMaterial } from '../../shared/intent/material';
 import type { TextureRef, TextureSet } from '../../shared/intent/textureRef';
 import { isTextureRef, normalizeTextureRef } from '../../shared/intent/textureRef';

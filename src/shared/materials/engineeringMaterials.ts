@@ -27,7 +27,7 @@
 // caller turns that into a loud failure naming `ACCEPTED_MATERIAL_NAMES`. There
 // is no silent fallback to water density, a default grade or a default finish.
 
-import type { FinishToken } from '../shared/render/finishes';
+import type { FinishToken } from '../render/finishes';
 import { MATERIAL_CATALOG, type CatalogKind, type MaterialProps } from './materialCatalog';
 
 /** The canonical engineering grade names, in table order. */

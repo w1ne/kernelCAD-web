@@ -36,7 +36,7 @@ import {
   defaultFinish,
   engineeringMaterialProps,
   type EngineeringMaterialName,
-} from '../../kinematic/engineeringMaterials';
+} from '../../shared/materials/engineeringMaterials';
 
 /** A canonical material name — exactly the engineering grades. */
 export type MaterialName = EngineeringMaterialName;

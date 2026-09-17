@@ -28,7 +28,7 @@ import {
   ENGINEERING_MATERIAL_NAMES,
   catalogRowOf,
   engineeringMaterialProps,
-} from '../../../../src/kinematic/engineeringMaterials';
+} from '../../../../src/shared/materials/engineeringMaterials';
 import { MATERIAL_CATALOG } from '../../../../src/kinematic/beamMaterials';
 import { FEA_MATERIAL_NAMES, resolveFeaMaterial } from '../../../../src/kernel/fea/feaMaterials';
 import { FINISHES, isFinishToken } from '../../../../src/shared/render/finishes';

@@ -30,7 +30,7 @@ import {
   engineeringMaterialProps,
   poissonRatio,
   type EngineeringMaterialName,
-} from '../../kinematic/engineeringMaterials';
+} from '../../shared/materials/engineeringMaterials';
 import { isFeaMaterialProps, type FeaMaterialProps } from '../../shared/intent/feaStudyRecord';
 
 /** Every canonical grade name the FEA path accepts, in table order. Aliases
