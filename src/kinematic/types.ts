@@ -14,7 +14,7 @@
 import type { Vec3 } from '../shared/intent/types';
 import type { NextAction } from '../shared/diagnostics/nextAction';
 import type { DiagnosticCode } from '../shared/diagnostics/registry';
-import type { AnyMaterialName } from './engineeringMaterials';
+import type { AnyMaterialName } from '../shared/materials/engineeringMaterials';
 
 /**
  * Pose record — numeric joint values keyed by joint name (deg for revolute,

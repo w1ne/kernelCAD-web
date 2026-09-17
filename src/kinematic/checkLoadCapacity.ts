@@ -49,7 +49,7 @@ import type {
 import { DIAGNOSTIC_REGISTRY, type DiagnosticCode } from '../shared/diagnostics/registry';
 import { sectionProperties } from './beamGeometry';
 import { resolveMaterialProps, type MaterialProps } from './beamMaterials';
-import { ACCEPTED_MATERIAL_NAMES } from './engineeringMaterials';
+import { ACCEPTED_MATERIAL_NAMES } from '../shared/materials/engineeringMaterials';
 import { validateJointLoadCapacity } from '../modeling/mates/jointLoadCapacity';
 
 const DEFAULT_SF_THRESHOLD = 1.5;
