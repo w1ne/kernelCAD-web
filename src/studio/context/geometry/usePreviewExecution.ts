@@ -28,9 +28,9 @@ export function usePreviewExecution(
             // here — this file is only linted as a "hook" because it's
             // named `use*`; the identical code was invisible to
             // react-hooks/set-state-in-effect inside the original
-            // GeometryProvider). Pinned by
-            // `GeometryContext.test.tsx` ("clears previewGeometries on the
-            // studioScript / not-ready / no-previewCode branches").
+            // GeometryProvider). The no-previewCode branch is pinned by
+            // `GeometryContext.test.tsx` ("clears previewGeometries when
+            // preview becomes ineligible (previewCode cleared)").
             // eslint-disable-next-line react-hooks/set-state-in-effect
             setPreviewGeometries([]);
             return;
