@@ -559,12 +559,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/backends/occt/occtLowerer.ts",
-    "symbol": "Method 'buildSurfaceById'",
-    "value": 27
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/backends/occt/sheetMetalLowerer.ts",
     "symbol": "Function 'resolveBendAxis'",
     "value": 21
@@ -1179,13 +1173,7 @@
     "rule": "max-lines-per-function",
     "file": "src/modeling/backends/occt/occtLowerer.ts",
     "symbol": "Async method 'lower'",
-    "value": 2519
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/backends/occt/occtLowerer.ts",
-    "symbol": "Method 'buildSurfaceById'",
-    "value": 152
+    "value": 2518
   },
   {
     "rule": "max-lines-per-function",
@@ -1497,7 +1485,7 @@
     "rule": "max-lines",
     "file": "src/modeling/backends/occt/occtLowerer.ts",
     "symbol": "(file)",
-    "value": 3118
+    "value": 2821
   },
   {
     "rule": "max-lines",

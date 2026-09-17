@@ -21,16 +21,12 @@ import { resolveTopologyOriginOnBackend } from './connectorTopology';
 import { KernelError } from '../../../shared/intent/kernelError';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
-import {
-  buildNurbsFace, buildSkinnedSurface, thickenFace, faceToShape,
-} from '../../../kernel/backends/occt/nurbsSurfaceLowerer';
+import { thickenFace, faceToShape } from '../../../kernel/backends/occt/nurbsSurfaceLowerer';
 import { lowerCurve3D } from './curve3dLowerer';
 import { lowerLoftWithRails, railHitsSections } from './loftWithRailsLowerer';
 import { isCurve3DMetadata } from '../../../shared/intent/curve3dRecord';
 import { lowerVariableSweep, type VariableSweepSectionLowered } from './variableSweepLowerer';
 import { isVariableSweepMetadata } from '../../../shared/intent/variableSweepRecord';
-import { lowerCoonsPatch } from './coonsPatchLowerer';
-import { lowerSurfaceTrim, NonPlanarTrimError } from './surfaceTrimLowerer';
 import { lowerSurfaceSew } from '../../../kernel/backends/occt/surfaceSewLowerer';
 import { lowerEmbossText } from './embossTextLowerer';
 import { subtractiveNoOpDiagnostic } from './subtractiveNoOp';
@@ -66,111 +62,18 @@ import type { DiagnosticCode } from '../../../shared/diagnostics/registry';
 import { TANGENCY_ERROR_PREFIX } from '../../../kernel/backends/occt/tangencySolver';
 import { HelicalSweepArgsError, helixAxisBasis } from '../../../kernel/backends/occt/helicalSweep';
 import { helix, helixOptionsFromSpec, type HelixRailSpec } from '../../helix';
+import type { LowerContext } from './lowerers/context';
+import {
+  drainResolvedWarnings,
+  filterEdgesByMinLength,
+  normalizeAxis,
+  readVec3Param,
+} from './lowerers/helpers';
+import { buildSurfaceById, resolveSurfaceFaceForRecord } from './lowerers/surfaceResolve';
 
-// ---------------------------------------------------------------------------
-// Shared helpers: Vec3Param resolution + axis normalization
-// ---------------------------------------------------------------------------
-
-/** Drain any `_resolvedWarnings` deposited on `record` by edgeSelection's
- *  resolveFaceRef created-ref branch into the lowerer's diagnostics list.
- *  Called immediately after a successful `pickEdges` / `pickFace` so warnings
- *  ride out alongside the feature's other diagnostics. */
-function drainResolvedWarnings(
-  record: FeatureRecord,
-  diagnostics: CompilerDiagnostic[],
-): void {
-  const warns = (record as { _resolvedWarnings?: CompilerDiagnostic[] })._resolvedWarnings;
-  if (warns && warns.length > 0) {
-    diagnostics.push(...warns);
-    (record as { _resolvedWarnings?: CompilerDiagnostic[] })._resolvedWarnings = [];
-  }
-}
-
-/** Pre-filter edges below `minLength` (2 × radius for fillet, 2 × distance for
- *  chamfer). OCCT's BlendChain solver rejects radii larger than half the target
- *  edge length, so historically a single sub-2×r edge would fail the whole
- *  operation. Filtering pre-call lets long edges proceed and surfaces a clean
- *  info diagnostic naming the skipped count. Used by both fillet and chamfer. */
-function filterEdgesByMinLength(
-  edges: readonly import('replicad').Edge[],
-  minLength: number,
-  ctx: {
-    op: 'fillet' | 'chamfer';
-    paramName: 'radius' | 'distance';
-    featureId: FeatureId;
-  },
-): {
-  kept: import('replicad').Edge[];
-  diagnostic: CompilerDiagnostic | undefined;
-} {
-  const kept: import('replicad').Edge[] = [];
-  let skipped = 0;
-  for (const e of edges) {
-    // Edge.length is the arc length via BRepAdaptor_Curve; safe on straight,
-    // arc, and spline edges. Throws if the edge has no underlying curve
-    // (degenerate); skip those defensively.
-    let len: number;
-    try { len = e.length; } catch { skipped++; continue; }
-    if (len >= minLength) kept.push(e); else skipped++;
-  }
-  if (skipped === 0) return { kept, diagnostic: undefined };
-  const minLenStr = minLength.toFixed(2);
-  const hint = HINT_TEMPLATES['feature.edge-feature.short-edges-skipped'].template;
-  if (kept.length === 0) {
-    return {
-      kept,
-      diagnostic: {
-        target: 'export-occt',
-        code: 'feature.edge-feature.short-edges-skipped',
-        featureId: ctx.featureId,
-        severity: 'error',
-        message: `${ctx.op} skipped: all ${skipped} target edges are shorter than 2 × ${ctx.paramName} = ${minLenStr} mm`,
-        hint,
-      },
-    };
-  }
-  const gerund = ctx.op === 'fillet' ? 'filleting' : 'chamfering';
-  return {
-    kept,
-    diagnostic: {
-      target: 'export-occt',
-      code: 'feature.edge-feature.short-edges-skipped',
-      featureId: ctx.featureId,
-      severity: 'warn',
-      message: `${ctx.op} skipped ${skipped} of ${edges.length} target edges shorter than 2 × ${ctx.paramName} = ${minLenStr} mm; ${gerund} the remaining ${kept.length}.`,
-      hint,
-    },
-  };
-}
-
-
-/** Read a Vec3Param to a numeric Vec3 by picking the `evaluated` field of each
- *  component. The recompute engine pre-resolves every Param-shaped node in the
- *  record (params + metadata + transforms) against the live ParamTable before
- *  invoking the lowerer, so `evaluated` already reflects the current value
- *  for any ParamRef-bearing component. Lowerers therefore never touch the
- *  ParamTable directly — they only read `.evaluated`. */
-function readVec3Param(v: Vec3Param): [number, number, number] {
-  return [v.x.evaluated, v.y.evaluated, v.z.evaluated];
-}
-
-/** Normalize an axis vector to unit length. Throws `feature.invalid-args` with
- *  hint `invalid-args.axis.zero` when the resolved vector is zero or contains
- *  non-finite components. The throw lets a ParamRef edit that produces a
- *  zero-axis surface as a structured diagnostic via the dispatcher's
- *  exception path rather than producing a silently-broken transform. */
-export function normalizeAxis(v: [number, number, number]): [number, number, number] {
-  const len = Math.hypot(v[0], v[1], v[2]);
-  if (len === 0 || !Number.isFinite(len)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `axis must be non-zero; resolved to [${v[0]}, ${v[1]}, ${v[2]}].`,
-      undefined,
-      'invalid-args.axis.zero — provide a non-zero direction; ParamRefs may have resolved to zero.',
-    );
-  }
-  return [v[0] / len, v[1] / len, v[2] / len];
-}
+// `normalizeAxis` moved to lowerers/helpers.ts; re-exported here so the
+// public import path stays `backends/occt/occtLowerer`.
+export { normalizeAxis };
 
 // ---------------------------------------------------------------------------
 // Shared helper: variable-radius fillet / variable-distance chamfer
@@ -471,310 +374,30 @@ export class OcctLowerer implements FeatureLowerer {
     id: import('../../../shared/intent/surfaceRecord').SurfaceId,
   ) => import('../../../shared/intent/surfaceRecord').SurfaceRecord | undefined;
 
-  /**
-   * Resolve the Replicad Face referenced by `record.inputs.surface`. Order of
-   * resolution: external map (`inputs.surfaces`) → instance cache
-   * (`surfaceCache`) → session lookup via `getSurfaceRecord` + lazy build.
-   *
-   * Returns undefined and appends the appropriate diagnostic when the input
-   * ref is missing/wrong-kind or the underlying surface cannot be built.
-   */
-  private resolveSurfaceFaceForRecord(
-    r: FeatureRecord,
-    inputs: ResolvedInputs,
-    diagnostics: CompilerDiagnostic[],
-    allRecords?: readonly FeatureRecord[],
-  ): import('../../../kernel/backends/occt/nurbsSurfaceLowerer').BuiltSurface | undefined {
-    const surfaceRef = r.inputs.surface;
-    if (!surfaceRef || surfaceRef.kind !== 'surface') {
-      diagnostics.push({
-        target: this.target,
-        code: 'feature.invalid-args',
-        featureId: r.id,
-        severity: 'error',
-        message: `${r.kind}: missing or wrong-kind surface input ref.`,
-        hint: `invalid-args.${r.kind}.input — call the corresponding Surface method on a captured Surface.`,
-      });
-      return undefined;
-    }
-    const sid = surfaceRef.surfaceId;
-    return this.buildSurfaceById(sid, r, inputs, diagnostics, allRecords);
-  }
-
-  /**
-   * Resolve a SurfaceId to a `BuiltSurface`, building it from its
-   * `SurfaceRecord` when not already cached. Recursive: a `surfaceTrim` record
-   * resolves its own base surface (and a sibling-surface cutter) through this
-   * same method. `r` is the *consuming* feature record (used only for
-   * diagnostic attribution).
-   */
-  private buildSurfaceById(
-    sid: import('../../../shared/intent/surfaceRecord').SurfaceId,
-    r: FeatureRecord,
-    inputs: ResolvedInputs,
-    diagnostics: CompilerDiagnostic[],
-    allRecords?: readonly FeatureRecord[],
-  ): import('../../../kernel/backends/occt/nurbsSurfaceLowerer').BuiltSurface | undefined {
-    let surface: import('../../../kernel/backends/occt/nurbsSurfaceLowerer').BuiltSurface | undefined =
-      inputs.surfaces?.get(sid) ?? this.surfaceCache.get(sid);
-    if (surface) return surface;
-    if (!this.getSurfaceRecord) {
-      diagnostics.push({
-        target: this.target,
-        code: 'recompute.input.missing',
-        featureId: r.id,
-        severity: 'error',
-        message: `${r.kind}: surface ${sid} not resolved (lowerer has no session hook).`,
-        hint: 'recompute.input.missing — use createOcctLowerer(session) so SurfaceRecords are reachable.',
-      });
-      return undefined;
-    }
-    const surfRec = this.getSurfaceRecord(sid);
-    if (!surfRec) {
-      diagnostics.push({
-        target: this.target,
-        code: 'recompute.input.missing',
-        featureId: r.id,
-        severity: 'error',
-        message: `${r.kind}: SurfaceRecord ${sid} not found in session.`,
-        hint: 'recompute.input.missing — Surface was not captured before its thicken/toShape escape.',
-      });
-      return undefined;
-    }
-    try {
-      if (surfRec.data.kind === 'nurbsSurface') {
-        const face = buildNurbsFace({
-          controls: surfRec.data.controls,
-          weights: surfRec.data.weights,
-          degree: surfRec.data.degree,
-          knots: surfRec.data.knots,
-          periodic: surfRec.data.periodic,
-        });
-        surface = { kind: 'face', face };
-      } else if (surfRec.data.kind === 'surfaceFromCurves') {
-        // Section sketches are passed via the consumer record's inputs map
-        // (SurfaceProxy.buildInputsWithSectionRefs adds `section_<i>` feature
-        // refs so the dep graph drives their lowering before this record is
-        // visited). Read them from `inputs.byKey` here.
-        const sectionShapes: OcctBackend[] = [];
-        for (let i = 0; i < surfRec.data.sectionIds.length; i++) {
-          const fid = surfRec.data.sectionIds[i];
-          const back = inputs.byKey[`section_${i}`] as OcctBackend | undefined;
-          if (!back) {
-            diagnostics.push({
-              target: this.target,
-              code: 'recompute.input.missing',
-              featureId: r.id,
-              severity: 'error',
-              message: `${r.kind}: section sketch ${fid} (section_${i}) not resolved by upstream lowering.`,
-              hint: 'recompute.input.missing — surfaceFromCurves requires every section to lower cleanly. Inspect each sketch with why_did_this_fail.',
-            });
-            return undefined;
-          }
-          sectionShapes.push(back);
-        }
-        const planes = sectionShapes.map((_, i) => ({
-          plane: 'XY' as const,
-          origin: [0, 0, i * 10] as [number, number, number],
-        }));
-        surface = buildSkinnedSurface(sectionShapes, planes);
-      } else if (surfRec.data.kind === 'coonsPatch') {
-        // NURBS Slice C: Coons patch via BRepOffsetAPI_MakeFilling. The
-        // upstream curve3d records are looked up by id from the all-records
-        // table threaded in by `lower()`; the lowerer parks each freshly-
-        // lowered edge on `importedGeometry` so downstream consumers reuse
-        // it (mirrors variableSweep's lazy-edge resolution).
-        if (!allRecords) {
-          diagnostics.push({
-            target: this.target,
-            code: 'recompute.input.missing',
-            featureId: r.id,
-            severity: 'error',
-            message: `${r.kind}: coonsPatch ${sid} needs the all-records table to resolve boundary curves.`,
-            hint: 'recompute.input.missing — surfaceFromBoundary requires the lowerer to receive the full records list.',
-          });
-          return undefined;
-        }
-        const { face } = lowerCoonsPatch(surfRec.data, allRecords, this.importedGeometry);
-        surface = { kind: 'face', face };
-      } else if (surfRec.data.kind === 'surfaceTrim') {
-        // NURBS Slice E (E2): trim/split a surface against a cutter. Resolve the
-        // base surface and the cutter, then cut via BRepAlgoAPI_Section + a
-        // half-space prism (BRepFeat_SplitShape is not bound in this wasm —
-        // see surfaceTrimLowerer.ts header). Both base and a sibling-surface
-        // cutter resolve through this same method (recursion).
-        const trimData = surfRec.data;
-        const baseBuilt = this.buildSurfaceById(trimData.surfaceId, r, inputs, diagnostics, allRecords);
-        if (!baseBuilt) return undefined;
-        if (baseBuilt.kind !== 'face') {
-          diagnostics.push({
-            target: this.target,
-            code: 'feature.invalid-args',
-            featureId: r.id,
-            severity: 'error',
-            message: `surfaceTrim ${sid}: base surface is a multi-face shell; trim supports single-face surfaces only.`,
-            hint: 'invalid-args.surfaceTrim.base — trim a nurbsSurface / coonsPatch face, not a skinned shell.',
-          });
-          return undefined;
-        }
-
-        const cutterFace = this.resolveTrimCutter(trimData, r, inputs, diagnostics, allRecords);
-        if (!cutterFace) return undefined;
-
-        try {
-          const { face } = lowerSurfaceTrim(baseBuilt.face, cutterFace, trimData.op, trimData.piece);
-          surface = { kind: 'face', face };
-        } catch (e) {
-          const msg = e instanceof Error ? e.message : String(e);
-          const nonPlanar = e instanceof NonPlanarTrimError || /not near-planar/i.test(msg);
-          const noIntersection = /do not intersect|no section curve/i.test(msg);
-          const code = nonPlanar
-            ? 'feature.surface-trim.non-planar'
-            : noIntersection
-              ? 'feature.surface-trim.no-intersection'
-              : 'feature.kernel-failed';
-          diagnostics.push({
-            target: this.target,
-            code,
-            featureId: r.id,
-            severity: 'error',
-            message: `surfaceTrim ${sid}: ${msg}`,
-            hint:
-              code === 'feature.kernel-failed'
-                ? 'kernel-failed — ensure the surface and cutter cross cleanly (well-conditioned, non-tangent).'
-                : HINT_TEMPLATES[code].template,
-          });
-          return undefined;
-        }
-      } else {
-        diagnostics.push({
-          target: this.target,
-          code: 'feature.invalid-args',
-          featureId: r.id,
-          severity: 'error',
-          message: `Unknown SurfaceRecord data kind on ${sid}.`,
-          hint: 'Use nurbsSurface(...) or surfaceFromCurves(...) to capture a Surface.',
-        });
-        return undefined;
-      }
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      const isCoons = surfRec.data.kind === 'coonsPatch';
-      diagnostics.push({
-        target: this.target,
-        code: isCoons ? 'feature.surface-from-boundary.degenerate-patch' : 'feature.kernel-failed',
-        featureId: r.id,
-        severity: 'error',
-        message: `${r.kind}: surface build failed: ${msg}`,
-        hint: isCoons
-          ? HINT_TEMPLATES['feature.surface-from-boundary.degenerate-patch'].template
-          : 'kernel-failed — fix the control net / degree / sections per the diagnostic message.',
-      });
-      return undefined;
-    }
-    if (!surface) return undefined;
-    this.surfaceCache.set(sid, surface);
-    return surface;
-  }
-
-  /**
-   * Resolve a `surfaceTrim` cutter (`byRef`) to a single `replicad.Face`.
-   *  - `{ surfaceId }`: a sibling Surface → resolved through `buildSurfaceById`
-   *    and required to be a single face.
-   *  - `{ featureRef }`: a lowered feature shape (box / imported solid / sweep)
-   *    looked up via `importedGeometry` / `inputs.byKey` → its first TopoDS_Face
-   *    is used as the cutter surface (best-effort; the Section only needs a
-   *    surface that crosses the base).
-   */
-  private resolveTrimCutter(
-    trimData: import('../../../shared/intent/surfaceRecord').SurfaceTrimData,
-    r: FeatureRecord,
-    inputs: ResolvedInputs,
-    diagnostics: CompilerDiagnostic[],
-    allRecords?: readonly FeatureRecord[],
-  ): import('replicad').Face | undefined {
-    const byRef = trimData.byRef;
-    if ('surfaceId' in byRef) {
-      const built = this.buildSurfaceById(byRef.surfaceId, r, inputs, diagnostics, allRecords);
-      if (!built) return undefined;
-      if (built.kind !== 'face') {
-        diagnostics.push({
-          target: this.target,
-          code: 'feature.invalid-args',
-          featureId: r.id,
-          severity: 'error',
-          message: `surfaceTrim: cutter surface ${byRef.surfaceId} is a multi-face shell; use a single-face surface as the cutter.`,
-          hint: 'invalid-args.surfaceTrim.cutter — pass a nurbsSurface / coonsPatch face as the cutter.',
-        });
-        return undefined;
-      }
-      return built.face;
-    }
-
-    // featureRef cutter: find the lowered shape and extract its first face.
-    // FeatureRef is a discriminated union; the cutter authoring contract
-    // (surfaceTrim byRef = a Shape feature) implies kind='feature' carrying `.id`,
-    // but we fall back to `.featureId` for face/edge/vertex refs so the lookup
-    // still resolves the owning feature's lowered shape.
-    const featureRef = byRef.featureRef;
-    const fid = featureRef.kind === 'feature' ? featureRef.id : featureRef.kind === 'surface' ? featureRef.surfaceId : featureRef.featureId;
-    const back =
-      this.importedGeometry.get(fid) ??
-      (inputs.byKey[fid] as OcctBackend | undefined) ??
-      (inputs.byKey['by'] as OcctBackend | undefined);
-    if (!back) {
-      diagnostics.push({
-        target: this.target,
-        code: 'recompute.input.missing',
-        featureId: r.id,
-        severity: 'error',
-        message: `surfaceTrim: cutter feature ${fid} was not lowered before the trim resolved.`,
-        hint: 'recompute.input.missing — capture/lower the cutter shape before trimming against it.',
-      });
-      return undefined;
-    }
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const oc = (replicad as any).getOC();
-      // `back` is always an OcctBackend at this call site — importedGeometry
-      // and inputs.byKey are both keyed on OcctBackend instances; the union
-      // type is wider than necessary because the accessor type is ShapeBackend.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const raw = ((back as OcctBackend).getReplicadShape() as any).wrapped;
-      const exp = new oc.TopExp_Explorer_2(
-        raw,
-        oc.TopAbs_ShapeEnum.TopAbs_FACE,
-        oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
-      );
-      if (!exp.More()) {
-        throw new Error(`cutter feature ${fid} has no faces`);
-      }
-      const topoFace = oc.TopoDS.Face_1(exp.Current());
-      return new replicad.Face(topoFace);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      diagnostics.push({
-        target: this.target,
-        code: 'feature.invalid-args',
-        featureId: r.id,
-        severity: 'error',
-        message: `surfaceTrim: could not extract a cutter face from feature ${fid}: ${msg}`,
-        hint: 'invalid-args.surfaceTrim.cutter — pass a surface or a shape with at least one planar face.',
-      });
-      return undefined;
-    }
-  }
-
   /** v0.6: absolute directory of the calling `.kcad.ts` script. Used by the
    *  text lowerer to resolve relative `fontPath(...)` arguments. */
   scriptDir?: string;
 
-  async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
-    const diagnostics: CompilerDiagnostic[] = [];
-    let shape: ShapeBackend;
+  /** Bundle everything the per-kind lowering steps read (instance state +
+   *  this call's inputs) into one context object. The `diagnostics` array is
+   *  the accumulator `lower()` returns. */
+  private contextFor(inputs: ResolvedInputs): LowerContext {
+    return {
+      target: this.target,
+      inputs,
+      // Record table for label-resolution path; threaded through pickEdges/pickFace.
+      allRecords: inputs.records,
+      diagnostics: [],
+      importedGeometry: this.importedGeometry,
+      surfaceCache: this.surfaceCache,
+      getSurfaceRecord: this.getSurfaceRecord,
+      scriptDir: this.scriptDir,
+    };
+  }
 
-    // Record table for label-resolution path; threaded through pickEdges/pickFace.
-    const allRecords = inputs.records;
+  async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
+    const ctx = this.contextFor(inputs);
+    let shape: ShapeBackend;
 
     switch (r.kind) {
       case 'box': {
@@ -802,7 +425,7 @@ export class OcctLowerer implements FeatureLowerer {
             featureId: r.id, opLabel: 'box',
             volumeAfter: (shape as OcctBackend).volume(), isEmpty: (shape as OcctBackend).isEmpty(),
           });
-          if (e) diagnostics.push(e);
+          if (e) ctx.diagnostics.push(e);
         }
         break;
       }
@@ -826,7 +449,7 @@ export class OcctLowerer implements FeatureLowerer {
             featureId: r.id, opLabel: 'cylinder',
             volumeAfter: (shape as OcctBackend).volume(), isEmpty: (shape as OcctBackend).isEmpty(),
           });
-          if (e) diagnostics.push(e);
+          if (e) ctx.diagnostics.push(e);
         }
         break;
       }
@@ -839,7 +462,7 @@ export class OcctLowerer implements FeatureLowerer {
             featureId: r.id, opLabel: 'sphere',
             volumeAfter: (shape as OcctBackend).volume(), isEmpty: (shape as OcctBackend).isEmpty(),
           });
-          if (e) diagnostics.push(e);
+          if (e) ctx.diagnostics.push(e);
         }
         break;
       }
@@ -851,9 +474,9 @@ export class OcctLowerer implements FeatureLowerer {
         // resulting OcctBackend was parked in `lowerer.importedGeometry` keyed
         // by feature id. Lowering is a hand-back — the geometry is already a
         // Shape3D, so all three formats share one arm.
-        const backend = this.importedGeometry.get(r.id);
+        const backend = ctx.importedGeometry.get(r.id);
         if (!backend) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -861,7 +484,7 @@ export class OcctLowerer implements FeatureLowerer {
             message: `${r.kind} record '${r.id}' has no pre-lowered geometry registered on the lowerer.`,
             hint: `invalid-args.${r.kind}.missing-backend — wire the session's importedGeometry map into the lowerer before calling engine.run().`,
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         // Hand back a clone, never the parked backend itself: replicad's
         // translate/rotate/mirror/scale destroy their source OCCT handle, so
@@ -876,9 +499,9 @@ export class OcctLowerer implements FeatureLowerer {
         // capture time (host-side pure JS + OCCT sewing); the resulting
         // OcctBackend was parked in `session.importedGeometry` keyed by
         // feature id. Lowering is a hand-back — geometry is already built.
-        const backend = this.importedGeometry.get(r.id);
+        const backend = ctx.importedGeometry.get(r.id);
         if (!backend) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -886,7 +509,7 @@ export class OcctLowerer implements FeatureLowerer {
             message: `sdfMaterialize record '${r.id}' has no pre-lowered geometry registered on the lowerer.`,
             hint: "invalid-args.sdfMaterialize.missing-backend — wire the session's importedGeometry map into the lowerer before calling engine.run().",
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         // Clone for the same reason as `importedStep` above: keep the parked
         // backend alive across repeated lowering passes.
@@ -896,17 +519,17 @@ export class OcctLowerer implements FeatureLowerer {
       case 'sketch': {
         const meta = r.metadata as { textContent?: unknown; commands?: unknown } | undefined;
         if (typeof meta?.textContent === 'string') {
-          const res = await (await import('../../../kernel/backends/occt/textLowerer')).lowerSketchText(r, this.scriptDir);
+          const res = await (await import('../../../kernel/backends/occt/textLowerer')).lowerSketchText(r, ctx.scriptDir);
           if (!res.ok) {
-            diagnostics.push(...res.diagnostics);
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            ctx.diagnostics.push(...res.diagnostics);
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
           shape = res.backend;
           break;
         }
         const commands = meta?.commands;
         if (!Array.isArray(commands) || commands.length === 0) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -914,7 +537,7 @@ export class OcctLowerer implements FeatureLowerer {
             message: `sketch requires metadata.commands: SketchCommand[] OR metadata.textContent: string.`,
             hint: 'Construct sketches via path().moveTo(...).lineTo(...).close() OR sketch.text(content, opts).',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         try {
           shape = OcctBackend.fromSketchCommands(commands as import('../../capture/sketch').SketchCommand[]);
@@ -942,7 +565,7 @@ export class OcctLowerer implements FeatureLowerer {
             code = 'feature.kernel-failed';
             hint = 'Sketch construction failed — read the diagnostic message for the underlying error.';
           }
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code,
             featureId: r.id,
@@ -950,7 +573,7 @@ export class OcctLowerer implements FeatureLowerer {
             message: `sketch construction failed: ${msg}`,
             hint,
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         break;
       }
@@ -983,7 +606,7 @@ export class OcctLowerer implements FeatureLowerer {
             : undefined;
           if (!Array.isArray(points) || points.length < 3 ||
               !points.every(p => typeof p[0] === 'number' && typeof p[1] === 'number')) {
-            diagnostics.push({
+            ctx.diagnostics.push({
               target: 'export-occt',
               code: 'feature.invalid-args',
               featureId: r.id,
@@ -991,13 +614,13 @@ export class OcctLowerer implements FeatureLowerer {
               message: `extrude polygon requires metadata.points: [number, number][] with at least 3 points.`,
               hint: 'Pass at least 3 [x, y] number pairs as the polygon points.',
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
           try {
             shape = OcctBackend.extrudePolygon(points as [number, number][], depth);
           } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);
-            diagnostics.push({
+            ctx.diagnostics.push({
               target: 'export-occt',
               code: 'feature.kernel-failed',
               featureId: r.id,
@@ -1005,7 +628,7 @@ export class OcctLowerer implements FeatureLowerer {
               message: `OCCT extrude failed: ${msg}`,
               hint: 'OCCT could not extrude — check for self-intersecting profile, inconsistent polygon winding, or rounded-rect radius exceeding half of width/height.',
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
         } else if (profileKind === 'rounded-rect') {
           const width = r.params.width?.evaluated;
@@ -1013,7 +636,7 @@ export class OcctLowerer implements FeatureLowerer {
           const radius = r.params.radius?.evaluated;
           const depth = r.params.depth?.evaluated;
           if (width === undefined || height === undefined || radius === undefined || depth === undefined) {
-            diagnostics.push({
+            ctx.diagnostics.push({
               target: 'export-occt',
               code: 'feature.invalid-args',
               featureId: r.id,
@@ -1021,13 +644,13 @@ export class OcctLowerer implements FeatureLowerer {
               message: `extrude rounded-rect requires width, height, radius, and depth params (positive finite numbers).`,
               hint: 'Pass width, height, radius, and depth as positive finite numbers.',
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
           try {
             shape = OcctBackend.extrudeRoundedRect(width, height, radius, depth);
           } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);
-            diagnostics.push({
+            ctx.diagnostics.push({
               target: 'export-occt',
               code: 'feature.kernel-failed',
               featureId: r.id,
@@ -1035,13 +658,13 @@ export class OcctLowerer implements FeatureLowerer {
               message: `OCCT extrude failed: ${msg}`,
               hint: 'OCCT could not extrude — check for self-intersecting profile, inconsistent polygon winding, or rounded-rect radius exceeding half of width/height.',
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
         } else if (profileKind === 'sketch') {
           const depth = r.params.depth.evaluated;
-          const sketchInput = inputs.byKey.sketch as OcctBackend | undefined;
+          const sketchInput = ctx.inputs.byKey.sketch as OcctBackend | undefined;
           if (!sketchInput) {
-            diagnostics.push({
+            ctx.diagnostics.push({
               target: 'export-occt',
               code: 'feature.invalid-args',
               featureId: r.id,
@@ -1049,13 +672,13 @@ export class OcctLowerer implements FeatureLowerer {
               message: `extrude with profile='sketch' requires an input named 'sketch'.`,
               hint: 'Chain extrude from a path()...close() sketch.',
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
           try {
             shape = OcctBackend.extrudeFromSketch(sketchInput, depth);
           } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);
-            diagnostics.push({
+            ctx.diagnostics.push({
               target: 'export-occt',
               code: 'feature.kernel-failed',
               featureId: r.id,
@@ -1063,14 +686,14 @@ export class OcctLowerer implements FeatureLowerer {
               message: `OCCT extrude failed: ${msg}`,
               hint: 'OCCT could not extrude — check for self-intersecting profile, inconsistent polygon winding, or rounded-rect radius exceeding half of width/height.',
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
         } else {
           return {
             shape: undefined as unknown as ShapeBackend,
             diagnostics: [
               {
-                target: this.target,
+                target: ctx.target,
                 code: 'feature.invalid-args',
                 featureId: r.id,
                 severity: 'error',
@@ -1087,7 +710,7 @@ export class OcctLowerer implements FeatureLowerer {
             featureId: r.id, opLabel: 'extrude',
             volumeAfter: (shape as OcctBackend).volume(), isEmpty: (shape as OcctBackend).isEmpty(),
           });
-          if (e) diagnostics.push(e);
+          if (e) ctx.diagnostics.push(e);
         }
         break;
       }
@@ -1099,9 +722,9 @@ export class OcctLowerer implements FeatureLowerer {
         //   (c) kFactor + sketchPlane carried on metadata for .bend() and
         //       flattenPattern().
         const depth = r.params.thickness.evaluated;
-        const sketchInput = inputs.byKey.sketch as OcctBackend | undefined;
+        const sketchInput = ctx.inputs.byKey.sketch as OcctBackend | undefined;
         if (!sketchInput) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -1109,13 +732,13 @@ export class OcctLowerer implements FeatureLowerer {
             message: `sheetMetal requires an input sketch.`,
             hint: 'Pass a closed path()...close() sketch as the first argument: sheetMetal(sketch, opts).',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         try {
           shape = OcctBackend.extrudeFromSketch(sketchInput, depth);
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.kernel-failed',
             featureId: r.id,
@@ -1123,14 +746,14 @@ export class OcctLowerer implements FeatureLowerer {
             message: `OCCT extrude failed during sheetMetal lowering: ${msg}`,
             hint: 'sheetMetal lowers via the extrude pipeline. Check for self-intersecting profile or near-zero thickness.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         break;
       }
       case 'sheetMetalBend': {
-        const base = inputs.byKey.base as OcctBackend | undefined;
+        const base = ctx.inputs.byKey.base as OcctBackend | undefined;
         if (!base) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -1138,13 +761,13 @@ export class OcctLowerer implements FeatureLowerer {
             message: `sheetMetalBend requires an input named 'base'.`,
             hint: 'Chain .bend() on a sheetMetal(...) Shape.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         // Walk lineage backward to find the root sheetMetal record so we can
         // read its kFactor and thickness. If none, emit feature.invalid-args.
-        const rootRec = findRootSheetMetalRecord(r, allRecords ?? []);
+        const rootRec = findRootSheetMetalRecord(r, ctx.allRecords ?? []);
         if (!rootRec) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -1152,7 +775,7 @@ export class OcctLowerer implements FeatureLowerer {
             message: `.bend() only works on Shapes whose lineage roots at sheetMetal(...).`,
             hint: 'Build the body via sheetMetal(sketch, opts), then chain .bend().',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         const kFactor = rootRec.params.kFactor.evaluated;
         const thickness = rootRec.params.thickness.evaluated;
@@ -1168,8 +791,8 @@ export class OcctLowerer implements FeatureLowerer {
           thickness,
         );
         if ('diagnostic' in axisResult) {
-          diagnostics.push(axisResult.diagnostic);
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          ctx.diagnostics.push(axisResult.diagnostic);
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         const result = lowerSheetMetalBend({
           featureId: r.id,
@@ -1181,9 +804,9 @@ export class OcctLowerer implements FeatureLowerer {
           kFactor,
           thickness,
         });
-        diagnostics.push(...result.diagnostics);
+        ctx.diagnostics.push(...result.diagnostics);
         if (!result.shape) {
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         // Persist the bend record on r.metadata for flattenPattern.
         if (result.bendRecord) {
@@ -1194,9 +817,9 @@ export class OcctLowerer implements FeatureLowerer {
         break;
       }
       case 'revolve': {
-        const sketchInput = inputs.byKey.sketch as OcctBackend | undefined;
+        const sketchInput = ctx.inputs.byKey.sketch as OcctBackend | undefined;
         if (!sketchInput) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -1204,11 +827,11 @@ export class OcctLowerer implements FeatureLowerer {
             message: `revolve requires an input named 'sketch'.`,
             hint: 'Chain revolve from a path()...close() sketch.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         const commands = sketchInput.getSketchCommands();
         if (!commands) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -1216,13 +839,13 @@ export class OcctLowerer implements FeatureLowerer {
             message: `revolve sketch input has no command history.`,
             hint: 'Chain revolve from a path()...close() sketch (the sketch must carry its command history).',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         // Empty profile: only moveTo + close (or even less). No segments means
         // no area to revolve.
         const segmentCount = commands.filter(c => c.kind === 'lineTo' || c.kind === 'tangentArc').length;
         if (segmentCount === 0) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -1230,14 +853,14 @@ export class OcctLowerer implements FeatureLowerer {
             message: `revolve profile has no line/arc segments — area is zero.`,
             hint: 'Add at least one lineTo or arc segment to the path before close.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         // Axis-cross check: any point with x < 0 means the profile spans the
         // rotation axis, which yields a self-intersecting revolve.
         const crossing = commands.find(c => (c.kind === 'moveTo' || c.kind === 'lineTo' || c.kind === 'tangentArc') && c.x.evaluated < 0);
         if (crossing) {
           const xv = (crossing as { x: { evaluated: number } }).x.evaluated;
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.revolve.crosses-axis',
             featureId: r.id,
@@ -1245,7 +868,7 @@ export class OcctLowerer implements FeatureLowerer {
             message: `revolve profile point (x=${xv}) crosses rotation axis. All points must satisfy x >= 0.`,
             hint: 'A revolve profile must stay on one side of the rotation axis. Clamp all path coordinates to x >= 0.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         // Optional partial-revolve `angleDeg` param. Default 360 (full).
         // Range: (0, 360]. Out-of-range values are caught here and surfaced
@@ -1253,7 +876,7 @@ export class OcctLowerer implements FeatureLowerer {
         // less-specific error.
         const angleDeg = r.params.angleDeg ? Number(r.params.angleDeg.evaluated) : 360;
         if (!Number.isFinite(angleDeg) || angleDeg <= 0 || angleDeg > 360) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -1261,13 +884,13 @@ export class OcctLowerer implements FeatureLowerer {
             message: `revolve angleDeg must be in (0, 360]; got ${angleDeg}.`,
             hint: 'Pass an angle in (0, 360]. Use 360 (default) for a full revolve, e.g. 180 for a half revolve.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         try {
           shape = OcctBackend.revolveFromSketch(sketchInput, angleDeg);
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.kernel-failed',
             featureId: r.id,
@@ -1275,7 +898,7 @@ export class OcctLowerer implements FeatureLowerer {
             message: `OCCT revolve failed: ${msg}`,
             hint: 'OCCT could not revolve — the profile may self-intersect or be degenerate.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         // revolve sweeps a closed profile around an axis into a solid — an
         // empty / zero-volume result is degenerate, never legitimate.
@@ -1284,16 +907,16 @@ export class OcctLowerer implements FeatureLowerer {
             featureId: r.id, opLabel: 'revolve',
             volumeAfter: (shape as OcctBackend).volume(), isEmpty: (shape as OcctBackend).isEmpty(),
           });
-          if (e) diagnostics.push(e);
+          if (e) ctx.diagnostics.push(e);
         }
         break;
       }
       case 'sweep': {
         const profileKind = String(r.params.profileKind.expression).replace(/'/g, '');
         if (profileKind === 'sketch') {
-          const sketchInput = inputs.byKey.sketch as OcctBackend | undefined;
+          const sketchInput = ctx.inputs.byKey.sketch as OcctBackend | undefined;
           if (!sketchInput) {
-            diagnostics.push({
+            ctx.diagnostics.push({
               target: 'export-occt',
               code: 'feature.invalid-args',
               featureId: r.id,
@@ -1301,7 +924,7 @@ export class OcctLowerer implements FeatureLowerer {
               message: `sweep with profile='sketch' requires an input named 'sketch'.`,
               hint: 'Chain sweep from a path()...close() sketch.',
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
           // A rail from helix() carries its (pre-resolved) dimensions: regenerate
           // it from the live values so a ParamRef radius/pitch/turns follows a
@@ -1311,7 +934,7 @@ export class OcctLowerer implements FeatureLowerer {
             ? helix(helixOptionsFromSpec(helixSpec))
             : (r.metadata as { rail?: unknown } | undefined)?.rail;
           if (!Array.isArray(rail) || rail.length < 2) {
-            diagnostics.push({
+            ctx.diagnostics.push({
               target: 'export-occt',
               code: 'feature.invalid-args',
               featureId: r.id,
@@ -1319,10 +942,10 @@ export class OcctLowerer implements FeatureLowerer {
               message: `sweep rail must be an array of at least 2 points; got ${Array.isArray(rail) ? `length ${rail.length}` : 'non-array'}.`,
               hint: 'Pass a rail array of [x, y, z] tuples (≥2 points). Use helix(...) for helical rails.',
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
           if (rail.length > 5000) {
-            diagnostics.push({
+            ctx.diagnostics.push({
               target: 'export-occt',
               code: 'feature.invalid-args',
               featureId: r.id,
@@ -1330,14 +953,14 @@ export class OcctLowerer implements FeatureLowerer {
               message: `sweep rail has ${rail.length} points (cap is 5000). For helices, reduce \`pointsPerTurn\` or \`turns\`. For polylines, simplify the path.`,
               hint: 'Reduce rail point count to ≤ 5000. For helices, lower pointsPerTurn or turns.',
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
           // Validate every entry is [number, number, number] of finite numbers.
           for (let i = 0; i < rail.length; i++) {
             const p = rail[i];
             if (!Array.isArray(p) || p.length !== 3 ||
                 !p.every(n => typeof n === 'number' && Number.isFinite(n))) {
-              diagnostics.push({
+              ctx.diagnostics.push({
                 target: 'export-occt',
                 code: 'feature.invalid-args',
                 featureId: r.id,
@@ -1345,14 +968,14 @@ export class OcctLowerer implements FeatureLowerer {
                 message: `sweep rail point at index ${i} must be a [x, y, z] tuple of finite numbers; got ${JSON.stringify(p)}.`,
                 hint: 'Each rail point must be a [x, y, z] tuple of finite numbers.',
               });
-              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+              return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
             }
           }
           const frenet = (r.params.frenet?.evaluated ?? 0) > 0.5;
           const rawTransition = (r.metadata as { transitionMode?: unknown } | undefined)?.transitionMode;
           const ALLOWED_MODES = ['right', 'transformed', 'round'] as const;
           if (rawTransition !== undefined && !ALLOWED_MODES.includes(rawTransition as typeof ALLOWED_MODES[number])) {
-            diagnostics.push({
+            ctx.diagnostics.push({
               target: 'export-occt',
               code: 'feature.invalid-args',
               featureId: r.id,
@@ -1360,13 +983,13 @@ export class OcctLowerer implements FeatureLowerer {
               message: `sweep.transitionMode must be one of 'right' | 'transformed' | 'round'; got ${JSON.stringify(rawTransition)}.`,
               hint: "Pass transitionMode: 'right' (default, sharp), 'transformed' (extend tangents), or 'round' (tangent-arc corner).",
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
           const transitionMode = (rawTransition ?? 'right') as 'right' | 'transformed' | 'round';
           const rawSpine = (r.metadata as { spine?: unknown } | undefined)?.spine;
           const ALLOWED_SPINES = ['polyline', 'smooth', 'helix'] as const;
           if (rawSpine !== undefined && !ALLOWED_SPINES.includes(rawSpine as typeof ALLOWED_SPINES[number])) {
-            diagnostics.push({
+            ctx.diagnostics.push({
               target: 'export-occt',
               code: 'feature.invalid-args',
               featureId: r.id,
@@ -1374,11 +997,11 @@ export class OcctLowerer implements FeatureLowerer {
               message: `sweep.spine must be one of 'polyline' | 'smooth' | 'helix'; got ${JSON.stringify(rawSpine)}.`,
               hint: "Pass spine: 'polyline' (default — straight rail edges, real corners), 'smooth' (single B-spline spine through the rail points; use for curved rails), or 'helix' (exact helix for a helix() rail; threads).",
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
           const spine = (rawSpine ?? 'polyline') as 'polyline' | 'smooth' | 'helix';
           if (spine === 'helix' && helixSpec === undefined) {
-            diagnostics.push({
+            ctx.diagnostics.push({
               target: 'export-occt',
               code: 'feature.invalid-args',
               featureId: r.id,
@@ -1386,7 +1009,7 @@ export class OcctLowerer implements FeatureLowerer {
               message: "sweep spine 'helix' requires a rail produced by helix(); this record carries no helix dimensions.",
               hint: "Pass helix({ radius, pitch, turns }) straight to sweep(rail, { spine: 'helix' }), or use spine: 'smooth' for other curved rails.",
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
           try {
             if (spine === 'helix') {
@@ -1408,7 +1031,7 @@ export class OcctLowerer implements FeatureLowerer {
             }
           } catch (e) {
             if (e instanceof HelicalSweepArgsError) {
-              diagnostics.push({
+              ctx.diagnostics.push({
                 target: 'export-occt',
                 code: 'feature.invalid-args',
                 featureId: r.id,
@@ -1416,14 +1039,14 @@ export class OcctLowerer implements FeatureLowerer {
                 message: e.message,
                 hint: e.hint,
               });
-              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+              return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
             }
             const msg = e instanceof Error ? e.message : String(e);
             // All sweep failure modes (multi-face profile, profile too large,
             // spine self-intersection, generic) collapse into kernel-failed.
             // The message preserves the underlying cause string from OCCT/
             // Replicad; the hint is generic to the sweep recovery class.
-            diagnostics.push({
+            ctx.diagnostics.push({
               target: 'export-occt',
               code: 'feature.kernel-failed',
               featureId: r.id,
@@ -1431,14 +1054,14 @@ export class OcctLowerer implements FeatureLowerer {
               message: `OCCT sweep failed: ${msg}`,
               hint: 'OCCT could not sweep — common causes: profile larger than rail curvature, sharp corners causing self-intersection, multi-face profile, or non-planar profile.',
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
         } else {
           return {
             shape: undefined as unknown as ShapeBackend,
             diagnostics: [
               {
-                target: this.target,
+                target: ctx.target,
                 code: 'feature.invalid-args',
                 featureId: r.id,
                 severity: 'error',
@@ -1455,7 +1078,7 @@ export class OcctLowerer implements FeatureLowerer {
             featureId: r.id, opLabel: 'sweep',
             volumeAfter: (shape as OcctBackend).volume(), isEmpty: (shape as OcctBackend).isEmpty(),
           });
-          if (e) diagnostics.push(e);
+          if (e) ctx.diagnostics.push(e);
         }
         break;
       }
@@ -1464,7 +1087,7 @@ export class OcctLowerer implements FeatureLowerer {
         if (profileKind === 'sketch') {
           const sectionCount = r.params.sectionCount?.evaluated ?? 0;
           if (sectionCount < 2) {
-            diagnostics.push({
+            ctx.diagnostics.push({
               target: 'export-occt',
               code: 'feature.invalid-args',
               featureId: r.id,
@@ -1472,22 +1095,22 @@ export class OcctLowerer implements FeatureLowerer {
               message: `loft needs at least 2 sketches (sectionCount=${sectionCount}).`,
               hint: 'Pass at least 2 sketches; e.g. s1.loft(s2).',
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
-          // Collect sketch_0 through sketch_{N-1} from inputs.byKey
+          // Collect sketch_0 through sketch_{N-1} from ctx.inputs.byKey
           const sketches: OcctBackend[] = [];
           for (let i = 0; i < sectionCount; i++) {
-            const s = inputs.byKey[`sketch_${i}`] as OcctBackend | undefined;
+            const s = ctx.inputs.byKey[`sketch_${i}`] as OcctBackend | undefined;
             if (!s) {
-              diagnostics.push({
+              ctx.diagnostics.push({
                 target: 'export-occt',
                 code: 'feature.invalid-args',
                 featureId: r.id,
                 severity: 'error',
                 message: `loft missing input sketch_${i} — upstream sketch did not lower successfully.`,
-                hint: 'Loft requires every upstream sketch input to lower successfully — check upstream sketch diagnostics first.',
+                hint: 'Loft requires every upstream sketch input to lower successfully — check upstream sketch ctx.diagnostics first.',
               });
-              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+              return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
             }
             sketches.push(s);
           }
@@ -1513,7 +1136,7 @@ export class OcctLowerer implements FeatureLowerer {
           let planes: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number] }>;
           if (Array.isArray(meta?.planes)) {
             if (meta.planes.length !== sectionCount) {
-              diagnostics.push({
+              ctx.diagnostics.push({
                 target: 'export-occt',
                 code: 'feature.invalid-args',
                 featureId: r.id,
@@ -1521,7 +1144,7 @@ export class OcctLowerer implements FeatureLowerer {
                 message: `loft planes length ${meta.planes.length} does not match section count ${sectionCount}.`,
                 hint: 'If you pass opts.planes, its length must equal the section count. Or omit planes and use opts.spacing.',
               });
-              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+              return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
             }
             planes = meta.planes;
           } else {
@@ -1537,7 +1160,7 @@ export class OcctLowerer implements FeatureLowerer {
             : [];
           const railCount = r.params.railCount?.evaluated ?? railIds.length;
           if (railCount > 2 || railIds.length > 2) {
-            diagnostics.push({
+            ctx.diagnostics.push({
               target: 'export-occt',
               code: 'feature.loft.rail-miss',
               featureId: r.id,
@@ -1545,21 +1168,21 @@ export class OcctLowerer implements FeatureLowerer {
               message: `loft rails: OCCT MakePipeShell accepts at most 2 rails (spine + auxiliary); got ${Math.max(railCount, railIds.length)}.`,
               hint: HINT_TEMPLATES['feature.loft.rail-miss'].template,
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
           if (railIds.length > 0) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const railEdges: any[] = [];
             for (const railId of railIds) {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              let edge: any = this.importedGeometry.get(railId);
-              if (!edge && allRecords) {
-                const upstream = allRecords.find((u) => u.id === railId);
+              let edge: any = ctx.importedGeometry.get(railId);
+              if (!edge && ctx.allRecords) {
+                const upstream = ctx.allRecords.find((u) => u.id === railId);
                 if (upstream?.kind === 'curve3d') {
                   const upMeta = upstream.metadata as { curve3d?: unknown } | undefined;
                   const cm = upMeta?.curve3d;
                   if (!isCurve3DMetadata(cm)) {
-                    diagnostics.push({
+                    ctx.diagnostics.push({
                       target: 'export-occt',
                       code: 'feature.curve3d.degenerate-controls',
                       featureId: r.id,
@@ -1567,14 +1190,14 @@ export class OcctLowerer implements FeatureLowerer {
                       message: `loft: rail curve3d '${railId}' is missing valid metadata.curve3d.`,
                       hint: 'Build each rail via nurbsCurve(...) / spline3d(...) / curveBridge(...).',
                     });
-                    return { shape: undefined as unknown as ShapeBackend, diagnostics };
+                    return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
                   }
                   try {
                     edge = lowerCurve3D(cm).edge;
-                    this.importedGeometry.set(railId, edge as unknown as ShapeBackend);
+                    ctx.importedGeometry.set(railId, edge as unknown as ShapeBackend);
                   } catch (e) {
                     const msg = e instanceof Error ? e.message : String(e);
-                    diagnostics.push({
+                    ctx.diagnostics.push({
                       target: 'export-occt',
                       code: 'feature.kernel-failed',
                       featureId: r.id,
@@ -1582,12 +1205,12 @@ export class OcctLowerer implements FeatureLowerer {
                       message: `loft: failed to lower rail '${railId}': ${msg}`,
                       hint: 'kernel-failed — verify the rail NURBS control net.',
                     });
-                    return { shape: undefined as unknown as ShapeBackend, diagnostics };
+                    return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
                   }
                 }
               }
               if (!edge) {
-                diagnostics.push({
+                ctx.diagnostics.push({
                   target: 'export-occt',
                   code: 'feature.loft.rail-miss',
                   featureId: r.id,
@@ -1595,7 +1218,7 @@ export class OcctLowerer implements FeatureLowerer {
                   message: `loft: rail '${railId}' could not be resolved to a curve.`,
                   hint: HINT_TEMPLATES['feature.loft.rail-miss'].template,
                 });
-                return { shape: undefined as unknown as ShapeBackend, diagnostics };
+                return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
               }
               railEdges.push(edge);
             }
@@ -1613,7 +1236,7 @@ export class OcctLowerer implements FeatureLowerer {
                 };
                 const p = planes[i];
                 if (s.kind !== 'sketch' || (!s._drawing && !s._hasNurbs)) {
-                  diagnostics.push({
+                  ctx.diagnostics.push({
                     target: 'export-occt',
                     code: 'feature.invalid-args',
                     featureId: r.id,
@@ -1621,7 +1244,7 @@ export class OcctLowerer implements FeatureLowerer {
                     message: `loft: input ${i} is not a sketch.`,
                     hint: 'Pass closed Sketch sections to loft.',
                   });
-                  return { shape: undefined as unknown as ShapeBackend, diagnostics };
+                  return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
                 }
                 let lifted: { face: () => { outerWire: () => { wrapped: unknown } } };
                 if (s._hasNurbs && s._commands) {
@@ -1637,7 +1260,7 @@ export class OcctLowerer implements FeatureLowerer {
               }
               for (let i = 0; i < railEdges.length; i++) {
                 if (!railHitsSections(railEdges[i], sectionWires)) {
-                  diagnostics.push({
+                  ctx.diagnostics.push({
                     target: 'export-occt',
                     code: 'feature.loft.rail-miss',
                     featureId: r.id,
@@ -1645,13 +1268,13 @@ export class OcctLowerer implements FeatureLowerer {
                     message: `loft: rail[${i}] does not pass within 1 mm of every section.`,
                     hint: HINT_TEMPLATES['feature.loft.rail-miss'].template,
                   });
-                  return { shape: undefined as unknown as ShapeBackend, diagnostics };
+                  return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
                 }
               }
               shape = lowerLoftWithRails(railEdges[0], sectionWires, railEdges[1]);
             } catch (e) {
               const msg = e instanceof Error ? e.message : String(e);
-              diagnostics.push({
+              ctx.diagnostics.push({
                 target: 'export-occt',
                 code: 'feature.kernel-failed',
                 featureId: r.id,
@@ -1659,7 +1282,7 @@ export class OcctLowerer implements FeatureLowerer {
                 message: `OCCT rail loft failed: ${msg}`,
                 hint: 'OCCT MakePipeShell could not build a solid from these rails and sections — check that each rail meets every section.',
               });
-              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+              return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
             }
           } else {
             try {
@@ -1670,7 +1293,7 @@ export class OcctLowerer implements FeatureLowerer {
               });
             } catch (e) {
               const msg = e instanceof Error ? e.message : String(e);
-              diagnostics.push({
+              ctx.diagnostics.push({
                 target: 'export-occt',
                 code: 'feature.kernel-failed',
                 featureId: r.id,
@@ -1678,7 +1301,7 @@ export class OcctLowerer implements FeatureLowerer {
                 message: `OCCT loft failed: ${msg}`,
                 hint: 'OCCT could not loft these sections — try ruled: true for sharp transitions, or use sections with similar vertex counts and orientation.',
               });
-              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+              return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
             }
           }
         } else {
@@ -1686,7 +1309,7 @@ export class OcctLowerer implements FeatureLowerer {
             shape: undefined as unknown as ShapeBackend,
             diagnostics: [
               {
-                target: this.target,
+                target: ctx.target,
                 code: 'feature.invalid-args',
                 featureId: r.id,
                 severity: 'error',
@@ -1703,21 +1326,21 @@ export class OcctLowerer implements FeatureLowerer {
             featureId: r.id, opLabel: 'loft',
             volumeAfter: (shape as OcctBackend).volume(), isEmpty: (shape as OcctBackend).isEmpty(),
           });
-          if (e) diagnostics.push(e);
+          if (e) ctx.diagnostics.push(e);
         }
         break;
       }
       case 'boolean': {
         // Op expression is a quoted string in IR (e.g. "'difference'").
         const op = String(r.params.op.expression).replace(/'/g, '');
-        const base = inputs.byKey['base'];
+        const base = ctx.inputs.byKey['base'];
         if (!base) throw new Error(`Boolean ${r.id} missing 'base' input`);
         let acc: OcctBackend = base as OcctBackend;
         // For a difference, capture the base volume so we can flag a no-op cut
         // (cutter missed the body) below — the kernel otherwise returns the
         // unchanged solid as a success.
         const volumeBeforeCut = op === 'difference' ? acc.volume() : null;
-        const cutters = Object.entries(inputs.byKey)
+        const cutters = Object.entries(ctx.inputs.byKey)
           .filter(([k]) => k.startsWith('cutter_'))
           .sort(([a], [b]) => a.localeCompare(b))
           .map(([, v]) => v as OcctBackend);
@@ -1747,7 +1370,7 @@ export class OcctLowerer implements FeatureLowerer {
             volumeBefore: volumeBeforeCut,
             volumeAfter: acc.volume(),
           });
-          if (noop) diagnostics.push(noop);
+          if (noop) ctx.diagnostics.push(noop);
         }
         // Additive analog of the cutter-miss: an intersection of disjoint
         // bodies yields no common solid. Empty/zero-volume here is unambiguous
@@ -1759,14 +1382,14 @@ export class OcctLowerer implements FeatureLowerer {
             volumeAfter: acc.volume(),
             isEmpty: acc.isEmpty(),
           });
-          if (empty) diagnostics.push(empty);
+          if (empty) ctx.diagnostics.push(empty);
         }
         break;
       }
       case 'fillet': {
-        const base = inputs.byKey.base as OcctBackend | undefined;
+        const base = ctx.inputs.byKey.base as OcctBackend | undefined;
         if (!base) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -1779,10 +1402,10 @@ export class OcctLowerer implements FeatureLowerer {
         // rc.12: variable-radius form is delegated to applyVariableEdgeFeature.
         const meta = r.metadata as { variable?: boolean; continuity?: 'G1' | 'G2' } | undefined;
         if (meta?.variable === true) {
-          const result = applyVariableEdgeFeature('fillet', base, r, allRecords);
-          diagnostics.push(...result.diagnostics);
+          const result = applyVariableEdgeFeature('fillet', base, r, ctx.allRecords);
+          ctx.diagnostics.push(...result.diagnostics);
           if (!result.ok) {
-            return { shape: base, diagnostics };
+            return { shape: base, diagnostics: ctx.diagnostics };
           }
           shape = result.shape;
           break;
@@ -1792,7 +1415,7 @@ export class OcctLowerer implements FeatureLowerer {
         const filletContinuity = meta?.continuity ?? 'G1';
         const radius = r.params.radius?.evaluated;
         if (radius === undefined) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -1802,12 +1425,12 @@ export class OcctLowerer implements FeatureLowerer {
           });
           throw new Error('fillet: no radius');
         }
-        const edgesResult = pickEdges(r, base, allRecords);
+        const edgesResult = pickEdges(r, base, ctx.allRecords);
         if ('error' in edgesResult) {
-          diagnostics.push(edgesResult.error);
-          return { shape: base, diagnostics };
+          ctx.diagnostics.push(edgesResult.error);
+          return { shape: base, diagnostics: ctx.diagnostics };
         }
-        drainResolvedWarnings(r, diagnostics);
+        drainResolvedWarnings(r, ctx.diagnostics);
         // Filter to sharp edges only — BRepFilletAPI_MakeFillet requires convex/concave
         // (non-smooth) edges. Smooth edges (G1, dihedral ≈ 180°) will cause OCCT to throw.
         // If all edges are already smooth (e.g., iterating a fillet on a face that was already
@@ -1845,7 +1468,7 @@ export class OcctLowerer implements FeatureLowerer {
         const filletFilter = filterEdgesByMinLength(edgesForFillet, 2 * radius, {
           op: 'fillet', paramName: 'radius', featureId: r.id,
         });
-        if (filletFilter.diagnostic) diagnostics.push(filletFilter.diagnostic);
+        if (filletFilter.diagnostic) ctx.diagnostics.push(filletFilter.diagnostic);
         if (filletFilter.diagnostic?.severity === 'error') {
           shape = base;
           break;
@@ -1878,7 +1501,7 @@ export class OcctLowerer implements FeatureLowerer {
             }
             // Edge-based or default selection: OCCT genuinely rejected. Emit a
             // clean diagnostic without leaking the raw pointer.
-            diagnostics.push({
+            ctx.diagnostics.push({
               target: 'export-occt',
               code: 'feature.kernel-failed',
               featureId: r.id,
@@ -1886,7 +1509,7 @@ export class OcctLowerer implements FeatureLowerer {
               message: 'OCCT fillet failed (non-Error C++ exception during Build)',
               hint: 'OCCT could not apply that fillet — try a smaller radius, a different edge selection, or check whether the target edges are already G1-smooth.',
             });
-            return { shape: base, diagnostics };
+            return { shape: base, diagnostics: ctx.diagnostics };
           }
           const msg = e.message;
           // Slice C Task 6: when G2 was requested and OCCT reports IsDone=false,
@@ -1894,7 +1517,7 @@ export class OcctLowerer implements FeatureLowerer {
           // faces are themselves only G1). Surface the specific diagnostic so
           // the agent can downgrade to G1 or refit upstream faces.
           if (filletContinuity === 'G2' && /BRepFilletAPI_MakeFillet failed/.test(msg)) {
-            diagnostics.push({
+            ctx.diagnostics.push({
               target: 'export-occt',
               code: 'feature.fillet.continuity-not-applicable',
               featureId: r.id,
@@ -1902,9 +1525,9 @@ export class OcctLowerer implements FeatureLowerer {
               message: `OCCT fillet failed with continuity: 'G2' — adjacent faces are not G2-compatible.`,
               hint: "drop continuity: 'G2' (adjacent faces are only G1) or refit the upstream faces as NURBS surfaces.",
             });
-            return { shape: base, diagnostics };
+            return { shape: base, diagnostics: ctx.diagnostics };
           }
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.kernel-failed',
             featureId: r.id,
@@ -1912,14 +1535,14 @@ export class OcctLowerer implements FeatureLowerer {
             message: `OCCT fillet failed: ${msg}`,
             hint: 'OCCT could not apply that fillet — try a smaller radius (typically less than half of the smallest face dimension).',
           });
-          return { shape: base, diagnostics };
+          return { shape: base, diagnostics: ctx.diagnostics };
         }
         break;
       }
       case 'chamfer': {
-        const base = inputs.byKey.base as OcctBackend | undefined;
+        const base = ctx.inputs.byKey.base as OcctBackend | undefined;
         if (!base) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -1932,17 +1555,17 @@ export class OcctLowerer implements FeatureLowerer {
         // rc.12: variable-distance form is delegated to applyVariableEdgeFeature.
         const meta = r.metadata as { variable?: boolean } | undefined;
         if (meta?.variable === true) {
-          const result = applyVariableEdgeFeature('chamfer', base, r, allRecords);
-          diagnostics.push(...result.diagnostics);
+          const result = applyVariableEdgeFeature('chamfer', base, r, ctx.allRecords);
+          ctx.diagnostics.push(...result.diagnostics);
           if (!result.ok) {
-            return { shape: base, diagnostics };
+            return { shape: base, diagnostics: ctx.diagnostics };
           }
           shape = result.shape;
           break;
         }
         const distance = r.params.distance?.evaluated;
         if (distance === undefined) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -1952,18 +1575,18 @@ export class OcctLowerer implements FeatureLowerer {
           });
           throw new Error('chamfer: no distance');
         }
-        const edgesResult = pickEdges(r, base, allRecords);
+        const edgesResult = pickEdges(r, base, ctx.allRecords);
         if ('error' in edgesResult) {
-          diagnostics.push(edgesResult.error);
-          return { shape: base, diagnostics };
+          ctx.diagnostics.push(edgesResult.error);
+          return { shape: base, diagnostics: ctx.diagnostics };
         }
-        drainResolvedWarnings(r, diagnostics);
+        drainResolvedWarnings(r, ctx.diagnostics);
         const chamferFilter = filterEdgesByMinLength(
           edgesResult as import('replicad').Edge[],
           2 * distance,
           { op: 'chamfer', paramName: 'distance', featureId: r.id },
         );
-        if (chamferFilter.diagnostic) diagnostics.push(chamferFilter.diagnostic);
+        if (chamferFilter.diagnostic) ctx.diagnostics.push(chamferFilter.diagnostic);
         if (chamferFilter.diagnostic?.severity === 'error') {
           shape = base;
           break;
@@ -1984,7 +1607,7 @@ export class OcctLowerer implements FeatureLowerer {
           shape = new OcctBackend(wrapped, undefined, newMap);
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.kernel-failed',
             featureId: r.id,
@@ -1992,14 +1615,14 @@ export class OcctLowerer implements FeatureLowerer {
             message: `OCCT chamfer failed: ${msg}`,
             hint: 'OCCT could not apply that chamfer — try a smaller distance (typically less than half of the smallest face dimension).',
           });
-          return { shape: base, diagnostics };
+          return { shape: base, diagnostics: ctx.diagnostics };
         }
         break;
       }
       case 'shell': {
-        const base = inputs.byKey.base as OcctBackend | undefined;
+        const base = ctx.inputs.byKey.base as OcctBackend | undefined;
         if (!base) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -2011,7 +1634,7 @@ export class OcctLowerer implements FeatureLowerer {
         }
         const thickness = r.params.thickness?.evaluated;
         if (thickness === undefined) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -2021,12 +1644,12 @@ export class OcctLowerer implements FeatureLowerer {
           });
           throw new Error('shell: no thickness');
         }
-        const faceResult = pickFace(r, base, allRecords);
+        const faceResult = pickFace(r, base, ctx.allRecords);
         if ('error' in faceResult) {
-          diagnostics.push(faceResult.error);
-          return { shape: base, diagnostics };
+          ctx.diagnostics.push(faceResult.error);
+          return { shape: base, diagnostics: ctx.diagnostics };
         }
-        drainResolvedWarnings(r, diagnostics);
+        drainResolvedWarnings(r, ctx.diagnostics);
         try {
           // Convert replicad Face → { hash: FaceHash } by hashing the
           // underlying TopoDS_Face handle.
@@ -2039,7 +1662,7 @@ export class OcctLowerer implements FeatureLowerer {
           shape = new OcctBackend(wrapped, undefined, newMap);
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.kernel-failed',
             featureId: r.id,
@@ -2047,14 +1670,14 @@ export class OcctLowerer implements FeatureLowerer {
             message: `OCCT shell failed: ${msg}`,
             hint: 'OCCT could not shell that solid — try a thinner wall or a different open face. Thickness must be smaller than the shape\'s minimum thickness.',
           });
-          return { shape: base, diagnostics };
+          return { shape: base, diagnostics: ctx.diagnostics };
         }
         break;
       }
       case 'draft': {
-        const base = inputs.byKey.base as OcctBackend | undefined;
+        const base = ctx.inputs.byKey.base as OcctBackend | undefined;
         if (!base) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -2066,7 +1689,7 @@ export class OcctLowerer implements FeatureLowerer {
         }
         const angleDeg = r.params.angle?.evaluated;
         if (angleDeg === undefined) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -2076,12 +1699,12 @@ export class OcctLowerer implements FeatureLowerer {
           });
           throw new Error('draft: no angle');
         }
-        const faceResult = pickFace(r, base, allRecords);
+        const faceResult = pickFace(r, base, ctx.allRecords);
         if ('error' in faceResult) {
-          diagnostics.push(faceResult.error);
-          return { shape: base, diagnostics };
+          ctx.diagnostics.push(faceResult.error);
+          return { shape: base, diagnostics: ctx.diagnostics };
         }
-        drainResolvedWarnings(r, diagnostics);
+        drainResolvedWarnings(r, ctx.diagnostics);
         // Honesty signal: the capture layer DEFAULTS metadata.neutralPlane to
         // the drafted face's own selector string (canonical/label name), and
         // sets '' when the face is a non-named selector (FaceQuery etc.). The
@@ -2097,7 +1720,7 @@ export class OcctLowerer implements FeatureLowerer {
           : faceRef?.kind === 'label' ? faceRef.name
           : ''; // FaceQuery / tracked / created etc. → capture default was ''
         if (neutralPlane !== '' && neutralPlane !== targetFaceSelector) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.draft.neutral-plane-derived',
             featureId: r.id,
@@ -2187,7 +1810,7 @@ export class OcctLowerer implements FeatureLowerer {
           shape = new OcctBackend(wrapped, undefined, newMap);
         } catch (e) {
           const msg = e instanceof Error ? e.message : 'OCCT draft failed';
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.draft.failed',
             featureId: r.id,
@@ -2195,14 +1818,14 @@ export class OcctLowerer implements FeatureLowerer {
             message: `OCCT draft failed: ${msg}`,
             hint: 'Drafts need a planar neutral plane and a consistent pull direction; check that the face is planar and the angle is < 90°.',
           });
-          return { shape: base, diagnostics };
+          return { shape: base, diagnostics: ctx.diagnostics };
         }
         break;
       }
       case 'hole': {
-        const target = inputs.byKey.target as OcctBackend | undefined;
+        const target = ctx.inputs.byKey.target as OcctBackend | undefined;
         if (!target) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -2213,10 +1836,10 @@ export class OcctLowerer implements FeatureLowerer {
           throw new Error('hole: no target shape');
         }
         const { lowerHole } = await import('../../../kernel/backends/occt/holeLowerer');
-        const res = lowerHole(r, target, allRecords);
-        diagnostics.push(...res.diagnostics);
+        const res = lowerHole(r, target, ctx.allRecords);
+        ctx.diagnostics.push(...res.diagnostics);
         if (res.diagnostics.some(d => d.severity === 'error')) {
-          return { shape: target, diagnostics };
+          return { shape: target, diagnostics: ctx.diagnostics };
         }
         shape = res.backend;
         {
@@ -2224,14 +1847,14 @@ export class OcctLowerer implements FeatureLowerer {
             featureId: r.id, opLabel: 'hole',
             volumeBefore: target.volume(), volumeAfter: res.backend.volume(),
           });
-          if (noop) diagnostics.push(noop);
+          if (noop) ctx.diagnostics.push(noop);
         }
         break;
       }
       case 'holes': {
-        const target = inputs.byKey.target as OcctBackend | undefined;
+        const target = ctx.inputs.byKey.target as OcctBackend | undefined;
         if (!target) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -2242,10 +1865,10 @@ export class OcctLowerer implements FeatureLowerer {
           throw new Error('holes: no target shape');
         }
         const { lowerHoles } = await import('../../../kernel/backends/occt/holeLowerer');
-        const res = lowerHoles(r, target, allRecords);
-        diagnostics.push(...res.diagnostics);
+        const res = lowerHoles(r, target, ctx.allRecords);
+        ctx.diagnostics.push(...res.diagnostics);
         if (res.diagnostics.some(d => d.severity === 'error')) {
-          return { shape: target, diagnostics };
+          return { shape: target, diagnostics: ctx.diagnostics };
         }
         shape = res.backend;
         {
@@ -2253,14 +1876,14 @@ export class OcctLowerer implements FeatureLowerer {
             featureId: r.id, opLabel: 'holes',
             volumeBefore: target.volume(), volumeAfter: res.backend.volume(),
           });
-          if (noop) diagnostics.push(noop);
+          if (noop) ctx.diagnostics.push(noop);
         }
         break;
       }
       case 'cutout': {
-        const target = inputs.byKey.target as OcctBackend | undefined;
+        const target = ctx.inputs.byKey.target as OcctBackend | undefined;
         if (!target) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -2270,12 +1893,12 @@ export class OcctLowerer implements FeatureLowerer {
           });
           throw new Error('cutout: no target shape');
         }
-        const profile = inputs.byKey.profile as OcctBackend | undefined;
+        const profile = ctx.inputs.byKey.profile as OcctBackend | undefined;
         const { lowerCutout } = await import('../../../kernel/backends/occt/cutoutLowerer');
-        const res = lowerCutout(r, target, profile, allRecords);
-        diagnostics.push(...res.diagnostics);
+        const res = lowerCutout(r, target, profile, ctx.allRecords);
+        ctx.diagnostics.push(...res.diagnostics);
         if (res.diagnostics.some(d => d.severity === 'error')) {
-          return { shape: target, diagnostics };
+          return { shape: target, diagnostics: ctx.diagnostics };
         }
         shape = res.backend;
         {
@@ -2283,14 +1906,14 @@ export class OcctLowerer implements FeatureLowerer {
             featureId: r.id, opLabel: 'cutout',
             volumeBefore: target.volume(), volumeAfter: res.backend.volume(),
           });
-          if (noop) diagnostics.push(noop);
+          if (noop) ctx.diagnostics.push(noop);
         }
         break;
       }
       case 'mirror': {
-        const base = inputs.byKey.base as OcctBackend | undefined;
+        const base = ctx.inputs.byKey.base as OcctBackend | undefined;
         if (!base) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -2303,7 +1926,7 @@ export class OcctLowerer implements FeatureLowerer {
         const meta = r.metadata as { plane?: PlaneSpec } | undefined;
         const plane = meta?.plane;
         if (!isValidPlaneSpec(plane)) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -2311,7 +1934,7 @@ export class OcctLowerer implements FeatureLowerer {
             message: `mirror requires a valid plane spec; got ${JSON.stringify(plane)}.`,
             hint: "Pass 'xy', 'xz', 'yz', or { plane: '<cardinal>', offset: <number> }.",
           });
-          return { shape: base, diagnostics };
+          return { shape: base, diagnostics: ctx.diagnostics };
         }
         const mirrorInputHashes = base.faceHashes();
         const mirrorInputMap = base.historyMap;
@@ -2319,7 +1942,7 @@ export class OcctLowerer implements FeatureLowerer {
           shape = base.mirror(plane);
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.kernel-failed',
             featureId: r.id,
@@ -2327,7 +1950,7 @@ export class OcctLowerer implements FeatureLowerer {
             message: `OCCT mirror union failed: ${msg}`,
             hint: 'OCCT rejected the mirror union — translate the source away from the mirror plane, or use { plane, offset }.',
           });
-          return { shape: base, diagnostics };
+          return { shape: base, diagnostics: ctx.diagnostics };
         }
         // Mirror is a union internally; face count may change if faces on the
         // mirror plane merge. Only propagate historyMap when face count matches.
@@ -2346,29 +1969,29 @@ export class OcctLowerer implements FeatureLowerer {
         break;
       }
       case 'pattern': {
-        const base = inputs.byKey.base as OcctBackend | undefined;
+        const base = ctx.inputs.byKey.base as OcctBackend | undefined;
         if (!base) {
-          diagnostics.push({
-            target: this.target,
+          ctx.diagnostics.push({
+            target: ctx.target,
             code: 'feature.pattern.source-not-found',
             featureId: r.id,
             severity: 'error',
             message: `pattern base input is missing or failed.`,
             hint: HINT_TEMPLATES['feature.pattern.source-not-found'].template,
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         const pattern = (r.metadata as { pattern?: PatternSpec } | undefined)?.pattern;
         if (!pattern) {
-          diagnostics.push({
-            target: this.target,
+          ctx.diagnostics.push({
+            target: ctx.target,
             code: 'feature.invalid-args',
             featureId: r.id,
             severity: 'error',
             message: 'pattern feature is missing pattern metadata.',
             hint: 'Create patterns through .patternLinear(...) / .patternCircular(...) / .patternGrid(...).',
           });
-          return { shape: base, diagnostics };
+          return { shape: base, diagnostics: ctx.diagnostics };
         }
 
         // Runtime count guard (catches Param-bound counts < 2 that capture-time
@@ -2377,15 +2000,15 @@ export class OcctLowerer implements FeatureLowerer {
           ? pattern.x.count * pattern.y.count
           : pattern.count;
         if (totalCount < 2) {
-          diagnostics.push({
-            target: this.target,
+          ctx.diagnostics.push({
+            target: ctx.target,
             code: 'feature.pattern.count-out-of-range',
             featureId: r.id,
             severity: 'error',
             message: `pattern total instance count is ${totalCount}; must be >= 2.`,
             hint: HINT_TEMPLATES['feature.pattern.count-out-of-range'].template,
           });
-          return { shape: base, diagnostics };
+          return { shape: base, diagnostics: ctx.diagnostics };
         }
 
         // Source FeatureId is the named input that the captured FeatureRecord
@@ -2486,17 +2109,17 @@ export class OcctLowerer implements FeatureLowerer {
         break;
       }
       case 'assemblyPart': {
-        const base = inputs.byKey.shape as OcctBackend | undefined;
+        const base = ctx.inputs.byKey.shape as OcctBackend | undefined;
         if (!base) {
-          diagnostics.push({
-            target: this.target,
+          ctx.diagnostics.push({
+            target: ctx.target,
             code: 'recompute.input.missing',
             featureId: r.id,
             severity: 'error',
             message: `assembly part shape input is missing or failed.`,
             hint: 'Assembly parts must wrap a successfully lowered source shape.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         shape = base.clone();
         const at = (r.metadata as { at?: Vec3Param } | undefined)?.at;
@@ -2507,17 +2130,17 @@ export class OcctLowerer implements FeatureLowerer {
         break;
       }
       case 'assemblyJoint': {
-        const partA = inputs.byKey.a as OcctBackend | undefined;
+        const partA = ctx.inputs.byKey.a as OcctBackend | undefined;
         if (!partA) {
-          diagnostics.push({
-            target: this.target,
+          ctx.diagnostics.push({
+            target: ctx.target,
             code: 'recompute.input.missing',
             featureId: r.id,
             severity: 'error',
             message: `assembly joint input 'a' is missing or failed.`,
             hint: 'Assembly joints must reference successfully lowered assembly parts.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         // Read joint metadata Vec3 values. Joint frames are now pure numeric
         // tuples (v1 spec deferred joint reactivity). `normalizeAxis`
@@ -2531,17 +2154,17 @@ export class OcctLowerer implements FeatureLowerer {
         break;
       }
       case 'assemblyConnect': {
-        const partA = inputs.byKey.a as OcctBackend | undefined;
+        const partA = ctx.inputs.byKey.a as OcctBackend | undefined;
         if (!partA) {
-          diagnostics.push({
-            target: this.target,
+          ctx.diagnostics.push({
+            target: ctx.target,
             code: 'recompute.input.missing',
             featureId: r.id,
             severity: 'error',
             message: `assembly connect input 'a' is missing or failed.`,
             hint: 'Assembly connect records must reference successfully lowered assembly parts.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         shape = partA.clone();
         break;
@@ -2552,19 +2175,19 @@ export class OcctLowerer implements FeatureLowerer {
         // enough metadata for default mate FK. The legacy boolean-union path
         // is gone; consumers that need a fused single-Shape now call
         // Scene.toUnion()/Scene.toCompound() explicitly.
-        const partEntries = Object.entries(inputs.byKey)
+        const partEntries = Object.entries(ctx.inputs.byKey)
           .filter(([key]) => key.startsWith('part_'))
           .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
         if (partEntries.length === 0) {
-          diagnostics.push({
-            target: this.target,
+          ctx.diagnostics.push({
+            target: ctx.target,
             code: 'recompute.input.missing',
             featureId: r.id,
             severity: 'error',
             message: `assembly model has no part inputs.`,
             hint: 'Call assembly.part(...) at least once before assembly.model().',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         const meta = r.metadata as {
           assemblyName?: string;
@@ -2584,17 +2207,17 @@ export class OcctLowerer implements FeatureLowerer {
         const mateCouplings = meta?.couplings ?? [];
         const connectorsByPartId = meta?.connectorsByPartId ?? {};
         if (partEntries.length !== partIds.length) {
-          diagnostics.push({
-            target: this.target,
+          ctx.diagnostics.push({
+            target: ctx.target,
             code: 'recompute.input.missing',
             featureId: r.id,
             severity: 'error',
             message: `assemblyModel: input part count (${partEntries.length}) != metadata.partIds length (${partIds.length}).`,
             hint: 'Ensure inputs and partIds stay in sync.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
-        const records = allRecords ?? [];
+        const records = ctx.allRecords ?? [];
         const worldT = new Map<FeatureId, Transform>();
         for (const partId of partIds) worldT.set(partId, Transform.identity());
 
@@ -2617,8 +2240,8 @@ export class OcctLowerer implements FeatureLowerer {
           for (const [name, val] of Object.entries(matePoses)) {
             const finite = Array.isArray(val) ? val.every(Number.isFinite) : Number.isFinite(val);
             if (!finite) {
-              diagnostics.push({
-                target: this.target,
+              ctx.diagnostics.push({
+                target: ctx.target,
                 code: 'feature.kernel-failed',
                 featureId: r.id,
                 severity: 'error',
@@ -2629,7 +2252,7 @@ export class OcctLowerer implements FeatureLowerer {
             }
           }
           if (matePoseFiniteFailed) {
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
 
           const resolvedParts: ResolvedMatePart[] = [];
@@ -2638,15 +2261,15 @@ export class OcctLowerer implements FeatureLowerer {
             const partId = partIds[i];
             const partRec = records.find((rec) => rec.id === partId);
             if (!partRec || partRec.kind !== 'assemblyPart') {
-              diagnostics.push({
-                target: this.target,
+              ctx.diagnostics.push({
+                target: ctx.target,
                 code: 'recompute.input.missing',
                 featureId: r.id,
                 severity: 'error',
                 message: `assemblyModel: missing or wrong-kind part record '${partId}'.`,
                 hint: 'Each partId in metadata.partIds must reference an assemblyPart record.',
               });
-              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+              return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
             }
             const partName =
               (partRec.metadata as { partName?: string } | undefined)?.partName ?? partId;
@@ -2673,8 +2296,8 @@ export class OcctLowerer implements FeatureLowerer {
                 });
               } catch (err) {
                 const msg = (err as Error).message;
-                diagnostics.push({
-                  target: this.target,
+                ctx.diagnostics.push({
+                  target: ctx.target,
                   code: 'feature.invalid-args',
                   featureId: r.id,
                   severity: 'error',
@@ -2688,7 +2311,7 @@ export class OcctLowerer implements FeatureLowerer {
             resolvedParts.push({ id: partId, name: partName, connectors: resolvedConnectors });
           }
           if (topologyResolutionFailed) {
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
 
           const mates: MateRecord[] = encodedMates.map((m) => ({
@@ -2720,7 +2343,7 @@ export class OcctLowerer implements FeatureLowerer {
           };
         });
         const sceneBackend: SceneBackend = {
-          target: this.target,
+          target: ctx.target,
           assemblyName: meta?.assemblyName ?? 'unnamed',
           parts: sceneParts,
           _kind: 'scene',
@@ -2728,7 +2351,7 @@ export class OcctLowerer implements FeatureLowerer {
         // Early-return: SceneBackend is not a ShapeBackend, so the post-hoc
         // r.transforms loop below cannot apply. Mirror the solvedAssembly
         // boundary cast (Task 4); Task 7 widens the dispatch signature.
-        return { shape: sceneBackend as unknown as ShapeBackend, diagnostics };
+        return { shape: sceneBackend as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
       }
       case 'solvedAssembly': {
         // 1. Read poses from metadata. Param.evaluated is updated by the
@@ -2760,19 +2383,19 @@ export class OcctLowerer implements FeatureLowerer {
         const mateCouplings = meta?.couplings ?? [];
         const connectorsByPartId = meta?.connectorsByPartId ?? {};
 
-        const partEntries = Object.entries(inputs.byKey)
+        const partEntries = Object.entries(ctx.inputs.byKey)
           .filter(([key]) => key.startsWith('part_'))
           .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
         if (partEntries.length === 0) {
-          diagnostics.push({
-            target: this.target,
+          ctx.diagnostics.push({
+            target: ctx.target,
             code: 'recompute.input.missing',
             featureId: r.id,
             severity: 'error',
             message: `solvedAssembly has no part inputs.`,
             hint: 'Call assembly.part(...) at least once before assembly.solvedModel(poses).',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
 
         // 2. Resolve poses to numeric values via Param.evaluated.
@@ -2793,20 +2416,20 @@ export class OcctLowerer implements FeatureLowerer {
         //    FeatureRecords. forwardKinematics only reads .id on parts and
         //    {id, name, kind, parentPartId, childPartId, axis, origin} on
         //    joints — so we build the minimal viable shape.
-        const records = allRecords ?? [];
+        const records = ctx.allRecords ?? [];
         const parts: AssemblyPartStored[] = [];
         for (const partId of partIds) {
           const partRec = records.find(rec => rec.id === partId);
           if (!partRec || partRec.kind !== 'assemblyPart') {
-            diagnostics.push({
-              target: this.target,
+            ctx.diagnostics.push({
+              target: ctx.target,
               code: 'recompute.input.missing',
               featureId: r.id,
               severity: 'error',
               message: `solvedAssembly: missing or wrong-kind part record '${partId}'.`,
               hint: 'Each partId in metadata.partIds must reference an assemblyPart record.',
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
           parts.push({ id: partRec.id } as AssemblyPartStored);
         }
@@ -2814,15 +2437,15 @@ export class OcctLowerer implements FeatureLowerer {
         for (const jointId of jointIds) {
           const jointRec = records.find(rec => rec.id === jointId);
           if (!jointRec || jointRec.kind !== 'assemblyJoint') {
-            diagnostics.push({
-              target: this.target,
+            ctx.diagnostics.push({
+              target: ctx.target,
               code: 'recompute.input.missing',
               featureId: r.id,
               severity: 'error',
               message: `solvedAssembly: missing or wrong-kind joint record '${jointId}'.`,
               hint: 'Each jointId in metadata.jointIds must reference an assemblyJoint record.',
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
           const jm = jointRec.metadata as {
             jointName: string;
@@ -2833,15 +2456,15 @@ export class OcctLowerer implements FeatureLowerer {
           const aRef = jointRec.inputs.a as { id: FeatureId } | undefined;
           const bRef = jointRec.inputs.b as { id: FeatureId } | undefined;
           if (!aRef || !bRef) {
-            diagnostics.push({
-              target: this.target,
+            ctx.diagnostics.push({
+              target: ctx.target,
               code: 'recompute.input.missing',
               featureId: r.id,
               severity: 'error',
               message: `solvedAssembly: joint '${jointId}' is missing parent or child part input.`,
               hint: 'Joint records must have a/b inputs referencing parent and child parts.',
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
           joints.push({
             id: jointRec.id,
@@ -2855,40 +2478,40 @@ export class OcctLowerer implements FeatureLowerer {
         }
 
         // Recompute-time pose validation. Capture allows ParamRef-bearing
-        // partial pose maps; the lowerer must emit structured diagnostics
+        // partial pose maps; the lowerer must emit structured ctx.diagnostics
         // when (a) a non-fixed joint has no pose value or (b) a pose
         // resolved to a non-finite number (NaN / +/-Infinity).
         for (const j of joints) {
           if (j.kind !== 'fixed' && numericPoses[j.name] === undefined) {
-            diagnostics.push({
-              target: this.target,
+            ctx.diagnostics.push({
+              target: ctx.target,
               code: 'feature.invalid-args',
               featureId: r.id,
               severity: 'error',
               message: `solvedAssembly: joint '${j.name}' (${j.kind}) requires a pose value.`,
               hint: `invalid-args.solvedModel.missing-pose — joint ${j.name} requires a pose value.`,
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
         }
         for (const [name, val] of Object.entries(numericPoses)) {
           const finite = Array.isArray(val) ? val.every(Number.isFinite) : Number.isFinite(val);
           if (!finite) {
-            diagnostics.push({
-              target: this.target,
+            ctx.diagnostics.push({
+              target: ctx.target,
               code: 'feature.kernel-failed',
               featureId: r.id,
               severity: 'error',
               message: `solvedAssembly: pose '${name}' is not finite (${JSON.stringify(val)}).`,
               hint: `kernel-failed.solvedModel.bad-pose — pose value for ${name} is not finite.`,
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
         }
 
         // 4. Run body-tree forward kinematics. Throws KernelError on graph
         //    issues (multi-parent, cycles); the dispatcher's exception path
-        //    surfaces these as structured diagnostics.
+        //    surfaces these as structured ctx.diagnostics.
         const worldT = forwardKinematics(parts, joints, numericPoses);
 
         // 4b. v0.6 T17: when the assembly declares mates, run `mateFk` over
@@ -2930,8 +2553,8 @@ export class OcctLowerer implements FeatureLowerer {
           for (const [name, val] of Object.entries(matePoses)) {
             const finite = Array.isArray(val) ? val.every(Number.isFinite) : Number.isFinite(val);
             if (!finite) {
-              diagnostics.push({
-                target: this.target,
+              ctx.diagnostics.push({
+                target: ctx.target,
                 code: 'feature.kernel-failed',
                 featureId: r.id,
                 severity: 'error',
@@ -2942,7 +2565,7 @@ export class OcctLowerer implements FeatureLowerer {
             }
           }
           if (matePoseFiniteFailed) {
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
           // Resolve topology connector origins via each part's already-
           // lowered backend, then build the pure-data `ResolvedMatePart[]`
@@ -2977,8 +2600,8 @@ export class OcctLowerer implements FeatureLowerer {
                 });
               } catch (err) {
                 const msg = (err as Error).message;
-                diagnostics.push({
-                  target: this.target,
+                ctx.diagnostics.push({
+                  target: ctx.target,
                   code: 'feature.invalid-args',
                   featureId: r.id,
                   severity: 'error',
@@ -2992,10 +2615,10 @@ export class OcctLowerer implements FeatureLowerer {
             resolvedParts.push({ id: partId, name: partName, connectors: resolvedConnectors });
           }
           if (topologyResolutionFailed) {
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
           // mateFk is pure — KernelErrors propagate out and surface via the
-          // dispatcher's exception path as structured diagnostics, same as
+          // dispatcher's exception path as structured ctx.diagnostics, same as
           // forwardKinematics' graph errors.
           const mates: MateRecord[] = encodedMates.map((m) => ({
             name: m.name,
@@ -3046,8 +2669,8 @@ export class OcctLowerer implements FeatureLowerer {
               const placedByConnect = partMeta?.placedBy !== undefined;
               if (partRec && atIsNonTrivial && !placedByConnect) {
                 const partName = partMeta?.partName ?? partId;
-                diagnostics.push({
-                  target: this.target,
+                ctx.diagnostics.push({
+                  target: ctx.target,
                   code: 'assembly.placement-ignored-by-mate-fk',
                   featureId: partRec.id,
                   severity: 'info',
@@ -3067,15 +2690,15 @@ export class OcctLowerer implements FeatureLowerer {
         //    path is gone; consumers that needed a fused single-Shape now
         //    call Scene.toUnion() / Scene.toCompound() explicitly.
         if (partEntries.length !== partIds.length) {
-          diagnostics.push({
-            target: this.target,
+          ctx.diagnostics.push({
+            target: ctx.target,
             code: 'recompute.input.missing',
             featureId: r.id,
             severity: 'error',
             message: `solvedAssembly: input part count (${partEntries.length}) != metadata.partIds length (${partIds.length}).`,
             hint: 'Ensure inputs and partIds stay in sync.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         const sceneParts: SceneBackendPart[] = partEntries.map(([, partShape], i) => {
           const partId = partIds[i];
@@ -3104,7 +2727,7 @@ export class OcctLowerer implements FeatureLowerer {
         const assemblyName =
           (r.metadata as { assemblyName?: string } | undefined)?.assemblyName ?? 'unnamed';
         const sceneBackend: SceneBackend = {
-          target: this.target,
+          target: ctx.target,
           assemblyName,
           parts: sceneParts,
           _kind: 'scene',
@@ -3115,7 +2738,7 @@ export class OcctLowerer implements FeatureLowerer {
         // the boundary so existing ShapeBackend-typed call sites (recompute
         // engine's shapes map, meshing) keep compiling. Consumers that need
         // the SceneBackend at runtime use isSceneBackend(...) to discriminate.
-        return { shape: sceneBackend as unknown as ShapeBackend, diagnostics };
+        return { shape: sceneBackend as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
       }
       case 'assemblyExport': {
         // Backs `Scene.toCompound()` and `Scene.toUnion()`. Reads the upstream
@@ -3126,42 +2749,42 @@ export class OcctLowerer implements FeatureLowerer {
         //     via replicad.makeCompound (lossless on per-part identity).
         //   - 'union'   : boolean-fuses them into a single solid (lossy on
         //     color, name, metadata — documented antipattern).
-        const sceneInput = inputs.byKey.scene as unknown;
+        const sceneInput = ctx.inputs.byKey.scene as unknown;
         if (!isSceneBackend(sceneInput)) {
-          diagnostics.push({
-            target: this.target,
+          ctx.diagnostics.push({
+            target: ctx.target,
             code: 'feature.invalid-args',
             featureId: r.id,
             severity: 'error',
             message: `assemblyExport: input 'scene' is not a SceneBackend (upstream solvedAssembly / assemblyModel must lower to a SceneBackend).`,
             hint: 'Construct via Scene.toCompound() / Scene.toUnion() on a Scene returned by Assembly.model() / Assembly.solvedModel().',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         const meta = r.metadata as { op?: 'compound' | 'union' } | undefined;
         const op = meta?.op;
         if (op !== 'compound' && op !== 'union') {
-          diagnostics.push({
-            target: this.target,
+          ctx.diagnostics.push({
+            target: ctx.target,
             code: 'feature.invalid-args',
             featureId: r.id,
             severity: 'error',
             message: `assemblyExport: metadata.op must be 'compound' or 'union'; got ${JSON.stringify(op)}.`,
             hint: 'Use Scene.toCompound() or Scene.toUnion() rather than constructing the feature directly.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         const sceneBackend = sceneInput as SceneBackend;
         if (sceneBackend.parts.length === 0) {
-          diagnostics.push({
-            target: this.target,
+          ctx.diagnostics.push({
+            target: ctx.target,
             code: 'recompute.input.missing',
             featureId: r.id,
             severity: 'error',
             message: `assemblyExport: scene has no parts.`,
             hint: 'Call assembly.part(...) at least once before exporting the scene.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         // Apply each part's worldTransform to its local-frame shape. Parts are
         // visited in scene-declaration order so both compound and union are
@@ -3198,46 +2821,46 @@ export class OcctLowerer implements FeatureLowerer {
         // W1.3 NURBS: consume the upstream Surface (resolved via session hook
         // or pre-populated by the recompute engine into `inputs.surfaces`) and
         // offset both sides via BRepOffsetAPI_MakeThickSolid.MakeThickSolidBySimple.
-        const face = this.resolveSurfaceFaceForRecord(r, inputs, diagnostics, allRecords);
+        const face = resolveSurfaceFaceForRecord(ctx, r);
         if (!face) {
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         const t = r.params.t.evaluated;
         try {
           shape = thickenFace(face, t);
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
-          diagnostics.push({
-            target: this.target,
+          ctx.diagnostics.push({
+            target: ctx.target,
             code: 'feature.kernel-failed',
             featureId: r.id,
             severity: 'error',
             message: `surfaceThicken: OCCT failed: ${msg}`,
             hint: 'kernel-failed — try a smaller thickness, simplify the control net, or ensure the surface has no self-intersections.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         break;
       }
       case 'surfaceToShape': {
         // W1.3 NURBS: wrap the Replicad Face as a single-face TopoDS_Shell.
-        const face = this.resolveSurfaceFaceForRecord(r, inputs, diagnostics, allRecords);
+        const face = resolveSurfaceFaceForRecord(ctx, r);
         if (!face) {
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         try {
           shape = faceToShape(face);
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
-          diagnostics.push({
-            target: this.target,
+          ctx.diagnostics.push({
+            target: ctx.target,
             code: 'feature.kernel-failed',
             featureId: r.id,
             severity: 'error',
             message: `surfaceToShape: OCCT failed: ${msg}`,
             hint: 'kernel-failed — surface produced an invalid Face; check control-net + degree.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         break;
       }
@@ -3256,45 +2879,45 @@ export class OcctLowerer implements FeatureLowerer {
             return ia - ib;
           });
         if (surfaceKeys.length === 0) {
-          diagnostics.push({
-            target: this.target,
+          ctx.diagnostics.push({
+            target: ctx.target,
             code: 'feature.invalid-args',
             featureId: r.id,
             severity: 'error',
             message: `surfaceSew: no surface_* inputs found.`,
             hint: 'invalid-args.surfaceSew.input — call sew([surfaceA, surfaceB, ...]).',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         const faces: import('replicad').Face[] = [];
         for (const key of surfaceKeys) {
           const ref = r.inputs[key];
           if (!ref || ref.kind !== 'surface') {
-            diagnostics.push({
-              target: this.target,
+            ctx.diagnostics.push({
+              target: ctx.target,
               code: 'feature.invalid-args',
               featureId: r.id,
               severity: 'error',
               message: `surfaceSew: input ${key} is missing or not a surface ref.`,
               hint: 'invalid-args.surfaceSew.input — every sew() input must be a captured Surface.',
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
-          const built = this.buildSurfaceById(ref.surfaceId, r, inputs, diagnostics, allRecords);
+          const built = buildSurfaceById(ctx, ref.surfaceId, r);
           if (!built) {
             // buildSurfaceById already pushed the specific diagnostic.
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
           if (built.kind !== 'face') {
-            diagnostics.push({
-              target: this.target,
+            ctx.diagnostics.push({
+              target: ctx.target,
               code: 'feature.invalid-args',
               featureId: r.id,
               severity: 'error',
               message: `surfaceSew: input ${key} (${ref.surfaceId}) is a multi-face shell; sew accepts single-face surfaces only.`,
               hint: 'invalid-args.surfaceSew.input — sew nurbsSurface / coonsPatch / trimmed faces, not skinned shells.',
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
           faces.push(built.face);
         }
@@ -3306,15 +2929,15 @@ export class OcctLowerer implements FeatureLowerer {
           sewResult = lowerSurfaceSew(faces, { tolerance, requireClosed });
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
-          diagnostics.push({
-            target: this.target,
+          ctx.diagnostics.push({
+            target: ctx.target,
             code: 'feature.kernel-failed',
             featureId: r.id,
             severity: 'error',
             message: `surfaceSew: OCCT sewing failed: ${msg}`,
             hint: 'kernel-failed — ensure the faces are well-conditioned and share edges within tolerance.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
 
         // Review-mandated enforcement: requireClosed must not be a silent
@@ -3322,8 +2945,8 @@ export class OcctLowerer implements FeatureLowerer {
         // shell is not a closed solid, surface the open-shell diagnostic. When
         // requireClosed is false, accept the (possibly open) shell silently.
         if (requireClosed && !(sewResult.isSolid && sewResult.isClosed)) {
-          diagnostics.push({
-            target: this.target,
+          ctx.diagnostics.push({
+            target: ctx.target,
             code: 'feature.surface-sew.open-shell',
             featureId: r.id,
             severity: 'error',
@@ -3339,38 +2962,38 @@ export class OcctLowerer implements FeatureLowerer {
         // Virtual record — no BREP output. recomputeEngine gates on
         // metadata.virtual === true and skips the lowerer, so this arm is
         // defense-in-depth for callers that invoke the lowerer directly.
-        return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
       }
       case 'renderEnvironment': {
         // Virtual record — no BREP output. recomputeEngine gates on
         // metadata.virtual === true and skips the lowerer; this arm is
         // defense-in-depth for direct callers.
-        return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
       }
       case 'dfmSpec': {
         // Virtual record — no BREP output. recomputeEngine gates on
         // metadata.virtual === true and skips the lowerer; this arm is
         // defense-in-depth for direct callers.
-        return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
       }
       case 'feaStudy': {
         // Virtual record — no BREP output. The study is a DECLARATION; the
         // solver run happens in the FEA runner, which reads this record's
         // metadata and the shape it points at. Same shape as dfmSpec.
-        return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
       }
       case 'drawingDatum':
       case 'drawingTolerance': {
         // Virtual records — no BREP output. GD&T declarations are read by the
         // svg-drawing exporter, which resolves their queries against the
         // exported geometry.
-        return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
       }
       case 'cameraTarget': {
         // Virtual record — no BREP output. Same shape as renderEnvironment:
         // recomputeEngine gates on metadata.virtual === true and skips the
         // lowerer; this arm is defense-in-depth for direct callers.
-        return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
       }
       case 'curve3d': {
         // NURBS Slice B: lower a 3D NURBS curve to a `TopoDS_Edge` backed by
@@ -3382,7 +3005,7 @@ export class OcctLowerer implements FeatureLowerer {
         const meta = r.metadata as { curve3d?: unknown } | undefined;
         const m = meta?.curve3d;
         if (!isCurve3DMetadata(m)) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.curve3d.degenerate-controls',
             featureId: r.id,
@@ -3390,7 +3013,7 @@ export class OcctLowerer implements FeatureLowerer {
             message: `curve3d record '${r.id}' is missing valid metadata.curve3d.`,
             hint: 'Build the record via session.addCurve3D({ metadata }) so the validators run.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         try {
           const { edge } = lowerCurve3D(m);
@@ -3399,10 +3022,10 @@ export class OcctLowerer implements FeatureLowerer {
           // use); curve3d stores a TopoDS_Edge instead, and the consumer
           // (variableSweep lowerer, lazy proxy) is responsible for retrieving
           // it with the matching expectation.
-          this.importedGeometry.set(r.id, edge as unknown as ShapeBackend);
+          ctx.importedGeometry.set(r.id, edge as unknown as ShapeBackend);
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.kernel-failed',
             featureId: r.id,
@@ -3411,7 +3034,7 @@ export class OcctLowerer implements FeatureLowerer {
             hint: 'kernel-failed — verify the control points, knots, and degree form a valid NURBS curve.',
           });
         }
-        return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
       }
       case 'variableSweep': {
         // NURBS Slice B Task 8: variable-section sweep via
@@ -3430,7 +3053,7 @@ export class OcctLowerer implements FeatureLowerer {
         const meta = r.metadata as { variableSweep?: unknown } | undefined;
         const m = meta?.variableSweep;
         if (!isVariableSweepMetadata(m)) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -3438,24 +3061,24 @@ export class OcctLowerer implements FeatureLowerer {
             message: `variableSweep record '${r.id}' is missing valid metadata.variableSweep.`,
             hint: 'Build the record via session.addVariableSweep({...}) (or the kcad.variableSweep public API) so the validators run.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
 
         // Resolve spine edge. The spine input is a FeatureRef.
         const spineId = m.spineRef.kind === 'feature' ? m.spineRef.id : undefined;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let spineEdge: any = spineId ? this.importedGeometry.get(spineId) : undefined;
+        let spineEdge: any = spineId ? ctx.importedGeometry.get(spineId) : undefined;
 
         // Step 2: if the upstream is a virtual curve3d record and the edge
         // is not yet parked, lower it on-demand. This is the normal path
         // for engine-driven runs because the engine skips virtual records.
-        if (!spineEdge && spineId && allRecords) {
-          const upstream = allRecords.find((u) => u.id === spineId);
+        if (!spineEdge && spineId && ctx.allRecords) {
+          const upstream = ctx.allRecords.find((u) => u.id === spineId);
           if (upstream?.kind === 'curve3d') {
             const upMeta = upstream.metadata as { curve3d?: unknown } | undefined;
             const cm = upMeta?.curve3d;
             if (!isCurve3DMetadata(cm)) {
-              diagnostics.push({
+              ctx.diagnostics.push({
                 target: 'export-occt',
                 code: 'feature.curve3d.degenerate-controls',
                 featureId: r.id,
@@ -3463,7 +3086,7 @@ export class OcctLowerer implements FeatureLowerer {
                 message: `variableSweep: spine curve3d '${spineId}' is missing valid metadata.curve3d.`,
                 hint: 'Build the spine via nurbsCurve(...) / spline3d(...) so the validators run.',
               });
-              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+              return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
             }
             try {
               const { edge } = lowerCurve3D(cm);
@@ -3471,10 +3094,10 @@ export class OcctLowerer implements FeatureLowerer {
               // Cache the edge on importedGeometry so subsequent recompute
               // passes (params.update) and other downstream consumers reuse
               // the lowered edge instead of rebuilding it.
-              this.importedGeometry.set(spineId, edge as unknown as ShapeBackend);
+              ctx.importedGeometry.set(spineId, edge as unknown as ShapeBackend);
             } catch (e) {
               const msg = e instanceof Error ? e.message : String(e);
-              diagnostics.push({
+              ctx.diagnostics.push({
                 target: 'export-occt',
                 code: 'feature.kernel-failed',
                 featureId: r.id,
@@ -3482,13 +3105,13 @@ export class OcctLowerer implements FeatureLowerer {
                 message: `variableSweep: failed to lower curve3d spine '${spineId}': ${msg}`,
                 hint: 'kernel-failed — verify the spine nurbsCurve control points, knots, and degree form a valid NURBS curve.',
               });
-              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+              return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
             }
           }
         }
 
         if (!spineEdge) {
-          const sketchInput = inputs.byKey.spine as OcctBackend | undefined;
+          const sketchInput = ctx.inputs.byKey.spine as OcctBackend | undefined;
           if (sketchInput) {
             try {
               const { face } = OcctBackend.liftSketchToFace(sketchInput, 'XY');
@@ -3511,7 +3134,7 @@ export class OcctLowerer implements FeatureLowerer {
               }
             } catch (e) {
               const msg = e instanceof Error ? e.message : String(e);
-              diagnostics.push({
+              ctx.diagnostics.push({
                 target: 'export-occt',
                 code: 'feature.invalid-args',
                 featureId: r.id,
@@ -3519,12 +3142,12 @@ export class OcctLowerer implements FeatureLowerer {
                 message: `variableSweep: failed to lift spine sketch: ${msg}`,
                 hint: 'invalid-args.variableSweep.spine — pass a Curve3D (preferred) or a single-edge Sketch as the spine.',
               });
-              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+              return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
             }
           }
         }
         if (!spineEdge) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -3532,7 +3155,7 @@ export class OcctLowerer implements FeatureLowerer {
             message: `variableSweep: spine input could not be resolved (no parked Curve3D edge and no sketch backend).`,
             hint: 'invalid-args.variableSweep.spine — pass a Curve3D (nurbsCurve/spline3d) or a Sketch (path().…close()).',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
 
         // Resolve each section's profile wire from the sketch in
@@ -3540,17 +3163,17 @@ export class OcctLowerer implements FeatureLowerer {
         // per section in addVariableSweep().
         const lowered: VariableSweepSectionLowered[] = [];
         for (let i = 0; i < m.sections.length; i++) {
-          const profileInput = inputs.byKey[`section_${i}`] as OcctBackend | undefined;
+          const profileInput = ctx.inputs.byKey[`section_${i}`] as OcctBackend | undefined;
           if (!profileInput) {
-            diagnostics.push({
+            ctx.diagnostics.push({
               target: 'export-occt',
               code: 'feature.invalid-args',
               featureId: r.id,
               severity: 'error',
               message: `variableSweep: missing input 'section_${i}' — upstream sketch did not lower successfully.`,
-              hint: 'Every section profile must be a Sketch that lowers cleanly — check upstream sketch diagnostics first.',
+              hint: 'Every section profile must be a Sketch that lowers cleanly — check upstream sketch ctx.diagnostics first.',
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
           let profileWire;
           try {
@@ -3559,7 +3182,7 @@ export class OcctLowerer implements FeatureLowerer {
             profileWire = (face().outerWire() as any).wrapped;
           } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);
-            diagnostics.push({
+            ctx.diagnostics.push({
               target: 'export-occt',
               code: 'feature.kernel-failed',
               featureId: r.id,
@@ -3567,7 +3190,7 @@ export class OcctLowerer implements FeatureLowerer {
               message: `variableSweep: failed to lift section ${i} profile: ${msg}`,
               hint: 'kernel-failed — each section profile must be a single closed sketch loop.',
             });
-            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
           }
           lowered.push({
             t: m.sections[i].t,
@@ -3594,7 +3217,7 @@ export class OcctLowerer implements FeatureLowerer {
           });
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.kernel-failed',
             featureId: r.id,
@@ -3602,7 +3225,7 @@ export class OcctLowerer implements FeatureLowerer {
             message: `OCCT variable-section sweep failed: ${msg}`,
             hint: 'kernel-failed — check spine length, profile planarity, t-span coverage, and that profile wires are closed and single-loop.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
         break;
       }
@@ -3610,10 +3233,10 @@ export class OcctLowerer implements FeatureLowerer {
         // W3: emboss/engrave text onto a target face. Reuses replicad's
         // `drawText → sketchOnFace → extrude → fuse|cut` pipeline. Lower
         // delegates to `lowerEmbossText`; parent shape resolved from
-        // `inputs.byKey.parent`.
-        const parentBackend = inputs.byKey.parent as OcctBackend | undefined;
+        // `ctx.inputs.byKey.parent`.
+        const parentBackend = ctx.inputs.byKey.parent as OcctBackend | undefined;
         if (!parentBackend) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -3621,12 +3244,12 @@ export class OcctLowerer implements FeatureLowerer {
             message: `embossText requires an input named 'parent'.`,
             hint: 'Chain embossText onto a solid via Shape.embossText({...}); the parent input is the LHS body.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
-        const res = await lowerEmbossText(r, parentBackend, allRecords, this.scriptDir);
+        const res = await lowerEmbossText(r, parentBackend, ctx.allRecords, ctx.scriptDir);
         if (!res.ok) {
-          diagnostics.push(...res.diagnostics);
-          return { shape: parentBackend, diagnostics };
+          ctx.diagnostics.push(...res.diagnostics);
+          return { shape: parentBackend, diagnostics: ctx.diagnostics };
         }
         shape = res.backend;
         break;
@@ -3636,9 +3259,9 @@ export class OcctLowerer implements FeatureLowerer {
         // returns a sketch-tagged OcctBackend (face-bound sketch). Downstream
         // chains (`.extrude(d)` / `.cut(...)`) consume it via the normal
         // sketch pipeline.
-        const parentBackend = inputs.byKey.parent as OcctBackend | undefined;
+        const parentBackend = ctx.inputs.byKey.parent as OcctBackend | undefined;
         if (!parentBackend) {
-          diagnostics.push({
+          ctx.diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
@@ -3646,12 +3269,12 @@ export class OcctLowerer implements FeatureLowerer {
             message: `projectCurve requires an input named 'parent'.`,
             hint: 'Chain projectCurve onto a solid via Shape.projectCurve({...}); the parent input is the body holding the target face.',
           });
-          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
         }
-        const res = await lowerProjectCurve(r, parentBackend, allRecords);
+        const res = await lowerProjectCurve(r, parentBackend, ctx.allRecords);
         if (!res.ok) {
-          diagnostics.push(...res.diagnostics);
-          return { shape: parentBackend, diagnostics };
+          ctx.diagnostics.push(...res.diagnostics);
+          return { shape: parentBackend, diagnostics: ctx.diagnostics };
         }
         shape = res.backend;
         break;
@@ -3661,7 +3284,7 @@ export class OcctLowerer implements FeatureLowerer {
           shape: undefined as unknown as ShapeBackend,
           diagnostics: [
             {
-              target: this.target,
+              target: ctx.target,
               code: 'feature.invalid-args',
               featureId: r.id,
               severity: 'error',
@@ -3694,7 +3317,7 @@ export class OcctLowerer implements FeatureLowerer {
           break;
         case 'reflect':
           if (!isValidPlaneSpec(t.plane)) {
-            diagnostics.push({
+            ctx.diagnostics.push({
               target: 'export-occt',
               code: 'feature.invalid-args',
               featureId: r.id,
@@ -3723,6 +3346,6 @@ export class OcctLowerer implements FeatureLowerer {
       }
     }
 
-    return { shape, diagnostics };
+    return { shape, diagnostics: ctx.diagnostics };
   }
 }
