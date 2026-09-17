@@ -547,27 +547,27 @@
   },
   {
     "rule": "complexity",
+    "file": "src/modeling/backends/occt/occtLowerer.ts",
+    "symbol": "Async method 'lower'",
+    "value": 493
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/backends/occt/occtLowerer.ts",
+    "symbol": "Function 'applyVariableEdgeFeature'",
+    "value": 29
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/backends/occt/occtLowerer.ts",
+    "symbol": "Method 'buildSurfaceById'",
+    "value": 27
+  },
+  {
+    "rule": "complexity",
     "file": "src/modeling/backends/occt/sheetMetalLowerer.ts",
     "symbol": "Function 'resolveBendAxis'",
     "value": 21
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/assembly.ts",
-    "symbol": "Method 'partInternal'",
-    "value": 36
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/assembly.ts",
-    "symbol": "Method 'solvedModel'",
-    "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/assembly.ts",
-    "symbol": "Method 'tendon'",
-    "value": 30
   },
   {
     "rule": "complexity",
@@ -1159,6 +1159,18 @@
   },
   {
     "rule": "max-lines-per-function",
+    "file": "src/modeling/backends/occt/occtLowerer.ts",
+    "symbol": "Async method 'lower'",
+    "value": 2519
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/modeling/backends/occt/occtLowerer.ts",
+    "symbol": "Method 'buildSurfaceById'",
+    "value": 152
+  },
+  {
+    "rule": "max-lines-per-function",
     "file": "src/modeling/backends/occt/sheetMetalLowerer.ts",
     "symbol": "Function 'lowerSheetMetalBend'",
     "value": 161
@@ -1465,9 +1477,9 @@
   },
   {
     "rule": "max-lines",
-    "file": "src/modeling/capture/assembly.ts",
+    "file": "src/modeling/backends/occt/occtLowerer.ts",
     "symbol": "(file)",
-    "value": 2502
+    "value": 3118
   },
   {
     "rule": "max-lines",
@@ -1504,6 +1516,12 @@
     "file": "src/modeling/mates/physicalUseCaseStatics.ts",
     "symbol": "(file)",
     "value": 920
+  },
+  {
+    "rule": "max-lines",
+    "file": "src/shared/diagnostics/registry.ts",
+    "symbol": "(file)",
+    "value": 2644
   },
   {
     "rule": "max-lines",
