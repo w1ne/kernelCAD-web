@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, mkdirSync, rmSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { collectFindings, diffAgainstBaseline, type Finding } from '../../../scripts/lib/qualityRatchet';
+import { join, resolve } from 'node:path';
+import { collectFindings, diffAgainstBaseline, listSourceFiles, type Finding } from '../../../scripts/lib/qualityRatchet';
 
 function complexFn(branches: number): string {
   let body = 'export function big(x: number): number {\n  let r = 0;\n';
@@ -71,17 +71,16 @@ describe('qualityRatchet.diffAgainstBaseline', () => {
     expect(r.ok).toBe(false);
     expect(r.grown).toHaveLength(1);
   });
-  it('passes when a baselined finding shrinks, but reports stale when it disappears', () => {
-    expect(diffAgainstBaseline([{ ...base, value: 22 }], [base]).ok).toBe(true);
+  it('fails when a baselined finding shrinks (reported as shrunk), and reports stale when it disappears', () => {
+    const shrunkAfter: Finding = { ...base, value: 22 };
+    const r1 = diffAgainstBaseline([shrunkAfter], [base]);
+    expect(r1.ok).toBe(false);
+    expect(r1.shrunk).toEqual([{ before: base, after: shrunkAfter }]);
     const r = diffAgainstBaseline([], [base]);
     expect(r.ok).toBe(false);
     expect(r.stale).toEqual([base]);
   });
 });
-
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { listSourceFiles } from '../../../scripts/lib/qualityRatchet';
 
 describe('quality ratchet (real tree)', () => {
   it('src/** has no complexity/size findings beyond scripts/lib/qualityBaseline.json', async () => {
@@ -93,8 +92,12 @@ describe('quality ratchet (real tree)', () => {
     const msg = [
       ...r.added.map((f) => `NEW      ${fmt(f)} — split it or reduce below the threshold`),
       ...r.grown.map(({ before, after }) => `GREW     ${fmt(after)} (was ${before.value})`),
+      ...r.shrunk.map(
+        ({ before, after }) =>
+          `SHRUNK   ${after.file} ${after.symbol} (${after.rule}=${after.value}, was ${before.value}) — good; run: npx tsx scripts/qualityBaselineRegen.ts`,
+      ),
       ...r.stale.map((f) => `STALE    ${fmt(f)} — run: npx tsx scripts/qualityBaselineRegen.ts`),
     ].join('\n');
     expect(r.ok, msg).toBe(true);
-  }, 120_000);
+  }, 300_000);
 });

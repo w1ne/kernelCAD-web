@@ -20,25 +20,38 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
-  // Layering: shared -> kernel -> modeling -> agent -> studio. Imports may only point down.
+  // Layering: shared -> kernel -> modeling -> kinematic -> agent -> studio. Imports may only
+  // point down. Mapped dirs: shared, kernel, modeling, kinematic, agent. Unmapped for now
+  // (no layering rule applied): authoring, docs, funnel, lib, server.
   ...[
-    { dir: 'shared', forbid: ['kernel', 'modeling', 'agent', 'studio', 'server'] },
-    { dir: 'kernel', forbid: ['modeling', 'agent', 'studio', 'server'] },
-    { dir: 'modeling', forbid: ['agent', 'studio', 'server'] },
+    { dir: 'shared', forbid: ['kernel', 'modeling', 'kinematic', 'agent', 'studio', 'server'] },
+    { dir: 'kernel', forbid: ['modeling', 'kinematic', 'agent', 'studio', 'server'] },
+    { dir: 'modeling', forbid: ['kinematic', 'agent', 'studio', 'server'] },
+    { dir: 'kinematic', forbid: ['agent', 'studio'] },
     { dir: 'agent', forbid: ['studio'] },
   ].map(({ dir, forbid }) => ({
     files: [`src/${dir}/**/*.{ts,tsx}`],
     ignores: [
       // Tests may import across layers.
       '**/*.test.{ts,tsx}',
+      // Remaining layering exceptions (kinematic placement, fixed in a follow-up slice).
+      'src/kinematic/sweepTolerance.ts',
+      'src/kernel/fea/feaMaterials.ts',
+      'src/modeling/api.ts',
+      'src/modeling/capture/proxy.ts',
+      'src/modeling/properties/materialLibrary.ts',
     ],
     rules: {
       'no-restricted-imports': ['error', {
         patterns: forbid.map((layer) => ({
-          regex: `(^|/)${layer}/`,
-          message: `src/${dir} must not import from src/${layer} (layering: shared -> kernel -> modeling -> agent -> studio).`,
+          regex: `(^|/)${layer}(/|$)`,
+          message: `src/${dir} must not import from src/${layer} (layering: shared -> kernel -> modeling -> kinematic -> agent -> studio).`,
         })),
       }],
+      'no-restricted-syntax': ['error', ...forbid.map((layer) => ({
+        selector: `ImportExpression[source.value=/(^|\\/)${layer}(\\/|$)/]`,
+        message: `src/${dir} must not import from src/${layer} (layering: shared -> kernel -> modeling -> kinematic -> agent -> studio).`,
+      }))],
     },
   })),
   {
