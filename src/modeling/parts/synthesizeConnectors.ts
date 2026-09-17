@@ -19,7 +19,7 @@
 
 import { formatTopoRef } from '../../kernel/naming';
 import type { AutoConnector } from './holeAutoConnectors';
-import type { StepInspectReport } from '../../agent/inspect/inspectStep';
+import type { StepInspectReport } from '../../kernel/import/inspectStep';
 
 function conn(
   name: string,

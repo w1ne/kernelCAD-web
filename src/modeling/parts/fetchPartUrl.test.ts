@@ -4,7 +4,7 @@
 //
 // FETCH-BY-URL mode: allowlist + vendor-configurator classification (pure),
 // and the host fetch path with an injected fetchImpl so no network / OCCT is
-// touched. The geometry modules (fromStepBytes / inspectStepFile /
+// touched. The geometry modules (fromStepBytes / inspectStepBuffer /
 // synthesizeConnectorsFromReport) are mocked so the STEP path stays
 // deterministic without an OCCT init — mirroring how the catalog STEP flow is
 // kept offline elsewhere.
@@ -40,9 +40,9 @@ vi.mock('./fromSTEP', () => ({
   ),
 }));
 
-vi.mock('../../agent/inspect/inspectStep', () => ({
-  inspectStepFile: vi.fn(async (path: string) => ({
-    file: path,
+vi.mock('../../kernel/import/inspectStep', () => ({
+  inspectStepBuffer: vi.fn(async (_bytes: Buffer, label: string) => ({
+    file: label,
     solidCount: 1,
     solids: [],
   })),

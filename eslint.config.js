@@ -32,9 +32,6 @@ export default defineConfig([
       // Tests may import across layers.
       '**/*.test.{ts,tsx}',
       // Slice-2 allowlist — delete each line as its file is fixed.
-      'src/kernel/backends/occt/importStl.ts',
-      'src/modeling/parts/fetchPart.ts',
-      'src/modeling/parts/synthesizeConnectors.ts',
       'src/modeling/animation/bakeAnimationTimeline.ts',
       'src/agent/render/headless-player/main.tsx',
     ],

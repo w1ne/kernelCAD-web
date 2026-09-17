@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { synthesizeConnectorsFromReport } from './synthesizeConnectors';
-import type { StepInspectReport } from '../../agent/inspect/inspectStep';
+import type { StepInspectReport } from '../../kernel/import/inspectStep';
 
 // A motor-plate-like solid: 40×40×5 mm with four corner mounting holes and a
 // central bore (the largest-diameter hole).
