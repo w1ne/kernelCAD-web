@@ -409,12 +409,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/authoringFeatureRecords.ts",
-    "symbol": "Function 'buildFeaStudyFeatureSpec'",
-    "value": 34
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/bridgeCurves.ts",
     "symbol": "Function 'bridgeCurves'",
     "value": 22
