@@ -1149,7 +1149,7 @@
     "rule": "max-lines-per-function",
     "file": "src/studio/components/viewer/overlays/MarkingOverlay.tsx",
     "symbol": "Function 'MarkingOverlay'",
-    "value": 161
+    "value": 151
   },
   {
     "rule": "max-lines-per-function",
