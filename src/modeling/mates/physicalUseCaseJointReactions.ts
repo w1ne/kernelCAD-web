@@ -6,7 +6,6 @@ import type { Vec3 } from '../../shared/intent/types';
 import { currentValue } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 import type { Transform } from '../../shared/runtime/se3';
-import { resolveConnectorOrigin, type Connector } from './connector';
 import type { PhysicalUseCaseRecord } from './physicalUseCase';
 import {
   DEFAULT_FORCE_RESIDUAL_N,
@@ -16,25 +15,36 @@ import {
 } from './physicalUseCaseStatics';
 import { solveMates } from './solver';
 import {
+  CERTIFICATE_NUMERIC_TOLERANCE,
+  add,
   buildDeclaredContactMap,
+  computeHeldNetWrench,
   contactKey,
   copyVec,
+  cross,
+  distance,
+  dot,
+  errorMessage,
   isFiniteVec3,
   isPositiveFinite,
-  safeParseConnectorRef,
+  midpoint,
+  norm,
+  numbersMatch,
+  resolveConnectorPoint,
+  resolveSolvedLoads,
   safePartName,
   scale,
+  sub,
+  unit,
   validateCertificateIdentity,
   validateCertificatePoses,
   validateCertificateResiduals,
   validateCertifiedContact,
+  validateSolvedContact,
 } from './physicalUseCaseJointReactionsPhases';
 
 const CONNECTOR_COINCIDENCE_TOLERANCE_MM = 1e-6;
 const AXIS_ALIGNMENT_TOLERANCE = 1e-6;
-const CERTIFICATE_POINT_TOLERANCE_MM = 1e-6;
-const CONTACT_DISTANCE_TOLERANCE_MM = 1e-6;
-const CERTIFICATE_NUMERIC_TOLERANCE = 1e-8;
 
 export interface PhysicalUseCaseJointReactionEvidence {
   readonly mateName: string;
@@ -107,12 +117,6 @@ interface OrientedEdge {
 interface ResolvedJointFrame {
   readonly pointWorldMm: Vec3;
   readonly axisWorld: Vec3;
-}
-
-interface ResolvedConnectorPoint {
-  readonly connector: Connector;
-  readonly pointWorldMm: Vec3;
-  readonly transform: Transform;
 }
 
 interface WrenchAtWorldOrigin {
@@ -268,109 +272,15 @@ async function validateCertificateAtSolvedPose(
   transforms: ReadonlyMap<string, Transform>,
 ): Promise<string | undefined> {
   for (const contact of contacts) {
-    const declared = useCase.contacts.find((candidate) =>
-      contactKey(candidate.a, candidate.b) ===
-      contactKey(contact.evidence.contactA, contact.evidence.contactB));
-    if (declared === undefined) {
-      return `Certified contact '${contact.evidence.contactA}' to '${contact.evidence.contactB}' is not declared.`;
-    }
-    const aPoint = await resolveConnectorPoint(arm, transforms, declared.a);
-    if (typeof aPoint === 'string') return aPoint;
-    const bPoint = await resolveConnectorPoint(arm, transforms, declared.b);
-    if (typeof bPoint === 'string') return bPoint;
-    const maxSlipMm = useCase.criteria?.maxSlipMm ?? 0;
-    if (!Number.isFinite(maxSlipMm) || maxSlipMm < 0) {
-      return `Use-case maxSlipMm must be a finite non-negative value.`;
-    }
-    const endpointDistanceMm = distance(aPoint.pointWorldMm, bPoint.pointWorldMm);
-    if (endpointDistanceMm > maxSlipMm + CONTACT_DISTANCE_TOLERANCE_MM) {
-      return `Solved contact endpoint distance ${endpointDistanceMm} mm for '${declared.a}' to '${declared.b}' exceeds maxSlipMm ${maxSlipMm}.`;
-    }
-    const expectedPoint = midpoint(aPoint.pointWorldMm, bPoint.pointWorldMm);
-    if (distance(contact.evidence.pointWorldMm, expectedPoint) > CERTIFICATE_POINT_TOLERANCE_MM) {
-      return `Certified contact point for '${declared.a}' to '${declared.b}' does not match the solved endpoint midpoint.`;
-    }
-
-    const heldNormal = contactHeldWorldNormal(
-      declared,
-      certificate.heldPart,
-      transforms,
-    );
-    if (typeof heldNormal === 'string') return heldNormal;
-    const normalForceN = dot(contact.evidence.forceOnHeldWorldN, heldNormal);
-    const tangentialForceN = norm(sub(
-      contact.evidence.forceOnHeldWorldN,
-      scale(heldNormal, normalForceN),
-    ));
-    if (
-      !numbersMatch(normalForceN, contact.evidence.normalForceN) ||
-      !numbersMatch(tangentialForceN, contact.evidence.tangentialForceN)
-    ) {
-      return `Certified contact force metadata for '${declared.a}' to '${declared.b}' does not match forceOnHeldWorldN at the solved pose.`;
-    }
-    if (
-      normalForceN < -CERTIFICATE_NUMERIC_TOLERANCE ||
-      normalForceN > contact.evidence.normalCapacityN + CERTIFICATE_NUMERIC_TOLERANCE ||
-      tangentialForceN >
-        contact.evidence.friction * Math.max(0, normalForceN) + CERTIFICATE_NUMERIC_TOLERANCE
-    ) {
-      return `Certified contact force for '${declared.a}' to '${declared.b}' is outside its solved-pose contact limits.`;
-    }
+    const issue = await validateSolvedContact(arm, transforms, useCase, certificate, contact);
+    if (issue !== undefined) return issue;
   }
 
-  const loads: { force: Vec3; torque: Vec3; pointWorldMm?: Vec3 }[] = [];
-  for (const load of useCase.loads) {
-    if (load.force !== undefined && !isFiniteVec3(load.force)) {
-      return `Declared force load on '${load.part}' is not a finite Vec3.`;
-    }
-    if (load.torque !== undefined && !isFiniteVec3(load.torque)) {
-      return `Declared torque load on '${load.part}' is not a finite Vec3.`;
-    }
-    let pointWorldMm: Vec3 | undefined;
-    if (load.at !== undefined) {
-      const parsed = safeParseConnectorRef(load.at);
-      if (parsed?.partName !== certificate.heldPart) {
-        return `Load application connector '${load.at}' does not belong to held part '${certificate.heldPart}'.`;
-      }
-      const resolved = await resolveConnectorPoint(arm, transforms, load.at);
-      if (typeof resolved === 'string') return resolved;
-      pointWorldMm = resolved.pointWorldMm;
-    } else if (hasNonZeroVec(load.force)) {
-      return `Force load on '${load.part}' has no application connector at the certified pose.`;
-    }
-    loads.push({
-      force: load.force === undefined ? [0, 0, 0] : copyVec(load.force),
-      torque: load.torque === undefined ? [0, 0, 0] : copyVec(load.torque),
-      ...(pointWorldMm === undefined ? {} : { pointWorldMm }),
-    });
-  }
-  const referencePoint = loads.find((load) => load.pointWorldMm !== undefined)?.pointWorldMm;
-  if (referencePoint === undefined) {
-    return `Held part '${certificate.heldPart}' has no resolved load application connector.`;
-  }
+  const solvedLoads = await resolveSolvedLoads(arm, transforms, useCase, certificate);
+  if (typeof solvedLoads === 'string') return solvedLoads;
+  const { loads, referencePoint } = solvedLoads;
 
-  let netForce: Vec3 = [0, 0, 0];
-  let netMoment: Vec3 = [0, 0, 0];
-  for (const load of loads) {
-    netForce = add(netForce, load.force);
-    netMoment = add(netMoment, load.torque);
-    if (load.pointWorldMm !== undefined) {
-      netMoment = add(
-        netMoment,
-        cross(sub(load.pointWorldMm, referencePoint), load.force),
-      );
-    }
-  }
-  for (const contact of contacts) {
-    netForce = add(netForce, contact.evidence.forceOnHeldWorldN);
-    netMoment = add(
-      netMoment,
-      cross(
-        sub(contact.evidence.pointWorldMm, referencePoint),
-        contact.evidence.forceOnHeldWorldN,
-      ),
-    );
-  }
+  const { netForce, netMoment } = computeHeldNetWrench(loads, contacts, referencePoint);
 
   const forceResidualN = norm(netForce);
   const torqueResidualNmm = norm(netMoment);
@@ -397,31 +307,6 @@ async function validateCertificateAtSolvedPose(
     return `Recomputed solved-pose residuals do not match the static certificate residual fields.`;
   }
   return undefined;
-}
-
-function contactHeldWorldNormal(
-  contact: PhysicalUseCaseRecord['contacts'][number],
-  heldPart: string,
-  transforms: ReadonlyMap<string, Transform>,
-): Vec3 | string {
-  const frame = contact.normalFrame ?? 'world';
-  let worldNormal: Vec3;
-  if (frame === 'world') {
-    worldNormal = copyVec(contact.normal);
-  } else {
-    const ref = frame === 'a' ? contact.a : contact.b;
-    const partName = safePartName(ref);
-    const transform = partName === undefined ? undefined : transforms.get(partName);
-    if (transform === undefined) {
-      return `Contact normal frame '${frame}' for '${contact.a}' to '${contact.b}' could not be resolved.`;
-    }
-    worldNormal = [...transform.axisDir(contact.normal)] as Vec3;
-  }
-  if (!isFiniteVec3(worldNormal) || norm(worldNormal) <= 0) {
-    return `Contact normal for '${contact.a}' to '${contact.b}' is not finite and non-zero.`;
-  }
-  worldNormal = unit(worldNormal);
-  return safePartName(contact.a) === heldPart ? worldNormal : scale(worldNormal, -1);
 }
 
 function validateCertificateInput(
@@ -621,36 +506,6 @@ async function resolveConnectorSide(
   return { pointWorldMm, axisWorld };
 }
 
-async function resolveConnectorPoint(
-  arm: Assembly,
-  transforms: ReadonlyMap<string, Transform>,
-  ref: string,
-): Promise<ResolvedConnectorPoint | string> {
-  const parsed = safeParseConnectorRef(ref);
-  if (parsed === undefined) return `connector reference '${ref}' is malformed.`;
-  const part = arm.__parts().find((candidate) => candidate.name === parsed.partName);
-  const connector = part?.mateConnectors.find((candidate) => candidate.name === parsed.connectorName);
-  const transform = transforms.get(parsed.partName);
-  if (part === undefined || connector === undefined || transform === undefined) {
-    return `connector '${ref}' could not be resolved in the solved assembly.`;
-  }
-  let localPoint: Vec3;
-  try {
-    localPoint = (await resolveConnectorOrigin(
-      part.originalShape,
-      connector.origin,
-      arm.__session().getRecords(),
-    )).value;
-  } catch (error) {
-    return `connector '${ref}' origin could not be resolved: ${errorMessage(error)}.`;
-  }
-  const pointWorldMm = [...transform.point(localPoint)] as Vec3;
-  if (!isFiniteVec3(pointWorldMm)) {
-    return `connector '${ref}' has a non-finite solved transform.`;
-  }
-  return { connector, pointWorldMm, transform };
-}
-
 function contactWrenchesByGroup(
   groupByPart: ReadonlyMap<string, string>,
   contacts: readonly CertifiedMechanismContact[],
@@ -823,15 +678,6 @@ function copyPoses(poses: NumericPoses): NumericPoses {
   ]));
 }
 
-function hasNonZeroVec(value: readonly number[] | undefined): value is Vec3 {
-  return value !== undefined && isFiniteVec3(value) && norm(value) > 0;
-}
-
-function numbersMatch(a: number, b: number): boolean {
-  return Math.abs(a - b) <=
-    CERTIFICATE_NUMERIC_TOLERANCE * Math.max(1, Math.abs(a), Math.abs(b));
-}
-
 function zeroWrench(): WrenchAtWorldOrigin {
   return { forceWorldN: [0, 0, 0], momentWorldNmm: [0, 0, 0] };
 }
@@ -843,42 +689,3 @@ function addWrenches(a: WrenchAtWorldOrigin, b: WrenchAtWorldOrigin): WrenchAtWo
   };
 }
 
-function add(a: Vec3, b: Vec3): Vec3 {
-  return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-}
-
-function sub(a: Vec3, b: Vec3): Vec3 {
-  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-}
-
-function dot(a: Vec3, b: Vec3): number {
-  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-}
-
-function cross(a: Vec3, b: Vec3): Vec3 {
-  return [
-    a[1] * b[2] - a[2] * b[1],
-    a[2] * b[0] - a[0] * b[2],
-    a[0] * b[1] - a[1] * b[0],
-  ];
-}
-
-function norm(value: Vec3): number {
-  return Math.hypot(value[0], value[1], value[2]);
-}
-
-function unit(value: Vec3): Vec3 {
-  return scale(value, 1 / norm(value));
-}
-
-function midpoint(a: Vec3, b: Vec3): Vec3 {
-  return scale(add(a, b), 0.5);
-}
-
-function distance(a: Vec3, b: Vec3): number {
-  return norm(sub(a, b));
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}

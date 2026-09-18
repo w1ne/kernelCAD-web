@@ -632,12 +632,6 @@
   {
     "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseJointReactions.ts",
-    "symbol": "Async function 'validateCertificateAtSolvedPose'",
-    "value": 45
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseJointReactions.ts",
     "symbol": "Function 'expandCertificatePoses'",
     "value": 21
   },
@@ -1222,12 +1216,6 @@
     "file": "src/modeling/mates/physicalUseCase.ts",
     "symbol": "(file)",
     "value": 977
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/modeling/mates/physicalUseCaseJointReactions.ts",
-    "symbol": "(file)",
-    "value": 811
   },
   {
     "rule": "max-lines",
