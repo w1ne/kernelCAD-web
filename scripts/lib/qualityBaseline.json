@@ -325,12 +325,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/script-runtime/export.ts",
-    "symbol": "Async function 'runAndExport'",
-    "value": 117
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/vision/index.ts",
     "symbol": "Async function 'traceFromImage'",
     "value": 24
@@ -997,12 +991,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/agent/script-runtime/export.ts",
-    "symbol": "Async function 'runAndExport'",
-    "value": 497
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/agent/vision/index.ts",
     "symbol": "Async function 'traceFromImage'",
     "value": 163
@@ -1288,12 +1276,6 @@
     "file": "src/agent/reconstruct/plan.ts",
     "symbol": "(file)",
     "value": 1044
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/agent/script-runtime/export.ts",
-    "symbol": "(file)",
-    "value": 869
   },
   {
     "rule": "max-lines",
