@@ -859,12 +859,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/studio/components/viewer/overlays/MarkingOverlay.tsx",
-    "symbol": "Function 'struckPartsFromMask'",
-    "value": 35
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/features-ui/ai/LLMService.ts",
     "symbol": "Async method 'sendMessage'",
     "value": 32
@@ -1155,7 +1149,7 @@
     "rule": "max-lines-per-function",
     "file": "src/studio/components/viewer/overlays/MarkingOverlay.tsx",
     "symbol": "Function 'MarkingOverlay'",
-    "value": 416
+    "value": 342
   },
   {
     "rule": "max-lines-per-function",
