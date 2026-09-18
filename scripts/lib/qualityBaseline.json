@@ -751,12 +751,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/studio/components/viewer/directEditTarget.ts",
-    "symbol": "Function 'isMatedAnchor'",
-    "value": 36
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/features-ui/ai/LLMService.ts",
     "symbol": "Async method 'sendMessage'",
     "value": 32
