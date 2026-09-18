@@ -80,32 +80,25 @@ const PASSED_CHECKS = {
   physicalUseCaseDeclared: 'physical-use-case-declared',
 } as const;
 
-export function summarizeMechanismFitness(
-  input: MechanismFitnessInput = {},
-): MechanismFitnessResult {
-  const validatorDiagnostics = input.validatorDiagnostics ?? [];
-  const mechanicalPlausibilityDiagnostics = input.mechanicalPlausibilityDiagnostics ?? [];
-  const mechanicalIntentDiagnostics = input.mechanicalIntentDiagnostics ?? [];
-  const mechanicalTransmissionDiagnostics = input.mechanicalTransmissionDiagnostics ?? [];
-  const jointTopologyDiagnostics = input.jointTopologyDiagnostics ?? [];
-  const mechanismTruthDiagnostics = input.mechanismTruthDiagnostics ?? [];
-  const physicalUseCaseDiagnostics = input.physicalUseCaseDiagnostics ?? [];
-  const physicalUseCaseCount = input.physicalUseCaseCount ?? 0;
-  const poseEnvelope = input.poseEnvelope;
-  const trackConnectors = input.trackConnectors ?? [];
+type AddBlockingReasonFn = (
+  code: string,
+  message: string,
+  repairHint: string,
+  evidence?: unknown,
+) => void;
 
-  const blockingReasons: MechanismBlockingReason[] = [];
-  const passedChecks: string[] = [];
-
-  const addBlockingReason = (
-    code: string,
-    message: string,
-    repairHint: string,
-    evidence?: unknown,
-  ): void => {
-    blockingReasons.push({ code, message, evidence, repairHint });
-  };
-
+function processMechanismDiagnostics(
+  validatorDiagnostics: readonly ValidatorDiagnostic[],
+  mechanicalPlausibilityDiagnostics: readonly MechanicalPlausibilityDiagnostic[],
+  mechanicalIntentDiagnostics: readonly MechanicalIntentDiagnostic[],
+  mechanicalTransmissionDiagnostics: readonly MechanicalTransmissionDiagnostic[],
+  jointTopologyDiagnostics: readonly JointTopologyDiagnostic[],
+  physicalUseCaseDiagnostics: readonly PhysicalUseCaseDiagnostic[],
+  mechanismTruthDiagnostics: readonly CompilerDiagnostic[],
+  physicalUseCaseCount: number,
+  addBlockingReason: AddBlockingReasonFn,
+  passedChecks: string[],
+): void {
   const hasValidatorErrors = validatorDiagnostics.some((diagnostic) => diagnostic.severity === 'error');
   for (const diagnostic of validatorDiagnostics) {
     if (diagnostic.severity !== 'error') continue;
@@ -182,7 +175,13 @@ export function summarizeMechanismFitness(
   if (physicalUseCaseCount > 0 && physicalUseCaseDiagnostics.length === 0) {
     passedChecks.push(PASSED_CHECKS.physicalUseCaseDeclared);
   }
+}
 
+function processPoseEnvelopePhase(
+  poseEnvelope: PoseEnvelopeReviewResult | undefined,
+  addBlockingReason: AddBlockingReasonFn,
+  passedChecks: string[],
+): void {
   const isBlockingPoseDiagnostic = (diagnostic: PoseEnvelopeReviewResult['diagnostics'][number]): boolean =>
     diagnostic.severity === 'error'
     || diagnostic.code === 'assembly.pose-envelope.clearance-unresolved';
@@ -218,7 +217,14 @@ export function summarizeMechanismFitness(
   if (poseEnvelope && !hasPoseInterference) {
     passedChecks.push(PASSED_CHECKS.poseEnvelopeNoInterference);
   }
+}
 
+function processTrackedConnectorsPhase(
+  poseEnvelope: PoseEnvelopeReviewResult | undefined,
+  trackConnectors: readonly string[],
+  addBlockingReason: AddBlockingReasonFn,
+  passedChecks: string[],
+): { trackedConnectorCount: number; maxTrackedTravelMm: number | undefined } {
   const trackedConnectorSet = new Set(trackConnectors);
   const trackedConnectorWorkspaces = trackedConnectorSet.size > 0
     ? (poseEnvelope?.connectorWorkspace ?? []).filter((workspace) => trackedConnectorSet.has(workspace.ref))
@@ -251,6 +257,14 @@ export function summarizeMechanismFitness(
     passedChecks.push(PASSED_CHECKS.trackedConnectorsMove);
   }
 
+  return { trackedConnectorCount, maxTrackedTravelMm };
+}
+
+function processGripperAperturePhase(
+  poseEnvelope: PoseEnvelopeReviewResult | undefined,
+  addBlockingReason: AddBlockingReasonFn,
+  passedChecks: string[],
+): void {
   if (poseEnvelope?.gripperApertureRequest !== undefined && poseEnvelope.gripperAperture === undefined) {
     addBlockingReason(
       'assembly.mechanism.gripper-aperture-missing',
@@ -263,6 +277,57 @@ export function summarizeMechanismFitness(
   if (poseEnvelope?.gripperAperture !== undefined && poseEnvelope.gripperAperture.travelMm > 0) {
     passedChecks.push(PASSED_CHECKS.gripperApertureMoves);
   }
+}
+
+export function summarizeMechanismFitness(
+  input: MechanismFitnessInput = {},
+): MechanismFitnessResult {
+  const validatorDiagnostics = input.validatorDiagnostics ?? [];
+  const mechanicalPlausibilityDiagnostics = input.mechanicalPlausibilityDiagnostics ?? [];
+  const mechanicalIntentDiagnostics = input.mechanicalIntentDiagnostics ?? [];
+  const mechanicalTransmissionDiagnostics = input.mechanicalTransmissionDiagnostics ?? [];
+  const jointTopologyDiagnostics = input.jointTopologyDiagnostics ?? [];
+  const mechanismTruthDiagnostics = input.mechanismTruthDiagnostics ?? [];
+  const physicalUseCaseDiagnostics = input.physicalUseCaseDiagnostics ?? [];
+  const physicalUseCaseCount = input.physicalUseCaseCount ?? 0;
+  const poseEnvelope = input.poseEnvelope;
+  const trackConnectors = input.trackConnectors ?? [];
+
+  const blockingReasons: MechanismBlockingReason[] = [];
+  const passedChecks: string[] = [];
+
+  const addBlockingReason = (
+    code: string,
+    message: string,
+    repairHint: string,
+    evidence?: unknown,
+  ): void => {
+    blockingReasons.push({ code, message, evidence, repairHint });
+  };
+
+  processMechanismDiagnostics(
+    validatorDiagnostics,
+    mechanicalPlausibilityDiagnostics,
+    mechanicalIntentDiagnostics,
+    mechanicalTransmissionDiagnostics,
+    jointTopologyDiagnostics,
+    physicalUseCaseDiagnostics,
+    mechanismTruthDiagnostics,
+    physicalUseCaseCount,
+    addBlockingReason,
+    passedChecks,
+  );
+
+  processPoseEnvelopePhase(poseEnvelope, addBlockingReason, passedChecks);
+
+  const { trackedConnectorCount, maxTrackedTravelMm } = processTrackedConnectorsPhase(
+    poseEnvelope,
+    trackConnectors,
+    addBlockingReason,
+    passedChecks,
+  );
+
+  processGripperAperturePhase(poseEnvelope, addBlockingReason, passedChecks);
 
   const sampleCount = poseEnvelope?.samples.length ?? 0;
   const interferenceCount = poseEnvelope?.interferencePairs.length ?? 0;

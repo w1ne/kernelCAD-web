@@ -651,7 +651,7 @@
     "rule": "complexity",
     "file": "src/modeling/mates/mechanismFitness.ts",
     "symbol": "Function 'summarizeMechanismFitness'",
-    "value": 67
+    "value": 24
   },
   {
     "rule": "complexity",
@@ -1102,12 +1102,6 @@
     "file": "src/modeling/mates/mechanicalPlausibility.ts",
     "symbol": "Async function 'reviewMechanicalPlausibility'",
     "value": 211
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/mates/mechanismFitness.ts",
-    "symbol": "Function 'summarizeMechanismFitness'",
-    "value": 193
   },
   {
     "rule": "max-lines-per-function",
