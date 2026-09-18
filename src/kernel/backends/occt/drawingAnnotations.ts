@@ -668,6 +668,262 @@ export function detectLabelOverlaps(svgByIndex: readonly string[]): Array<readon
   return out;
 }
 
+interface AnnotationRenderContext {
+  parts: readonly WorldFramePart[];
+  view: DrawingViewName;
+  placement: ViewPlacement;
+  scale: number;
+  role: string;
+  extra: number;
+  nextIndex: (view: DrawingViewName, side: string) => number;
+  bottomReserve: Record<DrawingViewName, number>;
+  rightReserve: Record<DrawingViewName, number>;
+  toSheet: (p: Vec3) => Pt2;
+}
+
+/** One `linear` dimension: orientation, stacking side and label. */
+function linearAnnotationSvg(
+  a: Extract<DrawingAnnotation, { kind: 'linear' }>,
+  ctx: AnnotationRenderContext,
+): string {
+  const { parts, view, placement, role, extra, nextIndex, bottomReserve, rightReserve, toSheet } = ctx;
+  const model0 = resolveAnchor(parts, a.from, `${role}.from`);
+  const model1 = resolveAnchor(parts, a.to, `${role}.to`);
+  const p0 = toSheet(model0);
+  const p1 = toSheet(model1);
+  // Orientation is read off the SHEET span so the dimension reads the
+  // way the feature looks in this view; the LABEL is the true model
+  // distance along that same axis, so it is scale-independent.
+  const horizontal = Math.abs(p1[0] - p0[0]) >= Math.abs(p1[1] - p0[1]);
+  const m0 = projectPointForDrawing(model0, view);
+  const m1 = projectPointForDrawing(model1, view);
+  const measured = horizontal
+    ? Math.abs(m1[0] - m0[0])
+    : Math.abs(m1[1] - m0[1]);
+  const side = horizontal ? 'bottom' : 'right';
+  const dist = DIM_BASE + nextIndex(view, side) * DIM_STEP + extra;
+  const box = placement.box;
+  const dim: LinearDimension = horizontal
+    ? {
+        kind: 'horizontal',
+        from: [p0[0], p0[1]],
+        to: [p1[0], p1[1]],
+        linePos: box.y + box.h + dist,
+        label: a.text ? esc(a.text) : formatDimValue(measured),
+      }
+    : {
+        kind: 'vertical',
+        from: [p0[0], p0[1]],
+        to: [p1[0], p1[1]],
+        linePos: box.x + box.w + dist,
+        label: a.text ? esc(a.text) : formatDimValue(measured),
+      };
+  if (horizontal) {
+    bottomReserve[view] = Math.max(bottomReserve[view], dist);
+  } else {
+    rightReserve[view] = Math.max(rightReserve[view], dist);
+  }
+  if (a.tol !== undefined && !a.text) {
+    dim.label = `${dim.label}${tolText(a.tol)}`;
+  }
+  return dimensionToSvg(dim);
+}
+
+/** One `radius` / `diameter` callout with its leader. */
+function radialAnnotationSvg(
+  a: Extract<DrawingAnnotation, { kind: 'radius' | 'diameter' }>,
+  ctx: AnnotationRenderContext,
+): string {
+  const { parts, view, scale, role, extra, nextIndex, toSheet } = ctx;
+  const edge = oneEdge(parts, a.edge, role);
+  const { center, radius } = circleOf(edge, role);
+  const value = a.kind === 'diameter' ? radius * 2 : radius;
+  const prefix = a.kind === 'diameter' ? '⌀' : 'R';
+  return radialDimensionToSvg({
+    kind: a.kind,
+    center: toSheet(center),
+    // Model radius through the same scale as every other length.
+    radius: radius * scale,
+    angle: LEADER_BASE_ANGLE + nextIndex(view, 'leader') * LEADER_STEP_ANGLE,
+    label: a.text ? esc(a.text) : `${prefix}${formatDimValue(value)}`,
+    stemExtra: extra,
+  });
+}
+
+/** One `angular` dimension between two straight edges, normalised to the
+ *  short sweep. */
+function angularAnnotationSvg(
+  a: Extract<DrawingAnnotation, { kind: 'angular' }>,
+  ctx: AnnotationRenderContext,
+): string {
+  const { parts, view, placement, scale, role, extra, nextIndex } = ctx;
+  const eA = oneEdge(parts, a.from, `${role}.from`);
+  const eB = oneEdge(parts, a.to, `${role}.to`);
+  const ray = (e: Edge) => {
+    const s = e.startPoint;
+    const t = e.endPoint;
+    const p = projectPointForDrawing([s.x, s.y, s.z], view);
+    const q = projectPointForDrawing([t.x, t.y, t.z], view);
+    return { p, d: [q[0] - p[0], q[1] - p[1]] as const };
+  };
+  const A = ray(eA);
+  const B = ray(eB);
+  const det = A.d[0] * B.d[1] - A.d[1] * B.d[0];
+  if (Math.abs(det) < 1e-9) {
+    fail(`${role}: the two edges are parallel in view '${view}' — no apex to measure from`);
+  }
+  // Apex = intersection of the two infinite lines in model-2D, so it
+  // survives the scale change exactly like every other anchor.
+  const t = ((B.p[0] - A.p[0]) * B.d[1] - (B.p[1] - A.p[1]) * B.d[0]) / det;
+  const apex2: Pt2 = [A.p[0] + A.d[0] * t, A.p[1] + A.d[1] * t];
+  const apexSheet: Pt2 = [
+    placement.tx + apex2[0] * scale,
+    placement.ty - apex2[1] * scale,
+  ];
+  // Point each direction AWAY from the apex, toward its edge's far end,
+  // so the arc lands inside the physical corner rather than opposite it.
+  const away = (r: { p: readonly [number, number]; d: readonly [number, number] }) => {
+    const far = Math.hypot(r.p[0] - apex2[0], r.p[1] - apex2[1]) >
+      Math.hypot(r.p[0] + r.d[0] - apex2[0], r.p[1] + r.d[1] - apex2[1])
+      ? [-r.d[0], -r.d[1]]
+      : [r.d[0], r.d[1]];
+    // Sheet y is down: flip y so the drawn angle matches the sheet.
+    return Math.atan2(-far[1], far[0]);
+  };
+  const a0 = away(A);
+  let a1 = away(B);
+  // Normalise to the SHORT sweep — an angular dimension states the
+  // included angle, and the arc must agree with the number printed.
+  let sweep = a1 - a0;
+  while (sweep <= -Math.PI) sweep += 2 * Math.PI;
+  while (sweep > Math.PI) sweep -= 2 * Math.PI;
+  a1 = a0 + sweep;
+  const idx = nextIndex(view, 'arc');
+  return angularDimensionToSvg({
+    apex: apexSheet,
+    startAngle: a0,
+    endAngle: a1,
+    radius: ANGULAR_RADIUS + idx * DIM_STEP + extra,
+    label: a.text ? esc(a.text) : `${formatDimValue(Math.abs(sweep) * 180 / Math.PI)}°`,
+  });
+}
+
+/** One leader note anchored at an explicit point / query. */
+function noteAnnotationSvg(
+  a: Extract<DrawingAnnotation, { kind: 'note' }>,
+  ctx: AnnotationRenderContext,
+): string {
+  const { parts, view, role, extra, nextIndex, toSheet } = ctx;
+  const target = toSheet(resolveAnchor(parts, a.at, `${role}.at`));
+  return leaderNoteToSvg({
+    target,
+    angle: LEADER_BASE_ANGLE + nextIndex(view, 'leader') * LEADER_STEP_ANGLE,
+    text: esc(a.text),
+    stemExtra: extra,
+  });
+}
+
+/** One `hole` callout with its feature-aware label. */
+function holeAnnotationSvg(
+  a: Extract<DrawingAnnotation, { kind: 'hole' }>,
+  ctx: AnnotationRenderContext,
+): string {
+  const { parts, view, scale, role, extra, nextIndex, toSheet } = ctx;
+  const edge = oneEdge(parts, a.edge, role);
+  const { center, radius } = circleOf(edge, role);
+  const label = a.text ? esc(a.text) : holeLabel(a, radius * 2, role);
+  return radialDimensionToSvg({
+    kind: 'diameter',
+    center: toSheet(center),
+    radius: radius * scale,
+    angle: LEADER_BASE_ANGLE + nextIndex(view, 'leader') * LEADER_STEP_ANGLE,
+    label,
+    stemExtra: extra,
+  });
+}
+
+/** One `fillet` radius callout. */
+function filletAnnotationSvg(
+  a: Extract<DrawingAnnotation, { kind: 'fillet' }>,
+  ctx: AnnotationRenderContext,
+): string {
+  const { parts, view, scale, role, extra, nextIndex, toSheet } = ctx;
+  const edge = oneEdge(parts, a.edge, role);
+  const { center, radius } = circleOf(edge, role);
+  const label = a.text ? esc(a.text) : `R${formatDimValue(radius)}`;
+  return radialDimensionToSvg({
+    kind: 'radius',
+    center: toSheet(center),
+    radius: radius * scale,
+    angle: LEADER_BASE_ANGLE + nextIndex(view, 'leader') * LEADER_STEP_ANGLE,
+    label,
+    stemExtra: extra,
+  });
+}
+
+/** One `chamfer` note with its size × angle label. */
+function chamferAnnotationSvg(
+  a: Extract<DrawingAnnotation, { kind: 'chamfer' }>,
+  ctx: AnnotationRenderContext,
+): string {
+  const { parts, view, role, extra, nextIndex, toSheet } = ctx;
+  const edge = oneEdge(parts, a.edge, role);
+  const target = toSheet(edgeMid(edge));
+  const angleDeg = a.angleDeg ?? 45;
+  const label = a.text
+    ? esc(a.text)
+    : `${formatDimValue(a.size)} × ${formatDimValue(angleDeg)}°`;
+  return leaderNoteToSvg({
+    target,
+    angle: LEADER_BASE_ANGLE + nextIndex(view, 'leader') * LEADER_STEP_ANGLE,
+    text: label,
+    stemExtra: extra,
+  });
+}
+
+/** One datum-feature symbol on a resolved face. */
+function datumAnnotationSvg(
+  a: Extract<DrawingAnnotation, { kind: 'datum' }>,
+  ctx: AnnotationRenderContext,
+): string {
+  const { parts, view, role, extra, nextIndex, toSheet } = ctx;
+  const faceMatch = oneFaceCoded(parts, a.face, role, 'drawing.datum.unresolved');
+  const c = faceMatch.center;
+  const target = toSheet([c.x, c.y, c.z]);
+  return datumSymbolToSvg(
+    target,
+    LEADER_BASE_ANGLE + nextIndex(view, 'leader') * LEADER_STEP_ANGLE,
+    a.label,
+    extra,
+  );
+}
+
+/** One feature-control frame, anchored to exactly one of edge / face. */
+function fcfAnnotationSvg(
+  a: Extract<DrawingAnnotation, { kind: 'fcf' }>,
+  ctx: AnnotationRenderContext,
+): string {
+  const { parts, view, role, extra, nextIndex, toSheet } = ctx;
+  if ((a.edge === undefined) === (a.face === undefined)) {
+    fail(`${role}: an 'fcf' annotation needs exactly one of 'edge' or 'face'`);
+  }
+  const anchor: Vec3 = a.edge
+    ? edgeMid(oneEdgeCoded(parts, a.edge, role, 'drawing.tolerance.feature-unresolved'))
+    : (() => {
+        const fc = oneFaceCoded(parts, a.face as FaceQuery, role, 'drawing.tolerance.feature-unresolved').center;
+        return [fc.x, fc.y, fc.z] as Vec3;
+      })();
+  const target = toSheet(anchor);
+  const cells = fcfCells(a);
+  return fcfToSvg(
+    target,
+    LEADER_BASE_ANGLE + nextIndex(view, 'leader') * LEADER_STEP_ANGLE,
+    cells,
+    extra,
+    ` data-kc-fcf="${escAttr(cells.join(' '))}"`,
+  );
+}
+
 /**
  * Stacking rule (deterministic, geometry-independent):
  *
@@ -712,228 +968,64 @@ export function renderAnnotations(input: AnnotationRenderInput): AnnotationRende
     const toSheet = (p: Vec3): Pt2 => modelToSheet(p, view, placement, scale);
     const extra = a.offset ?? 0;
 
+    const ctx: AnnotationRenderContext = {
+      parts,
+      view,
+      placement,
+      scale,
+      role,
+      extra,
+      nextIndex,
+      bottomReserve,
+      rightReserve,
+      toSheet,
+    };
+
     try {
       switch (a.kind) {
         case 'linear': {
-          const model0 = resolveAnchor(parts, a.from, `${role}.from`);
-          const model1 = resolveAnchor(parts, a.to, `${role}.to`);
-          const p0 = toSheet(model0);
-          const p1 = toSheet(model1);
-          // Orientation is read off the SHEET span so the dimension reads the
-          // way the feature looks in this view; the LABEL is the true model
-          // distance along that same axis, so it is scale-independent.
-          const horizontal = Math.abs(p1[0] - p0[0]) >= Math.abs(p1[1] - p0[1]);
-          const m0 = projectPointForDrawing(model0, view);
-          const m1 = projectPointForDrawing(model1, view);
-          const measured = horizontal
-            ? Math.abs(m1[0] - m0[0])
-            : Math.abs(m1[1] - m0[1]);
-          const side = horizontal ? 'bottom' : 'right';
-          const dist = DIM_BASE + nextIndex(view, side) * DIM_STEP + extra;
-          const box = placement.box;
-          const dim: LinearDimension = horizontal
-            ? {
-                kind: 'horizontal',
-                from: [p0[0], p0[1]],
-                to: [p1[0], p1[1]],
-                linePos: box.y + box.h + dist,
-                label: a.text ? esc(a.text) : formatDimValue(measured),
-              }
-            : {
-                kind: 'vertical',
-                from: [p0[0], p0[1]],
-                to: [p1[0], p1[1]],
-                linePos: box.x + box.w + dist,
-                label: a.text ? esc(a.text) : formatDimValue(measured),
-              };
-          if (horizontal) {
-            bottomReserve[view] = Math.max(bottomReserve[view], dist);
-          } else {
-            rightReserve[view] = Math.max(rightReserve[view], dist);
-          }
-          if (a.tol !== undefined && !a.text) {
-            dim.label = `${dim.label}${tolText(a.tol)}`;
-          }
-          svg.push(dimensionToSvg(dim));
+          svg.push(linearAnnotationSvg(a, ctx));
           break;
         }
 
         case 'radius':
         case 'diameter': {
-          const edge = oneEdge(parts, a.edge, role);
-          const { center, radius } = circleOf(edge, role);
-          const value = a.kind === 'diameter' ? radius * 2 : radius;
-          const prefix = a.kind === 'diameter' ? '⌀' : 'R';
-          svg.push(
-            radialDimensionToSvg({
-              kind: a.kind,
-              center: toSheet(center),
-              // Model radius through the same scale as every other length.
-              radius: radius * scale,
-              angle: LEADER_BASE_ANGLE + nextIndex(view, 'leader') * LEADER_STEP_ANGLE,
-              label: a.text ? esc(a.text) : `${prefix}${formatDimValue(value)}`,
-              stemExtra: extra,
-            }),
-          );
+          svg.push(radialAnnotationSvg(a, ctx));
           break;
         }
 
         case 'angular': {
-          const eA = oneEdge(parts, a.from, `${role}.from`);
-          const eB = oneEdge(parts, a.to, `${role}.to`);
-          const ray = (e: Edge) => {
-            const s = e.startPoint;
-            const t = e.endPoint;
-            const p = projectPointForDrawing([s.x, s.y, s.z], view);
-            const q = projectPointForDrawing([t.x, t.y, t.z], view);
-            return { p, d: [q[0] - p[0], q[1] - p[1]] as const };
-          };
-          const A = ray(eA);
-          const B = ray(eB);
-          const det = A.d[0] * B.d[1] - A.d[1] * B.d[0];
-          if (Math.abs(det) < 1e-9) {
-            fail(`${role}: the two edges are parallel in view '${view}' — no apex to measure from`);
-          }
-          // Apex = intersection of the two infinite lines in model-2D, so it
-          // survives the scale change exactly like every other anchor.
-          const t = ((B.p[0] - A.p[0]) * B.d[1] - (B.p[1] - A.p[1]) * B.d[0]) / det;
-          const apex2: Pt2 = [A.p[0] + A.d[0] * t, A.p[1] + A.d[1] * t];
-          const apexSheet: Pt2 = [
-            placement.tx + apex2[0] * scale,
-            placement.ty - apex2[1] * scale,
-          ];
-          // Point each direction AWAY from the apex, toward its edge's far end,
-          // so the arc lands inside the physical corner rather than opposite it.
-          const away = (r: { p: readonly [number, number]; d: readonly [number, number] }) => {
-            const far = Math.hypot(r.p[0] - apex2[0], r.p[1] - apex2[1]) >
-              Math.hypot(r.p[0] + r.d[0] - apex2[0], r.p[1] + r.d[1] - apex2[1])
-              ? [-r.d[0], -r.d[1]]
-              : [r.d[0], r.d[1]];
-            // Sheet y is down: flip y so the drawn angle matches the sheet.
-            return Math.atan2(-far[1], far[0]);
-          };
-          const a0 = away(A);
-          let a1 = away(B);
-          // Normalise to the SHORT sweep — an angular dimension states the
-          // included angle, and the arc must agree with the number printed.
-          let sweep = a1 - a0;
-          while (sweep <= -Math.PI) sweep += 2 * Math.PI;
-          while (sweep > Math.PI) sweep -= 2 * Math.PI;
-          a1 = a0 + sweep;
-          const idx = nextIndex(view, 'arc');
-          svg.push(
-            angularDimensionToSvg({
-              apex: apexSheet,
-              startAngle: a0,
-              endAngle: a1,
-              radius: ANGULAR_RADIUS + idx * DIM_STEP + extra,
-              label: a.text ? esc(a.text) : `${formatDimValue(Math.abs(sweep) * 180 / Math.PI)}°`,
-            }),
-          );
+          svg.push(angularAnnotationSvg(a, ctx));
           break;
         }
 
         case 'note': {
-          const target = toSheet(resolveAnchor(parts, a.at, `${role}.at`));
-          svg.push(
-            leaderNoteToSvg({
-              target,
-              angle: LEADER_BASE_ANGLE + nextIndex(view, 'leader') * LEADER_STEP_ANGLE,
-              text: esc(a.text),
-              stemExtra: extra,
-            }),
-          );
+          svg.push(noteAnnotationSvg(a, ctx));
           break;
         }
 
         case 'hole': {
-          const edge = oneEdge(parts, a.edge, role);
-          const { center, radius } = circleOf(edge, role);
-          const label = a.text ? esc(a.text) : holeLabel(a, radius * 2, role);
-          svg.push(
-            radialDimensionToSvg({
-              kind: 'diameter',
-              center: toSheet(center),
-              radius: radius * scale,
-              angle: LEADER_BASE_ANGLE + nextIndex(view, 'leader') * LEADER_STEP_ANGLE,
-              label,
-              stemExtra: extra,
-            }),
-          );
+          svg.push(holeAnnotationSvg(a, ctx));
           break;
         }
 
         case 'fillet': {
-          const edge = oneEdge(parts, a.edge, role);
-          const { center, radius } = circleOf(edge, role);
-          const label = a.text ? esc(a.text) : `R${formatDimValue(radius)}`;
-          svg.push(
-            radialDimensionToSvg({
-              kind: 'radius',
-              center: toSheet(center),
-              radius: radius * scale,
-              angle: LEADER_BASE_ANGLE + nextIndex(view, 'leader') * LEADER_STEP_ANGLE,
-              label,
-              stemExtra: extra,
-            }),
-          );
+          svg.push(filletAnnotationSvg(a, ctx));
           break;
         }
 
         case 'chamfer': {
-          const edge = oneEdge(parts, a.edge, role);
-          const target = toSheet(edgeMid(edge));
-          const angleDeg = a.angleDeg ?? 45;
-          const label = a.text
-            ? esc(a.text)
-            : `${formatDimValue(a.size)} × ${formatDimValue(angleDeg)}°`;
-          svg.push(
-            leaderNoteToSvg({
-              target,
-              angle: LEADER_BASE_ANGLE + nextIndex(view, 'leader') * LEADER_STEP_ANGLE,
-              text: label,
-              stemExtra: extra,
-            }),
-          );
+          svg.push(chamferAnnotationSvg(a, ctx));
           break;
         }
 
         case 'datum': {
-          const faceMatch = oneFaceCoded(parts, a.face, role, 'drawing.datum.unresolved');
-          const c = faceMatch.center;
-          const target = toSheet([c.x, c.y, c.z]);
-          svg.push(
-            datumSymbolToSvg(
-              target,
-              LEADER_BASE_ANGLE + nextIndex(view, 'leader') * LEADER_STEP_ANGLE,
-              a.label,
-              extra,
-            ),
-          );
+          svg.push(datumAnnotationSvg(a, ctx));
           break;
         }
 
         case 'fcf': {
-          if ((a.edge === undefined) === (a.face === undefined)) {
-            fail(`${role}: an 'fcf' annotation needs exactly one of 'edge' or 'face'`);
-          }
-          const anchor: Vec3 = a.edge
-            ? edgeMid(oneEdgeCoded(parts, a.edge, role, 'drawing.tolerance.feature-unresolved'))
-            : (() => {
-                const fc = oneFaceCoded(parts, a.face as FaceQuery, role, 'drawing.tolerance.feature-unresolved').center;
-                return [fc.x, fc.y, fc.z] as Vec3;
-              })();
-          const target = toSheet(anchor);
-          const cells = fcfCells(a);
-          svg.push(
-            fcfToSvg(
-              target,
-              LEADER_BASE_ANGLE + nextIndex(view, 'leader') * LEADER_STEP_ANGLE,
-              cells,
-              extra,
-              ` data-kc-fcf="${escAttr(cells.join(' '))}"`,
-            ),
-          );
+          svg.push(fcfAnnotationSvg(a, ctx));
           break;
         }
       }

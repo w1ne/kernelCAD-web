@@ -82,31 +82,13 @@ function weightedMedian(values: number[], weights: number[]): number {
   return values[idx[idx.length - 1]];
 }
 
-/**
- * Measure constant-radius blends on sharp edges.
- *
- * `points` are surface sample points of the input mesh (flat xyz) in the same
- * frame as `edges`. `depthTol` is the depth below both faces a point needs to
- * count as off the sharp surface; `maxRadius` bounds the search.
- */
-export function detectEdgeBlends(
-  points: Float64Array,
-  weights: Float64Array,
-  edges: SharpEdge[],
-  depthTol: number,
-  maxRadius: number,
-): BlendDetection {
-  const pointCount = points.length / 3;
-  const bestDist = new Float64Array(pointCount).fill(Infinity);
-  const bestEdge = new Int32Array(pointCount).fill(-1);
-  const bestSeg = new Int32Array(pointCount);
-  const bestU = new Float64Array(pointCount);
+const hash = (ix: number, iy: number, iz: number) => ((ix * 73856093) ^ (iy * 19349663) ^ (iz * 83492791)) | 0;
 
-  // Uniform grid over the edge polyline segments; each point looks up the
-  // segments in its own and neighbouring cells (cell = maxRadius), so the cost
-  // is points × nearby segments instead of points × all edge samples.
-  const cell = Math.max(maxRadius, 1e-3);
-  const hash = (ix: number, iy: number, iz: number) => ((ix * 73856093) ^ (iy * 19349663) ^ (iz * 83492791)) | 0;
+function buildSegmentGrid(edges: SharpEdge[], cell: number): {
+  segGrid: Map<number, number[]>;
+  segEdge: number[];
+  segIndex: number[];
+} {
   const segGrid = new Map<number, number[]>();
   const segEdge: number[] = [];
   const segIndex: number[] = [];
@@ -131,6 +113,22 @@ export function detectEdgeBlends(
       }
     }
   });
+  return { segGrid, segEdge, segIndex };
+}
+
+function nearestEdgeSegments(
+  points: Float64Array,
+  pointCount: number,
+  edges: SharpEdge[],
+  cell: number,
+  segGrid: Map<number, number[]>,
+  segEdge: number[],
+  segIndex: number[],
+): { bestDist: Float64Array; bestEdge: Int32Array; bestSeg: Int32Array; bestU: Float64Array } {
+  const bestDist = new Float64Array(pointCount).fill(Infinity);
+  const bestEdge = new Int32Array(pointCount).fill(-1);
+  const bestSeg = new Int32Array(pointCount);
+  const bestU = new Float64Array(pointCount);
   const seen = new Int32Array(segEdge.length).fill(-1);
   for (let pi = 0; pi < pointCount; pi++) {
     const px = points[pi * 3], py = points[pi * 3 + 1], pz = points[pi * 3 + 2];
@@ -163,9 +161,10 @@ export function detectEdgeBlends(
       }
     }
   }
+  return { bestDist, bestEdge, bestSeg, bestU };
+}
 
-  // Per-edge radius estimates.
-  const perEdge = new Map<number, Array<{ r: number; arc: number; w: number }>>();
+function edgeArcLengths(edges: SharpEdge[]): { lengths: number[]; cumulative: number[][] } {
   const lengths = edges.map((e) => {
     let L = 0;
     for (let k = 0; k + 1 < e.samples.length; k++) {
@@ -182,6 +181,24 @@ export function detectEdgeBlends(
     }
     return c;
   });
+  return { lengths, cumulative };
+}
+
+function collectRadiusEstimates(
+  points: Float64Array,
+  weights: Float64Array,
+  edges: SharpEdge[],
+  pointCount: number,
+  bestDist: Float64Array,
+  bestEdge: Int32Array,
+  bestSeg: Int32Array,
+  bestU: Float64Array,
+  depthTol: number,
+  maxRadius: number,
+  cumulative: number[][],
+): Map<number, Array<{ r: number; arc: number; w: number }>> {
+  // Per-edge radius estimates.
+  const perEdge = new Map<number, Array<{ r: number; arc: number; w: number }>>();
   for (let pi = 0; pi < pointCount; pi++) {
     const ei = bestEdge[pi];
     if (ei < 0 || bestDist[pi] > maxRadius) continue;
@@ -228,7 +245,15 @@ export function detectEdgeBlends(
     if (list) list.push({ r, arc, w });
     else perEdge.set(ei, [{ r, arc, w }]);
   }
+  return perEdge;
+}
 
+function classifyBlendEstimates(
+  edges: SharpEdge[],
+  perEdge: Map<number, Array<{ r: number; arc: number; w: number }>>,
+  lengths: number[],
+  depthTol: number,
+): BlendDetection {
   const blends: EdgeBlend[] = [];
   const rejected: RejectedBlend[] = [];
   for (const [ei, estimates] of perEdge) {
@@ -270,6 +295,34 @@ export function detectEdgeBlends(
     }
     blends.push({ edge: ei, measuredRadius: rMed, spread, count: usable.length });
   }
+  return { blends, rejected };
+}
+
+/**
+ * Measure constant-radius blends on sharp edges.
+ *
+ * `points` are surface sample points of the input mesh (flat xyz) in the same
+ * frame as `edges`. `depthTol` is the depth below both faces a point needs to
+ * count as off the sharp surface; `maxRadius` bounds the search.
+ */
+export function detectEdgeBlends(
+  points: Float64Array,
+  weights: Float64Array,
+  edges: SharpEdge[],
+  depthTol: number,
+  maxRadius: number,
+): BlendDetection {
+  const pointCount = points.length / 3;
+
+  // Uniform grid over the edge polyline segments; each point looks up the
+  // segments in its own and neighbouring cells (cell = maxRadius), so the cost
+  // is points × nearby segments instead of points × all edge samples.
+  const cell = Math.max(maxRadius, 1e-3);
+  const { segGrid, segEdge, segIndex } = buildSegmentGrid(edges, cell);
+  const { bestDist, bestEdge, bestSeg, bestU } = nearestEdgeSegments(points, pointCount, edges, cell, segGrid, segEdge, segIndex);
+  const { lengths, cumulative } = edgeArcLengths(edges);
+  const perEdge = collectRadiusEstimates(points, weights, edges, pointCount, bestDist, bestEdge, bestSeg, bestU, depthTol, maxRadius, cumulative);
+  const { blends, rejected } = classifyBlendEstimates(edges, perEdge, lengths, depthTol);
   blends.sort((a, b) => a.edge - b.edge);
   rejected.sort((a, b) => a.edge - b.edge);
   return { blends, rejected };
