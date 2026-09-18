@@ -154,6 +154,58 @@ export function attachTextures(
   }
 }
 
+function resolveBaseColor(pbr: PBRMaterial | undefined): number | string {
+  const baseColor = pbr?.baseColor ?? DEFAULT_MESH_COLOR;
+  const resolved: number | string =
+    resolveColor(typeof baseColor === 'string' ? baseColor : undefined) ??
+    DEFAULT_MESH_COLOR;
+  return resolved;
+}
+
+/** Attenuation color: resolveColor returns a hex string or null; default to
+ *  pure white so neutral glass doesn't tint the transmission. */
+function resolveAttenuationColor(pbr: PBRMaterial | undefined): string {
+  return pbr?.attenuationColor !== undefined
+    ? resolveColor(pbr.attenuationColor) ?? '#ffffff'
+    : '#ffffff';
+}
+
+function resolveSurfaceOptions(
+  pbr: PBRMaterial | undefined,
+): THREE.MeshPhysicalMaterialParameters {
+  return {
+    metalness: pbr?.metalness ?? 0,
+    roughness: pbr?.roughness ?? 0.5,
+    clearcoat: pbr?.clearcoat ?? 0,
+    clearcoatRoughness: pbr?.clearcoatRoughness ?? 0.03,
+    ior: pbr?.ior ?? 1.5,
+    sheen: pbr?.sheen ?? 0,
+  };
+}
+
+function resolveTransparencyOptions(
+  pbr: PBRMaterial | undefined,
+): THREE.MeshPhysicalMaterialParameters {
+  return {
+    opacity: pbr?.opacity ?? 1,
+    transparent: (pbr?.opacity ?? 1) < 1 || (pbr?.transmission ?? 0) > 0,
+    transmission: pbr?.transmission ?? 0,
+  };
+}
+
+function resolveVolumeOptions(
+  pbr: PBRMaterial | undefined,
+  attenuationColorResolved: string,
+): THREE.MeshPhysicalMaterialParameters {
+  return {
+    thickness: pbr?.thickness ?? 0,
+    attenuationColor: new THREE.Color(attenuationColorResolved),
+    attenuationDistance: pbr?.attenuationDistance ?? Infinity,
+    anisotropy: pbr?.anisotropy ?? 0,
+    anisotropyRotation: ((pbr?.anisotropyRotation ?? 0) * Math.PI) / 180,
+  };
+}
+
 /**
  * Construct a MeshPhysicalMaterial from a full PBR record. All optional PBR
  * fields default to physically neutral values so the output is always a valid
@@ -170,34 +222,14 @@ export function attachTextures(
  * reference-image hook in `DemoPlayerPage.tsx`.
  */
 export function buildMaterialFromPBR(pbr: PBRMaterial | undefined): THREE.Material {
-  const baseColor = pbr?.baseColor ?? DEFAULT_MESH_COLOR;
-  const resolved: number | string =
-    resolveColor(typeof baseColor === 'string' ? baseColor : undefined) ??
-    DEFAULT_MESH_COLOR;
-
-  // Attenuation color: resolveColor returns a hex string or null; default to
-  // pure white so neutral glass doesn't tint the transmission.
-  const attenuationColorResolved =
-    pbr?.attenuationColor !== undefined
-      ? resolveColor(pbr.attenuationColor) ?? '#ffffff'
-      : '#ffffff';
+  const resolved = resolveBaseColor(pbr);
+  const attenuationColorResolved = resolveAttenuationColor(pbr);
 
   const material = new THREE.MeshPhysicalMaterial({
     color: resolved,
-    metalness: pbr?.metalness ?? 0,
-    roughness: pbr?.roughness ?? 0.5,
-    clearcoat: pbr?.clearcoat ?? 0,
-    clearcoatRoughness: pbr?.clearcoatRoughness ?? 0.03,
-    ior: pbr?.ior ?? 1.5,
-    transmission: pbr?.transmission ?? 0,
-    sheen: pbr?.sheen ?? 0,
-    opacity: pbr?.opacity ?? 1,
-    transparent: (pbr?.opacity ?? 1) < 1 || (pbr?.transmission ?? 0) > 0,
-    thickness: pbr?.thickness ?? 0,
-    attenuationColor: new THREE.Color(attenuationColorResolved),
-    attenuationDistance: pbr?.attenuationDistance ?? Infinity,
-    anisotropy: pbr?.anisotropy ?? 0,
-    anisotropyRotation: ((pbr?.anisotropyRotation ?? 0) * Math.PI) / 180,
+    ...resolveSurfaceOptions(pbr),
+    ...resolveTransparencyOptions(pbr),
+    ...resolveVolumeOptions(pbr, attenuationColorResolved),
   });
   material.userData.authoredOpacity = pbr?.opacity ?? 1;
 

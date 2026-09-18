@@ -53,6 +53,83 @@ REVIEW GUIDELINES:
 - Legacy-correct: \`shape1.intersect(other)\` (Intersection)
 `;
 
+interface ApiContentItem {
+    type: string;
+    text?: string;
+    image_url?: { url: string };
+}
+
+function buildSystemPrompt(context?: { code?: string; selectedId?: string; style?: string }): string {
+    let systemPromptWithContext = SYSTEM_PROMPT;
+
+    // Inject Style Guidelines
+    if (context?.style && context.style !== 'Standard') {
+        systemPromptWithContext += `\nDESIGN STYLE: ${context.style}\n`;
+        if (context.style === 'Industrial') {
+            systemPromptWithContext += `GUIDELINES: Use robust proportions, visible chamfers (e.g., makeChamfer), and functional aesthetics. Avoid fragile geometry.\n`;
+        } else if (context.style === 'Minimalist') {
+            systemPromptWithContext += `GUIDELINES: Use smooth continuous surfaces, large fillet radii (e.g., makeFillet), and hide unnecessary details. Aim for "Apple-like" aesthetics.\n`;
+        } else if (context.style === 'Organic') {
+            systemPromptWithContext += `GUIDELINES: Avoid sharp corners. Use lofts and sweeps where possible to create curvy, biological forms.\n`;
+        }
+    }
+
+    // Inject Workbench Context
+    if (context) {
+        systemPromptWithContext += `\nCURRENT WORKBENCH STATE:\n`;
+        if (context.selectedId) {
+            systemPromptWithContext += `- User has SELECTED object with ID: "${context.selectedId}"\n`;
+        }
+        if (context.code) {
+            systemPromptWithContext += `- Current Code in Editor:\n\`\`\`typescript\n${context.code}\n\`\`\`\n`;
+            systemPromptWithContext += `(When generating code, you can reference existing variables if they are in scope, or suggest edits.)\n`;
+        }
+    }
+
+    return systemPromptWithContext;
+}
+
+function buildApiMessages(
+    history: ChatMessage[],
+    context: { image?: string } | undefined,
+    systemPromptWithContext: string,
+): { role: string; content: string | ApiContentItem[] }[] {
+    const apiMessages: { role: string; content: string | ApiContentItem[] }[] = [
+        { role: 'system', content: systemPromptWithContext },
+        ...history.map(m => ({ role: m.role === 'model' ? 'assistant' : 'user', content: m.content }))
+    ];
+
+    // If context has image, append it to the last user message or create a new one
+    if (context?.image) {
+        // Find last user message (compatible with older ES versions)
+        let lastUserMsgIndex = -1;
+        for (let i = apiMessages.length - 1; i >= 0; i--) {
+            if (apiMessages[i].role === 'user') {
+                lastUserMsgIndex = i;
+                break;
+            }
+        }
+
+        if (lastUserMsgIndex !== -1) {
+            const existingContent = apiMessages[lastUserMsgIndex].content;
+            apiMessages[lastUserMsgIndex].content = [
+                { type: "text", text: typeof existingContent === 'string' ? existingContent : "" },
+                { type: "image_url", image_url: { url: context.image } }
+            ];
+        } else {
+            apiMessages.push({
+                role: 'user',
+                content: [
+                    { type: "text", text: "Analyze this image and generate editable .kcad.ts source." },
+                    { type: "image_url", image_url: { url: context.image } }
+                ]
+            });
+        }
+    }
+
+    return apiMessages;
+}
+
 export class LLMService {
     private apiKey: string | null = null;
     private static STORAGE_KEY = 'kernelcad_llm_api_key';
@@ -90,7 +167,7 @@ export class LLMService {
         return errors;
     }
 
-    async sendMessage(history: ChatMessage[], context?: { code?: string; selectedId?: string; style?: string; image?: string }): Promise<string> {
+    private resolveApiKey(): string {
         // Use stored key or env variable
         let apiKey = this.apiKey;
         if (!apiKey && typeof import.meta !== 'undefined' && import.meta.env) {
@@ -101,74 +178,14 @@ export class LLMService {
             throw new Error("API Key is missing. Please configure it in the AI settings or .env file.");
         }
 
-        let systemPromptWithContext = SYSTEM_PROMPT;
+        return apiKey;
+    }
 
-        // Inject Style Guidelines
-        if (context?.style && context.style !== 'Standard') {
-            systemPromptWithContext += `\nDESIGN STYLE: ${context.style}\n`;
-            if (context.style === 'Industrial') {
-                systemPromptWithContext += `GUIDELINES: Use robust proportions, visible chamfers (e.g., makeChamfer), and functional aesthetics. Avoid fragile geometry.\n`;
-            } else if (context.style === 'Minimalist') {
-                systemPromptWithContext += `GUIDELINES: Use smooth continuous surfaces, large fillet radii (e.g., makeFillet), and hide unnecessary details. Aim for "Apple-like" aesthetics.\n`;
-            } else if (context.style === 'Organic') {
-                systemPromptWithContext += `GUIDELINES: Avoid sharp corners. Use lofts and sweeps where possible to create curvy, biological forms.\n`;
-            }
-        }
-
-        // Inject Workbench Context
-        if (context) {
-            systemPromptWithContext += `\nCURRENT WORKBENCH STATE:\n`;
-            if (context.selectedId) {
-                systemPromptWithContext += `- User has SELECTED object with ID: "${context.selectedId}"\n`;
-            }
-            if (context.code) {
-                systemPromptWithContext += `- Current Code in Editor:\n\`\`\`typescript\n${context.code}\n\`\`\`\n`;
-                systemPromptWithContext += `(When generating code, you can reference existing variables if they are in scope, or suggest edits.)\n`;
-            }
-        }
-
-        interface ApiContentItem {
-            type: string;
-            text?: string;
-            image_url?: { url: string };
-        }
-
-        const apiMessages: { role: string; content: string | ApiContentItem[] }[] = [
-            { role: 'system', content: systemPromptWithContext },
-            ...history.map(m => ({ role: m.role === 'model' ? 'assistant' : 'user', content: m.content }))
-        ];
-
-        // If context has image, append it to the last user message or create a new one
-        if (context?.image) {
-            // Find last user message (compatible with older ES versions)
-            let lastUserMsgIndex = -1;
-            for (let i = apiMessages.length - 1; i >= 0; i--) {
-                if (apiMessages[i].role === 'user') {
-                    lastUserMsgIndex = i;
-                    break;
-                }
-            }
-
-            if (lastUserMsgIndex !== -1) {
-                const existingContent = apiMessages[lastUserMsgIndex].content;
-                apiMessages[lastUserMsgIndex].content = [
-                    { type: "text", text: typeof existingContent === 'string' ? existingContent : "" },
-                    { type: "image_url", image_url: { url: context.image } }
-                ];
-            } else {
-                apiMessages.push({
-                    role: 'user',
-                    content: [
-                        { type: "text", text: "Analyze this image and generate editable .kcad.ts source." },
-                        { type: "image_url", image_url: { url: context.image } }
-                    ]
-                });
-            }
-        }
-
-        // Select Model
-        const model = context?.image ? "grok-2-vision-1212" : "grok-4-1-fast-reasoning";
-
+    private async requestCompletion(
+        apiKey: string,
+        apiMessages: { role: string; content: string | ApiContentItem[] }[],
+        model: string,
+    ): Promise<string> {
         try {
             const response = await fetch('https://api.x.ai/v1/chat/completions', {
                 method: 'POST',
@@ -209,6 +226,17 @@ export class LLMService {
             console.error("LLM Error:", message);
             throw new Error(`LLM Request Failed: ${message}`);
         }
+    }
+
+    async sendMessage(history: ChatMessage[], context?: { code?: string; selectedId?: string; style?: string; image?: string }): Promise<string> {
+        const apiKey = this.resolveApiKey();
+        const systemPromptWithContext = buildSystemPrompt(context);
+        const apiMessages = buildApiMessages(history, context, systemPromptWithContext);
+
+        // Select Model
+        const model = context?.image ? "grok-2-vision-1212" : "grok-4-1-fast-reasoning";
+
+        return this.requestCompletion(apiKey, apiMessages, model);
     }
 
     async generateVariations(prompt: string, context?: { code?: string; style?: string }): Promise<Array<{ name: string; code: string; description: string; }>> {
