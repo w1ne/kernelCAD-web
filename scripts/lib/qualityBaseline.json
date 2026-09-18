@@ -265,13 +265,7 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/plan.ts",
-    "symbol": "Function 'buildPlan'",
-    "value": 93
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/reconstruct/plan.ts",
+    "file": "src/agent/reconstruct/planPhases.ts",
     "symbol": "Function 'decomposeRun'",
     "value": 35
   },
@@ -961,12 +955,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/agent/reconstruct/plan.ts",
-    "symbol": "Function 'buildPlan'",
-    "value": 567
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/agent/reconstruct/reconstruct.ts",
     "symbol": "Async function 'reconstructFromSoup'",
     "value": 221
@@ -1261,9 +1249,9 @@
   },
   {
     "rule": "max-lines",
-    "file": "src/agent/reconstruct/plan.ts",
+    "file": "src/agent/reconstruct/planPhases.ts",
     "symbol": "(file)",
-    "value": 1044
+    "value": 1002
   },
   {
     "rule": "max-lines",
