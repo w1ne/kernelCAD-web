@@ -3,10 +3,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AnimationViewMetadata } from '../../../shared/intent/animationViewRecord';
 import { sampleTrackAt } from '../../../modeling/animation/animationSampler';
-import type { ParamEdit, UpdateParamFn } from '../../hooks/useParamUpdate';
+import type { UpdateParamFn } from '../../hooks/useParamUpdate';
 import type { BakedTimeline, BakedCollision } from './bakeInterpolation';
-import { sampleBakedTransforms } from './bakeInterpolation';
 import { fetchAnimationBake, type BakeFetcher } from './fetchAnimationBake';
+import {
+    applyBakedPose,
+    applyKernelEpochBump,
+    bakeTimelineKey,
+    ensureBakedTimeline,
+    resetBakeCache,
+    sampleTrackBatch,
+    syncKernelPose,
+} from './animationPlaybackBake';
 
 /** Playback loop behaviour at the end of the timeline. */
 export type PlaybackMode = 'once' | 'loop' | 'reciprocate';
@@ -273,28 +281,13 @@ export function useAnimationPlayback(
     // mis-credited as self. See the I3-race test.
     const settledSelfCreditsRef = useRef(0);
 
-    const bakeKey = useMemo(() => {
-        if (!metadata || !bakeSourceKey) return null;
-        // Identity of the timeline that matters for the baked poses: source key
-        // (session token or static gallery key) + per-track keyframes + fps.
-        // Stable across re-renders that don't change the timeline.
-        return JSON.stringify({
-            token: bakeSourceKey,
-            fps: metadata.fps,
-            tracks: metadata.tracks.map((t) => ({
-                p: t.param,
-                k: t.keys.map((k) => [k.atMs, k.value, k.ease]),
-            })),
-        });
-    }, [metadata, bakeSourceKey]);
+    const bakeKey = useMemo(
+        () => bakeTimelineKey(metadata, bakeSourceKey),
+        [metadata, bakeSourceKey],
+    );
 
     const invalidateBake = useCallback(() => {
-        bakeRef.current = null;
-        bakeInFlightRef.current = null;
-        setBakeState('idle');
-        setBakeFrames(0);
-        setBakeError(null);
-        setCollisions([]);
+        resetBakeCache(bakeRef, bakeInFlightRef, setBakeState, setBakeFrames, setBakeError, setCollisions);
     }, []);
 
     // Invalidate the cached bake when the timeline identity changes (script
@@ -323,104 +316,42 @@ export function useAnimationPlayback(
     // a redundant re-bake (when a credit settles a beat after its bump); a stale
     // serve is impossible.
     useEffect(() => {
-        if (kernelEpoch === epochRef.current) return;
-        const delta = kernelEpoch - epochRef.current;
-        epochRef.current = kernelEpoch;
-        if (delta <= 0) return; // epoch is monotonic; ignore non-advances
-        const credits = settledSelfCreditsRef.current;
-        if (delta <= credits) {
-            // Every bump in this advance is covered by a settled self-credit.
-            settledSelfCreditsRef.current = credits - delta;
-            return;
-        }
-        // At least one bump has no settled credit → a foreign edit is present.
-        // Invalidate and discard ALL remaining credits (a foreign edit poisons
-        // the whole bake; surviving credits would only risk a future false
-        // cache-hit).
-        settledSelfCreditsRef.current = 0;
-        invalidateBake();
+        applyKernelEpochBump(kernelEpoch, epochRef, settledSelfCreditsRef, invalidateBake);
     }, [kernelEpoch, invalidateBake]);
 
     // Fetch (or reuse) the bake for the current key. Single-flight: a second
     // caller while a fetch is pending awaits the same promise.
-    const ensureBake = useCallback(async (): Promise<BakedTimeline | null> => {
+    const ensureBake = useCallback((): Promise<BakedTimeline | null> => ensureBakedTimeline({
         // Live session token, or the gallery static-bake key. The injected
         // bakeFetcher interprets it (session POST vs static-file GET).
-        const token = sessionToken ?? staticBakeKey ?? null;
-        if (!token || !applyRef.current || !metaRef.current) return null;
-        if (bakeRef.current) return bakeRef.current;
-        if (bakeInFlightRef.current) return bakeInFlightRef.current;
-        setBakeState('baking');
-        setBakeError(null);
-        const promise = (async () => {
-            try {
-                const baked = await bakeFetcherRef.current(token);
-                // A completed bake restores the pre-bake pose with ONE trailing
-                // (non-silent) relower — a self-edit that must not invalidate
-                // this very bake. The fetch has resolved, so that relower has
-                // already been emitted on the SSE stream: register a SETTLED
-                // self-credit BEFORE storing the result so the epoch bump that
-                // follows is matched, not acted on.
-                settledSelfCreditsRef.current += 1;
-                if (!mountedRef.current) return null;
-                bakeRef.current = baked;
-                setBakeFrames(baked.frames);
-                setCollisions(baked.collisions ?? []);
-                setBakeState('ready');
-                return baked;
-            } catch (err) {
-                if (!mountedRef.current) return null;
-                setBakeState('error');
-                setBakeError(err instanceof Error ? err.message : String(err));
-                return null;
-            } finally {
-                bakeInFlightRef.current = null;
-            }
-        })();
-        bakeInFlightRef.current = promise;
-        return promise;
-    }, [sessionToken, staticBakeKey]);
+        token: sessionToken ?? staticBakeKey ?? null,
+        bakeFetcherRef,
+        bakeRef,
+        bakeInFlightRef,
+        settledSelfCreditsRef,
+        mountedRef,
+        applyRef,
+        metaRef,
+        setBakeState,
+        setBakeError,
+        setBakeFrames,
+        setCollisions,
+    }), [sessionToken, staticBakeKey]);
 
     // Sample every track at `at` → one param-edit batch (for the pause-sync
     // and the readout). Pure; no I/O.
-    const sampleBatch = useCallback((at: number): ParamEdit[] => {
-        const meta = metaRef.current;
-        if (!meta) return [];
-        return meta.tracks.map((track) => ({ name: track.param, value: sampleTrackAt(track, at) }));
-    }, []);
+    const sampleBatch = useCallback((at: number) => sampleTrackBatch(metaRef, at), []);
 
     // Apply the baked pose at `at` directly to the viewport part groups. No
     // kernel round-trip. No-op when no bake/apply path is available.
     const applyBakedAt = useCallback((at: number) => {
-        const baked = bakeRef.current;
-        const apply = applyRef.current;
-        if (!baked || !apply) return;
-        const transforms = sampleBakedTransforms(baked, at);
-        for (const [partName, matrix] of Object.entries(transforms)) {
-            apply(partName, matrix);
-        }
+        applyBakedPose(bakeRef, applyRef, at);
     }, []);
 
     // State coherence: push ONE param batch so the kernel/session pose matches
     // the displayed frame. Called on pause/stop and scrub — NOT per tick.
     const syncKernelTo = useCallback((at: number) => {
-        const fn = updateRef.current;
-        if (!fn) return;
-        const batch = sampleBatch(at);
-        if (batch.length === 0) return;
-        // This is a player-originated kernel write — it relowers ONE (the
-        // displayed pose) and bumps the kernel epoch. Register the self-credit
-        // ONLY once the write SETTLES (the promise resolves), never optimistically
-        // at issue time: until the server has processed the write its relower has
-        // not been emitted, so a FOREIGN relower interleaving in that window must
-        // invalidate (bias-to-rebake) rather than be swallowed by a phantom
-        // credit. On failure no relower fired, so no credit is registered.
-        fn(batch).then(
-            () => { settledSelfCreditsRef.current += 1; },
-            (err: unknown) => {
-                console.warn('[AnimationTab] pause-sync updateParam failed', err, batch);
-            },
-        );
+        syncKernelPose(updateRef, settledSelfCreditsRef, sampleBatch, at);
     }, [sampleBatch]);
 
     // --- rAF clock (absolute wall-time anchoring) -----------------------------

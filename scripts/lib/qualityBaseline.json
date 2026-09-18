@@ -1137,7 +1137,7 @@
     "rule": "max-lines-per-function",
     "file": "src/studio/components/animation/useAnimationPlayback.ts",
     "symbol": "Function 'useAnimationPlayback'",
-    "value": 297
+    "value": 241
   },
   {
     "rule": "max-lines-per-function",
