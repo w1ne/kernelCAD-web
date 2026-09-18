@@ -205,21 +205,23 @@ function parsePose(raw: string): { az: number; el: number } | undefined {
   return { az, el };
 }
 
-export async function renderPreviewTool(
-  input: RenderPreviewInput,
-  deps: RenderPreviewDeps = realDeps,
-): Promise<RenderPreviewOutput> {
+function resolvePreviewSource(input: RenderPreviewInput):
+  | { ok: true; hasCode: boolean; views: RenderView[] }
+  | { ok: false; result: RenderPreviewOutput } {
   // --- Input validation: every refusal carries a registry code + hint. ---
   const hasCode = typeof input.code === 'string' && input.code.length > 0;
   const hasFile = typeof input.file === 'string' && input.file.length > 0;
   if (hasCode === hasFile) {
-    return refusal(
-      'cli.invalid-args',
-      hasCode
-        ? 'render_preview: code and file are mutually exclusive — pass exactly one.'
-        : 'render_preview: pass { code } (inline script source) or { file } (path to a .kcad.ts script).',
-      'Provide exactly one of { code } or { file }.',
-    );
+    return {
+      ok: false,
+      result: refusal(
+        'cli.invalid-args',
+        hasCode
+          ? 'render_preview: code and file are mutually exclusive — pass exactly one.'
+          : 'render_preview: pass { code } (inline script source) or { file } (path to a .kcad.ts script).',
+        'Provide exactly one of { code } or { file }.',
+      ),
+    };
   }
 
   let views: RenderView[];
@@ -228,27 +230,43 @@ export async function renderPreviewTool(
   } else {
     const invalid = input.views.filter(v => !(ALL_VIEWS as readonly string[]).includes(v));
     if (invalid.length > 0) {
-      return refusal(
-        'cli.invalid-args',
-        `render_preview: unknown view(s): ${invalid.join(', ')}. Valid views: ${ALL_VIEWS.join(', ')}.`,
-        "Pass views as a subset of ['front', 'right', 'top', 'iso'], or omit it for all four.",
-      );
+      return {
+        ok: false,
+        result: refusal(
+          'cli.invalid-args',
+          `render_preview: unknown view(s): ${invalid.join(', ')}. Valid views: ${ALL_VIEWS.join(', ')}.`,
+          "Pass views as a subset of ['front', 'right', 'top', 'iso'], or omit it for all four.",
+        ),
+      };
     }
     views = [...new Set(input.views)] as RenderView[];
   }
+  return { ok: true, hasCode, views };
+}
 
+function resolvePreviewCamera(input: RenderPreviewInput):
+  | { ok: true; pose: { az: number; el: number } | undefined }
+  | { ok: false; result: RenderPreviewOutput } {
   let pose: { az: number; el: number } | undefined;
   if (input.pose !== undefined) {
     pose = parsePose(input.pose);
     if (pose === undefined) {
-      return refusal(
-        'cli.invalid-args',
-        `render_preview: invalid pose '${input.pose}' (expected '<az>,<el>' in degrees, e.g. '30,20').`,
-        "Pass pose as '<az>,<el>' degrees, e.g. pose: '30,20'.",
-      );
+      return {
+        ok: false,
+        result: refusal(
+          'cli.invalid-args',
+          `render_preview: invalid pose '${input.pose}' (expected '<az>,<el>' in degrees, e.g. '30,20').`,
+          "Pass pose as '<az>,<el>' degrees, e.g. pose: '30,20'.",
+        ),
+      };
     }
   }
+  return { ok: true, pose };
+}
 
+function resolvePreviewFilter(input: RenderPreviewInput):
+  | { ok: true; objectFilter: ReturnType<typeof buildObjectFilter> }
+  | { ok: false; result: RenderPreviewOutput } {
   let objectFilter;
   try {
     objectFilter = buildObjectFilter({
@@ -256,23 +274,44 @@ export async function renderPreviewTool(
       ...(input.hide !== undefined ? { hide: input.hide } : {}),
     });
   } catch (e) {
-    return refusal(
-      'cli.invalid-args',
-      e instanceof Error ? e.message.replace(/^render: /, 'render_preview: ') : String(e),
-      'Pass only focus OR hide, not both.',
-    );
+    return {
+      ok: false,
+      result: refusal(
+        'cli.invalid-args',
+        e instanceof Error ? e.message.replace(/^render: /, 'render_preview: ') : String(e),
+        'Pass only focus OR hide, not both.',
+      ),
+    };
   }
+  return { ok: true, objectFilter };
+}
 
+function resolvePreviewDimensions(input: RenderPreviewInput):
+  | { ok: true; width: number; height: number }
+  | { ok: false; result: RenderPreviewOutput } {
   const width = input.width ?? 768;
   const height = input.height ?? 768;
   if (!Number.isInteger(width) || !Number.isInteger(height) || width < 64 || height < 64 || width > 2048 || height > 2048) {
-    return refusal(
-      'cli.invalid-args',
-      `render_preview: width/height must be integers in [64, 2048] (got ${width}×${height}).`,
-      'Pass width and height between 64 and 2048 pixels, or omit them for the 768×768 default.',
-    );
+    return {
+      ok: false,
+      result: refusal(
+        'cli.invalid-args',
+        `render_preview: width/height must be integers in [64, 2048] (got ${width}×${height}).`,
+        'Pass width and height between 64 and 2048 pixels, or omit them for the 768×768 default.',
+      ),
+    };
   }
+  return { ok: true, width, height };
+}
 
+function resolvePreviewGeometry(input: RenderPreviewInput):
+  | {
+      ok: true;
+      explode: ParsedExplode | undefined;
+      section: { axis: 'x' | 'y' | 'z'; position: number; positionRaw: string; flip: boolean } | undefined;
+      overlay: SurfaceQualityOverlay | undefined;
+    }
+  | { ok: false; result: RenderPreviewOutput } {
   // Section plane: reuse the CLI's parseSectionFlag so positionRaw carries the
   // digits verbatim (stringifying the Number would emit exponent notation the
   // page-side `?section=` regex silently rejects → an unclipped render).
@@ -280,11 +319,14 @@ export async function renderPreviewTool(
   if (input.explode !== undefined) {
     const parsed = parseExplodeInput(input.explode);
     if (!parsed.ok) {
-      return refusal(
-        'cli.invalid-args',
-        `render_preview: ${parsed.message}`,
-        "Pass explode as { factor: <number ≥ 0>, mode?: 'radial'|'mate-axis' }.",
-      );
+      return {
+        ok: false,
+        result: refusal(
+          'cli.invalid-args',
+          `render_preview: ${parsed.message}`,
+          "Pass explode as { factor: <number ≥ 0>, mode?: 'radial'|'mate-axis' }.",
+        ),
+      };
     }
     explode = parsed.value;
   }
@@ -295,26 +337,36 @@ export async function renderPreviewTool(
       const parsed = parseSectionFlag(`${input.section.axis}=${input.section.position}`);
       section = { ...parsed, flip: input.section.flip ?? false };
     } catch {
-      return refusal(
-        'cli.invalid-args',
-        `render_preview: invalid section ${JSON.stringify(input.section)} — axis must be 'x', 'y', or 'z' and position a finite decimal.`,
-        "Pass section as { axis: 'x'|'y'|'z', position: <number>, flip?: boolean }, e.g. { axis: 'z', position: 10 }.",
-      );
+      return {
+        ok: false,
+        result: refusal(
+          'cli.invalid-args',
+          `render_preview: invalid section ${JSON.stringify(input.section)} — axis must be 'x', 'y', or 'z' and position a finite decimal.`,
+          "Pass section as { axis: 'x'|'y'|'z', position: <number>, flip?: boolean }, e.g. { axis: 'z', position: 10 }.",
+        ),
+      };
     }
   }
 
   let overlay: SurfaceQualityOverlay | undefined;
   if (input.overlay !== undefined) {
     if (!(SURFACE_QUALITY_OVERLAYS as readonly string[]).includes(input.overlay)) {
-      return refusal(
-        'cli.invalid-args',
-        `render_preview: unknown overlay '${String(input.overlay)}'. Valid: ${SURFACE_QUALITY_OVERLAYS.join(', ')}.`,
-        "Pass overlay as 'zebra', 'curvature', or 'continuity', or omit it for a plain render.",
-      );
+      return {
+        ok: false,
+        result: refusal(
+          'cli.invalid-args',
+          `render_preview: unknown overlay '${String(input.overlay)}'. Valid: ${SURFACE_QUALITY_OVERLAYS.join(', ')}.`,
+          "Pass overlay as 'zebra', 'curvature', or 'continuity', or omit it for a plain render.",
+        ),
+      };
     }
     overlay = input.overlay;
   }
+  return { ok: true, explode, section, overlay };
+}
 
+async function preparePreviewSession(input: RenderPreviewInput, hasCode: boolean):
+  Promise<{ ok: true; outDir: string; scriptPath: string } | { ok: false; result: RenderPreviewOutput }> {
   // --- Session dir + code-mode temp script. ---
   let outDir: string;
   let scriptPath: string;
@@ -332,12 +384,45 @@ export async function renderPreviewTool(
       scriptPath = isAbsolute(input.file!) ? input.file! : resolve(input.file!);
     }
   } catch (e) {
-    return refusal(
-      'cli.file-write',
-      `render_preview: could not prepare the output directory: ${e instanceof Error ? e.message : String(e)}`,
-      'Check that out_dir is writable, or omit it to use a temp session directory.',
-    );
+    return {
+      ok: false,
+      result: refusal(
+        'cli.file-write',
+        `render_preview: could not prepare the output directory: ${e instanceof Error ? e.message : String(e)}`,
+        'Check that out_dir is writable, or omit it to use a temp session directory.',
+      ),
+    };
   }
+  return { ok: true, outDir, scriptPath };
+}
+
+export async function renderPreviewTool(
+  input: RenderPreviewInput,
+  deps: RenderPreviewDeps = realDeps,
+): Promise<RenderPreviewOutput> {
+  const source = resolvePreviewSource(input);
+  if (!source.ok) return source.result;
+  const { hasCode, views } = source;
+
+  const camera = resolvePreviewCamera(input);
+  if (!camera.ok) return camera.result;
+  const { pose } = camera;
+
+  const filter = resolvePreviewFilter(input);
+  if (!filter.ok) return filter.result;
+  const { objectFilter } = filter;
+
+  const dimensions = resolvePreviewDimensions(input);
+  if (!dimensions.ok) return dimensions.result;
+  const { width, height } = dimensions;
+
+  const geometry = resolvePreviewGeometry(input);
+  if (!geometry.ok) return geometry.result;
+  const { explode, section, overlay } = geometry;
+
+  const session = await preparePreviewSession(input, hasCode);
+  if (!session.ok) return session.result;
+  const { outDir, scriptPath } = session;
 
   const work = renderPreviewWork({ input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section, explode, overlay });
   // Swallow the losing chain's rejection if the timeout wins (same pattern as

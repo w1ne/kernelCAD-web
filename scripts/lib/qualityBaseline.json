@@ -176,12 +176,6 @@
   {
     "rule": "complexity",
     "file": "src/agent/mcp/tools/renderPreview.ts",
-    "symbol": "Async function 'renderPreviewTool'",
-    "value": 37
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/tools/renderPreview.ts",
     "symbol": "Async function 'renderPreviewWork'",
     "value": 32
   },
