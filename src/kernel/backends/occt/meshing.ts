@@ -275,7 +275,7 @@ function resolveCenterAndNormalFallback(face: unknown): { center: unknown; norma
   return { center, normal };
 }
 
-function resolvePlaneDirectionsFallback(face: unknown): { xDir: [number, number, number] | undefined; yDir: [number, number, number] | undefined } {
+function resolvePlaneDirectionsFallback(face: unknown) {
   // Final fallback: try to get directions if it's a plane
   const faceRec2 = face as UnknownRecord;
   const planeNode = faceRec2.plane ||
