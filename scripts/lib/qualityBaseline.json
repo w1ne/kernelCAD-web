@@ -428,12 +428,6 @@
   {
     "rule": "complexity",
     "file": "src/kernel/import/importSvg.ts",
-    "symbol": "Function 'emitPath'",
-    "value": 53
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/import/importSvg.ts",
     "symbol": "Function 'importSvgText'",
     "value": 49
   },
@@ -961,12 +955,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/kernel/import/importSvg.ts",
-    "symbol": "Function 'emitPath'",
-    "value": 193
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/kinematic/checkLoadCapacity.ts",
     "symbol": "Function 'runBeamMode'",
     "value": 161
@@ -1186,12 +1174,6 @@
     "file": "src/kernel/backends/occt/occtBackend.ts",
     "symbol": "(file)",
     "value": 897
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/kernel/import/importSvg.ts",
-    "symbol": "(file)",
-    "value": 869
   },
   {
     "rule": "max-lines",
