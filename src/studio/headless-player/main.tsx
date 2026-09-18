@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/agent/render/headless-player/main.tsx
+// src/studio/headless-player/main.tsx
 //
 // Entry for the standalone headless player bundle (see index.html). Mounts
 // DemoPlayerPage directly — no TanStack router, no studio shell — because the
@@ -10,7 +10,7 @@
 
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { DemoPlayerPage } from '../../../studio/components/demoPlayer/DemoPlayerPage';
+import { DemoPlayerPage } from '../components/demoPlayer/DemoPlayerPage';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

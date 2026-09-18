@@ -55,7 +55,7 @@
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import { OcctBackend } from './occtBackend';
-import { lowerSurfaceSew } from '../../../modeling/backends/occt/surfaceSewLowerer';
+import { lowerSurfaceSew } from './surfaceSewLowerer';
 
 /** Why an STL byte payload could not be turned into geometry. */
 export type StlParseFailure = 'parse' | 'empty' | 'too-many-triangles';

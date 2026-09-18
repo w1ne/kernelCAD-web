@@ -5,7 +5,7 @@
 // Reader for inspect({ of: 'mass' }). Mirrors getShapeInfo.ts.
 //
 // The physics predates this file by a long way: OCCT BRepGProp::VolumeProperties
-// via modeling/properties/massProperties.ts, already carefully written (it
+// via kernel/properties/massProperties.ts, already carefully written (it
 // reconstructs the 6 unique inertia-tensor components from six MomentOfInertia
 // calls because this opencascade.js build doesn't bind gp_Mat). It was reachable
 // only from URDF/SDF/MJCF <inertial> serialization — no agent could ask for the

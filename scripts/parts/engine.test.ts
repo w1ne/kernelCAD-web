@@ -14,7 +14,7 @@ import {
   type IngestDeps,
 } from './engine';
 import type { PartSourceEntry, PartCandidate, MirrorStore } from './contracts';
-import type { StepInspectReport } from '../../src/agent/inspect/inspectStep';
+import type { StepInspectReport } from '../../src/kernel/import/inspectStep';
 import type { AutoConnector } from '../../src/modeling/parts/holeAutoConnectors';
 import type { PartRecord } from '../../src/shared/parts/types';
 

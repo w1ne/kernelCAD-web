@@ -29,7 +29,7 @@ import type {
 } from '../shared/intent/animationViewRecord';
 import type { DfmSpec, DfmSpecHandle } from '../shared/intent/dfmSpecRecord';
 import { helix, tagHelixRail, type RailPoint, type HelixOptions } from './helix';
-import { solveHermiteG2, type HermiteEndpoint } from './capture/hermiteG2';
+import { solveHermiteG2, type HermiteEndpoint } from '../kernel/geometry/hermiteG2';
 import { bridgeCurves } from './capture/bridgeCurves';
 import { createSketchModule, type SketchModule } from './sketch/index';
 import { fontPath, type FontPath } from '../shared/fonts/fontPath';

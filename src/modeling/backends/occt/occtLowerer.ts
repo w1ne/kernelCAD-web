@@ -31,7 +31,7 @@ import { lowerVariableSweep, type VariableSweepSectionLowered } from './variable
 import { isVariableSweepMetadata } from '../../../shared/intent/variableSweepRecord';
 import { lowerCoonsPatch } from './coonsPatchLowerer';
 import { lowerSurfaceTrim, NonPlanarTrimError } from './surfaceTrimLowerer';
-import { lowerSurfaceSew } from './surfaceSewLowerer';
+import { lowerSurfaceSew } from '../../../kernel/backends/occt/surfaceSewLowerer';
 import { lowerEmbossText } from './embossTextLowerer';
 import { subtractiveNoOpDiagnostic } from './subtractiveNoOp';
 import { intersectionEmptyDiagnostic, emptyResultDiagnostic } from './additiveNoOp';
@@ -3301,7 +3301,7 @@ export class OcctLowerer implements FeatureLowerer {
 
         const tolerance = r.params.tolerance.evaluated;
         const requireClosed = (r.metadata as { requireClosed?: boolean } | undefined)?.requireClosed === true;
-        let sewResult: import('./surfaceSewLowerer').SurfaceSewResult;
+        let sewResult: import('../../../kernel/backends/occt/surfaceSewLowerer').SurfaceSewResult;
         try {
           sewResult = lowerSurfaceSew(faces, { tolerance, requireClosed });
         } catch (e) {

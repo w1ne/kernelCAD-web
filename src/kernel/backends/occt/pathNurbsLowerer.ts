@@ -46,7 +46,7 @@ import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import nurbsJs from 'verb-nurbs';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
-import { solveHermiteG2 } from '../../../modeling/capture/hermiteG2';
+import { solveHermiteG2 } from '../../geometry/hermiteG2';
 import type { Vec3 } from '../../../shared/intent/types';
 import { clampedUniformKnots, decomposeKnots } from './nurbsSurfaceLowerer';
 import { fromVerb } from '../verb/curveBridge';

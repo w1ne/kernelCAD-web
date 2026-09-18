@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AnimationViewMetadata } from '../../../shared/intent/animationViewRecord';
-import { sampleTrackAt } from '../../../agent/render/animationSampler';
+import { sampleTrackAt } from '../../../modeling/animation/animationSampler';
 import type { ParamEdit, UpdateParamFn } from '../../hooks/useParamUpdate';
 import type { BakedTimeline, BakedCollision } from './bakeInterpolation';
 import { sampleBakedTransforms } from './bakeInterpolation';

@@ -3,7 +3,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 import { buildNurbsFace } from '../../../../src/kernel/backends/occt/nurbsSurfaceLowerer';
-import { lowerSurfaceSew } from '../../../../src/modeling/backends/occt/surfaceSewLowerer';
+import { lowerSurfaceSew } from '../../../../src/kernel/backends/occt/surfaceSewLowerer';
 import { CaptureSession } from '../../../../src/modeling/capture/captureSession';
 import { createApi } from '../../../../src/modeling/api';
 import { RecomputeEngine } from '../../../../src/modeling/compute/recomputeEngine';

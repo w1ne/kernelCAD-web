@@ -30,7 +30,7 @@ import {
   type HashBoundConnectorManifest,
 } from '../../shared/parts/connectorManifest';
 import { formatTopoRef } from '../../kernel/naming';
-import { inspectStepFile } from '../../agent/inspect/inspectStep';
+import { inspectStepBuffer } from '../../kernel/import/inspectStep';
 import { synthesizeConnectorsFromReport } from './synthesizeConnectors';
 
 export interface FetchPartCtx {
@@ -260,7 +260,7 @@ export async function fetchPartFromUrlHost(
   const shape = await fromStepBytes(ctx, bytes, url);
   let connectors: string[] = [];
   try {
-    const report = await inspectStepFile(path);
+    const report = await inspectStepBuffer(bytes, path);
     const conns = synthesizeConnectorsFromReport(report, shape.id);
     if (conns.length > 0) {
       ctx.session.attachAutoConnectors(shape.id, conns);
@@ -420,7 +420,7 @@ export async function fetchPartHost(
       // Records without authored interfaces retain geometry-derived discovery
       // connectors. A STEP that resists inspection still imports normally.
       try {
-        const report = await inspectStepFile(path);
+        const report = await inspectStepBuffer(bytes, path);
         const conns = synthesizeConnectorsFromReport(report, shape.id);
         if (conns.length > 0) {
           ctx.session.attachAutoConnectors(shape.id, conns);

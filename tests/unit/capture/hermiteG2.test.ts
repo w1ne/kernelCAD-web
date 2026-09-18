@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createApi } from '../../../src/modeling/api';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import { solveHermiteG2 } from '../../../src/modeling/capture/hermiteG2';
+import { solveHermiteG2 } from '../../../src/kernel/geometry/hermiteG2';
 import { KernelError } from '../../../src/shared/intent/kernelError';
 
 const EPS_TIGHT = 1e-6;
