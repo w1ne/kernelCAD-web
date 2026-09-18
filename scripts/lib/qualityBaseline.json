@@ -62,12 +62,6 @@
   {
     "rule": "complexity",
     "file": "src/agent/drawing/sheet.ts",
-    "symbol": "Function 'analyseSheet'",
-    "value": 73
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/drawing/sheet.ts",
     "symbol": "Function 'projectionSymbol'",
     "value": 22
   },
@@ -934,12 +928,6 @@
     "file": "src/agent/drawing/pdfVectors.ts",
     "symbol": "Async function 'readPdfPageVectors'",
     "value": 185
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/agent/drawing/sheet.ts",
-    "symbol": "Function 'analyseSheet'",
-    "value": 205
   },
   {
     "rule": "max-lines-per-function",
