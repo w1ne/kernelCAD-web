@@ -1147,12 +1147,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/viewer/overlays/MarkingOverlay.tsx",
-    "symbol": "Function 'MarkingOverlay'",
-    "value": 151
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/context/CodeContext.tsx",
     "symbol": "Function 'CodeProvider'",
     "value": 187
