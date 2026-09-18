@@ -13,9 +13,10 @@ import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { resolveFaceQuery, type FaceQuery } from '../../../kernel/backends/occt/edgeQueries';
-import type { Face } from 'replicad';
+import type { Face, Vector } from 'replicad';
 import { runMcpScript } from '../runMcpScript';
 import { formatTopoRef, type TopoKind } from '../../../kernel/naming';
+import type { FaceLineage } from '../../../kernel/naming/evolutionRecord';
 import type { FaceLabelsMap } from '../../../shared/intent/featureRecord';
 
 export interface ListFacesInput {
@@ -94,6 +95,54 @@ function countInnerLoops(face: Face): number {
   }
 }
 
+function summarizeLineage(lineage: FaceLineage | undefined, metadataLabel: string | undefined): FaceLineageSummary {
+  return {
+    ...(lineage?.canonicalName !== undefined ? { canonicalName: lineage.canonicalName } : {}),
+    ...(lineage?.labelName !== undefined ? { labelName: lineage.labelName } : {}),
+    ...(metadataLabel !== undefined && lineage?.labelName === undefined
+      ? { labelName: metadataLabel }
+      : {}),
+    ...(lineage?.featureKind !== undefined ? { featureKind: lineage.featureKind } : {}),
+    ...(lineage?.featureOrdinal !== undefined ? { featureOrdinal: lineage.featureOrdinal } : {}),
+    ...(lineage?.featureName !== undefined ? { featureName: lineage.featureName } : {}),
+    ...(lineage?.surfaceType !== undefined ? { surfaceType: lineage.surfaceType } : {}),
+  };
+}
+
+function resolveFaceRefName(lineage: FaceLineage | undefined, metadataLabel: string | undefined, idx: number): string {
+  return lineage?.labelName
+    ?? metadataLabel
+    ?? lineage?.canonicalName
+    ?? `f${idx >= 0 ? idx : 0}`;
+}
+
+function summarizeFace(
+  f: Face,
+  c: Vector,
+  n: Vector,
+  idx: number,
+  lineage: FaceLineage | undefined,
+  metadataLabel: string | undefined,
+  owner: string,
+  kind: TopoKind,
+): FaceSummary {
+  const refName = resolveFaceRefName(lineage, metadataLabel, idx);
+  const ref = formatTopoRef({ owner, kind, segments: [refName] });
+  const lineageSummary: FaceLineageSummary = summarizeLineage(lineage, metadataLabel);
+  return {
+    id: `f${idx >= 0 ? idx : 0}`,
+    deprecated: true,
+    ref,
+    lineage: lineageSummary,
+    centroid: [c.x, c.y, c.z],
+    normal: [n.x, n.y, n.z],
+    surfaceType: (f as unknown as { geomType?: string }).geomType ?? 'UNKNOWN',
+    area: (f as unknown as { area?: number }).area ?? 0,
+    label: lineage?.labelName ?? metadataLabel ?? null,
+    innerLoops: countInnerLoops(f),
+  };
+}
+
 export async function listFacesTool(input: ListFacesInput): Promise<ListFacesOutput> {
   const script = await runMcpScript(input);
   if (!script.ok) return script;
@@ -158,34 +207,7 @@ export async function listFacesTool(input: ListFacesInput): Promise<ListFacesOut
     const metadataLabel = lineage?.canonicalName !== undefined
       ? canonicalToLabel.get(lineage.canonicalName)
       : undefined;
-    const refName = lineage?.labelName
-      ?? metadataLabel
-      ?? lineage?.canonicalName
-      ?? `f${idx >= 0 ? idx : 0}`;
-    const ref = formatTopoRef({ owner, kind, segments: [refName] });
-    const lineageSummary: FaceLineageSummary = {
-      ...(lineage?.canonicalName !== undefined ? { canonicalName: lineage.canonicalName } : {}),
-      ...(lineage?.labelName !== undefined ? { labelName: lineage.labelName } : {}),
-      ...(metadataLabel !== undefined && lineage?.labelName === undefined
-        ? { labelName: metadataLabel }
-        : {}),
-      ...(lineage?.featureKind !== undefined ? { featureKind: lineage.featureKind } : {}),
-      ...(lineage?.featureOrdinal !== undefined ? { featureOrdinal: lineage.featureOrdinal } : {}),
-      ...(lineage?.featureName !== undefined ? { featureName: lineage.featureName } : {}),
-      ...(lineage?.surfaceType !== undefined ? { surfaceType: lineage.surfaceType } : {}),
-    };
-    return {
-      id: `f${idx >= 0 ? idx : 0}`,
-      deprecated: true,
-      ref,
-      lineage: lineageSummary,
-      centroid: [c.x, c.y, c.z],
-      normal: [n.x, n.y, n.z],
-      surfaceType: (f as unknown as { geomType?: string }).geomType ?? 'UNKNOWN',
-      area: (f as unknown as { area?: number }).area ?? 0,
-      label: lineage?.labelName ?? metadataLabel ?? null,
-      innerLoops: countInnerLoops(f),
-    };
+    return summarizeFace(f, c, n, idx, lineage, metadataLabel, owner, kind);
   });
 
   return { ok: true, faces };
