@@ -517,12 +517,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/joints/articulatedDigit.ts",
-    "symbol": "Function 'validatePreflight'",
-    "value": 35
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/joints/clevis.ts",
     "symbol": "Function 'withDefaults'",
     "value": 29
