@@ -590,12 +590,6 @@
   {
     "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseStatics.ts",
-    "symbol": "Async function 'resolveStaticSample'",
-    "value": 42
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseStatics.ts",
     "symbol": "Function 'requiredContactPathActuatorSources'",
     "value": 24
   },
@@ -1054,11 +1048,5 @@
     "file": "src/modeling/mates/physicalUseCase.ts",
     "symbol": "(file)",
     "value": 977
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/modeling/mates/physicalUseCaseStatics.ts",
-    "symbol": "(file)",
-    "value": 920
   }
 ]
