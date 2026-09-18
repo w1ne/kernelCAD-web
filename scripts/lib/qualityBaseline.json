@@ -385,12 +385,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kinematic/sweepTolerance.ts",
-    "symbol": "Async function 'evaluateCombo'",
-    "value": 31
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/animation/verifyAnimation.ts",
     "symbol": "Async function 'verifyAnimation'",
     "value": 21
