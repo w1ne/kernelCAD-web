@@ -286,117 +286,41 @@ export async function reviewPoseEnvelope(
 
   for (const sample of samples) {
     diagnostics.push(...validateMatePoseLimits(arm, sample.poses, sample.name));
-    let solvedPoses: ReadonlyMap<string, import('../../shared/runtime/se3').Transform> | undefined;
-    try {
-      const solved = await solveMates(arm, sample.poses);
-      solvedPoses = solved.poses;
-      collectConnectorPoses(
-        arm,
-        solved.poses,
-        sample.name,
-        trackConnectors,
-        connectorPoses,
-        unresolvedConnectorRefs,
-      );
-      if (
-        solved.status === 'over-constrained' ||
-        solved.status === 'did-not-converge'
-      ) {
-        diagnostics.push({
-          code: 'assembly.pose-envelope.solve-failed',
-          severity: 'error',
-          sampleName: sample.name,
-          sampleStrategy: classifySampleStrategy(sample.name),
-          message: `Pose-envelope sample '${sample.name}' produced solver status '${solved.status}'.`,
-          hint: `invalid-args.assembly.pose-envelope-solve-failed — repair the mate graph or reduce declared travel before trusting this mechanism range.`,
-        });
-      }
-    } catch (e) {
-      diagnostics.push({
-        code: 'assembly.pose-envelope.solve-failed',
-        severity: 'error',
-        sampleName: sample.name,
-        sampleStrategy: classifySampleStrategy(sample.name),
-        message: `Pose-envelope sample '${sample.name}' could not be solved: ${e instanceof Error ? e.message : String(e)}`,
-        hint: `invalid-args.assembly.pose-envelope-solve-failed — inspect the mate refs, connector origins, and pose shapes for this sample.`,
-      });
-    }
+    const solvedPoses = await solvePoseEnvelopeSample(
+      arm,
+      sample,
+      trackConnectors,
+      connectorPoses,
+      unresolvedConnectorRefs,
+      diagnostics,
+    );
 
     if (opts.minClearanceMm !== undefined && clearanceMatePairs !== undefined) {
-      const reports = await checkClearanceAtPose(
+      await reviewPoseEnvelopeSampleClearance(
         arm,
-        sample.poses,
-        opts.minClearanceMm,
+        sample,
+        { minClearanceMm: opts.minClearanceMm },
         ignoredPairs,
         clearanceMatePairs,
         opts.loweredScene,
         solvedPoses,
+        clearancePairs,
+        diagnostics,
+        reportInterference,
       );
-      for (const report of reports) {
-        clearancePairs.push({ ...report, sampleName: sample.name });
-        if (report.status === 'violated') {
-          diagnostics.push({
-            code: 'assembly.pose-envelope.clearance-violated',
-            severity: 'error',
-            sampleName: sample.name,
-            sampleStrategy: classifySampleStrategy(sample.name),
-            partA: report.a,
-            partB: report.b,
-            minClearanceMm: opts.minClearanceMm,
-            message: `Pose-envelope sample '${sample.name}' leaves ${report.distanceMm.toFixed(3)} mm between parts '${report.a}' and '${report.b}', below the required ${opts.minClearanceMm} mm clearance.`,
-            hint: `invalid-args.assembly.pose-envelope-clearance-violated — increase clearance between '${report.a}' and '${report.b}', reduce mate travel, or declare the pair in dfmSpec.ignore only when the contact is intentional.`,
-          });
-        } else if (report.status === 'unknown') {
-          diagnostics.push({
-            code: 'assembly.pose-envelope.clearance-unresolved',
-            severity: 'warning',
-            sampleName: sample.name,
-            sampleStrategy: classifySampleStrategy(sample.name),
-            partA: report.a,
-            partB: report.b,
-            minClearanceMm: opts.minClearanceMm,
-            message: `Pose-envelope sample '${sample.name}' could not resolve exact BREP clearance between parts '${report.a}' and '${report.b}' against the required ${opts.minClearanceMm} mm threshold.`,
-            hint: `invalid-args.assembly.pose-envelope-clearance-unresolved — repair degenerate geometry or the lowering path, then re-run clearance review; declare dfmSpec.ignore only when another verified constraint establishes this pair's clearance.`,
-          });
-        } else if (report.status === 'interfering') {
-          reportInterference(sample.name, {
-            a: report.a,
-            b: report.b,
-            volumeMm3: report.interferenceVolumeMm3 ?? 0,
-          });
-        }
-      }
     }
 
     if (!includeInterference) continue;
-    const pairs = await detectInterferencesForPoses(arm, sample.poses, epsilon);
-    for (const pair of pairs) {
-      reportInterference(sample.name, pair);
-    }
+    await reviewPoseEnvelopeSampleInterference(arm, sample, epsilon, reportInterference);
   }
 
-  for (const ref of unresolvedConnectorRefs) {
-    diagnostics.push({
-      code: 'assembly.pose-envelope.connector-unresolved',
-      severity: 'warning',
-      connectorRef: ref,
-      message: `Tracked connector '${ref}' has a topology-based origin and cannot be included in capture-time workspace bounds.`,
-      hint: `invalid-args.assembly.pose-envelope-connector-unresolved — use a numeric vec3 connector origin for workspace review, or run a lowerer-backed topology resolver before requesting this connector.`,
-    });
-  }
+  pushUnresolvedConnectorDiagnostics(unresolvedConnectorRefs, diagnostics);
 
-  const aperture = opts.gripperAperture !== undefined
-    ? computeGripperAperture(connectorPoses, opts.gripperAperture)
-    : undefined;
-  if (opts.gripperAperture !== undefined && aperture?.summary === undefined) {
-    diagnostics.push({
-      code: 'assembly.gripper-aperture.connector-missing',
-      severity: 'warning',
-      connectorRef: aperture?.missingRefs.join(', ') ?? `${opts.gripperAperture.left}, ${opts.gripperAperture.right}`,
-      message: `Gripper aperture could not be computed because one or both fingertip connector refs were not observed.`,
-      hint: `invalid-args.assembly.gripper-aperture-connector-missing — pass gripperAperture refs that exist as numeric frame connectors and are included in pose-envelope samples.`,
-    });
-  }
+  const apertureSummary = resolvePoseEnvelopeAperture(
+    opts.gripperAperture,
+    connectorPoses,
+    diagnostics,
+  );
 
   return {
     samples,
@@ -406,8 +330,158 @@ export async function reviewPoseEnvelope(
     connectorPoses,
     connectorWorkspace: buildConnectorWorkspace(connectorPoses),
     ...(opts.gripperAperture !== undefined ? { gripperApertureRequest: opts.gripperAperture } : {}),
-    ...(aperture?.summary !== undefined ? { gripperAperture: aperture.summary } : {}),
+    ...(apertureSummary !== undefined ? { gripperAperture: apertureSummary } : {}),
   };
+}
+
+async function solvePoseEnvelopeSample(
+  arm: Assembly,
+  sample: PoseEnvelopeSample,
+  trackConnectors: ReadonlySet<string> | undefined,
+  connectorPoses: TrackedConnectorPose[],
+  unresolvedConnectorRefs: Set<string>,
+  diagnostics: PoseEnvelopeDiagnostic[],
+): Promise<ReadonlyMap<string, import('../../shared/runtime/se3').Transform> | undefined> {
+  let solvedPoses: ReadonlyMap<string, import('../../shared/runtime/se3').Transform> | undefined;
+  try {
+    const solved = await solveMates(arm, sample.poses);
+    solvedPoses = solved.poses;
+    collectConnectorPoses(
+      arm,
+      solved.poses,
+      sample.name,
+      trackConnectors,
+      connectorPoses,
+      unresolvedConnectorRefs,
+    );
+    if (
+      solved.status === 'over-constrained' ||
+      solved.status === 'did-not-converge'
+    ) {
+      diagnostics.push({
+        code: 'assembly.pose-envelope.solve-failed',
+        severity: 'error',
+        sampleName: sample.name,
+        sampleStrategy: classifySampleStrategy(sample.name),
+        message: `Pose-envelope sample '${sample.name}' produced solver status '${solved.status}'.`,
+        hint: `invalid-args.assembly.pose-envelope-solve-failed — repair the mate graph or reduce declared travel before trusting this mechanism range.`,
+      });
+    }
+  } catch (e) {
+    diagnostics.push({
+      code: 'assembly.pose-envelope.solve-failed',
+      severity: 'error',
+      sampleName: sample.name,
+      sampleStrategy: classifySampleStrategy(sample.name),
+      message: `Pose-envelope sample '${sample.name}' could not be solved: ${e instanceof Error ? e.message : String(e)}`,
+      hint: `invalid-args.assembly.pose-envelope-solve-failed — inspect the mate refs, connector origins, and pose shapes for this sample.`,
+    });
+  }
+  return solvedPoses;
+}
+
+async function reviewPoseEnvelopeSampleClearance(
+  arm: Assembly,
+  sample: PoseEnvelopeSample,
+  opts: { readonly minClearanceMm: number },
+  ignoredPairs: ReadonlySet<string>,
+  clearanceMatePairs: ReadonlySet<string>,
+  loweredScene: SceneBackend | undefined,
+  solvedPoses: ReadonlyMap<string, import('../../shared/runtime/se3').Transform> | undefined,
+  clearancePairs: Array<ClearancePairReport & { sampleName: string }>,
+  diagnostics: PoseEnvelopeDiagnostic[],
+  reportInterference: (sampleName: string, pair: InterferencePair) => void,
+): Promise<void> {
+  const reports = await checkClearanceAtPose(
+    arm,
+    sample.poses,
+    opts.minClearanceMm,
+    ignoredPairs,
+    clearanceMatePairs,
+    loweredScene,
+    solvedPoses,
+  );
+  for (const report of reports) {
+    clearancePairs.push({ ...report, sampleName: sample.name });
+    if (report.status === 'violated') {
+      diagnostics.push({
+        code: 'assembly.pose-envelope.clearance-violated',
+        severity: 'error',
+        sampleName: sample.name,
+        sampleStrategy: classifySampleStrategy(sample.name),
+        partA: report.a,
+        partB: report.b,
+        minClearanceMm: opts.minClearanceMm,
+        message: `Pose-envelope sample '${sample.name}' leaves ${report.distanceMm.toFixed(3)} mm between parts '${report.a}' and '${report.b}', below the required ${opts.minClearanceMm} mm clearance.`,
+        hint: `invalid-args.assembly.pose-envelope-clearance-violated — increase clearance between '${report.a}' and '${report.b}', reduce mate travel, or declare the pair in dfmSpec.ignore only when the contact is intentional.`,
+      });
+    } else if (report.status === 'unknown') {
+      diagnostics.push({
+        code: 'assembly.pose-envelope.clearance-unresolved',
+        severity: 'warning',
+        sampleName: sample.name,
+        sampleStrategy: classifySampleStrategy(sample.name),
+        partA: report.a,
+        partB: report.b,
+        minClearanceMm: opts.minClearanceMm,
+        message: `Pose-envelope sample '${sample.name}' could not resolve exact BREP clearance between parts '${report.a}' and '${report.b}' against the required ${opts.minClearanceMm} mm threshold.`,
+        hint: `invalid-args.assembly.pose-envelope-clearance-unresolved — repair degenerate geometry or the lowering path, then re-run clearance review; declare dfmSpec.ignore only when another verified constraint establishes this pair's clearance.`,
+      });
+    } else if (report.status === 'interfering') {
+      reportInterference(sample.name, {
+        a: report.a,
+        b: report.b,
+        volumeMm3: report.interferenceVolumeMm3 ?? 0,
+      });
+    }
+  }
+}
+
+async function reviewPoseEnvelopeSampleInterference(
+  arm: Assembly,
+  sample: PoseEnvelopeSample,
+  epsilon: number,
+  reportInterference: (sampleName: string, pair: InterferencePair) => void,
+): Promise<void> {
+  const pairs = await detectInterferencesForPoses(arm, sample.poses, epsilon);
+  for (const pair of pairs) {
+    reportInterference(sample.name, pair);
+  }
+}
+
+function pushUnresolvedConnectorDiagnostics(
+  unresolvedConnectorRefs: ReadonlySet<string>,
+  diagnostics: PoseEnvelopeDiagnostic[],
+): void {
+  for (const ref of unresolvedConnectorRefs) {
+    diagnostics.push({
+      code: 'assembly.pose-envelope.connector-unresolved',
+      severity: 'warning',
+      connectorRef: ref,
+      message: `Tracked connector '${ref}' has a topology-based origin and cannot be included in capture-time workspace bounds.`,
+      hint: `invalid-args.assembly.pose-envelope-connector-unresolved — use a numeric vec3 connector origin for workspace review, or run a lowerer-backed topology resolver before requesting this connector.`,
+    });
+  }
+}
+
+function resolvePoseEnvelopeAperture(
+  request: GripperApertureRequest | undefined,
+  connectorPoses: readonly TrackedConnectorPose[],
+  diagnostics: PoseEnvelopeDiagnostic[],
+): GripperApertureSummary | undefined {
+  const aperture = request !== undefined
+    ? computeGripperAperture(connectorPoses, request)
+    : undefined;
+  if (request !== undefined && aperture?.summary === undefined) {
+    diagnostics.push({
+      code: 'assembly.gripper-aperture.connector-missing',
+      severity: 'warning',
+      connectorRef: aperture?.missingRefs.join(', ') ?? `${request.left}, ${request.right}`,
+      message: `Gripper aperture could not be computed because one or both fingertip connector refs were not observed.`,
+      hint: `invalid-args.assembly.gripper-aperture-connector-missing — pass gripperAperture refs that exist as numeric frame connectors and are included in pose-envelope samples.`,
+    });
+  }
+  return aperture?.summary;
 }
 
 function clearanceExemptMatedPairs(

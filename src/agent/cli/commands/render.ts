@@ -23,6 +23,7 @@ import {
   ALL_VIEWS,
   type HeadlessObjectFilter,
   type HeadlessInspectionChannel,
+  type HeadlessRenderResult,
 } from '../../render/headlessRender';
 import { resolveRenderBaseUrl } from '../../render/playerServer';
 import { buildModelFromFile } from '../../../modeling/buildModel';
@@ -388,42 +389,55 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
   return { exitCode: 0, outputPaths: written };
 }
 
-export async function renderInspectBundle(input: RenderInspectInput): Promise<RenderCliResult> {
-  const filePath = resolve(input.file);
-  const outDir = resolve(input.outDir);
-  const rgbDir = join(outDir, 'channels', 'rgb');
-  const maskDir = join(outDir, 'channels', 'mask');
-  const depthDir = join(outDir, 'channels', 'depth');
-  const normalsDir = join(outDir, 'channels', 'normals');
+type MechanismProbe = Awaited<ReturnType<typeof runRenderMechanismProbe>>;
+
+type InspectInputResolution =
+  | { ok: true; requestedChannels: HeadlessInspectionChannel[]; objectFilter: HeadlessObjectFilter | undefined }
+  | { ok: false; result: RenderCliResult };
+
+function resolveInspectInputs(input: RenderInspectInput): InspectInputResolution {
   let requestedChannels: HeadlessInspectionChannel[];
   try {
     requestedChannels = normalizeInspectChannels(input.channels);
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
-    return { exitCode: 1, outputPaths: [] };
+    return { ok: false, result: { exitCode: 1, outputPaths: [] } };
   }
   let objectFilter: HeadlessObjectFilter | undefined;
   try {
     objectFilter = buildObjectFilter(input);
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
-    return { exitCode: 1, outputPaths: [] };
+    return { ok: false, result: { exitCode: 1, outputPaths: [] } };
   }
+  return { ok: true, requestedChannels, objectFilter };
+}
 
-  // Physics-loop probe — P1 surface convergence. Runs BEFORE the
-  // (slow) headless render so strict mode refuses without spinning up
-  // a browser tile. The renderer's existing exit-1 paths take
-  // precedence over this; only a real broken mechanism + zero render
-  // errors trigger refuse/watermark.
+type InspectProbeResolution =
+  | { ok: true; mechanismProbe: MechanismProbe }
+  | { ok: false; result: RenderCliResult };
+
+async function probeInspectMechanism(filePath: string): Promise<InspectProbeResolution> {
   const mechanismProbe = await runRenderMechanismProbe(filePath);
   if (mechanismProbe.mechanism === 'broken' && isRenderStrictMode()) {
     reportBrokenMechanismToStderr(mechanismProbe.failures);
-    return { exitCode: 2, outputPaths: [] };
+    return { ok: false, result: { exitCode: 2, outputPaths: [] } };
   }
+  return { ok: true, mechanismProbe };
+}
 
-  let result;
+type InspectRenderResolution =
+  | { ok: true; result: HeadlessRenderResult }
+  | { ok: false; result: RenderCliResult };
+
+async function renderInspectViews(
+  input: RenderInspectInput,
+  filePath: string,
+  objectFilter: HeadlessObjectFilter | undefined,
+  requestedChannels: HeadlessInspectionChannel[],
+): Promise<InspectRenderResolution> {
   try {
-    result = await withRenderBase(input.baseUrl, (baseUrl) =>
+    const result = await withRenderBase(input.baseUrl, (baseUrl) =>
       headlessRender({
         scriptPath: filePath,
         viewportWidth: input.width,
@@ -437,11 +451,20 @@ export async function renderInspectBundle(input: RenderInspectInput): Promise<Re
         inspectionChannels: requestedChannels,
       }),
     );
+    return { ok: true, result };
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
-    return { exitCode: 1, outputPaths: [] };
+    return { ok: false, result: { exitCode: 1, outputPaths: [] } };
   }
+}
 
+async function ensureInspectChannelDirs(
+  requestedChannels: HeadlessInspectionChannel[],
+  rgbDir: string,
+  maskDir: string,
+  depthDir: string,
+  normalsDir: string,
+): Promise<void> {
   if (requestedChannels.includes('rgb')) {
     await mkdir(rgbDir, { recursive: true });
   }
@@ -454,55 +477,80 @@ export async function renderInspectBundle(input: RenderInspectInput): Promise<Re
   if (requestedChannels.includes('normals')) {
     await mkdir(normalsDir, { recursive: true });
   }
+}
 
-  const channelPaths: Record<string, Record<string, string>> = {};
-  const pngPaths: string[] = [];
-  if (requestedChannels.includes('rgb')) {
-    channelPaths.rgb = {};
-    for (const view of ALL_VIEWS) {
-      const buf = result.pngsByView[view];
-      if (!buf) throw new Error(`renderInspectBundle: missing rgb view '${view}'`);
-      const relativePath = `channels/rgb/${view}.png`;
-      const outPath = join(outDir, relativePath);
-      // Physics-loop watermark — only the RGB channel gets the
-      // broken-mechanism overlay. Mask / depth / normals channels are
-      // analytical data; rewriting them with a text overlay would
-      // corrupt downstream tooling that reads object-ids out of mask
-      // RGB or normalized depth out of the depth tile.
-      const finalBuf = mechanismProbe.mechanism === 'broken'
-        ? await watermarkBrokenMechanism(buf, mechanismProbe.failures)
-        : buf;
-      await writeFile(outPath, finalBuf);
-      channelPaths.rgb[view] = relativePath;
-      pngPaths.push(outPath);
-    }
+async function writeRgbInspectViews(
+  result: HeadlessRenderResult,
+  outDir: string,
+  mechanismProbe: MechanismProbe,
+  channelPaths: Record<string, Record<string, string>>,
+  pngPaths: string[],
+): Promise<void> {
+  channelPaths.rgb = {};
+  for (const view of ALL_VIEWS) {
+    const buf = result.pngsByView[view];
+    if (!buf) throw new Error(`renderInspectBundle: missing rgb view '${view}'`);
+    const relativePath = `channels/rgb/${view}.png`;
+    const outPath = join(outDir, relativePath);
+    // Physics-loop watermark — only the RGB channel gets the
+    // broken-mechanism overlay. Mask / depth / normals channels are
+    // analytical data; rewriting them with a text overlay would
+    // corrupt downstream tooling that reads object-ids out of mask
+    // RGB or normalized depth out of the depth tile.
+    const finalBuf = mechanismProbe.mechanism === 'broken'
+      ? await watermarkBrokenMechanism(buf, mechanismProbe.failures)
+      : buf;
+    await writeFile(outPath, finalBuf);
+    channelPaths.rgb[view] = relativePath;
+    pngPaths.push(outPath);
   }
-  if (requestedChannels.includes('mask')) {
-    channelPaths.mask = {};
-    for (const view of ALL_VIEWS) {
-      const buf = result.maskPngsByView?.[view];
-      if (!buf) throw new Error(`renderInspectBundle: missing mask view '${view}'`);
-      const relativePath = `channels/mask/${view}.png`;
-      const outPath = join(outDir, relativePath);
-      await writeFile(outPath, buf);
-      channelPaths.mask[view] = relativePath;
-      pngPaths.push(outPath);
-    }
-  }
-  for (const channel of ['depth', 'normals'] as const) {
-    if (!requestedChannels.includes(channel)) continue;
-    channelPaths[channel] = {};
-    for (const view of ALL_VIEWS) {
-      const buf = result.inspectionPngsByChannel?.[channel]?.[view];
-      if (!buf) throw new Error(`renderInspectBundle: missing ${channel} view '${view}'`);
-      const relativePath = `channels/${channel}/${view}.png`;
-      const outPath = join(outDir, relativePath);
-      await writeFile(outPath, buf);
-      channelPaths[channel][view] = relativePath;
-      pngPaths.push(outPath);
-    }
-  }
+}
 
+async function writeMaskInspectViews(
+  result: HeadlessRenderResult,
+  outDir: string,
+  channelPaths: Record<string, Record<string, string>>,
+  pngPaths: string[],
+): Promise<void> {
+  channelPaths.mask = {};
+  for (const view of ALL_VIEWS) {
+    const buf = result.maskPngsByView?.[view];
+    if (!buf) throw new Error(`renderInspectBundle: missing mask view '${view}'`);
+    const relativePath = `channels/mask/${view}.png`;
+    const outPath = join(outDir, relativePath);
+    await writeFile(outPath, buf);
+    channelPaths.mask[view] = relativePath;
+    pngPaths.push(outPath);
+  }
+}
+
+async function writeGenericInspectViews(
+  channel: 'depth' | 'normals',
+  result: HeadlessRenderResult,
+  outDir: string,
+  channelPaths: Record<string, Record<string, string>>,
+  pngPaths: string[],
+): Promise<void> {
+  channelPaths[channel] = {};
+  for (const view of ALL_VIEWS) {
+    const buf = result.inspectionPngsByChannel?.[channel]?.[view];
+    if (!buf) throw new Error(`renderInspectBundle: missing ${channel} view '${view}'`);
+    const relativePath = `channels/${channel}/${view}.png`;
+    const outPath = join(outDir, relativePath);
+    await writeFile(outPath, buf);
+    channelPaths[channel][view] = relativePath;
+    pngPaths.push(outPath);
+  }
+}
+
+function buildInspectManifest(
+  input: RenderInspectInput,
+  filePath: string,
+  requestedChannels: HeadlessInspectionChannel[],
+  channelPaths: Record<string, Record<string, string>>,
+  objectFilter: HeadlessObjectFilter | undefined,
+  result: HeadlessRenderResult,
+) {
   const channelMetadata = {
     ...(result.maskObjects !== undefined
       ? {
@@ -521,8 +569,7 @@ export async function renderInspectBundle(input: RenderInspectInput): Promise<Re
       : {}),
   };
 
-  const manifestPath = join(outDir, 'manifest.json');
-  const manifest = {
+  return {
     bundleVersion: 1,
     scriptPath: filePath,
     generatedAt: new Date().toISOString(),
@@ -559,6 +606,48 @@ export async function renderInspectBundle(input: RenderInspectInput): Promise<Re
     ],
     channels: channelPaths,
   };
+}
+
+export async function renderInspectBundle(input: RenderInspectInput): Promise<RenderCliResult> {
+  const filePath = resolve(input.file);
+  const outDir = resolve(input.outDir);
+  const rgbDir = join(outDir, 'channels', 'rgb');
+  const maskDir = join(outDir, 'channels', 'mask');
+  const depthDir = join(outDir, 'channels', 'depth');
+  const normalsDir = join(outDir, 'channels', 'normals');
+  const resolved = resolveInspectInputs(input);
+  if (!resolved.ok) return resolved.result;
+  const { requestedChannels, objectFilter } = resolved;
+
+  // Physics-loop probe — P1 surface convergence. Runs BEFORE the
+  // (slow) headless render so strict mode refuses without spinning up
+  // a browser tile. The renderer's existing exit-1 paths take
+  // precedence over this; only a real broken mechanism + zero render
+  // errors trigger refuse/watermark.
+  const probe = await probeInspectMechanism(filePath);
+  if (!probe.ok) return probe.result;
+
+  const rendered = await renderInspectViews(input, filePath, objectFilter, requestedChannels);
+  if (!rendered.ok) return rendered.result;
+  const result = rendered.result;
+
+  await ensureInspectChannelDirs(requestedChannels, rgbDir, maskDir, depthDir, normalsDir);
+
+  const channelPaths: Record<string, Record<string, string>> = {};
+  const pngPaths: string[] = [];
+  if (requestedChannels.includes('rgb')) {
+    await writeRgbInspectViews(result, outDir, probe.mechanismProbe, channelPaths, pngPaths);
+  }
+  if (requestedChannels.includes('mask')) {
+    await writeMaskInspectViews(result, outDir, channelPaths, pngPaths);
+  }
+  for (const channel of ['depth', 'normals'] as const) {
+    if (!requestedChannels.includes(channel)) continue;
+    await writeGenericInspectViews(channel, result, outDir, channelPaths, pngPaths);
+  }
+
+  const manifestPath = join(outDir, 'manifest.json');
+  const manifest = buildInspectManifest(input, filePath, requestedChannels, channelPaths, objectFilter, result);
   await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 
   return { exitCode: 0, outputPaths: [manifestPath, ...pngPaths] };

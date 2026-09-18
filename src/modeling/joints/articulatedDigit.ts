@@ -188,6 +188,15 @@ export function articulatedDigit(
 }
 
 function validatePreflight(arm: Assembly, opts: ArticulatedDigitOptions): Preflight {
+  validatePreflightArgs(opts);
+  validatePreflightSegments(opts.segments);
+  validatePreflightJoints(opts.joints);
+  const { transform, styles, webLengths } = buildPreflightGeometry(opts);
+  validatePreflightAssembly(arm, opts);
+  return { transform, styles, webLengths };
+}
+
+function validatePreflightArgs(opts: ArticulatedDigitOptions): void {
   assertName('name', opts?.name);
   assertTopoRefSafeName(opts.name, 'part-name');
   assertName('parentMount', opts?.parentMount);
@@ -198,9 +207,11 @@ function validatePreflight(arm: Assembly, opts: ArticulatedDigitOptions): Prefli
   }
   if (opts.density !== undefined) assertPositive('density', opts.density);
   validateFit(opts.fit);
+}
 
+function validatePreflightSegments(segments: readonly ArticulatedDigitSegmentSpec[]): void {
   const segmentNames = new Set<string>();
-  for (const [index, segment] of opts.segments.entries()) {
+  for (const [index, segment] of segments.entries()) {
     assertName('segments[].name', segment?.name);
     assertTopoRefSafeName(segment.name, 'part-name');
     if (segmentNames.has(segment.name)) invalidArgs(`segments contain duplicate name '${segment.name}'.`);
@@ -208,12 +219,15 @@ function validatePreflight(arm: Assembly, opts: ArticulatedDigitOptions): Prefli
     assertPositive(`segment '${segment.name}' lengthMm`, segment.lengthMm);
     assertPositive(`segment '${segment.name}' widthMm`, segment.widthMm);
     assertPositive(`segment '${segment.name}' depthMm`, segment.depthMm);
-    if (segment.terminal === true && index !== opts.segments.length - 1) {
+    if (segment.terminal === true && index !== segments.length - 1) {
       invalidArgs(`segment '${segment.name}' is terminal but is not the last segment.`);
     }
   }
+}
+
+function validatePreflightJoints(joints: readonly ArticulatedDigitJointSpec[]): void {
   const jointNames = new Set<string>();
-  for (const [index, joint] of opts.joints.entries()) {
+  for (const [index, joint] of joints.entries()) {
     assertName('joints[].name', joint?.name);
     assertTopoRefSafeName(joint.name, 'connector-name');
     if (jointNames.has(joint.name)) invalidArgs(`joints contain duplicate name '${joint.name}'.`);
@@ -221,7 +235,7 @@ function validatePreflight(arm: Assembly, opts: ArticulatedDigitOptions): Prefli
     if (index === 0 && joint.name === 'mount') {
       invalidArgs("first joint name 'mount' conflicts with the generated base mount connector.");
     }
-    if (index === opts.joints.length - 1 && joint.name === 'tip-frame') {
+    if (index === joints.length - 1 && joint.name === 'tip-frame') {
       invalidArgs("terminal joint name 'tip-frame' conflicts with the generated tip frame connector.");
     }
     if (!Array.isArray(joint.limitsDeg) || joint.limitsDeg.length !== 2 ||
@@ -230,7 +244,9 @@ function validatePreflight(arm: Assembly, opts: ArticulatedDigitOptions): Prefli
       invalidArgs(`joint '${joint.name}' limitsDeg must be a finite [min, max] range.`);
     }
   }
+}
 
+function buildPreflightGeometry(opts: ArticulatedDigitOptions): Preflight {
   const transform = frameTransform(opts.frame);
   const styles = opts.joints.map((joint) => withDefaults(joint.style));
   const webLengths = opts.segments.map((segment, index) => {
@@ -246,7 +262,10 @@ function validatePreflight(arm: Assembly, opts: ArticulatedDigitOptions): Prefli
     validateLinkCrossSection(segment, styles[index], outgoingStyle, opts.joints[index + 1]);
     return beamLengthMm;
   });
+  return { transform, styles, webLengths };
+}
 
+function validatePreflightAssembly(arm: Assembly, opts: ArticulatedDigitOptions): void {
   const parts = arm.__parts();
   const parent = parentMount(arm, opts.parentMount);
   if (parent === undefined || parent.type !== 'frame') {
@@ -265,7 +284,6 @@ function validatePreflight(arm: Assembly, opts: ArticulatedDigitOptions): Prefli
       invalidArgs(`generated joint support name '${name}-support' already exists in assembly '${arm.name}'.`);
     }
   }
-  return { transform, styles, webLengths };
 }
 
 function assertUniqueGeneratedNames(names: readonly string[], kind: 'part' | 'mate'): void {

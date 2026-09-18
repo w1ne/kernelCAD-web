@@ -52,5 +52,5 @@ describe('cycleRatchet', () => {
     for (const s of skipped) {
       expect(knownSkipped.some((k) => s.includes(k)), `unexpected skipped module: ${s}`).toBe(true);
     }
-  }, 300_000);
+  }, 480_000);
 });

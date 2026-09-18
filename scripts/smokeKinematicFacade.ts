@@ -46,15 +46,23 @@ async function main(): Promise<void> {
   if (mh.source !== 'local') throw new Error('source!=local on mounting-hole');
   if (mh.ok !== false)
     throw new Error('expected ok=false on diameter mismatch');
+  if (mh.mismatches.length !== 1)
+    throw new Error(
+      `expected 1 mounting-hole mismatch, got ${mh.mismatches.length}`,
+    );
 
-  // 2. swept-collision stub — empty success envelope (T3 fills body).
+  // 2. swept-collision — shipped sweep. The assembly is fully fastened (no
+  //    non-fixed joints), so the sweep samples zero poses and succeeds.
   const sc = await kc.kinematic.checkSweptCollision(arm);
   console.log(
     `[swept-collision] source=${sc.source} ok=${sc.ok} poses=${sc.posesSampled}`,
   );
   if (sc.source !== 'local') throw new Error('source!=local on swept');
+  if (sc.ok !== true) throw new Error('expected ok=true on rigid assembly');
 
-  // 3. reachable stub — unsupported-config diagnostic until T4/T5 ship.
+  // 3. reachable — shipped IK dispatcher. The tip is rigidly attached to the
+  //    root (fastened mate, no DOF joints), so the fixed tip frame already
+  //    satisfies the target within tolerance.
   const rr = await kc.kinematic.checkReachable(arm, {
     tipLink: 'a',
     target: { position: [0, 0, 0] },
@@ -63,15 +71,22 @@ async function main(): Promise<void> {
     `[reachable] source=${rr.source} ok=${rr.ok} diagnostics=${rr.diagnostics.length}`,
   );
   if (rr.source !== 'local') throw new Error('source!=local on reachable');
-  if (!rr.diagnostics.some((d) => d.code === 'kinematic.solver.unsupported-config'))
-    throw new Error('expected unsupported-config on reachable stub');
+  if (rr.ok !== true)
+    throw new Error('expected ok=true on rigid reachable tip');
+  if (rr.diagnostics.length !== 0)
+    throw new Error(
+      `expected no diagnostics on rigid reachable tip, got ${rr.diagnostics.length}`,
+    );
 
-  // 4. load-capacity stub — empty success envelope (T6 fills body).
+  // 4. load-capacity — shipped beam-mode check. No loads declared, so the
+  //    envelope is an empty success and no elements are analysed.
   const lc = await kc.kinematic.checkLoadCapacity(arm);
   console.log(
     `[load-capacity] source=${lc.source} ok=${lc.ok} elements=${lc.elements.length}`,
   );
   if (lc.source !== 'local') throw new Error('source!=local on load');
+  if (lc.ok !== true)
+    throw new Error('expected ok=true with no declared loads');
 
   console.log('[smoke] kc.kinematic.* facade dispatched all four entries OK');
 }

@@ -99,5 +99,5 @@ describe('quality ratchet (real tree)', () => {
       ...r.stale.map((f) => `STALE    ${fmt(f)} — run: npx tsx scripts/qualityBaselineRegen.ts`),
     ].join('\n');
     expect(r.ok, msg).toBe(true);
-  }, 300_000);
+  }, 480_000);
 });

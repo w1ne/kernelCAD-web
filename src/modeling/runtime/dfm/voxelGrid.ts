@@ -269,6 +269,79 @@ export interface ComponentLabeling {
   components: VoxelComponent[];
 }
 
+/** Label `idx` as a new member of component `id` and append it to the BFS
+ *  queue when it is an unvisited mask voxel. Returns the (possibly grown)
+ *  queue tail. */
+function enqueueVoxel(
+  idx: number,
+  mask: Uint8Array,
+  labels: Int32Array,
+  id: number,
+  queue: Int32Array,
+  tail: number,
+): number {
+  if (mask[idx] && labels[idx] === -1) {
+    labels[idx] = id;
+    queue[tail] = idx;
+    return tail + 1;
+  }
+  return tail;
+}
+
+/** Enqueue the six face neighbors of (i, j, k) that are in bounds. */
+function enqueueFaceNeighbors(
+  idx: number,
+  i: number,
+  j: number,
+  k: number,
+  dims: GridDims,
+  mask: Uint8Array,
+  labels: Int32Array,
+  id: number,
+  queue: Int32Array,
+  tail: number,
+): number {
+  const { nx, ny, nz } = dims;
+  if (i > 0) tail = enqueueVoxel(idx - 1, mask, labels, id, queue, tail);
+  if (i + 1 < nx) tail = enqueueVoxel(idx + 1, mask, labels, id, queue, tail);
+  if (j > 0) tail = enqueueVoxel(idx - nx, mask, labels, id, queue, tail);
+  if (j + 1 < ny) tail = enqueueVoxel(idx + nx, mask, labels, id, queue, tail);
+  if (k > 0) tail = enqueueVoxel(idx - nx * ny, mask, labels, id, queue, tail);
+  if (k + 1 < nz) tail = enqueueVoxel(idx + nx * ny, mask, labels, id, queue, tail);
+  return tail;
+}
+
+/** Enqueue the 26 face + edge + corner neighbors of (i, j, k) in bounds. */
+function enqueueAllNeighbors(
+  i: number,
+  j: number,
+  k: number,
+  dims: GridDims,
+  mask: Uint8Array,
+  labels: Int32Array,
+  id: number,
+  queue: Int32Array,
+  tail: number,
+): number {
+  const { nx, ny, nz } = dims;
+  for (let dk = -1; dk <= 1; dk++) {
+    const kk = k + dk;
+    if (kk < 0 || kk >= nz) continue;
+    for (let dj = -1; dj <= 1; dj++) {
+      const jj = j + dj;
+      if (jj < 0 || jj >= ny) continue;
+      for (let di = -1; di <= 1; di++) {
+        if (di === 0 && dj === 0 && dk === 0) continue;
+        const ii = i + di;
+        if (ii < 0 || ii >= nx) continue;
+        const nIdx = ii + nx * (jj + ny * kk);
+        tail = enqueueVoxel(nIdx, mask, labels, id, queue, tail);
+      }
+    }
+  }
+  return tail;
+}
+
 /**
  * BFS connected-component labeling of `mask ≠ 0` voxels. Connectivity 6 =
  * face neighbors only; 26 = face + edge + corner neighbors. Iterative with
@@ -303,33 +376,9 @@ export function components(mask: Uint8Array, dims: GridDims, connectivity: 6 | 2
       if (k < bz0) bz0 = k; if (k > bz1) bz1 = k;
 
       if (connectivity === 6) {
-        if (i > 0 && mask[idx - 1] && labels[idx - 1] === -1) { labels[idx - 1] = id; queue[tail++] = idx - 1; }
-        if (i + 1 < nx && mask[idx + 1] && labels[idx + 1] === -1) { labels[idx + 1] = id; queue[tail++] = idx + 1; }
-        if (j > 0 && mask[idx - nx] && labels[idx - nx] === -1) { labels[idx - nx] = id; queue[tail++] = idx - nx; }
-        if (j + 1 < ny && mask[idx + nx] && labels[idx + nx] === -1) { labels[idx + nx] = id; queue[tail++] = idx + nx; }
-        const down = idx - nx * ny;
-        const up = idx + nx * ny;
-        if (k > 0 && mask[down] && labels[down] === -1) { labels[down] = id; queue[tail++] = down; }
-        if (k + 1 < nz && mask[up] && labels[up] === -1) { labels[up] = id; queue[tail++] = up; }
+        tail = enqueueFaceNeighbors(idx, i, j, k, dims, mask, labels, id, queue, tail);
       } else {
-        for (let dk = -1; dk <= 1; dk++) {
-          const kk = k + dk;
-          if (kk < 0 || kk >= nz) continue;
-          for (let dj = -1; dj <= 1; dj++) {
-            const jj = j + dj;
-            if (jj < 0 || jj >= ny) continue;
-            for (let di = -1; di <= 1; di++) {
-              if (di === 0 && dj === 0 && dk === 0) continue;
-              const ii = i + di;
-              if (ii < 0 || ii >= nx) continue;
-              const nIdx = ii + nx * (jj + ny * kk);
-              if (mask[nIdx] && labels[nIdx] === -1) {
-                labels[nIdx] = id;
-                queue[tail++] = nIdx;
-              }
-            }
-          }
-        }
+        tail = enqueueAllNeighbors(i, j, k, dims, mask, labels, id, queue, tail);
       }
     }
 
