@@ -583,12 +583,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/poseEnvelope.ts",
-    "symbol": "Async function 'reviewPoseEnvelope'",
-    "value": 35
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/validator.ts",
     "symbol": "Async function 'validateAssemblyWithMates'",
     "value": 23
@@ -862,12 +856,6 @@
     "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
     "symbol": "Async function 'usdIsaacSerialize'",
     "value": 241
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/mates/poseEnvelope.ts",
-    "symbol": "Async function 'reviewPoseEnvelope'",
-    "value": 163
   },
   {
     "rule": "max-lines-per-function",
