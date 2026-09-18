@@ -816,12 +816,6 @@
     "value": 155
   },
   {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/routes/me.tsx",
-    "symbol": "Function 'MePage'",
-    "value": 159
-  },
-  {
     "rule": "max-lines",
     "file": "src/agent/reconstruct/planPhases.ts",
     "symbol": "(file)",

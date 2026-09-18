@@ -1,15 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
-import { useSession } from '../../funnel/hooks/useSession';
+import { useState } from 'react';
 import { getSupabase } from '../../funnel/lib/supabaseClient';
-import {
-  fetchMyPlan,
-  listMyProjects,
-  type MyPlan,
-  type ProjectRow,
-} from '../../funnel/lib/apiClient';
+import { useMePageData } from './-useMePageData';
 
 type CheckoutStatus = 'success' | 'cancel' | undefined;
 
@@ -52,26 +46,9 @@ export const Route = createFileRoute('/me')({
 });
 
 function MePage() {
-  const { session, loading } = useSession();
   const navigate = useNavigate();
   const { checkout } = Route.useSearch();
-  const [projects, setProjects] = useState<ProjectRow[] | null>(null);
-  const [plan, setPlan] = useState<MyPlan | null>(null);
-  const [planErr, setPlanErr] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!loading && !session) {
-      navigate({ to: '/signin', search: { next: '/me' } });
-    }
-  }, [loading, session, navigate]);
-
-  useEffect(() => {
-    if (session) {
-      listMyProjects().then(setProjects).catch(e => setErr(String(e)));
-      fetchMyPlan().then(setPlan).catch(e => setPlanErr(String(e)));
-    }
-  }, [session]);
+  const { session, loading, projects, plan, planErr, err } = useMePageData();
 
   const dismissCheckoutBanner = () => {
     navigate({ to: '/me', search: {}, replace: true });
