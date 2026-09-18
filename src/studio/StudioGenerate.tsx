@@ -10,6 +10,7 @@ import { ConceptResult } from './components/ConceptResult';
 import { useCode } from './context/CodeContext';
 import { useAgentGeneration } from './hooks/useAgentGeneration';
 import { useFeatureSelection } from './hooks/useFeatureSelection';
+import { useGenerationReview } from './hooks/useGenerationReview';
 import { usePromptDraft } from './hooks/usePromptDraft';
 import { useReferencePhoto } from './hooks/useReferencePhoto';
 import { useShellStore, shellStore } from './store/useShellStore';
@@ -41,9 +42,6 @@ const StudioGenerateInner: React.FC = () => {
     const { selectedFeatureId } = useFeatureSelection();
     const { agentDraftPrompt, agentDraftPromptVersion, agentRepairWorkflow, stagedEdit } = useShellStore();
     const { prompt, setPrompt } = usePromptDraft(agentDraftPrompt, agentDraftPromptVersion);
-    // The generationId we've already staged/rejected — gates the review panel
-    // so a resolved proposal doesn't reappear.
-    const [resolution, setResolution] = useState<{ generationId: string; action: 'staged' | 'discarded' } | null>(null);
     const {
         pendingReferenceImage,
         knownDimensionLabel,
@@ -84,12 +82,24 @@ const StudioGenerateInner: React.FC = () => {
         conceptBusy,
     });
 
+    const {
+        resolution,
+        reviewing,
+        stageGeneratedEdit,
+        reject,
+    } = useGenerationReview({
+        phase,
+        stagedEdit,
+        currentCode,
+        prompt,
+        selectedFeatureId,
+        agentRepairWorkflow,
+        reviewSnapshot,
+    });
+
     // The prompt the last concept was generated from — Build-as-CAD uses what
     // the user actually previewed even if they edited the box afterwards.
     const [conceptPrompt, setConceptPrompt] = useState('');
-
-    // A finished, not-yet-resolved proposal → show the review (diff + accept/reject).
-    const reviewing = phase.state === 'done' && resolution?.generationId !== phase.generationId;
 
     const steps = useMemo(() => events.map(stepLabel).filter(Boolean) as string[], [events]);
 
@@ -137,38 +147,6 @@ const StudioGenerateInner: React.FC = () => {
         } else {
             void submit(conceptPrompt, undefined, mesh);
         }
-    };
-
-    const stageGeneratedEdit = () => {
-        if (phase.state !== 'done') return;
-        if (stagedEdit != null) return;
-        const snapshot = reviewSnapshot ?? {
-            fromCode: currentCode,
-            promptText: prompt.trim(),
-            selectedFeatureId,
-            repairWorkflow: agentRepairWorkflow,
-        };
-        shellStore.proposeStagedEdit({
-            id: `agent:${phase.generationId}`,
-            intent: phase.artifact.title,
-            fromCode: snapshot.fromCode,
-            toCode: phase.artifact.code,
-            source: { kind: 'agent', label: 'Studio Generate' },
-            context: {
-                promptText: snapshot.promptText,
-                selectedFeatureId: snapshot.selectedFeatureId,
-                repairWorkflow: snapshot.repairWorkflow,
-                generationId: phase.generationId,
-            },
-        });
-        setResolution({ generationId: phase.generationId, action: 'staged' });
-    };
-    const reject = () => {
-        if (phase.state !== 'done') return;
-        if (agentRepairWorkflow?.state === 'running') {
-            shellStore.setAgentRepairWorkflow({ ...agentRepairWorkflow, state: 'drafted' });
-        }
-        setResolution({ generationId: phase.generationId, action: 'discarded' });
     };
 
     return (
