@@ -385,12 +385,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/fea/runFea.ts",
-    "symbol": "Async function 'runFeaStudy'",
-    "value": 44
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/import/importDxf.ts",
     "symbol": "Function 'importDxfText'",
     "value": 30
@@ -826,12 +820,6 @@
     "file": "src/kernel/backends/occt/worker.ts",
     "symbol": "Async arrow function",
     "value": 226
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kernel/fea/runFea.ts",
-    "symbol": "Async function 'runFeaStudy'",
-    "value": 283
   },
   {
     "rule": "max-lines-per-function",
