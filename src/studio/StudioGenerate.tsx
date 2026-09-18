@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { DiffEditor } from '@monaco-editor/react';
 import { useGeneration } from '../funnel/hooks/useGeneration';
 import { type GenerateEvent } from '../funnel/lib/generateClient';
@@ -9,6 +9,7 @@ import { inAppAgentEnabled } from './agentAvailability';
 import { ConceptResult } from './components/ConceptResult';
 import { useCode } from './context/CodeContext';
 import { useAgentGeneration } from './hooks/useAgentGeneration';
+import { useConceptWorkflow } from './hooks/useConceptWorkflow';
 import { useFeatureSelection } from './hooks/useFeatureSelection';
 import { useGenerationReview } from './hooks/useGenerationReview';
 import { usePromptDraft } from './hooks/usePromptDraft';
@@ -97,9 +98,22 @@ const StudioGenerateInner: React.FC = () => {
         reviewSnapshot,
     });
 
-    // The prompt the last concept was generated from — Build-as-CAD uses what
-    // the user actually previewed even if they edited the box afterwards.
-    const [conceptPrompt, setConceptPrompt] = useState('');
+    const { onConcept, buildConceptAsCad } = useConceptWorkflow({
+        prompt,
+        busy,
+        photoReferenceSelected,
+        referenceNeedsDimension,
+        setReferenceImageError,
+        readingReferenceImage,
+        referenceImage,
+        currentCode,
+        selectedFeatureId,
+        agentRepairWorkflow,
+        submit,
+        preview,
+        setBaseline,
+        setReviewSnapshot,
+    });
 
     const steps = useMemo(() => events.map(stepLabel).filter(Boolean) as string[], [events]);
 
@@ -107,47 +121,6 @@ const StudioGenerateInner: React.FC = () => {
         if (phase.state !== 'error' || agentRepairWorkflow?.state !== 'running') return;
         shellStore.setAgentRepairWorkflow({ ...agentRepairWorkflow, state: 'drafted' });
     }, [agentRepairWorkflow, phase.state]);
-
-    const onConcept = () => {
-        const trimmed = prompt.trim();
-        if (!trimmed || busy || photoReferenceSelected) return;
-        setConceptPrompt(trimmed);
-        void preview.submit(trimmed);
-    };
-
-    const buildConceptAsCad = () => {
-        if (!conceptPrompt || busy || readingReferenceImage) return;
-        if (referenceNeedsDimension) {
-            setReferenceImageError('Add a visible measurement label and a positive millimetre value before generating from a photo.');
-            return;
-        }
-        // Fresh generation, never an edit: framing the concept prompt as an
-        // edit of whatever happens to sit in the editor (often the untouched
-        // starter sample) lets the model return that code unchanged. The
-        // review diff still uses the current editor code as its baseline, so
-        // nothing is overwritten without the user accepting.
-        setBaseline(currentCode);
-        setReviewSnapshot({
-            fromCode: currentCode,
-            promptText: conceptPrompt,
-            selectedFeatureId,
-            repairWorkflow: agentRepairWorkflow,
-        });
-        // Read the concept mesh directly from the live preview phase (no mirrored
-        // state). A done preview with no Tripo render/fingerprint yields
-        // {renderImageUrl:null, proportions:null} — intentional and distinct from
-        // "no mesh" (undefined); the server's nullish schema accepts it.
-        const mesh = referenceImage == null && preview.phase.state === 'done'
-            ? { renderImageUrl: preview.phase.renderImageUrl, proportions: preview.phase.proportions }
-            : undefined;
-        if (referenceImage) {
-            // A photo is its own evidence mode. A preview that completed before
-            // the photo was selected must not make the request ambiguous.
-            void submit(conceptPrompt, undefined, undefined, referenceImage);
-        } else {
-            void submit(conceptPrompt, undefined, mesh);
-        }
-    };
 
     return (
         <div className="p-3 flex flex-col gap-2">

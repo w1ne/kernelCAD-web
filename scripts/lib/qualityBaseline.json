@@ -1101,7 +1101,7 @@
     "rule": "max-lines-per-function",
     "file": "src/studio/StudioGenerate.tsx",
     "symbol": "Arrow function",
-    "value": 272
+    "value": 259
   },
   {
     "rule": "max-lines-per-function",
