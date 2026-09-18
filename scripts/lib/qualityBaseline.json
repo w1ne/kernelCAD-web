@@ -62,12 +62,6 @@
   {
     "rule": "complexity",
     "file": "src/agent/drawing/sheet.ts",
-    "symbol": "Function 'analyseSheet'",
-    "value": 73
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/drawing/sheet.ts",
     "symbol": "Function 'projectionSymbol'",
     "value": 22
   },
@@ -265,13 +259,7 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/plan.ts",
-    "symbol": "Function 'buildPlan'",
-    "value": 93
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/reconstruct/plan.ts",
+    "file": "src/agent/reconstruct/planPhases.ts",
     "symbol": "Function 'decomposeRun'",
     "value": 35
   },
@@ -913,12 +901,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/agent/drawing/sheet.ts",
-    "symbol": "Function 'analyseSheet'",
-    "value": 205
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/agent/reconstruct/blends.ts",
     "symbol": "Function 'detectEdgeBlends'",
     "value": 175
@@ -928,12 +910,6 @@
     "file": "src/agent/reconstruct/meshClean.ts",
     "symbol": "Function 'cleanMesh'",
     "value": 205
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/agent/reconstruct/plan.ts",
-    "symbol": "Function 'buildPlan'",
-    "value": 567
   },
   {
     "rule": "max-lines-per-function",
@@ -1213,9 +1189,9 @@
   },
   {
     "rule": "max-lines",
-    "file": "src/agent/reconstruct/plan.ts",
+    "file": "src/agent/reconstruct/planPhases.ts",
     "symbol": "(file)",
-    "value": 1044
+    "value": 1002
   },
   {
     "rule": "max-lines",
