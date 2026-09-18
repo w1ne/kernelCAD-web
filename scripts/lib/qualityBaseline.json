@@ -745,12 +745,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/shared/codeGeneration/stripTypeScript.ts",
-    "symbol": "Function 'stripTypeScriptSyntax'",
-    "value": 51
-  },
-  {
-    "rule": "complexity",
     "file": "src/shared/intent/curve3dRecord.ts",
     "symbol": "Function 'isCurve3DMetadata'",
     "value": 22
@@ -1042,12 +1036,6 @@
     "file": "src/server/middleware/animationBakeEndpoint.ts",
     "symbol": "Function 'createAnimationBakeEndpoint'",
     "value": 157
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/shared/codeGeneration/stripTypeScript.ts",
-    "symbol": "Function 'stripTypeScriptSyntax'",
-    "value": 587
   },
   {
     "rule": "max-lines-per-function",
