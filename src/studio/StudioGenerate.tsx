@@ -8,6 +8,7 @@ import { inAppAgentEnabled } from './agentAvailability';
 import { ConceptResult } from './components/ConceptResult';
 import { GenerateForm } from './components/GenerateForm';
 import { GenerationReviewPanel } from './components/GenerationReviewPanel';
+import { GenerationStatus } from './components/GenerationStatus';
 import { useCode } from './context/CodeContext';
 import { useAgentGeneration } from './hooks/useAgentGeneration';
 import { useConceptWorkflow } from './hooks/useConceptWorkflow';
@@ -170,23 +171,7 @@ const StudioGenerateInner: React.FC = () => {
                 />
             )}
 
-            {phase.state === 'done' && !reviewing && resolution?.action === 'staged' && (
-                <div className="text-[10px] text-green-500 truncate" aria-live="polite">
-                    ✓ staged for review — {phase.artifact.title}
-                </div>
-            )}
-            {phase.state === 'done' && !reviewing && resolution?.action === 'discarded' && (
-                <div className="text-[10px] text-gray-500 truncate" aria-live="polite">
-                    discarded — {phase.artifact.title}
-                </div>
-            )}
-            {phase.state === 'error' && (
-                <div className="text-[10px] text-red-400" aria-live="polite">
-                    {phase.code === 'rate_limited'
-                        ? 'Rate limit reached — try again in a minute.'
-                        : `Didn't finish: ${phase.message.slice(0, 140)}`}
-                </div>
-            )}
+            <GenerationStatus phase={phase} reviewing={reviewing} resolution={resolution} />
 
             <ConceptResult
                 phase={preview.phase}
