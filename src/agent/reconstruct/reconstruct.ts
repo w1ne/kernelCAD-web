@@ -143,189 +143,161 @@ interface PassOutcome {
   holes?: Array<{ diameterMm: number; depthMm: number; kind: 'blind' | 'through' }>;
 }
 
-export async function reconstructFromSoup(
-  soup: TriangleSoup,
-  evaluate: ReconstructEvaluator,
-  opts: ReconstructOptions = {},
-): Promise<ReconstructResult> {
-  const analysis = analyseMesh(soup, opts.weldToleranceMm);
-  if (analysis.bands.length === 0 || analysis.report.triangles < 4) {
-    return {
-      ok: false,
-      error: 'mesh_to_features: the mesh has no usable volume — no band of material could be sectioned.',
-      errorCode: 'cli.invalid-args',
-      mesh: analysis.report,
-      diagnostics: [],
-    };
-  }
-  const thresholds: FidelityThresholds = {
-    minIoU: opts.minIoU ?? 0.98,
-    maxDeviationMm: opts.maxDeviationMm ?? Math.max(0.25, 0.001 * analysis.diagonal),
-    approximateIoU: 0.85,
-  };
-  const maxPasses = Math.max(1, Math.min(4, opts.maxPasses ?? 4));
-  const noise = analysis.seg.noiseMm;
-  const eps0 = Math.max(0.02, 3 * noise, 1e-4 * analysis.diagonal);
-  const snap0 = Math.max(0.01, 3 * noise);
-  // Pass 0 fits at the measured noise; pass 1 tightens fit and snap; pass 2
-  // loosens both (a noisier mesh than the estimate says); pass 3 snaps nothing
-  // and spells out every depth, the most literal reading of the mesh.
-  const schedule: PassParams[] = [
-    { index: 0, eps: eps0, snapTol: snap0, angleTolDeg: 2, allowThroughKeyword: true },
-    { index: 1, eps: eps0 / 2, snapTol: snap0 / 2, angleTolDeg: 1, allowThroughKeyword: true },
-    { index: 2, eps: eps0 * 2.5, snapTol: snap0 * 2, angleTolDeg: 3, allowThroughKeyword: true },
-    { index: 3, eps: eps0 / 4, snapTol: 0, angleTolDeg: 0, allowThroughKeyword: false },
-  ].slice(0, maxPasses);
+interface ReconstructContext {
+  analysis: MeshAnalysis;
+  evaluate: ReconstructEvaluator;
+  thresholds: FidelityThresholds;
+  meshTri: TriMesh;
+  sourceName: string;
+  outcomes: PassOutcome[];
+}
 
-  const sourceName = opts.sourceName ?? `a ${soup.format.toUpperCase()} mesh`;
-  const meshTri: TriMesh = { positions: analysis.mesh.positions, indices: analysis.mesh.triangles };
-  const outcomes: PassOutcome[] = [];
-  let winner: PassOutcome | undefined;
-
-  const measure = async (plan: FeaturePlan, variant: PassSummary['variant'], withEdges: boolean): Promise<{ outcome: PassOutcome; edges?: SharpEdge[]; mesh?: TriMesh }> => {
-    const pass = plan.pass;
-    const script = emitScript(plan, { frame: analysis.frame, sourceName });
-    const evaluated = await evaluate(script, { withEdges });
-    if (!evaluated.ok) {
-      return {
-        outcome: {
-          plan,
-          script,
-          summary: { pass: pass.index, variant, epsMm: pass.eps, snapToleranceMm: pass.snapTol, ok: false, error: evaluated.error, errorCode: evaluated.errorCode },
-        },
-      };
-    }
-    const iou = volumeIoU(meshTri, evaluated.mesh);
-    const dev = surfaceDeviation(meshTri, evaluated.mesh);
-    const metrics = {
-      volumeIoU: iou.iou,
-      maxDeviationMm: dev.maxDeviationMm,
-      rmsMm: dev.rmsDeviationMm,
-      reconVolume: iou.volumeB,
-      meshVolume: iou.volumeA,
-    };
-    const unmatched = unmatchedAgainst(analysis, evaluated.mesh, thresholds.maxDeviationMm);
-    const verdict = classifyFidelity(metrics, thresholds, analysis.report.watertight, unmatched.length);
+async function measurePlan(
+  ctx: ReconstructContext,
+  plan: FeaturePlan,
+  variant: PassSummary['variant'],
+  withEdges: boolean,
+): Promise<{ outcome: PassOutcome; edges?: SharpEdge[]; mesh?: TriMesh }> {
+  const { analysis, evaluate, thresholds, meshTri, sourceName } = ctx;
+  const pass = plan.pass;
+  const script = emitScript(plan, { frame: analysis.frame, sourceName });
+  const evaluated = await evaluate(script, { withEdges });
+  if (!evaluated.ok) {
     return {
       outcome: {
         plan,
         script,
-        metrics,
-        unmatched,
-        holes: evaluated.holes,
-        summary: {
-          pass: pass.index,
-          variant,
-          epsMm: pass.eps,
-          snapToleranceMm: pass.snapTol,
-          ok: true,
-          volumeIoU: metrics.volumeIoU,
-          maxDeviationMm: metrics.maxDeviationMm,
-          rmsMm: metrics.rmsMm,
-          verdict,
-        },
+        summary: { pass: pass.index, variant, epsMm: pass.eps, snapToleranceMm: pass.snapTol, ok: false, error: evaluated.error, errorCode: evaluated.errorCode },
       },
-      edges: evaluated.edges,
-      mesh: evaluated.mesh,
     };
+  }
+  const iou = volumeIoU(meshTri, evaluated.mesh);
+  const dev = surfaceDeviation(meshTri, evaluated.mesh);
+  const metrics = {
+    volumeIoU: iou.iou,
+    maxDeviationMm: dev.maxDeviationMm,
+    rmsMm: dev.rmsDeviationMm,
+    reconVolume: iou.volumeB,
+    meshVolume: iou.volumeA,
   };
-
-  for (const pass of schedule) {
-    let plan: FeaturePlan;
-    try {
-      plan = buildPlan(analysis, pass);
-    } catch (e) {
-      outcomes.push({
-        plan: undefined as unknown as FeaturePlan,
-        script: '',
-        summary: { pass: pass.index, variant: 'sharp', epsMm: pass.eps, snapToleranceMm: pass.snapTol, ok: false, error: `planning failed: ${e instanceof Error ? e.message : String(e)}` },
-      });
-      continue;
-    }
-    const base = await measure(plan, 'sharp', false);
-    outcomes.push(base.outcome);
-    const baseFaithful = base.outcome.summary.verdict === 'faithful';
-    // Blends change a part by a thin skin along its edges; a reading that is
-    // further off than that (a freeform body, a wrong axis) is not one blend
-    // search away from faithful, so do not spend kernel fillets on it.
-    if (!baseFaithful && (!base.outcome.metrics || base.outcome.metrics.volumeIoU < 0.95)) continue;
-    // Tangent corner rounds in the profile: try the design-intent reading, a
-    // sharp profile plus a fillet feature, even when the arcs already fit —
-    // one radius param then drives every round, cap edge or corner, and the
-    // kernel builds the corner patches.
-    const sharpened = buildPlan(analysis, { ...pass, sharpenCorners: true });
-    if (baseFaithful && sharpened.sharpenedArcs === 0) {
-      winner = base.outcome;
-      break;
-    }
-    // Each attempt is built only when the one before it did not verify, so a
-    // part whose rounds are all sharp-profile fillets never pays for reading
-    // the plain model's edges.
-    const attempts: Array<() => Promise<{ plan: FeaturePlan; variant: PassSummary['variant'] } | undefined>> = [
-      async () => {
-        if (sharpened.sharpenedArcs === 0) return undefined;
-        const sharp = await measure(sharpened, 'sharpened', true);
-        if (!sharp.edges || !sharp.mesh) return undefined;
-        const f = filletPlan(analysis, sharpened, sharp.edges, sharp.mesh);
-        base.outcome.blendNotes = f.notes;
-        return f.plan ? { plan: f.plan, variant: 'sharpened+fillets' } : undefined;
+  const unmatched = unmatchedAgainst(analysis, evaluated.mesh, thresholds.maxDeviationMm);
+  const verdict = classifyFidelity(metrics, thresholds, analysis.report.watertight, unmatched.length);
+  return {
+    outcome: {
+      plan,
+      script,
+      metrics,
+      unmatched,
+      holes: evaluated.holes,
+      summary: {
+        pass: pass.index,
+        variant,
+        epsMm: pass.eps,
+        snapToleranceMm: pass.snapTol,
+        ok: true,
+        volumeIoU: metrics.volumeIoU,
+        maxDeviationMm: metrics.maxDeviationMm,
+        rmsMm: metrics.rmsMm,
+        verdict,
       },
-      async () => {
-        // Not faithful: read the plain model's edges to look for blends too.
-        if (baseFaithful) return undefined;
-        const withEdges = await evaluate(base.outcome.script, { withEdges: true });
-        if (!withEdges.ok || !withEdges.edges) return undefined;
-        const plain = filletPlan(analysis, plan, withEdges.edges, withEdges.mesh);
-        if (!base.outcome.blendNotes) base.outcome.blendNotes = plain.notes;
-        return plain.plan ? { plan: plain.plan, variant: 'fillets' } : undefined;
-      },
-    ];
-    let done = false;
-    for (const build of attempts) {
-      const a = await build();
-      if (!a) continue;
-      const r = await measure(a.plan, a.variant, false);
-      r.outcome.blendNotes = base.outcome.blendNotes;
-      outcomes.push(r.outcome);
-      if (r.outcome.summary.verdict === 'faithful') {
-        winner = r.outcome;
-        done = true;
-        break;
-      }
-    }
-    if (done) break;
-    if (baseFaithful) {
-      // The fillet reading did not verify; the arcs in the profile did.
-      base.outcome.blendNotes = undefined;
-      winner = base.outcome;
-      break;
-    }
-  }
-  if (!winner) {
-    const rank = { faithful: 0, approximate: 1, failed: 2 } as const;
-    const measured = outcomes.filter((o) => o.metrics);
-    measured.sort(
-      (a, b) =>
-        rank[a.summary.verdict!] - rank[b.summary.verdict!] ||
-        Math.round(1e4 * (b.metrics!.volumeIoU - a.metrics!.volumeIoU)) ||
-        a.metrics!.maxDeviationMm - b.metrics!.maxDeviationMm,
-    );
-    winner = measured[0];
-  }
-  const passes = outcomes.map((o) => o.summary);
-  if (!winner || !winner.metrics) {
-    const last = outcomes[outcomes.length - 1];
-    return {
-      ok: false,
-      error: `mesh_to_features: no pass produced a script that evaluates (last error: ${last?.summary.error ?? 'none'}).`,
-      errorCode: last?.summary.errorCode ?? 'cli.script-exception',
-      passes,
-      mesh: analysis.report,
-      diagnostics: [],
-    };
-  }
+    },
+    edges: evaluated.edges,
+    mesh: evaluated.mesh,
+  };
+}
 
-  const m = winner.metrics;
+async function runReconstructionPass(
+  ctx: ReconstructContext,
+  pass: PassParams,
+): Promise<PassOutcome | undefined> {
+  const { analysis, evaluate, outcomes } = ctx;
+  let plan: FeaturePlan;
+  try {
+    plan = buildPlan(analysis, pass);
+  } catch (e) {
+    outcomes.push({
+      plan: undefined as unknown as FeaturePlan,
+      script: '',
+      summary: { pass: pass.index, variant: 'sharp', epsMm: pass.eps, snapToleranceMm: pass.snapTol, ok: false, error: `planning failed: ${e instanceof Error ? e.message : String(e)}` },
+    });
+    return undefined;
+  }
+  const base = await measurePlan(ctx, plan, 'sharp', false);
+  outcomes.push(base.outcome);
+  const baseFaithful = base.outcome.summary.verdict === 'faithful';
+  // Blends change a part by a thin skin along its edges; a reading that is
+  // further off than that (a freeform body, a wrong axis) is not one blend
+  // search away from faithful, so do not spend kernel fillets on it.
+  if (!baseFaithful && (!base.outcome.metrics || base.outcome.metrics.volumeIoU < 0.95)) return undefined;
+  // Tangent corner rounds in the profile: try the design-intent reading, a
+  // sharp profile plus a fillet feature, even when the arcs already fit —
+  // one radius param then drives every round, cap edge or corner, and the
+  // kernel builds the corner patches.
+  const sharpened = buildPlan(analysis, { ...pass, sharpenCorners: true });
+  if (baseFaithful && sharpened.sharpenedArcs === 0) {
+    return base.outcome;
+  }
+  // Each attempt is built only when the one before it did not verify, so a
+  // part whose rounds are all sharp-profile fillets never pays for reading
+  // the plain model's edges.
+  const attempts: Array<() => Promise<{ plan: FeaturePlan; variant: PassSummary['variant'] } | undefined>> = [
+    async () => {
+      if (sharpened.sharpenedArcs === 0) return undefined;
+      const sharp = await measurePlan(ctx, sharpened, 'sharpened', true);
+      if (!sharp.edges || !sharp.mesh) return undefined;
+      const f = filletPlan(analysis, sharpened, sharp.edges, sharp.mesh);
+      base.outcome.blendNotes = f.notes;
+      return f.plan ? { plan: f.plan, variant: 'sharpened+fillets' } : undefined;
+    },
+    async () => {
+      // Not faithful: read the plain model's edges to look for blends too.
+      if (baseFaithful) return undefined;
+      const withEdges = await evaluate(base.outcome.script, { withEdges: true });
+      if (!withEdges.ok || !withEdges.edges) return undefined;
+      const plain = filletPlan(analysis, plan, withEdges.edges, withEdges.mesh);
+      if (!base.outcome.blendNotes) base.outcome.blendNotes = plain.notes;
+      return plain.plan ? { plan: plain.plan, variant: 'fillets' } : undefined;
+    },
+  ];
+  for (const build of attempts) {
+    const a = await build();
+    if (!a) continue;
+    const r = await measurePlan(ctx, a.plan, a.variant, false);
+    r.outcome.blendNotes = base.outcome.blendNotes;
+    outcomes.push(r.outcome);
+    if (r.outcome.summary.verdict === 'faithful') {
+      return r.outcome;
+    }
+  }
+  if (baseFaithful) {
+    // The fillet reading did not verify; the arcs in the profile did.
+    base.outcome.blendNotes = undefined;
+    return base.outcome;
+  }
+  return undefined;
+}
+
+function selectBestOutcome(outcomes: PassOutcome[]): PassOutcome | undefined {
+  const rank = { faithful: 0, approximate: 1, failed: 2 } as const;
+  const measured = outcomes.filter((o) => o.metrics);
+  measured.sort(
+    (a, b) =>
+      rank[a.summary.verdict!] - rank[b.summary.verdict!] ||
+      Math.round(1e4 * (b.metrics!.volumeIoU - a.metrics!.volumeIoU)) ||
+      a.metrics!.maxDeviationMm - b.metrics!.maxDeviationMm,
+  );
+  return measured[0];
+}
+
+async function buildReconstructSuccess(
+  ctx: ReconstructContext,
+  soup: TriangleSoup,
+  winner: PassOutcome,
+  thresholds: FidelityThresholds,
+  passes: PassSummary[],
+): Promise<ReconstructSuccess> {
+  const { analysis, evaluate, sourceName } = ctx;
+  const m = winner.metrics!;
   const verdict = winner.summary.verdict!;
   const fidelity: FidelityReport = {
     maxDeviationMm: m.maxDeviationMm,
@@ -386,6 +358,71 @@ export async function reconstructFromSoup(
     notRepresented,
     diagnostics,
   };
+}
+
+export async function reconstructFromSoup(
+  soup: TriangleSoup,
+  evaluate: ReconstructEvaluator,
+  opts: ReconstructOptions = {},
+): Promise<ReconstructResult> {
+  const analysis = analyseMesh(soup, opts.weldToleranceMm);
+  if (analysis.bands.length === 0 || analysis.report.triangles < 4) {
+    return {
+      ok: false,
+      error: 'mesh_to_features: the mesh has no usable volume — no band of material could be sectioned.',
+      errorCode: 'cli.invalid-args',
+      mesh: analysis.report,
+      diagnostics: [],
+    };
+  }
+  const thresholds: FidelityThresholds = {
+    minIoU: opts.minIoU ?? 0.98,
+    maxDeviationMm: opts.maxDeviationMm ?? Math.max(0.25, 0.001 * analysis.diagonal),
+    approximateIoU: 0.85,
+  };
+  const maxPasses = Math.max(1, Math.min(4, opts.maxPasses ?? 4));
+  const noise = analysis.seg.noiseMm;
+  const eps0 = Math.max(0.02, 3 * noise, 1e-4 * analysis.diagonal);
+  const snap0 = Math.max(0.01, 3 * noise);
+  // Pass 0 fits at the measured noise; pass 1 tightens fit and snap; pass 2
+  // loosens both (a noisier mesh than the estimate says); pass 3 snaps nothing
+  // and spells out every depth, the most literal reading of the mesh.
+  const schedule: PassParams[] = [
+    { index: 0, eps: eps0, snapTol: snap0, angleTolDeg: 2, allowThroughKeyword: true },
+    { index: 1, eps: eps0 / 2, snapTol: snap0 / 2, angleTolDeg: 1, allowThroughKeyword: true },
+    { index: 2, eps: eps0 * 2.5, snapTol: snap0 * 2, angleTolDeg: 3, allowThroughKeyword: true },
+    { index: 3, eps: eps0 / 4, snapTol: 0, angleTolDeg: 0, allowThroughKeyword: false },
+  ].slice(0, maxPasses);
+
+  const sourceName = opts.sourceName ?? `a ${soup.format.toUpperCase()} mesh`;
+  const meshTri: TriMesh = { positions: analysis.mesh.positions, indices: analysis.mesh.triangles };
+  const outcomes: PassOutcome[] = [];
+  const ctx: ReconstructContext = { analysis, evaluate, thresholds, meshTri, sourceName, outcomes };
+  let winner: PassOutcome | undefined;
+
+  for (const pass of schedule) {
+    const passWinner = await runReconstructionPass(ctx, pass);
+    if (passWinner !== undefined) {
+      winner = passWinner;
+      break;
+    }
+  }
+  if (!winner) {
+    winner = selectBestOutcome(outcomes);
+  }
+  const passes = outcomes.map((o) => o.summary);
+  if (!winner || !winner.metrics) {
+    const last = outcomes[outcomes.length - 1];
+    return {
+      ok: false,
+      error: `mesh_to_features: no pass produced a script that evaluates (last error: ${last?.summary.error ?? 'none'}).`,
+      errorCode: last?.summary.errorCode ?? 'cli.script-exception',
+      passes,
+      mesh: analysis.report,
+      diagnostics: [],
+    };
+  }
+  return buildReconstructSuccess(ctx, soup, winner, thresholds, passes);
 }
 
 function round6(v: number): number {

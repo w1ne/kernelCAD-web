@@ -223,12 +223,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/reconstruct.ts",
-    "symbol": "Async function 'reconstructFromSoup'",
-    "value": 36
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/section.ts",
     "symbol": "Function 'sliceAtZ'",
     "value": 27
@@ -754,12 +748,6 @@
     "file": "src/studio/routes/p.$slug.tsx",
     "symbol": "Function 'ProjectPage'",
     "value": 23
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/agent/reconstruct/reconstruct.ts",
-    "symbol": "Async function 'reconstructFromSoup'",
-    "value": 221
   },
   {
     "rule": "max-lines-per-function",
