@@ -433,7 +433,7 @@ import {
     isReferenceImageMimeType,
     MAX_REFERENCE_IMAGE_BYTES,
     type GenerateRequest,
-} from '../../funnel/lib/generateClient';
+} from '../funnel/lib/generateClient';
 ```
 
 ```tsx
