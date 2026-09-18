@@ -110,6 +110,67 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
         throw new Error('assemblyToMjcf: assembly has no parts; nothing to physics-check.');
     }
 
+    const { partByName, childrenByParent, roots } = buildMateTree(parts, mates);
+
+    const { inertials, collisionMeshes } = await buildPartAssets(parts);
+
+    const resolvedMateAxes = await resolveMateFrames(mates, partByName);
+
+    const { resolvedTendons, sitesByPart, spatialChildrenByTendon } = await resolveTendonSites(tendons, partByName);
+
+    // Emit MJCF by recursive body-tree walk.
+    const jointOrder: { mjcfName: string; mateName: string }[] = [];
+    const bodyOrder: string[] = [];
+    const worldbodyBlocks = emitWorldbodyBlocks(
+        roots,
+        partByName,
+        childrenByParent,
+        inertials,
+        collisionMeshes,
+        resolvedMateAxes,
+        sitesByPart,
+        jointOrder,
+        bodyOrder,
+    );
+
+    const tendonBlockLines = emitTendonBlock(resolvedTendons, spatialChildrenByTendon);
+    const assetBlockLines = emitAssetBlock(parts, collisionMeshes);
+    const contactBlockLines = emitContactBlock(mates);
+
+    // P11: `<size nconmax>` gives MuJoCo headroom for contact storage.
+    // Its default is small (~100) and runs out on tight multi-part
+    // assemblies. Active contacts scale with the number of part pairs, so
+    // budget grows with part count: 500 floor for the small corpus,
+    // +120/part beyond that (a 50-part assembly gets 6000) — well within
+    // wasm heap limits while removing the fixed-cap ceiling that a large
+    // collision-rich assembly could trip over.
+    const nconmax = Math.max(500, parts.length * 120);
+    const mjcf = [
+        '<?xml version="1.0" ?>',
+        `<mujoco model="${escapeXml(arm.name)}">`,
+        '  <option gravity="0 0 -9.81"/>',
+        '  <compiler angle="radian"/>',
+        `  <size nconmax="${nconmax}"/>`,
+        ...assetBlockLines,
+        '  <worldbody>',
+        ...worldbodyBlocks,
+        '  </worldbody>',
+        ...tendonBlockLines,
+        ...contactBlockLines,
+        '</mujoco>',
+        '',
+    ].join('\n');
+
+    return { mjcf, jointOrder, bodyOrder };
+}
+
+interface MateTree {
+    readonly partByName: Map<string, AssemblyPartStored>;
+    readonly childrenByParent: Map<string, { childName: string; mate: MateRecord }[]>;
+    readonly roots: readonly AssemblyPartStored[];
+}
+
+function buildMateTree(parts: readonly AssemblyPartStored[], mates: readonly MateRecord[]): MateTree {
     // Build the parent/child tree from the mate graph. Match the URDF
     // serializer's spanning-tree convention: edge `a → b` makes `a` the
     // parent, `b` the child. Closed loops throw.
@@ -152,19 +213,25 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
     // body parented to the worldbody (or another body), so each root
     // becomes a top-level child of <worldbody>.
     const roots = parts.filter((p) => !parentByChild.has(p.name));
+    return { partByName, childrenByParent, roots };
+}
 
-    // Compute per-part inertia + collision mesh once. The bbox center is
-    // used to position the inertial origin when massProperties is
-    // unavailable (e.g. transformed-by-FK shapes). Mass / inertia from
-    // OcctBackend.massProperties; the URDF emitter shows the pattern.
-    //
-    // P11 Slice 1: also lower the part to its OCCT backend and pull a
-    // binary-STL tessellation, formatted as an inline `<mesh vertex="...">`
-    // string. Reuses `OcctBackend.exportSTLAsync()` (the same emitter the
-    // URDF writer feeds into per-link STL files) so collision geom and
-    // visual mesh stay byte-identical. Mesh-emission failures fall back
-    // to "inertia only" with no geom — the part stays in the kinematic
-    // tree but can't contact other bodies; criterion 6 will reflect that.
+// Compute per-part inertia + collision mesh once. The bbox center is
+// used to position the inertial origin when massProperties is
+// unavailable (e.g. transformed-by-FK shapes). Mass / inertia from
+// OcctBackend.massProperties; the URDF emitter shows the pattern.
+//
+// P11 Slice 1: also lower the part to its OCCT backend and pull a
+// binary-STL tessellation, formatted as an inline `<mesh vertex="...">`
+// string. Reuses `OcctBackend.exportSTLAsync()` (the same emitter the
+// URDF writer feeds into per-link STL files) so collision geom and
+// visual mesh stay byte-identical. Mesh-emission failures fall back
+// to "inertia only" with no geom — the part stays in the kinematic
+// tree but can't contact other bodies; criterion 6 will reflect that.
+async function buildPartAssets(parts: readonly AssemblyPartStored[]): Promise<{
+    inertials: Map<string, InertiaSpec>;
+    collisionMeshes: Map<string, { vertex: string; assetName: string }>;
+}> {
     const inertials = new Map<string, InertiaSpec>();
     const collisionMeshes = new Map<string, { vertex: string; assetName: string }>();
     for (const p of parts) {
@@ -215,12 +282,18 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
             }
         }
     }
+    return { inertials, collisionMeshes };
+}
 
-    // Resolve mate connector frames (origin + axis) in PARENT-LOCAL
-    // coordinates. The hinge/slide `pos` attribute is in the parent
-    // body's local frame, so we read the mate's `a` side (which lives
-    // on the parent) and use its origin/axis directly. Topology origins
-    // are resolved through `resolveConnectorOrigin` (async).
+// Resolve mate connector frames (origin + axis) in PARENT-LOCAL
+// coordinates. The hinge/slide `pos` attribute is in the parent
+// body's local frame, so we read the mate's `a` side (which lives
+// on the parent) and use its origin/axis directly. Topology origins
+// are resolved through `resolveConnectorOrigin` (async).
+async function resolveMateFrames(
+    mates: readonly MateRecord[],
+    partByName: Map<string, AssemblyPartStored>,
+): Promise<Map<string, { origin: Vec3; axis: Vec3 }>> {
     const resolvedMateAxes = new Map<string, { origin: Vec3; axis: Vec3 }>();
     for (const m of mates) {
         const aRef = parseConnectorRef(m.a);
@@ -232,51 +305,73 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
         const axis = (connector.axis ?? [0, 0, 1]) as Vec3;
         resolvedMateAxes.set(m.name, { origin: resolved.value, axis });
     }
+    return resolvedMateAxes;
+}
 
-    // P7: pre-resolve every tendon endpoint to (partName, site name,
-    // local-frame mm position). The site goes inside the owner body's
-    // `<body>` element; the `<spatial>` tendon references the sites by
-    // name. Mirror the mate-resolver pattern above — both use the same
-    // `resolveConnectorOrigin` to honor topology-bound connectors.
-    interface ResolvedTendonEndpoint {
-        readonly partName: string;
-        readonly siteName: string;
-        readonly localPosMm: Vec3;
+interface ResolvedTendonEndpoint {
+    readonly partName: string;
+    readonly siteName: string;
+    readonly localPosMm: Vec3;
+}
+
+interface ResolvedTendon {
+    readonly record: TendonRecord;
+    readonly endpoints: readonly [ResolvedTendonEndpoint, ResolvedTendonEndpoint];
+}
+
+async function resolveTendonEndpoint(
+    tendon: TendonRecord,
+    side: 'from' | 'to',
+    partByName: Map<string, AssemblyPartStored>,
+): Promise<ResolvedTendonEndpoint> {
+    const ref = side === 'from' ? tendon.from : tendon.to;
+    const parsed = parseConnectorRef(ref);
+    const part = partByName.get(parsed.partName);
+    if (part === undefined) {
+        throw new Error(
+            `assemblyToMjcf: tendon '${tendon.name}' ${side} references unknown part '${parsed.partName}'.`,
+        );
     }
-    interface ResolvedTendon {
-        readonly record: TendonRecord;
-        readonly endpoints: readonly [ResolvedTendonEndpoint, ResolvedTendonEndpoint];
+    const connector = part.mateConnectors.find((c) => c.name === parsed.connectorName);
+    if (connector === undefined) {
+        throw new Error(
+            `assemblyToMjcf: tendon '${tendon.name}' ${side} references unknown connector '${parsed.connectorName}' on part '${parsed.partName}'.`,
+        );
     }
-    async function resolveTendonEndpoint(
-        tendon: TendonRecord,
-        side: 'from' | 'to',
-    ): Promise<ResolvedTendonEndpoint> {
-        const ref = side === 'from' ? tendon.from : tendon.to;
-        const parsed = parseConnectorRef(ref);
-        const part = partByName.get(parsed.partName);
-        if (part === undefined) {
-            throw new Error(
-                `assemblyToMjcf: tendon '${tendon.name}' ${side} references unknown part '${parsed.partName}'.`,
-            );
-        }
-        const connector = part.mateConnectors.find((c) => c.name === parsed.connectorName);
-        if (connector === undefined) {
-            throw new Error(
-                `assemblyToMjcf: tendon '${tendon.name}' ${side} references unknown connector '${parsed.connectorName}' on part '${parsed.partName}'.`,
-            );
-        }
-        const resolved = await resolveConnectorOrigin(part.originalShape, connector.origin);
-        return {
-            partName: part.name,
-            siteName: `${tendon.name}__${side}`,
-            localPosMm: resolved.value,
-        };
-    }
+    const resolved = await resolveConnectorOrigin(part.originalShape, connector.origin);
+    return {
+        partName: part.name,
+        siteName: `${tendon.name}__${side}`,
+        localPosMm: resolved.value,
+    };
+}
+
+// P7: pre-resolve every tendon endpoint to (partName, site name,
+// local-frame mm position). The site goes inside the owner body's
+// `<body>` element; the `<spatial>` tendon references the sites by
+// name. Mirror the mate-resolver pattern above — both use the same
+// `resolveConnectorOrigin` to honor topology-bound connectors.
+//
+// P11 Slice 2 — build the routed `<spatial>` child sequence for every
+// tendon that declares wrapGeoms: `<site from>` → (wrap geom, with any
+// sidesite / separator sites) → `<site to>`. MuJoCo requires a `<site>`
+// between two consecutive wrap `<geom>`s, so a separator site is
+// injected at each subsequent wrap's origin. Sidesite + separator sites
+// are registered into `sitesByPart` here so `emitBody` (which runs
+// after this pass) materialises them inside the owning body.
+async function resolveTendonSites(
+    tendons: readonly TendonRecord[],
+    partByName: Map<string, AssemblyPartStored>,
+): Promise<{
+    resolvedTendons: ResolvedTendon[];
+    sitesByPart: Map<string, ResolvedTendonEndpoint[]>;
+    spatialChildrenByTendon: Map<string, string[]>;
+}> {
     const resolvedTendons: ResolvedTendon[] = [];
     const sitesByPart = new Map<string, ResolvedTendonEndpoint[]>();
     for (const t of tendons) {
-        const fromE = await resolveTendonEndpoint(t, 'from');
-        const toE = await resolveTendonEndpoint(t, 'to');
+        const fromE = await resolveTendonEndpoint(t, 'from', partByName);
+        const toE = await resolveTendonEndpoint(t, 'to', partByName);
         resolvedTendons.push({ record: t, endpoints: [fromE, toE] });
         for (const ep of [fromE, toE]) {
             const list = sitesByPart.get(ep.partName) ?? [];
@@ -285,13 +380,6 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
         }
     }
 
-    // P11 Slice 2 — build the routed `<spatial>` child sequence for every
-    // tendon that declares wrapGeoms: `<site from>` → (wrap geom, with any
-    // sidesite / separator sites) → `<site to>`. MuJoCo requires a `<site>`
-    // between two consecutive wrap `<geom>`s, so a separator site is
-    // injected at each subsequent wrap's origin. Sidesite + separator sites
-    // are registered into `sitesByPart` here so `emitBody` (which runs
-    // after this pass) materialises them inside the owning body.
     const addExtraSite = (partName: string, siteName: string, localPosMm: Vec3): void => {
         const list = sitesByPart.get(partName) ?? [];
         list.push({ partName, siteName, localPosMm });
@@ -325,11 +413,21 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
         children.push(`      <site site="${escapeXml(toE.siteName)}"/>`);
         spatialChildrenByTendon.set(t.name, children);
     }
+    return { resolvedTendons, sitesByPart, spatialChildrenByTendon };
+}
 
-    // Emit MJCF by recursive body-tree walk.
-    const jointOrder: { mjcfName: string; mateName: string }[] = [];
-    const bodyOrder: string[] = [];
-
+// Emit MJCF by recursive body-tree walk.
+function emitWorldbodyBlocks(
+    roots: readonly AssemblyPartStored[],
+    partByName: Map<string, AssemblyPartStored>,
+    childrenByParent: Map<string, { childName: string; mate: MateRecord }[]>,
+    inertials: Map<string, InertiaSpec>,
+    collisionMeshes: Map<string, { vertex: string; assetName: string }>,
+    resolvedMateAxes: Map<string, { origin: Vec3; axis: Vec3 }>,
+    sitesByPart: Map<string, ResolvedTendonEndpoint[]>,
+    jointOrder: { mjcfName: string; mateName: string }[],
+    bodyOrder: string[],
+): string[] {
     function partAttachPos(part: AssemblyPartStored): Vec3 {
         // Root bodies use the part's `at` placement (mm → m). Non-root
         // bodies live inside their parent's frame; we use the mate's
@@ -456,13 +554,19 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
     for (const root of roots) {
         worldbodyBlocks.push(emitBody(root.name, undefined, '    '));
     }
+    return worldbodyBlocks;
+}
 
-    // P7: emit the <tendon> block AFTER <worldbody>. Each spatial
-    // tendon references two sites by name; the sites were emitted
-    // inside their owner bodies above. Unit conversion:
-    //   restLengthMm    → springlength (m)   = mm × 1e-3
-    //   stiffnessNmm    → stiffness   (N/m)  = N/mm × 1e3
-    //   dampingNsmm     → damping     (N·s/m) = N·s/mm × 1e3
+// P7: emit the <tendon> block AFTER <worldbody>. Each spatial
+// tendon references two sites by name; the sites were emitted
+// inside their owner bodies above. Unit conversion:
+//   restLengthMm    → springlength (m)   = mm × 1e-3
+//   stiffnessNmm    → stiffness   (N/m)  = N/mm × 1e3
+//   dampingNsmm     → damping     (N·s/m) = N·s/mm × 1e3
+function emitTendonBlock(
+    resolvedTendons: readonly ResolvedTendon[],
+    spatialChildrenByTendon: Map<string, string[]>,
+): string[] {
     const tendonBlockLines: string[] = [];
     if (resolvedTendons.length > 0) {
         tendonBlockLines.push('  <tendon>');
@@ -490,13 +594,19 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
         }
         tendonBlockLines.push('  </tendon>');
     }
+    return tendonBlockLines;
+}
 
-    // P11 Slice 1: emit the `<asset>` block before `<worldbody>`. MJCF
-    // requires asset definitions ahead of every body that references
-    // them. One `<mesh>` per part that successfully exported STL;
-    // bodies whose mesh emission failed simply skip both the asset and
-    // the `<geom>` (they remain valid MuJoCo bodies, just inertia-only
-    // — the criterion 6 drop-test still observes their joint dynamics).
+// P11 Slice 1: emit the `<asset>` block before `<worldbody>`. MJCF
+// requires asset definitions ahead of every body that references
+// them. One `<mesh>` per part that successfully exported STL;
+// bodies whose mesh emission failed simply skip both the asset and
+// the `<geom>` (they remain valid MuJoCo bodies, just inertia-only
+// — the criterion 6 drop-test still observes their joint dynamics).
+function emitAssetBlock(
+    parts: readonly AssemblyPartStored[],
+    collisionMeshes: Map<string, { vertex: string; assetName: string }>,
+): string[] {
     const assetBlockLines: string[] = [];
     if (collisionMeshes.size > 0) {
         assetBlockLines.push('  <asset>');
@@ -517,20 +627,23 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
         }
         assetBlockLines.push('  </asset>');
     }
+    return assetBlockLines;
+}
 
-    // P11 Slice 1: emit a `<contact><exclude>` block for every mate's
-    // parent-child pair. A clevis fork-and-tongue pair (and every other
-    // joint primitive that nests one body inside another) is
-    // intentionally interpenetrating at the joint anchor — the
-    // constraint comes from the joint, not from contact. Without the
-    // exclude, MuJoCo treats the BREP overlap at every clevis as a deep
-    // penetration and applies enormous repulsive forces that kick the
-    // chain apart on the first integration step. The standard MJCF
-    // robotics idiom (see mujoco_menagerie + every Anglepoise/cable
-    // demo) is one `<exclude>` per kinematic-tree edge. Non-adjacent
-    // body pairs keep their default contact, so the genuine "free
-    // body falls onto another" failure modes Slice 1 was built to
-    // catch are still detectable.
+// P11 Slice 1: emit a `<contact><exclude>` block for every mate's
+// parent-child pair. A clevis fork-and-tongue pair (and every other
+// joint primitive that nests one body inside another) is
+// intentionally interpenetrating at the joint anchor — the
+// constraint comes from the joint, not from contact. Without the
+// exclude, MuJoCo treats the BREP overlap at every clevis as a deep
+// penetration and applies enormous repulsive forces that kick the
+// chain apart on the first integration step. The standard MJCF
+// robotics idiom (see mujoco_menagerie + every Anglepoise/cable
+// demo) is one `<exclude>` per kinematic-tree edge. Non-adjacent
+// body pairs keep their default contact, so the genuine "free
+// body falls onto another" failure modes Slice 1 was built to
+// catch are still detectable.
+function emitContactBlock(mates: readonly MateRecord[]): string[] {
     const contactBlockLines: string[] = [];
     if (mates.length > 0) {
         contactBlockLines.push('  <contact>');
@@ -543,32 +656,7 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
         }
         contactBlockLines.push('  </contact>');
     }
-
-    // P11: `<size nconmax>` gives MuJoCo headroom for contact storage.
-    // Its default is small (~100) and runs out on tight multi-part
-    // assemblies. Active contacts scale with the number of part pairs, so
-    // budget grows with part count: 500 floor for the small corpus,
-    // +120/part beyond that (a 50-part assembly gets 6000) — well within
-    // wasm heap limits while removing the fixed-cap ceiling that a large
-    // collision-rich assembly could trip over.
-    const nconmax = Math.max(500, parts.length * 120);
-    const mjcf = [
-        '<?xml version="1.0" ?>',
-        `<mujoco model="${escapeXml(arm.name)}">`,
-        '  <option gravity="0 0 -9.81"/>',
-        '  <compiler angle="radian"/>',
-        `  <size nconmax="${nconmax}"/>`,
-        ...assetBlockLines,
-        '  <worldbody>',
-        ...worldbodyBlocks,
-        '  </worldbody>',
-        ...tendonBlockLines,
-        ...contactBlockLines,
-        '</mujoco>',
-        '',
-    ].join('\n');
-
-    return { mjcf, jointOrder, bodyOrder };
+    return contactBlockLines;
 }
 
 interface InertiaSpec {

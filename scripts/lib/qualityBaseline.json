@@ -565,12 +565,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/runtime/mjcfExport.ts",
-    "symbol": "Async function 'assemblyToMjcf'",
-    "value": 34
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/validation/holeValidation.ts",
     "symbol": "Function 'validateCommonHoleFields'",
     "value": 26
@@ -730,12 +724,6 @@
     "file": "src/modeling/runtime/dfm/runDfmChecks.ts",
     "symbol": "Async function 'runDfmChecksOnModel'",
     "value": 153
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/runtime/mjcfExport.ts",
-    "symbol": "Async function 'assemblyToMjcf'",
-    "value": 309
   },
   {
     "rule": "max-lines-per-function",
