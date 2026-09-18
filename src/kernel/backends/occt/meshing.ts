@@ -224,7 +224,7 @@ function tryExtractFaceCenter(face: unknown): [number, number, number] | null {
   return tryVec3((face as UnknownRecord).center);
 }
 
-function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
+export function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
   if (!isRecord(face)) return undefined;
   const geomType = getString(face, 'geomType');
   if (!geomType) return undefined;
