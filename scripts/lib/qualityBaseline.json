@@ -805,12 +805,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/context/CodeContext.tsx",
-    "symbol": "Function 'CodeProvider'",
-    "value": 187
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/routes/generate.tsx",
     "symbol": "Function 'GeneratePage'",
     "value": 155
