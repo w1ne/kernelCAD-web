@@ -805,12 +805,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/studio/StudioGenerate.tsx",
-    "symbol": "Arrow function",
-    "value": 48
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/StudioShell.tsx",
     "symbol": "Function 'StudioShell'",
     "value": 21
@@ -1090,12 +1084,6 @@
     "file": "src/studio/StagedEditSlot.tsx",
     "symbol": "Function 'StagedEditSlot'",
     "value": 169
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/StudioGenerate.tsx",
-    "symbol": "Arrow function",
-    "value": 374
   },
   {
     "rule": "max-lines-per-function",
