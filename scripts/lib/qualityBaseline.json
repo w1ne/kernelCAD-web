@@ -212,12 +212,6 @@
   {
     "rule": "complexity",
     "file": "src/agent/reconstruct/blends.ts",
-    "symbol": "Function 'detectEdgeBlends'",
-    "value": 37
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/reconstruct/blends.ts",
     "symbol": "Function 'edgeMatchesQuery'",
     "value": 32
   },
@@ -766,12 +760,6 @@
     "file": "src/studio/routes/p.$slug.tsx",
     "symbol": "Function 'ProjectPage'",
     "value": 23
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/agent/reconstruct/blends.ts",
-    "symbol": "Function 'detectEdgeBlends'",
-    "value": 175
   },
   {
     "rule": "max-lines-per-function",
