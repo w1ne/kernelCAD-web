@@ -43,12 +43,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/drawing/pdfVectors.ts",
-    "symbol": "Async function 'readPdfPageVectors'",
-    "value": 53
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/drawing/reconstructPhases.ts",
     "symbol": "Arrow function",
     "value": 31
@@ -868,12 +862,6 @@
     "file": "src/agent/cli/commands/render.ts",
     "symbol": "Async function 'renderInspectBundle'",
     "value": 158
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/agent/drawing/pdfVectors.ts",
-    "symbol": "Async function 'readPdfPageVectors'",
-    "value": 185
   },
   {
     "rule": "max-lines-per-function",
