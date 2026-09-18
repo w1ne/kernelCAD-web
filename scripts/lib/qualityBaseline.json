@@ -793,12 +793,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/viewer/DirectEditGizmo.tsx",
-    "symbol": "Function 'DirectEditGizmo'",
-    "value": 218
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/context/CodeContext.tsx",
     "symbol": "Function 'CodeProvider'",
     "value": 187
