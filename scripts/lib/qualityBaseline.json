@@ -451,12 +451,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/sketch.ts",
-    "symbol": "Method 'nurbsSegment'",
-    "value": 31
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/virtualFeatureRecords.ts",
     "symbol": "Function 'buildReferenceImageFeatureSpec'",
     "value": 22
@@ -861,7 +855,7 @@
     "rule": "max-lines",
     "file": "src/modeling/capture/sketch.ts",
     "symbol": "(file)",
-    "value": 964
+    "value": 883
   },
   {
     "rule": "max-lines",
