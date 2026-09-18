@@ -307,12 +307,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/drawingAnnotations.ts",
-    "symbol": "Arrow function",
-    "value": 38
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/drawingAuto.ts",
     "symbol": "Function 'normaliseAutoAnnotate'",
     "value": 25
@@ -790,18 +784,6 @@
     "file": "src/agent/vision/index.ts",
     "symbol": "Async function 'traceFromImage'",
     "value": 163
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/drawingAnnotations.ts",
-    "symbol": "Arrow function",
-    "value": 222
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/drawingAnnotations.ts",
-    "symbol": "Function 'renderAnnotations'",
-    "value": 272
   },
   {
     "rule": "max-lines-per-function",
