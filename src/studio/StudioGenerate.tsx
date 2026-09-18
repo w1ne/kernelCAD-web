@@ -3,20 +3,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { DiffEditor } from '@monaco-editor/react';
 import { useGeneration } from '../funnel/hooks/useGeneration';
-import {
-    type GenerateEvent,
-    type GenerateRequest,
-} from '../funnel/lib/generateClient';
+import { type GenerateEvent } from '../funnel/lib/generateClient';
 import { useTextTo3dPreview } from '../funnel/hooks/useTextTo3dPreview';
 import { inAppAgentEnabled } from './agentAvailability';
 import { ConceptResult } from './components/ConceptResult';
 import { useCode } from './context/CodeContext';
+import { useAgentGeneration } from './hooks/useAgentGeneration';
 import { useFeatureSelection } from './hooks/useFeatureSelection';
 import { usePromptDraft } from './hooks/usePromptDraft';
 import { useReferencePhoto } from './hooks/useReferencePhoto';
 import { useShellStore, shellStore } from './store/useShellStore';
-import type { AgentRepairWorkflow } from './store/shellStore';
-import type { SelectedFeatureId } from './types';
 
 /** Web-only gate. No hooks here, so the conditional return is safe. */
 export const StudioGenerate: React.FC = () => {
@@ -38,13 +34,6 @@ function stepLabel(e: GenerateEvent): string | null {
     }
 }
 
-interface GenerationReviewSnapshot {
-    readonly fromCode: string;
-    readonly promptText: string;
-    readonly selectedFeatureId: SelectedFeatureId;
-    readonly repairWorkflow: AgentRepairWorkflow | null;
-}
-
 const StudioGenerateInner: React.FC = () => {
     const { phase, events, submit } = useGeneration();
     const { code } = useCode();
@@ -55,10 +44,6 @@ const StudioGenerateInner: React.FC = () => {
     // The generationId we've already staged/rejected — gates the review panel
     // so a resolved proposal doesn't reappear.
     const [resolution, setResolution] = useState<{ generationId: string; action: 'staged' | 'discarded' } | null>(null);
-    // The editor source captured at submit time — the "before" side of the diff
-    // (so the diff is stable even though `code` changes once we apply).
-    const [baseline, setBaseline] = useState('');
-    const [reviewSnapshot, setReviewSnapshot] = useState<GenerationReviewSnapshot | null>(null);
     const {
         pendingReferenceImage,
         knownDimensionLabel,
@@ -76,14 +61,33 @@ const StudioGenerateInner: React.FC = () => {
 
     // The single prompt box also drives the paid 3D concept preview.
     const preview = useTextTo3dPreview();
+    const conceptBusy = preview.phase.state === 'running';
+    const {
+        agentBusy,
+        busy,
+        baseline,
+        reviewSnapshot,
+        setBaseline,
+        setReviewSnapshot,
+        onSubmit,
+    } = useAgentGeneration({
+        phase,
+        submit,
+        currentCode,
+        prompt,
+        selectedFeatureId,
+        agentRepairWorkflow,
+        referenceImage,
+        referenceNeedsDimension,
+        setReferenceImageError,
+        readingReferenceImage,
+        conceptBusy,
+    });
+
     // The prompt the last concept was generated from — Build-as-CAD uses what
     // the user actually previewed even if they edited the box afterwards.
     const [conceptPrompt, setConceptPrompt] = useState('');
 
-    const agentBusy = phase.state === 'running';
-    const conceptBusy = preview.phase.state === 'running';
-    // One operation at a time: the rail is too narrow to narrate two runs.
-    const busy = agentBusy || conceptBusy;
     // A finished, not-yet-resolved proposal → show the review (diff + accept/reject).
     const reviewing = phase.state === 'done' && resolution?.generationId !== phase.generationId;
 
@@ -93,63 +97,6 @@ const StudioGenerateInner: React.FC = () => {
         if (phase.state !== 'error' || agentRepairWorkflow?.state !== 'running') return;
         shellStore.setAgentRepairWorkflow({ ...agentRepairWorkflow, state: 'drafted' });
     }, [agentRepairWorkflow, phase.state]);
-
-    const runAgent = (
-        text: string,
-        snapshot: GenerationReviewSnapshot,
-        photoReference?: GenerateRequest['referenceImage'],
-    ) => {
-        // Edit mode: hand the agent the current model so it iterates instead of
-        // replacing. Empty editor → fresh generation.
-        setBaseline(snapshot.fromCode);
-        setReviewSnapshot(snapshot);
-        if (snapshot.fromCode.trim()) {
-            if (photoReference) {
-                void submit(text, snapshot.fromCode, undefined, photoReference);
-            } else {
-                void submit(text, snapshot.fromCode);
-            }
-            return;
-        }
-        if (photoReference) {
-            void submit(text, undefined, undefined, photoReference);
-        } else {
-            void submit(text);
-        }
-    };
-
-    const onSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        const trimmed = prompt.trim();
-        if (!trimmed || busy || readingReferenceImage) return;
-        if (referenceNeedsDimension) {
-            setReferenceImageError('Add a visible measurement label and a positive millimetre value before generating from a photo.');
-            return;
-        }
-        const matchesDraftedRepair =
-            agentRepairWorkflow != null &&
-            agentRepairWorkflow.state === 'drafted' &&
-            agentRepairWorkflow.promptText === trimmed;
-        const runTargetId =
-            matchesDraftedRepair && agentRepairWorkflow.targetId === null
-                ? null
-                : selectedFeatureId;
-        const agentPrompt = runTargetId === null ? trimmed : `Edit selected target "${runTargetId}": ${trimmed}`;
-        let repairWorkflowForRun = agentRepairWorkflow;
-        if (
-            matchesDraftedRepair &&
-            agentRepairWorkflow.targetId === runTargetId
-        ) {
-            repairWorkflowForRun = { ...agentRepairWorkflow, state: 'running' };
-            shellStore.setAgentRepairWorkflow(repairWorkflowForRun);
-        }
-        runAgent(agentPrompt, {
-            fromCode: currentCode,
-            promptText: trimmed,
-            selectedFeatureId: runTargetId,
-            repairWorkflow: repairWorkflowForRun,
-        }, referenceImage ?? undefined);
-    };
 
     const onConcept = () => {
         const trimmed = prompt.trim();
