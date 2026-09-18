@@ -44,6 +44,7 @@ import {
   type DrawingViewName,
   type LinearDimension,
   type Polyline2,
+  type SheetLayout,
   type SheetSpec,
   type ViewBox2,
   type ViewPlacement,
@@ -161,6 +162,9 @@ export interface StyledDrawingView {
 type StyledView = StyledDrawingView;
 
 const VIEW_NAMES: readonly DrawingViewName[] = ['front', 'top', 'left', 'iso'];
+
+/** Height of the band reserved below the standard view grid for sections. */
+const SECTION_BAND_H = 70;
 
 const round3 = (n: number): string => {
   const r = Math.round(n * 1000) / 1000;
@@ -334,11 +338,116 @@ export function renderSvgDrawing(
   if (parts.length === 0) {
     throw new Error('svg-drawing export requires at least one part.');
   }
-  // Centroids must be read BEFORE makeCompound / getReplicadShape: those
-  // consume the replicad handles, and a later boundingBox would throw
-  // "This object has been deleted". Skip the read unless balloons,
-  // parts-list, or an exploded iso actually need them — exact bbox
-  // tessellation would otherwise perturb the automatic dimensions.
+  const { explodedParts, assembledCentroids, explodedCentroids, shape, explodedShape } =
+    resolveDrawingBodies(parts, options);
+
+  const sheet = SHEETS[options.sheet ?? 'a4'];
+  const [bbMin, bbMax] = shape.boundingBox.bounds;
+  const dims = {
+    w: bbMax[0] - bbMin[0],
+    d: bbMax[1] - bbMin[1],
+    h: bbMax[2] - bbMin[2],
+  };
+
+  const styled = projectSheetViews(shape, explodedShape);
+
+  const layout = computeSheetLayout(
+    {
+      front: styled.front.box,
+      top: styled.top.box,
+      left: styled.left.box,
+      iso: styled.iso.box,
+    },
+    sheet,
+  );
+  const s = layout.scale;
+
+  const dimensionStage = renderDimensionStage(parts, options, layout, s, dims, diagnosticsOut);
+
+  // --- section views ---------------------------------------------------
+  // The standard 4-view grid above is computed against the UNMODIFIED
+  // `sheet` spec, so a drawing with no sections is byte-identical to one
+  // from before this feature existed. Sections add a reserved band BELOW
+  // that grid (where the title block used to sit) and push the title block
+  // + frame down into a taller sheet — nothing above the band moves.
+  const sectionSpecs = options.sections ?? [];
+  const hasSections = sectionSpecs.length > 0;
+  const effSheet: SheetSpec = hasSections
+    ? { ...sheet, h: sheet.h + SECTION_BAND_H }
+    : sheet;
+  const sectionStage = renderSheetSections(shape, sectionSpecs, sheet, layout, s);
+  const sectionsSvg = sectionStage.svg;
+  const usesHatchPattern = sectionStage.usesHatchPattern;
+
+  // --- automatic annotation + declared GD&T ------------------------------
+  const autoStage = renderAutoStage({
+    parts,
+    options,
+    shape,
+    layout,
+    styled,
+    s,
+    sheet,
+    sectionsSvg,
+    dimBodies: dimensionStage.dimBodies,
+    bottomReserve: dimensionStage.bottomReserve,
+    rightReserve: dimensionStage.rightReserve,
+    report: dimensionStage.report,
+    diagnosticsOut,
+  });
+  const dimBodies = autoStage.dimBodies;
+  const bottomReserve = autoStage.bottomReserve;
+  const report = autoStage.report;
+  const generalTolerance = autoStage.generalTolerance;
+
+  const viewGroups = renderViewGroups(styled, layout, bottomReserve, s, explodedShape);
+
+  const explodeSvg = renderExplodeOverlays({
+    options,
+    assembledCentroids,
+    explodedCentroids,
+    explodedParts,
+    layout,
+    s,
+    effSheet,
+    diagnosticsOut,
+  });
+
+  return buildSheetSvg({
+    effSheet,
+    usesHatchPattern,
+    viewGroups,
+    dimBodies,
+    sectionsSvg,
+    explodeSvg,
+    generalTolerance,
+    layout,
+    options,
+    explodedShape,
+    diagnosticsOut,
+    report,
+  });
+}
+
+/**
+ * Resolve the lowered shape(s) and the part centroids the overlays need.
+ *
+ * Centroids must be read BEFORE makeCompound / getReplicadShape: those
+ * consume the replicad handles, and a later boundingBox would throw
+ * "This object has been deleted". Skip the read unless balloons,
+ * parts-list, or an exploded iso actually need them — exact bbox
+ * tessellation would otherwise perturb the automatic dimensions.
+ */
+function resolveDrawingBodies(
+  parts: WorldFramePart[],
+  options: SvgDrawingOptions,
+): {
+  explodedParts: readonly WorldFramePart[] | undefined;
+  assembledCentroids: Map<string, [number, number, number]>;
+  explodedCentroids: Map<string, [number, number, number]>;
+  shape: AnyShape;
+  explodedShape: AnyShape | undefined;
+} {
   const explodedParts = options.explodedParts;
   const needCentroids =
     options.balloons === true || options.partsList === true || explodedParts !== undefined;
@@ -356,18 +465,19 @@ export function renderSvgDrawing(
       : explodedParts.length === 1
         ? explodedParts[0]!.shape.getReplicadShape()
         : makeCompound(explodedParts.map(p => p.shape.getReplicadShape()));
+  return { explodedParts, assembledCentroids, explodedCentroids, shape, explodedShape };
+}
 
-  const sheet = SHEETS[options.sheet ?? 'a4'];
-  const [bbMin, bbMax] = shape.boundingBox.bounds;
-  const dims = {
-    w: bbMax[0] - bbMin[0],
-    d: bbMax[1] - bbMin[1],
-    h: bbMax[2] - bbMin[2],
-  };
-
-  // Project + classify + dedup each view. Class order is the dedup priority:
-  // visible full-weight first, then tangent, then hidden — a coincident
-  // segment renders once, in its strongest role.
+/**
+ * Project, classify and dedup the sheet's standard views, swapping in the
+ * exploded pose for the isometric cell when one is supplied. Class order is
+ * the dedup priority: visible full-weight first, then tangent, then hidden —
+ * a coincident segment lands once, in its strongest role.
+ */
+function projectSheetViews(
+  shape: AnyShape,
+  explodedShape: AnyShape | undefined,
+): Record<DrawingViewName, StyledView> {
   const styled = {} as Record<DrawingViewName, StyledView>;
   for (const name of VIEW_NAMES) {
     const camera = makeDrawingCamera(name);
@@ -393,32 +503,37 @@ export function renderSvgDrawing(
     if (box) view.box = box;
     styled[name] = view;
   }
+  return styled;
+}
 
-  const layout = computeSheetLayout(
-    {
-      front: styled.front.box,
-      top: styled.top.box,
-      left: styled.left.box,
-      iso: styled.iso.box,
-    },
-    sheet,
-  );
-  const s = layout.scale;
-
+/**
+ * Dimension phase: authored dimensions if the caller supplied any, else the
+ * automatic bounding-box set, or nothing when auto-annotation draws its own.
+ * Computed before the view groups because bottom-stacked dimensions decide
+ * how far down each view's caption has to move to clear them.
+ */
+function renderDimensionStage(
+  parts: WorldFramePart[],
+  options: SvgDrawingOptions,
+  layout: SheetLayout,
+  s: number,
+  dims: { w: number; d: number; h: number },
+  diagnosticsOut: CompilerDiagnostic[],
+): {
+  dimBodies: string[];
+  bottomReserve: Record<DrawingViewName, number>;
+  rightReserve: Record<DrawingViewName, number>;
+  report: DrawingReport | undefined;
+} {
   // --- dimensions: authored if the caller supplied any, else automatic ----
-  // Computed before the view groups because bottom-stacked dimensions decide
-  // how far down each view's caption has to move to clear them.
   const authored = options.annotations ?? [];
-  const declarations = options.declarations ?? { datums: [], tolerances: [] };
   const autoOn = options.autoAnnotate !== undefined && options.autoAnnotate !== false;
-  const hasDeclarations = declarations.datums.length + declarations.tolerances.length > 0;
   const f = layout.views.front.box;
   const t = layout.views.top.box;
   let dimBodies: string[];
   let bottomReserve: Record<DrawingViewName, number>;
   let rightReserve: Record<DrawingViewName, number> = { front: 0, top: 0, left: 0, iso: 0 };
   let report: DrawingReport | undefined;
-  let generalTolerance: string | undefined;
 
   if (authored.length > 0) {
     const rendered = renderAnnotations({
@@ -489,39 +604,78 @@ export function renderSvgDrawing(
     bottomReserve = { front: DIM_BASE, top: 0, left: 0, iso: 0 };
   }
 
-  // --- section views ---------------------------------------------------
-  // The standard 4-view grid above is computed against the UNMODIFIED
-  // `sheet` spec, so a drawing with no sections is byte-identical to one
-  // from before this feature existed. Sections add a reserved band BELOW
-  // that grid (where the title block used to sit) and push the title block
-  // + frame down into a taller sheet — nothing above the band moves.
-  const sectionSpecs = options.sections ?? [];
-  const SECTION_BAND_H = 70;
-  const hasSections = sectionSpecs.length > 0;
-  const effSheet: SheetSpec = hasSections
-    ? { ...sheet, h: sheet.h + SECTION_BAND_H }
-    : sheet;
-  let sectionsSvg = '';
-  let usesHatchPattern = false;
-  if (hasSections) {
-    const compoundBackend = new OcctBackend(shape as import('replicad').Shape3D);
-    const bandOrigin: [number, number] = [
-      sheet.margin,
-      sheet.h - sheet.margin - sheet.titleBlock.h,
-    ];
-    const rendered = renderSections({
-      compound: compoundBackend,
-      sections: sectionSpecs,
-      mainViewPlacements: layout.views,
-      mainScale: s,
-      bandOrigin,
-      bandWidth: sheet.w - 2 * sheet.margin,
-      bandHeight: SECTION_BAND_H,
-    });
-    sectionsSvg = rendered.svg;
-    usesHatchPattern = rendered.usesHatchPattern;
+  return { dimBodies, bottomReserve, rightReserve, report };
+}
+
+/**
+ * Section phase: render the requested section views into the reserved band
+ * below the standard grid, against the ORIGINAL sheet spec. Returns an empty
+ * stage when no sections were requested.
+ */
+function renderSheetSections(
+  shape: AnyShape,
+  sectionSpecs: readonly DrawingSectionSpec[],
+  sheet: SheetSpec,
+  layout: SheetLayout,
+  s: number,
+): { svg: string; usesHatchPattern: boolean } {
+  if (sectionSpecs.length === 0) {
+    return { svg: '', usesHatchPattern: false };
   }
-  // --- automatic annotation + declared GD&T ------------------------------
+  const compoundBackend = new OcctBackend(shape as import('replicad').Shape3D);
+  const bandOrigin: [number, number] = [
+    sheet.margin,
+    sheet.h - sheet.margin - sheet.titleBlock.h,
+  ];
+  const rendered = renderSections({
+    compound: compoundBackend,
+    sections: sectionSpecs,
+    mainViewPlacements: layout.views,
+    mainScale: s,
+    bandOrigin,
+    bandWidth: sheet.w - 2 * sheet.margin,
+    bandHeight: SECTION_BAND_H,
+  });
+  return { svg: rendered.svg, usesHatchPattern: rendered.usesHatchPattern };
+}
+
+/**
+ * Automatic-annotation + declared-GD&T phase. Returns the (possibly
+ * extended) dimension bodies and reserves, the updated placement report, and
+ * the general-tolerance note.
+ */
+function renderAutoStage(input: {
+  parts: WorldFramePart[];
+  options: SvgDrawingOptions;
+  shape: AnyShape;
+  layout: SheetLayout;
+  styled: Record<DrawingViewName, StyledView>;
+  s: number;
+  sheet: SheetSpec;
+  sectionsSvg: string;
+  dimBodies: string[];
+  bottomReserve: Record<DrawingViewName, number>;
+  rightReserve: Record<DrawingViewName, number>;
+  report: DrawingReport | undefined;
+  diagnosticsOut: CompilerDiagnostic[];
+}): {
+  dimBodies: string[];
+  bottomReserve: Record<DrawingViewName, number>;
+  report: DrawingReport | undefined;
+  generalTolerance: string | undefined;
+} {
+  const {
+    parts, options, shape, layout, styled, s, sheet, sectionsSvg, rightReserve, diagnosticsOut,
+  } = input;
+  const authored = options.annotations ?? [];
+  const declarations = options.declarations ?? { datums: [], tolerances: [] };
+  const autoOn = options.autoAnnotate !== undefined && options.autoAnnotate !== false;
+  const hasDeclarations = declarations.datums.length + declarations.tolerances.length > 0;
+  let dimBodies = input.dimBodies;
+  let bottomReserve = input.bottomReserve;
+  let report = input.report;
+  let generalTolerance: string | undefined;
+
   if (autoOn || hasDeclarations) {
     const compoundBackend = parts.length === 1
       ? (parts[0].shape as OcctBackend)
@@ -560,8 +714,19 @@ export function renderSvgDrawing(
         };
   }
 
-  // --- view groups -------------------------------------------------------
-  const viewGroups = VIEW_NAMES.map(name => {
+  return { dimBodies, bottomReserve, report, generalTolerance };
+}
+
+/** View-groups phase: one styled `<g>` per standard view, with the caption
+ *  pushed below any dimension band the view carries. */
+function renderViewGroups(
+  styled: Record<DrawingViewName, StyledView>,
+  layout: SheetLayout,
+  bottomReserve: Record<DrawingViewName, number>,
+  s: number,
+  explodedShape: AnyShape | undefined,
+): string[] {
+  return VIEW_NAMES.map(name => {
     const v = styled[name];
     const p = layout.views[name];
     // A view carrying dimensions underneath must push its caption below the
@@ -583,21 +748,24 @@ export function renderSvgDrawing(
       `</g>`
     );
   });
+}
 
-  const dimensions = `<g id="dimensions">` + dimBodies.join('') + `</g>`;
-
-  const hatchDefs = usesHatchPattern
-    ? `<defs><pattern id="kc-section-hatch" width="2" height="2" patternUnits="userSpaceOnUse" ` +
-      `patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="2" stroke="#000" stroke-width="0.2"/></pattern></defs>`
-    : '';
-
-  // --- sheet ---------------------------------------------------------------
-  const frame =
-    `<rect class="frame" x="${effSheet.margin}" y="${effSheet.margin}" ` +
-    `width="${effSheet.w - 2 * effSheet.margin}" height="${effSheet.h - 2 * effSheet.margin}" ` +
-    `fill="none" stroke="#000" stroke-width="0.35"/>`;
-
-
+/** Balloon / parts-list phase: draw the exploded isometric overlays and warn
+ *  when their labels overlap. */
+function renderExplodeOverlays(input: {
+  options: SvgDrawingOptions;
+  assembledCentroids: Map<string, [number, number, number]>;
+  explodedCentroids: Map<string, [number, number, number]>;
+  explodedParts: readonly WorldFramePart[] | undefined;
+  layout: SheetLayout;
+  s: number;
+  effSheet: SheetSpec;
+  diagnosticsOut: CompilerDiagnostic[];
+}): string {
+  const {
+    options, assembledCentroids, explodedCentroids, explodedParts, layout, s, effSheet,
+    diagnosticsOut,
+  } = input;
   const bomRows = options.bomRows ?? [];
   let explodeSvg = '';
   const overlapFragments: string[] = [];
@@ -639,6 +807,42 @@ export function renderSvgDrawing(
       });
     }
   }
+  return explodeSvg;
+}
+
+/** Sheet-assembly phase: frame, view groups, dimensions, overlays and title
+ *  block joined into the final SVG document. */
+function buildSheetSvg(input: {
+  effSheet: SheetSpec;
+  usesHatchPattern: boolean;
+  viewGroups: string[];
+  dimBodies: string[];
+  sectionsSvg: string;
+  explodeSvg: string;
+  generalTolerance: string | undefined;
+  layout: SheetLayout;
+  options: SvgDrawingOptions;
+  explodedShape: AnyShape | undefined;
+  diagnosticsOut: CompilerDiagnostic[];
+  report: DrawingReport | undefined;
+}): SvgDrawingResult {
+  const {
+    effSheet, usesHatchPattern, viewGroups, dimBodies, sectionsSvg, explodeSvg,
+    generalTolerance, layout, options, explodedShape, diagnosticsOut, report,
+  } = input;
+  const dimensions = `<g id="dimensions">` + dimBodies.join('') + `</g>`;
+
+  const hatchDefs = usesHatchPattern
+    ? `<defs><pattern id="kc-section-hatch" width="2" height="2" patternUnits="userSpaceOnUse" ` +
+      `patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="2" stroke="#000" stroke-width="0.2"/></pattern></defs>`
+    : '';
+
+  // --- sheet ---------------------------------------------------------------
+  const frame =
+    `<rect class="frame" x="${effSheet.margin}" y="${effSheet.margin}" ` +
+    `width="${effSheet.w - 2 * effSheet.margin}" height="${effSheet.h - 2 * effSheet.margin}" ` +
+    `fill="none" stroke="#000" stroke-width="0.35"/>`;
+
 
   const svg = [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${effSheet.w} ${effSheet.h}" ` +

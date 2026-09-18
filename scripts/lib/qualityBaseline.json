@@ -367,12 +367,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/exportSvgDrawing.ts",
-    "symbol": "Function 'renderSvgDrawing'",
-    "value": 46
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/holeClassifier.ts",
     "symbol": "Function 'classifyHoleFace'",
     "value": 23
@@ -946,12 +940,6 @@
     "file": "src/kernel/backends/occt/edgeSelection.ts",
     "symbol": "Function 'pickFace'",
     "value": 155
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/exportSvgDrawing.ts",
-    "symbol": "Function 'renderSvgDrawing'",
-    "value": 300
   },
   {
     "rule": "max-lines-per-function",
