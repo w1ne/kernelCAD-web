@@ -15,12 +15,14 @@ import { OcctBackend, initOcct, pbrFromMetadata } from '../../kernel/backends/oc
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { meshShape } from '../../kernel/backends/occt/meshing';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
-import { transformFeatureMesh } from './transformMesh';
-import { resolveFaceLabelToFace } from '../../kernel/backends/occt/edgeSelection';
-import { faceHashOf } from '../../kernel/backends/occt/createdRefs';
 import { generatePlanarUVs } from './planarUv';
 import { helixPolylineRouted } from '../mates/helixPolyline';
-import { Transform } from '../../shared/runtime/se3';
+import {
+  accumulateMeshBounds,
+  resolvePerFaceMaterialOverrides,
+  emitSceneBackendFanout,
+  type MeshBoundsAccumulator,
+} from './featureMeshingPhases';
 
 /** Attach bbox-planar UVs to every face in-place (idempotent — pre-existing
  *  uv arrays are preserved). Called after meshing so any consumer of
@@ -780,8 +782,10 @@ export async function meshFeaturesPerFeature(
   };
   const failedFeatureIds: FeatureId[] = [];
   const recordById = new Map<FeatureId, FeatureRecord>(records.map((r) => [r.id, r]));
-  let minX = Infinity, minY = Infinity, minZ = Infinity;
-  let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+  const meshBounds: MeshBoundsAccumulator = {
+    minX: Infinity, minY: Infinity, minZ: Infinity,
+    maxX: -Infinity, maxY: -Infinity, maxZ: -Infinity,
+  };
 
   // Lookup table for record metadata.color so we can attach it onto each
   // FeatureMesh when feature.compiled fires. Renderer resolves via ROLE_PALETTE.
@@ -920,129 +924,22 @@ export async function meshFeaturesPerFeature(
       // Keep vertices in each part's local frame so Studio can pose parts
       // by changing group matrices instead of remeshing on every joint tick.
       if (isSceneBackend(event.shape)) {
-        let partCache = cachedAssemblyPartMeshes?.get(event.featureId);
-        // Track part-meshing outcomes so an assembly whose parts ALL fail to
-        // mesh is surfaced as a failure rather than returning a silently-empty
-        // (but "successful") build. A partial assembly — at least one part
-        // meshed — must still render, so we only fail when nothing was emitted.
-        const partCount = event.shape.parts.length;
-        let emittedPartCount = 0;
-        for (const part of event.shape.parts) {
-          // Pose-cache fast path: when the assembly is being re-lowered for a
-          // pose-only edit, the per-part LOCAL shape is unchanged (same OCCT
-          // backend instance is reused via the engine's seedShapes seed) and
-          // only `part.worldTransform` has refreshed. Reuse cached triangle
-          // data so we skip the expensive `meshShape()` call per part.
-          const cachedPart = partCache?.get(part.name);
-          let faces: FaceGeometry[];
-          let volume: number | undefined;
-          let edges: Float32Array | undefined;
-          if (cachedPart) {
-            faces = cachedPart.faces;
-            volume = cachedPart.volume;
-            edges = cachedPart.edges;
-          } else {
-            const meshed = meshShape(extractRawShape(part.shape));
-            if (!meshed) {
-              // Per-part shape failed to mesh. Skip THIS part — the lowerer
-              // already populated the part shape, and a single bad part must
-              // not sink an otherwise-renderable assembly. Surface a soft
-              // warning so the skip is not silently lost; the post-loop check
-              // below escalates to a hard failure only when EVERY part skips.
-              console.warn(
-                `meshFeaturesPerFeature: assembly '${event.featureId}' part '${part.name}' compiled but produced no mesh — skipping part`,
-              );
-              continue;
-            }
-            faces = meshed.faces;
-            volume = meshed.volume;
-            edges = meshed.edges;
-            if (cachedAssemblyPartMeshes !== undefined) {
-              if (!partCache) {
-                partCache = new Map();
-                cachedAssemblyPartMeshes.set(event.featureId, partCache);
-              }
-              partCache.set(part.name, { faces, ...(volume !== undefined ? { volume } : {}), ...(edges ? { edges } : {}) });
-            }
-          }
-          const local: FeatureMesh = {
-            featureId: `${event.featureId}__${part.name}`,
-            featureKind: event.featureKind,
-            predecessors: [event.featureId],
-            // op intentionally omitted (no boolean op for assembly parts)
-            faces,
-            ...(volume !== undefined ? { volume } : {}),
-            ...(edges ? { edges } : {}),
-          };
-          if (!cachedPart) attachPlanarUVs(local.faces);
-          const extra = session?.explodeOffsets?.get(part.name);
-          const worldT = extra !== undefined
-            ? Transform.translation(extra[0], extra[1], extra[2]).compose(part.worldTransform)
-            : part.worldTransform;
-          emitFeature({
-            ...local,
-            assemblyFeatureId: event.featureId,
-            assemblyPartName: part.name,
-            transform: worldT.toMat4(),
-            ...meshIdentityFields({
-              featureId: local.featureId,
-              featureKind: local.featureKind,
-              assemblyFeatureId: event.featureId,
-              assemblyPartName: part.name,
-              sourceMetadataName: metadataNameOf(recordById.get(event.featureId)),
-            }),
-            ...(part.color !== undefined ? { color: part.color } : {}),
-            ...(part.material !== undefined ? { material: part.material } : {}),
-          });
-          emittedPartCount += 1;
-          // Aggregate bounds from FK-transformed vertices while keeping the
-          // emitted mesh local for viewport-side transforms.
-          const transformed = transformFeatureMesh(local, worldT);
-          for (const f of transformed.faces) {
-            for (let i = 0; i < f.vertices.length; i += 3) {
-              const x = f.vertices[i], y = f.vertices[i + 1], z = f.vertices[i + 2];
-              if (x < minX) minX = x; if (x > maxX) maxX = x;
-              if (y < minY) minY = y; if (y > maxY) maxY = y;
-              if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
-            }
-          }
-        }
-        // Escalate an all-parts-skipped assembly to a hard failure. When the
-        // assembly declared at least one part but NONE produced a mesh, the
-        // build would otherwise return a successful-but-empty result (zero
-        // part-meshes, assembly absent from `failedFeatureIds`). Surface it so
-        // the mesh endpoint turns it into a 500 the client can report instead
-        // of silently rendering nothing. Partial assemblies (emittedPartCount
-        // > 0) still render and are intentionally NOT failed here.
-        if (partCount > 0 && emittedPartCount === 0) {
-          console.warn(
-            `meshFeaturesPerFeature: assembly '${event.featureId}' produced no part meshes (all ${partCount} part(s) failed to mesh)`,
-          );
-          failedFeatureIds.push(event.featureId);
-          return;
-        }
-        // P7 — emit one synthetic tendon FeatureMesh per declared
-        // `arm.tendon(...)` record on the owning Assembly. The cylinder
-        // geometry is baked in WORLD frame here so it lands as a normal
-        // feature group in the renderer (no special path needed) and the
-        // centroid-recentre loop composes onto it identically to part
-        // groups. Cylinder span uses each owner part's `worldTransform`
-        // sourced directly off the SceneBackend.
-        const tendonMeshes = collectTendonMeshes(event.shape, event.featureId, assembliesIn);
-        for (const tm of tendonMeshes) {
-          emitFeature(tm);
-          for (const f of tm.faces) {
-            for (let i = 0; i < f.vertices.length; i += 3) {
-              const x = f.vertices[i], y = f.vertices[i + 1], z = f.vertices[i + 2];
-              if (x < minX) minX = x; if (x > maxX) maxX = x;
-              if (y < minY) minY = y; if (y > maxY) maxY = y;
-              if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
-            }
-          }
-        }
+        emitSceneBackendFanout(event.featureId, event.featureKind, event.shape, {
+          emitFeature,
+          bounds: meshBounds,
+          failedFeatureIds,
+          cachedAssemblyPartMeshes,
+          explodeOffsets: session?.explodeOffsets,
+          assembliesIn,
+          recordById,
+          attachPlanarUVs,
+          extractRawShape,
+          meshIdentityFields,
+          metadataNameOf,
+          collectTendonMeshes,
+        });
         return;
       }
-
       const meshed = meshShape(extractRawShape(event.shape));
       if (!meshed) {
         if (event.featureKind === 'sketch') {
@@ -1069,65 +966,13 @@ export async function meshFeaturesPerFeature(
       let materialByFaceId: Record<number, PBRMaterial> | undefined;
       const perFaceMap = materialByLabelByFeatureId.get(event.featureId);
       if (perFaceMap !== undefined && event.shape instanceof OcctBackend) {
-        const base = event.shape;
-        // Walk shape.faces ONCE and hash every face so resolution is O(F + L)
-        // not O(F * L). The replicad shape.faces iteration order matches
-        // meshShape's faceId assignment (see meshing.ts:meshShape).
-        const replicadFaces = (base.getReplicadShape() as unknown as { faces: unknown[] }).faces;
-        const faceIdByHash = new Map<string, number>();
-        replicadFaces.forEach((f, idx) => {
-          try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            faceIdByHash.set(faceHashOf(f as any), idx);
-          } catch {
-            // skip un-hashable faces; they simply won't get per-face overrides
-          }
-        });
-
-        const record = records.find(r => r.id === event.featureId);
-        if (record !== undefined) {
-          for (const [label, pbr] of Object.entries(perFaceMap)) {
-            const resolved = resolveFaceLabelToFace(record, base, label, records);
-            if ('error' in resolved) {
-              // Resolver collisions / canonical-not-applicable etc. — surface as
-              // soft no-match warning so the build continues. The error fields
-              // (code, severity 'error') are owned by the resolver; we lift
-              // only the label so the agent knows which call failed.
-              warnings.push({
-                code: 'feature.material.face-label-no-match',
-                featureId: event.featureId,
-                label,
-                detail: resolved.error.message,
-              });
-              continue;
-            }
-            let hash: string;
-            try {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              hash = faceHashOf(resolved.face as any);
-            } catch {
-              warnings.push({
-                code: 'feature.material.face-label-no-match',
-                featureId: event.featureId,
-                label,
-                detail: `Resolved face for '${label}' could not be hashed.`,
-              });
-              continue;
-            }
-            const idx = faceIdByHash.get(hash);
-            if (idx === undefined) {
-              warnings.push({
-                code: 'feature.material.face-label-no-match',
-                featureId: event.featureId,
-                label,
-                detail: `Resolved face hash '${hash}' for label '${label}' not present in the meshed face set.`,
-              });
-              continue;
-            }
-            if (materialByFaceId === undefined) materialByFaceId = {};
-            materialByFaceId[idx] = pbr;
-          }
-        }
+        materialByFaceId = resolvePerFaceMaterialOverrides(
+          event.featureId,
+          event.shape,
+          perFaceMap,
+          records,
+          warnings,
+        );
       }
 
       attachPlanarUVs(meshed.faces);
@@ -1155,14 +1000,7 @@ export async function meshFeaturesPerFeature(
       cachedFeatureMeshes?.set(event.featureId, emitted);
 
       // Aggregate bounds from this feature's vertices
-      for (const f of meshed.faces) {
-        for (let i = 0; i < f.vertices.length; i += 3) {
-          const x = f.vertices[i], y = f.vertices[i + 1], z = f.vertices[i + 2];
-          if (x < minX) minX = x; if (x > maxX) maxX = x;
-          if (y < minY) minY = y; if (y > maxY) maxY = y;
-          if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
-        }
-      }
+      accumulateMeshBounds(meshBounds, meshed.faces);
     },
   });
 
@@ -1182,20 +1020,13 @@ export async function meshFeaturesPerFeature(
       if (!cached) continue;
       const mesh = cached as FeatureMesh;
       emitFeature(mesh);
-      for (const f of mesh.faces) {
-        for (let i = 0; i < f.vertices.length; i += 3) {
-          const x = f.vertices[i], y = f.vertices[i + 1], z = f.vertices[i + 2];
-          if (x < minX) minX = x; if (x > maxX) maxX = x;
-          if (y < minY) minY = y; if (y > maxY) maxY = y;
-          if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
-        }
-      }
+      accumulateMeshBounds(meshBounds, mesh.faces);
     }
   }
 
   const bounds: Bounds = {
-    min: features.length > 0 ? [minX, minY, minZ] : [0, 0, 0],
-    max: features.length > 0 ? [maxX, maxY, maxZ] : [0, 0, 0],
+    min: features.length > 0 ? [meshBounds.minX, meshBounds.minY, meshBounds.minZ] : [0, 0, 0],
+    max: features.length > 0 ? [meshBounds.maxX, meshBounds.maxY, meshBounds.maxZ] : [0, 0, 0],
   };
 
   const materialShadowingWarnings = detectAttributeShadowing(

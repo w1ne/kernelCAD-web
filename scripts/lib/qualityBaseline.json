@@ -549,19 +549,13 @@
     "rule": "complexity",
     "file": "src/modeling/capture/featureMeshing.ts",
     "symbol": "Async function 'meshFeaturesPerFeature'",
-    "value": 50
+    "value": 42
   },
   {
     "rule": "complexity",
     "file": "src/modeling/capture/featureMeshing.ts",
     "symbol": "Function 'collectTendonMeshes'",
     "value": 29
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/featureMeshing.ts",
-    "symbol": "Method 'onEvent'",
-    "value": 63
   },
   {
     "rule": "complexity",
@@ -592,12 +586,6 @@
     "file": "src/modeling/capture/virtualFeatureRecords.ts",
     "symbol": "Function 'buildReferenceImageFeatureSpec'",
     "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/compute/recomputeEngine.ts",
-    "symbol": "Async method 'run'",
-    "value": 61
   },
   {
     "rule": "complexity",
@@ -1059,25 +1047,13 @@
     "rule": "max-lines-per-function",
     "file": "src/modeling/capture/featureMeshing.ts",
     "symbol": "Async function 'meshFeaturesPerFeature'",
-    "value": 355
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/capture/featureMeshing.ts",
-    "symbol": "Method 'onEvent'",
-    "value": 193
+    "value": 227
   },
   {
     "rule": "max-lines-per-function",
     "file": "src/modeling/capture/proxy.ts",
     "symbol": "Method 'material'",
     "value": 187
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/compute/recomputeEngine.ts",
-    "symbol": "Async method 'run'",
-    "value": 205
   },
   {
     "rule": "max-lines-per-function",
@@ -1270,12 +1246,6 @@
     "file": "src/modeling/api.ts",
     "symbol": "(file)",
     "value": 973
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/modeling/capture/featureMeshing.ts",
-    "symbol": "(file)",
-    "value": 876
   },
   {
     "rule": "max-lines",
