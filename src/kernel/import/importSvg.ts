@@ -57,25 +57,25 @@ import {
   type ImportedRegion,
 } from './contourAssembly';
 import { MM_PER_UNIT, isLengthUnit, LENGTH_UNIT_NAMES, type LengthUnit } from './lengthUnits';
+import {
+  SvgParseError,
+  IDENTITY,
+  apply,
+  det,
+  isSimilarity,
+  lengthToMm,
+  mul,
+  parseTransform,
+  parseViewBox,
+  scaleOf,
+  scanTags,
+  type Matrix,
+  type Tag,
+  type ViewBox,
+} from './importSvgParsing';
 
-export type SvgParseFailure =
-  | 'empty'
-  | 'not-svg'
-  | 'unsupported-element'
-  | 'unsupported-command'
-  | 'malformed-attribute'
-  | 'malformed-path'
-  | 'bad-units'
-  | 'contour';
-
-export class SvgParseError extends Error {
-  readonly reason: SvgParseFailure;
-  constructor(reason: SvgParseFailure, message: string) {
-    super(message);
-    this.reason = reason;
-    this.name = 'SvgParseError';
-  }
-}
+export type { SvgParseFailure } from './importSvgParsing';
+export { SvgParseError } from './importSvgParsing';
 
 export interface ImportSvgOptions {
   /** Interpret one SVG user unit as this unit, overriding `width`/`viewBox`. */
@@ -111,184 +111,6 @@ export interface SvgImportResult {
 export const DEFAULT_SVG_TOLERANCE = 1e-3;
 export const DEFAULT_CURVE_TOLERANCE = 0.01;
 
-// ---------------------------------------------------------------------------
-// Affine transforms
-// ---------------------------------------------------------------------------
-
-/** `[a, b, c, d, e, f]`, mapping (x, y) to (ax + cy + e, bx + dy + f). */
-export type Matrix = readonly [number, number, number, number, number, number];
-
-const IDENTITY: Matrix = [1, 0, 0, 1, 0, 0];
-
-/** `m1 ∘ m2` — m2 applied first. */
-function mul(m1: Matrix, m2: Matrix): Matrix {
-  return [
-    m1[0] * m2[0] + m1[2] * m2[1],
-    m1[1] * m2[0] + m1[3] * m2[1],
-    m1[0] * m2[2] + m1[2] * m2[3],
-    m1[1] * m2[2] + m1[3] * m2[3],
-    m1[0] * m2[4] + m1[2] * m2[5] + m1[4],
-    m1[1] * m2[4] + m1[3] * m2[5] + m1[5],
-  ];
-}
-
-function apply(m: Matrix, x: number, y: number): [number, number] {
-  return [m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + m[5]];
-}
-
-function det(m: Matrix): number {
-  return m[0] * m[3] - m[1] * m[2];
-}
-
-/**
- * A similarity maps circles to circles — equal column norms and orthogonal
- * columns. Only under a similarity can a circular arc stay a circular arc,
- * which is what decides between the exact bulge path and flattening.
- */
-function isSimilarity(m: Matrix): boolean {
-  const cx = Math.hypot(m[0], m[1]);
-  const cy = Math.hypot(m[2], m[3]);
-  if (cx === 0 || cy === 0) return false;
-  const scaleRel = Math.abs(cx - cy) / Math.max(cx, cy);
-  const ortho = Math.abs(m[0] * m[2] + m[1] * m[3]) / (cx * cy);
-  return scaleRel < 1e-9 && ortho < 1e-9;
-}
-
-/** Uniform scale factor of a similarity; the RMS scale otherwise (used only for tolerances). */
-function scaleOf(m: Matrix): number {
-  return Math.sqrt(Math.abs(det(m))) || Math.hypot(m[0], m[1]);
-}
-
-const TRANSFORM_FN = /([a-zA-Z]+)\s*\(([^)]*)\)/g;
-
-function parseTransform(spec: string, where: string): Matrix {
-  let out: Matrix = IDENTITY;
-  TRANSFORM_FN.lastIndex = 0;
-  let m: RegExpExecArray | null;
-  let matched = 0;
-  while ((m = TRANSFORM_FN.exec(spec)) !== null) {
-    matched++;
-    const name = m[1];
-    const args = m[2].trim().split(/[\s,]+/).filter(s => s !== '').map(Number);
-    if (args.some(v => !Number.isFinite(v))) {
-      throw new SvgParseError(
-        'malformed-attribute',
-        `${where}: transform '${name}(${m[2].trim()})' has a non-numeric argument.`,
-      );
-    }
-    let step: Matrix;
-    switch (name) {
-      case 'translate':
-        step = [1, 0, 0, 1, args[0] ?? 0, args[1] ?? 0];
-        break;
-      case 'scale':
-        step = [args[0] ?? 1, 0, 0, args[1] ?? args[0] ?? 1, 0, 0];
-        break;
-      case 'rotate': {
-        const a = ((args[0] ?? 0) * Math.PI) / 180;
-        const rot: Matrix = [Math.cos(a), Math.sin(a), -Math.sin(a), Math.cos(a), 0, 0];
-        if (args.length >= 3) {
-          step = mul(mul([1, 0, 0, 1, args[1], args[2]], rot), [1, 0, 0, 1, -args[1], -args[2]]);
-        } else {
-          step = rot;
-        }
-        break;
-      }
-      case 'matrix':
-        if (args.length !== 6) {
-          throw new SvgParseError(
-            'malformed-attribute',
-            `${where}: transform 'matrix' needs 6 numbers, got ${args.length}.`,
-          );
-        }
-        step = [args[0], args[1], args[2], args[3], args[4], args[5]];
-        break;
-      default:
-        // skewX/skewY are representable as a matrix, but they are rare enough
-        // in exported CAD profiles that supporting them untested would be a
-        // worse trade than naming them.
-        throw new SvgParseError(
-          'unsupported-element',
-          `${where}: transform function '${name}(...)' is not supported. ` +
-            'Supported: translate, scale, rotate, matrix. Flatten the transform in the source tool.',
-        );
-    }
-    out = mul(out, step);
-  }
-  if (matched === 0 && spec.trim() !== '') {
-    throw new SvgParseError(
-      'malformed-attribute',
-      `${where}: transform='${spec.trim()}' is not a sequence of transform functions.`,
-    );
-  }
-  return out;
-}
-
-// ---------------------------------------------------------------------------
-// Tag scanning
-// ---------------------------------------------------------------------------
-
-interface Tag {
-  name: string;
-  attrs: Record<string, string>;
-  closing: boolean;
-  selfClosing: boolean;
-  /** Character offset of the `<`, quoted in diagnostics. */
-  offset: number;
-}
-
-const ATTR = /([A-Za-z_:][-A-Za-z0-9_:.]*)\s*=\s*("([^"]*)"|'([^']*)')/g;
-
-function scanTags(text: string): Tag[] {
-  const tags: Tag[] = [];
-  let i = 0;
-  while (i < text.length) {
-    const lt = text.indexOf('<', i);
-    if (lt === -1) break;
-    if (text.startsWith('<!--', lt)) {
-      const end = text.indexOf('-->', lt);
-      i = end === -1 ? text.length : end + 3;
-      continue;
-    }
-    if (text.startsWith('<![CDATA[', lt)) {
-      const end = text.indexOf(']]>', lt);
-      i = end === -1 ? text.length : end + 3;
-      continue;
-    }
-    if (text.startsWith('<!', lt) || text.startsWith('<?', lt)) {
-      const end = text.indexOf('>', lt);
-      i = end === -1 ? text.length : end + 1;
-      continue;
-    }
-    const gt = text.indexOf('>', lt);
-    if (gt === -1) break;
-    const body = text.slice(lt + 1, gt);
-    const closing = body.startsWith('/');
-    const selfClosing = body.endsWith('/');
-    const nameMatch = /^\/?\s*([A-Za-z_:][-A-Za-z0-9_:.]*)/.exec(body);
-    if (nameMatch) {
-      const attrs: Record<string, string> = {};
-      ATTR.lastIndex = 0;
-      let a: RegExpExecArray | null;
-      const attrText = body.slice(nameMatch[0].length);
-      while ((a = ATTR.exec(attrText)) !== null) {
-        // Namespace prefixes carry no geometry meaning here; `sodipodi:cx`
-        // and `cx` must not collide, so keep the raw name and read locals.
-        attrs[a[1]] = a[3] ?? a[4] ?? '';
-      }
-      tags.push({
-        name: nameMatch[1].replace(/^.*:/, ''),
-        attrs,
-        closing,
-        selfClosing,
-        offset: lt,
-      });
-    }
-    i = gt + 1;
-  }
-  return tags;
-}
-
 function attrNum(tag: Tag, name: string, fallback: number | null): number {
   const raw = tag.attrs[name];
   if (raw === undefined || raw.trim() === '') {
@@ -308,59 +130,6 @@ function attrNum(tag: Tag, name: string, fallback: number | null): number {
     );
   }
   return v;
-}
-
-// ---------------------------------------------------------------------------
-// Units
-// ---------------------------------------------------------------------------
-
-const LENGTH_WITH_UNIT = /^\s*(-?[0-9.eE+-]+)\s*([a-z%]*)\s*$/;
-
-/** Parse an SVG length like `120mm`, `4.5in`, `800` (px) into millimetres. */
-function lengthToMm(raw: string, where: string): number | null {
-  const m = LENGTH_WITH_UNIT.exec(raw);
-  if (!m) return null;
-  const v = Number(m[1]);
-  if (!Number.isFinite(v)) return null;
-  const suffix = m[2];
-  if (suffix === '' || suffix === 'px') return v * MM_PER_UNIT.px;
-  if (suffix === '%') {
-    // A percentage width is relative to a viewport this importer does not
-    // have, so it cannot be turned into millimetres. Say so.
-    throw new SvgParseError(
-      'bad-units',
-      `${where}: a percentage length ('${raw.trim()}') has no absolute size outside a viewport. ` +
-        'Give the <svg> an absolute width (e.g. width="120mm") or pass opts.units.',
-    );
-  }
-  if (!isLengthUnit(suffix)) {
-    throw new SvgParseError(
-      'bad-units',
-      `${where}: unknown length unit '${suffix}' in '${raw.trim()}' ` +
-        `(known: ${LENGTH_UNIT_NAMES.join(', ')}).`,
-    );
-  }
-  return v * MM_PER_UNIT[suffix];
-}
-
-interface ViewBox { minX: number; minY: number; width: number; height: number }
-
-function parseViewBox(raw: string | undefined): ViewBox | null {
-  if (raw === undefined) return null;
-  const parts = raw.trim().split(/[\s,]+/).map(Number);
-  if (parts.length !== 4 || parts.some(v => !Number.isFinite(v))) {
-    throw new SvgParseError(
-      'malformed-attribute',
-      `<svg>: viewBox='${raw}' must be four numbers (min-x min-y width height).`,
-    );
-  }
-  if (parts[2] <= 0 || parts[3] <= 0) {
-    throw new SvgParseError(
-      'malformed-attribute',
-      `<svg>: viewBox width and height must be positive, got ${parts[2]} x ${parts[3]}.`,
-    );
-  }
-  return { minX: parts[0], minY: parts[1], width: parts[2], height: parts[3] };
 }
 
 // ---------------------------------------------------------------------------
@@ -759,6 +528,170 @@ function emitLine(tag: Tag, m: Matrix, sink: ElementSink): void {
   sink.open.push(...b.segments);
 }
 
+/** Resolve the next path command: an explicit command letter, or the SVG
+ *  implicit-repeat rule (after `M` a bare pair means `L`, otherwise the
+ *  previous command repeats). */
+function takePathCommand(scanner: PathScanner, prevCmd: string, d: string, where: string): string {
+  if (scanner.peekCommand() !== null) {
+    return scanner.takeCommand();
+  }
+  if (prevCmd !== '') {
+    // Implicit repeat: after `M x y` further pairs are `L`, otherwise the
+    // previous command repeats.
+    return prevCmd === 'M' ? 'L' : prevCmd === 'm' ? 'l' : prevCmd;
+  }
+  throw new SvgParseError(
+    'malformed-path',
+    `${where}: path data must begin with a moveto command, found '${d.trim()[0]}'.`,
+  );
+}
+
+/** L / H / V: a single absolute-or-relative coordinate (pair), ending in a
+ *  line-to. Returns the new user-space pen position. */
+function emitLineLikeCommand(
+  up: string,
+  scanner: PathScanner,
+  rel: boolean,
+  b: ContourBuilder,
+  ux: number,
+  uy: number,
+): { ux: number; uy: number } {
+  if (up === 'L') {
+    const nx = scanner.number(), ny = scanner.number();
+    ux = rel ? ux + nx : nx;
+    uy = rel ? uy + ny : ny;
+  } else if (up === 'H') {
+    const nx = scanner.number();
+    ux = rel ? ux + nx : nx;
+  } else {
+    const ny = scanner.number();
+    uy = rel ? uy + ny : ny;
+  }
+  b.lineToUser(ux, uy);
+  return { ux, uy };
+}
+
+/** C / S: cubic Bézier with optional smooth-control reflection. Returns the
+ *  new user-space pen position and the control point the next `S` reflects. */
+function emitCubicPathCommand(
+  up: string,
+  scanner: PathScanner,
+  rel: boolean,
+  b: ContourBuilder,
+  ux: number,
+  uy: number,
+  lastCubicCtrl: Pt | null,
+  tolMm: number,
+): { ux: number; uy: number; lastCubicCtrl: Pt } {
+  let c1x: number, c1y: number;
+  if (up === 'C') {
+    const a = scanner.number(), bb = scanner.number();
+    c1x = rel ? ux + a : a;
+    c1y = rel ? uy + bb : bb;
+  } else {
+    // S reflects the previous cubic control point through the pen.
+    const r = lastCubicCtrl ?? [ux, uy];
+    c1x = 2 * ux - r[0];
+    c1y = 2 * uy - r[1];
+  }
+  const a2 = scanner.number(), b2 = scanner.number();
+  const c2x = rel ? ux + a2 : a2;
+  const c2y = rel ? uy + b2 : b2;
+  const a3 = scanner.number(), b3 = scanner.number();
+  const ex = rel ? ux + a3 : a3;
+  const ey = rel ? uy + b3 : b3;
+  const pts: Pt[] = [];
+  flattenCubic(b.position, b.toMm(c1x, c1y), b.toMm(c2x, c2y), b.toMm(ex, ey), tolMm, pts);
+  for (const p of pts) b.lineToMm(p);
+  return { ux: ex, uy: ey, lastCubicCtrl: [c2x, c2y] };
+}
+
+/** Q / T: quadratic Bézier, exactly elevated to cubic before the same
+ *  subdivision. Returns the new pen position and the next `T` reflection. */
+function emitQuadraticPathCommand(
+  up: string,
+  scanner: PathScanner,
+  rel: boolean,
+  b: ContourBuilder,
+  ux: number,
+  uy: number,
+  lastQuadCtrl: Pt | null,
+  tolMm: number,
+): { ux: number; uy: number; lastQuadCtrl: Pt } {
+  let qx: number, qy: number;
+  if (up === 'Q') {
+    const a = scanner.number(), bb = scanner.number();
+    qx = rel ? ux + a : a;
+    qy = rel ? uy + bb : bb;
+  } else {
+    const r = lastQuadCtrl ?? [ux, uy];
+    qx = 2 * ux - r[0];
+    qy = 2 * uy - r[1];
+  }
+  const a2 = scanner.number(), b2 = scanner.number();
+  const ex = rel ? ux + a2 : a2;
+  const ey = rel ? uy + b2 : b2;
+  // Exact quadratic -> cubic elevation, then the same subdivision.
+  const c1x = ux + (2 / 3) * (qx - ux);
+  const c1y = uy + (2 / 3) * (qy - uy);
+  const c2x = ex + (2 / 3) * (qx - ex);
+  const c2y = ey + (2 / 3) * (qy - ey);
+  const pts: Pt[] = [];
+  flattenCubic(b.position, b.toMm(c1x, c1y), b.toMm(c2x, c2y), b.toMm(ex, ey), tolMm, pts);
+  for (const p of pts) b.lineToMm(p);
+  return { ux: ex, uy: ey, lastQuadCtrl: [qx, qy] };
+}
+
+/** A: elliptical arc — exact bulge under a similarity for the circular case,
+ *  chord-flattened otherwise. Returns the new user-space pen position. */
+function emitArcPathCommand(
+  scanner: PathScanner,
+  rel: boolean,
+  b: ContourBuilder,
+  ux: number,
+  uy: number,
+  similarity: boolean,
+  tolMm: number,
+  mmScale: number,
+): { ux: number; uy: number } {
+  const rx = Math.abs(scanner.number());
+  const ry = Math.abs(scanner.number());
+  const rot = scanner.number();
+  const largeArc = scanner.flag();
+  const sweepFlag = scanner.flag();
+  const a2 = scanner.number(), b2 = scanner.number();
+  const ex = rel ? ux + a2 : a2;
+  const ey = rel ? uy + b2 : b2;
+  const arc = arcToCenter(ux, uy, rx, ry, rot, largeArc, sweepFlag, ex, ey);
+  if (arc === null) {
+    // Spec: a zero radius degenerates to a straight line.
+    b.lineToUser(ex, ey);
+  } else if (Math.abs(arc.rx - arc.ry) < 1e-9 * Math.max(arc.rx, arc.ry) && similarity) {
+    // Circular under a similarity: exact. `sweep` is signed in the raw
+    // plane read as y-up, which is exactly the bulge convention; the
+    // builder applies the reflection's sign flip.
+    const halves = Math.abs(arc.sweep) > Math.PI ? 2 : 1;
+    for (let i = 0; i < halves; i++) {
+      const t = arc.theta0 + (arc.sweep * (i + 1)) / halves;
+      b.bulgeToUser(
+        arc.cx + arc.rx * Math.cos(t),
+        arc.cy + arc.ry * Math.sin(t),
+        Math.tan(arc.sweep / halves / 4),
+      );
+    }
+    // Land on the exact endpoint the file asked for.
+    if (b.position[0] !== b.toMm(ex, ey)[0] || b.position[1] !== b.toMm(ex, ey)[1]) {
+      const last = b.segments[b.segments.length - 1];
+      const target = b.toMm(ex, ey);
+      last.x1 = target[0];
+      last.y1 = target[1];
+    }
+  } else {
+    for (const p of sampleEllipse(arc, tolMm, mmScale)) b.lineToUser(p[0], p[1]);
+  }
+  return { ux: ex, uy: ey };
+}
+
 function emitPath(tag: Tag, m: Matrix, sink: ElementSink, tolMm: number): void {
   const d = tag.attrs.d;
   if (d === undefined || d.trim() === '') {
@@ -798,19 +731,7 @@ function emitPath(tag: Tag, m: Matrix, sink: ElementSink, tolMm: number): void {
   };
 
   while (!scanner.done) {
-    let cmd: string;
-    if (scanner.peekCommand() !== null) {
-      cmd = scanner.takeCommand();
-    } else if (prevCmd !== '') {
-      // Implicit repeat: after `M x y` further pairs are `L`, otherwise the
-      // previous command repeats.
-      cmd = prevCmd === 'M' ? 'L' : prevCmd === 'm' ? 'l' : prevCmd;
-    } else {
-      throw new SvgParseError(
-        'malformed-path',
-        `${where}: path data must begin with a moveto command, found '${d.trim()[0]}'.`,
-      );
-    }
+    const cmd = takePathCommand(scanner, prevCmd, d, where);
     const rel = cmd === cmd.toLowerCase() && cmd !== 'Z' && cmd !== 'z';
     const up = cmd.toUpperCase();
 
@@ -843,121 +764,32 @@ function emitPath(tag: Tag, m: Matrix, sink: ElementSink, tolMm: number): void {
 
     const b = need();
     switch (up) {
-      case 'L': {
-        const nx = scanner.number(), ny = scanner.number();
-        ux = rel ? ux + nx : nx;
-        uy = rel ? uy + ny : ny;
-        b.lineToUser(ux, uy);
-        lastCubicCtrl = null; lastQuadCtrl = null;
-        break;
-      }
-      case 'H': {
-        const nx = scanner.number();
-        ux = rel ? ux + nx : nx;
-        b.lineToUser(ux, uy);
-        lastCubicCtrl = null; lastQuadCtrl = null;
-        break;
-      }
+      case 'L':
+      case 'H':
       case 'V': {
-        const ny = scanner.number();
-        uy = rel ? uy + ny : ny;
-        b.lineToUser(ux, uy);
+        const res = emitLineLikeCommand(up, scanner, rel, b, ux, uy);
+        ux = res.ux; uy = res.uy;
         lastCubicCtrl = null; lastQuadCtrl = null;
         break;
       }
       case 'C':
       case 'S': {
-        let c1x: number, c1y: number;
-        if (up === 'C') {
-          const a = scanner.number(), bb = scanner.number();
-          c1x = rel ? ux + a : a;
-          c1y = rel ? uy + bb : bb;
-        } else {
-          // S reflects the previous cubic control point through the pen.
-          const r = lastCubicCtrl ?? [ux, uy];
-          c1x = 2 * ux - r[0];
-          c1y = 2 * uy - r[1];
-        }
-        const a2 = scanner.number(), b2 = scanner.number();
-        const c2x = rel ? ux + a2 : a2;
-        const c2y = rel ? uy + b2 : b2;
-        const a3 = scanner.number(), b3 = scanner.number();
-        const ex = rel ? ux + a3 : a3;
-        const ey = rel ? uy + b3 : b3;
-        const pts: Pt[] = [];
-        flattenCubic(b.position, b.toMm(c1x, c1y), b.toMm(c2x, c2y), b.toMm(ex, ey), tolMm, pts);
-        for (const p of pts) b.lineToMm(p);
-        lastCubicCtrl = [c2x, c2y];
-        lastQuadCtrl = null;
-        ux = ex; uy = ey;
+        const res = emitCubicPathCommand(up, scanner, rel, b, ux, uy, lastCubicCtrl, tolMm);
+        ux = res.ux; uy = res.uy;
+        lastCubicCtrl = res.lastCubicCtrl; lastQuadCtrl = null;
         break;
       }
       case 'Q':
       case 'T': {
-        let qx: number, qy: number;
-        if (up === 'Q') {
-          const a = scanner.number(), bb = scanner.number();
-          qx = rel ? ux + a : a;
-          qy = rel ? uy + bb : bb;
-        } else {
-          const r = lastQuadCtrl ?? [ux, uy];
-          qx = 2 * ux - r[0];
-          qy = 2 * uy - r[1];
-        }
-        const a2 = scanner.number(), b2 = scanner.number();
-        const ex = rel ? ux + a2 : a2;
-        const ey = rel ? uy + b2 : b2;
-        // Exact quadratic -> cubic elevation, then the same subdivision.
-        const c1x = ux + (2 / 3) * (qx - ux);
-        const c1y = uy + (2 / 3) * (qy - uy);
-        const c2x = ex + (2 / 3) * (qx - ex);
-        const c2y = ey + (2 / 3) * (qy - ey);
-        const pts: Pt[] = [];
-        flattenCubic(b.position, b.toMm(c1x, c1y), b.toMm(c2x, c2y), b.toMm(ex, ey), tolMm, pts);
-        for (const p of pts) b.lineToMm(p);
-        lastQuadCtrl = [qx, qy];
-        lastCubicCtrl = null;
-        ux = ex; uy = ey;
+        const res = emitQuadraticPathCommand(up, scanner, rel, b, ux, uy, lastQuadCtrl, tolMm);
+        ux = res.ux; uy = res.uy;
+        lastQuadCtrl = res.lastQuadCtrl; lastCubicCtrl = null;
         break;
       }
       case 'A': {
-        const rx = Math.abs(scanner.number());
-        const ry = Math.abs(scanner.number());
-        const rot = scanner.number();
-        const largeArc = scanner.flag();
-        const sweepFlag = scanner.flag();
-        const a2 = scanner.number(), b2 = scanner.number();
-        const ex = rel ? ux + a2 : a2;
-        const ey = rel ? uy + b2 : b2;
-        const arc = arcToCenter(ux, uy, rx, ry, rot, largeArc, sweepFlag, ex, ey);
-        if (arc === null) {
-          // Spec: a zero radius degenerates to a straight line.
-          b.lineToUser(ex, ey);
-        } else if (Math.abs(arc.rx - arc.ry) < 1e-9 * Math.max(arc.rx, arc.ry) && similarity) {
-          // Circular under a similarity: exact. `sweep` is signed in the raw
-          // plane read as y-up, which is exactly the bulge convention; the
-          // builder applies the reflection's sign flip.
-          const halves = Math.abs(arc.sweep) > Math.PI ? 2 : 1;
-          for (let i = 0; i < halves; i++) {
-            const t = arc.theta0 + (arc.sweep * (i + 1)) / halves;
-            b.bulgeToUser(
-              arc.cx + arc.rx * Math.cos(t),
-              arc.cy + arc.ry * Math.sin(t),
-              Math.tan(arc.sweep / halves / 4),
-            );
-          }
-          // Land on the exact endpoint the file asked for.
-          if (b.position[0] !== b.toMm(ex, ey)[0] || b.position[1] !== b.toMm(ex, ey)[1]) {
-            const last = b.segments[b.segments.length - 1];
-            const target = b.toMm(ex, ey);
-            last.x1 = target[0];
-            last.y1 = target[1];
-          }
-        } else {
-          for (const p of sampleEllipse(arc, tolMm, mmScale)) b.lineToUser(p[0], p[1]);
-        }
+        const res = emitArcPathCommand(scanner, rel, b, ux, uy, similarity, tolMm, mmScale);
+        ux = res.ux; uy = res.uy;
         lastCubicCtrl = null; lastQuadCtrl = null;
-        ux = ex; uy = ey;
         break;
       }
       default:
@@ -1001,42 +833,10 @@ export function importSvgText(text: string, opts: ImportSvgOptions = {}): SvgImp
   }
 
   const viewBox = parseViewBox(root.attrs.viewBox);
-  let scale: number;
-  let unitSource: string;
-  if (opts.units !== undefined) {
-    scale = MM_PER_UNIT[opts.units];
-    unitSource = `opts.units=${opts.units}`;
-  } else {
-    const widthMm = root.attrs.width !== undefined
-      ? lengthToMm(root.attrs.width, '<svg> width')
-      : null;
-    if (viewBox && widthMm !== null && root.attrs.width !== undefined && /[a-z]/i.test(root.attrs.width)) {
-      scale = widthMm / viewBox.width;
-      unitSource = `width='${root.attrs.width.trim()}' over viewBox width ${viewBox.width}`;
-    } else {
-      scale = MM_PER_UNIT.px;
-      unitSource = 'assumed 1 user unit = 1 CSS px (1/96 in); no physically-dimensioned width';
-    }
-  }
+  const { scale, unitSource } = resolveSvgScale(root, viewBox, opts);
 
-  // Reflection height: prefer the viewBox, fall back to an undimensioned
-  // `height`, and finally to plain negation.
-  let flipAbout: number | null = null;
-  if (viewBox) {
-    flipAbout = viewBox.minY + viewBox.height;
-  } else if (root.attrs.height !== undefined) {
-    const h = Number(String(root.attrs.height).replace(/[a-z%]+$/i, '').trim());
-    if (Number.isFinite(h) && h > 0) flipAbout = h;
-  }
-  const vbMinX = viewBox ? viewBox.minX : 0;
-  // The root matrix IS the Y flip: scale by `scale`, negate Y, and translate
-  // so the drawing sits in positive Y starting at the origin.
-  const rootMatrix: Matrix = [
-    scale, 0,
-    0, -scale,
-    -scale * vbMinX,
-    scale * (flipAbout ?? 0),
-  ];
+  const flipAbout = resolveFlipAbout(root, viewBox);
+  const rootMatrix = buildRootMatrix(scale, viewBox, flipAbout);
 
   const tolMm = opts.curveTolerance ?? DEFAULT_CURVE_TOLERANCE;
   if (!(tolMm > 0)) {
@@ -1054,14 +854,12 @@ export function importSvgText(text: string, opts: ImportSvgOptions = {}): SvgImp
     const lower = tag.name.toLowerCase();
 
     if (skipDepth > 0) {
-      // Inside a non-rendering subtree: track nesting so `</defs>` ends it.
-      if (!tag.closing && !tag.selfClosing) skipDepth++;
-      else if (tag.closing) skipDepth--;
+      skipDepth = advanceSkipDepth(tag, skipDepth);
       continue;
     }
 
     if (tag.closing) {
-      if (lower === 'g' && stack.length > 1) stack.pop();
+      closeOpenGroup(lower, stack);
       continue;
     }
 
@@ -1072,48 +870,14 @@ export function importSvgText(text: string, opts: ImportSvgOptions = {}): SvgImp
     }
 
     const parent = stack[stack.length - 1];
-    const local = tag.attrs.transform !== undefined
-      ? parseTransform(tag.attrs.transform, `<${tag.name}> at offset ${tag.offset}`)
-      : IDENTITY;
+    const local = localTransform(tag);
     const m = mul(parent, local);
 
-    switch (lower) {
-      case 'g':
-        // A self-closing <g> holds nothing; only push for a real subtree.
-        if (!tag.selfClosing) stack.push(m);
-        break;
-      case 'path': emitPath(tag, m, sink, tolMm); break;
-      case 'rect': emitRect(tag, m, sink); break;
-      case 'circle': emitCircle(tag, m, sink, tolMm); break;
-      case 'ellipse':
-        emitEllipse(
-          m, sink, tolMm,
-          attrNum(tag, 'cx', 0), attrNum(tag, 'cy', 0),
-          attrNum(tag, 'rx', null), attrNum(tag, 'ry', null),
-          `<ellipse> at offset ${tag.offset}`,
-        );
-        break;
-      case 'polygon': emitPolyish(tag, m, sink, true); break;
-      case 'polyline': emitPolyish(tag, m, sink, false); break;
-      case 'line': emitLine(tag, m, sink); break;
-      case 'use':
-      case 'text':
-      case 'tspan':
-      case 'image':
-      case 'foreignobject':
-        throw new SvgParseError(
-          'unsupported-element',
-          `<${tag.name}> at offset ${tag.offset}: this element carries geometry kernelCAD cannot ` +
-            'resolve here (references, glyph outlines or raster content), and skipping it would leave ' +
-            'the profile silently incomplete. Convert it to paths in the source tool ' +
-            '(Inkscape: Path > Object to Path; Illustrator: Create Outlines / Expand).',
-        );
-      default:
-        throw new SvgParseError(
-          'unsupported-element',
-          `<${tag.name}> at offset ${tag.offset}: unrecognised SVG element. kernelCAD reads ` +
-            'path, rect, circle, ellipse, polygon, polyline, line and g.',
-        );
+    if (lower === 'g') {
+      // A self-closing <g> holds nothing; only push for a real subtree.
+      if (!tag.selfClosing) stack.push(m);
+    } else {
+      emitGeometryElement(lower, tag, m, sink, tolMm);
     }
   }
 
@@ -1135,6 +899,122 @@ export function importSvgText(text: string, opts: ImportSvgOptions = {}): SvgImp
     degeneratesDropped: assembled.degeneratesDropped,
     gapsClosed: assembled.gapsClosed,
   };
+}
+
+/** Resolve the millimetres-per-user-unit scale and the human-readable source
+ *  that decided it (opts.units, a dimensioned width over the viewBox, or the
+ *  CSS-pixel default). */
+function resolveSvgScale(
+  root: Tag,
+  viewBox: ViewBox | null,
+  opts: ImportSvgOptions,
+): { scale: number; unitSource: string } {
+  if (opts.units !== undefined) {
+    return {
+      scale: MM_PER_UNIT[opts.units],
+      unitSource: `opts.units=${opts.units}`,
+    };
+  }
+  const widthMm = root.attrs.width !== undefined
+    ? lengthToMm(root.attrs.width, '<svg> width')
+    : null;
+  if (viewBox && widthMm !== null && root.attrs.width !== undefined && /[a-z]/i.test(root.attrs.width)) {
+    return {
+      scale: widthMm / viewBox.width,
+      unitSource: `width='${root.attrs.width.trim()}' over viewBox width ${viewBox.width}`,
+    };
+  }
+  return {
+    scale: MM_PER_UNIT.px,
+    unitSource: 'assumed 1 user unit = 1 CSS px (1/96 in); no physically-dimensioned width',
+  };
+}
+
+/** Reflection height: prefer the viewBox, fall back to an undimensioned
+ *  `height`, and finally to plain negation. */
+function resolveFlipAbout(root: Tag, viewBox: ViewBox | null): number | null {
+  if (viewBox) {
+    return viewBox.minY + viewBox.height;
+  }
+  if (root.attrs.height !== undefined) {
+    const h = Number(String(root.attrs.height).replace(/[a-z%]+$/i, '').trim());
+    if (Number.isFinite(h) && h > 0) return h;
+  }
+  return null;
+}
+
+/** The root matrix IS the Y flip: scale by `scale`, negate Y, and translate
+ *  so the drawing sits in positive Y starting at the origin. */
+function buildRootMatrix(scale: number, viewBox: ViewBox | null, flipAbout: number | null): Matrix {
+  const vbMinX = viewBox ? viewBox.minX : 0;
+  return [
+    scale, 0,
+    0, -scale,
+    -scale * vbMinX,
+    scale * (flipAbout ?? 0),
+  ];
+}
+
+function localTransform(tag: Tag): Matrix {
+  return tag.attrs.transform !== undefined
+    ? parseTransform(tag.attrs.transform, `<${tag.name}> at offset ${tag.offset}`)
+    : IDENTITY;
+}
+
+/** Inside a non-rendering subtree: track nesting so `</defs>` ends it. */
+function advanceSkipDepth(tag: Tag, skipDepth: number): number {
+  if (!tag.closing && !tag.selfClosing) return skipDepth + 1;
+  if (tag.closing) return skipDepth - 1;
+  return skipDepth;
+}
+
+function closeOpenGroup(lower: string, stack: Matrix[]): void {
+  if (lower === 'g' && stack.length > 1) stack.pop();
+}
+
+/** Emit one geometry element into the sink; throws for elements kernelCAD
+ *  cannot resolve. Group (`<g>`) handling stays in the caller. */
+function emitGeometryElement(
+  lower: string,
+  tag: Tag,
+  m: Matrix,
+  sink: ElementSink,
+  tolMm: number,
+): void {
+  switch (lower) {
+    case 'path': emitPath(tag, m, sink, tolMm); break;
+    case 'rect': emitRect(tag, m, sink); break;
+    case 'circle': emitCircle(tag, m, sink, tolMm); break;
+    case 'ellipse':
+      emitEllipse(
+        m, sink, tolMm,
+        attrNum(tag, 'cx', 0), attrNum(tag, 'cy', 0),
+        attrNum(tag, 'rx', null), attrNum(tag, 'ry', null),
+        `<ellipse> at offset ${tag.offset}`,
+      );
+      break;
+    case 'polygon': emitPolyish(tag, m, sink, true); break;
+    case 'polyline': emitPolyish(tag, m, sink, false); break;
+    case 'line': emitLine(tag, m, sink); break;
+    case 'use':
+    case 'text':
+    case 'tspan':
+    case 'image':
+    case 'foreignobject':
+      throw new SvgParseError(
+        'unsupported-element',
+        `<${tag.name}> at offset ${tag.offset}: this element carries geometry kernelCAD cannot ` +
+          'resolve here (references, glyph outlines or raster content), and skipping it would leave ' +
+          'the profile silently incomplete. Convert it to paths in the source tool ' +
+          '(Inkscape: Path > Object to Path; Illustrator: Create Outlines / Expand).',
+      );
+    default:
+      throw new SvgParseError(
+        'unsupported-element',
+        `<${tag.name}> at offset ${tag.offset}: unrecognised SVG element. kernelCAD reads ` +
+          'path, rect, circle, ellipse, polygon, polyline, line and g.',
+      );
+  }
 }
 
 export type { ImportedRegion };

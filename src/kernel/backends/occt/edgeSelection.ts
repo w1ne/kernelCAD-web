@@ -27,7 +27,12 @@
 import type { Edge, Face } from 'replicad';
 import type { FeatureRecord, FaceLabelsMap } from '../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
-import type { CanonicalFace, EdgeRef, FeatureId, FeatureRef } from '../../../shared/intent/types';
+import type { CanonicalFace, EdgeRef } from '../../../shared/intent/types';
+import {
+  findFaceLabelInMetadata,
+  labelToEdgeQuery,
+  type MetadataLabelHit,
+} from './edgeSelectionLabels';
 import { OcctBackend } from './occtBackend';
 import { resolveEdgeQuery, resolveFaceQuery, computeDihedralPublic } from './edgeQueries';
 import type { FaceQuery } from './edgeQueries';
@@ -71,40 +76,11 @@ export function pickEdges(
   // wrapper or bare kc.q.face(...) handed to .fillet({face})).
   const faceRefForEdges = record.inputs.face;
   if (faceRefForEdges && faceRefForEdges.kind === 'face' && faceRefForEdges.ref.kind === 'queryDsl') {
-    const faceResult = resolveQueryDslFace(record, base, faceRefForEdges.ref, records);
-    if ('error' in faceResult) return faceResult;
-    const faceEdges = collectFaceEdges([faceResult.face]);
-    if (faceEdges.length === 0) {
-      return {
-        error: {
-          target: 'export-occt',
-          code: 'feature.selection.no-match',
-          featureId: record.id,
-          severity: 'error',
-          message: `Query DSL face ref resolved to a face with no edges.`,
-          hint: 'Inspect available faces with list_faces, or relax the Query.',
-        },
-      };
-    }
-    return faceEdges;
+    return pickEdgesForQueryDslFace(record, base, faceRefForEdges.ref, records);
   }
   // 1. Edges by query / segment(s) — resolve via edgeQueries.ts
   if (edgesRef && edgesRef.kind === 'edge') {
-    const result = resolveEdgesRef(record, base, edgesRef.ref);
-    if ('error' in result) return result;
-    if (result.length === 0) {
-      return {
-        error: {
-          target: 'export-occt',
-          code: 'feature.selection.no-match',
-          featureId: record.id,
-          severity: 'error',
-          message: `Edge query / segment selector matched zero edges on the input shape.`,
-          hint: 'Inspect available edges with list_edges, or relax the query.',
-        },
-      };
-    }
-    return result;
+    return pickEdgesFromEdgeRef(record, base, edgesRef.ref);
   }
 
   const faceRef = record.inputs.face;
@@ -116,144 +92,243 @@ export function pickEdges(
 
   // 3. Face by query → resolve to faces, then collect their edges.
   if (faceRef.kind === 'face' && faceRef.ref.kind === 'query') {
-    const faces = resolveFaceQuery(base, faceRef.ref.query);
-    if (faces.length === 0) {
+    return pickEdgesForFaceQuery(record, base, faceRef.ref.query);
+  }
+
+  // 4. Face by label → check upstream metadata first (Task 4), then fall back
+  //    to the sketch-segment probe-query path.
+  if (faceRef.kind === 'face' && faceRef.ref.kind === 'label') {
+    return pickEdgesForFaceLabel(record, base, faceRef.ref.name, records);
+  }
+
+  // 5. Existing canonical face dispatch + v0.3 created-ref branch.
+  return pickEdgesForCanonicalOrCreated(record, base, faceRef);
+}
+
+function pickEdgesForQueryDslFace(
+  record: FeatureRecord,
+  base: OcctBackend,
+  ref: QueryDslFaceRef,
+  records: readonly FeatureRecord[] | undefined,
+): PickEdgesResult {
+  const faceResult = resolveQueryDslFace(record, base, ref, records);
+  if ('error' in faceResult) return faceResult;
+  const faceEdges = collectFaceEdges([faceResult.face]);
+  if (faceEdges.length === 0) {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.selection.no-match',
+        featureId: record.id,
+        severity: 'error',
+        message: `Query DSL face ref resolved to a face with no edges.`,
+        hint: 'Inspect available faces with list_faces, or relax the Query.',
+      },
+    };
+  }
+  return faceEdges;
+}
+
+function pickEdgesFromEdgeRef(
+  record: FeatureRecord,
+  base: OcctBackend,
+  ref: EdgeRef,
+): PickEdgesResult {
+  const result = resolveEdgesRef(record, base, ref);
+  if ('error' in result) return result;
+  if (result.length === 0) {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.selection.no-match',
+        featureId: record.id,
+        severity: 'error',
+        message: `Edge query / segment selector matched zero edges on the input shape.`,
+        hint: 'Inspect available edges with list_edges, or relax the query.',
+      },
+    };
+  }
+  return result;
+}
+
+function pickEdgesForFaceQuery(
+  record: FeatureRecord,
+  base: OcctBackend,
+  query: FaceQuery,
+): PickEdgesResult {
+  const faces = resolveFaceQuery(base, query);
+  if (faces.length === 0) {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.selection.no-match',
+        featureId: record.id,
+        severity: 'error',
+        message: `Face query matched zero faces.`,
+        hint: 'Inspect available faces with list_faces, or relax the FaceQuery.',
+      },
+    };
+  }
+  return collectFaceEdges(faces);
+}
+
+function pickEdgesForFaceLabel(
+  record: FeatureRecord,
+  base: OcctBackend,
+  labelName: string,
+  records: readonly FeatureRecord[] | undefined,
+): PickEdgesResult {
+  // (4a-pre) v0.3 slice 1+2: created-face refs declared by hole/holes/cutout
+  // attach labelName + (slice-2) featureName/featureOrdinal/snapshot to the
+  // result HistoryMap. Created refs win over upstream metadata.faceLabels.
+  const historyResult = pickEdgesFromLabelHistoryMap(record, base, labelName);
+  if (historyResult !== null) return historyResult;
+
+  // (4a) New: metadata.faceLabels lookup.
+  if (records) {
+    const metaResult = pickEdgesFromLabelMetadata(record, base, labelName, records);
+    if (metaResult !== null) return metaResult;
+    // 'miss' falls through to the sketch-segment path.
+  }
+
+  // (4b) Existing: sketch-segment probe-query path.
+  return pickEdgesFromLabelProbe(record, base, labelName, records);
+}
+
+function pickEdgesFromLabelHistoryMap(
+  record: FeatureRecord,
+  base: OcctBackend,
+  labelName: string,
+): PickEdgesResult | null {
+  if (base.historyMap === undefined) return null;
+  const parsed = parseFaceSelector(labelName);
+  const matchingHashes = findLineageMatches(base.historyMap, parsed);
+  if (matchingHashes.length > 0) {
+    const faces: Face[] = [];
+    for (const h of matchingHashes) {
+      try { faces.push(faceByHash(base, h)); } catch { /* skip stale hashes */ }
+    }
+    if (faces.length > 0) return collectFaceEdges(faces);
+  }
+  // Slice-2 snapshot fallback for named/ordinal selectors.
+  if (parsed.kind === 'named' || parsed.kind === 'ordinal') {
+    const fallbackSnap = findFallbackSnapshot(base.historyMap, parsed);
+    if (fallbackSnap) {
+      const snapMatches = resolveBySnapshot(base.historyMap, fallbackSnap);
+      if (snapMatches.length === 1) {
+        try {
+          const faces = [faceByHash(base, snapMatches[0])];
+          return collectFaceEdges(faces);
+        } catch { /* fallthrough */ }
+      }
+      if (snapMatches.length > 1) {
+        return {
+          error: {
+            target: 'export-occt',
+            code: 'feature.face-ref.ambiguous-after-split',
+            featureId: record.id,
+            severity: 'error',
+            message: `'${labelName}' resolved to 0 faces by lineage; geometry snapshot matched ${snapMatches.length} faces.`,
+            hint: `'${labelName}' resolved to 0 faces by lineage; geometry snapshot matched ${snapMatches.length} faces. Tighten the snapshot query or pick by a downstream feature ref.`,
+          },
+        };
+      }
+    }
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.face-ref.not-resolvable',
+        featureId: record.id,
+        severity: 'error',
+        message: `'${labelName}' did not resolve.`,
+        hint: `'${labelName}' did not resolve. The face may have been consumed by an upstream op, or the snapshot drifted by transform/scale.`,
+      },
+    };
+  }
+  return null;
+}
+
+function pickEdgesFromLabelMetadata(
+  record: FeatureRecord,
+  base: OcctBackend,
+  labelName: string,
+  records: readonly FeatureRecord[],
+): PickEdgesResult | null {
+  const meta = findFaceLabelInMetadata(records, record, labelName);
+  if ('collision' in meta) return { error: meta.collision };
+  if ('hit' in meta) {
+    const faceResult = resolveFromMetadataHit(record, base, meta.hit);
+    if ('error' in faceResult) return faceResult;
+    const faceEdges = collectFaceEdges([faceResult.face]);
+    if (faceEdges.length === 0) {
       return {
         error: {
           target: 'export-occt',
           code: 'feature.selection.no-match',
           featureId: record.id,
           severity: 'error',
-          message: `Face query matched zero faces.`,
-          hint: 'Inspect available faces with list_faces, or relax the FaceQuery.',
+          message: `Label '${labelName}' resolved to a face with no edges.`,
+          hint: 'Inspect available labels with list_face_labels, or use a different label.',
         },
       };
     }
-    return collectFaceEdges(faces);
+    return faceEdges;
   }
+  // 'miss' falls through to the sketch-segment path.
+  return null;
+}
 
-  // 4. Face by label → check upstream metadata first (Task 4), then fall back
-  //    to the sketch-segment probe-query path.
-  if (faceRef.kind === 'face' && faceRef.ref.kind === 'label') {
-    const labelName = faceRef.ref.name;
-
-    // (4a-pre) v0.3 slice 1+2: created-face refs declared by hole/holes/cutout
-    // attach labelName + (slice-2) featureName/featureOrdinal/snapshot to the
-    // result HistoryMap. Created refs win over upstream metadata.faceLabels.
-    if (base.historyMap !== undefined) {
-      const parsed = parseFaceSelector(labelName);
-      const matchingHashes = findLineageMatches(base.historyMap, parsed);
-      if (matchingHashes.length > 0) {
-        const faces: Face[] = [];
-        for (const h of matchingHashes) {
-          try { faces.push(faceByHash(base, h)); } catch { /* skip stale hashes */ }
-        }
-        if (faces.length > 0) return collectFaceEdges(faces);
-      }
-      // Slice-2 snapshot fallback for named/ordinal selectors.
-      if (parsed.kind === 'named' || parsed.kind === 'ordinal') {
-        const fallbackSnap = findFallbackSnapshot(base.historyMap, parsed);
-        if (fallbackSnap) {
-          const snapMatches = resolveBySnapshot(base.historyMap, fallbackSnap);
-          if (snapMatches.length === 1) {
-            try {
-              const faces = [faceByHash(base, snapMatches[0])];
-              return collectFaceEdges(faces);
-            } catch { /* fallthrough */ }
-          }
-          if (snapMatches.length > 1) {
-            return {
-              error: {
-                target: 'export-occt',
-                code: 'feature.face-ref.ambiguous-after-split',
-                featureId: record.id,
-                severity: 'error',
-                message: `'${labelName}' resolved to 0 faces by lineage; geometry snapshot matched ${snapMatches.length} faces.`,
-                hint: `'${labelName}' resolved to 0 faces by lineage; geometry snapshot matched ${snapMatches.length} faces. Tighten the snapshot query or pick by a downstream feature ref.`,
-              },
-            };
-          }
-        }
-        return {
-          error: {
-            target: 'export-occt',
-            code: 'feature.face-ref.not-resolvable',
-            featureId: record.id,
-            severity: 'error',
-            message: `'${labelName}' did not resolve.`,
-            hint: `'${labelName}' did not resolve. The face may have been consumed by an upstream op, or the snapshot drifted by transform/scale.`,
-          },
-        };
-      }
-    }
-
-    // (4a) New: metadata.faceLabels lookup.
-    if (records) {
-      const meta = findFaceLabelInMetadata(records, record, labelName);
-      if ('collision' in meta) return { error: meta.collision };
-      if ('hit' in meta) {
-        const faceResult = resolveFromMetadataHit(record, base, meta.hit);
-        if ('error' in faceResult) return faceResult;
-        const faceEdges = collectFaceEdges([faceResult.face]);
-        if (faceEdges.length === 0) {
-          return {
-            error: {
-              target: 'export-occt',
-              code: 'feature.selection.no-match',
-              featureId: record.id,
-              severity: 'error',
-              message: `Label '${labelName}' resolved to a face with no edges.`,
-              hint: 'Inspect available labels with list_face_labels, or use a different label.',
-            },
-          };
-        }
-        return faceEdges;
-      }
-      // 'miss' falls through to the sketch-segment path.
-    }
-
-    // (4b) Existing: sketch-segment probe-query path.
-    const probeQuery = labelToEdgeQuery(record, base, labelName, records);
-    if ('error' in probeQuery) return probeQuery;
-    const edges = resolveEdgeQuery(base, probeQuery.query);
-    if (edges.length === 0) {
-      return {
-        error: {
-          target: 'export-occt',
-          code: 'feature.label.unknown-name',
-          featureId: record.id,
-          severity: 'error',
-          message: `Label '${labelName}' resolved to a probe query that matched no edges.`,
-          hint: 'Call list_face_labels to see available labels on this shape.',
-        },
-      };
-    }
-    // Mixed-convexity guard (I6): if the matched edge set has both convex
-    // and concave members, fillet/chamfer will fail with a generic OCCT error.
-    // Surface a specific code so the agent can refine the query.
-    const shape = (base.getReplicadShape() as unknown as { faces: import('replicad').Face[] });
-    let hasConvex = false, hasConcave = false;
-    for (const e of edges) {
-      const d = computeDihedralPublic(shape, e);
-      if (d?.convex === true) hasConvex = true;
-      if (d?.convex === false) hasConcave = true;
-    }
-    if (hasConvex && hasConcave) {
-      return {
-        error: {
-          target: 'export-occt',
-          code: 'feature.label.mixed-convexity',
-          featureId: record.id,
-          severity: 'error',
-          message: `Label '${labelName}': probe matched ${edges.length} edges with mixed convexity (both convex and concave). Filleting mixed selections fails inside the kernel; either split the label upstream, or refine with a more specific query like {atZ: ...}.`,
-          hint: 'Split the label across smaller segments, or refine with an EdgeQuery filtering by convexity (e.g. { convex: true }).',
-        },
-      };
-    }
-    return edges;
+function pickEdgesFromLabelProbe(
+  record: FeatureRecord,
+  base: OcctBackend,
+  labelName: string,
+  records: readonly FeatureRecord[] | undefined,
+): PickEdgesResult {
+  const probeQuery = labelToEdgeQuery(record, base, labelName, records);
+  if ('error' in probeQuery) return probeQuery;
+  const edges = resolveEdgeQuery(base, probeQuery.query);
+  if (edges.length === 0) {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.label.unknown-name',
+        featureId: record.id,
+        severity: 'error',
+        message: `Label '${labelName}' resolved to a probe query that matched no edges.`,
+        hint: 'Call list_face_labels to see available labels on this shape.',
+      },
+    };
   }
+  // Mixed-convexity guard (I6): if the matched edge set has both convex
+  // and concave members, fillet/chamfer will fail with a generic OCCT error.
+  // Surface a specific code so the agent can refine the query.
+  const shape = (base.getReplicadShape() as unknown as { faces: import('replicad').Face[] });
+  let hasConvex = false, hasConcave = false;
+  for (const e of edges) {
+    const d = computeDihedralPublic(shape, e);
+    if (d?.convex === true) hasConvex = true;
+    if (d?.convex === false) hasConcave = true;
+  }
+  if (hasConvex && hasConcave) {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.label.mixed-convexity',
+        featureId: record.id,
+        severity: 'error',
+        message: `Label '${labelName}': probe matched ${edges.length} edges with mixed convexity (both convex and concave). Filleting mixed selections fails inside the kernel; either split the label upstream, or refine with a more specific query like {atZ: ...}.`,
+        hint: 'Split the label across smaller segments, or refine with an EdgeQuery filtering by convexity (e.g. { convex: true }).',
+      },
+    };
+  }
+  return edges;
+}
 
-  // 5. Existing canonical face dispatch + v0.3 created-ref branch.
+function pickEdgesForCanonicalOrCreated(
+  record: FeatureRecord,
+  base: OcctBackend,
+  faceRef: NonNullable<FeatureRecord['inputs']['face']>,
+): PickEdgesResult {
   if (faceRef.kind !== 'face' || (faceRef.ref.kind !== 'canonical' && faceRef.ref.kind !== 'created')) {
     return {
       error: {
@@ -821,113 +896,6 @@ export function pickFace(
   };
 }
 
-// ─── Task 4: faceLabels metadata resolution helpers ───────────────────────────
-
-interface MetadataLabelHit {
-  /** The originating feature whose metadata.faceLabels declared this label. */
-  origin: FeatureRecord;
-  /** The resolved value: a canonical face name or a FaceQuery descriptor. */
-  resolved: CanonicalFace | FaceQuery;
-}
-
-/** Pull the referenced feature id out of a `FeatureRef`, if it has one.
- *  `surface` refs point into the Surface table, not the feature-record
- *  array, so they contribute no lineage edge here. */
-function featureRefTargetId(ref: FeatureRef): FeatureId | undefined {
-  switch (ref.kind) {
-    case 'feature': return ref.id;
-    case 'face':
-    case 'edge':
-    case 'vertex': return ref.featureId;
-    default: return undefined;
-  }
-}
-
-/**
- * Transitive closure of `consumer.inputs` — every record the consumer is
- * actually built from (boolean operands `base`/`cutter_N`, pattern & mirror
- * `base`, sketch `profile`, assembly part `shape`, face/edge ref owners),
- * excluding the consumer itself.
- *
- * This is the scope a consumer legitimately "sees". Two independent shape
- * subtrees produced by the same factory helper share no ancestors, so each
- * may declare the same `faceLabels` name without colliding.
- *
- * Cycle-safe: the `ancestors` set doubles as the visited guard, so a
- * malformed graph cannot hang the walk.
- */
-function collectAncestorIds(
-  records: readonly FeatureRecord[],
-  consumer: FeatureRecord,
-): Set<FeatureId> {
-  const byId = new Map<FeatureId, FeatureRecord>();
-  for (const rec of records) byId.set(rec.id, rec);
-
-  const ancestors = new Set<FeatureId>();
-  const queue: FeatureId[] = [];
-  const pushInputs = (rec: FeatureRecord): void => {
-    for (const ref of Object.values(rec.inputs)) {
-      const id = featureRefTargetId(ref);
-      if (id !== undefined && id !== consumer.id && !ancestors.has(id)) {
-        ancestors.add(id);
-        queue.push(id);
-      }
-    }
-  };
-
-  pushInputs(consumer);
-  while (queue.length > 0) {
-    const next = byId.get(queue.pop() as FeatureId);
-    if (next) pushInputs(next);
-  }
-  return ancestors;
-}
-
-/**
- * Walk the consumer's lineage (the transitive closure of its inputs) and look
- * for any `metadata.faceLabels` entry that declares `label`. Returns a
- * three-way discriminated union:
- *   - `{ hit }` — exactly one ancestor declares it.
- *   - `{ collision }` — two or more ancestors in the SAME lineage conflict (fatal).
- *   - `{ miss }` — no ancestor declares it (fall through to sketch path).
- *
- * Scoping by lineage rather than by script order is what makes a reusable
- * factory safe: `makeBase()` called three times stamps
- * `faceLabels: { lid: 'top' }` on three unrelated records, and each consumer
- * only ever sees the one in its own subtree.
- */
-function findFaceLabelInMetadata(
-  records: readonly FeatureRecord[],
-  consumer: FeatureRecord,
-  label: string,
-): { hit: MetadataLabelHit } | { collision: CompilerDiagnostic } | { miss: true } {
-  const ancestors = collectAncestorIds(records, consumer);
-  const hits: MetadataLabelHit[] = [];
-  for (const rec of records) {
-    if (rec.id === consumer.id) break; // only upstream
-    if (!ancestors.has(rec.id)) continue; // ...and only within this lineage
-    const fl = (rec.metadata as { faceLabels?: FaceLabelsMap } | undefined)?.faceLabels;
-    if (fl && Object.prototype.hasOwnProperty.call(fl, label)) {
-      const resolved = fl[label];
-      hits.push({ origin: rec, resolved: resolved as CanonicalFace | FaceQuery });
-    }
-  }
-  if (hits.length === 0) return { miss: true };
-  if (hits.length > 1) {
-    return {
-      collision: {
-        target: 'export-occt',
-        code: 'feature.label.collision',
-        featureId: consumer.id,
-        severity: 'error',
-        message: `Label '${label}' is declared by multiple upstream features: ${hits.map(h => h.origin.id).join(', ')}. Each label must be unique within the scope a consumer sees.`,
-        hint: 'Rename one of the conflicting faceLabels entries upstream so the consumer sees a unique name.',
-      },
-    };
-  }
-  return { hit: hits[0] };
-}
-
 /**
  * Resolve a metadata label hit to the matching `Face` on the consumer's
  * current lowered shape (`base`).
@@ -1101,151 +1069,6 @@ function resolveLabeledFace(
   }
 
   return { face: matched[0] };
-}
-
-function labelToEdgeQuery(
-  record: FeatureRecord,
-  _base: OcctBackend,
-  label: string,
-  records: readonly FeatureRecord[] | undefined,
-): { query: import('./edgeQueries').EdgeQuery } | { error: CompilerDiagnostic } {
-  if (!records) {
-    return {
-      error: {
-        target: 'export-occt',
-        code: 'feature.label.no-upstream-sketch',
-        featureId: record.id,
-        severity: 'error',
-        message: `Label '${label}' lookup requires record context (internal: records not threaded).`,
-        hint: 'Internal error — record context was not threaded into the lowerer.',
-      },
-    };
-  }
-
-  const upstreamSketch = findUpstreamSketch(records, record);
-  if (!upstreamSketch) {
-    return {
-      error: {
-        target: 'export-occt',
-        code: 'feature.label.no-upstream-sketch',
-        featureId: record.id,
-        severity: 'error',
-        message: `Label '${label}': base shape isn't sketch-derived. Labels work on shapes built from a path() sketch (extrude); apply the label upstream on the sketch.`,
-        hint: 'Apply the label on the sketch, or use an inline FaceQuery (e.g. { atZ: ... }) for primitives.',
-      },
-    };
-  }
-
-  const commands = (upstreamSketch.metadata as { commands?: Array<{ kind: string; x?: { evaluated: number }; y?: { evaluated: number }; label?: string }> } | undefined)?.commands;
-  if (!commands) {
-    return {
-      error: {
-        target: 'export-occt',
-        code: 'feature.label.unknown-name',
-        featureId: record.id,
-        severity: 'error',
-        message: `Label '${label}': upstream sketch has no commands metadata.`,
-        hint: 'Construct sketches via path().moveTo(...).lineTo(...).label(...).close() so the commands are persisted.',
-      },
-    };
-  }
-
-  let labeledIdx = -1;
-  for (let i = 0; i < commands.length; i++) {
-    if (commands[i].label === label) { labeledIdx = i; break; }
-  }
-  if (labeledIdx < 0) {
-    return {
-      error: {
-        target: 'export-occt',
-        code: 'feature.label.unknown-name',
-        featureId: record.id,
-        severity: 'error',
-        message: `Label '${label}' not found on the upstream sketch's segments. Use the list_face_labels MCP tool to see available labels.`,
-        hint: 'Call list_face_labels to see available labels on this shape.',
-      },
-    };
-  }
-
-  const segment = commands[labeledIdx];
-  const prev = commands[labeledIdx - 1];
-  if (!prev || prev.x === undefined || prev.y === undefined || segment.x === undefined || segment.y === undefined) {
-    return {
-      error: {
-        target: 'export-occt',
-        code: 'feature.label.unknown-name',
-        featureId: record.id,
-        severity: 'error',
-        message: `Label '${label}': can't determine segment chord (prior command has no endpoint).`,
-        hint: 'Place .label(...) immediately after a lineTo or arc segment with an endpoint.',
-      },
-    };
-  }
-  const prevX = prev.x.evaluated;
-  const prevY = prev.y.evaluated;
-  const segX = segment.x.evaluated;
-  const segY = segment.y.evaluated;
-
-  const depth = extractExtrudeDepth(records, record);
-  if (depth === null) {
-    return {
-      error: {
-        target: 'export-occt',
-        code: 'feature.label.unsupported-base',
-        featureId: record.id,
-        severity: 'error',
-        message: `Label '${label}': labels currently support extrude only. Revolve labels are deferred; use an inline query against the geometry as a workaround: {face: {atZ: ...}}.`,
-        hint: 'Use an inline FaceQuery (e.g. { atZ: ... }) as a workaround for non-extrude bases.',
-      },
-    };
-  }
-
-  // The labeled segment maps to one side face of the extruded solid. That side
-  // face has 4 outer-wire edges: two horizontal (at z=0 and z=depth, running
-  // along the segment chord) and two vertical (at the segment's endpoints, both
-  // running 0..depth). Build a `within` bounding region that brackets exactly
-  // these four edges' midpoints — collapsed in any axis where the segment is
-  // axis-parallel, expanded by `tol` to absorb floating-point noise.
-  const tol = 1e-3;
-  const xMin = Math.min(prevX, segX) - tol;
-  const xMax = Math.max(prevX, segX) + tol;
-  const yMin = Math.min(prevY, segY) - tol;
-  const yMax = Math.max(prevY, segY) + tol;
-  return {
-    query: {
-      within: {
-        xMin, xMax,
-        yMin, yMax,
-        zMin: -tol,
-        zMax: depth + tol,
-      },
-    },
-  };
-}
-
-function findUpstreamSketch(records: readonly FeatureRecord[], record: FeatureRecord): FeatureRecord | null {
-  // Walk from this record's `base` input → if the base is an extrude/revolve,
-  // follow its `sketch` input → return the sketch record.
-  const baseRef = record.inputs.base;
-  if (!baseRef || baseRef.kind !== 'feature') return null;
-  const base = records.find(r => r.id === baseRef.id);
-  if (!base) return null;
-  if (base.kind === 'sketch') return base;
-  if (base.kind === 'extrude' || base.kind === 'revolve') {
-    const sketchRef = base.inputs.sketch;
-    if (sketchRef && sketchRef.kind === 'feature') {
-      return records.find(r => r.id === sketchRef.id) ?? null;
-    }
-  }
-  return null;
-}
-
-function extractExtrudeDepth(records: readonly FeatureRecord[], record: FeatureRecord): number | null {
-  const baseRef = record.inputs.base;
-  if (!baseRef || baseRef.kind !== 'feature') return null;
-  const base = records.find(r => r.id === baseRef.id);
-  if (!base || base.kind !== 'extrude') return null;
-  return base.params.depth?.evaluated ?? null;
 }
 
 // ─── Q8: Query DSL dispatchers ────────────────────────────────────────────────
