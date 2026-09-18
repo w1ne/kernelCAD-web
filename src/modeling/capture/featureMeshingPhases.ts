@@ -19,7 +19,7 @@ import { resolveFaceLabelToFace } from '../../kernel/backends/occt/edgeSelection
 import { faceHashOf } from '../../kernel/backends/occt/createdRefs';
 import { transformFeatureMesh } from './transformMesh';
 import { Transform } from '../../shared/runtime/se3';
-import type { FeatureMesh } from './featureMeshing';
+import type { FeatureMesh, PerFaceMaterialWarning } from './featureMeshing';
 
 export interface MeshBoundsAccumulator {
   minX: number;
@@ -45,12 +45,6 @@ export function accumulateMeshBounds(
   }
 }
 
-export interface PerFaceMaterialWarning {
-  code: 'feature.material.face-label-no-match';
-  featureId: FeatureId;
-  label: string;
-  detail: string;
-}
 
 // Per-face material resolution. For each label in materialByLabel,
 // resolve label → Face via the same machinery the edge-feature
