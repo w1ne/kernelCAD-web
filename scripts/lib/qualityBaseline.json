@@ -271,12 +271,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/render/headlessRender.ts",
-    "symbol": "Async function 'headlessRender'",
-    "value": 35
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/script-runtime/bom.ts",
     "symbol": "Async function 'computeBom'",
     "value": 25
@@ -772,12 +766,6 @@
     "file": "src/agent/reconstruct/reconstruct.ts",
     "symbol": "Async function 'reconstructFromSoup'",
     "value": 221
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/agent/render/headlessRender.ts",
-    "symbol": "Async function 'headlessRender'",
-    "value": 159
   },
   {
     "rule": "max-lines-per-function",
