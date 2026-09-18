@@ -235,12 +235,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/meshClean.ts",
-    "symbol": "Function 'cleanMesh'",
-    "value": 50
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/planPhases.ts",
     "symbol": "Function 'decomposeRun'",
     "value": 35
@@ -868,12 +862,6 @@
     "file": "src/agent/reconstruct/blends.ts",
     "symbol": "Function 'detectEdgeBlends'",
     "value": 175
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/agent/reconstruct/meshClean.ts",
-    "symbol": "Function 'cleanMesh'",
-    "value": 205
   },
   {
     "rule": "max-lines-per-function",
