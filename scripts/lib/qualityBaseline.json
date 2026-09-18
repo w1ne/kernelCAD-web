@@ -205,12 +205,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/blends.ts",
-    "symbol": "Function 'edgeMatchesQuery'",
-    "value": 32
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/planPhases.ts",
     "symbol": "Function 'decomposeRun'",
     "value": 35
