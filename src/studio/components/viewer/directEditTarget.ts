@@ -61,6 +61,51 @@ interface ConnectMetadataView {
     readonly b?: { partName?: unknown };
 }
 
+function findPartRecord(
+    features: readonly FeatureRecord[],
+    name: string,
+): FeatureRecord | undefined {
+    return features.find(
+        (record) =>
+            record.kind === 'assemblyPart'
+            && (record.metadata as { partName?: unknown } | undefined)?.partName === name,
+    );
+}
+
+function hasLegacyConnectPlacement(partRecord: FeatureRecord | undefined): boolean {
+    return (
+        partRecord != null
+        && (partRecord.metadata as { placedBy?: unknown } | undefined)?.placedBy != null
+    );
+}
+
+function jointOrConnectDrivesPart(
+    record: FeatureRecord,
+    partId: string | undefined,
+    partName: string,
+): boolean {
+    if (partId !== undefined && featureRefTargetsPart(record.inputs, partId)) return true;
+    const meta = record.metadata as ConnectMetadataView | undefined;
+    return meta?.a?.partName === partName || meta?.b?.partName === partName;
+}
+
+function mateGraphDrivesPart(
+    record: FeatureRecord,
+    partId: string | undefined,
+    partName: string,
+): boolean {
+    const meta = record.metadata as MateMetadataView | undefined;
+    const hasMateGraph = (meta?.mates?.length ?? 0) > 0 || (meta?.jointIds?.length ?? 0) > 0;
+    if (!hasMateGraph) return false;
+    if (partId !== undefined && meta?.partIds?.includes(partId)) return true;
+    if (partId !== undefined && featureRefTargetsPart(record.inputs, partId)) return true;
+    return meta?.mates?.some(
+        (mate) =>
+            connectorRefPartName(mate.a) === partName
+            || connectorRefPartName(mate.b) === partName,
+    ) === true;
+}
+
 /**
  * True when the anchored part is driven by the assembly's pose graph, so a
  * local `.translate(...)` drag would be silently overwritten (or produce an
@@ -80,45 +125,21 @@ export function isMatedAnchor(
 ): boolean {
     if (anchor.kind !== 'part') return false;
 
-    const partRecord = features.find(
-        (record) =>
-            record.kind === 'assemblyPart'
-            && (record.metadata as { partName?: unknown } | undefined)?.partName === anchor.name,
-    );
+    const partRecord = findPartRecord(features, anchor.name);
     const partId = partRecord?.id;
 
     // (a) legacy connect() placement.
-    if (
-        partRecord
-        && (partRecord.metadata as { placedBy?: unknown } | undefined)?.placedBy != null
-    ) {
-        return true;
-    }
+    if (hasLegacyConnectPlacement(partRecord)) return true;
 
     for (const record of features) {
         // (b) joint / connect primitives name the part in their inputs.
         if (record.kind === 'assemblyJoint' || record.kind === 'assemblyConnect') {
-            if (partId !== undefined && featureRefTargetsPart(record.inputs, partId)) return true;
-            const meta = record.metadata as ConnectMetadataView | undefined;
-            if (meta?.a?.partName === anchor.name || meta?.b?.partName === anchor.name) return true;
+            if (jointOrConnectDrivesPart(record, partId, anchor.name)) return true;
             continue;
         }
         // (c) member of a mated/jointed assembly model.
         if (record.kind !== 'solvedAssembly' && record.kind !== 'assemblyModel') continue;
-        const meta = record.metadata as MateMetadataView | undefined;
-        const hasMateGraph = (meta?.mates?.length ?? 0) > 0 || (meta?.jointIds?.length ?? 0) > 0;
-        if (!hasMateGraph) continue;
-        if (partId !== undefined && meta?.partIds?.includes(partId)) return true;
-        if (partId !== undefined && featureRefTargetsPart(record.inputs, partId)) return true;
-        if (
-            meta?.mates?.some(
-                (mate) =>
-                    connectorRefPartName(mate.a) === anchor.name
-                    || connectorRefPartName(mate.b) === anchor.name,
-            )
-        ) {
-            return true;
-        }
+        if (mateGraphDrivesPart(record, partId, anchor.name)) return true;
     }
 
     return false;
