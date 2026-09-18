@@ -811,12 +811,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/context/WorkbenchContext.tsx",
-    "symbol": "Function 'WorkbenchInnerProvider'",
-    "value": 205
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/routes/generate.tsx",
     "symbol": "Function 'GeneratePage'",
     "value": 155
