@@ -20,6 +20,49 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  // Layering: shared -> kernel -> modeling -> kinematic -> agent -> studio. Imports may only
+  // point down. Mapped dirs: shared, kernel, modeling, kinematic, agent. Unmapped for now
+  // (no layering rule applied): authoring, docs, funnel, lib, server.
+  ...[
+    { dir: 'shared', forbid: ['kernel', 'modeling', 'kinematic', 'agent', 'studio', 'server'] },
+    { dir: 'kernel', forbid: ['modeling', 'kinematic', 'agent', 'studio', 'server'] },
+    { dir: 'modeling', forbid: ['kinematic', 'agent', 'studio', 'server'] },
+    { dir: 'kinematic', forbid: ['agent', 'studio'] },
+    { dir: 'agent', forbid: ['studio'] },
+  ].map(({ dir, forbid }) => ({
+    files: [`src/${dir}/**/*.{ts,tsx}`],
+    ignores: [
+      // Tests may import across layers.
+      '**/*.test.{ts,tsx}',
+      // Slice-2 allowlist — delete each line as its file is fixed.
+      'src/kernel/backends/backend.ts',
+      'src/kernel/backends/occt/occtBackend.ts',
+      'src/kernel/backends/occt/pathNurbsLowerer.ts',
+      'src/kernel/backends/verb/curveBridge.ts',
+      'src/kernel/backends/occt/importStl.ts',
+      'src/modeling/parts/fetchPart.ts',
+      'src/modeling/parts/synthesizeConnectors.ts',
+      'src/modeling/animation/bakeAnimationTimeline.ts',
+      'src/agent/render/headless-player/main.tsx',
+      'src/kinematic/sweepTolerance.ts',
+      'src/kernel/fea/feaMaterials.ts',
+      'src/modeling/api.ts',
+      'src/modeling/capture/proxy.ts',
+      'src/modeling/properties/materialLibrary.ts',
+    ],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: forbid.map((layer) => ({
+          regex: `(^|/)${layer}(/|$)`,
+          message: `src/${dir} must not import from src/${layer} (layering: shared -> kernel -> modeling -> kinematic -> agent -> studio).`,
+        })),
+      }],
+      'no-restricted-syntax': ['error', ...forbid.map((layer) => ({
+        selector: `ImportExpression[source.value=/(^|\\/)${layer}(\\/|$)/]`,
+        message: `src/${dir} must not import from src/${layer} (layering: shared -> kernel -> modeling -> kinematic -> agent -> studio).`,
+      }))],
+    },
+  })),
   {
     files: [
       '**/*.test.{ts,tsx}',

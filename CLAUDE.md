@@ -51,3 +51,15 @@ When reviewing a PR that ships a `v0.X.0` tag (cuts a per-module release):
 4. If `meta.json.overrideApprovedBy` is non-null, the override path was used. Surface this to the controller for traceability — it is not automatically a fail, but should not be a default.
 
 This rule binds the `superpowers:code-reviewer` agent and any human reviewer working in this repo.
+
+## Quality ratchet
+
+`scripts/lib/qualityBaseline.json` and `scripts/lib/cycleBaseline.json` may only
+shrink over time; a value going back up (even to an old baselined value) fails CI.
+After reducing findings or cycles, run `npx tsx scripts/qualityBaselineRegen.ts`
+to regenerate both baselines — it refuses to write (exit 1) if any finding is new
+or grew, unless you pass `--allow-new`. `eslint.config.js` also enforces a
+one-way import layering (shared -> kernel -> modeling -> kinematic -> agent ->
+studio); a `no-restricted-imports`/`no-restricted-syntax` error there means you
+imported from a higher layer — move the code down or add it to that block's
+allowlist with a follow-up ticket, don't silence the rule.
