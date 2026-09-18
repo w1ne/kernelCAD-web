@@ -669,7 +669,7 @@
     "rule": "complexity",
     "file": "src/studio/routes/p.$slug.tsx",
     "symbol": "Function 'ProjectPage'",
-    "value": 23
+    "value": 22
   },
   {
     "rule": "max-lines-per-function",
@@ -826,12 +826,6 @@
     "file": "src/studio/routes/me.tsx",
     "symbol": "Function 'MePage'",
     "value": 159
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/routes/p.$slug.tsx",
-    "symbol": "Function 'ProjectPage'",
-    "value": 209
   },
   {
     "rule": "max-lines",
