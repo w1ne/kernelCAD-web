@@ -643,12 +643,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseJointReactions.ts",
-    "symbol": "Function 'validateCertificateInput'",
-    "value": 50
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseReachability.ts",
     "symbol": "Async function 'assessPhysicalUseCaseReachability'",
     "value": 28
@@ -1233,7 +1227,7 @@
     "rule": "max-lines",
     "file": "src/modeling/mates/physicalUseCaseJointReactions.ts",
     "symbol": "(file)",
-    "value": 929
+    "value": 811
   },
   {
     "rule": "max-lines",

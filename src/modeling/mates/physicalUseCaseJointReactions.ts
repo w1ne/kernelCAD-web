@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import type { Assembly, AssemblyPartStored } from '../capture/assembly';
+import type { Assembly } from '../capture/assembly';
 import type { NumericPoses } from '../capture/forwardKinematics';
 import type { Vec3 } from '../../shared/intent/types';
 import { currentValue } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 import type { Transform } from '../../shared/runtime/se3';
 import { resolveConnectorOrigin, type Connector } from './connector';
-import { parseConnectorRef } from './mate';
 import type { PhysicalUseCaseRecord } from './physicalUseCase';
 import {
   DEFAULT_FORCE_RESIDUAL_N,
@@ -16,6 +15,20 @@ import {
   type PhysicalUseCaseStaticContactForce,
 } from './physicalUseCaseStatics';
 import { solveMates } from './solver';
+import {
+  buildDeclaredContactMap,
+  contactKey,
+  copyVec,
+  isFiniteVec3,
+  isPositiveFinite,
+  safeParseConnectorRef,
+  safePartName,
+  scale,
+  validateCertificateIdentity,
+  validateCertificatePoses,
+  validateCertificateResiduals,
+  validateCertifiedContact,
+} from './physicalUseCaseJointReactionsPhases';
 
 const CONNECTOR_COINCIDENCE_TOLERANCE_MM = 1e-6;
 const AXIS_ALIGNMENT_TOLERANCE = 1e-6;
@@ -56,7 +69,7 @@ export interface PhysicalUseCaseJointReactionsResult {
 
 type Mate = ReturnType<Assembly['__mates']>[number];
 
-interface CertifiedMechanismContact {
+export interface CertifiedMechanismContact {
   readonly evidence: PhysicalUseCaseStaticContactForce;
   readonly mechanismPart: string;
   readonly pointWorldMm: Vec3;
@@ -416,118 +429,33 @@ function validateCertificateInput(
   useCase: PhysicalUseCaseRecord,
   certificate: PhysicalUseCaseStaticCertificate,
 ): CertifiedMechanismContact[] | string {
-  if (certificate.useCaseName !== useCase.name) {
-    return `Static certificate use case '${certificate.useCaseName}' does not match '${useCase.name}'.`;
-  }
   const partsByName = new Map(arm.__parts().map((part) => [part.name, part]));
-  if (!partsByName.has(certificate.heldPart)) {
-    return `Static certificate held part '${certificate.heldPart}' does not exist in the assembly.`;
-  }
-  const loadedParts = [...new Set(useCase.loads.map((load) => load.part))];
-  if (loadedParts.length !== 1 || loadedParts[0] !== certificate.heldPart) {
-    return `Static certificate held part '${certificate.heldPart}' does not match the use-case load owner.`;
-  }
-  for (const stablePart of useCase.stableParts) {
-    if (!partsByName.has(stablePart)) {
-      return `Stable part '${stablePart}' does not exist in the assembly.`;
-    }
-  }
-  for (const mate of arm.__mates()) {
-    const aPart = safePartName(mate.a);
-    const bPart = safePartName(mate.b);
-    if (aPart === certificate.heldPart || bPart === certificate.heldPart) {
-      return `Static certificate held part '${certificate.heldPart}' is connected by structural mate '${mate.name}'.`;
-    }
-  }
+  const identityIssue = validateCertificateIdentity(arm, useCase, certificate, partsByName);
+  if (identityIssue !== undefined) return identityIssue;
 
-  const forceLimit = useCase.criteria?.maxForceResidualN ?? DEFAULT_FORCE_RESIDUAL_N;
-  const torqueLimit = useCase.criteria?.maxTorqueResidualNmm ?? DEFAULT_TORQUE_RESIDUAL_NMM;
-  if (
-    !isNonNegativeFinite(certificate.forceResidualN) ||
-    certificate.forceResidualN > forceLimit + 1e-12 ||
-    !isNonNegativeFinite(certificate.torqueResidualNmm) ||
-    certificate.torqueResidualNmm > torqueLimit + 1e-12
-  ) {
-    return 'Static certificate residuals are not finite passing values for this use case.';
-  }
+  const residualIssue = validateCertificateResiduals(useCase, certificate);
+  if (residualIssue !== undefined) return residualIssue;
 
-  const matesByName = new Map(arm.__mates().map((mate) => [mate.name, mate]));
-  for (const [mateName, pose] of Object.entries(certificate.poses)) {
-    const mate = matesByName.get(mateName);
-    if (mate === undefined) return `Static certificate pose names unknown mate '${mateName}'.`;
-    if (!isFinitePose(pose)) return `Static certificate pose for mate '${mateName}' is not finite.`;
-    if (mate.type === 'ball' ? !Array.isArray(pose) : Array.isArray(pose)) {
-      return `Static certificate pose for mate '${mateName}' has the wrong shape for '${mate.type}'.`;
-    }
-    if (mate.type === 'fastened' || mate.type === 'planar') {
-      return `Static certificate must not provide a pose for zero-DOF mate '${mateName}'.`;
-    }
-  }
+  const poseIssue = validateCertificatePoses(arm, certificate);
+  if (poseIssue !== undefined) return poseIssue;
 
-  if (certificate.contactForces.length !== useCase.contacts.length) {
-    return `Static certificate has ${certificate.contactForces.length} contact forces for ${useCase.contacts.length} declared contacts.`;
-  }
-  const declaredContacts = new Map<string, PhysicalUseCaseRecord['contacts'][number]>();
-  for (const contact of useCase.contacts) {
-    const key = contactKey(contact.a, contact.b);
-    if (declaredContacts.has(key)) {
-      return `Use case declares duplicate contact '${contact.a}' to '${contact.b}'.`;
-    }
-    declaredContacts.set(key, contact);
-  }
+  const declaredContacts = buildDeclaredContactMap(useCase, certificate);
+  if (typeof declaredContacts === 'string') return declaredContacts;
 
   const seen = new Set<string>();
   const resolved: CertifiedMechanismContact[] = [];
   for (const evidence of certificate.contactForces) {
     const key = contactKey(evidence.contactA, evidence.contactB);
-    const declared = declaredContacts.get(key);
-    if (declared === undefined || seen.has(key)) {
-      return `Static certificate contact '${evidence.contactA}' to '${evidence.contactB}' does not match the declared contacts.`;
-    }
-    seen.add(key);
-    const aPart = safePartName(evidence.contactA);
-    const bPart = safePartName(evidence.contactB);
-    const heldIsA = aPart === certificate.heldPart;
-    const heldIsB = bPart === certificate.heldPart;
-    if (aPart === undefined || bPart === undefined || heldIsA === heldIsB) {
-      return `Static certificate contact '${evidence.contactA}' to '${evidence.contactB}' has invalid held/mechanism ownership.`;
-    }
-    const mechanismPart = heldIsA ? bPart : aPart;
-    if (evidence.mechanismPart !== mechanismPart || !partsByName.has(mechanismPart)) {
-      return `Static certificate mechanism part '${evidence.mechanismPart}' does not own the non-held contact endpoint.`;
-    }
-    if (
-      !connectorExists(partsByName, evidence.contactA) ||
-      !connectorExists(partsByName, evidence.contactB)
-    ) {
-      return `Static certificate contact '${evidence.contactA}' to '${evidence.contactB}' names an unknown connector.`;
-    }
-    if (!isFiniteVec3(evidence.pointWorldMm) || !isFiniteVec3(evidence.forceOnHeldWorldN)) {
-      return `Static certificate contact '${evidence.contactA}' to '${evidence.contactB}' has a non-finite point or force.`;
-    }
-    if (
-      !isNonNegativeFinite(evidence.normalForceN) ||
-      !isNonNegativeFinite(evidence.tangentialForceN) ||
-      !isPositiveFinite(evidence.normalCapacityN) ||
-      !isPositiveFinite(evidence.friction) ||
-      evidence.normalForceN > evidence.normalCapacityN + 1e-8 ||
-      evidence.tangentialForceN > evidence.friction * evidence.normalForceN + 1e-8
-    ) {
-      return `Static certificate contact '${evidence.contactA}' to '${evidence.contactB}' is outside its certified contact limits.`;
-    }
-    if (
-      declared.normalForceN === undefined ||
-      !nearlyEqual(evidence.normalCapacityN, declared.normalForceN) ||
-      !nearlyEqual(evidence.friction, declared.friction)
-    ) {
-      return `Static certificate contact '${evidence.contactA}' to '${evidence.contactB}' does not match declared capacity or friction.`;
-    }
-    resolved.push({
+    const contact = validateCertifiedContact(
       evidence,
-      mechanismPart,
-      pointWorldMm: copyVec(evidence.pointWorldMm),
-      forceOnMechanismWorldN: scale(evidence.forceOnHeldWorldN, -1),
-    });
+      declaredContacts.get(key),
+      certificate,
+      partsByName,
+      seen,
+    );
+    if (typeof contact === 'string') return contact;
+    seen.add(key);
+    resolved.push(contact);
   }
   return resolved;
 }
@@ -869,17 +797,6 @@ class DisjointSet {
   }
 }
 
-function connectorExists(
-  partsByName: ReadonlyMap<string, AssemblyPartStored>,
-  ref: string,
-): boolean {
-  const parsed = safeParseConnectorRef(ref);
-  return parsed !== undefined &&
-    partsByName.get(parsed.partName)?.mateConnectors.some(
-      (connector: Connector) => connector.name === parsed.connectorName,
-    ) === true;
-}
-
 function failure(
   useCaseName: string,
   problem: PreparationFailure,
@@ -899,22 +816,6 @@ function inputFailure(useCaseName: string, message: string): PhysicalUseCaseJoin
   };
 }
 
-function safeParseConnectorRef(ref: string): ReturnType<typeof parseConnectorRef> | undefined {
-  try {
-    return parseConnectorRef(ref);
-  } catch {
-    return undefined;
-  }
-}
-
-function safePartName(ref: string): string | undefined {
-  return safeParseConnectorRef(ref)?.partName;
-}
-
-function contactKey(a: string, b: string): string {
-  return `${a}\n${b}`;
-}
-
 function copyPoses(poses: NumericPoses): NumericPoses {
   return Object.fromEntries(Object.entries(poses).map(([name, pose]) => [
     name,
@@ -922,30 +823,8 @@ function copyPoses(poses: NumericPoses): NumericPoses {
   ]));
 }
 
-function isFinitePose(value: number | [number, number, number]): boolean {
-  return Array.isArray(value)
-    ? value.length === 3 && value.every(Number.isFinite)
-    : Number.isFinite(value);
-}
-
-function isFiniteVec3(value: readonly number[]): value is Vec3 {
-  return value.length === 3 && value.every(Number.isFinite);
-}
-
 function hasNonZeroVec(value: readonly number[] | undefined): value is Vec3 {
   return value !== undefined && isFiniteVec3(value) && norm(value) > 0;
-}
-
-function isNonNegativeFinite(value: number): boolean {
-  return Number.isFinite(value) && value >= 0;
-}
-
-function isPositiveFinite(value: number): boolean {
-  return Number.isFinite(value) && value > 0;
-}
-
-function nearlyEqual(a: number, b: number): boolean {
-  return Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b));
 }
 
 function numbersMatch(a: number, b: number): boolean {
@@ -964,20 +843,12 @@ function addWrenches(a: WrenchAtWorldOrigin, b: WrenchAtWorldOrigin): WrenchAtWo
   };
 }
 
-function copyVec(value: readonly [number, number, number]): Vec3 {
-  return [value[0], value[1], value[2]];
-}
-
 function add(a: Vec3, b: Vec3): Vec3 {
   return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 }
 
 function sub(a: Vec3, b: Vec3): Vec3 {
   return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-}
-
-function scale(value: readonly [number, number, number], scalar: number): Vec3 {
-  return [value[0] * scalar, value[1] * scalar, value[2] * scalar];
 }
 
 function dot(a: Vec3, b: Vec3): number {
