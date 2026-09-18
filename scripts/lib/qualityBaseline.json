@@ -55,15 +55,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/drawing/reconstruct.ts",
+    "file": "src/agent/drawing/reconstructPhases.ts",
     "symbol": "Arrow function",
     "value": 31
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/drawing/reconstruct.ts",
-    "symbol": "Function 'reconstructPart'",
-    "value": 118
   },
   {
     "rule": "complexity",
@@ -961,12 +955,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/agent/drawing/reconstruct.ts",
-    "symbol": "Function 'reconstructPart'",
-    "value": 525
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/agent/drawing/sheet.ts",
     "symbol": "Function 'analyseSheet'",
     "value": 205
@@ -1294,12 +1282,6 @@
     "file": "src/studio/routes/p.$slug.tsx",
     "symbol": "Function 'ProjectPage'",
     "value": 209
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/agent/drawing/reconstruct.ts",
-    "symbol": "(file)",
-    "value": 856
   },
   {
     "rule": "max-lines",
