@@ -55,21 +55,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/drawing/reconstruct.ts",
+    "file": "src/agent/drawing/reconstructPhases.ts",
     "symbol": "Arrow function",
     "value": 31
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/drawing/reconstruct.ts",
-    "symbol": "Function 'reconstructPart'",
-    "value": 118
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/drawing/sheet.ts",
-    "symbol": "Function 'analyseSheet'",
-    "value": 73
   },
   {
     "rule": "complexity",
@@ -271,13 +259,7 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/plan.ts",
-    "symbol": "Function 'buildPlan'",
-    "value": 93
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/reconstruct/plan.ts",
+    "file": "src/agent/reconstruct/planPhases.ts",
     "symbol": "Function 'decomposeRun'",
     "value": 35
   },
@@ -331,12 +313,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/script-runtime/export.ts",
-    "symbol": "Async function 'runAndExport'",
-    "value": 117
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/vision/index.ts",
     "symbol": "Async function 'traceFromImage'",
     "value": 24
@@ -370,12 +346,6 @@
     "file": "src/kernel/backends/occt/drawingAuto.ts",
     "symbol": "Function 'normaliseAutoAnnotate'",
     "value": 25
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/backends/occt/drawingAuto.ts",
-    "symbol": "Function 'renderAutoDrawing'",
-    "value": 108
   },
   {
     "rule": "complexity",
@@ -424,12 +394,6 @@
     "file": "src/kernel/backends/occt/meshing.ts",
     "symbol": "Function 'getWire'",
     "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/backends/occt/meshing.ts",
-    "symbol": "Function 'tryExtractPlaneFromFace'",
-    "value": 70
   },
   {
     "rule": "complexity",
@@ -554,12 +518,6 @@
   {
     "rule": "complexity",
     "file": "src/modeling/capture/authoringFeatureRecords.ts",
-    "symbol": "Function 'buildDfmSpecFeatureSpec'",
-    "value": 59
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/authoringFeatureRecords.ts",
     "symbol": "Function 'buildDrawingToleranceFeatureSpec'",
     "value": 24
   },
@@ -579,19 +537,13 @@
     "rule": "complexity",
     "file": "src/modeling/capture/featureMeshing.ts",
     "symbol": "Async function 'meshFeaturesPerFeature'",
-    "value": 50
+    "value": 42
   },
   {
     "rule": "complexity",
     "file": "src/modeling/capture/featureMeshing.ts",
     "symbol": "Function 'collectTendonMeshes'",
     "value": 29
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/featureMeshing.ts",
-    "symbol": "Method 'onEvent'",
-    "value": 63
   },
   {
     "rule": "complexity",
@@ -622,12 +574,6 @@
     "file": "src/modeling/capture/virtualFeatureRecords.ts",
     "symbol": "Function 'buildReferenceImageFeatureSpec'",
     "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/compute/recomputeEngine.ts",
-    "symbol": "Async method 'run'",
-    "value": 61
   },
   {
     "rule": "complexity",
@@ -670,12 +616,6 @@
     "file": "src/modeling/mates/mechanicalPlausibility.ts",
     "symbol": "Async function 'reviewMechanicalPlausibility'",
     "value": 48
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/mechanismFitness.ts",
-    "symbol": "Function 'summarizeMechanismFitness'",
-    "value": 67
   },
   {
     "rule": "complexity",
@@ -961,18 +901,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/agent/drawing/reconstruct.ts",
-    "symbol": "Function 'reconstructPart'",
-    "value": 525
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/agent/drawing/sheet.ts",
-    "symbol": "Function 'analyseSheet'",
-    "value": 205
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/agent/reconstruct/blends.ts",
     "symbol": "Function 'detectEdgeBlends'",
     "value": 175
@@ -982,12 +910,6 @@
     "file": "src/agent/reconstruct/meshClean.ts",
     "symbol": "Function 'cleanMesh'",
     "value": 205
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/agent/reconstruct/plan.ts",
-    "symbol": "Function 'buildPlan'",
-    "value": 567
   },
   {
     "rule": "max-lines-per-function",
@@ -1009,12 +931,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/agent/script-runtime/export.ts",
-    "symbol": "Async function 'runAndExport'",
-    "value": 497
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/agent/vision/index.ts",
     "symbol": "Async function 'traceFromImage'",
     "value": 163
@@ -1030,12 +946,6 @@
     "file": "src/kernel/backends/occt/drawingAnnotations.ts",
     "symbol": "Function 'renderAnnotations'",
     "value": 272
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/drawingAuto.ts",
-    "symbol": "Function 'renderAutoDrawing'",
-    "value": 508
   },
   {
     "rule": "max-lines-per-function",
@@ -1113,25 +1023,13 @@
     "rule": "max-lines-per-function",
     "file": "src/modeling/capture/featureMeshing.ts",
     "symbol": "Async function 'meshFeaturesPerFeature'",
-    "value": 355
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/capture/featureMeshing.ts",
-    "symbol": "Method 'onEvent'",
-    "value": 193
+    "value": 227
   },
   {
     "rule": "max-lines-per-function",
     "file": "src/modeling/capture/proxy.ts",
     "symbol": "Method 'material'",
     "value": 187
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/compute/recomputeEngine.ts",
-    "symbol": "Async method 'run'",
-    "value": 205
   },
   {
     "rule": "max-lines-per-function",
@@ -1144,12 +1042,6 @@
     "file": "src/modeling/mates/mechanicalPlausibility.ts",
     "symbol": "Async function 'reviewMechanicalPlausibility'",
     "value": 211
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/mates/mechanismFitness.ts",
-    "symbol": "Function 'summarizeMechanismFitness'",
-    "value": 193
   },
   {
     "rule": "max-lines-per-function",
@@ -1297,21 +1189,9 @@
   },
   {
     "rule": "max-lines",
-    "file": "src/agent/drawing/reconstruct.ts",
+    "file": "src/agent/reconstruct/planPhases.ts",
     "symbol": "(file)",
-    "value": 856
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/agent/reconstruct/plan.ts",
-    "symbol": "(file)",
-    "value": 1044
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/agent/script-runtime/export.ts",
-    "symbol": "(file)",
-    "value": 869
+    "value": 1002
   },
   {
     "rule": "max-lines",
@@ -1342,12 +1222,6 @@
     "file": "src/modeling/api.ts",
     "symbol": "(file)",
     "value": 973
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/modeling/capture/featureMeshing.ts",
-    "symbol": "(file)",
-    "value": 876
   },
   {
     "rule": "max-lines",

@@ -224,19 +224,8 @@ function tryExtractFaceCenter(face: unknown): [number, number, number] | null {
   return tryVec3((face as UnknownRecord).center);
 }
 
-function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
-  if (!isRecord(face)) return undefined;
-  const geomType = getString(face, 'geomType');
-  if (!geomType) return undefined;
-  const geomTypeUpper = geomType.toUpperCase();
-  if (geomTypeUpper !== 'PLANE' && geomTypeUpper !== 'PLANAR') return undefined;
-
-  const p =
-    (isRecord(face.planarPlane) ? face.planarPlane : null) ??
-    (isRecord(face.plane) ? face.plane : null) ??
-    (isRecord(face.surface) && isRecord((face.surface as UnknownRecord).plane) ? ((face.surface as UnknownRecord).plane as UnknownRecord) : null);
-
-  // Preferred strategy: use Replicad helper if available
+// Preferred strategy: use Replicad helper if available
+function tryExtractPlaneViaReplicadHelper(face: unknown): FaceGeometry['plane'] {
   try {
     const makePlaneFromFaceFn = (replicad as unknown as { makePlaneFromFace?: (f: unknown) => unknown }).makePlaneFromFace;
     if (typeof makePlaneFromFaceFn === 'function') {
@@ -270,42 +259,56 @@ function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
   } catch (e) {
     if (DEBUG) console.warn('meshing: replicad.makePlaneFromFace failed', e);
   }
+  return undefined;
+}
 
-  if (!p) {
-    // Fallback for native Replicad objects: use center and normalAt
-    try {
-      const centerFn = getFn(face, 'center');
-      const center = centerFn ? centerFn.call(face) : (face as UnknownRecord).center;
+function resolveCenterAndNormalFallback(face: unknown): { center: unknown; normal: unknown } {
+  const centerFn = getFn(face, 'center');
+  const center = centerFn ? centerFn.call(face) : (face as UnknownRecord).center;
 
-      const normalFn = getFn(face, 'normalAt');
-      const faceRec = face as UnknownRecord;
-      const normal = normalFn
-        ? (normalFn.length === 0 ? normalFn.call(face) : normalFn.call(face, center || [0, 0, 0]))
-        : (faceRec.normal || (isRecord(faceRec.surface) ? (faceRec.surface as UnknownRecord).normal : null) || (isRecord(faceRec.plane) ? (faceRec.plane as UnknownRecord).normal : null));
+  const normalFn = getFn(face, 'normalAt');
+  const faceRec = face as UnknownRecord;
+  const normal = normalFn
+    ? (normalFn.length === 0 ? normalFn.call(face) : normalFn.call(face, center || [0, 0, 0]))
+    : (faceRec.normal || (isRecord(faceRec.surface) ? (faceRec.surface as UnknownRecord).normal : null) || (isRecord(faceRec.plane) ? (faceRec.plane as UnknownRecord).normal : null));
 
-      if (center && normal) {
-        const origin = tryVec3(center);
-        const norm = tryVec3(normal);
+  return { center, normal };
+}
 
-        // Final fallback: try to get directions if it's a plane
-        const faceRec2 = face as UnknownRecord;
-        const planeNode = faceRec2.plane ||
-          (isRecord(faceRec2.surface) ? (faceRec2.surface as UnknownRecord).plane : null) ||
-          faceRec2.planarPlane;
-        const xDir = planeNode && isRecord(planeNode) ? tryVec3((planeNode as UnknownRecord).xDir || (typeof (planeNode as UnknownRecord).xDir === 'function' ? ((planeNode as UnknownRecord).xDir as () => unknown)() : null)) : undefined;
-        const yDir = planeNode && isRecord(planeNode) ? tryVec3((planeNode as UnknownRecord).yDir || (typeof (planeNode as UnknownRecord).yDir === 'function' ? ((planeNode as UnknownRecord).yDir as () => unknown)() : null)) : undefined;
+function resolvePlaneDirectionsFallback(face: unknown) {
+  // Final fallback: try to get directions if it's a plane
+  const faceRec2 = face as UnknownRecord;
+  const planeNode = faceRec2.plane ||
+    (isRecord(faceRec2.surface) ? (faceRec2.surface as UnknownRecord).plane : null) ||
+    faceRec2.planarPlane;
+  const xDir = planeNode && isRecord(planeNode) ? tryVec3((planeNode as UnknownRecord).xDir || (typeof (planeNode as UnknownRecord).xDir === 'function' ? ((planeNode as UnknownRecord).xDir as () => unknown)() : null)) : undefined;
+  const yDir = planeNode && isRecord(planeNode) ? tryVec3((planeNode as UnknownRecord).yDir || (typeof (planeNode as UnknownRecord).yDir === 'function' ? ((planeNode as UnknownRecord).yDir as () => unknown)() : null)) : undefined;
+  return { xDir, yDir };
+}
 
-        if (origin && norm) {
-          const anchoredOrigin = tryExtractFaceCenter(face) ?? origin;
-          return { origin: anchoredOrigin, normal: norm, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
-        }
+// Fallback for native Replicad objects: use center and normalAt
+function tryExtractPlaneViaCenterAndNormal(face: unknown): FaceGeometry['plane'] {
+  try {
+    const { center, normal } = resolveCenterAndNormalFallback(face);
+
+    if (center && normal) {
+      const origin = tryVec3(center);
+      const norm = tryVec3(normal);
+
+      const { xDir, yDir } = resolvePlaneDirectionsFallback(face);
+
+      if (origin && norm) {
+        const anchoredOrigin = tryExtractFaceCenter(face) ?? origin;
+        return { origin: anchoredOrigin, normal: norm, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
       }
-    } catch (e) {
-      if (DEBUG) console.warn('meshing: Fallback plane extraction failed', e);
     }
-    return undefined;
+  } catch (e) {
+    if (DEBUG) console.warn('meshing: Fallback plane extraction failed', e);
   }
+  return undefined;
+}
 
+function tryExtractPlaneFromPlaneRecord(face: unknown, p: UnknownRecord): FaceGeometry['plane'] {
   const origin =
     tryVec3((p as UnknownRecord).origin) ??
     tryVec3((p as UnknownRecord).location) ??
@@ -331,6 +334,28 @@ function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
 
   const anchoredOrigin = tryExtractFaceCenter(face) ?? origin;
   return { origin: anchoredOrigin, normal, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
+}
+
+export function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
+  if (!isRecord(face)) return undefined;
+  const geomType = getString(face, 'geomType');
+  if (!geomType) return undefined;
+  const geomTypeUpper = geomType.toUpperCase();
+  if (geomTypeUpper !== 'PLANE' && geomTypeUpper !== 'PLANAR') return undefined;
+
+  const p =
+    (isRecord(face.planarPlane) ? face.planarPlane : null) ??
+    (isRecord(face.plane) ? face.plane : null) ??
+    (isRecord(face.surface) && isRecord((face.surface as UnknownRecord).plane) ? ((face.surface as UnknownRecord).plane as UnknownRecord) : null);
+
+  const viaHelper = tryExtractPlaneViaReplicadHelper(face);
+  if (viaHelper) return viaHelper;
+
+  if (!p) {
+    return tryExtractPlaneViaCenterAndNormal(face);
+  }
+
+  return tryExtractPlaneFromPlaneRecord(face, p);
 }
 
 function tryExtractCylinderFromFace(face: unknown): FaceGeometry['cylinder'] {

@@ -170,7 +170,59 @@ interface SolidSeg {
  * Classify every path on the page and associate dimension lettering with the
  * linework that carries it.
  */
+/**
+ * Classify every path on the page and associate dimension lettering with the
+ * linework that carries it.
+ */
 export function analyseSheet(page: PdfPageVectors): SheetAnalysis {
+  const { paths, frame } = setupPathsAndFrame(page);
+
+  // --- title block ---------------------------------------------------------
+  const title = readTitleBlock(page, paths);
+  if (title.bbox) {
+    for (const p of paths) {
+      if (p.cls === 'ignored' && inside(p.bbox, title.bbox, 0.6)) p.cls = 'title-block';
+    }
+  }
+  const titleTextSet = new Set(title.texts);
+
+  // --- arrowheads ------------------------------------------------------------
+  const arrows = collectArrowheads(paths);
+
+  // --- candidate lettering ---------------------------------------------------
+  const lettering = page.texts
+    .filter(t => !titleTextSet.has(t))
+    .map(t => ({ text: t, parsed: parseDimensionText(t.text) }));
+  const usedText = new Set<PositionedText>();
+
+  // --- solid segments --------------------------------------------------------
+  const { solid, pathById, claim, tipOn } = buildSolidSegments(paths);
+
+  // --- linear dimensions -------------------------------------------------------
+  const { linearDims, dimArrowTips } = buildLinearDimensions(solid, pathById, claim, tipOn, lettering, usedText, arrows);
+
+  // --- radial callouts (leader + shoulder) ---------------------------------------
+  const { radialCallouts, unassociated } = buildRadialCallouts(lettering, usedText, solid, arrows, dimArrowTips, tipOn, claim);
+
+  // --- remaining linework by weight / dash ----------------------------------------
+  classifyRemainingLinework(paths);
+
+  const notes = page.texts.filter(t => !titleTextSet.has(t) && !usedText.has(t));
+  return {
+    widthMm: page.widthMm,
+    heightMm: page.heightMm,
+    paths,
+    arrows,
+    ...(frame ? { frame } : {}),
+    title,
+    linearDims,
+    radialCallouts,
+    unassociated,
+    notes,
+  };
+}
+
+function setupPathsAndFrame(page: PdfPageVectors): { paths: ClassifiedPath[]; pageArea: number; frame: BBox2 | undefined } {
   const paths: ClassifiedPath[] = page.paths
     .map((p, id) => ({ ...p, id, cls: 'ignored' as LineClass, bbox: bboxOf(p.points)! }))
     .filter(p => p.bbox !== null);
@@ -191,17 +243,10 @@ export function analyseSheet(page: PdfPageVectors): SheetAnalysis {
       if (!frame || (r.x1 - r.x0) * (r.y1 - r.y0) < (frame.x1 - frame.x0) * (frame.y1 - frame.y0)) frame = r;
     }
   }
+  return { paths, pageArea, frame };
+}
 
-  // --- title block ---------------------------------------------------------
-  const title = readTitleBlock(page, paths);
-  if (title.bbox) {
-    for (const p of paths) {
-      if (p.cls === 'ignored' && inside(p.bbox, title.bbox, 0.6)) p.cls = 'title-block';
-    }
-  }
-  const titleTextSet = new Set(title.texts);
-
-  // --- arrowheads ------------------------------------------------------------
+function collectArrowheads(paths: ClassifiedPath[]): Arrowhead[] {
   const arrows: Arrowhead[] = [];
   for (const p of paths) {
     if (p.cls !== 'ignored') continue;
@@ -211,14 +256,15 @@ export function analyseSheet(page: PdfPageVectors): SheetAnalysis {
       p.cls = 'arrowhead';
     }
   }
+  return arrows;
+}
 
-  // --- candidate lettering ---------------------------------------------------
-  const lettering = page.texts
-    .filter(t => !titleTextSet.has(t))
-    .map(t => ({ text: t, parsed: parseDimensionText(t.text) }));
-  const usedText = new Set<PositionedText>();
-
-  // --- solid segments --------------------------------------------------------
+function buildSolidSegments(paths: ClassifiedPath[]): {
+  solid: SolidSeg[];
+  pathById: Map<number, ClassifiedPath>;
+  claim: (pathId: number, cls: LineClass) => void;
+  tipOn: (seg: SolidSeg, arrow: Arrowhead, tol?: number) => boolean;
+} {
   const solid: SolidSeg[] = [];
   for (const p of paths) {
     if (p.cls !== 'ignored' || !p.stroked || p.dash.length > 0) continue;
@@ -233,8 +279,18 @@ export function analyseSheet(page: PdfPageVectors): SheetAnalysis {
   };
   const tipOn = (seg: SolidSeg, arrow: Arrowhead, tol = 0.3): boolean =>
     pointSegment(arrow.tip, seg.a, seg.b).d <= tol && Math.abs(cross(unit(seg.a, seg.b), arrow.dir)) < 0.2;
+  return { solid, pathById, claim, tipOn };
+}
 
-  // --- linear dimensions -------------------------------------------------------
+function buildLinearDimensions(
+  solid: SolidSeg[],
+  pathById: Map<number, ClassifiedPath>,
+  claim: (pathId: number, cls: LineClass) => void,
+  tipOn: (seg: SolidSeg, arrow: Arrowhead, tol?: number) => boolean,
+  lettering: Array<{ text: PositionedText; parsed: ParsedDimText | null }>,
+  usedText: Set<PositionedText>,
+  arrows: Arrowhead[],
+): { linearDims: LinearDimension[]; dimArrowTips: Set<Arrowhead> } {
   const linearDims: LinearDimension[] = [];
 
   /** Unused dimension lettering parallel to the line a→b and sitting on it. */
@@ -324,44 +380,67 @@ export function analyseSheet(page: PdfPageVectors): SheetAnalysis {
       if (d.tips.some(t => dist(t, ar.tip) <= 0.35)) dimArrowTips.add(ar);
     }
   }
+  return { linearDims, dimArrowTips };
+}
 
-  // --- radial callouts (leader + shoulder) ---------------------------------------
+/** Shoulder: parallel to the baseline, just under it, spanning under the lettering. */
+function findShoulder(text: PositionedText, solid: SolidSeg[]): SolidSeg | null {
+  const up: Pt = [text.dir[1], -text.dir[0]];
+  const start: Pt = [text.x, text.y];
+  for (const s of solid) {
+    if (Math.abs(dot(unit(s.a, s.b), text.dir)) < 0.98) continue;
+    const below = -dot([s.a[0] - text.x, s.a[1] - text.y], up);
+    if (below < -0.2 || below > 2.2) continue;
+    const alongA = dot([s.a[0] - start[0], s.a[1] - start[1]], text.dir);
+    const alongB = dot([s.b[0] - start[0], s.b[1] - start[1]], text.dir);
+    const lo = Math.min(alongA, alongB), hi = Math.max(alongA, alongB);
+    const overlap = Math.min(hi, text.widthMm) - Math.max(lo, 0);
+    if (overlap < Math.min(2, text.widthMm * 0.3)) continue;
+    return s;
+  }
+  return null;
+}
+
+function findStemAndTips(
+  shoulder: SolidSeg,
+  solid: SolidSeg[],
+  arrows: Arrowhead[],
+  dimArrowTips: Set<Arrowhead>,
+  tipOn: (seg: SolidSeg, arrow: Arrowhead, tol?: number) => boolean,
+  claim: (pathId: number, cls: LineClass) => void,
+): { tips: Pt[]; stem?: [Pt, Pt] } {
+  const tips: Pt[] = [];
+  let stem: [Pt, Pt] | undefined;
+  for (const s of solid) {
+    if (s === shoulder || Math.abs(dot(unit(s.a, s.b), unit(shoulder.a, shoulder.b))) > 0.98) continue;
+    const joins = [shoulder.a, shoulder.b].some(e => dist(e, s.a) <= 0.3 || dist(e, s.b) <= 0.3);
+    if (!joins) continue;
+    const onStem = arrows.filter(ar => !dimArrowTips.has(ar) && tipOn(s, ar));
+    if (onStem.length === 0) continue;
+    stem = [s.a, s.b];
+    tips.push(...onStem.map(ar => ar.tip));
+    claim(s.pathId, 'leader');
+    claim(shoulder.pathId, 'leader');
+    break;
+  }
+  return { tips, stem };
+}
+
+function buildRadialCallouts(
+  lettering: Array<{ text: PositionedText; parsed: ParsedDimText | null }>,
+  usedText: Set<PositionedText>,
+  solid: SolidSeg[],
+  arrows: Arrowhead[],
+  dimArrowTips: Set<Arrowhead>,
+  tipOn: (seg: SolidSeg, arrow: Arrowhead, tol?: number) => boolean,
+  claim: (pathId: number, cls: LineClass) => void,
+): { radialCallouts: RadialCallout[]; unassociated: SheetAnalysis['unassociated'] } {
   const radialCallouts: RadialCallout[] = [];
   const unassociated: SheetAnalysis['unassociated'] = [];
   for (const { text, parsed } of lettering) {
     if (!parsed || usedText.has(text)) continue;
-    const up: Pt = [text.dir[1], -text.dir[0]];
-    const start: Pt = [text.x, text.y];
-    // Shoulder: parallel to the baseline, just under it, spanning under the lettering.
-    let shoulder: SolidSeg | null = null;
-    for (const s of solid) {
-      if (Math.abs(dot(unit(s.a, s.b), text.dir)) < 0.98) continue;
-      const below = -dot([s.a[0] - text.x, s.a[1] - text.y], up);
-      if (below < -0.2 || below > 2.2) continue;
-      const alongA = dot([s.a[0] - start[0], s.a[1] - start[1]], text.dir);
-      const alongB = dot([s.b[0] - start[0], s.b[1] - start[1]], text.dir);
-      const lo = Math.min(alongA, alongB), hi = Math.max(alongA, alongB);
-      const overlap = Math.min(hi, text.widthMm) - Math.max(lo, 0);
-      if (overlap < Math.min(2, text.widthMm * 0.3)) continue;
-      shoulder = s;
-      break;
-    }
-    const tips: Pt[] = [];
-    let stem: [Pt, Pt] | undefined;
-    if (shoulder) {
-      for (const s of solid) {
-        if (s === shoulder || Math.abs(dot(unit(s.a, s.b), unit(shoulder.a, shoulder.b))) > 0.98) continue;
-        const joins = [shoulder.a, shoulder.b].some(e => dist(e, s.a) <= 0.3 || dist(e, s.b) <= 0.3);
-        if (!joins) continue;
-        const onStem = arrows.filter(ar => !dimArrowTips.has(ar) && tipOn(s, ar));
-        if (onStem.length === 0) continue;
-        stem = [s.a, s.b];
-        tips.push(...onStem.map(ar => ar.tip));
-        claim(s.pathId, 'leader');
-        claim(shoulder.pathId, 'leader');
-        break;
-      }
-    }
+    const shoulder = findShoulder(text, solid);
+    const { tips, stem } = shoulder ? findStemAndTips(shoulder, solid, arrows, dimArrowTips, tipOn, claim) : { tips: [] as Pt[], stem: undefined };
     if (tips.length === 0) {
       if (parsed.kind === 'linear' && !parsed.through && parsed.depth === undefined) {
         // A bare number with no dimension line is a note or a label, not a callout.
@@ -381,8 +460,10 @@ export function analyseSheet(page: PdfPageVectors): SheetAnalysis {
       usedText.add(text);
     }
   }
+  return { radialCallouts, unassociated };
+}
 
-  // --- remaining linework by weight / dash ----------------------------------------
+function classifyRemainingLinework(paths: ClassifiedPath[]): void {
   const remainingSolid = paths.filter(p => p.cls === 'ignored' && p.stroked && p.dash.length === 0);
   let thick = 0;
   for (const p of remainingSolid) thick = Math.max(thick, p.widthMm);
@@ -395,20 +476,6 @@ export function analyseSheet(page: PdfPageVectors): SheetAnalysis {
       p.cls = p.widthMm >= 0.7 * thick ? 'visible' : 'thin';
     }
   }
-
-  const notes = page.texts.filter(t => !titleTextSet.has(t) && !usedText.has(t));
-  return {
-    widthMm: page.widthMm,
-    heightMm: page.heightMm,
-    paths,
-    arrows,
-    ...(frame ? { frame } : {}),
-    title,
-    linearDims,
-    radialCallouts,
-    unassociated,
-    notes,
-  };
 }
 
 function readTitleBlock(page: PdfPageVectors, paths: ClassifiedPath[]): TitleBlockInfo {

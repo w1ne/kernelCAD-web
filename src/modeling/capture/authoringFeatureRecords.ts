@@ -69,19 +69,11 @@ export interface ProjectCurveCaptureArgs {
   asEdge?: boolean;
 }
 
-export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
-  const bad = (field: string, why: string): never => {
-    throw new KernelError(
-      'feature.invalid-args',
-      `dfmSpec: ${field} ${why}.`,
-      undefined,
-      `invalid-args.dfm-spec.${field} — fix the field; dfmSpec is an enforcement gate, malformed declarations fail the build rather than silently disabling checks.`,
-    );
-  };
+type BadFn = (field: string, why: string) => never;
 
-  // FDM fields first: a stray `nozzleMm` without `process: 'fdm'` deserves
-  // the specific fix, not the generic "declares no checks".
-  const fdm = normalizeFdmSettings(args, bad);
+// FDM fields first: a stray `nozzleMm` without `process: 'fdm'` deserves
+// the specific fix, not the generic "declares no checks".
+function validateDfmSpecCheckFields(args: DfmSpec, fdm: DfmFdmMetadata | undefined, bad: BadFn): void {
   if (
     args.minWall === undefined && args.minClearance === undefined &&
     !(args.channels?.length) && fdm === undefined
@@ -100,6 +92,9 @@ export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
   if (args.includeArticulatedMates === true && args.minClearance === undefined) {
     bad('includeArticulatedMates', 'requires minClearance because it only changes which pairs that distance gate measures');
   }
+}
+
+function validateDfmSpecArrayFieldShapes(args: DfmSpec, bad: BadFn): void {
   if (args.ignore !== undefined && !Array.isArray(args.ignore)) {
     bad('ignore', `must be an array of [partA, partB] pairs; got ${JSON.stringify(args.ignore)}`);
   }
@@ -109,6 +104,9 @@ export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
   if (args.channels !== undefined && !Array.isArray(args.channels)) {
     bad('channels', `must be an array of { part, name, openings, sealed? } entries; got ${JSON.stringify(args.channels)}`);
   }
+}
+
+function validateDfmSpecIgnoreEntries(args: DfmSpec, bad: BadFn): void {
   for (const [i, pair] of (args.ignore ?? []).entries()) {
     const isPair = Array.isArray(pair) && pair.length === 2 &&
       pair.every(p => typeof p === 'string' && p.length > 0);
@@ -119,6 +117,9 @@ export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
       bad(`ignore[${i}]`, `must name two different parts; ['${pair[0]}', '${pair[1]}'] can never match a distinct-part pair`);
     }
   }
+}
+
+function validateDfmSpecExcludeEntries(args: DfmSpec, bad: BadFn): void {
   for (const [i, name] of (args.exclude ?? []).entries()) {
     if (typeof name !== 'string' || name.length === 0) {
       bad(`exclude[${i}]`, `must be a non-empty part-name string; got ${JSON.stringify(name)}`);
@@ -128,6 +129,9 @@ export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
       bad(`exclude[${i}]`, `must be a literal part name or a trailing-'*' prefix glob (e.g. 'servo-*'); got ${JSON.stringify(name)}`);
     }
   }
+}
+
+function validateDfmSpecChannelEntries(args: DfmSpec, bad: BadFn): void {
   for (const [i, c] of (args.channels ?? []).entries()) {
     if (typeof c !== 'object' || c === null) {
       bad(`channels[${i}]`, `must be a { part, name, openings, sealed? } object; got ${JSON.stringify(c)}`);
@@ -157,8 +161,10 @@ export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
     }
     channelKeys.add(key);
   }
+}
 
-  const metadata: DfmSpecMetadata = {
+function buildDfmSpecMetadata(args: DfmSpec, fdm: DfmFdmMetadata | undefined): DfmSpecMetadata {
+  return {
     virtual: true,
     ...(args.minWall !== undefined ? { minWall: args.minWall } : {}),
     ...(args.minClearance !== undefined ? { minClearance: args.minClearance } : {}),
@@ -170,6 +176,26 @@ export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
     })),
     ...(fdm !== undefined ? { fdm } : {}),
   };
+}
+
+export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
+  const bad: BadFn = (field: string, why: string): never => {
+    throw new KernelError(
+      'feature.invalid-args',
+      `dfmSpec: ${field} ${why}.`,
+      undefined,
+      `invalid-args.dfm-spec.${field} — fix the field; dfmSpec is an enforcement gate, malformed declarations fail the build rather than silently disabling checks.`,
+    );
+  };
+
+  const fdm = normalizeFdmSettings(args, bad);
+  validateDfmSpecCheckFields(args, fdm, bad);
+  validateDfmSpecArrayFieldShapes(args, bad);
+  validateDfmSpecIgnoreEntries(args, bad);
+  validateDfmSpecExcludeEntries(args, bad);
+  validateDfmSpecChannelEntries(args, bad);
+
+  const metadata = buildDfmSpecMetadata(args, fdm);
 
   return {
     kind: 'dfmSpec',
