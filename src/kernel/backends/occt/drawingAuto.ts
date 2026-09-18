@@ -96,6 +96,7 @@ import {
   type RadiusFeature,
   type V3,
 } from './drawingFeatures';
+import { Obstacles, GEOMETRY_OWNER, type Box, type Seg } from './drawingObstacles';
 
 // ---------------------------------------------------------------------------
 // Public surface
@@ -351,130 +352,6 @@ function edgeOnLines(face: PlanarFaceInfo): EdgeLine[] {
 // ---------------------------------------------------------------------------
 // Placement: obstacles and costs
 // ---------------------------------------------------------------------------
-
-interface Box { x0: number; y0: number; x1: number; y1: number }
-type Seg = readonly [number, number, number, number];
-
-const CELL = 4;
-
-class Obstacles {
-  private readonly grid = new Map<string, Array<{ seg: Seg; owner: number }>>();
-  private readonly boxes: Array<{ box: Box; owner: number }> = [];
-  private readonly allowed: Box;
-
-  constructor(allowed: Box) {
-    this.allowed = allowed;
-  }
-
-  addSegment(seg: Seg, owner: number): void {
-    const [x0, y0, x1, y1] = seg;
-    const cx0 = Math.floor(Math.min(x0, x1) / CELL);
-    const cx1 = Math.floor(Math.max(x0, x1) / CELL);
-    const cy0 = Math.floor(Math.min(y0, y1) / CELL);
-    const cy1 = Math.floor(Math.max(y0, y1) / CELL);
-    for (let i = cx0; i <= cx1; i++) {
-      for (let j = cy0; j <= cy1; j++) {
-        const key = `${i},${j}`;
-        const list = this.grid.get(key);
-        if (list) list.push({ seg, owner });
-        else this.grid.set(key, [{ seg, owner }]);
-      }
-    }
-  }
-
-  addBox(box: Box, owner: number): void {
-    this.boxes.push({ box, owner });
-  }
-
-  /** Geometry lines a leader segment crosses (ignoring its first 1.5 mm,
-   *  where it touches the feature it points at). */
-  crossings(seg: Seg): number {
-    const [x0, y0, x1, y1] = seg;
-    const l = Math.hypot(x1 - x0, y1 - y0);
-    if (l < 1.6) return 0;
-    const k = 1.5 / l;
-    const s: Seg = [x0 + (x1 - x0) * k, y0 + (y1 - y0) * k, x1, y1];
-    const seen = new Set<Seg>();
-    let n = 0;
-    for (let i = Math.floor(Math.min(s[0], s[2]) / CELL); i <= Math.floor(Math.max(s[0], s[2]) / CELL); i++) {
-      for (let j = Math.floor(Math.min(s[1], s[3]) / CELL); j <= Math.floor(Math.max(s[1], s[3]) / CELL); j++) {
-        for (const o of this.grid.get(`${i},${j}`) ?? []) {
-          if (o.owner !== GEOMETRY_OWNER || seen.has(o.seg)) continue;
-          seen.add(o.seg);
-          if (segmentsCross(s, o.seg)) n++;
-        }
-      }
-    }
-    return n;
-  }
-
-  /** Labels (not geometry) a leader segment runs through, other than its own. */
-  labelHits(seg: Seg, owner: number): number {
-    let n = 0;
-    for (const o of this.boxes) {
-      if (o.owner === owner || o.owner === GEOMETRY_OWNER) continue;
-      if (segmentHitsBox(seg, o.box)) n++;
-    }
-    return n;
-  }
-
-  /** Collision cost of `boxes` owned by `owner` (its own items are ignored).
-   *  Boxes are padded so a label never sits flush against a line. */
-  cost(raw: readonly Box[], owner: number): number {
-    let total = 0;
-    const boxes = raw.map(b => ({ x0: b.x0 - PAD, y0: b.y0 - PAD, x1: b.x1 + PAD, y1: b.y1 + PAD }));
-    for (const b of boxes) {
-      const area = (b.x1 - b.x0) * (b.y1 - b.y0);
-      const ix = Math.max(0, Math.min(b.x1, this.allowed.x1) - Math.max(b.x0, this.allowed.x0));
-      const iy = Math.max(0, Math.min(b.y1, this.allowed.y1) - Math.max(b.y0, this.allowed.y0));
-      total += area - ix * iy;
-      for (const o of this.boxes) {
-        if (o.owner === owner) continue;
-        const ox = Math.min(b.x1, o.box.x1) - Math.max(b.x0, o.box.x0);
-        const oy = Math.min(b.y1, o.box.y1) - Math.max(b.y0, o.box.y0);
-        if (ox > 0 && oy > 0) total += ox * oy + 1;
-      }
-      const seen = new Set<Seg>();
-      for (let i = Math.floor(b.x0 / CELL); i <= Math.floor(b.x1 / CELL); i++) {
-        for (let j = Math.floor(b.y0 / CELL); j <= Math.floor(b.y1 / CELL); j++) {
-          for (const s of this.grid.get(`${i},${j}`) ?? []) {
-            if (s.owner === owner || seen.has(s.seg)) continue;
-            seen.add(s.seg);
-            if (segmentHitsBox(s.seg, b)) total += 2;
-          }
-        }
-      }
-    }
-    return total;
-  }
-}
-
-const PAD = 0.6;
-const GEOMETRY_OWNER = -1;
-
-function segmentsCross(a: Seg, b: Seg): boolean {
-  const d = (p: readonly number[], q: readonly number[], r: readonly number[]) =>
-    (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]);
-  const p1 = [a[0], a[1]], p2 = [a[2], a[3]], q1 = [b[0], b[1]], q2 = [b[2], b[3]];
-  const d1 = d(q1, q2, p1), d2 = d(q1, q2, p2), d3 = d(p1, p2, q1), d4 = d(p1, p2, q2);
-  return ((d1 > 0) !== (d2 > 0)) && ((d3 > 0) !== (d4 > 0));
-}
-
-function segmentHitsBox(seg: Seg, b: Box): boolean {
-  const [x0, y0, x1, y1] = seg;
-  let t0 = 0;
-  let t1 = 1;
-  const dx = x1 - x0;
-  const dy = y1 - y0;
-  const clip = (p: number, q: number): boolean => {
-    if (Math.abs(p) < 1e-12) return q >= 0;
-    const r = q / p;
-    if (p < 0) { if (r > t1) return false; if (r > t0) t0 = r; }
-    else { if (r < t0) return false; if (r < t1) t1 = r; }
-    return true;
-  };
-  return clip(-dx, x0 - b.x0) && clip(dx, b.x1 - x0) && clip(-dy, y0 - b.y0) && clip(dy, b.y1 - y0) && t0 <= t1;
-}
 
 const TEXT_H = 3.2;
 const CHAR_W = 0.62;
@@ -794,24 +671,210 @@ interface ResolvedTolerance {
   edgeLine?: EdgeLine | null;
 }
 
+interface HoleGroup {
+  key: string;
+  holes: HoleComposite[];
+  view: DrawingViewName;
+  rows: string[][];
+  label: string;
+}
+
+/** Shared mutable state and closures threaded through the auto-drawing phases.
+ *  Field-by-field this is exactly the local state `renderAutoDrawing` used to
+ *  hold inline; phases take the context instead of closing over it. */
+interface RenderCtx {
+  input: AutoDrawingInput;
+  opts: NormalisedOptions;
+  parts: readonly WorldFramePart[];
+  declarations: DrawingDeclarations;
+  views: AutoDrawingInput['views'];
+  scale: number;
+  sheet: SheetSpec;
+  include: Set<AutoAnnotateKind>;
+  model: DrawingFeatureModel;
+  diagnostics: CompilerDiagnostic[];
+  svg: string[];
+  bottomReserve: Record<DrawingViewName, number>;
+  byKind: Record<string, number>;
+  annotations: DrawingReportAnnotation[];
+  fixed: Map<string, Datum>;
+  datums: Map<string, Datum>;
+  frameDatums: string[];
+  resolvedTols: ResolvedTolerance[];
+  consumedTols: Set<number>;
+  obstacles: Obstacles;
+  placed: PlacedItem[];
+  ownerSeq: number;
+  datumLines: Map<string, EdgeLine>;
+  holeGroups: HoleGroup[];
+  linear: LinearItem[];
+}
+
+function toSheet(ctx: RenderCtx, p: V3, view: DrawingViewName): Pt2 {
+  return modelToSheet(p, view, ctx.views[view].placement, ctx.scale);
+}
+
+function commit(ctx: RenderCtx, kind: string, view: DrawingViewName, text: string, r: Rendered): void {
+  const owner = ctx.ownerSeq++;
+  for (const s of r.segments) ctx.obstacles.addSegment(s, owner);
+  for (const b of r.boxes) ctx.obstacles.addBox(b, owner);
+  ctx.placed.push({ kind, view, text, svg: r.svg, boxes: r.boxes, owner });
+  ctx.byKind[kind] = (ctx.byKind[kind] ?? 0) + 1;
+}
+
+// A label enclosed by a view's outline (geometry on all four sides) reads
+// as part of the part; prefer the free sheet around the views.
+function isEnclosed(ctx: RenderCtx, b: Box): boolean {
+  const cx = (b.x0 + b.x1) / 2;
+  const cy = (b.y0 + b.y1) / 2;
+  for (const name of [...STANDARD_VIEWS, 'iso'] as DrawingViewName[]) {
+    const vb = ctx.views[name].placement.box;
+    if (cx < vb.x || cx > vb.x + vb.w || cy < vb.y || cy > vb.y + vb.h) continue;
+    const rays: Seg[] = [
+      [cx, cy, vb.x - 1, cy], [cx, cy, vb.x + vb.w + 1, cy],
+      [cx, cy, cx, vb.y - 1], [cx, cy, cx, vb.y + vb.h + 1],
+    ];
+    return rays.every(ray => ctx.obstacles.crossings(ray) > 0);
+  }
+  return false;
+}
+
+function choose(
+  ctx: RenderCtx,
+  owner: number,
+  candidates: ReadonlyArray<{ render: () => Rendered; penalty: number }>,
+): { r: Rendered; cost: number; index: number } | null {
+  let best: { r: Rendered; cost: number; score: number; index: number } | null = null;
+  for (const [index, c] of candidates.entries()) {
+    const r = c.render();
+    const cost = ctx.obstacles.cost(r.boxes, owner) +
+      r.segments.reduce((n, seg) => n + ctx.obstacles.labelHits(seg, owner) * 5, 0);
+    const crossings = r.segments.reduce((n, seg) => n + ctx.obstacles.crossings(seg), 0);
+    const inside = r.boxes.length > 0 && isEnclosed(ctx, r.boxes[0]) ? 25 : 0;
+    const score = cost * 1000 + c.penalty + crossings * 6 + inside;
+    if (best === null || score < best.score) best = { r, cost, score, index };
+    if (cost === 0 && c.penalty === 0 && crossings === 0 && inside === 0) break;
+  }
+  return best;
+}
+
+function outwardAngle(ctx: RenderCtx, p: Pt2, view: DrawingViewName): number {
+  const box = ctx.views[view].placement.box;
+  const cx = box.x + box.w / 2;
+  const cy = box.y + box.h / 2;
+  const dx = p[0] - cx;
+  const dy = p[1] - cy;
+  return Math.hypot(dx, dy) < 1e-6 ? -Math.PI / 4 : Math.atan2(dy, dx);
+}
+
 export function renderAutoDrawing(input: AutoDrawingInput): AutoDrawingResult {
   const opts = normaliseAutoAnnotate(input.autoAnnotate);
   const { parts, declarations, views, scale, sheet } = input;
-  const include = opts.include;
-  const diagnostics: CompilerDiagnostic[] = [];
-  const svg: string[] = [];
-  const bottomReserve = { ...input.bottomReserve };
-  const byKind: Record<string, number> = {};
-  const annotations: DrawingReportAnnotation[] = [];
 
   const model = recogniseDrawingFeatures(input.compound, {
-    holes: opts.enabled && (include.has('holes') || include.has('hole-positions') || include.has('datums')),
-    radii: opts.enabled && include.has('fillets'),
-    chamfers: opts.enabled && include.has('chamfers'),
+    holes: opts.enabled && (opts.include.has('holes') || opts.include.has('hole-positions') || opts.include.has('datums')),
+    radii: opts.enabled && opts.include.has('fillets'),
+    chamfers: opts.enabled && opts.include.has('chamfers'),
   });
 
+  const ctx: RenderCtx = {
+    input, opts, parts, declarations, views, scale, sheet, include: opts.include, model,
+    diagnostics: [],
+    svg: [],
+    bottomReserve: { ...input.bottomReserve },
+    byKind: {},
+    annotations: [],
+    fixed: new Map(),
+    datums: new Map(),
+    frameDatums: [],
+    resolvedTols: [],
+    consumedTols: new Set(),
+    obstacles: buildObstacles(input, views, scale, sheet),
+    placed: [],
+    ownerSeq: 0,
+    datumLines: new Map(),
+    holeGroups: [],
+    linear: [],
+  };
+
   // --- datums ------------------------------------------------------------
-  const fixed = new Map<string, Datum>();
+  resolveDatumFacts(ctx);
+  ctx.frameDatums = ['A', 'B', 'C'].filter(l => ctx.datums.has(l));
+
+  // --- declared tolerances ----------------------------------------------
+  ctx.resolvedTols = resolveDeclaredTolerances(ctx);
+
+  // --- hole groups ----------------------------------------------------------
+  collectHoleGroups(ctx);
+
+  // --- linear dimensions ----------------------------------------------------
+  ctx.linear = collectLinearDimensions(ctx);
+
+  // View captions sit under each view, below whatever stacks there.
+  addViewCaptions(ctx);
+
+  // Hole callouts first: the largest labels need the most room.
+  placeHoleCallouts(ctx);
+
+  // Datum feature symbols.
+  placeDatumSymbols(ctx);
+
+  // Flatness on A (auto, or the declared flatness on A's face).
+  placeFlatnessOnA(ctx);
+
+  // Radius and chamfer notes.
+  placeRadiusAndChamferNotes(ctx);
+
+  // Declared tolerances no automatic feature absorbed: their own frames.
+  placeLeftoverTolerances(ctx);
+
+  // --- unclassified holes -------------------------------------------------
+  unclassifiedHolesDiagnostic(ctx);
+
+  // --- final collision pass -------------------------------------------------
+  return finalise(ctx);
+}
+
+function buildObstacles(
+  input: AutoDrawingInput,
+  views: AutoDrawingInput['views'],
+  scale: number,
+  sheet: SheetSpec,
+): Obstacles {
+  const margin = sheet.margin;
+  const obstacles = new Obstacles({
+    x0: margin + 1,
+    y0: margin + 1,
+    x1: sheet.w - margin - 1,
+    y1: sheet.h - margin - sheet.titleBlock.h - 1,
+  });
+  for (const name of [...STANDARD_VIEWS, 'iso'] as DrawingViewName[]) {
+    const { placement, polylines } = views[name];
+    for (const pl of polylines) {
+      for (let k = 0; k + 1 < pl.length; k++) {
+        obstacles.addSegment([
+          placement.tx + pl[k][0] * scale, placement.ty - pl[k][1] * scale,
+          placement.tx + pl[k + 1][0] * scale, placement.ty - pl[k + 1][1] * scale,
+        ], GEOMETRY_OWNER);
+      }
+    }
+  }
+  const AUTHORED = -2;
+  const foreign = [...input.authoredSvg, input.extraObstacleSvg ?? ''];
+  for (const b of foreign.flatMap((s, i) => extractTextBoxes(s, i))) {
+    obstacles.addBox({ x0: b.x0, y0: b.y0, x1: b.x1, y1: b.y1 }, AUTHORED);
+  }
+  for (const fragment of foreign) {
+    for (const m of fragment.matchAll(/<line x1="([-\d.]+)" y1="([-\d.]+)" x2="([-\d.]+)" y2="([-\d.]+)"\/>/g)) {
+      obstacles.addSegment([Number(m[1]), Number(m[2]), Number(m[3]), Number(m[4])], AUTHORED);
+    }
+  }
+  return obstacles;
+}
+
+function resolveDatumFacts(ctx: RenderCtx): void {
+  const { input, opts, parts, model } = ctx;
+  const fixed = ctx.fixed;
   const declare = (d: DrawingDatumDecl, draw: boolean, role: string) => {
     const face = oneFace(parts, d.face, role, 'drawing.datum.unresolved');
     const plane = matchPlanar(face, model.planar);
@@ -837,14 +900,14 @@ export function renderAutoDrawing(input: AutoDrawingInput): AutoDrawingResult {
   };
   input.authoredDatums.forEach((d, i) => declare(d, false, `annotations datum '${d.label}' (#${i})`));
   opts.datums.forEach((d, i) => declare(d, true, `autoAnnotate.datums[${i}]`));
-  declarations.datums.forEach(d => declare(d, true, `datum('${d.label}')`));
+  ctx.declarations.datums.forEach(d => declare(d, true, `datum('${d.label}')`));
 
   let datums = fixed;
-  if (opts.enabled && include.has('datums')) {
+  if (opts.enabled && ctx.include.has('datums')) {
     const derived = deriveDatums(model, fixed);
     datums = derived.datums;
     if (derived.missing.length > 0) {
-      diagnostics.push({
+      ctx.diagnostics.push({
         target: 'export-occt',
         code: 'drawing.auto.datum-ambiguous',
         severity: 'warn',
@@ -857,10 +920,12 @@ export function renderAutoDrawing(input: AutoDrawingInput): AutoDrawingResult {
       });
     }
   }
-  const frameDatums = ['A', 'B', 'C'].filter(l => datums.has(l));
+  ctx.datums = datums;
+}
 
-  // --- declared tolerances ----------------------------------------------
-  const resolvedTols: ResolvedTolerance[] = declarations.tolerances.map((decl, index) => {
+function resolveDeclaredTolerances(ctx: RenderCtx): ResolvedTolerance[] {
+  const { parts, declarations, model } = ctx;
+  return declarations.tolerances.map((decl, index) => {
     const role = `tolerance(${decl.type}) #${index}`;
     if (decl.edge) {
       const edge = oneEdge(parts, decl.edge, role);
@@ -896,54 +961,11 @@ export function renderAutoDrawing(input: AutoDrawingInput): AutoDrawingResult {
     const c = face.center;
     return { decl, index, target: [c.x, c.y, c.z], view: 'front' as DrawingViewName };
   });
-  const consumedTols = new Set<number>();
+}
 
-  // --- obstacles ----------------------------------------------------------
-  const margin = sheet.margin;
-  const obstacles = new Obstacles({
-    x0: margin + 1,
-    y0: margin + 1,
-    x1: sheet.w - margin - 1,
-    y1: sheet.h - margin - sheet.titleBlock.h - 1,
-  });
-  const GEOMETRY = GEOMETRY_OWNER;
-  for (const name of [...STANDARD_VIEWS, 'iso'] as DrawingViewName[]) {
-    const { placement, polylines } = views[name];
-    for (const pl of polylines) {
-      for (let k = 0; k + 1 < pl.length; k++) {
-        obstacles.addSegment([
-          placement.tx + pl[k][0] * scale, placement.ty - pl[k][1] * scale,
-          placement.tx + pl[k + 1][0] * scale, placement.ty - pl[k + 1][1] * scale,
-        ], GEOMETRY);
-      }
-    }
-  }
-  const AUTHORED = -2;
-  const foreign = [...input.authoredSvg, input.extraObstacleSvg ?? ''];
-  for (const b of foreign.flatMap((s, i) => extractTextBoxes(s, i))) {
-    obstacles.addBox({ x0: b.x0, y0: b.y0, x1: b.x1, y1: b.y1 }, AUTHORED);
-  }
-  for (const fragment of foreign) {
-    for (const m of fragment.matchAll(/<line x1="([-\d.]+)" y1="([-\d.]+)" x2="([-\d.]+)" y2="([-\d.]+)"\/>/g)) {
-      obstacles.addSegment([Number(m[1]), Number(m[2]), Number(m[3]), Number(m[4])], AUTHORED);
-    }
-  }
-
-  const placed: PlacedItem[] = [];
-  let ownerSeq = 0;
-  const commit = (kind: string, view: DrawingViewName, text: string, r: Rendered): void => {
-    const owner = ownerSeq++;
-    for (const s of r.segments) obstacles.addSegment(s, owner);
-    for (const b of r.boxes) obstacles.addBox(b, owner);
-    placed.push({ kind, view, text, svg: r.svg, boxes: r.boxes, owner });
-    byKind[kind] = (byKind[kind] ?? 0) + 1;
-  };
-
-  const toSheet = (p: V3, view: DrawingViewName): Pt2 => modelToSheet(p, view, views[view].placement, scale);
-
-  // --- hole groups ----------------------------------------------------------
-  interface HoleGroup { key: string; holes: HoleComposite[]; view: DrawingViewName; rows: string[][]; label: string }
-  const holeGroups: HoleGroup[] = [];
+function collectHoleGroups(ctx: RenderCtx): void {
+  const { model, opts, include, resolvedTols, frameDatums } = ctx;
+  const holeGroups = ctx.holeGroups;
   {
     for (const h of model.holes) {
       const key = holeKey(h);
@@ -964,54 +986,62 @@ export function renderAutoDrawing(input: AutoDrawingInput): AutoDrawingResult {
     if (opts.enabled && include.has('holes')) {
       for (const t of matched) {
         g.rows.push(fcfCells(t.decl));
-        consumedTols.add(t.index);
+        ctx.consumedTols.add(t.index);
       }
     }
   }
+}
 
-  // --- linear dimensions ----------------------------------------------------
+function collectHolePositionDimensions(ctx: RenderCtx): LinearItem[] {
+  const { opts, include, datums, holeGroups, views } = ctx;
   const linear: LinearItem[] = [];
-  const bb = input.compound.boundingBox();
-  if (opts.enabled && include.has('hole-positions')) {
-    const byView = new Map<DrawingViewName, HoleComposite[]>();
-    for (const g of holeGroups) {
-      if (principalAxis(g.holes[0].axis) === null) continue;
-      byView.set(g.view, [...(byView.get(g.view) ?? []), ...g.holes]);
-    }
-    for (const [view, holes] of byView) {
-      const b = viewBasis(view);
-      for (const screen of ['x', 'y'] as const) {
-        const w = screen === 'x' ? b.x : b.y;
-        const axisIdx = Math.abs(w[0]) > 0.5 ? 0 : Math.abs(w[1]) > 0.5 ? 1 : 2;
-        const datum = [...datums.values()].find(d => d.plane && Math.abs(d.normal![axisIdx]) > 0.999);
-        const ref = datum ? datum.point[axisIdx] : bb.min[axisIdx];
-        const coords: number[] = [];
-        for (const h of holes) {
-          const c = h.entry[axisIdx];
-          if (Math.abs(c - ref) < 0.01) continue;
-          if (!coords.some(x => Math.abs(x - c) < 0.01)) coords.push(c);
-        }
-        const side = screen === 'x' ? HOLE_SIDES[view].horizontal : HOLE_SIDES[view].vertical;
-        const box = views[view].placement.box;
-        for (const c of coords) {
-          const hole = holes.find(h => Math.abs(h.entry[axisIdx] - c) < 0.01)!;
-          const to = toSheet(hole.entry, view);
-          // Reference point: on the datum plane at the hole's in-view position,
-          // pushed to the view outline nearest the dimension line.
-          const refPoint: V3 = [...hole.entry] as V3;
-          refPoint[axisIdx] = ref;
-          const from = toSheet(refPoint, view);
-          const fromPt: Pt2 = screen === 'x'
-            ? [from[0], side === 'top' ? box.y : box.y + box.h]
-            : [side === 'left' ? box.x : box.x + box.w, from[1]];
-          linear.push({
-            kind: 'hole-position', view, side, from: fromPt, to,
-            label: formatDimValue(Math.abs(c - ref)), order: Math.abs(c - ref),
-          });
-        }
+  const bb = ctx.input.compound.boundingBox();
+  if (!(opts.enabled && include.has('hole-positions'))) return linear;
+  const byView = new Map<DrawingViewName, HoleComposite[]>();
+  for (const g of holeGroups) {
+    if (principalAxis(g.holes[0].axis) === null) continue;
+    byView.set(g.view, [...(byView.get(g.view) ?? []), ...g.holes]);
+  }
+  for (const [view, holes] of byView) {
+    const b = viewBasis(view);
+    for (const screen of ['x', 'y'] as const) {
+      const w = screen === 'x' ? b.x : b.y;
+      const axisIdx = Math.abs(w[0]) > 0.5 ? 0 : Math.abs(w[1]) > 0.5 ? 1 : 2;
+      const datum = [...datums.values()].find(d => d.plane && Math.abs(d.normal![axisIdx]) > 0.999);
+      const ref = datum ? datum.point[axisIdx] : bb.min[axisIdx];
+      const coords: number[] = [];
+      for (const h of holes) {
+        const c = h.entry[axisIdx];
+        if (Math.abs(c - ref) < 0.01) continue;
+        if (!coords.some(x => Math.abs(x - c) < 0.01)) coords.push(c);
+      }
+      const side = screen === 'x' ? HOLE_SIDES[view].horizontal : HOLE_SIDES[view].vertical;
+      const box = views[view].placement.box;
+      for (const c of coords) {
+        const hole = holes.find(h => Math.abs(h.entry[axisIdx] - c) < 0.01)!;
+        const to = toSheet(ctx, hole.entry, view);
+        // Reference point: on the datum plane at the hole's in-view position,
+        // pushed to the view outline nearest the dimension line.
+        const refPoint: V3 = [...hole.entry] as V3;
+        refPoint[axisIdx] = ref;
+        const from = toSheet(ctx, refPoint, view);
+        const fromPt: Pt2 = screen === 'x'
+          ? [from[0], side === 'top' ? box.y : box.y + box.h]
+          : [side === 'left' ? box.x : box.x + box.w, from[1]];
+        linear.push({
+          kind: 'hole-position', view, side, from: fromPt, to,
+          label: formatDimValue(Math.abs(c - ref)), order: Math.abs(c - ref),
+        });
       }
     }
   }
+  return linear;
+}
+
+function collectLinearDimensions(ctx: RenderCtx): LinearItem[] {
+  const { opts, include, views } = ctx;
+  const linear: LinearItem[] = collectHolePositionDimensions(ctx);
+  const bb = ctx.input.compound.boundingBox();
   if (opts.enabled && include.has('overall')) {
     const f = views.front.placement.box;
     const t = views.top.placement.box;
@@ -1031,14 +1061,14 @@ export function renderAutoDrawing(input: AutoDrawingInput): AutoDrawingResult {
     items.forEach((item, i) => {
       const box = views[item.view].placement.box;
       const reserve = item.side === 'bottom'
-        ? input.bottomReserve[item.view]
-        : item.side === 'right' ? input.rightReserve[item.view] : 0;
+        ? ctx.input.bottomReserve[item.view]
+        : item.side === 'right' ? ctx.input.rightReserve[item.view] : 0;
       const dist = (reserve > 0 ? reserve + DIM_STEP : DIM_BASE) + i * DIM_STEP;
       const horizontal = item.side === 'top' || item.side === 'bottom';
       const linePos = item.side === 'top' ? box.y - dist
         : item.side === 'bottom' ? box.y + box.h + dist
           : item.side === 'left' ? box.x - dist : box.x + box.w + dist;
-      if (item.side === 'bottom') bottomReserve[item.view] = Math.max(bottomReserve[item.view], dist);
+      if (item.side === 'bottom') ctx.bottomReserve[item.view] = Math.max(ctx.bottomReserve[item.view], dist);
       const dimSvg = dimensionToSvg({
         kind: horizontal ? 'horizontal' : 'vertical',
         from: item.from,
@@ -1056,73 +1086,33 @@ export function renderAutoDrawing(input: AutoDrawingInput): AutoDrawingResult {
       const segments: Seg[] = horizontal
         ? [[item.from[0], linePos, item.to[0], linePos], [item.from[0], item.from[1], item.from[0], linePos], [item.to[0], item.to[1], item.to[0], linePos]]
         : [[linePos, item.from[1], linePos, item.to[1]], [item.from[0], item.from[1], linePos, item.from[1]], [item.to[0], item.to[1], linePos, item.to[1]]];
-      commit(item.kind, item.view, item.label, { svg: dimSvg, boxes, segments });
+      commit(ctx, item.kind, item.view, item.label, { svg: dimSvg, boxes, segments });
     });
   }
+  return linear;
+}
 
-  // View captions sit under each view, below whatever stacks there.
-  const CAPTIONS: Record<DrawingViewName, string> = { front: 'FRONT', top: 'TOP', left: 'LEFT', iso: 'ISOMETRIC' };
+const CAPTIONS: Record<DrawingViewName, string> = { front: 'FRONT', top: 'TOP', left: 'LEFT', iso: 'ISOMETRIC' };
+
+function addViewCaptions(ctx: RenderCtx): void {
   for (const name of [...STANDARD_VIEWS, 'iso'] as DrawingViewName[]) {
-    const box = views[name].placement.box;
-    obstacles.addBox(
-      textBox(box.x + box.w / 2, box.y + box.h + 5 + bottomReserve[name], 2.6, 'middle', CAPTIONS[name]),
-      GEOMETRY,
+    const box = ctx.views[name].placement.box;
+    ctx.obstacles.addBox(
+      textBox(box.x + box.w / 2, box.y + box.h + 5 + ctx.bottomReserve[name], 2.6, 'middle', CAPTIONS[name]),
+      GEOMETRY_OWNER,
     );
   }
+}
 
-  // --- leader callouts ------------------------------------------------------
-  // A label enclosed by a view's outline (geometry on all four sides) reads
-  // as part of the part; prefer the free sheet around the views.
-  const enclosed = (b: Box): boolean => {
-    const cx = (b.x0 + b.x1) / 2;
-    const cy = (b.y0 + b.y1) / 2;
-    for (const name of [...STANDARD_VIEWS, 'iso'] as DrawingViewName[]) {
-      const vb = views[name].placement.box;
-      if (cx < vb.x || cx > vb.x + vb.w || cy < vb.y || cy > vb.y + vb.h) continue;
-      const rays: Seg[] = [
-        [cx, cy, vb.x - 1, cy], [cx, cy, vb.x + vb.w + 1, cy],
-        [cx, cy, cx, vb.y - 1], [cx, cy, cx, vb.y + vb.h + 1],
-      ];
-      return rays.every(ray => obstacles.crossings(ray) > 0);
-    }
-    return false;
-  };
-
-  const choose = (
-    owner: number,
-    candidates: ReadonlyArray<{ render: () => Rendered; penalty: number }>,
-  ): { r: Rendered; cost: number; index: number } | null => {
-    let best: { r: Rendered; cost: number; score: number; index: number } | null = null;
-    for (const [index, c] of candidates.entries()) {
-      const r = c.render();
-      const cost = obstacles.cost(r.boxes, owner) +
-        r.segments.reduce((n, seg) => n + obstacles.labelHits(seg, owner) * 5, 0);
-      const crossings = r.segments.reduce((n, seg) => n + obstacles.crossings(seg), 0);
-      const inside = r.boxes.length > 0 && enclosed(r.boxes[0]) ? 25 : 0;
-      const score = cost * 1000 + c.penalty + crossings * 6 + inside;
-      if (best === null || score < best.score) best = { r, cost, score, index };
-      if (cost === 0 && c.penalty === 0 && crossings === 0 && inside === 0) break;
-    }
-    return best;
-  };
-
-  const outwardAngle = (p: Pt2, view: DrawingViewName): number => {
-    const box = views[view].placement.box;
-    const cx = box.x + box.w / 2;
-    const cy = box.y + box.h / 2;
-    const dx = p[0] - cx;
-    const dy = p[1] - cy;
-    return Math.hypot(dx, dy) < 1e-6 ? -Math.PI / 4 : Math.atan2(dy, dx);
-  };
-
-  // Hole callouts first: the largest labels need the most room.
+function placeHoleCallouts(ctx: RenderCtx): void {
+  const { opts, include, holeGroups, views, scale } = ctx;
   if (opts.enabled && include.has('holes')) {
     for (const g of holeGroups) {
       const view = g.view;
       if (principalAxis(g.holes[0].axis) === null) continue;
-      const owner = ownerSeq;
+      const owner = ctx.ownerSeq;
       const reps = g.holes
-        .map(h => ({ h, p: toSheet(h.entry, view) }))
+        .map(h => ({ h, p: toSheet(ctx, h.entry, view) }))
         .sort((p, q) => {
           const box = views[view].placement.box;
           const d = (x: Pt2) => Math.hypot(x[0] - (box.x + box.w / 2), x[1] - (box.y + box.h / 2));
@@ -1131,7 +1121,7 @@ export function renderAutoDrawing(input: AutoDrawingInput): AutoDrawingResult {
       const radius = (g.holes[0].counterbore?.diameter ?? g.holes[0].countersink?.diameter ?? g.holes[0].diameter) / 2 * scale;
       const candidates: Array<{ render: () => Rendered; penalty: number }> = [];
       reps.forEach((rep, ri) => {
-        orderedAngles(outwardAngle(rep.p, view)).forEach((angle, ai) => {
+        orderedAngles(outwardAngle(ctx, rep.p, view)).forEach((angle, ai) => {
           STEMS.forEach(stem => {
             candidates.push({
               penalty: stem + ai * 4 + ri * 2,
@@ -1145,24 +1135,25 @@ export function renderAutoDrawing(input: AutoDrawingInput): AutoDrawingResult {
           });
         });
       });
-      const best = choose(owner, candidates);
-      if (best) commit('hole', view, [g.label, ...g.rows.map(r => r.join(' '))].join(' | '), best.r);
+      const best = choose(ctx, owner, candidates);
+      if (best) commit(ctx, 'hole', view, [g.label, ...g.rows.map(r => r.join(' '))].join(' | '), best.r);
     }
   }
+}
 
-  // Datum feature symbols.
-  const datumLines = new Map<string, EdgeLine>();
+function placeDatumSymbols(ctx: RenderCtx): void {
+  const { datums } = ctx;
   for (const label of [...datums.keys()].sort()) {
     const d = datums.get(label)!;
     if (!d.draw) continue;
     const lines = d.plane ? edgeOnLines(d.plane) : [];
-    const owner = ownerSeq;
+    const owner = ctx.ownerSeq;
     const candidates: Array<{ render: () => Rendered; penalty: number; view: DrawingViewName }> = [];
     const attrs = ` data-kc-auto="datum" data-kc-datum="${escAttr(label)}"`;
     if (lines.length > 0) {
       lines.forEach((line, li) => {
-        const a = toSheet(line.a, line.view);
-        const b = toSheet(line.b, line.view);
+        const a = toSheet(ctx, line.a, line.view);
+        const b = toSheet(ctx, line.b, line.view);
         const basis = viewBasis(line.view);
         const angle = Math.atan2(-dot(line.normal, basis.y), dot(line.normal, basis.x));
         [0.5, 0.35, 0.65, 0.2, 0.8].forEach((f, fi) => {
@@ -1177,23 +1168,25 @@ export function renderAutoDrawing(input: AutoDrawingInput): AutoDrawingResult {
         });
       });
     } else {
-      const tip = toSheet(d.point, 'front');
+      const tip = toSheet(ctx, d.point, 'front');
       orderedAngles(-Math.PI / 4).forEach((angle, ai) => {
         [5, 9, 13, 18, 24].forEach(stem => {
           candidates.push({ view: 'front', penalty: stem + ai * 3, render: () => datumRendered(tip, angle, label, stem, attrs) });
         });
       });
     }
-    const best = choose(owner, candidates);
+    const best = choose(ctx, owner, candidates);
     if (best) {
       const chosen = candidates[best.index];
       const line = lines.find(l => l.view === chosen.view);
-      if (line) datumLines.set(label, line);
-      commit('datum', chosen.view, `datum ${label}`, best.r);
+      if (line) ctx.datumLines.set(label, line);
+      commit(ctx, 'datum', chosen.view, `datum ${label}`, best.r);
     }
   }
+}
 
-  // Flatness on A (auto, or the declared flatness on A's face).
+function placeFlatnessOnA(ctx: RenderCtx): void {
+  const { opts, include, datums, resolvedTols, datumLines } = ctx;
   const datumA = datums.get('A');
   if (datumA?.plane) {
     const declaredFlat = resolvedTols.find(t =>
@@ -1208,16 +1201,18 @@ export function renderAutoDrawing(input: AutoDrawingInput): AutoDrawingResult {
       const cells = declaredFlat
         ? fcfCells(declaredFlat.decl)
         : fcfCells({ type: 'flatness', value: flatnessFor(opts.tolerance, longest) });
-      if (declaredFlat) consumedTols.add(declaredFlat.index);
-      const owner = ownerSeq;
+      if (declaredFlat) ctx.consumedTols.add(declaredFlat.index);
+      const owner = ctx.ownerSeq;
       const candidates = lines.flatMap((line, li) =>
-        fcfLineCandidates(line, cells, 'flatness', toSheet).map(c => ({ ...c, penalty: c.penalty + li * 12, view: line.view })));
-      const best = choose(owner, candidates);
-      if (best) commit('flatness', candidates[best.index].view, cells.join(' '), best.r);
+        fcfLineCandidates(line, cells, 'flatness', (p2, v) => toSheet(ctx, p2, v)).map(c => ({ ...c, penalty: c.penalty + li * 12, view: line.view })));
+      const best = choose(ctx, owner, candidates);
+      if (best) commit(ctx, 'flatness', candidates[best.index].view, cells.join(' '), best.r);
     }
   }
+}
 
-  // Radius and chamfer notes.
+function placeRadiusAndChamferNotes(ctx: RenderCtx): void {
+  const { opts, include, model } = ctx;
   if (opts.enabled && include.has('fillets')) {
     const groups = new Map<string, RadiusFeature[]>();
     for (const r of model.radii) {
@@ -1227,10 +1222,10 @@ export function renderAutoDrawing(input: AutoDrawingInput): AutoDrawingResult {
     for (const [k, feats] of groups) {
       const view = k.split('|')[0] as DrawingViewName;
       const label = `${feats.length > 1 ? `${feats.length}× ` : ''}R${formatDimValue(feats[0].radius)}`;
-      const targets = feats.flatMap(f => [f.arcPoint, ...f.samples]).map(p => toSheet(p, view));
-      const candidates = noteCandidates(targets, label, 'fillet', view, outwardAngle);
-      const best = choose(ownerSeq, candidates);
-      if (best) commit('fillet', view, label, best.r);
+      const targets = feats.flatMap(f => [f.arcPoint, ...f.samples]).map(p => toSheet(ctx, p, view));
+      const candidates = noteCandidates(targets, label, 'fillet', view, (p, v) => outwardAngle(ctx, p, v));
+      const best = choose(ctx, ctx.ownerSeq, candidates);
+      if (best) commit(ctx, 'fillet', view, label, best.r);
     }
   }
   if (opts.enabled && include.has('chamfers')) {
@@ -1246,24 +1241,26 @@ export function renderAutoDrawing(input: AutoDrawingInput): AutoDrawingResult {
         ? `${formatDimValue(l0)} × 45°`
         : `${formatDimValue(l0)} × ${formatDimValue(l1)}`;
       const label = `${feats.length > 1 ? `${feats.length}× ` : ''}${size}`;
-      const targets = feats.map(f => toSheet(f.midPoint, view));
-      const candidates = noteCandidates(targets, label, 'chamfer', view, outwardAngle);
-      const best = choose(ownerSeq, candidates);
-      if (best) commit('chamfer', view, label, best.r);
+      const targets = feats.map(f => toSheet(ctx, f.midPoint, view));
+      const candidates = noteCandidates(targets, label, 'chamfer', view, (p, v) => outwardAngle(ctx, p, v));
+      const best = choose(ctx, ctx.ownerSeq, candidates);
+      if (best) commit(ctx, 'chamfer', view, label, best.r);
     }
   }
+}
 
-  // Declared tolerances no automatic feature absorbed: their own frames.
+function placeLeftoverTolerances(ctx: RenderCtx): void {
+  const { resolvedTols, consumedTols } = ctx;
   for (const t of resolvedTols) {
     if (consumedTols.has(t.index)) continue;
     const cells = fcfCells(t.decl);
     let candidates: Array<{ render: () => Rendered; penalty: number }>;
     if (t.edgeLine) {
-      candidates = fcfLineCandidates(t.edgeLine, cells, 'tolerance', toSheet);
+      candidates = fcfLineCandidates(t.edgeLine, cells, 'tolerance', (p, v) => toSheet(ctx, p, v));
     } else {
-      const tip = toSheet(t.target, t.view);
+      const tip = toSheet(ctx, t.target, t.view);
       candidates = [];
-      orderedAngles(outwardAngle(tip, t.view)).forEach((angle, ai) => {
+      orderedAngles(outwardAngle(ctx, tip, t.view)).forEach((angle, ai) => {
         STEMS.forEach(stem => {
           candidates.push({
             penalty: stem + ai * 4,
@@ -1272,13 +1269,15 @@ export function renderAutoDrawing(input: AutoDrawingInput): AutoDrawingResult {
         });
       });
     }
-    const best = choose(ownerSeq, candidates);
-    if (best) commit('tolerance', t.edgeLine?.view ?? t.view, cells.join(' '), best.r);
+    const best = choose(ctx, ctx.ownerSeq, candidates);
+    if (best) commit(ctx, 'tolerance', t.edgeLine?.view ?? t.view, cells.join(' '), best.r);
   }
+}
 
-  // --- unclassified holes -------------------------------------------------
+function unclassifiedHolesDiagnostic(ctx: RenderCtx): void {
+  const { opts, include, model } = ctx;
   if (opts.enabled && include.has('holes') && model.unclassified.length > 0) {
-    diagnostics.push({
+    ctx.diagnostics.push({
       target: 'export-occt',
       code: 'drawing.auto.hole-unclassified',
       severity: 'warn',
@@ -1291,12 +1290,14 @@ export function renderAutoDrawing(input: AutoDrawingInput): AutoDrawingResult {
       nextAction: NEXT_ACTIONS['drawing.auto.hole-unclassified'],
     });
   }
+}
 
-  // --- final collision pass -------------------------------------------------
+function finalise(ctx: RenderCtx): AutoDrawingResult {
+  const { placed, byKind, diagnostics, svg, annotations, bottomReserve, opts, include, datums } = ctx;
   let overlapped = 0;
   const crowded: string[] = [];
   for (const item of placed) {
-    const hit = obstacles.cost(item.boxes, item.owner) > 0;
+    const hit = ctx.obstacles.cost(item.boxes, item.owner) > 0;
     if (hit) {
       overlapped++;
       crowded.push(`${item.kind} '${item.text}' (${item.view})`);

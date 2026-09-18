@@ -361,12 +361,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/drawingAuto.ts",
-    "symbol": "Function 'renderAutoDrawing'",
-    "value": 108
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/drawingFeatures.ts",
     "symbol": "Function 'classifyChain'",
     "value": 33
@@ -1006,12 +1000,6 @@
     "file": "src/kernel/backends/occt/drawingAnnotations.ts",
     "symbol": "Function 'renderAnnotations'",
     "value": 272
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/drawingAuto.ts",
-    "symbol": "Function 'renderAutoDrawing'",
-    "value": 508
   },
   {
     "rule": "max-lines-per-function",
