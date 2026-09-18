@@ -1,51 +1,26 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { Canvas } from "@react-three/fiber";
-// Subpath imports — pulling from the barrel index made vite prebundle 3.6MB
-// of drei. We only use 3 components total across the whole app.
-import { OrbitControls } from "@react-three/drei/core/OrbitControls";
-import { Grid } from "@react-three/drei/core/Grid";
-import { RendererSnapshotPublisher } from "./viewer/RendererSnapshotPublisher";
 import * as THREE from "three";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { GeometryResult, SketchGeometry } from "../../shared/worker/geometryEngine";
 import type { ViewMode3D } from "../../shared/types/viewMode";
 import { useWorkbench } from "../context/WorkbenchContext";
 import { useUI } from "../context/UIContext";
 import { useShellStore } from "../store/useShellStore";
-import { cutawayPlanesFromState } from "./viewer/sectionPlane";
-import { computeGeometryBox } from "./viewer/sectionRange";
-import { sectionPartKey } from "./viewer/sectionParts";
-import type { HoverResult } from "../features-ui/interaction/HoverManager";
-import type { SnapResult } from "../features-ui/interaction/SnapManager";
 
 // Extracted Components
-import { SketchLine } from "./viewer/entities/SketchLine";
-import { Shape, GhostShape } from "./viewer/entities/ShapeGeometry";
-import { PlaneLayer } from "./viewer/entities/PlaneEntity";
-import { ParametricLayer } from "./viewer/layers/ParametricLayer";
-import { CameraHandler } from "./viewer/controllers/CameraHandler";
-import { InteractionHandler } from "./viewer/controllers/InteractionHandler";
-import { SnapIndicator } from "./viewer/overlays/SnapIndicator";
-import { HighlightOverlay } from "./viewer/overlays/HighlightOverlay";
-import { SelectionOutline } from "./viewer/overlays/SelectionOutline";
-import { DirectEditGizmo } from "./viewer/DirectEditGizmo";
-import { SceneBackground } from "./viewer/SceneBackground";
+import { ViewerScene } from "./viewer/ViewerScene";
 import { ViewGizmo } from "./viewer/overlays/ViewGizmo";
-import type { ViewTarget } from "./viewer/controllers/cameraPose";
-import { CAPTURE_HIDDEN_FLAG } from "./viewer/captureViewerPng";
 
-// Tag value for scene furniture (origin construction planes + ground grid) that
-// render-to-image capture hides so the PNG shows the clean framed model, not the
-// authoring view. Read by captureViewerPngBase64; see captureViewerPng.ts.
-const CAPTURE_HIDDEN_USERDATA = { [CAPTURE_HIDDEN_FLAG]: true } as const;
+// Extracted hooks
+import { useViewerGridPlacement } from "../hooks/viewer/useViewerGridPlacement";
+import { useViewerSectionClipping } from "../hooks/viewer/useViewerSectionClipping";
+import { useViewerInteraction } from "../hooks/viewer/useViewerInteraction";
 
 // Constants
 export const SKETCH_FOV = 40;
 export const SKETCH_DISTANCE = 20;
-
-// Stable empty array so keep-whole shapes never re-memo their materials.
-const NO_PLANES: THREE.Plane[] = [];
 
 interface ViewerProps {
     geometries: GeometryResult[];
@@ -72,17 +47,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
 
     const { setContextMenu, viewportBackground, gridVisible } = useUI();
 
-    // kernelCAD models are z-up, so the ground grid must lie in the XY plane
-    // at the model's lowest point — drei's default y-up XZ grid would slice
-    // vertically through the model. Nudged slightly below min-z to avoid
-    // z-fighting with bottom faces; fade scales with model size.
-    const gridPlacement = useMemo(() => {
-        const box = computeGeometryBox(geometries);
-        if (!box) return { z: 0, fade: 300 };
-        const size = box.getSize(new THREE.Vector3());
-        const radius = Math.max(size.x, size.y, size.z) / 2;
-        return { z: box.min.z - 0.1, fade: Math.max(300, radius * 8) };
-    }, [geometries]);
+    const gridPlacement = useViewerGridPlacement(geometries);
 
     const {
         sectionMode,
@@ -93,58 +58,32 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
         viewportFocusTarget,
         viewportFocusTargetVersion,
     } = useShellStore();
-    // Three stable plane instances, mutated in place so slider/side changes
-    // never rebuild materials (only mode/axis-count switches do — see ShapeGeometry).
-    const sectionPlaneRefs = useMemo(
-        () => [
-            new THREE.Plane(new THREE.Vector3(0, 0, -1), 0),
-            new THREE.Plane(new THREE.Vector3(0, 0, -1), 0),
-            new THREE.Plane(new THREE.Vector3(0, 0, -1), 0),
-        ],
-        [],
+    const clippingPlanes = useViewerSectionClipping(
+        sectionMode,
+        sectionAxesEnabled,
+        sectionSides,
+        sectionOffsets,
     );
-    useEffect(() => {
-        cutawayPlanesFromState(sectionAxesEnabled, sectionSides, sectionOffsets)
-            .forEach((p, i) => sectionPlaneRefs[i].copy(p));
-    }, [sectionPlaneRefs, sectionAxesEnabled, sectionSides, sectionOffsets]);
-    const clippingPlanes = useMemo(() => {
-        if (!sectionMode) return NO_PLANES;
-        const count = (['x', 'y', 'z'] as const).filter((a) => sectionAxesEnabled[a]).length;
-        return count === 0 ? NO_PLANES : sectionPlaneRefs.slice(0, count);
-    }, [sectionMode, sectionAxesEnabled, sectionPlaneRefs]);
 
     const itemNames = useMemo(() => {
         return (codeContext?.returnedVariables as (string | null)[]) || [];
     }, [codeContext]);
 
-    const [hoveredItem, setHoveredItem] = useState<HoverResult | null>(null);
-    const [snapPoint, setSnapPoint] = useState<SnapResult | null>(null);
-    const [navigationRequest, setNavigationRequest] = useState<{ target: ViewTarget; id: number } | null>(null);
-    const focusRequest = useMemo(
-        () => (
-            viewportFocusTarget == null
-                ? null
-                : { target: viewportFocusTarget, id: viewportFocusTargetVersion }
-        ),
-        [viewportFocusTarget, viewportFocusTargetVersion],
-    );
-
-    useEffect(() => {
-        if (hoveredItem?.object?.userData?.ownerId) {
-            setHoveredItemId(hoveredItem.object.userData.ownerId);
-        } else {
-            setHoveredItemId(null);
-        }
-    }, [hoveredItem, setHoveredItemId]);
-
-    const cursor = useMemo(() => {
-        if (sketchMode.active) return 'crosshair';
-        if (hoveredItem) {
-            if (hoveredItem.type === 'VERTEX') return 'move';
-            return 'pointer';
-        }
-        return 'default';
-    }, [hoveredItem, sketchMode.active]);
+    const {
+        hoveredItem,
+        setHoveredItem,
+        snapPoint,
+        setSnapPoint,
+        navigationRequest,
+        setNavigationRequest,
+        focusRequest,
+        cursor,
+    } = useViewerInteraction({
+        setHoveredItemId,
+        sketchActive: sketchMode.active,
+        viewportFocusTarget,
+        viewportFocusTargetVersion,
+    });
 
     return (
         <div className="w-full h-full relative" style={{ cursor }} data-testid="viewer-container">
@@ -185,132 +124,34 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     setContextMenu({ visible: false, position: null, type: 'FACE' });
                 }}
             >
-                <RendererSnapshotPublisher />
-                <SceneBackground mode={viewportBackground} />
-
-                <ambientLight intensity={0.5} />
-                <directionalLight position={[10, 20, 10]} intensity={0.7} />
-                <directionalLight position={[-5, -10, -5]} intensity={0.3} />
-
-                <InteractionHandler setHovered={setHoveredItem} setSnap={setSnapPoint} />
-                <HighlightOverlay hovered={hoveredItem} geometries={geometries} />
-                <SnapIndicator snap={snapPoint} />
-                <SelectionOutline geometries={geometries} itemNames={itemNames} selectedItemIds={selectedItemIds} />
-
-                {!sketchMode.active && gridVisible && (
-                    <group userData={CAPTURE_HIDDEN_USERDATA}>
-                        <Grid
-                            position={[0, 0, gridPlacement.z]}
-                            rotation={[Math.PI / 2, 0, 0]}
-                            infiniteGrid
-                            cellSize={5}
-                            sectionSize={25}
-                            cellColor="#404040"
-                            sectionColor="#606060"
-                            fadeDistance={gridPlacement.fade}
-                            fadeStrength={1.5}
-                        />
-                    </group>
-                )}
-
-                <group>
-                    {geometries.map((g, i) => {
-                        // Prefer the authored assembly part name over the
-                        // return-variable name. For assemblies a single returned
-                        // variable expands into many per-part geometries, so
-                        // `itemNames[i]` is absent for all but the first — using
-                        // it alone leaves parts anonymous and downstream consumers
-                        // (selection, the marking/review overlay's `ownerId`) fall
-                        // back to `shape#<index>`. `assemblyPartName` carries the
-                        // real authored name per part. Mirrors `sectionPartKey`.
-                        const name = g.assemblyPartName ?? itemNames[i];
-                        if (name && hiddenIds.includes(name)) return null;
-                        // Hide whole assembly parts by name (the Parts list in the
-                        // Scene tab toggles `assemblyPartName` into hiddenIds).
-                        if (g.assemblyPartName && hiddenIds.includes(g.assemblyPartName)) return null;
-                        const partKey = sectionPartKey(g, name, i);
-                        return (
-                            <Shape
-                                key={i}
-                                geometry={g}
-                                shapeIndex={i}
-                                viewMode3D={viewMode3D}
-                                clippingPlanes={sectionKeepWhole.has(partKey) ? NO_PLANES : clippingPlanes}
-                                clipIntersection={true}
-                                isSelected={name ? selectedItemIds.includes(name) : false}
-                                name={name ?? undefined}
-                            />
-                        );
-                    })}
-                </group>
-
-                <group>
-                    {previewGeometries.map((g, i) => (
-                        <GhostShape key={`preview-${i}`} geometry={g} />
-                    ))}
-                </group>
-
-                {showSketches && (
-                    <group>
-                        {sketchesGeometries.filter(s => !hiddenIds.includes(s.name)).map((s) => (
-                            <SketchLine
-                                key={s.id}
-                                sketch={s}
-                                isSelected={selectedSketchName === s.name || selectedItemIds.includes(s.name)}
-                                onClick={(e) => {
-                                    const isMulti = e ? (e.metaKey || e.ctrlKey || e.shiftKey) : false;
-                                    if (isMulti) {
-                                        toggleSelection(s.name, true);
-                                        return;
-                                    }
-
-                                    setSelectedFace(null);
-                                    setSelectedSketchName(s.name);
-                                    setSelectedItemId(s.name);
-
-                                    if (e) {
-                                        const x = e.nativeEvent.clientX;
-                                        const y = e.nativeEvent.clientY;
-                                        setContextMenu({
-                                            visible: true,
-                                            position: { x, y },
-                                            type: 'SKETCH'
-                                        });
-                                    }
-                                }}
-                            />
-                        ))}
-                    </group>
-                )}
-
-                {!sketchMode.active && (
-                    <DirectEditGizmo geometries={geometries} itemNames={itemNames} />
-                )}
-
-                <group userData={CAPTURE_HIDDEN_USERDATA}>
-                    <PlaneLayer planes={planes} />
-                </group>
-                {sketchMode.active && <ParametricLayer />}
-                <OrbitControls
-                    makeDefault
-                    enabled={!sketchMode.active}
-                    mouseButtons={{
-                        LEFT: THREE.MOUSE.ROTATE,
-                        MIDDLE: THREE.MOUSE.PAN,
-                        RIGHT: THREE.MOUSE.PAN,
-                    }}
-                    touches={{
-                        ONE: THREE.TOUCH.ROTATE,
-                        TWO: THREE.TOUCH.DOLLY_PAN,
-                    }}
-                    screenSpacePanning
-                    enableDamping
-                    dampingFactor={0.12}
-                />
-                <CameraHandler
+                <ViewerScene
                     geometries={geometries}
+                    previewGeometries={previewGeometries}
+                    sketchesGeometries={sketchesGeometries}
+                    showSketches={showSketches}
+                    viewMode3D={viewMode3D}
+                    gridPlacement={gridPlacement}
+                    gridVisible={gridVisible}
+                    sketchActive={sketchMode.active}
+                    itemNames={itemNames}
+                    hiddenIds={hiddenIds}
+                    selectedItemIds={selectedItemIds}
+                    selectedSketchName={selectedSketchName}
+                    sectionKeepWhole={sectionKeepWhole}
+                    clippingPlanes={clippingPlanes}
+                    hoveredItem={hoveredItem}
+                    setHoveredItem={setHoveredItem}
+                    snapPoint={snapPoint}
+                    setSnapPoint={setSnapPoint}
+                    toggleSelection={toggleSelection}
+                    setSelectedFace={setSelectedFace}
+                    setSelectedSketchName={setSelectedSketchName}
+                    setSelectedItemId={setSelectedItemId}
+                    setContextMenu={setContextMenu}
                     navigationRequest={navigationRequest}
                     focusRequest={focusRequest}
+                    viewportBackground={viewportBackground}
+                    planes={planes}
                 />
             </Canvas>
             <ViewGizmo
