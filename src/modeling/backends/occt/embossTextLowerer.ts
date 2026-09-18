@@ -57,6 +57,74 @@ export async function lowerEmbossText(
   const diagnostics: CompilerDiagnostic[] = [];
 
   // Surface any capture-time diagnostics stashed on metadata.diagnostics.
+  if (stampStashedDiagnostics(r, diagnostics)) {
+    return { ok: false, diagnostics };
+  }
+
+  const meta = validateEmbossTextMetadata(r, diagnostics);
+  if (meta === undefined) {
+    return { ok: false, diagnostics };
+  }
+
+  // 1. Resolve target face on the parent.
+  const face = resolveEmbossFace(r, parent, records, diagnostics);
+  if (face === undefined) {
+    return { ok: false, diagnostics };
+  }
+
+  // 2-4. Build the glyph drawing.
+  let drawing = await buildEmbossDrawing(meta, r, scriptDir, diagnostics);
+  if (drawing === undefined) {
+    return { ok: false, diagnostics };
+  }
+
+  // 4-pre. Handedness correction (#392). `sketchOnFace` maps the drawing
+  // through the surface parameterisation S(u, v) verbatim. When the face's
+  // (∂S/∂u × ∂S/∂v) frame is LEFT-handed relative to the oriented outward
+  // normal (e.g. the top face of an OCCT box — while a cylinder end-cap is
+  // right-handed), the mapped glyphs appear mirror-imaged to a viewer
+  // outside the body. Detect the handedness at the face and pre-mirror the
+  // drawing (and negate the rotation sense) so text always reads correctly
+  // from OUTSIDE.
+  drawing = placeEmbossDrawing(drawing, face, meta);
+
+  // 6-7. Wrap onto the face and extrude.
+  const solid = extrudeEmbossDrawing(drawing, face, meta, r, diagnostics);
+  if (solid === undefined) {
+    return { ok: false, diagnostics };
+  }
+
+  // 8. History-aware boolean against the parent body.
+  const toolBackend = new OcctBackend(solid);
+  const fuse = meta.depth.evaluated > 0;
+
+  const boolResult = runEmbossBoolean(parent, toolBackend, fuse, r, diagnostics);
+  if (boolResult === undefined) {
+    return { ok: false, diagnostics };
+  }
+
+  // Wrap the result TopoDS_Shape into a replicad Shape3D + OcctBackend.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const wrappedResult = (replicad as any).cast(boolResult.shape) as replicad.Shape3D;
+  const resultIntermediate = new OcctBackend(wrappedResult);
+  if (embossEmptyResultGuard(resultIntermediate, r, diagnostics)) {
+    return { ok: false, diagnostics };
+  }
+
+  // No-op guard: a boolean that leaves the volume unchanged means the glyph
+  // tool never touched the body (e.g. an engrave descending into a void, or
+  // a glyph anchored off the solid). Silently returning the unchanged parent
+  // is the worst failure mode for an agent caller — fail loudly instead.
+  if (embossNoopGuard(parent, resultIntermediate, fuse, r, diagnostics)) {
+    return { ok: false, diagnostics };
+  }
+
+  return { ok: true, backend: finishEmbossResult(parent, resultIntermediate, boolResult, face, fuse, r, wrappedResult) };
+}
+
+/** Stamp capture-time diagnostics stashed on `metadata.diagnostics` with the
+ *  owning feature id; true when any of them is an error. */
+function stampStashedDiagnostics(r: FeatureRecord, diagnostics: CompilerDiagnostic[]): boolean {
   const stashed = (r.metadata as { diagnostics?: CompilerDiagnostic[] } | undefined)?.diagnostics;
   if (stashed && stashed.length > 0) {
     // Stamp the owning feature id: capture-time validation runs before the
@@ -66,10 +134,17 @@ export async function lowerEmbossText(
     diagnostics.push(...stashed.map(d => (d.featureId === undefined ? { ...d, featureId: r.id } : d)));
     // If any are errors, refuse to lower (validation was authoritative).
     if (stashed.some((d) => d.severity === 'error')) {
-      return { ok: false, diagnostics };
+      return true;
     }
   }
+  return false;
+}
 
+/** Validate metadata, pushing the invalid-args error; undefined when invalid. */
+function validateEmbossTextMetadata(
+  r: FeatureRecord,
+  diagnostics: CompilerDiagnostic[],
+): EmbossTextMetadata | undefined {
   if (!isEmbossTextMetadata(r.metadata)) {
     diagnostics.push({
       target: 'export-occt',
@@ -79,19 +154,33 @@ export async function lowerEmbossText(
       message: `embossText record '${r.id}' is missing valid metadata.`,
       hint: 'Build the record via Shape.embossText({...}) so the validators run.',
     });
-    return { ok: false, diagnostics };
+    return undefined;
   }
-  const meta: EmbossTextMetadata = r.metadata;
+  return r.metadata;
+}
 
-  // 1. Resolve target face on the parent.
+/** Resolve the target face, pushing the pick error; undefined when missing. */
+function resolveEmbossFace(
+  r: FeatureRecord,
+  parent: OcctBackend,
+  records: readonly FeatureRecord[] | undefined,
+  diagnostics: CompilerDiagnostic[],
+): Face | undefined {
   const faceResult = pickFace(r, parent, records);
   if ('error' in faceResult) {
     diagnostics.push(faceResult.error);
-    return { ok: false, diagnostics };
+    return undefined;
   }
-  const face = faceResult;
+  return faceResult;
+}
 
-  // 2-4. Build the glyph drawing.
+/** Load the font and build the glyph drawing; undefined when drawText failed. */
+async function buildEmbossDrawing(
+  meta: EmbossTextMetadata,
+  r: FeatureRecord,
+  scriptDir: string | undefined,
+  diagnostics: CompilerDiagnostic[],
+): Promise<replicad.Drawing | undefined> {
   let drawing: replicad.Drawing;
   try {
     const { fontFamily } = await loadFontViaHost(meta.fontFamily, scriptDir);
@@ -109,17 +198,13 @@ export async function lowerEmbossText(
       message: `embossText drawText failed: ${msg}`,
       hint: 'replicad.drawText raised — check the font family is registered and the size is positive.',
     });
-    return { ok: false, diagnostics };
+    return undefined;
   }
+  return drawing;
+}
 
-  // 4-pre. Handedness correction (#392). `sketchOnFace` maps the drawing
-  // through the surface parameterisation S(u, v) verbatim. When the face's
-  // (∂S/∂u × ∂S/∂v) frame is LEFT-handed relative to the oriented outward
-  // normal (e.g. the top face of an OCCT box — while a cylinder end-cap is
-  // right-handed), the mapped glyphs appear mirror-imaged to a viewer
-  // outside the body. Detect the handedness at the face and pre-mirror the
-  // drawing (and negate the rotation sense) so text always reads correctly
-  // from OUTSIDE.
+/** Mirror/align/rotate the drawing and place its anchor in the face UV frame. */
+function placeEmbossDrawing(drawing: replicad.Drawing, face: Face, meta: EmbossTextMetadata): replicad.Drawing {
   const leftHanded = faceUvIsLeftHanded(face);
   if (leftHanded) {
     drawing = drawing.mirror([0, 1], [0, 0], 'plane'); // x → -x about the origin
@@ -161,7 +246,17 @@ export async function lowerEmbossText(
     drawing = drawing.translate(dxU, dxV);
   }
 
-  // 6-7. Wrap onto the face and extrude.
+  return drawing;
+}
+
+/** Sketch the drawing onto the face and extrude it; undefined on failure. */
+function extrudeEmbossDrawing(
+  drawing: replicad.Drawing,
+  face: Face,
+  meta: EmbossTextMetadata,
+  r: FeatureRecord,
+  diagnostics: CompilerDiagnostic[],
+): replicad.Shape3D | undefined {
   let solid: replicad.Shape3D;
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -196,21 +291,27 @@ export async function lowerEmbossText(
         ? HINT_TEMPLATES['feature.emboss-text.face-too-small'].template
         : 'OCCT could not wrap the glyphs onto the face — verify the face is planar (for scaleMode=original) and the depth is positive.',
     });
-    return { ok: false, diagnostics };
+    return undefined;
   }
+  return solid;
+}
 
-  // 8. History-aware boolean against the parent body.
-  //
-  // We use `fuseWithHistory` / `cutWithHistory` (instead of the plain
-  // `parent.union/.subtract`) so the BRepAlgoAPI_* builder's Modified /
-  // Generated / IsDeleted callbacks can be read before the builder is
-  // destroyed. The merged HistoryMap is then stamped with `labelName`
-  // entries for the newly-created glyph faces so downstream chained
-  // features (.fillet/.chamfer/.shell, further embossText calls) can
-  // target them by label (e.g. `face: 'embossed-text'`).
-  const toolBackend = new OcctBackend(solid);
-  const fuse = meta.depth.evaluated > 0;
-
+/** History-aware boolean against the parent body; undefined on failure.
+ *
+ *  We use `fuseWithHistory` / `cutWithHistory` (instead of the plain
+ *  `parent.union/.subtract`) so the BRepAlgoAPI_* builder's Modified /
+ *  Generated / IsDeleted callbacks can be read before the builder is
+ *  destroyed. The merged HistoryMap is then stamped with `labelName`
+ *  entries for the newly-created glyph faces so downstream chained
+ *  features (.fillet/.chamfer/.shell, further embossText calls) can
+ *  target them by label (e.g. `face: 'embossed-text'`). */
+function runEmbossBoolean(
+  parent: OcctBackend,
+  toolBackend: OcctBackend,
+  fuse: boolean,
+  r: FeatureRecord,
+  diagnostics: CompilerDiagnostic[],
+): ReturnType<typeof fuseWithHistory> | undefined {
   let boolResult;
   try {
     boolResult = fuse ? fuseWithHistory(parent, toolBackend) : cutWithHistory(parent, toolBackend);
@@ -224,13 +325,17 @@ export async function lowerEmbossText(
       message: `embossText boolean ${fuse ? 'fuse' : 'cut'} failed: ${msg}`,
       hint: 'OCCT boolean failed — check the parent body is valid and the glyph block does not exceed the face.',
     });
-    return { ok: false, diagnostics };
+    return undefined;
   }
+  return boolResult;
+}
 
-  // Wrap the result TopoDS_Shape into a replicad Shape3D + OcctBackend.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const wrappedResult = (replicad as any).cast(boolResult.shape) as replicad.Shape3D;
-  const resultIntermediate = new OcctBackend(wrappedResult);
+/** True (and pushes the error) when the boolean produced an empty result. */
+function embossEmptyResultGuard(
+  resultIntermediate: OcctBackend,
+  r: FeatureRecord,
+  diagnostics: CompilerDiagnostic[],
+): boolean {
   if (resultIntermediate.isEmpty()) {
     diagnostics.push({
       target: 'export-occt',
@@ -240,13 +345,19 @@ export async function lowerEmbossText(
       message: 'embossText boolean produced an empty result.',
       hint: 'OCCT produced an empty solid; the glyph tool likely missed the parent body. Verify the face fits the requested text size.',
     });
-    return { ok: false, diagnostics };
+    return true;
   }
+  return false;
+}
 
-  // No-op guard: a boolean that leaves the volume unchanged means the glyph
-  // tool never touched the body (e.g. an engrave descending into a void, or
-  // a glyph anchored off the solid). Silently returning the unchanged parent
-  // is the worst failure mode for an agent caller — fail loudly instead.
+/** True (and pushes the error) when the boolean left the volume unchanged. */
+function embossNoopGuard(
+  parent: OcctBackend,
+  resultIntermediate: OcctBackend,
+  fuse: boolean,
+  r: FeatureRecord,
+  diagnostics: CompilerDiagnostic[],
+): boolean {
   const volBefore = parent.volume();
   const volAfter = resultIntermediate.volume();
   if (Math.abs(volAfter - volBefore) < Math.max(1e-6, volBefore * 1e-9)) {
@@ -258,9 +369,21 @@ export async function lowerEmbossText(
       message: `embossText ${fuse ? 'emboss' : 'engrave'} changed nothing: result volume equals the parent volume (${volBefore.toFixed(3)} mm³). The glyph tool did not intersect the body.`,
       hint: HINT_TEMPLATES['feature.emboss-text.boolean-noop'].template,
     });
-    return { ok: false, diagnostics };
+    return true;
   }
+  return false;
+}
 
+/** Merge histories, label the boolean's new faces, and wrap the result. */
+function finishEmbossResult(
+  parent: OcctBackend,
+  resultIntermediate: OcctBackend,
+  boolResult: ReturnType<typeof fuseWithHistory>,
+  face: Face,
+  fuse: boolean,
+  r: FeatureRecord,
+  wrappedResult: replicad.Shape3D,
+): OcctBackend {
   // Merge parent + tool histories with the boolean's evolution callbacks.
   // The parent's `historyMap` is undefined for primitives constructed via
   // `OcctBackend.box(...)` directly (e.g. in tests). The lowerer pipeline
@@ -296,7 +419,7 @@ export async function lowerEmbossText(
   // boolean).
   refreshSnapshots(merged, resultIntermediate.getReplicadShape().faces);
 
-  return { ok: true, backend: new OcctBackend(wrappedResult, undefined, merged) };
+  return new OcctBackend(wrappedResult, undefined, merged);
 }
 
 // ---------------------------------------------------------------------------

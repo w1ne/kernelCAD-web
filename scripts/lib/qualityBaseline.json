@@ -397,12 +397,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/backends/occt/embossTextLowerer.ts",
-    "symbol": "Async function 'lowerEmbossText'",
-    "value": 31
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/backends/occt/sheetMetalLowerer.ts",
     "symbol": "Function 'resolveBendAxis'",
     "value": 21
@@ -694,12 +688,6 @@
     "file": "src/modeling/api.ts",
     "symbol": "Function 'createApi'",
     "value": 654
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/backends/occt/embossTextLowerer.ts",
-    "symbol": "Async function 'lowerEmbossText'",
-    "value": 168
   },
   {
     "rule": "max-lines-per-function",
