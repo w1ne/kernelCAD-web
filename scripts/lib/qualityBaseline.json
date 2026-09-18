@@ -211,12 +211,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/planPhases.ts",
-    "symbol": "Function 'decomposeRun'",
-    "value": 35
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/profileFit.ts",
     "symbol": "Function 'fitLoop'",
     "value": 28
@@ -837,7 +831,7 @@
     "rule": "max-lines",
     "file": "src/agent/reconstruct/planPhases.ts",
     "symbol": "(file)",
-    "value": 1002
+    "value": 942
   },
   {
     "rule": "max-lines",
