@@ -607,12 +607,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/mechanicalPlausibility.ts",
-    "symbol": "Async function 'reviewMechanicalPlausibility'",
-    "value": 48
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCase.ts",
     "symbol": "Async function 'reviewPhysicalUseCasesWithReachability'",
     "value": 25
@@ -1012,12 +1006,6 @@
     "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
     "symbol": "Async function 'usdIsaacSerialize'",
     "value": 241
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/mates/mechanicalPlausibility.ts",
-    "symbol": "Async function 'reviewMechanicalPlausibility'",
-    "value": 211
   },
   {
     "rule": "max-lines-per-function",

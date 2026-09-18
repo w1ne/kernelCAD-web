@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import type { Assembly } from '../capture/assembly';
+import type { Assembly, AssemblyPartStored } from '../capture/assembly';
 import type { ShapeBackend } from '../../kernel/backends/backend';
-import type { Vec3 } from '../../shared/intent/types';
+import type { FeatureId, Vec3 } from '../../shared/intent/types';
 import type { DiagnosticCode } from '../../shared/diagnostics/registry';
 import { Transform } from '../../shared/runtime/se3';
 import { parseConnectorRef } from './mate';
@@ -142,8 +142,6 @@ export async function reviewMechanicalPlausibility(
   const backendByPartName = new Map<string, ShapeBackend>();
   const solved = await solveMates(arm);
   const worldBoundsByPartName = new Map<string, Bbox>();
-  let checkedMateConnectorCount = 0;
-  let checkedFastenedMateContactCount = 0;
 
   const localBoundsFor = async (partName: string): Promise<Bbox | undefined> => {
     const part = partsByName.get(partName);
@@ -178,12 +176,51 @@ export async function reviewMechanicalPlausibility(
     return bbox;
   };
 
-  for (const part of arm.__parts()) {
-    const backend = await backendFor(part.name);
+  const context: PlausibilityContext = {
+    arm,
+    partsByName,
+    partNameById,
+    solved,
+    localBoundsFor,
+    backendFor,
+    worldBoundsFor,
+  };
+
+  await collectDisconnectedPartDiagnostics(context, diagnostics);
+  await collectFixedJointDiagnostics(context, diagnostics);
+  const { checkedMateConnectorCount, checkedFastenedMateContactCount } =
+    await collectMateDiagnostics(context, diagnostics);
+
+  return { diagnostics, checkedMateConnectorCount, checkedFastenedMateContactCount };
+}
+
+interface PlausibilityContext {
+  readonly arm: Assembly;
+  readonly partsByName: ReadonlyMap<string, AssemblyPartStored>;
+  readonly partNameById: ReadonlyMap<FeatureId, string>;
+  readonly solved: Awaited<ReturnType<typeof solveMates>>;
+  readonly localBoundsFor: (partName: string) => Promise<Bbox | undefined>;
+  readonly backendFor: (partName: string) => Promise<ShapeBackend | undefined>;
+  readonly worldBoundsFor: (partName: string) => Promise<Bbox | undefined>;
+}
+
+type Mate = ReturnType<Assembly['__mates']>[number];
+
+interface MateCheckCounts {
+  readonly checkedMateConnectorCount: number;
+  readonly checkedFastenedMateContactCount: number;
+}
+
+async function collectDisconnectedPartDiagnostics(
+  context: PlausibilityContext,
+  diagnostics: MechanicalPlausibilityDiagnostic[],
+): Promise<void> {
+  for (const part of context.arm.__parts()) {
+    const backend = await context.backendFor(part.name);
     if (backend === undefined) continue;
     const disconnected = analyzeDisconnectedMesh(backend.getMesh());
     if (disconnected === undefined) continue;
-    const bbox = await localBoundsFor(part.name);
+    const bbox = await context.localBoundsFor(part.name);
     if (bbox === undefined) continue;
     diagnostics.push({
       code: 'assembly.mechanical.part-disconnected',
@@ -197,14 +234,19 @@ export async function reviewMechanicalPlausibility(
       hint: `mechanical-plausibility.part-disconnected — remove decorative/floating solids from '${part.name}', or add real bridge/bracket geometry so every solid in the part shares a physical load path.`,
     });
   }
+}
 
-  for (const joint of arm.__joints()) {
+async function collectFixedJointDiagnostics(
+  context: PlausibilityContext,
+  diagnostics: MechanicalPlausibilityDiagnostic[],
+): Promise<void> {
+  for (const joint of context.arm.__joints()) {
     if (joint.kind !== 'fixed') continue;
-    const partAName = partNameById.get(joint.parentPartId);
-    const partBName = partNameById.get(joint.childPartId);
+    const partAName = context.partNameById.get(joint.parentPartId);
+    const partBName = context.partNameById.get(joint.childPartId);
     if (partAName === undefined || partBName === undefined) continue;
-    const worldBboxA = await worldBoundsFor(partAName);
-    const worldBboxB = await worldBoundsFor(partBName);
+    const worldBboxA = await context.worldBoundsFor(partAName);
+    const worldBboxB = await context.worldBoundsFor(partBName);
     if (worldBboxA === undefined || worldBboxB === undefined) continue;
 
     const contact = analyzeFastenedContact(worldBboxA, worldBboxB);
@@ -224,145 +266,194 @@ export async function reviewMechanicalPlausibility(
       hint: `mechanical-plausibility.fixed-contact-missing — move '${partBName}' into contact with '${partAName}', or add a bracket, flange, stem, bridge, or mounting face so fixed joint '${joint.name}' has a real load path instead of an air gap.`,
     });
   }
+}
 
-  for (const mate of arm.__mates()) {
-    for (const connectorRef of [mate.a, mate.b]) {
-      const parsed = parseConnectorRef(connectorRef);
-      const part = partsByName.get(parsed.partName);
-      const connector = part?.mateConnectors.find((c) => c.name === parsed.connectorName);
-      if (part === undefined || connector === undefined || connector.origin.kind !== 'vec3') continue;
+async function collectMateDiagnostics(
+  context: PlausibilityContext,
+  diagnostics: MechanicalPlausibilityDiagnostic[],
+): Promise<MateCheckCounts> {
+  let checkedMateConnectorCount = 0;
+  let checkedFastenedMateContactCount = 0;
 
-      checkedMateConnectorCount += 1;
-      const bbox = await localBoundsFor(part.name);
-      if (bbox === undefined) continue;
-
-      const distanceMm = distanceOutsideExpandedBbox(connector.origin.value, bbox, CONNECTOR_SOLID_TOL_MM);
-      if (distanceMm === 0) continue;
-
-      diagnostics.push({
-        code: 'assembly.mechanical.connector-not-in-solid',
-        severity: 'error',
-        mateName: mate.name,
-        partName: part.name,
-        connectorName: parsed.connectorName,
-        connectorRef,
-        distanceMm,
-        bbox,
-        message: `Mate '${mate.name}' connector '${connectorRef}' is ${distanceMm.toFixed(1)} mm away from modeled material on part '${part.name}'.`,
-        hint: `mechanical-plausibility.connector-not-in-solid — move '${connectorRef}' onto the part's modeled bearing/bracket/knuckle, or add support geometry around that connector so the mate has a physical load path.`,
-      });
-    }
+  for (const mate of context.arm.__mates()) {
+    checkedMateConnectorCount += await checkMateConnectorsInSolid(context, mate, diagnostics);
 
     if (mate.type === 'revolute') {
-      const a = parseConnectorRef(mate.a);
-      const b = parseConnectorRef(mate.b);
-      const partA = partsByName.get(a.partName);
-      const partB = partsByName.get(b.partName);
-      const connectorA = partA?.mateConnectors.find((c) => c.name === a.connectorName);
-      const connectorB = partB?.mateConnectors.find((c) => c.name === b.connectorName);
-      const hasDeclaredDriveSupport = arm.__mechanicalJointIntents().some((intent) => intent.mate === mate.name) ||
-        arm.__jointSupportIntents().some((intent) => intent.mate === mate.name);
-      if (
-        !hasDeclaredDriveSupport &&
-        partA !== undefined &&
-        partB !== undefined &&
-        connectorA?.origin.kind === 'vec3' &&
-        connectorB?.origin.kind === 'vec3' &&
-        connectorA.axis !== undefined
-      ) {
-        const backendA = await backendFor(partA.name);
-        const backendB = await backendFor(partB.name);
-        if (backendA !== undefined && backendB !== undefined) {
-          const axialGapMm = minBearingAxialGapMm(
-            backendA,
-            connectorA.origin.value,
-            connectorA.axis,
-            backendB,
-            connectorB.origin.value,
-            connectorA.axis,
-          );
-          if (axialGapMm > REVOLUTE_BEARING_AXIAL_GAP_TOL_MM) {
-            diagnostics.push({
-              code: 'assembly.mechanical.revolute-contact-missing',
-              severity: 'error',
-              mateName: mate.name,
-              partAName: partA.name,
-              partBName: partB.name,
-              connectorARef: mate.a,
-              connectorBRef: mate.b,
-              axialGapMm,
-              message: `Revolute mate '${mate.name}' leaves ${axialGapMm.toFixed(1)} mm of air gap between bearing material on '${partA.name}' and '${partB.name}'.`,
-              hint: `mechanical-plausibility.revolute-contact-missing — add interleaved hinge knuckles, a clevis tab, spacer, or bearing shoulder so '${partA.name}' and '${partB.name}' have modeled support faces within ${REVOLUTE_BEARING_AXIAL_GAP_TOL_MM} mm along the hinge axis.`,
-            });
-          }
-        }
-      }
-
-      for (const connectorRef of [mate.a, mate.b]) {
-        const parsed = parseConnectorRef(connectorRef);
-        const part = partsByName.get(parsed.partName);
-        const connector = part?.mateConnectors.find((c) => c.name === parsed.connectorName);
-        if (part === undefined || connector === undefined || connector.origin.kind !== 'vec3') continue;
-        const bbox = await localBoundsFor(part.name);
-        if (bbox === undefined) continue;
-
-        const distanceMm = distanceOutsideExpandedBbox(connector.origin.value, bbox, REVOLUTE_SUPPORT_TOL_MM);
-        if (distanceMm === 0) continue;
-
-        const worldPoint = (solved.poses.get(part.name) ?? Transform.identity()).point(connector.origin.value) as Vec3;
-        const fastenedSupport = await findFastenedSupportForPoint(
-          arm,
-          part.name,
-          worldPoint,
-          worldBoundsFor,
-        );
-        if (fastenedSupport !== undefined) continue;
-
-        diagnostics.push({
-          code: 'assembly.mechanical.revolute-unsupported',
-          severity: 'error',
-          mateName: mate.name,
-          partName: part.name,
-          connectorName: parsed.connectorName,
-          connectorRef,
-          distanceMm,
-          bbox,
-          message: `Revolute mate '${mate.name}' connector '${connectorRef}' is ${distanceMm.toFixed(1)} mm outside modeled support material on part '${part.name}'.`,
-          hint: `mechanical-plausibility.revolute-unsupported — add a hinge knuckle, bearing block, bracket, or shaft support so '${connectorRef}' lies on modeled material, not just near a bounding box.`,
-        });
-      }
+      await checkRevoluteSupport(context, mate, diagnostics);
     }
 
     if (mate.type !== 'fastened') continue;
 
-    const a = parseConnectorRef(mate.a);
-    const b = parseConnectorRef(mate.b);
-    const worldBboxA = await worldBoundsFor(a.partName);
-    const worldBboxB = await worldBoundsFor(b.partName);
-    if (worldBboxA === undefined || worldBboxB === undefined) continue;
-
-    checkedFastenedMateContactCount += 1;
-    const contact = analyzeFastenedContact(worldBboxA, worldBboxB);
-    if (contact.supported) continue;
-
-    diagnostics.push({
-      code: 'assembly.mechanical.mate-contact-missing',
-      severity: 'error',
-      mateName: mate.name,
-      partAName: a.partName,
-      partBName: b.partName,
-      connectorARef: mate.a,
-      connectorBRef: mate.b,
-      contactAreaMm2: contact.maxContactAreaMm2,
-      gapMm: contact.gapMm,
-      worldBboxA,
-      worldBboxB,
-      message: `Fastened mate '${mate.name}' between '${a.partName}' and '${b.partName}' has only ${contact.maxContactAreaMm2.toFixed(1)} mm^2 of support contact.`,
-      hint: `mechanical-plausibility.mate-contact-missing — add a bracket, flange, horn, or mounting face so '${a.partName}' and '${b.partName}' share a real contact patch near mate '${mate.name}', not just a connector point.`,
-    });
+    checkedFastenedMateContactCount += await checkFastenedMateContact(context, mate, diagnostics);
   }
 
-  return { diagnostics, checkedMateConnectorCount, checkedFastenedMateContactCount };
+  return { checkedMateConnectorCount, checkedFastenedMateContactCount };
+}
+
+async function checkMateConnectorsInSolid(
+  context: PlausibilityContext,
+  mate: Mate,
+  diagnostics: MechanicalPlausibilityDiagnostic[],
+): Promise<number> {
+  let checked = 0;
+  for (const connectorRef of [mate.a, mate.b]) {
+    const parsed = parseConnectorRef(connectorRef);
+    const part = context.partsByName.get(parsed.partName);
+    const connector = part?.mateConnectors.find((c) => c.name === parsed.connectorName);
+    if (part === undefined || connector === undefined || connector.origin.kind !== 'vec3') continue;
+
+    checked += 1;
+    const bbox = await context.localBoundsFor(part.name);
+    if (bbox === undefined) continue;
+
+    const distanceMm = distanceOutsideExpandedBbox(connector.origin.value, bbox, CONNECTOR_SOLID_TOL_MM);
+    if (distanceMm === 0) continue;
+
+    diagnostics.push({
+      code: 'assembly.mechanical.connector-not-in-solid',
+      severity: 'error',
+      mateName: mate.name,
+      partName: part.name,
+      connectorName: parsed.connectorName,
+      connectorRef,
+      distanceMm,
+      bbox,
+      message: `Mate '${mate.name}' connector '${connectorRef}' is ${distanceMm.toFixed(1)} mm away from modeled material on part '${part.name}'.`,
+      hint: `mechanical-plausibility.connector-not-in-solid — move '${connectorRef}' onto the part's modeled bearing/bracket/knuckle, or add support geometry around that connector so the mate has a physical load path.`,
+    });
+  }
+  return checked;
+}
+
+async function checkRevoluteSupport(
+  context: PlausibilityContext,
+  mate: Mate,
+  diagnostics: MechanicalPlausibilityDiagnostic[],
+): Promise<void> {
+  await checkRevoluteBearingGap(context, mate, diagnostics);
+  await checkRevoluteConnectorSupport(context, mate, diagnostics);
+}
+
+async function checkRevoluteBearingGap(
+  context: PlausibilityContext,
+  mate: Mate,
+  diagnostics: MechanicalPlausibilityDiagnostic[],
+): Promise<void> {
+  const a = parseConnectorRef(mate.a);
+  const b = parseConnectorRef(mate.b);
+  const partA = context.partsByName.get(a.partName);
+  const partB = context.partsByName.get(b.partName);
+  const connectorA = partA?.mateConnectors.find((c) => c.name === a.connectorName);
+  const connectorB = partB?.mateConnectors.find((c) => c.name === b.connectorName);
+  const hasDeclaredDriveSupport = context.arm.__mechanicalJointIntents().some((intent) => intent.mate === mate.name) ||
+    context.arm.__jointSupportIntents().some((intent) => intent.mate === mate.name);
+  if (
+    !hasDeclaredDriveSupport &&
+    partA !== undefined &&
+    partB !== undefined &&
+    connectorA?.origin.kind === 'vec3' &&
+    connectorB?.origin.kind === 'vec3' &&
+    connectorA.axis !== undefined
+  ) {
+    const backendA = await context.backendFor(partA.name);
+    const backendB = await context.backendFor(partB.name);
+    if (backendA !== undefined && backendB !== undefined) {
+      const axialGapMm = minBearingAxialGapMm(
+        backendA,
+        connectorA.origin.value,
+        connectorA.axis,
+        backendB,
+        connectorB.origin.value,
+        connectorA.axis,
+      );
+      if (axialGapMm > REVOLUTE_BEARING_AXIAL_GAP_TOL_MM) {
+        diagnostics.push({
+          code: 'assembly.mechanical.revolute-contact-missing',
+          severity: 'error',
+          mateName: mate.name,
+          partAName: partA.name,
+          partBName: partB.name,
+          connectorARef: mate.a,
+          connectorBRef: mate.b,
+          axialGapMm,
+          message: `Revolute mate '${mate.name}' leaves ${axialGapMm.toFixed(1)} mm of air gap between bearing material on '${partA.name}' and '${partB.name}'.`,
+          hint: `mechanical-plausibility.revolute-contact-missing — add interleaved hinge knuckles, a clevis tab, spacer, or bearing shoulder so '${partA.name}' and '${partB.name}' have modeled support faces within ${REVOLUTE_BEARING_AXIAL_GAP_TOL_MM} mm along the hinge axis.`,
+        });
+      }
+    }
+  }
+}
+
+async function checkRevoluteConnectorSupport(
+  context: PlausibilityContext,
+  mate: Mate,
+  diagnostics: MechanicalPlausibilityDiagnostic[],
+): Promise<void> {
+  for (const connectorRef of [mate.a, mate.b]) {
+    const parsed = parseConnectorRef(connectorRef);
+    const part = context.partsByName.get(parsed.partName);
+    const connector = part?.mateConnectors.find((c) => c.name === parsed.connectorName);
+    if (part === undefined || connector === undefined || connector.origin.kind !== 'vec3') continue;
+    const bbox = await context.localBoundsFor(part.name);
+    if (bbox === undefined) continue;
+
+    const distanceMm = distanceOutsideExpandedBbox(connector.origin.value, bbox, REVOLUTE_SUPPORT_TOL_MM);
+    if (distanceMm === 0) continue;
+
+    const worldPoint = (context.solved.poses.get(part.name) ?? Transform.identity()).point(connector.origin.value) as Vec3;
+    const fastenedSupport = await findFastenedSupportForPoint(
+      context.arm,
+      part.name,
+      worldPoint,
+      context.worldBoundsFor,
+    );
+    if (fastenedSupport !== undefined) continue;
+
+    diagnostics.push({
+      code: 'assembly.mechanical.revolute-unsupported',
+      severity: 'error',
+      mateName: mate.name,
+      partName: part.name,
+      connectorName: parsed.connectorName,
+      connectorRef,
+      distanceMm,
+      bbox,
+      message: `Revolute mate '${mate.name}' connector '${connectorRef}' is ${distanceMm.toFixed(1)} mm outside modeled support material on part '${part.name}'.`,
+      hint: `mechanical-plausibility.revolute-unsupported — add a hinge knuckle, bearing block, bracket, or shaft support so '${connectorRef}' lies on modeled material, not just near a bounding box.`,
+    });
+  }
+}
+
+async function checkFastenedMateContact(
+  context: PlausibilityContext,
+  mate: Mate,
+  diagnostics: MechanicalPlausibilityDiagnostic[],
+): Promise<number> {
+  const a = parseConnectorRef(mate.a);
+  const b = parseConnectorRef(mate.b);
+  const worldBboxA = await context.worldBoundsFor(a.partName);
+  const worldBboxB = await context.worldBoundsFor(b.partName);
+  if (worldBboxA === undefined || worldBboxB === undefined) return 0;
+
+  const contact = analyzeFastenedContact(worldBboxA, worldBboxB);
+  if (contact.supported) return 1;
+
+  diagnostics.push({
+    code: 'assembly.mechanical.mate-contact-missing',
+    severity: 'error',
+    mateName: mate.name,
+    partAName: a.partName,
+    partBName: b.partName,
+    connectorARef: mate.a,
+    connectorBRef: mate.b,
+    contactAreaMm2: contact.maxContactAreaMm2,
+    gapMm: contact.gapMm,
+    worldBboxA,
+    worldBboxB,
+    message: `Fastened mate '${mate.name}' between '${a.partName}' and '${b.partName}' has only ${contact.maxContactAreaMm2.toFixed(1)} mm^2 of support contact.`,
+    hint: `mechanical-plausibility.mate-contact-missing — add a bracket, flange, horn, or mounting face so '${a.partName}' and '${b.partName}' share a real contact patch near mate '${mate.name}', not just a connector point.`,
+  });
+  return 1;
 }
 
 function analyzeDisconnectedMesh(mesh: ReturnType<ShapeBackend['getMesh']>): {
