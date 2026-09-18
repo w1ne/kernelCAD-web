@@ -9,6 +9,7 @@ import type { Vec3 } from '../../shared/intent/types';
 import type { PoseEnvelopeReviewResult, TrackedConnectorPose } from './poseEnvelope';
 import { parseConnectorRef } from './mate';
 import type {
+  PhysicalUseCaseContact,
   PhysicalUseCaseDiagnostic,
   PhysicalUseCaseRecord,
 } from './physicalUseCase';
@@ -146,29 +147,37 @@ export function reviewUseCaseContacts(
       continue;
     }
 
-    if (poseEnvelope !== undefined) {
-      const toleranceMm = useCase.criteria?.maxSlipMm ?? 0;
-      const minDistanceMm = minContactDistanceMm(poseEnvelope.connectorPoses, contact.a, contact.b);
-      if (minDistanceMm === undefined || minDistanceMm > toleranceMm) {
-        diagnostics.push({
-          code: 'assembly.physical-use-case.contact-unreachable',
-          severity: 'error',
-          useCaseName: useCase.name,
-          contactA: contact.a,
-          contactB: contact.b,
-          ...(minDistanceMm === undefined ? {} : { minDistanceMm }),
-          toleranceMm,
-          message: minDistanceMm === undefined
-            ? `Physical use case '${useCase.name}' contact '${contact.a}' to '${contact.b}' could not be checked in the sampled pose envelope.`
-            : `Physical use case '${useCase.name}' contact '${contact.a}' to '${contact.b}' never gets within ${toleranceMm.toFixed(2)} mm; closest sampled distance is ${minDistanceMm.toFixed(2)} mm.`,
-          hint: minDistanceMm === undefined
-            ? `physical-use-case.contact-unreachable — ensure '${contact.a}' and '${contact.b}' use numeric vec3 connector origins and are included in pose-envelope tracking.`
-            : `physical-use-case.contact-unreachable — move the contact connectors, widen mate travel, or revise the use case so '${contact.a}' can reach '${contact.b}' within maxSlipMm ${toleranceMm.toFixed(2)}.`,
-        });
-      }
-    }
+    reviewContactReachability(useCase, contact, poseEnvelope, diagnostics);
   }
   return diagnostics;
+}
+
+function reviewContactReachability(
+  useCase: PhysicalUseCaseRecord,
+  contact: PhysicalUseCaseContact,
+  poseEnvelope: PoseEnvelopeReviewResult | undefined,
+  diagnostics: PhysicalUseCaseDiagnostic[],
+): void {
+  if (poseEnvelope === undefined) return;
+  const toleranceMm = useCase.criteria?.maxSlipMm ?? 0;
+  const minDistanceMm = minContactDistanceMm(poseEnvelope.connectorPoses, contact.a, contact.b);
+  if (minDistanceMm === undefined || minDistanceMm > toleranceMm) {
+    diagnostics.push({
+      code: 'assembly.physical-use-case.contact-unreachable',
+      severity: 'error',
+      useCaseName: useCase.name,
+      contactA: contact.a,
+      contactB: contact.b,
+      ...(minDistanceMm === undefined ? {} : { minDistanceMm }),
+      toleranceMm,
+      message: minDistanceMm === undefined
+        ? `Physical use case '${useCase.name}' contact '${contact.a}' to '${contact.b}' could not be checked in the sampled pose envelope.`
+        : `Physical use case '${useCase.name}' contact '${contact.a}' to '${contact.b}' never gets within ${toleranceMm.toFixed(2)} mm; closest sampled distance is ${minDistanceMm.toFixed(2)} mm.`,
+      hint: minDistanceMm === undefined
+        ? `physical-use-case.contact-unreachable — ensure '${contact.a}' and '${contact.b}' use numeric vec3 connector origins and are included in pose-envelope tracking.`
+        : `physical-use-case.contact-unreachable — move the contact connectors, widen mate travel, or revise the use case so '${contact.a}' can reach '${contact.b}' within maxSlipMm ${toleranceMm.toFixed(2)}.`,
+    });
+  }
 }
 
 export function reviewUseCaseActuatorLimits(
