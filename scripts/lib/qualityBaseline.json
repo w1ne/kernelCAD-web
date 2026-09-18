@@ -475,12 +475,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kinematic/checkStaticHold.ts",
-    "symbol": "Async function 'checkStaticHold'",
-    "value": 51
-  },
-  {
-    "rule": "complexity",
     "file": "src/kinematic/inverseKinematicsAnalytical.ts",
     "symbol": "Function 'solveAnalytical'",
     "value": 24
@@ -994,12 +988,6 @@
     "file": "src/kinematic/checkLoadCapacity.ts",
     "symbol": "Function 'runBeamMode'",
     "value": 161
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kinematic/checkStaticHold.ts",
-    "symbol": "Async function 'checkStaticHold'",
-    "value": 153
   },
   {
     "rule": "max-lines-per-function",
