@@ -530,12 +530,6 @@
   {
     "rule": "complexity",
     "file": "src/modeling/capture/authoringFeatureRecords.ts",
-    "symbol": "Function 'buildDfmSpecFeatureSpec'",
-    "value": 59
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/authoringFeatureRecords.ts",
     "symbol": "Function 'buildDrawingToleranceFeatureSpec'",
     "value": 24
   },
