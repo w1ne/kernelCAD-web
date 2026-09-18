@@ -715,12 +715,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/studio/StudioGenerate.tsx",
-    "symbol": "Arrow function",
-    "value": 48
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/StudioShell.tsx",
     "symbol": "Function 'StudioShell'",
     "value": 21
@@ -766,12 +760,6 @@
     "file": "src/studio/components/viewer/directEditTarget.ts",
     "symbol": "Function 'isMatedAnchor'",
     "value": 36
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/components/viewer/overlays/MarkingOverlay.tsx",
-    "symbol": "Function 'struckPartsFromMask'",
-    "value": 35
   },
   {
     "rule": "complexity",
@@ -949,12 +937,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/StudioGenerate.tsx",
-    "symbol": "Arrow function",
-    "value": 374
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/StudioShell.tsx",
     "symbol": "Function 'StudioShell'",
     "value": 187
@@ -985,12 +967,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/animation/useAnimationPlayback.ts",
-    "symbol": "Function 'useAnimationPlayback'",
-    "value": 297
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/inputs/NumericScrubInput.tsx",
     "symbol": "Function 'NumericScrubInput'",
     "value": 195
@@ -1000,12 +976,6 @@
     "file": "src/studio/components/viewer/DirectEditGizmo.tsx",
     "symbol": "Function 'DirectEditGizmo'",
     "value": 218
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/components/viewer/overlays/MarkingOverlay.tsx",
-    "symbol": "Function 'MarkingOverlay'",
-    "value": 416
   },
   {
     "rule": "max-lines-per-function",
