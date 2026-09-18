@@ -476,12 +476,6 @@
   {
     "rule": "complexity",
     "file": "src/modeling/capture/featureMeshing.ts",
-    "symbol": "Async function 'meshFeaturesPerFeature'",
-    "value": 42
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/featureMeshing.ts",
     "symbol": "Function 'collectTendonMeshes'",
     "value": 29
   },
@@ -862,12 +856,6 @@
     "file": "src/modeling/backends/occt/sheetMetalLowerer.ts",
     "symbol": "Function 'lowerSheetMetalBend'",
     "value": 161
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/capture/featureMeshing.ts",
-    "symbol": "Async function 'meshFeaturesPerFeature'",
-    "value": 227
   },
   {
     "rule": "max-lines-per-function",
