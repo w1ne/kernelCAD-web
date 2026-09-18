@@ -739,12 +739,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/shared/codeGeneration/stripTypeScript.ts",
-    "symbol": "Arrow function",
-    "value": 49
-  },
-  {
-    "rule": "complexity",
     "file": "src/shared/intent/curve3dRecord.ts",
     "symbol": "Function 'isCurve3DMetadata'",
     "value": 22

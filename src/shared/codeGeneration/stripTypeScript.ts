@@ -142,18 +142,99 @@ const skipNumber = (st: StripState): void => {
     while (st.i < st.n && /[0-9a-fA-Fn._]/.test(st.source[st.i]!)) st.i++;
 };
 
+interface TypeCounters { angle: number; paren: number; bracket: number; brace: number }
+
+interface TypeScan { seenTerm: boolean; progressed: boolean }
+
+const TYPE_PUNCT = new Set(['.', '|', '&', ':', '?', '!', '*', '-', '+']);
+const TYPE_PUNCT_RESETS_TERM = new Set(['|', '&', ':', '.']);
+
+/** Depth-0 characters that end a type span. */
+const atTypeBoundary = (st: StripState, c: string, d: number, seenTerm: boolean): boolean => {
+    if (d !== 0) return false;
+    if (c === '=' && peek(st, 1) !== '>' && peek(st, 1) !== '=') return true;
+    if (c === ',' || c === ';' || c === ')') return true;
+    if (c === '}') return true;
+    if (c === '{' && seenTerm) return true;
+    return false;
+};
+
+/** Consume one structural character of a type span; `'break'` ends the span. */
+const consumeTypeGrouping = (st: StripState, c: string, counters: TypeCounters): 'skip' | 'seen' | 'unseen' | 'break' => {
+    if (c === '<') {
+        counters.angle++;
+        st.i++;
+        return 'unseen';
+    }
+    if (c === '>') {
+        if (counters.angle > 0) counters.angle--;
+        st.i++;
+        return 'seen';
+    }
+    if (c === '(') {
+        counters.paren++;
+        st.i++;
+        return 'unseen';
+    }
+    if (c === ')') {
+        if (counters.paren > 0) {
+            counters.paren--;
+            st.i++;
+            return 'seen';
+        }
+        return 'break';
+    }
+    if (c === '[') {
+        counters.bracket++;
+        st.i++;
+        return 'unseen';
+    }
+    if (c === ']') {
+        if (counters.bracket > 0) counters.bracket--;
+        st.i++;
+        return 'seen';
+    }
+    if (c === '{') {
+        counters.brace++;
+        st.i++;
+        return 'unseen';
+    }
+    if (c === '}') {
+        if (counters.brace > 0) counters.brace--;
+        st.i++;
+        return 'seen';
+    }
+    if (c === '=' && peek(st, 1) === '>') {
+        st.i += 2;
+        return 'unseen';
+    }
+    return 'skip';
+};
+
+/** Consume one identifier / punctuation / number character of a type span. */
+const consumeTypeAtom = (st: StripState, c: string): 'skip' | 'seen' | 'unseen' | 'unchanged' => {
+    if (IDENT_START.test(c)) {
+        readIdent(st);
+        return 'seen';
+    }
+    if (TYPE_PUNCT.has(c)) {
+        st.i++;
+        return TYPE_PUNCT_RESETS_TERM.has(c) ? 'unseen' : 'unchanged';
+    }
+    if (c >= '0' && c <= '9') {
+        skipNumber(st);
+        return 'seen';
+    }
+    return 'skip';
+};
+
 const skipType = (st: StripState): boolean => {
     skipCommentsAndWs(st);
     const start = st.i;
     if (st.i >= st.n) return false;
-    let angle = 0;
-    let paren = 0;
-    let bracket = 0;
-    let brace = 0;
-    let seenTerm = false;
-    let progressed = false;
-
-    const depth = (): number => angle + paren + bracket + brace;
+    const counters: TypeCounters = { angle: 0, paren: 0, bracket: 0, brace: 0 };
+    const scan: TypeScan = { seenTerm: false, progressed: false };
+    const depth = (): number => counters.angle + counters.paren + counters.bracket + counters.brace;
 
     while (st.i < st.n) {
         skipCommentsAndWs(st);
@@ -161,112 +242,43 @@ const skipType = (st: StripState): boolean => {
         const c = st.source[st.i]!;
         const d = depth();
 
-        if (d === 0) {
-            if (c === '=' && peek(st, 1) !== '>' && peek(st, 1) !== '=') break;
-            if (c === ',' || c === ';' || c === ')') break;
-            if (c === '}') break;
-            if (c === '{' && seenTerm) break;
-        }
+        if (atTypeBoundary(st, c, d, scan.seenTerm)) break;
 
         if (c === '"' || c === "'") {
             skipString(st, c);
-            seenTerm = true;
-            progressed = true;
+            scan.seenTerm = true;
+            scan.progressed = true;
             continue;
         }
         if (c === '`') {
             skipTemplate(st);
-            seenTerm = true;
-            progressed = true;
+            scan.seenTerm = true;
+            scan.progressed = true;
             continue;
         }
-        if (c === '<' ) {
-            angle++;
-            st.i++;
-            seenTerm = false;
-            progressed = true;
+
+        const grouping = consumeTypeGrouping(st, c, counters);
+        if (grouping === 'break') break;
+        if (grouping !== 'skip') {
+            scan.seenTerm = grouping === 'seen';
+            scan.progressed = true;
             continue;
         }
-        if (c === '>') {
-            if (angle > 0) angle--;
-            st.i++;
-            seenTerm = true;
-            progressed = true;
+
+        const atom = consumeTypeAtom(st, c);
+        if (atom !== 'skip') {
+            if (atom === 'seen') scan.seenTerm = true;
+            else if (atom === 'unseen') scan.seenTerm = false;
+            scan.progressed = true;
             continue;
         }
-        if (c === '(') {
-            paren++;
-            st.i++;
-            seenTerm = false;
-            progressed = true;
-            continue;
-        }
-        if (c === ')') {
-            if (paren > 0) paren--;
-            else break;
-            st.i++;
-            seenTerm = true;
-            progressed = true;
-            continue;
-        }
-        if (c === '[') {
-            bracket++;
-            st.i++;
-            seenTerm = false;
-            progressed = true;
-            continue;
-        }
-        if (c === ']') {
-            if (bracket > 0) bracket--;
-            st.i++;
-            seenTerm = true;
-            progressed = true;
-            continue;
-        }
-        if (c === '{') {
-            brace++;
-            st.i++;
-            seenTerm = false;
-            progressed = true;
-            continue;
-        }
-        if (c === '}') {
-            if (brace > 0) brace--;
-            st.i++;
-            seenTerm = true;
-            progressed = true;
-            continue;
-        }
-        if (c === '=' && peek(st, 1) === '>') {
-            st.i += 2;
-            seenTerm = false;
-            progressed = true;
-            continue;
-        }
-        if (IDENT_START.test(c)) {
-            readIdent(st);
-            seenTerm = true;
-            progressed = true;
-            continue;
-        }
-        if (c === '.' || c === '|' || c === '&' || c === ':' || c === '?' || c === '!' || c === '*' || c === '-' || c === '+') {
-            if (c === '|' || c === '&' || c === ':' || c === '.') seenTerm = false;
-            st.i++;
-            progressed = true;
-            continue;
-        }
-        if (c >= '0' && c <= '9') {
-            skipNumber(st);
-            seenTerm = true;
-            progressed = true;
-            continue;
-        }
+
         if (d === 0) break;
         st.i++;
-        progressed = true;
+        scan.progressed = true;
     }
 
-    return progressed && st.i > start;
+    return scan.progressed && st.i > start;
 };
 
 const skipTypeAnnotation = (st: StripState): boolean => {
