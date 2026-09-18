@@ -559,12 +559,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCase.ts",
-    "symbol": "Function 'reviewPhysicalUseCases'",
-    "value": 40
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseJointReactions.ts",
     "symbol": "Function 'expandCertificatePoses'",
     "value": 21
@@ -871,12 +865,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/mates/physicalUseCase.ts",
-    "symbol": "Function 'reviewPhysicalUseCases'",
-    "value": 161
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/modeling/mates/poseEnvelope.ts",
     "symbol": "Async function 'reviewPoseEnvelope'",
     "value": 163
@@ -1035,6 +1023,6 @@
     "rule": "max-lines",
     "file": "src/modeling/mates/physicalUseCase.ts",
     "symbol": "(file)",
-    "value": 977
+    "value": 824
   }
 ]
