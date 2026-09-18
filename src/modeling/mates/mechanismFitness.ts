@@ -260,6 +260,38 @@ function processTrackedConnectorsPhase(
   return { trackedConnectorCount, maxTrackedTravelMm };
 }
 
+function buildMechanismSummary(
+  sampleCount: number,
+  interferenceCount: number,
+  trackedConnectorCount: number,
+  maxTrackedTravelMm: number | undefined,
+  poseEnvelope: PoseEnvelopeReviewResult | undefined,
+  mechanicalPlausibilityIssueCount: number,
+  mechanicalIntentIssueCount: number,
+  mechanicalTransmissionIssueCount: number,
+  jointTopologyIssueCount: number,
+  physicalUseCaseCount: number,
+  physicalUseCaseIssueCount: number,
+): MechanismSummary {
+  return {
+    sampleCount,
+    interferenceCount,
+    trackedConnectorCount,
+    ...(maxTrackedTravelMm === undefined ? {} : { maxTrackedTravelMm }),
+    ...(poseEnvelope?.gripperAperture === undefined ? {} : {
+      gripperApertureMinMm: poseEnvelope.gripperAperture.minMm,
+      gripperApertureMaxMm: poseEnvelope.gripperAperture.maxMm,
+      gripperApertureTravelMm: poseEnvelope.gripperAperture.travelMm,
+    }),
+    ...(mechanicalPlausibilityIssueCount === 0 ? {} : { mechanicalPlausibilityIssueCount }),
+    ...(mechanicalIntentIssueCount === 0 ? {} : { mechanicalIntentIssueCount }),
+    ...(mechanicalTransmissionIssueCount === 0 ? {} : { mechanicalTransmissionIssueCount }),
+    ...(jointTopologyIssueCount === 0 ? {} : { jointTopologyIssueCount }),
+    ...(physicalUseCaseCount === 0 ? {} : { physicalUseCaseCount }),
+    ...(physicalUseCaseIssueCount === 0 ? {} : { physicalUseCaseIssueCount }),
+  };
+}
+
 function processGripperAperturePhase(
   poseEnvelope: PoseEnvelopeReviewResult | undefined,
   addBlockingReason: AddBlockingReasonFn,
@@ -344,23 +376,19 @@ export function summarizeMechanismFitness(
     repairDirective: repairDirectiveForMode(repairMode),
     passedChecks,
     blockingReasons,
-    mechanismSummary: {
+    mechanismSummary: buildMechanismSummary(
       sampleCount,
       interferenceCount,
       trackedConnectorCount,
-      ...(maxTrackedTravelMm === undefined ? {} : { maxTrackedTravelMm }),
-      ...(poseEnvelope?.gripperAperture === undefined ? {} : {
-        gripperApertureMinMm: poseEnvelope.gripperAperture.minMm,
-        gripperApertureMaxMm: poseEnvelope.gripperAperture.maxMm,
-        gripperApertureTravelMm: poseEnvelope.gripperAperture.travelMm,
-      }),
-      ...(mechanicalPlausibilityIssueCount === 0 ? {} : { mechanicalPlausibilityIssueCount }),
-      ...(mechanicalIntentIssueCount === 0 ? {} : { mechanicalIntentIssueCount }),
-      ...(mechanicalTransmissionIssueCount === 0 ? {} : { mechanicalTransmissionIssueCount }),
-      ...(jointTopologyIssueCount === 0 ? {} : { jointTopologyIssueCount }),
-      ...(physicalUseCaseCount === 0 ? {} : { physicalUseCaseCount }),
-      ...(physicalUseCaseIssueCount === 0 ? {} : { physicalUseCaseIssueCount }),
-    },
+      maxTrackedTravelMm,
+      poseEnvelope,
+      mechanicalPlausibilityIssueCount,
+      mechanicalIntentIssueCount,
+      mechanicalTransmissionIssueCount,
+      jointTopologyIssueCount,
+      physicalUseCaseCount,
+      physicalUseCaseIssueCount,
+    ),
   };
 }
 

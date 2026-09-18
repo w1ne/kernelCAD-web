@@ -643,12 +643,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/mechanismFitness.ts",
-    "symbol": "Function 'summarizeMechanismFitness'",
-    "value": 24
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCase.ts",
     "symbol": "Async function 'reviewPhysicalUseCasesWithReachability'",
     "value": 25
