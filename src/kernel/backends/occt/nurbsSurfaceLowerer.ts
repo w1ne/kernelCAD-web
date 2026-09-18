@@ -234,9 +234,10 @@ export function buildSkinnedSurface(
   //     build the section wire directly on the target plane via
   //     `buildNurbsSketchOnPlane`, which returns a `replicad.Sketch` whose
   //     `.loftWith(...)` works the same way as the pen-derived Sketch.
-  //     The `origin` offset isn't applied here (matches
-  //     `OcctBackend.loftFromSketches`'s NURBS branch — path coordinates
-  //     must already encode their final position).
+  //     The `origin` offset is NOT applied on this skinned-surface path yet
+  //     — path coordinates must already encode their final position.
+  //     (`OcctBackend.loftFromSketches` DOES apply `origin` for its NURBS
+  //     branch as of v0.17.)
   const lifted: unknown[] = [];
   for (let i = 0; i < sectionShapes.length; i++) {
     const s = sectionShapes[i] as unknown as {

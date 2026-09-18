@@ -46,6 +46,36 @@ export interface HermiteEndpoint2D {
   curvature?: [Editable<number>, Editable<number>];
 }
 
+/**
+ * Per-section placement for `Sketch.loft({ planes })`.
+ *
+ * `plane` / `origin` place the section's sketch plane; `rotationDeg` is an
+ * in-plane rotation of this section about the loft's rotation center
+ * (default `[0, 0]`, the sketch-local origin in this section's own plane;
+ * override with `twistCenter`). When omitted, the section takes the
+ * distributed `twistDeg` angle; when present it overrides that angle for
+ * this section only.
+ */
+export interface LoftPlaneSpec {
+  plane: 'XY' | 'YZ' | 'XZ';
+  origin: [Editable<number>, Editable<number>, Editable<number>];
+  rotationDeg?: Editable<number>;
+}
+
+/** Option keys `Sketch.loft` accepts. Anything else is a likely typo and is
+ *  rejected with `feature.invalid-args` instead of being silently dropped. */
+const ALLOWED_LOFT_KEYS = new Set([
+  'spacing', 'planes', 'ruled', 'startPoint', 'endPoint', 'faceLabels',
+  'rails', 'twistDeg', 'twistCenter',
+]);
+
+/** Keys a single `opts.planes[i]` entry accepts. */
+const ALLOWED_LOFT_PLANE_KEYS = new Set(['plane', 'origin', 'rotationDeg']);
+
+/** Option keys `Sketch.extrude` accepts. Anything else is a likely typo and is
+ *  rejected with `feature.invalid-args` instead of being silently dropped. */
+const ALLOWED_EXTRUDE_KEYS = new Set(['faceLabels', 'twistAngle']);
+
 // Re-export so existing modeling/agent/authoring importers keep working.
 // The canonical definition lives in shared/capture/sketchCommand.ts as a
 // leaf module so the kernel can type-import it without depending on
@@ -79,7 +109,41 @@ export class Sketch {
     this.session = session;
   }
 
-  extrude(depth: Editable<number>, opts?: { faceLabels?: FaceLabelsMap }): Shape {
+  /**
+   * Extrude this closed profile along +Z by `depth` mm.
+   *
+   * @param depth extrusion distance in mm (number or ParamRef; a ParamRef is
+   *   resolved at lower time).
+   * @param opts.twistAngle total twist in degrees applied from bottom to top
+   *   (number or ParamRef). The profile rotates about the sketch origin as it
+   *   sweeps, so a profile that does not touch the origin changes its
+   *   bounding box. Defaults to 0 (straight extrude). Not supported for
+   *   face-bound sketches (throws at lowering time).
+   *
+   * Returns a `Shape` (3D solid).
+   */
+  extrude(
+    depth: Editable<number>,
+    opts: { faceLabels?: FaceLabelsMap; twistAngle?: Editable<number> } = {},
+  ): Shape {
+    for (const key of Object.keys(opts)) {
+      if (!ALLOWED_EXTRUDE_KEYS.has(key)) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `Sketch.extrude: unknown option '${key}'.`,
+          this.id,
+          `extrude accepts ${[...ALLOWED_EXTRUDE_KEYS].join(', ')}.`,
+        );
+      }
+    }
+    if (opts.twistAngle !== undefined && !isValidEditableNumber(opts.twistAngle)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Sketch.extrude: opts.twistAngle must be a number or ParamRef; got ${JSON.stringify(opts.twistAngle)}.`,
+        this.id,
+        'Pass opts.twistAngle as a total twist in degrees — a number or a param() reference.',
+      );
+    }
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'extrude');
     return this.session.createShape({
       kind: 'extrude',
@@ -94,6 +158,7 @@ export class Sketch {
         // toParam keeps a ParamRef symbolic (resolved at lower time) and is
         // byte-identical to the old literal record for a plain number.
         depth: toParam(depth, 'mm'),
+        twistAngle: toParam(opts.twistAngle ?? 0, 'deg'),
       },
       metadata: faceLabels ? { faceLabels } : undefined,
     });
@@ -276,6 +341,17 @@ export class Sketch {
    * Other options:
    * - `opts.ruled: true` produces sharp (faceted) transitions instead of
    *   smooth interpolation — use for polyhedral / faceted lofts.
+   * - `opts.twistDeg` total twist in degrees distributed evenly across the
+   *   sections (e.g. turbine blades, drill flutes). Number or ParamRef;
+   *   stored as a `'deg'` param.
+   * - `opts.twistCenter` section-space `[x, y]` center that `twistDeg` and
+   *   per-plane `rotationDeg` rotate about. Defaults to `[0, 0]` — the
+   *   sketch-local origin in each section's own plane, NOT the 3D plane
+   *   `origin`; pass `twistCenter` to override that center.
+   * - `opts.planes[].rotationDeg` per-section in-plane rotation in degrees
+   *   (number or ParamRef) about the rotation center. It OVERRIDES the
+   *   distributed `twistDeg` for that section only:
+   *   `rotationDeg ?? twistDeg * i / (N - 1)`.
    * - `opts.startPoint` / `opts.endPoint` optionally extend the loft past the
    *   first / last section to a single point (cone-like terminations).
    * - `opts.rails: Curve3D[]` constrains the loft to follow guide curves.
@@ -290,7 +366,9 @@ export class Sketch {
     other: Sketch | Sketch[],
     opts: {
       spacing?: Editable<number>;
-      planes?: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [Editable<number>, Editable<number>, Editable<number>] }>;
+      planes?: LoftPlaneSpec[];
+      twistDeg?: Editable<number>;
+      twistCenter?: [Editable<number>, Editable<number>];
       ruled?: boolean;
       startPoint?: [Editable<number>, Editable<number>, Editable<number>];
       endPoint?: [Editable<number>, Editable<number>, Editable<number>];
@@ -298,6 +376,76 @@ export class Sketch {
       rails?: Curve3D[];
     } = {},
   ): Shape {
+    for (const key of Object.keys(opts)) {
+      if (!ALLOWED_LOFT_KEYS.has(key)) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `Sketch.loft: unknown option '${key}'.`,
+          this.id,
+          `loft accepts ${[...ALLOWED_LOFT_KEYS].join(', ')}.`,
+        );
+      }
+    }
+    if (
+      opts.twistCenter !== undefined &&
+      (!Array.isArray(opts.twistCenter) ||
+        opts.twistCenter.length !== 2 ||
+        !opts.twistCenter.every(isValidEditableNumber))
+    ) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Sketch.loft: opts.twistCenter must be a [x, y] pair of numbers or ParamRefs; got ${JSON.stringify(opts.twistCenter)}.`,
+        this.id,
+        'Pass opts.twistCenter as [x, y] — the section-space center for twistDeg and planes[].rotationDeg.',
+      );
+    }
+    if (opts.twistDeg !== undefined && !isValidEditableNumber(opts.twistDeg)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Sketch.loft: opts.twistDeg must be a number or ParamRef; got ${JSON.stringify(opts.twistDeg)}.`,
+        this.id,
+        'Pass opts.twistDeg as a total twist in degrees — a number or a param() reference.',
+      );
+    }
+    if (opts.planes !== undefined) {
+      if (!Array.isArray(opts.planes)) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `Sketch.loft: opts.planes must be an array of { plane, origin, rotationDeg? }; got ${typeof opts.planes}.`,
+          this.id,
+          'Pass opts.planes as one entry per loft section.',
+        );
+      }
+      for (let i = 0; i < opts.planes.length; i++) {
+        const p = opts.planes[i] as LoftPlaneSpec | null | undefined;
+        if (p === null || typeof p !== 'object' || Array.isArray(p)) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `Sketch.loft: opts.planes[${i}] must be an object like { plane, origin, rotationDeg? }; got ${JSON.stringify(p)}.`,
+            this.id,
+            `Pass opts.planes[${i}] as { plane, origin, rotationDeg? }.`,
+          );
+        }
+        for (const key of Object.keys(p)) {
+          if (!ALLOWED_LOFT_PLANE_KEYS.has(key)) {
+            throw new KernelError(
+              'feature.invalid-args',
+              `Sketch.loft: unknown planes[${i}] option '${key}'.`,
+              this.id,
+              `planes entries accept ${[...ALLOWED_LOFT_PLANE_KEYS].join(', ')}.`,
+            );
+          }
+        }
+        if (p.rotationDeg !== undefined && !isValidEditableNumber(p.rotationDeg)) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `Sketch.loft: opts.planes[${i}].rotationDeg must be a number or ParamRef; got ${JSON.stringify(p.rotationDeg)}.`,
+            this.id,
+            `Pass planes[${i}].rotationDeg as degrees — a number or a param() reference — or omit it to inherit the distributed twistDeg.`,
+          );
+        }
+      }
+    }
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'loft');
     const others = Array.isArray(other) ? other : [other];
     const allSketches = [this, ...others];
@@ -332,6 +480,7 @@ export class Sketch {
       params: {
         profileKind: { expression: "'sketch'", unit: 'unitless', evaluated: 0 },
         spacing: toParam(opts.spacing ?? 10, 'mm'),
+        twistDeg: toParam(opts.twistDeg ?? 0, 'deg'),
         ruled: { expression: String(opts.ruled ?? false), unit: 'unitless', evaluated: opts.ruled ? 1 : 0 },
         sectionCount: { expression: String(allSketches.length), unit: 'unitless', evaluated: allSketches.length },
         railCount: { expression: String(rails.length), unit: 'unitless', evaluated: rails.length },
@@ -340,9 +489,14 @@ export class Sketch {
         // Numeric coordinates are stored as plain numbers (unchanged records);
         // a ParamRef coordinate is boxed as a Param so the dispatcher's
         // pre-resolve substitutes it at lower time.
-        planes: opts.planes?.map((p) => ({ ...p, origin: editablePoint3(p.origin) })),
+        planes: opts.planes?.map((p) => ({
+          plane: p.plane,
+          origin: editablePoint3(p.origin),
+          ...(p.rotationDeg === undefined ? {} : { rotationDeg: toParam(p.rotationDeg, 'deg') }),
+        })),
         startPoint: opts.startPoint === undefined ? undefined : editablePoint3(opts.startPoint),
         endPoint: opts.endPoint === undefined ? undefined : editablePoint3(opts.endPoint),
+        twistCenter: opts.twistCenter?.map((v) => (typeof v === 'number' ? v : toParam(v, 'mm'))),
         rails: rails.map((c) => c.id),
         ...(faceLabels ? { faceLabels } : {}),
       },

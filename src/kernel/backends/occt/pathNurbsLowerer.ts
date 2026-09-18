@@ -46,6 +46,7 @@ import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import nurbsJs from 'verb-nurbs';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
+import { rotateSketchCommands } from '../../../shared/capture/rotateSketchCommands';
 import { solveHermiteG2 } from '../../../modeling/capture/hermiteG2';
 import type { Vec3 } from '../../../shared/intent/types';
 import { clampedUniformKnots, decomposeKnots } from './nurbsSurfaceLowerer';
@@ -308,19 +309,28 @@ function deriveChordTangent2D(
  * The returned Sketch has `defaultDirection` set to the plane's normal so the
  * consumer's `extrude(depth)` produces an axis-aligned solid; `revolve(axis)`
  * still takes an explicit axis argument as before.
+ *
+ * `opts.origin` places the assembled wire on the plane's world position
+ * (before this, the path coordinates were interpreted relative to the plane
+ * origin); `opts.rotationDeg` rotates the path in-plane (CCW, about
+ * `opts.rotationCenter`, default `[0, 0]`) before it is lifted.
  */
 export function buildNurbsSketchOnPlane(
   commands: SketchCommand[],
   plane: PlaneName,
+  opts?: { origin?: Vec3; rotationDeg?: number; rotationCenter?: [number, number] },
 ): replicad.Sketch {
-  if (commands.length === 0) {
+  const cmds = opts?.rotationDeg
+    ? rotateSketchCommands(commands, opts.rotationDeg, opts.rotationCenter)
+    : commands;
+  if (cmds.length === 0) {
     throw new Error('buildNurbsSketchOnPlane: empty commands array.');
   }
-  const closeIdx = commands.findIndex(c => c.kind === 'close');
+  const closeIdx = cmds.findIndex(c => c.kind === 'close');
   if (closeIdx === -1) {
     throw new Error('buildNurbsSketchOnPlane: missing close command.');
   }
-  const first = commands[0];
+  const first = cmds[0];
   if (first.kind !== 'moveTo') {
     throw new Error('buildNurbsSketchOnPlane: first command must be moveTo.');
   }
@@ -364,7 +374,7 @@ export function buildNurbsSketchOnPlane(
   }
 
   for (let i = 1; i < closeIdx; i++) {
-    const c = commands[i];
+    const c = cmds[i];
     if (c.kind === 'lineTo') {
       const p = ensurePen();
       pen = p.lineTo([c.x.evaluated, c.y.evaluated]) as replicad.DrawingPen;
@@ -493,13 +503,16 @@ export function buildNurbsSketchOnPlane(
     );
   }
 
-  // Wrap as a `replicad.Sketch` on the target plane. Set `defaultDirection`
-  // to the plane normal so `Sketch.extrude(depth)` produces an axis-aligned
-  // solid; `revolve(axis)` already passes its axis explicitly so the default
-  // direction is informational there.
+  // Wrap as a `replicad.Sketch` on the target plane. `opts.origin` places the
+  // wire at the plane's world position (the edge builders above lift relative
+  // to the plane origin). Set `defaultDirection` to the plane normal so
+  // `Sketch.extrude(depth)` produces an axis-aligned solid; `revolve(axis)`
+  // already passes its axis explicitly so the default direction is
+  // informational there.
   const planeNormal: Vec3 = plane === 'XY' ? [0, 0, 1] : plane === 'XZ' ? [0, 1, 0] : [1, 0, 0];
-  return new replicad.Sketch(wire, {
-    defaultOrigin: [0, 0, 0],
+  const placed = opts?.origin ? wire.translate(opts.origin as never) : wire;
+  return new replicad.Sketch(placed, {
+    defaultOrigin: opts?.origin ?? [0, 0, 0],
     defaultDirection: planeNormal,
   });
 }

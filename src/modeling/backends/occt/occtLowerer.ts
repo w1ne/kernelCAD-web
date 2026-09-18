@@ -1039,6 +1039,7 @@ export class OcctLowerer implements FeatureLowerer {
           }
         } else if (profileKind === 'sketch') {
           const depth = r.params.depth.evaluated;
+          const twistAngle = r.params.twistAngle?.evaluated ?? 0;
           const sketchInput = inputs.byKey.sketch as OcctBackend | undefined;
           if (!sketchInput) {
             diagnostics.push({
@@ -1052,7 +1053,7 @@ export class OcctLowerer implements FeatureLowerer {
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
           try {
-            shape = OcctBackend.extrudeFromSketch(sketchInput, depth);
+            shape = OcctBackend.extrudeFromSketch(sketchInput, depth, { twistAngle });
           } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);
             diagnostics.push({
@@ -1496,21 +1497,29 @@ export class OcctLowerer implements FeatureLowerer {
           // ParamRef (already pre-resolved by the dispatcher).
           type Coord = number | { evaluated: number };
           const num = (c: Coord): number => (typeof c === 'number' ? c : c.evaluated);
+          const point2 = (p: Coord[] | undefined): [number, number] | undefined =>
+            p === undefined ? undefined : [num(p[0]), num(p[1])];
           const point3 = (p: Coord[] | undefined): [number, number, number] | undefined =>
             p === undefined ? undefined : [num(p[0]), num(p[1]), num(p[2])];
           const rawMeta = r.metadata as {
-            planes?: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: Coord[] }>;
+            planes?: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: Coord[]; rotationDeg?: Coord }>;
             startPoint?: Coord[];
             endPoint?: Coord[];
+            twistCenter?: Coord[];
             rails?: string[];
           } | undefined;
           const meta = rawMeta === undefined ? undefined : {
-            planes: rawMeta.planes?.map((p) => ({ plane: p.plane, origin: point3(p.origin)! })),
+            planes: rawMeta.planes?.map((p) => ({
+              plane: p.plane,
+              origin: point3(p.origin)!,
+              rotationDeg: p.rotationDeg === undefined ? undefined : num(p.rotationDeg),
+            })),
             startPoint: point3(rawMeta.startPoint),
             endPoint: point3(rawMeta.endPoint),
+            twistCenter: point2(rawMeta.twistCenter),
             rails: rawMeta.rails,
           };
-          let planes: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number] }>;
+          let planes: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number]; rotationDeg?: number }>;
           if (Array.isArray(meta?.planes)) {
             if (meta.planes.length !== sectionCount) {
               diagnostics.push({
@@ -1531,6 +1540,15 @@ export class OcctLowerer implements FeatureLowerer {
               origin: [0, 0, i * spacing] as [number, number, number],
             }));
           }
+          // Per-section in-plane rotation: an explicit planes[].rotationDeg
+          // wins; otherwise the twistDeg shorthand is distributed evenly
+          // across the stack (first section at 0°, last at twistDeg).
+          const twistDeg = r.params.twistDeg?.evaluated ?? 0;
+          const sectionCountN = planes.length;
+          const withTwist = planes.map((p, i) => ({
+            ...p,
+            rotationDeg: p.rotationDeg ?? (sectionCountN > 1 ? (twistDeg * i) / (sectionCountN - 1) : 0),
+          }));
           const ruled = (r.params.ruled?.evaluated ?? 0) > 0.5;
           const railIds = Array.isArray((meta as { rails?: unknown } | undefined)?.rails)
             ? ((meta as { rails: string[] }).rails)
@@ -1548,6 +1566,22 @@ export class OcctLowerer implements FeatureLowerer {
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
           if (railIds.length > 0) {
+            // Rail-guided lofts follow the rails, so there is no place to
+            // apply a section rotation. Reject the combination loudly rather
+            // than silently producing an untwisted solid.
+            const hasSectionRotation =
+              twistDeg !== 0 || withTwist.some((p) => (p.rotationDeg ?? 0) !== 0);
+            if (hasSectionRotation) {
+              diagnostics.push({
+                target: 'export-occt',
+                code: 'feature.invalid-args',
+                featureId: r.id,
+                severity: 'error',
+                message: `loft: rail-guided lofts do not support section rotation (twistDeg/rotationDeg); remove rails or rotation.`,
+                hint: 'Rail-guided lofts follow the rails — remove opts.rails to use twistDeg/rotationDeg, or drop the rotation.',
+              });
+              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const railEdges: any[] = [];
             for (const railId of railIds) {
@@ -1662,11 +1696,40 @@ export class OcctLowerer implements FeatureLowerer {
               return { shape: undefined as unknown as ShapeBackend, diagnostics };
             }
           } else {
+            // A stack whose sections all lie on the same plane cannot enclose
+            // volume on its own. OCCT's ThruSections throws a raw C++
+            // exception for coincident wires (and returns a zero-volume shell
+            // for some non-identical ones), which would otherwise surface as
+            // a misleading kernel-failed. Gate the collapsed stack here so it
+            // reports the standard empty-result diagnostic. Same plane means
+            // the same plane name and the same offset along its normal — XY
+            // stacks along z, YZ along x, XZ along y. Start/end point
+            // terminations cone the stack out of the plane and make coplanar
+            // sections legitimate, so the gate skips those.
+            const hasPointTermination = meta?.startPoint !== undefined || meta?.endPoint !== undefined;
+            const first = withTwist[0];
+            const offsetIdx = first.plane === 'XY' ? 2 : first.plane === 'YZ' ? 0 : 1;
+            // Exact equality is deliberate: an offset by FP dust still hands
+            // off to OCCT (which may build a valid sliver) instead of being
+            // reported as an empty result.
+            const planeOffset = first.origin[offsetIdx];
+            const collapsed = !hasPointTermination && withTwist.every(
+              (p) => p.plane === first.plane && p.origin[offsetIdx] === planeOffset,
+            );
+            if (collapsed) {
+              const e = emptyResultDiagnostic({
+                featureId: r.id, opLabel: 'loft',
+                volumeAfter: 0, isEmpty: true,
+              });
+              if (e) diagnostics.push(e);
+              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            }
             try {
-              shape = OcctBackend.loftFromSketches(sketches, planes, {
+              shape = OcctBackend.loftFromSketches(sketches, withTwist, {
                 ruled,
                 startPoint: meta?.startPoint,
                 endPoint: meta?.endPoint,
+                twistCenter: meta?.twistCenter ?? [0, 0],
               });
             } catch (e) {
               const msg = e instanceof Error ? e.message : String(e);
