@@ -745,21 +745,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/studio/components/demoPlayer/buildMaterialFromPBR.ts",
-    "symbol": "Function 'buildMaterialFromPBR'",
-    "value": 41
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/components/inputs/NumericScrubInput.tsx",
     "symbol": "Function 'NumericScrubInput'",
     "value": 31
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/components/viewer/directEditTarget.ts",
-    "symbol": "Function 'isMatedAnchor'",
-    "value": 36
   },
   {
     "rule": "complexity",
