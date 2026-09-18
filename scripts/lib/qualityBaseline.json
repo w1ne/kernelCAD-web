@@ -43,12 +43,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/drawing/index.ts",
-    "symbol": "Async function 'runPipeline'",
-    "value": 49
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/drawing/pdfVectors.ts",
     "symbol": "Async function 'readPdfPageVectors'",
     "value": 53
@@ -880,12 +874,6 @@
     "file": "src/agent/cli/commands/render.ts",
     "symbol": "Async function 'renderInspectBundle'",
     "value": 158
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/agent/drawing/index.ts",
-    "symbol": "Async function 'runPipeline'",
-    "value": 157
   },
   {
     "rule": "max-lines-per-function",
