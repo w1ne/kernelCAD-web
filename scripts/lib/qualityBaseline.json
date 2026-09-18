@@ -745,12 +745,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/studio/components/demoPlayer/buildMaterialFromPBR.ts",
-    "symbol": "Function 'buildMaterialFromPBR'",
-    "value": 41
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/components/inputs/NumericScrubInput.tsx",
     "symbol": "Function 'NumericScrubInput'",
     "value": 31
