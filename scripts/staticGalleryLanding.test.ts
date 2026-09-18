@@ -166,4 +166,18 @@ describe('static gallery landing page', () => {
     expect(html).not.toContain("if (entry.slug === 'royal-pop-pocket-watch') return;");
     expect(html).not.toContain("tile.__entry?.slug !== 'royal-pop-pocket-watch'");
   });
+
+  it('links the engineer stack to live sister sites, not decommissioned proto.cat', () => {
+    const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
+    const stackStart = html.indexOf('part of the engineer stack');
+    expect(stackStart).toBeGreaterThan(-1);
+    const stackEnd = html.indexOf('</nav>', stackStart);
+    const stack = html.slice(stackStart, stackEnd);
+
+    expect(stack).not.toContain('proto.cat');
+    expect(stack).toContain('href="https://labwired.com"');
+    expect(stack).toContain('href="https://kernelcad.com"');
+    expect(stack).toContain('href="https://koamtachi.com"');
+    expect(stack).toContain('href="https://shylenko.com"');
+  });
 });
