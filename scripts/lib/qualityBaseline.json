@@ -1135,12 +1135,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/animation/useAnimationPlayback.ts",
-    "symbol": "Function 'useAnimationPlayback'",
-    "value": 241
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/inputs/NumericScrubInput.tsx",
     "symbol": "Function 'NumericScrubInput'",
     "value": 195

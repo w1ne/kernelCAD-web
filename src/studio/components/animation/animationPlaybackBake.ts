@@ -7,7 +7,7 @@ import type { ParamEdit, UpdateParamFn } from '../../hooks/useParamUpdate';
 import type { BakedCollision, BakedTimeline } from './bakeInterpolation';
 import { sampleBakedTransforms } from './bakeInterpolation';
 import type { BakeFetcher } from './fetchAnimationBake';
-import type { ApplyPartTransform, BakeState } from './useAnimationPlayback';
+import type { ApplyPartTransform, BakeState, TrackReadout } from './useAnimationPlayback';
 
 /** Identity of the timeline that matters for the baked poses: source key
  *  (session token or static gallery key) + per-track keyframes + fps.
@@ -25,6 +25,19 @@ export function bakeTimelineKey(
             k: t.keys.map((k) => [k.atMs, k.value, k.ease]),
         })),
     });
+}
+
+/** Invalidate the cached bake when the timeline identity changes (script
+ *  edit, new token). */
+export function trackBakeKey(
+    bakeKeyRef: MutableRefObject<string | null>,
+    bakeKey: string | null,
+    invalidateBake: () => void,
+): void {
+    if (bakeKeyRef.current !== null && bakeKeyRef.current !== bakeKey) {
+        invalidateBake();
+    }
+    bakeKeyRef.current = bakeKey;
 }
 
 /** Drop the cached bake and return the bake state cells to idle. */
@@ -150,6 +163,18 @@ export async function ensureBakedTimeline(ctx: EnsureBakeContext): Promise<Baked
     })();
     bakeInFlightRef.current = promise;
     return promise;
+}
+
+/** Current sampled value per track at `at` (for the per-track readout). */
+export function trackReadouts(
+    metadata: AnimationViewMetadata | null,
+    at: number,
+): TrackReadout[] {
+    if (!metadata) return [];
+    return metadata.tracks.map((track) => ({
+        param: track.param,
+        value: sampleTrackAt(track, at),
+    }));
 }
 
 /** Sample every track at `at` → one param-edit batch (for the pause-sync

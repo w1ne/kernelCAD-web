@@ -2,7 +2,6 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AnimationViewMetadata } from '../../../shared/intent/animationViewRecord';
-import { sampleTrackAt } from '../../../modeling/animation/animationSampler';
 import type { UpdateParamFn } from '../../hooks/useParamUpdate';
 import type { BakedTimeline, BakedCollision } from './bakeInterpolation';
 import { fetchAnimationBake, type BakeFetcher } from './fetchAnimationBake';
@@ -14,7 +13,19 @@ import {
     resetBakeCache,
     sampleTrackBatch,
     syncKernelPose,
+    trackBakeKey,
+    trackReadouts,
 } from './animationPlaybackBake';
+import {
+    anchorPlaybackClock,
+    drivePlaybackLoop,
+    holdViewportDriverLock,
+    releasePlayback,
+    runPlaybackTick,
+    scrubPlaybackTo,
+    startPlayback,
+    stopPlaybackRaf,
+} from './animationPlaybackTransport';
 
 /** Playback loop behaviour at the end of the timeline. */
 export type PlaybackMode = 'once' | 'loop' | 'reciprocate';
@@ -237,13 +248,7 @@ export function useAnimationPlayback(
     // the kernel and lets the resulting relower reflect the scrubbed pose.
     const driverLockRef = useRef(setViewportDriverLock);
     useEffect(() => { driverLockRef.current = setViewportDriverLock; });
-    useEffect(() => {
-        const lock = driverLockRef.current;
-        if (!lock) return;
-        const driving = isPlaying || bakeState === 'baking';
-        lock(driving);
-        return () => { driverLockRef.current?.(false); };
-    }, [isPlaying, bakeState]);
+    useEffect(() => holdViewportDriverLock(driverLockRef, isPlaying || bakeState === 'baking'), [isPlaying, bakeState]);
 
     // --- Bake cache -----------------------------------------------------------
     // Keyed by record identity + token. A script edit produces a fresh
@@ -281,23 +286,13 @@ export function useAnimationPlayback(
     // mis-credited as self. See the I3-race test.
     const settledSelfCreditsRef = useRef(0);
 
-    const bakeKey = useMemo(
-        () => bakeTimelineKey(metadata, bakeSourceKey),
-        [metadata, bakeSourceKey],
-    );
+    const bakeKey = useMemo(() => bakeTimelineKey(metadata, bakeSourceKey), [metadata, bakeSourceKey]);
 
-    const invalidateBake = useCallback(() => {
-        resetBakeCache(bakeRef, bakeInFlightRef, setBakeState, setBakeFrames, setBakeError, setCollisions);
-    }, []);
+    const invalidateBake = useCallback(() => resetBakeCache(bakeRef, bakeInFlightRef, setBakeState, setBakeFrames, setBakeError, setCollisions), []);
 
     // Invalidate the cached bake when the timeline identity changes (script
     // edit, new token).
-    useEffect(() => {
-        if (bakeKeyRef.current !== null && bakeKeyRef.current !== bakeKey) {
-            invalidateBake();
-        }
-        bakeKeyRef.current = bakeKey;
-    }, [bakeKey, invalidateBake]);
+    useEffect(() => trackBakeKey(bakeKeyRef, bakeKey, invalidateBake), [bakeKey, invalidateBake]);
 
     // Invalidate the cached bake when the kernel-state epoch advances — UNLESS
     // the advance is fully covered by player-caused relowers that have already
@@ -321,21 +316,12 @@ export function useAnimationPlayback(
 
     // Fetch (or reuse) the bake for the current key. Single-flight: a second
     // caller while a fetch is pending awaits the same promise.
+    // Live session token, or the gallery static-bake key. The injected
+    // bakeFetcher interprets it (session POST vs static-file GET).
     const ensureBake = useCallback((): Promise<BakedTimeline | null> => ensureBakedTimeline({
-        // Live session token, or the gallery static-bake key. The injected
-        // bakeFetcher interprets it (session POST vs static-file GET).
-        token: sessionToken ?? staticBakeKey ?? null,
-        bakeFetcherRef,
-        bakeRef,
-        bakeInFlightRef,
-        settledSelfCreditsRef,
-        mountedRef,
-        applyRef,
-        metaRef,
-        setBakeState,
-        setBakeError,
-        setBakeFrames,
-        setCollisions,
+        token: sessionToken ?? staticBakeKey ?? null, bakeFetcherRef, bakeRef, bakeInFlightRef,
+        settledSelfCreditsRef, mountedRef, applyRef, metaRef,
+        setBakeState, setBakeError, setBakeFrames, setCollisions,
     }), [sessionToken, staticBakeKey]);
 
     // Sample every track at `at` → one param-edit batch (for the pause-sync
@@ -376,94 +362,24 @@ export function useAnimationPlayback(
     // time. Called on play, speed change, mode change, and scrub. After this,
     // tMs = map(anchorTMs + (now - anchorWall) * speed).
     const reanchor = useCallback(() => {
-        anchorWallRef.current = clockRef.current.now();
-        anchorTMsRef.current = tMsRef.current;
-        maxElapsedRef.current = 0;
+        anchorPlaybackClock(clockRef, tMsRef, anchorWallRef, anchorTMsRef, maxElapsedRef);
     }, []);
 
     const stopRaf = useCallback(() => {
-        // Invalidate any in-flight chain (single-flight guard) and cancel the
-        // scheduled frame.
-        genRef.current += 1;
-        if (rafRef.current !== null) {
-            clockRef.current.cancel(rafRef.current);
-            rafRef.current = null;
-        }
+        stopPlaybackRaf(clockRef, rafRef, genRef);
     }, []);
 
     const tickRef = useRef<(nowMs: number) => void>(() => {});
     useEffect(() => {
-        tickRef.current = (nowMs: number) => {
-            if (!mountedRef.current) return;
-            // Single-flight: capture the generation this chain belongs to.
-            const myGen = genRef.current;
-            const dur = metaRef.current?.durationMs ?? 0;
-
-            if (dur <= 0) {
-                tMsRef.current = 0;
-                setTMs(0);
-                setIsPlaying(false);
-                stopRaf();
-                return;
-            }
-
-            // Absolute-anchored elapsed, clamped non-decreasing so an orphaned
-            // chain's out-of-order `now` can't run the clock backward.
-            const rawElapsed = (nowMs - anchorWallRef.current) * speedRef.current;
-            const elapsed = Math.max(maxElapsedRef.current, rawElapsed);
-            maxElapsedRef.current = elapsed;
-            const advanced = anchorTMsRef.current + elapsed;
-
-            let next: number;
-            let keepGoing = true;
-            const mode = modeRef.current;
-            if (mode === 'once') {
-                if (advanced >= dur) { next = dur; keepGoing = false; }
-                else next = advanced;
-            } else if (mode === 'loop') {
-                next = advanced % dur;
-            } else {
-                // reciprocate as a pure triangle wave of period 2*dur — no flip
-                // state, so there is no double-back glitch at the apex.
-                const phase = advanced % (2 * dur);
-                next = phase <= dur ? phase : 2 * dur - phase;
-            }
-
-            tMsRef.current = next;
-            setTMs(next);
-            // Pure client-side: interpolate + apply baked transforms. NO param
-            // edit during playback.
-            applyBakedAt(next);
-
-            // Only the current-generation chain may reschedule; a stale orphan
-            // (whose generation was bumped by stopRaf/re-anchor) stops here.
-            if (myGen !== genRef.current) return;
-
-            if (keepGoing) {
-                rafRef.current = clockRef.current.request((n) => tickRef.current(n));
-            } else {
-                setIsPlaying(false);
-                stopRaf();
-                // Reached the end (once mode): sync the kernel to the final pose.
-                syncKernelTo(next);
-            }
-        };
+        tickRef.current = (nowMs: number) => runPlaybackTick(nowMs, {
+            mountedRef, metaRef, speedRef, modeRef, tMsRef, clockRef, rafRef,
+            genRef, anchorWallRef, anchorTMsRef, maxElapsedRef, tickRef,
+            setTMs, setIsPlaying, stopRaf, applyBakedAt, syncKernelTo,
+        });
     }, [stopRaf, applyBakedAt, syncKernelTo]);
 
     const play = useCallback(() => {
-        const meta = metaRef.current;
-        if (meta == null || (meta.durationMs ?? 0) <= 0) return;
-        // `once` parked at the end restarts from 0.
-        if (modeRef.current === 'once' && tMsRef.current >= (meta.durationMs ?? 0)) {
-            tMsRef.current = 0;
-            setTMs(0);
-        }
-        // Kick the bake if not ready; playback starts moving once it resolves
-        // (the rAF loop applies transforms only when a bake is present).
-        void ensureBake().then((baked) => {
-            if (baked && mountedRef.current) applyBakedAt(tMsRef.current);
-        });
-        setIsPlaying(true);
+        startPlayback(metaRef, modeRef, tMsRef, mountedRef, setTMs, setIsPlaying, ensureBake, applyBakedAt);
     }, [ensureBake, applyBakedAt]);
 
     const pause = useCallback(() => {
@@ -483,14 +399,7 @@ export function useAnimationPlayback(
     // mount/cleanup/mount cycle can never leave two live chains: the orphaned
     // chain carries a stale generation and bails on its next tick.
     useEffect(() => {
-        if (!isPlaying) {
-            stopRaf();
-            return;
-        }
-        stopRaf();         // single-flight: kill any prior chain first
-        reanchor();        // absolute anchor at the current pose + wall time
-        rafRef.current = clockRef.current.request((n) => tickRef.current(n));
-        return () => { stopRaf(); };
+        drivePlaybackLoop(isPlaying, stopRaf, reanchor, clockRef, rafRef, tickRef);
     }, [isPlaying, stopRaf, reanchor]);
 
     // Re-anchor on speed or mode change so the displayed time stays continuous
@@ -502,38 +411,18 @@ export function useAnimationPlayback(
 
     // Unmount: stop rAF and drop viewport overrides so the next session starts
     // from the kernel's solved pose, not a left-over baked frame.
-    useEffect(() => {
-        return () => {
-            stopRaf();
-            clearPartTransforms?.();
-        };
-        // clearPartTransforms is stable (useCallback in GeometryContext); listed
-        // to satisfy exhaustive-deps without re-running on every render.
-    }, [stopRaf, clearPartTransforms]);
+    // clearPartTransforms is stable (useCallback in GeometryContext); listed
+    // to satisfy exhaustive-deps without re-running on every render.
+    useEffect(
+        () => releasePlayback(stopRaf, clearPartTransforms),
+        [stopRaf, clearPartTransforms],
+    );
 
     const scrubTo = useCallback((to: number) => {
-        const dur = metaRef.current?.durationMs ?? 0;
-        const clamped = Math.max(0, Math.min(dur, to));
-        setIsPlaying(false);
-        stopRaf();             // single-flight: kill any in-flight chain
-        tMsRef.current = clamped;
-        setTMs(clamped);
-        reanchor();            // anchor the (paused) clock to the scrubbed pose
-        // Ensure the bake, then apply immediately (instant scrub). Sync the
-        // kernel to the scrubbed pose for state coherence.
-        void ensureBake().then((baked) => {
-            if (baked && mountedRef.current) applyBakedAt(clamped);
-        });
-        syncKernelTo(clamped);
+        scrubPlaybackTo(to, metaRef, tMsRef, mountedRef, setTMs, setIsPlaying, stopRaf, reanchor, ensureBake, applyBakedAt, syncKernelTo);
     }, [ensureBake, applyBakedAt, syncKernelTo, stopRaf, reanchor]);
 
-    const trackValues = useMemo<TrackReadout[]>(() => {
-        if (!metadata) return [];
-        return metadata.tracks.map((track) => ({
-            param: track.param,
-            value: sampleTrackAt(track, tMs),
-        }));
-    }, [metadata, tMs]);
+    const trackValues = useMemo<TrackReadout[]>(() => trackReadouts(metadata, tMs), [metadata, tMs]);
 
     return {
         durationMs,
