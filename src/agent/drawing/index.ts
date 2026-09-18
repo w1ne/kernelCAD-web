@@ -121,21 +121,21 @@ export async function drawingToCad(input: DrawingToCadInput): Promise<DrawingToC
   }
 }
 
-async function runPipeline(input: DrawingToCadInput): Promise<DrawingToCadResult> {
-  const page = input.page ?? 1;
-  const diagnostics: CompilerDiagnostic[] = [];
-  const fail = (d: CompilerDiagnostic, pageCount = 0): DrawingToCadResult => ({
-    ok: false, page, pageCount, views: [], params: [], ledger: ledgerOf([]), diagnostics: [...diagnostics, d],
-  });
+type PdfVectors = Awaited<ReturnType<typeof readPdfPageVectors>>;
 
-  let vectors: Awaited<ReturnType<typeof readPdfPageVectors>>;
+type PipelineFail = (d: CompilerDiagnostic, pageCount?: number) => DrawingToCadResult;
+
+async function readPageVectorsPhase(input: DrawingToCadInput, page: number, fail: PipelineFail): Promise<{ vectors: PdfVectors } | { failure: DrawingToCadResult }> {
   try {
-    vectors = await readPdfPageVectors(input.pdf, page);
+    const vectors = await readPdfPageVectors(input.pdf, page);
+    return { vectors };
   } catch (e) {
     const msg = e instanceof PdfReadError ? e.message : `could not read the PDF: ${e instanceof Error ? e.message : String(e)}`;
-    return fail(diag('cli.file-read', 'error', `${input.source}: ${msg}`));
+    return { failure: fail(diag('cli.file-read', 'error', `${input.source}: ${msg}`)) };
   }
+}
 
+function rasterOnlyFailure(input: DrawingToCadInput, page: number, vectors: PdfVectors, fail: PipelineFail): DrawingToCadResult | null {
   const strokes = vectors.paths.filter(p => p.stroked).length;
   if (vectors.imageCount > 0 && strokes < 8) {
     return fail(diag(
@@ -144,18 +144,19 @@ async function runPipeline(input: DrawingToCadInput): Promise<DrawingToCadResult
       `${input.source} page ${page} is a raster image (${vectors.imageCount} image(s) covering ${Math.round(vectors.imageCoverage * 100)}% of the page, ${strokes} vector stroke(s)); there is no linework or dimension text to read.`,
     ), vectors.pageCount);
   }
+  return null;
+}
 
-  const sheet = analyseSheet(vectors);
-  const facts: AssumptionFact[] = [];
-
-  // Units.
+function unitsFact(sheet: SheetAnalysis): { units: 'mm' | 'in'; mmPerUnit: number; fact: AssumptionFact } {
   const units: 'mm' | 'in' = sheet.title.units?.value ?? 'mm';
   const mmPerUnit = units === 'in' ? MM_PER_UNIT.in : MM_PER_UNIT.mm;
-  facts.push(sheet.title.units
+  const fact: AssumptionFact = sheet.title.units
     ? { id: 'units', statement: `Units '${sheet.title.units.text}' read from the title block.`, kind: 'visible', evidence: { source: 'title-block' }, value: units, confidence: 1, resolution: 'confirmed' }
-    : { id: 'units', statement: 'No units stated on the sheet; dimensions are read as millimetres.', kind: 'assumed', evidence: { source: 'default' }, value: 'mm', confidence: 0, resolution: 'open' });
+    : { id: 'units', statement: 'No units stated on the sheet; dimensions are read as millimetres.', kind: 'assumed', evidence: { source: 'default' }, value: 'mm', confidence: 0, resolution: 'open' };
+  return { units, mmPerUnit, fact };
+}
 
-  // Scale: title block, cross-checked against the dimensions.
+function resolveScale(sheet: SheetAnalysis, mmPerUnit: number, facts: AssumptionFact[]): { sheetPerModel: number; scaleSource: 'title-block' | 'dimensions' | 'default' } {
   const fromDims = dimensionScale(sheet, mmPerUnit);
   let sheetPerModel = 1;
   let scaleSource: 'title-block' | 'dimensions' | 'default' = 'default';
@@ -181,19 +182,32 @@ async function runPipeline(input: DrawingToCadInput): Promise<DrawingToCadResult
   } else {
     facts.push({ id: 'scale', statement: 'No scale lettered and no dimensions to infer it from; the sheet is read at 1:1.', kind: 'assumed', evidence: { source: 'default' }, value: '1:1', confidence: 0, resolution: 'open' });
   }
+  return { sheetPerModel, scaleSource };
+}
 
-  // Projection angle.
+function resolveProjection(input: DrawingToCadInput, sheet: SheetAnalysis): { callerAngle: 'first' | 'third' | undefined; angle: 'first' | 'third' | undefined } {
   const callerAngle = input.projection === 'first-angle' ? 'first' : input.projection === 'third-angle' ? 'third' : undefined;
   const angle = callerAngle ?? sheet.title.projection?.value;
-  const viewSet = identifyViews(sheet.paths, sheet.notes, angle);
+  return { callerAngle, angle };
+}
 
+function viewsFailure(input: DrawingToCadInput, page: number, vectors: PdfVectors, viewSet: ReturnType<typeof identifyViews>, fail: PipelineFail): DrawingToCadResult | null {
   if (viewSet.views.length === 0) {
     if (vectors.imageCount > 0) {
       return fail(diag('reference.drawing.raster-only', 'error', `${input.source} page ${page} has no vector drawing views — its content is ${vectors.imageCount} raster image(s).`), vectors.pageCount);
     }
     return fail(diag('reference.drawing.view-ambiguous', 'error', `${input.source} page ${page}: no orthographic view could be identified in the vector linework.`), vectors.pageCount);
   }
-  const angleName = viewSet.projection === 'first' ? 'first-angle' : 'third-angle';
+  return null;
+}
+
+function pushViewFacts(
+  facts: AssumptionFact[],
+  sheet: SheetAnalysis,
+  viewSet: ReturnType<typeof identifyViews>,
+  angleName: 'first-angle' | 'third-angle',
+  callerAngle: 'first' | 'third' | undefined,
+): string[] {
   facts.push(callerAngle
     ? { id: 'projection', statement: `Projection ${angleName}, as the caller stated.`, kind: 'visible', evidence: { source: 'prior' }, value: angleName, confidence: 1, resolution: 'confirmed' }
     : sheet.title.projection
@@ -206,6 +220,10 @@ async function runPipeline(input: DrawingToCadInput): Promise<DrawingToCadResult
     kind: viewSet.ambiguities.length ? 'inferred' : 'visible', evidence: { source: 'linework' }, value: viewNames,
     confidence: viewSet.ambiguities.length ? 0.5 : 1, resolution: viewSet.ambiguities.length ? 'open' : 'confirmed',
   });
+  return viewNames;
+}
+
+function pushViewDiagnostics(diagnostics: CompilerDiagnostic[], viewSet: ReturnType<typeof identifyViews>): void {
   for (const a of viewSet.ambiguities) diagnostics.push(diag('reference.drawing.view-ambiguous', 'warn', a));
   if (viewSet.views.length === 1) {
     const lone = viewSet.views[0];
@@ -213,25 +231,109 @@ async function runPipeline(input: DrawingToCadInput): Promise<DrawingToCadResult
       ? `only one orthographic view was found; its caption '${lone.label}' names it the ${lone.name} view.`
       : `only one orthographic view was found and it carries no caption; it was read as the top (plan) view.`));
   }
+}
 
+function reconstructPhase(
+  sheet: SheetAnalysis,
+  viewSet: ReturnType<typeof identifyViews>,
+  sheetPerModel: number,
+  mmPerUnit: number,
+  diagnostics: CompilerDiagnostic[],
+  facts: AssumptionFact[],
+): ReturnType<typeof reconstructPart> {
   const rec = reconstructPart({ sheet, viewSet, sheetPerModel, mmPerUnit });
   for (const issue of rec.issues) diagnostics.push(diag(issue.code, issue.severity, issue.message));
   facts.push(...rec.facts);
-  const ledger = ledgerOf(facts);
+  return rec;
+}
 
-  const views = viewSet.views.map(v => ({
+function buildViews(viewSet: ReturnType<typeof identifyViews>): DrawingToCadResult['views'] {
+  return viewSet.views.map(v => ({
     name: v.name,
     bboxMm: [r2(v.bbox.x0), r2(v.bbox.y0), r2(v.bbox.x1 - v.bbox.x0), r2(v.bbox.y1 - v.bbox.y0)] as [number, number, number, number],
     identifiedBy: v.identifiedBy,
     ...(v.label ? { label: v.label } : {}),
   }));
-  const sheetInfo: DrawingToCadResult['sheet'] = {
+}
+
+function buildSheetInfo(
+  vectors: PdfVectors,
+  sheetPerModel: number,
+  scaleSource: 'title-block' | 'dimensions' | 'default',
+  units: 'mm' | 'in',
+  angleName: 'first-angle' | 'third-angle',
+): DrawingToCadResult['sheet'] {
+  return {
     widthMm: r2(vectors.widthMm),
     heightMm: r2(vectors.heightMm),
     scale: { text: scaleLabel(sheetPerModel), sheetPerModel: Math.round(sheetPerModel * 1e6) / 1e6, source: scaleSource },
     units,
     projection: angleName,
   };
+}
+
+async function verifyPhase(
+  input: DrawingToCadInput,
+  script: string,
+  model: PartModel,
+  rec: ReturnType<typeof reconstructPart>,
+): Promise<FidelityReport | undefined> {
+  if (input.verify === false) return undefined;
+  const { verifyReconstruction } = await import('./verify');
+  try {
+    return await verifyReconstruction(script, model, rec.geometry, rec.snap);
+  } catch (e) {
+    const reason = `verification threw: ${e instanceof Error ? e.message : String(e)}`;
+    return {
+      verdict: 'failed',
+      extents: { x: { expected: model.extents.x, actual: 0, delta: model.extents.x }, y: { expected: model.extents.y, actual: 0, delta: model.extents.y }, z: { expected: model.extents.z, actual: 0, delta: model.extents.z } },
+      holes: { expected: [], actual: [], maxDiameterDelta: 0 },
+      silhouettes: [],
+      reasons: [reason],
+      error: reason,
+    };
+  }
+}
+
+async function runPipeline(input: DrawingToCadInput): Promise<DrawingToCadResult> {
+  const page = input.page ?? 1;
+  const diagnostics: CompilerDiagnostic[] = [];
+  const fail = (d: CompilerDiagnostic, pageCount = 0): DrawingToCadResult => ({
+    ok: false, page, pageCount, views: [], params: [], ledger: ledgerOf([]), diagnostics: [...diagnostics, d],
+  });
+
+  const read = await readPageVectorsPhase(input, page, fail);
+  if ('failure' in read) return read.failure;
+  const vectors = read.vectors;
+
+  const rasterFailure = rasterOnlyFailure(input, page, vectors, fail);
+  if (rasterFailure) return rasterFailure;
+
+  const sheet = analyseSheet(vectors);
+  const facts: AssumptionFact[] = [];
+
+  // Units.
+  const { units, mmPerUnit, fact: unitsDeclaration } = unitsFact(sheet);
+  facts.push(unitsDeclaration);
+
+  // Scale: title block, cross-checked against the dimensions.
+  const { sheetPerModel, scaleSource } = resolveScale(sheet, mmPerUnit, facts);
+
+  // Projection angle.
+  const { callerAngle, angle } = resolveProjection(input, sheet);
+  const viewSet = identifyViews(sheet.paths, sheet.notes, angle);
+
+  const viewsFailureResult = viewsFailure(input, page, vectors, viewSet, fail);
+  if (viewsFailureResult) return viewsFailureResult;
+  const angleName = viewSet.projection === 'first' ? 'first-angle' : 'third-angle';
+  const viewNames = pushViewFacts(facts, sheet, viewSet, angleName, callerAngle);
+  pushViewDiagnostics(diagnostics, viewSet);
+
+  const rec = reconstructPhase(sheet, viewSet, sheetPerModel, mmPerUnit, diagnostics, facts);
+  const ledger = ledgerOf(facts);
+
+  const views = buildViews(viewSet);
+  const sheetInfo = buildSheetInfo(vectors, sheetPerModel, scaleSource, units, angleName);
 
   if (!rec.model) {
     return { ok: false, page, pageCount: vectors.pageCount, sheet: sheetInfo, views, params: [], ledger, diagnostics };
@@ -256,23 +358,7 @@ async function runPipeline(input: DrawingToCadInput): Promise<DrawingToCadResult
     unresolvedCount: ledger.unresolvedCount,
   });
 
-  let fidelity: FidelityReport | undefined;
-  if (input.verify !== false) {
-    const { verifyReconstruction } = await import('./verify');
-    try {
-      fidelity = await verifyReconstruction(script, model, rec.geometry, rec.snap);
-    } catch (e) {
-      const reason = `verification threw: ${e instanceof Error ? e.message : String(e)}`;
-      fidelity = {
-        verdict: 'failed',
-        extents: { x: { expected: model.extents.x, actual: 0, delta: model.extents.x }, y: { expected: model.extents.y, actual: 0, delta: model.extents.y }, z: { expected: model.extents.z, actual: 0, delta: model.extents.z } },
-        holes: { expected: [], actual: [], maxDiameterDelta: 0 },
-        silhouettes: [],
-        reasons: [reason],
-        error: reason,
-      };
-    }
-  }
+  const fidelity = await verifyPhase(input, script, model, rec);
 
   return {
     ok: !diagnostics.some(d => d.severity === 'error') && fidelity?.verdict !== 'failed',

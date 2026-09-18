@@ -43,18 +43,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/drawing/index.ts",
-    "symbol": "Async function 'runPipeline'",
-    "value": 49
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/drawing/pdfVectors.ts",
-    "symbol": "Async function 'readPdfPageVectors'",
-    "value": 53
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/drawing/reconstructPhases.ts",
     "symbol": "Arrow function",
     "value": 31
@@ -124,12 +112,6 @@
     "file": "src/agent/mcp/edits/removeFeature.ts",
     "symbol": "Function 'lineContainsTopLevelReturn'",
     "value": 27
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/edits/setParamValue.ts",
-    "symbol": "Function 'findParamCall'",
-    "value": 57
   },
   {
     "rule": "complexity",
@@ -253,12 +235,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/meshClean.ts",
-    "symbol": "Function 'cleanMesh'",
-    "value": 50
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/planPhases.ts",
     "symbol": "Function 'decomposeRun'",
     "value": 35
@@ -292,12 +268,6 @@
     "file": "src/agent/reconstruct/segment.ts",
     "symbol": "Function 'growPlanes'",
     "value": 26
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/render/captureAnimation.ts",
-    "symbol": "Async function 'captureAnimation'",
-    "value": 53
   },
   {
     "rule": "complexity",
@@ -853,39 +823,15 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/agent/drawing/index.ts",
-    "symbol": "Async function 'runPipeline'",
-    "value": 157
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/agent/drawing/pdfVectors.ts",
-    "symbol": "Async function 'readPdfPageVectors'",
-    "value": 185
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/agent/reconstruct/blends.ts",
     "symbol": "Function 'detectEdgeBlends'",
     "value": 175
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/agent/reconstruct/meshClean.ts",
-    "symbol": "Function 'cleanMesh'",
-    "value": 205
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/agent/reconstruct/reconstruct.ts",
     "symbol": "Async function 'reconstructFromSoup'",
     "value": 221
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/agent/render/captureAnimation.ts",
-    "symbol": "Async function 'captureAnimation'",
-    "value": 336
   },
   {
     "rule": "max-lines-per-function",
