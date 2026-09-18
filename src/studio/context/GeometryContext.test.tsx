@@ -86,6 +86,7 @@ function Probe() {
     scriptParams,
     scriptReview,
     error,
+    recomputeMs,
     setPreviewCode,
     setViewportDriverLock,
     updateParam,
@@ -116,6 +117,7 @@ function Probe() {
       <span data-testid="script-review-diagnostic-codes">{scriptReview?.diagnostics?.map((d) => d.code).join(',') ?? ''}</span>
       <span data-testid="script-review-fitness-mode">{scriptReview?.fitness?.repairMode ?? ''}</span>
       <span data-testid="error">{error ?? ''}</span>
+      <span data-testid="recompute-ms">{String(recomputeMs)}</span>
       <button data-testid="trigger-preview" onClick={() => setPreviewCode('return makeBox(1,1,1);')}>Trigger</button>
       <button data-testid="trigger-preview-2" onClick={() => setPreviewCode('return makeBox(2,2,2);')}>Trigger2</button>
       <button data-testid="clear-preview" onClick={() => setPreviewCode(null)}>Clear</button>
@@ -284,6 +286,66 @@ describe('GeometryContext latest-intent-wins', () => {
     });
     expect(screen.getByTestId('preview-face-count').textContent).toBe('2');
     expect(screen.getByTestId('stale-preview').textContent).toBe('1');
+  });
+
+  // Pins the preview-execution effect's "ineligible" branch (no previewCode
+  // / not ready / studioScript mode → previewGeometries reset to `[]`),
+  // which `usePreviewExecution` keeps as a synchronous setState in the
+  // effect body — byte-for-byte the original's — rather than deferring it.
+  it('clears previewGeometries when preview becomes ineligible (previewCode cleared)', async () => {
+    const mainPromise = deferred<{ geometries: Array<{ faces: unknown[] }>; sketches: unknown[] }>();
+    const previewPromise = deferred<{ geometries: Array<{ faces: unknown[] }>; sketches: unknown[] }>();
+
+    let mainResolved = false;
+    mockEngine.executeCode.mockImplementation((source: string) => {
+      if (source.includes('makeBox(1,1,1)')) return previewPromise.promise;
+      if (!mainResolved) {
+        mainResolved = true;
+        return mainPromise.promise;
+      }
+      return Promise.resolve({ geometries: [{ faces: [] }], sketches: [] });
+    });
+
+    render(
+      <GeometryProvider code={'const a = 1;'}>
+        <Probe />
+      </GeometryProvider>,
+    );
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600);
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      mainPromise.resolve({ geometries: [{ faces: [] }], sketches: [] });
+      await Promise.resolve();
+    });
+
+    // Trigger a preview and let it resolve.
+    await act(async () => {
+      screen.getByTestId('trigger-preview').click();
+      await Promise.resolve();
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(200);
+      await Promise.resolve();
+    });
+    await act(async () => {
+      previewPromise.resolve({ geometries: [{ faces: [{}, {}] }], sketches: [] });
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(screen.getByTestId('preview-face-count').textContent).toBe('2');
+
+    // Clearing previewCode makes preview ineligible — previewGeometries
+    // must reset to `[]` (preview-face-count back to 0), same as the
+    // original inline effect.
+    await act(async () => {
+      screen.getByTestId('clear-preview').click();
+      await Promise.resolve();
+    });
+    expect(screen.getByTestId('preview-face-count').textContent).toBe('0');
   });
 
   it('loads an examples script into Studio from the dev mesh endpoint', async () => {
@@ -544,6 +606,16 @@ describe('GeometryContext latest-intent-wins', () => {
         }),
       } as Response);
 
+    // Regression for the hosted-mesh branch of `fetchMeshAndReview`
+    // (`!token && shouldUseHostedMesh()`, exercised by this test): the
+    // status-bar "Last compute N ms" readout depends on `recomputeMs` being
+    // set here too, not just on the dev-kernel branch. Pin
+    // `performance.now()` to a known, non-zero delta so the assertion below
+    // can't pass by coincidence on a fast test run.
+    const perfNowSpy = vi.spyOn(performance, 'now')
+      .mockReturnValueOnce(1000) // fetchStart, captured when the hosted fetch begins
+      .mockReturnValueOnce(1500); // sampled when the payload lands
+
     render(
       <GeometryProvider code={'export default box(1, 1, 1);'}>
         <Probe />
@@ -556,6 +628,8 @@ describe('GeometryContext latest-intent-wins', () => {
     expect(fetchUrl(fetchMock, 2)).toContain('https://kernelcad.com/gallery/_mesh/');
     expect(screen.getByTestId('face-count').textContent).toBe('1');
     expect(screen.getByTestId('script-review-ok').textContent).toBe('true');
+    expect(screen.getByTestId('recompute-ms').textContent).toBe('500');
+    perfNowSpy.mockRestore();
   });
 
   // Regression: gallery/MCP models authored as modern .kcad.ts carry TypeScript

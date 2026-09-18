@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/kinematic/materialCatalog.ts
+// src/shared/materials/materialCatalog.ts
 //
 // Bulk-material property rows (density, Young's modulus, yield) — the numeric
 // source every material consumer reads. A leaf module: the engineering-grade

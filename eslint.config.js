@@ -11,42 +11,6 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 // shared/diagnostics/registry/) is not a layer import.
 const layerImportRegex = (layer) => `^(\\.\\./)+${layer}(/|$)|(^|/)src/${layer}(/|$)`;
 
-// Deprecated shim enforcement: the five `@deprecated export *` re-export shims
-// left at their pre-move paths exist only so old imports don't hard-break; new
-// imports must go straight to the moved module. ESLint flat config lets a later
-// block REPLACE an earlier block's options for the same rule, so these patterns
-// are merged into every layering block below instead of living in a block of
-// their own that would silently switch the layering patterns off.
-const SHIM_PATTERNS = [
-      {
-        regex: '/modeling/properties/massProperties$',
-        message: 'moved to src/modeling/properties/massProperties.ts; import from there instead of the deprecated shim.',
-      },
-      {
-        regex: '/modeling/capture/hermiteG2$',
-        message: 'moved to src/modeling/capture/hermiteG2.ts; import from there instead of the deprecated shim.',
-      },
-      {
-        regex: '/modeling/backends/occt/surfaceSewLowerer$',
-        message: 'moved to src/modeling/backends/occt/surfaceSewLowerer.ts; import from there instead of the deprecated shim.',
-      },
-      {
-        regex: '/agent/render/animationSampler$',
-        message: 'moved to src/modeling/animation/animationSampler.ts; import from there instead of the deprecated shim.',
-      },
-      {
-        regex: '/agent/render/verifyAnimation$',
-        message: 'moved to src/modeling/animation/verifyAnimation.ts; import from there instead of the deprecated shim.',
-      },
-];
-const SHIM_FILES = [
-  'src/modeling/properties/massProperties.ts',
-  'src/modeling/capture/hermiteG2.ts',
-  'src/modeling/backends/occt/surfaceSewLowerer.ts',
-  'src/agent/render/animationSampler.ts',
-  'src/agent/render/verifyAnimation.ts',
-];
-
 export default defineConfig([
   globalIgnores(['**/dist/**', 'eval/runs/**', '.claude/worktrees/**', '.worktrees/**']),
   {
@@ -60,16 +24,6 @@ export default defineConfig([
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
-    },
-  },
-  // Shim enforcement for files no layering block covers (studio, unmapped dirs,
-  // tests, allowlisted files). MUST stay before the layering blocks: for files
-  // matched by both, the later block's options win, and those include SHIM_PATTERNS.
-  {
-    files: ['src/**/*.{ts,tsx}'],
-    ignores: SHIM_FILES,
-    rules: {
-      'no-restricted-imports': ['error', { patterns: SHIM_PATTERNS }],
     },
   },
   // Layering: shared -> kernel -> modeling -> kinematic -> agent -> studio. Imports may only
@@ -86,22 +40,47 @@ export default defineConfig([
     ignores: [
       // Tests may import across layers.
       '**/*.test.{ts,tsx}',
-      // Remaining layering exceptions (kinematic placement, fixed in a follow-up slice).
-      'src/kinematic/sweepTolerance.ts',
-      'src/kernel/fea/feaMaterials.ts',
+      // modeling/api.ts is the script-API composition root: it is what
+      // exposes `kinematic.*` to user scripts, which structurally requires
+      // importing src/kinematic from modeling. The real fix is a dedicated
+      // script-API composition layer above both, coordinated with
+      // kernelCAD-server (which also constructs this API outside this
+      // repo) — tracked in the quality-ratchet spec, not a same-repo slice.
       'src/modeling/api.ts',
-      'src/modeling/capture/proxy.ts',
-      'src/modeling/properties/materialLibrary.ts',
+      // kinematic/sweepTolerance.ts orchestrates agent-side
+      // evaluate/setParam (CLI command tree + MCP edit helpers) from within
+      // the kinematic layer. The real fix is the same dedicated script-API
+      // composition layer above both — see the modeling/api.ts note above —
+      // coordinated with kernelCAD-server and tracked in the quality-ratchet
+      // spec, not a same-repo slice.
+      'src/kinematic/sweepTolerance.ts',
     ],
     rules: {
       'no-restricted-imports': ['error', {
-        patterns: [
-          ...forbid.map((layer) => ({
-            regex: layerImportRegex(layer),
-            message: `src/${dir} must not import from src/${layer} (layering: shared -> kernel -> modeling -> kinematic -> agent -> studio).`,
-          })),
-          ...SHIM_PATTERNS,
-        ],
+        patterns: forbid.map((layer) => ({
+          regex: layerImportRegex(layer),
+          message: `src/${dir} must not import from src/${layer} (layering: shared -> kernel -> modeling -> kinematic -> agent -> studio).`,
+        })),
+      }],
+      'no-restricted-syntax': ['error', ...forbid.map((layer) => ({
+        selector: `ImportExpression[source.value=/${layerImportRegex(layer).replace(/\//g, '\\/')}/]`,
+        message: `src/${dir} must not import from src/${layer} (layering: shared -> kernel -> modeling -> kinematic -> agent -> studio).`,
+      }))],
+    },
+  })),
+  // The two composition-root exceptions are exempt only from the ONE edge their
+  // comment above documents; every other upward import is still an error.
+  ...[
+    { file: 'src/modeling/api.ts', dir: 'modeling', forbid: ['agent', 'studio', 'server'] },
+    { file: 'src/kinematic/sweepTolerance.ts', dir: 'kinematic', forbid: ['studio'] },
+  ].map(({ file, dir, forbid }) => ({
+    files: [file],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: forbid.map((layer) => ({
+          regex: layerImportRegex(layer),
+          message: `src/${dir} must not import from src/${layer} (layering: shared -> kernel -> modeling -> kinematic -> agent -> studio).`,
+        })),
       }],
       'no-restricted-syntax': ['error', ...forbid.map((layer) => ({
         selector: `ImportExpression[source.value=/${layerImportRegex(layer).replace(/\//g, '\\/')}/]`,

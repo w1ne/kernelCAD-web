@@ -33,7 +33,8 @@ export interface LowerVariableSweepOpts {
   /**
    * When true, OCCT translates each profile wire so it makes contact with
    * the spine vertex it's anchored to (`BRepOffsetAPI_MakePipeShell::Add_2`'s
-   * `WithContact=true`). The dispatch arm in `occtLowerer` uses this for
+   * `WithContact=true`). `lowerVariableSweep` in
+   * `backends/occt/lowerers/curves.ts` uses this for
    * sketch-derived profiles (always lifted at z=0); callers that supply
    * pre-positioned profile wires (e.g. the lowerer's unit test) leave this
    * `false` so OCCT honours the caller-supplied placement. Default: `false`.

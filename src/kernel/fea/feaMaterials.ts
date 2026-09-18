@@ -8,7 +8,7 @@
 // could silently drop a factor of 1e6.
 //
 // Grade names, their aliases, E / yield and Poisson's ratio all come from the
-// single material registry (`src/kinematic/engineeringMaterials.ts`) that mass
+// single material registry (`src/shared/materials/engineeringMaterials.ts`) that mass
 // properties, finishes and the beam check also resolve through — so a part
 // declared `aluminum-6061` weighs, renders and solves as the same material.
 // This module only converts units (Pa -> MPa) for the solver.
@@ -30,7 +30,7 @@ import {
   engineeringMaterialProps,
   poissonRatio,
   type EngineeringMaterialName,
-} from '../../kinematic/engineeringMaterials';
+} from '../../shared/materials/engineeringMaterials';
 import { isFeaMaterialProps, type FeaMaterialProps } from '../../shared/intent/feaStudyRecord';
 
 /** Every canonical grade name the FEA path accepts, in table order. Aliases

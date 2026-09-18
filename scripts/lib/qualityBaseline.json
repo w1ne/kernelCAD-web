@@ -547,45 +547,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/backends/occt/occtLowerer.ts",
-    "symbol": "Async method 'lower'",
-    "value": 493
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/backends/occt/occtLowerer.ts",
-    "symbol": "Function 'applyVariableEdgeFeature'",
-    "value": 29
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/backends/occt/occtLowerer.ts",
-    "symbol": "Method 'buildSurfaceById'",
-    "value": 27
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/backends/occt/sheetMetalLowerer.ts",
     "symbol": "Function 'resolveBendAxis'",
     "value": 21
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/assembly.ts",
-    "symbol": "Method 'partInternal'",
-    "value": 36
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/assembly.ts",
-    "symbol": "Method 'solvedModel'",
-    "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/assembly.ts",
-    "symbol": "Method 'tendon'",
-    "value": 30
   },
   {
     "rule": "complexity",
@@ -913,21 +877,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/studio/Toolbar.tsx",
-    "symbol": "Function 'Toolbar'",
-    "value": 34
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/adapters/featureRecordsToCounts.ts",
     "symbol": "Function 'countModelTopology'",
     "value": 23
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/components/Layout/Header.tsx",
-    "symbol": "Function 'Header'",
-    "value": 25
   },
   {
     "rule": "complexity",
@@ -946,12 +898,6 @@
     "file": "src/studio/components/demoPlayer/AnimationEngine.ts",
     "symbol": "Function 'classify'",
     "value": 26
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/components/demoPlayer/DemoPlayerPage.tsx",
-    "symbol": "Method 'loadFeatureMeshes'",
-    "value": 41
   },
   {
     "rule": "complexity",
@@ -976,24 +922,6 @@
     "file": "src/studio/components/viewer/overlays/MarkingOverlay.tsx",
     "symbol": "Function 'struckPartsFromMask'",
     "value": 35
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/context/GeometryContext.tsx",
-    "symbol": "Async arrow function",
-    "value": 34
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/context/GeometryContext.tsx",
-    "symbol": "Async arrow function#2",
-    "value": 36
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/context/GeometryContext.tsx",
-    "symbol": "Function 'overlayLiveReview'",
-    "value": 24
   },
   {
     "rule": "complexity",
@@ -1177,18 +1105,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/backends/occt/occtLowerer.ts",
-    "symbol": "Async method 'lower'",
-    "value": 2519
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/backends/occt/occtLowerer.ts",
-    "symbol": "Method 'buildSurfaceById'",
-    "value": 152
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/modeling/backends/occt/sheetMetalLowerer.ts",
     "symbol": "Function 'lowerSheetMetalBend'",
     "value": 161
@@ -1303,18 +1219,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/Toolbar.tsx",
-    "symbol": "Function 'Toolbar'",
-    "value": 279
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/components/Layout/Header.tsx",
-    "symbol": "Function 'Header'",
-    "value": 286
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/Layout/SidePanel.tsx",
     "symbol": "Function 'SidePanel'",
     "value": 177
@@ -1345,24 +1249,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/demoPlayer/DemoPlayerPage.tsx",
-    "symbol": "Arrow function",
-    "value": 612
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/components/demoPlayer/DemoPlayerPage.tsx",
-    "symbol": "Function 'DemoPlayerPage'",
-    "value": 854
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/components/demoPlayer/DemoPlayerPage.tsx",
-    "symbol": "Method 'loadFeatureMeshes'",
-    "value": 185
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/inputs/NumericScrubInput.tsx",
     "symbol": "Function 'NumericScrubInput'",
     "value": 195
@@ -1387,45 +1273,9 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/context/GeometryContext.tsx",
-    "symbol": "Arrow function",
-    "value": 176
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/context/GeometryContext.tsx",
-    "symbol": "Arrow function#2",
-    "value": 184
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/context/GeometryContext.tsx",
-    "symbol": "Async arrow function",
-    "value": 174
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/context/GeometryContext.tsx",
-    "symbol": "Async arrow function#2",
-    "value": 154
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/context/GeometryContext.tsx",
-    "symbol": "Function 'GeometryProvider'",
-    "value": 894
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/context/WorkbenchContext.tsx",
     "symbol": "Function 'WorkbenchInnerProvider'",
     "value": 205
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/features-ui/ai/AIAssistant.tsx",
-    "symbol": "Function 'AIAssistant'",
-    "value": 301
   },
   {
     "rule": "max-lines-per-function",
@@ -1495,18 +1345,6 @@
   },
   {
     "rule": "max-lines",
-    "file": "src/modeling/backends/occt/occtLowerer.ts",
-    "symbol": "(file)",
-    "value": 3118
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/modeling/capture/assembly.ts",
-    "symbol": "(file)",
-    "value": 2502
-  },
-  {
-    "rule": "max-lines",
     "file": "src/modeling/capture/featureMeshing.ts",
     "symbol": "(file)",
     "value": 876
@@ -1540,23 +1378,5 @@
     "file": "src/modeling/mates/physicalUseCaseStatics.ts",
     "symbol": "(file)",
     "value": 920
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/shared/diagnostics/registry.ts",
-    "symbol": "(file)",
-    "value": 2644
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/studio/components/demoPlayer/DemoPlayerPage.tsx",
-    "symbol": "(file)",
-    "value": 1209
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/studio/context/GeometryContext.tsx",
-    "symbol": "(file)",
-    "value": 1105
   }
 ]

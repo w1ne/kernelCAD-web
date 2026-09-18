@@ -13,7 +13,7 @@ type Bbox = { min: Vec3; max: Vec3 };
 /**
  * Mechanical-plausibility review attaches one of five `assembly.mechanical.*`
  * codes per diagnostic. Each code is registered in the central
- * `DIAGNOSTIC_REGISTRY` (`src/shared/diagnostics/registry.ts`) so the
+ * `DIAGNOSTIC_REGISTRY` (`src/shared/diagnostics/registry/`) so the
  * `code` literal here is a single-element `Extract` of `DiagnosticCode` —
  * the type system enforces that any new mechanical-plausibility code goes
  * through the registry first.

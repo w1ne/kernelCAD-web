@@ -111,7 +111,7 @@ export interface RecomputeResult {
   /**
    * Structured per-failure list. Always populated to the empty array when
    * `mechanism === 'real'`. Each diagnostic uses one of the
-   * `mechanism.*` codes from `src/shared/diagnostics/registry.ts`.
+   * `mechanism.*` codes from `src/shared/diagnostics/registry/`.
    */
   mechanismFailures?: readonly CompilerDiagnostic[];
 }
