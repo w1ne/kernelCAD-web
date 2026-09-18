@@ -4,8 +4,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { DiffEditor } from '@monaco-editor/react';
 import { useGeneration } from '../funnel/hooks/useGeneration';
 import {
-    isReferenceImageMimeType,
-    MAX_REFERENCE_IMAGE_BYTES,
     type GenerateEvent,
     type GenerateRequest,
 } from '../funnel/lib/generateClient';
@@ -14,6 +12,7 @@ import { inAppAgentEnabled } from './agentAvailability';
 import { ConceptResult } from './components/ConceptResult';
 import { useCode } from './context/CodeContext';
 import { useFeatureSelection } from './hooks/useFeatureSelection';
+import { useReferencePhoto } from './hooks/useReferencePhoto';
 import { useShellStore, shellStore } from './store/useShellStore';
 import type { AgentRepairWorkflow } from './store/shellStore';
 import type { SelectedFeatureId } from './types';
@@ -45,22 +44,6 @@ interface GenerationReviewSnapshot {
     readonly repairWorkflow: AgentRepairWorkflow | null;
 }
 
-type PendingReferenceImage = Pick<NonNullable<GenerateRequest['referenceImage']>, 'dataUrl' | 'fileName' | 'mimeType'>;
-
-function photoReferenceFrom(
-    pending: PendingReferenceImage | null,
-    dimensionLabel: string,
-    dimensionMmText: string,
-): GenerateRequest['referenceImage'] | null {
-    const valueMm = Number(dimensionMmText);
-    const label = dimensionLabel.trim();
-    if (pending == null || !label || !Number.isFinite(valueMm) || valueMm <= 0) return null;
-    return {
-        ...pending,
-        knownDimension: { label, valueMm },
-    };
-}
-
 const StudioGenerateInner: React.FC = () => {
     const { phase, events, submit } = useGeneration();
     const { code } = useCode();
@@ -76,11 +59,20 @@ const StudioGenerateInner: React.FC = () => {
     // (so the diff is stable even though `code` changes once we apply).
     const [baseline, setBaseline] = useState('');
     const [reviewSnapshot, setReviewSnapshot] = useState<GenerationReviewSnapshot | null>(null);
-    const [pendingReferenceImage, setPendingReferenceImage] = useState<PendingReferenceImage | null>(null);
-    const [knownDimensionLabel, setKnownDimensionLabel] = useState('');
-    const [knownDimensionMm, setKnownDimensionMm] = useState('');
-    const [referenceImageError, setReferenceImageError] = useState<string | null>(null);
-    const [readingReferenceImage, setReadingReferenceImage] = useState(false);
+    const {
+        pendingReferenceImage,
+        knownDimensionLabel,
+        setKnownDimensionLabel,
+        knownDimensionMm,
+        setKnownDimensionMm,
+        referenceImageError,
+        setReferenceImageError,
+        readingReferenceImage,
+        referenceImage,
+        photoReferenceSelected,
+        referenceNeedsDimension,
+        onReferenceImageSelect,
+    } = useReferencePhoto();
 
     const prompt =
         agentDraftPrompt !== null && agentDraftPromptVersion !== acknowledgedDraftVersion
@@ -106,12 +98,6 @@ const StudioGenerateInner: React.FC = () => {
     const reviewing = phase.state === 'done' && resolution?.generationId !== phase.generationId;
 
     const steps = useMemo(() => events.map(stepLabel).filter(Boolean) as string[], [events]);
-    const referenceImage = useMemo(
-        () => photoReferenceFrom(pendingReferenceImage, knownDimensionLabel, knownDimensionMm),
-        [knownDimensionLabel, knownDimensionMm, pendingReferenceImage],
-    );
-    const photoReferenceSelected = pendingReferenceImage != null;
-    const referenceNeedsDimension = pendingReferenceImage != null && referenceImage == null;
 
     useEffect(() => {
         if (phase.state !== 'error' || agentRepairWorkflow?.state !== 'running') return;
@@ -173,52 +159,6 @@ const StudioGenerateInner: React.FC = () => {
             selectedFeatureId: runTargetId,
             repairWorkflow: repairWorkflowForRun,
         }, referenceImage ?? undefined);
-    };
-
-    const onReferenceImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-        const mimeType = file.type;
-
-        setReferenceImageError(null);
-        // A scale anchor belongs to a specific photo. Never silently reuse a
-        // measurement from the previous reference after the file changes.
-        setKnownDimensionLabel('');
-        setKnownDimensionMm('');
-        if (!isReferenceImageMimeType(mimeType)) {
-            setPendingReferenceImage(null);
-            setReferenceImageError('Use a PNG, JPEG, or WebP image for the reference photo.');
-            return;
-        }
-        if (file.size === 0) {
-            setPendingReferenceImage(null);
-            setReferenceImageError('Reference photo is empty. Choose an image with visible device details.');
-            return;
-        }
-        if (file.size > MAX_REFERENCE_IMAGE_BYTES) {
-            setPendingReferenceImage(null);
-            setReferenceImageError('Reference images must be 4 MiB or smaller.');
-            return;
-        }
-
-        setPendingReferenceImage(null);
-        setReadingReferenceImage(true);
-        const reader = new FileReader();
-        reader.onload = () => {
-            const dataUrl = reader.result;
-            if (typeof dataUrl !== 'string' || !dataUrl.startsWith(`data:${mimeType};base64,`)) {
-                setReferenceImageError('Could not read that image as a safe data URL. Choose a PNG, JPEG, or WebP image.');
-                setReadingReferenceImage(false);
-                return;
-            }
-            setPendingReferenceImage({ dataUrl, fileName: file.name, mimeType });
-            setReadingReferenceImage(false);
-        };
-        reader.onerror = () => {
-            setReferenceImageError('Could not read that reference photo. Try another image.');
-            setReadingReferenceImage(false);
-        };
-        reader.readAsDataURL(file);
     };
 
     const onConcept = () => {
