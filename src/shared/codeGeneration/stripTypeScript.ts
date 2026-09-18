@@ -13,624 +13,673 @@ const IDENT_PART = /[A-Za-z0-9_$]/;
 
 type BraceKind = 'block' | 'object' | 'spec';
 
-export function stripTypeScriptSyntax(source: string): string {
-    const n = source.length;
-    const out = source.split('');
-    let i = 0;
-    let lastKind: 'ident' | 'number' | 'string' | 'punct' | null = null;
-    let lastPunct = '';
-    let lastIdent = '';
-    let statementStart = true;
-    let expectBinding = false;
-    let inImport = false;
-    const braces: BraceKind[] = [];
+/** Mutable scan state, shared by the phase helpers below. */
+interface StripState {
+    source: string;
+    n: number;
+    out: string[];
+    i: number;
+    lastKind: 'ident' | 'number' | 'string' | 'punct' | null;
+    lastPunct: string;
+    lastIdent: string;
+    statementStart: boolean;
+    expectBinding: boolean;
+    inImport: boolean;
+    braces: BraceKind[];
+}
 
-    const blank = (start: number, end: number): void => {
-        const to = Math.min(end, n);
-        for (let k = start; k < to; k++) {
-            if (out[k] !== '\n' && out[k] !== '\r') out[k] = ' ';
+const blank = (st: StripState, start: number, end: number): void => {
+    const to = Math.min(end, st.n);
+    for (let k = start; k < to; k++) {
+        if (st.out[k] !== '\n' && st.out[k] !== '\r') st.out[k] = ' ';
+    }
+};
+
+const peek = (st: StripState, d = 0): string => st.source[st.i + d] ?? '';
+
+const skipWs = (st: StripState): void => {
+    while (st.i < st.n) {
+        const c = st.source[st.i];
+        if (c === ' ' || c === '\t' || c === '\n' || c === '\r' || c === '\f' || c === '\v') {
+            if (c === '\n' || c === '\r') st.statementStart = true;
+            st.i++;
+            continue;
         }
-    };
+        break;
+    }
+};
 
-    const peek = (d = 0): string => source[i + d] ?? '';
+const skipLineComment = (st: StripState): void => {
+    st.i += 2;
+    while (st.i < st.n && st.source[st.i] !== '\n' && st.source[st.i] !== '\r') st.i++;
+};
 
-    const skipWs = (): void => {
-        while (i < n) {
-            const c = source[i];
-            if (c === ' ' || c === '\t' || c === '\n' || c === '\r' || c === '\f' || c === '\v') {
-                if (c === '\n' || c === '\r') statementStart = true;
-                i++;
-                continue;
-            }
-            break;
+const skipBlockComment = (st: StripState): void => {
+    st.i += 2;
+    while (st.i < st.n && !(st.source[st.i] === '*' && st.source[st.i + 1] === '/')) st.i++;
+    if (st.i < st.n) st.i += 2;
+};
+
+const skipString = (st: StripState, quote: string): void => {
+    st.i++;
+    while (st.i < st.n) {
+        const c = st.source[st.i];
+        if (c === '\\') {
+            st.i += 2;
+            continue;
         }
-    };
-
-    const skipLineComment = (): void => {
-        i += 2;
-        while (i < n && source[i] !== '\n' && source[i] !== '\r') i++;
-    };
-
-    const skipBlockComment = (): void => {
-        i += 2;
-        while (i < n && !(source[i] === '*' && source[i + 1] === '/')) i++;
-        if (i < n) i += 2;
-    };
-
-    const skipString = (quote: string): void => {
-        i++;
-        while (i < n) {
-            const c = source[i];
-            if (c === '\\') {
-                i += 2;
-                continue;
-            }
-            if (c === quote) {
-                i++;
-                return;
-            }
-            if (c === '\n') return;
-            i++;
+        if (c === quote) {
+            st.i++;
+            return;
         }
-    };
+        if (c === '\n') return;
+        st.i++;
+    }
+};
 
-    const skipTemplate = (): void => {
-        i++;
-        while (i < n) {
-            const c = source[i];
-            if (c === '\\') {
-                i += 2;
-                continue;
-            }
-            if (c === '`') {
-                i++;
-                return;
-            }
-            if (c === '$' && source[i + 1] === '{') {
-                i += 2;
-                let depth = 1;
-                while (i < n && depth > 0) {
-                    const inner = source[i];
-                    if (inner === '\\') {
-                        i += 2;
-                        continue;
-                    }
-                    if (inner === '`' || inner === '"' || inner === "'") {
-                        skipString(inner);
-                        continue;
-                    }
-                    if (inner === '{') depth++;
-                    else if (inner === '}') depth--;
-                    if (depth > 0) i++;
-                }
-                if (source[i] === '}') i++;
-                continue;
-            }
-            i++;
-        }
-    };
-
-    const skipCommentsAndWs = (): void => {
-        for (;;) {
-            skipWs();
-            if (source[i] === '/' && source[i + 1] === '/') {
-                skipLineComment();
-                continue;
-            }
-            if (source[i] === '/' && source[i + 1] === '*') {
-                skipBlockComment();
-                continue;
-            }
-            break;
-        }
-    };
-
-    const readIdent = (): string => {
-        const start = i;
-        i++;
-        while (i < n && IDENT_PART.test(source[i]!)) i++;
-        return source.slice(start, i);
-    };
-
-    const skipNumber = (): void => {
-        if (source[i] === '0' && (source[i + 1] === 'x' || source[i + 1] === 'X' || source[i + 1] === 'b' || source[i + 1] === 'B' || source[i + 1] === 'o' || source[i + 1] === 'O')) {
-            i += 2;
-        }
-        while (i < n && /[0-9a-fA-Fn._]/.test(source[i]!)) i++;
-    };
-
-    const skipType = (): boolean => {
-        skipCommentsAndWs();
-        const start = i;
-        if (i >= n) return false;
-        let angle = 0;
-        let paren = 0;
-        let bracket = 0;
-        let brace = 0;
-        let seenTerm = false;
-        let progressed = false;
-
-        const depth = (): number => angle + paren + bracket + brace;
-
-        while (i < n) {
-            skipCommentsAndWs();
-            if (i >= n) break;
-            const c = source[i]!;
-            const d = depth();
-
-            if (d === 0) {
-                if (c === '=' && peek(1) !== '>' && peek(1) !== '=') break;
-                if (c === ',' || c === ';' || c === ')') break;
-                if (c === '}') break;
-                if (c === '{' && seenTerm) break;
-            }
-
-            if (c === '"' || c === "'") {
-                skipString(c);
-                seenTerm = true;
-                progressed = true;
-                continue;
-            }
-            if (c === '`') {
-                skipTemplate();
-                seenTerm = true;
-                progressed = true;
-                continue;
-            }
-            if (c === '<' ) {
-                angle++;
-                i++;
-                seenTerm = false;
-                progressed = true;
-                continue;
-            }
-            if (c === '>') {
-                if (angle > 0) angle--;
-                i++;
-                seenTerm = true;
-                progressed = true;
-                continue;
-            }
-            if (c === '(') {
-                paren++;
-                i++;
-                seenTerm = false;
-                progressed = true;
-                continue;
-            }
-            if (c === ')') {
-                if (paren > 0) paren--;
-                else break;
-                i++;
-                seenTerm = true;
-                progressed = true;
-                continue;
-            }
-            if (c === '[') {
-                bracket++;
-                i++;
-                seenTerm = false;
-                progressed = true;
-                continue;
-            }
-            if (c === ']') {
-                if (bracket > 0) bracket--;
-                i++;
-                seenTerm = true;
-                progressed = true;
-                continue;
-            }
-            if (c === '{') {
-                brace++;
-                i++;
-                seenTerm = false;
-                progressed = true;
-                continue;
-            }
-            if (c === '}') {
-                if (brace > 0) brace--;
-                i++;
-                seenTerm = true;
-                progressed = true;
-                continue;
-            }
-            if (c === '=' && peek(1) === '>') {
-                i += 2;
-                seenTerm = false;
-                progressed = true;
-                continue;
-            }
-            if (IDENT_START.test(c)) {
-                readIdent();
-                seenTerm = true;
-                progressed = true;
-                continue;
-            }
-            if (c === '.' || c === '|' || c === '&' || c === ':' || c === '?' || c === '!' || c === '*' || c === '-' || c === '+') {
-                if (c === '|' || c === '&' || c === ':' || c === '.') seenTerm = false;
-                i++;
-                progressed = true;
-                continue;
-            }
-            if (c >= '0' && c <= '9') {
-                skipNumber();
-                seenTerm = true;
-                progressed = true;
-                continue;
-            }
-            if (d === 0) break;
-            i++;
-            progressed = true;
-        }
-
-        return progressed && i > start;
-    };
-
-    const skipTypeAnnotation = (): boolean => {
-        skipCommentsAndWs();
-        if (source[i] !== ':') return false;
-        const colon = i;
-        i++;
-        if (!skipType()) {
-            i = colon;
-            return false;
-        }
-        blank(colon, i);
-        return true;
-    };
-
-    const looksLikeGeneric = (): boolean => {
-        skipCommentsAndWs();
-        if (source[i] !== '<') return false;
-        const start = i;
-        let angle = 1;
-        i++;
-        while (i < n && angle > 0) {
-            skipCommentsAndWs();
-            if (i >= n) {
-                i = start;
-                return false;
-            }
-            const c = source[i]!;
-            if (c === '"' || c === "'") {
-                skipString(c);
-                continue;
-            }
-            if (c === '`') {
-                skipTemplate();
-                continue;
-            }
-            if (angle === 1 && c === '&' && peek(1) === '&') {
-                i = start;
-                return false;
-            }
-            if (angle === 1 && c === '|' && peek(1) === '|') {
-                i = start;
-                return false;
-            }
-            if (c === '<') {
-                angle++;
-                i++;
-                continue;
-            }
-            if (c === '>') {
-                angle--;
-                i++;
-                continue;
-            }
-            i++;
-        }
-        if (angle !== 0) {
-            i = start;
-            return false;
-        }
-        blank(start, i);
-        return true;
-    };
-
-    const skipNonNull = (): void => {
-        skipCommentsAndWs();
-        if (source[i] !== '!') return;
-        if (peek(1) === '=' || peek(1) === '!') return;
-        blank(i, i + 1);
-        i++;
-    };
-
-    const skipAsOrSatisfies = (keyword: string): boolean => {
-        if (inImport) return false;
-        if (braces[braces.length - 1] === 'spec') return false;
-        if (lastPunct === '*') return false;
-        if (lastKind !== 'ident' && lastKind !== 'number' && lastKind !== 'string' && lastPunct !== ')' && lastPunct !== ']' && lastPunct !== '}') {
-            return false;
-        }
-        const start = i - keyword.length;
-        skipCommentsAndWs();
-        if (!skipType()) {
-            i = start + keyword.length;
-            return false;
-        }
-        blank(start, i);
-        return true;
-    };
-
-    const skipBalancedBracesFrom = (openAt: number): void => {
-        let depth = 1;
-        i = openAt + 1;
-        while (i < n && depth > 0) {
-            const c = source[i]!;
-            if (c === '"' || c === "'") {
-                skipString(c);
-                continue;
-            }
-            if (c === '`') {
-                skipTemplate();
-                continue;
-            }
-            if (c === '/' && peek(1) === '/') {
-                skipLineComment();
-                continue;
-            }
-            if (c === '/' && peek(1) === '*') {
-                skipBlockComment();
-                continue;
-            }
-            if (c === '{') depth++;
-            else if (c === '}') depth--;
-            i++;
-        }
-    };
-
-    const skipDeclarationToSemiOrBrace = (): void => {
-        while (i < n) {
-            skipCommentsAndWs();
-            const c = source[i];
-            if (c === '"' || c === "'") {
-                skipString(c);
-                continue;
-            }
-            if (c === '`') {
-                skipTemplate();
-                continue;
-            }
-            if (c === '{') {
-                const open = i;
-                skipBalancedBracesFrom(open);
-                return;
-            }
-            if (c === ';') {
-                i++;
-                return;
-            }
-            if (c === '\n' && lastKind === 'ident') {
-                return;
-            }
-            i++;
-        }
-    };
-
-    const classifyBrace = (): BraceKind => {
-        if (inImport) return 'spec';
-        if (lastPunct === '(' || lastPunct === ',' || lastPunct === '[' || lastPunct === '=' || lastPunct === ':' || lastPunct === '!') {
-            return 'object';
-        }
-        if (lastIdent === 'return' || lastIdent === 'throw' || lastIdent === 'case' || lastIdent === 'yield' || lastIdent === 'of') {
-            return 'object';
-        }
-        return 'block';
-    };
-
-    const inObjectKey = (): boolean => braces[braces.length - 1] === 'object';
-
-    while (i < n) {
-        skipCommentsAndWs();
-        if (i >= n) break;
-        const c = source[i]!;
-
-        if (c === '"' || c === "'") {
-            skipString(c);
-            lastKind = 'string';
-            lastPunct = '';
-            expectBinding = false;
-            statementStart = false;
+const skipTemplate = (st: StripState): void => {
+    st.i++;
+    while (st.i < st.n) {
+        const c = st.source[st.i];
+        if (c === '\\') {
+            st.i += 2;
             continue;
         }
         if (c === '`') {
-            skipTemplate();
-            lastKind = 'string';
-            lastPunct = '';
-            expectBinding = false;
-            statementStart = false;
+            st.i++;
+            return;
+        }
+        if (c === '$' && st.source[st.i + 1] === '{') {
+            st.i += 2;
+            let depth = 1;
+            while (st.i < st.n && depth > 0) {
+                const inner = st.source[st.i];
+                if (inner === '\\') {
+                    st.i += 2;
+                    continue;
+                }
+                if (inner === '`' || inner === '"' || inner === "'") {
+                    skipString(st, inner);
+                    continue;
+                }
+                if (inner === '{') depth++;
+                else if (inner === '}') depth--;
+                if (depth > 0) st.i++;
+            }
+            if (st.source[st.i] === '}') st.i++;
+            continue;
+        }
+        st.i++;
+    }
+};
+
+const skipCommentsAndWs = (st: StripState): void => {
+    for (;;) {
+        skipWs(st);
+        if (st.source[st.i] === '/' && st.source[st.i + 1] === '/') {
+            skipLineComment(st);
+            continue;
+        }
+        if (st.source[st.i] === '/' && st.source[st.i + 1] === '*') {
+            skipBlockComment(st);
+            continue;
+        }
+        break;
+    }
+};
+
+const readIdent = (st: StripState): string => {
+    const start = st.i;
+    st.i++;
+    while (st.i < st.n && IDENT_PART.test(st.source[st.i]!)) st.i++;
+    return st.source.slice(start, st.i);
+};
+
+const skipNumber = (st: StripState): void => {
+    if (st.source[st.i] === '0' && (st.source[st.i + 1] === 'x' || st.source[st.i + 1] === 'X' || st.source[st.i + 1] === 'b' || st.source[st.i + 1] === 'B' || st.source[st.i + 1] === 'o' || st.source[st.i + 1] === 'O')) {
+        st.i += 2;
+    }
+    while (st.i < st.n && /[0-9a-fA-Fn._]/.test(st.source[st.i]!)) st.i++;
+};
+
+interface TypeCounters { angle: number; paren: number; bracket: number; brace: number }
+
+interface TypeScan { seenTerm: boolean; progressed: boolean }
+
+const TYPE_PUNCT = new Set(['.', '|', '&', ':', '?', '!', '*', '-', '+']);
+const TYPE_PUNCT_RESETS_TERM = new Set(['|', '&', ':', '.']);
+
+/** Depth-0 characters that end a type span. */
+const atTypeBoundary = (st: StripState, c: string, d: number, seenTerm: boolean): boolean => {
+    if (d !== 0) return false;
+    if (c === '=' && peek(st, 1) !== '>' && peek(st, 1) !== '=') return true;
+    if (c === ',' || c === ';' || c === ')') return true;
+    if (c === '}') return true;
+    if (c === '{' && seenTerm) return true;
+    return false;
+};
+
+/** Consume one structural character of a type span; `'break'` ends the span. */
+const consumeTypeGrouping = (st: StripState, c: string, counters: TypeCounters): 'skip' | 'seen' | 'unseen' | 'break' => {
+    if (c === '<') {
+        counters.angle++;
+        st.i++;
+        return 'unseen';
+    }
+    if (c === '>') {
+        if (counters.angle > 0) counters.angle--;
+        st.i++;
+        return 'seen';
+    }
+    if (c === '(') {
+        counters.paren++;
+        st.i++;
+        return 'unseen';
+    }
+    if (c === ')') {
+        if (counters.paren > 0) {
+            counters.paren--;
+            st.i++;
+            return 'seen';
+        }
+        return 'break';
+    }
+    if (c === '[') {
+        counters.bracket++;
+        st.i++;
+        return 'unseen';
+    }
+    if (c === ']') {
+        if (counters.bracket > 0) counters.bracket--;
+        st.i++;
+        return 'seen';
+    }
+    if (c === '{') {
+        counters.brace++;
+        st.i++;
+        return 'unseen';
+    }
+    if (c === '}') {
+        if (counters.brace > 0) counters.brace--;
+        st.i++;
+        return 'seen';
+    }
+    if (c === '=' && peek(st, 1) === '>') {
+        st.i += 2;
+        return 'unseen';
+    }
+    return 'skip';
+};
+
+/** Consume one identifier / punctuation / number character of a type span. */
+const consumeTypeAtom = (st: StripState, c: string): 'skip' | 'seen' | 'unseen' | 'unchanged' => {
+    if (IDENT_START.test(c)) {
+        readIdent(st);
+        return 'seen';
+    }
+    if (TYPE_PUNCT.has(c)) {
+        st.i++;
+        return TYPE_PUNCT_RESETS_TERM.has(c) ? 'unseen' : 'unchanged';
+    }
+    if (c >= '0' && c <= '9') {
+        skipNumber(st);
+        return 'seen';
+    }
+    return 'skip';
+};
+
+const skipType = (st: StripState): boolean => {
+    skipCommentsAndWs(st);
+    const start = st.i;
+    if (st.i >= st.n) return false;
+    const counters: TypeCounters = { angle: 0, paren: 0, bracket: 0, brace: 0 };
+    const scan: TypeScan = { seenTerm: false, progressed: false };
+    const depth = (): number => counters.angle + counters.paren + counters.bracket + counters.brace;
+
+    while (st.i < st.n) {
+        skipCommentsAndWs(st);
+        if (st.i >= st.n) break;
+        const c = st.source[st.i]!;
+        const d = depth();
+
+        if (atTypeBoundary(st, c, d, scan.seenTerm)) break;
+
+        if (c === '"' || c === "'") {
+            skipString(st, c);
+            scan.seenTerm = true;
+            scan.progressed = true;
+            continue;
+        }
+        if (c === '`') {
+            skipTemplate(st);
+            scan.seenTerm = true;
+            scan.progressed = true;
+            continue;
+        }
+
+        const grouping = consumeTypeGrouping(st, c, counters);
+        if (grouping === 'break') break;
+        if (grouping !== 'skip') {
+            scan.seenTerm = grouping === 'seen';
+            scan.progressed = true;
+            continue;
+        }
+
+        const atom = consumeTypeAtom(st, c);
+        if (atom !== 'skip') {
+            if (atom === 'seen') scan.seenTerm = true;
+            else if (atom === 'unseen') scan.seenTerm = false;
+            scan.progressed = true;
+            continue;
+        }
+
+        if (d === 0) break;
+        st.i++;
+        scan.progressed = true;
+    }
+
+    return scan.progressed && st.i > start;
+};
+
+const skipTypeAnnotation = (st: StripState): boolean => {
+    skipCommentsAndWs(st);
+    if (st.source[st.i] !== ':') return false;
+    const colon = st.i;
+    st.i++;
+    if (!skipType(st)) {
+        st.i = colon;
+        return false;
+    }
+    blank(st, colon, st.i);
+    return true;
+};
+
+const looksLikeGeneric = (st: StripState): boolean => {
+    skipCommentsAndWs(st);
+    if (st.source[st.i] !== '<') return false;
+    const start = st.i;
+    let angle = 1;
+    st.i++;
+    while (st.i < st.n && angle > 0) {
+        skipCommentsAndWs(st);
+        if (st.i >= st.n) {
+            st.i = start;
+            return false;
+        }
+        const c = st.source[st.i]!;
+        if (c === '"' || c === "'") {
+            skipString(st, c);
+            continue;
+        }
+        if (c === '`') {
+            skipTemplate(st);
+            continue;
+        }
+        if (angle === 1 && c === '&' && peek(st, 1) === '&') {
+            st.i = start;
+            return false;
+        }
+        if (angle === 1 && c === '|' && peek(st, 1) === '|') {
+            st.i = start;
+            return false;
+        }
+        if (c === '<') {
+            angle++;
+            st.i++;
+            continue;
+        }
+        if (c === '>') {
+            angle--;
+            st.i++;
+            continue;
+        }
+        st.i++;
+    }
+    if (angle !== 0) {
+        st.i = start;
+        return false;
+    }
+    blank(st, start, st.i);
+    return true;
+};
+
+const skipNonNull = (st: StripState): void => {
+    skipCommentsAndWs(st);
+    if (st.source[st.i] !== '!') return;
+    if (peek(st, 1) === '=' || peek(st, 1) === '!') return;
+    blank(st, st.i, st.i + 1);
+    st.i++;
+};
+
+const skipAsOrSatisfies = (st: StripState, keyword: string): boolean => {
+    if (st.inImport) return false;
+    if (st.braces[st.braces.length - 1] === 'spec') return false;
+    if (st.lastPunct === '*') return false;
+    if (st.lastKind !== 'ident' && st.lastKind !== 'number' && st.lastKind !== 'string' && st.lastPunct !== ')' && st.lastPunct !== ']' && st.lastPunct !== '}') {
+        return false;
+    }
+    const start = st.i - keyword.length;
+    skipCommentsAndWs(st);
+    if (!skipType(st)) {
+        st.i = start + keyword.length;
+        return false;
+    }
+    blank(st, start, st.i);
+    return true;
+};
+
+const skipBalancedBracesFrom = (st: StripState, openAt: number): void => {
+    let depth = 1;
+    st.i = openAt + 1;
+    while (st.i < st.n && depth > 0) {
+        const c = st.source[st.i]!;
+        if (c === '"' || c === "'") {
+            skipString(st, c);
+            continue;
+        }
+        if (c === '`') {
+            skipTemplate(st);
+            continue;
+        }
+        if (c === '/' && peek(st, 1) === '/') {
+            skipLineComment(st);
+            continue;
+        }
+        if (c === '/' && peek(st, 1) === '*') {
+            skipBlockComment(st);
+            continue;
+        }
+        if (c === '{') depth++;
+        else if (c === '}') depth--;
+        st.i++;
+    }
+};
+
+const skipDeclarationToSemiOrBrace = (st: StripState): void => {
+    while (st.i < st.n) {
+        skipCommentsAndWs(st);
+        const c = st.source[st.i];
+        if (c === '"' || c === "'") {
+            skipString(st, c);
+            continue;
+        }
+        if (c === '`') {
+            skipTemplate(st);
+            continue;
+        }
+        if (c === '{') {
+            const open = st.i;
+            skipBalancedBracesFrom(st, open);
+            return;
+        }
+        if (c === ';') {
+            st.i++;
+            return;
+        }
+        if (c === '\n' && st.lastKind === 'ident') {
+            return;
+        }
+        st.i++;
+    }
+};
+
+const classifyBrace = (st: StripState): BraceKind => {
+    if (st.inImport) return 'spec';
+    if (st.lastPunct === '(' || st.lastPunct === ',' || st.lastPunct === '[' || st.lastPunct === '=' || st.lastPunct === ':' || st.lastPunct === '!') {
+        return 'object';
+    }
+    if (st.lastIdent === 'return' || st.lastIdent === 'throw' || st.lastIdent === 'case' || st.lastIdent === 'yield' || st.lastIdent === 'of') {
+        return 'object';
+    }
+    return 'block';
+};
+
+const inObjectKey = (st: StripState): boolean => st.braces[st.braces.length - 1] === 'object';
+
+/** Consume a declaration keyword that may carry a type-only declaration. */
+const handleTypeKeyword = (st: StripState, word: string, identStart: number): boolean => {
+    if (word === 'const' || word === 'let' || word === 'var') {
+        st.expectBinding = true;
+        st.lastKind = 'ident';
+        st.lastIdent = word;
+        st.lastPunct = '';
+        st.statementStart = false;
+        return true;
+    }
+    if (word === 'import' || word === 'export') {
+        st.inImport = true;
+        st.lastKind = 'ident';
+        st.lastIdent = word;
+        st.lastPunct = '';
+        st.statementStart = false;
+        return true;
+    }
+    if (st.inImport && word === 'type') {
+        // `import type` / `export type {` — drop the modifier keyword.
+        blank(st, identStart, st.i);
+        st.lastKind = 'ident';
+        st.lastPunct = '';
+        return true;
+    }
+    if ((word === 'interface' || word === 'type' || word === 'enum' || word === 'declare')
+        && st.statementStart
+        && st.braces[st.braces.length - 1] !== 'object') {
+        const afterKeyword = st.i;
+        skipCommentsAndWs(st);
+        const next = st.source[st.i] ?? '';
+        // Object keys like `{ type: 'frame' }` must not look like aliases.
+        if (IDENT_START.test(next)) {
+            skipDeclarationToSemiOrBrace(st);
+            blank(st, identStart, st.i);
+            st.lastKind = 'punct';
+            st.lastPunct = ';';
+            st.lastIdent = '';
+            st.statementStart = true;
+            st.expectBinding = false;
+            return true;
+        }
+        st.i = afterKeyword;
+    }
+    return false;
+};
+
+const stepIdentifier = (st: StripState): void => {
+    const identStart = st.i;
+    const prevPunct = st.lastPunct;
+    const prevExpectBinding = st.expectBinding;
+    const word = readIdent(st);
+    if (handleTypeKeyword(st, word, identStart)) return;
+    if (word === 'as' || word === 'satisfies') {
+        if (skipAsOrSatisfies(st, word)) {
+            st.lastKind = 'ident';
+            st.lastPunct = '';
+            st.expectBinding = false;
+            st.statementStart = false;
+            return;
+        }
+    }
+    st.lastKind = 'ident';
+    st.lastIdent = word;
+    st.lastPunct = '';
+    st.statementStart = false;
+
+    skipCommentsAndWs(st);
+    if (st.source[st.i] === '?' && peek(st, 1) === ':') {
+        blank(st, st.i, st.i + 1);
+        st.i++;
+    }
+    if (st.source[st.i] === '!' && peek(st, 1) === ':') {
+        blank(st, st.i, st.i + 1);
+        st.i++;
+    }
+    const allowAnnotation = !inObjectKey(st)
+        && (prevExpectBinding || prevPunct === '(' || prevPunct === ',');
+    if (allowAnnotation && st.source[st.i] === ':') {
+        skipTypeAnnotation(st);
+    }
+    looksLikeGeneric(st);
+    skipNonNull(st);
+    st.expectBinding = false;
+};
+
+const stepNumber = (st: StripState): void => {
+    skipNumber(st);
+    st.lastKind = 'number';
+    st.lastPunct = '';
+    st.lastIdent = '';
+    st.expectBinding = false;
+    st.statementStart = false;
+    skipNonNull(st);
+};
+
+/** Consume one punctuation character, updating the scan state. */
+const stepPunct = (st: StripState, c: string): void => {
+    if (c === '{') {
+        const kind = classifyBrace(st);
+        st.braces.push(kind);
+        st.lastKind = 'punct';
+        st.lastPunct = '{';
+        st.lastIdent = '';
+        st.i++;
+        st.statementStart = kind === 'block';
+        st.expectBinding = false;
+        return;
+    }
+    if (c === '}') {
+        st.braces.pop();
+        st.lastKind = 'punct';
+        st.lastPunct = '}';
+        st.lastIdent = '';
+        st.i++;
+        st.statementStart = true;
+        st.expectBinding = false;
+        if (st.braces.length === 0) st.inImport = false;
+        return;
+    }
+    if (c === '(') {
+        st.lastKind = 'punct';
+        st.lastPunct = '(';
+        st.lastIdent = '';
+        st.i++;
+        st.statementStart = false;
+        st.expectBinding = false;
+        return;
+    }
+    if (c === ')') {
+        st.lastKind = 'punct';
+        st.lastPunct = ')';
+        st.lastIdent = '';
+        st.i++;
+        st.statementStart = false;
+        st.expectBinding = false;
+        skipCommentsAndWs(st);
+        if (st.source[st.i] === ':') skipTypeAnnotation(st);
+        looksLikeGeneric(st);
+        skipNonNull(st);
+        return;
+    }
+    if (c === '[') {
+        st.lastKind = 'punct';
+        st.lastPunct = '[';
+        st.lastIdent = '';
+        st.i++;
+        st.statementStart = false;
+        return;
+    }
+    if (c === ']') {
+        st.lastKind = 'punct';
+        st.lastPunct = ']';
+        st.lastIdent = '';
+        st.i++;
+        st.statementStart = false;
+        skipCommentsAndWs(st);
+        if (st.expectBinding && st.source[st.i] === ':') skipTypeAnnotation(st);
+        skipNonNull(st);
+        st.expectBinding = false;
+        return;
+    }
+    if (c === ';') {
+        st.inImport = false;
+        st.expectBinding = false;
+        st.statementStart = true;
+        st.lastKind = 'punct';
+        st.lastPunct = ';';
+        st.lastIdent = '';
+        st.i++;
+        return;
+    }
+    if (c === '=' && peek(st, 1) === '>') {
+        st.lastKind = 'punct';
+        st.lastPunct = '=>';
+        st.lastIdent = '';
+        st.i += 2;
+        st.statementStart = false;
+        st.expectBinding = false;
+        return;
+    }
+    if (c === ':' && st.expectBinding) {
+        skipTypeAnnotation(st);
+        st.expectBinding = false;
+        return;
+    }
+
+    st.lastKind = 'punct';
+    st.lastPunct = c;
+    st.lastIdent = '';
+    st.statementStart = false;
+    st.expectBinding = false;
+    st.i++;
+};
+
+export function stripTypeScriptSyntax(source: string): string {
+    const st: StripState = {
+        source,
+        n: source.length,
+        out: source.split(''),
+        i: 0,
+        lastKind: null,
+        lastPunct: '',
+        lastIdent: '',
+        statementStart: true,
+        expectBinding: false,
+        inImport: false,
+        braces: [],
+    };
+
+    while (st.i < st.n) {
+        skipCommentsAndWs(st);
+        if (st.i >= st.n) break;
+        const c = st.source[st.i]!;
+
+        if (c === '"' || c === "'") {
+            skipString(st, c);
+            st.lastKind = 'string';
+            st.lastPunct = '';
+            st.expectBinding = false;
+            st.statementStart = false;
+            continue;
+        }
+        if (c === '`') {
+            skipTemplate(st);
+            st.lastKind = 'string';
+            st.lastPunct = '';
+            st.expectBinding = false;
+            st.statementStart = false;
             continue;
         }
 
         if (IDENT_START.test(c)) {
-            const identStart = i;
-            const prevPunct = lastPunct;
-            const prevExpectBinding = expectBinding;
-            const word = readIdent();
-            if (word === 'const' || word === 'let' || word === 'var') {
-                expectBinding = true;
-                lastKind = 'ident';
-                lastIdent = word;
-                lastPunct = '';
-                statementStart = false;
-                continue;
-            }
-            if (word === 'import' || word === 'export') {
-                inImport = true;
-                lastKind = 'ident';
-                lastIdent = word;
-                lastPunct = '';
-                statementStart = false;
-                continue;
-            }
-            if (inImport && word === 'type') {
-                // `import type` / `export type {` — drop the modifier keyword.
-                blank(identStart, i);
-                lastKind = 'ident';
-                lastPunct = '';
-                continue;
-            }
-            if ((word === 'interface' || word === 'type' || word === 'enum' || word === 'declare')
-                && statementStart
-                && braces[braces.length - 1] !== 'object') {
-                const afterKeyword = i;
-                skipCommentsAndWs();
-                const next = source[i] ?? '';
-                // Object keys like `{ type: 'frame' }` must not look like aliases.
-                if (IDENT_START.test(next)) {
-                    skipDeclarationToSemiOrBrace();
-                    blank(identStart, i);
-                    lastKind = 'punct';
-                    lastPunct = ';';
-                    lastIdent = '';
-                    statementStart = true;
-                    expectBinding = false;
-                    continue;
-                }
-                i = afterKeyword;
-            }
-            if (word === 'as' || word === 'satisfies') {
-                if (skipAsOrSatisfies(word)) {
-                    lastKind = 'ident';
-                    lastPunct = '';
-                    expectBinding = false;
-                    statementStart = false;
-                    continue;
-                }
-            }
-            lastKind = 'ident';
-            lastIdent = word;
-            lastPunct = '';
-            statementStart = false;
-
-            skipCommentsAndWs();
-            if (source[i] === '?' && peek(1) === ':') {
-                blank(i, i + 1);
-                i++;
-            }
-            if (source[i] === '!' && peek(1) === ':') {
-                blank(i, i + 1);
-                i++;
-            }
-            const allowAnnotation = !inObjectKey()
-                && (prevExpectBinding || prevPunct === '(' || prevPunct === ',');
-            if (allowAnnotation && source[i] === ':') {
-                skipTypeAnnotation();
-            }
-            looksLikeGeneric();
-            skipNonNull();
-            expectBinding = false;
+            stepIdentifier(st);
             continue;
         }
 
         if (c >= '0' && c <= '9') {
-            skipNumber();
-            lastKind = 'number';
-            lastPunct = '';
-            lastIdent = '';
-            expectBinding = false;
-            statementStart = false;
-            skipNonNull();
+            stepNumber(st);
             continue;
         }
 
-        if (c === '{') {
-            const kind = classifyBrace();
-            braces.push(kind);
-            lastKind = 'punct';
-            lastPunct = '{';
-            lastIdent = '';
-            i++;
-            statementStart = kind === 'block';
-            expectBinding = false;
-            continue;
-        }
-        if (c === '}') {
-            braces.pop();
-            lastKind = 'punct';
-            lastPunct = '}';
-            lastIdent = '';
-            i++;
-            statementStart = true;
-            expectBinding = false;
-            if (braces.length === 0) inImport = false;
-            continue;
-        }
-        if (c === '(') {
-            lastKind = 'punct';
-            lastPunct = '(';
-            lastIdent = '';
-            i++;
-            statementStart = false;
-            expectBinding = false;
-            continue;
-        }
-        if (c === ')') {
-            lastKind = 'punct';
-            lastPunct = ')';
-            lastIdent = '';
-            i++;
-            statementStart = false;
-            expectBinding = false;
-            skipCommentsAndWs();
-            if (source[i] === ':') skipTypeAnnotation();
-            looksLikeGeneric();
-            skipNonNull();
-            continue;
-        }
-        if (c === '[') {
-            lastKind = 'punct';
-            lastPunct = '[';
-            lastIdent = '';
-            i++;
-            statementStart = false;
-            continue;
-        }
-        if (c === ']') {
-            lastKind = 'punct';
-            lastPunct = ']';
-            lastIdent = '';
-            i++;
-            statementStart = false;
-            skipCommentsAndWs();
-            if (expectBinding && source[i] === ':') skipTypeAnnotation();
-            skipNonNull();
-            expectBinding = false;
-            continue;
-        }
-        if (c === ';') {
-            inImport = false;
-            expectBinding = false;
-            statementStart = true;
-            lastKind = 'punct';
-            lastPunct = ';';
-            lastIdent = '';
-            i++;
-            continue;
-        }
-        if (c === '=' && peek(1) === '>') {
-            lastKind = 'punct';
-            lastPunct = '=>';
-            lastIdent = '';
-            i += 2;
-            statementStart = false;
-            expectBinding = false;
-            continue;
-        }
-        if (c === ':' && expectBinding) {
-            skipTypeAnnotation();
-            expectBinding = false;
-            continue;
-        }
-
-        lastKind = 'punct';
-        lastPunct = c;
-        lastIdent = '';
-        statementStart = false;
-        expectBinding = false;
-        i++;
+        stepPunct(st, c);
     }
 
-    return out.join('');
+    return st.out.join('');
 }

@@ -43,18 +43,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/drawing/index.ts",
-    "symbol": "Async function 'runPipeline'",
-    "value": 49
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/drawing/pdfVectors.ts",
-    "symbol": "Async function 'readPdfPageVectors'",
-    "value": 53
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/drawing/reconstructPhases.ts",
     "symbol": "Arrow function",
     "value": 31
@@ -124,12 +112,6 @@
     "file": "src/agent/mcp/edits/removeFeature.ts",
     "symbol": "Function 'lineContainsTopLevelReturn'",
     "value": 27
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/edits/setParamValue.ts",
-    "symbol": "Function 'findParamCall'",
-    "value": 57
   },
   {
     "rule": "complexity",
@@ -253,12 +235,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/meshClean.ts",
-    "symbol": "Function 'cleanMesh'",
-    "value": 50
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/planPhases.ts",
     "symbol": "Function 'decomposeRun'",
     "value": 35
@@ -292,12 +268,6 @@
     "file": "src/agent/reconstruct/segment.ts",
     "symbol": "Function 'growPlanes'",
     "value": 26
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/render/captureAnimation.ts",
-    "symbol": "Async function 'captureAnimation'",
-    "value": 53
   },
   {
     "rule": "complexity",
@@ -356,12 +326,6 @@
   {
     "rule": "complexity",
     "file": "src/kernel/backends/occt/edgeSelection.ts",
-    "symbol": "Function 'pickEdges'",
-    "value": 57
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/backends/occt/edgeSelection.ts",
     "symbol": "Function 'pickFace'",
     "value": 28
   },
@@ -370,12 +334,6 @@
     "file": "src/kernel/backends/occt/exportGlb.ts",
     "symbol": "Function 'buildMaterial'",
     "value": 23
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/backends/occt/exportSvgDrawing.ts",
-    "symbol": "Function 'renderSvgDrawing'",
-    "value": 46
   },
   {
     "rule": "complexity",
@@ -439,18 +397,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/import/importSvg.ts",
-    "symbol": "Function 'emitPath'",
-    "value": 53
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/import/importSvg.ts",
-    "symbol": "Function 'importSvgText'",
-    "value": 49
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/naming/parseQuery.ts",
     "symbol": "Function 'formatAst'",
     "value": 22
@@ -472,12 +418,6 @@
     "file": "src/kinematic/checkLoadCapacity.ts",
     "symbol": "Function 'runBeamMode'",
     "value": 21
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kinematic/checkStaticHold.ts",
-    "symbol": "Async function 'checkStaticHold'",
-    "value": 51
   },
   {
     "rule": "complexity",
@@ -613,12 +553,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/mechanicalPlausibility.ts",
-    "symbol": "Async function 'reviewMechanicalPlausibility'",
-    "value": 48
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCase.ts",
     "symbol": "Async function 'reviewPhysicalUseCasesWithReachability'",
     "value": 25
@@ -638,20 +572,8 @@
   {
     "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseJointReactions.ts",
-    "symbol": "Async function 'validateCertificateAtSolvedPose'",
-    "value": 45
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseJointReactions.ts",
     "symbol": "Function 'expandCertificatePoses'",
     "value": 21
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseJointReactions.ts",
-    "symbol": "Function 'validateCertificateInput'",
-    "value": 50
   },
   {
     "rule": "complexity",
@@ -763,18 +685,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/shared/codeGeneration/stripTypeScript.ts",
-    "symbol": "Arrow function",
-    "value": 49
-  },
-  {
-    "rule": "complexity",
-    "file": "src/shared/codeGeneration/stripTypeScript.ts",
-    "symbol": "Function 'stripTypeScriptSyntax'",
-    "value": 51
-  },
-  {
-    "rule": "complexity",
     "file": "src/shared/intent/curve3dRecord.ts",
     "symbol": "Function 'isCurve3DMetadata'",
     "value": 22
@@ -877,39 +787,15 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/agent/drawing/index.ts",
-    "symbol": "Async function 'runPipeline'",
-    "value": 157
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/agent/drawing/pdfVectors.ts",
-    "symbol": "Async function 'readPdfPageVectors'",
-    "value": 185
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/agent/reconstruct/blends.ts",
     "symbol": "Function 'detectEdgeBlends'",
     "value": 175
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/agent/reconstruct/meshClean.ts",
-    "symbol": "Function 'cleanMesh'",
-    "value": 205
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/agent/reconstruct/reconstruct.ts",
     "symbol": "Async function 'reconstructFromSoup'",
     "value": 221
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/agent/render/captureAnimation.ts",
-    "symbol": "Async function 'captureAnimation'",
-    "value": 336
   },
   {
     "rule": "max-lines-per-function",
@@ -938,20 +824,8 @@
   {
     "rule": "max-lines-per-function",
     "file": "src/kernel/backends/occt/edgeSelection.ts",
-    "symbol": "Function 'pickEdges'",
-    "value": 230
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/edgeSelection.ts",
     "symbol": "Function 'pickFace'",
     "value": 155
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/exportSvgDrawing.ts",
-    "symbol": "Function 'renderSvgDrawing'",
-    "value": 300
   },
   {
     "rule": "max-lines-per-function",
@@ -973,21 +847,9 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/kernel/import/importSvg.ts",
-    "symbol": "Function 'emitPath'",
-    "value": 193
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/kinematic/checkLoadCapacity.ts",
     "symbol": "Function 'runBeamMode'",
     "value": 161
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kinematic/checkStaticHold.ts",
-    "symbol": "Async function 'checkStaticHold'",
-    "value": 153
   },
   {
     "rule": "max-lines-per-function",
@@ -1024,12 +886,6 @@
     "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
     "symbol": "Async function 'usdIsaacSerialize'",
     "value": 241
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/mates/mechanicalPlausibility.ts",
-    "symbol": "Async function 'reviewMechanicalPlausibility'",
-    "value": 211
   },
   {
     "rule": "max-lines-per-function",
@@ -1072,12 +928,6 @@
     "file": "src/server/middleware/animationBakeEndpoint.ts",
     "symbol": "Function 'createAnimationBakeEndpoint'",
     "value": 157
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/shared/codeGeneration/stripTypeScript.ts",
-    "symbol": "Function 'stripTypeScriptSyntax'",
-    "value": 587
   },
   {
     "rule": "max-lines-per-function",
@@ -1173,19 +1023,13 @@
     "rule": "max-lines",
     "file": "src/kernel/backends/occt/edgeSelection.ts",
     "symbol": "(file)",
-    "value": 1092
+    "value": 963
   },
   {
     "rule": "max-lines",
     "file": "src/kernel/backends/occt/occtBackend.ts",
     "symbol": "(file)",
     "value": 897
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/kernel/import/importSvg.ts",
-    "symbol": "(file)",
-    "value": 869
   },
   {
     "rule": "max-lines",
@@ -1210,12 +1054,6 @@
     "file": "src/modeling/mates/physicalUseCase.ts",
     "symbol": "(file)",
     "value": 977
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/modeling/mates/physicalUseCaseJointReactions.ts",
-    "symbol": "(file)",
-    "value": 929
   },
   {
     "rule": "max-lines",
