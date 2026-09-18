@@ -666,12 +666,6 @@
     "value": 22
   },
   {
-    "rule": "complexity",
-    "file": "src/studio/routes/p.$slug.tsx",
-    "symbol": "Function 'ProjectPage'",
-    "value": 22
-  },
-  {
     "rule": "max-lines-per-function",
     "file": "src/agent/vision/index.ts",
     "symbol": "Async function 'traceFromImage'",

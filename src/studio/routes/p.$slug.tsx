@@ -2,9 +2,8 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createFileRoute } from '@tanstack/react-router';
 import { useCallback, useState, type ReactNode } from 'react';
-import { Globe, Lock } from 'lucide-react';
 import App from '../App';
-import { SignInButton } from '../../funnel/components/SignInButton';
+import { ProjectClaimControl } from './-ProjectClaimControl';
 import { ProjectViewerActions } from './-ProjectViewerActions';
 import { ServerRevisionHistory } from './-ServerRevisionHistory';
 import { useOptionalSession } from '../../funnel/hooks/useSession';
@@ -100,58 +99,19 @@ function ProjectPage() {
     </div>
   );
 
-  // Anonymous (owner-less) projects — e.g. built by a web-Claude session via
-  // open_in_studio — can be claimed: "sign in to save" → claim into your account.
-  const isAnonymous = project.owner_id == null && !claimed;
-  const isOwner = !!session && project.owner_id != null && project.owner_id === session.user.id;
-  const isPrivate = project.privacy === 'private';
-  const btnClass = 'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-0.5 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 transition-colors';
-
-  let claimControl: ReactNode = null;
-  if (claimed) {
-    claimControl = <span className="text-[11px] text-green-500 font-mono">Saved ✓</span>;
-  } else if (isAnonymous && !session) {
-    claimControl = (
-      <SignInButton
-        redirectTo={typeof window !== 'undefined' ? window.location.href : undefined}
-        className={btnClass}
-      >
-        Sign in to save
-      </SignInButton>
-    );
-  } else if (isAnonymous && session) {
-    claimControl = (
-      <button type="button" onClick={handleClaim} disabled={claiming} className={btnClass}>
-        {claiming ? 'Saving…' : 'Save to my projects'}
-      </button>
-    );
-  } else if (isOwner) {
-    claimControl = upgradeNeeded ? (
-      <button type="button" onClick={handleUpgrade} className={btnClass} title="Private projects require Pro">
-        Upgrade to keep private
-      </button>
-    ) : (
-      // Icon-only below `md`: spelled out, this button plus Share crowds the
-      // project title off a phone-width header entirely.
-      <button
-        type="button"
-        onClick={handleTogglePrivacy}
-        disabled={privacyBusy}
-        className={btnClass}
-        aria-label={isPrivate ? 'Make public' : 'Make private'}
-        title={isPrivate ? 'Make public' : 'Make private'}
-      >
-        {isPrivate ? <Globe size={12} /> : <Lock size={12} />}
-        <span className="hidden md:inline">
-          {privacyBusy ? '…' : isPrivate ? 'Make public' : 'Make private'}
-        </span>
-      </button>
-    );
-  }
-
   const headerRight: ReactNode = (
     <div className="flex items-center gap-2 min-w-0">
-      {claimControl}
+      <ProjectClaimControl
+        project={project}
+        session={session}
+        claimed={claimed}
+        claiming={claiming}
+        privacyBusy={privacyBusy}
+        upgradeNeeded={upgradeNeeded}
+        onClaim={handleClaim}
+        onTogglePrivacy={handleTogglePrivacy}
+        onUpgrade={handleUpgrade}
+      />
       <ServerRevisionHistory slug={slug} onRestored={handleRestored} />
       <ProjectViewerActions
         slug={slug}
