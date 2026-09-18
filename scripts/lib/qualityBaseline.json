@@ -446,12 +446,6 @@
   {
     "rule": "complexity",
     "file": "src/modeling/capture/featureMeshing.ts",
-    "symbol": "Async function 'meshFeaturesPerFeature'",
-    "value": 42
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/featureMeshing.ts",
     "symbol": "Function 'collectTendonMeshes'",
     "value": 29
   },
@@ -493,12 +487,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/joints/articulatedDigit.ts",
-    "symbol": "Function 'validatePreflight'",
-    "value": 35
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/joints/clevis.ts",
     "symbol": "Function 'withDefaults'",
     "value": 29
@@ -535,12 +523,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCase.ts",
-    "symbol": "Function 'reviewPhysicalUseCases'",
-    "value": 40
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseJointReactions.ts",
     "symbol": "Function 'expandCertificatePoses'",
     "value": 21
@@ -560,20 +542,8 @@
   {
     "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseStatics.ts",
-    "symbol": "Async function 'resolveStaticSample'",
-    "value": 42
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseStatics.ts",
     "symbol": "Function 'requiredContactPathActuatorSources'",
     "value": 24
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/poseEnvelope.ts",
-    "symbol": "Async function 'reviewPoseEnvelope'",
-    "value": 35
   },
   {
     "rule": "complexity",
@@ -823,12 +793,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/capture/featureMeshing.ts",
-    "symbol": "Async function 'meshFeaturesPerFeature'",
-    "value": 227
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/modeling/capture/proxy.ts",
     "symbol": "Method 'material'",
     "value": 187
@@ -838,18 +802,6 @@
     "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
     "symbol": "Async function 'usdIsaacSerialize'",
     "value": 241
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/mates/physicalUseCase.ts",
-    "symbol": "Function 'reviewPhysicalUseCases'",
-    "value": 161
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/mates/poseEnvelope.ts",
-    "symbol": "Async function 'reviewPoseEnvelope'",
-    "value": 163
   },
   {
     "rule": "max-lines-per-function",
@@ -1005,12 +957,6 @@
     "rule": "max-lines",
     "file": "src/modeling/mates/physicalUseCase.ts",
     "symbol": "(file)",
-    "value": 977
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/modeling/mates/physicalUseCaseStatics.ts",
-    "symbol": "(file)",
-    "value": 920
+    "value": 824
   }
 ]
