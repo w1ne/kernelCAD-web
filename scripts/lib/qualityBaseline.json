@@ -14,12 +14,6 @@
   {
     "rule": "complexity",
     "file": "src/agent/cli/commands/render.ts",
-    "symbol": "Async function 'renderInspectBundle'",
-    "value": 38
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/cli/commands/render.ts",
     "symbol": "Async function 'renderScript'",
     "value": 26
   },
@@ -772,12 +766,6 @@
     "file": "src/studio/routes/p.$slug.tsx",
     "symbol": "Function 'ProjectPage'",
     "value": 23
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/agent/cli/commands/render.ts",
-    "symbol": "Async function 'renderInspectBundle'",
-    "value": 158
   },
   {
     "rule": "max-lines-per-function",
