@@ -71,6 +71,7 @@ import {
   scanTags,
   type Matrix,
   type Tag,
+  type ViewBox,
 } from './importSvgParsing';
 
 export type { SvgParseFailure } from './importSvgParsing';
@@ -832,42 +833,10 @@ export function importSvgText(text: string, opts: ImportSvgOptions = {}): SvgImp
   }
 
   const viewBox = parseViewBox(root.attrs.viewBox);
-  let scale: number;
-  let unitSource: string;
-  if (opts.units !== undefined) {
-    scale = MM_PER_UNIT[opts.units];
-    unitSource = `opts.units=${opts.units}`;
-  } else {
-    const widthMm = root.attrs.width !== undefined
-      ? lengthToMm(root.attrs.width, '<svg> width')
-      : null;
-    if (viewBox && widthMm !== null && root.attrs.width !== undefined && /[a-z]/i.test(root.attrs.width)) {
-      scale = widthMm / viewBox.width;
-      unitSource = `width='${root.attrs.width.trim()}' over viewBox width ${viewBox.width}`;
-    } else {
-      scale = MM_PER_UNIT.px;
-      unitSource = 'assumed 1 user unit = 1 CSS px (1/96 in); no physically-dimensioned width';
-    }
-  }
+  const { scale, unitSource } = resolveSvgScale(root, viewBox, opts);
 
-  // Reflection height: prefer the viewBox, fall back to an undimensioned
-  // `height`, and finally to plain negation.
-  let flipAbout: number | null = null;
-  if (viewBox) {
-    flipAbout = viewBox.minY + viewBox.height;
-  } else if (root.attrs.height !== undefined) {
-    const h = Number(String(root.attrs.height).replace(/[a-z%]+$/i, '').trim());
-    if (Number.isFinite(h) && h > 0) flipAbout = h;
-  }
-  const vbMinX = viewBox ? viewBox.minX : 0;
-  // The root matrix IS the Y flip: scale by `scale`, negate Y, and translate
-  // so the drawing sits in positive Y starting at the origin.
-  const rootMatrix: Matrix = [
-    scale, 0,
-    0, -scale,
-    -scale * vbMinX,
-    scale * (flipAbout ?? 0),
-  ];
+  const flipAbout = resolveFlipAbout(root, viewBox);
+  const rootMatrix = buildRootMatrix(scale, viewBox, flipAbout);
 
   const tolMm = opts.curveTolerance ?? DEFAULT_CURVE_TOLERANCE;
   if (!(tolMm > 0)) {
@@ -885,14 +854,12 @@ export function importSvgText(text: string, opts: ImportSvgOptions = {}): SvgImp
     const lower = tag.name.toLowerCase();
 
     if (skipDepth > 0) {
-      // Inside a non-rendering subtree: track nesting so `</defs>` ends it.
-      if (!tag.closing && !tag.selfClosing) skipDepth++;
-      else if (tag.closing) skipDepth--;
+      skipDepth = advanceSkipDepth(tag, skipDepth);
       continue;
     }
 
     if (tag.closing) {
-      if (lower === 'g' && stack.length > 1) stack.pop();
+      closeOpenGroup(lower, stack);
       continue;
     }
 
@@ -903,48 +870,14 @@ export function importSvgText(text: string, opts: ImportSvgOptions = {}): SvgImp
     }
 
     const parent = stack[stack.length - 1];
-    const local = tag.attrs.transform !== undefined
-      ? parseTransform(tag.attrs.transform, `<${tag.name}> at offset ${tag.offset}`)
-      : IDENTITY;
+    const local = localTransform(tag);
     const m = mul(parent, local);
 
-    switch (lower) {
-      case 'g':
-        // A self-closing <g> holds nothing; only push for a real subtree.
-        if (!tag.selfClosing) stack.push(m);
-        break;
-      case 'path': emitPath(tag, m, sink, tolMm); break;
-      case 'rect': emitRect(tag, m, sink); break;
-      case 'circle': emitCircle(tag, m, sink, tolMm); break;
-      case 'ellipse':
-        emitEllipse(
-          m, sink, tolMm,
-          attrNum(tag, 'cx', 0), attrNum(tag, 'cy', 0),
-          attrNum(tag, 'rx', null), attrNum(tag, 'ry', null),
-          `<ellipse> at offset ${tag.offset}`,
-        );
-        break;
-      case 'polygon': emitPolyish(tag, m, sink, true); break;
-      case 'polyline': emitPolyish(tag, m, sink, false); break;
-      case 'line': emitLine(tag, m, sink); break;
-      case 'use':
-      case 'text':
-      case 'tspan':
-      case 'image':
-      case 'foreignobject':
-        throw new SvgParseError(
-          'unsupported-element',
-          `<${tag.name}> at offset ${tag.offset}: this element carries geometry kernelCAD cannot ` +
-            'resolve here (references, glyph outlines or raster content), and skipping it would leave ' +
-            'the profile silently incomplete. Convert it to paths in the source tool ' +
-            '(Inkscape: Path > Object to Path; Illustrator: Create Outlines / Expand).',
-        );
-      default:
-        throw new SvgParseError(
-          'unsupported-element',
-          `<${tag.name}> at offset ${tag.offset}: unrecognised SVG element. kernelCAD reads ` +
-            'path, rect, circle, ellipse, polygon, polyline, line and g.',
-        );
+    if (lower === 'g') {
+      // A self-closing <g> holds nothing; only push for a real subtree.
+      if (!tag.selfClosing) stack.push(m);
+    } else {
+      emitGeometryElement(lower, tag, m, sink, tolMm);
     }
   }
 
@@ -966,6 +899,122 @@ export function importSvgText(text: string, opts: ImportSvgOptions = {}): SvgImp
     degeneratesDropped: assembled.degeneratesDropped,
     gapsClosed: assembled.gapsClosed,
   };
+}
+
+/** Resolve the millimetres-per-user-unit scale and the human-readable source
+ *  that decided it (opts.units, a dimensioned width over the viewBox, or the
+ *  CSS-pixel default). */
+function resolveSvgScale(
+  root: Tag,
+  viewBox: ViewBox | null,
+  opts: ImportSvgOptions,
+): { scale: number; unitSource: string } {
+  if (opts.units !== undefined) {
+    return {
+      scale: MM_PER_UNIT[opts.units],
+      unitSource: `opts.units=${opts.units}`,
+    };
+  }
+  const widthMm = root.attrs.width !== undefined
+    ? lengthToMm(root.attrs.width, '<svg> width')
+    : null;
+  if (viewBox && widthMm !== null && root.attrs.width !== undefined && /[a-z]/i.test(root.attrs.width)) {
+    return {
+      scale: widthMm / viewBox.width,
+      unitSource: `width='${root.attrs.width.trim()}' over viewBox width ${viewBox.width}`,
+    };
+  }
+  return {
+    scale: MM_PER_UNIT.px,
+    unitSource: 'assumed 1 user unit = 1 CSS px (1/96 in); no physically-dimensioned width',
+  };
+}
+
+/** Reflection height: prefer the viewBox, fall back to an undimensioned
+ *  `height`, and finally to plain negation. */
+function resolveFlipAbout(root: Tag, viewBox: ViewBox | null): number | null {
+  if (viewBox) {
+    return viewBox.minY + viewBox.height;
+  }
+  if (root.attrs.height !== undefined) {
+    const h = Number(String(root.attrs.height).replace(/[a-z%]+$/i, '').trim());
+    if (Number.isFinite(h) && h > 0) return h;
+  }
+  return null;
+}
+
+/** The root matrix IS the Y flip: scale by `scale`, negate Y, and translate
+ *  so the drawing sits in positive Y starting at the origin. */
+function buildRootMatrix(scale: number, viewBox: ViewBox | null, flipAbout: number | null): Matrix {
+  const vbMinX = viewBox ? viewBox.minX : 0;
+  return [
+    scale, 0,
+    0, -scale,
+    -scale * vbMinX,
+    scale * (flipAbout ?? 0),
+  ];
+}
+
+function localTransform(tag: Tag): Matrix {
+  return tag.attrs.transform !== undefined
+    ? parseTransform(tag.attrs.transform, `<${tag.name}> at offset ${tag.offset}`)
+    : IDENTITY;
+}
+
+/** Inside a non-rendering subtree: track nesting so `</defs>` ends it. */
+function advanceSkipDepth(tag: Tag, skipDepth: number): number {
+  if (!tag.closing && !tag.selfClosing) return skipDepth + 1;
+  if (tag.closing) return skipDepth - 1;
+  return skipDepth;
+}
+
+function closeOpenGroup(lower: string, stack: Matrix[]): void {
+  if (lower === 'g' && stack.length > 1) stack.pop();
+}
+
+/** Emit one geometry element into the sink; throws for elements kernelCAD
+ *  cannot resolve. Group (`<g>`) handling stays in the caller. */
+function emitGeometryElement(
+  lower: string,
+  tag: Tag,
+  m: Matrix,
+  sink: ElementSink,
+  tolMm: number,
+): void {
+  switch (lower) {
+    case 'path': emitPath(tag, m, sink, tolMm); break;
+    case 'rect': emitRect(tag, m, sink); break;
+    case 'circle': emitCircle(tag, m, sink, tolMm); break;
+    case 'ellipse':
+      emitEllipse(
+        m, sink, tolMm,
+        attrNum(tag, 'cx', 0), attrNum(tag, 'cy', 0),
+        attrNum(tag, 'rx', null), attrNum(tag, 'ry', null),
+        `<ellipse> at offset ${tag.offset}`,
+      );
+      break;
+    case 'polygon': emitPolyish(tag, m, sink, true); break;
+    case 'polyline': emitPolyish(tag, m, sink, false); break;
+    case 'line': emitLine(tag, m, sink); break;
+    case 'use':
+    case 'text':
+    case 'tspan':
+    case 'image':
+    case 'foreignobject':
+      throw new SvgParseError(
+        'unsupported-element',
+        `<${tag.name}> at offset ${tag.offset}: this element carries geometry kernelCAD cannot ` +
+          'resolve here (references, glyph outlines or raster content), and skipping it would leave ' +
+          'the profile silently incomplete. Convert it to paths in the source tool ' +
+          '(Inkscape: Path > Object to Path; Illustrator: Create Outlines / Expand).',
+      );
+    default:
+      throw new SvgParseError(
+        'unsupported-element',
+        `<${tag.name}> at offset ${tag.offset}: unrecognised SVG element. kernelCAD reads ` +
+          'path, rect, circle, ellipse, polygon, polyline, line and g.',
+      );
+  }
 }
 
 export type { ImportedRegion };
