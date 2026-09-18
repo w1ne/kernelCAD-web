@@ -12,6 +12,7 @@ import { inAppAgentEnabled } from './agentAvailability';
 import { ConceptResult } from './components/ConceptResult';
 import { useCode } from './context/CodeContext';
 import { useFeatureSelection } from './hooks/useFeatureSelection';
+import { usePromptDraft } from './hooks/usePromptDraft';
 import { useReferencePhoto } from './hooks/useReferencePhoto';
 import { useShellStore, shellStore } from './store/useShellStore';
 import type { AgentRepairWorkflow } from './store/shellStore';
@@ -50,8 +51,7 @@ const StudioGenerateInner: React.FC = () => {
     const currentCode = code ?? '';
     const { selectedFeatureId } = useFeatureSelection();
     const { agentDraftPrompt, agentDraftPromptVersion, agentRepairWorkflow, stagedEdit } = useShellStore();
-    const [editedPrompt, setEditedPrompt] = useState('');
-    const [acknowledgedDraftVersion, setAcknowledgedDraftVersion] = useState(-1);
+    const { prompt, setPrompt } = usePromptDraft(agentDraftPrompt, agentDraftPromptVersion);
     // The generationId we've already staged/rejected — gates the review panel
     // so a resolved proposal doesn't reappear.
     const [resolution, setResolution] = useState<{ generationId: string; action: 'staged' | 'discarded' } | null>(null);
@@ -73,16 +73,6 @@ const StudioGenerateInner: React.FC = () => {
         referenceNeedsDimension,
         onReferenceImageSelect,
     } = useReferencePhoto();
-
-    const prompt =
-        agentDraftPrompt !== null && agentDraftPromptVersion !== acknowledgedDraftVersion
-            ? agentDraftPrompt
-            : editedPrompt;
-
-    const setPrompt = (nextPrompt: string) => {
-        setAcknowledgedDraftVersion(agentDraftPromptVersion);
-        setEditedPrompt(nextPrompt);
-    };
 
     // The single prompt box also drives the paid 3D concept preview.
     const preview = useTextTo3dPreview();

@@ -807,7 +807,7 @@
     "rule": "complexity",
     "file": "src/studio/StudioGenerate.tsx",
     "symbol": "Arrow function",
-    "value": 47
+    "value": 45
   },
   {
     "rule": "complexity",
@@ -1101,7 +1101,7 @@
     "rule": "max-lines-per-function",
     "file": "src/studio/StudioGenerate.tsx",
     "symbol": "Arrow function",
-    "value": 336
+    "value": 327
   },
   {
     "rule": "max-lines-per-function",
