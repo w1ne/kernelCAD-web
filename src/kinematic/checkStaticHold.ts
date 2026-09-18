@@ -99,6 +99,48 @@ export async function checkStaticHold(
     return { ok: true, joints: [], posesSampled: 0, diagnostics, source: 'local' };
   }
 
+  const selection = selectEvaluableJoints(allJoints, opts, diagnostics);
+  if (selection.earlyResult !== undefined) return selection.earlyResult;
+
+  const masses = await lowerPartMasses(arm, parts, allJoints);
+  if (masses === undefined) {
+    return { ok: true, joints: [], posesSampled: 0, diagnostics, source: 'local' };
+  }
+  const { zeroPoses, massByPartId } = masses;
+
+  const gravity = opts?.gravity ?? DEFAULT_GRAVITY;
+  const marginThreshold = opts?.minTorqueMarginPct ?? DEFAULT_MARGIN_PCT;
+  const rangeSamples = Math.max(2, opts?.rangeSamples ?? DEFAULT_RANGE_SAMPLES);
+
+  const jointResults: StaticHoldJointResult[] = [];
+  let totalPosesSampled = 0;
+
+  for (const joint of selection.evaluable) {
+    const evaluated = evaluateHoldJoint(
+      joint,
+      parts,
+      allJoints,
+      opts,
+      zeroPoses,
+      massByPartId,
+      gravity,
+      marginThreshold,
+      rangeSamples,
+      diagnostics,
+    );
+    totalPosesSampled += evaluated.posesSampled;
+    jointResults.push(evaluated.result);
+  }
+
+  const ok = jointResults.every((j) => j.worstRequired <= j.actuatorCapacity);
+  return { ok, joints: jointResults, posesSampled: totalPosesSampled, diagnostics, source: 'local' };
+}
+
+function selectEvaluableJoints(
+  allJoints: readonly AssemblyJointStored[],
+  opts: StaticHoldOpts | undefined,
+  diagnostics: KinematicDiagnostic[],
+): { evaluable: AssemblyJointStored[]; earlyResult?: StaticHoldResult } {
   const targetJoints = (opts?.joint ? allJoints.filter((j) => j.name === opts.joint) : allJoints)
     .filter((j) => j.kind === 'revolute' || j.kind === 'prismatic');
 
@@ -134,9 +176,24 @@ export async function checkStaticHold(
         ),
       );
     }
-    return { ok: diagnostics.length === 0, joints: [], posesSampled: 0, diagnostics, source: 'local' };
+    return {
+      evaluable,
+      earlyResult: { ok: diagnostics.length === 0, joints: [], posesSampled: 0, diagnostics, source: 'local' },
+    };
   }
+  return { evaluable };
+}
 
+interface LoweredMasses {
+  readonly zeroPoses: FkNumericPoses;
+  readonly massByPartId: Map<FeatureId, PartMassLocal>;
+}
+
+async function lowerPartMasses(
+  arm: Assembly,
+  parts: readonly AssemblyPartStored[],
+  allJoints: readonly AssemblyJointStored[],
+): Promise<LoweredMasses | undefined> {
   // Lower once — geometry (local BREP + local mass) is pose-independent;
   // only the per-part world transform varies across sampled poses.
   await initOcct();
@@ -154,7 +211,7 @@ export async function checkStaticHold(
   const sourceId = scene.__sourceFeatureId();
   const lowered = sourceId !== undefined ? result.shapes.get(sourceId) : undefined;
   if (!lowered || !isSceneBackend(lowered)) {
-    return { ok: true, joints: [], posesSampled: 0, diagnostics, source: 'local' };
+    return undefined;
   }
 
   const partByName = new Map(parts.map((p) => [p.name, p]));
@@ -167,99 +224,140 @@ export async function checkStaticHold(
     massByPartId.set(part.id, { mass: mp.mass, comLocalMm: mp.com });
   }
 
-  const gravity = opts?.gravity ?? DEFAULT_GRAVITY;
-  const marginThreshold = opts?.minTorqueMarginPct ?? DEFAULT_MARGIN_PCT;
-  const rangeSamples = Math.max(2, opts?.rangeSamples ?? DEFAULT_RANGE_SAMPLES);
+  return { zeroPoses, massByPartId };
+}
 
-  const jointResults: StaticHoldJointResult[] = [];
-  let totalPosesSampled = 0;
+interface EvaluatedJoint {
+  readonly result: StaticHoldJointResult;
+  readonly posesSampled: number;
+}
 
-  for (const joint of evaluable) {
-    const poses = enumerateHoldPoses(joint, allJoints, opts?.pose, rangeSamples);
-    totalPosesSampled += poses.length;
-    const downstream = downstreamPartIds(parts, allJoints, joint.childPartId);
+function evaluateHoldJoint(
+  joint: AssemblyJointStored,
+  parts: readonly AssemblyPartStored[],
+  allJoints: readonly AssemblyJointStored[],
+  opts: StaticHoldOpts | undefined,
+  zeroPoses: FkNumericPoses,
+  massByPartId: Map<FeatureId, PartMassLocal>,
+  gravity: V3,
+  marginThreshold: number,
+  rangeSamples: number,
+  diagnostics: KinematicDiagnostic[],
+): EvaluatedJoint {
+  const poses = enumerateHoldPoses(joint, allJoints, opts?.pose, rangeSamples);
+  const downstream = downstreamPartIds(parts, allJoints, joint.childPartId);
+  const { worstRequired, worstPose } = computeWorstRequired(
+    joint,
+    poses,
+    downstream,
+    zeroPoses,
+    parts,
+    allJoints,
+    massByPartId,
+    gravity,
+  );
 
-    let worstRequired = -Infinity;
-    let worstPose: NumericPoses = poses[0] ?? {};
-    for (const pose of poses) {
-      const fullPose: FkNumericPoses = { ...zeroPoses, ...pose };
-      const worldT = forwardKinematics(parts, allJoints, fullPose);
-      const parentT = worldT.get(joint.parentPartId) ?? Transform.identity();
-      const axisWorld = normalize(parentT.axisDir(joint.axis!));
-      const originWorldM = scaleVec(parentT.point(joint.origin), MM_TO_M);
+  const capacity = joint.kind === 'revolute'
+    ? joint.actuator!.torqueNm ?? 0
+    : joint.actuator!.forceN ?? 0;
+  const marginPct = capacity > 0
+    ? ((capacity - worstRequired) / capacity) * 100
+    : (worstRequired > 0 ? -Infinity : 100);
 
-      if (joint.kind === 'revolute') {
-        let momentSum: V3 = [0, 0, 0];
-        for (const partId of downstream) {
-          const massLocal = massByPartId.get(partId);
-          if (!massLocal) continue;
-          const partWorldT = worldT.get(partId) ?? Transform.identity();
-          const comWorldM = scaleVec(partWorldT.point(massLocal.comLocalMm), MM_TO_M);
-          const rM = subVec(comWorldM, originWorldM);
-          const forceN = scaleVec(gravity, massLocal.mass);
-          momentSum = addVec(momentSum, cross(rM, forceN));
-        }
-        const required = Math.abs(dot(momentSum, axisWorld));
-        if (required > worstRequired) {
-          worstRequired = required;
-          worstPose = pose;
-        }
-      } else {
-        let totalForce: V3 = [0, 0, 0];
-        for (const partId of downstream) {
-          const massLocal = massByPartId.get(partId);
-          if (!massLocal) continue;
-          totalForce = addVec(totalForce, scaleVec(gravity, massLocal.mass));
-        }
-        const required = Math.abs(dot(totalForce, axisWorld));
-        if (required > worstRequired) {
-          worstRequired = required;
-          worstPose = pose;
-        }
+  const result: StaticHoldJointResult = {
+    jointName: joint.name,
+    kind: joint.kind as 'revolute' | 'prismatic',
+    actuatorCapacity: capacity,
+    worstRequired,
+    marginPct,
+    worstPose,
+  };
+
+  emitHoldDiagnostics(joint, worstRequired, capacity, marginPct, marginThreshold, diagnostics);
+  return { result, posesSampled: poses.length };
+}
+
+function computeWorstRequired(
+  joint: AssemblyJointStored,
+  poses: readonly NumericPoses[],
+  downstream: ReadonlySet<FeatureId>,
+  zeroPoses: FkNumericPoses,
+  parts: readonly AssemblyPartStored[],
+  allJoints: readonly AssemblyJointStored[],
+  massByPartId: Map<FeatureId, PartMassLocal>,
+  gravity: V3,
+): { worstRequired: number; worstPose: NumericPoses } {
+  let worstRequired = -Infinity;
+  let worstPose: NumericPoses = poses[0] ?? {};
+  for (const pose of poses) {
+    const fullPose: FkNumericPoses = { ...zeroPoses, ...pose };
+    const worldT = forwardKinematics(parts, allJoints, fullPose);
+    const parentT = worldT.get(joint.parentPartId) ?? Transform.identity();
+    const axisWorld = normalize(parentT.axisDir(joint.axis!));
+    const originWorldM = scaleVec(parentT.point(joint.origin), MM_TO_M);
+
+    if (joint.kind === 'revolute') {
+      let momentSum: V3 = [0, 0, 0];
+      for (const partId of downstream) {
+        const massLocal = massByPartId.get(partId);
+        if (!massLocal) continue;
+        const partWorldT = worldT.get(partId) ?? Transform.identity();
+        const comWorldM = scaleVec(partWorldT.point(massLocal.comLocalMm), MM_TO_M);
+        const rM = subVec(comWorldM, originWorldM);
+        const forceN = scaleVec(gravity, massLocal.mass);
+        momentSum = addVec(momentSum, cross(rM, forceN));
+      }
+      const required = Math.abs(dot(momentSum, axisWorld));
+      if (required > worstRequired) {
+        worstRequired = required;
+        worstPose = pose;
+      }
+    } else {
+      let totalForce: V3 = [0, 0, 0];
+      for (const partId of downstream) {
+        const massLocal = massByPartId.get(partId);
+        if (!massLocal) continue;
+        totalForce = addVec(totalForce, scaleVec(gravity, massLocal.mass));
+      }
+      const required = Math.abs(dot(totalForce, axisWorld));
+      if (required > worstRequired) {
+        worstRequired = required;
+        worstPose = pose;
       }
     }
-    if (worstRequired === -Infinity) worstRequired = 0;
-
-    const capacity = joint.kind === 'revolute'
-      ? joint.actuator!.torqueNm ?? 0
-      : joint.actuator!.forceN ?? 0;
-    const marginPct = capacity > 0
-      ? ((capacity - worstRequired) / capacity) * 100
-      : (worstRequired > 0 ? -Infinity : 100);
-
-    jointResults.push({
-      jointName: joint.name,
-      kind: joint.kind as 'revolute' | 'prismatic',
-      actuatorCapacity: capacity,
-      worstRequired,
-      marginPct,
-      worstPose,
-    });
-
-    const unit = joint.kind === 'revolute' ? 'N·m' : 'N';
-    if (worstRequired > capacity) {
-      diagnostics.push(
-        buildDiag(
-          'assembly.joint.static-hold.exceeded',
-          'error',
-          `Joint '${joint.name}' requires ${worstRequired.toFixed(3)} ${unit} to hold the assembly at its worst sampled pose, exceeding the declared actuator capacity of ${capacity.toFixed(3)} ${unit}. Increase the actuator ${joint.kind === 'revolute' ? 'torque' : 'force'} to at least ${worstRequired.toFixed(3)} ${unit}, or shorten the downstream link length / reduce its mass.`,
-          joint.name,
-        ),
-      );
-    } else if (marginPct < marginThreshold) {
-      diagnostics.push(
-        buildDiag(
-          'assembly.joint.static-hold.margin-low',
-          'warn',
-          `Joint '${joint.name}' holds at its worst sampled pose with only ${marginPct.toFixed(1)}% margin (required ${worstRequired.toFixed(3)} ${unit} vs actuator capacity ${capacity.toFixed(3)} ${unit}), below the ${marginThreshold}% floor. Increase the actuator ${joint.kind === 'revolute' ? 'torque' : 'force'} to X = ${(worstRequired / (1 - marginThreshold / 100)).toFixed(3)} ${unit} for the desired margin, or shorten the downstream link.`,
-          joint.name,
-        ),
-      );
-    }
   }
+  if (worstRequired === -Infinity) worstRequired = 0;
+  return { worstRequired, worstPose };
+}
 
-  const ok = jointResults.every((j) => j.worstRequired <= j.actuatorCapacity);
-  return { ok, joints: jointResults, posesSampled: totalPosesSampled, diagnostics, source: 'local' };
+function emitHoldDiagnostics(
+  joint: AssemblyJointStored,
+  worstRequired: number,
+  capacity: number,
+  marginPct: number,
+  marginThreshold: number,
+  diagnostics: KinematicDiagnostic[],
+): void {
+  const unit = joint.kind === 'revolute' ? 'N·m' : 'N';
+  if (worstRequired > capacity) {
+    diagnostics.push(
+      buildDiag(
+        'assembly.joint.static-hold.exceeded',
+        'error',
+        `Joint '${joint.name}' requires ${worstRequired.toFixed(3)} ${unit} to hold the assembly at its worst sampled pose, exceeding the declared actuator capacity of ${capacity.toFixed(3)} ${unit}. Increase the actuator ${joint.kind === 'revolute' ? 'torque' : 'force'} to at least ${worstRequired.toFixed(3)} ${unit}, or shorten the downstream link length / reduce its mass.`,
+        joint.name,
+      ),
+    );
+  } else if (marginPct < marginThreshold) {
+    diagnostics.push(
+      buildDiag(
+        'assembly.joint.static-hold.margin-low',
+        'warn',
+        `Joint '${joint.name}' holds at its worst sampled pose with only ${marginPct.toFixed(1)}% margin (required ${worstRequired.toFixed(3)} ${unit} vs actuator capacity ${capacity.toFixed(3)} ${unit}), below the ${marginThreshold}% floor. Increase the actuator ${joint.kind === 'revolute' ? 'torque' : 'force'} to X = ${(worstRequired / (1 - marginThreshold / 100)).toFixed(3)} ${unit} for the desired margin, or shorten the downstream link.`,
+        joint.name,
+      ),
+    );
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────

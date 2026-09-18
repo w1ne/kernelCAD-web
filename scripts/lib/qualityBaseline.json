@@ -421,12 +421,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kinematic/checkStaticHold.ts",
-    "symbol": "Async function 'checkStaticHold'",
-    "value": 51
-  },
-  {
-    "rule": "complexity",
     "file": "src/kinematic/inverseKinematicsAnalytical.ts",
     "symbol": "Function 'solveAnalytical'",
     "value": 24
@@ -559,12 +553,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/mechanicalPlausibility.ts",
-    "symbol": "Async function 'reviewMechanicalPlausibility'",
-    "value": 48
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCase.ts",
     "symbol": "Async function 'reviewPhysicalUseCasesWithReachability'",
     "value": 25
@@ -584,20 +572,8 @@
   {
     "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseJointReactions.ts",
-    "symbol": "Async function 'validateCertificateAtSolvedPose'",
-    "value": 45
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseJointReactions.ts",
     "symbol": "Function 'expandCertificatePoses'",
     "value": 21
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseJointReactions.ts",
-    "symbol": "Function 'validateCertificateInput'",
-    "value": 50
   },
   {
     "rule": "complexity",
@@ -889,12 +865,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/kinematic/checkStaticHold.ts",
-    "symbol": "Async function 'checkStaticHold'",
-    "value": 153
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/modeling/api.ts",
     "symbol": "Function 'createApi'",
     "value": 654
@@ -928,12 +898,6 @@
     "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
     "symbol": "Async function 'usdIsaacSerialize'",
     "value": 241
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/mates/mechanicalPlausibility.ts",
-    "symbol": "Async function 'reviewMechanicalPlausibility'",
-    "value": 211
   },
   {
     "rule": "max-lines-per-function",
@@ -1120,12 +1084,6 @@
     "file": "src/modeling/mates/physicalUseCase.ts",
     "symbol": "(file)",
     "value": 977
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/modeling/mates/physicalUseCaseJointReactions.ts",
-    "symbol": "(file)",
-    "value": 929
   },
   {
     "rule": "max-lines",
