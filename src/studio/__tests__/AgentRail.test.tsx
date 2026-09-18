@@ -25,13 +25,13 @@ describe('AgentRail', () => {
         expect((rail as HTMLElement).style.width).toBe('0px');
     });
 
-    it('renders open at 240px and shows the staged-edit pane when toggled on', () => {
+    it('renders open at 240px with only the in-Studio agent surface', () => {
         shellStore.setAgentRailOpen(true);
-        const { getByLabelText, getByText, queryByText } = render(<AgentRail />);
+        const { getByLabelText, queryByText } = render(<AgentRail />);
         const rail = getByLabelText('Agent rail');
         expect(rail.getAttribute('data-open')).toBe('true');
         expect((rail as HTMLElement).style.width).toBe('240px');
-        expect(getByText(/Staged edits/i)).toBeDefined();
+        expect(queryByText(/Cloud MCP connector/i)).toBeNull();
         // The stale "Cloud MCP connector" + "coming later" cards were removed; the
         // in-Studio agent is live and external-agent onboarding lives on /connect.
         expect(queryByText(/Cloud MCP connector/i)).toBeNull();
