@@ -79,9 +79,9 @@ export function useAgentGeneration({
         }
     };
 
-    const onSubmit = (e: FormEvent) => {
-        e.preventDefault();
-        const trimmed = prompt.trim();
+    const onSubmit = (message?: string | FormEvent) => {
+        if (typeof message !== 'string') message?.preventDefault();
+        const trimmed = (typeof message === 'string' ? message : prompt).trim();
         if (!trimmed || busy || readingReferenceImage) return;
         if (referenceNeedsDimension) {
             setReferenceImageError('Add a visible measurement label and a positive millimetre value before generating from a photo.');

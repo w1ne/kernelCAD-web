@@ -131,9 +131,7 @@ const StudioGenerateInner: React.FC = () => {
                 selectedFeatureId={selectedFeatureId}
                 prompt={prompt}
                 onPromptChange={setPrompt}
-                currentCode={currentCode}
                 busy={busy}
-                agentBusy={agentBusy}
                 conceptBusy={conceptBusy}
                 previewPhase={preview.phase}
                 photoReferenceSelected={photoReferenceSelected}
