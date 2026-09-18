@@ -356,12 +356,6 @@
   {
     "rule": "complexity",
     "file": "src/kernel/backends/occt/edgeSelection.ts",
-    "symbol": "Function 'pickEdges'",
-    "value": 57
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/backends/occt/edgeSelection.ts",
     "symbol": "Function 'pickFace'",
     "value": 28
   },
@@ -950,12 +944,6 @@
   {
     "rule": "max-lines-per-function",
     "file": "src/kernel/backends/occt/edgeSelection.ts",
-    "symbol": "Function 'pickEdges'",
-    "value": 230
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/edgeSelection.ts",
     "symbol": "Function 'pickFace'",
     "value": 155
   },
@@ -1203,7 +1191,7 @@
     "rule": "max-lines",
     "file": "src/kernel/backends/occt/edgeSelection.ts",
     "symbol": "(file)",
-    "value": 1092
+    "value": 963
   },
   {
     "rule": "max-lines",
