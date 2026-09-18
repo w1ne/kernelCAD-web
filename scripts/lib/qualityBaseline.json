@@ -13,12 +13,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/cli/commands/export.ts",
-    "symbol": "Async function 'exportScript'",
-    "value": 43
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/cli/commands/render.ts",
     "symbol": "Async function 'renderInspectBundle'",
     "value": 38
