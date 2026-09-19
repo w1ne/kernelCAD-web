@@ -115,12 +115,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/script-runtime/bom.ts",
-    "symbol": "Async function 'computeBom'",
-    "value": 25
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/vision/index.ts",
     "symbol": "Async function 'traceFromImage'",
     "value": 24
