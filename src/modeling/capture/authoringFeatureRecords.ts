@@ -613,6 +613,21 @@ export function buildDrawingToleranceFeatureSpec(
   spec: DrawingToleranceSpec,
   shapeRef: FeatureRef,
 ): AuthoringFeatureSpec {
+  const { hasFace, hasEdge } = validateToleranceTarget(spec);
+  const datums = validateToleranceDatums(spec);
+  validateToleranceModifier(spec);
+  const metadata = buildToleranceMetadata(spec, hasFace, hasEdge, datums);
+  return {
+    kind: 'drawingTolerance',
+    params: {},
+    inputs: { shape: shapeRef },
+    metadata: metadata as unknown as Record<string, unknown>,
+  };
+}
+
+function validateToleranceTarget(
+  spec: DrawingToleranceSpec,
+): { readonly hasFace: boolean; readonly hasEdge: boolean } {
   if (!isQueryObject(spec)) invalidGdt('tolerance', 'spec', 'must be an object');
   if (!GDT_TYPES.includes(spec.type)) {
     invalidGdt('tolerance', 'type', `must be one of ${GDT_TYPES.join(' | ')}; got ${JSON.stringify(spec.type)}`);
@@ -631,6 +646,10 @@ export function buildDrawingToleranceFeatureSpec(
   if (hasEdge && !isQueryObject(spec.edge)) {
     invalidGdt('tolerance', 'edge', `must be an EdgeQuery object; got ${JSON.stringify(spec.edge)}`);
   }
+  return { hasFace, hasEdge };
+}
+
+function validateToleranceDatums(spec: DrawingToleranceSpec): string[] {
   const datums = spec.datums ?? [];
   if (!Array.isArray(datums)) {
     invalidGdt('tolerance', 'datums', `must be an array of datum letters; got ${JSON.stringify(spec.datums)}`);
@@ -646,10 +665,22 @@ export function buildDrawingToleranceFeatureSpec(
   if (GDT_FORM_TYPES.includes(spec.type) && datums.length > 0) {
     invalidGdt('tolerance', 'datums', `must be empty for ${spec.type}: a form tolerance controls the feature on its own`);
   }
+  return [...datums];
+}
+
+function validateToleranceModifier(spec: DrawingToleranceSpec): void {
   if (spec.modifier !== undefined && !GDT_MODIFIERS.includes(spec.modifier)) {
     invalidGdt('tolerance', 'modifier', `must be one of ${GDT_MODIFIERS.join(' | ')}; got ${JSON.stringify(spec.modifier)}`);
   }
-  const metadata: DrawingToleranceMetadata = {
+}
+
+function buildToleranceMetadata(
+  spec: DrawingToleranceSpec,
+  hasFace: boolean,
+  hasEdge: boolean,
+  datums: readonly string[],
+): DrawingToleranceMetadata {
+  return {
     virtual: true,
     type: spec.type,
     value: spec.value,
@@ -657,11 +688,5 @@ export function buildDrawingToleranceFeatureSpec(
     ...(hasEdge ? { edge: spec.edge } : {}),
     datums: [...datums],
     ...(spec.modifier !== undefined ? { modifier: spec.modifier } : {}),
-  };
-  return {
-    kind: 'drawingTolerance',
-    params: {},
-    inputs: { shape: shapeRef },
-    metadata: metadata as unknown as Record<string, unknown>,
   };
 }

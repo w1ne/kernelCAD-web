@@ -275,3 +275,64 @@ export function unit(value: Vec3): Vec3 {
 export function midpoint(a: Vec3, b: Vec3): Vec3 {
   return scale(add(a, b), 0.5);
 }
+
+type Mate = ReturnType<Assembly['__mates']>[number];
+export type PathEdge = { readonly partName: string; readonly mate: Mate };
+type PathStep = { readonly from: string; readonly mate: Mate };
+export type StablePartPath = {
+  readonly reachedStablePart: string;
+  readonly parent: ReadonlyMap<string, PathStep>;
+};
+
+export function buildMatePathAdjacency(arm: Assembly): Map<string, PathEdge[]> {
+  const adjacency = new Map<string, PathEdge[]>();
+  for (const part of arm.__parts()) adjacency.set(part.name, []);
+  for (const mate of arm.__mates()) {
+    const aPart = safePartName(mate.a);
+    const bPart = safePartName(mate.b);
+    if (aPart === undefined || bPart === undefined) continue;
+    adjacency.get(aPart)?.push({ partName: bPart, mate });
+    adjacency.get(bPart)?.push({ partName: aPart, mate });
+  }
+  return adjacency;
+}
+
+export function buildCouplingByDriven(arm: Assembly): Map<string, string> | string {
+  const couplingByDriven = new Map<string, string>();
+  for (const coupling of arm.__mateCouplings()) {
+    const existing = couplingByDriven.get(coupling.driven);
+    if (existing !== undefined && existing !== coupling.source) {
+      return `Driven mate '${coupling.driven}' has multiple coupling sources.`;
+    }
+    couplingByDriven.set(coupling.driven, coupling.source);
+  }
+  return couplingByDriven;
+}
+
+export function findStablePartPath(
+  mechanismPart: string,
+  adjacency: ReadonlyMap<string, readonly PathEdge[]>,
+  stableParts: ReadonlySet<string>,
+): StablePartPath | string {
+  const queue = [mechanismPart];
+  const visited = new Set(queue);
+  const parent = new Map<string, PathStep>();
+  let reachedStablePart: string | undefined;
+  while (queue.length > 0 && reachedStablePart === undefined) {
+    const partName = queue.shift()!;
+    for (const edge of adjacency.get(partName) ?? []) {
+      if (visited.has(edge.partName)) continue;
+      visited.add(edge.partName);
+      parent.set(edge.partName, { from: partName, mate: edge.mate });
+      if (stableParts.has(edge.partName)) {
+        reachedStablePart = edge.partName;
+        break;
+      }
+      queue.push(edge.partName);
+    }
+  }
+  if (reachedStablePart === undefined) {
+    return `Mechanism contact part '${mechanismPart}' has no mate path to a declared stable part.`;
+  }
+  return { reachedStablePart, parent };
+}
