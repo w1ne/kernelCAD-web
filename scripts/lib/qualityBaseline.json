@@ -679,12 +679,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/featureMeshingPhases.ts",
-    "symbol": "Function 'emitSceneBackendFanout'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/forwardKinematics.ts",
     "symbol": "Function 'forwardKinematics'",
     "value": 16
