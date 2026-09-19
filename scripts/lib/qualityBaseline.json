@@ -7,6 +7,12 @@
   },
   {
     "rule": "complexity",
+    "file": "src/agent/cli/commands/export.ts",
+    "symbol": "Async arrow function",
+    "value": 28
+  },
+  {
+    "rule": "complexity",
     "file": "src/agent/cli/commands/render.ts",
     "symbol": "Async function 'renderScript'",
     "value": 26
@@ -16,6 +22,12 @@
     "file": "src/agent/cli/commands/validate.ts",
     "symbol": "Function 'renderHuman'",
     "value": 21
+  },
+  {
+    "rule": "complexity",
+    "file": "src/agent/drawing/dimensionText.ts",
+    "symbol": "Function 'parseDimensionText'",
+    "value": 28
   },
   {
     "rule": "complexity",
@@ -37,21 +49,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/edits/addFeature.ts",
-    "symbol": "Function 'findLastTopLevelReturnLine'",
-    "value": 26
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/edits/addPathNurbsSegment.ts",
     "symbol": "Function 'addPathNurbsSegment'",
     "value": 25
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/edits/addSurfaceFromBoundary.ts",
-    "symbol": "Function 'addSurfaceFromBoundary'",
-    "value": 26
   },
   {
     "rule": "complexity",
@@ -61,9 +61,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/edits/sourceEditUtils.ts",
-    "symbol": "Function 'findLastTopLevelReturnLine'",
-    "value": 26
+    "file": "src/agent/mcp/edits/removeFeature.ts",
+    "symbol": "Function 'lineContainsTopLevelReturn'",
+    "value": 27
   },
   {
     "rule": "complexity",
@@ -115,6 +115,12 @@
   },
   {
     "rule": "complexity",
+    "file": "src/agent/mcp/tools/listFaceLabels.ts",
+    "symbol": "Async function 'listFaceLabelsTool'",
+    "value": 27
+  },
+  {
+    "rule": "complexity",
     "file": "src/agent/mcp/tools/runFea.ts",
     "symbol": "Async function 'runFeaTool'",
     "value": 22
@@ -127,21 +133,21 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/analysis.ts",
-    "symbol": "Function 'analyseMesh'",
-    "value": 26
+    "file": "src/agent/reconstruct/profileFit.ts",
+    "symbol": "Function 'fitLoop'",
+    "value": 28
+  },
+  {
+    "rule": "complexity",
+    "file": "src/agent/reconstruct/section.ts",
+    "symbol": "Function 'sliceAtZ'",
+    "value": 27
   },
   {
     "rule": "complexity",
     "file": "src/agent/reconstruct/segment.ts",
     "symbol": "Function 'fitPlane'",
     "value": 24
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/reconstruct/segment.ts",
-    "symbol": "Function 'growPlanes'",
-    "value": 26
   },
   {
     "rule": "complexity",
@@ -172,6 +178,12 @@
     "file": "src/kernel/backends/occt/drawingAuto.ts",
     "symbol": "Function 'normaliseAutoAnnotate'",
     "value": 25
+  },
+  {
+    "rule": "complexity",
+    "file": "src/kernel/backends/occt/edgeSelection.ts",
+    "symbol": "Function 'pickFace'",
+    "value": 28
   },
   {
     "rule": "complexity",
@@ -301,6 +313,12 @@
   },
   {
     "rule": "complexity",
+    "file": "src/modeling/mates/physicalUseCase.ts",
+    "symbol": "Function 'makePhysicalUseCaseRecord'",
+    "value": 26
+  },
+  {
+    "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseJointReactions.ts",
     "symbol": "Function 'expandCertificatePoses'",
     "value": 21
@@ -343,9 +361,21 @@
   },
   {
     "rule": "complexity",
+    "file": "src/modeling/runtime/jointMeshContinuity.ts",
+    "symbol": "Function 'checkJointMeshContinuity'",
+    "value": 26
+  },
+  {
+    "rule": "complexity",
     "file": "src/modeling/runtime/mechanismTruth.ts",
     "symbol": "Function 'checkOrphanParts'",
     "value": 23
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/validation/holeValidation.ts",
+    "symbol": "Function 'validateCommonHoleFields'",
+    "value": 26
   },
   {
     "rule": "complexity",
@@ -388,6 +418,12 @@
     "file": "src/agent/vision/index.ts",
     "symbol": "Async function 'traceFromImage'",
     "value": 163
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/kernel/backends/occt/edgeSelection.ts",
+    "symbol": "Function 'pickFace'",
+    "value": 155
   },
   {
     "rule": "max-lines-per-function",
@@ -439,6 +475,12 @@
   },
   {
     "rule": "max-lines",
+    "file": "src/kernel/backends/occt/edgeSelection.ts",
+    "symbol": "(file)",
+    "value": 963
+  },
+  {
+    "rule": "max-lines",
     "file": "src/kernel/backends/occt/occtBackend.ts",
     "symbol": "(file)",
     "value": 844
@@ -460,5 +502,11 @@
     "file": "src/modeling/capture/sketch.ts",
     "symbol": "(file)",
     "value": 883
+  },
+  {
+    "rule": "max-lines",
+    "file": "src/modeling/mates/physicalUseCase.ts",
+    "symbol": "(file)",
+    "value": 824
   }
 ]

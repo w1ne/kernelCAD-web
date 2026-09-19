@@ -91,13 +91,42 @@ export function analyseMesh(soup: TriangleSoup, weldToleranceMm?: number): MeshA
   const frame = chooseFrame(seg, levelTol, mesh);
   const canonical = toCanonical(mesh.positions, frame);
 
+  const { zMin, zMax } = canonicalZRange(canonical);
+  const levels = capLevels(seg, frame, zMin, zMax, levelTol);
+  const bands = buildBands(canonical, mesh.triangles, levels, levelTol);
+
+  // Cross-axis bores and regions no feature represents.
+  const threshold = Math.max(0.5, 0.002 * seg.totalArea);
+  const { crossBores, unmatched } = classifyRegions(mesh, seg, frame, threshold);
+
+  return {
+    mesh,
+    report,
+    seg,
+    frame,
+    canonical,
+    zMin,
+    zMax,
+    levels,
+    bands,
+    crossBores,
+    unmatched,
+    unmatchedAreaThresholdMm2: threshold,
+    diagonal,
+  };
+}
+
+function canonicalZRange(canonical: Float64Array): { zMin: number; zMax: number } {
   let zMin = Infinity;
   let zMax = -Infinity;
   for (let i = 2; i < canonical.length; i += 3) {
     zMin = Math.min(zMin, canonical[i]);
     zMax = Math.max(zMax, canonical[i]);
   }
+  return { zMin, zMax };
+}
 
+function capLevels(seg: Segmentation, frame: CanonicalFrame, zMin: number, zMax: number, levelTol: number): number[] {
   // Cap levels: area-weighted cluster of cap-plane offsets.
   const caps = seg.planes
     .filter((p) => Math.abs(dot3(p.normal, frame.axis)) >= CAP_COS && p.area >= 1e-3 * seg.totalArea)
@@ -122,7 +151,15 @@ export function analyseMesh(soup: TriangleSoup, weldToleranceMm?: number): MeshA
   }
   flush();
   if (levels.length < 2) levels.push(zMax);
+  return levels;
+}
 
+function buildBands(
+  canonical: Float64Array,
+  triangles: Uint32Array,
+  levels: number[],
+  levelTol: number,
+): BandAnalysis[] {
   const bands: BandAnalysis[] = [];
   for (let i = 0; i + 1 < levels.length; i++) {
     const z0 = levels[i];
@@ -131,17 +168,23 @@ export function analyseMesh(soup: TriangleSoup, weldToleranceMm?: number): MeshA
     let best: Section | null = null;
     const sampledAreas: number[] = [];
     for (const f of SAMPLE_FRACTIONS) {
-      const s = sliceAtZ(canonical, mesh.triangles, z0 + f * (z1 - z0));
+      const s = sliceAtZ(canonical, triangles, z0 + f * (z1 - z0));
       sampledAreas.push(s.materialArea);
       if (!best || s.materialArea > best.materialArea) best = s;
     }
     bands.push({ z0, z1, section: best!, sampledAreas });
   }
+  return bands;
+}
 
-  // Cross-axis bores and regions no feature represents.
+function classifyRegions(
+  mesh: IndexedMesh,
+  seg: Segmentation,
+  frame: CanonicalFrame,
+  threshold: number,
+): { crossBores: CrossBore[]; unmatched: UnmatchedCandidate[] } {
   const crossBores: CrossBore[] = [];
   const unmatched: UnmatchedCandidate[] = [];
-  const threshold = Math.max(0.5, 0.002 * seg.totalArea);
   const e1 = frame.e1, e2 = frame.e2, axis = frame.axis;
   for (const c of seg.cylinders) {
     const along = Math.abs(dot3(c.axis, axis));
@@ -173,22 +216,7 @@ export function analyseMesh(soup: TriangleSoup, weldToleranceMm?: number): MeshA
       unmatched.push(regionSummary(mesh, f.tris, 'freeform', 'Surface matched neither a plane nor a cylinder within tolerance.'));
     }
   }
-
-  return {
-    mesh,
-    report,
-    seg,
-    frame,
-    canonical,
-    zMin,
-    zMax,
-    levels,
-    bands,
-    crossBores,
-    unmatched,
-    unmatchedAreaThresholdMm2: threshold,
-    diagonal,
-  };
+  return { crossBores, unmatched };
 }
 
 function crossBoreOf(mesh: IndexedMesh, c: CylinderRegion, frame: CanonicalFrame, label: 'X' | 'Y'): CrossBore {
