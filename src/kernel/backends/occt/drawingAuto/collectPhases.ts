@@ -14,7 +14,7 @@ import type { AutoDrawingInput } from './contracts';
 import { POSITION_ZONE } from './iso2768';
 import { CHAR_W, TEXT_H, textBox } from './placement';
 import { HOLE_SIDES, commit, holeKey, holeLabel, toSheet } from './renderContext';
-import type { LinearItem, RenderCtx } from './renderContext';
+import type { HoleGroup, LinearItem, RenderCtx } from './renderContext';
 import { STANDARD_VIEWS, viewAlong } from './views';
 import { cross, dot, len, sub } from './vectors';
 
@@ -85,49 +85,87 @@ export function collectHoleGroups(ctx: RenderCtx): void {
 }
 
 export function collectHolePositionDimensions(ctx: RenderCtx): LinearItem[] {
-  const { opts, include, datums, holeGroups, views } = ctx;
+  const { opts, include, holeGroups } = ctx;
   const linear: LinearItem[] = [];
   const bb = ctx.input.compound.boundingBox();
   if (!(opts.enabled && include.has('hole-positions'))) return linear;
+  const byView = groupHolesByDimensionView(holeGroups);
+  for (const [view, holes] of byView) {
+    linear.push(...holePositionItemsForView(ctx, view, holes, bb));
+  }
+  return linear;
+}
+
+function groupHolesByDimensionView(holeGroups: HoleGroup[]): Map<DrawingViewName, HoleComposite[]> {
   const byView = new Map<DrawingViewName, HoleComposite[]>();
   for (const g of holeGroups) {
     if (principalAxis(g.holes[0].axis) === null) continue;
     byView.set(g.view, [...(byView.get(g.view) ?? []), ...g.holes]);
   }
-  for (const [view, holes] of byView) {
-    const b = viewBasis(view);
-    for (const screen of ['x', 'y'] as const) {
-      const w = screen === 'x' ? b.x : b.y;
-      const axisIdx = Math.abs(w[0]) > 0.5 ? 0 : Math.abs(w[1]) > 0.5 ? 1 : 2;
-      const datum = [...datums.values()].find(d => d.plane && Math.abs(d.normal![axisIdx]) > 0.999);
-      const ref = datum ? datum.point[axisIdx] : bb.min[axisIdx];
-      const coords: number[] = [];
-      for (const h of holes) {
-        const c = h.entry[axisIdx];
-        if (Math.abs(c - ref) < 0.01) continue;
-        if (!coords.some(x => Math.abs(x - c) < 0.01)) coords.push(c);
-      }
-      const side = screen === 'x' ? HOLE_SIDES[view].horizontal : HOLE_SIDES[view].vertical;
-      const box = views[view].placement.box;
-      for (const c of coords) {
-        const hole = holes.find(h => Math.abs(h.entry[axisIdx] - c) < 0.01)!;
-        const to = toSheet(ctx, hole.entry, view);
-        // Reference point: on the datum plane at the hole's in-view position,
-        // pushed to the view outline nearest the dimension line.
-        const refPoint: V3 = [...hole.entry] as V3;
-        refPoint[axisIdx] = ref;
-        const from = toSheet(ctx, refPoint, view);
-        const fromPt: Pt2 = screen === 'x'
-          ? [from[0], side === 'top' ? box.y : box.y + box.h]
-          : [side === 'left' ? box.x : box.x + box.w, from[1]];
-        linear.push({
-          kind: 'hole-position', view, side, from: fromPt, to,
-          label: formatDimValue(Math.abs(c - ref)), order: Math.abs(c - ref),
-        });
-      }
+  return byView;
+}
+
+function holePositionItemsForView(
+  ctx: RenderCtx,
+  view: DrawingViewName,
+  holes: HoleComposite[],
+  bb: { min: readonly number[] },
+): LinearItem[] {
+  const linear: LinearItem[] = [];
+  const b = viewBasis(view);
+  for (const screen of ['x', 'y'] as const) {
+    const axisIdx = holeAxisIndex(b, screen);
+    const ref = holeReferenceCoord(ctx.datums, bb, axisIdx);
+    const coords = uniqueHoleCoords(holes, axisIdx, ref);
+    const side = screen === 'x' ? HOLE_SIDES[view].horizontal : HOLE_SIDES[view].vertical;
+    const box = ctx.views[view].placement.box;
+    for (const c of coords) {
+      const hole = holes.find(h => Math.abs(h.entry[axisIdx] - c) < 0.01)!;
+      const to = toSheet(ctx, hole.entry, view);
+      // Reference point: on the datum plane at the hole's in-view position,
+      // pushed to the view outline nearest the dimension line.
+      const refPoint: V3 = [...hole.entry] as V3;
+      refPoint[axisIdx] = ref;
+      const from = toSheet(ctx, refPoint, view);
+      const fromPt: Pt2 = holeDimensionFromPoint(from, screen, side, box);
+      linear.push({
+        kind: 'hole-position', view, side, from: fromPt, to,
+        label: formatDimValue(Math.abs(c - ref)), order: Math.abs(c - ref),
+      });
     }
   }
   return linear;
+}
+
+function holeAxisIndex(b: { x: readonly number[]; y: readonly number[] }, screen: 'x' | 'y'): number {
+  const w = screen === 'x' ? b.x : b.y;
+  return Math.abs(w[0]) > 0.5 ? 0 : Math.abs(w[1]) > 0.5 ? 1 : 2;
+}
+
+function holeReferenceCoord(datums: RenderCtx['datums'], bb: { min: readonly number[] }, axisIdx: number): number {
+  const datum = [...datums.values()].find(d => d.plane && Math.abs(d.normal![axisIdx]) > 0.999);
+  return datum ? datum.point[axisIdx] : bb.min[axisIdx];
+}
+
+function uniqueHoleCoords(holes: HoleComposite[], axisIdx: number, ref: number): number[] {
+  const coords: number[] = [];
+  for (const h of holes) {
+    const c = h.entry[axisIdx];
+    if (Math.abs(c - ref) < 0.01) continue;
+    if (!coords.some(x => Math.abs(x - c) < 0.01)) coords.push(c);
+  }
+  return coords;
+}
+
+function holeDimensionFromPoint(
+  from: Pt2,
+  screen: 'x' | 'y',
+  side: 'top' | 'bottom' | 'left' | 'right',
+  box: { x: number; y: number; w: number; h: number },
+): Pt2 {
+  return screen === 'x'
+    ? [from[0], side === 'top' ? box.y : box.y + box.h]
+    : [side === 'left' ? box.x : box.x + box.w, from[1]];
 }
 
 export function collectLinearDimensions(ctx: RenderCtx): LinearItem[] {

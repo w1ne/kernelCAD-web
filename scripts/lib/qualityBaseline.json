@@ -397,12 +397,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/drawingAuto/collectPhases.ts",
-    "symbol": "Function 'collectHolePositionDimensions'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/drawingAuto/placePhases.ts",
     "symbol": "Function 'placeRadiusAndChamferNotes'",
     "value": 16
