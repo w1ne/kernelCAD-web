@@ -379,10 +379,7 @@ function chordDir(e: SharpEdge): V3 {
   return l > 0 ? [d[0] / l, d[1] / l, d[2] / l] : [0, 0, 0];
 }
 
-/** Mirror of the kernel's EdgeQuery resolution (chord midpoint / chord direction). */
-export function edgeMatchesQuery(e: SharpEdge, q: EdgeQueryOut): boolean {
-  const tol = q.tolerance ?? 1.0;
-  const m = chordMid(e);
+function matchesPosition(m: V3, q: EdgeQueryOut, tol: number): boolean {
   if (q.atZ !== undefined && Math.abs(m[2] - q.atZ) > tol) return false;
   if (q.atX !== undefined && Math.abs(m[0] - q.atX) > tol) return false;
   if (q.atY !== undefined && Math.abs(m[1] - q.atY) > tol) return false;
@@ -390,7 +387,10 @@ export function edgeMatchesQuery(e: SharpEdge, q: EdgeQueryOut): boolean {
     const w = q.within;
     if (m[0] < w.xMin || m[0] > w.xMax || m[1] < w.yMin || m[1] > w.yMax || m[2] < w.zMin || m[2] > w.zMax) return false;
   }
-  const d = chordDir(e);
+  return true;
+}
+
+function matchesDirection(d: V3, q: EdgeQueryOut): boolean {
   const zero = d[0] === 0 && d[1] === 0 && d[2] === 0;
   if (q.parallel) {
     if (zero || Math.abs(dot(d, q.parallel)) < Math.cos((10 * Math.PI) / 180)) return false;
@@ -398,12 +398,25 @@ export function edgeMatchesQuery(e: SharpEdge, q: EdgeQueryOut): boolean {
   if (q.perpendicular) {
     if (zero || Math.abs(dot(d, q.perpendicular)) > Math.sin((10 * Math.PI) / 180)) return false;
   }
+  return true;
+}
+
+function matchesCurve(e: SharpEdge, q: EdgeQueryOut): boolean {
   if (q.ofCurveType && e.curveType !== q.ofCurveType) return false;
   if (q.convex !== undefined || q.concave !== undefined) {
     if (e.kernelConvex === null) return false;
     if (q.convex === true && e.kernelConvex !== true) return false;
     if (q.concave === true && e.kernelConvex !== false) return false;
   }
+  return true;
+}
+
+/** Mirror of the kernel's EdgeQuery resolution (chord midpoint / chord direction). */
+export function edgeMatchesQuery(e: SharpEdge, q: EdgeQueryOut): boolean {
+  const tol = q.tolerance ?? 1.0;
+  if (!matchesPosition(chordMid(e), q, tol)) return false;
+  if (!matchesDirection(chordDir(e), q)) return false;
+  if (!matchesCurve(e, q)) return false;
   return true;
 }
 

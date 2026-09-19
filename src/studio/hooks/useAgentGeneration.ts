@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import { useGeneration, type GenerationPhase } from '../../funnel/hooks/useGeneration';
 import type { GenerateRequest } from '../../funnel/lib/generateClient';
 import { shellStore } from '../store/useShellStore';
@@ -21,10 +21,6 @@ interface UseAgentGenerationArgs {
     readonly prompt: string;
     readonly selectedFeatureId: SelectedFeatureId;
     readonly agentRepairWorkflow: AgentRepairWorkflow | null;
-    readonly referenceImage: GenerateRequest['referenceImage'] | null;
-    readonly referenceNeedsDimension: boolean;
-    readonly setReferenceImageError: (message: string | null) => void;
-    readonly readingReferenceImage: boolean;
     readonly conceptBusy: boolean;
 }
 
@@ -40,10 +36,6 @@ export function useAgentGeneration({
     prompt,
     selectedFeatureId,
     agentRepairWorkflow,
-    referenceImage,
-    referenceNeedsDimension,
-    setReferenceImageError,
-    readingReferenceImage,
     conceptBusy,
 }: UseAgentGenerationArgs) {
     // The editor source captured at submit time — the "before" side of the diff
@@ -79,14 +71,9 @@ export function useAgentGeneration({
         }
     };
 
-    const onSubmit = (message?: string | FormEvent) => {
-        if (typeof message !== 'string') message?.preventDefault();
-        const trimmed = (typeof message === 'string' ? message : prompt).trim();
-        if (!trimmed || busy || readingReferenceImage) return;
-        if (referenceNeedsDimension) {
-            setReferenceImageError('Add a visible measurement label and a positive millimetre value before generating from a photo.');
-            return;
-        }
+    const onSubmit = (message?: string, referenceImage?: GenerateRequest['referenceImage']) => {
+        const trimmed = (message ?? prompt).trim();
+        if (!trimmed || busy) return;
         const matchesDraftedRepair =
             agentRepairWorkflow != null &&
             agentRepairWorkflow.state === 'drafted' &&
@@ -109,7 +96,7 @@ export function useAgentGeneration({
             promptText: trimmed,
             selectedFeatureId: runTargetId,
             repairWorkflow: repairWorkflowForRun,
-        }, referenceImage ?? undefined);
+        }, referenceImage);
     };
 
     return { agentBusy, busy, baseline, reviewSnapshot, setBaseline, setReviewSnapshot, onSubmit };

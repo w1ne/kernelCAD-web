@@ -277,20 +277,22 @@ interface Seg {
   anchored: boolean;
 }
 
-/** Analyze one build direction (unit vector, part-local frame). */
-export function analyzeBuildDirection(
-  prep: PreparedFdmMesh,
-  buildDirection: Vec3,
-  settings: FdmSettings,
-): FdmOrientationResult {
-  const { mesh, triCount, normals, areas, neighbors } = prep;
-  const V = mesh.vertices;
-  const T = mesh.triangles;
-  const nVerts = (V.length / 3) | 0;
-  const frame = buildFrameFor(buildDirection);
-  const [ru, rv, rw] = frame.rows;
+interface BuildFrameProjection {
+  pu: Float64Array;
+  pv: Float64Array;
+  pw: Float64Array;
+  wMin: number;
+  sizeMm: { x: number; y: number; z: number };
+}
 
-  // Printer-frame coordinates of every vertex.
+/** Printer-frame coordinates of every vertex, plus the frame extents. */
+function projectBuildFrameVertices(
+  V: ArrayLike<number>,
+  nVerts: number,
+  ru: Vec3,
+  rv: Vec3,
+  rw: Vec3,
+): BuildFrameProjection {
   const pu = new Float64Array(nVerts);
   const pv = new Float64Array(nVerts);
   const pw = new Float64Array(nVerts);
@@ -307,14 +309,29 @@ export function analyzeBuildDirection(
   }
   if (nVerts === 0) { uMin = uMax = vMin = vMax = wMin = wMax = 0; }
   const sizeMm = { x: uMax - uMin, y: vMax - vMin, z: wMax - wMin };
-  const onBed = (vi: number): boolean => pw[vi] - wMin <= BED_TOL_MM;
+  return { pu, pv, pw, wMin, sizeMm };
+}
 
-  // Classify triangles.
-  const steepSin = Math.sin((settings.maxOverhangDeg * Math.PI) / 180) + ANGLE_EPS;
+interface TriangleClassification {
+  isBed: Uint8Array;
+  isSteep: Uint8Array;
+  contactArea: number;
+  contactPts: number[];
+}
+
+/** Bed-contact and steep triangles, plus the coordinates of the contact patch. */
+function classifyBuildTriangles(
+  T: ArrayLike<number>,
+  triCount: number,
+  areas: Float64Array,
+  pu: Float64Array,
+  pv: Float64Array,
+  downOf: (i: number) => number,
+  onBed: (vi: number) => boolean,
+  steepSin: number,
+): TriangleClassification {
   const isBed = new Uint8Array(triCount);
   const isSteep = new Uint8Array(triCount);
-  const downOf = (i: number): number =>
-    -(normals[3 * i] * rw[0] + normals[3 * i + 1] * rw[1] + normals[3 * i + 2] * rw[2]);
   let contactArea = 0;
   const contactPts: number[] = [];
   for (let i = 0; i < triCount; i++) {
@@ -329,21 +346,37 @@ export function analyzeBuildDirection(
     }
     if (down > steepSin) isSteep[i] = 1;
   }
+  return { isBed, isSteep, contactArea, contactPts };
+}
 
-  // Bed contact + tip risk.
+/** Footprint, contact hull, and the adhesion/tip ratios for one orientation. */
+function measureBedContact(
+  pu: Float64Array,
+  pv: Float64Array,
+  nVerts: number,
+  contactArea: number,
+  contactPts: number[],
+  heightMm: number,
+): { bedContact: FdmBedContact; ratio: number; tipRatio: number } {
   const allPts: number[] = new Array(nVerts * 2);
   for (let i = 0; i < nVerts; i++) { allPts[2 * i] = pu[i]; allPts[2 * i + 1] = pv[i]; }
   const footprintMm2 = polygonArea(convexHull(allPts));
   const contactHull = convexHull(contactPts);
   const minBaseMm = contactArea > 0 ? hullMinWidth(contactHull) : 0;
-  const heightMm = sizeMm.z;
   const ratio = footprintMm2 > AREA_EPS ? contactArea / footprintMm2 : 0;
   const tipRatio = minBaseMm > 0 ? heightMm / minBaseMm : Infinity;
   const bedContact: FdmBedContact = { areaMm2: contactArea, footprintMm2, ratio, minBaseMm, heightMm, tipRatio };
+  return { bedContact, ratio, tipRatio };
+}
 
-  // Overhang regions.
-  const regionOf = new Int32Array(triCount).fill(-1);
-  const overhangs: FdmOverhangRegion[] = [];
+/** Seed-fill steep triangles into edge-connected regions, in discovery order. */
+function forEachSteepRegion(
+  triCount: number,
+  isSteep: Uint8Array,
+  neighbors: Int32Array,
+  regionOf: Int32Array,
+  emit: (tris: number[], id: number) => void,
+): void {
   let regionId = 0;
   for (let seed = 0; seed < triCount; seed++) {
     if (!isSteep[seed] || regionOf[seed] !== -1) continue;
@@ -359,9 +392,45 @@ export function analyzeBuildDirection(
         }
       }
     }
-    overhangs.push(analyzeRegion(tris, regionId));
+    emit(tris, regionId);
     regionId++;
   }
+}
+
+/** Analyze one build direction (unit vector, part-local frame). */
+export function analyzeBuildDirection(
+  prep: PreparedFdmMesh,
+  buildDirection: Vec3,
+  settings: FdmSettings,
+): FdmOrientationResult {
+  const { mesh, triCount, normals, areas, neighbors } = prep;
+  const V = mesh.vertices;
+  const T = mesh.triangles;
+  const nVerts = (V.length / 3) | 0;
+  const frame = buildFrameFor(buildDirection);
+  const [ru, rv, rw] = frame.rows;
+
+  // Printer-frame coordinates of every vertex.
+  const { pu, pv, pw, wMin, sizeMm } = projectBuildFrameVertices(V, nVerts, ru, rv, rw);
+  const onBed = (vi: number): boolean => pw[vi] - wMin <= BED_TOL_MM;
+
+  // Classify triangles.
+  const steepSin = Math.sin((settings.maxOverhangDeg * Math.PI) / 180) + ANGLE_EPS;
+  const downOf = (i: number): number =>
+    -(normals[3 * i] * rw[0] + normals[3 * i + 1] * rw[1] + normals[3 * i + 2] * rw[2]);
+  const { isBed, isSteep, contactArea, contactPts } =
+    classifyBuildTriangles(T, triCount, areas, pu, pv, downOf, onBed, steepSin);
+
+  // Bed contact + tip risk.
+  const { bedContact, ratio, tipRatio } =
+    measureBedContact(pu, pv, nVerts, contactArea, contactPts, sizeMm.z);
+
+  // Overhang regions.
+  const regionOf = new Int32Array(triCount).fill(-1);
+  const overhangs: FdmOverhangRegion[] = [];
+  forEachSteepRegion(triCount, isSteep, neighbors, regionOf, (tris, regionId) => {
+    overhangs.push(analyzeRegion(tris, regionId));
+  });
 
   function analyzeRegion(tris: number[], id: number): FdmOverhangRegion {
     let area = 0;

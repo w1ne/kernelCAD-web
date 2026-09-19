@@ -252,22 +252,17 @@ function coneOf(face: Face): ConeFace | null {
   };
 }
 
-function classifyChain(
-  segs: AxialSegment[],
-  origin: V3,
+function classifySingleBore(
+  seg: AxialSegment,
+  boreSeg: AxialSegment,
+  pointAt: (t: number) => V3,
   dir: V3,
-): { hole: HoleComposite } | { reason: string } {
-  const bores = segs.filter(s => s.kind === 'bore');
-  const cones = segs.filter(s => s.kind === 'cone');
-  if (bores.some(b => b.bore!.bothEndsClosed)) return { reason: 'both ends are closed (internal duct)' };
-  const pointAt = (t: number): V3 => add(origin, scale(dir, t));
-
-  if (segs.length === 1 && bores.length === 1) {
-    const b = bores[0].bore!;
+): { hole: HoleComposite } {
+    const b = boreSeg.bore!;
     if (b.kind === 'through') {
       // Entry on the +axis end, so a vertical hole reads from the top view.
       return {
-        hole: { entry: pointAt(segs[0].t1), axis: scale(dir, -1), diameter: b.diameterMm, through: true },
+        hole: { entry: pointAt(seg.t1), axis: scale(dir, -1), diameter: b.diameterMm, through: true },
       };
     }
     return {
@@ -279,9 +274,15 @@ function classifyChain(
         depth: b.depthMm,
       },
     };
-  }
+  
+}
 
-  if (segs.length === 2 && bores.length === 2) {
+function classifyCounterbore(
+  segs: AxialSegment[],
+  origin: V3,
+  dir: V3,
+  pointAt: (t: number) => V3,
+): { hole: HoleComposite } | { reason: string } {
     const [first, second] = segs;
     const d0 = first.diameter!;
     const d1 = second.diameter!;
@@ -313,9 +314,16 @@ function classifyChain(
         counterbore: { diameter: large.diameter!, depth: large.t1 - large.t0 },
       },
     };
-  }
+  
+}
 
-  if (bores.length === 1 && cones.length >= 1 && segs.length <= 3) {
+function classifyConicalStep(
+  bores: AxialSegment[],
+  cones: AxialSegment[],
+  origin: V3,
+  dir: V3,
+  pointAt: (t: number) => V3,
+): { hole: HoleComposite } | { reason: string } {
     const boreSeg = bores[0];
     const b = boreSeg.bore!;
     const boreR = b.diameterMm / 2;
@@ -357,6 +365,29 @@ function classifyChain(
         countersink: { diameter: 2 * wideR, angleDeg: Math.round((2 * semi * 180) / Math.PI * 10) / 10 },
       },
     };
+  
+}
+
+function classifyChain(
+  segs: AxialSegment[],
+  origin: V3,
+  dir: V3,
+): { hole: HoleComposite } | { reason: string } {
+  const bores = segs.filter(s => s.kind === 'bore');
+  const cones = segs.filter(s => s.kind === 'cone');
+  if (bores.some(b => b.bore!.bothEndsClosed)) return { reason: 'both ends are closed (internal duct)' };
+  const pointAt = (t: number): V3 => add(origin, scale(dir, t));
+
+  if (segs.length === 1 && bores.length === 1) {
+    return classifySingleBore(segs[0], bores[0], pointAt, dir);
+  }
+
+  if (segs.length === 2 && bores.length === 2) {
+    return classifyCounterbore(segs, origin, dir, pointAt);
+  }
+
+  if (bores.length === 1 && cones.length >= 1 && segs.length <= 3) {
+    return classifyConicalStep(bores, cones, origin, dir, pointAt);
   }
 
   return { reason: `${bores.length} stacked bores and ${cones.length} conical step(s)` };

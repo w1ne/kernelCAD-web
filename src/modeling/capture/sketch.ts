@@ -26,6 +26,13 @@ import {
   type TangentEntitySpec,
   type TangentNearSpec,
 } from '../../shared/capture/tangency';
+import {
+  checkNurbsPenMatch,
+  resolveNurbsDegree,
+  toNurbsControlPoints,
+  toNurbsKnots,
+  toNurbsWeights,
+} from './nurbsSegmentPhases';
 
 /**
  * 2D-Hermite endpoint shape — analogue of the 3D `HermiteEndpoint` used by
@@ -973,104 +980,16 @@ export class PathBuilder {
     controlPoints: Array<[Editable<number>, Editable<number>]>,
     opts?: { degree?: number; weights?: number[]; knots?: number[] },
   ): PathBuilder {
-    const degree = opts?.degree ?? 3;
-    if (!Number.isInteger(degree) || degree < 1) {
-      throw new KernelError(
-        'feature.path.nurbs-segment.degenerate-controls',
-        `path().nurbsSegment: degree must be an integer ≥ 1; got ${degree}.`,
-        undefined,
-        'path.nurbs-segment.degenerate-controls — degree must be an integer in [1, controlPoints.length - 1].',
-      );
-    }
-    if (!Array.isArray(controlPoints) || controlPoints.length < degree + 1) {
-      throw new KernelError(
-        'feature.path.nurbs-segment.degenerate-controls',
-        `path().nurbsSegment: need at least degree+1 = ${degree + 1} control points; got ${controlPoints?.length ?? 0}.`,
-        undefined,
-        'path.nurbs-segment.degenerate-controls — provide at least degree+1 finite Vec2 control points, with the first matching the current pen position within 1e-6 mm.',
-      );
-    }
-    const paramControls: Array<{ x: Param; y: Param }> = [];
-    for (let i = 0; i < controlPoints.length; i++) {
-      const cp = controlPoints[i];
-      if (!Array.isArray(cp) || cp.length !== 2) {
-        throw new KernelError(
-          'feature.path.nurbs-segment.degenerate-controls',
-          `path().nurbsSegment: control point ${i} is not a [x, y] tuple.`,
-          undefined,
-          'path.nurbs-segment.degenerate-controls — provide at least degree+1 finite Vec2 control points, with the first matching the current pen position within 1e-6 mm.',
-        );
-      }
-      const x = toParam(cp[0], 'mm');
-      const y = toParam(cp[1], 'mm');
-      if (!Number.isFinite(this.#now(x)) || !Number.isFinite(this.#now(y))) {
-        throw new KernelError(
-          'feature.path.nurbs-segment.degenerate-controls',
-          `path().nurbsSegment: control point ${i} has non-finite coord (x=${this.#now(x)}, y=${this.#now(y)}).`,
-          undefined,
-          'path.nurbs-segment.degenerate-controls — provide at least degree+1 finite Vec2 control points, with the first matching the current pen position within 1e-6 mm.',
-        );
-      }
-      paramControls.push({ x, y });
-    }
+    const degree = resolveNurbsDegree(opts?.degree);
+    const now = (p: Param): number => this.#now(p);
+    const paramControls = toNurbsControlPoints(controlPoints, degree, now);
     // First control point must match current pen position within 1e-6 mm.
     const pen = this.#currentPenPosition();
-    if (pen === null) {
-      throw new KernelError(
-        'feature.path.nurbs-segment.degenerate-controls',
-        `path().nurbsSegment: no current pen position — call moveTo(x, y) before nurbsSegment.`,
-        undefined,
-        'path.nurbs-segment.degenerate-controls — provide at least degree+1 finite Vec2 control points, with the first matching the current pen position within 1e-6 mm.',
-      );
-    }
-    const dx0 = this.#now(paramControls[0].x) - pen.x;
-    const dy0 = this.#now(paramControls[0].y) - pen.y;
-    if (Math.hypot(dx0, dy0) > 1e-6) {
-      throw new KernelError(
-        'feature.path.nurbs-segment.degenerate-controls',
-        `path().nurbsSegment: controlPoints[0] = (${this.#now(paramControls[0].x)}, ${this.#now(paramControls[0].y)}) does not match current pen position (${pen.x}, ${pen.y}) within 1e-6 mm.`,
-        undefined,
-        'path.nurbs-segment.degenerate-controls — provide at least degree+1 finite Vec2 control points, with the first matching the current pen position within 1e-6 mm.',
-      );
-    }
+    checkNurbsPenMatch(paramControls, pen, now);
     // Weights validation.
-    let paramWeights: Param[] | undefined;
-    if (opts?.weights !== undefined) {
-      if (!Array.isArray(opts.weights) || opts.weights.length !== controlPoints.length) {
-        throw new KernelError(
-          'feature.path.nurbs-segment.degenerate-controls',
-          `path().nurbsSegment: weights length (${opts.weights?.length ?? 0}) must equal controlPoints length (${controlPoints.length}).`,
-          undefined,
-          'path.nurbs-segment.degenerate-controls — provide at least degree+1 finite Vec2 control points, with the first matching the current pen position within 1e-6 mm.',
-        );
-      }
-      for (let i = 0; i < opts.weights.length; i++) {
-        const w = opts.weights[i];
-        if (!Number.isFinite(w) || w <= 0) {
-          throw new KernelError(
-            'feature.path.nurbs-segment.weights-non-positive',
-            `path().nurbsSegment: weight[${i}] = ${w} must be a strictly positive finite number.`,
-            undefined,
-            'path.nurbs-segment.weights-non-positive — weights must be strictly positive (zero collapses the basis; negative is undefined for B-splines).',
-          );
-        }
-      }
-      paramWeights = opts.weights.map((w) => toParam(w, 'unitless'));
-    }
+    const paramWeights = toNurbsWeights(opts?.weights, controlPoints.length);
     // Knots validation.
-    let paramKnots: Param[] | undefined;
-    if (opts?.knots !== undefined) {
-      const expectedKnotLen = controlPoints.length + degree + 1;
-      if (!Array.isArray(opts.knots) || opts.knots.length !== expectedKnotLen) {
-        throw new KernelError(
-          'feature.path.nurbs-segment.degenerate-controls',
-          `path().nurbsSegment: knots length (${opts.knots?.length ?? 0}) must equal controlPoints.length + degree + 1 (${expectedKnotLen}).`,
-          undefined,
-          'path.nurbs-segment.degenerate-controls — provide at least degree+1 finite Vec2 control points, with the first matching the current pen position within 1e-6 mm.',
-        );
-      }
-      paramKnots = opts.knots.map((k) => toParam(k, 'unitless'));
-    }
+    const paramKnots = toNurbsKnots(opts?.knots, controlPoints.length, degree);
     this.commands.push({
       kind: 'nurbsSegment',
       controlPoints: paramControls,
