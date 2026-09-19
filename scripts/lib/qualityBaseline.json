@@ -639,7 +639,7 @@
     "rule": "complexity",
     "file": "src/studio/components/Layout/SidePanel.tsx",
     "symbol": "Function 'SidePanel'",
-    "value": 30
+    "value": 23
   },
   {
     "rule": "complexity",
@@ -736,12 +736,6 @@
     "file": "src/studio/StudioShell.tsx",
     "symbol": "Function 'StudioShell'",
     "value": 187
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/components/Layout/SidePanel.tsx",
-    "symbol": "Function 'SidePanel'",
-    "value": 177
   },
   {
     "rule": "max-lines-per-function",
