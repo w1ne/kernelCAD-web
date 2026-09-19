@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useGeneration } from '../../funnel/hooks/useGeneration';
 import type { useTextTo3dPreview } from '../../funnel/hooks/useTextTo3dPreview';
-import type { GenerateRequest } from '../../funnel/lib/generateClient';
 import type { AgentRepairWorkflow } from '../store/shellStore';
 import type { SelectedFeatureId } from '../types';
 import type { GenerationReviewSnapshot } from './useAgentGeneration';
@@ -11,11 +10,6 @@ import type { GenerationReviewSnapshot } from './useAgentGeneration';
 interface UseConceptWorkflowArgs {
     readonly prompt: string;
     readonly busy: boolean;
-    readonly photoReferenceSelected: boolean;
-    readonly referenceNeedsDimension: boolean;
-    readonly setReferenceImageError: (message: string | null) => void;
-    readonly readingReferenceImage: boolean;
-    readonly referenceImage: GenerateRequest['referenceImage'] | null;
     readonly currentCode: string;
     readonly selectedFeatureId: SelectedFeatureId;
     readonly agentRepairWorkflow: AgentRepairWorkflow | null;
@@ -32,11 +26,6 @@ interface UseConceptWorkflowArgs {
 export function useConceptWorkflow({
     prompt,
     busy,
-    photoReferenceSelected,
-    referenceNeedsDimension,
-    setReferenceImageError,
-    readingReferenceImage,
-    referenceImage,
     currentCode,
     selectedFeatureId,
     agentRepairWorkflow,
@@ -51,17 +40,13 @@ export function useConceptWorkflow({
 
     const onConcept = () => {
         const trimmed = prompt.trim();
-        if (!trimmed || busy || photoReferenceSelected) return;
+        if (!trimmed || busy) return;
         setConceptPrompt(trimmed);
         void preview.submit(trimmed);
     };
 
     const buildConceptAsCad = () => {
-        if (!conceptPrompt || busy || readingReferenceImage) return;
-        if (referenceNeedsDimension) {
-            setReferenceImageError('Add a visible measurement label and a positive millimetre value before generating from a photo.');
-            return;
-        }
+        if (!conceptPrompt || busy) return;
         // Fresh generation, never an edit: framing the concept prompt as an
         // edit of whatever happens to sit in the editor (often the untouched
         // starter sample) lets the model return that code unchanged. The
@@ -78,16 +63,10 @@ export function useConceptWorkflow({
         // state). A done preview with no Tripo render/fingerprint yields
         // {renderImageUrl:null, proportions:null} — intentional and distinct from
         // "no mesh" (undefined); the server's nullish schema accepts it.
-        const mesh = referenceImage == null && preview.phase.state === 'done'
+        const mesh = preview.phase.state === 'done'
             ? { renderImageUrl: preview.phase.renderImageUrl, proportions: preview.phase.proportions }
             : undefined;
-        if (referenceImage) {
-            // A photo is its own evidence mode. A preview that completed before
-            // the photo was selected must not make the request ambiguous.
-            void submit(conceptPrompt, undefined, undefined, referenceImage);
-        } else {
-            void submit(conceptPrompt, undefined, mesh);
-        }
+        void submit(conceptPrompt, undefined, mesh);
     };
 
     return { onConcept, buildConceptAsCad };
