@@ -409,12 +409,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseReachability.ts",
-    "symbol": "Async function 'assessPhysicalUseCaseReachability'",
-    "value": 28
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseStatics.ts",
     "symbol": "Async function 'resolveActuators'",
     "value": 24
