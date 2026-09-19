@@ -145,12 +145,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/shared/intent/curve3dRecord.ts",
-    "symbol": "Function 'isCurve3DMetadata'",
-    "value": 22
-  },
-  {
-    "rule": "complexity",
     "file": "src/shared/intent/textureProjection.ts",
     "symbol": "Function 'computeProjectedUVs'",
     "value": 21
