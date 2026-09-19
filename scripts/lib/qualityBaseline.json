@@ -73,12 +73,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/whyDidThisFail.ts",
-    "symbol": "Async function 'whyDidThisFailTool'",
-    "value": 24
-  },
-  {
-    "rule": "complexity",
     "file": "src/funnel/components/PricingTiers.tsx",
     "symbol": "Arrow function",
     "value": 21
