@@ -7,18 +7,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/drawing/sheet.ts",
-    "symbol": "Function 'projectionSymbol'",
-    "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/tools/addPatternFeature.ts",
-    "symbol": "Async function 'addPatternFeatureTool'",
-    "value": 22
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/drawingToCad.ts",
     "symbol": "Async function 'drawingToCadTool'",
     "value": 21
@@ -37,21 +25,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/fetchPart.ts",
-    "symbol": "Async function 'fetchPartTool'",
-    "value": 22
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/getMassProperties.ts",
     "symbol": "Async function 'getMassPropertiesTool'",
     "value": 23
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/tools/runFea.ts",
-    "symbol": "Async function 'runFeaTool'",
-    "value": 22
   },
   {
     "rule": "complexity",
@@ -76,12 +52,6 @@
     "file": "src/kernel/backends/occt/holeClassifier.ts",
     "symbol": "Function 'classifyHoleFace'",
     "value": 23
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/backends/occt/meshing.ts",
-    "symbol": "Function 'getWire'",
-    "value": 22
   },
   {
     "rule": "complexity",
