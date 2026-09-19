@@ -6,7 +6,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { useState } from 'react';
 import { AgentComposer } from '../AgentComposer';
 
-function Harness({ submit = vi.fn() }: { submit?: (prompt: string) => void }) {
+function Harness({ submit = vi.fn() }: { submit?: (prompt: string, referenceImage?: unknown) => void }) {
     const [value, setValue] = useState('');
     return <AgentComposer value={value} onChange={setValue} onSubmit={submit} />;
 }
@@ -57,6 +57,44 @@ describe('AgentComposer', () => {
         expect(submit).not.toHaveBeenCalled();
         unmount();
         expect(speech.abort).toHaveBeenCalled();
+    });
+    it('submits an attached photo as a reference image, not as prompt text', async () => {
+        const submit = vi.fn();
+        render(<Harness submit={submit} />);
+        fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Build this e-reader' } });
+        fireEvent.change(screen.getByLabelText('Choose files'), {
+            target: { files: [new File([new Uint8Array([137, 80, 78, 71])], 'device.png', { type: 'image/png' })] },
+        });
+        await screen.findByRole('button', { name: 'Remove device.png' });
+        fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+        expect(submit).toHaveBeenCalledWith('Build this e-reader', {
+            dataUrl: expect.stringMatching(/^data:image\/png;base64,/),
+            fileName: 'device.png',
+            mimeType: 'image/png',
+        });
+        expect(submit.mock.calls[0][0]).not.toContain('data:image');
+        fireEvent.click(screen.getByRole('button', { name: 'Remove device.png' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+        expect(submit).toHaveBeenLastCalledWith('Build this e-reader');
+    });
+    it('rejects a second photo', async () => {
+        render(<Harness />);
+        const chooser = screen.getByLabelText('Choose files');
+        fireEvent.change(chooser, {
+            target: { files: [new File(['first'], 'first.png', { type: 'image/png' })] },
+        });
+        await screen.findByRole('button', { name: 'Remove first.png' });
+        fireEvent.change(chooser, {
+            target: { files: [new File(['second'], 'second.png', { type: 'image/png' })] },
+        });
+        expect((await screen.findByRole('alert')).textContent).toContain('One photo per build.');
+    });
+    it('rejects photos larger than four MiB', async () => {
+        render(<Harness />);
+        fireEvent.change(screen.getByLabelText('Choose files'), {
+            target: { files: [new File([new Uint8Array(4 * 1024 * 1024 + 1)], 'huge.png', { type: 'image/png' })] },
+        });
+        expect((await screen.findByRole('alert')).textContent).toContain('4 MiB');
     });
     it('shows microphone permission failures', () => {
         const speech = { start: vi.fn(), stop: vi.fn(), abort: vi.fn(), onerror: null as any };
