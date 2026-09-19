@@ -187,12 +187,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/shapeOperationFeatureRecords.ts",
-    "symbol": "Function 'buildEdgeFeatureRef'",
-    "value": 23
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/virtualFeatureRecords.ts",
     "symbol": "Function 'buildReferenceImageFeatureSpec'",
     "value": 22
