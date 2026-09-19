@@ -65,13 +65,16 @@ function isSection(v: unknown): v is VariableSweepSection {
   return true;
 }
 
-export function isVariableSweepMetadata(value: unknown): value is VariableSweepMetadata {
-  if (typeof value !== 'object' || value === null) return false;
-  const m = value as VariableSweepMetadata;
+/** Structural check for a `{ kind: string }` feature reference. */
+function isFeatureRefLike(v: unknown): boolean {
+  if (typeof v !== 'object' || v === null) return false;
+  if (typeof (v as { kind?: unknown }).kind !== 'string') return false;
+  return true;
+}
 
-  if (typeof m.spineRef !== 'object' || m.spineRef === null) return false;
-  if (typeof (m.spineRef as { kind?: unknown }).kind !== 'string') return false;
-
+/** Sections must number at least two, be strictly increasing in `t`, and
+ *  span the full spine (first at 0, last at 1). */
+function hasValidSections(m: VariableSweepMetadata): boolean {
   if (!Array.isArray(m.sections) || m.sections.length < 2) return false;
   for (const s of m.sections) {
     if (!isSection(s)) return false;
@@ -81,11 +84,25 @@ export function isVariableSweepMetadata(value: unknown): value is VariableSweepM
   }
   if (Math.abs(m.sections[0].t - 0) > 1e-9) return false;
   if (Math.abs(m.sections[m.sections.length - 1].t - 1) > 1e-9) return false;
+  return true;
+}
 
+/** The optional `closed` / `continuity` / `orientation` knobs. */
+function hasValidOptionalKnobs(m: VariableSweepMetadata): boolean {
   if (m.closed !== undefined && typeof m.closed !== 'boolean') return false;
   if (m.continuity !== undefined &&
       m.continuity !== 'C0' && m.continuity !== 'C1' && m.continuity !== 'C2') return false;
   if (m.orientation !== undefined && !isOrientation(m.orientation)) return false;
+  return true;
+}
+
+export function isVariableSweepMetadata(value: unknown): value is VariableSweepMetadata {
+  if (typeof value !== 'object' || value === null) return false;
+  const m = value as VariableSweepMetadata;
+
+  if (!isFeatureRefLike(m.spineRef)) return false;
+  if (!hasValidSections(m)) return false;
+  if (!hasValidOptionalKnobs(m)) return false;
 
   return true;
 }

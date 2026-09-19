@@ -156,12 +156,6 @@
     "value": 21
   },
   {
-    "rule": "complexity",
-    "file": "src/shared/intent/variableSweepRecord.ts",
-    "symbol": "Function 'isVariableSweepMetadata'",
-    "value": 22
-  },
-  {
     "rule": "max-lines-per-function",
     "file": "src/modeling/api.ts",
     "symbol": "Function 'createApi'",
