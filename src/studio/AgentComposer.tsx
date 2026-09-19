@@ -51,6 +51,36 @@ function readDataUrl(file: File): Promise<string> {
     });
 }
 
+async function attachmentsFrom(current: Attachment[], selected: File[]): Promise<Attachment[]> {
+    const added: Attachment[] = [];
+    let textCount = current.filter(file => file.kind === 'text').length;
+    let photoCount = current.filter(file => file.kind === 'image').length;
+    let textBytes = current.reduce((sum, file) => sum + (file.kind === 'text' ? file.content.length : 0), 0);
+    for (const file of selected) {
+        const mimeType = file.type;
+        if (isReferenceImageMimeType(mimeType)) {
+            if (photoCount >= 1) throw new Error('One photo per build.');
+            if (file.size === 0) throw new Error(`${file.name} is empty. Choose a photo with visible device details.`);
+            if (file.size > MAX_REFERENCE_IMAGE_BYTES) throw new Error('Photos must be 4 MiB or smaller.');
+            added.push({ kind: 'image', name: file.name, dataUrl: await readDataUrl(file), mimeType });
+            photoCount += 1;
+            continue;
+        }
+        if (!ACCEPT.split(',').some(ext => file.name.toLowerCase().endsWith(ext))) {
+            throw new Error('Choose text, code, SVG, or STEP files, or one PNG/JPEG/WebP photo.');
+        }
+        if (textCount >= MAX_TEXT_FILES) throw new Error(`Include up to ${MAX_TEXT_FILES} text files.`);
+        if (file.size > 60_000) throw new Error(`${file.name} is too large. Include files under 60 KB.`);
+        const content = await file.text();
+        if (content.includes('\0')) throw new Error(`${file.name} is not a text file.`);
+        textBytes += content.length;
+        if (textBytes > 60_000) throw new Error('Included files must total less than 60 KB of text.');
+        added.push({ kind: 'text', name: file.name, content });
+        textCount += 1;
+    }
+    return added;
+}
+
 export function AgentComposer({ value, onChange, onSubmit, disabled = false, submitLabel = 'Send', onPhotoChange }: {
     value: string;
     onChange: (value: string) => void;
@@ -94,32 +124,7 @@ export function AgentComposer({ value, onChange, onSubmit, disabled = false, sub
         setError('');
         setReading(true);
         try {
-            const added: Attachment[] = [];
-            let textCount = files.filter(file => file.kind === 'text').length;
-            let photoCount = files.filter(file => file.kind === 'image').length;
-            let textBytes = files.reduce((sum, file) => sum + (file.kind === 'text' ? file.content.length : 0), 0);
-            for (const file of selected) {
-                const mimeType = file.type;
-                if (isReferenceImageMimeType(mimeType)) {
-                    if (photoCount >= 1) throw new Error('One photo per build.');
-                    if (file.size === 0) throw new Error(`${file.name} is empty. Choose a photo with visible device details.`);
-                    if (file.size > MAX_REFERENCE_IMAGE_BYTES) throw new Error('Photos must be 4 MiB or smaller.');
-                    added.push({ kind: 'image', name: file.name, dataUrl: await readDataUrl(file), mimeType });
-                    photoCount += 1;
-                    continue;
-                }
-                if (!ACCEPT.split(',').some(ext => file.name.toLowerCase().endsWith(ext))) {
-                    throw new Error('Choose text, code, SVG, or STEP files, or one PNG/JPEG/WebP photo.');
-                }
-                if (textCount >= MAX_TEXT_FILES) throw new Error(`Include up to ${MAX_TEXT_FILES} text files.`);
-                if (file.size > 60_000) throw new Error(`${file.name} is too large. Include files under 60 KB.`);
-                const content = await file.text();
-                if (content.includes('\0')) throw new Error(`${file.name} is not a text file.`);
-                textBytes += content.length;
-                if (textBytes > 60_000) throw new Error('Included files must total less than 60 KB of text.');
-                added.push({ kind: 'text', name: file.name, content });
-                textCount += 1;
-            }
+            const added = await attachmentsFrom(files, selected);
             replaceFiles([...files, ...added]);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Could not read the selected files.');
