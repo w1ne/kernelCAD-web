@@ -469,12 +469,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/server/middleware/animationBakeEndpoint.ts",
-    "symbol": "Async function 'animationBakeHandler'",
-    "value": 28
-  },
-  {
-    "rule": "complexity",
     "file": "src/server/middleware/paramsEndpoint.ts",
     "symbol": "Async function 'paramsHandler'",
     "value": 24
@@ -556,18 +550,6 @@
     "file": "src/modeling/runtime/dfm/runDfmChecks.ts",
     "symbol": "Async function 'runDfmChecksOnModel'",
     "value": 153
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/server/middleware/animationBakeEndpoint.ts",
-    "symbol": "Async function 'animationBakeHandler'",
-    "value": 154
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/server/middleware/animationBakeEndpoint.ts",
-    "symbol": "Function 'createAnimationBakeEndpoint'",
-    "value": 157
   },
   {
     "rule": "max-lines",
