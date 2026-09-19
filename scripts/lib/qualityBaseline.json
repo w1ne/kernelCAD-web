@@ -157,12 +157,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/profileFit.ts",
-    "symbol": "Function 'fitLoop'",
-    "value": 28
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/section.ts",
     "symbol": "Function 'sliceAtZ'",
     "value": 27
