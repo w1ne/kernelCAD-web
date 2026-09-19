@@ -211,12 +211,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/edgeSelection.ts",
-    "symbol": "Function 'pickFace'",
-    "value": 28
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/exportGlb.ts",
     "symbol": "Function 'buildMaterial'",
     "value": 23
@@ -451,12 +445,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/edgeSelection.ts",
-    "symbol": "Function 'pickFace'",
-    "value": 155
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/kernel/backends/occt/worker.ts",
     "symbol": "Arrow function",
     "value": 231
@@ -502,12 +490,6 @@
     "file": "src/kernel/backends/occt/drawingAuto.ts",
     "symbol": "(file)",
     "value": 1214
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/kernel/backends/occt/edgeSelection.ts",
-    "symbol": "(file)",
-    "value": 963
   },
   {
     "rule": "max-lines",
