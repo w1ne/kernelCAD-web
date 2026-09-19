@@ -121,12 +121,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/imageDimensions.ts",
-    "symbol": "Function 'imageDimensions'",
-    "value": 23
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/virtualFeatureRecords.ts",
     "symbol": "Function 'buildReferenceImageFeatureSpec'",
     "value": 22
