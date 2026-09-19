@@ -307,12 +307,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/naming/parseQuery.ts",
-    "symbol": "Function 'parseExpr'",
-    "value": 29
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/naming/topoRef.ts",
     "symbol": "Function 'parseTopoRef'",
     "value": 23
