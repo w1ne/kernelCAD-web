@@ -49,12 +49,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/runFea.ts",
-    "symbol": "Async function 'runFeaTool'",
-    "value": 22
-  },
-  {
-    "rule": "complexity",
     "file": "src/funnel/components/PricingTiers.tsx",
     "symbol": "Arrow function",
     "value": 21
