@@ -157,12 +157,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/surfaceQualityOverlay.ts",
-    "symbol": "Async function 'buildSurfaceQualityOverlay'",
-    "value": 30
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/whyDidThisFail.ts",
     "symbol": "Async function 'whyDidThisFailTool'",
     "value": 24
