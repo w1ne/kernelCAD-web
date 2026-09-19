@@ -37,12 +37,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/edits/addPathNurbsSegment.ts",
-    "symbol": "Function 'addPathNurbsSegment'",
-    "value": 25
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/edits/addVariableSweep.ts",
     "symbol": "Function 'addVariableSweep'",
     "value": 24
