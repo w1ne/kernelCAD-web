@@ -365,6 +365,92 @@ function lwpolylineVertices(body: readonly Pair[], line: number, s: number): Pol
  *   or a drawing whose segments do not resolve into unambiguous closed loops.
  *   Never returns an empty or placeholder region list.
  */
+function segmentsForSimpleEntity(b: EntityBlock, scale: number): { closed: ImportSegment[][]; open: ImportSegment[] } | null {
+  switch (b.type) {
+    case 'LINE': {
+      const x0 = num(require(b.body, 10, 'LINE', b.line), 'LINE', 10) * scale;
+      const y0 = num(require(b.body, 20, 'LINE', b.line), 'LINE', 20) * scale;
+      const x1 = num(require(b.body, 11, 'LINE', b.line), 'LINE', 11) * scale;
+      const y1 = num(require(b.body, 21, 'LINE', b.line), 'LINE', 21) * scale;
+      return { closed: [], open: [{ x0, y0, x1, y1, source: `LINE (line ${b.line})` }] };
+    }
+    case 'ARC':
+      return { closed: [], open: arcSegments(b.body, b.line, scale) };
+    case 'CIRCLE':
+      return { closed: [circleSegments(b.body, b.line, scale)], open: [] };
+    case 'LWPOLYLINE': {
+      const verts = lwpolylineVertices(b.body, b.line, scale);
+      const flags = get(b.body, 70);
+      const isClosed = flags !== undefined && (Number(flags.value.trim()) & 1) === 1;
+      const segs = polylineSegments(verts, isClosed, 'LWPOLYLINE', b.line);
+      return isClosed ? { closed: [segs], open: [] } : { closed: [], open: segs };
+    }
+    default:
+      return null;
+  }
+}
+
+function consumePolyline(blocks: readonly EntityBlock[], i: number, scale: number): { closed: ImportSegment[][]; open: ImportSegment[]; nextIndex: number } {
+  const b = blocks[i];
+  // Pre-R13 form: the vertices are sibling VERTEX entities that follow,
+  // terminated by SEQEND. Consume them here and skip past.
+  const flags = get(b.body, 70);
+  const flagVal = flags === undefined ? 0 : Number(flags.value.trim());
+  if ((flagVal & 8) !== 0 || (flagVal & 64) !== 0) {
+    throw new DxfParseError(
+      'unsupported-entity',
+      `POLYLINE at line ${b.line}: flags=${flagVal} marks it as a 3D polyline or polygon mesh. ` +
+        'Only planar 2D polylines can become a Sketch; flatten it in the source tool.',
+    );
+  }
+  const verts: PolyVertex[] = [];
+  let j = i + 1;
+  for (; j < blocks.length && blocks[j].type === 'VERTEX'; j++) {
+    const vb = blocks[j].body;
+    verts.push({
+      x: num(require(vb, 10, 'VERTEX', blocks[j].line), 'VERTEX', 10) * scale,
+      y: num(require(vb, 20, 'VERTEX', blocks[j].line), 'VERTEX', 20) * scale,
+      bulge: get(vb, 42) ? num(get(vb, 42) as Pair, 'VERTEX', 42) : 0,
+    });
+  }
+  if (j < blocks.length && blocks[j].type === 'SEQEND') j++;
+  const isClosed = (flagVal & 1) === 1;
+  const segs = polylineSegments(verts, isClosed, 'POLYLINE', b.line);
+  return { closed: isClosed ? [segs] : [], open: isClosed ? [] : segs, nextIndex: j - 1 };
+}
+
+function throwUnsupportedEntity(b: EntityBlock): never {
+  switch (b.type) {
+    case 'SPLINE':
+      throw new DxfParseError(
+        'unsupported-entity',
+        `SPLINE at line ${b.line}: kernelCAD's sketch lowering has no 2D NURBS segment, so this ` +
+          'curve cannot be represented exactly and will not be silently approximated. ' +
+          'Convert splines to polylines (arc/line segments) in the source tool and re-export.',
+      );
+    case 'ELLIPSE':
+      throw new DxfParseError(
+        'unsupported-entity',
+        `ELLIPSE at line ${b.line}: an elliptical arc has no exact form in the sketch command ` +
+          'set (which carries lines and circular arcs). Convert it to a polyline in the source tool.',
+      );
+    case 'INSERT':
+      throw new DxfParseError(
+        'unsupported-entity',
+        `INSERT (block reference) at line ${b.line}: block definitions are not expanded, and the ` +
+          'geometry it references would be missing from the imported profile without warning. ' +
+          'Explode blocks in the source tool before exporting.',
+      );
+    default:
+      throw new DxfParseError(
+        'unsupported-entity',
+        `${b.type} at line ${b.line}: unsupported DXF entity. kernelCAD reads LINE, ARC, CIRCLE, ` +
+          'LWPOLYLINE and POLYLINE for 2D profiles; anything else is refused rather than dropped, ' +
+          'because a dropped entity leaves a hole in the profile with no indication.',
+      );
+  }
+}
+
 export function importDxfText(text: string, opts: ImportDxfOptions = {}): DxfImportResult {
   if (text.trim().length === 0) {
     throw new DxfParseError('empty', 'DXF payload is empty.');
@@ -384,99 +470,31 @@ export function importDxfText(text: string, opts: ImportDxfOptions = {}): DxfImp
 
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i];
-    switch (b.type) {
-      case 'LINE': {
-        const x0 = num(require(b.body, 10, 'LINE', b.line), 'LINE', 10) * scale;
-        const y0 = num(require(b.body, 20, 'LINE', b.line), 'LINE', 20) * scale;
-        const x1 = num(require(b.body, 11, 'LINE', b.line), 'LINE', 11) * scale;
-        const y1 = num(require(b.body, 21, 'LINE', b.line), 'LINE', 21) * scale;
-        open.push({ x0, y0, x1, y1, source: `LINE (line ${b.line})` });
-        break;
-      }
-      case 'ARC':
-        open.push(...arcSegments(b.body, b.line, scale));
-        break;
-      case 'CIRCLE':
-        closed.push(circleSegments(b.body, b.line, scale));
-        break;
-      case 'LWPOLYLINE': {
-        const verts = lwpolylineVertices(b.body, b.line, scale);
-        const flags = get(b.body, 70);
-        const isClosed = flags !== undefined && (Number(flags.value.trim()) & 1) === 1;
-        const segs = polylineSegments(verts, isClosed, 'LWPOLYLINE', b.line);
-        if (isClosed) closed.push(segs);
-        else open.push(...segs);
-        break;
-      }
-      case 'POLYLINE': {
-        // Pre-R13 form: the vertices are sibling VERTEX entities that follow,
-        // terminated by SEQEND. Consume them here and skip past.
-        const flags = get(b.body, 70);
-        const flagVal = flags === undefined ? 0 : Number(flags.value.trim());
-        if ((flagVal & 8) !== 0 || (flagVal & 64) !== 0) {
-          throw new DxfParseError(
-            'unsupported-entity',
-            `POLYLINE at line ${b.line}: flags=${flagVal} marks it as a 3D polyline or polygon mesh. ` +
-              'Only planar 2D polylines can become a Sketch; flatten it in the source tool.',
-          );
-        }
-        const verts: PolyVertex[] = [];
-        let j = i + 1;
-        for (; j < blocks.length && blocks[j].type === 'VERTEX'; j++) {
-          const vb = blocks[j].body;
-          verts.push({
-            x: num(require(vb, 10, 'VERTEX', blocks[j].line), 'VERTEX', 10) * scale,
-            y: num(require(vb, 20, 'VERTEX', blocks[j].line), 'VERTEX', 20) * scale,
-            bulge: get(vb, 42) ? num(get(vb, 42) as Pair, 'VERTEX', 42) : 0,
-          });
-        }
-        if (j < blocks.length && blocks[j].type === 'SEQEND') j++;
-        const isClosed = (flagVal & 1) === 1;
-        const segs = polylineSegments(verts, isClosed, 'POLYLINE', b.line);
-        if (isClosed) closed.push(segs);
-        else open.push(...segs);
-        i = j - 1;
-        break;
-      }
-      case 'SPLINE':
-        throw new DxfParseError(
-          'unsupported-entity',
-          `SPLINE at line ${b.line}: kernelCAD's sketch lowering has no 2D NURBS segment, so this ` +
-            'curve cannot be represented exactly and will not be silently approximated. ' +
-            'Convert splines to polylines (arc/line segments) in the source tool and re-export.',
-        );
-      case 'ELLIPSE':
-        throw new DxfParseError(
-          'unsupported-entity',
-          `ELLIPSE at line ${b.line}: an elliptical arc has no exact form in the sketch command ` +
-            'set (which carries lines and circular arcs). Convert it to a polyline in the source tool.',
-        );
-      case 'INSERT':
-        throw new DxfParseError(
-          'unsupported-entity',
-          `INSERT (block reference) at line ${b.line}: block definitions are not expanded, and the ` +
-            'geometry it references would be missing from the imported profile without warning. ' +
-            'Explode blocks in the source tool before exporting.',
-        );
-      case 'VERTEX':
-      case 'SEQEND':
-        // Only reachable if a VERTEX appears without its POLYLINE header.
-        throw new DxfParseError(
-          'malformed-entity',
-          `${b.type} at line ${b.line}: appears outside a POLYLINE, so the drawing structure is broken.`,
-        );
-      default:
-        if (ANNOTATION_ENTITIES.has(b.type)) {
-          ignoredEntities.push(`${b.type} (line ${b.line})`);
-          break;
-        }
-        throw new DxfParseError(
-          'unsupported-entity',
-          `${b.type} at line ${b.line}: unsupported DXF entity. kernelCAD reads LINE, ARC, CIRCLE, ` +
-            'LWPOLYLINE and POLYLINE for 2D profiles; anything else is refused rather than dropped, ' +
-            'because a dropped entity leaves a hole in the profile with no indication.',
-        );
+    const simple = segmentsForSimpleEntity(b, scale);
+    if (simple) {
+      closed.push(...simple.closed);
+      open.push(...simple.open);
+      continue;
     }
+    if (b.type === 'POLYLINE') {
+      const consumed = consumePolyline(blocks, i, scale);
+      closed.push(...consumed.closed);
+      open.push(...consumed.open);
+      i = consumed.nextIndex;
+      continue;
+    }
+    if (b.type === 'VERTEX' || b.type === 'SEQEND') {
+      // Only reachable if a VERTEX appears without its POLYLINE header.
+      throw new DxfParseError(
+        'malformed-entity',
+        `${b.type} at line ${b.line}: appears outside a POLYLINE, so the drawing structure is broken.`,
+      );
+    }
+    if (ANNOTATION_ENTITIES.has(b.type)) {
+      ignoredEntities.push(`${b.type} (line ${b.line})`);
+      continue;
+    }
+    throwUnsupportedEntity(b);
   }
 
   let assembled;
