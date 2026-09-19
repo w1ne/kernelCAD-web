@@ -68,12 +68,6 @@
   {
     "rule": "complexity",
     "file": "src/agent/mcp/edits/addPathSpline.ts",
-    "symbol": "Function 'findCloseCall'",
-    "value": 30
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/edits/addPathSpline.ts",
     "symbol": "Function 'injectIntoChain'",
     "value": 29
   },

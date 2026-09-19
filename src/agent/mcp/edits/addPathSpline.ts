@@ -176,6 +176,40 @@ export function injectIntoChain(
   return { ok: true, new_code: newCode };
 }
 
+interface LexicalCursor {
+  inStr: '"' | "'" | '`' | null;
+  inLineComment: boolean;
+  inBlockComment: boolean;
+}
+
+/**
+ * Consume one character of lexical context (string / template / line comment /
+ * block comment) starting at `i`, mutating `cursor`. Returns the new index when
+ * the character was handled by the context scanner, or `null` when the caller
+ * must classify it as code (nesting or `.close` detection).
+ */
+function consumeLexicalContext(code: string, i: number, cursor: LexicalCursor): number | null {
+  const c = code[i];
+  const c2 = code[i + 1] ?? '';
+  if (cursor.inLineComment) {
+    if (c === '\n') cursor.inLineComment = false;
+    return i;
+  }
+  if (cursor.inBlockComment) {
+    if (c === '*' && c2 === '/') { cursor.inBlockComment = false; return i + 1; }
+    return i;
+  }
+  if (cursor.inStr) {
+    if (c === '\\') return i + 1;
+    if (c === cursor.inStr) cursor.inStr = null;
+    return i;
+  }
+  if (c === '/' && c2 === '/') { cursor.inLineComment = true; return i + 1; }
+  if (c === '/' && c2 === '*') { cursor.inBlockComment = true; return i + 1; }
+  if (c === '"' || c === "'" || c === '`') { cursor.inStr = c as '"' | "'" | '`'; return i; }
+  return null;
+}
+
 /**
  * Find the leftmost `.close()` (or `.close ()`) call between [start, end) at
  * the top-level chain depth (depth 0). Returns the offset of the leading dot.
@@ -183,28 +217,11 @@ export function injectIntoChain(
  */
 function findCloseCall(code: string, start: number, end: number): number {
   let depth = 0;
-  let inStr: '"' | "'" | '`' | null = null;
-  let inLineComment = false;
-  let inBlockComment = false;
+  const cursor: LexicalCursor = { inStr: null, inLineComment: false, inBlockComment: false };
   for (let i = start; i < end; i++) {
+    const consumed = consumeLexicalContext(code, i, cursor);
+    if (consumed !== null) { i = consumed; continue; }
     const c = code[i];
-    const c2 = code[i + 1] ?? '';
-    if (inLineComment) {
-      if (c === '\n') inLineComment = false;
-      continue;
-    }
-    if (inBlockComment) {
-      if (c === '*' && c2 === '/') { inBlockComment = false; i++; }
-      continue;
-    }
-    if (inStr) {
-      if (c === '\\') { i++; continue; }
-      if (c === inStr) inStr = null;
-      continue;
-    }
-    if (c === '/' && c2 === '/') { inLineComment = true; i++; continue; }
-    if (c === '/' && c2 === '*') { inBlockComment = true; i++; continue; }
-    if (c === '"' || c === "'" || c === '`') { inStr = c as '"' | "'" | '`'; continue; }
     if (c === '(' || c === '[' || c === '{') { depth++; continue; }
     if (c === ')' || c === ']' || c === '}') { depth--; continue; }
     if (depth === 0 && c === '.' && code.slice(i, i + 6) === '.close') {
