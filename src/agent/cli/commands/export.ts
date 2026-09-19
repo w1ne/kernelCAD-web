@@ -638,6 +638,93 @@ const SUPPORTED_FORMATS = new Set<ExportFormat>([
   'bom-csv', 'bom-json',
 ]);
 
+interface ExportCommandOpts {
+  out: string; json?: boolean; part?: string[]; parts?: string; verify?: boolean;
+  connectorManifest?: string; manifestPartId?: string; manifestFamily?: string;
+  explode?: number; explodeMode?: string; balloons?: boolean; partsList?: boolean;
+  options?: string;
+}
+
+/** `--part` / `--parts all` branch: per-part STL export and its report. */
+async function runPartMode(
+  format: string,
+  file: string,
+  opts: ExportCommandOpts,
+): Promise<void> {
+  if (format !== 'stl') {
+    console.error('--part/--parts are only supported for stl exports.');
+    process.exitCode = 2; return;
+  }
+  if (opts.parts !== undefined && opts.parts !== 'all') {
+    console.error("--parts only accepts 'all'. Use repeated --part <name> for a subset.");
+    process.exitCode = 2; return;
+  }
+  const r = await exportPartsScript({
+    file,
+    ...(opts.parts === 'all' ? {} : { parts: opts.part }),
+    ...(opts.parts === 'all' ? { outDir: opts.out } : { outFile: opts.out }),
+    verify: opts.verify !== false,
+  });
+  if (opts.json) {
+    console.log(JSON.stringify({
+      ok: r.exitCode === 0,
+      parts: r.written,
+      diagnostics: r.diagnostics,
+    }, null, 2));
+  } else {
+    if (r.diagnostics.length > 0) console.log(formatHuman(r.diagnostics));
+    for (const w of r.written) {
+      const gate = w.watertight ? 'watertight' : 'NOT watertight';
+      console.log(`wrote ${w.name} -> ${w.path} (${w.triangleCount} tris, ${gate})`);
+    }
+  }
+  process.exitCode = r.exitCode;
+}
+
+/** Default branch: whole-script export and its report. */
+async function runExportMode(
+  format: string,
+  file: string,
+  opts: ExportCommandOpts,
+  options: Record<string, unknown> | undefined,
+): Promise<void> {
+  const r = await exportScript({
+    file, format: format as ExportFormat, out: opts.out,
+    ...(options === undefined ? {} : { options }),
+    ...(opts.connectorManifest === undefined
+      ? {}
+      : {
+          connectorManifest: opts.connectorManifest,
+          manifestPartId: opts.manifestPartId,
+          manifestFamily: opts.manifestFamily,
+        }),
+    ...(opts.verify === false ? { verify: false } : {}),
+    explode: opts.explode,
+    explodeMode: opts.explodeMode,
+    balloons: opts.balloons,
+    partsList: opts.partsList,
+  });
+  if (opts.json) {
+    console.log(JSON.stringify({
+      ok: r.exitCode === 0,
+      bytesWritten: r.bytesWritten,
+      out: opts.out,
+      ...(r.meshFiles !== undefined ? { meshFiles: r.meshFiles } : {}),
+      ...(r.drawingReport !== undefined ? { drawingReport: r.drawingReport } : {}),
+      diagnostics: r.diagnostics,
+    }, null, 2));
+  } else {
+    if (r.diagnostics.length > 0) console.log(formatHuman(r.diagnostics));
+    if (r.exitCode === 0) console.log(`Wrote ${r.bytesWritten} bytes to ${opts.out}`);
+    if (r.drawingReport !== undefined) {
+      const kinds = Object.entries(r.drawingReport.byKind).map(([k, n]) => `${k} ${n}`).join(', ');
+      console.log(`drawing: ${r.drawingReport.placed} annotation(s) placed, ${r.drawingReport.overlapped} overlapped (${kinds})`);
+    }
+    for (const m of r.meshFiles ?? []) console.log(`wrote mesh ${m}`);
+  }
+  process.exitCode = r.exitCode;
+}
+
 export function exportCommand(): Command {
   const cmd = new Command('export')
     .description('Export a .kcad.ts script to STL, STEP, DXF, 3MF, GLB, an SVG engineering-drawing sheet, or a bill of materials')
@@ -656,12 +743,7 @@ export function exportCommand(): Command {
     .option('--parts-list', 'svg-drawing: parts-list table (item, name, qty, material) above the title block', false)
     .option('--options <json>', 'per-format options as a JSON object, e.g. \'{"autoAnnotate":true}\' for svg-drawing')
     .option('--json', 'emit diagnostics as JSON')
-    .action(async (format: string, file: string, opts: {
-      out: string; json?: boolean; part?: string[]; parts?: string; verify?: boolean;
-      connectorManifest?: string; manifestPartId?: string; manifestFamily?: string;
-      explode?: number; explodeMode?: string; balloons?: boolean; partsList?: boolean;
-      options?: string;
-    }) => {
+    .action(async (format: string, file: string, opts: ExportCommandOpts) => {
       if (!SUPPORTED_FORMATS.has(format as ExportFormat)) {
         console.error(`Unsupported format: ${format}. Use one of ${[...SUPPORTED_FORMATS].join(', ')}.`);
         process.exitCode = 2; return;
@@ -678,76 +760,14 @@ export function exportCommand(): Command {
       }
       const partMode = (opts.part?.length ?? 0) > 0 || opts.parts !== undefined;
       if (partMode) {
-        if (format !== 'stl') {
-          console.error('--part/--parts are only supported for stl exports.');
-          process.exitCode = 2; return;
-        }
-        if (opts.parts !== undefined && opts.parts !== 'all') {
-          console.error("--parts only accepts 'all'. Use repeated --part <name> for a subset.");
-          process.exitCode = 2; return;
-        }
-        const r = await exportPartsScript({
-          file,
-          ...(opts.parts === 'all' ? {} : { parts: opts.part }),
-          ...(opts.parts === 'all' ? { outDir: opts.out } : { outFile: opts.out }),
-          verify: opts.verify !== false,
-        });
-        if (opts.json) {
-          console.log(JSON.stringify({
-            ok: r.exitCode === 0,
-            parts: r.written,
-            diagnostics: r.diagnostics,
-          }, null, 2));
-        } else {
-          if (r.diagnostics.length > 0) console.log(formatHuman(r.diagnostics));
-          for (const w of r.written) {
-            const gate = w.watertight ? 'watertight' : 'NOT watertight';
-            console.log(`wrote ${w.name} -> ${w.path} (${w.triangleCount} tris, ${gate})`);
-          }
-        }
-        process.exitCode = r.exitCode;
-        return;
+        return runPartMode(format, file, opts);
       }
       const parsedOptions = parseExportOptionsFlag(opts.options, format);
       if (!parsedOptions.ok) {
         console.error(parsedOptions.error);
         process.exitCode = 2; return;
       }
-      const r = await exportScript({
-        file, format: format as ExportFormat, out: opts.out,
-        ...(parsedOptions.options === undefined ? {} : { options: parsedOptions.options }),
-        ...(opts.connectorManifest === undefined
-          ? {}
-          : {
-              connectorManifest: opts.connectorManifest,
-              manifestPartId: opts.manifestPartId,
-              manifestFamily: opts.manifestFamily,
-            }),
-        ...(opts.verify === false ? { verify: false } : {}),
-        explode: opts.explode,
-        explodeMode: opts.explodeMode,
-        balloons: opts.balloons,
-        partsList: opts.partsList,
-      });
-      if (opts.json) {
-        console.log(JSON.stringify({
-          ok: r.exitCode === 0,
-          bytesWritten: r.bytesWritten,
-          out: opts.out,
-          ...(r.meshFiles !== undefined ? { meshFiles: r.meshFiles } : {}),
-          ...(r.drawingReport !== undefined ? { drawingReport: r.drawingReport } : {}),
-          diagnostics: r.diagnostics,
-        }, null, 2));
-      } else {
-        if (r.diagnostics.length > 0) console.log(formatHuman(r.diagnostics));
-        if (r.exitCode === 0) console.log(`Wrote ${r.bytesWritten} bytes to ${opts.out}`);
-        if (r.drawingReport !== undefined) {
-          const kinds = Object.entries(r.drawingReport.byKind).map(([k, n]) => `${k} ${n}`).join(', ');
-          console.log(`drawing: ${r.drawingReport.placed} annotation(s) placed, ${r.drawingReport.overlapped} overlapped (${kinds})`);
-        }
-        for (const m of r.meshFiles ?? []) console.log(`wrote mesh ${m}`);
-      }
-      process.exitCode = r.exitCode;
+      return runExportMode(format, file, opts, parsedOptions.options);
     });
   return cmd;
 }

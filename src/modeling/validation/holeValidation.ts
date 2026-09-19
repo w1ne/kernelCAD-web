@@ -206,12 +206,8 @@ function isFiniteNumber(n: unknown): n is number {
   return typeof n === 'number' && Number.isFinite(n);
 }
 
-/** Validate the shared parts of HoleOpts / HolesOpts (everything except positions). */
-function validateCommonHoleFields(
-  opts: HoleOpts | HolesOpts,
-  featureId: FeatureId | undefined,
-): void {
-  // Depth-required / depth-conflict
+// Depth-required / depth-conflict
+function validateHoleDepth(opts: HoleOpts | HolesOpts, featureId: FeatureId | undefined): void {
   if (opts.depth === undefined && opts.upToFace === undefined) {
     throw new KernelError(
       'feature.invalid-args',
@@ -239,7 +235,10 @@ function validateCommonHoleFields(
       );
     }
   }
-  // cb / cs mutual exclusion
+}
+
+// cb / cs mutual exclusion
+function validateHoleEndTreatments(opts: HoleOpts | HolesOpts, featureId: FeatureId | undefined): void {
   if (opts.counterbore !== undefined && opts.countersink !== undefined) {
     throw new KernelError(
       'feature.invalid-args',
@@ -248,7 +247,10 @@ function validateCommonHoleFields(
       'counterbore and countersink are mutually exclusive on a single hole. Chain two .hole() calls if you need both effects.',
     );
   }
-  // Diameter
+}
+
+// Diameter
+function validateHoleDiameter(opts: HoleOpts | HolesOpts, featureId: FeatureId | undefined): void {
   if (!isFiniteNumber(opts.diameter) || opts.diameter <= 0 || opts.diameter > MAX_DIAMETER_MM) {
     throw new KernelError(
       'feature.invalid-args',
@@ -257,7 +259,10 @@ function validateCommonHoleFields(
       `diameter (${opts.diameter}) must be > 0 and ≤ ${MAX_DIAMETER_MM} mm.`,
     );
   }
-  // Counterbore checks
+}
+
+// Counterbore checks
+function validateHoleCounterbore(opts: HoleOpts | HolesOpts, featureId: FeatureId | undefined): void {
   if (opts.counterbore !== undefined) {
     const cb = opts.counterbore;
     if (!isFiniteNumber(cb.diameter) || cb.diameter <= opts.diameter) {
@@ -277,7 +282,10 @@ function validateCommonHoleFields(
       );
     }
   }
-  // Countersink checks
+}
+
+// Countersink checks
+function validateHoleCountersink(opts: HoleOpts | HolesOpts, featureId: FeatureId | undefined): void {
   if (opts.countersink !== undefined) {
     const cs = opts.countersink;
     if (!isFiniteNumber(cs.diameter) || cs.diameter <= opts.diameter) {
@@ -298,6 +306,18 @@ function validateCommonHoleFields(
       );
     }
   }
+}
+
+/** Validate the shared parts of HoleOpts / HolesOpts (everything except positions). */
+function validateCommonHoleFields(
+  opts: HoleOpts | HolesOpts,
+  featureId: FeatureId | undefined,
+): void {
+  validateHoleDepth(opts, featureId);
+  validateHoleEndTreatments(opts, featureId);
+  validateHoleDiameter(opts, featureId);
+  validateHoleCounterbore(opts, featureId);
+  validateHoleCountersink(opts, featureId);
   if (opts.thread !== undefined) validateThread(opts, featureId);
 }
 
