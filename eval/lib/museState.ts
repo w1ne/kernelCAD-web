@@ -28,6 +28,12 @@ export function statePath(caseDir: string): string {
   return join(caseDir, 'state.json');
 }
 
+/**
+ * Writes state atomically: the JSON goes to a sibling `.tmp` file and is then
+ * renamed over `state.json`, so concurrent readers observe either the previous
+ * or the new state and a crash mid-write cannot corrupt resume state. No
+ * fsync, so this is not durable against power loss.
+ */
 export function writeState(caseDir: string, state: CaseState): void {
   const target = statePath(caseDir);
   const tmp = `${target}.tmp`;
@@ -35,10 +41,18 @@ export function writeState(caseDir: string, state: CaseState): void {
   renameSync(tmp, target);
 }
 
+/**
+ * Returns null when the state file is absent, unreadable, or corrupt; callers
+ * treat that as "no recorded progress" and rerun the case.
+ */
 export function readState(caseDir: string): CaseState | null {
   const path = statePath(caseDir);
   if (!existsSync(path)) return null;
-  return JSON.parse(readFileSync(path, 'utf8')) as CaseState;
+  try {
+    return JSON.parse(readFileSync(path, 'utf8')) as CaseState;
+  } catch {
+    return null;
+  }
 }
 
 /** True when `phase` is at or past `target`. infra_error is never at-target. */
