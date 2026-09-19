@@ -20,15 +20,14 @@
 // are resolved against the live param table by the mounting-hole gate, so
 // sweeping that diameter produces a real pass/fail envelope.
 
-// `evaluateAndBuildScript` lives in the CLI command tree, which pulls
-// node-only modules (file reads, CLI arg parsing) transitively. This module
-// is reachable from the browser runtime via `src/modeling/api.ts` ->
-// `import * as kinematic from '../kinematic'`, so the import is deferred to
-// a dynamic `await import(...)` (code-split, not part of the static browser
-// graph) rather than a top-level import — see
+// The script-evaluation step (the CLI command tree's `evaluateAndBuildScript`,
+// which pulls node-only modules — file reads, CLI arg parsing — transitively)
+// is injected: kinematic owns the `SweepEvaluator` seam below, the agent layer
+// supplies the implementation. This keeps the module free of agent imports
+// while it stays reachable from the browser runtime via `src/modeling/api.ts`
+// -> `import * as kinematic from '../kinematic'` — see
 // `src/modeling/runtime/browserGraphNodeFree.test.ts`.
-import type { evaluateAndBuildScript } from '../agent/cli/commands/evaluate';
-import { setParamValue } from '../agent/mcp/edits/setParamValue';
+import { setParamValue } from '../modeling/edits/setParamValue';
 import type { Assembly } from '../modeling/capture/assembly';
 import { validateAssemblyWithMates } from '../modeling/mates/validator';
 import { detectInterferencesForPoses } from '../modeling/mates/poseEnvelope';
@@ -37,12 +36,32 @@ import { KernelError } from '../shared/intent/kernelError';
 import { DIAGNOSTIC_REGISTRY, type DiagnosticCode } from '../shared/diagnostics/registry';
 import type {
   SweepComboResult,
+  SweepEvaluation,
+  SweepEvaluationModel,
+  SweepEvaluationResult,
+  SweepEvaluator,
   SweepGateSpec,
   SweepParamsDeclaration,
   SweepToleranceResult,
 } from './types';
 
+export type { SweepEvaluation, SweepEvaluator } from './types';
+
 export const SWEEP_COMBO_CAP = 64;
+
+/**
+ * Registered fallback evaluator. The agent entry that owns script evaluation
+ * (`src/agent/cli/commands/evaluate.ts`) registers one at import time so
+ * existing one-argument callers — user scripts reaching
+ * `kc.kinematic.sweepTolerance`, which cannot pass a second argument — keep
+ * working in every runtime where the agent evaluator is loaded. Runtimes
+ * without it (the browser) still fail at call time, exactly as before.
+ */
+let registeredEvaluator: SweepEvaluator | undefined;
+
+export function registerSweepEvaluator(evaluator: SweepEvaluator): void {
+  registeredEvaluator = evaluator;
+}
 
 export interface SweepToleranceInput {
   readonly code?: string;
@@ -69,7 +88,9 @@ export interface SweepToleranceInput {
  */
 export async function sweepTolerance(
   input: SweepToleranceInput,
+  evaluator?: SweepEvaluator,
 ): Promise<SweepToleranceResult> {
+  const evaluate = evaluator ?? registeredEvaluator;
   const baseCode = await resolveBaseCode(input);
   const paramNames = Object.keys(input.params);
   if (paramNames.length === 0) {
@@ -84,7 +105,7 @@ export async function sweepTolerance(
     };
   }
 
-  await assertParamsAreNumeric(baseCode, paramNames);
+  await assertParamsAreNumeric(baseCode, paramNames, evaluate);
 
   const valueLists = paramNames.map((name) => expandParamSpec(input.params[name]!));
   const allCombos = cartesianProduct(paramNames, valueLists);
@@ -118,7 +139,7 @@ export async function sweepTolerance(
             message: editFailed!,
           })),
         }
-      : await evaluateCombo(comboCode, input.assembly, gates, combo);
+      : await evaluateCombo(comboCode, input.assembly, gates, combo, evaluate);
 
     results.push(comboResult);
     for (const [gate, verdict] of Object.entries(comboResult.gates)) {
@@ -153,21 +174,24 @@ export async function sweepTolerance(
  * type up front so a bad request fails loudly with one clear diagnostic
  * instead of 64 confusing per-combo `set_param` failures.
  */
-async function assertParamsAreNumeric(baseCode: string, paramNames: string[]): Promise<void> {
-  // Same env-var save/restore dance as `evaluateCombo` below: calling
-  // `evaluateAndBuildScript` runs `applyEvaluateDefaults()`, which sets
-  // `KERNELCAD_VALIDATE_DEFAULT` to `'error'` the first time it's read and
-  // leaves it set for the process. Without restoring it here, this
-  // pre-check call would permanently flip validation to `'error'` and
-  // silently disable `evaluateCombo`'s own 'warn' override for the entire
-  // sweep — every combo's `solvedModel()` would then throw on the first
-  // mechanism-invalid combo instead of surfacing through this function's
-  // own gate classification.
+async function assertParamsAreNumeric(
+  baseCode: string,
+  paramNames: string[],
+  evaluator: SweepEvaluator | undefined,
+): Promise<void> {
+  // Same env-var save/restore dance as `runComboEvaluation` below: the agent
+  // evaluator calls `evaluateAndBuildScript`, which runs
+  // `applyEvaluateDefaults()`, setting `KERNELCAD_VALIDATE_DEFAULT` to
+  // `'error'` the first time it's read and leaving it set for the process.
+  // Without restoring it here, this pre-check call would permanently flip
+  // validation to `'error'` and silently disable `runComboEvaluation`'s own
+  // 'warn' override for the entire sweep — every combo's `solvedModel()`
+  // would then throw on the first mechanism-invalid combo instead of
+  // surfacing through this function's own gate classification.
   const hadValidateDefault = process.env.KERNELCAD_VALIDATE_DEFAULT !== undefined;
-  let built: Awaited<ReturnType<typeof evaluateAndBuildScript>>;
+  let built: SweepEvaluation;
   try {
-    const mod = await import('../agent/cli/commands/evaluate');
-    built = await mod.evaluateAndBuildScript({ code: baseCode });
+    built = await requireEvaluator(evaluator).evaluate(baseCode);
   } finally {
     if (!hadValidateDefault) delete process.env.KERNELCAD_VALIDATE_DEFAULT;
   }
@@ -226,13 +250,14 @@ async function evaluateCombo(
   assemblyName: string | undefined,
   gates: NormalizedGates,
   combo: Readonly<Record<string, number | string>>,
+  evaluator: SweepEvaluator | undefined,
 ): Promise<SweepComboResult> {
-  const { evaluation, model } = await runComboEvaluation(code);
+  const { evaluation, model } = await runComboEvaluation(code, evaluator);
   if (evaluation.exitCode !== 0 || !model) {
     return failedEvaluationResult(evaluation, combo, gates);
   }
 
-  const assemblies = model.session.assemblies as Map<string, Assembly>;
+  const assemblies = model.session.assemblies as ReadonlyMap<string, Assembly>;
   const arm = assemblyName !== undefined ? assemblies.get(assemblyName) : assemblies.values().next().value;
   if (!arm) {
     return noAssemblyResult(combo, gates);
@@ -243,30 +268,30 @@ async function evaluateCombo(
   return { combo, gates: gateVerdicts, diagnostics: rawDiagnostics };
 }
 
-type ComboEvaluation = Awaited<ReturnType<typeof evaluateAndBuildScript>>['evaluation'];
-type ComboModel = NonNullable<Awaited<ReturnType<typeof evaluateAndBuildScript>>['model']>;
 type AssemblyDiagnostic = Awaited<ReturnType<typeof validateAssemblyWithMates>>['diagnostics'][number];
 
 /**
  * Evaluate one combo under the sweep's validation default.
  *
- * `evaluateAndBuildScript` defaults KERNELCAD_VALIDATE_DEFAULT to 'error'
- * (see applyEvaluateDefaults), which makes an in-script
- * `arm.solvedModel({})` call THROW on a mechanism-invalid combo before
- * sweepTolerance's own gates ever run — the sweep exists to survey the
- * envelope, not stop at the first broken combo. Default to 'warn' (only
- * when the caller hasn't set an explicit value) so the script still
+ * The agent evaluator wraps `evaluateAndBuildScript`, which defaults
+ * KERNELCAD_VALIDATE_DEFAULT to 'error' (see applyEvaluateDefaults) and
+ * makes an in-script `arm.solvedModel({})` call THROW on a mechanism-invalid
+ * combo before sweepTolerance's own gates ever run — the sweep exists to
+ * survey the envelope, not stop at the first broken combo. Default to 'warn'
+ * (only when the caller hasn't set an explicit value) so the script still
  * evaluates and this function's own gate classification below is the
  * source of truth for pass/fail.
  */
-async function runComboEvaluation(code: string): Promise<{ evaluation: ComboEvaluation; model: ComboModel | undefined }> {
+async function runComboEvaluation(
+  code: string,
+  evaluator: SweepEvaluator | undefined,
+): Promise<{ evaluation: SweepEvaluationResult; model: SweepEvaluationModel | undefined }> {
   const hadValidateDefault = process.env.KERNELCAD_VALIDATE_DEFAULT !== undefined;
   if (!hadValidateDefault) process.env.KERNELCAD_VALIDATE_DEFAULT = 'warn';
-  let evaluation: ComboEvaluation;
-  let model: Awaited<ReturnType<typeof evaluateAndBuildScript>>['model'];
+  let evaluation: SweepEvaluationResult;
+  let model: SweepEvaluationModel | undefined;
   try {
-    const mod = await import('../agent/cli/commands/evaluate');
-    const built = await mod.evaluateAndBuildScript({ code });
+    const built = await requireEvaluator(evaluator).evaluate(code);
     evaluation = built.evaluation;
     model = built.model;
   } finally {
@@ -275,9 +300,25 @@ async function runComboEvaluation(code: string): Promise<{ evaluation: ComboEval
   return { evaluation, model };
 }
 
+/**
+ * Resolve the injected/registered evaluator at the point of use. Runtimes
+ * that never loaded the agent evaluator (the browser script graph) fail
+ * here at call time, exactly as the old deferred agent-module import did;
+ * the no-params path above never needs one and stays a vacuous pass.
+ */
+function requireEvaluator(evaluator: SweepEvaluator | undefined): SweepEvaluator {
+  if (evaluator === undefined) {
+    throw new Error(
+      'sweepTolerance: no script evaluator is available in this runtime. ' +
+      'Pass a SweepEvaluator or load the agent evaluate module (which registers one).',
+    );
+  }
+  return evaluator;
+}
+
 /** Every declared gate fails when the combo script did not evaluate. */
 function failedEvaluationResult(
-  evaluation: ComboEvaluation,
+  evaluation: SweepEvaluationResult,
   combo: Readonly<Record<string, number | string>>,
   gates: NormalizedGates,
 ): SweepComboResult {

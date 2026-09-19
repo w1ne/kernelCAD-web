@@ -30,6 +30,20 @@ import {
 import { detectUnstructuredBodies } from '../../../modeling/validation/unstructuredBodies';
 import { buildFeatureTrace } from '../../repair/trace';
 import type { FeatureTraceEntry } from '../../repair/types';
+import { registerSweepEvaluator, type SweepEvaluator } from '../../../kinematic/sweepTolerance';
+
+/**
+ * Script-evaluation implementation injected into the kinematic tolerance
+ * sweep (`sweepTolerance`) so the kinematic layer never imports this agent
+ * command tree. Registration at module load covers one-argument callers —
+ * user scripts reaching `kc.kinematic.sweepTolerance` — and direct callers
+ * (the MCP `sweep_tolerance` tool, unit tests) pass it explicitly.
+ */
+export const sweepScriptEvaluator: SweepEvaluator = {
+  evaluate: (code) => evaluateAndBuildScript({ code }),
+};
+
+registerSweepEvaluator(sweepScriptEvaluator);
 
 export interface EvaluateInput {
   file?: string;
