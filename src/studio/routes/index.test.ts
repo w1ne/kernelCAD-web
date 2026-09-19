@@ -55,20 +55,22 @@ describe('Initial Studio bundle import sentinels', () => {
  */
 describe('Generate page (src/studio/routes/generate.tsx)', () => {
   const source = readFileSync('src/studio/routes/generate.tsx', 'utf8');
+  const heroSource = readFileSync('src/studio/routes/GenerateHero.tsx', 'utf8');
 
   it('imports the prompt app and sign-in modal components', () => {
     expect(source).toMatch(/from\s+['"]\.\.\/agentAvailability['"]/);
-    expect(source).toMatch(/from\s+['"]\.\.\/\.\.\/funnel\/components\/PromptBox['"]/);
+    expect(heroSource).toMatch(/from\s+['"]\.\.\/\.\.\/funnel\/components\/PromptBox['"]/);
     expect(source).toMatch(/from\s+['"]\.\.\/\.\.\/funnel\/components\/GallerySection['"]/);
     expect(source).toMatch(/from\s+['"]\.\.\/\.\.\/funnel\/components\/EmailSignup['"]/);
     expect(source).toMatch(/from\s+['"]\.\.\/\.\.\/funnel\/components\/SignInModal['"]/);
   });
 
   it('keeps the prompt visible before sign-in', () => {
-    const promptIdx = source.indexOf('<PromptBox');
+    expect(heroSource).toContain('<PromptBox');
+    const heroIdx = source.indexOf('<GenerateHero');
     const modalIdx = source.indexOf('<SignInModal');
-    expect(promptIdx).toBeGreaterThan(-1);
-    expect(modalIdx).toBeGreaterThan(promptIdx);
+    expect(heroIdx).toBeGreaterThan(-1);
+    expect(modalIdx).toBeGreaterThan(heroIdx);
   });
 
   it('gates generation by stashing the prompt and opening sign-in', () => {
@@ -90,9 +92,10 @@ describe('Generate page (src/studio/routes/generate.tsx)', () => {
   });
 
   it('orders the generate page sections prompt -> gallery -> email', () => {
-    const promptIdx = source.indexOf('<PromptBox');
+    const promptIdx = source.indexOf('<GenerateHero');
     const galleryIdx = source.indexOf('<GallerySection');
     const emailIdx = source.indexOf('<EmailSignup');
+    expect(heroSource).toContain('<PromptBox');
     expect(promptIdx).toBeGreaterThan(-1);
     expect(galleryIdx).toBeGreaterThan(promptIdx);
     expect(emailIdx).toBeGreaterThan(galleryIdx);

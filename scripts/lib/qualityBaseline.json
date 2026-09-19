@@ -720,12 +720,6 @@
     "value": 157
   },
   {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/routes/generate.tsx",
-    "symbol": "Function 'GeneratePage'",
-    "value": 155
-  },
-  {
     "rule": "max-lines",
     "file": "src/agent/reconstruct/planPhases.ts",
     "symbol": "(file)",
