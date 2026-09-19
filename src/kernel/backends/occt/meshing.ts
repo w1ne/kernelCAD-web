@@ -182,6 +182,14 @@ export function getWire(obj: unknown): unknown | null {
   return null;
 }
 
+function resolveVecComponent(value: unknown, upper: unknown, thisArg: unknown): unknown {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'function') return (value as () => unknown).call(thisArg);
+  if (typeof upper === 'number') return upper;
+  if (typeof upper === 'function') return (upper as () => unknown).call(thisArg);
+  return null;
+}
+
 function tryVec3(v: unknown): [number, number, number] | null {
   if (typeof v === 'function') {
     try {
@@ -203,9 +211,9 @@ function tryVec3(v: unknown): [number, number, number] | null {
   const Yr = (v as UnknownRecord).Y;
   const Zr = (v as UnknownRecord).Z;
 
-  const x = typeof xr === 'number' ? xr : (typeof xr === 'function' ? (xr as () => unknown).call(v) : (typeof Xr === 'number' ? Xr : (typeof Xr === 'function' ? (Xr as () => unknown).call(v) : null)));
-  const y = typeof yr === 'number' ? yr : (typeof yr === 'function' ? (yr as () => unknown).call(v) : (typeof Yr === 'number' ? Yr : (typeof Yr === 'function' ? (Yr as () => unknown).call(v) : null)));
-  const z = typeof zr === 'number' ? zr : (typeof zr === 'function' ? (zr as () => unknown).call(v) : (typeof Zr === 'number' ? Zr : (typeof Zr === 'function' ? (Zr as () => unknown).call(v) : null)));
+  const x = resolveVecComponent(xr, Xr, v);
+  const y = resolveVecComponent(yr, Yr, v);
+  const z = resolveVecComponent(zr, Zr, v);
 
   if (typeof x !== 'number' || typeof y !== 'number' || typeof z !== 'number') return null;
   return [x, y, z];
