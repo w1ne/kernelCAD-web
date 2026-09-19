@@ -925,12 +925,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/runtime/dfm/clearance.ts",
-    "symbol": "Function 'checkClearance'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/runtime/dfm/fdmOrientation.ts",
     "symbol": "Function 'anchoredChord'",
     "value": 17
@@ -1348,12 +1342,6 @@
     "file": "src/modeling/parts/fetchPart.ts",
     "symbol": "Async function 'fetchPartHost'",
     "value": 106
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/runtime/dfm/clearance.ts",
-    "symbol": "Function 'checkClearance'",
-    "value": 112
   },
   {
     "rule": "max-lines-per-function",

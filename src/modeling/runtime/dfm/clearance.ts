@@ -125,25 +125,7 @@ export function checkClearance(
   // detectInterferences / STEP-exporter pattern). Guarded per part: a
   // clone/transform kernel failure leaves `shape` undefined — every pair
   // touching that part is recorded 'unknown' below; the sweep continues.
-  const transformed: TransformedPart[] = scene.parts.map((p) => {
-    try {
-      const clone = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
-      return { name: p.name, shape: clone, bbox: clone.boundingBox() };
-    } catch (e) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.kernel-failed',
-        severity: 'warn',
-        message:
-          `dfm.clearance: clone/transform failed for part '${p.name}' ` +
-          `(${e instanceof Error ? e.message : String(e)}); its pairs are recorded as 'unknown'.`,
-        hint:
-          'The OCCT kernel could not clone or transform this part — check it for degenerate ' +
-          'geometry with evaluate; pairs not touching it were still measured.',
-      });
-      return { name: p.name };
-    }
-  });
+  const transformed: TransformedPart[] = scene.parts.map((p) => transformScenePart(p, diagnostics));
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
@@ -166,83 +148,126 @@ export function checkClearance(
 
       // Either side failed the up-front clone/transform stage (warn
       // diagnostic already emitted, once per part): nothing to measure.
-      if (a.shape === undefined || a.bbox === undefined
-        || b.shape === undefined || b.bbox === undefined) {
+      if (!hasMeasurableGeometry(a) || !hasMeasurableGeometry(b)) {
         reports.push({ a: a.name, b: b.name, distanceMm: NaN, status: 'unknown', exact: false });
         continue;
       }
 
-      const lowerBound = bboxGap(a.bbox, b.bbox);
-      if (!options.forceExact && lowerBound >= minClearance) {
-        reports.push({ a: a.name, b: b.name, distanceMm: lowerBound, status: 'ok', exact: false });
-        continue;
-      }
-
-      let d: number | undefined;
-      try {
-        d = brepExtremaDistance(oc, wrappedShape(a.shape), wrappedShape(b.shape));
-      } catch {
-        d = undefined;
-      }
-      if (d === undefined) {
-        // Never abort the sweep on a kernel failure (same resilience stance
-        // as detectInterferences' per-pair try/catch).
-        diagnostics.push({
-          target: 'export-occt',
-          code: 'feature.kernel-failed',
-          severity: 'warn',
-          message: `dfm.clearance: BRepExtrema_DistShapeShape failed on pair (${a.name}, ${b.name}); distance not measured.`,
-          hint: 'The OCCT distance kernel could not process this part pair — check both parts for degenerate geometry with evaluate, or list the pair in dfmSpec.ignore if its clearance is established another way.',
-        });
-        reports.push({ a: a.name, b: b.name, distanceMm: NaN, status: 'unknown', exact: false });
-        continue;
-      }
-
-      if (d < CONTACT_EPS_MM) {
-        // Touching or crossing: a boolean-intersection volume probe decides
-        // which (volume-only; neither operand is consumed).
-        let volume: number | undefined;
-        try {
-          volume = a.shape.intersectionVolume(b.shape);
-        } catch {
-          volume = undefined;
-        }
-        if (volume === undefined) {
-          diagnostics.push({
-            target: 'export-occt',
-            code: 'feature.kernel-failed',
-            severity: 'warn',
-            message: `dfm.clearance: boolean-intersection volume probe failed on touching pair (${a.name}, ${b.name}); contact vs overlap not resolved.`,
-            hint: 'The OCCT boolean kernel could not probe this part pair — check both parts for degenerate geometry with evaluate, or list the pair in dfmSpec.ignore if its clearance is established another way.',
-          });
-          reports.push({ a: a.name, b: b.name, distanceMm: NaN, status: 'unknown', exact: false });
-          continue;
-        }
-        if (volume > OVERLAP_EPSILON_MM3) {
-          reports.push({
-            a: a.name,
-            b: b.name,
-            distanceMm: 0,
-            status: 'interfering',
-            exact: true,
-            interferenceVolumeMm3: volume,
-          });
-        } else {
-          reports.push({ a: a.name, b: b.name, distanceMm: 0, status: 'violated', exact: true });
-        }
-        continue;
-      }
-
-      reports.push({
-        a: a.name,
-        b: b.name,
-        distanceMm: d,
-        status: d < minClearance ? 'violated' : 'ok',
-        exact: true,
-      });
+      reports.push(classifyMeasuredPair(a, b, minClearance, options.forceExact, oc, diagnostics));
     }
   }
   return reports;
+}
+
+/** One scene part whose clone/applyTransform stage succeeded: `shape` and
+ *  `bbox` are present and measurable. */
+interface MeasuredPart extends TransformedPart {
+  shape: OcctBackend;
+  bbox: { min: [number, number, number]; max: [number, number, number] };
+}
+
+function hasMeasurableGeometry(part: TransformedPart): part is MeasuredPart {
+  return part.shape !== undefined && part.bbox !== undefined;
+}
+
+/** Clone + apply one part's worldTransform; a kernel failure emits ONE warn
+ *  diagnostic and leaves the part unmeasurable (`shape`/`bbox` undefined). */
+function transformScenePart(
+  p: SceneBackend['parts'][number],
+  diagnostics: CompilerDiagnostic[],
+): TransformedPart {
+  try {
+    const clone = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
+    return { name: p.name, shape: clone, bbox: clone.boundingBox() };
+  } catch (e) {
+    diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.kernel-failed',
+      severity: 'warn',
+      message:
+        `dfm.clearance: clone/transform failed for part '${p.name}' ` +
+        `(${e instanceof Error ? e.message : String(e)}); its pairs are recorded as 'unknown'.`,
+      hint:
+        'The OCCT kernel could not clone or transform this part — check it for degenerate ' +
+        'geometry with evaluate; pairs not touching it were still measured.',
+    });
+    return { name: p.name };
+  }
+}
+
+/** Measure one non-exempt pair with measurable geometry: bbox pre-filter,
+ *  BRepExtrema, and the volume probe for touching pairs. */
+function classifyMeasuredPair(
+  a: MeasuredPart,
+  b: MeasuredPart,
+  minClearance: number,
+  forceExact: boolean | undefined,
+  oc: unknown,
+  diagnostics: CompilerDiagnostic[],
+): ClearancePairReport {
+  const lowerBound = bboxGap(a.bbox, b.bbox);
+  if (!forceExact && lowerBound >= minClearance) {
+    return { a: a.name, b: b.name, distanceMm: lowerBound, status: 'ok', exact: false };
+  }
+
+  let d: number | undefined;
+  try {
+    d = brepExtremaDistance(oc, wrappedShape(a.shape), wrappedShape(b.shape));
+  } catch {
+    d = undefined;
+  }
+  if (d === undefined) {
+    // Never abort the sweep on a kernel failure (same resilience stance
+    // as detectInterferences' per-pair try/catch).
+    diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.kernel-failed',
+      severity: 'warn',
+      message: `dfm.clearance: BRepExtrema_DistShapeShape failed on pair (${a.name}, ${b.name}); distance not measured.`,
+      hint: 'The OCCT distance kernel could not process this part pair — check both parts for degenerate geometry with evaluate, or list the pair in dfmSpec.ignore if its clearance is established another way.',
+    });
+    return { a: a.name, b: b.name, distanceMm: NaN, status: 'unknown', exact: false };
+  }
+
+  if (d < CONTACT_EPS_MM) {
+    // Touching or crossing: a boolean-intersection volume probe decides
+    // which (volume-only; neither operand is consumed).
+    let volume: number | undefined;
+    try {
+      volume = a.shape.intersectionVolume(b.shape);
+    } catch {
+      volume = undefined;
+    }
+    if (volume === undefined) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.kernel-failed',
+        severity: 'warn',
+        message: `dfm.clearance: boolean-intersection volume probe failed on touching pair (${a.name}, ${b.name}); contact vs overlap not resolved.`,
+        hint: 'The OCCT boolean kernel could not probe this part pair — check both parts for degenerate geometry with evaluate, or list the pair in dfmSpec.ignore if its clearance is established another way.',
+      });
+      return { a: a.name, b: b.name, distanceMm: NaN, status: 'unknown', exact: false };
+    }
+    if (volume > OVERLAP_EPSILON_MM3) {
+      return {
+        a: a.name,
+        b: b.name,
+        distanceMm: 0,
+        status: 'interfering',
+        exact: true,
+        interferenceVolumeMm3: volume,
+      };
+    }
+    return { a: a.name, b: b.name, distanceMm: 0, status: 'violated', exact: true };
+  }
+
+  return {
+    a: a.name,
+    b: b.name,
+    distanceMm: d,
+    status: d < minClearance ? 'violated' : 'ok',
+    exact: true,
+  };
 }
 
 /** Euclidean lower bound on the distance between two parts from their
