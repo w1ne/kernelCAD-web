@@ -189,6 +189,36 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
   const diagnostics: ValidatorDiagnostic[] = [];
 
   // Build an undirected adjacency map: part name -> set of neighbour names.
+  const adj = buildPartAdjacency(parts, joints, mateEdges);
+
+  // Check 1 — floating parts (zero joints).
+  diagnostics.push(...collectFloatingDiagnostics(parts, adj));
+
+  // Check 2 — orphan from main component. Skip when there are <2 parts
+  // (single-part assemblies are trivially connected).
+  diagnostics.push(...collectOrphanDiagnostics(parts, adj));
+
+  // Check 3 — interference (promoted from checkInterference). Errors,
+  // not warnings, because solid bodies sharing volume is mechanically
+  // invalid (vs floating, which is a missing-information warning).
+  diagnostics.push(...collectInterferenceDiagnostics(input.interferencePairs, input.ignore));
+
+  const status = resolveValidatorStatus(diagnostics);
+
+  return {
+    status,
+    diagnostics,
+    partCount: parts.length,
+    jointCount: joints.length,
+  };
+}
+
+/** Undirected part-name adjacency from v0.5 joints + v0.6 mate edges. */
+function buildPartAdjacency(
+  parts: PartInfo[],
+  joints: JointInfo[],
+  mateEdges: readonly (readonly [string, string])[],
+): Map<string, Set<string>> {
   const adj = new Map<string, Set<string>>();
   for (const p of parts) adj.set(p.partName, new Set());
   for (const j of joints) {
@@ -202,8 +232,15 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
     adj.get(a)!.add(b);
     adj.get(b)!.add(a);
   }
+  return adj;
+}
 
-  // Check 1 — floating parts (zero joints).
+/** Check 1 — parts with no joint connecting them to any other part. */
+function collectFloatingDiagnostics(
+  parts: PartInfo[],
+  adj: Map<string, Set<string>>,
+): ValidatorDiagnostic[] {
+  const diagnostics: ValidatorDiagnostic[] = [];
   for (const p of parts) {
     if ((adj.get(p.partName)?.size ?? 0) === 0) {
       diagnostics.push({
@@ -215,9 +252,15 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
       });
     }
   }
+  return diagnostics;
+}
 
-  // Check 2 — orphan from main component. Skip when there are <2 parts
-  // (single-part assemblies are trivially connected).
+/** Check 2 — parts disconnected from the main mechanism component. */
+function collectOrphanDiagnostics(
+  parts: PartInfo[],
+  adj: Map<string, Set<string>>,
+): ValidatorDiagnostic[] {
+  const diagnostics: ValidatorDiagnostic[] = [];
   if (parts.length >= 2) {
     const components = connectedComponents(parts.map((p) => p.partName), adj);
     if (components.length > 1) {
@@ -244,11 +287,15 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
       }
     }
   }
+  return diagnostics;
+}
 
-  // Check 3 — interference (promoted from checkInterference). Errors,
-  // not warnings, because solid bodies sharing volume is mechanically
-  // invalid (vs floating, which is a missing-information warning).
-  //
+/** Check 3 — interference above the absolute noise cap, minus ignored pairs. */
+function collectInterferenceDiagnostics(
+  interferencePairs: readonly InterferencePair[] | undefined,
+  ignore: ReadonlyArray<readonly [string, string]> | undefined,
+): ValidatorDiagnostic[] {
+  const diagnostics: ValidatorDiagnostic[] = [];
   // The optional `ignore` list silences known-acceptable contacts (e.g. a
   // knuckle joint where two arm parts touch by design). Matching is
   // SYMMETRIC — `[a, b]` filters both `(a, b)` and `(b, a)` — and applies
@@ -264,8 +311,8 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
   // pair is an error" behaviour while still failing any real overlap above the
   // tessellation-noise floor.
   const cap = jointContactCapMm3();
-  for (const pair of input.interferencePairs ?? []) {
-    if (isPairIgnored(pair.a, pair.b, input.ignore)) continue;
+  for (const pair of interferencePairs ?? []) {
+    if (isPairIgnored(pair.a, pair.b, ignore)) continue;
     if (pair.volumeMm3 <= cap) continue;
     diagnostics.push({
       code: 'assembly.interference.overlap',
@@ -277,17 +324,16 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
       volumeMm3: pair.volumeMm3,
     });
   }
+  return diagnostics;
+}
 
+/** Fold diagnostic severities into the assembly-level verdict. */
+function resolveValidatorStatus(
+  diagnostics: readonly ValidatorDiagnostic[],
+): ValidatorStatus {
   const hasError = diagnostics.some((d) => d.severity === 'error');
   const hasWarning = diagnostics.some((d) => d.severity === 'warning');
-  const status: ValidatorStatus = hasError ? 'error' : hasWarning ? 'warning' : 'solved';
-
-  return {
-    status,
-    diagnostics,
-    partCount: parts.length,
-    jointCount: joints.length,
-  };
+  return hasError ? 'error' : hasWarning ? 'warning' : 'solved';
 }
 
 interface PartInfo { partName: string; recordId: string; }
