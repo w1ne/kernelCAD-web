@@ -451,29 +451,12 @@ export async function renderPreviewTool(
   }
 }
 
-async function renderPreviewWork(args: {
-  input: RenderPreviewInput;
-  deps: RenderPreviewDeps;
-  scriptPath: string;
-  outDir: string;
-  views: RenderView[];
-  pose?: { az: number; el: number };
-  objectFilter: ReturnType<typeof buildObjectFilter>;
-  width: number;
-  height: number;
-  section?: { axis: 'x' | 'y' | 'z'; position: number; positionRaw: string; flip: boolean };
-  explode?: ParsedExplode;
-  overlay?: SurfaceQualityOverlay;
-}): Promise<RenderPreviewOutput> {
-  const { input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section, explode, overlay } = args;
-  const t0 = Date.now();
+type MechanismProbeResult = Awaited<ReturnType<RenderPreviewDeps['mechanismProbe']>>;
 
-  // Physics-loop probe — identical protocol to the render CLI: strict mode
-  // refuses outright; otherwise broken mechanisms render watermarked.
-  // no_mechanism_check skips the probe for fast iteration on large
-  // assemblies (capture_animation precedent: full BREP sweeps can take tens
-  // of minutes) and honestly reports 'unverified' — but NEVER under strict
-  // mode, where the gate always runs.
+async function validateExplodeAssembly(
+  explode: ParsedExplode | undefined,
+  scriptPath: string,
+): Promise<RenderPreviewOutput | undefined> {
   if (explode !== undefined) {
     try {
       const loaded = await loadScriptFeatures(scriptPath);
@@ -492,7 +475,20 @@ async function renderPreviewWork(args: {
       );
     }
   }
+  return undefined;
+}
 
+// Physics-loop probe — identical protocol to the render CLI: strict mode
+// refuses outright; otherwise broken mechanisms render watermarked.
+// no_mechanism_check skips the probe for fast iteration on large
+// assemblies (capture_animation precedent: full BREP sweeps can take tens
+// of minutes) and honestly reports 'unverified' — but NEVER under strict
+// mode, where the gate always runs.
+async function probeMechanismGate(
+  input: RenderPreviewInput,
+  deps: RenderPreviewDeps,
+  scriptPath: string,
+): Promise<{ probe: MechanismProbeResult; failureCodes: string[] } | { refusal: RenderPreviewOutput }> {
   const skipProbe = input.no_mechanism_check === true && !isRenderStrictMode();
   const probe = skipProbe
     ? { mechanism: 'unverified' as const, failures: [] }
@@ -500,17 +496,27 @@ async function renderPreviewWork(args: {
   const failureCodes = [...new Set(probe.failures.map(f => f.code))];
   if (probe.mechanism === 'broken' && isRenderStrictMode()) {
     return {
-      ...refusal(
-        'cli.export-exception',
-        `render_preview: MECHANISM BROKEN — render refused in strict mode (${failureCodes.join(', ')}).`,
-        'Fix the mechanism failures (run validate / review_cad for detail), or unset KERNELCAD_RENDER_STRICT to render a watermarked preview.',
-      ),
-      mechanism: 'broken',
-      mechanism_failure_codes: failureCodes,
-      diagnostics: [...probe.failures],
+      refusal: {
+        ...refusal(
+          'cli.export-exception',
+          `render_preview: MECHANISM BROKEN — render refused in strict mode (${failureCodes.join(', ')}).`,
+          'Fix the mechanism failures (run validate / review_cad for detail), or unset KERNELCAD_RENDER_STRICT to render a watermarked preview.',
+        ),
+        mechanism: 'broken',
+        mechanism_failure_codes: failureCodes,
+        diagnostics: [...probe.failures],
+      },
     };
   }
+  return { probe, failureCodes };
+}
 
+async function buildOverlayScript(
+  input: RenderPreviewInput,
+  overlay: SurfaceQualityOverlay | undefined,
+  scriptPath: string,
+  outDir: string,
+): Promise<{ renderScriptPath: string } | { refusal: RenderPreviewOutput }> {
   let renderScriptPath = scriptPath;
   if (overlay !== undefined) {
     const built = await buildSurfaceQualityOverlay({
@@ -519,60 +525,93 @@ async function renderPreviewWork(args: {
       outDir,
     });
     if (!built.ok) {
-      return refusal(
-        built.errorCode ?? 'cli.export-exception',
-        `render_preview overlay '${overlay}': ${built.error}`,
-        'Run inspect({ of: \'continuity\' | \'curvature\' }) on the same source; the overlay is a picture of those numbers.',
-      );
+      return {
+        refusal: refusal(
+          built.errorCode ?? 'cli.export-exception',
+          `render_preview overlay '${overlay}': ${built.error}`,
+          'Run inspect({ of: \'continuity\' | \'curvature\' }) on the same source; the overlay is a picture of those numbers.',
+        ),
+      };
     }
     renderScriptPath = built.scriptPath;
   }
+  return { renderScriptPath };
+}
 
-  // Provision a render surface (static player preferred; see playerServer.ts).
-  let base: ResolvedRenderBase;
+// Provision a render surface (static player preferred; see playerServer.ts).
+async function resolveRenderBase(
+  input: RenderPreviewInput,
+  deps: RenderPreviewDeps,
+): Promise<{ base: ResolvedRenderBase } | { refusal: RenderPreviewOutput }> {
   try {
-    base = await deps.resolveBaseUrl(input.base_url);
+    return { base: await deps.resolveBaseUrl(input.base_url) };
   } catch (e) {
-    return refusal(
-      'cli.export-exception',
-      `render_preview: ${e instanceof Error ? e.message : String(e)}`,
-      'Run `npm run build:player` (in-repo) or reinstall the kernelcad package so dist/headless-player exists; alternatively start `npm run dev` or pass base_url.',
-    );
+    return {
+      refusal: refusal(
+        'cli.export-exception',
+        `render_preview: ${e instanceof Error ? e.message : String(e)}`,
+        'Run `npm run build:player` (in-repo) or reinstall the kernelcad package so dist/headless-player exists; alternatively start `npm run dev` or pass base_url.',
+      ),
+    };
   }
+}
 
+async function runHeadlessRenderPhase(
+  input: RenderPreviewInput,
+  deps: RenderPreviewDeps,
+  base: ResolvedRenderBase,
+  opts: {
+    renderScriptPath: string;
+    views: RenderView[];
+    pose?: { az: number; el: number };
+    objectFilter: ReturnType<typeof buildObjectFilter>;
+    width: number;
+    height: number;
+    section?: { axis: 'x' | 'y' | 'z'; position: number; positionRaw: string; flip: boolean };
+    explode?: ParsedExplode;
+  },
+): Promise<{ result: HeadlessRenderResult; renderSource: ResolvedRenderBase['source'] } | { refusal: RenderPreviewOutput }> {
   let result: HeadlessRenderResult;
   try {
     result = await deps.render({
-      scriptPath: renderScriptPath,
-      viewportWidth: width,
-      viewportHeight: height,
-      views,
-      ...(pose !== undefined ? { poses: [`${pose.az},${pose.el}`] } : {}),
+      scriptPath: opts.renderScriptPath,
+      viewportWidth: opts.width,
+      viewportHeight: opts.height,
+      views: opts.views,
+      ...(opts.pose !== undefined ? { poses: [`${opts.pose.az},${opts.pose.el}`] } : {}),
       baseUrl: base.baseUrl,
       hideReferenceImages: false,
       ...(input.environment !== undefined ? { environment: input.environment } : {}),
       ...(input.no_watermark === true ? { noWatermark: true } : {}),
-      ...(objectFilter !== undefined ? { objectFilter } : {}),
-      ...(section !== undefined ? { section } : {}),
-      ...(explode !== undefined ? { explode } : {}),
+      ...(opts.objectFilter !== undefined ? { objectFilter: opts.objectFilter } : {}),
+      ...(opts.section !== undefined ? { section: opts.section } : {}),
+      ...(opts.explode !== undefined ? { explode: opts.explode } : {}),
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     const isModelFault = /failed to compile/.test(message);
-    return refusal(
-      isModelFault ? 'cli.script-exception' : 'cli.export-exception',
-      `render_preview: ${message}`,
-      isModelFault
-        ? 'Run evaluate_script on the same source to get per-feature diagnostics, fix the script, then re-render.'
-        : 'Ensure playwright chromium is installed (npx playwright install chromium) and retry; pass base_url to use a running studio dev server instead.',
-    );
+    return {
+      refusal: refusal(
+        isModelFault ? 'cli.script-exception' : 'cli.export-exception',
+        `render_preview: ${message}`,
+        isModelFault
+          ? 'Run evaluate_script on the same source to get per-feature diagnostics, fix the script, then re-render.'
+          : 'Ensure playwright chromium is installed (npx playwright install chromium) and retry; pass base_url to use a running studio dev server instead.',
+      ),
+    };
   } finally {
     await base.close().catch(() => undefined);
   }
+  return { result, renderSource: base.source };
+}
 
-  // Write tiles; broken mechanisms get the same RGB watermark as the CLI.
-  const stamp = async (buf: Buffer): Promise<Buffer> =>
-    probe.mechanism === 'broken' ? watermarkBrokenMechanism(buf, probe.failures) : buf;
+// Write tiles; broken mechanisms get the same RGB watermark as the CLI.
+async function writePreviewImages(
+  outDir: string,
+  views: RenderView[],
+  result: HeadlessRenderResult,
+  stamp: (buf: Buffer) => Promise<Buffer>,
+): Promise<{ images: RenderPreviewImage[] } | { refusal: RenderPreviewOutput }> {
   const images: RenderPreviewImage[] = [];
   try {
     for (const view of views) {
@@ -589,12 +628,65 @@ async function renderPreviewWork(args: {
       images.push({ name: `pose ${poseKey}`, path, description: poseDescription(Number(az), Number(el)) });
     }
   } catch (e) {
-    return refusal(
-      'cli.file-write',
-      `render_preview: could not write PNGs: ${e instanceof Error ? e.message : String(e)}`,
-      'Check that out_dir is writable, or omit it to use a temp session directory.',
-    );
+    return {
+      refusal: refusal(
+        'cli.file-write',
+        `render_preview: could not write PNGs: ${e instanceof Error ? e.message : String(e)}`,
+        'Check that out_dir is writable, or omit it to use a temp session directory.',
+      ),
+    };
   }
+  return { images };
+}
+
+async function renderPreviewWork(args: {
+  input: RenderPreviewInput;
+  deps: RenderPreviewDeps;
+  scriptPath: string;
+  outDir: string;
+  views: RenderView[];
+  pose?: { az: number; el: number };
+  objectFilter: ReturnType<typeof buildObjectFilter>;
+  width: number;
+  height: number;
+  section?: { axis: 'x' | 'y' | 'z'; position: number; positionRaw: string; flip: boolean };
+  explode?: ParsedExplode;
+  overlay?: SurfaceQualityOverlay;
+}): Promise<RenderPreviewOutput> {
+  const { input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section, explode, overlay } = args;
+  const t0 = Date.now();
+
+  const explodeRefusal = await validateExplodeAssembly(explode, scriptPath);
+  if (explodeRefusal !== undefined) return explodeRefusal;
+
+  const gate = await probeMechanismGate(input, deps, scriptPath);
+  if ('refusal' in gate) return gate.refusal;
+  const { probe, failureCodes } = gate;
+
+  const overlayPhase = await buildOverlayScript(input, overlay, scriptPath, outDir);
+  if ('refusal' in overlayPhase) return overlayPhase.refusal;
+
+  const basePhase = await resolveRenderBase(input, deps);
+  if ('refusal' in basePhase) return basePhase.refusal;
+
+  const renderPhase = await runHeadlessRenderPhase(input, deps, basePhase.base, {
+    renderScriptPath: overlayPhase.renderScriptPath,
+    views,
+    pose,
+    objectFilter,
+    width,
+    height,
+    section,
+    explode,
+  });
+  if ('refusal' in renderPhase) return renderPhase.refusal;
+  const { result, renderSource } = renderPhase;
+
+  const stamp = async (buf: Buffer): Promise<Buffer> =>
+    probe.mechanism === 'broken' ? watermarkBrokenMechanism(buf, probe.failures) : buf;
+  const imagePhase = await writePreviewImages(outDir, views, result, stamp);
+  if ('refusal' in imagePhase) return imagePhase.refusal;
+  const { images } = imagePhase;
 
   return {
     ok: true,
@@ -603,7 +695,7 @@ async function renderPreviewWork(args: {
     bounds: result.bounds,
     mechanism: probe.mechanism,
     ...(probe.mechanism === 'broken' ? { mechanism_failure_codes: failureCodes } : {}),
-    render_source: base.source,
+    render_source: renderSource,
     render_ms: Date.now() - t0,
     diagnostics: probe.mechanism === 'broken' ? [...probe.failures] : [],
   };
