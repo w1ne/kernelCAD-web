@@ -199,12 +199,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/limitFixSuggest.ts",
-    "symbol": "Async function 'suggestLimitFix'",
-    "value": 23
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/matePhysicalRealization.ts",
     "symbol": "Function 'measureBearingCoplanarity'",
     "value": 22
