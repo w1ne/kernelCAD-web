@@ -365,36 +365,38 @@ async function handleExport(request: ExportRequest): Promise<void> {
   }
 }
 
+async function runWorkerRequest(rawData: unknown): Promise<void> {
+  let request: WorkerRequest;
+  try {
+    request = WorkerRequestSchema.parse(rawData);
+  } catch (err: unknown) {
+    const id = getString(rawData, 'id') ?? 'unknown';
+    postResponse({ type: 'ERROR', id, error: `Protocol Violation: ${String(err)}` });
+    return;
+  }
+
+  const { type, id } = request;
+
+  if (type === 'INIT') {
+    await handleInit(id);
+    return;
+  }
+
+  if (type === 'EXECUTE') {
+    await handleExecute(request);
+    return;
+  }
+
+  if (type === 'EXPORT_STEP' || type === 'EXPORT_STL') {
+    await handleExport(request);
+  }
+}
+
 self.onmessage = (e: MessageEvent<unknown>) => {
   const rawData = e.data;
 
   // Queue all incoming messages to process them sequentially
-  executionLock = executionLock.then(async () => {
-    let request: WorkerRequest;
-    try {
-      request = WorkerRequestSchema.parse(rawData);
-    } catch (err: unknown) {
-      const id = getString(rawData, 'id') ?? 'unknown';
-      postResponse({ type: 'ERROR', id, error: `Protocol Violation: ${String(err)}` });
-      return;
-    }
-
-    const { type, id } = request;
-
-    if (type === 'INIT') {
-      await handleInit(id);
-      return;
-    }
-
-    if (type === 'EXECUTE') {
-      await handleExecute(request);
-      return;
-    }
-
-    if (type === 'EXPORT_STEP' || type === 'EXPORT_STL') {
-      await handleExport(request);
-    }
-  }).catch((err) => {
+  executionLock = executionLock.then(() => runWorkerRequest(rawData)).catch((err) => {
     console.error('Worker: Unhandled lock error:', err);
   });
 };
