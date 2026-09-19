@@ -221,71 +221,98 @@ export function stitchCracks(mesh: EditableMesh, tol = 0.05, maxPasses = 100): n
     const splitTris = new Set<number>();
     let splits = 0;
     for (const e of cracks.values()) {
-      const { u, v } = e;
-      const ax = V[u * 3], ay = V[u * 3 + 1], az = V[u * 3 + 2];
-      const bx = V[v * 3], by = V[v * 3 + 1], bz = V[v * 3 + 2];
-      let best = -1;
-      let bestD = tol;
-      for (const w of pool) {
-        if (w === u || w === v) continue;
-        const d = distPointSegInterior(V[w * 3], V[w * 3 + 1], V[w * 3 + 2], ax, ay, az, bx, by, bz);
-        if (d < bestD) {
-          bestD = d;
-          best = w;
-        }
-      }
+      const best = findBestSplitVertex(e, pool, V, tol);
       if (best < 0) continue;
-      const tri = e.tris.find(t =>
-        !splitTris.has(t) &&
-        mesh.triangles[t * 3] !== best &&
-        mesh.triangles[t * 3 + 1] !== best &&
-        mesh.triangles[t * 3 + 2] !== best,
-      );
-      if (tri === undefined) continue;
-      const i0 = mesh.triangles[tri * 3];
-      const i1 = mesh.triangles[tri * 3 + 1];
-      const i2 = mesh.triangles[tri * 3 + 2];
-      const x = [i0, i1, i2].find(c => c !== u && c !== v);
-      if (x === undefined) continue;
-      // Preserve winding: the original triangle is a rotation of (u,v,x) or (v,u,x).
-      const isUV = (i0 === u && i1 === v) || (i1 === u && i2 === v) || (i2 === u && i0 === v);
-      if (isUV) {
-        mesh.triangles[tri * 3] = u;
-        mesh.triangles[tri * 3 + 1] = best;
-        mesh.triangles[tri * 3 + 2] = x;
-        mesh.triangles.push(best, v, x);
-      } else {
-        mesh.triangles[tri * 3] = v;
-        mesh.triangles[tri * 3 + 1] = best;
-        mesh.triangles[tri * 3 + 2] = x;
-        mesh.triangles.push(best, u, x);
-      }
-      splitTris.add(tri);
-      splits++;
+      if (splitTriangleAtCrackVertex(mesh, e, best, splitTris)) splits++;
     }
     total += splits;
     if (splits === 0) {
       // No vertex split applied. If a degenerate flap still owns a crack
       // edge, give the next pass a chance to cull it (pass 0 never removes
       // flaps); otherwise the mesh has reached its fixpoint.
-      const remaining = collectCrackEdges(mesh.triangles);
-      let anyFlap = false;
-      for (const e of remaining.values()) {
-        for (const t of e.tris) {
-          const a = mesh.triangles[t * 3];
-          const b = mesh.triangles[t * 3 + 1];
-          const c = mesh.triangles[t * 3 + 2];
-          if (triMinHeight(mesh.vertices, a, b, c) < tol) {
-            anyFlap = true;
-            break;
-          }
-        }
-        if (anyFlap) break;
-      }
-      if (!anyFlap) return total;
+      if (!anyDegenerateFlapOnCrackEdges(mesh, tol)) return total;
     }
   }
   return total;
+}
+
+/** Closest crack vertex strictly inside the (u,v) edge within `tol`, or -1. */
+function findBestSplitVertex(
+  e: CrackEdge,
+  pool: number[],
+  V: number[],
+  tol: number,
+): number {
+  const { u, v } = e;
+  const ax = V[u * 3], ay = V[u * 3 + 1], az = V[u * 3 + 2];
+  const bx = V[v * 3], by = V[v * 3 + 1], bz = V[v * 3 + 2];
+  let best = -1;
+  let bestD = tol;
+  for (const w of pool) {
+    if (w === u || w === v) continue;
+    const d = distPointSegInterior(V[w * 3], V[w * 3 + 1], V[w * 3 + 2], ax, ay, az, bx, by, bz);
+    if (d < bestD) {
+      bestD = d;
+      best = w;
+    }
+  }
+  return best;
+}
+
+/** Split one crack-owning triangle at `best` (winding preserved). */
+function splitTriangleAtCrackVertex(
+  mesh: EditableMesh,
+  e: CrackEdge,
+  best: number,
+  splitTris: Set<number>,
+): boolean {
+  const { u, v } = e;
+  const tri = e.tris.find(t =>
+    !splitTris.has(t) &&
+    mesh.triangles[t * 3] !== best &&
+    mesh.triangles[t * 3 + 1] !== best &&
+    mesh.triangles[t * 3 + 2] !== best,
+  );
+  if (tri === undefined) return false;
+  const i0 = mesh.triangles[tri * 3];
+  const i1 = mesh.triangles[tri * 3 + 1];
+  const i2 = mesh.triangles[tri * 3 + 2];
+  const x = [i0, i1, i2].find(c => c !== u && c !== v);
+  if (x === undefined) return false;
+  // Preserve winding: the original triangle is a rotation of (u,v,x) or (v,u,x).
+  const isUV = (i0 === u && i1 === v) || (i1 === u && i2 === v) || (i2 === u && i0 === v);
+  if (isUV) {
+    mesh.triangles[tri * 3] = u;
+    mesh.triangles[tri * 3 + 1] = best;
+    mesh.triangles[tri * 3 + 2] = x;
+    mesh.triangles.push(best, v, x);
+  } else {
+    mesh.triangles[tri * 3] = v;
+    mesh.triangles[tri * 3 + 1] = best;
+    mesh.triangles[tri * 3 + 2] = x;
+    mesh.triangles.push(best, u, x);
+  }
+  splitTris.add(tri);
+  return true;
+}
+
+/** True when any crack edge is owned by a degenerate (min-height < tol) flap. */
+function anyDegenerateFlapOnCrackEdges(mesh: EditableMesh, tol: number): boolean {
+  const remaining = collectCrackEdges(mesh.triangles);
+  let anyFlap = false;
+  for (const e of remaining.values()) {
+    for (const t of e.tris) {
+      const a = mesh.triangles[t * 3];
+      const b = mesh.triangles[t * 3 + 1];
+      const c = mesh.triangles[t * 3 + 2];
+      if (triMinHeight(mesh.vertices, a, b, c) < tol) {
+        anyFlap = true;
+        break;
+      }
+    }
+    if (anyFlap) break;
+  }
+  return anyFlap;
 }
 
 /** Remove triangles with a repeated vertex index (welding artifacts). */

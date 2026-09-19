@@ -235,12 +235,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/meshHeal.ts",
-    "symbol": "Function 'stitchCracks'",
-    "value": 29
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/meshing.ts",
     "symbol": "Function 'getWire'",
     "value": 22
@@ -331,12 +325,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/featureMeshing.ts",
-    "symbol": "Function 'collectTendonMeshes'",
-    "value": 29
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/imageDimensions.ts",
     "symbol": "Function 'imageDimensions'",
     "value": 23
@@ -352,12 +340,6 @@
     "file": "src/modeling/capture/virtualFeatureRecords.ts",
     "symbol": "Function 'buildReferenceImageFeatureSpec'",
     "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/joints/clevis.ts",
-    "symbol": "Function 'withDefaults'",
-    "value": 29
   },
   {
     "rule": "complexity",
@@ -397,12 +379,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseReachability.ts",
-    "symbol": "Async function 'assessPhysicalUseCaseReachability'",
-    "value": 28
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseStatics.ts",
     "symbol": "Async function 'resolveActuators'",
     "value": 24
@@ -418,12 +394,6 @@
     "file": "src/modeling/mates/validator.ts",
     "symbol": "Async function 'validateAssemblyWithMates'",
     "value": 23
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/validator.ts",
-    "symbol": "Function 'validateAssembly'",
-    "value": 28
   },
   {
     "rule": "complexity",

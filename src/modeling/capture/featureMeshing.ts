@@ -472,23 +472,26 @@ function buildHelixTubeMesh(
  *     cylinder; capture validation already enforces same-body-endpoints
  *     rejection but FK could still collapse the endpoints under poses).
  */
-function collectTendonMeshes(
-  sceneShape: unknown,
-  sceneFeatureId: FeatureId,
-  assemblies: ReadonlyMap<string, unknown> | undefined,
-): FeatureMesh[] {
-  if (assemblies === undefined) return [];
-  const scene = sceneShape as {
-    assemblyName?: string;
-    parts?: readonly { readonly name: string; readonly worldTransform: { toMat4(): readonly number[] } }[];
-  };
-  const assemblyName = scene.assemblyName;
-  if (typeof assemblyName !== 'string' || assemblyName.length === 0) return [];
-  const arm = assemblies.get(assemblyName);
-  if (!isAssemblyLikeForTendons(arm)) return [];
-  const tendons = arm.__tendons();
-  if (tendons.length === 0) return [];
+interface TendonSceneShape {
+  assemblyName?: string;
+  parts?: readonly {
+    readonly name: string;
+    readonly worldTransform: { toMat4(): readonly number[] };
+  }[];
+}
 
+type TendonLike = ReturnType<AssemblyLikeForTendons['__tendons']>[number];
+
+interface TendonLookups {
+  originByRef: Map<string, Vec3>;
+  wrapOriginByRef: Map<string, Vec3>;
+  transformByPart: Map<string, readonly number[]>;
+}
+
+function collectTendonLookups(
+  arm: AssemblyLikeForTendons,
+  scene: TendonSceneShape,
+): TendonLookups {
   // (partName.connectorName) → vec3 origin lookup.
   const originByRef = new Map<string, Vec3>();
   // (partName, wrapName) → part-local wrap origin lookup (P11 Slice 3).
@@ -510,49 +513,85 @@ function collectTendonMeshes(
   for (const part of scene.parts ?? []) {
     transformByPart.set(part.name, part.worldTransform.toMat4());
   }
+  return { originByRef, wrapOriginByRef, transformByPart };
+}
+
+interface TendonPath {
+  fromWorld: Vec3;
+  toWorld: Vec3;
+  centerline: Vec3[];
+}
+
+function resolveTendonPath(
+  t: TendonLike,
+  lookups: TendonLookups,
+): TendonPath | undefined {
+  const { originByRef, wrapOriginByRef, transformByPart } = lookups;
+  const fromOrigin = originByRef.get(t.from);
+  const toOrigin = originByRef.get(t.to);
+  if (fromOrigin === undefined || toOrigin === undefined) {
+    console.warn(
+      `meshFeaturesPerFeature: tendon '${t.name}' has a topology-origin connector; visual cylinder skipped (vec3 origins only in v1).`,
+    );
+    return undefined;
+  }
+  const [fromPartName] = splitConnectorRef(t.from);
+  const [toPartName] = splitConnectorRef(t.to);
+  if (fromPartName === undefined || toPartName === undefined) return undefined;
+  const fromT = transformByPart.get(fromPartName);
+  const toT = transformByPart.get(toPartName);
+  if (fromT === undefined || toT === undefined) return undefined;
+  const fromWorld = applyMat4ToPoint(fromT, fromOrigin);
+  const toWorld = applyMat4ToPoint(toT, toOrigin);
+  // P11 Slice 3: routed centerline — from-anchor, each wrap-geom origin
+  // in world coords (skip ones whose part/origin can't be resolved), then
+  // the to-anchor. With no wrapGeoms this is just [from, to], so straight
+  // tendons render identically to the pre-Slice-3 path.
+  const centerline: Vec3[] = [fromWorld];
+  for (const w of t.wrapGeoms ?? []) {
+    const wLocal = wrapOriginByRef.get(`${w.partName}.${w.wrapName}`);
+    const wT = transformByPart.get(w.partName);
+    if (wLocal !== undefined && wT !== undefined) {
+      centerline.push(applyMat4ToPoint(wT, wLocal));
+    }
+  }
+  centerline.push(toWorld);
+  return { fromWorld, toWorld, centerline };
+}
+
+function buildTendonFace(t: TendonLike, path: TendonPath): FaceGeometry | null {
+  // P10: coil tendons sweep an 8-facet tube along the helix polyline;
+  // line tendons fall through to the existing PR #368 cylinder path.
+  const style = t.visualStyle ?? 'line';
+  if (style === 'coil') {
+    const turns = t.coilTurns ?? 10;
+    const coilDiameter = t.coilDiameterMm ?? 7;
+    return buildHelixTubeMesh(path.centerline, turns, coilDiameter, t.visualDiameterMm);
+  }
+  return buildCylinderFaceWorld(path.fromWorld, path.toWorld, t.visualDiameterMm);
+}
+
+function collectTendonMeshes(
+  sceneShape: unknown,
+  sceneFeatureId: FeatureId,
+  assemblies: ReadonlyMap<string, unknown> | undefined,
+): FeatureMesh[] {
+  if (assemblies === undefined) return [];
+  const scene = sceneShape as TendonSceneShape;
+  const assemblyName = scene.assemblyName;
+  if (typeof assemblyName !== 'string' || assemblyName.length === 0) return [];
+  const arm = assemblies.get(assemblyName);
+  if (!isAssemblyLikeForTendons(arm)) return [];
+  const tendons = arm.__tendons();
+  if (tendons.length === 0) return [];
+
+  const lookups = collectTendonLookups(arm, scene);
 
   const meshes: FeatureMesh[] = [];
   for (const t of tendons) {
-    const fromOrigin = originByRef.get(t.from);
-    const toOrigin = originByRef.get(t.to);
-    if (fromOrigin === undefined || toOrigin === undefined) {
-      console.warn(
-        `meshFeaturesPerFeature: tendon '${t.name}' has a topology-origin connector; visual cylinder skipped (vec3 origins only in v1).`,
-      );
-      continue;
-    }
-    const [fromPartName] = splitConnectorRef(t.from);
-    const [toPartName] = splitConnectorRef(t.to);
-    if (fromPartName === undefined || toPartName === undefined) continue;
-    const fromT = transformByPart.get(fromPartName);
-    const toT = transformByPart.get(toPartName);
-    if (fromT === undefined || toT === undefined) continue;
-    const fromWorld = applyMat4ToPoint(fromT, fromOrigin);
-    const toWorld = applyMat4ToPoint(toT, toOrigin);
-    // P11 Slice 3: routed centerline — from-anchor, each wrap-geom origin
-    // in world coords (skip ones whose part/origin can't be resolved), then
-    // the to-anchor. With no wrapGeoms this is just [from, to], so straight
-    // tendons render identically to the pre-Slice-3 path.
-    const centerline: Vec3[] = [fromWorld];
-    for (const w of t.wrapGeoms ?? []) {
-      const wLocal = wrapOriginByRef.get(`${w.partName}.${w.wrapName}`);
-      const wT = transformByPart.get(w.partName);
-      if (wLocal !== undefined && wT !== undefined) {
-        centerline.push(applyMat4ToPoint(wT, wLocal));
-      }
-    }
-    centerline.push(toWorld);
-    // P10: coil tendons sweep an 8-facet tube along the helix polyline;
-    // line tendons fall through to the existing PR #368 cylinder path.
-    const style = t.visualStyle ?? 'line';
-    let face: FaceGeometry | null;
-    if (style === 'coil') {
-      const turns = t.coilTurns ?? 10;
-      const coilDiameter = t.coilDiameterMm ?? 7;
-      face = buildHelixTubeMesh(centerline, turns, coilDiameter, t.visualDiameterMm);
-    } else {
-      face = buildCylinderFaceWorld(fromWorld, toWorld, t.visualDiameterMm);
-    }
+    const path = resolveTendonPath(t, lookups);
+    if (path === undefined) continue;
+    const face = buildTendonFace(t, path);
     if (face === null) continue;
     const tendonId = `${sceneFeatureId}__tendon__${t.name}`;
     // Dark metallic PBR — matches Studio's `TendonRenderer.tsx`.
