@@ -235,12 +235,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/runtime/mechanismTruth.ts",
-    "symbol": "Function 'checkOrphanParts'",
-    "value": 23
-  },
-  {
-    "rule": "complexity",
     "file": "src/server/middleware/paramsEndpoint.ts",
     "symbol": "Async function 'paramsHandler'",
     "value": 24
