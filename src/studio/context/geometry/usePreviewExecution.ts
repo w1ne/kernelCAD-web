@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { GeometryEngine, type GeometryResult } from '../../../shared/worker/geometryEngine';
 import { parseCode } from '../../../shared/codeGeneration/ast';
+
+/** Stable empty list for previews that are ineligible this render. */
+const EMPTY_GEOMETRIES: GeometryResult[] = [];
 
 /**
  * Owns the live-preview execution loop: a debounced re-run of `code` plus a
@@ -15,30 +18,23 @@ export function usePreviewExecution(
     engine: GeometryEngine,
     studioScript: string | null,
 ) {
-    const [previewCode, setPreviewCode] = useState<string | null>(null);
+    const [previewCode, setPreviewCodeState] = useState<string | null>(null);
     const [previewGeometries, setPreviewGeometries] = useState<GeometryResult[]>([]);
     const [stalePreviewResponsesDropped, setStalePreviewResponsesDropped] = useState(0);
     const previewRevisionRef = useRef(0);
 
+    // Dropping the preview (a falsy `previewCode`) is a caller event, so the
+    // reset happens here instead of inside the effect body. It leaves the
+    // same empty preview list the effect-based reset did, and it also runs
+    // before the effect can schedule anything for the new value.
+    const setPreviewCode = useCallback((next: string | null) => {
+        if (!next) setPreviewGeometries([]);
+        setPreviewCodeState(next);
+    }, []);
+
     // Preview Execution Loop
     useEffect(() => {
-        if (studioScript) {
-            // Synchronous setState, matching the original inline effect
-            // byte-for-byte (zero-behavior-change outranks the lint rule
-            // here — this file is only linted as a "hook" because it's
-            // named `use*`; the identical code was invisible to
-            // react-hooks/set-state-in-effect inside the original
-            // GeometryProvider). The no-previewCode branch is pinned by
-            // `GeometryContext.test.tsx` ("clears previewGeometries when
-            // preview becomes ineligible (previewCode cleared)").
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setPreviewGeometries([]);
-            return;
-        }
-        if (!isReady || !previewCode) {
-            setPreviewGeometries([]);
-            return;
-        }
+        if (studioScript || !isReady || !previewCode) return;
 
         const runPreview = async () => {
             const revision = ++previewRevisionRef.current;
@@ -68,5 +64,17 @@ export function usePreviewExecution(
         return () => clearTimeout(timer);
     }, [code, previewCode, isReady, engine, studioScript]);
 
-    return { setPreviewCode, previewGeometries, setPreviewGeometries, stalePreviewResponsesDropped };
+    // `studioScript` / `!isReady` make previews ineligible without going
+    // through `setPreviewCode`, so mask any stored list at render time. In
+    // the reachable flows the stored list is already empty there (no preview
+    // can have run while ineligible), so this only replaces the effect's
+    // reset with a derived value.
+    const visiblePreviewGeometries = studioScript || !isReady ? EMPTY_GEOMETRIES : previewGeometries;
+
+    return {
+        setPreviewCode,
+        previewGeometries: visiblePreviewGeometries,
+        setPreviewGeometries,
+        stalePreviewResponsesDropped,
+    };
 }
