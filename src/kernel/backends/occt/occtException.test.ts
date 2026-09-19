@@ -14,6 +14,9 @@ import {
   isOutOfMemoryMessage,
   isRawOcctThrow,
   OUT_OF_MEMORY_MARKER,
+  isOcctWasmPoisoned,
+  isWasmPoisonMessage,
+  WASM_POISON_MARKER,
 } from './occtException';
 
 describe('isOcctOutOfMemory', () => {
@@ -96,5 +99,39 @@ describe('isOutOfMemoryMessage', () => {
     ).toBe(false);
     expect(isOutOfMemoryMessage(null)).toBe(false);
     expect(isOutOfMemoryMessage(24)).toBe(false);
+  });
+});
+
+describe('isOcctWasmPoisoned', () => {
+  it('recognizes RuntimeError memory access out of bounds', () => {
+    const err = new Error('memory access out of bounds');
+    err.name = 'RuntimeError';
+    expect(isOcctWasmPoisoned(err)).toBe(true);
+  });
+
+  it('recognizes RuntimeError Aborted()', () => {
+    const err = new Error('Aborted()');
+    err.name = 'RuntimeError';
+    expect(isOcctWasmPoisoned(err)).toBe(true);
+  });
+
+  it('recognizes worker-wrapped Error messages', () => {
+    expect(isOcctWasmPoisoned(new Error('RuntimeError: memory access out of bounds'))).toBe(true);
+  });
+
+  it('recognizes WebAssembly.RuntimeError when available', () => {
+    if (typeof WebAssembly === 'undefined' || typeof WebAssembly.RuntimeError !== 'function') return;
+    expect(isOcctWasmPoisoned(new WebAssembly.RuntimeError('memory access out of bounds'))).toBe(true);
+  });
+
+  it('does not treat ordinary Errors or OOM pointers as poison', () => {
+    expect(isOcctWasmPoisoned(new Error('boolean failed'))).toBe(false);
+    expect(isOcctWasmPoisoned(24)).toBe(false);
+    expect(isOcctWasmPoisoned(OUT_OF_MEMORY_MARKER)).toBe(false);
+  });
+
+  it('recognizes already-wrapped poison messages', () => {
+    expect(isWasmPoisonMessage(new Error(WASM_POISON_MARKER + ': still dead'))).toBe(true);
+    expect(isOcctWasmPoisoned(new Error(WASM_POISON_MARKER + ': still dead'))).toBe(true);
   });
 });

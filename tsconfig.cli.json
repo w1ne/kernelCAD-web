@@ -21,7 +21,7 @@
               "src/agent/render/**/*",
               "src/authoring/validation/**/*", "src/authoring/runtime/**/*",
               "src/kernel/backends/**/*",
-              "src/shared/diagnostics/**/*",
+              "src/shared/diagnostics/**/*", "src/shared/occt/**/*",
               "src/shared/worker/geometryHelpers.ts", "src/shared/worker/safeSketch.ts",
               "src/shared/worker/userGlobals.ts", "src/shared/worker/withTemporaryGlobals.ts",
               "src/shared/worker/workerTypes.ts",

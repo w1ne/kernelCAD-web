@@ -95,3 +95,11 @@ export function isOutOfMemoryMessage(e: unknown): boolean {
   const message = (e as { message?: unknown }).message;
   return typeof message === 'string' && message.includes(OUT_OF_MEMORY_MARKER);
 }
+
+// Poison detection lives in shared so GeometryEngine can use it without
+// importing kernel (layering). Re-export for kernel/Node callers.
+export {
+  WASM_POISON_MARKER,
+  isOcctWasmPoisoned,
+  isWasmPoisonMessage,
+} from '../../../shared/occt/wasmPoison';
