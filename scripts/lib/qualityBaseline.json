@@ -264,12 +264,6 @@
     "value": 22
   },
   {
-    "rule": "complexity",
-    "file": "src/shared/parts/connectorManifestSchema.ts",
-    "symbol": "Function 'validateConnectorManifest'",
-    "value": 23
-  },
-  {
     "rule": "max-lines-per-function",
     "file": "src/agent/vision/index.ts",
     "symbol": "Async function 'traceFromImage'",
