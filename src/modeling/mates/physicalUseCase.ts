@@ -15,8 +15,6 @@ import {
   reviewUseCaseStableParts,
 } from './physicalUseCasePhases';
 import {
-  DEFAULT_FORCE_RESIDUAL_N,
-  DEFAULT_TORQUE_RESIDUAL_NMM,
   reviewPhysicalUseCaseStatics,
   type PhysicalUseCaseStaticActuatorTorqueEvidence,
   type PhysicalUseCaseStaticCertificate,
@@ -30,10 +28,17 @@ import {
   type JointReactionCapacityEvidence,
 } from './physicalUseCaseJointCapacity';
 import {
-  DEFAULT_MIN_JOINT_SAFETY_FACTOR,
   reviewClevisJointStructure,
   type ClevisJointStructureReview,
 } from './clevisJointStructure';
+import {
+  copyUseCaseActuatorLimit,
+  copyUseCaseContact,
+  copyUseCaseLoad,
+  validateUseCaseContactFrames,
+  validateUseCaseCriteria,
+  validateUseCaseName,
+} from './physicalUseCaseRecordPhases';
 
 export interface PhysicalUseCaseLoad {
   readonly part: string;
@@ -273,60 +278,15 @@ export function makePhysicalUseCaseRecord(
   name: string,
   opts: PhysicalUseCaseOptions,
 ): PhysicalUseCaseRecord {
-  if (typeof name !== 'string' || name.trim() === '') {
-    throw new Error('assembly.physicalUseCase: name must be a non-empty string.');
-  }
-  for (const contact of opts.contacts ?? []) {
-    if (
-      contact.normalFrame !== undefined &&
-      contact.normalFrame !== 'world' &&
-      contact.normalFrame !== 'a' &&
-      contact.normalFrame !== 'b'
-    ) {
-      throw new Error("assembly.physicalUseCase: contact.normalFrame must be 'world', 'a', or 'b'.");
-    }
-  }
-  for (const [field, value, maximum] of [
-    ['maxForceResidualN', opts.criteria?.maxForceResidualN, DEFAULT_FORCE_RESIDUAL_N],
-    ['maxTorqueResidualNmm', opts.criteria?.maxTorqueResidualNmm, DEFAULT_TORQUE_RESIDUAL_NMM],
-  ] as const) {
-    if (value !== undefined && (!Number.isFinite(value) || value <= 0)) {
-      throw new Error(`assembly.physicalUseCase: criteria.${field} must be a positive finite number.`);
-    }
-    if (value !== undefined && value > maximum) {
-      throw new Error(`assembly.physicalUseCase: criteria.${field} cannot exceed ${maximum}.`);
-    }
-  }
-  const minJointSafetyFactor = opts.criteria?.minJointSafetyFactor;
-  if (
-    minJointSafetyFactor !== undefined &&
-    (!Number.isFinite(minJointSafetyFactor) || minJointSafetyFactor < DEFAULT_MIN_JOINT_SAFETY_FACTOR)
-  ) {
-    throw new Error(
-      `assembly.physicalUseCase: criteria.minJointSafetyFactor must be finite and at least ${DEFAULT_MIN_JOINT_SAFETY_FACTOR}.`,
-    );
-  }
+  validateUseCaseName(name);
+  validateUseCaseContactFrames(opts);
+  validateUseCaseCriteria(opts.criteria);
   return {
     name,
     stableParts: [...(opts.stableParts ?? [])],
-    loads: (opts.loads ?? []).map((load) => ({
-      part: load.part,
-      ...(load.at === undefined ? {} : { at: load.at }),
-      ...(load.force === undefined ? {} : { force: copyVec3(load.force) }),
-      ...(load.torque === undefined ? {} : { torque: copyVec3(load.torque) }),
-    })),
-    contacts: (opts.contacts ?? []).map((contact) => ({
-      a: contact.a,
-      b: contact.b,
-      normal: copyVec3(contact.normal),
-      ...(contact.normalFrame === undefined ? {} : { normalFrame: contact.normalFrame }),
-      friction: contact.friction,
-      ...(contact.normalForceN === undefined ? {} : { normalForceN: contact.normalForceN }),
-    })),
-    actuatorLimits: (opts.actuatorLimits ?? []).map((limit) => ({
-      mate: limit.mate,
-      maxTorqueNmm: limit.maxTorqueNmm,
-    })),
+    loads: (opts.loads ?? []).map((load) => copyUseCaseLoad(load)),
+    contacts: (opts.contacts ?? []).map((contact) => copyUseCaseContact(contact)),
+    actuatorLimits: (opts.actuatorLimits ?? []).map((limit) => copyUseCaseActuatorLimit(limit)),
     ...(opts.criteria === undefined ? {} : { criteria: { ...opts.criteria } }),
   };
 }
@@ -624,10 +584,6 @@ async function reviewCertifiedJointLoads(
     reactionCertificates: [...reactions.certificates],
     structuralCertificates,
   };
-}
-
-function copyVec3(v: readonly [number, number, number]): [number, number, number] {
-  return [v[0], v[1], v[2]];
 }
 
 function unreachableContactKey(useCaseName: string | undefined, contactA: string, contactB: string): string {

@@ -61,12 +61,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/edits/removeFeature.ts",
-    "symbol": "Function 'lineContainsTopLevelReturn'",
-    "value": 27
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/edits/sourceEditUtils.ts",
     "symbol": "Function 'findLastTopLevelReturnLine'",
     "value": 26
@@ -118,12 +112,6 @@
     "file": "src/agent/mcp/tools/inspectSection.ts",
     "symbol": "Async function 'inspectSectionTool'",
     "value": 25
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/tools/listFaceLabels.ts",
-    "symbol": "Async function 'listFaceLabelsTool'",
-    "value": 27
   },
   {
     "rule": "complexity",
@@ -313,12 +301,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCase.ts",
-    "symbol": "Function 'makePhysicalUseCaseRecord'",
-    "value": 26
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseJointReactions.ts",
     "symbol": "Function 'expandCertificatePoses'",
     "value": 21
@@ -361,21 +343,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/runtime/jointMeshContinuity.ts",
-    "symbol": "Function 'checkJointMeshContinuity'",
-    "value": 26
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/runtime/mechanismTruth.ts",
     "symbol": "Function 'checkOrphanParts'",
     "value": 23
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/validation/holeValidation.ts",
-    "symbol": "Function 'validateCommonHoleFields'",
-    "value": 26
   },
   {
     "rule": "complexity",
@@ -490,11 +460,5 @@
     "file": "src/modeling/capture/sketch.ts",
     "symbol": "(file)",
     "value": 883
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/modeling/mates/physicalUseCase.ts",
-    "symbol": "(file)",
-    "value": 824
   }
 ]
