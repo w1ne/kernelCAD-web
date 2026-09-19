@@ -52,7 +52,6 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
 import type { EdgeQuery, FaceQuery } from '../../../shared/intent/queryTypes';
 import {
-  DATUM_LABEL_RE,
   type DrawingDatumDecl,
   type DrawingDeclarations,
   type DrawingToleranceDecl,
@@ -97,25 +96,22 @@ import {
   type V3,
 } from './drawingFeatures';
 import { Obstacles, GEOMETRY_OWNER, type Box, type Seg } from './drawingObstacles';
+import {
+  AUTO_ANNOTATE_KINDS,
+  invalid,
+  normaliseAutoAnnotateDatums,
+  normaliseAutoAnnotateInclude,
+  normaliseAutoAnnotateTolerance,
+  type AutoAnnotateKind,
+  type Iso2768Class,
+} from './drawingAutoOptions';
 
 // ---------------------------------------------------------------------------
 // Public surface
 // ---------------------------------------------------------------------------
 
-export type Iso2768Class = 'ISO2768-f' | 'ISO2768-m' | 'ISO2768-c';
-
-export const AUTO_ANNOTATE_KINDS = [
-  'datums',
-  'flatness',
-  'holes',
-  'hole-positions',
-  'overall',
-  'fillets',
-  'chamfers',
-  'general-tolerance',
-] as const;
-
-export type AutoAnnotateKind = (typeof AUTO_ANNOTATE_KINDS)[number];
+export { AUTO_ANNOTATE_KINDS } from './drawingAutoOptions';
+export type { AutoAnnotateKind, Iso2768Class } from './drawingAutoOptions';
 
 export interface AutoAnnotateOptions {
   /** General-tolerance class; default `'ISO2768-m'`. */
@@ -178,22 +174,11 @@ export interface AutoDrawingResult {
 // Option validation
 // ---------------------------------------------------------------------------
 
-const CLASSES: readonly Iso2768Class[] = ['ISO2768-f', 'ISO2768-m', 'ISO2768-c'];
-
 interface NormalisedOptions {
   enabled: boolean;
   tolerance: Iso2768Class;
   include: Set<AutoAnnotateKind>;
   datums: DrawingDatumDecl[];
-}
-
-function invalid(field: string, why: string): never {
-  throw new KernelError(
-    'feature.invalid-args',
-    `svg-drawing: options.autoAnnotate${field} ${why}.`,
-    undefined,
-    "Pass autoAnnotate: true, or { tolerance?: 'ISO2768-f' | 'ISO2768-m' | 'ISO2768-c', datums?: 'auto' | [{ label, face }], include?: [...] }.",
-  );
 }
 
 export function normaliseAutoAnnotate(raw: boolean | AutoAnnotateOptions | undefined): NormalisedOptions {
@@ -206,37 +191,9 @@ export function normaliseAutoAnnotate(raw: boolean | AutoAnnotateOptions | undef
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
     invalid('', `must be true or an options object; got ${JSON.stringify(raw)}`);
   }
-  const tolerance = raw.tolerance ?? 'ISO2768-m';
-  if (!CLASSES.includes(tolerance)) {
-    invalid('.tolerance', `must be one of ${CLASSES.join(' | ')}; got ${JSON.stringify(raw.tolerance)}`);
-  }
-  let include: Set<AutoAnnotateKind>;
-  if (raw.include === undefined) {
-    include = new Set(AUTO_ANNOTATE_KINDS);
-  } else {
-    if (!Array.isArray(raw.include)) invalid('.include', `must be an array; got ${JSON.stringify(raw.include)}`);
-    for (const k of raw.include) {
-      if (!(AUTO_ANNOTATE_KINDS as readonly string[]).includes(k)) {
-        invalid('.include', `entries must be one of ${AUTO_ANNOTATE_KINDS.join(' | ')}; got ${JSON.stringify(k)}`);
-      }
-    }
-    include = new Set(raw.include);
-  }
-  const datums: DrawingDatumDecl[] = [];
-  if (raw.datums !== undefined && raw.datums !== 'auto') {
-    if (!Array.isArray(raw.datums)) {
-      invalid('.datums', `must be 'auto' or an array of { label, face }; got ${JSON.stringify(raw.datums)}`);
-    }
-    for (const [i, d] of raw.datums.entries()) {
-      if (typeof d !== 'object' || d === null || typeof d.label !== 'string' || !DATUM_LABEL_RE.test(d.label)) {
-        invalid(`.datums[${i}].label`, `must be one or two capital letters other than I, O and Q; got ${JSON.stringify(d?.label)}`);
-      }
-      if (typeof d.face !== 'object' || d.face === null || Array.isArray(d.face)) {
-        invalid(`.datums[${i}].face`, `must be a FaceQuery object; got ${JSON.stringify(d.face)}`);
-      }
-      datums.push({ label: d.label, face: d.face });
-    }
-  }
+  const tolerance = normaliseAutoAnnotateTolerance(raw.tolerance);
+  const include = normaliseAutoAnnotateInclude(raw.include);
+  const datums = normaliseAutoAnnotateDatums(raw.datums);
   return { enabled: true, tolerance, include, datums };
 }
 

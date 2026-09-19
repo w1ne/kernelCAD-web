@@ -133,12 +133,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/drawingAuto.ts",
-    "symbol": "Function 'normaliseAutoAnnotate'",
-    "value": 25
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/exportGlb.ts",
     "symbol": "Function 'buildMaterial'",
     "value": 23
@@ -375,7 +369,7 @@
     "rule": "max-lines",
     "file": "src/kernel/backends/occt/drawingAuto.ts",
     "symbol": "(file)",
-    "value": 1214
+    "value": 1175
   },
   {
     "rule": "max-lines",
