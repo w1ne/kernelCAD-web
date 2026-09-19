@@ -643,12 +643,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/studio/components/animation/AnimationTab.tsx",
-    "symbol": "Function 'AnimationTab'",
-    "value": 22
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/components/demoPlayer/AnimationEngine.ts",
     "symbol": "Function 'classify'",
     "value": 26
@@ -754,12 +748,6 @@
     "file": "src/studio/components/SceneBrowser.tsx",
     "symbol": "Arrow function",
     "value": 200
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/components/animation/AnimationTab.tsx",
-    "symbol": "Function 'AnimationTab'",
-    "value": 152
   },
   {
     "rule": "max-lines-per-function",
