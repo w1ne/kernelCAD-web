@@ -277,18 +277,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/worker.ts",
-    "symbol": "Arrow function",
-    "value": 231
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/worker.ts",
-    "symbol": "Async arrow function",
-    "value": 226
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/kinematic/checkLoadCapacity.ts",
     "symbol": "Function 'runBeamMode'",
     "value": 161
