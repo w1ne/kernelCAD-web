@@ -337,12 +337,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/repair/candidates.ts",
-    "symbol": "Function 'recentreHoleOnFace'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/repair/trace.ts",
     "symbol": "Function 'computeRepairRegion'",
     "value": 18
