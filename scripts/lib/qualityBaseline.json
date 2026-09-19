@@ -1117,12 +1117,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/studio/hooks/useFaceSelection.ts",
-    "symbol": "Arrow function",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/hooks/viewer/useDirectEditDrag.ts",
     "symbol": "Async arrow function",
     "value": 16
