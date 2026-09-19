@@ -397,12 +397,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/proxy.ts",
-    "symbol": "Method 'material'",
-    "value": 33
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/shapeOperationFeatureRecords.ts",
     "symbol": "Function 'buildEdgeFeatureRef'",
     "value": 23
@@ -655,12 +649,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/capture/proxy.ts",
-    "symbol": "Method 'material'",
-    "value": 187
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/modeling/runtime/dfm/runDfmChecks.ts",
     "symbol": "Async function 'runDfmChecksOnModel'",
     "value": 153
@@ -789,7 +777,7 @@
     "rule": "max-lines",
     "file": "src/modeling/capture/proxy.ts",
     "symbol": "(file)",
-    "value": 1183
+    "value": 1024
   },
   {
     "rule": "max-lines",
