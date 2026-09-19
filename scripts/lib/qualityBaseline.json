@@ -385,12 +385,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/joints/clevis.ts",
-    "symbol": "Function 'withDefaults'",
-    "value": 29
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/limitFixSuggest.ts",
     "symbol": "Async function 'suggestLimitFix'",
     "value": 23
