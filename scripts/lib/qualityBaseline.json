@@ -391,12 +391,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/validation/holeValidation.ts",
-    "symbol": "Function 'validateCommonHoleFields'",
-    "value": 26
-  },
-  {
-    "rule": "complexity",
     "file": "src/server/middleware/paramsEndpoint.ts",
     "symbol": "Async function 'paramsHandler'",
     "value": 24
