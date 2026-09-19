@@ -7,12 +7,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/cli/commands/render.ts",
-    "symbol": "Async function 'renderScript'",
-    "value": 26
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/cli/commands/validate.ts",
     "symbol": "Function 'renderHuman'",
     "value": 21
@@ -22,24 +16,6 @@
     "file": "src/agent/drawing/sheet.ts",
     "symbol": "Function 'projectionSymbol'",
     "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/drawing/verify.ts",
-    "symbol": "Async function 'verifyReconstruction'",
-    "value": 25
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/loop/closedLoop.ts",
-    "symbol": "Async function 'runClosedLoop'",
-    "value": 25
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/edits/addPathNurbsSegment.ts",
-    "symbol": "Function 'addPathNurbsSegment'",
-    "value": 25
   },
   {
     "rule": "complexity",
@@ -91,12 +67,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/inspectSection.ts",
-    "symbol": "Async function 'inspectSectionTool'",
-    "value": 25
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/runFea.ts",
     "symbol": "Async function 'runFeaTool'",
     "value": 22
@@ -115,12 +85,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/script-runtime/bom.ts",
-    "symbol": "Async function 'computeBom'",
-    "value": 25
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/vision/index.ts",
     "symbol": "Async function 'traceFromImage'",
     "value": 24
@@ -136,12 +100,6 @@
     "file": "src/kernel/backends/occt/cutoutLowerer.ts",
     "symbol": "Function 'lowerCutout'",
     "value": 23
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/backends/occt/drawingAuto.ts",
-    "symbol": "Function 'normaliseAutoAnnotate'",
-    "value": 25
   },
   {
     "rule": "complexity",
@@ -247,12 +205,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCase.ts",
-    "symbol": "Async function 'reviewPhysicalUseCasesWithReachability'",
-    "value": 25
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseJointReactions.ts",
     "symbol": "Function 'expandCertificatePoses'",
     "value": 21
@@ -274,12 +226,6 @@
     "file": "src/modeling/runtime/dfm/meshBvh.ts",
     "symbol": "Method 'buildNode'",
     "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/runtime/dfm/runDfmChecks.ts",
-    "symbol": "Async function 'runDfmChecksOnModel'",
-    "value": 25
   },
   {
     "rule": "complexity",
@@ -318,12 +264,6 @@
     "value": 23
   },
   {
-    "rule": "complexity",
-    "file": "src/shared/parts/types.ts",
-    "symbol": "Function 'isPartRecord'",
-    "value": 25
-  },
-  {
     "rule": "max-lines-per-function",
     "file": "src/agent/vision/index.ts",
     "symbol": "Async function 'traceFromImage'",
@@ -360,12 +300,6 @@
     "value": 161
   },
   {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/runtime/dfm/runDfmChecks.ts",
-    "symbol": "Async function 'runDfmChecksOnModel'",
-    "value": 153
-  },
-  {
     "rule": "max-lines",
     "file": "src/agent/reconstruct/planPhases.ts",
     "symbol": "(file)",
@@ -375,7 +309,7 @@
     "rule": "max-lines",
     "file": "src/kernel/backends/occt/drawingAuto.ts",
     "symbol": "(file)",
-    "value": 1214
+    "value": 1175
   },
   {
     "rule": "max-lines",
