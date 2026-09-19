@@ -277,12 +277,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseStatics.ts",
-    "symbol": "Async function 'resolveActuators'",
-    "value": 24
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/validator.ts",
     "symbol": "Async function 'validateAssemblyWithMates'",
     "value": 23
