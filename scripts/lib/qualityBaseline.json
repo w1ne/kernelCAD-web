@@ -577,12 +577,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/backends/occt/lowerers/edgeFeatures.ts",
-    "symbol": "Function 'lowerFillet'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/backends/occt/lowerers/loft.ts",
     "symbol": "Async function 'loftSketchSections'",
     "value": 20
@@ -1252,12 +1246,6 @@
     "file": "src/modeling/apiSurfaceMethods.ts",
     "symbol": "Function 'makeSweepMethods'",
     "value": 117
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/backends/occt/lowerers/edgeFeatures.ts",
-    "symbol": "Function 'lowerFillet'",
-    "value": 121
   },
   {
     "rule": "max-lines-per-function",
