@@ -297,6 +297,29 @@ function deriveChordTangent2D(
   return { x: { evaluated: dx }, y: { evaluated: dy } };
 }
 
+/** Validate the command list and locate the loop bounds and path origin. */
+function resolveSketchStart(commands: SketchCommand[]): {
+  closeIdx: number;
+  startX: number;
+  startY: number;
+} {
+  if (commands.length === 0) {
+    throw new Error('buildNurbsSketchOnPlane: empty commands array.');
+  }
+  const closeIdx = commands.findIndex(c => c.kind === 'close');
+  if (closeIdx === -1) {
+    throw new Error('buildNurbsSketchOnPlane: missing close command.');
+  }
+  const first = commands[0];
+  if (first.kind !== 'moveTo') {
+    throw new Error('buildNurbsSketchOnPlane: first command must be moveTo.');
+  }
+
+  const startX = first.x.evaluated;
+  const startY = first.y.evaluated;
+  return { closeIdx, startX, startY };
+}
+
 /**
  * Lower a `SketchCommand[]` containing at least one NURBS segment into a
  * `replicad.Sketch` on the requested plane.
@@ -313,20 +336,7 @@ export function buildNurbsSketchOnPlane(
   commands: SketchCommand[],
   plane: PlaneName,
 ): replicad.Sketch {
-  if (commands.length === 0) {
-    throw new Error('buildNurbsSketchOnPlane: empty commands array.');
-  }
-  const closeIdx = commands.findIndex(c => c.kind === 'close');
-  if (closeIdx === -1) {
-    throw new Error('buildNurbsSketchOnPlane: missing close command.');
-  }
-  const first = commands[0];
-  if (first.kind !== 'moveTo') {
-    throw new Error('buildNurbsSketchOnPlane: first command must be moveTo.');
-  }
-
-  const startX = first.x.evaluated;
-  const startY = first.y.evaluated;
+  const { closeIdx, startX, startY } = resolveSketchStart(commands);
   let currentX = startX;
   let currentY = startY;
 
@@ -363,8 +373,7 @@ export function buildNurbsSketchOnPlane(
     return pen;
   }
 
-  for (let i = 1; i < closeIdx; i++) {
-    const c = commands[i];
+  function processCommand(c: SketchCommand): void {
     if (c.kind === 'lineTo') {
       const p = ensurePen();
       pen = p.lineTo([c.x.evaluated, c.y.evaluated]) as replicad.DrawingPen;
@@ -458,23 +467,31 @@ export function buildNurbsSketchOnPlane(
     }
   }
 
-  // Close the loop. If we have an open pen run, send it to the start point
-  // before committing. Otherwise, add an explicit closing line edge from the
-  // last NURBS endpoint back to the path start.
-  const isAtStart = Math.hypot(currentX - startX, currentY - startY) < 1e-9;
-  if (pen !== null) {
-    if (!isAtStart) {
-      pen = pen.lineTo([startX, startY]) as replicad.DrawingPen;
-    }
-    commitPenRun();
-  } else if (!isAtStart) {
-    const a = liftCoord(plane, currentX, currentY);
-    const b = liftCoord(plane, startX, startY);
-    edges.push(replicad.makeLine(
-      a as unknown as Parameters<typeof replicad.makeLine>[0],
-      b as unknown as Parameters<typeof replicad.makeLine>[1],
-    ));
+  for (let i = 1; i < closeIdx; i++) {
+    processCommand(commands[i]);
   }
+
+  function closeLoop(): void {
+    // Close the loop. If we have an open pen run, send it to the start point
+    // before committing. Otherwise, add an explicit closing line edge from the
+    // last NURBS endpoint back to the path start.
+    const isAtStart = Math.hypot(currentX - startX, currentY - startY) < 1e-9;
+    if (pen !== null) {
+      if (!isAtStart) {
+        pen = pen.lineTo([startX, startY]) as replicad.DrawingPen;
+      }
+      commitPenRun();
+    } else if (!isAtStart) {
+      const a = liftCoord(plane, currentX, currentY);
+      const b = liftCoord(plane, startX, startY);
+      edges.push(replicad.makeLine(
+        a as unknown as Parameters<typeof replicad.makeLine>[0],
+        b as unknown as Parameters<typeof replicad.makeLine>[1],
+      ));
+    }
+  }
+
+  closeLoop();
   if (edges.length === 0) {
     throw new Error('buildNurbsSketchOnPlane: produced zero edges (degenerate path).');
   }

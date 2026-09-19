@@ -289,12 +289,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/pathNurbsLowerer.ts",
-    "symbol": "Function 'buildNurbsSketchOnPlane'",
-    "value": 29
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/surfaceQuality.ts",
     "symbol": "Function 'inspectCurvature'",
     "value": 28
