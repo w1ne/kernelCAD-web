@@ -254,15 +254,18 @@ function altitudes(mesh: IndexedMesh): Float64Array {
   return a;
 }
 
-function growPlanes(mesh: IndexedMesh, tol: number, totalArea: number, robust = false): PlaneRegion[] {
-  const triCount = mesh.areas.length;
-  const order = Array.from({ length: triCount }, (_, i) => i).sort((a, b) => mesh.areas[b] - mesh.areas[a]);
-  const owner = new Int32Array(triCount).fill(-1);
-  const tried = new Uint8Array(triCount);
-  const stampOf = new Int32Array(triCount);
-  const alt = altitudes(mesh);
-  const planes: PlaneRegion[] = [];
-  const minSeedArea = tol * tol;
+interface PlaneGrower {
+  grow(seed: number, n: V3, d: number, within: number): number[];
+  currentStamp(): number;
+}
+
+function makePlaneGrower(
+  mesh: IndexedMesh,
+  tol: number,
+  owner: Int32Array,
+  stampOf: Int32Array,
+  alt: Float64Array,
+): PlaneGrower {
   const cos20 = Math.cos((20 * Math.PI) / 180);
   let stamp = 0;
 
@@ -299,6 +302,35 @@ function growPlanes(mesh: IndexedMesh, tol: number, totalArea: number, robust = 
     return region;
   };
 
+  return { grow, currentStamp: () => stamp };
+}
+
+function planeBoundaryFraction(mesh: IndexedMesh, region: number[], stamp: number, stampOf: Int32Array): number {
+  let boundary = 0;
+  let sharp = 0;
+  for (const t of region) {
+    for (let k = 0; k < 3; k++) {
+      const nb = mesh.neighbors[t * 3 + k];
+      if (nb >= 0 && stampOf[nb] === stamp) continue;
+      const len = edgeLength(mesh, t, k);
+      boundary += len;
+      if (nb < 0 || dot3(triNormal(mesh, t), triNormal(mesh, nb)) < SHARP_COS) sharp += len;
+    }
+  }
+  return boundary > 0 ? sharp / boundary : 1;
+}
+
+function growPlanes(mesh: IndexedMesh, tol: number, totalArea: number, robust = false): PlaneRegion[] {
+  const triCount = mesh.areas.length;
+  const order = Array.from({ length: triCount }, (_, i) => i).sort((a, b) => mesh.areas[b] - mesh.areas[a]);
+  const owner = new Int32Array(triCount).fill(-1);
+  const tried = new Uint8Array(triCount);
+  const stampOf = new Int32Array(triCount);
+  const alt = altitudes(mesh);
+  const planes: PlaneRegion[] = [];
+  const minSeedArea = tol * tol;
+  const { grow, currentStamp } = makePlaneGrower(mesh, tol, owner, stampOf, alt);
+
   for (const seed of order) {
     if (owner[seed] >= 0 || tried[seed]) continue;
     tried[seed] = 1;
@@ -334,18 +366,7 @@ function growPlanes(mesh: IndexedMesh, tol: number, totalArea: number, robust = 
       reject();
       continue;
     }
-    let boundary = 0;
-    let sharp = 0;
-    for (const t of region) {
-      for (let k = 0; k < 3; k++) {
-        const nb = mesh.neighbors[t * 3 + k];
-        if (nb >= 0 && stampOf[nb] === stamp) continue;
-        const len = edgeLength(mesh, t, k);
-        boundary += len;
-        if (nb < 0 || dot3(triNormal(mesh, t), triNormal(mesh, nb)) < SHARP_COS) sharp += len;
-      }
-    }
-    const sharpBoundaryFraction = boundary > 0 ? sharp / boundary : 1;
+    const sharpBoundaryFraction = planeBoundaryFraction(mesh, region, currentStamp(), stampOf);
     if (!(big || sharpBoundaryFraction >= 0.25)) {
       reject();
       continue;
