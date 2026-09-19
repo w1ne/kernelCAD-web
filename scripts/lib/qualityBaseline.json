@@ -145,12 +145,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/parts/findPart.ts",
-    "symbol": "Async function 'findPartHost'",
-    "value": 22
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/runtime/dfm/meshBvh.ts",
     "symbol": "Method 'buildNode'",
     "value": 22
