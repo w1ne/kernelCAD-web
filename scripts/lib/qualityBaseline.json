@@ -151,12 +151,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kinematic/checkLoadCapacity.ts",
-    "symbol": "Function 'runBeamMode'",
-    "value": 21
-  },
-  {
-    "rule": "complexity",
     "file": "src/kinematic/inverseKinematicsAnalytical.ts",
     "symbol": "Function 'solveAnalytical'",
     "value": 24
@@ -274,12 +268,6 @@
     "file": "src/agent/vision/index.ts",
     "symbol": "Async function 'traceFromImage'",
     "value": 163
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kinematic/checkLoadCapacity.ts",
-    "symbol": "Function 'runBeamMode'",
-    "value": 161
   },
   {
     "rule": "max-lines-per-function",
