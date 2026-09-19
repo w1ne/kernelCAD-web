@@ -96,15 +96,37 @@ const SHARP_COS = Math.cos((30 * Math.PI) / 180);
 const COMPONENT_SPLIT_COS = Math.cos((50 * Math.PI) / 180);
 
 export function segmentMesh(mesh: IndexedMesh, opts: SegmentOptions = {}): Segmentation {
+  const { diag, floor } = meshToleranceFloor(mesh, opts);
+  const totalArea = mesh.areas.reduce((s, a) => s + a, 0);
+
+  const loose = growPlanes(mesh, Math.max(floor * 2.5, 0.05), totalArea, true);
+  const noise = estimateSurfaceNoise(loose);
+  const tol = Math.max(floor, 4 * noise);
+  const planes = growPlanes(mesh, tol, totalArea);
+
+  const { claimed, consumed } = claimSoftPlanes(planes, mesh, tol, diag, totalArea);
+  const assigned = markAssignedTriangles(planes, consumed, mesh);
+
+  const fitted = fitRemaining(mesh, assigned, tol, diag);
+  const { freeform } = fitted;
+  const cylinders = adoptFragments(mesh, planes, mergeCoaxial(mesh, claimed.concat(fitted.cylinders), tol), freeform, tol, totalArea);
+  planes.forEach((p, i) => (p.id = i));
+  cylinders.forEach((c, i) => (c.id = i));
+  freeform.forEach((f, i) => (f.id = i));
+  const { planeOf, cylinderOf } = buildRegionOwnership(mesh, planes, cylinders);
+  return { planes, cylinders, freeform, toleranceMm: tol, noiseMm: noise, totalArea, planeOf, cylinderOf };
+}
+
+function meshToleranceFloor(mesh: IndexedMesh, opts: SegmentOptions): { diag: number; floor: number } {
   const diag = Math.hypot(
     mesh.bbox.max[0] - mesh.bbox.min[0],
     mesh.bbox.max[1] - mesh.bbox.min[1],
     mesh.bbox.max[2] - mesh.bbox.min[2],
   );
-  const floor = opts.toleranceFloorMm ?? Math.max(0.02, 2.5e-4 * diag);
-  const totalArea = mesh.areas.reduce((s, a) => s + a, 0);
+  return { diag, floor: opts.toleranceFloorMm ?? Math.max(0.02, 2.5e-4 * diag) };
+}
 
-  const loose = growPlanes(mesh, Math.max(floor * 2.5, 0.05), totalArea, true);
+function estimateSurfaceNoise(loose: PlaneRegion[]): number {
   let wSum = 0;
   let rSum = 0;
   // Noise probes: regions bounded almost entirely by creases, measured by
@@ -117,10 +139,16 @@ export function segmentMesh(mesh: IndexedMesh, opts: SegmentOptions = {}): Segme
     wSum += p.area;
     rSum += p.area * p.robustSigma * p.robustSigma;
   }
-  const noise = wSum > 0 ? Math.sqrt(rSum / wSum) : 0;
-  const tol = Math.max(floor, 4 * noise);
-  const planes = growPlanes(mesh, tol, totalArea);
+  return wSum > 0 ? Math.sqrt(rSum / wSum) : 0;
+}
 
+function claimSoftPlanes(
+  planes: PlaneRegion[],
+  mesh: IndexedMesh,
+  tol: number,
+  diag: number,
+  totalArea: number,
+): { claimed: CylinderRegion[]; consumed: Set<number> } {
   // Small planes may be facet strips of a short or noisy bore (on a scan the
   // per-triangle normals are too noisy for the crease test to tell). Offer
   // them to the cylinder fit first: a smooth component that includes them and
@@ -135,22 +163,26 @@ export function segmentMesh(mesh: IndexedMesh, opts: SegmentOptions = {}): Segme
   for (let i = planes.length - 1; i >= 0; i--) {
     if (soft.has(planes[i]) && planes[i].tris.every((t) => consumed.has(t))) planes.splice(i, 1);
   }
+  return { claimed, consumed };
+}
 
+function markAssignedTriangles(planes: PlaneRegion[], consumed: Set<number>, mesh: IndexedMesh): Int8Array {
   const assigned = new Int8Array(mesh.areas.length);
   for (const p of planes) for (const t of p.tris) assigned[t] = 1;
   for (const t of consumed) assigned[t] = 1;
+  return assigned;
+}
 
-  const fitted = fitRemaining(mesh, assigned, tol, diag);
-  const { freeform } = fitted;
-  const cylinders = adoptFragments(mesh, planes, mergeCoaxial(mesh, claimed.concat(fitted.cylinders), tol), freeform, tol, totalArea);
-  planes.forEach((p, i) => (p.id = i));
-  cylinders.forEach((c, i) => (c.id = i));
-  freeform.forEach((f, i) => (f.id = i));
+function buildRegionOwnership(
+  mesh: IndexedMesh,
+  planes: PlaneRegion[],
+  cylinders: CylinderRegion[],
+): { planeOf: Int32Array; cylinderOf: Int32Array } {
   const planeOf = new Int32Array(mesh.areas.length).fill(-1);
   const cylinderOf = new Int32Array(mesh.areas.length).fill(-1);
   for (const p of planes) for (const t of p.tris) planeOf[t] = p.id;
   for (const c of cylinders) for (const t of c.tris) cylinderOf[t] = c.id;
-  return { planes, cylinders, freeform, toleranceMm: tol, noiseMm: noise, totalArea, planeOf, cylinderOf };
+  return { planeOf, cylinderOf };
 }
 
 /**

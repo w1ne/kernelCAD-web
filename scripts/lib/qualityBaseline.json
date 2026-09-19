@@ -319,12 +319,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/segment.ts",
-    "symbol": "Function 'segmentMesh'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/render/captureAnimation.ts",
     "symbol": "Async function 'captureAnimation'",
     "value": 19
