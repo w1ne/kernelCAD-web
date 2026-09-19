@@ -328,11 +328,5 @@
     "file": "src/modeling/capture/proxy.ts",
     "symbol": "(file)",
     "value": 1024
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/modeling/capture/sketch.ts",
-    "symbol": "(file)",
-    "value": 883
   }
 ]

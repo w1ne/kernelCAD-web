@@ -33,6 +33,7 @@ const EMITTING_FILES = [
   'modeling/capture/captureSession.ts',
   'modeling/capture/proxy.ts',
   'modeling/capture/sketch.ts',
+  'modeling/capture/sketchTangency.ts',
   'modeling/capture/faceLabels.ts',
   'shared/fonts/index.ts',
   'modeling/api.ts',
