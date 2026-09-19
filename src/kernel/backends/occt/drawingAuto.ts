@@ -88,32 +88,28 @@ function invalid(field: string, why: string): never {
   );
 }
 
-export function normaliseAutoAnnotate(raw: boolean | AutoAnnotateOptions | undefined): NormalisedOptions {
-  if (raw === undefined || raw === false) {
-    return { enabled: false, tolerance: 'ISO2768-m', include: new Set(), datums: [] };
-  }
-  if (raw === true) {
-    return { enabled: true, tolerance: 'ISO2768-m', include: new Set(AUTO_ANNOTATE_KINDS), datums: [] };
-  }
-  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
-    invalid('', `must be true or an options object; got ${JSON.stringify(raw)}`);
-  }
+function normaliseTolerance(raw: AutoAnnotateOptions): Iso2768Class {
   const tolerance = raw.tolerance ?? 'ISO2768-m';
   if (!CLASSES.includes(tolerance)) {
     invalid('.tolerance', `must be one of ${CLASSES.join(' | ')}; got ${JSON.stringify(raw.tolerance)}`);
   }
-  let include: Set<AutoAnnotateKind>;
+  return tolerance;
+}
+
+function normaliseInclude(raw: AutoAnnotateOptions): Set<AutoAnnotateKind> {
   if (raw.include === undefined) {
-    include = new Set(AUTO_ANNOTATE_KINDS);
-  } else {
-    if (!Array.isArray(raw.include)) invalid('.include', `must be an array; got ${JSON.stringify(raw.include)}`);
-    for (const k of raw.include) {
-      if (!(AUTO_ANNOTATE_KINDS as readonly string[]).includes(k)) {
-        invalid('.include', `entries must be one of ${AUTO_ANNOTATE_KINDS.join(' | ')}; got ${JSON.stringify(k)}`);
-      }
-    }
-    include = new Set(raw.include);
+    return new Set(AUTO_ANNOTATE_KINDS);
   }
+  if (!Array.isArray(raw.include)) invalid('.include', `must be an array; got ${JSON.stringify(raw.include)}`);
+  for (const k of raw.include) {
+    if (!(AUTO_ANNOTATE_KINDS as readonly string[]).includes(k)) {
+      invalid('.include', `entries must be one of ${AUTO_ANNOTATE_KINDS.join(' | ')}; got ${JSON.stringify(k)}`);
+    }
+  }
+  return new Set(raw.include);
+}
+
+function normaliseDatums(raw: AutoAnnotateOptions): DrawingDatumDecl[] {
   const datums: DrawingDatumDecl[] = [];
   if (raw.datums !== undefined && raw.datums !== 'auto') {
     if (!Array.isArray(raw.datums)) {
@@ -129,6 +125,22 @@ export function normaliseAutoAnnotate(raw: boolean | AutoAnnotateOptions | undef
       datums.push({ label: d.label, face: d.face });
     }
   }
+  return datums;
+}
+
+export function normaliseAutoAnnotate(raw: boolean | AutoAnnotateOptions | undefined): NormalisedOptions {
+  if (raw === undefined || raw === false) {
+    return { enabled: false, tolerance: 'ISO2768-m', include: new Set(), datums: [] };
+  }
+  if (raw === true) {
+    return { enabled: true, tolerance: 'ISO2768-m', include: new Set(AUTO_ANNOTATE_KINDS), datums: [] };
+  }
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+    invalid('', `must be true or an options object; got ${JSON.stringify(raw)}`);
+  }
+  const tolerance = normaliseTolerance(raw);
+  const include = normaliseInclude(raw);
+  const datums = normaliseDatums(raw);
   return { enabled: true, tolerance, include, datums };
 }
 

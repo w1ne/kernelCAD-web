@@ -147,6 +147,39 @@ export function buildFaceInputRef(
   };
 }
 
+/** True for the `{ face: <selector> }` wrapper form (and not a segment). */
+function isFaceWrapperSelector(selector: ShapeOperationEdgeSelector): boolean {
+  return typeof selector === 'object' && selector !== null && 'face' in selector &&
+    !('id' in selector && 'midpoint' in selector && 'direction' in selector && 'curveType' in selector);
+}
+
+/** True for a bare edge-segment descriptor (`{ id, midpoint, direction, curveType }`). */
+function isEdgeSegmentSelector(selector: ShapeOperationEdgeSelector): boolean {
+  return typeof selector === 'object' && selector !== null &&
+    'id' in selector && 'midpoint' in selector && 'direction' in selector && 'curveType' in selector;
+}
+
+/** Query-DSL (`kc.q.*`) branch of {@link buildEdgeFeatureRef}. */
+function buildQueryFeatureRef(
+  baseId: FeatureId,
+  selector: ShapeOperationQueryValue,
+): { key: 'face' | 'edges'; value: FeatureRef } {
+  const key: 'face' | 'edges' = selector.target === 'face' ? 'face' : 'edges';
+  return {
+    key,
+    value: {
+      kind: key === 'face' ? 'face' : 'edge',
+      featureId: baseId,
+      ref: {
+        kind: 'queryDsl',
+        queryAst: selector.ast as never,
+        queryTarget: selector.target as never,
+        ...(selector.lenient ? { lenient: true } : {}),
+      },
+    },
+  };
+}
+
 /**
  * Translate the user-facing EdgeSelector (or face wrapper) into either an
  * `inputs.face` or `inputs.edges` FeatureRef. The lowerer dispatches on the
@@ -157,29 +190,14 @@ export function buildEdgeFeatureRef(
   selector: ShapeOperationEdgeSelector,
 ): { key: 'face' | 'edges'; value: FeatureRef } {
   if (isQueryValue(selector)) {
-    const key: 'face' | 'edges' = selector.target === 'face' ? 'face' : 'edges';
-    return {
-      key,
-      value: {
-        kind: key === 'face' ? 'face' : 'edge',
-        featureId: baseId,
-        ref: {
-          kind: 'queryDsl',
-          queryAst: selector.ast as never,
-          queryTarget: selector.target as never,
-          ...(selector.lenient ? { lenient: true } : {}),
-        },
-      },
-    };
+    return buildQueryFeatureRef(baseId, selector);
   }
 
-  if (typeof selector === 'object' && selector !== null && 'face' in selector &&
-      !('id' in selector && 'midpoint' in selector && 'direction' in selector && 'curveType' in selector)) {
+  if (isFaceWrapperSelector(selector)) {
     return { key: 'face', value: buildFaceInputRef(baseId, (selector as { face: ShapeOperationFaceSelector }).face) };
   }
 
-  if (typeof selector === 'object' && selector !== null &&
-      'id' in selector && 'midpoint' in selector && 'direction' in selector && 'curveType' in selector) {
+  if (isEdgeSegmentSelector(selector)) {
     return {
       key: 'edges',
       value: {

@@ -399,6 +399,40 @@ function fitPlane(
   tris: number[],
   robust = true,
 ): { normal: V3; offset: number; centroid: V3; rms: number; robustSigma: number } | null {
+  const moments = accumulatePlaneMoments(mesh, tris);
+  let area = moments.area;
+  const c = moments.c;
+  if (area <= 0) return null;
+  let normal = normalize3(moments.nSum);
+  if (normal[0] === 0 && normal[1] === 0 && normal[2] === 0) return null;
+  // Refit without triangles tilted more than 3° from the first estimate: a
+  // region that crept onto the first facets of a neighbouring round would
+  // otherwise tilt its plane towards it.
+  const refit = refitPlaneWithinCone(mesh, tris, normal);
+  if (refit.area2 >= 0.5 * area) {
+    normal = normalize3(refit.n2);
+    c[0] = refit.c2[0]; c[1] = refit.c2[1]; c[2] = refit.c2[2];
+    area = refit.area2;
+  }
+  const centroid: V3 = [c[0] / area, c[1] / area, c[2] / area];
+  const offset = dot3(normal, centroid);
+  if (!robust) {
+    return {
+      normal,
+      offset,
+      centroid,
+      rms: rmsResidualAllCorners(mesh, tris, normal, offset),
+      robustSigma: 0,
+    };
+  }
+  const stats = robustResidualStats(mesh, tris, normal, offset);
+  return { normal, offset, centroid, rms: stats.rms, robustSigma: stats.robustSigma };
+}
+
+function accumulatePlaneMoments(
+  mesh: IndexedMesh,
+  tris: number[],
+): { area: number; nSum: V3; c: V3 } {
   let area = 0;
   const nSum: V3 = [0, 0, 0];
   const c: V3 = [0, 0, 0];
@@ -411,12 +445,14 @@ function fitPlane(
       for (let k = 0; k < 3; k++) c[k] += (mesh.positions[v + k] * a) / 3;
     }
   }
-  if (area <= 0) return null;
-  let normal = normalize3(nSum);
-  if (normal[0] === 0 && normal[1] === 0 && normal[2] === 0) return null;
-  // Refit without triangles tilted more than 3° from the first estimate: a
-  // region that crept onto the first facets of a neighbouring round would
-  // otherwise tilt its plane towards it.
+  return { area, nSum, c };
+}
+
+function refitPlaneWithinCone(
+  mesh: IndexedMesh,
+  tris: number[],
+  normal: V3,
+): { area2: number; n2: V3; c2: V3 } {
   const cos3 = Math.cos((3 * Math.PI) / 180);
   let area2 = 0;
   const n2: V3 = [0, 0, 0];
@@ -432,26 +468,34 @@ function fitPlane(
       for (let k = 0; k < 3; k++) c2[k] += (mesh.positions[v + k] * a) / 3;
     }
   }
-  if (area2 >= 0.5 * area) {
-    normal = normalize3(n2);
-    c[0] = c2[0]; c[1] = c2[1]; c[2] = c2[2];
-    area = area2;
-  }
-  const centroid: V3 = [c[0] / area, c[1] / area, c[2] / area];
-  const offset = dot3(normal, centroid);
-  if (!robust) {
-    let sq = 0;
-    let cnt = 0;
-    for (const t of tris) {
-      for (let j = 0; j < 3; j++) {
-        const v = mesh.triangles[t * 3 + j] * 3;
-        const dist = mesh.positions[v] * normal[0] + mesh.positions[v + 1] * normal[1] + mesh.positions[v + 2] * normal[2] - offset;
-        sq += dist * dist;
-        cnt++;
-      }
+  return { area2, n2, c2 };
+}
+
+function rmsResidualAllCorners(
+  mesh: IndexedMesh,
+  tris: number[],
+  normal: V3,
+  offset: number,
+): number {
+  let sq = 0;
+  let cnt = 0;
+  for (const t of tris) {
+    for (let j = 0; j < 3; j++) {
+      const v = mesh.triangles[t * 3 + j] * 3;
+      const dist = mesh.positions[v] * normal[0] + mesh.positions[v + 1] * normal[1] + mesh.positions[v + 2] * normal[2] - offset;
+      sq += dist * dist;
+      cnt++;
     }
-    return { normal, offset, centroid, rms: Math.sqrt(sq / Math.max(1, cnt)), robustSigma: 0 };
   }
+  return Math.sqrt(sq / Math.max(1, cnt));
+}
+
+function robustResidualStats(
+  mesh: IndexedMesh,
+  tris: number[],
+  normal: V3,
+  offset: number,
+): { rms: number; robustSigma: number } {
   let sq = 0;
   const dists: number[] = [];
   const seen = new Set<number>();
@@ -472,7 +516,7 @@ function fitPlane(
   const med = dists[dists.length >> 1] ?? 0;
   const abs = dists.map((d) => Math.abs(d - med)).sort((a, b) => a - b);
   const robustSigma = 1.4826 * (abs[abs.length >> 1] ?? 0);
-  return { normal, offset, centroid, rms: Math.sqrt(sq / Math.max(1, dists.length)), robustSigma };
+  return { rms: Math.sqrt(sq / Math.max(1, dists.length)), robustSigma };
 }
 
 /** Cylinders fitted to smooth components that span soft (strip-like) planes;

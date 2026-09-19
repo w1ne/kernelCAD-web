@@ -140,7 +140,7 @@ export function formatAnimateSummary(r: {
   return `Wrote ${r.outPath} — ${r.frameCount} frames, ${r.durationMs} ms @ ${r.fps} fps; ${verdict}`;
 }
 
-export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResult> {
+function refuseAnimateUsage(input: AnimateCliInput): AnimateCliResult | null {
   // Usage refusals — exit 2 before the engine builds anything.
   if (input.out !== undefined && input.frames !== undefined) {
     return usageRefusal(
@@ -173,6 +173,12 @@ export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResu
       safeFps(input.fps),
     );
   }
+  return null;
+}
+
+export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResult> {
+  const refusal = refuseAnimateUsage(input);
+  if (refusal !== null) return refusal;
   // --focus / --hide → object-visibility filter (render-parity: same builder,
   // same mutual-exclusivity rule). Visibility is render-only and does NOT
   // affect the animation-pose interference verification (it runs on the full

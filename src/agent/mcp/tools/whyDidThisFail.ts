@@ -11,9 +11,10 @@
 // Agents can call list_diagnostic_codes for the full catalogue.
 
 import type { FeatureKind } from '../../../shared/intent/types';
+import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
-import { analyzeScript, planRepair, selectDiagnostic } from '../../repair/analyze';
+import { analyzeScript, planRepair, selectDiagnostic, type ScriptAnalysis } from '../../repair/analyze';
 import type {
   CandidateStatus,
   FeatureTraceEntry,
@@ -98,6 +99,15 @@ export async function whyDidThisFailTool(input: WhyDidThisFailInput): Promise<Wh
   const targetRecord = records.find(r => r.id === targetId);
   if (!targetRecord) return { ok: false, error: `feature_id '${targetId}' not found.` };
 
+  const upstreamIds = collectUpstreamIds(targetRecord, records);
+  const chain = buildChain(records, targetId, upstreamIds, diagnostics, health, shapes);
+  return planRepairResponse(analysis, input, targetId, chain, diagnostics);
+}
+
+function collectUpstreamIds(
+  targetRecord: FeatureRecord,
+  records: readonly FeatureRecord[],
+): Set<string> {
   // Collect upstream feature ids reachable from the target via input edges.
   // The walk is BFS so every transitive predecessor is included; the final
   // emit order is then re-sorted by record-array index to give a topological
@@ -125,20 +135,30 @@ export async function whyDidThisFailTool(input: WhyDidThisFailInput): Promise<Wh
     if (!rec) continue;
     for (const ref of Object.values(rec.inputs)) {
       // W1.3: 'surface' refs point to a SurfaceRecord (not a FeatureRecord),
-    // so there's no upstream Feature to walk through. Skip.
-    const upId =
-      ref.kind === 'surface'
-        ? undefined
-        : ref.kind === 'feature'
-          ? ref.id
-          : ref.featureId;
+      // so there's no upstream Feature to walk through. Skip.
+      const upId =
+        ref.kind === 'surface'
+          ? undefined
+          : ref.kind === 'feature'
+            ? ref.id
+            : ref.featureId;
       if (upId && !upstreamIds.has(upId)) {
         upstreamIds.add(upId);
         queue.push(upId);
       }
     }
   }
+  return upstreamIds;
+}
 
+function buildChain(
+  records: readonly FeatureRecord[],
+  targetId: string,
+  upstreamIds: ReadonlySet<string>,
+  diagnostics: CompilerDiagnostic[],
+  health: ScriptAnalysis['health'],
+  shapes: ScriptAnalysis['shapes'],
+): ChainEntry[] {
   const chain: ChainEntry[] = [];
   for (const rec of records) {
     if (rec.id !== targetId && !upstreamIds.has(rec.id)) continue;
@@ -150,7 +170,16 @@ export async function whyDidThisFailTool(input: WhyDidThisFailInput): Promise<Wh
       diagnostics: withNextActions(featureDiags),
     });
   }
+  return chain;
+}
 
+function planRepairResponse(
+  analysis: ScriptAnalysis,
+  input: WhyDidThisFailInput,
+  targetId: string,
+  chain: ChainEntry[],
+  diagnostics: CompilerDiagnostic[],
+): WhyDidThisFailOutput {
   // Repair planning targets the first error on the chain by default: an agent
   // reading this response is looking at one failure, and the root cause is
   // upstream of the requested feature far more often than on it.

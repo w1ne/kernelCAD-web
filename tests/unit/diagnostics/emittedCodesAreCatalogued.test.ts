@@ -32,7 +32,10 @@ const EMITTING_FILES = [
   'kernel/backends/occt/flattenPattern.ts',      // W2.2
   'modeling/capture/captureSession.ts',
   'modeling/capture/proxy.ts',
+  'modeling/capture/proxyDerivedSketch.ts',
+  'modeling/capture/proxyFeatureChain.ts',
   'modeling/capture/sketch.ts',
+  'modeling/capture/sketchTangency.ts',
   'modeling/capture/faceLabels.ts',
   'shared/fonts/index.ts',
   'modeling/api.ts',

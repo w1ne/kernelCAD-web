@@ -1,12 +1,6 @@
 [
   {
     "rule": "complexity",
-    "file": "src/agent/cli/commands/animate.ts",
-    "symbol": "Async function 'runAnimate'",
-    "value": 25
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/cli/commands/validate.ts",
     "symbol": "Function 'renderHuman'",
     "value": 21
@@ -16,12 +10,6 @@
     "file": "src/agent/drawing/sheet.ts",
     "symbol": "Function 'projectionSymbol'",
     "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/edits/addVariableSweep.ts",
-    "symbol": "Function 'addVariableSweep'",
-    "value": 24
   },
   {
     "rule": "complexity",
@@ -61,33 +49,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/inspect.ts",
-    "symbol": "Function 'inspectTool'",
-    "value": 24
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/runFea.ts",
     "symbol": "Async function 'runFeaTool'",
     "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/tools/whyDidThisFail.ts",
-    "symbol": "Async function 'whyDidThisFailTool'",
-    "value": 24
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/reconstruct/segment.ts",
-    "symbol": "Function 'fitPlane'",
-    "value": 24
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/vision/index.ts",
-    "symbol": "Async function 'traceFromImage'",
-    "value": 24
   },
   {
     "rule": "complexity",
@@ -100,12 +64,6 @@
     "file": "src/kernel/backends/occt/cutoutLowerer.ts",
     "symbol": "Function 'lowerCutout'",
     "value": 23
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/backends/occt/drawingAuto.ts",
-    "symbol": "Function 'normaliseAutoAnnotate'",
-    "value": 25
   },
   {
     "rule": "complexity",
@@ -127,12 +85,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/meshing.ts",
-    "symbol": "Function 'tryVec3'",
-    "value": 24
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/nurbsSurfaceLowerer.ts",
     "symbol": "Function 'buildNurbsFace'",
     "value": 23
@@ -148,18 +100,6 @@
     "file": "src/kernel/naming/topoRef.ts",
     "symbol": "Function 'parseTopoRef'",
     "value": 23
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kinematic/checkLoadCapacity.ts",
-    "symbol": "Function 'runBeamMode'",
-    "value": 21
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kinematic/inverseKinematicsAnalytical.ts",
-    "symbol": "Function 'solveAnalytical'",
-    "value": 24
   },
   {
     "rule": "complexity",
@@ -187,21 +127,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/shapeOperationFeatureRecords.ts",
-    "symbol": "Function 'buildEdgeFeatureRef'",
-    "value": 23
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/virtualFeatureRecords.ts",
     "symbol": "Function 'buildReferenceImageFeatureSpec'",
     "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/limitFixSuggest.ts",
-    "symbol": "Async function 'suggestLimitFix'",
-    "value": 23
   },
   {
     "rule": "complexity",
@@ -217,12 +145,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/validator.ts",
-    "symbol": "Async function 'validateAssemblyWithMates'",
-    "value": 23
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/parts/findPart.ts",
     "symbol": "Async function 'findPartHost'",
     "value": 22
@@ -232,18 +154,6 @@
     "file": "src/modeling/runtime/dfm/meshBvh.ts",
     "symbol": "Method 'buildNode'",
     "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/runtime/mechanismTruth.ts",
-    "symbol": "Function 'checkOrphanParts'",
-    "value": 23
-  },
-  {
-    "rule": "complexity",
-    "file": "src/server/middleware/paramsEndpoint.ts",
-    "symbol": "Async function 'paramsHandler'",
-    "value": 24
   },
   {
     "rule": "complexity",
@@ -264,75 +174,15 @@
     "value": 22
   },
   {
-    "rule": "complexity",
-    "file": "src/shared/parts/connectorManifestSchema.ts",
-    "symbol": "Function 'validateConnectorManifest'",
-    "value": 23
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/agent/vision/index.ts",
-    "symbol": "Async function 'traceFromImage'",
-    "value": 163
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/worker.ts",
-    "symbol": "Arrow function",
-    "value": 231
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/worker.ts",
-    "symbol": "Async arrow function",
-    "value": 226
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kinematic/checkLoadCapacity.ts",
-    "symbol": "Function 'runBeamMode'",
-    "value": 161
-  },
-  {
     "rule": "max-lines-per-function",
     "file": "src/modeling/api.ts",
     "symbol": "Function 'createApi'",
     "value": 654
   },
   {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/backends/occt/sheetMetalLowerer.ts",
-    "symbol": "Function 'lowerSheetMetalBend'",
-    "value": 161
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/agent/reconstruct/planPhases.ts",
-    "symbol": "(file)",
-    "value": 942
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/kernel/backends/occt/occtBackend.ts",
-    "symbol": "(file)",
-    "value": 844
-  },
-  {
     "rule": "max-lines",
     "file": "src/modeling/api.ts",
     "symbol": "(file)",
     "value": 973
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/modeling/capture/proxy.ts",
-    "symbol": "(file)",
-    "value": 1024
-  },
-  {
-    "rule": "max-lines",
-    "file": "src/modeling/capture/sketch.ts",
-    "symbol": "(file)",
-    "value": 883
   }
 ]
