@@ -969,10 +969,11 @@ export class CaptureSession {
   };
 
   /** Compatibility facade for `params.update`. Recompute orchestration lives
-   *  in `src/kernel/buildModel.ts` so CLI, MCP, and direct session updates
-   *  share the same cache/warning/tail-shape policy. */
+   *  in `src/modeling/paramUpdate.ts` (re-exported by `buildModel`) so CLI,
+   *  MCP, and direct session updates share the same cache/warning/tail-shape
+   *  policy without an edge from this file into the build pipeline. */
   private async runParamUpdate(edits: ParamUpdateEdit[]): Promise<ParamUpdateResult> {
-    const { updateModelParams } = await import('../buildModel');
+    const { updateModelParams } = await import('../paramUpdate');
     const records = this.getRecords();
     const shapes = new Map<string, ShapeBackend>();
     for (const [id, shape] of this.cachedShapes) shapes.set(id, shape);

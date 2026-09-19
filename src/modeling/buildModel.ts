@@ -12,10 +12,14 @@ import type { FeatureId } from '../shared/intent/types';
 import type { CaptureSession } from './capture/captureSession';
 import type { SoftWarning } from '../shared/runtime/softWarning';
 import { runScript } from './runtime/runScript';
-import { KernelError } from '../shared/intent/kernelError';
 import { Shape } from './capture/proxy';
 import { Scene } from './validation/scene';
 import { computePrefixReuse, type RecordHealth } from './compute/prefixReuse';
+import { populateCache } from './paramUpdate';
+
+export { updateModelParams } from './paramUpdate';
+export { populateCache };
+export type { UpdateModelParamsOptions } from './paramUpdate';
 
 export interface BuildModelInput {
   code: string;
@@ -228,12 +232,6 @@ export async function buildModelFromFile(input: BuildModelFromFileInput): Promis
   return buildModel({ code, fileName, scriptDir: dirname(fileName) });
 }
 
-export function populateCache(session: CaptureSession, shapes: Map<FeatureId, ShapeBackend>): void {
-  for (const [id, shape] of shapes) {
-    session.cachedShapes.set(id, shape);
-  }
-}
-
 /**
  * Resolve the FeatureId of the value the script `return`ed.
  * Shape → its feature id; Scene → the upstream solvedAssembly /
@@ -247,195 +245,4 @@ export function resolveRootId(
   if (returnValue instanceof Shape) return returnValue.id;
   if (returnValue instanceof Scene) return returnValue.__sourceFeatureId() ?? tailId;
   return tailId;
-}
-
-/** Internal options for `updateModelParams`. Not part of the params.update
- *  public API surface — only server-side batch callers (e.g. the animation
- *  bake sweep) set these. */
-export interface UpdateModelParamsOptions {
-  /** Suppress the `engine.emitRelower(...)` notification for this solve. The
-   *  model still re-solves and the cache is repopulated exactly as normal; only
-   *  the host-side relower hub fan-out is skipped. Used by the animation-bake
-   *  sweep so its N per-frame pose solves do NOT each trigger an SSE relower
-   *  (and a client `/transforms` re-fetch + viewport twitch); the bake emits a
-   *  single relower itself after restoring the pre-bake pose. */
-  silent?: boolean;
-}
-
-export async function updateModelParams(
-  model: BuiltModel,
-  edits: ParamUpdateEdit[],
-  options?: UpdateModelParamsOptions,
-): Promise<BuiltModelParamUpdate> {
-  const session = model.session;
-  validateParamEdits(session, edits);
-
-  const editedNames = new Set<string>();
-  for (const edit of edits) {
-    session.paramTable.set(edit.name, edit.value);
-    editedNames.add(edit.name);
-  }
-
-  const { seedShapes, relowered, skipped } = buildSeedShapes(session, model.records, editedNames);
-  await initOcct();
-  // Slice 2E: reuse the per-session engine attached by `buildModel` so any
-  // `onRelower` subscribers registered after the initial build still fire on
-  // this update. Some callers bypass `buildModel` and drive `params.update`
-  // off a bare `runScript` result (eval corpus harnesses, legacy unit tests).
-  // For those paths, lazily attach a fresh engine to the session so
-  // subsequent updates reuse it. Studio's path always goes through
-  // `buildModel`, so its onRelower subscribers (registered against the
-  // session's attached engine) keep firing consistently.
-  //
-  // `session.engine` is typed as the structural `SessionRecomputeEngineHandle`
-  // so `captureSession.ts` stays free of recompute imports per the
-  // architecture-boundary guard. The actual instance is a RecomputeEngine.
-  let handle = session.engine;
-  if (!handle) {
-    const fresh = new RecomputeEngine(createOcctLowerer(session));
-    session.setEngine(fresh);
-    handle = fresh;
-  }
-  const engine = handle as RecomputeEngine;
-  const warningsBefore = session.warnings.length;
-  const result = await engine.run(model.records, {
-    paramTable: session.paramTable,
-    seedShapes,
-    warningSink: (warning: SoftWarning) => session.warnings.push(warning),
-    warningPhase: 'update',
-    gatedFeatureNames: session.gatedFeatureNames,
-  });
-
-  populateCache(session, result.shapes);
-  // Invalidate mesh caches for records that actually re-lowered. Records in
-  // `skipped` reused their cached shape and so their cached triangle mesh is
-  // still valid; records in `relowered` produced a fresh shape so their
-  // cached triangle data is stale. For solvedAssembly records re-lowered by
-  // a pose-only edit, the assembly entry stays valid for per-part LOCAL
-  // triangle data (only worldTransforms change) — but we keep the simple
-  // policy here and let the meshing layer re-decide; the assembly path's
-  // cache is keyed by (assemblyId, partName) and the geometry hash is
-  // implicitly the upstream part record's lowered shape, which remains
-  // cached. So skipping the assembly cache invalidation is correct.
-  for (const id of relowered) {
-    session.cachedFeatureMeshes.delete(id);
-  }
-  const tailId = model.records.length > 0 ? model.records[model.records.length - 1].id : undefined;
-  const tailShape = tailId ? result.shapes.get(tailId) : undefined;
-  if (!tailShape) {
-    throw new KernelError(
-      'recompute.lowering.exception',
-      'params.update: no shape produced for the chain tail; check upstream diagnostics.',
-      tailId,
-    );
-  }
-
-  const nextModel: BuiltModel = {
-    ...model,
-    shapes: result.shapes,
-    diagnostics: result.diagnostics,
-    health: result.health,
-    warnings: session.warnings.slice(warningsBefore),
-    tailId,
-    tailShape,
-    rootShape: model.rootId ? result.shapes.get(model.rootId) : undefined,
-  };
-
-  // Slice 2E: notify `onRelower` subscribers with the records re-lowered by
-  // this update. Studio's WorkbenchContext subscribes server-side via the
-  // session engine to live-refresh ParamsTab without a Validate press.
-  // `silent` callers (animation-bake per-frame sweep) skip this fan-out so a
-  // single bake doesn't emit one SSE relower per baked frame.
-  if (!options?.silent) {
-    engine.emitRelower(relowered);
-  }
-
-  return {
-    model: nextModel,
-    result: {
-      shape: tailShape,
-      relowered,
-      skipped,
-      warnings: nextModel.warnings,
-    },
-  };
-}
-
-function validateParamEdits(session: CaptureSession, edits: ParamUpdateEdit[]): void {
-  for (const edit of edits) {
-    const entry = session.paramTable.get(edit.name);
-    // 'choice' and 'string' params are both JS strings — only 'number' and
-    // 'boolean' map 1:1 to their JS typeof. Full validation (choice
-    // membership, maxLength, numeric bounds) happens in `paramTable.set`
-    // below; this is a fast pre-check so a bad edit throws before any
-    // re-lower work starts.
-    const expectedJsType = entry.type === 'choice' || entry.type === 'string' ? 'string' : entry.type;
-    if (typeof edit.value !== expectedJsType) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `params.update: param '${edit.name}' is ${entry.type}, got ${typeof edit.value}.`,
-        undefined,
-        `invalid-args.param.type-mismatch — param '${edit.name}' is ${entry.type}, got ${typeof edit.value}`,
-      );
-    }
-    if (entry.type === 'choice' && entry.meta?.choices && !entry.meta.choices.includes(edit.value as string)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `params.update: param '${edit.name}' value '${edit.value}' is not one of the declared choices: ${entry.meta.choices.join(', ')}.`,
-        undefined,
-        `invalid-args.param.choice-invalid — param '${edit.name}' value '${edit.value}' is not one of [${entry.meta.choices.join(', ')}]`,
-      );
-    }
-    if (entry.type === 'number' && entry.meta) {
-      const v = edit.value as number;
-      if (entry.meta.min !== undefined && v < entry.meta.min) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `params.update: param '${edit.name}' value ${v} below min ${entry.meta.min}.`,
-          undefined,
-          `invalid-args.param.value-out-of-range — param '${edit.name}' value ${v} below min ${entry.meta.min}`,
-        );
-      }
-      if (entry.meta.max !== undefined && v > entry.meta.max) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `params.update: param '${edit.name}' value ${v} above max ${entry.meta.max}.`,
-          undefined,
-          `invalid-args.param.value-out-of-range — param '${edit.name}' value ${v} above max ${entry.meta.max}`,
-        );
-      }
-    }
-  }
-}
-
-function buildSeedShapes(
-  session: CaptureSession,
-  records: readonly FeatureRecord[],
-  editedNames: Set<string>,
-): { seedShapes: Map<FeatureId, ShapeBackend>; relowered: string[]; skipped: string[] } {
-  let firstAffected = -1;
-  for (let i = 0; i < records.length; i++) {
-    const refs = (records[i].metadata as { paramRefs?: string[] } | undefined)?.paramRefs ?? [];
-    if (refs.some(name => editedNames.has(name))) {
-      firstAffected = i;
-      break;
-    }
-  }
-
-  const seedShapes = new Map<FeatureId, ShapeBackend>();
-  const relowered: string[] = [];
-  const skipped: string[] = [];
-
-  for (let i = 0; i < records.length; i++) {
-    const record = records[i];
-    if (firstAffected === -1 || i < firstAffected) {
-      skipped.push(record.id);
-      const cached = session.cachedShapes.get(record.id);
-      if (cached) seedShapes.set(record.id, cached);
-    } else {
-      relowered.push(record.id);
-    }
-  }
-
-  return { seedShapes, relowered, skipped };
 }
