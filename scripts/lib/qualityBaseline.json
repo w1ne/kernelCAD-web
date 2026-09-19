@@ -660,18 +660,6 @@
     "value": 31
   },
   {
-    "rule": "complexity",
-    "file": "src/studio/routes/me.tsx",
-    "symbol": "Function 'MePage'",
-    "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/routes/p.$slug.tsx",
-    "symbol": "Function 'ProjectPage'",
-    "value": 23
-  },
-  {
     "rule": "max-lines-per-function",
     "file": "src/agent/vision/index.ts",
     "symbol": "Async function 'traceFromImage'",
@@ -808,18 +796,6 @@
     "file": "src/studio/routes/generate.tsx",
     "symbol": "Function 'GeneratePage'",
     "value": 155
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/routes/me.tsx",
-    "symbol": "Function 'MePage'",
-    "value": 159
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/routes/p.$slug.tsx",
-    "symbol": "Function 'ProjectPage'",
-    "value": 209
   },
   {
     "rule": "max-lines",
