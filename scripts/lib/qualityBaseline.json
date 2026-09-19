@@ -859,12 +859,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCase.ts",
-    "symbol": "Async function 'reviewCertifiedJointLoads'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseJointReactionsPhases.ts",
     "symbol": "Async function 'resolveSolvedLoads'",
     "value": 16
@@ -1324,12 +1318,6 @@
     "file": "src/modeling/mates/jointVisualExposure.ts",
     "symbol": "Function 'measureJointVisuals'",
     "value": 101
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/mates/physicalUseCase.ts",
-    "symbol": "Async function 'reviewCertifiedJointLoads'",
-    "value": 133
   },
   {
     "rule": "max-lines-per-function",
