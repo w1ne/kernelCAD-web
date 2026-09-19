@@ -342,12 +342,6 @@
     "value": 23
   },
   {
-    "rule": "complexity",
-    "file": "src/shared/parts/types.ts",
-    "symbol": "Function 'isPartRecord'",
-    "value": 25
-  },
-  {
     "rule": "max-lines-per-function",
     "file": "src/agent/vision/index.ts",
     "symbol": "Async function 'traceFromImage'",
