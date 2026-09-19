@@ -61,12 +61,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/cutoutLowerer.ts",
-    "symbol": "Function 'lowerCutout'",
-    "value": 23
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/exportGlb.ts",
     "symbol": "Function 'buildMaterial'",
     "value": 23
