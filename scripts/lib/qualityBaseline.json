@@ -79,12 +79,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/meshing.ts",
-    "symbol": "Function 'getWire'",
-    "value": 22
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/nurbsSurfaceLowerer.ts",
     "symbol": "Function 'buildNurbsFace'",
     "value": 23
