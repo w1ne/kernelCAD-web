@@ -127,12 +127,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/virtualFeatureRecords.ts",
-    "symbol": "Function 'buildReferenceImageFeatureSpec'",
-    "value": 22
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseJointReactions.ts",
     "symbol": "Function 'expandCertificatePoses'",
     "value": 21
