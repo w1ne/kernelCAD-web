@@ -7,6 +7,7 @@ import type { Transform } from '../../shared/runtime/se3';
 import { expandCoupledPoses } from './coupledPoses';
 import { solveMates } from './solver';
 import type {
+  PhysicalUseCaseActuatorLimit,
   PhysicalUseCaseContact,
   PhysicalUseCaseRecord,
 } from './physicalUseCase';
@@ -14,9 +15,12 @@ import type { PhysicalUseCasePoseWitness } from './physicalUseCaseReachability';
 import {
   FRICTION_PYRAMID_EDGE_COUNT,
   add,
+  buildCouplingByDriven,
+  buildMatePathAdjacency,
   connectorWorldPoint,
   copyVec,
   cross,
+  findStablePartPath,
   isPositiveFinite,
   norm,
   resolveStaticContacts,
@@ -296,49 +300,9 @@ async function resolveActuators(
   }
 
   for (const limit of useCase.actuatorLimits) {
-    if (!isPositiveFinite(limit.maxTorqueNmm)) {
-      return `Actuator '${limit.mate}' requires a positive finite maxTorqueNmm.`;
-    }
-    const mate = matesByName.get(limit.mate);
-    if (mate === undefined) return `Actuator mate '${limit.mate}' does not exist.`;
-    if (mate.type !== 'revolute') {
-      return `Actuator mate '${limit.mate}' must be revolute for static torque review v1.`;
-    }
-    if (
-      mate.limitsDeg === undefined ||
-      !mate.limitsDeg.every(Number.isFinite) ||
-      mate.limitsDeg[0] > mate.limitsDeg[1]
-    ) {
-      return `Actuator mate '${limit.mate}' requires finite ordered limitsDeg.`;
-    }
-    if (couplings.some((coupling) => coupling.driven === limit.mate)) {
-      return `Actuator limit '${limit.mate}' names a driven coupled mate; name its independent source mate instead.`;
-    }
-
-    const movedCouplings = collectMovedCouplings(limit.mate, couplings);
-    for (const coupling of movedCouplings) {
-      const transmission = transmissions.find((candidate) =>
-        candidate.sourceMate === coupling.source &&
-        candidate.drivenMates.includes(coupling.driven));
-      if (transmission === undefined) {
-        return `Coupled motion '${coupling.source}' to '${coupling.driven}' requires arm.transmission(...) evidence for static torque review.`;
-      }
-      if (
-        transmission.ratio !== undefined &&
-        !nearlyEqual(transmission.ratio, coupling.ratio)
-      ) {
-        return `Transmission '${transmission.name}' ratio ${transmission.ratio} contradicts coupling ratio ${coupling.ratio} for '${coupling.source}' to '${coupling.driven}'.`;
-      }
-    }
-
-    const poseDeg = witness.poses[limit.mate];
-    if (typeof poseDeg !== 'number' || !Number.isFinite(poseDeg)) {
-      return `Actuator mate '${limit.mate}' has no finite scalar pose in the common-pose witness.`;
-    }
-    const [minDeg, maxDeg] = mate.limitsDeg;
-    if (poseDeg < minDeg - 1e-9 || poseDeg > maxDeg + 1e-9) {
-      return `Actuator mate '${limit.mate}' pose ${poseDeg} deg is outside limitsDeg.`;
-    }
+    const validated = validateActuatorLimit(limit, matesByName, couplings, transmissions, witness);
+    if (typeof validated === 'string') return validated;
+    const { poseDeg, minDeg, maxDeg } = validated;
 
     const baseRelativePoints = relativeContactPoints(arm, witness.transforms, contacts);
     if (baseRelativePoints === undefined) {
@@ -372,31 +336,67 @@ async function resolveActuators(
   return actuators;
 }
 
+function validateActuatorLimit(
+  limit: PhysicalUseCaseActuatorLimit,
+  matesByName: ReadonlyMap<string, ReturnType<Assembly['__mates']>[number]>,
+  couplings: ReturnType<Assembly['__mateCouplings']>,
+  transmissions: ReturnType<Assembly['__transmissionIntents']>,
+  witness: PhysicalUseCasePoseWitness,
+): { readonly poseDeg: number; readonly minDeg: number; readonly maxDeg: number } | string {
+  if (!isPositiveFinite(limit.maxTorqueNmm)) {
+    return `Actuator '${limit.mate}' requires a positive finite maxTorqueNmm.`;
+  }
+  const mate = matesByName.get(limit.mate);
+  if (mate === undefined) return `Actuator mate '${limit.mate}' does not exist.`;
+  if (mate.type !== 'revolute') {
+    return `Actuator mate '${limit.mate}' must be revolute for static torque review v1.`;
+  }
+  if (
+    mate.limitsDeg === undefined ||
+    !mate.limitsDeg.every(Number.isFinite) ||
+    mate.limitsDeg[0] > mate.limitsDeg[1]
+  ) {
+    return `Actuator mate '${limit.mate}' requires finite ordered limitsDeg.`;
+  }
+  if (couplings.some((coupling) => coupling.driven === limit.mate)) {
+    return `Actuator limit '${limit.mate}' names a driven coupled mate; name its independent source mate instead.`;
+  }
+
+  const movedCouplings = collectMovedCouplings(limit.mate, couplings);
+  for (const coupling of movedCouplings) {
+    const transmission = transmissions.find((candidate) =>
+      candidate.sourceMate === coupling.source &&
+      candidate.drivenMates.includes(coupling.driven));
+    if (transmission === undefined) {
+      return `Coupled motion '${coupling.source}' to '${coupling.driven}' requires arm.transmission(...) evidence for static torque review.`;
+    }
+    if (
+      transmission.ratio !== undefined &&
+      !nearlyEqual(transmission.ratio, coupling.ratio)
+    ) {
+      return `Transmission '${transmission.name}' ratio ${transmission.ratio} contradicts coupling ratio ${coupling.ratio} for '${coupling.source}' to '${coupling.driven}'.`;
+    }
+  }
+
+  const poseDeg = witness.poses[limit.mate];
+  if (typeof poseDeg !== 'number' || !Number.isFinite(poseDeg)) {
+    return `Actuator mate '${limit.mate}' has no finite scalar pose in the common-pose witness.`;
+  }
+  const [minDeg, maxDeg] = mate.limitsDeg;
+  if (poseDeg < minDeg - 1e-9 || poseDeg > maxDeg + 1e-9) {
+    return `Actuator mate '${limit.mate}' pose ${poseDeg} deg is outside limitsDeg.`;
+  }
+  return { poseDeg, minDeg, maxDeg };
+}
+
 function requiredContactPathActuatorSources(
   arm: Assembly,
   useCase: PhysicalUseCaseRecord,
   contacts: readonly ResolvedContact[],
 ): Set<string> | string {
-  type Mate = ReturnType<Assembly['__mates']>[number];
-  type PathEdge = { readonly partName: string; readonly mate: Mate };
-  const adjacency = new Map<string, PathEdge[]>();
-  for (const part of arm.__parts()) adjacency.set(part.name, []);
-  for (const mate of arm.__mates()) {
-    const aPart = safePartName(mate.a);
-    const bPart = safePartName(mate.b);
-    if (aPart === undefined || bPart === undefined) continue;
-    adjacency.get(aPart)?.push({ partName: bPart, mate });
-    adjacency.get(bPart)?.push({ partName: aPart, mate });
-  }
-
-  const couplingByDriven = new Map<string, string>();
-  for (const coupling of arm.__mateCouplings()) {
-    const existing = couplingByDriven.get(coupling.driven);
-    if (existing !== undefined && existing !== coupling.source) {
-      return `Driven mate '${coupling.driven}' has multiple coupling sources.`;
-    }
-    couplingByDriven.set(coupling.driven, coupling.source);
-  }
+  const adjacency = buildMatePathAdjacency(arm);
+  const couplingByDriven = buildCouplingByDriven(arm);
+  if (typeof couplingByDriven === 'string') return couplingByDriven;
 
   const stableParts = new Set(useCase.stableParts);
   const required = new Set<string>();
@@ -407,30 +407,12 @@ function requiredContactPathActuatorSources(
     }
     if (stableParts.has(mechanismPart)) continue;
 
-    const queue = [mechanismPart];
-    const visited = new Set(queue);
-    const parent = new Map<string, { readonly from: string; readonly mate: Mate }>();
-    let reachedStablePart: string | undefined;
-    while (queue.length > 0 && reachedStablePart === undefined) {
-      const partName = queue.shift()!;
-      for (const edge of adjacency.get(partName) ?? []) {
-        if (visited.has(edge.partName)) continue;
-        visited.add(edge.partName);
-        parent.set(edge.partName, { from: partName, mate: edge.mate });
-        if (stableParts.has(edge.partName)) {
-          reachedStablePart = edge.partName;
-          break;
-        }
-        queue.push(edge.partName);
-      }
-    }
-    if (reachedStablePart === undefined) {
-      return `Mechanism contact part '${mechanismPart}' has no mate path to a declared stable part.`;
-    }
+    const path = findStablePartPath(mechanismPart, adjacency, stableParts);
+    if (typeof path === 'string') return path;
 
-    let currentPart = reachedStablePart;
+    let currentPart = path.reachedStablePart;
     while (currentPart !== mechanismPart) {
-      const step = parent.get(currentPart);
+      const step = path.parent.get(currentPart);
       if (step === undefined) {
         return `Mechanism contact part '${mechanismPart}' has an unresolved stable-part path.`;
       }

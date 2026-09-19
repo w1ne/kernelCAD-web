@@ -112,11 +112,14 @@ function probe(backend: OcctBackend, frame: PlaneFrame, position: number, tol?: 
   };
 }
 
-export async function inspectSectionTool(input: InspectSectionInput): Promise<InspectSectionOutput> {
+/** Run the script and lower the target feature to its OCCT backend. */
+async function lowerSectionTarget(
+  input: InspectSectionInput,
+): Promise<{ backend: OcctBackend } | { result: InspectSectionOutput }> {
   const script = await runMcpScript(input);
-  if (!script.ok) return { ok: false, error: script.error, errorCode: script.errorCode };
+  if (!script.ok) return { result: { ok: false, error: script.error, errorCode: script.errorCode } };
   const { run } = script;
-  if (run.records.length === 0) return { ok: false, error: 'Script produced no features.' };
+  if (run.records.length === 0) return { result: { ok: false, error: 'Script produced no features.' } };
 
   const tailId = run.records[run.records.length - 1].id;
   const targetId = input.feature_id ?? resolveRootId(run.returnValue, tailId)!;
@@ -126,11 +129,59 @@ export async function inspectSectionTool(input: InspectSectionInput): Promise<In
   if (!backend) {
     const fatal = result.diagnostics.find(d => d.featureId === targetId && d.severity === 'error');
     return {
-      ok: false,
-      error: fatal ? `Feature '${targetId}' did not lower: ${fatal.message}` : `Feature '${targetId}' was not lowered.`,
-      errorCode: fatal?.code,
+      result: {
+        ok: false,
+        error: fatal ? `Feature '${targetId}' did not lower: ${fatal.message}` : `Feature '${targetId}' was not lowered.`,
+        errorCode: fatal?.code,
+      },
     };
   }
+  return { backend };
+}
+
+/** Probe a run of evenly-spaced parallel slices along the stack axis. */
+function runStackScan(
+  backend: OcctBackend,
+  stack: NonNullable<InspectSectionInput['stack']>,
+  axis: SectionAxis | undefined,
+  tol: number | undefined,
+): InspectSectionOutput {
+  const { from, to, count } = stack;
+  if (!Number.isFinite(from) || !Number.isFinite(to) || !Number.isInteger(count) || count < 1) {
+    return { ok: false, error: 'inspect stack requires finite from/to and integer count >= 1.', errorCode: 'feature.invalid-args' };
+  }
+  const stackAxis = stack.axis ?? axis ?? 'z';
+  const slices: SectionSlice[] = [];
+  for (let i = 0; i < count; i++) {
+    const t = count === 1 ? 0 : i / (count - 1);
+    const pos = from + t * (to - from);
+    const runFrame = makePlaneFrame(axisVec(stackAxis, pos), axisNormal(stackAxis), [1, 0, 0]);
+    slices.push(probe(backend, runFrame, pos, tol));
+  }
+  let minAreaIndex = 0;
+  let found = false;
+  for (let i = 0; i < slices.length; i++) {
+    // A slice that lands exactly on a face/edge boundary can return no
+    // loops (area 0); it must not masquerade as the thinnest section.
+    if (slices[i].loopCount === 0) continue;
+    if (!found || slices[i].area < slices[minAreaIndex].area) {
+      minAreaIndex = i;
+      found = true;
+    }
+  }
+  return {
+    ok: true,
+    axis: stackAxis,
+    slices,
+    minAreaIndex: found ? minAreaIndex : undefined,
+    minAreaPosition: found ? slices[minAreaIndex].position : undefined,
+  };
+}
+
+export async function inspectSectionTool(input: InspectSectionInput): Promise<InspectSectionOutput> {
+  const lowered = await lowerSectionTarget(input);
+  if ('result' in lowered) return lowered.result;
+  const backend = lowered.backend;
 
   const resolved = resolveFrame(input);
   if ('error' in resolved) return { ok: false, error: resolved.error, errorCode: resolved.errorCode };
@@ -138,36 +189,7 @@ export async function inspectSectionTool(input: InspectSectionInput): Promise<In
   const tol = input.curveTolerance;
 
   if (input.stack) {
-    const { from, to, count } = input.stack;
-    if (!Number.isFinite(from) || !Number.isFinite(to) || !Number.isInteger(count) || count < 1) {
-      return { ok: false, error: 'inspect stack requires finite from/to and integer count >= 1.', errorCode: 'feature.invalid-args' };
-    }
-    const stackAxis = input.stack.axis ?? input.axis ?? 'z';
-    const slices: SectionSlice[] = [];
-    for (let i = 0; i < count; i++) {
-      const t = count === 1 ? 0 : i / (count - 1);
-      const pos = from + t * (to - from);
-      const runFrame = makePlaneFrame(axisVec(stackAxis, pos), axisNormal(stackAxis), [1, 0, 0]);
-      slices.push(probe(backend, runFrame, pos, tol));
-    }
-    let minAreaIndex = 0;
-    let found = false;
-    for (let i = 0; i < slices.length; i++) {
-      // A slice that lands exactly on a face/edge boundary can return no
-      // loops (area 0); it must not masquerade as the thinnest section.
-      if (slices[i].loopCount === 0) continue;
-      if (!found || slices[i].area < slices[minAreaIndex].area) {
-        minAreaIndex = i;
-        found = true;
-      }
-    }
-    return {
-      ok: true,
-      axis: stackAxis,
-      slices,
-      minAreaIndex: found ? minAreaIndex : undefined,
-      minAreaPosition: found ? slices[minAreaIndex].position : undefined,
-    };
+    return runStackScan(backend, input.stack, input.axis, tol);
   }
 
   const position = input.at ?? 0;

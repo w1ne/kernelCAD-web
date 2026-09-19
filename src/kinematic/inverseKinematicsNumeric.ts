@@ -49,28 +49,13 @@ export function solveNumeric(
 ): NumericIKResult {
   const parts = arm.__parts();
   const joints = arm.__joints();
-  const tipPart = parts.find((p) => p.name === tipLink);
-  if (!tipPart) {
-    throw new Error(
-      `solveNumeric: tipLink '${tipLink}' not found among ${parts.length} parts.`,
-    );
-  }
-  const tipId = tipPart.id;
-
   // Walk parent-joint chain from the tip back to the root; collect revolute /
   // prismatic joints in tip-to-root order. Fixed and ball joints are skipped
   // (fixed has no DOF; ball is not v1 per cumulative finding #86).
-  const dofJoints = walkDofChainToTip(parts, joints, tipId);
+  const { tipId, dofJoints } = resolveNumericDofChain(parts, joints, tipLink);
   if (dofJoints.length === 0) {
     // Nothing to solve — tip is rigidly attached to the root.
-    const posErrMm = positionError(arm, tipId, seed, target);
-    return {
-      converged: posErrMm < (target.positionToleranceMm ?? 0.5),
-      poses: { ...seed },
-      iterations: 0,
-      positionErrorMm: posErrMm,
-      orientationErrorDeg: 0,
-    };
+    return zeroDofResult(arm, tipId, seed, target);
   }
 
   const posTolMm = target.positionToleranceMm ?? 0.5;
@@ -78,16 +63,7 @@ export function solveNumeric(
   // Pre-fill the full pose with the seed, defaulting any missing joints to 0.
   // The FK substrate requires every non-fixed joint to be posed (cumulative
   // finding #85).
-  const q: Record<string, number> = {};
-  for (const j of joints) {
-    if (j.kind === 'fixed') continue;
-    if (j.kind === 'ball') {
-      // v1 skips ball joints in IK; FK still needs a value.
-      // We don't iterate on ball joints here, so keep them at the seed value.
-      continue;
-    }
-    q[j.name] = (seed[j.name] as number | undefined) ?? 0;
-  }
+  const q = buildInitialPoses(joints, seed);
 
   let bestPoses: Record<string, number> = { ...q };
   let bestPosErr = Infinity;
@@ -100,13 +76,7 @@ export function solveNumeric(
     const tipT = transforms.get(tipId)!;
     const tipPos = tipT.point([0, 0, 0]);
 
-    // Position error in world coords.
-    const errPos: Vec3 = [
-      (target.position?.[0] ?? tipPos[0]) - tipPos[0],
-      (target.position?.[1] ?? tipPos[1]) - tipPos[1],
-      (target.position?.[2] ?? tipPos[2]) - tipPos[2],
-    ];
-    const pErrMm = Math.hypot(errPos[0], errPos[1], errPos[2]);
+    const { errPos, pErrMm } = numericIkError(tipPos, target);
 
     // Orientation: v1 only solves on the position channel (per ReachableTarget
     // shape — orientation tolerance is opt-in and the existing types accept
@@ -135,58 +105,17 @@ export function solveNumeric(
     // Compute the position Jacobian Jp (3 × n). Per-column geometric form for
     // a revolute joint: column = ω̂ × (tipPos − originWorld); for a prismatic
     // joint: column = ω̂ (unit axis dir in world frame).
-    const cols: { name: string; jp: Vec3 }[] = [];
-    for (const j of dofJoints) {
-      const { axisWorld, originWorld } = jointAxisInWorld(parts, joints, q, j);
-      if (j.kind === 'revolute') {
-        const r: Vec3 = [tipPos[0] - originWorld[0], tipPos[1] - originWorld[1], tipPos[2] - originWorld[2]];
-        // Cross product axisWorld × r (per-joint angular contribution).
-        const jp: Vec3 = [
-          axisWorld[1] * r[2] - axisWorld[2] * r[1],
-          axisWorld[2] * r[0] - axisWorld[0] * r[2],
-          axisWorld[0] * r[1] - axisWorld[1] * r[0],
-        ];
-        // Convert the per-radian contribution to per-degree (q is in degrees).
-        const scale = Math.PI / 180;
-        cols.push({ name: j.name, jp: [jp[0] * scale, jp[1] * scale, jp[2] * scale] });
-      } else {
-        // prismatic — axisWorld is the unit translation direction. q is in mm.
-        cols.push({ name: j.name, jp: axisWorld });
-      }
-    }
+    const cols = positionJacobianColumns(parts, joints, q, tipPos, dofJoints);
 
     // DLS step on the position channel only:
     //   Δq = J^T (J J^T + λ² I_3)^-1 e
     // where J is 3 × n and e ∈ R^3. The 3 × 3 system is closed-form invertible.
-    const lambda2 = DEFAULT_DAMPING * DEFAULT_DAMPING;
-    const A: number[][] = [
-      [lambda2, 0, 0],
-      [0, lambda2, 0],
-      [0, 0, lambda2],
-    ];
-    for (const c of cols) {
-      A[0][0] += c.jp[0] * c.jp[0];
-      A[0][1] += c.jp[0] * c.jp[1];
-      A[0][2] += c.jp[0] * c.jp[2];
-      A[1][0] += c.jp[1] * c.jp[0];
-      A[1][1] += c.jp[1] * c.jp[1];
-      A[1][2] += c.jp[1] * c.jp[2];
-      A[2][0] += c.jp[2] * c.jp[0];
-      A[2][1] += c.jp[2] * c.jp[1];
-      A[2][2] += c.jp[2] * c.jp[2];
-    }
-    const Ainv = invert3x3(A);
-    if (!Ainv) {
+    const y = solveDlsStep(cols, errPos);
+    if (y === undefined) {
       // Degenerate Jacobian — singular even with damping (shouldn't happen
       // with lambda2 > 0, but guard anyway).
       break;
     }
-    // y = Ainv * e
-    const y: Vec3 = [
-      Ainv[0][0] * errPos[0] + Ainv[0][1] * errPos[1] + Ainv[0][2] * errPos[2],
-      Ainv[1][0] * errPos[0] + Ainv[1][1] * errPos[1] + Ainv[1][2] * errPos[2],
-      Ainv[2][0] * errPos[0] + Ainv[2][1] * errPos[1] + Ainv[2][2] * errPos[2],
-    ];
     // dq = J^T y, scaled by TWIST_GAIN.
     for (const c of cols) {
       const dq = (c.jp[0] * y[0] + c.jp[1] * y[1] + c.jp[2] * y[2]) * TWIST_GAIN;
@@ -205,6 +134,132 @@ export function solveNumeric(
     positionErrorMm: bestPosErr,
     orientationErrorDeg: bestOriErr,
   };
+}
+
+function resolveNumericDofChain(
+  parts: ReturnType<Assembly['__parts']>,
+  joints: ReadonlyArray<AssemblyJointStored>,
+  tipLink: string,
+): { readonly tipId: FeatureId; readonly dofJoints: AssemblyJointStored[] } {
+  const tipPart = parts.find((p) => p.name === tipLink);
+  if (!tipPart) {
+    throw new Error(
+      `solveNumeric: tipLink '${tipLink}' not found among ${parts.length} parts.`,
+    );
+  }
+  const tipId = tipPart.id;
+  const dofJoints = walkDofChainToTip(parts, joints, tipId);
+  return { tipId, dofJoints };
+}
+
+function zeroDofResult(
+  arm: Assembly,
+  tipId: FeatureId,
+  seed: NumericPoses,
+  target: ReachableTarget,
+): NumericIKResult {
+  const posErrMm = positionError(arm, tipId, seed, target);
+  return {
+    converged: posErrMm < (target.positionToleranceMm ?? 0.5),
+    poses: { ...seed },
+    iterations: 0,
+    positionErrorMm: posErrMm,
+    orientationErrorDeg: 0,
+  };
+}
+
+function buildInitialPoses(
+  joints: ReadonlyArray<AssemblyJointStored>,
+  seed: NumericPoses,
+): Record<string, number> {
+  const q: Record<string, number> = {};
+  for (const j of joints) {
+    if (j.kind === 'fixed') continue;
+    if (j.kind === 'ball') {
+      // v1 skips ball joints in IK; FK still needs a value.
+      // We don't iterate on ball joints here, so keep them at the seed value.
+      continue;
+    }
+    q[j.name] = (seed[j.name] as number | undefined) ?? 0;
+  }
+  return q;
+}
+
+function numericIkError(
+  tipPos: Vec3,
+  target: ReachableTarget,
+): { readonly errPos: Vec3; readonly pErrMm: number } {
+  // Position error in world coords.
+  const errPos: Vec3 = [
+    (target.position?.[0] ?? tipPos[0]) - tipPos[0],
+    (target.position?.[1] ?? tipPos[1]) - tipPos[1],
+    (target.position?.[2] ?? tipPos[2]) - tipPos[2],
+  ];
+  const pErrMm = Math.hypot(errPos[0], errPos[1], errPos[2]);
+  return { errPos, pErrMm };
+}
+
+function positionJacobianColumns(
+  parts: ReturnType<Assembly['__parts']>,
+  joints: ReadonlyArray<AssemblyJointStored>,
+  q: NumericPoses,
+  tipPos: Vec3,
+  dofJoints: ReadonlyArray<AssemblyJointStored>,
+): { readonly name: string; readonly jp: Vec3 }[] {
+  const cols: { name: string; jp: Vec3 }[] = [];
+  for (const j of dofJoints) {
+    const { axisWorld, originWorld } = jointAxisInWorld(parts, joints, q, j);
+    if (j.kind === 'revolute') {
+      const r: Vec3 = [tipPos[0] - originWorld[0], tipPos[1] - originWorld[1], tipPos[2] - originWorld[2]];
+      // Cross product axisWorld × r (per-joint angular contribution).
+      const jp: Vec3 = [
+        axisWorld[1] * r[2] - axisWorld[2] * r[1],
+        axisWorld[2] * r[0] - axisWorld[0] * r[2],
+        axisWorld[0] * r[1] - axisWorld[1] * r[0],
+      ];
+      // Convert the per-radian contribution to per-degree (q is in degrees).
+      const scale = Math.PI / 180;
+      cols.push({ name: j.name, jp: [jp[0] * scale, jp[1] * scale, jp[2] * scale] });
+    } else {
+      // prismatic — axisWorld is the unit translation direction. q is in mm.
+      cols.push({ name: j.name, jp: axisWorld });
+    }
+  }
+  return cols;
+}
+
+function solveDlsStep(
+  cols: readonly { readonly name: string; readonly jp: Vec3 }[],
+  errPos: Vec3,
+): Vec3 | undefined {
+  const lambda2 = DEFAULT_DAMPING * DEFAULT_DAMPING;
+  const A: number[][] = [
+    [lambda2, 0, 0],
+    [0, lambda2, 0],
+    [0, 0, lambda2],
+  ];
+  for (const c of cols) {
+    A[0][0] += c.jp[0] * c.jp[0];
+    A[0][1] += c.jp[0] * c.jp[1];
+    A[0][2] += c.jp[0] * c.jp[2];
+    A[1][0] += c.jp[1] * c.jp[0];
+    A[1][1] += c.jp[1] * c.jp[1];
+    A[1][2] += c.jp[1] * c.jp[2];
+    A[2][0] += c.jp[2] * c.jp[0];
+    A[2][1] += c.jp[2] * c.jp[1];
+    A[2][2] += c.jp[2] * c.jp[2];
+  }
+  const Ainv = invert3x3(A);
+  if (!Ainv) {
+    return undefined;
+  }
+  // y = Ainv * e
+  const y: Vec3 = [
+    Ainv[0][0] * errPos[0] + Ainv[0][1] * errPos[1] + Ainv[0][2] * errPos[2],
+    Ainv[1][0] * errPos[0] + Ainv[1][1] * errPos[1] + Ainv[1][2] * errPos[2],
+    Ainv[2][0] * errPos[0] + Ainv[2][1] * errPos[1] + Ainv[2][2] * errPos[2],
+  ];
+  return y;
 }
 
 function walkDofChainToTip(

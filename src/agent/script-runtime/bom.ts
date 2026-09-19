@@ -170,6 +170,135 @@ function processHintFor(records: readonly FeatureRecord[], part: AssemblyPartSto
   return 'printed';
 }
 
+interface PartMeasurement {
+  catalogPart: CatalogPartMetadata | undefined;
+  kind: BomKind;
+  bbox: BomBbox;
+  density: number | null;
+  materialName: string | null;
+  massGPerUnit: number | null;
+  groupKey: string;
+}
+
+/** Lower one part and resolve its grouping identity + density/material. */
+async function measurePart(part: AssemblyPartStored, records: readonly FeatureRecord[]): Promise<PartMeasurement> {
+  const record = records.find((r) => r.id === part.originalShape.id);
+  const catalogPart = record?.metadata?.catalogPart;
+  const lowered = await part.originalShape.lower();
+  const bb = lowered.boundingBox({ exact: true });
+  const loweredBbox: BomBbox = { min: [bb.min[0], bb.min[1], bb.min[2]], max: [bb.max[0], bb.max[1], bb.max[2]] };
+  const volumeMm3 = lowered.volume();
+  const surfaceAreaMm2 = lowered.surfaceArea();
+
+  const kind: BomKind = catalogPart !== undefined ? 'purchased' : 'fabricated';
+  // Sheet-metal fabricated parts report the flat blank bbox (stock size);
+  // every other part reports the lowered body's bbox.
+  const bbox = kind === 'fabricated'
+    ? (flatSheetMetalBbox(records, part) ?? loweredBbox)
+    : loweredBbox;
+  const identityKey = catalogPart !== undefined
+    ? `catalog:${catalogPart.id}`
+    : fingerprint(volumeMm3, surfaceAreaMm2, bbox);
+  const groupKey = identityKey + declarationKey(part);
+
+  // Density resolution: explicit density wins, else the named material's
+  // catalog density, else no guess (unlike inspect({ of: 'mass' }), which
+  // defaults to water — a BOM total silently padded with water-weight
+  // guesses is worse than an honest gap).
+  let density: number | null = null;
+  let materialName: string | null = null;
+  if (part.density !== undefined) {
+    density = part.density;
+    materialName = part.material ?? null;
+  } else if (part.material !== undefined) {
+    const resolved = tryResolveMaterial(part.material);
+    if (resolved.ok) {
+      density = resolved.material.density;
+      materialName = resolved.material.name;
+    }
+  }
+
+  const massGPerUnit = density !== null ? round((volumeMm3 / 1e9) * density * 1000, 4) : null;
+
+  return { catalogPart, kind, bbox, density, materialName, massGPerUnit, groupKey };
+}
+
+/** Per-part BOM warnings, in the order they are emitted. */
+function bomDiagnosticsFor(
+  part: AssemblyPartStored,
+  kind: BomKind,
+  catalogPart: CatalogPartMetadata | undefined,
+  density: number | null,
+): CompilerDiagnostic[] {
+  const diagnostics: CompilerDiagnostic[] = [];
+  if (kind === 'fabricated' && density === null) {
+    diagnostics.push({
+      target: 'export-occt',
+      code: 'bom.material.unassigned',
+      featureId: part.originalShape.id,
+      severity: 'warn',
+      message: `BOM part '${part.name}' has no density source (no material, no explicit density); mass is omitted.`,
+      hint: 'Pass opts.material or opts.density on assembly.part(name, shape, opts) so BOM mass totals are real, not guessed.',
+    });
+  }
+  if (kind === 'purchased' && catalogPart !== undefined) {
+    const info = catalogInfo(catalogPart);
+    if (info.vendor === null) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'bom.purchased.catalog-metadata-missing',
+        featureId: part.originalShape.id,
+        severity: 'warn',
+        message: `BOM part '${part.name}' is purchased (catalog id '${catalogPart.id}') but carries no standard/upstream provenance to derive a vendor from.`,
+        hint: 'Re-fetch from a catalog record with `standard` or `upstream.repo` set, or accept catalog.vendor: null on this row.',
+      });
+    }
+  }
+  return diagnostics;
+}
+
+/** Fold another instance of the same group into an existing row. */
+function mergeBomGroup(
+  existing: BomRow & { __density: number | null },
+  part: AssemblyPartStored,
+  density: number | null,
+  massGPerUnit: number | null,
+): void {
+  existing.quantity += 1;
+  existing.instancePaths.push(part.name);
+  if (existing.__density === null && density !== null) {
+    existing.__density = density;
+    existing.density = density;
+    existing.massGPerUnit = massGPerUnit;
+  }
+  existing.massGTotal = existing.massGPerUnit !== null ? round(existing.massGPerUnit * existing.quantity, 4) : null;
+}
+
+/** Build the first row of a new group from a part's measurement. */
+function createBomRow(
+  item: number,
+  part: AssemblyPartStored,
+  measured: PartMeasurement,
+  records: readonly FeatureRecord[],
+): BomRow & { __density: number | null } {
+  const { catalogPart, kind, bbox, density, materialName, massGPerUnit } = measured;
+  return {
+    item,
+    name: part.name,
+    quantity: 1,
+    kind,
+    material: materialName,
+    density,
+    massGPerUnit,
+    massGTotal: massGPerUnit,
+    bboxMm: bbox,
+    ...(kind === 'fabricated' ? { processHint: processHintFor(records, part) } : {}),
+    ...(catalogPart !== undefined ? { catalog: catalogInfo(catalogPart) } : {}),
+    instancePaths: [part.name],
+    __density: density,
+  };
+}
+
 /**
  * Compute BOM rows + totals + diagnostics for one Assembly. Pure over the
  * capture graph; each fabricated part is lowered once (`.lower()`) to read
@@ -182,97 +311,17 @@ export async function computeBom(arm: Assembly, session: CaptureSession): Promis
   let item = 0;
 
   for (const part of arm.__parts()) {
-    const record = records.find((r) => r.id === part.originalShape.id);
-    const catalogPart = record?.metadata?.catalogPart;
-    const lowered = await part.originalShape.lower();
-    const bb = lowered.boundingBox({ exact: true });
-    const loweredBbox: BomBbox = { min: [bb.min[0], bb.min[1], bb.min[2]], max: [bb.max[0], bb.max[1], bb.max[2]] };
-    const volumeMm3 = lowered.volume();
-    const surfaceAreaMm2 = lowered.surfaceArea();
+    const measured = await measurePart(part, records);
+    diagnostics.push(...bomDiagnosticsFor(part, measured.kind, measured.catalogPart, measured.density));
 
-    const kind: BomKind = catalogPart !== undefined ? 'purchased' : 'fabricated';
-    // Sheet-metal fabricated parts report the flat blank bbox (stock size);
-    // every other part reports the lowered body's bbox.
-    const bbox = kind === 'fabricated'
-      ? (flatSheetMetalBbox(records, part) ?? loweredBbox)
-      : loweredBbox;
-    const identityKey = catalogPart !== undefined
-      ? `catalog:${catalogPart.id}`
-      : fingerprint(volumeMm3, surfaceAreaMm2, bbox);
-    const groupKey = identityKey + declarationKey(part);
-
-    // Density resolution: explicit density wins, else the named material's
-    // catalog density, else no guess (unlike inspect({ of: 'mass' }), which
-    // defaults to water — a BOM total silently padded with water-weight
-    // guesses is worse than an honest gap).
-    let density: number | null = null;
-    let materialName: string | null = null;
-    if (part.density !== undefined) {
-      density = part.density;
-      materialName = part.material ?? null;
-    } else if (part.material !== undefined) {
-      const resolved = tryResolveMaterial(part.material);
-      if (resolved.ok) {
-        density = resolved.material.density;
-        materialName = resolved.material.name;
-      }
-    }
-    if (kind === 'fabricated' && density === null) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'bom.material.unassigned',
-        featureId: part.originalShape.id,
-        severity: 'warn',
-        message: `BOM part '${part.name}' has no density source (no material, no explicit density); mass is omitted.`,
-        hint: 'Pass opts.material or opts.density on assembly.part(name, shape, opts) so BOM mass totals are real, not guessed.',
-      });
-    }
-    if (kind === 'purchased' && catalogPart !== undefined) {
-      const info = catalogInfo(catalogPart);
-      if (info.vendor === null) {
-        diagnostics.push({
-          target: 'export-occt',
-          code: 'bom.purchased.catalog-metadata-missing',
-          featureId: part.originalShape.id,
-          severity: 'warn',
-          message: `BOM part '${part.name}' is purchased (catalog id '${catalogPart.id}') but carries no standard/upstream provenance to derive a vendor from.`,
-          hint: 'Re-fetch from a catalog record with `standard` or `upstream.repo` set, or accept catalog.vendor: null on this row.',
-        });
-      }
-    }
-
-    const massGPerUnit = density !== null ? round((volumeMm3 / 1e9) * density * 1000, 4) : null;
-
-    const existing = groups.get(groupKey);
+    const existing = groups.get(measured.groupKey);
     if (existing) {
-      existing.quantity += 1;
-      existing.instancePaths.push(part.name);
-      if (existing.__density === null && density !== null) {
-        existing.__density = density;
-        existing.density = density;
-        existing.massGPerUnit = massGPerUnit;
-      }
-      existing.massGTotal = existing.massGPerUnit !== null ? round(existing.massGPerUnit * existing.quantity, 4) : null;
+      mergeBomGroup(existing, part, measured.density, measured.massGPerUnit);
       continue;
     }
 
     item += 1;
-    const row: BomRow & { __density: number | null } = {
-      item,
-      name: part.name,
-      quantity: 1,
-      kind,
-      material: materialName,
-      density,
-      massGPerUnit,
-      massGTotal: massGPerUnit,
-      bboxMm: bbox,
-      ...(kind === 'fabricated' ? { processHint: processHintFor(records, part) } : {}),
-      ...(catalogPart !== undefined ? { catalog: catalogInfo(catalogPart) } : {}),
-      instancePaths: [part.name],
-      __density: density,
-    };
-    groups.set(groupKey, row);
+    groups.set(measured.groupKey, createBomRow(item, part, measured, records));
   }
 
   const rows: BomRow[] = Array.from(groups.values()).map((g) => {
