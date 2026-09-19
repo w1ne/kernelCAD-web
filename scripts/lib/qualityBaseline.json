@@ -193,12 +193,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/planPhases.ts",
-    "symbol": "Function 'decomposeRun'",
-    "value": 35
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/profileFit.ts",
     "symbol": "Function 'fitLoop'",
     "value": 28
@@ -385,12 +379,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/authoringFeatureRecords.ts",
-    "symbol": "Function 'buildFeaStudyFeatureSpec'",
-    "value": 34
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/bridgeCurves.ts",
     "symbol": "Function 'bridgeCurves'",
     "value": 22
@@ -526,12 +514,6 @@
     "file": "src/modeling/runtime/mechanismTruth.ts",
     "symbol": "Function 'checkOrphanParts'",
     "value": 23
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/runtime/mjcfExport.ts",
-    "symbol": "Async function 'assemblyToMjcf'",
-    "value": 34
   },
   {
     "rule": "complexity",
@@ -685,12 +667,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/runtime/mjcfExport.ts",
-    "symbol": "Async function 'assemblyToMjcf'",
-    "value": 309
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/server/middleware/animationBakeEndpoint.ts",
     "symbol": "Async function 'animationBakeHandler'",
     "value": 154
@@ -783,7 +759,7 @@
     "rule": "max-lines",
     "file": "src/agent/reconstruct/planPhases.ts",
     "symbol": "(file)",
-    "value": 1002
+    "value": 942
   },
   {
     "rule": "max-lines",
