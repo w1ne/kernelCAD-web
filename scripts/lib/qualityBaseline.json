@@ -43,6 +43,12 @@
   },
   {
     "rule": "complexity",
+    "file": "src/agent/mcp/tools/getMassProperties.ts",
+    "symbol": "Async function 'getMassPropertiesTool'",
+    "value": 23
+  },
+  {
+    "rule": "complexity",
     "file": "src/agent/mcp/tools/runFea.ts",
     "symbol": "Async function 'runFeaTool'",
     "value": 22
@@ -52,6 +58,12 @@
     "file": "src/funnel/components/PricingTiers.tsx",
     "symbol": "Arrow function",
     "value": 21
+  },
+  {
+    "rule": "complexity",
+    "file": "src/kernel/backends/occt/cutoutLowerer.ts",
+    "symbol": "Function 'lowerCutout'",
+    "value": 23
   },
   {
     "rule": "complexity",
@@ -79,12 +91,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/naming/parseQuery.ts",
-    "symbol": "Function 'formatAst'",
-    "value": 22
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/naming/topoRef.ts",
     "symbol": "Function 'parseTopoRef'",
     "value": 23
@@ -103,27 +109,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/bridgeCurves.ts",
-    "symbol": "Function 'bridgeCurves'",
-    "value": 22
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/imageDimensions.ts",
     "symbol": "Function 'imageDimensions'",
     "value": 23
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/virtualFeatureRecords.ts",
-    "symbol": "Function 'buildReferenceImageFeatureSpec'",
-    "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/matePhysicalRealization.ts",
-    "symbol": "Function 'measureBearingCoplanarity'",
-    "value": 22
   },
   {
     "rule": "complexity",
@@ -133,8 +121,14 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/parts/findPart.ts",
-    "symbol": "Async function 'findPartHost'",
+    "file": "src/modeling/runtime/dfm/meshBvh.ts",
+    "symbol": "Method 'buildNode'",
+    "value": 22
+  },
+  {
+    "rule": "complexity",
+    "file": "src/shared/intent/curve3dRecord.ts",
+    "symbol": "Function 'isCurve3DMetadata'",
     "value": 22
   },
   {
@@ -142,6 +136,12 @@
     "file": "src/shared/intent/textureProjection.ts",
     "symbol": "Function 'computeProjectedUVs'",
     "value": 21
+  },
+  {
+    "rule": "complexity",
+    "file": "src/shared/intent/variableSweepRecord.ts",
+    "symbol": "Function 'isVariableSweepMetadata'",
+    "value": 22
   },
   {
     "rule": "max-lines-per-function",
