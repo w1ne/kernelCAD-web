@@ -739,12 +739,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/StagedEditSlot.tsx",
-    "symbol": "Function 'StagedEditSlot'",
-    "value": 169
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/StudioShell.tsx",
     "symbol": "Function 'StudioShell'",
     "value": 187
