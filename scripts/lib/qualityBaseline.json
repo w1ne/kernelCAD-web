@@ -288,12 +288,6 @@
     "value": 654
   },
   {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/backends/occt/sheetMetalLowerer.ts",
-    "symbol": "Function 'lowerSheetMetalBend'",
-    "value": 161
-  },
-  {
     "rule": "max-lines",
     "file": "src/agent/reconstruct/planPhases.ts",
     "symbol": "(file)",
