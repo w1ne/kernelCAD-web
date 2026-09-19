@@ -61,12 +61,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/edits/addSurfaceFromBoundary.ts",
-    "symbol": "Function 'addSurfaceFromBoundary'",
-    "value": 26
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/edits/addVariableSweep.ts",
     "symbol": "Function 'addVariableSweep'",
     "value": 24
