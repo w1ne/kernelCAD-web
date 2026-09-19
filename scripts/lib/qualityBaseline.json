@@ -151,12 +151,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/analysis.ts",
-    "symbol": "Function 'analyseMesh'",
-    "value": 26
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/profileFit.ts",
     "symbol": "Function 'fitLoop'",
     "value": 28
