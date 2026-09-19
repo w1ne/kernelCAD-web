@@ -307,12 +307,6 @@
   },
   {
     "rule": "max-lines",
-    "file": "src/agent/reconstruct/planPhases.ts",
-    "symbol": "(file)",
-    "value": 942
-  },
-  {
-    "rule": "max-lines",
     "file": "src/kernel/backends/occt/occtBackend.ts",
     "symbol": "(file)",
     "value": 844
