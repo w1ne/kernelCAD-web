@@ -277,12 +277,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/surfaceQuality.ts",
-    "symbol": "Function 'inspectCurvature'",
-    "value": 28
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/naming/parseQuery.ts",
     "symbol": "Function 'formatAst'",
     "value": 22
