@@ -253,12 +253,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/drawingFeatures.ts",
-    "symbol": "Function 'classifyChain'",
-    "value": 33
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/edgeSelection.ts",
     "symbol": "Function 'pickFace'",
     "value": 28
