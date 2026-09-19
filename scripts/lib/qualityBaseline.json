@@ -733,12 +733,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/SceneBrowser.tsx",
-    "symbol": "Arrow function",
-    "value": 154
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/routes/generate.tsx",
     "symbol": "Function 'GeneratePage'",
     "value": 155

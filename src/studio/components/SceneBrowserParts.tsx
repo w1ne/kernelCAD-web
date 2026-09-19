@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import type { JSX } from 'react';
+import type { JSX, MouseEvent } from 'react';
+import { Box, Cylinder, Layers, Eye, EyeOff, SquaresSubtract, SquaresUnite, SquaresIntersect, SquareRoundCorner, Circle, Square, SquareArrowUp, Rotate3D } from 'lucide-react';
+import { ChamferIcon } from '../icons/cad';
 import type { HistoryItem } from '../../shared/codeGeneration/codeAnalysis';
 
 export interface SceneContextMenuState {
@@ -84,5 +86,79 @@ export function SceneContextMenu({
                         Rename...
                     </button>
                 </div>
+    );
+}
+
+const getIconForType = (type: string) => {
+    switch (type) {
+        case 'Box': return <Box size={14} className="text-blue-400" />;
+        case 'Cylinder': return <Cylinder size={14} className="text-green-400" />;
+        case 'Sphere': return <Circle size={14} className="text-yellow-400" />;
+        case 'Fillet': return <SquareRoundCorner size={14} className="text-purple-400" />;
+        case 'Chamfer': return <ChamferIcon size={14} className="text-purple-400" />;
+        case 'Cut': return <SquaresSubtract size={14} className="text-red-400" />;
+        case 'Union': return <SquaresUnite size={14} className="text-red-400" />;
+        case 'Intersect': return <SquaresIntersect size={14} className="text-red-400" />;
+        case 'Extrude': return <SquareArrowUp size={14} className="text-cyan-400" />;
+        case 'Revolve': return <Rotate3D size={14} className="text-cyan-400" />;
+        case 'Sketch': return <Square size={14} className="text-gray-400" />;
+        default: return <Layers size={14} className="text-gray-500" />;
+    }
+};
+
+interface SceneFeatureRowProps {
+    readonly item: HistoryItem;
+    readonly idx: number;
+    readonly isSelected: boolean;
+    readonly isHovered: boolean;
+    readonly isHidden: boolean;
+    readonly onSelect: (item: HistoryItem) => void;
+    readonly onHover: (id: string | null) => void;
+    readonly onToggleVisibility: (id: string) => void;
+    readonly onToggleSelection?: (id: string, multi: boolean) => void;
+    readonly onContextMenu: (e: MouseEvent, item: HistoryItem) => void;
+}
+
+export function SceneFeatureRow(props: SceneFeatureRowProps): JSX.Element {
+    const { item, idx, isSelected, isHovered, isHidden, onSelect, onHover, onToggleVisibility, onToggleSelection, onContextMenu } = props;
+    return (
+                                    <div
+                                        key={item.id ?? `${item.name}-${idx}`}
+                                        data-testid={`scene-item-${item.id ?? item.name}`}
+                                        onClick={(e) => {
+                                            if (onToggleSelection && (e.metaKey || e.ctrlKey || e.shiftKey)) {
+                                                onToggleSelection(item.id, true);
+                                            } else {
+                                                onSelect(item);
+                                            }
+                                        }}
+                                        onMouseEnter={() => onHover(item.id)}
+                                        onMouseLeave={() => onHover(null)}
+                                        onContextMenu={(e) => onContextMenu(e, item)}
+                                        className={`w-full flex items-center gap-2 px-6 py-2 text-gray-300 hover:bg-[#222] hover:text-white transition-colors text-left group cursor-pointer ${isSelected ? 'bg-selection-blue/20 text-white border-l-2 border-selection-blue' : isHovered ? 'bg-[#333] text-white' : ''}`}
+                                    >
+                                        {getIconForType(item.type)}
+                                        <span className={`font-mono ${isHidden ? 'text-gray-600 italic' : ''} ${isHovered ? 'underline decoration-blue-500/50' : ''}`}>{item.name}</span>
+                                        {item.detail && (
+                                            <span className="ml-2 text-[10px] px-1 bg-[#444] rounded text-gray-400 font-mono">
+                                                {item.detail}
+                                            </span>
+                                        )}
+                                        <div className="ml-auto flex items-center gap-1">
+                                            <span className="opacity-0 group-hover:opacity-100 text-gray-500 text-[10px]">
+                                                L{item.line}
+                                            </span>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onToggleVisibility(item.name);
+                                                }}
+                                                className={`p-1 hover:bg-[#444] rounded transition-all ${isHidden ? 'opacity-100' : 'opacity-40 group-hover:opacity-100'}`}
+                                                title={isHidden ? "Show Operation" : "Hide Operation"}
+                                            >
+                                                {isHidden ? <EyeOff size={12} className="text-gray-600" /> : <Eye size={12} className="text-blue-400" />}
+                                            </button>
+                                        </div>
+                                    </div>
     );
 }
