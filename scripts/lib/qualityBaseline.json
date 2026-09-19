@@ -217,12 +217,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/validator.ts",
-    "symbol": "Async function 'validateAssemblyWithMates'",
-    "value": 23
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/parts/findPart.ts",
     "symbol": "Async function 'findPartHost'",
     "value": 22
