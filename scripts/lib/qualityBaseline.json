@@ -85,12 +85,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/vision/index.ts",
-    "symbol": "Async function 'traceFromImage'",
-    "value": 24
-  },
-  {
-    "rule": "complexity",
     "file": "src/funnel/components/PricingTiers.tsx",
     "symbol": "Arrow function",
     "value": 21
@@ -268,12 +262,6 @@
     "file": "src/shared/parts/connectorManifestSchema.ts",
     "symbol": "Function 'validateConnectorManifest'",
     "value": 23
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/agent/vision/index.ts",
-    "symbol": "Async function 'traceFromImage'",
-    "value": 163
   },
   {
     "rule": "max-lines-per-function",

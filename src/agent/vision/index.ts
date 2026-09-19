@@ -129,22 +129,9 @@ export async function traceFromImage(
   input: TraceFromImageInput,
   opts: TraceFromImageOptions = {},
 ): Promise<TraceFromImageOutput> {
-  // Step 1: validate imageUrl.
-  if (typeof input?.imageUrl !== 'string' || input.imageUrl.length === 0) {
-    return failOutput('tool.trace-from-image.invalid-image-url', 'imageUrl is missing or empty');
-  }
-
-  // Step 2: validate features (default to single silhouette).
-  let features: TraceFeatureRequest[];
-  if (input.features === undefined) {
-    features = [{ label: 'silhouette', kind: 'silhouette' }];
-  } else if (!Array.isArray(input.features) || input.features.length === 0) {
-    return failOutput('tool.trace-from-image.no-features-requested', 'features array is empty');
-  } else {
-    features = input.features;
-  }
-
-  const maxWaypoints = input.maxWaypointsPerFeature ?? DEFAULT_MAX_WAYPOINTS_PER_FEATURE;
+  const validated = validateTraceInput(input);
+  if (!validated.ok) return validated.output;
+  const { features, maxWaypoints } = validated;
 
   // Step 3: fetch image bytes.
   let imageBytes: Buffer;
@@ -164,17 +151,13 @@ export async function traceFromImage(
 
   // Step 4: pick backend.
   let backend: Exclude<TraceBackend, 'auto'>;
-  if (input.backend === undefined || input.backend === 'auto') {
-    try {
-      backend = await decideBackend(imageBytes, features);
-    } catch (err) {
-      return failOutput(
-        'tool.trace-from-image.backend-failed',
-        `router failed to inspect image: ${errMsg(err)}`,
-      );
-    }
-  } else {
-    backend = input.backend;
+  try {
+    backend = await resolveTraceBackend(input, imageBytes, features);
+  } catch (err) {
+    return failOutput(
+      'tool.trace-from-image.backend-failed',
+      `router failed to inspect image: ${errMsg(err)}`,
+    );
   }
 
   const extract = opts.extractSilhouettePolyline ?? defaultExtractSilhouettePolyline;
@@ -183,109 +166,181 @@ export async function traceFromImage(
   // Step 5: dispatch (under a hard timeout so a backend can never hang).
   const timeoutMs = opts.backendTimeoutMs ?? backendTimeoutMs();
   try {
-    const dispatch = async (): Promise<TraceFeatureResult[]> => {
-    let results: TraceFeatureResult[];
-    switch (backend) {
-      case 'opencv': {
-        const polyline = await extract(imageBytes, maxWaypoints);
-        results = features.map((f) => ({
-          label: f.label,
-          kind: f.kind,
-          waypoints: polyline,
-          confidence: 1,
-          backend: 'opencv' as const,
-        }));
-        const hasNamed = features.some((f) => f.kind === 'point' || f.kind === 'bbox');
-        if (hasNamed) {
-          diagnostics.push(
-            makeDiag(
-              'tool.trace-from-image.opencv-cannot-label',
-              'warn',
-              'opencv backend cannot label point/bbox features — every feature is returned with the same silhouette polyline. Switch to `hybrid` to label named features with the LLM.',
-            ),
-          );
-        }
-        break;
-      }
-      case 'vision-llm': {
-        const client = opts.visionClient ?? defaultVisionClient();
-        const imageU8 = new Uint8Array(
-          imageBytes.buffer,
-          imageBytes.byteOffset,
-          imageBytes.byteLength,
-        );
-        results = await extractFeaturesViaLLM(
-          client,
-          imageU8,
-          mediaType,
-          features,
-          input.hint,
-          maxWaypoints,
-        );
-        break;
-      }
-      case 'hybrid': {
-        const client = opts.visionClient ?? defaultVisionClient();
-        results = await traceHybrid(
-          client,
-          imageBytes,
-          mediaType,
-          features,
-          input.hint,
-          maxWaypoints,
-          { extractSilhouettePolyline: extract },
-        );
-        break;
-      }
-      default: {
-        throw new Error(`unknown backend "${String(backend)}"`);
-      }
-    }
-    return results;
-    };
+    const results = await withBackendTimeout(
+      dispatchTraceBackend(
+        backend,
+        imageBytes,
+        mediaType,
+        features,
+        input,
+        maxWaypoints,
+        extract,
+        opts,
+        diagnostics,
+      ),
+      timeoutMs,
+    );
 
-    const results = await withBackendTimeout(dispatch(), timeoutMs);
-
-    const ledger = buildLedger({
-      features: results,
-      scaleAnchor: input.scaleAnchor,
-      priors: input.priors,
-    });
-    if (ledger.unresolvedCount > 0) {
-      const escalate = input.validate === 'error' && hasOpenMissingFact(ledger);
-      diagnostics.push(
-        makeDiag(
-          'reference.assumptions.unresolved',
-          escalate ? 'error' : 'warn',
-          `${ledger.unresolvedCount} assumption ledger fact(s) remain open (scale/inferred/assumed) — call resolve_assumptions to confirm or override them before committing geometry.`,
-        ),
-      );
-    }
-
-    return {
-      ok: results.length > 0 && !(input.validate === 'error' && hasOpenMissingFact(ledger)),
-      features: results,
-      imageDims,
-      diagnostics,
-      ledger,
-    };
+    return buildTraceOutput(input, results, imageDims, diagnostics);
   } catch (err) {
-    if (err === TRACE_TIMEOUT) {
-      return {
-        ok: false,
-        features: [],
-        imageDims,
-        diagnostics: [
-          ...diagnostics,
+    return traceFailureOutput(err, backend, timeoutMs, imageDims, diagnostics);
+  }
+}
+
+type TraceInputValidation =
+  | { ok: true; features: TraceFeatureRequest[]; maxWaypoints: number }
+  | { ok: false; output: TraceFromImageOutput };
+
+function validateTraceInput(input: TraceFromImageInput): TraceInputValidation {
+  // Step 1: validate imageUrl.
+  if (typeof input?.imageUrl !== 'string' || input.imageUrl.length === 0) {
+    return {
+      ok: false,
+      output: failOutput('tool.trace-from-image.invalid-image-url', 'imageUrl is missing or empty'),
+    };
+  }
+
+  // Step 2: validate features (default to single silhouette).
+  let features: TraceFeatureRequest[];
+  if (input.features === undefined) {
+    features = [{ label: 'silhouette', kind: 'silhouette' }];
+  } else if (!Array.isArray(input.features) || input.features.length === 0) {
+    return {
+      ok: false,
+      output: failOutput('tool.trace-from-image.no-features-requested', 'features array is empty'),
+    };
+  } else {
+    features = input.features;
+  }
+
+  return {
+    ok: true,
+    features,
+    maxWaypoints: input.maxWaypointsPerFeature ?? DEFAULT_MAX_WAYPOINTS_PER_FEATURE,
+  };
+}
+
+async function resolveTraceBackend(
+  input: TraceFromImageInput,
+  imageBytes: Buffer,
+  features: TraceFeatureRequest[],
+): Promise<Exclude<TraceBackend, 'auto'>> {
+  if (input.backend === undefined || input.backend === 'auto') {
+    return decideBackend(imageBytes, features);
+  }
+  return input.backend;
+}
+
+async function dispatchTraceBackend(
+  backend: Exclude<TraceBackend, 'auto'>,
+  imageBytes: Buffer,
+  mediaType: VisionMediaType,
+  features: TraceFeatureRequest[],
+  input: TraceFromImageInput,
+  maxWaypoints: number,
+  extract: (pngBytes: Buffer, maxWaypoints: number) => Promise<Vec2Normalized[]>,
+  opts: TraceFromImageOptions,
+  diagnostics: TraceDiagnostic[],
+): Promise<TraceFeatureResult[]> {
+  let results: TraceFeatureResult[];
+  switch (backend) {
+    case 'opencv': {
+      const polyline = await extract(imageBytes, maxWaypoints);
+      results = features.map((f) => ({
+        label: f.label,
+        kind: f.kind,
+        waypoints: polyline,
+        confidence: 1,
+        backend: 'opencv' as const,
+      }));
+      const hasNamed = features.some((f) => f.kind === 'point' || f.kind === 'bbox');
+      if (hasNamed) {
+        diagnostics.push(
           makeDiag(
-            'tool.trace-from-image.trace-timeout',
-            'error',
-            `${backend} backend timed out after ${timeoutMs}ms`,
+            'tool.trace-from-image.opencv-cannot-label',
+            'warn',
+            'opencv backend cannot label point/bbox features — every feature is returned with the same silhouette polyline. Switch to `hybrid` to label named features with the LLM.',
           ),
-        ],
-        ledger: emptyLedger(),
-      };
+        );
+      }
+      break;
     }
+    case 'vision-llm': {
+      const client = opts.visionClient ?? defaultVisionClient();
+      const imageU8 = new Uint8Array(
+        imageBytes.buffer,
+        imageBytes.byteOffset,
+        imageBytes.byteLength,
+      );
+      results = await extractFeaturesViaLLM(
+        client,
+        imageU8,
+        mediaType,
+        features,
+        input.hint,
+        maxWaypoints,
+      );
+      break;
+    }
+    case 'hybrid': {
+      const client = opts.visionClient ?? defaultVisionClient();
+      results = await traceHybrid(
+        client,
+        imageBytes,
+        mediaType,
+        features,
+        input.hint,
+        maxWaypoints,
+        { extractSilhouettePolyline: extract },
+      );
+      break;
+    }
+    default: {
+      throw new Error(`unknown backend "${String(backend)}"`);
+    }
+  }
+  return results;
+}
+
+function buildTraceOutput(
+  input: TraceFromImageInput,
+  results: TraceFeatureResult[],
+  imageDims: [number, number],
+  diagnostics: TraceDiagnostic[],
+): TraceFromImageOutput {
+  const ledger = buildLedger({
+    features: results,
+    scaleAnchor: input.scaleAnchor,
+    priors: input.priors,
+  });
+  if (ledger.unresolvedCount > 0) {
+    const escalate = input.validate === 'error' && hasOpenMissingFact(ledger);
+    diagnostics.push(
+      makeDiag(
+        'reference.assumptions.unresolved',
+        escalate ? 'error' : 'warn',
+        `${ledger.unresolvedCount} assumption ledger fact(s) remain open (scale/inferred/assumed) — call resolve_assumptions to confirm or override them before committing geometry.`,
+      ),
+    );
+  }
+
+  return {
+    ok: results.length > 0 && !(input.validate === 'error' && hasOpenMissingFact(ledger)),
+    features: results,
+    imageDims,
+    diagnostics,
+    ledger,
+  };
+}
+
+function traceFailureOutput(
+  err: unknown,
+  backend: Exclude<TraceBackend, 'auto'>,
+  timeoutMs: number,
+  imageDims: [number, number],
+  diagnostics: TraceDiagnostic[],
+): TraceFromImageOutput {
+  if (err === TRACE_TIMEOUT) {
     return {
       ok: false,
       features: [],
@@ -293,14 +348,28 @@ export async function traceFromImage(
       diagnostics: [
         ...diagnostics,
         makeDiag(
-          'tool.trace-from-image.backend-failed',
+          'tool.trace-from-image.trace-timeout',
           'error',
-          `${backend} backend failed: ${errMsg(err)}`,
+          `${backend} backend timed out after ${timeoutMs}ms`,
         ),
       ],
       ledger: emptyLedger(),
     };
   }
+  return {
+    ok: false,
+    features: [],
+    imageDims,
+    diagnostics: [
+      ...diagnostics,
+      makeDiag(
+        'tool.trace-from-image.backend-failed',
+        'error',
+        `${backend} backend failed: ${errMsg(err)}`,
+      ),
+    ],
+    ledger: emptyLedger(),
+  };
 }
 
 function emptyLedger(): AssumptionLedger {
