@@ -24,14 +24,32 @@ export interface MuseSample {
   overlapFree: boolean;
   /** Judge categories (0/1); absent when the judge was not run. */
   categories?: JudgeCategories;
+  /**
+   * Infra-error cases are excluded from all aggregate denominators and
+   * returned separately as `infraCases`.
+   */
+  infra?: boolean;
 }
 
 export interface MuseLeaderboardRow {
   model: string;
+  /**
+   * Samples with effective categories (forced-zero and infra cases excluded).
+   * As a count, this is not a percentage; every other numeric column is 0–100.
+   */
   judged: number;
+  /** Non-infra samples, i.e. the denominator of every percentage column. */
   cases: number;
   sandbox: number;
   overlap_free: number;
+  /** Validator-only column: always null locally (upstream validator unpublished). */
+  watertight: number | null;
+  /** Validator-only column: always null locally (upstream validator unpublished). */
+  manifold: number | null;
+  /** Validator-only column: always null locally (upstream validator unpublished). */
+  self_int_free: number | null;
+  /** Validator-only column: always null locally (upstream validator unpublished). */
+  geom_valid: number | null;
   functionality: number;
   manufacturability: number;
   assemblability: number;
@@ -44,7 +62,7 @@ export interface MuseLeaderboardRow {
   connectable: number;
 }
 
-export const ZERO_CATEGORIES: JudgeCategories = {
+export const ZERO_CATEGORIES: Readonly<JudgeCategories> = {
   assembly_readiness: 0,
   joint_design: 0,
   tolerance: 0,
@@ -94,8 +112,16 @@ function samplePillars(categories: JudgeCategories): {
 export function aggregateMuseSamples(
   samples: readonly MuseSample[],
   meta: { model: string },
-): { row: MuseLeaderboardRow; forcedZeroCases: string[]; judgedCases: number } {
-  const cases = samples.length || 1;
+): {
+  row: MuseLeaderboardRow;
+  forcedZeroCases: string[];
+  judgedCases: number;
+  infraCases: string[];
+} {
+  const counted = samples.filter((s) => !s.infra);
+  const infraCases = samples.filter((s) => s.infra).map((s) => s.case);
+  // Empty and all-infra inputs would otherwise divide by zero.
+  const cases = counted.length || 1;
   const forcedZeroCases: string[] = [];
   let sandboxPass = 0;
   let overlapPass = 0;
@@ -113,7 +139,7 @@ export function aggregateMuseSamples(
     connectable: 0,
   };
 
-  for (const sample of samples) {
+  for (const sample of counted) {
     if (sample.sandboxOk) sandboxPass++;
     if (sample.sandboxOk && sample.overlapFree) overlapPass++;
     const effective = effectiveCategories(sample);
@@ -138,9 +164,13 @@ export function aggregateMuseSamples(
   const row: MuseLeaderboardRow = {
     model: meta.model,
     judged,
-    cases: samples.length,
+    cases: counted.length,
     sandbox: pct(sandboxPass / cases),
     overlap_free: pct(overlapPass / cases),
+    watertight: null,
+    manifold: null,
+    self_int_free: null,
+    geom_valid: null,
     functionality: pct(sums.functionality / cases),
     manufacturability: pct(sums.manufacturability / cases),
     assemblability: pct(sums.assemblability / cases),
@@ -152,5 +182,5 @@ export function aggregateMuseSamples(
     assembly_ready: pct(sums.assembly_ready / cases),
     connectable: pct(sums.connectable / cases),
   };
-  return { row, forcedZeroCases, judgedCases: judged };
+  return { row, forcedZeroCases, judgedCases: judged, infraCases };
 }
