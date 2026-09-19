@@ -45,10 +45,6 @@ const WASM_STATIC_BASE = 1024;
  *  identifiable after the raw pointer has been discarded. */
 export const OUT_OF_MEMORY_MARKER = 'OCCT wasm heap exhausted';
 
-/** Stable substring stamped into poison diagnostics so wrapped failures stay
- *  identifiable after the original RuntimeError has been discarded. */
-export const WASM_POISON_MARKER = 'OCCT wasm heap poisoned';
-
 /**
  * True when `e` is a raw Emscripten C++ exception pointer (a bare number)
  * whose value proves the underlying `malloc` returned null — i.e. the OCCT
@@ -100,51 +96,10 @@ export function isOutOfMemoryMessage(e: unknown): boolean {
   return typeof message === 'string' && message.includes(OUT_OF_MEMORY_MARKER);
 }
 
-/**
- * True when `e` indicates the OCCT wasm module is unusable for further calls —
- * typically `RuntimeError: memory access out of bounds` or `RuntimeError: Aborted()`
- * after an embind double-free / abort. Unlike OOM (a bare sub-1024 pointer), poison
- * is a *corrupt heap*: freeing masters will not help; the module must be reloaded.
- *
- * Also matches already-stringified worker errors (`Error` whose message embeds the
- * RuntimeError text) so GeometryEngine soft-failures are recognized.
- */
-export function isOcctWasmPoisoned(e: unknown): boolean {
-  if (isWasmPoisonMessage(e)) return true;
-  if (typeof e === 'string') return looksLikeWasmPoisonText(e);
-  if (typeof e !== 'object' || e === null) return false;
-  const name = (e as { name?: unknown }).name;
-  const message = (e as { message?: unknown }).message;
-  const msg = typeof message === 'string' ? message : '';
-  const nm = typeof name === 'string' ? name : '';
-  const isRuntime =
-    nm === 'RuntimeError' ||
-    nm === 'WebAssembly.RuntimeError' ||
-    (typeof WebAssembly !== 'undefined' && e instanceof WebAssembly.RuntimeError);
-  if (isRuntime) return looksLikeWasmPoisonText(msg) || looksLikeWasmPoisonText(`${nm}: ${msg}`);
-  // Worker hosts often wrap as a plain Error("RuntimeError: memory access out of bounds").
-  if (nm === 'Error' || nm === '') return looksLikeWasmPoisonText(msg);
-  return false;
-}
-
-function looksLikeWasmPoisonText(text: string): boolean {
-  const t = text.toLowerCase();
-  if (t.includes(WASM_POISON_MARKER.toLowerCase())) return true;
-  if (t.includes('memory access out of bounds')) return true;
-  if (t.includes('out of bounds memory access')) return true;
-  // Emscripten abort() after unrecoverable wasm failure (truncated BREP, etc.).
-  if (t.includes('aborted()') || t.includes('aborted(')) return true;
-  if (t.includes('runtimeerror') && t.includes('aborted')) return true;
-  return false;
-}
-
-/** True when `e` is an already-wrapped poison failure (marker in message/hint). */
-export function isWasmPoisonMessage(e: unknown): boolean {
-  if (typeof e === 'string') return e.includes(WASM_POISON_MARKER);
-  if (typeof e !== 'object' || e === null) return false;
-  const hint = (e as { hint?: unknown }).hint;
-  if (typeof hint === 'string' && hint.includes('.wasm-poison')) return true;
-  const message = (e as { message?: unknown }).message;
-  return typeof message === 'string' && message.includes(WASM_POISON_MARKER);
-}
-
+// Poison detection lives in shared so GeometryEngine can use it without
+// importing kernel (layering). Re-export for kernel/Node callers.
+export {
+  WASM_POISON_MARKER,
+  isOcctWasmPoisoned,
+  isWasmPoisonMessage,
+} from '../../../shared/occt/wasmPoison';

@@ -14,7 +14,7 @@ import {
     WorkerResponseSchema,
     isSuccessResponse
 } from './workerTypes';
-import { isOcctWasmPoisoned } from '../../kernel/backends/occt/occtException';
+import { isOcctWasmPoisoned } from '../occt/wasmPoison';
 
 // Re-export types for consumers
 export type { ExecutionResult, GeometryResult, SketchGeometry, FaceGeometry };
