@@ -72,6 +72,7 @@ const EMITTING_FILES = [
 // loud instead of silently scanning nothing.
 const EMITTING_DIRS: ReadonlyArray<{ dir: string; minFiles: number }> = [
   { dir: 'modeling/backends/occt/lowerers', minFiles: 21 },
+  { dir: 'kernel/backends/occt/drawingAuto', minFiles: 14 },
 ];
 
 function emitSiteFilesIn(dir: string): string[] {
