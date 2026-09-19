@@ -126,7 +126,7 @@ describe('StudioGenerate', () => {
         );
     });
 
-    it('rejects unsupported photo types before they enter the generation request', () => {
+    it('rejects unsupported photo types before they enter the generation request', async () => {
         render(<StudioGenerate />);
         const gif = new File(['gif-bytes'], 'e-reader.gif', { type: 'image/gif' });
 
@@ -134,11 +134,11 @@ describe('StudioGenerate', () => {
             target: { files: [gif] },
         });
 
-        expect(screen.getByRole('alert').textContent).toMatch(/PNG\/JPEG\/WebP/i);
+        expect((await screen.findByRole('alert')).textContent).toMatch(/PNG\/JPEG\/WebP/i);
         expect(mockGeneration.submit).not.toHaveBeenCalled();
     });
 
-    it('rejects photo files larger than four MiB before they enter the generation request', () => {
+    it('rejects photo files larger than four MiB before they enter the generation request', async () => {
         render(<StudioGenerate />);
         const oversized = new File([new Uint8Array(4 * 1024 * 1024 + 1)], 'e-reader.png', { type: 'image/png' });
 
@@ -146,7 +146,7 @@ describe('StudioGenerate', () => {
             target: { files: [oversized] },
         });
 
-        expect(screen.getByRole('alert').textContent).toMatch(/4 MiB/i);
+        expect((await screen.findByRole('alert')).textContent).toMatch(/4 MiB/i);
         expect(mockGeneration.submit).not.toHaveBeenCalled();
     });
 

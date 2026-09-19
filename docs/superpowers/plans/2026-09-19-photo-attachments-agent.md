@@ -796,8 +796,8 @@ In `src/studio/__tests__/StudioGenerate.test.tsx`, delete the tests `'forwards a
 
 Update the two validation tests to use the composer input:
 
-- `'rejects unsupported photo types before they enter the generation request'`: change `screen.getByLabelText('Reference photo')` to `screen.getByLabelText('Choose files')`; keep the `/PNG, JPEG, or WebP/i` alert assertion (the new message contains `PNG/JPEG/WebP photo`).
-- `'rejects photo files larger than four MiB before they enter the generation request'`: same label swap; keep the `/4 MiB/i` alert assertion.
+- `'rejects unsupported photo types before they enter the generation request'`: change `screen.getByLabelText('Reference photo')` to `screen.getByLabelText('Choose files')`, make the test `async`, and await the alert: `expect((await screen.findByRole('alert')).textContent).toMatch(/PNG\/JPEG\/WebP/i);` (the file read is async, so a synchronous `getByRole` races on slower CI).
+- `'rejects photo files larger than four MiB before they enter the generation request'`: same label swap and `async`/`findByRole` await; keep the `/4 MiB/i` assertion.
 
 In `src/studio/StudioGenerate.test.tsx` (the concept suite):
 
