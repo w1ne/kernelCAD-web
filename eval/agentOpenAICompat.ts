@@ -19,6 +19,8 @@ interface ChatCompletionResponse {
 
 const RETRYABLE_STATUS = (status: number): boolean => status === 429 || status >= 500;
 
+const num = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
+
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -84,7 +86,8 @@ export class OpenAICompatAgentClient implements AgentClient {
         continue;
       }
       if (RETRYABLE_STATUS(resp.status)) {
-        lastErr = new Error(`HTTP ${resp.status}`);
+        const text = await resp.text().catch(() => '');
+        lastErr = new Error(`HTTP ${resp.status} ${text.slice(0, 300)}`);
         continue;
       }
       if (!resp.ok) {
@@ -100,12 +103,12 @@ export class OpenAICompatAgentClient implements AgentClient {
       }
       const text = data.choices?.[0]?.message?.content ?? '';
       if (text.length === 0) {
-        return { text: '', tokens_in: data.usage?.prompt_tokens ?? 0, tokens_out: 0 };
+        return { text: '', tokens_in: num(data.usage?.prompt_tokens), tokens_out: 0 };
       }
       return {
         text,
-        tokens_in: data.usage?.prompt_tokens ?? 0,
-        tokens_out: data.usage?.completion_tokens ?? 0,
+        tokens_in: num(data.usage?.prompt_tokens),
+        tokens_out: num(data.usage?.completion_tokens),
       };
     }
     throw lastErr ?? new Error('OpenAI-compat request failed after retries');

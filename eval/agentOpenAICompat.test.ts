@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it, vi } from 'vitest';
 import { OpenAICompatAgentClient } from './agentOpenAICompat';
 
@@ -70,6 +72,51 @@ describe('OpenAICompatAgentClient', () => {
     });
     await expect(client.generate(REQ)).rejects.toThrow('ECONNRESET');
     expect(fetchImpl).toHaveBeenCalledTimes(3);
+  });
+
+  it('retries a bad JSON body then succeeds', async () => {
+    const badJson = {
+      status: 200,
+      ok: true,
+      json: async () => {
+        throw new SyntaxError('Unexpected token < in JSON');
+      },
+    } as unknown as Response;
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(badJson)
+      .mockResolvedValueOnce(
+        jsonResponse({ choices: [{ message: { content: 'ok' } }], usage: {} }),
+      );
+    const client = new OpenAICompatAgentClient({
+      baseUrl: 'https://api.example.com/v1',
+      apiKey: 'k',
+      retryBaseMs: 1,
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    const out = await client.generate(REQ);
+    expect(out.text).toBe('ok');
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
+
+  it('retries a timeout error then succeeds', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockRejectedValueOnce(
+        new DOMException('The operation was aborted due to timeout', 'TimeoutError'),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({ choices: [{ message: { content: 'ok' } }], usage: {} }),
+      );
+    const client = new OpenAICompatAgentClient({
+      baseUrl: 'https://api.example.com/v1',
+      apiKey: 'k',
+      retryBaseMs: 1,
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    const out = await client.generate(REQ);
+    expect(out.text).toBe('ok');
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
   });
 
   it('throws on a non-retryable 400 without retrying', async () => {
