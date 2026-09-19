@@ -1,12 +1,6 @@
 [
   {
     "rule": "complexity",
-    "file": "src/agent/cli/commands/validate.ts",
-    "symbol": "Function 'renderHuman'",
-    "value": 21
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/drawing/sheet.ts",
     "symbol": "Function 'projectionSymbol'",
     "value": 22
