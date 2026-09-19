@@ -102,6 +102,13 @@ export function inspectTool(input: InspectInput): Promise<unknown> {
       return listFacesTool(rest as unknown as Parameters<typeof listFacesTool>[0]);
     case 'face-labels':
       return listFaceLabelsTool(rest as unknown as Parameters<typeof listFaceLabelsTool>[0]);
+    default:
+      return dispatchSecondaryInspect(of, rest);
+  }
+}
+
+function dispatchSecondaryInspect(of: InspectOf, rest: Record<string, unknown>): Promise<unknown> {
+  switch (of) {
     case 'mates':
       return listMatesTool(rest as unknown as Parameters<typeof listMatesTool>[0]);
     case 'constraints':

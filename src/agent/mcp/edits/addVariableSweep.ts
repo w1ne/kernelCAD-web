@@ -43,6 +43,23 @@ export interface AddVariableSweepInput {
  * a fast structured error instead of a confusing capture-time stack trace.
  */
 export function addVariableSweep(input: AddVariableSweepInput): AddFeatureResult {
+  const sectionsError = validateSweepSections(input);
+  if (sectionsError) return sectionsError;
+
+  const spineError = validateSpineBinding(input);
+  if (spineError) return spineError;
+
+  const declarationError = validateDeclaredBindings(input);
+  if (declarationError) return declarationError;
+
+  const binding = input.binding_name ?? deriveDefaultBinding(input.code);
+  const sectionsLiteral = buildSectionsLiteral(input);
+  const feature_code = buildVariableSweepSource(input, binding, sectionsLiteral);
+
+  return addFeature(input.code, feature_code);
+}
+
+function validateSweepSections(input: AddVariableSweepInput): AddFeatureResult | null {
   if (!Array.isArray(input.sections) || input.sections.length < 2) {
     return {
       ok: false,
@@ -74,13 +91,20 @@ export function addVariableSweep(input: AddVariableSweepInput): AddFeatureResult
       error: 'add_variable_sweep: first t must be 0 and last t must be 1.',
     };
   }
+  return null;
+}
+
+function validateSpineBinding(input: AddVariableSweepInput): AddFeatureResult | null {
   if (typeof input.spine_binding !== 'string' || !isValidIdentifier(input.spine_binding)) {
     return {
       ok: false,
       error: `add_variable_sweep: spine_binding must be a JS identifier; got ${JSON.stringify(input.spine_binding)}.`,
     };
   }
+  return null;
+}
 
+function validateDeclaredBindings(input: AddVariableSweepInput): AddFeatureResult | null {
   if (!bindingExists(input.code, input.spine_binding)) {
     return {
       ok: false,
@@ -95,21 +119,27 @@ export function addVariableSweep(input: AddVariableSweepInput): AddFeatureResult
       };
     }
   }
+  return null;
+}
 
-  const binding = input.binding_name ?? deriveDefaultBinding(input.code);
-  const sectionsLiteral = '[' + input.sections
+function buildSectionsLiteral(input: AddVariableSweepInput): string {
+  return '[' + input.sections
     .map(s => `{ t: ${JSON.stringify(s.t)}, profile: ${s.profile_binding} }`)
     .join(', ') + ']';
+}
 
+function buildVariableSweepSource(
+  input: AddVariableSweepInput,
+  binding: string,
+  sectionsLiteral: string,
+): string {
   const optsParts: string[] = [];
   if (typeof input.closed === 'boolean') optsParts.push(`closed: ${JSON.stringify(input.closed)}`);
   if (input.continuity) optsParts.push(`continuity: ${JSON.stringify(input.continuity)}`);
 
-  const feature_code = optsParts.length > 0
+  return optsParts.length > 0
     ? `const ${binding} = variableSweep(${input.spine_binding}, ${sectionsLiteral}, { ${optsParts.join(', ')} });`
     : `const ${binding} = variableSweep(${input.spine_binding}, ${sectionsLiteral});`;
-
-  return addFeature(input.code, feature_code);
 }
 
 function deriveDefaultBinding(code: string): string {
