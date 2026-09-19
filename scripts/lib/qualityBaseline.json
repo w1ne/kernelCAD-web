@@ -103,12 +103,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/drawingAuto.ts",
-    "symbol": "Function 'normaliseAutoAnnotate'",
-    "value": 25
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/exportGlb.ts",
     "symbol": "Function 'buildMaterial'",
     "value": 23
