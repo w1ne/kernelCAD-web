@@ -43,12 +43,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/drawing/views.ts",
-    "symbol": "Function 'identifyViews'",
-    "value": 29
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/loop/closedLoop.ts",
     "symbol": "Async function 'runClosedLoop'",
     "value": 25

@@ -165,22 +165,15 @@ const LONE_VIEW_AXES: Record<OrthoViewName, { u: AxisMap; v: AxisMap }> = {
   right: { u: { axis: 'y', sheetIndex: 0, sign: 1 }, v: { axis: 'z', sheetIndex: 1, sign: -1 } },
 };
 
-/**
- * Identify the orthographic views on a sheet.
- *
- * `projectionHint` is the angle read from the title block (or passed by the
- * caller); without one, third-angle is assumed and reported by the caller.
- */
-export function identifyViews(
-  paths: readonly ClassifiedPath[],
-  notes: readonly PositionedText[],
-  projectionHint: 'third' | 'first' | undefined,
-): ViewSet {
-  const projection = projectionHint ?? 'third';
-  const islands = clusterIslands(paths);
+type LabeledIsland = Island & { label: ViewLabel | undefined };
+
+/** Partition islands into pictorials and orthographic candidates. */
+function splitPictorials(
+  islands: readonly Island[],
+  labels: Map<Island, ViewLabel>,
+): { pictorials: BBox2[]; ortho: LabeledIsland[] } {
   const pictorials: BBox2[] = [];
-  const labels = assignLabels(islands, notes);
-  const ortho: Array<Island & { label: ViewLabel | undefined }> = [];
+  const ortho: LabeledIsland[] = [];
   for (const is of islands) {
     const label = labels.get(is);
     if (label?.name === 'pictorial' || slantedFraction(is) > 0.35) {
@@ -189,10 +182,18 @@ export function identifyViews(
     }
     ortho.push({ ...is, label });
   }
-  const ambiguities: string[] = [];
-  const unplaced: BBox2[] = [];
-  if (ortho.length === 0) return { views: [], pictorials, unplaced, projection, ambiguities };
+  return { pictorials, ortho };
+}
 
+interface FrontCandidate {
+  is: LabeledIsland;
+  vertical: LabeledIsland[];
+  horizontal: LabeledIsland[];
+  score: number;
+}
+
+/** Score each ortho island as a front-view candidate, recording any tie. */
+function locateFrontCandidate(ortho: LabeledIsland[], ambiguities: string[]): FrontCandidate {
   const scaleTol = (a: BBox2, b: BBox2) => Math.max(0.3, 0.004 * Math.max(a.x1 - a.x0, a.y1 - a.y0, b.x1 - b.x0, b.y1 - b.y0));
   const alignedX = (a: BBox2, b: BBox2) => Math.abs(a.x0 - b.x0) <= scaleTol(a, b) && Math.abs(a.x1 - b.x1) <= scaleTol(a, b);
   const alignedY = (a: BBox2, b: BBox2) => Math.abs(a.y0 - b.y0) <= scaleTol(a, b) && Math.abs(a.y1 - b.y1) <= scaleTol(a, b);
@@ -209,30 +210,47 @@ export function identifyViews(
   if (scored.length > 1 && scored[1].score === top.score && top.score > 0 && top.score < 5) {
     ambiguities.push(`two views qualify equally as the front view (sheet boxes at x=${top.is.bbox.x0.toFixed(1)} and x=${scored[1].is.bbox.x0.toFixed(1)})`);
   }
-  if (top.score < 2) {
-    // Nothing aligns: a single-view sheet (or islands that are not a multiview
-    // set). Use the biggest island, named by its caption when it has one, else
-    // read as a plan view — the usual single view of a flat part.
-    const lone = [...ortho].sort((p, q) => area(q.bbox) - area(p.bbox))[0];
-    const name: OrthoViewName = lone.label && lone.label.name !== 'pictorial' ? lone.label.name : 'top';
-    const axes = LONE_VIEW_AXES[name];
-    for (const is of ortho) if (is !== lone) unplaced.push(is.bbox);
-    return {
-      views: [{
-        name,
-        bbox: lone.bbox,
-        paths: lone.paths,
-        ...axes,
-        identifiedBy: lone.label && lone.label.name !== 'pictorial' ? 'label' : 'single-view',
-        ...(lone.label ? { label: lone.label.text } : {}),
-      }],
-      pictorials,
-      unplaced,
-      projection,
-      ambiguities,
-    };
-  }
-  const front = top.is;
+  return top;
+}
+
+/** Single-view-sheet fallback: biggest island, named by its caption if it has one. */
+function buildLoneViewSet(
+  ortho: LabeledIsland[],
+  projection: 'third' | 'first',
+  pictorials: BBox2[],
+  ambiguities: string[],
+): ViewSet {
+  // Nothing aligns: a single-view sheet (or islands that are not a multiview
+  // set). Use the biggest island, named by its caption when it has one, else
+  // read as a plan view — the usual single view of a flat part.
+  const lone = [...ortho].sort((p, q) => area(q.bbox) - area(p.bbox))[0];
+  const name: OrthoViewName = lone.label && lone.label.name !== 'pictorial' ? lone.label.name : 'top';
+  const axes = LONE_VIEW_AXES[name];
+  const unplaced: BBox2[] = [];
+  for (const is of ortho) if (is !== lone) unplaced.push(is.bbox);
+  return {
+    views: [{
+      name,
+      bbox: lone.bbox,
+      paths: lone.paths,
+      ...axes,
+      identifiedBy: lone.label && lone.label.name !== 'pictorial' ? 'label' : 'single-view',
+      ...(lone.label ? { label: lone.label.text } : {}),
+    }],
+    pictorials,
+    unplaced,
+    projection,
+    ambiguities,
+  };
+}
+
+/** Build the front view plus whichever neighbours align with it. */
+function buildAlignedViews(
+  front: LabeledIsland,
+  top: FrontCandidate,
+  projection: 'third' | 'first',
+  ambiguities: string[],
+): { views: DrawingView[]; placed: Set<Island> } {
   if (front.label && front.label.name !== 'front' && front.label.name !== 'pictorial') {
     ambiguities.push(`the view aligned with both neighbours (the front view by projection) is labelled '${front.label.text}'`);
   }
@@ -247,7 +265,7 @@ export function identifyViews(
   }];
   const placed = new Set<Island>([front]);
 
-  const pick = (cands: typeof ortho, side: (b: BBox2) => boolean) =>
+  const pick = (cands: LabeledIsland[], side: (b: BBox2) => boolean) =>
     cands.filter(c => !placed.has(c) && side(c.bbox)).sort((p, q) => bboxGap(p.bbox, front.bbox) - bboxGap(q.bbox, front.bbox))[0];
 
   const above = pick(top.vertical, b => b.y1 <= front.bbox.y0 + 0.5);
@@ -255,7 +273,7 @@ export function identifyViews(
   const leftOf = pick(top.horizontal, b => b.x1 <= front.bbox.x0 + 0.5);
   const rightOf = pick(top.horizontal, b => b.x0 >= front.bbox.x1 - 0.5);
 
-  const addPlan = (is: Island & { label: ViewLabel | undefined }, isAbove: boolean) => {
+  const addPlan = (is: LabeledIsland, isAbove: boolean) => {
     const name: OrthoViewName = (projection === 'third') === isAbove ? 'top' : 'bottom';
     if (is.label && is.label.name !== name && is.label.name !== 'pictorial') {
       ambiguities.push(`view labelled '${is.label.text}' sits where a ${projection}-angle sheet puts the ${name} view`);
@@ -272,7 +290,7 @@ export function identifyViews(
       ...(is.label ? { label: is.label.text } : {}),
     });
   };
-  const addSide = (is: Island & { label: ViewLabel | undefined }, isLeftOf: boolean) => {
+  const addSide = (is: LabeledIsland, isLeftOf: boolean) => {
     const name: OrthoViewName = (projection === 'third') === isLeftOf ? 'left' : 'right';
     if (is.label && is.label.name !== name && is.label.name !== 'pictorial') {
       ambiguities.push(`view labelled '${is.label.text}' sits where a ${projection}-angle sheet puts the ${name} view`);
@@ -292,6 +310,35 @@ export function identifyViews(
   if (below) addPlan(below, false);
   if (leftOf) addSide(leftOf, true);
   if (rightOf) addSide(rightOf, false);
+
+  return { views, placed };
+}
+
+/**
+ * Identify the orthographic views on a sheet.
+ *
+ * `projectionHint` is the angle read from the title block (or passed by the
+ * caller); without one, third-angle is assumed and reported by the caller.
+ */
+export function identifyViews(
+  paths: readonly ClassifiedPath[],
+  notes: readonly PositionedText[],
+  projectionHint: 'third' | 'first' | undefined,
+): ViewSet {
+  const projection = projectionHint ?? 'third';
+  const islands = clusterIslands(paths);
+  const labels = assignLabels(islands, notes);
+  const { pictorials, ortho } = splitPictorials(islands, labels);
+  const ambiguities: string[] = [];
+  const unplaced: BBox2[] = [];
+  if (ortho.length === 0) return { views: [], pictorials, unplaced, projection, ambiguities };
+
+  const top = locateFrontCandidate(ortho, ambiguities);
+  if (top.score < 2) {
+    return buildLoneViewSet(ortho, projection, pictorials, ambiguities);
+  }
+  const front = top.is;
+  const { views, placed } = buildAlignedViews(front, top, projection, ambiguities);
 
   for (const is of ortho) {
     if (!placed.has(is)) unplaced.push(is.bbox);
