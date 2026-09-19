@@ -19,24 +19,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/drawing/verify.ts",
-    "symbol": "Async function 'verifyReconstruction'",
-    "value": 25
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/loop/closedLoop.ts",
-    "symbol": "Async function 'runClosedLoop'",
-    "value": 25
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/edits/addPathNurbsSegment.ts",
-    "symbol": "Function 'addPathNurbsSegment'",
-    "value": 25
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/edits/addVariableSweep.ts",
     "symbol": "Function 'addVariableSweep'",
     "value": 24
@@ -85,12 +67,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/inspectSection.ts",
-    "symbol": "Async function 'inspectSectionTool'",
-    "value": 25
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/runFea.ts",
     "symbol": "Async function 'runFeaTool'",
     "value": 22
@@ -106,12 +82,6 @@
     "file": "src/agent/reconstruct/segment.ts",
     "symbol": "Function 'fitPlane'",
     "value": 24
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/script-runtime/bom.ts",
-    "symbol": "Async function 'computeBom'",
-    "value": 25
   },
   {
     "rule": "complexity",
