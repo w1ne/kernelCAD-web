@@ -145,12 +145,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kinematic/inverseKinematicsAnalytical.ts",
-    "symbol": "Function 'solveAnalytical'",
-    "value": 24
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/animation/verifyAnimation.ts",
     "symbol": "Async function 'verifyAnimation'",
     "value": 21

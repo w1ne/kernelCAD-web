@@ -28,22 +28,18 @@ export interface AnalyticalIKResult {
   readonly solverUsed: 'analytical';
 }
 
-/**
- * Solve the position channel of the IK target in closed form. Returns null
- * when the chain doesn't match the spherical-wrist condition, when the target
- * is outside the reachable workspace, or when the chain layout doesn't match
- * the Z-yaw + Y-pitch + Y-pitch geometry the v1 solver supports.
- *
- * Orientation targets are NOT solved here — the dispatcher routes those to
- * the numeric path.
- */
-export function solveAnalytical(
-  arm: Assembly,
-  tipLink: string,
-  target: ReachableTarget,
-): AnalyticalIKResult | null {
-  if (!target.position) return null;
+interface PumaLayout {
+  readonly j1: AssemblyJointStored;
+  readonly j2: AssemblyJointStored;
+  readonly j3: AssemblyJointStored;
+  readonly chain: AssemblyJointStored[];
+  readonly joints: readonly AssemblyJointStored[];
+  readonly baseH: number;
+  readonly L1: number;
+  readonly L2: number;
+}
 
+function resolvePumaLayout(arm: Assembly, tipLink: string): PumaLayout | null {
   const detect = pieperDetector(arm, tipLink);
   if (!detect.matches) return null;
 
@@ -99,7 +95,16 @@ export function solveAnalytical(
     return null;
   }
 
-  const [tx, ty, tz] = target.position;
+  return { j1, j2, j3, chain, joints, baseH, L1, L2 };
+}
+
+function solvePumaAngles(
+  baseH: number,
+  L1: number,
+  L2: number,
+  targetPosition: Vec3,
+): { q1Deg: number; q2Deg: number; q3Deg: number } | null {
+  const [tx, ty, tz] = targetPosition;
   const x = tx;
   const y = ty;
   const z = tz - baseH;
@@ -117,14 +122,19 @@ export function solveAnalytical(
   const q3Rad = Math.atan2(sinQ3, cosQ3);
   const q2Rad = Math.atan2(-z, rho) - Math.atan2(L2 * sinQ3, L1 + L2 * cosQ3);
 
-  // Confine to per-joint limits when declared; reject if out-of-limit.
   const q1Deg = (q1Rad * 180) / Math.PI;
   const q2Deg = (q2Rad * 180) / Math.PI;
   const q3Deg = (q3Rad * 180) / Math.PI;
-  if (!withinLimits(j1, q1Deg)) return null;
-  if (!withinLimits(j2, q2Deg)) return null;
-  if (!withinLimits(j3, q3Deg)) return null;
+  return { q1Deg, q2Deg, q3Deg };
+}
 
+function buildPumaPoses(
+  layout: PumaLayout,
+  q1Deg: number,
+  q2Deg: number,
+  q3Deg: number,
+): Record<string, number> {
+  const { j1, j2, j3, chain, joints } = layout;
   const poses: Record<string, number> = {
     [j1.name]: q1Deg,
     [j2.name]: q2Deg,
@@ -139,7 +149,37 @@ export function solveAnalytical(
     if (j.kind === 'ball') continue;
     if (poses[j.name] === undefined) poses[j.name] = 0;
   }
+  return poses;
+}
 
+/**
+ * Solve the position channel of the IK target in closed form. Returns null
+ * when the chain doesn't match the spherical-wrist condition, when the target
+ * is outside the reachable workspace, or when the chain layout doesn't match
+ * the Z-yaw + Y-pitch + Y-pitch geometry the v1 solver supports.
+ *
+ * Orientation targets are NOT solved here — the dispatcher routes those to
+ * the numeric path.
+ */
+export function solveAnalytical(
+  arm: Assembly,
+  tipLink: string,
+  target: ReachableTarget,
+): AnalyticalIKResult | null {
+  if (!target.position) return null;
+
+  const layout = resolvePumaLayout(arm, tipLink);
+  if (!layout) return null;
+
+  const angles = solvePumaAngles(layout.baseH, layout.L1, layout.L2, target.position);
+  if (!angles) return null;
+
+  // Confine to per-joint limits when declared; reject if out-of-limit.
+  if (!withinLimits(layout.j1, angles.q1Deg)) return null;
+  if (!withinLimits(layout.j2, angles.q2Deg)) return null;
+  if (!withinLimits(layout.j3, angles.q3Deg)) return null;
+
+  const poses = buildPumaPoses(layout, angles.q1Deg, angles.q2Deg, angles.q3Deg);
   return { poses, solverUsed: 'analytical' };
 }
 
