@@ -163,12 +163,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/shared/intent/textureProjection.ts",
-    "symbol": "Function 'computeProjectedUVs'",
-    "value": 21
-  },
-  {
-    "rule": "complexity",
     "file": "src/shared/intent/variableSweepRecord.ts",
     "symbol": "Function 'isVariableSweepMetadata'",
     "value": 22
