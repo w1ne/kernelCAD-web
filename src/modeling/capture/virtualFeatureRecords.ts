@@ -56,6 +56,61 @@ export function buildReferenceImageFeatureSpec(
 
   const ext = extname(args.path).toLowerCase();
   const validExts = new Set(['.png', '.jpg', '.jpeg', '.webp']);
+  checkReferenceImageFormat(ext, validExts, diagnostics);
+
+  // Existence + pixel-dimension probing needs a real filesystem. On node the
+  // host-fs port is installed and this behaves exactly as it always has; in the
+  // browser there is no filesystem, so we say so explicitly rather than
+  // silently reporting "file not found" for a check that never ran.
+  const hostFs = getHostFs();
+  const { resolvedPath, fileExists } = resolveReferenceImageFile(
+    args,
+    ext,
+    validExts,
+    hostFs,
+    scriptDir,
+    diagnostics,
+  );
+
+  checkReferenceImagePlane(args.plane, diagnostics);
+
+  const { pixelWidth, pixelHeight } = readReferenceImageDimensions(
+    fileExists,
+    hostFs,
+    resolvedPath,
+  );
+
+  const scale: ReferenceImageScale = args.scale ?? 'fit-bbox';
+  checkReferenceImageScale(scale, diagnostics);
+
+  const opacity = Math.max(0, Math.min(1, args.opacity ?? 0.5));
+  const metadata: ReferenceImageMetadata & { diagnostics?: CompilerDiagnostic[] } = {
+    virtual: true,
+    path: resolvedPath,
+    plane: args.plane,
+    anchor: args.anchor ?? 'origin',
+    scale,
+    opacity,
+    flipU: args.flipU ?? false,
+    flipV: args.flipV ?? false,
+    pixelWidth,
+    pixelHeight,
+    ...(diagnostics.length > 0 ? { diagnostics } : {}),
+  };
+
+  return {
+    kind: 'referenceImage',
+    params: {},
+    inputs: {},
+    metadata: metadata as unknown as Record<string, unknown>,
+  };
+}
+
+function checkReferenceImageFormat(
+  ext: string,
+  validExts: ReadonlySet<string>,
+  diagnostics: CompilerDiagnostic[],
+): void {
   if (!validExts.has(ext)) {
     diagnostics.push({
       target: 'export-occt',
@@ -65,12 +120,16 @@ export function buildReferenceImageFeatureSpec(
       hint: HINT_TEMPLATES['feature.reference-image.format-unsupported'].template,
     });
   }
+}
 
-  // Existence + pixel-dimension probing needs a real filesystem. On node the
-  // host-fs port is installed and this behaves exactly as it always has; in the
-  // browser there is no filesystem, so we say so explicitly rather than
-  // silently reporting "file not found" for a check that never ran.
-  const hostFs = getHostFs();
+function resolveReferenceImageFile(
+  args: ReferenceImageCaptureArgs,
+  ext: string,
+  validExts: ReadonlySet<string>,
+  hostFs: ReturnType<typeof getHostFs>,
+  scriptDir: string | undefined,
+  diagnostics: CompilerDiagnostic[],
+): { resolvedPath: string; fileExists: boolean } {
   const resolvedPath = hostFs ? hostFs.resolveScriptRelative(scriptDir, args.path) : args.path;
   let fileExists = false;
   if (validExts.has(ext) && hostFs === null) {
@@ -95,17 +154,29 @@ export function buildReferenceImageFeatureSpec(
       });
     }
   }
+  return { resolvedPath, fileExists };
+}
 
-  if (!isValidPlaneSpec(args.plane)) {
+function checkReferenceImagePlane(
+  plane: PlaneSpec,
+  diagnostics: CompilerDiagnostic[],
+): void {
+  if (!isValidPlaneSpec(plane)) {
     diagnostics.push({
       target: 'export-occt',
       code: 'feature.reference-image.invalid-plane',
       severity: 'error',
-      message: `referenceImage: invalid plane '${JSON.stringify(args.plane)}'. Must be 'xy', 'xz', 'yz', or { plane, offset? }.`,
+      message: `referenceImage: invalid plane '${JSON.stringify(plane)}'. Must be 'xy', 'xz', 'yz', or { plane, offset? }.`,
       hint: HINT_TEMPLATES['feature.reference-image.invalid-plane'].template,
     });
   }
+}
 
+function readReferenceImageDimensions(
+  fileExists: boolean,
+  hostFs: ReturnType<typeof getHostFs>,
+  resolvedPath: string,
+): { pixelWidth: number; pixelHeight: number } {
   let pixelWidth = 0;
   let pixelHeight = 0;
   if (fileExists && hostFs !== null) {
@@ -113,8 +184,13 @@ export function buildReferenceImageFeatureSpec(
     pixelWidth = dims.width;
     pixelHeight = dims.height;
   }
+  return { pixelWidth, pixelHeight };
+}
 
-  const scale: ReferenceImageScale = args.scale ?? 'fit-bbox';
+function checkReferenceImageScale(
+  scale: ReferenceImageScale,
+  diagnostics: CompilerDiagnostic[],
+): void {
   if (typeof scale === 'number') {
     if (!Number.isFinite(scale) || scale <= 0 || scale > 10000) {
       diagnostics.push({
@@ -126,28 +202,6 @@ export function buildReferenceImageFeatureSpec(
       });
     }
   }
-
-  const opacity = Math.max(0, Math.min(1, args.opacity ?? 0.5));
-  const metadata: ReferenceImageMetadata & { diagnostics?: CompilerDiagnostic[] } = {
-    virtual: true,
-    path: resolvedPath,
-    plane: args.plane,
-    anchor: args.anchor ?? 'origin',
-    scale,
-    opacity,
-    flipU: args.flipU ?? false,
-    flipV: args.flipV ?? false,
-    pixelWidth,
-    pixelHeight,
-    ...(diagnostics.length > 0 ? { diagnostics } : {}),
-  };
-
-  return {
-    kind: 'referenceImage',
-    params: {},
-    inputs: {},
-    metadata: metadata as unknown as Record<string, unknown>,
-  };
 }
 
 export function buildRenderEnvironmentFeatureSpec(args: RenderEnvironmentSpec): VirtualFeatureSpec {

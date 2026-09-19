@@ -5,7 +5,7 @@
 // Discovery tier. Local-only by default; remote merges when partsBaseUrl
 // is configured AND source !== 'local'.
 
-import { loadCatalog, queryCatalog } from './catalog';
+import { loadCatalog, queryCatalog, type QueryOpts } from './catalog';
 import { remoteFindParts, RemoteDisabledError } from './remoteClient';
 import type { LicenseClass, PartRecord } from '../../shared/parts/types';
 
@@ -35,6 +35,56 @@ function filterByLicenseClass(
   return records.filter((r) => effectiveLicenseClass(r) === licenseClass);
 }
 
+function buildCatalogQueryOpts(opts: FindPartOpts): QueryOpts {
+  return {
+    ...(opts.category !== undefined ? { category: opts.category } : {}),
+    ...(opts.family !== undefined ? { family: opts.family } : {}),
+    ...(opts.standard !== undefined ? { standard: opts.standard } : {}),
+    ...(opts.tag !== undefined ? { tag: opts.tag } : {}),
+    ...(opts.limit !== undefined ? { limit: opts.limit } : {}),
+  };
+}
+
+function remotePartsConfigured(opts: FindPartOpts): boolean {
+  return (
+    (opts.partsBaseUrl !== undefined && opts.partsBaseUrl.length > 0) ||
+    (process.env.KERNELCAD_PARTS_BASE_URL !== undefined &&
+      process.env.KERNELCAD_PARTS_BASE_URL.length > 0)
+  );
+}
+
+function remoteFindPartsFor(query: string, opts: FindPartOpts) {
+  return remoteFindParts({
+    query,
+    ...(opts.partsBaseUrl !== undefined
+      ? { partsBaseUrl: opts.partsBaseUrl }
+      : {}),
+  });
+}
+
+function localOnlyResult(
+  local: PartRecord[],
+  remoteEnabled: boolean,
+): FindPartResult {
+  return {
+    results: local,
+    totalMatches: local.length,
+    source: 'local',
+    remoteEnabled,
+  };
+}
+
+function mergeRemoteResults(
+  local: PartRecord[],
+  remoteResults: PartRecord[],
+): PartRecord[] {
+  const merged = [...local];
+  for (const r of remoteResults) {
+    if (!merged.find((m) => m.id === r.id)) merged.push(r);
+  }
+  return merged;
+}
+
 export interface FindPartResult {
   results: PartRecord[];
   totalMatches: number;
@@ -49,35 +99,16 @@ export async function findPartHost(
   const source = opts.source ?? 'auto';
   const catalog = loadCatalog();
   const local = filterByLicenseClass(
-    queryCatalog(catalog, query, {
-      ...(opts.category !== undefined ? { category: opts.category } : {}),
-      ...(opts.family !== undefined ? { family: opts.family } : {}),
-      ...(opts.standard !== undefined ? { standard: opts.standard } : {}),
-      ...(opts.tag !== undefined ? { tag: opts.tag } : {}),
-      ...(opts.limit !== undefined ? { limit: opts.limit } : {}),
-    }),
+    queryCatalog(catalog, query, buildCatalogQueryOpts(opts)),
     opts.licenseClass,
   );
-  const remoteCandidate =
-    (opts.partsBaseUrl !== undefined && opts.partsBaseUrl.length > 0) ||
-    (process.env.KERNELCAD_PARTS_BASE_URL !== undefined &&
-      process.env.KERNELCAD_PARTS_BASE_URL.length > 0);
+  const remoteCandidate = remotePartsConfigured(opts);
 
   if (source === 'local') {
-    return {
-      results: local,
-      totalMatches: local.length,
-      source: 'local',
-      remoteEnabled: remoteCandidate,
-    };
+    return localOnlyResult(local, remoteCandidate);
   }
   if (source === 'remote') {
-    const remote = await remoteFindParts({
-      query,
-      ...(opts.partsBaseUrl !== undefined
-        ? { partsBaseUrl: opts.partsBaseUrl }
-        : {}),
-    });
+    const remote = await remoteFindPartsFor(query, opts);
     const results = filterByLicenseClass(remote.results, opts.licenseClass);
     return {
       results,
@@ -89,28 +120,15 @@ export async function findPartHost(
   }
   // auto
   if (!remoteCandidate) {
-    return {
-      results: local,
-      totalMatches: local.length,
-      source: 'local',
-      remoteEnabled: false,
-    };
+    return localOnlyResult(local, false);
   }
   try {
-    const remote = await remoteFindParts({
-      query,
-      ...(opts.partsBaseUrl !== undefined
-        ? { partsBaseUrl: opts.partsBaseUrl }
-        : {}),
-    });
-    const merged = [...local];
+    const remote = await remoteFindPartsFor(query, opts);
     const remoteResults = filterByLicenseClass(
       remote.results,
       opts.licenseClass,
     );
-    for (const r of remoteResults) {
-      if (!merged.find((m) => m.id === r.id)) merged.push(r);
-    }
+    const merged = mergeRemoteResults(local, remoteResults);
     return {
       results: merged.slice(0, opts.limit ?? 10),
       totalMatches: merged.length,
@@ -119,19 +137,9 @@ export async function findPartHost(
     };
   } catch (e) {
     if (e instanceof RemoteDisabledError) {
-      return {
-        results: local,
-        totalMatches: local.length,
-        source: 'local',
-        remoteEnabled: false,
-      };
+      return localOnlyResult(local, false);
     }
     // Network / 5xx failures: fall back to local.
-    return {
-      results: local,
-      totalMatches: local.length,
-      source: 'local',
-      remoteEnabled: true,
-    };
+    return localOnlyResult(local, true);
   }
 }

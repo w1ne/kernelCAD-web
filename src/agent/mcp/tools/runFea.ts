@@ -23,12 +23,14 @@ import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { runMcpScript } from '../runMcpScript';
+import type { RunScriptResult } from '../../../modeling/runtime/runScript';
 import {
   findFeaStudies,
   selectFeaStudy,
+  type FoundFeaStudy,
 } from '../../../modeling/runtime/fea/findFeaStudies';
 import { buildHeatmap, type HeatmapBand } from '../../../kernel/fea/heatmap';
-import { runFeaStudy } from '../../../kernel/fea/runFea';
+import { runFeaStudy, type RunFeaResult } from '../../../kernel/fea/runFea';
 import { detectFeaToolchain } from '../../../kernel/fea/toolchain';
 import type { FeaSummary } from '../../../kernel/fea/types';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -71,38 +73,48 @@ export interface RunFeaOutput {
   errorCode?: string;
 }
 
-/**
- * `run_fea` MCP tool. Runs one declared `feaStudy` and returns the solved
- * evidence plus heatmap PNGs.
- *
- * `ok` is false when the study violated its own declared `minSafetyFactor`,
- * when a selector did not resolve, or when the solver toolchain is absent —
- * the last of which is reported as `fea.solver.unavailable` with the install
- * command, never as a silent pass.
- */
-export async function runFeaTool(input: RunFeaInput): Promise<RunFeaOutput> {
+type FeaStudyResolution =
+  | { ok: false; output: RunFeaOutput }
+  | { ok: true; run: RunScriptResult; study: FoundFeaStudy };
+
+async function resolveFeaStudy(input: RunFeaInput): Promise<FeaStudyResolution> {
   const script = await runMcpScript(input);
-  if (!script.ok) return script;
+  if (!script.ok) return { ok: false, output: script };
   const { run } = script;
 
   const studies = findFeaStudies(run.records);
   if (studies.length === 0) {
     return {
       ok: false,
-      error:
-        'The script declares no feaStudy. Add shape.feaStudy({ material, fixed, loads }) to the part you want analysed.',
-      errorCode: 'feature.invalid-args',
+      output: {
+        ok: false,
+        error:
+          'The script declares no feaStudy. Add shape.feaStudy({ material, fixed, loads }) to the part you want analysed.',
+        errorCode: 'feature.invalid-args',
+      },
     };
   }
   const study = selectFeaStudy(studies, input.study);
   if (study === undefined) {
     return {
       ok: false,
-      error: `No feaStudy named '${input.study}'. Declared studies: ${studies.map(s => s.metadata.name).join(', ')}.`,
-      errorCode: 'feature.invalid-args',
+      output: {
+        ok: false,
+        error: `No feaStudy named '${input.study}'. Declared studies: ${studies.map(s => s.metadata.name).join(', ')}.`,
+        errorCode: 'feature.invalid-args',
+      },
     };
   }
 
+  return { ok: true, run, study };
+}
+
+type LoweredStudyShape = { ok: false; output: RunFeaOutput } | { ok: true; shape: OcctBackend };
+
+async function lowerStudyShape(
+  run: RunScriptResult,
+  study: FoundFeaStudy,
+): Promise<LoweredStudyShape> {
   const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const r = await engine.run(run.records, { paramTable: run.paramTable });
   const shape = r.shapes.get(study.shapeId);
@@ -110,34 +122,28 @@ export async function runFeaTool(input: RunFeaInput): Promise<RunFeaOutput> {
     const fatal = r.diagnostics.find(d => d.featureId === study.shapeId && d.severity === 'error');
     return {
       ok: false,
-      error: fatal
-        ? `The shape the study is bound to did not lower: ${fatal.message}`
-        : `The shape the study is bound to ('${study.shapeId}') produced no lowered geometry.`,
-      ...(fatal?.code !== undefined ? { errorCode: fatal.code } : {}),
+      output: {
+        ok: false,
+        error: fatal
+          ? `The shape the study is bound to did not lower: ${fatal.message}`
+          : `The shape the study is bound to ('${study.shapeId}') produced no lowered geometry.`,
+        ...(fatal?.code !== undefined ? { errorCode: fatal.code } : {}),
+      },
     };
   }
 
-  const outDir = input.output_dir !== undefined
-    ? (isAbsolute(input.output_dir) ? input.output_dir : resolve(input.output_dir))
-    : await mkdtemp(join(tmpdir(), 'kernelcad-fea-'));
-  await mkdir(outDir, { recursive: true });
+  return { ok: true, shape };
+}
 
-  const metadata = input.mesh_size !== undefined
-    ? { ...study.metadata, meshSize: input.mesh_size }
-    : study.metadata;
-
-  const result = await runFeaStudy(shape, metadata, study.shapeId, run.records, {
-    outDir,
-    paramTable: run.session.paramTable,
-    cwd: input.file !== undefined ? dirname(resolve(input.file)) : process.cwd(),
-    ...(input.mesh_timeout_ms !== undefined ? { meshTimeoutMs: input.mesh_timeout_ms } : {}),
-    ...(input.solve_timeout_ms !== undefined ? { solveTimeoutMs: input.solve_timeout_ms } : {}),
-  });
-
+async function renderStudyHeatmap(
+  result: RunFeaResult,
+  heatmaps: boolean | undefined,
+  outDir: string,
+  diagnostics: CompilerDiagnostic[],
+): Promise<{ images: string[] | undefined; legend: HeatmapBand[] | undefined }> {
   let images: string[] | undefined;
   let legend: HeatmapBand[] | undefined;
-  const diagnostics = [...result.diagnostics];
-  if (result.raw !== undefined && input.heatmaps !== false) {
+  if (result.raw !== undefined && heatmaps !== false) {
     const built = await buildHeatmap(result.raw.mesh, result.raw.fields, outDir);
     legend = built.bands;
     // Reuse the existing offline render pipeline verbatim — same camera set,
@@ -177,6 +183,47 @@ export async function runFeaTool(input: RunFeaInput): Promise<RunFeaOutput> {
       });
     }
   }
+
+  return { images, legend };
+}
+
+/**
+ * `run_fea` MCP tool. Runs one declared `feaStudy` and returns the solved
+ * evidence plus heatmap PNGs.
+ *
+ * `ok` is false when the study violated its own declared `minSafetyFactor`,
+ * when a selector did not resolve, or when the solver toolchain is absent —
+ * the last of which is reported as `fea.solver.unavailable` with the install
+ * command, never as a silent pass.
+ */
+export async function runFeaTool(input: RunFeaInput): Promise<RunFeaOutput> {
+  const resolved = await resolveFeaStudy(input);
+  if (!resolved.ok) return resolved.output;
+  const { run, study } = resolved;
+
+  const lowered = await lowerStudyShape(run, study);
+  if (!lowered.ok) return lowered.output;
+  const { shape } = lowered;
+
+  const outDir = input.output_dir !== undefined
+    ? (isAbsolute(input.output_dir) ? input.output_dir : resolve(input.output_dir))
+    : await mkdtemp(join(tmpdir(), 'kernelcad-fea-'));
+  await mkdir(outDir, { recursive: true });
+
+  const metadata = input.mesh_size !== undefined
+    ? { ...study.metadata, meshSize: input.mesh_size }
+    : study.metadata;
+
+  const result = await runFeaStudy(shape, metadata, study.shapeId, run.records, {
+    outDir,
+    paramTable: run.session.paramTable,
+    cwd: input.file !== undefined ? dirname(resolve(input.file)) : process.cwd(),
+    ...(input.mesh_timeout_ms !== undefined ? { meshTimeoutMs: input.mesh_timeout_ms } : {}),
+    ...(input.solve_timeout_ms !== undefined ? { solveTimeoutMs: input.solve_timeout_ms } : {}),
+  });
+
+  const diagnostics = [...result.diagnostics];
+  const { images, legend } = await renderStudyHeatmap(result, input.heatmaps, outDir, diagnostics);
 
   return {
     ok: result.ok,

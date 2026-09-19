@@ -308,6 +308,21 @@ export function resolveBendAxis(
   const zMid = (bb.min[2] + bb.max[2]) / 2;
 
   // 1. EdgeQuery with atX / atY.
+  const fromEdges = resolveEdgeQueryBendAxis(bb, edgesRef, zMid);
+  if (fromEdges !== undefined) return { axis: fromEdges };
+
+  // 2. Canonical face ref → default to midline of the longer bbox axis.
+  const fromFace = resolveCanonicalFaceBendAxis(bb, faceRef, zMid);
+  if (fromFace !== undefined) return { axis: fromFace };
+
+  return { diagnostic: unsupportedBendAxisDiagnostic(featureId, thickness) };
+}
+
+function resolveEdgeQueryBendAxis(
+  bb: ReturnType<OcctBackend['boundingBox']>,
+  edgesRef: unknown,
+  zMid: number,
+): BendAxisSpec | undefined {
   if (edgesRef && typeof edgesRef === 'object') {
     const ref = (edgesRef as { ref?: unknown }).ref ?? edgesRef;
     if (typeof ref === 'object' && ref !== null) {
@@ -316,28 +331,30 @@ export function resolveBendAxis(
         if (typeof r.query.atX === 'number' && Number.isFinite(r.query.atX)) {
           const x = r.query.atX;
           return {
-            axis: {
-              origin: [x, bb.min[1], zMid],
-              direction: [0, 1, 0],
-              edgeLength: bb.max[1] - bb.min[1],
-            },
+            origin: [x, bb.min[1], zMid],
+            direction: [0, 1, 0],
+            edgeLength: bb.max[1] - bb.min[1],
           };
         }
         if (typeof r.query.atY === 'number' && Number.isFinite(r.query.atY)) {
           const y = r.query.atY;
           return {
-            axis: {
-              origin: [bb.min[0], y, zMid],
-              direction: [1, 0, 0],
-              edgeLength: bb.max[0] - bb.min[0],
-            },
+            origin: [bb.min[0], y, zMid],
+            direction: [1, 0, 0],
+            edgeLength: bb.max[0] - bb.min[0],
           };
         }
       }
     }
   }
+  return undefined;
+}
 
-  // 2. Canonical face ref → default to midline of the longer bbox axis.
+function resolveCanonicalFaceBendAxis(
+  bb: ReturnType<OcctBackend['boundingBox']>,
+  faceRef: unknown,
+  zMid: number,
+): BendAxisSpec | undefined {
   if (faceRef && typeof faceRef === 'object') {
     const ref = (faceRef as { ref?: unknown }).ref ?? faceRef;
     if (typeof ref === 'object' && ref !== null) {
@@ -348,34 +365,34 @@ export function resolveBendAxis(
         if (w >= h) {
           const xMid = (bb.min[0] + bb.max[0]) / 2;
           return {
-            axis: {
-              origin: [xMid, bb.min[1], zMid],
-              direction: [0, 1, 0],
-              edgeLength: h,
-            },
+            origin: [xMid, bb.min[1], zMid],
+            direction: [0, 1, 0],
+            edgeLength: h,
           };
         } else {
           const yMid = (bb.min[1] + bb.max[1]) / 2;
           return {
-            axis: {
-              origin: [bb.min[0], yMid, zMid],
-              direction: [1, 0, 0],
-              edgeLength: w,
-            },
+            origin: [bb.min[0], yMid, zMid],
+            direction: [1, 0, 0],
+            edgeLength: w,
           };
         }
       }
     }
   }
+  return undefined;
+}
 
+function unsupportedBendAxisDiagnostic(
+  featureId: FeatureId,
+  thickness: number,
+): CompilerDiagnostic {
   return {
-    diagnostic: {
-      target: 'export-occt',
-      code: 'feature.bend.edge-not-linear',
-      featureId,
-      severity: 'error',
-      message: '.bend(): could not derive a bend axis from the selector. Slice-1 supports { atX: <n> }, { atY: <n> }, or { face: "top" | "bottom" }.',
-      hint: '.bend() slice-1 selectors: pass an EdgeQuery with atX/atY (e.g. { atX: 50 }) or { face: "top" }. thickness=' + thickness,
-    },
+    target: 'export-occt',
+    code: 'feature.bend.edge-not-linear',
+    featureId,
+    severity: 'error',
+    message: '.bend(): could not derive a bend axis from the selector. Slice-1 supports { atX: <n> }, { atY: <n> }, or { face: "top" | "bottom" }.',
+    hint: '.bend() slice-1 selectors: pass an EdgeQuery with atX/atY (e.g. { atX: 50 }) or { face: "top" }. thickness=' + thickness,
   };
 }

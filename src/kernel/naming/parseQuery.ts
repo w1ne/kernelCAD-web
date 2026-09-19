@@ -341,6 +341,20 @@ export function formatQueryAsString(q: Query<unknown>): string {
   return `@kcq[${formatAst(q.ast)}]`;
 }
 
+type BranchAst = Extract<
+  QueryAst,
+  {
+    op:
+      | 'ownedByPart'
+      | 'ownerPart'
+      | 'union'
+      | 'intersection'
+      | 'subtraction'
+      | 'entityFilter'
+      | 'nthElement';
+  }
+>;
+
 function formatAst(ast: QueryAst): string {
   switch (ast.op) {
     case 'nothing':
@@ -349,6 +363,25 @@ function formatAst(ast: QueryAst): string {
       return `everything(${ast.kind})`;
     case 'createdBy':
       return `createdBy("${ast.id}"${ast.kind ? `, ${ast.kind}` : ''})`;
+    case 'containsPoint':
+      return `containsPoint([${ast.point.join(',')}])`;
+    case 'closestTo':
+      return `closestTo([${ast.point.join(',')}]${ast.k !== undefined ? `, ${ast.k}` : ''})`;
+    case 'geometryType':
+      return `geometryType(${ast.geomType})`;
+    case 'withLabel':
+      return `withLabel("${ast.label}")`;
+    case 'withFeatureName':
+      return `withFeatureName("${ast.name}")`;
+    case 'fromString':
+      return `fromString("${ast.ref}")`;
+    default:
+      return formatBranchAst(ast);
+  }
+}
+
+function formatBranchAst(ast: BranchAst): string {
+  switch (ast.op) {
     case 'ownedByPart':
       return `ownedByPart(${formatAst(ast.query)})`;
     case 'ownerPart':
@@ -359,12 +392,6 @@ function formatAst(ast: QueryAst): string {
       return `intersection(${ast.queries.map(formatAst).join(', ')})`;
     case 'subtraction':
       return `subtraction(${formatAst(ast.a)}, ${formatAst(ast.b)})`;
-    case 'containsPoint':
-      return `containsPoint([${ast.point.join(',')}])`;
-    case 'closestTo':
-      return `closestTo([${ast.point.join(',')}]${ast.k !== undefined ? `, ${ast.k}` : ''})`;
-    case 'geometryType':
-      return `geometryType(${ast.geomType})`;
     case 'entityFilter': {
       const inner = ast.query;
       if (inner.op === 'intersection') {
@@ -375,14 +402,8 @@ function formatAst(ast: QueryAst): string {
       }
       return `${ast.kind}(${formatAst(inner)})`;
     }
-    case 'withLabel':
-      return `withLabel("${ast.label}")`;
-    case 'withFeatureName':
-      return `withFeatureName("${ast.name}")`;
     case 'nthElement':
       return `nthElement(${formatAst(ast.query)}, ${ast.index})`;
-    case 'fromString':
-      return `fromString("${ast.ref}")`;
   }
 }
 

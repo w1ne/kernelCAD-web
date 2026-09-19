@@ -48,7 +48,7 @@ import {
   INTERPENETRATION_EPSILON_MM3,
   jointContactCapMm3,
 } from '../runtime/jointContactCap';
-import { isSceneBackend } from '../../kernel/backends/sceneBackend';
+import { isSceneBackend, type SceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic, DiagnosticCode } from '../../shared/diagnostics/diagnostic';
 import { withNextAction } from '../../shared/diagnostics/diagnostic';
 import type { NormalizedAnimationTrack } from '../../shared/intent/animationViewRecord';
@@ -144,13 +144,7 @@ export async function verifyAnimation(
   // Snapshot the pre-verification values of every animated param so the
   // model can be restored after the sweep (a param may appear in only one
   // track post-validation; the Set guards defensively anyway).
-  const originals: ParamUpdateEdit[] = [];
-  const seen = new Set<string>();
-  for (const track of tracks) {
-    if (seen.has(track.param)) continue;
-    seen.add(track.param);
-    originals.push({ name: track.param, value: model.session.paramTable.get(track.param).value });
-  }
+  const originals: ParamUpdateEdit[] = snapshotAnimatedParamValues(model, tracks);
 
   // Does the script declare any assembly at all? If it does, at least one
   // sampled pose MUST resolve a SceneBackend — otherwise the thing we lowered
@@ -163,43 +157,16 @@ export async function verifyAnimation(
   let posesSampled = 0;
   let poseFailures = 0;
   for (const tMs of sampleTimes) {
-    const edits: ParamUpdateEdit[] = tracks.map((track) => ({
-      name: track.param,
-      value: sampleTrackAt(track, tMs),
-    }));
-    let lowered;
-    try {
-      const { model: updated } = await updateModelParams(model, edits, { silent: opts.silent });
-      lowered = updated.rootShape ?? updated.tailShape;
-      if (lowered === undefined) {
-        throw new Error('the chain root produced no lowered shape');
-      }
-    } catch (e) {
-      // Honesty rule: a pose that fails to solve is a failure, never a skip.
+    const outcome = await lowerPoseAtTime(model, tracks, tMs, opts.silent);
+    if ('failure' in outcome) {
       poseFailures += 1;
-      diagnostics.push(diag(
-        'recompute.lowering.exception',
-        `verifyAnimation: the pose at tMs=${tMs} failed to solve/lower: ${errMsg(e)}`,
-        'Fix the underlying solve error in the message, or adjust the animationView keyframes to avoid the failing pose.',
-      ));
+      diagnostics.push(outcome.failure);
       continue;
     }
     posesSampled += 1;
-    if (!isSceneBackend(lowered)) continue; // single-body model: nothing to clash
+    if (!isSceneBackend(outcome.lowered)) continue; // single-body model: nothing to clash
     anyPoseResolvedScene = true;
-    const result = detectInterferences(lowered, INTERPENETRATION_EPSILON_MM3, ignored);
-    for (const pair of result.pairs) {
-      // Mechanism-gate classification: at or below the cap is touching /
-      // tessellation noise, NOT an interference.
-      if (pair.volumeMm3 <= cap) continue;
-      collisions.push({ tMs, a: pair.a, b: pair.b, volumeMm3: pair.volumeMm3 });
-      diagnostics.push(diag(
-        'animation.collision',
-        `verifyAnimation: parts '${pair.a}' and '${pair.b}' collide at tMs=${tMs} of the animation timeline — ` +
-          `shared volume ${pair.volumeMm3.toFixed(2)} mm³ exceeds the ${cap} mm³ interference threshold.`,
-        `Adjust the keyframes so the pose at tMs=${tMs} keeps '${pair.a}' and '${pair.b}' clear, or reshape / add clearance to the colliding geometry.`,
-      ));
-    }
+    collectPoseCollisions(tMs, outcome.lowered, ignored, cap, collisions, diagnostics);
   }
 
   // Gate hole: the script declared an assembly, yet not one sampled pose
@@ -207,30 +174,19 @@ export async function verifyAnimation(
   // script returned a bare body instead of the solved scene, so motion
   // verification never saw the assembly and would otherwise pass silently.
   // Fail closed.
-  let sceneUnresolved = false;
-  if (declaresAssembly && !anyPoseResolvedScene && poseFailures === 0) {
-    sceneUnresolved = true;
-    diagnostics.push(diag(
-      'cli.invalid-args',
-      'verifyAnimation: the script declares an assembly, but its return value is a plain shape rather than the solved scene, ' +
-        'so animation-pose interference verification cannot see the assembly (no sampled pose resolved a scene).',
-      "Return the solved assembly from the script — `return asm.solvedModel(...)` — so the chain tail is the scene the animation drives.",
-    ));
-  }
+  const sceneUnresolved = applySceneResolutionGate(
+    declaresAssembly,
+    anyPoseResolvedScene,
+    poseFailures,
+    diagnostics,
+  );
 
   // Restore the pre-verification param values — the capture frame loop or
   // later consumers reuse the model and must see it unchanged.
-  if (originals.length > 0) {
-    try {
-      await updateModelParams(model, originals, { silent: opts.silent });
-    } catch (e) {
-      poseFailures += 1;
-      diagnostics.push(diag(
-        'recompute.lowering.exception',
-        `verifyAnimation: restoring the pre-verification param values failed: ${errMsg(e)}`,
-        'The model session may be in an inconsistent pose; rebuild the model before reusing it.',
-      ));
-    }
+  const restoreIssue = await restoreAnimatedParamValues(model, originals, opts.silent);
+  if (restoreIssue !== undefined) {
+    poseFailures += 1;
+    diagnostics.push(restoreIssue);
   }
 
   return {
@@ -239,4 +195,108 @@ export async function verifyAnimation(
     posesSampled,
     diagnostics,
   };
+}
+
+type PoseLoweringOutcome =
+  | { readonly failure: CompilerDiagnostic }
+  | { readonly lowered: unknown };
+
+async function lowerPoseAtTime(
+  model: BuiltModel,
+  tracks: readonly NormalizedAnimationTrack[],
+  tMs: number,
+  silent: boolean | undefined,
+): Promise<PoseLoweringOutcome> {
+  const edits: ParamUpdateEdit[] = tracks.map((track) => ({
+    name: track.param,
+    value: sampleTrackAt(track, tMs),
+  }));
+  try {
+    const { model: updated } = await updateModelParams(model, edits, { silent });
+    const lowered = updated.rootShape ?? updated.tailShape;
+    if (lowered === undefined) {
+      throw new Error('the chain root produced no lowered shape');
+    }
+    return { lowered };
+  } catch (e) {
+    // Honesty rule: a pose that fails to solve is a failure, never a skip.
+    return {
+      failure: diag(
+        'recompute.lowering.exception',
+        `verifyAnimation: the pose at tMs=${tMs} failed to solve/lower: ${errMsg(e)}`,
+        'Fix the underlying solve error in the message, or adjust the animationView keyframes to avoid the failing pose.',
+      ),
+    };
+  }
+}
+
+function collectPoseCollisions(
+  tMs: number,
+  lowered: SceneBackend,
+  ignored: ReadonlySet<string>,
+  cap: number,
+  collisions: AnimationCollision[],
+  diagnostics: CompilerDiagnostic[],
+): void {
+  const result = detectInterferences(lowered, INTERPENETRATION_EPSILON_MM3, ignored);
+  for (const pair of result.pairs) {
+    // Mechanism-gate classification: at or below the cap is touching /
+    // tessellation noise, NOT an interference.
+    if (pair.volumeMm3 <= cap) continue;
+    collisions.push({ tMs, a: pair.a, b: pair.b, volumeMm3: pair.volumeMm3 });
+    diagnostics.push(diag(
+      'animation.collision',
+      `verifyAnimation: parts '${pair.a}' and '${pair.b}' collide at tMs=${tMs} of the animation timeline — ` +
+        `shared volume ${pair.volumeMm3.toFixed(2)} mm³ exceeds the ${cap} mm³ interference threshold.`,
+      `Adjust the keyframes so the pose at tMs=${tMs} keeps '${pair.a}' and '${pair.b}' clear, or reshape / add clearance to the colliding geometry.`,
+    ));
+  }
+}
+
+function snapshotAnimatedParamValues(
+  model: BuiltModel,
+  tracks: readonly NormalizedAnimationTrack[],
+): ParamUpdateEdit[] {
+  const originals: ParamUpdateEdit[] = [];
+  const seen = new Set<string>();
+  for (const track of tracks) {
+    if (seen.has(track.param)) continue;
+    seen.add(track.param);
+    originals.push({ name: track.param, value: model.session.paramTable.get(track.param).value });
+  }
+  return originals;
+}
+
+function applySceneResolutionGate(
+  declaresAssembly: boolean,
+  anyPoseResolvedScene: boolean,
+  poseFailures: number,
+  diagnostics: CompilerDiagnostic[],
+): boolean {
+  if (!declaresAssembly || anyPoseResolvedScene || poseFailures !== 0) return false;
+  diagnostics.push(diag(
+    'cli.invalid-args',
+    'verifyAnimation: the script declares an assembly, but its return value is a plain shape rather than the solved scene, ' +
+      'so animation-pose interference verification cannot see the assembly (no sampled pose resolved a scene).',
+    "Return the solved assembly from the script — `return asm.solvedModel(...)` — so the chain tail is the scene the animation drives.",
+  ));
+  return true;
+}
+
+async function restoreAnimatedParamValues(
+  model: BuiltModel,
+  originals: ParamUpdateEdit[],
+  silent: boolean | undefined,
+): Promise<CompilerDiagnostic | undefined> {
+  if (originals.length === 0) return undefined;
+  try {
+    await updateModelParams(model, originals, { silent });
+  } catch (e) {
+    return diag(
+      'recompute.lowering.exception',
+      `verifyAnimation: restoring the pre-verification param values failed: ${errMsg(e)}`,
+      'The model session may be in an inconsistent pose; rebuild the model before reusing it.',
+    );
+  }
+  return undefined;
 }

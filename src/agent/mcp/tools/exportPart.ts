@@ -14,6 +14,7 @@ import { initOcct } from '../../../kernel/backends/occt/occtBackend';
 import {
   runAndExportParts,
   stlNotWatertightDiagnostic,
+  type ExportPartsResult,
 } from '../../script-runtime/export';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
@@ -47,6 +48,54 @@ export interface ExportPartOutput {
   error?: string;
 }
 
+function validateExportDestinations(input: ExportPartInput, allParts: boolean): string | undefined {
+  if (allParts) {
+    if (!input.output_dir || typeof input.output_dir !== 'string') {
+      return "Required: output_dir (all-parts mode; pass { part, output_path } for a single part)";
+    }
+  } else {
+    if (!input.output_path || typeof input.output_path !== 'string') {
+      return 'Required: output_path (single-part mode; pass { output_dir } with part omitted or "all" for all parts)';
+    }
+  }
+  return undefined;
+}
+
+async function writeExportedParts(
+  parts: ExportPartsResult['parts'],
+  input: ExportPartInput,
+  allParts: boolean,
+  written: WrittenPartFile[],
+  diagnostics: CompilerDiagnostic[],
+): Promise<string | undefined> {
+  for (const p of parts) {
+    const destination = allParts
+      ? join(input.output_dir!, `${p.fileSafeName}.stl`)
+      : input.output_path!;
+    const pathCheck = validateOutputPath(destination);
+    if (!pathCheck.ok) {
+      return pathCheck.error;
+    }
+    const finalPath = pathCheck.resolved!;
+    try {
+      await mkdir(dirname(finalPath), { recursive: true });
+      await writeFile(finalPath, Buffer.from(p.bytes));
+    } catch (e) {
+      return `Cannot write to ${finalPath}: ${e instanceof Error ? e.message : String(e)}`;
+    }
+    written.push({
+      part: p.name,
+      output_path: finalPath,
+      byte_count: p.bytes.byteLength,
+      watertight: p.report.ok,
+    });
+    if (!input.no_verify && !p.report.ok) {
+      diagnostics.push(stlNotWatertightDiagnostic(p.report, undefined, p.name));
+    }
+  }
+  return undefined;
+}
+
 /**
  * MCP `export_part` tool — export solved-assembly parts as individual
  * binary STL files in their modeled (world-frame) positions.
@@ -63,14 +112,9 @@ export interface ExportPartOutput {
 export async function exportPartTool(input: ExportPartInput): Promise<ExportPartOutput> {
   const allParts = input.part === undefined || input.part === 'all';
 
-  if (allParts) {
-    if (!input.output_dir || typeof input.output_dir !== 'string') {
-      return { ok: false, error: "Required: output_dir (all-parts mode; pass { part, output_path } for a single part)" };
-    }
-  } else {
-    if (!input.output_path || typeof input.output_path !== 'string') {
-      return { ok: false, error: 'Required: output_path (single-part mode; pass { output_dir } with part omitted or "all" for all parts)' };
-    }
+  const destinationError = validateExportDestinations(input, allParts);
+  if (destinationError !== undefined) {
+    return { ok: false, error: destinationError };
   }
 
   const source = await loadMcpScriptSource(input);
@@ -100,34 +144,9 @@ export async function exportPartTool(input: ExportPartInput): Promise<ExportPart
 
   const written: WrittenPartFile[] = [];
   const diagnostics: CompilerDiagnostic[] = [...result.diagnostics];
-  for (const p of result.parts) {
-    const destination = allParts
-      ? join(input.output_dir!, `${p.fileSafeName}.stl`)
-      : input.output_path!;
-    const pathCheck = validateOutputPath(destination);
-    if (!pathCheck.ok) {
-      return { ok: false, written, error: pathCheck.error };
-    }
-    const finalPath = pathCheck.resolved!;
-    try {
-      await mkdir(dirname(finalPath), { recursive: true });
-      await writeFile(finalPath, Buffer.from(p.bytes));
-    } catch (e) {
-      return {
-        ok: false,
-        written,
-        error: `Cannot write to ${finalPath}: ${e instanceof Error ? e.message : String(e)}`,
-      };
-    }
-    written.push({
-      part: p.name,
-      output_path: finalPath,
-      byte_count: p.bytes.byteLength,
-      watertight: p.report.ok,
-    });
-    if (!input.no_verify && !p.report.ok) {
-      diagnostics.push(stlNotWatertightDiagnostic(p.report, undefined, p.name));
-    }
+  const writeError = await writeExportedParts(result.parts, input, allParts, written, diagnostics);
+  if (writeError !== undefined) {
+    return { ok: false, written, error: writeError };
   }
 
   const gateFailed = !input.no_verify && written.some(w => !w.watertight);

@@ -110,74 +110,73 @@ function getString(obj: unknown, key: string): string | null {
   return typeof val === 'string' ? val : null;
 }
 
+// Prefer explicit wire/outline accessors when available (sketch results, planar faces, etc.).
+function tryWireValue(val: unknown, ctx: unknown): unknown | null {
+  if (!val) return null;
+  if (isRecord(val)) return val;
+  if (typeof val === 'function') {
+    try {
+      const out = (val as (...args: unknown[]) => unknown).call(ctx);
+      return out ?? null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+function callWireMethod(obj: UnknownRecord, key: string): unknown | null {
+  const fn = getFn(obj, key);
+  if (fn) {
+    try {
+      const out = fn.call(obj);
+      if (out) return out;
+    } catch {
+      // ignore
+    }
+  }
+  return null;
+}
+
+function resolveWireAccessor(obj: UnknownRecord, key: string): unknown | null {
+  const direct = tryWireValue(obj[key], obj);
+  if (direct) return direct;
+  return callWireMethod(obj, key);
+}
+
+function getWireFromProperty(obj: UnknownRecord, key: string): unknown | null {
+  const prop = obj[key];
+  if (!prop) return null;
+  return getWire(prop);
+}
+
 export function getWire(obj: unknown): unknown | null {
   if (!isRecord(obj)) return null;
 
-  // Prefer explicit wire/outline accessors when available (sketch results, planar faces, etc.).
-  const tryWireValue = (val: unknown, ctx: unknown): unknown | null => {
-    if (!val) return null;
-    if (isRecord(val)) return val;
-    if (typeof val === 'function') {
-      try {
-        const out = (val as (...args: unknown[]) => unknown).call(ctx);
-        return out ?? null;
-      } catch {
-        return null;
-      }
-    }
-    return null;
-  };
-
   // Unwrap common Replicad wrappers.
   const raw =
-    (isRecord((obj as UnknownRecord)._wrapped) ? ((obj as UnknownRecord)._wrapped as UnknownRecord) : null) ??
-    (isRecord((obj as UnknownRecord).occ) ? ((obj as UnknownRecord).occ as UnknownRecord) : null);
+    (isRecord(obj._wrapped) ? obj._wrapped : null) ??
+    (isRecord(obj.occ) ? obj.occ : null);
   if (raw) {
     const unwrapped = getWire(raw);
     if (unwrapped) return unwrapped;
   }
 
-  const shapeProp = (obj as UnknownRecord).shape;
-  if (shapeProp) {
-    const fromShape = getWire(shapeProp);
-    if (fromShape) return fromShape;
-  }
+  const fromShape = getWireFromProperty(obj, 'shape');
+  if (fromShape) return fromShape;
 
-  const directWire = tryWireValue(obj.wire, obj);
+  const directWire = resolveWireAccessor(obj, 'wire');
   if (directWire) return directWire;
 
-  const wireFn = getFn(obj, 'wire');
-  if (wireFn) {
-    try {
-      const out = wireFn.call(obj);
-      if (out) return out;
-    } catch {
-      // ignore
-    }
-  }
-
-  const outerWire = tryWireValue((obj as UnknownRecord).outerWire, obj);
+  const outerWire = resolveWireAccessor(obj, 'outerWire');
   if (outerWire) return outerWire;
 
-  const outerWireFn = getFn(obj, 'outerWire');
-  if (outerWireFn) {
-    try {
-      const out = outerWireFn.call(obj);
-      if (out) return out;
-    } catch {
-      // ignore
-    }
-  }
-
-  const wires = (obj as UnknownRecord).wires;
+  const wires = obj.wires;
   if (Array.isArray(wires) && wires.length > 0 && isRecord(wires[0])) return wires[0];
 
   // Recurse into common wrapper containers (e.g. SafeSketcher.sketch, sketch result holders).
-  const sketch = (obj as UnknownRecord).sketch;
-  if (sketch) {
-    const fromSketch = getWire(sketch);
-    if (fromSketch) return fromSketch;
-  }
+  const fromSketch = getWireFromProperty(obj, 'sketch');
+  if (fromSketch) return fromSketch;
 
   return null;
 }
