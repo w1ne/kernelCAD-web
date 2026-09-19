@@ -14,6 +14,7 @@ import {
     WorkerResponseSchema,
     isSuccessResponse
 } from './workerTypes';
+import { isOcctWasmPoisoned } from '../../kernel/backends/occt/occtException';
 
 // Re-export types for consumers
 export type { ExecutionResult, GeometryResult, SketchGeometry, FaceGeometry };
@@ -254,7 +255,7 @@ export class GeometryEngine {
     /**
      * Post a message to the worker and await response
      */
-    private async postToWorker<T>(message: WorkerRequest): Promise<T> {
+    private async postToWorkerOnce<T>(message: WorkerRequest): Promise<T> {
         await this.initialize();
         return new Promise<T>((resolve, reject) => {
             const id = message.id;
@@ -272,6 +273,19 @@ export class GeometryEngine {
             });
             this.worker?.postMessage(message);
         });
+    }
+
+    private async postToWorker<T>(message: WorkerRequest): Promise<T> {
+        try {
+            return await this.postToWorkerOnce<T>(message);
+        } catch (e) {
+            // Soft RuntimeError from the worker leaves the worker's OCCT heap poisoned
+            // (the host only sees an ERROR response — no onerror crash). Terminate and
+            // respawn so the next attempt gets a fresh wasm module, then retry once.
+            if (!isOcctWasmPoisoned(e)) throw e;
+            this.terminate('OCCT wasm poisoned in geometry worker; recycling.');
+            return await this.postToWorkerOnce<T>(message);
+        }
     }
 
     private nextRequestId(): string {
