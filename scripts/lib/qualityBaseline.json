@@ -229,12 +229,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/server/middleware/paramsEndpoint.ts",
-    "symbol": "Async function 'paramsHandler'",
-    "value": 24
-  },
-  {
-    "rule": "complexity",
     "file": "src/shared/intent/curve3dRecord.ts",
     "symbol": "Function 'isCurve3DMetadata'",
     "value": 22
