@@ -367,21 +367,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kinematic/sweepTolerance.ts",
-    "symbol": "Async function 'evaluateCombo'",
-    "value": 31
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/animation/verifyAnimation.ts",
     "symbol": "Async function 'verifyAnimation'",
     "value": 21
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/backends/occt/embossTextLowerer.ts",
-    "symbol": "Async function 'lowerEmbossText'",
-    "value": 31
   },
   {
     "rule": "complexity",
@@ -430,12 +418,6 @@
     "file": "src/modeling/capture/shapeOperationFeatureRecords.ts",
     "symbol": "Function 'buildEdgeFeatureRef'",
     "value": 23
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/sketch.ts",
-    "symbol": "Method 'nurbsSegment'",
-    "value": 31
   },
   {
     "rule": "complexity",
@@ -520,12 +502,6 @@
     "file": "src/modeling/parts/findPart.ts",
     "symbol": "Async function 'findPartHost'",
     "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/runtime/dfm/fdmOrientation.ts",
-    "symbol": "Function 'analyzeBuildDirection'",
-    "value": 32
   },
   {
     "rule": "complexity",
@@ -691,12 +667,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/backends/occt/embossTextLowerer.ts",
-    "symbol": "Async function 'lowerEmbossText'",
-    "value": 168
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/modeling/backends/occt/sheetMetalLowerer.ts",
     "symbol": "Function 'lowerSheetMetalBend'",
     "value": 161
@@ -706,12 +676,6 @@
     "file": "src/modeling/capture/proxy.ts",
     "symbol": "Method 'material'",
     "value": 187
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/runtime/dfm/fdmOrientation.ts",
-    "symbol": "Function 'analyzeBuildDirection'",
-    "value": 190
   },
   {
     "rule": "max-lines-per-function",
@@ -855,7 +819,7 @@
     "rule": "max-lines",
     "file": "src/modeling/capture/sketch.ts",
     "symbol": "(file)",
-    "value": 964
+    "value": 883
   },
   {
     "rule": "max-lines",
