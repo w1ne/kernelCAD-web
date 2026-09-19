@@ -781,12 +781,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
-    "symbol": "Function 'materialBlock'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/joints/supportedServoRevolute.ts",
     "symbol": "Function 'preflightSupportedServoRevolute'",
     "value": 20
