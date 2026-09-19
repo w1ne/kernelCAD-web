@@ -251,6 +251,98 @@ export class RecomputeEngine {
     return { byKey, inputsOk };
   }
 
+  /** Resolve one record to its pre-lowering state: suppression / virtual /
+   *  seed-cache skips are health-marked here and reported as `null` (nothing
+   *  to lower); otherwise returns the record to lower plus its gate state. */
+  private prepareRecord(
+    id: FeatureId,
+    r: FeatureRecord,
+    opts: RecomputeOptions | undefined,
+    health: Map<FeatureId, 'healthy' | 'warning' | 'error'>,
+  ): { recordForLower: FeatureRecord; isGatedOff: boolean } | null {
+    if (r.suppressed) return null;
+    if (r.metadata?.virtual === true) {
+      // Virtual records (referenceImage today; future construction-only kinds)
+      // produce no BREP. Mark healthy and skip the lowerer entirely.
+      health.set(r.id, 'healthy');
+      return null;
+    }
+    const recordForLower: FeatureRecord = opts?.paramTable
+      ? resolveParams(r, opts.paramTable) as FeatureRecord
+      : r;
+    const gatedParamName = enabledGateParamName(r);
+    const isGatedOff = isEnabledFalse(recordForLower);
+
+    if (isGatedOff) {
+      registerGatedName(recordForLower, opts?.gatedFeatureNames, gatedParamName);
+    }
+
+    // Slice-3: cache hit — record's lowered output was seeded by `params.update`.
+    // Skip lowering; mark healthy.
+    if (opts?.seedShapes && opts.seedShapes.has(id)) {
+      health.set(id, 'healthy');
+      return null;
+    }
+
+    return { recordForLower, isGatedOff };
+  }
+
+  /** Emit the `feature.failed` event for a record whose inputs did not
+   *  resolve. Returns 1 when an event was emitted, else 0. */
+  private emitInputFailure(
+    r: FeatureRecord,
+    diagnostics: CompilerDiagnostic[],
+    predecessorsOf: Map<FeatureId, FeatureId[]>,
+    onEvent: FeatureEventSink | undefined,
+  ): number {
+    if (onEvent) {
+      onEvent({
+        kind: 'feature.failed',
+        featureId: r.id,
+        featureKind: r.kind,
+        predecessors: predecessorsOf.get(r.id) ?? [],
+        diagnostics: diagnostics.filter((d) => d.featureId === r.id),
+      });
+      return 1;
+    }
+    return 0;
+  }
+
+  /** Gated-off records pass their upstream shape through instead of lowering
+   *  (warning health when a face ref names the gated feature, healthy
+   *  otherwise). Returns true when the record was resolved without lowering. */
+  private tryGatedPassthrough(
+    r: FeatureRecord,
+    recordForLower: FeatureRecord,
+    isGatedOff: boolean,
+    byKey: Record<string, ShapeBackend>,
+    opts: RecomputeOptions | undefined,
+    shapes: Map<FeatureId, ShapeBackend>,
+    health: Map<FeatureId, 'healthy' | 'warning' | 'error'>,
+  ): boolean {
+    const gatedLineage = findGatedLineageWarning(recordForLower, opts);
+    if (gatedLineage) {
+      opts?.warningSink?.(gatedLineage);
+      const passthrough = passthroughShape(byKey);
+      if (passthrough) {
+        shapes.set(r.id, passthrough);
+        health.set(r.id, 'warning');
+        return true;
+      }
+    }
+
+    if (isGatedOff) {
+      const passthrough = passthroughShape(byKey);
+      if (passthrough) {
+        shapes.set(r.id, passthrough);
+        health.set(r.id, 'healthy');
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   /** Process one topo-ordered record within a `run()` pass: resolve its
    *  inputs, apply gating/passthrough, lower it, and emit the matching
    *  event. Returns 1 if an event was emitted onto `ctx.onEvent`, else 0 —
@@ -270,69 +362,22 @@ export class RecomputeEngine {
   ): Promise<number> {
     const { idToRecord, predecessorsOf, shapes, diagnostics, health, onEvent, opts } = ctx;
     const r = idToRecord.get(id)!;
-    if (r.suppressed) return 0;
-    if (r.metadata?.virtual === true) {
-      // Virtual records (referenceImage today; future construction-only kinds)
-      // produce no BREP. Mark healthy and skip the lowerer entirely.
-      health.set(r.id, 'healthy');
-      return 0;
-    }
-    const recordForLower: FeatureRecord = opts?.paramTable
-      ? resolveParams(r, opts.paramTable) as FeatureRecord
-      : r;
-    const gatedParamName = enabledGateParamName(r);
-    const isGatedOff = isEnabledFalse(recordForLower);
-
-    if (isGatedOff) {
-      registerGatedName(recordForLower, opts?.gatedFeatureNames, gatedParamName);
-    }
-
-    // Slice-3: cache hit — record's lowered output was seeded by `params.update`.
-    // Skip lowering; mark healthy.
-    if (opts?.seedShapes && opts.seedShapes.has(id)) {
-      health.set(id, 'healthy');
-      return 0;
-    }
+    const prepared = this.prepareRecord(id, r, opts, health);
+    if (prepared === null) return 0;
 
     // Resolve inputs
     const { byKey, inputsOk } = this.resolveRecordInputs(r, idToRecord, shapes, diagnostics);
     if (!inputsOk) {
       health.set(r.id, 'error');
-      if (onEvent) {
-        onEvent({
-          kind: 'feature.failed',
-          featureId: r.id,
-          featureKind: r.kind,
-          predecessors: predecessorsOf.get(r.id) ?? [],
-          diagnostics: diagnostics.filter((d) => d.featureId === r.id),
-        });
-        return 1;
-      }
+      return this.emitInputFailure(r, diagnostics, predecessorsOf, onEvent);
+    }
+
+    if (this.tryGatedPassthrough(r, prepared.recordForLower, prepared.isGatedOff, byKey, opts, shapes, health)) {
       return 0;
     }
 
-    const gatedLineage = findGatedLineageWarning(recordForLower, opts);
-    if (gatedLineage) {
-      opts?.warningSink?.(gatedLineage);
-      const passthrough = passthroughShape(byKey);
-      if (passthrough) {
-        shapes.set(r.id, passthrough);
-        health.set(r.id, 'warning');
-        return 0;
-      }
-    }
-
-    if (isGatedOff) {
-      const passthrough = passthroughShape(byKey);
-      if (passthrough) {
-        shapes.set(r.id, passthrough);
-        health.set(r.id, 'healthy');
-        return 0;
-      }
-    }
-
     // Lower
-    return this.lowerAndEmit(recordForLower, r, records, byKey, {
+    return this.lowerAndEmit(prepared.recordForLower, r, records, byKey, {
       predecessorsOf, shapes, diagnostics, health, onEvent,
     });
   }

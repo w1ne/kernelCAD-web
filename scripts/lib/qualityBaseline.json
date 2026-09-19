@@ -739,12 +739,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/compute/recomputeEngine.ts",
-    "symbol": "Async method 'processRecord'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/export/sdformat/sdfSerializer.ts",
     "symbol": "Async function 'sdfSerialize'",
     "value": 19
