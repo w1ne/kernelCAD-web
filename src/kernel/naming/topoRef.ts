@@ -52,49 +52,17 @@ export function parseTopoRef(s: string): TopoRef | TopoRefParseError {
   if (!s.endsWith(']')) {
     return { error: `missing closing bracket ]`, raw: s };
   }
-  // Body lives between the FIRST '[' (after '@kc') and the LAST ']' in s.
-  // We require depth-zero at the final ']' so that `@kc[foo[2]]` parses but
-  // `@kc[foo[2]]extra` is rejected (trailing content) and unbalanced opens
-  // are rejected. This replaces the old `/^@kc\[([^\]]*)\]$/` regex which
-  // truncated the body at the FIRST inner ']' and thus rejected any ref
-  // containing a `name[N]` indexed segment.
-  const bodyStart = '@kc['.length; // index 4
-  const bodyEnd = s.length - 1;    // index of the final ']'
-  let depth = 1;
-  for (let i = bodyStart; i < bodyEnd; i++) {
-    if (s[i] === '[') depth++;
-    else if (s[i] === ']') depth--;
-    if (depth === 0) {
-      return {
-        error: `unbalanced brackets: closing ']' at offset ${i} ends the @kc[ wrapper before the final character (likely trailing content)`,
-        raw: s,
-      };
-    }
+  const bodyResult = parseTopoRefBody(s);
+  if ('error' in bodyResult) {
+    return bodyResult;
   }
-  if (depth !== 1) {
-    return { error: `unbalanced brackets inside ref body`, raw: s };
-  }
-  const body = s.slice(bodyStart, bodyEnd);
-  if (body.length === 0) {
-    return { error: `empty ref body`, raw: s };
-  }
+  const body = bodyResult.body;
 
-  // Split off modifier first (everything after the last '#').
-  let modifier: TopoModifier | undefined;
-  let pathPart = body;
-  const hashCount = (body.match(/#/g) ?? []).length;
-  if (hashCount > 1) {
-    return { error: `at most one '#' modifier separator is allowed`, raw: s };
+  const modifierResult = splitTopoRefModifier(body, s);
+  if ('error' in modifierResult) {
+    return modifierResult;
   }
-  if (hashCount === 1) {
-    const hashIdx = body.lastIndexOf('#');
-    const modCandidate = body.slice(hashIdx + 1);
-    pathPart = body.slice(0, hashIdx);
-    if (!(TOPO_MODIFIERS as readonly string[]).includes(modCandidate)) {
-      return { error: `unknown modifier '${modCandidate}'; expected one of ${TOPO_MODIFIERS.join(', ')}`, raw: s };
-    }
-    modifier = modCandidate as TopoModifier;
-  }
+  const { pathPart, modifier } = modifierResult;
 
   const parts = pathPart.split('/');
   if (parts.some((p) => p.length === 0)) {
@@ -130,6 +98,59 @@ export function parseTopoRef(s: string): TopoRef | TopoRefParseError {
   }
 
   return { raw: s, owner, kind, segments, ...(modifier !== undefined ? { modifier } : {}) };
+}
+
+// Body lives between the FIRST '[' (after '@kc') and the LAST ']' in s.
+// We require depth-zero at the final ']' so that `@kc[foo[2]]` parses but
+// `@kc[foo[2]]extra` is rejected (trailing content) and unbalanced opens
+// are rejected. This replaces the old `/^@kc\[([^\]]*)\]$/` regex which
+// truncated the body at the FIRST inner ']' and thus rejected any ref
+// containing a `name[N]` indexed segment.
+function parseTopoRefBody(s: string): { body: string } | TopoRefParseError {
+  const bodyStart = '@kc['.length; // index 4
+  const bodyEnd = s.length - 1;    // index of the final ']'
+  let depth = 1;
+  for (let i = bodyStart; i < bodyEnd; i++) {
+    if (s[i] === '[') depth++;
+    else if (s[i] === ']') depth--;
+    if (depth === 0) {
+      return {
+        error: `unbalanced brackets: closing ']' at offset ${i} ends the @kc[ wrapper before the final character (likely trailing content)`,
+        raw: s,
+      };
+    }
+  }
+  if (depth !== 1) {
+    return { error: `unbalanced brackets inside ref body`, raw: s };
+  }
+  const body = s.slice(bodyStart, bodyEnd);
+  if (body.length === 0) {
+    return { error: `empty ref body`, raw: s };
+  }
+  return { body };
+}
+
+// Split off modifier first (everything after the last '#').
+function splitTopoRefModifier(
+  body: string,
+  s: string,
+): { pathPart: string; modifier?: TopoModifier } | TopoRefParseError {
+  let modifier: TopoModifier | undefined;
+  let pathPart = body;
+  const hashCount = (body.match(/#/g) ?? []).length;
+  if (hashCount > 1) {
+    return { error: `at most one '#' modifier separator is allowed`, raw: s };
+  }
+  if (hashCount === 1) {
+    const hashIdx = body.lastIndexOf('#');
+    const modCandidate = body.slice(hashIdx + 1);
+    pathPart = body.slice(0, hashIdx);
+    if (!(TOPO_MODIFIERS as readonly string[]).includes(modCandidate)) {
+      return { error: `unknown modifier '${modCandidate}'; expected one of ${TOPO_MODIFIERS.join(', ')}`, raw: s };
+    }
+    modifier = modCandidate as TopoModifier;
+  }
+  return { pathPart, modifier };
 }
 
 export interface FormatTopoRefParts {
