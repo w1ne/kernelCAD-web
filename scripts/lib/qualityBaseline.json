@@ -283,12 +283,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseStatics.ts",
-    "symbol": "Function 'requiredContactPathActuatorSources'",
-    "value": 24
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/validator.ts",
     "symbol": "Async function 'validateAssemblyWithMates'",
     "value": 23

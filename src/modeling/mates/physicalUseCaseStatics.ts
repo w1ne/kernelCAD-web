@@ -14,9 +14,12 @@ import type { PhysicalUseCasePoseWitness } from './physicalUseCaseReachability';
 import {
   FRICTION_PYRAMID_EDGE_COUNT,
   add,
+  buildCouplingByDriven,
+  buildMatePathAdjacency,
   connectorWorldPoint,
   copyVec,
   cross,
+  findStablePartPath,
   isPositiveFinite,
   norm,
   resolveStaticContacts,
@@ -377,26 +380,9 @@ function requiredContactPathActuatorSources(
   useCase: PhysicalUseCaseRecord,
   contacts: readonly ResolvedContact[],
 ): Set<string> | string {
-  type Mate = ReturnType<Assembly['__mates']>[number];
-  type PathEdge = { readonly partName: string; readonly mate: Mate };
-  const adjacency = new Map<string, PathEdge[]>();
-  for (const part of arm.__parts()) adjacency.set(part.name, []);
-  for (const mate of arm.__mates()) {
-    const aPart = safePartName(mate.a);
-    const bPart = safePartName(mate.b);
-    if (aPart === undefined || bPart === undefined) continue;
-    adjacency.get(aPart)?.push({ partName: bPart, mate });
-    adjacency.get(bPart)?.push({ partName: aPart, mate });
-  }
-
-  const couplingByDriven = new Map<string, string>();
-  for (const coupling of arm.__mateCouplings()) {
-    const existing = couplingByDriven.get(coupling.driven);
-    if (existing !== undefined && existing !== coupling.source) {
-      return `Driven mate '${coupling.driven}' has multiple coupling sources.`;
-    }
-    couplingByDriven.set(coupling.driven, coupling.source);
-  }
+  const adjacency = buildMatePathAdjacency(arm);
+  const couplingByDriven = buildCouplingByDriven(arm);
+  if (typeof couplingByDriven === 'string') return couplingByDriven;
 
   const stableParts = new Set(useCase.stableParts);
   const required = new Set<string>();
@@ -407,30 +393,12 @@ function requiredContactPathActuatorSources(
     }
     if (stableParts.has(mechanismPart)) continue;
 
-    const queue = [mechanismPart];
-    const visited = new Set(queue);
-    const parent = new Map<string, { readonly from: string; readonly mate: Mate }>();
-    let reachedStablePart: string | undefined;
-    while (queue.length > 0 && reachedStablePart === undefined) {
-      const partName = queue.shift()!;
-      for (const edge of adjacency.get(partName) ?? []) {
-        if (visited.has(edge.partName)) continue;
-        visited.add(edge.partName);
-        parent.set(edge.partName, { from: partName, mate: edge.mate });
-        if (stableParts.has(edge.partName)) {
-          reachedStablePart = edge.partName;
-          break;
-        }
-        queue.push(edge.partName);
-      }
-    }
-    if (reachedStablePart === undefined) {
-      return `Mechanism contact part '${mechanismPart}' has no mate path to a declared stable part.`;
-    }
+    const path = findStablePartPath(mechanismPart, adjacency, stableParts);
+    if (typeof path === 'string') return path;
 
-    let currentPart = reachedStablePart;
+    let currentPart = path.reachedStablePart;
     while (currentPart !== mechanismPart) {
-      const step = parent.get(currentPart);
+      const step = path.parent.get(currentPart);
       if (step === undefined) {
         return `Mechanism contact part '${mechanismPart}' has an unresolved stable-part path.`;
       }
