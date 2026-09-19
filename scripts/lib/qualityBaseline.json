@@ -301,12 +301,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/runtime/dfm/runDfmChecks.ts",
-    "symbol": "Async function 'runDfmChecksOnModel'",
-    "value": 25
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/runtime/mechanismTruth.ts",
     "symbol": "Function 'checkOrphanParts'",
     "value": 23
@@ -376,12 +370,6 @@
     "file": "src/modeling/backends/occt/sheetMetalLowerer.ts",
     "symbol": "Function 'lowerSheetMetalBend'",
     "value": 161
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/runtime/dfm/runDfmChecks.ts",
-    "symbol": "Async function 'runDfmChecksOnModel'",
-    "value": 153
   },
   {
     "rule": "max-lines",
