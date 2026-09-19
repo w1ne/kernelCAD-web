@@ -527,13 +527,7 @@ function readTitleBlock(page: PdfPageVectors, paths: ClassifiedPath[]): TitleBlo
   return info;
 }
 
-/**
- * Read the ISO projection symbol: a truncated cone's side view (trapezoid)
- * beside its end view (two concentric circles). The end view drawn on the
- * SAME side as the cone's narrow end is third-angle; on the opposite side,
- * first-angle.
- */
-export function projectionSymbol(candidates: readonly VectorPath[]): 'third' | 'first' | null {
+function collectProjectionShapes(candidates: readonly VectorPath[]): { circles: CircleFit[]; traps: Pt[][] } {
   const circles: CircleFit[] = [];
   const traps: Pt[][] = [];
   for (const p of candidates) {
@@ -543,29 +537,59 @@ export function projectionSymbol(candidates: readonly VectorPath[]): 'third' | '
     if (pts.length >= 2 && dist(pts[0], pts[pts.length - 1]) < 1e-3) pts = pts.slice(0, -1);
     if (pts.length === 4) traps.push([...pts]);
   }
+  return { circles, traps };
+}
+
+function isConcentricPair(a: CircleFit, b: CircleFit): boolean {
+  if (Math.hypot(a.cx - b.cx, a.cy - b.cy) > 0.3) return false;
+  const ratio = Math.max(a.r, b.r) / Math.min(a.r, b.r);
+  if (ratio < 1.15 || ratio > 4) return false;
+  return true;
+}
+
+function trapezoidVerticals(t: Pt[]): Array<{ x: number; len: number }> {
+  const verticals: Array<{ x: number; len: number }> = [];
+  for (let k = 0; k < 4; k++) {
+    const p = t[k], q = t[(k + 1) % 4];
+    if (Math.abs(p[0] - q[0]) < 0.3 && Math.abs(p[1] - q[1]) > 0.3) verticals.push({ x: (p[0] + q[0]) / 2, len: Math.abs(p[1] - q[1]) });
+  }
+  return verticals;
+}
+
+function matchTrapezoid(t: Pt[], a: CircleFit, b: CircleFit): 'third' | 'first' | null {
+  const verticals = trapezoidVerticals(t);
+  if (verticals.length !== 2 || Math.abs(verticals[0].len - verticals[1].len) < 0.3) return null;
+  const cy = t.reduce((s, p) => s + p[1], 0) / 4;
+  if (Math.abs(cy - a.cy) > Math.max(a.r, b.r) * 2) return null;
+  const centerX = (verticals[0].x + verticals[1].x) / 2;
+  const narrow = verticals[0].len < verticals[1].len ? verticals[0] : verticals[1];
+  const narrowSide = Math.sign(narrow.x - centerX);
+  const circleSide = Math.sign(a.cx - centerX);
+  if (narrowSide === 0 || circleSide === 0) return null;
+  return narrowSide === circleSide ? 'third' : 'first';
+}
+
+function findProjectionMatch(circles: CircleFit[], traps: Pt[][]): 'third' | 'first' | null {
   for (let i = 0; i < circles.length; i++) {
     for (let j = i + 1; j < circles.length; j++) {
       const a = circles[i], b = circles[j];
-      if (Math.hypot(a.cx - b.cx, a.cy - b.cy) > 0.3) continue;
-      const ratio = Math.max(a.r, b.r) / Math.min(a.r, b.r);
-      if (ratio < 1.15 || ratio > 4) continue;
+      if (!isConcentricPair(a, b)) continue;
       for (const t of traps) {
-        const verticals: Array<{ x: number; len: number }> = [];
-        for (let k = 0; k < 4; k++) {
-          const p = t[k], q = t[(k + 1) % 4];
-          if (Math.abs(p[0] - q[0]) < 0.3 && Math.abs(p[1] - q[1]) > 0.3) verticals.push({ x: (p[0] + q[0]) / 2, len: Math.abs(p[1] - q[1]) });
-        }
-        if (verticals.length !== 2 || Math.abs(verticals[0].len - verticals[1].len) < 0.3) continue;
-        const cy = t.reduce((s, p) => s + p[1], 0) / 4;
-        if (Math.abs(cy - a.cy) > Math.max(a.r, b.r) * 2) continue;
-        const centerX = (verticals[0].x + verticals[1].x) / 2;
-        const narrow = verticals[0].len < verticals[1].len ? verticals[0] : verticals[1];
-        const narrowSide = Math.sign(narrow.x - centerX);
-        const circleSide = Math.sign(a.cx - centerX);
-        if (narrowSide === 0 || circleSide === 0) continue;
-        return narrowSide === circleSide ? 'third' : 'first';
+        const match = matchTrapezoid(t, a, b);
+        if (match) return match;
       }
     }
   }
   return null;
+}
+
+/**
+ * Read the ISO projection symbol: a truncated cone's side view (trapezoid)
+ * beside its end view (two concentric circles). The end view drawn on the
+ * SAME side as the cone's narrow end is third-angle; on the opposite side,
+ * first-angle.
+ */
+export function projectionSymbol(candidates: readonly VectorPath[]): 'third' | 'first' | null {
+  const { circles, traps } = collectProjectionShapes(candidates);
+  return findProjectionMatch(circles, traps);
 }
