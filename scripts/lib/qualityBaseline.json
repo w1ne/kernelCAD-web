@@ -735,7 +735,7 @@
     "rule": "max-lines-per-function",
     "file": "src/studio/components/SceneBrowser.tsx",
     "symbol": "Arrow function",
-    "value": 200
+    "value": 154
   },
   {
     "rule": "max-lines-per-function",

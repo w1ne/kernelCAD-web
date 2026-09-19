@@ -5,6 +5,7 @@ import type { HistoryItem } from '../../shared/codeGeneration/codeAnalysis';
 import type { SketchPlaneEntity } from '../../shared/types/plane';
 import { Box, Cylinder, Layers, SquaresSubtract, SquaresUnite, SquaresIntersect, SquareRoundCorner, Circle, Square, Plane, Eye, EyeOff, ChevronRight, ChevronDown, SquareArrowUp, Rotate3D } from 'lucide-react';
 import { ChamferIcon } from '../icons/cad';
+import { SceneContextMenu, type SceneContextMenuState } from './SceneBrowserParts';
 
 interface SceneBrowserProps {
     items: HistoryItem[];
@@ -59,7 +60,7 @@ const SceneBrowser: React.FC<SceneBrowserProps> = ({
     const [constructionOpen, setConstructionOpen] = React.useState(true);
     const [featuresOpen, setFeaturesOpen] = React.useState(true);
 
-    const [contextMenu, setContextMenu] = React.useState<{ x: number, y: number, item: HistoryItem } | null>(null);
+    const [contextMenu, setContextMenu] = React.useState<SceneContextMenuState | null>(null);
 
     const handleContextMenu = (e: React.MouseEvent, item: HistoryItem) => {
         e.preventDefault();
@@ -74,63 +75,15 @@ const SceneBrowser: React.FC<SceneBrowserProps> = ({
 
     return (
         <div className="flex flex-col w-full text-xs relative">
-            {/* Context Menu Overlay */}
-            {contextMenu && (
-                <div
-                    className="fixed z-50 bg-[#222] border border-[#444] rounded shadow-xl py-1 min-w-[120px]"
-                    style={{ top: contextMenu.y, left: contextMenu.x }}
-                >
-                    <button
-                        className="w-full text-left px-3 py-1.5 hover:bg-blue-600 text-gray-200"
-                        onClick={() => {
-                            onDelete?.(contextMenu.item);
-                            setContextMenu(null);
-                        }}
-                    >
-                        Delete
-                    </button>
-                    <button
-                        className="w-full text-left px-3 py-1.5 hover:bg-blue-600 text-gray-200"
-                        onClick={() => {
-                            onToggleVisibility(contextMenu.item.name);
-                            // Plus hide others... (Isolate logic)
-                            items.forEach(it => {
-                                if (it.name !== contextMenu.item.name && !hiddenIds.includes(it.name)) {
-                                    onToggleVisibility(it.name);
-                                }
-                            });
-                            setContextMenu(null);
-                        }}
-                    >
-                        Isolate
-                    </button>
-                    <button
-                        className="w-full text-left px-3 py-1.5 hover:bg-blue-600 text-gray-200"
-                        onClick={() => {
-                            // Show all hidden items
-                            hiddenIds.forEach(id => {
-                                onToggleVisibility(id);
-                            });
-                            setContextMenu(null);
-                        }}
-                    >
-                        Show All
-                    </button>
-                    <div className="border-t border-[#444] my-1"></div>
-                    <button
-                        className="w-full text-left px-3 py-1.5 hover:bg-blue-600 text-gray-200"
-                        onClick={() => {
-                            const newName = window.prompt("Rename variable:", contextMenu.item.name);
-                            if (newName && newName !== contextMenu.item.name && onRename) {
-                                onRename(contextMenu.item.name, newName);
-                            }
-                            setContextMenu(null);
-                        }}
-                    >
-                        Rename...
-                    </button>
-                </div>
-            )}
+            <SceneContextMenu
+                contextMenu={contextMenu}
+                items={items}
+                hiddenIds={hiddenIds}
+                onDelete={onDelete}
+                onToggleVisibility={onToggleVisibility}
+                onRename={onRename}
+                onClose={() => setContextMenu(null)}
+            />
 
             {/* Construction / Origin Folder */}
             <div className="bg-[#1a1a1a]">
