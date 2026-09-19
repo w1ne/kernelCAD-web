@@ -691,12 +691,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/imageDimensions.ts",
-    "symbol": "Function 'parseJpeg'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/planarUv.ts",
     "symbol": "Function 'generatePlanarUVs'",
     "value": 18
