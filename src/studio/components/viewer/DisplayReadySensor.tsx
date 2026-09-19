@@ -3,13 +3,7 @@
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
 import type { GeometryResult } from '../../../shared/worker/geometryEngine';
-
-/** True when at least one face has triangle indices (non-empty mesh). */
-export function hasNonemptyGeometry(geometries: GeometryResult[]): boolean {
-  return geometries.some((g) =>
-    g.faces.some((f) => f.indices.length >= 3 && f.vertices.length >= 9),
-  );
-}
+import { hasNonemptyGeometry } from './hasNonemptyGeometry';
 
 /**
  * Fires `onDisplayReady` once after nonempty geometry is present and at least
@@ -26,7 +20,10 @@ export function DisplayReadySensor({
   const firedRef = useRef(false);
   const framesWithGeomRef = useRef(0);
   const onReadyRef = useRef(onDisplayReady);
-  onReadyRef.current = onDisplayReady;
+
+  useEffect(() => {
+    onReadyRef.current = onDisplayReady;
+  });
 
   useEffect(() => {
     firedRef.current = false;

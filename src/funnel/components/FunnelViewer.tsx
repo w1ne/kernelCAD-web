@@ -14,7 +14,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Viewer from '../../studio/components/Viewer';
-import { hasNonemptyGeometry } from '../../studio/components/viewer/DisplayReadySensor';
+import { hasNonemptyGeometry } from '../../studio/components/viewer/hasNonemptyGeometry';
 import { WorkbenchProvider, useWorkbench } from '../../studio/context/WorkbenchContext';
 
 export type FunnelViewerPhase =

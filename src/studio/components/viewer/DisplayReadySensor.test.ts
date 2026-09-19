@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
-import { hasNonemptyGeometry } from './DisplayReadySensor';
+import { hasNonemptyGeometry } from './hasNonemptyGeometry';
 import type { GeometryResult } from '../../../shared/worker/geometryEngine';
 
 function geom(face: { vertices: number; indices: number }): GeometryResult {
