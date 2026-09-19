@@ -225,15 +225,9 @@ function hasPhysicalError(diagnostics: readonly MechanicalPlausibilityDiagnostic
   return diagnostics.some((d) => d.severity === 'error');
 }
 
-function renderHuman(
-  result: ValidatorResult,
-  physicalDiagnostics: readonly MechanicalPlausibilityDiagnostic[],
+function renderMechanismBanner(
   mechanismProbe: { mechanism: 'real' | 'broken' | 'unverified'; failures: readonly CompilerDiagnostic[] },
 ): void {
-  // Physics-loop banner FIRST — broken mechanisms invalidate any
-  // downstream "clean" reading from the legacy validator. The agent
-  // sees the merge gate first, then the advisory diagnostics that
-  // help them repair the build.
   if (mechanismProbe.mechanism === 'broken') {
     const isTty = Boolean(process.stdout.isTTY);
     const RED = isTty ? '\x1b[31m' : '';
@@ -247,6 +241,29 @@ function renderHuman(
     }
     console.log('');
   }
+}
+
+function renderDiagnosticLines(
+  diagnostics: readonly { severity: 'info' | 'warning' | 'error'; code: string; message: string; hint: string }[],
+): void {
+  for (const d of diagnostics) {
+    const prefix = d.severity === 'error' ? 'ERROR' : 'WARN';
+    console.log(`  [${prefix}] ${d.code}`);
+    console.log(`         ${d.message}`);
+    console.log(`         hint: ${d.hint}`);
+  }
+}
+
+function renderHuman(
+  result: ValidatorResult,
+  physicalDiagnostics: readonly MechanicalPlausibilityDiagnostic[],
+  mechanismProbe: { mechanism: 'real' | 'broken' | 'unverified'; failures: readonly CompilerDiagnostic[] },
+): void {
+  // Physics-loop banner FIRST — broken mechanisms invalidate any
+  // downstream "clean" reading from the legacy validator. The agent
+  // sees the merge gate first, then the advisory diagnostics that
+  // help them repair the build.
+  renderMechanismBanner(mechanismProbe);
 
   const errs = result.diagnostics.filter((d) => d.severity === 'error');
   const warns = result.diagnostics.filter((d) => d.severity === 'warning');
@@ -270,18 +287,8 @@ function renderHuman(
         ? 'WARNING'
         : 'SOLVED';
   console.log(`Assembly status: ${status} (${result.partCount} parts, ${result.jointCount} joints; ${errs.length + physicalErrs.length} error${errs.length + physicalErrs.length === 1 ? '' : 's'}, ${warns.length + physicalWarns.length} warning${warns.length + physicalWarns.length === 1 ? '' : 's'})`);
-  for (const d of result.diagnostics) {
-    const prefix = d.severity === 'error' ? 'ERROR' : 'WARN';
-    console.log(`  [${prefix}] ${d.code}`);
-    console.log(`         ${d.message}`);
-    console.log(`         hint: ${d.hint}`);
-  }
-  for (const d of physicalDiagnostics) {
-    const prefix = d.severity === 'error' ? 'ERROR' : 'WARN';
-    console.log(`  [${prefix}] ${d.code}`);
-    console.log(`         ${d.message}`);
-    console.log(`         hint: ${d.hint}`);
-  }
+  renderDiagnosticLines(result.diagnostics);
+  renderDiagnosticLines(physicalDiagnostics);
 }
 
 export function validateCommand(): Command {

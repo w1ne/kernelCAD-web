@@ -1,12 +1,6 @@
 [
   {
     "rule": "complexity",
-    "file": "src/agent/cli/commands/validate.ts",
-    "symbol": "Function 'renderHuman'",
-    "value": 21
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/drawing/sheet.ts",
     "symbol": "Function 'projectionSymbol'",
     "value": 22
@@ -16,24 +10,6 @@
     "file": "src/agent/mcp/tools/addPatternFeature.ts",
     "symbol": "Async function 'addPatternFeatureTool'",
     "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/tools/drawingToCad.ts",
-    "symbol": "Async function 'drawingToCadTool'",
-    "value": 21
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/tools/exportModel.ts",
-    "symbol": "Async function 'exportModelTool'",
-    "value": 21
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/tools/exportPart.ts",
-    "symbol": "Async function 'exportPartTool'",
-    "value": 21
   },
   {
     "rule": "complexity",
