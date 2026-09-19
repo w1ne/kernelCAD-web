@@ -8,6 +8,8 @@ import { CodeAnalyzer, type CodeGenerationContext } from '../../shared/codeGener
 import { deleteVariableDeclarationAST, deleteVariableDeclarationByLineFallback, deleteVariableDeclarationByNameAndLineAST, parseCode } from '../../shared/codeGeneration/ast';
 import type { HistoryItem } from '../../shared/codeGeneration/codeAnalysis';
 import { CodeMutationService, type CodeMutationDiagnostics, type CodeTransform } from '../../shared/codeGeneration/CodeMutationService';
+import { useApplyCodeSafe } from './useApplyCodeSafe';
+import { useMagicCommentDetection } from './useMagicCommentDetection';
 
 export interface CodeContextType {
     code: string;
@@ -185,71 +187,12 @@ export function CodeProvider({
         }, 'deleteHistoryItem');
     }, [commitMutation]);
 
-    const applyCodeSafe = useCallback(async (newCode: string): Promise<boolean> => {
-        try {
-            const { agentAPI } = await import('../../agent/api');
-            const result = await agentAPI.evaluateCode(newCode);
-
-            if (result.errors && result.errors.length > 0) {
-                const msg = "AI Validation Failed:\n" + result.errors.join('\n');
-                console.error(msg);
-                alert(msg);
-                return false;
-            }
-
-            setCode(newCode);
-            return true;
-        } catch (e: unknown) {
-            const message = e instanceof Error ? e.message : String(e);
-            console.error("Safety Check Error:", e);
-            alert("Safety Check Error: " + message);
-            return false;
-        }
-    }, [setCode]);
+    const applyCodeSafe = useApplyCodeSafe(setCode);
 
     const getMutationDiagnostics = useCallback(() => mutationService.getDiagnostics(), [mutationService]);
     const resetMutationDiagnostics = useCallback(() => mutationService.resetDiagnostics(), [mutationService]);
 
-    // Magic Comment Detection
-    useEffect(() => {
-        const magicCommentRegex = /\/\/ @ai:(.+)(\n|$)/;
-        const match = code.match(magicCommentRegex);
-
-        if (match) {
-            const fullMatch = match[0];
-            const instruction = match[1].trim();
-            const isFinished = fullMatch.endsWith('\n');
-
-            if (isFinished && instruction) {
-                const processingPlaceholder = `// @ai-processing: ${instruction}...\n`;
-                const newCodeWithPlaceholder = code.replace(fullMatch, processingPlaceholder);
-                mutationService.replace(newCodeWithPlaceholder, 'magicComment.processing');
-
-                import('../features-ui/ai/LLMService').then(async ({ llmService }) => {
-                    try {
-                        const contextCode = code.replace(fullMatch, '');
-                        const prompt = `Generate code for: "${instruction}". return ONLY the code.`;
-                        const response = await llmService.sendMessage(
-                            [{ role: 'user', content: prompt }],
-                            { code: contextCode }
-                        );
-                        const cleanCode = response.replace(/```javascript/g, '').replace(/```/g, '').trim();
-                        mutationService.apply(
-                            (prev) => prev.replace(processingPlaceholder, cleanCode + '\n'),
-                            'magicComment.success',
-                        );
-                    } catch (error) {
-                        console.error("Magic Comment Error:", error);
-                        mutationService.apply(
-                            (prev) => prev.replace(processingPlaceholder, `// @ai-error: Failed to generate for "${instruction}"\n`),
-                            'magicComment.failure',
-                        );
-                    }
-                });
-            }
-        }
-    }, [code, mutationService]);
-
+    useMagicCommentDetection(code, mutationService);
 
     const hasControlledCode = controlledCode !== undefined;
 
