@@ -43,12 +43,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/getMassProperties.ts",
-    "symbol": "Async function 'getMassPropertiesTool'",
-    "value": 23
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/runFea.ts",
     "symbol": "Async function 'runFeaTool'",
     "value": 22
