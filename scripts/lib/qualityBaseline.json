@@ -139,12 +139,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/runtime/dfm/meshBvh.ts",
-    "symbol": "Method 'buildNode'",
-    "value": 22
-  },
-  {
-    "rule": "complexity",
     "file": "src/shared/intent/textureProjection.ts",
     "symbol": "Function 'computeProjectedUVs'",
     "value": 21
