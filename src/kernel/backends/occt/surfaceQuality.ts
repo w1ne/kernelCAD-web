@@ -374,7 +374,9 @@ function faceSurfaceType(face: Face): string {
   return (face as unknown as { geomType?: string }).geomType ?? 'UNKNOWN';
 }
 
-function uvBounds(face: Face): { u1: number; u2: number; v1: number; v2: number } | null {
+type UvBounds = { u1: number; u2: number; v1: number; v2: number };
+
+function uvBounds(face: Face): UvBounds | null {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
   const adaptor = new oc.BRepAdaptor_Surface_2(wrappedOf(face), true);
@@ -407,61 +409,15 @@ export function inspectCurvature(
     if (faceFilter && !faceFilter(face, i)) continue;
     const bounds = uvBounds(face);
     if (!bounds) continue;
-    const { u1, u2, v1, v2 } = bounds;
-    const du = (u2 - u1) / (UV_GRID + 1);
-    const dv = (v2 - v1) / (UV_GRID + 1);
-    const props: SurfaceProps[] = [];
-    const grid: Array<Array<SurfaceProps | null>> = [];
-    for (let iu = 1; iu <= UV_GRID; iu++) {
-      const row: Array<SurfaceProps | null> = [];
-      for (let iv = 1; iv <= UV_GRID; iv++) {
-        const p = evalSurfaceProps(face, u1 + iu * du, v1 + iv * dv);
-        row.push(p);
-        if (p) props.push(p);
-      }
-      grid.push(row);
-    }
+    const { props, grid } = sampleFaceProps(face, bounds);
     if (props.length === 0) continue;
 
-    let gMin = Infinity, gMax = -Infinity, gSum = 0;
-    let mMin = Infinity, mMax = -Infinity, mSum = 0;
-    for (const p of props) {
-      if (p.gaussian < gMin) gMin = p.gaussian;
-      if (p.gaussian > gMax) gMax = p.gaussian;
-      gSum += p.gaussian;
-      if (p.mean < mMin) mMin = p.mean;
-      if (p.mean > mMax) mMax = p.mean;
-      mSum += p.mean;
-    }
-    const gMean = gSum / props.length;
-    const mMean = mSum / props.length;
-    let gVar = 0;
-    for (const p of props) gVar += (p.gaussian - gMean) ** 2;
-    const gStd = Math.sqrt(gVar / props.length);
+    const { gMin, gMax, gMean, mMin, mMax, mMean, gStd } = aggregateCurvatureStats(props);
     const spikeTol = Math.max(1e-4, spikeFactor * gStd);
 
-    const spikes: FaceCurvatureStats['spikes'] = [];
-    for (const p of props) {
-      if (Math.abs(p.gaussian - gMean) > spikeTol && Math.abs(p.gaussian - gMean) > 1e-3) {
-        spikes.push({ point: p.point, gaussian: p.gaussian, mean: p.mean });
-      }
-    }
+    const spikes = detectCurvatureSpikes(props, gMean, spikeTol);
 
-    let inflections = 0;
-    for (let r = 0; r < grid.length; r++) {
-      for (let c = 0; c < grid[r].length; c++) {
-        const here = grid[r][c];
-        if (!here) continue;
-        if (c + 1 < grid[r].length) {
-          const next = grid[r][c + 1];
-          if (next && here.gaussian * next.gaussian < 0) inflections++;
-        }
-        if (r + 1 < grid.length) {
-          const next = grid[r + 1][c];
-          if (next && here.gaussian * next.gaussian < 0) inflections++;
-        }
-      }
-    }
+    const inflections = countInflections(grid);
 
     out.push({
       faceIndex: i,
@@ -475,6 +431,87 @@ export function inspectCurvature(
     });
   }
   return out;
+}
+
+function sampleFaceProps(
+  face: Face,
+  bounds: UvBounds,
+): { props: SurfaceProps[]; grid: Array<Array<SurfaceProps | null>> } {
+  const { u1, u2, v1, v2 } = bounds;
+  const du = (u2 - u1) / (UV_GRID + 1);
+  const dv = (v2 - v1) / (UV_GRID + 1);
+  const props: SurfaceProps[] = [];
+  const grid: Array<Array<SurfaceProps | null>> = [];
+  for (let iu = 1; iu <= UV_GRID; iu++) {
+    const row: Array<SurfaceProps | null> = [];
+    for (let iv = 1; iv <= UV_GRID; iv++) {
+      const p = evalSurfaceProps(face, u1 + iu * du, v1 + iv * dv);
+      row.push(p);
+      if (p) props.push(p);
+    }
+    grid.push(row);
+  }
+  return { props, grid };
+}
+
+function aggregateCurvatureStats(props: SurfaceProps[]): {
+  gMin: number;
+  gMax: number;
+  gMean: number;
+  mMin: number;
+  mMax: number;
+  mMean: number;
+  gStd: number;
+} {
+  let gMin = Infinity, gMax = -Infinity, gSum = 0;
+  let mMin = Infinity, mMax = -Infinity, mSum = 0;
+  for (const p of props) {
+    if (p.gaussian < gMin) gMin = p.gaussian;
+    if (p.gaussian > gMax) gMax = p.gaussian;
+    gSum += p.gaussian;
+    if (p.mean < mMin) mMin = p.mean;
+    if (p.mean > mMax) mMax = p.mean;
+    mSum += p.mean;
+  }
+  const gMean = gSum / props.length;
+  const mMean = mSum / props.length;
+  let gVar = 0;
+  for (const p of props) gVar += (p.gaussian - gMean) ** 2;
+  const gStd = Math.sqrt(gVar / props.length);
+  return { gMin, gMax, gMean, mMin, mMax, mMean, gStd };
+}
+
+function detectCurvatureSpikes(
+  props: SurfaceProps[],
+  gMean: number,
+  spikeTol: number,
+): FaceCurvatureStats['spikes'] {
+  const spikes: FaceCurvatureStats['spikes'] = [];
+  for (const p of props) {
+    if (Math.abs(p.gaussian - gMean) > spikeTol && Math.abs(p.gaussian - gMean) > 1e-3) {
+      spikes.push({ point: p.point, gaussian: p.gaussian, mean: p.mean });
+    }
+  }
+  return spikes;
+}
+
+function countInflections(grid: Array<Array<SurfaceProps | null>>): number {
+  let inflections = 0;
+  for (let r = 0; r < grid.length; r++) {
+    for (let c = 0; c < grid[r].length; c++) {
+      const here = grid[r][c];
+      if (!here) continue;
+      if (c + 1 < grid[r].length) {
+        const next = grid[r][c + 1];
+        if (next && here.gaussian * next.gaussian < 0) inflections++;
+      }
+      if (r + 1 < grid.length) {
+        const next = grid[r + 1][c];
+        if (next && here.gaussian * next.gaussian < 0) inflections++;
+      }
+    }
+  }
+  return inflections;
 }
 
 export function vertexCurvatureColor(k: number, kMin: number, kMax: number): [number, number, number] {

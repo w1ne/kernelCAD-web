@@ -160,117 +160,145 @@ export function parseQuery(input: string): Query<unknown> {
   return astToQuery(ast);
 }
 
+function parseNothing(s: ParserState): QueryAst {
+  expectChar(s, ')');
+  return { op: 'nothing' };
+}
+
+function parseEverything(s: ParserState): QueryAst {
+  const kindName = readIdent(s);
+  if (!KINDS.has(kindName as QueryKind)) fail(`unknown kind '${kindName}'`, s.input, s.pos);
+  expectChar(s, ')');
+  return { op: 'everything', kind: kindName as QueryKind };
+}
+
+function parseKindFilterExpr(s: ParserState, ident: string): QueryAst {
+  const filters = parseExprList(s);
+  expectChar(s, ')');
+  return composeKindFilters(ident as QueryKind, filters);
+}
+
+function parseSetExpr(s: ParserState, ident: string): QueryAst {
+  const queries = parseExprList(s);
+  expectChar(s, ')');
+  return { op: ident as 'union' | 'intersection', queries };
+}
+
+function parseSubtraction(s: ParserState): QueryAst {
+  const a = parseExpr(s);
+  expectChar(s, ',');
+  const b = parseExpr(s);
+  expectChar(s, ')');
+  return { op: 'subtraction', a, b };
+}
+
+function parseCreatedBy(s: ParserState): QueryAst {
+  const id = readString(s);
+  let kind: QueryKind | undefined;
+  skipWs(s);
+  if (peek(s) === ',') {
+    advance(s);
+    const k = readIdent(s);
+    if (!KINDS.has(k as QueryKind)) fail(`unknown kind '${k}'`, s.input, s.pos);
+    kind = k as QueryKind;
+  }
+  expectChar(s, ')');
+  return kind ? { op: 'createdBy', id, kind } : { op: 'createdBy', id };
+}
+
+function parseUnaryExpr(s: ParserState, ident: string): QueryAst {
+  const query = parseExpr(s);
+  expectChar(s, ')');
+  return { op: ident as 'ownedByPart' | 'ownerPart', query };
+}
+
+function parseContainsPoint(s: ParserState): QueryAst {
+  const point = readPoint(s);
+  expectChar(s, ')');
+  return { op: 'containsPoint', query: { op: 'nothing' }, point };
+}
+
+function parseClosestTo(s: ParserState): QueryAst {
+  const point = readPoint(s);
+  let k: number | undefined;
+  skipWs(s);
+  if (peek(s) === ',') {
+    advance(s);
+    k = readInteger(s);
+  }
+  expectChar(s, ')');
+  return k !== undefined
+    ? { op: 'closestTo', query: { op: 'nothing' }, point, k }
+    : { op: 'closestTo', query: { op: 'nothing' }, point };
+}
+
+function parseGeometryType(s: ParserState): QueryAst {
+  const t = readIdent(s);
+  if (!GEOM_TYPES.has(t as GeometryType)) {
+    fail(`unknown geometry type '${t}'`, s.input, s.pos);
+  }
+  expectChar(s, ')');
+  return { op: 'geometryType', query: { op: 'nothing' }, geomType: t as GeometryType };
+}
+
+function parseWithLabel(s: ParserState): QueryAst {
+  const label = readString(s);
+  expectChar(s, ')');
+  return { op: 'withLabel', query: { op: 'nothing' }, label };
+}
+
+function parseWithFeatureName(s: ParserState): QueryAst {
+  const name = readString(s);
+  expectChar(s, ')');
+  return { op: 'withFeatureName', query: { op: 'nothing' }, name };
+}
+
+function parseNthElement(s: ParserState): QueryAst {
+  const query = parseExpr(s);
+  expectChar(s, ',');
+  const index = readInteger(s);
+  expectChar(s, ')');
+  return { op: 'nthElement', query, index };
+}
+
+function parseFromString(s: ParserState): QueryAst {
+  const ref = readString(s);
+  expectChar(s, ')');
+  return { op: 'fromString', ref };
+}
+
+type ExprHandler = (s: ParserState, ident: string) => QueryAst;
+
+const EXPR_HANDLERS: ReadonlyMap<string, ExprHandler> = new Map<string, ExprHandler>([
+  ['nothing', parseNothing],
+  ['everything', parseEverything],
+  ['face', parseKindFilterExpr],
+  ['edge', parseKindFilterExpr],
+  ['vertex', parseKindFilterExpr],
+  ['connector', parseKindFilterExpr],
+  ['part', parseKindFilterExpr],
+  ['solid', parseKindFilterExpr],
+  ['union', parseSetExpr],
+  ['intersection', parseSetExpr],
+  ['subtraction', parseSubtraction],
+  ['createdBy', parseCreatedBy],
+  ['ownedByPart', parseUnaryExpr],
+  ['ownerPart', parseUnaryExpr],
+  ['containsPoint', parseContainsPoint],
+  ['closestTo', parseClosestTo],
+  ['geometryType', parseGeometryType],
+  ['withLabel', parseWithLabel],
+  ['withFeatureName', parseWithFeatureName],
+  ['nthElement', parseNthElement],
+  ['fromString', parseFromString],
+]);
+
 function parseExpr(s: ParserState): QueryAst {
   const ident = readIdent(s);
   expectChar(s, '(');
-  switch (ident) {
-    case 'nothing': {
-      expectChar(s, ')');
-      return { op: 'nothing' };
-    }
-    case 'everything': {
-      const kindName = readIdent(s);
-      if (!KINDS.has(kindName as QueryKind)) fail(`unknown kind '${kindName}'`, s.input, s.pos);
-      expectChar(s, ')');
-      return { op: 'everything', kind: kindName as QueryKind };
-    }
-    case 'face':
-    case 'edge':
-    case 'vertex':
-    case 'connector':
-    case 'part':
-    case 'solid': {
-      const filters = parseExprList(s);
-      expectChar(s, ')');
-      return composeKindFilters(ident, filters);
-    }
-    case 'union':
-    case 'intersection': {
-      const queries = parseExprList(s);
-      expectChar(s, ')');
-      return { op: ident, queries };
-    }
-    case 'subtraction': {
-      const a = parseExpr(s);
-      expectChar(s, ',');
-      const b = parseExpr(s);
-      expectChar(s, ')');
-      return { op: 'subtraction', a, b };
-    }
-    case 'createdBy': {
-      const id = readString(s);
-      let kind: QueryKind | undefined;
-      skipWs(s);
-      if (peek(s) === ',') {
-        advance(s);
-        const k = readIdent(s);
-        if (!KINDS.has(k as QueryKind)) fail(`unknown kind '${k}'`, s.input, s.pos);
-        kind = k as QueryKind;
-      }
-      expectChar(s, ')');
-      return kind ? { op: 'createdBy', id, kind } : { op: 'createdBy', id };
-    }
-    case 'ownedByPart': {
-      const query = parseExpr(s);
-      expectChar(s, ')');
-      return { op: 'ownedByPart', query };
-    }
-    case 'ownerPart': {
-      const query = parseExpr(s);
-      expectChar(s, ')');
-      return { op: 'ownerPart', query };
-    }
-    case 'containsPoint': {
-      const point = readPoint(s);
-      expectChar(s, ')');
-      return { op: 'containsPoint', query: { op: 'nothing' }, point };
-    }
-    case 'closestTo': {
-      const point = readPoint(s);
-      let k: number | undefined;
-      skipWs(s);
-      if (peek(s) === ',') {
-        advance(s);
-        k = readInteger(s);
-      }
-      expectChar(s, ')');
-      return k !== undefined
-        ? { op: 'closestTo', query: { op: 'nothing' }, point, k }
-        : { op: 'closestTo', query: { op: 'nothing' }, point };
-    }
-    case 'geometryType': {
-      const t = readIdent(s);
-      if (!GEOM_TYPES.has(t as GeometryType)) {
-        fail(`unknown geometry type '${t}'`, s.input, s.pos);
-      }
-      expectChar(s, ')');
-      return { op: 'geometryType', query: { op: 'nothing' }, geomType: t as GeometryType };
-    }
-    case 'withLabel': {
-      const label = readString(s);
-      expectChar(s, ')');
-      return { op: 'withLabel', query: { op: 'nothing' }, label };
-    }
-    case 'withFeatureName': {
-      const name = readString(s);
-      expectChar(s, ')');
-      return { op: 'withFeatureName', query: { op: 'nothing' }, name };
-    }
-    case 'nthElement': {
-      const query = parseExpr(s);
-      expectChar(s, ',');
-      const index = readInteger(s);
-      expectChar(s, ')');
-      return { op: 'nthElement', query, index };
-    }
-    case 'fromString': {
-      const ref = readString(s);
-      expectChar(s, ')');
-      return { op: 'fromString', ref };
-    }
-    default:
-      fail(`unknown Query constructor '${ident}'`, s.input, s.pos);
-  }
+  const handler = EXPR_HANDLERS.get(ident);
+  if (!handler) fail(`unknown Query constructor '${ident}'`, s.input, s.pos);
+  return handler(s, ident);
 }
 
 function parseExprList(s: ParserState): QueryAst[] {

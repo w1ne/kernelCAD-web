@@ -76,21 +76,11 @@ export async function assessPhysicalUseCaseReachability(
   opts: PhysicalUseCaseReachabilityOptions = {},
 ): Promise<PhysicalUseCaseReachabilityAssessment> {
   const samples = buildTargetedReachabilitySamples(arm, useCase, opts);
-  const contactDistances = new Map<string, { contactA: string; contactB: string; minDistanceMm?: number }>();
+  const contactDistances = seedContactDistances(useCase);
   const toleranceMm = useCase.criteria?.maxSlipMm ?? 0;
   const solvedSamples: PhysicalUseCasePoseWitness[] = [];
   const commonPoseSamples: PhysicalUseCasePoseWitness[] = [];
-  let bestCommonPose: {
-    maxDistanceMm: number;
-    contactDistances: PhysicalUseCaseReachabilityContactDistance[];
-  } | undefined;
-
-  for (const contact of useCase.contacts) {
-    contactDistances.set(contactKey(contact.a, contact.b), {
-      contactA: contact.a,
-      contactB: contact.b,
-    });
-  }
+  let bestCommonPose: BestCommonPose | undefined;
 
   for (const poses of samples) {
     let solved: Awaited<ReturnType<typeof solveMates>>;
@@ -100,48 +90,18 @@ export async function assessPhysicalUseCaseReachability(
       continue;
     }
     if (solved.status !== 'solved' && solved.status !== 'redundant-ok') continue;
-    const solvedContacts: PhysicalUseCaseSolvedContact[] = [];
-    let sampleComplete = true;
-    for (const contact of useCase.contacts) {
-      const a = connectorWorldPoint(arm, solved.poses, contact.a);
-      const b = connectorWorldPoint(arm, solved.poses, contact.b);
-      if (a === undefined || b === undefined) {
-        sampleComplete = false;
-        continue;
-      }
+    const { solvedContacts, sampleComplete } = collectSampleContacts(arm, solved.poses, useCase, contactDistances);
 
-      const key = contactKey(contact.a, contact.b);
-      const entry = contactDistances.get(key);
-      if (entry === undefined) continue;
-      const distance = distanceMm(a, b);
-      solvedContacts.push({
-        contactA: contact.a,
-        contactB: contact.b,
-        pointA: a,
-        pointB: b,
-        distanceMm: distance,
-      });
-      contactDistances.set(key, {
-        ...entry,
-        minDistanceMm: entry.minDistanceMm === undefined
-          ? distance
-          : Math.min(entry.minDistanceMm, distance),
-      });
-    }
-
-    const complete = sampleComplete && solvedContacts.length === useCase.contacts.length;
-    const maxDistanceMm = complete
-      ? solvedContacts.reduce((maxDistance, contact) => Math.max(maxDistance, contact.distanceMm), 0)
-      : undefined;
-    const witness: PhysicalUseCasePoseWitness = {
-      poses: { ...poses },
-      transforms: solved.poses,
-      contacts: solvedContacts,
-      complete,
-      ...(maxDistanceMm === undefined ? {} : { maxDistanceMm }),
-    };
+    const witness = buildPoseWitness(
+      poses,
+      solved.poses,
+      solvedContacts,
+      sampleComplete,
+      useCase.contacts.length,
+    );
     solvedSamples.push(witness);
-    if (!complete || maxDistanceMm === undefined) continue;
+    const maxDistanceMm = witness.maxDistanceMm;
+    if (!witness.complete || maxDistanceMm === undefined) continue;
     const evidence = solvedContacts.map((contact) => ({
       contactA: contact.contactA,
       contactB: contact.contactB,
@@ -153,6 +113,108 @@ export async function assessPhysicalUseCaseReachability(
     if (maxDistanceMm <= toleranceMm) commonPoseSamples.push(witness);
   }
 
+  const findings = buildReachabilityFindings(
+    useCase,
+    toleranceMm,
+    contactDistances,
+    bestCommonPose,
+    commonPoseSamples,
+  );
+  return { findings, samples: solvedSamples, commonPoseSamples };
+}
+
+interface ContactDistanceEntry {
+  contactA: string;
+  contactB: string;
+  minDistanceMm?: number;
+}
+
+interface BestCommonPose {
+  maxDistanceMm: number;
+  contactDistances: PhysicalUseCaseReachabilityContactDistance[];
+}
+
+/** Seed the per-contact min-distance accumulator from the use case contacts. */
+function seedContactDistances(
+  useCase: PhysicalUseCaseRecord,
+): Map<string, ContactDistanceEntry> {
+  const contactDistances = new Map<string, ContactDistanceEntry>();
+  for (const contact of useCase.contacts) {
+    contactDistances.set(contactKey(contact.a, contact.b), {
+      contactA: contact.a,
+      contactB: contact.b,
+    });
+  }
+  return contactDistances;
+}
+
+/** Resolve one solved sample's contacts and fold distances into the map. */
+function collectSampleContacts(
+  arm: Assembly,
+  poses: ReadonlyMap<string, Transform>,
+  useCase: PhysicalUseCaseRecord,
+  contactDistances: Map<string, ContactDistanceEntry>,
+): { solvedContacts: PhysicalUseCaseSolvedContact[]; sampleComplete: boolean } {
+  const solvedContacts: PhysicalUseCaseSolvedContact[] = [];
+  let sampleComplete = true;
+  for (const contact of useCase.contacts) {
+    const a = connectorWorldPoint(arm, poses, contact.a);
+    const b = connectorWorldPoint(arm, poses, contact.b);
+    if (a === undefined || b === undefined) {
+      sampleComplete = false;
+      continue;
+    }
+
+    const key = contactKey(contact.a, contact.b);
+    const entry = contactDistances.get(key);
+    if (entry === undefined) continue;
+    const distance = distanceMm(a, b);
+    solvedContacts.push({
+      contactA: contact.a,
+      contactB: contact.b,
+      pointA: a,
+      pointB: b,
+      distanceMm: distance,
+    });
+    contactDistances.set(key, {
+      ...entry,
+      minDistanceMm: entry.minDistanceMm === undefined
+        ? distance
+        : Math.min(entry.minDistanceMm, distance),
+    });
+  }
+  return { solvedContacts, sampleComplete };
+}
+
+/** Assemble the pose witness for one solved sample. */
+function buildPoseWitness(
+  poses: NumericPoses,
+  transforms: ReadonlyMap<string, Transform>,
+  solvedContacts: readonly PhysicalUseCaseSolvedContact[],
+  sampleComplete: boolean,
+  contactCount: number,
+): PhysicalUseCasePoseWitness {
+  const complete = sampleComplete && solvedContacts.length === contactCount;
+  const maxDistanceMm = complete
+    ? solvedContacts.reduce((maxDistance, contact) => Math.max(maxDistance, contact.distanceMm), 0)
+    : undefined;
+  return {
+    poses: { ...poses },
+    transforms,
+    contacts: solvedContacts,
+    complete,
+    ...(maxDistanceMm === undefined ? {} : { maxDistanceMm }),
+  };
+}
+
+/** Per-contact issues, or the simultaneous-contacts verdict when none fired. */
+function buildReachabilityFindings(
+  useCase: PhysicalUseCaseRecord,
+  toleranceMm: number,
+  contactDistances: Map<string, ContactDistanceEntry>,
+  bestCommonPose: BestCommonPose | undefined,
+  commonPoseSamples: readonly PhysicalUseCasePoseWitness[],
+): PhysicalUseCaseReachabilityFinding[] {
   const contactIssues: PhysicalUseCaseReachabilityIssue[] = [...contactDistances.values()]
     .filter((entry) => entry.minDistanceMm === undefined || entry.minDistanceMm > toleranceMm)
     .map((entry) => ({
@@ -163,10 +225,10 @@ export async function assessPhysicalUseCaseReachability(
       toleranceMm,
     }));
   if (contactIssues.length > 0 || useCase.contacts.length < 2 || commonPoseSamples.length > 0) {
-    return { findings: contactIssues, samples: solvedSamples, commonPoseSamples };
+    return contactIssues;
   }
 
-  const findings: PhysicalUseCaseReachabilityFinding[] = [{
+  return [{
     kind: 'simultaneous-contacts-unreachable',
     useCaseName: useCase.name,
     toleranceMm,
@@ -176,7 +238,6 @@ export async function assessPhysicalUseCaseReachability(
       contactB: contact.b,
     })),
   }];
-  return { findings, samples: solvedSamples, commonPoseSamples };
 }
 
 export function buildTargetedReachabilitySamples(
