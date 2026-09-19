@@ -103,12 +103,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/animation/verifyAnimation.ts",
-    "symbol": "Async function 'verifyAnimation'",
-    "value": 21
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/bridgeCurves.ts",
     "symbol": "Function 'bridgeCurves'",
     "value": 22
