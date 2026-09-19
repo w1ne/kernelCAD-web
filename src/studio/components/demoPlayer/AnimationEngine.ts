@@ -7,26 +7,26 @@ import type { FeatureKind } from '../../../shared/intent/types';
 
 type TransitionKind = 'add' | 'boolean.cut' | 'boolean.fuse' | 'modifier' | 'transform' | 'fallback';
 
+const ADD_KINDS = new Set<FeatureKind>([
+  'box', 'cylinder', 'sphere', 'torus',
+  'extrude', 'revolve', 'loft', 'sweep',
+  'importedMesh', 'importedStep', 'importedBrep', 'importedStl',
+  'sdfMaterialize',
+  'sketch', 'constrainedSketch',
+]);
+const CUT_KINDS = new Set<FeatureKind>(['hole', 'holes', 'cutout']);
+const MODIFIER_KINDS = new Set<FeatureKind>(['fillet', 'chamfer', 'shell', 'draft']);
+const TRANSFORM_KINDS = new Set<FeatureKind>(['mirror']);
+
 function classify(kind: FeatureKind, op?: 'subtract' | 'union' | 'intersect'): TransitionKind {
-  switch (kind) {
-    case 'box': case 'cylinder': case 'sphere': case 'torus':
-    case 'extrude': case 'revolve': case 'loft': case 'sweep':
-    case 'importedMesh': case 'importedStep': case 'importedBrep': case 'importedStl':
-    case 'sdfMaterialize':
-      return 'add';
-    case 'hole': case 'holes': case 'cutout':
-      return 'boolean.cut';
-    case 'boolean':
-      return op === 'subtract' ? 'boolean.cut' : 'boolean.fuse';
-    case 'fillet': case 'chamfer': case 'shell': case 'draft':
-      return 'modifier';
-    case 'mirror':
-      return 'transform';
-    case 'sketch': case 'constrainedSketch':
-      return 'add';
-    default:
-      return 'fallback';
+  if (ADD_KINDS.has(kind)) return 'add';
+  if (CUT_KINDS.has(kind)) return 'boolean.cut';
+  if (kind === 'boolean') {
+    return op === 'subtract' ? 'boolean.cut' : 'boolean.fuse';
   }
+  if (MODIFIER_KINDS.has(kind)) return 'modifier';
+  if (TRANSFORM_KINDS.has(kind)) return 'transform';
+  return 'fallback';
 }
 
 const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);

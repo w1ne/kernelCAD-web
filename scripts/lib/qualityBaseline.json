@@ -624,18 +624,6 @@
     "value": 25
   },
   {
-    "rule": "complexity",
-    "file": "src/studio/adapters/featureRecordsToCounts.ts",
-    "symbol": "Function 'countModelTopology'",
-    "value": 23
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/components/demoPlayer/AnimationEngine.ts",
-    "symbol": "Function 'classify'",
-    "value": 26
-  },
-  {
     "rule": "max-lines-per-function",
     "file": "src/agent/vision/index.ts",
     "symbol": "Async function 'traceFromImage'",
