@@ -133,29 +133,12 @@ export function injectIntoChain(
   // Walk forward to the statement-terminating semicolon at depth 0, tracking
   // strings/templates/comments and brace/paren/bracket nesting.
   let depth = 0;
-  let inStr: '"' | "'" | '`' | null = null;
-  let inLineComment = false;
-  let inBlockComment = false;
+  const cursor: LexicalCursor = { inStr: null, inLineComment: false, inBlockComment: false };
   let semiIdx = -1;
   for (let i = rhsStart; i < code.length; i++) {
+    const consumed = consumeLexicalContext(code, i, cursor);
+    if (consumed !== null) { i = consumed; continue; }
     const c = code[i];
-    const c2 = code[i + 1] ?? '';
-    if (inLineComment) {
-      if (c === '\n') inLineComment = false;
-      continue;
-    }
-    if (inBlockComment) {
-      if (c === '*' && c2 === '/') { inBlockComment = false; i++; }
-      continue;
-    }
-    if (inStr) {
-      if (c === '\\') { i++; continue; }
-      if (c === inStr) inStr = null;
-      continue;
-    }
-    if (c === '/' && c2 === '/') { inLineComment = true; i++; continue; }
-    if (c === '/' && c2 === '*') { inBlockComment = true; i++; continue; }
-    if (c === '"' || c === "'" || c === '`') { inStr = c as '"' | "'" | '`'; continue; }
     if (c === '(' || c === '[' || c === '{') { depth++; continue; }
     if (c === ')' || c === ']' || c === '}') { depth--; continue; }
     if (c === ';' && depth === 0) { semiIdx = i; break; }

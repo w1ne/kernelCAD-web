@@ -67,12 +67,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/edits/addPathSpline.ts",
-    "symbol": "Function 'injectIntoChain'",
-    "value": 29
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/edits/addSurfaceFromBoundary.ts",
     "symbol": "Function 'addSurfaceFromBoundary'",
     "value": 26
