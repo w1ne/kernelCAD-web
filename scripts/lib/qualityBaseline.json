@@ -73,12 +73,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/holeClassifier.ts",
-    "symbol": "Function 'classifyHoleFace'",
-    "value": 23
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/meshing.ts",
     "symbol": "Function 'getWire'",
     "value": 22
