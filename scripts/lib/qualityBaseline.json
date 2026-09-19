@@ -43,12 +43,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/getMassProperties.ts",
-    "symbol": "Async function 'getMassPropertiesTool'",
-    "value": 23
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/runFea.ts",
     "symbol": "Async function 'runFeaTool'",
     "value": 22
@@ -61,8 +55,14 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/cutoutLowerer.ts",
-    "symbol": "Function 'lowerCutout'",
+    "file": "src/kernel/backends/occt/exportGlb.ts",
+    "symbol": "Function 'buildMaterial'",
+    "value": 23
+  },
+  {
+    "rule": "complexity",
+    "file": "src/kernel/backends/occt/holeClassifier.ts",
+    "symbol": "Function 'classifyHoleFace'",
     "value": 23
   },
   {
@@ -73,9 +73,21 @@
   },
   {
     "rule": "complexity",
+    "file": "src/kernel/backends/occt/nurbsSurfaceLowerer.ts",
+    "symbol": "Function 'buildNurbsFace'",
+    "value": 23
+  },
+  {
+    "rule": "complexity",
     "file": "src/kernel/naming/parseQuery.ts",
     "symbol": "Function 'formatAst'",
     "value": 22
+  },
+  {
+    "rule": "complexity",
+    "file": "src/kernel/naming/topoRef.ts",
+    "symbol": "Function 'parseTopoRef'",
+    "value": 23
   },
   {
     "rule": "complexity",
@@ -94,6 +106,12 @@
     "file": "src/modeling/capture/bridgeCurves.ts",
     "symbol": "Function 'bridgeCurves'",
     "value": 22
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/capture/imageDimensions.ts",
+    "symbol": "Function 'imageDimensions'",
+    "value": 23
   },
   {
     "rule": "complexity",
@@ -121,26 +139,20 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/runtime/dfm/meshBvh.ts",
-    "symbol": "Method 'buildNode'",
-    "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/shared/intent/curve3dRecord.ts",
-    "symbol": "Function 'isCurve3DMetadata'",
-    "value": 22
-  },
-  {
-    "rule": "complexity",
     "file": "src/shared/intent/textureProjection.ts",
     "symbol": "Function 'computeProjectedUVs'",
     "value": 21
   },
   {
-    "rule": "complexity",
-    "file": "src/shared/intent/variableSweepRecord.ts",
-    "symbol": "Function 'isVariableSweepMetadata'",
-    "value": 22
+    "rule": "max-lines-per-function",
+    "file": "src/modeling/api.ts",
+    "symbol": "Function 'createApi'",
+    "value": 654
+  },
+  {
+    "rule": "max-lines",
+    "file": "src/modeling/api.ts",
+    "symbol": "(file)",
+    "value": 973
   }
 ]
