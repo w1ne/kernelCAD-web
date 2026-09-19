@@ -1057,12 +1057,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/studio/AgentComposer.tsx",
-    "symbol": "Function 'AgentComposer'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/StagedEditSlot.tsx",
     "symbol": "Function 'StagedEditContextDetails'",
     "value": 16
@@ -1360,12 +1354,6 @@
     "file": "src/server/sessionPool.ts",
     "symbol": "Function 'createSessionPool'",
     "value": 144
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/AgentComposer.tsx",
-    "symbol": "Function 'AgentComposer'",
-    "value": 133
   },
   {
     "rule": "max-lines-per-function",
