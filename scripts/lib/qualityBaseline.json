@@ -73,12 +73,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/edits/removeFeature.ts",
-    "symbol": "Function 'lineContainsTopLevelReturn'",
-    "value": 27
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/edits/sourceEditUtils.ts",
     "symbol": "Function 'findLastTopLevelReturnLine'",
     "value": 26
