@@ -76,11 +76,10 @@ export interface BendInputs {
  *  the pipeline; the spec's intended `BRepAlgoAPI_Splitter` is replaced with
  *  two `BRepAlgoAPI_Cut_3` slab cuts (Splitter is not bound in the bundled
  *  `replicad-opencascadejs` WASM build — verified 2026-05-14). */
-export function lowerSheetMetalBend(inp: BendInputs): SheetMetalBendLoweringResult {
-  const diagnostics: CompilerDiagnostic[] = [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const oc = getOC() as any;
-
+function resolveBendPlane(
+  inp: BendInputs,
+  diagnostics: CompilerDiagnostic[],
+): { axisDirection: [number, number, number]; pn: [number, number, number] } | null {
   // Normalize the axis direction.
   const [adx, ady, adz] = inp.axis.direction;
   const aLen = Math.hypot(adx, ady, adz);
@@ -93,7 +92,7 @@ export function lowerSheetMetalBend(inp: BendInputs): SheetMetalBendLoweringResu
       message: '.bend(): bend axis direction is degenerate (zero-length).',
       hint: '.bend() requires a linear edge with a non-zero direction. Use list_edges to inspect candidates.',
     });
-    return { diagnostics };
+    return null;
   }
   const axisDirection: [number, number, number] = [adx / aLen, ady / aLen, adz / aLen];
 
@@ -116,13 +115,26 @@ export function lowerSheetMetalBend(inp: BendInputs): SheetMetalBendLoweringResu
       message: 'Bend axis is parallel to the top-face normal — cannot define a split plane.',
       hint: 'Pick a different bend edge; the bend axis must lie in the top face.',
     });
-    return { diagnostics };
+    return null;
   }
   const pn: [number, number, number] = [
     planeNormal[0] / pnLen,
     planeNormal[1] / pnLen,
     planeNormal[2] / pnLen,
   ];
+
+  return { axisDirection, pn };
+}
+
+export function lowerSheetMetalBend(inp: BendInputs): SheetMetalBendLoweringResult {
+  const diagnostics: CompilerDiagnostic[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = getOC() as any;
+
+  const plane = resolveBendPlane(inp, diagnostics);
+  if (!plane) return { diagnostics };
+  const { axisDirection, pn } = plane;
+  const [dx, dy, dz] = axisDirection;
 
   const baseShape = (inp.base.getReplicadShape() as { wrapped: unknown }).wrapped;
   if (!baseShape) {
