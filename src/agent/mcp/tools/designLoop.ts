@@ -167,62 +167,85 @@ export async function designLoopTool(input: DesignLoopInput): Promise<DesignLoop
   const attempts: DesignLoopAttemptResult[] = [];
 
   for (const [index, attempt] of input.attempts.entries()) {
-    if (!attempt.file && !attempt.code) {
-      throw new Error(`design_loop attempt ${index + 1} requires file or code.`);
-    }
-
-    const id = attempt.id ?? String(index + 1).padStart(2, '0');
-    const title = attempt.title ?? `Attempt ${id}`;
-    // design_loop signals misuse by throwing (see the guards above), so a
-    // failed read re-throws with the shared message rather than a raw ENOENT.
-    let source: string;
-    try {
-      source = attempt.code ?? (attempt.file !== undefined ? await readFile(attempt.file, 'utf-8') : '');
-    } catch (e) {
-      throw new Error(`design_loop attempt ${index + 1}: ${fileReadErrorMessage(e)}`);
-    }
-    const requirePhysicalAcceptance =
-      input.requirePhysicalAcceptance === true ||
-      containsPhysicalUseCaseDeclaration(source);
-    const reviewInput: ReviewCadInput = {
-      ...(attempt.file !== undefined ? { file: attempt.file } : {}),
-      ...(attempt.code !== undefined ? { code: attempt.code } : {}),
-      assembly: input.assembly,
-      designGoal: input.goal,
-      preserveInterfaces: input.preserveInterfaces,
-      includePoseEnvelope: input.includePoseEnvelope,
-      includeInterference: input.includeInterference,
-      epsilonMm3: input.epsilonMm3,
-      trackConnectors: input.trackConnectors,
-      gripperAperture: input.gripperAperture,
-      samplesPerMate: input.samplesPerMate,
-      combinatorial: input.combinatorial,
-      ...(requirePhysicalAcceptance
-        ? {
-            includePhysicalUseCaseReachability: true,
-            includePhysicalUseCaseStatics: true,
-            includePhysicalUseCaseJointReactions: true,
-            includePhysicalUseCaseJointStructure: true,
-            requirePhysicalUseCase: true,
-          }
-        : {}),
-    };
-    const review = await runReviewPipeline(reviewInput);
-    const attemptResult = toAttemptResult({
-      id,
-      title,
-      script: attempt.file,
-      review,
-      allowReviewWarnings: input.allowReviewWarnings ?? [],
-      requireVisualReview: input.requireVisualReview ?? true,
-      visualReview: attempt.visualReview,
-      source,
-    });
+    const attemptResult = await runDesignLoopAttempt(input, index, attempt);
     attempts.push(attemptResult);
 
     if (attemptResult.ok && stopOnPass) break;
   }
 
+  return finaliseDesignLoop(input, attempts);
+}
+
+async function runDesignLoopAttempt(
+  input: DesignLoopInput,
+  index: number,
+  attempt: DesignLoopAttemptInput,
+): Promise<DesignLoopAttemptResult> {
+  if (!attempt.file && !attempt.code) {
+    throw new Error(`design_loop attempt ${index + 1} requires file or code.`);
+  }
+
+  const id = attempt.id ?? String(index + 1).padStart(2, '0');
+  const title = attempt.title ?? `Attempt ${id}`;
+  // design_loop signals misuse by throwing (see the guards above), so a
+  // failed read re-throws with the shared message rather than a raw ENOENT.
+  let source: string;
+  try {
+    source = attempt.code ?? (attempt.file !== undefined ? await readFile(attempt.file, 'utf-8') : '');
+  } catch (e) {
+    throw new Error(`design_loop attempt ${index + 1}: ${fileReadErrorMessage(e)}`);
+  }
+  const reviewInput: ReviewCadInput = buildReviewInput(input, attempt, source);
+  const review = await runReviewPipeline(reviewInput);
+  return toAttemptResult({
+    id,
+    title,
+    script: attempt.file,
+    review,
+    allowReviewWarnings: input.allowReviewWarnings ?? [],
+    requireVisualReview: input.requireVisualReview ?? true,
+    visualReview: attempt.visualReview,
+    source,
+  });
+}
+
+function buildReviewInput(
+  input: DesignLoopInput,
+  attempt: DesignLoopAttemptInput,
+  source: string,
+): ReviewCadInput {
+  const requirePhysicalAcceptance =
+    input.requirePhysicalAcceptance === true ||
+    containsPhysicalUseCaseDeclaration(source);
+  return {
+    ...(attempt.file !== undefined ? { file: attempt.file } : {}),
+    ...(attempt.code !== undefined ? { code: attempt.code } : {}),
+    assembly: input.assembly,
+    designGoal: input.goal,
+    preserveInterfaces: input.preserveInterfaces,
+    includePoseEnvelope: input.includePoseEnvelope,
+    includeInterference: input.includeInterference,
+    epsilonMm3: input.epsilonMm3,
+    trackConnectors: input.trackConnectors,
+    gripperAperture: input.gripperAperture,
+    samplesPerMate: input.samplesPerMate,
+    combinatorial: input.combinatorial,
+    ...(requirePhysicalAcceptance
+      ? {
+          includePhysicalUseCaseReachability: true,
+          includePhysicalUseCaseStatics: true,
+          includePhysicalUseCaseJointReactions: true,
+          includePhysicalUseCaseJointStructure: true,
+          requirePhysicalUseCase: true,
+        }
+      : {}),
+  };
+}
+
+async function finaliseDesignLoop(
+  input: DesignLoopInput,
+  attempts: DesignLoopAttemptResult[],
+): Promise<DesignLoopOutput> {
   const finalPass = attempts.find((attempt) => attempt.ok);
   const convergence = detectConvergenceStall(attempts);
   const record = buildRecord(input, attempts);
