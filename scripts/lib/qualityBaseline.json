@@ -379,12 +379,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/runtime/jointMeshContinuity.ts",
-    "symbol": "Function 'checkJointMeshContinuity'",
-    "value": 26
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/runtime/mechanismTruth.ts",
     "symbol": "Function 'checkOrphanParts'",
     "value": 23
