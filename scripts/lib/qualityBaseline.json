@@ -31,12 +31,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/loop/closedLoop.ts",
-    "symbol": "Async function 'runClosedLoop'",
-    "value": 25
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/edits/addVariableSweep.ts",
     "symbol": "Function 'addVariableSweep'",
     "value": 24

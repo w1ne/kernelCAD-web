@@ -4,6 +4,7 @@ import {
   defaultBuildRepairPrompt,
   type ClosedLoopInput,
   type ClosedLoopResult,
+  type GateVerdict,
   type LoopMessage,
 } from './types.js';
 import { selectBest, type ScoredCandidate } from './bestOfN.js';
@@ -28,6 +29,131 @@ export const MAX_REPAIR_ATTEMPTS_CEILING = 10;
  * Invariant: never returns status:'passed' unless the gate suite reported ok for the
  * selected candidate. A broken artifact returns 'gate_failed' (or 'no_script').
  */
+/** Per-attempt outcome: token spend plus a terminal result when the loop ends. */
+interface AttemptOutcome {
+  tokensIn: number;
+  tokensOut: number;
+  /** Set when the attempt produced a terminal loop result; absent means iterate again. */
+  result?: ClosedLoopResult;
+}
+
+/** W4 best-of-N first attempt: fan out, select the winner, maybe repair. */
+async function runBestOfNAttempt(
+  input: ClosedLoopInput,
+  messages: LoopMessage[],
+  buildRepairPrompt: (verdicts: GateVerdict[]) => string,
+  attempt: number,
+  maxAttempts: number,
+  candidateCount: number,
+): Promise<AttemptOutcome> {
+  let tokensIn = 0;
+  let tokensOut = 0;
+
+  const genResults = await Promise.all(
+    Array.from({ length: candidateCount }, (_, i) => input.generate(messages, { variant: i })),
+  );
+  const scored: ScoredCandidate[] = [];
+  for (const gen of genResults) {
+    tokensIn += gen.tokensIn;
+    tokensOut += gen.tokensOut;
+    const code = input.extractScript(gen.text);
+    if (code === null) continue;
+    const scriptPath = await input.writeScript(code);
+    const report = await input.gateRunner.run(scriptPath);
+    const oracleScore = input.scoreCandidate ? await input.scoreCandidate(scriptPath, report) : null;
+    scored.push({ scriptPath, text: gen.text, report, oracleScore });
+  }
+
+  if (scored.length === 0) {
+    // No candidate produced a script — mirror the single-sample no_script path.
+    if (attempt < maxAttempts) {
+      messages.push({ role: 'assistant', content: genResults[genResults.length - 1].text });
+      messages.push({
+        role: 'user',
+        content: 'Could not extract a code block from your reply. Return the full script in a single fenced code block.',
+      });
+      return { tokensIn, tokensOut };
+    }
+    return { tokensIn, tokensOut, result: { status: 'no_script', attempts: attempt, tokensIn, tokensOut } };
+  }
+
+  const winner = selectBest(scored);
+  // The sequential fan-out above leaves the LAST candidate on disk when the
+  // host's writeScript reuses a single path. Re-materialize the winner so its
+  // scriptPath holds the winner's code — the host scores that path post-loop.
+  const winnerCode = input.extractScript(winner.text);
+  const winnerPath = winnerCode !== null ? await input.writeScript(winnerCode) : winner.scriptPath;
+  input.onEvent?.({
+    type: 'best_of_n',
+    winnerIndex: scored.indexOf(winner),
+    candidates: scored.map((c) => ({
+      stagesPassed: c.report.verdicts.filter((v) => v.ok).length,
+      oracleScore: c.oracleScore,
+    })),
+  });
+  input.onEvent?.({ type: 'gate_report', report: winner.report });
+
+  if (winner.report.ok) {
+    return { tokensIn, tokensOut, result: { status: 'passed', scriptPath: winnerPath, finalText: winner.text, attempts: attempt, tokensIn, tokensOut } };
+  }
+  if (attempt < maxAttempts) {
+    const repairPrompt = buildRepairPrompt(winner.report.verdicts);
+    input.onEvent?.({ type: 'repair', prompt: repairPrompt });
+    messages.push({ role: 'assistant', content: winner.text });
+    messages.push({ role: 'user', content: repairPrompt });
+    return { tokensIn, tokensOut };
+  }
+  return { tokensIn, tokensOut, result: { status: 'gate_failed', scriptPath: winnerPath, finalText: winner.text, attempts: attempt, verdicts: winner.report.verdicts, tokensIn, tokensOut } };
+}
+
+/** Single-sample path (unchanged: attempt > 1, or candidates <= 1). */
+async function runSingleAttempt(
+  input: ClosedLoopInput,
+  messages: LoopMessage[],
+  buildRepairPrompt: (verdicts: GateVerdict[]) => string,
+  attempt: number,
+  maxAttempts: number,
+): Promise<AttemptOutcome> {
+  let tokensIn = 0;
+  let tokensOut = 0;
+
+  const gen = await input.generate(messages);
+  tokensIn += gen.tokensIn;
+  tokensOut += gen.tokensOut;
+  const lastText = gen.text;
+
+  const code = input.extractScript(gen.text);
+  if (code === null) {
+    if (attempt < maxAttempts) {
+      messages.push({ role: 'assistant', content: gen.text });
+      messages.push({
+        role: 'user',
+        content: 'Could not extract a code block from your reply. Return the full script in a single fenced code block.',
+      });
+      return { tokensIn, tokensOut };
+    }
+    return { tokensIn, tokensOut, result: { status: 'no_script', attempts: attempt, tokensIn, tokensOut } };
+  }
+
+  const lastScriptPath = await input.writeScript(code);
+  const report = await input.gateRunner.run(lastScriptPath);
+  input.onEvent?.({ type: 'gate_report', report });
+
+  if (report.ok) {
+    return { tokensIn, tokensOut, result: { status: 'passed', scriptPath: lastScriptPath, finalText: lastText, attempts: attempt, tokensIn, tokensOut } };
+  }
+
+  if (attempt < maxAttempts) {
+    const repairPrompt = buildRepairPrompt(report.verdicts);
+    input.onEvent?.({ type: 'repair', prompt: repairPrompt });
+    messages.push({ role: 'assistant', content: gen.text });
+    messages.push({ role: 'user', content: repairPrompt });
+    return { tokensIn, tokensOut };
+  }
+
+  return { tokensIn, tokensOut, result: { status: 'gate_failed', scriptPath: lastScriptPath, finalText: lastText, attempts: attempt, verdicts: report.verdicts, tokensIn, tokensOut } };
+}
+
 export async function runClosedLoop(input: ClosedLoopInput): Promise<ClosedLoopResult> {
   const maxAttempts = input.maxAttempts ?? 3;
   const candidateCount = Math.max(1, input.candidates ?? 1);
@@ -36,109 +162,18 @@ export async function runClosedLoop(input: ClosedLoopInput): Promise<ClosedLoopR
   const messages: LoopMessage[] = [{ role: 'user', content: input.prompt }];
   let tokensIn = 0;
   let tokensOut = 0;
-  let lastScriptPath = '';
-  let lastText = '';
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     input.onEvent?.({ type: 'attempt', n: attempt });
 
     // --- W4 best-of-N: fan out on the first attempt only, when configured. ---
-    if (attempt === 1 && candidateCount > 1) {
-      const genResults = await Promise.all(
-        Array.from({ length: candidateCount }, (_, i) => input.generate(messages, { variant: i })),
-      );
-      const scored: ScoredCandidate[] = [];
-      for (const gen of genResults) {
-        tokensIn += gen.tokensIn;
-        tokensOut += gen.tokensOut;
-        const code = input.extractScript(gen.text);
-        if (code === null) continue;
-        const scriptPath = await input.writeScript(code);
-        const report = await input.gateRunner.run(scriptPath);
-        const oracleScore = input.scoreCandidate ? await input.scoreCandidate(scriptPath, report) : null;
-        scored.push({ scriptPath, text: gen.text, report, oracleScore });
-      }
+    const outcome = attempt === 1 && candidateCount > 1
+      ? await runBestOfNAttempt(input, messages, buildRepairPrompt, attempt, maxAttempts, candidateCount)
+      : await runSingleAttempt(input, messages, buildRepairPrompt, attempt, maxAttempts);
 
-      if (scored.length === 0) {
-        // No candidate produced a script — mirror the single-sample no_script path.
-        if (attempt < maxAttempts) {
-          messages.push({ role: 'assistant', content: genResults[genResults.length - 1].text });
-          messages.push({
-            role: 'user',
-            content: 'Could not extract a code block from your reply. Return the full script in a single fenced code block.',
-          });
-          continue;
-        }
-        return { status: 'no_script', attempts: attempt, tokensIn, tokensOut };
-      }
-
-      const winner = selectBest(scored);
-      // The sequential fan-out above leaves the LAST candidate on disk when the
-      // host's writeScript reuses a single path. Re-materialize the winner so its
-      // scriptPath holds the winner's code — the host scores that path post-loop.
-      const winnerCode = input.extractScript(winner.text);
-      const winnerPath = winnerCode !== null ? await input.writeScript(winnerCode) : winner.scriptPath;
-      input.onEvent?.({
-        type: 'best_of_n',
-        winnerIndex: scored.indexOf(winner),
-        candidates: scored.map((c) => ({
-          stagesPassed: c.report.verdicts.filter((v) => v.ok).length,
-          oracleScore: c.oracleScore,
-        })),
-      });
-      lastScriptPath = winnerPath;
-      lastText = winner.text;
-      input.onEvent?.({ type: 'gate_report', report: winner.report });
-
-      if (winner.report.ok) {
-        return { status: 'passed', scriptPath: winnerPath, finalText: winner.text, attempts: attempt, tokensIn, tokensOut };
-      }
-      if (attempt < maxAttempts) {
-        const repairPrompt = buildRepairPrompt(winner.report.verdicts);
-        input.onEvent?.({ type: 'repair', prompt: repairPrompt });
-        messages.push({ role: 'assistant', content: winner.text });
-        messages.push({ role: 'user', content: repairPrompt });
-        continue;
-      }
-      return { status: 'gate_failed', scriptPath: winnerPath, finalText: winner.text, attempts: attempt, verdicts: winner.report.verdicts, tokensIn, tokensOut };
-    }
-
-    // --- Single-sample path (unchanged: attempt > 1, or candidates <= 1). ---
-    const gen = await input.generate(messages);
-    tokensIn += gen.tokensIn;
-    tokensOut += gen.tokensOut;
-    lastText = gen.text;
-
-    const code = input.extractScript(gen.text);
-    if (code === null) {
-      if (attempt < maxAttempts) {
-        messages.push({ role: 'assistant', content: gen.text });
-        messages.push({
-          role: 'user',
-          content: 'Could not extract a code block from your reply. Return the full script in a single fenced code block.',
-        });
-        continue;
-      }
-      return { status: 'no_script', attempts: attempt, tokensIn, tokensOut };
-    }
-
-    lastScriptPath = await input.writeScript(code);
-    const report = await input.gateRunner.run(lastScriptPath);
-    input.onEvent?.({ type: 'gate_report', report });
-
-    if (report.ok) {
-      return { status: 'passed', scriptPath: lastScriptPath, finalText: lastText, attempts: attempt, tokensIn, tokensOut };
-    }
-
-    if (attempt < maxAttempts) {
-      const repairPrompt = buildRepairPrompt(report.verdicts);
-      input.onEvent?.({ type: 'repair', prompt: repairPrompt });
-      messages.push({ role: 'assistant', content: gen.text });
-      messages.push({ role: 'user', content: repairPrompt });
-      continue;
-    }
-
-    return { status: 'gate_failed', scriptPath: lastScriptPath, finalText: lastText, attempts: attempt, verdicts: report.verdicts, tokensIn, tokensOut };
+    tokensIn += outcome.tokensIn;
+    tokensOut += outcome.tokensOut;
+    if (outcome.result) return { ...outcome.result, tokensIn, tokensOut };
   }
 
   // Unreachable given maxAttempts >= 1, but the type checker needs a terminal return.
