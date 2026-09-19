@@ -763,12 +763,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/export/urdf/urdfSerializer.ts",
-    "symbol": "Async function 'urdfSerialize'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
     "symbol": "Arrow function",
     "value": 18
@@ -1300,12 +1294,6 @@
     "file": "src/modeling/constraints/sketchConverter.ts",
     "symbol": "Function 'convertSketchEntitiesToConstraints'",
     "value": 111
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/export/urdf/urdfSerializer.ts",
-    "symbol": "Async function 'urdfSerialize'",
-    "value": 128
   },
   {
     "rule": "max-lines-per-function",
