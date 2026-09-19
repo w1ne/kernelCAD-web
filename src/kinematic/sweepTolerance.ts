@@ -227,17 +227,42 @@ async function evaluateCombo(
   gates: NormalizedGates,
   combo: Readonly<Record<string, number | string>>,
 ): Promise<SweepComboResult> {
-  // `evaluateAndBuildScript` defaults KERNELCAD_VALIDATE_DEFAULT to 'error'
-  // (see applyEvaluateDefaults), which makes an in-script
-  // `arm.solvedModel({})` call THROW on a mechanism-invalid combo before
-  // sweepTolerance's own gates ever run — the sweep exists to survey the
-  // envelope, not stop at the first broken combo. Default to 'warn' (only
-  // when the caller hasn't set an explicit value) so the script still
-  // evaluates and this function's own gate classification below is the
-  // source of truth for pass/fail.
+  const { evaluation, model } = await runComboEvaluation(code);
+  if (evaluation.exitCode !== 0 || !model) {
+    return failedEvaluationResult(evaluation, combo, gates);
+  }
+
+  const assemblies = model.session.assemblies as Map<string, Assembly>;
+  const arm = assemblyName !== undefined ? assemblies.get(assemblyName) : assemblies.values().next().value;
+  if (!arm) {
+    return noAssemblyResult(combo, gates);
+  }
+
+  const { rawDiagnostics, gateVerdicts } = await collectComboGateVerdicts(arm, gates);
+
+  return { combo, gates: gateVerdicts, diagnostics: rawDiagnostics };
+}
+
+type ComboEvaluation = Awaited<ReturnType<typeof evaluateAndBuildScript>>['evaluation'];
+type ComboModel = NonNullable<Awaited<ReturnType<typeof evaluateAndBuildScript>>['model']>;
+type AssemblyDiagnostic = Awaited<ReturnType<typeof validateAssemblyWithMates>>['diagnostics'][number];
+
+/**
+ * Evaluate one combo under the sweep's validation default.
+ *
+ * `evaluateAndBuildScript` defaults KERNELCAD_VALIDATE_DEFAULT to 'error'
+ * (see applyEvaluateDefaults), which makes an in-script
+ * `arm.solvedModel({})` call THROW on a mechanism-invalid combo before
+ * sweepTolerance's own gates ever run — the sweep exists to survey the
+ * envelope, not stop at the first broken combo. Default to 'warn' (only
+ * when the caller hasn't set an explicit value) so the script still
+ * evaluates and this function's own gate classification below is the
+ * source of truth for pass/fail.
+ */
+async function runComboEvaluation(code: string): Promise<{ evaluation: ComboEvaluation; model: ComboModel | undefined }> {
   const hadValidateDefault = process.env.KERNELCAD_VALIDATE_DEFAULT !== undefined;
   if (!hadValidateDefault) process.env.KERNELCAD_VALIDATE_DEFAULT = 'warn';
-  let evaluation: Awaited<ReturnType<typeof evaluateAndBuildScript>>['evaluation'];
+  let evaluation: ComboEvaluation;
   let model: Awaited<ReturnType<typeof evaluateAndBuildScript>>['model'];
   try {
     const mod = await import('../agent/cli/commands/evaluate');
@@ -247,35 +272,50 @@ async function evaluateCombo(
   } finally {
     if (!hadValidateDefault) delete process.env.KERNELCAD_VALIDATE_DEFAULT;
   }
-  if (evaluation.exitCode !== 0 || !model) {
-    const message = evaluation.diagnostics[0]?.message ?? 'Script evaluation failed for this combo.';
-    return {
-      combo,
-      gates: Object.fromEntries(gateNames(gates).map((g) => [g, 'fail' as const])),
-      diagnostics: gateNames(gates).map((g) => ({
-        gate: g,
-        code: evaluation.diagnostics[0]?.code ?? 'feature.invalid-args',
-        severity: 'error',
-        message,
-      })),
-    };
-  }
+  return { evaluation, model };
+}
 
-  const assemblies = model.session.assemblies as Map<string, Assembly>;
-  const arm = assemblyName !== undefined ? assemblies.get(assemblyName) : assemblies.values().next().value;
-  if (!arm) {
-    return {
-      combo,
-      gates: Object.fromEntries(gateNames(gates).map((g) => [g, 'fail' as const])),
-      diagnostics: gateNames(gates).map((g) => ({
-        gate: g,
-        code: 'feature.invalid-args',
-        severity: 'error',
-        message: 'sweep_tolerance: no assembly captured for this combo.',
-      })),
-    };
-  }
+/** Every declared gate fails when the combo script did not evaluate. */
+function failedEvaluationResult(
+  evaluation: ComboEvaluation,
+  combo: Readonly<Record<string, number | string>>,
+  gates: NormalizedGates,
+): SweepComboResult {
+  const message = evaluation.diagnostics[0]?.message ?? 'Script evaluation failed for this combo.';
+  return {
+    combo,
+    gates: Object.fromEntries(gateNames(gates).map((g) => [g, 'fail' as const])),
+    diagnostics: gateNames(gates).map((g) => ({
+      gate: g,
+      code: evaluation.diagnostics[0]?.code ?? 'feature.invalid-args',
+      severity: 'error',
+      message,
+    })),
+  };
+}
 
+/** Every declared gate fails when the combo captured no assembly. */
+function noAssemblyResult(
+  combo: Readonly<Record<string, number | string>>,
+  gates: NormalizedGates,
+): SweepComboResult {
+  return {
+    combo,
+    gates: Object.fromEntries(gateNames(gates).map((g) => [g, 'fail' as const])),
+    diagnostics: gateNames(gates).map((g) => ({
+      gate: g,
+      code: 'feature.invalid-args',
+      severity: 'error',
+      message: 'sweep_tolerance: no assembly captured for this combo.',
+    })),
+  };
+}
+
+/** Run the declared mechanism gates on one combo's assembly. */
+async function collectComboGateVerdicts(
+  arm: Assembly,
+  gates: NormalizedGates,
+): Promise<{ rawDiagnostics: SweepComboResult['diagnostics']; gateVerdicts: Record<string, 'pass' | 'fail'> }> {
   const rawDiagnostics: SweepComboResult['diagnostics'][number][] = [];
   const gateVerdicts: Record<string, 'pass' | 'fail'> = {};
 
@@ -284,48 +324,77 @@ async function evaluateCombo(
       ? await detectInterferencesForPoses(arm, {})
       : undefined;
     const validated = await validateAssemblyWithMates(arm, interferencePairs);
-    let interferenceFail = false;
-    let mountingHoleFail = false;
-    let jointAxisFail = false;
-    for (const d of validated.diagnostics) {
-      if (d.code === 'assembly.interference.overlap') {
-        if (!gates.interference) continue;
-        interferenceFail = interferenceFail || d.severity === 'error';
-        rawDiagnostics.push({ gate: 'interference', code: d.code, severity: d.severity, message: d.message });
-      } else if (d.code === 'assembly.mounting-hole.mismatch') {
-        if (!gates.mountingHoles) continue;
-        // assembly.mounting-hole.mismatch is emitted at severity 'info'
-        // unconditionally (demoted 2026-06-01 — the merge gate is
-        // mechanism.disconnect at validate-time, not this authoring-time
-        // signal) — presence is the fail condition, not severity.
-        mountingHoleFail = true;
-        rawDiagnostics.push({ gate: 'mounting-holes', code: d.code, severity: d.severity, message: d.message });
-      } else if (d.code === 'assembly.joint-axis.unbound') {
-        if (!gates.jointAxis) continue;
-        jointAxisFail = jointAxisFail || d.severity === 'error';
-        rawDiagnostics.push({ gate: 'joint-axis', code: d.code, severity: d.severity, message: d.message });
-      }
-    }
-    if (gates.interference) gateVerdicts['interference'] = interferenceFail ? 'fail' : 'pass';
-    if (gates.mountingHoles) gateVerdicts['mounting-holes'] = mountingHoleFail ? 'fail' : 'pass';
-    if (gates.jointAxis) gateVerdicts['joint-axis'] = jointAxisFail ? 'fail' : 'pass';
+    const classified = classifyAssemblyDiagnostics(validated.diagnostics, gates);
+    rawDiagnostics.push(...classified.rawDiagnostics);
+    if (gates.interference) gateVerdicts['interference'] = classified.interferenceFail ? 'fail' : 'pass';
+    if (gates.mountingHoles) gateVerdicts['mounting-holes'] = classified.mountingHoleFail ? 'fail' : 'pass';
+    if (gates.jointAxis) gateVerdicts['joint-axis'] = classified.jointAxisFail ? 'fail' : 'pass';
   }
 
   if (gates.reachable !== undefined) {
-    const reach = await checkReachable(arm, {
-      tipLink: gates.reachable.tipLink,
-      target: {
-        position: gates.reachable.targetPosition,
-        orientation: gates.reachable.targetOrientation,
-      },
-    });
-    gateVerdicts['reachable'] = reach.ok ? 'pass' : 'fail';
-    for (const d of reach.diagnostics) {
-      rawDiagnostics.push({ gate: 'reachable', code: d.code, severity: d.severity, message: d.message });
-    }
+    const reach = await collectReachableVerdict(arm, gates.reachable);
+    gateVerdicts['reachable'] = reach.verdict;
+    rawDiagnostics.push(...reach.diagnostics);
   }
 
-  return { combo, gates: gateVerdicts, diagnostics: rawDiagnostics };
+  return { rawDiagnostics, gateVerdicts };
+}
+
+/** Sort validation diagnostics into the three assembly gates' fail flags. */
+function classifyAssemblyDiagnostics(
+  diagnostics: readonly AssemblyDiagnostic[],
+  gates: NormalizedGates,
+): {
+  interferenceFail: boolean;
+  mountingHoleFail: boolean;
+  jointAxisFail: boolean;
+  rawDiagnostics: SweepComboResult['diagnostics'][number][];
+} {
+  const rawDiagnostics: SweepComboResult['diagnostics'][number][] = [];
+  let interferenceFail = false;
+  let mountingHoleFail = false;
+  let jointAxisFail = false;
+  for (const d of diagnostics) {
+    if (d.code === 'assembly.interference.overlap') {
+      if (!gates.interference) continue;
+      interferenceFail = interferenceFail || d.severity === 'error';
+      rawDiagnostics.push({ gate: 'interference', code: d.code, severity: d.severity, message: d.message });
+    } else if (d.code === 'assembly.mounting-hole.mismatch') {
+      if (!gates.mountingHoles) continue;
+      // assembly.mounting-hole.mismatch is emitted at severity 'info'
+      // unconditionally (demoted 2026-06-01 — the merge gate is
+      // mechanism.disconnect at validate-time, not this authoring-time
+      // signal) — presence is the fail condition, not severity.
+      mountingHoleFail = true;
+      rawDiagnostics.push({ gate: 'mounting-holes', code: d.code, severity: d.severity, message: d.message });
+    } else if (d.code === 'assembly.joint-axis.unbound') {
+      if (!gates.jointAxis) continue;
+      jointAxisFail = jointAxisFail || d.severity === 'error';
+      rawDiagnostics.push({ gate: 'joint-axis', code: d.code, severity: d.severity, message: d.message });
+    }
+  }
+  return { interferenceFail, mountingHoleFail, jointAxisFail, rawDiagnostics };
+}
+
+/** Reachability verdict + diagnostics for one combo's arm. */
+async function collectReachableVerdict(
+  arm: Assembly,
+  reachable: NonNullable<NormalizedGates['reachable']>,
+): Promise<{ verdict: 'pass' | 'fail'; diagnostics: SweepComboResult['diagnostics'][number][] }> {
+  const reach = await checkReachable(arm, {
+    tipLink: reachable.tipLink,
+    target: {
+      position: reachable.targetPosition,
+      orientation: reachable.targetOrientation,
+    },
+  });
+  const diagnostics = reach.diagnostics.map((d) => ({
+    gate: 'reachable',
+    code: d.code,
+    severity: d.severity,
+    message: d.message,
+  }));
+  return { verdict: reach.ok ? 'pass' : 'fail', diagnostics };
 }
 
 function expandParamSpec(spec: SweepParamsDeclaration[string]): ReadonlyArray<number | string> {

@@ -457,13 +457,10 @@ export function buildHoles(args: {
       if (!radial.some(l => Math.abs(l.measured - c.r) <= tolModel * 2)) holeCandidates.push(c);
     }
   }
-  holeCandidates.forEach((c, k) => {
-    const g = geometry.find(x => x.view === c.view)!;
-    const axis = g.normal;
-    const name = `hole${k + 1}`;
+  function resolveDiameterGroup(c: ViewCircle, g: ViewGeometry): Expr {
     const stated = c.statedDiameter;
     const diaValue = stated ?? round2(c.r * 2);
-    const groupKey = `${axis}:${diaValue}:${stated !== undefined}`;
+    const groupKey = `${g.normal}:${diaValue}:${stated !== undefined}`;
     let group = diaGroups.find(d => d.key === groupKey);
     if (!group) {
       const base = holeCandidates.length === 1 || new Set(holeCandidates.map(h => (h.statedDiameter ?? round2(h.r * 2)))).size === 1 ? 'holeDia' : `holeDia${diaGroups.length + 1}`;
@@ -474,15 +471,10 @@ export function buildHoles(args: {
       group = { key: groupKey, expr };
       diaGroups.push(group);
     }
+    return group.expr;
+  }
 
-    const center: Partial<Record<ModelAxis, Expr>> = {};
-    if (kind === 'revolve' && g === endView) {
-      for (const a of AXES) if (a !== axis) center[a] = maxRadius!;
-    } else {
-      center[g.view.u.axis] = levelExpr(g.view.u.axis, c.u);
-      center[g.view.v.axis] = levelExpr(g.view.v.axis, c.v);
-    }
-
+  function resolveHoleExtent(c: ViewCircle, g: ViewGeometry, axis: ModelAxis, name: string): { from: Expr; length: Expr; isThrough: boolean } {
     // Depth: hidden walls at centre ± r in a view that shows the hole axis.
     const span = hiddenSpan(geometry, g, c, axis, tolModel);
     const L = axisLevels[axis];
@@ -515,7 +507,26 @@ export function buildHoles(args: {
       length = add(sub(hi, lo), num(2));
       facts.push({ id: `holeDepth:${name}`, statement: `Hole ${name} has no depth callout and no hidden lines in any view; treated as through the whole part.`, kind: 'assumed', source: 'default', value: 'THRU', confidence: 0, open: true });
     }
-    holes.push({ name, axis, center, diameter: group.expr, from, length, through: isThrough || through });
+    return { from, length, isThrough };
+  }
+
+  holeCandidates.forEach((c, k) => {
+    const g = geometry.find(x => x.view === c.view)!;
+    const axis = g.normal;
+    const name = `hole${k + 1}`;
+    const diameter = resolveDiameterGroup(c, g);
+
+    const center: Partial<Record<ModelAxis, Expr>> = {};
+    if (kind === 'revolve' && g === endView) {
+      for (const a of AXES) if (a !== axis) center[a] = maxRadius!;
+    } else {
+      center[g.view.u.axis] = levelExpr(g.view.u.axis, c.u);
+      center[g.view.v.axis] = levelExpr(g.view.v.axis, c.v);
+    }
+
+    const { from, length, isThrough } = resolveHoleExtent(c, g, axis, name);
+    const through = c.callout?.parsed.through ?? false;
+    holes.push({ name, axis, center, diameter, from, length, through: isThrough || through });
   });
   return holes;
 }

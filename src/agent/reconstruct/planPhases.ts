@@ -30,6 +30,18 @@ import type { MeshAnalysis } from './analysis';
 import type { LoopGuide, RegionSection } from './profileFit';
 import type { EdgeQueryOut } from './blends';
 import { CoordinateBook, paramProfile, rectilinearCorners, type Corner, type CornerExpr } from './profileParams';
+import {
+  drillableSteps,
+  makeRunDrill,
+  partitionRunSteps,
+  pushRunRemainders,
+  pushRunStepDrills,
+  type Drill,
+  type RunRemainder,
+  type RunSeg,
+} from './decomposeRunPhases';
+
+export type { Drill } from './decomposeRunPhases';
 
 export interface PassParams {
   index: number;
@@ -140,36 +152,6 @@ export interface BandLoops {
   depth: number[];
   /** Corner rounds of the outer outline made sharp (sharpenCorners passes). */
   sharpened: number;
-}
-
-interface RunSeg {
-  r: number;
-  rawR: number;
-  t0: number;
-  t1: number;
-  /** Measured (unsnapped) ends, same frame. */
-  rawT0: number;
-  rawT1: number;
-}
-
-export interface Drill {
-  axis: 'Z' | 'X' | 'Y';
-  /** Entry at the high-t end (+axis face) or the low end. */
-  fromHigh: boolean;
-  center: V2;
-  diameter: number;
-  measuredDiameter: number;
-  /** Distance from the entry face to the far end of the cut. */
-  length: number;
-  rawLength: number;
-  through: boolean;
-  counterbore?: { r: number; rawR: number; depth: number; rawDepth: number };
-  entryLevel: number;
-  exitLevel: number;
-  /** Radius where the drill breaks the entry face. */
-  rimR: number;
-  exitR: number;
-  source: string;
 }
 
 export const DEG = Math.PI / 180;
@@ -995,15 +977,13 @@ export function decomposeRun(
   center: V2,
   source: string,
   drills: Drill[],
-  remainder: Array<{ axis: 'Z' | 'X' | 'Y'; base: V3; length: number; radius: number; source: string }>,
+  remainder: RunRemainder[],
   assumptions: EntrySideAssumption[],
 ): void {
   const tLow = segs[0].t0;
   const tHigh = segs[segs.length - 1].t1;
-  const baseOf = (t0: number): V3 =>
-    axis === 'Z' ? [center[0], center[1], t0] : axis === 'X' ? [t0, center[0], center[1]] : [center[0], t0, center[1]];
   if (!openLow && !openHigh) {
-    for (const s of segs) remainder.push({ axis, base: baseOf(s.t0), length: s.t1 - s.t0, radius: s.r, source });
+    pushRunRemainders(segs, axis, center, source, remainder);
     return;
   }
   const rMin = Math.min(...segs.map((s) => s.r));
@@ -1019,65 +999,20 @@ export function decomposeRun(
   const entryLevel = fromHigh ? tHigh : tLow;
   const farLevel = fromHigh ? tLow : tHigh;
   const through = openLow && openHigh;
-  const len = (s: RunSeg) => s.t1 - s.t0;
-  const rawLen = (s: RunSeg) => s.rawT1 - s.rawT0;
 
-  let k = 0;
-  const entrySteps: RunSeg[] = [];
-  while (k < ordered.length && ordered[k].r > rMin + 1e-9) entrySteps.push(ordered[k++]);
-  let m = ordered.length - 1;
-  const farSteps: RunSeg[] = [];
-  if (through) {
-    while (m > k && ordered[m].r > rMin + 1e-9) farSteps.unshift(ordered[m--]);
-  }
-  const interior = ordered.slice(k, m + 1).filter((s) => s.r > rMin + 1e-9);
-  for (const s of interior) remainder.push({ axis, base: baseOf(s.t0), length: len(s), radius: s.r, source });
+  const { entrySteps, farSteps, interior } = partitionRunSteps(ordered, rMin, through);
+  pushRunRemainders(interior, axis, center, source, remainder);
 
   // Entry steps must narrow going in; a widening step is an undercut.
-  const drillable = (steps: RunSeg[]) => steps.every((s, i) => i === 0 || s.r <= steps[i - 1].r + 1e-9);
-  const entryOk = drillable(entrySteps);
-  if (!entryOk) for (const s of entrySteps) remainder.push({ axis, base: baseOf(s.t0), length: len(s), radius: s.r, source });
+  const entryOk = drillableSteps(entrySteps);
+  if (!entryOk) pushRunRemainders(entrySteps, axis, center, source, remainder);
   const farFromEnd = [...farSteps].reverse();
-  const farOk = drillable(farFromEnd);
-  if (!farOk) for (const s of farSteps) remainder.push({ axis, base: baseOf(s.t0), length: len(s), radius: s.r, source });
+  const farOk = drillableSteps(farFromEnd);
+  if (!farOk) pushRunRemainders(farSteps, axis, center, source, remainder);
 
   const counterboreStep = entryOk && entrySteps.length > 0 ? entrySteps[0] : undefined;
-  drills.push({
-    axis,
-    fromHigh,
-    center,
-    diameter: 2 * rMin,
-    measuredDiameter: 2 * minSeg.rawR,
-    length: tHigh - tLow,
-    rawLength: segs[segs.length - 1].rawT1 - segs[0].rawT0,
-    through,
-    ...(counterboreStep
-      ? { counterbore: { r: counterboreStep.r, rawR: counterboreStep.rawR, depth: len(counterboreStep), rawDepth: rawLen(counterboreStep) } }
-      : {}),
-    entryLevel,
-    exitLevel: farLevel,
-    rimR: counterboreStep ? counterboreStep.r : rMin,
-    exitR: rMin,
-    source,
-  });
-  if (entryOk) {
-    let depth = counterboreStep ? len(counterboreStep) : 0;
-    let rawDepth = counterboreStep ? rawLen(counterboreStep) : 0;
-    for (const s of entrySteps.slice(1)) {
-      depth += len(s);
-      rawDepth += rawLen(s);
-      drills.push({ axis, fromHigh, center, diameter: 2 * s.r, measuredDiameter: 2 * s.rawR, length: depth, rawLength: rawDepth, through: false, entryLevel, exitLevel: entryLevel, rimR: s.r, exitR: s.r, source: `${source} step` });
-    }
-  }
-  if (through && farOk) {
-    let depth = 0;
-    let rawDepth = 0;
-    for (const s of farFromEnd) {
-      depth += len(s);
-      rawDepth += rawLen(s);
-      drills.push({ axis, fromHigh: !fromHigh, center, diameter: 2 * s.r, measuredDiameter: 2 * s.rawR, length: depth, rawLength: rawDepth, through: false, entryLevel: farLevel, exitLevel: farLevel, rimR: s.r, exitR: s.r, source: `${source} far step` });
-    }
-  }
+  drills.push(makeRunDrill({ axis, fromHigh, center, rMin, minSeg, tLow, tHigh, segs, through, entryLevel, farLevel, source }, counterboreStep));
+  pushRunStepDrills(entrySteps, farFromEnd, entryOk, farOk, through, { axis, fromHigh, center, entryLevel, farLevel, source }, counterboreStep, drills);
 }
 
 /**
