@@ -61,18 +61,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/edits/addPathSpline.ts",
-    "symbol": "Function 'findCloseCall'",
-    "value": 30
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/edits/addPathSpline.ts",
-    "symbol": "Function 'injectIntoChain'",
-    "value": 29
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/edits/addSurfaceFromBoundary.ts",
     "symbol": "Function 'addSurfaceFromBoundary'",
     "value": 26
@@ -100,12 +88,6 @@
     "file": "src/agent/mcp/tools/addPatternFeature.ts",
     "symbol": "Async function 'addPatternFeatureTool'",
     "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/tools/designLoop.ts",
-    "symbol": "Async function 'designLoopTool'",
-    "value": 29
   },
   {
     "rule": "complexity",
@@ -160,12 +142,6 @@
     "file": "src/agent/mcp/tools/runFea.ts",
     "symbol": "Async function 'runFeaTool'",
     "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/tools/surfaceQualityOverlay.ts",
-    "symbol": "Async function 'buildSurfaceQualityOverlay'",
-    "value": 30
   },
   {
     "rule": "complexity",
@@ -253,12 +229,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/meshHeal.ts",
-    "symbol": "Function 'stitchCracks'",
-    "value": 29
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/meshing.ts",
     "symbol": "Function 'getWire'",
     "value": 22
@@ -274,12 +244,6 @@
     "file": "src/kernel/backends/occt/nurbsSurfaceLowerer.ts",
     "symbol": "Function 'buildNurbsFace'",
     "value": 23
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/backends/occt/surfaceQuality.ts",
-    "symbol": "Function 'inspectCurvature'",
-    "value": 28
   },
   {
     "rule": "complexity",
@@ -337,12 +301,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/featureMeshing.ts",
-    "symbol": "Function 'collectTendonMeshes'",
-    "value": 29
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/imageDimensions.ts",
     "symbol": "Function 'imageDimensions'",
     "value": 23
@@ -358,12 +316,6 @@
     "file": "src/modeling/capture/virtualFeatureRecords.ts",
     "symbol": "Function 'buildReferenceImageFeatureSpec'",
     "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/joints/clevis.ts",
-    "symbol": "Function 'withDefaults'",
-    "value": 29
   },
   {
     "rule": "complexity",
@@ -403,12 +355,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseReachability.ts",
-    "symbol": "Async function 'assessPhysicalUseCaseReachability'",
-    "value": 28
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseStatics.ts",
     "symbol": "Async function 'resolveActuators'",
     "value": 24
@@ -424,12 +370,6 @@
     "file": "src/modeling/mates/validator.ts",
     "symbol": "Async function 'validateAssemblyWithMates'",
     "value": 23
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/validator.ts",
-    "symbol": "Function 'validateAssembly'",
-    "value": 28
   },
   {
     "rule": "complexity",
