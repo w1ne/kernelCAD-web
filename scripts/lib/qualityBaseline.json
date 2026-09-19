@@ -835,12 +835,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/mechanicalIntent.ts",
-    "symbol": "Async function 'checkRequiredSupport'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/mechanicalPlausibility.ts",
     "symbol": "Function 'analyzeDisconnectedMesh'",
     "value": 19
