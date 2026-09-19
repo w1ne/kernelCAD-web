@@ -37,26 +37,16 @@ export function imageDimensions(filePath: string): ImageDimensions {
     const nHeader = readSync(fd, header, 0, 12, 0);
     if (nHeader < 12) return FAIL;
 
-    // PNG: magic 8 bytes + IHDR chunk (4-byte length + "IHDR" + 4W + 4H)
-    // IHDR width at bytes 16-19, height at 20-23.
-    if (
-      header[0] === 0x89 && header[1] === 0x50 && header[2] === 0x4e &&
-      header[3] === 0x47 && header[4] === 0x0d && header[5] === 0x0a &&
-      header[6] === 0x1a && header[7] === 0x0a
-    ) {
+    if (hasPngHeader(header)) {
       return parsePng(fd);
     }
 
-    // RIFF/WEBP: bytes 0-3 "RIFF", bytes 8-11 "WEBP"
-    if (
-      header[0] === 0x52 && header[1] === 0x49 && header[2] === 0x46 && header[3] === 0x46 &&
-      header[8] === 0x57 && header[9] === 0x45 && header[10] === 0x42 && header[11] === 0x50
-    ) {
+    if (hasWebpHeader(header)) {
       return parseWebp(fd);
     }
 
     // JPEG: SOI marker FF D8
-    if (header[0] === 0xff && header[1] === 0xd8) {
+    if (hasJpegHeader(header)) {
       return parseJpeg(fd);
     }
 
@@ -68,6 +58,28 @@ export function imageDimensions(filePath: string): ImageDimensions {
       try { closeSync(fd); } catch { /* ignore */ }
     }
   }
+}
+
+// PNG: magic 8 bytes + IHDR chunk (4-byte length + "IHDR" + 4W + 4H)
+// IHDR width at bytes 16-19, height at 20-23.
+function hasPngHeader(header: Buffer): boolean {
+  return (
+    header[0] === 0x89 && header[1] === 0x50 && header[2] === 0x4e &&
+    header[3] === 0x47 && header[4] === 0x0d && header[5] === 0x0a &&
+    header[6] === 0x1a && header[7] === 0x0a
+  );
+}
+
+// RIFF/WEBP: bytes 0-3 "RIFF", bytes 8-11 "WEBP"
+function hasWebpHeader(header: Buffer): boolean {
+  return (
+    header[0] === 0x52 && header[1] === 0x49 && header[2] === 0x46 && header[3] === 0x46 &&
+    header[8] === 0x57 && header[9] === 0x45 && header[10] === 0x42 && header[11] === 0x50
+  );
+}
+
+function hasJpegHeader(header: Buffer): boolean {
+  return header[0] === 0xff && header[1] === 0xd8;
 }
 
 function parsePng(fd: number): ImageDimensions {
