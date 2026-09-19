@@ -79,12 +79,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/edits/sourceEditUtils.ts",
-    "symbol": "Function 'findLastTopLevelReturnLine'",
-    "value": 26
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/addPatternFeature.ts",
     "symbol": "Async function 'addPatternFeatureTool'",
     "value": 22
