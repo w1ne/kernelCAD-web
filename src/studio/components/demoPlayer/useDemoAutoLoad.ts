@@ -1,10 +1,30 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MutableRefObject } from 'react';
 import { apiCall, rewritePath } from '../../api/apiBase';
 import type { TerminalLine } from './TerminalPane';
 import type { BuildRecord, BuildRecordStep, DevMeshPayload } from './demoPlayerGeometry';
+
+type ScriptLoadStatus = { kind: 'idle' | 'loading' | 'error'; message?: string };
+
+const IDLE_LOAD_STATUS: ScriptLoadStatus = { kind: 'idle' };
+
+/**
+ * The status shown before either auto-load path has settled, derived from the
+ * URL param the effects read. Computing it here (instead of synchronously
+ * inside the effects) keeps the `loading` status in the same render that turns
+ * the demo API ready — exactly where the effect-based write used to land.
+ */
+function pendingLoadStatus(): ScriptLoadStatus | null {
+    if (typeof window === 'undefined') return null;
+    const params = new URLSearchParams(window.location.search);
+    const script = params.get('script');
+    if (script) return { kind: 'loading', message: `Loading ${script}` };
+    const record = params.get('record');
+    if (record) return { kind: 'loading', message: `Loading build record ${record}` };
+    return null;
+}
 
 function linesForStep(record: BuildRecord, step: BuildRecordStep, index: number): TerminalLine[] {
     const status = step.status === 'passed' ? 'PASS' : 'FAIL';
@@ -28,13 +48,14 @@ function linesForStep(record: BuildRecord, step: BuildRecordStep, index: number)
  * inline effects.
  */
 export function useDemoAutoLoad(isDemoApiReady: boolean, elapsedMsRef: MutableRefObject<number>) {
-    const [scriptLoadStatus, setScriptLoadStatus] = useState<
-        { kind: 'idle' | 'loading' | 'error'; message?: string }
-    >({ kind: 'idle' });
+    // `null` until one of the async paths settles a status; the pending
+    // (`loading`) status is derived during render below.
+    const [scriptLoadStatus, setScriptLoadStatus] = useState<ScriptLoadStatus | null>(null);
     const [buildRecord, setBuildRecord] = useState<BuildRecord | null>(null);
     const [buildRecordStep, setBuildRecordStep] = useState<BuildRecordStep | null>(null);
     const autoLoadedScriptRef = useRef<string | null>(null);
     const autoLoadedRecordRef = useRef<string | null>(null);
+    const pendingStatus = useMemo(() => pendingLoadStatus(), []);
 
     useEffect(() => {
         if (!isDemoApiReady || autoLoadedScriptRef.current !== null || autoLoadedRecordRef.current !== null) return;
@@ -44,15 +65,6 @@ export function useDemoAutoLoad(isDemoApiReady: boolean, elapsedMsRef: MutableRe
 
         autoLoadedScriptRef.current = script;
         let cancelled = false;
-        // Synchronous setState, matching the original inline effect
-        // byte-for-byte (zero-behavior-change outranks the lint rule here —
-        // this file is only linted as a "hook" because it's named `use*`;
-        // the identical code was invisible to
-        // react-hooks/set-state-in-effect inside the original
-        // DemoPlayerPage).
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setScriptLoadStatus({ kind: 'loading', message: `Loading ${script}` });
-
         apiCall()
             .then(({ base, headers }) =>
                 fetch(
@@ -99,9 +111,6 @@ export function useDemoAutoLoad(isDemoApiReady: boolean, elapsedMsRef: MutableRe
         let cancelled = false;
         let stepTimer: number | undefined;
         let clockTimer: number | undefined;
-        // See the ?script= effect above for why this is a sync setState.
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setScriptLoadStatus({ kind: 'loading', message: `Loading build record ${recordPath}` });
 
         const loadStep = async (record: BuildRecord, index: number) => {
             const step = record.steps[index];
@@ -171,5 +180,10 @@ export function useDemoAutoLoad(isDemoApiReady: boolean, elapsedMsRef: MutableRe
         };
     }, [isDemoApiReady, elapsedMsRef]);
 
-    return { scriptLoadStatus, buildRecord, buildRecordStep };
+    return {
+        scriptLoadStatus: scriptLoadStatus
+            ?? (isDemoApiReady ? pendingStatus ?? IDLE_LOAD_STATUS : IDLE_LOAD_STATUS),
+        buildRecord,
+        buildRecordStep,
+    };
 }
