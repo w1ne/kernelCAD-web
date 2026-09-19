@@ -547,12 +547,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/backends/occt/connectorTopology.ts",
-    "symbol": "Function 'findEdgeByName'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/backends/occt/lowerers/assembly.ts",
     "symbol": "Function 'lowerAssemblyModel'",
     "value": 17
