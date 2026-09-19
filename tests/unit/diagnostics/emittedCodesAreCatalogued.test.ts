@@ -35,6 +35,7 @@ const EMITTING_FILES = [
   'modeling/capture/proxyDerivedSketch.ts',
   'modeling/capture/proxyFeatureChain.ts',
   'modeling/capture/sketch.ts',
+  'modeling/capture/sketchTangency.ts',
   'modeling/capture/faceLabels.ts',
   'shared/fonts/index.ts',
   'modeling/api.ts',

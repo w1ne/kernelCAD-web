@@ -151,6 +151,12 @@
   },
   {
     "rule": "complexity",
+    "file": "src/kinematic/checkLoadCapacity.ts",
+    "symbol": "Function 'runBeamMode'",
+    "value": 21
+  },
+  {
+    "rule": "complexity",
     "file": "src/kinematic/inverseKinematicsAnalytical.ts",
     "symbol": "Function 'solveAnalytical'",
     "value": 24
@@ -271,15 +277,39 @@
   },
   {
     "rule": "max-lines-per-function",
+    "file": "src/kernel/backends/occt/worker.ts",
+    "symbol": "Arrow function",
+    "value": 231
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/kernel/backends/occt/worker.ts",
+    "symbol": "Async arrow function",
+    "value": 226
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/kinematic/checkLoadCapacity.ts",
+    "symbol": "Function 'runBeamMode'",
+    "value": 161
+  },
+  {
+    "rule": "max-lines-per-function",
     "file": "src/modeling/api.ts",
     "symbol": "Function 'createApi'",
     "value": 654
   },
   {
+    "rule": "max-lines-per-function",
+    "file": "src/modeling/backends/occt/sheetMetalLowerer.ts",
+    "symbol": "Function 'lowerSheetMetalBend'",
+    "value": 161
+  },
+  {
     "rule": "max-lines",
-    "file": "src/kernel/backends/occt/occtBackend.ts",
+    "file": "src/agent/reconstruct/planPhases.ts",
     "symbol": "(file)",
-    "value": 844
+    "value": 942
   },
   {
     "rule": "max-lines",
@@ -289,8 +319,8 @@
   },
   {
     "rule": "max-lines",
-    "file": "src/modeling/capture/sketch.ts",
+    "file": "src/modeling/capture/proxy.ts",
     "symbol": "(file)",
-    "value": 883
+    "value": 1024
   }
 ]
