@@ -8,13 +8,18 @@ import { apiCall, rewritePath } from '../../api/apiBase';
  * `?script=` study. The pool reuses an existing session if one already
  * exists for this script, so a tab refresh doesn't lose params edits.
  */
+type SettledSession = {
+    script: string;
+    token: string | null;
+    status: 'resolved' | 'failed';
+};
+
 export function useSessionToken(studioScript: string | null) {
-    const [sessionToken, setSessionToken] = useState<string | null>(null);
-    // Tracks whether the GET /session attempt has settled so the mesh effect
-    // knows to wait. 'idle' → no studio script (legacy in-process path);
-    // 'pending' → fetch in flight; 'resolved' → token set; 'failed' →
-    // session fetch failed, mesh effect falls back to by-script.
-    const [sessionStatus, setSessionStatus] = useState<'idle' | 'pending' | 'resolved' | 'failed'>('idle');
+    // Settled result of the GET /session attempt, tagged with the script it
+    // belongs to. The in-flight ('pending') and no-script ('idle') statuses
+    // are derived during render below — the fetch effect then only writes
+    // state from its async callbacks, so no setState runs in the effect body.
+    const [session, setSession] = useState<SettledSession | null>(null);
 
     // Slice 2E.bridge: acquire the session token for the script. The pool
     // reuses an existing session if one already exists for this script, so
@@ -22,21 +27,8 @@ export function useSessionToken(studioScript: string | null) {
     // for `sessionStatus` to settle before fetching, so we never make two
     // mesh requests (one by-script, one by-session) on initial load.
     useEffect(() => {
-        if (!studioScript) {
-            // Synchronous setState, matching the original inline effect
-            // byte-for-byte (zero-behavior-change outranks the lint rule
-            // here — this file is only linted as a "hook" because it's
-            // named `use*`; the identical code was invisible to
-            // react-hooks/set-state-in-effect inside the original
-            // GeometryProvider).
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setSessionToken(null);
-            setSessionStatus('idle');
-            return;
-        }
+        if (!studioScript) return;
         let cancelled = false;
-        setSessionStatus('pending');
-        setSessionToken(null);
         apiCall()
             .then(({ base, headers }) =>
                 fetch(
@@ -54,17 +46,25 @@ export function useSessionToken(studioScript: string | null) {
             })
             .then(({ sessionToken: token }) => {
                 if (cancelled) return;
-                setSessionToken(token);
-                setSessionStatus('resolved');
+                setSession({ script: studioScript, token, status: 'resolved' });
             })
             .catch(() => {
                 if (cancelled) return;
                 // Fall back to the legacy per-request mesh path: token stays
                 // null and the mesh effect fetches by-script.
-                setSessionStatus('failed');
+                setSession({ script: studioScript, token: null, status: 'failed' });
             });
         return () => { cancelled = true; };
     }, [studioScript]);
+
+    // 'idle' → no studio script (legacy in-process path); 'pending' → fetch in
+    // flight; 'resolved' → token set; 'failed' → session fetch failed, mesh
+    // effect falls back to by-script.
+    const settled = studioScript && session?.script === studioScript ? session : null;
+    const sessionToken = settled ? settled.token : null;
+    const sessionStatus: 'idle' | 'pending' | 'resolved' | 'failed' = !studioScript
+        ? 'idle'
+        : settled?.status ?? 'pending';
 
     return { sessionToken, sessionStatus };
 }
