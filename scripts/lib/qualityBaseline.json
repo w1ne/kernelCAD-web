@@ -55,12 +55,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/funnel/components/PricingTiers.tsx",
-    "symbol": "Arrow function",
-    "value": 21
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/cutoutLowerer.ts",
     "symbol": "Function 'lowerCutout'",
     "value": 23
