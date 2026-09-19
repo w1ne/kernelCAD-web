@@ -1,12 +1,6 @@
 [
   {
     "rule": "complexity",
-    "file": "src/agent/cli/commands/animate.ts",
-    "symbol": "Async function 'runAnimate'",
-    "value": 25
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/cli/commands/validate.ts",
     "symbol": "Function 'renderHuman'",
     "value": 21
