@@ -727,12 +727,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/StudioShell.tsx",
-    "symbol": "Function 'StudioShell'",
-    "value": 187
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/routes/generate.tsx",
     "symbol": "Function 'GeneratePage'",
     "value": 155

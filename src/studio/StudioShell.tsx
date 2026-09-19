@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Header } from './components/Layout/Header';
 import { Toolbar } from './Toolbar';
@@ -29,6 +29,7 @@ import { useStudioChrome } from './context/StudioChromeContext';
 import { useOptionalSession } from '../funnel/hooks/useSession';
 import { isAuthConfigured } from '../funnel/lib/supabaseClient';
 import { jointContactCapMm3 } from '../modeling/runtime/jointContactCap';
+import { useViewportToggles } from './hooks/useViewportToggles';
 
 function KernelInitBanner({ error }: { error: string | null }) {
     const [timedOut, setTimedOut] = useState(false);
@@ -160,58 +161,16 @@ export function StudioShell() {
         shellStore.toggleInspectorOpen();
     }, []);
 
-    const [referenceImagesVisible, setReferenceImagesVisible] = useState(true);
-    const referenceImagesPresent = useMemo(
-        () => recompute.features.some((f) => f.kind === 'referenceImage'),
-        [recompute.features],
-    );
-    const handleToggleReferenceImages = useCallback(() => {
-        setReferenceImagesVisible((prev) => {
-            const next = !prev;
-            if (typeof window !== 'undefined') {
-                window.__demoPlayer?.setReferenceImagesVisible(next);
-            }
-            return next;
-        });
-    }, []);
+    const {
+        referenceImagesPresent,
+        referenceImagesVisible,
+        handleToggleReferenceImages,
+        renderEnvironmentPresent,
+        renderEnvironmentVisible,
+        renderEnvironmentPresetLabel,
+        handleToggleRenderEnvironment,
+    } = useViewportToggles(recompute.features);
 
-    const [renderEnvironmentVisible, setRenderEnvironmentVisible] = useState(true);
-    const renderEnvironmentRecord = useMemo(
-        () => [...recompute.features].reverse().find((f) => f.kind === 'renderEnvironment'),
-        [recompute.features],
-    );
-    const renderEnvironmentPresent = renderEnvironmentRecord !== undefined;
-    const renderEnvironmentPresetLabel = useMemo(() => {
-        const meta = renderEnvironmentRecord?.metadata as { preset?: string; url?: string } | undefined;
-        if (!meta) return '';
-        if (meta.preset) return meta.preset;
-        return 'custom';
-    }, [renderEnvironmentRecord]);
-    const handleToggleRenderEnvironment = useCallback(() => {
-        setRenderEnvironmentVisible((prev) => {
-            const next = !prev;
-            if (typeof window !== 'undefined') {
-                const meta = renderEnvironmentRecord?.metadata as {
-                    preset?: string;
-                    url?: string;
-                    intensity?: number;
-                    rotation?: number;
-                } | undefined;
-                const spec = next && meta
-                    ? {
-                        ...(meta.preset
-                            ? { preset: meta.preset as 'studio' | 'softbox' | 'neutral' | 'outdoor' | 'warehouse' }
-                            : {}),
-                        ...(meta.url ? { url: meta.url } : {}),
-                        intensity: meta.intensity,
-                        rotation: meta.rotation,
-                    }
-                    : null;
-                void window.__demoPlayer?.setRenderEnvironment(spec);
-            }
-            return next;
-        });
-    }, [renderEnvironmentRecord]);
 
     const tabSlots = {
         scene: <SceneTab />,
