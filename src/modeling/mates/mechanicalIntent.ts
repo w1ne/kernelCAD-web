@@ -93,26 +93,7 @@ export async function reviewMechanicalIntent(arm: Assembly): Promise<MechanicalI
 
   for (const intent of intents) {
     const mate = matesByName.get(intent.mate);
-    if (mate === undefined) {
-      diagnostics.push({
-        code: 'assembly.mechanical.intent.mate-missing',
-        severity: 'error',
-        intentName: intent.name,
-        mateName: intent.mate,
-        message: `Mechanical intent '${intent.name}' references missing mate '${intent.mate}'.`,
-        hint: `mechanical-intent.mate-missing — declare arm.mate('${intent.mate}', ...) before arm.mechanicalJoint('${intent.name}', ...).`,
-      });
-    } else if (mate.type !== 'revolute') {
-      diagnostics.push({
-        code: 'assembly.mechanical.intent.mate-not-revolute',
-        severity: 'error',
-        intentName: intent.name,
-        mateName: mate.name,
-        mateType: mate.type,
-        message: `Mechanical intent '${intent.name}' expects mate '${mate.name}' to be revolute, but it is '${mate.type}'.`,
-        hint: `mechanical-intent.mate-not-revolute — v1 mechanicalJoint contracts describe driven revolute joints; use a revolute mate or skip this contract.`,
-      });
-    }
+    pushMateDiagnostics(diagnostics, intent, mate);
 
     checkPartExists(diagnostics, intent, partsByName, 'actuator', intent.actuator);
     checkPartExists(diagnostics, intent, partsByName, 'shaft', intent.shaft);
@@ -122,80 +103,149 @@ export async function reviewMechanicalIntent(arm: Assembly): Promise<MechanicalI
     }
 
     if (!partsByName.has(intent.actuator)) continue;
-    if (!hasFastenedMateForPart(arm.__mates(), intent.actuator)) {
-      diagnostics.push({
-        code: 'assembly.mechanical.intent.actuator-not-mounted',
-        severity: 'error',
-        intentName: intent.name,
-        actuatorPartName: intent.actuator,
-        message: `Mechanical intent '${intent.name}' actuator '${intent.actuator}' is not mounted by any fastened mate.`,
-        hint: `mechanical-intent.actuator-not-mounted — fasten '${intent.actuator}' to a bracket, support, or frame part so the actuator has a physical load path.`,
-      });
-    }
-
-    for (const support of intent.supports) {
-      if (!partsByName.has(support)) continue;
-      if (hasFastenedMateForPart(arm.__mates(), support)) continue;
-      diagnostics.push({
-        code: 'assembly.mechanical.intent.support-missing',
-        severity: 'error',
-        intentName: intent.name,
-        supportPartName: support,
-        message: `Mechanical intent '${intent.name}' support '${support}' is not fixed to the assembly by any fastened mate.`,
-        hint: `mechanical-intent.support-missing — fasten '${support}' to the frame, actuator bracket, or joint carrier.`,
-      });
-    }
-
-    if (mate !== undefined && partsByName.has(intent.output) && !mateReferencesPart(mate, intent.output)) {
-      diagnostics.push({
-        code: 'assembly.mechanical.intent.output-not-captured',
-        severity: 'error',
-        intentName: intent.name,
-        outputPartName: intent.output,
-        mateName: mate.name,
-        message: `Mechanical intent '${intent.name}' output '${intent.output}' is not one side of mate '${mate.name}'.`,
-        hint: `mechanical-intent.output-not-captured — set output to the driven link connected by the declared revolute mate.`,
-      });
-    }
-
-    if (mate !== undefined && partsByName.has(intent.shaft)) {
-      const shaftDistanceMm = nearestShaftAxisDistanceMm(arm, solved.poses, intent, mate);
-      if (shaftDistanceMm === undefined || shaftDistanceMm > SHAFT_AXIS_TOL_MM) {
-        diagnostics.push({
-          code: 'assembly.mechanical.intent.shaft-not-on-axis',
-          severity: 'error',
-          intentName: intent.name,
-          shaftPartName: intent.shaft,
-          mateName: mate.name,
-          ...(shaftDistanceMm === undefined ? {} : { distanceMm: shaftDistanceMm }),
-          message: shaftDistanceMm === undefined
-            ? `Mechanical intent '${intent.name}' shaft '${intent.shaft}' has no numeric axis connector near mate '${mate.name}'.`
-            : `Mechanical intent '${intent.name}' shaft '${intent.shaft}' axis is ${shaftDistanceMm.toFixed(1)} mm from mate '${mate.name}'.`,
-          hint: `mechanical-intent.shaft-not-on-axis — add an axis connector to '${intent.shaft}' and fasten the shaft so that connector lies on the revolute mate axis.`,
-        });
-      }
-    }
-
-    if (intent.requiredSupport !== undefined) {
-      const issue = await checkRequiredSupport(arm, solved.poses, intent);
-      if (issue !== undefined) {
-        diagnostics.push({
-          code: 'assembly.mechanical.intent.required-support-missing',
-          severity: 'error',
-          intentName: intent.name,
-          supportKind: intent.requiredSupport.kind,
-          around: intent.requiredSupport.around,
-          supportPartNames: issue.supportPartNames,
-          ...(issue.distanceMm !== undefined ? { distanceMm: issue.distanceMm } : {}),
-          ...(intent.requiredSupport.minBearingLengthMm !== undefined ? { minBearingLengthMm: intent.requiredSupport.minBearingLengthMm } : {}),
-          message: `Mechanical intent '${intent.name}' requires ${intent.requiredSupport.kind} support around '${intent.requiredSupport.around}', but modeled support does not reach that connector.`,
-          hint: `mechanical-intent.required-support-missing — add bearing/hinge/bracket material on ${issue.supportPartNames.join(', ')} so it reaches '${intent.requiredSupport.around}' and preserves clearance through the mate travel.`,
-        });
-      }
-    }
+    pushActuatorMountedDiagnostic(diagnostics, arm, intent);
+    pushSupportDiagnostics(diagnostics, arm, intent, partsByName);
+    pushOutputDiagnostic(diagnostics, intent, mate, partsByName);
+    pushShaftAxisDiagnostic(diagnostics, arm, solved.poses, intent, mate, partsByName);
+    await pushRequiredSupportDiagnostic(diagnostics, arm, solved.poses, intent);
   }
 
   return { diagnostics, checkedIntentCount: intents.length };
+}
+
+function pushMateDiagnostics(
+  diagnostics: MechanicalIntentDiagnostic[],
+  intent: MechanicalJointIntentRecord,
+  mate: MateRecord | undefined,
+): void {
+  if (mate === undefined) {
+    diagnostics.push({
+      code: 'assembly.mechanical.intent.mate-missing',
+      severity: 'error',
+      intentName: intent.name,
+      mateName: intent.mate,
+      message: `Mechanical intent '${intent.name}' references missing mate '${intent.mate}'.`,
+      hint: `mechanical-intent.mate-missing — declare arm.mate('${intent.mate}', ...) before arm.mechanicalJoint('${intent.name}', ...).`,
+    });
+  } else if (mate.type !== 'revolute') {
+    diagnostics.push({
+      code: 'assembly.mechanical.intent.mate-not-revolute',
+      severity: 'error',
+      intentName: intent.name,
+      mateName: mate.name,
+      mateType: mate.type,
+      message: `Mechanical intent '${intent.name}' expects mate '${mate.name}' to be revolute, but it is '${mate.type}'.`,
+      hint: `mechanical-intent.mate-not-revolute — v1 mechanicalJoint contracts describe driven revolute joints; use a revolute mate or skip this contract.`,
+    });
+  }
+}
+
+function pushActuatorMountedDiagnostic(
+  diagnostics: MechanicalIntentDiagnostic[],
+  arm: Assembly,
+  intent: MechanicalJointIntentRecord,
+): void {
+  if (!hasFastenedMateForPart(arm.__mates(), intent.actuator)) {
+    diagnostics.push({
+      code: 'assembly.mechanical.intent.actuator-not-mounted',
+      severity: 'error',
+      intentName: intent.name,
+      actuatorPartName: intent.actuator,
+      message: `Mechanical intent '${intent.name}' actuator '${intent.actuator}' is not mounted by any fastened mate.`,
+      hint: `mechanical-intent.actuator-not-mounted — fasten '${intent.actuator}' to a bracket, support, or frame part so the actuator has a physical load path.`,
+    });
+  }
+}
+
+function pushSupportDiagnostics(
+  diagnostics: MechanicalIntentDiagnostic[],
+  arm: Assembly,
+  intent: MechanicalJointIntentRecord,
+  partsByName: ReadonlyMap<string, unknown>,
+): void {
+  for (const support of intent.supports) {
+    if (!partsByName.has(support)) continue;
+    if (hasFastenedMateForPart(arm.__mates(), support)) continue;
+    diagnostics.push({
+      code: 'assembly.mechanical.intent.support-missing',
+      severity: 'error',
+      intentName: intent.name,
+      supportPartName: support,
+      message: `Mechanical intent '${intent.name}' support '${support}' is not fixed to the assembly by any fastened mate.`,
+      hint: `mechanical-intent.support-missing — fasten '${support}' to the frame, actuator bracket, or joint carrier.`,
+    });
+  }
+}
+
+function pushOutputDiagnostic(
+  diagnostics: MechanicalIntentDiagnostic[],
+  intent: MechanicalJointIntentRecord,
+  mate: MateRecord | undefined,
+  partsByName: ReadonlyMap<string, unknown>,
+): void {
+  if (mate !== undefined && partsByName.has(intent.output) && !mateReferencesPart(mate, intent.output)) {
+    diagnostics.push({
+      code: 'assembly.mechanical.intent.output-not-captured',
+      severity: 'error',
+      intentName: intent.name,
+      outputPartName: intent.output,
+      mateName: mate.name,
+      message: `Mechanical intent '${intent.name}' output '${intent.output}' is not one side of mate '${mate.name}'.`,
+      hint: `mechanical-intent.output-not-captured — set output to the driven link connected by the declared revolute mate.`,
+    });
+  }
+}
+
+function pushShaftAxisDiagnostic(
+  diagnostics: MechanicalIntentDiagnostic[],
+  arm: Assembly,
+  poses: ReadonlyMap<string, { point(p: Vec3): Vec3 }>,
+  intent: MechanicalJointIntentRecord,
+  mate: MateRecord | undefined,
+  partsByName: ReadonlyMap<string, unknown>,
+): void {
+  if (mate !== undefined && partsByName.has(intent.shaft)) {
+    const shaftDistanceMm = nearestShaftAxisDistanceMm(arm, poses, intent, mate);
+    if (shaftDistanceMm === undefined || shaftDistanceMm > SHAFT_AXIS_TOL_MM) {
+      diagnostics.push({
+        code: 'assembly.mechanical.intent.shaft-not-on-axis',
+        severity: 'error',
+        intentName: intent.name,
+        shaftPartName: intent.shaft,
+        mateName: mate.name,
+        ...(shaftDistanceMm === undefined ? {} : { distanceMm: shaftDistanceMm }),
+        message: shaftDistanceMm === undefined
+          ? `Mechanical intent '${intent.name}' shaft '${intent.shaft}' has no numeric axis connector near mate '${mate.name}'.`
+          : `Mechanical intent '${intent.name}' shaft '${intent.shaft}' axis is ${shaftDistanceMm.toFixed(1)} mm from mate '${mate.name}'.`,
+        hint: `mechanical-intent.shaft-not-on-axis — add an axis connector to '${intent.shaft}' and fasten the shaft so that connector lies on the revolute mate axis.`,
+      });
+    }
+  }
+}
+
+async function pushRequiredSupportDiagnostic(
+  diagnostics: MechanicalIntentDiagnostic[],
+  arm: Assembly,
+  poses: ReadonlyMap<string, { point(p: Vec3): Vec3 }>,
+  intent: MechanicalJointIntentRecord,
+): Promise<void> {
+  if (intent.requiredSupport !== undefined) {
+    const issue = await checkRequiredSupport(arm, poses, intent);
+    if (issue !== undefined) {
+      diagnostics.push({
+        code: 'assembly.mechanical.intent.required-support-missing',
+        severity: 'error',
+        intentName: intent.name,
+        supportKind: intent.requiredSupport.kind,
+        around: intent.requiredSupport.around,
+        supportPartNames: issue.supportPartNames,
+        ...(issue.distanceMm !== undefined ? { distanceMm: issue.distanceMm } : {}),
+        ...(intent.requiredSupport.minBearingLengthMm !== undefined ? { minBearingLengthMm: intent.requiredSupport.minBearingLengthMm } : {}),
+        message: `Mechanical intent '${intent.name}' requires ${intent.requiredSupport.kind} support around '${intent.requiredSupport.around}', but modeled support does not reach that connector.`,
+        hint: `mechanical-intent.required-support-missing — add bearing/hinge/bracket material on ${issue.supportPartNames.join(', ')} so it reaches '${intent.requiredSupport.around}' and preserves clearance through the mate travel.`,
+      });
+    }
+  }
 }
 
 async function checkRequiredSupport(

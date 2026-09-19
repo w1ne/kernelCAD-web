@@ -259,12 +259,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/mechanicalIntent.ts",
-    "symbol": "Async function 'reviewMechanicalIntent'",
-    "value": 24
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCase.ts",
     "symbol": "Async function 'reviewPhysicalUseCasesWithReachability'",
     "value": 25
