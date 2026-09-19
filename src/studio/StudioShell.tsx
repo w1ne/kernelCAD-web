@@ -31,6 +31,36 @@ import { isAuthConfigured } from '../funnel/lib/supabaseClient';
 import { jointContactCapMm3 } from '../modeling/runtime/jointContactCap';
 import { useViewportToggles } from './hooks/useViewportToggles';
 
+
+interface EmbedFlags {
+    readonly showHeader?: boolean;
+    readonly enableAgentRail?: boolean;
+    readonly enableConnect?: boolean;
+}
+
+function resolveEmbedFlags(embed: EmbedFlags): { showHeader: boolean; enableAgentRail: boolean; enableConnect: boolean } {
+    return {
+        showHeader: embed.showHeader ?? true,
+        enableAgentRail: embed.enableAgentRail ?? true,
+        enableConnect: embed.enableConnect ?? true,
+    };
+}
+
+function resolveAgentEnabled(enableAgentRail: boolean, authConfigured: boolean, hasSession: boolean): boolean {
+    return enableAgentRail && authConfigured && hasSession;
+}
+
+function resolveIsModified(activeProjectCode: string | undefined, code: string): boolean {
+    return activeProjectCode != null && code !== activeProjectCode;
+}
+
+function resolveInterferenceCount(recompute: ReturnType<typeof useRecomputeResult>): number {
+    return recompute.interferenceSummary?.actionableCount
+        ?? (recompute.rawInterferencePairs ?? [])
+            .filter((pair) => pair.volumeMm3 > jointContactCapMm3())
+            .length;
+}
+
 function KernelInitBanner({ error }: { error: string | null }) {
     const [timedOut, setTimedOut] = useState(false);
 
@@ -77,8 +107,7 @@ export function StudioShell() {
     // Defaults preserve standalone behavior: show the kernelCAD header and
     // mount the AgentRail. Embed hosts (e.g. proto.cat) pass `false` for
     // both to drive a stripped viewport+inspector+toolbar shell.
-    const showHeader = embed.showHeader ?? true;
-    const enableAgentRail = embed.enableAgentRail ?? true;
+    const { showHeader, enableAgentRail, enableConnect } = resolveEmbedFlags(embed);
     const authConfigured = isAuthConfigured();
     const { session } = useOptionalSession();
     // The in-Studio agent talks to the hosted, auth'd, metered backend
@@ -90,8 +119,7 @@ export function StudioShell() {
     //     = false, e.g. proto.cat) or there is no live session.
     // (`open_in_studio` / `/p/<slug>` review pages additionally hide it via
     // viewerMode below.)
-    const agentEnabled = enableAgentRail && authConfigured && !!session;
-    const enableConnect = embed.enableConnect ?? true;
+    const agentEnabled = resolveAgentEnabled(enableAgentRail, authConfigured, !!session);
     const { viewerMode } = useStudioChrome();
     const handleToggleMarkingMode = useCallback(() => {
         shellStore.toggleMarkingMode();
@@ -118,7 +146,7 @@ export function StudioShell() {
         workbench.mutateCode?.((current: string) => current, 'studio.toolbar.run');
     }, [workbench]);
 
-    const isModified = activeProject != null && workbench.code !== activeProject.code;
+    const isModified = resolveIsModified(activeProject?.code, workbench.code);
 
     // Test/integration hook so MCP (Slice 1.5b) and the browser console can
     // stage a proposed edit. Mounted on the window object behind a
@@ -186,10 +214,7 @@ export function StudioShell() {
     // pairs stay available to diagnostic tabs, but the footer follows the same
     // absolute cap used by validator/mechanism-truth so clearance-fit clevis
     // contacts do not make a plausible mechanism look broken.
-    const interferenceCount = recompute.interferenceSummary?.actionableCount
-        ?? (recompute.rawInterferencePairs ?? [])
-            .filter((pair) => pair.volumeMm3 > jointContactCapMm3())
-            .length;
+    const interferenceCount = resolveInterferenceCount(recompute);
 
     return (
         <div

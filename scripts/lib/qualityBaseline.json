@@ -625,12 +625,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/studio/StudioShell.tsx",
-    "symbol": "Function 'StudioShell'",
-    "value": 21
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/adapters/featureRecordsToCounts.ts",
     "symbol": "Function 'countModelTopology'",
     "value": 23
