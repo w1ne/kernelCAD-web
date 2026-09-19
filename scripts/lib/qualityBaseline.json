@@ -115,12 +115,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/bridgeCurves.ts",
-    "symbol": "Function 'bridgeCurves'",
-    "value": 22
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/imageDimensions.ts",
     "symbol": "Function 'imageDimensions'",
     "value": 23
