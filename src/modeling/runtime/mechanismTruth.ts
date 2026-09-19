@@ -364,11 +364,11 @@ function estimateSweepWork(arm: Assembly, solvedSampleCount: number): number {
 // Criterion 4 — mechanism.orphan-part (graph reachability)
 // ─────────────────────────────────────────────────────────────────────────
 
-function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
-  const parts = arm.__parts();
-  const mates = arm.__mates();
-  if (parts.length <= 1) return [];
-
+function buildPartAdjacency(
+  parts: ReturnType<Assembly['__parts']>,
+  mates: ReturnType<Assembly['__mates']>,
+  joints: ReturnType<Assembly['__joints']>,
+): Map<string, Set<string>> {
   // Build adjacency: part-name → set of neighbor part-names.
   //
   // KC-04: kernelCAD has TWO assembly conventions and BOTH connect parts —
@@ -392,7 +392,7 @@ function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
   // Joint-primitive edges. Joints address parts by FeatureId, not by name.
   const nameByPartId = new Map<FeatureId, string>();
   for (const p of parts) nameByPartId.set(p.id, p.name);
-  for (const j of arm.__joints()) {
+  for (const j of joints) {
     const aPart = nameByPartId.get(j.parentPartId);
     const bPart = nameByPartId.get(j.childPartId);
     if (aPart === undefined || bPart === undefined) continue;
@@ -413,9 +413,14 @@ function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
     adj.get(p.name)?.add(parentName);
     adj.get(parentName)?.add(p.name);
   }
+  return adj;
+}
 
+function collectReachablePartNames(
+  adj: Map<string, Set<string>>,
+  root: string,
+): Set<string> {
   // BFS from parts[0]. Anything unreached is an orphan.
-  const root = parts[0].name;
   const visited = new Set<string>();
   const queue: string[] = [root];
   visited.add(root);
@@ -428,6 +433,16 @@ function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
       }
     }
   }
+  return visited;
+}
+
+function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
+  const parts = arm.__parts();
+  if (parts.length <= 1) return [];
+  const adj = buildPartAdjacency(parts, arm.__mates(), arm.__joints());
+
+  const root = parts[0].name;
+  const visited = collectReachablePartNames(adj, root);
 
   const out: CompilerDiagnostic[] = [];
   for (const p of parts) {
