@@ -109,12 +109,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/backends/occt/sheetMetalLowerer.ts",
-    "symbol": "Function 'resolveBendAxis'",
-    "value": 21
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/bridgeCurves.ts",
     "symbol": "Function 'bridgeCurves'",
     "value": 22
