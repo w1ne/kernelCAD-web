@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { JSX } from 'react';
+import SceneBrowser from '../SceneBrowser';
+import { useWorkbench } from '../../context/WorkbenchContext';
+import { extractHistoryItems, type HistoryItem } from '../../../shared/codeGeneration/codeAnalysis';
 
 interface BuildLoopPanelProps {
     readonly verdict: string;
@@ -103,5 +106,73 @@ export function BuildLoopPanel({
                             </div>
                         )}
                     </div>
+    );
+}
+
+interface ScenePanelProps {
+    readonly onJumpToLine: (line: number) => void;
+}
+
+export function ScenePanel({ onJumpToLine }: ScenePanelProps): JSX.Element {
+    const {
+        code,
+        planes,
+        setViewMode,
+        selectedItemId,
+        setSelectedItemId,
+        hoveredItemId,
+        setHoveredItemId,
+        hiddenIds,
+        toggleVisibility,
+        togglePlaneVisibility,
+        selectedItemIds,
+        toggleSelection,
+        renameItem,
+        deleteHistoryItem,
+    } = useWorkbench();
+
+    // We compute items on the fly.
+    // In a real app we might memoize this or put it in context.
+    const items = extractHistoryItems(code);
+    const historyIds = new Set(items.map((item) => item.id));
+    const selectedHistoryId = selectedItemId && historyIds.has(selectedItemId) ? selectedItemId : null;
+    const hoveredHistoryId = hoveredItemId && historyIds.has(hoveredItemId) ? hoveredItemId : null;
+    const selectedHistoryIds = selectedItemIds.filter((id) => historyIds.has(id));
+
+    return (
+        <SceneBrowser
+            items={items}
+            planes={planes}
+            selectedItemId={selectedHistoryId}
+            selectedItemIds={selectedHistoryIds}
+            hoveredItemId={hoveredHistoryId}
+            hiddenIds={hiddenIds}
+            onSelect={(item: HistoryItem) => {
+                setViewMode('code');
+                setSelectedItemId(item.id);
+                onJumpToLine(item.line);
+            }}
+            onToggleSelection={toggleSelection}
+            onHover={(id) => {
+                if (!id) {
+                    setHoveredItemId(null);
+                    return;
+                }
+                setHoveredItemId(id);
+            }}
+            onToggleVisibility={toggleVisibility}
+            onTogglePlane={togglePlaneVisibility}
+            onSelectPlane={(id) => setSelectedItemId(id)}
+            onRename={renameItem}
+            onDelete={(item) => {
+                deleteHistoryItem(item);
+                if (selectedHistoryId === item.id) {
+                    setSelectedItemId(null);
+                }
+                if (hoveredHistoryId === item.id) {
+                    setHoveredItemId(null);
+                }
+            }}
+        />
     );
 }

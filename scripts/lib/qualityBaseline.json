@@ -637,12 +637,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/studio/components/Layout/SidePanel.tsx",
-    "symbol": "Function 'SidePanel'",
-    "value": 23
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/components/demoPlayer/AnimationEngine.ts",
     "symbol": "Function 'classify'",
     "value": 26

@@ -1,38 +1,19 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useState } from 'react';
-import SceneBrowser from '../SceneBrowser';
 import { useWorkbench } from '../../context/WorkbenchContext';
-import { extractHistoryItems, type HistoryItem } from '../../../shared/codeGeneration/codeAnalysis';
 import { StudioGenerate } from '../../StudioGenerate';
-import { BuildLoopPanel } from './SidePanelParts';
+import { BuildLoopPanel, ScenePanel } from './SidePanelParts';
 
 interface SidePanelProps {
     onJumpToLine: (line: number) => void;
 }
 
 export function SidePanel({ onJumpToLine }: SidePanelProps) {
-    const {
-        code,
-        scriptParams,
-        scriptReview,
-        setViewMode,
-        planes,
-        togglePlaneVisibility,
-        selectedItemId,
-        setSelectedItemId,
-        hoveredItemId,
-        setHoveredItemId,
-        hiddenIds,
-        toggleVisibility,
-        selectedItemIds,
-        toggleSelection,
-        renameItem,
-        deleteHistoryItem
-    } = useWorkbench();
-
+    const { scriptParams, scriptReview } = useWorkbench();
     const [activeTab, setActiveTab] = useState<'scene' | 'loop' | 'generate'>('scene');
     const [showReviewDetails, setShowReviewDetails] = useState(false);
+
     const reviewOk = scriptReview?.ok ?? null;
     const verdict = reviewOk === null ? 'No Review' : reviewOk ? 'Functional' : 'Needs Repair';
     const repairMode = scriptReview?.fitness?.repairMode ?? 'none';
@@ -41,14 +22,6 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
         diagnostic.severity !== 'error' &&
         !blockingReasons.some((reason) => reason.code === diagnostic.code && reason.message === diagnostic.message),
     );
-
-    // We compute items on the fly. 
-    // In a real app we might memoize this or put it in context.
-    const items = extractHistoryItems(code);
-    const historyIds = new Set(items.map((item) => item.id));
-    const selectedHistoryId = selectedItemId && historyIds.has(selectedItemId) ? selectedItemId : null;
-    const hoveredHistoryId = hoveredItemId && historyIds.has(hoveredItemId) ? hoveredItemId : null;
-    const selectedHistoryIds = selectedItemIds.filter((id) => historyIds.has(id));
 
     return (
         <div className="flex flex-col h-full bg-[#111] border-b border-[#333]">
@@ -77,40 +50,7 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
             {/* Content Area */}
             <div className="flex-1 overflow-hidden relative">
                 {activeTab === 'scene' ? (
-                    <SceneBrowser
-                        items={items}
-                        planes={planes}
-                        selectedItemId={selectedHistoryId}
-                        selectedItemIds={selectedHistoryIds}
-                        hoveredItemId={hoveredHistoryId}
-                        hiddenIds={hiddenIds}
-                        onSelect={(item: HistoryItem) => {
-                            setViewMode('code');
-                            setSelectedItemId(item.id);
-                            onJumpToLine(item.line);
-                        }}
-                        onToggleSelection={toggleSelection}
-                        onHover={(id) => {
-                            if (!id) {
-                                setHoveredItemId(null);
-                                return;
-                            }
-                            setHoveredItemId(id);
-                        }}
-                        onToggleVisibility={toggleVisibility}
-                        onTogglePlane={togglePlaneVisibility}
-                        onSelectPlane={(id) => setSelectedItemId(id)}
-                        onRename={renameItem}
-                        onDelete={(item) => {
-                            deleteHistoryItem(item);
-                            if (selectedHistoryId === item.id) {
-                                setSelectedItemId(null);
-                            }
-                            if (hoveredHistoryId === item.id) {
-                                setHoveredItemId(null);
-                            }
-                        }}
-                    />
+                    <ScenePanel onJumpToLine={onJumpToLine} />
                 ) : activeTab === 'loop' ? (
 <BuildLoopPanel
                         verdict={verdict}
