@@ -37,12 +37,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/fetchPart.ts",
-    "symbol": "Async function 'fetchPartTool'",
-    "value": 22
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/getMassProperties.ts",
     "symbol": "Async function 'getMassPropertiesTool'",
     "value": 23
