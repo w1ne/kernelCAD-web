@@ -139,12 +139,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseJointReactions.ts",
-    "symbol": "Function 'expandCertificatePoses'",
-    "value": 21
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/parts/findPart.ts",
     "symbol": "Async function 'findPartHost'",
     "value": 22
