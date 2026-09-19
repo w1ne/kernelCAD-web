@@ -36,8 +36,8 @@ export interface Finding {
 }
 
 export const RATCHET_RULES = {
-  complexity: ['error', 20],
-  'max-lines-per-function': ['error', { max: 150, skipBlankLines: true, skipComments: true }],
+  complexity: ['error', 15],
+  'max-lines-per-function': ['error', { max: 100, skipBlankLines: true, skipComments: true }],
   'max-lines': ['error', { max: 800, skipBlankLines: true, skipComments: true }],
 } as const;
 
