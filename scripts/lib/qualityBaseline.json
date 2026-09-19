@@ -145,12 +145,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/section.ts",
-    "symbol": "Function 'sliceAtZ'",
-    "value": 27
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/segment.ts",
     "symbol": "Function 'fitPlane'",
     "value": 24
