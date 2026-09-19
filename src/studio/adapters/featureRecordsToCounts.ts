@@ -34,6 +34,30 @@ export const EMPTY_MODEL_TOPOLOGY: ModelTopologyCounts = { partCount: 0, jointCo
  * `solvedAssembly` records over the same parts) is not double counted —
  * that mirrors the last-wins precedence `extractJointSnapshots` applies.
  */
+function addRecordKeys(rec: FeatureRecord, partKeys: Set<string>, jointNames: Set<string>): void {
+    if (rec.kind === 'assemblyPart') {
+        const meta = rec.metadata as { assemblyName?: string; partName?: string } | undefined;
+        const partName = typeof meta?.partName === 'string' ? meta.partName : null;
+        // Qualify by assembly so two assemblies with a part of the same
+        // name still count as two parts.
+        partKeys.add(partName === null ? rec.id : `${meta?.assemblyName ?? ''}::${partName}`);
+        return;
+    }
+    if (rec.kind === 'assemblyJoint') {
+        const meta = rec.metadata as { assemblyName?: string; jointName?: string } | undefined;
+        const jointName = typeof meta?.jointName === 'string' ? meta.jointName : null;
+        jointNames.add(jointName === null ? rec.id : `${meta?.assemblyName ?? ''}::${jointName}`);
+        return;
+    }
+    if (rec.kind !== 'solvedAssembly' && rec.kind !== 'assemblyModel') return;
+    const meta = rec.metadata as
+        | { assemblyName?: string; mates?: readonly EncodedMateRecord[] }
+        | undefined;
+    for (const mate of meta?.mates ?? []) {
+        jointNames.add(`${meta?.assemblyName ?? ''}::${mate.name}`);
+    }
+}
+
 export function countModelTopology(
     records: readonly FeatureRecord[] | null | undefined,
 ): ModelTopologyCounts {
@@ -43,27 +67,7 @@ export function countModelTopology(
     const jointNames = new Set<string>();
 
     for (const rec of records) {
-        if (rec.kind === 'assemblyPart') {
-            const meta = rec.metadata as { assemblyName?: string; partName?: string } | undefined;
-            const partName = typeof meta?.partName === 'string' ? meta.partName : null;
-            // Qualify by assembly so two assemblies with a part of the same
-            // name still count as two parts.
-            partKeys.add(partName === null ? rec.id : `${meta?.assemblyName ?? ''}::${partName}`);
-            continue;
-        }
-        if (rec.kind === 'assemblyJoint') {
-            const meta = rec.metadata as { assemblyName?: string; jointName?: string } | undefined;
-            const jointName = typeof meta?.jointName === 'string' ? meta.jointName : null;
-            jointNames.add(jointName === null ? rec.id : `${meta?.assemblyName ?? ''}::${jointName}`);
-            continue;
-        }
-        if (rec.kind !== 'solvedAssembly' && rec.kind !== 'assemblyModel') continue;
-        const meta = rec.metadata as
-            | { assemblyName?: string; mates?: readonly EncodedMateRecord[] }
-            | undefined;
-        for (const mate of meta?.mates ?? []) {
-            jointNames.add(`${meta?.assemblyName ?? ''}::${mate.name}`);
-        }
+        addRecordKeys(rec, partKeys, jointNames);
     }
 
     return { partCount: partKeys.size, jointCount: jointNames.size };
