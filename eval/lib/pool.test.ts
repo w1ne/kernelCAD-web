@@ -23,7 +23,7 @@ describe('mapPool', () => {
     expect(peak).toBeGreaterThan(1);
   });
 
-  it('rejects with the first worker error', async () => {
+  it('propagates a worker error', async () => {
     await expect(
       mapPool([1, 2], 2, async (n) => {
         if (n === 1) throw new Error('boom');
@@ -34,5 +34,14 @@ describe('mapPool', () => {
 
   it('handles an empty input', async () => {
     expect(await mapPool([], 4, async () => 1)).toEqual([]);
+  });
+
+  it('rejects invalid limits', async () => {
+    await expect(mapPool([1], 0, async () => 1)).rejects.toThrow(/limit/);
+    await expect(mapPool([1], Number.NaN, async () => 1)).rejects.toThrow(/limit/);
+  });
+
+  it('passes the index and tolerates a limit larger than the input', async () => {
+    expect(await mapPool(['a', 'b'], 10, async (_item, i) => i)).toEqual([0, 1]);
   });
 });
