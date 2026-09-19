@@ -52,22 +52,27 @@ export function ledgerPathFor(scriptPath: string): string {
   return `${stem}.ledger.json`;
 }
 
-export async function drawingToCadTool(input: DrawingToCadToolInput): Promise<DrawingToCadToolOutput> {
-  const hasPath = typeof input?.path === 'string' && input.path.length > 0;
-  const hasInline = typeof input?.pdfBase64 === 'string' && input.pdfBase64.length > 0;
+function validateDrawingToCadInput(
+  input: DrawingToCadToolInput,
+  hasPath: boolean,
+  hasInline: boolean,
+): DrawingToCadToolOutput | undefined {
   if (hasPath === hasInline) {
     return inputError('drawing_to_cad: pass exactly one of `path` (a local PDF) or `pdfBase64` (the PDF inline).');
   }
   if (input.out !== undefined && !/\.ts$/.test(input.out)) {
     return inputError(`drawing_to_cad: \`out\` must name a .kcad.ts file; got '${input.out}'.`);
   }
+  return undefined;
+}
 
-  let pdf: Uint8Array;
-  let source: string;
+async function readDrawingPdf(
+  input: DrawingToCadToolInput,
+  hasPath: boolean,
+): Promise<{ pdf: Uint8Array; source: string } | { failure: DrawingToCadToolOutput }> {
   if (hasPath) {
     try {
-      pdf = new Uint8Array(await readFile(input.path!));
-      source = basename(input.path!);
+      return { pdf: new Uint8Array(await readFile(input.path!)), source: basename(input.path!) };
     } catch (e) {
       const d: CompilerDiagnostic = {
         target: 'export-occt',
@@ -79,12 +84,22 @@ export async function drawingToCadTool(input: DrawingToCadToolInput): Promise<Dr
         hint: HINT_TEMPLATES[FILE_READ_CODE].template,
         nextAction: NEXT_ACTIONS[FILE_READ_CODE],
       };
-      return { ok: false, page: input.page ?? 1, pageCount: 0, views: [], params: [], ledger: { facts: [], unresolvedCount: 0 }, diagnostics: [d] };
+      return { failure: { ok: false, page: input.page ?? 1, pageCount: 0, views: [], params: [], ledger: { facts: [], unresolvedCount: 0 }, diagnostics: [d] } };
     }
-  } else {
-    pdf = new Uint8Array(Buffer.from(input.pdfBase64!, 'base64'));
-    source = 'inline PDF';
   }
+  return { pdf: new Uint8Array(Buffer.from(input.pdfBase64!, 'base64')), source: 'inline PDF' };
+}
+
+export async function drawingToCadTool(input: DrawingToCadToolInput): Promise<DrawingToCadToolOutput> {
+  const hasPath = typeof input?.path === 'string' && input.path.length > 0;
+  const hasInline = typeof input?.pdfBase64 === 'string' && input.pdfBase64.length > 0;
+
+  const invalidInput = validateDrawingToCadInput(input, hasPath, hasInline);
+  if (invalidInput !== undefined) return invalidInput;
+
+  const read = await readDrawingPdf(input, hasPath);
+  if ('failure' in read) return read.failure;
+  const { pdf, source } = read;
 
   const scriptPath = input.out !== undefined ? resolve(input.out) : undefined;
   const ledgerPath = scriptPath ? ledgerPathFor(scriptPath) : undefined;

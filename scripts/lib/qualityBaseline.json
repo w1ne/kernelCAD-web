@@ -19,12 +19,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/drawingToCad.ts",
-    "symbol": "Async function 'drawingToCadTool'",
-    "value": 21
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/fetchPart.ts",
     "symbol": "Async function 'fetchPartTool'",
     "value": 22
