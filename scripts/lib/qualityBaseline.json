@@ -361,12 +361,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/featureMeshing.ts",
-    "symbol": "Function 'collectTendonMeshes'",
-    "value": 29
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/imageDimensions.ts",
     "symbol": "Function 'imageDimensions'",
     "value": 23
