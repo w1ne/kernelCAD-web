@@ -51,8 +51,8 @@ export function normaliseDimText(raw: string): string {
     .trim();
 }
 
-/** Parse dimension lettering; `null` when the text is not a dimension (a label, a note). */
-export function parseDimensionText(raw: string): ParsedDimText | null {
+/** Strip the reference parens and pattern-count prefix off the lettering. */
+function stripDimensionPrefix(raw: string): { s: string; reference: boolean; count: number } {
   let s = normaliseDimText(raw);
   let reference = false;
   const paren = /^\((.*)\)$/.exec(s);
@@ -67,14 +67,24 @@ export function parseDimensionText(raw: string): ParsedDimText | null {
     count = Number(countPrefix[1]);
     s = s.slice(countPrefix[0].length);
   }
+  return { s, reference, count };
+}
 
+/** Parse the symbol/value/unit head; `null` when there is no number head. */
+function parseDimensionHead(s: string): { kind: ParsedDimText['kind']; value: number; unit: ParsedDimText['unit']; rest: string } | null {
   const head = new RegExp(String.raw`^(⌀|R)?\s*${NUM}\s*(mm|in|")?`).exec(s);
   if (!head) return null;
   const kind: ParsedDimText['kind'] = head[1] === '⌀' ? 'diameter' : head[1] === 'R' ? 'radius' : 'linear';
   const value = toNum(head[2]);
   if (!Number.isFinite(value) || value <= 0) return null;
   const unit = head[3] === 'mm' ? 'mm' : head[3] === 'in' || head[3] === '"' ? 'in' : undefined;
-  let rest = s.slice(head[0].length).trim();
+  const rest = s.slice(head[0].length).trim();
+  return { kind, value, unit, rest };
+}
+
+/** Parse tolerance, through/depth and trailing pattern count off the rest. */
+function parseDimensionTail(restIn: string, countIn: number): { tolerance: string | undefined; through: boolean; depth: number | undefined; count: number; rest: string } {
+  let rest = restIn;
 
   let tolerance: string | undefined;
   const tol = new RegExp(String.raw`^(±\s*${NUM}|\+\s*${NUM}\s*/?\s*-\s*${NUM}|[A-Za-z]{1,2}\d{1,2}\b)`).exec(rest);
@@ -100,30 +110,55 @@ export function parseDimensionText(raw: string): ParsedDimText | null {
     }
   }
 
+  let count = countIn;
   const plcs = /(?:^|\s)(\d+)\s*(?:PLCS?|PL|HOLES)\.?$/i.exec(rest);
   if (plcs && count === 1) {
     count = Number(plcs[1]);
     rest = rest.slice(0, plcs.index).trim();
   }
 
-  // Angles, ratios and prose after a number are not length dimensions; a plain
-  // linear value may only carry a thickness note ("8 THK").
-  if (/^[°:/]/.test(rest)) return null;
+  return { tolerance, through, depth, count, rest };
+}
+
+/**
+ * Angles, ratios and prose after a number are not length dimensions; a plain
+ * linear value may only carry a thickness note ("8 THK").
+ */
+function isDimensionRestValid(
+  kind: ParsedDimText['kind'],
+  count: number,
+  through: boolean,
+  depth: number | undefined,
+  rest: string,
+): boolean {
+  if (/^[°:/]/.test(rest)) return false;
   if (kind === 'linear' && count === 1 && !through && depth === undefined && rest.length > 0 && !/^THK\.?$/i.test(rest)) {
-    return null;
+    return false;
   }
+  return true;
+}
+
+/** Parse dimension lettering; `null` when the text is not a dimension (a label, a note). */
+export function parseDimensionText(raw: string): ParsedDimText | null {
+  const { s, reference, count: prefixCount } = stripDimensionPrefix(raw);
+
+  const head = parseDimensionHead(s);
+  if (head === null) return null;
+
+  const tail = parseDimensionTail(head.rest, prefixCount);
+  if (!isDimensionRestValid(head.kind, tail.count, tail.through, tail.depth, tail.rest)) return null;
 
   return {
     raw,
-    kind,
-    value,
-    count,
-    through,
-    ...(depth !== undefined ? { depth } : {}),
+    kind: head.kind,
+    value: head.value,
+    count: tail.count,
+    through: tail.through,
+    ...(tail.depth !== undefined ? { depth: tail.depth } : {}),
     reference,
-    ...(tolerance !== undefined ? { tolerance } : {}),
-    ...(unit !== undefined ? { unit } : {}),
-    extras: rest,
+    ...(tail.tolerance !== undefined ? { tolerance: tail.tolerance } : {}),
+    ...(head.unit !== undefined ? { unit: head.unit } : {}),
+    extras: tail.rest,
   };
 }
 

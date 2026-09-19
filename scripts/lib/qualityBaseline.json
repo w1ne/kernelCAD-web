@@ -25,12 +25,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/drawing/dimensionText.ts",
-    "symbol": "Function 'parseDimensionText'",
-    "value": 28
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/drawing/sheet.ts",
     "symbol": "Function 'projectionSymbol'",
     "value": 22
