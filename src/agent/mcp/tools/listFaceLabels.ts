@@ -10,7 +10,7 @@
 
 import type { CanonicalFace } from '../../../shared/intent/types';
 import type { FaceQuery } from '../../../kernel/backends/occt/edgeQueries';
-import type { FaceLabelsMap } from '../../../shared/intent/featureRecord';
+import type { FaceLabelsMap, FeatureRecord } from '../../../shared/intent/featureRecord';
 import { runMcpScript } from '../runMcpScript';
 
 export interface ListFaceLabelsInput {
@@ -48,18 +48,27 @@ export interface ListFaceLabelsOutput {
   errorCode?: string;
 }
 
-export async function listFaceLabelsTool(input: ListFaceLabelsInput): Promise<ListFaceLabelsOutput> {
-  const result = await runMcpScript(input);
-  if (!result.ok) return result;
-  const { run } = result;
+type SketchCommand = { kind: string; x?: { evaluated: number }; y?: { evaluated: number }; label?: string };
 
-  const labels: LabelSummary[] = [];
+function sketchChord(prev: SketchCommand | undefined, c: SketchCommand): { startX: number; startY: number; endX: number; endY: number } {
+  return {
+    startX: prev?.x?.evaluated ?? 0,
+    startY: prev?.y?.evaluated ?? 0,
+    endX: c.x?.evaluated ?? 0,
+    endY: c.y?.evaluated ?? 0,
+  };
+}
 
-  // ── Sketch-segment labels ──────────────────────────────────────────────────
-  for (const rec of run.records) {
+// ── Sketch-segment labels ──────────────────────────────────────────────────
+function collectSketchSegmentLabels(
+  records: readonly FeatureRecord[],
+  featureId: string | undefined,
+  labels: LabelSummary[],
+): void {
+  for (const rec of records) {
     if (rec.kind !== 'sketch') continue;
-    if (input.feature_id && rec.id !== input.feature_id) continue;
-    const commands = (rec.metadata as { commands?: Array<{ kind: string; x?: { evaluated: number }; y?: { evaluated: number }; label?: string }> } | undefined)?.commands;
+    if (featureId && rec.id !== featureId) continue;
+    const commands = (rec.metadata as { commands?: SketchCommand[] } | undefined)?.commands;
     if (!commands) continue;
     for (let i = 0; i < commands.length; i++) {
       const c = commands[i];
@@ -70,19 +79,20 @@ export async function listFaceLabelsTool(input: ListFaceLabelsInput): Promise<Li
         source: 'sketch-segment',
         sketchId: rec.id,
         segmentKind: c.kind,
-        chord: {
-          startX: prev?.x?.evaluated ?? 0,
-          startY: prev?.y?.evaluated ?? 0,
-          endX: c.x?.evaluated ?? 0,
-          endY: c.y?.evaluated ?? 0,
-        },
+        chord: sketchChord(prev, c),
       });
     }
   }
+}
 
-  // ── faceLabels from creating-op metadata ──────────────────────────────────
-  for (const rec of run.records) {
-    if (input.feature_id && rec.id !== input.feature_id) continue;
+// ── faceLabels from creating-op metadata ──────────────────────────────────
+function collectFaceLabels(
+  records: readonly FeatureRecord[],
+  featureId: string | undefined,
+  labels: LabelSummary[],
+): void {
+  for (const rec of records) {
+    if (featureId && rec.id !== featureId) continue;
     const fl = (rec.metadata as { faceLabels?: FaceLabelsMap } | undefined)?.faceLabels;
     if (!fl) continue;
     for (const [name, value] of Object.entries(fl)) {
@@ -105,6 +115,18 @@ export async function listFaceLabelsTool(input: ListFaceLabelsInput): Promise<Li
       }
     }
   }
+}
+
+export async function listFaceLabelsTool(input: ListFaceLabelsInput): Promise<ListFaceLabelsOutput> {
+  const result = await runMcpScript(input);
+  if (!result.ok) return result;
+  const { run } = result;
+
+  const labels: LabelSummary[] = [];
+
+  collectSketchSegmentLabels(run.records, input.feature_id, labels);
+
+  collectFaceLabels(run.records, input.feature_id, labels);
 
   return { ok: true, labels };
 }
