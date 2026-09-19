@@ -6,6 +6,12 @@ import type { PoseEnvelopeReviewResult } from './poseEnvelope';
 import { parseConnectorRef } from './mate';
 import { assessPhysicalUseCaseReachability } from './physicalUseCaseReachability';
 import {
+  appendReachabilityDiagnostics,
+  appendStaticsDiagnostics,
+  resolvePhysicalUseCasePhases,
+  unreachableContactKey,
+} from './physicalUseCaseReachabilityPhases';
+import {
   connectorExists,
   hasNonZeroVec,
   reviewMissingPhysicalUseCase,
@@ -336,9 +342,8 @@ export async function reviewPhysicalUseCasesWithReachability(
   opts: PhysicalUseCaseReviewOptions = {},
 ): Promise<PhysicalUseCaseReviewResult> {
   const base = reviewPhysicalUseCases(arm, opts);
-  const includeJointReactions = opts.includeJointReactions === true || opts.includeJointStructure === true;
-  const includeStatics = opts.includeStatics === true || includeJointReactions;
-  const includeReachability = opts.includeReachability === true || includeStatics;
+  const { includeJointReactions, includeStatics, includeReachability, includeJointStructure } =
+    resolvePhysicalUseCasePhases(opts);
   if (!includeReachability) return base;
 
   const diagnostics: PhysicalUseCaseDiagnostic[] = [...base.diagnostics];
@@ -355,88 +360,23 @@ export async function reviewPhysicalUseCasesWithReachability(
     const assessment = await assessPhysicalUseCaseReachability(arm, useCase, {
       samplesPerMate: opts.reachabilitySamplesPerMate,
     });
-    for (const issue of assessment.findings) {
-      if (!('contactA' in issue)) {
-        diagnostics.push({
-          code: 'assembly.physical-use-case.simultaneous-contacts-unreachable',
-          severity: 'error',
-          useCaseName: issue.useCaseName,
-          toleranceMm: issue.toleranceMm,
-          ...(issue.bestMaxDistanceMm === undefined ? {} : { bestMaxDistanceMm: issue.bestMaxDistanceMm }),
-          contactDistances: issue.contactDistances,
-          message: issue.bestMaxDistanceMm === undefined
-            ? `Physical use case '${issue.useCaseName}' has no solved targeted actuator sample where all ${issue.contactDistances.length} contacts can be checked together.`
-            : `Physical use case '${issue.useCaseName}' has no single targeted actuator sample that satisfies all ${issue.contactDistances.length} contacts within ${issue.toleranceMm.toFixed(2)} mm; the best sample's worst contact is ${issue.bestMaxDistanceMm.toFixed(2)} mm away.`,
-          hint: 'physical-use-case.simultaneous-contacts-unreachable — revise mate couplings, contact geometry, or actuator ranges until one sampled mechanism state satisfies every declared contact; independent per-contact poses do not form a grasp.',
-        });
-        continue;
-      }
-      if (existingUnreachableContacts.has(unreachableContactKey(issue.useCaseName, issue.contactA, issue.contactB))) continue;
-      diagnostics.push({
-        code: 'assembly.physical-use-case.contact-unreachable',
-        severity: 'error',
-        useCaseName: issue.useCaseName,
-        contactA: issue.contactA,
-        contactB: issue.contactB,
-        ...(issue.minDistanceMm === undefined ? {} : { minDistanceMm: issue.minDistanceMm }),
-        toleranceMm: issue.toleranceMm,
-        message: issue.minDistanceMm === undefined
-          ? `Physical use case '${issue.useCaseName}' contact '${issue.contactA}' to '${issue.contactB}' could not be checked by targeted actuator sampling.`
-          : `Physical use case '${issue.useCaseName}' contact '${issue.contactA}' to '${issue.contactB}' cannot be reached by the declared actuator limits; closest targeted sample is ${issue.minDistanceMm.toFixed(2)} mm away with tolerance ${issue.toleranceMm.toFixed(2)} mm.`,
-        hint: `physical-use-case.contact-unreachable — repair the target connector, move '${issue.contactA}' or '${issue.contactB}', or widen the declared actuatorLimits so the contact can get within maxSlipMm ${issue.toleranceMm.toFixed(2)}.`,
-      });
-    }
+    appendReachabilityDiagnostics(assessment.findings, existingUnreachableContacts, diagnostics);
 
     if (!includeStatics || assessment.findings.length > 0) continue;
     const statics = await reviewPhysicalUseCaseStatics(arm, useCase, assessment.commonPoseSamples);
     staticCertificates.push(...statics.certificates);
-    for (const issue of statics.issues) {
-      if (issue.kind === 'static-input-incomplete') {
-        diagnostics.push({
-          code: 'assembly.physical-use-case.static-input-incomplete',
-          severity: 'error',
-          useCaseName: issue.useCaseName,
-          message: `Physical use case '${issue.useCaseName}' cannot run pose-bound static review: ${issue.message}`,
-          hint: 'physical-use-case.static-input-incomplete - add explicit load application connectors, contact capacities and frames, finite revolute limits, and transmission evidence for every coupled joint.',
-        });
-        continue;
-      }
-      if (issue.kind === 'static-equilibrium-unmet') {
-        diagnostics.push({
-          code: 'assembly.physical-use-case.static-equilibrium-unmet',
-          severity: 'error',
-          useCaseName: issue.useCaseName,
-          ...(issue.bestPoses === undefined ? {} : { bestPoses: issue.bestPoses }),
-          ...(issue.bestForceResidualN === undefined ? {} : { bestForceResidualN: issue.bestForceResidualN }),
-          ...(issue.bestTorqueResidualNmm === undefined ? {} : { bestTorqueResidualNmm: issue.bestTorqueResidualNmm }),
-          message: `Physical use case '${issue.useCaseName}' has no verified contact-force allocation that balances force and moment at a sampled common-contact pose.`,
-          hint: 'physical-use-case.static-equilibrium-unmet - revise contact locations/normals, friction, force capacity, or the applied load. This sampled linearized failure is not a proof of analytical impossibility.',
-        });
-        continue;
-      }
-      diagnostics.push({
-        code: 'assembly.physical-use-case.static-actuator-torque-insufficient',
-        severity: 'error',
-        useCaseName: issue.useCaseName,
-        ...(issue.bestPoses === undefined ? {} : { bestPoses: issue.bestPoses }),
-        actuatorTorques: issue.actuatorTorques,
-        message: `Physical use case '${issue.useCaseName}' can balance its held-object wrench, but no verified sampled allocation stays within every actuator torque limit.`,
-        hint: 'physical-use-case.static-actuator-torque-insufficient - increase real actuator/transmission capacity, shorten moment arms, reduce the load, or redesign contact placement without weakening the gate.',
-      });
-    }
+    appendStaticsDiagnostics(statics.issues, diagnostics);
 
     if (!includeJointReactions) continue;
-    for (const certificate of statics.certificates) {
-      const jointReview = await reviewCertifiedJointLoads(
-        arm,
-        useCase,
-        certificate,
-        opts.includeJointStructure === true,
-      );
-      diagnostics.push(...jointReview.diagnostics);
-      jointReactionCertificates.push(...jointReview.reactionCertificates);
-      jointStructuralCertificates.push(...jointReview.structuralCertificates);
-    }
+    await appendJointReactionCertificates(
+      arm,
+      useCase,
+      statics.certificates,
+      includeJointStructure,
+      diagnostics,
+      jointReactionCertificates,
+      jointStructuralCertificates,
+    );
   }
 
   return {
@@ -446,6 +386,29 @@ export async function reviewPhysicalUseCasesWithReachability(
     jointReactionCertificates,
     jointStructuralCertificates,
   };
+}
+
+/** Run the joint-reaction/structural review for each passing static certificate. */
+async function appendJointReactionCertificates(
+  arm: Assembly,
+  useCase: PhysicalUseCaseRecord,
+  certificates: readonly PhysicalUseCaseStaticCertificate[],
+  includeStructure: boolean,
+  diagnostics: PhysicalUseCaseDiagnostic[],
+  jointReactionCertificates: PhysicalUseCaseJointReactionCertificate[],
+  jointStructuralCertificates: PhysicalUseCaseJointStructuralCertificate[],
+): Promise<void> {
+  for (const certificate of certificates) {
+    const jointReview = await reviewCertifiedJointLoads(
+      arm,
+      useCase,
+      certificate,
+      includeStructure,
+    );
+    diagnostics.push(...jointReview.diagnostics);
+    jointReactionCertificates.push(...jointReview.reactionCertificates);
+    jointStructuralCertificates.push(...jointReview.structuralCertificates);
+  }
 }
 
 async function reviewCertifiedJointLoads(
@@ -584,10 +547,6 @@ async function reviewCertifiedJointLoads(
     reactionCertificates: [...reactions.certificates],
     structuralCertificates,
   };
-}
-
-function unreachableContactKey(useCaseName: string | undefined, contactA: string, contactB: string): string {
-  return `${useCaseName ?? ''}\n${contactA}\n${contactB}`;
 }
 
 function reviewLoadPaths(
