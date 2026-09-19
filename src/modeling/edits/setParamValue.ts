@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/mcp/edits/setParamValue.ts
+// src/modeling/edits/setParamValue.ts
+//
+// Pure source-text edits over `param('<name>', <default>, [meta])` calls.
+// Lives in modeling (not agent) so the kinematic sweep can rewrite swept
+// parameter defaults without importing the agent layer; the MCP `set_param`
+// tool is the agent-side caller.
 
 export interface SetParamValueResult {
   ok: boolean;

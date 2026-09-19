@@ -1,6 +1,4 @@
 [
-  "agent/cli/commands/evaluate.ts > modeling/buildModel.ts > modeling/runtime/runScript.ts > modeling/runtime/runScriptCore.ts > modeling/api.ts > kinematic/index.ts > kinematic/sweepTolerance.ts",
-  "agent/cli/commands/evaluate.ts > modeling/runtime/runScript.ts > modeling/runtime/runScriptCore.ts > modeling/api.ts > kinematic/index.ts > kinematic/sweepTolerance.ts",
   "kernel/backends/occt/edgeQueries.ts > kernel/backends/occt/occtBackend.ts",
   "kernel/backends/occt/nurbsSurfaceLowerer.ts > kernel/backends/occt/occtBackend.ts > kernel/backends/occt/pathNurbsLowerer.ts",
   "kernel/backends/occt/nurbsSurfaceLowerer.ts > kernel/backends/occt/pathNurbsLowerer.ts",

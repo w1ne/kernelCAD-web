@@ -328,6 +328,49 @@ export interface SweepToleranceResult {
   readonly source: 'local';
 }
 
+// ===== sweepTolerance — injected script-evaluation seam =====
+
+/** Minimal view of a script evaluation's diagnostic, as the sweep consumes
+ *  it: the first diagnostic's code/message surface on a failed combo. */
+export interface SweepEvaluationDiagnostic {
+  readonly code?: string;
+  readonly message?: string;
+}
+
+/** Minimal view of one evaluated script build, as the sweep consumes it. */
+export interface SweepEvaluationResult {
+  readonly exitCode: number;
+  readonly diagnostics: ReadonlyArray<SweepEvaluationDiagnostic>;
+}
+
+/** Minimal view of the live session a built script exposes — the numeric
+ *  precheck reads `paramTable`, each combo's gates read `assemblies`. */
+export interface SweepEvaluationModel {
+  readonly session: {
+    readonly paramTable: {
+      has(name: string): boolean;
+      get(name: string): { readonly type: string };
+    };
+    readonly assemblies: ReadonlyMap<string, unknown>;
+  };
+}
+
+export interface SweepEvaluation {
+  readonly evaluation: SweepEvaluationResult;
+  readonly model?: SweepEvaluationModel | undefined;
+}
+
+/**
+ * Script-evaluation implementation injected into `sweepTolerance`. Owned by
+ * kinematic so the sweep never imports the agent CLI command tree; the agent
+ * layer supplies the implementation (see `sweepScriptEvaluator` in
+ * `src/agent/cli/commands/evaluate.ts`) either by registering it or by
+ * passing it explicitly.
+ */
+export interface SweepEvaluator {
+  evaluate(code: string): Promise<SweepEvaluation>;
+}
+
 // ===== facade type — the kc.kinematic object surface =====
 
 import type { Assembly } from '../modeling/capture/assembly';
