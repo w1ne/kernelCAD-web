@@ -18,6 +18,7 @@ describe('Initial Studio bundle import sentinels', () => {
   const mainSource = readFileSync('src/studio/main.tsx', 'utf8');
   const demoPlayerRouteSource = readFileSync('src/studio/routes/demo-player.tsx', 'utf8');
   const codeContextSource = readFileSync('src/studio/context/CodeContext.tsx', 'utf8');
+  const magicCommentSource = readFileSync('src/studio/context/useMagicCommentDetection.ts', 'utf8');
 
   it('does not warm the GeometryEngine before route content mounts', () => {
     expect(mainSource).not.toMatch(/GeometryEngine/);
@@ -40,7 +41,8 @@ describe('Initial Studio bundle import sentinels', () => {
   it('keeps AI and refactoring services behind dynamic imports', () => {
     expect(codeContextSource).not.toMatch(/import\s+.*LLMService/);
     expect(codeContextSource).not.toMatch(/import\s+.*RefactoringManager/);
-    expect(codeContextSource).toContain("import('../features-ui/ai/LLMService')");
+    expect(magicCommentSource).not.toMatch(/import\s+.*LLMService/);
+    expect(magicCommentSource).toContain("import('../features-ui/ai/LLMService')");
     expect(codeContextSource).toContain("import('../../modeling/features/modeling/RefactoringManager')");
   });
 });
