@@ -43,12 +43,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/drawing/views.ts",
-    "symbol": "Function 'identifyViews'",
-    "value": 29
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/loop/closedLoop.ts",
     "symbol": "Async function 'runClosedLoop'",
     "value": 25
@@ -64,6 +58,18 @@
     "file": "src/agent/mcp/edits/addPathNurbsSegment.ts",
     "symbol": "Function 'addPathNurbsSegment'",
     "value": 25
+  },
+  {
+    "rule": "complexity",
+    "file": "src/agent/mcp/edits/addPathSpline.ts",
+    "symbol": "Function 'findCloseCall'",
+    "value": 30
+  },
+  {
+    "rule": "complexity",
+    "file": "src/agent/mcp/edits/addPathSpline.ts",
+    "symbol": "Function 'injectIntoChain'",
+    "value": 29
   },
   {
     "rule": "complexity",
@@ -94,6 +100,12 @@
     "file": "src/agent/mcp/tools/addPatternFeature.ts",
     "symbol": "Async function 'addPatternFeatureTool'",
     "value": 22
+  },
+  {
+    "rule": "complexity",
+    "file": "src/agent/mcp/tools/designLoop.ts",
+    "symbol": "Async function 'designLoopTool'",
+    "value": 29
   },
   {
     "rule": "complexity",
@@ -148,6 +160,12 @@
     "file": "src/agent/mcp/tools/runFea.ts",
     "symbol": "Async function 'runFeaTool'",
     "value": 22
+  },
+  {
+    "rule": "complexity",
+    "file": "src/agent/mcp/tools/surfaceQualityOverlay.ts",
+    "symbol": "Async function 'buildSurfaceQualityOverlay'",
+    "value": 30
   },
   {
     "rule": "complexity",
@@ -235,6 +253,12 @@
   },
   {
     "rule": "complexity",
+    "file": "src/kernel/backends/occt/meshHeal.ts",
+    "symbol": "Function 'stitchCracks'",
+    "value": 29
+  },
+  {
+    "rule": "complexity",
     "file": "src/kernel/backends/occt/meshing.ts",
     "symbol": "Function 'getWire'",
     "value": 22
@@ -253,27 +277,15 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/occtBackend.ts",
-    "symbol": "Static method 'fromTriangleMesh'",
-    "value": 29
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/backends/occt/pathNurbsLowerer.ts",
-    "symbol": "Function 'buildNurbsSketchOnPlane'",
-    "value": 29
+    "file": "src/kernel/backends/occt/surfaceQuality.ts",
+    "symbol": "Function 'inspectCurvature'",
+    "value": 28
   },
   {
     "rule": "complexity",
     "file": "src/kernel/naming/parseQuery.ts",
     "symbol": "Function 'formatAst'",
     "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/naming/parseQuery.ts",
-    "symbol": "Function 'parseExpr'",
-    "value": 29
   },
   {
     "rule": "complexity",
@@ -325,6 +337,12 @@
   },
   {
     "rule": "complexity",
+    "file": "src/modeling/capture/featureMeshing.ts",
+    "symbol": "Function 'collectTendonMeshes'",
+    "value": 29
+  },
+  {
+    "rule": "complexity",
     "file": "src/modeling/capture/imageDimensions.ts",
     "symbol": "Function 'imageDimensions'",
     "value": 23
@@ -340,6 +358,12 @@
     "file": "src/modeling/capture/virtualFeatureRecords.ts",
     "symbol": "Function 'buildReferenceImageFeatureSpec'",
     "value": 22
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/joints/clevis.ts",
+    "symbol": "Function 'withDefaults'",
+    "value": 29
   },
   {
     "rule": "complexity",
@@ -379,6 +403,12 @@
   },
   {
     "rule": "complexity",
+    "file": "src/modeling/mates/physicalUseCaseReachability.ts",
+    "symbol": "Async function 'assessPhysicalUseCaseReachability'",
+    "value": 28
+  },
+  {
+    "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseStatics.ts",
     "symbol": "Async function 'resolveActuators'",
     "value": 24
@@ -394,6 +424,12 @@
     "file": "src/modeling/mates/validator.ts",
     "symbol": "Async function 'validateAssemblyWithMates'",
     "value": 23
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/mates/validator.ts",
+    "symbol": "Function 'validateAssembly'",
+    "value": 28
   },
   {
     "rule": "complexity",
@@ -430,12 +466,6 @@
     "file": "src/modeling/validation/holeValidation.ts",
     "symbol": "Function 'validateCommonHoleFields'",
     "value": 26
-  },
-  {
-    "rule": "complexity",
-    "file": "src/server/middleware/animationBakeEndpoint.ts",
-    "symbol": "Async function 'animationBakeHandler'",
-    "value": 28
   },
   {
     "rule": "complexity",
@@ -522,18 +552,6 @@
     "value": 153
   },
   {
-    "rule": "max-lines-per-function",
-    "file": "src/server/middleware/animationBakeEndpoint.ts",
-    "symbol": "Async function 'animationBakeHandler'",
-    "value": 154
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/server/middleware/animationBakeEndpoint.ts",
-    "symbol": "Function 'createAnimationBakeEndpoint'",
-    "value": 157
-  },
-  {
     "rule": "max-lines",
     "file": "src/agent/reconstruct/planPhases.ts",
     "symbol": "(file)",
@@ -555,7 +573,7 @@
     "rule": "max-lines",
     "file": "src/kernel/backends/occt/occtBackend.ts",
     "symbol": "(file)",
-    "value": 897
+    "value": 844
   },
   {
     "rule": "max-lines",
