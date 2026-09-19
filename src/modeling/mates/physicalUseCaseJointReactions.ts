@@ -6,6 +6,7 @@ import type { Vec3 } from '../../shared/intent/types';
 import { currentValue } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 import type { Transform } from '../../shared/runtime/se3';
+import type { MateCouplingRecord } from './coupledPoses';
 import type { PhysicalUseCaseRecord } from './physicalUseCase';
 import {
   DEFAULT_FORCE_RESIDUAL_N,
@@ -223,45 +224,102 @@ function expandCertificatePoses(
       if (sourceMate === undefined) {
         return `Coupling for driven mate '${coupling.driven}' names unknown source '${coupling.source}'.`;
       }
-      let sourcePose: number | [number, number, number] | undefined =
-        expanded[coupling.source];
-      if (sourcePose === undefined && !drivenMateNames.has(coupling.source)) {
-        try {
-          sourcePose = sourceMate.pose === undefined
-            ? 0
-            : Array.isArray(sourceMate.pose)
-              ? undefined
-              : currentValue(sourceMate.pose as Editable<number>, arm.__session().paramTable);
-        } catch (error) {
-          return `Coupling source pose '${coupling.source}' could not be resolved: ${errorMessage(error)}.`;
-        }
-      }
-      if (sourcePose === undefined) continue;
-      if (Array.isArray(sourcePose) || !Number.isFinite(sourcePose)) {
-        return `Coupling source pose '${coupling.source}' is not a finite scalar.`;
-      }
-      const expectedDriven = sourcePose * coupling.ratio + (coupling.offset ?? 0);
-      const explicitDriven = certificatePoses[coupling.driven];
-      if (explicitDriven !== undefined) {
-        if (Array.isArray(explicitDriven) || !numbersMatch(explicitDriven, expectedDriven)) {
-          return `Explicit driven pose '${coupling.driven}' contradicts coupling '${coupling.source} * ${coupling.ratio} + ${coupling.offset ?? 0}'.`;
-        }
-        continue;
-      }
-      if (expanded[coupling.driven] === undefined) {
-        expanded[coupling.driven] = expectedDriven;
-        changed = true;
-      }
+      const source = resolveCouplingSourcePose(arm, coupling, sourceMate, drivenMateNames, expanded);
+      if (source.kind === 'error') return source.message;
+      if (source.kind === 'missing') continue;
+      const application = applyCouplingToExpanded(
+        coupling,
+        source.sourcePose,
+        certificatePoses,
+        expanded,
+      );
+      if (application.kind === 'error') return application.message;
+      if (application.changed) changed = true;
     }
     if (!changed) break;
   }
 
+  const derivedIssue = verifyCoupledPosesDerived(couplings, expanded);
+  if (derivedIssue !== undefined) return derivedIssue;
+  return expanded;
+}
+
+type CouplingSourceResolution =
+  | { readonly kind: 'error'; readonly message: string }
+  | { readonly kind: 'missing' }
+  | { readonly kind: 'posed'; readonly sourcePose: number };
+
+function resolveCouplingSourcePose(
+  arm: Assembly,
+  coupling: MateCouplingRecord,
+  sourceMate: Mate,
+  drivenMateNames: ReadonlySet<string>,
+  expanded: NumericPoses,
+): CouplingSourceResolution {
+  let sourcePose: number | [number, number, number] | undefined =
+    expanded[coupling.source];
+  if (sourcePose === undefined && !drivenMateNames.has(coupling.source)) {
+    try {
+      sourcePose = sourceMate.pose === undefined
+        ? 0
+        : Array.isArray(sourceMate.pose)
+          ? undefined
+          : currentValue(sourceMate.pose as Editable<number>, arm.__session().paramTable);
+    } catch (error) {
+      return {
+        kind: 'error',
+        message: `Coupling source pose '${coupling.source}' could not be resolved: ${errorMessage(error)}.`,
+      };
+    }
+  }
+  if (sourcePose === undefined) return { kind: 'missing' };
+  if (Array.isArray(sourcePose) || !Number.isFinite(sourcePose)) {
+    return {
+      kind: 'error',
+      message: `Coupling source pose '${coupling.source}' is not a finite scalar.`,
+    };
+  }
+  return { kind: 'posed', sourcePose };
+}
+
+type CouplingApplication =
+  | { readonly kind: 'error'; readonly message: string }
+  | { readonly kind: 'applied'; readonly changed: boolean };
+
+function applyCouplingToExpanded(
+  coupling: MateCouplingRecord,
+  sourcePose: number,
+  certificatePoses: NumericPoses,
+  expanded: NumericPoses,
+): CouplingApplication {
+  const expectedDriven = sourcePose * coupling.ratio + (coupling.offset ?? 0);
+  const explicitDriven = certificatePoses[coupling.driven];
+  if (explicitDriven !== undefined) {
+    if (Array.isArray(explicitDriven) || !numbersMatch(explicitDriven, expectedDriven)) {
+      return {
+        kind: 'error',
+        message: `Explicit driven pose '${coupling.driven}' contradicts coupling '${coupling.source} * ${coupling.ratio} + ${coupling.offset ?? 0}'.`,
+      };
+    }
+    return { kind: 'applied', changed: false };
+  }
+  if (expanded[coupling.driven] === undefined) {
+    expanded[coupling.driven] = expectedDriven;
+    return { kind: 'applied', changed: true };
+  }
+  return { kind: 'applied', changed: false };
+}
+
+function verifyCoupledPosesDerived(
+  couplings: readonly MateCouplingRecord[],
+  expanded: NumericPoses,
+): string | undefined {
   for (const coupling of couplings) {
     if (expanded[coupling.driven] === undefined) {
       return `Coupled pose '${coupling.driven}' could not be derived from source '${coupling.source}'.`;
     }
   }
-  return expanded;
+  return undefined;
 }
 
 async function validateCertificateAtSolvedPose(

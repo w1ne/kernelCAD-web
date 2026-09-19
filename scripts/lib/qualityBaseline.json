@@ -7,6 +7,18 @@
   },
   {
     "rule": "complexity",
+    "file": "src/agent/drawing/sheet.ts",
+    "symbol": "Function 'projectionSymbol'",
+    "value": 22
+  },
+  {
+    "rule": "complexity",
+    "file": "src/agent/mcp/tools/addPatternFeature.ts",
+    "symbol": "Async function 'addPatternFeatureTool'",
+    "value": 22
+  },
+  {
+    "rule": "complexity",
     "file": "src/agent/mcp/tools/drawingToCad.ts",
     "symbol": "Async function 'drawingToCadTool'",
     "value": 21
@@ -25,15 +37,21 @@
   },
   {
     "rule": "complexity",
+    "file": "src/agent/mcp/tools/fetchPart.ts",
+    "symbol": "Async function 'fetchPartTool'",
+    "value": 22
+  },
+  {
+    "rule": "complexity",
     "file": "src/agent/mcp/tools/getMassProperties.ts",
     "symbol": "Async function 'getMassPropertiesTool'",
     "value": 23
   },
   {
     "rule": "complexity",
-    "file": "src/funnel/components/PricingTiers.tsx",
-    "symbol": "Arrow function",
-    "value": 21
+    "file": "src/agent/mcp/tools/runFea.ts",
+    "symbol": "Async function 'runFeaTool'",
+    "value": 22
   },
   {
     "rule": "complexity",
@@ -55,9 +73,21 @@
   },
   {
     "rule": "complexity",
+    "file": "src/kernel/backends/occt/meshing.ts",
+    "symbol": "Function 'getWire'",
+    "value": 22
+  },
+  {
+    "rule": "complexity",
     "file": "src/kernel/backends/occt/nurbsSurfaceLowerer.ts",
     "symbol": "Function 'buildNurbsFace'",
     "value": 23
+  },
+  {
+    "rule": "complexity",
+    "file": "src/kernel/naming/parseQuery.ts",
+    "symbol": "Function 'formatAst'",
+    "value": 22
   },
   {
     "rule": "complexity",
@@ -67,15 +97,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/animation/verifyAnimation.ts",
-    "symbol": "Async function 'verifyAnimation'",
-    "value": 21
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/backends/occt/sheetMetalLowerer.ts",
-    "symbol": "Function 'resolveBendAxis'",
-    "value": 21
+    "file": "src/modeling/capture/bridgeCurves.ts",
+    "symbol": "Function 'bridgeCurves'",
+    "value": 22
   },
   {
     "rule": "complexity",
@@ -85,9 +109,21 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseJointReactions.ts",
-    "symbol": "Function 'expandCertificatePoses'",
-    "value": 21
+    "file": "src/modeling/capture/virtualFeatureRecords.ts",
+    "symbol": "Function 'buildReferenceImageFeatureSpec'",
+    "value": 22
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/mates/matePhysicalRealization.ts",
+    "symbol": "Function 'measureBearingCoplanarity'",
+    "value": 22
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/parts/findPart.ts",
+    "symbol": "Async function 'findPartHost'",
+    "value": 22
   },
   {
     "rule": "complexity",
@@ -100,12 +136,6 @@
     "file": "src/shared/intent/curve3dRecord.ts",
     "symbol": "Function 'isCurve3DMetadata'",
     "value": 22
-  },
-  {
-    "rule": "complexity",
-    "file": "src/shared/intent/textureProjection.ts",
-    "symbol": "Function 'computeProjectedUVs'",
-    "value": 21
   },
   {
     "rule": "complexity",
