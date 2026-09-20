@@ -784,14 +784,14 @@ In `scripts/runMuseSweep.ts`:
 ```
 (validate integer ≥ 1 like the other numeric flags)
 4. Resume guard: compare `toolLoop` and `toolMaxCalls` too (include them in the mismatch message).
-5. Envelope: add `toolLoop: cfg.toolLoop`, `toolMaxCalls: cfg.toolMaxCalls`.
+5. Envelope: add `toolLoop: cfg.toolLoop`, `toolMaxCalls: cfg.toolMaxCalls`. Also fail fast when both flags are set: at the top of `main`, `if (cfg.toolLoop && cfg.mockFixture) fail('--tool-loop cannot run with --mock-fixture (MockAgentClient has no chatWithTools)');`.
 6. In `runOneCase`, replace the generation block:
 ```ts
       const gen = cfg.toolLoop
         ? await generateCaseWithTools({
             taskDir,
             runDir: caseDir,
-            client: agent as unknown as ToolChatClient,
+            client: agent as AgentClient & ToolChatClient,
             model: cfg.model,
             skillMd,
             startedAt: cfg.startedAt,
