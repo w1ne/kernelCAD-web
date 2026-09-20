@@ -97,12 +97,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/drawingAuto/placePhases.ts",
-    "symbol": "Function 'placeRadiusAndChamferNotes'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/meshing.ts",
     "symbol": "Function 'tryExtractPlaneFromPlaneRecord'",
     "value": 16
