@@ -787,12 +787,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/joints/supportedServoRevolute.ts",
-    "symbol": "Function 'preflightSupportedServoRevolute'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/jointAxisBinding.ts",
     "symbol": "Async function 'validateJointAxisBindingWithCache'",
     "value": 17
@@ -1294,12 +1288,6 @@
     "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
     "symbol": "Function 'buildJointBlocks'",
     "value": 102
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/joints/supportedServoRevolute.ts",
-    "symbol": "Function 'preflightSupportedServoRevolute'",
-    "value": 119
   },
   {
     "rule": "max-lines-per-function",
