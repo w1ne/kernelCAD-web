@@ -10,19 +10,19 @@ import { materialize as sdfMaterialize } from './sdf/materialize';
 import { mm, ul } from './apiSupport';
 import type { KernelCadApi } from './api';
 
-export function makeCaptureMethods(
-  session: CaptureSession,
-): Pick<
+type CaptureShapeMethods = Pick<KernelCadApi, 'sheetMetal' | 'sdf'>;
+
+type CaptureRecordMethods = Pick<
   KernelCadApi,
-  | 'sheetMetal'
-  | 'sdf'
   | 'referenceImage'
   | 'setRenderEnvironment'
   | 'setCameraTarget'
   | 'setCameraDistance'
   | 'animationView'
   | 'dfmSpec'
-> {
+>;
+
+function makeCaptureShapeMethods(session: CaptureSession): CaptureShapeMethods {
   return {
     sheetMetal(profile, opts) {
       // Capture-time validation. Evaluate Editable inputs once.
@@ -69,7 +69,11 @@ export function makeCaptureMethods(
         session.sdfFields.set(name, field);
       },
     },
+  };
+}
 
+function makeCaptureRecordMethods(session: CaptureSession): CaptureRecordMethods {
+  return {
     referenceImage(path, opts) {
       const id = session.addReferenceImage({ path, ...opts });
       const record = session.getRecords().find(r => r.id === id)!;
@@ -127,5 +131,24 @@ export function makeCaptureMethods(
       const metadata = record.metadata as unknown as import('../shared/intent/dfmSpecRecord').DfmSpecMetadata;
       return { id, metadata };
     },
+  };
+}
+
+export function makeCaptureMethods(
+  session: CaptureSession,
+): Pick<
+  KernelCadApi,
+  | 'sheetMetal'
+  | 'sdf'
+  | 'referenceImage'
+  | 'setRenderEnvironment'
+  | 'setCameraTarget'
+  | 'setCameraDistance'
+  | 'animationView'
+  | 'dfmSpec'
+> {
+  return {
+    ...makeCaptureShapeMethods(session),
+    ...makeCaptureRecordMethods(session),
   };
 }
