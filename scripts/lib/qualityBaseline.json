@@ -13,12 +13,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/cli/commands/evaluate.ts",
-    "symbol": "Async function 'evaluateAndBuildScript'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/drawing/reconstructPhases.ts",
     "symbol": "Function 'applyRadialCallouts'",
     "value": 16

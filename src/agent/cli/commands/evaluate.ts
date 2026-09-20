@@ -108,6 +108,67 @@ export interface EvaluateAndBuildResult {
   feaReport?: FeaGateReport;
 }
 
+/** Build the model for an evaluate input, or return the failure evaluation
+ *  that should be surfaced verbatim. File-read faults get their dedicated
+ *  diagnostic; every other build throw is projected through
+ *  `kernelErrorToDiagnostic`. */
+async function buildModelForInput(
+  input: EvaluateInput,
+): Promise<{ model: BuiltModel } | { evaluation: EvaluateResult }> {
+  try {
+    const model = input.code !== undefined
+      ? await buildModel({
+          code: input.code,
+          fileName: input.file ?? '<inline>',
+          ...(input.scriptDir !== undefined ? { scriptDir: input.scriptDir } : {}),
+        })
+      : await buildModelFromFile({ file: input.file! });
+    return { model };
+  } catch (e) {
+    if (isFileReadError(e)) {
+      return { evaluation: fileReadEvaluation(e) };
+    }
+    const diag = kernelErrorToDiagnostic(e);
+    return {
+      evaluation: { exitCode: 1, featureCount: 0, diagnostics: [diag], featureHealth: [] },
+    };
+  }
+}
+
+/** Run the opt-in gates over a build that had no fatal diagnostics.
+ *
+ *  W3 DFM enforcement: when the script declares dfmSpec(...), run the
+ *  declared gates and merge their diagnostics into the model's. This one
+ *  hook covers CLI evaluate, MCP evaluate_script (delegates here), and the
+ *  eval harness. Zero cost for scripts without the record (findDfmSpec is
+ *  a records scan returning undefined). Skipped after fatal build
+ *  diagnostics — the underlying failure surfaces first.
+ *
+ *  Structural enforcement: same seam, same opt-in shape as the DFM gate.
+ *  Only studies that declare `minSafetyFactor` run here — a study without
+ *  one is a report you fetch with `run_fea`, not a gate. */
+async function runOptInGates(
+  model: BuiltModel,
+  fatal: boolean,
+): Promise<{ dfmReport?: DfmCheckReport; feaReport?: FeaGateReport }> {
+  let dfmReport: DfmCheckReport | undefined;
+  if (!fatal) {
+    dfmReport = await runDfmChecksOnModel(model);
+    if (dfmReport) model.diagnostics.push(...dfmReport.diagnostics);
+  }
+
+  let feaReport: FeaGateReport | undefined;
+  if (!fatal) {
+    feaReport = await runFeaGateOnModel(model);
+    if (feaReport) model.diagnostics.push(...feaReport.diagnostics);
+  }
+
+  return {
+    ...(dfmReport !== undefined ? { dfmReport } : {}),
+    ...(feaReport !== undefined ? { feaReport } : {}),
+  };
+}
+
 export async function evaluateAndBuildScript(input: EvaluateInput): Promise<EvaluateAndBuildResult> {
   // T10: harness-style evaluation flips the `solvedModel` validate gate to
   // `'error'` (read by T9 in `Assembly.solvedModel`). Done before script
@@ -119,24 +180,9 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
     return { evaluation: invalidArgsEvaluation() };
   }
 
-  let model;
-  try {
-    model = input.code !== undefined
-      ? await buildModel({
-          code: input.code,
-          fileName: input.file ?? '<inline>',
-          ...(input.scriptDir !== undefined ? { scriptDir: input.scriptDir } : {}),
-        })
-      : await buildModelFromFile({ file: input.file! });
-  } catch (e) {
-    if (isFileReadError(e)) {
-      return { evaluation: fileReadEvaluation(e) };
-    }
-    const diag = kernelErrorToDiagnostic(e);
-    return {
-      evaluation: { exitCode: 1, featureCount: 0, diagnostics: [diag], featureHealth: [] },
-    };
-  }
+  const built = await buildModelForInput(input);
+  if ('evaluation' in built) return { evaluation: built.evaluation };
+  const model = built.model;
   const fatal = model.diagnostics.some(d => d.severity === 'error');
 
   // Agent-parts-discipline: flag multi-body models authored as loose
@@ -152,26 +198,7 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
     );
   }
 
-  // W3 DFM enforcement: when the script declares dfmSpec(...), run the
-  // declared gates and merge their diagnostics into the model's. This one
-  // hook covers CLI evaluate, MCP evaluate_script (delegates here), and the
-  // eval harness. Zero cost for scripts without the record (findDfmSpec is
-  // a records scan returning undefined). Skipped after fatal build
-  // diagnostics — the underlying failure surfaces first.
-  let dfmReport: DfmCheckReport | undefined;
-  if (!fatal) {
-    dfmReport = await runDfmChecksOnModel(model);
-    if (dfmReport) model.diagnostics.push(...dfmReport.diagnostics);
-  }
-
-  // Structural enforcement: same seam, same opt-in shape as the DFM gate.
-  // Only studies that declare `minSafetyFactor` run here — a study without
-  // one is a report you fetch with `run_fea`, not a gate.
-  let feaReport: FeaGateReport | undefined;
-  if (!fatal) {
-    feaReport = await runFeaGateOnModel(model);
-    if (feaReport) model.diagnostics.push(...feaReport.diagnostics);
-  }
+  const gates = await runOptInGates(model, fatal);
 
   const fatalAfterGates = model.diagnostics.some(d => d.severity === 'error');
   return {
@@ -182,8 +209,7 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
       featureHealth: nonHealthyFeatures(model.health),
     },
     model,
-    ...(dfmReport !== undefined ? { dfmReport } : {}),
-    ...(feaReport !== undefined ? { feaReport } : {}),
+    ...gates,
   };
 }
 
