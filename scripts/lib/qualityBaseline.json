@@ -187,12 +187,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/compute/recomputeEngine.ts",
-    "symbol": "Async method 'lowerAndEmit'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
     "symbol": "Async function 'buildLinkBlocks'",
     "value": 16
