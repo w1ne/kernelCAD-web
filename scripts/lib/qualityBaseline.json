@@ -421,12 +421,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/matePhysicalRealization.ts",
-    "symbol": "Function 'analyzeMate'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/mechanicalTransmission.ts",
     "symbol": "Function 'pointTriangleDistanceSquared'",
     "value": 16
