@@ -769,12 +769,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/runtime/dfm/voidTopology.ts",
-    "symbol": "Function 'countMouths'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/runtime/explodedPoses.ts",
     "symbol": "Function 'mateAxisOffsets'",
     "value": 16
@@ -865,21 +859,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/shared/worker/v01ApiShim.ts",
-    "symbol": "Function 'bboxOf'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/StagedEditSlot.tsx",
     "symbol": "Function 'StagedEditContextDetails'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/components/Layout/SidePanel.tsx",
-    "symbol": "Function 'SidePanel'",
-    "value": 19
   },
   {
     "rule": "complexity",
@@ -898,18 +880,6 @@
     "file": "src/studio/components/viewer/directEditTarget.ts",
     "symbol": "Function 'mateGraphDrivesPart'",
     "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/context/geometry/types.ts",
-    "symbol": "Function 'mergePhysicalUseCaseReview'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/context/workbenchState.ts",
-    "symbol": "Function 'workbenchReducer'",
-    "value": 19
   },
   {
     "rule": "complexity",

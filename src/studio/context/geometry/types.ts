@@ -128,6 +128,8 @@ function isPhysicalUseCaseReviewCode(code: string | undefined): boolean {
     return code?.startsWith('assembly.physical-use-case.') === true;
 }
 
+type BlockingReasons = NonNullable<NonNullable<ScriptReviewSummary['fitness']>['blockingReasons']>;
+
 /**
  * `hasLivePhysicalUseCaseReview` branch of `overlayLiveReview`: the live
  * payload carries a fresh physical-use-case pass, so previous
@@ -146,27 +148,8 @@ function mergePhysicalUseCaseReview(
     const nonPhysicalBlockingReasons = (previous.fitness?.blockingReasons ?? []).filter((reason) =>
         !isPhysicalUseCaseReviewCode(reason.code),
     );
-    const liveBlockingReasons = live.fitness?.blockingReasons ?? liveDiagnostics.map((diagnostic) => ({
-        code: diagnostic.code,
-        message: diagnostic.message,
-        repairHint: diagnostic.hint,
-    }));
-    const mergedBlockingReasons = [...nonPhysicalBlockingReasons, ...liveBlockingReasons];
-    const mergedFitness = previous.fitness !== undefined || live.fitness !== undefined
-        ? mergedBlockingReasons.length > 0
-            ? {
-                ...(previous.fitness ?? {}),
-                ...(live.fitness ?? {}),
-                functional: false,
-                repairMode: nonPhysicalBlockingReasons.length > 0
-                    ? previous.fitness?.repairMode
-                    : liveDiagnostics.length > 0
-                        ? live.fitness?.repairMode ?? 'physical-use-case'
-                        : previous.fitness?.repairMode,
-                blockingReasons: mergedBlockingReasons,
-            }
-            : undefined
-        : undefined;
+    const mergedBlockingReasons = mergeLiveBlockingReasons(live, liveDiagnostics, nonPhysicalBlockingReasons);
+    const mergedFitness = mergePhysicalUseCaseFitness(previous, live, liveDiagnostics, nonPhysicalBlockingReasons, mergedBlockingReasons);
     return {
         ...previous,
         ok: nonPhysicalDiagnostics.length === 0 && nonPhysicalBlockingReasons.length === 0
@@ -177,6 +160,52 @@ function mergePhysicalUseCaseReview(
         rawInterferencePairs: live.rawInterferencePairs,
         interferenceSummary: live.interferenceSummary,
     };
+}
+
+function mergeLiveBlockingReasons(
+    live: ScriptReviewSummary,
+    liveDiagnostics: NonNullable<ScriptReviewSummary['diagnostics']>,
+    nonPhysicalBlockingReasons: BlockingReasons,
+): BlockingReasons {
+    const liveBlockingReasons = live.fitness?.blockingReasons ?? liveDiagnostics.map((diagnostic) => ({
+        code: diagnostic.code,
+        message: diagnostic.message,
+        repairHint: diagnostic.hint,
+    }));
+    return [...nonPhysicalBlockingReasons, ...liveBlockingReasons];
+}
+
+function selectPhysicalUseCaseRepairMode(
+    previous: ScriptReviewSummary,
+    live: ScriptReviewSummary,
+    liveDiagnostics: NonNullable<ScriptReviewSummary['diagnostics']>,
+    nonPhysicalBlockingReasons: BlockingReasons,
+): string | undefined {
+    return nonPhysicalBlockingReasons.length > 0
+        ? previous.fitness?.repairMode
+        : liveDiagnostics.length > 0
+            ? live.fitness?.repairMode ?? 'physical-use-case'
+            : previous.fitness?.repairMode;
+}
+
+function mergePhysicalUseCaseFitness(
+    previous: ScriptReviewSummary,
+    live: ScriptReviewSummary,
+    liveDiagnostics: NonNullable<ScriptReviewSummary['diagnostics']>,
+    nonPhysicalBlockingReasons: BlockingReasons,
+    mergedBlockingReasons: BlockingReasons,
+): ScriptReviewSummary['fitness'] {
+    return previous.fitness !== undefined || live.fitness !== undefined
+        ? mergedBlockingReasons.length > 0
+            ? {
+                ...(previous.fitness ?? {}),
+                ...(live.fitness ?? {}),
+                functional: false,
+                repairMode: selectPhysicalUseCaseRepairMode(previous, live, liveDiagnostics, nonPhysicalBlockingReasons),
+                blockingReasons: mergedBlockingReasons,
+            }
+            : undefined
+        : undefined;
 }
 
 export function overlayLiveReview(
