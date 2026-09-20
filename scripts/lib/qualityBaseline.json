@@ -172,11 +172,5 @@
     "file": "src/studio/routes/-useProjectLiveUpdates.ts",
     "symbol": "Function 'useProjectLiveUpdates'",
     "value": 103
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/routes/me.tsx",
-    "symbol": "Function 'MePage'",
-    "value": 115
   }
 ]
