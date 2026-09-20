@@ -373,12 +373,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/virtualFeatureRecords.ts",
-    "symbol": "Function 'buildRenderEnvironmentFeatureSpec'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/compute/recomputeEngine.ts",
     "symbol": "Async method 'lowerAndEmit'",
     "value": 16
