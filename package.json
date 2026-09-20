@@ -85,6 +85,8 @@
     "test:watch": "vitest",
     "pretypecheck": "tsr generate",
     "typecheck": "tsc -b --noEmit",
+    "typecheck:examples": "tsx scripts/typecheckExamples.ts examples/gallery/turbojet-engine.kcad.ts tests/e2e/fixtures/twisted-blade.kcad.ts",
+    "typecheck:examples:all": "tsx scripts/typecheckExamples.ts --all",
     "test:ratchet": "vitest run tests/unit/scripts/qualityRatchet.test.ts tests/unit/scripts/cycleRatchet.test.ts",
     "qc:lint": "npm run lint && npm run cookbook:validate",
     "qc:build": "npm run typecheck && npm run build:cli && npm run cookbook:build && npm run skill:out-of-scope && git diff --exit-code src/agent/skills && npm run cookbook:evaluate",
