@@ -91,12 +91,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/captureAnimation.ts",
-    "symbol": "Async function 'captureAnimationTool'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/diffGeometry.ts",
     "symbol": "Async function 'diffGeometryTool'",
     "value": 16
