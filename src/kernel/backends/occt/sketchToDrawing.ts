@@ -50,43 +50,54 @@ export function splitSketchLoops(commands: readonly SketchCommand[]): SketchComm
   return groups;
 }
 
+function applySegment(
+  pen: replicad.DrawingPen,
+  c: SketchCommand,
+  currentX: number,
+  currentY: number,
+): replicad.DrawingPen {
+  if (c.kind === 'lineTo') return pen.lineTo([c.x.evaluated, c.y.evaluated]);
+  if (c.kind === 'tangentArc') return pen.tangentArcTo([c.x.evaluated, c.y.evaluated]);
+  if (c.kind === 'threePointsArc') return pen.threePointsArcTo([c.x.evaluated, c.y.evaluated], [c.midX.evaluated, c.midY.evaluated]);
+  if (c.kind === 'sagittaArc') return pen.sagittaArcTo([c.x.evaluated, c.y.evaluated], c.sagitta.evaluated);
+  if (c.kind === 'bulgeArc') return pen.bulgeArcTo([c.x.evaluated, c.y.evaluated], c.bulge.evaluated);
+  if (c.kind === 'radiusArc') return pen.sagittaArcTo([c.x.evaluated, c.y.evaluated], radiusArcSagitta(c, currentX, currentY));
+  if (c.kind === 'smoothSpline') return pen.smoothSplineTo([c.x.evaluated, c.y.evaluated]);
+  throw new Error(`drawingFromCommands: unsupported segment kind '${(c as { kind: string }).kind}'`);
+}
+
+function radiusArcSagitta(
+  c: Extract<SketchCommand, { kind: 'radiusArc' }>,
+  currentX: number,
+  currentY: number,
+): number {
+  const cx = c.x.evaluated;
+  const cy = c.y.evaluated;
+  const cr = c.radius.evaluated;
+  const chord = Math.hypot(cx - currentX, cy - currentY);
+  if (chord < 1e-9) {
+    throw new Error(`radiusArc: degenerate chord (start ≈ end) at point (${cx}, ${cy})`);
+  }
+  const halfChord = chord / 2;
+  const r = Math.abs(cr);
+  if (r < halfChord) {
+    throw new Error(`radiusArc: radius (${cr}) too small for chord length ${chord.toFixed(3)} — needs |radius| >= chord/2`);
+  }
+  // radius → sagitta conversion (positive bulges left of chord)
+  return (cr >= 0 ? 1 : -1) * (r - Math.sqrt(r * r - halfChord * halfChord));
+}
+
 /** Build one closed `replicad.Drawing` from a single loop's commands. */
 function drawingForLoop(commands: readonly SketchCommand[]): replicad.Drawing {
   const first = commands[0];
   if (first.kind !== 'moveTo') throw new Error('drawingFromCommands: first command must be moveTo');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let pen: any = replicad.draw([first.x.evaluated, first.y.evaluated]);
+  let pen: replicad.DrawingPen = replicad.draw([first.x.evaluated, first.y.evaluated]);
   let currentX = first.x.evaluated;
   let currentY = first.y.evaluated;
   for (let i = 1; i < commands.length; i++) {
     const c = commands[i];
     if (c.kind === 'close') break;
-    if (c.kind === 'lineTo') pen = pen.lineTo([c.x.evaluated, c.y.evaluated]);
-    else if (c.kind === 'tangentArc') pen = pen.tangentArcTo([c.x.evaluated, c.y.evaluated]);
-    else if (c.kind === 'threePointsArc') pen = pen.threePointsArcTo([c.x.evaluated, c.y.evaluated], [c.midX.evaluated, c.midY.evaluated]);
-    else if (c.kind === 'sagittaArc') pen = pen.sagittaArcTo([c.x.evaluated, c.y.evaluated], c.sagitta.evaluated);
-    else if (c.kind === 'bulgeArc') pen = pen.bulgeArcTo([c.x.evaluated, c.y.evaluated], c.bulge.evaluated);
-    else if (c.kind === 'radiusArc') {
-      // radius → sagitta conversion (positive bulges left of chord)
-      const cx = c.x.evaluated;
-      const cy = c.y.evaluated;
-      const cr = c.radius.evaluated;
-      const chord = Math.hypot(cx - currentX, cy - currentY);
-      if (chord < 1e-9) {
-        throw new Error(`radiusArc: degenerate chord (start ≈ end) at point (${cx}, ${cy})`);
-      }
-      const halfChord = chord / 2;
-      const r = Math.abs(cr);
-      if (r < halfChord) {
-        throw new Error(`radiusArc: radius (${cr}) too small for chord length ${chord.toFixed(3)} — needs |radius| >= chord/2`);
-      }
-      const sagitta = (cr >= 0 ? 1 : -1) * (r - Math.sqrt(r * r - halfChord * halfChord));
-      pen = pen.sagittaArcTo([cx, cy], sagitta);
-    }
-    else if (c.kind === 'smoothSpline') pen = pen.smoothSplineTo([c.x.evaluated, c.y.evaluated]);
-    else {
-      throw new Error(`drawingFromCommands: unsupported segment kind '${(c as { kind: string }).kind}'`);
-    }
+    pen = applySegment(pen, c, currentX, currentY);
     if ('x' in c && 'y' in c) {
       currentX = c.x.evaluated;
       currentY = c.y.evaluated;

@@ -404,6 +404,30 @@ export async function extractSilhouettePolyline(
     throw new Error(`opencvBackend: maxWaypoints must be >= 3 (got ${maxWaypoints})`);
   }
 
+  const { grey, histogram, width, height } = await decodeGreyAndHistogram(pngBytes);
+
+  const candidate = selectSilhouetteContour(grey, histogram, width, height);
+
+  const boundary = candidate.boundary;
+
+  // 5: arcLength of the closed boundary.
+  const perimeter = arcLength(boundary, true);
+  if (perimeter <= 0) {
+    throw new Error('opencvBackend: no foreground contour found');
+  }
+
+  // 6: Douglas-Peucker, ramp epsilon up to 6× until <= maxWaypoints. We close
+  // the boundary by appending the first point so DP keeps the closing corner,
+  // then drop the duplicate.
+  const simplified = simplifyToMaxWaypoints(boundary, maxWaypoints, perimeter);
+
+  // 7: normalize to [0..1], top-left origin.
+  return simplified.map(({ x, y }) => [x / width, y / height] as Vec2Normalized);
+}
+
+async function decodeGreyAndHistogram(
+  pngBytes: Buffer,
+): Promise<{ grey: Uint8Array; histogram: Uint32Array; width: number; height: number }> {
   const { data, info } = await sharp(pngBytes)
     .ensureAlpha()
     .raw()
@@ -425,7 +449,15 @@ export async function extractSilhouettePolyline(
     grey[g] = lum;
     histogram[lum]++;
   }
+  return { grey, histogram, width, height };
+}
 
+function selectSilhouetteContour(
+  grey: Uint8Array,
+  histogram: Uint32Array,
+  width: number,
+  height: number,
+): ContourCandidate {
   // 3: Otsu threshold, inverted mask (foreground = darker than threshold).
   const t = otsuThreshold(histogram);
   // OpenCV THRESH_BINARY_INV: dst = (src > t) ? 0 : maxval, i.e. foreground is
@@ -459,18 +491,14 @@ export async function extractSilhouettePolyline(
     }
     candidate = darkCandidate;
   }
+  return candidate;
+}
 
-  const boundary = candidate.boundary;
-
-  // 5: arcLength of the closed boundary.
-  const perimeter = arcLength(boundary, true);
-  if (perimeter <= 0) {
-    throw new Error('opencvBackend: no foreground contour found');
-  }
-
-  // 6: Douglas-Peucker, ramp epsilon up to 6× until <= maxWaypoints. We close
-  // the boundary by appending the first point so DP keeps the closing corner,
-  // then drop the duplicate.
+function simplifyToMaxWaypoints(
+  boundary: Point[],
+  maxWaypoints: number,
+  perimeter: number,
+): Point[] {
   const closedBoundary = boundary.concat([boundary[0]]);
   let simplified: Point[] = closedBoundary;
   let epsilonRatio = 0.01; // 1% of perimeter to start (matches prior call).
@@ -482,9 +510,7 @@ export async function extractSilhouettePolyline(
     if (simplified.length <= maxWaypoints) break;
     epsilonRatio *= Math.sqrt(2);
   }
-
-  // 7: normalize to [0..1], top-left origin.
-  return simplified.map(({ x, y }) => [x / width, y / height] as Vec2Normalized);
+  return simplified;
 }
 
 function samePoint(a: Point, b: Point): boolean {

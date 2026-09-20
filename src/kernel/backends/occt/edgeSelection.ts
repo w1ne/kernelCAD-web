@@ -422,76 +422,10 @@ function resolveEdgesRef(
   base: OcctBackend,
   ref: EdgeRef,
 ): EdgeList | { error: CompilerDiagnostic } {
-  if (ref.kind === 'created') {
-    const result = resolveEdgeRef(ref, {
-      currentShape: base,
-      featureId: record.id,
-      surface: 'edge-feature',
-    });
-    if (!result.ok) return { error: result.diagnostic };
-    if (result.warnings) {
-      (record as { _resolvedWarnings?: CompilerDiagnostic[] })._resolvedWarnings = [
-        ...((record as { _resolvedWarnings?: CompilerDiagnostic[] })._resolvedWarnings ?? []),
-        ...result.warnings,
-      ];
-    }
-    return edgesOfFaceByHash(base, result.faceHashForBoundaryEdges);
-  }
-  if (ref.kind === 'query') {
-    const unknownKeys = Object.keys(ref.query).filter(k => !KNOWN_EDGE_QUERY_KEYS.has(k));
-    if (unknownKeys.length > 0) {
-      return {
-        error: {
-          target: 'export-occt',
-          code: 'feature.invalid-args',
-          featureId: record.id,
-          severity: 'error',
-          message: `EdgeQuery has unknown keys: ${unknownKeys.join(', ')}. Valid keys: ${Array.from(KNOWN_EDGE_QUERY_KEYS).join(', ')}.`,
-          hint: 'Drop unknown keys from the EdgeQuery; check the EdgeQuery type for the valid key set.',
-        },
-      };
-    }
-    return resolveEdgeQuery(base, ref.query);
-  }
-  if (ref.kind === 'segment') {
-    // segmentId encodes index into the lowered shape's edges array (`e0`, `e1`, ...).
-    const idx = parseInt(ref.segmentId.replace(/^e/, ''), 10);
-    const all = (base.getReplicadShape() as unknown as { edges: Edge[] }).edges;
-    if (Number.isNaN(idx) || idx < 0 || idx >= all.length) {
-      return {
-        error: {
-          target: 'export-occt',
-          code: 'feature.invalid-args',
-          featureId: record.id,
-          severity: 'error',
-          message: `Invalid segment id '${ref.segmentId}' — segment IDs are stable only within one shape lowering.`,
-          hint: 'Re-derive segment IDs from the current shape; segment IDs from earlier lowerings are not stable.',
-        },
-      };
-    }
-    return [all[idx]];
-  }
-  if (ref.kind === 'segments') {
-    const all = (base.getReplicadShape() as unknown as { edges: Edge[] }).edges;
-    const out: Edge[] = [];
-    for (const sid of ref.segmentIds) {
-      const idx = parseInt(sid.replace(/^e/, ''), 10);
-      if (Number.isNaN(idx) || idx < 0 || idx >= all.length) {
-        return {
-          error: {
-            target: 'export-occt',
-            code: 'feature.invalid-args',
-            featureId: record.id,
-            severity: 'error',
-            message: `Invalid segment id '${sid}'.`,
-            hint: 'Re-derive segment IDs from the current shape.',
-          },
-        };
-      }
-      out.push(all[idx]);
-    }
-    return out;
-  }
+  if (ref.kind === 'created') return resolveCreatedEdgesRef(record, base, ref);
+  if (ref.kind === 'query') return resolveQueryEdgesRef(record, base, ref);
+  if (ref.kind === 'segment') return resolveSingleSegmentEdgeRef(record, base, ref);
+  if (ref.kind === 'segments') return resolveMultiSegmentEdgeRef(record, base, ref);
   return {
     error: {
       target: 'export-occt',
@@ -502,6 +436,96 @@ function resolveEdgesRef(
       hint: 'Use a query, segment, or segments edge ref.',
     },
   };
+}
+
+function resolveCreatedEdgesRef(
+  record: FeatureRecord,
+  base: OcctBackend,
+  ref: Extract<EdgeRef, { kind: 'created' }>,
+): EdgeList | { error: CompilerDiagnostic } {
+  const result = resolveEdgeRef(ref, {
+    currentShape: base,
+    featureId: record.id,
+    surface: 'edge-feature',
+  });
+  if (!result.ok) return { error: result.diagnostic };
+  if (result.warnings) {
+    (record as { _resolvedWarnings?: CompilerDiagnostic[] })._resolvedWarnings = [
+      ...((record as { _resolvedWarnings?: CompilerDiagnostic[] })._resolvedWarnings ?? []),
+      ...result.warnings,
+    ];
+  }
+  return edgesOfFaceByHash(base, result.faceHashForBoundaryEdges);
+}
+
+function resolveQueryEdgesRef(
+  record: FeatureRecord,
+  base: OcctBackend,
+  ref: Extract<EdgeRef, { kind: 'query' }>,
+): EdgeList | { error: CompilerDiagnostic } {
+  const unknownKeys = Object.keys(ref.query).filter(k => !KNOWN_EDGE_QUERY_KEYS.has(k));
+  if (unknownKeys.length > 0) {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.invalid-args',
+        featureId: record.id,
+        severity: 'error',
+        message: `EdgeQuery has unknown keys: ${unknownKeys.join(', ')}. Valid keys: ${Array.from(KNOWN_EDGE_QUERY_KEYS).join(', ')}.`,
+        hint: 'Drop unknown keys from the EdgeQuery; check the EdgeQuery type for the valid key set.',
+      },
+    };
+  }
+  return resolveEdgeQuery(base, ref.query);
+}
+
+function resolveSingleSegmentEdgeRef(
+  record: FeatureRecord,
+  base: OcctBackend,
+  ref: Extract<EdgeRef, { kind: 'segment' }>,
+): EdgeList | { error: CompilerDiagnostic } {
+  // segmentId encodes index into the lowered shape's edges array (`e0`, `e1`, ...).
+  const idx = parseInt(ref.segmentId.replace(/^e/, ''), 10);
+  const all = (base.getReplicadShape() as unknown as { edges: Edge[] }).edges;
+  if (Number.isNaN(idx) || idx < 0 || idx >= all.length) {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.invalid-args',
+        featureId: record.id,
+        severity: 'error',
+        message: `Invalid segment id '${ref.segmentId}' — segment IDs are stable only within one shape lowering.`,
+        hint: 'Re-derive segment IDs from the current shape; segment IDs from earlier lowerings are not stable.',
+      },
+    };
+  }
+  return [all[idx]];
+}
+
+function resolveMultiSegmentEdgeRef(
+  record: FeatureRecord,
+  base: OcctBackend,
+  ref: Extract<EdgeRef, { kind: 'segments' }>,
+): EdgeList | { error: CompilerDiagnostic } {
+  const all = (base.getReplicadShape() as unknown as { edges: Edge[] }).edges;
+  const out: Edge[] = [];
+  for (const sid of ref.segmentIds) {
+    const idx = parseInt(sid.replace(/^e/, ''), 10);
+    if (Number.isNaN(idx) || idx < 0 || idx >= all.length) {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'feature.invalid-args',
+          featureId: record.id,
+          severity: 'error',
+          message: `Invalid segment id '${sid}'.`,
+          hint: 'Re-derive segment IDs from the current shape.',
+        },
+      };
+    }
+    out.push(all[idx]);
+  }
+  return out;
 }
 
 function collectFaceEdges(faces: Face[]): EdgeList {

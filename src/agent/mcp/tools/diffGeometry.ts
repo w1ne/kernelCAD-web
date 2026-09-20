@@ -179,6 +179,25 @@ export async function diffGeometryTool(input: DiffGeometryInput): Promise<DiffGe
   const hasRevisedScript = input.file !== undefined || input.code !== undefined;
   const hasParams = input.params !== undefined;
 
+  const invalidSides = validateDiffGeometrySides(input, hasRevisedScript, hasParams);
+  if (invalidSides !== undefined) return invalidSides;
+
+  const base = await evaluateSide({ file: input.baseFile, code: input.baseCode });
+  if (!base.ok) return { ...base, side: 'base' };
+
+  const revised = hasParams
+    ? await evaluateSide({ file: input.baseFile, code: input.baseCode }, input.params)
+    : await evaluateSide({ file: input.file, code: input.code });
+  if (!revised.ok) return { ...revised, side: 'revised' };
+
+  return assembleDiffGeometryResult(base, revised, input.render === true, input.out_dir);
+}
+
+function validateDiffGeometrySides(
+  input: DiffGeometryInput,
+  hasRevisedScript: boolean,
+  hasParams: boolean,
+): DiffGeometryOutput | undefined {
   if (input.baseFile === undefined && input.baseCode === undefined) {
     return {
       ok: false,
@@ -202,15 +221,15 @@ export async function diffGeometryTool(input: DiffGeometryInput): Promise<DiffGe
       errorCode: 'cli.invalid-args',
     };
   }
+  return undefined;
+}
 
-  const base = await evaluateSide({ file: input.baseFile, code: input.baseCode });
-  if (!base.ok) return { ...base, side: 'base' };
-
-  const revised = hasParams
-    ? await evaluateSide({ file: input.baseFile, code: input.baseCode }, input.params)
-    : await evaluateSide({ file: input.file, code: input.code });
-  if (!revised.ok) return { ...revised, side: 'revised' };
-
+async function assembleDiffGeometryResult(
+  base: Extract<SideResult, { ok: true }>,
+  revised: Extract<SideResult, { ok: true }>,
+  render: boolean,
+  outDir: string | undefined,
+): Promise<DiffGeometryOutput> {
   const diagnostics: CompilerDiagnostic[] = [];
   const { pairs, unmatchedBase, unmatchedRevised } = pairBodies(base.side.bodies, revised.side.bodies);
 
@@ -226,45 +245,59 @@ export async function diffGeometryTool(input: DiffGeometryInput): Promise<DiffGe
     bodies.push(compareBody(pair.base, pair.revised, pair.matchedBy));
   }
 
-  const summary = {
-    identical: bodies.filter((b) => b.verdict === 'identical').length,
-    moved: bodies.filter((b) => b.verdict === 'moved').length,
-    resized: bodies.filter((b) => b.verdict === 'resized').length,
-    topologyChanged: bodies.filter((b) => b.verdict === 'topology-changed').length,
-    unmatched: unmatchedBase.length + unmatchedRevised.length,
-    totalAddedMm3: bodies.reduce((s, b) => s + b.addedMm3, 0),
-    totalRemovedMm3: bodies.reduce((s, b) => s + b.removedMm3, 0),
-    maxDeviationMm: bodies.reduce((s, b) => Math.max(s, b.maxDeviationMm), 0),
-  };
+  const summary = diffGeometrySummary(bodies, unmatchedBase.length + unmatchedRevised.length);
 
-  let render: DiffOverlayRender | undefined;
-  if (input.render === true) {
-    const r = await renderDiffOverlay(pairs, input.out_dir);
-    render = r.render;
+  let renderOverlay: DiffOverlayRender | undefined;
+  if (render) {
+    const r = await renderDiffOverlay(pairs, outDir);
+    renderOverlay = r.render;
     diagnostics.push(...r.diagnostics);
   }
 
   return {
     ok: true,
-    base: {
-      featureCount: base.side.featureCount,
-      bodyCount: base.side.bodies.length,
-      isAssembly: base.side.isAssembly,
-    },
-    revised: {
-      featureCount: revised.side.featureCount,
-      bodyCount: revised.side.bodies.length,
-      isAssembly: revised.side.isAssembly,
-    },
+    base: sideHeader(base.side),
+    revised: sideHeader(revised.side),
     bodies,
-    unmatched: [
-      ...unmatchedBase.map((b) => ({ side: 'base' as const, name: b.name, volumeMm3: safeVolume(b.shape) })),
-      ...unmatchedRevised.map((b) => ({ side: 'revised' as const, name: b.name, volumeMm3: safeVolume(b.shape) })),
-    ],
+    unmatched: unmatchedEntries(unmatchedBase, unmatchedRevised),
     summary,
-    ...(render !== undefined ? { render } : {}),
+    ...(renderOverlay !== undefined ? { render: renderOverlay } : {}),
     diagnostics: withNextActions(diagnostics),
   };
+}
+
+function sideHeader(side: SideSummary): DiffGeometrySideHeader {
+  return {
+    featureCount: side.featureCount,
+    bodyCount: side.bodies.length,
+    isAssembly: side.isAssembly,
+  };
+}
+
+function diffGeometrySummary(
+  bodies: DiffGeometryBody[],
+  unmatchedCount: number,
+): Extract<DiffGeometryOutput, { ok: true }>['summary'] {
+  return {
+    identical: bodies.filter((b) => b.verdict === 'identical').length,
+    moved: bodies.filter((b) => b.verdict === 'moved').length,
+    resized: bodies.filter((b) => b.verdict === 'resized').length,
+    topologyChanged: bodies.filter((b) => b.verdict === 'topology-changed').length,
+    unmatched: unmatchedCount,
+    totalAddedMm3: bodies.reduce((s, b) => s + b.addedMm3, 0),
+    totalRemovedMm3: bodies.reduce((s, b) => s + b.removedMm3, 0),
+    maxDeviationMm: bodies.reduce((s, b) => Math.max(s, b.maxDeviationMm), 0),
+  };
+}
+
+function unmatchedEntries(
+  unmatchedBase: SideBody[],
+  unmatchedRevised: SideBody[],
+): Extract<DiffGeometryOutput, { ok: true }>['unmatched'] {
+  return [
+    ...unmatchedBase.map((b) => ({ side: 'base' as const, name: b.name, volumeMm3: safeVolume(b.shape) })),
+    ...unmatchedRevised.map((b) => ({ side: 'revised' as const, name: b.name, volumeMm3: safeVolume(b.shape) })),
+  ];
 }
 
 function unmatchedDiagnostic(name: string, side: 'base' | 'revised'): CompilerDiagnostic {

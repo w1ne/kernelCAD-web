@@ -231,6 +231,34 @@ function tryExtractFaceCenter(face: unknown): [number, number, number] | null {
   return tryVec3((face as UnknownRecord).center);
 }
 
+function resolveReplicadPlaneOrigin(planeObj: UnknownRecord): [number, number, number] | null {
+  const originFn = getFn(planeObj, 'origin');
+  return tryVec3(originFn ? (originFn as () => unknown).call(planeObj) : planeObj.origin);
+}
+
+function resolveReplicadPlaneNormal(planeObj: UnknownRecord): [number, number, number] | null {
+  const zDirFn = getFn(planeObj, 'zDir');
+  const normalFnAlt = getFn(planeObj, 'normal');
+  return tryVec3(
+    zDirFn ? (zDirFn as () => unknown).call(planeObj) :
+      normalFnAlt ? (normalFnAlt as () => unknown).call(planeObj) :
+        (planeObj.zDir ?? planeObj.normal)
+  );
+}
+
+function resolveReplicadPlaneXYDirs(planeObj: UnknownRecord): {
+  xDir: [number, number, number] | null;
+  yDir: [number, number, number] | null;
+} {
+  const xDirFn = getFn(planeObj, 'xDir');
+  const xDir = tryVec3(xDirFn ? (xDirFn as () => unknown).call(planeObj) : planeObj.xDir);
+
+  const yDirFn = getFn(planeObj, 'yDir');
+  const yDir = tryVec3(yDirFn ? (yDirFn as () => unknown).call(planeObj) : planeObj.yDir);
+
+  return { xDir, yDir };
+}
+
 // Preferred strategy: use Replicad helper if available
 function tryExtractPlaneViaReplicadHelper(face: unknown): FaceGeometry['plane'] {
   try {
@@ -238,22 +266,9 @@ function tryExtractPlaneViaReplicadHelper(face: unknown): FaceGeometry['plane'] 
     if (typeof makePlaneFromFaceFn === 'function') {
       const planeObj = makePlaneFromFaceFn(face);
       if (isRecord(planeObj)) {
-        const originFn = getFn(planeObj, 'origin');
-        const origin = tryVec3(originFn ? (originFn as () => unknown).call(planeObj) : planeObj.origin);
-
-        const zDirFn = getFn(planeObj, 'zDir');
-        const normalFnAlt = getFn(planeObj, 'normal');
-        const norm = tryVec3(
-          zDirFn ? (zDirFn as () => unknown).call(planeObj) :
-            normalFnAlt ? (normalFnAlt as () => unknown).call(planeObj) :
-              (planeObj.zDir ?? planeObj.normal)
-        );
-
-        const xDirFn = getFn(planeObj, 'xDir');
-        const xDir = tryVec3(xDirFn ? (xDirFn as () => unknown).call(planeObj) : planeObj.xDir);
-
-        const yDirFn = getFn(planeObj, 'yDir');
-        const yDir = tryVec3(yDirFn ? (yDirFn as () => unknown).call(planeObj) : planeObj.yDir);
+        const origin = resolveReplicadPlaneOrigin(planeObj);
+        const norm = resolveReplicadPlaneNormal(planeObj);
+        const { xDir, yDir } = resolveReplicadPlaneXYDirs(planeObj);
 
         if (origin && norm) {
           // Anchor plane to a point guaranteed to lie on the selected face.
@@ -315,29 +330,22 @@ function tryExtractPlaneViaCenterAndNormal(face: unknown): FaceGeometry['plane']
   return undefined;
 }
 
-function tryExtractPlaneFromPlaneRecord(face: unknown, p: UnknownRecord): FaceGeometry['plane'] {
-  const origin =
-    tryVec3((p as UnknownRecord).origin) ??
-    tryVec3((p as UnknownRecord).location) ??
-    tryVec3((p as UnknownRecord).pos) ??
-    tryVec3((p as UnknownRecord).p0);
+function firstVec3(p: UnknownRecord, keys: readonly string[]): [number, number, number] | null {
+  for (const key of keys) {
+    const v = tryVec3(p[key]);
+    if (v) return v;
+  }
+  return null;
+}
 
-  const normal =
-    tryVec3((p as UnknownRecord).normal) ??
-    tryVec3((p as UnknownRecord).zDir) ??
-    tryVec3((p as UnknownRecord).direction) ??
-    tryVec3((p as UnknownRecord).dir);
+function tryExtractPlaneFromPlaneRecord(face: unknown, p: UnknownRecord): FaceGeometry['plane'] {
+  const origin = firstVec3(p, ['origin', 'location', 'pos', 'p0']);
+  const normal = firstVec3(p, ['normal', 'zDir', 'direction', 'dir']);
 
   if (!origin || !normal) return undefined;
 
-  const xDir =
-    tryVec3((p as UnknownRecord).xDir) ??
-    tryVec3((p as UnknownRecord).xDirection) ??
-    tryVec3((p as UnknownRecord).xAxis);
-  const yDir =
-    tryVec3((p as UnknownRecord).yDir) ??
-    tryVec3((p as UnknownRecord).yDirection) ??
-    tryVec3((p as UnknownRecord).yAxis);
+  const xDir = firstVec3(p, ['xDir', 'xDirection', 'xAxis']);
+  const yDir = firstVec3(p, ['yDir', 'yDirection', 'yAxis']);
 
   const anchoredOrigin = tryExtractFaceCenter(face) ?? origin;
   return { origin: anchoredOrigin, normal, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
@@ -592,9 +600,7 @@ function recenterPlaneOntoVertices(
   }
 }
 
-function tryGetVolume(shape: unknown): number | undefined {
-  if (!isRecord(shape)) return undefined;
-
+function volumeViaReplicadMeasure(shape: unknown): number | undefined {
   // Try measureVolume from replicad
   try {
     const v = (replicad as unknown as Record<string, (s: unknown) => unknown>).measureVolume(shape);
@@ -602,9 +608,14 @@ function tryGetVolume(shape: unknown): number | undefined {
   } catch {
     // ignore
   }
+  return undefined;
+}
 
-  const raw = (isRecord(shape._wrapped) ? shape._wrapped : null) ?? (isRecord(shape.occ) ? shape.occ : null) ?? shape;
+function unwrapShape(shape: UnknownRecord): unknown {
+  return (isRecord(shape._wrapped) ? shape._wrapped : null) ?? (isRecord(shape.occ) ? shape.occ : null) ?? shape;
+}
 
+function volumeViaMethod(raw: unknown, shape: UnknownRecord): number | undefined {
   // Try to call volume() method with context
   const volFn = getFn(raw, 'volume') ?? getFn(shape, 'volume');
   if (volFn) {
@@ -616,7 +627,10 @@ function tryGetVolume(shape: unknown): number | undefined {
       // ignore and look for property
     }
   }
+  return undefined;
+}
 
+function volumeViaProperty(raw: unknown, shape: UnknownRecord): number | undefined {
   // Try to read volume property
   const volVal = (raw as UnknownRecord).volume;
   if (typeof volVal === 'number') return volVal;
@@ -625,6 +639,20 @@ function tryGetVolume(shape: unknown): number | undefined {
   if (typeof shapeVolVal === 'number') return shapeVolVal;
 
   return undefined;
+}
+
+function tryGetVolume(shape: unknown): number | undefined {
+  if (!isRecord(shape)) return undefined;
+
+  const viaMeasure = volumeViaReplicadMeasure(shape);
+  if (viaMeasure !== undefined) return viaMeasure;
+
+  const raw = unwrapShape(shape);
+
+  const viaMethod = volumeViaMethod(raw, shape);
+  if (viaMethod !== undefined) return viaMethod;
+
+  return volumeViaProperty(raw, shape);
 }
 
 /**

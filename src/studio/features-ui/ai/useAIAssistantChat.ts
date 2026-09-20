@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useEffect, useRef, useState } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { agentAPI } from '../../../agent/api';
 import { llmService, type ChatMessage } from './LLMService';
 import { useWorkbench } from '../../context/WorkbenchContext';
@@ -11,30 +12,29 @@ export interface Variation {
     description: string;
 }
 
-/**
- * Owns the AI Assistant's chat state, settings, and the send/variation/
- * image handlers. Split out of `AIAssistant.tsx` so the component file is
- * JSX composition only.
- */
-export function useAIAssistantChat() {
-    const { code, insertCode, selectedItemId, applyCodeSafe } = useWorkbench();
-    const [messages, setMessages] = useState<ChatMessage[]>([]);
-    const [input, setInput] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [apiKey, setApiKey] = useState(llmService.getApiKey() || '');
-    const [showSettings, setShowSettings] = useState(!llmService.getApiKey());
-    const [style, setStyle] = useState('Standard');
-    const messagesEndRef = useRef<HTMLDivElement>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+interface ChatSendHandlerDeps {
+    messages: ChatMessage[];
+    input: string;
+    isLoading: boolean;
+    code: string;
+    selectedItemId: string | null;
+    style: string;
+    setMessages: Dispatch<SetStateAction<ChatMessage[]>>;
+    setInput: Dispatch<SetStateAction<string>>;
+    setIsLoading: Dispatch<SetStateAction<boolean>>;
+}
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
-
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
-
+function useChatSendHandlers({
+    messages,
+    input,
+    isLoading,
+    code,
+    selectedItemId,
+    style,
+    setMessages,
+    setInput,
+    setIsLoading,
+}: ChatSendHandlerDeps) {
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;
 
@@ -83,21 +83,6 @@ export function useAIAssistantChat() {
         }
     };
 
-    const handleSaveKey = () => {
-        llmService.setApiKey(apiKey);
-        setShowSettings(false);
-    };
-
-    const handleRunCode = async (codeToRun: string) => {
-        try {
-            await agentAPI.evaluateCode(codeToRun);
-        } catch (e: unknown) {
-            const message = e instanceof Error ? e.message : String(e);
-            console.error(e);
-            alert("Execution failed: " + message);
-        }
-    };
-
     const handleSendWithImage = async (imageBase64: string) => {
         if (isLoading) return;
         const prompt = input.trim() || "Describe this image and generate geometry for it.";
@@ -119,6 +104,60 @@ export function useAIAssistantChat() {
             setMessages(prev => [...prev, { role: 'model', content: `**Error**: ${message}` }]);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    return { handleSend, handleGenerateVariations, handleSendWithImage };
+}
+
+/**
+ * Owns the AI Assistant's chat state, settings, and the send/variation/
+ * image handlers. Split out of `AIAssistant.tsx` so the component file is
+ * JSX composition only.
+ */
+export function useAIAssistantChat() {
+    const { code, insertCode, selectedItemId, applyCodeSafe } = useWorkbench();
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [input, setInput] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [apiKey, setApiKey] = useState(llmService.getApiKey() || '');
+    const [showSettings, setShowSettings] = useState(!llmService.getApiKey());
+    const [style, setStyle] = useState('Standard');
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
+    const { handleSend, handleGenerateVariations, handleSendWithImage } = useChatSendHandlers({
+        messages,
+        input,
+        isLoading,
+        code,
+        selectedItemId,
+        style,
+        setMessages,
+        setInput,
+        setIsLoading,
+    });
+
+    const handleSaveKey = () => {
+        llmService.setApiKey(apiKey);
+        setShowSettings(false);
+    };
+
+    const handleRunCode = async (codeToRun: string) => {
+        try {
+            await agentAPI.evaluateCode(codeToRun);
+        } catch (e: unknown) {
+            const message = e instanceof Error ? e.message : String(e);
+            console.error(e);
+            alert("Execution failed: " + message);
         }
     };
 

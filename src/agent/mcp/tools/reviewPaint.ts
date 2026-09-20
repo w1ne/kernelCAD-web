@@ -85,17 +85,12 @@ export interface ReviewPaintPeekLatestOutput {
   scanned_candidates: number;
 }
 
-/** MCP tool: return the newest Studio review-paint packet, if any.
- *  Mirrors the bash/Node UserPromptSubmit hook scan logic so the same
- *  packets are visible whether the agent picks them up via the hook
- *  (Claude Code only) or by calling this tool (any MCP client). */
-export async function reviewPaintPeekLatestTool(
-  input: ReviewPaintPeekLatestInput = {},
-): Promise<ReviewPaintPeekLatestOutput> {
-  const roots = [...KNOWN_ROOTS, ...(input.extra_roots ?? [])];
-  const windowMs = (input.freshness_sec ?? DEFAULT_FRESH_WINDOW_MS / 1000) * 1000;
-  const now = Date.now();
-
+/** Scan every root for fresh `latest` packet dirs, keeping the newest. */
+function scanCandidates(
+  roots: string[],
+  windowMs: number,
+  now: number,
+): { candidatesSeen: number; best: { dir: string; mtime: number } | null } {
   let candidatesSeen = 0;
   let best: { dir: string; mtime: number } | null = null;
 
@@ -122,18 +117,53 @@ export async function reviewPaintPeekLatestTool(
       }
     });
   }
+  return { candidatesSeen, best };
+}
+
+/** Parse the packet's meta.json, keeping the defaults when it is unreadable. */
+function readPacketMeta(dir: string): { note?: string; tags?: string[]; scriptPath?: string | null; ts?: string; struckParts?: string[] } {
+  try {
+    return JSON.parse(readFileSync(join(dir, 'meta.json'), 'utf8'));
+  } catch {
+    // keep defaults
+    return {};
+  }
+}
+
+/** Fill in the base64 PNGs when the caller wants an inline packet. */
+function inlinePacketImages(packet: ReviewPaintPacket): void {
+  try {
+    if (existsSync(packet.screenshot_path)) {
+      packet.screenshot_b64 = readFileSync(packet.screenshot_path).toString('base64');
+    }
+    packet.mask_b64 = readFileSync(packet.mask_path).toString('base64');
+  } catch {
+    // The file existed in the existsSync check above but vanished in the
+    // brief race between then and now — fall through with paths only.
+  }
+}
+
+/** MCP tool: return the newest Studio review-paint packet, if any.
+ *  Mirrors the bash/Node UserPromptSubmit hook scan logic so the same
+ *  packets are visible whether the agent picks them up via the hook
+ *  (Claude Code only) or by calling this tool (any MCP client). */
+export async function reviewPaintPeekLatestTool(
+  input: ReviewPaintPeekLatestInput = {},
+): Promise<ReviewPaintPeekLatestOutput> {
+  const roots = [...KNOWN_ROOTS, ...(input.extra_roots ?? [])];
+  const windowMs = (input.freshness_sec ?? DEFAULT_FRESH_WINDOW_MS / 1000) * 1000;
+  const now = Date.now();
+
+  const { candidatesSeen, best } = scanCandidates(roots, windowMs, now);
 
   if (!best) {
     return { ok: true, empty: true, scanned_roots: roots, scanned_candidates: candidatesSeen };
   }
 
-  // Pull out into local for narrowing inside TypeScript (the loop assigns
+  // Pull out into local for narrowing inside TypeScript (the scan assigns
   // `best` inside a callback and the inferrer needs the rebind).
   const found: { dir: string; mtime: number } = best;
-  let meta: { note?: string; tags?: string[]; scriptPath?: string | null; ts?: string; struckParts?: string[] } = {};
-  try { meta = JSON.parse(readFileSync(join(found.dir, 'meta.json'), 'utf8')); } catch {
-    // keep defaults
-  }
+  const meta = readPacketMeta(found.dir);
 
   const packet: ReviewPaintPacket = {
     packet_dir: found.dir,
@@ -147,15 +177,7 @@ export async function reviewPaintPeekLatestTool(
     struck_parts: Array.isArray(meta.struckParts) ? meta.struckParts : [],
   };
   if (!input.paths_only) {
-    try {
-      if (existsSync(packet.screenshot_path)) {
-        packet.screenshot_b64 = readFileSync(packet.screenshot_path).toString('base64');
-      }
-      packet.mask_b64 = readFileSync(packet.mask_path).toString('base64');
-    } catch {
-      // The file existed in the existsSync check above but vanished in the
-      // brief race between then and now — fall through with paths only.
-    }
+    inlinePacketImages(packet);
   }
 
   return {

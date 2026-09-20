@@ -44,24 +44,25 @@ const CodeContext = createContext<CodeContextType | undefined>(undefined);
  *  proto.cat agent producing a fresh `.kcad.ts`) drives Studio. */
 const ON_CODE_CHANGE_DEBOUNCE_MS = 150;
 
-export function CodeProvider({
-    children,
-    initialCode = defaultCode,
-    controlledCode,
-    onCodeChange,
-}: {
-    children: ReactNode;
-    initialCode?: string;
-    controlledCode?: string;
-    onCodeChange?: (next: string) => void;
-}) {
-    const seedCode = controlledCode ?? initialCode;
-    const [code, setRawCode] = useState<string>(seedCode);
-
+/** Controlled-mode bridge: sync external `controlledCode` into local state and
+ *  emit user-driven changes (debounced) through `onCodeChange`. Split out of
+ *  `CodeProvider` to keep its function length under the quality-ratchet
+ *  budget; hook call order and behavior are unchanged. */
+function useControlledCodeBridge(
+    code: string,
+    controlledCode: string | undefined,
+    onCodeChange: ((next: string) => void) | undefined,
+    setRawCode: (nextCode: string) => void,
+    seedCode: string,
+): void {
     // Stable ref to the latest onCodeChange so the emit effect doesn't have
-    // to re-subscribe when the host swaps callbacks.
+    // to re-subscribe when the host swaps callbacks. The assignment lives in
+    // an effect (declared before the emit effect, so it runs first) because
+    // the compiler forbids writing refs during render.
     const onCodeChangeRef = useRef(onCodeChange);
-    onCodeChangeRef.current = onCodeChange;
+    useEffect(() => {
+        onCodeChangeRef.current = onCodeChange;
+    });
     const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     // The last `code` value we either received from the host (via
     // controlledCode) or emitted to the host (via onCodeChange). Used to
@@ -79,7 +80,7 @@ export function CodeProvider({
         if (controlledCode === lastEmittedRef.current) return;
         lastEmittedRef.current = controlledCode;
         setRawCode(controlledCode);
-    }, [controlledCode]);
+    }, [controlledCode, setRawCode]);
 
     // Emit user-driven code changes (debounced) when in controlled mode.
     // Skips the initial render (code === seed === lastEmitted) and skips
@@ -101,22 +102,21 @@ export function CodeProvider({
             }
         };
     }, [code]);
+}
 
-    const [editorInstance, setEditorInstance] = useState<EditorLike | null>(null);
-    const mutationService = useMemo(() => new CodeMutationService(setRawCode), []);
-
-    // Initialize CommandManager once, then update its context provider as state changes.
-    const [commandManager] = useState(() => new CommandManager(() => ({
-        code: initialCode,
-        setCode: (next) => mutationService.replace(next, 'commandManager.setCode')
-    })));
-    useEffect(() => {
-        commandManager.setContextProvider(() => ({
-            code,
-            setCode: (next) => mutationService.replace(next, 'commandManager.setCode')
-        }));
-    }, [commandManager, code, mutationService]);
-
+/** Code mutation entry points: command mutation, transform application, raw
+ *  code replacement, and snippet insertion. Split out of `CodeProvider` to
+ *  keep its function length under the quality-ratchet budget; hook call order
+ *  and behavior are unchanged. */
+function useCodeMutators(
+    mutationService: CodeMutationService,
+    setRawCode: (nextCode: string) => void,
+): {
+    commitMutation: (mutate: CodeTransform, mutationName: string) => void;
+    mutateCode: (transform: CodeTransform, mutationName: string) => void;
+    setCode: (nextCode: string) => void;
+    insertCode: (snippet: string | ((name: string) => string), baseName?: string) => void;
+} {
     const commitMutation = useCallback((mutate: CodeTransform, mutationName: string): void => {
         mutationService.apply(mutate, mutationName);
     }, [mutationService]);
@@ -127,7 +127,7 @@ export function CodeProvider({
 
     const setCode = useCallback((nextCode: string): void => {
         setRawCode(nextCode);
-    }, []);
+    }, [setRawCode]);
 
     const insertCode = useCallback((snippet: string | ((name: string) => string), baseName?: string) => {
         commitMutation((prev) => {
@@ -137,22 +137,19 @@ export function CodeProvider({
         }, 'insertCode');
     }, [commitMutation]);
 
-    // Generic Code Context for Features
-    const codeContext = useMemo(() => {
-        try {
-            const analyzer = new CodeAnalyzer(code);
-            return analyzer.createContext();
-        } catch (e) {
-            console.warn('CodeContext: Failed to analyze code (likely syntax error):', e);
-            // Return a minimal context
-            return {
-                variables: [],
-                getVariableAtIndex: () => 'shape',
-                generateUniqueName: (prefix: string) => `${prefix}_fallback`
-            } as unknown as CodeGenerationContext;
-        }
-    }, [code]);
+    return { commitMutation, mutateCode, setCode, insertCode };
+}
 
+/** Item-level mutation actions (rename / delete / history delete). Split out
+ *  of `CodeProvider` to keep its function length under the quality-ratchet
+ *  budget; hook call order and behavior are unchanged. */
+function useItemActions(
+    commitMutation: (mutate: CodeTransform, mutationName: string) => void,
+): {
+    renameItem: (oldName: string, newName: string) => void;
+    deleteItem: (name: string, lineHint?: number) => void;
+    deleteHistoryItem: (item: HistoryItem) => void;
+} {
     const renameItem = useCallback((oldName: string, newName: string) => {
         import('../../modeling/features/modeling/RefactoringManager').then(({ refactoringManager }) => {
             commitMutation((prev) => refactoringManager.renameVariable(prev, oldName, newName), 'renameItem');
@@ -187,10 +184,75 @@ export function CodeProvider({
         }, 'deleteHistoryItem');
     }, [commitMutation]);
 
-    const applyCodeSafe = useApplyCodeSafe(setCode);
+    return { renameItem, deleteItem, deleteHistoryItem };
+}
 
+/** Mutation-diagnostics accessors. Split out of `CodeProvider` to keep its
+ *  function length under the quality-ratchet budget; hook call order and
+ *  behavior are unchanged. */
+function useMutationDiagnostics(mutationService: CodeMutationService): {
+    getMutationDiagnostics: () => Readonly<CodeMutationDiagnostics>;
+    resetMutationDiagnostics: () => void;
+} {
     const getMutationDiagnostics = useCallback(() => mutationService.getDiagnostics(), [mutationService]);
     const resetMutationDiagnostics = useCallback(() => mutationService.resetDiagnostics(), [mutationService]);
+    return { getMutationDiagnostics, resetMutationDiagnostics };
+}
+
+export function CodeProvider({
+    children,
+    initialCode = defaultCode,
+    controlledCode,
+    onCodeChange,
+}: {
+    children: ReactNode;
+    initialCode?: string;
+    controlledCode?: string;
+    onCodeChange?: (next: string) => void;
+}) {
+    const seedCode = controlledCode ?? initialCode;
+    const [code, setRawCode] = useState<string>(seedCode);
+
+    useControlledCodeBridge(code, controlledCode, onCodeChange, setRawCode, seedCode);
+
+    const [editorInstance, setEditorInstance] = useState<EditorLike | null>(null);
+    const mutationService = useMemo(() => new CodeMutationService(setRawCode), []);
+
+    // Initialize CommandManager once, then update its context provider as state changes.
+    const [commandManager] = useState(() => new CommandManager(() => ({
+        code: initialCode,
+        setCode: (next) => mutationService.replace(next, 'commandManager.setCode')
+    })));
+    useEffect(() => {
+        commandManager.setContextProvider(() => ({
+            code,
+            setCode: (next) => mutationService.replace(next, 'commandManager.setCode')
+        }));
+    }, [commandManager, code, mutationService]);
+
+    const { commitMutation, mutateCode, setCode, insertCode } = useCodeMutators(mutationService, setRawCode);
+
+    // Generic Code Context for Features
+    const codeContext = useMemo(() => {
+        try {
+            const analyzer = new CodeAnalyzer(code);
+            return analyzer.createContext();
+        } catch (e) {
+            console.warn('CodeContext: Failed to analyze code (likely syntax error):', e);
+            // Return a minimal context
+            return {
+                variables: [],
+                getVariableAtIndex: () => 'shape',
+                generateUniqueName: (prefix: string) => `${prefix}_fallback`
+            } as unknown as CodeGenerationContext;
+        }
+    }, [code]);
+
+    const { renameItem, deleteItem, deleteHistoryItem } = useItemActions(commitMutation);
+
+    const applyCodeSafe = useApplyCodeSafe(setCode);
+
+    const { getMutationDiagnostics, resetMutationDiagnostics } = useMutationDiagnostics(mutationService);
 
     useMagicCommentDetection(code, mutationService);
 

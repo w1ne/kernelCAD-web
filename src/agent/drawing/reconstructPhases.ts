@@ -39,48 +39,76 @@ export function applyRadialCallouts(
   issues: DrawingIssue[],
 ): void {
   for (const callout of callouts) {
-    if (callout.parsed.reference) continue;
-    let best: { c: ViewCircle; err: number } | null = null;
-    for (const g of geometry) {
-      for (const c of g.circles) {
-        const { cx, cy, r } = c.sheet;
-        const rimErr = Math.min(...callout.tips.map(t => Math.abs(Math.hypot(t[0] - cx, t[1] - cy) - r)));
-        if (rimErr > Math.max(0.15, 0.05 * r)) continue;
-        if (callout.stem && pointLine([cx, cy], callout.stem[0], callout.stem[1]) > Math.max(0.3, 0.08 * r)) continue;
-        if (!best || rimErr < best.err) best = { c, err: rimErr };
-      }
-    }
-    const value = callout.parsed.value * mmPerUnit * (callout.parsed.kind === 'radius' ? 2 : 1);
-    if (!best) {
-      issues.push({
-        code: 'reference.drawing.dimension-unassociated',
-        severity: 'warn',
-        message: `callout '${callout.text.text}' points at no circle in any view; its value was not applied.`,
-      });
-      facts.push({
-        id: `unapplied:${callout.text.text}`,
-        statement: `Callout '${callout.text.text}' could not be tied to a circle, so it did not drive the model.`,
-        kind: 'visible', source: 'dimension', region: textRegion(callout), value, confidence: 1, open: true,
-      });
-      continue;
-    }
-    const target = best.c;
-    const group = geometry
-      .find(g => g.view === target.view)!.circles
-      .filter(c => c.hidden === target.hidden && Math.abs(c.r - target.r) <= Math.max(tolModel, 0.02 * target.r));
-    const members = callout.parsed.count > 1 ? group : [target];
-    for (const c of members) {
-      c.statedDiameter = value;
-      c.callout = callout;
-    }
-    if (callout.parsed.count > 1 && group.length !== callout.parsed.count) {
-      facts.push({
-        id: `count:${callout.text.text}`,
-        statement: `Callout '${callout.text.text}' states ${callout.parsed.count} features; ${group.length} matching circle(s) are drawn in the ${target.view.name} view.`,
-        kind: 'visible', source: 'dimension', region: textRegion(callout), value: group.length, confidence: 1, open: true,
-      });
+    applyRadialCallout(callout, geometry, mmPerUnit, tolModel, facts, issues);
+  }
+}
+
+function applyRadialCallout(
+  callout: SheetAnalysis['radialCallouts'][number],
+  geometry: readonly ViewGeometry[],
+  mmPerUnit: number,
+  tolModel: number,
+  facts: FactBook,
+  issues: DrawingIssue[],
+): void {
+  if (callout.parsed.reference) return;
+  const best = findRimCircle(callout, geometry);
+  const value = callout.parsed.value * mmPerUnit * (callout.parsed.kind === 'radius' ? 2 : 1);
+  if (!best) {
+    recordUnassociatedCallout(callout, value, facts, issues);
+    return;
+  }
+  const target = best.c;
+  const group = geometry
+    .find(g => g.view === target.view)!.circles
+    .filter(c => c.hidden === target.hidden && Math.abs(c.r - target.r) <= Math.max(tolModel, 0.02 * target.r));
+  const members = callout.parsed.count > 1 ? group : [target];
+  for (const c of members) {
+    c.statedDiameter = value;
+    c.callout = callout;
+  }
+  if (callout.parsed.count > 1 && group.length !== callout.parsed.count) {
+    facts.push({
+      id: `count:${callout.text.text}`,
+      statement: `Callout '${callout.text.text}' states ${callout.parsed.count} features; ${group.length} matching circle(s) are drawn in the ${target.view.name} view.`,
+      kind: 'visible', source: 'dimension', region: textRegion(callout), value: group.length, confidence: 1, open: true,
+    });
+  }
+}
+
+function findRimCircle(
+  callout: SheetAnalysis['radialCallouts'][number],
+  geometry: readonly ViewGeometry[],
+): { c: ViewCircle; err: number } | null {
+  let best: { c: ViewCircle; err: number } | null = null;
+  for (const g of geometry) {
+    for (const c of g.circles) {
+      const { cx, cy, r } = c.sheet;
+      const rimErr = Math.min(...callout.tips.map(t => Math.abs(Math.hypot(t[0] - cx, t[1] - cy) - r)));
+      if (rimErr > Math.max(0.15, 0.05 * r)) continue;
+      if (callout.stem && pointLine([cx, cy], callout.stem[0], callout.stem[1]) > Math.max(0.3, 0.08 * r)) continue;
+      if (!best || rimErr < best.err) best = { c, err: rimErr };
     }
   }
+  return best;
+}
+
+function recordUnassociatedCallout(
+  callout: SheetAnalysis['radialCallouts'][number],
+  value: number,
+  facts: FactBook,
+  issues: DrawingIssue[],
+): void {
+  issues.push({
+    code: 'reference.drawing.dimension-unassociated',
+    severity: 'warn',
+    message: `callout '${callout.text.text}' points at no circle in any view; its value was not applied.`,
+  });
+  facts.push({
+    id: `unapplied:${callout.text.text}`,
+    statement: `Callout '${callout.text.text}' could not be tied to a circle, so it did not drive the model.`,
+    kind: 'visible', source: 'dimension', region: textRegion(callout), value, confidence: 1, open: true,
+  });
 }
 
 /** A view showing only concentric circles (a turned part's end view), if any. */
@@ -170,40 +198,90 @@ export function collectDimensionEdges(
   const edges: Record<ModelAxis, DimEdge[]> = { x: [], y: [], z: [] };
   const diameterDims: DiameterDim[] = [];
   for (const dim of linearDims) {
-    if (dim.parsed.reference) continue;
-    const horizontal = Math.abs(dim.dir[0]) >= 0.995;
-    const vertical = Math.abs(dim.dir[1]) >= 0.995;
-    const value = dim.parsed.value * mmPerUnit;
-    const unapplied = (why: string) => {
-      issues.push({ code: 'reference.drawing.dimension-unassociated', severity: 'warn', message: `dimension '${dim.text.text}' ${why}; its value was not applied.` });
-      facts.push({
-        id: `unapplied:${dim.text.text}`,
-        statement: `Dimension '${dim.text.text}' ${why}, so it did not drive the model.`,
-        kind: 'visible', source: 'dimension', region: textRegion(dim), value, confidence: 1, open: true,
-      });
-    };
-    if (!horizontal && !vertical) { unapplied('is aligned to neither sheet axis'); continue; }
-    let owner: ViewGeometry | null = null;
-    let ownerDist = Infinity;
-    for (const g of geometry) {
-      const d = Math.max(...dim.feet.map(f => boxDistance(g.view.bbox, f)));
-      if (d < ownerDist) { ownerDist = d; owner = g; }
-    }
-    if (!owner || ownerDist > 3) { unapplied('has extension lines that reach no view'); continue; }
-    const map = horizontal ? owner.view.u : owner.view.v;
-    const m0 = sheetToModel(owner.view, dim.feet[0], sheetPerModel)[horizontal ? 'u' : 'v'];
-    const m1 = sheetToModel(owner.view, dim.feet[1], sheetPerModel)[horizontal ? 'u' : 'v'];
-    if (dim.parsed.kind === 'diameter') {
-      diameterDims.push({ dim, axis: map.axis, center: (m0 + m1) / 2, radius: value / 2, measuredRadius: Math.abs(m1 - m0) / 2, view: owner.view.name });
-      continue;
-    }
-    const levels = axisLevels[map.axis];
-    const i = levels.find(m0);
-    const j = levels.find(m1);
-    if (i < 0 || j < 0 || i === j) { unapplied(`measures a ${map.axis.toUpperCase()} span in the ${owner.view.name} view that ends on no modelled edge or hole centre`); continue; }
-    edges[map.axis].push({ i, j, value, dim, view: owner.view.name, measured: Math.abs(levels.levels[j].measured - levels.levels[i].measured) });
+    collectDimensionEdge(dim, geometry, axisLevels, sheetPerModel, mmPerUnit, edges, diameterDims, facts, issues);
   }
   return { edges, diameterDims };
+}
+
+function collectDimensionEdge(
+  dim: LinearDimension,
+  geometry: readonly ViewGeometry[],
+  axisLevels: Record<ModelAxis, AxisLevels>,
+  sheetPerModel: number,
+  mmPerUnit: number,
+  edges: Record<ModelAxis, DimEdge[]>,
+  diameterDims: DiameterDim[],
+  facts: FactBook,
+  issues: DrawingIssue[],
+): void {
+  if (dim.parsed.reference) return;
+  const horizontal = Math.abs(dim.dir[0]) >= 0.995;
+  const vertical = Math.abs(dim.dir[1]) >= 0.995;
+  const value = dim.parsed.value * mmPerUnit;
+  if (!horizontal && !vertical) {
+    recordUnappliedDimension(dim, value, 'is aligned to neither sheet axis', facts, issues);
+    return;
+  }
+  const owner = dimensionOwner(dim, geometry);
+  if (!owner || owner.dist > 3) {
+    recordUnappliedDimension(dim, value, 'has extension lines that reach no view', facts, issues);
+    return;
+  }
+  const map = horizontal ? owner.view.view.u : owner.view.view.v;
+  const m0 = sheetToModel(owner.view.view, dim.feet[0], sheetPerModel)[horizontal ? 'u' : 'v'];
+  const m1 = sheetToModel(owner.view.view, dim.feet[1], sheetPerModel)[horizontal ? 'u' : 'v'];
+  if (dim.parsed.kind === 'diameter') {
+    diameterDims.push({ dim, axis: map.axis, center: (m0 + m1) / 2, radius: value / 2, measuredRadius: Math.abs(m1 - m0) / 2, view: owner.view.view.name });
+    return;
+  }
+  const span = locateDimensionSpan(map.axis, m0, m1, axisLevels);
+  if (!span) {
+    recordUnappliedDimension(dim, value, `measures a ${map.axis.toUpperCase()} span in the ${owner.view.view.name} view that ends on no modelled edge or hole centre`, facts, issues);
+    return;
+  }
+  const levels = axisLevels[span.axis];
+  edges[span.axis].push({ i: span.i, j: span.j, value, dim, view: owner.view.view.name, measured: Math.abs(levels.levels[span.j].measured - levels.levels[span.i].measured) });
+}
+
+function dimensionOwner(
+  dim: LinearDimension,
+  geometry: readonly ViewGeometry[],
+): { view: ViewGeometry; dist: number } | null {
+  let owner: ViewGeometry | null = null;
+  let ownerDist = Infinity;
+  for (const g of geometry) {
+    const d = Math.max(...dim.feet.map(f => boxDistance(g.view.bbox, f)));
+    if (d < ownerDist) { ownerDist = d; owner = g; }
+  }
+  return owner ? { view: owner, dist: ownerDist } : null;
+}
+
+function locateDimensionSpan(
+  axis: ModelAxis,
+  m0: number,
+  m1: number,
+  axisLevels: Record<ModelAxis, AxisLevels>,
+): { axis: ModelAxis; i: number; j: number } | null {
+  const levels = axisLevels[axis];
+  const i = levels.find(m0);
+  const j = levels.find(m1);
+  if (i < 0 || j < 0 || i === j) return null;
+  return { axis, i, j };
+}
+
+function recordUnappliedDimension(
+  dim: LinearDimension,
+  value: number,
+  why: string,
+  facts: FactBook,
+  issues: DrawingIssue[],
+): void {
+  issues.push({ code: 'reference.drawing.dimension-unassociated', severity: 'warn', message: `dimension '${dim.text.text}' ${why}; its value was not applied.` });
+  facts.push({
+    id: `unapplied:${dim.text.text}`,
+    statement: `Dimension '${dim.text.text}' ${why}, so it did not drive the model.`,
+    kind: 'visible', source: 'dimension', region: textRegion(dim), value, confidence: 1, open: true,
+  });
 }
 
 export interface ReconstructionChoice {

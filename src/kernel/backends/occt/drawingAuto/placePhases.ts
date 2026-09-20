@@ -125,40 +125,46 @@ export function placeFlatnessOnA(ctx: RenderCtx): void {
 }
 
 export function placeRadiusAndChamferNotes(ctx: RenderCtx): void {
-  const { opts, include, model } = ctx;
-  if (opts.enabled && include.has('fillets')) {
-    const groups = new Map<string, RadiusFeature[]>();
-    for (const r of model.radii) {
-      const k = `${viewAlong(r.axis)}|${formatDimValue(r.radius)}`;
-      groups.set(k, [...(groups.get(k) ?? []), r]);
-    }
-    for (const [k, feats] of groups) {
-      const view = k.split('|')[0] as DrawingViewName;
-      const label = `${feats.length > 1 ? `${feats.length}× ` : ''}R${formatDimValue(feats[0].radius)}`;
-      const targets = feats.flatMap(f => [f.arcPoint, ...f.samples]).map(p => toSheet(ctx, p, view));
-      const candidates = noteCandidates(targets, label, 'fillet', view, (p, v) => outwardAngle(ctx, p, v));
-      const best = choose(ctx, ctx.ownerSeq, candidates);
-      if (best) commit(ctx, 'fillet', view, label, best.r);
-    }
+  const { opts, include } = ctx;
+  if (opts.enabled && include.has('fillets')) placeFilletRadiusNotes(ctx);
+  if (opts.enabled && include.has('chamfers')) placeChamferNotes(ctx);
+}
+
+function placeFilletRadiusNotes(ctx: RenderCtx): void {
+  const { model } = ctx;
+  const groups = new Map<string, RadiusFeature[]>();
+  for (const r of model.radii) {
+    const k = `${viewAlong(r.axis)}|${formatDimValue(r.radius)}`;
+    groups.set(k, [...(groups.get(k) ?? []), r]);
   }
-  if (opts.enabled && include.has('chamfers')) {
-    const groups = new Map<string, ChamferFeature[]>();
-    for (const c of model.chamfers) {
-      const k = `${viewAlong(c.edgeDir)}|${formatDimValue(c.legs[0])}|${formatDimValue(c.legs[1])}`;
-      groups.set(k, [...(groups.get(k) ?? []), c]);
-    }
-    for (const [k, feats] of groups) {
-      const view = k.split('|')[0] as DrawingViewName;
-      const [l0, l1] = feats[0].legs;
-      const size = Math.abs(l0 - l1) < 0.01
-        ? `${formatDimValue(l0)} × 45°`
-        : `${formatDimValue(l0)} × ${formatDimValue(l1)}`;
-      const label = `${feats.length > 1 ? `${feats.length}× ` : ''}${size}`;
-      const targets = feats.map(f => toSheet(ctx, f.midPoint, view));
-      const candidates = noteCandidates(targets, label, 'chamfer', view, (p, v) => outwardAngle(ctx, p, v));
-      const best = choose(ctx, ctx.ownerSeq, candidates);
-      if (best) commit(ctx, 'chamfer', view, label, best.r);
-    }
+  for (const [k, feats] of groups) {
+    const view = k.split('|')[0] as DrawingViewName;
+    const label = `${feats.length > 1 ? `${feats.length}× ` : ''}R${formatDimValue(feats[0].radius)}`;
+    const targets = feats.flatMap(f => [f.arcPoint, ...f.samples]).map(p => toSheet(ctx, p, view));
+    const candidates = noteCandidates(targets, label, 'fillet', view, (p, v) => outwardAngle(ctx, p, v));
+    const best = choose(ctx, ctx.ownerSeq, candidates);
+    if (best) commit(ctx, 'fillet', view, label, best.r);
+  }
+}
+
+function placeChamferNotes(ctx: RenderCtx): void {
+  const { model } = ctx;
+  const groups = new Map<string, ChamferFeature[]>();
+  for (const c of model.chamfers) {
+    const k = `${viewAlong(c.edgeDir)}|${formatDimValue(c.legs[0])}|${formatDimValue(c.legs[1])}`;
+    groups.set(k, [...(groups.get(k) ?? []), c]);
+  }
+  for (const [k, feats] of groups) {
+    const view = k.split('|')[0] as DrawingViewName;
+    const [l0, l1] = feats[0].legs;
+    const size = Math.abs(l0 - l1) < 0.01
+      ? `${formatDimValue(l0)} × 45°`
+      : `${formatDimValue(l0)} × ${formatDimValue(l1)}`;
+    const label = `${feats.length > 1 ? `${feats.length}× ` : ''}${size}`;
+    const targets = feats.map(f => toSheet(ctx, f.midPoint, view));
+    const candidates = noteCandidates(targets, label, 'chamfer', view, (p, v) => outwardAngle(ctx, p, v));
+    const best = choose(ctx, ctx.ownerSeq, candidates);
+    if (best) commit(ctx, 'chamfer', view, label, best.r);
   }
 }
 
