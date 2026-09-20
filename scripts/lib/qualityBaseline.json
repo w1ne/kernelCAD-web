@@ -583,18 +583,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/sketch.ts",
-    "symbol": "Method 'loft'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/sketchReflect.ts",
-    "symbol": "Arrow function",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/virtualFeatureRecords.ts",
     "symbol": "Function 'buildRenderEnvironmentFeatureSpec'",
     "value": 17
@@ -610,12 +598,6 @@
     "file": "src/modeling/compute/recomputeEngine.ts",
     "symbol": "Async method 'lowerAndEmit'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/export/sdformat/sdfSerializer.ts",
-    "symbol": "Async function 'sdfSerialize'",
-    "value": 19
   },
   {
     "rule": "complexity",
@@ -679,12 +661,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/mechanicalPlausibility.ts",
-    "symbol": "Function 'analyzeDisconnectedMesh'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/mechanicalTransmission.ts",
     "symbol": "Function 'pointTriangleDistanceSquared'",
     "value": 16
@@ -742,12 +718,6 @@
     "file": "src/modeling/mates/solver.ts",
     "symbol": "Function 'mateFk'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/parts/fetchPart.ts",
-    "symbol": "Async function 'fetchPartHost'",
-    "value": 19
   },
   {
     "rule": "complexity",
@@ -1039,12 +1009,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/capture/sketchReflect.ts",
-    "symbol": "Function 'reflectSketchCommands'",
-    "value": 121
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/modeling/constraints/sketchConverter.ts",
     "symbol": "Function 'convertSketchEntitiesToConstraints'",
     "value": 111
@@ -1066,12 +1030,6 @@
     "file": "src/modeling/parts/fetchPart.ts",
     "symbol": "Async function 'fetchPartFromUrlHost'",
     "value": 104
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/parts/fetchPart.ts",
-    "symbol": "Async function 'fetchPartHost'",
-    "value": 106
   },
   {
     "rule": "max-lines-per-function",
