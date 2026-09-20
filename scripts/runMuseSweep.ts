@@ -13,7 +13,7 @@ import { isAtLeast, readState, writeState, type MusePhase } from '../eval/lib/mu
 import { judgeCase } from './museJudge';
 import { runPreflight, formatPreflight, type PreflightReport } from './musePreflight';
 import { writeReports } from './museReport';
-import type { AgentClient, AgentResponse, TaskResult } from '../eval/types';
+import type { AgentClient, AgentResponse, TaskResult, TranscriptEvent } from '../eval/types';
 
 const TASKS_DIR = resolve('eval/tasks');
 const RUNS_DIR = resolve('eval/runs');
@@ -220,6 +220,7 @@ async function runOneCase(
     const outputScriptPath = join(caseDir, 'output.kcad.ts');
     let result: TaskResult;
     let generationMs = state?.generationMs ?? 0;
+    let generationEvents: TranscriptEvent[] | undefined;
 
     const canReuseGeneration =
       !cfg.force.has(caseName) &&
@@ -241,6 +242,7 @@ async function runOneCase(
         temperature: cfg.temperature,
       });
       generationMs = gen.timeMs;
+      generationEvents = gen.events;
       totals.tokensIn += gen.tokensIn;
       totals.tokensOut += gen.tokensOut;
       writeState(caseDir, {
@@ -263,6 +265,7 @@ async function runOneCase(
         taskDir,
         runDir: caseDir,
         outputScriptPath,
+        events: generationEvents,
         attempts: state?.attempts ?? 1,
         tokensIn: state?.tokens.in ?? 0,
         tokensOut: state?.tokens.out ?? 0,
