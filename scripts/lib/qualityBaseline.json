@@ -1207,12 +1207,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/viewer/overlays/SectionPanel.tsx",
-    "symbol": "Function 'SectionPanel'",
-    "value": 149
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/viewer/overlays/ViewGizmo.tsx",
     "symbol": "Function 'ViewGizmo'",
     "value": 104
