@@ -187,12 +187,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/planPhases/body.ts",
-    "symbol": "Function 'buildFaceBook'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/planPhases/ops.ts",
     "symbol": "Function 'emitCutoutOps'",
     "value": 16
