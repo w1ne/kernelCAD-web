@@ -10,6 +10,6 @@ Tech stack: React, TypeScript, Three.js, existing OpenCascade worker, Vitest, Pl
 - [x] Route ordinary `/` visits to StartPage; retain existing script/gallery/headless Studio entry behavior. Update the root-route contract test.
 - [x] Shorten homepage and generation copy; link the browser trial clearly.
 - [x] Run focused tests, lint and production build. Verify real browser edits and file downloads at desktop and mobile widths.
-- [ ] Review, commit, create PR, pass required checks, merge and verify deployed app and marketing page.
+- [x] Review, commit, create PR, pass required checks, merge and verify deployed app and marketing page.
 
 Validation: 46 focused tests pass, including 12 real OCCT size/connectivity checks. The saved Playwright test passes with real worker evaluation, three resized STL exports, three STEP exports, Undo, and a 390px layout check. All changed TypeScript passes focused ESLint. Local production build passes. Remote CI/deployment are next.
