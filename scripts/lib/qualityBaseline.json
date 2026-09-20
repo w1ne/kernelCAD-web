@@ -553,12 +553,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/shared/intent/embossTextRecord.ts",
-    "symbol": "Function 'isEmbossTextMetadata'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/shared/runtime/resolveParams.ts",
     "symbol": "Function 'walkResolve'",
     "value": 16
