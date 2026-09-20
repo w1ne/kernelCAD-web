@@ -25,12 +25,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/drawingSections.ts",
-    "symbol": "Function 'renderSections'",
-    "value": 108
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/kernel/backends/occt/edgeSelectionLabels.ts",
     "symbol": "Function 'labelToEdgeQuery'",
     "value": 107
