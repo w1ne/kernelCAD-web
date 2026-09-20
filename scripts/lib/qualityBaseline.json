@@ -325,12 +325,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/features-ui/ai/useAIAssistantChat.ts",
-    "symbol": "Function 'useAIAssistantChat'",
-    "value": 123
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/hooks/useRecomputeResult.ts",
     "symbol": "Function 'useRecomputeResult'",
     "value": 103
