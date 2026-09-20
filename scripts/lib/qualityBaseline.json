@@ -145,12 +145,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/profileFit.ts",
-    "symbol": "Function 'fitGuidedLoop'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/segment.ts",
     "symbol": "Function 'adoptFragments'",
     "value": 16
