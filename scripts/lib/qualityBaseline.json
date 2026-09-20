@@ -62,12 +62,6 @@
   {
     "rule": "complexity",
     "file": "src/agent/mcp/edits/addPathSpline.ts",
-    "symbol": "Function 'addPathSpline'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/edits/addPathSpline.ts",
     "symbol": "Function 'consumeLexicalContext'",
     "value": 17
   },

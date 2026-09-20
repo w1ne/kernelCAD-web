@@ -29,38 +29,33 @@ export interface AddPathChainResult {
   error?: string;
 }
 
-export function addPathSpline(input: AddPathSplineInput): AddPathChainResult {
-  if (typeof input.chain_anchor !== 'string' || !isValidIdentifier(input.chain_anchor)) {
-    return {
-      ok: false,
-      error: `add_path_spline: chain_anchor must be a JS identifier; got ${JSON.stringify(input.chain_anchor)}.`,
-    };
+function validateAnchor(chainAnchor: unknown): string | null {
+  if (typeof chainAnchor !== 'string' || !isValidIdentifier(chainAnchor)) {
+    return `add_path_spline: chain_anchor must be a JS identifier; got ${JSON.stringify(chainAnchor)}.`;
   }
-  if (!Array.isArray(input.points) || input.points.length < 2) {
-    return {
-      ok: false,
-      error: 'add_path_spline: points must be a Vec2[] with at least 2 waypoints.',
-    };
+  return null;
+}
+
+function validatePoints(points: unknown): string | null {
+  if (!Array.isArray(points) || points.length < 2) {
+    return 'add_path_spline: points must be a Vec2[] with at least 2 waypoints.';
   }
-  for (const p of input.points) {
+  for (const p of points) {
     if (!Array.isArray(p) || p.length !== 2 || !p.every(n => typeof n === 'number' && Number.isFinite(n))) {
-      return {
-        ok: false,
-        error: 'add_path_spline: every point must be a [x, y] Vec2 of finite numbers.',
-      };
+      return 'add_path_spline: every point must be a [x, y] Vec2 of finite numbers.';
     }
   }
-  if (input.tension !== undefined && (typeof input.tension !== 'number' || !Number.isFinite(input.tension))) {
-    return {
-      ok: false,
-      error: `add_path_spline: tension must be a finite number; got ${JSON.stringify(input.tension)}.`,
-    };
-  }
-  const startTangentErr = validateTangent('startTangent', input.startTangent);
-  if (startTangentErr !== null) return { ok: false, error: startTangentErr };
-  const endTangentErr = validateTangent('endTangent', input.endTangent);
-  if (endTangentErr !== null) return { ok: false, error: endTangentErr };
+  return null;
+}
 
+function validateTension(tension: unknown): string | null {
+  if (tension !== undefined && (typeof tension !== 'number' || !Number.isFinite(tension))) {
+    return `add_path_spline: tension must be a finite number; got ${JSON.stringify(tension)}.`;
+  }
+  return null;
+}
+
+function buildSplineCall(input: AddPathSplineInput): string {
   const pointsLiteral = JSON.stringify(input.points);
   const optsParts: string[] = [];
   if (input.tension !== undefined) {
@@ -72,9 +67,21 @@ export function addPathSpline(input: AddPathSplineInput): AddPathChainResult {
   if (input.endTangent !== undefined) {
     optsParts.push(`endTangent: ${JSON.stringify(input.endTangent)}`);
   }
-  const callFragment = optsParts.length > 0
+  return optsParts.length > 0
     ? `.spline(${pointsLiteral}, { ${optsParts.join(', ')} })`
     : `.spline(${pointsLiteral})`;
+}
+
+export function addPathSpline(input: AddPathSplineInput): AddPathChainResult {
+  const validationError =
+    validateAnchor(input.chain_anchor) ??
+    validatePoints(input.points) ??
+    validateTension(input.tension) ??
+    validateTangent('startTangent', input.startTangent) ??
+    validateTangent('endTangent', input.endTangent);
+  if (validationError !== null) return { ok: false, error: validationError };
+
+  const callFragment = buildSplineCall(input);
 
   return injectIntoChain(input.code, input.chain_anchor, callFragment);
 }
