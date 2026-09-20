@@ -8,7 +8,7 @@ import { helix } from './helix';
 import { formatScalarForError } from '../shared/intent/types';
 import { KernelError } from '../shared/intent/kernelError';
 import { mm, ul, assertEditableNumber, assertPositiveFinite } from './apiSupport';
-import type { KernelCadApi } from './api';
+import type { KernelCadApi, SpringOptions } from './api';
 
 export function makePrimitiveMethods(
   session: CaptureSession,
@@ -89,59 +89,91 @@ export function makePrimitiveMethods(
   };
 }
 
+/** Validate the four positive dimensions of `spring()` in call order. */
+function resolveSpringSizing(opts: SpringOptions): {
+  length: number;
+  coilRadius: number;
+  wireRadius: number;
+  turns: number;
+} {
+  const length = assertPositiveFinite('spring', 'length', opts?.length);
+  const coilRadius = assertPositiveFinite('spring', 'coilRadius', opts?.coilRadius);
+  const wireRadius = assertPositiveFinite('spring', 'wireRadius', opts?.wireRadius);
+  const turns = assertPositiveFinite('spring', 'turns', opts?.turns);
+  if (coilRadius <= wireRadius) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `spring: coilRadius (${coilRadius}) must be greater than wireRadius (${wireRadius}) so the spring has a visible coil centerline.`,
+      'spring',
+      'Pick coilRadius > wireRadius. Typical balance springs use wireRadius around 15-30% of coilRadius.',
+    );
+  }
+  return { length, coilRadius, wireRadius, turns };
+}
+
+/** Validate the `axis` option and apply its `'Z'` default. */
+function resolveSpringAxis(opts: SpringOptions): 'X' | 'Y' | 'Z' {
+  const axis = opts.axis ?? 'Z';
+  if (axis !== 'X' && axis !== 'Y' && axis !== 'Z') {
+    throw new KernelError(
+      'feature.invalid-args',
+      `spring: axis must be one of 'X', 'Y', or 'Z'; got ${formatScalarForError(axis)}.`,
+      'spring',
+      'Pass axis: "X", "Y", or "Z".',
+    );
+  }
+  return axis;
+}
+
+/** Validate the discretisation options and apply their defaults. */
+function resolveSpringSampling(opts: SpringOptions): {
+  pointsPerTurn: number;
+  cylinderSegments: number;
+} {
+  const pointsPerTurn = opts.pointsPerTurn ?? 24;
+  if (!Number.isInteger(pointsPerTurn) || pointsPerTurn < 6) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `spring: pointsPerTurn must be an integer >= 6; got ${formatScalarForError(pointsPerTurn)}.`,
+      'spring',
+      'Use pointsPerTurn >= 6. Higher values smooth the coil at higher feature cost.',
+    );
+  }
+  const cylinderSegments = opts.segments ?? 16;
+  if (!Number.isInteger(cylinderSegments) || cylinderSegments < 6) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `spring: segments must be an integer >= 6; got ${formatScalarForError(cylinderSegments)}.`,
+      'spring',
+      'Use segments >= 6 for the circular wire cross-section.',
+    );
+  }
+  return { pointsPerTurn, cylinderSegments };
+}
+
+/** Validate the `endStyle` option and apply its `'open'` default. */
+function resolveSpringEndStyle(opts: SpringOptions): 'open' | 'closed' {
+  const endStyle = opts.endStyle ?? 'open';
+  if (endStyle !== 'open' && endStyle !== 'closed') {
+    throw new KernelError(
+      'feature.invalid-args',
+      `spring: endStyle must be 'open' or 'closed'; got ${formatScalarForError(endStyle)}.`,
+      'spring',
+      'Use endStyle: "open" for bare wire ends or "closed" for short integral end bars.',
+    );
+  }
+  return endStyle;
+}
+
 export function makeSpringMethod(
   session: CaptureSession,
   self: () => KernelCadApi,
 ): KernelCadApi['spring'] {
   return (opts) => {
-    const length = assertPositiveFinite('spring', 'length', opts?.length);
-    const coilRadius = assertPositiveFinite('spring', 'coilRadius', opts?.coilRadius);
-    const wireRadius = assertPositiveFinite('spring', 'wireRadius', opts?.wireRadius);
-    const turns = assertPositiveFinite('spring', 'turns', opts?.turns);
-    if (coilRadius <= wireRadius) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `spring: coilRadius (${coilRadius}) must be greater than wireRadius (${wireRadius}) so the spring has a visible coil centerline.`,
-        'spring',
-        'Pick coilRadius > wireRadius. Typical balance springs use wireRadius around 15-30% of coilRadius.',
-      );
-    }
-    const axis = opts.axis ?? 'Z';
-    if (axis !== 'X' && axis !== 'Y' && axis !== 'Z') {
-      throw new KernelError(
-        'feature.invalid-args',
-        `spring: axis must be one of 'X', 'Y', or 'Z'; got ${formatScalarForError(axis)}.`,
-        'spring',
-        'Pass axis: "X", "Y", or "Z".',
-      );
-    }
-    const pointsPerTurn = opts.pointsPerTurn ?? 24;
-    if (!Number.isInteger(pointsPerTurn) || pointsPerTurn < 6) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `spring: pointsPerTurn must be an integer >= 6; got ${formatScalarForError(pointsPerTurn)}.`,
-        'spring',
-        'Use pointsPerTurn >= 6. Higher values smooth the coil at higher feature cost.',
-      );
-    }
-    const cylinderSegments = opts.segments ?? 16;
-    if (!Number.isInteger(cylinderSegments) || cylinderSegments < 6) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `spring: segments must be an integer >= 6; got ${formatScalarForError(cylinderSegments)}.`,
-        'spring',
-        'Use segments >= 6 for the circular wire cross-section.',
-      );
-    }
-    const endStyle = opts.endStyle ?? 'open';
-    if (endStyle !== 'open' && endStyle !== 'closed') {
-      throw new KernelError(
-        'feature.invalid-args',
-        `spring: endStyle must be 'open' or 'closed'; got ${formatScalarForError(endStyle)}.`,
-        'spring',
-        'Use endStyle: "open" for bare wire ends or "closed" for short integral end bars.',
-      );
-    }
+    const { length, coilRadius, wireRadius, turns } = resolveSpringSizing(opts);
+    const axis = resolveSpringAxis(opts);
+    const { pointsPerTurn, cylinderSegments } = resolveSpringSampling(opts);
+    const endStyle = resolveSpringEndStyle(opts);
 
     const orient = (axial: number, radialA: number, radialB: number): [number, number, number] => {
       if (axis === 'X') return [axial, radialA, radialB];
