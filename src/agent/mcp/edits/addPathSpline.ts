@@ -178,9 +178,12 @@ interface LexicalCursor {
  * the character was handled by the context scanner, or `null` when the caller
  * must classify it as code (nesting or `.close` detection).
  */
-function consumeLexicalContext(code: string, i: number, cursor: LexicalCursor): number | null {
-  const c = code[i];
-  const c2 = code[i + 1] ?? '';
+function consumeCommentContext(
+  i: number,
+  c: string,
+  c2: string,
+  cursor: LexicalCursor,
+): number | null {
   if (cursor.inLineComment) {
     if (c === '\n') cursor.inLineComment = false;
     return i;
@@ -189,15 +192,36 @@ function consumeLexicalContext(code: string, i: number, cursor: LexicalCursor): 
     if (c === '*' && c2 === '/') { cursor.inBlockComment = false; return i + 1; }
     return i;
   }
+  return null;
+}
+
+function consumeStringContext(i: number, c: string, cursor: LexicalCursor): number | null {
   if (cursor.inStr) {
     if (c === '\\') return i + 1;
     if (c === cursor.inStr) cursor.inStr = null;
     return i;
   }
+  return null;
+}
+
+function consumeCommentStart(i: number, c: string, c2: string, cursor: LexicalCursor): number | null {
   if (c === '/' && c2 === '/') { cursor.inLineComment = true; return i + 1; }
   if (c === '/' && c2 === '*') { cursor.inBlockComment = true; return i + 1; }
+  return null;
+}
+
+function consumeStringStart(i: number, c: string, cursor: LexicalCursor): number | null {
   if (c === '"' || c === "'" || c === '`') { cursor.inStr = c as '"' | "'" | '`'; return i; }
   return null;
+}
+
+function consumeLexicalContext(code: string, i: number, cursor: LexicalCursor): number | null {
+  const c = code[i];
+  const c2 = code[i + 1] ?? '';
+  return consumeCommentContext(i, c, c2, cursor)
+    ?? consumeStringContext(i, c, cursor)
+    ?? consumeCommentStart(i, c, c2, cursor)
+    ?? consumeStringStart(i, c, cursor);
 }
 
 /**
