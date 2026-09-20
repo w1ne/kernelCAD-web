@@ -75,18 +75,32 @@ type BadFn = (field: string, why: string) => never;
 // FDM fields first: a stray `nozzleMm` without `process: 'fdm'` deserves
 // the specific fix, not the generic "declares no checks".
 function validateDfmSpecCheckFields(args: DfmSpec, fdm: DfmFdmMetadata | undefined, bad: BadFn): void {
+  validateDfmSpecDeclaresChecks(args, fdm, bad);
+  validateDfmSpecPositiveNumber('minWall', args.minWall, bad);
+  validateDfmSpecPositiveNumber('minClearance', args.minClearance, bad);
+  validateDfmSpecArticulatedMates(args, bad);
+}
+
+function validateDfmSpecDeclaresChecks(args: DfmSpec, fdm: DfmFdmMetadata | undefined, bad: BadFn): void {
   if (
     args.minWall === undefined && args.minClearance === undefined &&
     !(args.channels?.length) && fdm === undefined
   ) {
     bad('spec', "declares no checks; pass minWall, minClearance, channels, and/or process: 'fdm'");
   }
-  if (args.minWall !== undefined && !(Number.isFinite(args.minWall) && args.minWall > 0)) {
-    bad('minWall', `must be a positive finite number; got ${args.minWall}`);
+}
+
+function validateDfmSpecPositiveNumber(
+  field: 'minWall' | 'minClearance',
+  value: number | undefined,
+  bad: BadFn,
+): void {
+  if (value !== undefined && !(Number.isFinite(value) && value > 0)) {
+    bad(field, `must be a positive finite number; got ${value}`);
   }
-  if (args.minClearance !== undefined && !(Number.isFinite(args.minClearance) && args.minClearance > 0)) {
-    bad('minClearance', `must be a positive finite number; got ${args.minClearance}`);
-  }
+}
+
+function validateDfmSpecArticulatedMates(args: DfmSpec, bad: BadFn): void {
   if (args.includeArticulatedMates !== undefined && typeof args.includeArticulatedMates !== 'boolean') {
     bad('includeArticulatedMates', `must be a boolean; got ${JSON.stringify(args.includeArticulatedMates)}`);
   }

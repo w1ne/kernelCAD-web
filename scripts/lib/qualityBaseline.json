@@ -157,12 +157,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/authoringFeatureRecords.ts",
-    "symbol": "Function 'validateDfmSpecCheckFields'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/featureMeshing.ts",
     "symbol": "Function 'buildHelixTubeMesh'",
     "value": 16
