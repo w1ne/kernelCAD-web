@@ -61,6 +61,26 @@ describe('stripTypeScriptSyntax', () => {
         expect(stripTypeScriptSyntax(src)).toBe(src);
     });
 
+    it('blanks interface and type alias declarations', () => {
+        const src = 'interface Foo { a: number }\ntype Bar = string;\nconst x = 1;\n';
+        const stripped = stripTypeScriptSyntax(src);
+        expect(stripped).toContain('const x = 1;');
+        expect(stripped).not.toContain('interface');
+        expect(stripped).not.toContain('Foo');
+        expect(stripped).not.toContain('Bar');
+        expect(stripped.length).toBe(src.length);
+        expect(() => parseCode(src)).not.toThrow();
+    });
+
+    it('drops import type and export type modifiers', () => {
+        const src = "import type { Foo } from './foo';\nexport type { Bar };\n";
+        const stripped = stripTypeScriptSyntax(src);
+        expect(stripped).toContain("import      { Foo } from './foo';");
+        expect(stripped).toContain('export      { Bar };');
+        expect(stripped.includes('type')).toBe(false);
+        expect(stripped.length).toBe(src.length);
+    });
+
     it('keeps object keys named type (connector frames)', () => {
         const src = `
             plate.connector('s0', {
