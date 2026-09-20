@@ -535,12 +535,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/server/sessionPool.ts",
-    "symbol": "Function 'createSessionPool'",
-    "value": 144
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/StudioShell.tsx",
     "symbol": "Function 'StudioShell'",
     "value": 140
@@ -550,12 +544,6 @@
     "file": "src/studio/Toolbar.tsx",
     "symbol": "Function 'Toolbar'",
     "value": 121
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/components/Dialogs/ProjectManagerDialog.tsx",
-    "symbol": "Function 'ProjectManagerDialog'",
-    "value": 142
   },
   {
     "rule": "max-lines-per-function",
@@ -580,12 +568,6 @@
     "file": "src/studio/components/Viewer.tsx",
     "symbol": "Function 'Viewer'",
     "value": 123
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/components/animation/useAnimationPlayback.ts",
-    "symbol": "Function 'useAnimationPlayback'",
-    "value": 142
   },
   {
     "rule": "max-lines-per-function",
@@ -619,12 +601,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/viewer/controllers/CameraHandler.tsx",
-    "symbol": "Function 'CameraHandler'",
-    "value": 144
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/viewer/layers/ParametricLayer.tsx",
     "symbol": "Function 'ParametricLayer'",
     "value": 106
@@ -652,12 +628,6 @@
     "file": "src/studio/context/ProjectContext.tsx",
     "symbol": "Function 'ProjectProvider'",
     "value": 135
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/context/SelectionContext.tsx",
-    "symbol": "Function 'SelectionProvider'",
-    "value": 142
   },
   {
     "rule": "max-lines-per-function",
