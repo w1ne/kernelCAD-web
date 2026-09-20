@@ -111,7 +111,7 @@ describe('generateCaseWithTools', () => {
       maxCalls: 4,
       cookbook: {
         query: 'q',
-        hits: [],
+        hits: [{ id: 'snap-1', score: 0.9 }],
         systemPromptAddendum: 'DISTINCTIVE_COOKBOOK_ADDENDUM',
       },
       execute: async () => ({ content: '{"ok":true}', ok: true, diagnostics: [] }),
@@ -120,6 +120,12 @@ describe('generateCaseWithTools', () => {
     expect(capturedSystem).toContain('DISTINCTIVE_COOKBOOK_ADDENDUM');
     expect(capturedSystem).toContain('## Verification tool');
     expect(capturedSystem).toContain(TOOL_PROTOCOL);
+    expect(result.events.map((e) => e.kind)).toEqual(['system_prompt', 'user_prompt', 'cookbook_inject']);
+    expect(result.events[2]).toEqual({
+      kind: 'cookbook_inject',
+      query: 'q',
+      hits: [{ id: 'snap-1', score: 0.9 }],
+    });
     expect(result.status).toBe('passed');
   });
 

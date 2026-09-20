@@ -51,6 +51,30 @@ interface SweepConfig {
   env: Record<string, string | undefined>;
 }
 
+export function resumeMismatch(
+  prior: { promptPreset?: string; cookbook?: boolean; toolLoop?: boolean; toolMaxCalls?: number },
+  cfg: { promptPreset: string; useCookbook: boolean; toolLoop: boolean; toolMaxCalls: number },
+): string | null {
+  const priorPreset = prior.promptPreset ?? 'full';
+  const priorCookbook = prior.cookbook ?? true;
+  const priorLoop = prior.toolLoop ?? false;
+  const priorCalls = prior.toolMaxCalls ?? 8;
+  if (priorPreset !== cfg.promptPreset || priorCookbook !== cfg.useCookbook || priorLoop !== cfg.toolLoop) {
+    return `promptPreset=${priorPreset}/${cfg.promptPreset} cookbook=${priorCookbook}/${cfg.useCookbook} toolLoop=${priorLoop}/${cfg.toolLoop}`;
+  }
+  if (cfg.toolLoop && priorCalls !== cfg.toolMaxCalls) {
+    return `toolMaxCalls=${priorCalls}/${cfg.toolMaxCalls}`;
+  }
+  return null;
+}
+
+export function asToolChatClient(agent: AgentClient): AgentClient & ToolChatClient {
+  if (typeof (agent as Partial<ToolChatClient>).chatWithTools !== 'function') {
+    throw new Error('agent client lacks chatWithTools; --tool-loop requires OpenAICompatAgentClient');
+  }
+  return agent as AgentClient & ToolChatClient;
+}
+
 export interface CaseOutcome {
   case: string;
   status: 'ok' | 'skipped' | 'stopped' | 'budget' | 'infra';
@@ -119,6 +143,10 @@ export function parseSweepArgs(argv: string[]): SweepConfig {
   if (!Number.isInteger(toolMaxCalls) || toolMaxCalls < 1) {
     fail(`--tool-max-calls must be an integer >= 1, got ${toolMaxCalls}`);
   }
+  const toolLoop = has('--tool-loop');
+  if (has('--tool-max-calls') && !toolLoop) {
+    throw new Error('--tool-max-calls only applies to --tool-loop');
+  }
 
   const promptPreset = flagValue('--prompt-preset') ?? 'full';
   const presets = loadPresets();
@@ -149,7 +177,7 @@ export function parseSweepArgs(argv: string[]): SweepConfig {
     maxTokens,
     skills,
     promptPreset,
-    toolLoop: has('--tool-loop'),
+    toolLoop,
     toolMaxCalls,
     useCookbook: !has('--no-cookbook'),
     skipJudge: has('--skip-judge'),
@@ -270,7 +298,7 @@ async function runOneCase(
         ? await generateCaseWithTools({
             taskDir,
             runDir: caseDir,
-            client: agent as AgentClient & ToolChatClient,
+            client: asToolChatClient(agent),
             model: cfg.model,
             skillMd,
             startedAt: cfg.startedAt,
@@ -446,18 +474,11 @@ async function main(): Promise<void> {
       toolMaxCalls?: number;
       cookbook?: boolean;
     };
-    if (
-      prior.promptPreset !== cfg.promptPreset ||
-      prior.toolLoop !== cfg.toolLoop ||
-      prior.toolMaxCalls !== cfg.toolMaxCalls ||
-      prior.cookbook !== cfg.useCookbook
-    ) {
+    const mismatch = resumeMismatch(prior, cfg);
+    if (mismatch !== null) {
       console.error(
-        `run '${cfg.runId}' was created with promptPreset=${prior.promptPreset} cookbook=${prior.cookbook} ` +
-          `toolLoop=${prior.toolLoop} toolMaxCalls=${prior.toolMaxCalls}; ` +
-          `refusing to resume with promptPreset=${cfg.promptPreset} cookbook=${cfg.useCookbook} ` +
-          `toolLoop=${cfg.toolLoop} toolMaxCalls=${cfg.toolMaxCalls}. ` +
-          'Use a new --run-id.',
+        `run '${cfg.runId}' was created with a different configuration; ` +
+          `refusing to resume (${mismatch}). Use a new --run-id.`,
       );
       process.exit(1);
     }

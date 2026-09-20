@@ -80,6 +80,9 @@ export async function generateCaseWithTools(args: GenerateCaseWithToolsArgs): Pr
   const events: TranscriptEvent[] = [];
   events.push({ kind: 'system_prompt', chars: system.length });
   events.push({ kind: 'user_prompt', content: prompt });
+  if (args.cookbook) {
+    events.push({ kind: 'cookbook_inject', query: args.cookbook.query, hits: args.cookbook.hits });
+  }
 
   let callNo = 0;
   const execute =

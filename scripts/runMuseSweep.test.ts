@@ -2,7 +2,8 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
 import { buildSweepPrompt } from '../eval/lib/sweepPrompt';
-import { parseSweepArgs, resolvePromptPlan } from './runMuseSweep';
+import type { AgentClient } from '../eval/types';
+import { asToolChatClient, parseSweepArgs, resolvePromptPlan, resumeMismatch } from './runMuseSweep';
 
 describe('parseSweepArgs prompt flags', () => {
   it('defaults to the full preset with cookbook retrieval on', () => {
@@ -34,6 +35,64 @@ describe('parseSweepArgs prompt flags', () => {
     expect(cfg.toolLoop).toBe(true);
     expect(cfg.toolMaxCalls).toBe(5);
     expect(parseSweepArgs(['--cases', 'stool']).toolLoop).toBe(false);
+  });
+
+  it('rejects --tool-max-calls without --tool-loop', () => {
+    expect(() => parseSweepArgs(['--cases', 'stool', '--tool-max-calls', '5'])).toThrow(
+      /--tool-max-calls only applies to --tool-loop/,
+    );
+  });
+});
+
+describe('resumeMismatch', () => {
+  const priorControl = { promptPreset: 'full', cookbook: true, toolLoop: false, toolMaxCalls: 8 };
+  const cfgControl = { promptPreset: 'full', useCookbook: true, toolLoop: false, toolMaxCalls: 8 };
+
+  it('normalizes legacy run.json that predates the tool-loop fields', () => {
+    expect(resumeMismatch({}, cfgControl)).toBeNull();
+  });
+
+  it('detects a tool-loop mismatch', () => {
+    const mismatch = resumeMismatch({}, { ...cfgControl, toolLoop: true });
+    expect(mismatch).not.toBeNull();
+    expect(mismatch).toContain('toolLoop=false/true');
+  });
+
+  it('returns null when the prior config matches', () => {
+    expect(resumeMismatch(priorControl, cfgControl)).toBeNull();
+  });
+
+  it('ignores toolMaxCalls drift on control runs', () => {
+    expect(
+      resumeMismatch({ ...priorControl, toolMaxCalls: 3 }, { ...cfgControl, toolMaxCalls: 99 }),
+    ).toBeNull();
+  });
+
+  it('flags toolMaxCalls drift on tool runs', () => {
+    const cfgTool = { ...cfgControl, toolLoop: true, toolMaxCalls: 5 };
+    const priorTool = { ...priorControl, toolLoop: true, toolMaxCalls: 8 };
+    expect(resumeMismatch(priorTool, cfgTool)).toContain('toolMaxCalls=8/5');
+  });
+});
+
+describe('asToolChatClient', () => {
+  it('throws when the agent lacks chatWithTools', () => {
+    const agent = {} as AgentClient;
+    expect(() => asToolChatClient(agent)).toThrow(/chatWithTools/);
+  });
+
+  it('returns the same object when chatWithTools is present', () => {
+    const agent = {
+      generate: async () => ({ text: '', tokens_in: 0, tokens_out: 0 }),
+      chatWithTools: async () => ({
+        text: '',
+        toolCalls: [],
+        finishReason: 'stop',
+        tokensIn: 0,
+        tokensOut: 0,
+      }),
+    } as unknown as AgentClient;
+    expect(asToolChatClient(agent)).toBe(agent);
   });
 });
 
