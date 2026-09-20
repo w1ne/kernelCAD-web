@@ -43,12 +43,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/kernel/naming/query.ts",
-    "symbol": "Function 'makeQuery'",
-    "value": 106
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/kernel/naming/resolveTopoRef.ts",
     "symbol": "Function 'resolveTopoRef'",
     "value": 103
