@@ -67,12 +67,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/backends/occt/sheetMetalLowerer.ts",
-    "symbol": "Function 'lowerSheetMetalBend'",
-    "value": 127
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/modeling/capture/featureMeshing.ts",
     "symbol": "Async function 'meshFeaturesPerFeature'",
     "value": 114
