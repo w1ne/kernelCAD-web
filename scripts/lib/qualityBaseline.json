@@ -421,12 +421,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/flattenPattern.ts",
-    "symbol": "Function 'flattenPattern'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/holeLowerer.ts",
     "symbol": "Function 'lowerHoles'",
     "value": 19
@@ -1180,12 +1174,6 @@
     "file": "src/kernel/backends/occt/edgeSelectionLabels.ts",
     "symbol": "Function 'labelToEdgeQuery'",
     "value": 107
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/flattenPattern.ts",
-    "symbol": "Function 'flattenPattern'",
-    "value": 112
   },
   {
     "rule": "max-lines-per-function",

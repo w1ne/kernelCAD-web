@@ -36,6 +36,33 @@ export function flattenPattern(
   records: readonly FeatureRecord[],
   terminalId?: string,
 ): Region {
+  const { recById, terminal } = resolveFlattenTerminal(records, terminalId);
+  const { root, chain } = walkFlattenLineage(recById, terminal);
+  const bendRecords = collectBendRecords(chain, terminal);
+  const outer = resolveSketchOutline(recById, root, terminal);
+  // Slice-1 polylines have no holes; reserved for future slices.
+  const holes: Vec2[][] = [];
+  const bendLines = buildBendLines(bendRecords);
+
+  // The flat blank length is the sketch's original outline plus, for each
+  // bend, an `arcLength` strip whose width replaces the projected bent
+  // section. Because the sheet was originally flat with that exact outline
+  // length, the K-factor neutral-axis identity means the recovered outer
+  // wire is the original outline modulo float noise — no per-bend
+  // un-rotation arithmetic needed for slice-1 single-/two-bend roundtrips.
+  return makeRegion({
+    plane: { origin: [0, 0, 0], normal: [0, 0, 1] },
+    outer,
+    holes,
+    bendLines,
+  });
+}
+
+/** Resolve the record map and the terminal (caller's choice, or last record). */
+function resolveFlattenTerminal(
+  records: readonly FeatureRecord[],
+  terminalId?: string,
+): { recById: Map<string, FeatureRecord>; terminal: FeatureRecord } {
   if (records.length === 0) {
     throw new KernelError(
       'feature.invalid-args',
@@ -57,8 +84,14 @@ export function flattenPattern(
       'invalid-args.flattenPattern.unknown-terminal — pass an id of a Shape captured in this session.',
     );
   }
+  return { recById, terminal };
+}
 
-  // Walk lineage backward to the sheetMetal root.
+/** Walk lineage backward from the terminal to the sheetMetal root. */
+function walkFlattenLineage(
+  recById: Map<string, FeatureRecord>,
+  terminal: FeatureRecord,
+): { root: FeatureRecord; chain: FeatureRecord[] } {
   const chain: FeatureRecord[] = [];
   let cur: FeatureRecord | undefined = terminal;
   while (cur) {
@@ -77,8 +110,11 @@ export function flattenPattern(
       'invalid-args.flattenPattern.no-root — build the body with sheetMetal(sketch, opts) first.',
     );
   }
+  return { root, chain };
+}
 
-  // Reverse to root-first ordering.
+/** Reverse to root-first ordering and enforce the slice-1 bend limit. */
+function collectBendRecords(chain: FeatureRecord[], terminal: FeatureRecord): FeatureRecord[] {
   chain.reverse();
   const bendRecords = chain.filter(r => r.kind === 'sheetMetalBend');
   if (bendRecords.length > 2) {
@@ -89,9 +125,15 @@ export function flattenPattern(
       `flattenPattern.multi-bend-unsupported — chain has ${bendRecords.length} bends; flatten an upstream Shape with <= 2 bends, or wait for slice 2.`,
     );
   }
+  return bendRecords;
+}
 
-  // Recover the original sketch outline from the sketch record referenced
-  // by the sheetMetal root's `inputs.sketch`.
+/** Recover the original sketch outline from the sheetMetal root's sketch input. */
+function resolveSketchOutline(
+  recById: Map<string, FeatureRecord>,
+  root: FeatureRecord,
+  terminal: FeatureRecord,
+): Vec2[] {
   const sketchInputRef = root.inputs.sketch;
   if (!sketchInputRef || sketchInputRef.kind !== 'feature') {
     throw new KernelError(
@@ -110,10 +152,11 @@ export function flattenPattern(
       'invalid-args.flattenPattern.no-sketch — re-run sheetMetal(profile, opts) with a closed path() sketch.',
     );
   }
-  const outer = extractPolylineFromSketch(sketchRec);
-  // Slice-1 polylines have no holes; reserved for future slices.
-  const holes: Vec2[][] = [];
+  return extractPolylineFromSketch(sketchRec);
+}
 
+/** Compute bend-line endpoints from the persisted bendRecord metadata. */
+function buildBendLines(bendRecords: FeatureRecord[]): BendLineRecord[] {
   // For each recorded bend, compute its bend-line endpoints. The bendRecord
   // metadata is persisted by the sheetMetalBend lowerer (axisOrigin /
   // axisDirection / edgeLength in world coords, slice-1 XY plane).
@@ -151,19 +194,7 @@ export function flattenPattern(
       ordinal: i,
     });
   }
-
-  // The flat blank length is the sketch's original outline plus, for each
-  // bend, an `arcLength` strip whose width replaces the projected bent
-  // section. Because the sheet was originally flat with that exact outline
-  // length, the K-factor neutral-axis identity means the recovered outer
-  // wire is the original outline modulo float noise — no per-bend
-  // un-rotation arithmetic needed for slice-1 single-/two-bend roundtrips.
-  return makeRegion({
-    plane: { origin: [0, 0, 0], normal: [0, 0, 1] },
-    outer,
-    holes,
-    bendLines,
-  });
+  return bendLines;
 }
 
 interface SketchCommandLike {
