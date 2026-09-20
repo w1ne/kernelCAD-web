@@ -452,8 +452,7 @@ const classifyBrace = (st: StripState): BraceKind => {
 
 const inObjectKey = (st: StripState): boolean => st.braces[st.braces.length - 1] === 'object';
 
-/** Consume a declaration keyword that may carry a type-only declaration. */
-const handleTypeKeyword = (st: StripState, word: string, identStart: number): boolean => {
+const handleBindingKeyword = (st: StripState, word: string): boolean => {
     if (word === 'const' || word === 'let' || word === 'var') {
         st.expectBinding = true;
         st.lastKind = 'ident';
@@ -462,6 +461,10 @@ const handleTypeKeyword = (st: StripState, word: string, identStart: number): bo
         st.statementStart = false;
         return true;
     }
+    return false;
+};
+
+const handleImportKeyword = (st: StripState, word: string, identStart: number): boolean => {
     if (word === 'import' || word === 'export') {
         st.inImport = true;
         st.lastKind = 'ident';
@@ -477,6 +480,10 @@ const handleTypeKeyword = (st: StripState, word: string, identStart: number): bo
         st.lastPunct = '';
         return true;
     }
+    return false;
+};
+
+const handleTypeDeclarationKeyword = (st: StripState, word: string, identStart: number): boolean => {
     if ((word === 'interface' || word === 'type' || word === 'enum' || word === 'declare')
         && st.statementStart
         && st.braces[st.braces.length - 1] !== 'object') {
@@ -497,6 +504,13 @@ const handleTypeKeyword = (st: StripState, word: string, identStart: number): bo
         st.i = afterKeyword;
     }
     return false;
+};
+
+/** Consume a declaration keyword that may carry a type-only declaration. */
+const handleTypeKeyword = (st: StripState, word: string, identStart: number): boolean => {
+    if (handleBindingKeyword(st, word)) return true;
+    if (handleImportKeyword(st, word, identStart)) return true;
+    return handleTypeDeclarationKeyword(st, word, identStart);
 };
 
 const stepIdentifier = (st: StripState): void => {
