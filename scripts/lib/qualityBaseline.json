@@ -31,12 +31,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/drawing/geometry2d.ts",
-    "symbol": "Function 'splitAtJunctions'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/drawing/reconstructPhases.ts",
     "symbol": "Function 'applyRadialCallouts'",
     "value": 16
