@@ -49,12 +49,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/kernel/naming/resolveTopoRef.ts",
-    "symbol": "Function 'resolveTopoRef'",
-    "value": 103
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/modeling/apiCaptureMethods.ts",
     "symbol": "Function 'makeCaptureMethods'",
     "value": 101
