@@ -14,6 +14,13 @@
 
 ### Task 1: Presets config and builder
 
+> **Superseded code note:** the snippets below are the original plan draft.
+> The merged implementation (commits `2df8055a`, `62617c62`) is authoritative:
+> `extractSections` is fence-aware, CRLF-safe, and throws on duplicate
+> headings; `BuiltSweepPrompt` is `{ text, bytes, preset }` (no
+> `sectionBytes`); missing skills raise the `systemPrompt.ts`-style error.
+> Replay from the repository, not from this code block.
+
 **Files:**
 - Create: `eval/prompts/sweep-prompt-presets.json`
 - Create: `eval/lib/sweepPrompt.ts`
