@@ -559,12 +559,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/server/sessionPool.ts",
-    "symbol": "Function 'createSessionPool'",
-    "value": 144
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/StudioShell.tsx",
     "symbol": "Function 'StudioShell'",
     "value": 140
