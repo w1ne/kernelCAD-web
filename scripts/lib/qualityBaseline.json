@@ -199,12 +199,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/capture/assemblyParts.ts",
-    "symbol": "Function 'makePartRef'",
-    "value": 134
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/modeling/capture/featureMeshing.ts",
     "symbol": "Async function 'meshFeaturesPerFeature'",
     "value": 114
