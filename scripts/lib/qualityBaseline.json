@@ -19,12 +19,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/drawingSections.ts",
-    "symbol": "Function 'renderObliqueSection'",
-    "value": 105
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/kernel/backends/occt/edgeSelectionLabels.ts",
     "symbol": "Function 'labelToEdgeQuery'",
     "value": 107
