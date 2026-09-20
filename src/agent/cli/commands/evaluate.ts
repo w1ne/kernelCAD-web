@@ -28,6 +28,7 @@ import {
   type PoseEnvelopeDiagnostic,
 } from '../../../modeling/mates/poseEnvelope';
 import { detectUnstructuredBodies } from '../../../modeling/validation/unstructuredBodies';
+import { detectNoShapeReturn } from '../../../modeling/validation/noShapeReturn';
 import { buildFeatureTrace } from '../../repair/trace';
 import type { FeatureTraceEntry } from '../../repair/types';
 
@@ -150,6 +151,7 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
     model.diagnostics.push(
       ...detectUnstructuredBodies({ returnValue: model.returnValue, code: model.code }),
     );
+    model.diagnostics.push(...detectNoShapeReturn({ returnValue: model.returnValue }));
   }
 
   // W3 DFM enforcement: when the script declares dfmSpec(...), run the
@@ -255,7 +257,10 @@ export async function dryRunScript(input: EvaluateInput): Promise<DryRunScriptRe
 
   // Capture-light static check — same producer the full evaluation runs.
   // Needs only the return value + source text, no lowered geometry.
-  const diagnostics = detectUnstructuredBodies({ returnValue: run.returnValue, code });
+  const diagnostics = [
+    ...detectUnstructuredBodies({ returnValue: run.returnValue, code }),
+    ...detectNoShapeReturn({ returnValue: run.returnValue }),
+  ];
 
   return {
     evaluation: {
