@@ -55,12 +55,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/listFaces.ts",
-    "symbol": "Function 'summarizeLineage'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/segment.ts",
     "symbol": "Function 'adoptFragments'",
     "value": 16

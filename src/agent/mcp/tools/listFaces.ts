@@ -95,18 +95,27 @@ function countInnerLoops(face: Face): number {
   }
 }
 
+function lineageField<K extends keyof FaceLineage>(lineage: FaceLineage | undefined, key: K): FaceLineage[K] | undefined {
+  if (lineage === undefined) return undefined;
+  return lineage[key];
+}
+
 function summarizeLineage(lineage: FaceLineage | undefined, metadataLabel: string | undefined): FaceLineageSummary {
-  return {
-    ...(lineage?.canonicalName !== undefined ? { canonicalName: lineage.canonicalName } : {}),
-    ...(lineage?.labelName !== undefined ? { labelName: lineage.labelName } : {}),
-    ...(metadataLabel !== undefined && lineage?.labelName === undefined
-      ? { labelName: metadataLabel }
-      : {}),
-    ...(lineage?.featureKind !== undefined ? { featureKind: lineage.featureKind } : {}),
-    ...(lineage?.featureOrdinal !== undefined ? { featureOrdinal: lineage.featureOrdinal } : {}),
-    ...(lineage?.featureName !== undefined ? { featureName: lineage.featureName } : {}),
-    ...(lineage?.surfaceType !== undefined ? { surfaceType: lineage.surfaceType } : {}),
-  };
+  const canonicalName = lineageField(lineage, 'canonicalName');
+  const labelName = lineageField(lineage, 'labelName');
+  const featureKind = lineageField(lineage, 'featureKind');
+  const featureOrdinal = lineageField(lineage, 'featureOrdinal');
+  const featureName = lineageField(lineage, 'featureName');
+  const surfaceType = lineageField(lineage, 'surfaceType');
+  const summary: FaceLineageSummary = {};
+  if (canonicalName !== undefined) summary.canonicalName = canonicalName;
+  if (labelName !== undefined) summary.labelName = labelName;
+  if (metadataLabel !== undefined && labelName === undefined) summary.labelName = metadataLabel;
+  if (featureKind !== undefined) summary.featureKind = featureKind;
+  if (featureOrdinal !== undefined) summary.featureOrdinal = featureOrdinal;
+  if (featureName !== undefined) summary.featureName = featureName;
+  if (surfaceType !== undefined) summary.surfaceType = surfaceType;
+  return summary;
 }
 
 function resolveFaceRefName(lineage: FaceLineage | undefined, metadataLabel: string | undefined, idx: number): string {
