@@ -12,6 +12,8 @@ import type {
 import { isHdriPresetKey } from '../../shared/intent/renderEnvironmentRecord';
 import type { CameraTargetMetadata, CameraTargetSpec } from '../../shared/intent/cameraTargetRecord';
 import {
+  type AnimationKey,
+  type AnimationTrack,
   type AnimationViewMetadata,
   type AnimationViewSpec,
   type AnimationViewSweepSpec,
@@ -56,76 +58,32 @@ export function buildReferenceImageFeatureSpec(
 
   const ext = extname(args.path).toLowerCase();
   const validExts = new Set(['.png', '.jpg', '.jpeg', '.webp']);
-  if (!validExts.has(ext)) {
-    diagnostics.push({
-      target: 'export-occt',
-      code: 'feature.reference-image.format-unsupported',
-      severity: 'error',
-      message: `referenceImage: unsupported file format '${ext || '(no extension)'}'. Supported: .png, .jpg, .jpeg, .webp.`,
-      hint: HINT_TEMPLATES['feature.reference-image.format-unsupported'].template,
-    });
-  }
+  checkReferenceImageFormat(ext, validExts, diagnostics);
 
   // Existence + pixel-dimension probing needs a real filesystem. On node the
   // host-fs port is installed and this behaves exactly as it always has; in the
   // browser there is no filesystem, so we say so explicitly rather than
   // silently reporting "file not found" for a check that never ran.
   const hostFs = getHostFs();
-  const resolvedPath = hostFs ? hostFs.resolveScriptRelative(scriptDir, args.path) : args.path;
-  let fileExists = false;
-  if (validExts.has(ext) && hostFs === null) {
-    diagnostics.push({
-      target: 'export-occt',
-      code: 'cli.host-fs-unavailable',
-      severity: 'error',
-      message:
-        `referenceImage('${args.path}'): this runtime has no filesystem, so the image cannot be read. ` +
-        `referenceImage() works in the kernelCAD CLI and MCP server, not in the in-browser script engine.`,
-      hint: HINT_TEMPLATES['cli.host-fs-unavailable'].template,
-    });
-  } else if (validExts.has(ext) && hostFs !== null) {
-    fileExists = hostFs.fileExists(resolvedPath);
-    if (!fileExists) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.reference-image.path-not-found',
-        severity: 'error',
-        message: `referenceImage: file not found at '${resolvedPath}'.`,
-        hint: HINT_TEMPLATES['feature.reference-image.path-not-found'].template,
-      });
-    }
-  }
+  const { resolvedPath, fileExists } = resolveReferenceImageFile(
+    args,
+    ext,
+    validExts,
+    hostFs,
+    scriptDir,
+    diagnostics,
+  );
 
-  if (!isValidPlaneSpec(args.plane)) {
-    diagnostics.push({
-      target: 'export-occt',
-      code: 'feature.reference-image.invalid-plane',
-      severity: 'error',
-      message: `referenceImage: invalid plane '${JSON.stringify(args.plane)}'. Must be 'xy', 'xz', 'yz', or { plane, offset? }.`,
-      hint: HINT_TEMPLATES['feature.reference-image.invalid-plane'].template,
-    });
-  }
+  checkReferenceImagePlane(args.plane, diagnostics);
 
-  let pixelWidth = 0;
-  let pixelHeight = 0;
-  if (fileExists && hostFs !== null) {
-    const dims = hostFs.imageDimensions(resolvedPath);
-    pixelWidth = dims.width;
-    pixelHeight = dims.height;
-  }
+  const { pixelWidth, pixelHeight } = readReferenceImageDimensions(
+    fileExists,
+    hostFs,
+    resolvedPath,
+  );
 
   const scale: ReferenceImageScale = args.scale ?? 'fit-bbox';
-  if (typeof scale === 'number') {
-    if (!Number.isFinite(scale) || scale <= 0 || scale > 10000) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.reference-image.scale-out-of-range',
-        severity: 'warn',
-        message: `referenceImage: scale ${scale} is out of range. Must be in (0, 10000] mm.`,
-        hint: HINT_TEMPLATES['feature.reference-image.scale-out-of-range'].template,
-      });
-    }
-  }
+  checkReferenceImageScale(scale, diagnostics);
 
   const opacity = Math.max(0, Math.min(1, args.opacity ?? 0.5));
   const metadata: ReferenceImageMetadata & { diagnostics?: CompilerDiagnostic[] } = {
@@ -150,11 +108,137 @@ export function buildReferenceImageFeatureSpec(
   };
 }
 
+function checkReferenceImageFormat(
+  ext: string,
+  validExts: ReadonlySet<string>,
+  diagnostics: CompilerDiagnostic[],
+): void {
+  if (!validExts.has(ext)) {
+    diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.reference-image.format-unsupported',
+      severity: 'error',
+      message: `referenceImage: unsupported file format '${ext || '(no extension)'}'. Supported: .png, .jpg, .jpeg, .webp.`,
+      hint: HINT_TEMPLATES['feature.reference-image.format-unsupported'].template,
+    });
+  }
+}
+
+function resolveReferenceImageFile(
+  args: ReferenceImageCaptureArgs,
+  ext: string,
+  validExts: ReadonlySet<string>,
+  hostFs: ReturnType<typeof getHostFs>,
+  scriptDir: string | undefined,
+  diagnostics: CompilerDiagnostic[],
+): { resolvedPath: string; fileExists: boolean } {
+  const resolvedPath = hostFs ? hostFs.resolveScriptRelative(scriptDir, args.path) : args.path;
+  let fileExists = false;
+  if (validExts.has(ext) && hostFs === null) {
+    diagnostics.push({
+      target: 'export-occt',
+      code: 'cli.host-fs-unavailable',
+      severity: 'error',
+      message:
+        `referenceImage('${args.path}'): this runtime has no filesystem, so the image cannot be read. ` +
+        `referenceImage() works in the kernelCAD CLI and MCP server, not in the in-browser script engine.`,
+      hint: HINT_TEMPLATES['cli.host-fs-unavailable'].template,
+    });
+  } else if (validExts.has(ext) && hostFs !== null) {
+    fileExists = hostFs.fileExists(resolvedPath);
+    if (!fileExists) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.reference-image.path-not-found',
+        severity: 'error',
+        message: `referenceImage: file not found at '${resolvedPath}'.`,
+        hint: HINT_TEMPLATES['feature.reference-image.path-not-found'].template,
+      });
+    }
+  }
+  return { resolvedPath, fileExists };
+}
+
+function checkReferenceImagePlane(
+  plane: PlaneSpec,
+  diagnostics: CompilerDiagnostic[],
+): void {
+  if (!isValidPlaneSpec(plane)) {
+    diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.reference-image.invalid-plane',
+      severity: 'error',
+      message: `referenceImage: invalid plane '${JSON.stringify(plane)}'. Must be 'xy', 'xz', 'yz', or { plane, offset? }.`,
+      hint: HINT_TEMPLATES['feature.reference-image.invalid-plane'].template,
+    });
+  }
+}
+
+function readReferenceImageDimensions(
+  fileExists: boolean,
+  hostFs: ReturnType<typeof getHostFs>,
+  resolvedPath: string,
+): { pixelWidth: number; pixelHeight: number } {
+  let pixelWidth = 0;
+  let pixelHeight = 0;
+  if (fileExists && hostFs !== null) {
+    const dims = hostFs.imageDimensions(resolvedPath);
+    pixelWidth = dims.width;
+    pixelHeight = dims.height;
+  }
+  return { pixelWidth, pixelHeight };
+}
+
+function checkReferenceImageScale(
+  scale: ReferenceImageScale,
+  diagnostics: CompilerDiagnostic[],
+): void {
+  if (typeof scale === 'number') {
+    if (!Number.isFinite(scale) || scale <= 0 || scale > 10000) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.reference-image.scale-out-of-range',
+        severity: 'warn',
+        message: `referenceImage: scale ${scale} is out of range. Must be in (0, 10000] mm.`,
+        hint: HINT_TEMPLATES['feature.reference-image.scale-out-of-range'].template,
+      });
+    }
+  }
+}
+
 export function buildRenderEnvironmentFeatureSpec(args: RenderEnvironmentSpec): VirtualFeatureSpec {
   const diagnostics: CompilerDiagnostic[] = [];
 
   const hasPreset = args.preset !== undefined;
   const hasUrl = args.url !== undefined;
+  validateRenderEnvironmentSource(args, hasPreset, hasUrl, diagnostics);
+
+  const intensity = resolveRenderEnvironmentIntensity(args, diagnostics);
+  const rotation = Number.isFinite(args.rotation) ? Number(args.rotation) : 0;
+
+  const metadata: RenderEnvironmentMetadata & { diagnostics?: CompilerDiagnostic[] } = {
+    virtual: true,
+    ...(hasPreset && isHdriPresetKey(args.preset) ? { preset: args.preset } : {}),
+    ...(hasUrl ? { url: args.url } : {}),
+    intensity,
+    rotation,
+    ...(diagnostics.length > 0 ? { diagnostics } : {}),
+  };
+
+  return {
+    kind: 'renderEnvironment',
+    params: {},
+    inputs: {},
+    metadata: metadata as unknown as Record<string, unknown>,
+  };
+}
+
+function validateRenderEnvironmentSource(
+  args: RenderEnvironmentSpec,
+  hasPreset: boolean,
+  hasUrl: boolean,
+  diagnostics: CompilerDiagnostic[],
+): void {
   if (hasPreset && hasUrl) {
     diagnostics.push({
       target: 'export-occt',
@@ -180,7 +264,12 @@ export function buildRenderEnvironmentFeatureSpec(args: RenderEnvironmentSpec): 
       hint: HINT_TEMPLATES['feature.render-environment.unknown-preset'].template,
     });
   }
+}
 
+function resolveRenderEnvironmentIntensity(
+  args: RenderEnvironmentSpec,
+  diagnostics: CompilerDiagnostic[],
+): number {
   const rawIntensity = args.intensity ?? 1;
   const intensityValid = Number.isFinite(rawIntensity) && rawIntensity > 0 && rawIntensity <= 100;
   if (!intensityValid) {
@@ -192,24 +281,7 @@ export function buildRenderEnvironmentFeatureSpec(args: RenderEnvironmentSpec): 
       hint: HINT_TEMPLATES['feature.render-environment.intensity-out-of-range'].template,
     });
   }
-  const intensity = intensityValid ? rawIntensity : 1;
-  const rotation = Number.isFinite(args.rotation) ? Number(args.rotation) : 0;
-
-  const metadata: RenderEnvironmentMetadata & { diagnostics?: CompilerDiagnostic[] } = {
-    virtual: true,
-    ...(hasPreset && isHdriPresetKey(args.preset) ? { preset: args.preset } : {}),
-    ...(hasUrl ? { url: args.url } : {}),
-    intensity,
-    rotation,
-    ...(diagnostics.length > 0 ? { diagnostics } : {}),
-  };
-
-  return {
-    kind: 'renderEnvironment',
-    params: {},
-    inputs: {},
-    metadata: metadata as unknown as Record<string, unknown>,
-  };
+  return intensityValid ? rawIntensity : 1;
 }
 
 export function buildCameraTargetFeatureSpec(args: CameraTargetSpec): VirtualFeatureSpec {
@@ -369,6 +441,61 @@ function requireDeclaredNumericParam(paramTable: ParamTable, name: unknown, wher
   }
 }
 
+function validateAnimationTrack(
+  track: AnimationTrack,
+  i: number,
+  paramTable: ParamTable,
+  seenParams: Set<string>,
+  badKeys: (why: string) => never,
+): void {
+  if (typeof track !== 'object' || track === null) {
+    badKeys(`tracks[${i}] must be an object { param, keys }; got ${JSON.stringify(track)}`);
+  }
+  requireDeclaredNumericParam(paramTable, track.param, `tracks[${i}].param`);
+  if (seenParams.has(track.param)) {
+    throw new KernelError(
+      'animation.track.duplicate-param',
+      `animationView: tracks[${i}] targets param '${track.param}' which an earlier track already animates; merge the keys into one track per param.`,
+      undefined,
+      HINT_TEMPLATES['animation.track.duplicate-param'].template,
+    );
+  }
+  seenParams.add(track.param);
+  if (!Array.isArray(track.keys) || track.keys.length === 0) {
+    badKeys(`tracks[${i}] ('${track.param}') has an empty keys array; declare at least one key`);
+  }
+  const seenAtMs = new Set<number>();
+  for (let j = 0; j < track.keys.length; j += 1) {
+    validateAnimationKey(track.keys[j], i, j, track.param, seenAtMs, badKeys);
+  }
+}
+
+function validateAnimationKey(
+  key: AnimationKey,
+  i: number,
+  j: number,
+  param: string,
+  seenAtMs: Set<number>,
+  badKeys: (why: string) => never,
+): void {
+  if (typeof key !== 'object' || key === null) {
+    badKeys(`tracks[${i}].keys[${j}] must be an object { atMs, value, ease? }; got ${JSON.stringify(key)}`);
+  }
+  if (!Number.isFinite(key.atMs) || !Number.isFinite(key.value)) {
+    badKeys(`tracks[${i}].keys[${j}] atMs and value must be finite numbers; got (atMs: ${key.atMs}, value: ${key.value})`);
+  }
+  if (key.atMs < 0) {
+    badKeys(`tracks[${i}].keys[${j}] atMs must be >= 0; got ${key.atMs}`);
+  }
+  if (seenAtMs.has(key.atMs)) {
+    badKeys(`tracks[${i}] ('${param}') has duplicate atMs ${key.atMs}; key timestamps must be unique within a track`);
+  }
+  seenAtMs.add(key.atMs);
+  if (key.ease !== undefined && !(ANIMATION_EASES as readonly string[]).includes(key.ease as string)) {
+    badKeys(`tracks[${i}].keys[${j}] has unknown ease ${JSON.stringify(key.ease)}; expected one of ${ANIMATION_EASES.join(' | ')}`);
+  }
+}
+
 function validateAnimationTracks(
   args: AnimationViewTracksSpec,
   fps: number,
@@ -388,43 +515,7 @@ function validateAnimationTracks(
   }
   const seenParams = new Set<string>();
   for (let i = 0; i < args.tracks.length; i += 1) {
-    const track = args.tracks[i];
-    if (typeof track !== 'object' || track === null) {
-      badKeys(`tracks[${i}] must be an object { param, keys }; got ${JSON.stringify(track)}`);
-    }
-    requireDeclaredNumericParam(paramTable, track.param, `tracks[${i}].param`);
-    if (seenParams.has(track.param)) {
-      throw new KernelError(
-        'animation.track.duplicate-param',
-        `animationView: tracks[${i}] targets param '${track.param}' which an earlier track already animates; merge the keys into one track per param.`,
-        undefined,
-        HINT_TEMPLATES['animation.track.duplicate-param'].template,
-      );
-    }
-    seenParams.add(track.param);
-    if (!Array.isArray(track.keys) || track.keys.length === 0) {
-      badKeys(`tracks[${i}] ('${track.param}') has an empty keys array; declare at least one key`);
-    }
-    const seenAtMs = new Set<number>();
-    for (let j = 0; j < track.keys.length; j += 1) {
-      const key = track.keys[j];
-      if (typeof key !== 'object' || key === null) {
-        badKeys(`tracks[${i}].keys[${j}] must be an object { atMs, value, ease? }; got ${JSON.stringify(key)}`);
-      }
-      if (!Number.isFinite(key.atMs) || !Number.isFinite(key.value)) {
-        badKeys(`tracks[${i}].keys[${j}] atMs and value must be finite numbers; got (atMs: ${key.atMs}, value: ${key.value})`);
-      }
-      if (key.atMs < 0) {
-        badKeys(`tracks[${i}].keys[${j}] atMs must be >= 0; got ${key.atMs}`);
-      }
-      if (seenAtMs.has(key.atMs)) {
-        badKeys(`tracks[${i}] ('${track.param}') has duplicate atMs ${key.atMs}; key timestamps must be unique within a track`);
-      }
-      seenAtMs.add(key.atMs);
-      if (key.ease !== undefined && !(ANIMATION_EASES as readonly string[]).includes(key.ease as string)) {
-        badKeys(`tracks[${i}].keys[${j}] has unknown ease ${JSON.stringify(key.ease)}; expected one of ${ANIMATION_EASES.join(' | ')}`);
-      }
-    }
+    validateAnimationTrack(args.tracks[i], i, paramTable, seenParams, badKeys);
   }
   return normalizeAnimationView(args, fps);
 }

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('Reproduction: Sketch on Filleted Face', async ({ page }) => {
     // 1. Load Application
-    await page.goto('/');
+    await page.goto('/studio');
     const editor = page.locator('.monaco-editor').first();
     await expect(editor).toBeVisible({ timeout: 15000 });
     await page.waitForTimeout(1000);

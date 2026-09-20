@@ -258,9 +258,20 @@ export function isLicenseClass(v: unknown): v is LicenseClass {
   return v === 'permissive' || v === 'share-alike' || v === 'fetch-only';
 }
 
-export function isPartRecord(v: unknown): v is PartRecord {
-  if (typeof v !== 'object' || v === null) return false;
-  const r = v as Record<string, unknown>;
+type PartRecordScalarFields = Record<string, unknown> & {
+  id: string;
+  name: string;
+  category: string;
+  family: string;
+  tags: unknown[];
+  attributes: object;
+  sha256: string;
+  source: 'local-catalog' | 'remote';
+  license: string;
+};
+
+/** Scalar shape checks: id, name, category, family, tags, attributes, sha256, source, license. */
+function hasPartRecordScalarFields(r: Record<string, unknown>): r is PartRecordScalarFields {
   if (typeof r.id !== 'string' || r.id.length === 0) return false;
   if (typeof r.name !== 'string') return false;
   if (typeof r.category !== 'string') return false;
@@ -270,26 +281,55 @@ export function isPartRecord(v: unknown): v is PartRecord {
   if (typeof r.sha256 !== 'string') return false;
   if (r.source !== 'local-catalog' && r.source !== 'remote') return false;
   if (typeof r.license !== 'string') return false;
-  if (r.connectorManifest !== undefined) {
+  return true;
+}
+
+/** Connector binding: either a validated manifest with exact names, or a string list. */
+function hasValidPartConnectors(binding: {
+  connectors: unknown;
+  connectorManifest: unknown;
+  partId: string;
+  family: string;
+  geometrySha256: string;
+}): boolean {
+  if (binding.connectorManifest !== undefined) {
     try {
-      const manifest = r.connectorManifest;
+      const manifest = binding.connectorManifest;
       validateHashBoundConnectorManifest(
         manifest,
         {
-          partId: r.id,
-          family: r.family,
-          geometrySha256: r.sha256,
+          partId: binding.partId,
+          family: binding.family,
+          geometrySha256: binding.geometrySha256,
         },
       );
-      if (!hasExactManifestConnectorNames(r.connectors, manifest)) {
+      if (!hasExactManifestConnectorNames(binding.connectors, manifest)) {
         return false;
       }
     } catch {
       return false;
     }
   } else if (
-    !Array.isArray(r.connectors) ||
-    !Array.from(r.connectors).every((connector) => typeof connector === 'string')
+    !Array.isArray(binding.connectors) ||
+    !Array.from(binding.connectors).every((connector) => typeof connector === 'string')
+  ) {
+    return false;
+  }
+  return true;
+}
+
+export function isPartRecord(v: unknown): v is PartRecord {
+  if (typeof v !== 'object' || v === null) return false;
+  const r = v as Record<string, unknown>;
+  if (!hasPartRecordScalarFields(r)) return false;
+  if (
+    !hasValidPartConnectors({
+      connectors: r.connectors,
+      connectorManifest: r.connectorManifest,
+      partId: r.id,
+      family: r.family,
+      geometrySha256: r.sha256,
+    })
   ) {
     return false;
   }

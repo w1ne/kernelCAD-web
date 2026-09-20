@@ -101,48 +101,79 @@ export function classifyHoleFace(face: Face, bore: BoreFrame): HoleRefName | nul
   const csRadius = bore.countersink ? bore.countersink.diameter / 2 : null;
 
   if (surfaceType === 'CYLINDRE') {
-    const r = radiusFromBoreAxis(face, bore);
-    if (Math.abs(r - boreRadius) < RADIUS_TOL) {
-      if (bore.through) {
-        const along = distanceAlongAxis(center, bore.entryPoint, axis);
-        if (along > bore.effectiveDepth * 0.75) return 'wall-back';
-      }
-      return 'wall';
-    }
-    if (cbRadius !== null && Math.abs(r - cbRadius) < RADIUS_TOL) {
-      return 'counterbore-wall';
-    }
-    return null;
+    return classifyCylindricalFace(face, bore, boreRadius, cbRadius, center, axis);
   }
 
-  if (surfaceType === 'CONE' && csRadius !== null) {
-    const r = radiusFromBoreAxis(face, bore);
-    if (r < csRadius + RADIUS_TOL) return 'countersink-cone';
-    return null;
+  if (surfaceType === 'CONE') {
+    return classifyConicalFace(face, bore, csRadius);
   }
 
   if (surfaceType === 'PLANE') {
-    const n = faceNormal(face);
-    if (n === null || Math.abs(dot(n, axis)) < PARALLEL_DOT_MIN) return null;
-
-    const along = distanceAlongAxis(center, bore.entryPoint, axis);
-    const lateralExtent = radiusFromBoreAxis(face, bore);
-    const PLANAR_AXIAL_TOL = 0.05;
-
-    if (bore.counterbore && cbRadius !== null) {
-      if (Math.abs(along - bore.counterbore.depth) < PLANAR_AXIAL_TOL &&
-          lateralExtent < cbRadius + RADIUS_TOL && lateralExtent > boreRadius - RADIUS_TOL) {
-        return 'counterbore-floor';
-      }
-    }
-
-    if (!bore.through &&
-        Math.abs(along - bore.effectiveDepth) < PLANAR_AXIAL_TOL &&
-        lateralExtent < boreRadius + RADIUS_TOL) {
-      return 'floor';
-    }
-    return null;
+    return classifyPlanarFace(face, bore, boreRadius, cbRadius, center, axis);
   }
 
+  return null;
+}
+
+function classifyCylindricalFace(
+  face: Face,
+  bore: BoreFrame,
+  boreRadius: number,
+  cbRadius: number | null,
+  center: Vec3,
+  axis: Vec3,
+): HoleRefName | null {
+  const r = radiusFromBoreAxis(face, bore);
+  if (Math.abs(r - boreRadius) < RADIUS_TOL) {
+    if (bore.through) {
+      const along = distanceAlongAxis(center, bore.entryPoint, axis);
+      if (along > bore.effectiveDepth * 0.75) return 'wall-back';
+    }
+    return 'wall';
+  }
+  if (cbRadius !== null && Math.abs(r - cbRadius) < RADIUS_TOL) {
+    return 'counterbore-wall';
+  }
+  return null;
+}
+
+function classifyConicalFace(
+  face: Face,
+  bore: BoreFrame,
+  csRadius: number | null,
+): HoleRefName | null {
+  if (csRadius === null) return null;
+  const r = radiusFromBoreAxis(face, bore);
+  if (r < csRadius + RADIUS_TOL) return 'countersink-cone';
+  return null;
+}
+
+function classifyPlanarFace(
+  face: Face,
+  bore: BoreFrame,
+  boreRadius: number,
+  cbRadius: number | null,
+  center: Vec3,
+  axis: Vec3,
+): HoleRefName | null {
+  const n = faceNormal(face);
+  if (n === null || Math.abs(dot(n, axis)) < PARALLEL_DOT_MIN) return null;
+
+  const along = distanceAlongAxis(center, bore.entryPoint, axis);
+  const lateralExtent = radiusFromBoreAxis(face, bore);
+  const PLANAR_AXIAL_TOL = 0.05;
+
+  if (bore.counterbore && cbRadius !== null) {
+    if (Math.abs(along - bore.counterbore.depth) < PLANAR_AXIAL_TOL &&
+        lateralExtent < cbRadius + RADIUS_TOL && lateralExtent > boreRadius - RADIUS_TOL) {
+      return 'counterbore-floor';
+    }
+  }
+
+  if (!bore.through &&
+      Math.abs(along - bore.effectiveDepth) < PLANAR_AXIAL_TOL &&
+      lateralExtent < boreRadius + RADIUS_TOL) {
+    return 'floor';
+  }
   return null;
 }

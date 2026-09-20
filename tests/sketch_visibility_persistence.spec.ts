@@ -7,7 +7,7 @@ async function waitForReady(page: Page) {
 
 test.describe('Sketch Visibility Persistence', () => {
   test('persists show/hide sketches toggle across reload', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/studio');
     await waitForReady(page);
 
     // Hide sketches.

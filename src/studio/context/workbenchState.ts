@@ -44,7 +44,39 @@ export type WorkbenchAction =
 // Reducer
 // ============================================================================
 
+type ModeAction = Extract<
+    WorkbenchAction,
+    { type: 'START_SKETCH' | 'EXIT_SKETCH' | 'OPEN_DIALOG' | 'CLOSE_DIALOG' | 'START_FACE_SELECTION' | 'CANCEL_SELECTION' | 'GO_IDLE' }
+>;
+type PanelAction = Extract<WorkbenchAction, { type: 'OPEN_PANEL' | 'CLOSE_PANEL' }>;
+type ToolAction = Extract<WorkbenchAction, { type: 'START_TOOL' | 'UPDATE_TOOL_STATE' | 'CANCEL_TOOL' }>;
+
 export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction): WorkbenchState {
+    switch (action.type) {
+        case 'START_SKETCH':
+        case 'EXIT_SKETCH':
+        case 'OPEN_DIALOG':
+        case 'CLOSE_DIALOG':
+        case 'START_FACE_SELECTION':
+        case 'CANCEL_SELECTION':
+        case 'GO_IDLE':
+            return reduceModeAction(state, action);
+
+        case 'OPEN_PANEL':
+        case 'CLOSE_PANEL':
+            return reducePanelAction(state, action);
+
+        case 'START_TOOL':
+        case 'UPDATE_TOOL_STATE':
+        case 'CANCEL_TOOL':
+            return reduceToolAction(state, action);
+
+        default:
+            return state;
+    }
+}
+
+function reduceModeAction(state: WorkbenchState, action: ModeAction): WorkbenchState {
     switch (action.type) {
         case 'START_SKETCH':
             return {
@@ -88,7 +120,11 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
 
         case 'GO_IDLE':
             return { ...state, mode: { type: 'IDLE' } };
+    }
+}
 
+function reducePanelAction(state: WorkbenchState, action: PanelAction): WorkbenchState {
+    switch (action.type) {
         case 'OPEN_PANEL':
             if (state.activePanels.includes(action.id)) return state;
             return {
@@ -101,7 +137,11 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
                 ...state,
                 activePanels: state.activePanels.filter(id => id !== action.id)
             };
+    }
+}
 
+function reduceToolAction(state: WorkbenchState, action: ToolAction): WorkbenchState {
+    switch (action.type) {
         case 'START_TOOL':
             return {
                 ...state,
@@ -118,8 +158,5 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
         case 'CANCEL_TOOL':
             if (state.mode.type !== 'TOOL_ACTIVE') return state;
             return { ...state, mode: { type: 'IDLE' } };
-
-        default:
-            return state;
     }
 }

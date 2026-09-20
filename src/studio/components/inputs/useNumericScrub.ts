@@ -3,12 +3,24 @@
 import { useState } from 'react';
 import type { NumericScrubInputProps } from './NumericScrubInput';
 
-export function useNumericScrub(props: NumericScrubInputProps) {
-    const { name, value, onChange, onCommit, min, max, step: stepProp } = props;
+function resolveStep(stepProp: number | undefined, min: number | undefined, max: number | undefined): number {
     const hasRange = typeof min === 'number' && typeof max === 'number' && max > min;
     const rawStep = stepProp ?? (hasRange ? Math.max((max - min) / 100, 0.01) : 1);
     // Guard: step must be > 0 for a sensible slider/scrub increment.
-    const step = rawStep > 0 ? rawStep : 1;
+    return rawStep > 0 ? rawStep : 1;
+}
+
+function isScrubFocused(name: string): boolean {
+    return (
+        typeof document !== 'undefined' &&
+        document.activeElement?.getAttribute('data-scrub-name') === name
+    );
+}
+
+export function useNumericScrub(props: NumericScrubInputProps) {
+    const { name, value, onChange, onCommit, min, max, step: stepProp } = props;
+    const hasRange = typeof min === 'number' && typeof max === 'number' && max > min;
+    const step = resolveStep(stepProp, min, max);
     const [lastSyncedValue, setLastSyncedValue] = useState<number>(value);
     const [displayValue, setDisplayValue] = useState<number>(value);
     const [draft, setDraft] = useState<string>(Number.isFinite(value) ? String(value) : '');
@@ -19,9 +31,7 @@ export function useNumericScrub(props: NumericScrubInputProps) {
     // React-canonical "adjust state when a prop changes" pattern — runs during render,
     // no extra paint, idempotent because the !== check stops after one pass.
     // https://react.dev/reference/react/useState#storing-information-from-previous-renders
-    const isFocused =
-        typeof document !== 'undefined' &&
-        document.activeElement?.getAttribute('data-scrub-name') === name;
+    const isFocused = isScrubFocused(name);
     if (value !== lastSyncedValue && !isFocused) {
         setLastSyncedValue(value);
         setDisplayValue(value);

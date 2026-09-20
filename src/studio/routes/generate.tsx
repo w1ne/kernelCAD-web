@@ -95,7 +95,7 @@ function GeneratePage() {
 
   return (
     <main className="min-h-screen bg-vellum text-ink font-sans">
-      <div className="max-w-[1040px] mx-auto px-10 py-7">
+      <div className="max-w-[1040px] mx-auto px-5 sm:px-10 py-7">
         <GenerateHero
           agentEnabled={agentEnabled}
           isBusy={isBusy}
@@ -118,7 +118,7 @@ function GeneratePage() {
         open={signInOpen}
         onClose={() => setSignInOpen(false)}
         title="Sign in to generate"
-        description="Your prompt resumes in the app after sign-in, and agents build the CAD live there."
+        description="Your description will be kept."
       />
     </main>
   );

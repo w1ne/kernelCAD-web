@@ -68,7 +68,35 @@ interface RulesJson {
   rules: DfmRule[];
 }
 
-export async function dfmPreflightTool(input: DfmPreflightInput): Promise<DfmPreflightOutput> {
+type Bend = {
+  ordinal: number;
+  featureId: string;
+  angle: number;
+  radius: number;
+  bendAllowance: number;
+  axisOrigin: [number, number, number];
+  axisDirection: [number, number, number];
+};
+
+interface VendorData {
+  catalog: CatalogJson;
+  specs: SpecsJson;
+  rules: DfmRule[];
+  matEntry: CatalogJson['skus'][string];
+}
+
+type GeometryResolution =
+  | { failure: DfmPreflightOutput }
+  | {
+      region: Region;
+      bendThicknessMm: number;
+      bendKFactor: number;
+      bends: Bend[];
+      pipelineDiagnostics: CompilerDiagnostic[];
+      parsedDxfFindings: Finding[];
+    };
+
+function collectInputDiagnostics(input: DfmPreflightInput): CompilerDiagnostic[] {
   // Input validation — fail closed on missing required args. All three
   // checks accumulate so the agent sees every gap in a single round-trip.
   const inputDiag: CompilerDiagnostic[] = [];
@@ -77,82 +105,105 @@ export async function dfmPreflightTool(input: DfmPreflightInput): Promise<DfmPre
   if (input.thicknessIn === undefined && input.thicknessMm === undefined) {
     inputDiag.push(emit('dfm.input.thickness-required'));
   }
-  if (inputDiag.length > 0) {
-    return { ok: false, findings: [], diagnostics: inputDiag };
-  }
+  return inputDiag;
+}
 
+function loadVendorData(vendor: string, materialSku: string): VendorData | null {
   // Load vendor data files.
-  const vendorDir = join(CATALOG_ROOT, 'vendors', input.vendor as string);
-  if (!existsSync(vendorDir)) {
-    return {
-      ok: false, findings: [], diagnostics: [emit('dfm.material.unknown-sku')],
-    };
-  }
+  const vendorDir = join(CATALOG_ROOT, 'vendors', vendor);
+  if (!existsSync(vendorDir)) return null;
   const catalog: CatalogJson = JSON.parse(readFileSync(join(vendorDir, 'catalog.json'), 'utf-8'));
   const specs: SpecsJson = JSON.parse(readFileSync(join(vendorDir, 'specs.json'), 'utf-8'));
   const rulesFile: RulesJson = JSON.parse(readFileSync(join(vendorDir, 'rules.json'), 'utf-8'));
   const rules: DfmRule[] = rulesFile.rules;
-
-  const materialSku = input.material as string;
   const matEntry = catalog.skus[materialSku];
-  if (!matEntry) {
-    return {
-      ok: false, findings: [], diagnostics: [emit('dfm.material.unknown-sku')],
-    };
-  }
-  const thicknessIn = input.thicknessIn ?? (input.thicknessMm as number) / 25.4;
-  const thicknessMm = input.thicknessMm ?? (input.thicknessIn as number) * 25.4;
-  const service: DfmService = input.service ?? inferService(matEntry);
+  if (!matEntry) return null;
+  return { catalog, specs, rules, matEntry };
+}
 
+async function resolveGeometrySource(
+  input: DfmPreflightInput,
+  thicknessMm: number,
+): Promise<GeometryResolution> {
   // Branch on geometry source: .kcad.ts file/code vs DXF path.
-  let region: Region;
-  let bendThicknessMm = thicknessMm;
-  let bendKFactor = 0.38;
-  let bends: Array<{ ordinal: number; featureId: string; angle: number; radius: number; bendAllowance: number; axisOrigin: [number, number, number]; axisDirection: [number, number, number] }> = [];
-  let pipelineDiagnostics: CompilerDiagnostic[] = [];
-  let parsedDxfFindings: Finding[] = [];
-
   if (input.dxf) {
     const parsed = parseDxfInput(input.dxf);
-    parsedDxfFindings = parsed.findings;
     if (!parsed.region) {
       // Unrecoverable DXF (no cut polylines) — surface findings as the
       // failure mode and return early.
       return {
-        ok: false,
-        findings: parsed.findings,
-        diagnostics: parsed.findings.map(findingToDiagnostic),
+        failure: {
+          ok: false,
+          findings: parsed.findings,
+          diagnostics: parsed.findings.map(findingToDiagnostic),
+        },
       };
     }
-    region = parsed.region;
-    // DXF carries no thickness metadata in the contract; use input.
-    bendThicknessMm = thicknessMm;
-    bendKFactor = 0.38;
-    bends = [];
-  } else if (input.file || input.code) {
+    return {
+      region: parsed.region,
+      // DXF carries no thickness metadata in the contract; use input.
+      bendThicknessMm: thicknessMm,
+      bendKFactor: 0.38,
+      bends: [],
+      pipelineDiagnostics: [],
+      parsedDxfFindings: parsed.findings,
+    };
+  }
+  if (input.file || input.code) {
     const fp = await flattenPatternTool({ file: input.file, code: input.code, featureId: input.featureId });
     if (!fp.ok || !fp.region) {
-      return { ok: false, findings: [], diagnostics: fp.diagnostics };
+      return { failure: { ok: false, findings: [], diagnostics: fp.diagnostics } };
     }
     const bt = await getBendTableTool({ file: input.file, code: input.code });
-    region = {
-      plane: fp.region.plane,
-      outer: fp.region.outer,
-      holes: fp.region.holes,
-      bendLines: fp.region.bendLines,
-    };
+    let bendThicknessMm = thicknessMm;
+    let bendKFactor = 0.38;
     if (bt.rootSheetMetal !== undefined) {
       bendThicknessMm = bt.rootSheetMetal.thickness;
       bendKFactor = bt.rootSheetMetal.kFactor;
     }
-    bends = bt.bends.slice();
-    pipelineDiagnostics = [...fp.diagnostics, ...bt.diagnostics];
-  } else {
     return {
-      ok: false, findings: [],
-      diagnostics: [emit('dfm.input.vendor-required')], // never reached given input validation above; keeps TS happy
+      region: {
+        plane: fp.region.plane,
+        outer: fp.region.outer,
+        holes: fp.region.holes,
+        bendLines: fp.region.bendLines,
+      },
+      bendThicknessMm,
+      bendKFactor,
+      bends: bt.bends.slice(),
+      pipelineDiagnostics: [...fp.diagnostics, ...bt.diagnostics],
+      parsedDxfFindings: [],
     };
   }
+  return {
+    failure: {
+      ok: false, findings: [],
+      diagnostics: [emit('dfm.input.vendor-required')], // never reached given input validation above; keeps TS happy
+    },
+  };
+}
+
+export async function dfmPreflightTool(input: DfmPreflightInput): Promise<DfmPreflightOutput> {
+  const inputDiag = collectInputDiagnostics(input);
+  if (inputDiag.length > 0) {
+    return { ok: false, findings: [], diagnostics: inputDiag };
+  }
+
+  const materialSku = input.material as string;
+  const vendorData = loadVendorData(input.vendor as string, materialSku);
+  if (!vendorData) {
+    return {
+      ok: false, findings: [], diagnostics: [emit('dfm.material.unknown-sku')],
+    };
+  }
+  const { catalog, specs, rules, matEntry } = vendorData;
+  const thicknessIn = input.thicknessIn ?? (input.thicknessMm as number) / 25.4;
+  const thicknessMm = input.thicknessMm ?? (input.thicknessIn as number) * 25.4;
+  const service: DfmService = input.service ?? inferService(matEntry);
+
+  const geometry = await resolveGeometrySource(input, thicknessMm);
+  if ('failure' in geometry) return geometry.failure;
+  const { region, bendThicknessMm, bendKFactor, bends, pipelineDiagnostics, parsedDxfFindings } = geometry;
 
   const ownerPart = input.featureId ?? 'shape';
   const bundle = measure(

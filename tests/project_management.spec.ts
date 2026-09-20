@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Project Management', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto('/');
+        await page.goto('/studio');
         await page.evaluate(() => localStorage.clear());
         await page.reload();
         await page.waitForSelector('[data-testid="workbench-ready"]', { state: 'attached' });

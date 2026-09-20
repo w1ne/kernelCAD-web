@@ -2,8 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/sketch.ts
 import type { FeatureId, FeatureRef, Vec3, AxisSpec, Param } from '../../shared/intent/types';
-import { isValidAxisSpec, isValidEditableNumber } from '../../shared/intent/types';
-import type { ParamTable } from '../../shared/runtime/paramTable';
+import { isValidAxisSpec } from '../../shared/intent/types';
 import type { CaptureSession } from './captureSession';
 import { validateFaceLabels } from './faceLabels';
 import { Shape } from './proxy';
@@ -20,12 +19,9 @@ import {
 } from '../../shared/runtime/editableHelpers';
 import type { SketchCommand } from '../../shared/capture/sketchCommand';
 import type { Curve3D } from './curveProxy';
-import {
-  TANGENT_SIDES,
-  type TangentEntity2D,
-  type TangentEntitySpec,
-  type TangentNearSpec,
-} from '../../shared/capture/tangency';
+import { type TangentEntity2D } from '../../shared/capture/tangency';
+import { reflectSketchCommands } from './sketchReflect';
+import { toNearSpec, validateTangentEntity } from './sketchTangency';
 import {
   checkNurbsPenMatch,
   resolveNurbsDegree,
@@ -33,6 +29,12 @@ import {
   toNurbsKnots,
   toNurbsWeights,
 } from './nurbsSegmentPhases';
+import {
+  checkSplineConsecutiveDistinct,
+  checkSplinePenMatch,
+  toSplineTangent,
+  toSplineWaypoints,
+} from './splinePhases';
 
 /**
  * 2D-Hermite endpoint shape — analogue of the 3D `HermiteEndpoint` used by
@@ -51,6 +53,17 @@ export interface HermiteEndpoint2D {
   point: [Editable<number>, Editable<number>];
   tangent: [Editable<number>, Editable<number>];
   curvature?: [Editable<number>, Editable<number>];
+}
+
+/** Options accepted by `Sketch.loft`. */
+export interface LoftOptions {
+  spacing?: Editable<number>;
+  planes?: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [Editable<number>, Editable<number>, Editable<number>] }>;
+  ruled?: boolean;
+  startPoint?: [Editable<number>, Editable<number>, Editable<number>];
+  endPoint?: [Editable<number>, Editable<number>, Editable<number>];
+  faceLabels?: FaceLabelsMap;
+  rails?: Curve3D[];
 }
 
 // Re-export so existing modeling/agent/authoring importers keep working.
@@ -295,64 +308,18 @@ export class Sketch {
    */
   loft(
     other: Sketch | Sketch[],
-    opts: {
-      spacing?: Editable<number>;
-      planes?: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [Editable<number>, Editable<number>, Editable<number>] }>;
-      ruled?: boolean;
-      startPoint?: [Editable<number>, Editable<number>, Editable<number>];
-      endPoint?: [Editable<number>, Editable<number>, Editable<number>];
-      faceLabels?: FaceLabelsMap;
-      rails?: Curve3D[];
-    } = {},
+    opts: LoftOptions = {},
   ): Shape {
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'loft');
     const others = Array.isArray(other) ? other : [other];
     const allSketches = [this, ...others];
-    const inputs: Record<string, FeatureRef> = {};
-    for (let i = 0; i < allSketches.length; i++) {
-      inputs[`sketch_${i}`] = { kind: 'feature', id: allSketches[i].id };
-    }
-    const rails = opts.rails ?? [];
-    if (!Array.isArray(rails)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `loft: opts.rails must be an array of Curve3D; got ${typeof rails}.`,
-        this.id,
-        'invalid-args.loft.rails — pass Curve3D values from nurbsCurve / spline3d / curveBridge.',
-      );
-    }
-    for (let i = 0; i < rails.length; i++) {
-      const rail = rails[i];
-      if (!rail || typeof rail !== 'object' || !('id' in rail) || !('pointAt' in rail)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `loft: opts.rails[${i}] is not a Curve3D.`,
-          this.id,
-          'invalid-args.loft.rails — each rail must be a Curve3D.',
-        );
-      }
-      inputs[`rail_${i}`] = { kind: 'feature', id: rail.id };
-    }
+    const inputs = buildSketchInputs(allSketches);
+    const rails = validateLoftRails(opts, this.id, inputs);
     return this.session.createShape({
       kind: 'loft',
       inputs,
-      params: {
-        profileKind: { expression: "'sketch'", unit: 'unitless', evaluated: 0 },
-        spacing: toParam(opts.spacing ?? 10, 'mm'),
-        ruled: { expression: String(opts.ruled ?? false), unit: 'unitless', evaluated: opts.ruled ? 1 : 0 },
-        sectionCount: { expression: String(allSketches.length), unit: 'unitless', evaluated: allSketches.length },
-        railCount: { expression: String(rails.length), unit: 'unitless', evaluated: rails.length },
-      },
-      metadata: {
-        // Numeric coordinates are stored as plain numbers (unchanged records);
-        // a ParamRef coordinate is boxed as a Param so the dispatcher's
-        // pre-resolve substitutes it at lower time.
-        planes: opts.planes?.map((p) => ({ ...p, origin: editablePoint3(p.origin) })),
-        startPoint: opts.startPoint === undefined ? undefined : editablePoint3(opts.startPoint),
-        endPoint: opts.endPoint === undefined ? undefined : editablePoint3(opts.endPoint),
-        rails: rails.map((c) => c.id),
-        ...(faceLabels ? { faceLabels } : {}),
-      },
+      params: buildLoftParams(allSketches, opts, rails),
+      metadata: buildLoftMetadata(opts, rails, faceLabels),
     });
   }
 
@@ -386,163 +353,10 @@ export class Sketch {
       );
     }
 
-    // Reflection is affine, so it stays SYMBOLIC: a ParamRef coordinate
-    // reflects to a ParamRef expression (`-y`, `2·offset − y`) that the
-    // dispatcher re-evaluates at lower time, and a ParamRef offset is carried
-    // the same way. Plain numbers fold back to plain numbers, so a numeric
-    // sketch reflects to exactly the record it always did.
-    const offsetExpr: ParamRefExpr | undefined =
-      typeof axis === 'object' ? paramExpr(toParam(axis.offset ?? 0, 'mm')) : undefined;
-    const mirrorExpr = (e: ParamRefExpr): ParamRefExpr =>
-      offsetExpr === undefined
-        ? { kind: 'neg', expr: e }
-        : {
-            kind: 'binop',
-            op: '-',
-            left: { kind: 'binop', op: '*', left: { kind: 'lit', value: 2 }, right: offsetExpr },
-            right: e,
-          };
-    const axisLetter = typeof axis === 'object' ? axis.axis : axis;
-
-    const reflectXY = (x: Param, y: Param): [Param, Param] => {
-      if (axisLetter === 'x') {
-        return [paramFromExpr(paramExpr(x), x.unit), paramFromExpr(mirrorExpr(paramExpr(y)), y.unit)];
-      }
-      return [paramFromExpr(mirrorExpr(paramExpr(x)), x.unit), paramFromExpr(paramExpr(y), y.unit)];
-    };
-
-    const negateScalar = (p: Param): Param =>
-      paramFromExpr({ kind: 'neg', expr: paramExpr(p) }, p.unit);
-
-    // Vector (direction-only) reflection. Same axis as the coordinate
-    // reflection above but WITHOUT the offset shift — used for derivatives
-    // (tangent, curvature) which carry no absolute-position component.
-    const reflectVec = (vx: Param, vy: Param): [Param, Param] => {
-      if (axisLetter === 'x') {
-        return [paramFromExpr(paramExpr(vx), vx.unit), negateScalar(vy)];
-      }
-      return [negateScalar(vx), paramFromExpr(paramExpr(vy), vy.unit)];
-    };
-
-    // Arc sign-flip: reflection inverts winding. For arcs whose direction is
-    // encoded as a sign on a scalar (sagitta, bulge, radius), negate the sign.
-    // tangentArc has no explicit direction parameter — the tangent is inherited
-    // from the prior segment, which will also be reflected, so no flip needed.
-    // threePointsArc is fully determined by three reflected points — no flip needed.
-    // Tangency entities reflect like any other geometry, with one twist: a
-    // mirror reverses handedness, so a solution that was on the RIGHT of a
-    // directed line is on the LEFT of the mirrored line. `side: 'outside'`
-    // is defined relative to that direction, so reflecting the endpoints AND
-    // swapping from/to restores the original left/right relationship and
-    // keeps the qualifier meaning what the author wrote. Circle qualifiers
-    // (inside/outside the circle) are mirror-invariant and need no fix-up.
-    const reflectEntity = (e: TangentEntitySpec): TangentEntitySpec => {
-      if (e.kind === 'line') {
-        const [x1, y1] = reflectXY(e.x1, e.y1);
-        const [x2, y2] = reflectXY(e.x2, e.y2);
-        return { ...e, x1: x2, y1: y2, x2: x1, y2: y1 };
-      }
-      const [cx, cy] = reflectXY(e.cx, e.cy);
-      return { ...e, cx, cy };
-    };
-    const reflectNear = (n: TangentNearSpec | undefined): TangentNearSpec | undefined => {
-      if (!n) return undefined;
-      const [x, y] = reflectXY(n.x, n.y);
-      return { x, y };
-    };
-
     const record = this.session.getRecords().find(r => r.id === this.id);
     const commands: SketchCommand[] = (record?.metadata as { commands?: SketchCommand[] })?.commands ?? [];
 
-    const newCommands: SketchCommand[] = commands.map(cmd => {
-      switch (cmd.kind) {
-        case 'moveTo': {
-          const [x, y] = reflectXY(cmd.x, cmd.y);
-          return { ...cmd, x, y };
-        }
-        case 'lineTo': {
-          const [x, y] = reflectXY(cmd.x, cmd.y);
-          return { ...cmd, x, y };
-        }
-        case 'tangentArc': {
-          const [x, y] = reflectXY(cmd.x, cmd.y);
-          return { ...cmd, x, y };
-        }
-        case 'threePointsArc': {
-          const [x, y] = reflectXY(cmd.x, cmd.y);
-          const [midX, midY] = reflectXY(cmd.midX, cmd.midY);
-          return { ...cmd, x, y, midX, midY };
-        }
-        case 'sagittaArc': {
-          const [x, y] = reflectXY(cmd.x, cmd.y);
-          return { ...cmd, x, y, sagitta: negateScalar(cmd.sagitta) };
-        }
-        case 'bulgeArc': {
-          const [x, y] = reflectXY(cmd.x, cmd.y);
-          return { ...cmd, x, y, bulge: negateScalar(cmd.bulge) };
-        }
-        case 'radiusArc': {
-          const [x, y] = reflectXY(cmd.x, cmd.y);
-          return { ...cmd, x, y, radius: negateScalar(cmd.radius) };
-        }
-        case 'smoothSpline': {
-          // smoothSpline inherits its start tangent from the prior segment
-          // (which is also reflected here), so we only flip the endpoint.
-          // The end tangent is auto-chosen by replicad; reflection of the
-          // surrounding context picks the correct mirrored tangent.
-          const [x, y] = reflectXY(cmd.x, cmd.y);
-          return { ...cmd, x, y };
-        }
-        case 'spline': {
-          // Reflect every waypoint; tension is a scalar magnitude (no flip).
-          const newPoints = cmd.points.map(p => {
-            const [x, y] = reflectXY(p.x, p.y);
-            return { x, y };
-          });
-          return { ...cmd, points: newPoints };
-        }
-        case 'nurbsSegment': {
-          // Reflect every control point; degree, weights, and knots are
-          // invariant under coordinate reflection.
-          const newControls = cmd.controlPoints.map(p => {
-            const [x, y] = reflectXY(p.x, p.y);
-            return { x, y };
-          });
-          return { ...cmd, controlPoints: newControls };
-        }
-        case 'hermiteG2_2d': {
-          // Reflect endpoints with the affine offset; reflect tangents and
-          // curvatures as pure direction vectors (no offset shift).
-          const [ax, ay] = reflectXY(cmd.ax, cmd.ay);
-          const [bx, by] = reflectXY(cmd.bx, cmd.by);
-          const [atx, aty] = reflectVec(cmd.atx, cmd.aty);
-          const [btx, bty] = reflectVec(cmd.btx, cmd.bty);
-          const [acx, acy] = cmd.acx !== undefined && cmd.acy !== undefined
-            ? reflectVec(cmd.acx, cmd.acy)
-            : [undefined, undefined];
-          const [bcx, bcy] = cmd.bcx !== undefined && cmd.bcy !== undefined
-            ? reflectVec(cmd.bcx, cmd.bcy)
-            : [undefined, undefined];
-          return {
-            ...cmd,
-            ax, ay, bx, by,
-            atx, aty, btx, bty,
-            acx, acy, bcx, bcy,
-          };
-        }
-        case 'tangentCircle':
-          return { ...cmd, entities: cmd.entities.map(reflectEntity), near: reflectNear(cmd.near) };
-        case 'tangentLine':
-          return { ...cmd, a: reflectEntity(cmd.a), b: reflectEntity(cmd.b), near: reflectNear(cmd.near) };
-        case 'close':
-          return cmd;
-        default: {
-          // exhaustiveness guard
-          const _exhaustive: never = cmd;
-          return _exhaustive;
-        }
-      }
-    });
+    const newCommands = reflectSketchCommands(commands, axis);
 
     return this.session.createSketch({
       kind: 'sketch',
@@ -832,50 +646,9 @@ export class PathBuilder {
       endTangent?: [Editable<number>, Editable<number>];
     },
   ): PathBuilder {
-    if (!Array.isArray(points) || points.length < 2) {
-      throw new KernelError(
-        'feature.path.spline.degenerate-points',
-        `path().spline: need at least 2 waypoints; got ${points?.length ?? 0}.`,
-        undefined,
-        'path.spline.degenerate-points — pass at least 2 finite Vec2 waypoints (the path interpolates through every one).',
-      );
-    }
-    const paramPoints: Array<{ x: Param; y: Param }> = [];
-    for (let i = 0; i < points.length; i++) {
-      const pt = points[i];
-      if (!Array.isArray(pt) || pt.length !== 2) {
-        throw new KernelError(
-          'feature.path.spline.degenerate-points',
-          `path().spline: waypoint ${i} is not a [x, y] tuple.`,
-          undefined,
-          'path.spline.degenerate-points — pass at least 2 finite Vec2 waypoints (the path interpolates through every one).',
-        );
-      }
-      const x = toParam(pt[0], 'mm');
-      const y = toParam(pt[1], 'mm');
-      if (!Number.isFinite(this.#now(x)) || !Number.isFinite(this.#now(y))) {
-        throw new KernelError(
-          'feature.path.spline.degenerate-points',
-          `path().spline: waypoint ${i} has non-finite coord (x=${this.#now(x)}, y=${this.#now(y)}).`,
-          undefined,
-          'path.spline.degenerate-points — pass at least 2 finite Vec2 waypoints (the path interpolates through every one).',
-        );
-      }
-      paramPoints.push({ x, y });
-    }
-    // Reject consecutive duplicates (closer than 1e-9 mm).
-    for (let i = 1; i < paramPoints.length; i++) {
-      const dx = this.#now(paramPoints[i].x) - this.#now(paramPoints[i - 1].x);
-      const dy = this.#now(paramPoints[i].y) - this.#now(paramPoints[i - 1].y);
-      if (Math.hypot(dx, dy) < 1e-9) {
-        throw new KernelError(
-          'feature.path.spline.degenerate-points',
-          `path().spline: waypoints ${i - 1} and ${i} are coincident (< 1e-9 mm apart).`,
-          undefined,
-          'path.spline.degenerate-points — pass at least 2 finite Vec2 waypoints (the path interpolates through every one).',
-        );
-      }
-    }
+    const now = (p: Param): number => this.#now(p);
+    const paramPoints = toSplineWaypoints(points, now);
+    checkSplineConsecutiveDistinct(paramPoints, now);
     // points[0] must match the current pen position within 1e-6 mm — same
     // contract (and tolerance) as nurbsSegment / hermiteG2. A gap leaves the
     // lowered edge chain disconnected; OCCT's wire builder silently drops
@@ -883,63 +656,10 @@ export class PathBuilder {
     // from the profile and a revolve/extrude produces degenerate geometry
     // (e.g. a flat disc) while evaluation reports ok (issue #447).
     const pen = this.#currentPenPosition();
-    if (pen === null) {
-      throw new KernelError(
-        'feature.path.spline.degenerate-points',
-        `path().spline: no current pen position — call moveTo(x, y) before spline.`,
-        undefined,
-        'path.spline.degenerate-points — start the path with moveTo(points[0][0], points[0][1]) so the spline has a start position to chain from.',
-      );
-    }
-    const penDx = this.#now(paramPoints[0].x) - pen.x;
-    const penDy = this.#now(paramPoints[0].y) - pen.y;
-    if (Math.hypot(penDx, penDy) > 1e-6) {
-      throw new KernelError(
-        'feature.path.spline.degenerate-points',
-        `path().spline: points[0] = (${this.#now(paramPoints[0].x)}, ${this.#now(paramPoints[0].y)}) does not match current pen position (${pen.x}, ${pen.y}) within 1e-6 mm.`,
-        undefined,
-        'path.spline.degenerate-points — the spline starts where the previous segment ended: make points[0] equal the current pen position, or add a lineTo(points[0][0], points[0][1]) before the spline.',
-      );
-    }
+    checkSplinePenMatch(paramPoints, pen, now);
     // V slice — validate optional tangent constraints.
-    const validateTangent = (
-      label: 'startTangent' | 'endTangent',
-      t: [Editable<number>, Editable<number>] | undefined,
-    ): { x: Param; y: Param } | undefined => {
-      if (t === undefined) return undefined;
-      if (!Array.isArray(t) || t.length !== 2) {
-        throw new KernelError(
-          'feature.path.spline.tangent-zero-magnitude',
-          `path().spline: ${label} must be a [x, y] tuple; got ${JSON.stringify(t)}.`,
-          undefined,
-          'Pass a non-zero 2D direction vector [x, y]. Magnitude is normalised; direction matters.',
-        );
-      }
-      const x = toParam(t[0], 'mm');
-      const y = toParam(t[1], 'mm');
-      const xv = this.#now(x);
-      const yv = this.#now(y);
-      if (!Number.isFinite(xv) || !Number.isFinite(yv)) {
-        throw new KernelError(
-          'feature.path.spline.tangent-zero-magnitude',
-          `path().spline: ${label} has non-finite coord (x=${xv}, y=${yv}).`,
-          undefined,
-          'Pass a finite non-zero 2D direction vector. Magnitude is normalised; direction matters.',
-        );
-      }
-      const mag = Math.hypot(xv, yv);
-      if (mag < 1e-9) {
-        throw new KernelError(
-          'feature.path.spline.tangent-zero-magnitude',
-          `path().spline: ${label} has magnitude ${mag} (< 1e-9); got [${xv}, ${yv}].`,
-          undefined,
-          'Pass a non-zero 2D direction vector. Magnitude is normalised; direction matters.',
-        );
-      }
-      return { x, y };
-    };
-    const startTangent = validateTangent('startTangent', opts?.startTangent);
-    const endTangent = validateTangent('endTangent', opts?.endTangent);
+    const startTangent = toSplineTangent('startTangent', opts?.startTangent, now);
+    const endTangent = toSplineTangent('endTangent', opts?.endTangent, now);
 
     this.commands.push({
       kind: 'spline',
@@ -1371,113 +1091,72 @@ export class PathBuilder {
   }
 }
 
-/**
- * Validate an authored tangency entity and box it into the `Param`-shaped
- * wire form. Runs at capture time so a malformed entity is rejected at the
- * call site rather than surfacing as an opaque OCCT failure three layers down.
- *
- * `side` defaults to `'outside'` — the sketch-fillet reading, and the value
- * that most often makes the construction unique on its own.
- */
-function validateTangentEntity(e: TangentEntity2D, where: string, table: ParamTable): TangentEntitySpec {
-  if (!e || typeof e !== 'object' || (e.kind !== 'line' && e.kind !== 'circle')) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${where}: expected { kind: 'line', from, to } or { kind: 'circle', center, radius }; got ${JSON.stringify(e)}.`,
-      undefined,
-      "Tangency entities are lines and circles only. Point tangency is unavailable — the bundled OCCT does not bind Handle_Geom2d_Point.",
-    );
+function buildSketchInputs(allSketches: readonly Sketch[]): Record<string, FeatureRef> {
+  const inputs: Record<string, FeatureRef> = {};
+  for (let i = 0; i < allSketches.length; i++) {
+    inputs[`sketch_${i}`] = { kind: 'feature', id: allSketches[i].id };
   }
-  const side = e.side ?? 'outside';
-  if (!TANGENT_SIDES.includes(side)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${where}: side must be one of ${TANGENT_SIDES.join(' | ')}; got '${side}'.`,
-      undefined,
-      "side maps to OCCT's GccEnt_Position and is the primary control over which solution you get.",
-    );
-  }
-  // Coordinates may be numbers or numeric ParamRefs. Validation reads the
-  // CURRENT value; the captured Param keeps the ParamRef so the lowerer sees
-  // the live value after a param change.
-  const finite = (v: unknown, field: string): { value: number; param: Param } => {
-    if (!isValidEditableNumber(v)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `${where}.${field}: expected a finite number or numeric ParamRef; got ${JSON.stringify(v)}.`,
-        undefined,
-        'Tangency entity coordinates must be finite numbers or param() references.',
-      );
-    }
-    const editable = v as Editable<number>;
-    const value = currentValue(editable, table);
-    if (!Number.isFinite(value)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `${where}.${field}: expected a finite value; got ${value}.`,
-        undefined,
-        'Tangency entity coordinates must resolve to finite numbers.',
-      );
-    }
-    return { value, param: toParam(editable, 'mm') };
-  };
-  if (e.kind === 'line') {
-    const from = e.from ?? ([] as unknown as [number, number]);
-    const to = e.to ?? ([] as unknown as [number, number]);
-    const x1 = finite(from[0], 'from[0]'), y1 = finite(from[1], 'from[1]');
-    const x2 = finite(to[0], 'to[0]'), y2 = finite(to[1], 'to[1]');
-    if (Math.hypot(x2.value - x1.value, y2.value - y1.value) < 1e-9) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `${where}: from and to are coincident at (${x1.value}, ${y1.value}) — they define no line.`,
-        undefined,
-        'Give two distinct points. Their order also sets the line direction, which is what side:"outside" is relative to.',
-      );
-    }
-    return { kind: 'line', x1: x1.param, y1: y1.param, x2: x2.param, y2: y2.param, side };
-  }
-  const center = e.center ?? ([] as unknown as [number, number]);
-  const cx = finite(center[0], 'center[0]'), cy = finite(center[1], 'center[1]');
-  const r = finite(e.radius, 'radius');
-  if (!(r.value > 0)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${where}: circle radius must be > 0; got ${r.value}.`,
-      undefined,
-      'Pass a positive radius.',
-    );
-  }
-  return { kind: 'circle', cx: cx.param, cy: cy.param, r: r.param, side };
+  return inputs;
 }
 
-/** Box the optional `near` disambiguation hint. */
-function toNearSpec(
-  near: [Editable<number>, Editable<number>] | undefined,
-  where: string,
-  table: ParamTable,
-): TangentNearSpec | undefined {
-  if (near === undefined) return undefined;
-  if (!Array.isArray(near) || near.length !== 2) {
+function validateLoftRails(
+  opts: LoftOptions,
+  sketchId: FeatureId,
+  inputs: Record<string, FeatureRef>,
+): Curve3D[] {
+  const rails = opts.rails ?? [];
+  if (!Array.isArray(rails)) {
     throw new KernelError(
       'feature.invalid-args',
-      `${where}: opts.near must be a [x, y] pair; got ${JSON.stringify(near)}.`,
-      undefined,
-      'Pass opts.near as [x, y] near the solution you want.',
+      `loft: opts.rails must be an array of Curve3D; got ${typeof rails}.`,
+      sketchId,
+      'invalid-args.loft.rails — pass Curve3D values from nurbsCurve / spline3d / curveBridge.',
     );
   }
-  const x = toParam(near[0], 'mm');
-  const y = toParam(near[1], 'mm');
-  const xv = paramValue(x, table);
-  const yv = paramValue(y, table);
-  if (!Number.isFinite(xv) || !Number.isFinite(yv)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${where}: opts.near coordinates must be finite; got [${xv}, ${yv}].`,
-      undefined,
-      'Pass finite numbers for opts.near.',
-    );
+  for (let i = 0; i < rails.length; i++) {
+    const rail = rails[i];
+    if (!rail || typeof rail !== 'object' || !('id' in rail) || !('pointAt' in rail)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `loft: opts.rails[${i}] is not a Curve3D.`,
+        sketchId,
+        'invalid-args.loft.rails — each rail must be a Curve3D.',
+      );
+    }
+    inputs[`rail_${i}`] = { kind: 'feature', id: rail.id };
   }
-  return { x, y };
+  return rails;
+}
+
+function buildLoftParams(
+  allSketches: readonly Sketch[],
+  opts: LoftOptions,
+  rails: readonly Curve3D[],
+): Record<string, Param> {
+  return {
+    profileKind: { expression: "'sketch'", unit: 'unitless', evaluated: 0 },
+    spacing: toParam(opts.spacing ?? 10, 'mm'),
+    ruled: { expression: String(opts.ruled ?? false), unit: 'unitless', evaluated: opts.ruled ? 1 : 0 },
+    sectionCount: { expression: String(allSketches.length), unit: 'unitless', evaluated: allSketches.length },
+    railCount: { expression: String(rails.length), unit: 'unitless', evaluated: rails.length },
+  };
+}
+
+function buildLoftMetadata(
+  opts: LoftOptions,
+  rails: readonly Curve3D[],
+  faceLabels: FaceLabelsMap | undefined,
+): Record<string, unknown> {
+  return {
+    // Numeric coordinates are stored as plain numbers (unchanged records);
+    // a ParamRef coordinate is boxed as a Param so the dispatcher's
+    // pre-resolve substitutes it at lower time.
+    planes: opts.planes?.map((p) => ({ ...p, origin: editablePoint3(p.origin) })),
+    startPoint: opts.startPoint === undefined ? undefined : editablePoint3(opts.startPoint),
+    endPoint: opts.endPoint === undefined ? undefined : editablePoint3(opts.endPoint),
+    rails: rails.map((c) => c.id),
+    ...(faceLabels ? { faceLabels } : {}),
+  };
 }
 
 /** Box a 3D point for record metadata: plain numbers stay plain numbers (so a

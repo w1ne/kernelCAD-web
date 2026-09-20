@@ -59,37 +59,32 @@ interface ToolbarProps {
     projectName?: string;
 }
 
-export function Toolbar({
-    isModified,
-    onValidate,
-    onRun,
-    agentRailOpen,
-    onToggleAgentRail,
-    enableAgentRail = true,
-    enableConnect = true,
-    referenceImagesPresent,
-    referenceImagesVisible,
-    onToggleReferenceImages,
-    renderEnvironmentPresent = false,
-    renderEnvironmentVisible = true,
-    renderEnvironmentPresetLabel = '',
-    onToggleRenderEnvironment,
-    markingMode,
-    onToggleMarkingMode,
-    sectionMode,
-    onToggleSectionMode,
-    inspectorOpen,
-    onToggleInspector,
-    agentRailHidden = false,
-    code,
-    projectName,
-}: ToolbarProps) {
-    const { session, publishState, publishedLink, handlePublish } = usePublishAction(code, projectName);
-    // Below `md` only the two act-on-the-model buttons (Validate / Run) stay on
-    // the bar; everything else moves into the overflow menu. Previously the
-    // whole set stayed inline and Run was pushed past the right edge of a
-    // phone screen, into a scroll region with no visible scrollbar.
-    const narrow = useIsNarrow();
+function buildToolbarButtons(
+    {
+        onValidate,
+        onRun,
+        agentRailOpen,
+        onToggleAgentRail,
+        enableAgentRail = true,
+        enableConnect = true,
+        referenceImagesPresent,
+        referenceImagesVisible,
+        onToggleReferenceImages,
+        renderEnvironmentPresent = false,
+        renderEnvironmentVisible = true,
+        renderEnvironmentPresetLabel = '',
+        onToggleRenderEnvironment,
+        markingMode,
+        onToggleMarkingMode,
+        sectionMode,
+        onToggleSectionMode,
+        inspectorOpen,
+        onToggleInspector,
+        agentRailHidden = false,
+    }: ToolbarProps,
+    publish: ReturnType<typeof usePublishAction>,
+) {
+    const { session, publishState, handlePublish } = publish;
 
     const agentButton = (
         <AgentButton
@@ -122,6 +117,33 @@ export function Toolbar({
     );
     const inspectorButton = <InspectorButton inspectorOpen={inspectorOpen} onToggleInspector={onToggleInspector} />;
 
+    return {
+        agentButton,
+        connectLink,
+        myDesignsLink,
+        publishButton,
+        validateButton,
+        runButton,
+        brushButton,
+        sectionButton,
+        referenceButton,
+        environmentButton,
+        inspectorButton,
+    };
+}
+
+export function Toolbar(props: ToolbarProps) {
+    const publish = usePublishAction(props.code, props.projectName);
+    // Below `md` only the two act-on-the-model buttons (Validate / Run) stay on
+    // the bar; everything else moves into the overflow menu. Previously the
+    // whole set stayed inline and Run was pushed past the right edge of a
+    // phone screen, into a scroll region with no visible scrollbar.
+    const narrow = useIsNarrow();
+    const {
+        agentButton, connectLink, myDesignsLink, publishButton, validateButton, runButton,
+        brushButton, sectionButton, referenceButton, environmentButton, inspectorButton,
+    } = buildToolbarButtons(props, publish);
+
     return (
         <div
             data-testid="studio-toolbar"
@@ -151,18 +173,18 @@ export function Toolbar({
                         {publishButton}
                     </>
                 )}
-                {publishedLink && (
+                {publish.publishedLink && (
                     <a
-                        href={publishedLink}
+                        href={publish.publishedLink}
                         data-testid="toolbar-publish-link"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 px-2 py-1 rounded text-emerald-400 hover:text-emerald-300 text-xs transition-colors truncate max-w-[45vw]"
                     >
-                        Link copied — {publishedLink}
+                        Link copied — {publish.publishedLink}
                     </a>
                 )}
-                {isModified && (
+                {props.isModified && (
                     <span
                         data-testid="toolbar-modified-dot"
                         aria-label="Unsaved changes"

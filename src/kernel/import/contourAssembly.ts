@@ -238,6 +238,95 @@ function dedupe(
   return { kept, duplicates, degenerates };
 }
 
+function buildEndpointIndex(segs: readonly ImportSegment[], tol: number): EndpointIndex {
+  // Index every segment END as `segIndex * 2 + (0 = start, 1 = end)`.
+  const index = new EndpointIndex(tol);
+  for (let i = 0; i < segs.length; i++) {
+    index.add(segs[i].x0, segs[i].y0, i * 2);
+    index.add(segs[i].x1, segs[i].y1, i * 2 + 1);
+  }
+  return index;
+}
+
+function collectCandidates(
+  index: EndpointIndex,
+  segs: readonly ImportSegment[],
+  used: readonly boolean[],
+  cx: number,
+  cy: number,
+  tol: number,
+): Array<{ seg: ImportSegment; idx: number }> {
+  const candidates: Array<{ seg: ImportSegment; idx: number }> = [];
+  for (const ref of index.near(cx, cy)) {
+    const idx = ref >> 1;
+    if (used[idx]) continue;
+    const atStart = (ref & 1) === 0;
+    const px = atStart ? segs[idx].x0 : segs[idx].x1;
+    const py = atStart ? segs[idx].y0 : segs[idx].y1;
+    if (!near(cx, cy, px, py, tol)) continue;
+    candidates.push({ seg: atStart ? segs[idx] : reverseSegment(segs[idx]), idx });
+  }
+  return candidates;
+}
+
+function walkChain(
+  segs: readonly ImportSegment[],
+  index: EndpointIndex,
+  used: boolean[],
+  start: number,
+  tol: number,
+): ImportSegment[] {
+  const loop: ImportSegment[] = [segs[start]];
+  let cx = segs[start].x1;
+  let cy = segs[start].y1;
+  const originX = segs[start].x0;
+  const originY = segs[start].y0;
+
+  for (;;) {
+    if (near(cx, cy, originX, originY, tol)) break; // closed
+
+    const candidates = collectCandidates(index, segs, used, cx, cy, tol);
+
+    if (candidates.length === 0) {
+      throw new ContourError(
+        'open-contour',
+        `open contour: the chain starting at ${fmtPt(originX, originY)} (${segs[start].source}) ` +
+          `dead-ends at ${fmtPt(cx, cy)} (${loop[loop.length - 1].source}); ` +
+          `nothing continues from there and it is ${fmtLen(Math.hypot(cx - originX, cy - originY))} ` +
+          `from its own start, past the ${fmtLen(tol)} tolerance.`,
+      );
+    }
+    if (candidates.length > 1) {
+      throw new ContourError(
+        'ambiguous-junction',
+        `ambiguous junction at ${fmtPt(cx, cy)}: ${candidates.length + 1} segments meet there ` +
+          `(${candidates.map(c => c.seg.source).join(', ')}), so the contour to follow is not determined. ` +
+          'Split the drawing into one region per file, or delete the stray segments.',
+      );
+    }
+
+    const next = candidates[0];
+    used[next.idx] = true;
+    loop.push(next.seg);
+    cx = next.seg.x1;
+    cy = next.seg.y1;
+  }
+
+  return loop;
+}
+
+// Snap the closing gap. It is at most `tolerance`, but leaving it would
+// hand replicad a wire whose last vertex is not its first. Returns 1 when a
+// gap was snapped, 0 when the chain already ended exactly on its start.
+function closeLoopGap(loop: ImportSegment[], originX: number, originY: number): number {
+  const last = loop[loop.length - 1];
+  if (last.x1 !== originX || last.y1 !== originY) {
+    loop[loop.length - 1] = { ...last, x1: originX, y1: originY };
+    return 1;
+  }
+  return 0;
+}
+
 /**
  * Chain loose segments into closed loops by endpoint matching.
  *
@@ -249,12 +338,7 @@ function chainLoops(
   segs: readonly ImportSegment[],
   tol: number,
 ): { loops: ImportSegment[][]; gapsClosed: number } {
-  // Index every segment END as `segIndex * 2 + (0 = start, 1 = end)`.
-  const index = new EndpointIndex(tol);
-  for (let i = 0; i < segs.length; i++) {
-    index.add(segs[i].x0, segs[i].y0, i * 2);
-    index.add(segs[i].x1, segs[i].y1, i * 2 + 1);
-  }
+  const index = buildEndpointIndex(segs, tol);
 
   const used = new Array(segs.length).fill(false);
   const loops: ImportSegment[][] = [];
@@ -263,58 +347,9 @@ function chainLoops(
   for (let start = 0; start < segs.length; start++) {
     if (used[start]) continue;
     used[start] = true;
-    const loop: ImportSegment[] = [segs[start]];
-    let cx = segs[start].x1;
-    let cy = segs[start].y1;
-    const originX = segs[start].x0;
-    const originY = segs[start].y0;
+    const loop = walkChain(segs, index, used, start, tol);
 
-    for (;;) {
-      if (near(cx, cy, originX, originY, tol)) break; // closed
-
-      const candidates: Array<{ seg: ImportSegment; idx: number }> = [];
-      for (const ref of index.near(cx, cy)) {
-        const idx = ref >> 1;
-        if (used[idx]) continue;
-        const atStart = (ref & 1) === 0;
-        const px = atStart ? segs[idx].x0 : segs[idx].x1;
-        const py = atStart ? segs[idx].y0 : segs[idx].y1;
-        if (!near(cx, cy, px, py, tol)) continue;
-        candidates.push({ seg: atStart ? segs[idx] : reverseSegment(segs[idx]), idx });
-      }
-
-      if (candidates.length === 0) {
-        throw new ContourError(
-          'open-contour',
-          `open contour: the chain starting at ${fmtPt(originX, originY)} (${segs[start].source}) ` +
-            `dead-ends at ${fmtPt(cx, cy)} (${loop[loop.length - 1].source}); ` +
-            `nothing continues from there and it is ${fmtLen(Math.hypot(cx - originX, cy - originY))} ` +
-            `from its own start, past the ${fmtLen(tol)} tolerance.`,
-        );
-      }
-      if (candidates.length > 1) {
-        throw new ContourError(
-          'ambiguous-junction',
-          `ambiguous junction at ${fmtPt(cx, cy)}: ${candidates.length + 1} segments meet there ` +
-            `(${candidates.map(c => c.seg.source).join(', ')}), so the contour to follow is not determined. ` +
-            'Split the drawing into one region per file, or delete the stray segments.',
-        );
-      }
-
-      const next = candidates[0];
-      used[next.idx] = true;
-      loop.push(next.seg);
-      cx = next.seg.x1;
-      cy = next.seg.y1;
-    }
-
-    // Snap the closing gap. It is at most `tolerance`, but leaving it would
-    // hand replicad a wire whose last vertex is not its first.
-    const last = loop[loop.length - 1];
-    if (last.x1 !== originX || last.y1 !== originY) {
-      gapsClosed++;
-      loop[loop.length - 1] = { ...last, x1: originX, y1: originY };
-    }
+    gapsClosed += closeLoopGap(loop, segs[start].x0, segs[start].y0);
     loops.push(loop);
   }
 

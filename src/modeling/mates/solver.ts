@@ -298,8 +298,24 @@ export function mateFk(
   const worldT = new Map<FeatureId, Transform>();
   if (parts.length === 0) return worldT;
 
-  // 1. Adjacency: part-name -> array of mate edges. Mirrors `solveMates`'s
-  //    tree walk but keyed off the resolved-part view (no Assembly handle).
+  const adjacency = buildResolvedMateAdjacency(parts, mates);
+  const partByName = new Map(parts.map((p) => [p.name, p]));
+  const worldTByName = walkResolvedMateTree(parts, adjacency, partByName, numericPoses);
+
+  // 3. Re-key the result by FeatureId so callers (and the lowerer) can
+  //    intersect it with v0.5 `forwardKinematics`'s map seamlessly.
+  for (const p of parts) {
+    worldT.set(p.id, worldTByName.get(p.name)!);
+  }
+  return worldT;
+}
+
+/** 1. Adjacency: part-name -> array of mate edges. Mirrors `solveMates`'s
+ *  tree walk but keyed off the resolved-part view (no Assembly handle). */
+function buildResolvedMateAdjacency(
+  parts: readonly ResolvedMatePart[],
+  mates: readonly MateRecord[],
+): Map<string, MateEdge[]> {
   const adjacency = new Map<string, MateEdge[]>();
   for (const p of parts) adjacency.set(p.name, []);
   for (const m of mates) {
@@ -320,11 +336,17 @@ export function mateFk(
     aList.push({ mate: m, neighbor: bSide.partName, partIsA: true });
     bList.push({ mate: m, neighbor: aSide.partName, partIsA: false });
   }
+  return adjacency;
+}
 
-  const partByName = new Map(parts.map((p) => [p.name, p]));
-
-  // 2. BFS spanning tree from parts[0]. Compose child world transform from
-  //    parent's via the mate's local SE(3) contribution.
+/** 2. BFS spanning tree from `parts[0]`. Compose child world transform from
+ *  parent's via the mate's local SE(3) contribution. */
+function walkResolvedMateTree(
+  parts: readonly ResolvedMatePart[],
+  adjacency: ReadonlyMap<string, MateEdge[]>,
+  partByName: ReadonlyMap<string, ResolvedMatePart>,
+  numericPoses: NumericPoses,
+): Map<string, Transform> {
   const root = parts[0];
   const worldTByName = new Map<string, Transform>();
   worldTByName.set(root.name, Transform.identity());
@@ -341,23 +363,10 @@ export function mateFk(
       if (visited.has(edge.neighbor)) continue; // loop-closure mate — owned by solveMates
       visited.add(edge.neighbor);
 
-      const aSide = parseConnectorRef(edge.mate.a);
-      const bSide = parseConnectorRef(edge.mate.b);
-      const parentSide = edge.partIsA ? aSide : bSide;
-      const childSide = edge.partIsA ? bSide : aSide;
-      const parentPart = partByName.get(parentSide.partName)!;
-      const childPart = partByName.get(childSide.partName)!;
-      const parentConnector = findResolvedConnector(parentPart, parentSide.connectorName);
-      const childConnector = findResolvedConnector(childPart, childSide.connectorName);
-      const parentOrigin = numericOrigin(parentConnector, parentPart.name);
-      const childOrigin = numericOrigin(childConnector, childPart.name);
-
-      const parentToConnector = Transform.translation(parentOrigin[0], parentOrigin[1], parentOrigin[2]);
-      const childInverse = Transform.translation(-childOrigin[0], -childOrigin[1], -childOrigin[2]);
-      const pose = resolveNumericPose(edge.mate, numericPoses);
-      const jointLocalT = jointTransformForMate(edge.mate.type, pose, parentConnector);
-      const childT = parentT.compose(parentToConnector).compose(jointLocalT).compose(childInverse);
-      worldTByName.set(edge.neighbor, childT);
+      worldTByName.set(
+        edge.neighbor,
+        composeResolvedChildTransform(parentT, edge, partByName, numericPoses),
+      );
       queue.push(edge.neighbor);
     }
   }
@@ -367,13 +376,33 @@ export function mateFk(
   for (const p of parts) {
     if (!worldTByName.has(p.name)) worldTByName.set(p.name, Transform.identity());
   }
+  return worldTByName;
+}
 
-  // 3. Re-key the result by FeatureId so callers (and the lowerer) can
-  //    intersect it with v0.5 `forwardKinematics`'s map seamlessly.
-  for (const p of parts) {
-    worldT.set(p.id, worldTByName.get(p.name)!);
-  }
-  return worldT;
+/** Compose one child's world transform from the parent's through the parent
+ *  connector, the mate's joint SE(3) and the child connector inverse. */
+function composeResolvedChildTransform(
+  parentT: Transform,
+  edge: MateEdge,
+  partByName: ReadonlyMap<string, ResolvedMatePart>,
+  numericPoses: NumericPoses,
+): Transform {
+  const aSide = parseConnectorRef(edge.mate.a);
+  const bSide = parseConnectorRef(edge.mate.b);
+  const parentSide = edge.partIsA ? aSide : bSide;
+  const childSide = edge.partIsA ? bSide : aSide;
+  const parentPart = partByName.get(parentSide.partName)!;
+  const childPart = partByName.get(childSide.partName)!;
+  const parentConnector = findResolvedConnector(parentPart, parentSide.connectorName);
+  const childConnector = findResolvedConnector(childPart, childSide.connectorName);
+  const parentOrigin = numericOrigin(parentConnector, parentPart.name);
+  const childOrigin = numericOrigin(childConnector, childPart.name);
+
+  const parentToConnector = Transform.translation(parentOrigin[0], parentOrigin[1], parentOrigin[2]);
+  const childInverse = Transform.translation(-childOrigin[0], -childOrigin[1], -childOrigin[2]);
+  const pose = resolveNumericPose(edge.mate, numericPoses);
+  const jointLocalT = jointTransformForMate(edge.mate.type, pose, parentConnector);
+  return parentT.compose(parentToConnector).compose(jointLocalT).compose(childInverse);
 }
 
 /** Pure-FK variant of `findConnector` — no Assembly handle, no Shape. */
@@ -729,12 +758,12 @@ function jointTransformForMate(
       return Transform.identity();
     case 'revolute': {
       const deg = (pose as number | undefined) ?? 0;
-      const ax = (parentConnector.axis ?? [0, 0, 1]) as Se3Vec3;
+      const ax = connectorAxis(parentConnector);
       return Transform.rotationAxisAngleDeg(ax, deg);
     }
     case 'prismatic': {
       const stroke = (pose as number | undefined) ?? 0;
-      const ax = (parentConnector.axis ?? [0, 0, 1]) as Se3Vec3;
+      const ax = connectorAxis(parentConnector);
       const len = Math.hypot(ax[0], ax[1], ax[2]) || 1;
       const dx = (ax[0] / len) * stroke;
       const dy = (ax[1] / len) * stroke;
@@ -749,7 +778,7 @@ function jointTransformForMate(
       // for pin_slot) defaults to 0. A multi-DOF pose surface lands when
       // Pattern A grows beyond scalar/triple inputs.
       const deg = (pose as number | undefined) ?? 0;
-      const ax = (parentConnector.axis ?? [0, 0, 1]) as Se3Vec3;
+      const ax = connectorAxis(parentConnector);
       return Transform.rotationAxisAngleDeg(ax, deg);
     }
     case 'ball': {
@@ -767,4 +796,10 @@ function jointTransformForMate(
       );
     }
   }
+}
+
+/** The parent connector's rotation / translation axis with the documented
+ *  `+Z` default when the connector omits one. */
+function connectorAxis(parentConnector: Connector): Se3Vec3 {
+  return (parentConnector.axis ?? [0, 0, 1]) as Se3Vec3;
 }

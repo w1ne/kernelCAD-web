@@ -63,7 +63,7 @@ test.describe('Core CAD Workflows E2E (Hardened)', () => {
                 console.log(`BROWSER [${msg.type().toUpperCase()}]: ${msg.text()}`);
             }
         });
-        await page.goto('/');
+        await page.goto('/studio');
         await page.waitForFunction(() => (window as any).isEditorReady === true);
         await page.waitForFunction(() => (window as any).isEngineReady === true);
         await page.evaluate(() => (window as any).resetEngineDiagnostics?.());

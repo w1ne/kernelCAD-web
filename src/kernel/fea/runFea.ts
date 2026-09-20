@@ -419,9 +419,78 @@ interface FeaSummaryComputation {
   hotSpots: FeaHotSpot[];
 }
 
+/** Global peaks over every solved node. The scan is strictly-greater, so
+ *  equal peaks keep the first node, as the single-pass original did. */
+function findGlobalPeaks(
+  fields: ReturnType<typeof parseFrd>,
+): { maxVm: number; maxVmNode: number; maxDisp: number; maxDispNode: number } {
+  let maxVm = 0;
+  let maxVmNode = fields.nodeIds[0] ?? 0;
+  let maxDisp = 0;
+  let maxDispNode = fields.nodeIds[0] ?? 0;
+  for (let i = 0; i < fields.nodeIds.length; i++) {
+    if (fields.vonMises[i] > maxVm) { maxVm = fields.vonMises[i]; maxVmNode = fields.nodeIds[i]; }
+    const d = Math.hypot(...fields.displacement[i]);
+    if (d > maxDisp) { maxDisp = d; maxDispNode = fields.nodeIds[i]; }
+  }
+  return { maxVm, maxVmNode, maxDisp, maxDispNode };
+}
+
+/** Per-region peaks and their safety factors. A single global maximum hides
+ *  the case where the declared load face is fine and an unrelated fillet is
+ *  the real problem. */
+function computeHotSpots(
+  fields: ReturnType<typeof parseFrd>,
+  labelled: ReturnType<typeof labelSurfaces>,
+  coordOf: (id: number) => [number, number, number],
+  yieldMPa: number,
+): FeaHotSpot[] {
+  const perRegion = new Map<string, { vm: number; node: number }>();
+  for (let i = 0; i < fields.nodeIds.length; i++) {
+    const id = fields.nodeIds[i];
+    const region = regionForNode(id, coordOf(id), labelled);
+    const prev = perRegion.get(region);
+    if (prev === undefined || fields.vonMises[i] > prev.vm) {
+      perRegion.set(region, { vm: fields.vonMises[i], node: id });
+    }
+  }
+  return [...perRegion.entries()]
+    .map(([region, v]) => ({
+      region,
+      maxVonMisesMPa: v.vm,
+      nodeId: v.node,
+      at: coordOf(v.node),
+      safetyFactor: v.vm > 0 ? yieldMPa / v.vm : Infinity,
+    }))
+    .sort((a, b) => b.maxVonMisesMPa - a.maxVonMisesMPa)
+    .slice(0, 5);
+}
+
+/** Sum the applied force vectors and close the loop against the reaction
+ *  table, when the solver reported one and the applied load is non-zero. */
+function computeEquilibrium(
+  loads: readonly FeaResolvedLoad[],
+  dat: ReturnType<typeof parseDat>,
+): {
+  applied: [number, number, number];
+  reaction: ReturnType<typeof parseDat>['totalReactionForce'];
+  equilibriumResidual: number | undefined;
+} {
+  const applied: [number, number, number] = [0, 0, 0];
+  for (const l of loads) for (let k = 0; k < 3; k++) applied[k] += l.force[k];
+  const appliedMag = Math.hypot(...applied);
+  const reaction = dat.totalReactionForce;
+  const equilibriumResidual =
+    reaction !== undefined && appliedMag > 0
+      ? Math.hypot(reaction[0] + applied[0], reaction[1] + applied[1], reaction[2] + applied[2]) / appliedMag
+      : undefined;
+  return { applied, reaction, equilibriumResidual };
+}
+
 /** Global + per-region peaks, equilibrium residual and trust flags, folded
- *  into the summary object. No I/O and no diagnostics. */
-function computeFeaSummary(
+ *  into the summary object. No I/O and no diagnostics. Exported so the
+ *  summary arithmetic can be pinned without a solver toolchain. */
+export function computeFeaSummary(
   ctx: FeaRunContext,
   material: ResolvedFeaMaterial,
   meshed: Awaited<ReturnType<typeof meshStep>>,
@@ -433,51 +502,16 @@ function computeFeaSummary(
   solveMs: number,
 ): FeaSummaryComputation {
   const { study } = ctx;
-  let maxVm = 0;
-  let maxVmNode = fields.nodeIds[0] ?? 0;
-  let maxDisp = 0;
-  let maxDispNode = fields.nodeIds[0] ?? 0;
-  for (let i = 0; i < fields.nodeIds.length; i++) {
-    if (fields.vonMises[i] > maxVm) { maxVm = fields.vonMises[i]; maxVmNode = fields.nodeIds[i]; }
-    const d = Math.hypot(...fields.displacement[i]);
-    if (d > maxDisp) { maxDisp = d; maxDispNode = fields.nodeIds[i]; }
-  }
+  const { maxVm, maxVmNode, maxDisp, maxDispNode } = findGlobalPeaks(fields);
   const coordOf = (id: number): [number, number, number] => {
     const c = meshed.mesh.nodes.get(id);
     return c !== undefined ? [c[0], c[1], c[2]] : [0, 0, 0];
   };
 
-  // Per-region peaks. A single global maximum hides the case where the
-  // declared load face is fine and an unrelated fillet is the real problem.
-  const perRegion = new Map<string, { vm: number; node: number }>();
-  for (let i = 0; i < fields.nodeIds.length; i++) {
-    const id = fields.nodeIds[i];
-    const region = regionForNode(id, coordOf(id), labelled);
-    const prev = perRegion.get(region);
-    if (prev === undefined || fields.vonMises[i] > prev.vm) {
-      perRegion.set(region, { vm: fields.vonMises[i], node: id });
-    }
-  }
   const yieldMPa = material.props.yield;
-  const hotSpots: FeaHotSpot[] = [...perRegion.entries()]
-    .map(([region, v]) => ({
-      region,
-      maxVonMisesMPa: v.vm,
-      nodeId: v.node,
-      at: coordOf(v.node),
-      safetyFactor: v.vm > 0 ? yieldMPa / v.vm : Infinity,
-    }))
-    .sort((a, b) => b.maxVonMisesMPa - a.maxVonMisesMPa)
-    .slice(0, 5);
+  const hotSpots: FeaHotSpot[] = computeHotSpots(fields, labelled, coordOf, yieldMPa);
 
-  const applied: [number, number, number] = [0, 0, 0];
-  for (const l of loads) for (let k = 0; k < 3; k++) applied[k] += l.force[k];
-  const appliedMag = Math.hypot(...applied);
-  const reaction = dat.totalReactionForce;
-  const equilibriumResidual =
-    reaction !== undefined && appliedMag > 0
-      ? Math.hypot(reaction[0] + applied[0], reaction[1] + applied[1], reaction[2] + applied[2]) / appliedMag
-      : undefined;
+  const { applied, reaction, equilibriumResidual } = computeEquilibrium(loads, dat);
 
   const maxErr = fields.stressErrorPercent.length > 0 ? Math.max(...fields.stressErrorPercent) : undefined;
   const trust = trustFrom(meshed.mesh.quality, meshed.mesh.elements.length, maxErr);

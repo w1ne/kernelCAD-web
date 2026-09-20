@@ -174,18 +174,10 @@ function connectorToManifestEntry(
   };
 }
 
-/**
- * Convert the numeric, source-scoped connectors of a mate-free static
- * assembly Scene into a portable manifest. The assembly part's `at` placement
- * is baked into the lowered part shape, while SceneBackend.worldTransform is
- * applied later by STEP export, so the manifest uses their exact composition.
- */
-export function sceneToConnectorManifest(
+function resolveAssemblySource(
   scene: Scene,
-  lowered: SceneBackend,
   resolvedRecords: readonly FeatureRecord[],
-  identity: { partId: string; family: string },
-): ConnectorManifest {
+): AssemblyModelMetadata {
   const sourceId = scene.__sourceFeatureId();
   if (sourceId === undefined) {
     throw new Error('connector-manifest export requires a Scene with an assemblyModel source feature.');
@@ -205,7 +197,14 @@ export function sceneToConnectorManifest(
     throw new Error('connector-manifest export requires a mate-free, joint-free assembly.');
   }
   assertAssemblyPartInputs(source, metadata.partIds);
+  return metadata;
+}
 
+function assertScenePartAgreement(
+  scene: Scene,
+  lowered: SceneBackend,
+  metadata: AssemblyModelMetadata,
+): void {
   if (
     scene.parts.length !== metadata.partIds.length ||
     lowered.parts.length !== metadata.partIds.length
@@ -217,7 +216,14 @@ export function sceneToConnectorManifest(
   }
   assertUniquePartNames(scene.parts.map((part) => part.name), 'Scene');
   assertUniquePartNames(lowered.parts.map((part) => part.name), 'lowered SceneBackend');
+}
 
+function collectManifestConnectors(
+  scene: Scene,
+  lowered: SceneBackend,
+  resolvedRecords: readonly FeatureRecord[],
+  metadata: AssemblyModelMetadata,
+): ConnectorEntry[] {
   const connectors: ConnectorEntry[] = [];
   const connectorNames = new Set<string>();
   for (const [index, partId] of metadata.partIds.entries()) {
@@ -242,6 +248,24 @@ export function sceneToConnectorManifest(
       connectors.push(connectorToManifestEntry(connector, transform));
     }
   }
+  return connectors;
+}
+
+/**
+ * Convert the numeric, source-scoped connectors of a mate-free static
+ * assembly Scene into a portable manifest. The assembly part's `at` placement
+ * is baked into the lowered part shape, while SceneBackend.worldTransform is
+ * applied later by STEP export, so the manifest uses their exact composition.
+ */
+export function sceneToConnectorManifest(
+  scene: Scene,
+  lowered: SceneBackend,
+  resolvedRecords: readonly FeatureRecord[],
+  identity: { partId: string; family: string },
+): ConnectorManifest {
+  const metadata = resolveAssemblySource(scene, resolvedRecords);
+  assertScenePartAgreement(scene, lowered, metadata);
+  const connectors = collectManifestConnectors(scene, lowered, resolvedRecords, metadata);
 
   const manifest: ConnectorManifest = {
     schemaVersion: 1,

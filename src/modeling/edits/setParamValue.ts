@@ -47,6 +47,17 @@ function skipWhitespace(code: string, from: number): number {
  * and string literals so a nested `{ choices: [...] }` in a LATER arg
  * doesn't confuse this scan.
  */
+function scanStringChar(
+  code: string,
+  p: number,
+  inStr: '"' | "'" | '`',
+): { p: number; inStr: '"' | "'" | '`' | null } {
+  const c = code[p];
+  if (c === '\\') return { p: p + 2, inStr };
+  if (c === inStr) return { p: p + 1, inStr: null };
+  return { p: p + 1, inStr };
+}
+
 function scanArgEnd(code: string, from: number): number {
   let p = from;
   let depth = 0;
@@ -54,9 +65,9 @@ function scanArgEnd(code: string, from: number): number {
   while (p < code.length) {
     const c = code[p];
     if (inStr) {
-      if (c === '\\') p += 2;
-      else if (c === inStr) { inStr = null; p++; }
-      else p++;
+      const next = scanStringChar(code, p, inStr);
+      p = next.p;
+      inStr = next.inStr;
       continue;
     }
     if (c === '"' || c === "'" || c === '`') { inStr = c as '"' | "'" | '`'; p++; continue; }

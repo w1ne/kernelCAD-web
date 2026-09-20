@@ -56,34 +56,42 @@ function hasTopLevelReturnAt(line: string, i: number, depth: number): boolean {
   return !/[A-Za-z0-9_$]/.test(before) && !/[A-Za-z0-9_$]/.test(after);
 }
 
+function skipBlockComment(line: string, state: LineScanState, i: number): number {
+  if (line[i] === '*' && line[i + 1] === '/') { state.inBlockComment = false; return i + 2; }
+  return i + 1;
+}
+
+function skipString(line: string, state: LineScanState, i: number): number {
+  const c = line[i];
+  if (c === '\\') return i + 2;
+  if (c === state.inStr) { state.inStr = null; return i + 1; }
+  return i + 1;
+}
+
+function skipCodeChar(line: string, state: LineScanState, i: number): number {
+  const c = line[i];
+  const c2 = line[i + 1];
+  if (c === '/' && c2 === '/') { state.inLineComment = true; return i + 2; }
+  if (c === '/' && c2 === '*') { state.inBlockComment = true; return i + 2; }
+  if (c === '"' || c === "'" || c === '`') { state.inStr = c as '"' | "'" | '`'; return i + 1; }
+  if (c === '{') { state.depth++; return i + 1; }
+  if (c === '}') { state.depth--; return i + 1; }
+  return i + 1;
+}
+
 function scanLineForTopLevelReturn(line: string, state: LineScanState): boolean {
   let i = 0;
   let lineHasTopLevelReturn = false;
 
   while (i < line.length) {
-    const c = line[i];
-    const c2 = line[i + 1];
-
     if (state.inLineComment) { i++; continue; }
-    if (state.inBlockComment) {
-      if (c === '*' && c2 === '/') { state.inBlockComment = false; i += 2; continue; }
-      i++; continue;
-    }
-    if (state.inStr) {
-      if (c === '\\') { i += 2; continue; }
-      if (c === state.inStr) { state.inStr = null; i++; continue; }
-      i++; continue;
-    }
-    if (c === '/' && c2 === '/') { state.inLineComment = true; i += 2; continue; }
-    if (c === '/' && c2 === '*') { state.inBlockComment = true; i += 2; continue; }
-    if (c === '"' || c === "'" || c === '`') { state.inStr = c as '"' | "'" | '`'; i++; continue; }
-    if (c === '{') { state.depth++; i++; continue; }
-    if (c === '}') { state.depth--; i++; continue; }
+    if (state.inBlockComment) { i = skipBlockComment(line, state, i); continue; }
+    if (state.inStr) { i = skipString(line, state, i); continue; }
     if (hasTopLevelReturnAt(line, i, state.depth)) {
       lineHasTopLevelReturn = true;
       i += 6; continue;
     }
-    i++;
+    i = skipCodeChar(line, state, i);
   }
 
   return lineHasTopLevelReturn;

@@ -3,10 +3,126 @@
 import { useState } from 'react';
 import { X, Plus, Trash2, FolderOpen, Edit2, Check, Clock } from 'lucide-react';
 import { useProject } from '../../context/ProjectContext';
+import type { ProjectMetadata } from '../../../authoring/projectService';
 
 interface ProjectManagerDialogProps {
     isOpen: boolean;
     onClose: () => void;
+}
+
+interface ProjectRowProps {
+    project: ProjectMetadata;
+    activeProjectId: string | null;
+    editingId: string | null;
+    editName: string;
+    setEditName: (name: string) => void;
+    saveRename: () => void;
+    handleRename: (id: string, currentName: string) => void;
+    openProject: (id: string) => void;
+    deleteProject: (id: string) => void;
+    onClose: () => void;
+}
+
+function formatDate(dateStr: string) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function ProjectRow({
+    project,
+    activeProjectId,
+    editingId,
+    editName,
+    setEditName,
+    saveRename,
+    handleRename,
+    openProject,
+    deleteProject,
+    onClose,
+}: ProjectRowProps) {
+    return (
+        <div
+            className={`group flex items-center justify-between p-4 rounded-xl border transition-all ${activeProjectId === project.id
+                ? 'bg-blue-500/10 border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.1)]'
+                : 'bg-[#222] border-[#333] hover:border-[#444]'
+                }`}
+        >
+            <div className="flex flex-col gap-1 flex-1 min-w-0 pr-4">
+                {editingId === project.id ? (
+                    <div className="flex items-center gap-2">
+                        <input
+                            autoFocus
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && saveRename()}
+                            className="bg-[#333] border border-blue-500 rounded px-2 py-0.5 text-white outline-none w-full"
+                        />
+                        <button onClick={saveRename} className="text-green-500 hover:text-green-400">
+                            <Check size={18} />
+                        </button>
+                    </div>
+                ) : (
+                    <div className="flex items-center gap-2">
+                        <span
+                            className="font-medium text-white truncate cursor-pointer hover:text-blue-400 transition-colors"
+                            onClick={() => {
+                                openProject(project.id);
+                                onClose();
+                            }}
+                        >
+                            {project.name}
+                        </span>
+                        {activeProjectId === project.id && (
+                            <button
+                                onClick={() => handleRename(project.id, project.name)}
+                                className="opacity-0 group-hover:opacity-100 p-1 text-gray-500 hover:text-white transition-all"
+                            >
+                                <Edit2 size={12} />
+                            </button>
+                        )}
+                    </div>
+                )}
+                <div className="flex items-center gap-3 text-[11px] text-gray-500">
+                    <span className="flex items-center gap-1">
+                        <Clock size={10} />
+                        {formatDate(project.lastUpdated)}
+                    </span>
+                    {activeProjectId === project.id && (
+                        <span className="px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-bold uppercase tracking-wider text-[9px]">
+                            Active
+                        </span>
+                    )}
+                </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+                <button
+                    onClick={() => {
+                        openProject(project.id);
+                        onClose();
+                    }}
+                    disabled={activeProjectId === project.id}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${activeProjectId === project.id
+                        ? 'bg-blue-500/20 text-blue-400 cursor-default'
+                        : 'bg-[#333] text-gray-300 hover:bg-[#444] hover:text-white'
+                        }`}
+                >
+                    {activeProjectId === project.id ? 'Open' : 'Switch'}
+                </button>
+                <button
+                    onClick={() => {
+                        if (confirm(`Delete project "${project.name}"?`)) {
+                            deleteProject(project.id);
+                        }
+                    }}
+                    className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                    title="Delete Project"
+                >
+                    <Trash2 size={16} />
+                </button>
+            </div>
+        </div>
+    );
 }
 
 export default function ProjectManagerDialog({ isOpen, onClose }: ProjectManagerDialogProps) {
@@ -30,11 +146,6 @@ export default function ProjectManagerDialog({ isOpen, onClose }: ProjectManager
             // Simplified for now.
         }
         setEditingId(null);
-    };
-
-    const formatDate = (dateStr: string) => {
-        const date = new Date(dateStr);
-        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
     return (
@@ -69,88 +180,19 @@ export default function ProjectManagerDialog({ isOpen, onClose }: ProjectManager
 
                     <div className="grid gap-3">
                         {projects.sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()).map((project) => (
-                            <div
+                            <ProjectRow
                                 key={project.id}
-                                className={`group flex items-center justify-between p-4 rounded-xl border transition-all ${activeProjectId === project.id
-                                    ? 'bg-blue-500/10 border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.1)]'
-                                    : 'bg-[#222] border-[#333] hover:border-[#444]'
-                                    }`}
-                            >
-                                <div className="flex flex-col gap-1 flex-1 min-w-0 pr-4">
-                                    {editingId === project.id ? (
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                autoFocus
-                                                value={editName}
-                                                onChange={(e) => setEditName(e.target.value)}
-                                                onKeyDown={(e) => e.key === 'Enter' && saveRename()}
-                                                className="bg-[#333] border border-blue-500 rounded px-2 py-0.5 text-white outline-none w-full"
-                                            />
-                                            <button onClick={saveRename} className="text-green-500 hover:text-green-400">
-                                                <Check size={18} />
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center gap-2">
-                                            <span
-                                                className="font-medium text-white truncate cursor-pointer hover:text-blue-400 transition-colors"
-                                                onClick={() => {
-                                                    openProject(project.id);
-                                                    onClose();
-                                                }}
-                                            >
-                                                {project.name}
-                                            </span>
-                                            {activeProjectId === project.id && (
-                                                <button
-                                                    onClick={() => handleRename(project.id, project.name)}
-                                                    className="opacity-0 group-hover:opacity-100 p-1 text-gray-500 hover:text-white transition-all"
-                                                >
-                                                    <Edit2 size={12} />
-                                                </button>
-                                            )}
-                                        </div>
-                                    )}
-                                    <div className="flex items-center gap-3 text-[11px] text-gray-500">
-                                        <span className="flex items-center gap-1">
-                                            <Clock size={10} />
-                                            {formatDate(project.lastUpdated)}
-                                        </span>
-                                        {activeProjectId === project.id && (
-                                            <span className="px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-bold uppercase tracking-wider text-[9px]">
-                                                Active
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => {
-                                            openProject(project.id);
-                                            onClose();
-                                        }}
-                                        disabled={activeProjectId === project.id}
-                                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${activeProjectId === project.id
-                                            ? 'bg-blue-500/20 text-blue-400 cursor-default'
-                                            : 'bg-[#333] text-gray-300 hover:bg-[#444] hover:text-white'
-                                            }`}
-                                    >
-                                        {activeProjectId === project.id ? 'Open' : 'Switch'}
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            if (confirm(`Delete project "${project.name}"?`)) {
-                                                deleteProject(project.id);
-                                            }
-                                        }}
-                                        className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
-                                        title="Delete Project"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                            </div>
+                                project={project}
+                                activeProjectId={activeProjectId}
+                                editingId={editingId}
+                                editName={editName}
+                                setEditName={setEditName}
+                                saveRename={saveRename}
+                                handleRename={handleRename}
+                                openProject={openProject}
+                                deleteProject={deleteProject}
+                                onClose={onClose}
+                            />
                         ))}
                     </div>
                 </div>

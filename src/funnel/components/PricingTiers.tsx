@@ -67,6 +67,56 @@ function FeatureRow({ f }: { f: Feature }) {
   );
 }
 
+interface TierCtaProps {
+  t: Tier;
+  current: boolean;
+  highlight?: boolean;
+  busy: boolean;
+  period: BillingPeriod;
+  onSelect: (tier: PaidTier, period: BillingPeriod) => void;
+  onFree: () => void;
+}
+
+function TierCta({ t, current, highlight, busy, period, onSelect, onFree }: TierCtaProps) {
+  return t.contact ? (
+    <a
+      href={CONTACT_HREF}
+      aria-label="Contact sales about Enterprise"
+      className="mt-5 w-full rounded-lg bg-[#EFE5C9] py-3 text-center text-sm font-semibold text-[#0A1628] no-underline transition-colors hover:bg-[#E3D6B4]"
+    >
+      Contact sales
+    </a>
+  ) : t.tier === null ? (
+    <button
+      type="button"
+      onClick={onFree}
+      disabled={current}
+      aria-label={current ? 'Current plan (Free)' : 'Get started with Free'}
+      className="mt-5 w-full rounded-lg bg-[#EFE5C9] py-3 text-sm font-semibold text-[#0A1628] transition-colors hover:bg-[#E3D6B4] disabled:cursor-default disabled:opacity-60"
+    >
+      {current ? 'Current plan' : 'Get started'}
+    </button>
+  ) : (
+    <button
+      type="button"
+      onClick={() => onSelect(t.tier as PaidTier, period)}
+      disabled={current || busy}
+      aria-label={current ? `Current plan (${t.name})` : `Subscribe to ${t.name}`}
+      className={`mt-5 w-full rounded-lg py-3 text-sm font-semibold transition-colors disabled:cursor-default disabled:opacity-70 ${
+        highlight
+          ? 'bg-[#1E5FA8] text-white hover:bg-[#174E8B]'
+          : 'bg-[#EFE5C9] text-[#0A1628] hover:bg-[#E3D6B4]'
+      }`}
+    >
+      {current ? 'Current plan' : busy ? 'Loading…' : 'Subscribe →'}
+    </button>
+  );
+}
+
+function billingLabel(t: Tier, paid: boolean, showYearly: boolean): string {
+  return t.contact ? "let's talk" : paid ? (showYearly ? '/mo · billed yearly' : 'per month') : t.monthly === '$0' ? 'forever' : '';
+}
+
 export function PricingTiers({ period, currentPlan, currentTier, onSelect, onFree, busy = false }: PricingTiersProps) {
   const yearly = period === 'yearly';
 
@@ -103,7 +153,7 @@ export function PricingTiers({ period, currentPlan, currentTier, onSelect, onFre
                 {showYearly ? t.yearlyPerMonth : t.monthly}
               </span>
               <span className="mb-1.5 text-sm text-[#97A0AC]">
-                {t.contact ? "let's talk" : paid ? (showYearly ? '/mo · billed yearly' : 'per month') : t.monthly === '$0' ? 'forever' : ''}
+                {billingLabel(t, paid, showYearly)}
               </span>
             </div>
             {showYearly ? (
@@ -113,39 +163,15 @@ export function PricingTiers({ period, currentPlan, currentTier, onSelect, onFre
             )}
             <p className="mt-3 min-h-[40px] text-sm text-[#3F4C5E]">{t.blurb}</p>
 
-            {t.contact ? (
-              <a
-                href={CONTACT_HREF}
-                aria-label="Contact sales about Enterprise"
-                className="mt-5 w-full rounded-lg bg-[#EFE5C9] py-3 text-center text-sm font-semibold text-[#0A1628] no-underline transition-colors hover:bg-[#E3D6B4]"
-              >
-                Contact sales
-              </a>
-            ) : t.tier === null ? (
-              <button
-                type="button"
-                onClick={onFree}
-                disabled={current}
-                aria-label={current ? 'Current plan (Free)' : 'Get started with Free'}
-                className="mt-5 w-full rounded-lg bg-[#EFE5C9] py-3 text-sm font-semibold text-[#0A1628] transition-colors hover:bg-[#E3D6B4] disabled:cursor-default disabled:opacity-60"
-              >
-                {current ? 'Current plan' : 'Get started'}
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => onSelect(t.tier as PaidTier, period)}
-                disabled={current || busy}
-                aria-label={current ? `Current plan (${t.name})` : `Subscribe to ${t.name}`}
-                className={`mt-5 w-full rounded-lg py-3 text-sm font-semibold transition-colors disabled:cursor-default disabled:opacity-70 ${
-                  highlight
-                    ? 'bg-[#1E5FA8] text-white hover:bg-[#174E8B]'
-                    : 'bg-[#EFE5C9] text-[#0A1628] hover:bg-[#E3D6B4]'
-                }`}
-              >
-                {current ? 'Current plan' : busy ? 'Loading…' : 'Subscribe →'}
-              </button>
-            )}
+            <TierCta
+              t={t}
+              current={current}
+              highlight={highlight}
+              busy={busy}
+              period={period}
+              onSelect={onSelect}
+              onFree={onFree}
+            />
 
             <ul className="mt-6 space-y-3">
               {t.inherits && (

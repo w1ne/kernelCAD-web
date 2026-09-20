@@ -9,7 +9,7 @@
 
 import type { Assembly } from '../../../modeling/capture/assembly';
 import { isKernelError } from '../../../shared/intent/kernelError';
-import { solveMates, type SolveStatus } from '../../../modeling/mates/solver';
+import { solveMates, type SolveResult, type SolveStatus } from '../../../modeling/mates/solver';
 import { getActiveMcpSession } from '../activeSession';
 
 export interface SolveMatesInput {
@@ -84,38 +84,12 @@ export async function solveMatesTool(input: SolveMatesInput): Promise<SolveMates
   }
   try {
     const r = await solveMates(arm, input.poses);
-    const serialized: Record<string, SerializedPose> = {};
-    for (const [partName, t] of r.poses) {
-      const { translate, rotateAxis, rotateDeg } = t.decomposeToTranslateAndRotate();
-      serialized[partName] = {
-        translation: [translate[0], translate[1], translate[2]],
-        rotateAxis: [rotateAxis[0], rotateAxis[1], rotateAxis[2]],
-        rotateDeg,
-      };
-    }
+    const serialized = serializePoses(r.poses);
     if (!isConverged(r.status)) {
       // The solver did NOT converge. Report ok:false so the agent never
       // mistakes a wrong configuration for an assembled one — but still
       // carry status + best-effort poses/iterations for diagnosis.
-      const isOver = r.status === 'over-constrained';
-      const errorCode = isOver
-        ? 'assembly.mate.over-constrained'
-        : 'assembly.solver.did-not-converge';
-      const error = isOver
-        ? 'solve_mates: assembly is over-constrained — at least one mate in a closed loop contradicts the others.'
-        : `solve_mates: solver did not converge (status '${r.status}').`;
-      const errorHint = isOver
-        ? 'assembly.mate.over-constrained — remove or relax a mate in the closed loop, or adjust a connector origin so the geometry agrees.'
-        : 'assembly.solver.did-not-converge — articulated closed loops are not yet solved; restrict closed loops to fastened-only mates or split into open chains.';
-      return {
-        ok: false,
-        status: r.status,
-        poses: serialized,
-        ...(r.iterations !== undefined ? { iterations: r.iterations } : {}),
-        error,
-        errorCode,
-        errorHint,
-      };
+      return notConvergedResult(r.status, serialized, r.iterations);
     }
     return {
       ok: true,
@@ -131,4 +105,43 @@ export async function solveMatesTool(input: SolveMatesInput): Promise<SolveMates
       errorHint: isKernelError(e) ? e.hint : undefined,
     };
   }
+}
+
+function serializePoses(poses: SolveResult['poses']): Record<string, SerializedPose> {
+  const serialized: Record<string, SerializedPose> = {};
+  for (const [partName, t] of poses) {
+    const { translate, rotateAxis, rotateDeg } = t.decomposeToTranslateAndRotate();
+    serialized[partName] = {
+      translation: [translate[0], translate[1], translate[2]],
+      rotateAxis: [rotateAxis[0], rotateAxis[1], rotateAxis[2]],
+      rotateDeg,
+    };
+  }
+  return serialized;
+}
+
+function notConvergedResult(
+  status: SolveStatus,
+  serialized: Record<string, SerializedPose>,
+  iterations: number | undefined,
+): Extract<SolveMatesOutput, { ok: false }> {
+  const isOver = status === 'over-constrained';
+  const errorCode = isOver
+    ? 'assembly.mate.over-constrained'
+    : 'assembly.solver.did-not-converge';
+  const error = isOver
+    ? 'solve_mates: assembly is over-constrained — at least one mate in a closed loop contradicts the others.'
+    : `solve_mates: solver did not converge (status '${status}').`;
+  const errorHint = isOver
+    ? 'assembly.mate.over-constrained — remove or relax a mate in the closed loop, or adjust a connector origin so the geometry agrees.'
+    : 'assembly.solver.did-not-converge — articulated closed loops are not yet solved; restrict closed loops to fastened-only mates or split into open chains.';
+  return {
+    ok: false,
+    status,
+    poses: serialized,
+    ...(iterations !== undefined ? { iterations } : {}),
+    error,
+    errorCode,
+    errorHint,
+  };
 }

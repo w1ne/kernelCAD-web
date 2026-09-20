@@ -9,7 +9,7 @@
 
 import type { CallExpression, Node } from 'ts-morph';
 import { AnchorError, parseSource, resolveAnchorExpression, type DirectEditAnchor } from './anchors';
-import { resolveMotionSpec, type Axis, type MotionSpec } from './motionSpec';
+import { resolveMotionSpec, type Axis, type AxisPlan, type MotionSpec } from './motionSpec';
 import { DIAGNOSTIC_REGISTRY } from '../../shared/diagnostics/registry';
 import type { NextAction } from '../../shared/diagnostics/nextAction';
 
@@ -143,54 +143,21 @@ export function planDrag(input: PlanDragInput): DragPlan {
   // One `param(...)` declaration can drive several axes. Equal deltas collapse
   // to a single write; differing deltas cannot be encoded in one param, so the
   // plan fails closed before touching the source.
-  const paramGroups = new Map<CallExpression, { paramName: string; axes: Axis[] }>();
-  for (const axis of [0, 1, 2] as const) {
-    const axisPlan = spec.axes[axis];
-    if (axisPlan.kind !== 'param') continue;
-    const group = paramGroups.get(axisPlan.paramCall);
-    if (group) {
-      group.axes.push(axis);
-    } else {
-      paramGroups.set(axisPlan.paramCall, { paramName: axisPlan.paramName, axes: [axis] });
-    }
-  }
-  for (const group of paramGroups.values()) {
-    const groupDelta = delta[group.axes[0]];
-    if (group.axes.some((axis) => delta[axis] !== groupDelta)) {
-      return {
-        ...base,
-        spec,
-        toCode: null,
-        diagnostics: [sharedParamConflictDiagnostic(group.paramName)],
-      };
-    }
+  const paramGroups = collectParamGroups(spec);
+  const conflict = findSharedParamConflict(paramGroups, delta);
+  if (conflict !== null) {
+    return {
+      ...base,
+      spec,
+      toCode: null,
+      diagnostics: [sharedParamConflictDiagnostic(conflict)],
+    };
   }
 
   // In-place edits first; the delta append below rewrites `expr` wholesale, so
   // its descendants must already be settled when `expr.getText()` is read.
   const writtenParams = new Set<CallExpression>();
-  for (const axis of [0, 1, 2] as const) {
-    const axisPlan = spec.axes[axis];
-    const axisDelta = delta[axis];
-    if (axisPlan.kind === 'param') {
-      if (writtenParams.has(axisPlan.paramCall)) continue;
-      writtenParams.add(axisPlan.paramCall);
-      const raw = axisPlan.declaredValue + axisDelta;
-      let next = raw;
-      if (axisPlan.min !== undefined && next < axisPlan.min) {
-        next = axisPlan.min;
-        diagnostics.push(clampedDiagnostic(axisPlan.paramName, 'min', axisPlan.min));
-      } else if (axisPlan.max !== undefined && next > axisPlan.max) {
-        next = axisPlan.max;
-        diagnostics.push(clampedDiagnostic(axisPlan.paramName, 'max', axisPlan.max));
-      }
-      axisPlan.paramCall.getArguments()[1].replaceWithText(formatNumber(next));
-    } else if (axisPlan.kind === 'literal') {
-      axisPlan.argNode.replaceWithText(formatNumber(axisPlan.value + axisDelta));
-    } else {
-      pendingDeltas[axis] += axisDelta;
-    }
-  }
+  applyAxisEdits(spec, delta, writtenParams, diagnostics, pendingDeltas);
 
   if (pendingDeltas.some((value) => value !== 0)) {
     const appended = `.translate(${pendingDeltas.map(formatNumber).join(', ')})`;
@@ -204,4 +171,77 @@ export function planDrag(input: PlanDragInput): DragPlan {
   }
 
   return { ...base, spec, toCode: sf.getFullText(), diagnostics };
+}
+
+/** Group the `param(...)` declarations that drive one or more axes,
+ *  preserving first-seen order. */
+function collectParamGroups(spec: MotionSpec): Map<CallExpression, { paramName: string; axes: Axis[] }> {
+  const paramGroups = new Map<CallExpression, { paramName: string; axes: Axis[] }>();
+  for (const axis of [0, 1, 2] as const) {
+    const axisPlan = spec.axes[axis];
+    if (axisPlan.kind !== 'param') continue;
+    const group = paramGroups.get(axisPlan.paramCall);
+    if (group) {
+      group.axes.push(axis);
+    } else {
+      paramGroups.set(axisPlan.paramCall, { paramName: axisPlan.paramName, axes: [axis] });
+    }
+  }
+  return paramGroups;
+}
+
+/** Returns the name of the first param whose axes carry differing deltas. */
+function findSharedParamConflict(
+  paramGroups: Map<CallExpression, { paramName: string; axes: Axis[] }>,
+  delta: readonly [number, number, number],
+): string | null {
+  for (const group of paramGroups.values()) {
+    const groupDelta = delta[group.axes[0]];
+    if (group.axes.some((axis) => delta[axis] !== groupDelta)) return group.paramName;
+  }
+  return null;
+}
+
+/** Apply the in-place param + literal edits; computed axes accumulate into
+ *  `pendingDeltas` for the delta append. */
+function applyAxisEdits(
+  spec: MotionSpec,
+  delta: readonly [number, number, number],
+  writtenParams: Set<CallExpression>,
+  diagnostics: DragPlanDiagnostic[],
+  pendingDeltas: [number, number, number],
+): void {
+  for (const axis of [0, 1, 2] as const) {
+    const axisPlan = spec.axes[axis];
+    const axisDelta = delta[axis];
+    if (axisPlan.kind === 'param') {
+      applyParamAxisEdit(axisPlan, axisDelta, writtenParams, diagnostics);
+    } else if (axisPlan.kind === 'literal') {
+      axisPlan.argNode.replaceWithText(formatNumber(axisPlan.value + axisDelta));
+    } else {
+      pendingDeltas[axis] += axisDelta;
+    }
+  }
+}
+
+/** Write one `param(...)`-backed axis in place, clamping to its declared
+ *  bounds. Each param declaration is written at most once. */
+function applyParamAxisEdit(
+  axisPlan: Extract<AxisPlan, { kind: 'param' }>,
+  axisDelta: number,
+  writtenParams: Set<CallExpression>,
+  diagnostics: DragPlanDiagnostic[],
+): void {
+  if (writtenParams.has(axisPlan.paramCall)) return;
+  writtenParams.add(axisPlan.paramCall);
+  const raw = axisPlan.declaredValue + axisDelta;
+  let next = raw;
+  if (axisPlan.min !== undefined && next < axisPlan.min) {
+    next = axisPlan.min;
+    diagnostics.push(clampedDiagnostic(axisPlan.paramName, 'min', axisPlan.min));
+  } else if (axisPlan.max !== undefined && next > axisPlan.max) {
+    next = axisPlan.max;
+    diagnostics.push(clampedDiagnostic(axisPlan.paramName, 'max', axisPlan.max));
+  }
+  axisPlan.paramCall.getArguments()[1].replaceWithText(formatNumber(next));
 }

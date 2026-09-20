@@ -16,7 +16,7 @@
 // (missing localization, ball mate, etc.).
 
 import type { Assembly } from '../capture/assembly';
-import type { MateRecord } from './mate';
+import type { MateLimitRange, MateRecord } from './mate';
 import type { PoseEnvelopeDiagnostic } from './poseEnvelope';
 import { currentValue } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
@@ -34,10 +34,25 @@ const MAX_ITER = 8;
 const EPS_DEG = 1;
 const EPS_MM = 1;
 
-export async function suggestLimitFix(
+interface ResolvedLimitFixTarget {
+  readonly mate: MateRecord;
+  readonly limits: MateLimitRange;
+  readonly limitsField: 'limitsDeg' | 'limitsMm';
+  readonly partA: string;
+  readonly partB: string;
+  readonly isMin: boolean;
+  readonly offendingExtreme: number;
+}
+
+/**
+ * Actionability gate for {@link suggestLimitFix}: the diagnostic must
+ * localize to a specific mate + part pair, the mate must carry scalar
+ * limits, and the sample name must name one of its extremes.
+ */
+function resolveLimitFixTarget(
   arm: Assembly,
   diagnostic: PoseEnvelopeDiagnostic,
-): Promise<SuggestedLimits | null> {
+): ResolvedLimitFixTarget | null {
   // Diagnostic must be actionable: localizable to a specific mate + part pair.
   if (!diagnostic.mateName) return null;
   if (diagnostic.code !== 'assembly.pose-envelope.interference' && diagnostic.code !== 'assembly.pose.out-of-limits') {
@@ -62,29 +77,71 @@ export async function suggestLimitFix(
   if (!isMin && !isMax) return null;
 
   const offendingExtreme = isMin ? limits[0] : limits[1];
-  const defaultPose = resolveMateDefault(mate, arm);
-  if (defaultPose === undefined) return null;
+  return {
+    mate,
+    limits,
+    limitsField,
+    partA: diagnostic.partA,
+    partB: diagnostic.partB,
+    isMin,
+    offendingExtreme,
+  };
+}
 
-  // Belt-and-suspenders: if default collides, there's no clean anchor for the
-  // binary search. Return null so caller falls back to stock hint.
-  if (await pairCollidesAt(arm, mate.name, defaultPose, diagnostic.partA, diagnostic.partB)) {
-    return null;
-  }
-
-  let lo = defaultPose;
-  let hi = offendingExtreme;
-  const eps = limitsField === 'limitsDeg' ? EPS_DEG : EPS_MM;
-
+/**
+ * Binary-search the collision onset between a known-clean anchor pose and
+ * the offending extreme. Returns the largest known-clean bound.
+ */
+async function searchLimitOnset(
+  arm: Assembly,
+  mateName: string,
+  from: number,
+  to: number,
+  eps: number,
+  partA: string,
+  partB: string,
+): Promise<number> {
+  let lo = from;
+  let hi = to;
   for (let i = 0; i < MAX_ITER && Math.abs(hi - lo) > eps; i++) {
     const mid = (lo + hi) / 2;
-    if (await pairCollidesAt(arm, mate.name, mid, diagnostic.partA, diagnostic.partB)) {
+    if (await pairCollidesAt(arm, mateName, mid, partA, partB)) {
       hi = mid;
     } else {
       lo = mid;
     }
   }
+  return lo;
+}
 
-  const safeBound = lo;
+export async function suggestLimitFix(
+  arm: Assembly,
+  diagnostic: PoseEnvelopeDiagnostic,
+): Promise<SuggestedLimits | null> {
+  const target = resolveLimitFixTarget(arm, diagnostic);
+  if (target === null) return null;
+  const { mate, limits, limitsField, partA, partB, isMin, offendingExtreme } = target;
+
+  const defaultPose = resolveMateDefault(mate, arm);
+  if (defaultPose === undefined) return null;
+
+  // Belt-and-suspenders: if default collides, there's no clean anchor for the
+  // binary search. Return null so caller falls back to stock hint.
+  if (await pairCollidesAt(arm, mate.name, defaultPose, partA, partB)) {
+    return null;
+  }
+
+  const eps = limitsField === 'limitsDeg' ? EPS_DEG : EPS_MM;
+  const safeBound = await searchLimitOnset(
+    arm,
+    mate.name,
+    defaultPose,
+    offendingExtreme,
+    eps,
+    partA,
+    partB,
+  );
+
   const newLimits: readonly [number, number] = isMin
     ? [safeBound, limits[1]]
     : [limits[0], safeBound];

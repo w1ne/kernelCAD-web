@@ -6,10 +6,10 @@ import { describe, expect, it } from 'vitest';
 describe('App root route (src/studio/routes/index.tsx)', () => {
   const source = readFileSync('src/studio/routes/index.tsx', 'utf8');
 
-  it('opens the Studio shell at app root instead of the generation prompt funnel', () => {
+  it('opens the full Studio at the homepage', () => {
     expect(source).toMatch(/import\s+App\s+from\s+['"]\.\.\/App['"]/);
     expect(source).toMatch(/<App\s*\/>/);
-    expect(source).not.toMatch(/<PromptBox\b/);
+    expect(source).not.toContain('StartPage');
   });
 });
 

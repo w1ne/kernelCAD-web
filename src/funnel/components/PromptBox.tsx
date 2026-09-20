@@ -57,7 +57,7 @@ export function PromptBox({ onSubmit, disabled, examples = DEFAULT_EXAMPLES, ini
           disabled={disabled || !value.trim()}
           className="rounded-lg bg-blueprint hover:bg-blueprint-hover text-white px-6 py-3 text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {disabled ? 'Generating…' : 'Generate →'}
+          {disabled ? 'Generating…' : 'Create'}
         </button>
       </div>
     </form>

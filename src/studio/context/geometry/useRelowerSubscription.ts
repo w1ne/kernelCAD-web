@@ -7,6 +7,28 @@ import type { MeshFetchOpts } from './useMeshFetch';
 
 type RequestMeshAndReview = (script: string, token: string | null, opts?: MeshFetchOpts) => void;
 
+/** Decode the `affectedIds` array from a raw `relower` SSE frame. A malformed
+ *  or absent list yields `[]` — the caller treats that as a full refresh. */
+function readAffectedIds(event: Event): string[] {
+    let affectedIds: string[] = [];
+    try {
+        const parsed = JSON.parse((event as MessageEvent).data) as { affectedIds?: unknown };
+        if (Array.isArray(parsed.affectedIds)) {
+            affectedIds = parsed.affectedIds.filter((id): id is string => typeof id === 'string');
+        }
+    } catch {
+        // Malformed frame — treat as a full refresh.
+    }
+    return affectedIds;
+}
+
+/** Every affected record is a `solvedAssembly*` — a param-driven mate pose
+ *  edit, so only per-part world transforms changed. */
+function isPoseOnlyRelower(affectedIds: string[]): boolean {
+    return affectedIds.length > 0
+        && affectedIds.every((id) => id.startsWith('solvedAssembly'));
+}
+
 /**
  * Owns the pooled-session live-update surface: the pose-only fast path
  * (`applyPoseOnlyRelower`), the lightweight live-review refresh
@@ -109,18 +131,8 @@ export function useRelowerSubscription(
             // queue of them. Anything else (empty affectedIds = synthetic
             // rebuild relower, geometry-changing records) takes the full
             // mesh+review path below.
-            let affectedIds: string[] = [];
-            try {
-                const parsed = JSON.parse((event as MessageEvent).data) as { affectedIds?: unknown };
-                if (Array.isArray(parsed.affectedIds)) {
-                    affectedIds = parsed.affectedIds.filter((id): id is string => typeof id === 'string');
-                }
-            } catch {
-                // Malformed frame — treat as a full refresh.
-            }
-            const poseOnly = affectedIds.length > 0
-                && affectedIds.every((id) => id.startsWith('solvedAssembly'));
-            if (poseOnly) {
+            const affectedIds = readAffectedIds(event);
+            if (isPoseOnlyRelower(affectedIds)) {
                 void applyPoseOnlyRelower(sessionToken).then((applied) => {
                     if (cancelled) return;
                     if (!applied) {

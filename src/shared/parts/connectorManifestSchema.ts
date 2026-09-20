@@ -89,9 +89,9 @@ function validateExactConnectorFields(
   }
 }
 
-/** Validate local v1 connector data independently of any geometry binding. */
-export function validateConnectorManifest(value: unknown): asserts value is ConnectorManifest {
-  if (!isRecord(value)) throw new Error('manifest: not an object');
+function validateManifestFields(
+  value: Record<string, unknown>,
+): { connectors: unknown[]; partId: string } {
   if (value.schemaVersion !== 1) {
     throw new Error(
       `manifest: schemaVersion must be 1, got ${String(value.schemaVersion)}`,
@@ -119,50 +119,65 @@ export function validateConnectorManifest(value: unknown): asserts value is Conn
   if (!Array.isArray(value.connectors)) {
     throw new Error('manifest: connectors must be an array');
   }
+  return { connectors: value.connectors, partId: value.partId };
+}
+
+function validateConnectorEntry(
+  connector: unknown,
+  names: Set<string>,
+  partId: string,
+): void {
+  if (!isRecord(connector)) {
+    throw new Error('manifest: connector must be an object');
+  }
+  if (!Object.hasOwn(connector, 'name') || typeof connector.name !== 'string') {
+    throw new Error('manifest: connector name required');
+  }
+  // Throws KernelError if the name would conflict with the @kc[...] grammar.
+  assertTopoRefSafeName(connector.name, 'connector-name', partId);
+  if (names.has(connector.name)) {
+    throw new Error(`manifest: duplicate connector name '${connector.name}'`);
+  }
+  names.add(connector.name);
+
+  if (!Object.hasOwn(connector, 'type')) {
+    throw new Error(`manifest: connector ${connector.name} type required`);
+  }
+  if (connector.type === 'frame') {
+    validateExactConnectorFields(
+      connector,
+      ['name', 'type', 'origin', 'normal'],
+      `frame connector ${connector.name}`,
+    );
+    validateVector3(connector.origin, `connector ${connector.name} origin`);
+    validateVector3(connector.normal, `connector ${connector.name} normal`);
+    validateNonZeroVector(connector.normal, `connector ${connector.name} normal`);
+    return;
+  }
+  if (connector.type === 'axis') {
+    validateExactConnectorFields(
+      connector,
+      ['name', 'type', 'origin', 'axis'],
+      `axis connector ${connector.name}`,
+    );
+    validateVector3(connector.origin, `connector ${connector.name} origin`);
+    validateVector3(connector.axis, `connector ${connector.name} axis`);
+    validateNonZeroVector(connector.axis, `connector ${connector.name} axis`);
+    return;
+  }
+  throw new Error(
+    `manifest: connector ${connector.name} type must be 'frame' or 'axis'`,
+  );
+}
+
+/** Validate local v1 connector data independently of any geometry binding. */
+export function validateConnectorManifest(value: unknown): asserts value is ConnectorManifest {
+  if (!isRecord(value)) throw new Error('manifest: not an object');
+  const { connectors, partId } = validateManifestFields(value);
 
   const names = new Set<string>();
-  for (const connector of value.connectors) {
-    if (!isRecord(connector)) {
-      throw new Error('manifest: connector must be an object');
-    }
-    if (!Object.hasOwn(connector, 'name') || typeof connector.name !== 'string') {
-      throw new Error('manifest: connector name required');
-    }
-    // Throws KernelError if the name would conflict with the @kc[...] grammar.
-    assertTopoRefSafeName(connector.name, 'connector-name', value.partId);
-    if (names.has(connector.name)) {
-      throw new Error(`manifest: duplicate connector name '${connector.name}'`);
-    }
-    names.add(connector.name);
-
-    if (!Object.hasOwn(connector, 'type')) {
-      throw new Error(`manifest: connector ${connector.name} type required`);
-    }
-    if (connector.type === 'frame') {
-      validateExactConnectorFields(
-        connector,
-        ['name', 'type', 'origin', 'normal'],
-        `frame connector ${connector.name}`,
-      );
-      validateVector3(connector.origin, `connector ${connector.name} origin`);
-      validateVector3(connector.normal, `connector ${connector.name} normal`);
-      validateNonZeroVector(connector.normal, `connector ${connector.name} normal`);
-      continue;
-    }
-    if (connector.type === 'axis') {
-      validateExactConnectorFields(
-        connector,
-        ['name', 'type', 'origin', 'axis'],
-        `axis connector ${connector.name}`,
-      );
-      validateVector3(connector.origin, `connector ${connector.name} origin`);
-      validateVector3(connector.axis, `connector ${connector.name} axis`);
-      validateNonZeroVector(connector.axis, `connector ${connector.name} axis`);
-      continue;
-    }
-    throw new Error(
-      `manifest: connector ${connector.name} type must be 'frame' or 'axis'`,
-    );
+  for (const connector of connectors) {
+    validateConnectorEntry(connector, names, partId);
   }
 }
 

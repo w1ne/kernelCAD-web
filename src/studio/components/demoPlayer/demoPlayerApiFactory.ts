@@ -332,6 +332,66 @@ function captureMaskPng(deps: DemoPlayerApiDeps): DemoPlayerMaskCapture {
   }
 }
 
+interface InspectionRenderContext {
+  ctx: DemoPlayerSceneContext;
+  width: number;
+  height: number;
+  target: THREE.WebGLRenderTarget;
+  temporaryMaterials: THREE.Material[];
+  originalMaterials: Array<{
+    mesh: THREE.Mesh;
+    material: THREE.Material | THREE.Material[];
+  }>;
+  metadata: DemoPlayerInspectionCapture['metadata'];
+}
+
+/** Render one aux channel over the visible feature-group meshes and encode
+ *  the pixels as a PNG data URL, recording the channel metadata. */
+function renderInspectionChannel(
+  render: InspectionRenderContext,
+  channel: DemoPlayerAuxInspectionChannel,
+  material: THREE.Material,
+): string {
+  const { ctx, width, height, target, temporaryMaterials, originalMaterials, metadata } = render;
+  temporaryMaterials.push(material);
+  originalMaterials.length = 0;
+  ctx.scene.traverse((obj) => {
+    if (!(obj instanceof THREE.Mesh) || !isInsideFeatureGroup(obj) || !isVisibleInScene(obj)) return;
+    originalMaterials.push({ mesh: obj, material: obj.material });
+    obj.material = material;
+  });
+
+  ctx.scene.background = null;
+  ctx.renderer.setClearColor(0x000000, 0);
+  ctx.renderer.setRenderTarget(target);
+  ctx.renderer.render(ctx.scene, ctx.camera);
+  const pixels = new Uint8Array(width * height * 4);
+  ctx.renderer.readRenderTargetPixels(target, 0, 0, width, height, pixels);
+
+  for (const original of originalMaterials) {
+    original.mesh.material = original.material;
+  }
+  originalMaterials.length = 0;
+  if (channel === 'depth') {
+    metadata.depth = {
+      encoding: 'linear-camera-depth-rgba8',
+      units: 'mm',
+      near: ctx.camera.near,
+      far: ctx.camera.far,
+      background: 'rgba(0,0,0,0)',
+      meaning: 'nearest visible model surface after the active object filter, measured along the camera view direction and normalized from near to far',
+    };
+  } else {
+    metadata.normals = {
+      encoding: 'view-space-normal-rgb8',
+      mapping: 'rgb = round((normal_view * 0.5 + 0.5) * 255)',
+      background: 'rgba(0,0,0,0)',
+      meaning: 'visible model-surface normal in the camera coordinate frame after the active object filter',
+    };
+  }
+  return rgbaPixelsToPngDataUrl(pixels, width, height);
+}
+
 function captureInspectionChannels(
   deps: DemoPlayerApiDeps,
   input: { channels: readonly DemoPlayerAuxInspectionChannel[]; width: number; height: number },
@@ -367,47 +427,8 @@ function captureInspectionChannels(
     stencilBuffer: false,
   });
 
-  const renderChannel = (
-    channel: DemoPlayerAuxInspectionChannel,
-    material: THREE.Material,
-  ): string => {
-    temporaryMaterials.push(material);
-    originalMaterials.length = 0;
-    ctx.scene.traverse((obj) => {
-      if (!(obj instanceof THREE.Mesh) || !isInsideFeatureGroup(obj) || !isVisibleInScene(obj)) return;
-      originalMaterials.push({ mesh: obj, material: obj.material });
-      obj.material = material;
-    });
-
-    ctx.scene.background = null;
-    ctx.renderer.setClearColor(0x000000, 0);
-    ctx.renderer.setRenderTarget(target);
-    ctx.renderer.render(ctx.scene, ctx.camera);
-    const pixels = new Uint8Array(width * height * 4);
-    ctx.renderer.readRenderTargetPixels(target, 0, 0, width, height, pixels);
-
-    for (const original of originalMaterials) {
-      original.mesh.material = original.material;
-    }
-    originalMaterials.length = 0;
-    if (channel === 'depth') {
-      metadata.depth = {
-        encoding: 'linear-camera-depth-rgba8',
-        units: 'mm',
-        near: ctx.camera.near,
-        far: ctx.camera.far,
-        background: 'rgba(0,0,0,0)',
-        meaning: 'nearest visible model surface after the active object filter, measured along the camera view direction and normalized from near to far',
-      };
-    } else {
-      metadata.normals = {
-        encoding: 'view-space-normal-rgb8',
-        mapping: 'rgb = round((normal_view * 0.5 + 0.5) * 255)',
-        background: 'rgba(0,0,0,0)',
-        meaning: 'visible model-surface normal in the camera coordinate frame after the active object filter',
-      };
-    }
-    return rgbaPixelsToPngDataUrl(pixels, width, height);
+  const renderContext: InspectionRenderContext = {
+    ctx, width, height, target, temporaryMaterials, originalMaterials, metadata,
   };
 
   try {
@@ -425,11 +446,19 @@ function captureInspectionChannels(
     for (const channel of uniqueChannels) {
       if (channel === 'depth') {
         captures.depth = {
-          pngDataUrl: renderChannel('depth', makeDepthInspectionMaterial(ctx.camera)),
+          pngDataUrl: renderInspectionChannel(
+            renderContext,
+            'depth',
+            makeDepthInspectionMaterial(ctx.camera),
+          ),
         };
       } else if (channel === 'normals') {
         captures.normals = {
-          pngDataUrl: renderChannel('normals', makeNormalsInspectionMaterial()),
+          pngDataUrl: renderInspectionChannel(
+            renderContext,
+            'normals',
+            makeNormalsInspectionMaterial(),
+          ),
         };
       }
     }

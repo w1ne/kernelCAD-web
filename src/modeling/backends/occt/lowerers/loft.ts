@@ -79,9 +79,24 @@ async function loftSketchSections(
   const planes = resolveLoftPlanes(ctx, r, sketches, sectionCount, meta);
   if (planes === undefined) return undefined;
   const ruled = (r.params.ruled?.evaluated ?? 0) > 0.5;
-  const railIds = Array.isArray((meta as { rails?: unknown } | undefined)?.rails)
+  const railIds = readLoftRailIds(meta);
+  if (!enforceLoftRailLimit(ctx, r, railIds)) return undefined;
+  if (railIds.length > 0) {
+    const railEdges = resolveLoftRails(ctx, r, railIds);
+    if (railEdges === undefined) return undefined;
+    return buildRailLoft(ctx, r, sketches, planes, railEdges);
+  }
+  return buildLoftFromSketches(ctx, r, sketches, planes, ruled, meta);
+}
+
+function readLoftRailIds(meta: LoftMeta | undefined): string[] {
+  return Array.isArray((meta as { rails?: unknown } | undefined)?.rails)
     ? ((meta as { rails: string[] }).rails)
     : [];
+}
+
+/** Enforce the <=2-rail MakePipeShell limit; false once the diagnostic is pushed. */
+function enforceLoftRailLimit(ctx: LowerContext, r: FeatureRecord, railIds: string[]): boolean {
   const railCount = r.params.railCount?.evaluated ?? railIds.length;
   if (railCount > 2 || railIds.length > 2) {
     ctx.diagnostics.push({
@@ -92,13 +107,20 @@ async function loftSketchSections(
       message: `loft rails: OCCT MakePipeShell accepts at most 2 rails (spine + auxiliary); got ${Math.max(railCount, railIds.length)}.`,
       hint: HINT_TEMPLATES['feature.loft.rail-miss'].template,
     });
-    return undefined;
+    return false;
   }
-  if (railIds.length > 0) {
-    const railEdges = resolveLoftRails(ctx, r, railIds);
-    if (railEdges === undefined) return undefined;
-    return buildRailLoft(ctx, r, sketches, planes, railEdges);
-  }
+  return true;
+}
+
+/** Non-rail path: direct OCCT loft from the resolved sections and planes. */
+function buildLoftFromSketches(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  sketches: OcctBackend[],
+  planes: LoftPlane[],
+  ruled: boolean,
+  meta: LoftMeta | undefined,
+): ShapeBackend | undefined {
   try {
     return OcctBackend.loftFromSketches(sketches, planes, {
       ruled,

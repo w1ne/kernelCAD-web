@@ -456,7 +456,7 @@ async function checkFastenedMateContact(
   return 1;
 }
 
-function analyzeDisconnectedMesh(mesh: ReturnType<ShapeBackend['getMesh']>): {
+export function analyzeDisconnectedMesh(mesh: ReturnType<ShapeBackend['getMesh']>): {
   componentCount: number;
   largestComponentTriangleCount: number;
   maxComponentGapMm: number;
@@ -464,6 +464,15 @@ function analyzeDisconnectedMesh(mesh: ReturnType<ShapeBackend['getMesh']>): {
   const triangleCount = Math.floor(mesh.indices.length / 3);
   if (triangleCount <= 1) return undefined;
 
+  const { trianglesByVertexKey, triangleVertexKeys } = buildVertexAdjacency(mesh, triangleCount);
+  const components = collectMeshComponents(mesh, triangleCount, trianglesByVertexKey, triangleVertexKeys);
+  return summarizeMeshComponents(components);
+}
+
+function buildVertexAdjacency(
+  mesh: ReturnType<ShapeBackend['getMesh']>,
+  triangleCount: number,
+): { trianglesByVertexKey: Map<string, number[]>; triangleVertexKeys: string[][] } {
   const trianglesByVertexKey = new Map<string, number[]>();
   const triangleVertexKeys: string[][] = [];
   for (let tri = 0; tri < triangleCount; tri++) {
@@ -481,7 +490,15 @@ function analyzeDisconnectedMesh(mesh: ReturnType<ShapeBackend['getMesh']>): {
     }
     triangleVertexKeys.push(keys);
   }
+  return { trianglesByVertexKey, triangleVertexKeys };
+}
 
+function collectMeshComponents(
+  mesh: ReturnType<ShapeBackend['getMesh']>,
+  triangleCount: number,
+  trianglesByVertexKey: Map<string, number[]>,
+  triangleVertexKeys: string[][],
+): MeshComponent[] {
   const visited = new Uint8Array(triangleCount);
   const components: MeshComponent[] = [];
   for (let start = 0; start < triangleCount; start++) {
@@ -516,7 +533,14 @@ function analyzeDisconnectedMesh(mesh: ReturnType<ShapeBackend['getMesh']>): {
 
     components.push({ triangleCount: componentTriangleCount, bbox, vertices: [...vertices.values()] });
   }
+  return components;
+}
 
+function summarizeMeshComponents(components: MeshComponent[]): {
+  componentCount: number;
+  largestComponentTriangleCount: number;
+  maxComponentGapMm: number;
+} | undefined {
   // Some OCCT triangulations do not share exact vertex coordinates across
   // adjacent faces, which can make a single complex solid look like thousands
   // of triangle components. Exact bbox clustering has pairwise vertex-distance

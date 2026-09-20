@@ -45,7 +45,7 @@
 // and surviving clusters are reported in descending severity order.
 
 import type { Vec3 } from '../../../shared/intent/types';
-import { TriangleBvh, type DfmMesh } from './meshBvh';
+import { TriangleBvh, type BvhHit, type DfmMesh } from './meshBvh';
 
 /** Inward offset of the cast origin and the traversal floor (mm). Walls
  *  thinner than ~2ε are below any manufacturable scale, so the floor costs
@@ -121,6 +121,84 @@ interface ThinSample {
   vc: number;
 }
 
+interface TriSample {
+  va: number;
+  vb: number;
+  vc: number;
+  nx: number;
+  ny: number;
+  nz: number;
+  cx: number;
+  cy: number;
+  cz: number;
+}
+
+/** Unit winding normal + centroid of triangle `i`; `undefined` for a
+ *  degenerate (or NaN) triangle, which is skipped rather than cast. */
+function triangleSample(
+  vertices: readonly number[],
+  triangles: readonly number[],
+  i: number,
+): TriSample | undefined {
+  const va = triangles[3 * i];
+  const vb = triangles[3 * i + 1];
+  const vc = triangles[3 * i + 2];
+  const a = va * 3, b = vb * 3, c = vc * 3;
+  const ax = vertices[a], ay = vertices[a + 1], az = vertices[a + 2];
+  const e1x = vertices[b] - ax, e1y = vertices[b + 1] - ay, e1z = vertices[b + 2] - az;
+  const e2x = vertices[c] - ax, e2y = vertices[c + 1] - ay, e2z = vertices[c + 2] - az;
+  // Winding normal (outward for meshShapeForExport output).
+  let nx = e1y * e2z - e1z * e2y;
+  let ny = e1z * e2x - e1x * e2z;
+  let nz = e1x * e2y - e1y * e2x;
+  const len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+  if (!(len / 2 >= AREA_EPS)) return undefined; // degenerate (or NaN): skip, do not cast
+  nx /= len; ny /= len; nz /= len;
+
+  const cx = (ax + vertices[b] + vertices[c]) / 3;
+  const cy = (ay + vertices[b + 1] + vertices[c + 1]) / 3;
+  const cz = (az + vertices[b + 2] + vertices[c + 2]) / 3;
+  return { va, vb, vc, nx, ny, nz, cx, cy, cz };
+}
+
+/** Apply one accepted ray hit to the running result and return the possibly
+ *  lowered `thinnestMm`. The midpoint inside-test and the knife-edge filter
+ *  are the only places a hit can drop out. */
+function recordThinHit(
+  hit: BvhHit,
+  sample: TriSample,
+  minWallMm: number,
+  wedgeCos: number | undefined,
+  thinnestMm: number,
+  vertices: readonly number[],
+  triangles: readonly number[],
+  bvh: TriangleBvh,
+  thin: ThinSample[],
+): number {
+  const t = hit.t;
+
+  // Midpoint inside-test: a segment whose midpoint is in air is an air
+  // gap between surfaces, not a wall — reject it entirely (violations AND
+  // thinnestMm). Run lazily: only when the hit is a violation candidate
+  // or would lower thinnestMm; anything else never influences the result,
+  // so skipping the test there is pure perf with no accuracy cost.
+  if (t < minWallMm || t < thinnestMm) {
+    // Knife-edge filter (opt-in): the far surface must face back within
+    // maxWedgeDeg of anti-parallel, else the two faces meet at an edge
+    // (cone rim, sharp chamfer tip) and the short ray measures the taper
+    // of that edge, not a wall.
+    if (wedgeCos !== undefined && -dotWithTriNormal(vertices, triangles, hit.triIndex, sample.nx, sample.ny, sample.nz) < wedgeCos) {
+      return thinnestMm;
+    }
+    const d = RAY_EPS_MM + t / 2;
+    const mid: Vec3 = [sample.cx - sample.nx * d, sample.cy - sample.ny * d, sample.cz - sample.nz * d];
+    if (!bvh.pointInside(mid)) return thinnestMm;
+    if (t < minWallMm) thin.push({ t, location: [sample.cx, sample.cy, sample.cz], va: sample.va, vb: sample.vb, vc: sample.vc });
+    if (t < thinnestMm) return t;
+  }
+  return thinnestMm;
+}
+
 /**
  * Check the minimum wall thickness of one part's export-grade mesh (the
  * part's LOCAL frame — thickness is transform-invariant) against
@@ -153,51 +231,21 @@ export function checkMinWall(
   const thin: ThinSample[] = [];
 
   for (let i = 0; i < numTris; i += stride) {
-    const va = triangles[3 * i];
-    const vb = triangles[3 * i + 1];
-    const vc = triangles[3 * i + 2];
-    const a = va * 3, b = vb * 3, c = vc * 3;
-    const ax = vertices[a], ay = vertices[a + 1], az = vertices[a + 2];
-    const e1x = vertices[b] - ax, e1y = vertices[b + 1] - ay, e1z = vertices[b + 2] - az;
-    const e2x = vertices[c] - ax, e2y = vertices[c + 1] - ay, e2z = vertices[c + 2] - az;
-    // Winding normal (outward for meshShapeForExport output).
-    let nx = e1y * e2z - e1z * e2y;
-    let ny = e1z * e2x - e1x * e2z;
-    let nz = e1x * e2y - e1y * e2x;
-    const len = Math.sqrt(nx * nx + ny * ny + nz * nz);
-    if (!(len / 2 >= AREA_EPS)) continue; // degenerate (or NaN): skip, do not cast
-    nx /= len; ny /= len; nz /= len;
-
-    const cx = (ax + vertices[b] + vertices[c]) / 3;
-    const cy = (ay + vertices[b + 1] + vertices[c + 1]) / 3;
-    const cz = (az + vertices[b + 2] + vertices[c + 2]) / 3;
+    const sample = triangleSample(vertices, triangles, i);
+    if (sample === undefined) continue; // degenerate (or NaN): skip, do not cast
 
     sampleCount++;
-    const origin: Vec3 = [cx - nx * RAY_EPS_MM, cy - ny * RAY_EPS_MM, cz - nz * RAY_EPS_MM];
-    const dir: Vec3 = [-nx, -ny, -nz];
+    const origin: Vec3 = [
+      sample.cx - sample.nx * RAY_EPS_MM,
+      sample.cy - sample.ny * RAY_EPS_MM,
+      sample.cz - sample.nz * RAY_EPS_MM,
+    ];
+    const dir: Vec3 = [-sample.nx, -sample.ny, -sample.nz];
     const hit = bvh.raycast(origin, dir, { skipTri: i, tMin: RAY_EPS_MM });
     if (hit === null) continue;
-    const t = hit.t;
-
-    // Midpoint inside-test: a segment whose midpoint is in air is an air
-    // gap between surfaces, not a wall — reject it entirely (violations AND
-    // thinnestMm). Run lazily: only when the hit is a violation candidate
-    // or would lower thinnestMm; anything else never influences the result,
-    // so skipping the test there is pure perf with no accuracy cost.
-    if (t < minWallMm || t < thinnestMm) {
-      // Knife-edge filter (opt-in): the far surface must face back within
-      // maxWedgeDeg of anti-parallel, else the two faces meet at an edge
-      // (cone rim, sharp chamfer tip) and the short ray measures the taper
-      // of that edge, not a wall.
-      if (wedgeCos !== undefined && -dotWithTriNormal(vertices, triangles, hit.triIndex, nx, ny, nz) < wedgeCos) {
-        continue;
-      }
-      const d = RAY_EPS_MM + t / 2;
-      const mid: Vec3 = [cx - nx * d, cy - ny * d, cz - nz * d];
-      if (!bvh.pointInside(mid)) continue;
-      if (t < minWallMm) thin.push({ t, location: [cx, cy, cz], va, vb, vc });
-      if (t < thinnestMm) thinnestMm = t;
-    }
+    thinnestMm = recordThinHit(
+      hit, sample, minWallMm, wedgeCos, thinnestMm, vertices, triangles, bvh, thin,
+    );
   }
 
   const { clusters, truncated } = clusterThinSamples(thin, minWallMm);

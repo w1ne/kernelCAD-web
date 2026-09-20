@@ -45,59 +45,57 @@ export type FetchPartOutput =
   | { ok: false; error: 'url_host_not_allowed'; host: string | null }
   | { ok: false; error: string; errorCode: string; errorHint: string };
 
-export async function fetchPartTool(
-  input: FetchPartInput,
+async function withKernelErrorMapping(
+  fn: () => Promise<FetchPartOutput>,
 ): Promise<FetchPartOutput> {
-  // FETCH-BY-URL mode takes precedence when a url is supplied.
-  if (typeof input.url === 'string' && input.url.length > 0) {
-    const session = new CaptureSession();
-    try {
-      const outcome = await fetchPartFromUrlHost({ session }, input.url);
-      if (!outcome.ok) {
-        return { ok: false, error: outcome.error, host: outcome.host };
-      }
-      if (outcome.kind === 'link_out') {
-        return {
-          ok: true,
-          kind: 'link_out',
-          url: outcome.url,
-          instruction: outcome.instruction,
-        };
-      }
-      const { record } = outcome.result;
-      const cachePath = String(record.attributes.cachePath ?? '');
+  try {
+    return await fn();
+  } catch (e) {
+    if (e instanceof KernelError) {
+      return {
+        ok: false,
+        error: e.message,
+        errorCode: e.code,
+        errorHint: e.hint ?? '',
+      };
+    }
+    throw e;
+  }
+}
+
+async function fetchByUrl(url: string): Promise<FetchPartOutput> {
+  const session = new CaptureSession();
+  return withKernelErrorMapping(async () => {
+    const outcome = await fetchPartFromUrlHost({ session }, url);
+    if (!outcome.ok) {
+      return { ok: false, error: outcome.error, host: outcome.host };
+    }
+    if (outcome.kind === 'link_out') {
       return {
         ok: true,
-        record,
-        cachePath,
-        sha256: record.sha256,
-        source: 'remote',
+        kind: 'link_out',
+        url: outcome.url,
+        instruction: outcome.instruction,
       };
-    } catch (e) {
-      if (e instanceof KernelError) {
-        return {
-          ok: false,
-          error: e.message,
-          errorCode: e.code,
-          errorHint: e.hint ?? '',
-        };
-      }
-      throw e;
     }
-  }
-
-  if (!input.id && !input.query) {
+    const { record } = outcome.result;
+    const cachePath = String(record.attributes.cachePath ?? '');
     return {
-      ok: false,
-      error: 'fetch_part requires id, query, or url.',
-      errorCode: 'parts.input.id-or-query-required',
-      errorHint:
-        'Pass an id (exact bundled record), a query (fuzzy search), or a url (direct geometry URL).',
+      ok: true,
+      record,
+      cachePath,
+      sha256: record.sha256,
+      source: 'remote',
     };
-  }
-  const idOrQuery = input.id ?? input.query!;
+  });
+}
+
+async function fetchByIdOrQuery(
+  input: FetchPartInput,
+  idOrQuery: string,
+): Promise<FetchPartOutput> {
   const session = new CaptureSession();
-  try {
+  return withKernelErrorMapping(async () => {
     const r = await fetchPartHost({ session }, idOrQuery, {
       ...(input.category !== undefined ? { category: input.category } : {}),
       ...(input.family !== undefined ? { family: input.family } : {}),
@@ -117,15 +115,26 @@ export async function fetchPartTool(
       sha256: r.record.sha256,
       source: r.record.source === 'local-catalog' ? 'local' : 'remote',
     };
-  } catch (e) {
-    if (e instanceof KernelError) {
-      return {
-        ok: false,
-        error: e.message,
-        errorCode: e.code,
-        errorHint: e.hint ?? '',
-      };
-    }
-    throw e;
+  });
+}
+
+export async function fetchPartTool(
+  input: FetchPartInput,
+): Promise<FetchPartOutput> {
+  // FETCH-BY-URL mode takes precedence when a url is supplied.
+  if (typeof input.url === 'string' && input.url.length > 0) {
+    return fetchByUrl(input.url);
   }
+
+  if (!input.id && !input.query) {
+    return {
+      ok: false,
+      error: 'fetch_part requires id, query, or url.',
+      errorCode: 'parts.input.id-or-query-required',
+      errorHint:
+        'Pass an id (exact bundled record), a query (fuzzy search), or a url (direct geometry URL).',
+    };
+  }
+  const idOrQuery = input.id ?? input.query!;
+  return fetchByIdOrQuery(input, idOrQuery);
 }

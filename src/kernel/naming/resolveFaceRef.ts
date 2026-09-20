@@ -19,7 +19,7 @@
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { FaceRef } from '../../shared/intent/types';
 import type { OcctBackend } from '../backends/occt/occtBackend';
-import type { FaceHash } from './evolutionRecord';
+import type { FaceHash, HistoryMap } from './evolutionRecord';
 import { findByGeometrySnapshot } from './geometrySnapshotFallback';
 import { DEFAULT_SNAPSHOT_TOLERANCE } from '../backends/occt/createdRefs';
 import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
@@ -128,6 +128,73 @@ function resolveCanonical(ref: Extract<FaceRef, { kind: 'canonical' }>, ctx: Res
   };
 }
 
+type CreatedSurfaceType = 'PLANE' | 'CYLINDRE' | 'CONE' | 'SPHERE' | 'TORUS' | 'BSPLINE' | 'OTHER';
+
+interface CreatedFingerprint {
+  snapshotAtCreate: FaceSnapshotImported | undefined;
+  surfaceType: CreatedSurfaceType | undefined;
+}
+
+interface CreatedTopologyScan extends CreatedFingerprint {
+  topology: FaceHash[];
+}
+
+// 1. Topology route: lineage.featureId === ref.rewriteId && labelName === ref.slot.
+//    Only entries with a live `snapshot` field count as topology hits — a
+//    lineage that retains only `snapshotAtCreate` (and no live snapshot) is
+//    an orphan record of a removed face, not a live face on the result.
+function collectCreatedTopology(map: HistoryMap, ref: Extract<FaceRef, { kind: 'created' }>): CreatedTopologyScan {
+  const topology: FaceHash[] = [];
+  let snapshotAtCreate: FaceSnapshotImported | undefined;
+  let surfaceType: CreatedSurfaceType | undefined;
+  for (const [hash, lineage] of map.entries()) {
+    if (lineage.featureId === ref.rewriteId && lineage.labelName === ref.slot) {
+      if (lineage.snapshot) {
+        topology.push(hash);
+      }
+      // Capture the create-time fingerprint while we're walking — any lineage
+      // entry with this (featureId, slot) carries the same snapshotAtCreate.
+      if (lineage.snapshotAtCreate) {
+        snapshotAtCreate = lineage.snapshotAtCreate;
+        surfaceType = lineage.surfaceType;
+      }
+    }
+  }
+  return { topology, snapshotAtCreate, surfaceType };
+}
+
+// 2. Fallback. We need a create-time fingerprint even when topology
+//    returned zero hits. If no lineage in the map carries it, walk again
+//    to pick up any orphan lineage that kept the fingerprint under a
+//    different labelName (e.g. an upstream rename).
+function findCreatedFingerprint(map: HistoryMap, ref: Extract<FaceRef, { kind: 'created' }>): CreatedFingerprint | undefined {
+  for (const lineage of map.values()) {
+    if (lineage.featureId === ref.rewriteId && lineage.snapshotAtCreate) {
+      return { snapshotAtCreate: lineage.snapshotAtCreate, surfaceType: lineage.surfaceType };
+    }
+  }
+  return undefined;
+}
+
+function fallbackResolved(
+  ref: Extract<FaceRef, { kind: 'created' }>,
+  ctx: ResolveContext,
+  faceHash: FaceHash,
+): ResolveResult {
+  return {
+    ok: true,
+    faceHash,
+    warnings: [{
+      target: 'export-occt',
+      code: 'feature.created-ref.fallback-used',
+      featureId: ctx.featureId,
+      severity: 'warn',
+      message: `Created face ref '${ref.rewriteId}.${ref.slot}' resolved via geometry-snapshot fallback after the topology route lost it. The downstream feature continues, but a future edit may shift this match.`,
+      hint: HINT_TEMPLATES['feature.created-ref.fallback-used'].template,
+    }],
+  };
+}
+
 function resolveCreated(ref: Extract<FaceRef, { kind: 'created' }>, ctx: ResolveContext): ResolveResult {
   const map = ctx.currentShape.historyMap;
   if (map === undefined) {
@@ -144,66 +211,31 @@ function resolveCreated(ref: Extract<FaceRef, { kind: 'created' }>, ctx: Resolve
     };
   }
 
-  // 1. Topology route: lineage.featureId === ref.rewriteId && labelName === ref.slot.
-  //    Only entries with a live `snapshot` field count as topology hits — a
-  //    lineage that retains only `snapshotAtCreate` (and no live snapshot) is
-  //    an orphan record of a removed face, not a live face on the result.
-  const topology: FaceHash[] = [];
-  let snapshotAtCreate: FaceSnapshotImported | undefined;
-  let surfaceType: 'PLANE' | 'CYLINDRE' | 'CONE' | 'SPHERE' | 'TORUS' | 'BSPLINE' | 'OTHER' | undefined;
-  for (const [hash, lineage] of map.entries()) {
-    if (lineage.featureId === ref.rewriteId && lineage.labelName === ref.slot) {
-      if (lineage.snapshot) {
-        topology.push(hash);
-      }
-      // Capture the create-time fingerprint while we're walking — any lineage
-      // entry with this (featureId, slot) carries the same snapshotAtCreate.
-      if (lineage.snapshotAtCreate) {
-        snapshotAtCreate = lineage.snapshotAtCreate;
-        surfaceType = lineage.surfaceType;
-      }
-    }
-  }
-  if (topology.length === 1) {
-    return { ok: true, faceHash: topology[0] };
+  const scan = collectCreatedTopology(map, ref);
+  if (scan.topology.length === 1) {
+    return { ok: true, faceHash: scan.topology[0] };
   }
 
-  // 2. Fallback. We need a create-time fingerprint even when topology
-  //    returned zero hits. If no lineage in the map carries it, walk again
-  //    to pick up any orphan lineage that kept the fingerprint under a
-  //    different labelName (e.g. an upstream rename).
-  if (!snapshotAtCreate) {
-    for (const lineage of map.values()) {
-      if (lineage.featureId === ref.rewriteId && lineage.snapshotAtCreate) {
-        snapshotAtCreate = lineage.snapshotAtCreate;
-        surfaceType = lineage.surfaceType;
-        break;
-      }
-    }
-  }
-  if (!snapshotAtCreate || !surfaceType) {
-    if (topology.length === 0) return removed(ref, ctx);
+  const fingerprint = scan.snapshotAtCreate
+    ? { snapshotAtCreate: scan.snapshotAtCreate, surfaceType: scan.surfaceType }
+    : findCreatedFingerprint(map, ref);
+  if (!fingerprint || !fingerprint.snapshotAtCreate || !fingerprint.surfaceType) {
+    if (scan.topology.length === 0) return removed(ref, ctx);
     // topology.length > 1 with no fingerprint → genuine ambiguity.
-    return ambiguous(ref, ctx, topology.length);
+    return ambiguous(ref, ctx, scan.topology.length);
   }
 
-  const { matches } = findByGeometrySnapshot(map, snapshotAtCreate, surfaceType, DEFAULT_SNAPSHOT_TOLERANCE);
+  const { matches } = findByGeometrySnapshot(
+    map,
+    fingerprint.snapshotAtCreate,
+    fingerprint.surfaceType,
+    DEFAULT_SNAPSHOT_TOLERANCE,
+  );
   // 3. If topology.length > 1, restrict matches to that subset.
-  const restricted = topology.length > 1 ? matches.filter((h) => topology.includes(h)) : matches;
+  const restricted = scan.topology.length > 1 ? matches.filter((h) => scan.topology.includes(h)) : matches;
 
   if (restricted.length === 1) {
-    return {
-      ok: true,
-      faceHash: restricted[0],
-      warnings: [{
-        target: 'export-occt',
-        code: 'feature.created-ref.fallback-used',
-        featureId: ctx.featureId,
-        severity: 'warn',
-        message: `Created face ref '${ref.rewriteId}.${ref.slot}' resolved via geometry-snapshot fallback after the topology route lost it. The downstream feature continues, but a future edit may shift this match.`,
-        hint: HINT_TEMPLATES['feature.created-ref.fallback-used'].template,
-      }],
-    };
+    return fallbackResolved(ref, ctx, restricted[0]);
   }
   if (restricted.length === 0) return removed(ref, ctx);
   return ambiguous(ref, ctx, restricted.length);

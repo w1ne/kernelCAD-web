@@ -96,15 +96,37 @@ const SHARP_COS = Math.cos((30 * Math.PI) / 180);
 const COMPONENT_SPLIT_COS = Math.cos((50 * Math.PI) / 180);
 
 export function segmentMesh(mesh: IndexedMesh, opts: SegmentOptions = {}): Segmentation {
+  const { diag, floor } = meshToleranceFloor(mesh, opts);
+  const totalArea = mesh.areas.reduce((s, a) => s + a, 0);
+
+  const loose = growPlanes(mesh, Math.max(floor * 2.5, 0.05), totalArea, true);
+  const noise = estimateSurfaceNoise(loose);
+  const tol = Math.max(floor, 4 * noise);
+  const planes = growPlanes(mesh, tol, totalArea);
+
+  const { claimed, consumed } = claimSoftPlanes(planes, mesh, tol, diag, totalArea);
+  const assigned = markAssignedTriangles(planes, consumed, mesh);
+
+  const fitted = fitRemaining(mesh, assigned, tol, diag);
+  const { freeform } = fitted;
+  const cylinders = adoptFragments(mesh, planes, mergeCoaxial(mesh, claimed.concat(fitted.cylinders), tol), freeform, tol, totalArea);
+  planes.forEach((p, i) => (p.id = i));
+  cylinders.forEach((c, i) => (c.id = i));
+  freeform.forEach((f, i) => (f.id = i));
+  const { planeOf, cylinderOf } = buildRegionOwnership(mesh, planes, cylinders);
+  return { planes, cylinders, freeform, toleranceMm: tol, noiseMm: noise, totalArea, planeOf, cylinderOf };
+}
+
+function meshToleranceFloor(mesh: IndexedMesh, opts: SegmentOptions): { diag: number; floor: number } {
   const diag = Math.hypot(
     mesh.bbox.max[0] - mesh.bbox.min[0],
     mesh.bbox.max[1] - mesh.bbox.min[1],
     mesh.bbox.max[2] - mesh.bbox.min[2],
   );
-  const floor = opts.toleranceFloorMm ?? Math.max(0.02, 2.5e-4 * diag);
-  const totalArea = mesh.areas.reduce((s, a) => s + a, 0);
+  return { diag, floor: opts.toleranceFloorMm ?? Math.max(0.02, 2.5e-4 * diag) };
+}
 
-  const loose = growPlanes(mesh, Math.max(floor * 2.5, 0.05), totalArea, true);
+function estimateSurfaceNoise(loose: PlaneRegion[]): number {
   let wSum = 0;
   let rSum = 0;
   // Noise probes: regions bounded almost entirely by creases, measured by
@@ -117,10 +139,16 @@ export function segmentMesh(mesh: IndexedMesh, opts: SegmentOptions = {}): Segme
     wSum += p.area;
     rSum += p.area * p.robustSigma * p.robustSigma;
   }
-  const noise = wSum > 0 ? Math.sqrt(rSum / wSum) : 0;
-  const tol = Math.max(floor, 4 * noise);
-  const planes = growPlanes(mesh, tol, totalArea);
+  return wSum > 0 ? Math.sqrt(rSum / wSum) : 0;
+}
 
+function claimSoftPlanes(
+  planes: PlaneRegion[],
+  mesh: IndexedMesh,
+  tol: number,
+  diag: number,
+  totalArea: number,
+): { claimed: CylinderRegion[]; consumed: Set<number> } {
   // Small planes may be facet strips of a short or noisy bore (on a scan the
   // per-triangle normals are too noisy for the crease test to tell). Offer
   // them to the cylinder fit first: a smooth component that includes them and
@@ -135,22 +163,26 @@ export function segmentMesh(mesh: IndexedMesh, opts: SegmentOptions = {}): Segme
   for (let i = planes.length - 1; i >= 0; i--) {
     if (soft.has(planes[i]) && planes[i].tris.every((t) => consumed.has(t))) planes.splice(i, 1);
   }
+  return { claimed, consumed };
+}
 
+function markAssignedTriangles(planes: PlaneRegion[], consumed: Set<number>, mesh: IndexedMesh): Int8Array {
   const assigned = new Int8Array(mesh.areas.length);
   for (const p of planes) for (const t of p.tris) assigned[t] = 1;
   for (const t of consumed) assigned[t] = 1;
+  return assigned;
+}
 
-  const fitted = fitRemaining(mesh, assigned, tol, diag);
-  const { freeform } = fitted;
-  const cylinders = adoptFragments(mesh, planes, mergeCoaxial(mesh, claimed.concat(fitted.cylinders), tol), freeform, tol, totalArea);
-  planes.forEach((p, i) => (p.id = i));
-  cylinders.forEach((c, i) => (c.id = i));
-  freeform.forEach((f, i) => (f.id = i));
+function buildRegionOwnership(
+  mesh: IndexedMesh,
+  planes: PlaneRegion[],
+  cylinders: CylinderRegion[],
+): { planeOf: Int32Array; cylinderOf: Int32Array } {
   const planeOf = new Int32Array(mesh.areas.length).fill(-1);
   const cylinderOf = new Int32Array(mesh.areas.length).fill(-1);
   for (const p of planes) for (const t of p.tris) planeOf[t] = p.id;
   for (const c of cylinders) for (const t of c.tris) cylinderOf[t] = c.id;
-  return { planes, cylinders, freeform, toleranceMm: tol, noiseMm: noise, totalArea, planeOf, cylinderOf };
+  return { planeOf, cylinderOf };
 }
 
 /**
@@ -193,23 +225,9 @@ function adoptFragments(
       const c = pool[ci];
       if (c.coverageRad < Math.PI / 2) continue;
       let tris = c.tris;
-      for (let i = planes.length - 1; i >= 0; i--) {
-        const p = planes[i];
-        if (p.area >= 0.02 * totalArea || !onSurface(c, p.tris)) continue;
-        tris = tris.concat(p.tris);
-        planes.splice(i, 1);
-      }
-      for (let i = freeform.length - 1; i >= 0; i--) {
-        if (!onSurface(c, freeform[i].tris)) continue;
-        tris = tris.concat(freeform[i].tris);
-        freeform.splice(i, 1);
-      }
-      for (let j = pool.length - 1; j > ci; j--) {
-        const other = pool[j];
-        if (other.area >= c.area || !onSurface(c, other.tris)) continue;
-        tris = tris.concat(other.tris);
-        pool.splice(j, 1);
-      }
+      tris = adoptSmallPlaneFragments(c, tris, planes, onSurface, totalArea);
+      tris = adoptFreeformFragments(c, tris, freeform, onSurface);
+      tris = adoptSmallerCylinderFragments(c, ci, tris, pool, onSurface);
       if (tris.length === c.tris.length) continue;
       const refit = fitCylinder(mesh, tris, Infinity, Infinity) ?? fitCylinder(mesh, tris, Infinity, Infinity, c.axis);
       if (refit) {
@@ -220,6 +238,52 @@ function adoptFragments(
     pool = mergeCoaxial(mesh, pool, tol);
   }
   return pool;
+}
+
+function adoptSmallPlaneFragments(
+  c: CylinderRegion,
+  tris: number[],
+  planes: PlaneRegion[],
+  onSurface: (c: CylinderRegion, tris: number[]) => boolean,
+  totalArea: number,
+): number[] {
+  for (let i = planes.length - 1; i >= 0; i--) {
+    const p = planes[i];
+    if (p.area >= 0.02 * totalArea || !onSurface(c, p.tris)) continue;
+    tris = tris.concat(p.tris);
+    planes.splice(i, 1);
+  }
+  return tris;
+}
+
+function adoptFreeformFragments(
+  c: CylinderRegion,
+  tris: number[],
+  freeform: FreeformRegion[],
+  onSurface: (c: CylinderRegion, tris: number[]) => boolean,
+): number[] {
+  for (let i = freeform.length - 1; i >= 0; i--) {
+    if (!onSurface(c, freeform[i].tris)) continue;
+    tris = tris.concat(freeform[i].tris);
+    freeform.splice(i, 1);
+  }
+  return tris;
+}
+
+function adoptSmallerCylinderFragments(
+  c: CylinderRegion,
+  ci: number,
+  tris: number[],
+  pool: CylinderRegion[],
+  onSurface: (c: CylinderRegion, tris: number[]) => boolean,
+): number[] {
+  for (let j = pool.length - 1; j > ci; j--) {
+    const other = pool[j];
+    if (other.area >= c.area || !onSurface(c, other.tris)) continue;
+    tris = tris.concat(other.tris);
+    pool.splice(j, 1);
+  }
+  return tris;
 }
 
 function vertex(mesh: IndexedMesh, v: number): V3 {
@@ -320,6 +384,15 @@ function planeBoundaryFraction(mesh: IndexedMesh, region: number[], stamp: numbe
   return boundary > 0 ? sharp / boundary : 1;
 }
 
+interface PlaneGrowContext {
+  owner: Int32Array;
+  tried: Uint8Array;
+  stampOf: Int32Array;
+  planes: PlaneRegion[];
+  grow: PlaneGrower['grow'];
+  currentStamp: () => number;
+}
+
 function growPlanes(mesh: IndexedMesh, tol: number, totalArea: number, robust = false): PlaneRegion[] {
   const triCount = mesh.areas.length;
   const order = Array.from({ length: triCount }, (_, i) => i).sort((a, b) => mesh.areas[b] - mesh.areas[a]);
@@ -328,70 +401,84 @@ function growPlanes(mesh: IndexedMesh, tol: number, totalArea: number, robust = 
   const stampOf = new Int32Array(triCount);
   const alt = altitudes(mesh);
   const planes: PlaneRegion[] = [];
-  const minSeedArea = tol * tol;
   const { grow, currentStamp } = makePlaneGrower(mesh, tol, owner, stampOf, alt);
+  const ctx: PlaneGrowContext = { owner, tried, stampOf, planes, grow, currentStamp };
 
   for (const seed of order) {
     if (owner[seed] >= 0 || tried[seed]) continue;
-    tried[seed] = 1;
-    if (mesh.areas[seed] < minSeedArea) break; // sorted: every later seed is smaller
-    const n0 = triNormal(mesh, seed);
-    const d0 = dot3(n0, vertex(mesh, mesh.triangles[seed * 3]));
-    // Two growth rounds: grow loosely from the seed triangle's plane (on a
-    // noisy mesh a single triangle's plane is itself off by the noise), refit,
-    // then regrow from scratch at the real tolerance against the fitted plane.
-    let region = grow(seed, n0, d0, 2 * tol);
-    let area0 = 0;
-    for (const t of region) area0 += mesh.areas[t];
-    if (area0 < 25 * tol * tol && area0 < 0.02 * totalArea) {
-      // Even the loose growth is too small to become a plane: skip the refit.
-      for (const t of region) tried[t] = 1;
-      continue;
-    }
-    if (region.length >= 3) {
-      const first = fitPlane(mesh, region, false);
-      region = first ? grow(seed, first.normal, first.offset, tol) : grow(seed, n0, d0, tol);
-    } else {
-      region = grow(seed, n0, d0, tol);
-    }
-    let area = 0;
-    for (const t of region) area += mesh.areas[t];
-    const big = area >= 0.02 * totalArea;
-    const reject = () => {
-      // Every triangle of a rejected region is a poor seed too (a facet strip
-      // on a round); later seeds can still grow into them.
-      for (const t of region) tried[t] = 1;
-    };
-    if (!big && area < 25 * tol * tol) {
-      reject();
-      continue;
-    }
-    const sharpBoundaryFraction = planeBoundaryFraction(mesh, region, currentStamp(), stampOf);
-    if (!(big || sharpBoundaryFraction >= 0.25)) {
-      reject();
-      continue;
-    }
-    const fit = fitPlane(mesh, region, robust);
-    if (!fit) {
-      reject();
-      continue;
-    }
-    const id = planes.length;
-    for (const t of region) owner[t] = id;
-    planes.push({
-      kind: 'plane',
-      id,
-      tris: region,
-      normal: fit.normal,
-      offset: fit.offset,
-      area,
-      centroid: fit.centroid,
-      rms: fit.rms,
-      robustSigma: fit.robustSigma,
-      sharpBoundaryFraction,
-    });
+    if (growPlaneFromSeed(mesh, seed, tol, totalArea, robust, ctx) === 'stop') break;
   }
   return planes;
+}
+
+function growPlaneFromSeed(
+  mesh: IndexedMesh,
+  seed: number,
+  tol: number,
+  totalArea: number,
+  robust: boolean,
+  ctx: PlaneGrowContext,
+): 'stop' | 'skip' | 'grown' {
+  const { owner, tried, stampOf, planes, grow, currentStamp } = ctx;
+  const minSeedArea = tol * tol;
+  tried[seed] = 1;
+  if (mesh.areas[seed] < minSeedArea) return 'stop'; // sorted: every later seed is smaller
+  const n0 = triNormal(mesh, seed);
+  const d0 = dot3(n0, vertex(mesh, mesh.triangles[seed * 3]));
+  // Two growth rounds: grow loosely from the seed triangle's plane (on a
+  // noisy mesh a single triangle's plane is itself off by the noise), refit,
+  // then regrow from scratch at the real tolerance against the fitted plane.
+  let region = grow(seed, n0, d0, 2 * tol);
+  let area0 = 0;
+  for (const t of region) area0 += mesh.areas[t];
+  if (area0 < 25 * tol * tol && area0 < 0.02 * totalArea) {
+    // Even the loose growth is too small to become a plane: skip the refit.
+    for (const t of region) tried[t] = 1;
+    return 'skip';
+  }
+  if (region.length >= 3) {
+    const first = fitPlane(mesh, region, false);
+    region = first ? grow(seed, first.normal, first.offset, tol) : grow(seed, n0, d0, tol);
+  } else {
+    region = grow(seed, n0, d0, tol);
+  }
+  let area = 0;
+  for (const t of region) area += mesh.areas[t];
+  const big = area >= 0.02 * totalArea;
+  const reject = () => {
+    // Every triangle of a rejected region is a poor seed too (a facet strip
+    // on a round); later seeds can still grow into them.
+    for (const t of region) tried[t] = 1;
+  };
+  if (!big && area < 25 * tol * tol) {
+    reject();
+    return 'skip';
+  }
+  const sharpBoundaryFraction = planeBoundaryFraction(mesh, region, currentStamp(), stampOf);
+  if (!(big || sharpBoundaryFraction >= 0.25)) {
+    reject();
+    return 'skip';
+  }
+  const fit = fitPlane(mesh, region, robust);
+  if (!fit) {
+    reject();
+    return 'skip';
+  }
+  const id = planes.length;
+  for (const t of region) owner[t] = id;
+  planes.push({
+    kind: 'plane',
+    id,
+    tris: region,
+    normal: fit.normal,
+    offset: fit.offset,
+    area,
+    centroid: fit.centroid,
+    rms: fit.rms,
+    robustSigma: fit.robustSigma,
+    sharpBoundaryFraction,
+  });
+  return 'grown';
 }
 
 function fitPlane(
@@ -399,6 +486,40 @@ function fitPlane(
   tris: number[],
   robust = true,
 ): { normal: V3; offset: number; centroid: V3; rms: number; robustSigma: number } | null {
+  const moments = accumulatePlaneMoments(mesh, tris);
+  let area = moments.area;
+  const c = moments.c;
+  if (area <= 0) return null;
+  let normal = normalize3(moments.nSum);
+  if (normal[0] === 0 && normal[1] === 0 && normal[2] === 0) return null;
+  // Refit without triangles tilted more than 3° from the first estimate: a
+  // region that crept onto the first facets of a neighbouring round would
+  // otherwise tilt its plane towards it.
+  const refit = refitPlaneWithinCone(mesh, tris, normal);
+  if (refit.area2 >= 0.5 * area) {
+    normal = normalize3(refit.n2);
+    c[0] = refit.c2[0]; c[1] = refit.c2[1]; c[2] = refit.c2[2];
+    area = refit.area2;
+  }
+  const centroid: V3 = [c[0] / area, c[1] / area, c[2] / area];
+  const offset = dot3(normal, centroid);
+  if (!robust) {
+    return {
+      normal,
+      offset,
+      centroid,
+      rms: rmsResidualAllCorners(mesh, tris, normal, offset),
+      robustSigma: 0,
+    };
+  }
+  const stats = robustResidualStats(mesh, tris, normal, offset);
+  return { normal, offset, centroid, rms: stats.rms, robustSigma: stats.robustSigma };
+}
+
+function accumulatePlaneMoments(
+  mesh: IndexedMesh,
+  tris: number[],
+): { area: number; nSum: V3; c: V3 } {
   let area = 0;
   const nSum: V3 = [0, 0, 0];
   const c: V3 = [0, 0, 0];
@@ -411,12 +532,14 @@ function fitPlane(
       for (let k = 0; k < 3; k++) c[k] += (mesh.positions[v + k] * a) / 3;
     }
   }
-  if (area <= 0) return null;
-  let normal = normalize3(nSum);
-  if (normal[0] === 0 && normal[1] === 0 && normal[2] === 0) return null;
-  // Refit without triangles tilted more than 3° from the first estimate: a
-  // region that crept onto the first facets of a neighbouring round would
-  // otherwise tilt its plane towards it.
+  return { area, nSum, c };
+}
+
+function refitPlaneWithinCone(
+  mesh: IndexedMesh,
+  tris: number[],
+  normal: V3,
+): { area2: number; n2: V3; c2: V3 } {
   const cos3 = Math.cos((3 * Math.PI) / 180);
   let area2 = 0;
   const n2: V3 = [0, 0, 0];
@@ -432,26 +555,34 @@ function fitPlane(
       for (let k = 0; k < 3; k++) c2[k] += (mesh.positions[v + k] * a) / 3;
     }
   }
-  if (area2 >= 0.5 * area) {
-    normal = normalize3(n2);
-    c[0] = c2[0]; c[1] = c2[1]; c[2] = c2[2];
-    area = area2;
-  }
-  const centroid: V3 = [c[0] / area, c[1] / area, c[2] / area];
-  const offset = dot3(normal, centroid);
-  if (!robust) {
-    let sq = 0;
-    let cnt = 0;
-    for (const t of tris) {
-      for (let j = 0; j < 3; j++) {
-        const v = mesh.triangles[t * 3 + j] * 3;
-        const dist = mesh.positions[v] * normal[0] + mesh.positions[v + 1] * normal[1] + mesh.positions[v + 2] * normal[2] - offset;
-        sq += dist * dist;
-        cnt++;
-      }
+  return { area2, n2, c2 };
+}
+
+function rmsResidualAllCorners(
+  mesh: IndexedMesh,
+  tris: number[],
+  normal: V3,
+  offset: number,
+): number {
+  let sq = 0;
+  let cnt = 0;
+  for (const t of tris) {
+    for (let j = 0; j < 3; j++) {
+      const v = mesh.triangles[t * 3 + j] * 3;
+      const dist = mesh.positions[v] * normal[0] + mesh.positions[v + 1] * normal[1] + mesh.positions[v + 2] * normal[2] - offset;
+      sq += dist * dist;
+      cnt++;
     }
-    return { normal, offset, centroid, rms: Math.sqrt(sq / Math.max(1, cnt)), robustSigma: 0 };
   }
+  return Math.sqrt(sq / Math.max(1, cnt));
+}
+
+function robustResidualStats(
+  mesh: IndexedMesh,
+  tris: number[],
+  normal: V3,
+  offset: number,
+): { rms: number; robustSigma: number } {
   let sq = 0;
   const dists: number[] = [];
   const seen = new Set<number>();
@@ -472,7 +603,7 @@ function fitPlane(
   const med = dists[dists.length >> 1] ?? 0;
   const abs = dists.map((d) => Math.abs(d - med)).sort((a, b) => a - b);
   const robustSigma = 1.4826 * (abs[abs.length >> 1] ?? 0);
-  return { normal, offset, centroid, rms: Math.sqrt(sq / Math.max(1, dists.length)), robustSigma };
+  return { rms: Math.sqrt(sq / Math.max(1, dists.length)), robustSigma };
 }
 
 /** Cylinders fitted to smooth components that span soft (strip-like) planes;
@@ -551,6 +682,18 @@ export function fitCylinder(
   forcedAxis?: V3,
 ): CylinderRegion | null {
   if (tris.length < 4) return null;
+  const { m, area } = accumulateNormalMoments(mesh, tris);
+  if (area <= 0) return null;
+  const candidates = cylinderAxisCandidates(mesh, tris, area, symmetricEigen3(m), forcedAxis);
+  const verts = uniqueVertices(mesh, tris);
+  for (const axis of candidates) {
+    const fitted = fitCylinderOnAxis(mesh, tris, verts, axis, area, tol, diag);
+    if (fitted) return fitted;
+  }
+  return null;
+}
+
+function accumulateNormalMoments(mesh: IndexedMesh, tris: number[]): { m: Float64Array; area: number } {
   const m = new Float64Array(9);
   let area = 0;
   for (const t of tris) {
@@ -559,8 +702,16 @@ export function fitCylinder(
     const n = triNormal(mesh, t);
     for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) m[i * 3 + j] += a * n[i] * n[j];
   }
-  if (area <= 0) return null;
-  const eig = symmetricEigen3(m);
+  return { m, area };
+}
+
+function cylinderAxisCandidates(
+  mesh: IndexedMesh,
+  tris: number[],
+  area: number,
+  eig: ReturnType<typeof symmetricEigen3>,
+  forcedAxis: V3 | undefined,
+): V3[] {
   const candidates: V3[] = [];
   if (forcedAxis) candidates.push(forcedAxis);
   else if (eig.values[1] / Math.max(eig.values[2], 1e-300) >= 0.02) candidates.push(eig.vectors[0]);
@@ -573,61 +724,74 @@ export function fitCylinder(
       if (s / area < 0.005) candidates.push(ax);
     }
   }
-  const verts = uniqueVertices(mesh, tris);
-  for (const axis of candidates) {
-    const u = normalize3(Math.abs(axis[2]) < 0.9 ? cross3([0, 0, 1], axis) : cross3([1, 0, 0], axis));
-    const w = cross3(axis, u);
-    const xy = new Float64Array(verts.length * 2);
-    let tMin = Infinity;
-    let tMax = -Infinity;
-    verts.forEach((v, i) => {
-      const p = vertex(mesh, v);
-      xy[i * 2] = dot3(p, u);
-      xy[i * 2 + 1] = dot3(p, w);
-      const t = dot3(p, axis);
-      if (t < tMin) tMin = t;
-      if (t > tMax) tMax = t;
-    });
-    const fit = fitCircle2D(xy);
-    if (!fit || fit.r > diag * 2 || fit.rms > tol || fit.maxResidual > 3 * tol) continue;
-    const angles = Array.from({ length: verts.length }, (_, i) => Math.atan2(xy[i * 2 + 1] - fit.cy, xy[i * 2] - fit.cx)).sort(
-      (a, b) => a - b,
-    );
-    let maxGap = angles.length > 0 ? angles[0] + 2 * Math.PI - angles[angles.length - 1] : 2 * Math.PI;
-    for (let i = 1; i < angles.length; i++) maxGap = Math.max(maxGap, angles[i] - angles[i - 1]);
-    const origin: V3 = [
-      u[0] * fit.cx + w[0] * fit.cy,
-      u[1] * fit.cx + w[1] * fit.cy,
-      u[2] * fit.cx + w[2] * fit.cy,
+  return candidates;
+}
+
+function fitCylinderOnAxis(
+  mesh: IndexedMesh,
+  tris: number[],
+  verts: number[],
+  axis: V3,
+  area: number,
+  tol: number,
+  diag: number,
+): CylinderRegion | null {
+  const u = normalize3(Math.abs(axis[2]) < 0.9 ? cross3([0, 0, 1], axis) : cross3([1, 0, 0], axis));
+  const w = cross3(axis, u);
+  const xy = new Float64Array(verts.length * 2);
+  let tMin = Infinity;
+  let tMax = -Infinity;
+  verts.forEach((v, i) => {
+    const p = vertex(mesh, v);
+    xy[i * 2] = dot3(p, u);
+    xy[i * 2 + 1] = dot3(p, w);
+    const t = dot3(p, axis);
+    if (t < tMin) tMin = t;
+    if (t > tMax) tMax = t;
+  });
+  const fit = fitCircle2D(xy);
+  if (!fit || fit.r > diag * 2 || fit.rms > tol || fit.maxResidual > 3 * tol) return null;
+  const angles = Array.from({ length: verts.length }, (_, i) => Math.atan2(xy[i * 2 + 1] - fit.cy, xy[i * 2] - fit.cx)).sort(
+    (a, b) => a - b,
+  );
+  const maxGap = maxAngularGap(angles);
+  const origin: V3 = [
+    u[0] * fit.cx + w[0] * fit.cy,
+    u[1] * fit.cx + w[1] * fit.cy,
+    u[2] * fit.cx + w[2] * fit.cy,
+  ];
+  let radialSign = 0;
+  for (const t of tris) {
+    const a = mesh.triangles[t * 3] * 3, b = mesh.triangles[t * 3 + 1] * 3, c = mesh.triangles[t * 3 + 2] * 3;
+    const cen: V3 = [
+      (mesh.positions[a] + mesh.positions[b] + mesh.positions[c]) / 3,
+      (mesh.positions[a + 1] + mesh.positions[b + 1] + mesh.positions[c + 1]) / 3,
+      (mesh.positions[a + 2] + mesh.positions[b + 2] + mesh.positions[c + 2]) / 3,
     ];
-    let radialSign = 0;
-    for (const t of tris) {
-      const a = mesh.triangles[t * 3] * 3, b = mesh.triangles[t * 3 + 1] * 3, c = mesh.triangles[t * 3 + 2] * 3;
-      const cen: V3 = [
-        (mesh.positions[a] + mesh.positions[b] + mesh.positions[c]) / 3,
-        (mesh.positions[a + 1] + mesh.positions[b + 1] + mesh.positions[c + 1]) / 3,
-        (mesh.positions[a + 2] + mesh.positions[b + 2] + mesh.positions[c + 2]) / 3,
-      ];
-      const along = dot3(cen, axis);
-      const radial: V3 = [cen[0] - origin[0] - axis[0] * along, cen[1] - origin[1] - axis[1] * along, cen[2] - origin[2] - axis[2] * along];
-      radialSign += mesh.areas[t] * dot3(triNormal(mesh, t), radial);
-    }
-    return {
-      kind: 'cylinder',
-      id: 0,
-      tris,
-      axis,
-      origin,
-      radius: fit.r,
-      tMin,
-      tMax,
-      coverageRad: 2 * Math.PI - maxGap,
-      concave: radialSign < 0,
-      rms: fit.rms,
-      area,
-    };
+    const along = dot3(cen, axis);
+    const radial: V3 = [cen[0] - origin[0] - axis[0] * along, cen[1] - origin[1] - axis[1] * along, cen[2] - origin[2] - axis[2] * along];
+    radialSign += mesh.areas[t] * dot3(triNormal(mesh, t), radial);
   }
-  return null;
+  return {
+    kind: 'cylinder',
+    id: 0,
+    tris,
+    axis,
+    origin,
+    radius: fit.r,
+    tMin,
+    tMax,
+    coverageRad: 2 * Math.PI - maxGap,
+    concave: radialSign < 0,
+    rms: fit.rms,
+    area,
+  };
+}
+
+function maxAngularGap(angles: number[]): number {
+  let maxGap = angles.length > 0 ? angles[0] + 2 * Math.PI - angles[angles.length - 1] : 2 * Math.PI;
+  for (let i = 1; i < angles.length; i++) maxGap = Math.max(maxGap, angles[i] - angles[i - 1]);
+  return maxGap;
 }
 
 function freeformOf(mesh: IndexedMesh, tris: number[]): FreeformRegion {

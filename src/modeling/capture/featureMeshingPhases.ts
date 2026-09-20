@@ -15,7 +15,7 @@ import type { ReferenceImageMetadata } from '../../shared/intent/referenceImageR
 import type { RenderEnvironmentMetadata } from '../../shared/intent/renderEnvironmentRecord';
 import type { CameraTargetMetadata } from '../../shared/intent/cameraTargetRecord';
 import type { ShapeBackend } from '../../kernel/backends/backend';
-import type { SceneBackend } from '../../kernel/backends/sceneBackend';
+import type { SceneBackend, SceneBackendPart } from '../../kernel/backends/sceneBackend';
 import { OcctBackend, pbrFromMetadata } from '../../kernel/backends/occt/occtBackend';
 import { meshShape } from '../../kernel/backends/occt/meshing';
 import { resolveFaceLabelToFace } from '../../kernel/backends/occt/edgeSelection';
@@ -170,10 +170,7 @@ export function emitSceneBackendFanout(
   shape: SceneBackend,
   ctx: SceneFanoutCtx,
 ): void {
-  const {
-    emitFeature, bounds, failedFeatureIds, cachedAssemblyPartMeshes, explodeOffsets, assembliesIn, recordById,
-    attachPlanarUVs, extractRawShape, meshIdentityFields, metadataNameOf, collectTendonMeshes,
-  } = ctx;
+  const { emitFeature, bounds, failedFeatureIds, cachedAssemblyPartMeshes, assembliesIn, collectTendonMeshes } = ctx;
   let partCache = cachedAssemblyPartMeshes?.get(featureId);
   // Track part-meshing outcomes so an assembly whose parts ALL fail to
   // mesh is surfaced as a failure rather than returning a silently-empty
@@ -182,72 +179,10 @@ export function emitSceneBackendFanout(
   const partCount = shape.parts.length;
   let emittedPartCount = 0;
   for (const part of shape.parts) {
-    // Pose-cache fast path: when the assembly is being re-lowered for a
-    // pose-only edit, the per-part LOCAL shape is unchanged (same OCCT
-    // backend instance is reused via the engine's seedShapes seed) and
-    // only `part.worldTransform` has refreshed. Reuse cached triangle
-    // data so we skip the expensive `meshShape()` call per part.
-    const cachedPart = partCache?.get(part.name);
-    let faces: FaceGeometry[];
-    let volume: number | undefined;
-    let edges: Float32Array | undefined;
-    if (cachedPart) {
-      faces = cachedPart.faces;
-      volume = cachedPart.volume;
-      edges = cachedPart.edges;
-    } else {
-      const meshed = meshShape(extractRawShape(part.shape));
-      if (!meshed) {
-        // Per-part shape failed to mesh. Skip THIS part — the lowerer
-        // already populated the part shape, and a single bad part must
-        // not sink an otherwise-renderable assembly. Surface a soft
-        // warning so the skip is not silently lost; the post-loop check
-        // below escalates to a hard failure only when EVERY part skips.
-        console.warn(
-          `meshFeaturesPerFeature: assembly '${featureId}' part '${part.name}' compiled but produced no mesh — skipping part`,
-        );
-        continue;
-      }
-      faces = meshed.faces;
-      volume = meshed.volume;
-      edges = meshed.edges;
-      if (cachedAssemblyPartMeshes !== undefined) {
-        if (!partCache) {
-          partCache = new Map();
-          cachedAssemblyPartMeshes.set(featureId, partCache);
-        }
-        partCache.set(part.name, { faces, ...(volume !== undefined ? { volume } : {}), ...(edges ? { edges } : {}) });
-      }
-    }
-    const local: FeatureMesh = {
-      featureId: `${featureId}__${part.name}`,
-      featureKind: featureKind,
-      predecessors: [featureId],
-      // op intentionally omitted (no boolean op for assembly parts)
-      faces,
-      ...(volume !== undefined ? { volume } : {}),
-      ...(edges ? { edges } : {}),
-    };
-    if (!cachedPart) attachPlanarUVs(local.faces);
-    const extra = explodeOffsets?.get(part.name);
-    const worldT = extra !== undefined
-      ? Transform.translation(extra[0], extra[1], extra[2]).compose(part.worldTransform)
-      : part.worldTransform;
-    emitFeature({
-      ...local,
-      assemblyFeatureId: featureId,
-      assemblyPartName: part.name,
-      transform: worldT.toMat4(),
-      ...meshIdentityFields({
-        featureId: local.featureId,
-        featureKind: local.featureKind,
-        assemblyFeatureId: featureId,
-        assemblyPartName: part.name,
-        sourceMetadataName: metadataNameOf(recordById.get(featureId)),
-      }),
-      ...(part.color !== undefined ? { color: part.color } : {}),
-      ...(part.material !== undefined ? { material: part.material } : {}),
-    });
+    const resolved = resolveScenePartMesh(featureId, part, partCache, ctx);
+    if (resolved === undefined) continue;
+    partCache = resolved.partCache;
+    const { local, worldT } = emitScenePartMesh(featureId, featureKind, part, resolved, ctx);
     emittedPartCount += 1;
     // Aggregate bounds from FK-transformed vertices while keeping the
     // emitted mesh local for viewport-side transforms.
@@ -280,6 +215,100 @@ export function emitSceneBackendFanout(
     emitFeature(tm);
     accumulateMeshBounds(bounds, tm.faces);
   }
+}
+
+type CachedScenePartMesh = { faces: FaceGeometry[]; volume?: number; edges?: Float32Array };
+type ScenePartMeshCache = Map<string, CachedScenePartMesh>;
+
+interface ResolvedScenePartMesh {
+  faces: FaceGeometry[];
+  volume: number | undefined;
+  edges: Float32Array | undefined;
+  fromCache: boolean;
+  partCache: ScenePartMeshCache | undefined;
+}
+
+/** Resolve one assembly part's mesh, reusing (and populating) the pose cache. */
+function resolveScenePartMesh(
+  featureId: FeatureId,
+  part: SceneBackendPart,
+  partCache: ScenePartMeshCache | undefined,
+  ctx: SceneFanoutCtx,
+): ResolvedScenePartMesh | undefined {
+  // Pose-cache fast path: when the assembly is being re-lowered for a
+  // pose-only edit, the per-part LOCAL shape is unchanged (same OCCT
+  // backend instance is reused via the engine's seedShapes seed) and
+  // only `part.worldTransform` has refreshed. Reuse cached triangle
+  // data so we skip the expensive `meshShape()` call per part.
+  const cachedPart = partCache?.get(part.name);
+  if (cachedPart) {
+    return { faces: cachedPart.faces, volume: cachedPart.volume, edges: cachedPart.edges, fromCache: true, partCache };
+  }
+  const meshed = meshShape(ctx.extractRawShape(part.shape));
+  if (!meshed) {
+    // Per-part shape failed to mesh. Skip THIS part — the lowerer
+    // already populated the part shape, and a single bad part must
+    // not sink an otherwise-renderable assembly. Surface a soft
+    // warning so the skip is not silently lost; the post-loop check
+    // below escalates to a hard failure only when EVERY part skips.
+    console.warn(
+      `meshFeaturesPerFeature: assembly '${featureId}' part '${part.name}' compiled but produced no mesh — skipping part`,
+    );
+    return undefined;
+  }
+  const faces = meshed.faces;
+  const volume = meshed.volume;
+  const edges = meshed.edges;
+  let nextCache = partCache;
+  if (ctx.cachedAssemblyPartMeshes !== undefined) {
+    if (!nextCache) {
+      nextCache = new Map();
+      ctx.cachedAssemblyPartMeshes.set(featureId, nextCache);
+    }
+    nextCache.set(part.name, { faces, ...(volume !== undefined ? { volume } : {}), ...(edges ? { edges } : {}) });
+  }
+  return { faces, volume, edges, fromCache: false, partCache: nextCache };
+}
+
+/** Build + emit one assembly part's FeatureMesh; returns the local mesh and
+ *  its world transform for the caller's bounds accumulation. */
+function emitScenePartMesh(
+  featureId: FeatureId,
+  featureKind: FeatureKind,
+  part: SceneBackendPart,
+  resolved: ResolvedScenePartMesh,
+  ctx: SceneFanoutCtx,
+): { local: FeatureMesh; worldT: Transform } {
+  const local: FeatureMesh = {
+    featureId: `${featureId}__${part.name}`,
+    featureKind: featureKind,
+    predecessors: [featureId],
+    // op intentionally omitted (no boolean op for assembly parts)
+    faces: resolved.faces,
+    ...(resolved.volume !== undefined ? { volume: resolved.volume } : {}),
+    ...(resolved.edges ? { edges: resolved.edges } : {}),
+  };
+  if (!resolved.fromCache) ctx.attachPlanarUVs(local.faces);
+  const extra = ctx.explodeOffsets?.get(part.name);
+  const worldT = extra !== undefined
+    ? Transform.translation(extra[0], extra[1], extra[2]).compose(part.worldTransform)
+    : part.worldTransform;
+  ctx.emitFeature({
+    ...local,
+    assemblyFeatureId: featureId,
+    assemblyPartName: part.name,
+    transform: worldT.toMat4(),
+    ...ctx.meshIdentityFields({
+      featureId: local.featureId,
+      featureKind: local.featureKind,
+      assemblyFeatureId: featureId,
+      assemblyPartName: part.name,
+      sourceMetadataName: ctx.metadataNameOf(ctx.recordById.get(featureId)),
+    }),
+    ...(part.color !== undefined ? { color: part.color } : {}),
+    ...(part.material !== undefined ? { material: part.material } : {}),
+  });
+  return { local, worldT };
 }
 
 export interface FeatureStyling {
@@ -501,6 +530,24 @@ export function computeConstructionClosure(
   // Seed with assembly construction-node IDs (the part/joint/connect
   // records themselves don't produce renderable single-shape meshes —
   // SceneBackend handles their composed presentation).
+  seedAssemblyConstructionNodes(records, closure);
+
+  // Walk upstream from each assemblyPart's source shape, visiting all
+  // feature-kind input refs transitively. Any record that contributes to
+  // the BUILD of an assembly part is construction debris from the
+  // renderer's perspective.
+  const queue = seedConstructionQueue(records);
+
+  walkConstructionClosure(queue, recordById, closure);
+
+  return closure;
+}
+
+/** Seed `closure` with assembly construction-node IDs. */
+function seedAssemblyConstructionNodes(
+  records: readonly FeatureRecord[],
+  closure: Set<FeatureId>,
+): void {
   for (const r of records) {
     if (
       r.kind === 'assemblyPart' ||
@@ -510,18 +557,26 @@ export function computeConstructionClosure(
       closure.add(r.id);
     }
   }
+}
 
-  // Walk upstream from each assemblyPart's source shape, visiting all
-  // feature-kind input refs transitively. Any record that contributes to
-  // the BUILD of an assembly part is construction debris from the
-  // renderer's perspective.
+/** Collect each assemblyPart's source-shape ref as the upstream walk seeds. */
+function seedConstructionQueue(records: readonly FeatureRecord[]): FeatureId[] {
   const queue: FeatureId[] = [];
   for (const r of records) {
     if (r.kind !== 'assemblyPart') continue;
     const shapeRef = r.inputs.shape as FeatureRef | undefined;
     if (shapeRef && shapeRef.kind === 'feature') queue.push(shapeRef.id);
   }
+  return queue;
+}
 
+/** Walk upstream from the seeded queue, following all feature-kind input
+ *  refs transitively. */
+function walkConstructionClosure(
+  queue: FeatureId[],
+  recordById: ReadonlyMap<FeatureId, FeatureRecord>,
+  closure: Set<FeatureId>,
+): void {
   while (queue.length > 0) {
     const id = queue.pop()!;
     if (closure.has(id)) continue;
@@ -536,8 +591,6 @@ export function computeConstructionClosure(
       }
     }
   }
-
-  return closure;
 }
 
 export function splitConnectorRef(ref: string): [string | undefined, string | undefined] {
@@ -600,11 +653,35 @@ function detectAttributeShadowing(
   const featureById = new Map<FeatureId, FeatureMesh>();
   for (const f of features) featureById.set(f.featureId, f);
 
-  // Reverse adjacency for fuse-style edges only. A leaf at `id` flows into
-  // `descendantsByPredecessor.get(id)` when those descendants list it as a
-  // predecessor AND the descendant's op is union/intersect (or no-op, for
-  // non-boolean records that just consume the shape — modifiers/transforms
-  // preserve material reachability).
+  const descendantsByPredecessor = buildShadowDescendantIndex(features);
+
+  const out: AttributeShadowingWarning[] = [];
+  for (const leaf of features) {
+    if (leaf.virtual) continue;
+    if (!attributeByFeatureId.has(leaf.featureId)) continue;
+
+    const shadower = findShadowingFeature(
+      leaf.featureId,
+      attributeByFeatureId,
+      descendantsByPredecessor,
+      featureById,
+    );
+    if (shadower) {
+      out.push(attributeShadowingWarning(attribute, leaf, shadower));
+    }
+  }
+
+  return out;
+}
+
+/** Reverse adjacency for fuse-style edges only. A leaf at `id` flows into
+ *  `descendantsByPredecessor.get(id)` when those descendants list it as a
+ *  predecessor AND the descendant's op is union/intersect (or no-op, for
+ *  non-boolean records that just consume the shape — modifiers/transforms
+ *  preserve material reachability). */
+function buildShadowDescendantIndex(
+  features: readonly FeatureMesh[],
+): Map<FeatureId, FeatureId[]> {
   const descendantsByPredecessor = new Map<FeatureId, FeatureId[]>();
   for (const f of features) {
     if (f.virtual) continue;
@@ -618,51 +695,57 @@ function detectAttributeShadowing(
       else descendantsByPredecessor.set(predId, [f.featureId]);
     }
   }
+  return descendantsByPredecessor;
+}
 
-  const out: AttributeShadowingWarning[] = [];
-  for (const leaf of features) {
-    if (leaf.virtual) continue;
-    if (!attributeByFeatureId.has(leaf.featureId)) continue;
+/** BFS forward from `leafId`; stop at the first attributed descendant on each
+ *  branch. We only need one shadower per leaf for the diagnostic; if there's a
+ *  chain (.union().union().union()), the FIRST one with its own attribution is
+ *  the load-bearing one. */
+function findShadowingFeature(
+  leafId: FeatureId,
+  attributeByFeatureId: ReadonlyMap<FeatureId, PBRMaterial | string>,
+  descendantsByPredecessor: ReadonlyMap<FeatureId, FeatureId[]>,
+  featureById: ReadonlyMap<FeatureId, FeatureMesh>,
+): FeatureMesh | undefined {
+  const visited = new Set<FeatureId>([leafId]);
+  const queue: FeatureId[] = [];
+  const seedDescendants = descendantsByPredecessor.get(leafId);
+  if (seedDescendants) queue.push(...seedDescendants);
 
-    // BFS forward; stop at the first attributed descendant on each
-    // branch. We only need one shadower per leaf for the diagnostic; if
-    // there's a chain (.union().union().union()), the FIRST one with its
-    // own attribution is the load-bearing one.
-    const visited = new Set<FeatureId>([leaf.featureId]);
-    const queue: FeatureId[] = [];
-    const seedDescendants = descendantsByPredecessor.get(leaf.featureId);
-    if (seedDescendants) queue.push(...seedDescendants);
-
-    let shadower: FeatureMesh | undefined;
-    while (queue.length > 0) {
-      const id = queue.shift()!;
-      if (visited.has(id)) continue;
-      visited.add(id);
-      if (attributeByFeatureId.has(id)) {
-        shadower = featureById.get(id);
-        break;
-      }
-      const next = descendantsByPredecessor.get(id);
-      if (next) queue.push(...next);
+  let shadower: FeatureMesh | undefined;
+  while (queue.length > 0) {
+    const id = queue.shift()!;
+    if (visited.has(id)) continue;
+    visited.add(id);
+    if (attributeByFeatureId.has(id)) {
+      shadower = featureById.get(id);
+      break;
     }
-
-    if (shadower) {
-      out.push({
-        attribute,
-        leafFeatureId: leaf.featureId,
-        leafFeatureKind: leaf.featureKind,
-        shadowingFeatureId: shadower.featureId,
-        shadowingFeatureKind: shadower.featureKind,
-        message:
-          `leaf '${leaf.featureId}' (${leaf.featureKind}) has its own ${attribute} but is unioned into ` +
-          `'${shadower.featureId}' (${shadower.featureKind}) which also has its own ${attribute}. ` +
-          `The leaf ${attribute} is visible during the build animation only; the static render ` +
-          `(kernelcad render, post-rotate capture-demo) shows the head ${attribute} on the fused silhouette. ` +
-          `To preserve per-leaf ${attribute} in the static render, split the construction so the leaf is not ` +
-          `unioned into a ${attribute}-bearing parent, or author the leaf as a separate assemblyPart.`,
-      });
-    }
+    const next = descendantsByPredecessor.get(id);
+    if (next) queue.push(...next);
   }
+  return shadower;
+}
 
-  return out;
+/** Build the structured warning for one (leaf, shadowing record) pair. */
+function attributeShadowingWarning(
+  attribute: ShadowedAttribute,
+  leaf: FeatureMesh,
+  shadower: FeatureMesh,
+): AttributeShadowingWarning {
+  return {
+    attribute,
+    leafFeatureId: leaf.featureId,
+    leafFeatureKind: leaf.featureKind,
+    shadowingFeatureId: shadower.featureId,
+    shadowingFeatureKind: shadower.featureKind,
+    message:
+      `leaf '${leaf.featureId}' (${leaf.featureKind}) has its own ${attribute} but is unioned into ` +
+      `'${shadower.featureId}' (${shadower.featureKind}) which also has its own ${attribute}. ` +
+      `The leaf ${attribute} is visible during the build animation only; the static render ` +
+      `(kernelcad render, post-rotate capture-demo) shows the head ${attribute} on the fused silhouette. ` +
+      `To preserve per-leaf ${attribute} in the static render, split the construction so the leaf is not ` +
+      `unioned into a ${attribute}-bearing parent, or author the leaf as a separate assemblyPart.`,
+  };
 }

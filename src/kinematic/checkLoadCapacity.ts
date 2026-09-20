@@ -44,6 +44,7 @@ import type {
   LoadCapacityOpts,
   LoadCapacityResult,
   LoadDeclaration,
+  LoadEntry,
   MaterialDeclarationEntry,
 } from './types';
 import { DIAGNOSTIC_REGISTRY, type DiagnosticCode } from '../shared/diagnostics/registry';
@@ -217,107 +218,11 @@ function runBeamMode(
   let worstSF = Number.POSITIVE_INFINITY;
 
   for (const partName of loadedPartNames) {
-    const load = loads[partName]!;
-    const matEntry: MaterialDeclarationEntry = opts!.materials![partName]!;
-    const matResolved = resolveMaterialProps(matEntry);
-    if (!matResolved.ok) {
-      const message =
-        matResolved.reason === 'unknown-material'
-          ? `Material declaration for '${partName}' names unknown material '${matResolved.material}' (valid: ${ACCEPTED_MATERIAL_NAMES.join('|')}, or material: 'custom' with yieldStressMPa + youngsModulusGPa).`
-          : `Material declaration for '${partName}' uses material: 'custom' but is missing ${matResolved.missingField}. Both yieldStressMPa and youngsModulusGPa are required for custom materials.`;
-      diagnostics.push(
-        buildDiag('kinematic.no-material-declared', 'error', message, partName),
-      );
-      continue;
-    }
-
-    const part = partByName.get(partName);
-    if (part === undefined) {
-      diagnostics.push(
-        buildDiag(
-          'kinematic.load.beam-not-applicable',
-          'warn',
-          `Loaded part '${partName}' is not declared on this assembly; no closed-form beam check ran for it.`,
-          partName,
-        ),
-      );
-      continue;
-    }
-
-    if (part.crossSection === undefined) {
-      diagnostics.push(
-        buildDiag(
-          'kinematic.load.beam-not-applicable',
-          'warn',
-          `Part '${partName}' has no declared crossSection; closed-form beam not applicable. Pass crossSection on arm.part(...) or switch to mode: 'stub'.`,
-          partName,
-        ),
-      );
-      continue;
-    }
-
-    const partAnchorCount = anchorCount.get(partName) ?? 0;
-    if (partAnchorCount === 0) {
-      diagnostics.push(
-        buildDiag(
-          'kinematic.load.beam-not-applicable',
-          'warn',
-          `Part '${partName}' has no declared mate or anchoring joint; the cantilever boundary requires exactly one root anchor.`,
-          partName,
-        ),
-      );
-      continue;
-    }
-    if (partAnchorCount > 1) {
-      diagnostics.push(
-        buildDiag(
-          'kinematic.load.beam-not-applicable',
-          'warn',
-          `Part '${partName}' is bound by ${partAnchorCount} anchors (mates + joints); the v1 cantilever approximation requires exactly one. Decompose the part into single-anchor segments or wait for v2 FEA.`,
-          partName,
-        ),
-      );
-      continue;
-    }
-
-    // Closed-form bending stress.
-    const sec = sectionProperties(part.crossSection);
-    const props: MaterialProps = matResolved.props;
-    const forceMag = vec3Magnitude(load.force ?? [0, 0, 0]);
-    const torqueMag = vec3Magnitude(load.torque ?? [0, 0, 0]);
-    // Cantilever moment at the root = |F| · L_freeSpan; applied tip torque
-    // adds directly. Both in N·m once `sec.lengthM` is metres.
-    const momentNm = forceMag * sec.lengthM + torqueMag;
-    const stressPa = (momentNm * sec.cM) / sec.iM4;
-    const safetyFactor = stressPa > 0 ? props.yieldStressPa / stressPa : Number.POSITIVE_INFINITY;
-
-    elements.push({
-      partName,
-      stressPa,
-      yieldPa: props.yieldStressPa,
-      safetyFactor,
-    });
-    if (safetyFactor < worstSF) worstSF = safetyFactor;
-
-    if (safetyFactor < threshold) {
-      failures.push({
-        element: partName,
-        elementKind: 'part',
-        stress: stressPa,
-        yieldStress: props.yieldStressPa,
-        load: forceMag,
-        capacity: (props.yieldStressPa * sec.iM4) / sec.cM,
-        reason: 'stress-exceeds-yield',
-      });
-      diagnostics.push(
-        buildDiag(
-          'kinematic.load-exceeds-yield',
-          'error',
-          `Closed-form beam check: stress ${(stressPa / 1e6).toFixed(1)} MPa at '${partName}' exceeds yield ${(props.yieldStressPa / 1e6).toFixed(1)} MPa (safety factor ${safetyFactor.toFixed(2)} < threshold ${threshold}). Thicken the cross-section, switch to a stronger material, or shorten the moment arm.`,
-          partName,
-        ),
-      );
-    }
+    const analyzed = analyzeLoadedPart(partName, loads, opts, partByName, anchorCount, threshold);
+    if (analyzed.element !== undefined) elements.push(analyzed.element);
+    if (analyzed.safetyFactor < worstSF) worstSF = analyzed.safetyFactor;
+    if (analyzed.failure !== undefined) failures.push(analyzed.failure);
+    if (analyzed.diagnostic !== undefined) diagnostics.push(analyzed.diagnostic);
   }
 
   return {
@@ -333,6 +238,144 @@ function runBeamMode(
 // ─────────────────────────────────────────────────────────────────────────
 // Helpers.
 // ─────────────────────────────────────────────────────────────────────────
+
+type AssemblyStoredPart = ReturnType<Assembly['__parts']>[number];
+
+interface BeamPartAnalysis {
+  safetyFactor: number;
+  diagnostic?: KinematicDiagnostic;
+  element?: LoadCapacityElementResult;
+  failure?: LoadCapacityFailure;
+}
+
+function analyzeLoadedPart(
+  partName: string,
+  loads: LoadDeclaration,
+  opts: LoadCapacityOpts | undefined,
+  partByName: Map<string, AssemblyStoredPart>,
+  anchorCount: Map<string, number>,
+  threshold: number,
+): BeamPartAnalysis {
+  const load = loads[partName]!;
+  const matEntry: MaterialDeclarationEntry = opts!.materials![partName]!;
+  const matResolved = resolveMaterialProps(matEntry);
+  if (!matResolved.ok) {
+    const message =
+      matResolved.reason === 'unknown-material'
+        ? `Material declaration for '${partName}' names unknown material '${matResolved.material}' (valid: ${ACCEPTED_MATERIAL_NAMES.join('|')}, or material: 'custom' with yieldStressMPa + youngsModulusGPa).`
+        : `Material declaration for '${partName}' uses material: 'custom' but is missing ${matResolved.missingField}. Both yieldStressMPa and youngsModulusGPa are required for custom materials.`;
+    return {
+      safetyFactor: Number.POSITIVE_INFINITY,
+      diagnostic: buildDiag('kinematic.no-material-declared', 'error', message, partName),
+    };
+  }
+
+  const part = partByName.get(partName);
+  if (part === undefined) {
+    return {
+      safetyFactor: Number.POSITIVE_INFINITY,
+      diagnostic: buildDiag(
+        'kinematic.load.beam-not-applicable',
+        'warn',
+        `Loaded part '${partName}' is not declared on this assembly; no closed-form beam check ran for it.`,
+        partName,
+      ),
+    };
+  }
+
+  if (part.crossSection === undefined) {
+    return {
+      safetyFactor: Number.POSITIVE_INFINITY,
+      diagnostic: buildDiag(
+        'kinematic.load.beam-not-applicable',
+        'warn',
+        `Part '${partName}' has no declared crossSection; closed-form beam not applicable. Pass crossSection on arm.part(...) or switch to mode: 'stub'.`,
+        partName,
+      ),
+    };
+  }
+
+  const partAnchorCount = anchorCount.get(partName) ?? 0;
+  if (partAnchorCount === 0) {
+    return {
+      safetyFactor: Number.POSITIVE_INFINITY,
+      diagnostic: buildDiag(
+        'kinematic.load.beam-not-applicable',
+        'warn',
+        `Part '${partName}' has no declared mate or anchoring joint; the cantilever boundary requires exactly one root anchor.`,
+        partName,
+      ),
+    };
+  }
+  if (partAnchorCount > 1) {
+    return {
+      safetyFactor: Number.POSITIVE_INFINITY,
+      diagnostic: buildDiag(
+        'kinematic.load.beam-not-applicable',
+        'warn',
+        `Part '${partName}' is bound by ${partAnchorCount} anchors (mates + joints); the v1 cantilever approximation requires exactly one. Decompose the part into single-anchor segments or wait for v2 FEA.`,
+        partName,
+      ),
+    };
+  }
+
+  return computeCantileverAnalysis(
+    partName,
+    load,
+    matResolved.props,
+    part.crossSection,
+    threshold,
+  );
+}
+
+function computeCantileverAnalysis(
+  partName: string,
+  load: LoadEntry,
+  props: MaterialProps,
+  crossSection: NonNullable<AssemblyStoredPart['crossSection']>,
+  threshold: number,
+): BeamPartAnalysis {
+  // Closed-form bending stress.
+  const sec = sectionProperties(crossSection);
+  const forceMag = vec3Magnitude(load.force ?? [0, 0, 0]);
+  const torqueMag = vec3Magnitude(load.torque ?? [0, 0, 0]);
+  // Cantilever moment at the root = |F| · L_freeSpan; applied tip torque
+  // adds directly. Both in N·m once `sec.lengthM` is metres.
+  const momentNm = forceMag * sec.lengthM + torqueMag;
+  const stressPa = (momentNm * sec.cM) / sec.iM4;
+  const safetyFactor = stressPa > 0 ? props.yieldStressPa / stressPa : Number.POSITIVE_INFINITY;
+
+  const element: LoadCapacityElementResult = {
+    partName,
+    stressPa,
+    yieldPa: props.yieldStressPa,
+    safetyFactor,
+  };
+
+  if (safetyFactor < threshold) {
+    return {
+      safetyFactor,
+      element,
+      failure: {
+        element: partName,
+        elementKind: 'part',
+        stress: stressPa,
+        yieldStress: props.yieldStressPa,
+        load: forceMag,
+        capacity: (props.yieldStressPa * sec.iM4) / sec.cM,
+        reason: 'stress-exceeds-yield',
+      },
+      diagnostic: buildDiag(
+        'kinematic.load-exceeds-yield',
+        'error',
+        `Closed-form beam check: stress ${(stressPa / 1e6).toFixed(1)} MPa at '${partName}' exceeds yield ${(props.yieldStressPa / 1e6).toFixed(1)} MPa (safety factor ${safetyFactor.toFixed(2)} < threshold ${threshold}). Thicken the cross-section, switch to a stronger material, or shorten the moment arm.`,
+        partName,
+      ),
+    };
+  }
+
+  return { safetyFactor, element };
+}
 
 function buildDiag(
   code: DiagnosticCode,

@@ -33,7 +33,6 @@ import { isTextureRef } from '../../shared/intent/textureRef';
 import type { TextureProjection } from '../../shared/intent/textureProjection';
 import { isTextureProjection } from '../../shared/intent/textureProjection';
 import { validateBendArgs } from '../sheetMetal';
-import { normalizeTopoRefOrString } from './topoRefNormalize';
 import type { Region } from '../../shared/intent/region';
 import type { DrawingToleranceSpec } from '../../shared/intent/drawingGdtRecord';
 import type {
@@ -87,6 +86,13 @@ import {
   cleanMaterialTextures,
   assignMaterialMetadata,
 } from './proxyMaterial';
+import { sectionSketchOf, faceSketchOf, silhouetteOf } from './proxyDerivedSketch';
+import {
+  validateGridPatternAxis,
+  normalizeFaceSelector,
+  assertFeatureNameUniqueOnChain,
+  nextOrdinalForKindOnChain,
+} from './proxyFeatureChain';
 export class Shape {
   readonly id: FeatureId;
   private session: CaptureSession;
@@ -1127,35 +1133,7 @@ export class Shape {
       | { origin: [number, number, number]; normal: [number, number, number] },
     opts: { curveTolerance?: number } = {},
   ): Promise<import('./sketch').Sketch> {
-    const run = async (): Promise<import('./sketch').Sketch> => {
-    const { sectionLoops } = await import('../../kernel/backends/occt/sketchFromShapeOps');
-    const { cardinalFrame, makePlaneFrame } = await import('../../kernel/backends/occt/sketchFromShape');
-    const backend = await this.lower();
-    const frame = resolveSectionFrame(plane, cardinalFrame, makePlaneFrame);
-    const extracted = sectionLoops(backend, frame, { curveTolerance: opts.curveTolerance });
-    if (extracted.loops.length === 0) {
-      throw new KernelError(
-        'feature.section.plane-misses-body',
-        `sectionSketch: the section plane does not intersect this body (no closed loops; ${extracted.openChains.length} open chain(s)).`,
-        this.id,
-        'Move the plane offset/origin so it passes through the solid, or check the normal direction.',
-      );
-    }
-    const commands = extracted.loops.flat();
-    return this.session.createSketch({
-      kind: 'sketch',
-      inputs: { source: { kind: 'feature', id: this.id } },
-      params: {},
-      metadata: {
-        commands,
-        derivedFrom: 'section',
-        loopCount: extracted.loops.length,
-        holeCount: Math.max(0, extracted.loops.length - 1),
-        sectionAreaMm2: extracted.areas[0] - extracted.areas.slice(1).reduce((acc, a) => acc + a, 0),
-      },
-    });
-    };
-    return guardAsyncSketchResult(run(), 'sectionSketch');
+    return sectionSketchOf(this, this.session, plane, opts);
   }
 
   /**
@@ -1177,79 +1155,7 @@ export class Shape {
     face: FaceSelector | CanonicalFace | string,
     opts: { curveTolerance?: number } = {},
   ): Promise<import('./sketch').Sketch> {
-    const run = async (): Promise<import('./sketch').Sketch> => {
-    const { faceLoops } = await import('../../kernel/backends/occt/sketchFromShapeOps');
-    const { makePlaneFrame } = await import('../../kernel/backends/occt/sketchFromShape');
-    const { pickFace } = await import('../../kernel/backends/occt/edgeSelection');
-    const backend = await this.lower();
-
-    // Resolve the selector through the same path every face feature uses, by
-    // synthesizing a minimal face-typed record. This keeps canonical/label/
-    // query/Query-DSL resolution in exactly one place.
-    const faceRef = buildFaceInputRef(this.id, normalizeFaceSelector(face) as never);
-    const synthetic = {
-      id: this.id,
-      kind: 'sectionSketch' as const,
-      inputs: { face: faceRef },
-      params: {},
-      transforms: [],
-      suppressed: false,
-    };
-    const resolved = pickFace(synthetic as never, backend, this.session.getRecords());
-    if ('error' in resolved) {
-      throw new KernelError(
-        resolved.error.code as never,
-        resolved.error.message,
-        this.id,
-        resolved.error.hint,
-      );
-    }
-    const replicadFace = resolved as unknown as {
-      geomType?: string;
-      center: { x: number; y: number; z: number };
-      normalAt?: () => { x: number; y: number; z: number };
-    };
-    const surfaceType = (replicadFace.geomType ?? '').toUpperCase();
-    if (surfaceType !== 'PLANE') {
-      throw new KernelError(
-        'feature.face-sketch.non-planar',
-        `faceSketch: the selected face is non-planar (${surfaceType || 'unknown'} surface); only planar faces can be unrolled to a 2D sketch.`,
-        this.id,
-        'Select a planar face (add { ofSurfaceType: "PLANE" } to the query), or use sectionSketch for a curved body.',
-      );
-    }
-    const center: [number, number, number] = [
-      replicadFace.center.x, replicadFace.center.y, replicadFace.center.z,
-    ];
-    // Face normal points out of the solid; the sketch frame can use either
-    // orientation — flip to face inward so an extrude goes into the body.
-    const n = resolved.normalAt?.() ?? { x: 0, y: 0, z: 1 };
-    const normal: [number, number, number] = [n.x, n.y, n.z];
-    const frame = makePlaneFrame(center, normal, [1, 0, 0]);
-    const boundary = faceLoops(resolved as never, frame, { curveTolerance: opts.curveTolerance });
-    const loops = [boundary.outer, ...boundary.holes].filter((l) => l.length > 0);
-    if (loops.length === 0) {
-      throw new KernelError(
-        'feature.face-sketch.non-planar',
-        `faceSketch: the selected face produced no closed boundary loops.`,
-        this.id,
-        'Select a planar face with a closed outer wire.',
-      );
-    }
-    const toCommands = (await import('../../kernel/backends/occt/sketchFromShape')).loopToCommands;
-    return this.session.createSketch({
-      kind: 'sketch',
-      inputs: { source: { kind: 'feature', id: this.id } },
-      params: {},
-      metadata: {
-        commands: loops.flatMap((l) => toCommands(l)),
-        derivedFrom: 'face',
-        loopCount: loops.length,
-        holeCount: loops.length - 1,
-      },
-    });
-    };
-    return guardAsyncSketchResult(run(), 'faceSketch');
+    return faceSketchOf(this, this.session, face, opts);
   }
 
   /**
@@ -1271,44 +1177,7 @@ export class Shape {
     direction: [number, number, number] = [0, 0, 1],
     opts: { curveTolerance?: number } = {},
   ): Promise<import('./sketch').Sketch> {
-    const run = async (): Promise<import('./sketch').Sketch> => {
-    const { silhouetteLoops } = await import('../../kernel/backends/occt/sketchFromShapeOps');
-    const { makePlaneFrame, loopToCommands } = await import('../../kernel/backends/occt/sketchFromShape');
-    if (!isValidVec3(direction) || Math.hypot(...direction) < 1e-9) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `silhouette: direction must be a non-zero finite Vec3; got ${formatScalarForError(direction)}.`,
-        this.id,
-        'Pass a view direction such as [0, 0, 1] (top) or [1, 0, 0] (right).',
-      );
-    }
-    const backend = await this.lower();
-    const frame = makePlaneFrame([0, 0, 0], direction, [1, 0, 0]);
-    const res = silhouetteLoops(backend, frame, { curveTolerance: opts.curveTolerance });
-    if (res.loops.length === 0) {
-      throw new KernelError(
-        'feature.section.plane-misses-body',
-        `silhouette: no closed outline found along [${direction.join(', ')}].`,
-        this.id,
-        'Try a different direction, or check the direction is not zero-length.',
-      );
-    }
-    // Largest loop first (outer boundary), holes after — same convention as
-    // sectionSketch.
-    res.loops.sort((a, b) => Math.abs(chordArea(b)) - Math.abs(chordArea(a)));
-    return this.session.createSketch({
-      kind: 'sketch',
-      inputs: { source: { kind: 'feature', id: this.id } },
-      params: {},
-      metadata: {
-        commands: res.loops.flatMap((l) => loopToCommands(l)),
-        derivedFrom: 'silhouette',
-        loopCount: res.loops.length,
-        direction,
-      },
-    });
-    };
-    return guardAsyncSketchResult(run(), 'silhouette');
+    return silhouetteOf(this, this.session, direction, opts);
   }
 
   /**
@@ -1463,187 +1332,4 @@ export class Shape {
     this._loweredAtTransformCount = transformCount;
     return shape;
   }
-}
-
-function validateGridPatternAxis(
-  label: 'patternGrid.x' | 'patternGrid.y',
-  axis: { count: number; direction: [number, number, number]; spacing: number },
-  featureId: FeatureId,
-): void {
-  if (!Number.isInteger(axis.count) || axis.count < 2) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${label} count must be an integer >= 2.`,
-      featureId,
-      'Pass count: 2 or greater for both grid axes.',
-    );
-  }
-  if (!isValidVec3(axis.direction)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${label} direction must be a finite Vec3; got ${formatScalarForError(axis.direction)}.`,
-      featureId,
-      'Pass direction: [x, y, z] for both grid axes.',
-    );
-  }
-  if (typeof axis.spacing !== 'number' || !Number.isFinite(axis.spacing) || axis.spacing === 0) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${label} spacing must be a non-zero finite number; got ${formatScalarForError(axis.spacing)}.`,
-      featureId,
-      'Pass a non-zero finite spacing for both grid axes.',
-    );
-  }
-}
-
-/** Wrap a bare canonical-face / label string OR a `@kc[<owner>/face/<name>]`
- *  ref string into the structured `{ face: <s> }` shape so hole/holes/cutout/
- *  shell accept every input form uniformly. */
-function normalizeFaceSelector(face: FaceSelector | CanonicalFace | string): FaceSelector {
-  if (typeof face === 'string') {
-    return normalizeTopoRefOrString(face, 'face') as FaceSelector;
-  }
-  return face;
-}
-
-/**
- * Public method names on `Sketch` (kept in sync with `SKETCH_METHODS` in
- * `src/agent/mcp/tools/listApi.ts`). Used only to decide which property
- * accesses on an un-awaited `sectionSketch` / `faceSketch` / `silhouette`
- * result should raise the actionable "missing await" diagnostic below.
- */
-const SKETCH_METHOD_NAMES = new Set(['extrude', 'revolve', 'sweep', 'loft', 'reflect']);
-
-/**
- * Wrap the Promise<Sketch> returned by an async Shape->Sketch producer
- * (`sectionSketch`, `faceSketch`, `silhouette`) so that the common agent
- * mistake of chaining a Sketch method directly on the un-awaited result —
- * `part.sectionSketch('xy', 5).extrude(3)` — fails with an actionable
- * `feature.async-result.missing-await` diagnostic instead of the cryptic
- * `TypeError: sec.extrude is not a function`.
- *
- * `await`/`.then`/`.catch`/`.finally`/`Promise.all` etc. are untouched —
- * the Proxy forwards every property that isn't a Sketch method name to the
- * real Promise, bound to it.
- */
-function guardAsyncSketchResult(promise: Promise<import('./sketch').Sketch>, methodName: string): Promise<import('./sketch').Sketch> {
-  return new Proxy(promise, {
-    get(target, prop) {
-      if (typeof prop === 'string' && SKETCH_METHOD_NAMES.has(prop)) {
-        return () => {
-          throw new KernelError(
-            'feature.async-result.missing-await',
-            `${methodName}() is async — write \`(await shape.${methodName}(...)).${prop}(...)\`.`,
-          );
-        };
-      }
-      const value = Reflect.get(target, prop, target);
-      return typeof value === 'function' ? value.bind(target) : value;
-    },
-  }) as Promise<import('./sketch').Sketch>;
-}
-
-/** Resolve the `sectionSketch` plane argument into a 2D frame. */
-function resolveSectionFrame(
-  plane:
-    | 'xy' | 'xz' | 'yz'
-    | { plane: 'xy' | 'xz' | 'yz'; offset?: number }
-    | { origin: [number, number, number]; normal: [number, number, number] },
-  cardinalFrame: (p: 'xy' | 'xz' | 'yz', offset: number) => import('../../kernel/backends/occt/sketchFromShape').PlaneFrame,
-  makePlaneFrame: (
-    origin: [number, number, number],
-    normal: [number, number, number],
-    uHint?: [number, number, number],
-  ) => import('../../kernel/backends/occt/sketchFromShape').PlaneFrame,
-): import('../../kernel/backends/occt/sketchFromShape').PlaneFrame {
-  if (typeof plane === 'string') return cardinalFrame(plane, 0);
-  if ('plane' in plane) {
-    const offset = plane.offset ?? 0;
-    if (!Number.isFinite(offset)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `sectionSketch: plane offset must be a finite number; got ${formatScalarForError(offset)}.`,
-        undefined,
-        'Pass { plane: "xy" | "xz" | "yz", offset: <mm> }.',
-      );
-    }
-    return cardinalFrame(plane.plane, offset);
-  }
-  if (!isValidVec3(plane.origin) || !isValidVec3(plane.normal) || Math.hypot(...plane.normal) < 1e-9) {
-    throw new KernelError(
-      'feature.invalid-args',
-      'sectionSketch: { origin, normal } must be finite Vec3s with a non-zero normal.',
-      undefined,
-      'Pass { origin: [x, y, z], normal: [nx, ny, nz] } in mm.',
-    );
-  }
-  return makePlaneFrame(plane.origin, plane.normal, [1, 0, 0]);
-}
-
-/** Signed chord area of a projected loop, used only to rank outer vs holes. */
-function chordArea(segs: Array<{ x0: number; y0: number; x1: number; y1: number }>): number {
-  let a = 0;
-  for (const s of segs) a += s.x0 * s.y1 - s.x1 * s.y0;
-  return a / 2;
-}
-
-/** Walk records back from `targetId` via `inputs.target` (slice-2 chain
- *  semantics). Returns records in chain order (oldest first). */
-function chainRecordsFrom(
-  records: ReadonlyArray<{ id: string; kind: string; inputs?: Record<string, { kind: string; id?: string }>; metadata?: Record<string, unknown> }>,
-  targetId: string,
-): typeof records[number][] {
-  const byId = new Map<string, typeof records[number]>();
-  for (const r of records) byId.set(r.id, r);
-  const out: typeof records[number][] = [];
-  let cur: string | undefined = targetId;
-  const seen = new Set<string>();
-  while (cur && !seen.has(cur)) {
-    seen.add(cur);
-    const r = byId.get(cur);
-    if (!r) break;
-    out.unshift(r);
-    const target = r.inputs?.target;
-    cur = target && target.kind === 'feature' ? target.id : undefined;
-  }
-  return out;
-}
-
-/** Throw `feature.invalid-args` if any prior feature in the chain ending
- *  at `targetId` already used the given `name`. */
-function assertFeatureNameUniqueOnChain(
-  records: ReadonlyArray<{ id: string; kind: string; inputs?: Record<string, { kind: string; id?: string }>; metadata?: Record<string, unknown> }>,
-  targetId: string,
-  name: string,
-): void {
-  const chain = chainRecordsFrom(records, targetId);
-  for (const r of chain) {
-    const prev = (r.metadata as { name?: unknown } | undefined)?.name;
-    if (typeof prev === 'string' && prev === name) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `feature name '${name}' is already used in this chain.`,
-        undefined,
-        `Feature name '${name}' already used in this chain. Names must be unique per chain; for variations use suffixes ('${name}-front', '${name}-back').`,
-      );
-    }
-  }
-}
-
-/** 1-based ordinal among unnamed features of the given `kind` in the chain
- *  ending at `targetId`. */
-function nextOrdinalForKindOnChain(
-  records: ReadonlyArray<{ id: string; kind: string; inputs?: Record<string, { kind: string; id?: string }>; metadata?: Record<string, unknown> }>,
-  targetId: string,
-  kind: string,
-): number {
-  const chain = chainRecordsFrom(records, targetId);
-  let count = 0;
-  for (const r of chain) {
-    if (r.kind !== kind) continue;
-    const meta = r.metadata as { name?: unknown } | undefined;
-    if (typeof meta?.name === 'string') continue;  // named features don't consume an ordinal slot
-    count++;
-  }
-  return count + 1;
 }

@@ -16,7 +16,7 @@ async function waitForStability(page: Page, expectedCount?: number) {
 test.describe('Sketching Dimensions E2E', () => {
     test.beforeEach(async ({ page }) => {
         test.setTimeout(120000);
-        await page.goto('/');
+        await page.goto('/studio');
         await page.waitForSelector('canvas', { timeout: 60000 });
         await page.waitForFunction(() => (window as any).isEditorReady === true, { timeout: 60000 });
         await page.waitForFunction(() => (window as any).isEngineReady === true, { timeout: 60000 });

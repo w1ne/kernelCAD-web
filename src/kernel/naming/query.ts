@@ -150,27 +150,10 @@ export interface Query<T extends EntityMarker | unknown = unknown> {
   };
 }
 
-/** Internal factory used by every constructor in queryConstructors.ts.
- *  Wires the chainable methods onto a fresh Query object as non-enumerable
- *  properties so JSON.stringify ignores them. */
-export function makeQuery<T extends EntityMarker | unknown>(
-  target: QueryKind | 'any',
-  ast: QueryAst,
-  lenient?: boolean,
-): Query<T> {
-  // Build the data-bearing object first. Methods are attached below as
-  // non-enumerable so JSON serialization sees only data fields.
-  const base: {
-    _kind: 'kc.query';
-    target: QueryKind | 'any';
-    ast: QueryAst;
-    lenient?: boolean;
-  } = lenient
-    ? { _kind: 'kc.query', target, ast, lenient: true }
-    : { _kind: 'kc.query', target, ast };
-
-  const v = base as Query<T>;
-
+/** Composition chainables (asLenient/nth/and/or/minus) attached as
+ *  non-enumerable properties. Extracted from makeQuery; defineProperty order
+ *  and function bodies are unchanged. */
+function attachCompositionChainables<T extends EntityMarker | unknown>(v: Query<T>): void {
   Object.defineProperty(v, 'asLenient', {
     value: function asLenientImpl(this: Query<T>): Query<T> {
       return makeQuery<T>(this.target, this.ast, true);
@@ -217,6 +200,11 @@ export function makeQuery<T extends EntityMarker | unknown>(
     },
     enumerable: false,
   });
+}
+
+/** Evaluator entry points (evaluate/evaluateUnique) attached as
+ *  non-enumerable properties. Bodies unchanged from makeQuery. */
+function attachEvaluationChainables<T extends EntityMarker | unknown>(v: Query<T>): void {
   Object.defineProperty(v, 'evaluate', {
     value: function evaluateImpl(this: Query<T>, scene: QueryScene): unknown {
       // Read the delegate at call time so the cycle (query → evaluator →
@@ -243,6 +231,11 @@ export function makeQuery<T extends EntityMarker | unknown>(
     },
     enumerable: false,
   });
+}
+
+/** Serialization chainables (toString/toJSON) attached as non-enumerable
+ *  properties. Bodies unchanged from makeQuery. */
+function attachSerializationChainables<T extends EntityMarker | unknown>(v: Query<T>): void {
   Object.defineProperty(v, 'toString', {
     value: function toStringImpl(this: Query<T>): string {
       // Q7 — delegate to the @kcq[...] string-DSL serializer installed by
@@ -277,6 +270,32 @@ export function makeQuery<T extends EntityMarker | unknown>(
     },
     enumerable: false,
   });
+}
+
+/** Internal factory used by every constructor in queryConstructors.ts.
+ *  Wires the chainable methods onto a fresh Query object as non-enumerable
+ *  properties so JSON.stringify ignores them. */
+export function makeQuery<T extends EntityMarker | unknown>(
+  target: QueryKind | 'any',
+  ast: QueryAst,
+  lenient?: boolean,
+): Query<T> {
+  // Build the data-bearing object first. Methods are attached below as
+  // non-enumerable so JSON serialization sees only data fields.
+  const base: {
+    _kind: 'kc.query';
+    target: QueryKind | 'any';
+    ast: QueryAst;
+    lenient?: boolean;
+  } = lenient
+    ? { _kind: 'kc.query', target, ast, lenient: true }
+    : { _kind: 'kc.query', target, ast };
+
+  const v = base as Query<T>;
+
+  attachCompositionChainables(v);
+  attachEvaluationChainables(v);
+  attachSerializationChainables(v);
 
   return v;
 }

@@ -101,97 +101,111 @@ function safeSpan(min: number, max: number): number {
  * [u0,v0, u1,v1, ...] Float32Array, one pair per vertex, each component in
  * `[0, 1]` (cylinder `u` wraps at the 0/1 seam).
  */
-export function computeProjectedUVs(
+function flatProjectedUVs(
   vertices: ArrayLike<number>,
-  projection: TextureProjection,
+  n: number,
+  b: Bounds,
+  onto: 'xy' | 'xz' | 'yz',
 ): Float32Array {
-  const n = vertices.length / 3;
   const uv = new Float32Array(n * 2);
-  const b = boundsOf(vertices);
-
-  if (projection.type === 'flat') {
-    const onto = projection.onto ?? 'xy';
-    const [ai, bi, uSpan, vSpan, uMin, vMin] =
-      onto === 'xy'
-        ? [0, 1, safeSpan(b.minX, b.maxX), safeSpan(b.minY, b.maxY), b.minX, b.minY]
-        : onto === 'xz'
-          ? [0, 2, safeSpan(b.minX, b.maxX), safeSpan(b.minZ, b.maxZ), b.minX, b.minZ]
-          : [1, 2, safeSpan(b.minY, b.maxY), safeSpan(b.minZ, b.maxZ), b.minY, b.minZ];
-    for (let i = 0; i < n; i++) {
-      const u = (vertices[i * 3 + ai] - uMin) / uSpan;
-      const v = (vertices[i * 3 + bi] - vMin) / vSpan;
-      uv[i * 2] = u;
-      uv[i * 2 + 1] = v;
-    }
-    return uv;
+  const [ai, bi, uSpan, vSpan, uMin, vMin] =
+    onto === 'xy'
+      ? [0, 1, safeSpan(b.minX, b.maxX), safeSpan(b.minY, b.maxY), b.minX, b.minY]
+      : onto === 'xz'
+        ? [0, 2, safeSpan(b.minX, b.maxX), safeSpan(b.minZ, b.maxZ), b.minX, b.minZ]
+        : [1, 2, safeSpan(b.minY, b.maxY), safeSpan(b.minZ, b.maxZ), b.minY, b.minZ];
+  for (let i = 0; i < n; i++) {
+    const u = (vertices[i * 3 + ai] - uMin) / uSpan;
+    const v = (vertices[i * 3 + bi] - vMin) / vSpan;
+    uv[i * 2] = u;
+    uv[i * 2 + 1] = v;
   }
+  return uv;
+}
 
-  if (projection.type === 'cylinder') {
-    const [ax0, ay0, az0] = projection.axis;
-    const len = Math.hypot(ax0, ay0, az0);
-    const ax = ax0 / len, ay = ay0 / len, az = az0 / len;
-    // Pick a stable reference vector not parallel to the axis, build a
-    // right-handed (right, up) basis in the plane perpendicular to axis.
-    const ref: [number, number, number] =
-      Math.abs(az) < 0.9 ? [0, 0, 1] : [1, 0, 0];
-    // right = axis × ref (normalized); up = right × axis.
-    let rx = ay * ref[2] - az * ref[1];
-    let ry = az * ref[0] - ax * ref[2];
-    let rz = ax * ref[1] - ay * ref[0];
-    const rlen = Math.hypot(rx, ry, rz) || 1;
-    rx /= rlen; ry /= rlen; rz /= rlen;
-    const ux = ay * rz - az * ry;
-    const uy = az * rx - ax * rz;
-    const uz = ax * ry - ay * rx;
+function cylinderProjectedUVs(
+  vertices: ArrayLike<number>,
+  n: number,
+  b: Bounds,
+  axis: readonly [number, number, number],
+): Float32Array {
+  const uv = new Float32Array(n * 2);
+  const [ax0, ay0, az0] = axis;
+  const len = Math.hypot(ax0, ay0, az0);
+  const ax = ax0 / len, ay = ay0 / len, az = az0 / len;
+  // Pick a stable reference vector not parallel to the axis, build a
+  // right-handed (right, up) basis in the plane perpendicular to axis.
+  const ref: [number, number, number] =
+    Math.abs(az) < 0.9 ? [0, 0, 1] : [1, 0, 0];
+  // right = axis × ref (normalized); up = right × axis.
+  let rx = ay * ref[2] - az * ref[1];
+  let ry = az * ref[0] - ax * ref[2];
+  let rz = ax * ref[1] - ay * ref[0];
+  const rlen = Math.hypot(rx, ry, rz) || 1;
+  rx /= rlen; ry /= rlen; rz /= rlen;
+  const ux = ay * rz - az * ry;
+  const uy = az * rx - ax * rz;
+  const uz = ax * ry - ay * rx;
 
-    const cx = (b.minX + b.maxX) / 2;
-    const cy = (b.minY + b.maxY) / 2;
-    const cz = (b.minZ + b.maxZ) / 2;
+  const cx = (b.minX + b.maxX) / 2;
+  const cy = (b.minY + b.maxY) / 2;
+  const cz = (b.minZ + b.maxZ) / 2;
 
-    // Height range along axis, for v normalization.
-    let minH = Infinity, maxH = -Infinity;
-    const heights = new Float32Array(n);
-    for (let i = 0; i < n; i++) {
-      const dx = vertices[i * 3] - cx;
-      const dy = vertices[i * 3 + 1] - cy;
-      const dz = vertices[i * 3 + 2] - cz;
-      const h = dx * ax + dy * ay + dz * az;
-      heights[i] = h;
-      if (h < minH) minH = h;
-      if (h > maxH) maxH = h;
-    }
-    const hSpan = safeSpan(minH, maxH);
-
-    for (let i = 0; i < n; i++) {
-      const dx = vertices[i * 3] - cx;
-      const dy = vertices[i * 3 + 1] - cy;
-      const dz = vertices[i * 3 + 2] - cz;
-      const r = dx * rx + dy * ry + dz * rz;
-      const u2 = dx * ux + dy * uy + dz * uz;
-      const angle = Math.atan2(u2, r); // [-PI, PI]
-      uv[i * 2] = (angle + Math.PI) / (2 * Math.PI); // [0,1)
-      uv[i * 2 + 1] = (heights[i] - minH) / hSpan;
-    }
-    return uv;
+  // Height range along axis, for v normalization.
+  let minH = Infinity, maxH = -Infinity;
+  const heights = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const dx = vertices[i * 3] - cx;
+    const dy = vertices[i * 3 + 1] - cy;
+    const dz = vertices[i * 3 + 2] - cz;
+    const h = dx * ax + dy * ay + dz * az;
+    heights[i] = h;
+    if (h < minH) minH = h;
+    if (h > maxH) maxH = h;
   }
+  const hSpan = safeSpan(minH, maxH);
 
-  if (projection.type === 'sphere') {
-    const cx = (b.minX + b.maxX) / 2;
-    const cy = (b.minY + b.maxY) / 2;
-    const cz = (b.minZ + b.maxZ) / 2;
-    for (let i = 0; i < n; i++) {
-      const dx = vertices[i * 3] - cx;
-      const dy = vertices[i * 3 + 1] - cy;
-      const dz = vertices[i * 3 + 2] - cz;
-      const r = Math.hypot(dx, dy, dz) || 1e-9;
-      const u = 0.5 + Math.atan2(dy, dx) / (2 * Math.PI);
-      const v = 0.5 - Math.asin(Math.max(-1, Math.min(1, dz / r))) / Math.PI;
-      uv[i * 2] = u;
-      uv[i * 2 + 1] = v;
-    }
-    return uv;
+  for (let i = 0; i < n; i++) {
+    const dx = vertices[i * 3] - cx;
+    const dy = vertices[i * 3 + 1] - cy;
+    const dz = vertices[i * 3 + 2] - cz;
+    const r = dx * rx + dy * ry + dz * rz;
+    const u2 = dx * ux + dy * uy + dz * uz;
+    const angle = Math.atan2(u2, r); // [-PI, PI]
+    uv[i * 2] = (angle + Math.PI) / (2 * Math.PI); // [0,1)
+    uv[i * 2 + 1] = (heights[i] - minH) / hSpan;
   }
+  return uv;
+}
 
+function sphereProjectedUVs(
+  vertices: ArrayLike<number>,
+  n: number,
+  b: Bounds,
+): Float32Array {
+  const uv = new Float32Array(n * 2);
+  const cx = (b.minX + b.maxX) / 2;
+  const cy = (b.minY + b.maxY) / 2;
+  const cz = (b.minZ + b.maxZ) / 2;
+  for (let i = 0; i < n; i++) {
+    const dx = vertices[i * 3] - cx;
+    const dy = vertices[i * 3 + 1] - cy;
+    const dz = vertices[i * 3 + 2] - cz;
+    const r = Math.hypot(dx, dy, dz) || 1e-9;
+    const u = 0.5 + Math.atan2(dy, dx) / (2 * Math.PI);
+    const v = 0.5 - Math.asin(Math.max(-1, Math.min(1, dz / r))) / Math.PI;
+    uv[i * 2] = u;
+    uv[i * 2 + 1] = v;
+  }
+  return uv;
+}
+
+function boxProjectedUVs(
+  vertices: ArrayLike<number>,
+  n: number,
+  b: Bounds,
+): Float32Array {
+  const uv = new Float32Array(n * 2);
   // box: assign each vertex to the bbox face its position is nearest to
   // (by distance to that face's plane), then unwrap planar on that face.
   const cx = (b.minX + b.maxX) / 2;
@@ -217,4 +231,26 @@ export function computeProjectedUVs(
     }
   }
   return uv;
+}
+
+export function computeProjectedUVs(
+  vertices: ArrayLike<number>,
+  projection: TextureProjection,
+): Float32Array {
+  const n = vertices.length / 3;
+  const b = boundsOf(vertices);
+
+  if (projection.type === 'flat') {
+    return flatProjectedUVs(vertices, n, b, projection.onto ?? 'xy');
+  }
+
+  if (projection.type === 'cylinder') {
+    return cylinderProjectedUVs(vertices, n, b, projection.axis);
+  }
+
+  if (projection.type === 'sphere') {
+    return sphereProjectedUVs(vertices, n, b);
+  }
+
+  return boxProjectedUVs(vertices, n, b);
 }

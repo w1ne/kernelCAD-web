@@ -364,11 +364,63 @@ function estimateSweepWork(arm: Assembly, solvedSampleCount: number): number {
 // Criterion 4 — mechanism.orphan-part (graph reachability)
 // ─────────────────────────────────────────────────────────────────────────
 
-function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
-  const parts = arm.__parts();
-  const mates = arm.__mates();
-  if (parts.length <= 1) return [];
+/** Add a connection in both directions. Unknown part names are ignored,
+ *  matching the optional-chaining lookups the walk has always used. */
+function addUndirectedEdge(adj: Map<string, Set<string>>, a: string, b: string): void {
+  adj.get(a)?.add(b);
+  adj.get(b)?.add(a);
+}
 
+/** Mate edges: connectors address parts by name. */
+function addMateEdges(
+  adj: Map<string, Set<string>>,
+  mates: ReturnType<Assembly['__mates']>,
+): void {
+  for (const m of mates) {
+    const aPart = parseConnectorRef(m.a).partName;
+    const bPart = parseConnectorRef(m.b).partName;
+    addUndirectedEdge(adj, aPart, bPart);
+  }
+}
+
+/** Joint-primitive edges. Joints address parts by FeatureId, not by name. */
+function addJointEdges(
+  adj: Map<string, Set<string>>,
+  joints: ReturnType<Assembly['__joints']>,
+  nameByPartId: Map<FeatureId, string>,
+): void {
+  for (const j of joints) {
+    const aPart = nameByPartId.get(j.parentPartId);
+    const bPart = nameByPartId.get(j.childPartId);
+    if (aPart === undefined || bPart === undefined) continue;
+    addUndirectedEdge(adj, aPart, bPart);
+  }
+}
+
+/** `arm.part(name, shape, { connect: { to } })` places a part rigidly on a
+ *  parent without declaring either a mate or a joint. That is a structural
+ *  connection too — the v0.5 validator has always treated it as one
+ *  (`validateAssembly`'s floating/orphan pass) — so the truth walk must
+ *  agree rather than call the placed part an orphan. */
+function addConnectEdges(
+  adj: Map<string, Set<string>>,
+  parts: ReturnType<Assembly['__parts']>,
+  nameByPartId: Map<FeatureId, string>,
+): void {
+  for (const p of parts) {
+    const parentName = p.connectParentId === undefined
+      ? undefined
+      : nameByPartId.get(p.connectParentId);
+    if (parentName === undefined) continue;
+    addUndirectedEdge(adj, p.name, parentName);
+  }
+}
+
+function buildPartAdjacency(
+  parts: ReturnType<Assembly['__parts']>,
+  mates: ReturnType<Assembly['__mates']>,
+  joints: ReturnType<Assembly['__joints']>,
+): Map<string, Set<string>> {
   // Build adjacency: part-name → set of neighbor part-names.
   //
   // KC-04: kernelCAD has TWO assembly conventions and BOTH connect parts —
@@ -382,40 +434,20 @@ function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
   // Both cannot be right; joint edges are connections, so they belong here.
   const adj = new Map<string, Set<string>>();
   for (const p of parts) adj.set(p.name, new Set());
-  for (const m of mates) {
-    const aPart = parseConnectorRef(m.a).partName;
-    const bPart = parseConnectorRef(m.b).partName;
-    adj.get(aPart)?.add(bPart);
-    adj.get(bPart)?.add(aPart);
-  }
+  addMateEdges(adj, mates);
 
-  // Joint-primitive edges. Joints address parts by FeatureId, not by name.
   const nameByPartId = new Map<FeatureId, string>();
   for (const p of parts) nameByPartId.set(p.id, p.name);
-  for (const j of arm.__joints()) {
-    const aPart = nameByPartId.get(j.parentPartId);
-    const bPart = nameByPartId.get(j.childPartId);
-    if (aPart === undefined || bPart === undefined) continue;
-    adj.get(aPart)?.add(bPart);
-    adj.get(bPart)?.add(aPart);
-  }
+  addJointEdges(adj, joints, nameByPartId);
+  addConnectEdges(adj, parts, nameByPartId);
+  return adj;
+}
 
-  // `arm.part(name, shape, { connect: { to } })` places a part rigidly on a
-  // parent without declaring either a mate or a joint. That is a structural
-  // connection too — the v0.5 validator has always treated it as one
-  // (`validateAssembly`'s floating/orphan pass) — so the truth walk must
-  // agree rather than call the placed part an orphan.
-  for (const p of parts) {
-    const parentName = p.connectParentId === undefined
-      ? undefined
-      : nameByPartId.get(p.connectParentId);
-    if (parentName === undefined) continue;
-    adj.get(p.name)?.add(parentName);
-    adj.get(parentName)?.add(p.name);
-  }
-
+function collectReachablePartNames(
+  adj: Map<string, Set<string>>,
+  root: string,
+): Set<string> {
   // BFS from parts[0]. Anything unreached is an orphan.
-  const root = parts[0].name;
   const visited = new Set<string>();
   const queue: string[] = [root];
   visited.add(root);
@@ -428,6 +460,16 @@ function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
       }
     }
   }
+  return visited;
+}
+
+function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
+  const parts = arm.__parts();
+  if (parts.length <= 1) return [];
+  const adj = buildPartAdjacency(parts, arm.__mates(), arm.__joints());
+
+  const root = parts[0].name;
+  const visited = collectReachablePartNames(adj, root);
 
   const out: CompilerDiagnostic[] = [];
   for (const p of parts) {
