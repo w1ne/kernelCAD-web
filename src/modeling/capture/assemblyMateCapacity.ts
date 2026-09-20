@@ -40,74 +40,88 @@ export function validateMateCapacityOptions(
   }
 
   if (capacity !== undefined) {
-    if (!isMateOptionObject(capacity)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `assembly.mate.invalid-capacity: mate '${mateName}' capacity must be an object with an optional envelope.`,
-        undefined,
-        `invalid-args.assembly.mate-invalid-capacity — pass capacity: {} or capacity: { envelope: { maxResultantForceN, maxResultantMomentNmm } } using N and Nmm.`,
-      );
-    }
-    const envelope = capacity.envelope;
-    if (envelope !== undefined) {
-      if (!isMateOptionObject(envelope)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.mate.invalid-capacity: mate '${mateName}' capacity.envelope must be an object containing force and moment ratings.`,
-          undefined,
-          `invalid-args.assembly.mate-invalid-capacity — pass capacity.envelope: { maxResultantForceN, maxResultantMomentNmm } using positive finite N and Nmm values.`,
-        );
-      }
-      validatePositiveFiniteMateValue(
-        mateName,
-        'capacity.envelope.maxResultantForceN',
-        envelope.maxResultantForceN,
-        'N',
-      );
-      validatePositiveFiniteMateValue(
-        mateName,
-        'capacity.envelope.maxResultantMomentNmm',
-        envelope.maxResultantMomentNmm,
-        'Nmm',
-      );
-    }
-    const structure = capacity.structure;
-    if (structure !== undefined) {
-      if (mateType !== 'revolute') {
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.mate.invalid-capacity: mate '${mateName}' capacity.structure is a clevis revolute model but mate type is '${mateType}'.`,
-          undefined,
-          `invalid-args.assembly.mate-invalid-capacity — attach joint.clevis(...).structural only to its revolute mate.`,
-        );
-      }
-      validateClevisStructuralModel(mateName, structure);
-    }
+    validateCapacityOptions(mateName, mateType, capacity);
   }
 
   if (maxLoad !== undefined) {
-    if (!isMateOptionObject(maxLoad)) {
+    validateMaxLoadOptions(mateName, maxLoad);
+  }
+}
+
+function validateCapacityOptions(mateName: string, mateType: MateType, capacity: unknown): void {
+  if (!isMateOptionObject(capacity)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `assembly.mate.invalid-capacity: mate '${mateName}' capacity must be an object with an optional envelope.`,
+      undefined,
+      `invalid-args.assembly.mate-invalid-capacity — pass capacity: {} or capacity: { envelope: { maxResultantForceN, maxResultantMomentNmm } } using N and Nmm.`,
+    );
+  }
+  validateCapacityEnvelope(mateName, capacity.envelope);
+  validateCapacityStructure(mateName, mateType, capacity.structure);
+}
+
+function validateCapacityEnvelope(mateName: string, envelope: unknown): void {
+  if (envelope !== undefined) {
+    if (!isMateOptionObject(envelope)) {
       throw new KernelError(
         'feature.invalid-args',
-        `assembly.mate.invalid-capacity: mate '${mateName}' maxLoad must be an object with optional force and torque ratings.`,
+        `assembly.mate.invalid-capacity: mate '${mateName}' capacity.envelope must be an object containing force and moment ratings.`,
         undefined,
-        `invalid-args.assembly.mate-invalid-capacity — pass maxLoad: {} or maxLoad: { force, torque } using positive finite N and Nm values.`,
+        `invalid-args.assembly.mate-invalid-capacity — pass capacity.envelope: { maxResultantForceN, maxResultantMomentNmm } using positive finite N and Nmm values.`,
       );
     }
-    if (maxLoad.force !== undefined) {
-      validatePositiveFiniteMateValue(mateName, 'maxLoad.force', maxLoad.force, 'N');
+    validatePositiveFiniteMateValue(
+      mateName,
+      'capacity.envelope.maxResultantForceN',
+      envelope.maxResultantForceN,
+      'N',
+    );
+    validatePositiveFiniteMateValue(
+      mateName,
+      'capacity.envelope.maxResultantMomentNmm',
+      envelope.maxResultantMomentNmm,
+      'Nmm',
+    );
+  }
+}
+
+function validateCapacityStructure(mateName: string, mateType: MateType, structure: unknown): void {
+  if (structure !== undefined) {
+    if (mateType !== 'revolute') {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.mate.invalid-capacity: mate '${mateName}' capacity.structure is a clevis revolute model but mate type is '${mateType}'.`,
+        undefined,
+        `invalid-args.assembly.mate-invalid-capacity — attach joint.clevis(...).structural only to its revolute mate.`,
+      );
     }
-    if (maxLoad.torque !== undefined) {
-      const torqueNm = maxLoad.torque;
-      validatePositiveFiniteMateValue(mateName, 'maxLoad.torque', torqueNm, 'Nm');
-      if (typeof torqueNm === 'number' && !Number.isFinite(torqueNm * NMM_PER_NM)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.mate.invalid-capacity: mate '${mateName}' maxLoad.torque=${torqueNm} Nm converts to Nmm as a non-finite value.`,
-          undefined,
-          `invalid-args.assembly.mate-invalid-capacity — reduce maxLoad.torque so its Nm-to-Nmm conversion remains finite, or use capacity.envelope.maxResultantMomentNmm directly.`,
-        );
-      }
+    validateClevisStructuralModel(mateName, structure);
+  }
+}
+
+function validateMaxLoadOptions(mateName: string, maxLoad: unknown): void {
+  if (!isMateOptionObject(maxLoad)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `assembly.mate.invalid-capacity: mate '${mateName}' maxLoad must be an object with optional force and torque ratings.`,
+      undefined,
+      `invalid-args.assembly.mate-invalid-capacity — pass maxLoad: {} or maxLoad: { force, torque } using positive finite N and Nm values.`,
+    );
+  }
+  if (maxLoad.force !== undefined) {
+    validatePositiveFiniteMateValue(mateName, 'maxLoad.force', maxLoad.force, 'N');
+  }
+  if (maxLoad.torque !== undefined) {
+    const torqueNm = maxLoad.torque;
+    validatePositiveFiniteMateValue(mateName, 'maxLoad.torque', torqueNm, 'Nm');
+    if (typeof torqueNm === 'number' && !Number.isFinite(torqueNm * NMM_PER_NM)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.mate.invalid-capacity: mate '${mateName}' maxLoad.torque=${torqueNm} Nm converts to Nmm as a non-finite value.`,
+        undefined,
+        `invalid-args.assembly.mate-invalid-capacity — reduce maxLoad.torque so its Nm-to-Nmm conversion remains finite, or use capacity.envelope.maxResultantMomentNmm directly.`,
+      );
     }
   }
 }
