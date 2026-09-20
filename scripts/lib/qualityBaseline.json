@@ -361,21 +361,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/holeLowerer.ts",
-    "symbol": "Function 'lowerHoles'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/meshing.ts",
     "symbol": "Function 'meshFaceToGeometry'",
     "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/backends/occt/meshing.ts",
-    "symbol": "Function 'tryExtractCylinderFromFace'",
-    "value": 19
   },
   {
     "rule": "complexity",
@@ -415,27 +403,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/fea/runFea.ts",
-    "symbol": "Function 'computeFeaSummary'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/import/contourAssembly.ts",
     "symbol": "Function 'chainLoops'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/import/importSvg.ts",
-    "symbol": "Function 'emitPath'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/import/importSvg.ts",
-    "symbol": "Function 'importSvgText'",
-    "value": 19
   },
   {
     "rule": "complexity",
@@ -940,12 +910,6 @@
     "file": "src/kernel/backends/occt/pathNurbsLowerer.ts",
     "symbol": "Function 'buildNurbsSketchOnPlane'",
     "value": 143
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kernel/import/importSvg.ts",
-    "symbol": "Function 'emitPath'",
-    "value": 101
   },
   {
     "rule": "max-lines-per-function",

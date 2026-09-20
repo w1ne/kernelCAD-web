@@ -692,6 +692,52 @@ function emitArcPathCommand(
   return { ux: ex, uy: ey };
 }
 
+/** Dispatch one drawing command (everything but `M`/`Z`) to its emitter and
+ *  report the pen position and smooth-curve reflection it leaves behind. */
+function emitPathCommand(
+  cmd: string,
+  up: string,
+  scanner: PathScanner,
+  rel: boolean,
+  b: ContourBuilder,
+  ux: number,
+  uy: number,
+  lastCubicCtrl: Pt | null,
+  lastQuadCtrl: Pt | null,
+  similarity: boolean,
+  tolMm: number,
+  mmScale: number,
+  where: string,
+): { ux: number; uy: number; lastCubicCtrl: Pt | null; lastQuadCtrl: Pt | null } {
+  switch (up) {
+    case 'L':
+    case 'H':
+    case 'V': {
+      const res = emitLineLikeCommand(up, scanner, rel, b, ux, uy);
+      return { ux: res.ux, uy: res.uy, lastCubicCtrl: null, lastQuadCtrl: null };
+    }
+    case 'C':
+    case 'S': {
+      const res = emitCubicPathCommand(up, scanner, rel, b, ux, uy, lastCubicCtrl, tolMm);
+      return { ux: res.ux, uy: res.uy, lastCubicCtrl: res.lastCubicCtrl, lastQuadCtrl: null };
+    }
+    case 'Q':
+    case 'T': {
+      const res = emitQuadraticPathCommand(up, scanner, rel, b, ux, uy, lastQuadCtrl, tolMm);
+      return { ux: res.ux, uy: res.uy, lastCubicCtrl: null, lastQuadCtrl: res.lastQuadCtrl };
+    }
+    case 'A': {
+      const res = emitArcPathCommand(scanner, rel, b, ux, uy, similarity, tolMm, mmScale);
+      return { ux: res.ux, uy: res.uy, lastCubicCtrl: null, lastQuadCtrl: null };
+    }
+    default:
+      throw new SvgParseError(
+        'unsupported-command',
+        `${where}: path command '${cmd}' at offset ${scanner.offset} is not a valid SVG path command.`,
+      );
+  }
+}
+
 function emitPath(tag: Tag, m: Matrix, sink: ElementSink, tolMm: number): void {
   const d = tag.attrs.d;
   if (d === undefined || d.trim() === '') {
@@ -763,41 +809,11 @@ function emitPath(tag: Tag, m: Matrix, sink: ElementSink, tolMm: number): void {
     }
 
     const b = need();
-    switch (up) {
-      case 'L':
-      case 'H':
-      case 'V': {
-        const res = emitLineLikeCommand(up, scanner, rel, b, ux, uy);
-        ux = res.ux; uy = res.uy;
-        lastCubicCtrl = null; lastQuadCtrl = null;
-        break;
-      }
-      case 'C':
-      case 'S': {
-        const res = emitCubicPathCommand(up, scanner, rel, b, ux, uy, lastCubicCtrl, tolMm);
-        ux = res.ux; uy = res.uy;
-        lastCubicCtrl = res.lastCubicCtrl; lastQuadCtrl = null;
-        break;
-      }
-      case 'Q':
-      case 'T': {
-        const res = emitQuadraticPathCommand(up, scanner, rel, b, ux, uy, lastQuadCtrl, tolMm);
-        ux = res.ux; uy = res.uy;
-        lastQuadCtrl = res.lastQuadCtrl; lastCubicCtrl = null;
-        break;
-      }
-      case 'A': {
-        const res = emitArcPathCommand(scanner, rel, b, ux, uy, similarity, tolMm, mmScale);
-        ux = res.ux; uy = res.uy;
-        lastCubicCtrl = null; lastQuadCtrl = null;
-        break;
-      }
-      default:
-        throw new SvgParseError(
-          'unsupported-command',
-          `${where}: path command '${cmd}' at offset ${scanner.offset} is not a valid SVG path command.`,
-        );
-    }
+    const res = emitPathCommand(
+      cmd, up, scanner, rel, b, ux, uy, lastCubicCtrl, lastQuadCtrl, similarity, tolMm, mmScale, where,
+    );
+    ux = res.ux; uy = res.uy;
+    lastCubicCtrl = res.lastCubicCtrl; lastQuadCtrl = res.lastQuadCtrl;
     prevCmd = cmd;
   }
   flushOpen();
@@ -816,15 +832,7 @@ function emitPath(tag: Tag, m: Matrix, sink: ElementSink, tolMm: number): void {
  *   empty or placeholder region list.
  */
 export function importSvgText(text: string, opts: ImportSvgOptions = {}): SvgImportResult {
-  if (text.trim().length === 0) {
-    throw new SvgParseError('empty', 'SVG payload is empty.');
-  }
-  if (opts.units !== undefined && !isLengthUnit(opts.units)) {
-    throw new SvgParseError(
-      'bad-units',
-      `opts.units '${String(opts.units)}' is not a known length unit (${LENGTH_UNIT_NAMES.join(', ')}).`,
-    );
-  }
+  validateImportRequest(text, opts);
 
   const tags = scanTags(text);
   const root = tags.find(t => t.name === 'svg' && !t.closing);
@@ -845,6 +853,45 @@ export function importSvgText(text: string, opts: ImportSvgOptions = {}): SvgImp
 
   const sink: ElementSink = { closed: [], open: [] };
   const ignoredElements: string[] = [];
+  emitSvgElements(tags, rootMatrix, tolMm, sink, ignoredElements);
+
+  const assembled = assembleSvgRegions(sink, opts);
+
+  return {
+    regions: assembled.regions,
+    unitScale: scale,
+    unitSource,
+    ignoredElements,
+    flippedAboutViewBox: flipAbout !== null,
+    duplicatesDropped: assembled.duplicatesDropped,
+    degeneratesDropped: assembled.degeneratesDropped,
+    gapsClosed: assembled.gapsClosed,
+  };
+}
+
+/** Empty payloads and unknown `opts.units` are rejected before any parsing,
+ *  so the failure names the request rather than the document. */
+function validateImportRequest(text: string, opts: ImportSvgOptions): void {
+  if (text.trim().length === 0) {
+    throw new SvgParseError('empty', 'SVG payload is empty.');
+  }
+  if (opts.units !== undefined && !isLengthUnit(opts.units)) {
+    throw new SvgParseError(
+      'bad-units',
+      `opts.units '${String(opts.units)}' is not a known length unit (${LENGTH_UNIT_NAMES.join(', ')}).`,
+    );
+  }
+}
+
+/** Walk the element stream once, maintaining the transform stack and the
+ *  non-rendering skip depth, and hand each geometry element to the emitter. */
+function emitSvgElements(
+  tags: Tag[],
+  rootMatrix: Matrix,
+  tolMm: number,
+  sink: ElementSink,
+  ignoredElements: string[],
+): void {
   const stack: Matrix[] = [rootMatrix];
   let skipDepth = 0;
 
@@ -880,25 +927,17 @@ export function importSvgText(text: string, opts: ImportSvgOptions = {}): SvgImp
       emitGeometryElement(lower, tag, m, sink, tolMm);
     }
   }
+}
 
-  let assembled;
+/** Run the contour assembler, translating contour failures into the
+ *  importer's own error type so callers only have to know `SvgParseError`. */
+function assembleSvgRegions(sink: ElementSink, opts: ImportSvgOptions): ReturnType<typeof assembleRegions> {
   try {
-    assembled = assembleRegions(sink, { tolerance: opts.tolerance ?? DEFAULT_SVG_TOLERANCE });
+    return assembleRegions(sink, { tolerance: opts.tolerance ?? DEFAULT_SVG_TOLERANCE });
   } catch (e) {
     if (e instanceof ContourError) throw new SvgParseError('contour', e.message);
     throw e;
   }
-
-  return {
-    regions: assembled.regions,
-    unitScale: scale,
-    unitSource,
-    ignoredElements,
-    flippedAboutViewBox: flipAbout !== null,
-    duplicatesDropped: assembled.duplicatesDropped,
-    degeneratesDropped: assembled.degeneratesDropped,
-    gapsClosed: assembled.gapsClosed,
-  };
 }
 
 /** Resolve the millimetres-per-user-unit scale and the human-readable source
