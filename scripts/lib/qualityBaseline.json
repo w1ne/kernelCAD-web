@@ -571,12 +571,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/matePhysicalRealization.ts",
-    "symbol": "Function 'inferPinRadius'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/mechanicalTransmission.ts",
     "symbol": "Function 'pointTriangleDistanceSquared'",
     "value": 16
