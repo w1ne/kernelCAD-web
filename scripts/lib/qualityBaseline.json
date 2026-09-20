@@ -163,32 +163,32 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/featureMeshing.ts",
-    "symbol": "Function 'buildHelixTubeMesh'",
+    "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
+    "symbol": "Async function 'buildLinkBlocks'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/featureMeshingPhases.ts",
-    "symbol": "Function 'computeConstructionClosure'",
+    "file": "src/modeling/mates/matePhysicalRealization.ts",
+    "symbol": "Async function 'validateMatePhysicalRealization'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/featureMeshingPhases.ts",
-    "symbol": "Function 'detectAttributeShadowing'",
+    "file": "src/modeling/mates/mechanicalTransmission.ts",
+    "symbol": "Function 'pointTriangleDistanceSquared'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/forwardKinematics.ts",
-    "symbol": "Function 'forwardKinematics'",
+    "file": "src/modeling/mates/physicalUseCaseJointReactionsPhases.ts",
+    "symbol": "Async function 'resolveSolvedLoads'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/compute/recomputeEngine.ts",
-    "symbol": "Async method 'lowerAndEmit'",
+    "file": "src/modeling/mates/physicalUseCaseJointReactionsPhases.ts",
+    "symbol": "Async function 'validateSolvedContact'",
     "value": 16
   },
   {
@@ -349,12 +349,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/capture/forwardKinematics.ts",
-    "symbol": "Function 'forwardKinematics'",
-    "value": 101
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/modeling/constraints/sketchConverter.ts",
     "symbol": "Function 'convertSketchEntitiesToConstraints'",
     "value": 111
@@ -508,12 +502,6 @@
     "file": "src/studio/routes/-useProjectLiveUpdates.ts",
     "symbol": "Function 'useProjectLiveUpdates'",
     "value": 103
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/routes/embed.$slug.tsx",
-    "symbol": "Function 'EmbedPage'",
-    "value": 141
   },
   {
     "rule": "max-lines-per-function",
