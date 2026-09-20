@@ -1,8 +1,9 @@
 # MUSE 106-Case Sweep — Open-Weight Driver + kernelCAD Agent Stack
 
-Status: design approved 2026-09-19 (brainstorming session). This spec is the
-source of truth for the implementation plan. Target: an official MUSE
-leaderboard submission run.
+Status: implemented 2026-09-20. First full 106-case run complete — results and
+gap analysis in `kernelCAD-private/docs/process/running-muse-benchmark.md` §7.
+This spec is the source of truth for the implementation. Target: an official
+MUSE leaderboard submission run.
 
 ## Goal
 
