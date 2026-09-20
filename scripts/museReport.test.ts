@@ -55,6 +55,9 @@ describe('writeReports', () => {
     const root = mkdtempSync(join(tmpdir(), 'report-'));
     makeCase(root, 'a', true, true, CATS);
     makeCase(root, 'b', false, false, CATS);
+    const unevaluated = join(root, 'cases', 'unevaluated');
+    mkdirSync(unevaluated, { recursive: true });
+    writeFileSync(join(unevaluated, 'state.json'), JSON.stringify({ phase: 'pending' }));
     writeFileSync(
       join(root, 'run.json'),
       JSON.stringify({
@@ -75,7 +78,12 @@ describe('writeReports', () => {
     expect(row.rows[0].final).toBe(33.33);
     expect(row.rows[0].geom_valid).toBeNull();
     expect(row.validator_status).toBe('unpublished');
-    expect(readFileSync(join(root, 'summary.md'), 'utf8')).toContain('Forced-zero');
+    expect(row.evaluated_cases).toBe(2);
+    expect(row.infra_cases).toBe(1);
+    const summary = readFileSync(join(root, 'summary.md'), 'utf8');
+    expect(summary).toContain('Forced-zero');
+    expect(summary).toContain('## Excluded cases (infra errors or unevaluated)');
+    expect(summary).toContain('- unevaluated');
     expect(readFileSync(join(root, 'protocol.md'), 'utf8')).toContain('validator');
     expect(readFileSync(join(root, 'leaderboard.csv'), 'utf8')).toContain('m+kcad + kernelCAD');
   });
@@ -98,7 +106,7 @@ describe('writeReports', () => {
     expect(leaderboard.evaluated_cases).toBe(1);
     expect(leaderboard.infra_cases).toBe(1);
     expect(leaderboard.rows[0].final).toBe(66.67);
-    expect(readFileSync(join(root, 'summary.md'), 'utf8')).toContain('Infra errors');
+    expect(readFileSync(join(root, 'summary.md'), 'utf8')).toContain('Excluded cases');
     expect(readFileSync(join(root, 'summary.md'), 'utf8')).toContain('- bad');
   });
 });

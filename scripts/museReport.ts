@@ -43,8 +43,10 @@ function loadCase(root: string, name: string): CaseArtifact {
   const state = existsSync(statePath)
     ? (JSON.parse(readFileSync(statePath, 'utf8')) as { phase?: string })
     : undefined;
-  const score: Score | undefined = existsSync(join(dir, 'score.json'))
-    ? (JSON.parse(readFileSync(join(dir, 'score.json'), 'utf8')) as Score)
+  const scorePath = join(dir, 'score.json');
+  const evaluated = existsSync(scorePath);
+  const score: Score | undefined = evaluated
+    ? (JSON.parse(readFileSync(scorePath, 'utf8')) as Score)
     : undefined;
   const metrics = (score?.metrics ?? {}) as Record<string, unknown>;
   let categories: JudgeCategories | undefined;
@@ -59,7 +61,7 @@ function loadCase(root: string, name: string): CaseArtifact {
   }
   return {
     case: name,
-    infra: state?.phase === 'infra_error',
+    infra: !evaluated || state?.phase === 'infra_error',
     sandboxOk: metrics.muse_sandbox_ok === true,
     overlapFree: metrics.muse_overlap_free === true,
     categories,
@@ -144,7 +146,7 @@ export function writeReports(runRoot: string): void {
     '',
     ...(forcedZeroCases.length > 0 ? forcedZeroCases.map((c) => `- ${c}`) : ['- none']),
     '',
-    '## Infra errors (excluded from denominators)',
+    '## Excluded cases (infra errors or unevaluated)',
     '',
     ...(infraCases.length > 0 ? infraCases.map((c) => `- ${c}`) : ['- none']),
     '',

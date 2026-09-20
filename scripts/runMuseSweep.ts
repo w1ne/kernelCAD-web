@@ -137,7 +137,7 @@ export function parseSweepArgs(argv: string[]): SweepConfig {
   if (!Number.isInteger(maxAttempts) || maxAttempts < 1) fail(`--max-attempts must be an integer >= 1`);
   const maxTokens = Number(flagValue('--max-tokens') ?? 16000);
   if (!Number.isInteger(maxTokens) || maxTokens < 1) fail(`--max-tokens must be an integer >= 1`);
-  const maxTokensIn = Number(flagValue('--max-tokens-in') ?? 25_000_000);
+  const maxTokensIn = Number(flagValue('--max-tokens-in') ?? 60_000_000);
   if (!Number.isFinite(maxTokensIn)) fail(`--max-tokens-in must be a number`);
   const toolMaxCalls = Number(flagValue('--tool-max-calls') ?? 8);
   if (!Number.isInteger(toolMaxCalls) || toolMaxCalls < 1) {
@@ -267,7 +267,6 @@ async function runOneCase(
 ): Promise<CaseOutcome> {
   const taskDir = join(TASKS_DIR, `muse-${caseName}`);
   const caseDir = join(cfg.runRoot, 'cases', caseName);
-  mkdirSync(caseDir, { recursive: true });
 
   if (existsSync(join(cfg.runRoot, 'STOP'))) {
     return { case: caseName, status: 'stopped' };
@@ -275,6 +274,8 @@ async function runOneCase(
   if (totals.tokensIn >= cfg.maxTokensIn) {
     return { case: caseName, status: 'budget' };
   }
+
+  mkdirSync(caseDir, { recursive: true });
 
   const targetPhase: MusePhase = cfg.skipJudge ? 'scored' : 'judged';
   let state = readState(caseDir);
