@@ -79,12 +79,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/constraints/sketchConverter.ts",
-    "symbol": "Function 'convertSketchEntitiesToConstraints'",
-    "value": 111
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/modeling/mates/jointVisualExposure.ts",
     "symbol": "Function 'measureJointVisuals'",
     "value": 101
