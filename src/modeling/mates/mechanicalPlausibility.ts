@@ -456,7 +456,7 @@ async function checkFastenedMateContact(
   return 1;
 }
 
-function analyzeDisconnectedMesh(mesh: ReturnType<ShapeBackend['getMesh']>): {
+export function analyzeDisconnectedMesh(mesh: ReturnType<ShapeBackend['getMesh']>): {
   componentCount: number;
   largestComponentTriangleCount: number;
   maxComponentGapMm: number;
