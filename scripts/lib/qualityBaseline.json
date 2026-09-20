@@ -73,12 +73,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/planPhases/ops.ts",
-    "symbol": "Function 'emitCutoutOps'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/segment.ts",
     "symbol": "Function 'adoptFragments'",
     "value": 16
