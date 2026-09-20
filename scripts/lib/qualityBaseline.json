@@ -667,12 +667,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/context/SelectionContext.tsx",
-    "symbol": "Function 'SelectionProvider'",
-    "value": 142
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/context/geometry/useRelowerSubscription.ts",
     "symbol": "Function 'useRelowerSubscription'",
     "value": 102
