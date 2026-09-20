@@ -555,29 +555,7 @@ function visualReviewFacts(
     );
   }
   if (visualReview.accepted) {
-    const missing: string[] = [];
-    if (visualReview.screenshotPath === undefined || visualReview.screenshotPath.trim() === '') {
-      missing.push('screenshotPath');
-    }
-    if (visualReview.findings.length === 0 || visualReview.findings.every((finding) => finding.trim() === '')) {
-      missing.push('findings');
-    }
-    if (visualReview.checks === undefined || visualReview.checks.length === 0) {
-      missing.push('visualReview.checks');
-    }
-    const checkResults = visualReview.checks ?? [];
-    const missingCheckCodes = requiredVisualReviewCheckCodes().filter((code) =>
-      !checkResults.some((check) => check.code === code),
-    );
-    if (missingCheckCodes.length > 0) {
-      missing.push(`checks for ${missingCheckCodes.join(', ')}`);
-    }
-    const checksMissingFindings = checkResults
-      .filter((check) => check.finding.trim() === '')
-      .map((check) => check.code);
-    if (checksMissingFindings.length > 0) {
-      missing.push(`check findings for ${checksMissingFindings.join(', ')}`);
-    }
+    const { missing, checkResults } = visualReviewMissingFields(visualReview);
     if (missing.length === 0) {
       const failedChecks = checkResults.filter((check) => !check.passed);
       const weakEvidence = checkResults.flatMap((check) => weakVisualCheckEvidence(check));
@@ -614,6 +592,35 @@ function visualReviewFacts(
     `Screenshot review rejected this attempt: ${visualReview.findings.join(' ')}`,
     'visual-review.rejected — redesign from the prompt or a mechanism primitive, render screenshots again, and only set accepted when the model is visually/mechanically legible.',
   );
+}
+
+function visualReviewMissingFields(
+  visualReview: DesignLoopVisualReview,
+): { missing: string[]; checkResults: DesignLoopVisualReviewCheck[] } {
+  const missing: string[] = [];
+  if (visualReview.screenshotPath === undefined || visualReview.screenshotPath.trim() === '') {
+    missing.push('screenshotPath');
+  }
+  if (visualReview.findings.length === 0 || visualReview.findings.every((finding) => finding.trim() === '')) {
+    missing.push('findings');
+  }
+  if (visualReview.checks === undefined || visualReview.checks.length === 0) {
+    missing.push('visualReview.checks');
+  }
+  const checkResults = visualReview.checks ?? [];
+  const missingCheckCodes = requiredVisualReviewCheckCodes().filter((code) =>
+    !checkResults.some((check) => check.code === code),
+  );
+  if (missingCheckCodes.length > 0) {
+    missing.push(`checks for ${missingCheckCodes.join(', ')}`);
+  }
+  const checksMissingFindings = checkResults
+    .filter((check) => check.finding.trim() === '')
+    .map((check) => check.code);
+  if (checksMissingFindings.length > 0) {
+    missing.push(`check findings for ${checksMissingFindings.join(', ')}`);
+  }
+  return { missing, checkResults };
 }
 
 function requiredVisualReviewCheckCodes(): readonly string[] {

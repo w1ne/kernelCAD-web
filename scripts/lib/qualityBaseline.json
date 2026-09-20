@@ -97,12 +97,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/designLoop.ts",
-    "symbol": "Function 'visualReviewFacts'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/diffGeometry.ts",
     "symbol": "Async function 'diffGeometryTool'",
     "value": 16
@@ -118,18 +112,6 @@
     "file": "src/agent/mcp/tools/drawingToCad.ts",
     "symbol": "Async function 'drawingToCadTool'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/tools/evaluateQuery.ts",
-    "symbol": "Async function 'evaluateQueryTool'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/tools/evaluateScript.ts",
-    "symbol": "Async function 'evaluateScriptTool'",
-    "value": 18
   },
   {
     "rule": "complexity",
@@ -178,18 +160,6 @@
     "file": "src/agent/reconstruct/emit.ts",
     "symbol": "Function 'emitOp'",
     "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/reconstruct/geom.ts",
-    "symbol": "Function 'fitCircle2D'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/reconstruct/planPhases/body.ts",
-    "symbol": "Function 'buildFaceBook'",
-    "value": 18
   },
   {
     "rule": "complexity",
