@@ -445,12 +445,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/fea/runFea.ts",
-    "symbol": "Function 'computeFeaSummary'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/import/contourAssembly.ts",
     "symbol": "Function 'chainLoops'",
     "value": 16
