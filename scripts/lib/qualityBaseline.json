@@ -571,12 +571,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/Dialogs/ProjectManagerDialog.tsx",
-    "symbol": "Function 'ProjectManagerDialog'",
-    "value": 142
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/Layout/Header.tsx",
     "symbol": "Function 'Header'",
     "value": 117
