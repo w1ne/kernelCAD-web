@@ -390,13 +390,14 @@ export function buildCurve3DFeatureSpec(args: Curve3DCaptureArgs): AuthoringFeat
   };
 }
 
-export function buildEmbossTextFeatureSpec(
-  parentFeatureId: FeatureId,
-  args: EmbossTextCaptureArgs,
-  faceInputRef: FeatureRef,
-): AuthoringFeatureSpec {
-  const diagnostics: CompilerDiagnostic[] = [];
+function isEmbossTextAnchorOutOfRange(anchor: Param): boolean {
+  return !(anchor.evaluated >= 0 && anchor.evaluated <= 1);
+}
 
+function validateEmbossTextFields(
+  args: EmbossTextCaptureArgs,
+  diagnostics: CompilerDiagnostic[],
+): { depthParam: Param; anchorUParam: Param; anchorVParam: Param } {
   if (typeof args.textContent !== 'string' || args.textContent.trim().length === 0) {
     diagnostics.push({
       target: 'export-occt',
@@ -420,9 +421,7 @@ export function buildEmbossTextFeatureSpec(
 
   const anchorUParam = toParam(args.anchorU ?? 0.5, 'unitless');
   const anchorVParam = toParam(args.anchorV ?? 0.5, 'unitless');
-  const outOfRangeU = !(anchorUParam.evaluated >= 0 && anchorUParam.evaluated <= 1);
-  const outOfRangeV = !(anchorVParam.evaluated >= 0 && anchorVParam.evaluated <= 1);
-  if (outOfRangeU || outOfRangeV) {
+  if (isEmbossTextAnchorOutOfRange(anchorUParam) || isEmbossTextAnchorOutOfRange(anchorVParam)) {
     diagnostics.push({
       target: 'export-occt',
       code: 'feature.face.invalid-uv-anchor',
@@ -431,6 +430,17 @@ export function buildEmbossTextFeatureSpec(
       hint: HINT_TEMPLATES['feature.face.invalid-uv-anchor'].template,
     });
   }
+
+  return { depthParam, anchorUParam, anchorVParam };
+}
+
+export function buildEmbossTextFeatureSpec(
+  parentFeatureId: FeatureId,
+  args: EmbossTextCaptureArgs,
+  faceInputRef: FeatureRef,
+): AuthoringFeatureSpec {
+  const diagnostics: CompilerDiagnostic[] = [];
+  const { depthParam, anchorUParam, anchorVParam } = validateEmbossTextFields(args, diagnostics);
 
   const faceRef =
     faceInputRef.kind === 'face'
