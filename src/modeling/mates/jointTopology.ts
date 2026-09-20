@@ -69,6 +69,29 @@ export function reviewJointTopology(arm: Assembly): JointTopologyReviewResult {
 
   const checkedMates = mates.filter((mate) => mate.type !== 'fastened');
 
+  collectMateTopologyDiagnostics(mates, partsByName, graph, movingParts, supportedRevoluteMates, diagnostics);
+
+  const stableRoots = collectStableRoots(arm, partsByName);
+  const reachableFromRoots = findReachableParts(stableRoots, graph);
+
+  collectFloatingMovingPartDiagnostics(movingParts, reachableFromRoots, stableRoots, diagnostics);
+  collectUseCaseLoadPathDiagnostics(arm, partsByName, graph, diagnostics);
+
+  return {
+    diagnostics,
+    checkedMateCount: checkedMates.length,
+    checkedMovingPartCount: movingParts.size,
+  };
+}
+
+function collectMateTopologyDiagnostics(
+  mates: readonly MateRecord[],
+  partsByName: ReadonlyMap<string, AssemblyPartStored>,
+  graph: Map<string, Set<string>>,
+  movingParts: Set<string>,
+  supportedRevoluteMates: ReadonlySet<string>,
+  diagnostics: JointTopologyDiagnostic[],
+): void {
   for (const mate of mates) {
     const a = parseEndpoint(mate.a, partsByName);
     const b = parseEndpoint(mate.b, partsByName);
@@ -88,10 +111,14 @@ export function reviewJointTopology(arm: Assembly): JointTopologyReviewResult {
     validateMateAxisAlignment(mate, a, b, diagnostics);
     validateMateContract(mate, supportedRevoluteMates, diagnostics);
   }
+}
 
-  const stableRoots = collectStableRoots(arm, partsByName);
-  const reachableFromRoots = findReachableParts(stableRoots, graph);
-
+function collectFloatingMovingPartDiagnostics(
+  movingParts: ReadonlySet<string>,
+  reachableFromRoots: ReadonlySet<string>,
+  stableRoots: ReadonlySet<string>,
+  diagnostics: JointTopologyDiagnostic[],
+): void {
   for (const partName of movingParts) {
     if (!reachableFromRoots.has(partName)) {
       diagnostics.push({
@@ -104,7 +131,14 @@ export function reviewJointTopology(arm: Assembly): JointTopologyReviewResult {
       });
     }
   }
+}
 
+function collectUseCaseLoadPathDiagnostics(
+  arm: Assembly,
+  partsByName: ReadonlyMap<string, AssemblyPartStored>,
+  graph: ReadonlyMap<string, ReadonlySet<string>>,
+  diagnostics: JointTopologyDiagnostic[],
+): void {
   for (const useCase of arm.__physicalUseCases()) {
     const useCaseStableParts = stableRootsForUseCase(useCase.stableParts, partsByName);
     const reachableForUseCase = findReachableParts(useCaseStableParts, graph);
@@ -125,12 +159,6 @@ export function reviewJointTopology(arm: Assembly): JointTopologyReviewResult {
       }
     }
   }
-
-  return {
-    diagnostics,
-    checkedMateCount: checkedMates.length,
-    checkedMovingPartCount: movingParts.size,
-  };
 }
 
 function parseEndpoint(ref: string, partsByName: ReadonlyMap<string, { readonly mateConnectors: readonly Connector[] }>): Partial<ParsedEndpoint> {

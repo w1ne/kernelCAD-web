@@ -403,12 +403,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/jointTopology.ts",
-    "symbol": "Function 'reviewJointTopology'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/jointVisualExposure.ts",
     "symbol": "Async function 'validateJointVisualExposure'",
     "value": 17
