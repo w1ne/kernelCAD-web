@@ -321,6 +321,45 @@ function resolveSketchStart(commands: SketchCommand[]): {
   return { closeIdx, startX, startY };
 }
 
+/** Validate `opts.rotationDeg` and apply the in-plane rotation, then locate
+ *  the loop bounds and path origin of the (possibly rotated) command list. */
+function prepareSketchCommands(
+  commands: SketchCommand[],
+  opts?: { rotationDeg?: number; rotationCenter?: [number, number] },
+): { cmds: SketchCommand[]; closeIdx: number; startX: number; startY: number } {
+  if (opts?.rotationDeg !== undefined && !Number.isFinite(opts.rotationDeg)) {
+    throw new Error(
+      `buildNurbsSketchOnPlane: opts.rotationDeg must be a finite number (got ${opts.rotationDeg}).`,
+    );
+  }
+  const cmds = opts?.rotationDeg !== undefined && opts.rotationDeg !== 0
+    ? rotateSketchCommands(commands, opts.rotationDeg, opts.rotationCenter)
+    : commands;
+  const { closeIdx, startX, startY } = resolveSketchStart(cmds);
+  return { cmds, closeIdx, startX, startY };
+}
+
+/** Compose all edges into a single closed wire, verifying none were dropped.
+ *  `replicad.assembleWire` accepts mixed `(Edge | Wire)[]` and orients
+ *  adjacent edges head-to-tail. NOTE: its post-Build Error() check is NOT a
+ *  reliable discontinuity gate — OCCT's MakeWire.Error() reflects only the
+ *  most recent Add, so a disconnected edge in the middle is silently skipped
+ *  whenever a later edge does connect. Verify nothing was dropped by edge
+ *  count. */
+function assembleNurbsWire(edges: replicad.Edge[]): replicad.Wire {
+  if (edges.length === 0) {
+    throw new Error('buildNurbsSketchOnPlane: produced zero edges (degenerate path).');
+  }
+  const wire = replicad.assembleWire(edges);
+  const assembled = wire.edges.length;
+  if (assembled !== edges.length) {
+    throw new Error(
+      `buildNurbsSketchOnPlane: wire assembly dropped ${edges.length - assembled} of ${edges.length} edges (disconnected path) — the profile would be silently wrong. Segments must chain head-to-tail with no gaps.`,
+    );
+  }
+  return wire;
+}
+
 /**
  * Lower a `SketchCommand[]` containing at least one NURBS segment into a
  * `replicad.Sketch` on the requested plane.
@@ -343,15 +382,7 @@ export function buildNurbsSketchOnPlane(
   plane: PlaneName,
   opts?: { origin?: Vec3; rotationDeg?: number; rotationCenter?: [number, number] },
 ): replicad.Sketch {
-  if (opts?.rotationDeg !== undefined && !Number.isFinite(opts.rotationDeg)) {
-    throw new Error(
-      `buildNurbsSketchOnPlane: opts.rotationDeg must be a finite number (got ${opts.rotationDeg}).`,
-    );
-  }
-  const cmds = opts?.rotationDeg !== undefined && opts.rotationDeg !== 0
-    ? rotateSketchCommands(commands, opts.rotationDeg, opts.rotationCenter)
-    : commands;
-  const { closeIdx, startX, startY } = resolveSketchStart(cmds);
+  const { cmds, closeIdx, startX, startY } = prepareSketchCommands(commands, opts);
   let currentX = startX;
   let currentY = startY;
 
@@ -507,23 +538,7 @@ export function buildNurbsSketchOnPlane(
   }
 
   closeLoop();
-  if (edges.length === 0) {
-    throw new Error('buildNurbsSketchOnPlane: produced zero edges (degenerate path).');
-  }
-
-  // Compose all edges into a single closed wire. `replicad.assembleWire`
-  // accepts mixed `(Edge | Wire)[]` and orients adjacent edges head-to-tail.
-  // NOTE: its post-Build Error() check is NOT a reliable discontinuity
-  // gate — OCCT's MakeWire.Error() reflects only the most recent Add, so a
-  // disconnected edge in the middle is silently skipped whenever a later
-  // edge does connect. Verify nothing was dropped by edge count.
-  const wire = replicad.assembleWire(edges);
-  const assembled = wire.edges.length;
-  if (assembled !== edges.length) {
-    throw new Error(
-      `buildNurbsSketchOnPlane: wire assembly dropped ${edges.length - assembled} of ${edges.length} edges (disconnected path) — the profile would be silently wrong. Segments must chain head-to-tail with no gaps.`,
-    );
-  }
+  const wire = assembleNurbsWire(edges);
 
   // Wrap as a `replicad.Sketch` on the target plane. `opts.origin` places the
   // wire at the plane's world position (the edge builders above lift relative

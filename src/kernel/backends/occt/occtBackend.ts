@@ -22,6 +22,14 @@ import { type PBRMaterial } from '../../../shared/intent/material';
 import { sceneToWorldFrameParts } from './sceneToWorldFrame';
 import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../properties/massProperties';
 import { KernelError } from '../../../shared/intent/kernelError';
+import {
+  resolveExtrudeTwistAngle,
+  extrudeLiftedShape,
+  extrudeRectShape,
+  extrudeCircleShape,
+  extrudePolygonShape,
+  extrudeRoundedRectShape,
+} from './backendExtrudeProfiles';
 
 export { initOcct, type InitOcctOptions } from './backendInit';
 export { meshShapeForExport } from './backendMesh';
@@ -30,37 +38,6 @@ type ReplicadEdge = replicad.Edge;
 type ReplicadFace = replicad.Face;
 
 type ReplicadShape3D = replicad.Shape3D;
-
-/** Resolve the optional `twistAngle` of an extrude call: absent means 0, a
- *  non-finite resolved value throws a typed `feature.invalid-args` (the same
- *  contract `extrudeFromSketch` has). */
-function resolveExtrudeTwistAngle(twistAngle: number | undefined, context: string): number {
-  const angle = twistAngle ?? 0;
-  if (!Number.isFinite(angle)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${context}: twistAngle must be a finite number.`,
-      undefined,
-      'twistAngle must resolve to a finite number — check the param expression and any division in it.',
-    );
-  }
-  return angle;
-}
-
-/** Lift a `replicad.Sketch` into a solid with an optional total twist. A zero
- *  angle takes the exact legacy straight-extrude call; a non-zero angle routes
- *  through replicad's twist extrude (profile rotates about the sketch origin
- *  through the sweep). */
-function extrudeLiftedSketch(
-  sketch: unknown,
-  depth: number,
-  angle: number,
-): OcctBackend {
-  const single = sketch as { extrude: (d: number, opts?: { twistAngle?: number }) => ReplicadShape3D };
-  return new OcctBackend(
-    angle === 0 ? single.extrude(depth) : single.extrude(depth, { twistAngle: angle }),
-  );
-}
 
 /**
  * `ShapeBackend` implementation backed by Replicad / OpenCascade.
@@ -173,10 +150,7 @@ export class OcctBackend implements ShapeBackend {
     height: number,
     opts: { twistAngle?: number } = {},
   ): OcctBackend {
-    if (!isOcctInitialized()) throw new Error('OCCT not initialized — call initOcct() first');
-    const angle = resolveExtrudeTwistAngle(opts.twistAngle, 'extrudeRect');
-    const sketch = replicad.drawRectangle(w, h).sketchOnPlane('XY');
-    return extrudeLiftedSketch(sketch, height, angle);
+    return new OcctBackend(extrudeRectShape(w, h, height, opts));
   }
 
   /**
@@ -195,10 +169,7 @@ export class OcctBackend implements ShapeBackend {
     height: number,
     opts: { twistAngle?: number } = {},
   ): OcctBackend {
-    if (!isOcctInitialized()) throw new Error('OCCT not initialized — call initOcct() first');
-    const angle = resolveExtrudeTwistAngle(opts.twistAngle, 'extrudeCircle');
-    const sketch = replicad.drawCircle(r).sketchOnPlane('XY');
-    return extrudeLiftedSketch(sketch, height, angle);
+    return new OcctBackend(extrudeCircleShape(r, height, opts));
   }
 
   /**
@@ -220,28 +191,7 @@ export class OcctBackend implements ShapeBackend {
     depth: number,
     opts: { twistAngle?: number } = {},
   ): OcctBackend {
-    if (!isOcctInitialized()) throw new Error('OCCT not initialized — call initOcct() first');
-    if (points.length < 3) {
-      throw new Error(`OcctBackend.extrudePolygon: need at least 3 points (got ${points.length})`);
-    }
-    if (depth <= 0) {
-      throw new Error(`OcctBackend.extrudePolygon: depth must be positive (got ${depth})`);
-    }
-    const angle = resolveExtrudeTwistAngle(opts.twistAngle, 'extrudePolygon');
-
-    const ccw = ensureCCW(points);
-
-    // Build a 2D drawing using replicad's DrawingPen API:
-    // draw(start).lineTo(p1)...lineTo(pn-1).close() returns a Drawing;
-    // sketchOnPlane('XY') promotes it to a Sketch; extrude lifts it to a
-    // 3D solid.
-    let pen = replicad.draw(ccw[0]);
-    for (let i = 1; i < ccw.length; i++) {
-      pen = pen.lineTo(ccw[i]) as typeof pen;
-    }
-    const drawing = pen.close();
-    const sketch = drawing.sketchOnPlane('XY');
-    return extrudeLiftedSketch(sketch, depth, angle);
+    return new OcctBackend(extrudePolygonShape(points, depth, opts));
   }
 
   /**
@@ -263,18 +213,7 @@ export class OcctBackend implements ShapeBackend {
     depth: number,
     opts: { twistAngle?: number } = {},
   ): OcctBackend {
-    if (depth <= 0) {
-      throw new Error(`OcctBackend.extrudeRoundedRect: depth must be positive (got ${depth})`);
-    }
-    const angle = resolveExtrudeTwistAngle(opts.twistAngle, 'extrudeRoundedRect');
-    // Replicad's drawRoundedRectangle requires r < min(width/2, height/2) when
-    // building symmetric arcs — at the exact maximum the hLine segment becomes
-    // zero-length and the tangentArc call fails. Cap at 99.99 % of the limit.
-    const maxR = Math.min(width / 2, height / 2);
-    const clamped = Math.min(Math.max(0, radius), maxR * 0.9999);
-    const drawing = replicad.drawRoundedRectangle(width, height, clamped);
-    const sketch = drawing.sketchOnPlane('XY');
-    return extrudeLiftedSketch(sketch, depth, angle);
+    return new OcctBackend(extrudeRoundedRectShape(width, height, radius, depth, opts));
   }
 
   /**
@@ -402,10 +341,10 @@ export class OcctBackend implements ShapeBackend {
       // NURBS path — build a fresh `replicad.Sketch` on XY from the captured
       // SketchCommand[], composing pen-run edges with direct-OCCT NURBS edges.
       const built = buildNurbsSketchOnPlane(sketch._commands, 'XY');
-      return extrudeLiftedSketch(built, depth, angle);
+      return new OcctBackend(extrudeLiftedShape(built, depth, angle));
     }
     const lifted = sketch._drawing!.sketchOnPlane('XY');
-    return extrudeLiftedSketch(lifted, depth, angle);
+    return new OcctBackend(extrudeLiftedShape(lifted, depth, angle));
   }
 
   /**
@@ -678,32 +617,7 @@ export class OcctBackend implements ShapeBackend {
         `OcctBackend.loftFromSketches: opts.twistCenter must be a pair of finite numbers (got [${cx}, ${cy}]).`,
       );
     }
-    const lifted: unknown[] = [];
-    for (let i = 0; i < sketches.length; i++) {
-      const s = sketches[i];
-      if (s.kind !== 'sketch' || (!s._drawing && !s._hasNurbs)) {
-        throw new Error(`OcctBackend.loftFromSketches: input ${i} is not a sketch.`);
-      }
-      const p = planes[i];
-      const rotationDeg = p.rotationDeg ?? 0;
-      if (!Number.isFinite(rotationDeg)) {
-        throw new Error(
-          `OcctBackend.loftFromSketches: planes[${i}].rotationDeg must be finite (got ${rotationDeg}).`,
-        );
-      }
-      if (s._hasNurbs && s._commands) {
-        lifted.push(buildNurbsSketchOnPlane(s._commands, p.plane, {
-          origin: p.origin,
-          rotationDeg,
-          rotationCenter: [cx, cy],
-        }));
-      } else {
-        const drawing = rotationDeg === 0 && cx === 0 && cy === 0
-          ? s._drawing!
-          : s._drawing!.rotate(rotationDeg, [cx, cy]);
-        lifted.push(drawing.sketchOnPlane(p.plane, p.origin as never));
-      }
-    }
+    const lifted = sketches.map((s, i) => OcctBackend.liftLoftSection(s, planes[i], cx, cy, i));
     // Replicad's Sketch.loftWith expects the receiver as the first section
     // and an array (or one) of "other" sections.
     const [first, ...rest] = lifted;
@@ -714,6 +628,38 @@ export class OcctBackend implements ShapeBackend {
     const lofted = (first as { loftWith: (others: unknown[], cfg: typeof loftConfig) => ReplicadShape3D })
       .loftWith(rest, loftConfig);
     return new OcctBackend(lofted);
+  }
+
+  /** Lift one loft section onto its target plane, applying the per-section
+   *  in-plane rotation (about the `twistCenter` passed as `cx`/`cy`). Returns
+   *  a `replicad.Sketch` for the `loftWith` chain. */
+  private static liftLoftSection(
+    s: OcctBackend,
+    p: { plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number]; rotationDeg?: number },
+    cx: number,
+    cy: number,
+    i: number,
+  ): unknown {
+    if (s.kind !== 'sketch' || (!s._drawing && !s._hasNurbs)) {
+      throw new Error(`OcctBackend.loftFromSketches: input ${i} is not a sketch.`);
+    }
+    const rotationDeg = p.rotationDeg ?? 0;
+    if (!Number.isFinite(rotationDeg)) {
+      throw new Error(
+        `OcctBackend.loftFromSketches: planes[${i}].rotationDeg must be finite (got ${rotationDeg}).`,
+      );
+    }
+    if (s._hasNurbs && s._commands) {
+      return buildNurbsSketchOnPlane(s._commands, p.plane, {
+        origin: p.origin,
+        rotationDeg,
+        rotationCenter: [cx, cy],
+      });
+    }
+    const drawing = rotationDeg === 0 && cx === 0 && cy === 0
+      ? s._drawing!
+      : s._drawing!.rotate(rotationDeg, [cx, cy]);
+    return drawing.sketchOnPlane(p.plane, p.origin as never);
   }
 
   /**
@@ -1499,20 +1445,4 @@ export function pbrFromMetadata(metadata: Record<string, unknown> | undefined): 
     return { baseColor: metadata.color };
   }
   return undefined;
-}
-
-/**
- * Ensure polygon points are in counter-clockwise winding order.
- * Uses the shoelace formula: positive signed area => CCW, negative => CW.
- * CW input is silently reversed.
- */
-function ensureCCW(points: [number, number][]): [number, number][] {
-  // Shoelace area: positive => CCW, negative => CW
-  let area2 = 0;
-  for (let i = 0; i < points.length; i++) {
-    const [x1, y1] = points[i];
-    const [x2, y2] = points[(i + 1) % points.length];
-    area2 += x1 * y2 - x2 * y1;
-  }
-  return area2 < 0 ? (points.slice().reverse() as [number, number][]) : points;
 }

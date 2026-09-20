@@ -433,6 +433,28 @@ function collectMateJoints(records: readonly FeatureRecord[]): JointInfo[] {
   return out;
 }
 
+/** v0.5 `assemblyJoint` records → `JointInfo` rows, resolving each input's
+ *  part name through the id → name map. */
+function collectAssemblyJointRows(
+  records: readonly FeatureRecord[],
+  partNameById: ReadonlyMap<string, string>,
+): JointInfo[] {
+  const out: JointInfo[] = [];
+  for (const r of records) {
+    if (r.kind !== 'assemblyJoint') continue;
+    const meta = r.metadata as { jointName?: string } | undefined;
+    const a = r.inputs.a, b = r.inputs.b;
+    const aId = a && 'id' in a ? a.id : undefined;
+    const bId = b && 'id' in b ? b.id : undefined;
+    out.push({
+      jointName: meta?.jointName ?? '<unnamed>',
+      aPartName: aId ? partNameById.get(aId) : undefined,
+      bPartName: bId ? partNameById.get(bId) : undefined,
+    });
+  }
+  return out;
+}
+
 /**
  * Collect the assembly's declared joints. v0.5 `assemblyJoint` records keep
  * the exact prior behavior; v0.6 mate-graph edges (metadata-only records) are
@@ -447,19 +469,7 @@ function collectJoints(records: readonly FeatureRecord[]): JointInfo[] {
     const meta = r.metadata as { partName?: string } | undefined;
     if (typeof meta?.partName === 'string') partNameById.set(r.id, meta.partName);
   }
-  const out: JointInfo[] = [];
-  for (const r of records) {
-    if (r.kind !== 'assemblyJoint') continue;
-    const meta = r.metadata as { jointName?: string } | undefined;
-    const a = r.inputs.a, b = r.inputs.b;
-    const aId = a && 'id' in a ? a.id : undefined;
-    const bId = b && 'id' in b ? b.id : undefined;
-    out.push({
-      jointName: meta?.jointName ?? '<unnamed>',
-      aPartName: aId ? partNameById.get(aId) : undefined,
-      bPartName: bId ? partNameById.get(bId) : undefined,
-    });
-  }
+  const out = collectAssemblyJointRows(records, partNameById);
   const seen = new Set(out.map((j) => j.jointName));
   for (const mateJoint of collectMateJoints(records)) {
     if (seen.has(mateJoint.jointName)) continue;

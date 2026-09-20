@@ -85,25 +85,7 @@ async function loftSketchSections(
   const railIds = readLoftRailIds(meta);
   if (!enforceLoftRailLimit(ctx, r, railIds)) return undefined;
   if (railIds.length > 0) {
-    // Rail-guided lofts follow the rails, so there is no place to apply a
-    // section rotation. Reject the combination loudly rather than silently
-    // producing an untwisted solid.
-    const hasSectionRotation =
-      twistDeg !== 0 || withTwist.some((p) => (p.rotationDeg ?? 0) !== 0);
-    if (hasSectionRotation) {
-      ctx.diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.invalid-args',
-        featureId: r.id,
-        severity: 'error',
-        message: `loft: rail-guided lofts do not support section rotation (twistDeg/rotationDeg); remove rails or rotation.`,
-        hint: 'Rail-guided lofts follow the rails — remove opts.rails to use twistDeg/rotationDeg, or drop the rotation.',
-      });
-      return undefined;
-    }
-    const railEdges = resolveLoftRails(ctx, r, railIds);
-    if (railEdges === undefined) return undefined;
-    return buildRailLoft(ctx, r, sketches, planes, railEdges);
+    return buildRailGuidedLoft(ctx, r, sketches, planes, railIds, twistDeg, withTwist);
   }
   if (isCollapsedPlaneStack(withTwist, meta)) {
     const e = emptyResultDiagnostic({
@@ -114,6 +96,36 @@ async function loftSketchSections(
     return undefined;
   }
   return buildLoftFromSketches(ctx, r, sketches, withTwist, ruled, meta);
+}
+
+/** Rail-guided path. Rails follow their own curves, so there is no place to
+ *  apply a section rotation — reject the combination loudly rather than
+ *  silently producing an untwisted solid. */
+async function buildRailGuidedLoft(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  sketches: OcctBackend[],
+  planes: LoftPlane[],
+  railIds: string[],
+  twistDeg: number,
+  withTwist: LoftPlane[],
+): Promise<ShapeBackend | undefined> {
+  const hasSectionRotation =
+    twistDeg !== 0 || withTwist.some((p) => (p.rotationDeg ?? 0) !== 0);
+  if (hasSectionRotation) {
+    ctx.diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.invalid-args',
+      featureId: r.id,
+      severity: 'error',
+      message: `loft: rail-guided lofts do not support section rotation (twistDeg/rotationDeg); remove rails or rotation.`,
+      hint: 'Rail-guided lofts follow the rails — remove opts.rails to use twistDeg/rotationDeg, or drop the rotation.',
+    });
+    return undefined;
+  }
+  const railEdges = resolveLoftRails(ctx, r, railIds);
+  if (railEdges === undefined) return undefined;
+  return buildRailLoft(ctx, r, sketches, planes, railEdges);
 }
 
 function readLoftRailIds(meta: LoftMeta | undefined): string[] {

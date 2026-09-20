@@ -421,12 +421,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/backends/occt/variableSweepLowerer.ts",
-    "symbol": "Function 'lowerVariableSweep'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/assemblyFeatureRecords.ts",
     "symbol": "Function 'validateSolvedAssemblyPoses'",
     "value": 18
@@ -849,7 +843,7 @@
     "rule": "max-lines-per-function",
     "file": "src/kernel/backends/occt/pathNurbsLowerer.ts",
     "symbol": "Function 'buildNurbsSketchOnPlane'",
-    "value": 143
+    "value": 136
   },
   {
     "rule": "max-lines-per-function",

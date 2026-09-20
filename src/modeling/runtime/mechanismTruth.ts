@@ -588,31 +588,8 @@ async function checkFastenedInvariant(
     // at ANY corner ⇒ the mate's FK output doesn't realize rigid
     // attachment under motion.
     const T_AB_local = T_A_rest.inverse().compose(T_B_rest);
-
-    let worstDriftMm = 0;
-    let worstSampleName = '';
-    let worstCornerIndex = -1;
-    for (const s of solved) {
-      if (s.sample.name === 'rest') continue;
-      const T_A = s.transforms.get(aPart);
-      const T_B = s.transforms.get(bPart);
-      if (T_A === undefined || T_B === undefined) continue;
-      const expected_B = T_A.compose(T_AB_local);
-      for (let i = 0; i < corners.length; i++) {
-        const observed = T_B.point(corners[i]);
-        const expected = expected_B.point(corners[i]);
-        const drift = Math.hypot(
-          observed[0] - expected[0],
-          observed[1] - expected[1],
-          observed[2] - expected[2],
-        );
-        if (drift > worstDriftMm) {
-          worstDriftMm = drift;
-          worstSampleName = s.sample.name;
-          worstCornerIndex = i;
-        }
-      }
-    }
+    const { worstDriftMm, worstSampleName, worstCornerIndex } =
+      worstFastenedDrift(aPart, bPart, T_AB_local, solved, corners);
 
     if (worstDriftMm > DISCONNECT_TOLERANCE_MM) {
       out.push(makeFailure(
@@ -629,6 +606,44 @@ async function checkFastenedInvariant(
   }
 
   return out;
+}
+
+/** Worst FK-rigidity drift of `bPart` relative to `aPart` across every
+ *  non-rest pose and every bbox corner. The fastened-mate invariant holds iff
+ *  this stays under `DISCONNECT_TOLERANCE_MM`; the returned sample name and
+ *  corner index pinpoint the offending corner for the diagnostic. */
+function worstFastenedDrift(
+  aPart: string,
+  bPart: string,
+  offset: Transform,
+  solved: readonly SolvedSample[],
+  corners: readonly Se3Vec3[],
+): { worstDriftMm: number; worstSampleName: string; worstCornerIndex: number } {
+  let worstDriftMm = 0;
+  let worstSampleName = '';
+  let worstCornerIndex = -1;
+  for (const s of solved) {
+    if (s.sample.name === 'rest') continue;
+    const T_A = s.transforms.get(aPart);
+    const T_B = s.transforms.get(bPart);
+    if (T_A === undefined || T_B === undefined) continue;
+    const expected_B = T_A.compose(offset);
+    for (let i = 0; i < corners.length; i++) {
+      const observed = T_B.point(corners[i]);
+      const expected = expected_B.point(corners[i]);
+      const drift = Math.hypot(
+        observed[0] - expected[0],
+        observed[1] - expected[1],
+        observed[2] - expected[2],
+      );
+      if (drift > worstDriftMm) {
+        worstDriftMm = drift;
+        worstSampleName = s.sample.name;
+        worstCornerIndex = i;
+      }
+    }
+  }
+  return { worstDriftMm, worstSampleName, worstCornerIndex };
 }
 
 /** 8 corners of an AABB, in the same x→y→z nesting order the old
