@@ -529,7 +529,7 @@ describe('generateCaseWithTools', () => {
 Run: `npx vitest run eval/lib/toolGenerate.test.ts`
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Add the transcript event type**
+- [ ] **Step 3: Add the transcript event type and a strict fence extractor**
 
 In `eval/types.ts`, extend `TranscriptEvent`:
 
@@ -537,7 +537,29 @@ In `eval/types.ts`, extend `TranscriptEvent`:
   | { kind: 'tool_call'; call: number; name: string; ok: boolean; diagnostics: string[] }
 ```
 
-In `eval/lib.ts` `renderTranscript`, add a branch beside the other event kinds:
+In `eval/lib.ts`, extract the fence-only logic and export it (keeps `extractScript`'s whole-text fallback for the repair path):
+
+```ts
+export function extractFencedScript(text: string): string | null {
+  if (!text) return null;
+  const fenceRegex = /```(\w*)\n([\s\S]*?)```/g;
+  let m: RegExpExecArray | null;
+  while ((m = fenceRegex.exec(text)) !== null) {
+    const lang = (m[1] ?? '').toLowerCase();
+    if (FENCED_LANGS.includes(lang)) {
+      return m[2].trim();
+    }
+  }
+  return null;
+}
+
+export function extractScript(text: string): string | null {
+  if (!text || !text.trim()) return null;
+  return extractFencedScript(text) ?? text.trim();
+}
+```
+
+In `renderTranscript`, add a branch beside the other event kinds:
 
 ```ts
     } else if (ev.kind === 'tool_call') {
@@ -558,7 +580,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import type { EvaluateResult, TranscriptEvent } from '../types';
 import { evaluateScript } from '../oracle/kernelcad-client';
-import { extractScript } from '../lib';
+import { extractFencedScript } from '../lib';
 import type { GenerateCaseResult } from '../runner';
 import { runToolLoop, type ToolChatClient, type ToolExecuteResult, type ToolSpec } from './toolLoop';
 
@@ -588,8 +610,13 @@ export const TOOL_PROTOCOL = [
 ].join('\n');
 
 export function pickArtifact(finalText: string, lastEvaluatedCode?: string): string | null {
-  return extractScript(finalText) ?? lastEvaluatedCode ?? null;
+  return extractFencedScript(finalText) ?? lastEvaluatedCode ?? null;
 }
+
+// Strictness matters: extractScript falls back to the whole reply, so a truncated
+// or prose reply would be written as the artifact. extractFencedScript accepts
+// only a properly closed fenced block; otherwise fall back to the last code the
+// model actually evaluated (verified), else no-script.
 
 export interface GenerateCaseWithToolsArgs {
   taskDir: string;
@@ -662,6 +689,21 @@ export async function generateCaseWithTools(args: GenerateCaseWithToolsArgs): Pr
       }
     },
   });
+
+  writeFileSync(
+    join(args.runDir, 'tool-loop.json'),
+    JSON.stringify(
+      {
+        toolCallCount: loop.toolCallCount,
+        stopReason: loop.stopReason,
+        finishReason: loop.finishReason,
+        tokensIn: loop.tokensIn,
+        tokensOut: loop.tokensOut,
+      },
+      null,
+      2,
+    ),
+  );
 
   const artifact = pickArtifact(loop.finalText, loop.lastEvaluatedCode);
   let finalEvaluate: Pick<EvaluateResult, 'ok' | 'diagnostics'>;
