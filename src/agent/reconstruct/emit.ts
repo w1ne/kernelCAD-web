@@ -194,73 +194,96 @@ function indentBlock(s: string, indent: string): string {
     .join('\n');
 }
 
+type HolesOp = Extract<Op, { kind: 'holes' }>;
+type CutoutOp = Extract<Op, { kind: 'cutout' }>;
+type SubtractCylinderOp = Extract<Op, { kind: 'subtractCylinder' }>;
+type FilletOp = Extract<Op, { kind: 'fillet' }>;
+type SubtractPrismOp = Extract<Op, { kind: 'subtractPrism' }>;
+
 function emitOp(op: Op): string {
   switch (op.kind) {
-    case 'holes': {
-      const depth = op.depth === 'through' ? `'through'` : op.depthParam ?? num(op.depth);
-      const cb = op.counterbore ? `,\n    counterbore: { diameter: ${op.counterbore.diameterParam}, depth: ${op.counterbore.depthParam} }` : '';
-      const where = op.positions.map((p) => `(${p.at.map(num).join(', ')})`).join(' ');
-      if (op.positions.length === 1) {
-        const p = op.positions[0];
-        return [
-          `  // ${op.name}: ${op.axis === 'Z' ? 'axial' : `cross (${op.axis})`} bore at ${where}; u/v are from the entry face centroid.`,
-          `  .hole(${faceQuery(op.face)}, {`,
-          `    u: ${num(p.u)},`,
-          `    v: ${num(p.v)},`,
-          `    diameter: ${op.diameterParam},`,
-          `    depth: ${depth}${cb},`,
-          `    name: '${op.name}',`,
-          '  })',
-        ].join('\n');
-      }
-      return [
-        `  // ${op.name}: ${op.positions.length} ${op.axis === 'Z' ? 'axial' : `cross (${op.axis})`} bores at ${where}; u/v are from the entry face centroid.`,
-        `  .holes(${faceQuery(op.face)}, {`,
-        '    positions: [',
-        ...op.positions.map((p) => `      { u: ${num(p.u)}, v: ${num(p.v)} },`),
-        '    ],',
-        `    diameter: ${op.diameterParam},`,
-        `    depth: ${depth}${cb},`,
-        `    name: '${op.name}',`,
-        '  })',
-      ].join('\n');
-    }
+    case 'holes':
+      return emitHolesOp(op);
     case 'cutout':
-      return [
-        `  // ${op.name}: pocket entering the face centred at (${op.at.map(num).join(', ')}); profile is face-centroid relative.`,
-        `  .cutout(`,
-        `    ${pathChain(op.prims, '      ')},`,
-        `    { face: ${faceQuery(op.face)}, depth: ${op.depthParam}, name: '${op.name}' },`,
-        '  )',
-      ].join('\n');
-    case 'subtractCylinder': {
-      const orient = op.axis === 'Z' ? '' : op.axis === 'X' ? '.rotate([0, 1, 0], 90)' : '.rotate([1, 0, 0], -90)';
-      return [
-        `  // ${op.name}: bore that no drilling feature can reach, cut as a boolean.`,
-        `  .subtract(cylinder(${num(op.length)}, ${num(op.radius)})${orient}.translate(${op.base.map(num).join(', ')}))`,
-      ].join('\n');
-    }
-    case 'fillet': {
-      const edgesTotal = op.groups.reduce((n, g) => n + g.edgeCount, 0);
-      const head = `  // Constant-radius edge blends measured on the mesh: ${edgesTotal} edge(s) in ${op.groups.length} radius group(s).`;
-      if (op.groups.length === 1 && op.groups[0].selectors.length === 1) {
-        const g = op.groups[0];
-        const sel = g.selectors[0];
-        return [head, sel === undefined ? `  .fillet(${g.radiusParam})` : `  .fillet(${g.radiusParam}, ${edgeQuery(sel)})`].join('\n');
-      }
-      const entries = op.groups.flatMap((g) => g.selectors.map((sel) => `    { edges: ${sel === undefined ? '{}' : edgeQuery(sel)}, radius: ${g.radiusParam} },`));
-      return [head, '  .fillet([', ...entries, '  ])'].join('\n');
-    }
+      return emitCutoutOp(op);
+    case 'subtractCylinder':
+      return emitSubtractCylinderOp(op);
+    case 'fillet':
+      return emitFilletOp(op);
     case 'subtractPrism':
-      return [
-        `  // ${op.name}: pocket whose opening is covered by material, cut as a boolean.`,
-        `  .subtract(`,
-        `    ${pathChain(op.prims, '      ')}`,
-        `      .extrude(${num(op.length)})`,
-        `      .translate(0, 0, ${num(op.z0)}),`,
-        '  )',
-      ].join('\n');
+      return emitSubtractPrismOp(op);
   }
+}
+
+function emitHolesOp(op: HolesOp): string {
+  const depth = op.depth === 'through' ? `'through'` : op.depthParam ?? num(op.depth);
+  const cb = op.counterbore ? `,\n    counterbore: { diameter: ${op.counterbore.diameterParam}, depth: ${op.counterbore.depthParam} }` : '';
+  const where = op.positions.map((p) => `(${p.at.map(num).join(', ')})`).join(' ');
+  if (op.positions.length === 1) {
+    const p = op.positions[0];
+    return [
+      `  // ${op.name}: ${op.axis === 'Z' ? 'axial' : `cross (${op.axis})`} bore at ${where}; u/v are from the entry face centroid.`,
+      `  .hole(${faceQuery(op.face)}, {`,
+      `    u: ${num(p.u)},`,
+      `    v: ${num(p.v)},`,
+      `    diameter: ${op.diameterParam},`,
+      `    depth: ${depth}${cb},`,
+      `    name: '${op.name}',`,
+      '  })',
+    ].join('\n');
+  }
+  return [
+    `  // ${op.name}: ${op.positions.length} ${op.axis === 'Z' ? 'axial' : `cross (${op.axis})`} bores at ${where}; u/v are from the entry face centroid.`,
+    `  .holes(${faceQuery(op.face)}, {`,
+    '    positions: [',
+    ...op.positions.map((p) => `      { u: ${num(p.u)}, v: ${num(p.v)} },`),
+    '    ],',
+    `    diameter: ${op.diameterParam},`,
+    `    depth: ${depth}${cb},`,
+    `    name: '${op.name}',`,
+    '  })',
+  ].join('\n');
+}
+
+function emitCutoutOp(op: CutoutOp): string {
+  return [
+    `  // ${op.name}: pocket entering the face centred at (${op.at.map(num).join(', ')}); profile is face-centroid relative.`,
+    `  .cutout(`,
+    `    ${pathChain(op.prims, '      ')},`,
+    `    { face: ${faceQuery(op.face)}, depth: ${op.depthParam}, name: '${op.name}' },`,
+    '  )',
+  ].join('\n');
+}
+
+function emitSubtractCylinderOp(op: SubtractCylinderOp): string {
+  const orient = op.axis === 'Z' ? '' : op.axis === 'X' ? '.rotate([0, 1, 0], 90)' : '.rotate([1, 0, 0], -90)';
+  return [
+    `  // ${op.name}: bore that no drilling feature can reach, cut as a boolean.`,
+    `  .subtract(cylinder(${num(op.length)}, ${num(op.radius)})${orient}.translate(${op.base.map(num).join(', ')}))`,
+  ].join('\n');
+}
+
+function emitFilletOp(op: FilletOp): string {
+  const edgesTotal = op.groups.reduce((n, g) => n + g.edgeCount, 0);
+  const head = `  // Constant-radius edge blends measured on the mesh: ${edgesTotal} edge(s) in ${op.groups.length} radius group(s).`;
+  if (op.groups.length === 1 && op.groups[0].selectors.length === 1) {
+    const g = op.groups[0];
+    const sel = g.selectors[0];
+    return [head, sel === undefined ? `  .fillet(${g.radiusParam})` : `  .fillet(${g.radiusParam}, ${edgeQuery(sel)})`].join('\n');
+  }
+  const entries = op.groups.flatMap((g) => g.selectors.map((sel) => `    { edges: ${sel === undefined ? '{}' : edgeQuery(sel)}, radius: ${g.radiusParam} },`));
+  return [head, '  .fillet([', ...entries, '  ])'].join('\n');
+}
+
+function emitSubtractPrismOp(op: SubtractPrismOp): string {
+  return [
+    `  // ${op.name}: pocket whose opening is covered by material, cut as a boolean.`,
+    `  .subtract(`,
+    `    ${pathChain(op.prims, '      ')}`,
+    `      .extrude(${num(op.length)})`,
+    `      .translate(0, 0, ${num(op.z0)}),`,
+    '  )',
+  ].join('\n');
 }
 
 function edgeQuery(q: EdgeQueryOut): string {

@@ -61,21 +61,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/edits/shapeDraft.ts",
-    "symbol": "Function 'shapeDraftEdit'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/diffGeometry.ts",
     "symbol": "Async function 'diffGeometryTool'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/tools/diffGeometry.ts",
-    "symbol": "Async function 'evaluateSide'",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -103,33 +91,15 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/repairScript.ts",
-    "symbol": "Async function 'repairScriptTool'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/reviewPaint.ts",
     "symbol": "Async function 'reviewPaintPeekLatestTool'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/solveMates.ts",
-    "symbol": "Async function 'solveMatesTool'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/analysis.ts",
     "symbol": "Function 'classifyRegions'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/reconstruct/emit.ts",
-    "symbol": "Function 'emitOp'",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -400,12 +370,6 @@
     "file": "src/agent/cli/commands/render.ts",
     "symbol": "Function 'renderCommand'",
     "value": 133
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/agent/mcp/tools/repairScript.ts",
-    "symbol": "Async function 'repairScriptTool'",
-    "value": 136
   },
   {
     "rule": "max-lines-per-function",
