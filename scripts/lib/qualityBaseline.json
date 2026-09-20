@@ -397,12 +397,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/runtime/dfm/fdmOrientation.ts",
-    "symbol": "Function 'analyzeBuildDirection'",
-    "value": 139
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/StudioShell.tsx",
     "symbol": "Function 'StudioShell'",
     "value": 140
