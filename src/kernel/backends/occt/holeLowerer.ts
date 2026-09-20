@@ -558,6 +558,118 @@ export function lowerHole(
   return runCutAndClassify(target, [built.tool], [built.bore], feature.id, feature.kind, meta?.name, meta?.ordinal, diagnostics);
 }
 
+// Slice-3: positions are stored as Array<{u: Param, v: Param}> so that any
+// symbolic ParamRef survives capture and gets pre-resolved at lower time.
+// Read .evaluated for the resolved numeric value (post-dispatcher pre-resolve).
+type PositionEntry = { u: { evaluated: number } | number; v: { evaluated: number } | number };
+
+interface HolePosition {
+  u: number;
+  v: number;
+}
+
+/** Thread, diameter, depth and sub-feature parameters shared by every bore in
+ *  a batch. Every `params.*.evaluated` read happens here, in the original
+ *  order. */
+interface HoleGeometryParams {
+  thread: ThreadParams | undefined;
+  nominalDiameter: number;
+  diameter: number;
+  through: boolean;
+  numericDepth: number | undefined;
+  counterbore: { diameter: number; depth: number } | undefined;
+  countersink: { diameter: number; angleDeg: number } | undefined;
+}
+
+function resolveHolePositions(feature: FeatureRecord): HolePosition[] {
+  const meta = feature.metadata as { positions?: PositionEntry[] } | undefined;
+  const rawPositions = meta?.positions ?? [];
+  return rawPositions.map((p) => ({
+    u: typeof p.u === 'number' ? p.u : p.u.evaluated,
+    v: typeof p.v === 'number' ? p.v : p.v.evaluated,
+  }));
+}
+
+function emptyPositionsDiagnostic(featureId: string): CompilerDiagnostic {
+  return {
+    target: 'export-occt',
+    code: 'feature.invalid-args',
+    featureId,
+    severity: 'error',
+    message: 'holes lowering: positions array is empty.',
+    hint: 'holes() requires at least one position.',
+  };
+}
+
+function resolveHoleGeometryParams(feature: FeatureRecord): HoleGeometryParams {
+  const thread = readThread(feature);
+  const nominalDiameter = feature.params.diameter.evaluated;
+  const diameter = drilledDiameter(nominalDiameter, thread);
+  const through = feature.params.depthMode?.expression === "'through'";
+  const numericDepth = feature.params.depth?.evaluated;
+  const counterbore = feature.params.counterboreDiameter
+    ? { diameter: feature.params.counterboreDiameter.evaluated, depth: feature.params.counterboreDepth.evaluated }
+    : undefined;
+  const countersink = feature.params.countersinkDiameter
+    ? { diameter: feature.params.countersinkDiameter.evaluated, angleDeg: feature.params.countersinkAngleDeg.evaluated }
+    : undefined;
+  return { thread, nominalDiameter, diameter, through, numericDepth, counterbore, countersink };
+}
+
+/** Through-bore depth, derived once for the whole batch. A non-through hole
+ *  needs none (depth 0). Returns the failing diagnostic instead of pushing it. */
+function resolveBatchThroughDepth(
+  target: OcctBackend,
+  entry: ResolvedEntry,
+  through: boolean,
+  diameter: number,
+  featureId: string,
+): { throughDepth: number } | { error: CompilerDiagnostic } {
+  if (!through) return { throughDepth: 0 };
+  const td = deriveThroughDepth(target, entry, diameter, featureId);
+  return typeof td === 'number' ? { throughDepth: td } : { error: td.error };
+}
+
+/** Build N tools, fuse into one compound for a single boolean cut. */
+function buildBatchTools(
+  entry: ResolvedEntry,
+  positions: readonly HolePosition[],
+  params: HoleGeometryParams,
+  throughDepth: number,
+  featureId: string,
+): { tools: replicad.Shape3D[]; bores: BoreFrame[] } | { error: CompilerDiagnostic } {
+  const tools: replicad.Shape3D[] = [];
+  const bores: BoreFrame[] = [];
+  try {
+    for (const p of positions) {
+      const built = buildOneTool(
+        entry, p.u, p.v, params.diameter, params.numericDepth, params.through, throughDepth,
+        params.counterbore, params.countersink,
+        params.thread ? { params: params.thread, nominalDiameter: params.nominalDiameter } : undefined,
+      );
+      tools.push(built.tool);
+      bores.push(built.bore);
+    }
+  } catch (e) {
+    return { error: toolBuildDiagnostic(e, featureId) };
+  }
+  return { tools, bores };
+}
+
+/** Fuse all tools into a single solid via sequential .fuse(). Tools carrying
+ *  a modeled thread groove skip replicad's face-unification pass (see
+ *  fuseUnsimplified); plain tools keep it exactly as before. */
+function fuseBatchTools(tools: replicad.Shape3D[], modeled: boolean | undefined): replicad.Shape3D {
+  let fused = tools[0];
+  for (let i = 1; i < tools.length; i++) {
+    fused = modeled
+      ? fuseUnsimplified(fused, tools[i])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      : (fused as any).fuse(tools[i]) as replicad.Shape3D;
+  }
+  return fused;
+}
+
 export function lowerHoles(
   feature: FeatureRecord,
   target: OcctBackend,
@@ -571,80 +683,30 @@ export function lowerHoles(
   }
   const entry = entryRes;
 
-  // Slice-3: positions are stored as Array<{u: Param, v: Param}> so that any
-  // symbolic ParamRef survives capture and gets pre-resolved at lower time.
-  // Read .evaluated for the resolved numeric value (post-dispatcher pre-resolve).
-  type PositionEntry = { u: { evaluated: number } | number; v: { evaluated: number } | number };
-  const meta = feature.metadata as { positions?: PositionEntry[] } | undefined;
-  const rawPositions = meta?.positions ?? [];
-  const positions = rawPositions.map((p) => ({
-    u: typeof p.u === 'number' ? p.u : p.u.evaluated,
-    v: typeof p.v === 'number' ? p.v : p.v.evaluated,
-  }));
+  const positions = resolveHolePositions(feature);
   if (positions.length === 0) {
-    diagnostics.push({
-      target: 'export-occt',
-      code: 'feature.invalid-args',
-      featureId: feature.id,
-      severity: 'error',
-      message: 'holes lowering: positions array is empty.',
-      hint: 'holes() requires at least one position.',
-    });
+    diagnostics.push(emptyPositionsDiagnostic(feature.id));
     return { backend: target, diagnostics };
   }
 
-  const thread = readThread(feature);
-  const nominalDiameter = feature.params.diameter.evaluated;
-  const diameter = drilledDiameter(nominalDiameter, thread);
-  const through = feature.params.depthMode?.expression === "'through'";
-  const numericDepth = feature.params.depth?.evaluated;
-  const counterbore = feature.params.counterboreDiameter
-    ? { diameter: feature.params.counterboreDiameter.evaluated, depth: feature.params.counterboreDepth.evaluated }
-    : undefined;
-  const countersink = feature.params.countersinkDiameter
-    ? { diameter: feature.params.countersinkDiameter.evaluated, angleDeg: feature.params.countersinkAngleDeg.evaluated }
-    : undefined;
+  const params = resolveHoleGeometryParams(feature);
 
-  let throughDepth = 0;
-  if (through) {
-    const td = deriveThroughDepth(target, entry, diameter, feature.id);
-    if (typeof td !== 'number') {
-      diagnostics.push(td.error);
-      return { backend: target, diagnostics };
-    }
-    throughDepth = td;
-  }
-
-  // Build N tools, fuse into one compound for a single boolean cut.
-  const tools: replicad.Shape3D[] = [];
-  const bores: BoreFrame[] = [];
-  try {
-    for (const p of positions) {
-      const built = buildOneTool(
-        entry, p.u, p.v, diameter, numericDepth, through, throughDepth, counterbore, countersink,
-        thread ? { params: thread, nominalDiameter } : undefined,
-      );
-      tools.push(built.tool);
-      bores.push(built.bore);
-    }
-  } catch (e) {
-    diagnostics.push(toolBuildDiagnostic(e, feature.id));
+  const depthRes = resolveBatchThroughDepth(target, entry, params.through, params.diameter, feature.id);
+  if ('error' in depthRes) {
+    diagnostics.push(depthRes.error);
     return { backend: target, diagnostics };
   }
 
-  // Fuse all tools into a single solid via sequential .fuse(). Tools carrying
-  // a modeled thread groove skip replicad's face-unification pass (see
-  // fuseUnsimplified); plain tools keep it exactly as before.
-  let fused = tools[0];
-  for (let i = 1; i < tools.length; i++) {
-    fused = thread?.modeled
-      ? fuseUnsimplified(fused, tools[i])
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      : (fused as any).fuse(tools[i]) as replicad.Shape3D;
+  const built = buildBatchTools(entry, positions, params, depthRes.throughDepth, feature.id);
+  if ('error' in built) {
+    diagnostics.push(built.error);
+    return { backend: target, diagnostics };
   }
+
+  const fused = fuseBatchTools(built.tools, params.thread?.modeled);
 
   const meta2 = feature.metadata as { name?: string; ordinal?: number } | undefined;
-  return runCutAndClassify(target, [fused], bores, feature.id, feature.kind, meta2?.name, meta2?.ordinal, diagnostics);
+  return runCutAndClassify(target, [fused], built.bores, feature.id, feature.kind, meta2?.name, meta2?.ordinal, diagnostics);
 }
 
 /** Map a tool-building failure (thread groove, countersink cone, sub-tool

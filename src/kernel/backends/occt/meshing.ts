@@ -365,20 +365,19 @@ export function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
   return tryExtractPlaneFromPlaneRecord(face, p);
 }
 
-function tryExtractCylinderFromFace(face: unknown): FaceGeometry['cylinder'] {
-  if (!isRecord(face)) return undefined;
+/** Does the face's own `geomType` string claim a cylinder? */
+function isCylinderGeomType(geomType: string): boolean {
+  const t = geomType.toUpperCase();
+  return t === 'CYLINDER' || t === 'CYLINDRICAL' || t === 'CYLINDRE';
+}
 
-  // Check geomType
-  const geomType = getString(face, 'geomType');
-
-  if (geomType) {
-    const t = geomType.toUpperCase();
-    if (t !== 'CYLINDER' && t !== 'CYLINDRICAL' && t !== 'CYLINDRE') {
-      return undefined;
-    }
-  }
-
-  // 1. Try OCJS direct extraction if available
+/** OCJS direct extraction, when the loaded OCCT has the adaptor. Returns
+ *  undefined when OCJS is unavailable, rejects the face, or the surface is
+ *  not a cylinder, so the caller can fall through to property extraction. */
+function tryExtractCylinderViaOcjs(
+  face: UnknownRecord,
+  geomType: string | null,
+): FaceGeometry['cylinder'] {
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const OC = getOC() as any;
@@ -423,47 +422,69 @@ function tryExtractCylinderFromFace(face: unknown): FaceGeometry['cylinder'] {
   } catch {
     // getOC() may throw if not initialized — fall through to property-based extraction
   }
+  return undefined;
+}
 
-  // Helper to extract cylinder data from a surface object
-  const extractFromSurface = (surf: unknown): FaceGeometry['cylinder'] | undefined => {
-    if (!isRecord(surf)) return undefined;
+// Helper to extract cylinder data from a surface object
+function cylinderFromSurfaceRecord(surf: unknown): FaceGeometry['cylinder'] | undefined {
+  if (!isRecord(surf)) return undefined;
 
-    const origin =
-      tryVec3((surf as UnknownRecord).origin) ??
-      tryVec3((surf as UnknownRecord).location);
+  const origin =
+    tryVec3((surf as UnknownRecord).origin) ??
+    tryVec3((surf as UnknownRecord).location);
 
-    const axis =
-      tryVec3((surf as UnknownRecord).axis) ??
-      tryVec3((surf as UnknownRecord).direction) ??
-      tryVec3((surf as UnknownRecord).zDir);
+  const axis =
+    tryVec3((surf as UnknownRecord).axis) ??
+    tryVec3((surf as UnknownRecord).direction) ??
+    tryVec3((surf as UnknownRecord).zDir);
 
-    const radius = (surf as UnknownRecord).radius;
+  const radius = (surf as UnknownRecord).radius;
 
-    if (origin && axis && typeof radius === 'number') {
-      return { origin, axis, radius };
-    }
-    return undefined;
-  };
+  if (origin && axis && typeof radius === 'number') {
+    return { origin, axis, radius };
+  }
+  return undefined;
+}
 
+/** Property-based fallback: try the face itself, then its `surface` or
+ *  Replicad `geom` sub-object. */
+function cylinderFromFaceProperties(face: UnknownRecord): FaceGeometry['cylinder'] {
   // 1. Try direct properties (if it's a surface)
-  const direct = extractFromSurface(face);
+  const direct = cylinderFromSurfaceRecord(face);
   if (direct) return direct;
 
   // 2. Try 'surface' property
-  const surface = (face as UnknownRecord).surface;
+  const surface = face.surface;
   if (surface) {
-    const fromSurf = extractFromSurface(surface);
+    const fromSurf = cylinderFromSurfaceRecord(surface);
     if (fromSurf) return fromSurf;
   }
 
   // 3. Try Replicad 'geom' property (sometimes found on faces)
-  const geom = (face as UnknownRecord).geom;
+  const geom = face.geom;
   if (geom) {
-    const fromGeom = extractFromSurface(geom);
+    const fromGeom = cylinderFromSurfaceRecord(geom);
     if (fromGeom) return fromGeom;
   }
 
   return undefined;
+}
+
+function tryExtractCylinderFromFace(face: unknown): FaceGeometry['cylinder'] {
+  if (!isRecord(face)) return undefined;
+
+  // Check geomType
+  const geomType = getString(face, 'geomType');
+
+  if (geomType && !isCylinderGeomType(geomType)) {
+    return undefined;
+  }
+
+  // 1. Try OCJS direct extraction if available
+  const viaOcjs = tryExtractCylinderViaOcjs(face, geomType);
+  if (viaOcjs) return viaOcjs;
+
+  return cylinderFromFaceProperties(face);
 }
 
 export function meshWireToSketch(

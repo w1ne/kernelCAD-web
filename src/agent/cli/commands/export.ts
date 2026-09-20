@@ -24,6 +24,7 @@ import {
   type ExportFormat,
   type ExportOptions,
   type ExportResult,
+  type PartStlExport,
 } from '../../script-runtime/export';
 import { formatHuman } from '../../../shared/diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -553,6 +554,44 @@ export interface ExportPartsCliResult {
   diagnostics: CompilerDiagnostic[];
 }
 
+function emptyPartsSelectionDiagnostic(input: ExportPartsCliInput): CompilerDiagnostic {
+  return {
+    target: 'export-occt', code: 'cli.invalid-args', severity: 'error',
+    message: input.parts !== undefined && input.parts.length === 0
+      ? 'No parts selected: the part selection is empty. Pass --part <name> (repeatable) or --parts all.'
+      : 'The script resolved to zero assembly parts; nothing to export.',
+    hint: 'Run `kernelcad parts <file>` to list the available part names.',
+  };
+}
+
+async function writeSelectedParts(
+  parts: readonly PartStlExport[],
+  singleFile: string | undefined,
+  input: ExportPartsCliInput,
+  diagnostics: CompilerDiagnostic[],
+): Promise<{ written: WrittenPart[]; failed: boolean }> {
+  const written: WrittenPart[] = [];
+  try {
+    let outDir: string | undefined;
+    if (singleFile === undefined) {
+      outDir = resolve(input.outDir ?? input.outFile ?? '.');
+      await mkdir(outDir, { recursive: true });
+    }
+    for (const p of parts) {
+      const path = singleFile ?? join(outDir!, `${p.fileSafeName}.stl`);
+      await writeFile(path, p.bytes);
+      written.push({ name: p.name, path, triangleCount: p.triangleCount, watertight: p.report.ok });
+      if (input.verify && !p.report.ok) {
+        diagnostics.push(stlNotWatertightDiagnostic(p.report, undefined, p.name));
+      }
+    }
+  } catch (e) {
+    diagnostics.push(fileWriteDiagnostic(e));
+    return { written, failed: true };
+  }
+  return { written, failed: false };
+}
+
 /**
  * Per-part STL export: run the script, resolve the returned Scene into
  * world-frame parts, write one binary STL per selected part. Files are
@@ -589,13 +628,7 @@ export async function exportPartsScript(input: ExportPartsCliInput): Promise<Exp
     // self-explanatory instead of a bare exit 1.
     return {
       exitCode: 1, written: [],
-      diagnostics: withNextActions([...result.diagnostics, {
-        target: 'export-occt', code: 'cli.invalid-args', severity: 'error',
-        message: input.parts !== undefined && input.parts.length === 0
-          ? 'No parts selected: the part selection is empty. Pass --part <name> (repeatable) or --parts all.'
-          : 'The script resolved to zero assembly parts; nothing to export.',
-        hint: 'Run `kernelcad parts <file>` to list the available part names.',
-      }]),
+      diagnostics: withNextActions([...result.diagnostics, emptyPartsSelectionDiagnostic(input)]),
     };
   }
 
@@ -605,24 +638,9 @@ export async function exportPartsScript(input: ExportPartsCliInput): Promise<Exp
     ? resolve(input.outFile)
     : undefined;
 
-  const written: WrittenPart[] = [];
   const diagnostics: CompilerDiagnostic[] = [...result.diagnostics];
-  try {
-    let outDir: string | undefined;
-    if (singleFile === undefined) {
-      outDir = resolve(input.outDir ?? input.outFile ?? '.');
-      await mkdir(outDir, { recursive: true });
-    }
-    for (const p of result.parts) {
-      const path = singleFile ?? join(outDir!, `${p.fileSafeName}.stl`);
-      await writeFile(path, p.bytes);
-      written.push({ name: p.name, path, triangleCount: p.triangleCount, watertight: p.report.ok });
-      if (input.verify && !p.report.ok) {
-        diagnostics.push(stlNotWatertightDiagnostic(p.report, undefined, p.name));
-      }
-    }
-  } catch (e) {
-    diagnostics.push(fileWriteDiagnostic(e));
+  const { written, failed } = await writeSelectedParts(result.parts, singleFile, input, diagnostics);
+  if (failed) {
     return { exitCode: 1, written, diagnostics: withNextActions(diagnostics) };
   }
   const gateFailed = input.verify && written.some(w => !w.watertight);

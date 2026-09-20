@@ -309,6 +309,16 @@ export async function fetchPartHost(
   idOrQuery: string,
   opts: FetchPartOpts,
 ): Promise<FetchPartResult> {
+  assertFetchPartInput(idOrQuery);
+  const catalog = loadCatalog();
+
+  const bundled = await resolveBundledPart(ctx, catalog, idOrQuery, opts);
+  if (bundled) return bundled;
+
+  return fetchRemotePart(ctx, idOrQuery, opts);
+}
+
+function assertFetchPartInput(idOrQuery: string): void {
   if (typeof idOrQuery !== 'string' || idOrQuery.length === 0) {
     throw new KernelError(
       'parts.input.id-or-query-required',
@@ -317,19 +327,20 @@ export async function fetchPartHost(
       'Pass either an `id` (for a known catalog record) or a `query` (for fuzzy search). Both are missing.',
     );
   }
-  const catalog = loadCatalog();
+}
 
-  // (1) Bundled id direct hit.
+/** (1) Bundled id direct hit, then (1b) bundled fuzzy query. */
+async function resolveBundledPart(
+  ctx: FetchPartCtx,
+  catalog: ReturnType<typeof loadCatalog>,
+  idOrQuery: string,
+  opts: FetchPartOpts,
+): Promise<FetchPartResult | null> {
   const direct = resolveById(catalog, idOrQuery);
   if (direct) {
-    const bytes = readFileSync(direct.stepPath);
-    const shape = await fromStepBytes(ctx, bytes, direct.stepPath);
-    attachManifestConnectorsFromSidecar(ctx, shape, direct.stepPath);
-    attachCatalogPartMetadata(ctx, shape, direct.record);
-    return { shape, record: direct.record };
+    return importBundledPart(ctx, direct.stepPath, direct.record);
   }
 
-  // (1b) Bundled fuzzy query — accept the single-match case unless strict=false.
   const matches = queryCatalog(catalog, idOrQuery, {
     ...(opts.category !== undefined ? { category: opts.category } : {}),
     ...(opts.family !== undefined ? { family: opts.family } : {}),
@@ -338,11 +349,7 @@ export async function fetchPartHost(
   });
   if (matches.length === 1) {
     const r = resolveById(catalog, matches[0].id)!;
-    const bytes = readFileSync(r.stepPath);
-    const shape = await fromStepBytes(ctx, bytes, r.stepPath);
-    attachManifestConnectorsFromSidecar(ctx, shape, r.stepPath);
-    attachCatalogPartMetadata(ctx, shape, r.record);
-    return { shape, record: r.record };
+    return importBundledPart(ctx, r.stepPath, r.record);
   }
   if (matches.length > 1 && opts.strict !== false) {
     throw new KernelError(
@@ -355,8 +362,27 @@ export async function fetchPartHost(
       'Use find_part to inspect matches, then fetch_part with the exact id.',
     );
   }
+  return null;
+}
 
-  // (2) Remote tier — opt-in.
+async function importBundledPart(
+  ctx: FetchPartCtx,
+  stepPath: string,
+  record: PartRecord,
+): Promise<FetchPartResult> {
+  const bytes = readFileSync(stepPath);
+  const shape = await fromStepBytes(ctx, bytes, stepPath);
+  attachManifestConnectorsFromSidecar(ctx, shape, stepPath);
+  attachCatalogPartMetadata(ctx, shape, record);
+  return { shape, record };
+}
+
+/** (2) Remote tier — opt-in. */
+async function fetchRemotePart(
+  ctx: FetchPartCtx,
+  idOrQuery: string,
+  opts: FetchPartOpts,
+): Promise<FetchPartResult> {
   try {
     const meta = await remoteFetchPartMeta({
       id: idOrQuery,

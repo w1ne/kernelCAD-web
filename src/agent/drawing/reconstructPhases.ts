@@ -431,6 +431,96 @@ export function buildProfileLoop(args: {
   return { loop, profileAxes, depth, maxRadius, extents };
 }
 
+interface HoleExtentContext {
+  span: [number, number] | null;
+  lo: Expr;
+  hi: Expr;
+  spanLo: Expr;
+  spanHi: Expr;
+  viewer: number;
+  through: boolean;
+  statedDepth: number | undefined;
+}
+
+function holeExtentContext(args: {
+  geometry: readonly ViewGeometry[];
+  g: ViewGeometry;
+  c: ViewCircle;
+  axis: ModelAxis;
+  axisLevels: Record<ModelAxis, AxisLevels>;
+  levelExpr: (axis: ModelAxis, m: number) => Expr;
+  depth: Expr | undefined;
+  tolModel: number;
+  mmPerUnit: number;
+}): HoleExtentContext {
+  const { geometry, g, c, axis, axisLevels, levelExpr, depth, tolModel, mmPerUnit } = args;
+  // Depth: hidden walls at centre ± r in a view that shows the hole axis.
+  const span = hiddenSpan(geometry, g, c, axis, tolModel);
+  const L = axisLevels[axis];
+  const lo = L.levels.length ? L.levels[L.min].expr! : num(0);
+  const hi = L.levels.length ? L.levels[L.max].expr! : depth ?? num(0);
+  const spanLo = span ? levelExpr(axis, span[0]) : lo;
+  const spanHi = span ? levelExpr(axis, span[1]) : hi;
+  const viewer = (c.hidden ? -1 : 1) * VIEWER_SIDE[g.view.name];
+  const through = c.callout?.parsed.through ?? false;
+  const statedDepth = c.callout?.parsed.depth !== undefined ? c.callout.parsed.depth * mmPerUnit : undefined;
+  return { span, lo, hi, spanLo, spanHi, viewer, through, statedDepth };
+}
+
+function resolveStatedDepthHoleExtent(args: {
+  c: ViewCircle;
+  name: string;
+  statedDepth: number;
+  viewer: number;
+  spanHi: Expr;
+  spanLo: Expr;
+  params: ParamRegistry;
+  facts: FactBook;
+}): { from: Expr; length: Expr; isThrough: boolean } {
+  const { c, name, statedDepth, viewer, spanHi, spanLo, params, facts } = args;
+  const dp = params.declare(`${name}Depth`, statedDepth, `blind hole depth — callout '${c.callout!.text.text}'`);
+  facts.push({ id: (dp as { name: string }).name, statement: `Blind depth ${statedDepth} mm stated by callout '${c.callout!.text.text}'.`, kind: 'visible', source: 'dimension', region: textRegion(c.callout!), value: statedDepth, confidence: 1 });
+  const entry = viewer > 0 ? spanHi : spanLo;
+  const from = viewer > 0 ? sub(entry, dp) : sub(entry, num(1));
+  const length = add(dp, num(1));
+  return { from, length, isThrough: false };
+}
+
+function resolveThroughHoleExtent(args: {
+  name: string;
+  axis: ModelAxis;
+  through: boolean;
+  span: [number, number] | null;
+  spanLo: Expr;
+  spanHi: Expr;
+  toScale: number;
+  facts: FactBook;
+}): { from: Expr; length: Expr; isThrough: boolean } {
+  const { name, axis, through, span, spanLo, spanHi, toScale, facts } = args;
+  const isThrough = through || !span;
+  const from = sub(spanLo, num(1));
+  const length = add(sub(spanHi, spanLo), num(2));
+  if (!through) {
+    facts.push(span
+      ? { id: `holeDepth:${name}`, statement: `Hole ${name} runs ${round2(spanHi.v - spanLo.v)} mm along ${axis.toUpperCase()}, from its hidden lines; no depth is lettered.`, kind: 'inferred', source: 'linework', value: round2(spanHi.v - spanLo.v), confidence: toScale, open: true }
+      : { id: `holeDepth:${name}`, statement: `Hole ${name} has no depth callout and no hidden lines; treated as through.`, kind: 'assumed', source: 'default', value: 'THRU', confidence: 0, open: true });
+  }
+  return { from, length, isThrough };
+}
+
+function resolveDefaultThroughHoleExtent(args: {
+  name: string;
+  lo: Expr;
+  hi: Expr;
+  facts: FactBook;
+}): { from: Expr; length: Expr; isThrough: boolean } {
+  const { name, lo, hi, facts } = args;
+  const from = sub(lo, num(1));
+  const length = add(sub(hi, lo), num(2));
+  facts.push({ id: `holeDepth:${name}`, statement: `Hole ${name} has no depth callout and no hidden lines in any view; treated as through the whole part.`, kind: 'assumed', source: 'default', value: 'THRU', confidence: 0, open: true });
+  return { from, length, isThrough: true };
+}
+
 export function buildHoles(args: {
   holeCircles: readonly ViewCircle[];
   geometry: readonly ViewGeometry[];
@@ -475,39 +565,14 @@ export function buildHoles(args: {
   }
 
   function resolveHoleExtent(c: ViewCircle, g: ViewGeometry, axis: ModelAxis, name: string): { from: Expr; length: Expr; isThrough: boolean } {
-    // Depth: hidden walls at centre ± r in a view that shows the hole axis.
-    const span = hiddenSpan(geometry, g, c, axis, tolModel);
-    const L = axisLevels[axis];
-    const lo = L.levels.length ? L.levels[L.min].expr! : num(0);
-    const hi = L.levels.length ? L.levels[L.max].expr! : depth ?? num(0);
-    const spanLo = span ? levelExpr(axis, span[0]) : lo;
-    const spanHi = span ? levelExpr(axis, span[1]) : hi;
-    const viewer = (c.hidden ? -1 : 1) * VIEWER_SIDE[g.view.name];
-    const through = c.callout?.parsed.through ?? false;
-    const statedDepth = c.callout?.parsed.depth !== undefined ? c.callout.parsed.depth * mmPerUnit : undefined;
-    let from: Expr, length: Expr, isThrough = false;
-    if (statedDepth !== undefined) {
-      const dp = params.declare(`${name}Depth`, statedDepth, `blind hole depth — callout '${c.callout!.text.text}'`);
-      facts.push({ id: (dp as { name: string }).name, statement: `Blind depth ${statedDepth} mm stated by callout '${c.callout!.text.text}'.`, kind: 'visible', source: 'dimension', region: textRegion(c.callout!), value: statedDepth, confidence: 1 });
-      const entry = viewer > 0 ? spanHi : spanLo;
-      from = viewer > 0 ? sub(entry, dp) : sub(entry, num(1));
-      length = add(dp, num(1));
-    } else if (through || span || kind === 'revolve') {
-      isThrough = through || !span;
-      from = sub(spanLo, num(1));
-      length = add(sub(spanHi, spanLo), num(2));
-      if (!through) {
-        facts.push(span
-          ? { id: `holeDepth:${name}`, statement: `Hole ${name} runs ${round2(spanHi.v - spanLo.v)} mm along ${axis.toUpperCase()}, from its hidden lines; no depth is lettered.`, kind: 'inferred', source: 'linework', value: round2(spanHi.v - spanLo.v), confidence: toScale, open: true }
-          : { id: `holeDepth:${name}`, statement: `Hole ${name} has no depth callout and no hidden lines; treated as through.`, kind: 'assumed', source: 'default', value: 'THRU', confidence: 0, open: true });
-      }
-    } else {
-      isThrough = true;
-      from = sub(lo, num(1));
-      length = add(sub(hi, lo), num(2));
-      facts.push({ id: `holeDepth:${name}`, statement: `Hole ${name} has no depth callout and no hidden lines in any view; treated as through the whole part.`, kind: 'assumed', source: 'default', value: 'THRU', confidence: 0, open: true });
+    const ctx = holeExtentContext({ geometry, g, c, axis, axisLevels, levelExpr, depth, tolModel, mmPerUnit });
+    if (ctx.statedDepth !== undefined) {
+      return resolveStatedDepthHoleExtent({ c, name, statedDepth: ctx.statedDepth, viewer: ctx.viewer, spanHi: ctx.spanHi, spanLo: ctx.spanLo, params, facts });
     }
-    return { from, length, isThrough };
+    if (ctx.through || ctx.span || kind === 'revolve') {
+      return resolveThroughHoleExtent({ name, axis, through: ctx.through, span: ctx.span, spanLo: ctx.spanLo, spanHi: ctx.spanHi, toScale, facts });
+    }
+    return resolveDefaultThroughHoleExtent({ name, lo: ctx.lo, hi: ctx.hi, facts });
   }
 
   holeCandidates.forEach((c, k) => {

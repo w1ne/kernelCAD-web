@@ -282,82 +282,107 @@ function buildSolidSegments(paths: ClassifiedPath[]): {
   return { solid, pathById, claim, tipOn };
 }
 
-function buildLinearDimensions(
+/** Unused dimension lettering parallel to the line a→b and sitting on it. */
+function findDimensionLabel(
+  a: Pt,
+  b: Pt,
+  lettering: Array<{ text: PositionedText; parsed: ParsedDimText | null }>,
+  usedText: Set<PositionedText>,
+): { text: PositionedText; parsed: ParsedDimText } | null {
+  const len = dist(a, b);
+  const dir = unit(a, b);
+  const mid: Pt = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  let best: { text: PositionedText; parsed: ParsedDimText; score: number } | null = null;
+  for (const { text, parsed } of lettering) {
+    if (!parsed || usedText.has(text) || parsed.kind === 'radius') continue;
+    if (Math.abs(dot(text.dir, dir)) < 0.98) continue;
+    const c = textCenter(text);
+    const perp = pointLine(c, a, b);
+    const along = Math.abs(dot([c[0] - mid[0], c[1] - mid[1]], dir));
+    if (perp > 1.6 * text.sizeMm + 0.5) continue;
+    if (along > len / 2 + text.widthMm / 2 + 3) continue;
+    const score = perp + 0.1 * along;
+    if (!best || score < best.score) best = { text, parsed, score };
+  }
+  return best;
+}
+
+/** Record a dimension measured tip to tip, finding its extension lines. */
+function addLinearDimension(
+  linearDims: LinearDimension[],
+  a: Pt,
+  b: Pt,
+  linePathIds: number[],
+  label: { text: PositionedText; parsed: ParsedDimText },
   solid: SolidSeg[],
   pathById: Map<number, ClassifiedPath>,
   claim: (pathId: number, cls: LineClass) => void,
+  usedText: Set<PositionedText>,
+): void {
+  usedText.add(label.text);
+  for (const id of linePathIds) claim(id, 'dimension');
+  const dir = unit(a, b);
+  // Extension lines are drawn with the dimension line's pen. Where stacked
+  // dimensions share a feature edge, several collinear extension lines pass
+  // through one tip; the one that belongs to THIS dimension is the one that
+  // ends (overshoots) right at its tip.
+  const penWidth = Math.max(...linePathIds.map(id => pathById.get(id)?.widthMm ?? 0));
+  const feet: [Pt, Pt] = [a, b];
+  [a, b].forEach((tip, k) => {
+    let chosen: SolidSeg | null = null;
+    let chosenOvershoot = Infinity;
+    for (const cand of solid) {
+      if ((pathById.get(cand.pathId)?.widthMm ?? 0) > penWidth + 0.01) continue;
+      const cl = dist(cand.a, cand.b);
+      if (cl < 0.5 || Math.abs(dot(unit(cand.a, cand.b), dir)) > 0.15) continue;
+      if (pointLine(tip, cand.a, cand.b) > 0.3) continue;
+      const { t } = pointSegment(tip, cand.a, cand.b);
+      const overshoot = Math.min(dist(tip, cand.a), dist(tip, cand.b));
+      if ((t <= 0 || t >= 1) && overshoot > 2.5) continue;
+      if (overshoot < chosenOvershoot) { chosen = cand; chosenOvershoot = overshoot; }
+    }
+    if (chosen) {
+      claim(chosen.pathId, 'extension');
+      feet[k] = pointLine(chosen.a, a, b) >= pointLine(chosen.b, a, b) ? chosen.a : chosen.b;
+    }
+  });
+  linearDims.push({ id: `dim${linearDims.length + 1}`, text: label.text, parsed: label.parsed, dir, tips: [a, b], feet, sheetLength: dist(a, b) });
+}
+
+// One line carrying an arrow tip at each end.
+function collectTipToTipDimensions(
+  solid: SolidSeg[],
+  arrows: Arrowhead[],
   tipOn: (seg: SolidSeg, arrow: Arrowhead, tol?: number) => boolean,
   lettering: Array<{ text: PositionedText; parsed: ParsedDimText | null }>,
   usedText: Set<PositionedText>,
-  arrows: Arrowhead[],
-): { linearDims: LinearDimension[]; dimArrowTips: Set<Arrowhead> } {
-  const linearDims: LinearDimension[] = [];
-
-  /** Unused dimension lettering parallel to the line a→b and sitting on it. */
-  const labelFor = (a: Pt, b: Pt): { text: PositionedText; parsed: ParsedDimText } | null => {
-    const len = dist(a, b);
-    const dir = unit(a, b);
-    const mid: Pt = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-    let best: { text: PositionedText; parsed: ParsedDimText; score: number } | null = null;
-    for (const { text, parsed } of lettering) {
-      if (!parsed || usedText.has(text) || parsed.kind === 'radius') continue;
-      if (Math.abs(dot(text.dir, dir)) < 0.98) continue;
-      const c = textCenter(text);
-      const perp = pointLine(c, a, b);
-      const along = Math.abs(dot([c[0] - mid[0], c[1] - mid[1]], dir));
-      if (perp > 1.6 * text.sizeMm + 0.5) continue;
-      if (along > len / 2 + text.widthMm / 2 + 3) continue;
-      const score = perp + 0.1 * along;
-      if (!best || score < best.score) best = { text, parsed, score };
-    }
-    return best;
-  };
-
-  /** Record a dimension measured tip to tip, finding its extension lines. */
-  const addLinear = (a: Pt, b: Pt, linePathIds: number[], label: { text: PositionedText; parsed: ParsedDimText }): void => {
-    usedText.add(label.text);
-    for (const id of linePathIds) claim(id, 'dimension');
-    const dir = unit(a, b);
-    // Extension lines are drawn with the dimension line's pen. Where stacked
-    // dimensions share a feature edge, several collinear extension lines pass
-    // through one tip; the one that belongs to THIS dimension is the one that
-    // ends (overshoots) right at its tip.
-    const penWidth = Math.max(...linePathIds.map(id => pathById.get(id)?.widthMm ?? 0));
-    const feet: [Pt, Pt] = [a, b];
-    [a, b].forEach((tip, k) => {
-      let chosen: SolidSeg | null = null;
-      let chosenOvershoot = Infinity;
-      for (const cand of solid) {
-        if ((pathById.get(cand.pathId)?.widthMm ?? 0) > penWidth + 0.01) continue;
-        const cl = dist(cand.a, cand.b);
-        if (cl < 0.5 || Math.abs(dot(unit(cand.a, cand.b), dir)) > 0.15) continue;
-        if (pointLine(tip, cand.a, cand.b) > 0.3) continue;
-        const { t } = pointSegment(tip, cand.a, cand.b);
-        const overshoot = Math.min(dist(tip, cand.a), dist(tip, cand.b));
-        if ((t <= 0 || t >= 1) && overshoot > 2.5) continue;
-        if (overshoot < chosenOvershoot) { chosen = cand; chosenOvershoot = overshoot; }
-      }
-      if (chosen) {
-        claim(chosen.pathId, 'extension');
-        feet[k] = pointLine(chosen.a, a, b) >= pointLine(chosen.b, a, b) ? chosen.a : chosen.b;
-      }
-    });
-    linearDims.push({ id: `dim${linearDims.length + 1}`, text: label.text, parsed: label.parsed, dir, tips: [a, b], feet, sheetLength: dist(a, b) });
-  };
-
-  // One line carrying an arrow tip at each end.
+  linearDims: LinearDimension[],
+  pathById: Map<number, ClassifiedPath>,
+  claim: (pathId: number, cls: LineClass) => void,
+): void {
   for (const seg of solid) {
     if (dist(seg.a, seg.b) < 0.5) continue;
     const atA = arrows.find(ar => dist(ar.tip, seg.a) <= 0.35 && tipOn(seg, ar));
     const atB = arrows.find(ar => dist(ar.tip, seg.b) <= 0.35 && tipOn(seg, ar));
     if (!atA || !atB || atA === atB) continue;
-    const label = labelFor(seg.a, seg.b);
-    if (label) addLinear(seg.a, seg.b, [seg.pathId], label);
+    const label = findDimensionLabel(seg.a, seg.b, lettering, usedText);
+    if (label) addLinearDimension(linearDims, seg.a, seg.b, [seg.pathId], label, solid, pathById, claim, usedText);
   }
+}
 
-  // A dimension line broken around its lettering (the usual ANSI style): two
-  // collinear lines, each ending in an arrow tip, the tips pointing apart or
-  // together along one line.
+// A dimension line broken around its lettering (the usual ANSI style): two
+// collinear lines, each ending in an arrow tip, the tips pointing apart or
+// together along one line.
+function collectBrokenLineDimensions(
+  solid: SolidSeg[],
+  arrows: Arrowhead[],
+  tipOn: (seg: SolidSeg, arrow: Arrowhead, tol?: number) => boolean,
+  lettering: Array<{ text: PositionedText; parsed: ParsedDimText | null }>,
+  usedText: Set<PositionedText>,
+  linearDims: LinearDimension[],
+  pathById: Map<number, ClassifiedPath>,
+  claim: (pathId: number, cls: LineClass) => void,
+): void {
   const tipTaken = (ar: Arrowhead) => linearDims.some(d => d.tips.some(t => dist(t, ar.tip) <= 0.35));
   const lineEndingAt = (ar: Arrowhead): SolidSeg | undefined =>
     solid.find(sg => dist(sg.a, sg.b) >= 0.5 && (dist(sg.a, ar.tip) <= 0.35 || dist(sg.b, ar.tip) <= 0.35) && tipOn(sg, ar) &&
@@ -370,16 +395,36 @@ function buildLinearDimensions(
       if (pointLine(q.tip, p.tip, [p.tip[0] + p.dir[0], p.tip[1] + p.dir[1]]) > 0.3) continue;
       const sp = lineEndingAt(p), sq = lineEndingAt(q);
       if (!sp || !sq || sp === sq) continue;
-      const label = labelFor(p.tip, q.tip);
-      if (label) addLinear(p.tip, q.tip, [sp.pathId, sq.pathId], label);
+      const label = findDimensionLabel(p.tip, q.tip, lettering, usedText);
+      if (label) addLinearDimension(linearDims, p.tip, q.tip, [sp.pathId, sq.pathId], label, solid, pathById, claim, usedText);
     }
   }
+}
+
+function collectDimensionArrowTips(linearDims: LinearDimension[], arrows: Arrowhead[]): Set<Arrowhead> {
   const dimArrowTips = new Set<Arrowhead>();
   for (const d of linearDims) {
     for (const ar of arrows) {
       if (d.tips.some(t => dist(t, ar.tip) <= 0.35)) dimArrowTips.add(ar);
     }
   }
+  return dimArrowTips;
+}
+
+function buildLinearDimensions(
+  solid: SolidSeg[],
+  pathById: Map<number, ClassifiedPath>,
+  claim: (pathId: number, cls: LineClass) => void,
+  tipOn: (seg: SolidSeg, arrow: Arrowhead, tol?: number) => boolean,
+  lettering: Array<{ text: PositionedText; parsed: ParsedDimText | null }>,
+  usedText: Set<PositionedText>,
+  arrows: Arrowhead[],
+): { linearDims: LinearDimension[]; dimArrowTips: Set<Arrowhead> } {
+  const linearDims: LinearDimension[] = [];
+
+  collectTipToTipDimensions(solid, arrows, tipOn, lettering, usedText, linearDims, pathById, claim);
+  collectBrokenLineDimensions(solid, arrows, tipOn, lettering, usedText, linearDims, pathById, claim);
+  const dimArrowTips = collectDimensionArrowTips(linearDims, arrows);
   return { linearDims, dimArrowTips };
 }
 
