@@ -289,38 +289,14 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/apiSurfaceMethods.ts",
-    "symbol": "Method 'variableSweep'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/backends/occt/lowerers/assembly.ts",
-    "symbol": "Function 'lowerAssemblyModel'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/backends/occt/lowerers/edgeFeatures.ts",
-    "symbol": "Function 'applyVariableEdgeFeature'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/backends/occt/projectCurveLowerer.ts",
     "symbol": "Async function 'lowerProjectCurve'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/backends/occt/variableSweepLowerer.ts",
-    "symbol": "Function 'lowerVariableSweep'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/assemblyMateCapacity.ts",
-    "symbol": "Function 'validateMateCapacityOptions'",
+    "file": "src/modeling/capture/assemblyParts.ts",
+    "symbol": "Function 'recordSubAssembly'",
     "value": 17
   },
   {
@@ -367,15 +343,39 @@
   },
   {
     "rule": "complexity",
+    "file": "src/modeling/capture/virtualFeatureRecords.ts",
+    "symbol": "Function 'buildRenderEnvironmentFeatureSpec'",
+    "value": 17
+  },
+  {
+    "rule": "complexity",
     "file": "src/modeling/compute/recomputeEngine.ts",
     "symbol": "Async method 'lowerAndEmit'",
     "value": 16
   },
   {
     "rule": "complexity",
+    "file": "src/modeling/export/sdformat/sdfSerializer.ts",
+    "symbol": "Function 'urdfInertialToSdf'",
+    "value": 17
+  },
+  {
+    "rule": "complexity",
     "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
     "symbol": "Async function 'buildLinkBlocks'",
     "value": 16
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/mates/jointAxisBinding.ts",
+    "symbol": "Async function 'validateJointAxisBindingWithCache'",
+    "value": 17
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/mates/jointTopology.ts",
+    "symbol": "Function 'reviewJointTopology'",
+    "value": 17
   },
   {
     "rule": "complexity",
@@ -664,12 +664,6 @@
     "file": "src/modeling/apiCaptureMethods.ts",
     "symbol": "Function 'makeCaptureMethods'",
     "value": 101
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/apiSurfaceMethods.ts",
-    "symbol": "Function 'makeSweepMethods'",
-    "value": 117
   },
   {
     "rule": "max-lines-per-function",
