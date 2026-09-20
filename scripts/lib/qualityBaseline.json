@@ -493,12 +493,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/planarUv.ts",
-    "symbol": "Function 'generatePlanarUVs'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/virtualFeatureRecords.ts",
     "symbol": "Function 'buildRenderEnvironmentFeatureSpec'",
     "value": 17
