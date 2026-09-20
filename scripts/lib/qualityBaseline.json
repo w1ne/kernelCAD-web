@@ -223,12 +223,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseStaticsPhases.ts",
-    "symbol": "Function 'resolveStaticLoads'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/runtime/dfm/minWall.ts",
     "symbol": "Function 'checkMinWall'",
     "value": 16

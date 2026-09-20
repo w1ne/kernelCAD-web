@@ -12,6 +12,7 @@ import { parseConnectorRef } from './mate';
 import type {
   PhysicalUseCaseActuatorLimit,
   PhysicalUseCaseContact,
+  PhysicalUseCaseLoad,
   PhysicalUseCaseRecord,
 } from './physicalUseCase';
 import type { PhysicalUseCasePoseWitness } from './physicalUseCaseReachability';
@@ -65,25 +66,13 @@ export function resolveStaticLoads(
 ): string | { readonly loads: ResolvedLoad[]; readonly referencePoint: Vec3 } {
   const loads: ResolvedLoad[] = [];
   for (const load of useCase.loads) {
-    if (load.force !== undefined && !isFiniteVec3(load.force)) {
-      return `Force load on '${heldPart}' must be a finite Vec3.`;
-    }
-    if (load.torque !== undefined && !isFiniteVec3(load.torque)) {
-      return `Torque load on '${heldPart}' must be a finite Vec3.`;
-    }
-    let point: Vec3 | undefined;
-    if (load.at !== undefined) {
-      const parsed = safeParseConnectorRef(load.at);
-      if (parsed?.partName !== heldPart) {
-        return `Load application connector '${load.at}' must belong to held part '${heldPart}'.`;
-      }
-      point = connectorWorldPoint(arm, witness.transforms, load.at);
-      if (point === undefined) {
-        return `Load application connector '${load.at}' could not be resolved at the sampled pose.`;
-      }
-    } else if (hasNonZeroVec(load.force)) {
-      return `Force load on '${heldPart}' requires load.at naming an application connector.`;
-    }
+    const vectorError = validateLoadVectors(load, heldPart);
+    if (vectorError !== undefined) return vectorError;
+
+    const pointCheck = resolveLoadPoint(arm, witness, load, heldPart);
+    if (typeof pointCheck === 'string') return pointCheck;
+    const point = pointCheck.point;
+
     loads.push({
       force: load.force === undefined ? [0, 0, 0] : copyVec(load.force),
       torque: load.torque === undefined ? [0, 0, 0] : copyVec(load.torque),
@@ -96,6 +85,43 @@ export function resolveStaticLoads(
     return `Held part '${heldPart}' requires at least one load with an explicit application connector.`;
   }
   return { loads, referencePoint };
+}
+
+/** Finite-vector checks for one declared load. */
+function validateLoadVectors(
+  load: PhysicalUseCaseLoad,
+  heldPart: string,
+): string | undefined {
+  if (load.force !== undefined && !isFiniteVec3(load.force)) {
+    return `Force load on '${heldPart}' must be a finite Vec3.`;
+  }
+  if (load.torque !== undefined && !isFiniteVec3(load.torque)) {
+    return `Torque load on '${heldPart}' must be a finite Vec3.`;
+  }
+  return undefined;
+}
+
+/** Resolve the optional `load.at` application point on the held part. */
+function resolveLoadPoint(
+  arm: Assembly,
+  witness: PhysicalUseCasePoseWitness,
+  load: PhysicalUseCaseLoad,
+  heldPart: string,
+): { readonly point: Vec3 | undefined } | string {
+  let point: Vec3 | undefined;
+  if (load.at !== undefined) {
+    const parsed = safeParseConnectorRef(load.at);
+    if (parsed?.partName !== heldPart) {
+      return `Load application connector '${load.at}' must belong to held part '${heldPart}'.`;
+    }
+    point = connectorWorldPoint(arm, witness.transforms, load.at);
+    if (point === undefined) {
+      return `Load application connector '${load.at}' could not be resolved at the sampled pose.`;
+    }
+  } else if (hasNonZeroVec(load.force)) {
+    return `Force load on '${heldPart}' requires load.at naming an application connector.`;
+  }
+  return { point };
 }
 
 export function resolveStaticContacts(
