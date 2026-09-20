@@ -15,7 +15,7 @@
 // `kc` alias and the async-return unwrapping all happen here exactly once.
 
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import type { ApiContext, KernelCadApi } from '../api';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { ParamTable } from '../../shared/runtime/paramTable';
 import { normalizeUserScript } from '../../shared/runtime/normalizeUserScript';
@@ -41,6 +41,15 @@ export interface TranspileOutput {
  *  rather than shipping a 3.4 MB compiler. */
 export type ScriptTranspiler = (source: string, fileName: string) => TranspileOutput;
 
+/**
+ * Builds the script-facing API for one evaluation. REQUIRED at the core so a
+ * caller can never silently evaluate a script against a partial surface: the
+ * composition layer owns the factory that attaches the cross-layer namespaces
+ * (`kc.kinematic.*`) and their wiring. Modeling's own facade passes
+ * `createApi`; the composition facade passes `createScriptApi`.
+ */
+export type ScriptApiFactory = (ctx: ApiContext) => KernelCadApi;
+
 export interface RunScriptCoreInput {
   code: string;
   fileName: string;
@@ -50,6 +59,8 @@ export interface RunScriptCoreInput {
   scriptDir?: string;
   runner: ScriptRunner;
   transpile: ScriptTranspiler;
+  /** Script-API construction — see `ScriptApiFactory`. Required. */
+  apiFactory: ScriptApiFactory;
   /** Displacement the chosen runner's `wrapReturn` prologue applies to
    *  call-site positions. Supplied by the facade that picked the runner;
    *  defaults to identity so a bare core call still runs. */
@@ -69,10 +80,10 @@ export interface RunScriptResult {
 }
 
 export async function runScriptCore(input: RunScriptCoreInput): Promise<RunScriptResult> {
-  const { code, fileName, scriptDir, runner, transpile, wrapOffset = NO_WRAP_OFFSET } = input;
+  const { code, fileName, scriptDir, runner, transpile, apiFactory, wrapOffset = NO_WRAP_OFFSET } = input;
   const session = new CaptureSession();
   session.scriptDir = scriptDir;
-  const api = createApi({ session, scriptDir });
+  const api = apiFactory({ session, scriptDir });
 
   // Agent-authored scripts are idiomatic ES modules: they end with
   // `export default <model>`, use `export const`, or carry top-level `import`s.

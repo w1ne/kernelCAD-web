@@ -12,7 +12,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { initOcct, OcctBackend } from '../src/kernel/backends/occt/occtBackend';
-import { runScript } from '../src/modeling/runtime/runScript';
+import { runScript } from '../src/composition/runScript';
 import { RecomputeEngine } from '../src/modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../src/modeling/backends/occt/occtLowerer';
 import { isKernelError } from '../src/shared/intent/kernelError';

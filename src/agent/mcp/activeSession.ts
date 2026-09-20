@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { CaptureSession } from '../../modeling/capture/captureSession';
-import { buildModel, buildModelFromFile } from '../../modeling/buildModel';
+import { buildModel, buildModelFromFile } from '../../composition/buildModel';
 
 export interface ScriptSourceInput {
   file?: string;

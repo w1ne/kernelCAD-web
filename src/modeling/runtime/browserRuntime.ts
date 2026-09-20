@@ -47,14 +47,16 @@
 
 import { REALM_WRAP_OFFSET, runInRealm } from './realmRunner';
 import { transpileBrowser } from './browserTranspile';
+import { createApi } from '../api';
 import {
   runScriptCore,
+  type ScriptApiFactory,
   type ScriptRunner,
   type ScriptTranspiler,
   type RunScriptResult,
 } from './runScriptCore';
 
-export type { ScriptRunner, ScriptTranspiler, RunScriptResult };
+export type { ScriptApiFactory, ScriptRunner, ScriptTranspiler, RunScriptResult };
 
 /**
  * Recommended wall-clock budget for a browser script run, matching the node
@@ -75,6 +77,10 @@ export interface RunScriptInBrowserInput {
   /** Override the transpiler. Pass `transpileTs` from './transpile' to opt into
    *  full TypeScript support at a measured 3.40 MB / 0.97 MB gzipped. */
   transpile?: ScriptTranspiler;
+  /** Script-API factory. Defaults to modeling's `createApi`; the composition
+   *  layer passes its browser `createScriptApi` (see
+   *  `src/composition/browserRuntime.ts`). */
+  apiFactory?: ScriptApiFactory;
 }
 
 /**
@@ -96,6 +102,7 @@ export async function runScriptInBrowser(
     scriptDir,
     runner = runInRealm,
     transpile = transpileBrowser,
+    apiFactory = createApi,
   } = input;
   return runScriptCore({
     code,
@@ -103,6 +110,7 @@ export async function runScriptInBrowser(
     scriptDir,
     runner,
     transpile,
+    apiFactory,
     // Only the default runner's prologue is known here; a caller-supplied
     // runner wraps differently, so report identity rather than a wrong offset.
     wrapOffset: runner === runInRealm ? REALM_WRAP_OFFSET : undefined,

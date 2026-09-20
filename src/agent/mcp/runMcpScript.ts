@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { kernelErrorToDiagnostic } from '../script-runtime/kernelErrorToDiagnostic';
-import { runScript, type RunScriptResult } from '../../modeling/runtime/runScript';
+import { runScript, type RunScriptResult } from '../../composition/runScript';
 import { FILE_READ_CODE, fileReadErrorMessage } from '../../shared/diagnostics/fileReadError';
 
 export interface McpScriptInput {

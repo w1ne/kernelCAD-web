@@ -21,7 +21,7 @@ import { detectCylindricalHoles } from '../../../kernel/backends/occt/holeDetect
 import { isSameEdge, toEdgeSegment } from '../../../kernel/backends/occt/edgeQueries';
 import type { Edge, Face } from 'replicad';
 import type { SharpEdge } from '../../reconstruct/blends';
-import { resolveRootId } from '../../../modeling/buildModel';
+import { resolveRootId } from '../../../composition/buildModel';
 import { withNextActions, type CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
 import { FILE_READ_CODE, fileReadErrorMessage } from '../../../shared/diagnostics/fileReadError';

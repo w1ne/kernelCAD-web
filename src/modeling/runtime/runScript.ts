@@ -22,9 +22,15 @@ import '../../shared/runtime/kernelcadVersionNode';
 
 import { transpileTs } from './transpile';
 import { ISOLATION_WRAP_OFFSET, runIsolated } from './isolation';
-import { runScriptCore, type ScriptRunner, type RunScriptResult } from './runScriptCore';
+import { createApi } from '../api';
+import {
+  runScriptCore,
+  type ScriptApiFactory,
+  type ScriptRunner,
+  type RunScriptResult,
+} from './runScriptCore';
 
-export type { ScriptRunner, RunScriptResult };
+export type { ScriptApiFactory, ScriptRunner, RunScriptResult };
 
 export interface RunScriptInput {
   code: string;
@@ -37,6 +43,13 @@ export interface RunScriptInput {
   runner?: ScriptRunner;
 }
 
+export interface RunScriptFacadeOptions {
+  /** Script-API factory. Defaults to modeling's `createApi`; the composition
+   *  layer passes `createScriptApi` so cross-layer namespaces (`kc.kinematic`)
+   *  are wired. See `src/composition/runScript.ts` — the supported entry. */
+  apiFactory?: ScriptApiFactory;
+}
+
 /**
  * Execute a `.kcad.ts` user script end-to-end:
  *   1. transpile TypeScript → ES2022 JavaScript,
@@ -47,8 +60,14 @@ export interface RunScriptInput {
  *
  * The script's top-level `return` is captured via `wrapReturn` — the script
  * body is wrapped in an IIFE inside the sandbox.
+ *
+ * Low-level modeling primitive. Prefer `src/composition/runScript.ts` — it
+ * passes the composed API factory.
  */
-export async function runScript(input: RunScriptInput): Promise<RunScriptResult> {
+export async function runScript(
+  input: RunScriptInput,
+  opts?: RunScriptFacadeOptions,
+): Promise<RunScriptResult> {
   const { code, fileName, scriptDir, runner = runIsolated } = input;
   return runScriptCore({
     code,
@@ -56,6 +75,7 @@ export async function runScript(input: RunScriptInput): Promise<RunScriptResult>
     scriptDir,
     runner,
     transpile: transpileTs,
+    apiFactory: opts?.apiFactory ?? createApi,
     // Only the default runner's prologue is known here; a caller-supplied
     // runner wraps differently, so report identity rather than a wrong offset.
     wrapOffset: runner === runIsolated ? ISOLATION_WRAP_OFFSET : undefined,

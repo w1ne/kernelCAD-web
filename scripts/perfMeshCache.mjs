@@ -1,6 +1,6 @@
 import { performance } from 'node:perf_hooks';
 import { readFileSync } from 'node:fs';
-import { buildModel, updateModelParams } from '../src/modeling/buildModel.ts';
+import { buildModel, updateModelParams } from '../src/composition/buildModel.ts';
 import { meshFeaturesPerFeature } from '../src/modeling/capture/featureMeshing.ts';
 
 const file = 'examples/gallery/gearfinity-planetary-stage.kcad.ts';

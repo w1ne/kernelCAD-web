@@ -7,7 +7,7 @@
 // sheetMetal thickness + kFactor.
 
 import { readFileSync } from 'node:fs';
-import { runScript } from '../../../modeling/runtime/runScript';
+import { runScript } from '../../../composition/runScript';
 import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { computeBendAllowance } from '../../../modeling/sheetMetal';

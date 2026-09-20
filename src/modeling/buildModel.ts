@@ -11,7 +11,7 @@ import type { FeatureRecord } from '../shared/intent/featureRecord';
 import type { FeatureId } from '../shared/intent/types';
 import type { CaptureSession } from './capture/captureSession';
 import type { SoftWarning } from '../shared/runtime/softWarning';
-import { runScript } from './runtime/runScript';
+import { runScript, type RunScriptFacadeOptions } from './runtime/runScript';
 import { Shape } from './capture/proxy';
 import { Scene } from './validation/scene';
 import { computePrefixReuse, type RecordHealth } from './compute/prefixReuse';
@@ -84,9 +84,12 @@ export interface BuiltModelParamUpdate {
   result: BuiltModelParamUpdateResult;
 }
 
-export async function buildModel(input: BuildModelInput): Promise<BuiltModel> {
+export async function buildModel(
+  input: BuildModelInput,
+  opts?: RunScriptFacadeOptions,
+): Promise<BuiltModel> {
   await initOcct();
-  const run = await runScript(input);
+  const run = await runScript(input, opts);
   const session = run.session;
   // Slice 2E: attach a per-session engine so `params.update` reuses it and
   // `onRelower` subscriptions added after the initial build still fire.
@@ -127,6 +130,7 @@ export async function buildModel(input: BuildModelInput): Promise<BuiltModel> {
 export async function rebuildModelIncremental(
   prevModel: BuiltModel,
   input: BuildModelInput,
+  opts?: RunScriptFacadeOptions,
 ): Promise<BuiltModel> {
   await initOcct();
 
@@ -135,9 +139,9 @@ export async function rebuildModelIncremental(
   //    script throws, fall back — `buildModel` reproduces the same failure path.
   let run;
   try {
-    run = await runScript(input);
+    run = await runScript(input, opts);
   } catch {
-    return buildModel(input);
+    return buildModel(input, opts);
   }
   const session = run.session;
 
@@ -158,7 +162,7 @@ export async function rebuildModelIncremental(
     // discarded; `buildModel` re-runs the script in a fresh session. Re-running
     // is acceptable: capture is cheap and re-running guarantees the fallback is
     // byte-identical to the normal build path (no half-seeded state leaks).
-    return buildModel(input);
+    return buildModel(input, opts);
   }
 
   // 3. Seed the engine with the previous build's cached prefix shapes and lower
@@ -169,7 +173,7 @@ export async function rebuildModelIncremental(
     // Defensive: computePrefixReuse already verified presence, but a missing
     // entry here would mean lowering a record whose upstream shape we promised
     // to seed — fall back rather than risk it.
-    if (!cached) return buildModel(input);
+    if (!cached) return buildModel(input, opts);
     seedShapes.set(id, cached);
   }
 
@@ -225,11 +229,14 @@ function assembleBuiltModel(
   };
 }
 
-export async function buildModelFromFile(input: BuildModelFromFileInput): Promise<BuiltModel> {
+export async function buildModelFromFile(
+  input: BuildModelFromFileInput,
+  opts?: RunScriptFacadeOptions,
+): Promise<BuiltModel> {
   const fileName = resolve(input.file);
   const code = await readFile(fileName, 'utf8');
   const { dirname } = await import('node:path');
-  return buildModel({ code, fileName, scriptDir: dirname(fileName) });
+  return buildModel({ code, fileName, scriptDir: dirname(fileName) }, opts);
 }
 
 /**

@@ -9,7 +9,7 @@
 // authoring/, so the wrapper sits one tier up while the pure routine
 // stays in modeling/.
 
-import { runScript } from '../../modeling/runtime/runScript';
+import { runScript } from '../../composition/runScript';
 import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';

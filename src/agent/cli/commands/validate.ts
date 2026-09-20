@@ -26,8 +26,8 @@ import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { initOcct } from '../../../kernel/backends/occt/occtBackend';
 import type { Assembly } from '../../../modeling/capture/assembly';
-import { buildModelFromFile } from '../../../modeling/buildModel';
-import { runScript } from '../../../modeling/runtime/runScript';
+import { buildModelFromFile } from '../../../composition/buildModel';
+import { runScript } from '../../../composition/runScript';
 import { checkInterference } from '../../script-runtime/checkInterference';
 import { validateAssembly, type ValidatorResult } from '../../../modeling/mates/validator';
 import {

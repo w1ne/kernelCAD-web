@@ -1,5 +1,5 @@
 import { performance } from 'node:perf_hooks';
-import { buildModel, updateModelParams } from '../src/modeling/buildModel.ts';
+import { buildModel, updateModelParams } from '../src/composition/buildModel.ts';
 import { readFileSync } from 'node:fs';
 
 const file = 'examples/gallery/gearfinity-planetary-stage.kcad.ts';

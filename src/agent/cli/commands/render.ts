@@ -26,7 +26,7 @@ import {
   type HeadlessRenderResult,
 } from '../../render/headlessRender';
 import { resolveRenderBaseUrl } from '../../render/playerServer';
-import { buildModelFromFile } from '../../../modeling/buildModel';
+import { buildModelFromFile } from '../../../composition/buildModel';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';

@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { evaluateScript } from '../../oracle/kernelcad-client';
 import type { HarnessResult } from '../../types';
-import { runScript } from '../../../src/modeling/runtime/runScript';
+import { runScript } from '../../../src/composition/runScript';
 
 export default async function harness(scriptPath: string): Promise<HarnessResult> {
   const ev = await evaluateScript(scriptPath);
