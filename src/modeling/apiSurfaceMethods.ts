@@ -224,53 +224,12 @@ export function makeSweepMethods(
 ): Pick<KernelCadApi, 'variableSweep' | 'surfaceFromBoundary' | 'sew'> {
   return {
     variableSweep(spine, sections, opts) {
-      // Resolve spine to a FeatureId. Accepts: Curve3D, Sketch, or Vec3[].
-      let spineId: import('../shared/intent/types').FeatureId;
-      if (Array.isArray(spine)) {
-        // Auto-convert Vec3[] to a nurbsCurve.
-        if (spine.length < 2) {
-          throw new KernelError(
-            'feature.invalid-args',
-            `variableSweep: spine Vec3[] needs at least 2 points; got ${spine.length}.`,
-            undefined,
-            'invalid-args.variableSweep.spine — pass at least 2 points or a Curve3D.',
-          );
-        }
-        const curve = session.addCurve3D({
-          metadata: {
-            controlPoints: spine,
-            degree: Math.min(3, spine.length - 1),
-            closed: false,
-          },
-        });
-        spineId = curve.id;
-      } else if (typeof spine === 'object' && spine !== null && 'sample' in spine) {
-        // Curve3D
-        spineId = (spine as Curve3D).id;
-      } else if (typeof spine === 'object' && spine !== null && 'id' in spine) {
-        // Sketch (handled by the lowerer via its lifted wire).
-        spineId = (spine as Sketch).id;
-      } else {
-        throw new KernelError(
-          'feature.invalid-args',
-          `variableSweep: spine must be a Curve3D, Sketch, or Vec3[]; got ${typeof spine}.`,
-          undefined,
-          'invalid-args.variableSweep.spine — pass a Curve3D (nurbsCurve/spline3d), a Sketch (path().…close()), or a Vec3[].',
-        );
-      }
-
-      if (!Array.isArray(sections) || sections.length < 2) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `variableSweep: need at least 2 sections; got ${sections?.length ?? 0}.`,
-          undefined,
-          'invalid-args.variableSweep.sections — pass at least 2 { t, profile } sections.',
-        );
-      }
+      const spineId = resolveVariableSweepSpineId(session, spine);
+      const sweepSections = requireVariableSweepSections(sections);
 
       const sweepId = session.addVariableSweep({
         spineId,
-        sections: sections.map((s) => ({ t: s.t, profileId: s.profile.id })),
+        sections: sweepSections.map((s) => ({ t: s.t, profileId: s.profile.id })),
         ...(opts?.closed !== undefined ? { closed: opts.closed } : {}),
         ...(opts?.continuity !== undefined ? { continuity: opts.continuity } : {}),
       });
@@ -351,4 +310,58 @@ export function makeSweepMethods(
       });
     },
   };
+}
+
+// Resolve spine to a FeatureId. Accepts: Curve3D, Sketch, or Vec3[].
+function resolveVariableSweepSpineId(
+  session: CaptureSession,
+  spine: Curve3D | Sketch | Vec3[],
+): import('../shared/intent/types').FeatureId {
+  if (Array.isArray(spine)) {
+    // Auto-convert Vec3[] to a nurbsCurve.
+    if (spine.length < 2) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `variableSweep: spine Vec3[] needs at least 2 points; got ${spine.length}.`,
+        undefined,
+        'invalid-args.variableSweep.spine — pass at least 2 points or a Curve3D.',
+      );
+    }
+    const curve = session.addCurve3D({
+      metadata: {
+        controlPoints: spine,
+        degree: Math.min(3, spine.length - 1),
+        closed: false,
+      },
+    });
+    return curve.id;
+  }
+  if (typeof spine === 'object' && spine !== null && 'sample' in spine) {
+    // Curve3D
+    return (spine as Curve3D).id;
+  }
+  if (typeof spine === 'object' && spine !== null && 'id' in spine) {
+    // Sketch (handled by the lowerer via its lifted wire).
+    return (spine as Sketch).id;
+  }
+  throw new KernelError(
+    'feature.invalid-args',
+    `variableSweep: spine must be a Curve3D, Sketch, or Vec3[]; got ${typeof spine}.`,
+    undefined,
+    'invalid-args.variableSweep.spine — pass a Curve3D (nurbsCurve/spline3d), a Sketch (path().…close()), or a Vec3[].',
+  );
+}
+
+function requireVariableSweepSections(
+  sections: Array<{ t: number; profile: Sketch }>,
+): Array<{ t: number; profile: Sketch }> {
+  if (!Array.isArray(sections) || sections.length < 2) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `variableSweep: need at least 2 sections; got ${sections?.length ?? 0}.`,
+      undefined,
+      'invalid-args.variableSweep.sections — pass at least 2 { t, profile } sections.',
+    );
+  }
+  return sections;
 }

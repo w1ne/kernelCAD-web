@@ -289,12 +289,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/apiSurfaceMethods.ts",
-    "symbol": "Method 'variableSweep'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/backends/occt/projectCurveLowerer.ts",
     "symbol": "Async function 'lowerProjectCurve'",
     "value": 16
@@ -670,12 +664,6 @@
     "file": "src/modeling/apiCaptureMethods.ts",
     "symbol": "Function 'makeCaptureMethods'",
     "value": 101
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/apiSurfaceMethods.ts",
-    "symbol": "Function 'makeSweepMethods'",
-    "value": 117
   },
   {
     "rule": "max-lines-per-function",
