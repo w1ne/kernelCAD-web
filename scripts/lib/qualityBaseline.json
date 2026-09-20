@@ -391,27 +391,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/backends/occt/lowerers/assembly.ts",
-    "symbol": "Function 'warnPlacementIgnoredByMateFk'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/backends/occt/lowerers/curves.ts",
-    "symbol": "Function 'resolveVariableSweepSpine'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/backends/occt/lowerers/edgeFeatures.ts",
     "symbol": "Function 'applyVariableEdgeFeature'",
     "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/backends/occt/lowerers/mirrorPattern.ts",
-    "symbol": "Function 'lowerPattern'",
-    "value": 18
   },
   {
     "rule": "complexity",
@@ -424,12 +406,6 @@
     "file": "src/modeling/backends/occt/variableSweepLowerer.ts",
     "symbol": "Function 'lowerVariableSweep'",
     "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/assemblyFeatureRecords.ts",
-    "symbol": "Function 'validateSolvedAssemblyPoses'",
-    "value": 18
   },
   {
     "rule": "complexity",
@@ -454,12 +430,6 @@
     "file": "src/modeling/capture/authoringFeatureRecords.ts",
     "symbol": "Function 'buildEmbossTextFeatureSpec'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/authoringFeatureRecords.ts",
-    "symbol": "Function 'validateDfmSpecChannelEntries'",
-    "value": 18
   },
   {
     "rule": "complexity",
@@ -820,12 +790,6 @@
     "file": "src/modeling/apiSurfaceMethods.ts",
     "symbol": "Function 'makeSweepMethods'",
     "value": 117
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/backends/occt/lowerers/mirrorPattern.ts",
-    "symbol": "Function 'lowerPattern'",
-    "value": 109
   },
   {
     "rule": "max-lines-per-function",

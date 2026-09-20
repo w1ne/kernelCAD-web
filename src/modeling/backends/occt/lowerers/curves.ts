@@ -123,6 +123,88 @@ export function lowerVariableSweep(ctx: LowerContext, r: FeatureRecord): LowerOu
   }
 }
 
+type UpstreamSpineResult =
+  | { readonly attempted: false }
+  | { readonly attempted: true; readonly edge: unknown | undefined };
+
+/**
+ * Step 2 of the spine resolution order documented on `lowerVariableSweep`:
+ * lower a virtual upstream curve3d record on-demand and park the edge.
+ * `attempted: true` means the upstream record was a curve3d (and, on
+ * `edge: undefined`, a diagnostic was pushed); `attempted: false` means the
+ * caller should fall through to the sketch spine path.
+ */
+function lowerUpstreamCurve3dSpine(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  spineId: string,
+): UpstreamSpineResult {
+  // Step 2: if the upstream is a virtual curve3d record and the edge
+  // is not yet parked, lower it on-demand. This is the normal path
+  // for engine-driven runs because the engine skips virtual records.
+  const upstream = ctx.allRecords?.find((u) => u.id === spineId);
+  if (upstream?.kind !== 'curve3d') return { attempted: false };
+  const upMeta = upstream.metadata as { curve3d?: unknown } | undefined;
+  const cm = upMeta?.curve3d;
+  if (!isCurve3DMetadata(cm)) {
+    ctx.diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.curve3d.degenerate-controls',
+      featureId: r.id,
+      severity: 'error',
+      message: `variableSweep: spine curve3d '${spineId}' is missing valid metadata.curve3d.`,
+      hint: 'Build the spine via nurbsCurve(...) / spline3d(...) so the validators run.',
+    });
+    return { attempted: true, edge: undefined };
+  }
+  try {
+    const { edge } = buildCurve3dEdge(cm);
+    // Cache the edge on importedGeometry so subsequent recompute
+    // passes (params.update) and other downstream consumers reuse
+    // the lowered edge instead of rebuilding it.
+    ctx.importedGeometry.set(spineId, edge as unknown as ShapeBackend);
+    return { attempted: true, edge };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    ctx.diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.kernel-failed',
+      featureId: r.id,
+      severity: 'error',
+      message: `variableSweep: failed to lower curve3d spine '${spineId}': ${msg}`,
+      hint: 'kernel-failed — verify the spine nurbsCurve control points, knots, and degree form a valid NURBS curve.',
+    });
+    return { attempted: true, edge: undefined };
+  }
+}
+
+/**
+ * Step 3 of the spine resolution order documented on `lowerVariableSweep`:
+ * lift a sketch input to its outer wire's first edge. Throws whatever
+ * `liftSketchToFace` / the OCCT explorer throw; the caller reports it.
+ */
+function firstEdgeOfSketchSpine(sketchInput: OcctBackend): unknown | undefined {
+  const { face } = OcctBackend.liftSketchToFace(sketchInput, 'XY');
+  // The lifted sketch face's outer wire's first edge — replicad
+  // wraps `wire.wrapped` as TopoDS_Wire; extract its first edge
+  // via TopExp_Explorer. Single-edge sketch wires are the
+  // common case (a straight-line spine sketch); multi-edge
+  // wires would need full-wire spine support in lowerVariableSweep.
+  const wire = face().outerWire();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = (replicad as any).getOC();
+  const exp = new oc.TopExp_Explorer_2(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (wire as any).wrapped,
+    oc.TopAbs_ShapeEnum.TopAbs_EDGE,
+    oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
+  );
+  if (exp.More()) {
+    return oc.TopoDS.Edge_1(exp.Current());
+  }
+  return undefined;
+}
+
 /**
  * Steps 1-3 of the spine resolution order documented on `lowerVariableSweep`.
  *
@@ -142,44 +224,11 @@ function resolveVariableSweepSpine(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let spineEdge: any = spineId ? ctx.importedGeometry.get(spineId) : undefined;
 
-  // Step 2: if the upstream is a virtual curve3d record and the edge
-  // is not yet parked, lower it on-demand. This is the normal path
-  // for engine-driven runs because the engine skips virtual records.
   if (!spineEdge && spineId && ctx.allRecords) {
-    const upstream = ctx.allRecords.find((u) => u.id === spineId);
-    if (upstream?.kind === 'curve3d') {
-      const upMeta = upstream.metadata as { curve3d?: unknown } | undefined;
-      const cm = upMeta?.curve3d;
-      if (!isCurve3DMetadata(cm)) {
-        ctx.diagnostics.push({
-          target: 'export-occt',
-          code: 'feature.curve3d.degenerate-controls',
-          featureId: r.id,
-          severity: 'error',
-          message: `variableSweep: spine curve3d '${spineId}' is missing valid metadata.curve3d.`,
-          hint: 'Build the spine via nurbsCurve(...) / spline3d(...) so the validators run.',
-        });
-        return undefined;
-      }
-      try {
-        const { edge } = buildCurve3dEdge(cm);
-        spineEdge = edge;
-        // Cache the edge on importedGeometry so subsequent recompute
-        // passes (params.update) and other downstream consumers reuse
-        // the lowered edge instead of rebuilding it.
-        ctx.importedGeometry.set(spineId, edge as unknown as ShapeBackend);
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        ctx.diagnostics.push({
-          target: 'export-occt',
-          code: 'feature.kernel-failed',
-          featureId: r.id,
-          severity: 'error',
-          message: `variableSweep: failed to lower curve3d spine '${spineId}': ${msg}`,
-          hint: 'kernel-failed — verify the spine nurbsCurve control points, knots, and degree form a valid NURBS curve.',
-        });
-        return undefined;
-      }
+    const upstream = lowerUpstreamCurve3dSpine(ctx, r, spineId);
+    if (upstream.attempted) {
+      if (upstream.edge === undefined) return undefined;
+      spineEdge = upstream.edge;
     }
   }
 
@@ -187,24 +236,7 @@ function resolveVariableSweepSpine(
     const sketchInput = ctx.inputs.byKey.spine as OcctBackend | undefined;
     if (sketchInput) {
       try {
-        const { face } = OcctBackend.liftSketchToFace(sketchInput, 'XY');
-        // The lifted sketch face's outer wire's first edge — replicad
-        // wraps `wire.wrapped` as TopoDS_Wire; extract its first edge
-        // via TopExp_Explorer. Single-edge sketch wires are the
-        // common case (a straight-line spine sketch); multi-edge
-        // wires would need full-wire spine support in lowerVariableSweep.
-        const wire = face().outerWire();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const oc = (replicad as any).getOC();
-        const exp = new oc.TopExp_Explorer_2(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (wire as any).wrapped,
-          oc.TopAbs_ShapeEnum.TopAbs_EDGE,
-          oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
-        );
-        if (exp.More()) {
-          spineEdge = oc.TopoDS.Edge_1(exp.Current());
-        }
+        spineEdge = firstEdgeOfSketchSpine(sketchInput);
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         ctx.diagnostics.push({

@@ -285,6 +285,52 @@ export function buildAssemblyExportFeatureSpec(
   };
 }
 
+function validateMatePoseShape(
+  name: string,
+  mateKind: EncodedMateType,
+  val: SolvedAssemblyPoseInput[string],
+): void {
+  if (mateKind === 'ball' && !Array.isArray(val)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `assembly.solvedModel: ball mate '${name}' requires [x, y, z] pose; got ${typeof val}.`,
+      undefined,
+      `invalid-args.solvedModel.pose-shape — mate ${name} is a ball mate; pose must be [x, y, z].`,
+    );
+  }
+  if (mateKind !== 'ball' && Array.isArray(val)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `assembly.solvedModel: scalar mate '${name}' (${mateKind}) requires a number pose; got [x, y, z].`,
+      undefined,
+      `invalid-args.solvedModel.pose-shape — mate ${name} is a ${mateKind} mate; pose must be a single number.`,
+    );
+  }
+}
+
+function validateJointPoseShape(
+  name: string,
+  kind: AssemblyJointKind,
+  val: SolvedAssemblyPoseInput[string],
+): void {
+  if (kind === 'ball' && !Array.isArray(val)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `assembly.solvedModel: ball joint '${name}' requires [x, y, z] pose; got ${typeof val}.`,
+      undefined,
+      `invalid-args.solvedModel.pose-shape — joint ${name} is a ball joint; pose must be [x, y, z].`,
+    );
+  }
+  if (kind !== 'ball' && Array.isArray(val)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `assembly.solvedModel: scalar joint '${name}' (${kind}) requires a number pose; got [x, y, z].`,
+      undefined,
+      `invalid-args.solvedModel.pose-shape — joint ${name} is a ${kind} joint; pose must be a single number.`,
+    );
+  }
+}
+
 function validateSolvedAssemblyPoses(
   assemblyName: string,
   joints: readonly SolvedAssemblyJointRef[],
@@ -307,22 +353,7 @@ function validateSolvedAssemblyPoses(
     const kind = jointKindByName.get(name);
     const mateKind = mateKindByName.get(name);
     if (kind === undefined && mateKind !== undefined) {
-      if (mateKind === 'ball' && !Array.isArray(val)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.solvedModel: ball mate '${name}' requires [x, y, z] pose; got ${typeof val}.`,
-          undefined,
-          `invalid-args.solvedModel.pose-shape — mate ${name} is a ball mate; pose must be [x, y, z].`,
-        );
-      }
-      if (mateKind !== 'ball' && Array.isArray(val)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.solvedModel: scalar mate '${name}' (${mateKind}) requires a number pose; got [x, y, z].`,
-          undefined,
-          `invalid-args.solvedModel.pose-shape — mate ${name} is a ${mateKind} mate; pose must be a single number.`,
-        );
-      }
+      validateMatePoseShape(name, mateKind, val);
       continue;
     }
     if (kind === undefined) {
@@ -333,22 +364,7 @@ function validateSolvedAssemblyPoses(
         `invalid-args.solvedModel.unknown-joint — joint ${name} not declared.`,
       );
     }
-    if (kind === 'ball' && !Array.isArray(val)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `assembly.solvedModel: ball joint '${name}' requires [x, y, z] pose; got ${typeof val}.`,
-        undefined,
-        `invalid-args.solvedModel.pose-shape — joint ${name} is a ball joint; pose must be [x, y, z].`,
-      );
-    }
-    if (kind !== 'ball' && Array.isArray(val)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `assembly.solvedModel: scalar joint '${name}' (${kind}) requires a number pose; got [x, y, z].`,
-        undefined,
-        `invalid-args.solvedModel.pose-shape — joint ${name} is a ${kind} joint; pose must be a single number.`,
-      );
-    }
+    validateJointPoseShape(name, kind, val);
   }
 }
 
