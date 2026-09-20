@@ -331,12 +331,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/pathNurbsLowerer.ts",
-    "symbol": "Function 'buildNurbsSketchOnPlane'",
-    "value": 140
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/kernel/naming/query.ts",
     "symbol": "Function 'makeQuery'",
     "value": 106
