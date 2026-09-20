@@ -541,25 +541,13 @@ export function meshFaceToGeometry(
   }) as UnknownRecord;
   if (!isRecord(mesh)) return null;
 
-  const vertices = Array.isArray(mesh.vertices) ? (mesh.vertices as number[]) : null;
-  const triangles = Array.isArray(mesh.triangles) ? (mesh.triangles as number[]) : null;
-  const normals = Array.isArray(mesh.normals) ? (mesh.normals as number[]) : null;
-  if (!vertices || !triangles || !normals) return null;
+  const arrays = extractMeshArrays(mesh);
+  if (!arrays) return null;
+  const { vertices, triangles, normals } = arrays;
 
   const plane = tryExtractPlaneFromFace(face);
   if (plane) {
-    let cx = 0;
-    let cy = 0;
-    let cz = 0;
-    const count = Math.floor(vertices.length / 3);
-    if (count > 0) {
-      for (let i = 0; i < vertices.length; i += 3) {
-        cx += vertices[i] ?? 0;
-        cy += vertices[i + 1] ?? 0;
-        cz += vertices[i + 2] ?? 0;
-      }
-      plane.origin = [cx / count, cy / count, cz / count];
-    }
+    recenterPlaneOntoVertices(plane, vertices);
   }
 
   return {
@@ -570,6 +558,38 @@ export function meshFaceToGeometry(
     plane,
     cylinder: tryExtractCylinderFromFace(face),
   };
+}
+
+function extractMeshArrays(mesh: UnknownRecord): {
+  vertices: number[];
+  triangles: number[];
+  normals: number[];
+} | null {
+  const vertices = Array.isArray(mesh.vertices) ? (mesh.vertices as number[]) : null;
+  const triangles = Array.isArray(mesh.triangles) ? (mesh.triangles as number[]) : null;
+  const normals = Array.isArray(mesh.normals) ? (mesh.normals as number[]) : null;
+  if (!vertices || !triangles || !normals) return null;
+  return { vertices, triangles, normals };
+}
+
+/** Move a face's plane origin onto the centroid of its mesh vertices — the
+ *  extracted plane record's own origin is not the tessellated face centre. */
+function recenterPlaneOntoVertices(
+  plane: NonNullable<FaceGeometry['plane']>,
+  vertices: number[],
+): void {
+  let cx = 0;
+  let cy = 0;
+  let cz = 0;
+  const count = Math.floor(vertices.length / 3);
+  if (count > 0) {
+    for (let i = 0; i < vertices.length; i += 3) {
+      cx += vertices[i] ?? 0;
+      cy += vertices[i + 1] ?? 0;
+      cz += vertices[i + 2] ?? 0;
+    }
+    plane.origin = [cx / count, cy / count, cz / count];
+  }
 }
 
 function tryGetVolume(shape: unknown): number | undefined {

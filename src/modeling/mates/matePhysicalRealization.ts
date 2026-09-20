@@ -250,10 +250,30 @@ function analyzeMate(input: AnalyzeMateInput): MateAnalysis {
   const inferredKnuckleR = Math.max(inferredPinR * 3, 5); // proxy for "joint hardware radius"
 
   // ── Sub-check 1: no-shared-pin-feature ───────────────────────────────
-  // Both parts must carry material near the joint axis within the
-  // knuckle-radius envelope of the connector origin. If a part's BREP
-  // does not extend into the axis-aligned tube around the origin, no
-  // physical pin can constrain it.
+  const pinFeature = checkSharedPinFeature(axisOrigin, parent, child);
+  if (pinFeature !== undefined) return pinFeature;
+
+  // ── Sub-check 2: bearing-not-coplanar (revolute only) ────────────────
+  const bearing = checkBearingAlignment(mate, parent, child, axisOrigin, axisDir, inferredPinR, tolFraction);
+  if (bearing !== undefined) return bearing;
+
+  // ── Sub-check 3: pin-escapes-hole-at-pose ────────────────────────────
+  const escape = checkPinEscape(mate, parent, child, axisOrigin, axisOriginChild, axisDir, inferredKnuckleR, samples);
+  if (escape !== undefined) return escape;
+
+  // ── Sub-check 4: over-constrained (heaviest) ─────────────────────────
+  return overConstrainedAnalysis(parent, child, axisOrigin, axisDir, inferredPinR, inferredKnuckleR);
+}
+
+/** Sub-check 1 — both parts must carry material near the joint axis within
+ *  the knuckle-radius envelope of the connector origin. If a part's BREP
+ *  does not extend into the axis-aligned tube around the origin, no
+ *  physical pin can constrain it. */
+function checkSharedPinFeature(
+  axisOrigin: Vec3,
+  parent: OcctBackend,
+  child: OcctBackend,
+): MateAnalysis | undefined {
   const parentHits = pointInsideShapeAabb(axisOrigin, parent);
   const childHits = pointInsideShapeAabb(axisOrigin, child);
   if (!parentHits || !childHits) {
@@ -262,72 +282,93 @@ function analyzeMate(input: AnalyzeMateInput): MateAnalysis {
       detail: `joint origin [${fmtVec(axisOrigin)}] does not lie inside ${!parentHits ? 'parent' : 'child'} body AABB`,
     };
   }
+  return undefined;
+}
 
-  // ── Sub-check 2: bearing-not-coplanar (revolute only) ────────────────
-  // The "bearing surfaces" of a clevis are the fork inner cheeks and the
-  // tongue outer cheeks. In a properly-built clevis the tongue lies
-  // BETWEEN the two fork plates with intentional running clearance — so
-  // the inner-cheek-to-outer-cheek gap is positive (typical: 1 mm per
-  // side for joint.clevis defaults). The gate's bearing-coplanarity
-  // condition is therefore "the tongue lives INSIDE the fork gap", not
-  // "the cheeks touch". A failure is the tongue extending far OUTSIDE
-  // the fork gap, or the fork being so narrow that the tongue cannot
-  // slip in.
-  //
-  // We measure: the tongue's axis-centre offset from the fork-gap centre.
-  // The tongue should be reasonably centred between the fork plates (within
-  // tolFraction * (forkGapY) of the fork-gap centre — design intent says
-  // the tongue is concentric with the fork). If the offset exceeds that
-  // tolerance scaled to forkGapY (or plateT, whichever is larger), the
-  // bearing is misaligned. The 5 % spec lock applies to the *concentricity*,
-  // not the absolute clearance — a 4 mm plate with a 0.2 mm tongue-centre
-  // offset is still aligned; a 4 mm plate with a 2 mm offset is not.
-  if ((mate.type as string) === 'revolute') {
-    const bearing = measureBearingCoplanarity(parent, child, axisOrigin, axisDir, inferredPinR);
-    if (bearing !== undefined && bearing.forkGapY !== undefined && bearing.tongueAxialCentre !== undefined && bearing.forkAxialCentre !== undefined) {
-      const plateT = bearing.plateT ?? PLATE_T_FALLBACK_MM;
-      // Tolerance on tongue concentricity: 5 % of forkGapY (per spec lock,
-      // expressed as a fraction of the bearing's NATURAL scale — the gap
-      // through which the tongue slides), with an absolute floor at
-      // tolFraction * plateT for OCCT noise on cheek-to-cheek alignment.
-      const tol = Math.max(tolFraction * bearing.forkGapY, tolFraction * plateT);
-      const offset = Math.abs(bearing.tongueAxialCentre - bearing.forkAxialCentre);
-      if (offset > tol) {
-        return {
-          failure: 'bearing-not-coplanar',
-          detail:
-            `tongue centre is ${offset.toFixed(3)} mm off the fork-gap centre along the pin axis ` +
-            `(tolerance ${tol.toFixed(3)} mm = ${(tolFraction * 100).toFixed(1)}% of forkGapY ${bearing.forkGapY.toFixed(2)} mm / plateT ${plateT.toFixed(2)} mm)`,
-        };
-      }
-      // Additionally: the tongue must AXIALLY OVERLAP the fork gap. A
-      // tongue that misses the fork entirely (e.g. authored at a wrong
-      // pivotChild) is the canonical bearing-not-coplanar failure.
-      if (bearing.tongueOutsideForkGap) {
-        return {
-          failure: 'bearing-not-coplanar',
-          detail:
-            `tongue does not axially overlap the fork gap (fork plates at axis-coords ` +
-            `near ${bearing.forkAxialCentre.toFixed(2)} mm, tongue centred at ` +
-            `${bearing.tongueAxialCentre.toFixed(2)} mm)`,
-        };
-      }
+/** Sub-check 2 — bearing-not-coplanar (revolute only).
+ *  The "bearing surfaces" of a clevis are the fork inner cheeks and the
+ *  tongue outer cheeks. In a properly-built clevis the tongue lies
+ *  BETWEEN the two fork plates with intentional running clearance — so
+ *  the inner-cheek-to-outer-cheek gap is positive (typical: 1 mm per
+ *  side for joint.clevis defaults). The gate's bearing-coplanarity
+ *  condition is therefore "the tongue lives INSIDE the fork gap", not
+ *  "the cheeks touch". A failure is the tongue extending far OUTSIDE
+ *  the fork gap, or the fork being so narrow that the tongue cannot
+ *  slip in.
+ *
+ *  We measure: the tongue's axis-centre offset from the fork-gap centre.
+ *  The tongue should be reasonably centred between the fork plates (within
+ *  tolFraction * (forkGapY) of the fork-gap centre — design intent says
+ *  the tongue is concentric with the fork). If the offset exceeds that
+ *  tolerance scaled to forkGapY (or plateT, whichever is larger), the
+ *  bearing is misaligned. The 5 % spec lock applies to the *concentricity*,
+ *  not the absolute clearance — a 4 mm plate with a 0.2 mm tongue-centre
+ *  offset is still aligned; a 4 mm plate with a 2 mm offset is not. */
+function checkBearingAlignment(
+  mate: MateRecord,
+  parent: OcctBackend,
+  child: OcctBackend,
+  axisOrigin: Vec3,
+  axisDir: Vec3,
+  inferredPinR: number,
+  tolFraction: number,
+): MateAnalysis | undefined {
+  if ((mate.type as string) !== 'revolute') return undefined;
+  const bearing = measureBearingCoplanarity(parent, child, axisOrigin, axisDir, inferredPinR);
+  if (bearing !== undefined && bearing.forkGapY !== undefined && bearing.tongueAxialCentre !== undefined && bearing.forkAxialCentre !== undefined) {
+    const plateT = bearing.plateT ?? PLATE_T_FALLBACK_MM;
+    // Tolerance on tongue concentricity: 5 % of forkGapY (per spec lock,
+    // expressed as a fraction of the bearing's NATURAL scale — the gap
+    // through which the tongue slides), with an absolute floor at
+    // tolFraction * plateT for OCCT noise on cheek-to-cheek alignment.
+    const tol = Math.max(tolFraction * bearing.forkGapY, tolFraction * plateT);
+    const offset = Math.abs(bearing.tongueAxialCentre - bearing.forkAxialCentre);
+    if (offset > tol) {
+      return {
+        failure: 'bearing-not-coplanar',
+        detail:
+          `tongue centre is ${offset.toFixed(3)} mm off the fork-gap centre along the pin axis ` +
+          `(tolerance ${tol.toFixed(3)} mm = ${(tolFraction * 100).toFixed(1)}% of forkGapY ${bearing.forkGapY.toFixed(2)} mm / plateT ${plateT.toFixed(2)} mm)`,
+      };
+    }
+    // Additionally: the tongue must AXIALLY OVERLAP the fork gap. A
+    // tongue that misses the fork entirely (e.g. authored at a wrong
+    // pivotChild) is the canonical bearing-not-coplanar failure.
+    if (bearing.tongueOutsideForkGap) {
+      return {
+        failure: 'bearing-not-coplanar',
+        detail:
+          `tongue does not axially overlap the fork gap (fork plates at axis-coords ` +
+          `near ${bearing.forkAxialCentre.toFixed(2)} mm, tongue centred at ` +
+          `${bearing.tongueAxialCentre.toFixed(2)} mm)`,
+      };
     }
   }
+  return undefined;
+}
 
-  // ── Sub-check 3: pin-escapes-hole-at-pose ────────────────────────────
-  // Walk samples poses across the mate's limits; at each, lift the
-  // child's joint origin by the pose and check it stays within the
-  // parent's body AABB along the joint axis. For revolute about a fixed
-  // axis through the connector origin, rotation about the axis preserves
-  // any on-axis point, so this sub-check is a no-op for well-formed
-  // revolute mates (and immediately fires for a child whose connector
-  // origin sits OFF the axis). For prismatic, the child slides along the
-  // axis — the joint line is invariant under translation along its own
-  // direction.
-  // Narrow mate.type — we already filtered to revolute/prismatic at the
-  // top of `validateMatePhysicalRealization`, but the type guard does not
-  // propagate through the analyzeMate input record.
+/** Sub-check 3 — pin-escapes-hole-at-pose. Walk samples poses across the
+ *  mate's limits; at each, lift the child's joint origin by the pose and
+ *  check it stays within the parent's body AABB along the joint axis. For
+ *  revolute about a fixed axis through the connector origin, rotation about
+ *  the axis preserves any on-axis point, so this sub-check is a no-op for
+ *  well-formed revolute mates (and immediately fires for a child whose
+ *  connector origin sits OFF the axis). For prismatic, the child slides
+ *  along the axis — the joint line is invariant under translation along its
+ *  own direction.
+ *  Narrow mate.type — we already filtered to revolute/prismatic at the
+ *  top of `validateMatePhysicalRealization`, but the type guard does not
+ *  propagate through the analyzeMate input record. */
+function checkPinEscape(
+  mate: MateRecord,
+  parent: OcctBackend,
+  child: OcctBackend,
+  axisOrigin: Vec3,
+  axisOriginChild: Vec3,
+  axisDir: Vec3,
+  inferredKnuckleR: number,
+  samples: number,
+): MateAnalysis | undefined {
   const mateType: 'revolute' | 'prismatic' =
     mate.type === 'revolute' ? 'revolute' : 'prismatic';
   const limits = mateType === 'revolute' ? mate.limitsDeg : mate.limitsMm;
@@ -350,14 +391,23 @@ function analyzeMate(input: AnalyzeMateInput): MateAnalysis {
       };
     }
   }
+  return undefined;
+}
 
-  // ── Sub-check 4: over-constrained (heaviest) ─────────────────────────
-  // Remove a generous cylindrical sweep along the axis from both parts
-  // and test if the residue still overlaps. A clean clevis: forkGapY >
-  // tongueY → the fork plates do not touch the tongue outside the pin
-  // envelope, so the residue is disjoint. A welded / over-engaged mate:
-  // material remains touching outside the pin envelope, residue
-  // intersection > 0.
+/** Sub-check 4 — over-constrained (heaviest). Remove a generous cylindrical
+ *  sweep along the axis from both parts and test if the residue still
+ *  overlaps. A clean clevis: forkGapY > tongueY → the fork plates do not
+ *  touch the tongue outside the pin envelope, so the residue is disjoint.
+ *  A welded / over-engaged mate: material remains touching outside the pin
+ *  envelope, residue intersection > 0. */
+function overConstrainedAnalysis(
+  parent: OcctBackend,
+  child: OcctBackend,
+  axisOrigin: Vec3,
+  axisDir: Vec3,
+  inferredPinR: number,
+  inferredKnuckleR: number,
+): MateAnalysis {
   const overConstrained = checkOverConstrained(parent, child, axisOrigin, axisDir, inferredPinR, inferredKnuckleR);
   if (overConstrained !== undefined) {
     return {
@@ -365,7 +415,6 @@ function analyzeMate(input: AnalyzeMateInput): MateAnalysis {
       detail: overConstrained,
     };
   }
-
   return {};
 }
 

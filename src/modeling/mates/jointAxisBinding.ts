@@ -58,7 +58,9 @@ import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
+import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
+import type { CaptureSession } from '../capture/captureSession';
 import type { FeatureId } from '../../shared/intent/types';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import type { Vec3 } from '../../shared/intent/types';
@@ -172,23 +174,7 @@ export async function validateJointAxisBindingWithCache(
   // because the gate was inert on legacy `arm.revolute(...)` assemblies.
   await initOcct();
   const session = arm.__session();
-  let sceneFeatureId: FeatureId | undefined;
-  const records = session.getRecords();
-  for (let i = records.length - 1; i >= 0; i--) {
-    const r = records[i];
-    if (r.kind !== 'solvedAssembly') continue;
-    const meta = r.metadata as { assemblyName?: string } | undefined;
-    if (meta?.assemblyName === arm.name) {
-      sceneFeatureId = r.id;
-      break;
-    }
-  }
-  if (sceneFeatureId === undefined) {
-    const mateMetadata = arm.__buildMateMetadata();
-    const joints = arm.__joints().map((j) => ({ id: j.id, name: j.name }));
-    const sceneShape = session.solvedAssembly(arm.name, arm.__parts(), joints, {}, mateMetadata);
-    sceneFeatureId = sceneShape.id;
-  }
+  const sceneFeatureId = findOrCreateSceneFeatureId(arm, session);
   const engine = new RecomputeEngine(createOcctLowerer(session));
   const recompute = await engine.run(session.getRecords(), {
     paramTable: session.paramTable,
@@ -199,22 +185,61 @@ export async function validateJointAxisBindingWithCache(
     return { diagnostics: [], worldShapes: new Map(), worldTransforms: new Map() };
   }
 
-  // Apply each part's world transform once up-front (clone first — replicad
-  // translate/rotate mutate-and-destroy the source OCCT handle, same lifecycle
-  // hazard documented in `detectInterferences`).
+  const worldShapes = buildWorldShapes(lowered);
+  const partsByName = indexPartsByName(arm);
+  const worldTransforms = indexWorldTransforms(lowered);
+
+  const out = await collectAxisBindingDiagnostics(gatedMates, partsByName, worldTransforms, worldShapes);
+  return { diagnostics: out, worldShapes, worldTransforms };
+}
+
+function findOrCreateSceneFeatureId(arm: Assembly, session: CaptureSession): FeatureId {
+  const records = session.getRecords();
+  for (let i = records.length - 1; i >= 0; i--) {
+    const r = records[i];
+    if (r.kind !== 'solvedAssembly') continue;
+    const meta = r.metadata as { assemblyName?: string } | undefined;
+    if (meta?.assemblyName === arm.name) {
+      return r.id;
+    }
+  }
+  const mateMetadata = arm.__buildMateMetadata();
+  const joints = arm.__joints().map((j) => ({ id: j.id, name: j.name }));
+  return session.solvedAssembly(arm.name, arm.__parts(), joints, {}, mateMetadata).id;
+}
+
+// Apply each part's world transform once up-front (clone first — replicad
+// translate/rotate mutate-and-destroy the source OCCT handle, same lifecycle
+// hazard documented in `detectInterferences`).
+function buildWorldShapes(lowered: SceneBackend): Map<string, OcctBackend> {
   const worldShapes = new Map<string, OcctBackend>();
   for (const p of lowered.parts) {
     worldShapes.set(p.name, (p.shape as OcctBackend).clone().applyTransform(p.worldTransform));
   }
+  return worldShapes;
+}
 
-  // Index parts and per-part world transforms for the connector-resolution
-  // step (origin/axis live in the part's LOCAL frame; the world transform
-  // lifts both to world coordinates).
+// Index parts and per-part world transforms for the connector-resolution
+// step (origin/axis live in the part's LOCAL frame; the world transform
+// lifts both to world coordinates).
+function indexPartsByName(arm: Assembly): Map<string, AssemblyPartStored> {
   const partsByName = new Map<string, AssemblyPartStored>();
   for (const p of arm.__parts()) partsByName.set(p.name, p);
+  return partsByName;
+}
+
+function indexWorldTransforms(lowered: SceneBackend): Map<string, Transform> {
   const worldTransforms = new Map<string, Transform>();
   for (const p of lowered.parts) worldTransforms.set(p.name, p.worldTransform);
+  return worldTransforms;
+}
 
+async function collectAxisBindingDiagnostics(
+  gatedMates: readonly MateRecord[],
+  partsByName: ReadonlyMap<string, AssemblyPartStored>,
+  worldTransforms: ReadonlyMap<string, Transform>,
+  worldShapes: ReadonlyMap<string, OcctBackend>,
+): Promise<ValidatorDiagnostic[]> {
   const out: ValidatorDiagnostic[] = [];
   for (const mate of gatedMates) {
     const sideA = await resolveSide(mate.a, partsByName, worldTransforms);
@@ -228,7 +253,7 @@ export async function validateJointAxisBindingWithCache(
       }
     }
   }
-  return { diagnostics: out, worldShapes, worldTransforms };
+  return out;
 }
 
 interface ResolvedSide {

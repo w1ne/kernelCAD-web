@@ -226,8 +226,33 @@ class TriangleGrid {
     return Math.max(0, Math.min(this.dims[axis] - 1, Math.floor((v - this.min[axis]) / this.cell)));
   }
 
-  nearestSq(px: number, py: number, pz: number): number {
+  private scanCell(
+    px: number, py: number, pz: number,
+    i: number, j: number, k: number,
+    ci: number, cj: number, ck: number,
+    ring: number, tick: number, bestSq: number,
+  ): number {
+    if (Math.max(Math.abs(i - ci), Math.abs(j - cj), Math.abs(k - ck)) !== ring) return bestSq;
     const soup = this.soup;
+    const list = this.cells[(k * this.dims[1] + j) * this.dims[0] + i];
+    for (let n = 0; n < list.length; n++) {
+      const t = list[n];
+      if (this.stamp[t] === tick) continue;
+      this.stamp[t] = tick;
+      if (pointAabbDistanceSq(px, py, pz, soup.bounds, t * 6) >= bestSq) continue;
+      const o = t * 9;
+      const dSq = pointTriangleDistanceSq(
+        px, py, pz,
+        soup.verts[o], soup.verts[o + 1], soup.verts[o + 2],
+        soup.verts[o + 3], soup.verts[o + 4], soup.verts[o + 5],
+        soup.verts[o + 6], soup.verts[o + 7], soup.verts[o + 8],
+      );
+      if (dSq < bestSq) bestSq = dSq;
+    }
+    return bestSq;
+  }
+
+  nearestSq(px: number, py: number, pz: number): number {
     const ci = this.index(px, 0), cj = this.index(py, 1), ck = this.index(pz, 2);
     const tick = ++this.tick;
     let bestSq = Infinity;
@@ -239,22 +264,7 @@ class TriangleGrid {
           if (j < 0 || j >= this.dims[1]) continue;
           for (let k = ck - ring; k <= ck + ring; k++) {
             if (k < 0 || k >= this.dims[2]) continue;
-            if (Math.max(Math.abs(i - ci), Math.abs(j - cj), Math.abs(k - ck)) !== ring) continue;
-            const list = this.cells[(k * this.dims[1] + j) * this.dims[0] + i];
-            for (let n = 0; n < list.length; n++) {
-              const t = list[n];
-              if (this.stamp[t] === tick) continue;
-              this.stamp[t] = tick;
-              if (pointAabbDistanceSq(px, py, pz, soup.bounds, t * 6) >= bestSq) continue;
-              const o = t * 9;
-              const dSq = pointTriangleDistanceSq(
-                px, py, pz,
-                soup.verts[o], soup.verts[o + 1], soup.verts[o + 2],
-                soup.verts[o + 3], soup.verts[o + 4], soup.verts[o + 5],
-                soup.verts[o + 6], soup.verts[o + 7], soup.verts[o + 8],
-              );
-              if (dSq < bestSq) bestSq = dSq;
-            }
+            bestSq = this.scanCell(px, py, pz, i, j, k, ci, cj, ck, ring, tick, bestSq);
           }
         }
       }
