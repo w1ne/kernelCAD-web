@@ -458,12 +458,6 @@
   {
     "rule": "complexity",
     "file": "src/kernel/import/importSvg.ts",
-    "symbol": "Function 'emitPath'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/import/importSvg.ts",
     "symbol": "Method 'number'",
     "value": 18
   },
@@ -1024,12 +1018,6 @@
     "file": "src/kernel/backends/occt/pathNurbsLowerer.ts",
     "symbol": "Function 'buildNurbsSketchOnPlane'",
     "value": 143
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kernel/import/importSvg.ts",
-    "symbol": "Function 'emitPath'",
-    "value": 101
   },
   {
     "rule": "max-lines-per-function",

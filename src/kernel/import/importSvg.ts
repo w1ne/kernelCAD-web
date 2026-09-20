@@ -692,6 +692,52 @@ function emitArcPathCommand(
   return { ux: ex, uy: ey };
 }
 
+/** Dispatch one drawing command (everything but `M`/`Z`) to its emitter and
+ *  report the pen position and smooth-curve reflection it leaves behind. */
+function emitPathCommand(
+  cmd: string,
+  up: string,
+  scanner: PathScanner,
+  rel: boolean,
+  b: ContourBuilder,
+  ux: number,
+  uy: number,
+  lastCubicCtrl: Pt | null,
+  lastQuadCtrl: Pt | null,
+  similarity: boolean,
+  tolMm: number,
+  mmScale: number,
+  where: string,
+): { ux: number; uy: number; lastCubicCtrl: Pt | null; lastQuadCtrl: Pt | null } {
+  switch (up) {
+    case 'L':
+    case 'H':
+    case 'V': {
+      const res = emitLineLikeCommand(up, scanner, rel, b, ux, uy);
+      return { ux: res.ux, uy: res.uy, lastCubicCtrl: null, lastQuadCtrl: null };
+    }
+    case 'C':
+    case 'S': {
+      const res = emitCubicPathCommand(up, scanner, rel, b, ux, uy, lastCubicCtrl, tolMm);
+      return { ux: res.ux, uy: res.uy, lastCubicCtrl: res.lastCubicCtrl, lastQuadCtrl: null };
+    }
+    case 'Q':
+    case 'T': {
+      const res = emitQuadraticPathCommand(up, scanner, rel, b, ux, uy, lastQuadCtrl, tolMm);
+      return { ux: res.ux, uy: res.uy, lastCubicCtrl: null, lastQuadCtrl: res.lastQuadCtrl };
+    }
+    case 'A': {
+      const res = emitArcPathCommand(scanner, rel, b, ux, uy, similarity, tolMm, mmScale);
+      return { ux: res.ux, uy: res.uy, lastCubicCtrl: null, lastQuadCtrl: null };
+    }
+    default:
+      throw new SvgParseError(
+        'unsupported-command',
+        `${where}: path command '${cmd}' at offset ${scanner.offset} is not a valid SVG path command.`,
+      );
+  }
+}
+
 function emitPath(tag: Tag, m: Matrix, sink: ElementSink, tolMm: number): void {
   const d = tag.attrs.d;
   if (d === undefined || d.trim() === '') {
@@ -763,41 +809,11 @@ function emitPath(tag: Tag, m: Matrix, sink: ElementSink, tolMm: number): void {
     }
 
     const b = need();
-    switch (up) {
-      case 'L':
-      case 'H':
-      case 'V': {
-        const res = emitLineLikeCommand(up, scanner, rel, b, ux, uy);
-        ux = res.ux; uy = res.uy;
-        lastCubicCtrl = null; lastQuadCtrl = null;
-        break;
-      }
-      case 'C':
-      case 'S': {
-        const res = emitCubicPathCommand(up, scanner, rel, b, ux, uy, lastCubicCtrl, tolMm);
-        ux = res.ux; uy = res.uy;
-        lastCubicCtrl = res.lastCubicCtrl; lastQuadCtrl = null;
-        break;
-      }
-      case 'Q':
-      case 'T': {
-        const res = emitQuadraticPathCommand(up, scanner, rel, b, ux, uy, lastQuadCtrl, tolMm);
-        ux = res.ux; uy = res.uy;
-        lastQuadCtrl = res.lastQuadCtrl; lastCubicCtrl = null;
-        break;
-      }
-      case 'A': {
-        const res = emitArcPathCommand(scanner, rel, b, ux, uy, similarity, tolMm, mmScale);
-        ux = res.ux; uy = res.uy;
-        lastCubicCtrl = null; lastQuadCtrl = null;
-        break;
-      }
-      default:
-        throw new SvgParseError(
-          'unsupported-command',
-          `${where}: path command '${cmd}' at offset ${scanner.offset} is not a valid SVG path command.`,
-        );
-    }
+    const res = emitPathCommand(
+      cmd, up, scanner, rel, b, ux, uy, lastCubicCtrl, lastQuadCtrl, similarity, tolMm, mmScale, where,
+    );
+    ux = res.ux; uy = res.uy;
+    lastCubicCtrl = res.lastCubicCtrl; lastQuadCtrl = res.lastQuadCtrl;
     prevCmd = cmd;
   }
   flushOpen();
