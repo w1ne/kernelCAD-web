@@ -61,12 +61,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/apiCaptureMethods.ts",
-    "symbol": "Function 'makeCaptureMethods'",
-    "value": 101
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/modeling/backends/occt/sheetMetalLowerer.ts",
     "symbol": "Function 'lowerSheetMetalBend'",
     "value": 127
