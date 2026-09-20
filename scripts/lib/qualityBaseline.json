@@ -235,24 +235,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/repair/trace.ts",
-    "symbol": "Function 'computeRepairRegion'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/review/reviewPipeline.ts",
-    "symbol": "Function 'buildSuggestedRepairPrompt'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/script-runtime/connectorManifestExport.ts",
-    "symbol": "Function 'sceneToConnectorManifest'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/script-runtime/exportDrawing.ts",
     "symbol": "Async function 'exportSvgDrawing'",
     "value": 16
@@ -265,14 +247,8 @@
   },
   {
     "rule": "complexity",
-    "file": "src/funnel/hooks/useGeneration.ts",
-    "symbol": "Async arrow function",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
-    "file": "src/funnel/lib/previewClient.ts",
-    "symbol": "Function 'parseBlock'",
+    "file": "src/kernel/backends/occt/backendMesh.ts",
+    "symbol": "Function 'meshShapeForExport'",
     "value": 18
   },
   {
@@ -325,6 +301,18 @@
   },
   {
     "rule": "complexity",
+    "file": "src/kernel/backends/occt/occtBackend.ts",
+    "symbol": "Method 'findCanonicalFaceHash'",
+    "value": 18
+  },
+  {
+    "rule": "complexity",
+    "file": "src/kernel/backends/occt/pathNurbsLowerer.ts",
+    "symbol": "Function 'processCommand'",
+    "value": 18
+  },
+  {
+    "rule": "complexity",
     "file": "src/kernel/backends/occt/sketchToDrawing.ts",
     "symbol": "Function 'drawingForLoop'",
     "value": 16
@@ -334,6 +322,12 @@
     "file": "src/kernel/import/contourAssembly.ts",
     "symbol": "Function 'chainLoops'",
     "value": 16
+  },
+  {
+    "rule": "complexity",
+    "file": "src/kernel/import/importSvg.ts",
+    "symbol": "Method 'number'",
+    "value": 18
   },
   {
     "rule": "complexity",
@@ -349,6 +343,12 @@
   },
   {
     "rule": "complexity",
+    "file": "src/kernel/naming/resolveFaceRef.ts",
+    "symbol": "Function 'resolveCreated'",
+    "value": 18
+  },
+  {
+    "rule": "complexity",
     "file": "src/modeling/apiSurfaceMethods.ts",
     "symbol": "Method 'variableSweep'",
     "value": 17
@@ -361,9 +361,27 @@
   },
   {
     "rule": "complexity",
+    "file": "src/modeling/backends/occt/lowerers/assembly.ts",
+    "symbol": "Function 'warnPlacementIgnoredByMateFk'",
+    "value": 18
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/backends/occt/lowerers/curves.ts",
+    "symbol": "Function 'resolveVariableSweepSpine'",
+    "value": 18
+  },
+  {
+    "rule": "complexity",
     "file": "src/modeling/backends/occt/lowerers/edgeFeatures.ts",
     "symbol": "Function 'applyVariableEdgeFeature'",
     "value": 17
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/backends/occt/lowerers/mirrorPattern.ts",
+    "symbol": "Function 'lowerPattern'",
+    "value": 18
   },
   {
     "rule": "complexity",
@@ -376,6 +394,12 @@
     "file": "src/modeling/backends/occt/variableSweepLowerer.ts",
     "symbol": "Function 'lowerVariableSweep'",
     "value": 17
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/capture/assemblyFeatureRecords.ts",
+    "symbol": "Function 'validateSolvedAssemblyPoses'",
+    "value": 18
   },
   {
     "rule": "complexity",
@@ -400,6 +424,12 @@
     "file": "src/modeling/capture/authoringFeatureRecords.ts",
     "symbol": "Function 'buildEmbossTextFeatureSpec'",
     "value": 16
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/capture/authoringFeatureRecords.ts",
+    "symbol": "Function 'validateDfmSpecChannelEntries'",
+    "value": 18
   },
   {
     "rule": "complexity",
@@ -433,9 +463,21 @@
   },
   {
     "rule": "complexity",
+    "file": "src/modeling/capture/planarUv.ts",
+    "symbol": "Function 'generatePlanarUVs'",
+    "value": 18
+  },
+  {
+    "rule": "complexity",
     "file": "src/modeling/capture/virtualFeatureRecords.ts",
     "symbol": "Function 'buildRenderEnvironmentFeatureSpec'",
     "value": 17
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/capture/virtualFeatureRecords.ts",
+    "symbol": "Function 'validateAnimationTracks'",
+    "value": 18
   },
   {
     "rule": "complexity",
@@ -448,6 +490,12 @@
     "file": "src/modeling/export/sdformat/sdfSerializer.ts",
     "symbol": "Function 'urdfInertialToSdf'",
     "value": 17
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
+    "symbol": "Arrow function",
+    "value": 18
   },
   {
     "rule": "complexity",
@@ -475,6 +523,12 @@
   },
   {
     "rule": "complexity",
+    "file": "src/modeling/mates/jointVisualExposure.ts",
+    "symbol": "Function 'inferPinRadius'",
+    "value": 18
+  },
+  {
+    "rule": "complexity",
     "file": "src/modeling/mates/matePhysicalRealization.ts",
     "symbol": "Async function 'validateMatePhysicalRealization'",
     "value": 16
@@ -484,6 +538,12 @@
     "file": "src/modeling/mates/matePhysicalRealization.ts",
     "symbol": "Function 'analyzeMate'",
     "value": 17
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/mates/matePhysicalRealization.ts",
+    "symbol": "Function 'inferPinRadius'",
+    "value": 18
   },
   {
     "rule": "complexity",
@@ -553,6 +613,12 @@
   },
   {
     "rule": "complexity",
+    "file": "src/modeling/runtime/dfm/meshBvh.ts",
+    "symbol": "Method 'raycast'",
+    "value": 18
+  },
+  {
+    "rule": "complexity",
     "file": "src/modeling/runtime/dfm/minWall.ts",
     "symbol": "Function 'checkMinWall'",
     "value": 16
@@ -562,6 +628,12 @@
     "file": "src/modeling/runtime/explodedPoses.ts",
     "symbol": "Function 'mateAxisOffsets'",
     "value": 16
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/runtime/jointMeshContinuity.ts",
+    "symbol": "Function 'collectMateRows'",
+    "value": 18
   },
   {
     "rule": "complexity",
@@ -583,9 +655,21 @@
   },
   {
     "rule": "complexity",
+    "file": "src/modeling/runtime/tendonBodyIntersect.ts",
+    "symbol": "Function 'checkTendonBodyIntersectAtPose'",
+    "value": 18
+  },
+  {
+    "rule": "complexity",
     "file": "src/server/middleware/sourceEndpoint.ts",
     "symbol": "Async function 'sourceHandler'",
     "value": 16
+  },
+  {
+    "rule": "complexity",
+    "file": "src/shared/codeGeneration/codeAnalysis.ts",
+    "symbol": "Function 'classifyVariable'",
+    "value": 18
   },
   {
     "rule": "complexity",
@@ -661,6 +745,12 @@
   },
   {
     "rule": "complexity",
+    "file": "src/studio/routes/-ProjectClaimControl.tsx",
+    "symbol": "Function 'ProjectClaimControl'",
+    "value": 18
+  },
+  {
+    "rule": "complexity",
     "file": "src/studio/routes/GenerateHero.tsx",
     "symbol": "Function 'GenerateHero'",
     "value": 16
@@ -729,7 +819,7 @@
     "rule": "max-lines-per-function",
     "file": "src/kernel/backends/occt/pathNurbsLowerer.ts",
     "symbol": "Function 'buildNurbsSketchOnPlane'",
-    "value": 140
+    "value": 143
   },
   {
     "rule": "max-lines-per-function",
@@ -763,6 +853,12 @@
   },
   {
     "rule": "max-lines-per-function",
+    "file": "src/modeling/backends/occt/lowerers/mirrorPattern.ts",
+    "symbol": "Function 'lowerPattern'",
+    "value": 109
+  },
+  {
+    "rule": "max-lines-per-function",
     "file": "src/modeling/backends/occt/sheetMetalLowerer.ts",
     "symbol": "Function 'lowerSheetMetalBend'",
     "value": 127
@@ -790,6 +886,12 @@
     "file": "src/modeling/constraints/sketchConverter.ts",
     "symbol": "Function 'convertSketchEntitiesToConstraints'",
     "value": 111
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
+    "symbol": "Function 'buildJointBlocks'",
+    "value": 102
   },
   {
     "rule": "max-lines-per-function",
