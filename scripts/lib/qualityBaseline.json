@@ -43,12 +43,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/edits/addPathSpline.ts",
-    "symbol": "Function 'consumeLexicalContext'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/edits/shapeDraft.ts",
     "symbol": "Function 'shapeDraftEdit'",
     "value": 17
