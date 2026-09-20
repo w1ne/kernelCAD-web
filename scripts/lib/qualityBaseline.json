@@ -409,12 +409,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/backends/occt/lowerers/mirrorPattern.ts",
-    "symbol": "Function 'lowerPattern'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/backends/occt/projectCurveLowerer.ts",
     "symbol": "Async function 'lowerProjectCurve'",
     "value": 16
@@ -868,12 +862,6 @@
     "file": "src/modeling/apiSurfaceMethods.ts",
     "symbol": "Function 'makeSweepMethods'",
     "value": 117
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/backends/occt/lowerers/mirrorPattern.ts",
-    "symbol": "Function 'lowerPattern'",
-    "value": 109
   },
   {
     "rule": "max-lines-per-function",
