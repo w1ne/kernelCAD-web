@@ -775,12 +775,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/parts/fetchPart.ts",
-    "symbol": "Async function 'fetchPartHost'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/runtime/dfm/fdmOrientation.ts",
     "symbol": "Function 'anchoredChord'",
     "value": 17
@@ -1126,12 +1120,6 @@
     "file": "src/modeling/parts/fetchPart.ts",
     "symbol": "Async function 'fetchPartFromUrlHost'",
     "value": 104
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/parts/fetchPart.ts",
-    "symbol": "Async function 'fetchPartHost'",
-    "value": 106
   },
   {
     "rule": "max-lines-per-function",
