@@ -74,12 +74,6 @@
   {
     "rule": "complexity",
     "file": "src/agent/drawing/sheet.ts",
-    "symbol": "Function 'buildLinearDimensions'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/drawing/sheet.ts",
     "symbol": "Function 'readTitleBlock'",
     "value": 17
   },
