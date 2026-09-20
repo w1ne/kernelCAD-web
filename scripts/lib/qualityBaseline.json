@@ -464,12 +464,6 @@
   {
     "rule": "complexity",
     "file": "src/kernel/import/importSvg.ts",
-    "symbol": "Function 'importSvgText'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/import/importSvg.ts",
     "symbol": "Method 'number'",
     "value": 18
   },

@@ -816,15 +816,7 @@ function emitPath(tag: Tag, m: Matrix, sink: ElementSink, tolMm: number): void {
  *   empty or placeholder region list.
  */
 export function importSvgText(text: string, opts: ImportSvgOptions = {}): SvgImportResult {
-  if (text.trim().length === 0) {
-    throw new SvgParseError('empty', 'SVG payload is empty.');
-  }
-  if (opts.units !== undefined && !isLengthUnit(opts.units)) {
-    throw new SvgParseError(
-      'bad-units',
-      `opts.units '${String(opts.units)}' is not a known length unit (${LENGTH_UNIT_NAMES.join(', ')}).`,
-    );
-  }
+  validateImportRequest(text, opts);
 
   const tags = scanTags(text);
   const root = tags.find(t => t.name === 'svg' && !t.closing);
@@ -845,6 +837,45 @@ export function importSvgText(text: string, opts: ImportSvgOptions = {}): SvgImp
 
   const sink: ElementSink = { closed: [], open: [] };
   const ignoredElements: string[] = [];
+  emitSvgElements(tags, rootMatrix, tolMm, sink, ignoredElements);
+
+  const assembled = assembleSvgRegions(sink, opts);
+
+  return {
+    regions: assembled.regions,
+    unitScale: scale,
+    unitSource,
+    ignoredElements,
+    flippedAboutViewBox: flipAbout !== null,
+    duplicatesDropped: assembled.duplicatesDropped,
+    degeneratesDropped: assembled.degeneratesDropped,
+    gapsClosed: assembled.gapsClosed,
+  };
+}
+
+/** Empty payloads and unknown `opts.units` are rejected before any parsing,
+ *  so the failure names the request rather than the document. */
+function validateImportRequest(text: string, opts: ImportSvgOptions): void {
+  if (text.trim().length === 0) {
+    throw new SvgParseError('empty', 'SVG payload is empty.');
+  }
+  if (opts.units !== undefined && !isLengthUnit(opts.units)) {
+    throw new SvgParseError(
+      'bad-units',
+      `opts.units '${String(opts.units)}' is not a known length unit (${LENGTH_UNIT_NAMES.join(', ')}).`,
+    );
+  }
+}
+
+/** Walk the element stream once, maintaining the transform stack and the
+ *  non-rendering skip depth, and hand each geometry element to the emitter. */
+function emitSvgElements(
+  tags: Tag[],
+  rootMatrix: Matrix,
+  tolMm: number,
+  sink: ElementSink,
+  ignoredElements: string[],
+): void {
   const stack: Matrix[] = [rootMatrix];
   let skipDepth = 0;
 
@@ -880,25 +911,17 @@ export function importSvgText(text: string, opts: ImportSvgOptions = {}): SvgImp
       emitGeometryElement(lower, tag, m, sink, tolMm);
     }
   }
+}
 
-  let assembled;
+/** Run the contour assembler, translating contour failures into the
+ *  importer's own error type so callers only have to know `SvgParseError`. */
+function assembleSvgRegions(sink: ElementSink, opts: ImportSvgOptions): ReturnType<typeof assembleRegions> {
   try {
-    assembled = assembleRegions(sink, { tolerance: opts.tolerance ?? DEFAULT_SVG_TOLERANCE });
+    return assembleRegions(sink, { tolerance: opts.tolerance ?? DEFAULT_SVG_TOLERANCE });
   } catch (e) {
     if (e instanceof ContourError) throw new SvgParseError('contour', e.message);
     throw e;
   }
-
-  return {
-    regions: assembled.regions,
-    unitScale: scale,
-    unitSource,
-    ignoredElements,
-    flippedAboutViewBox: flipAbout !== null,
-    duplicatesDropped: assembled.duplicatesDropped,
-    degeneratesDropped: assembled.degeneratesDropped,
-    gapsClosed: assembled.gapsClosed,
-  };
 }
 
 /** Resolve the millimetres-per-user-unit scale and the human-readable source
