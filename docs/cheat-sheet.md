@@ -67,13 +67,13 @@ Turn a profile into a solid, or grow one along a path.
 
 | Call | What it does |
 |---|---|
-| `Sketch.extrude(depth: Editable<number>) => Shape` | Extrude this closed sketch normal to its plane by `depth` (mm). |
+| `Sketch.extrude(depth: Editable<number>, opts?: { faceLabels?, twistAngle? }) => Shape` | Extrude this closed sketch normal to its plane by `depth` (mm). |
 | `Sketch.revolve(opts?: { angleDeg?: Editable<number> }) => Shape` | Revolve around the Z axis, 360 degrees unless `angleDeg` (number or ParamRef). |
 | `Sketch.revolve() => Shape` | Revolve 360 degrees around the Z axis. |
 | `Sketch.sweep(rail, opts?: { frenet?, transitionMode?, spine? }) => Shape` | Sweep this profile along a 3D rail. |
 | `Sketch.sweep(rail, opts?: { frenet?, transitionMode?, spine? }) => Shape` | Sweep this profile along a 3D rail. |
-| `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, ruled?, startPoint?, endPoint? }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
-| `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, ruled?, startPoint?, endPoint?, rails?: Curve3D[] }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
+| `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, twistDeg?, twistCenter?, ruled?, startPoint?, endPoint?, faceLabels? }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
+| `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, twistDeg?, twistCenter?, ruled?, startPoint?, endPoint?, faceLabels?, rails?: Curve3D[] }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
 | `variableSweep(spine: Curve3D \| Sketch \| Vec3[], sections: Array<{ t: number; profile: Sketch }>, opts?: { closed?: boolean; continuity?: "C0" \| "C1" \| "C2" }) => Shape` | Multi-section sweep that blends `sections[i].profile` along the spine at the section's `t ∈ [0, 1]` spine parameter. |
 | `helix({ radius: Editable<number>, pitch: Editable<number>, turns: Editable<number>, axis?, pointsPerTurn?, startAngle?: Editable<number> }) => [number, number, number][]` | Helix rail for `Sketch.sweep`. |
 

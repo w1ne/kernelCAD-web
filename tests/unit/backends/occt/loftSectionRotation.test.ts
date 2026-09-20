@@ -1,5 +1,6 @@
 import { describe, expect, it, beforeAll } from 'vitest';
 import { initOcct, OcctBackend } from '../../../../src/kernel/backends/occt/occtBackend';
+import { buildNurbsSketchOnPlane } from '../../../../src/kernel/backends/occt/pathNurbsLowerer';
 import { toParam } from '../../../../src/shared/runtime/editableHelpers';
 import type { SketchCommand } from '../../../../src/modeling/capture/sketch';
 
@@ -77,6 +78,13 @@ describe('loft section rotation + NURBS placement', () => {
       { plane: 'XY', origin: [0, 0, 0] },
       { plane: 'XY', origin: [0, 0, 60], rotationDeg: NaN },
     ])).toThrow(/planes\[1\]\.rotationDeg.*finite/);
+  });
+
+  it('rejects a non-finite opts.rotationDeg in the NURBS lowerer instead of skipping it', () => {
+    for (const bad of [NaN, Infinity, -Infinity]) {
+      expect(() => buildNurbsSketchOnPlane(tri, 'XY', { rotationDeg: bad }))
+        .toThrow(/rotationDeg.*finite/);
+    }
   });
 
   it('honors origin for NURBS-bearing sections (no degenerate solid)', () => {

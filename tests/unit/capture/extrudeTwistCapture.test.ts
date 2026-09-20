@@ -61,4 +61,13 @@ describe('extrude twistAngle capture contract', () => {
     expect(err.code).toBe('feature.invalid-args');
     expect(err.message).toMatch(/opts\.twistAngle/);
   });
+
+  it('tolerates null opts (legacy optional-chaining behaviour)', () => {
+    const { s, kcad } = session();
+    const sketch = kcad.path().moveTo(0, 0).lineTo(30, 0).lineTo(30, 6).close();
+
+    expect(() => sketch.extrude(80, null)).not.toThrow();
+
+    expect(s.getRecords().at(-1)!.params.twistAngle).toMatchObject({ unit: 'deg', evaluated: 0 });
+  });
 });

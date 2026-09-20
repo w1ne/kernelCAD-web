@@ -124,8 +124,12 @@ export class Sketch {
    */
   extrude(
     depth: Editable<number>,
-    opts: { faceLabels?: FaceLabelsMap; twistAngle?: Editable<number> } = {},
+    opts?: { faceLabels?: FaceLabelsMap; twistAngle?: Editable<number> } | null,
   ): Shape {
+    // Tolerate an explicit `null` opts: the pre-guard implementation read
+    // `opts?.faceLabels`, so JS/agent callers could pass null. Keep that
+    // contract rather than crashing on Object.keys(null).
+    opts ??= {};
     for (const key of Object.keys(opts)) {
       if (!ALLOWED_EXTRUDE_KEYS.has(key)) {
         throw new KernelError(
@@ -364,7 +368,7 @@ export class Sketch {
    */
   loft(
     other: Sketch | Sketch[],
-    opts: {
+    opts?: {
       spacing?: Editable<number>;
       planes?: LoftPlaneSpec[];
       twistDeg?: Editable<number>;
@@ -374,8 +378,12 @@ export class Sketch {
       endPoint?: [Editable<number>, Editable<number>, Editable<number>];
       faceLabels?: FaceLabelsMap;
       rails?: Curve3D[];
-    } = {},
+    } | null,
   ): Shape {
+    // Tolerate an explicit `null` opts: the pre-guard implementation read
+    // `opts?.` fields, so JS/agent callers could pass null. Keep that
+    // contract rather than crashing on Object.keys(null).
+    opts ??= {};
     for (const key of Object.keys(opts)) {
       if (!ALLOWED_LOFT_KEYS.has(key)) {
         throw new KernelError(

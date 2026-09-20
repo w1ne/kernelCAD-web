@@ -19,6 +19,7 @@ import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
 import { sceneToWorldFrameParts } from './sceneToWorldFrame';
 import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../../modeling/properties/massProperties';
+import { KernelError } from '../../../shared/intent/kernelError';
 
 type ReplicadEdge = replicad.Edge;
 type ReplicadFace = replicad.Face;
@@ -508,11 +509,14 @@ export class OcctBackend implements ShapeBackend {
    * @param opts.twistAngle total twist in degrees applied from bottom to top,
    *   rotating the profile about the sketch origin as it sweeps. 0 / omitted
    *   takes the exact legacy straight-extrude path. Not supported for
-   *   face-bound sketches (throws).
+   *   face-bound sketches (throws `feature.invalid-args`).
    *
    * @throws {Error} If `sketch` is not a sketch-tagged backend.
    * @throws {Error} If `depth <= 0`.
-   * @throws {Error} If `opts.twistAngle` is non-zero for a face-bound sketch.
+   * @throws {KernelError} If `opts.twistAngle` is not finite
+   *   (`feature.invalid-args`).
+   * @throws {KernelError} If `opts.twistAngle` is non-zero for a face-bound
+   *   sketch (`feature.invalid-args`).
    */
   static extrudeFromSketch(
     sketch: OcctBackend,
@@ -528,10 +532,22 @@ export class OcctBackend implements ShapeBackend {
     if (depth <= 0) {
       throw new Error(`OcctBackend.extrudeFromSketch: depth must be positive (got ${depth})`);
     }
+    const angle = opts.twistAngle ?? 0;
+    if (!Number.isFinite(angle)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        'extrudeFromSketch: twistAngle must be a finite number.',
+        undefined,
+        'twistAngle must resolve to a finite number — check the param expression and any division in it.',
+      );
+    }
     if (sketch._faceBoundSketch) {
-      if (opts.twistAngle) {
-        throw new Error(
+      if (angle !== 0) {
+        throw new KernelError(
+          'feature.invalid-args',
           'extrudeFromSketch: twistAngle is not supported for face-bound sketches.',
+          undefined,
+          'Remove twistAngle from this extrude, or author the profile as a path()...close() sketch instead of a face-bound sketch.',
         );
       }
       // W3: extrude the already face-bound sketch directly. replicad
@@ -543,13 +559,19 @@ export class OcctBackend implements ShapeBackend {
       // NURBS path — build a fresh `replicad.Sketch` on XY from the captured
       // SketchCommand[], composing pen-run edges with direct-OCCT NURBS edges.
       const built = buildNurbsSketchOnPlane(sketch._commands, 'XY');
-      return new OcctBackend(built.extrude(depth, { twistAngle: opts.twistAngle }) as ReplicadShape3D);
+      if (angle === 0) {
+        return new OcctBackend(built.extrude(depth) as ReplicadShape3D);
+      }
+      return new OcctBackend(built.extrude(depth, { twistAngle: angle }) as ReplicadShape3D);
     }
     const lifted = sketch._drawing!.sketchOnPlane('XY');
     const single = lifted as unknown as {
       extrude: (d: number, opts?: { twistAngle?: number }) => ReplicadShape3D;
     };
-    return new OcctBackend(single.extrude(depth, { twistAngle: opts.twistAngle }));
+    if (angle === 0) {
+      return new OcctBackend(single.extrude(depth));
+    }
+    return new OcctBackend(single.extrude(depth, { twistAngle: angle }));
   }
 
   /**

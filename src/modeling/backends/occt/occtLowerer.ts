@@ -18,7 +18,7 @@ import type { Connector } from '../../mates/connector';
 import type { MateRecord } from '../../mates/mate';
 import type { MateType } from '../../mates/mateTypes';
 import { resolveTopologyOriginOnBackend } from './connectorTopology';
-import { KernelError } from '../../../shared/intent/kernelError';
+import { KernelError, isKernelError } from '../../../shared/intent/kernelError';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import {
@@ -1055,6 +1055,20 @@ export class OcctLowerer implements FeatureLowerer {
           try {
             shape = OcctBackend.extrudeFromSketch(sketchInput, depth, { twistAngle });
           } catch (e) {
+            if (isKernelError(e)) {
+              // Typed capture/kernel errors carry their own code + hint —
+              // preserve them instead of burying them under a generic
+              // feature.kernel-failed self-intersection hint.
+              diagnostics.push({
+                target: 'export-occt',
+                code: e.code,
+                featureId: r.id,
+                severity: 'error',
+                message: e.message,
+                hint: e.hint ?? HINT_TEMPLATES[e.code].template,
+              });
+              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            }
             const msg = e instanceof Error ? e.message : String(e);
             diagnostics.push({
               target: 'export-occt',

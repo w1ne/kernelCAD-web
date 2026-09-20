@@ -320,7 +320,12 @@ export function buildNurbsSketchOnPlane(
   plane: PlaneName,
   opts?: { origin?: Vec3; rotationDeg?: number; rotationCenter?: [number, number] },
 ): replicad.Sketch {
-  const cmds = opts?.rotationDeg
+  if (opts?.rotationDeg !== undefined && !Number.isFinite(opts.rotationDeg)) {
+    throw new Error(
+      `buildNurbsSketchOnPlane: opts.rotationDeg must be a finite number (got ${opts.rotationDeg}).`,
+    );
+  }
+  const cmds = opts?.rotationDeg !== undefined && opts.rotationDeg !== 0
     ? rotateSketchCommands(commands, opts.rotationDeg, opts.rotationCenter)
     : commands;
   if (cmds.length === 0) {

@@ -102,6 +102,23 @@ describe('loft twist capture contract', () => {
     expect(err.message).toMatch(/planes\[1\] option 'normal'/);
   });
 
+  it('tolerates null opts (legacy optional-chaining behaviour)', () => {
+    const nullOpts = session();
+    const a1 = nullOpts.kcad.path().moveTo(0, -1).lineTo(2, 0).lineTo(0, 1).close();
+    const b1 = nullOpts.kcad.path().moveTo(0, -1).lineTo(2, 0).lineTo(0, 1).close();
+    expect(() => a1.loft(b1, null)).not.toThrow();
+
+    const emptyOpts = session();
+    const a2 = emptyOpts.kcad.path().moveTo(0, -1).lineTo(2, 0).lineTo(0, 1).close();
+    const b2 = emptyOpts.kcad.path().moveTo(0, -1).lineTo(2, 0).lineTo(0, 1).close();
+    a2.loft(b2, {});
+
+    const nullRec = nullOpts.s.getRecords().find((r) => r.kind === 'loft')!;
+    const emptyRec = emptyOpts.s.getRecords().find((r) => r.kind === 'loft')!;
+    expect(nullRec.params).toEqual(emptyRec.params);
+    expect(nullRec.metadata).toEqual(emptyRec.metadata);
+  });
+
   it('rejects non-numeric twistDeg and planes[].rotationDeg', () => {
     const { kcad } = session();
     const a = kcad.path().moveTo(0, -1).lineTo(2, 0).lineTo(0, 1).close();
