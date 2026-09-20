@@ -22,26 +22,14 @@ export interface ProjectLiveUpdates {
   handleTogglePrivacy: () => void;
 }
 
-/** Project row loading, live SSE updates, and the owner privacy toggle for the
- *  /p/:slug viewer. */
-export function useProjectLiveUpdates(slug: string): ProjectLiveUpdates {
-  const [project, setProject] = useState<ProjectRow | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-  const [privacyBusy, setPrivacyBusy] = useState(false);
-  const [upgradeNeeded, setUpgradeNeeded] = useState(false);
-  const [liveCode, setLiveCode] = useState<string | undefined>();
-  const [lastLiveUpdate, setLastLiveUpdate] = useState<Date | null>(null);
-  const versionRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    fetchProjectBySlug(slug).then(setProject).catch(e => setErr(String(e)));
-  }, [slug]);
-
-  // Seed the version guard from the initial fetch.
-  useEffect(() => {
-    if (project) versionRef.current = project.version ?? null;
-  }, [project]);
-
+/** Subscribe to the project's SSE channel and apply monotonic refetches.
+ *  Extracted from useProjectLiveUpdates; the effect body is unchanged. */
+function useProjectEventStream(
+  slug: string,
+  versionRef: { current: number | null },
+  setLiveCode: (value: string | undefined) => void,
+  setLastLiveUpdate: (value: Date | null) => void,
+): void {
   useEffect(() => {
     let disposed = false;
     // Guarded refetch: the SSE payload carries only the version; fetch the row
@@ -73,19 +61,27 @@ export function useProjectLiveUpdates(slug: string): ProjectLiveUpdates {
     });
     es.addEventListener('error', () => { hadError = true; });
     return () => { disposed = true; es.close(); };
-  }, [slug]);
+  }, [slug, versionRef, setLiveCode, setLastLiveUpdate]);
+}
 
-  // Render-to-image for web Claude: the hosted backend has no browser, so this
-  // open tab captures its own WebGL canvas and uploads it; an agent then fetches
-  // the stored image via get_latest_render.
-  //
-  // Capture only once the render has SETTLED. A fixed delay grabs an empty /
-  // unframed frame, because meshing + the camera-fit tween finish well after the
-  // project metadata loads. Instead we poll the canvas and upload the first
-  // frame that is stable (two consecutive grabs of ~equal size) — i.e. after the
-  // model is meshed and the camera has stopped moving. Re-armed on initial load
-  // (project) and after each live update (lastLiveUpdate). Strictly
-  // fire-and-forget: a failed capture/upload must never break the viewer.
+/** Capture-and-upload loop for the hosted backend. Extracted from
+ *  useProjectLiveUpdates; the effect body is unchanged. */
+// Render-to-image for web Claude: the hosted backend has no browser, so this
+// open tab captures its own WebGL canvas and uploads it; an agent then fetches
+// the stored image via get_latest_render.
+//
+// Capture only once the render has SETTLED. A fixed delay grabs an empty /
+// unframed frame, because meshing + the camera-fit tween finish well after the
+// project metadata loads. Instead we poll the canvas and upload the first
+// frame that is stable (two consecutive grabs of ~equal size) — i.e. after the
+// model is meshed and the camera has stopped moving. Re-armed on initial load
+// (project) and after each live update (lastLiveUpdate). Strictly
+// fire-and-forget: a failed capture/upload must never break the viewer.
+function useSettledRenderCapture(
+  slug: string,
+  project: ProjectRow | null,
+  lastLiveUpdate: Date | null,
+): void {
   useEffect(() => {
     if (!project) return;
     const FIRST_DELAY_MS = 1000; // let the first paint happen before sampling
@@ -120,6 +116,31 @@ export function useProjectLiveUpdates(slug: string): ProjectLiveUpdates {
       if (timer !== undefined) window.clearTimeout(timer);
     };
   }, [slug, project, lastLiveUpdate]);
+}
+
+/** Project row loading, live SSE updates, and the owner privacy toggle for the
+ *  /p/:slug viewer. */
+export function useProjectLiveUpdates(slug: string): ProjectLiveUpdates {
+  const [project, setProject] = useState<ProjectRow | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [privacyBusy, setPrivacyBusy] = useState(false);
+  const [upgradeNeeded, setUpgradeNeeded] = useState(false);
+  const [liveCode, setLiveCode] = useState<string | undefined>();
+  const [lastLiveUpdate, setLastLiveUpdate] = useState<Date | null>(null);
+  const versionRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    fetchProjectBySlug(slug).then(setProject).catch(e => setErr(String(e)));
+  }, [slug]);
+
+  // Seed the version guard from the initial fetch.
+  useEffect(() => {
+    if (project) versionRef.current = project.version ?? null;
+  }, [project]);
+
+  useProjectEventStream(slug, versionRef, setLiveCode, setLastLiveUpdate);
+
+  useSettledRenderCapture(slug, project, lastLiveUpdate);
 
   // Owner-only privacy toggle: public_unlisted <-> private. Making a project
   // private is Pro-gated server-side; a 403 surfaces the upgrade CTA instead.

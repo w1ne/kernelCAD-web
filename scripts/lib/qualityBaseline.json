@@ -1,6 +1,12 @@
 [
   {
     "rule": "max-lines-per-function",
+    "file": "src/agent/reconstruct/planPhases/body.ts",
+    "symbol": "Function 'buildBody'",
+    "value": 111
+  },
+  {
+    "rule": "max-lines-per-function",
     "file": "src/agent/reconstruct/reconstruct.ts",
     "symbol": "Function 'buildMeshLedger'",
     "value": 122
@@ -19,9 +25,21 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/kernel/naming/query.ts",
-    "symbol": "Function 'makeQuery'",
-    "value": 106
+    "file": "src/kernel/backends/occt/drawingSections.ts",
+    "symbol": "Function 'renderObliqueSection'",
+    "value": 105
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/kernel/backends/occt/drawingSections.ts",
+    "symbol": "Function 'renderSections'",
+    "value": 108
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/kernel/backends/occt/edgeSelectionLabels.ts",
+    "symbol": "Function 'labelToEdgeQuery'",
+    "value": 107
   },
   {
     "rule": "max-lines-per-function",
@@ -55,15 +73,15 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/mates/jointVisualExposure.ts",
-    "symbol": "Function 'measureJointVisuals'",
-    "value": 101
+    "file": "src/modeling/constraints/sketchConverter.ts",
+    "symbol": "Function 'convertSketchEntitiesToConstraints'",
+    "value": 111
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/parts/fetchPart.ts",
-    "symbol": "Async function 'fetchPartFromUrlHost'",
-    "value": 104
+    "file": "src/modeling/mates/jointVisualExposure.ts",
+    "symbol": "Function 'measureJointVisuals'",
+    "value": 101
   },
   {
     "rule": "max-lines-per-function",
@@ -97,21 +115,15 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/inputs/NumericScrubInput.tsx",
-    "symbol": "Function 'NumericScrubInput'",
-    "value": 105
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/viewer/ViewerScene.tsx",
     "symbol": "Function 'ViewerScene'",
     "value": 113
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/viewer/overlays/ViewGizmo.tsx",
-    "symbol": "Function 'ViewGizmo'",
-    "value": 104
+    "file": "src/studio/components/viewer/layers/ParametricLayer.tsx",
+    "symbol": "Function 'ParametricLayer'",
+    "value": 106
   },
   {
     "rule": "max-lines-per-function",
@@ -133,21 +145,9 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/hooks/useRecomputeResult.ts",
-    "symbol": "Function 'useRecomputeResult'",
-    "value": 103
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/routes/-ServerRevisionHistory.tsx",
     "symbol": "Function 'ServerRevisionHistory'",
     "value": 102
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/routes/-useProjectLiveUpdates.ts",
-    "symbol": "Function 'useProjectLiveUpdates'",
-    "value": 103
   },
   {
     "rule": "max-lines-per-function",
