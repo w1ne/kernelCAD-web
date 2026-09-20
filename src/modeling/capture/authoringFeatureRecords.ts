@@ -3,6 +3,7 @@
 import type { FeatureKind, FeatureId, FeatureRef, Param } from '../../shared/intent/types';
 import {
   FDM_DEFAULTS,
+  type DfmChannelSpec,
   type DfmFdmMetadata,
   type DfmSpec,
   type DfmSpecMetadata,
@@ -131,28 +132,28 @@ function validateDfmSpecExcludeEntries(args: DfmSpec, bad: BadFn): void {
   }
 }
 
-function validateDfmSpecChannelEntries(args: DfmSpec, bad: BadFn): void {
-  for (const [i, c] of (args.channels ?? []).entries()) {
-    if (typeof c !== 'object' || c === null) {
-      bad(`channels[${i}]`, `must be a { part, name, openings, sealed? } object; got ${JSON.stringify(c)}`);
-    }
-    if (typeof c.part !== 'string' || c.part.length === 0) {
-      bad(`channels[${i}].part`, `must be a non-empty part-name string; got ${JSON.stringify(c.part)}`);
-    }
-    if (typeof c.name !== 'string' || c.name.length === 0) {
-      bad(`channels[${i}].name`, `must be a non-empty label string; got ${JSON.stringify(c.name)}`);
-    }
-    if (!Number.isInteger(c.openings) || c.openings < 0) {
-      bad(`channels[${i}].openings`, `must be a non-negative integer; got ${c.openings}`);
-    }
-    if (c.openings === 0 && c.sealed !== true) {
-      bad(`channels[${i}].openings`, `is 0 but the channel is not declared sealed; pass sealed: true for an intentionally sealed void`);
-    }
-    if (c.sealed === true && c.openings !== 0) {
-      bad(`channels[${i}].openings`, `must be 0 when sealed: true; got ${c.openings}`);
-    }
+function validateDfmSpecChannelFields(i: number, c: DfmChannelSpec, bad: BadFn): void {
+  if (typeof c !== 'object' || c === null) {
+    bad(`channels[${i}]`, `must be a { part, name, openings, sealed? } object; got ${JSON.stringify(c)}`);
   }
+  if (typeof c.part !== 'string' || c.part.length === 0) {
+    bad(`channels[${i}].part`, `must be a non-empty part-name string; got ${JSON.stringify(c.part)}`);
+  }
+  if (typeof c.name !== 'string' || c.name.length === 0) {
+    bad(`channels[${i}].name`, `must be a non-empty label string; got ${JSON.stringify(c.name)}`);
+  }
+  if (!Number.isInteger(c.openings) || c.openings < 0) {
+    bad(`channels[${i}].openings`, `must be a non-negative integer; got ${c.openings}`);
+  }
+  if (c.openings === 0 && c.sealed !== true) {
+    bad(`channels[${i}].openings`, `is 0 but the channel is not declared sealed; pass sealed: true for an intentionally sealed void`);
+  }
+  if (c.sealed === true && c.openings !== 0) {
+    bad(`channels[${i}].openings`, `must be 0 when sealed: true; got ${c.openings}`);
+  }
+}
 
+function validateDfmSpecChannelDuplicates(args: DfmSpec, bad: BadFn): void {
   const channelKeys = new Set<string>();
   for (const [i, c] of (args.channels ?? []).entries()) {
     const key = JSON.stringify([c.part, c.name]);
@@ -161,6 +162,13 @@ function validateDfmSpecChannelEntries(args: DfmSpec, bad: BadFn): void {
     }
     channelKeys.add(key);
   }
+}
+
+function validateDfmSpecChannelEntries(args: DfmSpec, bad: BadFn): void {
+  for (const [i, c] of (args.channels ?? []).entries()) {
+    validateDfmSpecChannelFields(i, c, bad);
+  }
+  validateDfmSpecChannelDuplicates(args, bad);
 }
 
 function buildDfmSpecMetadata(args: DfmSpec, fdm: DfmFdmMetadata | undefined): DfmSpecMetadata {

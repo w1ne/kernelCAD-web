@@ -458,12 +458,6 @@
   {
     "rule": "complexity",
     "file": "src/modeling/capture/authoringFeatureRecords.ts",
-    "symbol": "Function 'validateDfmSpecChannelEntries'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/authoringFeatureRecords.ts",
     "symbol": "Function 'validateDfmSpecCheckFields'",
     "value": 16
   },
