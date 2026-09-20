@@ -7,12 +7,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/agent/reconstruct/reconstruct.ts",
-    "symbol": "Function 'buildMeshLedger'",
-    "value": 122
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/agent/render/captureAnimationPhases.ts",
     "symbol": "Async function 'runFrameLoopPhase'",
     "value": 101
