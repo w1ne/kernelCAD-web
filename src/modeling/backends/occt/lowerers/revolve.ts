@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
+import type { SketchCommand } from '../../../../shared/capture/sketchCommand';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import { emptyResultDiagnostic } from '../additiveNoOp';
 import { built, noShape, type LowerContext, type LowerOutcome } from './context';
@@ -34,31 +35,32 @@ export function lowerRevolve(ctx: LowerContext, r: FeatureRecord): LowerOutcome 
     });
     return noShape();
   }
-  // Empty profile: only moveTo + close (or even less). No segments means
-  // no area to revolve.
-  const segmentCount = commands.filter(c => c.kind === 'lineTo' || c.kind === 'tangentArc').length;
-  if (segmentCount === 0) {
+  // Empty profile: only moveTo + close (or even less). Any real segment —
+  // line, arc, spline, NURBS, or hermite — gives the profile area.
+  if (!commands.some(isPathSegment)) {
     ctx.diagnostics.push({
       target: 'export-occt',
       code: 'feature.invalid-args',
       featureId: r.id,
       severity: 'error',
       message: `revolve profile has no line/arc segments — area is zero.`,
-      hint: 'Add at least one lineTo or arc segment to the path before close.',
+      hint: 'Add at least one segment (line, arc, or spline) to the path before close.',
     });
     return noShape();
   }
   // Axis-cross check: any point with x < 0 means the profile spans the
-  // rotation axis, which yields a self-intersecting revolve.
-  const crossing = commands.find(c => (c.kind === 'moveTo' || c.kind === 'lineTo' || c.kind === 'tangentArc') && c.x.evaluated < 0);
-  if (crossing) {
-    const xv = (crossing as { x: { evaluated: number } }).x.evaluated;
+  // rotation axis, which yields a self-intersecting revolve. Every segment
+  // kind's carried positions participate — line/arc endpoints, arc
+  // midpoints, spline waypoints, NURBS control points, hermite endpoints —
+  // not just the pen-command endpoints.
+  const crossingX = firstNegativeX(commands);
+  if (crossingX !== undefined) {
     ctx.diagnostics.push({
       target: 'export-occt',
       code: 'feature.revolve.crosses-axis',
       featureId: r.id,
       severity: 'error',
-      message: `revolve profile point (x=${xv}) crosses rotation axis. All points must satisfy x >= 0.`,
+      message: `revolve profile point (x=${crossingX}) crosses rotation axis. All points must satisfy x >= 0.`,
       hint: 'A revolve profile must stay on one side of the rotation axis. Clamp all path coordinates to x >= 0.',
     });
     return noShape();
@@ -103,4 +105,66 @@ export function lowerRevolve(ctx: LowerContext, r: FeatureRecord): LowerOutcome 
     if (e) ctx.diagnostics.push(e);
   }
   return built(shape);
+}
+
+/** True for command kinds that contribute geometry to the profile. Tangency
+ *  constructions never reach the lowerer (fromSketchCommands resolves them
+ *  into primitive commands first), so they count as non-segments here. */
+function isPathSegment(c: SketchCommand): boolean {
+  switch (c.kind) {
+    case 'lineTo':
+    case 'tangentArc':
+    case 'threePointsArc':
+    case 'sagittaArc':
+    case 'bulgeArc':
+    case 'radiusArc':
+    case 'smoothSpline':
+    case 'spline':
+    case 'nurbsSegment':
+    case 'hermiteG2_2d':
+      return true;
+    case 'moveTo':
+    case 'close':
+    case 'tangentCircle':
+    case 'tangentLine':
+      return false;
+  }
+}
+
+/** Every x position a command carries. Direction vectors (spline tangents,
+ *  hermite tangents/curvatures) and magnitude scalars (sagitta, bulge,
+ *  radius) are deliberately excluded — only positions can cross the axis. */
+function commandXs(c: SketchCommand): number[] {
+  switch (c.kind) {
+    case 'moveTo':
+    case 'lineTo':
+    case 'tangentArc':
+    case 'sagittaArc':
+    case 'bulgeArc':
+    case 'radiusArc':
+    case 'smoothSpline':
+      return [c.x.evaluated];
+    case 'threePointsArc':
+      return [c.x.evaluated, c.midX.evaluated];
+    case 'spline':
+      return c.points.map(p => p.x.evaluated);
+    case 'nurbsSegment':
+      return c.controlPoints.map(p => p.x.evaluated);
+    case 'hermiteG2_2d':
+      return [c.ax.evaluated, c.bx.evaluated];
+    case 'close':
+    case 'tangentCircle':
+    case 'tangentLine':
+      return [];
+  }
+}
+
+/** First x < 0 in path order, or undefined when the profile stays on x >= 0. */
+function firstNegativeX(commands: SketchCommand[]): number | undefined {
+  for (const c of commands) {
+    for (const x of commandXs(c)) {
+      if (x < 0) return x;
+    }
+  }
+  return undefined;
 }

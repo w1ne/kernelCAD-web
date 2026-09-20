@@ -96,7 +96,7 @@ const limb = variableSweep(spine, [
 ]);
 ```
 
-Spine accepts a `Curve3D`, a planar `Sketch` (its lifted outer wire is used as the rail), or a `Vec3[]` (auto-converted to a `nurbsCurve` of degree `min(3, n-1)`). Sections must be strictly increasing in `t`; the first MUST sit at `t=0` and the last at `t=1` (full-spine coverage).
+Spine accepts a `Curve3D`, a planar `Sketch` (its lifted outer wire is used as the rail), or a `Vec3[]` (auto-converted to a `nurbsCurve` of degree `min(3, n-1)`). Sections must be strictly increasing in `t`; the first MUST sit at `t=0` and the last at `t=1` (full-spine coverage). Intermediate stations anywhere in `(0, 1)` are supported.
 
 ### variableSweep diagnostic codes
 
@@ -107,9 +107,9 @@ Spine accepts a `Curve3D`, a planar `Sketch` (its lifted outer wire is used as t
 - `feature.variable-sweep.profile-empty` — profile sketch is empty (path() not closed).
 - `feature.variable-sweep.frenet-degenerate` — Frenet orientation undefined where spine curvature vanishes. Orientation controls are not exposed in the MCP add tool until runtime orientation support is wired.
 
-### variableSweep gotcha — section locations must be on the spine
+### variableSweep gotcha — section locations are spine vertices (intermediate stations subdivide)
 
-`BRepOffsetAPI_MakePipeShell::Add_2` requires a location `TopoDS_Vertex` that is one of the spine wire's own sub-shapes. Today the lowerer maps `t=0` to the spine's first vertex and `t=1` to its last vertex; intermediate `t` values are not yet supported (spine subdivision lands as a follow-up). Authoring scripts can still target intermediate spine positions by routing through `nurbsCurve` segments stitched into the spine. For twisted solids (turbine blades, drill flutes, staggered sections) use `Sketch.loft` with `twistDeg` (an even total twist distributed across the sections) and/or per-plane `rotationDeg` (`rotationDeg` overrides the distributed `twistDeg`; both rotate about `twistCenter`) instead — `variableSweep` has no per-section orientation control, and rail-guided lofts reject rotation.
+`BRepOffsetAPI_MakePipeShell::Add_2` requires a location `TopoDS_Vertex` that is one of the spine wire's own sub-shapes; a fresh vertex at the same coordinates aborts the build. The lowerer maps `t=0` to the spine's first vertex and `t=1` to its last. For every intermediate station it rebuilds the spine wire with a shared vertex at that station first (extract the edge's `Geom_Curve`, split it into sub-edges over the station-bounded parameter ranges, stitch them back with `BRepBuilderAPI_MakeWire`) and anchors the profile there. Each section's `t` is the spine's normalized **curve parameter** — the same mapping as `Curve3D.pointAt(t)` — not normalized arc length; use `curve.analytics.divideByEqualArcLength(n)` first if you want stations spaced by arc length. For twisted solids (turbine blades, drill flutes, staggered sections) use `Sketch.loft` with `twistDeg` (an even total twist distributed across the sections) and/or per-plane `rotationDeg` (`rotationDeg` overrides the distributed `twistDeg`; both rotate about `twistCenter`) instead — `variableSweep` has no per-section orientation control, and rail-guided lofts reject rotation.
 
 ## Filling surfaces — surfaceFromBoundary (Slice C)
 

@@ -68,4 +68,35 @@ describe('Sketch.loft({ rails })', () => {
     const r = await engine.run(result.records);
     expect(r.diagnostics.some((d) => d.code === 'feature.loft.rail-miss' && d.severity === 'error')).toBe(true);
   });
+
+  it('rail loft applies planes[].origin to NURBS sections', async () => {
+    // Spline (NURBS) sections on planes offset to z=5 / z=45, with the rail
+    // spanning exactly those stations. Before the origin fix the NURBS
+    // sections were lifted at the world origin, so the rail proximity check
+    // missed by 5 mm and the loft failed with feature.loft.rail-miss.
+    const code = `
+      const loop = [[5,-2],[6.73,-1],[6.73,1],[5,2],[3.27,1],[3.27,-1],[5,-2]];
+      const s0 = path().moveTo(5,-2).spline(loop).close();
+      const s1 = path().moveTo(5,-2).spline(loop).close();
+      const rail = nurbsCurve([[5,-2,5],[5,-2,45]], { degree: 1 });
+      return s0.loft(s1, {
+        planes: [
+          { plane: 'XY', origin: [0, 0, 5] },
+          { plane: 'XY', origin: [0, 0, 45] },
+        ],
+        rails: [rail],
+      });
+    `;
+    const result = await runScript({ code, fileName: 'loft-rails-nurbs-origin.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    const errors = r.diagnostics.filter((d) => d.severity === 'error');
+    expect(errors, JSON.stringify(errors)).toHaveLength(0);
+    const loftRec = result.records.find((rec) => rec.kind === 'loft')!;
+    const solid = r.shapes.get(loftRec.id)!;
+    expect(solid.volume()).toBeGreaterThan(100);
+    const bbox = solid.boundingBox({ exact: true });
+    expect(bbox.min[2]).toBeGreaterThanOrEqual(4.5);
+    expect(bbox.max[2]).toBeLessThanOrEqual(45.5);
+  });
 });

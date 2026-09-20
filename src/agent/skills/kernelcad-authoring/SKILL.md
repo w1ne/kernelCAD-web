@@ -192,11 +192,14 @@ box(x: number, y: number, z: number, centered?: boolean, opts?: { faceLabels?: R
 cylinder(h: number, r: number, segments?: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
 sphere(r: number): Shape;  // faceLabels NOT accepted — sphere has no canonical faces
 
-// Extrusion helpers — profile defined inline, extruded along Z.
-extrudeRect(w: number, h: number, height: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
-extrudeCircle(r: number, height: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
-extrudePolygon(points: Array<[Editable<number>, Editable<number>]>, depth: Editable<number>, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
-extrudeRoundedRect(width: number, height: number, radius: number, depth: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
+// Extrusion helpers — profile defined inline, extruded along Z. All four
+// accept opts.twistAngle (deg; number or ParamRef): the profile rotates about
+// the profile origin through the sweep. Unknown option keys throw
+// feature.invalid-args.
+extrudeRect(w: number, h: number, height: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape;
+extrudeCircle(r: number, height: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape;
+extrudePolygon(points: Array<[Editable<number>, Editable<number>]>, depth: Editable<number>, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape;
+extrudeRoundedRect(width: number, height: number, radius: number, depth: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape;
 
 // Path builder — chain moveTo / lineTo / arcs / .close() to get a Sketch. For
 // revolved geometry (washers, donut bodies, mug profiles, etc.) build a profile

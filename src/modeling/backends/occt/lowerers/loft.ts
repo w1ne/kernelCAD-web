@@ -377,7 +377,9 @@ async function buildRailLoft(
       let lifted: { face: () => { outerWire: () => { wrapped: unknown } } };
       if (s._hasNurbs && s._commands) {
         const { buildNurbsSketchOnPlane } = await import('../../../../kernel/backends/occt/pathNurbsLowerer');
-        lifted = buildNurbsSketchOnPlane(s._commands as never, p.plane) as unknown as typeof lifted;
+        lifted = buildNurbsSketchOnPlane(s._commands as never, p.plane, {
+          origin: p.origin,
+        }) as unknown as typeof lifted;
       } else {
         lifted = s._drawing!.sketchOnPlane(
           p.plane,

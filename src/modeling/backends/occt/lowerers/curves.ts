@@ -276,7 +276,10 @@ function resolveVariableSweepSections(
     lowered.push({
       t: sections[i].t,
       profileWire,
-      locationPnt: [0, 0, 0], // unused for t=0/t=1 — see buildVariableSweepShape
+      // The lowerer evaluates the spine edge itself at each station and
+      // matches that point to a spine vertex, so no pre-evaluated anchor is
+      // threaded through here.
+      locationPnt: [0, 0, 0],
     });
   }
   return lowered;
