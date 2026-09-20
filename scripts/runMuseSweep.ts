@@ -274,6 +274,7 @@ async function runOneCase(
             model: cfg.model,
             skillMd,
             startedAt: cfg.startedAt,
+            cookbook,
             maxCalls: cfg.toolMaxCalls,
             maxTokens: cfg.maxTokens,
             temperature: cfg.temperature,

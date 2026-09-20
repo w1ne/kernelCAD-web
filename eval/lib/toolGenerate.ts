@@ -6,6 +6,7 @@ import type { EvaluateResult, TranscriptEvent } from '../types';
 import { evaluateScript } from '../oracle/kernelcad-client';
 import { extractFencedScript } from '../lib';
 import type { GenerateCaseResult } from '../runner';
+import type { CookbookInjection } from '../cookbook-injector';
 import { runToolLoop, type ToolChatClient, type ToolExecuteResult, type ToolSpec } from './toolLoop';
 
 export const EVALUATE_SCRIPT_TOOL: ToolSpec = {
@@ -59,6 +60,7 @@ export interface GenerateCaseWithToolsArgs {
   maxCalls: number;
   maxTokens?: number;
   temperature?: number;
+  cookbook?: CookbookInjection;
   /** Test overrides; production builds them from `evaluateScript`. */
   execute?: (name: string, args: Record<string, unknown>) => Promise<ToolExecuteResult>;
   evaluateArtifact?: (scriptPath: string) => Promise<Pick<EvaluateResult, 'ok' | 'diagnostics'>>;
@@ -72,8 +74,11 @@ export async function generateCaseWithTools(args: GenerateCaseWithToolsArgs): Pr
   const callDir = join(args.runDir, 'tool-calls');
   mkdirSync(callDir, { recursive: true });
 
+  const addendum = args.cookbook?.systemPromptAddendum;
+  const system = `${args.skillMd}${addendum && addendum.length > 0 ? `\n\n${addendum}` : ''}\n\n---\n\n${TOOL_PROTOCOL}`;
+
   const events: TranscriptEvent[] = [];
-  events.push({ kind: 'system_prompt', chars: args.skillMd.length + TOOL_PROTOCOL.length });
+  events.push({ kind: 'system_prompt', chars: system.length });
   events.push({ kind: 'user_prompt', content: prompt });
 
   let callNo = 0;
@@ -106,7 +111,7 @@ export async function generateCaseWithTools(args: GenerateCaseWithToolsArgs): Pr
   const start = Date.now();
   const loop = await runToolLoop({
     client: args.client,
-    system: `${args.skillMd}\n\n---\n\n${TOOL_PROTOCOL}`,
+    system,
     user: prompt,
     model: args.model,
     maxTokens: args.maxTokens ?? 16000,

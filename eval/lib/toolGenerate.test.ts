@@ -11,7 +11,7 @@ vi.mock('../oracle/kernelcad-client', () => ({ evaluateScript: vi.fn() }));
 
 // Import AFTER mocks are registered.
 import { evaluateScript } from '../oracle/kernelcad-client';
-import { generateCaseWithTools, pickArtifact } from './toolGenerate';
+import { generateCaseWithTools, pickArtifact, TOOL_PROTOCOL } from './toolGenerate';
 import type { ToolChatClient, ToolChatMessage, ToolChatResult } from './toolLoop';
 
 const TASK_DIR = join(__dirname, '..', 'tasks', 'bracket-holes');
@@ -84,6 +84,43 @@ describe('generateCaseWithTools', () => {
     expect(meta.status).toBe('passed');
     expect(meta.maxCalls).toBe(4);
     expect(meta.startedAt).toBe('2026-09-20T00-00-00');
+  });
+
+  it('keeps the cookbook addendum in the tool-arm system prompt', async () => {
+    const runDir = mkdtempSync(join(tmpdir(), 'toolgen-'));
+    let capturedSystem = '';
+    const client: ToolChatClient = {
+      chatWithTools: async (a) => {
+        capturedSystem = a.system;
+        return {
+          text: '```ts\nreturn box(1,1,1);\n```',
+          toolCalls: [],
+          finishReason: 'stop',
+          tokensIn: 1,
+          tokensOut: 1,
+        };
+      },
+    };
+    const result = await generateCaseWithTools({
+      taskDir: TASK_DIR,
+      runDir,
+      client,
+      model: 'mock',
+      skillMd: '# skills',
+      startedAt: '2026-09-20T00-00-00',
+      maxCalls: 4,
+      cookbook: {
+        query: 'q',
+        hits: [],
+        systemPromptAddendum: 'DISTINCTIVE_COOKBOOK_ADDENDUM',
+      },
+      execute: async () => ({ content: '{"ok":true}', ok: true, diagnostics: [] }),
+      evaluateArtifact: async () => ({ ok: true, diagnostics: [] }),
+    });
+    expect(capturedSystem).toContain('DISTINCTIVE_COOKBOOK_ADDENDUM');
+    expect(capturedSystem).toContain('## Verification tool');
+    expect(capturedSystem).toContain(TOOL_PROTOCOL);
+    expect(result.status).toBe('passed');
   });
 
   it('falls back to the last evaluated code when the model never emits a fence', async () => {
