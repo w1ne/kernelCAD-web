@@ -308,12 +308,6 @@
   {
     "rule": "complexity",
     "file": "src/agent/reconstruct/segment.ts",
-    "symbol": "Function 'fitCylinder'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/reconstruct/segment.ts",
     "symbol": "Function 'growPlanes'",
     "value": 19
   },

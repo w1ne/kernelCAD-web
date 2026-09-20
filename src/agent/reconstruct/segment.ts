@@ -627,6 +627,18 @@ export function fitCylinder(
   forcedAxis?: V3,
 ): CylinderRegion | null {
   if (tris.length < 4) return null;
+  const { m, area } = accumulateNormalMoments(mesh, tris);
+  if (area <= 0) return null;
+  const candidates = cylinderAxisCandidates(mesh, tris, area, symmetricEigen3(m), forcedAxis);
+  const verts = uniqueVertices(mesh, tris);
+  for (const axis of candidates) {
+    const fitted = fitCylinderOnAxis(mesh, tris, verts, axis, area, tol, diag);
+    if (fitted) return fitted;
+  }
+  return null;
+}
+
+function accumulateNormalMoments(mesh: IndexedMesh, tris: number[]): { m: Float64Array; area: number } {
   const m = new Float64Array(9);
   let area = 0;
   for (const t of tris) {
@@ -635,8 +647,16 @@ export function fitCylinder(
     const n = triNormal(mesh, t);
     for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) m[i * 3 + j] += a * n[i] * n[j];
   }
-  if (area <= 0) return null;
-  const eig = symmetricEigen3(m);
+  return { m, area };
+}
+
+function cylinderAxisCandidates(
+  mesh: IndexedMesh,
+  tris: number[],
+  area: number,
+  eig: ReturnType<typeof symmetricEigen3>,
+  forcedAxis: V3 | undefined,
+): V3[] {
   const candidates: V3[] = [];
   if (forcedAxis) candidates.push(forcedAxis);
   else if (eig.values[1] / Math.max(eig.values[2], 1e-300) >= 0.02) candidates.push(eig.vectors[0]);
@@ -649,61 +669,74 @@ export function fitCylinder(
       if (s / area < 0.005) candidates.push(ax);
     }
   }
-  const verts = uniqueVertices(mesh, tris);
-  for (const axis of candidates) {
-    const u = normalize3(Math.abs(axis[2]) < 0.9 ? cross3([0, 0, 1], axis) : cross3([1, 0, 0], axis));
-    const w = cross3(axis, u);
-    const xy = new Float64Array(verts.length * 2);
-    let tMin = Infinity;
-    let tMax = -Infinity;
-    verts.forEach((v, i) => {
-      const p = vertex(mesh, v);
-      xy[i * 2] = dot3(p, u);
-      xy[i * 2 + 1] = dot3(p, w);
-      const t = dot3(p, axis);
-      if (t < tMin) tMin = t;
-      if (t > tMax) tMax = t;
-    });
-    const fit = fitCircle2D(xy);
-    if (!fit || fit.r > diag * 2 || fit.rms > tol || fit.maxResidual > 3 * tol) continue;
-    const angles = Array.from({ length: verts.length }, (_, i) => Math.atan2(xy[i * 2 + 1] - fit.cy, xy[i * 2] - fit.cx)).sort(
-      (a, b) => a - b,
-    );
-    let maxGap = angles.length > 0 ? angles[0] + 2 * Math.PI - angles[angles.length - 1] : 2 * Math.PI;
-    for (let i = 1; i < angles.length; i++) maxGap = Math.max(maxGap, angles[i] - angles[i - 1]);
-    const origin: V3 = [
-      u[0] * fit.cx + w[0] * fit.cy,
-      u[1] * fit.cx + w[1] * fit.cy,
-      u[2] * fit.cx + w[2] * fit.cy,
+  return candidates;
+}
+
+function fitCylinderOnAxis(
+  mesh: IndexedMesh,
+  tris: number[],
+  verts: number[],
+  axis: V3,
+  area: number,
+  tol: number,
+  diag: number,
+): CylinderRegion | null {
+  const u = normalize3(Math.abs(axis[2]) < 0.9 ? cross3([0, 0, 1], axis) : cross3([1, 0, 0], axis));
+  const w = cross3(axis, u);
+  const xy = new Float64Array(verts.length * 2);
+  let tMin = Infinity;
+  let tMax = -Infinity;
+  verts.forEach((v, i) => {
+    const p = vertex(mesh, v);
+    xy[i * 2] = dot3(p, u);
+    xy[i * 2 + 1] = dot3(p, w);
+    const t = dot3(p, axis);
+    if (t < tMin) tMin = t;
+    if (t > tMax) tMax = t;
+  });
+  const fit = fitCircle2D(xy);
+  if (!fit || fit.r > diag * 2 || fit.rms > tol || fit.maxResidual > 3 * tol) return null;
+  const angles = Array.from({ length: verts.length }, (_, i) => Math.atan2(xy[i * 2 + 1] - fit.cy, xy[i * 2] - fit.cx)).sort(
+    (a, b) => a - b,
+  );
+  const maxGap = maxAngularGap(angles);
+  const origin: V3 = [
+    u[0] * fit.cx + w[0] * fit.cy,
+    u[1] * fit.cx + w[1] * fit.cy,
+    u[2] * fit.cx + w[2] * fit.cy,
+  ];
+  let radialSign = 0;
+  for (const t of tris) {
+    const a = mesh.triangles[t * 3] * 3, b = mesh.triangles[t * 3 + 1] * 3, c = mesh.triangles[t * 3 + 2] * 3;
+    const cen: V3 = [
+      (mesh.positions[a] + mesh.positions[b] + mesh.positions[c]) / 3,
+      (mesh.positions[a + 1] + mesh.positions[b + 1] + mesh.positions[c + 1]) / 3,
+      (mesh.positions[a + 2] + mesh.positions[b + 2] + mesh.positions[c + 2]) / 3,
     ];
-    let radialSign = 0;
-    for (const t of tris) {
-      const a = mesh.triangles[t * 3] * 3, b = mesh.triangles[t * 3 + 1] * 3, c = mesh.triangles[t * 3 + 2] * 3;
-      const cen: V3 = [
-        (mesh.positions[a] + mesh.positions[b] + mesh.positions[c]) / 3,
-        (mesh.positions[a + 1] + mesh.positions[b + 1] + mesh.positions[c + 1]) / 3,
-        (mesh.positions[a + 2] + mesh.positions[b + 2] + mesh.positions[c + 2]) / 3,
-      ];
-      const along = dot3(cen, axis);
-      const radial: V3 = [cen[0] - origin[0] - axis[0] * along, cen[1] - origin[1] - axis[1] * along, cen[2] - origin[2] - axis[2] * along];
-      radialSign += mesh.areas[t] * dot3(triNormal(mesh, t), radial);
-    }
-    return {
-      kind: 'cylinder',
-      id: 0,
-      tris,
-      axis,
-      origin,
-      radius: fit.r,
-      tMin,
-      tMax,
-      coverageRad: 2 * Math.PI - maxGap,
-      concave: radialSign < 0,
-      rms: fit.rms,
-      area,
-    };
+    const along = dot3(cen, axis);
+    const radial: V3 = [cen[0] - origin[0] - axis[0] * along, cen[1] - origin[1] - axis[1] * along, cen[2] - origin[2] - axis[2] * along];
+    radialSign += mesh.areas[t] * dot3(triNormal(mesh, t), radial);
   }
-  return null;
+  return {
+    kind: 'cylinder',
+    id: 0,
+    tris,
+    axis,
+    origin,
+    radius: fit.r,
+    tMin,
+    tMax,
+    coverageRad: 2 * Math.PI - maxGap,
+    concave: radialSign < 0,
+    rms: fit.rms,
+    area,
+  };
+}
+
+function maxAngularGap(angles: number[]): number {
+  let maxGap = angles.length > 0 ? angles[0] + 2 * Math.PI - angles[angles.length - 1] : 2 * Math.PI;
+  for (let i = 1; i < angles.length; i++) maxGap = Math.max(maxGap, angles[i] - angles[i - 1]);
+  return maxGap;
 }
 
 function freeformOf(mesh: IndexedMesh, tris: number[]): FreeformRegion {
