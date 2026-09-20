@@ -133,12 +133,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/designLoop.ts",
-    "symbol": "Function 'weakVisualCheckEvidence'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/dfmPreflight.ts",
     "symbol": "Async function 'dfmPreflightTool'",
     "value": 19
