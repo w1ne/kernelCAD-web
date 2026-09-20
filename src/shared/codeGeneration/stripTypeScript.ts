@@ -562,8 +562,7 @@ const stepNumber = (st: StripState): void => {
     skipNonNull(st);
 };
 
-/** Consume one punctuation character, updating the scan state. */
-const stepPunct = (st: StripState, c: string): void => {
+const stepBracePunct = (st: StripState, c: string): boolean => {
     if (c === '{') {
         const kind = classifyBrace(st);
         st.braces.push(kind);
@@ -573,7 +572,7 @@ const stepPunct = (st: StripState, c: string): void => {
         st.i++;
         st.statementStart = kind === 'block';
         st.expectBinding = false;
-        return;
+        return true;
     }
     if (c === '}') {
         st.braces.pop();
@@ -584,8 +583,12 @@ const stepPunct = (st: StripState, c: string): void => {
         st.statementStart = true;
         st.expectBinding = false;
         if (st.braces.length === 0) st.inImport = false;
-        return;
+        return true;
     }
+    return false;
+};
+
+const stepBracketPunct = (st: StripState, c: string): boolean => {
     if (c === '(') {
         st.lastKind = 'punct';
         st.lastPunct = '(';
@@ -593,7 +596,7 @@ const stepPunct = (st: StripState, c: string): void => {
         st.i++;
         st.statementStart = false;
         st.expectBinding = false;
-        return;
+        return true;
     }
     if (c === ')') {
         st.lastKind = 'punct';
@@ -606,7 +609,7 @@ const stepPunct = (st: StripState, c: string): void => {
         if (st.source[st.i] === ':') skipTypeAnnotation(st);
         looksLikeGeneric(st);
         skipNonNull(st);
-        return;
+        return true;
     }
     if (c === '[') {
         st.lastKind = 'punct';
@@ -614,7 +617,7 @@ const stepPunct = (st: StripState, c: string): void => {
         st.lastIdent = '';
         st.i++;
         st.statementStart = false;
-        return;
+        return true;
     }
     if (c === ']') {
         st.lastKind = 'punct';
@@ -626,8 +629,12 @@ const stepPunct = (st: StripState, c: string): void => {
         if (st.expectBinding && st.source[st.i] === ':') skipTypeAnnotation(st);
         skipNonNull(st);
         st.expectBinding = false;
-        return;
+        return true;
     }
+    return false;
+};
+
+const stepSimplePunct = (st: StripState, c: string): void => {
     if (c === ';') {
         st.inImport = false;
         st.expectBinding = false;
@@ -659,6 +666,13 @@ const stepPunct = (st: StripState, c: string): void => {
     st.statementStart = false;
     st.expectBinding = false;
     st.i++;
+};
+
+/** Consume one punctuation character, updating the scan state. */
+const stepPunct = (st: StripState, c: string): void => {
+    if (stepBracePunct(st, c)) return;
+    if (stepBracketPunct(st, c)) return;
+    stepSimplePunct(st, c);
 };
 
 export function stripTypeScriptSyntax(source: string): string {
