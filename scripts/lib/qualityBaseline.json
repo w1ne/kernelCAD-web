@@ -19,6 +19,12 @@
   },
   {
     "rule": "complexity",
+    "file": "src/agent/cli/commands/export.ts",
+    "symbol": "Async function 'trustedManifestPath'",
+    "value": 17
+  },
+  {
+    "rule": "complexity",
     "file": "src/agent/drawing/reconstructPhases.ts",
     "symbol": "Function 'applyRadialCallouts'",
     "value": 16
@@ -28,6 +34,30 @@
     "file": "src/agent/drawing/reconstructPhases.ts",
     "symbol": "Function 'collectDimensionEdges'",
     "value": 16
+  },
+  {
+    "rule": "complexity",
+    "file": "src/agent/drawing/sheet.ts",
+    "symbol": "Function 'readTitleBlock'",
+    "value": 17
+  },
+  {
+    "rule": "complexity",
+    "file": "src/agent/mcp/edits/addPathSpline.ts",
+    "symbol": "Function 'consumeLexicalContext'",
+    "value": 17
+  },
+  {
+    "rule": "complexity",
+    "file": "src/agent/mcp/edits/assemblySourceEdits.ts",
+    "symbol": "Function 'addTransmissionSource'",
+    "value": 17
+  },
+  {
+    "rule": "complexity",
+    "file": "src/agent/mcp/edits/setParamValue.ts",
+    "symbol": "Function 'scanArgEnd'",
+    "value": 17
   },
   {
     "rule": "complexity",
@@ -343,26 +373,32 @@
   },
   {
     "rule": "complexity",
-    "file": "src/shared/codeGeneration/stripTypeScript.ts",
-    "symbol": "Arrow function",
+    "file": "src/studio/StagedEditSlot.tsx",
+    "symbol": "Function 'StagedEditContextDetails'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/shared/codeGeneration/stripTypeScript.ts",
-    "symbol": "Arrow function#2",
+    "file": "src/studio/components/Layout/StatusBar.tsx",
+    "symbol": "Function 'StatusBar'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/shared/codeGeneration/stripTypeScript.ts",
-    "symbol": "Arrow function#3",
+    "file": "src/studio/components/inputs/useNumericScrub.ts",
+    "symbol": "Function 'useNumericScrub'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/shared/runtime/resolveParams.ts",
-    "symbol": "Function 'walkResolve'",
+    "file": "src/studio/hooks/viewer/useDirectEditDrag.ts",
+    "symbol": "Async arrow function",
+    "value": 16
+  },
+  {
+    "rule": "complexity",
+    "file": "src/studio/routes/GenerateHero.tsx",
+    "symbol": "Function 'GenerateHero'",
     "value": 16
   },
   {
@@ -649,6 +685,12 @@
   },
   {
     "rule": "max-lines-per-function",
+    "file": "src/studio/hooks/viewer/useDirectEditDrag.ts",
+    "symbol": "Function 'useDirectEditDrag'",
+    "value": 101
+  },
+  {
+    "rule": "max-lines-per-function",
     "file": "src/studio/routes/-ServerRevisionHistory.tsx",
     "symbol": "Function 'ServerRevisionHistory'",
     "value": 102
@@ -658,12 +700,6 @@
     "file": "src/studio/routes/-useProjectLiveUpdates.ts",
     "symbol": "Function 'useProjectLiveUpdates'",
     "value": 103
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/routes/billing.tsx",
-    "symbol": "Function 'BillingPage'",
-    "value": 144
   },
   {
     "rule": "max-lines-per-function",
