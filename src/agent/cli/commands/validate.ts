@@ -26,9 +26,15 @@ import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { initOcct } from '../../../kernel/backends/occt/occtBackend';
 import type { Assembly } from '../../../modeling/capture/assembly';
+import type { CaptureSession } from '../../../modeling/capture/captureSession';
 import { buildModelFromFile } from '../../../modeling/buildModel';
 import { runScript } from '../../../modeling/runtime/runScript';
-import { checkInterference } from '../../script-runtime/checkInterference';
+import { lowerScriptScene } from '../../script-runtime/checkInterference';
+import {
+  detectInterferences,
+  pairKey,
+  type InterferencePair,
+} from '../../../modeling/runtime/detectInterferences';
 import { validateAssembly, type ValidatorResult } from '../../../modeling/mates/validator';
 import {
   reviewMechanicalPlausibility,
@@ -92,17 +98,28 @@ export async function runValidateCli(input: ValidateCliInput): Promise<ValidateC
   // routinely clash by design. Agents who want them in the validator
   // stream pass --include-interference (and get the same epsilon
   // semantics as `kernelcad interference`).
-  let interferencePairs: import('../../../modeling/runtime/detectInterferences').InterferencePair[] = [];
+  //
+  // The script is executed ONCE and its record stream lowered ONCE; the
+  // same session feeds the mechanism probe below. Previously this path ran
+  // the script twice (checkInterference + buildModelFromFile) and lowered
+  // each run separately. Detection itself uses the same AABB-pruned
+  // candidate generation as the dedicated `interference` command
+  // (`collectInterferenceCandidates` via `detectInterferences`).
+  let interferencePairs: InterferencePair[] = [];
   let kernelDiagnostics: import('../../../shared/diagnostics/diagnostic').CompilerDiagnostic[] = [];
   if (input.includeInterference) {
-    const interferenceR = await checkInterference({
-      code,
-      fileName: input.file,
-      scriptDir,
-      epsilonMm3: input.epsilon,
-    });
-    interferencePairs = [...interferenceR.pairs];
-    kernelDiagnostics = interferenceR.diagnostics;
+    const lowered = await lowerScriptScene(run);
+    kernelDiagnostics = lowered.diagnostics;
+    if (lowered.scene !== undefined) {
+      const interferenceR = detectInterferences(
+        lowered.scene,
+        input.epsilon,
+        modelIgnorePairs(run.session),
+        lowered.diagnostics,
+      );
+      interferencePairs = [...interferenceR.pairs];
+      kernelDiagnostics = interferenceR.diagnostics;
+    }
   }
 
   const result = validateAssembly({
@@ -126,7 +143,7 @@ export async function runValidateCli(input: ValidateCliInput): Promise<ValidateC
   // gate is in the same "heavy validate" tier as interference); the
   // explicit --no-include-physics opts back out.
   const mechanismProbe = input.includeInterference
-    ? await runMechanismProbe(absPath, { physicsCheck: input.includePhysics })
+    ? await runMechanismProbe(run.session, { physicsCheck: input.includePhysics })
     : { mechanism: 'unverified' as const, failures: [] };
 
   if (input.json) {
@@ -165,24 +182,42 @@ export async function runValidateCli(input: ValidateCliInput): Promise<ValidateC
 }
 
 /**
+ * Union of every captured assembly's `solvedModel({ ignore })` list as
+ * symmetric `pairKey` strings. This is the model's own declaration of
+ * intended contacts (SolidWorks "Ignore" / press-fit), so the CLI validate
+ * path honors the same silencing the Studio review surface does. The
+ * dedicated `interference` command keeps its explicit `--ignore` surface.
+ */
+function modelIgnorePairs(session: CaptureSession): Set<string> {
+  const ignored = new Set<string>();
+  for (const arm of session.assemblies.values() as Iterable<Assembly>) {
+    for (const [a, b] of arm.__ignoreInterference()) ignored.add(pairKey(a, b));
+  }
+  return ignored;
+}
+
+/**
  * Run the mechanism-truth probe against every assembly the script
  * captures. Aggregates failures across assemblies — if any one
  * assembly is broken, the run is broken.
+ *
+ * Reuses the session from the single script execution the caller already
+ * performed (no second `buildModelFromFile`); `checkMechanismTruth` lowers
+ * its own rest-pose scene once and re-poses it across the sweep.
  *
  * Catches probe-side throws so a kernel hiccup in the pose sweep can't
  * mask the legacy validator's diagnostics. Surfaces such throws as a
  * synthetic warning diagnostic instead of a crash.
  */
 async function runMechanismProbe(
-  absPath: string,
+  session: CaptureSession,
   opts: { physicsCheck: boolean },
 ): Promise<{
   mechanism: 'real' | 'broken' | 'unverified';
   failures: CompilerDiagnostic[];
 }> {
   try {
-    const model = await buildModelFromFile({ file: absPath });
-    const assemblies = Array.from(model.session.assemblies.values()) as Assembly[];
+    const assemblies = Array.from(session.assemblies.values()) as Assembly[];
     if (assemblies.length === 0) {
       return { mechanism: 'unverified', failures: [] };
     }

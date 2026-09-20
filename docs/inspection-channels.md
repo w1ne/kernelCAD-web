@@ -28,9 +28,11 @@ Implemented path:
 
 CLI:
 
-`kernelcad render inspect <file> <outDir> --channels rgb,depth,normals`
+`kernelcad render inspect <file> <outDir> --channels rgb,depth,normals --views front,iso`
 
-Default stays `rgb`. Unsupported channels should still fail before launching the browser. `requestedChannels` should preserve the user's normalized request; `emittedChannels` should list the channels actually written.
+Default stays `rgb` (channels) and all four canonical views (`--views` omitted). Unsupported channels/views should still fail before launching the browser. `requestedChannels` should preserve the user's normalized request; `emittedChannels` should list the channels actually written; `views` records the captured view subset.
+
+Batching + mask resolution (gap #9): `--views <list>` lets a large model be captured in view batches instead of one multi-hour bundle. The mask channel renders through a capped offscreen render target (`MASK_CAPTURE_MAX_SIZE = 1024` longest edge, aspect preserved) and is nearest-upscaled to the requested tile size — masks carry object ids, so the cap loses no semantics. RGB/depth/normals renders are unchanged; `captureMaskPng()` without an argument keeps the full-canvas path for Studio callers.
 
 Headless API:
 

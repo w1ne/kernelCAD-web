@@ -57,8 +57,9 @@ import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { solveMates } from '../mates/solver';
-import { detectInterferences } from './detectInterferences';
+import { detectInterferences, pairKey } from './detectInterferences';
 import { jointContactCapMm3, INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
+import { reposedLoweredAssemblyScene } from '../mates/loweredAssemblyScene';
 import { expandCoupledPoses } from '../mates/coupledPoses';
 import type { NumericPoses } from '../capture/forwardKinematics';
 import { parseConnectorRef, type MateRecord } from '../mates/mate';
@@ -221,6 +222,19 @@ interface SolvedSample {
 }
 
 /**
+ * One full BREP lower shared by every pose in a sweep. A scene's part
+ * shapes are local-frame geometry, so a single lower can be re-posed per
+ * sample by swapping in that sample's `solveMates` world transforms
+ * (`reposedLoweredAssemblyScene`) instead of re-running the whole
+ * RecomputeEngine per sample. Populated by the first sample that needs a
+ * lowered scene (the rest sample in practice); a missing/partial pose map
+ * falls back to a full lower per sample (see `lowerSceneForSample`).
+ */
+interface LoweredSceneBase {
+  scene?: SceneBackend;
+}
+
+/**
  * Entry point. Runs all four mechanism-truth criteria against an
  * Assembly at sampled poses. Returns `mechanism: 'real'` iff every
  * criterion holds at every pose.
@@ -271,21 +285,39 @@ export async function checkMechanismTruth(
     return { mechanism: failures.length === 0 ? 'real' : 'broken', failures };
   }
 
-  // Criterion 1 (mechanism.disconnect) — fastened-mate invariant. Lowers
-  // each fastened part ONCE for bbox corners (O(parts), cached), not
-  // per-pose, so it stays affordable even on dense assemblies; always run.
-  failures.push(...(await checkFastenedInvariant(arm, solved)));
-
   // BREP-sweep budget gate (issue #348). Criteria 2/3/7/8 each lower the
   // whole assembly per pose sample — a Cartesian cost that explodes on
   // dense mechanisms (Gearfinity: 24 parts × 13 samples + 4 mates × 3 dof
   // micro-poses ≈ 600 work units, > 5 min). Estimate the work from the
   // assembly graph (no lowering) and skip the sweep when it's intractable;
   // the verdict then degrades to 'unverified' rather than timing out.
+  // Computed BEFORE criterion 1 so the shared rest-scene lower below only
+  // runs when a criterion actually needs a lowered scene.
   const partCount = arm.__parts().length;
   const sweepBudget = effectiveSweepBudget(opts.sweepBudget);
   const sweepWork = estimateSweepWork(arm, solved.length);
   const sweepSkipped = sweepWork > sweepBudget;
+
+  // One lowered rest scene is shared by criterion 1 (local bbox corners),
+  // the sweep's per-pose detection (re-posed via `solveMates` transforms),
+  // and criteria 7/8. `Shape.lower()` re-runs the ENTIRE record chain, so
+  // the old per-fastened-part bbox lowering was O(parts) full-assembly
+  // lowers — the dominant cost of `validate --include-interference` on the
+  // 42-part turbojet. Skipped when no criterion needs a scene (no fastened
+  // mates AND an over-budget sweep).
+  const loweredBase: LoweredSceneBase = {};
+  const hasFastenedMates = arm.__mates().some((m) => m.type === 'fastened');
+  if (hasFastenedMates || !sweepSkipped) {
+    const restSample = solved.find((s) => s.sample.name === 'rest');
+    if (restSample !== undefined) {
+      await lowerSceneForSample(arm, restSample, loweredBase);
+    }
+  }
+
+  // Criterion 1 (mechanism.disconnect) — fastened-mate invariant. Reads the
+  // part local bboxes from the shared rest scene when available; falls back
+  // to per-part `originalShape.lower()` only when that scene is missing.
+  failures.push(...(await checkFastenedInvariant(arm, solved, loweredBase.scene)));
 
   if (sweepSkipped) {
     // LOUD skip (T3): the over-budget skip used to emit ONLY a console.warn
@@ -298,29 +330,33 @@ export async function checkMechanismTruth(
     // reserved for a definitive 'broken').
     failures.push(makeBudgetExceeded(sweepWork, sweepBudget, partCount, solved.length));
   } else {
+    // `loweredBase` was populated above (the rest sample's full lower);
+    // every other pose re-poses it with that sample's `solveMates`
+    // transforms instead of re-lowering the whole assembly.
+
     // Criterion 2 (mechanism.interpenetration) — per-pose BREP sweep.
-    failures.push(...(await checkInterpenetration(arm, solved)));
+    failures.push(...(await checkInterpenetration(arm, solved, loweredBase)));
 
     // Criterion 3 (mechanism.dof-mismatch) — pragmatic micro-pose check.
     // Note: this is the spec's open-question #2 ("DoF-mismatch is
     // geometric"); the pragmatic shape used here is connected-component
     // count stability under ±ε around the declared axis. Skipped when the
     // assembly has no revolute mates.
-    failures.push(...(await checkDofMismatch(arm)));
+    failures.push(...(await checkDofMismatch(arm, loweredBase)));
 
     // Criterion 7 (mechanism.joint-mesh-gap) — at REST pose, every joint
     // pivot must lie inside both its parent and child body meshes. P8
     // slice; closes the visual-mesh-gap hole MJCF cannot see (joints in
     // physics are constraints on abstract rigid bodies, not assertions
     // about material continuity in the rendered geometry).
-    failures.push(...(await checkJointMeshContinuityCriterion(arm, solved)));
+    failures.push(...(await checkJointMeshContinuityCriterion(arm, solved, loweredBase)));
 
     // Criterion 8 (mechanism.tendon-body-intersect) — a balance tendon's
     // routed path must not cut through a non-anchor body at any sampled
     // pose. The static authoring backstop for "the spring goes through the
     // arm"; MuJoCo wrap routing (Slice 2 MJCF) is the runtime side, this is
     // the design-time gate. No-op for assemblies with no tendons.
-    failures.push(...(await checkTendonBodyIntersectCriterion(arm, solved)));
+    failures.push(...(await checkTendonBodyIntersectCriterion(arm, solved, loweredBase)));
   }
 
   // Criteria 5 + 6 (physics) — gated on `opts.physicsCheck`. The MuJoCo
@@ -510,6 +546,7 @@ function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
 async function checkFastenedInvariant(
   arm: Assembly,
   solved: readonly SolvedSample[],
+  baseScene?: SceneBackend,
 ): Promise<CompilerDiagnostic[]> {
   const fastenedMates = arm.__mates().filter((m) => m.type === 'fastened');
   if (fastenedMates.length === 0) return [];
@@ -518,8 +555,14 @@ async function checkFastenedInvariant(
   if (rest === undefined) return [];
 
   const out: CompilerDiagnostic[] = [];
-  // Cache local-frame bbox corners per part — `originalShape.lower()`
-  // is heavy and we may visit the same part across multiple mates.
+  // Local-frame bboxes come from the shared rest scene when it was lowered
+  // (one full lower); otherwise `getOrComputeBboxCorners` falls back to the
+  // per-part `originalShape.lower()` (a full record-chain lower per part).
+  const localBboxByPart = baseScene === undefined
+    ? undefined
+    : new Map(baseScene.parts.map((p) => [p.name, p.shape.boundingBox()]));
+  // Cache local-frame bbox corners per part — we may visit the same part
+  // across multiple mates.
   const cornersByPart = new Map<string, readonly Se3Vec3[]>();
 
   for (const mate of fastenedMates) {
@@ -530,7 +573,7 @@ async function checkFastenedInvariant(
     const T_B_rest = rest.transforms.get(bPart);
     if (T_A_rest === undefined || T_B_rest === undefined) continue;
 
-    const corners = await getOrComputeBboxCorners(arm, bPart, cornersByPart);
+    const corners = await getOrComputeBboxCorners(arm, bPart, cornersByPart, localBboxByPart);
     if (corners === undefined || corners.length === 0) continue;
 
     // FK-expected-position rigidity test:
@@ -588,34 +631,54 @@ async function checkFastenedInvariant(
   return out;
 }
 
+/** 8 corners of an AABB, in the same x→y→z nesting order the old
+ *  per-part lower used (so the drift diagnostic's corner index is stable). */
+function bboxCorners(
+  bb: { min: [number, number, number]; max: [number, number, number] },
+): Se3Vec3[] {
+  const corners: Se3Vec3[] = [];
+  for (const x of [bb.min[0], bb.max[0]]) {
+    for (const y of [bb.min[1], bb.max[1]]) {
+      for (const z of [bb.min[2], bb.max[2]]) {
+        corners.push([x, y, z]);
+      }
+    }
+  }
+  return corners;
+}
+
 /**
  * Compute the 8 bbox corners of `partName`'s local-frame geometry,
- * caching the result. Returns `undefined` if the part isn't found or
- * the lower / bbox call throws (the part may be on a session that
- * hasn't been initialized in this engine — caller should skip).
+ * caching the result. Prefers the shared rest scene's local part bbox when
+ * one is supplied (one full lower total); otherwise falls back to
+ * `originalShape.lower()` — which re-runs the ENTIRE record chain, so the
+ * fallback is O(parts) full lowers on a dense assembly. Returns `undefined`
+ * if the part isn't found or the lower / bbox call throws (the part may be
+ * on a session that hasn't been initialized in this engine — caller should
+ * skip).
  */
 async function getOrComputeBboxCorners(
   arm: Assembly,
   partName: string,
   cache: Map<string, readonly Se3Vec3[]>,
+  localBboxByPart?: ReadonlyMap<string, { min: [number, number, number]; max: [number, number, number] }>,
 ): Promise<readonly Se3Vec3[] | undefined> {
   const cached = cache.get(partName);
   if (cached !== undefined) return cached;
+
+  const sceneBbox = localBboxByPart?.get(partName);
+  if (sceneBbox !== undefined) {
+    const corners = bboxCorners(sceneBbox);
+    cache.set(partName, corners);
+    return corners;
+  }
 
   const part = arm.__parts().find((p) => p.name === partName);
   if (part === undefined) return undefined;
 
   try {
     const backend = await part.originalShape.lower();
-    const bb = backend.boundingBox();
-    const corners: Se3Vec3[] = [];
-    for (const x of [bb.min[0], bb.max[0]]) {
-      for (const y of [bb.min[1], bb.max[1]]) {
-        for (const z of [bb.min[2], bb.max[2]]) {
-          corners.push([x, y, z]);
-        }
-      }
-    }
+    const corners = bboxCorners(backend.boundingBox());
     cache.set(partName, corners);
     return corners;
   } catch {
@@ -644,6 +707,7 @@ async function getOrComputeBboxCorners(
 async function checkInterpenetration(
   arm: Assembly,
   solved: SolvedSample[],
+  loweredBase: LoweredSceneBase,
 ): Promise<CompilerDiagnostic[]> {
   const out: CompilerDiagnostic[] = [];
   const mates = arm.__mates();
@@ -657,11 +721,19 @@ async function checkInterpenetration(
     matedPairs.set(pairKey(a, b), m.type);
   }
 
+  // The documented escape hatch for a genuine intended overlap is the
+  // per-pair user `ignore` list on `solvedModel({ ignore: [...] })`
+  // (SolidWorks "Ignore" / press-fit). Fold it into the detector's
+  // symmetric pair-key set so the mechanism-truth criterion honors the
+  // same silencing the validator diagnostic stream does.
+  const ignored = new Set<string>();
+  for (const [a, b] of arm.__ignoreInterference()) ignored.add(pairKey(a, b));
+
   for (const s of solved) {
-    const scene = await lowerSceneForSample(arm, s);
+    const scene = await lowerSceneForSample(arm, s, loweredBase);
     if (scene === undefined) continue;
 
-    const result = detectInterferences(scene, INTERPENETRATION_EPSILON_MM3, new Set());
+    const result = detectInterferences(scene, INTERPENETRATION_EPSILON_MM3, ignored);
     if (result.pairs.length === 0) continue;
 
     for (const pair of result.pairs) {
@@ -721,9 +793,18 @@ async function checkInterpenetration(
  * infinitesimal rotation about the declared axis — which is what
  * dof-mismatch means in BREP terms.
  */
-async function checkDofMismatch(arm: Assembly): Promise<CompilerDiagnostic[]> {
+async function checkDofMismatch(
+  arm: Assembly,
+  loweredBase: LoweredSceneBase,
+): Promise<CompilerDiagnostic[]> {
   const revoluteMates = arm.__mates().filter((m) => m.type === 'revolute');
   if (revoluteMates.length === 0) return [];
+
+  // Same symmetric `solvedModel({ ignore })` silencing the interpenetration
+  // criterion applies — an intended contact must not make the micro-pose
+  // overlap count wobble and fire a spurious dof-mismatch.
+  const ignored = new Set<string>();
+  for (const [a, b] of arm.__ignoreInterference()) ignored.add(pairKey(a, b));
 
   const out: CompilerDiagnostic[] = [];
   for (const mate of revoluteMates) {
@@ -740,13 +821,13 @@ async function checkDofMismatch(arm: Assembly): Promise<CompilerDiagnostic[]> {
           sample: { name: `${mate.name}:µ${p}`, mateName: mate.name, poses: overrides },
           transforms: r.poses,
         };
-        const scene = await lowerSceneForSample(arm, sample);
+        const scene = await lowerSceneForSample(arm, sample, loweredBase);
         if (scene === undefined) {
           overlapCounts.push(-1);
           continue;
         }
         const result = detectInterferences(
-          scene, INTERPENETRATION_EPSILON_MM3, new Set(),
+          scene, INTERPENETRATION_EPSILON_MM3, ignored,
         );
         overlapCounts.push(result.pairs.length);
       } catch {
@@ -795,10 +876,11 @@ async function checkDofMismatch(arm: Assembly): Promise<CompilerDiagnostic[]> {
 async function checkJointMeshContinuityCriterion(
   arm: Assembly,
   solved: SolvedSample[],
+  loweredBase: LoweredSceneBase,
 ): Promise<CompilerDiagnostic[]> {
   const rest = solved.find((s) => s.sample.name === 'rest');
   if (rest === undefined) return [];
-  const scene = await lowerSceneForSample(arm, rest);
+  const scene = await lowerSceneForSample(arm, rest, loweredBase);
   if (scene === undefined) return [];
 
   const results = checkJointMeshContinuity(arm, {
@@ -855,12 +937,13 @@ async function checkJointMeshContinuityCriterion(
 async function checkTendonBodyIntersectCriterion(
   arm: Assembly,
   solved: SolvedSample[],
+  loweredBase: LoweredSceneBase,
 ): Promise<CompilerDiagnostic[]> {
   if (arm.__tendons().length === 0) return [];
   const out: CompilerDiagnostic[] = [];
   const seen = new Set<string>(); // dedupe (tendon, part) across poses
   for (const s of solved) {
-    const scene = await lowerSceneForSample(arm, s);
+    const scene = await lowerSceneForSample(arm, s, loweredBase);
     if (scene === undefined) continue;
     const results = checkTendonBodyIntersectAtPose(arm, { transforms: s.transforms, scene });
     for (const r of results) {
@@ -920,36 +1003,58 @@ function formatPoseValue(v: number): string {
 // ─────────────────────────────────────────────────────────────────────────
 
 /**
- * Lower the assembly + apply the per-part world transforms from `sample`
- * to produce a SceneBackend the interference detector can read. Cached
- * on `sample.scene` to avoid re-paying for repeat criterion calls on the
- * same sample.
+ * Produce a SceneBackend for `sample` the interference detector can read.
  *
- * Mirrors the existing `detectInterferencesForPoses` pipeline — re-runs
- * the RecomputeEngine for the assembly's records at this pose. Heavy;
- * only called by criteria 2 + 3.
+ * Fast path: once `loweredBase.scene` holds one fully lowered scene, every
+ * other sample re-poses it with that sample's `solveMates` world transforms
+ * (`reposedLoweredAssemblyScene`) — part BREPs are local-frame geometry, so
+ * the source feature tree does NOT need re-lowering per pose. This turns
+ * the sweep's `(samples × parts)` full lowers into ONE lower plus cheap
+ * clone-free re-poses.
+ *
+ * Slow path (first sample, or a partial pose map the re-pose helper
+ * refuses): run `arm.solvedModel(poses)` + RecomputeEngine exactly like the
+ * old per-sample lower. Results are cached on `sample.scene` to avoid
+ * re-paying for repeat criterion calls on the same sample.
  */
 async function lowerSceneForSample(
   arm: Assembly,
   sample: SolvedSample,
+  loweredBase: LoweredSceneBase = {},
 ): Promise<SceneBackend | undefined> {
   if (sample.scene !== undefined) return sample.scene;
   try {
-    const scene = await arm.solvedModel(sample.sample.poses, { validate: 'off' });
-    const engine = new RecomputeEngine(createOcctLowerer(arm.__session()));
-    const result = await engine.run(arm.__session().getRecords(), {
-      paramTable: arm.__session().paramTable,
-      gatedFeatureNames: arm.__session().gatedFeatureNames,
-    });
-    const sourceId: FeatureId | undefined = scene.__sourceFeatureId();
-    if (sourceId === undefined) return undefined;
-    const lowered = result.shapes.get(sourceId);
-    if (lowered === undefined || !isSceneBackend(lowered)) return undefined;
+    const reposed = loweredBase.scene === undefined
+      ? undefined
+      : reposedLoweredAssemblyScene(arm, loweredBase.scene, sample.transforms);
+    const lowered = reposed ?? await lowerAssemblySceneForPose(arm, sample);
+    if (lowered === undefined) return undefined;
     (sample as { scene?: SceneBackend }).scene = lowered;
+    if (loweredBase.scene === undefined) loweredBase.scene = lowered;
     return lowered;
   } catch {
     return undefined;
   }
+}
+
+/** Full-assembly lower at one pose — the slow path behind
+ *  {@link lowerSceneForSample}. Runs the RecomputeEngine over the
+ *  assembly's records (mirrors `detectInterferencesForPoses`). */
+async function lowerAssemblySceneForPose(
+  arm: Assembly,
+  sample: SolvedSample,
+): Promise<SceneBackend | undefined> {
+  const scene = await arm.solvedModel(sample.sample.poses, { validate: 'off' });
+  const engine = new RecomputeEngine(createOcctLowerer(arm.__session()));
+  const result = await engine.run(arm.__session().getRecords(), {
+    paramTable: arm.__session().paramTable,
+    gatedFeatureNames: arm.__session().gatedFeatureNames,
+  });
+  const sourceId: FeatureId | undefined = scene.__sourceFeatureId();
+  if (sourceId === undefined) return undefined;
+  const lowered = result.shapes.get(sourceId);
+  if (lowered === undefined || !isSceneBackend(lowered)) return undefined;
+  return lowered;
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -1268,10 +1373,6 @@ function formatTorque(v: number): string {
 // ─────────────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────
-
-function pairKey(a: string, b: string): string {
-  return a < b ? `${a}\t${b}` : `${b}\t${a}`;
-}
 
 /**
  * Build the LOUD non-fatal diagnostic for a skipped (over-budget) BREP

@@ -128,7 +128,7 @@ export interface DemoPlayerWindow {
   /** Capture a flat object-id mask for the current view without leaving the
    *  scene in mask-material mode. Colors are deterministic by visible
    *  feature-group order and exclude hidden objects. */
-  captureMaskPng(): DemoPlayerMaskCapture;
+  captureMaskPng(maxSize?: number): DemoPlayerMaskCapture;
   /** Capture offscreen depth / normals inspection channels for the current
    *  camera state without disturbing the visible RGB frame. */
   captureInspectionChannels(input: {

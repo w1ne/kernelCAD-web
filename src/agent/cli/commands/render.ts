@@ -24,6 +24,7 @@ import {
   type HeadlessObjectFilter,
   type HeadlessInspectionChannel,
   type HeadlessRenderResult,
+  type RenderView,
 } from '../../render/headlessRender';
 import { resolveRenderBaseUrl } from '../../render/playerServer';
 import { buildModelFromFile } from '../../../modeling/buildModel';
@@ -86,9 +87,13 @@ export interface RenderInspectInput {
   focus?: string[];
   hide?: string[];
   channels?: string[];
+  /** Subset of canonical views to capture; default all four. Lets a large
+   *  model be captured in view batches instead of one multi-hour bundle. */
+  views?: string[];
 }
 
 const SUPPORTED_INSPECT_CHANNELS = new Set<HeadlessInspectionChannel>(['rgb', 'mask', 'depth', 'normals']);
+const SUPPORTED_INSPECT_VIEWS = new Set<RenderView>(['front', 'right', 'top', 'iso']);
 
 /**
  * Build a HeadlessObjectFilter from `--focus` / `--hide` pattern lists.
@@ -260,6 +265,22 @@ function normalizeInspectChannels(values: readonly string[] | undefined): Headle
     throw new Error(`render inspect: unsupported channel(s): ${unsupported.join(', ')}. Supported channels: rgb, mask, depth, normals.`);
   }
   return [...new Set(requested)] as HeadlessInspectionChannel[];
+}
+
+/**
+ * Validate a `--views <list>` value (comma list of `front,right,top,iso`).
+ * Empty/undefined defaults to all four canonical views, so existing
+ * invocations keep capturing the full bundle. Rejects unknown view names
+ * before the render surface is provisioned, mirroring `--channels`.
+ */
+export function normalizeInspectViews(values: readonly string[] | undefined): RenderView[] {
+  const views = normalizePatternList(values);
+  const requested = views.length > 0 ? views : [...ALL_VIEWS];
+  const unsupported = requested.filter((view) => !SUPPORTED_INSPECT_VIEWS.has(view as RenderView));
+  if (unsupported.length > 0) {
+    throw new Error(`render inspect: unsupported view(s): ${unsupported.join(', ')}. Supported views: front, right, top, iso.`);
+  }
+  return [...new Set(requested)] as RenderView[];
 }
 
 /**
@@ -464,13 +485,20 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
 type MechanismProbe = Awaited<ReturnType<typeof runRenderMechanismProbe>>;
 
 type InspectInputResolution =
-  | { ok: true; requestedChannels: HeadlessInspectionChannel[]; objectFilter: HeadlessObjectFilter | undefined }
+  | {
+      ok: true;
+      requestedChannels: HeadlessInspectionChannel[];
+      requestedViews: RenderView[];
+      objectFilter: HeadlessObjectFilter | undefined;
+    }
   | { ok: false; result: RenderCliResult };
 
 function resolveInspectInputs(input: RenderInspectInput): InspectInputResolution {
   let requestedChannels: HeadlessInspectionChannel[];
+  let requestedViews: RenderView[];
   try {
     requestedChannels = normalizeInspectChannels(input.channels);
+    requestedViews = normalizeInspectViews(input.views);
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
     return { ok: false, result: { exitCode: 1, outputPaths: [] } };
@@ -482,7 +510,7 @@ function resolveInspectInputs(input: RenderInspectInput): InspectInputResolution
     console.error(e instanceof Error ? e.message : String(e));
     return { ok: false, result: { exitCode: 1, outputPaths: [] } };
   }
-  return { ok: true, requestedChannels, objectFilter };
+  return { ok: true, requestedChannels, requestedViews, objectFilter };
 }
 
 type InspectProbeResolution =
@@ -507,6 +535,7 @@ async function renderInspectViews(
   filePath: string,
   objectFilter: HeadlessObjectFilter | undefined,
   requestedChannels: HeadlessInspectionChannel[],
+  requestedViews: RenderView[],
 ): Promise<InspectRenderResolution> {
   try {
     const result = await withRenderBase(input.baseUrl, (baseUrl) =>
@@ -514,7 +543,7 @@ async function renderInspectViews(
         scriptPath: filePath,
         viewportWidth: input.width,
         viewportHeight: input.height,
-        views: ALL_VIEWS,
+        views: requestedViews,
         baseUrl,
         hideReferenceImages: input.hideReferenceImages,
         environment: input.environment,
@@ -557,9 +586,10 @@ async function writeRgbInspectViews(
   mechanismProbe: MechanismProbe,
   channelPaths: Record<string, Record<string, string>>,
   pngPaths: string[],
+  views: readonly RenderView[],
 ): Promise<void> {
   channelPaths.rgb = {};
-  for (const view of ALL_VIEWS) {
+  for (const view of views) {
     const buf = result.pngsByView[view];
     if (!buf) throw new Error(`renderInspectBundle: missing rgb view '${view}'`);
     const relativePath = `channels/rgb/${view}.png`;
@@ -583,9 +613,10 @@ async function writeMaskInspectViews(
   outDir: string,
   channelPaths: Record<string, Record<string, string>>,
   pngPaths: string[],
+  views: readonly RenderView[],
 ): Promise<void> {
   channelPaths.mask = {};
-  for (const view of ALL_VIEWS) {
+  for (const view of views) {
     const buf = result.maskPngsByView?.[view];
     if (!buf) throw new Error(`renderInspectBundle: missing mask view '${view}'`);
     const relativePath = `channels/mask/${view}.png`;
@@ -602,9 +633,10 @@ async function writeGenericInspectViews(
   outDir: string,
   channelPaths: Record<string, Record<string, string>>,
   pngPaths: string[],
+  views: readonly RenderView[],
 ): Promise<void> {
   channelPaths[channel] = {};
-  for (const view of ALL_VIEWS) {
+  for (const view of views) {
     const buf = result.inspectionPngsByChannel?.[channel]?.[view];
     if (!buf) throw new Error(`renderInspectBundle: missing ${channel} view '${view}'`);
     const relativePath = `channels/${channel}/${view}.png`;
@@ -619,6 +651,7 @@ function buildInspectManifest(
   input: RenderInspectInput,
   filePath: string,
   requestedChannels: HeadlessInspectionChannel[],
+  requestedViews: RenderView[],
   channelPaths: Record<string, Record<string, string>>,
   objectFilter: HeadlessObjectFilter | undefined,
   result: HeadlessRenderResult,
@@ -648,11 +681,12 @@ function buildInspectManifest(
     requestedChannels,
     emittedChannels: Object.keys(channelPaths),
     viewport: { width: input.width, height: input.height },
-    views: [...ALL_VIEWS],
+    views: [...requestedViews],
     bounds: result.bounds,
     command: {
       name: 'kernelcad render inspect',
       channels: requestedChannels,
+      views: requestedViews,
     },
     ...(objectFilter !== undefined ? { filters: { object: objectFilter } } : {}),
     ...(result.objectVisibility !== undefined
@@ -689,7 +723,7 @@ export async function renderInspectBundle(input: RenderInspectInput): Promise<Re
   const normalsDir = join(outDir, 'channels', 'normals');
   const resolved = resolveInspectInputs(input);
   if (!resolved.ok) return resolved.result;
-  const { requestedChannels, objectFilter } = resolved;
+  const { requestedChannels, requestedViews, objectFilter } = resolved;
 
   // Physics-loop probe — P1 surface convergence. Runs BEFORE the
   // (slow) headless render so strict mode refuses without spinning up
@@ -699,7 +733,7 @@ export async function renderInspectBundle(input: RenderInspectInput): Promise<Re
   const probe = await probeInspectMechanism(filePath);
   if (!probe.ok) return probe.result;
 
-  const rendered = await renderInspectViews(input, filePath, objectFilter, requestedChannels);
+  const rendered = await renderInspectViews(input, filePath, objectFilter, requestedChannels, requestedViews);
   if (!rendered.ok) return rendered.result;
   const result = rendered.result;
 
@@ -708,18 +742,18 @@ export async function renderInspectBundle(input: RenderInspectInput): Promise<Re
   const channelPaths: Record<string, Record<string, string>> = {};
   const pngPaths: string[] = [];
   if (requestedChannels.includes('rgb')) {
-    await writeRgbInspectViews(result, outDir, probe.mechanismProbe, channelPaths, pngPaths);
+    await writeRgbInspectViews(result, outDir, probe.mechanismProbe, channelPaths, pngPaths, requestedViews);
   }
   if (requestedChannels.includes('mask')) {
-    await writeMaskInspectViews(result, outDir, channelPaths, pngPaths);
+    await writeMaskInspectViews(result, outDir, channelPaths, pngPaths, requestedViews);
   }
   for (const channel of ['depth', 'normals'] as const) {
     if (!requestedChannels.includes(channel)) continue;
-    await writeGenericInspectViews(channel, result, outDir, channelPaths, pngPaths);
+    await writeGenericInspectViews(channel, result, outDir, channelPaths, pngPaths, requestedViews);
   }
 
   const manifestPath = join(outDir, 'manifest.json');
-  const manifest = buildInspectManifest(input, filePath, requestedChannels, channelPaths, objectFilter, result);
+  const manifest = buildInspectManifest(input, filePath, requestedChannels, requestedViews, channelPaths, objectFilter, result);
   await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 
   return { exitCode: 0, outputPaths: [manifestPath, ...pngPaths] };
@@ -755,7 +789,7 @@ export function renderCommand(): Command {
       'suppress the kernelCAD version badge in the bottom-right of the captured frame (clean hero artifacts)',
       false,
     )
-    .option('--channels <list>', 'comma-separated inspection channels to emit (rgb, mask, depth, normals)')
+    .option('--channels <list>', 'comma-separated inspection channels to emit (rgb, mask, depth, normals)').option('--views <list>', 'comma-separated views to capture (front, right, top, iso; default all four)')
     .option('--focus <names>', 'show only comma-separated feature ids or assembly part names')
     .option('--hide <names>', 'hide comma-separated feature ids or assembly part names')
     .action(async (file: string, outDir: string, opts: {
@@ -765,7 +799,7 @@ export function renderCommand(): Command {
       hideReferenceImages: boolean;
       environment?: string;
       watermark: boolean;
-      channels?: string;
+      channels?: string; views?: string;
       focus?: string;
       hide?: string;
     }) => {
@@ -778,7 +812,7 @@ export function renderCommand(): Command {
         hideReferenceImages: opts.hideReferenceImages,
         environment: opts.environment,
         noWatermark: opts.watermark === false,
-        channels: opts.channels ? [opts.channels] : undefined,
+        channels: opts.channels ? [opts.channels] : undefined, views: opts.views ? [opts.views] : undefined,
         focus: opts.focus ? [opts.focus] : undefined,
         hide: opts.hide ? [opts.hide] : undefined,
       });
