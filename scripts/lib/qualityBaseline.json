@@ -613,12 +613,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/sketch.ts",
-    "symbol": "Method 'loft'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/sketchReflect.ts",
     "symbol": "Arrow function",
     "value": 19

@@ -55,6 +55,17 @@ export interface HermiteEndpoint2D {
   curvature?: [Editable<number>, Editable<number>];
 }
 
+/** Options accepted by `Sketch.loft`. */
+export interface LoftOptions {
+  spacing?: Editable<number>;
+  planes?: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [Editable<number>, Editable<number>, Editable<number>] }>;
+  ruled?: boolean;
+  startPoint?: [Editable<number>, Editable<number>, Editable<number>];
+  endPoint?: [Editable<number>, Editable<number>, Editable<number>];
+  faceLabels?: FaceLabelsMap;
+  rails?: Curve3D[];
+}
+
 // Re-export so existing modeling/agent/authoring importers keep working.
 // The canonical definition lives in shared/capture/sketchCommand.ts as a
 // leaf module so the kernel can type-import it without depending on
@@ -297,64 +308,18 @@ export class Sketch {
    */
   loft(
     other: Sketch | Sketch[],
-    opts: {
-      spacing?: Editable<number>;
-      planes?: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [Editable<number>, Editable<number>, Editable<number>] }>;
-      ruled?: boolean;
-      startPoint?: [Editable<number>, Editable<number>, Editable<number>];
-      endPoint?: [Editable<number>, Editable<number>, Editable<number>];
-      faceLabels?: FaceLabelsMap;
-      rails?: Curve3D[];
-    } = {},
+    opts: LoftOptions = {},
   ): Shape {
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'loft');
     const others = Array.isArray(other) ? other : [other];
     const allSketches = [this, ...others];
-    const inputs: Record<string, FeatureRef> = {};
-    for (let i = 0; i < allSketches.length; i++) {
-      inputs[`sketch_${i}`] = { kind: 'feature', id: allSketches[i].id };
-    }
-    const rails = opts.rails ?? [];
-    if (!Array.isArray(rails)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `loft: opts.rails must be an array of Curve3D; got ${typeof rails}.`,
-        this.id,
-        'invalid-args.loft.rails — pass Curve3D values from nurbsCurve / spline3d / curveBridge.',
-      );
-    }
-    for (let i = 0; i < rails.length; i++) {
-      const rail = rails[i];
-      if (!rail || typeof rail !== 'object' || !('id' in rail) || !('pointAt' in rail)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `loft: opts.rails[${i}] is not a Curve3D.`,
-          this.id,
-          'invalid-args.loft.rails — each rail must be a Curve3D.',
-        );
-      }
-      inputs[`rail_${i}`] = { kind: 'feature', id: rail.id };
-    }
+    const inputs = buildSketchInputs(allSketches);
+    const rails = validateLoftRails(opts, this.id, inputs);
     return this.session.createShape({
       kind: 'loft',
       inputs,
-      params: {
-        profileKind: { expression: "'sketch'", unit: 'unitless', evaluated: 0 },
-        spacing: toParam(opts.spacing ?? 10, 'mm'),
-        ruled: { expression: String(opts.ruled ?? false), unit: 'unitless', evaluated: opts.ruled ? 1 : 0 },
-        sectionCount: { expression: String(allSketches.length), unit: 'unitless', evaluated: allSketches.length },
-        railCount: { expression: String(rails.length), unit: 'unitless', evaluated: rails.length },
-      },
-      metadata: {
-        // Numeric coordinates are stored as plain numbers (unchanged records);
-        // a ParamRef coordinate is boxed as a Param so the dispatcher's
-        // pre-resolve substitutes it at lower time.
-        planes: opts.planes?.map((p) => ({ ...p, origin: editablePoint3(p.origin) })),
-        startPoint: opts.startPoint === undefined ? undefined : editablePoint3(opts.startPoint),
-        endPoint: opts.endPoint === undefined ? undefined : editablePoint3(opts.endPoint),
-        rails: rails.map((c) => c.id),
-        ...(faceLabels ? { faceLabels } : {}),
-      },
+      params: buildLoftParams(allSketches, opts, rails),
+      metadata: buildLoftMetadata(opts, rails, faceLabels),
     });
   }
 
@@ -1124,6 +1089,74 @@ export class PathBuilder {
       metadata: { commands: this.commands },
     });
   }
+}
+
+function buildSketchInputs(allSketches: readonly Sketch[]): Record<string, FeatureRef> {
+  const inputs: Record<string, FeatureRef> = {};
+  for (let i = 0; i < allSketches.length; i++) {
+    inputs[`sketch_${i}`] = { kind: 'feature', id: allSketches[i].id };
+  }
+  return inputs;
+}
+
+function validateLoftRails(
+  opts: LoftOptions,
+  sketchId: FeatureId,
+  inputs: Record<string, FeatureRef>,
+): Curve3D[] {
+  const rails = opts.rails ?? [];
+  if (!Array.isArray(rails)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `loft: opts.rails must be an array of Curve3D; got ${typeof rails}.`,
+      sketchId,
+      'invalid-args.loft.rails — pass Curve3D values from nurbsCurve / spline3d / curveBridge.',
+    );
+  }
+  for (let i = 0; i < rails.length; i++) {
+    const rail = rails[i];
+    if (!rail || typeof rail !== 'object' || !('id' in rail) || !('pointAt' in rail)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `loft: opts.rails[${i}] is not a Curve3D.`,
+        sketchId,
+        'invalid-args.loft.rails — each rail must be a Curve3D.',
+      );
+    }
+    inputs[`rail_${i}`] = { kind: 'feature', id: rail.id };
+  }
+  return rails;
+}
+
+function buildLoftParams(
+  allSketches: readonly Sketch[],
+  opts: LoftOptions,
+  rails: readonly Curve3D[],
+): Record<string, Param> {
+  return {
+    profileKind: { expression: "'sketch'", unit: 'unitless', evaluated: 0 },
+    spacing: toParam(opts.spacing ?? 10, 'mm'),
+    ruled: { expression: String(opts.ruled ?? false), unit: 'unitless', evaluated: opts.ruled ? 1 : 0 },
+    sectionCount: { expression: String(allSketches.length), unit: 'unitless', evaluated: allSketches.length },
+    railCount: { expression: String(rails.length), unit: 'unitless', evaluated: rails.length },
+  };
+}
+
+function buildLoftMetadata(
+  opts: LoftOptions,
+  rails: readonly Curve3D[],
+  faceLabels: FaceLabelsMap | undefined,
+): Record<string, unknown> {
+  return {
+    // Numeric coordinates are stored as plain numbers (unchanged records);
+    // a ParamRef coordinate is boxed as a Param so the dispatcher's
+    // pre-resolve substitutes it at lower time.
+    planes: opts.planes?.map((p) => ({ ...p, origin: editablePoint3(p.origin) })),
+    startPoint: opts.startPoint === undefined ? undefined : editablePoint3(opts.startPoint),
+    endPoint: opts.endPoint === undefined ? undefined : editablePoint3(opts.endPoint),
+    rails: rails.map((c) => c.id),
+    ...(faceLabels ? { faceLabels } : {}),
+  };
 }
 
 /** Box a 3D point for record metadata: plain numbers stay plain numbers (so a
