@@ -397,12 +397,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/backends/occt/lowerers/curves.ts",
-    "symbol": "Function 'resolveVariableSweepSpine'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/backends/occt/lowerers/edgeFeatures.ts",
     "symbol": "Function 'applyVariableEdgeFeature'",
     "value": 17
