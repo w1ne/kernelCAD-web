@@ -73,12 +73,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/diffGeometry.ts",
-    "symbol": "Async function 'evaluateSide'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/drawingToCad.ts",
     "symbol": "Async function 'drawingToCadTool'",
     "value": 16
