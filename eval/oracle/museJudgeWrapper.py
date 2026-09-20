@@ -119,7 +119,7 @@ def main() -> int:
         "reference_png": str(reference),
     }
     Path(args.out).write_text(json.dumps(out, indent=2), encoding="utf-8")
-    print(json.dumps({"ok": True, "out": args.out}))
+    print(json.dumps(out))
     return 0
 
 
