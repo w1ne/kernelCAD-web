@@ -231,6 +231,34 @@ function tryExtractFaceCenter(face: unknown): [number, number, number] | null {
   return tryVec3((face as UnknownRecord).center);
 }
 
+function resolveReplicadPlaneOrigin(planeObj: UnknownRecord): [number, number, number] | null {
+  const originFn = getFn(planeObj, 'origin');
+  return tryVec3(originFn ? (originFn as () => unknown).call(planeObj) : planeObj.origin);
+}
+
+function resolveReplicadPlaneNormal(planeObj: UnknownRecord): [number, number, number] | null {
+  const zDirFn = getFn(planeObj, 'zDir');
+  const normalFnAlt = getFn(planeObj, 'normal');
+  return tryVec3(
+    zDirFn ? (zDirFn as () => unknown).call(planeObj) :
+      normalFnAlt ? (normalFnAlt as () => unknown).call(planeObj) :
+        (planeObj.zDir ?? planeObj.normal)
+  );
+}
+
+function resolveReplicadPlaneXYDirs(planeObj: UnknownRecord): {
+  xDir: [number, number, number] | null;
+  yDir: [number, number, number] | null;
+} {
+  const xDirFn = getFn(planeObj, 'xDir');
+  const xDir = tryVec3(xDirFn ? (xDirFn as () => unknown).call(planeObj) : planeObj.xDir);
+
+  const yDirFn = getFn(planeObj, 'yDir');
+  const yDir = tryVec3(yDirFn ? (yDirFn as () => unknown).call(planeObj) : planeObj.yDir);
+
+  return { xDir, yDir };
+}
+
 // Preferred strategy: use Replicad helper if available
 function tryExtractPlaneViaReplicadHelper(face: unknown): FaceGeometry['plane'] {
   try {
@@ -238,22 +266,9 @@ function tryExtractPlaneViaReplicadHelper(face: unknown): FaceGeometry['plane'] 
     if (typeof makePlaneFromFaceFn === 'function') {
       const planeObj = makePlaneFromFaceFn(face);
       if (isRecord(planeObj)) {
-        const originFn = getFn(planeObj, 'origin');
-        const origin = tryVec3(originFn ? (originFn as () => unknown).call(planeObj) : planeObj.origin);
-
-        const zDirFn = getFn(planeObj, 'zDir');
-        const normalFnAlt = getFn(planeObj, 'normal');
-        const norm = tryVec3(
-          zDirFn ? (zDirFn as () => unknown).call(planeObj) :
-            normalFnAlt ? (normalFnAlt as () => unknown).call(planeObj) :
-              (planeObj.zDir ?? planeObj.normal)
-        );
-
-        const xDirFn = getFn(planeObj, 'xDir');
-        const xDir = tryVec3(xDirFn ? (xDirFn as () => unknown).call(planeObj) : planeObj.xDir);
-
-        const yDirFn = getFn(planeObj, 'yDir');
-        const yDir = tryVec3(yDirFn ? (yDirFn as () => unknown).call(planeObj) : planeObj.yDir);
+        const origin = resolveReplicadPlaneOrigin(planeObj);
+        const norm = resolveReplicadPlaneNormal(planeObj);
+        const { xDir, yDir } = resolveReplicadPlaneXYDirs(planeObj);
 
         if (origin && norm) {
           // Anchor plane to a point guaranteed to lie on the selected face.
