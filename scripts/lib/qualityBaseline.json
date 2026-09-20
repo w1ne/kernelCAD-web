@@ -241,12 +241,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/review/reviewPipeline.ts",
-    "symbol": "Function 'buildSuggestedRepairPrompt'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/script-runtime/exportDrawing.ts",
     "symbol": "Async function 'exportSvgDrawing'",
     "value": 16
