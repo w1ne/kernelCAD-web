@@ -109,12 +109,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/demoPlayer/AnimationEngine.ts",
-    "symbol": "Method 'enqueue'",
-    "value": 117
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/demoPlayer/demoPlayerApiFactory.ts",
     "symbol": "Function 'captureInspectionChannels'",
     "value": 112
