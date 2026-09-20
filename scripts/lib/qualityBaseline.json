@@ -385,12 +385,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/StudioShell.tsx",
-    "symbol": "Function 'StudioShell'",
-    "value": 140
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/Toolbar.tsx",
     "symbol": "Function 'Toolbar'",
     "value": 121
