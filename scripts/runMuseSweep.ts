@@ -7,6 +7,8 @@ import { join, resolve } from 'node:path';
 import { MockAgentClient } from '../eval/agent';
 import { OpenAICompatAgentClient } from '../eval/agentOpenAICompat';
 import { generateCase, scoreCase } from '../eval/runner';
+import { buildSweepPrompt } from '../eval/lib/sweepPrompt';
+import { injectCookbook } from '../eval/cookbook-injector';
 import { buildSystemPrompt, SWEEP_SKILLS } from '../eval/lib/systemPrompt';
 import { mapPool } from '../eval/lib/pool';
 import { isAtLeast, readState, writeState, type MusePhase } from '../eval/lib/museState';
@@ -33,6 +35,8 @@ interface SweepConfig {
   maxAttempts: number;
   maxTokens: number;
   skills: string[];
+  promptPreset: string;
+  useCookbook: boolean;
   skipJudge: boolean;
   force: Set<string>;
   maxTokensIn: number;
@@ -53,7 +57,7 @@ export interface CaseOutcome {
   error?: string;
 }
 
-function parseArgs(argv: string[]): SweepConfig {
+export function parseSweepArgs(argv: string[]): SweepConfig {
   const flagValue = (name: string): string | undefined => {
     const i = argv.indexOf(name);
     return i >= 0 ? argv[i + 1] : undefined;
@@ -122,6 +126,8 @@ function parseArgs(argv: string[]): SweepConfig {
     maxAttempts,
     maxTokens,
     skills,
+    promptPreset: flagValue('--prompt-preset') ?? 'full',
+    useCookbook: !has('--no-cookbook'),
     skipJudge: has('--skip-judge'),
     force: new Set(multiList('--force')),
     maxTokensIn,
@@ -233,6 +239,9 @@ async function runOneCase(
       existsSync(outputScriptPath);
 
     if (!canReuseGeneration) {
+      const cookbook = cfg.useCookbook
+        ? injectCookbook(readFileSync(join(taskDir, 'prompt.md'), 'utf8'))
+        : undefined;
       const gen = await generateCase({
         taskDir,
         runDir: caseDir,
@@ -240,6 +249,7 @@ async function runOneCase(
         model: cfg.model,
         skillMd,
         startedAt: cfg.startedAt,
+        cookbook,
         candidates: 1,
         maxAttempts: cfg.maxAttempts,
         maxTokens: cfg.maxTokens,
@@ -355,7 +365,7 @@ async function runOneCase(
 }
 
 async function main(): Promise<void> {
-  const cfg = parseArgs(process.argv.slice(2));
+  const cfg = parseSweepArgs(process.argv.slice(2));
   const preflightOnly = process.argv.includes('--preflight-only');
 
   const report: PreflightReport = await runPreflight({
@@ -395,7 +405,19 @@ async function main(): Promise<void> {
   }
   mkdirSync(cfg.runRoot, { recursive: true });
 
-  const skillMd = buildSystemPrompt(cfg.skills);
+  let skillMd: string;
+  let promptBytes: number;
+  if (cfg.promptPreset === 'full') {
+    // Legacy path: `--skills` still selects the concatenated skill set.
+    skillMd = buildSystemPrompt(cfg.skills);
+    promptBytes = Buffer.byteLength(skillMd);
+    console.log(`prompt preset=full skills=${cfg.skills.join(',')} bytes=${promptBytes}`);
+  } else {
+    const built = buildSweepPrompt({ preset: cfg.promptPreset });
+    skillMd = built.text;
+    promptBytes = built.bytes;
+    console.log(`prompt preset=${built.preset} bytes=${built.bytes}`);
+  }
   const agent: AgentClient = cfg.mockFixture
     ? new MockAgentClient(readCachedAgentResponses(cfg.mockFixture))
     : new OpenAICompatAgentClient({
@@ -415,6 +437,9 @@ async function main(): Promise<void> {
     maxAttempts: cfg.maxAttempts,
     maxTokens: cfg.maxTokens,
     skills: cfg.skills,
+    promptPreset: cfg.promptPreset,
+    promptBytes,
+    cookbook: cfg.useCookbook,
     workers: cfg.workers,
     protocol: PROTOCOL,
     judgeModel: JUDGE_MODEL,
