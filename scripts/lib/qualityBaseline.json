@@ -644,12 +644,6 @@
   {
     "rule": "complexity",
     "file": "src/modeling/capture/authoringFeatureRecords.ts",
-    "symbol": "Function 'normalizeFdmSettings'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/authoringFeatureRecords.ts",
     "symbol": "Function 'validateDfmSpecChannelEntries'",
     "value": 18
   },
