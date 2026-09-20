@@ -103,12 +103,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/repairScript.ts",
-    "symbol": "Async function 'repairScriptTool'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/reviewPaint.ts",
     "symbol": "Async function 'reviewPaintPeekLatestTool'",
     "value": 16
@@ -418,12 +412,6 @@
     "file": "src/agent/cli/commands/render.ts",
     "symbol": "Function 'renderCommand'",
     "value": 133
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/agent/mcp/tools/repairScript.ts",
-    "symbol": "Async function 'repairScriptTool'",
-    "value": 136
   },
   {
     "rule": "max-lines-per-function",
