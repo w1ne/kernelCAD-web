@@ -724,12 +724,7 @@ export async function meshFeaturesPerFeature(
 ): Promise<MeshFeaturesResult> {
   await initOcct();
   const lowerer = new OcctLowerer();
-  if (session) {
-    lowerer.importedGeometry = session.importedGeometry;
-    if (session.getSurfaceRecord) {
-      lowerer.getSurfaceRecord = session.getSurfaceRecord.bind(session);
-    }
-  }
+  applySessionToLowerer(lowerer, session);
   const engine = new RecomputeEngine(lowerer);
   const features: FeatureMesh[] = [];
   // Collect every produced FeatureMesh, and — when a streaming caller passed
@@ -830,6 +825,39 @@ export async function meshFeaturesPerFeature(
     meshBounds,
   );
 
+  return finishMeshFeatures(
+    features,
+    meshBounds,
+    failedFeatureIds,
+    explicitMaterialByFeatureId,
+    colorByFeatureId,
+    warnings,
+  );
+}
+
+/** Attach the optional session hooks (imported geometry, NURBS surface
+ *  resolution) to a freshly constructed lowerer. */
+function applySessionToLowerer(
+  lowerer: OcctLowerer,
+  session: Parameters<typeof meshFeaturesPerFeature>[2],
+): void {
+  if (session) {
+    lowerer.importedGeometry = session.importedGeometry;
+    if (session.getSurfaceRecord) {
+      lowerer.getSurfaceRecord = session.getSurfaceRecord.bind(session);
+    }
+  }
+}
+
+/** Final phase: bounds, shadowing diagnostics (logged in order), result object. */
+function finishMeshFeatures(
+  features: FeatureMesh[],
+  meshBounds: MeshBoundsAccumulator,
+  failedFeatureIds: FeatureId[],
+  explicitMaterialByFeatureId: ReadonlyMap<FeatureId, PBRMaterial>,
+  colorByFeatureId: ReadonlyMap<FeatureId, string>,
+  warnings: PerFaceMaterialWarning[],
+): MeshFeaturesResult {
   const bounds = buildMeshBounds(features, meshBounds);
 
   const { materialShadowingWarnings, colorShadowingWarnings } = collectShadowingWarnings(

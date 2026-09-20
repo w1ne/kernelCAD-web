@@ -44,6 +44,7 @@ import type {
   LoadCapacityOpts,
   LoadCapacityResult,
   LoadDeclaration,
+  LoadEntry,
   MaterialDeclarationEntry,
 } from './types';
 import { DIAGNOSTIC_REGISTRY, type DiagnosticCode } from '../shared/diagnostics/registry';
@@ -318,9 +319,24 @@ function analyzeLoadedPart(
     };
   }
 
+  return computeCantileverAnalysis(
+    partName,
+    load,
+    matResolved.props,
+    part.crossSection,
+    threshold,
+  );
+}
+
+function computeCantileverAnalysis(
+  partName: string,
+  load: LoadEntry,
+  props: MaterialProps,
+  crossSection: NonNullable<AssemblyStoredPart['crossSection']>,
+  threshold: number,
+): BeamPartAnalysis {
   // Closed-form bending stress.
-  const sec = sectionProperties(part.crossSection);
-  const props: MaterialProps = matResolved.props;
+  const sec = sectionProperties(crossSection);
   const forceMag = vec3Magnitude(load.force ?? [0, 0, 0]);
   const torqueMag = vec3Magnitude(load.torque ?? [0, 0, 0]);
   // Cantilever moment at the root = |F| · L_freeSpan; applied tip torque

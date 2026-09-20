@@ -1,8 +1,73 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { type Dispatch, type RefObject, type SetStateAction } from 'react';
 import { useAIAssistantChat } from './useAIAssistantChat';
 import { AISettingsPanel } from './AISettingsPanel';
 import { AIChatMessage } from './AIChatMessage';
+
+interface AIAssistantComposerProps {
+    input: string;
+    setInput: Dispatch<SetStateAction<string>>;
+    isLoading: boolean;
+    handleSend: () => void;
+    handleGenerateVariations: () => void;
+    fileInputRef: RefObject<HTMLInputElement | null>;
+}
+
+/** Composer row: prompt textarea plus send / vision / variations actions. */
+function AIAssistantComposer({
+    input,
+    setInput,
+    isLoading,
+    handleSend,
+    handleGenerateVariations,
+    fileInputRef,
+}: AIAssistantComposerProps) {
+    return (
+        <div className="p-3 bg-[#252526] border-t border-[#333]">
+            <div className="flex gap-2">
+                <textarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSend();
+                        }
+                    }}
+                    placeholder="Describe geometry..."
+                    className="flex-1 bg-[#111] border border-[#333] rounded p-2 text-sm text-white resize-none h-20 focus:outline-none focus:border-blue-500"
+                />
+                <div className="flex flex-col gap-1">
+                    <button
+                        onClick={handleSend}
+                        disabled={isLoading || !input.trim()}
+                        className="bg-blue-600 disabled:bg-gray-700 text-white px-3 py-2 rounded hover:bg-blue-500 transition-colors flex-1"
+                        title="Send Message"
+                    >
+                        ➤
+                    </button>
+                    <button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isLoading}
+                        className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded transition-colors text-xs font-bold"
+                        title="Upload Image (Vision)"
+                    >
+                        📷
+                    </button>
+                    <button
+                        onClick={handleGenerateVariations}
+                        disabled={isLoading || !input.trim()}
+                        className="bg-purple-600 disabled:bg-gray-700 text-white px-3 py-2 rounded hover:bg-purple-500 transition-colors text-xs font-bold"
+                        title="Generate 3 Variations"
+                    >
+                        ✨
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
 
 export function AIAssistant() {
     const {
@@ -66,48 +131,14 @@ export function AIAssistant() {
             </div>
 
             {/* Input Area */}
-            <div className="p-3 bg-[#252526] border-t border-[#333]">
-                <div className="flex gap-2">
-                    <textarea
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' && !e.shiftKey) {
-                                e.preventDefault();
-                                handleSend();
-                            }
-                        }}
-                        placeholder="Describe geometry..."
-                        className="flex-1 bg-[#111] border border-[#333] rounded p-2 text-sm text-white resize-none h-20 focus:outline-none focus:border-blue-500"
-                    />
-                    <div className="flex flex-col gap-1">
-                        <button
-                            onClick={handleSend}
-                            disabled={isLoading || !input.trim()}
-                            className="bg-blue-600 disabled:bg-gray-700 text-white px-3 py-2 rounded hover:bg-blue-500 transition-colors flex-1"
-                            title="Send Message"
-                        >
-                            ➤
-                        </button>
-                        <button
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={isLoading}
-                            className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded transition-colors text-xs font-bold"
-                            title="Upload Image (Vision)"
-                        >
-                            📷
-                        </button>
-                        <button
-                            onClick={handleGenerateVariations}
-                            disabled={isLoading || !input.trim()}
-                            className="bg-purple-600 disabled:bg-gray-700 text-white px-3 py-2 rounded hover:bg-purple-500 transition-colors text-xs font-bold"
-                            title="Generate 3 Variations"
-                        >
-                            ✨
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <AIAssistantComposer
+                input={input}
+                setInput={setInput}
+                isLoading={isLoading}
+                handleSend={handleSend}
+                handleGenerateVariations={handleGenerateVariations}
+                fileInputRef={fileInputRef}
+            />
         </div>
     );
 }

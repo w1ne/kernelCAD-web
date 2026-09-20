@@ -118,12 +118,54 @@ export function findFaceLabelInMetadata(
   return { hit: hits[0] };
 }
 
+type SketchCommand = { kind: string; x?: { evaluated: number }; y?: { evaluated: number }; label?: string };
+type LabelLookupError = { error: CompilerDiagnostic };
+
 export function labelToEdgeQuery(
   record: FeatureRecord,
   _base: OcctBackend,
   label: string,
   records: readonly FeatureRecord[] | undefined,
 ): { query: import('./edgeQueries').EdgeQuery } | { error: CompilerDiagnostic } {
+  const labeled = resolveLabeledSegment(record, label, records);
+  if ('error' in labeled) return labeled;
+
+  const chord = labeledSegmentChord(labeled.commands, labeled.labeledIdx, record, label);
+  if ('error' in chord) return chord;
+  const { prevX, prevY, segX, segY } = chord;
+
+  const depthResult = labeledExtrudeDepth(labeled.records, record, label);
+  if ('error' in depthResult) return depthResult;
+  const depth = depthResult.depth;
+
+  // The labeled segment maps to one side face of the extruded solid. That side
+  // face has 4 outer-wire edges: two horizontal (at z=0 and z=depth, running
+  // along the segment chord) and two vertical (at the segment's endpoints, both
+  // running 0..depth). Build a `within` bounding region that brackets exactly
+  // these four edges' midpoints — collapsed in any axis where the segment is
+  // axis-parallel, expanded by `tol` to absorb floating-point noise.
+  const tol = 1e-3;
+  const xMin = Math.min(prevX, segX) - tol;
+  const xMax = Math.max(prevX, segX) + tol;
+  const yMin = Math.min(prevY, segY) - tol;
+  const yMax = Math.max(prevY, segY) + tol;
+  return {
+    query: {
+      within: {
+        xMin, xMax,
+        yMin, yMax,
+        zMin: -tol,
+        zMax: depth + tol,
+      },
+    },
+  };
+}
+
+function resolveLabeledSegment(
+  record: FeatureRecord,
+  label: string,
+  records: readonly FeatureRecord[] | undefined,
+): { records: readonly FeatureRecord[]; commands: SketchCommand[]; labeledIdx: number } | LabelLookupError {
   if (!records) {
     return {
       error: {
@@ -151,7 +193,7 @@ export function labelToEdgeQuery(
     };
   }
 
-  const commands = (upstreamSketch.metadata as { commands?: Array<{ kind: string; x?: { evaluated: number }; y?: { evaluated: number }; label?: string }> } | undefined)?.commands;
+  const commands = (upstreamSketch.metadata as { commands?: SketchCommand[] } | undefined)?.commands;
   if (!commands) {
     return {
       error: {
@@ -182,6 +224,15 @@ export function labelToEdgeQuery(
     };
   }
 
+  return { records, commands, labeledIdx };
+}
+
+function labeledSegmentChord(
+  commands: SketchCommand[],
+  labeledIdx: number,
+  record: FeatureRecord,
+  label: string,
+): { prevX: number; prevY: number; segX: number; segY: number } | LabelLookupError {
   const segment = commands[labeledIdx];
   const prev = commands[labeledIdx - 1];
   if (!prev || prev.x === undefined || prev.y === undefined || segment.x === undefined || segment.y === undefined) {
@@ -200,7 +251,14 @@ export function labelToEdgeQuery(
   const prevY = prev.y.evaluated;
   const segX = segment.x.evaluated;
   const segY = segment.y.evaluated;
+  return { prevX, prevY, segX, segY };
+}
 
+function labeledExtrudeDepth(
+  records: readonly FeatureRecord[],
+  record: FeatureRecord,
+  label: string,
+): { depth: number } | LabelLookupError {
   const depth = extractExtrudeDepth(records, record);
   if (depth === null) {
     return {
@@ -214,28 +272,7 @@ export function labelToEdgeQuery(
       },
     };
   }
-
-  // The labeled segment maps to one side face of the extruded solid. That side
-  // face has 4 outer-wire edges: two horizontal (at z=0 and z=depth, running
-  // along the segment chord) and two vertical (at the segment's endpoints, both
-  // running 0..depth). Build a `within` bounding region that brackets exactly
-  // these four edges' midpoints — collapsed in any axis where the segment is
-  // axis-parallel, expanded by `tol` to absorb floating-point noise.
-  const tol = 1e-3;
-  const xMin = Math.min(prevX, segX) - tol;
-  const xMax = Math.max(prevX, segX) + tol;
-  const yMin = Math.min(prevY, segY) - tol;
-  const yMax = Math.max(prevY, segY) + tol;
-  return {
-    query: {
-      within: {
-        xMin, xMax,
-        yMin, yMax,
-        zMin: -tol,
-        zMax: depth + tol,
-      },
-    },
-  };
+  return { depth };
 }
 
 function findUpstreamSketch(records: readonly FeatureRecord[], record: FeatureRecord): FeatureRecord | null {

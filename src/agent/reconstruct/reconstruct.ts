@@ -575,8 +575,7 @@ function regionPoints(an: MeshAnalysis, c: UnmatchedCandidate): Float64Array {
   return Float64Array.from(pts);
 }
 
-export function buildMeshLedger(an: MeshAnalysis, plan: FeaturePlan, soup: TriangleSoup, unmatched: UnmatchedRegion[]): AssumptionLedger {
-  const facts: AssumptionFact[] = [];
+function pushMeshSourceFacts(facts: AssumptionFact[], an: MeshAnalysis, soup: TriangleSoup): void {
   const bbox = an.report.bbox;
   facts.push(
     soup.unitDeclared
@@ -619,6 +618,9 @@ export function buildMeshLedger(an: MeshAnalysis, plan: FeaturePlan, soup: Trian
     confidence: Math.max(0, Math.min(1, an.frame.chosen.explainedFraction)),
     resolution: 'open',
   });
+}
+
+function pushParamFacts(facts: AssumptionFact[], plan: FeaturePlan): void {
   for (const p of plan.params) {
     facts.push(
       p.snapped
@@ -653,6 +655,9 @@ export function buildMeshLedger(an: MeshAnalysis, plan: FeaturePlan, soup: Trian
       resolution: 'open',
     });
   }
+}
+
+function pushRegionFacts(facts: AssumptionFact[], plan: FeaturePlan, unmatched: UnmatchedRegion[]): void {
   plan.holeSummary.forEach((h) => {
     facts.push({
       id: `${h.name}.kind`,
@@ -695,6 +700,13 @@ export function buildMeshLedger(an: MeshAnalysis, plan: FeaturePlan, soup: Trian
       resolution: 'open',
     });
   });
+}
+
+export function buildMeshLedger(an: MeshAnalysis, plan: FeaturePlan, soup: TriangleSoup, unmatched: UnmatchedRegion[]): AssumptionLedger {
+  const facts: AssumptionFact[] = [];
+  pushMeshSourceFacts(facts, an, soup);
+  pushParamFacts(facts, plan);
+  pushRegionFacts(facts, plan, unmatched);
   return { facts, unresolvedCount: facts.filter((f) => f.resolution === 'open').length };
 }
 
