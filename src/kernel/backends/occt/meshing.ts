@@ -330,29 +330,22 @@ function tryExtractPlaneViaCenterAndNormal(face: unknown): FaceGeometry['plane']
   return undefined;
 }
 
-function tryExtractPlaneFromPlaneRecord(face: unknown, p: UnknownRecord): FaceGeometry['plane'] {
-  const origin =
-    tryVec3((p as UnknownRecord).origin) ??
-    tryVec3((p as UnknownRecord).location) ??
-    tryVec3((p as UnknownRecord).pos) ??
-    tryVec3((p as UnknownRecord).p0);
+function firstVec3(p: UnknownRecord, keys: readonly string[]): [number, number, number] | null {
+  for (const key of keys) {
+    const v = tryVec3(p[key]);
+    if (v) return v;
+  }
+  return null;
+}
 
-  const normal =
-    tryVec3((p as UnknownRecord).normal) ??
-    tryVec3((p as UnknownRecord).zDir) ??
-    tryVec3((p as UnknownRecord).direction) ??
-    tryVec3((p as UnknownRecord).dir);
+function tryExtractPlaneFromPlaneRecord(face: unknown, p: UnknownRecord): FaceGeometry['plane'] {
+  const origin = firstVec3(p, ['origin', 'location', 'pos', 'p0']);
+  const normal = firstVec3(p, ['normal', 'zDir', 'direction', 'dir']);
 
   if (!origin || !normal) return undefined;
 
-  const xDir =
-    tryVec3((p as UnknownRecord).xDir) ??
-    tryVec3((p as UnknownRecord).xDirection) ??
-    tryVec3((p as UnknownRecord).xAxis);
-  const yDir =
-    tryVec3((p as UnknownRecord).yDir) ??
-    tryVec3((p as UnknownRecord).yDirection) ??
-    tryVec3((p as UnknownRecord).yAxis);
+  const xDir = firstVec3(p, ['xDir', 'xDirection', 'xAxis']);
+  const yDir = firstVec3(p, ['yDir', 'yDirection', 'yAxis']);
 
   const anchoredOrigin = tryExtractFaceCenter(face) ?? origin;
   return { origin: anchoredOrigin, normal, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
