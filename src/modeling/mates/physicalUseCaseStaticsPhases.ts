@@ -10,6 +10,7 @@ import type { Vec3 } from '../../shared/intent/types';
 import type { Transform } from '../../shared/runtime/se3';
 import { parseConnectorRef } from './mate';
 import type {
+  PhysicalUseCaseActuatorLimit,
   PhysicalUseCaseContact,
   PhysicalUseCaseRecord,
 } from './physicalUseCase';
@@ -274,6 +275,123 @@ export function unit(value: Vec3): Vec3 {
 
 export function midpoint(a: Vec3, b: Vec3): Vec3 {
   return scale(add(a, b), 0.5);
+}
+
+export function validateActuatorLimit(
+  limit: PhysicalUseCaseActuatorLimit,
+  matesByName: ReadonlyMap<string, ReturnType<Assembly['__mates']>[number]>,
+  couplings: ReturnType<Assembly['__mateCouplings']>,
+  transmissions: ReturnType<Assembly['__transmissionIntents']>,
+  witness: PhysicalUseCasePoseWitness,
+): { readonly poseDeg: number; readonly minDeg: number; readonly maxDeg: number } | string {
+  const mateCheck = validateActuatorMate(limit, matesByName);
+  if (typeof mateCheck === 'string') return mateCheck;
+
+  const couplingError = validateActuatorCouplings(limit.mate, couplings, transmissions);
+  if (couplingError !== undefined) return couplingError;
+
+  const poseCheck = validateActuatorPose(limit.mate, mateCheck.minDeg, mateCheck.maxDeg, witness);
+  if (typeof poseCheck === 'string') return poseCheck;
+
+  return { poseDeg: poseCheck.poseDeg, minDeg: mateCheck.minDeg, maxDeg: mateCheck.maxDeg };
+}
+
+/** Checks the actuator declaration against the mate graph: positive torque
+ *  rating, existing revolute mate, finite ordered limitsDeg. */
+function validateActuatorMate(
+  limit: PhysicalUseCaseActuatorLimit,
+  matesByName: ReadonlyMap<string, ReturnType<Assembly['__mates']>[number]>,
+): {
+  readonly mate: ReturnType<Assembly['__mates']>[number];
+  readonly minDeg: number;
+  readonly maxDeg: number;
+} | string {
+  if (!isPositiveFinite(limit.maxTorqueNmm)) {
+    return `Actuator '${limit.mate}' requires a positive finite maxTorqueNmm.`;
+  }
+  const mate = matesByName.get(limit.mate);
+  if (mate === undefined) return `Actuator mate '${limit.mate}' does not exist.`;
+  if (mate.type !== 'revolute') {
+    return `Actuator mate '${limit.mate}' must be revolute for static torque review v1.`;
+  }
+  if (
+    mate.limitsDeg === undefined ||
+    !mate.limitsDeg.every(Number.isFinite) ||
+    mate.limitsDeg[0] > mate.limitsDeg[1]
+  ) {
+    return `Actuator mate '${limit.mate}' requires finite ordered limitsDeg.`;
+  }
+  const [minDeg, maxDeg] = mate.limitsDeg;
+  return { mate, minDeg, maxDeg };
+}
+
+/** Coupled-mate and transmission-evidence checks for the named actuator. */
+function validateActuatorCouplings(
+  mateName: string,
+  couplings: ReturnType<Assembly['__mateCouplings']>,
+  transmissions: ReturnType<Assembly['__transmissionIntents']>,
+): string | undefined {
+  if (couplings.some((coupling) => coupling.driven === mateName)) {
+    return `Actuator limit '${mateName}' names a driven coupled mate; name its independent source mate instead.`;
+  }
+
+  const movedCouplings = collectMovedCouplings(mateName, couplings);
+  for (const coupling of movedCouplings) {
+    const transmission = transmissions.find((candidate) =>
+      candidate.sourceMate === coupling.source &&
+      candidate.drivenMates.includes(coupling.driven));
+    if (transmission === undefined) {
+      return `Coupled motion '${coupling.source}' to '${coupling.driven}' requires arm.transmission(...) evidence for static torque review.`;
+    }
+    if (
+      transmission.ratio !== undefined &&
+      !nearlyEqual(transmission.ratio, coupling.ratio)
+    ) {
+      return `Transmission '${transmission.name}' ratio ${transmission.ratio} contradicts coupling ratio ${coupling.ratio} for '${coupling.source}' to '${coupling.driven}'.`;
+    }
+  }
+  return undefined;
+}
+
+/** Witness-pose finiteness and declared-limits containment for the named
+ *  actuator. */
+function validateActuatorPose(
+  mateName: string,
+  minDeg: number,
+  maxDeg: number,
+  witness: PhysicalUseCasePoseWitness,
+): { readonly poseDeg: number } | string {
+  const poseDeg = witness.poses[mateName];
+  if (typeof poseDeg !== 'number' || !Number.isFinite(poseDeg)) {
+    return `Actuator mate '${mateName}' has no finite scalar pose in the common-pose witness.`;
+  }
+  if (poseDeg < minDeg - 1e-9 || poseDeg > maxDeg + 1e-9) {
+    return `Actuator mate '${mateName}' pose ${poseDeg} deg is outside limitsDeg.`;
+  }
+  return { poseDeg };
+}
+
+function collectMovedCouplings(
+  sourceMate: string,
+  couplings: ReturnType<Assembly['__mateCouplings']>,
+): ReturnType<Assembly['__mateCouplings']>[number][] {
+  const movedMates = new Set([sourceMate]);
+  const movedCouplings: ReturnType<Assembly['__mateCouplings']>[number][] = [];
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const coupling of couplings) {
+      if (!movedMates.has(coupling.source) || movedMates.has(coupling.driven)) continue;
+      movedCouplings.push(coupling);
+      movedMates.add(coupling.driven);
+      changed = true;
+    }
+  }
+  return movedCouplings;
+}
+
+function nearlyEqual(a: number, b: number): boolean {
+  return Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b));
 }
 
 type Mate = ReturnType<Assembly['__mates']>[number];
