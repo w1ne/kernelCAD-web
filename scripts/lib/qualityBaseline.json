@@ -205,12 +205,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/mechanicalTransmission.ts",
-    "symbol": "Function 'pointTriangleDistanceSquared'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseStatics.ts",
     "symbol": "Function 'validateActuatorLimit'",
     "value": 16
