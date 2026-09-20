@@ -265,12 +265,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/funnel/hooks/useGeneration.ts",
-    "symbol": "Async arrow function",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/backendMesh.ts",
     "symbol": "Function 'meshShapeForExport'",
     "value": 18
