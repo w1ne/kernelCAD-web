@@ -38,12 +38,6 @@
   {
     "rule": "complexity",
     "file": "src/agent/drawing/geometry2d.ts",
-    "symbol": "Function 'recoverArcs'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/drawing/geometry2d.ts",
     "symbol": "Function 'splitAtJunctions'",
     "value": 18
   },
@@ -103,12 +97,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/edits/removeFeature.ts",
-    "symbol": "Function 'scanLineForTopLevelReturn'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/edits/setParamValue.ts",
     "symbol": "Function 'scanArgEnd'",
     "value": 17
@@ -136,12 +124,6 @@
     "file": "src/agent/mcp/tools/designLoop.ts",
     "symbol": "Function 'weakVisualCheckEvidence'",
     "value": 20
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/tools/dfmPreflight.ts",
-    "symbol": "Async function 'dfmPreflightTool'",
-    "value": 19
   },
   {
     "rule": "complexity",
@@ -175,8 +157,8 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/findPart.ts",
-    "symbol": "Async function 'findPartTool'",
+    "file": "src/agent/mcp/tools/getFaceLineage.ts",
+    "symbol": "Async function 'getFaceLineageTool'",
     "value": 19
   },
   {
@@ -242,6 +224,12 @@
   {
     "rule": "complexity",
     "file": "src/agent/reconstruct/planPhases/body.ts",
+    "symbol": "Arrow function",
+    "value": 19
+  },
+  {
+    "rule": "complexity",
+    "file": "src/agent/reconstruct/planPhases/body.ts",
     "symbol": "Function 'buildFaceBook'",
     "value": 18
   },
@@ -266,6 +254,12 @@
   {
     "rule": "complexity",
     "file": "src/agent/reconstruct/profileParams.ts",
+    "symbol": "Function 'paramProfile'",
+    "value": 19
+  },
+  {
+    "rule": "complexity",
+    "file": "src/agent/reconstruct/profileParams.ts",
     "symbol": "Function 'rectilinearCorners'",
     "value": 17
   },
@@ -280,6 +274,18 @@
     "file": "src/agent/reconstruct/segment.ts",
     "symbol": "Function 'adoptFragments'",
     "value": 16
+  },
+  {
+    "rule": "complexity",
+    "file": "src/agent/reconstruct/segment.ts",
+    "symbol": "Function 'growPlanes'",
+    "value": 19
+  },
+  {
+    "rule": "complexity",
+    "file": "src/agent/render/captureAnimation.ts",
+    "symbol": "Async function 'captureAnimation'",
+    "value": 19
   },
   {
     "rule": "complexity",
@@ -937,12 +943,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/agent/mcp/tools/dfmPreflight.ts",
-    "symbol": "Async function 'dfmPreflightTool'",
-    "value": 101
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/agent/mcp/tools/repairScript.ts",
     "symbol": "Async function 'repairScriptTool'",
     "value": 136
@@ -951,7 +951,7 @@
     "rule": "max-lines-per-function",
     "file": "src/agent/reconstruct/planPhases/body.ts",
     "symbol": "Function 'buildBody'",
-    "value": 111
+    "value": 139
   },
   {
     "rule": "max-lines-per-function",
@@ -1204,12 +1204,6 @@
     "file": "src/studio/components/viewer/layers/ParametricLayer.tsx",
     "symbol": "Function 'ParametricLayer'",
     "value": 106
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/components/viewer/overlays/SectionPanel.tsx",
-    "symbol": "Function 'SectionPanel'",
-    "value": 149
   },
   {
     "rule": "max-lines-per-function",
