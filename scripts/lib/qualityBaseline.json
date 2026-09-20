@@ -271,12 +271,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/funnel/lib/previewClient.ts",
-    "symbol": "Function 'parseBlock'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/backendMesh.ts",
     "symbol": "Function 'meshShapeForExport'",
     "value": 18
