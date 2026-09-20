@@ -307,12 +307,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/render/captureAnimation.ts",
-    "symbol": "Async function 'captureAnimation'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/repair/candidates.ts",
     "symbol": "Function 'recentreEmbossAnchor'",
     "value": 17
