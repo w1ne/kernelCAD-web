@@ -97,120 +97,95 @@ function severityAriaLabel(severity: ValidatorDiagnostic['severity'] | null): st
     return severity === null ? 'validity ok' : `validity ${severity}`;
 }
 
-export function SceneTab(): JSX.Element {
-    const { features, validity } = useRecomputeResult();
-    const { selectedFeatureId, selectFeature } = useFeatureSelection();
-    const workbench = useWorkbench();
-    const { geometries } = useGeometry();
+interface SceneTabPartsPanelProps {
+    readonly partNames: readonly string[];
+    readonly hiddenIds: readonly string[];
+    readonly selectedFeatureId: string | null;
+    readonly diagnostics: readonly ValidatorDiagnostic[];
+    readonly selectFeature: (id: string) => void;
+    readonly toggleVisibility?: (id: string) => void;
+}
 
-    // Assembly Parts list. The per-part identity rides on the rendered
-    // geometries (`assemblyPartName`) — worker-side FeatureRecord serialization
-    // is still pending, so `features` is empty for node-rendered assemblies and
-    // the feature-based rows below never populate. When the model is an assembly
-    // we surface the parts directly here, each with an eye toggle that drives
-    // `hiddenIds` (the Viewer hides any geometry whose `assemblyPartName` is in
-    // that set). Unique, in first-seen order.
-    const partNames = useMemo(() => {
-        const seen = new Set<string>();
-        const out: string[] = [];
-        for (const g of geometries) {
-            const p = g.assemblyPartName;
-            if (p && !seen.has(p)) {
-                seen.add(p);
-                out.push(p);
-            }
-        }
-        return out;
-    }, [geometries]);
-
-    const rows = useMemo(() => buildRows(features), [features]);
-    const adaptiveActive = validity !== null && rows.length > 0;
-
-    // All hooks must run before any early return (Rules of Hooks) — compute the
-    // legacy fallback list here, unconditionally, even though the Parts branch
-    // below may return first.
-    const fallbackItems = useMemo(
-        () => (adaptiveActive ? [] : extractHistoryItems(workbench.code ?? '')),
-        [adaptiveActive, workbench.code],
-    );
-
-    if (partNames.length > 0) {
-        const hiddenIds = workbench.hiddenIds ?? [];
-        const anyHidden = partNames.some((p) => hiddenIds.includes(p));
-        return (
-            <div className="flex flex-col bg-[#111] text-xs" data-testid="scene-tab-parts">
-                <div className="flex items-center justify-between px-3 py-2 text-gray-400 uppercase tracking-wider font-semibold border-b border-[#333]">
-                    <span>Parts</span>
-                    {anyHidden && (
-                        <button
-                            type="button"
-                            data-testid="parts-show-all"
-                            className="text-[10px] normal-case text-blue-400 hover:text-blue-300"
-                            onClick={() => partNames.forEach((p) => {
-                                if (hiddenIds.includes(p)) workbench.toggleVisibility?.(p);
-                            })}
-                        >
-                            Show all
-                        </button>
-                    )}
-                </div>
-                <ul className="flex flex-col divide-y divide-[#1f1f1f]" data-testid="scene-tab-parts-rows">
-                    {partNames.map((partName) => {
-                        const isHidden = hiddenIds.includes(partName);
-                        const isSelected = selectedFeatureId === partName;
-                        const severity = highestSeverityForRow(partName, validity?.diagnostics ?? []);
-                        return (
-                            <li key={partName}>
-                                <div
-                                    data-testid={`part-row-${partName}`}
-                                    onClick={() => selectFeature(partName)}
-                                    className={`group w-full flex items-center gap-2 px-3 py-1.5 text-gray-300 hover:bg-[#1a1a1a] transition-colors cursor-pointer ${isSelected ? 'bg-selection-blue/20 text-white border-l-2 border-selection-blue' : ''}`}
+/** Assembly Parts list: one row per rendered part, with an eye toggle that
+ *  drives `hiddenIds` (the Viewer hides any geometry whose `assemblyPartName`
+ *  is in that set). Unique, in first-seen order. */
+function SceneTabPartsPanel({
+    partNames,
+    hiddenIds,
+    selectedFeatureId,
+    diagnostics,
+    selectFeature,
+    toggleVisibility,
+}: SceneTabPartsPanelProps): JSX.Element {
+    const anyHidden = partNames.some((p) => hiddenIds.includes(p));
+    return (
+        <div className="flex flex-col bg-[#111] text-xs" data-testid="scene-tab-parts">
+            <div className="flex items-center justify-between px-3 py-2 text-gray-400 uppercase tracking-wider font-semibold border-b border-[#333]">
+                <span>Parts</span>
+                {anyHidden && (
+                    <button
+                        type="button"
+                        data-testid="parts-show-all"
+                        className="text-[10px] normal-case text-blue-400 hover:text-blue-300"
+                        onClick={() => partNames.forEach((p) => {
+                            if (hiddenIds.includes(p)) toggleVisibility?.(p);
+                        })}
+                    >
+                        Show all
+                    </button>
+                )}
+            </div>
+            <ul className="flex flex-col divide-y divide-[#1f1f1f]" data-testid="scene-tab-parts-rows">
+                {partNames.map((partName) => {
+                    const isHidden = hiddenIds.includes(partName);
+                    const isSelected = selectedFeatureId === partName;
+                    const severity = highestSeverityForRow(partName, diagnostics);
+                    return (
+                        <li key={partName}>
+                            <div
+                                data-testid={`part-row-${partName}`}
+                                onClick={() => selectFeature(partName)}
+                                className={`group w-full flex items-center gap-2 px-3 py-1.5 text-gray-300 hover:bg-[#1a1a1a] transition-colors cursor-pointer ${isSelected ? 'bg-selection-blue/20 text-white border-l-2 border-selection-blue' : ''}`}
+                            >
+                                <span
+                                    className={`inline-block h-2 w-2 rounded-full shrink-0 ${severityDotClasses(severity)}`}
+                                    aria-label={severityAriaLabel(severity)}
+                                />
+                                <span className={`truncate flex-1 ${isHidden ? 'text-gray-600 italic' : ''}`} title={partName}>
+                                    {partName}
+                                </span>
+                                <button
+                                    type="button"
+                                    data-testid={`part-visibility-${partName}`}
+                                    title={isHidden ? 'Show part' : 'Hide part'}
+                                    onClick={(e) => { e.stopPropagation(); toggleVisibility?.(partName); }}
+                                    className={`p-1 rounded hover:bg-[#333] transition-all ${isHidden ? 'opacity-100' : 'opacity-40 group-hover:opacity-100'}`}
                                 >
-                                    <span
-                                        className={`inline-block h-2 w-2 rounded-full shrink-0 ${severityDotClasses(severity)}`}
-                                        aria-label={severityAriaLabel(severity)}
-                                    />
-                                    <span className={`truncate flex-1 ${isHidden ? 'text-gray-600 italic' : ''}`} title={partName}>
-                                        {partName}
-                                    </span>
-                                    <button
-                                        type="button"
-                                        data-testid={`part-visibility-${partName}`}
-                                        title={isHidden ? 'Show part' : 'Hide part'}
-                                        onClick={(e) => { e.stopPropagation(); workbench.toggleVisibility?.(partName); }}
-                                        className={`p-1 rounded hover:bg-[#333] transition-all ${isHidden ? 'opacity-100' : 'opacity-40 group-hover:opacity-100'}`}
-                                    >
-                                        {isHidden ? <EyeOff size={12} className="text-gray-600" /> : <Eye size={12} className="text-blue-400" />}
-                                    </button>
-                                </div>
-                            </li>
-                        );
-                    })}
-                </ul>
-            </div>
-        );
-    }
+                                    {isHidden ? <EyeOff size={12} className="text-gray-600" /> : <Eye size={12} className="text-blue-400" />}
+                                </button>
+                            </div>
+                        </li>
+                    );
+                })}
+            </ul>
+        </div>
+    );
+}
 
-    if (!adaptiveActive) {
-        return (
-            <div data-testid="scene-tab-fallback">
-                <SceneBrowser
-                    items={fallbackItems}
-                    planes={workbench.planes ?? []}
-                    selectedItemId={workbench.selectedItemId ?? null}
-                    hoveredItemId={workbench.hoveredItemId ?? null}
-                    hiddenIds={workbench.hiddenIds ?? []}
-                    onSelect={(item) => workbench.setSelectedItemId?.(item.id)}
-                    onHover={(id) => workbench.setHoveredItemId?.(id)}
-                    onToggleVisibility={(name) => workbench.toggleVisibility?.(name)}
-                    onTogglePlane={(id) => workbench.togglePlaneVisibility?.(id)}
-                />
-            </div>
-        );
-    }
+interface SceneTabFeatureRowsProps {
+    readonly rows: readonly SceneTabRow[];
+    readonly diagnostics: readonly ValidatorDiagnostic[];
+    readonly selectedFeatureId: string | null;
+    readonly selectFeature: (id: string) => void;
+}
 
-    const diagnostics = validity!.diagnostics;
-
+/** Adaptive feature rows, one per non-suppressed feature record. */
+function SceneTabFeatureRows({
+    rows,
+    diagnostics,
+    selectedFeatureId,
+    selectFeature,
+}: SceneTabFeatureRowsProps): JSX.Element {
     return (
         <div className="flex flex-col bg-[#111] text-xs" data-testid="scene-tab">
             <ul
@@ -250,6 +225,84 @@ export function SceneTab(): JSX.Element {
                 })}
             </ul>
         </div>
+    );
+}
+
+export function SceneTab(): JSX.Element {
+    const { features, validity } = useRecomputeResult();
+    const { selectedFeatureId, selectFeature } = useFeatureSelection();
+    const workbench = useWorkbench();
+    const { geometries } = useGeometry();
+
+    // Assembly Parts list. The per-part identity rides on the rendered
+    // geometries (`assemblyPartName`) — worker-side FeatureRecord serialization
+    // is still pending, so `features` is empty for node-rendered assemblies and
+    // the feature-based rows below never populate. When the model is an assembly
+    // we surface the parts directly here, each with an eye toggle that drives
+    // `hiddenIds` (the Viewer hides any geometry whose `assemblyPartName` is in
+    // that set). Unique, in first-seen order.
+    const partNames = useMemo(() => {
+        const seen = new Set<string>();
+        const out: string[] = [];
+        for (const g of geometries) {
+            const p = g.assemblyPartName;
+            if (p && !seen.has(p)) {
+                seen.add(p);
+                out.push(p);
+            }
+        }
+        return out;
+    }, [geometries]);
+
+    const rows = useMemo(() => buildRows(features), [features]);
+    const adaptiveActive = validity !== null && rows.length > 0;
+
+    // All hooks must run before any early return (Rules of Hooks) — compute the
+    // legacy fallback list here, unconditionally, even though the Parts branch
+    // below may return first.
+    const fallbackItems = useMemo(
+        () => (adaptiveActive ? [] : extractHistoryItems(workbench.code ?? '')),
+        [adaptiveActive, workbench.code],
+    );
+
+    if (partNames.length > 0) {
+        return (
+            <SceneTabPartsPanel
+                partNames={partNames}
+                hiddenIds={workbench.hiddenIds ?? []}
+                selectedFeatureId={selectedFeatureId}
+                diagnostics={validity?.diagnostics ?? []}
+                selectFeature={selectFeature}
+                toggleVisibility={workbench.toggleVisibility}
+            />
+        );
+    }
+
+    if (!adaptiveActive) {
+        return (
+            <div data-testid="scene-tab-fallback">
+                <SceneBrowser
+                    items={fallbackItems}
+                    planes={workbench.planes ?? []}
+                    selectedItemId={workbench.selectedItemId ?? null}
+                    hoveredItemId={workbench.hoveredItemId ?? null}
+                    hiddenIds={workbench.hiddenIds ?? []}
+                    onSelect={(item) => workbench.setSelectedItemId?.(item.id)}
+                    onHover={(id) => workbench.setHoveredItemId?.(id)}
+                    onToggleVisibility={(name) => workbench.toggleVisibility?.(name)}
+                    onTogglePlane={(id) => workbench.togglePlaneVisibility?.(id)}
+                />
+            </div>
+        );
+    }
+
+    return (
+        <SceneTabFeatureRows
+            rows={rows}
+            diagnostics={validity!.diagnostics}
+            selectedFeatureId={selectedFeatureId}
+            selectFeature={selectFeature}
+        />
     );
 }
 

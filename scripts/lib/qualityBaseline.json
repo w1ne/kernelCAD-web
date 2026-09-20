@@ -139,6 +139,30 @@
   },
   {
     "rule": "complexity",
+    "file": "src/modeling/backends/occt/projectCurveLowerer.ts",
+    "symbol": "Async function 'lowerProjectCurve'",
+    "value": 16
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/capture/assemblySolve.ts",
+    "symbol": "Function 'checkPoseLimits'",
+    "value": 16
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/capture/authoringFeatureRecords.ts",
+    "symbol": "Function 'buildEmbossTextFeatureSpec'",
+    "value": 16
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/capture/authoringFeatureRecords.ts",
+    "symbol": "Function 'validateDfmSpecCheckFields'",
+    "value": 16
+  },
+  {
+    "rule": "complexity",
     "file": "src/modeling/capture/featureMeshing.ts",
     "symbol": "Function 'buildHelixTubeMesh'",
     "value": 16
@@ -307,12 +331,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/pathNurbsLowerer.ts",
-    "symbol": "Function 'buildNurbsSketchOnPlane'",
-    "value": 140
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/kernel/naming/query.ts",
     "symbol": "Function 'makeQuery'",
     "value": 106
@@ -379,9 +397,9 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/runtime/dfm/fdmOrientation.ts",
-    "symbol": "Function 'analyzeBuildDirection'",
-    "value": 139
+    "file": "src/studio/StudioShell.tsx",
+    "symbol": "Function 'StudioShell'",
+    "value": 140
   },
   {
     "rule": "max-lines-per-function",
@@ -469,12 +487,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/context/ProjectContext.tsx",
-    "symbol": "Function 'ProjectProvider'",
-    "value": 135
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/context/geometry/useRelowerSubscription.ts",
     "symbol": "Function 'useRelowerSubscription'",
     "value": 102
@@ -520,11 +532,5 @@
     "file": "src/studio/routes/me.tsx",
     "symbol": "Function 'MePage'",
     "value": 115
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/tabs/SceneTab.tsx",
-    "symbol": "Function 'SceneTab'",
-    "value": 138
   }
 ]
