@@ -43,6 +43,42 @@ export interface DirectEditDrag {
     ) => Promise<StagedEdit | null>;
 }
 
+interface PlannedDrag extends DragPlan {
+    readonly toCode: string;
+}
+
+async function planDragWithNotice(
+    targetAnchor: DirectEditAnchor,
+    rawDelta: DragDelta,
+    baselineCode: string,
+    mated: boolean,
+): Promise<PlannedDrag | null> {
+    // Lazy so the 13MB ts-morph parser stays out of the eager
+    // Studio bundle; it loads once, the first time a drag commits.
+    let plan: DragPlan;
+    try {
+        const { planDrag } = await import('../../../modeling/directEdit/planDrag');
+        plan = planDrag({
+            source: baselineCode,
+            anchor: targetAnchor,
+            delta: snapDelta(rawDelta, 'mm'),
+            mated,
+        });
+    } catch (error) {
+        shellStore.setDirectEditNotice(
+            error instanceof Error ? error.message : String(error),
+        );
+        return null;
+    }
+    if (plan.toCode == null) {
+        shellStore.setDirectEditNotice(
+            plan.diagnostics[0]?.message ?? FALLBACK_PLAN_NOTICE,
+        );
+        return null;
+    }
+    return { ...plan, toCode: plan.toCode };
+}
+
 /**
  * Drag bookkeeping for the direct-edit gizmo plus the plan → review → propose
  * commit path. The commit is deliberately kept next to the refs it guards so
@@ -80,29 +116,13 @@ export function useDirectEditDrag(code: string, scriptReview: ScriptReviewSummar
             setReviewing(true);
             shellStore.setDirectEditNotice(REVIEWING_NOTICE);
             try {
-                // Lazy so the 13MB ts-morph parser stays out of the eager
-                // Studio bundle; it loads once, the first time a drag commits.
-                let plan: DragPlan;
-                try {
-                    const { planDrag } = await import('../../../modeling/directEdit/planDrag');
-                    plan = planDrag({
-                        source: baselineCode,
-                        anchor: targetAnchor,
-                        delta: snapDelta(rawDelta, 'mm'),
-                        mated,
-                    });
-                } catch (error) {
-                    shellStore.setDirectEditNotice(
-                        error instanceof Error ? error.message : String(error),
-                    );
-                    return null;
-                }
-                if (plan.toCode == null) {
-                    shellStore.setDirectEditNotice(
-                        plan.diagnostics[0]?.message ?? FALLBACK_PLAN_NOTICE,
-                    );
-                    return null;
-                }
+                const plan = await planDragWithNotice(
+                    targetAnchor,
+                    rawDelta,
+                    baselineCode,
+                    mated,
+                );
+                if (plan == null) return null;
 
                 const targetScript = currentStudioScript();
                 const candidate = await reviewCandidate({

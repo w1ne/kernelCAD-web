@@ -821,16 +821,8 @@ function recentreEmbossAnchor(ctx: CandidateContext): RepairCandidate[] {
 
   const uChars = findOptionInAnyArgument(spans, call, 'anchorU');
   const vChars = findOptionInAnyArgument(spans, call, 'anchorV');
-  const u = record.params.anchorU?.evaluated
-    ?? (typeof record.metadata?.anchorU === 'object' && record.metadata.anchorU !== null
-      && 'evaluated' in record.metadata.anchorU
-      ? Number((record.metadata.anchorU as { evaluated: number }).evaluated)
-      : 0.5);
-  const v = record.params.anchorV?.evaluated
-    ?? (typeof record.metadata?.anchorV === 'object' && record.metadata.anchorV !== null
-      && 'evaluated' in record.metadata.anchorV
-      ? Number((record.metadata.anchorV as { evaluated: number }).evaluated)
-      : 0.5);
+  const u = record.params.anchorU?.evaluated ?? anchorFromMetadata(record, 'anchorU');
+  const v = record.params.anchorV?.evaluated ?? anchorFromMetadata(record, 'anchorV');
 
   const nextU = 0.2;
   const nextV = 0.2;
@@ -911,6 +903,15 @@ function findOptionInAnyArgument(
     if (chars !== undefined) return chars;
   }
   return undefined;
+}
+
+/** Anchor default carried under `metadata` when the record has no evaluated
+ *  parameter for it; 0.5 (face centre) when metadata has no usable payload. */
+function anchorFromMetadata(record: FeatureRecord, key: 'anchorU' | 'anchorV'): number {
+  const value = record.metadata?.[key];
+  return typeof value === 'object' && value !== null && 'evaluated' in value
+    ? Number((value as { evaluated: number }).evaluated)
+    : 0.5;
 }
 
 function buildAnchorEdits(

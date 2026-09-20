@@ -39,7 +39,7 @@
 // Read-only with respect to the model: never touches the active MCP session
 // and writes nothing unless `render: true` was asked for.
 
-import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
+import { RecomputeEngine, type RecomputeResult } from '../../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { isSceneBackend } from '../../../kernel/backends/sceneBackend';
@@ -47,6 +47,7 @@ import { sceneToWorldFrameParts } from '../../../kernel/backends/occt/sceneToWor
 import { detectCylindricalHoles } from '../../../kernel/backends/occt/holeDetection';
 import { meshDeviation } from '../../../modeling/runtime/meshDeviation';
 import { resolveRootId } from '../../../modeling/buildModel';
+import type { RunScriptResult } from '../../../modeling/runtime/runScript';
 import { Scene } from '../../../modeling/validation/scene';
 import { ParamTable } from '../../../shared/runtime/paramTable';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -290,28 +291,9 @@ async function evaluateSide(
   }
   const { run } = script;
 
-  let paramTable = run.paramTable;
-  if (paramOverrides !== undefined) {
-    paramTable = ParamTable.deserialize(run.paramTable.serialize());
-    for (const [name, value] of Object.entries(paramOverrides)) {
-      if (!paramTable.has(name)) {
-        return {
-          ok: false,
-          error: `diff_geometry: param '${name}' is not declared by the baseline script. Declared: ${paramTable.list().map((p) => p.name).join(', ') || '(none)'}.`,
-          errorCode: 'feature.invalid-args',
-        };
-      }
-      try {
-        paramTable.set(name, value);
-      } catch (e) {
-        return {
-          ok: false,
-          error: `diff_geometry: param override '${name}' rejected — ${e instanceof Error ? e.message : String(e)}`,
-          errorCode: 'feature.invalid-args',
-        };
-      }
-    }
-  }
+  const overrides = applyParamOverrides(run.paramTable, paramOverrides);
+  if (!overrides.ok) return overrides;
+  const paramTable = overrides.paramTable;
 
   const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const result = await engine.run(run.records, { paramTable });
@@ -327,28 +309,68 @@ async function evaluateSide(
 
   const ret = run.returnValue;
   if (ret instanceof Scene) {
-    const sourceId = ret.__sourceFeatureId();
-    const lowered = sourceId !== undefined ? result.shapes.get(sourceId) : undefined;
-    if (!lowered || !isSceneBackend(lowered)) {
-      return {
-        ok: false,
-        error: 'diff_geometry: the assembly scene did not lower successfully.',
-        errorCode: 'recompute.input.missing',
-        diagnostics: withNextActions(result.diagnostics),
-      };
-    }
-    return {
-      ok: true,
-      side: {
-        featureCount: run.records.length,
-        isAssembly: true,
-        bodies: sceneToWorldFrameParts(lowered).map((p) => ({ name: p.name, shape: p.shape })),
-      },
-    };
+    return sceneSideResult(run, result, ret);
   }
 
+  return solidSideResult(run, result, ret);
+}
+
+function applyParamOverrides(
+  base: ParamTable,
+  paramOverrides: Record<string, number | boolean> | undefined,
+): { ok: true; paramTable: ParamTable } | { ok: false; error: string; errorCode: string } {
+  if (paramOverrides === undefined) return { ok: true, paramTable: base };
+
+  const paramTable = ParamTable.deserialize(base.serialize());
+  for (const [name, value] of Object.entries(paramOverrides)) {
+    if (!paramTable.has(name)) {
+      return {
+        ok: false,
+        error: `diff_geometry: param '${name}' is not declared by the baseline script. Declared: ${paramTable.list().map((p) => p.name).join(', ') || '(none)'}.`,
+        errorCode: 'feature.invalid-args',
+      };
+    }
+    try {
+      paramTable.set(name, value);
+    } catch (e) {
+      return {
+        ok: false,
+        error: `diff_geometry: param override '${name}' rejected — ${e instanceof Error ? e.message : String(e)}`,
+        errorCode: 'feature.invalid-args',
+      };
+    }
+  }
+  return { ok: true, paramTable };
+}
+
+function sceneSideResult(run: RunScriptResult, result: RecomputeResult, scene: Scene): SideResult {
+  const sourceId = scene.__sourceFeatureId();
+  const lowered = sourceId !== undefined ? result.shapes.get(sourceId) : undefined;
+  if (!lowered || !isSceneBackend(lowered)) {
+    return {
+      ok: false,
+      error: 'diff_geometry: the assembly scene did not lower successfully.',
+      errorCode: 'recompute.input.missing',
+      diagnostics: withNextActions(result.diagnostics),
+    };
+  }
+  return {
+    ok: true,
+    side: {
+      featureCount: run.records.length,
+      isAssembly: true,
+      bodies: sceneToWorldFrameParts(lowered).map((p) => ({ name: p.name, shape: p.shape })),
+    },
+  };
+}
+
+function solidSideResult(
+  run: RunScriptResult,
+  result: RecomputeResult,
+  returnValue: RunScriptResult['returnValue'],
+): SideResult {
   const tailId = run.records.length > 0 ? run.records[run.records.length - 1].id : undefined;
-  const rootId = resolveRootId(ret, tailId);
+  const rootId = resolveRootId(returnValue, tailId);
   const rootShape = rootId !== undefined ? result.shapes.get(rootId) : undefined;
   if (!(rootShape instanceof OcctBackend)) {
     return {

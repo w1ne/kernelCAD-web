@@ -523,27 +523,55 @@ function classifyRemainingLinework(paths: ClassifiedPath[]): void {
   }
 }
 
+function findTitleBlockBBox(
+  page: PdfPageVectors,
+  paths: ClassifiedPath[],
+  captions: PositionedText[],
+): BBox2 | undefined {
+  if (captions.length < 2) return undefined;
+  const cb = bboxOf(captions.flatMap(t => [[t.x, t.y - t.sizeMm], [t.x + t.widthMm, t.y]] as Pt[]))!;
+  return smallestEnclosingRectangle(paths, cb, page.widthMm * page.heightMm)
+    ?? { x0: cb.x0 - 4, y0: cb.y0 - 4, x1: cb.x1 + 30, y1: cb.y1 + 8 };
+}
+
+function smallestEnclosingRectangle(paths: ClassifiedPath[], cb: BBox2, pageArea: number): BBox2 | undefined {
+  // The smallest stroked rectangle that encloses every caption is the block.
+  let bestArea = Infinity;
+  let best: BBox2 | undefined;
+  for (const p of paths) {
+    if (!p.stroked || p.cls === 'frame') continue;
+    const r = asRectangle(p);
+    if (!r || !inside(cb, r, 0.5)) continue;
+    const area = (r.x1 - r.x0) * (r.y1 - r.y0);
+    if (area < bestArea && area < 0.5 * pageArea) { bestArea = area; best = r; }
+  }
+  return best;
+}
+
+function readProjection(
+  page: PdfPageVectors,
+  paths: ClassifiedPath[],
+  bbox: BBox2 | undefined,
+): TitleBlockInfo['projection'] {
+  const angleText = page.texts.find(t => /(THIRD|3RD|FIRST|1ST)\s*ANGLE/i.test(t.text));
+  if (angleText) {
+    return { value: /(THIRD|3RD)/i.test(angleText.text) ? 'third' : 'first', source: 'text' };
+  }
+  if (bbox) {
+    const symbol = projectionSymbol(paths.filter(p => inside(p.bbox, bbox, 0.6)));
+    if (symbol) return { value: symbol, source: 'symbol' };
+  }
+  return undefined;
+}
+
 function readTitleBlock(page: PdfPageVectors, paths: ClassifiedPath[]): TitleBlockInfo {
   const captions = page.texts.filter(t => TITLE_WORDS.test(t.text));
   const info: TitleBlockInfo = { texts: [] };
 
-  let bbox: BBox2 | undefined;
-  if (captions.length >= 2) {
-    const cb = bboxOf(captions.flatMap(t => [[t.x, t.y - t.sizeMm], [t.x + t.widthMm, t.y]] as Pt[]))!;
-    // The smallest stroked rectangle that encloses every caption is the block.
-    let bestArea = Infinity;
-    for (const p of paths) {
-      if (!p.stroked || p.cls === 'frame') continue;
-      const r = asRectangle(p);
-      if (!r || !inside(cb, r, 0.5)) continue;
-      const area = (r.x1 - r.x0) * (r.y1 - r.y0);
-      if (area < bestArea && area < 0.5 * page.widthMm * page.heightMm) { bestArea = area; bbox = r; }
-    }
-    bbox ??= { x0: cb.x0 - 4, y0: cb.y0 - 4, x1: cb.x1 + 30, y1: cb.y1 + 8 };
-  }
+  const bbox = findTitleBlockBBox(page, paths, captions);
   if (bbox) {
     info.bbox = bbox;
-    info.texts = page.texts.filter(t => inside({ x0: t.x, y0: t.y - t.sizeMm, x1: t.x + t.widthMm, y1: t.y }, bbox!, 0.5));
+    info.texts = page.texts.filter(t => inside({ x0: t.x, y0: t.y - t.sizeMm, x1: t.x + t.widthMm, y1: t.y }, bbox, 0.5));
   }
 
   // Scale / units: inline ("SCALE 1:2") or the parseable value nearest its caption.
@@ -562,13 +590,8 @@ function readTitleBlock(page: PdfPageVectors, paths: ClassifiedPath[]): TitleBlo
   const units = valueNear(/UNITS|DIMENSIONS\s+(ARE\s+)?IN/i, parseUnitsText);
   if (units) info.units = units;
 
-  const angleText = page.texts.find(t => /(THIRD|3RD|FIRST|1ST)\s*ANGLE/i.test(t.text));
-  if (angleText) {
-    info.projection = { value: /(THIRD|3RD)/i.test(angleText.text) ? 'third' : 'first', source: 'text' };
-  } else if (bbox) {
-    const symbol = projectionSymbol(paths.filter(p => inside(p.bbox, bbox!, 0.6)));
-    if (symbol) info.projection = { value: symbol, source: 'symbol' };
-  }
+  const projection = readProjection(page, paths, bbox);
+  if (projection) info.projection = projection;
   return info;
 }
 

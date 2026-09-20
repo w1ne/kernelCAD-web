@@ -22,6 +22,48 @@ interface GenerateHeroProps {
     readonly onUpgrade: () => void;
 }
 
+function GenerateHeroStatus({ phase, events, hasSession, onUpgrade, upgradeBusy }: {
+    readonly phase: GenerationPhase;
+    readonly events: GenerationEvents;
+    readonly hasSession: boolean;
+    readonly onUpgrade: () => void;
+    readonly upgradeBusy: boolean;
+}): JSX.Element | null {
+    if (phase.state === 'running') {
+        return (
+            <div className="mt-6 text-sm text-ink-soft font-mono">
+              <p>working - {events.length} events</p>
+              <p className="text-xs mt-2 truncate opacity-70">
+                {phase.lastEvent.kind === 'tool_call' && `-> ${phase.lastEvent.name}`}
+                {phase.lastEvent.kind === 'tool_result' && `<- ${phase.lastEvent.name} ok=${phase.lastEvent.ok}`}
+                {phase.lastEvent.kind === 'status' && `... ${phase.lastEvent.phase}`}
+              </p>
+            </div>
+        );
+    }
+    if (phase.state === 'error') {
+        return (
+            <>
+                {phase.code === 'rate_limited' && (
+                    <RateLimitedPanel
+                      authenticated={hasSession}
+                      onUpgrade={onUpgrade}
+                      busy={upgradeBusy}
+                    />
+                )}
+                {phase.code !== 'rate_limited' && (
+                    <div className="mt-6 mx-auto max-w-2xl rounded-lg border border-copper bg-vellum-soft p-4 text-ink text-left">
+                      <p className="font-serif font-medium text-lg">Generation didn't finish</p>
+                      <p className="font-mono text-xs text-copper mt-1 tracking-widest uppercase">{phase.code}</p>
+                      <p className="text-sm text-ink-soft mt-2">{phase.message}</p>
+                    </div>
+                )}
+            </>
+        );
+    }
+    return null;
+}
+
 function GenerateHero({ agentEnabled, isBusy, initialPrompt, onSubmit, hasSession, sessionEmail, sessionLoading, phase, events, upgradeBusy, onUpgrade }: GenerateHeroProps): JSX.Element {
     return (
         <>
@@ -87,31 +129,13 @@ function GenerateHero({ agentEnabled, isBusy, initialPrompt, onSubmit, hasSessio
             )}
           </div>
 
-          {phase.state === 'running' && (
-            <div className="mt-6 text-sm text-ink-soft font-mono">
-              <p>working - {events.length} events</p>
-              <p className="text-xs mt-2 truncate opacity-70">
-                {phase.lastEvent.kind === 'tool_call' && `-> ${phase.lastEvent.name}`}
-                {phase.lastEvent.kind === 'tool_result' && `<- ${phase.lastEvent.name} ok=${phase.lastEvent.ok}`}
-                {phase.lastEvent.kind === 'status' && `... ${phase.lastEvent.phase}`}
-              </p>
-            </div>
-          )}
-
-          {phase.state === 'error' && phase.code === 'rate_limited' && (
-            <RateLimitedPanel
-              authenticated={hasSession}
-              onUpgrade={onUpgrade}
-              busy={upgradeBusy}
-            />
-          )}
-          {phase.state === 'error' && phase.code !== 'rate_limited' && (
-            <div className="mt-6 mx-auto max-w-2xl rounded-lg border border-copper bg-vellum-soft p-4 text-ink text-left">
-              <p className="font-serif font-medium text-lg">Generation didn't finish</p>
-              <p className="font-mono text-xs text-copper mt-1 tracking-widest uppercase">{phase.code}</p>
-              <p className="text-sm text-ink-soft mt-2">{phase.message}</p>
-            </div>
-          )}
+          <GenerateHeroStatus
+            phase={phase}
+            events={events}
+            hasSession={hasSession}
+            onUpgrade={onUpgrade}
+            upgradeBusy={upgradeBusy}
+          />
         </header>
         </>
     );

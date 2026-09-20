@@ -185,19 +185,23 @@ function errorMessage(error: unknown): string {
  * so every resolved ancestor must be owned by the current user or root, and
  * must not allow an untrusted user to replace the next child entry.
  */
-async function trustedManifestPath(destination: string): Promise<string> {
-  const requestedPath = resolve(destination);
-  const requestedParent = dirname(requestedPath);
-  let parent: string;
+interface ManifestAncestor {
+  path: string;
+  info: Stats;
+}
+
+async function resolveManifestParent(requestedParent: string): Promise<string> {
   try {
-    parent = await realpath(requestedParent);
+    return await realpath(requestedParent);
   } catch (error) {
     throw new Error(
       `--connector-manifest parent '${requestedParent}' cannot be resolved: ${errorMessage(error)}`,
     );
   }
+}
 
-  const ancestry: Array<{ path: string; info: Stats }> = [];
+async function collectManifestAncestry(parent: string): Promise<ManifestAncestor[]> {
+  const ancestry: ManifestAncestor[] = [];
   for (let directory = parent; ; directory = dirname(directory)) {
     let info: Stats;
     try {
@@ -213,42 +217,63 @@ async function trustedManifestPath(destination: string): Promise<string> {
     ancestry.unshift({ path: directory, info });
     if (dirname(directory) === directory) break;
   }
+  return ancestry;
+}
 
-  if (process.platform !== 'win32') {
-    const uid = typeof process.getuid === 'function' ? process.getuid() : undefined;
-    if (uid === undefined) {
-      throw new Error('--connector-manifest ancestry cannot determine the current user id.');
-    }
-    const manifestParent = ancestry.at(-1)!;
-    const isTrustedOwner = (info: Stats): boolean => info.uid === uid || info.uid === 0;
-    if (!isTrustedOwner(manifestParent.info)) {
-      throw new Error(
-        `--connector-manifest ancestry is unsafe: '${manifestParent.path}' must be owned by the current user or root.`,
-      );
-    }
-    if ((manifestParent.info.mode & 0o022) !== 0) {
-      throw new Error(
-        `--connector-manifest parent '${manifestParent.path}' must not be writable by group or other users.`,
-      );
-    }
-    for (let index = 0; index < ancestry.length - 1; index++) {
-      const ancestor = ancestry[index];
-      if (!isTrustedOwner(ancestor.info)) {
-        const sticky = (ancestor.info.mode & 0o1000) !== 0;
-        throw new Error(
-          `--connector-manifest ancestry is unsafe: '${ancestor.path}' must be owned by the current user or root.${sticky ? ' A sticky ancestor is trusted only with such an owner.' : ''}`,
-        );
-      }
-      if ((ancestor.info.mode & 0o022) === 0) continue;
-      const child = ancestry[index + 1];
+function isTrustedManifestOwner(info: Stats, uid: number): boolean {
+  return info.uid === uid || info.uid === 0;
+}
+
+function assertTrustedManifestParent(manifestParent: ManifestAncestor, uid: number): void {
+  if (!isTrustedManifestOwner(manifestParent.info, uid)) {
+    throw new Error(
+      `--connector-manifest ancestry is unsafe: '${manifestParent.path}' must be owned by the current user or root.`,
+    );
+  }
+  if ((manifestParent.info.mode & 0o022) !== 0) {
+    throw new Error(
+      `--connector-manifest parent '${manifestParent.path}' must not be writable by group or other users.`,
+    );
+  }
+}
+
+function assertTrustedManifestAncestors(ancestry: ManifestAncestor[], uid: number): void {
+  for (let index = 0; index < ancestry.length - 1; index++) {
+    const ancestor = ancestry[index];
+    if (!isTrustedManifestOwner(ancestor.info, uid)) {
       const sticky = (ancestor.info.mode & 0o1000) !== 0;
-      if (!sticky || child.info.uid !== uid) {
-        throw new Error(
-          `--connector-manifest ancestry is unsafe: '${ancestor.path}' is writable by group or other users and can replace '${child.path}'. A sticky ancestor must be trusted (owned by the current user or root).`,
-        );
-      }
+      throw new Error(
+        `--connector-manifest ancestry is unsafe: '${ancestor.path}' must be owned by the current user or root.${sticky ? ' A sticky ancestor is trusted only with such an owner.' : ''}`,
+      );
+    }
+    if ((ancestor.info.mode & 0o022) === 0) continue;
+    const child = ancestry[index + 1];
+    const sticky = (ancestor.info.mode & 0o1000) !== 0;
+    if (!sticky || child.info.uid !== uid) {
+      throw new Error(
+        `--connector-manifest ancestry is unsafe: '${ancestor.path}' is writable by group or other users and can replace '${child.path}'. A sticky ancestor must be trusted (owned by the current user or root).`,
+      );
     }
   }
+}
+
+function assertTrustedManifestAncestry(ancestry: ManifestAncestor[]): void {
+  if (process.platform === 'win32') return;
+  const uid = typeof process.getuid === 'function' ? process.getuid() : undefined;
+  if (uid === undefined) {
+    throw new Error('--connector-manifest ancestry cannot determine the current user id.');
+  }
+  const manifestParent = ancestry.at(-1)!;
+  assertTrustedManifestParent(manifestParent, uid);
+  assertTrustedManifestAncestors(ancestry, uid);
+}
+
+async function trustedManifestPath(destination: string): Promise<string> {
+  const requestedPath = resolve(destination);
+  const requestedParent = dirname(requestedPath);
+  const parent = await resolveManifestParent(requestedParent);
+  const ancestry = await collectManifestAncestry(parent);
+  assertTrustedManifestAncestry(ancestry);
   return join(parent, basename(requestedPath));
 }
 

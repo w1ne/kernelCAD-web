@@ -375,11 +375,7 @@ export async function reconstructFromSoup(
       diagnostics: [],
     };
   }
-  const thresholds: FidelityThresholds = {
-    minIoU: opts.minIoU ?? 0.98,
-    maxDeviationMm: opts.maxDeviationMm ?? Math.max(0.25, 0.001 * analysis.diagonal),
-    approximateIoU: 0.85,
-  };
+  const thresholds = resolveFidelityThresholds(analysis, opts);
   const maxPasses = Math.max(1, Math.min(4, opts.maxPasses ?? 4));
   const noise = analysis.seg.noiseMm;
   const eps0 = Math.max(0.02, 3 * noise, 1e-4 * analysis.diagonal);
@@ -398,31 +394,56 @@ export async function reconstructFromSoup(
   const meshTri: TriMesh = { positions: analysis.mesh.positions, indices: analysis.mesh.triangles };
   const outcomes: PassOutcome[] = [];
   const ctx: ReconstructContext = { analysis, evaluate, thresholds, meshTri, sourceName, outcomes };
-  let winner: PassOutcome | undefined;
-
-  for (const pass of schedule) {
-    const passWinner = await runReconstructionPass(ctx, pass);
-    if (passWinner !== undefined) {
-      winner = passWinner;
-      break;
-    }
-  }
+  let winner = await runFirstAcceptablePass(ctx, schedule);
   if (!winner) {
     winner = selectBestOutcome(outcomes);
   }
   const passes = outcomes.map((o) => o.summary);
   if (!winner || !winner.metrics) {
-    const last = outcomes[outcomes.length - 1];
-    return {
-      ok: false,
-      error: `mesh_to_features: no pass produced a script that evaluates (last error: ${last?.summary.error ?? 'none'}).`,
-      errorCode: last?.summary.errorCode ?? 'cli.script-exception',
-      passes,
-      mesh: analysis.report,
-      diagnostics: [],
-    };
+    return noMeasurablePassFailure(analysis, outcomes, passes);
   }
   return buildReconstructSuccess(ctx, soup, winner, thresholds, passes);
+}
+
+/** Fit thresholds: explicit options win, defaults are per the option docs. */
+function resolveFidelityThresholds(
+  analysis: MeshAnalysis,
+  opts: ReconstructOptions,
+): FidelityThresholds {
+  return {
+    minIoU: opts.minIoU ?? 0.98,
+    maxDeviationMm: opts.maxDeviationMm ?? Math.max(0.25, 0.001 * analysis.diagonal),
+    approximateIoU: 0.85,
+  };
+}
+
+/** First pass that produced an outcome; `undefined` when every pass failed. */
+async function runFirstAcceptablePass(
+  ctx: ReconstructContext,
+  schedule: PassParams[],
+): Promise<PassOutcome | undefined> {
+  for (const pass of schedule) {
+    const passWinner = await runReconstructionPass(ctx, pass);
+    if (passWinner !== undefined) return passWinner;
+  }
+  return undefined;
+}
+
+/** The failure emitted when no pass produced a script with measurable fidelity. */
+function noMeasurablePassFailure(
+  analysis: MeshAnalysis,
+  outcomes: PassOutcome[],
+  passes: PassSummary[],
+): ReconstructFailure {
+  const last = outcomes[outcomes.length - 1];
+  return {
+    ok: false,
+    error: `mesh_to_features: no pass produced a script that evaluates (last error: ${last?.summary.error ?? 'none'}).`,
+    errorCode: last?.summary.errorCode ?? 'cli.script-exception',
+    passes,
+    mesh: analysis.report,
+    diagnostics: [],
+  };
 }
 
 function round6(v: number): number {
