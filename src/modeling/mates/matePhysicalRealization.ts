@@ -175,35 +175,16 @@ export async function validateMatePhysicalRealization(
 
   const out: ValidatorDiagnostic[] = [];
   for (const mate of arm.__mates()) {
-    // Out of scope: fastened (no axis); ball / planar / cylindrical /
-    // pin_slot (G2 covers revolute + prismatic only).
-    if (mate.type !== 'revolute' && mate.type !== 'prismatic') continue;
-
-    const sideA = await resolveSide(mate.a, partsByName, worldTransforms);
-    const sideB = await resolveSide(mate.b, partsByName, worldTransforms);
-    if (!sideA || !sideB) continue;
-
-    const parentShape = loweredShapes.get(sideA.partName);
-    const childShape = loweredShapes.get(sideB.partName);
-    if (!parentShape || !childShape) continue;
-
-    // Microscale skip — combined parent+child bounding-sphere radius below
-    // the threshold means the joint is too small to expect realistic
-    // hardware. Matches Gate 4's convention.
-    if (combinedBoundingSphereRadius(parentShape, childShape) < MICROSCALE_BOUNDING_RADIUS) {
-      continue;
-    }
-
-    const axisDir = normalize(sideA.direction);
-    if (axisDir === undefined) continue; // degenerate axis — out of scope
+    const gated = await prepareGatedMate(mate, partsByName, loweredShapes, worldTransforms);
+    if (gated === undefined) continue;
 
     const result = analyzeMate({
-      mate,
-      parent: parentShape,
-      child: childShape,
-      axisOrigin: sideA.origin,
-      axisOriginChild: sideB.origin,
-      axisDir,
+      mate: gated.mate,
+      parent: gated.parent,
+      child: gated.child,
+      axisOrigin: gated.axisOrigin,
+      axisOriginChild: gated.axisOriginChild,
+      axisDir: gated.axisDir,
       tolFraction,
       samples,
     });
@@ -218,6 +199,56 @@ export async function validateMatePhysicalRealization(
     }
   }
   return out;
+}
+
+interface GatedMate {
+  readonly mate: MateRecord;
+  readonly parent: OcctBackend;
+  readonly child: OcctBackend;
+  readonly axisOrigin: Vec3;
+  readonly axisOriginChild: Vec3;
+  readonly axisDir: Vec3;
+}
+
+/** Resolve both mate sides, their lowered shapes and the world axis, applying
+ *  the in-scope filter and the microscale skip. Returns `undefined` when the
+ *  mate cannot be gated. */
+async function prepareGatedMate(
+  mate: MateRecord,
+  partsByName: ReadonlyMap<string, AssemblyPartStored>,
+  loweredShapes: ReadonlyMap<string, OcctBackend>,
+  worldTransforms: ReadonlyMap<string, Transform>,
+): Promise<GatedMate | undefined> {
+  // Out of scope: fastened (no axis); ball / planar / cylindrical /
+  // pin_slot (G2 covers revolute + prismatic only).
+  if (mate.type !== 'revolute' && mate.type !== 'prismatic') return undefined;
+
+  const sideA = await resolveSide(mate.a, partsByName, worldTransforms);
+  const sideB = await resolveSide(mate.b, partsByName, worldTransforms);
+  if (!sideA || !sideB) return undefined;
+
+  const parentShape = loweredShapes.get(sideA.partName);
+  const childShape = loweredShapes.get(sideB.partName);
+  if (!parentShape || !childShape) return undefined;
+
+  // Microscale skip — combined parent+child bounding-sphere radius below
+  // the threshold means the joint is too small to expect realistic
+  // hardware. Matches Gate 4's convention.
+  if (combinedBoundingSphereRadius(parentShape, childShape) < MICROSCALE_BOUNDING_RADIUS) {
+    return undefined;
+  }
+
+  const axisDir = normalize(sideA.direction);
+  if (axisDir === undefined) return undefined; // degenerate axis — out of scope
+
+  return {
+    mate,
+    parent: parentShape,
+    child: childShape,
+    axisOrigin: sideA.origin,
+    axisOriginChild: sideB.origin,
+    axisDir,
+  };
 }
 
 interface MateAnalysis {
