@@ -301,12 +301,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/segment.ts",
-    "symbol": "Function 'growPlanes'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/repair/candidates.ts",
     "symbol": "Function 'recentreEmbossAnchor'",
     "value": 17
