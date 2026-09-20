@@ -41,6 +41,26 @@ describe('stripTypeScriptSyntax', () => {
         expect(() => parseCode(src)).not.toThrow();
     });
 
+    it('keeps template literals with interpolations untouched', () => {
+        const src = 'const label = `hello ${name} #${i}`;';
+        expect(stripTypeScriptSyntax(src)).toBe(src);
+    });
+
+    it('keeps nested braces and strings inside template interpolations', () => {
+        const src = "const t = `a ${ { x: '}' } } b`;";
+        expect(stripTypeScriptSyntax(src)).toBe(src);
+    });
+
+    it('keeps escaped backticks and nested templates untouched', () => {
+        const src = 'const u = `a \\` b ${ `inner` } c`;';
+        expect(stripTypeScriptSyntax(src)).toBe(src);
+    });
+
+    it('does not blank type-like text inside template literals', () => {
+        const src = 'const s = `const x: number = 1;`;';
+        expect(stripTypeScriptSyntax(src)).toBe(src);
+    });
+
     it('keeps object keys named type (connector frames)', () => {
         const src = `
             plate.connector('s0', {
