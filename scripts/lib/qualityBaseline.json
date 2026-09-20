@@ -613,12 +613,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/sketchReflect.ts",
-    "symbol": "Arrow function",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/virtualFeatureRecords.ts",
     "symbol": "Function 'buildRenderEnvironmentFeatureSpec'",
     "value": 17
@@ -1072,12 +1066,6 @@
     "file": "src/modeling/capture/forwardKinematics.ts",
     "symbol": "Function 'forwardKinematics'",
     "value": 101
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/capture/sketchReflect.ts",
-    "symbol": "Function 'reflectSketchCommands'",
-    "value": 121
   },
   {
     "rule": "max-lines-per-function",

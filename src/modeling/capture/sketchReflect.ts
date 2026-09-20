@@ -7,6 +7,15 @@ import { paramExpr, paramFromExpr, toParam } from '../../shared/runtime/editable
 import type { SketchCommand } from '../../shared/capture/sketchCommand';
 import type { TangentEntitySpec, TangentNearSpec } from '../../shared/capture/tangency';
 
+/** Coordinate/derivative reflection closures shared by the command handlers. */
+interface SketchReflectContext {
+  reflectXY: (x: Param, y: Param) => [Param, Param];
+  reflectVec: (vx: Param, vy: Param) => [Param, Param];
+  negateScalar: (p: Param) => Param;
+  reflectEntity: (e: TangentEntitySpec) => TangentEntitySpec;
+  reflectNear: (n: TangentNearSpec | undefined) => TangentNearSpec | undefined;
+}
+
 /**
  * Reflect a captured sketch's command list across an axis. Pure mapping: the
  * source commands are unchanged and a new list is returned.
@@ -78,93 +87,146 @@ export function reflectSketchCommands(commands: SketchCommand[], axis: AxisSpec)
     return { x, y };
   };
 
-  return commands.map(cmd => {
-    switch (cmd.kind) {
-      case 'moveTo': {
-        const [x, y] = reflectXY(cmd.x, cmd.y);
-        return { ...cmd, x, y };
-      }
-      case 'lineTo': {
-        const [x, y] = reflectXY(cmd.x, cmd.y);
-        return { ...cmd, x, y };
-      }
-      case 'tangentArc': {
-        const [x, y] = reflectXY(cmd.x, cmd.y);
-        return { ...cmd, x, y };
-      }
-      case 'threePointsArc': {
-        const [x, y] = reflectXY(cmd.x, cmd.y);
-        const [midX, midY] = reflectXY(cmd.midX, cmd.midY);
-        return { ...cmd, x, y, midX, midY };
-      }
-      case 'sagittaArc': {
-        const [x, y] = reflectXY(cmd.x, cmd.y);
-        return { ...cmd, x, y, sagitta: negateScalar(cmd.sagitta) };
-      }
-      case 'bulgeArc': {
-        const [x, y] = reflectXY(cmd.x, cmd.y);
-        return { ...cmd, x, y, bulge: negateScalar(cmd.bulge) };
-      }
-      case 'radiusArc': {
-        const [x, y] = reflectXY(cmd.x, cmd.y);
-        return { ...cmd, x, y, radius: negateScalar(cmd.radius) };
-      }
-      case 'smoothSpline': {
-        // smoothSpline inherits its start tangent from the prior segment
-        // (which is also reflected here), so we only flip the endpoint.
-        // The end tangent is auto-chosen by replicad; reflection of the
-        // surrounding context picks the correct mirrored tangent.
-        const [x, y] = reflectXY(cmd.x, cmd.y);
-        return { ...cmd, x, y };
-      }
-      case 'spline': {
-        // Reflect every waypoint; tension is a scalar magnitude (no flip).
-        const newPoints = cmd.points.map(p => {
-          const [x, y] = reflectXY(p.x, p.y);
-          return { x, y };
-        });
-        return { ...cmd, points: newPoints };
-      }
-      case 'nurbsSegment': {
-        // Reflect every control point; degree, weights, and knots are
-        // invariant under coordinate reflection.
-        const newControls = cmd.controlPoints.map(p => {
-          const [x, y] = reflectXY(p.x, p.y);
-          return { x, y };
-        });
-        return { ...cmd, controlPoints: newControls };
-      }
-      case 'hermiteG2_2d': {
-        // Reflect endpoints with the affine offset; reflect tangents and
-        // curvatures as pure direction vectors (no offset shift).
-        const [ax, ay] = reflectXY(cmd.ax, cmd.ay);
-        const [bx, by] = reflectXY(cmd.bx, cmd.by);
-        const [atx, aty] = reflectVec(cmd.atx, cmd.aty);
-        const [btx, bty] = reflectVec(cmd.btx, cmd.bty);
-        const [acx, acy] = cmd.acx !== undefined && cmd.acy !== undefined
-          ? reflectVec(cmd.acx, cmd.acy)
-          : [undefined, undefined];
-        const [bcx, bcy] = cmd.bcx !== undefined && cmd.bcy !== undefined
-          ? reflectVec(cmd.bcx, cmd.bcy)
-          : [undefined, undefined];
-        return {
-          ...cmd,
-          ax, ay, bx, by,
-          atx, aty, btx, bty,
-          acx, acy, bcx, bcy,
-        };
-      }
-      case 'tangentCircle':
-        return { ...cmd, entities: cmd.entities.map(reflectEntity), near: reflectNear(cmd.near) };
-      case 'tangentLine':
-        return { ...cmd, a: reflectEntity(cmd.a), b: reflectEntity(cmd.b), near: reflectNear(cmd.near) };
-      case 'close':
-        return cmd;
-      default: {
-        // exhaustiveness guard
-        const _exhaustive: never = cmd;
-        return _exhaustive;
-      }
+  const context: SketchReflectContext = { reflectXY, reflectVec, negateScalar, reflectEntity, reflectNear };
+  return commands.map(cmd => reflectSketchCommand(cmd, context));
+}
+
+/** Command-family routing. The lookup is exhaustive over `SketchCommand['kind']`
+ *  by construction, so a new command kind cannot silently skip reflection. */
+const REFLECT_GROUP_BY_KIND: Record<SketchCommand['kind'], 'point' | 'arc' | 'curve' | 'tangent' | 'close'> = {
+  moveTo: 'point',
+  lineTo: 'point',
+  tangentArc: 'point',
+  threePointsArc: 'point',
+  smoothSpline: 'point',
+  sagittaArc: 'arc',
+  bulgeArc: 'arc',
+  radiusArc: 'arc',
+  spline: 'curve',
+  nurbsSegment: 'curve',
+  hermiteG2_2d: 'curve',
+  tangentCircle: 'tangent',
+  tangentLine: 'tangent',
+  close: 'close',
+};
+
+function reflectSketchCommand(cmd: SketchCommand, ctx: SketchReflectContext): SketchCommand {
+  switch (REFLECT_GROUP_BY_KIND[cmd.kind]) {
+    case 'point':
+      return reflectPointCommand(cmd, ctx);
+    case 'arc':
+      return reflectArcCommand(cmd, ctx);
+    case 'curve':
+      return reflectCurveCommand(cmd, ctx);
+    case 'tangent':
+      return reflectTangentCommand(cmd, ctx);
+    default:
+      return cmd;
+  }
+}
+
+function reflectPointCommand(cmd: SketchCommand, ctx: SketchReflectContext): SketchCommand {
+  switch (cmd.kind) {
+    case 'moveTo': {
+      const [x, y] = ctx.reflectXY(cmd.x, cmd.y);
+      return { ...cmd, x, y };
     }
-  });
+    case 'lineTo': {
+      const [x, y] = ctx.reflectXY(cmd.x, cmd.y);
+      return { ...cmd, x, y };
+    }
+    case 'tangentArc': {
+      const [x, y] = ctx.reflectXY(cmd.x, cmd.y);
+      return { ...cmd, x, y };
+    }
+    case 'threePointsArc': {
+      const [x, y] = ctx.reflectXY(cmd.x, cmd.y);
+      const [midX, midY] = ctx.reflectXY(cmd.midX, cmd.midY);
+      return { ...cmd, x, y, midX, midY };
+    }
+    case 'smoothSpline': {
+      // smoothSpline inherits its start tangent from the prior segment
+      // (which is also reflected here), so we only flip the endpoint.
+      // The end tangent is auto-chosen by replicad; reflection of the
+      // surrounding context picks the correct mirrored tangent.
+      const [x, y] = ctx.reflectXY(cmd.x, cmd.y);
+      return { ...cmd, x, y };
+    }
+    default:
+      return cmd;
+  }
+}
+
+function reflectArcCommand(cmd: SketchCommand, ctx: SketchReflectContext): SketchCommand {
+  switch (cmd.kind) {
+    case 'sagittaArc': {
+      const [x, y] = ctx.reflectXY(cmd.x, cmd.y);
+      return { ...cmd, x, y, sagitta: ctx.negateScalar(cmd.sagitta) };
+    }
+    case 'bulgeArc': {
+      const [x, y] = ctx.reflectXY(cmd.x, cmd.y);
+      return { ...cmd, x, y, bulge: ctx.negateScalar(cmd.bulge) };
+    }
+    case 'radiusArc': {
+      const [x, y] = ctx.reflectXY(cmd.x, cmd.y);
+      return { ...cmd, x, y, radius: ctx.negateScalar(cmd.radius) };
+    }
+    default:
+      return cmd;
+  }
+}
+
+function reflectCurveCommand(cmd: SketchCommand, ctx: SketchReflectContext): SketchCommand {
+  switch (cmd.kind) {
+    case 'spline': {
+      // Reflect every waypoint; tension is a scalar magnitude (no flip).
+      const newPoints = cmd.points.map(p => {
+        const [x, y] = ctx.reflectXY(p.x, p.y);
+        return { x, y };
+      });
+      return { ...cmd, points: newPoints };
+    }
+    case 'nurbsSegment': {
+      // Reflect every control point; degree, weights, and knots are
+      // invariant under coordinate reflection.
+      const newControls = cmd.controlPoints.map(p => {
+        const [x, y] = ctx.reflectXY(p.x, p.y);
+        return { x, y };
+      });
+      return { ...cmd, controlPoints: newControls };
+    }
+    case 'hermiteG2_2d': {
+      // Reflect endpoints with the affine offset; reflect tangents and
+      // curvatures as pure direction vectors (no offset shift).
+      const [ax, ay] = ctx.reflectXY(cmd.ax, cmd.ay);
+      const [bx, by] = ctx.reflectXY(cmd.bx, cmd.by);
+      const [atx, aty] = ctx.reflectVec(cmd.atx, cmd.aty);
+      const [btx, bty] = ctx.reflectVec(cmd.btx, cmd.bty);
+      const [acx, acy] = cmd.acx !== undefined && cmd.acy !== undefined
+        ? ctx.reflectVec(cmd.acx, cmd.acy)
+        : [undefined, undefined];
+      const [bcx, bcy] = cmd.bcx !== undefined && cmd.bcy !== undefined
+        ? ctx.reflectVec(cmd.bcx, cmd.bcy)
+        : [undefined, undefined];
+      return {
+        ...cmd,
+        ax, ay, bx, by,
+        atx, aty, btx, bty,
+        acx, acy, bcx, bcy,
+      };
+    }
+    default:
+      return cmd;
+  }
+}
+
+function reflectTangentCommand(cmd: SketchCommand, ctx: SketchReflectContext): SketchCommand {
+  switch (cmd.kind) {
+    case 'tangentCircle':
+      return { ...cmd, entities: cmd.entities.map(ctx.reflectEntity), near: ctx.reflectNear(cmd.near) };
+    case 'tangentLine':
+      return { ...cmd, a: ctx.reflectEntity(cmd.a), b: ctx.reflectEntity(cmd.b), near: ctx.reflectNear(cmd.near) };
+    default:
+      return cmd;
+  }
 }
