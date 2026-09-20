@@ -352,6 +352,15 @@ function planeBoundaryFraction(mesh: IndexedMesh, region: number[], stamp: numbe
   return boundary > 0 ? sharp / boundary : 1;
 }
 
+interface PlaneGrowContext {
+  owner: Int32Array;
+  tried: Uint8Array;
+  stampOf: Int32Array;
+  planes: PlaneRegion[];
+  grow: PlaneGrower['grow'];
+  currentStamp: () => number;
+}
+
 function growPlanes(mesh: IndexedMesh, tol: number, totalArea: number, robust = false): PlaneRegion[] {
   const triCount = mesh.areas.length;
   const order = Array.from({ length: triCount }, (_, i) => i).sort((a, b) => mesh.areas[b] - mesh.areas[a]);
@@ -360,70 +369,84 @@ function growPlanes(mesh: IndexedMesh, tol: number, totalArea: number, robust = 
   const stampOf = new Int32Array(triCount);
   const alt = altitudes(mesh);
   const planes: PlaneRegion[] = [];
-  const minSeedArea = tol * tol;
   const { grow, currentStamp } = makePlaneGrower(mesh, tol, owner, stampOf, alt);
+  const ctx: PlaneGrowContext = { owner, tried, stampOf, planes, grow, currentStamp };
 
   for (const seed of order) {
     if (owner[seed] >= 0 || tried[seed]) continue;
-    tried[seed] = 1;
-    if (mesh.areas[seed] < minSeedArea) break; // sorted: every later seed is smaller
-    const n0 = triNormal(mesh, seed);
-    const d0 = dot3(n0, vertex(mesh, mesh.triangles[seed * 3]));
-    // Two growth rounds: grow loosely from the seed triangle's plane (on a
-    // noisy mesh a single triangle's plane is itself off by the noise), refit,
-    // then regrow from scratch at the real tolerance against the fitted plane.
-    let region = grow(seed, n0, d0, 2 * tol);
-    let area0 = 0;
-    for (const t of region) area0 += mesh.areas[t];
-    if (area0 < 25 * tol * tol && area0 < 0.02 * totalArea) {
-      // Even the loose growth is too small to become a plane: skip the refit.
-      for (const t of region) tried[t] = 1;
-      continue;
-    }
-    if (region.length >= 3) {
-      const first = fitPlane(mesh, region, false);
-      region = first ? grow(seed, first.normal, first.offset, tol) : grow(seed, n0, d0, tol);
-    } else {
-      region = grow(seed, n0, d0, tol);
-    }
-    let area = 0;
-    for (const t of region) area += mesh.areas[t];
-    const big = area >= 0.02 * totalArea;
-    const reject = () => {
-      // Every triangle of a rejected region is a poor seed too (a facet strip
-      // on a round); later seeds can still grow into them.
-      for (const t of region) tried[t] = 1;
-    };
-    if (!big && area < 25 * tol * tol) {
-      reject();
-      continue;
-    }
-    const sharpBoundaryFraction = planeBoundaryFraction(mesh, region, currentStamp(), stampOf);
-    if (!(big || sharpBoundaryFraction >= 0.25)) {
-      reject();
-      continue;
-    }
-    const fit = fitPlane(mesh, region, robust);
-    if (!fit) {
-      reject();
-      continue;
-    }
-    const id = planes.length;
-    for (const t of region) owner[t] = id;
-    planes.push({
-      kind: 'plane',
-      id,
-      tris: region,
-      normal: fit.normal,
-      offset: fit.offset,
-      area,
-      centroid: fit.centroid,
-      rms: fit.rms,
-      robustSigma: fit.robustSigma,
-      sharpBoundaryFraction,
-    });
+    if (growPlaneFromSeed(mesh, seed, tol, totalArea, robust, ctx) === 'stop') break;
   }
   return planes;
+}
+
+function growPlaneFromSeed(
+  mesh: IndexedMesh,
+  seed: number,
+  tol: number,
+  totalArea: number,
+  robust: boolean,
+  ctx: PlaneGrowContext,
+): 'stop' | 'skip' | 'grown' {
+  const { owner, tried, stampOf, planes, grow, currentStamp } = ctx;
+  const minSeedArea = tol * tol;
+  tried[seed] = 1;
+  if (mesh.areas[seed] < minSeedArea) return 'stop'; // sorted: every later seed is smaller
+  const n0 = triNormal(mesh, seed);
+  const d0 = dot3(n0, vertex(mesh, mesh.triangles[seed * 3]));
+  // Two growth rounds: grow loosely from the seed triangle's plane (on a
+  // noisy mesh a single triangle's plane is itself off by the noise), refit,
+  // then regrow from scratch at the real tolerance against the fitted plane.
+  let region = grow(seed, n0, d0, 2 * tol);
+  let area0 = 0;
+  for (const t of region) area0 += mesh.areas[t];
+  if (area0 < 25 * tol * tol && area0 < 0.02 * totalArea) {
+    // Even the loose growth is too small to become a plane: skip the refit.
+    for (const t of region) tried[t] = 1;
+    return 'skip';
+  }
+  if (region.length >= 3) {
+    const first = fitPlane(mesh, region, false);
+    region = first ? grow(seed, first.normal, first.offset, tol) : grow(seed, n0, d0, tol);
+  } else {
+    region = grow(seed, n0, d0, tol);
+  }
+  let area = 0;
+  for (const t of region) area += mesh.areas[t];
+  const big = area >= 0.02 * totalArea;
+  const reject = () => {
+    // Every triangle of a rejected region is a poor seed too (a facet strip
+    // on a round); later seeds can still grow into them.
+    for (const t of region) tried[t] = 1;
+  };
+  if (!big && area < 25 * tol * tol) {
+    reject();
+    return 'skip';
+  }
+  const sharpBoundaryFraction = planeBoundaryFraction(mesh, region, currentStamp(), stampOf);
+  if (!(big || sharpBoundaryFraction >= 0.25)) {
+    reject();
+    return 'skip';
+  }
+  const fit = fitPlane(mesh, region, robust);
+  if (!fit) {
+    reject();
+    return 'skip';
+  }
+  const id = planes.length;
+  for (const t of region) owner[t] = id;
+  planes.push({
+    kind: 'plane',
+    id,
+    tris: region,
+    normal: fit.normal,
+    offset: fit.offset,
+    area,
+    centroid: fit.centroid,
+    rms: fit.rms,
+    robustSigma: fit.robustSigma,
+    sharpBoundaryFraction,
+  });
+  return 'grown';
 }
 
 function fitPlane(

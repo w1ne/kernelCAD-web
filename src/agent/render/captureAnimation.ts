@@ -51,7 +51,9 @@
 // already-written PNGs but the result still says ok:false.
 
 import { rm } from 'node:fs/promises';
+import type { BuiltModel } from '../../modeling/buildModel';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
+import type { AnimationViewMetadata } from '../../shared/intent/animationViewRecord';
 import type { AnimationCollision } from '../../modeling/animation/verifyAnimation';
 import { sampleTracks } from '../../modeling/animation/animationSampler';
 import { openDemoPlayerPage, type DemoPlayerPageHandle, type HeadlessObjectFilter } from './headlessRender';
@@ -179,6 +181,68 @@ export interface CaptureAnimationDeps {
 
 export { animationFrameFileName } from './captureAnimationPhases';
 
+type VerifyFieldsFn = () => Pick<CaptureAnimationResult, 'verified' | 'collisions' | 'verifySkipped'>;
+type FrameList = ReturnType<typeof sampleTracks>['frames'];
+
+function resolveCaptureDeps(
+  deps: CaptureAnimationDeps,
+  opts: CaptureAnimationOpts,
+): {
+  openPage: typeof openDemoPlayerPage;
+  spawnFfmpeg: (args: readonly string[]) => FfmpegProcessLike;
+  onProgress: (msg: string) => void;
+} {
+  const openPage = deps.openPage ?? openDemoPlayerPage;
+  const spawnFfmpeg = deps.spawnFfmpeg ?? defaultSpawnFfmpeg;
+  const onProgress = opts.onProgress ?? (() => undefined);
+  return { openPage, spawnFfmpeg, onProgress };
+}
+
+async function runVerificationPhase(
+  verifySkipped: boolean,
+  opts: CaptureAnimationOpts,
+  model: BuiltModel,
+  metadata: AnimationViewMetadata,
+  frames: FrameList,
+  durationMs: number,
+  fps: number,
+  stashedWarns: CompilerDiagnostic[],
+  onProgress: (msg: string) => void,
+  t0: number,
+): Promise<{ kind: 'done'; verified: boolean; collisions: AnimationCollision[] } | { kind: 'failure'; failure: CaptureAnimationResult }> {
+  if (verifySkipped) return { kind: 'done', verified: false, collisions: [] };
+  return verifyPosesPhase(opts, model, metadata, frames, durationMs, fps, stashedWarns, onProgress, t0);
+}
+
+async function closeCaptureResources(
+  pageHandle: DemoPlayerPageHandle | undefined,
+  renderSurface: ResolvedRenderBase | undefined,
+): Promise<void> {
+  if (pageHandle) await pageHandle.close();
+  // Tear the ephemeral static-player server down on EVERY exit path
+  // (success, typed refusal, throw) — a no-op for the explicit/dev-server
+  // lanes.
+  if (renderSurface) await renderSurface.close();
+}
+
+function captureThrowFailure(
+  e: unknown,
+  written: number,
+  durationMs: number,
+  fps: number,
+  stashedWarns: CompilerDiagnostic[],
+  verifyFields: VerifyFieldsFn,
+): CaptureAnimationResult {
+  return {
+    ok: false, frameCount: written, durationMs, fps, failureKind: 'environment', ...verifyFields(),
+    diagnostics: [...stashedWarns, diag(
+      'cli.export-exception',
+      `captureAnimation: ${errMsg(e)}`,
+      'Read the diagnostic message; common causes are a missing playwright chromium or an unavailable render surface (run `npm run build:player` once to bundle the static player, or start `npm run dev`).',
+    )],
+  };
+}
+
 /**
  * Capture the script's animationView timeline.
  *
@@ -198,9 +262,7 @@ export async function captureAnimation(
   opts: CaptureAnimationOpts,
   deps: CaptureAnimationDeps = {},
 ): Promise<CaptureAnimationResult> {
-  const openPage = deps.openPage ?? openDemoPlayerPage;
-  const spawnFfmpeg = deps.spawnFfmpeg ?? defaultSpawnFfmpeg;
-  const onProgress = opts.onProgress ?? (() => undefined);
+  const { openPage, spawnFfmpeg, onProgress } = resolveCaptureDeps(deps, opts);
   const t0 = Date.now();
 
   // Animation-pose verification state, threaded onto EVERY result (refusals
@@ -257,12 +319,10 @@ export async function captureAnimation(
   //     do NOT abort the capture — the MP4/frames are evidence — but a pose
   //     that fails to SOLVE during verification is a model fault and refuses
   //     here, exactly as it would have in the frame loop.
-  if (!verifySkipped) {
-    const outcome = await verifyPosesPhase(opts, model, metadata, frames, durationMs, fps, stashedWarns, onProgress, t0);
-    if (outcome.kind === 'failure') return outcome.failure;
-    verified = outcome.verified;
-    collisions = outcome.collisions;
-  }
+  const outcome = await runVerificationPhase(verifySkipped, opts, model, metadata, frames, durationMs, fps, stashedWarns, onProgress, t0);
+  if (outcome.kind === 'failure') return outcome.failure;
+  verified = outcome.verified;
+  collisions = outcome.collisions;
 
   // 5. Cold mesh — populates the per-session triangle cache so the per-frame
   //    recompute below is warm.
@@ -329,19 +389,8 @@ export async function captureAnimation(
   } catch (e) {
     // Unexpected non-frame failure (browser connect, page bootstrap, fs).
     await abortFfmpeg();
-    return {
-      ok: false, frameCount: written, durationMs, fps, failureKind: 'environment', ...verifyFields(),
-      diagnostics: [...stashedWarns, diag(
-        'cli.export-exception',
-        `captureAnimation: ${errMsg(e)}`,
-        'Read the diagnostic message; common causes are a missing playwright chromium or an unavailable render surface (run `npm run build:player` once to bundle the static player, or start `npm run dev`).',
-      )],
-    };
+    return captureThrowFailure(e, written, durationMs, fps, stashedWarns, verifyFields);
   } finally {
-    if (pageHandle) await pageHandle.close();
-    // Tear the ephemeral static-player server down on EVERY exit path
-    // (success, typed refusal, throw) — a no-op for the explicit/dev-server
-    // lanes.
-    if (renderSurface) await renderSurface.close();
+    await closeCaptureResources(pageHandle, renderSurface);
   }
 }

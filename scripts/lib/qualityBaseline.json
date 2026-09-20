@@ -26,6 +26,12 @@
   {
     "rule": "complexity",
     "file": "src/agent/cli/commands/export.ts",
+    "symbol": "Async function 'exportPartsScript'",
+    "value": 20
+  },
+  {
+    "rule": "complexity",
+    "file": "src/agent/cli/commands/export.ts",
     "symbol": "Async function 'trustedManifestPath'",
     "value": 17
   },
@@ -55,9 +61,21 @@
   },
   {
     "rule": "complexity",
+    "file": "src/agent/drawing/reconstructPhases.ts",
+    "symbol": "Function 'resolveHoleExtent'",
+    "value": 20
+  },
+  {
+    "rule": "complexity",
     "file": "src/agent/drawing/reconstructSolver.ts",
     "symbol": "Function 'levelNamer'",
     "value": 18
+  },
+  {
+    "rule": "complexity",
+    "file": "src/agent/drawing/sheet.ts",
+    "symbol": "Function 'buildLinearDimensions'",
+    "value": 20
   },
   {
     "rule": "complexity",
@@ -115,6 +133,12 @@
   },
   {
     "rule": "complexity",
+    "file": "src/agent/mcp/tools/designLoop.ts",
+    "symbol": "Function 'weakVisualCheckEvidence'",
+    "value": 20
+  },
+  {
+    "rule": "complexity",
     "file": "src/agent/mcp/tools/dfmPreflight.ts",
     "symbol": "Async function 'dfmPreflightTool'",
     "value": 19
@@ -157,9 +181,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/getFaceLineage.ts",
-    "symbol": "Async function 'getFaceLineageTool'",
-    "value": 19
+    "file": "src/agent/mcp/tools/inspectRobot.ts",
+    "symbol": "Async function 'inspectRobotTool'",
+    "value": 20
   },
   {
     "rule": "complexity",
@@ -218,12 +242,6 @@
   {
     "rule": "complexity",
     "file": "src/agent/reconstruct/planPhases/body.ts",
-    "symbol": "Arrow function",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/reconstruct/planPhases/body.ts",
     "symbol": "Function 'buildFaceBook'",
     "value": 18
   },
@@ -248,12 +266,6 @@
   {
     "rule": "complexity",
     "file": "src/agent/reconstruct/profileParams.ts",
-    "symbol": "Function 'paramProfile'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/reconstruct/profileParams.ts",
     "symbol": "Function 'rectilinearCorners'",
     "value": 17
   },
@@ -268,18 +280,6 @@
     "file": "src/agent/reconstruct/segment.ts",
     "symbol": "Function 'adoptFragments'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/reconstruct/segment.ts",
-    "symbol": "Function 'growPlanes'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/render/captureAnimation.ts",
-    "symbol": "Async function 'captureAnimation'",
-    "value": 19
   },
   {
     "rule": "complexity",
@@ -361,9 +361,21 @@
   },
   {
     "rule": "complexity",
+    "file": "src/kernel/backends/occt/holeLowerer.ts",
+    "symbol": "Function 'lowerHoles'",
+    "value": 19
+  },
+  {
+    "rule": "complexity",
     "file": "src/kernel/backends/occt/meshing.ts",
     "symbol": "Function 'meshFaceToGeometry'",
     "value": 17
+  },
+  {
+    "rule": "complexity",
+    "file": "src/kernel/backends/occt/meshing.ts",
+    "symbol": "Function 'tryExtractCylinderFromFace'",
+    "value": 19
   },
   {
     "rule": "complexity",
@@ -403,9 +415,27 @@
   },
   {
     "rule": "complexity",
+    "file": "src/kernel/fea/runFea.ts",
+    "symbol": "Function 'computeFeaSummary'",
+    "value": 19
+  },
+  {
+    "rule": "complexity",
     "file": "src/kernel/import/contourAssembly.ts",
     "symbol": "Function 'chainLoops'",
     "value": 16
+  },
+  {
+    "rule": "complexity",
+    "file": "src/kernel/import/importSvg.ts",
+    "symbol": "Function 'emitPath'",
+    "value": 19
+  },
+  {
+    "rule": "complexity",
+    "file": "src/kernel/import/importSvg.ts",
+    "symbol": "Function 'importSvgText'",
+    "value": 19
   },
   {
     "rule": "complexity",
@@ -553,6 +583,18 @@
   },
   {
     "rule": "complexity",
+    "file": "src/modeling/capture/sketch.ts",
+    "symbol": "Method 'loft'",
+    "value": 19
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/capture/sketchReflect.ts",
+    "symbol": "Arrow function",
+    "value": 19
+  },
+  {
+    "rule": "complexity",
     "file": "src/modeling/capture/virtualFeatureRecords.ts",
     "symbol": "Function 'buildRenderEnvironmentFeatureSpec'",
     "value": 17
@@ -568,6 +610,12 @@
     "file": "src/modeling/compute/recomputeEngine.ts",
     "symbol": "Async method 'lowerAndEmit'",
     "value": 16
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/export/sdformat/sdfSerializer.ts",
+    "symbol": "Async function 'sdfSerialize'",
+    "value": 19
   },
   {
     "rule": "complexity",
@@ -631,6 +679,12 @@
   },
   {
     "rule": "complexity",
+    "file": "src/modeling/mates/mechanicalPlausibility.ts",
+    "symbol": "Function 'analyzeDisconnectedMesh'",
+    "value": 19
+  },
+  {
+    "rule": "complexity",
     "file": "src/modeling/mates/mechanicalTransmission.ts",
     "symbol": "Function 'pointTriangleDistanceSquared'",
     "value": 16
@@ -691,6 +745,12 @@
   },
   {
     "rule": "complexity",
+    "file": "src/modeling/parts/fetchPart.ts",
+    "symbol": "Async function 'fetchPartHost'",
+    "value": 19
+  },
+  {
+    "rule": "complexity",
     "file": "src/modeling/runtime/dfm/fdmOrientation.ts",
     "symbol": "Function 'anchoredChord'",
     "value": 17
@@ -706,6 +766,12 @@
     "file": "src/modeling/runtime/dfm/minWall.ts",
     "symbol": "Function 'checkMinWall'",
     "value": 16
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/runtime/dfm/voidTopology.ts",
+    "symbol": "Function 'countMouths'",
+    "value": 19
   },
   {
     "rule": "complexity",
@@ -799,9 +865,21 @@
   },
   {
     "rule": "complexity",
+    "file": "src/shared/worker/v01ApiShim.ts",
+    "symbol": "Function 'bboxOf'",
+    "value": 19
+  },
+  {
+    "rule": "complexity",
     "file": "src/studio/StagedEditSlot.tsx",
     "symbol": "Function 'StagedEditContextDetails'",
     "value": 16
+  },
+  {
+    "rule": "complexity",
+    "file": "src/studio/components/Layout/SidePanel.tsx",
+    "symbol": "Function 'SidePanel'",
+    "value": 19
   },
   {
     "rule": "complexity",
@@ -820,6 +898,18 @@
     "file": "src/studio/components/viewer/directEditTarget.ts",
     "symbol": "Function 'mateGraphDrivesPart'",
     "value": 17
+  },
+  {
+    "rule": "complexity",
+    "file": "src/studio/context/geometry/types.ts",
+    "symbol": "Function 'mergePhysicalUseCaseReview'",
+    "value": 19
+  },
+  {
+    "rule": "complexity",
+    "file": "src/studio/context/workbenchState.ts",
+    "symbol": "Function 'workbenchReducer'",
+    "value": 19
   },
   {
     "rule": "complexity",
@@ -861,7 +951,7 @@
     "rule": "max-lines-per-function",
     "file": "src/agent/reconstruct/planPhases/body.ts",
     "symbol": "Function 'buildBody'",
-    "value": 139
+    "value": 111
   },
   {
     "rule": "max-lines-per-function",
@@ -910,6 +1000,12 @@
     "file": "src/kernel/backends/occt/pathNurbsLowerer.ts",
     "symbol": "Function 'buildNurbsSketchOnPlane'",
     "value": 143
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/kernel/import/importSvg.ts",
+    "symbol": "Function 'emitPath'",
+    "value": 101
   },
   {
     "rule": "max-lines-per-function",
@@ -973,6 +1069,12 @@
   },
   {
     "rule": "max-lines-per-function",
+    "file": "src/modeling/capture/sketchReflect.ts",
+    "symbol": "Function 'reflectSketchCommands'",
+    "value": 121
+  },
+  {
+    "rule": "max-lines-per-function",
     "file": "src/modeling/constraints/sketchConverter.ts",
     "symbol": "Function 'convertSketchEntitiesToConstraints'",
     "value": 111
@@ -994,6 +1096,12 @@
     "file": "src/modeling/parts/fetchPart.ts",
     "symbol": "Async function 'fetchPartFromUrlHost'",
     "value": 104
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/modeling/parts/fetchPart.ts",
+    "symbol": "Async function 'fetchPartHost'",
+    "value": 106
   },
   {
     "rule": "max-lines-per-function",
