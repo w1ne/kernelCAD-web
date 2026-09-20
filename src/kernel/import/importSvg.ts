@@ -68,6 +68,7 @@ import {
   parseTransform,
   parseViewBox,
   scaleOf,
+  scanNumberAt,
   scanTags,
   type Matrix,
   type Tag,
@@ -192,22 +193,7 @@ class PathScanner {
   number(): number {
     this.skipSep();
     const start = this.i;
-    if (this.d[this.i] === '+' || this.d[this.i] === '-') this.i++;
-    while (this.i < this.d.length && /[0-9]/.test(this.d[this.i])) this.i++;
-    if (this.d[this.i] === '.') {
-      this.i++;
-      while (this.i < this.d.length && /[0-9]/.test(this.d[this.i])) this.i++;
-    }
-    if (this.d[this.i] === 'e' || this.d[this.i] === 'E') {
-      const save = this.i;
-      this.i++;
-      if (this.d[this.i] === '+' || this.d[this.i] === '-') this.i++;
-      if (/[0-9]/.test(this.d[this.i] ?? '')) {
-        while (this.i < this.d.length && /[0-9]/.test(this.d[this.i])) this.i++;
-      } else {
-        this.i = save;
-      }
-    }
+    this.i = scanNumberAt(this.d, this.i);
     const text = this.d.slice(start, this.i);
     const v = Number(text);
     if (text === '' || !Number.isFinite(v)) {

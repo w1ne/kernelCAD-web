@@ -4,8 +4,9 @@
 //
 // Low-level parsing primitives for the SVG reader: the parse error type,
 // affine-transform algebra, tag scanning, transform-list parsing, length
-// units and viewBox parsing. Split out of importSvg.ts purely to keep that
-// file under the file-length ratchet; behaviour is unchanged.
+// units, path number scanning and viewBox parsing. Split out of importSvg.ts
+// purely to keep that file under the file-length ratchet; behaviour is
+// unchanged.
 
 import { MM_PER_UNIT, isLengthUnit, LENGTH_UNIT_NAMES } from './lengthUnits';
 
@@ -237,6 +238,39 @@ export function lengthToMm(raw: string, where: string): number | null {
     );
   }
   return v * MM_PER_UNIT[suffix];
+}
+
+// ---------------------------------------------------------------------------
+// Path number scanning
+// ---------------------------------------------------------------------------
+
+function skipDigitsAt(d: string, start: number): number {
+  let i = start;
+  while (i < d.length && /[0-9]/.test(d[i])) i++;
+  return i;
+}
+
+function skipExponentAt(d: string, start: number): number {
+  if (d[start] !== 'e' && d[start] !== 'E') return start;
+  let i = start + 1;
+  if (d[i] === '+' || d[i] === '-') i++;
+  if (/[0-9]/.test(d[i] ?? '')) return skipDigitsAt(d, i);
+  return start;
+}
+
+/**
+ * Advance past one SVG number token starting at `start`, returning the new
+ * index. Character positions are the contract: arc flags can run together
+ * with the following number, so the caller validates the scanned slice.
+ */
+export function scanNumberAt(d: string, start: number): number {
+  let i = start;
+  if (d[i] === '+' || d[i] === '-') i++;
+  i = skipDigitsAt(d, i);
+  if (d[i] === '.') {
+    i = skipDigitsAt(d, i + 1);
+  }
+  return skipExponentAt(d, i);
 }
 
 export interface ViewBox { minX: number; minY: number; width: number; height: number }
