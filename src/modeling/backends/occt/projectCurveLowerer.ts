@@ -26,6 +26,7 @@
 // separate `projectEdges()` returning wires, plus a rule for which of the N
 // wires the caller wanted. Until that is decided, we reject rather than guess.
 
+import type { Drawing, Face } from 'replicad';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
@@ -45,26 +46,14 @@ export async function lowerProjectCurve(
   const diagnostics: CompilerDiagnostic[] = [];
 
   // Surface any capture-time diagnostics. Refuse to lower on any error.
-  const stashed = (r.metadata as { diagnostics?: CompilerDiagnostic[] } | undefined)?.diagnostics;
-  if (stashed && stashed.length > 0) {
-    diagnostics.push(...stashed);
-    if (stashed.some((d) => d.severity === 'error')) {
-      return { ok: false, diagnostics };
-    }
-  }
-
-  if (!isProjectCurveMetadata(r.metadata)) {
-    diagnostics.push({
-      target: 'export-occt',
-      code: 'feature.invalid-args',
-      featureId: r.id,
-      severity: 'error',
-      message: `projectCurve record '${r.id}' is missing valid metadata.`,
-      hint: 'Build the record via Shape.projectCurve({...}) so the validators run.',
-    });
+  if (stampStashedProjectCurveDiagnostics(r, diagnostics)) {
     return { ok: false, diagnostics };
   }
-  const meta: ProjectCurveMetadata = r.metadata;
+
+  const meta = validateProjectCurveMetadata(r, diagnostics);
+  if (meta === undefined) {
+    return { ok: false, diagnostics };
+  }
 
   // asEdge:true is deferred — unimplemented here, NOT missing from OCCT.
   if (meta.asEdge) {
@@ -80,15 +69,79 @@ export async function lowerProjectCurve(
   }
 
   // 1. Resolve target face.
+  const face = resolveProjectCurveFace(r, parent, records, diagnostics);
+  if (face === undefined) {
+    return { ok: false, diagnostics };
+  }
+
+  // 2. Build a Drawing from the source.
+  const drawing = buildProjectCurveDrawing(r, meta, diagnostics);
+  if (drawing === undefined) {
+    return { ok: false, diagnostics };
+  }
+
+  // 3-4. sketchOnFace and wrap as a sketch-tagged OcctBackend.
+  const backend = applyProjectCurveSketchOnFace(r, meta, drawing, face, diagnostics);
+  if (backend === undefined) {
+    return { ok: false, diagnostics };
+  }
+  return { ok: true, backend };
+}
+
+/** Stamp capture-time diagnostics stashed on `metadata.diagnostics`; true when
+ *  any of them is an error. */
+function stampStashedProjectCurveDiagnostics(r: FeatureRecord, diagnostics: CompilerDiagnostic[]): boolean {
+  const stashed = (r.metadata as { diagnostics?: CompilerDiagnostic[] } | undefined)?.diagnostics;
+  if (stashed && stashed.length > 0) {
+    diagnostics.push(...stashed);
+    if (stashed.some((d) => d.severity === 'error')) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/** Validate metadata, pushing the invalid-args error; undefined when invalid. */
+function validateProjectCurveMetadata(
+  r: FeatureRecord,
+  diagnostics: CompilerDiagnostic[],
+): ProjectCurveMetadata | undefined {
+  if (!isProjectCurveMetadata(r.metadata)) {
+    diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.invalid-args',
+      featureId: r.id,
+      severity: 'error',
+      message: `projectCurve record '${r.id}' is missing valid metadata.`,
+      hint: 'Build the record via Shape.projectCurve({...}) so the validators run.',
+    });
+    return undefined;
+  }
+  return r.metadata;
+}
+
+/** Resolve the target face, pushing the pick error; undefined when missing. */
+function resolveProjectCurveFace(
+  r: FeatureRecord,
+  parent: OcctBackend,
+  records: readonly FeatureRecord[] | undefined,
+  diagnostics: CompilerDiagnostic[],
+): Face | undefined {
   const faceResult = pickFace(r, parent, records);
   if ('error' in faceResult) {
     diagnostics.push(faceResult.error);
-    return { ok: false, diagnostics };
+    return undefined;
   }
-  const face = faceResult;
+  return faceResult;
+}
 
-  // 2. Build a Drawing from the source.
-  let drawing;
+/** Build the source Drawing, pushing the empty/unsupported/kernel-failed error;
+ *  undefined when the build failed. */
+function buildProjectCurveDrawing(
+  r: FeatureRecord,
+  meta: ProjectCurveMetadata,
+  diagnostics: CompilerDiagnostic[],
+): Drawing | undefined {
   try {
     if (meta.source.kind === 'sketchCommands') {
       if (meta.source.commands.length === 0) {
@@ -100,9 +153,9 @@ export async function lowerProjectCurve(
           message: 'projectCurve: source.commands is empty; nothing to project.',
           hint: HINT_TEMPLATES['feature.project-curve.curve-empty'].template,
         });
-        return { ok: false, diagnostics };
+        return undefined;
       }
-      drawing = drawingFromCommands(meta.source.commands);
+      return drawingFromCommands(meta.source.commands);
     } else {
       diagnostics.push({
         target: 'export-occt',
@@ -112,7 +165,7 @@ export async function lowerProjectCurve(
         message: 'projectCurve: source.kind === "drawing" (serialized JSON) is not yet supported.',
         hint: 'Use source: { kind: "sketchCommands", commands: [...] } for now; serialized-drawing input is a v0.X follow-up.',
       });
-      return { ok: false, diagnostics };
+      return undefined;
     }
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -124,15 +177,22 @@ export async function lowerProjectCurve(
       message: `projectCurve drawing build failed: ${msg}`,
       hint: 'projectCurve.source.commands rejected by the drawing builder — verify the path is closed and uses supported segment kinds.',
     });
-    return { ok: false, diagnostics };
+    return undefined;
   }
+}
 
-  // 3-4. sketchOnFace and wrap as a sketch-tagged OcctBackend.
+/** sketchOnFace + sketch-tagged OcctBackend; undefined when the wrap failed. */
+function applyProjectCurveSketchOnFace(
+  r: FeatureRecord,
+  meta: ProjectCurveMetadata,
+  drawing: Drawing,
+  face: Face,
+  diagnostics: CompilerDiagnostic[],
+): OcctBackend | undefined {
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sketch = (drawing as any).sketchOnFace(face, meta.scaleMode);
-    const backend = OcctBackend.fromFaceBoundSketch(sketch);
-    return { ok: true, backend };
+    return OcctBackend.fromFaceBoundSketch(sketch);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     const isFaceFit = /bounds|too\s*small|fit|intersect/i.test(msg);
@@ -146,6 +206,6 @@ export async function lowerProjectCurve(
         ? HINT_TEMPLATES['feature.project-curve.no-intersection'].template
         : 'OCCT could not wrap the curve onto the face — verify the face is planar (for scaleMode=original) and the curve fits within the face bounds.',
     });
-    return { ok: false, diagnostics };
+    return undefined;
   }
 }

@@ -139,12 +139,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/backends/occt/projectCurveLowerer.ts",
-    "symbol": "Async function 'lowerProjectCurve'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/featureMeshing.ts",
     "symbol": "Function 'buildHelixTubeMesh'",
     "value": 16
