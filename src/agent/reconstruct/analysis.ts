@@ -9,7 +9,7 @@
 // re-measure the mesh.
 
 import { cleanMesh, type IndexedMesh, type MeshReport } from './meshClean';
-import { segmentMesh, type CylinderRegion, type Segmentation } from './segment';
+import { segmentMesh, type CylinderRegion, type PlaneRegion, type Segmentation } from './segment';
 import { chooseFrame, toCanonical, type CanonicalFrame } from './frame';
 import { sliceAtZ, type Section } from './section';
 import { dot3, type V3 } from './geom';
@@ -177,6 +177,47 @@ function buildBands(
   return bands;
 }
 
+function classifyCylinderRegion(
+  mesh: IndexedMesh,
+  c: CylinderRegion,
+  frame: CanonicalFrame,
+  threshold: number,
+  crossBores: CrossBore[],
+  unmatched: UnmatchedCandidate[],
+): void {
+  const e1 = frame.e1, e2 = frame.e2, axis = frame.axis;
+  const along = Math.abs(dot3(c.axis, axis));
+  if (along >= CAP_COS) return; // part of the extruded profile
+  const cx = Math.abs(dot3(c.axis, e1));
+  const cy = Math.abs(dot3(c.axis, e2));
+  const isCross = along <= WALL_SIN && c.concave && c.coverageRad >= (300 * Math.PI) / 180 && Math.max(cx, cy) >= CAP_COS;
+  if (isCross) {
+    const bore = crossBoreOf(mesh, c, frame, cx >= cy ? 'X' : 'Y');
+    crossBores.push(bore);
+    return;
+  }
+  if (c.area >= threshold) {
+    unmatched.push(regionSummary(mesh, c.tris, 'cylinder',
+      c.concave
+        ? 'Concave cylinder that is neither along the extrusion axis nor a full cardinal cross bore.'
+        : 'Convex cylinder across the extrusion axis (a side boss or edge round) — not representable as a profile or hole.'));
+  }
+}
+
+function classifyPlaneRegion(
+  mesh: IndexedMesh,
+  p: PlaneRegion,
+  axis: V3,
+  threshold: number,
+  unmatched: UnmatchedCandidate[],
+): void {
+  const d = Math.abs(dot3(p.normal, axis));
+  if (d >= CAP_COS || d <= WALL_SIN) return;
+  if (p.area >= threshold) {
+    unmatched.push(regionSummary(mesh, p.tris, 'tilted-plane', 'Plane tilted relative to the extrusion axis (a draft or cap-edge chamfer) — the prismatic profile cannot represent it.'));
+  }
+}
+
 function classifyRegions(
   mesh: IndexedMesh,
   seg: Segmentation,
@@ -185,31 +226,12 @@ function classifyRegions(
 ): { crossBores: CrossBore[]; unmatched: UnmatchedCandidate[] } {
   const crossBores: CrossBore[] = [];
   const unmatched: UnmatchedCandidate[] = [];
-  const e1 = frame.e1, e2 = frame.e2, axis = frame.axis;
+  const axis = frame.axis;
   for (const c of seg.cylinders) {
-    const along = Math.abs(dot3(c.axis, axis));
-    if (along >= CAP_COS) continue; // part of the extruded profile
-    const cx = Math.abs(dot3(c.axis, e1));
-    const cy = Math.abs(dot3(c.axis, e2));
-    const isCross = along <= WALL_SIN && c.concave && c.coverageRad >= (300 * Math.PI) / 180 && Math.max(cx, cy) >= CAP_COS;
-    if (isCross) {
-      const bore = crossBoreOf(mesh, c, frame, cx >= cy ? 'X' : 'Y');
-      crossBores.push(bore);
-      continue;
-    }
-    if (c.area >= threshold) {
-      unmatched.push(regionSummary(mesh, c.tris, 'cylinder',
-        c.concave
-          ? 'Concave cylinder that is neither along the extrusion axis nor a full cardinal cross bore.'
-          : 'Convex cylinder across the extrusion axis (a side boss or edge round) — not representable as a profile or hole.'));
-    }
+    classifyCylinderRegion(mesh, c, frame, threshold, crossBores, unmatched);
   }
   for (const p of seg.planes) {
-    const d = Math.abs(dot3(p.normal, axis));
-    if (d >= CAP_COS || d <= WALL_SIN) continue;
-    if (p.area >= threshold) {
-      unmatched.push(regionSummary(mesh, p.tris, 'tilted-plane', 'Plane tilted relative to the extrusion axis (a draft or cap-edge chamfer) — the prismatic profile cannot represent it.'));
-    }
+    classifyPlaneRegion(mesh, p, axis, threshold, unmatched);
   }
   for (const f of seg.freeform) {
     if (f.area >= threshold) {

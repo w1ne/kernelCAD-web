@@ -49,32 +49,32 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/listFaces.ts",
-    "symbol": "Async function 'listFacesTool'",
+    "file": "src/agent/reconstruct/segment.ts",
+    "symbol": "Function 'adoptFragments'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/listFaces.ts",
-    "symbol": "Function 'summarizeLineage'",
+    "file": "src/agent/script-runtime/exportDrawing.ts",
+    "symbol": "Async function 'exportSvgDrawing'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/reviewPaint.ts",
-    "symbol": "Async function 'reviewPaintPeekLatestTool'",
+    "file": "src/agent/vision/opencvBackend.ts",
+    "symbol": "Async function 'extractSilhouettePolyline'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/analysis.ts",
-    "symbol": "Function 'classifyRegions'",
+    "file": "src/kernel/backends/occt/drawingAuto/placePhases.ts",
+    "symbol": "Function 'placeRadiusAndChamferNotes'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/planPhases/ops.ts",
-    "symbol": "Function 'emitCutoutOps'",
+    "file": "src/kernel/backends/occt/edgeSelection.ts",
+    "symbol": "Function 'resolveEdgesRef'",
     "value": 16
   },
   {
