@@ -537,18 +537,12 @@
     "rule": "complexity",
     "file": "src/shared/codeGeneration/stripTypeScript.ts",
     "symbol": "Arrow function#2",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/shared/codeGeneration/stripTypeScript.ts",
-    "symbol": "Arrow function#3",
     "value": 16
   },
   {
     "rule": "complexity",
     "file": "src/shared/codeGeneration/stripTypeScript.ts",
-    "symbol": "Arrow function#4",
+    "symbol": "Arrow function#3",
     "value": 16
   },
   {
