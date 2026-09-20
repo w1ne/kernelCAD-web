@@ -211,6 +211,34 @@ export function buildRenderEnvironmentFeatureSpec(args: RenderEnvironmentSpec): 
 
   const hasPreset = args.preset !== undefined;
   const hasUrl = args.url !== undefined;
+  validateRenderEnvironmentSource(args, hasPreset, hasUrl, diagnostics);
+
+  const intensity = resolveRenderEnvironmentIntensity(args, diagnostics);
+  const rotation = Number.isFinite(args.rotation) ? Number(args.rotation) : 0;
+
+  const metadata: RenderEnvironmentMetadata & { diagnostics?: CompilerDiagnostic[] } = {
+    virtual: true,
+    ...(hasPreset && isHdriPresetKey(args.preset) ? { preset: args.preset } : {}),
+    ...(hasUrl ? { url: args.url } : {}),
+    intensity,
+    rotation,
+    ...(diagnostics.length > 0 ? { diagnostics } : {}),
+  };
+
+  return {
+    kind: 'renderEnvironment',
+    params: {},
+    inputs: {},
+    metadata: metadata as unknown as Record<string, unknown>,
+  };
+}
+
+function validateRenderEnvironmentSource(
+  args: RenderEnvironmentSpec,
+  hasPreset: boolean,
+  hasUrl: boolean,
+  diagnostics: CompilerDiagnostic[],
+): void {
   if (hasPreset && hasUrl) {
     diagnostics.push({
       target: 'export-occt',
@@ -236,7 +264,12 @@ export function buildRenderEnvironmentFeatureSpec(args: RenderEnvironmentSpec): 
       hint: HINT_TEMPLATES['feature.render-environment.unknown-preset'].template,
     });
   }
+}
 
+function resolveRenderEnvironmentIntensity(
+  args: RenderEnvironmentSpec,
+  diagnostics: CompilerDiagnostic[],
+): number {
   const rawIntensity = args.intensity ?? 1;
   const intensityValid = Number.isFinite(rawIntensity) && rawIntensity > 0 && rawIntensity <= 100;
   if (!intensityValid) {
@@ -248,24 +281,7 @@ export function buildRenderEnvironmentFeatureSpec(args: RenderEnvironmentSpec): 
       hint: HINT_TEMPLATES['feature.render-environment.intensity-out-of-range'].template,
     });
   }
-  const intensity = intensityValid ? rawIntensity : 1;
-  const rotation = Number.isFinite(args.rotation) ? Number(args.rotation) : 0;
-
-  const metadata: RenderEnvironmentMetadata & { diagnostics?: CompilerDiagnostic[] } = {
-    virtual: true,
-    ...(hasPreset && isHdriPresetKey(args.preset) ? { preset: args.preset } : {}),
-    ...(hasUrl ? { url: args.url } : {}),
-    intensity,
-    rotation,
-    ...(diagnostics.length > 0 ? { diagnostics } : {}),
-  };
-
-  return {
-    kind: 'renderEnvironment',
-    params: {},
-    inputs: {},
-    metadata: metadata as unknown as Record<string, unknown>,
-  };
+  return intensityValid ? rawIntensity : 1;
 }
 
 export function buildCameraTargetFeatureSpec(args: CameraTargetSpec): VirtualFeatureSpec {

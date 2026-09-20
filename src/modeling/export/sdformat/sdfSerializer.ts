@@ -247,16 +247,20 @@ function poseUnsolved(reason: string): CompilerDiagnostic {
   };
 }
 
+function readUrdfInertialAttribute(urdfBlock: string, pattern: RegExp, fallback: string): string {
+  return urdfBlock.match(pattern)?.[1] ?? fallback;
+}
+
 function urdfInertialToSdf(urdfBlock: string): string {
   // Convert <inertia ixx="..." ixy="..." .../> to SDF's nested form.
-  const ixx = urdfBlock.match(/ixx="([^"]+)"/)?.[1] ?? '0';
-  const ixy = urdfBlock.match(/ixy="([^"]+)"/)?.[1] ?? '0';
-  const ixz = urdfBlock.match(/ixz="([^"]+)"/)?.[1] ?? '0';
-  const iyy = urdfBlock.match(/iyy="([^"]+)"/)?.[1] ?? '0';
-  const iyz = urdfBlock.match(/iyz="([^"]+)"/)?.[1] ?? '0';
-  const izz = urdfBlock.match(/izz="([^"]+)"/)?.[1] ?? '0';
-  const mass = urdfBlock.match(/<mass value="([^"]+)"/)?.[1] ?? '0';
-  const com = urdfBlock.match(/<origin xyz="([^"]+)"/)?.[1] ?? '0 0 0';
+  const ixx = readUrdfInertialAttribute(urdfBlock, /ixx="([^"]+)"/, '0');
+  const ixy = readUrdfInertialAttribute(urdfBlock, /ixy="([^"]+)"/, '0');
+  const ixz = readUrdfInertialAttribute(urdfBlock, /ixz="([^"]+)"/, '0');
+  const iyy = readUrdfInertialAttribute(urdfBlock, /iyy="([^"]+)"/, '0');
+  const iyz = readUrdfInertialAttribute(urdfBlock, /iyz="([^"]+)"/, '0');
+  const izz = readUrdfInertialAttribute(urdfBlock, /izz="([^"]+)"/, '0');
+  const mass = readUrdfInertialAttribute(urdfBlock, /<mass value="([^"]+)"/, '0');
+  const com = readUrdfInertialAttribute(urdfBlock, /<origin xyz="([^"]+)"/, '0 0 0');
   return [
     `    <inertial>`,
     `      <pose>${com} 0 0 0</pose>`,
