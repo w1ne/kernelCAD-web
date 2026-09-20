@@ -166,12 +166,13 @@ export class OpenAICompatAgentClient implements AgentClient, ToolChatClient {
     });
     const choice = data.choices?.[0];
     const toolCalls = (choice?.message?.tool_calls ?? [])
-      .map((tc, i) => ({
-        id: tc.id ?? `call_${i}`,
+      .map((tc) => ({
+        id: tc.id ?? '',
         name: tc.function?.name ?? '',
-        arguments: tc.function?.arguments ?? '{}',
+        arguments: typeof tc.function?.arguments === 'string' ? tc.function.arguments : '{}',
       }))
-      .filter((tc) => tc.name.length > 0);
+      .filter((tc) => tc.name.length > 0)
+      .map((tc, i) => ({ ...tc, id: tc.id.length > 0 ? tc.id : `call_${i}` }));
     return {
       text: choice?.message?.content ?? '',
       toolCalls,
