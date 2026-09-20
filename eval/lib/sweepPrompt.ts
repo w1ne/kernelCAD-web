@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildSystemPrompt, SKILLS_ROOT, SWEEP_SKILLS } from './systemPrompt';
@@ -17,24 +17,37 @@ export interface BuiltSweepPrompt {
   text: string;
   bytes: number;
   preset: string;
-  sectionBytes: Record<string, number>;
 }
 
 export function extractSections(md: string): Map<string, string> {
   const out = new Map<string, string>();
   let current: string | null = null;
   let buf: string[] = [];
-  for (const line of md.split('\n')) {
-    const m = /^## (?!#)(.*)$/.exec(line);
-    if (m) {
-      if (current !== null) out.set(current, buf.join('\n'));
-      current = m[1].trim();
-      buf = [line];
-    } else if (current !== null) {
-      buf.push(line);
+  let inFence = false;
+  for (const line of md.split(/\r?\n/)) {
+    if (/^\s*(```|~~~)/.test(line)) {
+      inFence = !inFence;
+      if (current !== null) buf.push(line);
+      continue;
     }
+    if (!inFence) {
+      const m = /^## (?!#)(.*)$/.exec(line);
+      if (m) {
+        if (current !== null) {
+          if (out.has(current)) throw new Error(`duplicate section heading '${current}' in SKILL.md`);
+          out.set(current, buf.join('\n'));
+        }
+        current = m[1].trim();
+        buf = [line];
+        continue;
+      }
+    }
+    if (current !== null) buf.push(line);
   }
-  if (current !== null) out.set(current, buf.join('\n'));
+  if (current !== null) {
+    if (out.has(current)) throw new Error(`duplicate section heading '${current}' in SKILL.md`);
+    out.set(current, buf.join('\n'));
+  }
   return out;
 }
 
@@ -57,19 +70,21 @@ export function buildSweepPrompt(opts: {
   const cfg = presets[opts.preset];
   if (cfg === null) {
     const text = buildSystemPrompt(SWEEP_SKILLS, root);
-    return { text, bytes: Buffer.byteLength(text), preset: opts.preset, sectionBytes: {} };
+    return { text, bytes: Buffer.byteLength(text), preset: opts.preset };
   }
   const parts: string[] = [];
-  const sectionBytes: Record<string, number> = {};
   for (const skill of cfg.skills) {
-    const md = readFileSync(join(root, skill, 'SKILL.md'), 'utf8');
+    const skillPath = join(root, skill, 'SKILL.md');
+    if (!existsSync(skillPath)) {
+      throw new Error(`SKILL.md not found for skill '${skill}' at ${skillPath}`);
+    }
+    const md = readFileSync(skillPath, 'utf8');
     const wanted = cfg.sections[skill];
     if (wanted === undefined) {
       throw new Error(`preset '${opts.preset}' has no sections entry for skill '${skill}'`);
     }
     if (wanted === '*') {
       parts.push(md);
-      sectionBytes[skill] = Buffer.byteLength(md);
       continue;
     }
     const sections = extractSections(md);
@@ -79,9 +94,8 @@ export function buildSweepPrompt(opts: {
         throw new Error(`heading '${heading}' not found in skill '${skill}' (preset '${opts.preset}')`);
       }
       parts.push(body);
-      sectionBytes[`${skill}::${heading}`] = Buffer.byteLength(body);
     }
   }
   const text = parts.join('\n\n---\n\n');
-  return { text, bytes: Buffer.byteLength(text), preset: opts.preset, sectionBytes };
+  return { text, bytes: Buffer.byteLength(text), preset: opts.preset };
 }

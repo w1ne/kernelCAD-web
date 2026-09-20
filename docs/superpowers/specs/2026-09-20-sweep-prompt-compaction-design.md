@@ -72,9 +72,9 @@ heading is a hard error, so skill edits surface immediately in tests.
   trimmed, body includes the heading line; content before the first `##` is
   dropped.
 - `loadPresets(configPath?)`.
-- `buildSweepPrompt({ preset, root?, configPath? }): { text, bytes, preset,
-  sectionBytes }` — validates every allowlisted heading exists, assembles in
-  config order, joins with `\n\n---\n\n`.
+- `buildSweepPrompt({ preset, root?, configPath? }): { text, bytes, preset }` —
+  validates every allowlisted heading exists, assembles in config order, joins
+  with `\n\n---\n\n`.
 - `full` delegates to the existing `buildSystemPrompt(SWEEP_SKILLS)`.
 
 Size budgets asserted in tests: `v1 < 80 KB`, `v2_lean < 60 KB`, `full`
