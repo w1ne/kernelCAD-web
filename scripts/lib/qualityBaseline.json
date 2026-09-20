@@ -37,12 +37,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/drawing/sheet.ts",
-    "symbol": "Function 'readTitleBlock'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/edits/shapeDraft.ts",
     "symbol": "Function 'shapeDraftEdit'",
     "value": 17
