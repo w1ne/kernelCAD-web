@@ -9,6 +9,8 @@
 import '../../modeling/runtime/hostFsNode';
 import '../../shared/runtime/kernelcadVersionNode';
 
+import { maybeReexecWithLargerHeap } from './lib/heapReexec';
+
 import { Command } from 'commander';
 import { createRequire } from 'node:module';
 import { animateCommand } from './commands/animate';
@@ -27,6 +29,12 @@ import { skillCommand } from './commands/skill';
 import { statsCommand } from './commands/stats';
 import { telemetryCommand } from './commands/telemetry';
 import { validateCommand } from './commands/validate';
+
+// Mesh-heavy commands (parts/export/render/…) OOM at the default ~2 GB heap
+// (gap #11). Re-exec once with a larger heap before commander parses anything;
+// `npm run build:cli` bundles this entry point so `dist/cli/index.js` carries
+// the guard. Fast commands are untouched.
+maybeReexecWithLargerHeap();
 
 const requireFromHere = createRequire(import.meta.url);
 // At source: src/agent/cli/index.ts → ../../../package.json (3 up)
