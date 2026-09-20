@@ -277,12 +277,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/demoPlayer/useDemoAutoLoad.ts",
-    "symbol": "Function 'useDemoAutoLoad'",
-    "value": 127
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/inputs/NumericScrubInput.tsx",
     "symbol": "Function 'NumericScrubInput'",
     "value": 105

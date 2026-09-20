@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { MutableRefObject } from 'react';
+import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import { apiCall, rewritePath } from '../../api/apiBase';
 import type { TerminalLine } from './TerminalPane';
 import type { BuildRecord, BuildRecordStep, DevMeshPayload } from './demoPlayerGeometry';
@@ -41,6 +41,126 @@ function linesForStep(record: BuildRecord, step: BuildRecordStep, index: number)
     ];
 }
 
+function startScriptAutoLoad(
+    script: string,
+    setScriptLoadStatus: Dispatch<SetStateAction<ScriptLoadStatus | null>>,
+): () => void {
+    let cancelled = false;
+    apiCall()
+        .then(({ base, headers }) =>
+            fetch(
+                rewritePath(`/__kernelcad/mesh?script=${encodeURIComponent(script)}`, base),
+                { headers },
+            ),
+        )
+        .then(async (response) => {
+            const payload = await response.json();
+            if (!response.ok) {
+                const message = typeof payload?.error === 'string' ? payload.error : response.statusText;
+                throw new Error(message);
+            }
+            return payload as DevMeshPayload;
+        })
+        .then((payload) => {
+            if (cancelled) return;
+            if (!window.__demoPlayer) throw new Error('demo-player API disappeared while loading script');
+            window.__demoPlayer.loadFeatureMeshes(payload.features, payload.bounds);
+            window.__demoPlayer.forceFullOpacity();
+            window.__demoPlayer.setVersion('dev');
+            setScriptLoadStatus({ kind: 'idle' });
+        })
+        .catch((error) => {
+            if (cancelled) return;
+            setScriptLoadStatus({
+                kind: 'error',
+                message: error instanceof Error ? error.message : String(error),
+            });
+        });
+
+    return () => {
+        cancelled = true;
+    };
+}
+
+function startBuildRecordAutoLoad(
+    recordPath: string,
+    elapsedMsRef: MutableRefObject<number>,
+    setBuildRecord: Dispatch<SetStateAction<BuildRecord | null>>,
+    setBuildRecordStep: Dispatch<SetStateAction<BuildRecordStep | null>>,
+    setScriptLoadStatus: Dispatch<SetStateAction<ScriptLoadStatus | null>>,
+): () => void {
+    let cancelled = false;
+    let stepTimer: number | undefined;
+    let clockTimer: number | undefined;
+
+    const loadStep = async (record: BuildRecord, index: number) => {
+        const step = record.steps[index];
+        if (!step) return;
+        setBuildRecordStep(step);
+        setScriptLoadStatus({ kind: 'loading', message: `Loading ${step.script}` });
+        const { base, headers } = await apiCall();
+        const response = await fetch(
+            rewritePath(`/__kernelcad/mesh?script=${encodeURIComponent(step.script)}`, base),
+            { headers },
+        );
+        const payload = await response.json();
+        if (!response.ok) {
+            const message = typeof payload?.error === 'string' ? payload.error : response.statusText;
+            throw new Error(message);
+        }
+        if (cancelled) return;
+        if (!window.__demoPlayer) throw new Error('demo-player API disappeared while loading build record');
+        window.__demoPlayer.loadFeatureMeshes(
+            (payload as DevMeshPayload).features,
+            (payload as DevMeshPayload).bounds,
+        );
+        window.__demoPlayer.forceFullOpacity();
+        window.__demoPlayer.setVersion(step.status === 'passed' ? 'loop pass' : 'loop fail');
+        window.__demoPlayer.setTerminalLines(linesForStep(record, step, index));
+        window.__demoPlayer.startTerminalClock(elapsedMsRef.current);
+        setScriptLoadStatus({ kind: 'idle' });
+    };
+
+    fetch(recordPath)
+        .then(async (response) => {
+            const payload = await response.json();
+            if (!response.ok) {
+                const message = typeof payload?.error === 'string' ? payload.error : response.statusText;
+                throw new Error(message);
+            }
+            return payload as BuildRecord;
+        })
+        .then(async (record) => {
+            if (cancelled) return;
+            setBuildRecord(record);
+            let stepIndex = 0;
+            await loadStep(record, stepIndex);
+            clockTimer = window.setInterval(() => window.__demoPlayer?.advance(100), 100);
+            stepTimer = window.setInterval(() => {
+                stepIndex = (stepIndex + 1) % record.steps.length;
+                void loadStep(record, stepIndex).catch((error) => {
+                    setScriptLoadStatus({
+                        kind: 'error',
+                        message: error instanceof Error ? error.message : String(error),
+                    });
+                });
+            }, 5200);
+        })
+        .catch((error) => {
+            if (cancelled) return;
+            setScriptLoadStatus({
+                kind: 'error',
+                message: error instanceof Error ? error.message : String(error),
+            });
+        });
+
+    return () => {
+        cancelled = true;
+        if (stepTimer !== undefined) window.clearInterval(stepTimer);
+        if (clockTimer !== undefined) window.clearInterval(clockTimer);
+    };
+}
+
 /**
  * Owns the two demo-player auto-load paths gated on `isDemoApiReady`:
  * loading a single `?script=` mesh, or stepping through a `?record=`
@@ -64,41 +184,7 @@ export function useDemoAutoLoad(isDemoApiReady: boolean, elapsedMsRef: MutableRe
         if (!script) return;
 
         autoLoadedScriptRef.current = script;
-        let cancelled = false;
-        apiCall()
-            .then(({ base, headers }) =>
-                fetch(
-                    rewritePath(`/__kernelcad/mesh?script=${encodeURIComponent(script)}`, base),
-                    { headers },
-                ),
-            )
-            .then(async (response) => {
-                const payload = await response.json();
-                if (!response.ok) {
-                    const message = typeof payload?.error === 'string' ? payload.error : response.statusText;
-                    throw new Error(message);
-                }
-                return payload as DevMeshPayload;
-            })
-            .then((payload) => {
-                if (cancelled) return;
-                if (!window.__demoPlayer) throw new Error('demo-player API disappeared while loading script');
-                window.__demoPlayer.loadFeatureMeshes(payload.features, payload.bounds);
-                window.__demoPlayer.forceFullOpacity();
-                window.__demoPlayer.setVersion('dev');
-                setScriptLoadStatus({ kind: 'idle' });
-            })
-            .catch((error) => {
-                if (cancelled) return;
-                setScriptLoadStatus({
-                    kind: 'error',
-                    message: error instanceof Error ? error.message : String(error),
-                });
-            });
-
-        return () => {
-            cancelled = true;
-        };
+        return startScriptAutoLoad(script, setScriptLoadStatus);
     }, [isDemoApiReady]);
 
     useEffect(() => {
@@ -108,76 +194,7 @@ export function useDemoAutoLoad(isDemoApiReady: boolean, elapsedMsRef: MutableRe
         if (!recordPath) return;
 
         autoLoadedRecordRef.current = recordPath;
-        let cancelled = false;
-        let stepTimer: number | undefined;
-        let clockTimer: number | undefined;
-
-        const loadStep = async (record: BuildRecord, index: number) => {
-            const step = record.steps[index];
-            if (!step) return;
-            setBuildRecordStep(step);
-            setScriptLoadStatus({ kind: 'loading', message: `Loading ${step.script}` });
-            const { base, headers } = await apiCall();
-            const response = await fetch(
-                rewritePath(`/__kernelcad/mesh?script=${encodeURIComponent(step.script)}`, base),
-                { headers },
-            );
-            const payload = await response.json();
-            if (!response.ok) {
-                const message = typeof payload?.error === 'string' ? payload.error : response.statusText;
-                throw new Error(message);
-            }
-            if (cancelled) return;
-            if (!window.__demoPlayer) throw new Error('demo-player API disappeared while loading build record');
-            window.__demoPlayer.loadFeatureMeshes(
-                (payload as DevMeshPayload).features,
-                (payload as DevMeshPayload).bounds,
-            );
-            window.__demoPlayer.forceFullOpacity();
-            window.__demoPlayer.setVersion(step.status === 'passed' ? 'loop pass' : 'loop fail');
-            window.__demoPlayer.setTerminalLines(linesForStep(record, step, index));
-            window.__demoPlayer.startTerminalClock(elapsedMsRef.current);
-            setScriptLoadStatus({ kind: 'idle' });
-        };
-
-        fetch(recordPath)
-            .then(async (response) => {
-                const payload = await response.json();
-                if (!response.ok) {
-                    const message = typeof payload?.error === 'string' ? payload.error : response.statusText;
-                    throw new Error(message);
-                }
-                return payload as BuildRecord;
-            })
-            .then(async (record) => {
-                if (cancelled) return;
-                setBuildRecord(record);
-                let stepIndex = 0;
-                await loadStep(record, stepIndex);
-                clockTimer = window.setInterval(() => window.__demoPlayer?.advance(100), 100);
-                stepTimer = window.setInterval(() => {
-                    stepIndex = (stepIndex + 1) % record.steps.length;
-                    void loadStep(record, stepIndex).catch((error) => {
-                        setScriptLoadStatus({
-                            kind: 'error',
-                            message: error instanceof Error ? error.message : String(error),
-                        });
-                    });
-                }, 5200);
-            })
-            .catch((error) => {
-                if (cancelled) return;
-                setScriptLoadStatus({
-                    kind: 'error',
-                    message: error instanceof Error ? error.message : String(error),
-                });
-            });
-
-        return () => {
-            cancelled = true;
-            if (stepTimer !== undefined) window.clearInterval(stepTimer);
-            if (clockTimer !== undefined) window.clearInterval(clockTimer);
-        };
+        return startBuildRecordAutoLoad(recordPath, elapsedMsRef, setBuildRecord, setBuildRecordStep, setScriptLoadStatus);
     }, [isDemoApiReady, elapsedMsRef]);
 
     return {
