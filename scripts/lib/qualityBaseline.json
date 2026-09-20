@@ -49,12 +49,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/drawing/reconstructSolver.ts",
-    "symbol": "Function 'levelNamer'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/drawing/sheet.ts",
     "symbol": "Function 'readTitleBlock'",
     "value": 17
