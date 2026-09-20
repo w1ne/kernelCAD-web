@@ -337,7 +337,21 @@ function resolveValidatorStatus(
 }
 
 interface PartInfo { partName: string; recordId: string; }
-interface JointInfo { jointName: string; aPartName?: string; bPartName?: string; }
+interface JointInfo {
+  jointName: string;
+  aPartName?: string;
+  bPartName?: string;
+  /** v0.6 mate type when the joint row came from mate metadata (e.g. 'revolute'). */
+  jointKind?: string;
+}
+
+/** One v0.6 mate entry read from `solvedAssembly` / `assemblyModel` metadata. */
+interface MateEdgeInfo {
+  readonly name?: string;
+  readonly type?: string;
+  readonly aPartName: string;
+  readonly bPartName: string;
+}
 
 function collectParts(records: readonly FeatureRecord[]): PartInfo[] {
   const out: PartInfo[] = [];
@@ -352,10 +366,9 @@ function collectParts(records: readonly FeatureRecord[]): PartInfo[] {
 
 /**
  * Walk scene-producing assembly records (`solvedAssembly` AND `assemblyModel`)
- * and pull v0.6 mate edges into a flat list of `[aPartName, bPartName]`
- * pairs. Mate refs are `'partName.connectorName'` strings; we slice off the
- * connector and keep the part. Returns [] when no record carries mates
- * (v0.5-only assemblies or pre-solve record streams).
+ * and pull v0.6 mate entries. Mate refs are `'partName.connectorName'`
+ * strings; we slice off the connector and keep the part. Returns [] when no
+ * record carries mates (v0.5-only assemblies or pre-solve record streams).
  *
  * Both record kinds matter (issue #448): `Assembly.solvedModel` writes mate
  * metadata onto a `solvedAssembly` record, while `Assembly.model()` writes
@@ -364,22 +377,69 @@ function collectParts(records: readonly FeatureRecord[]): PartInfo[] {
  * `solvedModel({})` but emit spurious floating-part warnings via `.model()` —
  * which trains agents to ignore the floating-part gate.
  */
-function collectMateEdges(records: readonly FeatureRecord[]): readonly (readonly [string, string])[] {
-  const out: [string, string][] = [];
+function collectMateInfos(records: readonly FeatureRecord[]): MateEdgeInfo[] {
+  const out: MateEdgeInfo[] = [];
   for (const r of records) {
     if (r.kind !== 'solvedAssembly' && r.kind !== 'assemblyModel') continue;
-    const meta = r.metadata as { mates?: ReadonlyArray<{ a: string; b: string }> } | undefined;
+    const meta = r.metadata as {
+      mates?: ReadonlyArray<{ name?: string; type?: string; a: string; b: string }>;
+    } | undefined;
     const mates = meta?.mates;
     if (!Array.isArray(mates)) continue;
     for (const m of mates) {
       const a = typeof m.a === 'string' ? m.a.split('.')[0] : undefined;
       const b = typeof m.b === 'string' ? m.b.split('.')[0] : undefined;
-      if (a && b) out.push([a, b]);
+      if (!a || !b) continue;
+      out.push({
+        ...(typeof m.name === 'string' ? { name: m.name } : {}),
+        ...(typeof m.type === 'string' ? { type: m.type } : {}),
+        aPartName: a,
+        bPartName: b,
+      });
     }
   }
   return out;
 }
 
+/** Undirected part-name edges for the adjacency map. */
+function collectMateEdges(records: readonly FeatureRecord[]): readonly (readonly [string, string])[] {
+  return collectMateInfos(records).map((m) => [m.aPartName, m.bPartName] as const);
+}
+
+/**
+ * v0.6 mate entries formatted as `JointInfo` rows so the reported
+ * `jointCount` reflects `engine.mate(...)` declarations (gap-log #12:
+ * `validate` reported 0 joints for mate-vocabulary assemblies). Names come
+ * from `metadata.mates[i].name` with the mate type carried when present;
+ * duplicate names across the `solvedAssembly` / `assemblyModel` record kinds
+ * are counted once. Entries whose metadata lacks a name keep a positional
+ * placeholder so they still count.
+ */
+function collectMateJoints(records: readonly FeatureRecord[]): JointInfo[] {
+  const out: JointInfo[] = [];
+  const seen = new Set<string>();
+  for (const [i, m] of collectMateInfos(records).entries()) {
+    if (m.name !== undefined) {
+      if (seen.has(m.name)) continue;
+      seen.add(m.name);
+    }
+    out.push({
+      jointName: m.name ?? `<mate:${i}>`,
+      aPartName: m.aPartName,
+      bPartName: m.bPartName,
+      ...(m.type !== undefined ? { jointKind: m.type } : {}),
+    });
+  }
+  return out;
+}
+
+/**
+ * Collect the assembly's declared joints. v0.5 `assemblyJoint` records keep
+ * the exact prior behavior; v0.6 mate-graph edges (metadata-only records) are
+ * appended so mate-vocabulary assemblies report their real joint count
+ * (gap-log #12). Deduped by name: a name declared in both vocabularies counts
+ * once.
+ */
 function collectJoints(records: readonly FeatureRecord[]): JointInfo[] {
   const partNameById = new Map<string, string>();
   for (const r of records) {
@@ -399,6 +459,12 @@ function collectJoints(records: readonly FeatureRecord[]): JointInfo[] {
       aPartName: aId ? partNameById.get(aId) : undefined,
       bPartName: bId ? partNameById.get(bId) : undefined,
     });
+  }
+  const seen = new Set(out.map((j) => j.jointName));
+  for (const mateJoint of collectMateJoints(records)) {
+    if (seen.has(mateJoint.jointName)) continue;
+    seen.add(mateJoint.jointName);
+    out.push(mateJoint);
   }
   return out;
 }
@@ -586,10 +652,16 @@ export async function validateAssemblyWithMates(
   //    when no envelope was sampled (gate inert).
   diagnostics.push(...validateWorkspaceReachability(arm, connectorWorkspace));
 
+  // Gap #12b — report the same joint count the CLI `validate` path reports.
+  // `base.jointCount` comes from `validateAssembly`'s `collectJoints`, which
+  // folds v0.6 mate-graph edges (from `solvedAssembly` / `assemblyModel`
+  // metadata) into the v0.5 `assemblyJoint` rows, deduped by name. Reading
+  // `arm.__joints().length` here made the MCP surface report 0 joints for
+  // mate-vocabulary assemblies the CLI already counted.
   return finalizeResult(
     diagnostics,
     arm.__parts().length,
-    arm.__joints().length,
+    base.jointCount,
     solveStatus,
   );
 }

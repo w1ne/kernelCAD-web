@@ -29,6 +29,8 @@ describe('Sketch.loft({ rails })', () => {
     expect(rails).toHaveLength(2);
   });
 
+  // Heavy rail-loft build: ~32 s even on an idle 12-core box, 50-65 s under
+  // parallel load (gap #21), so it needs more than the 60 s default timeout.
   it('rail loft solid passes within 1 mm of every rail sample and every section', async () => {
     const code = `
       const s0 = path().circle(0, 0, 6);
@@ -54,7 +56,7 @@ describe('Sketch.loft({ rails })', () => {
 
     const railCurves = result.records.filter((rec) => rec.kind === 'curve3d');
     expect(railCurves.length).toBeGreaterThanOrEqual(2);
-  });
+  }, 180_000);
 
   it('incompatible rails (miss the sections) emit feature.loft.rail-miss', async () => {
     const code = `
@@ -98,5 +100,5 @@ describe('Sketch.loft({ rails })', () => {
     const bbox = solid.boundingBox({ exact: true });
     expect(bbox.min[2]).toBeGreaterThanOrEqual(4.5);
     expect(bbox.max[2]).toBeLessThanOrEqual(45.5);
-  });
+  }, 180_000);
 });

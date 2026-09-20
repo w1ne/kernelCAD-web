@@ -14,6 +14,7 @@ import { describe, expect, it, beforeAll } from 'vitest';
 import { buildModel } from '../../../src/modeling/buildModel';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { validateAssembly } from '../../../src/modeling/mates/validator';
+import type { FeatureRecord } from '../../../src/shared/intent/featureRecord';
 
 describe('validateAssembly is v0.6 mate-aware', () => {
   beforeAll(async () => { await initOcct(); });
@@ -128,5 +129,79 @@ describe('validateAssembly is v0.6 mate-aware', () => {
     expect(floating).toHaveLength(1);
     expect(floating[0].partName).toBe('lonely');
     expect(result.status).toBe('warning');
+  });
+
+  // Gap #12 (turbojet README gap log) — `validate` used to report
+  // `jointCount: 0` for assemblies wired entirely through the v0.6
+  // `arm.mate(...)` vocabulary because `collectJoints` walked only v0.5
+  // `assemblyJoint` records. The mate graph must surface in the reported
+  // count now that it is the primary (only) connection vocabulary.
+  it('counts v0.6 mate-graph edges in jointCount (gap #12)', async () => {
+    const model = await buildModel({
+      fileName: 'mate-count.kcad.ts',
+      code: `
+        const arm = assembly('count');
+        arm.part('a', box(10, 10, 10))
+           .connector('p', { type: 'frame', origin: { kind: 'vec3', value: [5, 0, 0] } });
+        arm.part('b', box(10, 10, 10))
+           .connector('q', { type: 'frame', origin: { kind: 'vec3', value: [-5, 0, 0] } })
+           .connector('r', { type: 'frame', origin: { kind: 'vec3', value: [5, 0, 0] } });
+        arm.part('c', box(10, 10, 10))
+           .connector('s', { type: 'frame', origin: { kind: 'vec3', value: [-5, 0, 0] } })
+           .connector('t', { type: 'frame', origin: { kind: 'vec3', value: [5, 0, 0] } });
+        arm.part('d', box(10, 10, 10))
+           .connector('u', { type: 'frame', origin: { kind: 'vec3', value: [-5, 0, 0] } });
+        arm.mate('m1', 'a.p', 'b.q', 'fastened');
+        arm.mate('m2', 'b.r', 'c.s', 'fastened');
+        arm.mate('m3', 'c.t', 'd.u', 'fastened');
+        return arm.solvedModel({});
+      `,
+    });
+    const result = validateAssembly({ records: model.records });
+    expect(result.jointCount).toBe(3);
+  });
+
+  it('does not double-count a name shared by a v0.5 joint and a v0.6 mate (gap #12)', async () => {
+    const model = await buildModel({
+      fileName: 'mate-count-dedupe.kcad.ts',
+      code: `
+        const arm = assembly('count-dedupe');
+        arm.part('a', box(10, 10, 10))
+           .connector('p', { type: 'frame', origin: { kind: 'vec3', value: [5, 0, 0] } });
+        arm.part('b', box(10, 10, 10))
+           .connector('q', { type: 'frame', origin: { kind: 'vec3', value: [-5, 0, 0] } })
+           .connector('r', { type: 'frame', origin: { kind: 'vec3', value: [5, 0, 0] } });
+        arm.part('c', box(10, 10, 10))
+           .connector('s', { type: 'frame', origin: { kind: 'vec3', value: [-5, 0, 0] } });
+        arm.mate('m1', 'a.p', 'b.q', 'fastened');
+        arm.mate('m2', 'b.r', 'c.s', 'fastened');
+        return arm.solvedModel({});
+      `,
+    });
+    // v0.5 `assemblyJoint` records sharing a name with a v0.6 mate must not be
+    // counted twice; distinct v0.5 joints still add to the total.
+    const legacySameName: FeatureRecord = {
+      id: 'assemblyJoint_legacy_same',
+      kind: 'assemblyJoint',
+      params: {},
+      inputs: {},
+      transforms: [],
+      suppressed: false,
+      metadata: { assemblyName: 'count-dedupe', jointName: 'm1', jointKind: 'fixed' },
+    };
+    const legacyDistinct: FeatureRecord = {
+      id: 'assemblyJoint_legacy_distinct',
+      kind: 'assemblyJoint',
+      params: {},
+      inputs: {},
+      transforms: [],
+      suppressed: false,
+      metadata: { assemblyName: 'count-dedupe', jointName: 'legacy', jointKind: 'fixed' },
+    };
+    const result = validateAssembly({
+      records: [...model.records, legacySameName, legacyDistinct],
+    });
+    // 2 v0.6 mates (m1 counted once) + 1 distinct v0.5 joint.
+    expect(result.jointCount).toBe(3);
   });
 });
