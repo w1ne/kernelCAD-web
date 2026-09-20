@@ -115,12 +115,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/viewer/ViewerScene.tsx",
-    "symbol": "Function 'ViewerScene'",
-    "value": 113
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/viewer/layers/ParametricLayer.tsx",
     "symbol": "Function 'ParametricLayer'",
     "value": 106
