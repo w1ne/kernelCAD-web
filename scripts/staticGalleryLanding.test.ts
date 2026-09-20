@@ -50,7 +50,7 @@ describe('static gallery landing page', () => {
     // agent (generation) is the paid path.
     expect(html).toContain('id="claude-desktop-note"');
     expect(html).toContain('free and unlimited');
-    expect(html).toContain('built-in hosted agent (paid)');
+    expect(html).toContain('Built-in AI: paid.');
   });
 
   it('documents the same full marketing build command used by deploy', () => {
