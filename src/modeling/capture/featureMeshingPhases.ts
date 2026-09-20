@@ -15,7 +15,7 @@ import type { ReferenceImageMetadata } from '../../shared/intent/referenceImageR
 import type { RenderEnvironmentMetadata } from '../../shared/intent/renderEnvironmentRecord';
 import type { CameraTargetMetadata } from '../../shared/intent/cameraTargetRecord';
 import type { ShapeBackend } from '../../kernel/backends/backend';
-import type { SceneBackend } from '../../kernel/backends/sceneBackend';
+import type { SceneBackend, SceneBackendPart } from '../../kernel/backends/sceneBackend';
 import { OcctBackend, pbrFromMetadata } from '../../kernel/backends/occt/occtBackend';
 import { meshShape } from '../../kernel/backends/occt/meshing';
 import { resolveFaceLabelToFace } from '../../kernel/backends/occt/edgeSelection';
@@ -170,10 +170,7 @@ export function emitSceneBackendFanout(
   shape: SceneBackend,
   ctx: SceneFanoutCtx,
 ): void {
-  const {
-    emitFeature, bounds, failedFeatureIds, cachedAssemblyPartMeshes, explodeOffsets, assembliesIn, recordById,
-    attachPlanarUVs, extractRawShape, meshIdentityFields, metadataNameOf, collectTendonMeshes,
-  } = ctx;
+  const { emitFeature, bounds, failedFeatureIds, cachedAssemblyPartMeshes, assembliesIn, collectTendonMeshes } = ctx;
   let partCache = cachedAssemblyPartMeshes?.get(featureId);
   // Track part-meshing outcomes so an assembly whose parts ALL fail to
   // mesh is surfaced as a failure rather than returning a silently-empty
@@ -182,72 +179,10 @@ export function emitSceneBackendFanout(
   const partCount = shape.parts.length;
   let emittedPartCount = 0;
   for (const part of shape.parts) {
-    // Pose-cache fast path: when the assembly is being re-lowered for a
-    // pose-only edit, the per-part LOCAL shape is unchanged (same OCCT
-    // backend instance is reused via the engine's seedShapes seed) and
-    // only `part.worldTransform` has refreshed. Reuse cached triangle
-    // data so we skip the expensive `meshShape()` call per part.
-    const cachedPart = partCache?.get(part.name);
-    let faces: FaceGeometry[];
-    let volume: number | undefined;
-    let edges: Float32Array | undefined;
-    if (cachedPart) {
-      faces = cachedPart.faces;
-      volume = cachedPart.volume;
-      edges = cachedPart.edges;
-    } else {
-      const meshed = meshShape(extractRawShape(part.shape));
-      if (!meshed) {
-        // Per-part shape failed to mesh. Skip THIS part — the lowerer
-        // already populated the part shape, and a single bad part must
-        // not sink an otherwise-renderable assembly. Surface a soft
-        // warning so the skip is not silently lost; the post-loop check
-        // below escalates to a hard failure only when EVERY part skips.
-        console.warn(
-          `meshFeaturesPerFeature: assembly '${featureId}' part '${part.name}' compiled but produced no mesh — skipping part`,
-        );
-        continue;
-      }
-      faces = meshed.faces;
-      volume = meshed.volume;
-      edges = meshed.edges;
-      if (cachedAssemblyPartMeshes !== undefined) {
-        if (!partCache) {
-          partCache = new Map();
-          cachedAssemblyPartMeshes.set(featureId, partCache);
-        }
-        partCache.set(part.name, { faces, ...(volume !== undefined ? { volume } : {}), ...(edges ? { edges } : {}) });
-      }
-    }
-    const local: FeatureMesh = {
-      featureId: `${featureId}__${part.name}`,
-      featureKind: featureKind,
-      predecessors: [featureId],
-      // op intentionally omitted (no boolean op for assembly parts)
-      faces,
-      ...(volume !== undefined ? { volume } : {}),
-      ...(edges ? { edges } : {}),
-    };
-    if (!cachedPart) attachPlanarUVs(local.faces);
-    const extra = explodeOffsets?.get(part.name);
-    const worldT = extra !== undefined
-      ? Transform.translation(extra[0], extra[1], extra[2]).compose(part.worldTransform)
-      : part.worldTransform;
-    emitFeature({
-      ...local,
-      assemblyFeatureId: featureId,
-      assemblyPartName: part.name,
-      transform: worldT.toMat4(),
-      ...meshIdentityFields({
-        featureId: local.featureId,
-        featureKind: local.featureKind,
-        assemblyFeatureId: featureId,
-        assemblyPartName: part.name,
-        sourceMetadataName: metadataNameOf(recordById.get(featureId)),
-      }),
-      ...(part.color !== undefined ? { color: part.color } : {}),
-      ...(part.material !== undefined ? { material: part.material } : {}),
-    });
+    const resolved = resolveScenePartMesh(featureId, part, partCache, ctx);
+    if (resolved === undefined) continue;
+    partCache = resolved.partCache;
+    const { local, worldT } = emitScenePartMesh(featureId, featureKind, part, resolved, ctx);
     emittedPartCount += 1;
     // Aggregate bounds from FK-transformed vertices while keeping the
     // emitted mesh local for viewport-side transforms.
@@ -280,6 +215,100 @@ export function emitSceneBackendFanout(
     emitFeature(tm);
     accumulateMeshBounds(bounds, tm.faces);
   }
+}
+
+type CachedScenePartMesh = { faces: FaceGeometry[]; volume?: number; edges?: Float32Array };
+type ScenePartMeshCache = Map<string, CachedScenePartMesh>;
+
+interface ResolvedScenePartMesh {
+  faces: FaceGeometry[];
+  volume: number | undefined;
+  edges: Float32Array | undefined;
+  fromCache: boolean;
+  partCache: ScenePartMeshCache | undefined;
+}
+
+/** Resolve one assembly part's mesh, reusing (and populating) the pose cache. */
+function resolveScenePartMesh(
+  featureId: FeatureId,
+  part: SceneBackendPart,
+  partCache: ScenePartMeshCache | undefined,
+  ctx: SceneFanoutCtx,
+): ResolvedScenePartMesh | undefined {
+  // Pose-cache fast path: when the assembly is being re-lowered for a
+  // pose-only edit, the per-part LOCAL shape is unchanged (same OCCT
+  // backend instance is reused via the engine's seedShapes seed) and
+  // only `part.worldTransform` has refreshed. Reuse cached triangle
+  // data so we skip the expensive `meshShape()` call per part.
+  const cachedPart = partCache?.get(part.name);
+  if (cachedPart) {
+    return { faces: cachedPart.faces, volume: cachedPart.volume, edges: cachedPart.edges, fromCache: true, partCache };
+  }
+  const meshed = meshShape(ctx.extractRawShape(part.shape));
+  if (!meshed) {
+    // Per-part shape failed to mesh. Skip THIS part — the lowerer
+    // already populated the part shape, and a single bad part must
+    // not sink an otherwise-renderable assembly. Surface a soft
+    // warning so the skip is not silently lost; the post-loop check
+    // below escalates to a hard failure only when EVERY part skips.
+    console.warn(
+      `meshFeaturesPerFeature: assembly '${featureId}' part '${part.name}' compiled but produced no mesh — skipping part`,
+    );
+    return undefined;
+  }
+  const faces = meshed.faces;
+  const volume = meshed.volume;
+  const edges = meshed.edges;
+  let nextCache = partCache;
+  if (ctx.cachedAssemblyPartMeshes !== undefined) {
+    if (!nextCache) {
+      nextCache = new Map();
+      ctx.cachedAssemblyPartMeshes.set(featureId, nextCache);
+    }
+    nextCache.set(part.name, { faces, ...(volume !== undefined ? { volume } : {}), ...(edges ? { edges } : {}) });
+  }
+  return { faces, volume, edges, fromCache: false, partCache: nextCache };
+}
+
+/** Build + emit one assembly part's FeatureMesh; returns the local mesh and
+ *  its world transform for the caller's bounds accumulation. */
+function emitScenePartMesh(
+  featureId: FeatureId,
+  featureKind: FeatureKind,
+  part: SceneBackendPart,
+  resolved: ResolvedScenePartMesh,
+  ctx: SceneFanoutCtx,
+): { local: FeatureMesh; worldT: Transform } {
+  const local: FeatureMesh = {
+    featureId: `${featureId}__${part.name}`,
+    featureKind: featureKind,
+    predecessors: [featureId],
+    // op intentionally omitted (no boolean op for assembly parts)
+    faces: resolved.faces,
+    ...(resolved.volume !== undefined ? { volume: resolved.volume } : {}),
+    ...(resolved.edges ? { edges: resolved.edges } : {}),
+  };
+  if (!resolved.fromCache) ctx.attachPlanarUVs(local.faces);
+  const extra = ctx.explodeOffsets?.get(part.name);
+  const worldT = extra !== undefined
+    ? Transform.translation(extra[0], extra[1], extra[2]).compose(part.worldTransform)
+    : part.worldTransform;
+  ctx.emitFeature({
+    ...local,
+    assemblyFeatureId: featureId,
+    assemblyPartName: part.name,
+    transform: worldT.toMat4(),
+    ...ctx.meshIdentityFields({
+      featureId: local.featureId,
+      featureKind: local.featureKind,
+      assemblyFeatureId: featureId,
+      assemblyPartName: part.name,
+      sourceMetadataName: ctx.metadataNameOf(ctx.recordById.get(featureId)),
+    }),
+    ...(part.color !== undefined ? { color: part.color } : {}),
+    ...(part.material !== undefined ? { material: part.material } : {}),
+  });
+  return { local, worldT };
 }
 
 export interface FeatureStyling {

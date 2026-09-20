@@ -248,11 +248,9 @@ function buildGroupInputs(
   }
 }
 
-/** `fillet` — constant-radius (or the variable form via
- *  `applyVariableEdgeFeature`), with the smooth-edge pre-filter and the
- *  OCCT failure taxonomy. */
-export function lowerFillet(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
-  let shape: ShapeBackend;
+/** Resolve the `base` input for `lowerFillet`, pushing the invalid-args
+ *  diagnostic and throwing when it is missing. */
+function requireFilletBase(ctx: LowerContext, r: FeatureRecord): OcctBackend {
   const base = ctx.inputs.byKey.base as OcctBackend | undefined;
   if (!base) {
     ctx.diagnostics.push({
@@ -265,20 +263,12 @@ export function lowerFillet(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
     });
     throw new Error('fillet: no base shape');
   }
-  // rc.12: variable-radius form is delegated to applyVariableEdgeFeature.
-  const meta = r.metadata as { variable?: boolean; continuity?: 'G1' | 'G2' } | undefined;
-  if (meta?.variable === true) {
-    const result = applyVariableEdgeFeature('fillet', base, r, ctx.allRecords);
-    ctx.diagnostics.push(...result.diagnostics);
-    if (!result.ok) {
-      return finished(base);
-    }
-    shape = result.shape;
-    return built(shape);
-  }
-  // Slice C Task 6: optional continuity grade (G1 default; G2 calls
-  // BRepFilletAPI_MakeFillet.SetContinuity(GeomAbs_G2, 1e-4)).
-  const filletContinuity = meta?.continuity ?? 'G1';
+  return base;
+}
+
+/** Resolve the constant `radius` param for `lowerFillet`, pushing the
+ *  invalid-args diagnostic and throwing when it is missing. */
+function requireFilletRadius(ctx: LowerContext, r: FeatureRecord): number {
   const radius = r.params.radius?.evaluated;
   if (radius === undefined) {
     ctx.diagnostics.push({
@@ -291,12 +281,14 @@ export function lowerFillet(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
     });
     throw new Error('fillet: no radius');
   }
-  const edgesResult = pickEdges(r, base, ctx.allRecords);
-  if ('error' in edgesResult) {
-    ctx.diagnostics.push(edgesResult.error);
-    return finished(base);
-  }
-  drainResolvedWarnings(r, ctx.diagnostics);
+  return radius;
+}
+
+/** Filter picked edges to sharp (non-smooth) ones. Returns null when every
+ *  picked edge is genuinely G1-smooth (caller treats that as a no-op
+ *  success); falls back to the original edge set when no dihedral could be
+ *  computed at all. */
+function selectSharpEdgesForFillet(edgesResult: Edge[], base: OcctBackend): Edge[] | null {
   // Filter to sharp edges only — BRepFilletAPI_MakeFillet requires convex/concave
   // (non-smooth) edges. Smooth edges (G1, dihedral ≈ 180°) will cause OCCT to throw.
   // If all edges are already smooth (e.g., iterating a fillet on a face that was already
@@ -304,7 +296,7 @@ export function lowerFillet(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
   const shapeForDihedral = base.getReplicadShape() as unknown as { faces: import('replicad').Face[] };
   const SMOOTH_THRESHOLD = 5; // degrees; edges with dihedral > (180 - threshold) are smooth
   let nullCount = 0;
-  const sharpEdges = (edgesResult as import('replicad').Edge[]).filter((e) => {
+  const sharpEdges = edgesResult.filter((e) => {
     const d = computeDihedralPublic(shapeForDihedral, e);
     // null means the dihedral could not be computed — either the edge has only one
     // adjacent face, isSameEdge found no match, or normalAt threw a non-Error C++
@@ -316,43 +308,46 @@ export function lowerFillet(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
     }
     return d.angleDeg < 180 - SMOOTH_THRESHOLD;
   });
-  let edgesForFillet: import('replicad').Edge[];
   if (sharpEdges.length === 0) {
     if (nullCount === 0) {
       // Genuinely all G1-smooth — fillet already satisfied, return shape unchanged.
-      shape = base;
-      return built(shape);
+      return null;
     }
     // All edges had unknown dihedral (e.g., cylinder cap edges on the
     // parametric seam where normalAt throws). OCCT can fillet circular
     // cap edges directly — trust it with the original edge set. The
     // non-Error catch below handles any genuine OCCT rejection cleanly.
-    edgesForFillet = edgesResult as import('replicad').Edge[];
-  } else {
-    edgesForFillet = sharpEdges;
+    return edgesResult;
   }
-  const filletFilter = filterEdgesByMinLength(edgesForFillet, 2 * radius, {
-    op: 'fillet', paramName: 'radius', featureId: r.id,
-  });
-  if (filletFilter.diagnostic) ctx.diagnostics.push(filletFilter.diagnostic);
-  if (filletFilter.diagnostic?.severity === 'error') {
-    shape = base;
-    return built(shape);
-  }
-  edgesForFillet = filletFilter.kept;
-  try {
-    // Convert replicad Edge[] → EdgeRefForFilleting[] by hashing each
-    // edge's underlying TopoDS_Edge handle.
+  return sharpEdges;
+}
+
+/** Convert replicad Edge[] → EdgeRefForFilleting[] by hashing each
+ *  edge's underlying TopoDS_Edge handle. */
+function toFilletEdgeRefs(edges: Edge[]): EdgeRefForFilleting[] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return edges.map((e: any) => ({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const edgeRefs: EdgeRefForFilleting[] = edgesForFillet.map((e: any) => ({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      hash: ((e.wrapped ?? e._wrapped ?? e) as any).HashCode(2147483647).toString(16),
-    }));
+    hash: ((e.wrapped ?? e._wrapped ?? e) as any).HashCode(2147483647).toString(16),
+  }));
+}
+
+/** Run filletWithHistory + history merge and map the OCCT failure taxonomy
+ *  onto the lowerer's diagnostics. Always terminal (built or finished). */
+function applyFilletWithHistory(
+  base: OcctBackend,
+  edgeRefs: EdgeRefForFilleting[],
+  radius: number,
+  filletContinuity: 'G1' | 'G2',
+  ctx: LowerContext,
+  r: FeatureRecord,
+): LowerOutcome {
+  try {
     const filletResult = filletWithHistory(base, edgeRefs, radius, filletContinuity);
     const newMap = mergeEdgeFeatureHistory(base.historyMap, filletResult);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapped = replicad.cast(filletResult.shape as any) as replicad.Shape3D;
-    shape = new OcctBackend(wrapped, undefined, newMap);
+    return built(new OcctBackend(wrapped, undefined, newMap));
   } catch (e) {
     if (!(e instanceof Error)) {
       // Non-JS exception (WASM/OCCT C++ exception pointer) thrown during Build.
@@ -362,8 +357,7 @@ export function lowerFillet(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
         // Pre-existing silent no-op: face-based fillet on already-G1-smooth
         // boundary (the fillet-of-fillet case) — the user intent of
         // "the face is already fully rounded" is met by returning unchanged.
-        shape = base;
-        return built(shape);
+        return built(base);
       }
       // Edge-based or default selection: OCCT genuinely rejected. Emit a
       // clean diagnostic without leaking the raw pointer.
@@ -403,7 +397,46 @@ export function lowerFillet(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
     });
     return finished(base);
   }
-  return built(shape);
+}
+
+/** `fillet` — constant-radius (or the variable form via
+ *  `applyVariableEdgeFeature`), with the smooth-edge pre-filter and the
+ *  OCCT failure taxonomy. */
+export function lowerFillet(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
+  const base = requireFilletBase(ctx, r);
+  // rc.12: variable-radius form is delegated to applyVariableEdgeFeature.
+  const meta = r.metadata as { variable?: boolean; continuity?: 'G1' | 'G2' } | undefined;
+  if (meta?.variable === true) {
+    const result = applyVariableEdgeFeature('fillet', base, r, ctx.allRecords);
+    ctx.diagnostics.push(...result.diagnostics);
+    if (!result.ok) {
+      return finished(base);
+    }
+    return built(result.shape);
+  }
+  // Slice C Task 6: optional continuity grade (G1 default; G2 calls
+  // BRepFilletAPI_MakeFillet.SetContinuity(GeomAbs_G2, 1e-4)).
+  const filletContinuity = meta?.continuity ?? 'G1';
+  const radius = requireFilletRadius(ctx, r);
+  const edgesResult = pickEdges(r, base, ctx.allRecords);
+  if ('error' in edgesResult) {
+    ctx.diagnostics.push(edgesResult.error);
+    return finished(base);
+  }
+  drainResolvedWarnings(r, ctx.diagnostics);
+  let edgesForFillet = selectSharpEdgesForFillet(edgesResult as Edge[], base);
+  if (edgesForFillet === null) {
+    return built(base);
+  }
+  const filletFilter = filterEdgesByMinLength(edgesForFillet, 2 * radius, {
+    op: 'fillet', paramName: 'radius', featureId: r.id,
+  });
+  if (filletFilter.diagnostic) ctx.diagnostics.push(filletFilter.diagnostic);
+  if (filletFilter.diagnostic?.severity === 'error') {
+    return built(base);
+  }
+  edgesForFillet = filletFilter.kept;
+  return applyFilletWithHistory(base, toFilletEdgeRefs(edgesForFillet), radius, filletContinuity, ctx, r);
 }
 
 /** `chamfer` — constant-distance, or the variable form via

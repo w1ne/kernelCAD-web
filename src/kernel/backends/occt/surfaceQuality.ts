@@ -292,6 +292,84 @@ function storedOcctClass(edge: Edge, a: Face, b: Face): ContinuityClass | undefi
   }
 }
 
+/** Sample the edge at EDGE_SAMPLES stations and keep the G0/G1/G2 probes. */
+function sampleEdgeContinuity(edge: Edge, fa: Face, fb: Face): ContinuitySample[] {
+  const samples: ContinuitySample[] = [];
+  for (let s = 1; s <= EDGE_SAMPLES; s++) {
+    const t = s / (EDGE_SAMPLES + 1);
+    const p = edgePoint(edge, t);
+    const uvA = pcurveUv(edge, fa, t);
+    const uvB = pcurveUv(edge, fb, t);
+    const a = uvA ? evalSurfaceProps(fa, uvA[0], uvA[1]) : (p ? propsAtPoint(fa, p) : null);
+    const b = uvB ? evalSurfaceProps(fb, uvB[0], uvB[1]) : (p ? propsAtPoint(fb, p) : null);
+    if (!a || !b) continue;
+    const point = p ?? a.point;
+    const gapA = hypot3(sub(a.point, point));
+    const gapB = hypot3(sub(b.point, point));
+    const gapAB = hypot3(sub(a.point, b.point));
+    const positionGapMm = Math.max(gapA, gapB, gapAB);
+    const normalAngleDeg = Math.min(angleDeg(a.normal, b.normal), angleDeg(a.normal, [-b.normal[0], -b.normal[1], -b.normal[2]]));
+    const dH = curvatureDiff(a, b);
+    samples.push({
+      t,
+      point,
+      positionGapMm,
+      normalAngleDeg,
+      curvatureDiff: dH,
+      gaussianA: a.gaussian,
+      gaussianB: b.gaussian,
+      meanA: a.mean,
+      meanB: b.mean,
+    });
+  }
+  return samples;
+}
+
+/** Fold samples into per-class maxima and the worst tolerance-normalised sample. */
+function summariseContinuitySamples(samples: ContinuitySample[]): {
+  worst: ContinuitySample;
+  maxG0: number;
+  maxG1: number;
+  maxG2: number;
+} {
+  let worst = samples[0];
+  let maxG0 = 0;
+  let maxG1 = 0;
+  let maxG2 = 0;
+  for (const sm of samples) {
+    if (sm.positionGapMm > maxG0) maxG0 = sm.positionGapMm;
+    if (sm.normalAngleDeg > maxG1) maxG1 = sm.normalAngleDeg;
+    if (sm.curvatureDiff > maxG2) maxG2 = sm.curvatureDiff;
+    const score = sm.positionGapMm / G0_TOL_MM + sm.normalAngleDeg / G1_TOL_DEG + sm.curvatureDiff;
+    const worstScore = worst.positionGapMm / G0_TOL_MM + worst.normalAngleDeg / G1_TOL_DEG + worst.curvatureDiff;
+    if (score > worstScore) worst = sm;
+  }
+  return { worst, maxG0, maxG1, maxG2 };
+}
+
+/** Build the continuity record for one shared edge, or null when unsampled. */
+function continuityForEdge(i: number, edge: Edge, fa: Face, fb: Face): SharedEdgeContinuity | null {
+  const samples = sampleEdgeContinuity(edge, fa, fb);
+  if (samples.length === 0) return null;
+
+  const { worst, maxG0, maxG1, maxG2 } = summariseContinuitySamples(samples);
+  const sampledClass = classify(maxG0, maxG1, maxG2);
+  const occtContinuity = storedOcctClass(edge, fa, fb);
+
+  return {
+    edgeIndex: i,
+    edgeHash: edgeHash(edge),
+    faceHashes: [faceHash(fa), faceHash(fb)],
+    class: sampledClass,
+    maxPositionGapMm: maxG0,
+    maxNormalAngleDeg: maxG1,
+    maxCurvatureDiff: maxG2,
+    worstSample: worst,
+    sampleCount: samples.length,
+    ...(occtContinuity !== undefined ? { occtContinuity } : {}),
+  };
+}
+
 /** Shared (manifold) edges of a solid, sampled for G0/G1/G2. Boundary edges skipped. */
 export function inspectContinuity(
   body: OcctBackend,
@@ -306,66 +384,8 @@ export function inspectContinuity(
     if (edgeFilter && !edgeFilter(edge, i)) continue;
     const faces = adjacentFaces(shape, edge);
     if (faces.length < 2) continue;
-    const [fa, fb] = faces;
-
-    const samples: ContinuitySample[] = [];
-    for (let s = 1; s <= EDGE_SAMPLES; s++) {
-      const t = s / (EDGE_SAMPLES + 1);
-      const p = edgePoint(edge, t);
-      const uvA = pcurveUv(edge, fa, t);
-      const uvB = pcurveUv(edge, fb, t);
-      const a = uvA ? evalSurfaceProps(fa, uvA[0], uvA[1]) : (p ? propsAtPoint(fa, p) : null);
-      const b = uvB ? evalSurfaceProps(fb, uvB[0], uvB[1]) : (p ? propsAtPoint(fb, p) : null);
-      if (!a || !b) continue;
-      const point = p ?? a.point;
-      const gapA = hypot3(sub(a.point, point));
-      const gapB = hypot3(sub(b.point, point));
-      const gapAB = hypot3(sub(a.point, b.point));
-      const positionGapMm = Math.max(gapA, gapB, gapAB);
-      const normalAngleDeg = Math.min(angleDeg(a.normal, b.normal), angleDeg(a.normal, [-b.normal[0], -b.normal[1], -b.normal[2]]));
-      const dH = curvatureDiff(a, b);
-      samples.push({
-        t,
-        point,
-        positionGapMm,
-        normalAngleDeg,
-        curvatureDiff: dH,
-        gaussianA: a.gaussian,
-        gaussianB: b.gaussian,
-        meanA: a.mean,
-        meanB: b.mean,
-      });
-    }
-    if (samples.length === 0) continue;
-
-    let worst = samples[0];
-    let maxG0 = 0;
-    let maxG1 = 0;
-    let maxG2 = 0;
-    for (const sm of samples) {
-      if (sm.positionGapMm > maxG0) maxG0 = sm.positionGapMm;
-      if (sm.normalAngleDeg > maxG1) maxG1 = sm.normalAngleDeg;
-      if (sm.curvatureDiff > maxG2) maxG2 = sm.curvatureDiff;
-      const score = sm.positionGapMm / G0_TOL_MM + sm.normalAngleDeg / G1_TOL_DEG + sm.curvatureDiff;
-      const worstScore = worst.positionGapMm / G0_TOL_MM + worst.normalAngleDeg / G1_TOL_DEG + worst.curvatureDiff;
-      if (score > worstScore) worst = sm;
-    }
-
-    const sampledClass = classify(maxG0, maxG1, maxG2);
-    const occtContinuity = storedOcctClass(edge, fa, fb);
-
-    out.push({
-      edgeIndex: i,
-      edgeHash: edgeHash(edge),
-      faceHashes: [faceHash(fa), faceHash(fb)],
-      class: sampledClass,
-      maxPositionGapMm: maxG0,
-      maxNormalAngleDeg: maxG1,
-      maxCurvatureDiff: maxG2,
-      worstSample: worst,
-      sampleCount: samples.length,
-      ...(occtContinuity !== undefined ? { occtContinuity } : {}),
-    });
+    const record = continuityForEdge(i, edge, faces[0], faces[1]);
+    if (record) out.push(record);
   }
   return out;
 }

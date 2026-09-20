@@ -328,12 +328,32 @@ function meshLayerText(primName: string, shape: OcctBackend): string {
   ].join('\n');
 }
 
-function materialBlock(rootPath: string, primName: string, pbr: PBRMaterial | undefined, color: string | undefined): string {
-  const baseHex = resolveColor(pbr?.baseColor) ?? resolveColor(color) ?? DEFAULT_COLOR;
-  const diffuse = hexToLinear(baseHex);
-  const opacity = pbr?.opacity ?? (pbr?.transmission !== undefined && pbr.transmission > 0
+/** Resolve the material's base color hex: PBR base color, then the lineage
+ *  color, then the default. */
+function resolveMaterialBaseHex(pbr: PBRMaterial | undefined, color: string | undefined): string {
+  return resolveColor(pbr?.baseColor) ?? resolveColor(color) ?? DEFAULT_COLOR;
+}
+
+/** Resolve the shader opacity: explicit PBR opacity, else derive from
+ *  transmission, else fully opaque. */
+function resolveMaterialOpacity(pbr: PBRMaterial | undefined): number {
+  return pbr?.opacity ?? (pbr?.transmission !== undefined && pbr.transmission > 0
     ? Math.max(0.05, 1 - pbr.transmission)
     : 1);
+}
+
+/** Append the optional UsdPreviewSurface inputs (clearcoat, ior, opacity). */
+function appendOptionalSurfaceInputs(lines: string[], pbr: PBRMaterial | undefined, opacity: number): void {
+  if (pbr?.clearcoat !== undefined) lines.push(`                float inputs:clearcoat = ${f(pbr.clearcoat)}`);
+  if (pbr?.clearcoatRoughness !== undefined) lines.push(`                float inputs:clearcoatRoughness = ${f(pbr.clearcoatRoughness)}`);
+  if (pbr?.ior !== undefined) lines.push(`                float inputs:ior = ${f(pbr.ior)}`);
+  if (opacity < 1) lines.push(`                float inputs:opacity = ${f(opacity)}`);
+}
+
+function materialBlock(rootPath: string, primName: string, pbr: PBRMaterial | undefined, color: string | undefined): string {
+  const baseHex = resolveMaterialBaseHex(pbr, color);
+  const diffuse = hexToLinear(baseHex);
+  const opacity = resolveMaterialOpacity(pbr);
   const matPath = `${rootPath}/Materials/${primName}`;
   const lines = [
     `        def Material "${primName}"`,
@@ -347,10 +367,7 @@ function materialBlock(rootPath: string, primName: string, pbr: PBRMaterial | un
     `                float inputs:metallic = ${f(pbr?.metalness ?? 0)}`,
     `                float inputs:roughness = ${f(pbr?.roughness ?? 0.5)}`,
   ];
-  if (pbr?.clearcoat !== undefined) lines.push(`                float inputs:clearcoat = ${f(pbr.clearcoat)}`);
-  if (pbr?.clearcoatRoughness !== undefined) lines.push(`                float inputs:clearcoatRoughness = ${f(pbr.clearcoatRoughness)}`);
-  if (pbr?.ior !== undefined) lines.push(`                float inputs:ior = ${f(pbr.ior)}`);
-  if (opacity < 1) lines.push(`                float inputs:opacity = ${f(opacity)}`);
+  appendOptionalSurfaceInputs(lines, pbr, opacity);
   lines.push(
     '                token outputs:surface',
     '            }',

@@ -17,7 +17,7 @@ import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { Vec3 } from '../../shared/intent/types';
 import { patchFromCharEdit, patchFromCharEdits } from './applyPatch';
 import type { CharRange, ScriptSpanIndex } from './scriptSpans';
-import type { RepairCandidate } from './types';
+import type { RepairCandidate, RepairPatch } from './types';
 import {
   bboxOf,
   bboxSize,
@@ -145,17 +145,68 @@ function restoreSubtractiveContact(ctx: CandidateContext): RepairCandidate[] {
  *  (u, v) anchor back inside the face, derived from the target body's bbox. */
 function recentreHoleOnFace(ctx: CandidateContext): RepairCandidate[] {
   const { record, spans } = ctx;
-  const faceRef = record.inputs.face;
-  const faceName =
-    faceRef !== undefined && faceRef.kind === 'face' && faceRef.ref.kind === 'canonical'
-      ? faceRef.ref.face
-      : undefined;
+  const faceName = holeEntryFaceName(record);
   if (faceName === undefined) return [];
+  const plan = holeClampPlan(ctx, record, faceName);
+  if (plan === undefined) return [];
+
+  const candidates: RepairCandidate[] = [];
+  const clampEdits = buildAnchorEdits(spans, [
+    { chars: plan.uChars, current: plan.u, next: plan.clampedU },
+    { chars: plan.vChars, current: plan.v, next: plan.clampedV },
+  ]);
+  if (clampEdits.length > 0) {
+    const patch = patchFromCharEdits(spans, clampEdits);
+    if (patch !== undefined) {
+      candidates.push(clampHoleAnchorCandidate(ctx, record, plan, patch));
+    }
+  }
+
+  // Fallback: the face centre always lies on a convex body.
+  const centreEdits = buildAnchorEdits(spans, [
+    { chars: plan.uChars, current: plan.u, next: 0 },
+    { chars: plan.vChars, current: plan.v, next: 0 },
+  ]);
+  if (centreEdits.length > 0) {
+    const patch = patchFromCharEdits(spans, centreEdits);
+    if (patch !== undefined) {
+      candidates.push(centreHoleAnchorCandidate(ctx, record, plan, patch));
+    }
+  }
+  return candidates;
+}
+
+function holeEntryFaceName(record: FeatureRecord): string | undefined {
+  const faceRef = record.inputs.face;
+  return faceRef !== undefined && faceRef.kind === 'face' && faceRef.ref.kind === 'canonical'
+    ? faceRef.ref.face
+    : undefined;
+}
+
+interface HoleClampPlan {
+  faceName: string;
+  uChars: CharRange | undefined;
+  vChars: CharRange | undefined;
+  u: number;
+  v: number;
+  clampedU: number;
+  clampedV: number;
+  halfU: number;
+  halfV: number;
+  wall: number;
+}
+
+function holeClampPlan(
+  ctx: CandidateContext,
+  record: FeatureRecord,
+  faceName: string,
+): HoleClampPlan | undefined {
+  const { spans } = ctx;
   const axes = canonicalFaceAxes(faceName);
-  if (axes === undefined) return [];
+  if (axes === undefined) return undefined;
 
   const targetBbox = bboxOf(inputShape(ctx, 'target'));
-  if (targetBbox === undefined) return [];
+  if (targetBbox === undefined) return undefined;
   const size = bboxSize(targetBbox);
   const diameter = record.params.diameter?.evaluated ?? 0;
   // Keep the whole bore inside the face AND leave a wall around it. Clamping
@@ -168,65 +219,68 @@ function recentreHoleOnFace(ctx: CandidateContext): RepairCandidate[] {
   const halfV = Math.max(0, size[axes[1]] / 2 - diameter / 2 - wall);
 
   const call = callOf(ctx);
-  if (call === undefined) return [];
+  if (call === undefined) return undefined;
   const uChars = spans.optionValueChars(call, 1, 'u');
   const vChars = spans.optionValueChars(call, 1, 'v');
-  if (uChars === undefined && vChars === undefined) return [];
+  if (uChars === undefined && vChars === undefined) return undefined;
 
   const u = record.params.u?.evaluated ?? 0;
   const v = record.params.v?.evaluated ?? 0;
-  const clampedU = clamp(u, -halfU, halfU);
-  const clampedV = clamp(v, -halfV, halfV);
+  return {
+    faceName,
+    uChars,
+    vChars,
+    u,
+    v,
+    clampedU: clamp(u, -halfU, halfU),
+    clampedV: clamp(v, -halfV, halfV),
+    halfU,
+    halfV,
+    wall,
+  };
+}
 
-  const candidates: RepairCandidate[] = [];
-  const clampEdits = buildAnchorEdits(spans, [
-    { chars: uChars, current: u, next: clampedU },
-    { chars: vChars, current: v, next: clampedV },
-  ]);
-  if (clampEdits.length > 0) {
-    const patch = patchFromCharEdits(spans, clampEdits);
-    if (patch !== undefined) {
-      candidates.push({
-        id: `${record.id}:clamp-uv`,
-        diagnosticId: ctx.diagnosticId,
-        code: ctx.diagnostic.code,
-        featureId: record.id,
-        summary: `Clamp the hole anchor onto the '${faceName}' face, one bore radius clear of its edge (u=${formatNumber(clampedU)}, v=${formatNumber(clampedV)}).`,
-        predictedEffect: 'the bore lands on the face with wall around it and removes material',
-        patch,
-        evidence: {
-          faceName,
-          maxAnchorUmm: round(halfU, 4),
-          maxAnchorVmm: round(halfV, 4),
-          wallAroundBoreMm: round(wall, 4),
-          requestedU: round(u, 4),
-          requestedV: round(v, 4),
-        },
-      });
-    }
-  }
+function clampHoleAnchorCandidate(
+  ctx: CandidateContext,
+  record: FeatureRecord,
+  plan: HoleClampPlan,
+  patch: RepairPatch,
+): RepairCandidate {
+  return {
+    id: `${record.id}:clamp-uv`,
+    diagnosticId: ctx.diagnosticId,
+    code: ctx.diagnostic.code,
+    featureId: record.id,
+    summary: `Clamp the hole anchor onto the '${plan.faceName}' face, one bore radius clear of its edge (u=${formatNumber(plan.clampedU)}, v=${formatNumber(plan.clampedV)}).`,
+    predictedEffect: 'the bore lands on the face with wall around it and removes material',
+    patch,
+    evidence: {
+      faceName: plan.faceName,
+      maxAnchorUmm: round(plan.halfU, 4),
+      maxAnchorVmm: round(plan.halfV, 4),
+      wallAroundBoreMm: round(plan.wall, 4),
+      requestedU: round(plan.u, 4),
+      requestedV: round(plan.v, 4),
+    },
+  };
+}
 
-  // Fallback: the face centre always lies on a convex body.
-  const centreEdits = buildAnchorEdits(spans, [
-    { chars: uChars, current: u, next: 0 },
-    { chars: vChars, current: v, next: 0 },
-  ]);
-  if (centreEdits.length > 0) {
-    const patch = patchFromCharEdits(spans, centreEdits);
-    if (patch !== undefined) {
-      candidates.push({
-        id: `${record.id}:centre-uv`,
-        diagnosticId: ctx.diagnosticId,
-        code: ctx.diagnostic.code,
-        featureId: record.id,
-        summary: `Move the hole to the centre of the '${faceName}' face (u=0, v=0).`,
-        predictedEffect: 'the bore is centred on the entry face and removes material',
-        patch,
-        evidence: { faceName, requestedU: round(u, 4), requestedV: round(v, 4) },
-      });
-    }
-  }
-  return candidates;
+function centreHoleAnchorCandidate(
+  ctx: CandidateContext,
+  record: FeatureRecord,
+  plan: HoleClampPlan,
+  patch: RepairPatch,
+): RepairCandidate {
+  return {
+    id: `${record.id}:centre-uv`,
+    diagnosticId: ctx.diagnosticId,
+    code: ctx.diagnostic.code,
+    featureId: record.id,
+    summary: `Move the hole to the centre of the '${plan.faceName}' face (u=0, v=0).`,
+    predictedEffect: 'the bore is centred on the entry face and removes material',
+    patch,
+    evidence: { faceName: plan.faceName, requestedU: round(plan.u, 4), requestedV: round(plan.v, 4) },
+  };
 }
 
 // --- feature.intersection-empty ----------------------------------------------

@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { KernelError } from '../../shared/intent/kernelError';
 import { formatScalarForError, isValidVec3 } from '../../shared/intent/types';
-import { parseConnectorRef, type MateCapacity, type MateLimitRange, type MateLoadLimit, type MatePose } from '../mates/mate';
+import { parseConnectorRef, type MateCapacity, type MateLimitRange, type MateLoadLimit, type MatePose, type MateRecord } from '../mates/mate';
 import type { Connector } from '../mates/connector';
 import { isCompatiblePair, type MateType } from '../mates/mateTypes';
 import {
@@ -229,24 +229,41 @@ export function connectFixed(state: AssemblyState, name: string, a: AssemblyConn
  * is honored by the v0.6 Pattern A FK in `solveMates(arm, poses?)` and
  * piped into `Scene.parts[].worldTransform` by `Assembly.solvedModel`.
  */
+interface MateOptions {
+  pose?: MatePose;
+  limitsDeg?: MateLimitRange;
+  limitsMm?: MateLimitRange;
+  exposure?: 'exposed' | 'concealed';
+  capacity?: MateCapacity;
+  /** @deprecated legacy manual-load API */
+  maxLoad?: MateLoadLimit;
+}
+
 export function recordMate(
   state: AssemblyState,
   name: string,
   aRef: string,
   bRef: string,
   type: MateType,
-  opts?: {
-    pose?: MatePose;
-    limitsDeg?: MateLimitRange;
-    limitsMm?: MateLimitRange;
-    exposure?: 'exposed' | 'concealed';
-    capacity?: MateCapacity;
-    /** @deprecated legacy manual-load API */
-    maxLoad?: MateLoadLimit;
-  },
+  opts?: MateOptions,
 ): void {
   const a = resolveMateConnector(state, aRef);
   const b = resolveMateConnector(state, bRef);
+  assertMateConnectorPair(name, type, aRef, bRef, a, b);
+  validateMatePoseAllowed(name, type, opts);
+  validateMateLimits(name, type, opts);
+  validateMateCapacityOptions(name, type, opts);
+  state.mates.push(buildMateRecord(name, aRef, bRef, type, opts));
+}
+
+function assertMateConnectorPair(
+  name: string,
+  type: MateType,
+  aRef: string,
+  bRef: string,
+  a: { connector: Connector },
+  b: { connector: Connector },
+): void {
   if (!isCompatiblePair(type, a.connector.type, b.connector.type)) {
     throw new KernelError(
       'feature.invalid-args',
@@ -255,6 +272,9 @@ export function recordMate(
       `invalid-args.assembly.mate-type-mismatch — '${type}' mates require a specific connector-type pair; see the mate-type compatibility table in mateTypes.ts.`,
     );
   }
+}
+
+function validateMatePoseAllowed(name: string, type: MateType, opts: MateOptions | undefined): void {
   if (opts?.pose !== undefined && (type === 'fastened' || type === 'planar')) {
     throw new KernelError(
       'feature.invalid-args',
@@ -263,9 +283,16 @@ export function recordMate(
       `invalid-args.assembly.mate-pose-on-zero-dof-mate — '${type}' mates have no articulation DOF; drop opts.pose or change the mate type.`,
     );
   }
-  validateMateLimits(name, type, opts);
-  validateMateCapacityOptions(name, type, opts);
-  state.mates.push({
+}
+
+function buildMateRecord(
+  name: string,
+  aRef: string,
+  bRef: string,
+  type: MateType,
+  opts: MateOptions | undefined,
+): MateRecord {
+  return {
     name,
     a: aRef,
     b: bRef,
@@ -283,7 +310,7 @@ export function recordMate(
           },
         }
       : {}),
-  });
+  };
 }
 
 export function coupleMateRecords(
