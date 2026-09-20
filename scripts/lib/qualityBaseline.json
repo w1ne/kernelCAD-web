@@ -661,12 +661,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/runtime/jointMeshContinuity.ts",
-    "symbol": "Function 'collectMateRows'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/runtime/mechanismTruth.ts",
     "symbol": "Function 'buildPartAdjacency'",
     "value": 16
