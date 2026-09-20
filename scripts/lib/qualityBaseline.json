@@ -181,12 +181,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/getFaceLineage.ts",
-    "symbol": "Async function 'getFaceLineageTool'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/inspectRobot.ts",
     "symbol": "Async function 'inspectRobotTool'",
     "value": 20
