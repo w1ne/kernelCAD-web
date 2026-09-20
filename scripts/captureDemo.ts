@@ -30,10 +30,13 @@ interface Args {
   rotateOnly: boolean;
   heroArtifact: string;
   overrideApprovedBy: string | null;
+  fps: number;
+  width: number;
+  height: number;
 }
 
 function parseArgs(argv: string[]): Args {
-  const a: Partial<Args> = { rotateOnly: false };
+  const a: Partial<Args> = { rotateOnly: false, fps: 30, width: 1920, height: 1080 };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     const next = argv[i + 1];
@@ -47,10 +50,19 @@ function parseArgs(argv: string[]): Args {
     else if (arg === '--rotate-only') { a.rotateOnly = true; }
     else if (arg === '--hero-artifact') { a.heroArtifact = next; i++; }
     else if (arg === '--override-approved-by') { a.overrideApprovedBy = next; i++; }
+    else if (arg === '--fps') { a.fps = Number(next); i++; }
+    else if (arg === '--width') { a.width = Number(next); i++; }
+    else if (arg === '--height') { a.height = Number(next); i++; }
   }
   if (!a.module || !a.output) {
-    console.error('Usage: captureDemo --module v0.X --output <dir> --hero-artifact <slug> (--task <id> | --script <path> --prompt <path>) [--override-approved-by "<name>: <reason>"]');
+    console.error('Usage: captureDemo --module v0.X --output <dir> --hero-artifact <slug> (--task <id> | --script <path> --prompt <path>) [--override-approved-by "<name>: <reason>"] [--fps <n>] [--width <n>] [--height <n>]');
     process.exit(2);
+  }
+  for (const [name, value] of [['fps', a.fps], ['width', a.width], ['height', a.height]] as const) {
+    if (!Number.isFinite(value) || (value as number) <= 0) {
+      console.error(`--${name} must be a positive number; got ${value}`);
+      process.exit(2);
+    }
   }
   if (!a.task && !(a.script && a.prompt)) {
     console.error('Must specify either --task or both --script and --prompt');
@@ -133,7 +145,7 @@ async function main(): Promise<void> {
 
   const vite = await ensureViteRunning();
   const browser: Browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
-  const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
+  const context = await browser.newContext({ viewport: { width: args.width, height: args.height } });
   const page: Page = await context.newPage();
   // Heavy NURBS / referenceImage scenes (v0.8 eyewear-wayfarer-front) can
   // block the WASM meshing thread for >30 s between frames. The default 30 s
@@ -202,9 +214,9 @@ async function main(): Promise<void> {
 
     const ffmpeg = new FfmpegPipeline();
     const mp4Path = join(args.output, 'demo.mp4');
-    ffmpeg.start({ outputPath: mp4Path, fps: 30, width: 1920, height: 1080 });
+    ffmpeg.start({ outputPath: mp4Path, fps: args.fps, width: args.width, height: args.height });
     await page.evaluate((d) => window.__demoPlayer!.setRotatePhase(d), existingPacing.rotateDurationMs);
-    const frameMs = 1000 / 30;
+    const frameMs = 1000 / args.fps;
     const rotateFrames = Math.floor(existingPacing.rotateDurationMs / frameMs);
     for (let i = 0; i < rotateFrames; i++) {
       await page.evaluate((dtMs: number) => window.__demoPlayer!.advance(dtMs), frameMs);
@@ -330,9 +342,9 @@ async function main(): Promise<void> {
 
   const ffmpeg = new FfmpegPipeline();
   const mp4Path = join(args.output, 'demo.mp4');
-  ffmpeg.start({ outputPath: mp4Path, fps: 30, width: 1920, height: 1080 });
+  ffmpeg.start({ outputPath: mp4Path, fps: args.fps, width: args.width, height: args.height });
 
-  const frameMs = 1000 / 30;
+  const frameMs = 1000 / args.fps;
   const startWall = Date.now();
   const advance = async (toMs: number): Promise<void> => {
     const dt = toMs - (Date.now() - startWall);
