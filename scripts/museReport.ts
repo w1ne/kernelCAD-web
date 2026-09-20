@@ -13,6 +13,8 @@ import type { Score } from '../eval/types';
 export interface RunEnvelope {
   runId?: string;
   model: string;
+  gitSha?: string;
+  gitDirty?: boolean;
   judgeModel?: string;
   baseUrl?: string;
   protocol?: string;
@@ -153,6 +155,7 @@ export function writeReports(runRoot: string): void {
     '# Sweep protocol and deviations',
     '',
     `- Driver: ${run.model}; protocol version ${run.protocol ?? 'muse-v1'}; temperature ${run.temperature ?? 0.2}; skills: ${(run.skills ?? []).join(', ') || 'n/a'}.`,
+    `- kernelCAD commit: ${run.gitSha ?? 'unknown'}${run.gitDirty ? ' (dirty tree)' : ''}.`,
     '- Generation: kernelCAD product loop — 1 sample per case, up to 2 diagnostic-driven repairs, candidates=1.',
     '- Geometry submission: MUSE sandbox runs a CadQuery shim importing a kernelCAD-exported STEP (no CadQuery authored by kernelCAD).',
     '- Judge: MUSE `generate_score_sp` + `_run_alignment_judge`, model google/gemini-3.1-pro served via DeepInfra (upstream default serving is OpenRouter preview).',

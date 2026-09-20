@@ -38,6 +38,8 @@ interface SweepConfig {
   maxTokensIn: number;
   mockFixture?: string;
   startedAt: string;
+  gitSha: string;
+  gitDirty: boolean;
   env: Record<string, string | undefined>;
 }
 
@@ -125,6 +127,8 @@ function parseArgs(argv: string[]): SweepConfig {
     maxTokensIn,
     mockFixture: flagValue('--mock-fixture'),
     startedAt: new Date().toISOString().replace(/\..+$/, '').replace(/:/g, '-'),
+    gitSha: sha,
+    gitDirty: dirty.length > 0,
     env: process.env as Record<string, string | undefined>,
   };
 }
@@ -405,6 +409,8 @@ async function main(): Promise<void> {
     runId: cfg.runId,
     model: cfg.model,
     baseUrl: cfg.baseUrl,
+    gitSha: cfg.gitSha,
+    gitDirty: cfg.gitDirty,
     temperature: cfg.temperature,
     maxAttempts: cfg.maxAttempts,
     maxTokens: cfg.maxTokens,
