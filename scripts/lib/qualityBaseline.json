@@ -493,21 +493,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/planarUv.ts",
-    "symbol": "Function 'generatePlanarUVs'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/virtualFeatureRecords.ts",
     "symbol": "Function 'buildRenderEnvironmentFeatureSpec'",
     "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/virtualFeatureRecords.ts",
-    "symbol": "Function 'validateAnimationTracks'",
-    "value": 18
   },
   {
     "rule": "complexity",
@@ -520,12 +508,6 @@
     "file": "src/modeling/export/sdformat/sdfSerializer.ts",
     "symbol": "Function 'urdfInertialToSdf'",
     "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
-    "symbol": "Arrow function",
-    "value": 18
   },
   {
     "rule": "complexity",
@@ -553,12 +535,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/jointVisualExposure.ts",
-    "symbol": "Function 'inferPinRadius'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/matePhysicalRealization.ts",
     "symbol": "Async function 'validateMatePhysicalRealization'",
     "value": 16
@@ -568,12 +544,6 @@
     "file": "src/modeling/mates/matePhysicalRealization.ts",
     "symbol": "Function 'analyzeMate'",
     "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/matePhysicalRealization.ts",
-    "symbol": "Function 'inferPinRadius'",
-    "value": 18
   },
   {
     "rule": "complexity",
@@ -886,12 +856,6 @@
     "file": "src/modeling/constraints/sketchConverter.ts",
     "symbol": "Function 'convertSketchEntitiesToConstraints'",
     "value": 111
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
-    "symbol": "Function 'buildJointBlocks'",
-    "value": 102
   },
   {
     "rule": "max-lines-per-function",

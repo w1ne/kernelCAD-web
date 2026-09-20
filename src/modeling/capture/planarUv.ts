@@ -18,17 +18,10 @@
 
 import type { FaceGeometry } from '../../shared/worker/workerTypes';
 
-/** Generate planar UVs for a face geometry. Returns a `Float32Array` with
- *  `vertices.length / 3 * 2` entries (one (u,v) per vertex), deterministic
- *  across recomputes for the same input. */
-export function generatePlanarUVs(face: FaceGeometry): Float32Array {
-  const verts = face.vertices;
-  const vCount = verts.length / 3;
-  if (vCount === 0) return new Float32Array(0);
-
-  // Determine the dominant axis from the face's normal. Prefer the face's
-  // declared plane normal when available; fall back to averaging vertex
-  // normals to dodge degenerate-plane edge cases on curved faces.
+/** Determine the dominant axis from the face's normal. Prefer the face's
+ *  declared plane normal when available; fall back to averaging vertex
+ *  normals to dodge degenerate-plane edge cases on curved faces. */
+function dominantFaceNormal(face: FaceGeometry): [number, number, number] {
   let nx = 0, ny = 0, nz = 0;
   if (face.plane?.normal) {
     [nx, ny, nz] = face.plane.normal;
@@ -42,24 +35,32 @@ export function generatePlanarUVs(face: FaceGeometry): Float32Array {
   } else {
     nx = 0; ny = 0; nz = 1; // arbitrary fallback (degenerate face → all-zero UVs anyway)
   }
+  return [nx, ny, nz];
+}
 
+function chooseUvAxes(nx: number, ny: number, nz: number): { uAxis: 0 | 1 | 2; vAxis: 0 | 1 | 2 } {
   const ax = Math.abs(nx), ay = Math.abs(ny), az = Math.abs(nz);
   // Pick the two axes with the SMALLEST normal-projection magnitude — i.e.
   // the in-plane directions for the dominant face plane.
   // Drop the axis with the LARGEST absolute normal component.
-  let uAxis: 0 | 1 | 2;
-  let vAxis: 0 | 1 | 2;
   if (ax >= ay && ax >= az) {
     // Drop X; UV from Y, Z.
-    uAxis = 1; vAxis = 2;
-  } else if (ay >= ax && ay >= az) {
-    // Drop Y; UV from X, Z.
-    uAxis = 0; vAxis = 2;
-  } else {
-    // Drop Z; UV from X, Y.
-    uAxis = 0; vAxis = 1;
+    return { uAxis: 1, vAxis: 2 };
   }
+  if (ay >= ax && ay >= az) {
+    // Drop Y; UV from X, Z.
+    return { uAxis: 0, vAxis: 2 };
+  }
+  // Drop Z; UV from X, Y.
+  return { uAxis: 0, vAxis: 1 };
+}
 
+function projectedBounds(
+  verts: Float32Array,
+  vCount: number,
+  uAxis: 0 | 1 | 2,
+  vAxis: 0 | 1 | 2,
+): { minU: number; maxU: number; minV: number; maxV: number } {
   // Compute the bbox along the two chosen axes.
   let minU = Infinity, maxU = -Infinity;
   let minV = Infinity, maxV = -Infinity;
@@ -71,6 +72,20 @@ export function generatePlanarUVs(face: FaceGeometry): Float32Array {
     if (v < minV) minV = v;
     if (v > maxV) maxV = v;
   }
+  return { minU, maxU, minV, maxV };
+}
+
+/** Generate planar UVs for a face geometry. Returns a `Float32Array` with
+ *  `vertices.length / 3 * 2` entries (one (u,v) per vertex), deterministic
+ *  across recomputes for the same input. */
+export function generatePlanarUVs(face: FaceGeometry): Float32Array {
+  const verts = face.vertices;
+  const vCount = verts.length / 3;
+  if (vCount === 0) return new Float32Array(0);
+
+  const [nx, ny, nz] = dominantFaceNormal(face);
+  const { uAxis, vAxis } = chooseUvAxes(nx, ny, nz);
+  const { minU, maxU, minV, maxV } = projectedBounds(verts, vCount, uAxis, vAxis);
   const du = maxU - minU;
   const dv = maxV - minV;
 
