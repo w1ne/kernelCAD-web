@@ -295,12 +295,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/backends/occt/lowerers/assembly.ts",
-    "symbol": "Function 'lowerAssemblyModel'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/backends/occt/projectCurveLowerer.ts",
     "symbol": "Async function 'lowerProjectCurve'",
     "value": 16
