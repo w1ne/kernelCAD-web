@@ -92,4 +92,92 @@ describe('runToolLoop', () => {
     expect(r.stopReason).toBe('cap');
     expect(r.toolCallCount).toBe(3);
   });
+
+  it('executes multiple tool calls in one turn and keeps last-evaluated-code wins', async () => {
+    const client = clientFrom([
+      {
+        text: 'checking',
+        toolCalls: [
+          { id: 'c1', name: 'evaluate_script', arguments: '{"code":"return first;"}' },
+          { id: 'c2', name: 'evaluate_script', arguments: '{"code":"return second;"}' },
+        ],
+        finishReason: 'tool_calls', tokensIn: 5, tokensOut: 5,
+      },
+      { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 5, tokensOut: 5 },
+    ]);
+    const r = await runToolLoop({
+      client, system: 's', user: 'u', model: 'm', maxTokens: 100, maxCalls: 8, tools: [TOOL],
+      execute: async (_name, args) => ({
+        content: '{"ok":true}',
+        ok: true,
+        diagnostics: [],
+        evaluatedCode: String(args.code),
+      }),
+    });
+    expect(r.stopReason).toBe('final');
+    expect(r.toolCallCount).toBe(2);
+    const toolMsgs = r.messages.filter((m) => m.role === 'tool');
+    expect(toolMsgs).toHaveLength(2);
+    expect(toolMsgs.map((m) => m.tool_call_id)).toEqual(['c1', 'c2']);
+    expect(r.lastEvaluatedCode).toBe('return second;');
+  });
+
+  it('returns an error tool message when execute throws and continues the loop', async () => {
+    const client = clientFrom([
+      {
+        text: '',
+        toolCalls: [{ id: 'c1', name: 'evaluate_script', arguments: '{"code":"x"}' }],
+        finishReason: 'tool_calls', tokensIn: 1, tokensOut: 1,
+      },
+      { text: 'recovered', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
+    ]);
+    const r = await runToolLoop({
+      client, system: 's', user: 'u', model: 'm', maxTokens: 100, maxCalls: 8, tools: [TOOL],
+      execute: async () => {
+        throw new Error('sandbox exploded');
+      },
+    });
+    const toolMsg = r.messages.find((m) => m.role === 'tool');
+    expect(toolMsg?.content).toContain('"error"');
+    expect(toolMsg?.content).toContain('sandbox exploded');
+    expect(r.stopReason).toBe('final');
+    expect(r.finalText).toBe('recovered');
+  });
+
+  it('bounds tool executions within a single turn at maxCalls', async () => {
+    const client = clientFrom([
+      {
+        text: 'checking',
+        toolCalls: [
+          { id: 'c1', name: 'evaluate_script', arguments: '{"code":"a"}' },
+          { id: 'c2', name: 'evaluate_script', arguments: '{"code":"b"}' },
+          { id: 'c3', name: 'evaluate_script', arguments: '{"code":"c"}' },
+        ],
+        finishReason: 'tool_calls', tokensIn: 1, tokensOut: 1,
+      },
+      { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
+    ]);
+    const r = await runToolLoop({
+      client, system: 's', user: 'u', model: 'm', maxTokens: 100, maxCalls: 2, tools: [TOOL],
+      execute: async () => ({ content: '{"ok":true}', ok: true, diagnostics: [] }),
+    });
+    expect(r.toolCallCount).toBe(2);
+    const toolMsgs = r.messages.filter((m) => m.role === 'tool');
+    expect(toolMsgs).toHaveLength(3);
+    expect(toolMsgs[2]?.tool_call_id).toBe('c3');
+    expect(toolMsgs[2]?.content).toContain('budget exhausted');
+    expect(r.stopReason).toBe('final');
+  });
+
+  it('surfaces the last finish reason even when stopping on a final message', async () => {
+    const client = clientFrom([
+      { text: 'truncated', toolCalls: [], finishReason: 'length', tokensIn: 10, tokensOut: 5 },
+    ]);
+    const r = await runToolLoop({
+      client, system: 's', user: 'u', model: 'm', maxTokens: 100, maxCalls: 8, tools: [TOOL],
+      execute: async () => ({ content: '{}', ok: true, diagnostics: [] }),
+    });
+    expect(r.finishReason).toBe('length');
+    expect(r.stopReason).toBe('final');
+  });
 });

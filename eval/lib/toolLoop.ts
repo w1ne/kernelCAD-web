@@ -51,6 +51,7 @@ export interface ToolExecuteResult {
 
 export interface ToolLoopResult {
   finalText: string;
+  finishReason: string;
   toolCallCount: number;
   tokensIn: number;
   tokensOut: number;
@@ -77,6 +78,7 @@ export async function runToolLoop(opts: {
   let toolCallCount = 0;
   let lastEvaluatedCode: string | undefined;
   let finalText = '';
+  let finishReason = '';
 
   for (let call = 1; call <= opts.maxCalls; call++) {
     const resp = await opts.client.chatWithTools({
@@ -90,6 +92,7 @@ export async function runToolLoop(opts: {
     tokensIn += resp.tokensIn;
     tokensOut += resp.tokensOut;
     finalText = resp.text;
+    finishReason = resp.finishReason;
 
     const assistant: ToolChatMessage = { role: 'assistant', content: resp.text };
     if (resp.toolCalls.length > 0) {
@@ -110,15 +113,37 @@ export async function runToolLoop(opts: {
     });
 
     if (resp.toolCalls.length === 0) {
-      return { finalText, toolCallCount, tokensIn, tokensOut, stopReason: 'final', lastEvaluatedCode, messages };
+      return {
+        finalText,
+        finishReason,
+        toolCallCount,
+        tokensIn,
+        tokensOut,
+        stopReason: 'final',
+        lastEvaluatedCode,
+        messages,
+      };
     }
 
     for (const tc of resp.toolCalls) {
-      toolCallCount++;
+      if (toolCallCount >= opts.maxCalls) {
+        messages.push({
+          role: 'tool',
+          tool_call_id: tc.id,
+          content: JSON.stringify({ error: 'tool call budget exhausted' }),
+        });
+        opts.onEvent?.({ type: 'tool', call, name: tc.name, ok: false, diagnostics: ['budget-exhausted'] });
+        continue;
+      }
       let args: Record<string, unknown>;
       try {
-        args = JSON.parse(tc.arguments) as Record<string, unknown>;
+        const parsed: unknown = JSON.parse(tc.arguments);
+        if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+          throw new Error('invalid arguments shape');
+        }
+        args = parsed as Record<string, unknown>;
       } catch {
+        toolCallCount++;
         messages.push({
           role: 'tool',
           tool_call_id: tc.id,
@@ -127,6 +152,7 @@ export async function runToolLoop(opts: {
         opts.onEvent?.({ type: 'tool', call, name: tc.name, ok: false, diagnostics: ['invalid-arguments-json'] });
         continue;
       }
+      toolCallCount++;
       let result: ToolExecuteResult;
       try {
         result = await opts.execute(tc.name, args);
@@ -149,5 +175,5 @@ export async function runToolLoop(opts: {
     }
   }
 
-  return { finalText, toolCallCount, tokensIn, tokensOut, stopReason: 'cap', lastEvaluatedCode, messages };
+  return { finalText, finishReason, toolCallCount, tokensIn, tokensOut, stopReason: 'cap', lastEvaluatedCode, messages };
 }
