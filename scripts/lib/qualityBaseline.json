@@ -38,12 +38,6 @@
   {
     "rule": "complexity",
     "file": "src/agent/drawing/geometry2d.ts",
-    "symbol": "Function 'recoverArcs'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/drawing/geometry2d.ts",
     "symbol": "Function 'splitAtJunctions'",
     "value": 18
   },

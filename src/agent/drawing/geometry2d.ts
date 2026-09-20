@@ -335,45 +335,62 @@ export interface LoopElement {
  * has ≥ 3 chords, turns consistently one way by < 35° per vertex, and every
  * vertex sits within `tol` of one fitted circle. Everything else stays a line.
  */
-export function recoverArcs(loop: readonly P2[], tol: number): LoopElement[] {
-  const nPts = loop.length;
-  if (nPts < 3) return [];
-  const turnAt = (i: number): number => {
-    const p = loop[(i - 1 + nPts) % nPts], q = loop[i], r = loop[(i + 1) % nPts];
-    const a1 = Math.atan2(q[1] - p[1], q[0] - p[0]);
-    const a2 = Math.atan2(r[1] - q[1], r[0] - q[0]);
-    let d = a2 - a1;
-    while (d > Math.PI) d -= 2 * Math.PI;
-    while (d < -Math.PI) d += 2 * Math.PI;
-    return d;
-  };
+function turnAt(loop: readonly P2[], nPts: number, i: number): number {
+  const p = loop[(i - 1 + nPts) % nPts], q = loop[i], r = loop[(i + 1) % nPts];
+  const a1 = Math.atan2(q[1] - p[1], q[0] - p[0]);
+  const a2 = Math.atan2(r[1] - q[1], r[0] - q[0]);
+  let d = a2 - a1;
+  while (d > Math.PI) d -= 2 * Math.PI;
+  while (d < -Math.PI) d += 2 * Math.PI;
+  return d;
+}
+
+function rotateToSharpCorner(loop: readonly P2[], nPts: number): { pts: P2[]; turns: number[] } {
   // Rotate so the loop starts at a sharp corner, when there is one, so no arc wraps the seam.
   let startIdx = 0;
   for (let i = 0; i < nPts; i++) {
-    if (Math.abs(turnAt(i)) > (35 * Math.PI) / 180) { startIdx = i; break; }
+    if (Math.abs(turnAt(loop, nPts, i)) > (35 * Math.PI) / 180) { startIdx = i; break; }
   }
   const pts = [...loop.slice(startIdx), ...loop.slice(0, startIdx)];
-  const turns = pts.map((_, i) => turnAt((i + startIdx) % nPts));
+  const turns = pts.map((_, i) => turnAt(loop, nPts, (i + startIdx) % nPts));
+  return { pts, turns };
+}
+
+function growArcRun(
+  pts: readonly P2[],
+  turns: readonly number[],
+  i: number,
+  nPts: number,
+  tol: number,
+): { best: number; bestFit: CircleFit | null } {
+  let j = i + 1;
+  let best = -1;
+  let bestFit: CircleFit | null = null;
+  // Grow the run while the interior vertices turn the same way gently.
+  while (j < nPts && j - i <= 256) {
+    const t = turns[j % nPts];
+    const sameSign = Math.sign(t) === Math.sign(turns[(i + 1) % nPts]) && Math.abs(t) > 1e-6;
+    if (!sameSign || Math.abs(t) > (35 * Math.PI) / 180) break;
+    const candidate = pts.slice(i, j + 2 > nPts ? nPts : j + 2);
+    if (j + 1 >= nPts) candidate.push(pts[0]);
+    if (candidate.length >= 4) {
+      const fit = fitCircle(candidate);
+      if (fit && fit.maxResidual <= tol && fit.r > tol * 4) { best = j + 1; bestFit = fit; }
+      else if (best >= 0) break;
+    }
+    j++;
+  }
+  return { best, bestFit };
+}
+
+export function recoverArcs(loop: readonly P2[], tol: number): LoopElement[] {
+  const nPts = loop.length;
+  if (nPts < 3) return [];
+  const { pts, turns } = rotateToSharpCorner(loop, nPts);
   const out: LoopElement[] = [];
   let i = 0;
   while (i < nPts) {
-    let j = i + 1;
-    let best = -1;
-    let bestFit: CircleFit | null = null;
-    // Grow the run while the interior vertices turn the same way gently.
-    while (j < nPts && j - i <= 256) {
-      const t = turns[j % nPts];
-      const sameSign = Math.sign(t) === Math.sign(turns[(i + 1) % nPts]) && Math.abs(t) > 1e-6;
-      if (!sameSign || Math.abs(t) > (35 * Math.PI) / 180) break;
-      const candidate = pts.slice(i, j + 2 > nPts ? nPts : j + 2);
-      if (j + 1 >= nPts) candidate.push(pts[0]);
-      if (candidate.length >= 4) {
-        const fit = fitCircle(candidate);
-        if (fit && fit.maxResidual <= tol && fit.r > tol * 4) { best = j + 1; bestFit = fit; }
-        else if (best >= 0) break;
-      }
-      j++;
-    }
+    const { best, bestFit } = growArcRun(pts, turns, i, nPts, tol);
     if (best >= 0 && bestFit) {
       const a = pts[i];
       const b = pts[best % nPts];
