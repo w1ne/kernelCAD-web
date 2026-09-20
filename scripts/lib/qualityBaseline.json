@@ -181,12 +181,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/forwardKinematics.ts",
-    "symbol": "Function 'forwardKinematics'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
     "symbol": "Async function 'buildLinkBlocks'",
     "value": 16
@@ -370,12 +364,6 @@
     "file": "src/modeling/capture/featureMeshing.ts",
     "symbol": "Async function 'meshFeaturesPerFeature'",
     "value": 114
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/capture/forwardKinematics.ts",
-    "symbol": "Function 'forwardKinematics'",
-    "value": 101
   },
   {
     "rule": "max-lines-per-function",
