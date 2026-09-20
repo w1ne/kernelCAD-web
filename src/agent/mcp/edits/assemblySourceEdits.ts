@@ -180,32 +180,43 @@ export function addMateCouplingSource(input: AddMateCouplingSourceInput): Source
 export function addTransmissionSource(input: AddTransmissionSourceInput): SourceEditResult {
   const baseError = validateSourceBasics(input.code, input.assembly_binding);
   if (baseError) return baseError;
+  const fieldError = validateTransmissionRequiredFields(input) ?? validateTransmissionOptionalFields(input);
+  if (fieldError) return fieldError;
+
+  return insertStatementBeforeLastTopLevelReturn(input.code, buildTransmissionCall(input));
+}
+
+function validateTransmissionRequiredFields(input: AddTransmissionSourceInput): SourceEditResult | undefined {
   if (!isNonEmptyString(input.name)) return { ok: false, error: 'add_mate: name must be a non-empty string.' };
   if (!isTransmissionKind(input.kind)) return { ok: false, error: `add_mate: unsupported kind '${String(input.kind)}'.` };
   if (!isNonEmptyString(input.sourceMate)) return { ok: false, error: 'add_mate: sourceMate must be a non-empty string.' };
   if (!isStringArray(input.drivenMates, true)) return { ok: false, error: 'add_mate: drivenMates must be a non-empty string array.' };
   if (!isStringArray(input.path, true)) return { ok: false, error: 'add_mate: path must be a non-empty string array.' };
+  return undefined;
+}
+
+function validateTransmissionOptionalFields(input: AddTransmissionSourceInput): SourceEditResult | undefined {
   for (const field of ['actuator', 'input', 'output', 'notes'] as const) {
     if (input[field] !== undefined && !isNonEmptyString(input[field])) {
       return { ok: false, error: `add_mate: ${field} must be a non-empty string when provided.` };
     }
   }
   if (input.ratio !== undefined && !Number.isFinite(input.ratio)) return { ok: false, error: 'add_mate: ratio must be finite when provided.' };
+  return undefined;
+}
 
-  return insertStatementBeforeLastTopLevelReturn(
-    input.code,
-    `${input.assembly_binding}.transmission(${quoteString(input.name)}, ${formatJsValue({
-      kind: input.kind,
-      sourceMate: input.sourceMate,
-      drivenMates: input.drivenMates,
-      ...(input.actuator !== undefined ? { actuator: input.actuator } : {}),
-      ...(input.input !== undefined ? { input: input.input } : {}),
-      ...(input.output !== undefined ? { output: input.output } : {}),
-      path: input.path,
-      ...(input.ratio !== undefined ? { ratio: input.ratio } : {}),
-      ...(input.notes !== undefined ? { notes: input.notes } : {}),
-    })});`,
-  );
+function buildTransmissionCall(input: AddTransmissionSourceInput): string {
+  return `${input.assembly_binding}.transmission(${quoteString(input.name)}, ${formatJsValue({
+    kind: input.kind,
+    sourceMate: input.sourceMate,
+    drivenMates: input.drivenMates,
+    ...(input.actuator !== undefined ? { actuator: input.actuator } : {}),
+    ...(input.input !== undefined ? { input: input.input } : {}),
+    ...(input.output !== undefined ? { output: input.output } : {}),
+    path: input.path,
+    ...(input.ratio !== undefined ? { ratio: input.ratio } : {}),
+    ...(input.notes !== undefined ? { notes: input.notes } : {}),
+  })});`;
 }
 
 export function addWorkspaceTargetSource(input: AddWorkspaceTargetSourceInput): SourceEditResult {

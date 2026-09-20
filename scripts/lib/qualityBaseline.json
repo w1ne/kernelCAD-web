@@ -49,12 +49,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/edits/assemblySourceEdits.ts",
-    "symbol": "Function 'addTransmissionSource'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/edits/shapeDraft.ts",
     "symbol": "Function 'shapeDraftEdit'",
     "value": 17
