@@ -55,12 +55,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/edits/setParamValue.ts",
-    "symbol": "Function 'scanArgEnd'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/edits/shapeDraft.ts",
     "symbol": "Function 'shapeDraftEdit'",
     "value": 17
