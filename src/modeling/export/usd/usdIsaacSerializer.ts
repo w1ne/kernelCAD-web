@@ -519,6 +519,73 @@ async function buildLinkBlocks(
   return { linkBlocks, materialBlocks, meshLayers };
 }
 
+/** Joint fields shared by the legacy-joint and mate emission paths. */
+interface JointEmitSpec {
+  name: string;
+  kind: 'fixed' | 'revolute' | 'prismatic';
+  parent: string;
+  child: string;
+  parentOrigin: Vec3;
+  parentAxis: Vec3;
+  childOrigin: Vec3;
+  childAxis: Vec3;
+  limits?: readonly [number, number];
+}
+
+function resolveJointFrames(
+  spec: JointEmitSpec,
+  poses: Map<string, Transform> | undefined,
+): { token: 'X' | 'Y' | 'Z'; frame: Quat; localPos1: Vec3; localRot1: Quat } {
+  const { token, frame } = axisTokenAndFrame(spec.parentAxis);
+  const T0 = poses?.get(spec.parent);
+  const T1 = poses?.get(spec.child);
+  let localPos1: Vec3;
+  let localRot1: Quat;
+  if (T0 && T1) {
+    // Derive the child-side frame from the solved poses so both sides name
+    // the SAME world frame at rest — otherwise a twist between the two
+    // connector frames reads as a non-zero joint angle and offsets limits.
+    localPos1 = T1.inverse().point(T0.point(spec.parentOrigin));
+    localRot1 = quatNormalize(quatMul(quatMul(quatConj(transformQuat(T1)), transformQuat(T0)), frame));
+  } else {
+    localPos1 = spec.childOrigin;
+    localRot1 = quatFromTo(unitFor(token), spec.childAxis);
+  }
+  return { token, frame, localPos1, localRot1 };
+}
+
+function jointTypeName(kind: JointEmitSpec['kind']): string {
+  return kind === 'fixed'
+    ? 'PhysicsFixedJoint'
+    : kind === 'revolute' ? 'PhysicsRevoluteJoint' : 'PhysicsPrismaticJoint';
+}
+
+function appendJointAxisLimitsAndDrive(
+  lines: string[],
+  spec: JointEmitSpec,
+  token: 'X' | 'Y' | 'Z',
+  drive: UsdJointDrive | undefined,
+  driveNs: 'angular' | 'linear',
+): void {
+  if (spec.kind !== 'fixed') {
+    lines.push(`            uniform token physics:axis = "${token}"`);
+    if (spec.limits) {
+      // Revolute limits are degrees in UsdPhysics; prismatic limits are
+      // stage distance units (metres here).
+      const scale = spec.kind === 'revolute' ? 1 : MM_TO_M;
+      lines.push(`            float physics:lowerLimit = ${f(spec.limits[0] * scale)}`);
+      lines.push(`            float physics:upperLimit = ${f(spec.limits[1] * scale)}`);
+    }
+  }
+  if (drive) {
+    lines.push(`            uniform token drive:${driveNs}:physics:type = "force"`);
+    lines.push(`            float drive:${driveNs}:physics:stiffness = ${f(drive.stiffness)}`);
+    lines.push(`            float drive:${driveNs}:physics:damping = ${f(drive.damping)}`);
+    if (drive.maxForce !== undefined) lines.push(`            float drive:${driveNs}:physics:maxForce = ${f(drive.maxForce)}`);
+    if (drive.targetPosition !== undefined) lines.push(`            float drive:${driveNs}:physics:targetPosition = ${f(drive.targetPosition)}`);
+  }
+}
+
 /** Emit the UsdPhysics joint blocks for the legacy joints then the mates, in
  *  declaration order. */
 function buildJointBlocks(
@@ -535,37 +602,11 @@ function buildJointBlocks(
   const partByName = new Map(parts.map((p) => [p.name, p]));
   const partNameById = (id: string): string => parts.find((p) => p.id === id)?.name ?? id;
 
-  const emitJoint = (spec: {
-    name: string;
-    kind: 'fixed' | 'revolute' | 'prismatic';
-    parent: string;
-    child: string;
-    parentOrigin: Vec3;
-    parentAxis: Vec3;
-    childOrigin: Vec3;
-    childAxis: Vec3;
-    limits?: readonly [number, number];
-  }): void => {
-    const { token, frame } = axisTokenAndFrame(spec.parentAxis);
-    const T0 = poses?.get(spec.parent);
-    const T1 = poses?.get(spec.child);
-    let localPos1: Vec3;
-    let localRot1: Quat;
-    if (T0 && T1) {
-      // Derive the child-side frame from the solved poses so both sides name
-      // the SAME world frame at rest — otherwise a twist between the two
-      // connector frames reads as a non-zero joint angle and offsets limits.
-      localPos1 = T1.inverse().point(T0.point(spec.parentOrigin));
-      localRot1 = quatNormalize(quatMul(quatMul(quatConj(transformQuat(T1)), transformQuat(T0)), frame));
-    } else {
-      localPos1 = spec.childOrigin;
-      localRot1 = quatFromTo(unitFor(token), spec.childAxis);
-    }
+  const emitJoint = (spec: JointEmitSpec): void => {
+    const { token, frame, localPos1, localRot1 } = resolveJointFrames(spec, poses);
     const drive = spec.kind !== 'fixed' ? opts.drives?.[spec.name] : undefined;
     const driveNs = spec.kind === 'revolute' ? 'angular' : 'linear';
-    const jointType = spec.kind === 'fixed'
-      ? 'PhysicsFixedJoint'
-      : spec.kind === 'revolute' ? 'PhysicsRevoluteJoint' : 'PhysicsPrismaticJoint';
+    const jointType = jointTypeName(spec.kind);
 
     const lines = [
       `        def ${jointType} "${jointName(spec.name)}"${drive ? ' (' : ''}`,
@@ -578,23 +619,7 @@ function buildJointBlocks(
       `            point3f physics:localPos1 = ${tuple(localPos1.map((n) => n * MM_TO_M))}`,
       `            quatf physics:localRot1 = ${tuple(localRot1)}`,
     ];
-    if (spec.kind !== 'fixed') {
-      lines.push(`            uniform token physics:axis = "${token}"`);
-      if (spec.limits) {
-        // Revolute limits are degrees in UsdPhysics; prismatic limits are
-        // stage distance units (metres here).
-        const scale = spec.kind === 'revolute' ? 1 : MM_TO_M;
-        lines.push(`            float physics:lowerLimit = ${f(spec.limits[0] * scale)}`);
-        lines.push(`            float physics:upperLimit = ${f(spec.limits[1] * scale)}`);
-      }
-    }
-    if (drive) {
-      lines.push(`            uniform token drive:${driveNs}:physics:type = "force"`);
-      lines.push(`            float drive:${driveNs}:physics:stiffness = ${f(drive.stiffness)}`);
-      lines.push(`            float drive:${driveNs}:physics:damping = ${f(drive.damping)}`);
-      if (drive.maxForce !== undefined) lines.push(`            float drive:${driveNs}:physics:maxForce = ${f(drive.maxForce)}`);
-      if (drive.targetPosition !== undefined) lines.push(`            float drive:${driveNs}:physics:targetPosition = ${f(drive.targetPosition)}`);
-    }
+    appendJointAxisLimitsAndDrive(lines, spec, token, drive, driveNs);
     lines.push('        }');
     jointBlocks.push(lines.join('\n'));
   };

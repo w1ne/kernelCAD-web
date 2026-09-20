@@ -524,12 +524,6 @@
   {
     "rule": "complexity",
     "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
-    "symbol": "Arrow function",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
     "symbol": "Async function 'buildLinkBlocks'",
     "value": 16
   },
@@ -904,12 +898,6 @@
     "file": "src/modeling/constraints/sketchConverter.ts",
     "symbol": "Function 'convertSketchEntitiesToConstraints'",
     "value": 111
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
-    "symbol": "Function 'buildJointBlocks'",
-    "value": 102
   },
   {
     "rule": "max-lines-per-function",
