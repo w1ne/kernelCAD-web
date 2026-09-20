@@ -703,12 +703,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/routes/billing.tsx",
-    "symbol": "Function 'BillingPage'",
-    "value": 144
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/routes/embed.$slug.tsx",
     "symbol": "Function 'EmbedPage'",
     "value": 141
