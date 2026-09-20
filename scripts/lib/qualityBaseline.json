@@ -709,12 +709,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/mechanicalPlausibility.ts",
-    "symbol": "Function 'analyzeDisconnectedMesh'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/mechanicalTransmission.ts",
     "symbol": "Function 'pointTriangleDistanceSquared'",
     "value": 16
