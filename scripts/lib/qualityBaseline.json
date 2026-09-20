@@ -235,12 +235,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/poseEnvelope.ts",
-    "symbol": "Function 'buildPoseEnvelopeSamples'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/runtime/dfm/minWall.ts",
     "symbol": "Function 'checkMinWall'",
     "value": 16
