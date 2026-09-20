@@ -404,12 +404,6 @@
   {
     "rule": "complexity",
     "file": "src/kernel/backends/occt/meshing.ts",
-    "symbol": "Function 'tryExtractCylinderFromFace'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/backends/occt/meshing.ts",
     "symbol": "Function 'tryExtractPlaneFromPlaneRecord'",
     "value": 16
   },
