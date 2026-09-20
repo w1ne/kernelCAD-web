@@ -397,12 +397,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/jointAxisBinding.ts",
-    "symbol": "Async function 'validateJointAxisBindingWithCache'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/jointVisualExposure.ts",
     "symbol": "Async function 'validateJointVisualExposure'",
     "value": 17
