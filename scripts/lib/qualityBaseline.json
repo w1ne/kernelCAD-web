@@ -85,12 +85,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/parts/fetchPart.ts",
-    "symbol": "Async function 'fetchPartFromUrlHost'",
-    "value": 104
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/Toolbar.tsx",
     "symbol": "Function 'Toolbar'",
     "value": 121
