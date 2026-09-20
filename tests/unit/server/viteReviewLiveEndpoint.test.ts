@@ -76,7 +76,7 @@ vi.mock('../../../src/server/middleware/animationBakeEndpoint', () => ({
   createAnimationBakeEndpoint: vi.fn(() => async () => undefined),
 }));
 
-vi.mock('../../../src/modeling/buildModel', () => ({
+vi.mock('../../../src/composition/buildModel', () => ({
   buildModelFromFile: vi.fn(),
 }));
 

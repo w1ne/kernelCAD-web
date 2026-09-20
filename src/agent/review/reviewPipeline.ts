@@ -48,7 +48,7 @@ import {
 } from '../../modeling/runtime/interferenceClassification';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { analyzeContactGraph, type ContactGraphResult } from '../../modeling/runtime/contactGraph';
-import type { BuiltModel } from '../../modeling/buildModel';
+import type { BuiltModel } from '../../composition/buildModel';
 import { clearActiveMcpSession, setActiveMcpSession } from '../mcp/activeSession';
 
 export interface ReviewCadInput {

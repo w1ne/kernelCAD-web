@@ -22,10 +22,11 @@
 
 // The script-evaluation step (the CLI command tree's `evaluateAndBuildScript`,
 // which pulls node-only modules — file reads, CLI arg parsing — transitively)
-// is injected: kinematic owns the `SweepEvaluator` seam below, the agent layer
-// supplies the implementation. This keeps the module free of agent imports
-// while it stays reachable from the browser runtime via `src/modeling/api.ts`
-// -> `import * as kinematic from '../kinematic'` — see
+// is injected: kinematic owns the `SweepEvaluator` seam below, and the
+// composition layer (`src/composition/scriptApi.ts`) binds the implementation
+// when it constructs the script API. This keeps the module free of agent and
+// composition imports while it stays reachable from the browser runtime via
+// `src/modeling/api.ts` -> `import * as kinematic from '../kinematic'` — see
 // `src/modeling/runtime/browserGraphNodeFree.test.ts`.
 import { setParamValue } from '../modeling/edits/setParamValue';
 import type { Assembly } from '../modeling/capture/assembly';
@@ -48,20 +49,6 @@ import type {
 export type { SweepEvaluation, SweepEvaluator } from './types';
 
 export const SWEEP_COMBO_CAP = 64;
-
-/**
- * Registered fallback evaluator. The agent entry that owns script evaluation
- * (`src/agent/cli/commands/evaluate.ts`) registers one at import time so
- * existing one-argument callers — user scripts reaching
- * `kc.kinematic.sweepTolerance`, which cannot pass a second argument — keep
- * working in every runtime where the agent evaluator is loaded. Runtimes
- * without it (the browser) still fail at call time, exactly as before.
- */
-let registeredEvaluator: SweepEvaluator | undefined;
-
-export function registerSweepEvaluator(evaluator: SweepEvaluator): void {
-  registeredEvaluator = evaluator;
-}
 
 export interface SweepToleranceInput {
   readonly code?: string;
@@ -90,7 +77,7 @@ export async function sweepTolerance(
   input: SweepToleranceInput,
   evaluator?: SweepEvaluator,
 ): Promise<SweepToleranceResult> {
-  const evaluate = evaluator ?? registeredEvaluator;
+  const evaluate = evaluator;
   const baseCode = await resolveBaseCode(input);
   const paramNames = Object.keys(input.params);
   if (paramNames.length === 0) {
@@ -301,16 +288,17 @@ async function runComboEvaluation(
 }
 
 /**
- * Resolve the injected/registered evaluator at the point of use. Runtimes
- * that never loaded the agent evaluator (the browser script graph) fail
- * here at call time, exactly as the old deferred agent-module import did;
- * the no-params path above never needs one and stays a vacuous pass.
+ * Resolve the injected evaluator at the point of use. Runtimes that never
+ * received one (the browser script graph, or a raw modeling-level entry point
+ * that bypasses composition) fail here at call time; the no-params path above
+ * never needs one and stays a vacuous pass.
  */
 function requireEvaluator(evaluator: SweepEvaluator | undefined): SweepEvaluator {
   if (evaluator === undefined) {
     throw new Error(
       'sweepTolerance: no script evaluator is available in this runtime. ' +
-      'Pass a SweepEvaluator or load the agent evaluate module (which registers one).',
+      'Run the script through a composition entry point (src/composition/runScript ' +
+      'or src/composition/buildModel), which binds one; direct callers pass a SweepEvaluator.',
     );
   }
   return evaluator;

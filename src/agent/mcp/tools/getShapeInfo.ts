@@ -4,7 +4,7 @@
 import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import type { FeatureKind } from '../../../shared/intent/types';
-import { resolveRootId } from '../../../modeling/buildModel';
+import { resolveRootId } from '../../../composition/buildModel';
 import { runMcpScript } from '../runMcpScript';
 
 export interface GetShapeInfoInput {

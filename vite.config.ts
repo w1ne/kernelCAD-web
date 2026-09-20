@@ -61,7 +61,7 @@ function reviewPaintSaveServer(): Plugin {
 
 function kernelCadMeshEndpoint(): Plugin {
   // Slice 2E.bridge: lazily-initialised pool + middlewares. We can't import
-  // the pool at module top because it pulls in `src/modeling/buildModel`,
+  // the pool at module top because it pulls in `src/composition/buildModel`,
   // which transitively boots OCCT — Vite's config is loaded synchronously
   // and we want OCCT init delayed until the first request. Build the pool
   // on demand, then close over it for the session/events/params handlers.
@@ -146,7 +146,7 @@ function kernelCadMeshEndpoint(): Plugin {
               import('./src/server/middleware/paramsEndpoint'),
               import('./src/server/middleware/transformsEndpoint'),
               import('./src/server/middleware/animationBakeEndpoint'),
-              import('./src/modeling/buildModel'),
+              import('./src/composition/buildModel'),
             ]);
             // Single-user dev pool: no `maxEntries` cap (unbounded) and no
             // `runExclusive` lock (identity passthrough) — one local developer
@@ -232,7 +232,7 @@ function kernelCadMeshEndpoint(): Plugin {
             import('./src/modeling/runtime/scriptLoader'),
             import('./src/modeling/capture/featureMeshing'),
             import('./src/modeling/capture/featureMeshSerialize'),
-            import('./src/modeling/runtime/runScript'),
+            import('./src/composition/runScript'),
           ]);
 
           // Slice 2E.bridge: with a session token, mesh against the pooled

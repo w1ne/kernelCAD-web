@@ -6,7 +6,7 @@
 // bent sheet-metal Shape as a Region (closed polyline + holes + bend lines).
 
 import { readFileSync } from 'node:fs';
-import { runScript } from '../../../modeling/runtime/runScript';
+import { runScript } from '../../../composition/runScript';
 import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { flattenPattern } from '../../../kernel/backends/occt/flattenPattern';

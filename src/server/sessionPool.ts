@@ -65,7 +65,7 @@
 
 import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
-import type { BuiltModel } from '../modeling/buildModel';
+import type { BuiltModel } from '../composition/buildModel';
 
 export interface SessionPoolEntry {
   readonly token: string;

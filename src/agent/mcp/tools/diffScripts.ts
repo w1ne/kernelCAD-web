@@ -32,7 +32,7 @@ import {
   detectInterferences,
   type InterferencePair,
 } from '../../../modeling/runtime/detectInterferences';
-import { resolveRootId } from '../../../modeling/buildModel';
+import { resolveRootId } from '../../../composition/buildModel';
 import { Scene } from '../../../modeling/validation/scene';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';

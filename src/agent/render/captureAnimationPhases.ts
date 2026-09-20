@@ -17,7 +17,7 @@ import {
   updateModelParams,
   type BuiltModel,
   type ParamUpdateEdit,
-} from '../../modeling/buildModel';
+} from '../../composition/buildModel';
 import { meshFeaturesPerFeature } from '../../modeling/capture/featureMeshing';
 import { serializeForBridge } from '../../modeling/capture/featureMeshSerialize';
 import type { CompilerDiagnostic, DiagnosticCode } from '../../shared/diagnostics/diagnostic';

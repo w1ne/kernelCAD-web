@@ -362,10 +362,10 @@ export interface SweepEvaluation {
 
 /**
  * Script-evaluation implementation injected into `sweepTolerance`. Owned by
- * kinematic so the sweep never imports the agent CLI command tree; the agent
- * layer supplies the implementation (see `sweepScriptEvaluator` in
- * `src/agent/cli/commands/evaluate.ts`) either by registering it or by
- * passing it explicitly.
+ * kinematic so the sweep never imports agent or composition code; the
+ * composition layer binds the implementation when it builds the script API
+ * (`createScriptApi` in `src/composition/scriptApi.ts`), and direct callers
+ * pass it explicitly.
  */
 export interface SweepEvaluator {
   evaluate(code: string): Promise<SweepEvaluation>;

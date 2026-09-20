@@ -22,12 +22,12 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { sweepTolerance as runSweepTolerance, SWEEP_COMBO_CAP } from '../../../src/kinematic/sweepTolerance';
-import { sweepScriptEvaluator } from '../../../src/agent/cli/commands/evaluate';
+import { defaultSweepEvaluator } from '../../../src/composition/scriptEvaluation';
 
-// The sweep takes its script evaluator by injection; the agent layer owns the
-// implementation. Direct callers bind it once here.
+// The sweep takes its script evaluator by injection; the composition layer
+// owns the implementation. Direct callers bind it once here.
 const sweepTolerance = (input: Parameters<typeof runSweepTolerance>[0]) =>
-  runSweepTolerance(input, sweepScriptEvaluator);
+  runSweepTolerance(input, defaultSweepEvaluator);
 
 const CLEARANCE_CODE = `
   const arm = assembly('sweep-clearance');
