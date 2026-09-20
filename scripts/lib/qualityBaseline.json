@@ -258,12 +258,6 @@
     "value": 16
   },
   {
-    "rule": "complexity",
-    "file": "src/modeling/runtime/explodedPoses.ts",
-    "symbol": "Function 'mateAxisOffsets'",
-    "value": 16
-  },
-  {
     "rule": "max-lines-per-function",
     "file": "src/agent/cli/commands/render.ts",
     "symbol": "Function 'renderCommand'",
