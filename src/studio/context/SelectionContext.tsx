@@ -42,6 +42,102 @@ export interface SelectionContextType {
 const SelectionContext = createContext<SelectionContextType | undefined>(undefined);
 
 import { useWorkbenchState } from './WorkbenchStateContext';
+import type { WorkbenchAction, WorkbenchState } from './workbenchState';
+
+function loadHiddenIds(): string[] {
+    if (typeof window === 'undefined') return [];
+    try {
+        const saved = localStorage.getItem('kernelcad_hidden_ids');
+        return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+        console.warn('Failed to load hiddenIds:', e);
+        return [];
+    }
+}
+
+function applySelectionToggle(prev: string[], id: string, multi: boolean): string[] {
+    if (!multi) {
+        // If single select mode, asking to toggle could mean:
+        // 1. If ID matches unique selection, deselect?
+        // 2. If ID matches one of many, select only it?
+        // Standard behavior: Click without modifier selects ONLY that item.
+        // If it was already the ONLY selected item, usually we don't deselect in CAD unless clicking void.
+        // But SceneBrowser behavior 'onSelect' usually implies "Select this".
+        return [id];
+    } else {
+        // Multi select (Cmd/Ctrl)
+        if (prev.includes(id)) {
+            return prev.filter(i => i !== id);
+        } else {
+            return [...prev, id];
+        }
+    }
+}
+
+function appendPlane(prev: SketchPlaneEntity[], plane: SketchPlaneEntity): SketchPlaneEntity[] {
+    if (prev.find(p => p.id === plane.id)) return prev;
+    return [...prev, plane];
+}
+
+function computeSketchMode(stateMode: WorkbenchState['mode'], planes: SketchPlaneEntity[]): SketchModeState {
+    if (stateMode.type !== 'SKETCHING') {
+        return {
+            active: false,
+            plane: null,
+            currentSketch: null,
+            tool: 'select',
+        };
+    }
+
+    const planeId = stateMode.planeId;
+    return {
+        active: true,
+        plane: planes.find(p => p.id === planeId) || planeId,
+        currentSketch: null, // TODO: Pass sketch object via state or lookup
+        tool: 'line', // Default tool
+    };
+}
+
+function faceSelectingAction(selecting: boolean): WorkbenchAction {
+    if (selecting) {
+        // Defaulting to feature purpose if generic toggle
+        return { type: 'START_FACE_SELECTION', purpose: 'feature' };
+    } else {
+        return { type: 'CANCEL_SELECTION' };
+    }
+}
+
+function sketchModeToAction(
+    mode: SketchModeState,
+    addPlane: (plane: SketchPlaneEntity) => void,
+): WorkbenchAction {
+    if (mode.active) {
+        let planeId = '';
+        if (typeof mode.plane === 'string') {
+            planeId = mode.plane;
+        } else if (mode.plane && typeof mode.plane === 'object') {
+            planeId = mode.plane.id;
+            // Ensure this plane is in our planes list so we can resolve it later
+            addPlane(mode.plane);
+        }
+
+        if (!planeId) {
+            planeId = mode.currentSketch?.plane === 'face' ? 'face' : 'XY';
+        }
+
+        return { type: 'START_SKETCH', planeId, sketchId: mode.currentSketch?.id };
+    } else {
+        return { type: 'EXIT_SKETCH' };
+    }
+}
+
+function toggleIdInList(prev: string[], id: string): string[] {
+    return prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id];
+}
+
+function addIdToList(prev: string[], id: string): string[] {
+    return prev.includes(id) ? prev : [...prev, id];
+}
 
 export function SelectionProvider({ children }: { children: ReactNode }) {
     const [selectedFace, setSelectedFace] = useState<{ shapeIndex: number; faceId: number } | null>(null);
@@ -59,36 +155,10 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const toggleSelection = useCallback((id: string, multi: boolean) => {
-        setSelectedItemIds(prev => {
-            if (!multi) {
-                // If single select mode, asking to toggle could mean:
-                // 1. If ID matches unique selection, deselect?
-                // 2. If ID matches one of many, select only it?
-                // Standard behavior: Click without modifier selects ONLY that item.
-                // If it was already the ONLY selected item, usually we don't deselect in CAD unless clicking void.
-                // But SceneBrowser behavior 'onSelect' usually implies "Select this".
-                return [id];
-            } else {
-                // Multi select (Cmd/Ctrl)
-                if (prev.includes(id)) {
-                    return prev.filter(i => i !== id);
-                } else {
-                    return [...prev, id];
-                }
-            }
-        });
+        setSelectedItemIds(prev => applySelectionToggle(prev, id, multi));
     }, []);
     const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
-    const [hiddenIds, setHiddenIds] = useState<string[]>(() => {
-        if (typeof window === 'undefined') return [];
-        try {
-            const saved = localStorage.getItem('kernelcad_hidden_ids');
-            return saved ? JSON.parse(saved) : [];
-        } catch (e) {
-            console.warn('Failed to load hiddenIds:', e);
-            return [];
-        }
-    });
+    const [hiddenIds, setHiddenIds] = useState<string[]>(loadHiddenIds);
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -102,12 +172,7 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
     const isFaceSelecting = state.mode.type === 'FACE_SELECTION';
 
     const setIsFaceSelecting = useCallback((selecting: boolean) => {
-        if (selecting) {
-            // Defaulting to feature purpose if generic toggle
-            dispatch({ type: 'START_FACE_SELECTION', purpose: 'feature' });
-        } else {
-            dispatch({ type: 'CANCEL_SELECTION' });
-        }
+        dispatch(faceSelectingAction(selecting));
     }, [dispatch]);
 
     const [planes, setPlanes] = useState<SketchPlaneEntity[]>([
@@ -117,50 +182,16 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
     ]);
 
     const addPlane = useCallback((plane: SketchPlaneEntity) => {
-        setPlanes(prev => {
-            if (prev.find(p => p.id === plane.id)) return prev;
-            return [...prev, plane];
-        });
+        setPlanes(prev => appendPlane(prev, plane));
     }, []);
 
-    const sketchMode: SketchModeState = useMemo(() => {
-        if (state.mode.type !== 'SKETCHING') {
-            return {
-                active: false,
-                plane: null,
-                currentSketch: null,
-                tool: 'select',
-            };
-        }
-
-        const planeId = state.mode.planeId;
-        return {
-            active: true,
-            plane: planes.find(p => p.id === planeId) || planeId,
-            currentSketch: null, // TODO: Pass sketch object via state or lookup
-            tool: 'line', // Default tool
-        };
-    }, [planes, state.mode]);
+    const sketchMode: SketchModeState = useMemo(
+        () => computeSketchMode(state.mode, planes),
+        [planes, state.mode],
+    );
 
     const setSketchMode = useCallback((mode: SketchModeState) => {
-        if (mode.active) {
-            let planeId = '';
-            if (typeof mode.plane === 'string') {
-                planeId = mode.plane;
-            } else if (mode.plane && typeof mode.plane === 'object') {
-                planeId = mode.plane.id;
-                // Ensure this plane is in our planes list so we can resolve it later
-                addPlane(mode.plane);
-            }
-
-            if (!planeId) {
-                planeId = mode.currentSketch?.plane === 'face' ? 'face' : 'XY';
-            }
-
-            dispatch({ type: 'START_SKETCH', planeId, sketchId: mode.currentSketch?.id });
-        } else {
-            dispatch({ type: 'EXIT_SKETCH' });
-        }
+        dispatch(sketchModeToAction(mode, addPlane));
     }, [addPlane, dispatch]);
 
     const [sketches, setSketches] = useState<SketchData[]>([]);
@@ -169,7 +200,7 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const toggleVisibility = useCallback((id: string) => {
-        setHiddenIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+        setHiddenIds(prev => toggleIdInList(prev, id));
     }, []);
 
     const togglePlaneVisibility = useCallback((id: string) => {
@@ -177,7 +208,7 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
     }, [toggleVisibility]);
 
     const hideItem = useCallback((id: string) => {
-        setHiddenIds(prev => prev.includes(id) ? prev : [...prev, id]);
+        setHiddenIds(prev => addIdToList(prev, id));
     }, []);
 
     const showAll = useCallback(() => {

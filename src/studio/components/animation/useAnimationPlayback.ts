@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import type { AnimationViewMetadata } from '../../../shared/intent/animationViewRecord';
 import type { UpdateParamFn } from '../../hooks/useParamUpdate';
 import type { BakedTimeline, BakedCollision } from './bakeInterpolation';
@@ -151,71 +151,50 @@ export interface AnimationPlaybackState {
     toggle: () => void;
 }
 
-/**
- * Headless playback engine for Studio's Animation tab — BAKED client-side
- * playback.
- *
- * The old design sent one `POST /__kernelcad/params` per rAF tick: every
- * visible pose was a full kernel re-solve → SSE relower → client re-fetch of
- * ALL feature meshes → scene rebuild (200-400ms/pose; jerky). But a pose-only
- * timeline (mate-pose params on a solvedAssembly) never changes per-part
- * GEOMETRY — only per-part WORLD TRANSFORMS — so re-transferring identical
- * meshes every frame was the bug.
- *
- * New design:
- *   1. On first play/scrub, request the server bake ONCE
- *      (`POST /__kernelcad/animation-bake`) — per-part world matrices at every
- *      scheduled frame, no geometry. Cached by record identity + token.
- *   2. Playback runs rAF at full rate; each tick interpolates (slerp rotation,
- *      lerp position/scale) between bracketing baked frames and applies the
- *      result DIRECTLY to the existing viewport part groups via
- *      `applyPartTransform` — no kernel round-trip, smooth 60fps.
- *   3. Scrub takes the same path (instant).
- *
- * STATE COHERENCE: while animating client-side we do NOT touch the kernel
- * session. On PAUSE/STOP (and scrub) we send ONE final `updateParam` batch so
- * the kernel/session pose matches what the viewport displays — otherwise
- * Export / Validate would read the session's stale pre-playback pose and
- * disagree with the visible mechanism. This single trailing edit is the only
- * param write the player makes.
- *
- * Sampling of track READOUT values still goes through the shared
- * `sampleTrackAt` so the numbers match the offline MP4 capture bit-for-bit.
- */
-export function useAnimationPlayback(
-    opts: UseAnimationPlaybackOptions,
-): AnimationPlaybackState {
+interface PlaybackLoopState {
+    tMs: number;
+    isPlaying: boolean;
+    speed: PlaybackSpeed;
+    mode: PlaybackMode;
+    bakeState: BakeState;
+    setBakeState: Dispatch<SetStateAction<BakeState>>;
+    setBakeFrames: Dispatch<SetStateAction<number>>;
+    setBakeError: Dispatch<SetStateAction<string | null>>;
+    setCollisions: Dispatch<SetStateAction<readonly BakedCollision[]>>;
+    setTMs: Dispatch<SetStateAction<number>>;
+    setIsPlaying: Dispatch<SetStateAction<boolean>>;
+}
+
+interface PlaybackEngine {
+    metaRef: RefObject<AnimationViewMetadata | null>;
+    speedRef: RefObject<PlaybackSpeed>;
+    modeRef: RefObject<PlaybackMode>;
+    tMsRef: RefObject<number>;
+    clockRef: RefObject<PlaybackClock>;
+    mountedRef: RefObject<boolean>;
+    ensureBake: () => Promise<BakedTimeline | null>;
+    applyBakedAt: (at: number) => void;
+    syncKernelTo: (at: number) => void;
+}
+
+function usePlaybackEngine(opts: UseAnimationPlaybackOptions, state: PlaybackLoopState): PlaybackEngine {
     const {
         metadata,
         sessionToken,
         updateParam,
         applyPartTransform,
-        clearPartTransforms,
         setViewportDriverLock,
         bakeFetcher = fetchAnimationBake,
         staticBakeKey,
         clock = defaultClock,
         kernelEpoch = 0,
     } = opts;
+    const {
+        tMs, isPlaying, speed, mode, bakeState,
+        setBakeState, setBakeFrames, setBakeError, setCollisions,
+    } = state;
 
-    // The bake source is the live session OR a gallery static-bake key.
     const bakeSourceKey = sessionToken ?? staticBakeKey ?? null;
-
-    const durationMs = metadata?.durationMs ?? 0;
-    const fps = metadata?.fps ?? 30;
-    const name = metadata?.name ?? 'animation';
-    // Driving the viewport needs a bake source (live session OR gallery static
-    // bake) AND an apply path.
-    const canDrive = Boolean(bakeSourceKey) && applyPartTransform != null;
-
-    const [tMs, setTMs] = useState(0);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [mode, setMode] = useState<PlaybackMode>('loop');
-    const [speed, setSpeed] = useState<PlaybackSpeed>(1);
-    const [bakeState, setBakeState] = useState<BakeState>('idle');
-    const [bakeFrames, setBakeFrames] = useState(0);
-    const [bakeError, setBakeError] = useState<string | null>(null);
-    const [collisions, setCollisions] = useState<readonly BakedCollision[]>([]);
 
     const mountedRef = useRef(true);
     useEffect(() => {
@@ -288,7 +267,7 @@ export function useAnimationPlayback(
 
     const bakeKey = useMemo(() => bakeTimelineKey(metadata, bakeSourceKey), [metadata, bakeSourceKey]);
 
-    const invalidateBake = useCallback(() => resetBakeCache(bakeRef, bakeInFlightRef, setBakeState, setBakeFrames, setBakeError, setCollisions), []);
+    const invalidateBake = useCallback(() => resetBakeCache(bakeRef, bakeInFlightRef, setBakeState, setBakeFrames, setBakeError, setCollisions), [setBakeState, setBakeFrames, setBakeError, setCollisions]);
 
     // Invalidate the cached bake when the timeline identity changes (script
     // edit, new token).
@@ -322,7 +301,7 @@ export function useAnimationPlayback(
         token: sessionToken ?? staticBakeKey ?? null, bakeFetcherRef, bakeRef, bakeInFlightRef,
         settledSelfCreditsRef, mountedRef, applyRef, metaRef,
         setBakeState, setBakeError, setBakeFrames, setCollisions,
-    }), [sessionToken, staticBakeKey]);
+    }), [sessionToken, staticBakeKey, setBakeState, setBakeError, setBakeFrames, setCollisions]);
 
     // Sample every track at `at` → one param-edit batch (for the pause-sync
     // and the readout). Pure; no I/O.
@@ -339,6 +318,26 @@ export function useAnimationPlayback(
     const syncKernelTo = useCallback((at: number) => {
         syncKernelPose(updateRef, settledSelfCreditsRef, sampleBatch, at);
     }, [sampleBatch]);
+
+    return { metaRef, speedRef, modeRef, tMsRef, clockRef, mountedRef, ensureBake, applyBakedAt, syncKernelTo };
+}
+
+interface PlaybackTransportOptions {
+    state: PlaybackLoopState;
+    engine: PlaybackEngine;
+    clearPartTransforms?: () => void;
+}
+
+function usePlaybackTransport({
+    state,
+    engine,
+    clearPartTransforms,
+}: PlaybackTransportOptions): Pick<AnimationPlaybackState, 'play' | 'pause' | 'toggle' | 'scrubTo'> {
+    const { isPlaying, speed, mode, setTMs, setIsPlaying } = state;
+    const {
+        metaRef, speedRef, modeRef, tMsRef, mountedRef, clockRef,
+        ensureBake, applyBakedAt, syncKernelTo,
+    } = engine;
 
     // --- rAF clock (absolute wall-time anchoring) -----------------------------
     // The displayed time is a PURE FUNCTION of (now - anchorWall) — never a
@@ -363,11 +362,11 @@ export function useAnimationPlayback(
     // tMs = map(anchorTMs + (now - anchorWall) * speed).
     const reanchor = useCallback(() => {
         anchorPlaybackClock(clockRef, tMsRef, anchorWallRef, anchorTMsRef, maxElapsedRef);
-    }, []);
+    }, [clockRef, tMsRef]);
 
     const stopRaf = useCallback(() => {
         stopPlaybackRaf(clockRef, rafRef, genRef);
-    }, []);
+    }, [clockRef]);
 
     const tickRef = useRef<(nowMs: number) => void>(() => {});
     useEffect(() => {
@@ -376,18 +375,18 @@ export function useAnimationPlayback(
             genRef, anchorWallRef, anchorTMsRef, maxElapsedRef, tickRef,
             setTMs, setIsPlaying, stopRaf, applyBakedAt, syncKernelTo,
         });
-    }, [stopRaf, applyBakedAt, syncKernelTo]);
+    }, [stopRaf, applyBakedAt, syncKernelTo, mountedRef, metaRef, speedRef, modeRef, tMsRef, clockRef, setTMs, setIsPlaying]);
 
     const play = useCallback(() => {
         startPlayback(metaRef, modeRef, tMsRef, mountedRef, setTMs, setIsPlaying, ensureBake, applyBakedAt);
-    }, [ensureBake, applyBakedAt]);
+    }, [ensureBake, applyBakedAt, metaRef, modeRef, tMsRef, mountedRef, setTMs, setIsPlaying]);
 
     const pause = useCallback(() => {
         setIsPlaying(false);
         // State coherence: on pause, sync the kernel to the displayed pose so
         // Export/Validate agree with the viewport.
         syncKernelTo(tMsRef.current);
-    }, [syncKernelTo]);
+    }, [syncKernelTo, setIsPlaying, tMsRef]);
 
     const toggle = useCallback(() => {
         if (isPlaying) pause();
@@ -400,7 +399,7 @@ export function useAnimationPlayback(
     // chain carries a stale generation and bails on its next tick.
     useEffect(() => {
         drivePlaybackLoop(isPlaying, stopRaf, reanchor, clockRef, rafRef, tickRef);
-    }, [isPlaying, stopRaf, reanchor]);
+    }, [isPlaying, stopRaf, reanchor, clockRef]);
 
     // Re-anchor on speed or mode change so the displayed time stays continuous
     // (no jump) and the new rate/mode applies from the current pose forward.
@@ -420,7 +419,83 @@ export function useAnimationPlayback(
 
     const scrubTo = useCallback((to: number) => {
         scrubPlaybackTo(to, metaRef, tMsRef, mountedRef, setTMs, setIsPlaying, stopRaf, reanchor, ensureBake, applyBakedAt, syncKernelTo);
-    }, [ensureBake, applyBakedAt, syncKernelTo, stopRaf, reanchor]);
+    }, [ensureBake, applyBakedAt, syncKernelTo, stopRaf, reanchor, metaRef, tMsRef, mountedRef, setTMs, setIsPlaying]);
+
+    return { play, pause, toggle, scrubTo };
+}
+
+/**
+ * Headless playback engine for Studio's Animation tab — BAKED client-side
+ * playback.
+ *
+ * The old design sent one `POST /__kernelcad/params` per rAF tick: every
+ * visible pose was a full kernel re-solve → SSE relower → client re-fetch of
+ * ALL feature meshes → scene rebuild (200-400ms/pose; jerky). But a pose-only
+ * timeline (mate-pose params on a solvedAssembly) never changes per-part
+ * GEOMETRY — only per-part WORLD TRANSFORMS — so re-transferring identical
+ * meshes every frame was the bug.
+ *
+ * New design:
+ *   1. On first play/scrub, request the server bake ONCE
+ *      (`POST /__kernelcad/animation-bake`) — per-part world matrices at every
+ *      scheduled frame, no geometry. Cached by record identity + token.
+ *   2. Playback runs rAF at full rate; each tick interpolates (slerp rotation,
+ *      lerp position/scale) between bracketing baked frames and applies the
+ *      result DIRECTLY to the existing viewport part groups via
+ *      `applyPartTransform` — no kernel round-trip, smooth 60fps.
+ *   3. Scrub takes the same path (instant).
+ *
+ * STATE COHERENCE: while animating client-side we do NOT touch the kernel
+ * session. On PAUSE/STOP (and scrub) we send ONE final `updateParam` batch so
+ * the kernel/session pose matches what the viewport displays — otherwise
+ * Export / Validate would read the session's stale pre-playback pose and
+ * disagree with the visible mechanism. This single trailing edit is the only
+ * param write the player makes.
+ *
+ * Sampling of track READOUT values still goes through the shared
+ * `sampleTrackAt` so the numbers match the offline MP4 capture bit-for-bit.
+ */
+export function useAnimationPlayback(
+    opts: UseAnimationPlaybackOptions,
+): AnimationPlaybackState {
+    const {
+        metadata,
+        sessionToken,
+        applyPartTransform,
+        clearPartTransforms,
+        staticBakeKey,
+    } = opts;
+
+    // The bake source is the live session OR a gallery static-bake key.
+    const bakeSourceKey = sessionToken ?? staticBakeKey ?? null;
+
+    const durationMs = metadata?.durationMs ?? 0;
+    const fps = metadata?.fps ?? 30;
+    const name = metadata?.name ?? 'animation';
+    // Driving the viewport needs a bake source (live session OR gallery static
+    // bake) AND an apply path.
+    const canDrive = Boolean(bakeSourceKey) && applyPartTransform != null;
+
+    const [tMs, setTMs] = useState(0);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [mode, setMode] = useState<PlaybackMode>('loop');
+    const [speed, setSpeed] = useState<PlaybackSpeed>(1);
+    const [bakeState, setBakeState] = useState<BakeState>('idle');
+    const [bakeFrames, setBakeFrames] = useState(0);
+    const [bakeError, setBakeError] = useState<string | null>(null);
+    const [collisions, setCollisions] = useState<readonly BakedCollision[]>([]);
+
+    const loopState: PlaybackLoopState = {
+        tMs, isPlaying, speed, mode, bakeState,
+        setBakeState, setBakeFrames, setBakeError, setCollisions,
+        setTMs, setIsPlaying,
+    };
+    const engine = usePlaybackEngine(opts, loopState);
+    const { play, pause, toggle, scrubTo } = usePlaybackTransport({
+        state: loopState,
+        engine,
+        clearPartTransforms,
+    });
 
     const trackValues = useMemo<TrackReadout[]>(() => trackReadouts(metadata, tMs), [metadata, tMs]);
 

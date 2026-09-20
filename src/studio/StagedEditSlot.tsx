@@ -83,46 +83,58 @@ function PlaceholderBody() {
     );
 }
 
+function StagedEditSourceLabel({ edit }: { edit: StagedEdit }) {
+    const source = edit.source;
+    if (!source?.label) return null;
+
+    return (
+        <div className="min-w-0">
+            <span className="text-gray-500">Source:</span> {source.kind} · {source.label}
+        </div>
+    );
+}
+
+function StagedEditContextMeta({ context }: { context: NonNullable<StagedEdit['context']> }) {
+    const target = context.selectedFeatureId ?? null;
+    const workflow = context.repairWorkflow ?? null;
+
+    return (
+        <div className="flex min-w-0 flex-wrap gap-x-2 gap-y-1">
+            <span className="min-w-0">
+                <span className="text-gray-500">Target:</span> {target ?? 'whole model'}
+            </span>
+            {workflow != null && (
+                <span className="min-w-0">
+                    <span className="text-gray-500">Workflow:</span> {workflow.promptSource} repair
+                </span>
+            )}
+            {context.generationId && (
+                <span className="min-w-0">
+                    <span className="text-gray-500">Generation:</span> {context.generationId}
+                </span>
+            )}
+        </div>
+    );
+}
+
 function StagedEditContextDetails({ edit }: { edit: StagedEdit }) {
     const context = edit.context;
     if (context == null && edit.source?.label == null) return null;
 
     const prompt = context?.promptText.trim();
-    const target = context?.selectedFeatureId ?? null;
-    const workflow = context?.repairWorkflow ?? null;
 
     return (
         <div
             className="min-w-0 rounded border border-[#252a33] bg-[#111318] px-2 py-1.5 text-[10px] text-gray-400 space-y-1 break-words"
             data-testid="staged-edit-context"
         >
-            {edit.source?.label && (
-                <div className="min-w-0">
-                    <span className="text-gray-500">Source:</span> {edit.source.kind} · {edit.source.label}
-                </div>
-            )}
+            <StagedEditSourceLabel edit={edit} />
             {prompt && (
                 <div className="line-clamp-2 min-w-0" title={prompt}>
                     <span className="text-gray-500">Prompt:</span> {prompt}
                 </div>
             )}
-            {context != null && (
-                <div className="flex min-w-0 flex-wrap gap-x-2 gap-y-1">
-                    <span className="min-w-0">
-                        <span className="text-gray-500">Target:</span> {target ?? 'whole model'}
-                    </span>
-                    {workflow != null && (
-                        <span className="min-w-0">
-                            <span className="text-gray-500">Workflow:</span> {workflow.promptSource} repair
-                        </span>
-                    )}
-                    {context.generationId && (
-                        <span className="min-w-0">
-                            <span className="text-gray-500">Generation:</span> {context.generationId}
-                        </span>
-                    )}
-                </div>
-            )}
+            {context != null && <StagedEditContextMeta context={context} />}
         </div>
     );
 }

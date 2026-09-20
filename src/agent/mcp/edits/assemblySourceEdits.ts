@@ -180,17 +180,8 @@ export function addMateCouplingSource(input: AddMateCouplingSourceInput): Source
 export function addTransmissionSource(input: AddTransmissionSourceInput): SourceEditResult {
   const baseError = validateSourceBasics(input.code, input.assembly_binding);
   if (baseError) return baseError;
-  if (!isNonEmptyString(input.name)) return { ok: false, error: 'add_mate: name must be a non-empty string.' };
-  if (!isTransmissionKind(input.kind)) return { ok: false, error: `add_mate: unsupported kind '${String(input.kind)}'.` };
-  if (!isNonEmptyString(input.sourceMate)) return { ok: false, error: 'add_mate: sourceMate must be a non-empty string.' };
-  if (!isStringArray(input.drivenMates, true)) return { ok: false, error: 'add_mate: drivenMates must be a non-empty string array.' };
-  if (!isStringArray(input.path, true)) return { ok: false, error: 'add_mate: path must be a non-empty string array.' };
-  for (const field of ['actuator', 'input', 'output', 'notes'] as const) {
-    if (input[field] !== undefined && !isNonEmptyString(input[field])) {
-      return { ok: false, error: `add_mate: ${field} must be a non-empty string when provided.` };
-    }
-  }
-  if (input.ratio !== undefined && !Number.isFinite(input.ratio)) return { ok: false, error: 'add_mate: ratio must be finite when provided.' };
+  const fieldError = validateTransmissionRequiredFields(input) ?? validateTransmissionOptionalFields(input);
+  if (fieldError) return fieldError;
 
   return insertStatementBeforeLastTopLevelReturn(
     input.code,
@@ -206,6 +197,25 @@ export function addTransmissionSource(input: AddTransmissionSourceInput): Source
       ...(input.notes !== undefined ? { notes: input.notes } : {}),
     })});`,
   );
+}
+
+function validateTransmissionRequiredFields(input: AddTransmissionSourceInput): SourceEditResult | undefined {
+  if (!isNonEmptyString(input.name)) return { ok: false, error: 'add_mate: name must be a non-empty string.' };
+  if (!isTransmissionKind(input.kind)) return { ok: false, error: `add_mate: unsupported kind '${String(input.kind)}'.` };
+  if (!isNonEmptyString(input.sourceMate)) return { ok: false, error: 'add_mate: sourceMate must be a non-empty string.' };
+  if (!isStringArray(input.drivenMates, true)) return { ok: false, error: 'add_mate: drivenMates must be a non-empty string array.' };
+  if (!isStringArray(input.path, true)) return { ok: false, error: 'add_mate: path must be a non-empty string array.' };
+  return undefined;
+}
+
+function validateTransmissionOptionalFields(input: AddTransmissionSourceInput): SourceEditResult | undefined {
+  for (const field of ['actuator', 'input', 'output', 'notes'] as const) {
+    if (input[field] !== undefined && !isNonEmptyString(input[field])) {
+      return { ok: false, error: `add_mate: ${field} must be a non-empty string when provided.` };
+    }
+  }
+  if (input.ratio !== undefined && !Number.isFinite(input.ratio)) return { ok: false, error: 'add_mate: ratio must be finite when provided.' };
+  return undefined;
 }
 
 export function addWorkspaceTargetSource(input: AddWorkspaceTargetSourceInput): SourceEditResult {

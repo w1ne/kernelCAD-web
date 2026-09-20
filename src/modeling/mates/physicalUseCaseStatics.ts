@@ -143,96 +143,147 @@ interface SearchCandidate {
   readonly actuatorTorques: readonly PhysicalUseCaseStaticActuatorTorqueEvidence[];
 }
 
+interface StaticSearchState {
+  best:
+    | { poses: NumericPoses; forceResidualN: number; torqueResidualNmm: number; score: number }
+    | undefined;
+  bestActuator:
+    | {
+        poses: NumericPoses;
+        actuatorTorques: readonly PhysicalUseCaseStaticActuatorTorqueEvidence[];
+        violation: number;
+      }
+    | undefined;
+  equilibriumFound: boolean;
+}
+
 export async function reviewPhysicalUseCaseStatics(
   arm: Assembly,
   useCase: PhysicalUseCaseRecord,
   witnesses: readonly PhysicalUseCasePoseWitness[],
 ): Promise<PhysicalUseCaseStaticsResult> {
   if (witnesses.length === 0) {
-    return {
-      certificates: [],
-      issues: [{
-        kind: 'static-input-incomplete',
-        useCaseName: useCase.name,
-        message: 'No complete common-contact pose witness was provided for static review.',
-      }],
-    };
+    return staticInputIncomplete(
+      useCase.name,
+      'No complete common-contact pose witness was provided for static review.',
+    );
   }
 
-  let best: { poses: NumericPoses; forceResidualN: number; torqueResidualNmm: number; score: number } | undefined;
-  let bestActuator: {
-    poses: NumericPoses;
-    actuatorTorques: readonly PhysicalUseCaseStaticActuatorTorqueEvidence[];
-    violation: number;
-  } | undefined;
-  let equilibriumFound = false;
+  const state: StaticSearchState = { best: undefined, bestActuator: undefined, equilibriumFound: false };
   for (const witness of witnesses) {
-    const resolved = await resolveStaticSample(arm, useCase, witness);
-    if (typeof resolved === 'string') {
-      return {
-        certificates: [],
-        issues: [{ kind: 'static-input-incomplete', useCaseName: useCase.name, message: resolved }],
-      };
-    }
+    const result = await reviewStaticWitness(arm, useCase, witness, state);
+    if (result !== undefined) return result;
+  }
 
-    const contactCandidate = searchContactAllocation(resolved, false);
-    if (
-      best === undefined ||
-      contactCandidate.normalizedResidual < best.score
-    ) {
-      best = {
-        poses: { ...resolved.poses },
-        forceResidualN: contactCandidate.forceResidualN,
-        torqueResidualNmm: contactCandidate.torqueResidualNmm,
-        score: contactCandidate.normalizedResidual,
-      };
-    }
+  if (state.equilibriumFound) {
+    return staticActuatorTorqueIssue(useCase.name, state.bestActuator);
+  }
 
-    if (!isVerifiedContactCertificate(resolved, contactCandidate)) continue;
-    equilibriumFound = true;
-    const candidate = resolved.actuators.length === 0
-      ? contactCandidate
-      : searchContactAllocation(resolved, true);
-    const actuatorViolation = totalActuatorViolation(candidate.actuatorTorques);
-    if (bestActuator === undefined || actuatorViolation < bestActuator.violation) {
-      bestActuator = {
-        poses: { ...resolved.poses },
-        actuatorTorques: candidate.actuatorTorques,
-        violation: actuatorViolation,
-      };
-    }
-    if (!isVerifiedContactCertificate(resolved, candidate) || !areActuatorsWithinLimits(candidate)) continue;
-    return {
-      issues: [],
-      certificates: [{
-        useCaseName: useCase.name,
-        heldPart: resolved.heldPart,
-        poses: { ...resolved.poses },
-        forceResidualN: candidate.forceResidualN,
-        torqueResidualNmm: candidate.torqueResidualNmm,
-        contactForces: candidate.contactForces,
-        actuatorTorques: candidate.actuatorTorques,
-      }],
+  return staticEquilibriumIssue(useCase.name, state.best);
+}
+
+/** Resolves one witness and folds it into the running bests; returns a result
+ *  when the witness is incomplete or certifies an equilibrium, else undefined. */
+async function reviewStaticWitness(
+  arm: Assembly,
+  useCase: PhysicalUseCaseRecord,
+  witness: PhysicalUseCasePoseWitness,
+  state: StaticSearchState,
+): Promise<PhysicalUseCaseStaticsResult | undefined> {
+  const resolved = await resolveStaticSample(arm, useCase, witness);
+  if (typeof resolved === 'string') {
+    return staticInputIncomplete(useCase.name, resolved);
+  }
+
+  const contactCandidate = searchContactAllocation(resolved, false);
+  if (
+    state.best === undefined ||
+    contactCandidate.normalizedResidual < state.best.score
+  ) {
+    state.best = {
+      poses: { ...resolved.poses },
+      forceResidualN: contactCandidate.forceResidualN,
+      torqueResidualNmm: contactCandidate.torqueResidualNmm,
+      score: contactCandidate.normalizedResidual,
     };
   }
 
-  if (equilibriumFound) {
-    return {
-      certificates: [],
-      issues: [{
-        kind: 'static-actuator-torque-insufficient',
-        useCaseName: useCase.name,
-        ...(bestActuator === undefined ? {} : { bestPoses: bestActuator.poses }),
-        actuatorTorques: bestActuator?.actuatorTorques ?? [],
-      }],
+  if (!isVerifiedContactCertificate(resolved, contactCandidate)) return undefined;
+  state.equilibriumFound = true;
+  const candidate = resolved.actuators.length === 0
+    ? contactCandidate
+    : searchContactAllocation(resolved, true);
+  const actuatorViolation = totalActuatorViolation(candidate.actuatorTorques);
+  if (state.bestActuator === undefined || actuatorViolation < state.bestActuator.violation) {
+    state.bestActuator = {
+      poses: { ...resolved.poses },
+      actuatorTorques: candidate.actuatorTorques,
+      violation: actuatorViolation,
     };
   }
+  if (!isVerifiedContactCertificate(resolved, candidate) || !areActuatorsWithinLimits(candidate)) {
+    return undefined;
+  }
+  return staticCertificate(useCase, resolved, candidate);
+}
 
+function staticInputIncomplete(
+  useCaseName: string,
+  message: string,
+): PhysicalUseCaseStaticsResult {
+  return {
+    certificates: [],
+    issues: [{
+      kind: 'static-input-incomplete',
+      useCaseName,
+      message,
+    }],
+  };
+}
+
+function staticCertificate(
+  useCase: PhysicalUseCaseRecord,
+  resolved: ResolvedStaticSample,
+  candidate: SearchCandidate,
+): PhysicalUseCaseStaticsResult {
+  return {
+    issues: [],
+    certificates: [{
+      useCaseName: useCase.name,
+      heldPart: resolved.heldPart,
+      poses: { ...resolved.poses },
+      forceResidualN: candidate.forceResidualN,
+      torqueResidualNmm: candidate.torqueResidualNmm,
+      contactForces: candidate.contactForces,
+      actuatorTorques: candidate.actuatorTorques,
+    }],
+  };
+}
+
+function staticActuatorTorqueIssue(
+  useCaseName: string,
+  bestActuator: StaticSearchState['bestActuator'],
+): PhysicalUseCaseStaticsResult {
+  return {
+    certificates: [],
+    issues: [{
+      kind: 'static-actuator-torque-insufficient',
+      useCaseName,
+      ...(bestActuator === undefined ? {} : { bestPoses: bestActuator.poses }),
+      actuatorTorques: bestActuator?.actuatorTorques ?? [],
+    }],
+  };
+}
+
+function staticEquilibriumIssue(
+  useCaseName: string,
+  best: StaticSearchState['best'],
+): PhysicalUseCaseStaticsResult {
   return {
     certificates: [],
     issues: [{
       kind: 'static-equilibrium-unmet',
-      useCaseName: useCase.name,
+      useCaseName,
       ...(best === undefined ? {} : {
         bestPoses: best.poses,
         bestForceResidualN: best.forceResidualN,

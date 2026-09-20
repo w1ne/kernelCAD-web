@@ -45,10 +45,35 @@ export interface ParamProfile {
  * Returns undefined for any other outline.
  */
 export function rectilinearCorners(prims: ProfilePrim[], angleTol: number, posTol: number): Corner[] | undefined {
+  const lines = collectAxisLines(prims, angleTol);
+  if (lines === undefined) return undefined;
+  const corners: Corner[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    const corner = cornerAt(lines, i, posTol);
+    if (corner === undefined) return undefined;
+    corners.push(corner);
+  }
+  return corners;
+}
+
+/** One axis-aligned edge, with the tangent arc that precedes it (if any). */
+interface AxisLine {
+  a: V2;
+  b: V2;
+  dir: V2;
+  arcBefore?: Extract<ProfilePrim, { kind: 'arc' }>;
+}
+
+/**
+ * Rotate the chain to start at its first line, then read every primitive as an
+ * axis-aligned edge. Undefined when the chain has no line, two arcs in a row,
+ * a degenerate/slanted line, or fewer than four edges.
+ */
+function collectAxisLines(prims: ProfilePrim[], angleTol: number): AxisLine[] | undefined {
   const firstLine = prims.findIndex((p) => p.kind === 'line');
   if (firstLine < 0) return undefined;
   const seq = [...prims.slice(firstLine), ...prims.slice(0, firstLine)];
-  const lines: Array<{ a: V2; b: V2; dir: V2; arcBefore?: Extract<ProfilePrim, { kind: 'arc' }> }> = [];
+  const lines: AxisLine[] = [];
   let pendingArc: Extract<ProfilePrim, { kind: 'arc' }> | undefined;
   for (const p of seq) {
     if (p.kind === 'arc') {
@@ -68,32 +93,33 @@ export function rectilinearCorners(prims: ProfilePrim[], angleTol: number, posTo
   }
   if (lines.length < 4) return undefined;
   if (pendingArc) lines[0].arcBefore = pendingArc;
-  const corners: Corner[] = [];
-  for (let i = 0; i < lines.length; i++) {
-    const prev = lines[(i - 1 + lines.length) % lines.length];
-    const cur = lines[i];
-    // Consecutive edges must turn by a right angle.
-    if (Math.abs(prev.dir[0] * cur.dir[0] + prev.dir[1] * cur.dir[1]) > 1e-9) return undefined;
-    // The vertical edge fixes x, the horizontal one fixes y.
-    const vertical = prev.dir[0] === 0 ? prev : cur;
-    const horizontal = prev.dir[0] === 0 ? cur : prev;
-    const x = (vertical.a[0] + vertical.b[0]) / 2;
-    const y = (horizontal.a[1] + horizontal.b[1]) / 2;
-    let r = 0;
-    if (cur.arcBefore) {
-      r = cur.arcBefore.r;
-      // Centre one radius in from both edges, on the inside of the turn.
-      const cx = x + r * (cur.dir[0] - prev.dir[0]);
-      const cy = y + r * (cur.dir[1] - prev.dir[1]);
-      if (Math.hypot(cur.arcBefore.c[0] - cx, cur.arcBefore.c[1] - cy) > posTol) return undefined;
-      // A tangent round starts r before the corner and ends r after it.
-      const startOk = Math.hypot(cur.arcBefore.a[0] - (x - prev.dir[0] * r), cur.arcBefore.a[1] - (y - prev.dir[1] * r)) <= posTol;
-      const endOk = Math.hypot(cur.arcBefore.b[0] - (x + cur.dir[0] * r), cur.arcBefore.b[1] - (y + cur.dir[1] * r)) <= posTol;
-      if (!startOk || !endOk) return undefined;
-    }
-    corners.push({ x, y, r, inDir: prev.dir, outDir: cur.dir });
+  return lines;
+}
+
+/** The corner at edge `i`, or undefined when the turn or its arc is not rectilinear. */
+function cornerAt(lines: AxisLine[], i: number, posTol: number): Corner | undefined {
+  const prev = lines[(i - 1 + lines.length) % lines.length];
+  const cur = lines[i];
+  // Consecutive edges must turn by a right angle.
+  if (Math.abs(prev.dir[0] * cur.dir[0] + prev.dir[1] * cur.dir[1]) > 1e-9) return undefined;
+  // The vertical edge fixes x, the horizontal one fixes y.
+  const vertical = prev.dir[0] === 0 ? prev : cur;
+  const horizontal = prev.dir[0] === 0 ? cur : prev;
+  const x = (vertical.a[0] + vertical.b[0]) / 2;
+  const y = (horizontal.a[1] + horizontal.b[1]) / 2;
+  let r = 0;
+  if (cur.arcBefore) {
+    r = cur.arcBefore.r;
+    // Centre one radius in from both edges, on the inside of the turn.
+    const cx = x + r * (cur.dir[0] - prev.dir[0]);
+    const cy = y + r * (cur.dir[1] - prev.dir[1]);
+    if (Math.hypot(cur.arcBefore.c[0] - cx, cur.arcBefore.c[1] - cy) > posTol) return undefined;
+    // A tangent round starts r before the corner and ends r after it.
+    const startOk = Math.hypot(cur.arcBefore.a[0] - (x - prev.dir[0] * r), cur.arcBefore.a[1] - (y - prev.dir[1] * r)) <= posTol;
+    const endOk = Math.hypot(cur.arcBefore.b[0] - (x + cur.dir[0] * r), cur.arcBefore.b[1] - (y + cur.dir[1] * r)) <= posTol;
+    if (!startOk || !endOk) return undefined;
   }
-  return corners;
+  return { x, y, r, inDir: prev.dir, outDir: cur.dir };
 }
 
 export type AddParam = (name: string, value: number, measured: number, description: string) => string;

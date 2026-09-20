@@ -19,24 +19,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/cli/commands/evaluate.ts",
-    "symbol": "Async function 'evaluateWithEnvelope'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/cli/commands/export.ts",
-    "symbol": "Async function 'trustedManifestPath'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/drawing/geometry2d.ts",
-    "symbol": "Function 'splitAtJunctions'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/drawing/reconstructPhases.ts",
     "symbol": "Function 'applyRadialCallouts'",
     "value": 16
@@ -49,63 +31,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/drawing/reconstructSolver.ts",
-    "symbol": "Function 'levelNamer'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/drawing/sheet.ts",
-    "symbol": "Function 'readTitleBlock'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/edits/addPathSpline.ts",
-    "symbol": "Function 'addPathSpline'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/edits/addPathSpline.ts",
-    "symbol": "Function 'consumeLexicalContext'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/edits/assemblySourceEdits.ts",
-    "symbol": "Function 'addTransmissionSource'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/edits/setParamValue.ts",
-    "symbol": "Function 'scanArgEnd'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/edits/shapeDraft.ts",
-    "symbol": "Function 'shapeDraftEdit'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/tools/captureAnimation.ts",
-    "symbol": "Async function 'captureAnimationTool'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/diffGeometry.ts",
     "symbol": "Async function 'diffGeometryTool'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/tools/diffGeometry.ts",
-    "symbol": "Async function 'evaluateSide'",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -133,21 +61,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/repairScript.ts",
-    "symbol": "Async function 'repairScriptTool'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/reviewPaint.ts",
     "symbol": "Async function 'reviewPaintPeekLatestTool'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/tools/solveMates.ts",
-    "symbol": "Async function 'solveMatesTool'",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -157,51 +73,15 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/emit.ts",
-    "symbol": "Function 'emitOp'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/planPhases/ops.ts",
     "symbol": "Function 'emitCutoutOps'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/planPhases/runs.ts",
-    "symbol": "Function 'decomposeRun'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/reconstruct/profileFit.ts",
-    "symbol": "Function 'fitGuidedLoop'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/reconstruct/profileParams.ts",
-    "symbol": "Function 'rectilinearCorners'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/reconstruct/reconstruct.ts",
-    "symbol": "Async function 'reconstructFromSoup'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/segment.ts",
     "symbol": "Function 'adoptFragments'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/repair/candidates.ts",
-    "symbol": "Function 'recentreEmbossAnchor'",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -217,33 +97,15 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/drawingAnnotations.ts",
-    "symbol": "Arrow function",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/drawingAuto/placePhases.ts",
     "symbol": "Function 'placeRadiusAndChamferNotes'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/drawingFeatures.ts",
-    "symbol": "Function 'recogniseChamfers'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/edgeSelection.ts",
     "symbol": "Function 'resolveEdgesRef'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/backends/occt/meshing.ts",
-    "symbol": "Function 'meshFaceToGeometry'",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -277,57 +139,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/import/importSvgParsing.ts",
-    "symbol": "Function 'parseTransform'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/naming/queryEvaluator.ts",
-    "symbol": "Function 'evalAst'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/apiSurfaceMethods.ts",
-    "symbol": "Method 'variableSweep'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/backends/occt/lowerers/assembly.ts",
-    "symbol": "Function 'lowerAssemblyModel'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/backends/occt/lowerers/edgeFeatures.ts",
-    "symbol": "Function 'applyVariableEdgeFeature'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/backends/occt/projectCurveLowerer.ts",
     "symbol": "Async function 'lowerProjectCurve'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/backends/occt/variableSweepLowerer.ts",
-    "symbol": "Function 'lowerVariableSweep'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/assemblyMateCapacity.ts",
-    "symbol": "Function 'validateMateCapacityOptions'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/assemblyParts.ts",
-    "symbol": "Function 'recordSubAssembly'",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -373,21 +187,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/virtualFeatureRecords.ts",
-    "symbol": "Function 'buildRenderEnvironmentFeatureSpec'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/compute/recomputeEngine.ts",
     "symbol": "Async method 'lowerAndEmit'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/export/sdformat/sdfSerializer.ts",
-    "symbol": "Function 'urdfInertialToSdf'",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -397,33 +199,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/jointAxisBinding.ts",
-    "symbol": "Async function 'validateJointAxisBindingWithCache'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/jointTopology.ts",
-    "symbol": "Function 'reviewJointTopology'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/jointVisualExposure.ts",
-    "symbol": "Async function 'validateJointVisualExposure'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/matePhysicalRealization.ts",
     "symbol": "Async function 'validateMatePhysicalRealization'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/matePhysicalRealization.ts",
-    "symbol": "Function 'analyzeMate'",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -446,12 +224,6 @@
   {
     "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseStatics.ts",
-    "symbol": "Async function 'reviewPhysicalUseCaseStatics'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseStatics.ts",
     "symbol": "Function 'validateActuatorLimit'",
     "value": 16
   },
@@ -460,12 +232,6 @@
     "file": "src/modeling/mates/physicalUseCaseStaticsPhases.ts",
     "symbol": "Function 'resolveStaticLoads'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/poseEnvelope.ts",
-    "symbol": "Async function 'reviewPoseEnvelope'",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -484,12 +250,6 @@
     "file": "src/modeling/mates/solver.ts",
     "symbol": "Function 'mateFk'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/runtime/dfm/fdmOrientation.ts",
-    "symbol": "Function 'anchoredChord'",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -517,86 +277,8 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/runtime/meshDeviation.ts",
-    "symbol": "Method 'nearestSq'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/server/middleware/sourceEndpoint.ts",
     "symbol": "Async function 'sourceHandler'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/shared/codeGeneration/stripTypeScript.ts",
-    "symbol": "Arrow function",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/shared/codeGeneration/stripTypeScript.ts",
-    "symbol": "Arrow function#2",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/shared/codeGeneration/stripTypeScript.ts",
-    "symbol": "Arrow function#3",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/shared/codeGeneration/stripTypeScript.ts",
-    "symbol": "Arrow function#4",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/shared/intent/embossTextRecord.ts",
-    "symbol": "Function 'isEmbossTextMetadata'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/shared/runtime/resolveParams.ts",
-    "symbol": "Function 'walkResolve'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/shared/worker/geometryHelpers.ts",
-    "symbol": "Arrow function",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/StagedEditSlot.tsx",
-    "symbol": "Function 'StagedEditContextDetails'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/components/Layout/StatusBar.tsx",
-    "symbol": "Function 'StatusBar'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/components/inputs/useNumericScrub.ts",
-    "symbol": "Function 'useNumericScrub'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/components/viewer/directEditTarget.ts",
-    "symbol": "Function 'mateGraphDrivesPart'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/hooks/viewer/useDirectEditDrag.ts",
-    "symbol": "Async arrow function",
     "value": 16
   },
   {
@@ -604,12 +286,6 @@
     "file": "src/agent/cli/commands/render.ts",
     "symbol": "Function 'renderCommand'",
     "value": 133
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/agent/mcp/tools/repairScript.ts",
-    "symbol": "Async function 'repairScriptTool'",
-    "value": 136
   },
   {
     "rule": "max-lines-per-function",
@@ -634,12 +310,6 @@
     "file": "src/funnel/components/GallerySection.tsx",
     "symbol": "Function 'GallerySection'",
     "value": 116
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/drawingAnnotations.ts",
-    "symbol": "Function 'renderAnnotations'",
-    "value": 118
   },
   {
     "rule": "max-lines-per-function",
@@ -691,12 +361,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/apiSurfaceMethods.ts",
-    "symbol": "Function 'makeSweepMethods'",
-    "value": 117
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/modeling/backends/occt/sheetMetalLowerer.ts",
     "symbol": "Function 'lowerSheetMetalBend'",
     "value": 127
@@ -745,12 +409,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/server/sessionPool.ts",
-    "symbol": "Function 'createSessionPool'",
-    "value": 144
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/StudioShell.tsx",
     "symbol": "Function 'StudioShell'",
     "value": 140
@@ -760,12 +418,6 @@
     "file": "src/studio/Toolbar.tsx",
     "symbol": "Function 'Toolbar'",
     "value": 121
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/components/Dialogs/ProjectManagerDialog.tsx",
-    "symbol": "Function 'ProjectManagerDialog'",
-    "value": 142
   },
   {
     "rule": "max-lines-per-function",
@@ -790,12 +442,6 @@
     "file": "src/studio/components/Viewer.tsx",
     "symbol": "Function 'Viewer'",
     "value": 123
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/components/animation/useAnimationPlayback.ts",
-    "symbol": "Function 'useAnimationPlayback'",
-    "value": 142
   },
   {
     "rule": "max-lines-per-function",
@@ -829,12 +475,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/viewer/controllers/CameraHandler.tsx",
-    "symbol": "Function 'CameraHandler'",
-    "value": 144
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/viewer/layers/ParametricLayer.tsx",
     "symbol": "Function 'ParametricLayer'",
     "value": 106
@@ -865,12 +505,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/context/SelectionContext.tsx",
-    "symbol": "Function 'SelectionProvider'",
-    "value": 142
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/context/geometry/useRelowerSubscription.ts",
     "symbol": "Function 'useRelowerSubscription'",
     "value": 102
@@ -895,12 +529,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/hooks/viewer/useDirectEditDrag.ts",
-    "symbol": "Function 'useDirectEditDrag'",
-    "value": 101
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/routes/-ServerRevisionHistory.tsx",
     "symbol": "Function 'ServerRevisionHistory'",
     "value": 102
@@ -910,12 +538,6 @@
     "file": "src/studio/routes/-useProjectLiveUpdates.ts",
     "symbol": "Function 'useProjectLiveUpdates'",
     "value": 103
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/routes/billing.tsx",
-    "symbol": "Function 'BillingPage'",
-    "value": 144
   },
   {
     "rule": "max-lines-per-function",

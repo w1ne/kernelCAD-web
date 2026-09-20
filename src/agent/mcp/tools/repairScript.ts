@@ -17,7 +17,7 @@
 
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES } from '../../../shared/diagnostics/registry';
-import { analyzeScript, planRepair, selectDiagnostic } from '../../repair/analyze';
+import { analyzeScript, planRepair, selectDiagnostic, type RepairPlan } from '../../repair/analyze';
 import { applyRepairPatch, formatPatchDiff } from '../../repair/applyPatch';
 import type {
   CandidateStatus,
@@ -126,15 +126,19 @@ export async function repairScriptTool(input: RepairScriptInput): Promise<Repair
     ...(plan.diagnostic.featureId !== undefined ? { featureId: plan.diagnostic.featureId } : {}),
     message: plan.diagnostic.message,
   };
+  const base = {
+    strategy,
+    target,
+    repairRegion: plan.repairRegion,
+    candidates: plan.candidates,
+    candidateStatus: plan.candidateStatus,
+  };
 
   if (plan.candidateStatus === 'no-automatic-candidate') {
     return {
       ok: false,
-      strategy,
-      target,
-      repairRegion: plan.repairRegion,
+      ...base,
       candidates: [],
-      candidateStatus: plan.candidateStatus,
       ...(plan.reason !== undefined ? { candidateReason: plan.reason } : {}),
       attempts: [],
       diagnostics: [noCandidateDiagnostic(plan.diagnostic, plan.reason)],
@@ -148,11 +152,7 @@ export async function repairScriptTool(input: RepairScriptInput): Promise<Repair
   if (strategy === 'dry-run') {
     return {
       ok: true,
-      strategy,
-      target,
-      repairRegion: plan.repairRegion,
-      candidates: plan.candidates,
-      candidateStatus: plan.candidateStatus,
+      ...base,
       attempts: [],
       diff: plan.candidates.map(c => formatPatchDiff(c.patch)).join('\n'),
     };
@@ -165,53 +165,19 @@ export async function repairScriptTool(input: RepairScriptInput): Promise<Repair
 
   const attempts: RepairAttempt[] = [];
   for (const candidate of attemptable) {
-    const applied = applyRepairPatch(analysis.source, candidate.patch, plan.repairRegion);
-    if (!applied.ok) {
-      attempts.push({
-        candidateId: candidate.id,
-        applied: false,
-        accepted: false,
-        diagnostic: applied.diagnostic,
-      });
-      continue;
-    }
+    const outcome = await evaluateCandidate(analysis.source, candidate, plan, beforeErrorCodes);
+    attempts.push(outcome.attempt);
 
-    const after = await snapshot(applied.new_code);
-    const cleared = !after.diagnostics.some(
-      d => d.code === plan.diagnostic.code && d.featureId === plan.diagnostic.featureId,
-    );
-    const newErrorCodes = [
-      ...new Set(
-        after.diagnostics
-          .filter(d => d.severity === 'error' && !beforeErrorCodes.has(d.code))
-          .map(d => d.code),
-      ),
-    ];
-    const accepted = cleared && newErrorCodes.length === 0;
-
-    attempts.push({
-      candidateId: candidate.id,
-      applied: true,
-      ok: after.ok,
-      clearedDiagnostic: cleared,
-      newErrorCodes,
-      accepted,
-    });
-
-    if (accepted) {
+    if (outcome.accepted) {
       return {
         ok: true,
-        strategy,
-        target,
-        repairRegion: plan.repairRegion,
-        candidates: plan.candidates,
-        candidateStatus: plan.candidateStatus,
+        ...base,
         attempts,
         applied: candidate.id,
-        new_code: applied.new_code,
+        new_code: outcome.newCode,
         diff: formatPatchDiff(candidate.patch),
         before,
-        after,
+        after: outcome.after,
       };
     }
     // `apply-first` is a single-shot contract: report what the top candidate
@@ -219,16 +185,12 @@ export async function repairScriptTool(input: RepairScriptInput): Promise<Repair
     if (strategy === 'apply-first') {
       return {
         ok: false,
-        strategy,
-        target,
-        repairRegion: plan.repairRegion,
-        candidates: plan.candidates,
-        candidateStatus: plan.candidateStatus,
+        ...base,
         attempts,
-        new_code: applied.new_code,
+        new_code: outcome.newCode,
         diff: formatPatchDiff(candidate.patch),
         before,
-        after,
+        after: outcome.after,
         diagnostics: [exhaustedDiagnostic(plan.diagnostic, attempts.length)],
       };
     }
@@ -236,14 +198,66 @@ export async function repairScriptTool(input: RepairScriptInput): Promise<Repair
 
   return {
     ok: false,
-    strategy,
-    target,
-    repairRegion: plan.repairRegion,
-    candidates: plan.candidates,
-    candidateStatus: plan.candidateStatus,
+    ...base,
     attempts,
     before,
     diagnostics: [exhaustedDiagnostic(plan.diagnostic, attempts.length)],
+  };
+}
+
+interface CandidateOutcome {
+  attempt: RepairAttempt;
+  accepted: boolean;
+  /** Evaluation verdict after the patch; absent when the patch was refused. */
+  after?: RepairHealthSnapshot;
+  /** Patched source; absent when the patch was refused. */
+  newCode?: string;
+}
+
+async function evaluateCandidate(
+  source: string,
+  candidate: RepairCandidate,
+  plan: RepairPlan,
+  beforeErrorCodes: Set<string>,
+): Promise<CandidateOutcome> {
+  const applied = applyRepairPatch(source, candidate.patch, plan.repairRegion);
+  if (!applied.ok) {
+    return {
+      attempt: {
+        candidateId: candidate.id,
+        applied: false,
+        accepted: false,
+        diagnostic: applied.diagnostic,
+      },
+      accepted: false,
+    };
+  }
+
+  const after = await snapshot(applied.new_code);
+  const cleared = !after.diagnostics.some(
+    d => d.code === plan.diagnostic.code && d.featureId === plan.diagnostic.featureId,
+  );
+  const newErrorCodes = [
+    ...new Set(
+      after.diagnostics
+        .filter(d => d.severity === 'error' && !beforeErrorCodes.has(d.code))
+        .map(d => d.code),
+    ),
+  ];
+  const accepted = cleared && newErrorCodes.length === 0;
+
+  return {
+    attempt: {
+      candidateId: candidate.id,
+      applied: true,
+      ok: after.ok,
+      clearedDiagnostic: cleared,
+      newErrorCodes,
+      accepted,
+    },
+    accepted,
+    after,
+    newCode: applied.new_code,
   };
 }
 

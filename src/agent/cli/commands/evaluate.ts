@@ -349,8 +349,38 @@ export interface EvaluateWithEnvelopeResult {
 export async function evaluateWithEnvelope(
   input: EvaluateWithEnvelopeInput,
 ): Promise<EvaluateWithEnvelopeResult> {
-  // Misuse check first — agent supplies sampling flags without enabling the
-  // gate. Fail fast and tell the user how to enable it. No script run.
+  const misuse = envelopeMisuse(input);
+  if (misuse !== undefined) return misuse;
+
+  const built = await evaluateAndBuildScript({ file: input.file, code: input.code });
+  const { evaluation, model } = built;
+  const trace = input.trace === true ? traceOfBuiltModel(model, input.file) : undefined;
+
+  if (!input.envelope) return evaluationResult(evaluation, trace);
+
+  // Don't run envelope on a broken script — surface the underlying failure.
+  // The `!model` case shouldn't happen for exitCode 0, but be defensive.
+  if (evaluation.exitCode !== 0 || !model) return envelopeResult(evaluation, evaluation.exitCode);
+
+  const assemblies = Array.from(model.session.assemblies.values()) as Assembly[];
+  if (assemblies.length === 0) return envelopeResult(evaluation, 0);
+
+  const { envelopeDiagnostics, envelopeSampleCount } = await reviewAssemblies(assemblies, input);
+
+  const hasError = envelopeDiagnostics.some((d) => d.severity === 'error');
+  return {
+    exitCode: hasError ? 2 : 0,
+    featureCount: evaluation.featureCount,
+    diagnostics: evaluation.diagnostics,
+    envelopeDiagnostics,
+    envelopeSampleCount,
+    ...(trace !== undefined ? { trace } : {}),
+  };
+}
+
+/** Misuse check first — agent supplies sampling flags without enabling the
+ *  gate. Fail fast and tell the user how to enable it. No script run. */
+function envelopeMisuse(input: EvaluateWithEnvelopeInput): EvaluateWithEnvelopeResult | undefined {
   if (!input.envelope) {
     if (input.samplesPerMate !== undefined) {
       return {
@@ -381,53 +411,35 @@ export async function evaluateWithEnvelope(
         `--samples-per-mate must be an integer ≥ 1; got ${input.samplesPerMate}.`,
     };
   }
+  return undefined;
+}
 
-  const built = await evaluateAndBuildScript({ file: input.file, code: input.code });
-  const { evaluation, model } = built;
-  const trace = input.trace === true ? traceOfBuiltModel(model, input.file) : undefined;
+function evaluationResult(
+  evaluation: EvaluateResult,
+  trace: FeatureTraceEntry[] | undefined,
+): EvaluateWithEnvelopeResult {
+  return {
+    exitCode: evaluation.exitCode,
+    featureCount: evaluation.featureCount,
+    diagnostics: evaluation.diagnostics,
+    ...(trace !== undefined ? { trace } : {}),
+  };
+}
 
-  if (!input.envelope) {
-    return {
-      exitCode: evaluation.exitCode,
-      featureCount: evaluation.featureCount,
-      diagnostics: evaluation.diagnostics,
-      ...(trace !== undefined ? { trace } : {}),
-    };
-  }
+function envelopeResult(evaluation: EvaluateResult, exitCode: number): EvaluateWithEnvelopeResult {
+  return {
+    exitCode,
+    featureCount: evaluation.featureCount,
+    diagnostics: evaluation.diagnostics,
+    envelopeDiagnostics: [],
+    envelopeSampleCount: 0,
+  };
+}
 
-  if (evaluation.exitCode !== 0) {
-    // Don't run envelope on a broken script — surface the underlying failure.
-    return {
-      exitCode: evaluation.exitCode,
-      featureCount: evaluation.featureCount,
-      diagnostics: evaluation.diagnostics,
-      envelopeDiagnostics: [],
-      envelopeSampleCount: 0,
-    };
-  }
-
-  if (!model) {
-    // Shouldn't happen for exitCode 0, but be defensive.
-    return {
-      exitCode: evaluation.exitCode,
-      featureCount: evaluation.featureCount,
-      diagnostics: evaluation.diagnostics,
-      envelopeDiagnostics: [],
-      envelopeSampleCount: 0,
-    };
-  }
-
-  const assemblies = Array.from(model.session.assemblies.values()) as Assembly[];
-  if (assemblies.length === 0) {
-    return {
-      exitCode: 0,
-      featureCount: evaluation.featureCount,
-      diagnostics: evaluation.diagnostics,
-      envelopeDiagnostics: [],
-      envelopeSampleCount: 0,
-    };
-  }
-
+async function reviewAssemblies(
+  assemblies: readonly Assembly[],
+  input: EvaluateWithEnvelopeInput,
+): Promise<{ envelopeDiagnostics: PoseEnvelopeDiagnostic[]; envelopeSampleCount: number }> {
   const reviewOpts: { samplesPerMate?: number; combinatorial?: boolean; includeInterference: true } = {
     includeInterference: true,
   };
@@ -441,16 +453,7 @@ export async function evaluateWithEnvelope(
     envelopeDiagnostics.push(...review.diagnostics);
     envelopeSampleCount += review.samples.length;
   }
-
-  const hasError = envelopeDiagnostics.some((d) => d.severity === 'error');
-  return {
-    exitCode: hasError ? 2 : 0,
-    featureCount: evaluation.featureCount,
-    diagnostics: evaluation.diagnostics,
-    envelopeDiagnostics,
-    envelopeSampleCount,
-    ...(trace !== undefined ? { trace } : {}),
-  };
+  return { envelopeDiagnostics, envelopeSampleCount };
 }
 
 /**

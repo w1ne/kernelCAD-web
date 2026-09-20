@@ -29,6 +29,90 @@ function planLabel(plan: MyPlan): string {
   return plan.tier === 'pro' ? 'Pro plan' : 'Standard plan';
 }
 
+/** Top navigation for the billing page. */
+function BillingNav({ email }: { email: string | undefined }) {
+  return (
+    <header className="border-b border-rule px-6 py-3 flex items-center justify-between bg-vellum">
+      <a href="/" className="flex items-center gap-2 font-serif text-base font-medium no-underline text-ink">
+        <svg className="w-4 h-4 text-ink" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
+          <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
+        </svg>
+        <span>kernel<span className="text-blueprint">CAD</span></span>
+      </a>
+      <div className="flex items-center gap-4">
+        <a href="/me" className="font-mono text-xs text-ink-soft hover:text-ink tracking-wide no-underline">
+          Your projects
+        </a>
+        <span className="font-mono text-xs text-ink-soft tracking-wide hidden sm:inline">{email}</span>
+        <button
+          type="button"
+          onClick={() => {
+            // onAuthStateChange clears the session; the !session effect above
+            // then redirects to /signin.
+            void getSupabase().auth.signOut();
+          }}
+          className="rounded-md border border-rule px-3 py-1.5 font-mono text-xs tracking-wide text-ink-soft hover:border-ink hover:text-ink transition-colors"
+        >
+          Sign out
+        </button>
+      </div>
+    </header>
+  );
+}
+
+/** Checkout result banners shown after returning from Stripe. */
+function CheckoutBanners({ checkout, onDismiss }: { checkout: CheckoutStatus; onDismiss: () => void }) {
+  return (
+    <>
+      {checkout === 'success' && (
+        <div role="status" className="mb-6 rounded-lg border border-blueprint bg-vellum-soft p-4 text-ink relative">
+          <button type="button" onClick={onDismiss} aria-label="Dismiss" className="absolute top-3 right-3 text-ink-faint hover:text-ink font-mono text-sm leading-none">×</button>
+          <p className="font-serif font-medium">You're on Pro</p>
+          <p className="text-sm text-ink-soft mt-1">Subscription active — generate as much as you like.</p>
+        </div>
+      )}
+      {checkout === 'cancel' && (
+        <div role="status" className="mb-6 rounded-lg border border-rule bg-vellum-soft p-4 text-ink relative">
+          <button type="button" onClick={onDismiss} aria-label="Dismiss" className="absolute top-3 right-3 text-ink-faint hover:text-ink font-mono text-sm leading-none">×</button>
+          <p className="font-serif font-medium">Checkout cancelled</p>
+          <p className="text-sm text-ink-soft mt-1">No charge was made. You can upgrade any time from this page.</p>
+        </div>
+      )}
+    </>
+  );
+}
+
+/** Usage detail table for the current billing period. */
+function UsageSummary({ plan, isPro }: { plan: MyPlan; isPro: boolean }) {
+  return (
+    <section aria-label="Usage" className="mt-6 rounded-xl border border-rule bg-white p-5">
+      <h2 className="font-serif text-lg font-medium text-ink">This period</h2>
+      <dl className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <dt className="font-mono text-[11px] text-ink-faint tracking-wide uppercase">Plan</dt>
+          <dd className="text-ink mt-1">{planLabel(plan)}</dd>
+        </div>
+        <div>
+          <dt className="font-mono text-[11px] text-ink-faint tracking-wide uppercase">Generations</dt>
+          <dd className="text-ink mt-1">
+            {isPro ? 'Unlimited' : `${plan.generationsRemaining} remaining`}
+          </dd>
+        </div>
+        <div>
+          <dt className="font-mono text-[11px] text-ink-faint tracking-wide uppercase">
+            {isPro ? 'Renews' : 'Resets'}
+          </dt>
+          <dd className="text-ink mt-1">
+            {plan.currentPeriodEnd
+              ? new Date(plan.currentPeriodEnd).toLocaleDateString()
+              : isPro ? '—' : 'monthly'}
+          </dd>
+        </div>
+      </dl>
+    </section>
+  );
+}
+
 function BillingPage() {
   const { session, loading } = useSession();
   const navigate = useNavigate();
@@ -84,31 +168,7 @@ function BillingPage() {
   return (
     <main className="min-h-screen bg-vellum text-ink font-sans">
       {/* Nav */}
-      <header className="border-b border-rule px-6 py-3 flex items-center justify-between bg-vellum">
-        <a href="/" className="flex items-center gap-2 font-serif text-base font-medium no-underline text-ink">
-          <svg className="w-4 h-4 text-ink" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
-            <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
-          </svg>
-          <span>kernel<span className="text-blueprint">CAD</span></span>
-        </a>
-        <div className="flex items-center gap-4">
-          <a href="/me" className="font-mono text-xs text-ink-soft hover:text-ink tracking-wide no-underline">
-            Your projects
-          </a>
-          <span className="font-mono text-xs text-ink-soft tracking-wide hidden sm:inline">{session.user.email}</span>
-          <button
-            type="button"
-            onClick={() => {
-              // onAuthStateChange clears the session; the !session effect above
-              // then redirects to /signin.
-              void getSupabase().auth.signOut();
-            }}
-            className="rounded-md border border-rule px-3 py-1.5 font-mono text-xs tracking-wide text-ink-soft hover:border-ink hover:text-ink transition-colors"
-          >
-            Sign out
-          </button>
-        </div>
-      </header>
+      <BillingNav email={session.user.email} />
 
       <section className="px-6 py-10 max-w-2xl mx-auto">
         <div className="flex items-baseline justify-between gap-4">
@@ -121,20 +181,7 @@ function BillingPage() {
           Your plan, generation usage, and payment settings.
         </p>
 
-        {checkout === 'success' && (
-          <div role="status" className="mb-6 rounded-lg border border-blueprint bg-vellum-soft p-4 text-ink relative">
-            <button type="button" onClick={dismissCheckoutBanner} aria-label="Dismiss" className="absolute top-3 right-3 text-ink-faint hover:text-ink font-mono text-sm leading-none">×</button>
-            <p className="font-serif font-medium">You're on Pro</p>
-            <p className="text-sm text-ink-soft mt-1">Subscription active — generate as much as you like.</p>
-          </div>
-        )}
-        {checkout === 'cancel' && (
-          <div role="status" className="mb-6 rounded-lg border border-rule bg-vellum-soft p-4 text-ink relative">
-            <button type="button" onClick={dismissCheckoutBanner} aria-label="Dismiss" className="absolute top-3 right-3 text-ink-faint hover:text-ink font-mono text-sm leading-none">×</button>
-            <p className="font-serif font-medium">Checkout cancelled</p>
-            <p className="text-sm text-ink-soft mt-1">No charge was made. You can upgrade any time from this page.</p>
-          </div>
-        )}
+        <CheckoutBanners checkout={checkout} onDismiss={dismissCheckoutBanner} />
 
         {plan && (
           <PlanCard
@@ -157,33 +204,7 @@ function BillingPage() {
         )}
 
         {/* Usage detail */}
-        {plan && (
-          <section aria-label="Usage" className="mt-6 rounded-xl border border-rule bg-white p-5">
-            <h2 className="font-serif text-lg font-medium text-ink">This period</h2>
-            <dl className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <dt className="font-mono text-[11px] text-ink-faint tracking-wide uppercase">Plan</dt>
-                <dd className="text-ink mt-1">{planLabel(plan)}</dd>
-              </div>
-              <div>
-                <dt className="font-mono text-[11px] text-ink-faint tracking-wide uppercase">Generations</dt>
-                <dd className="text-ink mt-1">
-                  {isPro ? 'Unlimited' : `${plan.generationsRemaining} remaining`}
-                </dd>
-              </div>
-              <div>
-                <dt className="font-mono text-[11px] text-ink-faint tracking-wide uppercase">
-                  {isPro ? 'Renews' : 'Resets'}
-                </dt>
-                <dd className="text-ink mt-1">
-                  {plan.currentPeriodEnd
-                    ? new Date(plan.currentPeriodEnd).toLocaleDateString()
-                    : isPro ? '—' : 'monthly'}
-                </dd>
-              </div>
-            </dl>
-          </section>
-        )}
+        {plan && <UsageSummary plan={plan} isPro={isPro} />}
       </section>
     </main>
   );

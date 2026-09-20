@@ -61,6 +61,32 @@ export function applyVariableEdgeFeature(
   const groups = meta?.groups ?? [];
   const valueKey: 'radius' | 'distance' = kind === 'fillet' ? 'radius' : 'distance';
 
+  const narrowedBase = validateVariableEdgeInputs(kind, feature, groups, diagnostics);
+  if (!narrowedBase) return { ok: false, diagnostics };
+
+  const collected = collectVariableEdgeGroups(
+    { kind, valueKey, base, feature, allRecords, narrowedBase },
+    groups,
+    diagnostics,
+  );
+  if (!collected) return { ok: false, diagnostics };
+
+  const shape = dispatchVariableEdgeOperation(
+    kind, base, collected.filletGroups, collected.chamferGroups, feature, diagnostics,
+  );
+  if (!shape) return { ok: false, diagnostics };
+
+  return { ok: true, shape, diagnostics };
+}
+
+/** Empty-group and base-ref validation for `applyVariableEdgeFeature`.
+ *  Returns the narrowed base ref, or undefined once a diagnostic is pushed. */
+function validateVariableEdgeInputs(
+  kind: VariableEdgeKind,
+  feature: FeatureRecord,
+  groups: Array<VariableEdgeGroup>,
+  diagnostics: CompilerDiagnostic[],
+): FeatureRef | undefined {
   if (groups.length === 0) {
     diagnostics.push({
       target: 'export-occt',
@@ -74,7 +100,7 @@ export function applyVariableEdgeFeature(
         ? 'Pass [{ edges: ..., radius: ... }, ...] with one entry per intended blend region.'
         : 'Pass [{ edges: ..., distance: ... }, ...] with one entry per intended bevel region.',
     });
-    return { ok: false, diagnostics };
+    return undefined;
   }
 
   // N3 fix: runtime-narrow inputs.base to a 'feature' ref before extracting id.
@@ -88,34 +114,48 @@ export function applyVariableEdgeFeature(
       message: `${kind} input 'base' must be a feature ref; got ${JSON.stringify(baseRef)}.`,
       hint: 'Chain the variable-radius/distance feature onto a solid shape.',
     });
-    return { ok: false, diagnostics };
+    return undefined;
   }
-  const narrowedBase: FeatureRef = baseRef as { kind: 'feature'; id: FeatureId };
+  return baseRef as { kind: 'feature'; id: FeatureId };
+}
 
-  // Per-group resolution loop. Build a synthetic one-input FeatureRecord
-  // per group so we can reuse pickEdges' canonical/label/query/segments
-  // dispatch — same behavior as single-radius edge selection.
+// Per-group resolution loop. Build a synthetic one-input FeatureRecord
+// per group so we can reuse pickEdges' canonical/label/query/segments
+// dispatch — same behavior as single-radius edge selection.
+function collectVariableEdgeGroups(
+  vc: VariableEdgeCtx,
+  groups: Array<VariableEdgeGroup>,
+  diagnostics: CompilerDiagnostic[],
+): {
+  filletGroups: Array<{ edges: Edge[]; radius: number }>;
+  chamferGroups: Array<{ edges: Edge[]; distance: number }>;
+} | undefined {
+  const { kind } = vc;
   const filletGroups: Array<{ edges: Edge[]; radius: number }> = [];
   const chamferGroups: Array<{ edges: Edge[]; distance: number }> = [];
 
   for (let i = 0; i < groups.length; i++) {
-    const resolved = resolveVariableEdgeGroup(
-      { kind, valueKey, base, feature, allRecords, narrowedBase },
-      groups[i],
-      i,
-      diagnostics,
-    );
-    if (!resolved) return { ok: false, diagnostics };
+    const resolved = resolveVariableEdgeGroup(vc, groups[i], i, diagnostics);
+    if (!resolved) return undefined;
     if (kind === 'fillet') {
       filletGroups.push({ edges: resolved.edges, radius: resolved.value });
     } else {
       chamferGroups.push({ edges: resolved.edges, distance: resolved.value });
     }
   }
+  return { filletGroups, chamferGroups };
+}
 
-  let shape: OcctBackend;
+function dispatchVariableEdgeOperation(
+  kind: VariableEdgeKind,
+  base: OcctBackend,
+  filletGroups: Array<{ edges: Edge[]; radius: number }>,
+  chamferGroups: Array<{ edges: Edge[]; distance: number }>,
+  feature: FeatureRecord,
+  diagnostics: CompilerDiagnostic[],
+): OcctBackend | undefined {
   try {
-    shape = kind === 'fillet'
+    return kind === 'fillet'
       ? base.filletVariable(filletGroups)
       : base.chamferVariable(chamferGroups);
   } catch (e) {
@@ -132,10 +172,8 @@ export function applyVariableEdgeFeature(
         ? 'OCCT could not apply that variable fillet — try smaller per-group radii or a coarser group split.'
         : 'OCCT could not apply that variable chamfer — try smaller per-group distances or a coarser group split.',
     });
-    return { ok: false, diagnostics };
+    return undefined;
   }
-
-  return { ok: true, shape, diagnostics };
 }
 
 interface VariableEdgeCtx {
