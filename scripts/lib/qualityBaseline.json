@@ -464,12 +464,6 @@
   {
     "rule": "complexity",
     "file": "src/modeling/mates/poseEnvelope.ts",
-    "symbol": "Async function 'reviewPoseEnvelope'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/poseEnvelope.ts",
     "symbol": "Function 'buildPoseEnvelopeSamples'",
     "value": 16
   },
