@@ -183,7 +183,20 @@ export function addTransmissionSource(input: AddTransmissionSourceInput): Source
   const fieldError = validateTransmissionRequiredFields(input) ?? validateTransmissionOptionalFields(input);
   if (fieldError) return fieldError;
 
-  return insertStatementBeforeLastTopLevelReturn(input.code, buildTransmissionCall(input));
+  return insertStatementBeforeLastTopLevelReturn(
+    input.code,
+    `${input.assembly_binding}.transmission(${quoteString(input.name)}, ${formatJsValue({
+      kind: input.kind,
+      sourceMate: input.sourceMate,
+      drivenMates: input.drivenMates,
+      ...(input.actuator !== undefined ? { actuator: input.actuator } : {}),
+      ...(input.input !== undefined ? { input: input.input } : {}),
+      ...(input.output !== undefined ? { output: input.output } : {}),
+      path: input.path,
+      ...(input.ratio !== undefined ? { ratio: input.ratio } : {}),
+      ...(input.notes !== undefined ? { notes: input.notes } : {}),
+    })});`,
+  );
 }
 
 function validateTransmissionRequiredFields(input: AddTransmissionSourceInput): SourceEditResult | undefined {
@@ -203,20 +216,6 @@ function validateTransmissionOptionalFields(input: AddTransmissionSourceInput): 
   }
   if (input.ratio !== undefined && !Number.isFinite(input.ratio)) return { ok: false, error: 'add_mate: ratio must be finite when provided.' };
   return undefined;
-}
-
-function buildTransmissionCall(input: AddTransmissionSourceInput): string {
-  return `${input.assembly_binding}.transmission(${quoteString(input.name)}, ${formatJsValue({
-    kind: input.kind,
-    sourceMate: input.sourceMate,
-    drivenMates: input.drivenMates,
-    ...(input.actuator !== undefined ? { actuator: input.actuator } : {}),
-    ...(input.input !== undefined ? { input: input.input } : {}),
-    ...(input.output !== undefined ? { output: input.output } : {}),
-    path: input.path,
-    ...(input.ratio !== undefined ? { ratio: input.ratio } : {}),
-    ...(input.notes !== undefined ? { notes: input.notes } : {}),
-  })});`;
 }
 
 export function addWorkspaceTargetSource(input: AddWorkspaceTargetSourceInput): SourceEditResult {
