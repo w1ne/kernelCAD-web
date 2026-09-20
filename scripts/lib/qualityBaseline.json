@@ -277,12 +277,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/import/importSvgParsing.ts",
-    "symbol": "Function 'parseTransform'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/apiSurfaceMethods.ts",
     "symbol": "Method 'variableSweep'",
     "value": 17
