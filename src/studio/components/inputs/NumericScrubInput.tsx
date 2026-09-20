@@ -43,6 +43,78 @@ export interface NumericScrubInputProps {
     readonly interference?: ScrubInterference;
 }
 
+function ScrubValueInput({
+    name,
+    draft,
+    setDraft,
+    commit,
+    step,
+    min,
+    max,
+    inputClass,
+    isOutOfRange,
+    outOfRangeTitle,
+    unit,
+}: {
+    name: string;
+    draft: string;
+    setDraft: (value: string) => void;
+    commit: (raw: string) => void;
+    step: number;
+    min: number | undefined;
+    max: number | undefined;
+    inputClass: string;
+    isOutOfRange: boolean;
+    outOfRangeTitle: string | undefined;
+    unit: string | undefined;
+}): JSX.Element {
+    return (
+        <div className="flex items-center gap-1">
+            <input
+                type="number"
+                value={draft}
+                step={step}
+                min={min}
+                max={max}
+                data-scrub-name={name}
+                data-testid={`scrub-input-${name}`}
+                onChange={(e) => setDraft(e.target.value)}
+                onBlur={(e) => commit(e.target.value)}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        commit((e.target as HTMLInputElement).value);
+                        (e.target as HTMLInputElement).blur();
+                    }
+                }}
+                className={inputClass}
+                aria-label={`${name} value`}
+                aria-invalid={isOutOfRange || undefined}
+                title={outOfRangeTitle}
+            />
+            {unit && <span className="text-[10px] text-gray-500 w-4">{unit}</span>}
+        </div>
+    );
+}
+
+function ScrubInterferenceBadge({
+    name,
+    title,
+}: {
+    name: string;
+    title: string | undefined;
+}): JSX.Element {
+    return (
+        <span
+            className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-600 text-white text-[10px] font-bold leading-none cursor-help"
+            title={title}
+            aria-label={`${name} is implicated in an interference at the current pose`}
+            data-testid={`scrub-interference-badge-${name}`}
+        >
+            !
+        </span>
+    );
+}
+
 export function NumericScrubInput(props: NumericScrubInputProps): JSX.Element {
     const { name, onCommit, min, max, unit, limitMarks, interference } = props;
     const isColliding = !!interference && interference.collidingPairs.length > 0;
@@ -98,40 +170,22 @@ export function NumericScrubInput(props: NumericScrubInputProps): JSX.Element {
                 >
                     {name}
                     {isColliding && (
-                        <span
-                            className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-600 text-white text-[10px] font-bold leading-none cursor-help"
-                            title={interferenceTitle}
-                            aria-label={`${name} is implicated in an interference at the current pose`}
-                            data-testid={`scrub-interference-badge-${name}`}
-                        >
-                            !
-                        </span>
+                        <ScrubInterferenceBadge name={name} title={interferenceTitle} />
                     )}
                 </span>
-                <div className="flex items-center gap-1">
-                    <input
-                        type="number"
-                        value={draft}
-                        step={step}
-                        min={min}
-                        max={max}
-                        data-scrub-name={name}
-                        data-testid={`scrub-input-${name}`}
-                        onChange={(e) => setDraft(e.target.value)}
-                        onBlur={(e) => commit(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                commit((e.target as HTMLInputElement).value);
-                                (e.target as HTMLInputElement).blur();
-                            }
-                        }}
-                        className={inputClass}
-                        aria-label={`${name} value`}
-                        aria-invalid={isOutOfRange || undefined}
-                        title={outOfRangeTitle}
-                    />
-                    {unit && <span className="text-[10px] text-gray-500 w-4">{unit}</span>}
-                </div>
+                <ScrubValueInput
+                    name={name}
+                    draft={draft}
+                    setDraft={setDraft}
+                    commit={commit}
+                    step={step}
+                    min={min}
+                    max={max}
+                    inputClass={inputClass}
+                    isOutOfRange={isOutOfRange}
+                    outOfRangeTitle={outOfRangeTitle}
+                    unit={unit}
+                />
             </div>
             {hasRange && (
                 <ScrubRange

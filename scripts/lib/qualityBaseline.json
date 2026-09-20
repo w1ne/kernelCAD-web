@@ -121,12 +121,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/inputs/NumericScrubInput.tsx",
-    "symbol": "Function 'NumericScrubInput'",
-    "value": 105
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/viewer/ViewerScene.tsx",
     "symbol": "Function 'ViewerScene'",
     "value": 113
