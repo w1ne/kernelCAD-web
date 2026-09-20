@@ -895,12 +895,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/shared/worker/v01ApiShim.ts",
-    "symbol": "Function 'bboxOf'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/StagedEditSlot.tsx",
     "symbol": "Function 'StagedEditContextDetails'",
     "value": 16

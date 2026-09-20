@@ -71,36 +71,37 @@ function canonicalFaceNameToPlane(
   }
 }
 
-/**
- * Extract axis-aligned bounding box from a Replicad Shape3D.
- * Uses `shape.boundingBox.bounds` which returns `[SimplePoint, SimplePoint]`.
- */
-function bboxOf(shape: unknown): { min: [number, number, number]; max: [number, number, number] } {
-  const r = shape as {
-    boundingBox?: {
-      bounds?: [[number, number, number], [number, number, number]];
-      min?: number[];
-      max?: number[];
-    };
-    faces?: ArrayLike<unknown>;
-  };
+interface BoundingBoxLike {
+  bounds?: [[number, number, number], [number, number, number]];
+  min?: number[];
+  max?: number[];
+}
 
+/** Primary/secondary bounding-box paths of `bboxOf`, or null when neither shape matches. */
+function bboxFromBoundingBox(
+  boundingBox: BoundingBoxLike,
+): { min: [number, number, number]; max: [number, number, number] } | null {
   // Primary path: Replicad Shape3D.boundingBox.bounds → [SimplePoint, SimplePoint]
-  if (r.boundingBox && Array.isArray(r.boundingBox.bounds)) {
-    const b = r.boundingBox.bounds as [[number, number, number], [number, number, number]];
+  if (Array.isArray(boundingBox.bounds)) {
+    const b = boundingBox.bounds as [[number, number, number], [number, number, number]];
     return { min: [b[0][0], b[0][1], b[0][2]], max: [b[1][0], b[1][1], b[1][2]] };
   }
 
   // Secondary path: some shapes expose .min/.max directly
-  if (r.boundingBox && Array.isArray(r.boundingBox.min) && Array.isArray(r.boundingBox.max)) {
+  if (Array.isArray(boundingBox.min) && Array.isArray(boundingBox.max)) {
     return {
-      min: [r.boundingBox.min[0]!, r.boundingBox.min[1]!, r.boundingBox.min[2]!],
-      max: [r.boundingBox.max[0]!, r.boundingBox.max[1]!, r.boundingBox.max[2]!],
+      min: [boundingBox.min[0]!, boundingBox.min[1]!, boundingBox.min[2]!],
+      max: [boundingBox.max[0]!, boundingBox.max[1]!, boundingBox.max[2]!],
     };
   }
 
-  // Fallback: walk face mesh vertices
-  const faces = r.faces;
+  return null;
+}
+
+/** Fallback path of `bboxOf`: walk face mesh vertices. Throws when no vertex is found. */
+function bboxFromFaceMeshes(
+  faces: ArrayLike<unknown> | undefined,
+): { min: [number, number, number]; max: [number, number, number] } {
   let minX = Infinity, minY = Infinity, minZ = Infinity;
   let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
   if (faces) {
@@ -128,6 +129,24 @@ function bboxOf(shape: unknown): { min: [number, number, number]; max: [number, 
     );
   }
   return { min: [minX, minY, minZ], max: [maxX, maxY, maxZ] };
+}
+
+/**
+ * Extract axis-aligned bounding box from a Replicad Shape3D.
+ * Uses `shape.boundingBox.bounds` which returns `[SimplePoint, SimplePoint]`.
+ */
+function bboxOf(shape: unknown): { min: [number, number, number]; max: [number, number, number] } {
+  const r = shape as {
+    boundingBox?: BoundingBoxLike;
+    faces?: ArrayLike<unknown>;
+  };
+
+  if (r.boundingBox) {
+    const fromBoundingBox = bboxFromBoundingBox(r.boundingBox);
+    if (fromBoundingBox) return fromBoundingBox;
+  }
+
+  return bboxFromFaceMeshes(r.faces);
 }
 
 /**
