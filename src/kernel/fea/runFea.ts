@@ -420,8 +420,9 @@ interface FeaSummaryComputation {
 }
 
 /** Global + per-region peaks, equilibrium residual and trust flags, folded
- *  into the summary object. No I/O and no diagnostics. */
-function computeFeaSummary(
+ *  into the summary object. No I/O and no diagnostics. Exported so the
+ *  summary arithmetic can be pinned without a solver toolchain. */
+export function computeFeaSummary(
   ctx: FeaRunContext,
   material: ResolvedFeaMaterial,
   meshed: Awaited<ReturnType<typeof meshStep>>,
