@@ -122,20 +122,24 @@ contacts are design intent and are listed here with their reason:
 | Hero render (4 views) | 511 s; cutaway 477 s; section ≈6 min |
 | Kernel regression sweep | 62 files / 514 tests pass (`--no-file-parallelism`) |
 
-### Demo capture status (v0.17 release)
+### Demo (v0.17 release)
 
-`docs/demos/v0.17/turbojet/` ships `whats-new.md`, `meta.json` and `prompt.md`;
-the `demo.mp4` + `panel.png` pair is the **one remaining release task**. Two
-`captureDemo.ts` attempts ran on this (shared, heavily loaded) machine: the
-first crashed at the hero screenshot after ~70 min (`page.screenshot: Protocol
-error … Unable to capture screenshot`, headless SwiftShader), the second
-sustained only ~2 frames/min and was stopped after ~1.5 h with no complete
-video; the partial `demo.mp4` was deleted rather than shipped. The render
-packet in this directory (`hero.png`, `cutaway.png`, `section-x0.png`) is the
-visual evidence instead, per the v0.17 spec's explicit fallback. Re-run on an
-idle machine with the command above (it starts its own vite). Note that
-`scripts/lint-demos.ts` checks media only for tagged modules, so it will not
-flag this until `v0.17.0` is tagged.
+`docs/demos/v0.17/turbojet/` ships `demo.mp4` (1920×1080, 10 fps, 29.7 s),
+`panel.png` (prompt + source + harness score PASS 1.00 + hero frame),
+`hero-frame.png`, `pacing.json`, `whats-new.md` and `meta.json` (override
+recorded; validator-clean). The demo is the **cutaway**: the capture hides
+`casing-upper-half` (`captureDemo --hide`), looks into the open half
+(`--pose 205,20`) and orbits, so the compressor rows and the bronze hot
+section read against the retained casing.
+
+Capture tooling added for this artifact: `captureDemo
+--fps/--width/--height/--hide/--pose`, and the demo player's
+`CameraController.cancelNudge()` (called by `setRenderView`/`setRenderPose`/
+`startRotate`) so an explicit camera fit is not overridden by a build-phase
+nudge tween on the next `advance()`. Two earlier capture attempts failed under
+machine load (hero-screenshot protocol error; ~2 frames/min); the successful
+runs used the reduced settings. Note `scripts/lint-demos.ts` checks media only
+for tagged modules, so v0.17 is enforced at tag time.
 
 ### Post-merge status (2026-09-20)
 
@@ -151,7 +155,8 @@ loft null tolerance, **#18** `twistAngle` on rect/circle/polygon/rounded-rect
 extrudes, **#19** rail-loft NURBS section `origin`, **#22** non-finite
 rotation guard. Remaining deferred entries are environmental/scale limits
 (render-inspect, validate-interference, heap, local imports, tsconfig
-coverage, jointCount display, lighting, spline pen contract).
+coverage, jointCount display, lighting, spline pen contract). The demo capture
+is complete (cutaway, see the Demo section above).
 
 ## Gap log
 
