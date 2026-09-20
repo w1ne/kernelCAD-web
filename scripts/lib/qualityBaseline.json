@@ -955,12 +955,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/runtime/dfm/voxelGrid.ts",
-    "symbol": "Function 'voxelize'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/runtime/explodedPoses.ts",
     "symbol": "Function 'mateAxisOffsets'",
     "value": 16
