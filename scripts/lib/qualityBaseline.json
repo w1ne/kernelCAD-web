@@ -600,12 +600,6 @@
     "value": 16
   },
   {
-    "rule": "complexity",
-    "file": "src/studio/routes/GenerateHero.tsx",
-    "symbol": "Function 'GenerateHero'",
-    "value": 16
-  },
-  {
     "rule": "max-lines-per-function",
     "file": "src/agent/cli/commands/render.ts",
     "symbol": "Function 'renderCommand'",
