@@ -161,7 +161,7 @@ export function buildBody(
       bandBody[bi] = [circleRegion(0, 0, step!.r)];
     });
   } else {
-    const blocks: Array<{ z0: number; z1: number; i0: number; i1: number; bands: number[]; loops: FittedLoop[]; raw: FittedLoop[] }> = [];
+    const blocks: BodyBlock[] = [];
     bands.forEach((b, bi) => {
       const outer = b.loops.filter((_, i) => b.depth[i] === 0);
       const rawOuter = b.raw.filter((_, i) => b.depth[i] === 0);
@@ -218,40 +218,12 @@ export function buildBody(
       radiusNames.set(i, name);
       return name;
     };
+    const blockCtx: ExtrudeBlockContext = {
+      single, minExtent, bands, rawRel, tol, cornerSets, coords, addParam, snapInfo, radiusExpr,
+    };
     body = {
       kind: 'extrude',
-      blocks: blocks.map((blk, k) => {
-        const h = blk.z1 - blk.z0;
-        const rawH = rawRel[blk.i1] - rawRel[blk.i0];
-        const hName = single ? (h <= 0.5 * minExtent ? 'thickness' : 'height') : `block${k + 1}Height`;
-        const loops: LoopOut[] = blk.loops.map((l) =>
-          l.kind === 'circle' ? { kind: 'circle', cx: l.cx, cy: l.cy, r: l.r } : { kind: 'path', prims: startNearOrigin(loopPrimitives(l)) },
-        );
-        const sharpened = blk.bands.some((bi) => bands[bi].sharpened > 0);
-        const measured = rawMeasures(blk.raw, 2 * tol + 1e-3);
-        const addDim = (name: string, value: number, meas: number, description: string) => {
-          addParam(name, value, meas, description, snapInfo(value, meas).grid);
-          return name;
-        };
-        let profile: ProfileOut | undefined;
-        let outline: OutlineKind = 'literal';
-        const corners = cornerSets[k];
-        if (corners) {
-          const pp = paramProfile(k + 1, corners, coords, addDim, measured.coordinate, (r) => radiusExpr(r, measured.radius(corners, r)));
-          profile = { kind: 'corners', corners: pp.corners };
-          outline = pp.kind;
-        } else if (loops.length === 1 && loops[0].kind === 'circle') {
-          const c = loops[0];
-          const rawC = blk.raw[0].kind === 'circle' ? blk.raw[0] : undefined;
-          const rName = addDim(single ? 'radius' : `block${k + 1}Radius`, c.r, rawC ? rawC.r : c.r, `Radius of the round profile${single ? '' : ` of block ${k + 1}`}.`);
-          profile = { kind: 'circle', cx: coords.lookup('x', c.cx) ?? num3(c.cx), cy: coords.lookup('y', c.cy) ?? num3(c.cy), r: rName };
-          outline = 'circle';
-        }
-        addParam(hName, h, rawH, single ? 'Extrusion length of the profile.' : `Extrusion length of block ${k + 1} (from the base).`, snapInfo(h, rawH).grid);
-        const hasArcs = profile?.kind === 'corners' ? profile.corners.some((c) => c.r !== undefined) : !profile && loops.some((l) => l.kind === 'path' && l.prims.some((p) => p.kind === 'arc'));
-        const rounds: RoundsKind = sharpened ? 'fillet' : hasArcs ? 'arcs' : 'none';
-        return { z0: blk.z0, z1: blk.z1, loops, hParam: hName, outline, rounds, ...(profile ? { profile } : {}) };
-      }),
+      blocks: blocks.map((blk, k) => buildExtrudeBlock(blk, k, blockCtx)),
     };
     bands.forEach((_, bi) => {
       const blk = blocks.find((x) => x.bands.includes(bi))!;
@@ -259,6 +231,94 @@ export function buildBody(
     });
   }
   return { body, bandBody };
+}
+
+interface BodyBlock {
+  z0: number;
+  z1: number;
+  i0: number;
+  i1: number;
+  bands: number[];
+  loops: FittedLoop[];
+  raw: FittedLoop[];
+}
+
+interface ExtrudeBlockContext {
+  single: boolean;
+  minExtent: number;
+  bands: BandLoops[];
+  rawRel: number[];
+  tol: number;
+  cornerSets: Array<Corner[] | undefined>;
+  coords: CoordinateBook;
+  addParam: (name: string, value: number, measured: number, description: string, grid?: number) => string;
+  snapInfo: (value: number, measured: number) => { grid: number };
+  radiusExpr: (r: number, measured: number) => string;
+}
+
+type ExtrudeBlockOut = Extract<BodyPlan, { kind: 'extrude' }>['blocks'][number];
+
+function buildExtrudeBlock(blk: BodyBlock, k: number, ctx: ExtrudeBlockContext): ExtrudeBlockOut {
+  const h = blk.z1 - blk.z0;
+  const rawH = ctx.rawRel[blk.i1] - ctx.rawRel[blk.i0];
+  const hName = blockHeightName(h, ctx.single, k, ctx.minExtent);
+  const loops: LoopOut[] = blockLoops(blk);
+  const sharpened = blk.bands.some((bi) => ctx.bands[bi].sharpened > 0);
+  const { profile, outline } = blockProfile(blk, k, ctx, loops);
+  ctx.addParam(hName, h, rawH, ctx.single ? 'Extrusion length of the profile.' : `Extrusion length of block ${k + 1} (from the base).`, ctx.snapInfo(h, rawH).grid);
+  const hasArcs = blockHasArcs(profile, loops);
+  const rounds: RoundsKind = blockRounds(sharpened, hasArcs);
+  return { z0: blk.z0, z1: blk.z1, loops, hParam: hName, outline, rounds, ...(profile ? { profile } : {}) };
+}
+
+function blockHeightName(h: number, single: boolean, k: number, minExtent: number): string {
+  if (!single) return `block${k + 1}Height`;
+  return h <= 0.5 * minExtent ? 'thickness' : 'height';
+}
+
+function blockLoops(blk: BodyBlock): LoopOut[] {
+  return blk.loops.map((l) =>
+    l.kind === 'circle' ? { kind: 'circle', cx: l.cx, cy: l.cy, r: l.r } : { kind: 'path', prims: startNearOrigin(loopPrimitives(l)) },
+  );
+}
+
+function blockProfile(
+  blk: BodyBlock,
+  k: number,
+  ctx: ExtrudeBlockContext,
+  loops: LoopOut[],
+): { profile: ProfileOut | undefined; outline: OutlineKind } {
+  const measured = rawMeasures(blk.raw, 2 * ctx.tol + 1e-3);
+  const addDim = (name: string, value: number, meas: number, description: string) => {
+    ctx.addParam(name, value, meas, description, ctx.snapInfo(value, meas).grid);
+    return name;
+  };
+  let profile: ProfileOut | undefined;
+  let outline: OutlineKind = 'literal';
+  const corners = ctx.cornerSets[k];
+  if (corners) {
+    const pp = paramProfile(k + 1, corners, ctx.coords, addDim, measured.coordinate, (r) => ctx.radiusExpr(r, measured.radius(corners, r)));
+    profile = { kind: 'corners', corners: pp.corners };
+    outline = pp.kind;
+  } else if (loops.length === 1 && loops[0].kind === 'circle') {
+    const c = loops[0];
+    const rawC = blk.raw[0].kind === 'circle' ? blk.raw[0] : undefined;
+    const rName = addDim(ctx.single ? 'radius' : `block${k + 1}Radius`, c.r, rawC ? rawC.r : c.r, `Radius of the round profile${ctx.single ? '' : ` of block ${k + 1}`}.`);
+    profile = { kind: 'circle', cx: ctx.coords.lookup('x', c.cx) ?? num3(c.cx), cy: ctx.coords.lookup('y', c.cy) ?? num3(c.cy), r: rName };
+    outline = 'circle';
+  }
+  return { profile, outline };
+}
+
+function blockHasArcs(profile: ProfileOut | undefined, loops: LoopOut[]): boolean {
+  if (profile?.kind === 'corners') return profile.corners.some((c) => c.r !== undefined);
+  return !profile && loops.some((l) => l.kind === 'path' && l.prims.some((p) => p.kind === 'arc'));
+}
+
+function blockRounds(sharpened: boolean, hasArcs: boolean): RoundsKind {
+  if (sharpened) return 'fillet';
+  if (hasArcs) return 'arcs';
+  return 'none';
 }
 
 export function buildFaceBook(nb: number, bandBody: Region[][], levels: number[], tol: number, body: BodyPlan): FaceBook {

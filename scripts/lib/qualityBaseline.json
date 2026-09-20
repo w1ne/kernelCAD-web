@@ -248,12 +248,6 @@
   {
     "rule": "complexity",
     "file": "src/agent/reconstruct/planPhases/body.ts",
-    "symbol": "Arrow function",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/reconstruct/planPhases/body.ts",
     "symbol": "Function 'buildFaceBook'",
     "value": 18
   },
@@ -963,7 +957,7 @@
     "rule": "max-lines-per-function",
     "file": "src/agent/reconstruct/planPhases/body.ts",
     "symbol": "Function 'buildBody'",
-    "value": 139
+    "value": 111
   },
   {
     "rule": "max-lines-per-function",
