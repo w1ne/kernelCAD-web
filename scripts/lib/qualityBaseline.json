@@ -799,12 +799,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/runtime/dfm/voidTopology.ts",
-    "symbol": "Function 'countMouths'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/runtime/explodedPoses.ts",
     "symbol": "Function 'mateAxisOffsets'",
     "value": 16
