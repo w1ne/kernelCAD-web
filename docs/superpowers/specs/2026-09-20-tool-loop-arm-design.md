@@ -1,6 +1,10 @@
 # Tool-Loop Agent Arm — design
 
-Status: design approved 2026-09-20. Drives
+Status: implemented and **adopted 2026-09-20**. Paired A/B on the 58-case
+attribution subset: tool loop **39/58** sandbox, 30 overlap, 30 judged vs
+`full` repair loop 16/13/13 (2.4×). The sweep now defaults to the tool loop;
+`--repair-loop` keeps the one-shot baseline. Evidence:
+kernelCAD-private runbook §7. Drives
 `docs/superpowers/plans/2026-09-20-tool-loop-arm.md`.
 
 ## Evidence

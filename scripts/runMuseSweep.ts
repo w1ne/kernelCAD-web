@@ -143,9 +143,13 @@ export function parseSweepArgs(argv: string[]): SweepConfig {
   if (!Number.isInteger(toolMaxCalls) || toolMaxCalls < 1) {
     fail(`--tool-max-calls must be an integer >= 1, got ${toolMaxCalls}`);
   }
-  const toolLoop = has('--tool-loop');
+  if (has('--tool-loop') && has('--repair-loop')) {
+    throw new Error('--tool-loop and --repair-loop are mutually exclusive');
+  }
+  // Tool loop is the default arm (A/B winner, 2026-09-20: 39/58 vs 16/58 sandbox).
+  const toolLoop = !has('--repair-loop');
   if (has('--tool-max-calls') && !toolLoop) {
-    throw new Error('--tool-max-calls only applies to --tool-loop');
+    throw new Error('--tool-max-calls only applies to the tool loop (remove --repair-loop)');
   }
 
   const promptPreset = flagValue('--prompt-preset') ?? 'full';

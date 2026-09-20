@@ -6,10 +6,11 @@ import type { AgentClient } from '../eval/types';
 import { asToolChatClient, parseSweepArgs, resolvePromptPlan, resumeMismatch } from './runMuseSweep';
 
 describe('parseSweepArgs prompt flags', () => {
-  it('defaults to the full preset with cookbook retrieval on', () => {
+  it('defaults to the full preset with cookbook retrieval on and the tool loop', () => {
     const cfg = parseSweepArgs(['--cases', 'stool']);
     expect(cfg.promptPreset).toBe('full');
     expect(cfg.useCookbook).toBe(true);
+    expect(cfg.toolLoop).toBe(true);
   });
 
   it('accepts a preset and --no-cookbook', () => {
@@ -30,17 +31,20 @@ describe('parseSweepArgs prompt flags', () => {
     ).toThrow(/--skills only applies/);
   });
 
-  it('parses tool-loop flags', () => {
+  it('parses tool-loop flags and the repair-loop escape hatch', () => {
     const cfg = parseSweepArgs(['--cases', 'stool', '--tool-loop', '--tool-max-calls', '5']);
     expect(cfg.toolLoop).toBe(true);
     expect(cfg.toolMaxCalls).toBe(5);
-    expect(parseSweepArgs(['--cases', 'stool']).toolLoop).toBe(false);
+    expect(parseSweepArgs(['--cases', 'stool', '--repair-loop']).toolLoop).toBe(false);
+    expect(() => parseSweepArgs(['--cases', 'stool', '--tool-loop', '--repair-loop'])).toThrow(
+      /mutually exclusive/,
+    );
   });
 
-  it('rejects --tool-max-calls without --tool-loop', () => {
-    expect(() => parseSweepArgs(['--cases', 'stool', '--tool-max-calls', '5'])).toThrow(
-      /--tool-max-calls only applies to --tool-loop/,
-    );
+  it('rejects --tool-max-calls with the repair loop', () => {
+    expect(() =>
+      parseSweepArgs(['--cases', 'stool', '--repair-loop', '--tool-max-calls', '5']),
+    ).toThrow(/--tool-max-calls only applies to the tool loop/);
   });
 });
 
