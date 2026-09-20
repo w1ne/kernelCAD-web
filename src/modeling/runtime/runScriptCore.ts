@@ -18,7 +18,8 @@ import { CaptureSession } from '../capture/captureSession';
 import { createApi } from '../api';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { ParamTable } from '../../shared/runtime/paramTable';
-import { normalizeUserScript } from '../../shared/runtime/normalizeUserScript';
+import { KernelError } from '../../shared/intent/kernelError';
+import { findTopLevelImport, normalizeUserScript } from '../../shared/runtime/normalizeUserScript';
 import { NO_WRAP_OFFSET, type IsolationOptions, type IsolationResult, type ScriptWrapOffset } from './isolationTypes';
 import { ScriptLocationResolver } from './scriptLocationCapture';
 
@@ -70,6 +71,23 @@ export interface RunScriptResult {
 
 export async function runScriptCore(input: RunScriptCoreInput): Promise<RunScriptResult> {
   const { code, fileName, scriptDir, runner, transpile, wrapOffset = NO_WRAP_OFFSET } = input;
+
+  // Refuse top-level imports BEFORE the normalizer strips them. A stripped
+  // `import` leaves the imported binding undefined, so the script dies
+  // mid-evaluation with a bare `ReferenceError: <name> is not defined`.
+  // Bundling local modules is out of scope, but the failure must not be
+  // silent: fail fast with the same structured `feature.invalid-args` code
+  // every other capture-time API misuse uses.
+  const importStatement = findTopLevelImport(code);
+  if (importStatement !== undefined) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `local imports are not supported in .kcad.ts — define helpers in the same file (imports are stripped before execution). Found: ${importStatement}`,
+      undefined,
+      'Move the imported helper into this .kcad.ts file. The kernelCAD API (box, path, assembly, …) and the lib.* loaders are injected as globals — no import needed.',
+    );
+  }
+
   const session = new CaptureSession();
   session.scriptDir = scriptDir;
   const api = createApi({ session, scriptDir });

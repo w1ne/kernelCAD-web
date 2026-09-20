@@ -7,6 +7,8 @@ description: kernelCAD model authoring API — primitives, transforms, booleans,
 
 Author or modify kernelCAD models in TypeScript. Scripts live in `.kcad.ts` files; the kernelCAD CLI (`kernelcad evaluate <file>` and `kernelcad export stl|step|dxf|3mf|glb <file> -o <out>`) executes them via an OpenCASCADE WASM kernel.
 
+`.kcad.ts` scripts are single files: top-level `import`/`require` statements are not supported and are refused before execution with `feature.invalid-args` — define helpers in the same file.
+
 ## Agent authoring loop
 
 Use this loop for every non-trivial model edit:

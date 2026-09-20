@@ -98,6 +98,71 @@ const ALLOWED_LOFT_PLANE_KEYS = new Set(['plane', 'origin', 'rotationDeg']);
  *  rejected with `feature.invalid-args` instead of being silently dropped. */
 const ALLOWED_EXTRUDE_KEYS = new Set(['faceLabels', 'twistAngle']);
 
+/**
+ * Reject unknown keys on a `Sketch` option bag with `feature.invalid-args`.
+ * Shared by `extrude`'s opts, `loft`'s opts, and each `loft.planes[i]` entry
+ * so the three call sites cannot drift. `unknownMessage` and `accepts` keep
+ * every message/hint byte-identical to the hand-rolled guards this replaced.
+ */
+function assertKnownKeys(
+  opts: object,
+  allowed: ReadonlySet<string>,
+  featureId: FeatureId,
+  unknownMessage: (key: string) => string,
+  accepts: string,
+): void {
+  for (const key of Object.keys(opts)) {
+    if (!allowed.has(key)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        unknownMessage(key),
+        featureId,
+        `${accepts} accepts ${[...allowed].join(', ')}.`,
+      );
+    }
+  }
+}
+
+/**
+ * Reject a present-but-invalid `Editable<number>` option. Same
+ * "must be a number or ParamRef" message/hint contract across
+ * `extrude.twistAngle`, `loft.twistDeg`, and `loft.planes[i].rotationDeg`.
+ */
+function assertEditableNumber(
+  value: unknown,
+  where: string,
+  featureId: FeatureId,
+  hint: string,
+): void {
+  if (value !== undefined && !isValidEditableNumber(value)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `${where} must be a number or ParamRef; got ${JSON.stringify(value)}.`,
+      featureId,
+      hint,
+    );
+  }
+}
+
+/** Same contract for `[x, y]` Editable pairs (`loft.twistCenter`). */
+function assertEditablePair(
+  value: unknown,
+  where: string,
+  featureId: FeatureId,
+  hint: string,
+): void {
+  if (
+    value !== undefined &&
+    (!Array.isArray(value) || value.length !== 2 || !value.every(isValidEditableNumber))
+  ) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `${where} must be a [x, y] pair of numbers or ParamRefs; got ${JSON.stringify(value)}.`,
+      featureId,
+      hint,
+    );
+  }
+}
 
 // Re-export so existing modeling/agent/authoring importers keep working.
 // The canonical definition lives in shared/capture/sketchCommand.ts as a
@@ -153,24 +218,19 @@ export class Sketch {
     // `opts?.faceLabels`, so JS/agent callers could pass null. Keep that
     // contract rather than crashing on Object.keys(null).
     opts ??= {};
-    for (const key of Object.keys(opts)) {
-      if (!ALLOWED_EXTRUDE_KEYS.has(key)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `Sketch.extrude: unknown option '${key}'.`,
-          this.id,
-          `extrude accepts ${[...ALLOWED_EXTRUDE_KEYS].join(', ')}.`,
-        );
-      }
-    }
-    if (opts.twistAngle !== undefined && !isValidEditableNumber(opts.twistAngle)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Sketch.extrude: opts.twistAngle must be a number or ParamRef; got ${JSON.stringify(opts.twistAngle)}.`,
-        this.id,
-        'Pass opts.twistAngle as a total twist in degrees — a number or a param() reference.',
-      );
-    }
+    assertKnownKeys(
+      opts,
+      ALLOWED_EXTRUDE_KEYS,
+      this.id,
+      (key) => `Sketch.extrude: unknown option '${key}'.`,
+      'extrude',
+    );
+    assertEditableNumber(
+      opts.twistAngle,
+      'Sketch.extrude: opts.twistAngle',
+      this.id,
+      'Pass opts.twistAngle as a total twist in degrees — a number or a param() reference.',
+    );
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'extrude');
     return this.session.createShape({
       kind: 'extrude',
@@ -397,37 +457,25 @@ export class Sketch {
     // `opts?.` fields, so JS/agent callers could pass null. Keep that
     // contract rather than crashing on Object.keys(null).
     opts ??= {};
-    for (const key of Object.keys(opts)) {
-      if (!ALLOWED_LOFT_KEYS.has(key)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `Sketch.loft: unknown option '${key}'.`,
-          this.id,
-          `loft accepts ${[...ALLOWED_LOFT_KEYS].join(', ')}.`,
-        );
-      }
-    }
-    if (
-      opts.twistCenter !== undefined &&
-      (!Array.isArray(opts.twistCenter) ||
-        opts.twistCenter.length !== 2 ||
-        !opts.twistCenter.every(isValidEditableNumber))
-    ) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Sketch.loft: opts.twistCenter must be a [x, y] pair of numbers or ParamRefs; got ${JSON.stringify(opts.twistCenter)}.`,
-        this.id,
-        'Pass opts.twistCenter as [x, y] — the section-space center for twistDeg and planes[].rotationDeg.',
-      );
-    }
-    if (opts.twistDeg !== undefined && !isValidEditableNumber(opts.twistDeg)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Sketch.loft: opts.twistDeg must be a number or ParamRef; got ${JSON.stringify(opts.twistDeg)}.`,
-        this.id,
-        'Pass opts.twistDeg as a total twist in degrees — a number or a param() reference.',
-      );
-    }
+    assertKnownKeys(
+      opts,
+      ALLOWED_LOFT_KEYS,
+      this.id,
+      (key) => `Sketch.loft: unknown option '${key}'.`,
+      'loft',
+    );
+    assertEditablePair(
+      opts.twistCenter,
+      'Sketch.loft: opts.twistCenter',
+      this.id,
+      'Pass opts.twistCenter as [x, y] — the section-space center for twistDeg and planes[].rotationDeg.',
+    );
+    assertEditableNumber(
+      opts.twistDeg,
+      'Sketch.loft: opts.twistDeg',
+      this.id,
+      'Pass opts.twistDeg as a total twist in degrees — a number or a param() reference.',
+    );
     if (opts.planes !== undefined) {
       if (!Array.isArray(opts.planes)) {
         throw new KernelError(
@@ -447,24 +495,19 @@ export class Sketch {
             `Pass opts.planes[${i}] as { plane, origin, rotationDeg? }.`,
           );
         }
-        for (const key of Object.keys(p)) {
-          if (!ALLOWED_LOFT_PLANE_KEYS.has(key)) {
-            throw new KernelError(
-              'feature.invalid-args',
-              `Sketch.loft: unknown planes[${i}] option '${key}'.`,
-              this.id,
-              `planes entries accept ${[...ALLOWED_LOFT_PLANE_KEYS].join(', ')}.`,
-            );
-          }
-        }
-        if (p.rotationDeg !== undefined && !isValidEditableNumber(p.rotationDeg)) {
-          throw new KernelError(
-            'feature.invalid-args',
-            `Sketch.loft: opts.planes[${i}].rotationDeg must be a number or ParamRef; got ${JSON.stringify(p.rotationDeg)}.`,
-            this.id,
-            `Pass planes[${i}].rotationDeg as degrees — a number or a param() reference — or omit it to inherit the distributed twistDeg.`,
-          );
-        }
+        assertKnownKeys(
+          p,
+          ALLOWED_LOFT_PLANE_KEYS,
+          this.id,
+          (key) => `Sketch.loft: unknown planes[${i}] option '${key}'.`,
+          'planes entries',
+        );
+        assertEditableNumber(
+          p.rotationDeg,
+          `Sketch.loft: opts.planes[${i}].rotationDeg`,
+          this.id,
+          `Pass planes[${i}].rotationDeg as degrees — a number or a param() reference — or omit it to inherit the distributed twistDeg.`,
+        );
       }
     }
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'loft');
