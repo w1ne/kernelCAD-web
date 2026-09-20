@@ -22,7 +22,9 @@
 
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
+import type { Vec3 } from '../../shared/intent/types';
 
 /** A single (part_a, part_b) pair whose intersection has non-trivial volume. */
 export interface InterferencePair {
@@ -37,33 +39,32 @@ export interface CheckInterferenceResult {
   readonly partCount: number;
   readonly comparisonCount: number;
   readonly diagnostics: CompilerDiagnostic[];
+  /** What was clash-checked: `scene` for a multi-part assembly, `compound`
+   *  for the top-level solids of a single Shape return, `none` when nothing
+   *  was eligible. Optional for backwards compatibility with callers that
+   *  construct results by hand. */
+  readonly scope?: 'scene' | 'compound' | 'none';
 }
 
-/** Pure detection over an already-resolved SceneBackend. Exposed for tests
- *  and for callers that have a Scene in hand without re-running a script. */
-export function detectInterferences(
-  scene: SceneBackend,
+interface NamedShape {
+  readonly name: string;
+  readonly shape: OcctBackend;
+  readonly bbox: { min: Vec3; max: Vec3 };
+}
+
+function pairwiseClash(
+  items: readonly NamedShape[],
   epsilonMm3: number,
   ignored: ReadonlySet<string>,
-  diagnostics: CompilerDiagnostic[] = [],
-): CheckInterferenceResult {
-  // Clone + apply each part's worldTransform once, up front. The same
-  // pattern the STEP exporter uses (`exportSceneToSTEPAsync`) — replicad's
-  // translate / rotate mutate-and-destroy the source OCCT handle, so we
-  // never touch the originals.
-  const transformed = scene.parts.map((p) => {
-    const clone = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
-    return { name: p.name, shape: clone, bbox: clone.boundingBox() };
-  });
-
+  diagnostics: CompilerDiagnostic[],
+): { pairs: InterferencePair[]; comparisonCount: number } {
   const pairs: InterferencePair[] = [];
   let comparisons = 0;
-  for (let i = 0; i < transformed.length; i++) {
-    for (let j = i + 1; j < transformed.length; j++) {
-      const a = transformed[i];
-      const b = transformed[j];
-      const key = pairKey(a.name, b.name);
-      if (ignored.has(key)) continue;
+  for (let i = 0; i < items.length; i++) {
+    for (let j = i + 1; j < items.length; j++) {
+      const a = items[i];
+      const b = items[j];
+      if (ignored.has(pairKey(a.name, b.name))) continue;
       if (!bboxesOverlap(a.bbox, b.bbox)) continue;
       comparisons++;
       // Volume-only common: no face-unification pass, which on B-spline-heavy
@@ -87,11 +88,57 @@ export function detectInterferences(
       }
     }
   }
+  return { pairs, comparisonCount: comparisons };
+}
+
+/** Pure detection over an already-resolved SceneBackend. Exposed for tests
+ *  and for callers that have a Scene in hand without re-running a script. */
+export function detectInterferences(
+  scene: SceneBackend,
+  epsilonMm3: number,
+  ignored: ReadonlySet<string>,
+  diagnostics: CompilerDiagnostic[] = [],
+): CheckInterferenceResult {
+  // Clone + apply each part's worldTransform once, up front. The same
+  // pattern the STEP exporter uses (`exportSceneToSTEPAsync`) — replicad's
+  // translate / rotate mutate-and-destroy the source OCCT handle, so we
+  // never touch the originals.
+  const transformed = scene.parts.map((p) => {
+    const clone = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
+    return { name: p.name, shape: clone, bbox: clone.boundingBox() };
+  });
+  const { pairs, comparisonCount } = pairwiseClash(transformed, epsilonMm3, ignored, diagnostics);
   return {
     pairs,
     partCount: transformed.length,
-    comparisonCount: comparisons,
+    comparisonCount,
     diagnostics,
+    scope: 'scene',
+  };
+}
+
+/** Pairwise clash detection inside a single ShapeBackend with ≥2 top-level
+ *  solids (e.g. a union of disjoint bodies). Pair names are `solid[i]`. */
+export function detectCompoundInterferences(
+  shape: ShapeBackend,
+  epsilonMm3: number,
+  ignored: ReadonlySet<string>,
+  diagnostics: CompilerDiagnostic[] = [],
+): CheckInterferenceResult {
+  // Same OCCT-only cast `detectInterferences` makes for scene parts:
+  // intersectionVolume is on OcctBackend, not the ShapeBackend surface.
+  const solids = (shape as OcctBackend).solidComponents().map((s, i) => ({
+    name: `solid[${i}]`,
+    shape: s,
+    bbox: s.boundingBox(),
+  }));
+  const { pairs, comparisonCount } = pairwiseClash(solids, epsilonMm3, ignored, diagnostics);
+  return {
+    pairs,
+    partCount: solids.length,
+    comparisonCount,
+    diagnostics,
+    scope: 'compound',
   };
 }
 

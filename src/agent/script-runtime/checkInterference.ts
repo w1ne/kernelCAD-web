@@ -17,6 +17,7 @@ import { Shape } from '../../modeling/capture/proxy';
 import { Scene } from '../../modeling/validation/scene';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import {
+  detectCompoundInterferences,
   detectInterferences,
   pairKey,
   type CheckInterferenceResult,
@@ -47,8 +48,9 @@ export interface CheckInterferenceInput {
 
 const DEFAULT_EPSILON_MM3 = 0.01;
 
-/** Resolve the script to a SceneBackend, then detect interferences. Returns
- *  an empty `pairs` array when the script doesn't produce a Scene. */
+/** Resolve the script to a SceneBackend or a multi-solid Shape, then detect
+ *  interferences. Returns an empty `pairs` array when the script produces
+ *  neither. */
 export async function checkInterference(
   input: CheckInterferenceInput,
 ): Promise<CheckInterferenceResult> {
@@ -65,7 +67,7 @@ export async function checkInterference(
 
   const fatal = r.diagnostics.filter((d: CompilerDiagnostic) => d.severity === 'error');
   if (fatal.length > 0) {
-    return { pairs: [], partCount: 0, comparisonCount: 0, diagnostics: r.diagnostics };
+    return { pairs: [], partCount: 0, comparisonCount: 0, diagnostics: r.diagnostics, scope: 'none' };
   }
 
   // Resolve the target feature id the same way runAndExport does for STEP.
@@ -76,14 +78,20 @@ export async function checkInterference(
   else if (run.records.length > 0) targetId = run.records[run.records.length - 1].id;
 
   if (!targetId) {
-    return { pairs: [], partCount: 0, comparisonCount: 0, diagnostics: r.diagnostics };
+    return { pairs: [], partCount: 0, comparisonCount: 0, diagnostics: r.diagnostics, scope: 'none' };
   }
 
   const lowered = r.shapes.get(targetId);
-  if (!lowered || !isSceneBackend(lowered)) {
-    // Not an assembly — nothing to clash. Caller decides whether this is an
-    // error or a no-op via the empty `pairs` array + `partCount: 0`.
-    return { pairs: [], partCount: 0, comparisonCount: 0, diagnostics: r.diagnostics };
+  if (!lowered) {
+    return { pairs: [], partCount: 0, comparisonCount: 0, diagnostics: r.diagnostics, scope: 'none' };
   }
-  return detectInterferences(lowered, epsilon, ignored, r.diagnostics);
+  if (isSceneBackend(lowered)) {
+    return detectInterferences(lowered, epsilon, ignored, r.diagnostics);
+  }
+  // Non-Scene Shape: still clash-check multi-solid compounds (a union of
+  // disjoint bodies lowers to one ShapeBackend with several solids).
+  if (lowered.solidComponents().length >= 2) {
+    return detectCompoundInterferences(lowered, epsilon, ignored, r.diagnostics);
+  }
+  return { pairs: [], partCount: 0, comparisonCount: 0, diagnostics: r.diagnostics, scope: 'none' };
 }

@@ -64,6 +64,7 @@ export async function runInterferenceCli(input: InterferenceCliInput): Promise<I
   if (input.json) {
     console.log(JSON.stringify({
       ok: r.pairs.length === 0,
+      scope: r.scope ?? 'none',
       partCount: r.partCount,
       comparisonCount: r.comparisonCount,
       epsilonMm3: input.epsilon,
@@ -77,7 +78,8 @@ export async function runInterferenceCli(input: InterferenceCliInput): Promise<I
       return { exitCode: 0 };
     }
     if (r.pairs.length === 0) {
-      console.log(`No interferences detected (${r.partCount} parts, ${r.comparisonCount} comparisons, ε=${input.epsilon}mm³).`);
+      const scopeNote = r.scope === 'compound' ? `compound of ${r.partCount} solids` : `${r.partCount} parts`;
+      console.log(`No interferences detected (${scopeNote}, ${r.comparisonCount} comparisons, ε=${input.epsilon}mm³).`);
     } else {
       console.error(`Detected ${r.pairs.length} interference${r.pairs.length === 1 ? '' : 's'} in ${r.partCount}-part assembly:`);
       for (const p of r.pairs) {
