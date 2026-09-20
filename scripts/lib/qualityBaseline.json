@@ -127,12 +127,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/emit.ts",
-    "symbol": "Function 'emitOp'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/planPhases/ops.ts",
     "symbol": "Function 'emitCutoutOps'",
     "value": 16
