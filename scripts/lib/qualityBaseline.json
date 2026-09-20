@@ -397,12 +397,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/studio/StagedEditSlot.tsx",
-    "symbol": "Function 'StagedEditContextDetails'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/components/Layout/StatusBar.tsx",
     "symbol": "Function 'StatusBar'",
     "value": 16
