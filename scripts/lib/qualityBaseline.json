@@ -19,21 +19,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/cli/commands/evaluate.ts",
-    "symbol": "Async function 'evaluateWithEnvelope'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/cli/commands/export.ts",
     "symbol": "Async function 'trustedManifestPath'",
     "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/drawing/geometry2d.ts",
-    "symbol": "Function 'splitAtJunctions'",
-    "value": 18
   },
   {
     "rule": "complexity",
@@ -49,21 +37,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/drawing/reconstructSolver.ts",
-    "symbol": "Function 'levelNamer'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/drawing/sheet.ts",
     "symbol": "Function 'readTitleBlock'",
     "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/edits/addPathSpline.ts",
-    "symbol": "Function 'addPathSpline'",
-    "value": 18
   },
   {
     "rule": "complexity",
@@ -88,12 +64,6 @@
     "file": "src/agent/mcp/edits/shapeDraft.ts",
     "symbol": "Function 'shapeDraftEdit'",
     "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/mcp/tools/captureAnimation.ts",
-    "symbol": "Async function 'captureAnimationTool'",
-    "value": 18
   },
   {
     "rule": "complexity",
@@ -259,45 +229,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/apiSurfaceMethods.ts",
-    "symbol": "Method 'variableSweep'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/backends/occt/lowerers/assembly.ts",
-    "symbol": "Function 'lowerAssemblyModel'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/backends/occt/lowerers/edgeFeatures.ts",
-    "symbol": "Function 'applyVariableEdgeFeature'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/backends/occt/projectCurveLowerer.ts",
     "symbol": "Async function 'lowerProjectCurve'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/backends/occt/variableSweepLowerer.ts",
-    "symbol": "Function 'lowerVariableSweep'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/assemblyMateCapacity.ts",
-    "symbol": "Function 'validateMateCapacityOptions'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/assemblyParts.ts",
-    "symbol": "Function 'recordSubAssembly'",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -343,21 +277,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/virtualFeatureRecords.ts",
-    "symbol": "Function 'buildRenderEnvironmentFeatureSpec'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/compute/recomputeEngine.ts",
     "symbol": "Async method 'lowerAndEmit'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/export/sdformat/sdfSerializer.ts",
-    "symbol": "Function 'urdfInertialToSdf'",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -367,33 +289,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/jointAxisBinding.ts",
-    "symbol": "Async function 'validateJointAxisBindingWithCache'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/jointTopology.ts",
-    "symbol": "Function 'reviewJointTopology'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/jointVisualExposure.ts",
-    "symbol": "Async function 'validateJointVisualExposure'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/matePhysicalRealization.ts",
     "symbol": "Async function 'validateMatePhysicalRealization'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/matePhysicalRealization.ts",
-    "symbol": "Function 'analyzeMate'",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -416,12 +314,6 @@
   {
     "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseStatics.ts",
-    "symbol": "Async function 'reviewPhysicalUseCaseStatics'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseStatics.ts",
     "symbol": "Function 'validateActuatorLimit'",
     "value": 16
   },
@@ -430,12 +322,6 @@
     "file": "src/modeling/mates/physicalUseCaseStaticsPhases.ts",
     "symbol": "Function 'resolveStaticLoads'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/poseEnvelope.ts",
-    "symbol": "Async function 'reviewPoseEnvelope'",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -454,12 +340,6 @@
     "file": "src/modeling/mates/solver.ts",
     "symbol": "Function 'mateFk'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/runtime/dfm/fdmOrientation.ts",
-    "symbol": "Function 'anchoredChord'",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -487,12 +367,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/runtime/meshDeviation.ts",
-    "symbol": "Method 'nearestSq'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/server/middleware/sourceEndpoint.ts",
     "symbol": "Async function 'sourceHandler'",
     "value": 16
@@ -507,7 +381,7 @@
     "rule": "complexity",
     "file": "src/shared/codeGeneration/stripTypeScript.ts",
     "symbol": "Arrow function#2",
-    "value": 17
+    "value": 16
   },
   {
     "rule": "complexity",
@@ -517,27 +391,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/shared/codeGeneration/stripTypeScript.ts",
-    "symbol": "Arrow function#4",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/shared/intent/embossTextRecord.ts",
-    "symbol": "Function 'isEmbossTextMetadata'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/shared/runtime/resolveParams.ts",
     "symbol": "Function 'walkResolve'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/shared/worker/geometryHelpers.ts",
-    "symbol": "Arrow function",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -556,12 +412,6 @@
     "file": "src/studio/components/inputs/useNumericScrub.ts",
     "symbol": "Function 'useNumericScrub'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/components/viewer/directEditTarget.ts",
-    "symbol": "Function 'mateGraphDrivesPart'",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -658,12 +508,6 @@
     "file": "src/modeling/apiCaptureMethods.ts",
     "symbol": "Function 'makeCaptureMethods'",
     "value": 101
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/modeling/apiSurfaceMethods.ts",
-    "symbol": "Function 'makeSweepMethods'",
-    "value": 117
   },
   {
     "rule": "max-lines-per-function",
