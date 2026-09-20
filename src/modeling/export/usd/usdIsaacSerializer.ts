@@ -439,6 +439,19 @@ interface LinkBlockContext {
   diagnostics: CompilerDiagnostic[];
 }
 
+/** Per-part emission result: the link's Xform block plus its optional material
+ *  block and mesh layer. */
+interface LinkBlocksForPart {
+  readonly linkBlock: string;
+  readonly materialBlock: string | undefined;
+  readonly meshLayer: UsdMeshLayer;
+}
+
+interface LinkAppearance {
+  readonly materialBlock: string | undefined;
+  readonly hasAppearance: boolean;
+}
+
 /** Emit the Xform + visual/collision mesh blocks, material blocks and mesh
  *  layers for every part. Mass errors are appended to ctx.diagnostics. */
 async function buildLinkBlocks(
@@ -450,73 +463,102 @@ async function buildLinkBlocks(
   const meshLayers: UsdMeshLayer[] = [];
 
   for (const part of parts) {
-    const prim = ctx.linkName(part.name);
-    const density = part.density ?? ctx.defaultDensity;
-    const lowered = await part.originalShape.lower();
-    if (density === undefined) {
-      ctx.diagnostics.push(...linkInertialBlock(lowered, undefined).diagnostics);
-    }
-    const mp = lowered.massProperties(density ?? 1000);
-    if (!Number.isFinite(mp.mass) || mp.mass <= 0) {
-      ctx.diagnostics.push({
-        target: 'export-occt',
-        code: 'export.usd.mass-missing',
-        severity: 'error',
-        message: `Link '${part.name}' has a non-finite or non-positive mass (${mp.mass}).`,
-        hint: `Link '${part.name}' cannot carry a physical mass. Pass density or a named material on arm.part('${part.name}', shape, { material: 'steel' }), or check the part's shape is a closed solid.`,
-        nextAction: NEXT_ACTIONS['export.usd.mass-missing'],
-      });
-      continue;
-    }
-    const inertia = linkInertia(mp);
-
-    const sourceRecord = ctx.records.find((r) => r.id === part.originalShape.id);
-    const pbr = sourceRecord ? lookupMaterialFromLineage(sourceRecord, ctx.records) : undefined;
-    const color = sourceRecord ? lookupColorFromLineage(sourceRecord, ctx.records) : undefined;
-    const hasAppearance = pbr !== undefined || color !== undefined;
-    if (hasAppearance) materialBlocks.push(materialBlock(ctx.rootPath, prim, pbr, color));
-
-    const relPath = `${ctx.meshPrefix}${prim}.usda`;
-    meshLayers.push({ partName: part.name, relPath, usda: meshLayerText(prim, lowered) });
-
-    const pose = ctx.poses?.get(part.name);
-    const translate = pose ? pose.point([0, 0, 0]).map((n) => n * MM_TO_M) : [0, 0, 0];
-    const orient = pose ? transformQuat(pose) : ([1, 0, 0, 0] as Quat);
-
-    linkBlocks.push([
-      `        def Xform "${prim}" (`,
-      '            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]',
-      '        )',
-      '        {',
-      `            double3 xformOp:translate = ${tuple(translate)}`,
-      `            quatf xformOp:orient = ${tuple(orient)}`,
-      '            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]',
-      `            float physics:mass = ${f(inertia.mass)}`,
-      `            point3f physics:centerOfMass = ${tuple(inertia.com)}`,
-      `            float3 physics:diagonalInertia = ${tuple(inertia.diagonal)}`,
-      `            quatf physics:principalAxes = ${tuple(inertia.principalAxes)}`,
-      '',
-      '            def Mesh "visual" (',
-      ...(hasAppearance ? ['                prepend apiSchemas = ["MaterialBindingAPI"]'] : []),
-      `                prepend references = @${relPath}@`,
-      '            )',
-      '            {',
-      ...(hasAppearance ? [`                rel material:binding = <${ctx.rootPath}/Materials/${prim}>`] : []),
-      '            }',
-      '',
-      '            def Mesh "collision" (',
-      '                prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]',
-      `                prepend references = @${relPath}@`,
-      '            )',
-      '            {',
-      `                uniform token physics:approximation = "${ctx.approximation}"`,
-      '                uniform token purpose = "guide"',
-      '            }',
-      '        }',
-    ].join('\n'));
+    const built = await buildLinkBlock(part, ctx);
+    if (built === undefined) continue;
+    linkBlocks.push(built.linkBlock);
+    if (built.materialBlock !== undefined) materialBlocks.push(built.materialBlock);
+    meshLayers.push(built.meshLayer);
   }
 
   return { linkBlocks, materialBlocks, meshLayers };
+}
+
+async function buildLinkBlock(
+  part: AssemblyPartStored,
+  ctx: LinkBlockContext,
+): Promise<LinkBlocksForPart | undefined> {
+  const prim = ctx.linkName(part.name);
+  const density = part.density ?? ctx.defaultDensity;
+  const lowered = await part.originalShape.lower();
+  if (density === undefined) {
+    ctx.diagnostics.push(...linkInertialBlock(lowered, undefined).diagnostics);
+  }
+  const mp = lowered.massProperties(density ?? 1000);
+  if (!Number.isFinite(mp.mass) || mp.mass <= 0) {
+    ctx.diagnostics.push({
+      target: 'export-occt',
+      code: 'export.usd.mass-missing',
+      severity: 'error',
+      message: `Link '${part.name}' has a non-finite or non-positive mass (${mp.mass}).`,
+      hint: `Link '${part.name}' cannot carry a physical mass. Pass density or a named material on arm.part('${part.name}', shape, { material: 'steel' }), or check the part's shape is a closed solid.`,
+      nextAction: NEXT_ACTIONS['export.usd.mass-missing'],
+    });
+    return undefined;
+  }
+  const inertia = linkInertia(mp);
+
+  const appearance = resolveLinkAppearance(part, prim, ctx);
+
+  const relPath = `${ctx.meshPrefix}${prim}.usda`;
+  const meshLayer: UsdMeshLayer = { partName: part.name, relPath, usda: meshLayerText(prim, lowered) };
+
+  const pose = ctx.poses?.get(part.name);
+  const { translate, orient } = linkPose(pose);
+
+  const linkBlock = [
+    `        def Xform "${prim}" (`,
+    '            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]',
+    '        )',
+    '        {',
+    `            double3 xformOp:translate = ${tuple(translate)}`,
+    `            quatf xformOp:orient = ${tuple(orient)}`,
+    '            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]',
+    `            float physics:mass = ${f(inertia.mass)}`,
+    `            point3f physics:centerOfMass = ${tuple(inertia.com)}`,
+    `            float3 physics:diagonalInertia = ${tuple(inertia.diagonal)}`,
+    `            quatf physics:principalAxes = ${tuple(inertia.principalAxes)}`,
+    '',
+    '            def Mesh "visual" (',
+    ...(appearance.hasAppearance ? ['                prepend apiSchemas = ["MaterialBindingAPI"]'] : []),
+    `                prepend references = @${relPath}@`,
+    '            )',
+    '            {',
+    ...(appearance.hasAppearance ? [`                rel material:binding = <${ctx.rootPath}/Materials/${prim}>`] : []),
+    '            }',
+    '',
+    '            def Mesh "collision" (',
+    '                prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]',
+    `                prepend references = @${relPath}@`,
+    '            )',
+    '            {',
+    `                uniform token physics:approximation = "${ctx.approximation}"`,
+    '                uniform token purpose = "guide"',
+    '            }',
+    '        }',
+  ].join('\n');
+
+  return { linkBlock, materialBlock: appearance.materialBlock, meshLayer };
+}
+
+function resolveLinkAppearance(
+  part: AssemblyPartStored,
+  prim: string,
+  ctx: LinkBlockContext,
+): LinkAppearance {
+  const sourceRecord = ctx.records.find((r) => r.id === part.originalShape.id);
+  const pbr = sourceRecord ? lookupMaterialFromLineage(sourceRecord, ctx.records) : undefined;
+  const color = sourceRecord ? lookupColorFromLineage(sourceRecord, ctx.records) : undefined;
+  const hasAppearance = pbr !== undefined || color !== undefined;
+  return {
+    materialBlock: hasAppearance ? materialBlock(ctx.rootPath, prim, pbr, color) : undefined,
+    hasAppearance,
+  };
+}
+
+function linkPose(pose: Transform | undefined): { translate: number[]; orient: Quat } {
+  const translate = pose ? pose.point([0, 0, 0]).map((n) => n * MM_TO_M) : [0, 0, 0];
+  const orient = pose ? transformQuat(pose) : ([1, 0, 0, 0] as Quat);
+  return { translate, orient };
 }
 
 /** Joint fields shared by the legacy-joint and mate emission paths. */

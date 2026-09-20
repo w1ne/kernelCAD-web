@@ -193,32 +193,32 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
-    "symbol": "Async function 'buildLinkBlocks'",
+    "file": "src/modeling/mates/physicalUseCaseStatics.ts",
+    "symbol": "Function 'validateActuatorLimit'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/matePhysicalRealization.ts",
-    "symbol": "Async function 'validateMatePhysicalRealization'",
+    "file": "src/modeling/mates/physicalUseCaseStaticsPhases.ts",
+    "symbol": "Function 'resolveStaticLoads'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/mechanicalTransmission.ts",
-    "symbol": "Function 'pointTriangleDistanceSquared'",
+    "file": "src/modeling/mates/poseEnvelope.ts",
+    "symbol": "Function 'buildPoseEnvelopeSamples'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseJointReactionsPhases.ts",
-    "symbol": "Async function 'resolveSolvedLoads'",
+    "file": "src/modeling/mates/solver.ts",
+    "symbol": "Function 'jointTransformForMate'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseJointReactionsPhases.ts",
-    "symbol": "Async function 'validateSolvedContact'",
+    "file": "src/modeling/mates/solver.ts",
+    "symbol": "Function 'mateFk'",
     "value": 16
   },
   {
