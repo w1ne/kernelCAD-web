@@ -276,24 +276,44 @@ const lowerHalf = casingShell.subtract(casingCutLower);   // keeps y < 0
 const upperHalf = casingShell.subtract(casingCutUpper);   // keeps y > 0
 const casingHalves = [lowerHalf, upperHalf];
 
-// Shaft: Ø44 main journal, Ø60 lands at the two bearing stations. Display
-// simplification: the compressor disc bores are r65..r100 (Task 9), so the
-// main journal passes each disc with 43..78 mm of radial clearance instead of
-// a spacer drum; the lands are the only shaft contact with the static
-// structure (≈1 mm radial play in the bearing bores).
+// Stepped spool drum: Ø44 main journal + Ø60 lands at the two bearing
+// stations, with a collar under every rotor disc. Each collar is sized
+// line-to-line with its disc bore (compressor r65..r100 from the Task 9
+// table, turbine r110 from Task 11) and spans the 18 mm web with 2 mm of
+// margin each side, so each disc rides on shaft material instead of the
+// journal passing it in open air. A literal 2 mm radial shrink fit would
+// share ≈15,000-25,000 mm³ with each disc (ten pairs over the 20 mm³ clash
+// cap); the display fit is line-to-line — zero clearance and zero shared
+// volume — which still registers as material contact in the joint-mesh
+// probe. The collars stay well inside the r150 stator vane tips and leave
+// the nose-cone/exhaust-cone interfaces unchanged.
 const SHAFT_MAIN_R = 22;         // Ø44 main journal
 const SHAFT_LAND_R = 30;         // Ø60 bearing lands
 const SHAFT_FRONT_Z = -545;      // nose end, buried in the spinner
 const SHAFT_REAR_Z = 470;        // rear end, inside the casing aft bore
-const SHAFT_STEP_T = 8;          // land-to-journal axial blend
 const SHAFT_FRONT_LAND_Z = -482; // front land ends at the R1 disc front face
-const SHAFT_REAR_LAND_Z = 404;   // rear land starts aft of the T2 disc hub (Task 11)
-const shaftShape = path()
+const SHAFT_REAR_LAND_Z = 426;   // rear land starts at the T2 collar aft shoulder
+const DRUM_COLLAR_T = 22;        // collar axial length: 18 mm web + 2 mm margin each side
+const drumCollars: Array<{ z: number; r: number }> = [
+  ...rotorStages.map((stage) => ({ z: stage.z, r: stage.hubR })),
+  { z: 303, r: 110 },            // T1 disc bore (Task 11 table)
+  { z: 415, r: 110 },            // T2 disc bore (Task 11 table)
+];
+let shaftPen = path()
   .moveTo(0, SHAFT_FRONT_Z)
   .lineTo(SHAFT_LAND_R, SHAFT_FRONT_Z)
   .lineTo(SHAFT_LAND_R, SHAFT_FRONT_LAND_Z)
-  .lineTo(SHAFT_MAIN_R, SHAFT_FRONT_LAND_Z + SHAFT_STEP_T)
-  .lineTo(SHAFT_MAIN_R, SHAFT_REAR_LAND_Z - SHAFT_STEP_T)
+  .lineTo(SHAFT_MAIN_R, SHAFT_FRONT_LAND_Z);
+for (const collar of drumCollars) {
+  const z0 = collar.z - DRUM_COLLAR_T / 2;
+  const z1 = collar.z + DRUM_COLLAR_T / 2;
+  shaftPen = shaftPen
+    .lineTo(SHAFT_MAIN_R, z0)
+    .lineTo(collar.r, z0)
+    .lineTo(collar.r, z1)
+    .lineTo(SHAFT_MAIN_R, z1);
+}
+const shaftShape = shaftPen
   .lineTo(SHAFT_LAND_R, SHAFT_REAR_LAND_Z)
   .lineTo(SHAFT_LAND_R, SHAFT_REAR_Z)
   .lineTo(0, SHAFT_REAR_Z)
@@ -454,16 +474,29 @@ for (const stage of hotTurbineStages) {
 }
 
 // Can-annular combustor, all inside the 211 barrel bore: outer casing shell,
-// liner shell, then 8 cans on a 136 mm circle inside the liner (Ø56 body ->
-// 164 mm outer edge, 14 mm clear of the 178 liner bore and 48 mm apart
-// tangentially). The cans sit forward of the NGV1 vane leading edge (226.2)
-// and aft of the R8 blade trailing edge (~38 at these radii).
-const COMBUSTOR_CASING_BORE_R = 196;   // 15 mm inside the barrel bore
-const COMBUSTOR_CASING_R = 206;        // 10 mm wall; 5 mm to the barrel bore
+// liner shell, then 8 cans on a 136 mm circle inside the liner. The shells
+// form a line-to-line touching chain — outer casing outer = the 211 barrel
+// bore, liner outer = the 196 outer casing bore, can outer edge
+// (136 + 28 = 164) = the liner bore — so every combustor mate partner is
+// material-connected. (A 1 mm radial embed would share 100,000+ mm³ with the
+// barrel; the display fit is zero-clearance, zero shared volume.) The cans
+// still sit forward of the NGV1 vane leading edge (226.2) and aft of the R8
+// blade trailing edge (~38 at these radii).
+const CAN_COUNT = 8;
+const CANS_R = 136;                // can centreline radius
+const CAN_BODY_R = 28;             // Ø56 body: 108..164 radial
+const CAN_BODY_FRONT_Z = 118;
+const CAN_BODY_AFT_Z = 188;
+const CAN_SNOUT_R = 10;
+const CAN_SNOUT_FRONT_Z = 75;
+const CAN_SNOUT_AFT_Z = 95;        // 5 mm buried in the dome
+
+const COMBUSTOR_CASING_BORE_R = 196;   // outer casing bore = liner outer (line-to-line)
+const COMBUSTOR_CASING_R = CASING_BORE_R; // 211: outer touches the barrel bore
 const COMBUSTOR_CASING_FRONT_Z = 58;
 const COMBUSTOR_CASING_AFT_Z = 190;    // 36.2 mm forward of the NGV1 vane LE
-const COMBUSTOR_LINER_BORE_R = 178;
-const COMBUSTOR_LINER_R = 188;         // 10 mm wall; 8 mm to the casing bore
+const COMBUSTOR_LINER_BORE_R = CANS_R + CAN_BODY_R; // 164 = can outer edge
+const COMBUSTOR_LINER_R = COMBUSTOR_CASING_BORE_R;  // 196: liner outer touches the casing bore
 const COMBUSTOR_LINER_FRONT_Z = 75;
 const COMBUSTOR_LINER_AFT_Z = 186;
 function shell(boreR: number, outR: number, zFront: number, zAft: number) {
@@ -480,15 +513,6 @@ const combustorLiner = shell(
   COMBUSTOR_LINER_BORE_R, COMBUSTOR_LINER_R,
   COMBUSTOR_LINER_FRONT_Z, COMBUSTOR_LINER_AFT_Z,
 ).color(COLOR_COMBUSTOR);
-
-const CAN_COUNT = 8;
-const CANS_R = 136;                // can centreline radius
-const CAN_BODY_R = 28;             // Ø56 body: 108..164 radial, 14 mm to the liner bore
-const CAN_BODY_FRONT_Z = 118;
-const CAN_BODY_AFT_Z = 188;
-const CAN_SNOUT_R = 10;
-const CAN_SNOUT_FRONT_Z = 75;
-const CAN_SNOUT_AFT_Z = 95;        // 5 mm buried in the dome
 const canBody = cylinder(CAN_BODY_AFT_Z - CAN_BODY_FRONT_Z, CAN_BODY_R)
   .translate(CANS_R, 0, CAN_BODY_FRONT_Z).color(COLOR_COMBUSTOR);
 const canDome = sphere(CAN_BODY_R)
@@ -577,7 +601,7 @@ const engine = assembly('kernelCAD v0.17 turbojet');
 // connectors sit at the shared world origin — the fastened zero pose is the
 // authored pose.
 function frameConnector(origin: [number, number, number]) {
-  return { type: 'frame', origin: { kind: 'vec3', value: origin } };
+  return { type: 'frame' as const, origin: { kind: 'vec3' as const, value: origin } };
 }
 let fastenSeq = 0;
 type PartRef = ReturnType<typeof engine.part>;
@@ -601,7 +625,7 @@ const [bearingFront, bearingRear] = bearingHousings;
 
 // Ground: lower casing half + its half of the convergent nozzle.
 const ground = engine.part('casing-lower-half', casingLower.union(nozzleLower));
-fixed(ground, 'casing-upper-half', casingUpper.union(nozzleUpper));
+const casingUpperPart = fixed(ground, 'casing-upper-half', casingUpper.union(nozzleUpper));
 
 // Merged static vane units: `row.union(band)` keeps the row as the boolean
 // base, so lookupSourceColor resolves the part to the row's color — alloy for
@@ -617,16 +641,21 @@ for (let i = 1; i < statorRings.length; i++) {
 fixed(ground, 'ngv-1', ngvRows[0].union(ngvBands[0]));
 fixed(ground, 'ngv-2', ngvRows[1].union(ngvBands[1]));
 
-// Remaining static parts, all fastened to the ground half.
+// Remaining static parts, fastened to the half/neighbour they actually
+// touch. Task 10 staging array mounts = [front crown (+y), rear crown (-y)]:
+// the front mount embeds in the upper half's barrel, so it hangs off
+// casing-upper-half, not the ground lower half.
 fixed(ground, 'bearing-front', bearingFront);
 fixed(ground, 'bearing-rear', bearingRear.union(exhaustCone)); // Task 12 merge 2
-// Task 10 staging array mounts = [front crown (+y), rear crown (-y)].
-fixed(ground, 'mount-front', mounts[0]);
+fixed(casingUpperPart, 'mount-front', mounts[0]);
 fixed(ground, 'mount-rear', mounts[1]);
-fixed(ground, 'combustor-outer', combustorOuterCasing);
-fixed(ground, 'combustor-liner', combustorLiner);
-fixed(ground, 'combustor-cans', combustorCans);
-fixed(ground, 'fuel-manifold', fuelManifold);
+// Combustor chain: outer casing rides the barrel bore, liner rides the outer
+// casing bore, cans ride the liner bore, manifold is buried in the can
+// snouts — each mate partner is material-connected (line-to-line contacts).
+const combustorOuterPart = fixed(ground, 'combustor-outer', combustorOuterCasing);
+const combustorLinerPart = fixed(combustorOuterPart, 'combustor-liner', combustorLiner);
+const combustorCansPart = fixed(combustorLinerPart, 'combustor-cans', combustorCans);
+fixed(combustorCansPart, 'fuel-manifold', fuelManifold);
 
 // The single revolute: casing lower half <-> shaft on the engine axis (world
 // origin, +Z). `concealed` because the spool bearing lives inside the
@@ -647,16 +676,18 @@ engine.mate('spool', 'casing-lower-half.spool-axis', 'shaft.spool-axis', 'revolu
   exposure: 'concealed',
 });
 
-// Rotor stack, all fastened to the shaft.
+// Rotor stack. Discs are fastened to the shaft (each rides its drum collar);
+// blade rows are fastened to the disc they root into, not to the shaft —
+// the root embed is the real joint, and the shaft never reaches blade radii.
 fixed(shaft, 'nose-cone', noseCone);
 for (let i = 0; i < rotorDiscs.length; i++) {
-  fixed(shaft, `compressor-disc-${i + 1}`, rotorDiscs[i]);
-  fixed(shaft, `compressor-blades-${i + 1}`, rotorRows[i]);
+  const discPart = fixed(shaft, `compressor-disc-${i + 1}`, rotorDiscs[i]);
+  fixed(discPart, `compressor-blades-${i + 1}`, rotorRows[i]);
 }
-fixed(shaft, 'turbine-disc-1', turbineDiscs[0]);
-fixed(shaft, 'turbine-disc-2', turbineDiscs[1]);
-fixed(shaft, 'turbine-blade-1', turbineRows[0]);
-fixed(shaft, 'turbine-blade-2', turbineRows[1]);
+const turbineDisc1 = fixed(shaft, 'turbine-disc-1', turbineDiscs[0]);
+const turbineDisc2 = fixed(shaft, 'turbine-disc-2', turbineDiscs[1]);
+fixed(turbineDisc1, 'turbine-blade-1', turbineRows[0]);
+fixed(turbineDisc2, 'turbine-blade-2', turbineRows[1]);
 
 // Intended contacts (the Task 13 table): design-intent embeds whose shared
 // volume exceeds the 20 mm^3 clash cap. `ignore` silences only the validator
@@ -668,6 +699,9 @@ fixed(shaft, 'turbine-blade-2', turbineRows[1]);
 //   - rotor blade roots embed 2 mm into their disc rims;
 //   - the spinner base swallows the shaft nose;
 //   - injector lines bury 5 mm into the can snouts.
+// The stepped-drum/disc and combustor-chain contacts are line-to-line (zero
+// shared volume), so they need no ignore entry and stay visible to the raw
+// detector.
 const casingBoreParts = [...statorUnitNames, 'ngv-1', 'ngv-2', 'bearing-front', 'bearing-rear'];
 const intendedContacts: Array<readonly [string, string]> = [
   ...casingBoreParts.flatMap((name): Array<readonly [string, string]> => [
