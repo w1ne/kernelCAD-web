@@ -229,12 +229,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/drawingFeatures.ts",
-    "symbol": "Function 'recogniseChamfers'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/edgeSelection.ts",
     "symbol": "Function 'resolveEdgesRef'",
     "value": 16
