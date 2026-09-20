@@ -259,12 +259,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/SceneBrowser.tsx",
-    "symbol": "Arrow function",
-    "value": 129
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/Viewer.tsx",
     "symbol": "Function 'Viewer'",
     "value": 123
