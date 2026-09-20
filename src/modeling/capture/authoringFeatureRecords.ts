@@ -230,6 +230,15 @@ function normalizeFdmSettings(
     bad('process', `must be 'fdm' (the only supported process); got ${JSON.stringify(args.process)}`);
   }
 
+  const buildDirection = normalizeFdmBuildDirection(args, bad);
+  const nozzleMm = readPositiveFdmNumber('nozzleMm', args.nozzleMm, FDM_DEFAULTS.nozzleMm, bad);
+  const maxBridgeMm = readPositiveFdmNumber('maxBridgeMm', args.maxBridgeMm, FDM_DEFAULTS.maxBridgeMm, bad);
+  const maxOverhangDeg = normalizeFdmOverhang(args, bad);
+  const printer = normalizeFdmPrinter(args, bad);
+  return { buildDirection, nozzleMm, maxOverhangDeg, maxBridgeMm, printer };
+}
+
+function normalizeFdmBuildDirection(args: DfmSpec, bad: BadFn): [number, number, number] {
   let buildDirection: [number, number, number] = [...FDM_DEFAULTS.buildDirection];
   const dir = args.buildDirection;
   if (dir !== undefined) {
@@ -248,28 +257,37 @@ function normalizeFdmSettings(
       buildDirection = [dir[0] / len, dir[1] / len, dir[2] / len];
     }
   }
-  const positive = (field: 'nozzleMm' | 'maxBridgeMm', v: number | undefined, dflt: number): number => {
-    if (v === undefined) return dflt;
-    if (!(typeof v === 'number' && Number.isFinite(v) && v > 0)) {
-      bad(field, `must be a positive finite number; got ${v}`);
-    }
-    return v;
-  };
-  const nozzleMm = positive('nozzleMm', args.nozzleMm, FDM_DEFAULTS.nozzleMm);
-  const maxBridgeMm = positive('maxBridgeMm', args.maxBridgeMm, FDM_DEFAULTS.maxBridgeMm);
-  let maxOverhangDeg: number = FDM_DEFAULTS.maxOverhangDeg;
-  if (args.maxOverhangDeg !== undefined) {
-    const v = args.maxOverhangDeg;
-    if (!(typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 90)) {
-      bad('maxOverhangDeg', `must be a finite number of degrees in [0, 90] (0 = vertical wall, 90 = flat ceiling); got ${v}`);
-    }
-    maxOverhangDeg = v;
+  return buildDirection;
+}
+
+function readPositiveFdmNumber(
+  field: 'nozzleMm' | 'maxBridgeMm',
+  v: number | undefined,
+  dflt: number,
+  bad: BadFn,
+): number {
+  if (v === undefined) return dflt;
+  if (!(typeof v === 'number' && Number.isFinite(v) && v > 0)) {
+    bad(field, `must be a positive finite number; got ${v}`);
   }
+  return v;
+}
+
+function normalizeFdmOverhang(args: DfmSpec, bad: BadFn): number {
+  if (args.maxOverhangDeg === undefined) return FDM_DEFAULTS.maxOverhangDeg;
+  const v = args.maxOverhangDeg;
+  if (!(typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 90)) {
+    bad('maxOverhangDeg', `must be a finite number of degrees in [0, 90] (0 = vertical wall, 90 = flat ceiling); got ${v}`);
+  }
+  return v;
+}
+
+function normalizeFdmPrinter(args: DfmSpec, bad: BadFn): string {
   const printer = args.printer ?? DEFAULT_PRINTER_PROFILE;
   if (typeof printer !== 'string' || PRINTER_PROFILES[printer] === undefined) {
     bad('printer', `must name a bundled printer profile (${Object.keys(PRINTER_PROFILES).join(', ')}); got ${JSON.stringify(printer)}`);
   }
-  return { buildDirection, nozzleMm, maxOverhangDeg, maxBridgeMm, printer };
+  return printer;
 }
 
 export function buildCurve3DFeatureSpec(args: Curve3DCaptureArgs): AuthoringFeatureSpec {

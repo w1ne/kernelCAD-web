@@ -152,22 +152,12 @@ function parseJpeg(fd: number): ImageDimensions {
   let markersRead = 0;
 
   while (position < MAX_JPEG_HEADER_SCAN_BYTES && markersRead < MAX_JPEG_MARKERS) {
-    const prefix = readExact(fd, position, 2);
-    if (!prefix || prefix[0] !== 0xff) return FAIL;
+    const scanned = readJpegMarker(fd, position, markersRead);
+    if (scanned === undefined) return FAIL;
 
-    let marker = prefix[1];
-    position += 2;
-    markersRead += 1;
-
-    // JPEG permits any number of 0xff fill bytes before a marker code.
-    while (marker === 0xff) {
-      if (markersRead >= MAX_JPEG_MARKERS || position >= MAX_JPEG_HEADER_SCAN_BYTES) return FAIL;
-      const fill = readExact(fd, position, 1);
-      if (!fill) return FAIL;
-      marker = fill[0];
-      position += 1;
-      markersRead += 1;
-    }
+    const marker = scanned.marker;
+    position = scanned.position;
+    markersRead = scanned.markersRead;
 
     // A stuffed zero is valid only in entropy-coded scan data. We never scan
     // that data: dimensions must be declared before SOS.
@@ -184,14 +174,7 @@ function parseJpeg(fd: number): ImageDimensions {
     const payloadLength = segmentLength - 2;
 
     if (isJpegStartOfFrame(marker)) {
-      // SOF payload: precision (1), height (2), width (2), components (1)...
-      if (payloadStart + 5 > MAX_JPEG_HEADER_SCAN_BYTES) return FAIL;
-      const frame = readExact(fd, payloadStart, 5);
-      if (!frame) return FAIL;
-      const height = frame.readUInt16BE(1);
-      const width = frame.readUInt16BE(3);
-      if (width === 0 || height === 0) return FAIL;
-      return { width, height };
+      return readJpegStartOfFrameDimensions(fd, payloadStart);
     }
 
     // Skip exactly this segment's payload. The next loop starts at its marker.
@@ -199,6 +182,42 @@ function parseJpeg(fd: number): ImageDimensions {
   }
 
   return FAIL;
+}
+
+function readJpegMarker(
+  fd: number,
+  position: number,
+  markersRead: number,
+): { marker: number; position: number; markersRead: number } | undefined {
+  const prefix = readExact(fd, position, 2);
+  if (!prefix || prefix[0] !== 0xff) return undefined;
+
+  let marker = prefix[1];
+  position += 2;
+  markersRead += 1;
+
+  // JPEG permits any number of 0xff fill bytes before a marker code.
+  while (marker === 0xff) {
+    if (markersRead >= MAX_JPEG_MARKERS || position >= MAX_JPEG_HEADER_SCAN_BYTES) return undefined;
+    const fill = readExact(fd, position, 1);
+    if (!fill) return undefined;
+    marker = fill[0];
+    position += 1;
+    markersRead += 1;
+  }
+
+  return { marker, position, markersRead };
+}
+
+function readJpegStartOfFrameDimensions(fd: number, payloadStart: number): ImageDimensions {
+  // SOF payload: precision (1), height (2), width (2), components (1)...
+  if (payloadStart + 5 > MAX_JPEG_HEADER_SCAN_BYTES) return FAIL;
+  const frame = readExact(fd, payloadStart, 5);
+  if (!frame) return FAIL;
+  const height = frame.readUInt16BE(1);
+  const width = frame.readUInt16BE(3);
+  if (width === 0 || height === 0) return FAIL;
+  return { width, height };
 }
 
 function readExact(fd: number, position: number, length: number): Buffer | undefined {

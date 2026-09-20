@@ -583,12 +583,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/backends/occt/lowerers/loft.ts",
-    "symbol": "Async function 'loftSketchSections'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/backends/occt/lowerers/mirrorPattern.ts",
     "symbol": "Function 'lowerPattern'",
     "value": 18
@@ -613,12 +607,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/assemblyJoints.ts",
-    "symbol": "Function 'recordMate'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/assemblyMateCapacity.ts",
     "symbol": "Function 'validateMateCapacityOptions'",
     "value": 17
@@ -640,12 +628,6 @@
     "file": "src/modeling/capture/authoringFeatureRecords.ts",
     "symbol": "Function 'buildEmbossTextFeatureSpec'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/authoringFeatureRecords.ts",
-    "symbol": "Function 'normalizeFdmSettings'",
-    "value": 20
   },
   {
     "rule": "complexity",
@@ -679,21 +661,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/featureMeshingPhases.ts",
-    "symbol": "Function 'emitSceneBackendFanout'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/forwardKinematics.ts",
     "symbol": "Function 'forwardKinematics'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/imageDimensions.ts",
-    "symbol": "Function 'parseJpeg'",
-    "value": 20
   },
   {
     "rule": "complexity",
