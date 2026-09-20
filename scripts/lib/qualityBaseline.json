@@ -517,12 +517,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/runtime/meshDeviation.ts",
-    "symbol": "Method 'nearestSq'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/server/middleware/sourceEndpoint.ts",
     "symbol": "Async function 'sourceHandler'",
     "value": 16
