@@ -26,12 +26,6 @@
   {
     "rule": "complexity",
     "file": "src/agent/cli/commands/export.ts",
-    "symbol": "Async function 'exportPartsScript'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/cli/commands/export.ts",
     "symbol": "Async function 'trustedManifestPath'",
     "value": 17
   },
