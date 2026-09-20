@@ -4,9 +4,30 @@ import { useState } from 'react';
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { StudioGenerate } from '../../StudioGenerate';
 import { BuildLoopPanel, ScenePanel } from './SidePanelParts';
+import type { ScriptReviewSummary } from '../../context/geometry/types';
 
 interface SidePanelProps {
     onJumpToLine: (line: number) => void;
+}
+
+type BlockingReasons = NonNullable<NonNullable<ScriptReviewSummary['fitness']>['blockingReasons']>;
+
+function deriveReviewSummary(scriptReview: ScriptReviewSummary | null) {
+    const reviewOk = scriptReview?.ok ?? null;
+    const verdict = reviewOk === null ? 'No Review' : reviewOk ? 'Functional' : 'Needs Repair';
+    const repairMode = scriptReview?.fitness?.repairMode ?? 'none';
+    const blockingReasons = scriptReview?.fitness?.blockingReasons ?? [];
+    return { verdict, repairMode, blockingReasons };
+}
+
+function collectNonBlockingDiagnostics(
+    scriptReview: ScriptReviewSummary | null,
+    blockingReasons: BlockingReasons,
+) {
+    return (scriptReview?.diagnostics ?? []).filter((diagnostic) =>
+        diagnostic.severity !== 'error' &&
+        !blockingReasons.some((reason) => reason.code === diagnostic.code && reason.message === diagnostic.message),
+    );
 }
 
 export function SidePanel({ onJumpToLine }: SidePanelProps) {
@@ -14,14 +35,8 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
     const [activeTab, setActiveTab] = useState<'scene' | 'loop' | 'generate'>('scene');
     const [showReviewDetails, setShowReviewDetails] = useState(false);
 
-    const reviewOk = scriptReview?.ok ?? null;
-    const verdict = reviewOk === null ? 'No Review' : reviewOk ? 'Functional' : 'Needs Repair';
-    const repairMode = scriptReview?.fitness?.repairMode ?? 'none';
-    const blockingReasons = scriptReview?.fitness?.blockingReasons ?? [];
-    const nonBlockingDiagnostics = (scriptReview?.diagnostics ?? []).filter((diagnostic) =>
-        diagnostic.severity !== 'error' &&
-        !blockingReasons.some((reason) => reason.code === diagnostic.code && reason.message === diagnostic.message),
-    );
+    const { verdict, repairMode, blockingReasons } = deriveReviewSummary(scriptReview);
+    const nonBlockingDiagnostics = collectNonBlockingDiagnostics(scriptReview, blockingReasons);
 
     return (
         <div className="flex flex-col h-full bg-[#111] border-b border-[#333]">

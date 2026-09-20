@@ -907,12 +907,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/studio/components/Layout/SidePanel.tsx",
-    "symbol": "Function 'SidePanel'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/components/Layout/StatusBar.tsx",
     "symbol": "Function 'StatusBar'",
     "value": 16
