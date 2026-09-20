@@ -259,12 +259,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/Viewer.tsx",
-    "symbol": "Function 'Viewer'",
-    "value": 123
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/demoPlayer/AnimationEngine.ts",
     "symbol": "Method 'enqueue'",
     "value": 117
