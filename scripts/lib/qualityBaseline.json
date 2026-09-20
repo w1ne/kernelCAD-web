@@ -242,12 +242,6 @@
   {
     "rule": "complexity",
     "file": "src/kernel/backends/occt/meshing.ts",
-    "symbol": "Function 'meshFaceToGeometry'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/backends/occt/meshing.ts",
     "symbol": "Function 'tryExtractPlaneFromPlaneRecord'",
     "value": 16
   },
