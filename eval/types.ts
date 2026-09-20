@@ -104,6 +104,9 @@ export interface AgentResponse {
   text: string;
   tokens_in: number;
   tokens_out: number;
+  /** Provider stop reason when available (OpenAI-compatible `finish_reason`,
+   *  Anthropic `stop_reason`). 'length' means the reply was truncated. */
+  finish_reason?: string;
 }
 
 export interface AgentClient {

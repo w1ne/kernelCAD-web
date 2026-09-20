@@ -13,11 +13,18 @@ export interface OpenAICompatOptions {
 }
 
 interface ChatCompletionResponse {
-  choices?: Array<{ message?: { content?: string | null } }>;
+  choices?: Array<{
+    message?: { content?: string | null };
+    finish_reason?: string | null;
+  }>;
   usage?: { prompt_tokens?: number; completion_tokens?: number };
 }
 
 const RETRYABLE_STATUS = (status: number): boolean => status === 429 || status >= 500;
+
+const MAX_CONTINUATIONS = 2;
+const CONTINUATION_PROMPT =
+  'Your previous reply was truncated. Continue exactly where you left off; do not repeat anything.';
 
 const num = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
 
@@ -42,28 +49,7 @@ export class OpenAICompatAgentClient implements AgentClient {
     this.fetchImpl = opts.fetchImpl ?? fetch;
   }
 
-  async generate(args: {
-    system: string;
-    systemAddendum?: string;
-    messages: AgentMessage[];
-    model: string;
-    max_tokens: number;
-    temperature?: number;
-  }): Promise<AgentResponse> {
-    const system =
-      args.systemAddendum && args.systemAddendum.length > 0
-        ? `${args.system}\n\n${args.systemAddendum}`
-        : args.system;
-    const body = {
-      model: args.model,
-      max_tokens: args.max_tokens,
-      messages: [
-        { role: 'system', content: system },
-        ...args.messages.map((m) => ({ role: m.role, content: m.content })),
-      ],
-      ...(args.temperature !== undefined ? { temperature: args.temperature } : {}),
-    };
-
+  private async request(body: Record<string, unknown>): Promise<ChatCompletionResponse> {
     let lastErr: Error | undefined;
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
       if (attempt > 0) {
@@ -94,23 +80,64 @@ export class OpenAICompatAgentClient implements AgentClient {
         const text = await resp.text().catch(() => '');
         throw new Error(`OpenAI-compat request failed: HTTP ${resp.status} ${text.slice(0, 300)}`);
       }
-      let data: ChatCompletionResponse;
       try {
-        data = (await resp.json()) as ChatCompletionResponse;
+        return (await resp.json()) as ChatCompletionResponse;
       } catch (err) {
         lastErr = err instanceof Error ? err : new Error(String(err));
         continue;
       }
-      const text = data.choices?.[0]?.message?.content ?? '';
-      if (text.length === 0) {
-        return { text: '', tokens_in: num(data.usage?.prompt_tokens), tokens_out: 0 };
-      }
-      return {
-        text,
-        tokens_in: num(data.usage?.prompt_tokens),
-        tokens_out: num(data.usage?.completion_tokens),
-      };
     }
     throw lastErr ?? new Error('OpenAI-compat request failed after retries');
+  }
+
+  async generate(args: {
+    system: string;
+    systemAddendum?: string;
+    messages: AgentMessage[];
+    model: string;
+    max_tokens: number;
+    temperature?: number;
+  }): Promise<AgentResponse> {
+    const system =
+      args.systemAddendum && args.systemAddendum.length > 0
+        ? `${args.system}\n\n${args.systemAddendum}`
+        : args.system;
+    const base = {
+      model: args.model,
+      max_tokens: args.max_tokens,
+      messages: [
+        { role: 'system', content: system },
+        ...args.messages.map((m) => ({ role: m.role, content: m.content })),
+      ],
+      ...(args.temperature !== undefined ? { temperature: args.temperature } : {}),
+    };
+
+    const first = await this.request(base);
+    let text = first.choices?.[0]?.message?.content ?? '';
+    let tokensIn = num(first.usage?.prompt_tokens);
+    let tokensOut = num(first.usage?.completion_tokens);
+    let finish = first.choices?.[0]?.finish_reason ?? 'stop';
+
+    let continuations = 0;
+    while (finish === 'length' && continuations < MAX_CONTINUATIONS) {
+      continuations += 1;
+      const cont = await this.request({
+        ...base,
+        messages: [
+          ...base.messages,
+          { role: 'assistant', content: text },
+          { role: 'user', content: CONTINUATION_PROMPT },
+        ],
+      });
+      text += cont.choices?.[0]?.message?.content ?? '';
+      tokensIn += num(cont.usage?.prompt_tokens);
+      tokensOut += num(cont.usage?.completion_tokens);
+      finish = cont.choices?.[0]?.finish_reason ?? 'stop';
+    }
+
+    if (text.length === 0) {
+      return { text: '', tokens_in: tokensIn, tokens_out: 0, finish_reason: finish };
+    }
+    return { text, tokens_in: tokensIn, tokens_out: tokensOut, finish_reason: finish };
   }
 }

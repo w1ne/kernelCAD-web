@@ -103,7 +103,7 @@ function parseArgs(argv: string[]): SweepConfig {
   if (!Number.isFinite(temperature)) fail(`--temperature must be a number, got ${temperature}`);
   const maxAttempts = Number(flagValue('--max-attempts') ?? 3);
   if (!Number.isInteger(maxAttempts) || maxAttempts < 1) fail(`--max-attempts must be an integer >= 1`);
-  const maxTokens = Number(flagValue('--max-tokens') ?? 8000);
+  const maxTokens = Number(flagValue('--max-tokens') ?? 16000);
   if (!Number.isInteger(maxTokens) || maxTokens < 1) fail(`--max-tokens must be an integer >= 1`);
   const maxTokensIn = Number(flagValue('--max-tokens-in') ?? 25_000_000);
   if (!Number.isFinite(maxTokensIn)) fail(`--max-tokens-in must be a number`);

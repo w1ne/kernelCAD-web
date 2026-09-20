@@ -32,7 +32,7 @@ describe('OpenAICompatAgentClient', () => {
       fetchImpl: fetchImpl as unknown as typeof fetch,
     });
     const out = await client.generate(REQ);
-    expect(out).toEqual({ text: 'hello', tokens_in: 11, tokens_out: 7 });
+    expect(out).toEqual({ text: 'hello', tokens_in: 11, tokens_out: 7, finish_reason: 'stop' });
     const [url, init] = fetchImpl.mock.calls[0];
     expect(url).toBe('https://api.example.com/v1/chat/completions');
     const body = JSON.parse((init as RequestInit).body as string);
@@ -129,5 +129,58 @@ describe('OpenAICompatAgentClient', () => {
     });
     await expect(client.generate(REQ)).rejects.toThrow('HTTP 400');
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
+  it('continues once when the reply is truncated (finish_reason length)', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          choices: [{ message: { content: 'const a = ' }, finish_reason: 'length' }],
+          usage: { prompt_tokens: 10, completion_tokens: 3 },
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          choices: [{ message: { content: 'box(1,1,1);' }, finish_reason: 'stop' }],
+          usage: { prompt_tokens: 12, completion_tokens: 4 },
+        }),
+      );
+    const client = new OpenAICompatAgentClient({
+      baseUrl: 'https://api.example.com/v1',
+      apiKey: 'k',
+      retryBaseMs: 1,
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    const out = await client.generate(REQ);
+    expect(out.text).toBe('const a = box(1,1,1);');
+    expect(out.tokens_in).toBe(22);
+    expect(out.tokens_out).toBe(7);
+    expect(out.finish_reason).toBe('stop');
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    const secondBody = JSON.parse(
+      (fetchImpl.mock.calls[1][1] as RequestInit).body as string,
+    );
+    expect(secondBody.messages.at(-1).role).toBe('user');
+    expect(secondBody.messages.at(-1).content).toMatch(/continue/i);
+  });
+
+  it('caps continuation at two turns', async () => {
+    const fetchImpl = vi.fn(async () =>
+      jsonResponse({
+        choices: [{ message: { content: 'x' }, finish_reason: 'length' }],
+        usage: { prompt_tokens: 1, completion_tokens: 1 },
+      }),
+    );
+    const client = new OpenAICompatAgentClient({
+      baseUrl: 'https://api.example.com/v1',
+      apiKey: 'k',
+      retryBaseMs: 1,
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    const out = await client.generate(REQ);
+    expect(out.text).toBe('xxx');
+    expect(out.finish_reason).toBe('length');
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
   });
 });
