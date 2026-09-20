@@ -277,12 +277,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/backendMesh.ts",
-    "symbol": "Function 'meshShapeForExport'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/drawingAnnotations.ts",
     "symbol": "Arrow function",
     "value": 17
@@ -331,18 +325,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/occtBackend.ts",
-    "symbol": "Method 'findCanonicalFaceHash'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/backends/occt/pathNurbsLowerer.ts",
-    "symbol": "Function 'processCommand'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/sketchToDrawing.ts",
     "symbol": "Function 'drawingForLoop'",
     "value": 16
@@ -355,12 +337,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/import/importSvg.ts",
-    "symbol": "Method 'number'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/import/importSvgParsing.ts",
     "symbol": "Function 'parseTransform'",
     "value": 17
@@ -370,12 +346,6 @@
     "file": "src/kernel/naming/queryEvaluator.ts",
     "symbol": "Function 'evalAst'",
     "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/naming/resolveFaceRef.ts",
-    "symbol": "Function 'resolveCreated'",
-    "value": 18
   },
   {
     "rule": "complexity",
@@ -759,7 +729,7 @@
     "rule": "max-lines-per-function",
     "file": "src/kernel/backends/occt/pathNurbsLowerer.ts",
     "symbol": "Function 'buildNurbsSketchOnPlane'",
-    "value": 143
+    "value": 140
   },
   {
     "rule": "max-lines-per-function",
