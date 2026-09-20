@@ -553,12 +553,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/jointVisualExposure.ts",
-    "symbol": "Function 'inferPinRadius'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/matePhysicalRealization.ts",
     "symbol": "Async function 'validateMatePhysicalRealization'",
     "value": 16

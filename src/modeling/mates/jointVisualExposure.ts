@@ -621,6 +621,55 @@ function combinedBoundingSphereRadius(a: OcctBackend, b: OcctBackend): number {
  * near-zero on a degenerate geometry. The spec calls 3.5 mm out
  * explicitly as the reference for `MIN_PIN_STICKOUT_FACTOR × PIN_R`.
  */
+function projectFacePerpendicular(
+  aabbMin: Vec3,
+  aabbMax: Vec3,
+  u: Vec3,
+  v: Vec3,
+): { uMin: number; uMax: number; vMin: number; vMax: number } {
+  let uMin = Infinity, uMax = -Infinity, vMin = Infinity, vMax = -Infinity;
+  for (let i = 0; i < 8; i++) {
+    const p: Vec3 = [
+      ((i & 1) === 0 ? aabbMin[0] : aabbMax[0]),
+      ((i & 2) === 0 ? aabbMin[1] : aabbMax[1]),
+      ((i & 4) === 0 ? aabbMin[2] : aabbMax[2]),
+    ];
+    const uu = p[0] * u[0] + p[1] * u[1] + p[2] * u[2];
+    const vv = p[0] * v[0] + p[1] * v[1] + p[2] * v[2];
+    if (uu < uMin) uMin = uu;
+    if (uu > uMax) uMax = uu;
+    if (vv < vMin) vMin = vv;
+    if (vv > vMax) vMax = vv;
+  }
+  return { uMin, uMax, vMin, vMax };
+}
+
+function candidatePinHalfExtent(
+  aabbMin: Vec3,
+  aabbMax: Vec3,
+  originU: number,
+  originV: number,
+  u: Vec3,
+  v: Vec3,
+): number | undefined {
+  const { uMin, uMax, vMin, vMax } = projectFacePerpendicular(aabbMin, aabbMax, u, v);
+  const halfU = 0.5 * (uMax - uMin);
+  const halfV = 0.5 * (vMax - vMin);
+  // Skip degenerate faces (perpendicular extent ≈ 0 — these are
+  // faces whose normal is in the axis-perpendicular plane, not
+  // useful for pin-radius inference). Take the LARGER of the two
+  // half-extents so a pin's lateral cylindrical face (whose
+  // perpendicular AABB is the pin cross-section ≈ 2 × PIN_R square)
+  // is correctly read as PIN_R, not as 0.
+  const halfMax = Math.max(halfU, halfV);
+  if (halfMax < PARALLEL_DIRECTION_EPSILON) return undefined;
+  // Only consider faces whose perpendicular AABB straddles the
+  // joint origin in BOTH perpendicular directions — the pin sits on
+  // the joint axis, so its perpendicular AABB encloses the origin.
+  if (uMin > originU || uMax < originU || vMin > originV || vMax < originV) return undefined;
+  return halfMax;
+}
+
 function inferPinRadius(
   parent: OcctBackend,
   child: OcctBackend,
@@ -637,35 +686,8 @@ function inferPinRadius(
       const bb = face.boundingBox.bounds;
       const aabbMin = bb[0] as Vec3;
       const aabbMax = bb[1] as Vec3;
-      let uMin = Infinity, uMax = -Infinity, vMin = Infinity, vMax = -Infinity;
-      for (let i = 0; i < 8; i++) {
-        const p: Vec3 = [
-          ((i & 1) === 0 ? aabbMin[0] : aabbMax[0]),
-          ((i & 2) === 0 ? aabbMin[1] : aabbMax[1]),
-          ((i & 4) === 0 ? aabbMin[2] : aabbMax[2]),
-        ];
-        const uu = p[0] * u[0] + p[1] * u[1] + p[2] * u[2];
-        const vv = p[0] * v[0] + p[1] * v[1] + p[2] * v[2];
-        if (uu < uMin) uMin = uu;
-        if (uu > uMax) uMax = uu;
-        if (vv < vMin) vMin = vv;
-        if (vv > vMax) vMax = vv;
-      }
-      const halfU = 0.5 * (uMax - uMin);
-      const halfV = 0.5 * (vMax - vMin);
-      // Skip degenerate faces (perpendicular extent ≈ 0 — these are
-      // faces whose normal is in the axis-perpendicular plane, not
-      // useful for pin-radius inference). Take the LARGER of the two
-      // half-extents so a pin's lateral cylindrical face (whose
-      // perpendicular AABB is the pin cross-section ≈ 2 × PIN_R square)
-      // is correctly read as PIN_R, not as 0.
-      const halfMax = Math.max(halfU, halfV);
-      if (halfMax < PARALLEL_DIRECTION_EPSILON) continue;
-      // Only consider faces whose perpendicular AABB straddles the
-      // joint origin in BOTH perpendicular directions — the pin sits on
-      // the joint axis, so its perpendicular AABB encloses the origin.
-      if (uMin > originU || uMax < originU || vMin > originV || vMax < originV) continue;
-      if (halfMax < smallestHalf) smallestHalf = halfMax;
+      const halfMax = candidatePinHalfExtent(aabbMin, aabbMax, originU, originV, u, v);
+      if (halfMax !== undefined && halfMax < smallestHalf) smallestHalf = halfMax;
     }
   }
   return smallestHalf < Infinity ? smallestHalf : PIN_R_FALLBACK_MM;
