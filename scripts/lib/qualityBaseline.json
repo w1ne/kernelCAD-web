@@ -181,12 +181,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/geom.ts",
-    "symbol": "Function 'fitCircle2D'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/planPhases/ops.ts",
     "symbol": "Function 'emitCutoutOps'",
     "value": 16
