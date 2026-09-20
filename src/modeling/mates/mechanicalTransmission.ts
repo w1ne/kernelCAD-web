@@ -78,6 +78,44 @@ export async function reviewMechanicalTransmission(
     ? buildPoseEnvelopeSamples(arm)
     : [{ name: 'current', poses: {}, reason: 'capture-time/default mate poses' }] satisfies PoseEnvelopeSample[];
 
+  appendMissingCouplingDiagnostics(arm, transmissions, diagnostics);
+
+  for (const transmission of transmissions) {
+    appendTransmissionMateDiagnostics(transmission, matesByName, diagnostics);
+
+    checkOptionalPart(diagnostics, transmission, partNames, 'actuator', transmission.actuator);
+    checkOptionalPart(diagnostics, transmission, partNames, 'input', transmission.input);
+    checkOptionalPart(diagnostics, transmission, partNames, 'output', transmission.output);
+    for (const pathPart of transmission.path) {
+      checkOptionalPart(diagnostics, transmission, partNames, 'path', pathPart);
+    }
+
+    for (const sample of pathSamples) {
+      await appendPathContinuityDiagnostics(
+        arm,
+        transmission,
+        sample,
+        partNames,
+        partsByName,
+        localMeshByPartName,
+        diagnostics,
+      );
+    }
+  }
+
+  return {
+    diagnostics,
+    checkedTransmissionCount: transmissions.length,
+    checkedCouplingCount: arm.__mateCouplings().length,
+  };
+}
+
+/** Flag couplings that no declared transmission covers. */
+function appendMissingCouplingDiagnostics(
+  arm: Assembly,
+  transmissions: readonly TransmissionIntentRecord[],
+  diagnostics: MechanicalTransmissionDiagnostic[],
+): void {
   for (const coupling of arm.__mateCouplings()) {
     const matching = transmissions.some((transmission) =>
       transmission.sourceMate === coupling.source &&
@@ -94,82 +132,83 @@ export async function reviewMechanicalTransmission(
       hint: `mechanical-transmission.missing-for-coupled-mate — add arm.transmission(name, { sourceMate: '${coupling.source}', drivenMates: ['${coupling.driven}'], kind, path: [...] }) naming the horn/link/gear/belt/tendon parts that transfer motion.`,
     });
   }
+}
 
-  for (const transmission of transmissions) {
-    if (!matesByName.has(transmission.sourceMate)) {
-      diagnostics.push({
-        code: 'assembly.transmission.mate-missing',
-        severity: 'error',
-        transmissionName: transmission.name,
-        mateName: transmission.sourceMate,
-        role: 'sourceMate',
-        message: `Transmission '${transmission.name}' references missing source mate '${transmission.sourceMate}'.`,
-        hint: `mechanical-transmission.mate-missing — declare arm.mate('${transmission.sourceMate}', ...) before arm.transmission('${transmission.name}', ...).`,
-      });
-    }
-
-    for (const drivenMate of transmission.drivenMates) {
-      if (matesByName.has(drivenMate)) continue;
-      diagnostics.push({
-        code: 'assembly.transmission.mate-missing',
-        severity: 'error',
-        transmissionName: transmission.name,
-        mateName: drivenMate,
-        role: 'drivenMate',
-        message: `Transmission '${transmission.name}' references missing driven mate '${drivenMate}'.`,
-        hint: `mechanical-transmission.mate-missing — declare arm.mate('${drivenMate}', ...) before naming it in arm.transmission('${transmission.name}', ...).`,
-      });
-    }
-
-    checkOptionalPart(diagnostics, transmission, partNames, 'actuator', transmission.actuator);
-    checkOptionalPart(diagnostics, transmission, partNames, 'input', transmission.input);
-    checkOptionalPart(diagnostics, transmission, partNames, 'output', transmission.output);
-    for (const pathPart of transmission.path) {
-      checkOptionalPart(diagnostics, transmission, partNames, 'path', pathPart);
-    }
-
-    for (const sample of pathSamples) {
-      const solved = await solveMates(arm, sample.poses);
-      const worldBoundsByPartName = new Map<string, Bbox>();
-      const worldMeshByPartName = new Map<string, TransformedMesh>();
-      for (let index = 1; index < transmission.path.length; index++) {
-        const fromPartName = transmission.path[index - 1];
-        const toPartName = transmission.path[index];
-        if (!partNames.has(fromPartName) || !partNames.has(toPartName)) continue;
-        const worldBboxA = await worldBoundsFor(fromPartName, partsByName, solved.poses, worldBoundsByPartName);
-        const worldBboxB = await worldBoundsFor(toPartName, partsByName, solved.poses, worldBoundsByPartName);
-        if (worldBboxA === undefined || worldBboxB === undefined) continue;
-        let gapMm = bboxGap(worldBboxA, worldBboxB);
-        if (gapMm <= TRANSMISSION_PATH_CONTACT_GAP_TOL_MM) {
-          const worldMeshA = await worldMeshFor(fromPartName, partsByName, solved.poses, localMeshByPartName, worldMeshByPartName);
-          const worldMeshB = await worldMeshFor(toPartName, partsByName, solved.poses, localMeshByPartName, worldMeshByPartName);
-          if (worldMeshA === undefined || worldMeshB === undefined) continue;
-          gapMm = meshSurfaceGap(worldMeshA, worldMeshB);
-        }
-        if (gapMm <= TRANSMISSION_PATH_CONTACT_GAP_TOL_MM) continue;
-
-        diagnostics.push({
-          code: 'assembly.transmission.path-disconnected',
-          severity: 'error',
-          transmissionName: transmission.name,
-          sampleName: sample.name,
-          fromPartName,
-          toPartName,
-          gapMm,
-          worldBboxA,
-          worldBboxB,
-          message: `Transmission '${transmission.name}' path jumps ${gapMm.toFixed(1)} mm from '${fromPartName}' to '${toPartName}' at pose-envelope sample '${sample.name}'.`,
-          hint: `mechanical-transmission.path-disconnected — add a horn/link/gear/belt/tendon part that physically touches both '${fromPartName}' and '${toPartName}' across the declared travel, or reorder the transmission path so consecutive parts form a load path within ${TRANSMISSION_PATH_CONTACT_GAP_TOL_MM} mm.`,
-        });
-      }
-    }
+/** Flag source/driven mates the transmission names but the assembly lacks. */
+function appendTransmissionMateDiagnostics(
+  transmission: TransmissionIntentRecord,
+  matesByName: ReadonlyMap<string, unknown>,
+  diagnostics: MechanicalTransmissionDiagnostic[],
+): void {
+  if (!matesByName.has(transmission.sourceMate)) {
+    diagnostics.push({
+      code: 'assembly.transmission.mate-missing',
+      severity: 'error',
+      transmissionName: transmission.name,
+      mateName: transmission.sourceMate,
+      role: 'sourceMate',
+      message: `Transmission '${transmission.name}' references missing source mate '${transmission.sourceMate}'.`,
+      hint: `mechanical-transmission.mate-missing — declare arm.mate('${transmission.sourceMate}', ...) before arm.transmission('${transmission.name}', ...).`,
+    });
   }
 
-  return {
-    diagnostics,
-    checkedTransmissionCount: transmissions.length,
-    checkedCouplingCount: arm.__mateCouplings().length,
-  };
+  for (const drivenMate of transmission.drivenMates) {
+    if (matesByName.has(drivenMate)) continue;
+    diagnostics.push({
+      code: 'assembly.transmission.mate-missing',
+      severity: 'error',
+      transmissionName: transmission.name,
+      mateName: drivenMate,
+      role: 'drivenMate',
+      message: `Transmission '${transmission.name}' references missing driven mate '${drivenMate}'.`,
+      hint: `mechanical-transmission.mate-missing — declare arm.mate('${drivenMate}', ...) before naming it in arm.transmission('${transmission.name}', ...).`,
+    });
+  }
+}
+
+/** Measure consecutive path parts at one pose sample and flag jumps. */
+async function appendPathContinuityDiagnostics(
+  arm: Assembly,
+  transmission: TransmissionIntentRecord,
+  sample: PoseEnvelopeSample,
+  partNames: ReadonlySet<string>,
+  partsByName: ReadonlyMap<string, AssemblyPart>,
+  localMeshByPartName: Map<string, RuntimeMesh>,
+  diagnostics: MechanicalTransmissionDiagnostic[],
+): Promise<void> {
+  const solved = await solveMates(arm, sample.poses);
+  const worldBoundsByPartName = new Map<string, Bbox>();
+  const worldMeshByPartName = new Map<string, TransformedMesh>();
+  for (let index = 1; index < transmission.path.length; index++) {
+    const fromPartName = transmission.path[index - 1];
+    const toPartName = transmission.path[index];
+    if (!partNames.has(fromPartName) || !partNames.has(toPartName)) continue;
+    const worldBboxA = await worldBoundsFor(fromPartName, partsByName, solved.poses, worldBoundsByPartName);
+    const worldBboxB = await worldBoundsFor(toPartName, partsByName, solved.poses, worldBoundsByPartName);
+    if (worldBboxA === undefined || worldBboxB === undefined) continue;
+    let gapMm = bboxGap(worldBboxA, worldBboxB);
+    if (gapMm <= TRANSMISSION_PATH_CONTACT_GAP_TOL_MM) {
+      const worldMeshA = await worldMeshFor(fromPartName, partsByName, solved.poses, localMeshByPartName, worldMeshByPartName);
+      const worldMeshB = await worldMeshFor(toPartName, partsByName, solved.poses, localMeshByPartName, worldMeshByPartName);
+      if (worldMeshA === undefined || worldMeshB === undefined) continue;
+      gapMm = meshSurfaceGap(worldMeshA, worldMeshB);
+    }
+    if (gapMm <= TRANSMISSION_PATH_CONTACT_GAP_TOL_MM) continue;
+
+    diagnostics.push({
+      code: 'assembly.transmission.path-disconnected',
+      severity: 'error',
+      transmissionName: transmission.name,
+      sampleName: sample.name,
+      fromPartName,
+      toPartName,
+      gapMm,
+      worldBboxA,
+      worldBboxB,
+      message: `Transmission '${transmission.name}' path jumps ${gapMm.toFixed(1)} mm from '${fromPartName}' to '${toPartName}' at pose-envelope sample '${sample.name}'.`,
+      hint: `mechanical-transmission.path-disconnected — add a horn/link/gear/belt/tendon part that physically touches both '${fromPartName}' and '${toPartName}' across the declared travel, or reorder the transmission path so consecutive parts form a load path within ${TRANSMISSION_PATH_CONTACT_GAP_TOL_MM} mm.`,
+    });
+  }
 }
 
 async function worldBoundsFor(

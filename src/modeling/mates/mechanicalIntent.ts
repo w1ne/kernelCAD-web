@@ -256,26 +256,14 @@ async function checkRequiredSupport(
   const requirement = intent.requiredSupport;
   if (requirement === undefined) return undefined;
 
-  let parsed: { partName: string; connectorName: string };
-  try {
-    parsed = parseConnectorRef(requirement.around);
-  } catch {
-    return { supportPartNames: [...(requirement.supports ?? intent.supports)] };
-  }
-
   const parts = arm.__parts();
-  const aroundPart = parts.find((part) => part.name === parsed.partName);
-  const aroundConnector = aroundPart?.mateConnectors.find((connector) => connector.name === parsed.connectorName);
-  if (aroundPart === undefined || aroundConnector === undefined || aroundConnector.origin.kind !== 'vec3') {
-    return { supportPartNames: [...(requirement.supports ?? intent.supports)] };
+  const around = resolveAroundConnector(parts, poses, requirement.around);
+  if (around === undefined) {
+    return { supportPartNames: supportNamesFor(requirement, intent) };
   }
-  const aroundPose = poses.get(aroundPart.name);
-  if (aroundPose === undefined) {
-    return { supportPartNames: [...(requirement.supports ?? intent.supports)] };
-  }
-  const worldPoint = aroundPose.point(aroundConnector.origin.value);
+  const worldPoint = around.worldPoint;
 
-  const supportPartNames = [...(requirement.supports ?? intent.supports)];
+  const supportPartNames = supportNamesFor(requirement, intent);
   let bestDistance = Infinity;
   for (const supportPartName of supportPartNames) {
     const supportPart = parts.find((part) => part.name === supportPartName);
@@ -287,8 +275,8 @@ async function checkRequiredSupport(
     const distance = distanceOutsideExpandedBbox(worldPoint, bbox, REQUIRED_SUPPORT_TOL_MM);
     bestDistance = Math.min(bestDistance, distance);
     if (distance > 0) continue;
-    if (requirement.minBearingLengthMm !== undefined && aroundConnector.axis !== undefined) {
-      const axis = dominantAxis(aroundConnector.axis);
+    if (requirement.minBearingLengthMm !== undefined && around.axis !== undefined) {
+      const axis = dominantAxis(around.axis);
       const extent = bbox.max[axis] - bbox.min[axis];
       if (extent < requirement.minBearingLengthMm) {
         bestDistance = Math.min(bestDistance, requirement.minBearingLengthMm - extent);
@@ -302,6 +290,39 @@ async function checkRequiredSupport(
     supportPartNames,
     ...(Number.isFinite(bestDistance) ? { distanceMm: bestDistance } : {}),
   };
+}
+
+/** The declared `requiredSupport.supports`, falling back to the intent's
+ *  support parts when the requirement omits its own list. */
+function supportNamesFor(
+  requirement: NonNullable<MechanicalJointIntentRecord['requiredSupport']>,
+  intent: MechanicalJointIntentRecord,
+): string[] {
+  return [...(requirement.supports ?? intent.supports)];
+}
+
+/** Resolve the requirement's `around` connector ref to its world-space
+ *  point and axis, or `undefined` when any resolution step fails. */
+function resolveAroundConnector(
+  parts: ReturnType<Assembly['__parts']>,
+  poses: ReadonlyMap<string, { point(p: Vec3): Vec3 }>,
+  aroundRef: string,
+): { worldPoint: Vec3; axis: Vec3 | undefined } | undefined {
+  let parsed: { partName: string; connectorName: string };
+  try {
+    parsed = parseConnectorRef(aroundRef);
+  } catch {
+    return undefined;
+  }
+
+  const aroundPart = parts.find((part) => part.name === parsed.partName);
+  const aroundConnector = aroundPart?.mateConnectors.find((connector) => connector.name === parsed.connectorName);
+  if (aroundPart === undefined || aroundConnector === undefined || aroundConnector.origin.kind !== 'vec3') {
+    return undefined;
+  }
+  const aroundPose = poses.get(aroundPart.name);
+  if (aroundPose === undefined) return undefined;
+  return { worldPoint: aroundPose.point(aroundConnector.origin.value), axis: aroundConnector.axis };
 }
 
 function transformBbox(bbox: { min: Vec3; max: Vec3 }, transform: { point(p: Vec3): Vec3 }): { min: Vec3; max: Vec3 } {

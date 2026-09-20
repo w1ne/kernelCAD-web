@@ -28,6 +28,8 @@ import {
 import {
   reviewPhysicalUseCaseJointReactions,
   type PhysicalUseCaseJointReactionCertificate,
+  type PhysicalUseCaseJointReactionEvidence,
+  type PhysicalUseCaseJointReactionIssue,
 } from './physicalUseCaseJointReactions';
 import {
   reviewJointReactionCapacity,
@@ -423,19 +425,7 @@ async function reviewCertifiedJointLoads(
 }> {
   const diagnostics: PhysicalUseCaseDiagnostic[] = [];
   const reactions = await reviewPhysicalUseCaseJointReactions(arm, useCase, staticCertificate);
-  for (const issue of reactions.issues) {
-    diagnostics.push({
-      code: issue.kind === 'joint-reaction-input-incomplete'
-        ? 'assembly.physical-use-case.joint-reaction-input-incomplete'
-        : 'assembly.physical-use-case.joint-reaction-indeterminate',
-      severity: 'error',
-      useCaseName: issue.useCaseName,
-      message: `Physical use case '${issue.useCaseName}' cannot derive determinate pose-bound joint reactions: ${issue.message}`,
-      hint: issue.kind === 'joint-reaction-input-incomplete'
-        ? 'physical-use-case.joint-reaction-input-incomplete - preserve the exact passing contact certificate, solved pose, contact points, loads, and connector frames.'
-        : 'physical-use-case.joint-reaction-indeterminate - use one stable root and a tree load path, or provide a future stiffness model for loops and multiple supports.',
-    });
-  }
+  appendJointReactionIssueDiagnostics(reactions.issues, diagnostics);
 
   const matesByName = new Map(arm.__mates().map((mate) => [mate.name, mate]));
   const structuralCertificates: PhysicalUseCaseJointStructuralCertificate[] = [];
@@ -455,78 +445,8 @@ async function reviewCertifiedJointLoads(
       }
 
       const envelope = reviewJointReactionCapacity(mate, reaction);
-      if (envelope.status === 'undeclared') {
-        diagnostics.push({
-          code: 'assembly.physical-use-case.joint-capacity-undeclared',
-          severity: 'error',
-          useCaseName: useCase.name,
-          mateName: mate.name,
-          evidence: envelope,
-          message: `Physical use case '${useCase.name}' derives a reaction at mate '${mate.name}', but the mate has no complete resultant force and moment envelope.`,
-          hint: `physical-use-case.joint-capacity-undeclared - add capacity.envelope with positive maxResultantForceN and maxResultantMomentNmm to mate '${mate.name}'. A declaration is a rating check, not structural proof.`,
-        });
-      } else if (envelope.status === 'exceeded') {
-        diagnostics.push({
-          code: 'assembly.physical-use-case.joint-capacity-exceeded',
-          severity: 'error',
-          useCaseName: useCase.name,
-          mateName: mate.name,
-          evidence: envelope,
-          message: `Physical use case '${useCase.name}' reaction at mate '${mate.name}' exceeds its declared resultant capacity envelope.`,
-          hint: `physical-use-case.joint-capacity-exceeded - increase real rated joint capacity or redesign the load path; do not raise the declaration without physical evidence.`,
-        });
-      }
-
-      let structure: ClevisJointStructureReview | undefined;
-      if (includeStructure) {
-        if (mate.capacity?.structure === undefined) {
-          diagnostics.push({
-            code: 'assembly.physical-use-case.joint-structure-input-incomplete',
-            severity: 'error',
-            useCaseName: useCase.name,
-            mateName: mate.name,
-            message: `Physical use case '${useCase.name}' has no geometry/material structural descriptor for mate '${mate.name}'.`,
-            hint: `physical-use-case.joint-structure-input-incomplete - build '${mate.name}' with joint.clevis(...), declare pin/fork/tongue engineering materials, and attach clevis.structural as capacity.structure.`,
-          });
-        } else {
-          structure = reviewClevisJointStructure({
-            reaction,
-            model: mate.capacity.structure,
-            minSafetyFactor: useCase.criteria?.minJointSafetyFactor,
-          });
-          if (structure.status === 'input-incomplete') {
-            diagnostics.push({
-              code: 'assembly.physical-use-case.joint-structure-input-incomplete',
-              severity: 'error',
-              useCaseName: useCase.name,
-              mateName: mate.name,
-              review: structure,
-              message: `Physical use case '${useCase.name}' cannot derive clevis strength for mate '${mate.name}': ${structure.message ?? 'structural input is incomplete'}`,
-              hint: `physical-use-case.joint-structure-input-incomplete - use the unmodified joint.clevis structural descriptor with explicit valid materials and geometry.`,
-            });
-          } else if (structure.status === 'unsupported-load-case') {
-            diagnostics.push({
-              code: 'assembly.physical-use-case.joint-structure-unsupported-load-case',
-              severity: 'error',
-              useCaseName: useCase.name,
-              mateName: mate.name,
-              review: structure,
-              message: `Physical use case '${useCase.name}' reaction at mate '${mate.name}' is outside the clevis v1 load model: ${structure.message ?? 'unsupported load component'}`,
-              hint: `physical-use-case.joint-structure-unsupported-load-case - add explicit thrust/moment load-path geometry or use a later structural model; the current gate will not silently omit this component.`,
-            });
-          } else if (structure.status === 'failed') {
-            diagnostics.push({
-              code: 'assembly.physical-use-case.joint-structure-insufficient',
-              severity: 'error',
-              useCaseName: useCase.name,
-              mateName: mate.name,
-              review: structure,
-              message: `Physical use case '${useCase.name}' clevis at mate '${mate.name}' is below minimum factor of safety ${structure.minSafetyFactor}.`,
-              hint: `physical-use-case.joint-structure-insufficient - increase real pin/ligament/bearing dimensions, select stronger declared materials, reduce load, or redesign the load path.`,
-            });
-          }
-        }
-      }
+      appendJointCapacityDiagnostics(useCase, mate.name, envelope, diagnostics);
+      const structure = resolveJointStructure(useCase, mate, reaction, includeStructure, diagnostics);
 
       joints.push({
         mateName: mate.name,
@@ -547,6 +467,113 @@ async function reviewCertifiedJointLoads(
     reactionCertificates: [...reactions.certificates],
     structuralCertificates,
   };
+}
+
+function appendJointReactionIssueDiagnostics(
+  issues: readonly PhysicalUseCaseJointReactionIssue[],
+  diagnostics: PhysicalUseCaseDiagnostic[],
+): void {
+  for (const issue of issues) {
+    diagnostics.push({
+      code: issue.kind === 'joint-reaction-input-incomplete'
+        ? 'assembly.physical-use-case.joint-reaction-input-incomplete'
+        : 'assembly.physical-use-case.joint-reaction-indeterminate',
+      severity: 'error',
+      useCaseName: issue.useCaseName,
+      message: `Physical use case '${issue.useCaseName}' cannot derive determinate pose-bound joint reactions: ${issue.message}`,
+      hint: issue.kind === 'joint-reaction-input-incomplete'
+        ? 'physical-use-case.joint-reaction-input-incomplete - preserve the exact passing contact certificate, solved pose, contact points, loads, and connector frames.'
+        : 'physical-use-case.joint-reaction-indeterminate - use one stable root and a tree load path, or provide a future stiffness model for loops and multiple supports.',
+    });
+  }
+}
+
+function appendJointCapacityDiagnostics(
+  useCase: PhysicalUseCaseRecord,
+  mateName: string,
+  envelope: JointReactionCapacityEvidence,
+  diagnostics: PhysicalUseCaseDiagnostic[],
+): void {
+  if (envelope.status === 'undeclared') {
+    diagnostics.push({
+      code: 'assembly.physical-use-case.joint-capacity-undeclared',
+      severity: 'error',
+      useCaseName: useCase.name,
+      mateName,
+      evidence: envelope,
+      message: `Physical use case '${useCase.name}' derives a reaction at mate '${mateName}', but the mate has no complete resultant force and moment envelope.`,
+      hint: `physical-use-case.joint-capacity-undeclared - add capacity.envelope with positive maxResultantForceN and maxResultantMomentNmm to mate '${mateName}'. A declaration is a rating check, not structural proof.`,
+    });
+  } else if (envelope.status === 'exceeded') {
+    diagnostics.push({
+      code: 'assembly.physical-use-case.joint-capacity-exceeded',
+      severity: 'error',
+      useCaseName: useCase.name,
+      mateName,
+      evidence: envelope,
+      message: `Physical use case '${useCase.name}' reaction at mate '${mateName}' exceeds its declared resultant capacity envelope.`,
+      hint: `physical-use-case.joint-capacity-exceeded - increase real rated joint capacity or redesign the load path; do not raise the declaration without physical evidence.`,
+    });
+  }
+}
+
+function resolveJointStructure(
+  useCase: PhysicalUseCaseRecord,
+  mate: ReturnType<Assembly['__mates']>[number],
+  reaction: PhysicalUseCaseJointReactionEvidence,
+  includeStructure: boolean,
+  diagnostics: PhysicalUseCaseDiagnostic[],
+): ClevisJointStructureReview | undefined {
+  if (!includeStructure) return undefined;
+  if (mate.capacity?.structure === undefined) {
+    diagnostics.push({
+      code: 'assembly.physical-use-case.joint-structure-input-incomplete',
+      severity: 'error',
+      useCaseName: useCase.name,
+      mateName: mate.name,
+      message: `Physical use case '${useCase.name}' has no geometry/material structural descriptor for mate '${mate.name}'.`,
+      hint: `physical-use-case.joint-structure-input-incomplete - build '${mate.name}' with joint.clevis(...), declare pin/fork/tongue engineering materials, and attach clevis.structural as capacity.structure.`,
+    });
+    return undefined;
+  }
+
+  const structure = reviewClevisJointStructure({
+    reaction,
+    model: mate.capacity.structure,
+    minSafetyFactor: useCase.criteria?.minJointSafetyFactor,
+  });
+  if (structure.status === 'input-incomplete') {
+    diagnostics.push({
+      code: 'assembly.physical-use-case.joint-structure-input-incomplete',
+      severity: 'error',
+      useCaseName: useCase.name,
+      mateName: mate.name,
+      review: structure,
+      message: `Physical use case '${useCase.name}' cannot derive clevis strength for mate '${mate.name}': ${structure.message ?? 'structural input is incomplete'}`,
+      hint: `physical-use-case.joint-structure-input-incomplete - use the unmodified joint.clevis structural descriptor with explicit valid materials and geometry.`,
+    });
+  } else if (structure.status === 'unsupported-load-case') {
+    diagnostics.push({
+      code: 'assembly.physical-use-case.joint-structure-unsupported-load-case',
+      severity: 'error',
+      useCaseName: useCase.name,
+      mateName: mate.name,
+      review: structure,
+      message: `Physical use case '${useCase.name}' reaction at mate '${mate.name}' is outside the clevis v1 load model: ${structure.message ?? 'unsupported load component'}`,
+      hint: `physical-use-case.joint-structure-unsupported-load-case - add explicit thrust/moment load-path geometry or use a later structural model; the current gate will not silently omit this component.`,
+    });
+  } else if (structure.status === 'failed') {
+    diagnostics.push({
+      code: 'assembly.physical-use-case.joint-structure-insufficient',
+      severity: 'error',
+      useCaseName: useCase.name,
+      mateName: mate.name,
+      review: structure,
+      message: `Physical use case '${useCase.name}' clevis at mate '${mate.name}' is below minimum factor of safety ${structure.minSafetyFactor}.`,
+      hint: `physical-use-case.joint-structure-insufficient - increase real pin/ligament/bearing dimensions, select stronger declared materials, reduce load, or redesign the load path.`,
+    });
+  }
+  return structure;
 }
 
 function reviewLoadPaths(
