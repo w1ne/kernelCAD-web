@@ -121,12 +121,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/agent/cli/commands/render.ts",
-    "symbol": "Function 'renderCommand'",
-    "value": 133
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/agent/reconstruct/planPhases/body.ts",
     "symbol": "Function 'buildBody'",
     "value": 111
@@ -241,18 +235,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/SceneBrowser.tsx",
-    "symbol": "Arrow function",
-    "value": 129
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/components/Viewer.tsx",
-    "symbol": "Function 'Viewer'",
-    "value": 123
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/demoPlayer/AnimationEngine.ts",
     "symbol": "Method 'enqueue'",
     "value": 117
@@ -262,12 +244,6 @@
     "file": "src/studio/components/demoPlayer/demoPlayerApiFactory.ts",
     "symbol": "Function 'captureInspectionChannels'",
     "value": 112
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/components/demoPlayer/useDemoAutoLoad.ts",
-    "symbol": "Function 'useDemoAutoLoad'",
-    "value": 127
   },
   {
     "rule": "max-lines-per-function",
@@ -310,12 +286,6 @@
     "file": "src/studio/features-ui/ai/AIAssistant.tsx",
     "symbol": "Function 'AIAssistant'",
     "value": 101
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/features-ui/ai/useAIAssistantChat.ts",
-    "symbol": "Function 'useAIAssistantChat'",
-    "value": 123
   },
   {
     "rule": "max-lines-per-function",

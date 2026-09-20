@@ -33,7 +33,9 @@ interface ViewerProps {
     onDisplayReady?: () => void;
 }
 
-export default function Viewer({ geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D, onDisplayReady }: ViewerProps) {
+/** Scene state phase: workbench/ui/shell context plus the grid, section-clipping
+ *  and hover/interaction hooks the Viewer canvas is driven by. */
+function useViewerSetup(geometries: GeometryResult[]) {
     const {
         setSelectedFace,
         selectedSketchName,
@@ -87,6 +89,43 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
         viewportFocusTarget,
         viewportFocusTargetVersion,
     });
+
+    return {
+        setSelectedFace,
+        selectedSketchName,
+        setSelectedSketchName,
+        sketchMode,
+        planes,
+        hiddenIds,
+        selectedItemIds,
+        setSelectedItemId,
+        toggleSelection,
+        setContextMenu,
+        viewportBackground,
+        gridVisible,
+        gridPlacement,
+        sectionKeepWhole,
+        clippingPlanes,
+        itemNames,
+        hoveredItem,
+        setHoveredItem,
+        snapPoint,
+        setSnapPoint,
+        navigationRequest,
+        setNavigationRequest,
+        focusRequest,
+        cursor,
+    };
+}
+
+export default function Viewer({ geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D, onDisplayReady }: ViewerProps) {
+    const {
+        setSelectedFace, selectedSketchName, setSelectedSketchName, sketchMode, planes, hiddenIds,
+        selectedItemIds, setSelectedItemId, toggleSelection, setContextMenu, viewportBackground,
+        gridVisible, gridPlacement, sectionKeepWhole, clippingPlanes, itemNames, hoveredItem,
+        setHoveredItem, snapPoint, setSnapPoint, navigationRequest, setNavigationRequest,
+        focusRequest, cursor,
+    } = useViewerSetup(geometries);
 
     return (
         <div className="w-full h-full relative" style={{ cursor }} data-testid="viewer-container">
