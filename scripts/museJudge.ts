@@ -9,6 +9,9 @@ import { ZERO_CATEGORIES, type JudgeCategories } from '../eval/lib/museAggregate
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const WRAPPER_PY = resolve(__dirname, '../eval/oracle/museJudgeWrapper.py');
 
+/** Outer cap on the python judge process (the HTTP call has its own 180s timeout). */
+const JUDGE_SPAWN_TIMEOUT_MS = Number(process.env.MUSE_JUDGE_TIMEOUT_MS ?? 240_000);
+
 export interface JudgeCaseArgs {
   caseName: string;
   datasetCaseDir: string;
@@ -79,21 +82,22 @@ function runWrapper(
         '--model', args.model,
         '--base-url', args.baseUrl,
       ],
-      { stdio: ['ignore', 'pipe', 'pipe'] },
+      { stdio: ['ignore', 'pipe', 'pipe'], timeout: JUDGE_SPAWN_TIMEOUT_MS },
     );
     let stdout = '';
     let stderr = '';
     child.stdout.on('data', (d) => (stdout += d.toString()));
     child.stderr.on('data', (d) => (stderr += d.toString()));
     child.on('error', reject);
-    child.on('close', (code) => {
+    child.on('close', (code, signal) => {
       const line = stdout
         .split('\n')
         .map((l) => l.trim())
         .reverse()
         .find((l) => l.startsWith('{'));
       if (!line) {
-        reject(new Error(`judge wrapper exited ${code}: ${stderr.slice(0, 300)}`));
+        const suffix = signal !== null && child.killed ? ` (killed after ${JUDGE_SPAWN_TIMEOUT_MS}ms)` : '';
+        reject(new Error(`judge wrapper exited ${code}${suffix}: ${stderr.slice(0, 300)}`));
         return;
       }
       const parsed = JSON.parse(line) as Record<string, unknown>;
