@@ -163,12 +163,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/routes/-ServerRevisionHistory.tsx",
-    "symbol": "Function 'ServerRevisionHistory'",
-    "value": 102
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/routes/-useProjectLiveUpdates.ts",
     "symbol": "Function 'useProjectLiveUpdates'",
     "value": 103
