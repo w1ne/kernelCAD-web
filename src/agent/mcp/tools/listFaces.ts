@@ -9,7 +9,7 @@
 // was derived. The legacy `id` field is retained one release with
 // `deprecated: true` per spec §3.6.
 
-import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
+import { RecomputeEngine, type RecomputeResult } from '../../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { resolveFaceQuery, type FaceQuery } from '../../../kernel/backends/occt/edgeQueries';
@@ -17,7 +17,7 @@ import type { Face, Vector } from 'replicad';
 import { runMcpScript } from '../runMcpScript';
 import { formatTopoRef, type TopoKind } from '../../../kernel/naming';
 import type { FaceLineage } from '../../../kernel/naming/evolutionRecord';
-import type { FaceLabelsMap } from '../../../shared/intent/featureRecord';
+import type { FaceLabelsMap, FeatureRecord } from '../../../shared/intent/featureRecord';
 
 export interface ListFacesInput {
   file?: string;
@@ -152,6 +152,50 @@ function summarizeFace(
   };
 }
 
+type ResolvedListFacesShape = { ok: true; shape: OcctBackend } | { ok: false; output: ListFacesOutput };
+
+function resolveListFacesShape(result: RecomputeResult, targetId: string): ResolvedListFacesShape {
+  const shape = result.shapes.get(targetId);
+  if (!shape) {
+    const fatal = result.diagnostics.find(d => d.featureId === targetId && d.severity === 'error');
+    return {
+      ok: false,
+      output: {
+        ok: false,
+        error: fatal
+          ? `Feature '${targetId}' has no lowered shape: ${fatal.message}`
+          : `Feature '${targetId}' has no lowered shape.`,
+        errorCode: fatal?.code,
+      },
+    };
+  }
+  if (!(shape instanceof OcctBackend)) {
+    return { ok: false, output: { ok: false, error: 'Shape is not an OcctBackend.' } };
+  }
+  return { ok: true, shape };
+}
+
+function buildCanonicalToLabel(records: readonly FeatureRecord[], targetId: string): Map<string, string> {
+  // Build a reverse map of metadata.faceLabels declared at-or-upstream-of the
+  // target feature: canonicalName → label string. The list_faces resolver does
+  // not run feature-resolution (which would invoke `findFaceLabelInMetadata`),
+  // so we mirror that look-up directly so user-applied labels surface on the
+  // face summary's `label` and on the canonical ref's segment name.
+  const canonicalToLabel = new Map<string, string>();
+  for (const rec of records) {
+    const fl = (rec.metadata as { faceLabels?: FaceLabelsMap } | undefined)?.faceLabels;
+    if (!fl) continue;
+    for (const [label, value] of Object.entries(fl)) {
+      if (typeof value === 'string') {
+        // canonical alias — `lid: 'top'` etc.
+        canonicalToLabel.set(value, label);
+      }
+    }
+    if (rec.id === targetId) break;
+  }
+  return canonicalToLabel;
+}
+
 export async function listFacesTool(input: ListFacesInput): Promise<ListFacesOutput> {
   const script = await runMcpScript(input);
   if (!script.ok) return script;
@@ -164,20 +208,9 @@ export async function listFacesTool(input: ListFacesInput): Promise<ListFacesOut
   const r = await engine.run(run.records, { paramTable: run.paramTable });
 
   const targetId = input.feature_id ?? run.records[run.records.length - 1].id;
-  const shape = r.shapes.get(targetId);
-  if (!shape) {
-    const fatal = r.diagnostics.find(d => d.featureId === targetId && d.severity === 'error');
-    return {
-      ok: false,
-      error: fatal
-        ? `Feature '${targetId}' has no lowered shape: ${fatal.message}`
-        : `Feature '${targetId}' has no lowered shape.`,
-      errorCode: fatal?.code,
-    };
-  }
-  if (!(shape instanceof OcctBackend)) {
-    return { ok: false, error: 'Shape is not an OcctBackend.' };
-  }
+  const resolved = resolveListFacesShape(r, targetId);
+  if (!resolved.ok) return resolved.output;
+  const shape = resolved.shape;
 
   const matchedFaces = resolveFaceQuery(shape, input.query ?? {});
   const allFaces = (shape.getReplicadShape() as unknown as { faces: Face[] }).faces;
@@ -189,23 +222,7 @@ export async function listFacesTool(input: ListFacesInput): Promise<ListFacesOut
   const owner = input.feature_id ?? run.records[run.records.length - 1].id;
   const kind: TopoKind = 'face';
 
-  // Build a reverse map of metadata.faceLabels declared at-or-upstream-of the
-  // target feature: canonicalName → label string. The list_faces resolver does
-  // not run feature-resolution (which would invoke `findFaceLabelInMetadata`),
-  // so we mirror that look-up directly so user-applied labels surface on the
-  // face summary's `label` and on the canonical ref's segment name.
-  const canonicalToLabel = new Map<string, string>();
-  for (const rec of run.records) {
-    const fl = (rec.metadata as { faceLabels?: FaceLabelsMap } | undefined)?.faceLabels;
-    if (!fl) continue;
-    for (const [label, value] of Object.entries(fl)) {
-      if (typeof value === 'string') {
-        // canonical alias — `lid: 'top'` etc.
-        canonicalToLabel.set(value, label);
-      }
-    }
-    if (rec.id === targetId) break;
-  }
+  const canonicalToLabel = buildCanonicalToLabel(run.records, targetId);
 
   const faces: FaceSummary[] = matchedFaces.map(f => {
     const c = f.center;

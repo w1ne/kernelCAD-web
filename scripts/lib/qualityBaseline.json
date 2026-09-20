@@ -49,12 +49,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/listFaces.ts",
-    "symbol": "Async function 'listFacesTool'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/segment.ts",
     "symbol": "Function 'adoptFragments'",
     "value": 16
