@@ -55,12 +55,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/kinematic/checkLoadCapacity.ts",
-    "symbol": "Function 'analyzeLoadedPart'",
-    "value": 103
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/modeling/apiCaptureMethods.ts",
     "symbol": "Function 'makeCaptureMethods'",
     "value": 101
