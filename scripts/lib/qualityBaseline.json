@@ -331,12 +331,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/occtBackend.ts",
-    "symbol": "Method 'findCanonicalFaceHash'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/sketchToDrawing.ts",
     "symbol": "Function 'drawingForLoop'",
     "value": 16
