@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('UI Interactions E2E', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto('/');
+        await page.goto('/studio');
         await page.waitForSelector('canvas');
         await page.waitForFunction(() => (window as any).isEditorReady === true);
         await page.waitForFunction(() => (window as any).isEngineReady === true);

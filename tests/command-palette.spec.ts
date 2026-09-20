@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Command Palette', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto('/');
+        await page.goto('/studio');
         // Wait for app to be ready
         await page.waitForSelector('canvas');
     });

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Visual Feedback System', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto('http://localhost:5173');
+        await page.goto('/studio');
         // Wait for the workbench to be ready
         await page.waitForSelector('[data-testid="workbench-ready"]', { state: 'attached' });
     });

@@ -7,7 +7,7 @@ async function waitForReady(page: Page) {
 
 test.describe('UI Persistence', () => {
   test('persists view mode and 3D mode across reload', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/studio');
     await waitForReady(page);
 
     await page.getByTitle('Design Mode', { exact: false }).click();
