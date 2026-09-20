@@ -34,7 +34,9 @@ export const TOOL_PROTOCOL = [
 ].join('\n');
 
 export function pickArtifact(finalText: string, lastEvaluatedCode?: string): string | null {
-  return extractFencedScript(finalText) ?? lastEvaluatedCode ?? null;
+  const fenced = extractFencedScript(finalText);
+  if (fenced !== null && fenced.length > 0) return fenced;
+  return lastEvaluatedCode ?? null;
 }
 
 // Strictness matters: extractScript falls back to the whole reply, so a truncated
@@ -42,6 +44,11 @@ export function pickArtifact(finalText: string, lastEvaluatedCode?: string): str
 // only a properly closed fenced block; otherwise fall back to the last code the
 // model actually evaluated (verified), else no-script.
 
+/**
+ * Args for the tool arm. The returned `status` reflects `evaluateScript` (the
+ * code-valid check) only — this arm does not run the interference gate; the
+ * sweep's score path still runs the full harness against `output.kcad.ts`.
+ */
 export interface GenerateCaseWithToolsArgs {
   taskDir: string;
   runDir: string;
@@ -63,6 +70,7 @@ export async function generateCaseWithTools(args: GenerateCaseWithToolsArgs): Pr
   mkdirSync(args.runDir, { recursive: true });
   const outputScriptPath = join(args.runDir, 'output.kcad.ts');
   const callDir = join(args.runDir, 'tool-calls');
+  mkdirSync(callDir, { recursive: true });
 
   const events: TranscriptEvent[] = [];
   events.push({ kind: 'system_prompt', chars: args.skillMd.length + TOOL_PROTOCOL.length });
@@ -79,7 +87,6 @@ export async function generateCaseWithTools(args: GenerateCaseWithToolsArgs): Pr
       if (code.length === 0) {
         return { content: JSON.stringify({ error: 'code is required' }), ok: false, diagnostics: ['missing-code'] };
       }
-      mkdirSync(callDir, { recursive: true });
       callNo += 1;
       const candidate = join(callDir, `call-${callNo}.kcad.ts`);
       writeFileSync(candidate, code);
@@ -114,22 +121,15 @@ export async function generateCaseWithTools(args: GenerateCaseWithToolsArgs): Pr
     },
   });
 
-  writeFileSync(
-    join(args.runDir, 'tool-loop.json'),
-    JSON.stringify(
-      {
-        toolCallCount: loop.toolCallCount,
-        stopReason: loop.stopReason,
-        finishReason: loop.finishReason,
-        tokensIn: loop.tokensIn,
-        tokensOut: loop.tokensOut,
-      },
-      null,
-      2,
-    ),
-  );
-
   const artifact = pickArtifact(loop.finalText, loop.lastEvaluatedCode);
+  const fenced = extractFencedScript(loop.finalText);
+  const hasFenced = fenced !== null && fenced.length > 0;
+  const artifactSource: 'fence' | 'last-evaluated' | 'none' = hasFenced
+    ? 'fence'
+    : artifact !== null
+      ? 'last-evaluated'
+      : 'none';
+
   let finalEvaluate: Pick<EvaluateResult, 'ok' | 'diagnostics'>;
   if (artifact === null) {
     writeFileSync(outputScriptPath, '// (no script extracted from any attempt)');
@@ -140,14 +140,38 @@ export async function generateCaseWithTools(args: GenerateCaseWithToolsArgs): Pr
     finalEvaluate = await evaluateArtifact(outputScriptPath);
   }
 
+  const status: GenerateCaseResult['status'] =
+    artifact === null ? 'no_script' : finalEvaluate.ok ? 'passed' : 'gate_failed';
+  const firstFailureCode = finalEvaluate.ok ? undefined : finalEvaluate.diagnostics[0]?.code;
+
+  writeFileSync(
+    join(args.runDir, 'tool-loop.json'),
+    JSON.stringify(
+      {
+        toolCallCount: loop.toolCallCount,
+        stopReason: loop.stopReason,
+        finishReason: loop.finishReason,
+        tokensIn: loop.tokensIn,
+        tokensOut: loop.tokensOut,
+        artifactSource,
+        status,
+        firstFailureCode,
+        maxCalls: args.maxCalls,
+        startedAt: args.startedAt,
+      },
+      null,
+      2,
+    ),
+  );
+
   return {
     events,
-    status: artifact === null ? 'no_script' : finalEvaluate.ok ? 'passed' : 'gate_failed',
-    attempts: Math.max(1, loop.toolCallCount),
+    status,
+    attempts: 1,
     tokensIn: loop.tokensIn,
     tokensOut: loop.tokensOut,
     timeMs: Date.now() - start,
-    firstFailureCode: finalEvaluate.ok ? undefined : finalEvaluate.diagnostics[0]?.code,
+    firstFailureCode,
     outputScriptPath,
   };
 }
