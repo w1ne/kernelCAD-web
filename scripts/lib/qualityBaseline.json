@@ -589,12 +589,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/studio/components/viewer/directEditTarget.ts",
-    "symbol": "Function 'mateGraphDrivesPart'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/hooks/viewer/useDirectEditDrag.ts",
     "symbol": "Async arrow function",
     "value": 16
