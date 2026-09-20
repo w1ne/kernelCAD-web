@@ -217,12 +217,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseJointReactionsPhases.ts",
-    "symbol": "Async function 'validateSolvedContact'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseStatics.ts",
     "symbol": "Function 'validateActuatorLimit'",
     "value": 16
