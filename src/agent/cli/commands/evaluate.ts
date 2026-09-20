@@ -140,13 +140,18 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
   }
   const fatal = model.diagnostics.some(d => d.severity === 'error');
 
-  // Agent-parts-discipline: flag multi-body models authored as loose
-  // top-level bodies instead of named `assembly().part(...)`. Runs on a
-  // clean build only — a broken build surfaces its own failure first.
-  // Emitting here (the shared producer for `evaluate_script` AND the
-  // `/__kernelcad/review` payload, plus the CLI) surfaces the info
-  // diagnostic on every authoring surface from a single seam, and — unlike
-  // the assembly validator — runs for NON-assembly scripts too.
+  // Capture-light static checks on the script's return value. Run on a
+  // clean build only — a broken build surfaces its own failure first. Two
+  // producers share this seam:
+  //   1. Agent-parts-discipline: flag multi-body models authored as loose
+  //      top-level bodies instead of named `assembly().part(...)`
+  //      (`assembly.structure.unstructured-bodies`, info). Unlike the
+  //      assembly validator, this runs for NON-assembly scripts too.
+  //   2. No-shape gate: flag a script that built features but returned no
+  //      exportable model artifact (`export.no-shape`, error).
+  // Emitting here — the shared producer for `evaluate_script` AND the
+  // `/__kernelcad/review` payload, plus the CLI — surfaces both on every
+  // authoring surface from a single seam.
   if (!fatal) {
     model.diagnostics.push(
       ...detectUnstructuredBodies({ returnValue: model.returnValue, code: model.code }),
@@ -216,7 +221,10 @@ export interface DryRunScriptResult {
  *   validate gate runs at capture and defaults to `'error'` here, exactly
  *   like a full evaluation),
  * - the agent-parts-discipline `assembly.structure.unstructured-bodies`
- *   info diagnostic (a static check on the return value + source).
+ *   info diagnostic (a static check on the return value + source),
+ * - the no-shape `export.no-shape` error when the script returned no
+ *   exportable model artifact (`Shape`, `Scene`, `Region`, or a non-empty
+ *   array of `Shape`) — error severity, so it makes the dry run exit 1.
  *
  * What it does NOT catch: lowering failures (failed booleans, oversized
  * fillets, degenerate sweeps) and `dfmSpec(...)` gate diagnostics — those
@@ -261,12 +269,13 @@ export async function dryRunScript(input: EvaluateInput): Promise<DryRunScriptRe
     ...detectUnstructuredBodies({ returnValue: run.returnValue, code }),
     ...detectNoShapeReturn({ returnValue: run.returnValue }),
   ];
+  const withActions = withNextActions(diagnostics);
 
   return {
     evaluation: {
-      exitCode: 0,
+      exitCode: withActions.some((d) => d.severity === 'error') ? 1 : 0,
       featureCount: run.records.length,
-      diagnostics: withNextActions(diagnostics),
+      diagnostics: withActions,
       // Dry runs skip lowering, so there is no recompute health map to report.
       featureHealth: [],
     },

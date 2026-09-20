@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
 import { dryRunScript } from '../../../src/agent/cli/commands/evaluate';
+import { isExportableReturn } from '../../../src/modeling/validation/noShapeReturn';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 
 const CODE = 'export.no-shape';
@@ -48,8 +49,43 @@ describe('export.no-shape from the evaluate seam', () => {
     expect(r.diagnostics.some(x => x.code === CODE)).toBe(false);
   });
 
+  it('fires on an empty array return', async () => {
+    const r = await evaluateScriptTool({ code: `return [];` });
+    expect(r.ok).toBe(false);
+    expect(r.diagnostics.some(x => x.code === CODE)).toBe(true);
+  });
+
+  it('fires on an array that mixes a Shape with a non-Shape element', async () => {
+    const r = await evaluateScriptTool({ code: `return [box(10, 10, 10), 1];` });
+    expect(r.ok).toBe(false);
+    expect(r.diagnostics.some(x => x.code === CODE)).toBe(true);
+  });
+
   it('fires from dryRunScript too (cheap pre-check)', async () => {
     const r = await dryRunScript({ code: `const b = box(10, 10, 10);` });
     expect(r.evaluation.diagnostics.some(d => d.code === CODE)).toBe(true);
+    expect(r.evaluation.exitCode).toBe(1);
+  });
+});
+
+describe('isExportableReturn', () => {
+  it('rejects an empty array', () => {
+    expect(isExportableReturn([])).toBe(false);
+  });
+
+  it('rejects an array of non-Shape values', () => {
+    expect(isExportableReturn([1, 2])).toBe(false);
+  });
+
+  it('rejects a primitive', () => {
+    expect(isExportableReturn(42)).toBe(false);
+  });
+
+  it('accepts a structurally valid Region', () => {
+    // `isRegion` is structural — it checks the outer/holes/bendLines
+    // arrays rather than a class brand — so a plain object satisfies it.
+    expect(
+      isExportableReturn({ outer: [[0, 0], [1, 0], [0, 1]], holes: [], bendLines: [] }),
+    ).toBe(true);
   });
 });

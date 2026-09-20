@@ -123,6 +123,9 @@ export async function evaluateScriptTool(
   // out of the 9 session-dependent tools exactly while iterating on the
   // dfm fix. Genuine build failures (model missing or non-dfm errors)
   // still clear the session — its shapes would be stale or absent.
+  // `export.no-shape` is an intentional session clearer: a script with no
+  // exportable return is not a model, so its captured records must not be
+  // served through the last-record fallback of the session-dependent tools.
   const dfmErrors = new Set(dfmReport?.diagnostics ?? []);
   const buildSucceeded =
     model !== undefined &&

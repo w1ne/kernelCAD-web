@@ -225,4 +225,19 @@ describe('evaluateScriptTool', () => {
     expect(broken.ok).toBe(false);
     expect(getActiveMcpSession()).toBeUndefined();
   });
+
+  it('no-shape script is an intentional session clearer', async () => {
+    // Establish a good session first ...
+    const good = await evaluateScriptTool({ code: `return box(10, 10, 10);` });
+    expect(good.ok).toBe(true);
+    expect(getActiveMcpSession()).toBeDefined();
+
+    // ... then a script that built features but returned no exportable
+    // model must clear it: `export.no-shape` is a non-dfm error, so the
+    // last-record fallback cannot serve a non-model.
+    const noShape = await evaluateScriptTool({ code: `const b = box(10, 10, 10);` });
+    expect(noShape.ok).toBe(false);
+    expect(noShape.diagnostics.some(d => d.code === 'export.no-shape')).toBe(true);
+    expect(getActiveMcpSession()).toBeUndefined();
+  });
 });
