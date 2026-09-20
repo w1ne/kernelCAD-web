@@ -1,0 +1,21 @@
+{
+  "presets": {
+    "full": null,
+    "v1": {
+      "skills": ["kernelcad", "kernelcad-authoring", "kernelcad-assemblies"],
+      "sections": {
+        "kernelcad": ["Decision tree", "Key globals available today", "Universal conventions"],
+        "kernelcad-authoring": ["Coordinate System", "API Surface", "Labels — naming faces at creation time", "When something fails", "Conventions", "Interlocking joinery (flat-pack / laser / CNC)", "Hardware, belts, and wood joinery", "Verification gates", "Sample"],
+        "kernelcad-assemblies": ["Assembly validity", "Assembly intent API", "Scene API", "Connectors and mates", "Verification gates"]
+      }
+    },
+    "v2_lean": {
+      "skills": ["kernelcad", "kernelcad-authoring", "kernelcad-assemblies"],
+      "sections": {
+        "kernelcad": ["Decision tree", "Key globals available today", "Universal conventions"],
+        "kernelcad-authoring": ["Coordinate System", "API Surface", "Labels — naming faces at creation time", "When something fails", "Conventions", "Interlocking joinery (flat-pack / laser / CNC)", "Verification gates"],
+        "kernelcad-assemblies": ["Assembly validity", "Assembly intent API", "Scene API", "Verification gates"]
+      }
+    }
+  }
+}
