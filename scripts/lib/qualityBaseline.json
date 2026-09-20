@@ -385,12 +385,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/export/sdformat/sdfSerializer.ts",
-    "symbol": "Function 'urdfInertialToSdf'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
     "symbol": "Async function 'buildLinkBlocks'",
     "value": 16
