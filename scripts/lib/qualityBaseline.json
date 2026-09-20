@@ -409,12 +409,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/jointVisualExposure.ts",
-    "symbol": "Async function 'validateJointVisualExposure'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/matePhysicalRealization.ts",
     "symbol": "Async function 'validateMatePhysicalRealization'",
     "value": 16
