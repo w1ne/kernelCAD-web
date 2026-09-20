@@ -115,12 +115,19 @@ describe('buildSweepPrompt', () => {
     expect(v2.bytes).toBeLessThan(v1.bytes * 0.8);
     expect(v1.text).toContain('## API Surface');
     expect(v2.text).not.toContain('## Connectors and mates');
+    expect(v1.skills).toEqual(['kernelcad', 'kernelcad-authoring', 'kernelcad-assemblies']);
   });
 
   it('full preset concatenates all sweep skills (legacy)', () => {
     const full = buildSweepPrompt({ preset: 'full' });
     expect(full.bytes).toBeGreaterThan(130_000);
     expect(full.text).toContain('## API Surface');
+    expect(full.skills).toEqual([
+      'kernelcad',
+      'kernelcad-authoring',
+      'kernelcad-assemblies',
+      'kernelcad-parts',
+    ]);
   });
 
   it('is deterministic', () => {

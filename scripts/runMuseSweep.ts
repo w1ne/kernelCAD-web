@@ -7,7 +7,7 @@ import { join, resolve } from 'node:path';
 import { MockAgentClient } from '../eval/agent';
 import { OpenAICompatAgentClient } from '../eval/agentOpenAICompat';
 import { generateCase, scoreCase } from '../eval/runner';
-import { buildSweepPrompt } from '../eval/lib/sweepPrompt';
+import { buildSweepPrompt, loadPresets } from '../eval/lib/sweepPrompt';
 import { injectCookbook } from '../eval/cookbook-injector';
 import { buildSystemPrompt, SWEEP_SKILLS } from '../eval/lib/systemPrompt';
 import { mapPool } from '../eval/lib/pool';
@@ -112,8 +112,22 @@ export function parseSweepArgs(argv: string[]): SweepConfig {
   const maxTokensIn = Number(flagValue('--max-tokens-in') ?? 25_000_000);
   if (!Number.isFinite(maxTokensIn)) fail(`--max-tokens-in must be a number`);
 
-  const skills = flagValue('--skills') !== undefined ? list('--skills') : [...SWEEP_SKILLS];
-  if (skills.length === 0) fail('--skills must select at least one skill');
+  const promptPreset = flagValue('--prompt-preset') ?? 'full';
+  const presets = loadPresets();
+  if (!(promptPreset in presets)) {
+    // Thrown (not fail()) so parseSweepArgs stays unit-testable without process.exit.
+    throw new Error(
+      `unknown prompt preset '${promptPreset}' (available: ${Object.keys(presets).join(', ')})`,
+    );
+  }
+  const skillsExplicit = flagValue('--skills') !== undefined;
+  if (skillsExplicit && promptPreset !== 'full') {
+    throw new Error(
+      '--skills only applies to --prompt-preset full; compact presets select their own skill set',
+    );
+  }
+  const skills = skillsExplicit ? list('--skills') : [...SWEEP_SKILLS];
+  if (promptPreset === 'full' && skills.length === 0) fail('--skills must select at least one skill');
 
   return {
     runId,
@@ -126,7 +140,7 @@ export function parseSweepArgs(argv: string[]): SweepConfig {
     maxAttempts,
     maxTokens,
     skills,
-    promptPreset: flagValue('--prompt-preset') ?? 'full',
+    promptPreset,
     useCookbook: !has('--no-cookbook'),
     skipJudge: has('--skip-judge'),
     force: new Set(multiList('--force')),
@@ -364,9 +378,53 @@ async function runOneCase(
   }
 }
 
+export interface PromptPlan {
+  skillMd: string;
+  promptBytes: number;
+  skills: string[];
+  preset: string;
+}
+
+/** Resolves the system prompt and its provenance (preset + effective skills). */
+export function resolvePromptPlan(cfg: Pick<SweepConfig, 'promptPreset' | 'skills'>): PromptPlan {
+  if (cfg.promptPreset === 'full') {
+    // Legacy path: `--skills` selects the concatenated skill set.
+    const skillMd = buildSystemPrompt(cfg.skills);
+    return {
+      skillMd,
+      promptBytes: Buffer.byteLength(skillMd),
+      skills: cfg.skills,
+      preset: 'full',
+    };
+  }
+  const built = buildSweepPrompt({ preset: cfg.promptPreset });
+  return {
+    skillMd: built.text,
+    promptBytes: built.bytes,
+    skills: built.skills,
+    preset: built.preset,
+  };
+}
+
 async function main(): Promise<void> {
   const cfg = parseSweepArgs(process.argv.slice(2));
   const preflightOnly = process.argv.includes('--preflight-only');
+
+  const runJsonPath = join(cfg.runRoot, 'run.json');
+  if (existsSync(runJsonPath)) {
+    const prior = JSON.parse(readFileSync(runJsonPath, 'utf8')) as {
+      promptPreset?: string;
+      cookbook?: boolean;
+    };
+    if (prior.promptPreset !== cfg.promptPreset || prior.cookbook !== cfg.useCookbook) {
+      console.error(
+        `run '${cfg.runId}' was created with promptPreset=${prior.promptPreset} cookbook=${prior.cookbook}; ` +
+          `refusing to resume with promptPreset=${cfg.promptPreset} cookbook=${cfg.useCookbook}. ` +
+          'Use a new --run-id.',
+      );
+      process.exit(1);
+    }
+  }
 
   const report: PreflightReport = await runPreflight({
     env: cfg.env,
@@ -405,19 +463,9 @@ async function main(): Promise<void> {
   }
   mkdirSync(cfg.runRoot, { recursive: true });
 
-  let skillMd: string;
-  let promptBytes: number;
-  if (cfg.promptPreset === 'full') {
-    // Legacy path: `--skills` still selects the concatenated skill set.
-    skillMd = buildSystemPrompt(cfg.skills);
-    promptBytes = Buffer.byteLength(skillMd);
-    console.log(`prompt preset=full skills=${cfg.skills.join(',')} bytes=${promptBytes}`);
-  } else {
-    const built = buildSweepPrompt({ preset: cfg.promptPreset });
-    skillMd = built.text;
-    promptBytes = built.bytes;
-    console.log(`prompt preset=${built.preset} bytes=${built.bytes}`);
-  }
+  const plan = resolvePromptPlan(cfg);
+  const { skillMd, promptBytes } = plan;
+  console.log(`prompt preset=${plan.preset} skills=${plan.skills.join(',')} bytes=${plan.promptBytes}`);
   const agent: AgentClient = cfg.mockFixture
     ? new MockAgentClient(readCachedAgentResponses(cfg.mockFixture))
     : new OpenAICompatAgentClient({
@@ -436,7 +484,7 @@ async function main(): Promise<void> {
     temperature: cfg.temperature,
     maxAttempts: cfg.maxAttempts,
     maxTokens: cfg.maxTokens,
-    skills: cfg.skills,
+    skills: plan.skills,
     promptPreset: cfg.promptPreset,
     promptBytes,
     cookbook: cfg.useCookbook,

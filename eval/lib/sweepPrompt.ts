@@ -17,6 +17,7 @@ export interface BuiltSweepPrompt {
   text: string;
   bytes: number;
   preset: string;
+  skills: string[];
 }
 
 export function extractSections(md: string): Map<string, string> {
@@ -70,7 +71,7 @@ export function buildSweepPrompt(opts: {
   const cfg = presets[opts.preset];
   if (cfg === null) {
     const text = buildSystemPrompt(SWEEP_SKILLS, root);
-    return { text, bytes: Buffer.byteLength(text), preset: opts.preset };
+    return { text, bytes: Buffer.byteLength(text), preset: opts.preset, skills: [...SWEEP_SKILLS] };
   }
   const parts: string[] = [];
   for (const skill of cfg.skills) {
@@ -97,5 +98,5 @@ export function buildSweepPrompt(opts: {
     }
   }
   const text = parts.join('\n\n---\n\n');
-  return { text, bytes: Buffer.byteLength(text), preset: opts.preset };
+  return { text, bytes: Buffer.byteLength(text), preset: opts.preset, skills: [...cfg.skills] };
 }
