@@ -139,26 +139,32 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/backends/occt/projectCurveLowerer.ts",
-    "symbol": "Async function 'lowerProjectCurve'",
+    "file": "src/modeling/capture/featureMeshing.ts",
+    "symbol": "Function 'buildHelixTubeMesh'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/assemblySolve.ts",
-    "symbol": "Function 'checkPoseLimits'",
+    "file": "src/modeling/capture/featureMeshingPhases.ts",
+    "symbol": "Function 'computeConstructionClosure'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/authoringFeatureRecords.ts",
-    "symbol": "Function 'buildEmbossTextFeatureSpec'",
+    "file": "src/modeling/capture/featureMeshingPhases.ts",
+    "symbol": "Function 'detectAttributeShadowing'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/authoringFeatureRecords.ts",
-    "symbol": "Function 'validateDfmSpecCheckFields'",
+    "file": "src/modeling/capture/forwardKinematics.ts",
+    "symbol": "Function 'forwardKinematics'",
+    "value": 16
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/compute/recomputeEngine.ts",
+    "symbol": "Async method 'lowerAndEmit'",
     "value": 16
   },
   {
@@ -349,6 +355,12 @@
   },
   {
     "rule": "max-lines-per-function",
+    "file": "src/modeling/capture/forwardKinematics.ts",
+    "symbol": "Function 'forwardKinematics'",
+    "value": 101
+  },
+  {
+    "rule": "max-lines-per-function",
     "file": "src/modeling/constraints/sketchConverter.ts",
     "symbol": "Function 'convertSketchEntitiesToConstraints'",
     "value": 111
@@ -370,12 +382,6 @@
     "file": "src/modeling/runtime/dfm/fdmOrientation.ts",
     "symbol": "Function 'analyzeBuildDirection'",
     "value": 139
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/StudioShell.tsx",
-    "symbol": "Function 'StudioShell'",
-    "value": 140
   },
   {
     "rule": "max-lines-per-function",
@@ -502,6 +508,12 @@
     "file": "src/studio/routes/-useProjectLiveUpdates.ts",
     "symbol": "Function 'useProjectLiveUpdates'",
     "value": 103
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/studio/routes/embed.$slug.tsx",
+    "symbol": "Function 'EmbedPage'",
+    "value": 141
   },
   {
     "rule": "max-lines-per-function",
