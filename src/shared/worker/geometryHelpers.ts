@@ -71,6 +71,35 @@ export const sketchOnFace = (shape: unknown, faceId: number) => {
   return new replicad.Sketcher(plane);
 };
 
+function extrudePlanarFace(
+  profile: UnknownRecord,
+  distance: number,
+  plane: unknown,
+): unknown {
+  const drawFaceOutline = (replicad as unknown as { drawFaceOutline?: (p: unknown) => unknown }).drawFaceOutline;
+  if (typeof drawFaceOutline !== 'function') {
+    throw new Error('Cannot extrude face: replicad.drawFaceOutline is unavailable');
+  }
+  const drawing = drawFaceOutline(profile);
+  const sketchOnPlaneFn = getFn(drawing, 'sketchOnPlane');
+  if (!sketchOnPlaneFn) throw new Error('Cannot extrude face: drawing.sketchOnPlane is unavailable');
+  const sketch = sketchOnPlaneFn.call(drawing, plane);
+  const sketchExtrudeFn = getFn(sketch, 'extrude');
+  if (!sketchExtrudeFn) throw new Error('Cannot extrude face: sketch.extrude is unavailable');
+  const result = sketchExtrudeFn.call(sketch, distance);
+  return result;
+}
+
+function mapExtrudeFailure(err: unknown): never {
+  const message = err instanceof Error ? err.message : String(err);
+  if (message.includes('No lines to convert into a wire') || message.includes('face.clone is not a function')) {
+    throw new Error(
+      'Extrusion failed: The sketch is empty or contains invalid geometry. Please draw some geometry before extruding.',
+    );
+  }
+  throw err;
+}
+
 export const extrude = (profile: unknown, distance: number) => {
   try {
     const extrudeFn = getFn(profile, 'extrude');
@@ -87,28 +116,11 @@ export const extrude = (profile: unknown, distance: number) => {
     const plane = (profile as UnknownRecord).planarPlane ?? (profile as UnknownRecord).plane ?? (isPlanarFace ? (replicad as unknown as { makePlaneFromFace?: (f: unknown) => unknown }).makePlaneFromFace?.(profile) : null);
 
     if (plane) {
-      const drawFaceOutline = (replicad as unknown as { drawFaceOutline?: (p: unknown) => unknown }).drawFaceOutline;
-      if (typeof drawFaceOutline !== 'function') {
-        throw new Error('Cannot extrude face: replicad.drawFaceOutline is unavailable');
-      }
-      const drawing = drawFaceOutline(profile);
-      const sketchOnPlaneFn = getFn(drawing, 'sketchOnPlane');
-      if (!sketchOnPlaneFn) throw new Error('Cannot extrude face: drawing.sketchOnPlane is unavailable');
-      const sketch = sketchOnPlaneFn.call(drawing, plane);
-      const sketchExtrudeFn = getFn(sketch, 'extrude');
-      if (!sketchExtrudeFn) throw new Error('Cannot extrude face: sketch.extrude is unavailable');
-      const result = sketchExtrudeFn.call(sketch, distance);
-      return result;
+      return extrudePlanarFace(profile, distance, plane);
     }
 
     throw new Error(`Cannot extrude non-planar object (type: ${geomType}). Please select a flat face.`);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    if (message.includes('No lines to convert into a wire') || message.includes('face.clone is not a function')) {
-      throw new Error(
-        'Extrusion failed: The sketch is empty or contains invalid geometry. Please draw some geometry before extruding.',
-      );
-    }
-    throw err;
+    mapExtrudeFailure(err);
   }
 };

@@ -294,6 +294,30 @@ const skipTypeAnnotation = (st: StripState): boolean => {
     return true;
 };
 
+const abortGenericScan = (st: StripState, start: number): false => {
+    st.i = start;
+    return false;
+};
+
+const skipGenericQuoted = (st: StripState, c: string): boolean => {
+    if (c === '"' || c === "'") {
+        skipString(st, c);
+        return true;
+    }
+    if (c === '`') {
+        skipTemplate(st);
+        return true;
+    }
+    return false;
+};
+
+const isTopLevelLogicalOperator = (st: StripState, angle: number, c: string): boolean => {
+    if (angle !== 1) return false;
+    if (c === '&' && peek(st, 1) === '&') return true;
+    if (c === '|' && peek(st, 1) === '|') return true;
+    return false;
+};
+
 const looksLikeGeneric = (st: StripState): boolean => {
     skipCommentsAndWs(st);
     if (st.source[st.i] !== '<') return false;
@@ -303,25 +327,14 @@ const looksLikeGeneric = (st: StripState): boolean => {
     while (st.i < st.n && angle > 0) {
         skipCommentsAndWs(st);
         if (st.i >= st.n) {
-            st.i = start;
-            return false;
+            return abortGenericScan(st, start);
         }
         const c = st.source[st.i]!;
-        if (c === '"' || c === "'") {
-            skipString(st, c);
+        if (skipGenericQuoted(st, c)) {
             continue;
         }
-        if (c === '`') {
-            skipTemplate(st);
-            continue;
-        }
-        if (angle === 1 && c === '&' && peek(st, 1) === '&') {
-            st.i = start;
-            return false;
-        }
-        if (angle === 1 && c === '|' && peek(st, 1) === '|') {
-            st.i = start;
-            return false;
+        if (isTopLevelLogicalOperator(st, angle, c)) {
+            return abortGenericScan(st, start);
         }
         if (c === '<') {
             angle++;
@@ -336,8 +349,7 @@ const looksLikeGeneric = (st: StripState): boolean => {
         st.i++;
     }
     if (angle !== 0) {
-        st.i = start;
-        return false;
+        return abortGenericScan(st, start);
     }
     blank(st, start, st.i);
     return true;

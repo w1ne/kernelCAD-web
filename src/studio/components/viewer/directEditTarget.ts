@@ -89,21 +89,31 @@ function jointOrConnectDrivesPart(
     return meta?.a?.partName === partName || meta?.b?.partName === partName;
 }
 
+function hasMateGraph(meta: MateMetadataView | undefined): boolean {
+    return (meta?.mates?.length ?? 0) > 0 || (meta?.jointIds?.length ?? 0) > 0;
+}
+
+function mateConnectorsNamePart(
+    mates: MateMetadataView['mates'],
+    partName: string,
+): boolean {
+    return mates?.some(
+        (mate) =>
+            connectorRefPartName(mate.a) === partName
+            || connectorRefPartName(mate.b) === partName,
+    ) === true;
+}
+
 function mateGraphDrivesPart(
     record: FeatureRecord,
     partId: string | undefined,
     partName: string,
 ): boolean {
     const meta = record.metadata as MateMetadataView | undefined;
-    const hasMateGraph = (meta?.mates?.length ?? 0) > 0 || (meta?.jointIds?.length ?? 0) > 0;
-    if (!hasMateGraph) return false;
+    if (!hasMateGraph(meta)) return false;
     if (partId !== undefined && meta?.partIds?.includes(partId)) return true;
     if (partId !== undefined && featureRefTargetsPart(record.inputs, partId)) return true;
-    return meta?.mates?.some(
-        (mate) =>
-            connectorRefPartName(mate.a) === partName
-            || connectorRefPartName(mate.b) === partName,
-    ) === true;
+    return mateConnectorsNamePart(meta?.mates, partName);
 }
 
 /**

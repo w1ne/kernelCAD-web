@@ -487,12 +487,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/runtime/meshDeviation.ts",
-    "symbol": "Method 'nearestSq'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/server/middleware/sourceEndpoint.ts",
     "symbol": "Async function 'sourceHandler'",
     "value": 16
@@ -507,7 +501,7 @@
     "rule": "complexity",
     "file": "src/shared/codeGeneration/stripTypeScript.ts",
     "symbol": "Arrow function#2",
-    "value": 17
+    "value": 16
   },
   {
     "rule": "complexity",
@@ -517,27 +511,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/shared/codeGeneration/stripTypeScript.ts",
-    "symbol": "Arrow function#4",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/shared/intent/embossTextRecord.ts",
-    "symbol": "Function 'isEmbossTextMetadata'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/shared/runtime/resolveParams.ts",
     "symbol": "Function 'walkResolve'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/shared/worker/geometryHelpers.ts",
-    "symbol": "Arrow function",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -556,12 +532,6 @@
     "file": "src/studio/components/inputs/useNumericScrub.ts",
     "symbol": "Function 'useNumericScrub'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/components/viewer/directEditTarget.ts",
-    "symbol": "Function 'mateGraphDrivesPart'",
-    "value": 17
   },
   {
     "rule": "complexity",
