@@ -112,6 +112,80 @@ function GalleryTile({
   );
 }
 
+function GalleryDialog({
+  open,
+  onClose,
+  dialogRef,
+}: {
+  open: GalleryEntry | null;
+  onClose: () => void;
+  dialogRef: RefObject<HTMLDialogElement | null>;
+}) {
+  return (
+    <dialog
+      ref={dialogRef}
+      onClose={onClose}
+      onClick={e => {
+        if (e.target === dialogRef.current) onClose();
+      }}
+      className="max-w-3xl w-full rounded-xl border border-rule bg-vellum text-ink p-0 backdrop:bg-ink/40 backdrop:backdrop-blur-sm"
+    >
+      {open && (
+        <div className="p-6 relative">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="absolute top-3 right-3 text-ink-faint hover:text-ink transition-colors text-2xl leading-none"
+          >
+            ×
+          </button>
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            controls
+            src={open.videoUrl}
+            className="w-full rounded-lg border border-rule bg-vellum-soft mb-4"
+          />
+          <h3 className="font-serif text-xl font-medium">{open.title}</h3>
+          <p className="text-xs font-mono text-ink-faint mt-1">
+            by{' '}
+            <a href={open.author.url} className="hover:text-blueprint">
+              @{open.author.handle}
+            </a>{' '}
+            · {open.version} · {open.createdAt}
+          </p>
+          <pre className="mt-3 max-h-56 overflow-auto rounded bg-vellum-soft border border-rule p-3 text-xs whitespace-pre-wrap font-mono text-ink-soft">
+            {open.prompt}
+          </pre>
+          <div className="mt-4 flex flex-wrap gap-3 text-xs font-mono">
+            <a
+              className="px-3 py-1.5 rounded border border-rule text-ink-soft hover:text-ink hover:border-blueprint transition-colors"
+              href={open.code}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View source ↗
+            </a>
+            {open.appUrl && (
+              <a
+                className="px-3 py-1.5 rounded bg-blueprint text-white hover:bg-blueprint-hover transition-colors"
+                href={open.appUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Open in app ↗
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+    </dialog>
+  );
+}
+
 export function GallerySection() {
   const [entries, setEntries] = useState<GalleryEntry[] | null>(null);
   const [open, setOpen] = useState<GalleryEntry | null>(null);
@@ -171,67 +245,7 @@ export function GallerySection() {
         ))}
       </div>
 
-      <dialog
-        ref={dialogRef}
-        onClose={() => setOpen(null)}
-        onClick={e => {
-          if (e.target === dialogRef.current) setOpen(null);
-        }}
-        className="max-w-3xl w-full rounded-xl border border-rule bg-vellum text-ink p-0 backdrop:bg-ink/40 backdrop:backdrop-blur-sm"
-      >
-        {open && (
-          <div className="p-6 relative">
-            <button
-              type="button"
-              onClick={() => setOpen(null)}
-              aria-label="Close"
-              className="absolute top-3 right-3 text-ink-faint hover:text-ink transition-colors text-2xl leading-none"
-            >
-              ×
-            </button>
-            <video
-              autoPlay
-              muted
-              loop
-              playsInline
-              controls
-              src={open.videoUrl}
-              className="w-full rounded-lg border border-rule bg-vellum-soft mb-4"
-            />
-            <h3 className="font-serif text-xl font-medium">{open.title}</h3>
-            <p className="text-xs font-mono text-ink-faint mt-1">
-              by{' '}
-              <a href={open.author.url} className="hover:text-blueprint">
-                @{open.author.handle}
-              </a>{' '}
-              · {open.version} · {open.createdAt}
-            </p>
-            <pre className="mt-3 max-h-56 overflow-auto rounded bg-vellum-soft border border-rule p-3 text-xs whitespace-pre-wrap font-mono text-ink-soft">
-              {open.prompt}
-            </pre>
-            <div className="mt-4 flex flex-wrap gap-3 text-xs font-mono">
-              <a
-                className="px-3 py-1.5 rounded border border-rule text-ink-soft hover:text-ink hover:border-blueprint transition-colors"
-                href={open.code}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View source ↗
-              </a>
-              {open.appUrl && (
-                <a
-                  className="px-3 py-1.5 rounded bg-blueprint text-white hover:bg-blueprint-hover transition-colors"
-                  href={open.appUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Open in app ↗
-                </a>
-              )}
-            </div>
-          </div>
-        )}
-      </dialog>
+      <GalleryDialog open={open} onClose={() => setOpen(null)} dialogRef={dialogRef} />
     </section>
   );
 }

@@ -229,44 +229,46 @@ function pickFacePlane(
  *
  * Returns null on miss; caller raises `topology-not-resolvable`.
  */
+/** Cylinder cap form (`edge-top` / `edge-bottom`). A cylinder cap is a single
+ *  circular face; its outer edge is the cap edge. */
+function findCylinderCapEdge(backend: OcctBackend, part: string): Edge | null {
+  const f = part as CanonicalFaceName;
+  if (!CANONICAL_FACES.has(f)) return null;
+  if (backend.kind !== 'cylinder') return null;
+  if (f !== 'top' && f !== 'bottom') return null;
+  const face = findCanonicalFace(backend, f);
+  if (face === null) return null;
+  const edges = (face as unknown as { edges?: Edge[] }).edges ?? [];
+  return edges.length > 0 ? edges[0] : null;
+}
+
+/** Box form (`edge-<face1>-<face2>`): intersection of two canonical faces.
+ *  The two faces must define a real edge (i.e. their bounding planes must
+ *  share an axis-perpendicular intersection — not e.g. top+bottom). */
+function findBoxEdgeByName(backend: OcctBackend, parts: string[]): Edge | null {
+  const [a, b] = parts as [CanonicalFaceName, CanonicalFaceName];
+  if (!CANONICAL_FACES.has(a) || !CANONICAL_FACES.has(b)) return null;
+  const faceA = findCanonicalFace(backend, a);
+  const faceB = findCanonicalFace(backend, b);
+  if (faceA === null || faceB === null) return null;
+  const eA = (faceA as unknown as { edges?: Edge[] }).edges ?? [];
+  const eB = (faceB as unknown as { edges?: Edge[] }).edges ?? [];
+  // Find an edge that appears on both faces (endpoint match within TOL).
+  for (const ea of eA) {
+    for (const eb of eB) {
+      if (isSameEdgeApprox(ea, eb)) return ea;
+    }
+  }
+  return null;
+}
+
 function findEdgeByName(backend: OcctBackend, name: string): Edge | null {
   if (!name.startsWith('edge-')) return null;
   const rest = name.slice('edge-'.length); // e.g. 'top-front' or 'top'
   const parts = rest.split('-').filter(p => p.length > 0);
 
-  if (parts.length === 1) {
-    // Cylinder cap edge (`edge-top` / `edge-bottom`).
-    const f = parts[0] as CanonicalFaceName;
-    if (!CANONICAL_FACES.has(f)) return null;
-    if (backend.kind !== 'cylinder') return null;
-    if (f !== 'top' && f !== 'bottom') return null;
-    const face = findCanonicalFace(backend, f);
-    if (face === null) return null;
-    // A cylinder cap is a single circular face; its outer edge is the cap edge.
-    const edges = (face as unknown as { edges?: Edge[] }).edges ?? [];
-    return edges.length > 0 ? edges[0] : null;
-  }
-
-  if (parts.length === 2) {
-    // Box edge: intersection of two canonical faces.
-    const [a, b] = parts as [CanonicalFaceName, CanonicalFaceName];
-    if (!CANONICAL_FACES.has(a) || !CANONICAL_FACES.has(b)) return null;
-    // The two faces must define a real edge (i.e. their bounding planes must
-    // share an axis-perpendicular intersection — not e.g. top+bottom).
-    const faceA = findCanonicalFace(backend, a);
-    const faceB = findCanonicalFace(backend, b);
-    if (faceA === null || faceB === null) return null;
-    const eA = (faceA as unknown as { edges?: Edge[] }).edges ?? [];
-    const eB = (faceB as unknown as { edges?: Edge[] }).edges ?? [];
-    // Find an edge that appears on both faces (endpoint match within TOL).
-    for (const ea of eA) {
-      for (const eb of eB) {
-        if (isSameEdgeApprox(ea, eb)) return ea;
-      }
-    }
-    return null;
-  }
-
+  if (parts.length === 1) return findCylinderCapEdge(backend, parts[0]);
+  if (parts.length === 2) return findBoxEdgeByName(backend, parts);
   return null;
 }
 

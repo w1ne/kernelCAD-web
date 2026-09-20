@@ -19,7 +19,7 @@ import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { parseAnyTopologyInput } from '../../../kernel/naming/parseAnyTopologyInput';
 import { evaluate, evaluateUnique } from '../../../kernel/naming/queryEvaluator';
-import type { Query, QueryAst, QueryScene } from '../../../kernel/naming/query';
+import type { Query, QueryAst, QueryScene, ResolvedEntity } from '../../../kernel/naming/query';
 import { runMcpScript } from '../runMcpScript';
 import { HINT_TEMPLATES } from '../../../shared/diagnostics/registry';
 import { isKernelError } from '../../../shared/intent/kernelError';
@@ -62,13 +62,7 @@ export async function evaluateQueryTool(input: EvaluateQueryInput): Promise<Eval
   try {
     query = parseAnyTopologyInput(input.query as never);
   } catch (e) {
-    const code = isKernelError(e) ? e.code : 'query.invalid-syntax';
-    return {
-      ok: false,
-      error: e instanceof Error ? e.message : String(e),
-      errorCode: code,
-      errorHint: HINT_TEMPLATES[code as keyof typeof HINT_TEMPLATES]?.template,
-    };
+    return queryErrorEnvelope(e, 'query.invalid-syntax');
   }
 
   // ----- Run the script + lower the target feature -------------------------
@@ -107,39 +101,48 @@ export async function evaluateQueryTool(input: EvaluateQueryInput): Promise<Eval
 
   // ----- Evaluate -----------------------------------------------------------
   try {
-    if (input.expect === 'unique') {
-      const e = evaluateUnique(query, scene, 'evaluate_query');
-      return {
-        ok: true,
-        entities: [
-          {
-            kind: e.kind,
-            ref: e.ref,
-            handle: e.handle,
-            ...(e.snapshot ? { snapshot: e.snapshot } : {}),
-          },
-        ],
-        query: { ast: query.ast },
-      };
-    }
-    const list = evaluate(query, scene);
+    return evaluateExpectation(query, input.expect, scene);
+  } catch (e) {
+    return queryErrorEnvelope(e, 'unknown');
+  }
+}
+
+function queryErrorEnvelope(e: unknown, fallbackCode: string): EvaluateQueryOutput {
+  const code = isKernelError(e) ? e.code : fallbackCode;
+  return {
+    ok: false,
+    error: e instanceof Error ? e.message : String(e),
+    errorCode: code,
+    errorHint: HINT_TEMPLATES[code as keyof typeof HINT_TEMPLATES]?.template,
+  };
+}
+
+function evaluateExpectation(
+  query: Query<unknown>,
+  expect: EvaluateQueryInput['expect'],
+  scene: QueryScene,
+): EvaluateQueryOutput {
+  if (expect === 'unique') {
+    const e = evaluateUnique(query, scene, 'evaluate_query');
     return {
       ok: true,
-      entities: list.map((e) => ({
-        kind: e.kind,
-        ref: e.ref,
-        handle: e.handle,
-        ...(e.snapshot ? { snapshot: e.snapshot } : {}),
-      })),
+      entities: [entityOut(e)],
       query: { ast: query.ast },
     };
-  } catch (e) {
-    const code = isKernelError(e) ? e.code : 'unknown';
-    return {
-      ok: false,
-      error: e instanceof Error ? e.message : String(e),
-      errorCode: code,
-      errorHint: HINT_TEMPLATES[code as keyof typeof HINT_TEMPLATES]?.template,
-    };
   }
+  const list = evaluate(query, scene);
+  return {
+    ok: true,
+    entities: list.map(entityOut),
+    query: { ast: query.ast },
+  };
+}
+
+function entityOut(e: ResolvedEntity): EvaluateQueryEntity {
+  return {
+    kind: e.kind,
+    ref: e.ref,
+    handle: e.handle,
+    ...(e.snapshot ? { snapshot: e.snapshot } : {}),
+  };
 }

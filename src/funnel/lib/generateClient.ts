@@ -37,13 +37,15 @@ export function isReferenceImageMimeType(value: string): value is ReferenceImage
   return (REFERENCE_IMAGE_MIME_TYPES as readonly string[]).includes(value);
 }
 
-/** A user-supplied, scaled image reference. The server recomputes the SHA-256
- * from `dataUrl`; no client-provided hash is trusted as provenance. */
+/** A user-supplied image reference. The server recomputes the SHA-256 from
+ * `dataUrl`; no client-provided hash is trusted as provenance. A real-world
+ * scale anchor is optional: when present the agent treats it as authoritative,
+ * when absent the agent asks for a measurement instead of inventing one. */
 export interface ReferenceImage {
   dataUrl: string;
   fileName: string;
   mimeType: ReferenceImageMimeType;
-  knownDimension: {
+  knownDimension?: {
     label: string;
     valueMm: number;
   };

@@ -292,6 +292,84 @@ function storedOcctClass(edge: Edge, a: Face, b: Face): ContinuityClass | undefi
   }
 }
 
+/** Sample the edge at EDGE_SAMPLES stations and keep the G0/G1/G2 probes. */
+function sampleEdgeContinuity(edge: Edge, fa: Face, fb: Face): ContinuitySample[] {
+  const samples: ContinuitySample[] = [];
+  for (let s = 1; s <= EDGE_SAMPLES; s++) {
+    const t = s / (EDGE_SAMPLES + 1);
+    const p = edgePoint(edge, t);
+    const uvA = pcurveUv(edge, fa, t);
+    const uvB = pcurveUv(edge, fb, t);
+    const a = uvA ? evalSurfaceProps(fa, uvA[0], uvA[1]) : (p ? propsAtPoint(fa, p) : null);
+    const b = uvB ? evalSurfaceProps(fb, uvB[0], uvB[1]) : (p ? propsAtPoint(fb, p) : null);
+    if (!a || !b) continue;
+    const point = p ?? a.point;
+    const gapA = hypot3(sub(a.point, point));
+    const gapB = hypot3(sub(b.point, point));
+    const gapAB = hypot3(sub(a.point, b.point));
+    const positionGapMm = Math.max(gapA, gapB, gapAB);
+    const normalAngleDeg = Math.min(angleDeg(a.normal, b.normal), angleDeg(a.normal, [-b.normal[0], -b.normal[1], -b.normal[2]]));
+    const dH = curvatureDiff(a, b);
+    samples.push({
+      t,
+      point,
+      positionGapMm,
+      normalAngleDeg,
+      curvatureDiff: dH,
+      gaussianA: a.gaussian,
+      gaussianB: b.gaussian,
+      meanA: a.mean,
+      meanB: b.mean,
+    });
+  }
+  return samples;
+}
+
+/** Fold samples into per-class maxima and the worst tolerance-normalised sample. */
+function summariseContinuitySamples(samples: ContinuitySample[]): {
+  worst: ContinuitySample;
+  maxG0: number;
+  maxG1: number;
+  maxG2: number;
+} {
+  let worst = samples[0];
+  let maxG0 = 0;
+  let maxG1 = 0;
+  let maxG2 = 0;
+  for (const sm of samples) {
+    if (sm.positionGapMm > maxG0) maxG0 = sm.positionGapMm;
+    if (sm.normalAngleDeg > maxG1) maxG1 = sm.normalAngleDeg;
+    if (sm.curvatureDiff > maxG2) maxG2 = sm.curvatureDiff;
+    const score = sm.positionGapMm / G0_TOL_MM + sm.normalAngleDeg / G1_TOL_DEG + sm.curvatureDiff;
+    const worstScore = worst.positionGapMm / G0_TOL_MM + worst.normalAngleDeg / G1_TOL_DEG + worst.curvatureDiff;
+    if (score > worstScore) worst = sm;
+  }
+  return { worst, maxG0, maxG1, maxG2 };
+}
+
+/** Build the continuity record for one shared edge, or null when unsampled. */
+function continuityForEdge(i: number, edge: Edge, fa: Face, fb: Face): SharedEdgeContinuity | null {
+  const samples = sampleEdgeContinuity(edge, fa, fb);
+  if (samples.length === 0) return null;
+
+  const { worst, maxG0, maxG1, maxG2 } = summariseContinuitySamples(samples);
+  const sampledClass = classify(maxG0, maxG1, maxG2);
+  const occtContinuity = storedOcctClass(edge, fa, fb);
+
+  return {
+    edgeIndex: i,
+    edgeHash: edgeHash(edge),
+    faceHashes: [faceHash(fa), faceHash(fb)],
+    class: sampledClass,
+    maxPositionGapMm: maxG0,
+    maxNormalAngleDeg: maxG1,
+    maxCurvatureDiff: maxG2,
+    worstSample: worst,
+    sampleCount: samples.length,
+    ...(occtContinuity !== undefined ? { occtContinuity } : {}),
+  };
+}
+
 /** Shared (manifold) edges of a solid, sampled for G0/G1/G2. Boundary edges skipped. */
 export function inspectContinuity(
   body: OcctBackend,
@@ -306,66 +384,8 @@ export function inspectContinuity(
     if (edgeFilter && !edgeFilter(edge, i)) continue;
     const faces = adjacentFaces(shape, edge);
     if (faces.length < 2) continue;
-    const [fa, fb] = faces;
-
-    const samples: ContinuitySample[] = [];
-    for (let s = 1; s <= EDGE_SAMPLES; s++) {
-      const t = s / (EDGE_SAMPLES + 1);
-      const p = edgePoint(edge, t);
-      const uvA = pcurveUv(edge, fa, t);
-      const uvB = pcurveUv(edge, fb, t);
-      const a = uvA ? evalSurfaceProps(fa, uvA[0], uvA[1]) : (p ? propsAtPoint(fa, p) : null);
-      const b = uvB ? evalSurfaceProps(fb, uvB[0], uvB[1]) : (p ? propsAtPoint(fb, p) : null);
-      if (!a || !b) continue;
-      const point = p ?? a.point;
-      const gapA = hypot3(sub(a.point, point));
-      const gapB = hypot3(sub(b.point, point));
-      const gapAB = hypot3(sub(a.point, b.point));
-      const positionGapMm = Math.max(gapA, gapB, gapAB);
-      const normalAngleDeg = Math.min(angleDeg(a.normal, b.normal), angleDeg(a.normal, [-b.normal[0], -b.normal[1], -b.normal[2]]));
-      const dH = curvatureDiff(a, b);
-      samples.push({
-        t,
-        point,
-        positionGapMm,
-        normalAngleDeg,
-        curvatureDiff: dH,
-        gaussianA: a.gaussian,
-        gaussianB: b.gaussian,
-        meanA: a.mean,
-        meanB: b.mean,
-      });
-    }
-    if (samples.length === 0) continue;
-
-    let worst = samples[0];
-    let maxG0 = 0;
-    let maxG1 = 0;
-    let maxG2 = 0;
-    for (const sm of samples) {
-      if (sm.positionGapMm > maxG0) maxG0 = sm.positionGapMm;
-      if (sm.normalAngleDeg > maxG1) maxG1 = sm.normalAngleDeg;
-      if (sm.curvatureDiff > maxG2) maxG2 = sm.curvatureDiff;
-      const score = sm.positionGapMm / G0_TOL_MM + sm.normalAngleDeg / G1_TOL_DEG + sm.curvatureDiff;
-      const worstScore = worst.positionGapMm / G0_TOL_MM + worst.normalAngleDeg / G1_TOL_DEG + worst.curvatureDiff;
-      if (score > worstScore) worst = sm;
-    }
-
-    const sampledClass = classify(maxG0, maxG1, maxG2);
-    const occtContinuity = storedOcctClass(edge, fa, fb);
-
-    out.push({
-      edgeIndex: i,
-      edgeHash: edgeHash(edge),
-      faceHashes: [faceHash(fa), faceHash(fb)],
-      class: sampledClass,
-      maxPositionGapMm: maxG0,
-      maxNormalAngleDeg: maxG1,
-      maxCurvatureDiff: maxG2,
-      worstSample: worst,
-      sampleCount: samples.length,
-      ...(occtContinuity !== undefined ? { occtContinuity } : {}),
-    });
+    const record = continuityForEdge(i, edge, faces[0], faces[1]);
+    if (record) out.push(record);
   }
   return out;
 }
@@ -374,7 +394,9 @@ function faceSurfaceType(face: Face): string {
   return (face as unknown as { geomType?: string }).geomType ?? 'UNKNOWN';
 }
 
-function uvBounds(face: Face): { u1: number; u2: number; v1: number; v2: number } | null {
+type UvBounds = { u1: number; u2: number; v1: number; v2: number };
+
+function uvBounds(face: Face): UvBounds | null {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
   const adaptor = new oc.BRepAdaptor_Surface_2(wrappedOf(face), true);
@@ -407,61 +429,15 @@ export function inspectCurvature(
     if (faceFilter && !faceFilter(face, i)) continue;
     const bounds = uvBounds(face);
     if (!bounds) continue;
-    const { u1, u2, v1, v2 } = bounds;
-    const du = (u2 - u1) / (UV_GRID + 1);
-    const dv = (v2 - v1) / (UV_GRID + 1);
-    const props: SurfaceProps[] = [];
-    const grid: Array<Array<SurfaceProps | null>> = [];
-    for (let iu = 1; iu <= UV_GRID; iu++) {
-      const row: Array<SurfaceProps | null> = [];
-      for (let iv = 1; iv <= UV_GRID; iv++) {
-        const p = evalSurfaceProps(face, u1 + iu * du, v1 + iv * dv);
-        row.push(p);
-        if (p) props.push(p);
-      }
-      grid.push(row);
-    }
+    const { props, grid } = sampleFaceProps(face, bounds);
     if (props.length === 0) continue;
 
-    let gMin = Infinity, gMax = -Infinity, gSum = 0;
-    let mMin = Infinity, mMax = -Infinity, mSum = 0;
-    for (const p of props) {
-      if (p.gaussian < gMin) gMin = p.gaussian;
-      if (p.gaussian > gMax) gMax = p.gaussian;
-      gSum += p.gaussian;
-      if (p.mean < mMin) mMin = p.mean;
-      if (p.mean > mMax) mMax = p.mean;
-      mSum += p.mean;
-    }
-    const gMean = gSum / props.length;
-    const mMean = mSum / props.length;
-    let gVar = 0;
-    for (const p of props) gVar += (p.gaussian - gMean) ** 2;
-    const gStd = Math.sqrt(gVar / props.length);
+    const { gMin, gMax, gMean, mMin, mMax, mMean, gStd } = aggregateCurvatureStats(props);
     const spikeTol = Math.max(1e-4, spikeFactor * gStd);
 
-    const spikes: FaceCurvatureStats['spikes'] = [];
-    for (const p of props) {
-      if (Math.abs(p.gaussian - gMean) > spikeTol && Math.abs(p.gaussian - gMean) > 1e-3) {
-        spikes.push({ point: p.point, gaussian: p.gaussian, mean: p.mean });
-      }
-    }
+    const spikes = detectCurvatureSpikes(props, gMean, spikeTol);
 
-    let inflections = 0;
-    for (let r = 0; r < grid.length; r++) {
-      for (let c = 0; c < grid[r].length; c++) {
-        const here = grid[r][c];
-        if (!here) continue;
-        if (c + 1 < grid[r].length) {
-          const next = grid[r][c + 1];
-          if (next && here.gaussian * next.gaussian < 0) inflections++;
-        }
-        if (r + 1 < grid.length) {
-          const next = grid[r + 1][c];
-          if (next && here.gaussian * next.gaussian < 0) inflections++;
-        }
-      }
-    }
+    const inflections = countInflections(grid);
 
     out.push({
       faceIndex: i,
@@ -475,6 +451,87 @@ export function inspectCurvature(
     });
   }
   return out;
+}
+
+function sampleFaceProps(
+  face: Face,
+  bounds: UvBounds,
+): { props: SurfaceProps[]; grid: Array<Array<SurfaceProps | null>> } {
+  const { u1, u2, v1, v2 } = bounds;
+  const du = (u2 - u1) / (UV_GRID + 1);
+  const dv = (v2 - v1) / (UV_GRID + 1);
+  const props: SurfaceProps[] = [];
+  const grid: Array<Array<SurfaceProps | null>> = [];
+  for (let iu = 1; iu <= UV_GRID; iu++) {
+    const row: Array<SurfaceProps | null> = [];
+    for (let iv = 1; iv <= UV_GRID; iv++) {
+      const p = evalSurfaceProps(face, u1 + iu * du, v1 + iv * dv);
+      row.push(p);
+      if (p) props.push(p);
+    }
+    grid.push(row);
+  }
+  return { props, grid };
+}
+
+function aggregateCurvatureStats(props: SurfaceProps[]): {
+  gMin: number;
+  gMax: number;
+  gMean: number;
+  mMin: number;
+  mMax: number;
+  mMean: number;
+  gStd: number;
+} {
+  let gMin = Infinity, gMax = -Infinity, gSum = 0;
+  let mMin = Infinity, mMax = -Infinity, mSum = 0;
+  for (const p of props) {
+    if (p.gaussian < gMin) gMin = p.gaussian;
+    if (p.gaussian > gMax) gMax = p.gaussian;
+    gSum += p.gaussian;
+    if (p.mean < mMin) mMin = p.mean;
+    if (p.mean > mMax) mMax = p.mean;
+    mSum += p.mean;
+  }
+  const gMean = gSum / props.length;
+  const mMean = mSum / props.length;
+  let gVar = 0;
+  for (const p of props) gVar += (p.gaussian - gMean) ** 2;
+  const gStd = Math.sqrt(gVar / props.length);
+  return { gMin, gMax, gMean, mMin, mMax, mMean, gStd };
+}
+
+function detectCurvatureSpikes(
+  props: SurfaceProps[],
+  gMean: number,
+  spikeTol: number,
+): FaceCurvatureStats['spikes'] {
+  const spikes: FaceCurvatureStats['spikes'] = [];
+  for (const p of props) {
+    if (Math.abs(p.gaussian - gMean) > spikeTol && Math.abs(p.gaussian - gMean) > 1e-3) {
+      spikes.push({ point: p.point, gaussian: p.gaussian, mean: p.mean });
+    }
+  }
+  return spikes;
+}
+
+function countInflections(grid: Array<Array<SurfaceProps | null>>): number {
+  let inflections = 0;
+  for (let r = 0; r < grid.length; r++) {
+    for (let c = 0; c < grid[r].length; c++) {
+      const here = grid[r][c];
+      if (!here) continue;
+      if (c + 1 < grid[r].length) {
+        const next = grid[r][c + 1];
+        if (next && here.gaussian * next.gaussian < 0) inflections++;
+      }
+      if (r + 1 < grid.length) {
+        const next = grid[r + 1][c];
+        if (next && here.gaussian * next.gaussian < 0) inflections++;
+      }
+    }
+  }
+  return inflections;
 }
 
 export function vertexCurvatureColor(k: number, kMin: number, kMax: number): [number, number, number] {

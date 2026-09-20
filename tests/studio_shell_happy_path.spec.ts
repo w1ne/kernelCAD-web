@@ -22,7 +22,7 @@ async function waitForStability(page: Page): Promise<void> {
 
 test.describe('Studio shell — happy path', () => {
     test('renders the six shell slots and stays in a clean state on a solving script', async ({ page }) => {
-        await page.goto('/');
+        await page.goto('/studio');
 
         const script = `
 const w = param('Width', 60, { unit: 'mm' });
@@ -61,7 +61,7 @@ return box(w, h, t);
         // returns null pending Phase 5.1 wiring. The chip overlay should
         // therefore render no chips. This locks the contract: the overlay
         // is silent until the recompute pipeline surfaces paramTable.
-        await page.goto('/');
+        await page.goto('/studio');
         await waitForStability(page);
 
         await expect(page.locator('[data-testid="param-chips"]')).toHaveCount(0);

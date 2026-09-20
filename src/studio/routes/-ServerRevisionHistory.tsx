@@ -25,6 +25,49 @@ function formatRevisionTime(ts: string): string {
   );
 }
 
+interface RevisionMenuProps {
+  revisions: ProjectRevision[];
+  restoring: number | null;
+  onRestore: (version: number) => void;
+}
+
+/** The open dropdown panel: header row + one restorable row per revision. */
+function RevisionMenu({ revisions, restoring, onRestore }: RevisionMenuProps): ReactNode {
+  return (
+    <div
+      role="menu"
+      className="absolute right-0 top-full mt-1 w-64 max-h-80 overflow-y-auto bg-[#1a1a1a] border border-[#333] rounded shadow-lg z-50 py-1"
+      data-testid="server-history-dropdown"
+    >
+      <div className="px-3 py-1.5 text-[10px] uppercase tracking-wide text-gray-500 font-medium">
+        Revision history
+      </div>
+      {revisions.map((rev) => (
+        <div
+          key={rev.version}
+          className="group flex items-center justify-between gap-2 px-3 py-1.5 hover:bg-[#222]"
+        >
+          <div className="min-w-0">
+            <div className="text-xs text-gray-300">v{rev.version}</div>
+            <div className="text-[10px] text-gray-500 truncate">{formatRevisionTime(rev.created_at)}</div>
+          </div>
+          <button
+            type="button"
+            onClick={() => onRestore(rev.version)}
+            disabled={restoring !== null}
+            className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-white px-1.5 py-1 rounded hover:bg-[#333] transition-colors shrink-0 disabled:opacity-50"
+            aria-label={`Restore revision v${rev.version}`}
+            title={`Restore v${rev.version}`}
+          >
+            <RotateCcw className="w-3 h-3" />
+            {restoring === rev.version ? 'Restoring…' : 'Restore'}
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /** Server-side revision history dropdown for slug-backed projects, mirroring
  *  the localStorage History dropdown in the Studio Header. Lists Supabase
  *  revisions newest-first; each row can restore that revision server-side and
@@ -110,37 +153,7 @@ export function ServerRevisionHistory({
         <History className="w-4 h-4" />
       </button>
       {open && (
-        <div
-          role="menu"
-          className="absolute right-0 top-full mt-1 w-64 max-h-80 overflow-y-auto bg-[#1a1a1a] border border-[#333] rounded shadow-lg z-50 py-1"
-          data-testid="server-history-dropdown"
-        >
-          <div className="px-3 py-1.5 text-[10px] uppercase tracking-wide text-gray-500 font-medium">
-            Revision history
-          </div>
-          {revisions.map((rev) => (
-            <div
-              key={rev.version}
-              className="group flex items-center justify-between gap-2 px-3 py-1.5 hover:bg-[#222]"
-            >
-              <div className="min-w-0">
-                <div className="text-xs text-gray-300">v{rev.version}</div>
-                <div className="text-[10px] text-gray-500 truncate">{formatRevisionTime(rev.created_at)}</div>
-              </div>
-              <button
-                type="button"
-                onClick={() => handleRestore(rev.version)}
-                disabled={restoring !== null}
-                className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-white px-1.5 py-1 rounded hover:bg-[#333] transition-colors shrink-0 disabled:opacity-50"
-                aria-label={`Restore revision v${rev.version}`}
-                title={`Restore v${rev.version}`}
-              >
-                <RotateCcw className="w-3 h-3" />
-                {restoring === rev.version ? 'Restoring…' : 'Restore'}
-              </button>
-            </div>
-          ))}
-        </div>
+        <RevisionMenu revisions={revisions} restoring={restoring} onRestore={handleRestore} />
       )}
     </div>
   );

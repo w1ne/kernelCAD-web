@@ -67,6 +67,78 @@ function selectAssembly(
     : assemblies.values().next().value;
 }
 
+type CapturedPart = ReturnType<Assembly['__parts']>[number];
+type CapturedJoint = ReturnType<Assembly['__joints']>[number];
+type CapturedMate = ReturnType<Assembly['__mates']>[number];
+
+// Build per-link summary: name + extent + declared density. Extent comes
+// from the lowered shape's bounding box (mm).
+async function buildLinkSummaries(parts: readonly CapturedPart[]): Promise<InspectRobotLink[]> {
+  const links: InspectRobotLink[] = [];
+  for (const p of parts) {
+    const lowered = await p.originalShape.lower();
+    const bb = lowered.boundingBox();
+    links.push({
+      name: p.name,
+      extentMm: [bb.max[0] - bb.min[0], bb.max[1] - bb.min[1], bb.max[2] - bb.min[2]],
+      ...(p.density !== undefined ? { densityKgPerM3: p.density } : {}),
+    });
+  }
+  return links;
+}
+
+function buildLegacyJointSummaries(
+  legacyJoints: readonly CapturedJoint[],
+  parts: readonly CapturedPart[],
+): InspectRobotJoint[] {
+  const joints: InspectRobotJoint[] = [];
+  for (const j of legacyJoints) {
+    const parent = parts.find(p => p.id === j.parentPartId)?.name ?? '';
+    const child = parts.find(p => p.id === j.childPartId)?.name ?? '';
+    joints.push({
+      name: j.name,
+      type: j.kind,
+      parent,
+      child,
+      ...(j.limitsDeg ? { limitsRad: [j.limitsDeg[0] * DEG_TO_RAD, j.limitsDeg[1] * DEG_TO_RAD] } : {}),
+      ...(j.limitsMm ? { limitsM: [j.limitsMm[0] * MM_TO_M, j.limitsMm[1] * MM_TO_M] } : {}),
+    });
+  }
+  return joints;
+}
+
+function buildMateJointSummaries(mates: readonly CapturedMate[]): InspectRobotJoint[] {
+  const joints: InspectRobotJoint[] = [];
+  for (const m of mates) {
+    const parent = m.a.split('.')[0];
+    const child = m.b.split('.')[0];
+    joints.push({
+      name: m.name,
+      type: m.type,
+      parent,
+      child,
+      ...(m.limitsDeg ? { limitsRad: [m.limitsDeg[0] * DEG_TO_RAD, m.limitsDeg[1] * DEG_TO_RAD] } : {}),
+      ...(m.limitsMm ? { limitsM: [m.limitsMm[0] * MM_TO_M, m.limitsMm[1] * MM_TO_M] } : {}),
+    });
+  }
+  return joints;
+}
+
+function buildPlanningGroups(arm: Assembly): Array<{ name: string; members: string[] }> {
+  return arm.__planningGroups().map(g => ({
+    name: g.name,
+    members: [
+      ...(g.chain ? [g.chain.baseLink, g.chain.tipLink] : []),
+      ...(g.joints ?? []),
+      ...(g.links ?? []),
+    ],
+  }));
+}
+
+function buildEndEffectors(arm: Assembly): Array<{ name: string; parentLink: string }> {
+  return arm.__endEffectors().map(ee => ({ name: ee.name, parentLink: ee.parentLink }));
+}
+
 export async function inspectRobotTool(input: InspectRobotInput): Promise<InspectRobotOutput> {
   const { evaluation, model } = await evaluateAndBuildScript(input as EvaluateInput);
   if (evaluation.exitCode !== 0 || !model) {
@@ -96,54 +168,13 @@ export async function inspectRobotTool(input: InspectRobotInput): Promise<Inspec
   const legacyJoints = arm.__joints();
   const mates = arm.__mates();
 
-  // Build per-link summary: name + extent + declared density. Extent comes
-  // from the lowered shape's bounding box (mm).
-  const links: InspectRobotLink[] = [];
-  for (const p of parts) {
-    const lowered = await p.originalShape.lower();
-    const bb = lowered.boundingBox();
-    links.push({
-      name: p.name,
-      extentMm: [bb.max[0] - bb.min[0], bb.max[1] - bb.min[1], bb.max[2] - bb.min[2]],
-      ...(p.density !== undefined ? { densityKgPerM3: p.density } : {}),
-    });
-  }
-
-  const joints: InspectRobotJoint[] = [];
-  for (const j of legacyJoints) {
-    const parent = parts.find(p => p.id === j.parentPartId)?.name ?? '';
-    const child = parts.find(p => p.id === j.childPartId)?.name ?? '';
-    joints.push({
-      name: j.name,
-      type: j.kind,
-      parent,
-      child,
-      ...(j.limitsDeg ? { limitsRad: [j.limitsDeg[0] * DEG_TO_RAD, j.limitsDeg[1] * DEG_TO_RAD] } : {}),
-      ...(j.limitsMm ? { limitsM: [j.limitsMm[0] * MM_TO_M, j.limitsMm[1] * MM_TO_M] } : {}),
-    });
-  }
-  for (const m of mates) {
-    const parent = m.a.split('.')[0];
-    const child = m.b.split('.')[0];
-    joints.push({
-      name: m.name,
-      type: m.type,
-      parent,
-      child,
-      ...(m.limitsDeg ? { limitsRad: [m.limitsDeg[0] * DEG_TO_RAD, m.limitsDeg[1] * DEG_TO_RAD] } : {}),
-      ...(m.limitsMm ? { limitsM: [m.limitsMm[0] * MM_TO_M, m.limitsMm[1] * MM_TO_M] } : {}),
-    });
-  }
-
-  const planningGroups = arm.__planningGroups().map(g => ({
-    name: g.name,
-    members: [
-      ...(g.chain ? [g.chain.baseLink, g.chain.tipLink] : []),
-      ...(g.joints ?? []),
-      ...(g.links ?? []),
-    ],
-  }));
-  const endEffectors = arm.__endEffectors().map(ee => ({ name: ee.name, parentLink: ee.parentLink }));
+  const links = await buildLinkSummaries(parts);
+  const joints = [
+    ...buildLegacyJointSummaries(legacyJoints, parts),
+    ...buildMateJointSummaries(mates),
+  ];
+  const planningGroups = buildPlanningGroups(arm);
+  const endEffectors = buildEndEffectors(arm);
 
   return {
     ok: true,

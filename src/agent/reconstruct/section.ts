@@ -33,19 +33,7 @@ export interface Section {
 
 export function sliceAtZ(positions: Float64Array, triangles: Uint32Array, zRequested: number): Section {
   const vCount = positions.length / 3;
-  let z = zRequested;
-  // Keep the plane off every vertex so each crossing is a clean edge crossing.
-  for (let attempt = 0; attempt < 20; attempt++) {
-    let clear = true;
-    for (let v = 0; v < vCount; v++) {
-      if (Math.abs(positions[v * 3 + 2] - z) < 1e-7) {
-        clear = false;
-        break;
-      }
-    }
-    if (clear) break;
-    z += 3.7e-6;
-  }
+  const z = clearOfVertices(positions, vCount, zRequested);
 
   const next = new Map<number, number>();
   const point = new Map<number, [number, number]>();
@@ -89,6 +77,33 @@ export function sliceAtZ(positions: Float64Array, triangles: Uint32Array, zReque
     point.set(to.key, [to.x, to.y]);
   }
 
+  const { loops, openChains } = chainLoops(next, point, segTri);
+  return { z, loops, openChains, materialArea: loops.reduce((s, l) => s + l.signedArea, 0) };
+}
+
+/** Keep the plane off every vertex so each crossing is a clean edge crossing. */
+function clearOfVertices(positions: Float64Array, vCount: number, zRequested: number): number {
+  let z = zRequested;
+  for (let attempt = 0; attempt < 20; attempt++) {
+    let clear = true;
+    for (let v = 0; v < vCount; v++) {
+      if (Math.abs(positions[v * 3 + 2] - z) < 1e-7) {
+        clear = false;
+        break;
+      }
+    }
+    if (clear) break;
+    z += 3.7e-6;
+  }
+  return z;
+}
+
+/** Chain the per-edge crossing segments into closed loops. */
+function chainLoops(
+  next: Map<number, number>,
+  point: Map<number, [number, number]>,
+  segTri: Map<number, number>,
+): { loops: SectionLoop[]; openChains: number } {
   const loops: SectionLoop[] = [];
   let openChains = 0;
   const used = new Set<number>();
@@ -119,5 +134,5 @@ export function sliceAtZ(positions: Float64Array, triangles: Uint32Array, zReque
     const xy = Float64Array.from(coords);
     loops.push({ xy, tris: Int32Array.from(tris), signedArea: polygonSignedArea(xy) });
   }
-  return { z, loops, openChains, materialArea: loops.reduce((s, l) => s + l.signedArea, 0) };
+  return { loops, openChains };
 }

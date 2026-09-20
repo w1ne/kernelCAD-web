@@ -24,6 +24,7 @@ import {
   type ExportFormat,
   type ExportOptions,
   type ExportResult,
+  type PartStlExport,
 } from '../../script-runtime/export';
 import { formatHuman } from '../../../shared/diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -184,19 +185,23 @@ function errorMessage(error: unknown): string {
  * so every resolved ancestor must be owned by the current user or root, and
  * must not allow an untrusted user to replace the next child entry.
  */
-async function trustedManifestPath(destination: string): Promise<string> {
-  const requestedPath = resolve(destination);
-  const requestedParent = dirname(requestedPath);
-  let parent: string;
+interface ManifestAncestor {
+  path: string;
+  info: Stats;
+}
+
+async function resolveManifestParent(requestedParent: string): Promise<string> {
   try {
-    parent = await realpath(requestedParent);
+    return await realpath(requestedParent);
   } catch (error) {
     throw new Error(
       `--connector-manifest parent '${requestedParent}' cannot be resolved: ${errorMessage(error)}`,
     );
   }
+}
 
-  const ancestry: Array<{ path: string; info: Stats }> = [];
+async function collectManifestAncestry(parent: string): Promise<ManifestAncestor[]> {
+  const ancestry: ManifestAncestor[] = [];
   for (let directory = parent; ; directory = dirname(directory)) {
     let info: Stats;
     try {
@@ -212,42 +217,63 @@ async function trustedManifestPath(destination: string): Promise<string> {
     ancestry.unshift({ path: directory, info });
     if (dirname(directory) === directory) break;
   }
+  return ancestry;
+}
 
-  if (process.platform !== 'win32') {
-    const uid = typeof process.getuid === 'function' ? process.getuid() : undefined;
-    if (uid === undefined) {
-      throw new Error('--connector-manifest ancestry cannot determine the current user id.');
-    }
-    const manifestParent = ancestry.at(-1)!;
-    const isTrustedOwner = (info: Stats): boolean => info.uid === uid || info.uid === 0;
-    if (!isTrustedOwner(manifestParent.info)) {
-      throw new Error(
-        `--connector-manifest ancestry is unsafe: '${manifestParent.path}' must be owned by the current user or root.`,
-      );
-    }
-    if ((manifestParent.info.mode & 0o022) !== 0) {
-      throw new Error(
-        `--connector-manifest parent '${manifestParent.path}' must not be writable by group or other users.`,
-      );
-    }
-    for (let index = 0; index < ancestry.length - 1; index++) {
-      const ancestor = ancestry[index];
-      if (!isTrustedOwner(ancestor.info)) {
-        const sticky = (ancestor.info.mode & 0o1000) !== 0;
-        throw new Error(
-          `--connector-manifest ancestry is unsafe: '${ancestor.path}' must be owned by the current user or root.${sticky ? ' A sticky ancestor is trusted only with such an owner.' : ''}`,
-        );
-      }
-      if ((ancestor.info.mode & 0o022) === 0) continue;
-      const child = ancestry[index + 1];
+function isTrustedManifestOwner(info: Stats, uid: number): boolean {
+  return info.uid === uid || info.uid === 0;
+}
+
+function assertTrustedManifestParent(manifestParent: ManifestAncestor, uid: number): void {
+  if (!isTrustedManifestOwner(manifestParent.info, uid)) {
+    throw new Error(
+      `--connector-manifest ancestry is unsafe: '${manifestParent.path}' must be owned by the current user or root.`,
+    );
+  }
+  if ((manifestParent.info.mode & 0o022) !== 0) {
+    throw new Error(
+      `--connector-manifest parent '${manifestParent.path}' must not be writable by group or other users.`,
+    );
+  }
+}
+
+function assertTrustedManifestAncestors(ancestry: ManifestAncestor[], uid: number): void {
+  for (let index = 0; index < ancestry.length - 1; index++) {
+    const ancestor = ancestry[index];
+    if (!isTrustedManifestOwner(ancestor.info, uid)) {
       const sticky = (ancestor.info.mode & 0o1000) !== 0;
-      if (!sticky || child.info.uid !== uid) {
-        throw new Error(
-          `--connector-manifest ancestry is unsafe: '${ancestor.path}' is writable by group or other users and can replace '${child.path}'. A sticky ancestor must be trusted (owned by the current user or root).`,
-        );
-      }
+      throw new Error(
+        `--connector-manifest ancestry is unsafe: '${ancestor.path}' must be owned by the current user or root.${sticky ? ' A sticky ancestor is trusted only with such an owner.' : ''}`,
+      );
+    }
+    if ((ancestor.info.mode & 0o022) === 0) continue;
+    const child = ancestry[index + 1];
+    const sticky = (ancestor.info.mode & 0o1000) !== 0;
+    if (!sticky || child.info.uid !== uid) {
+      throw new Error(
+        `--connector-manifest ancestry is unsafe: '${ancestor.path}' is writable by group or other users and can replace '${child.path}'. A sticky ancestor must be trusted (owned by the current user or root).`,
+      );
     }
   }
+}
+
+function assertTrustedManifestAncestry(ancestry: ManifestAncestor[]): void {
+  if (process.platform === 'win32') return;
+  const uid = typeof process.getuid === 'function' ? process.getuid() : undefined;
+  if (uid === undefined) {
+    throw new Error('--connector-manifest ancestry cannot determine the current user id.');
+  }
+  const manifestParent = ancestry.at(-1)!;
+  assertTrustedManifestParent(manifestParent, uid);
+  assertTrustedManifestAncestors(ancestry, uid);
+}
+
+async function trustedManifestPath(destination: string): Promise<string> {
+  const requestedPath = resolve(destination);
+  const requestedParent = dirname(requestedPath);
+  const parent = await resolveManifestParent(requestedParent);
+  const ancestry = await collectManifestAncestry(parent);
+  assertTrustedManifestAncestry(ancestry);
   return join(parent, basename(requestedPath));
 }
 
@@ -553,6 +579,44 @@ export interface ExportPartsCliResult {
   diagnostics: CompilerDiagnostic[];
 }
 
+function emptyPartsSelectionDiagnostic(input: ExportPartsCliInput): CompilerDiagnostic {
+  return {
+    target: 'export-occt', code: 'cli.invalid-args', severity: 'error',
+    message: input.parts !== undefined && input.parts.length === 0
+      ? 'No parts selected: the part selection is empty. Pass --part <name> (repeatable) or --parts all.'
+      : 'The script resolved to zero assembly parts; nothing to export.',
+    hint: 'Run `kernelcad parts <file>` to list the available part names.',
+  };
+}
+
+async function writeSelectedParts(
+  parts: readonly PartStlExport[],
+  singleFile: string | undefined,
+  input: ExportPartsCliInput,
+  diagnostics: CompilerDiagnostic[],
+): Promise<{ written: WrittenPart[]; failed: boolean }> {
+  const written: WrittenPart[] = [];
+  try {
+    let outDir: string | undefined;
+    if (singleFile === undefined) {
+      outDir = resolve(input.outDir ?? input.outFile ?? '.');
+      await mkdir(outDir, { recursive: true });
+    }
+    for (const p of parts) {
+      const path = singleFile ?? join(outDir!, `${p.fileSafeName}.stl`);
+      await writeFile(path, p.bytes);
+      written.push({ name: p.name, path, triangleCount: p.triangleCount, watertight: p.report.ok });
+      if (input.verify && !p.report.ok) {
+        diagnostics.push(stlNotWatertightDiagnostic(p.report, undefined, p.name));
+      }
+    }
+  } catch (e) {
+    diagnostics.push(fileWriteDiagnostic(e));
+    return { written, failed: true };
+  }
+  return { written, failed: false };
+}
+
 /**
  * Per-part STL export: run the script, resolve the returned Scene into
  * world-frame parts, write one binary STL per selected part. Files are
@@ -589,13 +653,7 @@ export async function exportPartsScript(input: ExportPartsCliInput): Promise<Exp
     // self-explanatory instead of a bare exit 1.
     return {
       exitCode: 1, written: [],
-      diagnostics: withNextActions([...result.diagnostics, {
-        target: 'export-occt', code: 'cli.invalid-args', severity: 'error',
-        message: input.parts !== undefined && input.parts.length === 0
-          ? 'No parts selected: the part selection is empty. Pass --part <name> (repeatable) or --parts all.'
-          : 'The script resolved to zero assembly parts; nothing to export.',
-        hint: 'Run `kernelcad parts <file>` to list the available part names.',
-      }]),
+      diagnostics: withNextActions([...result.diagnostics, emptyPartsSelectionDiagnostic(input)]),
     };
   }
 
@@ -605,24 +663,9 @@ export async function exportPartsScript(input: ExportPartsCliInput): Promise<Exp
     ? resolve(input.outFile)
     : undefined;
 
-  const written: WrittenPart[] = [];
   const diagnostics: CompilerDiagnostic[] = [...result.diagnostics];
-  try {
-    let outDir: string | undefined;
-    if (singleFile === undefined) {
-      outDir = resolve(input.outDir ?? input.outFile ?? '.');
-      await mkdir(outDir, { recursive: true });
-    }
-    for (const p of result.parts) {
-      const path = singleFile ?? join(outDir!, `${p.fileSafeName}.stl`);
-      await writeFile(path, p.bytes);
-      written.push({ name: p.name, path, triangleCount: p.triangleCount, watertight: p.report.ok });
-      if (input.verify && !p.report.ok) {
-        diagnostics.push(stlNotWatertightDiagnostic(p.report, undefined, p.name));
-      }
-    }
-  } catch (e) {
-    diagnostics.push(fileWriteDiagnostic(e));
+  const { written, failed } = await writeSelectedParts(result.parts, singleFile, input, diagnostics);
+  if (failed) {
     return { exitCode: 1, written, diagnostics: withNextActions(diagnostics) };
   }
   const gateFailed = input.verify && written.some(w => !w.watertight);
@@ -637,6 +680,93 @@ const SUPPORTED_FORMATS = new Set<ExportFormat>([
   'stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'gcode', 'usd-isaac',
   'bom-csv', 'bom-json',
 ]);
+
+interface ExportCommandOpts {
+  out: string; json?: boolean; part?: string[]; parts?: string; verify?: boolean;
+  connectorManifest?: string; manifestPartId?: string; manifestFamily?: string;
+  explode?: number; explodeMode?: string; balloons?: boolean; partsList?: boolean;
+  options?: string;
+}
+
+/** `--part` / `--parts all` branch: per-part STL export and its report. */
+async function runPartMode(
+  format: string,
+  file: string,
+  opts: ExportCommandOpts,
+): Promise<void> {
+  if (format !== 'stl') {
+    console.error('--part/--parts are only supported for stl exports.');
+    process.exitCode = 2; return;
+  }
+  if (opts.parts !== undefined && opts.parts !== 'all') {
+    console.error("--parts only accepts 'all'. Use repeated --part <name> for a subset.");
+    process.exitCode = 2; return;
+  }
+  const r = await exportPartsScript({
+    file,
+    ...(opts.parts === 'all' ? {} : { parts: opts.part }),
+    ...(opts.parts === 'all' ? { outDir: opts.out } : { outFile: opts.out }),
+    verify: opts.verify !== false,
+  });
+  if (opts.json) {
+    console.log(JSON.stringify({
+      ok: r.exitCode === 0,
+      parts: r.written,
+      diagnostics: r.diagnostics,
+    }, null, 2));
+  } else {
+    if (r.diagnostics.length > 0) console.log(formatHuman(r.diagnostics));
+    for (const w of r.written) {
+      const gate = w.watertight ? 'watertight' : 'NOT watertight';
+      console.log(`wrote ${w.name} -> ${w.path} (${w.triangleCount} tris, ${gate})`);
+    }
+  }
+  process.exitCode = r.exitCode;
+}
+
+/** Default branch: whole-script export and its report. */
+async function runExportMode(
+  format: string,
+  file: string,
+  opts: ExportCommandOpts,
+  options: Record<string, unknown> | undefined,
+): Promise<void> {
+  const r = await exportScript({
+    file, format: format as ExportFormat, out: opts.out,
+    ...(options === undefined ? {} : { options }),
+    ...(opts.connectorManifest === undefined
+      ? {}
+      : {
+          connectorManifest: opts.connectorManifest,
+          manifestPartId: opts.manifestPartId,
+          manifestFamily: opts.manifestFamily,
+        }),
+    ...(opts.verify === false ? { verify: false } : {}),
+    explode: opts.explode,
+    explodeMode: opts.explodeMode,
+    balloons: opts.balloons,
+    partsList: opts.partsList,
+  });
+  if (opts.json) {
+    console.log(JSON.stringify({
+      ok: r.exitCode === 0,
+      bytesWritten: r.bytesWritten,
+      out: opts.out,
+      ...(r.meshFiles !== undefined ? { meshFiles: r.meshFiles } : {}),
+      ...(r.drawingReport !== undefined ? { drawingReport: r.drawingReport } : {}),
+      diagnostics: r.diagnostics,
+    }, null, 2));
+  } else {
+    if (r.diagnostics.length > 0) console.log(formatHuman(r.diagnostics));
+    if (r.exitCode === 0) console.log(`Wrote ${r.bytesWritten} bytes to ${opts.out}`);
+    if (r.drawingReport !== undefined) {
+      const kinds = Object.entries(r.drawingReport.byKind).map(([k, n]) => `${k} ${n}`).join(', ');
+      console.log(`drawing: ${r.drawingReport.placed} annotation(s) placed, ${r.drawingReport.overlapped} overlapped (${kinds})`);
+    }
+    for (const m of r.meshFiles ?? []) console.log(`wrote mesh ${m}`);
+  }
+  process.exitCode = r.exitCode;
+}
 
 export function exportCommand(): Command {
   const cmd = new Command('export')
@@ -656,12 +786,7 @@ export function exportCommand(): Command {
     .option('--parts-list', 'svg-drawing: parts-list table (item, name, qty, material) above the title block', false)
     .option('--options <json>', 'per-format options as a JSON object, e.g. \'{"autoAnnotate":true}\' for svg-drawing')
     .option('--json', 'emit diagnostics as JSON')
-    .action(async (format: string, file: string, opts: {
-      out: string; json?: boolean; part?: string[]; parts?: string; verify?: boolean;
-      connectorManifest?: string; manifestPartId?: string; manifestFamily?: string;
-      explode?: number; explodeMode?: string; balloons?: boolean; partsList?: boolean;
-      options?: string;
-    }) => {
+    .action(async (format: string, file: string, opts: ExportCommandOpts) => {
       if (!SUPPORTED_FORMATS.has(format as ExportFormat)) {
         console.error(`Unsupported format: ${format}. Use one of ${[...SUPPORTED_FORMATS].join(', ')}.`);
         process.exitCode = 2; return;
@@ -678,76 +803,14 @@ export function exportCommand(): Command {
       }
       const partMode = (opts.part?.length ?? 0) > 0 || opts.parts !== undefined;
       if (partMode) {
-        if (format !== 'stl') {
-          console.error('--part/--parts are only supported for stl exports.');
-          process.exitCode = 2; return;
-        }
-        if (opts.parts !== undefined && opts.parts !== 'all') {
-          console.error("--parts only accepts 'all'. Use repeated --part <name> for a subset.");
-          process.exitCode = 2; return;
-        }
-        const r = await exportPartsScript({
-          file,
-          ...(opts.parts === 'all' ? {} : { parts: opts.part }),
-          ...(opts.parts === 'all' ? { outDir: opts.out } : { outFile: opts.out }),
-          verify: opts.verify !== false,
-        });
-        if (opts.json) {
-          console.log(JSON.stringify({
-            ok: r.exitCode === 0,
-            parts: r.written,
-            diagnostics: r.diagnostics,
-          }, null, 2));
-        } else {
-          if (r.diagnostics.length > 0) console.log(formatHuman(r.diagnostics));
-          for (const w of r.written) {
-            const gate = w.watertight ? 'watertight' : 'NOT watertight';
-            console.log(`wrote ${w.name} -> ${w.path} (${w.triangleCount} tris, ${gate})`);
-          }
-        }
-        process.exitCode = r.exitCode;
-        return;
+        return runPartMode(format, file, opts);
       }
       const parsedOptions = parseExportOptionsFlag(opts.options, format);
       if (!parsedOptions.ok) {
         console.error(parsedOptions.error);
         process.exitCode = 2; return;
       }
-      const r = await exportScript({
-        file, format: format as ExportFormat, out: opts.out,
-        ...(parsedOptions.options === undefined ? {} : { options: parsedOptions.options }),
-        ...(opts.connectorManifest === undefined
-          ? {}
-          : {
-              connectorManifest: opts.connectorManifest,
-              manifestPartId: opts.manifestPartId,
-              manifestFamily: opts.manifestFamily,
-            }),
-        ...(opts.verify === false ? { verify: false } : {}),
-        explode: opts.explode,
-        explodeMode: opts.explodeMode,
-        balloons: opts.balloons,
-        partsList: opts.partsList,
-      });
-      if (opts.json) {
-        console.log(JSON.stringify({
-          ok: r.exitCode === 0,
-          bytesWritten: r.bytesWritten,
-          out: opts.out,
-          ...(r.meshFiles !== undefined ? { meshFiles: r.meshFiles } : {}),
-          ...(r.drawingReport !== undefined ? { drawingReport: r.drawingReport } : {}),
-          diagnostics: r.diagnostics,
-        }, null, 2));
-      } else {
-        if (r.diagnostics.length > 0) console.log(formatHuman(r.diagnostics));
-        if (r.exitCode === 0) console.log(`Wrote ${r.bytesWritten} bytes to ${opts.out}`);
-        if (r.drawingReport !== undefined) {
-          const kinds = Object.entries(r.drawingReport.byKind).map(([k, n]) => `${k} ${n}`).join(', ');
-          console.log(`drawing: ${r.drawingReport.placed} annotation(s) placed, ${r.drawingReport.overlapped} overlapped (${kinds})`);
-        }
-        for (const m of r.meshFiles ?? []) console.log(`wrote mesh ${m}`);
-      }
-      process.exitCode = r.exitCode;
+      return runExportMode(format, file, opts, parsedOptions.options);
     });
   return cmd;
 }

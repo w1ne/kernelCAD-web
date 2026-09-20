@@ -236,6 +236,16 @@ function posesAreFinite(
   return ok;
 }
 
+interface AssemblyModelInputs {
+  partEntries: PartEntry[];
+  partIds: FeatureId[];
+  encodedMates: EncodedMate[];
+  mateCouplings: readonly MateCouplingRecord[];
+  connectorsByPartId: Record<FeatureId, readonly Connector[]>;
+  records: readonly FeatureRecord[];
+  assemblyName: string;
+}
+
 /** `assemblyModel` — SceneBackend counterpart of `solvedAssembly`. */
 export function lowerAssemblyModel(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
   // SceneBackend counterpart of `solvedAssembly`: mate-free model()
@@ -243,6 +253,29 @@ export function lowerAssemblyModel(ctx: LowerContext, r: FeatureRecord): LowerOu
   // enough metadata for default mate FK. The legacy boolean-union path
   // is gone; consumers that need a fused single-Shape now call
   // Scene.toUnion()/Scene.toCompound() explicitly.
+  const inputs = readAssemblyModelInputs(ctx, r);
+  if (!inputs) return noShape();
+
+  const worldT = applyAssemblyModelFk(ctx, r, inputs);
+  if (!worldT) return noShape();
+
+  const sceneParts = buildAssemblyModelSceneParts(inputs, worldT);
+  const sceneBackend: SceneBackend = {
+    target: ctx.target,
+    assemblyName: inputs.assemblyName,
+    parts: sceneParts,
+    _kind: 'scene',
+  };
+  // Early-return: SceneBackend is not a ShapeBackend, so the post-hoc
+  // r.transforms loop cannot apply. Mirror the solvedAssembly boundary
+  // cast (Task 4); Task 7 widens the dispatch signature.
+  return finished(sceneBackend as unknown as ShapeBackend);
+}
+
+function readAssemblyModelInputs(
+  ctx: LowerContext,
+  r: FeatureRecord,
+): AssemblyModelInputs | undefined {
   const partEntries = readPartEntries(ctx);
   if (partEntries.length === 0) {
     ctx.diagnostics.push({
@@ -253,7 +286,7 @@ export function lowerAssemblyModel(ctx: LowerContext, r: FeatureRecord): LowerOu
       message: `assembly model has no part inputs.`,
       hint: 'Call assembly.part(...) at least once before assembly.model().',
     });
-    return noShape();
+    return undefined;
   }
   const meta = r.metadata as {
     assemblyName?: string;
@@ -275,9 +308,28 @@ export function lowerAssemblyModel(ctx: LowerContext, r: FeatureRecord): LowerOu
       message: `assemblyModel: input part count (${partEntries.length}) != metadata.partIds length (${partIds.length}).`,
       hint: 'Ensure inputs and partIds stay in sync.',
     });
-    return noShape();
+    return undefined;
   }
   const records = ctx.allRecords ?? [];
+  return {
+    partEntries,
+    partIds,
+    encodedMates,
+    mateCouplings,
+    connectorsByPartId,
+    records,
+    assemblyName: meta?.assemblyName ?? 'unnamed',
+  };
+}
+
+/** Identity world transforms for every part, then default mate FK when the
+ *  model declares mates. Undefined once a downstream diagnostic is pushed. */
+function applyAssemblyModelFk(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  inputs: AssemblyModelInputs,
+): Map<FeatureId, Transform> | undefined {
+  const { partEntries, partIds, encodedMates, mateCouplings, connectorsByPartId, records } = inputs;
   const worldT = new Map<FeatureId, Transform>();
   for (const partId of partIds) worldT.set(partId, Transform.identity());
 
@@ -285,10 +337,17 @@ export function lowerAssemblyModel(ctx: LowerContext, r: FeatureRecord): LowerOu
     const applied = applyModelMateFk(ctx, r, {
       partIds, partEntries, encodedMates, mateCouplings, connectorsByPartId, records, worldT,
     });
-    if (!applied) return noShape();
+    if (!applied) return undefined;
   }
+  return worldT;
+}
 
-  const sceneParts: SceneBackendPart[] = partEntries.map(([, partShape], i) => {
+function buildAssemblyModelSceneParts(
+  inputs: AssemblyModelInputs,
+  worldT: Map<FeatureId, Transform>,
+): SceneBackendPart[] {
+  const { partEntries, partIds, records } = inputs;
+  return partEntries.map(([, partShape], i) => {
     const partId = partIds[i];
     const partRec = records.find((rec) => rec.id === partId);
     const partName =
@@ -303,16 +362,6 @@ export function lowerAssemblyModel(ctx: LowerContext, r: FeatureRecord): LowerOu
       ...(material !== undefined ? { material } : {}),
     };
   });
-  const sceneBackend: SceneBackend = {
-    target: ctx.target,
-    assemblyName: meta?.assemblyName ?? 'unnamed',
-    parts: sceneParts,
-    _kind: 'scene',
-  };
-  // Early-return: SceneBackend is not a ShapeBackend, so the post-hoc
-  // r.transforms loop cannot apply. Mirror the solvedAssembly boundary
-  // cast (Task 4); Task 7 widens the dispatch signature.
-  return finished(sceneBackend as unknown as ShapeBackend);
 }
 
 /** Default mate FK for a mate-bearing `model()` record; writes the resolved
@@ -724,6 +773,40 @@ function applySolvedMateFk(
   return true;
 }
 
+type PartPlacementMeta = {
+  at?: { x?: { evaluated?: number }; y?: { evaluated?: number }; z?: { evaluated?: number } };
+  placedBy?: unknown;
+  partName?: string;
+};
+
+/** Read the authored `at:` vec3; defaults every missing coordinate to 0. */
+function readPartAtVector(partAt: PartPlacementMeta['at']): [number, number, number] {
+  const ax = partAt?.x?.evaluated ?? 0;
+  const ay = partAt?.y?.evaluated ?? 0;
+  const az = partAt?.z?.evaluated ?? 0;
+  return [ax, ay, az];
+}
+
+function emitPlacementIgnoredByMateFk(
+  ctx: LowerContext,
+  partRec: FeatureRecord,
+  partMeta: PartPlacementMeta | undefined,
+  partId: FeatureId,
+  ax: number,
+  ay: number,
+  az: number,
+): void {
+  const partName = partMeta?.partName ?? partId;
+  ctx.diagnostics.push({
+    target: ctx.target,
+    code: 'assembly.placement-ignored-by-mate-fk',
+    featureId: partRec.id,
+    severity: 'info',
+    message: `assembly.part '${partName}' has both an authored \`at:\` placement (${ax.toFixed(2)}, ${ay.toFixed(2)}, ${az.toFixed(2)}) AND a mate-FK-derived pose; the \`at:\` is being ignored.`,
+    hint: "Remove the `at:` and let the mate decide the pose, or place the part's local frame so its mate connector sits at the origin (mate FK composes parent_world ∘ trans(parent_conn) ∘ joint ∘ trans(-child_conn)).",
+  });
+}
+
 /**
  * Exp-B four-bolt-flange surfaced this: when a part has an authored `at:` AND
  * is positioned by mate FK, the `at:` is silently dropped — the agent only
@@ -743,27 +826,12 @@ function warnPlacementIgnoredByMateFk(
   // (the placedBy/connect path leaves `at` synthesized from the
   // connector pair — that's not a conflict, it's how connect
   // was designed; skip those).
-  const partMeta = partRec?.metadata as
-    | { at?: { x?: { evaluated?: number }; y?: { evaluated?: number }; z?: { evaluated?: number } };
-        placedBy?: unknown;
-        partName?: string }
-    | undefined;
-  const partAt = partMeta?.at;
-  const ax = partAt?.x?.evaluated ?? 0;
-  const ay = partAt?.y?.evaluated ?? 0;
-  const az = partAt?.z?.evaluated ?? 0;
+  const partMeta = partRec?.metadata as PartPlacementMeta | undefined;
+  const [ax, ay, az] = readPartAtVector(partMeta?.at);
   const atIsNonTrivial = Math.abs(ax) + Math.abs(ay) + Math.abs(az) > 1e-6;
   const placedByConnect = partMeta?.placedBy !== undefined;
   if (partRec && atIsNonTrivial && !placedByConnect) {
-    const partName = partMeta?.partName ?? partId;
-    ctx.diagnostics.push({
-      target: ctx.target,
-      code: 'assembly.placement-ignored-by-mate-fk',
-      featureId: partRec.id,
-      severity: 'info',
-      message: `assembly.part '${partName}' has both an authored \`at:\` placement (${ax.toFixed(2)}, ${ay.toFixed(2)}, ${az.toFixed(2)}) AND a mate-FK-derived pose; the \`at:\` is being ignored.`,
-      hint: "Remove the `at:` and let the mate decide the pose, or place the part's local frame so its mate connector sits at the origin (mate FK composes parent_world ∘ trans(parent_conn) ∘ joint ∘ trans(-child_conn)).",
-    });
+    emitPlacementIgnoredByMateFk(ctx, partRec, partMeta, partId, ax, ay, az);
   }
 }
 

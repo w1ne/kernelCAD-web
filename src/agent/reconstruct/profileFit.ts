@@ -207,14 +207,8 @@ export function fitLoop(xyIn: ArrayLike<number>, eps: number, guide?: LoopGuide)
   const { pts, labels: rawLabels } = dedupe(xyIn, Math.max(1e-7, eps * 0.01), guide?.labels);
   const n = pts.length / 2;
   const hole = polygonSignedArea(pts) < 0;
-  if (n >= 6) {
-    const cf = fitCircle2D(pts);
-    // RMS within eps and no point beyond 2.5 eps: a noisy scan of a bore is
-    // still a circle, while a polygon's corners stick out well past that.
-    if (cf && cf.rms <= eps && cf.maxResidual <= 2.5 * eps && angularCoverage(pts, cf.cx, cf.cy) >= 350 * DEG && sagittaOk(cf.r, 2 * Math.PI, eps)) {
-      return { kind: 'circle', cx: cf.cx, cy: cf.cy, r: cf.r, hole, rms: cf.rms };
-    }
-  }
+  const whole = fitWholeCircle(pts, eps, hole);
+  if (whole !== null) return whole;
   let bx0 = Infinity, by0 = Infinity, bx1 = -Infinity, by1 = -Infinity;
   for (let q = 0; q < n; q++) {
     bx0 = Math.min(bx0, pts[2 * q]);
@@ -226,66 +220,132 @@ export function fitLoop(xyIn: ArrayLike<number>, eps: number, guide?: LoopGuide)
   const labels = rawLabels.map((l) => (guide && l !== 0 && guide.geometry(l) ? l : 0));
   const boundary = labels.findIndex((l, i) => l !== labels[(i - 1 + n) % n]);
 
-  if (guide && boundary >= 0 && labels.some((l) => l !== 0)) {
-    // Walk runs of equally labelled segments, starting on a run boundary.
-    const rotated = range(pts, boundary, boundary + n - 1);
-    const lab = Array.from({ length: n }, (_, i) => labels[(boundary + i) % n]);
-    const segments: ProfileSegment[] = [];
-    let a = 0;
-    while (a < n) {
-      let b = a;
-      while (b + 1 < n && lab[b + 1] === lab[a]) b++;
-      const first = a;
-      const last = b + 1;
-      const geom = lab[a] !== 0 ? guide.geometry(lab[a]) : undefined;
-      if (geom && geom.kind === 'line') {
-        const tx = rotated[2 * (last % n)] - rotated[2 * first];
-        const ty = rotated[2 * (last % n) + 1] - rotated[2 * first + 1];
-        const sgn = geom.dx * tx + geom.dy * ty >= 0 ? 1 : -1;
-        // Direction from the wall plane; offset from the section it cuts (a
-        // plane fit can tilt a little where it borders a round), weighted by
-        // length: a sparse tessellated wall is one long chord, and the short
-        // chord of a blend facet grown into the region must not pull it.
-        let ox = 0;
-        let oy = 0;
-        let wsum = 0;
-        for (let q = first; q < last; q++) {
-          const ax = rotated[2 * (q % n)], ay = rotated[2 * (q % n) + 1];
-          const bx = rotated[2 * ((q + 1) % n)], by = rotated[2 * ((q + 1) % n) + 1];
-          const w = Math.hypot(bx - ax, by - ay);
-          ox += (w * (ax + bx)) / 2;
-          oy += (w * (ay + by)) / 2;
-          wsum += w;
-        }
-        if (wsum <= 1e-12) {
-          ox = rotated[2 * first];
-          oy = rotated[2 * first + 1];
-          wsum = 1;
-        }
-        segments.push({ geom: { kind: 'line', px: ox / wsum, py: oy / wsum, dx: geom.dx * sgn, dy: geom.dy * sgn }, first, last, fixed: true });
-      } else if (geom && geom.kind === 'circle') {
-        let sweep = 0;
-        let prev = Math.atan2(rotated[2 * first + 1] - geom.cy, rotated[2 * first] - geom.cx);
-        for (let q = first + 1; q <= last; q++) {
-          const m = q % n;
-          const ang = Math.atan2(rotated[2 * m + 1] - geom.cy, rotated[2 * m] - geom.cx);
-          let d = ang - prev;
-          while (d > Math.PI) d -= 2 * Math.PI;
-          while (d < -Math.PI) d += 2 * Math.PI;
-          sweep += d;
-          prev = ang;
-        }
-        segments.push({ geom: { kind: 'arc', cx: geom.cx, cy: geom.cy, r: geom.r, ccw: sweep >= 0 }, first, last, fixed: true });
-      } else {
-        segments.push(...greedySegments(rotated, first, last, eps, maxRadius));
-      }
-      a = b + 1;
-    }
-    mergeCollinear(rotated, segments, eps);
-    refineSegments(rotated, segments);
-    return { kind: 'path', segments, hole, points: rotated };
+  if (guide) {
+    const guided = fitGuidedLoop(pts, n, labels, boundary, eps, maxRadius, guide, hole);
+    if (guided !== null) return guided;
   }
 
+  return fitUnguidedLoop(pts, n, eps, maxRadius, hole);
+}
+
+function fitWholeCircle(pts: Float64Array, eps: number, hole: boolean): FittedLoop | null {
+  const n = pts.length / 2;
+  if (n >= 6) {
+    const cf = fitCircle2D(pts);
+    // RMS within eps and no point beyond 2.5 eps: a noisy scan of a bore is
+    // still a circle, while a polygon's corners stick out well past that.
+    if (cf && cf.rms <= eps && cf.maxResidual <= 2.5 * eps && angularCoverage(pts, cf.cx, cf.cy) >= 350 * DEG && sagittaOk(cf.r, 2 * Math.PI, eps)) {
+      return { kind: 'circle', cx: cf.cx, cy: cf.cy, r: cf.r, hole, rms: cf.rms };
+    }
+  }
+  return null;
+}
+
+function fitGuidedLoop(
+  pts: Float64Array,
+  n: number,
+  labels: number[],
+  boundary: number,
+  eps: number,
+  maxRadius: number,
+  guide: LoopGuide,
+  hole: boolean,
+): FittedLoop | null {
+  if (!hasGuidedRuns(boundary, labels)) return null;
+  // Walk runs of equally labelled segments, starting on a run boundary.
+  const rotated = range(pts, boundary, boundary + n - 1);
+  const lab = rotateLabels(labels, boundary, n);
+  const segments: ProfileSegment[] = [];
+  let a = 0;
+  while (a < n) {
+    let b = a;
+    while (b + 1 < n && lab[b + 1] === lab[a]) b++;
+    const first = a;
+    const last = b + 1;
+    const geom = lab[a] !== 0 ? guide.geometry(lab[a]) : undefined;
+    if (geom && geom.kind === 'line') {
+      pushGuidedLineSegment(rotated, n, first, last, geom, segments);
+    } else if (geom && geom.kind === 'circle') {
+      pushGuidedCircleSegment(rotated, n, first, last, geom, segments);
+    } else {
+      segments.push(...greedySegments(rotated, first, last, eps, maxRadius));
+    }
+    a = b + 1;
+  }
+  mergeCollinear(rotated, segments, eps);
+  refineSegments(rotated, segments);
+  return { kind: 'path', segments, hole, points: rotated };
+}
+
+/** A run boundary exists and at least one segment carries a region label. */
+function hasGuidedRuns(boundary: number, labels: number[]): boolean {
+  return boundary >= 0 && labels.some((l) => l !== 0);
+}
+
+/** The labels rotated so index 0 starts at `boundary`. */
+function rotateLabels(labels: number[], boundary: number, n: number): number[] {
+  return Array.from({ length: n }, (_, i) => labels[(boundary + i) % n]);
+}
+
+/** Emit the labelled run [first, last] as a fixed line from its wall plane. */
+function pushGuidedLineSegment(
+  rotated: Float64Array,
+  n: number,
+  first: number,
+  last: number,
+  geom: Extract<RegionSection, { kind: 'line' }>,
+  segments: ProfileSegment[],
+): void {
+  const tx = rotated[2 * (last % n)] - rotated[2 * first];
+  const ty = rotated[2 * (last % n) + 1] - rotated[2 * first + 1];
+  const sgn = geom.dx * tx + geom.dy * ty >= 0 ? 1 : -1;
+  // Direction from the wall plane; offset from the section it cuts (a
+  // plane fit can tilt a little where it borders a round), weighted by
+  // length: a sparse tessellated wall is one long chord, and the short
+  // chord of a blend facet grown into the region must not pull it.
+  let ox = 0;
+  let oy = 0;
+  let wsum = 0;
+  for (let q = first; q < last; q++) {
+    const ax = rotated[2 * (q % n)], ay = rotated[2 * (q % n) + 1];
+    const bx = rotated[2 * ((q + 1) % n)], by = rotated[2 * ((q + 1) % n) + 1];
+    const w = Math.hypot(bx - ax, by - ay);
+    ox += (w * (ax + bx)) / 2;
+    oy += (w * (ay + by)) / 2;
+    wsum += w;
+  }
+  if (wsum <= 1e-12) {
+    ox = rotated[2 * first];
+    oy = rotated[2 * first + 1];
+    wsum = 1;
+  }
+  segments.push({ geom: { kind: 'line', px: ox / wsum, py: oy / wsum, dx: geom.dx * sgn, dy: geom.dy * sgn }, first, last, fixed: true });
+}
+
+/** Emit the labelled run [first, last] as a fixed arc on its cylinder axis. */
+function pushGuidedCircleSegment(
+  rotated: Float64Array,
+  n: number,
+  first: number,
+  last: number,
+  geom: Extract<RegionSection, { kind: 'circle' }>,
+  segments: ProfileSegment[],
+): void {
+  let sweep = 0;
+  let prev = Math.atan2(rotated[2 * first + 1] - geom.cy, rotated[2 * first] - geom.cx);
+  for (let q = first + 1; q <= last; q++) {
+    const m = q % n;
+    const ang = Math.atan2(rotated[2 * m + 1] - geom.cy, rotated[2 * m] - geom.cx);
+    let d = ang - prev;
+    while (d > Math.PI) d -= 2 * Math.PI;
+    while (d < -Math.PI) d += 2 * Math.PI;
+    sweep += d;
+    prev = ang;
+  }
+  segments.push({ geom: { kind: 'arc', cx: geom.cx, cy: geom.cy, r: geom.r, ccw: sweep >= 0 }, first, last, fixed: true });
+}
+
+function fitUnguidedLoop(pts: Float64Array, n: number, eps: number, maxRadius: number, hole: boolean): FittedLoop {
   // Start at the sharpest corner so no primitive straddles the seam.
   let start = 0;
   let sharpest = -1;

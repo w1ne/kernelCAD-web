@@ -174,52 +174,15 @@ export async function validateJointVisualExposure(
 
   const out: ValidatorDiagnostic[] = [];
   for (const mate of arm.__mates()) {
-    // Non-revolute joints are out of scope per spec §"Locked decisions" §1
-    // and §"Out of scope" — `prismatic` / `pin_slot` / `ball` etc. get
-    // their own gates later if they exhibit the same failure mode.
-    if (mate.type !== 'revolute') continue;
+    const joint = await resolveExposedJoint(mate, partsByName, loweredShapes, worldTransforms);
+    if (joint === undefined) continue;
 
-    // Concealed-by-design skip — `exposure: 'concealed'` is the script's
-    // explicit declaration that this revolute is an ENCLOSED mechanism
-    // (valve rotor in a bore, internal spindle, worm shaft) where fork
-    // daylight is structurally impossible. The hinge-visibility
-    // measurement below assumes fork+tongue+pin construction and only
-    // produces false positives on such joints (the daylight is
-    // normalized by the parent's perpendicular extent, so a compact
-    // rotor inside a large body can never pass). Exposed hinges — the
-    // Luxo failure class this gate guards — never set this flag.
-    if (mate.exposure === 'concealed') continue;
-
-    const sideA = await resolveSide(mate.a, partsByName, worldTransforms);
-    const sideB = await resolveSide(mate.b, partsByName, worldTransforms);
-    if (!sideA || !sideB) continue;
-
-    const parentShape = loweredShapes.get(sideA.partName);
-    const childShape = loweredShapes.get(sideB.partName);
-    if (!parentShape || !childShape) continue;
-
-    // Microscale skip — combined parent+child bounding-sphere radius
-    // below the threshold means the joint is too small to expect to
-    // read as a hinge at typical viewing distance. Spec §"Locked
-    // decisions" §5.
-    const combinedRadius = combinedBoundingSphereRadius(parentShape, childShape);
-    if (combinedRadius < MICROSCALE_BOUNDING_RADIUS) continue;
-
-    // Build the joint-axis world line. Axis direction is consistent on
-    // both sides of a revolute mate (the mate-graph validator enforces
-    // axis-axis pairing); use side A's. Gate 2 already guarantees the
-    // line passes through both bodies, so we can use side A's origin
-    // without loss.
-    const axisOrigin = sideA.origin;
-    const axisDir = normalize(sideA.direction);
-    if (axisDir === undefined) continue; // degenerate axis — out of scope
-
-    const inferredPinR = inferPinRadius(parentShape, childShape, axisOrigin, axisDir);
+    const inferredPinR = inferPinRadius(joint.parentShape, joint.childShape, joint.axisOrigin, joint.axisDir);
     const measurements = measureJointVisuals(
-      parentShape,
-      childShape,
-      axisOrigin,
-      axisDir,
+      joint.parentShape,
+      joint.childShape,
+      joint.axisOrigin,
+      joint.axisDir,
       inferredPinR,
     );
     const minPinStickout = MIN_PIN_STICKOUT_FACTOR * inferredPinR;
@@ -228,11 +191,7 @@ export async function validateJointVisualExposure(
     const pinFails = measurements.pinStickout < minPinStickout;
     if (!gapFails && !pinFails) continue;
 
-    const failureCause: 'gap' | 'pin-stickout' | 'both' = gapFails && pinFails
-      ? 'both'
-      : gapFails
-        ? 'gap'
-        : 'pin-stickout';
+    const failureCause = jointFailureCause(gapFails, pinFails);
 
     out.push({
       code: 'assembly.joint.not-visible',
@@ -243,6 +202,71 @@ export async function validateJointVisualExposure(
     });
   }
   return out;
+}
+
+interface ExposedJoint {
+  readonly parentShape: OcctBackend;
+  readonly childShape: OcctBackend;
+  readonly axisOrigin: Vec3;
+  readonly axisDir: Vec3;
+}
+
+/** Resolves the shapes and joint-axis world line for a mate this gate has
+ *  an opinion on, or undefined when the mate is out of scope / too small /
+ *  unresolved. */
+async function resolveExposedJoint(
+  mate: MateRecord,
+  partsByName: ReadonlyMap<string, AssemblyPartStored>,
+  loweredShapes: ReadonlyMap<string, OcctBackend>,
+  worldTransforms: ReadonlyMap<string, Transform>,
+): Promise<ExposedJoint | undefined> {
+  // Non-revolute joints are out of scope per spec §"Locked decisions" §1
+  // and §"Out of scope" — `prismatic` / `pin_slot` / `ball` etc. get
+  // their own gates later if they exhibit the same failure mode.
+  if (mate.type !== 'revolute') return undefined;
+
+  // Concealed-by-design skip — `exposure: 'concealed'` is the script's
+  // explicit declaration that this revolute is an ENCLOSED mechanism
+  // (valve rotor in a bore, internal spindle, worm shaft) where fork
+  // daylight is structurally impossible. The hinge-visibility
+  // measurement below assumes fork+tongue+pin construction and only
+  // produces false positives on such joints (the daylight is
+  // normalized by the parent's perpendicular extent, so a compact
+  // rotor inside a large body can never pass). Exposed hinges — the
+  // Luxo failure class this gate guards — never set this flag.
+  if (mate.exposure === 'concealed') return undefined;
+
+  const sideA = await resolveSide(mate.a, partsByName, worldTransforms);
+  const sideB = await resolveSide(mate.b, partsByName, worldTransforms);
+  if (!sideA || !sideB) return undefined;
+
+  const parentShape = loweredShapes.get(sideA.partName);
+  const childShape = loweredShapes.get(sideB.partName);
+  if (!parentShape || !childShape) return undefined;
+
+  // Microscale skip — combined parent+child bounding-sphere radius
+  // below the threshold means the joint is too small to expect to
+  // read as a hinge at typical viewing distance. Spec §"Locked
+  // decisions" §5.
+  const combinedRadius = combinedBoundingSphereRadius(parentShape, childShape);
+  if (combinedRadius < MICROSCALE_BOUNDING_RADIUS) return undefined;
+
+  // Build the joint-axis world line. Axis direction is consistent on
+  // both sides of a revolute mate (the mate-graph validator enforces
+  // axis-axis pairing); use side A's. Gate 2 already guarantees the
+  // line passes through both bodies, so we can use side A's origin
+  // without loss.
+  const axisOrigin = sideA.origin;
+  const axisDir = normalize(sideA.direction);
+  if (axisDir === undefined) return undefined; // degenerate axis — out of scope
+
+  return { parentShape, childShape, axisOrigin, axisDir };
+}
+
+function jointFailureCause(gapFails: boolean, pinFails: boolean): 'gap' | 'pin-stickout' | 'both' {
+  if (gapFails && pinFails) return 'both';
+  if (gapFails) return 'gap';
+  return 'pin-stickout';
 }
 
 interface ResolvedSide {
@@ -278,6 +302,64 @@ async function resolveLocalOrigin(part: AssemblyPartStored, connector: Connector
 interface JointVisuals {
   readonly gapRatio: number;
   readonly pinStickout: number;
+}
+
+interface ParentFace {
+  readonly axisMin: number;
+  readonly axisMax: number;
+  readonly perpMax: number;
+  readonly perpOverlapFraction: number;
+}
+
+/** Walk the parent's BREP faces and project each onto the joint axis and the
+ *  perpendicular (u, v) frame, pre-computing the (axis-range, perp-extent,
+ *  perp-overlap-fraction-against-child) triple the plate-like filter reads. */
+function collectParentFaces(
+  parent: OcctBackend,
+  axisOrigin: Vec3,
+  axisDir: Vec3,
+  u: Vec3,
+  v: Vec3,
+  childPerpProj: { uMin: number; uMax: number; vMin: number; vMax: number },
+  childPerpArea: number,
+): ParentFace[] {
+  const parentFaces: ParentFace[] = [];
+  const replicadShape = parent.getReplicadShape();
+  for (const face of replicadShape.faces) {
+    const bb = face.boundingBox.bounds;
+    const aabbMin = bb[0] as Vec3;
+    const aabbMax = bb[1] as Vec3;
+    const range = projectAabbToAxis(aabbMin, aabbMax, axisOrigin, axisDir);
+    const perp = perpendicularProjection(aabbMin, aabbMax, u, v);
+    // Overlap rectangle of (face perp AABB) ∩ (child perp AABB) in (u, v).
+    // Fraction is taken over the SMALLER of the face's own perp area
+    // and the child's perp area — this captures "the face's silhouette
+    // largely sits inside the child's silhouette" without being thrown
+    // off when EITHER party has a much larger overall extent (e.g. the
+    // lower-arm child whose perp AABB extends way past the fork plate
+    // because the arm beam stretches L_LOWER=200 mm perpendicular to
+    // the joint axis, while the actual fork plate is only 22 mm in
+    // that dimension). The plate is a "real fork plate" if its
+    // silhouette substantially overlaps the child's silhouette IN THE
+    // REGION WHERE BOTH EXIST.
+    const oUMin = Math.max(perp.uMin, childPerpProj.uMin);
+    const oUMax = Math.min(perp.uMax, childPerpProj.uMax);
+    const oVMin = Math.max(perp.vMin, childPerpProj.vMin);
+    const oVMax = Math.min(perp.vMax, childPerpProj.vMax);
+    const overlapW = Math.max(0, oUMax - oUMin);
+    const overlapH = Math.max(0, oVMax - oVMin);
+    const overlapArea = overlapW * overlapH;
+    const facePerpArea = (perp.uMax - perp.uMin) * (perp.vMax - perp.vMin);
+    const denomArea = Math.min(facePerpArea, childPerpArea);
+    const perpOverlapFraction = denomArea > 0 ? overlapArea / denomArea : 0;
+    parentFaces.push({
+      axisMin: range.min,
+      axisMax: range.max,
+      perpMax: Math.max(perp.uMax - perp.uMin, perp.vMax - perp.vMin),
+      perpOverlapFraction,
+    });
+  }
+  return parentFaces;
 }
 
 /**
@@ -360,48 +442,15 @@ function measureJointVisuals(
   // Walk parent faces and collect their (axis-range, perp-extent,
   // perp-overlap) per face so we don't recompute the AABB-corner
   // projection twice.
-  interface ParentFace {
-    readonly axisMin: number;
-    readonly axisMax: number;
-    readonly perpMax: number;
-    readonly perpOverlapFraction: number;
-  }
-  const parentFaces: ParentFace[] = [];
-  const replicadShape = parent.getReplicadShape();
-  for (const face of replicadShape.faces) {
-    const bb = face.boundingBox.bounds;
-    const aabbMin = bb[0] as Vec3;
-    const aabbMax = bb[1] as Vec3;
-    const range = projectAabbToAxis(aabbMin, aabbMax, axisOrigin, axisDir);
-    const perp = perpendicularProjection(aabbMin, aabbMax, u, v);
-    // Overlap rectangle of (face perp AABB) ∩ (child perp AABB) in (u, v).
-    // Fraction is taken over the SMALLER of the face's own perp area
-    // and the child's perp area — this captures "the face's silhouette
-    // largely sits inside the child's silhouette" without being thrown
-    // off when EITHER party has a much larger overall extent (e.g. the
-    // lower-arm child whose perp AABB extends way past the fork plate
-    // because the arm beam stretches L_LOWER=200 mm perpendicular to
-    // the joint axis, while the actual fork plate is only 22 mm in
-    // that dimension). The plate is a "real fork plate" if its
-    // silhouette substantially overlaps the child's silhouette IN THE
-    // REGION WHERE BOTH EXIST.
-    const oUMin = Math.max(perp.uMin, childPerpProj.uMin);
-    const oUMax = Math.min(perp.uMax, childPerpProj.uMax);
-    const oVMin = Math.max(perp.vMin, childPerpProj.vMin);
-    const oVMax = Math.min(perp.vMax, childPerpProj.vMax);
-    const overlapW = Math.max(0, oUMax - oUMin);
-    const overlapH = Math.max(0, oVMax - oVMin);
-    const overlapArea = overlapW * overlapH;
-    const facePerpArea = (perp.uMax - perp.uMin) * (perp.vMax - perp.vMin);
-    const denomArea = Math.min(facePerpArea, childPerpArea);
-    const perpOverlapFraction = denomArea > 0 ? overlapArea / denomArea : 0;
-    parentFaces.push({
-      axisMin: range.min,
-      axisMax: range.max,
-      perpMax: Math.max(perp.uMax - perp.uMin, perp.vMax - perp.vMin),
-      perpOverlapFraction,
-    });
-  }
+  const parentFaces = collectParentFaces(
+    parent,
+    axisOrigin,
+    axisDir,
+    u,
+    v,
+    childPerpProj,
+    childPerpArea,
+  );
   const isPlateLike = (f: ParentFace): boolean =>
     (f.axisMax - f.axisMin) <= axisThickThreshold
     && f.perpMax >= platePerpThreshold
@@ -621,6 +670,55 @@ function combinedBoundingSphereRadius(a: OcctBackend, b: OcctBackend): number {
  * near-zero on a degenerate geometry. The spec calls 3.5 mm out
  * explicitly as the reference for `MIN_PIN_STICKOUT_FACTOR × PIN_R`.
  */
+function projectFacePerpendicular(
+  aabbMin: Vec3,
+  aabbMax: Vec3,
+  u: Vec3,
+  v: Vec3,
+): { uMin: number; uMax: number; vMin: number; vMax: number } {
+  let uMin = Infinity, uMax = -Infinity, vMin = Infinity, vMax = -Infinity;
+  for (let i = 0; i < 8; i++) {
+    const p: Vec3 = [
+      ((i & 1) === 0 ? aabbMin[0] : aabbMax[0]),
+      ((i & 2) === 0 ? aabbMin[1] : aabbMax[1]),
+      ((i & 4) === 0 ? aabbMin[2] : aabbMax[2]),
+    ];
+    const uu = p[0] * u[0] + p[1] * u[1] + p[2] * u[2];
+    const vv = p[0] * v[0] + p[1] * v[1] + p[2] * v[2];
+    if (uu < uMin) uMin = uu;
+    if (uu > uMax) uMax = uu;
+    if (vv < vMin) vMin = vv;
+    if (vv > vMax) vMax = vv;
+  }
+  return { uMin, uMax, vMin, vMax };
+}
+
+function candidatePinHalfExtent(
+  aabbMin: Vec3,
+  aabbMax: Vec3,
+  originU: number,
+  originV: number,
+  u: Vec3,
+  v: Vec3,
+): number | undefined {
+  const { uMin, uMax, vMin, vMax } = projectFacePerpendicular(aabbMin, aabbMax, u, v);
+  const halfU = 0.5 * (uMax - uMin);
+  const halfV = 0.5 * (vMax - vMin);
+  // Skip degenerate faces (perpendicular extent ≈ 0 — these are
+  // faces whose normal is in the axis-perpendicular plane, not
+  // useful for pin-radius inference). Take the LARGER of the two
+  // half-extents so a pin's lateral cylindrical face (whose
+  // perpendicular AABB is the pin cross-section ≈ 2 × PIN_R square)
+  // is correctly read as PIN_R, not as 0.
+  const halfMax = Math.max(halfU, halfV);
+  if (halfMax < PARALLEL_DIRECTION_EPSILON) return undefined;
+  // Only consider faces whose perpendicular AABB straddles the
+  // joint origin in BOTH perpendicular directions — the pin sits on
+  // the joint axis, so its perpendicular AABB encloses the origin.
+  if (uMin > originU || uMax < originU || vMin > originV || vMax < originV) return undefined;
+  return halfMax;
+}
+
 function inferPinRadius(
   parent: OcctBackend,
   child: OcctBackend,
@@ -637,35 +735,8 @@ function inferPinRadius(
       const bb = face.boundingBox.bounds;
       const aabbMin = bb[0] as Vec3;
       const aabbMax = bb[1] as Vec3;
-      let uMin = Infinity, uMax = -Infinity, vMin = Infinity, vMax = -Infinity;
-      for (let i = 0; i < 8; i++) {
-        const p: Vec3 = [
-          ((i & 1) === 0 ? aabbMin[0] : aabbMax[0]),
-          ((i & 2) === 0 ? aabbMin[1] : aabbMax[1]),
-          ((i & 4) === 0 ? aabbMin[2] : aabbMax[2]),
-        ];
-        const uu = p[0] * u[0] + p[1] * u[1] + p[2] * u[2];
-        const vv = p[0] * v[0] + p[1] * v[1] + p[2] * v[2];
-        if (uu < uMin) uMin = uu;
-        if (uu > uMax) uMax = uu;
-        if (vv < vMin) vMin = vv;
-        if (vv > vMax) vMax = vv;
-      }
-      const halfU = 0.5 * (uMax - uMin);
-      const halfV = 0.5 * (vMax - vMin);
-      // Skip degenerate faces (perpendicular extent ≈ 0 — these are
-      // faces whose normal is in the axis-perpendicular plane, not
-      // useful for pin-radius inference). Take the LARGER of the two
-      // half-extents so a pin's lateral cylindrical face (whose
-      // perpendicular AABB is the pin cross-section ≈ 2 × PIN_R square)
-      // is correctly read as PIN_R, not as 0.
-      const halfMax = Math.max(halfU, halfV);
-      if (halfMax < PARALLEL_DIRECTION_EPSILON) continue;
-      // Only consider faces whose perpendicular AABB straddles the
-      // joint origin in BOTH perpendicular directions — the pin sits on
-      // the joint axis, so its perpendicular AABB encloses the origin.
-      if (uMin > originU || uMax < originU || vMin > originV || vMax < originV) continue;
-      if (halfMax < smallestHalf) smallestHalf = halfMax;
+      const halfMax = candidatePinHalfExtent(aabbMin, aabbMax, originU, originV, u, v);
+      if (halfMax !== undefined && halfMax < smallestHalf) smallestHalf = halfMax;
     }
   }
   return smallestHalf < Infinity ? smallestHalf : PIN_R_FALLBACK_MM;

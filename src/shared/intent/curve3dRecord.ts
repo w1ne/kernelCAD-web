@@ -35,28 +35,51 @@ export interface Curve3DMetadata {
   closed?: boolean;
 }
 
-export function isCurve3DMetadata(value: unknown): value is Curve3DMetadata {
-  if (typeof value !== 'object' || value === null) return false;
-  const m = value as Curve3DMetadata;
+/** A 3D point: exactly three finite numbers. */
+function isVec3Array(p: unknown): boolean {
+  if (!Array.isArray(p) || p.length !== 3) return false;
+  if (!p.every((c) => typeof c === 'number' && Number.isFinite(c))) return false;
+  return true;
+}
 
+/** `controlPoints` must have at least `degree + 1` finite 3D points and
+ *  `degree` must be a positive integer. */
+function hasValidControlPoints(m: Curve3DMetadata): boolean {
   if (!Array.isArray(m.controlPoints)) return false;
   if (typeof m.degree !== 'number' || !Number.isInteger(m.degree) || m.degree < 1) return false;
   if (m.controlPoints.length < m.degree + 1) return false;
   for (const p of m.controlPoints) {
-    if (!Array.isArray(p) || p.length !== 3) return false;
-    if (!p.every((c) => typeof c === 'number' && Number.isFinite(c))) return false;
+    if (!isVec3Array(p)) return false;
   }
+  return true;
+}
 
-  if (m.weights !== undefined) {
-    if (!Array.isArray(m.weights) || m.weights.length !== m.controlPoints.length) return false;
-    if (!m.weights.every((w) => typeof w === 'number' && Number.isFinite(w) && w > 0)) return false;
-  }
+/** `weights`, when supplied, must match the control-point count and be
+ *  finite and strictly positive. */
+function hasValidWeights(m: Curve3DMetadata): boolean {
+  if (m.weights === undefined) return true;
+  if (!Array.isArray(m.weights) || m.weights.length !== m.controlPoints.length) return false;
+  if (!m.weights.every((w) => typeof w === 'number' && Number.isFinite(w) && w > 0)) return false;
+  return true;
+}
 
-  if (m.knots !== undefined) {
-    const expectedKnots = m.controlPoints.length + m.degree + 1;
-    if (!Array.isArray(m.knots) || m.knots.length !== expectedKnots) return false;
-    if (!m.knots.every((k) => typeof k === 'number' && Number.isFinite(k))) return false;
-  }
+/** `knots`, when supplied, must have the standard non-periodic B-spline
+ *  count of `controlPoints.length + degree + 1` finite entries. */
+function hasValidKnots(m: Curve3DMetadata): boolean {
+  if (m.knots === undefined) return true;
+  const expectedKnots = m.controlPoints.length + m.degree + 1;
+  if (!Array.isArray(m.knots) || m.knots.length !== expectedKnots) return false;
+  if (!m.knots.every((k) => typeof k === 'number' && Number.isFinite(k))) return false;
+  return true;
+}
+
+export function isCurve3DMetadata(value: unknown): value is Curve3DMetadata {
+  if (typeof value !== 'object' || value === null) return false;
+  const m = value as Curve3DMetadata;
+
+  if (!hasValidControlPoints(m)) return false;
+  if (!hasValidWeights(m)) return false;
+  if (!hasValidKnots(m)) return false;
 
   if (m.closed !== undefined && typeof m.closed !== 'boolean') return false;
 

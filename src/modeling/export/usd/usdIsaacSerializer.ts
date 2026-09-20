@@ -328,12 +328,32 @@ function meshLayerText(primName: string, shape: OcctBackend): string {
   ].join('\n');
 }
 
-function materialBlock(rootPath: string, primName: string, pbr: PBRMaterial | undefined, color: string | undefined): string {
-  const baseHex = resolveColor(pbr?.baseColor) ?? resolveColor(color) ?? DEFAULT_COLOR;
-  const diffuse = hexToLinear(baseHex);
-  const opacity = pbr?.opacity ?? (pbr?.transmission !== undefined && pbr.transmission > 0
+/** Resolve the material's base color hex: PBR base color, then the lineage
+ *  color, then the default. */
+function resolveMaterialBaseHex(pbr: PBRMaterial | undefined, color: string | undefined): string {
+  return resolveColor(pbr?.baseColor) ?? resolveColor(color) ?? DEFAULT_COLOR;
+}
+
+/** Resolve the shader opacity: explicit PBR opacity, else derive from
+ *  transmission, else fully opaque. */
+function resolveMaterialOpacity(pbr: PBRMaterial | undefined): number {
+  return pbr?.opacity ?? (pbr?.transmission !== undefined && pbr.transmission > 0
     ? Math.max(0.05, 1 - pbr.transmission)
     : 1);
+}
+
+/** Append the optional UsdPreviewSurface inputs (clearcoat, ior, opacity). */
+function appendOptionalSurfaceInputs(lines: string[], pbr: PBRMaterial | undefined, opacity: number): void {
+  if (pbr?.clearcoat !== undefined) lines.push(`                float inputs:clearcoat = ${f(pbr.clearcoat)}`);
+  if (pbr?.clearcoatRoughness !== undefined) lines.push(`                float inputs:clearcoatRoughness = ${f(pbr.clearcoatRoughness)}`);
+  if (pbr?.ior !== undefined) lines.push(`                float inputs:ior = ${f(pbr.ior)}`);
+  if (opacity < 1) lines.push(`                float inputs:opacity = ${f(opacity)}`);
+}
+
+function materialBlock(rootPath: string, primName: string, pbr: PBRMaterial | undefined, color: string | undefined): string {
+  const baseHex = resolveMaterialBaseHex(pbr, color);
+  const diffuse = hexToLinear(baseHex);
+  const opacity = resolveMaterialOpacity(pbr);
   const matPath = `${rootPath}/Materials/${primName}`;
   const lines = [
     `        def Material "${primName}"`,
@@ -347,10 +367,7 @@ function materialBlock(rootPath: string, primName: string, pbr: PBRMaterial | un
     `                float inputs:metallic = ${f(pbr?.metalness ?? 0)}`,
     `                float inputs:roughness = ${f(pbr?.roughness ?? 0.5)}`,
   ];
-  if (pbr?.clearcoat !== undefined) lines.push(`                float inputs:clearcoat = ${f(pbr.clearcoat)}`);
-  if (pbr?.clearcoatRoughness !== undefined) lines.push(`                float inputs:clearcoatRoughness = ${f(pbr.clearcoatRoughness)}`);
-  if (pbr?.ior !== undefined) lines.push(`                float inputs:ior = ${f(pbr.ior)}`);
-  if (opacity < 1) lines.push(`                float inputs:opacity = ${f(opacity)}`);
+  appendOptionalSurfaceInputs(lines, pbr, opacity);
   lines.push(
     '                token outputs:surface',
     '            }',
@@ -422,6 +439,19 @@ interface LinkBlockContext {
   diagnostics: CompilerDiagnostic[];
 }
 
+/** Per-part emission result: the link's Xform block plus its optional material
+ *  block and mesh layer. */
+interface LinkBlocksForPart {
+  readonly linkBlock: string;
+  readonly materialBlock: string | undefined;
+  readonly meshLayer: UsdMeshLayer;
+}
+
+interface LinkAppearance {
+  readonly materialBlock: string | undefined;
+  readonly hasAppearance: boolean;
+}
+
 /** Emit the Xform + visual/collision mesh blocks, material blocks and mesh
  *  layers for every part. Mass errors are appended to ctx.diagnostics. */
 async function buildLinkBlocks(
@@ -433,73 +463,169 @@ async function buildLinkBlocks(
   const meshLayers: UsdMeshLayer[] = [];
 
   for (const part of parts) {
-    const prim = ctx.linkName(part.name);
-    const density = part.density ?? ctx.defaultDensity;
-    const lowered = await part.originalShape.lower();
-    if (density === undefined) {
-      ctx.diagnostics.push(...linkInertialBlock(lowered, undefined).diagnostics);
-    }
-    const mp = lowered.massProperties(density ?? 1000);
-    if (!Number.isFinite(mp.mass) || mp.mass <= 0) {
-      ctx.diagnostics.push({
-        target: 'export-occt',
-        code: 'export.usd.mass-missing',
-        severity: 'error',
-        message: `Link '${part.name}' has a non-finite or non-positive mass (${mp.mass}).`,
-        hint: `Link '${part.name}' cannot carry a physical mass. Pass density or a named material on arm.part('${part.name}', shape, { material: 'steel' }), or check the part's shape is a closed solid.`,
-        nextAction: NEXT_ACTIONS['export.usd.mass-missing'],
-      });
-      continue;
-    }
-    const inertia = linkInertia(mp);
-
-    const sourceRecord = ctx.records.find((r) => r.id === part.originalShape.id);
-    const pbr = sourceRecord ? lookupMaterialFromLineage(sourceRecord, ctx.records) : undefined;
-    const color = sourceRecord ? lookupColorFromLineage(sourceRecord, ctx.records) : undefined;
-    const hasAppearance = pbr !== undefined || color !== undefined;
-    if (hasAppearance) materialBlocks.push(materialBlock(ctx.rootPath, prim, pbr, color));
-
-    const relPath = `${ctx.meshPrefix}${prim}.usda`;
-    meshLayers.push({ partName: part.name, relPath, usda: meshLayerText(prim, lowered) });
-
-    const pose = ctx.poses?.get(part.name);
-    const translate = pose ? pose.point([0, 0, 0]).map((n) => n * MM_TO_M) : [0, 0, 0];
-    const orient = pose ? transformQuat(pose) : ([1, 0, 0, 0] as Quat);
-
-    linkBlocks.push([
-      `        def Xform "${prim}" (`,
-      '            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]',
-      '        )',
-      '        {',
-      `            double3 xformOp:translate = ${tuple(translate)}`,
-      `            quatf xformOp:orient = ${tuple(orient)}`,
-      '            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]',
-      `            float physics:mass = ${f(inertia.mass)}`,
-      `            point3f physics:centerOfMass = ${tuple(inertia.com)}`,
-      `            float3 physics:diagonalInertia = ${tuple(inertia.diagonal)}`,
-      `            quatf physics:principalAxes = ${tuple(inertia.principalAxes)}`,
-      '',
-      '            def Mesh "visual" (',
-      ...(hasAppearance ? ['                prepend apiSchemas = ["MaterialBindingAPI"]'] : []),
-      `                prepend references = @${relPath}@`,
-      '            )',
-      '            {',
-      ...(hasAppearance ? [`                rel material:binding = <${ctx.rootPath}/Materials/${prim}>`] : []),
-      '            }',
-      '',
-      '            def Mesh "collision" (',
-      '                prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]',
-      `                prepend references = @${relPath}@`,
-      '            )',
-      '            {',
-      `                uniform token physics:approximation = "${ctx.approximation}"`,
-      '                uniform token purpose = "guide"',
-      '            }',
-      '        }',
-    ].join('\n'));
+    const built = await buildLinkBlock(part, ctx);
+    if (built === undefined) continue;
+    linkBlocks.push(built.linkBlock);
+    if (built.materialBlock !== undefined) materialBlocks.push(built.materialBlock);
+    meshLayers.push(built.meshLayer);
   }
 
   return { linkBlocks, materialBlocks, meshLayers };
+}
+
+async function buildLinkBlock(
+  part: AssemblyPartStored,
+  ctx: LinkBlockContext,
+): Promise<LinkBlocksForPart | undefined> {
+  const prim = ctx.linkName(part.name);
+  const density = part.density ?? ctx.defaultDensity;
+  const lowered = await part.originalShape.lower();
+  if (density === undefined) {
+    ctx.diagnostics.push(...linkInertialBlock(lowered, undefined).diagnostics);
+  }
+  const mp = lowered.massProperties(density ?? 1000);
+  if (!Number.isFinite(mp.mass) || mp.mass <= 0) {
+    ctx.diagnostics.push({
+      target: 'export-occt',
+      code: 'export.usd.mass-missing',
+      severity: 'error',
+      message: `Link '${part.name}' has a non-finite or non-positive mass (${mp.mass}).`,
+      hint: `Link '${part.name}' cannot carry a physical mass. Pass density or a named material on arm.part('${part.name}', shape, { material: 'steel' }), or check the part's shape is a closed solid.`,
+      nextAction: NEXT_ACTIONS['export.usd.mass-missing'],
+    });
+    return undefined;
+  }
+  const inertia = linkInertia(mp);
+
+  const appearance = resolveLinkAppearance(part, prim, ctx);
+
+  const relPath = `${ctx.meshPrefix}${prim}.usda`;
+  const meshLayer: UsdMeshLayer = { partName: part.name, relPath, usda: meshLayerText(prim, lowered) };
+
+  const pose = ctx.poses?.get(part.name);
+  const { translate, orient } = linkPose(pose);
+
+  const linkBlock = [
+    `        def Xform "${prim}" (`,
+    '            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]',
+    '        )',
+    '        {',
+    `            double3 xformOp:translate = ${tuple(translate)}`,
+    `            quatf xformOp:orient = ${tuple(orient)}`,
+    '            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]',
+    `            float physics:mass = ${f(inertia.mass)}`,
+    `            point3f physics:centerOfMass = ${tuple(inertia.com)}`,
+    `            float3 physics:diagonalInertia = ${tuple(inertia.diagonal)}`,
+    `            quatf physics:principalAxes = ${tuple(inertia.principalAxes)}`,
+    '',
+    '            def Mesh "visual" (',
+    ...(appearance.hasAppearance ? ['                prepend apiSchemas = ["MaterialBindingAPI"]'] : []),
+    `                prepend references = @${relPath}@`,
+    '            )',
+    '            {',
+    ...(appearance.hasAppearance ? [`                rel material:binding = <${ctx.rootPath}/Materials/${prim}>`] : []),
+    '            }',
+    '',
+    '            def Mesh "collision" (',
+    '                prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]',
+    `                prepend references = @${relPath}@`,
+    '            )',
+    '            {',
+    `                uniform token physics:approximation = "${ctx.approximation}"`,
+    '                uniform token purpose = "guide"',
+    '            }',
+    '        }',
+  ].join('\n');
+
+  return { linkBlock, materialBlock: appearance.materialBlock, meshLayer };
+}
+
+function resolveLinkAppearance(
+  part: AssemblyPartStored,
+  prim: string,
+  ctx: LinkBlockContext,
+): LinkAppearance {
+  const sourceRecord = ctx.records.find((r) => r.id === part.originalShape.id);
+  const pbr = sourceRecord ? lookupMaterialFromLineage(sourceRecord, ctx.records) : undefined;
+  const color = sourceRecord ? lookupColorFromLineage(sourceRecord, ctx.records) : undefined;
+  const hasAppearance = pbr !== undefined || color !== undefined;
+  return {
+    materialBlock: hasAppearance ? materialBlock(ctx.rootPath, prim, pbr, color) : undefined,
+    hasAppearance,
+  };
+}
+
+function linkPose(pose: Transform | undefined): { translate: number[]; orient: Quat } {
+  const translate = pose ? pose.point([0, 0, 0]).map((n) => n * MM_TO_M) : [0, 0, 0];
+  const orient = pose ? transformQuat(pose) : ([1, 0, 0, 0] as Quat);
+  return { translate, orient };
+}
+
+/** Joint fields shared by the legacy-joint and mate emission paths. */
+interface JointEmitSpec {
+  name: string;
+  kind: 'fixed' | 'revolute' | 'prismatic';
+  parent: string;
+  child: string;
+  parentOrigin: Vec3;
+  parentAxis: Vec3;
+  childOrigin: Vec3;
+  childAxis: Vec3;
+  limits?: readonly [number, number];
+}
+
+function resolveJointFrames(
+  spec: JointEmitSpec,
+  poses: Map<string, Transform> | undefined,
+): { token: 'X' | 'Y' | 'Z'; frame: Quat; localPos1: Vec3; localRot1: Quat } {
+  const { token, frame } = axisTokenAndFrame(spec.parentAxis);
+  const T0 = poses?.get(spec.parent);
+  const T1 = poses?.get(spec.child);
+  let localPos1: Vec3;
+  let localRot1: Quat;
+  if (T0 && T1) {
+    // Derive the child-side frame from the solved poses so both sides name
+    // the SAME world frame at rest — otherwise a twist between the two
+    // connector frames reads as a non-zero joint angle and offsets limits.
+    localPos1 = T1.inverse().point(T0.point(spec.parentOrigin));
+    localRot1 = quatNormalize(quatMul(quatMul(quatConj(transformQuat(T1)), transformQuat(T0)), frame));
+  } else {
+    localPos1 = spec.childOrigin;
+    localRot1 = quatFromTo(unitFor(token), spec.childAxis);
+  }
+  return { token, frame, localPos1, localRot1 };
+}
+
+function jointTypeName(kind: JointEmitSpec['kind']): string {
+  return kind === 'fixed'
+    ? 'PhysicsFixedJoint'
+    : kind === 'revolute' ? 'PhysicsRevoluteJoint' : 'PhysicsPrismaticJoint';
+}
+
+function appendJointAxisLimitsAndDrive(
+  lines: string[],
+  spec: JointEmitSpec,
+  token: 'X' | 'Y' | 'Z',
+  drive: UsdJointDrive | undefined,
+  driveNs: 'angular' | 'linear',
+): void {
+  if (spec.kind !== 'fixed') {
+    lines.push(`            uniform token physics:axis = "${token}"`);
+    if (spec.limits) {
+      // Revolute limits are degrees in UsdPhysics; prismatic limits are
+      // stage distance units (metres here).
+      const scale = spec.kind === 'revolute' ? 1 : MM_TO_M;
+      lines.push(`            float physics:lowerLimit = ${f(spec.limits[0] * scale)}`);
+      lines.push(`            float physics:upperLimit = ${f(spec.limits[1] * scale)}`);
+    }
+  }
+  if (drive) {
+    lines.push(`            uniform token drive:${driveNs}:physics:type = "force"`);
+    lines.push(`            float drive:${driveNs}:physics:stiffness = ${f(drive.stiffness)}`);
+    lines.push(`            float drive:${driveNs}:physics:damping = ${f(drive.damping)}`);
+    if (drive.maxForce !== undefined) lines.push(`            float drive:${driveNs}:physics:maxForce = ${f(drive.maxForce)}`);
+    if (drive.targetPosition !== undefined) lines.push(`            float drive:${driveNs}:physics:targetPosition = ${f(drive.targetPosition)}`);
+  }
 }
 
 /** Emit the UsdPhysics joint blocks for the legacy joints then the mates, in
@@ -518,37 +644,11 @@ function buildJointBlocks(
   const partByName = new Map(parts.map((p) => [p.name, p]));
   const partNameById = (id: string): string => parts.find((p) => p.id === id)?.name ?? id;
 
-  const emitJoint = (spec: {
-    name: string;
-    kind: 'fixed' | 'revolute' | 'prismatic';
-    parent: string;
-    child: string;
-    parentOrigin: Vec3;
-    parentAxis: Vec3;
-    childOrigin: Vec3;
-    childAxis: Vec3;
-    limits?: readonly [number, number];
-  }): void => {
-    const { token, frame } = axisTokenAndFrame(spec.parentAxis);
-    const T0 = poses?.get(spec.parent);
-    const T1 = poses?.get(spec.child);
-    let localPos1: Vec3;
-    let localRot1: Quat;
-    if (T0 && T1) {
-      // Derive the child-side frame from the solved poses so both sides name
-      // the SAME world frame at rest — otherwise a twist between the two
-      // connector frames reads as a non-zero joint angle and offsets limits.
-      localPos1 = T1.inverse().point(T0.point(spec.parentOrigin));
-      localRot1 = quatNormalize(quatMul(quatMul(quatConj(transformQuat(T1)), transformQuat(T0)), frame));
-    } else {
-      localPos1 = spec.childOrigin;
-      localRot1 = quatFromTo(unitFor(token), spec.childAxis);
-    }
+  const emitJoint = (spec: JointEmitSpec): void => {
+    const { token, frame, localPos1, localRot1 } = resolveJointFrames(spec, poses);
     const drive = spec.kind !== 'fixed' ? opts.drives?.[spec.name] : undefined;
     const driveNs = spec.kind === 'revolute' ? 'angular' : 'linear';
-    const jointType = spec.kind === 'fixed'
-      ? 'PhysicsFixedJoint'
-      : spec.kind === 'revolute' ? 'PhysicsRevoluteJoint' : 'PhysicsPrismaticJoint';
+    const jointType = jointTypeName(spec.kind);
 
     const lines = [
       `        def ${jointType} "${jointName(spec.name)}"${drive ? ' (' : ''}`,
@@ -561,23 +661,7 @@ function buildJointBlocks(
       `            point3f physics:localPos1 = ${tuple(localPos1.map((n) => n * MM_TO_M))}`,
       `            quatf physics:localRot1 = ${tuple(localRot1)}`,
     ];
-    if (spec.kind !== 'fixed') {
-      lines.push(`            uniform token physics:axis = "${token}"`);
-      if (spec.limits) {
-        // Revolute limits are degrees in UsdPhysics; prismatic limits are
-        // stage distance units (metres here).
-        const scale = spec.kind === 'revolute' ? 1 : MM_TO_M;
-        lines.push(`            float physics:lowerLimit = ${f(spec.limits[0] * scale)}`);
-        lines.push(`            float physics:upperLimit = ${f(spec.limits[1] * scale)}`);
-      }
-    }
-    if (drive) {
-      lines.push(`            uniform token drive:${driveNs}:physics:type = "force"`);
-      lines.push(`            float drive:${driveNs}:physics:stiffness = ${f(drive.stiffness)}`);
-      lines.push(`            float drive:${driveNs}:physics:damping = ${f(drive.damping)}`);
-      if (drive.maxForce !== undefined) lines.push(`            float drive:${driveNs}:physics:maxForce = ${f(drive.maxForce)}`);
-      if (drive.targetPosition !== undefined) lines.push(`            float drive:${driveNs}:physics:targetPosition = ${f(drive.targetPosition)}`);
-    }
+    appendJointAxisLimitsAndDrive(lines, spec, token, drive, driveNs);
     lines.push('        }');
     jointBlocks.push(lines.join('\n'));
   };

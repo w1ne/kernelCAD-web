@@ -264,6 +264,23 @@ function normalizeLiftDir(hint: Vec3 | undefined): Vec3 {
  *  - holeClearance = 0.2 mm
  */
 export function withDefaults(style: ClevisStyle | undefined): ResolvedClevisStyle {
+  const dims = resolveStyleDimensions(style);
+  assertStyleDimensionsValid(dims);
+  const pinCapThickness = resolvePinCapThickness(style, dims);
+  return composeResolvedStyle(style, dims, pinCapThickness);
+}
+
+interface ResolvedStyleDimensions {
+  knuckleR: number;
+  tongueY: number;
+  forkGapY: number;
+  plateT: number;
+  pinR: number;
+  pinCapR: number;
+  holeClearance: number;
+}
+
+function resolveStyleDimensions(style: ClevisStyle | undefined): ResolvedStyleDimensions {
   const knuckleR = clamp(style?.knuckleR ?? 12, 3, 25);
   const tongueY = style?.tongueY ?? 0.6 * knuckleR;
   const forkGapY = style?.forkGapY ?? tongueY + DEFAULT_FORK_CLEARANCE_RATIO * knuckleR;
@@ -271,6 +288,11 @@ export function withDefaults(style: ClevisStyle | undefined): ResolvedClevisStyl
   const pinR = style?.pinR ?? 0.35 * knuckleR;
   const pinCapR = style?.pinCapR ?? pinR + 1.5;
   const holeClearance = style?.holeClearance ?? 0.2;
+  return { knuckleR, tongueY, forkGapY, plateT, pinR, pinCapR, holeClearance };
+}
+
+function assertStyleDimensionsValid(dims: ResolvedStyleDimensions): void {
+  const { knuckleR, tongueY, forkGapY, plateT, pinR, pinCapR, holeClearance } = dims;
   assertPositive('style.knuckleR', knuckleR);
   assertPositive('style.tongueY', tongueY);
   assertPositive('style.forkGapY', forkGapY);
@@ -309,7 +331,13 @@ export function withDefaults(style: ClevisStyle | undefined): ResolvedClevisStyl
       'Pick a smaller pinR or a larger knuckleR so the drilled hole leaves wall thickness.',
     );
   }
+}
 
+function resolvePinCapThickness(
+  style: ClevisStyle | undefined,
+  dims: ResolvedStyleDimensions,
+): number {
+  const { plateT, pinR } = dims;
   // Cap thickness — choose enough material for a cap to project by at least
   // one shaft radius beyond the outer fork face after the fixed union overlap.
   // That makes the default clevis legible as serviceable hardware and keeps
@@ -334,7 +362,15 @@ export function withDefaults(style: ClevisStyle | undefined): ResolvedClevisStyl
       `Increase style.pinCapThickness to at least ${PIN_CAP_SHAFT_OVERLAP_MM} mm.`,
     );
   }
+  return pinCapThickness;
+}
 
+function composeResolvedStyle(
+  style: ClevisStyle | undefined,
+  dims: ResolvedStyleDimensions,
+  pinCapThickness: number,
+): ResolvedClevisStyle {
+  const { knuckleR, tongueY, forkGapY, plateT, pinR, pinCapR, holeClearance } = dims;
   return {
     knuckleR,
     forkGapY,

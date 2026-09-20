@@ -4,6 +4,32 @@ import { useLayoutEffect, useRef, useState } from 'react';
 
 export const FIXED_BRUSH_PX = 24;
 
+function pointerPos(canvas: HTMLCanvasElement, e: React.PointerEvent<HTMLCanvasElement>) {
+  const rect = canvas.getBoundingClientRect();
+  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+}
+
+// CSS-pixel point → canvas-bitmap coordinate. Bitmap may be briefly
+// smaller than the CSS box before the ResizeObserver settles.
+function toBitmap(canvas: HTMLCanvasElement, p: { x: number; y: number }) {
+  const rect = canvas.getBoundingClientRect();
+  const sx = rect.width > 0 ? canvas.width / rect.width : 1;
+  const sy = rect.height > 0 ? canvas.height / rect.height : 1;
+  return { x: p.x * sx, y: p.y * sy };
+}
+
+function paintDot(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  radius: number,
+) {
+  ctx.fillStyle = 'rgb(239, 68, 68)';
+  ctx.beginPath();
+  ctx.arc(x, y, radius / 2, 0, Math.PI * 2);
+  ctx.fill();
+}
+
 export function useMarkingCanvas(visible: boolean, persist: () => void) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   // True once the user has painted anything; gates the auto-save on
@@ -42,22 +68,6 @@ export function useMarkingCanvas(visible: boolean, persist: () => void) {
     };
   }, []);
 
-  function pointerPos(e: React.PointerEvent<HTMLCanvasElement>) {
-    const canvas = canvasRef.current!;
-    const rect = canvas.getBoundingClientRect();
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
-  }
-
-  // CSS-pixel point → canvas-bitmap coordinate. Bitmap may be briefly
-  // smaller than the CSS box before the ResizeObserver settles.
-  function toBitmap(p: { x: number; y: number }) {
-    const canvas = canvasRef.current!;
-    const rect = canvas.getBoundingClientRect();
-    const sx = rect.width > 0 ? canvas.width / rect.width : 1;
-    const sy = rect.height > 0 ? canvas.height / rect.height : 1;
-    return { x: p.x * sx, y: p.y * sy };
-  }
-
   function onPointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
     if (!visible) return;
     const canvas = canvasRef.current;
@@ -67,24 +77,24 @@ export function useMarkingCanvas(visible: boolean, persist: () => void) {
     drawingRef.current = true;
     dirtyRef.current = true;
     canvas.setPointerCapture(e.pointerId);
-    const p = pointerPos(e);
+    const p = pointerPos(canvas, e);
     lastPointRef.current = p;
-    const bp = toBitmap(p);
+    const bp = toBitmap(canvas, p);
     paintDot(ctx, bp.x, bp.y, FIXED_BRUSH_PX);
   }
 
   function onPointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const p = pointerPos(e);
+    const p = pointerPos(canvas, e);
     setCursorPos(p);
     if (!drawingRef.current) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const last = lastPointRef.current;
     if (last) {
-      const bpLast = toBitmap(last);
-      const bp = toBitmap(p);
+      const bpLast = toBitmap(canvas, last);
+      const bp = toBitmap(canvas, p);
       // Highlighter semantics: solid red on the bitmap + CSS opacity on
       // the canvas. Overlapping strokes do not stack alpha.
       ctx.strokeStyle = 'rgb(239, 68, 68)';
@@ -125,18 +135,6 @@ export function useMarkingCanvas(visible: boolean, persist: () => void) {
       persistTimerRef.current = null;
       persist();
     }, 500);
-  }
-
-  function paintDot(
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    radius: number,
-  ) {
-    ctx.fillStyle = 'rgb(239, 68, 68)';
-    ctx.beginPath();
-    ctx.arc(x, y, radius / 2, 0, Math.PI * 2);
-    ctx.fill();
   }
 
   return {

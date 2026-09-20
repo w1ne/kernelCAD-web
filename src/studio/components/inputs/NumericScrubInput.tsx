@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useState } from 'react';
 import type { JSX } from 'react';
-
+import { useNumericScrub } from './useNumericScrub';
+import { ScrubRange } from './ScrubRange';
 /**
  * When set, this param is implicated in one or more interference pairs at
  * the current pose. The slider track turns red and a "!" badge with a
@@ -43,89 +43,105 @@ export interface NumericScrubInputProps {
     readonly interference?: ScrubInterference;
 }
 
+function ScrubValueInput({
+    name,
+    draft,
+    setDraft,
+    commit,
+    step,
+    min,
+    max,
+    inputClass,
+    isOutOfRange,
+    outOfRangeTitle,
+    unit,
+}: {
+    name: string;
+    draft: string;
+    setDraft: (value: string) => void;
+    commit: (raw: string) => void;
+    step: number;
+    min: number | undefined;
+    max: number | undefined;
+    inputClass: string;
+    isOutOfRange: boolean;
+    outOfRangeTitle: string | undefined;
+    unit: string | undefined;
+}): JSX.Element {
+    return (
+        <div className="flex items-center gap-1">
+            <input
+                type="number"
+                value={draft}
+                step={step}
+                min={min}
+                max={max}
+                data-scrub-name={name}
+                data-testid={`scrub-input-${name}`}
+                onChange={(e) => setDraft(e.target.value)}
+                onBlur={(e) => commit(e.target.value)}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        commit((e.target as HTMLInputElement).value);
+                        (e.target as HTMLInputElement).blur();
+                    }
+                }}
+                className={inputClass}
+                aria-label={`${name} value`}
+                aria-invalid={isOutOfRange || undefined}
+                title={outOfRangeTitle}
+            />
+            {unit && <span className="text-[10px] text-gray-500 w-4">{unit}</span>}
+        </div>
+    );
+}
+
+function ScrubInterferenceBadge({
+    name,
+    title,
+}: {
+    name: string;
+    title: string | undefined;
+}): JSX.Element {
+    return (
+        <span
+            className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-600 text-white text-[10px] font-bold leading-none cursor-help"
+            title={title}
+            aria-label={`${name} is implicated in an interference at the current pose`}
+            data-testid={`scrub-interference-badge-${name}`}
+        >
+            !
+        </span>
+    );
+}
+
 export function NumericScrubInput(props: NumericScrubInputProps): JSX.Element {
-    const { name, value, onChange, onCommit, min, max, step: stepProp, unit, limitMarks, interference } = props;
+    const { name, onCommit, min, max, unit, limitMarks, interference } = props;
     const isColliding = !!interference && interference.collidingPairs.length > 0;
     const interferenceTitle = isColliding
         ? `current pose collides:\n${interference.collidingPairs
               .map((p) => `  ${p.a} ↔ ${p.b} — ${p.volumeMm3.toFixed(1)} mm³`)
               .join('\n')}`
         : undefined;
-    const hasRange = typeof min === 'number' && typeof max === 'number' && max > min;
-    const rawStep = stepProp ?? (hasRange ? Math.max((max - min) / 100, 0.01) : 1);
-    // Guard: step must be > 0 for a sensible slider/scrub increment.
-    const step = rawStep > 0 ? rawStep : 1;
-    const [lastSyncedValue, setLastSyncedValue] = useState<number>(value);
-    const [displayValue, setDisplayValue] = useState<number>(value);
-    const [draft, setDraft] = useState<string>(Number.isFinite(value) ? String(value) : '');
-    const [scrubStart, setScrubStart] = useState<{ x: number; baseValue: number } | null>(null);
+    const {
+        step,
+        hasRange,
+        isOutOfRange,
+        pct,
+        draft,
+        setDraft,
+        displayValue,
+        commit,
+        clamp,
+        applyLocalValue,
+        handlePointerDown,
+        handlePointerMove,
+        handlePointerUp,
+    } = useNumericScrub(props);
 
-    // Sync draft when external value changes (e.g. another component updated the param).
-    // Guard with focus check so user's in-progress typing isn't clobbered. The focus
-    // check uses `data-scrub-name` on the active element (no ref-during-render lint).
-    // React-canonical "adjust state when a prop changes" pattern — runs during render,
-    // no extra paint, idempotent because the !== check stops after one pass.
-    // https://react.dev/reference/react/useState#storing-information-from-previous-renders
-    const isFocused =
-        typeof document !== 'undefined' &&
-        document.activeElement?.getAttribute('data-scrub-name') === name;
-    if (value !== lastSyncedValue && !isFocused) {
-        setLastSyncedValue(value);
-        setDisplayValue(value);
-        setDraft(Number.isFinite(value) ? String(value) : '');
-    }
-
-    const clamp = (v: number): number => {
-        let out = v;
-        if (typeof min === 'number') out = Math.max(min, out);
-        if (typeof max === 'number') out = Math.min(max, out);
-        return out;
-    };
-
-    const applyLocalValue = (next: number): void => {
-        setDisplayValue(next);
-        setDraft(Number.isFinite(next) ? String(next) : '');
-        if (next !== displayValue) onChange(next);
-    };
-
-    const commit = (raw: string): void => {
-        const n = Number(raw);
-        if (!Number.isFinite(n)) {
-            setDraft(Number.isFinite(displayValue) ? String(displayValue) : '');
-            return;
-        }
-        const next = clamp(n);
-        applyLocalValue(next);
-        onCommit?.();
-    };
-
-    const pct = hasRange ? Math.max(0, Math.min(1, (displayValue - min) / (max - min))) : 0;
-    const isOutOfRange =
-        hasRange &&
-        Number.isFinite(displayValue) &&
-        (displayValue < (min as number) || displayValue > (max as number));
-
-    const handlePointerDown = (e: React.PointerEvent<HTMLSpanElement>): void => {
-        if (e.pointerType === 'mouse' && e.button !== 0) return;
-        e.currentTarget.setPointerCapture(e.pointerId);
-        setScrubStart({ x: e.clientX, baseValue: value });
-    };
-
-    const handlePointerMove = (e: React.PointerEvent<HTMLSpanElement>): void => {
-        if (!scrubStart) return;
-        const dx = e.clientX - scrubStart.x;
-        const multiplier = e.altKey ? 0.1 : e.shiftKey ? 10 : 1;
-        const next = clamp(scrubStart.baseValue + dx * step * multiplier);
-        applyLocalValue(next);
-    };
-
-    const handlePointerUp = (e: React.PointerEvent<HTMLSpanElement>): void => {
-        if (e.currentTarget.hasPointerCapture?.(e.pointerId)) {
-            e.currentTarget.releasePointerCapture(e.pointerId);
-        }
-        setScrubStart(null);
-        onCommit?.();
-    };
+    // Restricted to the range-rendered branches: when hasRange is true both are numbers.
+    const rangeMin = typeof min === 'number' ? min : 0;
+    const rangeMax = typeof max === 'number' ? max : 0;
 
     const inputClassBase =
         'bg-[#1f1f1f] text-white border rounded px-1.5 py-0.5 w-16 font-mono text-xs text-right';
@@ -154,103 +170,38 @@ export function NumericScrubInput(props: NumericScrubInputProps): JSX.Element {
                 >
                     {name}
                     {isColliding && (
-                        <span
-                            className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-600 text-white text-[10px] font-bold leading-none cursor-help"
-                            title={interferenceTitle}
-                            aria-label={`${name} is implicated in an interference at the current pose`}
-                            data-testid={`scrub-interference-badge-${name}`}
-                        >
-                            !
-                        </span>
+                        <ScrubInterferenceBadge name={name} title={interferenceTitle} />
                     )}
                 </span>
-                <div className="flex items-center gap-1">
-                    <input
-                        type="number"
-                        value={draft}
-                        step={step}
-                        min={min}
-                        max={max}
-                        data-scrub-name={name}
-                        data-testid={`scrub-input-${name}`}
-                        onChange={(e) => setDraft(e.target.value)}
-                        onBlur={(e) => commit(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                commit((e.target as HTMLInputElement).value);
-                                (e.target as HTMLInputElement).blur();
-                            }
-                        }}
-                        className={inputClass}
-                        aria-label={`${name} value`}
-                        aria-invalid={isOutOfRange || undefined}
-                        title={outOfRangeTitle}
-                    />
-                    {unit && <span className="text-[10px] text-gray-500 w-4">{unit}</span>}
-                </div>
+                <ScrubValueInput
+                    name={name}
+                    draft={draft}
+                    setDraft={setDraft}
+                    commit={commit}
+                    step={step}
+                    min={min}
+                    max={max}
+                    inputClass={inputClass}
+                    isOutOfRange={isOutOfRange}
+                    outOfRangeTitle={outOfRangeTitle}
+                    unit={unit}
+                />
             </div>
             {hasRange && (
-                <div className="relative">
-                    <input
-                        type="range"
-                        min={min}
-                        max={max}
-                        step={step}
-                        value={displayValue}
-                        onChange={(e) => applyLocalValue(clamp(Number(e.target.value)))}
-                        onPointerUp={() => onCommit?.()}
-                        onKeyUp={(e) => {
-                            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'Home' || e.key === 'End') {
-                                onCommit?.();
-                            }
-                        }}
-                        className="w-full appearance-none bg-transparent h-5"
-                        data-testid={`scrub-slider-${name}`}
-                        aria-label={`${name} slider`}
-                        aria-valuetext={`${displayValue}${unit ?? ''}`}
-                    />
-                    <div className="absolute inset-0 pointer-events-none flex items-center">
-                        <div
-                            className={
-                                isColliding
-                                    ? 'h-1.5 w-full bg-red-950 rounded relative ring-1 ring-red-500'
-                                    : 'h-1.5 w-full bg-[#1f1f1f] rounded relative'
-                            }
-                            title={interferenceTitle}
-                            data-testid={`scrub-track-${name}`}
-                        >
-                            <div
-                                className={
-                                    isColliding ? 'h-full bg-red-500 rounded' : 'h-full bg-[#4a9eff] rounded'
-                                }
-                                style={{ width: `${pct * 100}%` }}
-                            />
-                            {limitMarks?.map((m, i) => {
-                                const lpct = hasRange
-                                    ? Math.max(0, Math.min(100, ((m.at - min) / (max - min)) * 100))
-                                    : 0;
-                                return (
-                                    <div
-                                        key={i}
-                                        className="absolute top-[-2px] w-[1px] h-[10px] bg-gray-500"
-                                        style={{ left: `${lpct}%` }}
-                                        title={m.label ?? String(m.at)}
-                                    />
-                                );
-                            })}
-                        </div>
-                    </div>
-                    <div className="flex justify-between text-[10px] text-gray-600 mt-0.5">
-                        <span>
-                            {min}
-                            {unit ?? ''}
-                        </span>
-                        <span>
-                            {max}
-                            {unit ?? ''}
-                        </span>
-                    </div>
-                </div>
+                <ScrubRange
+                    name={name}
+                    min={rangeMin}
+                    max={rangeMax}
+                    step={step}
+                    displayValue={displayValue}
+                    pct={pct}
+                    isColliding={isColliding}
+                    interferenceTitle={interferenceTitle}
+                    limitMarks={limitMarks}
+                    unit={unit}
+                    onCommit={onCommit}
+                    onValueChange={(next) => applyLocalValue(clamp(next))}
+                />
             )}
         </div>
     );

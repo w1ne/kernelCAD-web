@@ -15,7 +15,6 @@ import { useConceptWorkflow } from './hooks/useConceptWorkflow';
 import { useFeatureSelection } from './hooks/useFeatureSelection';
 import { useGenerationReview } from './hooks/useGenerationReview';
 import { usePromptDraft } from './hooks/usePromptDraft';
-import { useReferencePhoto } from './hooks/useReferencePhoto';
 import { useShellStore, shellStore } from './store/useShellStore';
 
 /** Web-only gate. No hooks here, so the conditional return is safe. */
@@ -45,20 +44,6 @@ const StudioGenerateInner: React.FC = () => {
     const { selectedFeatureId } = useFeatureSelection();
     const { agentDraftPrompt, agentDraftPromptVersion, agentRepairWorkflow, stagedEdit } = useShellStore();
     const { prompt, setPrompt } = usePromptDraft(agentDraftPrompt, agentDraftPromptVersion);
-    const {
-        pendingReferenceImage,
-        knownDimensionLabel,
-        setKnownDimensionLabel,
-        knownDimensionMm,
-        setKnownDimensionMm,
-        referenceImageError,
-        setReferenceImageError,
-        readingReferenceImage,
-        referenceImage,
-        photoReferenceSelected,
-        referenceNeedsDimension,
-        onReferenceImageSelect,
-    } = useReferencePhoto();
 
     // The single prompt box also drives the paid 3D concept preview.
     const preview = useTextTo3dPreview();
@@ -78,10 +63,6 @@ const StudioGenerateInner: React.FC = () => {
         prompt,
         selectedFeatureId,
         agentRepairWorkflow,
-        referenceImage,
-        referenceNeedsDimension,
-        setReferenceImageError,
-        readingReferenceImage,
         conceptBusy,
     });
 
@@ -103,11 +84,6 @@ const StudioGenerateInner: React.FC = () => {
     const { onConcept, buildConceptAsCad } = useConceptWorkflow({
         prompt,
         busy,
-        photoReferenceSelected,
-        referenceNeedsDimension,
-        setReferenceImageError,
-        readingReferenceImage,
-        referenceImage,
         currentCode,
         selectedFeatureId,
         agentRepairWorkflow,
@@ -134,16 +110,6 @@ const StudioGenerateInner: React.FC = () => {
                 busy={busy}
                 conceptBusy={conceptBusy}
                 previewPhase={preview.phase}
-                photoReferenceSelected={photoReferenceSelected}
-                referenceNeedsDimension={referenceNeedsDimension}
-                readingReferenceImage={readingReferenceImage}
-                pendingReferenceImage={pendingReferenceImage}
-                knownDimensionLabel={knownDimensionLabel}
-                onKnownDimensionLabelChange={setKnownDimensionLabel}
-                knownDimensionMm={knownDimensionMm}
-                onKnownDimensionMmChange={setKnownDimensionMm}
-                referenceImageError={referenceImageError}
-                onReferenceImageSelect={onReferenceImageSelect}
                 onSubmit={onSubmit}
                 onConcept={onConcept}
             />
@@ -174,7 +140,7 @@ const StudioGenerateInner: React.FC = () => {
             <ConceptResult
                 phase={preview.phase}
                 onBuildAsCad={buildConceptAsCad}
-                buildDisabled={busy || readingReferenceImage || referenceNeedsDimension}
+                buildDisabled={busy}
             />
         </div>
     );

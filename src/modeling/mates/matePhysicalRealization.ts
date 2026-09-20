@@ -175,35 +175,16 @@ export async function validateMatePhysicalRealization(
 
   const out: ValidatorDiagnostic[] = [];
   for (const mate of arm.__mates()) {
-    // Out of scope: fastened (no axis); ball / planar / cylindrical /
-    // pin_slot (G2 covers revolute + prismatic only).
-    if (mate.type !== 'revolute' && mate.type !== 'prismatic') continue;
-
-    const sideA = await resolveSide(mate.a, partsByName, worldTransforms);
-    const sideB = await resolveSide(mate.b, partsByName, worldTransforms);
-    if (!sideA || !sideB) continue;
-
-    const parentShape = loweredShapes.get(sideA.partName);
-    const childShape = loweredShapes.get(sideB.partName);
-    if (!parentShape || !childShape) continue;
-
-    // Microscale skip — combined parent+child bounding-sphere radius below
-    // the threshold means the joint is too small to expect realistic
-    // hardware. Matches Gate 4's convention.
-    if (combinedBoundingSphereRadius(parentShape, childShape) < MICROSCALE_BOUNDING_RADIUS) {
-      continue;
-    }
-
-    const axisDir = normalize(sideA.direction);
-    if (axisDir === undefined) continue; // degenerate axis — out of scope
+    const gated = await prepareGatedMate(mate, partsByName, loweredShapes, worldTransforms);
+    if (gated === undefined) continue;
 
     const result = analyzeMate({
-      mate,
-      parent: parentShape,
-      child: childShape,
-      axisOrigin: sideA.origin,
-      axisOriginChild: sideB.origin,
-      axisDir,
+      mate: gated.mate,
+      parent: gated.parent,
+      child: gated.child,
+      axisOrigin: gated.axisOrigin,
+      axisOriginChild: gated.axisOriginChild,
+      axisDir: gated.axisDir,
       tolFraction,
       samples,
     });
@@ -218,6 +199,56 @@ export async function validateMatePhysicalRealization(
     }
   }
   return out;
+}
+
+interface GatedMate {
+  readonly mate: MateRecord;
+  readonly parent: OcctBackend;
+  readonly child: OcctBackend;
+  readonly axisOrigin: Vec3;
+  readonly axisOriginChild: Vec3;
+  readonly axisDir: Vec3;
+}
+
+/** Resolve both mate sides, their lowered shapes and the world axis, applying
+ *  the in-scope filter and the microscale skip. Returns `undefined` when the
+ *  mate cannot be gated. */
+async function prepareGatedMate(
+  mate: MateRecord,
+  partsByName: ReadonlyMap<string, AssemblyPartStored>,
+  loweredShapes: ReadonlyMap<string, OcctBackend>,
+  worldTransforms: ReadonlyMap<string, Transform>,
+): Promise<GatedMate | undefined> {
+  // Out of scope: fastened (no axis); ball / planar / cylindrical /
+  // pin_slot (G2 covers revolute + prismatic only).
+  if (mate.type !== 'revolute' && mate.type !== 'prismatic') return undefined;
+
+  const sideA = await resolveSide(mate.a, partsByName, worldTransforms);
+  const sideB = await resolveSide(mate.b, partsByName, worldTransforms);
+  if (!sideA || !sideB) return undefined;
+
+  const parentShape = loweredShapes.get(sideA.partName);
+  const childShape = loweredShapes.get(sideB.partName);
+  if (!parentShape || !childShape) return undefined;
+
+  // Microscale skip — combined parent+child bounding-sphere radius below
+  // the threshold means the joint is too small to expect realistic
+  // hardware. Matches Gate 4's convention.
+  if (combinedBoundingSphereRadius(parentShape, childShape) < MICROSCALE_BOUNDING_RADIUS) {
+    return undefined;
+  }
+
+  const axisDir = normalize(sideA.direction);
+  if (axisDir === undefined) return undefined; // degenerate axis — out of scope
+
+  return {
+    mate,
+    parent: parentShape,
+    child: childShape,
+    axisOrigin: sideA.origin,
+    axisOriginChild: sideB.origin,
+    axisDir,
+  };
 }
 
 interface MateAnalysis {
@@ -250,10 +281,30 @@ function analyzeMate(input: AnalyzeMateInput): MateAnalysis {
   const inferredKnuckleR = Math.max(inferredPinR * 3, 5); // proxy for "joint hardware radius"
 
   // ── Sub-check 1: no-shared-pin-feature ───────────────────────────────
-  // Both parts must carry material near the joint axis within the
-  // knuckle-radius envelope of the connector origin. If a part's BREP
-  // does not extend into the axis-aligned tube around the origin, no
-  // physical pin can constrain it.
+  const pinFeature = checkSharedPinFeature(axisOrigin, parent, child);
+  if (pinFeature !== undefined) return pinFeature;
+
+  // ── Sub-check 2: bearing-not-coplanar (revolute only) ────────────────
+  const bearing = checkBearingAlignment(mate, parent, child, axisOrigin, axisDir, inferredPinR, tolFraction);
+  if (bearing !== undefined) return bearing;
+
+  // ── Sub-check 3: pin-escapes-hole-at-pose ────────────────────────────
+  const escape = checkPinEscape(mate, parent, child, axisOrigin, axisOriginChild, axisDir, inferredKnuckleR, samples);
+  if (escape !== undefined) return escape;
+
+  // ── Sub-check 4: over-constrained (heaviest) ─────────────────────────
+  return overConstrainedAnalysis(parent, child, axisOrigin, axisDir, inferredPinR, inferredKnuckleR);
+}
+
+/** Sub-check 1 — both parts must carry material near the joint axis within
+ *  the knuckle-radius envelope of the connector origin. If a part's BREP
+ *  does not extend into the axis-aligned tube around the origin, no
+ *  physical pin can constrain it. */
+function checkSharedPinFeature(
+  axisOrigin: Vec3,
+  parent: OcctBackend,
+  child: OcctBackend,
+): MateAnalysis | undefined {
   const parentHits = pointInsideShapeAabb(axisOrigin, parent);
   const childHits = pointInsideShapeAabb(axisOrigin, child);
   if (!parentHits || !childHits) {
@@ -262,72 +313,93 @@ function analyzeMate(input: AnalyzeMateInput): MateAnalysis {
       detail: `joint origin [${fmtVec(axisOrigin)}] does not lie inside ${!parentHits ? 'parent' : 'child'} body AABB`,
     };
   }
+  return undefined;
+}
 
-  // ── Sub-check 2: bearing-not-coplanar (revolute only) ────────────────
-  // The "bearing surfaces" of a clevis are the fork inner cheeks and the
-  // tongue outer cheeks. In a properly-built clevis the tongue lies
-  // BETWEEN the two fork plates with intentional running clearance — so
-  // the inner-cheek-to-outer-cheek gap is positive (typical: 1 mm per
-  // side for joint.clevis defaults). The gate's bearing-coplanarity
-  // condition is therefore "the tongue lives INSIDE the fork gap", not
-  // "the cheeks touch". A failure is the tongue extending far OUTSIDE
-  // the fork gap, or the fork being so narrow that the tongue cannot
-  // slip in.
-  //
-  // We measure: the tongue's axis-centre offset from the fork-gap centre.
-  // The tongue should be reasonably centred between the fork plates (within
-  // tolFraction * (forkGapY) of the fork-gap centre — design intent says
-  // the tongue is concentric with the fork). If the offset exceeds that
-  // tolerance scaled to forkGapY (or plateT, whichever is larger), the
-  // bearing is misaligned. The 5 % spec lock applies to the *concentricity*,
-  // not the absolute clearance — a 4 mm plate with a 0.2 mm tongue-centre
-  // offset is still aligned; a 4 mm plate with a 2 mm offset is not.
-  if ((mate.type as string) === 'revolute') {
-    const bearing = measureBearingCoplanarity(parent, child, axisOrigin, axisDir, inferredPinR);
-    if (bearing !== undefined && bearing.forkGapY !== undefined && bearing.tongueAxialCentre !== undefined && bearing.forkAxialCentre !== undefined) {
-      const plateT = bearing.plateT ?? PLATE_T_FALLBACK_MM;
-      // Tolerance on tongue concentricity: 5 % of forkGapY (per spec lock,
-      // expressed as a fraction of the bearing's NATURAL scale — the gap
-      // through which the tongue slides), with an absolute floor at
-      // tolFraction * plateT for OCCT noise on cheek-to-cheek alignment.
-      const tol = Math.max(tolFraction * bearing.forkGapY, tolFraction * plateT);
-      const offset = Math.abs(bearing.tongueAxialCentre - bearing.forkAxialCentre);
-      if (offset > tol) {
-        return {
-          failure: 'bearing-not-coplanar',
-          detail:
-            `tongue centre is ${offset.toFixed(3)} mm off the fork-gap centre along the pin axis ` +
-            `(tolerance ${tol.toFixed(3)} mm = ${(tolFraction * 100).toFixed(1)}% of forkGapY ${bearing.forkGapY.toFixed(2)} mm / plateT ${plateT.toFixed(2)} mm)`,
-        };
-      }
-      // Additionally: the tongue must AXIALLY OVERLAP the fork gap. A
-      // tongue that misses the fork entirely (e.g. authored at a wrong
-      // pivotChild) is the canonical bearing-not-coplanar failure.
-      if (bearing.tongueOutsideForkGap) {
-        return {
-          failure: 'bearing-not-coplanar',
-          detail:
-            `tongue does not axially overlap the fork gap (fork plates at axis-coords ` +
-            `near ${bearing.forkAxialCentre.toFixed(2)} mm, tongue centred at ` +
-            `${bearing.tongueAxialCentre.toFixed(2)} mm)`,
-        };
-      }
+/** Sub-check 2 — bearing-not-coplanar (revolute only).
+ *  The "bearing surfaces" of a clevis are the fork inner cheeks and the
+ *  tongue outer cheeks. In a properly-built clevis the tongue lies
+ *  BETWEEN the two fork plates with intentional running clearance — so
+ *  the inner-cheek-to-outer-cheek gap is positive (typical: 1 mm per
+ *  side for joint.clevis defaults). The gate's bearing-coplanarity
+ *  condition is therefore "the tongue lives INSIDE the fork gap", not
+ *  "the cheeks touch". A failure is the tongue extending far OUTSIDE
+ *  the fork gap, or the fork being so narrow that the tongue cannot
+ *  slip in.
+ *
+ *  We measure: the tongue's axis-centre offset from the fork-gap centre.
+ *  The tongue should be reasonably centred between the fork plates (within
+ *  tolFraction * (forkGapY) of the fork-gap centre — design intent says
+ *  the tongue is concentric with the fork). If the offset exceeds that
+ *  tolerance scaled to forkGapY (or plateT, whichever is larger), the
+ *  bearing is misaligned. The 5 % spec lock applies to the *concentricity*,
+ *  not the absolute clearance — a 4 mm plate with a 0.2 mm tongue-centre
+ *  offset is still aligned; a 4 mm plate with a 2 mm offset is not. */
+function checkBearingAlignment(
+  mate: MateRecord,
+  parent: OcctBackend,
+  child: OcctBackend,
+  axisOrigin: Vec3,
+  axisDir: Vec3,
+  inferredPinR: number,
+  tolFraction: number,
+): MateAnalysis | undefined {
+  if ((mate.type as string) !== 'revolute') return undefined;
+  const bearing = measureBearingCoplanarity(parent, child, axisOrigin, axisDir, inferredPinR);
+  if (bearing !== undefined && bearing.forkGapY !== undefined && bearing.tongueAxialCentre !== undefined && bearing.forkAxialCentre !== undefined) {
+    const plateT = bearing.plateT ?? PLATE_T_FALLBACK_MM;
+    // Tolerance on tongue concentricity: 5 % of forkGapY (per spec lock,
+    // expressed as a fraction of the bearing's NATURAL scale — the gap
+    // through which the tongue slides), with an absolute floor at
+    // tolFraction * plateT for OCCT noise on cheek-to-cheek alignment.
+    const tol = Math.max(tolFraction * bearing.forkGapY, tolFraction * plateT);
+    const offset = Math.abs(bearing.tongueAxialCentre - bearing.forkAxialCentre);
+    if (offset > tol) {
+      return {
+        failure: 'bearing-not-coplanar',
+        detail:
+          `tongue centre is ${offset.toFixed(3)} mm off the fork-gap centre along the pin axis ` +
+          `(tolerance ${tol.toFixed(3)} mm = ${(tolFraction * 100).toFixed(1)}% of forkGapY ${bearing.forkGapY.toFixed(2)} mm / plateT ${plateT.toFixed(2)} mm)`,
+      };
+    }
+    // Additionally: the tongue must AXIALLY OVERLAP the fork gap. A
+    // tongue that misses the fork entirely (e.g. authored at a wrong
+    // pivotChild) is the canonical bearing-not-coplanar failure.
+    if (bearing.tongueOutsideForkGap) {
+      return {
+        failure: 'bearing-not-coplanar',
+        detail:
+          `tongue does not axially overlap the fork gap (fork plates at axis-coords ` +
+          `near ${bearing.forkAxialCentre.toFixed(2)} mm, tongue centred at ` +
+          `${bearing.tongueAxialCentre.toFixed(2)} mm)`,
+      };
     }
   }
+  return undefined;
+}
 
-  // ── Sub-check 3: pin-escapes-hole-at-pose ────────────────────────────
-  // Walk samples poses across the mate's limits; at each, lift the
-  // child's joint origin by the pose and check it stays within the
-  // parent's body AABB along the joint axis. For revolute about a fixed
-  // axis through the connector origin, rotation about the axis preserves
-  // any on-axis point, so this sub-check is a no-op for well-formed
-  // revolute mates (and immediately fires for a child whose connector
-  // origin sits OFF the axis). For prismatic, the child slides along the
-  // axis — the joint line is invariant under translation along its own
-  // direction.
-  // Narrow mate.type — we already filtered to revolute/prismatic at the
-  // top of `validateMatePhysicalRealization`, but the type guard does not
-  // propagate through the analyzeMate input record.
+/** Sub-check 3 — pin-escapes-hole-at-pose. Walk samples poses across the
+ *  mate's limits; at each, lift the child's joint origin by the pose and
+ *  check it stays within the parent's body AABB along the joint axis. For
+ *  revolute about a fixed axis through the connector origin, rotation about
+ *  the axis preserves any on-axis point, so this sub-check is a no-op for
+ *  well-formed revolute mates (and immediately fires for a child whose
+ *  connector origin sits OFF the axis). For prismatic, the child slides
+ *  along the axis — the joint line is invariant under translation along its
+ *  own direction.
+ *  Narrow mate.type — we already filtered to revolute/prismatic at the
+ *  top of `validateMatePhysicalRealization`, but the type guard does not
+ *  propagate through the analyzeMate input record. */
+function checkPinEscape(
+  mate: MateRecord,
+  parent: OcctBackend,
+  child: OcctBackend,
+  axisOrigin: Vec3,
+  axisOriginChild: Vec3,
+  axisDir: Vec3,
+  inferredKnuckleR: number,
+  samples: number,
+): MateAnalysis | undefined {
   const mateType: 'revolute' | 'prismatic' =
     mate.type === 'revolute' ? 'revolute' : 'prismatic';
   const limits = mateType === 'revolute' ? mate.limitsDeg : mate.limitsMm;
@@ -350,14 +422,23 @@ function analyzeMate(input: AnalyzeMateInput): MateAnalysis {
       };
     }
   }
+  return undefined;
+}
 
-  // ── Sub-check 4: over-constrained (heaviest) ─────────────────────────
-  // Remove a generous cylindrical sweep along the axis from both parts
-  // and test if the residue still overlaps. A clean clevis: forkGapY >
-  // tongueY → the fork plates do not touch the tongue outside the pin
-  // envelope, so the residue is disjoint. A welded / over-engaged mate:
-  // material remains touching outside the pin envelope, residue
-  // intersection > 0.
+/** Sub-check 4 — over-constrained (heaviest). Remove a generous cylindrical
+ *  sweep along the axis from both parts and test if the residue still
+ *  overlaps. A clean clevis: forkGapY > tongueY → the fork plates do not
+ *  touch the tongue outside the pin envelope, so the residue is disjoint.
+ *  A welded / over-engaged mate: material remains touching outside the pin
+ *  envelope, residue intersection > 0. */
+function overConstrainedAnalysis(
+  parent: OcctBackend,
+  child: OcctBackend,
+  axisOrigin: Vec3,
+  axisDir: Vec3,
+  inferredPinR: number,
+  inferredKnuckleR: number,
+): MateAnalysis {
   const overConstrained = checkOverConstrained(parent, child, axisOrigin, axisDir, inferredPinR, inferredKnuckleR);
   if (overConstrained !== undefined) {
     return {
@@ -365,7 +446,6 @@ function analyzeMate(input: AnalyzeMateInput): MateAnalysis {
       detail: overConstrained,
     };
   }
-
   return {};
 }
 
@@ -454,7 +534,53 @@ function measureBearingCoplanarity(
   const platePerpThreshold = PLATE_PERP_FACTOR * pinR;
 
   const childInterval = axisInterval(child, axisOrigin, axisDir);
+  const { plateInnerPositive, plateInnerNegative, inferredPlateT } =
+    collectForkPlateFaces(
+      parent,
+      childInterval,
+      axisOrigin,
+      axisDir,
+      axisThickThreshold,
+      platePerpThreshold,
+    );
+  if (plateInnerPositive === undefined && plateInnerNegative === undefined) {
+    return undefined;
+  }
+  const gapPositive = plateInnerPositive !== undefined
+    ? Math.max(0, plateInnerPositive - childInterval.max)
+    : 0;
+  const gapNegative = plateInnerNegative !== undefined
+    ? Math.max(0, childInterval.min - plateInnerNegative)
+    : 0;
+  // Fork-gap axial centre + width, tongue axial centre, overlap test.
+  const { forkGapY, forkAxialCentre, tongueOutsideForkGap } = computeForkGap(
+    plateInnerPositive,
+    plateInnerNegative,
+    childInterval,
+  );
+  const tongueAxialCentre = 0.5 * (childInterval.min + childInterval.max);
+  return {
+    gap: Math.max(gapPositive, gapNegative),
+    ...(inferredPlateT !== undefined ? { plateT: inferredPlateT } : {}),
+    ...(forkGapY !== undefined ? { forkGapY } : {}),
+    ...(forkAxialCentre !== undefined ? { forkAxialCentre } : {}),
+    tongueAxialCentre,
+    tongueOutsideForkGap,
+  };
+}
 
+function collectForkPlateFaces(
+  parent: OcctBackend,
+  childInterval: { min: number; max: number },
+  axisOrigin: Vec3,
+  axisDir: Vec3,
+  axisThickThreshold: number,
+  platePerpThreshold: number,
+): {
+  plateInnerPositive: number | undefined;
+  plateInnerNegative: number | undefined;
+  inferredPlateT: number | undefined;
+} {
   let plateInnerPositive: number | undefined; // nearest parent inner-cheek face on +axis side
   let plateInnerNegative: number | undefined; // nearest parent inner-cheek face on -axis side
   let inferredPlateT: number | undefined;
@@ -483,16 +609,18 @@ function measureBearingCoplanarity(
       }
     }
   }
-  if (plateInnerPositive === undefined && plateInnerNegative === undefined) {
-    return undefined;
-  }
-  const gapPositive = plateInnerPositive !== undefined
-    ? Math.max(0, plateInnerPositive - childInterval.max)
-    : 0;
-  const gapNegative = plateInnerNegative !== undefined
-    ? Math.max(0, childInterval.min - plateInnerNegative)
-    : 0;
-  // Fork-gap axial centre + width, tongue axial centre, overlap test.
+  return { plateInnerPositive, plateInnerNegative, inferredPlateT };
+}
+
+function computeForkGap(
+  plateInnerPositive: number | undefined,
+  plateInnerNegative: number | undefined,
+  childInterval: { min: number; max: number },
+): {
+  forkGapY: number | undefined;
+  forkAxialCentre: number | undefined;
+  tongueOutsideForkGap: boolean;
+} {
   let forkGapY: number | undefined;
   let forkAxialCentre: number | undefined;
   let tongueOutsideForkGap = false;
@@ -502,15 +630,7 @@ function measureBearingCoplanarity(
     tongueOutsideForkGap =
       childInterval.max < plateInnerNegative || childInterval.min > plateInnerPositive;
   }
-  const tongueAxialCentre = 0.5 * (childInterval.min + childInterval.max);
-  return {
-    gap: Math.max(gapPositive, gapNegative),
-    ...(inferredPlateT !== undefined ? { plateT: inferredPlateT } : {}),
-    ...(forkGapY !== undefined ? { forkGapY } : {}),
-    ...(forkAxialCentre !== undefined ? { forkAxialCentre } : {}),
-    tongueAxialCentre,
-    tongueOutsideForkGap,
-  };
+  return { forkGapY, forkAxialCentre, tongueOutsideForkGap };
 }
 
 /**
@@ -692,6 +812,48 @@ function buildAxisCylinder(
 // private to each module)
 // =============================================================================
 
+function projectFacePerpendicular(
+  aabbMin: Vec3,
+  aabbMax: Vec3,
+  axisOrigin: Vec3,
+  u: Vec3,
+  v: Vec3,
+): { uMin: number; uMax: number; vMin: number; vMax: number } {
+  let uMin = Infinity, uMax = -Infinity, vMin = Infinity, vMax = -Infinity;
+  for (let i = 0; i < 8; i++) {
+    const p: Vec3 = [
+      ((i & 1) === 0 ? aabbMin[0] : aabbMax[0]) - axisOrigin[0],
+      ((i & 2) === 0 ? aabbMin[1] : aabbMax[1]) - axisOrigin[1],
+      ((i & 4) === 0 ? aabbMin[2] : aabbMax[2]) - axisOrigin[2],
+    ];
+    const uu = p[0] * u[0] + p[1] * u[1] + p[2] * u[2];
+    const vv = p[0] * v[0] + p[1] * v[1] + p[2] * v[2];
+    if (uu < uMin) uMin = uu;
+    if (uu > uMax) uMax = uu;
+    if (vv < vMin) vMin = vv;
+    if (vv > vMax) vMax = vv;
+  }
+  return { uMin, uMax, vMin, vMax };
+}
+
+function candidatePinHalfExtent(
+  aabbMin: Vec3,
+  aabbMax: Vec3,
+  axisOrigin: Vec3,
+  u: Vec3,
+  v: Vec3,
+): number | undefined {
+  const { uMin, uMax, vMin, vMax } = projectFacePerpendicular(aabbMin, aabbMax, axisOrigin, u, v);
+  const halfU = 0.5 * (uMax - uMin);
+  const halfV = 0.5 * (vMax - vMin);
+  const halfMax = Math.max(halfU, halfV);
+  if (halfMax < PARALLEL_DIRECTION_EPSILON) return undefined;
+  // Face perpendicular AABB must straddle the joint axis (so it's a
+  // candidate pin feature, not an off-axis prism).
+  if (uMin > 0 || uMax < 0 || vMin > 0 || vMax < 0) return undefined;
+  return halfMax;
+}
+
 function inferPinRadius(parent: OcctBackend, child: OcctBackend, axisOrigin: Vec3, axisDir: Vec3): number {
   const { u, v } = buildPerpendicularFrame(axisDir);
   let smallestHalf = Infinity;
@@ -701,28 +863,8 @@ function inferPinRadius(parent: OcctBackend, child: OcctBackend, axisOrigin: Vec
       const bb = face.boundingBox.bounds;
       const aabbMin = bb[0] as Vec3;
       const aabbMax = bb[1] as Vec3;
-      let uMin = Infinity, uMax = -Infinity, vMin = Infinity, vMax = -Infinity;
-      for (let i = 0; i < 8; i++) {
-        const p: Vec3 = [
-          ((i & 1) === 0 ? aabbMin[0] : aabbMax[0]) - axisOrigin[0],
-          ((i & 2) === 0 ? aabbMin[1] : aabbMax[1]) - axisOrigin[1],
-          ((i & 4) === 0 ? aabbMin[2] : aabbMax[2]) - axisOrigin[2],
-        ];
-        const uu = p[0] * u[0] + p[1] * u[1] + p[2] * u[2];
-        const vv = p[0] * v[0] + p[1] * v[1] + p[2] * v[2];
-        if (uu < uMin) uMin = uu;
-        if (uu > uMax) uMax = uu;
-        if (vv < vMin) vMin = vv;
-        if (vv > vMax) vMax = vv;
-      }
-      const halfU = 0.5 * (uMax - uMin);
-      const halfV = 0.5 * (vMax - vMin);
-      const halfMax = Math.max(halfU, halfV);
-      if (halfMax < PARALLEL_DIRECTION_EPSILON) continue;
-      // Face perpendicular AABB must straddle the joint axis (so it's a
-      // candidate pin feature, not an off-axis prism).
-      if (uMin > 0 || uMax < 0 || vMin > 0 || vMax < 0) continue;
-      if (halfMax < smallestHalf) smallestHalf = halfMax;
+      const halfMax = candidatePinHalfExtent(aabbMin, aabbMax, axisOrigin, u, v);
+      if (halfMax !== undefined && halfMax < smallestHalf) smallestHalf = halfMax;
     }
   }
   return smallestHalf < Infinity ? smallestHalf : PIN_R_FALLBACK_MM;

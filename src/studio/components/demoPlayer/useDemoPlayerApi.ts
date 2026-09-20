@@ -1,12 +1,36 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { AnimationEngine } from './AnimationEngine';
 import { CameraController } from './CameraController';
 import type { TerminalLine } from './TerminalPane';
 import { parseSectionParam } from './sectionParam';
 import { sectionPlaneFromState } from '../viewer/sectionPlane';
 import { createDemoPlayerWindowApi, type DemoPlayerSceneContext } from './demoPlayerApiFactory';
+
+/**
+ * Presence of the installed `window.__demoPlayer` bridge. The global is
+ * external state, so the mount effect publishes to this little store and
+ * `isDemoApiReady` subscribes via `useSyncExternalStore` instead of being a
+ * `useState` written synchronously from the effect body.
+ */
+let demoApiInstalled = false;
+const demoApiListeners = new Set<() => void>();
+
+function subscribeDemoApi(listener: () => void): () => void {
+    demoApiListeners.add(listener);
+    return () => { demoApiListeners.delete(listener); };
+}
+
+function getDemoApiInstalled(): boolean {
+    return demoApiInstalled;
+}
+
+function setDemoApiInstalled(installed: boolean): void {
+    if (demoApiInstalled === installed) return;
+    demoApiInstalled = installed;
+    for (const listener of demoApiListeners) listener();
+}
 
 /**
  * Owns the `window.__demoPlayer` bridge API: the scene-ready handshake, the
@@ -31,7 +55,11 @@ export function useDemoPlayerApi() {
     const [version, setVersion] = useState(
         typeof __APP_VERSION__ !== 'undefined' ? `v${__APP_VERSION__}` : 'DEV',
     );
-    const [isDemoApiReady, setIsDemoApiReady] = useState(false);
+    const isDemoApiReady = useSyncExternalStore(
+        subscribeDemoApi,
+        getDemoApiInstalled,
+        () => false,
+    );
     const [terminalLines, setTerminalLines] = useState<readonly TerminalLine[]>([]);
     const [titleCard, setTitleCard] = useState<{ title: string; tagline: string; durationMs: number } | null>(
         null,
@@ -83,16 +111,9 @@ export function useDemoPlayerApi() {
             setTitleCard: (spec) => setTitleCard(spec),
             setVersion: (v) => setVersion(v),
         });
-        // Synchronous setState, matching the original inline effect
-        // byte-for-byte (zero-behavior-change outranks the lint rule here —
-        // this file is only linted as a "hook" because it's named `use*`;
-        // the identical code was invisible to
-        // react-hooks/set-state-in-effect inside the original
-        // DemoPlayerPage).
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setIsDemoApiReady(true);
+        setDemoApiInstalled(true);
         return () => {
-            setIsDemoApiReady(false);
+            setDemoApiInstalled(false);
             delete window.__demoPlayer;
         };
     }, []);

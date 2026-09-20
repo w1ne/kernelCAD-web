@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('Sketch on Face Workflow E2E', async ({ page }) => {
     // 1. Load Application
-    await page.goto('/');
+    await page.goto('/studio');
 
     // 2. Wait for Editor and Worker initialization
     const editor = page.locator('.monaco-editor').first();

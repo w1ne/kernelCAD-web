@@ -58,8 +58,8 @@ import type { Assembly } from '../capture/assembly';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { OcctBackend as OcctBackendClass } from '../../kernel/backends/occt/occtBackend';
-import type { Transform } from '../../shared/runtime/se3';
-import { parseConnectorRef } from '../mates/mate';
+import type { Transform, Vec3 } from '../../shared/runtime/se3';
+import { parseConnectorRef, type MateRecord } from '../mates/mate';
 import { brepExtremaDistance, wrappedShape } from './brepDistance';
 
 /**
@@ -146,26 +146,31 @@ export interface JointMeshGapResult {
  * here — that's a separate `assembly.connector.topology-not-resolvable`
  * surface that already runs at capture.
  */
-export function checkJointMeshContinuity(
-  arm: Assembly,
-  rest: JointMeshContinuityRestSample,
-): JointMeshGapResult[] {
-  const out: JointMeshGapResult[] = [];
-  const sceneByPartName = new Map<string, SceneBackend['parts'][number]>();
-  for (const p of rest.scene.parts) sceneByPartName.set(p.name, p);
+type AssemblyPart = ReturnType<Assembly['__parts']>[number];
+type MateConnector = AssemblyPart['mateConnectors'][number];
 
-  // Pre-lookup each connector's part-local vec3 origin via the
-  // Assembly's part records. Topology origins are not resolved here
-  // (the lowered scene already evaluated them — but the lookup
-  // happens through `parsedRef + connectorName`, not the scene).
+function indexSceneParts(scene: SceneBackend): Map<string, SceneBackend['parts'][number]> {
+  const sceneByPartName = new Map<string, SceneBackend['parts'][number]>();
+  for (const p of scene.parts) sceneByPartName.set(p.name, p);
+  return sceneByPartName;
+}
+
+// Pre-lookup each connector's part-local vec3 origin via the
+// Assembly's part records. Topology origins are not resolved here
+// (the lowered scene already evaluated them — but the lookup
+// happens through `parsedRef + connectorName`, not the scene).
+function indexAssemblyParts(arm: Assembly): Map<string, ReturnType<Assembly['__parts']>[number]> {
   const partByName = new Map<string, ReturnType<Assembly['__parts']>[number]>();
   for (const p of arm.__parts()) partByName.set(p.name, p);
+  return partByName;
+}
 
-  // Fastened-mate adjacency for the bearing-contact fallback: parts
-  // joined by fastened mates move as one rigid link, so a bearing
-  // surface on ANY part of the group constrains a joint mated to the
-  // group (e.g. a spindle running in a bore of a block fastened to the
-  // mate's declared parent).
+// Fastened-mate adjacency for the bearing-contact fallback: parts
+// joined by fastened mates move as one rigid link, so a bearing
+// surface on ANY part of the group constrains a joint mated to the
+// group (e.g. a spindle running in a bore of a block fastened to the
+// mate's declared parent).
+function buildFastenedAdjacency(arm: Assembly): Map<string, Set<string>> {
   const fastenedAdj = new Map<string, Set<string>>();
   for (const m of arm.__mates()) {
     if (m.type !== 'fastened') continue;
@@ -180,105 +185,152 @@ export function checkJointMeshContinuity(
       continue;
     }
   }
+  return fastenedAdj;
+}
+
+interface ResolvedMateContext {
+  parsedA: { partName: string; connectorName: string };
+  parsedB: { partName: string; connectorName: string };
+  aConn: MateConnector;
+  bConn: MateConnector;
+  T_A: Transform;
+  T_B: Transform;
+  aLocal: Vec3;
+  bLocal: Vec3;
+  pivotWorld: Vec3;
+}
+
+function resolveMateContext(
+  mate: MateRecord,
+  rest: JointMeshContinuityRestSample,
+  partByName: ReadonlyMap<string, ReturnType<Assembly['__parts']>[number]>,
+): ResolvedMateContext | undefined {
+  let parsedA: { partName: string; connectorName: string };
+  let parsedB: { partName: string; connectorName: string };
+  try {
+    parsedA = parseConnectorRef(mate.a);
+    parsedB = parseConnectorRef(mate.b);
+  } catch {
+    return undefined;
+  }
+
+  const aPart = partByName.get(parsedA.partName);
+  const bPart = partByName.get(parsedB.partName);
+  if (aPart === undefined || bPart === undefined) return undefined;
+
+  const aConn = aPart.mateConnectors.find((c) => c.name === parsedA.connectorName);
+  const bConn = bPart.mateConnectors.find((c) => c.name === parsedB.connectorName);
+  if (aConn === undefined || bConn === undefined) return undefined;
+  if (aConn.origin.kind !== 'vec3' || bConn.origin.kind !== 'vec3') return undefined;
+
+  const T_A = rest.transforms.get(parsedA.partName);
+  const T_B = rest.transforms.get(parsedB.partName);
+  if (T_A === undefined || T_B === undefined) return undefined;
+
+  // World-space pivot point. The parent-side connector origin is the
+  // canonical reference — at REST pose the solver enforces the
+  // child-side origin co-locates with it (any disagreement already
+  // surfaces as `mechanism.disconnect`). We compute both and use the
+  // parent-side for the diagnostic message, but evaluate each side
+  // against its own body using that body's local origin point lifted
+  // via its own world transform — that avoids accidentally probing a
+  // body at a point its local frame never names.
+  const aLocal = aConn.origin.value;
+  const bLocal = bConn.origin.value;
+  const pivotWorld = T_A.point(aLocal);
+
+  return { parsedA, parsedB, aConn, bConn, T_A, T_B, aLocal, bLocal, pivotWorld };
+}
+
+function buildSideRow(
+  mateName: string,
+  side: 'parent' | 'child',
+  partName: string,
+  pivotWorld: Vec3,
+  scenePart: SceneBackend['parts'][number],
+  connector: MateConnector,
+): JointMeshGapResult | undefined {
+  const gap = measureGapToBody(scenePart.shape as OcctBackend, scenePart.worldTransform, pivotWorld);
+  if (gap === undefined) return undefined;
+  return {
+    mateName,
+    side,
+    partName,
+    pivotWorld,
+    signedDistanceMm: gap,
+    clearanceRadiusMm: connector.jointClearanceRadius ?? 0,
+  };
+}
+
+function applyBearingGap(
+  rows: JointMeshGapResult[],
+  fastenedAdj: ReadonlyMap<string, ReadonlySet<string>>,
+  sceneByPartName: ReadonlyMap<string, SceneBackend['parts'][number]>,
+  parentPartName: string,
+  childPartName: string,
+): JointMeshGapResult[] {
+  // Bearing-contact fallback (only paid for when a pivot probe fails):
+  // measure the true minimum distance between the two mated rigid
+  // groups. The caller passes the joint when this lands within
+  // tolerance — the pivot sits in deliberately open space (annular rim
+  // seat, bushing-at-a-distance) but real material constrains the
+  // joint elsewhere.
+  if (rows.some((r) => r.signedDistanceMm > r.clearanceRadiusMm + JOINT_MESH_GAP_TOLERANCE_MM)) {
+    const bearingGapMm = measureMateBearingGap(fastenedAdj, sceneByPartName, parentPartName, childPartName);
+    if (bearingGapMm !== undefined) {
+      return rows.map((r) => ({ ...r, bearingGapMm }));
+    }
+  }
+  return rows;
+}
+
+function collectMateRows(
+  mate: MateRecord,
+  rest: JointMeshContinuityRestSample,
+  sceneByPartName: ReadonlyMap<string, SceneBackend['parts'][number]>,
+  partByName: ReadonlyMap<string, ReturnType<Assembly['__parts']>[number]>,
+  fastenedAdj: ReadonlyMap<string, ReadonlySet<string>>,
+): JointMeshGapResult[] {
+  const ctx = resolveMateContext(mate, rest, partByName);
+  if (ctx === undefined) return [];
+
+  const aScenePart = sceneByPartName.get(ctx.parsedA.partName);
+  const bScenePart = sceneByPartName.get(ctx.parsedB.partName);
+
+  const rows: JointMeshGapResult[] = [];
+
+  if (aScenePart !== undefined) {
+    const row = buildSideRow(mate.name, 'parent', ctx.parsedA.partName, ctx.pivotWorld, aScenePart, ctx.aConn);
+    if (row !== undefined) rows.push(row);
+  }
+
+  if (bScenePart !== undefined) {
+    // Probe the child body at the SAME world point — at rest pose the
+    // solver places the child's connector origin there too. (We
+    // intentionally probe the world pivot, not a separate
+    // `T_B.point(bLocal)`, because the gate's premise is that BOTH
+    // bodies must contain the single physical pivot.)
+    const probePointForChild = ctx.T_B.point(ctx.bLocal);
+    const row = buildSideRow(mate.name, 'child', ctx.parsedB.partName, probePointForChild, bScenePart, ctx.bConn);
+    if (row !== undefined) rows.push(row);
+  }
+
+  return applyBearingGap(rows, fastenedAdj, sceneByPartName, ctx.parsedA.partName, ctx.parsedB.partName);
+}
+
+export function checkJointMeshContinuity(
+  arm: Assembly,
+  rest: JointMeshContinuityRestSample,
+): JointMeshGapResult[] {
+  const out: JointMeshGapResult[] = [];
+  const sceneByPartName = indexSceneParts(rest.scene);
+
+  const partByName = indexAssemblyParts(arm);
+
+  const fastenedAdj = buildFastenedAdjacency(arm);
 
   for (const mate of arm.__mates()) {
-    let parsedA: { partName: string; connectorName: string };
-    let parsedB: { partName: string; connectorName: string };
-    try {
-      parsedA = parseConnectorRef(mate.a);
-      parsedB = parseConnectorRef(mate.b);
-    } catch {
-      continue;
-    }
-
-    const aPart = partByName.get(parsedA.partName);
-    const bPart = partByName.get(parsedB.partName);
-    if (aPart === undefined || bPart === undefined) continue;
-
-    const aConn = aPart.mateConnectors.find((c) => c.name === parsedA.connectorName);
-    const bConn = bPart.mateConnectors.find((c) => c.name === parsedB.connectorName);
-    if (aConn === undefined || bConn === undefined) continue;
-    if (aConn.origin.kind !== 'vec3' || bConn.origin.kind !== 'vec3') continue;
-
-    const T_A = rest.transforms.get(parsedA.partName);
-    const T_B = rest.transforms.get(parsedB.partName);
-    if (T_A === undefined || T_B === undefined) continue;
-
-    // World-space pivot point. The parent-side connector origin is the
-    // canonical reference — at REST pose the solver enforces the
-    // child-side origin co-locates with it (any disagreement already
-    // surfaces as `mechanism.disconnect`). We compute both and use the
-    // parent-side for the diagnostic message, but evaluate each side
-    // against its own body using that body's local origin point lifted
-    // via its own world transform — that avoids accidentally probing a
-    // body at a point its local frame never names.
-    const aLocal = aConn.origin.value;
-    const bLocal = bConn.origin.value;
-    const pivotWorld = T_A.point(aLocal);
-
-    const aScenePart = sceneByPartName.get(parsedA.partName);
-    const bScenePart = sceneByPartName.get(parsedB.partName);
-
-    const rows: JointMeshGapResult[] = [];
-
-    if (aScenePart !== undefined) {
-      const gap = measureGapToBody(aScenePart.shape as OcctBackend, aScenePart.worldTransform, pivotWorld);
-      if (gap !== undefined) {
-        rows.push({
-          mateName: mate.name,
-          side: 'parent',
-          partName: parsedA.partName,
-          pivotWorld,
-          signedDistanceMm: gap,
-          clearanceRadiusMm: aConn.jointClearanceRadius ?? 0,
-        });
-      }
-    }
-
-    if (bScenePart !== undefined) {
-      // Probe the child body at the SAME world point — at rest pose the
-      // solver places the child's connector origin there too. (We
-      // intentionally probe the world pivot, not a separate
-      // `T_B.point(bLocal)`, because the gate's premise is that BOTH
-      // bodies must contain the single physical pivot.)
-      const probePointForChild = T_B.point(bLocal);
-      const gap = measureGapToBody(
-        bScenePart.shape as OcctBackend,
-        bScenePart.worldTransform,
-        probePointForChild,
-      );
-      if (gap !== undefined) {
-        rows.push({
-          mateName: mate.name,
-          side: 'child',
-          partName: parsedB.partName,
-          pivotWorld: probePointForChild,
-          signedDistanceMm: gap,
-          clearanceRadiusMm: bConn.jointClearanceRadius ?? 0,
-        });
-      }
-    }
-
-    // Bearing-contact fallback (only paid for when a pivot probe fails):
-    // measure the true minimum distance between the two mated rigid
-    // groups. The caller passes the joint when this lands within
-    // tolerance — the pivot sits in deliberately open space (annular rim
-    // seat, bushing-at-a-distance) but real material constrains the
-    // joint elsewhere.
-    if (rows.some((r) => r.signedDistanceMm > r.clearanceRadiusMm + JOINT_MESH_GAP_TOLERANCE_MM)) {
-      const bearingGapMm = measureMateBearingGap(
-        fastenedAdj,
-        sceneByPartName,
-        parsedA.partName,
-        parsedB.partName,
-      );
-      if (bearingGapMm !== undefined) {
-        out.push(...rows.map((r) => ({ ...r, bearingGapMm })));
-        continue;
-      }
-    }
-
-    out.push(...rows);
+    out.push(...collectMateRows(mate, rest, sceneByPartName, partByName, fastenedAdj));
   }
 
   return out;

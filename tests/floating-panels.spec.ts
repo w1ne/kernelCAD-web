@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Floating Panels HUD & Live Preview', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto('/');
+        await page.goto('/studio');
         await page.evaluate(() => localStorage.clear());
         await page.waitForSelector('canvas');
         await page.waitForFunction(() => (window as any).isEngineReady === true);

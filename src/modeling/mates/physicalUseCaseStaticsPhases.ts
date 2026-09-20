@@ -10,7 +10,9 @@ import type { Vec3 } from '../../shared/intent/types';
 import type { Transform } from '../../shared/runtime/se3';
 import { parseConnectorRef } from './mate';
 import type {
+  PhysicalUseCaseActuatorLimit,
   PhysicalUseCaseContact,
+  PhysicalUseCaseLoad,
   PhysicalUseCaseRecord,
 } from './physicalUseCase';
 import type { PhysicalUseCasePoseWitness } from './physicalUseCaseReachability';
@@ -64,25 +66,13 @@ export function resolveStaticLoads(
 ): string | { readonly loads: ResolvedLoad[]; readonly referencePoint: Vec3 } {
   const loads: ResolvedLoad[] = [];
   for (const load of useCase.loads) {
-    if (load.force !== undefined && !isFiniteVec3(load.force)) {
-      return `Force load on '${heldPart}' must be a finite Vec3.`;
-    }
-    if (load.torque !== undefined && !isFiniteVec3(load.torque)) {
-      return `Torque load on '${heldPart}' must be a finite Vec3.`;
-    }
-    let point: Vec3 | undefined;
-    if (load.at !== undefined) {
-      const parsed = safeParseConnectorRef(load.at);
-      if (parsed?.partName !== heldPart) {
-        return `Load application connector '${load.at}' must belong to held part '${heldPart}'.`;
-      }
-      point = connectorWorldPoint(arm, witness.transforms, load.at);
-      if (point === undefined) {
-        return `Load application connector '${load.at}' could not be resolved at the sampled pose.`;
-      }
-    } else if (hasNonZeroVec(load.force)) {
-      return `Force load on '${heldPart}' requires load.at naming an application connector.`;
-    }
+    const vectorError = validateLoadVectors(load, heldPart);
+    if (vectorError !== undefined) return vectorError;
+
+    const pointCheck = resolveLoadPoint(arm, witness, load, heldPart);
+    if (typeof pointCheck === 'string') return pointCheck;
+    const point = pointCheck.point;
+
     loads.push({
       force: load.force === undefined ? [0, 0, 0] : copyVec(load.force),
       torque: load.torque === undefined ? [0, 0, 0] : copyVec(load.torque),
@@ -95,6 +85,43 @@ export function resolveStaticLoads(
     return `Held part '${heldPart}' requires at least one load with an explicit application connector.`;
   }
   return { loads, referencePoint };
+}
+
+/** Finite-vector checks for one declared load. */
+function validateLoadVectors(
+  load: PhysicalUseCaseLoad,
+  heldPart: string,
+): string | undefined {
+  if (load.force !== undefined && !isFiniteVec3(load.force)) {
+    return `Force load on '${heldPart}' must be a finite Vec3.`;
+  }
+  if (load.torque !== undefined && !isFiniteVec3(load.torque)) {
+    return `Torque load on '${heldPart}' must be a finite Vec3.`;
+  }
+  return undefined;
+}
+
+/** Resolve the optional `load.at` application point on the held part. */
+function resolveLoadPoint(
+  arm: Assembly,
+  witness: PhysicalUseCasePoseWitness,
+  load: PhysicalUseCaseLoad,
+  heldPart: string,
+): { readonly point: Vec3 | undefined } | string {
+  let point: Vec3 | undefined;
+  if (load.at !== undefined) {
+    const parsed = safeParseConnectorRef(load.at);
+    if (parsed?.partName !== heldPart) {
+      return `Load application connector '${load.at}' must belong to held part '${heldPart}'.`;
+    }
+    point = connectorWorldPoint(arm, witness.transforms, load.at);
+    if (point === undefined) {
+      return `Load application connector '${load.at}' could not be resolved at the sampled pose.`;
+    }
+  } else if (hasNonZeroVec(load.force)) {
+    return `Force load on '${heldPart}' requires load.at naming an application connector.`;
+  }
+  return { point };
 }
 
 export function resolveStaticContacts(
@@ -274,4 +301,182 @@ export function unit(value: Vec3): Vec3 {
 
 export function midpoint(a: Vec3, b: Vec3): Vec3 {
   return scale(add(a, b), 0.5);
+}
+
+export function validateActuatorLimit(
+  limit: PhysicalUseCaseActuatorLimit,
+  matesByName: ReadonlyMap<string, ReturnType<Assembly['__mates']>[number]>,
+  couplings: ReturnType<Assembly['__mateCouplings']>,
+  transmissions: ReturnType<Assembly['__transmissionIntents']>,
+  witness: PhysicalUseCasePoseWitness,
+): { readonly poseDeg: number; readonly minDeg: number; readonly maxDeg: number } | string {
+  const mateCheck = validateActuatorMate(limit, matesByName);
+  if (typeof mateCheck === 'string') return mateCheck;
+
+  const couplingError = validateActuatorCouplings(limit.mate, couplings, transmissions);
+  if (couplingError !== undefined) return couplingError;
+
+  const poseCheck = validateActuatorPose(limit.mate, mateCheck.minDeg, mateCheck.maxDeg, witness);
+  if (typeof poseCheck === 'string') return poseCheck;
+
+  return { poseDeg: poseCheck.poseDeg, minDeg: mateCheck.minDeg, maxDeg: mateCheck.maxDeg };
+}
+
+/** Checks the actuator declaration against the mate graph: positive torque
+ *  rating, existing revolute mate, finite ordered limitsDeg. */
+function validateActuatorMate(
+  limit: PhysicalUseCaseActuatorLimit,
+  matesByName: ReadonlyMap<string, ReturnType<Assembly['__mates']>[number]>,
+): {
+  readonly mate: ReturnType<Assembly['__mates']>[number];
+  readonly minDeg: number;
+  readonly maxDeg: number;
+} | string {
+  if (!isPositiveFinite(limit.maxTorqueNmm)) {
+    return `Actuator '${limit.mate}' requires a positive finite maxTorqueNmm.`;
+  }
+  const mate = matesByName.get(limit.mate);
+  if (mate === undefined) return `Actuator mate '${limit.mate}' does not exist.`;
+  if (mate.type !== 'revolute') {
+    return `Actuator mate '${limit.mate}' must be revolute for static torque review v1.`;
+  }
+  if (
+    mate.limitsDeg === undefined ||
+    !mate.limitsDeg.every(Number.isFinite) ||
+    mate.limitsDeg[0] > mate.limitsDeg[1]
+  ) {
+    return `Actuator mate '${limit.mate}' requires finite ordered limitsDeg.`;
+  }
+  const [minDeg, maxDeg] = mate.limitsDeg;
+  return { mate, minDeg, maxDeg };
+}
+
+/** Coupled-mate and transmission-evidence checks for the named actuator. */
+function validateActuatorCouplings(
+  mateName: string,
+  couplings: ReturnType<Assembly['__mateCouplings']>,
+  transmissions: ReturnType<Assembly['__transmissionIntents']>,
+): string | undefined {
+  if (couplings.some((coupling) => coupling.driven === mateName)) {
+    return `Actuator limit '${mateName}' names a driven coupled mate; name its independent source mate instead.`;
+  }
+
+  const movedCouplings = collectMovedCouplings(mateName, couplings);
+  for (const coupling of movedCouplings) {
+    const transmission = transmissions.find((candidate) =>
+      candidate.sourceMate === coupling.source &&
+      candidate.drivenMates.includes(coupling.driven));
+    if (transmission === undefined) {
+      return `Coupled motion '${coupling.source}' to '${coupling.driven}' requires arm.transmission(...) evidence for static torque review.`;
+    }
+    if (
+      transmission.ratio !== undefined &&
+      !nearlyEqual(transmission.ratio, coupling.ratio)
+    ) {
+      return `Transmission '${transmission.name}' ratio ${transmission.ratio} contradicts coupling ratio ${coupling.ratio} for '${coupling.source}' to '${coupling.driven}'.`;
+    }
+  }
+  return undefined;
+}
+
+/** Witness-pose finiteness and declared-limits containment for the named
+ *  actuator. */
+function validateActuatorPose(
+  mateName: string,
+  minDeg: number,
+  maxDeg: number,
+  witness: PhysicalUseCasePoseWitness,
+): { readonly poseDeg: number } | string {
+  const poseDeg = witness.poses[mateName];
+  if (typeof poseDeg !== 'number' || !Number.isFinite(poseDeg)) {
+    return `Actuator mate '${mateName}' has no finite scalar pose in the common-pose witness.`;
+  }
+  if (poseDeg < minDeg - 1e-9 || poseDeg > maxDeg + 1e-9) {
+    return `Actuator mate '${mateName}' pose ${poseDeg} deg is outside limitsDeg.`;
+  }
+  return { poseDeg };
+}
+
+function collectMovedCouplings(
+  sourceMate: string,
+  couplings: ReturnType<Assembly['__mateCouplings']>,
+): ReturnType<Assembly['__mateCouplings']>[number][] {
+  const movedMates = new Set([sourceMate]);
+  const movedCouplings: ReturnType<Assembly['__mateCouplings']>[number][] = [];
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const coupling of couplings) {
+      if (!movedMates.has(coupling.source) || movedMates.has(coupling.driven)) continue;
+      movedCouplings.push(coupling);
+      movedMates.add(coupling.driven);
+      changed = true;
+    }
+  }
+  return movedCouplings;
+}
+
+function nearlyEqual(a: number, b: number): boolean {
+  return Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b));
+}
+
+type Mate = ReturnType<Assembly['__mates']>[number];
+export type PathEdge = { readonly partName: string; readonly mate: Mate };
+type PathStep = { readonly from: string; readonly mate: Mate };
+export type StablePartPath = {
+  readonly reachedStablePart: string;
+  readonly parent: ReadonlyMap<string, PathStep>;
+};
+
+export function buildMatePathAdjacency(arm: Assembly): Map<string, PathEdge[]> {
+  const adjacency = new Map<string, PathEdge[]>();
+  for (const part of arm.__parts()) adjacency.set(part.name, []);
+  for (const mate of arm.__mates()) {
+    const aPart = safePartName(mate.a);
+    const bPart = safePartName(mate.b);
+    if (aPart === undefined || bPart === undefined) continue;
+    adjacency.get(aPart)?.push({ partName: bPart, mate });
+    adjacency.get(bPart)?.push({ partName: aPart, mate });
+  }
+  return adjacency;
+}
+
+export function buildCouplingByDriven(arm: Assembly): Map<string, string> | string {
+  const couplingByDriven = new Map<string, string>();
+  for (const coupling of arm.__mateCouplings()) {
+    const existing = couplingByDriven.get(coupling.driven);
+    if (existing !== undefined && existing !== coupling.source) {
+      return `Driven mate '${coupling.driven}' has multiple coupling sources.`;
+    }
+    couplingByDriven.set(coupling.driven, coupling.source);
+  }
+  return couplingByDriven;
+}
+
+export function findStablePartPath(
+  mechanismPart: string,
+  adjacency: ReadonlyMap<string, readonly PathEdge[]>,
+  stableParts: ReadonlySet<string>,
+): StablePartPath | string {
+  const queue = [mechanismPart];
+  const visited = new Set(queue);
+  const parent = new Map<string, PathStep>();
+  let reachedStablePart: string | undefined;
+  while (queue.length > 0 && reachedStablePart === undefined) {
+    const partName = queue.shift()!;
+    for (const edge of adjacency.get(partName) ?? []) {
+      if (visited.has(edge.partName)) continue;
+      visited.add(edge.partName);
+      parent.set(edge.partName, { from: partName, mate: edge.mate });
+      if (stableParts.has(edge.partName)) {
+        reachedStablePart = edge.partName;
+        break;
+      }
+      queue.push(edge.partName);
+    }
+  }
+  if (reachedStablePart === undefined) {
+    return `Mechanism contact part '${mechanismPart}' has no mate path to a declared stable part.`;
+  }
+  return { reachedStablePart, parent };
 }

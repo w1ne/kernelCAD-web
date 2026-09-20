@@ -4,7 +4,7 @@ test('construction geometry - midplane and tangent plane', async ({ page }) => {
     test.setTimeout(60000);
     // 1. Initialize
     page.on('console', msg => console.log(msg.text()));
-    await page.goto('/');
+    await page.goto('/studio');
     await page.waitForSelector('[data-testid="workbench-ready"]');
     // Wait for E2E globals
     await page.waitForFunction(() => typeof (window as any).openCommandPalette === 'function');

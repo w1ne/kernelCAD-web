@@ -7,26 +7,26 @@ import type { FeatureKind } from '../../../shared/intent/types';
 
 type TransitionKind = 'add' | 'boolean.cut' | 'boolean.fuse' | 'modifier' | 'transform' | 'fallback';
 
+const ADD_KINDS = new Set<FeatureKind>([
+  'box', 'cylinder', 'sphere', 'torus',
+  'extrude', 'revolve', 'loft', 'sweep',
+  'importedMesh', 'importedStep', 'importedBrep', 'importedStl',
+  'sdfMaterialize',
+  'sketch', 'constrainedSketch',
+]);
+const CUT_KINDS = new Set<FeatureKind>(['hole', 'holes', 'cutout']);
+const MODIFIER_KINDS = new Set<FeatureKind>(['fillet', 'chamfer', 'shell', 'draft']);
+const TRANSFORM_KINDS = new Set<FeatureKind>(['mirror']);
+
 function classify(kind: FeatureKind, op?: 'subtract' | 'union' | 'intersect'): TransitionKind {
-  switch (kind) {
-    case 'box': case 'cylinder': case 'sphere': case 'torus':
-    case 'extrude': case 'revolve': case 'loft': case 'sweep':
-    case 'importedMesh': case 'importedStep': case 'importedBrep': case 'importedStl':
-    case 'sdfMaterialize':
-      return 'add';
-    case 'hole': case 'holes': case 'cutout':
-      return 'boolean.cut';
-    case 'boolean':
-      return op === 'subtract' ? 'boolean.cut' : 'boolean.fuse';
-    case 'fillet': case 'chamfer': case 'shell': case 'draft':
-      return 'modifier';
-    case 'mirror':
-      return 'transform';
-    case 'sketch': case 'constrainedSketch':
-      return 'add';
-    default:
-      return 'fallback';
+  if (ADD_KINDS.has(kind)) return 'add';
+  if (CUT_KINDS.has(kind)) return 'boolean.cut';
+  if (kind === 'boolean') {
+    return op === 'subtract' ? 'boolean.cut' : 'boolean.fuse';
   }
+  if (MODIFIER_KINDS.has(kind)) return 'modifier';
+  if (TRANSFORM_KINDS.has(kind)) return 'transform';
+  return 'fallback';
 }
 
 const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
@@ -131,133 +131,169 @@ export class AnimationEngine {
 
     // Fix 4: scale tween only for 'add'
     if (cls === 'add') {
-      setOpacity(target, 0);
-      target.group.scale.setScalar(0.85);
-      const dur = 500;
-      return new Promise<void>((resolve) => {
-        this.active.push({
-          startMs, durationMs: dur, resolve,
-          step: (t) => {
-            const e = easeOutCubic(t);
-            setOpacity(target, e);
-            target.group.scale.setScalar(0.85 + 0.15 * e);
-            if (t >= 1) setOpaque(target);
-          },
-        });
-      });
+      return this.enqueueAdd(target, startMs);
     }
 
     // Fix 4: transform/fallback fade in without scale tween
     if (cls === 'transform' || cls === 'fallback') {
-      setOpacity(target, 0);
-      const dur = cls === 'transform' ? 500 : 400;
-      return new Promise<void>((resolve) => {
-        this.active.push({
-          startMs, durationMs: dur, resolve,
-          step: (t) => {
-            setOpacity(target, easeOutCubic(t));
-            if (t >= 1) setOpaque(target);
-          },
-        });
-      });
+      return this.enqueueTransformOrFallback(target, startMs, cls);
     }
 
     if (cls === 'boolean.cut') {
-      setOpacity(target, 0);
-      // Fix 5: use helper; Fix 3: warn logged inside helper
-      const predGroups = collectPredGroups(this.scene, event.predecessors);
-      // Fix 2: capture dur to keep durationMs and step closure in sync
-      const dur = 600;
-      return new Promise<void>((resolve) => {
-        this.active.push({
-          startMs, durationMs: dur, resolve,
-          step: (t) => {
-            const elapsed = t * dur;
-            // 0–150ms: cutters flash red
-            if (elapsed < 150) {
-              for (const pg of predGroups) setColor(pg, 1, 0.3, 0.3);
-            } else {
-              for (const pg of predGroups) restoreColors(pg);
-            }
-            // Avoid z-fighting in recorded demos: cut results occupy the same
-            // space as their predecessors, and transparent CAD solids expose
-            // internal triangulation/backfaces. Flash the old solid, then
-            // swap directly to the opaque cut result.
-            if (elapsed > 150) {
-              for (const pg of predGroups) setOpacity(pg, 0);
-              setOpaque(target);
-            }
-            if (t >= 1) {
-              for (const pg of predGroups) setOpacity(pg, 0);
-              setOpaque(target);
-            }
-          },
-        });
-      });
+      return this.enqueueBooleanCut(target, startMs, event.predecessors);
     }
 
     if (cls === 'boolean.fuse') {
-      setOpacity(target, 0);
-      // Fix 5: use helper; Fix 3: warn logged inside helper
-      const predGroups = collectPredGroups(this.scene, event.predecessors);
-      // Fix 2: capture dur to keep durationMs and step closure in sync
-      const dur = 500;
-      return new Promise<void>((resolve) => {
-        this.active.push({
-          startMs, durationMs: dur, resolve,
-          step: (t) => {
-            const elapsed = t * dur;
-            if (elapsed < 150) {
-              for (const pg of predGroups) setColor(pg, 1, 0.9, 0.4);
-            } else {
-              for (const pg of predGroups) restoreColors(pg);
-            }
-            if (elapsed > 150) {
-              const f = easeOutCubic(Math.min(1, (elapsed - 150) / 350));
-              for (const pg of predGroups) setOpacity(pg, 1 - f);
-              setOpacity(target, f);
-            }
-            if (t >= 1) {
-              for (const pg of predGroups) setOpacity(pg, 0);
-              setOpaque(target);
-            }
-          },
-        });
-      });
+      return this.enqueueBooleanFuse(target, startMs, event.predecessors);
     }
 
     if (cls === 'modifier') {
-      // Fix 1: start at 0.7 opacity so the 0–150ms cyan flash is visible
-      setOpacity(target, 0.7);
-      // Fix 5: use helper; Fix 3: warn logged inside helper
-      const predGroups = collectPredGroups(this.scene, event.predecessors);
-      // Fix 2: capture dur to keep durationMs and step closure in sync
-      const dur = 400;
-      return new Promise<void>((resolve) => {
-        this.active.push({
-          startMs, durationMs: dur, resolve,
-          step: (t) => {
-            const elapsed = t * dur;
-            if (elapsed < 150) {
-              setColor(target, 0.4, 0.9, 1);
-            } else {
-              restoreColors(target);
-            }
-            if (elapsed > 150) {
-              const f = (elapsed - 150) / 250;
-              setOpacity(target, 0.7 + 0.3 * f);
-              for (const pg of predGroups) setOpacity(pg, 1 - f);
-            }
-            if (t >= 1) {
-              setOpaque(target);
-              for (const pg of predGroups) setOpacity(pg, 0);
-            }
-          },
-        });
-      });
+      return this.enqueueModifier(target, startMs, event.predecessors);
     }
 
     return Promise.resolve();
+  }
+
+  private enqueueAdd(target: GroupRefs, startMs: number): Promise<void> {
+    setOpacity(target, 0);
+    target.group.scale.setScalar(0.85);
+    const dur = 500;
+    return new Promise<void>((resolve) => {
+      this.active.push({
+        startMs, durationMs: dur, resolve,
+        step: (t) => {
+          const e = easeOutCubic(t);
+          setOpacity(target, e);
+          target.group.scale.setScalar(0.85 + 0.15 * e);
+          if (t >= 1) setOpaque(target);
+        },
+      });
+    });
+  }
+
+  private enqueueTransformOrFallback(
+    target: GroupRefs,
+    startMs: number,
+    cls: 'transform' | 'fallback',
+  ): Promise<void> {
+    setOpacity(target, 0);
+    const dur = cls === 'transform' ? 500 : 400;
+    return new Promise<void>((resolve) => {
+      this.active.push({
+        startMs, durationMs: dur, resolve,
+        step: (t) => {
+          setOpacity(target, easeOutCubic(t));
+          if (t >= 1) setOpaque(target);
+        },
+      });
+    });
+  }
+
+  private enqueueBooleanCut(
+    target: GroupRefs,
+    startMs: number,
+    predecessors: readonly string[],
+  ): Promise<void> {
+    setOpacity(target, 0);
+    // Fix 5: use helper; Fix 3: warn logged inside helper
+    const predGroups = collectPredGroups(this.scene, predecessors);
+    // Fix 2: capture dur to keep durationMs and step closure in sync
+    const dur = 600;
+    return new Promise<void>((resolve) => {
+      this.active.push({
+        startMs, durationMs: dur, resolve,
+        step: (t) => {
+          const elapsed = t * dur;
+          // 0–150ms: cutters flash red
+          if (elapsed < 150) {
+            for (const pg of predGroups) setColor(pg, 1, 0.3, 0.3);
+          } else {
+            for (const pg of predGroups) restoreColors(pg);
+          }
+          // Avoid z-fighting in recorded demos: cut results occupy the same
+          // space as their predecessors, and transparent CAD solids expose
+          // internal triangulation/backfaces. Flash the old solid, then
+          // swap directly to the opaque cut result.
+          if (elapsed > 150) {
+            for (const pg of predGroups) setOpacity(pg, 0);
+            setOpaque(target);
+          }
+          if (t >= 1) {
+            for (const pg of predGroups) setOpacity(pg, 0);
+            setOpaque(target);
+          }
+        },
+      });
+    });
+  }
+
+  private enqueueBooleanFuse(
+    target: GroupRefs,
+    startMs: number,
+    predecessors: readonly string[],
+  ): Promise<void> {
+    setOpacity(target, 0);
+    // Fix 5: use helper; Fix 3: warn logged inside helper
+    const predGroups = collectPredGroups(this.scene, predecessors);
+    // Fix 2: capture dur to keep durationMs and step closure in sync
+    const dur = 500;
+    return new Promise<void>((resolve) => {
+      this.active.push({
+        startMs, durationMs: dur, resolve,
+        step: (t) => {
+          const elapsed = t * dur;
+          if (elapsed < 150) {
+            for (const pg of predGroups) setColor(pg, 1, 0.9, 0.4);
+          } else {
+            for (const pg of predGroups) restoreColors(pg);
+          }
+          if (elapsed > 150) {
+            const f = easeOutCubic(Math.min(1, (elapsed - 150) / 350));
+            for (const pg of predGroups) setOpacity(pg, 1 - f);
+            setOpacity(target, f);
+          }
+          if (t >= 1) {
+            for (const pg of predGroups) setOpacity(pg, 0);
+            setOpaque(target);
+          }
+        },
+      });
+    });
+  }
+
+  private enqueueModifier(
+    target: GroupRefs,
+    startMs: number,
+    predecessors: readonly string[],
+  ): Promise<void> {
+    // Fix 1: start at 0.7 opacity so the 0–150ms cyan flash is visible
+    setOpacity(target, 0.7);
+    // Fix 5: use helper; Fix 3: warn logged inside helper
+    const predGroups = collectPredGroups(this.scene, predecessors);
+    // Fix 2: capture dur to keep durationMs and step closure in sync
+    const dur = 400;
+    return new Promise<void>((resolve) => {
+      this.active.push({
+        startMs, durationMs: dur, resolve,
+        step: (t) => {
+          const elapsed = t * dur;
+          if (elapsed < 150) {
+            setColor(target, 0.4, 0.9, 1);
+          } else {
+            restoreColors(target);
+          }
+          if (elapsed > 150) {
+            const f = (elapsed - 150) / 250;
+            setOpacity(target, 0.7 + 0.3 * f);
+            for (const pg of predGroups) setOpacity(pg, 1 - f);
+          }
+          if (t >= 1) {
+            setOpaque(target);
+            for (const pg of predGroups) setOpacity(pg, 0);
+          }
+        },
+      });
+    });
   }
 
   /** Advance internal clock by `dtMs`. Tweens active animations; resolves completed. */

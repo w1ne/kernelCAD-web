@@ -42,51 +42,77 @@ export function removeFeature(code: string, match: string): RemoveFeatureResult 
   return { ok: true, new_code: lines.join('\n') };
 }
 
+interface LineScanState {
+  depth: number;
+  inStr: '"' | "'" | '`' | null;
+  inLineComment: boolean;
+  inBlockComment: boolean;
+}
+
+function hasTopLevelReturnAt(line: string, i: number, depth: number): boolean {
+  if (depth !== 0 || line.slice(i, i + 6) !== 'return') return false;
+  const before = i === 0 ? ' ' : line[i - 1];
+  const after = line[i + 6] ?? ' ';
+  return !/[A-Za-z0-9_$]/.test(before) && !/[A-Za-z0-9_$]/.test(after);
+}
+
+function skipBlockComment(line: string, state: LineScanState, i: number): number {
+  if (line[i] === '*' && line[i + 1] === '/') { state.inBlockComment = false; return i + 2; }
+  return i + 1;
+}
+
+function skipString(line: string, state: LineScanState, i: number): number {
+  const c = line[i];
+  if (c === '\\') return i + 2;
+  if (c === state.inStr) { state.inStr = null; return i + 1; }
+  return i + 1;
+}
+
+function skipCodeChar(line: string, state: LineScanState, i: number): number {
+  const c = line[i];
+  const c2 = line[i + 1];
+  if (c === '/' && c2 === '/') { state.inLineComment = true; return i + 2; }
+  if (c === '/' && c2 === '*') { state.inBlockComment = true; return i + 2; }
+  if (c === '"' || c === "'" || c === '`') { state.inStr = c as '"' | "'" | '`'; return i + 1; }
+  if (c === '{') { state.depth++; return i + 1; }
+  if (c === '}') { state.depth--; return i + 1; }
+  return i + 1;
+}
+
+function scanLineForTopLevelReturn(line: string, state: LineScanState): boolean {
+  let i = 0;
+  let lineHasTopLevelReturn = false;
+
+  while (i < line.length) {
+    if (state.inLineComment) { i++; continue; }
+    if (state.inBlockComment) { i = skipBlockComment(line, state, i); continue; }
+    if (state.inStr) { i = skipString(line, state, i); continue; }
+    if (hasTopLevelReturnAt(line, i, state.depth)) {
+      lineHasTopLevelReturn = true;
+      i += 6; continue;
+    }
+    i = skipCodeChar(line, state, i);
+  }
+
+  return lineHasTopLevelReturn;
+}
+
 /**
  * Check whether the line at `lineIndex` contains a `return` keyword at brace
  * depth 0 (top-level). Mirrors the state-machine in addFeature.ts.
  */
 function lineContainsTopLevelReturn(lines: string[], lineIndex: number): boolean {
-  let depth = 0;
-  let inStr: '"' | "'" | '`' | null = null;
-  let inLineComment = false;
-  let inBlockComment = false;
+  const state: LineScanState = {
+    depth: 0,
+    inStr: null,
+    inLineComment: false,
+    inBlockComment: false,
+  };
 
   for (let li = 0; li <= lineIndex; li++) {
     const line = lines[li];
-    inLineComment = false;
-    let i = 0;
-    let lineHasTopLevelReturn = false;
-
-    while (i < line.length) {
-      const c = line[i];
-      const c2 = line[i + 1];
-
-      if (inLineComment) { i++; continue; }
-      if (inBlockComment) {
-        if (c === '*' && c2 === '/') { inBlockComment = false; i += 2; continue; }
-        i++; continue;
-      }
-      if (inStr) {
-        if (c === '\\') { i += 2; continue; }
-        if (c === inStr) { inStr = null; i++; continue; }
-        i++; continue;
-      }
-      if (c === '/' && c2 === '/') { inLineComment = true; i += 2; continue; }
-      if (c === '/' && c2 === '*') { inBlockComment = true; i += 2; continue; }
-      if (c === '"' || c === "'" || c === '`') { inStr = c as '"' | "'" | '`'; i++; continue; }
-      if (c === '{') { depth++; i++; continue; }
-      if (c === '}') { depth--; i++; continue; }
-      if (depth === 0 && line.slice(i, i + 6) === 'return') {
-        const before = i === 0 ? ' ' : line[i - 1];
-        const after = line[i + 6] ?? ' ';
-        if (!/[A-Za-z0-9_$]/.test(before) && !/[A-Za-z0-9_$]/.test(after)) {
-          lineHasTopLevelReturn = true;
-          i += 6; continue;
-        }
-      }
-      i++;
-    }
+    state.inLineComment = false;
+    const lineHasTopLevelReturn = scanLineForTopLevelReturn(line, state);
 
     if (li === lineIndex && lineHasTopLevelReturn) return true;
   }

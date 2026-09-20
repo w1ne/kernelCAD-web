@@ -43,6 +43,38 @@ export interface HistoryItem extends VariableDefinition {
     id: string;
 }
 
+/** Ordered shape markers: first match wins, mirroring the historical
+ *  if/else chain (e.g. an initializer mentioning both `makeBox` and
+ *  `Sketcher` classifies as Box). */
+const SHAPE_TYPE_MARKERS: ReadonlyArray<readonly [string, string]> = [
+    ['makeBox', 'Box'],
+    ['makeCylinder', 'Cylinder'],
+    ['makeSphere', 'Sphere'],
+    ['fillet', 'Fillet'],
+    ['chamfer', 'Chamfer'],
+    ['cut', 'Cut'],
+    ['fuse', 'Union'],
+    ['intersect', 'Intersect'],
+    ['extrude', 'Extrude'],
+    ['revolve', 'Revolve'],
+    ['Sketcher', 'Sketch'],
+];
+
+function shapeTypeFor(initSrc: string): string {
+    const match = SHAPE_TYPE_MARKERS.find(([marker]) => initSrc.includes(marker));
+    return match ? match[1] : 'Shape';
+}
+
+function sketchDetail(initSrc: string, init?: { arguments?: unknown[] }): string | undefined {
+    const firstArg = Array.isArray(init?.arguments) ? init.arguments[0] : null;
+    const arg = firstArg as unknown as { type?: string; value?: unknown } | null;
+    if (arg && arg.type === 'Literal' && typeof arg.value === 'string') {
+        return arg.value;
+    }
+    const planeMatch = initSrc.match(/new Sketcher\(['"](\w+)['"]\)/);
+    return planeMatch ? planeMatch[1] : undefined;
+}
+
 /**
  * Parses the code to find top-level shape definitions for Scene Browser.
  * Heuristics:
@@ -50,30 +82,8 @@ export interface HistoryItem extends VariableDefinition {
  * - Guesses type based on keywords (makeBox, makeCylinder, fillet, etc.)
  */
 function classifyVariable(initSrc: string, init?: { arguments?: unknown[] }): { type: string; detail?: string } {
-    let type = 'Shape';
-    let detail: string | undefined;
-
-    if (initSrc.includes('makeBox')) type = 'Box';
-    else if (initSrc.includes('makeCylinder')) type = 'Cylinder';
-    else if (initSrc.includes('makeSphere')) type = 'Sphere';
-    else if (initSrc.includes('fillet')) type = 'Fillet';
-    else if (initSrc.includes('chamfer')) type = 'Chamfer';
-    else if (initSrc.includes('cut')) type = 'Cut';
-    else if (initSrc.includes('fuse')) type = 'Union';
-    else if (initSrc.includes('intersect')) type = 'Intersect';
-    else if (initSrc.includes('extrude')) type = 'Extrude';
-    else if (initSrc.includes('revolve')) type = 'Revolve';
-    else if (initSrc.includes('Sketcher')) {
-        type = 'Sketch';
-        const firstArg = Array.isArray(init?.arguments) ? init.arguments[0] : null;
-        const arg = firstArg as unknown as { type?: string; value?: unknown } | null;
-        if (arg && arg.type === 'Literal' && typeof arg.value === 'string') {
-            detail = arg.value;
-        } else {
-            const planeMatch = initSrc.match(/new Sketcher\(['"](\w+)['"]\)/);
-            if (planeMatch) detail = planeMatch[1];
-        }
-    }
+    const type = shapeTypeFor(initSrc);
+    const detail = type === 'Sketch' ? sketchDetail(initSrc, init) : undefined;
 
     return { type, detail };
 }

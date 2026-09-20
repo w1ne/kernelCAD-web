@@ -146,6 +146,19 @@ export function buildPoseEnvelopeSamples(
     { name: 'current', poses: {}, reason: 'capture-time/default mate poses' },
   ];
 
+  appendMateLimitSamples(arm, samples, samplesPerMate);
+
+  if (options.combinatorial) appendCombinatorialSamples(arm, samples);
+
+  return samples;
+}
+
+/** Corner (min/max) and interior samples for every mate with declared limits. */
+function appendMateLimitSamples(
+  arm: Assembly,
+  samples: PoseEnvelopeSample[],
+  samplesPerMate: number,
+): void {
   for (const mate of arm.__mates()) {
     const limits = mate.limitsDeg ?? mate.limitsMm;
     if (limits === undefined) continue;
@@ -175,40 +188,40 @@ export function buildPoseEnvelopeSamples(
       });
     }
   }
+}
 
-  if (options.combinatorial) {
-    const limited = arm.__mates().filter((m) => (m.limitsDeg ?? m.limitsMm) !== undefined);
-    if (limited.length > 8) {
-      throw new Error(
-        `combinatorial sampling capped at 8 mates with declared limits; got ${limited.length}. Use samplesPerMate for higher-DOF mechanisms.`,
-      );
-    }
-    // With 0 limited mates the only "corner" is the empty pose, which duplicates
-    // the `current` sample emitted above — skip enumeration entirely to keep the
-    // output deduped.
-    if (limited.length >= 1) {
-      const width = limited.length;
-      const total = 1 << width;
-      for (let mask = 0; mask < total; mask++) {
-        const overrides: NumericPoses = {};
-        for (let i = 0; i < width; i++) {
-          const mate = limited[i];
-          const limits = (mate.limitsDeg ?? mate.limitsMm) as readonly [number, number];
-          // Bit i (LSB = mate 0) — set bit -> max, unset -> min.
-          const useMax = ((mask >> i) & 1) === 1;
-          overrides[mate.name] = useMax ? limits[1] : limits[0];
-        }
-        const maskBits = mask.toString(2).padStart(width, '0');
-        samples.push({
-          name: `corner:${maskBits}`,
-          poses: expandCoupledPoses(arm.__mates(), arm.__mateCouplings(), overrides),
-          reason: `combinatorial corner ${mask + 1}/${total}`,
-        });
+/** Enumerate the 2^N min/max corner combinations over mates with declared
+ *  limits (capped at 8). */
+function appendCombinatorialSamples(arm: Assembly, samples: PoseEnvelopeSample[]): void {
+  const limited = arm.__mates().filter((m) => (m.limitsDeg ?? m.limitsMm) !== undefined);
+  if (limited.length > 8) {
+    throw new Error(
+      `combinatorial sampling capped at 8 mates with declared limits; got ${limited.length}. Use samplesPerMate for higher-DOF mechanisms.`,
+    );
+  }
+  // With 0 limited mates the only "corner" is the empty pose, which duplicates
+  // the `current` sample emitted above — skip enumeration entirely to keep the
+  // output deduped.
+  if (limited.length >= 1) {
+    const width = limited.length;
+    const total = 1 << width;
+    for (let mask = 0; mask < total; mask++) {
+      const overrides: NumericPoses = {};
+      for (let i = 0; i < width; i++) {
+        const mate = limited[i];
+        const limits = (mate.limitsDeg ?? mate.limitsMm) as readonly [number, number];
+        // Bit i (LSB = mate 0) — set bit -> max, unset -> min.
+        const useMax = ((mask >> i) & 1) === 1;
+        overrides[mate.name] = useMax ? limits[1] : limits[0];
       }
+      const maskBits = mask.toString(2).padStart(width, '0');
+      samples.push({
+        name: `corner:${maskBits}`,
+        poses: expandCoupledPoses(arm.__mates(), arm.__mateCouplings(), overrides),
+        reason: `combinatorial corner ${mask + 1}/${total}`,
+      });
     }
   }
-
-  return samples;
 }
 
 export function validateMatePoseLimits(
@@ -253,35 +266,11 @@ export async function reviewPoseEnvelope(
   const diagnostics: PoseEnvelopeDiagnostic[] = [];
   const interferencePairs: Array<InterferencePair & { sampleName: string }> = [];
   const clearancePairs: Array<ClearancePairReport & { sampleName: string }> = [];
-  const reportedInterferences = new Set<string>();
-  const reportInterference = (sampleName: string, pair: InterferencePair): void => {
-    const key = `${sampleName}\u0000${pairKey(pair.a, pair.b)}`;
-    if (reportedInterferences.has(key)) return;
-    reportedInterferences.add(key);
-    interferencePairs.push({ ...pair, sampleName });
-    diagnostics.push({
-      code: 'assembly.pose-envelope.interference',
-      severity: 'error',
-      sampleName,
-      sampleStrategy: classifySampleStrategy(sampleName),
-      partA: pair.a,
-      partB: pair.b,
-      volumeMm3: pair.volumeMm3,
-      message: `Pose-envelope sample '${sampleName}' makes parts '${pair.a}' and '${pair.b}' overlap by ${pair.volumeMm3.toFixed(2)} mm³.`,
-      hint: `invalid-args.assembly.pose-envelope-interference — add clearance, reduce mate travel, or move the connector/mount geometry so the swept pose stays collision-free.`,
-    });
-  };
+  const reportInterference = createInterferenceReporter(interferencePairs, diagnostics);
   const connectorPoses: TrackedConnectorPose[] = [];
-  const trackConnectors = opts.trackConnectors !== undefined || opts.gripperAperture !== undefined
-    ? new Set([
-        ...(opts.trackConnectors ?? []),
-        ...(opts.gripperAperture !== undefined ? [opts.gripperAperture.left, opts.gripperAperture.right] : []),
-      ])
-    : undefined;
+  const trackConnectors = resolveTrackedConnectors(opts);
   const unresolvedConnectorRefs = new Set<string>();
-  const clearanceMatePairs = opts.minClearanceMm === undefined
-    ? undefined
-    : clearanceExemptMatedPairs(arm, opts.includeArticulatedMateClearance ?? false);
+  const clearanceMatePairs = resolveClearanceMatePairs(arm, opts);
   const ignoredPairs = opts.ignoredPairs ?? new Set<string>();
 
   for (const sample of samples) {
@@ -332,6 +321,52 @@ export async function reviewPoseEnvelope(
     ...(opts.gripperAperture !== undefined ? { gripperApertureRequest: opts.gripperAperture } : {}),
     ...(apertureSummary !== undefined ? { gripperAperture: apertureSummary } : {}),
   };
+}
+
+/** Interference sink that dedupes by sample + pair and records both the pair
+ *  list and the diagnostic, in that order. */
+function createInterferenceReporter(
+  interferencePairs: Array<InterferencePair & { sampleName: string }>,
+  diagnostics: PoseEnvelopeDiagnostic[],
+): (sampleName: string, pair: InterferencePair) => void {
+  const reportedInterferences = new Set<string>();
+  return (sampleName: string, pair: InterferencePair): void => {
+    const key = `${sampleName}\u0000${pairKey(pair.a, pair.b)}`;
+    if (reportedInterferences.has(key)) return;
+    reportedInterferences.add(key);
+    interferencePairs.push({ ...pair, sampleName });
+    diagnostics.push({
+      code: 'assembly.pose-envelope.interference',
+      severity: 'error',
+      sampleName,
+      sampleStrategy: classifySampleStrategy(sampleName),
+      partA: pair.a,
+      partB: pair.b,
+      volumeMm3: pair.volumeMm3,
+      message: `Pose-envelope sample '${sampleName}' makes parts '${pair.a}' and '${pair.b}' overlap by ${pair.volumeMm3.toFixed(2)} mm³.`,
+      hint: `invalid-args.assembly.pose-envelope-interference — add clearance, reduce mate travel, or move the connector/mount geometry so the swept pose stays collision-free.`,
+    });
+  };
+}
+
+/** Connector refs to track: the explicit list plus both gripper fingertips,
+ *  or undefined when neither was requested. */
+function resolveTrackedConnectors(opts: PoseEnvelopeReviewOptions): ReadonlySet<string> | undefined {
+  if (opts.trackConnectors === undefined && opts.gripperAperture === undefined) return undefined;
+  return new Set([
+    ...(opts.trackConnectors ?? []),
+    ...(opts.gripperAperture !== undefined ? [opts.gripperAperture.left, opts.gripperAperture.right] : []),
+  ]);
+}
+
+/** Mated pairs exempt from the clearance check, computed only when a minimum
+ *  clearance was requested. */
+function resolveClearanceMatePairs(
+  arm: Assembly,
+  opts: PoseEnvelopeReviewOptions,
+): Set<string> | undefined {
+  if (opts.minClearanceMm === undefined) return undefined;
+  return clearanceExemptMatedPairs(arm, opts.includeArticulatedMateClearance ?? false);
 }
 
 async function solvePoseEnvelopeSample(

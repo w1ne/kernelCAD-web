@@ -6,6 +6,12 @@ import type { PoseEnvelopeReviewResult } from './poseEnvelope';
 import { parseConnectorRef } from './mate';
 import { assessPhysicalUseCaseReachability } from './physicalUseCaseReachability';
 import {
+  appendReachabilityDiagnostics,
+  appendStaticsDiagnostics,
+  resolvePhysicalUseCasePhases,
+  unreachableContactKey,
+} from './physicalUseCaseReachabilityPhases';
+import {
   connectorExists,
   hasNonZeroVec,
   reviewMissingPhysicalUseCase,
@@ -15,8 +21,6 @@ import {
   reviewUseCaseStableParts,
 } from './physicalUseCasePhases';
 import {
-  DEFAULT_FORCE_RESIDUAL_N,
-  DEFAULT_TORQUE_RESIDUAL_NMM,
   reviewPhysicalUseCaseStatics,
   type PhysicalUseCaseStaticActuatorTorqueEvidence,
   type PhysicalUseCaseStaticCertificate,
@@ -24,16 +28,25 @@ import {
 import {
   reviewPhysicalUseCaseJointReactions,
   type PhysicalUseCaseJointReactionCertificate,
+  type PhysicalUseCaseJointReactionEvidence,
+  type PhysicalUseCaseJointReactionIssue,
 } from './physicalUseCaseJointReactions';
 import {
   reviewJointReactionCapacity,
   type JointReactionCapacityEvidence,
 } from './physicalUseCaseJointCapacity';
 import {
-  DEFAULT_MIN_JOINT_SAFETY_FACTOR,
   reviewClevisJointStructure,
   type ClevisJointStructureReview,
 } from './clevisJointStructure';
+import {
+  copyUseCaseActuatorLimit,
+  copyUseCaseContact,
+  copyUseCaseLoad,
+  validateUseCaseContactFrames,
+  validateUseCaseCriteria,
+  validateUseCaseName,
+} from './physicalUseCaseRecordPhases';
 
 export interface PhysicalUseCaseLoad {
   readonly part: string;
@@ -273,60 +286,15 @@ export function makePhysicalUseCaseRecord(
   name: string,
   opts: PhysicalUseCaseOptions,
 ): PhysicalUseCaseRecord {
-  if (typeof name !== 'string' || name.trim() === '') {
-    throw new Error('assembly.physicalUseCase: name must be a non-empty string.');
-  }
-  for (const contact of opts.contacts ?? []) {
-    if (
-      contact.normalFrame !== undefined &&
-      contact.normalFrame !== 'world' &&
-      contact.normalFrame !== 'a' &&
-      contact.normalFrame !== 'b'
-    ) {
-      throw new Error("assembly.physicalUseCase: contact.normalFrame must be 'world', 'a', or 'b'.");
-    }
-  }
-  for (const [field, value, maximum] of [
-    ['maxForceResidualN', opts.criteria?.maxForceResidualN, DEFAULT_FORCE_RESIDUAL_N],
-    ['maxTorqueResidualNmm', opts.criteria?.maxTorqueResidualNmm, DEFAULT_TORQUE_RESIDUAL_NMM],
-  ] as const) {
-    if (value !== undefined && (!Number.isFinite(value) || value <= 0)) {
-      throw new Error(`assembly.physicalUseCase: criteria.${field} must be a positive finite number.`);
-    }
-    if (value !== undefined && value > maximum) {
-      throw new Error(`assembly.physicalUseCase: criteria.${field} cannot exceed ${maximum}.`);
-    }
-  }
-  const minJointSafetyFactor = opts.criteria?.minJointSafetyFactor;
-  if (
-    minJointSafetyFactor !== undefined &&
-    (!Number.isFinite(minJointSafetyFactor) || minJointSafetyFactor < DEFAULT_MIN_JOINT_SAFETY_FACTOR)
-  ) {
-    throw new Error(
-      `assembly.physicalUseCase: criteria.minJointSafetyFactor must be finite and at least ${DEFAULT_MIN_JOINT_SAFETY_FACTOR}.`,
-    );
-  }
+  validateUseCaseName(name);
+  validateUseCaseContactFrames(opts);
+  validateUseCaseCriteria(opts.criteria);
   return {
     name,
     stableParts: [...(opts.stableParts ?? [])],
-    loads: (opts.loads ?? []).map((load) => ({
-      part: load.part,
-      ...(load.at === undefined ? {} : { at: load.at }),
-      ...(load.force === undefined ? {} : { force: copyVec3(load.force) }),
-      ...(load.torque === undefined ? {} : { torque: copyVec3(load.torque) }),
-    })),
-    contacts: (opts.contacts ?? []).map((contact) => ({
-      a: contact.a,
-      b: contact.b,
-      normal: copyVec3(contact.normal),
-      ...(contact.normalFrame === undefined ? {} : { normalFrame: contact.normalFrame }),
-      friction: contact.friction,
-      ...(contact.normalForceN === undefined ? {} : { normalForceN: contact.normalForceN }),
-    })),
-    actuatorLimits: (opts.actuatorLimits ?? []).map((limit) => ({
-      mate: limit.mate,
-      maxTorqueNmm: limit.maxTorqueNmm,
-    })),
+    loads: (opts.loads ?? []).map((load) => copyUseCaseLoad(load)),
+    contacts: (opts.contacts ?? []).map((contact) => copyUseCaseContact(contact)),
+    actuatorLimits: (opts.actuatorLimits ?? []).map((limit) => copyUseCaseActuatorLimit(limit)),
     ...(opts.criteria === undefined ? {} : { criteria: { ...opts.criteria } }),
   };
 }
@@ -376,9 +344,8 @@ export async function reviewPhysicalUseCasesWithReachability(
   opts: PhysicalUseCaseReviewOptions = {},
 ): Promise<PhysicalUseCaseReviewResult> {
   const base = reviewPhysicalUseCases(arm, opts);
-  const includeJointReactions = opts.includeJointReactions === true || opts.includeJointStructure === true;
-  const includeStatics = opts.includeStatics === true || includeJointReactions;
-  const includeReachability = opts.includeReachability === true || includeStatics;
+  const { includeJointReactions, includeStatics, includeReachability, includeJointStructure } =
+    resolvePhysicalUseCasePhases(opts);
   if (!includeReachability) return base;
 
   const diagnostics: PhysicalUseCaseDiagnostic[] = [...base.diagnostics];
@@ -395,88 +362,23 @@ export async function reviewPhysicalUseCasesWithReachability(
     const assessment = await assessPhysicalUseCaseReachability(arm, useCase, {
       samplesPerMate: opts.reachabilitySamplesPerMate,
     });
-    for (const issue of assessment.findings) {
-      if (!('contactA' in issue)) {
-        diagnostics.push({
-          code: 'assembly.physical-use-case.simultaneous-contacts-unreachable',
-          severity: 'error',
-          useCaseName: issue.useCaseName,
-          toleranceMm: issue.toleranceMm,
-          ...(issue.bestMaxDistanceMm === undefined ? {} : { bestMaxDistanceMm: issue.bestMaxDistanceMm }),
-          contactDistances: issue.contactDistances,
-          message: issue.bestMaxDistanceMm === undefined
-            ? `Physical use case '${issue.useCaseName}' has no solved targeted actuator sample where all ${issue.contactDistances.length} contacts can be checked together.`
-            : `Physical use case '${issue.useCaseName}' has no single targeted actuator sample that satisfies all ${issue.contactDistances.length} contacts within ${issue.toleranceMm.toFixed(2)} mm; the best sample's worst contact is ${issue.bestMaxDistanceMm.toFixed(2)} mm away.`,
-          hint: 'physical-use-case.simultaneous-contacts-unreachable — revise mate couplings, contact geometry, or actuator ranges until one sampled mechanism state satisfies every declared contact; independent per-contact poses do not form a grasp.',
-        });
-        continue;
-      }
-      if (existingUnreachableContacts.has(unreachableContactKey(issue.useCaseName, issue.contactA, issue.contactB))) continue;
-      diagnostics.push({
-        code: 'assembly.physical-use-case.contact-unreachable',
-        severity: 'error',
-        useCaseName: issue.useCaseName,
-        contactA: issue.contactA,
-        contactB: issue.contactB,
-        ...(issue.minDistanceMm === undefined ? {} : { minDistanceMm: issue.minDistanceMm }),
-        toleranceMm: issue.toleranceMm,
-        message: issue.minDistanceMm === undefined
-          ? `Physical use case '${issue.useCaseName}' contact '${issue.contactA}' to '${issue.contactB}' could not be checked by targeted actuator sampling.`
-          : `Physical use case '${issue.useCaseName}' contact '${issue.contactA}' to '${issue.contactB}' cannot be reached by the declared actuator limits; closest targeted sample is ${issue.minDistanceMm.toFixed(2)} mm away with tolerance ${issue.toleranceMm.toFixed(2)} mm.`,
-        hint: `physical-use-case.contact-unreachable — repair the target connector, move '${issue.contactA}' or '${issue.contactB}', or widen the declared actuatorLimits so the contact can get within maxSlipMm ${issue.toleranceMm.toFixed(2)}.`,
-      });
-    }
+    appendReachabilityDiagnostics(assessment.findings, existingUnreachableContacts, diagnostics);
 
     if (!includeStatics || assessment.findings.length > 0) continue;
     const statics = await reviewPhysicalUseCaseStatics(arm, useCase, assessment.commonPoseSamples);
     staticCertificates.push(...statics.certificates);
-    for (const issue of statics.issues) {
-      if (issue.kind === 'static-input-incomplete') {
-        diagnostics.push({
-          code: 'assembly.physical-use-case.static-input-incomplete',
-          severity: 'error',
-          useCaseName: issue.useCaseName,
-          message: `Physical use case '${issue.useCaseName}' cannot run pose-bound static review: ${issue.message}`,
-          hint: 'physical-use-case.static-input-incomplete - add explicit load application connectors, contact capacities and frames, finite revolute limits, and transmission evidence for every coupled joint.',
-        });
-        continue;
-      }
-      if (issue.kind === 'static-equilibrium-unmet') {
-        diagnostics.push({
-          code: 'assembly.physical-use-case.static-equilibrium-unmet',
-          severity: 'error',
-          useCaseName: issue.useCaseName,
-          ...(issue.bestPoses === undefined ? {} : { bestPoses: issue.bestPoses }),
-          ...(issue.bestForceResidualN === undefined ? {} : { bestForceResidualN: issue.bestForceResidualN }),
-          ...(issue.bestTorqueResidualNmm === undefined ? {} : { bestTorqueResidualNmm: issue.bestTorqueResidualNmm }),
-          message: `Physical use case '${issue.useCaseName}' has no verified contact-force allocation that balances force and moment at a sampled common-contact pose.`,
-          hint: 'physical-use-case.static-equilibrium-unmet - revise contact locations/normals, friction, force capacity, or the applied load. This sampled linearized failure is not a proof of analytical impossibility.',
-        });
-        continue;
-      }
-      diagnostics.push({
-        code: 'assembly.physical-use-case.static-actuator-torque-insufficient',
-        severity: 'error',
-        useCaseName: issue.useCaseName,
-        ...(issue.bestPoses === undefined ? {} : { bestPoses: issue.bestPoses }),
-        actuatorTorques: issue.actuatorTorques,
-        message: `Physical use case '${issue.useCaseName}' can balance its held-object wrench, but no verified sampled allocation stays within every actuator torque limit.`,
-        hint: 'physical-use-case.static-actuator-torque-insufficient - increase real actuator/transmission capacity, shorten moment arms, reduce the load, or redesign contact placement without weakening the gate.',
-      });
-    }
+    appendStaticsDiagnostics(statics.issues, diagnostics);
 
     if (!includeJointReactions) continue;
-    for (const certificate of statics.certificates) {
-      const jointReview = await reviewCertifiedJointLoads(
-        arm,
-        useCase,
-        certificate,
-        opts.includeJointStructure === true,
-      );
-      diagnostics.push(...jointReview.diagnostics);
-      jointReactionCertificates.push(...jointReview.reactionCertificates);
-      jointStructuralCertificates.push(...jointReview.structuralCertificates);
-    }
+    await appendJointReactionCertificates(
+      arm,
+      useCase,
+      statics.certificates,
+      includeJointStructure,
+      diagnostics,
+      jointReactionCertificates,
+      jointStructuralCertificates,
+    );
   }
 
   return {
@@ -486,6 +388,29 @@ export async function reviewPhysicalUseCasesWithReachability(
     jointReactionCertificates,
     jointStructuralCertificates,
   };
+}
+
+/** Run the joint-reaction/structural review for each passing static certificate. */
+async function appendJointReactionCertificates(
+  arm: Assembly,
+  useCase: PhysicalUseCaseRecord,
+  certificates: readonly PhysicalUseCaseStaticCertificate[],
+  includeStructure: boolean,
+  diagnostics: PhysicalUseCaseDiagnostic[],
+  jointReactionCertificates: PhysicalUseCaseJointReactionCertificate[],
+  jointStructuralCertificates: PhysicalUseCaseJointStructuralCertificate[],
+): Promise<void> {
+  for (const certificate of certificates) {
+    const jointReview = await reviewCertifiedJointLoads(
+      arm,
+      useCase,
+      certificate,
+      includeStructure,
+    );
+    diagnostics.push(...jointReview.diagnostics);
+    jointReactionCertificates.push(...jointReview.reactionCertificates);
+    jointStructuralCertificates.push(...jointReview.structuralCertificates);
+  }
 }
 
 async function reviewCertifiedJointLoads(
@@ -500,19 +425,7 @@ async function reviewCertifiedJointLoads(
 }> {
   const diagnostics: PhysicalUseCaseDiagnostic[] = [];
   const reactions = await reviewPhysicalUseCaseJointReactions(arm, useCase, staticCertificate);
-  for (const issue of reactions.issues) {
-    diagnostics.push({
-      code: issue.kind === 'joint-reaction-input-incomplete'
-        ? 'assembly.physical-use-case.joint-reaction-input-incomplete'
-        : 'assembly.physical-use-case.joint-reaction-indeterminate',
-      severity: 'error',
-      useCaseName: issue.useCaseName,
-      message: `Physical use case '${issue.useCaseName}' cannot derive determinate pose-bound joint reactions: ${issue.message}`,
-      hint: issue.kind === 'joint-reaction-input-incomplete'
-        ? 'physical-use-case.joint-reaction-input-incomplete - preserve the exact passing contact certificate, solved pose, contact points, loads, and connector frames.'
-        : 'physical-use-case.joint-reaction-indeterminate - use one stable root and a tree load path, or provide a future stiffness model for loops and multiple supports.',
-    });
-  }
+  appendJointReactionIssueDiagnostics(reactions.issues, diagnostics);
 
   const matesByName = new Map(arm.__mates().map((mate) => [mate.name, mate]));
   const structuralCertificates: PhysicalUseCaseJointStructuralCertificate[] = [];
@@ -532,78 +445,8 @@ async function reviewCertifiedJointLoads(
       }
 
       const envelope = reviewJointReactionCapacity(mate, reaction);
-      if (envelope.status === 'undeclared') {
-        diagnostics.push({
-          code: 'assembly.physical-use-case.joint-capacity-undeclared',
-          severity: 'error',
-          useCaseName: useCase.name,
-          mateName: mate.name,
-          evidence: envelope,
-          message: `Physical use case '${useCase.name}' derives a reaction at mate '${mate.name}', but the mate has no complete resultant force and moment envelope.`,
-          hint: `physical-use-case.joint-capacity-undeclared - add capacity.envelope with positive maxResultantForceN and maxResultantMomentNmm to mate '${mate.name}'. A declaration is a rating check, not structural proof.`,
-        });
-      } else if (envelope.status === 'exceeded') {
-        diagnostics.push({
-          code: 'assembly.physical-use-case.joint-capacity-exceeded',
-          severity: 'error',
-          useCaseName: useCase.name,
-          mateName: mate.name,
-          evidence: envelope,
-          message: `Physical use case '${useCase.name}' reaction at mate '${mate.name}' exceeds its declared resultant capacity envelope.`,
-          hint: `physical-use-case.joint-capacity-exceeded - increase real rated joint capacity or redesign the load path; do not raise the declaration without physical evidence.`,
-        });
-      }
-
-      let structure: ClevisJointStructureReview | undefined;
-      if (includeStructure) {
-        if (mate.capacity?.structure === undefined) {
-          diagnostics.push({
-            code: 'assembly.physical-use-case.joint-structure-input-incomplete',
-            severity: 'error',
-            useCaseName: useCase.name,
-            mateName: mate.name,
-            message: `Physical use case '${useCase.name}' has no geometry/material structural descriptor for mate '${mate.name}'.`,
-            hint: `physical-use-case.joint-structure-input-incomplete - build '${mate.name}' with joint.clevis(...), declare pin/fork/tongue engineering materials, and attach clevis.structural as capacity.structure.`,
-          });
-        } else {
-          structure = reviewClevisJointStructure({
-            reaction,
-            model: mate.capacity.structure,
-            minSafetyFactor: useCase.criteria?.minJointSafetyFactor,
-          });
-          if (structure.status === 'input-incomplete') {
-            diagnostics.push({
-              code: 'assembly.physical-use-case.joint-structure-input-incomplete',
-              severity: 'error',
-              useCaseName: useCase.name,
-              mateName: mate.name,
-              review: structure,
-              message: `Physical use case '${useCase.name}' cannot derive clevis strength for mate '${mate.name}': ${structure.message ?? 'structural input is incomplete'}`,
-              hint: `physical-use-case.joint-structure-input-incomplete - use the unmodified joint.clevis structural descriptor with explicit valid materials and geometry.`,
-            });
-          } else if (structure.status === 'unsupported-load-case') {
-            diagnostics.push({
-              code: 'assembly.physical-use-case.joint-structure-unsupported-load-case',
-              severity: 'error',
-              useCaseName: useCase.name,
-              mateName: mate.name,
-              review: structure,
-              message: `Physical use case '${useCase.name}' reaction at mate '${mate.name}' is outside the clevis v1 load model: ${structure.message ?? 'unsupported load component'}`,
-              hint: `physical-use-case.joint-structure-unsupported-load-case - add explicit thrust/moment load-path geometry or use a later structural model; the current gate will not silently omit this component.`,
-            });
-          } else if (structure.status === 'failed') {
-            diagnostics.push({
-              code: 'assembly.physical-use-case.joint-structure-insufficient',
-              severity: 'error',
-              useCaseName: useCase.name,
-              mateName: mate.name,
-              review: structure,
-              message: `Physical use case '${useCase.name}' clevis at mate '${mate.name}' is below minimum factor of safety ${structure.minSafetyFactor}.`,
-              hint: `physical-use-case.joint-structure-insufficient - increase real pin/ligament/bearing dimensions, select stronger declared materials, reduce load, or redesign the load path.`,
-            });
-          }
-        }
-      }
+      appendJointCapacityDiagnostics(useCase, mate.name, envelope, diagnostics);
+      const structure = resolveJointStructure(useCase, mate, reaction, includeStructure, diagnostics);
 
       joints.push({
         mateName: mate.name,
@@ -626,12 +469,111 @@ async function reviewCertifiedJointLoads(
   };
 }
 
-function copyVec3(v: readonly [number, number, number]): [number, number, number] {
-  return [v[0], v[1], v[2]];
+function appendJointReactionIssueDiagnostics(
+  issues: readonly PhysicalUseCaseJointReactionIssue[],
+  diagnostics: PhysicalUseCaseDiagnostic[],
+): void {
+  for (const issue of issues) {
+    diagnostics.push({
+      code: issue.kind === 'joint-reaction-input-incomplete'
+        ? 'assembly.physical-use-case.joint-reaction-input-incomplete'
+        : 'assembly.physical-use-case.joint-reaction-indeterminate',
+      severity: 'error',
+      useCaseName: issue.useCaseName,
+      message: `Physical use case '${issue.useCaseName}' cannot derive determinate pose-bound joint reactions: ${issue.message}`,
+      hint: issue.kind === 'joint-reaction-input-incomplete'
+        ? 'physical-use-case.joint-reaction-input-incomplete - preserve the exact passing contact certificate, solved pose, contact points, loads, and connector frames.'
+        : 'physical-use-case.joint-reaction-indeterminate - use one stable root and a tree load path, or provide a future stiffness model for loops and multiple supports.',
+    });
+  }
 }
 
-function unreachableContactKey(useCaseName: string | undefined, contactA: string, contactB: string): string {
-  return `${useCaseName ?? ''}\n${contactA}\n${contactB}`;
+function appendJointCapacityDiagnostics(
+  useCase: PhysicalUseCaseRecord,
+  mateName: string,
+  envelope: JointReactionCapacityEvidence,
+  diagnostics: PhysicalUseCaseDiagnostic[],
+): void {
+  if (envelope.status === 'undeclared') {
+    diagnostics.push({
+      code: 'assembly.physical-use-case.joint-capacity-undeclared',
+      severity: 'error',
+      useCaseName: useCase.name,
+      mateName,
+      evidence: envelope,
+      message: `Physical use case '${useCase.name}' derives a reaction at mate '${mateName}', but the mate has no complete resultant force and moment envelope.`,
+      hint: `physical-use-case.joint-capacity-undeclared - add capacity.envelope with positive maxResultantForceN and maxResultantMomentNmm to mate '${mateName}'. A declaration is a rating check, not structural proof.`,
+    });
+  } else if (envelope.status === 'exceeded') {
+    diagnostics.push({
+      code: 'assembly.physical-use-case.joint-capacity-exceeded',
+      severity: 'error',
+      useCaseName: useCase.name,
+      mateName,
+      evidence: envelope,
+      message: `Physical use case '${useCase.name}' reaction at mate '${mateName}' exceeds its declared resultant capacity envelope.`,
+      hint: `physical-use-case.joint-capacity-exceeded - increase real rated joint capacity or redesign the load path; do not raise the declaration without physical evidence.`,
+    });
+  }
+}
+
+function resolveJointStructure(
+  useCase: PhysicalUseCaseRecord,
+  mate: ReturnType<Assembly['__mates']>[number],
+  reaction: PhysicalUseCaseJointReactionEvidence,
+  includeStructure: boolean,
+  diagnostics: PhysicalUseCaseDiagnostic[],
+): ClevisJointStructureReview | undefined {
+  if (!includeStructure) return undefined;
+  if (mate.capacity?.structure === undefined) {
+    diagnostics.push({
+      code: 'assembly.physical-use-case.joint-structure-input-incomplete',
+      severity: 'error',
+      useCaseName: useCase.name,
+      mateName: mate.name,
+      message: `Physical use case '${useCase.name}' has no geometry/material structural descriptor for mate '${mate.name}'.`,
+      hint: `physical-use-case.joint-structure-input-incomplete - build '${mate.name}' with joint.clevis(...), declare pin/fork/tongue engineering materials, and attach clevis.structural as capacity.structure.`,
+    });
+    return undefined;
+  }
+
+  const structure = reviewClevisJointStructure({
+    reaction,
+    model: mate.capacity.structure,
+    minSafetyFactor: useCase.criteria?.minJointSafetyFactor,
+  });
+  if (structure.status === 'input-incomplete') {
+    diagnostics.push({
+      code: 'assembly.physical-use-case.joint-structure-input-incomplete',
+      severity: 'error',
+      useCaseName: useCase.name,
+      mateName: mate.name,
+      review: structure,
+      message: `Physical use case '${useCase.name}' cannot derive clevis strength for mate '${mate.name}': ${structure.message ?? 'structural input is incomplete'}`,
+      hint: `physical-use-case.joint-structure-input-incomplete - use the unmodified joint.clevis structural descriptor with explicit valid materials and geometry.`,
+    });
+  } else if (structure.status === 'unsupported-load-case') {
+    diagnostics.push({
+      code: 'assembly.physical-use-case.joint-structure-unsupported-load-case',
+      severity: 'error',
+      useCaseName: useCase.name,
+      mateName: mate.name,
+      review: structure,
+      message: `Physical use case '${useCase.name}' reaction at mate '${mate.name}' is outside the clevis v1 load model: ${structure.message ?? 'unsupported load component'}`,
+      hint: `physical-use-case.joint-structure-unsupported-load-case - add explicit thrust/moment load-path geometry or use a later structural model; the current gate will not silently omit this component.`,
+    });
+  } else if (structure.status === 'failed') {
+    diagnostics.push({
+      code: 'assembly.physical-use-case.joint-structure-insufficient',
+      severity: 'error',
+      useCaseName: useCase.name,
+      mateName: mate.name,
+      review: structure,
+      message: `Physical use case '${useCase.name}' clevis at mate '${mate.name}' is below minimum factor of safety ${structure.minSafetyFactor}.`,
+      hint: `physical-use-case.joint-structure-insufficient - increase real pin/ligament/bearing dimensions, select stronger declared materials, reduce load, or redesign the load path.`,
+    });
+  }
+  return structure;
 }
 
 function reviewLoadPaths(

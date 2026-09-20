@@ -65,6 +65,7 @@ import {
   edt2,
   samplePoint,
   voxelize,
+  type ComponentLabeling,
   type VoxelGrid,
 } from './voxelGrid';
 
@@ -200,6 +201,27 @@ function countMouths(
   isOutsideComp: boolean[],
   voxelVolMm3: number,
 ): NonNullable<VoidTopologyResult['channelOpenings']> {
+  const closed = buildClosedHull(grid);
+  const located = locateChannelComponents(grid, closed, airLabels, isOutsideComp);
+  if (located === null) {
+    return { found: 0, partOpenings: 0, channelVolumeMm3: 0, partChannelVolumeMm3: 0, mouthLocations: [], partMouthLocations: [] };
+  }
+  const { vComps, counted, channelId, channelVoxels, partVoxels } = located;
+  const { channelClusters, partClusters } = collectMouthClusters(grid, closed, airLabels, isOutsideComp, vComps, counted, channelId);
+
+  return {
+    found: channelClusters.components.length,
+    partOpenings: partClusters.components.length,
+    channelVolumeMm3: channelVoxels * voxelVolMm3,
+    partChannelVolumeMm3: partVoxels * voxelVolMm3,
+    mouthLocations: channelClusters.components.map(c => seedPoint(grid, c.seed)),
+    partMouthLocations: partClusters.components.map(c => seedPoint(grid, c.seed)),
+    channelSeed: seedPoint(grid, vComps.components[channelId].seed),
+  };
+}
+
+/** Morphological closing of S with radius r = ceil(8 mm / voxelMm) voxels. */
+function buildClosedHull(grid: VoxelGrid): Uint8Array {
   const { nx, ny, nz, solid, voxelMm } = grid;
   const n = nx * ny * nz;
   const r = Math.ceil(CLOSING_RADIUS_MM / voxelMm);
@@ -218,15 +240,36 @@ function countMouths(
   for (let idx = 0; idx < n; idx++) {
     if (dilated[idx] && distToNotDilated[idx] > r2) closed[idx] = 1;
   }
+  return closed;
+}
+
+function isOutsideVoxelAt(airLabels: Int32Array, isOutsideComp: boolean[], idx: number): boolean {
+  const label = airLabels[idx];
+  return label >= 0 && isOutsideComp[label];
+}
+
+interface ChannelComponents {
+  vComps: ComponentLabeling;
+  counted: Uint8Array;
+  channelId: number;
+  channelVoxels: number;
+  partVoxels: number;
+}
+
+/** Channel candidates V and the largest counted component (the declared channel). */
+function locateChannelComponents(
+  grid: VoxelGrid,
+  closed: Uint8Array,
+  airLabels: Int32Array,
+  isOutsideComp: boolean[],
+): ChannelComponents | null {
+  const { nx, ny, nz, solid } = grid;
+  const n = nx * ny * nz;
 
   // Channel candidates V = closed ∧ ¬S ∧ O.
-  const isOutsideVoxel = (idx: number): boolean => {
-    const label = airLabels[idx];
-    return label >= 0 && isOutsideComp[label];
-  };
   const candidates = new Uint8Array(n);
   for (let idx = 0; idx < n; idx++) {
-    if (closed[idx] && !solid[idx] && isOutsideVoxel(idx)) candidates[idx] = 1;
+    if (closed[idx] && !solid[idx] && isOutsideVoxelAt(airLabels, isOutsideComp, idx)) candidates[idx] = 1;
   }
 
   // Channel candidates split into 6-connected components. `found` keeps the
@@ -265,8 +308,24 @@ function countMouths(
     // ~2r exists (either the part has no channel, or it is too wide for the
     // closing; the orchestrator's mismatch hint covers the wide case). No
     // channel component → no channelSeed to point at.
-    return { found: 0, partOpenings: 0, channelVolumeMm3: 0, partChannelVolumeMm3: 0, mouthLocations: [], partMouthLocations: [] };
+    return null;
   }
+
+  return { vComps, counted, channelId, channelVoxels, partVoxels };
+}
+
+/** Mouth clustering of the channel and part components (algorithm step 3, second half). */
+function collectMouthClusters(
+  grid: VoxelGrid,
+  closed: Uint8Array,
+  airLabels: Int32Array,
+  isOutsideComp: boolean[],
+  vComps: ComponentLabeling,
+  counted: Uint8Array,
+  channelId: number,
+): { channelClusters: ComponentLabeling; partClusters: ComponentLabeling } {
+  const { nx, ny, nz, solid } = grid;
+  const n = nx * ny * nz;
 
   // Mouth voxels: channel voxels 6-adjacent to open air beyond the closed hull
   // (O ∧ ¬closed); each 26-connected cluster is one mouth. Built twice over the
@@ -275,7 +334,7 @@ function countMouths(
   // distinct openings are spatially separate, so global clustering for the
   // part-level count yields the correct total.
   const sliceStride = nx * ny;
-  const openAir = (idx: number): boolean => !closed[idx] && !solid[idx] && isOutsideVoxel(idx);
+  const openAir = (idx: number): boolean => !closed[idx] && !solid[idx] && isOutsideVoxelAt(airLabels, isOutsideComp, idx);
   const adjacentToOpenAir = (idx: number): boolean => {
     const i = idx % nx;
     const rest = (idx / nx) | 0;
@@ -299,13 +358,5 @@ function countMouths(
   const channelClusters = components(channelMouth, grid, 26);
   const partClusters = components(partMouth, grid, 26);
 
-  return {
-    found: channelClusters.components.length,
-    partOpenings: partClusters.components.length,
-    channelVolumeMm3: channelVoxels * voxelVolMm3,
-    partChannelVolumeMm3: partVoxels * voxelVolMm3,
-    mouthLocations: channelClusters.components.map(c => seedPoint(grid, c.seed)),
-    partMouthLocations: partClusters.components.map(c => seedPoint(grid, c.seed)),
-    channelSeed: seedPoint(grid, vComps.components[channelId].seed),
-  };
+  return { channelClusters, partClusters };
 }

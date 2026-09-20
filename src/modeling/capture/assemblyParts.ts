@@ -303,25 +303,26 @@ function resolvePartPlacement(
   };
 }
 
-export function makePartRef(
+/** Build the part-ref `connector` chain method.
+ *
+ *  Overload: `connector(name)` returns the v0.5 kinematic AssemblyConnectorRef;
+ *  `connector(name, opts)` registers a v0.6 mate-style Connector and returns
+ *  the part-ref for chaining. Defined as a standalone function so the
+ *  overloaded union return type can be narrowed by `opts !== undefined`.
+ *  `getRef` resolves the part ref the registering form chains back to; it is
+ *  assigned by `makePartRef` before the method can be called. Extracted from
+ *  `makePartRef` to keep it under the quality-ratchet function-length
+ *  budget. */
+function createPartConnector(
   assemblyName: string,
   id: FeatureId,
   name: string,
   at: Vec3Param,
   connectors: Record<string, AssemblyConnectorFrameStored>,
   mateConnectors: Connector[],
-  wrapGeoms: WrapGeomRecord[],
-  addPart: (name: string, shape: Shape, opts?: AssemblyPartOpts) => AssemblyPartRef,
-  // Owning assembly — the ref's chain terminators (`model` / `solve` /
-  // `solvedModel`) delegate straight to it so there is exactly one
-  // implementation of each.
-  owner: Assembly,
-): AssemblyPartRef {
-  // Overload: `connector(name)` returns the v0.5 kinematic AssemblyConnectorRef;
-  // `connector(name, opts)` registers a v0.6 mate-style Connector and returns
-  // the part-ref for chaining. Defined as a standalone function so the
-  // overloaded union return type can be narrowed by `opts !== undefined`.
-  const connector = (
+  getRef: () => AssemblyPartRef,
+): (connectorName: string, opts?: AssemblyConnectorOpts) => AssemblyConnectorRef | AssemblyPartRef {
+  return (
     connectorName: string,
     opts?: AssemblyConnectorOpts,
   ): AssemblyConnectorRef | AssemblyPartRef => {
@@ -352,7 +353,7 @@ export function makePartRef(
             : {}),
         }),
       );
-      return ref;
+      return getRef();
     }
     const frame = connectors[connectorName];
     if (!frame) {
@@ -378,10 +379,23 @@ export function makePartRef(
       ...(frame.axis !== undefined ? { axis: frame.axis } : {}),
     };
   };
-  // P11 Slice 2 — declare a collision-OFF wrap cylinder for tendon
-  // routing. Mirrors the mate-style `connector(name, opts)` chain: validate,
-  // push into the shared `wrapGeoms` array, return `ref`.
-  const wrapGeom = (
+}
+
+/** Build the part-ref `wrapGeom` chain method.
+ *
+ *  P11 Slice 2 — declare a collision-OFF wrap cylinder for tendon
+ *  routing. Mirrors the mate-style `connector(name, opts)` chain: validate,
+ *  push into the shared `wrapGeoms` array, return `ref`. `getRef` resolves
+ *  the part ref to chain; it is assigned by `makePartRef` before the method
+ *  can be called. Extracted from `makePartRef` to keep it under the
+ *  quality-ratchet function-length budget. */
+function createPartWrapGeom(
+  id: FeatureId,
+  name: string,
+  wrapGeoms: WrapGeomRecord[],
+  getRef: () => AssemblyPartRef,
+): (wrapName: string, opts: WrapGeomOptions) => AssemblyPartRef {
+  return (
     wrapName: string,
     opts: WrapGeomOptions,
   ): AssemblyPartRef => {
@@ -432,8 +446,28 @@ export function makePartRef(
       ...(opts.halfLengthMm !== undefined ? { halfLengthMm: opts.halfLengthMm } : {}),
     };
     wrapGeoms.push(rec);
-    return ref;
+    return getRef();
   };
+}
+
+export function makePartRef(
+  assemblyName: string,
+  id: FeatureId,
+  name: string,
+  at: Vec3Param,
+  connectors: Record<string, AssemblyConnectorFrameStored>,
+  mateConnectors: Connector[],
+  wrapGeoms: WrapGeomRecord[],
+  addPart: (name: string, shape: Shape, opts?: AssemblyPartOpts) => AssemblyPartRef,
+  // Owning assembly — the ref's chain terminators (`model` / `solve` /
+  // `solvedModel`) delegate straight to it so there is exactly one
+  // implementation of each.
+  owner: Assembly,
+): AssemblyPartRef {
+  const connector = createPartConnector(
+    assemblyName, id, name, at, connectors, mateConnectors, () => ref,
+  );
+  const wrapGeom = createPartWrapGeom(id, name, wrapGeoms, () => ref);
   const ref: AssemblyPartRef = {
     id,
     name,
@@ -667,69 +701,10 @@ export function recordPartInternal(
  * identical bolts, cross-assembly mates with their own resolution).
  */
 export function recordSubAssembly(state: AssemblyState, arm: Assembly, name: string, other: Assembly): SubAssemblyHandle {
-  if (other === arm) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `assembly.subAssembly: cannot import an assembly into itself ('${state.name}').`,
-      undefined,
-      'Pass a DIFFERENT Assembly handle, captured via a separate kcad.assembly(otherName) call.',
-    );
-  }
-  if (typeof name !== 'string' || name.length === 0 || name.includes('.') || name.includes('_')) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `assembly.subAssembly: name '${name}' must be a non-empty string without '.' or '_' (the underscore is reserved for the namespace separator, the dot for connector refs).`,
-      undefined,
-      "Use a simple identifier like 'grip' or 'leftArm'.",
-    );
-  }
+  validateSubAssemblyImport(state, arm, name, other);
   const prefix = `${name}_`;
-  // 1. Copy parts. Use recordPart(...) so the v0.5 record + connectors +
-  //    placement validation all run as if the user authored each part
-  //    directly — sub-assembly is observationally identical to a flat
-  //    authoring (Slice 1 semantics).
-  const importedByOriginalName = new Map<string, AssemblyPartRef>();
-  for (const op of other.__parts()) {
-    const newName = `${prefix}${op.name}`;
-    const newRef = recordPartInternal(state, arm, newName, op.originalShape, {
-      ...(op.connectors !== undefined ? { connectors: op.connectors } : {}),
-    }, false);
-    // Copy v0.6 mateConnectors (the .connector(name, opts) chain output)
-    // by shallow-copying the array contents. The new part already owns an
-    // empty mateConnectors array per `part()`; populate it now so post-
-    // import mate authoring resolves the refs.
-    for (const conn of op.mateConnectors) {
-      newRef.mateConnectors.push(conn);
-    }
-    importedByOriginalName.set(op.name, newRef);
-  }
-  // 2. Copy mates. Remap the partName portion of each `a` / `b` ref by
-  //    prepending the prefix, leaving the connectorName intact. Mate
-  //    names are also prefixed so name-uniqueness within `state` holds.
-  const remapRef = (ref: string): string => {
-    const { partName, connectorName } = parseConnectorRef(ref);
-    return `${prefix}${partName}.${connectorName}`;
-  };
-  for (const om of other.__mates()) {
-    state.mates.push({
-      name: `${prefix}${om.name}`,
-      a: remapRef(om.a),
-      b: remapRef(om.b),
-      type: om.type,
-      ...(om.pose !== undefined ? { pose: om.pose } : {}),
-      ...(om.limitsDeg !== undefined ? { limitsDeg: om.limitsDeg } : {}),
-      ...(om.limitsMm !== undefined ? { limitsMm: om.limitsMm } : {}),
-      ...(om.capacity !== undefined ? { capacity: copyMateCapacity(om.capacity) } : {}),
-      ...(om.maxLoad !== undefined
-        ? {
-            maxLoad: {
-              ...(om.maxLoad.force !== undefined ? { force: om.maxLoad.force } : {}),
-              ...(om.maxLoad.torque !== undefined ? { torque: om.maxLoad.torque } : {}),
-            },
-          }
-        : {}),
-    });
-  }
+  const importedByOriginalName = importSubAssemblyParts(state, arm, prefix, other);
+  importSubAssemblyMates(state, prefix, other);
   const requireImportedPart = (origPartName: string, method: 'ref' | 'part'): AssemblyPartRef => {
     const ref = importedByOriginalName.get(origPartName);
     if (ref) return ref;
@@ -754,4 +729,81 @@ export function recordSubAssembly(state: AssemblyState, arm: Assembly, name: str
     },
     part: (origPartName: string): AssemblyPartRef => requireImportedPart(origPartName, 'part'),
   };
+}
+
+function validateSubAssemblyImport(state: AssemblyState, arm: Assembly, name: string, other: Assembly): void {
+  if (other === arm) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `assembly.subAssembly: cannot import an assembly into itself ('${state.name}').`,
+      undefined,
+      'Pass a DIFFERENT Assembly handle, captured via a separate kcad.assembly(otherName) call.',
+    );
+  }
+  if (typeof name !== 'string' || name.length === 0 || name.includes('.') || name.includes('_')) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `assembly.subAssembly: name '${name}' must be a non-empty string without '.' or '_' (the underscore is reserved for the namespace separator, the dot for connector refs).`,
+      undefined,
+      "Use a simple identifier like 'grip' or 'leftArm'.",
+    );
+  }
+}
+
+// 1. Copy parts. Use recordPart(...) so the v0.5 record + connectors +
+//    placement validation all run as if the user authored each part
+//    directly — sub-assembly is observationally identical to a flat
+//    authoring (Slice 1 semantics).
+function importSubAssemblyParts(
+  state: AssemblyState,
+  arm: Assembly,
+  prefix: string,
+  other: Assembly,
+): Map<string, AssemblyPartRef> {
+  const importedByOriginalName = new Map<string, AssemblyPartRef>();
+  for (const op of other.__parts()) {
+    const newName = `${prefix}${op.name}`;
+    const newRef = recordPartInternal(state, arm, newName, op.originalShape, {
+      ...(op.connectors !== undefined ? { connectors: op.connectors } : {}),
+    }, false);
+    // Copy v0.6 mateConnectors (the .connector(name, opts) chain output)
+    // by shallow-copying the array contents. The new part already owns an
+    // empty mateConnectors array per `part()`; populate it now so post-
+    // import mate authoring resolves the refs.
+    for (const conn of op.mateConnectors) {
+      newRef.mateConnectors.push(conn);
+    }
+    importedByOriginalName.set(op.name, newRef);
+  }
+  return importedByOriginalName;
+}
+
+// 2. Copy mates. Remap the partName portion of each `a` / `b` ref by
+//    prepending the prefix, leaving the connectorName intact. Mate
+//    names are also prefixed so name-uniqueness within `state` holds.
+function importSubAssemblyMates(state: AssemblyState, prefix: string, other: Assembly): void {
+  const remapRef = (ref: string): string => {
+    const { partName, connectorName } = parseConnectorRef(ref);
+    return `${prefix}${partName}.${connectorName}`;
+  };
+  for (const om of other.__mates()) {
+    state.mates.push({
+      name: `${prefix}${om.name}`,
+      a: remapRef(om.a),
+      b: remapRef(om.b),
+      type: om.type,
+      ...(om.pose !== undefined ? { pose: om.pose } : {}),
+      ...(om.limitsDeg !== undefined ? { limitsDeg: om.limitsDeg } : {}),
+      ...(om.limitsMm !== undefined ? { limitsMm: om.limitsMm } : {}),
+      ...(om.capacity !== undefined ? { capacity: copyMateCapacity(om.capacity) } : {}),
+      ...(om.maxLoad !== undefined
+        ? {
+            maxLoad: {
+              ...(om.maxLoad.force !== undefined ? { force: om.maxLoad.force } : {}),
+              ...(om.maxLoad.torque !== undefined ? { torque: om.maxLoad.torque } : {}),
+            },
+          }
+        : {}),
+    });
+  }
 }

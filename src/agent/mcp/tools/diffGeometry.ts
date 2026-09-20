@@ -39,7 +39,7 @@
 // Read-only with respect to the model: never touches the active MCP session
 // and writes nothing unless `render: true` was asked for.
 
-import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
+import { RecomputeEngine, type RecomputeResult } from '../../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { isSceneBackend } from '../../../kernel/backends/sceneBackend';
@@ -47,6 +47,7 @@ import { sceneToWorldFrameParts } from '../../../kernel/backends/occt/sceneToWor
 import { detectCylindricalHoles } from '../../../kernel/backends/occt/holeDetection';
 import { meshDeviation } from '../../../modeling/runtime/meshDeviation';
 import { resolveRootId } from '../../../modeling/buildModel';
+import type { RunScriptResult } from '../../../modeling/runtime/runScript';
 import { Scene } from '../../../modeling/validation/scene';
 import { ParamTable } from '../../../shared/runtime/paramTable';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -178,6 +179,25 @@ export async function diffGeometryTool(input: DiffGeometryInput): Promise<DiffGe
   const hasRevisedScript = input.file !== undefined || input.code !== undefined;
   const hasParams = input.params !== undefined;
 
+  const invalidSides = validateDiffGeometrySides(input, hasRevisedScript, hasParams);
+  if (invalidSides !== undefined) return invalidSides;
+
+  const base = await evaluateSide({ file: input.baseFile, code: input.baseCode });
+  if (!base.ok) return { ...base, side: 'base' };
+
+  const revised = hasParams
+    ? await evaluateSide({ file: input.baseFile, code: input.baseCode }, input.params)
+    : await evaluateSide({ file: input.file, code: input.code });
+  if (!revised.ok) return { ...revised, side: 'revised' };
+
+  return assembleDiffGeometryResult(base, revised, input.render === true, input.out_dir);
+}
+
+function validateDiffGeometrySides(
+  input: DiffGeometryInput,
+  hasRevisedScript: boolean,
+  hasParams: boolean,
+): DiffGeometryOutput | undefined {
   if (input.baseFile === undefined && input.baseCode === undefined) {
     return {
       ok: false,
@@ -201,15 +221,15 @@ export async function diffGeometryTool(input: DiffGeometryInput): Promise<DiffGe
       errorCode: 'cli.invalid-args',
     };
   }
+  return undefined;
+}
 
-  const base = await evaluateSide({ file: input.baseFile, code: input.baseCode });
-  if (!base.ok) return { ...base, side: 'base' };
-
-  const revised = hasParams
-    ? await evaluateSide({ file: input.baseFile, code: input.baseCode }, input.params)
-    : await evaluateSide({ file: input.file, code: input.code });
-  if (!revised.ok) return { ...revised, side: 'revised' };
-
+async function assembleDiffGeometryResult(
+  base: Extract<SideResult, { ok: true }>,
+  revised: Extract<SideResult, { ok: true }>,
+  render: boolean,
+  outDir: string | undefined,
+): Promise<DiffGeometryOutput> {
   const diagnostics: CompilerDiagnostic[] = [];
   const { pairs, unmatchedBase, unmatchedRevised } = pairBodies(base.side.bodies, revised.side.bodies);
 
@@ -225,45 +245,59 @@ export async function diffGeometryTool(input: DiffGeometryInput): Promise<DiffGe
     bodies.push(compareBody(pair.base, pair.revised, pair.matchedBy));
   }
 
-  const summary = {
-    identical: bodies.filter((b) => b.verdict === 'identical').length,
-    moved: bodies.filter((b) => b.verdict === 'moved').length,
-    resized: bodies.filter((b) => b.verdict === 'resized').length,
-    topologyChanged: bodies.filter((b) => b.verdict === 'topology-changed').length,
-    unmatched: unmatchedBase.length + unmatchedRevised.length,
-    totalAddedMm3: bodies.reduce((s, b) => s + b.addedMm3, 0),
-    totalRemovedMm3: bodies.reduce((s, b) => s + b.removedMm3, 0),
-    maxDeviationMm: bodies.reduce((s, b) => Math.max(s, b.maxDeviationMm), 0),
-  };
+  const summary = diffGeometrySummary(bodies, unmatchedBase.length + unmatchedRevised.length);
 
-  let render: DiffOverlayRender | undefined;
-  if (input.render === true) {
-    const r = await renderDiffOverlay(pairs, input.out_dir);
-    render = r.render;
+  let renderOverlay: DiffOverlayRender | undefined;
+  if (render) {
+    const r = await renderDiffOverlay(pairs, outDir);
+    renderOverlay = r.render;
     diagnostics.push(...r.diagnostics);
   }
 
   return {
     ok: true,
-    base: {
-      featureCount: base.side.featureCount,
-      bodyCount: base.side.bodies.length,
-      isAssembly: base.side.isAssembly,
-    },
-    revised: {
-      featureCount: revised.side.featureCount,
-      bodyCount: revised.side.bodies.length,
-      isAssembly: revised.side.isAssembly,
-    },
+    base: sideHeader(base.side),
+    revised: sideHeader(revised.side),
     bodies,
-    unmatched: [
-      ...unmatchedBase.map((b) => ({ side: 'base' as const, name: b.name, volumeMm3: safeVolume(b.shape) })),
-      ...unmatchedRevised.map((b) => ({ side: 'revised' as const, name: b.name, volumeMm3: safeVolume(b.shape) })),
-    ],
+    unmatched: unmatchedEntries(unmatchedBase, unmatchedRevised),
     summary,
-    ...(render !== undefined ? { render } : {}),
+    ...(renderOverlay !== undefined ? { render: renderOverlay } : {}),
     diagnostics: withNextActions(diagnostics),
   };
+}
+
+function sideHeader(side: SideSummary): DiffGeometrySideHeader {
+  return {
+    featureCount: side.featureCount,
+    bodyCount: side.bodies.length,
+    isAssembly: side.isAssembly,
+  };
+}
+
+function diffGeometrySummary(
+  bodies: DiffGeometryBody[],
+  unmatchedCount: number,
+): Extract<DiffGeometryOutput, { ok: true }>['summary'] {
+  return {
+    identical: bodies.filter((b) => b.verdict === 'identical').length,
+    moved: bodies.filter((b) => b.verdict === 'moved').length,
+    resized: bodies.filter((b) => b.verdict === 'resized').length,
+    topologyChanged: bodies.filter((b) => b.verdict === 'topology-changed').length,
+    unmatched: unmatchedCount,
+    totalAddedMm3: bodies.reduce((s, b) => s + b.addedMm3, 0),
+    totalRemovedMm3: bodies.reduce((s, b) => s + b.removedMm3, 0),
+    maxDeviationMm: bodies.reduce((s, b) => Math.max(s, b.maxDeviationMm), 0),
+  };
+}
+
+function unmatchedEntries(
+  unmatchedBase: SideBody[],
+  unmatchedRevised: SideBody[],
+): Extract<DiffGeometryOutput, { ok: true }>['unmatched'] {
+  return [
+    ...unmatchedBase.map((b) => ({ side: 'base' as const, name: b.name, volumeMm3: safeVolume(b.shape) })),
+    ...unmatchedRevised.map((b) => ({ side: 'revised' as const, name: b.name, volumeMm3: safeVolume(b.shape) })),
+  ];
 }
 
 function unmatchedDiagnostic(name: string, side: 'base' | 'revised'): CompilerDiagnostic {
@@ -290,28 +324,9 @@ async function evaluateSide(
   }
   const { run } = script;
 
-  let paramTable = run.paramTable;
-  if (paramOverrides !== undefined) {
-    paramTable = ParamTable.deserialize(run.paramTable.serialize());
-    for (const [name, value] of Object.entries(paramOverrides)) {
-      if (!paramTable.has(name)) {
-        return {
-          ok: false,
-          error: `diff_geometry: param '${name}' is not declared by the baseline script. Declared: ${paramTable.list().map((p) => p.name).join(', ') || '(none)'}.`,
-          errorCode: 'feature.invalid-args',
-        };
-      }
-      try {
-        paramTable.set(name, value);
-      } catch (e) {
-        return {
-          ok: false,
-          error: `diff_geometry: param override '${name}' rejected — ${e instanceof Error ? e.message : String(e)}`,
-          errorCode: 'feature.invalid-args',
-        };
-      }
-    }
-  }
+  const overrides = applyParamOverrides(run.paramTable, paramOverrides);
+  if (!overrides.ok) return overrides;
+  const paramTable = overrides.paramTable;
 
   const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const result = await engine.run(run.records, { paramTable });
@@ -327,28 +342,68 @@ async function evaluateSide(
 
   const ret = run.returnValue;
   if (ret instanceof Scene) {
-    const sourceId = ret.__sourceFeatureId();
-    const lowered = sourceId !== undefined ? result.shapes.get(sourceId) : undefined;
-    if (!lowered || !isSceneBackend(lowered)) {
-      return {
-        ok: false,
-        error: 'diff_geometry: the assembly scene did not lower successfully.',
-        errorCode: 'recompute.input.missing',
-        diagnostics: withNextActions(result.diagnostics),
-      };
-    }
-    return {
-      ok: true,
-      side: {
-        featureCount: run.records.length,
-        isAssembly: true,
-        bodies: sceneToWorldFrameParts(lowered).map((p) => ({ name: p.name, shape: p.shape })),
-      },
-    };
+    return sceneSideResult(run, result, ret);
   }
 
+  return solidSideResult(run, result, ret);
+}
+
+function applyParamOverrides(
+  base: ParamTable,
+  paramOverrides: Record<string, number | boolean> | undefined,
+): { ok: true; paramTable: ParamTable } | { ok: false; error: string; errorCode: string } {
+  if (paramOverrides === undefined) return { ok: true, paramTable: base };
+
+  const paramTable = ParamTable.deserialize(base.serialize());
+  for (const [name, value] of Object.entries(paramOverrides)) {
+    if (!paramTable.has(name)) {
+      return {
+        ok: false,
+        error: `diff_geometry: param '${name}' is not declared by the baseline script. Declared: ${paramTable.list().map((p) => p.name).join(', ') || '(none)'}.`,
+        errorCode: 'feature.invalid-args',
+      };
+    }
+    try {
+      paramTable.set(name, value);
+    } catch (e) {
+      return {
+        ok: false,
+        error: `diff_geometry: param override '${name}' rejected — ${e instanceof Error ? e.message : String(e)}`,
+        errorCode: 'feature.invalid-args',
+      };
+    }
+  }
+  return { ok: true, paramTable };
+}
+
+function sceneSideResult(run: RunScriptResult, result: RecomputeResult, scene: Scene): SideResult {
+  const sourceId = scene.__sourceFeatureId();
+  const lowered = sourceId !== undefined ? result.shapes.get(sourceId) : undefined;
+  if (!lowered || !isSceneBackend(lowered)) {
+    return {
+      ok: false,
+      error: 'diff_geometry: the assembly scene did not lower successfully.',
+      errorCode: 'recompute.input.missing',
+      diagnostics: withNextActions(result.diagnostics),
+    };
+  }
+  return {
+    ok: true,
+    side: {
+      featureCount: run.records.length,
+      isAssembly: true,
+      bodies: sceneToWorldFrameParts(lowered).map((p) => ({ name: p.name, shape: p.shape })),
+    },
+  };
+}
+
+function solidSideResult(
+  run: RunScriptResult,
+  result: RecomputeResult,
+  returnValue: RunScriptResult['returnValue'],
+): SideResult {
   const tailId = run.records.length > 0 ? run.records[run.records.length - 1].id : undefined;
-  const rootId = resolveRootId(ret, tailId);
+  const rootId = resolveRootId(returnValue, tailId);
   const rootShape = rootId !== undefined ? result.shapes.get(rootId) : undefined;
   if (!(rootShape instanceof OcctBackend)) {
     return {

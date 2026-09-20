@@ -14,7 +14,9 @@
 
 import type { FaceRef, EdgeRef, FeatureKind } from '../../../shared/intent/types';
 import type { DiagnosticCode } from '../../../shared/diagnostics/registry';
+import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import type { FaceSnapshot } from '../../../kernel/backends/occt/createdRefs';
+import type { HistoryMap } from '../../../kernel/naming/evolutionRecord';
 import { runMcpScript } from '../runMcpScript';
 import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
@@ -47,47 +49,48 @@ export interface GetFaceLineageOutput {
   errorCode?: DiagnosticCode | string;
 }
 
-export async function getFaceLineageTool(input: GetFaceLineageInput): Promise<GetFaceLineageOutput> {
-  const script = await runMcpScript(input);
-  if (!script.ok) return { ok: false, error: script.error, errorCode: script.errorCode };
-  const { run } = script;
+type RunScriptSuccess = Extract<Awaited<ReturnType<typeof runMcpScript>>, { ok: true }>['run'];
 
-  const targetId = input.feature_id === 'auto'
-    ? run.records[run.records.length - 1]?.id
-    : input.feature_id;
-  if (!targetId) return { ok: false, error: 'No features in script.' };
-  const target = run.records.find((r) => r.id === targetId);
-  if (!target) {
-    return {
-      ok: false,
-      error: `feature_id '${targetId}' not found.`,
-      errorCode: 'export.feature-not-found',
-    };
+function parseRefPhase(
+  input: GetFaceLineageInput,
+  records: RunScriptSuccess['records'],
+): { rewriteId: string; slot: string } | { failure: GetFaceLineageOutput } {
+  // Parse the ref. String form 'name.slot' → { rewriteId: <feature-with-matching-name>, slot }.
+  const parsed = typeof input.ref === 'string'
+    ? parseSelector(input.ref, records)
+    : { rewriteId: (input.ref as { rewriteId?: string }).rewriteId ?? '', slot: (input.ref as { slot?: string }).slot ?? '' };
+  if (!parsed || !parsed.rewriteId) {
+    return { failure: { ok: false, error: `Unable to parse ref '${String(input.ref)}'.` } };
   }
+  return parsed;
+}
 
+async function resolveTargetShape(
+  run: RunScriptSuccess,
+  targetId: string,
+): Promise<{ shape: OcctBackend; diagnostics: CompilerDiagnostic[] } | { failure: GetFaceLineageOutput }> {
   const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const result = await engine.run(run.records, { paramTable: run.paramTable });
   const shape = result.shapes.get(targetId);
   if (!shape) {
-    return { ok: false, error: `feature '${targetId}' did not lower.` };
+    return { failure: { ok: false, error: `feature '${targetId}' did not lower.` } };
   }
   if (!(shape instanceof OcctBackend)) {
-    return { ok: false, error: 'Target shape is not an OcctBackend.' };
+    return { failure: { ok: false, error: 'Target shape is not an OcctBackend.' } };
   }
+  return { shape, diagnostics: result.diagnostics };
+}
 
-  // Parse the ref. String form 'name.slot' → { rewriteId: <feature-with-matching-name>, slot }.
-  const parsed = typeof input.ref === 'string'
-    ? parseSelector(input.ref, run.records)
-    : { rewriteId: (input.ref as { rewriteId?: string }).rewriteId ?? '', slot: (input.ref as { slot?: string }).slot ?? '' };
-  if (!parsed || !parsed.rewriteId) {
-    return { ok: false, error: `Unable to parse ref '${String(input.ref)}'.` };
-  }
-
+function collectLineageChain(
+  map: HistoryMap | undefined,
+  parsed: { rewriteId: string; slot: string },
+  records: RunScriptSuccess['records'],
+  diagnostics: CompilerDiagnostic[] | undefined,
+): { chain: FaceLineageStep[]; usedFallback: boolean } | { failure: GetFaceLineageOutput } {
   // Walk the historyMap of the target shape, collecting every lineage
   // entry whose featureId === parsed.rewriteId. Classify each as create vs
   // modify based on whether its labelName matches the requested slot.
-  const map = shape.historyMap;
-  if (!map) return { ok: false, error: 'No historyMap on target shape.' };
+  if (!map) return { failure: { ok: false, error: 'No historyMap on target shape.' } };
   const chain: FaceLineageStep[] = [];
   for (const [hash, lineage] of map.entries()) {
     if (lineage.featureId !== parsed.rewriteId) continue;
@@ -109,7 +112,7 @@ export async function getFaceLineageTool(input: GetFaceLineageInput): Promise<Ge
   // chain see a stable, chronological view regardless of how the lowerers
   // happened to build the result map.
   const idIndex = new Map<string, number>();
-  for (let i = 0; i < run.records.length; i++) idIndex.set(run.records[i].id, i);
+  for (let i = 0; i < records.length; i++) idIndex.set(records[i].id, i);
   chain.sort((a, b) => {
     const ai = idIndex.get(a.featureId) ?? Number.MAX_SAFE_INTEGER;
     const bi = idIndex.get(b.featureId) ?? Number.MAX_SAFE_INTEGER;
@@ -122,9 +125,39 @@ export async function getFaceLineageTool(input: GetFaceLineageInput): Promise<Ge
   });
   // usedFallback is signalled by the resolver via `feature.created-ref.fallback-used`
   // anywhere in the run's diagnostics — the resolver is the authoritative emitter.
-  const usedFallback = (result.diagnostics ?? []).some((d) => d.code === 'feature.created-ref.fallback-used');
+  const usedFallback = (diagnostics ?? []).some((d) => d.code === 'feature.created-ref.fallback-used');
 
-  return { ok: true, chain, usedFallback };
+  return { chain, usedFallback };
+}
+
+export async function getFaceLineageTool(input: GetFaceLineageInput): Promise<GetFaceLineageOutput> {
+  const script = await runMcpScript(input);
+  if (!script.ok) return { ok: false, error: script.error, errorCode: script.errorCode };
+  const { run } = script;
+
+  const targetId = input.feature_id === 'auto'
+    ? run.records[run.records.length - 1]?.id
+    : input.feature_id;
+  if (!targetId) return { ok: false, error: 'No features in script.' };
+  const target = run.records.find((r) => r.id === targetId);
+  if (!target) {
+    return {
+      ok: false,
+      error: `feature_id '${targetId}' not found.`,
+      errorCode: 'export.feature-not-found',
+    };
+  }
+
+  const resolved = await resolveTargetShape(run, targetId);
+  if ('failure' in resolved) return resolved.failure;
+
+  const parsed = parseRefPhase(input, run.records);
+  if ('failure' in parsed) return parsed.failure;
+
+  const collected = collectLineageChain(resolved.shape.historyMap, parsed, run.records, resolved.diagnostics);
+  if ('failure' in collected) return collected.failure;
+
+  return { ok: true, chain: collected.chain, usedFallback: collected.usedFallback };
 }
 
 function parseSelector(

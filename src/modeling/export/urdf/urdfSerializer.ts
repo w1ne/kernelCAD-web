@@ -11,6 +11,7 @@
 // and exports per-link STL files into the sibling meshes/ dir.
 
 import type { Assembly, AssemblyJointStored, AssemblyPartStored } from '../../capture/assembly';
+import type { MateRecord } from '../../mates/mate';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import type { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { mateToUrdfJoint, type ConnectorResolver, type DummyLinkSpec } from './mateToJoint';
@@ -51,6 +52,57 @@ export async function urdfSerialize(arm: Assembly, opts: UrdfSerializeOptions): 
   // Closed-loop detection: build a parent map (child -> [parents]) from
   // legacy joints + mates, refuse on multi-parent, then run a DFS cycle
   // check on the spanning-tree-projected single-parent graph.
+  const refusal = detectTreeTopologyRefusal(parts, legacyJoints, mates);
+  if (refusal !== null) {
+    const { partName, reason } = refusal;
+    diagnostics.push({
+      target: 'export-occt',
+      code: 'export.urdf.closed-loop',
+      severity: 'error',
+      message: `Assembly has a closed kinematic loop: ${reason}.`,
+      hint: `URDF requires a tree topology. Switch to export_model with format: 'sdf-gazebo' which supports closed loops natively, or restructure the mate graph so each part has at most one parent and forms a tree (root-to-leaf chain) — affected part: '${partName}'.`,
+      nextAction: NEXT_ACTIONS['export.urdf.closed-loop'],
+    });
+    return { urdf: '', meshPaths: [], diagnostics };
+  }
+
+  const meshPrefix = opts.meshPrefix ?? DEFAULT_MESH_PREFIX;
+  const meshFormat = opts.meshFormat ?? 'stl';
+
+  const { linkBlocks, meshPaths } = await buildPartLinkBlocks(parts, opts, meshPrefix, meshFormat, diagnostics);
+
+  const allDummyLinks: DummyLinkSpec[] = [];
+  const jointBlocks: string[] = [];
+
+  // Legacy joint records.
+  appendLegacyJointBlocks(jointBlocks, legacyJoints, parts, allDummyLinks, diagnostics);
+
+  // Mate records via mateToUrdfJoint.
+  appendMateJointBlocks(jointBlocks, mates, parts, allDummyLinks, diagnostics);
+
+  // Synthesised dummy links from ball decomposition.
+  appendDummyLinkBlocks(linkBlocks, allDummyLinks);
+
+  const urdf = [
+    `<?xml version="1.0"?>`,
+    `<robot name="${escapeXml(arm.name)}">`,
+    ...linkBlocks,
+    ...jointBlocks,
+    `</robot>`,
+    ``,
+  ].join('\n');
+
+  return { urdf, meshPaths, diagnostics };
+}
+
+/** Build the parent map (child -> parents) from legacy joints + mates and
+ *  refuse multi-parent / cycle violations. Returns the offending part and
+ *  reason, or null when the graph is a tree. */
+function detectTreeTopologyRefusal(
+  parts: readonly AssemblyPartStored[],
+  legacyJoints: readonly AssemblyJointStored[],
+  mates: readonly MateRecord[],
+): { partName: string; reason: string } | null {
   const parentByChild = new Map<string, string[]>();
   const recordEdge = (parent: string, child: string): void => {
     if (parent === child) return;
@@ -66,20 +118,9 @@ export async function urdfSerialize(arm: Assembly, opts: UrdfSerializeOptions): 
   for (const m of mates) {
     recordEdge(m.a.split('.')[0], m.b.split('.')[0]);
   }
-  const closedLoopRefusal = (partName: string, reason: string): UrdfSerializeResult => {
-    diagnostics.push({
-      target: 'export-occt',
-      code: 'export.urdf.closed-loop',
-      severity: 'error',
-      message: `Assembly has a closed kinematic loop: ${reason}.`,
-      hint: `URDF requires a tree topology. Switch to export_model with format: 'sdf-gazebo' which supports closed loops natively, or restructure the mate graph so each part has at most one parent and forms a tree (root-to-leaf chain) — affected part: '${partName}'.`,
-      nextAction: NEXT_ACTIONS['export.urdf.closed-loop'],
-    });
-    return { urdf: '', meshPaths: [], diagnostics };
-  };
   for (const [child, ps] of parentByChild.entries()) {
     if (ps.length > 1) {
-      return closedLoopRefusal(child, `part '${child}' has ${ps.length} parents`);
+      return { partName: child, reason: `part '${child}' has ${ps.length} parents` };
     }
   }
   // DFS cycle detection on the directed parent->child graph (each node has
@@ -102,18 +143,23 @@ export async function urdfSerialize(arm: Assembly, opts: UrdfSerializeOptions): 
   for (const part of parts) {
     const cyc = dfs(part.name);
     if (cyc !== null) {
-      return closedLoopRefusal(cyc, `cycle reached '${cyc}' in the joint/mate graph`);
+      return { partName: cyc, reason: `cycle reached '${cyc}' in the joint/mate graph` };
     }
   }
+  return null;
+}
 
-  const meshPrefix = opts.meshPrefix ?? DEFAULT_MESH_PREFIX;
-  const meshFormat = opts.meshFormat ?? 'stl';
-
-  // Per-part visual + collision + inertial. Lower the captured Shape to
-  // OcctBackend so we can call massProperties on it.
+/** Per-part visual + collision + inertial. Lower the captured Shape to
+ *  OcctBackend so we can call massProperties on it. */
+async function buildPartLinkBlocks(
+  parts: readonly AssemblyPartStored[],
+  opts: UrdfSerializeOptions,
+  meshPrefix: string,
+  meshFormat: 'stl' | 'dae',
+  diagnostics: CompilerDiagnostic[],
+): Promise<{ linkBlocks: string[]; meshPaths: MeshEmitRequest[] }> {
   const linkBlocks: string[] = [];
   const meshPaths: MeshEmitRequest[] = [];
-  const allDummyLinks: DummyLinkSpec[] = [];
 
   for (const part of parts) {
     const partName = part.name;
@@ -142,8 +188,18 @@ export async function urdfSerialize(arm: Assembly, opts: UrdfSerializeOptions): 
     ].join('\n'));
   }
 
-  // Legacy joint records.
-  const jointBlocks: string[] = [];
+  return { linkBlocks, meshPaths };
+}
+
+/** Emit one joint block per legacy joint record; ball kinds also synthesise
+ *  chained dummy links and warn. */
+function appendLegacyJointBlocks(
+  jointBlocks: string[],
+  legacyJoints: readonly AssemblyJointStored[],
+  parts: readonly AssemblyPartStored[],
+  allDummyLinks: DummyLinkSpec[],
+  diagnostics: CompilerDiagnostic[],
+): void {
   for (const j of legacyJoints) {
     const block = legacyJointToUrdf(j, parts, allDummyLinks);
     jointBlocks.push(block);
@@ -158,8 +214,16 @@ export async function urdfSerialize(arm: Assembly, opts: UrdfSerializeOptions): 
       });
     }
   }
+}
 
-  // Mate records via mateToUrdfJoint.
+/** Emit one joint block group per mate record via mateToUrdfJoint. */
+function appendMateJointBlocks(
+  jointBlocks: string[],
+  mates: readonly MateRecord[],
+  parts: readonly AssemblyPartStored[],
+  allDummyLinks: DummyLinkSpec[],
+  diagnostics: CompilerDiagnostic[],
+): void {
   const resolver = makeConnectorResolver(parts);
   for (const m of mates) {
     const r = mateToUrdfJoint(m, resolver);
@@ -167,8 +231,10 @@ export async function urdfSerialize(arm: Assembly, opts: UrdfSerializeOptions): 
     diagnostics.push(...r.diagnostics);
     if (r.dummyLinks) allDummyLinks.push(...r.dummyLinks);
   }
+}
 
-  // Synthesised dummy links from ball decomposition.
+/** Append synthesised dummy links from ball decomposition. */
+function appendDummyLinkBlocks(linkBlocks: string[], allDummyLinks: readonly DummyLinkSpec[]): void {
   for (const d of allDummyLinks) {
     linkBlocks.push([
       `  <link name="${escapeXml(d.name)}">`,
@@ -180,17 +246,6 @@ export async function urdfSerialize(arm: Assembly, opts: UrdfSerializeOptions): 
       `  </link>`,
     ].join('\n'));
   }
-
-  const urdf = [
-    `<?xml version="1.0"?>`,
-    `<robot name="${escapeXml(arm.name)}">`,
-    ...linkBlocks,
-    ...jointBlocks,
-    `</robot>`,
-    ``,
-  ].join('\n');
-
-  return { urdf, meshPaths, diagnostics };
 }
 
 function legacyJointToUrdf(

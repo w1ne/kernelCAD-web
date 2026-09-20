@@ -252,22 +252,17 @@ function coneOf(face: Face): ConeFace | null {
   };
 }
 
-function classifyChain(
-  segs: AxialSegment[],
-  origin: V3,
+function classifySingleBore(
+  seg: AxialSegment,
+  boreSeg: AxialSegment,
+  pointAt: (t: number) => V3,
   dir: V3,
-): { hole: HoleComposite } | { reason: string } {
-  const bores = segs.filter(s => s.kind === 'bore');
-  const cones = segs.filter(s => s.kind === 'cone');
-  if (bores.some(b => b.bore!.bothEndsClosed)) return { reason: 'both ends are closed (internal duct)' };
-  const pointAt = (t: number): V3 => add(origin, scale(dir, t));
-
-  if (segs.length === 1 && bores.length === 1) {
-    const b = bores[0].bore!;
+): { hole: HoleComposite } {
+    const b = boreSeg.bore!;
     if (b.kind === 'through') {
       // Entry on the +axis end, so a vertical hole reads from the top view.
       return {
-        hole: { entry: pointAt(segs[0].t1), axis: scale(dir, -1), diameter: b.diameterMm, through: true },
+        hole: { entry: pointAt(seg.t1), axis: scale(dir, -1), diameter: b.diameterMm, through: true },
       };
     }
     return {
@@ -279,9 +274,15 @@ function classifyChain(
         depth: b.depthMm,
       },
     };
-  }
+  
+}
 
-  if (segs.length === 2 && bores.length === 2) {
+function classifyCounterbore(
+  segs: AxialSegment[],
+  origin: V3,
+  dir: V3,
+  pointAt: (t: number) => V3,
+): { hole: HoleComposite } | { reason: string } {
     const [first, second] = segs;
     const d0 = first.diameter!;
     const d1 = second.diameter!;
@@ -313,9 +314,16 @@ function classifyChain(
         counterbore: { diameter: large.diameter!, depth: large.t1 - large.t0 },
       },
     };
-  }
+  
+}
 
-  if (bores.length === 1 && cones.length >= 1 && segs.length <= 3) {
+function classifyConicalStep(
+  bores: AxialSegment[],
+  cones: AxialSegment[],
+  origin: V3,
+  dir: V3,
+  pointAt: (t: number) => V3,
+): { hole: HoleComposite } | { reason: string } {
     const boreSeg = bores[0];
     const b = boreSeg.bore!;
     const boreR = b.diameterMm / 2;
@@ -357,6 +365,29 @@ function classifyChain(
         countersink: { diameter: 2 * wideR, angleDeg: Math.round((2 * semi * 180) / Math.PI * 10) / 10 },
       },
     };
+  
+}
+
+function classifyChain(
+  segs: AxialSegment[],
+  origin: V3,
+  dir: V3,
+): { hole: HoleComposite } | { reason: string } {
+  const bores = segs.filter(s => s.kind === 'bore');
+  const cones = segs.filter(s => s.kind === 'cone');
+  if (bores.some(b => b.bore!.bothEndsClosed)) return { reason: 'both ends are closed (internal duct)' };
+  const pointAt = (t: number): V3 => add(origin, scale(dir, t));
+
+  if (segs.length === 1 && bores.length === 1) {
+    return classifySingleBore(segs[0], bores[0], pointAt, dir);
+  }
+
+  if (segs.length === 2 && bores.length === 2) {
+    return classifyCounterbore(segs, origin, dir, pointAt);
+  }
+
+  if (bores.length === 1 && cones.length >= 1 && segs.length <= 3) {
+    return classifyConicalStep(bores, cones, origin, dir, pointAt);
   }
 
   return { reason: `${bores.length} stacked bores and ${cones.length} conical step(s)` };
@@ -510,6 +541,66 @@ function edgeEnds(e: Edge): [V3, V3] {
   return [vec(e.startPoint), vec(e.endPoint)];
 }
 
+interface EdgeSeg { e: Edge; a: V3; b: V3; dir: V3; length: number }
+
+/** The two long parallel edges of a four-line planar strip, or null when the
+ *  face is not a narrow strip between two long edges. */
+function chamferStripSegs(edges: Edge[]): [EdgeSeg, EdgeSeg] | null {
+  if (edges.length !== 4) return null;
+  if (edges.some(e => (e as unknown as { geomType?: string }).geomType !== 'LINE')) return null;
+  const segs = edges.map(e => {
+    const [a, b] = edgeEnds(e);
+    return { e, a, b, dir: unit(sub(b, a)), length: len(sub(b, a)) };
+  });
+  // Two parallel long edges, two short ones.
+  const sorted = [...segs].sort((p, q) => q.length - p.length);
+  const [l1, l2, s1, s2] = sorted;
+  if (Math.abs(dot(l1.dir, l2.dir)) < 0.9999) return null;
+  if (s1.length > l1.length * 0.5 || s2.length > l1.length * 0.5) return null;
+  const width = distToLine(l2.a, l1.a, l1.dir);
+  if (width > l1.length * 0.25) return null;
+  return [l1, l2];
+}
+
+/** Validate a candidate strip against its two planar neighbours and measure
+ *  the chamfer feature; null when it is not a chamfer. */
+function chamferFromStrip(
+  idx: number,
+  info: PlanarFaceInfo,
+  l1: EdgeSeg,
+  l2: EdgeSeg,
+  planarByIndex: Map<number, PlanarFaceInfo>,
+  neighbourAcross: (faceIdx: number, edge: Edge) => number,
+): ChamferFeature | null {
+  const n1 = neighbourAcross(idx, l1.e);
+  const n2 = neighbourAcross(idx, l2.e);
+  const p1 = planarByIndex.get(n1);
+  const p2 = planarByIndex.get(n2);
+  if (!p1 || !p2) return null;
+  // A chamfer is a small strip cut from a corner of two larger faces; a
+  // narrow face whose neighbours are themselves the smaller strips (the
+  // flat left between two chamfers) is not one.
+  if (p1.area < info.area * 1.5 || p2.area < info.area * 1.5) return null;
+  const sinDihedral = len(cross(p1.normal, p2.normal));
+  if (sinDihedral < 0.1) return null;
+  // The strip must not be coplanar with either neighbour.
+  if (Math.abs(dot(info.normal, p1.normal)) > 0.999 || Math.abs(dot(info.normal, p2.normal)) > 0.999) return null;
+  // Leg on neighbour 1: distance within plane 1 from the long edge l1 to the
+  // corner line where planes 1 and 2 meet.
+  const legOn = (edgePoint: V3, other: PlanarFaceInfo): number =>
+    Math.abs(dot(other.normal, edgePoint) - other.offset) / sinDihedral;
+  const leg1 = legOn(l1.a, p2);
+  const leg2 = legOn(l2.a, p1);
+  // Convexity: the removed corner lies outside the body, i.e. on the strip's
+  // outward side.
+  const cornerSide = dot(info.normal, sub(p1.centre, info.centre)) < 1e-9 &&
+    dot(info.normal, sub(p2.centre, info.centre)) < 1e-9;
+  if (!cornerSide) return null;
+  const midPoint = scale(add(add(l1.a, l1.b), add(l2.a, l2.b)), 0.25);
+  const legs = [leg1, leg2].sort((a, b) => a - b) as [number, number];
+  return { legs, edgeDir: canonicalAxis(l1.dir), midPoint, normal: info.normal };
+}
+
 function recogniseChamfers(faces: Face[], planarByIndex: Map<number, PlanarFaceInfo>): ChamferFeature[] {
   const out: ChamferFeature[] = [];
   const faceEdges = faces.map(f => (f as unknown as { edges: Edge[] }).edges);
@@ -522,47 +613,11 @@ function recogniseChamfers(faces: Face[], planarByIndex: Map<number, PlanarFaceI
   };
 
   for (const [idx, info] of planarByIndex) {
-    const edges = faceEdges[idx];
-    if (edges.length !== 4) continue;
-    if (edges.some(e => (e as unknown as { geomType?: string }).geomType !== 'LINE')) continue;
-    const segs = edges.map(e => {
-      const [a, b] = edgeEnds(e);
-      return { e, a, b, dir: unit(sub(b, a)), length: len(sub(b, a)) };
-    });
-    // Two parallel long edges, two short ones.
-    const sorted = [...segs].sort((p, q) => q.length - p.length);
-    const [l1, l2, s1, s2] = sorted;
-    if (Math.abs(dot(l1.dir, l2.dir)) < 0.9999) continue;
-    if (s1.length > l1.length * 0.5 || s2.length > l1.length * 0.5) continue;
-    const width = distToLine(l2.a, l1.a, l1.dir);
-    if (width > l1.length * 0.25) continue;
-    const n1 = neighbourAcross(idx, l1.e);
-    const n2 = neighbourAcross(idx, l2.e);
-    const p1 = planarByIndex.get(n1);
-    const p2 = planarByIndex.get(n2);
-    if (!p1 || !p2) continue;
-    // A chamfer is a small strip cut from a corner of two larger faces; a
-    // narrow face whose neighbours are themselves the smaller strips (the
-    // flat left between two chamfers) is not one.
-    if (p1.area < info.area * 1.5 || p2.area < info.area * 1.5) continue;
-    const sinDihedral = len(cross(p1.normal, p2.normal));
-    if (sinDihedral < 0.1) continue;
-    // The strip must not be coplanar with either neighbour.
-    if (Math.abs(dot(info.normal, p1.normal)) > 0.999 || Math.abs(dot(info.normal, p2.normal)) > 0.999) continue;
-    // Leg on neighbour 1: distance within plane 1 from the long edge l1 to the
-    // corner line where planes 1 and 2 meet.
-    const legOn = (edgePoint: V3, other: PlanarFaceInfo): number =>
-      Math.abs(dot(other.normal, edgePoint) - other.offset) / sinDihedral;
-    const leg1 = legOn(l1.a, p2);
-    const leg2 = legOn(l2.a, p1);
-    // Convexity: the removed corner lies outside the body, i.e. on the strip's
-    // outward side.
-    const cornerSide = dot(info.normal, sub(p1.centre, info.centre)) < 1e-9 &&
-      dot(info.normal, sub(p2.centre, info.centre)) < 1e-9;
-    if (!cornerSide) continue;
-    const midPoint = scale(add(add(l1.a, l1.b), add(l2.a, l2.b)), 0.25);
-    const legs = [leg1, leg2].sort((a, b) => a - b) as [number, number];
-    out.push({ legs, edgeDir: canonicalAxis(l1.dir), midPoint, normal: info.normal });
+    const strip = chamferStripSegs(faceEdges[idx]);
+    if (!strip) continue;
+    const [l1, l2] = strip;
+    const feature = chamferFromStrip(idx, info, l1, l2, planarByIndex, neighbourAcross);
+    if (feature) out.push(feature);
   }
   return out;
 }

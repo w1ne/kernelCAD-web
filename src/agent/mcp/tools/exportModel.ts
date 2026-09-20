@@ -19,6 +19,7 @@ import {
   type DrawingReport,
   type ExportFormat,
   type ExportOptions,
+  type ExportResult,
 } from '../../script-runtime/export';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
@@ -55,6 +56,41 @@ export interface ExportModelOutput {
   error?: string;
 }
 
+function validateExportModelInput(input: ExportModelInput): string | undefined {
+  const { output_path, format } = input;
+
+  if (!output_path || typeof output_path !== 'string') {
+    return 'Required: output_path';
+  }
+  if (!format || typeof format !== 'string') {
+    return 'Required: format';
+  }
+  return undefined;
+}
+
+async function writeExportPayload(
+  finalPath: string,
+  result: ExportResult,
+  meshFiles: string[],
+): Promise<string | undefined> {
+  try {
+    await mkdir(dirname(finalPath), { recursive: true });
+    await writeFile(finalPath, Buffer.from(result.bytes));
+    // Robot-description exports (URDF / SDF) reference per-link mesh files
+    // by relative path — write them next to the output file so the
+    // document is consumable as-is.
+    for (const m of result.meshes ?? []) {
+      const meshPath = resolve(dirname(finalPath), m.relPath);
+      await mkdir(dirname(meshPath), { recursive: true });
+      await writeFile(meshPath, Buffer.from(m.bytes));
+      meshFiles.push(meshPath);
+    }
+  } catch (e) {
+    return `Cannot write to ${finalPath}: ${e instanceof Error ? e.message : String(e)}`;
+  }
+  return undefined;
+}
+
 /**
  * MCP `export_model` tool — runs a kernelCAD script and writes the geometry
  * to `output_path` in the requested `format`. The single, unified write-side
@@ -75,11 +111,9 @@ export interface ExportModelOutput {
 export async function exportModelTool(input: ExportModelInput): Promise<ExportModelOutput> {
   const { output_path, format, feature_id, options } = input;
 
-  if (!output_path || typeof output_path !== 'string') {
-    return { ok: false, error: 'Required: output_path' };
-  }
-  if (!format || typeof format !== 'string') {
-    return { ok: false, error: 'Required: format' };
+  const inputError = validateExportModelInput(input);
+  if (inputError !== undefined) {
+    return { ok: false, error: inputError };
   }
 
   const source = await loadMcpScriptSource(input);
@@ -131,23 +165,9 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
   const finalPath = pathCheck.resolved!;
 
   const meshFiles: string[] = [];
-  try {
-    await mkdir(dirname(finalPath), { recursive: true });
-    await writeFile(finalPath, Buffer.from(result.bytes));
-    // Robot-description exports (URDF / SDF) reference per-link mesh files
-    // by relative path — write them next to the output file so the
-    // document is consumable as-is.
-    for (const m of result.meshes ?? []) {
-      const meshPath = resolve(dirname(finalPath), m.relPath);
-      await mkdir(dirname(meshPath), { recursive: true });
-      await writeFile(meshPath, Buffer.from(m.bytes));
-      meshFiles.push(meshPath);
-    }
-  } catch (e) {
-    return {
-      ok: false,
-      error: `Cannot write to ${finalPath}: ${e instanceof Error ? e.message : String(e)}`,
-    };
+  const writeError = await writeExportPayload(finalPath, result, meshFiles);
+  if (writeError !== undefined) {
+    return { ok: false, error: writeError };
   }
 
   return {

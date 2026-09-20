@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { FeatureId } from '../../shared/intent/types';
+import type { BackendTarget } from '../../shared/types/backendTarget';
 import type { FeatureLowerer, ShapeBackend } from '../../kernel/backends/backend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
@@ -110,6 +111,89 @@ function findGatedLineageWarning(
     recordId: record.id,
     paramName,
     phase: opts.warningPhase ?? 'build',
+  };
+}
+
+/** Emit a `feature.failed` event for `r`; returns 1 when the event was
+ *  emitted onto `onEvent`, else 0. Shared by the diagnostic-error and
+ *  thrown-exception paths of `lowerAndEmit`. */
+function emitFeatureFailedEvent(
+  r: FeatureRecord,
+  featureDiags: CompilerDiagnostic[],
+  predecessorsOf: Map<FeatureId, FeatureId[]>,
+  onEvent: FeatureEventSink | undefined,
+): number {
+  if (onEvent) {
+    onEvent({
+      kind: 'feature.failed',
+      featureId: r.id,
+      featureKind: r.kind,
+      predecessors: predecessorsOf.get(r.id) ?? [],
+      diagnostics: featureDiags,
+    });
+    return 1;
+  }
+  return 0;
+}
+
+/** Emit a `feature.compiled` event for `r`; returns 1 when the event was
+ *  emitted onto `onEvent`, else 0. The boolean `op` is only computed on the
+ *  emitting path, matching the original inline emission. */
+function emitFeatureCompiledEvent(
+  r: FeatureRecord,
+  shape: ShapeBackend,
+  featureDiags: CompilerDiagnostic[],
+  featureHealth: 'healthy' | 'warning',
+  predecessorsOf: Map<FeatureId, FeatureId[]>,
+  onEvent: FeatureEventSink | undefined,
+): number {
+  if (onEvent) {
+    const op = r.kind === 'boolean'
+      ? normalizeBooleanOp(r.params.op?.expression)
+      : undefined;
+    onEvent({
+      kind: 'feature.compiled',
+      featureId: r.id,
+      featureKind: r.kind,
+      shape,
+      predecessors: predecessorsOf.get(r.id) ?? [],
+      diagnostics: featureDiags,
+      health: featureHealth,
+      op,
+    });
+    return 1;
+  }
+  return 0;
+}
+
+/** Build the structured diagnostic for a throw during lowering. Preserves
+ *  `KernelError.code`/`.hint` so e.g. `normalizeAxis` raising
+ *  `feature.invalid-args` with hint `invalid-args.axis.zero` surfaces as
+ *  a structured diagnostic instead of being flattened to the generic
+ *  `recompute.lowering.exception` shape. Non-KernelError throws still
+ *  fall through to the generic path. */
+function loweringFailureDiagnostic(
+  target: BackendTarget,
+  e: unknown,
+  fallbackFeatureId: FeatureId,
+): CompilerDiagnostic {
+  if (e instanceof KernelError) {
+    return {
+      target,
+      code: e.code,
+      featureId: e.featureId ?? fallbackFeatureId,
+      severity: 'error',
+      message: e.message,
+      hint: e.hint ?? HINT_TEMPLATES[e.code].template,
+    };
+  }
+  return {
+    target,
+    code: 'recompute.lowering.exception',
+    featureId: fallbackFeatureId,
+    severity: 'error',
+    message: e instanceof Error ? e.message : String(e),
+    hint: 'An exception was raised during lowering; read the message for the underlying error.',
   };
 }
 
@@ -253,6 +337,98 @@ export class RecomputeEngine {
     return { byKey, inputsOk };
   }
 
+  /** Resolve one record to its pre-lowering state: suppression / virtual /
+   *  seed-cache skips are health-marked here and reported as `null` (nothing
+   *  to lower); otherwise returns the record to lower plus its gate state. */
+  private prepareRecord(
+    id: FeatureId,
+    r: FeatureRecord,
+    opts: RecomputeOptions | undefined,
+    health: Map<FeatureId, 'healthy' | 'warning' | 'error'>,
+  ): { recordForLower: FeatureRecord; isGatedOff: boolean } | null {
+    if (r.suppressed) return null;
+    if (r.metadata?.virtual === true) {
+      // Virtual records (referenceImage today; future construction-only kinds)
+      // produce no BREP. Mark healthy and skip the lowerer entirely.
+      health.set(r.id, 'healthy');
+      return null;
+    }
+    const recordForLower: FeatureRecord = opts?.paramTable
+      ? resolveParams(r, opts.paramTable) as FeatureRecord
+      : r;
+    const gatedParamName = enabledGateParamName(r);
+    const isGatedOff = isEnabledFalse(recordForLower);
+
+    if (isGatedOff) {
+      registerGatedName(recordForLower, opts?.gatedFeatureNames, gatedParamName);
+    }
+
+    // Slice-3: cache hit — record's lowered output was seeded by `params.update`.
+    // Skip lowering; mark healthy.
+    if (opts?.seedShapes && opts.seedShapes.has(id)) {
+      health.set(id, 'healthy');
+      return null;
+    }
+
+    return { recordForLower, isGatedOff };
+  }
+
+  /** Emit the `feature.failed` event for a record whose inputs did not
+   *  resolve. Returns 1 when an event was emitted, else 0. */
+  private emitInputFailure(
+    r: FeatureRecord,
+    diagnostics: CompilerDiagnostic[],
+    predecessorsOf: Map<FeatureId, FeatureId[]>,
+    onEvent: FeatureEventSink | undefined,
+  ): number {
+    if (onEvent) {
+      onEvent({
+        kind: 'feature.failed',
+        featureId: r.id,
+        featureKind: r.kind,
+        predecessors: predecessorsOf.get(r.id) ?? [],
+        diagnostics: diagnostics.filter((d) => d.featureId === r.id),
+      });
+      return 1;
+    }
+    return 0;
+  }
+
+  /** Gated-off records pass their upstream shape through instead of lowering
+   *  (warning health when a face ref names the gated feature, healthy
+   *  otherwise). Returns true when the record was resolved without lowering. */
+  private tryGatedPassthrough(
+    r: FeatureRecord,
+    recordForLower: FeatureRecord,
+    isGatedOff: boolean,
+    byKey: Record<string, ShapeBackend>,
+    opts: RecomputeOptions | undefined,
+    shapes: Map<FeatureId, ShapeBackend>,
+    health: Map<FeatureId, 'healthy' | 'warning' | 'error'>,
+  ): boolean {
+    const gatedLineage = findGatedLineageWarning(recordForLower, opts);
+    if (gatedLineage) {
+      opts?.warningSink?.(gatedLineage);
+      const passthrough = passthroughShape(byKey);
+      if (passthrough) {
+        shapes.set(r.id, passthrough);
+        health.set(r.id, 'warning');
+        return true;
+      }
+    }
+
+    if (isGatedOff) {
+      const passthrough = passthroughShape(byKey);
+      if (passthrough) {
+        shapes.set(r.id, passthrough);
+        health.set(r.id, 'healthy');
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   /** Process one topo-ordered record within a `run()` pass: resolve its
    *  inputs, apply gating/passthrough, lower it, and emit the matching
    *  event. Returns 1 if an event was emitted onto `ctx.onEvent`, else 0 —
@@ -272,69 +448,22 @@ export class RecomputeEngine {
   ): Promise<number> {
     const { idToRecord, predecessorsOf, shapes, diagnostics, health, onEvent, opts } = ctx;
     const r = idToRecord.get(id)!;
-    if (r.suppressed) return 0;
-    if (r.metadata?.virtual === true) {
-      // Virtual records (referenceImage today; future construction-only kinds)
-      // produce no BREP. Mark healthy and skip the lowerer entirely.
-      health.set(r.id, 'healthy');
-      return 0;
-    }
-    const recordForLower: FeatureRecord = opts?.paramTable
-      ? resolveParams(r, opts.paramTable) as FeatureRecord
-      : r;
-    const gatedParamName = enabledGateParamName(r);
-    const isGatedOff = isEnabledFalse(recordForLower);
-
-    if (isGatedOff) {
-      registerGatedName(recordForLower, opts?.gatedFeatureNames, gatedParamName);
-    }
-
-    // Slice-3: cache hit — record's lowered output was seeded by `params.update`.
-    // Skip lowering; mark healthy.
-    if (opts?.seedShapes && opts.seedShapes.has(id)) {
-      health.set(id, 'healthy');
-      return 0;
-    }
+    const prepared = this.prepareRecord(id, r, opts, health);
+    if (prepared === null) return 0;
 
     // Resolve inputs
     const { byKey, inputsOk } = this.resolveRecordInputs(r, idToRecord, shapes, diagnostics);
     if (!inputsOk) {
       health.set(r.id, 'error');
-      if (onEvent) {
-        onEvent({
-          kind: 'feature.failed',
-          featureId: r.id,
-          featureKind: r.kind,
-          predecessors: predecessorsOf.get(r.id) ?? [],
-          diagnostics: diagnostics.filter((d) => d.featureId === r.id),
-        });
-        return 1;
-      }
+      return this.emitInputFailure(r, diagnostics, predecessorsOf, onEvent);
+    }
+
+    if (this.tryGatedPassthrough(r, prepared.recordForLower, prepared.isGatedOff, byKey, opts, shapes, health)) {
       return 0;
     }
 
-    const gatedLineage = findGatedLineageWarning(recordForLower, opts);
-    if (gatedLineage) {
-      opts?.warningSink?.(gatedLineage);
-      const passthrough = passthroughShape(byKey);
-      if (passthrough) {
-        shapes.set(r.id, passthrough);
-        health.set(r.id, 'warning');
-        return 0;
-      }
-    }
-
-    if (isGatedOff) {
-      const passthrough = passthroughShape(byKey);
-      if (passthrough) {
-        shapes.set(r.id, passthrough);
-        health.set(r.id, 'healthy');
-        return 0;
-      }
-    }
-
     // Lower
-    return this.lowerAndEmit(recordForLower, r, records, byKey, {
+    return this.lowerAndEmit(prepared.recordForLower, r, records, byKey, {
       predecessorsOf, shapes, diagnostics, health, onEvent,
     });
   }
@@ -362,40 +491,14 @@ export class RecomputeEngine {
       const featureDiags = res.diagnostics;
       if (featureDiags.some((d) => d.severity === 'error')) {
         health.set(r.id, 'error');
-        if (onEvent) {
-          onEvent({
-            kind: 'feature.failed',
-            featureId: r.id,
-            featureKind: r.kind,
-            predecessors: predecessorsOf.get(r.id) ?? [],
-            diagnostics: featureDiags,
-          });
-          return 1;
-        }
-        return 0;
+        return emitFeatureFailedEvent(r, featureDiags, predecessorsOf, onEvent);
       } else {
         const featureHealth: 'healthy' | 'warning' = featureDiags.some((d) => d.severity === 'warn')
           ? 'warning'
           : 'healthy';
         health.set(r.id, featureHealth);
         shapes.set(r.id, res.shape);
-        if (onEvent) {
-          const op = r.kind === 'boolean'
-            ? normalizeBooleanOp(r.params.op?.expression)
-            : undefined;
-          onEvent({
-            kind: 'feature.compiled',
-            featureId: r.id,
-            featureKind: r.kind,
-            shape: res.shape,
-            predecessors: predecessorsOf.get(r.id) ?? [],
-            diagnostics: featureDiags,
-            health: featureHealth,
-            op,
-          });
-          return 1;
-        }
-        return 0;
+        return emitFeatureCompiledEvent(r, res.shape, featureDiags, featureHealth, predecessorsOf, onEvent);
       }
     } catch (e) {
       // Wasm poison (OOB / Aborted) corrupts the process-global OCCT heap —
@@ -403,41 +506,10 @@ export class RecomputeEngine {
       // broken. Rethrow so `run()` can resetOcct + retry the full pass once.
       if (isOcctWasmPoisoned(e)) throw e;
 
-      // Preserve `KernelError.code`/`.hint` so e.g. `normalizeAxis` raising
-      // `feature.invalid-args` with hint `invalid-args.axis.zero` surfaces as
-      // a structured diagnostic instead of being flattened to the generic
-      // `recompute.lowering.exception` shape. Non-KernelError throws still
-      // fall through to the generic path.
-      const failDiag: CompilerDiagnostic = e instanceof KernelError
-        ? {
-            target: this.lowerer.target,
-            code: e.code,
-            featureId: e.featureId ?? r.id,
-            severity: 'error',
-            message: e.message,
-            hint: e.hint ?? HINT_TEMPLATES[e.code].template,
-          }
-        : {
-            target: this.lowerer.target,
-            code: 'recompute.lowering.exception',
-            featureId: r.id,
-            severity: 'error',
-            message: e instanceof Error ? e.message : String(e),
-            hint: 'An exception was raised during lowering; read the message for the underlying error.',
-          };
+      const failDiag: CompilerDiagnostic = loweringFailureDiagnostic(this.lowerer.target, e, r.id);
       diagnostics.push(failDiag);
       health.set(r.id, 'error');
-      if (onEvent) {
-        onEvent({
-          kind: 'feature.failed',
-          featureId: r.id,
-          featureKind: r.kind,
-          predecessors: predecessorsOf.get(r.id) ?? [],
-          diagnostics: [failDiag],
-        });
-        return 1;
-      }
-      return 0;
+      return emitFeatureFailedEvent(r, [failDiag], predecessorsOf, onEvent);
     }
   }
 

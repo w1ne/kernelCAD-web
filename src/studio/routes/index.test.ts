@@ -6,10 +6,10 @@ import { describe, expect, it } from 'vitest';
 describe('App root route (src/studio/routes/index.tsx)', () => {
   const source = readFileSync('src/studio/routes/index.tsx', 'utf8');
 
-  it('opens the Studio shell at app root instead of the generation prompt funnel', () => {
+  it('opens the full Studio at the homepage', () => {
     expect(source).toMatch(/import\s+App\s+from\s+['"]\.\.\/App['"]/);
     expect(source).toMatch(/<App\s*\/>/);
-    expect(source).not.toMatch(/<PromptBox\b/);
+    expect(source).not.toContain('StartPage');
   });
 });
 
@@ -18,6 +18,7 @@ describe('Initial Studio bundle import sentinels', () => {
   const mainSource = readFileSync('src/studio/main.tsx', 'utf8');
   const demoPlayerRouteSource = readFileSync('src/studio/routes/demo-player.tsx', 'utf8');
   const codeContextSource = readFileSync('src/studio/context/CodeContext.tsx', 'utf8');
+  const magicCommentSource = readFileSync('src/studio/context/useMagicCommentDetection.ts', 'utf8');
 
   it('does not warm the GeometryEngine before route content mounts', () => {
     expect(mainSource).not.toMatch(/GeometryEngine/);
@@ -40,7 +41,8 @@ describe('Initial Studio bundle import sentinels', () => {
   it('keeps AI and refactoring services behind dynamic imports', () => {
     expect(codeContextSource).not.toMatch(/import\s+.*LLMService/);
     expect(codeContextSource).not.toMatch(/import\s+.*RefactoringManager/);
-    expect(codeContextSource).toContain("import('../features-ui/ai/LLMService')");
+    expect(magicCommentSource).not.toMatch(/import\s+.*LLMService/);
+    expect(magicCommentSource).toContain("import('../features-ui/ai/LLMService')");
     expect(codeContextSource).toContain("import('../../modeling/features/modeling/RefactoringManager')");
   });
 });
@@ -53,20 +55,22 @@ describe('Initial Studio bundle import sentinels', () => {
  */
 describe('Generate page (src/studio/routes/generate.tsx)', () => {
   const source = readFileSync('src/studio/routes/generate.tsx', 'utf8');
+  const heroSource = readFileSync('src/studio/routes/GenerateHero.tsx', 'utf8');
 
   it('imports the prompt app and sign-in modal components', () => {
     expect(source).toMatch(/from\s+['"]\.\.\/agentAvailability['"]/);
-    expect(source).toMatch(/from\s+['"]\.\.\/\.\.\/funnel\/components\/PromptBox['"]/);
+    expect(heroSource).toMatch(/from\s+['"]\.\.\/\.\.\/funnel\/components\/PromptBox['"]/);
     expect(source).toMatch(/from\s+['"]\.\.\/\.\.\/funnel\/components\/GallerySection['"]/);
     expect(source).toMatch(/from\s+['"]\.\.\/\.\.\/funnel\/components\/EmailSignup['"]/);
     expect(source).toMatch(/from\s+['"]\.\.\/\.\.\/funnel\/components\/SignInModal['"]/);
   });
 
   it('keeps the prompt visible before sign-in', () => {
-    const promptIdx = source.indexOf('<PromptBox');
+    expect(heroSource).toContain('<PromptBox');
+    const heroIdx = source.indexOf('<GenerateHero');
     const modalIdx = source.indexOf('<SignInModal');
-    expect(promptIdx).toBeGreaterThan(-1);
-    expect(modalIdx).toBeGreaterThan(promptIdx);
+    expect(heroIdx).toBeGreaterThan(-1);
+    expect(modalIdx).toBeGreaterThan(heroIdx);
   });
 
   it('gates generation by stashing the prompt and opening sign-in', () => {
@@ -88,9 +92,10 @@ describe('Generate page (src/studio/routes/generate.tsx)', () => {
   });
 
   it('orders the generate page sections prompt -> gallery -> email', () => {
-    const promptIdx = source.indexOf('<PromptBox');
+    const promptIdx = source.indexOf('<GenerateHero');
     const galleryIdx = source.indexOf('<GallerySection');
     const emailIdx = source.indexOf('<EmailSignup');
+    expect(heroSource).toContain('<PromptBox');
     expect(promptIdx).toBeGreaterThan(-1);
     expect(galleryIdx).toBeGreaterThan(promptIdx);
     expect(emailIdx).toBeGreaterThan(galleryIdx);

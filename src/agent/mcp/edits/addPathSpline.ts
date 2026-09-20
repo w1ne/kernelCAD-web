@@ -29,38 +29,33 @@ export interface AddPathChainResult {
   error?: string;
 }
 
-export function addPathSpline(input: AddPathSplineInput): AddPathChainResult {
-  if (typeof input.chain_anchor !== 'string' || !isValidIdentifier(input.chain_anchor)) {
-    return {
-      ok: false,
-      error: `add_path_spline: chain_anchor must be a JS identifier; got ${JSON.stringify(input.chain_anchor)}.`,
-    };
+function validateAnchor(chainAnchor: unknown): string | null {
+  if (typeof chainAnchor !== 'string' || !isValidIdentifier(chainAnchor)) {
+    return `add_path_spline: chain_anchor must be a JS identifier; got ${JSON.stringify(chainAnchor)}.`;
   }
-  if (!Array.isArray(input.points) || input.points.length < 2) {
-    return {
-      ok: false,
-      error: 'add_path_spline: points must be a Vec2[] with at least 2 waypoints.',
-    };
+  return null;
+}
+
+function validatePoints(points: unknown): string | null {
+  if (!Array.isArray(points) || points.length < 2) {
+    return 'add_path_spline: points must be a Vec2[] with at least 2 waypoints.';
   }
-  for (const p of input.points) {
+  for (const p of points) {
     if (!Array.isArray(p) || p.length !== 2 || !p.every(n => typeof n === 'number' && Number.isFinite(n))) {
-      return {
-        ok: false,
-        error: 'add_path_spline: every point must be a [x, y] Vec2 of finite numbers.',
-      };
+      return 'add_path_spline: every point must be a [x, y] Vec2 of finite numbers.';
     }
   }
-  if (input.tension !== undefined && (typeof input.tension !== 'number' || !Number.isFinite(input.tension))) {
-    return {
-      ok: false,
-      error: `add_path_spline: tension must be a finite number; got ${JSON.stringify(input.tension)}.`,
-    };
-  }
-  const startTangentErr = validateTangent('startTangent', input.startTangent);
-  if (startTangentErr !== null) return { ok: false, error: startTangentErr };
-  const endTangentErr = validateTangent('endTangent', input.endTangent);
-  if (endTangentErr !== null) return { ok: false, error: endTangentErr };
+  return null;
+}
 
+function validateTension(tension: unknown): string | null {
+  if (tension !== undefined && (typeof tension !== 'number' || !Number.isFinite(tension))) {
+    return `add_path_spline: tension must be a finite number; got ${JSON.stringify(tension)}.`;
+  }
+  return null;
+}
+
+function buildSplineCall(input: AddPathSplineInput): string {
   const pointsLiteral = JSON.stringify(input.points);
   const optsParts: string[] = [];
   if (input.tension !== undefined) {
@@ -72,9 +67,21 @@ export function addPathSpline(input: AddPathSplineInput): AddPathChainResult {
   if (input.endTangent !== undefined) {
     optsParts.push(`endTangent: ${JSON.stringify(input.endTangent)}`);
   }
-  const callFragment = optsParts.length > 0
+  return optsParts.length > 0
     ? `.spline(${pointsLiteral}, { ${optsParts.join(', ')} })`
     : `.spline(${pointsLiteral})`;
+}
+
+export function addPathSpline(input: AddPathSplineInput): AddPathChainResult {
+  const validationError =
+    validateAnchor(input.chain_anchor) ??
+    validatePoints(input.points) ??
+    validateTension(input.tension) ??
+    validateTangent('startTangent', input.startTangent) ??
+    validateTangent('endTangent', input.endTangent);
+  if (validationError !== null) return { ok: false, error: validationError };
+
+  const callFragment = buildSplineCall(input);
 
   return injectIntoChain(input.code, input.chain_anchor, callFragment);
 }
@@ -133,29 +140,12 @@ export function injectIntoChain(
   // Walk forward to the statement-terminating semicolon at depth 0, tracking
   // strings/templates/comments and brace/paren/bracket nesting.
   let depth = 0;
-  let inStr: '"' | "'" | '`' | null = null;
-  let inLineComment = false;
-  let inBlockComment = false;
+  const cursor: LexicalCursor = { inStr: null, inLineComment: false, inBlockComment: false };
   let semiIdx = -1;
   for (let i = rhsStart; i < code.length; i++) {
+    const consumed = consumeLexicalContext(code, i, cursor);
+    if (consumed !== null) { i = consumed; continue; }
     const c = code[i];
-    const c2 = code[i + 1] ?? '';
-    if (inLineComment) {
-      if (c === '\n') inLineComment = false;
-      continue;
-    }
-    if (inBlockComment) {
-      if (c === '*' && c2 === '/') { inBlockComment = false; i++; }
-      continue;
-    }
-    if (inStr) {
-      if (c === '\\') { i++; continue; }
-      if (c === inStr) inStr = null;
-      continue;
-    }
-    if (c === '/' && c2 === '/') { inLineComment = true; i++; continue; }
-    if (c === '/' && c2 === '*') { inBlockComment = true; i++; continue; }
-    if (c === '"' || c === "'" || c === '`') { inStr = c as '"' | "'" | '`'; continue; }
     if (c === '(' || c === '[' || c === '{') { depth++; continue; }
     if (c === ')' || c === ']' || c === '}') { depth--; continue; }
     if (c === ';' && depth === 0) { semiIdx = i; break; }
@@ -176,6 +166,64 @@ export function injectIntoChain(
   return { ok: true, new_code: newCode };
 }
 
+interface LexicalCursor {
+  inStr: '"' | "'" | '`' | null;
+  inLineComment: boolean;
+  inBlockComment: boolean;
+}
+
+/**
+ * Consume one character of lexical context (string / template / line comment /
+ * block comment) starting at `i`, mutating `cursor`. Returns the new index when
+ * the character was handled by the context scanner, or `null` when the caller
+ * must classify it as code (nesting or `.close` detection).
+ */
+function consumeCommentContext(
+  i: number,
+  c: string,
+  c2: string,
+  cursor: LexicalCursor,
+): number | null {
+  if (cursor.inLineComment) {
+    if (c === '\n') cursor.inLineComment = false;
+    return i;
+  }
+  if (cursor.inBlockComment) {
+    if (c === '*' && c2 === '/') { cursor.inBlockComment = false; return i + 1; }
+    return i;
+  }
+  return null;
+}
+
+function consumeStringContext(i: number, c: string, cursor: LexicalCursor): number | null {
+  if (cursor.inStr) {
+    if (c === '\\') return i + 1;
+    if (c === cursor.inStr) cursor.inStr = null;
+    return i;
+  }
+  return null;
+}
+
+function consumeCommentStart(i: number, c: string, c2: string, cursor: LexicalCursor): number | null {
+  if (c === '/' && c2 === '/') { cursor.inLineComment = true; return i + 1; }
+  if (c === '/' && c2 === '*') { cursor.inBlockComment = true; return i + 1; }
+  return null;
+}
+
+function consumeStringStart(i: number, c: string, cursor: LexicalCursor): number | null {
+  if (c === '"' || c === "'" || c === '`') { cursor.inStr = c as '"' | "'" | '`'; return i; }
+  return null;
+}
+
+function consumeLexicalContext(code: string, i: number, cursor: LexicalCursor): number | null {
+  const c = code[i];
+  const c2 = code[i + 1] ?? '';
+  return consumeCommentContext(i, c, c2, cursor)
+    ?? consumeStringContext(i, c, cursor)
+    ?? consumeCommentStart(i, c, c2, cursor)
+    ?? consumeStringStart(i, c, cursor);
+}
+
 /**
  * Find the leftmost `.close()` (or `.close ()`) call between [start, end) at
  * the top-level chain depth (depth 0). Returns the offset of the leading dot.
@@ -183,28 +231,11 @@ export function injectIntoChain(
  */
 function findCloseCall(code: string, start: number, end: number): number {
   let depth = 0;
-  let inStr: '"' | "'" | '`' | null = null;
-  let inLineComment = false;
-  let inBlockComment = false;
+  const cursor: LexicalCursor = { inStr: null, inLineComment: false, inBlockComment: false };
   for (let i = start; i < end; i++) {
+    const consumed = consumeLexicalContext(code, i, cursor);
+    if (consumed !== null) { i = consumed; continue; }
     const c = code[i];
-    const c2 = code[i + 1] ?? '';
-    if (inLineComment) {
-      if (c === '\n') inLineComment = false;
-      continue;
-    }
-    if (inBlockComment) {
-      if (c === '*' && c2 === '/') { inBlockComment = false; i++; }
-      continue;
-    }
-    if (inStr) {
-      if (c === '\\') { i++; continue; }
-      if (c === inStr) inStr = null;
-      continue;
-    }
-    if (c === '/' && c2 === '/') { inLineComment = true; i++; continue; }
-    if (c === '/' && c2 === '*') { inBlockComment = true; i++; continue; }
-    if (c === '"' || c === "'" || c === '`') { inStr = c as '"' | "'" | '`'; continue; }
     if (c === '(' || c === '[' || c === '{') { depth++; continue; }
     if (c === ')' || c === ']' || c === '}') { depth--; continue; }
     if (depth === 0 && c === '.' && code.slice(i, i + 6) === '.close') {

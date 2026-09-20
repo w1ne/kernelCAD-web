@@ -277,20 +277,22 @@ interface Seg {
   anchored: boolean;
 }
 
-/** Analyze one build direction (unit vector, part-local frame). */
-export function analyzeBuildDirection(
-  prep: PreparedFdmMesh,
-  buildDirection: Vec3,
-  settings: FdmSettings,
-): FdmOrientationResult {
-  const { mesh, triCount, normals, areas, neighbors } = prep;
-  const V = mesh.vertices;
-  const T = mesh.triangles;
-  const nVerts = (V.length / 3) | 0;
-  const frame = buildFrameFor(buildDirection);
-  const [ru, rv, rw] = frame.rows;
+interface BuildFrameProjection {
+  pu: Float64Array;
+  pv: Float64Array;
+  pw: Float64Array;
+  wMin: number;
+  sizeMm: { x: number; y: number; z: number };
+}
 
-  // Printer-frame coordinates of every vertex.
+/** Printer-frame coordinates of every vertex, plus the frame extents. */
+function projectBuildFrameVertices(
+  V: ArrayLike<number>,
+  nVerts: number,
+  ru: Vec3,
+  rv: Vec3,
+  rw: Vec3,
+): BuildFrameProjection {
   const pu = new Float64Array(nVerts);
   const pv = new Float64Array(nVerts);
   const pw = new Float64Array(nVerts);
@@ -307,14 +309,29 @@ export function analyzeBuildDirection(
   }
   if (nVerts === 0) { uMin = uMax = vMin = vMax = wMin = wMax = 0; }
   const sizeMm = { x: uMax - uMin, y: vMax - vMin, z: wMax - wMin };
-  const onBed = (vi: number): boolean => pw[vi] - wMin <= BED_TOL_MM;
+  return { pu, pv, pw, wMin, sizeMm };
+}
 
-  // Classify triangles.
-  const steepSin = Math.sin((settings.maxOverhangDeg * Math.PI) / 180) + ANGLE_EPS;
+interface TriangleClassification {
+  isBed: Uint8Array;
+  isSteep: Uint8Array;
+  contactArea: number;
+  contactPts: number[];
+}
+
+/** Bed-contact and steep triangles, plus the coordinates of the contact patch. */
+function classifyBuildTriangles(
+  T: ArrayLike<number>,
+  triCount: number,
+  areas: Float64Array,
+  pu: Float64Array,
+  pv: Float64Array,
+  downOf: (i: number) => number,
+  onBed: (vi: number) => boolean,
+  steepSin: number,
+): TriangleClassification {
   const isBed = new Uint8Array(triCount);
   const isSteep = new Uint8Array(triCount);
-  const downOf = (i: number): number =>
-    -(normals[3 * i] * rw[0] + normals[3 * i + 1] * rw[1] + normals[3 * i + 2] * rw[2]);
   let contactArea = 0;
   const contactPts: number[] = [];
   for (let i = 0; i < triCount; i++) {
@@ -329,21 +346,37 @@ export function analyzeBuildDirection(
     }
     if (down > steepSin) isSteep[i] = 1;
   }
+  return { isBed, isSteep, contactArea, contactPts };
+}
 
-  // Bed contact + tip risk.
+/** Footprint, contact hull, and the adhesion/tip ratios for one orientation. */
+function measureBedContact(
+  pu: Float64Array,
+  pv: Float64Array,
+  nVerts: number,
+  contactArea: number,
+  contactPts: number[],
+  heightMm: number,
+): { bedContact: FdmBedContact; ratio: number; tipRatio: number } {
   const allPts: number[] = new Array(nVerts * 2);
   for (let i = 0; i < nVerts; i++) { allPts[2 * i] = pu[i]; allPts[2 * i + 1] = pv[i]; }
   const footprintMm2 = polygonArea(convexHull(allPts));
   const contactHull = convexHull(contactPts);
   const minBaseMm = contactArea > 0 ? hullMinWidth(contactHull) : 0;
-  const heightMm = sizeMm.z;
   const ratio = footprintMm2 > AREA_EPS ? contactArea / footprintMm2 : 0;
   const tipRatio = minBaseMm > 0 ? heightMm / minBaseMm : Infinity;
   const bedContact: FdmBedContact = { areaMm2: contactArea, footprintMm2, ratio, minBaseMm, heightMm, tipRatio };
+  return { bedContact, ratio, tipRatio };
+}
 
-  // Overhang regions.
-  const regionOf = new Int32Array(triCount).fill(-1);
-  const overhangs: FdmOverhangRegion[] = [];
+/** Seed-fill steep triangles into edge-connected regions, in discovery order. */
+function forEachSteepRegion(
+  triCount: number,
+  isSteep: Uint8Array,
+  neighbors: Int32Array,
+  regionOf: Int32Array,
+  emit: (tris: number[], id: number) => void,
+): void {
   let regionId = 0;
   for (let seed = 0; seed < triCount; seed++) {
     if (!isSteep[seed] || regionOf[seed] !== -1) continue;
@@ -359,111 +392,172 @@ export function analyzeBuildDirection(
         }
       }
     }
-    overhangs.push(analyzeRegion(tris, regionId));
+    emit(tris, regionId);
     regionId++;
   }
+}
 
-  function analyzeRegion(tris: number[], id: number): FdmOverhangRegion {
-    let area = 0;
-    let maxDown = 0;
-    let maxRise = 0;
-    let horizontal = true;
-    const faceArea = new Map<number, number>();
-    const bboxMin: Vec3 = [Infinity, Infinity, Infinity];
-    const bboxMax: Vec3 = [-Infinity, -Infinity, -Infinity];
-    const segs: Seg[] = [];
-    const samples: number[] = [];
-    const stride = Math.max(1, Math.ceil((tris.length * 4) / MAX_SAMPLES));
-    tris.forEach((t, idx) => {
-      area += areas[t];
-      const down = downOf(t);
-      if (down > maxDown) maxDown = down;
-      if (down < HORIZONTAL_COS) horizontal = false;
-      const f = mesh.faceOfTri[t];
-      faceArea.set(f, (faceArea.get(f) ?? 0) + areas[t]);
-      const vi = [T[3 * t], T[3 * t + 1], T[3 * t + 2]];
-      for (const v of vi) {
-        if (pw[v] - wMin > maxRise) maxRise = pw[v] - wMin;
-        for (let d = 0; d < 3; d++) {
-          const c = V[3 * v + d];
-          if (c < bboxMin[d]) bboxMin[d] = c;
-          if (c > bboxMax[d]) bboxMax[d] = c;
-        }
-      }
-      const cu = (pu[vi[0]] + pu[vi[1]] + pu[vi[2]]) / 3;
-      const cv = (pv[vi[0]] + pv[vi[1]] + pv[vi[2]]) / 3;
-      if (idx % stride === 0) {
-        samples.push(cu, cv);
-        for (const v of vi) samples.push(0.75 * pu[v] + 0.25 * cu, 0.75 * pv[v] + 0.25 * cv);
-      }
-      for (let k = 0; k < 3; k++) {
-        const n = neighbors[3 * t + k];
-        if (n >= 0 && regionOf[n] === id) continue;
-        const a = vi[k];
-        const b = vi[(k + 1) % 3];
-        segs.push({ ax: pu[a], ay: pv[a], bx: pu[b], by: pv[b], anchored: edgeAnchored(a, b, n) });
-      }
-    });
+/** Per-orientation values the overhang-region phase reads. */
+interface RegionAnalysisContext {
+  mesh: FaceTaggedMesh;
+  T: ArrayLike<number>;
+  V: ArrayLike<number>;
+  areas: Float64Array;
+  pu: Float64Array;
+  pv: Float64Array;
+  pw: Float64Array;
+  wMin: number;
+  neighbors: Int32Array;
+  regionOf: Int32Array;
+  rw: Vec3;
+  isBed: Uint8Array;
+  settings: FdmSettings;
+  downOf: (i: number) => number;
+  onBed: (vi: number) => boolean;
+}
 
-    let faceRef: string | undefined;
-    let best = -1;
-    for (const [f, fa] of [...faceArea.entries()].sort((p, q) => p[0] - q[0])) {
-      if (fa > best) { best = fa; faceRef = mesh.faceRefs[f]; }
-    }
-    const region: FdmOverhangRegion = {
-      status: 'unsupported',
-      areaMm2: area,
-      maxOverhangDeg: (Math.asin(Math.min(1, maxDown)) * 180) / Math.PI,
-      horizontal,
-      bboxMin,
-      bboxMax,
-      ...(faceRef !== undefined ? { faceRef } : {}),
-    };
+/** Anchored when the edge lies on the bed, borders bed contact, or the
+ *  surface across it descends from the edge. */
+function edgeAnchored(ctx: RegionAnalysisContext, a: number, b: number, n: number): boolean {
+  const { T, V, rw, isBed, onBed } = ctx;
+  if (onBed(a) && onBed(b)) return true;
+  if (n < 0) return false;
+  if (isBed[n]) return true;
+  const na = T[3 * n], nb = T[3 * n + 1], nc = T[3 * n + 2];
+  const c = na !== a && na !== b ? na : nb !== a && nb !== b ? nb : nc;
+  const ex = V[3 * b] - V[3 * a], ey = V[3 * b + 1] - V[3 * a + 1], ez = V[3 * b + 2] - V[3 * a + 2];
+  const el = Math.hypot(ex, ey, ez);
+  if (el <= 0) return false;
+  const cx = V[3 * c] - V[3 * a], cy = V[3 * c + 1] - V[3 * a + 1], cz = V[3 * c + 2] - V[3 * a + 2];
+  const along = (cx * ex + cy * ey + cz * ez) / (el * el);
+  const dx = cx - along * ex, dy = cy - along * ey, dz = cz - along * ez;
+  const dl = Math.hypot(dx, dy, dz);
+  const dw = dx * rw[0] + dy * rw[1] + dz * rw[2];
+  return dl > 0 && dw < -1e-3 * dl;
+}
 
-    const anchored = segs.filter(s => s.anchored);
-    if (anchored.length === 0) {
-      region.reachMm = Infinity;
-      return region;
+/** One steep region: area, bbox, boundary segments, samples, and verdict. */
+function analyzeRegion(ctx: RegionAnalysisContext, tris: number[], id: number): FdmOverhangRegion {
+  const { mesh, T, V, areas, pu, pv, pw, wMin, neighbors, regionOf, settings, downOf } = ctx;
+  let area = 0;
+  let maxDown = 0;
+  let maxRise = 0;
+  let horizontal = true;
+  const faceArea = new Map<number, number>();
+  const bboxMin: Vec3 = [Infinity, Infinity, Infinity];
+  const bboxMax: Vec3 = [-Infinity, -Infinity, -Infinity];
+  const segs: Seg[] = [];
+  const samples: number[] = [];
+  const stride = Math.max(1, Math.ceil((tris.length * 4) / MAX_SAMPLES));
+  tris.forEach((t, idx) => {
+    area += areas[t];
+    const down = downOf(t);
+    if (down > maxDown) maxDown = down;
+    if (down < HORIZONTAL_COS) horizontal = false;
+    const f = mesh.faceOfTri[t];
+    faceArea.set(f, (faceArea.get(f) ?? 0) + areas[t]);
+    const vi = [T[3 * t], T[3 * t + 1], T[3 * t + 2]];
+    for (const v of vi) {
+      if (pw[v] - wMin > maxRise) maxRise = pw[v] - wMin;
+      for (let d = 0; d < 3; d++) {
+        const c = V[3 * v + d];
+        if (c < bboxMin[d]) bboxMin[d] = c;
+        if (c > bboxMax[d]) bboxMax[d] = c;
+      }
     }
-    if (maxRise <= settings.nozzleMm + ANGLE_EPS) {
-      region.status = 'first-layer';
-      return region;
+    const cu = (pu[vi[0]] + pu[vi[1]] + pu[vi[2]]) / 3;
+    const cv = (pv[vi[0]] + pv[vi[1]] + pv[vi[2]]) / 3;
+    if (idx % stride === 0) {
+      samples.push(cu, cv);
+      for (const v of vi) samples.push(0.75 * pu[v] + 0.25 * cu, 0.75 * pv[v] + 0.25 * cv);
     }
-    const span = bridgeSpan(samples, segs, anchored);
-    if (Number.isFinite(span)) {
-      region.spanMm = span;
-      region.status = span <= settings.maxBridgeMm + ANGLE_EPS ? 'bridged' : 'unsupported';
-      return region;
+    for (let k = 0; k < 3; k++) {
+      const n = neighbors[3 * t + k];
+      if (n >= 0 && regionOf[n] === id) continue;
+      const a = vi[k];
+      const b = vi[(k + 1) % 3];
+      segs.push({ ax: pu[a], ay: pv[a], bx: pu[b], by: pv[b], anchored: edgeAnchored(ctx, a, b, n) });
     }
-    const reachPts = samples.slice();
-    for (const s of segs) if (!s.anchored) reachPts.push(s.ax, s.ay, s.bx, s.by);
-    let reach = 0;
-    for (let i = 0; i < reachPts.length; i += 2) {
-      reach = Math.max(reach, distanceToSegments(reachPts[i], reachPts[i + 1], anchored));
-    }
-    region.reachMm = reach;
-    region.status = reach <= settings.nozzleMm + ANGLE_EPS ? 'short-reach' : 'unsupported';
+  });
+
+  let faceRef: string | undefined;
+  let best = -1;
+  for (const [f, fa] of [...faceArea.entries()].sort((p, q) => p[0] - q[0])) {
+    if (fa > best) { best = fa; faceRef = mesh.faceRefs[f]; }
+  }
+  const region: FdmOverhangRegion = {
+    status: 'unsupported',
+    areaMm2: area,
+    maxOverhangDeg: (Math.asin(Math.min(1, maxDown)) * 180) / Math.PI,
+    horizontal,
+    bboxMin,
+    bboxMax,
+    ...(faceRef !== undefined ? { faceRef } : {}),
+  };
+
+  const anchored = segs.filter(s => s.anchored);
+  if (anchored.length === 0) {
+    region.reachMm = Infinity;
     return region;
   }
-
-  /** Anchored when the edge lies on the bed, borders bed contact, or the
-   *  surface across it descends from the edge. */
-  function edgeAnchored(a: number, b: number, n: number): boolean {
-    if (onBed(a) && onBed(b)) return true;
-    if (n < 0) return false;
-    if (isBed[n]) return true;
-    const na = T[3 * n], nb = T[3 * n + 1], nc = T[3 * n + 2];
-    const c = na !== a && na !== b ? na : nb !== a && nb !== b ? nb : nc;
-    const ex = V[3 * b] - V[3 * a], ey = V[3 * b + 1] - V[3 * a + 1], ez = V[3 * b + 2] - V[3 * a + 2];
-    const el = Math.hypot(ex, ey, ez);
-    if (el <= 0) return false;
-    const cx = V[3 * c] - V[3 * a], cy = V[3 * c + 1] - V[3 * a + 1], cz = V[3 * c + 2] - V[3 * a + 2];
-    const along = (cx * ex + cy * ey + cz * ez) / (el * el);
-    const dx = cx - along * ex, dy = cy - along * ey, dz = cz - along * ez;
-    const dl = Math.hypot(dx, dy, dz);
-    const dw = dx * rw[0] + dy * rw[1] + dz * rw[2];
-    return dl > 0 && dw < -1e-3 * dl;
+  if (maxRise <= settings.nozzleMm + ANGLE_EPS) {
+    region.status = 'first-layer';
+    return region;
   }
+  const span = bridgeSpan(samples, segs, anchored);
+  if (Number.isFinite(span)) {
+    region.spanMm = span;
+    region.status = span <= settings.maxBridgeMm + ANGLE_EPS ? 'bridged' : 'unsupported';
+    return region;
+  }
+  const reachPts = samples.slice();
+  for (const s of segs) if (!s.anchored) reachPts.push(s.ax, s.ay, s.bx, s.by);
+  let reach = 0;
+  for (let i = 0; i < reachPts.length; i += 2) {
+    reach = Math.max(reach, distanceToSegments(reachPts[i], reachPts[i + 1], anchored));
+  }
+  region.reachMm = reach;
+  region.status = reach <= settings.nozzleMm + ANGLE_EPS ? 'short-reach' : 'unsupported';
+  return region;
+}
+
+/** Analyze one build direction (unit vector, part-local frame). */
+export function analyzeBuildDirection(
+  prep: PreparedFdmMesh,
+  buildDirection: Vec3,
+  settings: FdmSettings,
+): FdmOrientationResult {
+  const { mesh, triCount, normals, areas, neighbors } = prep;
+  const V = mesh.vertices;
+  const T = mesh.triangles;
+  const nVerts = (V.length / 3) | 0;
+  const frame = buildFrameFor(buildDirection);
+  const [ru, rv, rw] = frame.rows;
+
+  // Printer-frame coordinates of every vertex.
+  const { pu, pv, pw, wMin, sizeMm } = projectBuildFrameVertices(V, nVerts, ru, rv, rw);
+  const onBed = (vi: number): boolean => pw[vi] - wMin <= BED_TOL_MM;
+
+  // Classify triangles.
+  const steepSin = Math.sin((settings.maxOverhangDeg * Math.PI) / 180) + ANGLE_EPS;
+  const downOf = (i: number): number =>
+    -(normals[3 * i] * rw[0] + normals[3 * i + 1] * rw[1] + normals[3 * i + 2] * rw[2]);
+  const { isBed, isSteep, contactArea, contactPts } =
+    classifyBuildTriangles(T, triCount, areas, pu, pv, downOf, onBed, steepSin);
+
+  // Bed contact + tip risk.
+  const { bedContact, ratio, tipRatio } =
+    measureBedContact(pu, pv, nVerts, contactArea, contactPts, sizeMm.z);
+
+  // Overhang regions.
+  const regionOf = new Int32Array(triCount).fill(-1);
+  const overhangs: FdmOverhangRegion[] = [];
+  const regionCtx: RegionAnalysisContext = {
+    mesh, T, V, areas, pu, pv, pw, wMin, neighbors, regionOf, rw, isBed, settings, downOf, onBed,
+  };
+  forEachSteepRegion(triCount, isSteep, neighbors, regionOf, (tris, regionId) => {
+    overhangs.push(analyzeRegion(regionCtx, tris, regionId));
+  });
 
   overhangs.sort((p, q) => q.areaMm2 - p.areaMm2);
   const unsupportedAreaMm2 = overhangs
@@ -547,12 +641,24 @@ function bridgeSpan(samples: number[], segs: Seg[], anchored: Seg[]): number {
   return best;
 }
 
-/** Chord through (px, py) along ±(dx, dy) to the nearest boundary crossing
- *  each way; its length when both ends are anchored, else undefined. Ties
- *  between an anchored and a free crossing resolve to free. */
-function anchoredChord(px: number, py: number, dx: number, dy: number, segs: Seg[]): number | undefined {
-  let fwd = Infinity, fwdAnchored = false;
-  let back = Infinity, backAnchored = false;
+/** A boundary crossing's signed ray parameter and the anchoring of the
+ *  segment it crossed. */
+interface ChordCrossing {
+  t: number;
+  anchored: boolean;
+}
+
+/** Nearest crossing on one side of (px, py): `t` is the distance along the
+ *  ray, `anchored` is the AND of every crossing within 1e-7 of it. */
+interface ChordEnd {
+  t: number;
+  anchored: boolean;
+}
+
+/** Every non-parallel segment crossing the ray through (px, py) along
+ *  ±(dx, dy) within its bounds, with the ray parameter t. */
+function collectChordCrossings(px: number, py: number, dx: number, dy: number, segs: Seg[]): ChordCrossing[] {
+  const crossings: ChordCrossing[] = [];
   for (const s of segs) {
     const ex = s.bx - s.ax, ey = s.by - s.ay;
     const denom = dx * ey - dy * ex;
@@ -561,17 +667,39 @@ function anchoredChord(px: number, py: number, dx: number, dy: number, segs: Seg
     const t = (wx * ey - wy * ex) / denom;
     const u = (wx * dy - wy * dx) / denom;
     if (u < -1e-9 || u > 1 + 1e-9) continue;
-    if (t > 1e-9) {
-      if (t < fwd - 1e-7) { fwd = t; fwdAnchored = s.anchored; }
-      else if (t <= fwd + 1e-7) fwdAnchored = fwdAnchored && s.anchored;
-    } else if (t < -1e-9) {
-      const bt = -t;
-      if (bt < back - 1e-7) { back = bt; backAnchored = s.anchored; }
-      else if (bt <= back + 1e-7) backAnchored = backAnchored && s.anchored;
-    }
+    crossings.push({ t, anchored: s.anchored });
   }
-  if (!Number.isFinite(fwd) || !Number.isFinite(back) || !fwdAnchored || !backAnchored) return undefined;
-  return fwd + back;
+  return crossings;
+}
+
+/** Folds a crossing into the nearest end so far: strictly nearer replaces it,
+ *  a tie within 1e-7 ANDs the anchoring (so ties resolve to free). */
+function mergeChordEnd(current: ChordEnd | undefined, t: number, anchored: boolean): ChordEnd {
+  if (current === undefined || t < current.t - 1e-7) return { t, anchored };
+  if (t <= current.t + 1e-7) return { t: current.t, anchored: current.anchored && anchored };
+  return current;
+}
+
+/** Nearest forward (t > 1e-9) and backward (t < -1e-9) crossing, if any. */
+function nearestChordEnds(crossings: ChordCrossing[]): { fwd: ChordEnd | undefined; back: ChordEnd | undefined } {
+  let fwd: ChordEnd | undefined;
+  let back: ChordEnd | undefined;
+  for (const c of crossings) {
+    if (c.t > 1e-9) fwd = mergeChordEnd(fwd, c.t, c.anchored);
+    else if (c.t < -1e-9) back = mergeChordEnd(back, -c.t, c.anchored);
+  }
+  return { fwd, back };
+}
+
+/** Chord through (px, py) along ±(dx, dy) to the nearest boundary crossing
+ *  each way; its length when both ends are anchored, else undefined. Ties
+ *  between an anchored and a free crossing resolve to free. */
+function anchoredChord(px: number, py: number, dx: number, dy: number, segs: Seg[]): number | undefined {
+  const crossings = collectChordCrossings(px, py, dx, dy, segs);
+  const { fwd, back } = nearestChordEnds(crossings);
+  if (fwd === undefined || back === undefined) return undefined;
+  if (!fwd.anchored || !back.anchored) return undefined;
+  return fwd.t + back.t;
 }
 
 function distanceToSegments(px: number, py: number, segs: Seg[]): number {

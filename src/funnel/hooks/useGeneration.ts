@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useCallback, useState } from 'react';
+import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
 import { parseSseStream, startGeneration, type Artifact, type GenerateEvent, type GenerateRequest } from '../lib/generateClient';
 
 /** Codes emitted by the client when generation fails outside the server's
@@ -20,6 +20,38 @@ export type GenerationPhase =
   | { state: 'running'; generationId?: string; anonId?: string; lastEvent: GenerateEvent }
   | { state: 'done'; generationId: string; anonId: string; artifact: Artifact }
   | { state: 'error'; code: FunnelErrorCode; message: string; generationId?: string };
+
+async function consumeGenerationStream(
+  body: ReadableStream<Uint8Array>,
+  setEvents: Dispatch<SetStateAction<GenerateEvent[]>>,
+  setPhase: Dispatch<SetStateAction<GenerationPhase>>,
+): Promise<boolean> {
+  let generationId = '';
+  let anonId = '';
+  for await (const e of parseSseStream(body)) {
+    setEvents(prev => [...prev, e]);
+    if (e.kind === 'generation') {
+      if (e.generationId) generationId = e.generationId;
+      if (e.anonId) anonId = e.anonId;
+      setPhase({ state: 'running', generationId, anonId, lastEvent: e });
+    } else if (e.kind === 'done') {
+      const finalId = e.generationId || generationId;
+      const finalAnon = e.anonId || anonId;
+      if (!finalId) {
+        setPhase({ state: 'error', code: 'missing_generation_id', message: 'Generation completed but no ID was returned.' });
+        return false;
+      }
+      setPhase({ state: 'done', generationId: finalId, anonId: finalAnon, artifact: e.artifact });
+      return false;
+    } else if (e.kind === 'error') {
+      setPhase({ state: 'error', code: e.code, message: e.message, generationId: e.generationId || generationId });
+      return false;
+    } else {
+      setPhase({ state: 'running', generationId, anonId, lastEvent: e });
+    }
+  }
+  return true;
+}
 
 export function useGeneration() {
   const [phase, setPhase] = useState<GenerationPhase>({ state: 'idle' });
@@ -64,30 +96,8 @@ export function useGeneration() {
       return;
     }
 
-    let generationId = '';
-    let anonId = '';
-    for await (const e of parseSseStream(res.body)) {
-      setEvents(prev => [...prev, e]);
-      if (e.kind === 'generation') {
-        if (e.generationId) generationId = e.generationId;
-        if (e.anonId) anonId = e.anonId;
-        setPhase({ state: 'running', generationId, anonId, lastEvent: e });
-      } else if (e.kind === 'done') {
-        const finalId = e.generationId || generationId;
-        const finalAnon = e.anonId || anonId;
-        if (!finalId) {
-          setPhase({ state: 'error', code: 'missing_generation_id', message: 'Generation completed but no ID was returned.' });
-          return;
-        }
-        setPhase({ state: 'done', generationId: finalId, anonId: finalAnon, artifact: e.artifact });
-        return;
-      } else if (e.kind === 'error') {
-        setPhase({ state: 'error', code: e.code, message: e.message, generationId: e.generationId || generationId });
-        return;
-      } else {
-        setPhase({ state: 'running', generationId, anonId, lastEvent: e });
-      }
-    }
+    const exhausted = await consumeGenerationStream(res.body, setEvents, setPhase);
+    if (!exhausted) return;
 
     // Stream ended without a `done` or `error` event (e.g., upstream timeout
     // or proxy buffering). Surface this instead of silently leaving phase in

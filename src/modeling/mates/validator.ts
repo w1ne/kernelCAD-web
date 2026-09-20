@@ -39,7 +39,7 @@ import { jointContactCapMm3 } from '../runtime/jointContactCap';
 import { validateMatePhysicalRealization } from './matePhysicalRealization';
 import { validateMountingHoleConsistency } from './mountingHoleConsistency';
 import type { ConnectorWorkspace, PoseEnvelopeReviewResult } from './poseEnvelope';
-import { solveMates } from './solver';
+import { solveMates, type SolveResult, type SolveStatus } from './solver';
 import { validateWorkspaceReachability } from './workspaceReachability';
 
 /**
@@ -189,6 +189,36 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
   const diagnostics: ValidatorDiagnostic[] = [];
 
   // Build an undirected adjacency map: part name -> set of neighbour names.
+  const adj = buildPartAdjacency(parts, joints, mateEdges);
+
+  // Check 1 — floating parts (zero joints).
+  diagnostics.push(...collectFloatingDiagnostics(parts, adj));
+
+  // Check 2 — orphan from main component. Skip when there are <2 parts
+  // (single-part assemblies are trivially connected).
+  diagnostics.push(...collectOrphanDiagnostics(parts, adj));
+
+  // Check 3 — interference (promoted from checkInterference). Errors,
+  // not warnings, because solid bodies sharing volume is mechanically
+  // invalid (vs floating, which is a missing-information warning).
+  diagnostics.push(...collectInterferenceDiagnostics(input.interferencePairs, input.ignore));
+
+  const status = resolveValidatorStatus(diagnostics);
+
+  return {
+    status,
+    diagnostics,
+    partCount: parts.length,
+    jointCount: joints.length,
+  };
+}
+
+/** Undirected part-name adjacency from v0.5 joints + v0.6 mate edges. */
+function buildPartAdjacency(
+  parts: PartInfo[],
+  joints: JointInfo[],
+  mateEdges: readonly (readonly [string, string])[],
+): Map<string, Set<string>> {
   const adj = new Map<string, Set<string>>();
   for (const p of parts) adj.set(p.partName, new Set());
   for (const j of joints) {
@@ -202,8 +232,15 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
     adj.get(a)!.add(b);
     adj.get(b)!.add(a);
   }
+  return adj;
+}
 
-  // Check 1 — floating parts (zero joints).
+/** Check 1 — parts with no joint connecting them to any other part. */
+function collectFloatingDiagnostics(
+  parts: PartInfo[],
+  adj: Map<string, Set<string>>,
+): ValidatorDiagnostic[] {
+  const diagnostics: ValidatorDiagnostic[] = [];
   for (const p of parts) {
     if ((adj.get(p.partName)?.size ?? 0) === 0) {
       diagnostics.push({
@@ -215,9 +252,15 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
       });
     }
   }
+  return diagnostics;
+}
 
-  // Check 2 — orphan from main component. Skip when there are <2 parts
-  // (single-part assemblies are trivially connected).
+/** Check 2 — parts disconnected from the main mechanism component. */
+function collectOrphanDiagnostics(
+  parts: PartInfo[],
+  adj: Map<string, Set<string>>,
+): ValidatorDiagnostic[] {
+  const diagnostics: ValidatorDiagnostic[] = [];
   if (parts.length >= 2) {
     const components = connectedComponents(parts.map((p) => p.partName), adj);
     if (components.length > 1) {
@@ -244,11 +287,15 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
       }
     }
   }
+  return diagnostics;
+}
 
-  // Check 3 — interference (promoted from checkInterference). Errors,
-  // not warnings, because solid bodies sharing volume is mechanically
-  // invalid (vs floating, which is a missing-information warning).
-  //
+/** Check 3 — interference above the absolute noise cap, minus ignored pairs. */
+function collectInterferenceDiagnostics(
+  interferencePairs: readonly InterferencePair[] | undefined,
+  ignore: ReadonlyArray<readonly [string, string]> | undefined,
+): ValidatorDiagnostic[] {
+  const diagnostics: ValidatorDiagnostic[] = [];
   // The optional `ignore` list silences known-acceptable contacts (e.g. a
   // knuckle joint where two arm parts touch by design). Matching is
   // SYMMETRIC — `[a, b]` filters both `(a, b)` and `(b, a)` — and applies
@@ -264,8 +311,8 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
   // pair is an error" behaviour while still failing any real overlap above the
   // tessellation-noise floor.
   const cap = jointContactCapMm3();
-  for (const pair of input.interferencePairs ?? []) {
-    if (isPairIgnored(pair.a, pair.b, input.ignore)) continue;
+  for (const pair of interferencePairs ?? []) {
+    if (isPairIgnored(pair.a, pair.b, ignore)) continue;
     if (pair.volumeMm3 <= cap) continue;
     diagnostics.push({
       code: 'assembly.interference.overlap',
@@ -277,17 +324,16 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
       volumeMm3: pair.volumeMm3,
     });
   }
+  return diagnostics;
+}
 
+/** Fold diagnostic severities into the assembly-level verdict. */
+function resolveValidatorStatus(
+  diagnostics: readonly ValidatorDiagnostic[],
+): ValidatorStatus {
   const hasError = diagnostics.some((d) => d.severity === 'error');
   const hasWarning = diagnostics.some((d) => d.severity === 'warning');
-  const status: ValidatorStatus = hasError ? 'error' : hasWarning ? 'warning' : 'solved';
-
-  return {
-    status,
-    diagnostics,
-    partCount: parts.length,
-    jointCount: joints.length,
-  };
+  return hasError ? 'error' : hasWarning ? 'warning' : 'solved';
 }
 
 interface PartInfo { partName: string; recordId: string; }
@@ -434,23 +480,10 @@ export async function validateAssemblyWithMates(
   //    diagnostic for a part if a mate (rather than a joint) connects it
   //    — `validateAssembly` only sees v0.5 joints, so a part connected
   //    purely via mates looks floating to it. Suppress those.
-  const matePartNames = new Set<string>();
-  for (const m of arm.__mates()) {
-    const a = safeParse(m.a);
-    const b = safeParse(m.b);
-    if (a) matePartNames.add(a);
-    if (b) matePartNames.add(b);
-  }
-  const usedContactTargetPartNames = collectUsedContactTargetPartNames(arm);
-  const diagnostics: ValidatorDiagnostic[] = base.diagnostics.filter((d) => {
-    if (d.code === 'assembly.part.floating' && d.partName && matePartNames.has(d.partName)) {
-      return false; // part is connected via a mate; v0.5 just couldn't see it.
-    }
-    if (d.code === 'assembly.part.floating' && d.partName && usedContactTargetPartNames.has(d.partName)) {
-      return false; // external physical-use-case target; intentionally not structural.
-    }
-    return true;
-  });
+  const diagnostics: ValidatorDiagnostic[] = suppressMateConnectedFloating(
+    base.diagnostics,
+    arm,
+  );
 
   // 2b. Convention-mix gate. Runs BEFORE the no-mates early exit below:
   //     an assembly built from joint primitives has zero mates by
@@ -481,57 +514,7 @@ export async function validateAssemblyWithMates(
   //    skipped (no mates), so there is nothing solver-derived to say — the
   //    gates below still run.
   const solveStatus = solveResult === null ? null : solveResult.status;
-  switch (solveStatus) {
-    case null:
-      break;
-    case 'solved':
-      // Nothing to add.
-      break;
-    case 'under-constrained':
-      // The solver doesn't currently identify WHICH parts have residual
-      // DOF (T6/T7's SolveResult shape is `{ status, poses, iterations? }`;
-      // no per-part DOF map). For now emit a single assembly-scoped
-      // diagnostic; the per-part breakdown lands when SolveResult grows
-      // a `underConstrainedParts` field in T7.x. Surfacing the
-      // assembly-level fact is strictly better than silently dropping it,
-      // and the hint points users at the actionable fix (add a mate /
-      // tighten a constraint).
-      diagnostics.push({
-        code: 'assembly.part.under-constrained',
-        severity: 'warning',
-        message: `Assembly '${arm.name}' is under-constrained — the mate graph leaves residual degrees of freedom.`,
-        hint: `invalid-args.assembly.under-constrained — add a mate (arm.mate('...', 'partA.connector', 'partB.connector', '<type>')) or tighten an existing mate so every part has its 6 DOF removed.`,
-      });
-      break;
-    case 'over-constrained':
-      diagnostics.push({
-        code: 'assembly.mate.over-constrained',
-        severity: 'error',
-        message: `Assembly '${arm.name}' is over-constrained — at least one mate contradicts the others (loop-closure residual exceeds tolerance).`,
-        hint: `invalid-args.assembly.over-constrained — remove or relax one of the mates in the closed loop, or adjust a connector origin so the geometry agrees with the other mates.`,
-      });
-      break;
-    case 'redundant-ok':
-      diagnostics.push({
-        code: 'assembly.mate.over-constrained',
-        severity: 'info',
-        message: `Assembly '${arm.name}' has redundant mates that agree — mechanically valid but the extra mates carry no information.`,
-        hint: `invalid-args.assembly.redundant-mate — drop one mate from the closed loop if you want a minimal mate graph; otherwise no action needed.`,
-      });
-      break;
-    case 'did-not-converge':
-      diagnostics.push({
-        code: 'assembly.solver.did-not-converge',
-        severity: 'error',
-        message: `Assembly '${arm.name}' did not converge within the solver iteration cap (${solveResult?.iterations ?? 0} iterations).`,
-        hint: `invalid-args.assembly.did-not-converge — articulated closed loops are not yet supported by the v0.6.0 solver (lands in T7.x); for v0.6.0, restrict closed loops to fastened-only mates.`,
-      });
-      break;
-    default: {
-      const _exhaustive: never = solveStatus;
-      throw new Error(`validateAssemblyWithMates: unhandled SolveStatus '${String(_exhaustive)}'.`);
-    }
-  }
+  pushSolveStatusDiagnostics(diagnostics, arm, solveStatus, solveResult);
 
   // 5. v0.6.2 — fold envelope diagnostics (Gap 1 from the spec). Called
   //    automatically by `Assembly.solvedModel({validate:'error'})` when at
@@ -556,17 +539,7 @@ export async function validateAssemblyWithMates(
   //    below treats it as exempt; if a future schema change merges the
   //    triple into scalar `limitsDeg`, this check will need to inspect
   //    the field's shape.
-  for (const mate of arm.__mates()) {
-    if (mate.type === 'fastened' || mate.type === 'planar' || mate.type === 'ball') continue;
-    if (mate.limitsDeg !== undefined || mate.limitsMm !== undefined) continue;
-    diagnostics.push({
-      code: 'assembly.mate.limit-missing',
-      severity: 'warning',
-      mateName: mate.name,
-      message: `Mate '${mate.name}' (${mate.type}) has no declared limits; envelope check cannot verify its travel range.`,
-      hint: `invalid-args.assembly.mate-limit-missing — declare limitsDeg:[min,max] (or limitsMm for prismatic) on '${mate.name}' so the kernel can verify the mechanism does not self-collide across its declared range.`,
-    });
-  }
+  emitMissingLimitWarnings(diagnostics, arm.__mates());
 
   // 7. v0.7.4 — kinematic grounding gates. Run order: cheap pure gates first
   //    (Gate 3, Gate 1), expensive BREP gate last (Gate 2) so an earlier
@@ -619,6 +592,134 @@ export async function validateAssemblyWithMates(
     arm.__joints().length,
     solveStatus,
   );
+}
+
+/**
+ * Phase 2 of {@link validateAssemblyWithMates} — drop the v0.5 'floating'
+ * diagnostic for parts connected via a mate or used as an external
+ * physical-use-case target.
+ */
+function suppressMateConnectedFloating(
+  baseDiagnostics: readonly ValidatorDiagnostic[],
+  arm: Assembly,
+): ValidatorDiagnostic[] {
+  const matePartNames = new Set<string>();
+  for (const m of arm.__mates()) {
+    const a = safeParse(m.a);
+    const b = safeParse(m.b);
+    if (a) matePartNames.add(a);
+    if (b) matePartNames.add(b);
+  }
+  const usedContactTargetPartNames = collectUsedContactTargetPartNames(arm);
+  return baseDiagnostics.filter((d) => {
+    if (d.code === 'assembly.part.floating' && d.partName && matePartNames.has(d.partName)) {
+      return false; // part is connected via a mate; v0.5 just couldn't see it.
+    }
+    if (d.code === 'assembly.part.floating' && d.partName && usedContactTargetPartNames.has(d.partName)) {
+      return false; // external physical-use-case target; intentionally not structural.
+    }
+    return true;
+  });
+}
+
+/**
+ * Phase 4 of {@link validateAssemblyWithMates} — translate the solver
+ * verdict into v0.6 diagnostics. `null` means the solver was skipped (no
+ * mates), so there is nothing solver-derived to say.
+ */
+function pushSolveStatusDiagnostics(
+  diagnostics: ValidatorDiagnostic[],
+  arm: Assembly,
+  solveStatus: SolveStatus | null,
+  solveResult: SolveResult | null,
+): void {
+  switch (solveStatus) {
+    case null:
+      break;
+    case 'solved':
+      // Nothing to add.
+      break;
+    case 'under-constrained':
+      // The solver doesn't currently identify WHICH parts have residual
+      // DOF (T6/T7's SolveResult shape is `{ status, poses, iterations? }`;
+      // no per-part DOF map). For now emit a single assembly-scoped
+      // diagnostic; the per-part breakdown lands when SolveResult grows
+      // a `underConstrainedParts` field in T7.x. Surfacing the
+      // assembly-level fact is strictly better than silently dropping it,
+      // and the hint points users at the actionable fix (add a mate /
+      // tighten a constraint).
+      diagnostics.push({
+        code: 'assembly.part.under-constrained',
+        severity: 'warning',
+        message: `Assembly '${arm.name}' is under-constrained — the mate graph leaves residual degrees of freedom.`,
+        hint: `invalid-args.assembly.under-constrained — add a mate (arm.mate('...', 'partA.connector', 'partB.connector', '<type>')) or tighten an existing mate so every part has its 6 DOF removed.`,
+      });
+      break;
+    case 'over-constrained':
+      diagnostics.push({
+        code: 'assembly.mate.over-constrained',
+        severity: 'error',
+        message: `Assembly '${arm.name}' is over-constrained — at least one mate contradicts the others (loop-closure residual exceeds tolerance).`,
+        hint: `invalid-args.assembly.over-constrained — remove or relax one of the mates in the closed loop, or adjust a connector origin so the geometry agrees with the other mates.`,
+      });
+      break;
+    case 'redundant-ok':
+      diagnostics.push({
+        code: 'assembly.mate.over-constrained',
+        severity: 'info',
+        message: `Assembly '${arm.name}' has redundant mates that agree — mechanically valid but the extra mates carry no information.`,
+        hint: `invalid-args.assembly.redundant-mate — drop one mate from the closed loop if you want a minimal mate graph; otherwise no action needed.`,
+      });
+      break;
+    case 'did-not-converge':
+      diagnostics.push({
+        code: 'assembly.solver.did-not-converge',
+        severity: 'error',
+        message: `Assembly '${arm.name}' did not converge within the solver iteration cap (${solveResult?.iterations ?? 0} iterations).`,
+        hint: `invalid-args.assembly.did-not-converge — articulated closed loops are not yet supported by the v0.6.0 solver (lands in T7.x); for v0.6.0, restrict closed loops to fastened-only mates.`,
+      });
+      break;
+    default: {
+      const _exhaustive: never = solveStatus;
+      throw new Error(`validateAssemblyWithMates: unhandled SolveStatus '${String(_exhaustive)}'.`);
+    }
+  }
+}
+
+/**
+ * Phase 6 of {@link validateAssemblyWithMates} — emit an
+ * `assembly.mate.limit-missing` warning per articulated mate without
+ * declared limits (Gap 4). The pose-envelope sampler only walks mates
+ * whose `limitsDeg ?? limitsMm` is defined; a mate without limits is
+ * invisible to envelope review, which is a silent correctness hole for
+ * agents (the mechanism could still collide somewhere in its undeclared
+ * travel range). Surface that explicitly so callers either declare limits
+ * or accept the partial check.
+ *
+ * Fastened/planar mates are 0-DOF (or planar's 3 in-plane DOFs are not
+ * pose-driven), so they are exempt. Ball mates exposed via the per-axis
+ * Euler triple are also exempt — `buildPoseEnvelopeSamples` only reads
+ * scalar `limitsDeg ?? limitsMm`, and the `MateRecord` schema stores the
+ * ball triple in a different field (see mate.ts). If a ball mate's scalar
+ * `limitsDeg` field is undefined, the check below treats it as exempt; if
+ * a future schema change merges the triple into scalar `limitsDeg`, this
+ * check will need to inspect the field's shape.
+ */
+function emitMissingLimitWarnings(
+  diagnostics: ValidatorDiagnostic[],
+  mates: ReturnType<Assembly['__mates']>,
+): void {
+  for (const mate of mates) {
+    if (mate.type === 'fastened' || mate.type === 'planar' || mate.type === 'ball') continue;
+    if (mate.limitsDeg !== undefined || mate.limitsMm !== undefined) continue;
+    diagnostics.push({
+      code: 'assembly.mate.limit-missing',
+      severity: 'warning',
+      mateName: mate.name,
+      message: `Mate '${mate.name}' (${mate.type}) has no declared limits; envelope check cannot verify its travel range.`,
+      hint: `invalid-args.assembly.mate-limit-missing — declare limitsDeg:[min,max] (or limitsMm for prismatic) on '${mate.name}' so the kernel can verify the mechanism does not self-collide across its declared range.`,
+    });
+  }
 }
 
 /**

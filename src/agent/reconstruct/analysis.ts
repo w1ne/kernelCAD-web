@@ -9,7 +9,7 @@
 // re-measure the mesh.
 
 import { cleanMesh, type IndexedMesh, type MeshReport } from './meshClean';
-import { segmentMesh, type CylinderRegion, type Segmentation } from './segment';
+import { segmentMesh, type CylinderRegion, type PlaneRegion, type Segmentation } from './segment';
 import { chooseFrame, toCanonical, type CanonicalFrame } from './frame';
 import { sliceAtZ, type Section } from './section';
 import { dot3, type V3 } from './geom';
@@ -91,13 +91,42 @@ export function analyseMesh(soup: TriangleSoup, weldToleranceMm?: number): MeshA
   const frame = chooseFrame(seg, levelTol, mesh);
   const canonical = toCanonical(mesh.positions, frame);
 
+  const { zMin, zMax } = canonicalZRange(canonical);
+  const levels = capLevels(seg, frame, zMin, zMax, levelTol);
+  const bands = buildBands(canonical, mesh.triangles, levels, levelTol);
+
+  // Cross-axis bores and regions no feature represents.
+  const threshold = Math.max(0.5, 0.002 * seg.totalArea);
+  const { crossBores, unmatched } = classifyRegions(mesh, seg, frame, threshold);
+
+  return {
+    mesh,
+    report,
+    seg,
+    frame,
+    canonical,
+    zMin,
+    zMax,
+    levels,
+    bands,
+    crossBores,
+    unmatched,
+    unmatchedAreaThresholdMm2: threshold,
+    diagonal,
+  };
+}
+
+function canonicalZRange(canonical: Float64Array): { zMin: number; zMax: number } {
   let zMin = Infinity;
   let zMax = -Infinity;
   for (let i = 2; i < canonical.length; i += 3) {
     zMin = Math.min(zMin, canonical[i]);
     zMax = Math.max(zMax, canonical[i]);
   }
+  return { zMin, zMax };
+}
 
+function capLevels(seg: Segmentation, frame: CanonicalFrame, zMin: number, zMax: number, levelTol: number): number[] {
   // Cap levels: area-weighted cluster of cap-plane offsets.
   const caps = seg.planes
     .filter((p) => Math.abs(dot3(p.normal, frame.axis)) >= CAP_COS && p.area >= 1e-3 * seg.totalArea)
@@ -122,7 +151,15 @@ export function analyseMesh(soup: TriangleSoup, weldToleranceMm?: number): MeshA
   }
   flush();
   if (levels.length < 2) levels.push(zMax);
+  return levels;
+}
 
+function buildBands(
+  canonical: Float64Array,
+  triangles: Uint32Array,
+  levels: number[],
+  levelTol: number,
+): BandAnalysis[] {
   const bands: BandAnalysis[] = [];
   for (let i = 0; i + 1 < levels.length; i++) {
     const z0 = levels[i];
@@ -131,64 +168,77 @@ export function analyseMesh(soup: TriangleSoup, weldToleranceMm?: number): MeshA
     let best: Section | null = null;
     const sampledAreas: number[] = [];
     for (const f of SAMPLE_FRACTIONS) {
-      const s = sliceAtZ(canonical, mesh.triangles, z0 + f * (z1 - z0));
+      const s = sliceAtZ(canonical, triangles, z0 + f * (z1 - z0));
       sampledAreas.push(s.materialArea);
       if (!best || s.materialArea > best.materialArea) best = s;
     }
     bands.push({ z0, z1, section: best!, sampledAreas });
   }
+  return bands;
+}
 
-  // Cross-axis bores and regions no feature represents.
+function classifyCylinderRegion(
+  mesh: IndexedMesh,
+  c: CylinderRegion,
+  frame: CanonicalFrame,
+  threshold: number,
+  crossBores: CrossBore[],
+  unmatched: UnmatchedCandidate[],
+): void {
+  const e1 = frame.e1, e2 = frame.e2, axis = frame.axis;
+  const along = Math.abs(dot3(c.axis, axis));
+  if (along >= CAP_COS) return; // part of the extruded profile
+  const cx = Math.abs(dot3(c.axis, e1));
+  const cy = Math.abs(dot3(c.axis, e2));
+  const isCross = along <= WALL_SIN && c.concave && c.coverageRad >= (300 * Math.PI) / 180 && Math.max(cx, cy) >= CAP_COS;
+  if (isCross) {
+    const bore = crossBoreOf(mesh, c, frame, cx >= cy ? 'X' : 'Y');
+    crossBores.push(bore);
+    return;
+  }
+  if (c.area >= threshold) {
+    unmatched.push(regionSummary(mesh, c.tris, 'cylinder',
+      c.concave
+        ? 'Concave cylinder that is neither along the extrusion axis nor a full cardinal cross bore.'
+        : 'Convex cylinder across the extrusion axis (a side boss or edge round) — not representable as a profile or hole.'));
+  }
+}
+
+function classifyPlaneRegion(
+  mesh: IndexedMesh,
+  p: PlaneRegion,
+  axis: V3,
+  threshold: number,
+  unmatched: UnmatchedCandidate[],
+): void {
+  const d = Math.abs(dot3(p.normal, axis));
+  if (d >= CAP_COS || d <= WALL_SIN) return;
+  if (p.area >= threshold) {
+    unmatched.push(regionSummary(mesh, p.tris, 'tilted-plane', 'Plane tilted relative to the extrusion axis (a draft or cap-edge chamfer) — the prismatic profile cannot represent it.'));
+  }
+}
+
+function classifyRegions(
+  mesh: IndexedMesh,
+  seg: Segmentation,
+  frame: CanonicalFrame,
+  threshold: number,
+): { crossBores: CrossBore[]; unmatched: UnmatchedCandidate[] } {
   const crossBores: CrossBore[] = [];
   const unmatched: UnmatchedCandidate[] = [];
-  const threshold = Math.max(0.5, 0.002 * seg.totalArea);
-  const e1 = frame.e1, e2 = frame.e2, axis = frame.axis;
+  const axis = frame.axis;
   for (const c of seg.cylinders) {
-    const along = Math.abs(dot3(c.axis, axis));
-    if (along >= CAP_COS) continue; // part of the extruded profile
-    const cx = Math.abs(dot3(c.axis, e1));
-    const cy = Math.abs(dot3(c.axis, e2));
-    const isCross = along <= WALL_SIN && c.concave && c.coverageRad >= (300 * Math.PI) / 180 && Math.max(cx, cy) >= CAP_COS;
-    if (isCross) {
-      const bore = crossBoreOf(mesh, c, frame, cx >= cy ? 'X' : 'Y');
-      crossBores.push(bore);
-      continue;
-    }
-    if (c.area >= threshold) {
-      unmatched.push(regionSummary(mesh, c.tris, 'cylinder',
-        c.concave
-          ? 'Concave cylinder that is neither along the extrusion axis nor a full cardinal cross bore.'
-          : 'Convex cylinder across the extrusion axis (a side boss or edge round) — not representable as a profile or hole.'));
-    }
+    classifyCylinderRegion(mesh, c, frame, threshold, crossBores, unmatched);
   }
   for (const p of seg.planes) {
-    const d = Math.abs(dot3(p.normal, axis));
-    if (d >= CAP_COS || d <= WALL_SIN) continue;
-    if (p.area >= threshold) {
-      unmatched.push(regionSummary(mesh, p.tris, 'tilted-plane', 'Plane tilted relative to the extrusion axis (a draft or cap-edge chamfer) — the prismatic profile cannot represent it.'));
-    }
+    classifyPlaneRegion(mesh, p, axis, threshold, unmatched);
   }
   for (const f of seg.freeform) {
     if (f.area >= threshold) {
       unmatched.push(regionSummary(mesh, f.tris, 'freeform', 'Surface matched neither a plane nor a cylinder within tolerance.'));
     }
   }
-
-  return {
-    mesh,
-    report,
-    seg,
-    frame,
-    canonical,
-    zMin,
-    zMax,
-    levels,
-    bands,
-    crossBores,
-    unmatched,
-    unmatchedAreaThresholdMm2: threshold,
-    diagonal,
-  };
+  return { crossBores, unmatched };
 }
 
 function crossBoreOf(mesh: IndexedMesh, c: CylinderRegion, frame: CanonicalFrame, label: 'X' | 'Y'): CrossBore {

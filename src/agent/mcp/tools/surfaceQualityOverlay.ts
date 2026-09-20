@@ -7,9 +7,10 @@
 // the PNG is for locating the problem.
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { Face } from 'replicad';
+import type { Face, Shape3D } from 'replicad';
 import { binaryStl } from '../../../kernel/fea/heatmap';
 import { meshShape } from '../../../kernel/backends/occt/meshing';
+import type { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import {
   continuityClassColor,
   evalSurfaceProps,
@@ -21,6 +22,7 @@ import {
 } from '../../../kernel/backends/occt/surfaceQuality';
 import { loadInspectOcctShape } from './inspectShapeLoad';
 import type { Vec3 } from '../../../shared/intent/types';
+import type { GeometryResult } from '../../../shared/worker/workerTypes';
 
 export type SurfaceQualityOverlay = 'zebra' | 'curvature' | 'continuity';
 
@@ -76,9 +78,11 @@ function tubeTris(a: Vec3, b: Vec3, radius: number): Tri[] {
   ];
 }
 
+type OverlayBand = { color: string; tris: Tri[]; name: string };
+
 async function writeOverlayScript(
   outDir: string,
-  bands: Array<{ color: string; tris: Tri[]; name: string }>,
+  bands: OverlayBand[],
 ): Promise<string> {
   const imports: string[] = [];
   for (const band of bands) {
@@ -118,42 +122,7 @@ export async function buildSurfaceQualityOverlay(args: {
   }
 
   if (args.overlay === 'continuity') {
-    const reports = inspectContinuity(loaded.shape);
-    const byClass: Record<ContinuityClass, Tri[]> = { G0: [], G1: [], G2: [], broken: [] };
-    let minX = Infinity, maxX = -Infinity;
-    for (const f of mesh.faces) {
-      for (let i = 0; i < f.vertices.length; i += 3) {
-        const x = f.vertices[i];
-        if (x < minX) minX = x;
-        if (x > maxX) maxX = x;
-      }
-    }
-    const radius = Math.max(0.15, (maxX - minX) * 0.008);
-    const allEdges = (shape as unknown as { edges: Array<{ pointAt: (t: number) => { x: number; y: number; z: number } }> }).edges;
-    for (const r of reports) {
-      const edge = allEdges[r.edgeIndex];
-      if (!edge) continue;
-      const n = 8;
-      for (let i = 0; i < n; i++) {
-        const a = edge.pointAt(i / n);
-        const b = edge.pointAt((i + 1) / n);
-        byClass[r.class].push(...tubeTris([a.x, a.y, a.z], [b.x, b.y, b.z], radius));
-      }
-    }
-    // Ghost body so the edges have a silhouette.
-    const ghost: Tri[] = [];
-    for (const face of mesh.faces) {
-      for (let i = 0; i < face.indices.length; i += 3) {
-        ghost.push(triOf(face.vertices, face.indices[i], face.indices[i + 1], face.indices[i + 2]));
-      }
-    }
-    const bands = [
-      { name: 'ghost', color: '#b8bcc0', tris: ghost },
-      { name: 'g2', color: continuityClassColor('G2'), tris: byClass.G2 },
-      { name: 'g1', color: continuityClassColor('G1'), tris: byClass.G1 },
-      { name: 'g0', color: continuityClassColor('G0'), tris: byClass.G0 },
-      { name: 'broken', color: continuityClassColor('broken'), tris: byClass.broken },
-    ];
+    const bands = buildContinuityBands(loaded.shape, mesh, shape);
     const scriptPath = await writeOverlayScript(overlayDir, bands);
     return { ok: true, scriptPath };
   }
@@ -163,29 +132,86 @@ export async function buildSurfaceQualityOverlay(args: {
   const faces = Array.from((shape as unknown as { faces: Face[] }).faces);
 
   if (args.overlay === 'zebra') {
-    for (const face of mesh.faces) {
-      for (let i = 0; i < face.indices.length; i += 3) {
-        const i0 = face.indices[i], i1 = face.indices[i + 1], i2 = face.indices[i + 2];
-        const n: Vec3 = [
-          (face.normals[i0 * 3] + face.normals[i1 * 3] + face.normals[i2 * 3]) / 3,
-          (face.normals[i0 * 3 + 1] + face.normals[i1 * 3 + 1] + face.normals[i2 * 3 + 1]) / 3,
-          (face.normals[i0 * 3 + 2] + face.normals[i1 * 3 + 2] + face.normals[i2 * 3 + 2]) / 3,
-        ];
-        const s = (zebraStripe(n) + 1) / 2;
-        const band = Math.min(BANDS - 1, Math.max(0, Math.floor(s * BANDS)));
-        buckets[band].push(triOf(face.vertices, i0, i1, i2));
-      }
-    }
-    const bands = buckets.map((tris, i) => {
-      const g = Math.round((i / (BANDS - 1)) * 255);
-      return { name: `zebra-${i}`, color: hex([g, g, g]), tris };
-    });
+    const bands = buildZebraBands(mesh, buckets, BANDS);
     const scriptPath = await writeOverlayScript(overlayDir, bands);
     return { ok: true, scriptPath };
   }
 
   // curvature
-  const curv = inspectCurvature(loaded.shape);
+  const bands = buildCurvatureBands(loaded.shape, mesh, faces, buckets, BANDS);
+  const scriptPath = await writeOverlayScript(overlayDir, bands);
+  return { ok: true, scriptPath };
+}
+
+function buildContinuityBands(loadedShape: OcctBackend, mesh: GeometryResult, shape: Shape3D): OverlayBand[] {
+  const reports = inspectContinuity(loadedShape);
+  const byClass: Record<ContinuityClass, Tri[]> = { G0: [], G1: [], G2: [], broken: [] };
+  let minX = Infinity, maxX = -Infinity;
+  for (const f of mesh.faces) {
+    for (let i = 0; i < f.vertices.length; i += 3) {
+      const x = f.vertices[i];
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+    }
+  }
+  const radius = Math.max(0.15, (maxX - minX) * 0.008);
+  const allEdges = (shape as unknown as { edges: Array<{ pointAt: (t: number) => { x: number; y: number; z: number } }> }).edges;
+  for (const r of reports) {
+    const edge = allEdges[r.edgeIndex];
+    if (!edge) continue;
+    const n = 8;
+    for (let i = 0; i < n; i++) {
+      const a = edge.pointAt(i / n);
+      const b = edge.pointAt((i + 1) / n);
+      byClass[r.class].push(...tubeTris([a.x, a.y, a.z], [b.x, b.y, b.z], radius));
+    }
+  }
+  // Ghost body so the edges have a silhouette.
+  const ghost: Tri[] = [];
+  for (const face of mesh.faces) {
+    for (let i = 0; i < face.indices.length; i += 3) {
+      ghost.push(triOf(face.vertices, face.indices[i], face.indices[i + 1], face.indices[i + 2]));
+    }
+  }
+  const bands = [
+    { name: 'ghost', color: '#b8bcc0', tris: ghost },
+    { name: 'g2', color: continuityClassColor('G2'), tris: byClass.G2 },
+    { name: 'g1', color: continuityClassColor('G1'), tris: byClass.G1 },
+    { name: 'g0', color: continuityClassColor('G0'), tris: byClass.G0 },
+    { name: 'broken', color: continuityClassColor('broken'), tris: byClass.broken },
+  ];
+  return bands;
+}
+
+function buildZebraBands(mesh: GeometryResult, buckets: Tri[][], BANDS: number): OverlayBand[] {
+  for (const face of mesh.faces) {
+    for (let i = 0; i < face.indices.length; i += 3) {
+      const i0 = face.indices[i], i1 = face.indices[i + 1], i2 = face.indices[i + 2];
+      const n: Vec3 = [
+        (face.normals[i0 * 3] + face.normals[i1 * 3] + face.normals[i2 * 3]) / 3,
+        (face.normals[i0 * 3 + 1] + face.normals[i1 * 3 + 1] + face.normals[i2 * 3 + 1]) / 3,
+        (face.normals[i0 * 3 + 2] + face.normals[i1 * 3 + 2] + face.normals[i2 * 3 + 2]) / 3,
+      ];
+      const s = (zebraStripe(n) + 1) / 2;
+      const band = Math.min(BANDS - 1, Math.max(0, Math.floor(s * BANDS)));
+      buckets[band].push(triOf(face.vertices, i0, i1, i2));
+    }
+  }
+  const bands = buckets.map((tris, i) => {
+    const g = Math.round((i / (BANDS - 1)) * 255);
+    return { name: `zebra-${i}`, color: hex([g, g, g]), tris };
+  });
+  return bands;
+}
+
+function buildCurvatureBands(
+  loadedShape: OcctBackend,
+  mesh: GeometryResult,
+  faces: Face[],
+  buckets: Tri[][],
+  BANDS: number,
+): OverlayBand[] {
+  const curv = inspectCurvature(loadedShape);
   const kByFace = new Map(curv.map(c => [c.faceIndex, c]));
   let kMin = Infinity, kMax = -Infinity;
   for (const c of curv) {
@@ -226,6 +252,5 @@ export async function buildSurfaceQualityOverlay(args: {
     const t = BANDS <= 1 ? 0 : i / (BANDS - 1);
     return { name: `curv-${i}`, color: hex(vertexCurvatureColor(t, 0, 1)), tris };
   });
-  const scriptPath = await writeOverlayScript(overlayDir, bands);
-  return { ok: true, scriptPath };
+  return bands;
 }

@@ -8,6 +8,7 @@ describe('headless architecture boundary', () => {
     expect(source).not.toContain('../compute/recomputeEngine');
     expect(source).not.toContain('../backends/occt/occtLowerer');
     expect(source).not.toContain('../../kernel/backends/occt/occtBackend');
-    expect(source).toContain('../buildModel');
+    expect(source).not.toContain('../buildModel');
+    expect(source).toContain('../paramUpdate');
   });
 });

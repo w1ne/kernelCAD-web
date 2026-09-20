@@ -40,7 +40,12 @@
 // to an existing Chrome.
 
 import { Command } from 'commander';
-import { captureAnimation, type CaptureAnimationResult } from '../../render/captureAnimation';
+import {
+  captureAnimation,
+  type CaptureAnimationOpts,
+  type CaptureAnimationResult,
+} from '../../render/captureAnimation';
+import type { HeadlessObjectFilter } from '../../render/headlessRender';
 import { buildObjectFilter } from './render';
 import { formatHuman } from '../../../shared/diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -140,7 +145,7 @@ export function formatAnimateSummary(r: {
   return `Wrote ${r.outPath} — ${r.frameCount} frames, ${r.durationMs} ms @ ${r.fps} fps; ${verdict}`;
 }
 
-export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResult> {
+function refuseAnimateUsage(input: AnimateCliInput): AnimateCliResult | null {
   // Usage refusals — exit 2 before the engine builds anything.
   if (input.out !== undefined && input.frames !== undefined) {
     return usageRefusal(
@@ -173,6 +178,34 @@ export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResu
       safeFps(input.fps),
     );
   }
+  return null;
+}
+
+/** Map the CLI input onto the capture engine's options, forwarding only the
+ *  fields the caller actually supplied. */
+function captureAnimationOptsFor(
+  input: AnimateCliInput,
+  objectFilter: HeadlessObjectFilter | undefined,
+): CaptureAnimationOpts {
+  return {
+    scriptPath: input.file,
+    ...(input.out !== undefined ? { outPath: input.out } : {}),
+    ...(input.frames !== undefined ? { framesDir: input.frames } : {}),
+    ...(input.fps !== undefined ? { fps: input.fps } : {}),
+    ...(input.skipVerify === true ? { skipVerify: true } : {}),
+    ...(input.verifyEvery !== undefined ? { verifyEveryNthFrame: input.verifyEvery } : {}),
+    ...(objectFilter !== undefined ? { objectFilter } : {}),
+    // Only forwarded when actually provided — an always-present value would
+    // take resolveRenderBaseUrl's 'explicit' lane and silently bypass
+    // static-player provisioning (exactly the defect #625 fixed for render).
+    ...(input.baseUrl !== undefined ? { baseUrl: input.baseUrl } : {}),
+    ...(input.onProgress !== undefined ? { onProgress: input.onProgress } : {}),
+  };
+}
+
+export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResult> {
+  const refusal = refuseAnimateUsage(input);
+  if (refusal !== null) return refusal;
   // --focus / --hide → object-visibility filter (render-parity: same builder,
   // same mutual-exclusivity rule). Visibility is render-only and does NOT
   // affect the animation-pose interference verification (it runs on the full
@@ -189,20 +222,7 @@ export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResu
     );
   }
 
-  const result = await captureAnimation({
-    scriptPath: input.file,
-    ...(input.out !== undefined ? { outPath: input.out } : {}),
-    ...(input.frames !== undefined ? { framesDir: input.frames } : {}),
-    ...(input.fps !== undefined ? { fps: input.fps } : {}),
-    ...(input.skipVerify === true ? { skipVerify: true } : {}),
-    ...(input.verifyEvery !== undefined ? { verifyEveryNthFrame: input.verifyEvery } : {}),
-    ...(objectFilter !== undefined ? { objectFilter } : {}),
-    // Only forwarded when actually provided — an always-present value would
-    // take resolveRenderBaseUrl's 'explicit' lane and silently bypass
-    // static-player provisioning (exactly the defect #625 fixed for render).
-    ...(input.baseUrl !== undefined ? { baseUrl: input.baseUrl } : {}),
-    ...(input.onProgress !== undefined ? { onProgress: input.onProgress } : {}),
-  });
+  const result = await captureAnimation(captureAnimationOptsFor(input, objectFilter));
 
   if (result.ok && result.outPath !== undefined) {
     return {

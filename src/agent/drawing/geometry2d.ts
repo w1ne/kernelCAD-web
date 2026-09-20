@@ -167,6 +167,51 @@ function segIntersection(s: Seg2, t: Seg2): { u: number; v: number } | null {
   return { u, v };
 }
 
+/** True when `t`'s axis-aligned bounds overlap `s`'s (padded by `tol`). */
+function segmentBoundsOverlap(s: Seg2, t: Seg2, tol: number): boolean {
+  const minX = Math.min(s.a[0], s.b[0]) - tol, maxX = Math.max(s.a[0], s.b[0]) + tol;
+  const minY = Math.min(s.a[1], s.b[1]) - tol, maxY = Math.max(s.a[1], s.b[1]) + tol;
+  if (Math.max(t.a[0], t.b[0]) < minX || Math.min(t.a[0], t.b[0]) > maxX) return false;
+  if (Math.max(t.a[1], t.b[1]) < minY || Math.min(t.a[1], t.b[1]) > maxY) return false;
+  return true;
+}
+
+/** Cut parameters where an endpoint of `t` touches the interior of `s`. */
+function endpointCutsOn(s: Seg2, t: Seg2, len: number, tol: number): number[] {
+  const cuts: number[] = [];
+  for (const e of [t.a, t.b]) {
+    const { d, t: param } = pointSegment(e, s.a, s.b);
+    if (d <= tol && param * len > tol && (1 - param) * len > tol) cuts.push(param);
+  }
+  return cuts;
+}
+
+/** Cut parameter where `t` properly crosses the interior of `s`, if any. */
+function crossingCutOn(s: Seg2, t: Seg2, len: number, tol: number): number | undefined {
+  const x = segIntersection(s, t);
+  if (x && x.u * len > tol && (1 - x.u) * len > tol) {
+    const tLen = dist(t.a, t.b);
+    if (x.v * tLen > tol && (1 - x.v) * tLen > tol) return x.u;
+  }
+  return undefined;
+}
+
+/** Every cut parameter on segment `i` from all other segments. */
+function collectSegmentCuts(s: Seg2, i: number, segs: readonly Seg2[], tol: number): number[] {
+  const len = dist(s.a, s.b);
+  if (len <= tol) return [];
+  const cuts: number[] = [];
+  for (let j = 0; j < segs.length; j++) {
+    if (i === j) continue;
+    const t = segs[j];
+    if (!segmentBoundsOverlap(s, t, tol)) continue;
+    cuts.push(...endpointCutsOn(s, t, len, tol));
+    const crossing = crossingCutOn(s, t, len, tol);
+    if (crossing !== undefined) cuts.push(crossing);
+  }
+  return cuts;
+}
+
 /**
  * Split every segment wherever another segment's endpoint touches its
  * interior (a T-junction) or two segments properly cross. The boundary walk
@@ -175,26 +220,7 @@ function segIntersection(s: Seg2, t: Seg2): { u: number; v: number } | null {
 export function splitAtJunctions(segs: readonly Seg2[], tol: number): Seg2[] {
   const cuts: number[][] = segs.map(() => []);
   for (let i = 0; i < segs.length; i++) {
-    const s = segs[i];
-    const len = dist(s.a, s.b);
-    if (len <= tol) continue;
-    const minX = Math.min(s.a[0], s.b[0]) - tol, maxX = Math.max(s.a[0], s.b[0]) + tol;
-    const minY = Math.min(s.a[1], s.b[1]) - tol, maxY = Math.max(s.a[1], s.b[1]) + tol;
-    for (let j = 0; j < segs.length; j++) {
-      if (i === j) continue;
-      const t = segs[j];
-      if (Math.max(t.a[0], t.b[0]) < minX || Math.min(t.a[0], t.b[0]) > maxX) continue;
-      if (Math.max(t.a[1], t.b[1]) < minY || Math.min(t.a[1], t.b[1]) > maxY) continue;
-      for (const e of [t.a, t.b]) {
-        const { d, t: param } = pointSegment(e, s.a, s.b);
-        if (d <= tol && param * len > tol && (1 - param) * len > tol) cuts[i].push(param);
-      }
-      const x = segIntersection(s, t);
-      if (x && x.u * len > tol && (1 - x.u) * len > tol) {
-        const tLen = dist(t.a, t.b);
-        if (x.v * tLen > tol && (1 - x.v) * tLen > tol) cuts[i].push(x.u);
-      }
-    }
+    cuts[i] = collectSegmentCuts(segs[i], i, segs, tol);
   }
   const out: Seg2[] = [];
   segs.forEach((s, i) => {
@@ -335,45 +361,62 @@ export interface LoopElement {
  * has ≥ 3 chords, turns consistently one way by < 35° per vertex, and every
  * vertex sits within `tol` of one fitted circle. Everything else stays a line.
  */
-export function recoverArcs(loop: readonly P2[], tol: number): LoopElement[] {
-  const nPts = loop.length;
-  if (nPts < 3) return [];
-  const turnAt = (i: number): number => {
-    const p = loop[(i - 1 + nPts) % nPts], q = loop[i], r = loop[(i + 1) % nPts];
-    const a1 = Math.atan2(q[1] - p[1], q[0] - p[0]);
-    const a2 = Math.atan2(r[1] - q[1], r[0] - q[0]);
-    let d = a2 - a1;
-    while (d > Math.PI) d -= 2 * Math.PI;
-    while (d < -Math.PI) d += 2 * Math.PI;
-    return d;
-  };
+function turnAt(loop: readonly P2[], nPts: number, i: number): number {
+  const p = loop[(i - 1 + nPts) % nPts], q = loop[i], r = loop[(i + 1) % nPts];
+  const a1 = Math.atan2(q[1] - p[1], q[0] - p[0]);
+  const a2 = Math.atan2(r[1] - q[1], r[0] - q[0]);
+  let d = a2 - a1;
+  while (d > Math.PI) d -= 2 * Math.PI;
+  while (d < -Math.PI) d += 2 * Math.PI;
+  return d;
+}
+
+function rotateToSharpCorner(loop: readonly P2[], nPts: number): { pts: P2[]; turns: number[] } {
   // Rotate so the loop starts at a sharp corner, when there is one, so no arc wraps the seam.
   let startIdx = 0;
   for (let i = 0; i < nPts; i++) {
-    if (Math.abs(turnAt(i)) > (35 * Math.PI) / 180) { startIdx = i; break; }
+    if (Math.abs(turnAt(loop, nPts, i)) > (35 * Math.PI) / 180) { startIdx = i; break; }
   }
   const pts = [...loop.slice(startIdx), ...loop.slice(0, startIdx)];
-  const turns = pts.map((_, i) => turnAt((i + startIdx) % nPts));
+  const turns = pts.map((_, i) => turnAt(loop, nPts, (i + startIdx) % nPts));
+  return { pts, turns };
+}
+
+function growArcRun(
+  pts: readonly P2[],
+  turns: readonly number[],
+  i: number,
+  nPts: number,
+  tol: number,
+): { best: number; bestFit: CircleFit | null } {
+  let j = i + 1;
+  let best = -1;
+  let bestFit: CircleFit | null = null;
+  // Grow the run while the interior vertices turn the same way gently.
+  while (j < nPts && j - i <= 256) {
+    const t = turns[j % nPts];
+    const sameSign = Math.sign(t) === Math.sign(turns[(i + 1) % nPts]) && Math.abs(t) > 1e-6;
+    if (!sameSign || Math.abs(t) > (35 * Math.PI) / 180) break;
+    const candidate = pts.slice(i, j + 2 > nPts ? nPts : j + 2);
+    if (j + 1 >= nPts) candidate.push(pts[0]);
+    if (candidate.length >= 4) {
+      const fit = fitCircle(candidate);
+      if (fit && fit.maxResidual <= tol && fit.r > tol * 4) { best = j + 1; bestFit = fit; }
+      else if (best >= 0) break;
+    }
+    j++;
+  }
+  return { best, bestFit };
+}
+
+export function recoverArcs(loop: readonly P2[], tol: number): LoopElement[] {
+  const nPts = loop.length;
+  if (nPts < 3) return [];
+  const { pts, turns } = rotateToSharpCorner(loop, nPts);
   const out: LoopElement[] = [];
   let i = 0;
   while (i < nPts) {
-    let j = i + 1;
-    let best = -1;
-    let bestFit: CircleFit | null = null;
-    // Grow the run while the interior vertices turn the same way gently.
-    while (j < nPts && j - i <= 256) {
-      const t = turns[j % nPts];
-      const sameSign = Math.sign(t) === Math.sign(turns[(i + 1) % nPts]) && Math.abs(t) > 1e-6;
-      if (!sameSign || Math.abs(t) > (35 * Math.PI) / 180) break;
-      const candidate = pts.slice(i, j + 2 > nPts ? nPts : j + 2);
-      if (j + 1 >= nPts) candidate.push(pts[0]);
-      if (candidate.length >= 4) {
-        const fit = fitCircle(candidate);
-        if (fit && fit.maxResidual <= tol && fit.r > tol * 4) { best = j + 1; bestFit = fit; }
-        else if (best >= 0) break;
-      }
-      j++;
-    }
+    const { best, bestFit } = growArcRun(pts, turns, i, nPts, tol);
     if (best >= 0 && bestFit) {
       const a = pts[i];
       const b = pts[best % nPts];

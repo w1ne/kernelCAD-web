@@ -32,10 +32,18 @@ const EMITTING_FILES = [
   'kernel/backends/occt/flattenPattern.ts',      // W2.2
   'modeling/capture/captureSession.ts',
   'modeling/capture/proxy.ts',
+  'modeling/capture/proxyDerivedSketch.ts',
+  'modeling/capture/proxyFeatureChain.ts',
   'modeling/capture/sketch.ts',
+  'modeling/capture/sketchTangency.ts',
   'modeling/capture/faceLabels.ts',
   'shared/fonts/index.ts',
   'modeling/api.ts',
+  'modeling/apiSupport.ts',
+  'modeling/apiShapeMethods.ts',
+  'modeling/apiParamMethods.ts',
+  'modeling/apiSurfaceMethods.ts',
+  'modeling/apiCaptureMethods.ts',
   'modeling/capture/bridgeCurves.ts',
   'modeling/backends/occt/surfaceIntersection.ts',
   'modeling/backends/occt/loftWithRailsLowerer.ts',
@@ -72,6 +80,7 @@ const EMITTING_FILES = [
 // loud instead of silently scanning nothing.
 const EMITTING_DIRS: ReadonlyArray<{ dir: string; minFiles: number }> = [
   { dir: 'modeling/backends/occt/lowerers', minFiles: 21 },
+  { dir: 'kernel/backends/occt/drawingAuto', minFiles: 14 },
 ];
 
 function emitSiteFilesIn(dir: string): string[] {
