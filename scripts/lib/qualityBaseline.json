@@ -709,12 +709,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/sketch.ts",
-    "symbol": "Method 'spline'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/sketchReflect.ts",
     "symbol": "Arrow function",
     "value": 19
@@ -739,18 +733,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/compute/recomputeEngine.ts",
-    "symbol": "Async method 'processRecord'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/directEdit/planDrag.ts",
-    "symbol": "Function 'planDrag'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/export/sdformat/sdfSerializer.ts",
     "symbol": "Async function 'sdfSerialize'",
     "value": 19
@@ -760,12 +742,6 @@
     "file": "src/modeling/export/sdformat/sdfSerializer.ts",
     "symbol": "Function 'urdfInertialToSdf'",
     "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/export/urdf/urdfSerializer.ts",
-    "symbol": "Async function 'urdfSerialize'",
-    "value": 20
   },
   {
     "rule": "complexity",
@@ -781,8 +757,8 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
-    "symbol": "Function 'materialBlock'",
+    "file": "src/modeling/joints/supportedServoRevolute.ts",
+    "symbol": "Function 'preflightSupportedServoRevolute'",
     "value": 20
   },
   {
@@ -829,6 +805,12 @@
   },
   {
     "rule": "complexity",
+    "file": "src/modeling/mates/mechanicalIntent.ts",
+    "symbol": "Async function 'checkRequiredSupport'",
+    "value": 20
+  },
+  {
+    "rule": "complexity",
     "file": "src/modeling/mates/mechanicalPlausibility.ts",
     "symbol": "Function 'analyzeDisconnectedMesh'",
     "value": 19
@@ -836,8 +818,20 @@
   {
     "rule": "complexity",
     "file": "src/modeling/mates/mechanicalTransmission.ts",
+    "symbol": "Async function 'reviewMechanicalTransmission'",
+    "value": 20
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/mates/mechanicalTransmission.ts",
     "symbol": "Function 'pointTriangleDistanceSquared'",
     "value": 16
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/mates/physicalUseCase.ts",
+    "symbol": "Async function 'reviewCertifiedJointLoads'",
+    "value": 20
   },
   {
     "rule": "complexity",
@@ -901,6 +895,12 @@
   },
   {
     "rule": "complexity",
+    "file": "src/modeling/runtime/dfm/clearance.ts",
+    "symbol": "Function 'checkClearance'",
+    "value": 20
+  },
+  {
+    "rule": "complexity",
     "file": "src/modeling/runtime/dfm/fdmOrientation.ts",
     "symbol": "Function 'anchoredChord'",
     "value": 17
@@ -922,6 +922,12 @@
     "file": "src/modeling/runtime/dfm/voidTopology.ts",
     "symbol": "Function 'countMouths'",
     "value": 19
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/runtime/dfm/voxelGrid.ts",
+    "symbol": "Function 'voxelize'",
+    "value": 20
   },
   {
     "rule": "complexity",
@@ -1021,9 +1027,27 @@
   },
   {
     "rule": "complexity",
+    "file": "src/studio/AgentComposer.tsx",
+    "symbol": "Function 'AgentComposer'",
+    "value": 20
+  },
+  {
+    "rule": "complexity",
     "file": "src/studio/StagedEditSlot.tsx",
     "symbol": "Function 'StagedEditContextDetails'",
     "value": 16
+  },
+  {
+    "rule": "complexity",
+    "file": "src/studio/adapters/featureRecordsToCounts.ts",
+    "symbol": "Function 'addRecordKeys'",
+    "value": 20
+  },
+  {
+    "rule": "complexity",
+    "file": "src/studio/adapters/featureRecordsToMates.ts",
+    "symbol": "Function 'jointPrimitiveToSnapshot'",
+    "value": 20
   },
   {
     "rule": "complexity",
@@ -1060,6 +1084,12 @@
     "file": "src/studio/context/workbenchState.ts",
     "symbol": "Function 'workbenchReducer'",
     "value": 19
+  },
+  {
+    "rule": "complexity",
+    "file": "src/studio/hooks/useFaceSelection.ts",
+    "symbol": "Arrow function",
+    "value": 20
   },
   {
     "rule": "complexity",
@@ -1231,12 +1261,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/capture/sketch.ts",
-    "symbol": "Method 'spline'",
-    "value": 117
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/modeling/capture/sketchReflect.ts",
     "symbol": "Function 'reflectSketchCommands'",
     "value": 121
@@ -1249,21 +1273,27 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/export/urdf/urdfSerializer.ts",
-    "symbol": "Async function 'urdfSerialize'",
-    "value": 128
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
     "symbol": "Function 'buildJointBlocks'",
     "value": 102
   },
   {
     "rule": "max-lines-per-function",
+    "file": "src/modeling/joints/supportedServoRevolute.ts",
+    "symbol": "Function 'preflightSupportedServoRevolute'",
+    "value": 119
+  },
+  {
+    "rule": "max-lines-per-function",
     "file": "src/modeling/mates/jointVisualExposure.ts",
     "symbol": "Function 'measureJointVisuals'",
     "value": 101
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/modeling/mates/physicalUseCase.ts",
+    "symbol": "Async function 'reviewCertifiedJointLoads'",
+    "value": 133
   },
   {
     "rule": "max-lines-per-function",
@@ -1279,6 +1309,12 @@
   },
   {
     "rule": "max-lines-per-function",
+    "file": "src/modeling/runtime/dfm/clearance.ts",
+    "symbol": "Function 'checkClearance'",
+    "value": 112
+  },
+  {
+    "rule": "max-lines-per-function",
     "file": "src/modeling/runtime/dfm/fdmOrientation.ts",
     "symbol": "Function 'analyzeBuildDirection'",
     "value": 139
@@ -1288,6 +1324,12 @@
     "file": "src/server/sessionPool.ts",
     "symbol": "Function 'createSessionPool'",
     "value": 144
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/studio/AgentComposer.tsx",
+    "symbol": "Function 'AgentComposer'",
+    "value": 133
   },
   {
     "rule": "max-lines-per-function",
