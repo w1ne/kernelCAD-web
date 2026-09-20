@@ -217,12 +217,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/resolveTopoRef.ts",
-    "symbol": "Async function 'resolveTopoRefTool'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/reviewPaint.ts",
     "symbol": "Async function 'reviewPaintPeekLatestTool'",
     "value": 16
@@ -308,20 +302,8 @@
   {
     "rule": "complexity",
     "file": "src/agent/reconstruct/segment.ts",
-    "symbol": "Function 'fitCylinder'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/reconstruct/segment.ts",
     "symbol": "Function 'growPlanes'",
     "value": 19
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/reconstruct/segment.ts",
-    "symbol": "Function 'segmentMesh'",
-    "value": 20
   },
   {
     "rule": "complexity",
@@ -334,12 +316,6 @@
     "file": "src/agent/repair/candidates.ts",
     "symbol": "Function 'recentreEmbossAnchor'",
     "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/repair/candidates.ts",
-    "symbol": "Function 'recentreHoleOnFace'",
-    "value": 20
   },
   {
     "rule": "complexity",
@@ -394,12 +370,6 @@
     "file": "src/kernel/backends/occt/drawingAnnotations.ts",
     "symbol": "Arrow function",
     "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/backends/occt/drawingAuto/collectPhases.ts",
-    "symbol": "Function 'collectHolePositionDimensions'",
-    "value": 20
   },
   {
     "rule": "complexity",
