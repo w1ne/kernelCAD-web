@@ -139,12 +139,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/planPhases/runs.ts",
-    "symbol": "Function 'decomposeRun'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/segment.ts",
     "symbol": "Function 'adoptFragments'",
     "value": 16
