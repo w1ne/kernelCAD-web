@@ -397,12 +397,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/studio/components/Layout/StatusBar.tsx",
-    "symbol": "Function 'StatusBar'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/components/inputs/useNumericScrub.ts",
     "symbol": "Function 'useNumericScrub'",
     "value": 16
