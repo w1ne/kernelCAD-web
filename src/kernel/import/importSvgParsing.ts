@@ -87,50 +87,8 @@ export function parseTransform(spec: string, where: string): Matrix {
   while ((m = TRANSFORM_FN.exec(spec)) !== null) {
     matched++;
     const name = m[1];
-    const args = m[2].trim().split(/[\s,]+/).filter(s => s !== '').map(Number);
-    if (args.some(v => !Number.isFinite(v))) {
-      throw new SvgParseError(
-        'malformed-attribute',
-        `${where}: transform '${name}(${m[2].trim()})' has a non-numeric argument.`,
-      );
-    }
-    let step: Matrix;
-    switch (name) {
-      case 'translate':
-        step = [1, 0, 0, 1, args[0] ?? 0, args[1] ?? 0];
-        break;
-      case 'scale':
-        step = [args[0] ?? 1, 0, 0, args[1] ?? args[0] ?? 1, 0, 0];
-        break;
-      case 'rotate': {
-        const a = ((args[0] ?? 0) * Math.PI) / 180;
-        const rot: Matrix = [Math.cos(a), Math.sin(a), -Math.sin(a), Math.cos(a), 0, 0];
-        if (args.length >= 3) {
-          step = mul(mul([1, 0, 0, 1, args[1], args[2]], rot), [1, 0, 0, 1, -args[1], -args[2]]);
-        } else {
-          step = rot;
-        }
-        break;
-      }
-      case 'matrix':
-        if (args.length !== 6) {
-          throw new SvgParseError(
-            'malformed-attribute',
-            `${where}: transform 'matrix' needs 6 numbers, got ${args.length}.`,
-          );
-        }
-        step = [args[0], args[1], args[2], args[3], args[4], args[5]];
-        break;
-      default:
-        // skewX/skewY are representable as a matrix, but they are rare enough
-        // in exported CAD profiles that supporting them untested would be a
-        // worse trade than naming them.
-        throw new SvgParseError(
-          'unsupported-element',
-          `${where}: transform function '${name}(...)' is not supported. ` +
-            'Supported: translate, scale, rotate, matrix. Flatten the transform in the source tool.',
-        );
-    }
+    const args = parseTransformArgs(m[2], where, name);
+    const step = transformStep(name, args, where);
     out = mul(out, step);
   }
   if (matched === 0 && spec.trim() !== '') {
@@ -140,6 +98,66 @@ export function parseTransform(spec: string, where: string): Matrix {
     );
   }
   return out;
+}
+
+function parseTransformArgs(rawArgs: string, where: string, name: string): number[] {
+  const args = rawArgs.trim().split(/[\s,]+/).filter(s => s !== '').map(Number);
+  if (args.some(v => !Number.isFinite(v))) {
+    throw new SvgParseError(
+      'malformed-attribute',
+      `${where}: transform '${name}(${rawArgs.trim()})' has a non-numeric argument.`,
+    );
+  }
+  return args;
+}
+
+function transformStep(name: string, args: number[], where: string): Matrix {
+  switch (name) {
+    case 'translate':
+      return translateStep(args);
+    case 'scale':
+      return scaleStep(args);
+    case 'rotate':
+      return rotateStep(args);
+    case 'matrix':
+      return matrixStep(args, where);
+    default:
+      // skewX/skewY are representable as a matrix, but they are rare enough
+      // in exported CAD profiles that supporting them untested would be a
+      // worse trade than naming them.
+      throw new SvgParseError(
+        'unsupported-element',
+        `${where}: transform function '${name}(...)' is not supported. ` +
+          'Supported: translate, scale, rotate, matrix. Flatten the transform in the source tool.',
+      );
+  }
+}
+
+function translateStep(args: number[]): Matrix {
+  return [1, 0, 0, 1, args[0] ?? 0, args[1] ?? 0];
+}
+
+function scaleStep(args: number[]): Matrix {
+  return [args[0] ?? 1, 0, 0, args[1] ?? args[0] ?? 1, 0, 0];
+}
+
+function rotateStep(args: number[]): Matrix {
+  const a = ((args[0] ?? 0) * Math.PI) / 180;
+  const rot: Matrix = [Math.cos(a), Math.sin(a), -Math.sin(a), Math.cos(a), 0, 0];
+  if (args.length >= 3) {
+    return mul(mul([1, 0, 0, 1, args[1], args[2]], rot), [1, 0, 0, 1, -args[1], -args[2]]);
+  }
+  return rot;
+}
+
+function matrixStep(args: number[], where: string): Matrix {
+  if (args.length !== 6) {
+    throw new SvgParseError(
+      'malformed-attribute',
+      `${where}: transform 'matrix' needs 6 numbers, got ${args.length}.`,
+    );
+  }
+  return [args[0], args[1], args[2], args[3], args[4], args[5]];
 }
 
 // ---------------------------------------------------------------------------

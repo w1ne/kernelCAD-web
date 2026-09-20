@@ -103,6 +103,26 @@ export function evaluateUnique<T>(
 // AST dispatch.
 // ---------------------------------------------------------------------------
 
+/** Set-algebra AST nodes: each composes child ASTs. */
+type SetAlgebraAst = Extract<QueryAst, { op: 'union' | 'intersection' | 'subtraction' }>;
+
+/** Filter-style AST nodes: each narrows a nested sub-query (or, for
+ *  fromString, resolves a topology ref). */
+type FilterAst = Extract<
+  QueryAst,
+  {
+    op:
+      | 'containsPoint'
+      | 'closestTo'
+      | 'geometryType'
+      | 'entityFilter'
+      | 'withLabel'
+      | 'withFeatureName'
+      | 'nthElement'
+      | 'fromString';
+  }
+>;
+
 function evalAst(
   ast: QueryAst,
   scene: QueryScene,
@@ -122,12 +142,34 @@ function evalAst(
       // For now, return [] so composed queries don't crash on part-side
       // sub-queries during face-only evaluation.
       return [];
+  }
+  return evalComposedAst(ast, scene, lenient, originatingQuery);
+}
+
+function evalComposedAst(
+  ast: SetAlgebraAst | FilterAst,
+  scene: QueryScene,
+  lenient: boolean,
+  originatingQuery: Query<unknown>,
+): ResolvedEntity[] {
+  switch (ast.op) {
     case 'union':
       return setAlgebraUnion(ast.queries, scene, lenient, originatingQuery);
     case 'intersection':
       return setAlgebraIntersection(ast.queries, scene, lenient, originatingQuery);
     case 'subtraction':
       return setAlgebraSubtraction(ast.a, ast.b, scene, lenient, originatingQuery);
+  }
+  return evalFilterAst(ast, scene, lenient, originatingQuery);
+}
+
+function evalFilterAst(
+  ast: FilterAst,
+  scene: QueryScene,
+  lenient: boolean,
+  originatingQuery: Query<unknown>,
+): ResolvedEntity[] {
+  switch (ast.op) {
     case 'containsPoint':
       return filterContainsPoint(
         evalAst(ast.query, scene, lenient, originatingQuery),

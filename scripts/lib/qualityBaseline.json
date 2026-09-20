@@ -217,33 +217,15 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/drawingAnnotations.ts",
-    "symbol": "Arrow function",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/drawingAuto/placePhases.ts",
     "symbol": "Function 'placeRadiusAndChamferNotes'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/drawingFeatures.ts",
-    "symbol": "Function 'recogniseChamfers'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/edgeSelection.ts",
     "symbol": "Function 'resolveEdgesRef'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/kernel/backends/occt/meshing.ts",
-    "symbol": "Function 'meshFaceToGeometry'",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -277,14 +259,20 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/import/importSvgParsing.ts",
-    "symbol": "Function 'parseTransform'",
+    "file": "src/modeling/apiSurfaceMethods.ts",
+    "symbol": "Method 'variableSweep'",
     "value": 17
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/naming/queryEvaluator.ts",
-    "symbol": "Function 'evalAst'",
+    "file": "src/modeling/backends/occt/lowerers/assembly.ts",
+    "symbol": "Function 'lowerAssemblyModel'",
+    "value": 17
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/backends/occt/lowerers/edgeFeatures.ts",
+    "symbol": "Function 'applyVariableEdgeFeature'",
     "value": 17
   },
   {
@@ -292,6 +280,18 @@
     "file": "src/modeling/backends/occt/projectCurveLowerer.ts",
     "symbol": "Async function 'lowerProjectCurve'",
     "value": 16
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/backends/occt/variableSweepLowerer.ts",
+    "symbol": "Function 'lowerVariableSweep'",
+    "value": 17
+  },
+  {
+    "rule": "complexity",
+    "file": "src/modeling/capture/assemblyMateCapacity.ts",
+    "symbol": "Function 'validateMateCapacityOptions'",
+    "value": 17
   },
   {
     "rule": "complexity",
@@ -613,12 +613,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/drawingAnnotations.ts",
-    "symbol": "Function 'renderAnnotations'",
-    "value": 118
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/kernel/backends/occt/drawingSections.ts",
     "symbol": "Function 'renderObliqueSection'",
     "value": 105
@@ -664,6 +658,12 @@
     "file": "src/modeling/apiCaptureMethods.ts",
     "symbol": "Function 'makeCaptureMethods'",
     "value": 101
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/modeling/apiSurfaceMethods.ts",
+    "symbol": "Function 'makeSweepMethods'",
+    "value": 117
   },
   {
     "rule": "max-lines-per-function",
