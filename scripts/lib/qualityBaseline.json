@@ -278,12 +278,6 @@
   {
     "rule": "complexity",
     "file": "src/agent/reconstruct/profileParams.ts",
-    "symbol": "Function 'paramProfile'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
-    "file": "src/agent/reconstruct/profileParams.ts",
     "symbol": "Function 'rectilinearCorners'",
     "value": 17
   },
