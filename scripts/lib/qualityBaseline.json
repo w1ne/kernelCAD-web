@@ -385,12 +385,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/shared/codeGeneration/stripTypeScript.ts",
-    "symbol": "Arrow function#3",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/StagedEditSlot.tsx",
     "symbol": "Function 'StagedEditContextDetails'",
     "value": 16

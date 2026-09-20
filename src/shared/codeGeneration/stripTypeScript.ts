@@ -77,6 +77,26 @@ const skipString = (st: StripState, quote: string): void => {
     }
 };
 
+const skipTemplateInterpolation = (st: StripState): void => {
+    st.i += 2;
+    let depth = 1;
+    while (st.i < st.n && depth > 0) {
+        const inner = st.source[st.i];
+        if (inner === '\\') {
+            st.i += 2;
+            continue;
+        }
+        if (inner === '`' || inner === '"' || inner === "'") {
+            skipString(st, inner);
+            continue;
+        }
+        if (inner === '{') depth++;
+        else if (inner === '}') depth--;
+        if (depth > 0) st.i++;
+    }
+    if (st.source[st.i] === '}') st.i++;
+};
+
 const skipTemplate = (st: StripState): void => {
     st.i++;
     while (st.i < st.n) {
@@ -90,23 +110,7 @@ const skipTemplate = (st: StripState): void => {
             return;
         }
         if (c === '$' && st.source[st.i + 1] === '{') {
-            st.i += 2;
-            let depth = 1;
-            while (st.i < st.n && depth > 0) {
-                const inner = st.source[st.i];
-                if (inner === '\\') {
-                    st.i += 2;
-                    continue;
-                }
-                if (inner === '`' || inner === '"' || inner === "'") {
-                    skipString(st, inner);
-                    continue;
-                }
-                if (inner === '{') depth++;
-                else if (inner === '}') depth--;
-                if (depth > 0) st.i++;
-            }
-            if (st.source[st.i] === '}') st.i++;
+            skipTemplateInterpolation(st);
             continue;
         }
         st.i++;
