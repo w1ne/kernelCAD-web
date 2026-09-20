@@ -223,32 +223,32 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseStatics.ts",
-    "symbol": "Function 'validateActuatorLimit'",
+    "file": "src/modeling/runtime/dfm/minWall.ts",
+    "symbol": "Function 'checkMinWall'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseStaticsPhases.ts",
-    "symbol": "Function 'resolveStaticLoads'",
+    "file": "src/modeling/runtime/explodedPoses.ts",
+    "symbol": "Function 'mateAxisOffsets'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/poseEnvelope.ts",
-    "symbol": "Function 'buildPoseEnvelopeSamples'",
+    "file": "src/modeling/runtime/mechanismTruth.ts",
+    "symbol": "Function 'buildPartAdjacency'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/solver.ts",
-    "symbol": "Function 'jointTransformForMate'",
+    "file": "src/modeling/runtime/meshDeviation.ts",
+    "symbol": "Function 'pointTriangleDistanceSq'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/solver.ts",
-    "symbol": "Function 'mateFk'",
+    "file": "src/server/middleware/sourceEndpoint.ts",
+    "symbol": "Async function 'sourceHandler'",
     "value": 16
   },
   {
