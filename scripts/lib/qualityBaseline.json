@@ -103,12 +103,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/demoPlayer/demoPlayerApiFactory.ts",
-    "symbol": "Function 'captureInspectionChannels'",
-    "value": 112
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/inputs/NumericScrubInput.tsx",
     "symbol": "Function 'NumericScrubInput'",
     "value": 105
