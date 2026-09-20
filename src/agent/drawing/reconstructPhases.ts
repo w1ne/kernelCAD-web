@@ -39,48 +39,76 @@ export function applyRadialCallouts(
   issues: DrawingIssue[],
 ): void {
   for (const callout of callouts) {
-    if (callout.parsed.reference) continue;
-    let best: { c: ViewCircle; err: number } | null = null;
-    for (const g of geometry) {
-      for (const c of g.circles) {
-        const { cx, cy, r } = c.sheet;
-        const rimErr = Math.min(...callout.tips.map(t => Math.abs(Math.hypot(t[0] - cx, t[1] - cy) - r)));
-        if (rimErr > Math.max(0.15, 0.05 * r)) continue;
-        if (callout.stem && pointLine([cx, cy], callout.stem[0], callout.stem[1]) > Math.max(0.3, 0.08 * r)) continue;
-        if (!best || rimErr < best.err) best = { c, err: rimErr };
-      }
-    }
-    const value = callout.parsed.value * mmPerUnit * (callout.parsed.kind === 'radius' ? 2 : 1);
-    if (!best) {
-      issues.push({
-        code: 'reference.drawing.dimension-unassociated',
-        severity: 'warn',
-        message: `callout '${callout.text.text}' points at no circle in any view; its value was not applied.`,
-      });
-      facts.push({
-        id: `unapplied:${callout.text.text}`,
-        statement: `Callout '${callout.text.text}' could not be tied to a circle, so it did not drive the model.`,
-        kind: 'visible', source: 'dimension', region: textRegion(callout), value, confidence: 1, open: true,
-      });
-      continue;
-    }
-    const target = best.c;
-    const group = geometry
-      .find(g => g.view === target.view)!.circles
-      .filter(c => c.hidden === target.hidden && Math.abs(c.r - target.r) <= Math.max(tolModel, 0.02 * target.r));
-    const members = callout.parsed.count > 1 ? group : [target];
-    for (const c of members) {
-      c.statedDiameter = value;
-      c.callout = callout;
-    }
-    if (callout.parsed.count > 1 && group.length !== callout.parsed.count) {
-      facts.push({
-        id: `count:${callout.text.text}`,
-        statement: `Callout '${callout.text.text}' states ${callout.parsed.count} features; ${group.length} matching circle(s) are drawn in the ${target.view.name} view.`,
-        kind: 'visible', source: 'dimension', region: textRegion(callout), value: group.length, confidence: 1, open: true,
-      });
+    applyRadialCallout(callout, geometry, mmPerUnit, tolModel, facts, issues);
+  }
+}
+
+function applyRadialCallout(
+  callout: SheetAnalysis['radialCallouts'][number],
+  geometry: readonly ViewGeometry[],
+  mmPerUnit: number,
+  tolModel: number,
+  facts: FactBook,
+  issues: DrawingIssue[],
+): void {
+  if (callout.parsed.reference) return;
+  const best = findRimCircle(callout, geometry);
+  const value = callout.parsed.value * mmPerUnit * (callout.parsed.kind === 'radius' ? 2 : 1);
+  if (!best) {
+    recordUnassociatedCallout(callout, value, facts, issues);
+    return;
+  }
+  const target = best.c;
+  const group = geometry
+    .find(g => g.view === target.view)!.circles
+    .filter(c => c.hidden === target.hidden && Math.abs(c.r - target.r) <= Math.max(tolModel, 0.02 * target.r));
+  const members = callout.parsed.count > 1 ? group : [target];
+  for (const c of members) {
+    c.statedDiameter = value;
+    c.callout = callout;
+  }
+  if (callout.parsed.count > 1 && group.length !== callout.parsed.count) {
+    facts.push({
+      id: `count:${callout.text.text}`,
+      statement: `Callout '${callout.text.text}' states ${callout.parsed.count} features; ${group.length} matching circle(s) are drawn in the ${target.view.name} view.`,
+      kind: 'visible', source: 'dimension', region: textRegion(callout), value: group.length, confidence: 1, open: true,
+    });
+  }
+}
+
+function findRimCircle(
+  callout: SheetAnalysis['radialCallouts'][number],
+  geometry: readonly ViewGeometry[],
+): { c: ViewCircle; err: number } | null {
+  let best: { c: ViewCircle; err: number } | null = null;
+  for (const g of geometry) {
+    for (const c of g.circles) {
+      const { cx, cy, r } = c.sheet;
+      const rimErr = Math.min(...callout.tips.map(t => Math.abs(Math.hypot(t[0] - cx, t[1] - cy) - r)));
+      if (rimErr > Math.max(0.15, 0.05 * r)) continue;
+      if (callout.stem && pointLine([cx, cy], callout.stem[0], callout.stem[1]) > Math.max(0.3, 0.08 * r)) continue;
+      if (!best || rimErr < best.err) best = { c, err: rimErr };
     }
   }
+  return best;
+}
+
+function recordUnassociatedCallout(
+  callout: SheetAnalysis['radialCallouts'][number],
+  value: number,
+  facts: FactBook,
+  issues: DrawingIssue[],
+): void {
+  issues.push({
+    code: 'reference.drawing.dimension-unassociated',
+    severity: 'warn',
+    message: `callout '${callout.text.text}' points at no circle in any view; its value was not applied.`,
+  });
+  facts.push({
+    id: `unapplied:${callout.text.text}`,
+    statement: `Callout '${callout.text.text}' could not be tied to a circle, so it did not drive the model.`,
+    kind: 'visible', source: 'dimension', region: textRegion(callout), value, confidence: 1, open: true,
+  });
 }
 
 /** A view showing only concentric circles (a turned part's end view), if any. */
