@@ -241,12 +241,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/solver.ts",
-    "symbol": "Function 'jointTransformForMate'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/runtime/dfm/minWall.ts",
     "symbol": "Function 'checkMinWall'",
     "value": 16

@@ -758,12 +758,12 @@ function jointTransformForMate(
       return Transform.identity();
     case 'revolute': {
       const deg = (pose as number | undefined) ?? 0;
-      const ax = (parentConnector.axis ?? [0, 0, 1]) as Se3Vec3;
+      const ax = connectorAxis(parentConnector);
       return Transform.rotationAxisAngleDeg(ax, deg);
     }
     case 'prismatic': {
       const stroke = (pose as number | undefined) ?? 0;
-      const ax = (parentConnector.axis ?? [0, 0, 1]) as Se3Vec3;
+      const ax = connectorAxis(parentConnector);
       const len = Math.hypot(ax[0], ax[1], ax[2]) || 1;
       const dx = (ax[0] / len) * stroke;
       const dy = (ax[1] / len) * stroke;
@@ -778,7 +778,7 @@ function jointTransformForMate(
       // for pin_slot) defaults to 0. A multi-DOF pose surface lands when
       // Pattern A grows beyond scalar/triple inputs.
       const deg = (pose as number | undefined) ?? 0;
-      const ax = (parentConnector.axis ?? [0, 0, 1]) as Se3Vec3;
+      const ax = connectorAxis(parentConnector);
       return Transform.rotationAxisAngleDeg(ax, deg);
     }
     case 'ball': {
@@ -796,4 +796,10 @@ function jointTransformForMate(
       );
     }
   }
+}
+
+/** The parent connector's rotation / translation axis with the documented
+ *  `+Z` default when the connector omits one. */
+function connectorAxis(parentConnector: Connector): Se3Vec3 {
+  return (parentConnector.axis ?? [0, 0, 1]) as Se3Vec3;
 }
