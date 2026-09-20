@@ -408,12 +408,6 @@
     "value": 16
   },
   {
-    "rule": "complexity",
-    "file": "src/studio/hooks/viewer/useDirectEditDrag.ts",
-    "symbol": "Async arrow function",
-    "value": 16
-  },
-  {
     "rule": "max-lines-per-function",
     "file": "src/agent/cli/commands/render.ts",
     "symbol": "Function 'renderCommand'",
@@ -694,12 +688,6 @@
     "file": "src/studio/hooks/useRecomputeResult.ts",
     "symbol": "Function 'useRecomputeResult'",
     "value": 103
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/hooks/viewer/useDirectEditDrag.ts",
-    "symbol": "Function 'useDirectEditDrag'",
-    "value": 101
   },
   {
     "rule": "max-lines-per-function",
