@@ -643,12 +643,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/runtime/dfm/meshBvh.ts",
-    "symbol": "Method 'raycast'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/runtime/dfm/minWall.ts",
     "symbol": "Function 'checkMinWall'",
     "value": 16
