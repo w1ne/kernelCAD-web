@@ -304,6 +304,64 @@ interface JointVisuals {
   readonly pinStickout: number;
 }
 
+interface ParentFace {
+  readonly axisMin: number;
+  readonly axisMax: number;
+  readonly perpMax: number;
+  readonly perpOverlapFraction: number;
+}
+
+/** Walk the parent's BREP faces and project each onto the joint axis and the
+ *  perpendicular (u, v) frame, pre-computing the (axis-range, perp-extent,
+ *  perp-overlap-fraction-against-child) triple the plate-like filter reads. */
+function collectParentFaces(
+  parent: OcctBackend,
+  axisOrigin: Vec3,
+  axisDir: Vec3,
+  u: Vec3,
+  v: Vec3,
+  childPerpProj: { uMin: number; uMax: number; vMin: number; vMax: number },
+  childPerpArea: number,
+): ParentFace[] {
+  const parentFaces: ParentFace[] = [];
+  const replicadShape = parent.getReplicadShape();
+  for (const face of replicadShape.faces) {
+    const bb = face.boundingBox.bounds;
+    const aabbMin = bb[0] as Vec3;
+    const aabbMax = bb[1] as Vec3;
+    const range = projectAabbToAxis(aabbMin, aabbMax, axisOrigin, axisDir);
+    const perp = perpendicularProjection(aabbMin, aabbMax, u, v);
+    // Overlap rectangle of (face perp AABB) ∩ (child perp AABB) in (u, v).
+    // Fraction is taken over the SMALLER of the face's own perp area
+    // and the child's perp area — this captures "the face's silhouette
+    // largely sits inside the child's silhouette" without being thrown
+    // off when EITHER party has a much larger overall extent (e.g. the
+    // lower-arm child whose perp AABB extends way past the fork plate
+    // because the arm beam stretches L_LOWER=200 mm perpendicular to
+    // the joint axis, while the actual fork plate is only 22 mm in
+    // that dimension). The plate is a "real fork plate" if its
+    // silhouette substantially overlaps the child's silhouette IN THE
+    // REGION WHERE BOTH EXIST.
+    const oUMin = Math.max(perp.uMin, childPerpProj.uMin);
+    const oUMax = Math.min(perp.uMax, childPerpProj.uMax);
+    const oVMin = Math.max(perp.vMin, childPerpProj.vMin);
+    const oVMax = Math.min(perp.vMax, childPerpProj.vMax);
+    const overlapW = Math.max(0, oUMax - oUMin);
+    const overlapH = Math.max(0, oVMax - oVMin);
+    const overlapArea = overlapW * overlapH;
+    const facePerpArea = (perp.uMax - perp.uMin) * (perp.vMax - perp.vMin);
+    const denomArea = Math.min(facePerpArea, childPerpArea);
+    const perpOverlapFraction = denomArea > 0 ? overlapArea / denomArea : 0;
+    parentFaces.push({
+      axisMin: range.min,
+      axisMax: range.max,
+      perpMax: Math.max(perp.uMax - perp.uMin, perp.vMax - perp.vMin),
+      perpOverlapFraction,
+    });
+  }
+  return parentFaces;
+}
+
 /**
  * Closed-form measurement of (a) the fork-plate gap ratio and (b) the
  * pin-stickout, both from the joint-axis-projected face/AABB data.
@@ -384,48 +442,15 @@ function measureJointVisuals(
   // Walk parent faces and collect their (axis-range, perp-extent,
   // perp-overlap) per face so we don't recompute the AABB-corner
   // projection twice.
-  interface ParentFace {
-    readonly axisMin: number;
-    readonly axisMax: number;
-    readonly perpMax: number;
-    readonly perpOverlapFraction: number;
-  }
-  const parentFaces: ParentFace[] = [];
-  const replicadShape = parent.getReplicadShape();
-  for (const face of replicadShape.faces) {
-    const bb = face.boundingBox.bounds;
-    const aabbMin = bb[0] as Vec3;
-    const aabbMax = bb[1] as Vec3;
-    const range = projectAabbToAxis(aabbMin, aabbMax, axisOrigin, axisDir);
-    const perp = perpendicularProjection(aabbMin, aabbMax, u, v);
-    // Overlap rectangle of (face perp AABB) ∩ (child perp AABB) in (u, v).
-    // Fraction is taken over the SMALLER of the face's own perp area
-    // and the child's perp area — this captures "the face's silhouette
-    // largely sits inside the child's silhouette" without being thrown
-    // off when EITHER party has a much larger overall extent (e.g. the
-    // lower-arm child whose perp AABB extends way past the fork plate
-    // because the arm beam stretches L_LOWER=200 mm perpendicular to
-    // the joint axis, while the actual fork plate is only 22 mm in
-    // that dimension). The plate is a "real fork plate" if its
-    // silhouette substantially overlaps the child's silhouette IN THE
-    // REGION WHERE BOTH EXIST.
-    const oUMin = Math.max(perp.uMin, childPerpProj.uMin);
-    const oUMax = Math.min(perp.uMax, childPerpProj.uMax);
-    const oVMin = Math.max(perp.vMin, childPerpProj.vMin);
-    const oVMax = Math.min(perp.vMax, childPerpProj.vMax);
-    const overlapW = Math.max(0, oUMax - oUMin);
-    const overlapH = Math.max(0, oVMax - oVMin);
-    const overlapArea = overlapW * overlapH;
-    const facePerpArea = (perp.uMax - perp.uMin) * (perp.vMax - perp.vMin);
-    const denomArea = Math.min(facePerpArea, childPerpArea);
-    const perpOverlapFraction = denomArea > 0 ? overlapArea / denomArea : 0;
-    parentFaces.push({
-      axisMin: range.min,
-      axisMax: range.max,
-      perpMax: Math.max(perp.uMax - perp.uMin, perp.vMax - perp.vMin),
-      perpOverlapFraction,
-    });
-  }
+  const parentFaces = collectParentFaces(
+    parent,
+    axisOrigin,
+    axisDir,
+    u,
+    v,
+    childPerpProj,
+    childPerpArea,
+  );
   const isPlateLike = (f: ParentFace): boolean =>
     (f.axisMax - f.axisMin) <= axisThickThreshold
     && f.perpMax >= platePerpThreshold

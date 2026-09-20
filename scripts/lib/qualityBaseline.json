@@ -73,12 +73,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/mates/jointVisualExposure.ts",
-    "symbol": "Function 'measureJointVisuals'",
-    "value": 101
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/modeling/parts/fetchPart.ts",
     "symbol": "Async function 'fetchPartFromUrlHost'",
     "value": 104
