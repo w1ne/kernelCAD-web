@@ -583,12 +583,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/backends/occt/lowerers/loft.ts",
-    "symbol": "Async function 'loftSketchSections'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/backends/occt/lowerers/mirrorPattern.ts",
     "symbol": "Function 'lowerPattern'",
     "value": 18
