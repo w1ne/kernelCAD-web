@@ -103,12 +103,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/edits/removeFeature.ts",
-    "symbol": "Function 'scanLineForTopLevelReturn'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/edits/setParamValue.ts",
     "symbol": "Function 'scanArgEnd'",
     "value": 17
