@@ -28,6 +28,13 @@ describe('parseSweepArgs prompt flags', () => {
       parseSweepArgs(['--cases', 'stool', '--prompt-preset', 'v1', '--skills', 'kernelcad']),
     ).toThrow(/--skills only applies/);
   });
+
+  it('parses tool-loop flags', () => {
+    const cfg = parseSweepArgs(['--cases', 'stool', '--tool-loop', '--tool-max-calls', '5']);
+    expect(cfg.toolLoop).toBe(true);
+    expect(cfg.toolMaxCalls).toBe(5);
+    expect(parseSweepArgs(['--cases', 'stool']).toolLoop).toBe(false);
+  });
 });
 
 describe('resolvePromptPlan', () => {

@@ -7,6 +7,8 @@ import { join, resolve } from 'node:path';
 import { MockAgentClient } from '../eval/agent';
 import { OpenAICompatAgentClient } from '../eval/agentOpenAICompat';
 import { generateCase, scoreCase } from '../eval/runner';
+import { generateCaseWithTools } from '../eval/lib/toolGenerate';
+import type { ToolChatClient } from '../eval/lib/toolLoop';
 import { buildSweepPrompt, loadPresets } from '../eval/lib/sweepPrompt';
 import { injectCookbook } from '../eval/cookbook-injector';
 import { buildSystemPrompt, SWEEP_SKILLS } from '../eval/lib/systemPrompt';
@@ -36,6 +38,8 @@ interface SweepConfig {
   maxTokens: number;
   skills: string[];
   promptPreset: string;
+  toolLoop: boolean;
+  toolMaxCalls: number;
   useCookbook: boolean;
   skipJudge: boolean;
   force: Set<string>;
@@ -111,6 +115,10 @@ export function parseSweepArgs(argv: string[]): SweepConfig {
   if (!Number.isInteger(maxTokens) || maxTokens < 1) fail(`--max-tokens must be an integer >= 1`);
   const maxTokensIn = Number(flagValue('--max-tokens-in') ?? 25_000_000);
   if (!Number.isFinite(maxTokensIn)) fail(`--max-tokens-in must be a number`);
+  const toolMaxCalls = Number(flagValue('--tool-max-calls') ?? 8);
+  if (!Number.isInteger(toolMaxCalls) || toolMaxCalls < 1) {
+    fail(`--tool-max-calls must be an integer >= 1, got ${toolMaxCalls}`);
+  }
 
   const promptPreset = flagValue('--prompt-preset') ?? 'full';
   const presets = loadPresets();
@@ -141,6 +149,8 @@ export function parseSweepArgs(argv: string[]): SweepConfig {
     maxTokens,
     skills,
     promptPreset,
+    toolLoop: has('--tool-loop'),
+    toolMaxCalls,
     useCookbook: !has('--no-cookbook'),
     skipJudge: has('--skip-judge'),
     force: new Set(multiList('--force')),
@@ -256,19 +266,31 @@ async function runOneCase(
       const cookbook = cfg.useCookbook
         ? injectCookbook(readFileSync(join(taskDir, 'prompt.md'), 'utf8'))
         : undefined;
-      const gen = await generateCase({
-        taskDir,
-        runDir: caseDir,
-        agent,
-        model: cfg.model,
-        skillMd,
-        startedAt: cfg.startedAt,
-        cookbook,
-        candidates: 1,
-        maxAttempts: cfg.maxAttempts,
-        maxTokens: cfg.maxTokens,
-        temperature: cfg.temperature,
-      });
+      const gen = cfg.toolLoop
+        ? await generateCaseWithTools({
+            taskDir,
+            runDir: caseDir,
+            client: agent as AgentClient & ToolChatClient,
+            model: cfg.model,
+            skillMd,
+            startedAt: cfg.startedAt,
+            maxCalls: cfg.toolMaxCalls,
+            maxTokens: cfg.maxTokens,
+            temperature: cfg.temperature,
+          })
+        : await generateCase({
+            taskDir,
+            runDir: caseDir,
+            agent,
+            model: cfg.model,
+            skillMd,
+            startedAt: cfg.startedAt,
+            cookbook,
+            candidates: 1,
+            maxAttempts: cfg.maxAttempts,
+            maxTokens: cfg.maxTokens,
+            temperature: cfg.temperature,
+          });
       generationMs = gen.timeMs;
       generationEvents = gen.events;
       totals.tokensIn += gen.tokensIn;
@@ -410,16 +432,30 @@ async function main(): Promise<void> {
   const cfg = parseSweepArgs(process.argv.slice(2));
   const preflightOnly = process.argv.includes('--preflight-only');
 
+  if (cfg.toolLoop && cfg.mockFixture) {
+    console.error('ERROR: --tool-loop cannot run with --mock-fixture (MockAgentClient has no chatWithTools)');
+    process.exit(1);
+  }
+
   const runJsonPath = join(cfg.runRoot, 'run.json');
   if (existsSync(runJsonPath)) {
     const prior = JSON.parse(readFileSync(runJsonPath, 'utf8')) as {
       promptPreset?: string;
+      toolLoop?: boolean;
+      toolMaxCalls?: number;
       cookbook?: boolean;
     };
-    if (prior.promptPreset !== cfg.promptPreset || prior.cookbook !== cfg.useCookbook) {
+    if (
+      prior.promptPreset !== cfg.promptPreset ||
+      prior.toolLoop !== cfg.toolLoop ||
+      prior.toolMaxCalls !== cfg.toolMaxCalls ||
+      prior.cookbook !== cfg.useCookbook
+    ) {
       console.error(
-        `run '${cfg.runId}' was created with promptPreset=${prior.promptPreset} cookbook=${prior.cookbook}; ` +
-          `refusing to resume with promptPreset=${cfg.promptPreset} cookbook=${cfg.useCookbook}. ` +
+        `run '${cfg.runId}' was created with promptPreset=${prior.promptPreset} cookbook=${prior.cookbook} ` +
+          `toolLoop=${prior.toolLoop} toolMaxCalls=${prior.toolMaxCalls}; ` +
+          `refusing to resume with promptPreset=${cfg.promptPreset} cookbook=${cfg.useCookbook} ` +
+          `toolLoop=${cfg.toolLoop} toolMaxCalls=${cfg.toolMaxCalls}. ` +
           'Use a new --run-id.',
       );
       process.exit(1);
@@ -486,6 +522,8 @@ async function main(): Promise<void> {
     maxTokens: cfg.maxTokens,
     skills: plan.skills,
     promptPreset: cfg.promptPreset,
+    toolLoop: cfg.toolLoop,
+    toolMaxCalls: cfg.toolMaxCalls,
     promptBytes,
     cookbook: cfg.useCookbook,
     workers: cfg.workers,
