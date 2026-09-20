@@ -595,12 +595,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/animation/useAnimationPlayback.ts",
-    "symbol": "Function 'useAnimationPlayback'",
-    "value": 142
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/demoPlayer/AnimationEngine.ts",
     "symbol": "Method 'enqueue'",
     "value": 117
