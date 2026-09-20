@@ -95,6 +95,9 @@ function currentSceneBounds(ctx: DemoPlayerSceneContext): THREE.Box3 {
 
 function setRenderView(deps: DemoPlayerApiDeps, view: RenderView, outputAspect?: number): void {
   const ctx = requireScene(deps);
+  // A build-phase nudge tween interpolates the camera on every advance();
+  // cancel it so this explicit fit is not overridden on the next frame.
+  deps.cameraCtrlRef.current?.cancelNudge();
   // Reuse the bounds the loadFeatureMeshes path computed (mesh groups are
   // already centered at origin; just re-aim the camera). Recompute
   // aggregate bounds from current scene contents to tolerate scenes loaded
@@ -113,6 +116,8 @@ function setRenderView(deps: DemoPlayerApiDeps, view: RenderView, outputAspect?:
 
 function setRenderPose(deps: DemoPlayerApiDeps, azDeg: number, elDeg: number, outputAspect?: number): void {
   const ctx = requireScene(deps);
+  // Same nudge-cancel rationale as setRenderView.
+  deps.cameraCtrlRef.current?.cancelNudge();
   const bbox = currentSceneBounds(ctx);
   if (bbox.isEmpty()) return;
   // az=0,el=0 = front view (camera at -Y looking at origin, Z up).
