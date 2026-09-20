@@ -643,12 +643,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/viewer/controllers/CameraHandler.tsx",
-    "symbol": "Function 'CameraHandler'",
-    "value": 144
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/viewer/layers/ParametricLayer.tsx",
     "symbol": "Function 'ParametricLayer'",
     "value": 106
