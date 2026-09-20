@@ -109,12 +109,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/viewer/layers/ParametricLayer.tsx",
-    "symbol": "Function 'ParametricLayer'",
-    "value": 106
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/viewer/overlays/ViewGizmo.tsx",
     "symbol": "Function 'ViewGizmo'",
     "value": 104
