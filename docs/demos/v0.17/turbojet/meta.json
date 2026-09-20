@@ -1,0 +1,11 @@
+{
+  "taskId": "turbojet",
+  "module": "v0.17",
+  "capturedAt": "2026-09-19T22:49:00Z",
+  "durationMs": null,
+  "truncated": false,
+  "gitSha": "dd189b4daf737b1811bc649448e351bb99439633",
+  "heroArtifact": "single-spool-turbojet-cutaway",
+  "catalogSource": "override: user approved a turbojet hero for v0.17 (catalog is the v0.17 GCode/engraving set)",
+  "overrideApprovedBy": "user: approved turbojet as the v0.17 hero despite off-catalog theme"
+}
