@@ -138,150 +138,6 @@
     "value": 16
   },
   {
-    "rule": "complexity",
-    "file": "src/modeling/backends/occt/projectCurveLowerer.ts",
-    "symbol": "Async function 'lowerProjectCurve'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/assemblySolve.ts",
-    "symbol": "Function 'checkPoseLimits'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/authoringFeatureRecords.ts",
-    "symbol": "Function 'buildEmbossTextFeatureSpec'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/authoringFeatureRecords.ts",
-    "symbol": "Function 'validateDfmSpecCheckFields'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/featureMeshing.ts",
-    "symbol": "Function 'buildHelixTubeMesh'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/featureMeshingPhases.ts",
-    "symbol": "Function 'computeConstructionClosure'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/featureMeshingPhases.ts",
-    "symbol": "Function 'detectAttributeShadowing'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/capture/forwardKinematics.ts",
-    "symbol": "Function 'forwardKinematics'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/compute/recomputeEngine.ts",
-    "symbol": "Async method 'lowerAndEmit'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
-    "symbol": "Async function 'buildLinkBlocks'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/matePhysicalRealization.ts",
-    "symbol": "Async function 'validateMatePhysicalRealization'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/mechanicalTransmission.ts",
-    "symbol": "Function 'pointTriangleDistanceSquared'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseJointReactionsPhases.ts",
-    "symbol": "Async function 'resolveSolvedLoads'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseJointReactionsPhases.ts",
-    "symbol": "Async function 'validateSolvedContact'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseStatics.ts",
-    "symbol": "Function 'validateActuatorLimit'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseStaticsPhases.ts",
-    "symbol": "Function 'resolveStaticLoads'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/poseEnvelope.ts",
-    "symbol": "Function 'buildPoseEnvelopeSamples'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/solver.ts",
-    "symbol": "Function 'jointTransformForMate'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/solver.ts",
-    "symbol": "Function 'mateFk'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/runtime/dfm/minWall.ts",
-    "symbol": "Function 'checkMinWall'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/runtime/explodedPoses.ts",
-    "symbol": "Function 'mateAxisOffsets'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/runtime/mechanismTruth.ts",
-    "symbol": "Function 'buildPartAdjacency'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/runtime/meshDeviation.ts",
-    "symbol": "Function 'pointTriangleDistanceSq'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/server/middleware/sourceEndpoint.ts",
-    "symbol": "Async function 'sourceHandler'",
-    "value": 16
-  },
-  {
     "rule": "max-lines-per-function",
     "file": "src/agent/cli/commands/render.ts",
     "symbol": "Function 'renderCommand'",
@@ -373,12 +229,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/capture/forwardKinematics.ts",
-    "symbol": "Function 'forwardKinematics'",
-    "value": 101
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/modeling/constraints/sketchConverter.ts",
     "symbol": "Function 'convertSketchEntitiesToConstraints'",
     "value": 111
@@ -394,12 +244,6 @@
     "file": "src/modeling/parts/fetchPart.ts",
     "symbol": "Async function 'fetchPartFromUrlHost'",
     "value": 104
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/StudioShell.tsx",
-    "symbol": "Function 'StudioShell'",
-    "value": 140
   },
   {
     "rule": "max-lines-per-function",
@@ -520,12 +364,6 @@
     "file": "src/studio/routes/-useProjectLiveUpdates.ts",
     "symbol": "Function 'useProjectLiveUpdates'",
     "value": 103
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/routes/embed.$slug.tsx",
-    "symbol": "Function 'EmbedPage'",
-    "value": 141
   },
   {
     "rule": "max-lines-per-function",
