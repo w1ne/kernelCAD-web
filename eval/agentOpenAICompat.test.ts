@@ -163,6 +163,27 @@ describe('OpenAICompatAgentClient', () => {
     );
     expect(secondBody.messages.at(-1).role).toBe('user');
     expect(secondBody.messages.at(-1).content).toMatch(/continue/i);
+    expect(secondBody.messages.at(-2)).toEqual({ role: 'assistant', content: 'const a = ' });
+    expect(secondBody.messages[0].role).toBe('system');
+    expect(secondBody.messages[1]).toEqual({ role: 'user', content: 'hi' });
+  });
+
+  it('does not continue an empty truncated reply', async () => {
+    const fetchImpl = vi.fn(async () =>
+      jsonResponse({
+        choices: [{ message: { content: '' }, finish_reason: 'length' }],
+        usage: { prompt_tokens: 5, completion_tokens: 9 },
+      }),
+    );
+    const client = new OpenAICompatAgentClient({
+      baseUrl: 'https://api.example.com/v1',
+      apiKey: 'k',
+      retryBaseMs: 1,
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    const out = await client.generate(REQ);
+    expect(out).toEqual({ text: '', tokens_in: 5, tokens_out: 0, finish_reason: 'length' });
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
 
   it('caps continuation at two turns', async () => {

@@ -22,6 +22,8 @@ interface ChatCompletionResponse {
 
 const RETRYABLE_STATUS = (status: number): boolean => status === 429 || status >= 500;
 
+const isTruncated = (r: string | undefined): boolean => r === 'length' || r === 'max_tokens';
+
 const MAX_CONTINUATIONS = 2;
 const CONTINUATION_PROMPT =
   'Your previous reply was truncated. Continue exactly where you left off; do not repeat anything.';
@@ -119,7 +121,7 @@ export class OpenAICompatAgentClient implements AgentClient {
     let finish = first.choices?.[0]?.finish_reason ?? 'stop';
 
     let continuations = 0;
-    while (finish === 'length' && continuations < MAX_CONTINUATIONS) {
+    while (text.length > 0 && isTruncated(finish) && continuations < MAX_CONTINUATIONS) {
       continuations += 1;
       const cont = await this.request({
         ...base,
@@ -136,6 +138,7 @@ export class OpenAICompatAgentClient implements AgentClient {
     }
 
     if (text.length === 0) {
+      // Deliberately zero output tokens for empty replies (existing behavior).
       return { text: '', tokens_in: tokensIn, tokens_out: 0, finish_reason: finish };
     }
     return { text, tokens_in: tokensIn, tokens_out: tokensOut, finish_reason: finish };

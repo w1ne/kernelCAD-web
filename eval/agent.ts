@@ -69,7 +69,7 @@ export class AnthropicAgentClient implements AgentClient {
       text,
       tokens_in: resp.usage.input_tokens + (resp.usage.cache_creation_input_tokens ?? 0) + (resp.usage.cache_read_input_tokens ?? 0),
       tokens_out: resp.usage.output_tokens,
-      ...(resp.stop_reason !== null ? { finish_reason: resp.stop_reason } : {}),
+      ...(resp.stop_reason ? { finish_reason: resp.stop_reason } : {}),
     };
   }
 }

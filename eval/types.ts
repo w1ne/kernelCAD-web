@@ -105,7 +105,8 @@ export interface AgentResponse {
   tokens_in: number;
   tokens_out: number;
   /** Provider stop reason when available (OpenAI-compatible `finish_reason`,
-   *  Anthropic `stop_reason`). 'length' means the reply was truncated. */
+   *  Anthropic `stop_reason`). Truncation is `'length'` (OpenAI-compatible)
+   *  or `'max_tokens'` (Anthropic). */
   finish_reason?: string;
 }
 
