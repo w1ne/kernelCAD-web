@@ -61,12 +61,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/reviewPaint.ts",
-    "symbol": "Async function 'reviewPaintPeekLatestTool'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/segment.ts",
     "symbol": "Function 'adoptFragments'",
     "value": 16
