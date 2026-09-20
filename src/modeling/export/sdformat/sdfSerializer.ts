@@ -77,8 +77,39 @@ export async function sdfSerialize(arm: Assembly, opts: SdfSerializeOptions): Pr
   // simply explode). A failed solve degrades to identity poses + a warning.
   const worldPoses = await solveLinkPoses(arm, diagnostics);
 
-  // Per-part link blocks. Reuses the URDF linkInertialBlock — same
-  // semantics; the wrapping XML differs.
+  const linkBlocks = await buildLinkBlocks(parts, opts, worldPoses, meshPrefix, meshFormat, meshPaths, diagnostics);
+
+  const partNames = new Set(parts.map(p => p.name));
+  const resolver = makeConnectorResolver(parts);
+  const jointBlocks = buildJointBlocks(arm, parts, partNames, resolver, diagnostics);
+  if (jointBlocks === undefined) {
+    return { sdf: '', meshPaths: [], diagnostics };
+  }
+
+  const sdf = [
+    `<?xml version="1.0"?>`,
+    `<sdf version="${SDF_VERSION}">`,
+    `  <model name="${escapeXml(arm.name)}">`,
+    ...linkBlocks,
+    ...jointBlocks,
+    `  </model>`,
+    `</sdf>`,
+    ``,
+  ].join('\n');
+  return { sdf, meshPaths, diagnostics };
+}
+
+// Per-part link blocks. Reuses the URDF linkInertialBlock — same
+// semantics; the wrapping XML differs.
+async function buildLinkBlocks(
+  parts: readonly AssemblyPartStored[],
+  opts: SdfSerializeOptions,
+  worldPoses: Map<string, Transform> | undefined,
+  meshPrefix: string,
+  meshFormat: 'stl' | 'dae',
+  meshPaths: MeshEmitRequest[],
+  diagnostics: CompilerDiagnostic[],
+): Promise<string[]> {
   const linkBlocks: string[] = [];
   for (const part of parts) {
     const density = part.density ?? opts.density;
@@ -105,10 +136,18 @@ export async function sdfSerialize(arm: Assembly, opts: SdfSerializeOptions): Pr
       `  </link>`,
     ].join('\n'));
   }
+  return linkBlocks;
+}
 
-  // Joint blocks via mateToSdfJoint + legacy joint records.
-  const partNames = new Set(parts.map(p => p.name));
-  const resolver = makeConnectorResolver(parts);
+// Joint blocks via mateToSdfJoint + legacy joint records. A dangling
+// reference keeps the caller's empty-sdf early return.
+function buildJointBlocks(
+  arm: Assembly,
+  parts: readonly AssemblyPartStored[],
+  partNames: ReadonlySet<string>,
+  resolver: ConnectorResolver,
+  diagnostics: CompilerDiagnostic[],
+): string[] | undefined {
   const jointBlocks: string[] = [];
 
   for (const j of arm.__joints()) {
@@ -116,7 +155,7 @@ export async function sdfSerialize(arm: Assembly, opts: SdfSerializeOptions): Pr
     const child = parts.find(p => p.id === j.childPartId)?.name ?? '';
     if (!partNames.has(parent) || !partNames.has(child)) {
       diagnostics.push(danglingLinkRef(j.name, parent, child));
-      return { sdf: '', meshPaths: [], diagnostics };
+      return undefined;
     }
     jointBlocks.push(legacyJointToSdf(j, parent, child));
   }
@@ -133,24 +172,13 @@ export async function sdfSerialize(arm: Assembly, opts: SdfSerializeOptions): Pr
     if (vj.type !== 'fixed' || vj.parentFrame !== 'world') continue;
     if (!partNames.has(vj.childLink)) {
       diagnostics.push(danglingLinkRef(vj.name, vj.parentFrame, vj.childLink));
-      return { sdf: '', meshPaths: [], diagnostics };
+      return undefined;
     }
     jointBlocks.push(
       `  <joint name="${escapeXml(vj.name)}" type="fixed"><parent>world</parent><child>${escapeXml(vj.childLink)}</child></joint>`,
     );
   }
-
-  const sdf = [
-    `<?xml version="1.0"?>`,
-    `<sdf version="${SDF_VERSION}">`,
-    `  <model name="${escapeXml(arm.name)}">`,
-    ...linkBlocks,
-    ...jointBlocks,
-    `  </model>`,
-    `</sdf>`,
-    ``,
-  ].join('\n');
-  return { sdf, meshPaths, diagnostics };
+  return jointBlocks;
 }
 
 /** Solve the mate graph to per-link world transforms at the default pose.
