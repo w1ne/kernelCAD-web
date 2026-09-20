@@ -937,12 +937,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/studio/context/workbenchState.ts",
-    "symbol": "Function 'workbenchReducer'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/hooks/viewer/useDirectEditDrag.ts",
     "symbol": "Async arrow function",
     "value": 16
