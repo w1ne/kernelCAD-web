@@ -187,12 +187,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/inspectRobot.ts",
-    "symbol": "Async function 'inspectRobotTool'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/listAssemblies.ts",
     "symbol": "Function 'summarizeAssemblies'",
     "value": 16
