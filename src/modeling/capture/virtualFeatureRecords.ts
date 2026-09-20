@@ -12,6 +12,8 @@ import type {
 import { isHdriPresetKey } from '../../shared/intent/renderEnvironmentRecord';
 import type { CameraTargetMetadata, CameraTargetSpec } from '../../shared/intent/cameraTargetRecord';
 import {
+  type AnimationKey,
+  type AnimationTrack,
   type AnimationViewMetadata,
   type AnimationViewSpec,
   type AnimationViewSweepSpec,
@@ -423,6 +425,61 @@ function requireDeclaredNumericParam(paramTable: ParamTable, name: unknown, wher
   }
 }
 
+function validateAnimationTrack(
+  track: AnimationTrack,
+  i: number,
+  paramTable: ParamTable,
+  seenParams: Set<string>,
+  badKeys: (why: string) => never,
+): void {
+  if (typeof track !== 'object' || track === null) {
+    badKeys(`tracks[${i}] must be an object { param, keys }; got ${JSON.stringify(track)}`);
+  }
+  requireDeclaredNumericParam(paramTable, track.param, `tracks[${i}].param`);
+  if (seenParams.has(track.param)) {
+    throw new KernelError(
+      'animation.track.duplicate-param',
+      `animationView: tracks[${i}] targets param '${track.param}' which an earlier track already animates; merge the keys into one track per param.`,
+      undefined,
+      HINT_TEMPLATES['animation.track.duplicate-param'].template,
+    );
+  }
+  seenParams.add(track.param);
+  if (!Array.isArray(track.keys) || track.keys.length === 0) {
+    badKeys(`tracks[${i}] ('${track.param}') has an empty keys array; declare at least one key`);
+  }
+  const seenAtMs = new Set<number>();
+  for (let j = 0; j < track.keys.length; j += 1) {
+    validateAnimationKey(track.keys[j], i, j, track.param, seenAtMs, badKeys);
+  }
+}
+
+function validateAnimationKey(
+  key: AnimationKey,
+  i: number,
+  j: number,
+  param: string,
+  seenAtMs: Set<number>,
+  badKeys: (why: string) => never,
+): void {
+  if (typeof key !== 'object' || key === null) {
+    badKeys(`tracks[${i}].keys[${j}] must be an object { atMs, value, ease? }; got ${JSON.stringify(key)}`);
+  }
+  if (!Number.isFinite(key.atMs) || !Number.isFinite(key.value)) {
+    badKeys(`tracks[${i}].keys[${j}] atMs and value must be finite numbers; got (atMs: ${key.atMs}, value: ${key.value})`);
+  }
+  if (key.atMs < 0) {
+    badKeys(`tracks[${i}].keys[${j}] atMs must be >= 0; got ${key.atMs}`);
+  }
+  if (seenAtMs.has(key.atMs)) {
+    badKeys(`tracks[${i}] ('${param}') has duplicate atMs ${key.atMs}; key timestamps must be unique within a track`);
+  }
+  seenAtMs.add(key.atMs);
+  if (key.ease !== undefined && !(ANIMATION_EASES as readonly string[]).includes(key.ease as string)) {
+    badKeys(`tracks[${i}].keys[${j}] has unknown ease ${JSON.stringify(key.ease)}; expected one of ${ANIMATION_EASES.join(' | ')}`);
+  }
+}
+
 function validateAnimationTracks(
   args: AnimationViewTracksSpec,
   fps: number,
@@ -442,43 +499,7 @@ function validateAnimationTracks(
   }
   const seenParams = new Set<string>();
   for (let i = 0; i < args.tracks.length; i += 1) {
-    const track = args.tracks[i];
-    if (typeof track !== 'object' || track === null) {
-      badKeys(`tracks[${i}] must be an object { param, keys }; got ${JSON.stringify(track)}`);
-    }
-    requireDeclaredNumericParam(paramTable, track.param, `tracks[${i}].param`);
-    if (seenParams.has(track.param)) {
-      throw new KernelError(
-        'animation.track.duplicate-param',
-        `animationView: tracks[${i}] targets param '${track.param}' which an earlier track already animates; merge the keys into one track per param.`,
-        undefined,
-        HINT_TEMPLATES['animation.track.duplicate-param'].template,
-      );
-    }
-    seenParams.add(track.param);
-    if (!Array.isArray(track.keys) || track.keys.length === 0) {
-      badKeys(`tracks[${i}] ('${track.param}') has an empty keys array; declare at least one key`);
-    }
-    const seenAtMs = new Set<number>();
-    for (let j = 0; j < track.keys.length; j += 1) {
-      const key = track.keys[j];
-      if (typeof key !== 'object' || key === null) {
-        badKeys(`tracks[${i}].keys[${j}] must be an object { atMs, value, ease? }; got ${JSON.stringify(key)}`);
-      }
-      if (!Number.isFinite(key.atMs) || !Number.isFinite(key.value)) {
-        badKeys(`tracks[${i}].keys[${j}] atMs and value must be finite numbers; got (atMs: ${key.atMs}, value: ${key.value})`);
-      }
-      if (key.atMs < 0) {
-        badKeys(`tracks[${i}].keys[${j}] atMs must be >= 0; got ${key.atMs}`);
-      }
-      if (seenAtMs.has(key.atMs)) {
-        badKeys(`tracks[${i}] ('${track.param}') has duplicate atMs ${key.atMs}; key timestamps must be unique within a track`);
-      }
-      seenAtMs.add(key.atMs);
-      if (key.ease !== undefined && !(ANIMATION_EASES as readonly string[]).includes(key.ease as string)) {
-        badKeys(`tracks[${i}].keys[${j}] has unknown ease ${JSON.stringify(key.ease)}; expected one of ${ANIMATION_EASES.join(' | ')}`);
-      }
-    }
+    validateAnimationTrack(args.tracks[i], i, paramTable, seenParams, badKeys);
   }
   return normalizeAnimationView(args, fps);
 }
