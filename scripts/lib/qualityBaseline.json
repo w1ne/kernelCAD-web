@@ -1,12 +1,6 @@
 [
   {
     "rule": "max-lines-per-function",
-    "file": "src/agent/reconstruct/planPhases/body.ts",
-    "symbol": "Function 'buildBody'",
-    "value": 111
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/agent/reconstruct/reconstruct.ts",
     "symbol": "Function 'buildMeshLedger'",
     "value": 122
@@ -22,24 +16,6 @@
     "file": "src/funnel/components/GallerySection.tsx",
     "symbol": "Function 'GallerySection'",
     "value": 116
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/drawingSections.ts",
-    "symbol": "Function 'renderObliqueSection'",
-    "value": 105
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/drawingSections.ts",
-    "symbol": "Function 'renderSections'",
-    "value": 108
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/edgeSelectionLabels.ts",
-    "symbol": "Function 'labelToEdgeQuery'",
-    "value": 107
   },
   {
     "rule": "max-lines-per-function",
@@ -73,9 +49,9 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/constraints/sketchConverter.ts",
-    "symbol": "Function 'convertSketchEntitiesToConstraints'",
-    "value": 111
+    "file": "src/modeling/capture/featureMeshing.ts",
+    "symbol": "Async function 'meshFeaturesPerFeature'",
+    "value": 114
   },
   {
     "rule": "max-lines-per-function",
@@ -103,15 +79,33 @@
   },
   {
     "rule": "max-lines-per-function",
+    "file": "src/studio/components/Layout/UserMenu.tsx",
+    "symbol": "Function 'UserMenuInner'",
+    "value": 122
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/studio/components/demoPlayer/AnimationEngine.ts",
+    "symbol": "Method 'enqueue'",
+    "value": 117
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/studio/components/demoPlayer/demoPlayerApiFactory.ts",
+    "symbol": "Function 'captureInspectionChannels'",
+    "value": 112
+  },
+  {
+    "rule": "max-lines-per-function",
     "file": "src/studio/components/inputs/NumericScrubInput.tsx",
     "symbol": "Function 'NumericScrubInput'",
     "value": 105
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/viewer/layers/ParametricLayer.tsx",
-    "symbol": "Function 'ParametricLayer'",
-    "value": 106
+    "file": "src/studio/components/viewer/ViewerScene.tsx",
+    "symbol": "Function 'ViewerScene'",
+    "value": 113
   },
   {
     "rule": "max-lines-per-function",
@@ -154,5 +148,11 @@
     "file": "src/studio/routes/-useProjectLiveUpdates.ts",
     "symbol": "Function 'useProjectLiveUpdates'",
     "value": 103
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/studio/routes/me.tsx",
+    "symbol": "Function 'MePage'",
+    "value": 115
   }
 ]

@@ -130,106 +130,131 @@ export function buildBody(
   addParam: (name: string, value: number, measured: number, description: string, grid?: number) => string,
   snapInfo: (value: number, measured: number) => { grid: number },
 ): { body: BodyPlan; bandBody: Region[][] } {
-  // ---- body ---------------------------------------------------------------------------
-  let body: BodyPlan;
-  const bandBody: Region[][] = []; // per band: body outline regions (time 0)
   if (axisymmetric) {
-    const steps: Array<{ r: number; rawR: number; i0: number; i1: number }> = [];
-    bands.forEach((b, bi) => {
-      const idx = b.depth.findIndex((d) => d === 0);
-      const c = b.loops[idx] as Extract<FittedLoop, { kind: 'circle' }>;
-      const rc = b.raw[idx] as Extract<FittedLoop, { kind: 'circle' }>;
-      const last = steps[steps.length - 1];
-      if (last && Math.abs(last.r - c.r) <= (pass.snapTol > 0 ? 1e-9 : pass.eps)) last.i1 = bi + 1;
-      else steps.push({ r: c.r, rawR: rc.r, i0: bi, i1: bi + 1 });
-    });
-    const single = steps.length === 1;
-    body = {
-      kind: 'revolve',
-      steps: steps.map((s, k) => {
-        const rName = single ? 'radius' : `step${k + 1}Radius`;
-        const hName = single ? 'height' : `step${k + 1}Height`;
-        addParam(rName, s.r, s.rawR, single ? 'Outer radius of the turned body.' : `Outer radius of turned step ${k + 1} (from the base).`, snapInfo(s.r, s.rawR).grid);
-        const h = levels[s.i1] - levels[s.i0];
-        const rawH = rawRel[s.i1] - rawRel[s.i0];
-        addParam(hName, h, rawH, single ? 'Height of the turned body.' : `Axial height of turned step ${k + 1}.`, snapInfo(h, rawH).grid);
-        return { r: s.r, z0: levels[s.i0], z1: levels[s.i1], rParam: rName, hParam: hName };
-      }),
-    };
-    bands.forEach((b, bi) => {
-      const step = body.kind === 'revolve' ? body.steps.find((s) => s.z0 <= b.z0 + 1e-9 && s.z1 >= b.z1 - 1e-9)! : undefined;
-      bandBody[bi] = [circleRegion(0, 0, step!.r)];
-    });
-  } else {
-    const blocks: BodyBlock[] = [];
-    bands.forEach((b, bi) => {
-      const outer = b.loops.filter((_, i) => b.depth[i] === 0);
-      const rawOuter = b.raw.filter((_, i) => b.depth[i] === 0);
-      b.loops.forEach((_, i) => {
-        if (b.depth[i] >= 2) notRepresented.push(`band ${bi}: an island inside an inner loop (nesting depth ${b.depth[i]}) is not reconstructed.`);
-      });
-      const last = blocks[blocks.length - 1];
-      if (last && sameOutline(last.loops, outer, tol)) {
-        last.z1 = levels[bi + 1];
-        last.i1 = bi + 1;
-        last.bands.push(bi);
-      } else {
-        blocks.push({ z0: levels[bi], z1: levels[bi + 1], i0: bi, i1: bi + 1, bands: [bi], loops: outer, raw: rawOuter });
-      }
-    });
-    let minExtent = Infinity;
-    for (const blk of blocks) {
-      for (const l of blk.loops) {
-        const poly = loopPolygon(l);
-        let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
-        for (let k = 0; k < poly.length; k += 2) {
-          x0 = Math.min(x0, poly[k]);
-          x1 = Math.max(x1, poly[k]);
-          y0 = Math.min(y0, poly[k + 1]);
-          y1 = Math.max(y1, poly[k + 1]);
-        }
-        minExtent = Math.min(minExtent, x1 - x0, y1 - y0);
-      }
-    }
-    const single = blocks.length === 1;
-    const angleTol = Math.max(pass.angleTolDeg, 0.5) * DEG;
-    const coordTol = pass.snapTol > 0 ? 1e-6 : Math.max(1e-6, pass.eps);
-    const coords = new CoordinateBook(coordTol);
-    const cornerSets = blocks.map((blk) => {
-      if (blk.loops.length !== 1 || blk.loops[0].kind !== 'path') return undefined;
-      const corners = rectilinearCorners(loopPrimitives(blk.loops[0]), angleTol, Math.max(2 * tol, 1e-3));
-      if (!corners) return undefined;
-      let first = 0;
-      corners.forEach((c, i) => {
-        if (Math.hypot(c.x, c.y) < Math.hypot(corners[first].x, corners[first].y) - 1e-9) first = i;
-      });
-      return [...corners.slice(first), ...corners.slice(0, first)];
-    });
-    // One radius param per distinct corner-round radius, shared by all blocks.
-    const radiusValues: number[] = [];
-    for (const cs of cornerSets) for (const c of cs ?? []) if (c.r > 0 && !radiusValues.some((r) => Math.abs(r - c.r) <= coordTol)) radiusValues.push(c.r);
-    const radiusNames = new Map<number, string>();
-    const radiusExpr = (r: number, measured: number): string => {
-      const i = radiusValues.findIndex((v) => Math.abs(v - r) <= coordTol);
-      const existing = radiusNames.get(i);
-      if (existing) return existing;
-      const name = radiusValues.length === 1 ? 'cornerRadius' : `corner${i + 1}Radius`;
-      addParam(name, radiusValues[i], measured, 'Radius of the tangent corner rounds in the extruded profile.', snapInfo(radiusValues[i], measured).grid);
-      radiusNames.set(i, name);
-      return name;
-    };
-    const blockCtx: ExtrudeBlockContext = {
-      single, minExtent, bands, rawRel, tol, cornerSets, coords, addParam, snapInfo, radiusExpr,
-    };
-    body = {
-      kind: 'extrude',
-      blocks: blocks.map((blk, k) => buildExtrudeBlock(blk, k, blockCtx)),
-    };
-    bands.forEach((_, bi) => {
-      const blk = blocks.find((x) => x.bands.includes(bi))!;
-      bandBody[bi] = blk.loops.map(loopRegion);
-    });
+    return buildRevolveBody(pass, bands, levels, rawRel, addParam, snapInfo);
   }
+  return buildExtrudeBody(pass, bands, levels, rawRel, tol, notRepresented, addParam, snapInfo);
+}
+
+function buildRevolveBody(
+  pass: PassParams,
+  bands: BandLoops[],
+  levels: number[],
+  rawRel: number[],
+  addParam: (name: string, value: number, measured: number, description: string, grid?: number) => string,
+  snapInfo: (value: number, measured: number) => { grid: number },
+): { body: BodyPlan; bandBody: Region[][] } {
+  // ---- body ---------------------------------------------------------------------------
+  const bandBody: Region[][] = []; // per band: body outline regions (time 0)
+  const steps: Array<{ r: number; rawR: number; i0: number; i1: number }> = [];
+  bands.forEach((b, bi) => {
+    const idx = b.depth.findIndex((d) => d === 0);
+    const c = b.loops[idx] as Extract<FittedLoop, { kind: 'circle' }>;
+    const rc = b.raw[idx] as Extract<FittedLoop, { kind: 'circle' }>;
+    const last = steps[steps.length - 1];
+    if (last && Math.abs(last.r - c.r) <= (pass.snapTol > 0 ? 1e-9 : pass.eps)) last.i1 = bi + 1;
+    else steps.push({ r: c.r, rawR: rc.r, i0: bi, i1: bi + 1 });
+  });
+  const single = steps.length === 1;
+  const body: BodyPlan = {
+    kind: 'revolve',
+    steps: steps.map((s, k) => {
+      const rName = single ? 'radius' : `step${k + 1}Radius`;
+      const hName = single ? 'height' : `step${k + 1}Height`;
+      addParam(rName, s.r, s.rawR, single ? 'Outer radius of the turned body.' : `Outer radius of turned step ${k + 1} (from the base).`, snapInfo(s.r, s.rawR).grid);
+      const h = levels[s.i1] - levels[s.i0];
+      const rawH = rawRel[s.i1] - rawRel[s.i0];
+      addParam(hName, h, rawH, single ? 'Height of the turned body.' : `Axial height of turned step ${k + 1}.`, snapInfo(h, rawH).grid);
+      return { r: s.r, z0: levels[s.i0], z1: levels[s.i1], rParam: rName, hParam: hName };
+    }),
+  };
+  bands.forEach((b, bi) => {
+    const step = body.kind === 'revolve' ? body.steps.find((s) => s.z0 <= b.z0 + 1e-9 && s.z1 >= b.z1 - 1e-9)! : undefined;
+    bandBody[bi] = [circleRegion(0, 0, step!.r)];
+  });
+  return { body, bandBody };
+}
+
+function buildExtrudeBody(
+  pass: PassParams,
+  bands: BandLoops[],
+  levels: number[],
+  rawRel: number[],
+  tol: number,
+  notRepresented: string[],
+  addParam: (name: string, value: number, measured: number, description: string, grid?: number) => string,
+  snapInfo: (value: number, measured: number) => { grid: number },
+): { body: BodyPlan; bandBody: Region[][] } {
+  // ---- body ---------------------------------------------------------------------------
+  const bandBody: Region[][] = []; // per band: body outline regions (time 0)
+  const blocks: BodyBlock[] = [];
+  bands.forEach((b, bi) => {
+    const outer = b.loops.filter((_, i) => b.depth[i] === 0);
+    const rawOuter = b.raw.filter((_, i) => b.depth[i] === 0);
+    b.loops.forEach((_, i) => {
+      if (b.depth[i] >= 2) notRepresented.push(`band ${bi}: an island inside an inner loop (nesting depth ${b.depth[i]}) is not reconstructed.`);
+    });
+    const last = blocks[blocks.length - 1];
+    if (last && sameOutline(last.loops, outer, tol)) {
+      last.z1 = levels[bi + 1];
+      last.i1 = bi + 1;
+      last.bands.push(bi);
+    } else {
+      blocks.push({ z0: levels[bi], z1: levels[bi + 1], i0: bi, i1: bi + 1, bands: [bi], loops: outer, raw: rawOuter });
+    }
+  });
+  let minExtent = Infinity;
+  for (const blk of blocks) {
+    for (const l of blk.loops) {
+      const poly = loopPolygon(l);
+      let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+      for (let k = 0; k < poly.length; k += 2) {
+        x0 = Math.min(x0, poly[k]);
+        x1 = Math.max(x1, poly[k]);
+        y0 = Math.min(y0, poly[k + 1]);
+        y1 = Math.max(y1, poly[k + 1]);
+      }
+      minExtent = Math.min(minExtent, x1 - x0, y1 - y0);
+    }
+  }
+  const single = blocks.length === 1;
+  const angleTol = Math.max(pass.angleTolDeg, 0.5) * DEG;
+  const coordTol = pass.snapTol > 0 ? 1e-6 : Math.max(1e-6, pass.eps);
+  const coords = new CoordinateBook(coordTol);
+  const cornerSets = blocks.map((blk) => {
+    if (blk.loops.length !== 1 || blk.loops[0].kind !== 'path') return undefined;
+    const corners = rectilinearCorners(loopPrimitives(blk.loops[0]), angleTol, Math.max(2 * tol, 1e-3));
+    if (!corners) return undefined;
+    let first = 0;
+    corners.forEach((c, i) => {
+      if (Math.hypot(c.x, c.y) < Math.hypot(corners[first].x, corners[first].y) - 1e-9) first = i;
+    });
+    return [...corners.slice(first), ...corners.slice(0, first)];
+  });
+  // One radius param per distinct corner-round radius, shared by all blocks.
+  const radiusValues: number[] = [];
+  for (const cs of cornerSets) for (const c of cs ?? []) if (c.r > 0 && !radiusValues.some((r) => Math.abs(r - c.r) <= coordTol)) radiusValues.push(c.r);
+  const radiusNames = new Map<number, string>();
+  const radiusExpr = (r: number, measured: number): string => {
+    const i = radiusValues.findIndex((v) => Math.abs(v - r) <= coordTol);
+    const existing = radiusNames.get(i);
+    if (existing) return existing;
+    const name = radiusValues.length === 1 ? 'cornerRadius' : `corner${i + 1}Radius`;
+    addParam(name, radiusValues[i], measured, 'Radius of the tangent corner rounds in the extruded profile.', snapInfo(radiusValues[i], measured).grid);
+    radiusNames.set(i, name);
+    return name;
+  };
+  const blockCtx: ExtrudeBlockContext = {
+    single, minExtent, bands, rawRel, tol, cornerSets, coords, addParam, snapInfo, radiusExpr,
+  };
+  const body: BodyPlan = {
+    kind: 'extrude',
+    blocks: blocks.map((blk, k) => buildExtrudeBlock(blk, k, blockCtx)),
+  };
+  bands.forEach((_, bi) => {
+    const blk = blocks.find((x) => x.bands.includes(bi))!;
+    bandBody[bi] = blk.loops.map(loopRegion);
+  });
   return { body, bandBody };
 }
 
