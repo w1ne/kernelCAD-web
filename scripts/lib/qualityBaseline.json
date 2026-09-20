@@ -487,12 +487,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/runtime/dfm/fdmOrientation.ts",
-    "symbol": "Function 'anchoredChord'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/runtime/dfm/minWall.ts",
     "symbol": "Function 'checkMinWall'",
     "value": 16
