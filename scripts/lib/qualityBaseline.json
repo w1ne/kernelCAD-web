@@ -366,36 +366,6 @@
     "value": 16
   },
   {
-    "rule": "complexity",
-    "file": "src/studio/StagedEditSlot.tsx",
-    "symbol": "Function 'StagedEditContextDetails'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/components/Layout/StatusBar.tsx",
-    "symbol": "Function 'StatusBar'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/components/inputs/useNumericScrub.ts",
-    "symbol": "Function 'useNumericScrub'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/hooks/viewer/useDirectEditDrag.ts",
-    "symbol": "Async arrow function",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/studio/routes/GenerateHero.tsx",
-    "symbol": "Function 'GenerateHero'",
-    "value": 16
-  },
-  {
     "rule": "max-lines-per-function",
     "file": "src/agent/cli/commands/render.ts",
     "symbol": "Function 'renderCommand'",
@@ -676,12 +646,6 @@
     "file": "src/studio/hooks/useRecomputeResult.ts",
     "symbol": "Function 'useRecomputeResult'",
     "value": 103
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/hooks/viewer/useDirectEditDrag.ts",
-    "symbol": "Function 'useDirectEditDrag'",
-    "value": 101
   },
   {
     "rule": "max-lines-per-function",
