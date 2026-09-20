@@ -14,7 +14,7 @@ import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { OcctBackend, initOcct } from '../src/kernel/backends/occt/occtBackend';
 import { ingestDirectory, measureStepReport } from './ingestParts';
-import type { StepInspectReport } from '../src/agent/inspect/inspectStep';
+import type { StepInspectReport } from '../src/kernel/import/inspectStep';
 
 let tinyStepBytes: Buffer;
 let alternateTinyStepBytes: Buffer;

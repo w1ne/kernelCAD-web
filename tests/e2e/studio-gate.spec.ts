@@ -6,5 +6,5 @@ test('anonymous user hitting /studio sees the sign-in window, not the editor', a
   await expect(page.getByRole('dialog')).toBeVisible();
   await expect(page.getByText(/Sign in to open kernelCAD Studio/i)).toBeVisible();
   // Non-dismissable: no close control.
-  await expect(page.getByLabelText('Close')).toHaveCount(0);
+  await expect(page.getByLabel('Close')).toHaveCount(0);
 });

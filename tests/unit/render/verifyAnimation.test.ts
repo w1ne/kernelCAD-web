@@ -16,8 +16,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { buildModelFromFile } from '../../../src/modeling/buildModel';
 import { jointContactCapMm3 } from '../../../src/modeling/runtime/jointContactCap';
-import { keyframeSampleSet } from '../../../src/agent/render/animationSampler';
-import { verifyAnimation } from '../../../src/agent/render/verifyAnimation';
+import { keyframeSampleSet } from '../../../src/modeling/animation/animationSampler';
+import { verifyAnimation } from '../../../src/modeling/animation/verifyAnimation';
 import type { BuiltModel } from '../../../src/modeling/buildModel';
 import type { NormalizedAnimationTrack } from '../../../src/shared/intent/animationViewRecord';
 

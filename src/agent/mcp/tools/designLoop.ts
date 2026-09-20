@@ -167,62 +167,85 @@ export async function designLoopTool(input: DesignLoopInput): Promise<DesignLoop
   const attempts: DesignLoopAttemptResult[] = [];
 
   for (const [index, attempt] of input.attempts.entries()) {
-    if (!attempt.file && !attempt.code) {
-      throw new Error(`design_loop attempt ${index + 1} requires file or code.`);
-    }
-
-    const id = attempt.id ?? String(index + 1).padStart(2, '0');
-    const title = attempt.title ?? `Attempt ${id}`;
-    // design_loop signals misuse by throwing (see the guards above), so a
-    // failed read re-throws with the shared message rather than a raw ENOENT.
-    let source: string;
-    try {
-      source = attempt.code ?? (attempt.file !== undefined ? await readFile(attempt.file, 'utf-8') : '');
-    } catch (e) {
-      throw new Error(`design_loop attempt ${index + 1}: ${fileReadErrorMessage(e)}`);
-    }
-    const requirePhysicalAcceptance =
-      input.requirePhysicalAcceptance === true ||
-      containsPhysicalUseCaseDeclaration(source);
-    const reviewInput: ReviewCadInput = {
-      ...(attempt.file !== undefined ? { file: attempt.file } : {}),
-      ...(attempt.code !== undefined ? { code: attempt.code } : {}),
-      assembly: input.assembly,
-      designGoal: input.goal,
-      preserveInterfaces: input.preserveInterfaces,
-      includePoseEnvelope: input.includePoseEnvelope,
-      includeInterference: input.includeInterference,
-      epsilonMm3: input.epsilonMm3,
-      trackConnectors: input.trackConnectors,
-      gripperAperture: input.gripperAperture,
-      samplesPerMate: input.samplesPerMate,
-      combinatorial: input.combinatorial,
-      ...(requirePhysicalAcceptance
-        ? {
-            includePhysicalUseCaseReachability: true,
-            includePhysicalUseCaseStatics: true,
-            includePhysicalUseCaseJointReactions: true,
-            includePhysicalUseCaseJointStructure: true,
-            requirePhysicalUseCase: true,
-          }
-        : {}),
-    };
-    const review = await runReviewPipeline(reviewInput);
-    const attemptResult = toAttemptResult({
-      id,
-      title,
-      script: attempt.file,
-      review,
-      allowReviewWarnings: input.allowReviewWarnings ?? [],
-      requireVisualReview: input.requireVisualReview ?? true,
-      visualReview: attempt.visualReview,
-      source,
-    });
+    const attemptResult = await runDesignLoopAttempt(input, index, attempt);
     attempts.push(attemptResult);
 
     if (attemptResult.ok && stopOnPass) break;
   }
 
+  return finaliseDesignLoop(input, attempts);
+}
+
+async function runDesignLoopAttempt(
+  input: DesignLoopInput,
+  index: number,
+  attempt: DesignLoopAttemptInput,
+): Promise<DesignLoopAttemptResult> {
+  if (!attempt.file && !attempt.code) {
+    throw new Error(`design_loop attempt ${index + 1} requires file or code.`);
+  }
+
+  const id = attempt.id ?? String(index + 1).padStart(2, '0');
+  const title = attempt.title ?? `Attempt ${id}`;
+  // design_loop signals misuse by throwing (see the guards above), so a
+  // failed read re-throws with the shared message rather than a raw ENOENT.
+  let source: string;
+  try {
+    source = attempt.code ?? (attempt.file !== undefined ? await readFile(attempt.file, 'utf-8') : '');
+  } catch (e) {
+    throw new Error(`design_loop attempt ${index + 1}: ${fileReadErrorMessage(e)}`);
+  }
+  const reviewInput: ReviewCadInput = buildReviewInput(input, attempt, source);
+  const review = await runReviewPipeline(reviewInput);
+  return toAttemptResult({
+    id,
+    title,
+    script: attempt.file,
+    review,
+    allowReviewWarnings: input.allowReviewWarnings ?? [],
+    requireVisualReview: input.requireVisualReview ?? true,
+    visualReview: attempt.visualReview,
+    source,
+  });
+}
+
+function buildReviewInput(
+  input: DesignLoopInput,
+  attempt: DesignLoopAttemptInput,
+  source: string,
+): ReviewCadInput {
+  const requirePhysicalAcceptance =
+    input.requirePhysicalAcceptance === true ||
+    containsPhysicalUseCaseDeclaration(source);
+  return {
+    ...(attempt.file !== undefined ? { file: attempt.file } : {}),
+    ...(attempt.code !== undefined ? { code: attempt.code } : {}),
+    assembly: input.assembly,
+    designGoal: input.goal,
+    preserveInterfaces: input.preserveInterfaces,
+    includePoseEnvelope: input.includePoseEnvelope,
+    includeInterference: input.includeInterference,
+    epsilonMm3: input.epsilonMm3,
+    trackConnectors: input.trackConnectors,
+    gripperAperture: input.gripperAperture,
+    samplesPerMate: input.samplesPerMate,
+    combinatorial: input.combinatorial,
+    ...(requirePhysicalAcceptance
+      ? {
+          includePhysicalUseCaseReachability: true,
+          includePhysicalUseCaseStatics: true,
+          includePhysicalUseCaseJointReactions: true,
+          includePhysicalUseCaseJointStructure: true,
+          requirePhysicalUseCase: true,
+        }
+      : {}),
+  };
+}
+
+async function finaliseDesignLoop(
+  input: DesignLoopInput,
+  attempts: DesignLoopAttemptResult[],
+): Promise<DesignLoopOutput> {
   const finalPass = attempts.find((attempt) => attempt.ok);
   const convergence = detectConvergenceStall(attempts);
   const record = buildRecord(input, attempts);
@@ -606,48 +629,64 @@ function requiredVisualReviewCheckCodes(): readonly string[] {
   ];
 }
 
+interface WeakVisualEvidenceRule {
+  code: string;
+  patterns: readonly RegExp[];
+  format: (finding: string) => string;
+}
+
+const WEAK_VISUAL_EVIDENCE_RULES: readonly WeakVisualEvidenceRule[] = [
+  {
+    code: 'attachment-plausibility',
+    patterns: [
+      /\b(lugs?|spring\s*bars?|pins?|barrels?|slots?|clamps?|brackets?|mounts?|fasteners?|hinges?|strap\s*tongues?|end\s*links?|connectors?|interfaces?)\b/,
+      /\b(connects?|connected|connection|load(?:\s|-)*path|load(?:\s|-)*bearing|bridg\w*|through|between|seated|captured|passes|touches|anchored|retained)\b/,
+      /\b(seated|exposed|clearance|clearanced|not\s+buried|not\s+half(?:\s|-)*inserted|not\s+embedded|not\s+occluded|visible\s+ends?|flush|captured\s+in\s+(?:the\s+)?lugs?)\b/,
+      /\b(case(?:\s|-)*body|case(?:\s|-)*band|case|body|housing|watch\s*head|main\s*body)\b/,
+    ],
+    format: (finding) =>
+      `attachment-plausibility needs concrete interface, load path, seated/no-buried-hardware, and parent or case body anchor evidence; finding was "${finding}".`,
+  },
+  {
+    code: 'required-visible-features',
+    patterns: [
+      /\b(required|features?|dial|numerals?|numbers?|labels?|text|hands?|markers?|ticks?|crown|strap|bracelet)\b/,
+      /\b(legible|readable|visible|clear|present)\b/,
+      /\b(unobstructed|not\s+covered|not\s+occluded|not\s+hidden|not\s+cut\s*off|clearance|clearanced|outside\s+the\s+bezel|inside\s+the\s+dial|within\s+the\s+dial)\b/,
+    ],
+    format: (finding) =>
+      `required-visible-features needs evidence that required details are legible and unobstructed/not covered; finding was "${finding}".`,
+  },
+  {
+    code: 'no-stray-or-floating-geometry',
+    patterns: [
+      /\b(no\s+(?:stray|floating|disconnected|unsupported)|not\s+(?:floating|disconnected|unsupported)|nothing\s+(?:floating|disconnected|unsupported))\b/,
+      /\b(contact|touch(?:es|ing)?|fasteners?|screws?|pins?|brackets?|mounts?|clips?|hinges?|socket|seated|supported|attached|connected|continuous\s+path|load(?:\s|-)*path|parent\s+(?:body|structure)|main\s+(?:body|structure|frame)|case|housing|frame)\b/,
+      /\b(secondary|strap|bracelet|button|crown|cover|panel|bracket|handle|lug|link|arm|wire|cable|accessory|part|component|geometry)\b/,
+      /\b(no\s+(?:visible\s+)?air\s*gap|not\s+separated|touch(?:es|ing)?|in\s+contact|near(?:\s|-)*contact|flush|seated|captured|passes\s+through|mounted\s+into)\b/,
+    ],
+    format: (finding) =>
+      `no-stray-or-floating-geometry needs evidence that secondary components are supported by contact/near-contact, fasteners, brackets, or a continuous path into the parent body, with no visible air gap; finding was "${finding}".`,
+  },
+  {
+    code: 'device-depth-and-construction',
+    patterns: [
+      /\b(side|canonical|section|thickness|depth|deep|wall|shell|layer|layers|stack)\b/,
+      /\b(bezel|case(?:back)?|back|cover|housing|body|cavity|movement|crystal|gasket|recess|pocket|chamber|case\s*band)\b/,
+      /\b(non(?:\s|-)*facade|not\s+(?:a\s+)?flat|not\s+two\s+(?:flat\s+)?faces|not\s+two\s+surfaces|full\s+casing)\b/,
+    ],
+    format: (finding) =>
+      `device-depth-and-construction needs concrete construction layers and non-facade evidence; finding was "${finding}".`,
+  },
+];
+
 function weakVisualCheckEvidence(check: DesignLoopVisualReviewCheck): string[] {
   if (!check.passed) return [];
   const finding = check.finding.toLowerCase();
-  if (check.code === 'attachment-plausibility') {
-    const namesInterface = /\b(lugs?|spring\s*bars?|pins?|barrels?|slots?|clamps?|brackets?|mounts?|fasteners?|hinges?|strap\s*tongues?|end\s*links?|connectors?|interfaces?)\b/.test(finding);
-    const namesContinuity = /\b(connects?|connected|connection|load(?:\s|-)*path|load(?:\s|-)*bearing|bridg\w*|through|between|seated|captured|passes|touches|anchored|retained)\b/.test(finding);
-    const namesFit = /\b(seated|exposed|clearance|clearanced|not\s+buried|not\s+half(?:\s|-)*inserted|not\s+embedded|not\s+occluded|visible\s+ends?|flush|captured\s+in\s+(?:the\s+)?lugs?)\b/.test(finding);
-    const namesBodyAnchor = /\b(case(?:\s|-)*body|case(?:\s|-)*band|case|body|housing|watch\s*head|main\s*body)\b/.test(finding);
-    if (namesInterface && namesContinuity && namesFit && namesBodyAnchor) return [];
-    return [
-      `attachment-plausibility needs concrete interface, load path, seated/no-buried-hardware, and parent or case body anchor evidence; finding was "${check.finding}".`,
-    ];
-  }
-  if (check.code === 'required-visible-features') {
-    const namesRequiredDetails = /\b(required|features?|dial|numerals?|numbers?|labels?|text|hands?|markers?|ticks?|crown|strap|bracelet)\b/.test(finding);
-    const namesLegibility = /\b(legible|readable|visible|clear|present)\b/.test(finding);
-    const namesNoOcclusion = /\b(unobstructed|not\s+covered|not\s+occluded|not\s+hidden|not\s+cut\s*off|clearance|clearanced|outside\s+the\s+bezel|inside\s+the\s+dial|within\s+the\s+dial)\b/.test(finding);
-    if (namesRequiredDetails && namesLegibility && namesNoOcclusion) return [];
-    return [
-      `required-visible-features needs evidence that required details are legible and unobstructed/not covered; finding was "${check.finding}".`,
-    ];
-  }
-  if (check.code === 'no-stray-or-floating-geometry') {
-    const rejectsFloating = /\b(no\s+(?:stray|floating|disconnected|unsupported)|not\s+(?:floating|disconnected|unsupported)|nothing\s+(?:floating|disconnected|unsupported))\b/.test(finding);
-    const namesSupport = /\b(contact|touch(?:es|ing)?|fasteners?|screws?|pins?|brackets?|mounts?|clips?|hinges?|socket|seated|supported|attached|connected|continuous\s+path|load(?:\s|-)*path|parent\s+(?:body|structure)|main\s+(?:body|structure|frame)|case|housing|frame)\b/.test(finding);
-    const namesSecondary = /\b(secondary|strap|bracelet|button|crown|cover|panel|bracket|handle|lug|link|arm|wire|cable|accessory|part|component|geometry)\b/.test(finding);
-    const rejectsAirGap = /\b(no\s+(?:visible\s+)?air\s*gap|not\s+separated|touch(?:es|ing)?|in\s+contact|near(?:\s|-)*contact|flush|seated|captured|passes\s+through|mounted\s+into)\b/.test(finding);
-    if (rejectsFloating && namesSupport && namesSecondary && rejectsAirGap) return [];
-    return [
-      `no-stray-or-floating-geometry needs evidence that secondary components are supported by contact/near-contact, fasteners, brackets, or a continuous path into the parent body, with no visible air gap; finding was "${check.finding}".`,
-    ];
-  }
-  if (check.code === 'device-depth-and-construction') {
-    const namesDepth = /\b(side|canonical|section|thickness|depth|deep|wall|shell|layer|layers|stack)\b/.test(finding);
-    const namesConstruction = /\b(bezel|case(?:back)?|back|cover|housing|body|cavity|movement|crystal|gasket|recess|pocket|chamber|case\s*band)\b/.test(finding);
-    const rejectsFacade = /\b(non(?:\s|-)*facade|not\s+(?:a\s+)?flat|not\s+two\s+(?:flat\s+)?faces|not\s+two\s+surfaces|full\s+casing)\b/.test(finding);
-    if (namesDepth && namesConstruction && rejectsFacade) return [];
-    return [
-      `device-depth-and-construction needs concrete construction layers and non-facade evidence; finding was "${check.finding}".`,
-    ];
-  }
-  return [];
+  const rule = WEAK_VISUAL_EVIDENCE_RULES.find((candidate) => candidate.code === check.code);
+  if (rule === undefined) return [];
+  if (rule.patterns.every((pattern) => pattern.test(finding))) return [];
+  return [rule.format(check.finding)];
 }
 
 function visualReviewEvidenceRequirements(): string[] {

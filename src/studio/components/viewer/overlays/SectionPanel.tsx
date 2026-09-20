@@ -33,6 +33,122 @@ function sliderStep(r: Range): number {
 const segBtn = (active: boolean) =>
   `px-2 py-0.5 rounded ${active ? 'bg-sky-600 text-white' : 'bg-[#222] text-white/70 hover:bg-[#333]'}`;
 
+function PresetButtons({
+  presetMatches,
+  onApply,
+}: {
+  presetMatches: (enabled: AxesEnabled) => boolean;
+  onApply: (enabled: AxesEnabled) => void;
+}) {
+  return (
+    <div className="mb-2 flex gap-1">
+      {PRESETS.map(({ id, label, enabled }) => (
+        <button
+          key={id}
+          type="button"
+          data-testid={`section-preset-${id}`}
+          onClick={() => onApply(enabled)}
+          aria-pressed={presetMatches(enabled)}
+          className={segBtn(presetMatches(enabled))}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function AxisRow({
+  axis,
+  on,
+  side,
+  offset,
+  range,
+  onToggle,
+  onToggleSide,
+  onOffsetChange,
+}: {
+  axis: 'x' | 'y' | 'z';
+  on: boolean;
+  side: boolean;
+  offset: number;
+  range: Range;
+  onToggle: (on: boolean) => void;
+  onToggleSide: () => void;
+  onOffsetChange: (value: number) => void;
+}) {
+  return (
+    <div className="mb-2 flex items-center gap-2">
+      <label className="flex w-9 items-center gap-1">
+        <input
+          type="checkbox"
+          data-testid={`section-axis-on-${axis}`}
+          checked={on}
+          onChange={(e) => onToggle(e.target.checked)}
+        />
+        <span className={`uppercase ${on ? 'text-white/80' : 'text-white/40'}`}>{axis}</span>
+      </label>
+      <button
+        type="button"
+        data-testid={`section-side-${axis}`}
+        title="Which side of this axis is removed"
+        aria-pressed={side}
+        disabled={!on}
+        onClick={onToggleSide}
+        className="w-6 rounded bg-[#222] py-0.5 text-center text-white/80 hover:bg-[#333] disabled:opacity-40 disabled:hover:bg-[#222]"
+      >
+        {side ? '+' : '−'}
+      </button>
+      <input
+        type="range"
+        data-testid={`section-offset-${axis}`}
+        className="flex-1 disabled:opacity-40"
+        min={range.min}
+        max={range.max}
+        step={sliderStep(range)}
+        value={offset}
+        disabled={!on || range.max - range.min <= 0}
+        onChange={(e) => onOffsetChange(Number(e.target.value))}
+      />
+      <span className={`w-10 text-right tabular-nums ${on ? '' : 'text-white/40'}`}>
+        {offset.toFixed(1)}
+      </span>
+    </div>
+  );
+}
+
+function KeepWholeList({
+  partKeys,
+  sectionKeepWhole,
+  allExcluded,
+}: {
+  partKeys: string[];
+  sectionKeepWhole: ReadonlySet<string>;
+  allExcluded: boolean;
+}) {
+  return (
+    <div className="mt-2 border-t border-white/10 pt-2">
+      <div className="mb-1 text-white/60">Keep whole</div>
+      <div className="max-h-36 overflow-y-auto">
+        {partKeys.map((key) => (
+          <label key={key} className="flex items-center gap-2 py-0.5">
+            <input
+              type="checkbox"
+              data-testid={`section-keep-whole-${key}`}
+              checked={sectionKeepWhole.has(key)}
+              onChange={() => shellStore.toggleSectionKeepWhole(key)}
+            />
+            <span className="truncate">{key}</span>
+          </label>
+        ))}
+      </div>
+      {allExcluded && (
+        <div className="mt-1 text-amber-400/80">All parts excluded — nothing is cut.</div>
+      )}
+    </div>
+  );
+}
+
 /**
  * Floating, draggable control for the section tool. Each axis row can
  * contribute one cut plane (enable + removed-side + offset): one enabled
@@ -126,88 +242,32 @@ export function SectionPanel({ visible }: { visible: boolean }) {
       widthClassName="w-72"
     >
       <div data-testid="section-panel" className="text-xs text-white/90 select-none">
-      <div className="mb-2 flex gap-1">
-        {PRESETS.map(({ id, label, enabled }) => (
-          <button
-            key={id}
-            type="button"
-            data-testid={`section-preset-${id}`}
-            onClick={() => applyPreset(enabled)}
-            aria-pressed={presetMatches(enabled)}
-            className={segBtn(presetMatches(enabled))}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <PresetButtons presetMatches={presetMatches} onApply={applyPreset} />
 
-      {AXES.map((a) => {
-        const on = sectionAxesEnabled[a];
-        const r = rangeFor(a);
-        return (
-          <div key={a} className="mb-2 flex items-center gap-2">
-            <label className="flex w-9 items-center gap-1">
-              <input
-                type="checkbox"
-                data-testid={`section-axis-on-${a}`}
-                checked={on}
-                onChange={(e) => enableAxis(a, e.target.checked)}
-              />
-              <span className={`uppercase ${on ? 'text-white/80' : 'text-white/40'}`}>{a}</span>
-            </label>
-            <button
-              type="button"
-              data-testid={`section-side-${a}`}
-              title="Which side of this axis is removed"
-              aria-pressed={sectionSides[a]}
-              disabled={!on}
-              onClick={() => shellStore.setSectionSide(a, !sectionSides[a])}
-              className="w-6 rounded bg-[#222] py-0.5 text-center text-white/80 hover:bg-[#333] disabled:opacity-40 disabled:hover:bg-[#222]"
-            >
-              {sectionSides[a] ? '+' : '−'}
-            </button>
-            <input
-              type="range"
-              data-testid={`section-offset-${a}`}
-              className="flex-1 disabled:opacity-40"
-              min={r.min}
-              max={r.max}
-              step={sliderStep(r)}
-              value={sectionOffsets[a]}
-              disabled={!on || r.max - r.min <= 0}
-              onChange={(e) => shellStore.setSectionOffset(a, Number(e.target.value))}
-            />
-            <span className={`w-10 text-right tabular-nums ${on ? '' : 'text-white/40'}`}>
-              {sectionOffsets[a].toFixed(1)}
-            </span>
-          </div>
-        );
-      })}
+      {AXES.map((a) => (
+        <AxisRow
+          key={a}
+          axis={a}
+          on={sectionAxesEnabled[a]}
+          side={sectionSides[a]}
+          offset={sectionOffsets[a]}
+          range={rangeFor(a)}
+          onToggle={(next) => enableAxis(a, next)}
+          onToggleSide={() => shellStore.setSectionSide(a, !sectionSides[a])}
+          onOffsetChange={(value) => shellStore.setSectionOffset(a, value)}
+        />
+      ))}
 
       {noneEnabled && (
         <div className="mb-2 text-amber-400/80">No axis enabled — nothing is cut.</div>
       )}
 
       {partKeys.length > 0 && (
-        <div className="mt-2 border-t border-white/10 pt-2">
-          <div className="mb-1 text-white/60">Keep whole</div>
-          <div className="max-h-36 overflow-y-auto">
-            {partKeys.map((key) => (
-              <label key={key} className="flex items-center gap-2 py-0.5">
-                <input
-                  type="checkbox"
-                  data-testid={`section-keep-whole-${key}`}
-                  checked={sectionKeepWhole.has(key)}
-                  onChange={() => shellStore.toggleSectionKeepWhole(key)}
-                />
-                <span className="truncate">{key}</span>
-              </label>
-            ))}
-          </div>
-          {allExcluded && (
-            <div className="mt-1 text-amber-400/80">All parts excluded — nothing is cut.</div>
-          )}
-        </div>
+        <KeepWholeList
+          partKeys={partKeys}
+          sectionKeepWhole={sectionKeepWhole}
+          allExcluded={allExcluded}
+        />
       )}
       </div>
     </FloatingPanel>

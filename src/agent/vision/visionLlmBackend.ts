@@ -126,12 +126,7 @@ export async function extractFeaturesViaLLM(
   );
 }
 
-/** @internal — exported for the test seam. */
-export function parseAndValidate(
-  text: string,
-  features: TraceFeatureRequest[],
-  maxWaypointsPerFeature: number,
-): TraceFeatureResult[] {
+function parseFeaturePayload(text: string): unknown[] {
   const stripped = stripCodeFences(text);
   let parsed: unknown;
   try {
@@ -151,7 +146,101 @@ export function parseAndValidate(
       'visionLlmBackend: response JSON missing "features" array',
     );
   }
-  const rawFeatures = (parsed as { features: unknown[] }).features;
+  return (parsed as { features: unknown[] }).features;
+}
+
+interface ValidatedFeatureEntry {
+  label: string;
+  kind: TraceFeatureKind;
+  rawWaypoints: unknown[];
+  confidence: number;
+}
+
+function validateFeatureEntry(
+  rf: unknown,
+  requestedByLabel: Map<string, TraceFeatureRequest>,
+): ValidatedFeatureEntry {
+  if (!rf || typeof rf !== 'object') {
+    throw new Error('visionLlmBackend: feature entry is not an object');
+  }
+  const r = rf as {
+    label?: unknown;
+    kind?: unknown;
+    waypoints?: unknown;
+    confidence?: unknown;
+  };
+  if (typeof r.label !== 'string' || r.label.length === 0) {
+    throw new Error('visionLlmBackend: feature missing string label');
+  }
+  if (!requestedByLabel.has(r.label)) {
+    throw new Error(
+      `visionLlmBackend: feature label "${r.label}" was not requested`,
+    );
+  }
+  if (typeof r.kind !== 'string' || !VALID_KINDS.includes(r.kind as TraceFeatureKind)) {
+    throw new Error(
+      `visionLlmBackend: feature "${r.label}" has invalid kind "${String(r.kind)}"`,
+    );
+  }
+  if (!Array.isArray(r.waypoints)) {
+    throw new Error(
+      `visionLlmBackend: feature "${r.label}" missing waypoints array`,
+    );
+  }
+
+  let confidence = 0.5;
+  const rawConf = r.confidence;
+  if (typeof rawConf === 'number' && Number.isFinite(rawConf)) {
+    confidence = Math.max(0, Math.min(1, rawConf));
+  }
+  return { label: r.label, kind: r.kind as TraceFeatureKind, rawWaypoints: r.waypoints, confidence };
+}
+
+function validateWaypoints(rawWaypoints: unknown[], label: string): Vec2Normalized[] {
+  const validatedWaypoints: Vec2Normalized[] = [];
+  for (const wp of rawWaypoints) {
+    if (!Array.isArray(wp) || wp.length !== 2) {
+      throw new Error(
+        `visionLlmBackend: feature "${label}" waypoint is not a 2-tuple`,
+      );
+    }
+    const x = wp[0];
+    const y = wp[1];
+    if (
+      typeof x !== 'number' ||
+      typeof y !== 'number' ||
+      !Number.isFinite(x) ||
+      !Number.isFinite(y)
+    ) {
+      throw new Error(
+        `visionLlmBackend: feature "${label}" waypoint has non-finite coordinate`,
+      );
+    }
+    if (x < 0 || x > 1 || y < 0 || y > 1) {
+      // Out-of-range is a hard fail — do NOT silently clamp.
+      throw new Error(
+        `OUT_OF_RANGE: feature "${label}" waypoint [${x}, ${y}]`,
+      );
+    }
+    validatedWaypoints.push([x, y]);
+  }
+  return validatedWaypoints;
+}
+
+function truncateWaypoints(waypoints: Vec2Normalized[], maxWaypointsPerFeature: number): Vec2Normalized[] {
+  // Truncate (don't reject) when LLM overshoots the cap. Preserve prefix.
+  return waypoints.length > maxWaypointsPerFeature
+    ? waypoints.slice(0, maxWaypointsPerFeature)
+    : waypoints;
+}
+
+/** @internal — exported for the test seam. */
+export function parseAndValidate(
+  text: string,
+  features: TraceFeatureRequest[],
+  maxWaypointsPerFeature: number,
+): TraceFeatureResult[] {
+  const rawFeatures = parseFeaturePayload(text);
 
   // Index requested features by label for cross-validation.
   const requestedByLabel = new Map<string, TraceFeatureRequest>();
@@ -161,79 +250,16 @@ export function parseAndValidate(
 
   const out: TraceFeatureResult[] = [];
   for (const rf of rawFeatures) {
-    if (!rf || typeof rf !== 'object') {
-      throw new Error('visionLlmBackend: feature entry is not an object');
-    }
-    const r = rf as {
-      label?: unknown;
-      kind?: unknown;
-      waypoints?: unknown;
-      confidence?: unknown;
-    };
-    if (typeof r.label !== 'string' || r.label.length === 0) {
-      throw new Error('visionLlmBackend: feature missing string label');
-    }
-    if (!requestedByLabel.has(r.label)) {
-      throw new Error(
-        `visionLlmBackend: feature label "${r.label}" was not requested`,
-      );
-    }
-    if (typeof r.kind !== 'string' || !VALID_KINDS.includes(r.kind as TraceFeatureKind)) {
-      throw new Error(
-        `visionLlmBackend: feature "${r.label}" has invalid kind "${String(r.kind)}"`,
-      );
-    }
-    if (!Array.isArray(r.waypoints)) {
-      throw new Error(
-        `visionLlmBackend: feature "${r.label}" missing waypoints array`,
-      );
-    }
-
-    const validatedWaypoints: Vec2Normalized[] = [];
-    for (const wp of r.waypoints as unknown[]) {
-      if (!Array.isArray(wp) || wp.length !== 2) {
-        throw new Error(
-          `visionLlmBackend: feature "${r.label}" waypoint is not a 2-tuple`,
-        );
-      }
-      const x = wp[0];
-      const y = wp[1];
-      if (
-        typeof x !== 'number' ||
-        typeof y !== 'number' ||
-        !Number.isFinite(x) ||
-        !Number.isFinite(y)
-      ) {
-        throw new Error(
-          `visionLlmBackend: feature "${r.label}" waypoint has non-finite coordinate`,
-        );
-      }
-      if (x < 0 || x > 1 || y < 0 || y > 1) {
-        // Out-of-range is a hard fail — do NOT silently clamp.
-        throw new Error(
-          `OUT_OF_RANGE: feature "${r.label}" waypoint [${x}, ${y}]`,
-        );
-      }
-      validatedWaypoints.push([x, y]);
-    }
-
-    // Truncate (don't reject) when LLM overshoots the cap. Preserve prefix.
-    const truncated =
-      validatedWaypoints.length > maxWaypointsPerFeature
-        ? validatedWaypoints.slice(0, maxWaypointsPerFeature)
-        : validatedWaypoints;
-
-    const rawConf = r.confidence;
-    let confidence = 0.5;
-    if (typeof rawConf === 'number' && Number.isFinite(rawConf)) {
-      confidence = Math.max(0, Math.min(1, rawConf));
-    }
-
+    const entry = validateFeatureEntry(rf, requestedByLabel);
+    const waypoints = truncateWaypoints(
+      validateWaypoints(entry.rawWaypoints, entry.label),
+      maxWaypointsPerFeature,
+    );
     out.push({
-      label: r.label,
-      kind: r.kind as TraceFeatureKind,
-      waypoints: truncated,
-      confidence,
+      label: entry.label,
+      kind: entry.kind,
+      waypoints,
+      confidence: entry.confidence,
       backend: 'vision-llm',
     });
   }

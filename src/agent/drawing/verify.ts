@@ -63,33 +63,38 @@ function normalise(loop: readonly P2[]): P2[] {
   return loop.map(p => [p[0] - x0, p[1] - y0]);
 }
 
-export async function verifyReconstruction(
-  script: string,
-  model: PartModel,
-  geometry: readonly ViewGeometry[],
-  snap: (axis: ModelAxis, measured: number) => number,
-): Promise<FidelityReport> {
-  const empty = (error: string): FidelityReport => ({
+function emptyFidelityReport(model: PartModel, error: string): FidelityReport {
+  return {
     verdict: 'failed',
     extents: Object.fromEntries(AXES.map(a => [a, { expected: model.extents[a], actual: 0, delta: model.extents[a] }])) as FidelityReport['extents'],
     holes: { expected: [], actual: [], maxDiameterDelta: 0 },
     silhouettes: [],
     reasons: [error],
     error,
-  });
+  };
+}
 
+/** Run the emitted script and lower its returned root to a solid. */
+async function lowerScriptShape(script: string): Promise<{ shape: OcctBackend } | { error: string }> {
   const run = await runMcpScript({ code: script, file: 'drawing_to_cad.kcad.ts' });
-  if (!run.ok) return empty(`the emitted script did not run: ${run.error}`);
+  if (!run.ok) return { error: `the emitted script did not run: ${run.error}` };
   const engine = new RecomputeEngine(createOcctLowerer(run.run.session));
   const lowered = await engine.run(run.run.records, { paramTable: run.run.paramTable });
   const fatal = lowered.diagnostics.find(d => d.severity === 'error');
-  if (fatal) return empty(`the emitted script failed to build: ${fatal.code} — ${fatal.message}`);
+  if (fatal) return { error: `the emitted script failed to build: ${fatal.code} — ${fatal.message}` };
   const tail = run.run.records.length > 0 ? run.run.records[run.run.records.length - 1].id : undefined;
   const rootId = resolveRootId(run.run.returnValue, tail);
   const shape = rootId !== undefined ? lowered.shapes.get(rootId) : undefined;
-  if (!(shape instanceof OcctBackend)) return empty('the emitted script did not return a solid.');
+  if (!(shape instanceof OcctBackend)) return { error: 'the emitted script did not return a solid.' };
+  return { shape };
+}
 
-  const reasons: string[] = [];
+/** Exact bbox of the rebuild vs the solved extents, appending mismatches. */
+function measureExtents(
+  shape: OcctBackend,
+  model: PartModel,
+  reasons: string[],
+): FidelityReport['extents'] {
   const bb = shape.boundingBox({ exact: true });
   const extents = {} as FidelityReport['extents'];
   AXES.forEach((a, i) => {
@@ -100,7 +105,15 @@ export async function verifyReconstruction(
       reasons.push(`${a.toUpperCase()} extent is ${actual} mm, the drawing states ${expected} mm.`);
     }
   });
+  return extents;
+}
 
+/** Cylindrical holes detected on the result vs the holes read off the sheet. */
+function checkHoles(
+  shape: OcctBackend,
+  model: PartModel,
+  reasons: string[],
+): { expectedHoles: number[]; actualHoles: number[]; maxDiameterDelta: number } {
   let actualHoles: number[] = [];
   try {
     actualHoles = detectCylindricalHoles(shape).map(h => round3(h.diameterMm)).sort((p, q) => p - q);
@@ -117,7 +130,16 @@ export async function verifyReconstruction(
   }
   maxDiameterDelta = round3(maxDiameterDelta);
   if (maxDiameterDelta > HOLE_TOL_MM) reasons.push(`hole diameters differ by up to ${maxDiameterDelta} mm.`);
+  return { expectedHoles, actualHoles, maxDiameterDelta };
+}
 
+/** Re-project each view's outer silhouette and compare by filled-area IoU. */
+function compareSilhouettes(
+  shape: OcctBackend,
+  geometry: readonly ViewGeometry[],
+  snap: (axis: ModelAxis, measured: number) => number,
+  reasons: string[],
+): FidelityReport['silhouettes'] {
   const silhouettes: FidelityReport['silhouettes'] = [];
   let projected: ReturnType<typeof projectDrawingViews> | null = null;
   try {
@@ -145,6 +167,23 @@ export async function verifyReconstruction(
       if (iou < SILHOUETTE_MATCH_IOU) reasons.push(`${g.view.name} silhouette overlaps the drawing by ${iou} (IoU).`);
     }
   }
+  return silhouettes;
+}
+
+export async function verifyReconstruction(
+  script: string,
+  model: PartModel,
+  geometry: readonly ViewGeometry[],
+  snap: (axis: ModelAxis, measured: number) => number,
+): Promise<FidelityReport> {
+  const lowered = await lowerScriptShape(script);
+  if ('error' in lowered) return emptyFidelityReport(model, lowered.error);
+  const shape = lowered.shape;
+
+  const reasons: string[] = [];
+  const extents = measureExtents(shape, model, reasons);
+  const { expectedHoles, actualHoles, maxDiameterDelta } = checkHoles(shape, model, reasons);
+  const silhouettes = compareSilhouettes(shape, geometry, snap, reasons);
 
   const extentOk = AXES.every(a => Math.abs(extents[a].delta) <= EXTENT_TOL_MM);
   const holesOk = actualHoles.length === expectedHoles.length && maxDiameterDelta <= HOLE_TOL_MM;

@@ -170,56 +170,56 @@ function regionForNode(
   return best !== undefined ? (best.ref ?? `surface#${best.tag}`) : 'interior';
 }
 
-/**
- * Run one declared study against a built shape.
- *
- * `shape` must already be lowered (the caller owns building the model);
- * `study` is the normalized record metadata; `owner` is the feature id the
- * study is bound to, used for `@kc[...]` ref formatting and diagnostics.
- */
-export async function runFeaStudy(
-  shape: OcctBackend,
-  declared: FeaStudyMetadata,
-  owner: string,
-  records: readonly FeatureRecord[] | undefined,
-  opts: RunFeaOptions,
-): Promise<RunFeaResult> {
-  const diagnostics: CompilerDiagnostic[] = [];
-  const artifacts: RunFeaResult['artifacts'] = {};
-  // Selectors, forces and meshSize stay symbolic on the record so the study
-  // tracks its params; they become numbers here, once, for this run.
-  const study =
-    opts.paramTable !== undefined ? resolveStudyParams(declared, opts.paramTable) : declared;
+interface FeaRunContext {
+  shape: OcctBackend;
+  study: FeaStudyMetadata;
+  owner: string;
+  records: readonly FeatureRecord[] | undefined;
+  opts: RunFeaOptions;
+  diagnostics: CompilerDiagnostic[];
+  artifacts: RunFeaResult['artifacts'];
+}
 
+type ResolvedFeaMaterial = Extract<ReturnType<typeof resolveFeaMaterial>, { ok: true }>;
+
+/** Material resolution + toolchain probe, before any file work. Pushes the
+ *  failing diagnostic and returns undefined when either cannot proceed. */
+async function resolveStudyInputs(
+  ctx: FeaRunContext,
+): Promise<{ material: ResolvedFeaMaterial; toolchain: FeaToolchain } | undefined> {
+  const { study, owner, opts, diagnostics } = ctx;
   const material = resolveFeaMaterial(study.material);
   if (!material.ok) {
-    return {
-      ok: false,
-      diagnostics: withNextActions([diag('feature.invalid-args', 'error', material.message, owner)]),
-      artifacts,
-    };
+    diagnostics.push(diag('feature.invalid-args', 'error', material.message, owner));
+    return undefined;
   }
 
   const toolchain = opts.toolchain ?? (await detectFeaToolchain(opts.cwd));
   if (!toolchain.ok) {
-    return {
-      ok: false,
-      diagnostics: withNextActions([
-        diag(
-          'fea.solver.unavailable',
-          'error',
-          `feaStudy '${study.name}' could not run: missing ${toolchain.missing.join(' and ')}. No structural evidence was produced — this is not a pass.`,
-          owner,
-        ),
-      ]),
-      artifacts,
-    };
+    diagnostics.push(
+      diag(
+        'fea.solver.unavailable',
+        'error',
+        `feaStudy '${study.name}' could not run: missing ${toolchain.missing.join(' and ')}. No structural evidence was produced — this is not a pass.`,
+        owner,
+      ),
+    );
+    return undefined;
   }
+  return { material, toolchain };
+}
 
-  await mkdir(opts.outDir, { recursive: true });
-  const jobDir = join(opts.outDir, 'solver');
-  await mkdir(jobDir, { recursive: true });
-
+/** BREP handoff + face-selector resolution. Returns undefined after pushing
+ *  the failing diagnostic. */
+async function writeBrepAndResolveFaces(
+  ctx: FeaRunContext,
+  jobDir: string,
+): Promise<{
+  brepPath: string;
+  fixedFaces: ReturnType<typeof resolveSelector>;
+  loadFaces: Array<{ name: string; force: readonly [number, number, number]; faces: ReturnType<typeof resolveSelector>['faces'] }>;
+} | undefined> {
+  const { shape, study, owner, records, diagnostics, artifacts } = ctx;
   // 1. Geometry handoff as OCCT-native BREP. gmsh's geometry kernel IS OCC,
   //    so BREP crosses over with exact surfaces and topology and no schema
   //    translation — and, unlike the STEP writer, it prints no translator
@@ -234,28 +234,45 @@ export async function runFeaStudy(
   //    fast rather than after a two-minute mesh.
   const fixedFaces = resolveSelector(shape, study.fixed, { owner, ...(records ? { records } : {}) });
   if (!fixedFaces.ok) {
-    return {
-      ok: false,
-      diagnostics: withNextActions([
-        diag('fea.study.fixed-unresolved', 'error', `feaStudy '${study.name}': ${fixedFaces.error}`, owner),
-      ]),
-      artifacts,
-    };
+    diagnostics.push(
+      diag('fea.study.fixed-unresolved', 'error', `feaStudy '${study.name}': ${fixedFaces.error}`, owner),
+    );
+    return undefined;
   }
   const loadFaces: Array<{ name: string; force: readonly [number, number, number]; faces: ReturnType<typeof resolveSelector>['faces'] }> = [];
   for (const load of study.loads) {
     const r = resolveSelector(shape, load.faces, { owner, ...(records ? { records } : {}) });
     if (!r.ok) {
-      return {
-        ok: false,
-        diagnostics: withNextActions([
-          diag('fea.study.load-unresolved', 'error', `feaStudy '${study.name}', load '${load.name}': ${r.error}`, owner),
-        ]),
-        artifacts,
-      };
+      diagnostics.push(
+        diag('fea.study.load-unresolved', 'error', `feaStudy '${study.name}', load '${load.name}': ${r.error}`, owner),
+      );
+      return undefined;
     }
     loadFaces.push({ name: load.name, force: load.force, faces: r.faces });
   }
+  return { brepPath, fixedFaces, loadFaces };
+}
+
+/** Mesh the BREP, enforce the element ceiling, and bind fixed/load faces to
+ *  meshed surfaces. Returns undefined after pushing the failing diagnostic. */
+async function meshAndBindFaces(
+  ctx: FeaRunContext,
+  toolchain: FeaToolchain,
+  jobDir: string,
+  resolved: {
+    brepPath: string;
+    fixedFaces: ReturnType<typeof resolveSelector>;
+    loadFaces: Array<{ name: string; force: readonly [number, number, number]; faces: ReturnType<typeof resolveSelector>['faces'] }>;
+  },
+): Promise<{
+  meshed: Awaited<ReturnType<typeof meshStep>>;
+  labelled: ReturnType<typeof labelSurfaces>;
+  fixedBind: ReturnType<typeof nodesForFaces>;
+  loads: FeaResolvedLoad[];
+  meshSize: number;
+} | undefined> {
+  const { shape, study, owner, opts, diagnostics, artifacts } = ctx;
+  const { brepPath, fixedFaces, loadFaces } = resolved;
 
   // 3. Mesh.
   const { min, max } = boundsOf(shape);
@@ -271,28 +288,22 @@ export async function runFeaStudy(
       timeoutMs: opts.meshTimeoutMs ?? DEFAULT_MESH_TIMEOUT_MS,
     });
   } catch (e) {
-    return {
-      ok: false,
-      diagnostics: withNextActions([
-        diag('fea.mesh.quality-low', 'error', `feaStudy '${study.name}': ${(e as Error).message}`, owner),
-      ]),
-      artifacts,
-    };
+    diagnostics.push(
+      diag('fea.mesh.quality-low', 'error', `feaStudy '${study.name}': ${(e as Error).message}`, owner),
+    );
+    return undefined;
   }
   artifacts.meshPath = join(jobDir, 'mesh.json');
   if (meshed.mesh.elements.length > MAX_ELEMENTS) {
-    return {
-      ok: false,
-      diagnostics: withNextActions([
-        diag(
-          'fea.mesh.quality-low',
-          'error',
-          `feaStudy '${study.name}': the mesh has ${meshed.mesh.elements.length} elements, past the ${MAX_ELEMENTS}-element in-loop ceiling. Raise meshSize (currently ${meshSize.toFixed(3)} mm).`,
-          owner,
-        ),
-      ]),
-      artifacts,
-    };
+    diagnostics.push(
+      diag(
+        'fea.mesh.quality-low',
+        'error',
+        `feaStudy '${study.name}': the mesh has ${meshed.mesh.elements.length} elements, past the ${MAX_ELEMENTS}-element in-loop ceiling. Raise meshSize (currently ${meshSize.toFixed(3)} mm).`,
+        owner,
+      ),
+    );
+    return undefined;
   }
 
   // 4. Bind the resolved faces to meshed surfaces.
@@ -300,39 +311,48 @@ export async function runFeaStudy(
   const labelled = labelSurfaces(meshed.mesh.surfaces, allFaces, scaleMm);
   const fixedBind = nodesForFaces(labelled, fixedFaces.faces, scaleMm);
   if (fixedBind.nodes.length === 0) {
-    return {
-      ok: false,
-      diagnostics: withNextActions([
-        diag(
-          'fea.study.fixed-unresolved',
-          'error',
-          `feaStudy '${study.name}': the fixed face(s) ${fixedFaces.faces.map(f => f.ref).join(', ')} matched no meshed surface, so the part would be unconstrained.`,
-          owner,
-        ),
-      ]),
-      artifacts,
-    };
+    diagnostics.push(
+      diag(
+        'fea.study.fixed-unresolved',
+        'error',
+        `feaStudy '${study.name}': the fixed face(s) ${fixedFaces.faces.map(f => f.ref).join(', ')} matched no meshed surface, so the part would be unconstrained.`,
+        owner,
+      ),
+    );
+    return undefined;
   }
   const loads: FeaResolvedLoad[] = [];
   for (const [i, l] of loadFaces.entries()) {
     const bind = nodesForFaces(labelled, l.faces, scaleMm);
     if (bind.nodes.length === 0) {
-      return {
-        ok: false,
-        diagnostics: withNextActions([
-          diag(
-            'fea.study.load-unresolved',
-            'error',
-            `feaStudy '${study.name}', load '${l.name}': face(s) ${l.faces.map(f => f.ref).join(', ')} matched no meshed surface, so the force would be applied to no node.`,
-            owner,
-          ),
-        ]),
-        artifacts,
-      };
+      diagnostics.push(
+        diag(
+          'fea.study.load-unresolved',
+          'error',
+          `feaStudy '${study.name}', load '${l.name}': face(s) ${l.faces.map(f => f.ref).join(', ')} matched no meshed surface, so the force would be applied to no node.`,
+          owner,
+        ),
+      );
+      return undefined;
     }
     loads.push({ name: l.name, force: l.force, set: { name: `NLOAD${i}`, nodes: bind.nodes } });
   }
 
+  return { meshed, labelled, fixedBind, loads, meshSize };
+}
+
+/** Write the CalculiX deck and run the bounded solve. Returns undefined after
+ *  pushing the failing diagnostic. */
+async function solveFeaDeck(
+  ctx: FeaRunContext,
+  toolchain: FeaToolchain,
+  jobDir: string,
+  meshed: Awaited<ReturnType<typeof meshStep>>,
+  material: ResolvedFeaMaterial,
+  fixedBind: ReturnType<typeof nodesForFaces>,
+  loads: readonly FeaResolvedLoad[],
+): Promise<{ solveMs: number; frdPath: string } | undefined> {
+  const { study, owner, opts, diagnostics, artifacts } = ctx;
   // 5. Deck + solve.
   const job: FeaJobSpec = {
     mesh: meshed.mesh,
@@ -352,40 +372,58 @@ export async function runFeaStudy(
   const solveMs = Date.now() - solveStarted;
   const frdPath = join(jobDir, 'job.frd');
   if (run.timedOut) {
-    return {
-      ok: false,
-      diagnostics: withNextActions([
-        diag(
-          'fea.mesh.quality-low',
-          'error',
-          `feaStudy '${study.name}': CalculiX exceeded its ${opts.solveTimeoutMs ?? DEFAULT_SOLVE_TIMEOUT_MS} ms budget on a ${meshed.mesh.elements.length}-element mesh. Raise meshSize.`,
-          owner,
-        ),
-      ]),
-      artifacts,
-    };
+    diagnostics.push(
+      diag(
+        'fea.mesh.quality-low',
+        'error',
+        `feaStudy '${study.name}': CalculiX exceeded its ${opts.solveTimeoutMs ?? DEFAULT_SOLVE_TIMEOUT_MS} ms budget on a ${meshed.mesh.elements.length}-element mesh. Raise meshSize.`,
+        owner,
+      ),
+    );
+    return undefined;
   }
   if (!existsSync(frdPath)) {
-    return {
-      ok: false,
-      diagnostics: withNextActions([
-        diag(
-          'fea.solver.unavailable',
-          'error',
-          `feaStudy '${study.name}': CalculiX produced no result file (exit ${run.code}). Solver output: ${run.out.trim().split('\n').slice(-5).join(' | ')}`,
-          owner,
-        ),
-      ]),
-      artifacts,
-    };
+    diagnostics.push(
+      diag(
+        'fea.solver.unavailable',
+        'error',
+        `feaStudy '${study.name}': CalculiX produced no result file (exit ${run.code}). Solver output: ${run.out.trim().split('\n').slice(-5).join(' | ')}`,
+        owner,
+      ),
+    );
+    return undefined;
   }
   artifacts.frdPath = frdPath;
+  return { solveMs, frdPath };
+}
 
+/** Read the .frd fields and the optional .dat reaction table back. */
+async function readFeaFields(
+  jobDir: string,
+  frdPath: string,
+): Promise<{ fields: ReturnType<typeof parseFrd>; dat: ReturnType<typeof parseDat> }> {
   // 6. Read the fields back.
   const fields = parseFrd(await readFile(frdPath, 'utf8'));
   const datPath = join(jobDir, 'job.dat');
   const dat = existsSync(datPath) ? parseDat(await readFile(datPath, 'utf8')) : {};
+  return { fields, dat };
+}
 
+interface FeaSummaryComputation {
+  summary: FeaSummary;
+  trust: FeaTrust;
+  maxVm: number;
+  maxDisp: number;
+  minSafetyFactor: number;
+  yieldMPa: number;
+  hotSpots: FeaHotSpot[];
+}
+
+/** Global peaks over every solved node. The scan is strictly-greater, so
+ *  equal peaks keep the first node, as the single-pass original did. */
+function findGlobalPeaks(
+  fields: ReturnType<typeof parseFrd>,
+): { maxVm: number; maxVmNode: number; maxDisp: number; maxDispNode: number } {
   let maxVm = 0;
   let maxVmNode = fields.nodeIds[0] ?? 0;
   let maxDisp = 0;
@@ -395,13 +433,18 @@ export async function runFeaStudy(
     const d = Math.hypot(...fields.displacement[i]);
     if (d > maxDisp) { maxDisp = d; maxDispNode = fields.nodeIds[i]; }
   }
-  const coordOf = (id: number): [number, number, number] => {
-    const c = meshed.mesh.nodes.get(id);
-    return c !== undefined ? [c[0], c[1], c[2]] : [0, 0, 0];
-  };
+  return { maxVm, maxVmNode, maxDisp, maxDispNode };
+}
 
-  // Per-region peaks. A single global maximum hides the case where the
-  // declared load face is fine and an unrelated fillet is the real problem.
+/** Per-region peaks and their safety factors. A single global maximum hides
+ *  the case where the declared load face is fine and an unrelated fillet is
+ *  the real problem. */
+function computeHotSpots(
+  fields: ReturnType<typeof parseFrd>,
+  labelled: ReturnType<typeof labelSurfaces>,
+  coordOf: (id: number) => [number, number, number],
+  yieldMPa: number,
+): FeaHotSpot[] {
   const perRegion = new Map<string, { vm: number; node: number }>();
   for (let i = 0; i < fields.nodeIds.length; i++) {
     const id = fields.nodeIds[i];
@@ -411,8 +454,7 @@ export async function runFeaStudy(
       perRegion.set(region, { vm: fields.vonMises[i], node: id });
     }
   }
-  const yieldMPa = material.props.yield;
-  const hotSpots: FeaHotSpot[] = [...perRegion.entries()]
+  return [...perRegion.entries()]
     .map(([region, v]) => ({
       region,
       maxVonMisesMPa: v.vm,
@@ -422,7 +464,18 @@ export async function runFeaStudy(
     }))
     .sort((a, b) => b.maxVonMisesMPa - a.maxVonMisesMPa)
     .slice(0, 5);
+}
 
+/** Sum the applied force vectors and close the loop against the reaction
+ *  table, when the solver reported one and the applied load is non-zero. */
+function computeEquilibrium(
+  loads: readonly FeaResolvedLoad[],
+  dat: ReturnType<typeof parseDat>,
+): {
+  applied: [number, number, number];
+  reaction: ReturnType<typeof parseDat>['totalReactionForce'];
+  equilibriumResidual: number | undefined;
+} {
   const applied: [number, number, number] = [0, 0, 0];
   for (const l of loads) for (let k = 0; k < 3; k++) applied[k] += l.force[k];
   const appliedMag = Math.hypot(...applied);
@@ -431,6 +484,34 @@ export async function runFeaStudy(
     reaction !== undefined && appliedMag > 0
       ? Math.hypot(reaction[0] + applied[0], reaction[1] + applied[1], reaction[2] + applied[2]) / appliedMag
       : undefined;
+  return { applied, reaction, equilibriumResidual };
+}
+
+/** Global + per-region peaks, equilibrium residual and trust flags, folded
+ *  into the summary object. No I/O and no diagnostics. Exported so the
+ *  summary arithmetic can be pinned without a solver toolchain. */
+export function computeFeaSummary(
+  ctx: FeaRunContext,
+  material: ResolvedFeaMaterial,
+  meshed: Awaited<ReturnType<typeof meshStep>>,
+  labelled: ReturnType<typeof labelSurfaces>,
+  fields: ReturnType<typeof parseFrd>,
+  dat: ReturnType<typeof parseDat>,
+  loads: readonly FeaResolvedLoad[],
+  meshSize: number,
+  solveMs: number,
+): FeaSummaryComputation {
+  const { study } = ctx;
+  const { maxVm, maxVmNode, maxDisp, maxDispNode } = findGlobalPeaks(fields);
+  const coordOf = (id: number): [number, number, number] => {
+    const c = meshed.mesh.nodes.get(id);
+    return c !== undefined ? [c[0], c[1], c[2]] : [0, 0, 0];
+  };
+
+  const yieldMPa = material.props.yield;
+  const hotSpots: FeaHotSpot[] = computeHotSpots(fields, labelled, coordOf, yieldMPa);
+
+  const { applied, reaction, equilibriumResidual } = computeEquilibrium(loads, dat);
 
   const maxErr = fields.stressErrorPercent.length > 0 ? Math.max(...fields.stressErrorPercent) : undefined;
   const trust = trustFrom(meshed.mesh.quality, meshed.mesh.elements.length, maxErr);
@@ -459,6 +540,18 @@ export async function runFeaStudy(
     meshMs: meshed.meshMs,
   };
 
+  return { summary, trust, maxVm, maxDisp, minSafetyFactor, yieldMPa, hotSpots };
+}
+
+/** Push the mesh-trust warning and the declared safety-factor error, in the
+ *  same order as the original single-pass flow. */
+function appendFeaSummaryDiagnostics(
+  ctx: FeaRunContext,
+  material: ResolvedFeaMaterial,
+  computed: FeaSummaryComputation,
+): void {
+  const { study, owner, diagnostics } = ctx;
+  const { trust, maxVm, maxDisp, minSafetyFactor, yieldMPa, hotSpots } = computed;
   if (!trust.meshTrusted) {
     diagnostics.push(
       diag(
@@ -483,11 +576,66 @@ export async function runFeaStudy(
       ),
     );
   }
+}
 
-  await writeFile(join(opts.outDir, 'fea-summary.json'), JSON.stringify(summary, null, 2), 'utf8');
+/**
+ * Run one declared study against a built shape.
+ *
+ * `shape` must already be lowered (the caller owns building the model);
+ * `study` is the normalized record metadata; `owner` is the feature id the
+ * study is bound to, used for `@kc[...]` ref formatting and diagnostics.
+ */
+export async function runFeaStudy(
+  shape: OcctBackend,
+  declared: FeaStudyMetadata,
+  owner: string,
+  records: readonly FeatureRecord[] | undefined,
+  opts: RunFeaOptions,
+): Promise<RunFeaResult> {
+  const diagnostics: CompilerDiagnostic[] = [];
+  const artifacts: RunFeaResult['artifacts'] = {};
+  // Selectors, forces and meshSize stay symbolic on the record so the study
+  // tracks its params; they become numbers here, once, for this run.
+  const study =
+    opts.paramTable !== undefined ? resolveStudyParams(declared, opts.paramTable) : declared;
+
+  const ctx: FeaRunContext = { shape, study, owner, records, opts, diagnostics, artifacts };
+
+  const inputs = await resolveStudyInputs(ctx);
+  if (inputs === undefined) {
+    return { ok: false, diagnostics: withNextActions(diagnostics), artifacts };
+  }
+  const { material, toolchain } = inputs;
+
+  await mkdir(opts.outDir, { recursive: true });
+  const jobDir = join(opts.outDir, 'solver');
+  await mkdir(jobDir, { recursive: true });
+
+  const resolved = await writeBrepAndResolveFaces(ctx, jobDir);
+  if (resolved === undefined) {
+    return { ok: false, diagnostics: withNextActions(diagnostics), artifacts };
+  }
+
+  const meshedPhase = await meshAndBindFaces(ctx, toolchain, jobDir, resolved);
+  if (meshedPhase === undefined) {
+    return { ok: false, diagnostics: withNextActions(diagnostics), artifacts };
+  }
+  const { meshed, labelled, fixedBind, loads, meshSize } = meshedPhase;
+
+  const solved = await solveFeaDeck(ctx, toolchain, jobDir, meshed, material, fixedBind, loads);
+  if (solved === undefined) {
+    return { ok: false, diagnostics: withNextActions(diagnostics), artifacts };
+  }
+  const { solveMs, frdPath } = solved;
+
+  const { fields, dat } = await readFeaFields(jobDir, frdPath);
+  const computed = computeFeaSummary(ctx, material, meshed, labelled, fields, dat, loads, meshSize, solveMs);
+  appendFeaSummaryDiagnostics(ctx, material, computed);
+
+  await writeFile(join(opts.outDir, 'fea-summary.json'), JSON.stringify(computed.summary, null, 2), 'utf8');
   return {
     ok: !diagnostics.some(d => d.severity === 'error'),
-    summary,
+    summary: computed.summary,
     diagnostics: withNextActions(diagnostics),
     artifacts,
     raw: { mesh: { ...meshed.mesh, surfaces: labelled }, fields },

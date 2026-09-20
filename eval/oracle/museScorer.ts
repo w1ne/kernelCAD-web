@@ -33,6 +33,9 @@ import { fileURLToPath } from 'node:url';
 
 const LOCAL_BUILD = './dist/cli/index.js';
 const DEFAULT_MUSE_ROOT = '/home/andrii/projects/muse';
+
+/** Hard cap on a single spawn; runaway OCCT/STEP jobs are killed. */
+const CLI_TIMEOUT_MS = Number(process.env.KERNELCAD_CLI_TIMEOUT_MS ?? 300_000);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const WRAPPER_PY = resolve(__dirname, 'museScorerWrapper.py');
 
@@ -98,13 +101,26 @@ function getKernelcadBin(): { cmd: string; baseArgs: string[] } {
 
 function runOnce(cmd: string, args: string[]): Promise<RunResult> {
   return new Promise((resolveP, rejectP) => {
-    const child = spawn(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(cmd, args, {
+      stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: CLI_TIMEOUT_MS,
+    });
     let stdout = '';
     let stderr = '';
     child.stdout.on('data', (d) => (stdout += d.toString()));
     child.stderr.on('data', (d) => (stderr += d.toString()));
     child.on('error', rejectP);
-    child.on('close', (code) => resolveP({ code: code ?? -1, stdout, stderr }));
+    child.on('close', (code, signal) => {
+      if (signal !== null && child.killed) {
+        resolveP({
+          code: -1,
+          stdout,
+          stderr: `${stderr}\n[timeout] process killed after ${CLI_TIMEOUT_MS}ms (${signal})`,
+        });
+        return;
+      }
+      resolveP({ code: code ?? -1, stdout, stderr });
+    });
   });
 }
 

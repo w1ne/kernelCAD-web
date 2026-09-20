@@ -161,21 +161,48 @@ const JOINT_KIND_TO_MATE_TYPE: Record<string, MateRecord['type']> = {
  *  row read-only — truthful: the joint exists, nothing drives it. */
 const REST_POSE_PARAM: Param = { expression: '0', unit: 'deg', evaluated: 0 };
 
+/** Metadata shape carried by an `assemblyJoint` record captured from a joint
+ *  primitive. */
+type JointPrimitiveMetadata = {
+  jointName?: string;
+  jointKind?: string;
+  limitsDeg?: readonly [number, number];
+  limitsMm?: readonly [number, number];
+  ballLimitsDeg?: readonly [number, number];
+};
+
+/** Copy the joint's declared limits, promoting ball limits to `limitsDeg`
+ *  when no explicit degree limit was captured. */
+function jointLimitsFromMetadata(meta: JointPrimitiveMetadata | undefined) {
+  return {
+    ...(meta?.limitsDeg !== undefined ? { limitsDeg: meta.limitsDeg } : {}),
+    ...(meta?.limitsMm !== undefined ? { limitsMm: meta.limitsMm } : {}),
+    ...(meta?.limitsDeg === undefined && meta?.ballLimitsDeg !== undefined
+      ? { limitsDeg: meta.ballLimitsDeg }
+      : {}),
+  };
+}
+
+/** The solved pose for a joint name, or the zero resting pose when
+ *  `solvedModel` gave none. */
+function jointPoseFor(
+  posesByJointName: ReadonlyMap<string, NonNullable<EncodedMateRecord['pose']>>,
+  name: string,
+  type: MateRecord['type'],
+) {
+  return posesByJointName.get(name)
+    ?? (type === 'ball'
+      ? ({ kind: 'ball', value: [REST_POSE_PARAM, REST_POSE_PARAM, REST_POSE_PARAM] } as const)
+      : ({ kind: 'scalar', value: REST_POSE_PARAM } as const));
+}
+
 function jointPrimitiveToSnapshot(
   rec: FeatureRecord,
   namesByPartId: ReadonlyMap<string, string>,
   posesByJointName: ReadonlyMap<string, NonNullable<EncodedMateRecord['pose']>>,
   paramTable: ParamTable | null,
 ): JointPoseSnapshot | null {
-  const meta = rec.metadata as
-    | {
-        jointName?: string;
-        jointKind?: string;
-        limitsDeg?: readonly [number, number];
-        limitsMm?: readonly [number, number];
-        ballLimitsDeg?: readonly [number, number];
-      }
-    | undefined;
+  const meta = rec.metadata as JointPrimitiveMetadata | undefined;
   const name = meta?.jointName;
   if (typeof name !== 'string' || name === '') return null;
   const type = JOINT_KIND_TO_MATE_TYPE[meta?.jointKind ?? ''];
@@ -185,17 +212,8 @@ function jointPrimitiveToSnapshot(
 
   const partA = refPartName(rec.inputs?.a, namesByPartId);
   const partB = refPartName(rec.inputs?.b, namesByPartId);
-  const limits = {
-    ...(meta?.limitsDeg !== undefined ? { limitsDeg: meta.limitsDeg } : {}),
-    ...(meta?.limitsMm !== undefined ? { limitsMm: meta.limitsMm } : {}),
-    ...(meta?.limitsDeg === undefined && meta?.ballLimitsDeg !== undefined
-      ? { limitsDeg: meta.ballLimitsDeg }
-      : {}),
-  };
-  const pose = posesByJointName.get(name)
-    ?? (type === 'ball'
-      ? ({ kind: 'ball', value: [REST_POSE_PARAM, REST_POSE_PARAM, REST_POSE_PARAM] } as const)
-      : ({ kind: 'scalar', value: REST_POSE_PARAM } as const));
+  const limits = jointLimitsFromMetadata(meta);
+  const pose = jointPoseFor(posesByJointName, name, type);
 
   return encodedToSnapshot(
     { name, a: partA, b: partB, type, pose, ...limits },

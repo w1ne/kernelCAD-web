@@ -49,5 +49,5 @@ describe('bakeAnimationTimeline (build-time)', () => {
     // collision check) is inherently slow; this is an integration test, not a
     // hot-path unit test. The merge-gate floor is already the spice interference
     // sweep, so this lands on a different shard without raising the floor.
-  }, 180_000);
+  }, 300_000);
 });

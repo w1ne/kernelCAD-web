@@ -5,7 +5,7 @@
 // Reader for inspect({ of: 'mass' }). Mirrors getShapeInfo.ts.
 //
 // The physics predates this file by a long way: OCCT BRepGProp::VolumeProperties
-// via modeling/properties/massProperties.ts, already carefully written (it
+// via kernel/properties/massProperties.ts, already carefully written (it
 // reconstructs the 6 unique inertia-tensor components from six MomentOfInertia
 // calls because this opencascade.js build doesn't bind gp_Mat). It was reachable
 // only from URDF/SDF/MJCF <inertial> serialization — no agent could ask for the
@@ -15,6 +15,7 @@ import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { resolveRootId } from '../../../modeling/buildModel';
 import { runMcpScript } from '../runMcpScript';
 import { tryResolveMaterial } from '../../../modeling/properties/materialLibrary';
+import type { MassProperties } from '../../../kernel/properties/massProperties';
 import type { Vec3 } from '../../../shared/intent/types';
 
 /** Water. Same default as OcctBackend.massProperties and URDF's linkInertialBlock. */
@@ -86,69 +87,110 @@ export interface GetMassPropertiesOutput {
   warning?: string;
 }
 
+interface DensityResolution {
+  density: number;
+  densitySource: MassPropertiesInfo['densitySource'];
+  materialName?: string;
+}
+
+/** Validate the density inputs and resolve the density + its provenance.
+ *  A named material resolves to a REAL catalog density (densityDefaulted =
+ *  false); an unknown material is rejected here naming the valid ones —
+ *  never a silent water fallback. Only the true no-input case defaults to
+ *  water. */
+function resolveDensity(input: GetMassPropertiesInput): DensityResolution | { error: string } {
+  if (input.density !== undefined && !(input.density > 0)) {
+    return { error: `density must be a positive number (kg/m^3); got ${input.density}.` };
+  }
+  if (input.density !== undefined && input.material !== undefined) {
+    return { error: 'Pass either `density` or `material`, not both — they both set the density.' };
+  }
+  if (input.density !== undefined) {
+    return { density: input.density, densitySource: 'raw' };
+  }
+  if (input.material !== undefined) {
+    const resolved = tryResolveMaterial(input.material);
+    if (!resolved.ok) {
+      return { error: resolved.hint ? `${resolved.message} ${resolved.hint}` : resolved.message };
+    }
+    return {
+      density: resolved.material.density,
+      densitySource: 'material',
+      materialName: resolved.material.name,
+    };
+  }
+  return { density: DEFAULT_DENSITY, densitySource: 'default' };
+}
+
+/** Validate the optional gyration axis; returns an error message or undefined. */
+function validateGyrationAxis(axis: GetMassPropertiesInput['gyration_axis']): string | undefined {
+  if (axis === undefined) return undefined;
+  const triple = (v: unknown): v is [number, number, number] =>
+    Array.isArray(v) && v.length === 3 && v.every(n => typeof n === 'number' && Number.isFinite(n));
+  if (!triple(axis.origin) || !triple(axis.direction)) {
+    return 'gyration_axis requires { origin: [x,y,z], direction: [x,y,z] } of finite numbers.';
+  }
+  if (Math.hypot(...axis.direction) === 0) {
+    return 'gyration_axis.direction must be a non-zero vector; got [0, 0, 0].';
+  }
+  return undefined;
+}
+
+/** Assemble the success envelope, including the conditional material,
+ *  radiusOfGyration, and default-density warning fields. */
+function buildMassPropertiesOutput(
+  targetId: string,
+  mp: MassProperties,
+  density: number,
+  densitySource: MassPropertiesInfo['densitySource'],
+  densityDefaulted: boolean,
+  materialName: string | undefined,
+  volume: number,
+): GetMassPropertiesOutput {
+  return {
+    ok: true,
+    massProperties: {
+      id: targetId,
+      mass: mp.mass,
+      density,
+      densitySource,
+      densityDefaulted,
+      ...(materialName !== undefined ? { material: materialName } : {}),
+      com: mp.com,
+      inertia6: mp.inertia6,
+      inertiaMatrix: mp.inertiaMatrix,
+      principalMoments: mp.principalMoments,
+      principalAxes: mp.principalAxes,
+      hasSymmetryAxis: mp.hasSymmetryAxis,
+      hasSymmetryPoint: mp.hasSymmetryPoint,
+      ...(mp.radiusOfGyration !== undefined
+        ? { radiusOfGyration: mp.radiusOfGyration }
+        : {}),
+      volume,
+    },
+    ...(densityDefaulted
+      ? {
+          warning:
+            'Mass computed with default density 1000 kg/m^3 (water). Pass `density` for a ' +
+            'real number — steel 7850 (~8x), aluminium 2700 (~2.7x), ABS 1050.',
+        }
+      : {}),
+  };
+}
+
 export async function getMassPropertiesTool(
   input: GetMassPropertiesInput,
 ): Promise<GetMassPropertiesOutput> {
-  if (input.density !== undefined && !(input.density > 0)) {
-    return {
-      ok: false,
-      error: `density must be a positive number (kg/m^3); got ${input.density}.`,
-      errorCode: 'feature.invalid-args',
-    };
+  const densityRes = resolveDensity(input);
+  if ('error' in densityRes) {
+    return { ok: false, error: densityRes.error, errorCode: 'feature.invalid-args' };
   }
-  if (input.density !== undefined && input.material !== undefined) {
-    return {
-      ok: false,
-      error: 'Pass either `density` or `material`, not both — they both set the density.',
-      errorCode: 'feature.invalid-args',
-    };
-  }
-  // Resolve the density and record its provenance up front. A named material
-  // resolves to a REAL catalog density (densityDefaulted = false); an unknown
-  // material is rejected here naming the valid ones — never a silent water
-  // fallback. Only the true no-input case defaults to water.
-  let density: number;
-  let densitySource: MassPropertiesInfo['densitySource'];
-  let materialName: string | undefined;
-  if (input.density !== undefined) {
-    density = input.density;
-    densitySource = 'raw';
-  } else if (input.material !== undefined) {
-    const resolved = tryResolveMaterial(input.material);
-    if (!resolved.ok) {
-      return {
-        ok: false,
-        error: resolved.hint ? `${resolved.message} ${resolved.hint}` : resolved.message,
-        errorCode: 'feature.invalid-args',
-      };
-    }
-    density = resolved.material.density;
-    densitySource = 'material';
-    materialName = resolved.material.name;
-  } else {
-    density = DEFAULT_DENSITY;
-    densitySource = 'default';
-  }
+  const { density, densitySource, materialName } = densityRes;
   const densityDefaulted = densitySource === 'default';
 
-  const axis = input.gyration_axis;
-  if (axis !== undefined) {
-    const triple = (v: unknown): v is [number, number, number] =>
-      Array.isArray(v) && v.length === 3 && v.every(n => typeof n === 'number' && Number.isFinite(n));
-    if (!triple(axis.origin) || !triple(axis.direction)) {
-      return {
-        ok: false,
-        error: 'gyration_axis requires { origin: [x,y,z], direction: [x,y,z] } of finite numbers.',
-        errorCode: 'feature.invalid-args',
-      };
-    }
-    if (Math.hypot(...axis.direction) === 0) {
-      return {
-        ok: false,
-        error: 'gyration_axis.direction must be a non-zero vector; got [0, 0, 0].',
-        errorCode: 'feature.invalid-args',
-      };
-    }
+  const axisError = validateGyrationAxis(input.gyration_axis);
+  if (axisError !== undefined) {
+    return { ok: false, error: axisError, errorCode: 'feature.invalid-args' };
   }
 
   const script = await runMcpScript(input);
@@ -182,33 +224,13 @@ export async function getMassPropertiesTool(
 
   const mp = shape.massProperties(density, input.gyration_axis);
 
-  return {
-    ok: true,
-    massProperties: {
-      id: targetId,
-      mass: mp.mass,
-      density,
-      densitySource,
-      densityDefaulted,
-      ...(materialName !== undefined ? { material: materialName } : {}),
-      com: mp.com,
-      inertia6: mp.inertia6,
-      inertiaMatrix: mp.inertiaMatrix,
-      principalMoments: mp.principalMoments,
-      principalAxes: mp.principalAxes,
-      hasSymmetryAxis: mp.hasSymmetryAxis,
-      hasSymmetryPoint: mp.hasSymmetryPoint,
-      ...(mp.radiusOfGyration !== undefined
-        ? { radiusOfGyration: mp.radiusOfGyration }
-        : {}),
-      volume: shape.volume(),
-    },
-    ...(densityDefaulted
-      ? {
-          warning:
-            'Mass computed with default density 1000 kg/m^3 (water). Pass `density` for a ' +
-            'real number — steel 7850 (~8x), aluminium 2700 (~2.7x), ABS 1050.',
-        }
-      : {}),
-  };
+  return buildMassPropertiesOutput(
+    targetId,
+    mp,
+    density,
+    densitySource,
+    densityDefaulted,
+    materialName,
+    shape.volume(),
+  );
 }

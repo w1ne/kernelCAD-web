@@ -110,75 +110,82 @@ function getString(obj: unknown, key: string): string | null {
   return typeof val === 'string' ? val : null;
 }
 
+// Prefer explicit wire/outline accessors when available (sketch results, planar faces, etc.).
+function tryWireValue(val: unknown, ctx: unknown): unknown | null {
+  if (!val) return null;
+  if (isRecord(val)) return val;
+  if (typeof val === 'function') {
+    try {
+      const out = (val as (...args: unknown[]) => unknown).call(ctx);
+      return out ?? null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+function callWireMethod(obj: UnknownRecord, key: string): unknown | null {
+  const fn = getFn(obj, key);
+  if (fn) {
+    try {
+      const out = fn.call(obj);
+      if (out) return out;
+    } catch {
+      // ignore
+    }
+  }
+  return null;
+}
+
+function resolveWireAccessor(obj: UnknownRecord, key: string): unknown | null {
+  const direct = tryWireValue(obj[key], obj);
+  if (direct) return direct;
+  return callWireMethod(obj, key);
+}
+
+function getWireFromProperty(obj: UnknownRecord, key: string): unknown | null {
+  const prop = obj[key];
+  if (!prop) return null;
+  return getWire(prop);
+}
+
 export function getWire(obj: unknown): unknown | null {
   if (!isRecord(obj)) return null;
 
-  // Prefer explicit wire/outline accessors when available (sketch results, planar faces, etc.).
-  const tryWireValue = (val: unknown, ctx: unknown): unknown | null => {
-    if (!val) return null;
-    if (isRecord(val)) return val;
-    if (typeof val === 'function') {
-      try {
-        const out = (val as (...args: unknown[]) => unknown).call(ctx);
-        return out ?? null;
-      } catch {
-        return null;
-      }
-    }
-    return null;
-  };
-
   // Unwrap common Replicad wrappers.
   const raw =
-    (isRecord((obj as UnknownRecord)._wrapped) ? ((obj as UnknownRecord)._wrapped as UnknownRecord) : null) ??
-    (isRecord((obj as UnknownRecord).occ) ? ((obj as UnknownRecord).occ as UnknownRecord) : null);
+    (isRecord(obj._wrapped) ? obj._wrapped : null) ??
+    (isRecord(obj.occ) ? obj.occ : null);
   if (raw) {
     const unwrapped = getWire(raw);
     if (unwrapped) return unwrapped;
   }
 
-  const shapeProp = (obj as UnknownRecord).shape;
-  if (shapeProp) {
-    const fromShape = getWire(shapeProp);
-    if (fromShape) return fromShape;
-  }
+  const fromShape = getWireFromProperty(obj, 'shape');
+  if (fromShape) return fromShape;
 
-  const directWire = tryWireValue(obj.wire, obj);
+  const directWire = resolveWireAccessor(obj, 'wire');
   if (directWire) return directWire;
 
-  const wireFn = getFn(obj, 'wire');
-  if (wireFn) {
-    try {
-      const out = wireFn.call(obj);
-      if (out) return out;
-    } catch {
-      // ignore
-    }
-  }
-
-  const outerWire = tryWireValue((obj as UnknownRecord).outerWire, obj);
+  const outerWire = resolveWireAccessor(obj, 'outerWire');
   if (outerWire) return outerWire;
 
-  const outerWireFn = getFn(obj, 'outerWire');
-  if (outerWireFn) {
-    try {
-      const out = outerWireFn.call(obj);
-      if (out) return out;
-    } catch {
-      // ignore
-    }
-  }
-
-  const wires = (obj as UnknownRecord).wires;
+  const wires = obj.wires;
   if (Array.isArray(wires) && wires.length > 0 && isRecord(wires[0])) return wires[0];
 
   // Recurse into common wrapper containers (e.g. SafeSketcher.sketch, sketch result holders).
-  const sketch = (obj as UnknownRecord).sketch;
-  if (sketch) {
-    const fromSketch = getWire(sketch);
-    if (fromSketch) return fromSketch;
-  }
+  const fromSketch = getWireFromProperty(obj, 'sketch');
+  if (fromSketch) return fromSketch;
 
+  return null;
+}
+
+function resolveVecComponent(value: unknown, upper: unknown, thisArg: unknown): unknown {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'function') return (value as () => unknown).call(thisArg);
+  if (typeof upper === 'number') return upper;
+  if (typeof upper === 'function') return (upper as () => unknown).call(thisArg);
   return null;
 }
 
@@ -203,9 +210,9 @@ function tryVec3(v: unknown): [number, number, number] | null {
   const Yr = (v as UnknownRecord).Y;
   const Zr = (v as UnknownRecord).Z;
 
-  const x = typeof xr === 'number' ? xr : (typeof xr === 'function' ? (xr as () => unknown).call(v) : (typeof Xr === 'number' ? Xr : (typeof Xr === 'function' ? (Xr as () => unknown).call(v) : null)));
-  const y = typeof yr === 'number' ? yr : (typeof yr === 'function' ? (yr as () => unknown).call(v) : (typeof Yr === 'number' ? Yr : (typeof Yr === 'function' ? (Yr as () => unknown).call(v) : null)));
-  const z = typeof zr === 'number' ? zr : (typeof zr === 'function' ? (zr as () => unknown).call(v) : (typeof Zr === 'number' ? Zr : (typeof Zr === 'function' ? (Zr as () => unknown).call(v) : null)));
+  const x = resolveVecComponent(xr, Xr, v);
+  const y = resolveVecComponent(yr, Yr, v);
+  const z = resolveVecComponent(zr, Zr, v);
 
   if (typeof x !== 'number' || typeof y !== 'number' || typeof z !== 'number') return null;
   return [x, y, z];
@@ -224,19 +231,8 @@ function tryExtractFaceCenter(face: unknown): [number, number, number] | null {
   return tryVec3((face as UnknownRecord).center);
 }
 
-function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
-  if (!isRecord(face)) return undefined;
-  const geomType = getString(face, 'geomType');
-  if (!geomType) return undefined;
-  const geomTypeUpper = geomType.toUpperCase();
-  if (geomTypeUpper !== 'PLANE' && geomTypeUpper !== 'PLANAR') return undefined;
-
-  const p =
-    (isRecord(face.planarPlane) ? face.planarPlane : null) ??
-    (isRecord(face.plane) ? face.plane : null) ??
-    (isRecord(face.surface) && isRecord((face.surface as UnknownRecord).plane) ? ((face.surface as UnknownRecord).plane as UnknownRecord) : null);
-
-  // Preferred strategy: use Replicad helper if available
+// Preferred strategy: use Replicad helper if available
+function tryExtractPlaneViaReplicadHelper(face: unknown): FaceGeometry['plane'] {
   try {
     const makePlaneFromFaceFn = (replicad as unknown as { makePlaneFromFace?: (f: unknown) => unknown }).makePlaneFromFace;
     if (typeof makePlaneFromFaceFn === 'function') {
@@ -270,42 +266,56 @@ function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
   } catch (e) {
     if (DEBUG) console.warn('meshing: replicad.makePlaneFromFace failed', e);
   }
+  return undefined;
+}
 
-  if (!p) {
-    // Fallback for native Replicad objects: use center and normalAt
-    try {
-      const centerFn = getFn(face, 'center');
-      const center = centerFn ? centerFn.call(face) : (face as UnknownRecord).center;
+function resolveCenterAndNormalFallback(face: unknown): { center: unknown; normal: unknown } {
+  const centerFn = getFn(face, 'center');
+  const center = centerFn ? centerFn.call(face) : (face as UnknownRecord).center;
 
-      const normalFn = getFn(face, 'normalAt');
-      const faceRec = face as UnknownRecord;
-      const normal = normalFn
-        ? (normalFn.length === 0 ? normalFn.call(face) : normalFn.call(face, center || [0, 0, 0]))
-        : (faceRec.normal || (isRecord(faceRec.surface) ? (faceRec.surface as UnknownRecord).normal : null) || (isRecord(faceRec.plane) ? (faceRec.plane as UnknownRecord).normal : null));
+  const normalFn = getFn(face, 'normalAt');
+  const faceRec = face as UnknownRecord;
+  const normal = normalFn
+    ? (normalFn.length === 0 ? normalFn.call(face) : normalFn.call(face, center || [0, 0, 0]))
+    : (faceRec.normal || (isRecord(faceRec.surface) ? (faceRec.surface as UnknownRecord).normal : null) || (isRecord(faceRec.plane) ? (faceRec.plane as UnknownRecord).normal : null));
 
-      if (center && normal) {
-        const origin = tryVec3(center);
-        const norm = tryVec3(normal);
+  return { center, normal };
+}
 
-        // Final fallback: try to get directions if it's a plane
-        const faceRec2 = face as UnknownRecord;
-        const planeNode = faceRec2.plane ||
-          (isRecord(faceRec2.surface) ? (faceRec2.surface as UnknownRecord).plane : null) ||
-          faceRec2.planarPlane;
-        const xDir = planeNode && isRecord(planeNode) ? tryVec3((planeNode as UnknownRecord).xDir || (typeof (planeNode as UnknownRecord).xDir === 'function' ? ((planeNode as UnknownRecord).xDir as () => unknown)() : null)) : undefined;
-        const yDir = planeNode && isRecord(planeNode) ? tryVec3((planeNode as UnknownRecord).yDir || (typeof (planeNode as UnknownRecord).yDir === 'function' ? ((planeNode as UnknownRecord).yDir as () => unknown)() : null)) : undefined;
+function resolvePlaneDirectionsFallback(face: unknown) {
+  // Final fallback: try to get directions if it's a plane
+  const faceRec2 = face as UnknownRecord;
+  const planeNode = faceRec2.plane ||
+    (isRecord(faceRec2.surface) ? (faceRec2.surface as UnknownRecord).plane : null) ||
+    faceRec2.planarPlane;
+  const xDir = planeNode && isRecord(planeNode) ? tryVec3((planeNode as UnknownRecord).xDir || (typeof (planeNode as UnknownRecord).xDir === 'function' ? ((planeNode as UnknownRecord).xDir as () => unknown)() : null)) : undefined;
+  const yDir = planeNode && isRecord(planeNode) ? tryVec3((planeNode as UnknownRecord).yDir || (typeof (planeNode as UnknownRecord).yDir === 'function' ? ((planeNode as UnknownRecord).yDir as () => unknown)() : null)) : undefined;
+  return { xDir, yDir };
+}
 
-        if (origin && norm) {
-          const anchoredOrigin = tryExtractFaceCenter(face) ?? origin;
-          return { origin: anchoredOrigin, normal: norm, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
-        }
+// Fallback for native Replicad objects: use center and normalAt
+function tryExtractPlaneViaCenterAndNormal(face: unknown): FaceGeometry['plane'] {
+  try {
+    const { center, normal } = resolveCenterAndNormalFallback(face);
+
+    if (center && normal) {
+      const origin = tryVec3(center);
+      const norm = tryVec3(normal);
+
+      const { xDir, yDir } = resolvePlaneDirectionsFallback(face);
+
+      if (origin && norm) {
+        const anchoredOrigin = tryExtractFaceCenter(face) ?? origin;
+        return { origin: anchoredOrigin, normal: norm, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
       }
-    } catch (e) {
-      if (DEBUG) console.warn('meshing: Fallback plane extraction failed', e);
     }
-    return undefined;
+  } catch (e) {
+    if (DEBUG) console.warn('meshing: Fallback plane extraction failed', e);
   }
+  return undefined;
+}
 
+function tryExtractPlaneFromPlaneRecord(face: unknown, p: UnknownRecord): FaceGeometry['plane'] {
   const origin =
     tryVec3((p as UnknownRecord).origin) ??
     tryVec3((p as UnknownRecord).location) ??
@@ -333,20 +343,41 @@ function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
   return { origin: anchoredOrigin, normal, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
 }
 
-function tryExtractCylinderFromFace(face: unknown): FaceGeometry['cylinder'] {
+export function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
   if (!isRecord(face)) return undefined;
-
-  // Check geomType
   const geomType = getString(face, 'geomType');
+  if (!geomType) return undefined;
+  const geomTypeUpper = geomType.toUpperCase();
+  if (geomTypeUpper !== 'PLANE' && geomTypeUpper !== 'PLANAR') return undefined;
 
-  if (geomType) {
-    const t = geomType.toUpperCase();
-    if (t !== 'CYLINDER' && t !== 'CYLINDRICAL' && t !== 'CYLINDRE') {
-      return undefined;
-    }
+  const p =
+    (isRecord(face.planarPlane) ? face.planarPlane : null) ??
+    (isRecord(face.plane) ? face.plane : null) ??
+    (isRecord(face.surface) && isRecord((face.surface as UnknownRecord).plane) ? ((face.surface as UnknownRecord).plane as UnknownRecord) : null);
+
+  const viaHelper = tryExtractPlaneViaReplicadHelper(face);
+  if (viaHelper) return viaHelper;
+
+  if (!p) {
+    return tryExtractPlaneViaCenterAndNormal(face);
   }
 
-  // 1. Try OCJS direct extraction if available
+  return tryExtractPlaneFromPlaneRecord(face, p);
+}
+
+/** Does the face's own `geomType` string claim a cylinder? */
+function isCylinderGeomType(geomType: string): boolean {
+  const t = geomType.toUpperCase();
+  return t === 'CYLINDER' || t === 'CYLINDRICAL' || t === 'CYLINDRE';
+}
+
+/** OCJS direct extraction, when the loaded OCCT has the adaptor. Returns
+ *  undefined when OCJS is unavailable, rejects the face, or the surface is
+ *  not a cylinder, so the caller can fall through to property extraction. */
+function tryExtractCylinderViaOcjs(
+  face: UnknownRecord,
+  geomType: string | null,
+): FaceGeometry['cylinder'] {
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const OC = getOC() as any;
@@ -391,47 +422,69 @@ function tryExtractCylinderFromFace(face: unknown): FaceGeometry['cylinder'] {
   } catch {
     // getOC() may throw if not initialized — fall through to property-based extraction
   }
+  return undefined;
+}
 
-  // Helper to extract cylinder data from a surface object
-  const extractFromSurface = (surf: unknown): FaceGeometry['cylinder'] | undefined => {
-    if (!isRecord(surf)) return undefined;
+// Helper to extract cylinder data from a surface object
+function cylinderFromSurfaceRecord(surf: unknown): FaceGeometry['cylinder'] | undefined {
+  if (!isRecord(surf)) return undefined;
 
-    const origin =
-      tryVec3((surf as UnknownRecord).origin) ??
-      tryVec3((surf as UnknownRecord).location);
+  const origin =
+    tryVec3((surf as UnknownRecord).origin) ??
+    tryVec3((surf as UnknownRecord).location);
 
-    const axis =
-      tryVec3((surf as UnknownRecord).axis) ??
-      tryVec3((surf as UnknownRecord).direction) ??
-      tryVec3((surf as UnknownRecord).zDir);
+  const axis =
+    tryVec3((surf as UnknownRecord).axis) ??
+    tryVec3((surf as UnknownRecord).direction) ??
+    tryVec3((surf as UnknownRecord).zDir);
 
-    const radius = (surf as UnknownRecord).radius;
+  const radius = (surf as UnknownRecord).radius;
 
-    if (origin && axis && typeof radius === 'number') {
-      return { origin, axis, radius };
-    }
-    return undefined;
-  };
+  if (origin && axis && typeof radius === 'number') {
+    return { origin, axis, radius };
+  }
+  return undefined;
+}
 
+/** Property-based fallback: try the face itself, then its `surface` or
+ *  Replicad `geom` sub-object. */
+function cylinderFromFaceProperties(face: UnknownRecord): FaceGeometry['cylinder'] {
   // 1. Try direct properties (if it's a surface)
-  const direct = extractFromSurface(face);
+  const direct = cylinderFromSurfaceRecord(face);
   if (direct) return direct;
 
   // 2. Try 'surface' property
-  const surface = (face as UnknownRecord).surface;
+  const surface = face.surface;
   if (surface) {
-    const fromSurf = extractFromSurface(surface);
+    const fromSurf = cylinderFromSurfaceRecord(surface);
     if (fromSurf) return fromSurf;
   }
 
   // 3. Try Replicad 'geom' property (sometimes found on faces)
-  const geom = (face as UnknownRecord).geom;
+  const geom = face.geom;
   if (geom) {
-    const fromGeom = extractFromSurface(geom);
+    const fromGeom = cylinderFromSurfaceRecord(geom);
     if (fromGeom) return fromGeom;
   }
 
   return undefined;
+}
+
+function tryExtractCylinderFromFace(face: unknown): FaceGeometry['cylinder'] {
+  if (!isRecord(face)) return undefined;
+
+  // Check geomType
+  const geomType = getString(face, 'geomType');
+
+  if (geomType && !isCylinderGeomType(geomType)) {
+    return undefined;
+  }
+
+  // 1. Try OCJS direct extraction if available
+  const viaOcjs = tryExtractCylinderViaOcjs(face, geomType);
+  if (viaOcjs) return viaOcjs;
+
+  return cylinderFromFaceProperties(face);
 }
 
 export function meshWireToSketch(

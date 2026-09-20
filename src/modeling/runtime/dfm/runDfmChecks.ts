@@ -65,7 +65,7 @@
 
 import type { BuiltModel } from '../../buildModel';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
-import type { DfmSpecMetadata } from '../../../shared/intent/dfmSpecRecord';
+import type { DfmFdmMetadata, DfmSpecMetadata } from '../../../shared/intent/dfmSpecRecord';
 import type { CompilerDiagnostic, DiagnosticCode } from '../../../shared/diagnostics/diagnostic';
 import { DIAGNOSTIC_REGISTRY } from '../../../shared/diagnostics/registry';
 import { isSceneBackend, type SceneBackend } from '../../../kernel/backends/sceneBackend';
@@ -78,7 +78,7 @@ import { Transform } from '../../../shared/runtime/se3';
 import { checkClearance, type ClearancePairReport } from './clearance';
 import { checkMinWall, MAX_REPORTED_CLUSTERS, type MinWallResult } from './minWall';
 import { analyzeVoids, type VoidTopologyResult } from './voidTopology';
-import { TriangleBvh } from './meshBvh';
+import { TriangleBvh, type DfmMesh } from './meshBvh';
 import { checkFdmPrintability, type FdmPartReport } from './fdmCheck';
 
 export interface DfmCheckReport {
@@ -143,32 +143,9 @@ export async function runDfmChecksOnModel(model: BuiltModel): Promise<DfmCheckRe
   // --- Clearance (assembly scenes only) ------------------------------------
   let clearance: ClearancePairReport[] = [];
   if (scene !== undefined && spec.minClearance !== undefined) {
-    const t0 = performance.now();
-    const ignored = new Set(spec.ignore.map(([a, b]) => pairKey(a, b)));
-    const mated = clearanceExemptMatedPairsFor(model, scene, spec.includeArticulatedMates);
-    // checkClearance appends its own warn diagnostics for 'unknown' pairs.
-    clearance = checkClearance(scene, spec.minClearance, ignored, mated, diagnostics);
-    timings.clearance = performance.now() - t0;
-    for (const r of clearance) {
-      if (r.status === 'interfering') {
-        // Overlap must fail the gate (Task 8 derives exit from
-        // error-severity presence in THIS report), but its analysis belongs
-        // to the interference gate — emit the shared code and defer.
-        diagnostics.push(emit(
-          'assembly.interference.overlap',
-          `dfm.clearance: parts '${r.a}' and '${r.b}' overlap (intersection volume not ` +
-            'measured here); the interference gate owns overlap analysis — run the ' +
-            'interference check for volume and resolution details.',
-        ));
-        continue;
-      }
-      if (r.status !== 'violated') continue;
-      diagnostics.push(emit(
-        'dfm.clearance.violated',
-        `dfm.clearance: parts '${r.a}' and '${r.b}' are ${mm(r.distanceMm)} mm apart ` +
-          `(< minClearance ${spec.minClearance} mm).`,
-      ));
-    }
+    const phase = runClearancePhase(model, spec, scene, spec.minClearance, diagnostics);
+    clearance = phase.clearance;
+    timings.clearance = phase.elapsedMs;
   }
 
   // --- Per printed part: mesh ONCE, share one BVH across wall + void -------
@@ -203,96 +180,23 @@ export async function runDfmChecksOnModel(model: BuiltModel): Promise<DfmCheckRe
 
       // Min-wall (only when declared).
       if (spec.minWall !== undefined) {
-        const t0 = performance.now();
-        const result = checkMinWall(mesh, spec.minWall, { bvh });
-        wallsMs += performance.now() - t0;
-        walls.push({ part: part.name, result });
-        result.violations.forEach((v, i) => {
-          const note = i === 0 && result.truncated
-            ? ` More thin clusters exist; first ${MAX_REPORTED_CLUSTERS} shown.`
-            : '';
-          diagnostics.push(emit(
-            'dfm.wall.too-thin',
-            `dfm.minWall: part '${part.name}' has a ${mm(v.thicknessMm)} mm wall ` +
-              `(< minWall ${spec.minWall} mm) at ${world(v.location)}; ` +
-              `cluster of ${v.sampleCount} sample(s).${note}`,
-          ));
-        });
+        const phase = checkPartMinWall(part, spec.minWall, mesh, bvh, world, diagnostics);
+        wallsMs += phase.elapsedMs;
+        walls.push({ part: part.name, result: phase.result });
       }
 
       // FDM printability (only when declared).
       if (spec.fdm !== undefined) {
-        const t0 = performance.now();
-        const r = checkFdmPrintability(part.shape as OcctBackend, {
-          settings: spec.fdm,
-          part: part.name,
-          refOwner: part.refOwner,
-          mesh,
-          bvh,
-          toWorld: p => part.worldTransform.point(p),
-        });
-        fdmMs += performance.now() - t0;
-        fdm.push({ part: part.name, result: r.report });
-        diagnostics.push(...r.diagnostics);
+        const phase = checkPartFdm(part, spec.fdm, mesh, bvh);
+        fdmMs += phase.elapsedMs;
+        fdm.push({ part: part.name, result: phase.report });
+        diagnostics.push(...phase.diagnostics);
       }
 
       // Void/channel topology (always — undeclared cavities must be caught).
-      const partChannels = spec.channels.filter(c => c.part === part.name);
-      const nonSealed = partChannels.filter(c => !c.sealed);
-      if (nonSealed.length > 1) {
-        // analyzeVoids' documented scope limit: ONE non-sealed channel per
-        // part; the mouth count binds to the first declaration.
-        diagnostics.push(emit(
-          'feature.invalid-args',
-          `dfmSpec: part '${part.name}' declares ${nonSealed.length} non-sealed channels ` +
-            `(${nonSealed.map(c => `'${c.name}'`).join(', ')}); only one non-sealed channel per ` +
-            `part is supported — the mouth count binds to '${nonSealed[0].name}'. ` +
-            'Merge the declarations or split the part.',
-        ));
-      }
-      const tVoid = performance.now();
-      const result = analyzeVoids(mesh, bvh, partChannels);
-      voidsMs += performance.now() - tVoid;
-      voids.push({ part: part.name, result });
-
-      for (const v of result.sealedVoids) {
-        diagnostics.push(emit(
-          'dfm.void.undeclared',
-          `dfm.voids: part '${part.name}' contains an undeclared sealed void of ` +
-            `${v.volumeMm3.toFixed(1)} mm³ at ${world(v.location)}.`,
-        ));
-      }
-
-      // Over-declared sealed channels: count-based consumption empties
-      // sealedVoids, so the PRE-consumption count is the only signal that a
-      // declared sealed channel has no matching cavity.
-      const sealed = partChannels.filter(c => c.sealed);
-      if (sealed.length > result.detectedSealedVoidCount) {
-        diagnostics.push(emit(
-          'dfm.channel.openings-mismatch',
-          `dfm.channels: part '${part.name}' declares ${sealed.length} sealed channel(s) ` +
-            `(${sealed.map(c => `'${c.name}'`).join(', ')}) but only ` +
-            `${result.detectedSealedVoidCount} sealed cavities were detected — at least one ` +
-            'declared sealed channel has no matching cavity in the geometry.',
-        ));
-      }
-
-      // Mouth-count mismatch for the part's (first) non-sealed channel.
-      const open = nonSealed[0];
-      const co = result.channelOpenings;
-      if (open !== undefined && co !== undefined && co.found !== open.openings) {
-        const mouths = co.mouthLocations.length > 0
-          ? ` Mouths at ${co.mouthLocations.map(world).join(', ')}.`
-          : '';
-        const seed = co.channelSeed !== undefined
-          ? ` Channel interior near ${world(co.channelSeed)}.`
-          : '';
-        diagnostics.push(emit(
-          'dfm.channel.openings-mismatch',
-          `dfm.channels: channel '${open.name}' on part '${part.name}' has ${co.found} ` +
-            `mouth opening(s); declared openings: ${open.openings}.${mouths}${seed}`,
-        ));
-      }
+      const voidPhase = checkPartVoids(part, spec, mesh, bvh, world, diagnostics);
+      voidsMs += voidPhase.elapsedMs;
+      voids.push({ part: part.name, result: voidPhase.result });
     } catch (e) {
       diagnostics.push({
         target: 'export-occt',
@@ -317,6 +221,161 @@ export async function runDfmChecksOnModel(model: BuiltModel): Promise<DfmCheckRe
   timings.total = performance.now() - tStart;
 
   return { clearance, walls, voids, ...(spec.fdm !== undefined ? { fdm } : {}), diagnostics, timings };
+}
+
+// --- Per-phase runners ------------------------------------------------------
+
+/** Clearance phase: measure every non-exempt part pair and emit the
+ *  overlap/violation diagnostics. Returns the per-pair report and wall time. */
+function runClearancePhase(
+  model: BuiltModel,
+  spec: DfmSpecMetadata,
+  scene: SceneBackend,
+  minClearance: number,
+  diagnostics: CompilerDiagnostic[],
+): { clearance: ClearancePairReport[]; elapsedMs: number } {
+  const t0 = performance.now();
+  const ignored = new Set(spec.ignore.map(([a, b]) => pairKey(a, b)));
+  const mated = clearanceExemptMatedPairsFor(model, scene, spec.includeArticulatedMates);
+  // checkClearance appends its own warn diagnostics for 'unknown' pairs.
+  const clearance = checkClearance(scene, minClearance, ignored, mated, diagnostics);
+  const elapsedMs = performance.now() - t0;
+  for (const r of clearance) {
+    if (r.status === 'interfering') {
+      // Overlap must fail the gate (Task 8 derives exit from
+      // error-severity presence in THIS report), but its analysis belongs
+      // to the interference gate — emit the shared code and defer.
+      diagnostics.push(emit(
+        'assembly.interference.overlap',
+        `dfm.clearance: parts '${r.a}' and '${r.b}' overlap (intersection volume not ` +
+          'measured here); the interference gate owns overlap analysis — run the ' +
+          'interference check for volume and resolution details.',
+      ));
+      continue;
+    }
+    if (r.status !== 'violated') continue;
+    diagnostics.push(emit(
+      'dfm.clearance.violated',
+      `dfm.clearance: parts '${r.a}' and '${r.b}' are ${mm(r.distanceMm)} mm apart ` +
+        `(< minClearance ${minClearance} mm).`,
+    ));
+  }
+  return { clearance, elapsedMs };
+}
+
+/** Min-wall phase for one printed part; emits thin-wall diagnostics in world frame. */
+function checkPartMinWall(
+  part: ResolvedPart,
+  minWallMm: number,
+  mesh: DfmMesh,
+  bvh: TriangleBvh,
+  world: (p: readonly [number, number, number]) => string,
+  diagnostics: CompilerDiagnostic[],
+): { result: MinWallResult; elapsedMs: number } {
+  const t0 = performance.now();
+  const result = checkMinWall(mesh, minWallMm, { bvh });
+  const elapsedMs = performance.now() - t0;
+  result.violations.forEach((v, i) => {
+    const note = i === 0 && result.truncated
+      ? ` More thin clusters exist; first ${MAX_REPORTED_CLUSTERS} shown.`
+      : '';
+    diagnostics.push(emit(
+      'dfm.wall.too-thin',
+      `dfm.minWall: part '${part.name}' has a ${mm(v.thicknessMm)} mm wall ` +
+        `(< minWall ${minWallMm} mm) at ${world(v.location)}; ` +
+        `cluster of ${v.sampleCount} sample(s).${note}`,
+    ));
+  });
+  return { result, elapsedMs };
+}
+
+/** FDM printability phase for one printed part. */
+function checkPartFdm(
+  part: ResolvedPart,
+  settings: DfmFdmMetadata,
+  mesh: DfmMesh,
+  bvh: TriangleBvh,
+): { report: FdmPartReport; diagnostics: CompilerDiagnostic[]; elapsedMs: number } {
+  const t0 = performance.now();
+  const r = checkFdmPrintability(part.shape as OcctBackend, {
+    settings,
+    part: part.name,
+    refOwner: part.refOwner,
+    mesh,
+    bvh,
+    toWorld: p => part.worldTransform.point(p),
+  });
+  const elapsedMs = performance.now() - t0;
+  return { report: r.report, diagnostics: r.diagnostics, elapsedMs };
+}
+
+/** Void/channel topology phase for one printed part; always runs, and emits
+ *  undeclared-void and channel-openings diagnostics. */
+function checkPartVoids(
+  part: ResolvedPart,
+  spec: DfmSpecMetadata,
+  mesh: DfmMesh,
+  bvh: TriangleBvh,
+  world: (p: readonly [number, number, number]) => string,
+  diagnostics: CompilerDiagnostic[],
+): { result: VoidTopologyResult; elapsedMs: number } {
+  // Void/channel topology (always — undeclared cavities must be caught).
+  const partChannels = spec.channels.filter(c => c.part === part.name);
+  const nonSealed = partChannels.filter(c => !c.sealed);
+  if (nonSealed.length > 1) {
+    // analyzeVoids' documented scope limit: ONE non-sealed channel per
+    // part; the mouth count binds to the first declaration.
+    diagnostics.push(emit(
+      'feature.invalid-args',
+      `dfmSpec: part '${part.name}' declares ${nonSealed.length} non-sealed channels ` +
+        `(${nonSealed.map(c => `'${c.name}'`).join(', ')}); only one non-sealed channel per ` +
+        `part is supported — the mouth count binds to '${nonSealed[0].name}'. ` +
+        'Merge the declarations or split the part.',
+    ));
+  }
+  const tVoid = performance.now();
+  const result = analyzeVoids(mesh, bvh, partChannels);
+  const elapsedMs = performance.now() - tVoid;
+
+  for (const v of result.sealedVoids) {
+    diagnostics.push(emit(
+      'dfm.void.undeclared',
+      `dfm.voids: part '${part.name}' contains an undeclared sealed void of ` +
+        `${v.volumeMm3.toFixed(1)} mm³ at ${world(v.location)}.`,
+    ));
+  }
+
+  // Over-declared sealed channels: count-based consumption empties
+  // sealedVoids, so the PRE-consumption count is the only signal that a
+  // declared sealed channel has no matching cavity.
+  const sealed = partChannels.filter(c => c.sealed);
+  if (sealed.length > result.detectedSealedVoidCount) {
+    diagnostics.push(emit(
+      'dfm.channel.openings-mismatch',
+      `dfm.channels: part '${part.name}' declares ${sealed.length} sealed channel(s) ` +
+        `(${sealed.map(c => `'${c.name}'`).join(', ')}) but only ` +
+        `${result.detectedSealedVoidCount} sealed cavities were detected — at least one ` +
+        'declared sealed channel has no matching cavity in the geometry.',
+    ));
+  }
+
+  // Mouth-count mismatch for the part's (first) non-sealed channel.
+  const open = nonSealed[0];
+  const co = result.channelOpenings;
+  if (open !== undefined && co !== undefined && co.found !== open.openings) {
+    const mouths = co.mouthLocations.length > 0
+      ? ` Mouths at ${co.mouthLocations.map(world).join(', ')}.`
+      : '';
+    const seed = co.channelSeed !== undefined
+      ? ` Channel interior near ${world(co.channelSeed)}.`
+      : '';
+    diagnostics.push(emit(
+      'dfm.channel.openings-mismatch',
+      `dfm.channels: channel '${open.name}' on part '${part.name}' has ${co.found} ` +
+        `mouth opening(s); declared openings: ${open.openings}.${mouths}${seed}`,
+    ));
+  }
+  return { result, elapsedMs };
 }
 
 // --- Resolution helpers -----------------------------------------------------

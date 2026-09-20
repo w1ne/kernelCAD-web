@@ -10,7 +10,7 @@
 // per-code drift check) which were predicated on the old HINTS map.
 
 import { describe, it, expect } from 'vitest';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { resolve as resolvePath, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DIAGNOSTIC_CODES } from '../../../src/shared/diagnostics/registry';
@@ -32,10 +32,18 @@ const EMITTING_FILES = [
   'kernel/backends/occt/flattenPattern.ts',      // W2.2
   'modeling/capture/captureSession.ts',
   'modeling/capture/proxy.ts',
+  'modeling/capture/proxyDerivedSketch.ts',
+  'modeling/capture/proxyFeatureChain.ts',
   'modeling/capture/sketch.ts',
+  'modeling/capture/sketchTangency.ts',
   'modeling/capture/faceLabels.ts',
   'shared/fonts/index.ts',
   'modeling/api.ts',
+  'modeling/apiSupport.ts',
+  'modeling/apiShapeMethods.ts',
+  'modeling/apiParamMethods.ts',
+  'modeling/apiSurfaceMethods.ts',
+  'modeling/apiCaptureMethods.ts',
   'modeling/capture/bridgeCurves.ts',
   'modeling/backends/occt/surfaceIntersection.ts',
   'modeling/backends/occt/loftWithRailsLowerer.ts',
@@ -60,13 +68,40 @@ const EMITTING_FILES = [
   'modeling/directEdit/planDrag.ts', // direct-edit drag diagnostics
 ];
 
+// Directories every non-test `.ts` file of which is an emit site, enumerated at
+// test time so a new module inside them is scanned WITHOUT editing this file.
+//
+// This exists because listing emit sites by path is exactly what went stale
+// when `occtLowerer.ts`'s 45-arm switch was split into
+// `modeling/backends/occt/lowerers/*`: the listed file still existed, so the
+// existence guard below stayed green while 11 codes moved out of scan range.
+// `minFiles` keeps the guard meaningful in the other direction — if the
+// directory is moved or emptied by a refactor, the count drops and this fails
+// loud instead of silently scanning nothing.
+const EMITTING_DIRS: ReadonlyArray<{ dir: string; minFiles: number }> = [
+  { dir: 'modeling/backends/occt/lowerers', minFiles: 21 },
+  { dir: 'kernel/backends/occt/drawingAuto', minFiles: 14 },
+];
+
+function emitSiteFilesIn(dir: string): string[] {
+  return readdirSync(join(SRC_DIR, dir))
+    .filter((name) => name.endsWith('.ts') && !name.endsWith('.test.ts') && !name.endsWith('.d.ts'))
+    .sort()
+    .map((name) => `${dir}/${name}`);
+}
+
+/** Every scanned emit site: the hand-listed files plus the expanded directories. */
+function allEmitSiteFiles(): string[] {
+  return [...EMITTING_FILES, ...EMITTING_DIRS.flatMap(({ dir }) => emitSiteFilesIn(dir))];
+}
+
 // Match `code: '<value>'` and `new KernelError('<code>', ...)`.
 const CODE_LITERAL_RE = /\bcode:\s*['"]([\w.-]+)['"]/g;
 const KERNEL_ERR_RE = /new\s+KernelError\(\s*['"]([\w.-]+)['"]/g;
 
 function emittedCodes(): Set<string> {
   const codes = new Set<string>();
-  for (const rel of EMITTING_FILES) {
+  for (const rel of allEmitSiteFiles()) {
     const src = readFileSync(join(SRC_DIR, rel), 'utf8');
     for (const m of src.matchAll(CODE_LITERAL_RE)) codes.add(m[1]);
     for (const m of src.matchAll(KERNEL_ERR_RE)) codes.add(m[1]);
@@ -87,6 +122,23 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
       missing,
       `Emit-site files missing from src/: ${JSON.stringify(missing)}.\nIf a refactor moved them, update EMITTING_FILES to the new paths.`,
     ).toEqual([]);
+  });
+
+  it('every listed emit-site directory exists and still yields its files', () => {
+    // Same fail-loud intent as the file check above, for the directory form:
+    // a moved or emptied directory must break the build, not quietly shrink
+    // the scan.
+    for (const { dir, minFiles } of EMITTING_DIRS) {
+      expect(
+        existsSync(join(SRC_DIR, dir)),
+        `Emit-site directory missing from src/: ${dir}.\nIf a refactor moved it, update EMITTING_DIRS to the new path.`,
+      ).toBe(true);
+      const files = emitSiteFilesIn(dir);
+      expect(
+        files.length,
+        `Emit-site directory ${dir} yields ${files.length} scannable .ts files, expected at least ${minFiles}.\nIf files were deliberately deleted, lower minFiles in the same commit; if they moved, update EMITTING_DIRS.`,
+      ).toBeGreaterThanOrEqual(minFiles);
+    }
   });
 
   it('catalogue has exactly 309 codes', () => {

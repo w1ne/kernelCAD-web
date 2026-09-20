@@ -73,6 +73,27 @@ export function supportedServoRevolute(
 }
 
 function preflightSupportedServoRevolute(arm: Assembly, opts: SupportedServoRevoluteOptions): void {
+  const { supportMount, axisRef } = validateServoRevoluteOptions(opts);
+
+  const parts = arm.__parts();
+  const mates = arm.__mates();
+  const intents = arm.__mechanicalJointIntents();
+  const actuatorPartName = `${opts.name}-servo`;
+  const fastenedMateName = `${opts.name}-servo-fix`;
+
+  assertServoRevoluteNamesAvailable(parts, mates, intents, actuatorPartName, fastenedMateName, opts);
+
+  const drivenMate = findDrivenRevoluteMate(mates, opts);
+  validateServoRevoluteAxis(parts, opts, axisRef, drivenMate);
+  validateServoRevoluteMount(parts, opts, supportMount);
+}
+
+/** String/option validation plus connector-ref parsing: everything that can
+ *  be rejected before the assembly is even inspected. */
+function validateServoRevoluteOptions(opts: SupportedServoRevoluteOptions): {
+  supportMount: { partName: string; connectorName: string };
+  axisRef: { partName: string; connectorName: string };
+} {
   for (const field of ['name', 'mate', 'support', 'supportMount', 'output', 'axis'] as const) {
     assertNonEmptyString(field, opts[field]);
   }
@@ -96,12 +117,19 @@ function preflightSupportedServoRevolute(arm: Assembly, opts: SupportedServoRevo
     );
   }
 
-  const parts = arm.__parts();
-  const mates = arm.__mates();
-  const intents = arm.__mechanicalJointIntents();
-  const actuatorPartName = `${opts.name}-servo`;
-  const fastenedMateName = `${opts.name}-servo-fix`;
+  return { supportMount, axisRef };
+}
 
+/** The generated actuator part, fastened mate, and intent names must all be
+ *  free before the helper mutates the assembly. */
+function assertServoRevoluteNamesAvailable(
+  parts: ReturnType<Assembly['__parts']>,
+  mates: ReturnType<Assembly['__mates']>,
+  intents: ReturnType<Assembly['__mechanicalJointIntents']>,
+  actuatorPartName: string,
+  fastenedMateName: string,
+  opts: SupportedServoRevoluteOptions,
+): void {
   if (parts.some((part) => part.name === actuatorPartName)) {
     throw invalidArgs(
       `joint.supportedServoRevolute: actuator part '${actuatorPartName}' already exists.`,
@@ -120,7 +148,13 @@ function preflightSupportedServoRevolute(arm: Assembly, opts: SupportedServoRevo
       `Choose a unique supportedServoRevolute name before adding another helper.`,
     );
   }
+}
 
+/** Resolve the driven mate, requiring it to exist and be revolute. */
+function findDrivenRevoluteMate(
+  mates: ReturnType<Assembly['__mates']>,
+  opts: SupportedServoRevoluteOptions,
+): ReturnType<Assembly['__mates']>[number] {
   const drivenMate = mates.find((mate) => mate.name === opts.mate);
   if (drivenMate === undefined) {
     throw invalidArgs(
@@ -134,7 +168,17 @@ function preflightSupportedServoRevolute(arm: Assembly, opts: SupportedServoRevo
       `Use this helper only for driven revolute mates, or choose a helper for '${drivenMate.type}' mates.`,
     );
   }
+  return drivenMate;
+}
 
+/** Support/output parts and the axis connector, including its match to the
+ *  support-side connector of the driven mate. */
+function validateServoRevoluteAxis(
+  parts: ReturnType<Assembly['__parts']>,
+  opts: SupportedServoRevoluteOptions,
+  axisRef: { partName: string; connectorName: string },
+  drivenMate: ReturnType<Assembly['__mates']>[number],
+): void {
   const supportPart = parts.find((part) => part.name === opts.support);
   if (supportPart === undefined) {
     throw invalidArgs(
@@ -175,7 +219,14 @@ function preflightSupportedServoRevolute(arm: Assembly, opts: SupportedServoRevo
       `Pass axis: '${supportSideAxisRef}' so the requiredSupport contract names the driven revolute shaft axis.`,
     );
   }
+}
 
+/** The mount part must exist and carry a frame connector for the actuator. */
+function validateServoRevoluteMount(
+  parts: ReturnType<Assembly['__parts']>,
+  opts: SupportedServoRevoluteOptions,
+  supportMount: { partName: string; connectorName: string },
+): void {
   const mountPart = parts.find((part) => part.name === supportMount.partName);
   if (mountPart === undefined) {
     throw invalidArgs(

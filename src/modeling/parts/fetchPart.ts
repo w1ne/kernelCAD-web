@@ -30,7 +30,7 @@ import {
   type HashBoundConnectorManifest,
 } from '../../shared/parts/connectorManifest';
 import { formatTopoRef } from '../../kernel/naming';
-import { inspectStepFile } from '../../agent/inspect/inspectStep';
+import { inspectStepBuffer } from '../../kernel/import/inspectStep';
 import { synthesizeConnectorsFromReport } from './synthesizeConnectors';
 
 export interface FetchPartCtx {
@@ -260,7 +260,7 @@ export async function fetchPartFromUrlHost(
   const shape = await fromStepBytes(ctx, bytes, url);
   let connectors: string[] = [];
   try {
-    const report = await inspectStepFile(path);
+    const report = await inspectStepBuffer(bytes, path);
     const conns = synthesizeConnectorsFromReport(report, shape.id);
     if (conns.length > 0) {
       ctx.session.attachAutoConnectors(shape.id, conns);
@@ -309,6 +309,16 @@ export async function fetchPartHost(
   idOrQuery: string,
   opts: FetchPartOpts,
 ): Promise<FetchPartResult> {
+  assertFetchPartInput(idOrQuery);
+  const catalog = loadCatalog();
+
+  const bundled = await resolveBundledPart(ctx, catalog, idOrQuery, opts);
+  if (bundled) return bundled;
+
+  return fetchRemotePart(ctx, idOrQuery, opts);
+}
+
+function assertFetchPartInput(idOrQuery: string): void {
   if (typeof idOrQuery !== 'string' || idOrQuery.length === 0) {
     throw new KernelError(
       'parts.input.id-or-query-required',
@@ -317,19 +327,20 @@ export async function fetchPartHost(
       'Pass either an `id` (for a known catalog record) or a `query` (for fuzzy search). Both are missing.',
     );
   }
-  const catalog = loadCatalog();
+}
 
-  // (1) Bundled id direct hit.
+/** (1) Bundled id direct hit, then (1b) bundled fuzzy query. */
+async function resolveBundledPart(
+  ctx: FetchPartCtx,
+  catalog: ReturnType<typeof loadCatalog>,
+  idOrQuery: string,
+  opts: FetchPartOpts,
+): Promise<FetchPartResult | null> {
   const direct = resolveById(catalog, idOrQuery);
   if (direct) {
-    const bytes = readFileSync(direct.stepPath);
-    const shape = await fromStepBytes(ctx, bytes, direct.stepPath);
-    attachManifestConnectorsFromSidecar(ctx, shape, direct.stepPath);
-    attachCatalogPartMetadata(ctx, shape, direct.record);
-    return { shape, record: direct.record };
+    return importBundledPart(ctx, direct.stepPath, direct.record);
   }
 
-  // (1b) Bundled fuzzy query — accept the single-match case unless strict=false.
   const matches = queryCatalog(catalog, idOrQuery, {
     ...(opts.category !== undefined ? { category: opts.category } : {}),
     ...(opts.family !== undefined ? { family: opts.family } : {}),
@@ -338,11 +349,7 @@ export async function fetchPartHost(
   });
   if (matches.length === 1) {
     const r = resolveById(catalog, matches[0].id)!;
-    const bytes = readFileSync(r.stepPath);
-    const shape = await fromStepBytes(ctx, bytes, r.stepPath);
-    attachManifestConnectorsFromSidecar(ctx, shape, r.stepPath);
-    attachCatalogPartMetadata(ctx, shape, r.record);
-    return { shape, record: r.record };
+    return importBundledPart(ctx, r.stepPath, r.record);
   }
   if (matches.length > 1 && opts.strict !== false) {
     throw new KernelError(
@@ -355,8 +362,27 @@ export async function fetchPartHost(
       'Use find_part to inspect matches, then fetch_part with the exact id.',
     );
   }
+  return null;
+}
 
-  // (2) Remote tier — opt-in.
+async function importBundledPart(
+  ctx: FetchPartCtx,
+  stepPath: string,
+  record: PartRecord,
+): Promise<FetchPartResult> {
+  const bytes = readFileSync(stepPath);
+  const shape = await fromStepBytes(ctx, bytes, stepPath);
+  attachManifestConnectorsFromSidecar(ctx, shape, stepPath);
+  attachCatalogPartMetadata(ctx, shape, record);
+  return { shape, record };
+}
+
+/** (2) Remote tier — opt-in. */
+async function fetchRemotePart(
+  ctx: FetchPartCtx,
+  idOrQuery: string,
+  opts: FetchPartOpts,
+): Promise<FetchPartResult> {
   try {
     const meta = await remoteFetchPartMeta({
       id: idOrQuery,
@@ -373,8 +399,10 @@ export async function fetchPartHost(
       // will never carry BREP.
       //
       // We deliberately do NOT route these into the `importedMesh` escape hatch:
-      // `importedMesh` has no lowerer (occtLowerer's switch falls through to
-      // `default:` → "Feature kind 'importedMesh' is not supported"), and the
+      // `importedMesh` has no entry in the `LOWERERS` table in
+      // `modeling/backends/occt/lowerers/index.ts`, so it hits the
+      // unsupported-kind diagnostic ("Feature kind 'importedMesh' is not
+      // supported"), and the
       // boards are multi-component meshes that OCCT cannot sew into a solid
       // anyway (nucleo-h563zi-board = 10 disjoint meshes → sewing yields a
       // COMPOUND, and fromTriangleMesh rejects it). A mesh Shape here would fail
@@ -420,7 +448,7 @@ export async function fetchPartHost(
       // Records without authored interfaces retain geometry-derived discovery
       // connectors. A STEP that resists inspection still imports normally.
       try {
-        const report = await inspectStepFile(path);
+        const report = await inspectStepBuffer(bytes, path);
         const conns = synthesizeConnectorsFromReport(report, shape.id);
         if (conns.length > 0) {
           ctx.session.attachAutoConnectors(shape.id, conns);

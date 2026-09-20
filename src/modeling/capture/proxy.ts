@@ -23,18 +23,16 @@ import { isParamRef, type Editable } from '../../shared/runtime/paramRef';
 import { toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
 import { Transform } from '../../shared/runtime/se3';
 import type { ColorToken } from '../../shared/render/palette';
-import { resolveColor } from '../../shared/render/palette';
 import type { FinishToken } from '../../shared/render/finishes';
 import { expandFinish, isFinishToken, unknownFinishMessage } from '../../shared/render/finishes';
 import { tryResolveMaterial, type MaterialName } from '../properties/materialLibrary';
-import type { AnyMaterialName } from '../../kinematic/engineeringMaterials';
+import type { AnyMaterialName } from '../../shared/materials/engineeringMaterials';
 import type { PBRMaterial } from '../../shared/intent/material';
-import type { TextureRef, TextureSet } from '../../shared/intent/textureRef';
-import { isTextureRef, normalizeTextureRef } from '../../shared/intent/textureRef';
+import type { TextureRef } from '../../shared/intent/textureRef';
+import { isTextureRef } from '../../shared/intent/textureRef';
 import type { TextureProjection } from '../../shared/intent/textureProjection';
 import { isTextureProjection } from '../../shared/intent/textureProjection';
 import { validateBendArgs } from '../sheetMetal';
-import { normalizeTopoRefOrString } from './topoRefNormalize';
 import type { Region } from '../../shared/intent/region';
 import type { DrawingToleranceSpec } from '../../shared/intent/drawingGdtRecord';
 import type {
@@ -79,6 +77,22 @@ export type FaceSelector =
  * match the advertised array. This guards agent discoverability — methods
  * not in `list_api` are invisible to MCP clients.
  */
+import {
+  validateMaterialBaseColor,
+  resolveMaterialFaceLabel,
+  cleanMaterialScalars,
+  cleanMaterialAttenuation,
+  cleanMaterialAnisotropyRotation,
+  cleanMaterialTextures,
+  assignMaterialMetadata,
+} from './proxyMaterial';
+import { sectionSketchOf, faceSketchOf, silhouetteOf } from './proxyDerivedSketch';
+import {
+  validateGridPatternAxis,
+  normalizeFaceSelector,
+  assertFeatureNameUniqueOnChain,
+  nextOrdinalForKindOnChain,
+} from './proxyFeatureChain';
 export class Shape {
   readonly id: FeatureId;
   private session: CaptureSession;
@@ -358,207 +372,18 @@ export class Shape {
    * shape-level default.
    */
   material(opts: PBRMaterial & { face?: string }): Shape {
-    if (!opts || typeof opts.baseColor !== 'string' || opts.baseColor.length === 0) {
-      throw new KernelError(
-        'feature.material.invalid-base-color',
-        `Shape.material: baseColor is required and must be a non-empty string; got ${formatScalarForError(opts?.baseColor)}.`,
-        this.id,
-        'Pass a CSS color string or a registered role token to baseColor.',
-      );
-    }
+    validateMaterialBaseColor(opts, this.id);
+    const faceLabel = resolveMaterialFaceLabel(opts, this.id);
+    const state = cleanMaterialScalars(opts, this.id);
 
-    // Validate `face` if present — must be a non-empty string label.
-    let faceLabel: string | undefined;
-    if (opts.face !== undefined) {
-      if (typeof opts.face !== 'string' || opts.face.length === 0) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `Shape.material: 'face' must be a non-empty string label; got ${formatScalarForError(opts.face)}.`,
-          this.id,
-          "Pass a face-label string declared upstream via `<creator>(..., { faceLabels: { <label>: <CanonicalFace|FaceQuery> } })`.",
-        );
-      }
-      faceLabel = opts.face;
-    }
+    cleanMaterialAttenuation(opts, this.id, state);
+    cleanMaterialAnisotropyRotation(opts, this.id, state, this.session.warnings);
+    const textures = cleanMaterialTextures(opts, this.id);
+    if (textures !== undefined) state.cleaned.textures = textures;
 
-    const cleaned: PBRMaterial = { baseColor: opts.baseColor };
-    let anyClamped = false;
-    const maybeAssign = (
-      key: keyof PBRMaterial,
-      raw: number | undefined,
-      min: number,
-      max: number,
-    ): void => {
-      if (raw === undefined) return;
-      if (!Number.isFinite(raw)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `Shape.material: field '${key}' must be a finite number; got ${raw}.`,
-          this.id,
-          'Fix the named field on the call args; check type, sign, and units.',
-        );
-      }
-      const clamped = Math.max(min, Math.min(max, raw));
-      if (clamped !== raw) anyClamped = true;
-      (cleaned as Record<keyof PBRMaterial, unknown>)[key] = clamped;
-    };
-    maybeAssign('metalness', opts.metalness, 0, 1);
-    maybeAssign('roughness', opts.roughness, 0, 1);
-    maybeAssign('clearcoat', opts.clearcoat, 0, 1);
-    maybeAssign('clearcoatRoughness', opts.clearcoatRoughness, 0, 1);
-    maybeAssign('ior', opts.ior, 1.0, 2.5);
-    maybeAssign('transmission', opts.transmission, 0, 1);
-    maybeAssign('sheen', opts.sheen, 0, 1);
-    maybeAssign('opacity', opts.opacity, 0, 1);
-    maybeAssign('anisotropy', opts.anisotropy, 0, 1);
+    assignMaterialMetadata(this.session, this.id, faceLabel, state.cleaned);
 
-    // thickness — non-negative finite mm. Negative is a hard error.
-    if (opts.thickness !== undefined) {
-      if (!Number.isFinite(opts.thickness)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `Shape.material: field 'thickness' must be a finite number; got ${opts.thickness}.`,
-          this.id,
-          'Fix the named field on the call args; check type, sign, and units.',
-        );
-      }
-      if (opts.thickness < 0) {
-        throw new KernelError(
-          'feature.material.thickness-negative',
-          `Shape.material: thickness must be non-negative mm; got ${opts.thickness}.`,
-          this.id,
-          'Pass a non-negative number of mm for the volume thickness, or omit the field.',
-        );
-      }
-      cleaned.thickness = opts.thickness;
-    }
-
-    // attenuationColor — route through resolveColor; on null return drop +
-    // soft warn (matches the value-clamped convention).
-    if (opts.attenuationColor !== undefined) {
-      if (typeof opts.attenuationColor !== 'string') {
-        throw new KernelError(
-          'feature.invalid-args',
-          `Shape.material: field 'attenuationColor' must be a string; got ${formatScalarForError(opts.attenuationColor)}.`,
-          this.id,
-          'Pass a CSS color string or a registered role token.',
-        );
-      }
-      const resolved = resolveColor(opts.attenuationColor);
-      if (resolved === undefined) {
-        anyClamped = true;
-      } else {
-        cleaned.attenuationColor = resolved;
-      }
-    }
-
-    // attenuationDistance — positive finite mm, or Infinity. Anything else
-    // is a hard error (zero / negative / NaN).
-    if (opts.attenuationDistance !== undefined) {
-      const ad = opts.attenuationDistance;
-      const isInf = ad === Number.POSITIVE_INFINITY;
-      if (!isInf && (!Number.isFinite(ad) || ad <= 0)) {
-        throw new KernelError(
-          'feature.material.attenuation-distance-invalid',
-          `Shape.material: attenuationDistance must be positive finite mm or Infinity; got ${ad}.`,
-          this.id,
-          'Pass a positive distance in mm (e.g. 10 for a typical glass volume) or Infinity for no attenuation.',
-        );
-      }
-      cleaned.attenuationDistance = ad;
-    }
-
-    // anisotropyRotation — degrees; normalize to [0, 360). If normalized
-    // value differs from raw, emit a soft warning so the agent can clean up
-    // its call.
-    if (opts.anisotropyRotation !== undefined) {
-      if (!Number.isFinite(opts.anisotropyRotation)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `Shape.material: field 'anisotropyRotation' must be a finite number; got ${opts.anisotropyRotation}.`,
-          this.id,
-          'Fix the named field on the call args; check type, sign, and units.',
-        );
-      }
-      const raw = opts.anisotropyRotation;
-      const norm = ((raw % 360) + 360) % 360;
-      cleaned.anisotropyRotation = norm;
-      if (norm !== raw) {
-        this.session.warnings.push({
-          code: 'feature.material.anisotropy-rotation-normalized',
-          hint: 'anisotropyRotation is in degrees and was normalized to [0, 360).',
-          message: `Shape.material: anisotropyRotation ${raw}° normalized to ${norm}°.`,
-          recordId: this.id,
-          phase: 'build',
-        });
-      }
-    }
-
-    // textures — validate each TextureRef.path is a non-empty string and
-    // pass through with defaults applied. Existence / format / dimension
-    // checks happen at load time (src/shared/textures/index.ts).
-    if (opts.textures !== undefined) {
-      if (typeof opts.textures !== 'object' || opts.textures === null) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `Shape.material: field 'textures' must be an object; got ${formatScalarForError(opts.textures)}.`,
-          this.id,
-          'Pass a TextureSet — { albedo?, normal?, roughness?, metalness?, anisotropy?, emissive? } of TextureRef.',
-        );
-      }
-      const cleanedTextures: TextureSet = {};
-      const slots: Array<keyof TextureSet> = [
-        'albedo',
-        'normal',
-        'roughness',
-        'metalness',
-        'anisotropy',
-        'emissive',
-      ];
-      for (const slot of slots) {
-        const raw = (opts.textures as TextureSet)[slot];
-        if (raw === undefined) continue;
-        if (!isTextureRef(raw)) {
-          throw new KernelError(
-            'feature.invalid-args',
-            `Shape.material: textures.${slot} must be a TextureRef ({ path, ... }) with a non-empty 'path' string; got ${formatScalarForError(raw)}.`,
-            this.id,
-            'Pass { path: "<file-or-url>", repeat?, offset?, rotation? }.',
-          );
-        }
-        cleanedTextures[slot] = normalizeTextureRef(raw as TextureRef);
-      }
-      if (Object.keys(cleanedTextures).length > 0) {
-        cleaned.textures = cleanedTextures;
-      }
-    }
-
-    const records = this.session.getRecords();
-    const record = records.find(r => r.id === this.id);
-    if (record === undefined) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Shape.material: feature record '${this.id}' not found in session.`,
-        this.id,
-        'Call .material() on a Shape produced by the current session.',
-      );
-    }
-    if (record.metadata === undefined) {
-      (record as { metadata: Record<string, unknown> }).metadata = {};
-    }
-    const metadata = record.metadata as Record<string, unknown>;
-    if (faceLabel !== undefined) {
-      // Per-face: route to materialByLabel, leave whole-shape material
-      // untouched (the two forms compose — whole-shape acts as default for
-      // unmatched faces).
-      const existing = (metadata.materialByLabel as Record<string, PBRMaterial> | undefined) ?? {};
-      // Last-write-wins on the same label.
-      metadata.materialByLabel = { ...existing, [faceLabel]: cleaned };
-    } else {
-      metadata.material = cleaned;
-    }
-
-    if (anyClamped) {
+    if (state.anyClamped) {
       this.session.warnings.push({
         code: 'feature.material.value-clamped',
         hint: 'Numeric PBR fields are clamped to [0, 1] (ior to [1.0, 2.5]).',
@@ -1308,35 +1133,7 @@ export class Shape {
       | { origin: [number, number, number]; normal: [number, number, number] },
     opts: { curveTolerance?: number } = {},
   ): Promise<import('./sketch').Sketch> {
-    const run = async (): Promise<import('./sketch').Sketch> => {
-    const { sectionLoops } = await import('../../kernel/backends/occt/sketchFromShapeOps');
-    const { cardinalFrame, makePlaneFrame } = await import('../../kernel/backends/occt/sketchFromShape');
-    const backend = await this.lower();
-    const frame = resolveSectionFrame(plane, cardinalFrame, makePlaneFrame);
-    const extracted = sectionLoops(backend, frame, { curveTolerance: opts.curveTolerance });
-    if (extracted.loops.length === 0) {
-      throw new KernelError(
-        'feature.section.plane-misses-body',
-        `sectionSketch: the section plane does not intersect this body (no closed loops; ${extracted.openChains.length} open chain(s)).`,
-        this.id,
-        'Move the plane offset/origin so it passes through the solid, or check the normal direction.',
-      );
-    }
-    const commands = extracted.loops.flat();
-    return this.session.createSketch({
-      kind: 'sketch',
-      inputs: { source: { kind: 'feature', id: this.id } },
-      params: {},
-      metadata: {
-        commands,
-        derivedFrom: 'section',
-        loopCount: extracted.loops.length,
-        holeCount: Math.max(0, extracted.loops.length - 1),
-        sectionAreaMm2: extracted.areas[0] - extracted.areas.slice(1).reduce((acc, a) => acc + a, 0),
-      },
-    });
-    };
-    return guardAsyncSketchResult(run(), 'sectionSketch');
+    return sectionSketchOf(this, this.session, plane, opts);
   }
 
   /**
@@ -1358,79 +1155,7 @@ export class Shape {
     face: FaceSelector | CanonicalFace | string,
     opts: { curveTolerance?: number } = {},
   ): Promise<import('./sketch').Sketch> {
-    const run = async (): Promise<import('./sketch').Sketch> => {
-    const { faceLoops } = await import('../../kernel/backends/occt/sketchFromShapeOps');
-    const { makePlaneFrame } = await import('../../kernel/backends/occt/sketchFromShape');
-    const { pickFace } = await import('../../kernel/backends/occt/edgeSelection');
-    const backend = await this.lower();
-
-    // Resolve the selector through the same path every face feature uses, by
-    // synthesizing a minimal face-typed record. This keeps canonical/label/
-    // query/Query-DSL resolution in exactly one place.
-    const faceRef = buildFaceInputRef(this.id, normalizeFaceSelector(face) as never);
-    const synthetic = {
-      id: this.id,
-      kind: 'sectionSketch' as const,
-      inputs: { face: faceRef },
-      params: {},
-      transforms: [],
-      suppressed: false,
-    };
-    const resolved = pickFace(synthetic as never, backend, this.session.getRecords());
-    if ('error' in resolved) {
-      throw new KernelError(
-        resolved.error.code as never,
-        resolved.error.message,
-        this.id,
-        resolved.error.hint,
-      );
-    }
-    const replicadFace = resolved as unknown as {
-      geomType?: string;
-      center: { x: number; y: number; z: number };
-      normalAt?: () => { x: number; y: number; z: number };
-    };
-    const surfaceType = (replicadFace.geomType ?? '').toUpperCase();
-    if (surfaceType !== 'PLANE') {
-      throw new KernelError(
-        'feature.face-sketch.non-planar',
-        `faceSketch: the selected face is non-planar (${surfaceType || 'unknown'} surface); only planar faces can be unrolled to a 2D sketch.`,
-        this.id,
-        'Select a planar face (add { ofSurfaceType: "PLANE" } to the query), or use sectionSketch for a curved body.',
-      );
-    }
-    const center: [number, number, number] = [
-      replicadFace.center.x, replicadFace.center.y, replicadFace.center.z,
-    ];
-    // Face normal points out of the solid; the sketch frame can use either
-    // orientation — flip to face inward so an extrude goes into the body.
-    const n = resolved.normalAt?.() ?? { x: 0, y: 0, z: 1 };
-    const normal: [number, number, number] = [n.x, n.y, n.z];
-    const frame = makePlaneFrame(center, normal, [1, 0, 0]);
-    const boundary = faceLoops(resolved as never, frame, { curveTolerance: opts.curveTolerance });
-    const loops = [boundary.outer, ...boundary.holes].filter((l) => l.length > 0);
-    if (loops.length === 0) {
-      throw new KernelError(
-        'feature.face-sketch.non-planar',
-        `faceSketch: the selected face produced no closed boundary loops.`,
-        this.id,
-        'Select a planar face with a closed outer wire.',
-      );
-    }
-    const toCommands = (await import('../../kernel/backends/occt/sketchFromShape')).loopToCommands;
-    return this.session.createSketch({
-      kind: 'sketch',
-      inputs: { source: { kind: 'feature', id: this.id } },
-      params: {},
-      metadata: {
-        commands: loops.flatMap((l) => toCommands(l)),
-        derivedFrom: 'face',
-        loopCount: loops.length,
-        holeCount: loops.length - 1,
-      },
-    });
-    };
-    return guardAsyncSketchResult(run(), 'faceSketch');
+    return faceSketchOf(this, this.session, face, opts);
   }
 
   /**
@@ -1452,44 +1177,7 @@ export class Shape {
     direction: [number, number, number] = [0, 0, 1],
     opts: { curveTolerance?: number } = {},
   ): Promise<import('./sketch').Sketch> {
-    const run = async (): Promise<import('./sketch').Sketch> => {
-    const { silhouetteLoops } = await import('../../kernel/backends/occt/sketchFromShapeOps');
-    const { makePlaneFrame, loopToCommands } = await import('../../kernel/backends/occt/sketchFromShape');
-    if (!isValidVec3(direction) || Math.hypot(...direction) < 1e-9) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `silhouette: direction must be a non-zero finite Vec3; got ${formatScalarForError(direction)}.`,
-        this.id,
-        'Pass a view direction such as [0, 0, 1] (top) or [1, 0, 0] (right).',
-      );
-    }
-    const backend = await this.lower();
-    const frame = makePlaneFrame([0, 0, 0], direction, [1, 0, 0]);
-    const res = silhouetteLoops(backend, frame, { curveTolerance: opts.curveTolerance });
-    if (res.loops.length === 0) {
-      throw new KernelError(
-        'feature.section.plane-misses-body',
-        `silhouette: no closed outline found along [${direction.join(', ')}].`,
-        this.id,
-        'Try a different direction, or check the direction is not zero-length.',
-      );
-    }
-    // Largest loop first (outer boundary), holes after — same convention as
-    // sectionSketch.
-    res.loops.sort((a, b) => Math.abs(chordArea(b)) - Math.abs(chordArea(a)));
-    return this.session.createSketch({
-      kind: 'sketch',
-      inputs: { source: { kind: 'feature', id: this.id } },
-      params: {},
-      metadata: {
-        commands: res.loops.flatMap((l) => loopToCommands(l)),
-        derivedFrom: 'silhouette',
-        loopCount: res.loops.length,
-        direction,
-      },
-    });
-    };
-    return guardAsyncSketchResult(run(), 'silhouette');
+    return silhouetteOf(this, this.session, direction, opts);
   }
 
   /**
@@ -1644,187 +1332,4 @@ export class Shape {
     this._loweredAtTransformCount = transformCount;
     return shape;
   }
-}
-
-function validateGridPatternAxis(
-  label: 'patternGrid.x' | 'patternGrid.y',
-  axis: { count: number; direction: [number, number, number]; spacing: number },
-  featureId: FeatureId,
-): void {
-  if (!Number.isInteger(axis.count) || axis.count < 2) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${label} count must be an integer >= 2.`,
-      featureId,
-      'Pass count: 2 or greater for both grid axes.',
-    );
-  }
-  if (!isValidVec3(axis.direction)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${label} direction must be a finite Vec3; got ${formatScalarForError(axis.direction)}.`,
-      featureId,
-      'Pass direction: [x, y, z] for both grid axes.',
-    );
-  }
-  if (typeof axis.spacing !== 'number' || !Number.isFinite(axis.spacing) || axis.spacing === 0) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${label} spacing must be a non-zero finite number; got ${formatScalarForError(axis.spacing)}.`,
-      featureId,
-      'Pass a non-zero finite spacing for both grid axes.',
-    );
-  }
-}
-
-/** Wrap a bare canonical-face / label string OR a `@kc[<owner>/face/<name>]`
- *  ref string into the structured `{ face: <s> }` shape so hole/holes/cutout/
- *  shell accept every input form uniformly. */
-function normalizeFaceSelector(face: FaceSelector | CanonicalFace | string): FaceSelector {
-  if (typeof face === 'string') {
-    return normalizeTopoRefOrString(face, 'face') as FaceSelector;
-  }
-  return face;
-}
-
-/**
- * Public method names on `Sketch` (kept in sync with `SKETCH_METHODS` in
- * `src/agent/mcp/tools/listApi.ts`). Used only to decide which property
- * accesses on an un-awaited `sectionSketch` / `faceSketch` / `silhouette`
- * result should raise the actionable "missing await" diagnostic below.
- */
-const SKETCH_METHOD_NAMES = new Set(['extrude', 'revolve', 'sweep', 'loft', 'reflect']);
-
-/**
- * Wrap the Promise<Sketch> returned by an async Shape->Sketch producer
- * (`sectionSketch`, `faceSketch`, `silhouette`) so that the common agent
- * mistake of chaining a Sketch method directly on the un-awaited result —
- * `part.sectionSketch('xy', 5).extrude(3)` — fails with an actionable
- * `feature.async-result.missing-await` diagnostic instead of the cryptic
- * `TypeError: sec.extrude is not a function`.
- *
- * `await`/`.then`/`.catch`/`.finally`/`Promise.all` etc. are untouched —
- * the Proxy forwards every property that isn't a Sketch method name to the
- * real Promise, bound to it.
- */
-function guardAsyncSketchResult(promise: Promise<import('./sketch').Sketch>, methodName: string): Promise<import('./sketch').Sketch> {
-  return new Proxy(promise, {
-    get(target, prop) {
-      if (typeof prop === 'string' && SKETCH_METHOD_NAMES.has(prop)) {
-        return () => {
-          throw new KernelError(
-            'feature.async-result.missing-await',
-            `${methodName}() is async — write \`(await shape.${methodName}(...)).${prop}(...)\`.`,
-          );
-        };
-      }
-      const value = Reflect.get(target, prop, target);
-      return typeof value === 'function' ? value.bind(target) : value;
-    },
-  }) as Promise<import('./sketch').Sketch>;
-}
-
-/** Resolve the `sectionSketch` plane argument into a 2D frame. */
-function resolveSectionFrame(
-  plane:
-    | 'xy' | 'xz' | 'yz'
-    | { plane: 'xy' | 'xz' | 'yz'; offset?: number }
-    | { origin: [number, number, number]; normal: [number, number, number] },
-  cardinalFrame: (p: 'xy' | 'xz' | 'yz', offset: number) => import('../../kernel/backends/occt/sketchFromShape').PlaneFrame,
-  makePlaneFrame: (
-    origin: [number, number, number],
-    normal: [number, number, number],
-    uHint?: [number, number, number],
-  ) => import('../../kernel/backends/occt/sketchFromShape').PlaneFrame,
-): import('../../kernel/backends/occt/sketchFromShape').PlaneFrame {
-  if (typeof plane === 'string') return cardinalFrame(plane, 0);
-  if ('plane' in plane) {
-    const offset = plane.offset ?? 0;
-    if (!Number.isFinite(offset)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `sectionSketch: plane offset must be a finite number; got ${formatScalarForError(offset)}.`,
-        undefined,
-        'Pass { plane: "xy" | "xz" | "yz", offset: <mm> }.',
-      );
-    }
-    return cardinalFrame(plane.plane, offset);
-  }
-  if (!isValidVec3(plane.origin) || !isValidVec3(plane.normal) || Math.hypot(...plane.normal) < 1e-9) {
-    throw new KernelError(
-      'feature.invalid-args',
-      'sectionSketch: { origin, normal } must be finite Vec3s with a non-zero normal.',
-      undefined,
-      'Pass { origin: [x, y, z], normal: [nx, ny, nz] } in mm.',
-    );
-  }
-  return makePlaneFrame(plane.origin, plane.normal, [1, 0, 0]);
-}
-
-/** Signed chord area of a projected loop, used only to rank outer vs holes. */
-function chordArea(segs: Array<{ x0: number; y0: number; x1: number; y1: number }>): number {
-  let a = 0;
-  for (const s of segs) a += s.x0 * s.y1 - s.x1 * s.y0;
-  return a / 2;
-}
-
-/** Walk records back from `targetId` via `inputs.target` (slice-2 chain
- *  semantics). Returns records in chain order (oldest first). */
-function chainRecordsFrom(
-  records: ReadonlyArray<{ id: string; kind: string; inputs?: Record<string, { kind: string; id?: string }>; metadata?: Record<string, unknown> }>,
-  targetId: string,
-): typeof records[number][] {
-  const byId = new Map<string, typeof records[number]>();
-  for (const r of records) byId.set(r.id, r);
-  const out: typeof records[number][] = [];
-  let cur: string | undefined = targetId;
-  const seen = new Set<string>();
-  while (cur && !seen.has(cur)) {
-    seen.add(cur);
-    const r = byId.get(cur);
-    if (!r) break;
-    out.unshift(r);
-    const target = r.inputs?.target;
-    cur = target && target.kind === 'feature' ? target.id : undefined;
-  }
-  return out;
-}
-
-/** Throw `feature.invalid-args` if any prior feature in the chain ending
- *  at `targetId` already used the given `name`. */
-function assertFeatureNameUniqueOnChain(
-  records: ReadonlyArray<{ id: string; kind: string; inputs?: Record<string, { kind: string; id?: string }>; metadata?: Record<string, unknown> }>,
-  targetId: string,
-  name: string,
-): void {
-  const chain = chainRecordsFrom(records, targetId);
-  for (const r of chain) {
-    const prev = (r.metadata as { name?: unknown } | undefined)?.name;
-    if (typeof prev === 'string' && prev === name) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `feature name '${name}' is already used in this chain.`,
-        undefined,
-        `Feature name '${name}' already used in this chain. Names must be unique per chain; for variations use suffixes ('${name}-front', '${name}-back').`,
-      );
-    }
-  }
-}
-
-/** 1-based ordinal among unnamed features of the given `kind` in the chain
- *  ending at `targetId`. */
-function nextOrdinalForKindOnChain(
-  records: ReadonlyArray<{ id: string; kind: string; inputs?: Record<string, { kind: string; id?: string }>; metadata?: Record<string, unknown> }>,
-  targetId: string,
-  kind: string,
-): number {
-  const chain = chainRecordsFrom(records, targetId);
-  let count = 0;
-  for (const r of chain) {
-    if (r.kind !== kind) continue;
-    const meta = r.metadata as { name?: unknown } | undefined;
-    if (typeof meta?.name === 'string') continue;  // named features don't consume an ordinal slot
-    count++;
-  }
-  return count + 1;
 }

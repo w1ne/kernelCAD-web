@@ -35,78 +35,73 @@ export interface AddSurfaceFromBoundaryInput {
  * get a fast structured error instead of a capture-time stack trace.
  */
 export function addSurfaceFromBoundary(input: AddSurfaceFromBoundaryInput): AddFeatureResult {
+  const bindingsError = validateCurveBindings(input);
+  if (bindingsError !== null) return { ok: false, error: bindingsError };
+  const continuityError = validateContinuity(input.continuity);
+  if (continuityError !== null) return { ok: false, error: continuityError };
+  const samplingError = validateSampling(input.sampling);
+  if (samplingError !== null) return { ok: false, error: samplingError };
+
+  const binding = input.binding_name ?? deriveDefaultBinding(input.code);
+  return addFeature(input.code, buildSurfaceFeatureCode(input, binding));
+}
+
+function validateCurveBindings(input: AddSurfaceFromBoundaryInput): string | null {
   if (!Array.isArray(input.curve_bindings) || input.curve_bindings.length !== 4) {
-    return {
-      ok: false,
-      error: 'add_surface_from_boundary: curve_bindings must be a tuple of exactly 4 Curve3D variable names.',
-    };
+    return 'add_surface_from_boundary: curve_bindings must be a tuple of exactly 4 Curve3D variable names.';
   }
   for (const name of input.curve_bindings) {
     if (typeof name !== 'string' || !isValidIdentifier(name)) {
-      return {
-        ok: false,
-        error: `add_surface_from_boundary: curve_bindings must be JS identifiers; got ${JSON.stringify(name)}.`,
-      };
+      return `add_surface_from_boundary: curve_bindings must be JS identifiers; got ${JSON.stringify(name)}.`;
     }
   }
   for (const name of input.curve_bindings) {
     if (!bindingExists(input.code, name)) {
-      return {
-        ok: false,
-        error: `add_surface_from_boundary: curve binding "${name}" is not declared in the source.`,
-      };
+      return `add_surface_from_boundary: curve binding "${name}" is not declared in the source.`;
     }
   }
+  return null;
+}
 
-  if (input.continuity !== undefined) {
-    if (Array.isArray(input.continuity)) {
-      if (input.continuity.length !== 4) {
-        return {
-          ok: false,
-          error: `add_surface_from_boundary: continuity array must be length 4; got ${input.continuity.length}.`,
-        };
+function validateContinuity(continuity: AddSurfaceFromBoundaryInput['continuity']): string | null {
+  if (continuity === undefined) return null;
+  if (Array.isArray(continuity)) {
+    if (continuity.length !== 4) {
+      return `add_surface_from_boundary: continuity array must be length 4; got ${continuity.length}.`;
+    }
+    for (const c of continuity) {
+      if (c !== 'C0' && c !== 'C1' && c !== 'C2') {
+        return `add_surface_from_boundary: continuity entries must be 'C0' | 'C1' | 'C2'; got ${JSON.stringify(c)}.`;
       }
-      for (const c of input.continuity) {
-        if (c !== 'C0' && c !== 'C1' && c !== 'C2') {
-          return {
-            ok: false,
-            error: `add_surface_from_boundary: continuity entries must be 'C0' | 'C1' | 'C2'; got ${JSON.stringify(c)}.`,
-          };
-        }
-      }
-    } else if (
-      input.continuity !== 'C0' &&
-      input.continuity !== 'C1' &&
-      input.continuity !== 'C2'
-    ) {
-      return {
-        ok: false,
-        error: `add_surface_from_boundary: continuity must be 'C0' | 'C1' | 'C2' or an array of 4; got ${JSON.stringify(input.continuity)}.`,
-      };
     }
+  } else if (
+    continuity !== 'C0' &&
+    continuity !== 'C1' &&
+    continuity !== 'C2'
+  ) {
+    return `add_surface_from_boundary: continuity must be 'C0' | 'C1' | 'C2' or an array of 4; got ${JSON.stringify(continuity)}.`;
   }
+  return null;
+}
 
-  if (input.sampling !== undefined) {
-    if (typeof input.sampling !== 'number' || !Number.isFinite(input.sampling) || input.sampling < 1) {
-      return {
-        ok: false,
-        error: `add_surface_from_boundary: sampling must be a finite positive integer; got ${JSON.stringify(input.sampling)}.`,
-      };
-    }
+function validateSampling(sampling: number | undefined): string | null {
+  if (sampling === undefined) return null;
+  if (typeof sampling !== 'number' || !Number.isFinite(sampling) || sampling < 1) {
+    return `add_surface_from_boundary: sampling must be a finite positive integer; got ${JSON.stringify(sampling)}.`;
   }
+  return null;
+}
 
-  const binding = input.binding_name ?? deriveDefaultBinding(input.code);
+function buildSurfaceFeatureCode(input: AddSurfaceFromBoundaryInput, binding: string): string {
   const curveLiteral = `[${input.curve_bindings.join(', ')}]`;
 
   const optsParts: string[] = [];
   if (input.continuity !== undefined) optsParts.push(`continuity: ${JSON.stringify(input.continuity)}`);
   if (input.sampling !== undefined) optsParts.push(`sampling: ${JSON.stringify(input.sampling)}`);
 
-  const feature_code = optsParts.length > 0
+  return optsParts.length > 0
     ? `const ${binding} = surfaceFromBoundary(${curveLiteral}, { ${optsParts.join(', ')} });`
     : `const ${binding} = surfaceFromBoundary(${curveLiteral});`;
-
-  return addFeature(input.code, feature_code);
 }
 
 /**

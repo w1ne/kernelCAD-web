@@ -337,6 +337,19 @@ function buildMaterial(
   color: string | undefined,
 ): THREE.MeshPhysicalMaterial {
   const mat = new THREE.MeshPhysicalMaterial();
+  applyBaseColor(mat, pbr, color);
+  if (pbr === undefined) return mat;
+
+  applySurfaceFields(mat, pbr);
+  applyOpticalFields(mat, pbr);
+  return mat;
+}
+
+function applyBaseColor(
+  mat: THREE.MeshPhysicalMaterial,
+  pbr: PBRMaterial | undefined,
+  color: string | undefined,
+): void {
   const authored = pbr?.baseColor ?? color;
   // Role tokens ('plate', 'servo', …) are authoring intent, not CSS colour
   // names — resolve them through the shared ROLE_PALETTE first. Handing a
@@ -349,8 +362,9 @@ function buildMaterial(
   } catch {
     mat.color = new THREE.Color('#cccccc');
   }
-  if (pbr === undefined) return mat;
+}
 
+function applySurfaceFields(mat: THREE.MeshPhysicalMaterial, pbr: PBRMaterial): void {
   if (pbr.metalness !== undefined) mat.metalness = pbr.metalness;
   if (pbr.roughness !== undefined) mat.roughness = pbr.roughness;
   if (pbr.clearcoat !== undefined) mat.clearcoat = pbr.clearcoat;
@@ -361,6 +375,9 @@ function buildMaterial(
     if (pbr.transmission > 0) mat.transparent = true;
   }
   if (pbr.sheen !== undefined) mat.sheen = pbr.sheen;
+}
+
+function applyOpticalFields(mat: THREE.MeshPhysicalMaterial, pbr: PBRMaterial): void {
   if (pbr.opacity !== undefined) {
     mat.opacity = pbr.opacity;
     if (pbr.opacity < 1) mat.transparent = true;
@@ -376,5 +393,4 @@ function buildMaterial(
   if (pbr.attenuationDistance !== undefined) mat.attenuationDistance = pbr.attenuationDistance;
   if (pbr.anisotropy !== undefined) mat.anisotropy = pbr.anisotropy;
   if (pbr.anisotropyRotation !== undefined) mat.anisotropyRotation = pbr.anisotropyRotation;
-  return mat;
 }

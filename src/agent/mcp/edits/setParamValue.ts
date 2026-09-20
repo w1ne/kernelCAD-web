@@ -30,6 +30,58 @@ type FindParamCallResult =
  * regex alone can't reliably track balanced parens/brackets/braces and
  * string literals across a multi-line call.
  */
+function skipWhitespace(code: string, from: number): number {
+  let p = from;
+  while (p < code.length && /\s/.test(code[p])) p++;
+  return p;
+}
+
+/**
+ * Scan one argument starting at `from`, returning the index where it ends
+ * (at the top-level `,` or closing delimiter). Track nesting of () [] {}
+ * and string literals so a nested `{ choices: [...] }` in a LATER arg
+ * doesn't confuse this scan.
+ */
+function scanArgEnd(code: string, from: number): number {
+  let p = from;
+  let depth = 0;
+  let inStr: '"' | "'" | '`' | null = null;
+  while (p < code.length) {
+    const c = code[p];
+    if (inStr) {
+      if (c === '\\') p += 2;
+      else if (c === inStr) { inStr = null; p++; }
+      else p++;
+      continue;
+    }
+    if (c === '"' || c === "'" || c === '`') { inStr = c as '"' | "'" | '`'; p++; continue; }
+    if (c === '(' || c === '[' || c === '{') { depth++; p++; continue; }
+    if (c === ')' || c === ']' || c === '}') {
+      if (depth === 0) break;
+      depth--; p++; continue;
+    }
+    if (c === ',' && depth === 0) break;
+    p++;
+  }
+  return p;
+}
+
+/** Read the quoted first argument's literal text; `null` when malformed. */
+function readParamName(code: string, from: number): { name: string; end: number } | null {
+  let p = from;
+  // Expect quote — single or double
+  if (code[p] !== "'" && code[p] !== '"') return null;
+  const quote = code[p];
+  const nameStart = p + 1;
+  let nameEnd = nameStart;
+  while (nameEnd < code.length && code[nameEnd] !== quote) {
+    if (code[nameEnd] === '\\') nameEnd += 2; else nameEnd++;
+  }
+  const literalName = code.slice(nameStart, nameEnd);
+  p = nameEnd + 1;
+  return { name: literalName, end: p };
+}
+
 function findParamCall(code: string, paramName: string): FindParamCallResult {
   const matches: ParamCallMatch[] = [];
 
@@ -42,86 +94,32 @@ function findParamCall(code: string, paramName: string): FindParamCallResult {
     const charBefore = j > 0 ? code[j - 1] : ' ';
     if (/[A-Za-z0-9_$]/.test(charBefore)) { i = j + 6; continue; }
 
-    let p = j + 'param('.length;
-    // Skip whitespace
-    while (p < code.length && /\s/.test(code[p])) p++;
-
-    // Expect quote — single or double
-    if (code[p] !== "'" && code[p] !== '"') { i = j + 1; continue; }
-    const quote = code[p];
-    const nameStart = p + 1;
-    let nameEnd = nameStart;
-    while (nameEnd < code.length && code[nameEnd] !== quote) {
-      if (code[nameEnd] === '\\') nameEnd += 2; else nameEnd++;
-    }
-    const literalName = code.slice(nameStart, nameEnd);
-    p = nameEnd + 1;
-    if (literalName !== paramName) { i = j + 1; continue; }
+    let p = skipWhitespace(code, j + 'param('.length);
+    const name = readParamName(code, p);
+    if (!name) { i = j + 1; continue; }
+    p = name.end;
+    if (name.name !== paramName) { i = j + 1; continue; }
 
     // Skip whitespace + comma
-    while (p < code.length && /\s/.test(code[p])) p++;
+    p = skipWhitespace(code, p);
     if (code[p] !== ',') { i = j + 1; continue; }
-    p++;
-    while (p < code.length && /\s/.test(code[p])) p++;
+    p = skipWhitespace(code, p + 1);
 
-    // Capture the second-arg (default) value span. Track nesting of
-    // () [] {} and string literals so a nested `{ choices: [...] }` in a
-    // LATER arg doesn't confuse this scan.
     const valueStart = p;
-    let depth = 0;
-    let inStr: '"' | "'" | '`' | null = null;
-    while (p < code.length) {
-      const c = code[p];
-      if (inStr) {
-        if (c === '\\') p += 2;
-        else if (c === inStr) { inStr = null; p++; }
-        else p++;
-        continue;
-      }
-      if (c === '"' || c === "'" || c === '`') { inStr = c as '"' | "'" | '`'; p++; continue; }
-      if (c === '(' || c === '[' || c === '{') { depth++; p++; continue; }
-      if (c === ')' || c === ']' || c === '}') {
-        if (depth === 0) break;
-        depth--; p++; continue;
-      }
-      if (c === ',' && depth === 0) break;
-      p++;
-    }
-    const valueEnd = p;
+    const valueEnd = scanArgEnd(code, p);
 
     // Optional third (meta) arg: `, { ... }` up to the closing `)`.
     let metaStart: number | undefined;
     let metaEnd: number | undefined;
-    let q = p;
-    while (q < code.length && /\s/.test(code[q])) q++;
+    let q = skipWhitespace(code, valueEnd);
     if (code[q] === ',') {
-      q++;
-      while (q < code.length && /\s/.test(code[q])) q++;
+      q = skipWhitespace(code, q + 1);
       metaStart = q;
-      let mdepth = 0;
-      let minStr: '"' | "'" | '`' | null = null;
-      while (q < code.length) {
-        const c = code[q];
-        if (minStr) {
-          if (c === '\\') q += 2;
-          else if (c === minStr) { minStr = null; q++; }
-          else q++;
-          continue;
-        }
-        if (c === '"' || c === "'" || c === '`') { minStr = c as '"' | "'" | '`'; q++; continue; }
-        if (c === '(' || c === '[' || c === '{') { mdepth++; q++; continue; }
-        if (c === ')' || c === ']' || c === '}') {
-          if (mdepth === 0) break;
-          mdepth--; q++; continue;
-        }
-        if (c === ',' && mdepth === 0) break;
-        q++;
-      }
-      metaEnd = q;
+      metaEnd = scanArgEnd(code, q);
     }
 
     matches.push({ start: j, end: valueEnd, valueStart, valueEnd, metaStart, metaEnd });
-    i = p;
+    i = valueEnd;
   }
 
   if (matches.length === 0) {

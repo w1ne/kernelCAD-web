@@ -45,7 +45,7 @@
 // sub-voxel bias well below the 0.4 mm default resolution.
 
 import type { Vec3 } from '../../../shared/intent/types';
-import type { TriangleBvh, DfmMesh } from './meshBvh';
+import type { TriangleBvh, DfmMesh, BvhHit } from './meshBvh';
 
 /** Morphological closing radius (mm) used by voidTopology.ts; the voxel
  *  grid is padded by this plus 2 voxels so the closing never clips. Seals
@@ -96,6 +96,82 @@ export function samplePoint(grid: VoxelGrid, i: number, j: number, k: number): [
   ];
 }
 
+interface MeshBounds {
+  minX: number;
+  minY: number;
+  minZ: number;
+  maxX: number;
+  maxY: number;
+  maxZ: number;
+}
+
+/** Part bbox over the mesh vertices (export meshes have no orphan verts);
+ *  `null` when the mesh is empty. */
+function meshBounds(vertices: DfmMesh['vertices']): MeshBounds | null {
+  let minX = Infinity, minY = Infinity, minZ = Infinity;
+  let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+  for (let v = 0; v < vertices.length; v += 3) {
+    const x = vertices[v], y = vertices[v + 1], z = vertices[v + 2];
+    if (x < minX) minX = x; if (x > maxX) maxX = x;
+    if (y < minY) minY = y; if (y > maxY) maxY = y;
+    if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
+  }
+  if (!(minX <= maxX)) return null;
+  return { minX, minY, minZ, maxX, maxY, maxZ };
+}
+
+/** Voxel size from the dilated bbox volume; one refinement pass with the
+ *  clamped size (padding depends on voxelMm, voxelMm on the padded volume). */
+function resolveVoxelSize(
+  spanX: number,
+  spanY: number,
+  spanZ: number,
+  targetMm: number,
+  maxVoxels: number,
+): number {
+  let voxelMm = targetMm;
+  for (let pass = 0; pass < 2; pass++) {
+    const pad = CLOSING_RADIUS_MM + 2 * voxelMm;
+    const vol = (spanX + 2 * pad) * (spanY + 2 * pad) * (spanZ + 2 * pad);
+    voxelMm = Math.max(targetMm, Math.cbrt(vol / maxVoxels));
+  }
+  return voxelMm;
+}
+
+/** Dedup a column's ascending ray crossings, drop an unpaired tail hit and
+ *  mark the voxel spans between consecutive pairs in `solid`. Returns true
+ *  when the column had an odd crossing count (cracked). */
+function fillColumnSpans(
+  solid: Uint8Array,
+  hits: readonly BvhHit[],
+  rayOx: number,
+  nx: number,
+  ox: number,
+  voxelMm: number,
+  base: number,
+): boolean {
+  // Dedup coincident crossings (ascending t from allHits).
+  const xs: number[] = [];
+  let lastT = -Infinity;
+  for (const h of hits) {
+    if (h.t - lastT > PARITY_T_EPS) xs.push(rayOx + h.t);
+    lastT = h.t;
+  }
+  let cracked = false;
+  if (xs.length & 1) {
+    xs.pop(); // drop the unpaired tail crossing
+    cracked = true;
+  }
+
+  for (let p = 0; p + 1 < xs.length; p += 2) {
+    // Voxels whose center x lies strictly inside the span (x0, x1).
+    const i0 = Math.max(0, Math.floor((xs[p] - ox) / voxelMm - 0.5) + 1);
+    const i1 = Math.min(nx - 1, Math.ceil((xs[p + 1] - ox) / voxelMm - 0.5) - 1);
+    for (let i = i0; i <= i1; i++) solid[base + i] = 1;
+  }
+  return cracked;
+}
+
 /**
  * Rasterize a watertight export-grade mesh into a binary voxel grid by
  * X-column ray parity. `bvh` MUST have been built from `mesh` (same caveat
@@ -110,30 +186,17 @@ export function voxelize(
 ): VoxelGrid {
   // Part bbox over the mesh vertices (export meshes have no orphan verts).
   const { vertices } = mesh;
-  let minX = Infinity, minY = Infinity, minZ = Infinity;
-  let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
-  for (let v = 0; v < vertices.length; v += 3) {
-    const x = vertices[v], y = vertices[v + 1], z = vertices[v + 2];
-    if (x < minX) minX = x; if (x > maxX) maxX = x;
-    if (y < minY) minY = y; if (y > maxY) maxY = y;
-    if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
-  }
-  if (!(minX <= maxX)) {
+  const bounds = meshBounds(vertices);
+  if (bounds === null) {
     // Empty mesh: a single all-air voxel keeps every consumer well-defined.
     return {
       nx: 1, ny: 1, nz: 1, voxelMm: targetMm,
       origin: [0, 0, 0], solid: new Uint8Array(1), crackedColumns: 0,
     };
   }
+  const { minX, minY, minZ, maxX, maxY, maxZ } = bounds;
 
-  // Voxel size from the dilated bbox volume; one refinement pass with the
-  // clamped size (padding depends on voxelMm, voxelMm on the padded volume).
-  let voxelMm = targetMm;
-  for (let pass = 0; pass < 2; pass++) {
-    const pad = CLOSING_RADIUS_MM + 2 * voxelMm;
-    const vol = (maxX - minX + 2 * pad) * (maxY - minY + 2 * pad) * (maxZ - minZ + 2 * pad);
-    voxelMm = Math.max(targetMm, Math.cbrt(vol / maxVoxels));
-  }
+  const voxelMm = resolveVoxelSize(maxX - minX, maxY - minY, maxZ - minZ, targetMm, maxVoxels);
   const pad = CLOSING_RADIUS_MM + 2 * voxelMm;
   const ox = minX - pad, oy = minY - pad, oz = minZ - pad;
   const nx = Math.ceil((maxX - minX + 2 * pad) / voxelMm);
@@ -152,24 +215,8 @@ export function voxelize(
       const hits = bvh.allHits([rayOx, y, z], dir, 0);
       if (hits.length === 0) continue;
 
-      // Dedup coincident crossings (ascending t from allHits).
-      const xs: number[] = [];
-      let lastT = -Infinity;
-      for (const h of hits) {
-        if (h.t - lastT > PARITY_T_EPS) xs.push(rayOx + h.t);
-        lastT = h.t;
-      }
-      if (xs.length & 1) {
-        xs.pop(); // drop the unpaired tail crossing
+      if (fillColumnSpans(solid, hits, rayOx, nx, ox, voxelMm, nx * (j + ny * k))) {
         crackedColumns++;
-      }
-
-      const base = nx * (j + ny * k);
-      for (let p = 0; p + 1 < xs.length; p += 2) {
-        // Voxels whose center x lies strictly inside the span (x0, x1).
-        const i0 = Math.max(0, Math.floor((xs[p] - ox) / voxelMm - 0.5) + 1);
-        const i1 = Math.min(nx - 1, Math.ceil((xs[p + 1] - ox) / voxelMm - 0.5) - 1);
-        for (let i = i0; i <= i1; i++) solid[base + i] = 1;
       }
     }
   }
@@ -269,6 +316,79 @@ export interface ComponentLabeling {
   components: VoxelComponent[];
 }
 
+/** Label `idx` as a new member of component `id` and append it to the BFS
+ *  queue when it is an unvisited mask voxel. Returns the (possibly grown)
+ *  queue tail. */
+function enqueueVoxel(
+  idx: number,
+  mask: Uint8Array,
+  labels: Int32Array,
+  id: number,
+  queue: Int32Array,
+  tail: number,
+): number {
+  if (mask[idx] && labels[idx] === -1) {
+    labels[idx] = id;
+    queue[tail] = idx;
+    return tail + 1;
+  }
+  return tail;
+}
+
+/** Enqueue the six face neighbors of (i, j, k) that are in bounds. */
+function enqueueFaceNeighbors(
+  idx: number,
+  i: number,
+  j: number,
+  k: number,
+  dims: GridDims,
+  mask: Uint8Array,
+  labels: Int32Array,
+  id: number,
+  queue: Int32Array,
+  tail: number,
+): number {
+  const { nx, ny, nz } = dims;
+  if (i > 0) tail = enqueueVoxel(idx - 1, mask, labels, id, queue, tail);
+  if (i + 1 < nx) tail = enqueueVoxel(idx + 1, mask, labels, id, queue, tail);
+  if (j > 0) tail = enqueueVoxel(idx - nx, mask, labels, id, queue, tail);
+  if (j + 1 < ny) tail = enqueueVoxel(idx + nx, mask, labels, id, queue, tail);
+  if (k > 0) tail = enqueueVoxel(idx - nx * ny, mask, labels, id, queue, tail);
+  if (k + 1 < nz) tail = enqueueVoxel(idx + nx * ny, mask, labels, id, queue, tail);
+  return tail;
+}
+
+/** Enqueue the 26 face + edge + corner neighbors of (i, j, k) in bounds. */
+function enqueueAllNeighbors(
+  i: number,
+  j: number,
+  k: number,
+  dims: GridDims,
+  mask: Uint8Array,
+  labels: Int32Array,
+  id: number,
+  queue: Int32Array,
+  tail: number,
+): number {
+  const { nx, ny, nz } = dims;
+  for (let dk = -1; dk <= 1; dk++) {
+    const kk = k + dk;
+    if (kk < 0 || kk >= nz) continue;
+    for (let dj = -1; dj <= 1; dj++) {
+      const jj = j + dj;
+      if (jj < 0 || jj >= ny) continue;
+      for (let di = -1; di <= 1; di++) {
+        if (di === 0 && dj === 0 && dk === 0) continue;
+        const ii = i + di;
+        if (ii < 0 || ii >= nx) continue;
+        const nIdx = ii + nx * (jj + ny * kk);
+        tail = enqueueVoxel(nIdx, mask, labels, id, queue, tail);
+      }
+    }
+  }
+  return tail;
+}
+
 /**
  * BFS connected-component labeling of `mask ≠ 0` voxels. Connectivity 6 =
  * face neighbors only; 26 = face + edge + corner neighbors. Iterative with
@@ -303,33 +423,9 @@ export function components(mask: Uint8Array, dims: GridDims, connectivity: 6 | 2
       if (k < bz0) bz0 = k; if (k > bz1) bz1 = k;
 
       if (connectivity === 6) {
-        if (i > 0 && mask[idx - 1] && labels[idx - 1] === -1) { labels[idx - 1] = id; queue[tail++] = idx - 1; }
-        if (i + 1 < nx && mask[idx + 1] && labels[idx + 1] === -1) { labels[idx + 1] = id; queue[tail++] = idx + 1; }
-        if (j > 0 && mask[idx - nx] && labels[idx - nx] === -1) { labels[idx - nx] = id; queue[tail++] = idx - nx; }
-        if (j + 1 < ny && mask[idx + nx] && labels[idx + nx] === -1) { labels[idx + nx] = id; queue[tail++] = idx + nx; }
-        const down = idx - nx * ny;
-        const up = idx + nx * ny;
-        if (k > 0 && mask[down] && labels[down] === -1) { labels[down] = id; queue[tail++] = down; }
-        if (k + 1 < nz && mask[up] && labels[up] === -1) { labels[up] = id; queue[tail++] = up; }
+        tail = enqueueFaceNeighbors(idx, i, j, k, dims, mask, labels, id, queue, tail);
       } else {
-        for (let dk = -1; dk <= 1; dk++) {
-          const kk = k + dk;
-          if (kk < 0 || kk >= nz) continue;
-          for (let dj = -1; dj <= 1; dj++) {
-            const jj = j + dj;
-            if (jj < 0 || jj >= ny) continue;
-            for (let di = -1; di <= 1; di++) {
-              if (di === 0 && dj === 0 && dk === 0) continue;
-              const ii = i + di;
-              if (ii < 0 || ii >= nx) continue;
-              const nIdx = ii + nx * (jj + ny * kk);
-              if (mask[nIdx] && labels[nIdx] === -1) {
-                labels[nIdx] = id;
-                queue[tail++] = nIdx;
-              }
-            }
-          }
-        }
+        tail = enqueueAllNeighbors(i, j, k, dims, mask, labels, id, queue, tail);
       }
     }
 

@@ -48,7 +48,7 @@ import {
   type CaptureFailureKind,
 } from '../../render/captureAnimation';
 import { buildObjectFilter } from '../../cli/commands/render';
-import type { AnimationCollision } from '../../render/verifyAnimation';
+import type { AnimationCollision } from '../../../modeling/animation/verifyAnimation';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 /** Generous request/response deadline for a single capture (10 minutes). */

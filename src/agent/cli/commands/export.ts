@@ -23,6 +23,8 @@ import {
   type DrawingReport,
   type ExportFormat,
   type ExportOptions,
+  type ExportResult,
+  type PartStlExport,
 } from '../../script-runtime/export';
 import { formatHuman } from '../../../shared/diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -358,25 +360,125 @@ function postStepManifestWriteFailureResult(
   };
 }
 
-export async function exportScript(input: ExportInput): Promise<ExportCliResult> {
+type ExportTargetResolution =
+  | { ok: true; outPath: string; trustedManifestOutput: string | undefined }
+  | { ok: false; result: ExportCliResult };
+
+async function prepareExportTargets(input: ExportInput): Promise<ExportTargetResolution> {
   const manifestError = manifestOptionError(input);
-  if (manifestError !== undefined) return invalidManifestOptionsResult(manifestError);
+  if (manifestError !== undefined) return { ok: false, result: invalidManifestOptionsResult(manifestError) };
   const manifestPath = input.connectorManifest === undefined ? undefined : resolve(input.connectorManifest);
   const outPath = resolve(input.out);
   if (manifestPath !== undefined && await outputPathsAlias(outPath, manifestPath)) {
-    return invalidManifestOptionsResult('--connector-manifest must not overwrite the STEP output path.');
+    return { ok: false, result: invalidManifestOptionsResult('--connector-manifest must not overwrite the STEP output path.') };
   }
   let trustedManifestOutput = manifestPath;
   if (trustedManifestOutput !== undefined) {
     try {
       trustedManifestOutput = await trustedManifestPath(trustedManifestOutput);
     } catch (error) {
-      return invalidManifestOptionsResult(errorMessage(error));
+      return { ok: false, result: invalidManifestOptionsResult(errorMessage(error)) };
     }
     if (await outputPathEntryExists(trustedManifestOutput)) {
-      return invalidManifestOptionsResult('--connector-manifest must name an unused output path.');
+      return { ok: false, result: invalidManifestOptionsResult('--connector-manifest must name an unused output path.') };
     }
   }
+  return { ok: true, outPath, trustedManifestOutput };
+}
+
+function drawingOptionsFor(input: ExportInput) {
+  return input.format === 'svg-drawing' && (
+    input.explode !== undefined || input.explodeMode !== undefined || input.balloons === true || input.partsList === true
+  )
+    ? {
+        format: 'svg-drawing' as const,
+        ...(input.explode !== undefined || input.explodeMode !== undefined
+          ? { exploded: { factor: input.explode ?? 1, mode: (input.explodeMode as 'radial' | 'mate-axis' | undefined) } }
+          : {}),
+        ...(input.balloons === true ? { balloons: true } : {}),
+        ...(input.partsList === true ? { partsList: true } : {}),
+      }
+    : undefined;
+}
+
+function exportOptionsFor(
+  input: ExportInput,
+  drawingOptions: ReturnType<typeof drawingOptionsFor>,
+): { options?: ExportOptions } | Record<string, never> {
+  return input.options !== undefined || drawingOptions !== undefined
+    ? {
+        options: {
+          ...(input.options !== undefined
+            ? ((input.format === 'stl' && input.verify === false
+                ? { ...input.options, verify: false }
+                : input.options) as object)
+            : input.format === 'stl' && input.verify === false
+              ? { format: 'stl' as const, verify: false }
+              : {}),
+          ...(drawingOptions ?? {}),
+        } as unknown as ExportOptions,
+      }
+    : input.format === 'stl' && input.verify === false
+      ? { options: { format: 'stl' as const, verify: false } }
+      : {};
+}
+
+type ExportPublication =
+  | { ok: true; meshFiles: string[] }
+  | { ok: false; result: ExportCliResult };
+
+async function publishExportOutputs(
+  outPath: string,
+  trustedManifestOutput: string | undefined,
+  result: ExportResult,
+): Promise<ExportPublication> {
+  const meshFiles: string[] = [];
+  try {
+    await writeFile(outPath, result.bytes);
+    if (trustedManifestOutput !== undefined) {
+      if (await outputPathsAlias(outPath, trustedManifestOutput)) {
+        return { ok: false, result: postStepManifestAliasResult(result.bytes, result.diagnostics) };
+      }
+      if (result.connectorManifest === undefined) {
+        throw new Error('STEP export completed without the requested connector manifest.');
+      }
+      try {
+        await writeManifestSidecarAtomically(
+          trustedManifestOutput,
+          `${JSON.stringify(result.connectorManifest, null, 2)}\n`,
+        );
+      } catch (error) {
+        if (isExistingPathError(error)) {
+          return { ok: false, result: postStepManifestDestinationExistsResult(result.bytes, result.diagnostics) };
+        }
+        return { ok: false, result: postStepManifestWriteFailureResult(result.bytes, result.diagnostics, error) };
+      }
+    }
+    // Robot-description exports (URDF / SDF) reference per-link mesh files
+    // by relative path — write them next to the output file so the
+    // document is consumable as-is.
+    for (const m of result.meshes ?? []) {
+      const meshPath = join(dirname(outPath), m.relPath);
+      await mkdir(dirname(meshPath), { recursive: true });
+      await writeFile(meshPath, m.bytes);
+      meshFiles.push(meshPath);
+    }
+  } catch (e) {
+    return {
+      ok: false,
+      result: {
+        exitCode: 1, bytesWritten: 0,
+        diagnostics: withNextActions([...result.diagnostics, fileWriteDiagnostic(e)]),
+      },
+    };
+  }
+  return { ok: true, meshFiles };
+}
+
+export async function exportScript(input: ExportInput): Promise<ExportCliResult> {
+  const targets = await prepareExportTargets(input);
+  if (!targets.ok) return targets.result;
+  const { outPath, trustedManifestOutput } = targets;
   await initOcct();
   const read = await readScriptOrDiagnostic(input.file);
   if (!read.ok) {
@@ -385,18 +487,7 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
   const { filePath, code } = read;
   let result;
   try {
-    const drawingOptions = input.format === 'svg-drawing' && (
-      input.explode !== undefined || input.explodeMode !== undefined || input.balloons === true || input.partsList === true
-    )
-      ? {
-          format: 'svg-drawing' as const,
-          ...(input.explode !== undefined || input.explodeMode !== undefined
-            ? { exploded: { factor: input.explode ?? 1, mode: (input.explodeMode as 'radial' | 'mate-axis' | undefined) } }
-            : {}),
-          ...(input.balloons === true ? { balloons: true } : {}),
-          ...(input.partsList === true ? { partsList: true } : {}),
-        }
-      : undefined;
+    const drawingOptions = drawingOptionsFor(input);
     result = await runAndExport({
       code,
       fileName: filePath,
@@ -410,22 +501,7 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
               family: input.manifestFamily!,
             },
           }),
-      ...(input.options !== undefined || drawingOptions !== undefined
-        ? {
-            options: {
-              ...(input.options !== undefined
-                ? ((input.format === 'stl' && input.verify === false
-                    ? { ...input.options, verify: false }
-                    : input.options) as object)
-                : input.format === 'stl' && input.verify === false
-                  ? { format: 'stl' as const, verify: false }
-                  : {}),
-              ...(drawingOptions ?? {}),
-            } as unknown as ExportOptions,
-          }
-        : input.format === 'stl' && input.verify === false
-          ? { options: { format: 'stl' as const, verify: false } }
-          : {}),
+      ...exportOptionsFor(input, drawingOptions),
     });
   } catch (e) {
     const diag = kernelErrorToDiagnostic(e, 'cli.export-exception');
@@ -441,43 +517,9 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
   // Write-then-fail: a verify-gate failure (export.mesh.not-watertight)
   // still carries the mesh bytes, so the file is written for inspection
   // BEFORE the gate fails the command — same contract as part-mode.
-  const meshFiles: string[] = [];
-  try {
-    await writeFile(outPath, result.bytes);
-    if (trustedManifestOutput !== undefined) {
-      if (await outputPathsAlias(outPath, trustedManifestOutput)) {
-        return postStepManifestAliasResult(result.bytes, result.diagnostics);
-      }
-      if (result.connectorManifest === undefined) {
-        throw new Error('STEP export completed without the requested connector manifest.');
-      }
-      try {
-        await writeManifestSidecarAtomically(
-          trustedManifestOutput,
-          `${JSON.stringify(result.connectorManifest, null, 2)}\n`,
-        );
-      } catch (error) {
-        if (isExistingPathError(error)) {
-          return postStepManifestDestinationExistsResult(result.bytes, result.diagnostics);
-        }
-        return postStepManifestWriteFailureResult(result.bytes, result.diagnostics, error);
-      }
-    }
-    // Robot-description exports (URDF / SDF) reference per-link mesh files
-    // by relative path — write them next to the output file so the
-    // document is consumable as-is.
-    for (const m of result.meshes ?? []) {
-      const meshPath = join(dirname(outPath), m.relPath);
-      await mkdir(dirname(meshPath), { recursive: true });
-      await writeFile(meshPath, m.bytes);
-      meshFiles.push(meshPath);
-    }
-  } catch (e) {
-    return {
-      exitCode: 1, bytesWritten: 0,
-      diagnostics: withNextActions([...result.diagnostics, fileWriteDiagnostic(e)]),
-    };
-  }
+  const published = await publishExportOutputs(outPath, trustedManifestOutput, result);
+  if (!published.ok) return published.result;
+  const { meshFiles } = published;
   return {
     exitCode: fatal ? 1 : 0,
     bytesWritten: result.bytes.length,
@@ -510,6 +552,44 @@ export interface ExportPartsCliResult {
   exitCode: number;
   written: WrittenPart[];
   diagnostics: CompilerDiagnostic[];
+}
+
+function emptyPartsSelectionDiagnostic(input: ExportPartsCliInput): CompilerDiagnostic {
+  return {
+    target: 'export-occt', code: 'cli.invalid-args', severity: 'error',
+    message: input.parts !== undefined && input.parts.length === 0
+      ? 'No parts selected: the part selection is empty. Pass --part <name> (repeatable) or --parts all.'
+      : 'The script resolved to zero assembly parts; nothing to export.',
+    hint: 'Run `kernelcad parts <file>` to list the available part names.',
+  };
+}
+
+async function writeSelectedParts(
+  parts: readonly PartStlExport[],
+  singleFile: string | undefined,
+  input: ExportPartsCliInput,
+  diagnostics: CompilerDiagnostic[],
+): Promise<{ written: WrittenPart[]; failed: boolean }> {
+  const written: WrittenPart[] = [];
+  try {
+    let outDir: string | undefined;
+    if (singleFile === undefined) {
+      outDir = resolve(input.outDir ?? input.outFile ?? '.');
+      await mkdir(outDir, { recursive: true });
+    }
+    for (const p of parts) {
+      const path = singleFile ?? join(outDir!, `${p.fileSafeName}.stl`);
+      await writeFile(path, p.bytes);
+      written.push({ name: p.name, path, triangleCount: p.triangleCount, watertight: p.report.ok });
+      if (input.verify && !p.report.ok) {
+        diagnostics.push(stlNotWatertightDiagnostic(p.report, undefined, p.name));
+      }
+    }
+  } catch (e) {
+    diagnostics.push(fileWriteDiagnostic(e));
+    return { written, failed: true };
+  }
+  return { written, failed: false };
 }
 
 /**
@@ -548,13 +628,7 @@ export async function exportPartsScript(input: ExportPartsCliInput): Promise<Exp
     // self-explanatory instead of a bare exit 1.
     return {
       exitCode: 1, written: [],
-      diagnostics: withNextActions([...result.diagnostics, {
-        target: 'export-occt', code: 'cli.invalid-args', severity: 'error',
-        message: input.parts !== undefined && input.parts.length === 0
-          ? 'No parts selected: the part selection is empty. Pass --part <name> (repeatable) or --parts all.'
-          : 'The script resolved to zero assembly parts; nothing to export.',
-        hint: 'Run `kernelcad parts <file>` to list the available part names.',
-      }]),
+      diagnostics: withNextActions([...result.diagnostics, emptyPartsSelectionDiagnostic(input)]),
     };
   }
 
@@ -564,24 +638,9 @@ export async function exportPartsScript(input: ExportPartsCliInput): Promise<Exp
     ? resolve(input.outFile)
     : undefined;
 
-  const written: WrittenPart[] = [];
   const diagnostics: CompilerDiagnostic[] = [...result.diagnostics];
-  try {
-    let outDir: string | undefined;
-    if (singleFile === undefined) {
-      outDir = resolve(input.outDir ?? input.outFile ?? '.');
-      await mkdir(outDir, { recursive: true });
-    }
-    for (const p of result.parts) {
-      const path = singleFile ?? join(outDir!, `${p.fileSafeName}.stl`);
-      await writeFile(path, p.bytes);
-      written.push({ name: p.name, path, triangleCount: p.triangleCount, watertight: p.report.ok });
-      if (input.verify && !p.report.ok) {
-        diagnostics.push(stlNotWatertightDiagnostic(p.report, undefined, p.name));
-      }
-    }
-  } catch (e) {
-    diagnostics.push(fileWriteDiagnostic(e));
+  const { written, failed } = await writeSelectedParts(result.parts, singleFile, input, diagnostics);
+  if (failed) {
     return { exitCode: 1, written, diagnostics: withNextActions(diagnostics) };
   }
   const gateFailed = input.verify && written.some(w => !w.watertight);
@@ -596,6 +655,93 @@ const SUPPORTED_FORMATS = new Set<ExportFormat>([
   'stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'gcode', 'usd-isaac',
   'bom-csv', 'bom-json',
 ]);
+
+interface ExportCommandOpts {
+  out: string; json?: boolean; part?: string[]; parts?: string; verify?: boolean;
+  connectorManifest?: string; manifestPartId?: string; manifestFamily?: string;
+  explode?: number; explodeMode?: string; balloons?: boolean; partsList?: boolean;
+  options?: string;
+}
+
+/** `--part` / `--parts all` branch: per-part STL export and its report. */
+async function runPartMode(
+  format: string,
+  file: string,
+  opts: ExportCommandOpts,
+): Promise<void> {
+  if (format !== 'stl') {
+    console.error('--part/--parts are only supported for stl exports.');
+    process.exitCode = 2; return;
+  }
+  if (opts.parts !== undefined && opts.parts !== 'all') {
+    console.error("--parts only accepts 'all'. Use repeated --part <name> for a subset.");
+    process.exitCode = 2; return;
+  }
+  const r = await exportPartsScript({
+    file,
+    ...(opts.parts === 'all' ? {} : { parts: opts.part }),
+    ...(opts.parts === 'all' ? { outDir: opts.out } : { outFile: opts.out }),
+    verify: opts.verify !== false,
+  });
+  if (opts.json) {
+    console.log(JSON.stringify({
+      ok: r.exitCode === 0,
+      parts: r.written,
+      diagnostics: r.diagnostics,
+    }, null, 2));
+  } else {
+    if (r.diagnostics.length > 0) console.log(formatHuman(r.diagnostics));
+    for (const w of r.written) {
+      const gate = w.watertight ? 'watertight' : 'NOT watertight';
+      console.log(`wrote ${w.name} -> ${w.path} (${w.triangleCount} tris, ${gate})`);
+    }
+  }
+  process.exitCode = r.exitCode;
+}
+
+/** Default branch: whole-script export and its report. */
+async function runExportMode(
+  format: string,
+  file: string,
+  opts: ExportCommandOpts,
+  options: Record<string, unknown> | undefined,
+): Promise<void> {
+  const r = await exportScript({
+    file, format: format as ExportFormat, out: opts.out,
+    ...(options === undefined ? {} : { options }),
+    ...(opts.connectorManifest === undefined
+      ? {}
+      : {
+          connectorManifest: opts.connectorManifest,
+          manifestPartId: opts.manifestPartId,
+          manifestFamily: opts.manifestFamily,
+        }),
+    ...(opts.verify === false ? { verify: false } : {}),
+    explode: opts.explode,
+    explodeMode: opts.explodeMode,
+    balloons: opts.balloons,
+    partsList: opts.partsList,
+  });
+  if (opts.json) {
+    console.log(JSON.stringify({
+      ok: r.exitCode === 0,
+      bytesWritten: r.bytesWritten,
+      out: opts.out,
+      ...(r.meshFiles !== undefined ? { meshFiles: r.meshFiles } : {}),
+      ...(r.drawingReport !== undefined ? { drawingReport: r.drawingReport } : {}),
+      diagnostics: r.diagnostics,
+    }, null, 2));
+  } else {
+    if (r.diagnostics.length > 0) console.log(formatHuman(r.diagnostics));
+    if (r.exitCode === 0) console.log(`Wrote ${r.bytesWritten} bytes to ${opts.out}`);
+    if (r.drawingReport !== undefined) {
+      const kinds = Object.entries(r.drawingReport.byKind).map(([k, n]) => `${k} ${n}`).join(', ');
+      console.log(`drawing: ${r.drawingReport.placed} annotation(s) placed, ${r.drawingReport.overlapped} overlapped (${kinds})`);
+    }
+    for (const m of r.meshFiles ?? []) console.log(`wrote mesh ${m}`);
+  }
+  process.exitCode = r.exitCode;
+}
 
 export function exportCommand(): Command {
   const cmd = new Command('export')
@@ -615,12 +761,7 @@ export function exportCommand(): Command {
     .option('--parts-list', 'svg-drawing: parts-list table (item, name, qty, material) above the title block', false)
     .option('--options <json>', 'per-format options as a JSON object, e.g. \'{"autoAnnotate":true}\' for svg-drawing')
     .option('--json', 'emit diagnostics as JSON')
-    .action(async (format: string, file: string, opts: {
-      out: string; json?: boolean; part?: string[]; parts?: string; verify?: boolean;
-      connectorManifest?: string; manifestPartId?: string; manifestFamily?: string;
-      explode?: number; explodeMode?: string; balloons?: boolean; partsList?: boolean;
-      options?: string;
-    }) => {
+    .action(async (format: string, file: string, opts: ExportCommandOpts) => {
       if (!SUPPORTED_FORMATS.has(format as ExportFormat)) {
         console.error(`Unsupported format: ${format}. Use one of ${[...SUPPORTED_FORMATS].join(', ')}.`);
         process.exitCode = 2; return;
@@ -637,76 +778,14 @@ export function exportCommand(): Command {
       }
       const partMode = (opts.part?.length ?? 0) > 0 || opts.parts !== undefined;
       if (partMode) {
-        if (format !== 'stl') {
-          console.error('--part/--parts are only supported for stl exports.');
-          process.exitCode = 2; return;
-        }
-        if (opts.parts !== undefined && opts.parts !== 'all') {
-          console.error("--parts only accepts 'all'. Use repeated --part <name> for a subset.");
-          process.exitCode = 2; return;
-        }
-        const r = await exportPartsScript({
-          file,
-          ...(opts.parts === 'all' ? {} : { parts: opts.part }),
-          ...(opts.parts === 'all' ? { outDir: opts.out } : { outFile: opts.out }),
-          verify: opts.verify !== false,
-        });
-        if (opts.json) {
-          console.log(JSON.stringify({
-            ok: r.exitCode === 0,
-            parts: r.written,
-            diagnostics: r.diagnostics,
-          }, null, 2));
-        } else {
-          if (r.diagnostics.length > 0) console.log(formatHuman(r.diagnostics));
-          for (const w of r.written) {
-            const gate = w.watertight ? 'watertight' : 'NOT watertight';
-            console.log(`wrote ${w.name} -> ${w.path} (${w.triangleCount} tris, ${gate})`);
-          }
-        }
-        process.exitCode = r.exitCode;
-        return;
+        return runPartMode(format, file, opts);
       }
       const parsedOptions = parseExportOptionsFlag(opts.options, format);
       if (!parsedOptions.ok) {
         console.error(parsedOptions.error);
         process.exitCode = 2; return;
       }
-      const r = await exportScript({
-        file, format: format as ExportFormat, out: opts.out,
-        ...(parsedOptions.options === undefined ? {} : { options: parsedOptions.options }),
-        ...(opts.connectorManifest === undefined
-          ? {}
-          : {
-              connectorManifest: opts.connectorManifest,
-              manifestPartId: opts.manifestPartId,
-              manifestFamily: opts.manifestFamily,
-            }),
-        ...(opts.verify === false ? { verify: false } : {}),
-        explode: opts.explode,
-        explodeMode: opts.explodeMode,
-        balloons: opts.balloons,
-        partsList: opts.partsList,
-      });
-      if (opts.json) {
-        console.log(JSON.stringify({
-          ok: r.exitCode === 0,
-          bytesWritten: r.bytesWritten,
-          out: opts.out,
-          ...(r.meshFiles !== undefined ? { meshFiles: r.meshFiles } : {}),
-          ...(r.drawingReport !== undefined ? { drawingReport: r.drawingReport } : {}),
-          diagnostics: r.diagnostics,
-        }, null, 2));
-      } else {
-        if (r.diagnostics.length > 0) console.log(formatHuman(r.diagnostics));
-        if (r.exitCode === 0) console.log(`Wrote ${r.bytesWritten} bytes to ${opts.out}`);
-        if (r.drawingReport !== undefined) {
-          const kinds = Object.entries(r.drawingReport.byKind).map(([k, n]) => `${k} ${n}`).join(', ');
-          console.log(`drawing: ${r.drawingReport.placed} annotation(s) placed, ${r.drawingReport.overlapped} overlapped (${kinds})`);
-        }
-        for (const m of r.meshFiles ?? []) console.log(`wrote mesh ${m}`);
-      }
-      process.exitCode = r.exitCode;
+      return runExportMode(format, file, opts, parsedOptions.options);
     });
   return cmd;
 }

@@ -51,6 +51,11 @@ const BARY_EPS = 1e-9;
 const PARITY_T_EPS = 1e-9;
 const LEAF_SIZE = 8;
 
+/** Widest centroid axis: 0 = x, 1 = y, 2 = z (ties prefer the lower axis). */
+function splitAxis(ex: number, ey: number, ez: number): number {
+  return ex >= ey ? (ex >= ez ? 0 : 2) : ey >= ez ? 1 : 2;
+}
+
 export class TriangleBvh {
   /** Number of non-degenerate triangles indexed by the BVH. */
   readonly triangleCount: number;
@@ -151,12 +156,13 @@ export class TriangleBvh {
     }
   }
 
-  /** Allocate and fill the subtree over triOrder[lo, hi). Returns the node
-   *  index. Recursive at build time only (depth ~ log2(n / leafSize)). */
-  private buildNode(lo: number, hi: number, centroids: Float64Array): number {
-    const node = this.nodeCount++;
-    const b = this.bounds;
-    const bo = node * 6;
+  /** Vertex bounds and centroid bounds over triOrder[lo, hi). */
+  private computeNodeBounds(lo: number, hi: number, centroids: Float64Array): {
+    minX: number; minY: number; minZ: number;
+    maxX: number; maxY: number; maxZ: number;
+    cMinX: number; cMinY: number; cMinZ: number;
+    cMaxX: number; cMaxY: number; cMaxZ: number;
+  } {
     // Node bounds from triangle vertices in range.
     let minX = Infinity, minY = Infinity, minZ = Infinity;
     let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
@@ -177,11 +183,21 @@ export class TriangleBvh {
       if (cy < cMinY) cMinY = cy; if (cy > cMaxY) cMaxY = cy;
       if (cz < cMinZ) cMinZ = cz; if (cz > cMaxZ) cMaxZ = cz;
     }
-    b[bo] = minX; b[bo + 1] = minY; b[bo + 2] = minZ;
-    b[bo + 3] = maxX; b[bo + 4] = maxY; b[bo + 5] = maxZ;
+    return { minX, minY, minZ, maxX, maxY, maxZ, cMinX, cMinY, cMinZ, cMaxX, cMaxY, cMaxZ };
+  }
+
+  /** Allocate and fill the subtree over triOrder[lo, hi). Returns the node
+   *  index. Recursive at build time only (depth ~ log2(n / leafSize)). */
+  private buildNode(lo: number, hi: number, centroids: Float64Array): number {
+    const node = this.nodeCount++;
+    const b = this.bounds;
+    const bo = node * 6;
+    const bounds = this.computeNodeBounds(lo, hi, centroids);
+    b[bo] = bounds.minX; b[bo + 1] = bounds.minY; b[bo + 2] = bounds.minZ;
+    b[bo + 3] = bounds.maxX; b[bo + 4] = bounds.maxY; b[bo + 5] = bounds.maxZ;
 
     const n = hi - lo;
-    const ex = cMaxX - cMinX, ey = cMaxY - cMinY, ez = cMaxZ - cMinZ;
+    const ex = bounds.cMaxX - bounds.cMinX, ey = bounds.cMaxY - bounds.cMinY, ez = bounds.cMaxZ - bounds.cMinZ;
     if (n <= LEAF_SIZE || (ex <= 0 && ey <= 0 && ez <= 0)) {
       // Leaf — also when all centroids coincide (split would not progress).
       this.start[node] = lo;
@@ -189,7 +205,7 @@ export class TriangleBvh {
       return node;
     }
 
-    const axis = ex >= ey ? (ex >= ez ? 0 : 2) : ey >= ez ? 1 : 2;
+    const axis = splitAxis(ex, ey, ez);
     const mid = lo + (n >> 1);
     this.selectNth(lo, hi, mid, axis, centroids);
 

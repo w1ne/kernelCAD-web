@@ -9,7 +9,7 @@
 //
 // This module does NOT own any numbers or names. The vocabulary, its aliases,
 // the density source and the default finish all live in the single registry
-// `src/kinematic/engineeringMaterials.ts`, which FEA and the beam check also
+// `src/shared/materials/engineeringMaterials.ts`, which FEA and the beam check also
 // resolve through — so `mild-steel` weighs, renders, solves and appears in a
 // BOM under one name.
 //
@@ -36,7 +36,7 @@ import {
   defaultFinish,
   engineeringMaterialProps,
   type EngineeringMaterialName,
-} from '../../kinematic/engineeringMaterials';
+} from '../../shared/materials/engineeringMaterials';
 
 /** A canonical material name — exactly the engineering grades. */
 export type MaterialName = EngineeringMaterialName;

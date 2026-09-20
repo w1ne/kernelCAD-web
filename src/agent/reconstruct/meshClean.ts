@@ -58,13 +58,7 @@ export interface CleanOptions {
   weldToleranceMm?: number;
 }
 
-export function cleanMesh(soup: TriangleSoup, opts: CleanOptions = {}): { mesh: IndexedMesh; report: MeshReport } {
-  const src = soup.positions;
-  const inputTriangles = Math.floor(src.length / 9);
-  const rawBox = boundsOf(src);
-  const diag = Math.hypot(rawBox.max[0] - rawBox.min[0], rawBox.max[1] - rawBox.min[1], rawBox.max[2] - rawBox.min[2]);
-  const tol = opts.weldToleranceMm ?? Math.max(1e-4, 1e-6 * diag);
-
+function weldVertices(src: ArrayLike<number>, inputTriangles: number, tol: number): { verts: number[]; remap: Uint32Array } {
   // --- weld (spatial hash with 27-cell neighbourhood) -----------------------
   const cells = new Map<number, number[]>();
   // Hashed cell key; a collision only adds candidates, which the distance
@@ -102,7 +96,15 @@ export function cleanMesh(soup: TriangleSoup, opts: CleanOptions = {}): { mesh: 
     }
     remap[c] = found;
   }
+  return { verts, remap };
+}
 
+function dropDegenerateAndDuplicate(
+  verts: number[],
+  remap: Uint32Array,
+  inputTriangles: number,
+  tol: number,
+): { kept: number[]; droppedDegenerate: number; droppedDuplicate: number } {
   // --- drop degenerate + duplicate triangles --------------------------------
   let droppedDegenerate = 0;
   let droppedDuplicate = 0;
@@ -123,10 +125,17 @@ export function cleanMesh(soup: TriangleSoup, opts: CleanOptions = {}): { mesh: 
     seen.add(key);
     kept.push(a, b, c);
   }
+  return { kept, droppedDegenerate, droppedDuplicate };
+}
 
+function buildShells(
+  kept: number[],
+  verts: number[],
+  triCount0: number,
+): { find: (x: number) => number; shellArea: Map<number, number>; bestShell: number } {
   // --- shells: union-find over shared edges --------------------------------
-  const triCount0 = kept.length / 3;
   const parent = new Int32Array(triCount0).map((_, i) => i);
+  const vCount = verts.length / 3;
   const find = (x: number): number => {
     while (parent[x] !== x) {
       parent[x] = parent[parent[x]];
@@ -135,7 +144,6 @@ export function cleanMesh(soup: TriangleSoup, opts: CleanOptions = {}): { mesh: 
     return x;
   };
   const edgeOwner = new Map<number, number>();
-  const vCount = verts.length / 3;
   for (let t = 0; t < triCount0; t++) {
     for (let k = 0; k < 3; k++) {
       const u = kept[t * 3 + k], v = kept[t * 3 + ((k + 1) % 3)];
@@ -161,8 +169,18 @@ export function cleanMesh(soup: TriangleSoup, opts: CleanOptions = {}): { mesh: 
       bestShell = r;
     }
   }
+  return { find, shellArea, bestShell };
+}
 
+function compactToShell(
+  kept: number[],
+  verts: number[],
+  triCount0: number,
+  find: (x: number) => number,
+  bestShell: number,
+): { positions: Float64Array; triangles: Uint32Array; triCount: number } {
   // --- compact to the kept shell -------------------------------------------
+  const vCount = verts.length / 3;
   const vMap = new Int32Array(vCount).fill(-1);
   const outVerts: number[] = [];
   const outTris: number[] = [];
@@ -180,7 +198,10 @@ export function cleanMesh(soup: TriangleSoup, opts: CleanOptions = {}): { mesh: 
   const positions = Float64Array.from(outVerts);
   const triangles = Uint32Array.from(outTris);
   const triCount = triangles.length / 3;
+  return { positions, triangles, triCount };
+}
 
+function orientByVolume(positions: Float64Array, triangles: Uint32Array, triCount: number): { volume6: number; orientationFlipped: boolean } {
   // --- orientation by enclosed volume ---------------------------------------
   let volume6 = 0;
   for (let t = 0; t < triCount; t++) {
@@ -198,8 +219,15 @@ export function cleanMesh(soup: TriangleSoup, opts: CleanOptions = {}): { mesh: 
       triangles[t * 3 + 2] = tmp;
     }
   }
+  return { volume6, orientationFlipped };
+}
 
-  // --- normals, areas, adjacency, edge report --------------------------------
+function computeNormalsAndAreas(
+  positions: Float64Array,
+  triangles: Uint32Array,
+  triCount: number,
+): { normals: Float64Array; areas: Float64Array; surfaceArea: number } {
+  // --- normals, areas --------------------------------------------------------
   const normals = new Float64Array(triCount * 3);
   const areas = new Float64Array(triCount);
   let surfaceArea = 0;
@@ -217,7 +245,23 @@ export function cleanMesh(soup: TriangleSoup, opts: CleanOptions = {}): { mesh: 
       normals[t * 3 + 2] = nz / len;
     }
   }
-  const outVCount = positions.length / 3;
+  return { normals, areas, surfaceArea };
+}
+
+function buildAdjacencyAndReport(
+  positions: Float64Array,
+  triangles: Uint32Array,
+  triCount: number,
+  outVCount: number,
+): {
+  neighbors: Int32Array;
+  openEdges: number;
+  nonManifoldEdges: number;
+  inconsistentEdges: number;
+  watertight: boolean;
+  crackClusters: CrackCluster[];
+} {
+  // --- adjacency, edge report -------------------------------------------------
   const edgeUses = new Map<number, number[]>();
   for (let t = 0; t < triCount; t++) {
     for (let k = 0; k < 3; k++) {
@@ -253,6 +297,26 @@ export function cleanMesh(soup: TriangleSoup, opts: CleanOptions = {}): { mesh: 
   const crackClusters = watertight
     ? []
     : verifyWatertight({ vertices: Float32Array.from(positions), triangles }).clusters;
+  return { neighbors, openEdges, nonManifoldEdges, inconsistentEdges, watertight, crackClusters };
+}
+
+export function cleanMesh(soup: TriangleSoup, opts: CleanOptions = {}): { mesh: IndexedMesh; report: MeshReport } {
+  const src = soup.positions;
+  const inputTriangles = Math.floor(src.length / 9);
+  const rawBox = boundsOf(src);
+  const diag = Math.hypot(rawBox.max[0] - rawBox.min[0], rawBox.max[1] - rawBox.min[1], rawBox.max[2] - rawBox.min[2]);
+  const tol = opts.weldToleranceMm ?? Math.max(1e-4, 1e-6 * diag);
+
+  const { verts, remap } = weldVertices(src, inputTriangles, tol);
+  const { kept, droppedDegenerate, droppedDuplicate } = dropDegenerateAndDuplicate(verts, remap, inputTriangles, tol);
+  const triCount0 = kept.length / 3;
+  const { find, shellArea, bestShell } = buildShells(kept, verts, triCount0);
+  const { positions, triangles, triCount } = compactToShell(kept, verts, triCount0, find, bestShell);
+  const { volume6, orientationFlipped } = orientByVolume(positions, triangles, triCount);
+  const { normals, areas, surfaceArea } = computeNormalsAndAreas(positions, triangles, triCount);
+  const outVCount = positions.length / 3;
+  const { neighbors, openEdges, nonManifoldEdges, inconsistentEdges, watertight, crackClusters } =
+    buildAdjacencyAndReport(positions, triangles, triCount, outVCount);
 
   const bbox = boundsOf(positions, 3);
   return {

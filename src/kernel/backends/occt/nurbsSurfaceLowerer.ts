@@ -123,36 +123,20 @@ export function buildNurbsFace(opts: NurbsSurfaceInputs): replicad.Face {
 
   // 1-indexed (1..nU, 1..nV) per OCCT convention.
   const poles = new oc.TColgp_Array2OfPnt_2(1, nU, 1, nV);
-  for (let i = 0; i < nU; i++) {
-    if (opts.controls[i].length !== nV) {
-      throw new Error(
-        `buildNurbsFace: control grid is jagged: row ${i} has ${opts.controls[i].length} cols, expected ${nV}`,
-      );
-    }
-    for (let j = 0; j < nV; j++) {
-      const [x, y, z] = opts.controls[i][j];
-      poles.SetValue(i + 1, j + 1, new oc.gp_Pnt_3(x, y, z));
-    }
-  }
+  fillPoleGrid(poles, oc.gp_Pnt_3, opts.controls, nU, nV);
 
-  const decomposed = (
-    raw: number[] | undefined,
-    n: number,
-    d: number,
-  ): { knots: number[]; mults: number[] } =>
-    raw ? decomposeKnots(raw) : clampedUniformKnots(n, d);
-  const uK = decomposed(opts.knots?.u, nU, du);
-  const vK = decomposed(opts.knots?.v, nV, dv);
+  const uK = resolveKnots(opts.knots?.u, nU, du);
+  const vK = resolveKnots(opts.knots?.v, nV, dv);
 
   const uKnotsArr = new oc.TColStd_Array1OfReal_2(1, uK.knots.length);
-  for (let i = 0; i < uK.knots.length; i++) uKnotsArr.SetValue(i + 1, uK.knots[i]);
+  fillNumericArray(uKnotsArr, uK.knots);
   const vKnotsArr = new oc.TColStd_Array1OfReal_2(1, vK.knots.length);
-  for (let i = 0; i < vK.knots.length; i++) vKnotsArr.SetValue(i + 1, vK.knots[i]);
+  fillNumericArray(vKnotsArr, vK.knots);
 
   const uMultsArr = new oc.TColStd_Array1OfInteger_2(1, uK.mults.length);
-  for (let i = 0; i < uK.mults.length; i++) uMultsArr.SetValue(i + 1, uK.mults[i]);
+  fillNumericArray(uMultsArr, uK.mults);
   const vMultsArr = new oc.TColStd_Array1OfInteger_2(1, vK.mults.length);
-  for (let i = 0; i < vK.mults.length; i++) vMultsArr.SetValue(i + 1, vK.mults[i]);
+  fillNumericArray(vMultsArr, vK.mults);
 
   const uPeriodic = opts.periodic?.u ?? false;
   const vPeriodic = opts.periodic?.v ?? false;
@@ -163,17 +147,7 @@ export function buildNurbsFace(opts: NurbsSurfaceInputs): replicad.Face {
     // kcad-v0.23.2+ exposes TColStd_Array2OfReal_2(lowerRow, upperRow,
     // lowerCol, upperCol)). 1-indexed SetValue mirrors the poles array.
     const weightsArr = new oc.TColStd_Array2OfReal_2(1, nU, 1, nV);
-    for (let i = 0; i < nU; i++) {
-      if (opts.weights[i].length !== nV) {
-        throw new Error(
-          `buildNurbsFace: weights grid is jagged: row ${i} has ` +
-          `${opts.weights[i].length} cols, expected ${nV}`,
-        );
-      }
-      for (let j = 0; j < nV; j++) {
-        weightsArr.SetValue(i + 1, j + 1, opts.weights[i][j]);
-      }
-    }
+    fillWeightGrid(weightsArr, opts.weights, nU, nV);
     surf = new oc.Geom_BSplineSurface_2(
       poles, weightsArr, uKnotsArr, vKnotsArr, uMultsArr, vMultsArr,
       du, dv, uPeriodic, vPeriodic,
@@ -195,6 +169,67 @@ export function buildNurbsFace(opts: NurbsSurfaceInputs): replicad.Face {
   const topoFace = mkFace.Face();
   // Replicad's Face constructor takes a TopoDS_Face directly.
   return new replicad.Face(topoFace);
+}
+
+type OcPointConstructor = new (x: number, y: number, z: number) => unknown;
+
+interface OcGridArray {
+  SetValue(row: number, col: number, value: unknown): void;
+}
+
+interface OcNumericArray1 {
+  SetValue(index: number, value: number): void;
+}
+
+function resolveKnots(
+  raw: number[] | undefined,
+  n: number,
+  d: number,
+): { knots: number[]; mults: number[] } {
+  return raw ? decomposeKnots(raw) : clampedUniformKnots(n, d);
+}
+
+function fillPoleGrid(
+  poles: OcGridArray,
+  Pnt: OcPointConstructor,
+  controls: Vec3[][],
+  nU: number,
+  nV: number,
+): void {
+  for (let i = 0; i < nU; i++) {
+    if (controls[i].length !== nV) {
+      throw new Error(
+        `buildNurbsFace: control grid is jagged: row ${i} has ${controls[i].length} cols, expected ${nV}`,
+      );
+    }
+    for (let j = 0; j < nV; j++) {
+      const [x, y, z] = controls[i][j];
+      poles.SetValue(i + 1, j + 1, new Pnt(x, y, z));
+    }
+  }
+}
+
+function fillWeightGrid(
+  weightsArr: OcGridArray,
+  weights: number[][],
+  nU: number,
+  nV: number,
+): void {
+  for (let i = 0; i < nU; i++) {
+    if (weights[i].length !== nV) {
+      throw new Error(
+        `buildNurbsFace: weights grid is jagged: row ${i} has ` +
+        `${weights[i].length} cols, expected ${nV}`,
+      );
+    }
+    for (let j = 0; j < nV; j++) {
+      weightsArr.SetValue(i + 1, j + 1, weights[i][j]);
+    }
+  }
+}
+
+function fillNumericArray(array: OcNumericArray1, values: number[]): void {
+  for (let i = 0; i < values.length; i++) array.SetValue(i + 1, values[i]);
 }
 
 /**

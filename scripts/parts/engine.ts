@@ -31,7 +31,7 @@ import type {
   MirrorStore,
 } from './contracts';
 import type { PartRecord } from '../../src/shared/parts/types';
-import type { StepInspectReport } from '../../src/agent/inspect/inspectStep';
+import type { StepInspectReport } from '../../src/kernel/import/inspectStep';
 import type { AutoConnector } from '../../src/modeling/parts/holeAutoConnectors';
 import { guessCategory } from '../../src/shared/parts/taxonomy';
 import { ingestStepParts } from './stepPartsIngest';

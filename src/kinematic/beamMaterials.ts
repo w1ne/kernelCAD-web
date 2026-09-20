@@ -25,8 +25,8 @@
 // without a corresponding material entry.
 
 import type { MaterialDeclarationEntry } from './types';
-import { MATERIAL_CATALOG, CATALOG_KINDS, type CatalogKind, type MaterialProps } from './materialCatalog';
-import { canonicalMaterialName, engineeringMaterialProps } from './engineeringMaterials';
+import { MATERIAL_CATALOG, CATALOG_KINDS, type CatalogKind, type MaterialProps } from '../shared/materials/materialCatalog';
+import { canonicalMaterialName, engineeringMaterialProps } from '../shared/materials/engineeringMaterials';
 
 // The property rows live in the leaf `materialCatalog.ts`; re-exported here so
 // existing `beamMaterials` importers keep working.

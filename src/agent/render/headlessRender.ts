@@ -304,16 +304,12 @@ export async function loadFeatureMeshesIntoPage(
   );
 }
 
-export async function headlessRender(opts: HeadlessRenderOpts): Promise<HeadlessRenderResult> {
-  const baseUrl = opts.baseUrl ?? DEFAULT_RENDER_BASE_URL;
-  const views = opts.views ?? ALL_VIEWS;
-  const inspectionChannels = opts.inspectionChannels ?? ['rgb'];
-  const captureRgb = inspectionChannels.includes('rgb');
-  const captureMask = inspectionChannels.includes('mask');
-  const auxInspectionChannels = inspectionChannels.filter(
-    (channel): channel is HeadlessAuxInspectionChannel => channel === 'depth' || channel === 'normals',
-  );
-
+/** Node-side meshing: load the script, resolve explode offsets when asked,
+ *  mesh per feature and serialize for the browser bridge. */
+async function meshForHeadlessRender(opts: HeadlessRenderOpts): Promise<{
+  meshing: Awaited<ReturnType<typeof meshFeaturesPerFeature>>;
+  serialized: FeatureMeshSerialized[];
+}> {
   // 1. Mesh on Node side — same path captureDemo uses. The CaptureSession's
   // `assemblies` map (live `Assembly` handles by name) is consumed inside
   // `meshFeaturesPerFeature` to synthesise tendon FeatureMeshes for each
@@ -347,27 +343,36 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
     );
   }
   const serialized = meshing.features.map(serializeForBridge);
+  return { meshing, serialized };
+}
 
+/** Launch the demo-player page, load meshes into it and apply the capture
+ *  options (watermark, section, visibility, reference images, environment). */
+async function openRenderPage(
+  opts: HeadlessRenderOpts,
+  baseUrl: string,
+  serialized: readonly FeatureMeshSerialized[],
+  meshing: Awaited<ReturnType<typeof meshFeaturesPerFeature>>,
+): Promise<{ pageHandle: DemoPlayerPageHandle; objectVisibility: HeadlessObjectVisibility | undefined }> {
   // 2. Launch headless chromium via the shared demo-player bootstrap.
   //    Build query string: headless=1 always (added by the helper),
   //    nowatermark=1 when requested.
-  let pageHandle: DemoPlayerPageHandle | undefined;
+  const extraQueryParts: string[] = [];
+  if (opts.noWatermark) extraQueryParts.push('nowatermark=1');
+  if (opts.section) {
+    extraQueryParts.push(`section=${opts.section.axis}:${opts.section.positionRaw}`);
+    if (opts.section.flip) extraQueryParts.push('sectionflip=1');
+  }
+  const pageHandle = await openDemoPlayerPage({
+    baseUrl,
+    // DemoPlayer's headless ViewerPane is currently fixed at 1920×1080.
+    // Capturing a smaller viewport clips the top-left of that canvas and
+    // produces false visual-review evidence. Capture the full pane, then
+    // resize/pad to the requested tile dimensions below.
+    viewport: HEADLESS_VIEWPORT,
+    extraQueryParts,
+  });
   try {
-    const extraQueryParts: string[] = [];
-    if (opts.noWatermark) extraQueryParts.push('nowatermark=1');
-    if (opts.section) {
-      extraQueryParts.push(`section=${opts.section.axis}:${opts.section.positionRaw}`);
-      if (opts.section.flip) extraQueryParts.push('sectionflip=1');
-    }
-    pageHandle = await openDemoPlayerPage({
-      baseUrl,
-      // DemoPlayer's headless ViewerPane is currently fixed at 1920×1080.
-      // Capturing a smaller viewport clips the top-left of that canvas and
-      // produces false visual-review evidence. Capture the full pane, then
-      // resize/pad to the requested tile dimensions below.
-      viewport: HEADLESS_VIEWPORT,
-      extraQueryParts,
-    });
     const page = pageHandle.page;
 
     // 3. Load meshes + skip the fade-in animation.
@@ -428,77 +433,132 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
       })()
     `);
 
-    // 4. Per-view: snap camera, screenshot, collect.
-    const pngsByView: Partial<Record<RenderView, Buffer>> = {};
-    const maskPngsByView: Partial<Record<RenderView, Buffer>> = {};
-    const inspectionPngsByChannel: Partial<Record<HeadlessAuxInspectionChannel, Partial<Record<RenderView, Buffer>>>> = {};
-    const inspectionChannelMetadata: HeadlessInspectionCapture['metadata'] = {};
-    let maskObjects: HeadlessMaskObject[] | undefined;
-    const outputAspect = opts.viewportWidth / opts.viewportHeight;
-    for (const view of views) {
-      await page.evaluate(
-        ({ v, a }) => window.__demoPlayer!.setRenderView(v, a),
-        { v: view, a: outputAspect },
-      );
-      if (captureRgb) {
-        const buf = await normalizeTile(await page.screenshot({ type: 'png' }), opts);
-        pngsByView[view] = buf;
-      }
-      if (captureMask) {
-        const mask = await page.evaluate(() => window.__demoPlayer!.captureMaskPng());
-        const maskBuffer = Buffer.from(mask.pngDataUrl.replace(/^data:image\/png;base64,/, ''), 'base64');
-        maskPngsByView[view] = await normalizeInspectionTile(maskBuffer, opts, 'mask');
-        if (maskObjects === undefined) maskObjects = mask.objects;
-      }
-      if (auxInspectionChannels.length > 0) {
-        const capture = await page.evaluate(
-          ({ channels, width, height }) => window.__demoPlayer!.captureInspectionChannels({ channels, width, height }),
-          {
-            channels: auxInspectionChannels,
-            width: HEADLESS_VIEWPORT.width,
-            height: HEADLESS_VIEWPORT.height,
-          },
-        );
-        if (capture.metadata.depth !== undefined) inspectionChannelMetadata.depth = capture.metadata.depth;
-        if (capture.metadata.normals !== undefined) inspectionChannelMetadata.normals = capture.metadata.normals;
-        for (const channel of auxInspectionChannels) {
-          const channelCapture = capture.channels[channel];
-          if (!channelCapture) continue;
-          const rawBuffer = Buffer.from(channelCapture.pngDataUrl.replace(/^data:image\/png;base64,/, ''), 'base64');
-          inspectionPngsByChannel[channel] ??= {};
-          inspectionPngsByChannel[channel]![view] = await normalizeInspectionTile(rawBuffer, opts, channel);
-        }
-      }
-    }
+    return { pageHandle, objectVisibility };
+  } catch (e) {
+    await pageHandle.close();
+    throw e;
+  }
+}
 
-    // 5. Per-pose: parse "<az>,<el>", set camera, screenshot, collect.
-    const pngsByPose: Record<string, Buffer> = {};
-    if (opts.poses) {
-      for (const poseKey of opts.poses) {
-        const [azStr, elStr] = poseKey.split(',').map((s) => s.trim());
-        const az = Number(azStr);
-        const el = Number(elStr);
-        if (!Number.isFinite(az) || !Number.isFinite(el)) {
-          throw new Error(`headlessRender: invalid --pose value '${poseKey}' (expected '<az>,<el>')`);
-        }
-        await page.evaluate(
-          ({ a, e, asp }) => window.__demoPlayer!.setRenderPose(a, e, asp),
-          { a: az, e: el, asp: outputAspect },
-        );
-        const buf = await normalizeTile(await page.screenshot({ type: 'png' }), opts);
-        pngsByPose[poseKey] = buf;
+/** Per-view capture: snap the camera, screenshot RGB / mask / aux inspection
+ *  channels and collect the per-view buffers. */
+async function captureViews(
+  page: Page,
+  opts: HeadlessRenderOpts,
+  views: readonly RenderView[],
+  outputAspect: number,
+  captureRgb: boolean,
+  captureMask: boolean,
+  auxInspectionChannels: readonly HeadlessAuxInspectionChannel[],
+): Promise<{
+  pngsByView: Partial<Record<RenderView, Buffer>>;
+  maskPngsByView: Partial<Record<RenderView, Buffer>>;
+  maskObjects: HeadlessMaskObject[] | undefined;
+  inspectionPngsByChannel: Partial<Record<HeadlessAuxInspectionChannel, Partial<Record<RenderView, Buffer>>>>;
+  inspectionChannelMetadata: HeadlessInspectionCapture['metadata'];
+}> {
+  // 4. Per-view: snap camera, screenshot, collect.
+  const pngsByView: Partial<Record<RenderView, Buffer>> = {};
+  const maskPngsByView: Partial<Record<RenderView, Buffer>> = {};
+  const inspectionPngsByChannel: Partial<Record<HeadlessAuxInspectionChannel, Partial<Record<RenderView, Buffer>>>> = {};
+  const inspectionChannelMetadata: HeadlessInspectionCapture['metadata'] = {};
+  let maskObjects: HeadlessMaskObject[] | undefined;
+  for (const view of views) {
+    await page.evaluate(
+      ({ v, a }) => window.__demoPlayer!.setRenderView(v, a),
+      { v: view, a: outputAspect },
+    );
+    if (captureRgb) {
+      const buf = await normalizeTile(await page.screenshot({ type: 'png' }), opts);
+      pngsByView[view] = buf;
+    }
+    if (captureMask) {
+      const mask = await page.evaluate(() => window.__demoPlayer!.captureMaskPng());
+      const maskBuffer = Buffer.from(mask.pngDataUrl.replace(/^data:image\/png;base64,/, ''), 'base64');
+      maskPngsByView[view] = await normalizeInspectionTile(maskBuffer, opts, 'mask');
+      if (maskObjects === undefined) maskObjects = mask.objects;
+    }
+    if (auxInspectionChannels.length > 0) {
+      const capture = await page.evaluate(
+        ({ channels, width, height }) => window.__demoPlayer!.captureInspectionChannels({ channels, width, height }),
+        {
+          channels: auxInspectionChannels,
+          width: HEADLESS_VIEWPORT.width,
+          height: HEADLESS_VIEWPORT.height,
+        },
+      );
+      if (capture.metadata.depth !== undefined) inspectionChannelMetadata.depth = capture.metadata.depth;
+      if (capture.metadata.normals !== undefined) inspectionChannelMetadata.normals = capture.metadata.normals;
+      for (const channel of auxInspectionChannels) {
+        const channelCapture = capture.channels[channel];
+        if (!channelCapture) continue;
+        const rawBuffer = Buffer.from(channelCapture.pngDataUrl.replace(/^data:image\/png;base64,/, ''), 'base64');
+        inspectionPngsByChannel[channel] ??= {};
+        inspectionPngsByChannel[channel]![view] = await normalizeInspectionTile(rawBuffer, opts, channel);
       }
     }
+  }
+  return { pngsByView, maskPngsByView, maskObjects, inspectionPngsByChannel, inspectionChannelMetadata };
+}
+
+/** Per-pose capture: parse `<az>,<el>`, snap the camera, screenshot, collect. */
+async function capturePoses(
+  page: Page,
+  opts: HeadlessRenderOpts,
+  outputAspect: number,
+): Promise<Record<string, Buffer>> {
+  // 5. Per-pose: parse "<az>,<el>", set camera, screenshot, collect.
+  const pngsByPose: Record<string, Buffer> = {};
+  if (opts.poses) {
+    for (const poseKey of opts.poses) {
+      const [azStr, elStr] = poseKey.split(',').map((s) => s.trim());
+      const az = Number(azStr);
+      const el = Number(elStr);
+      if (!Number.isFinite(az) || !Number.isFinite(el)) {
+        throw new Error(`headlessRender: invalid --pose value '${poseKey}' (expected '<az>,<el>')`);
+      }
+      await page.evaluate(
+        ({ a, e, asp }) => window.__demoPlayer!.setRenderPose(a, e, asp),
+        { a: az, e: el, asp: outputAspect },
+      );
+      const buf = await normalizeTile(await page.screenshot({ type: 'png' }), opts);
+      pngsByPose[poseKey] = buf;
+    }
+  }
+  return pngsByPose;
+}
+
+export async function headlessRender(opts: HeadlessRenderOpts): Promise<HeadlessRenderResult> {
+  const baseUrl = opts.baseUrl ?? DEFAULT_RENDER_BASE_URL;
+  const views = opts.views ?? ALL_VIEWS;
+  const inspectionChannels = opts.inspectionChannels ?? ['rgb'];
+  const captureRgb = inspectionChannels.includes('rgb');
+  const captureMask = inspectionChannels.includes('mask');
+  const auxInspectionChannels = inspectionChannels.filter(
+    (channel): channel is HeadlessAuxInspectionChannel => channel === 'depth' || channel === 'normals',
+  );
+
+  const { meshing, serialized } = await meshForHeadlessRender(opts);
+
+  let pageHandle: DemoPlayerPageHandle | undefined;
+  try {
+    const opened = await openRenderPage(opts, baseUrl, serialized, meshing);
+    pageHandle = opened.pageHandle;
+    const page = pageHandle.page;
+
+    const outputAspect = opts.viewportWidth / opts.viewportHeight;
+    const captured = await captureViews(page, opts, views, outputAspect, captureRgb, captureMask, auxInspectionChannels);
+    const pngsByPose = await capturePoses(page, opts, outputAspect);
 
     return {
-      pngsByView,
+      pngsByView: captured.pngsByView,
       pngsByPose,
-      ...(captureMask ? { maskPngsByView, maskObjects: maskObjects ?? [] } : {}),
+      ...(captureMask ? { maskPngsByView: captured.maskPngsByView, maskObjects: captured.maskObjects ?? [] } : {}),
       ...(auxInspectionChannels.length > 0
-        ? { inspectionPngsByChannel, inspectionChannelMetadata }
+        ? { inspectionPngsByChannel: captured.inspectionPngsByChannel, inspectionChannelMetadata: captured.inspectionChannelMetadata }
         : {}),
       bounds: meshing.bounds,
-      ...(objectVisibility !== undefined ? { objectVisibility } : {}),
+      ...(opened.objectVisibility !== undefined ? { objectVisibility: opened.objectVisibility } : {}),
     };
   } finally {
     // captureDemo has a known timeout-on-close issue; the handle's close()

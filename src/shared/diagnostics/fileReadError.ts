@@ -18,7 +18,7 @@
 // and always points at the escape hatch that works everywhere: pass `code`.
 
 /** Diagnostic code every file-read failure reports. Already registered in
- *  `src/shared/diagnostics/registry.ts` with a hint + nextAction. */
+ *  `src/shared/diagnostics/registry/` with a hint + nextAction. */
 export const FILE_READ_CODE = 'cli.file-read';
 
 /** Hint attached to every file-read diagnostic. */

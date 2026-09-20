@@ -48,7 +48,11 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
   const { activeProject, activeProjectId, saveActiveProject } = useProject();
   const { viewerMode } = useStudioChrome();
   const { agentRailOpen } = useShellStore();
-  const [isInitialized, setIsInitialized] = useState(false);
+  // "We have seeded the workbench from a source route or project at least
+  // once." No render output reads this flag (only the two effects below), so
+  // it lives in a ref: the sync effect can flip it without a re-render, and
+  // the auto-save effect reads it after that effect ran in the same commit.
+  const hasInitializedRef = useRef(false);
   // setLoadedSourceRouteKey is still called for its side effects (gating the
   // source-load effect in deps), but the value isn't read since we removed
   // the loading-gate in commit 95dc75a3. Keeping the setter, ignoring the value.
@@ -81,7 +85,7 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
         setViewMode('code');
         setSourceLoadError(null);
         setLoadedSourceRouteKey(sourceRouteKey);
-        setIsInitialized(true);
+        hasInitializedRef.current = true;
       })
       .catch((error) => {
         if (cancelled) return;
@@ -117,25 +121,24 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     // first run, then step aside. After initialization, external/programmatic
     // setCode calls (e.g. live agent updates) must not be overwritten by the
     // frozen mount-time initialCode snapshot stored in the ephemeral project.
-    if (isInitialized && isEphemeralProjectId(activeProjectId)) return;
+    if (hasInitializedRef.current && isEphemeralProjectId(activeProjectId)) return;
 
     // Only sync on initial load or project switch
-    if (!isInitialized || activeProject.code !== code) {
+    if (!hasInitializedRef.current || activeProject.code !== code) {
       setCode(activeProject.code);
       if (activeProject.viewState) {
         setViewMode(activeProject.viewState.viewMode);
         setViewMode3D(activeProject.viewState.viewMode3D as typeof viewMode3D);
         shellStore.setAgentRailOpen(activeProject.viewState.agentRailOpen ?? false);
       }
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsInitialized(true);
+      hasInitializedRef.current = true;
     }
-  }, [activeProject, activeProjectId, isDevLab, setCode, setViewMode, setViewMode3D, isInitialized, code, viewMode3D, scriptParam, galleryParam, viewerMode]);
+  }, [activeProject, activeProjectId, isDevLab, setCode, setViewMode, setViewMode3D, code, viewMode3D, scriptParam, galleryParam, viewerMode]);
 
   // Auto-save: workbench state -> active project
   useEffect(() => {
     if (scriptParam || galleryParam) return;
-    if (isDevLab || !isInitialized || !activeProject) return;
+    if (isDevLab || !hasInitializedRef.current || !activeProject) return;
     if (viewerMode) return; // read-only review page — never persist
     if (!isCodeParsable(code)) return;
 
@@ -153,7 +156,7 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     }, 1500); // 1.5s debounce for project save
 
     return () => clearTimeout(timeoutId);
-  }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, agentRailOpen, isDevLab, isInitialized, activeProject, saveActiveProject, scriptParam, galleryParam, viewerMode]);
+  }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, agentRailOpen, isDevLab, activeProject, saveActiveProject, scriptParam, galleryParam, viewerMode]);
 
   const activeSourceLoadError = sourceRouteKey && sourceLoadError?.routeKey === sourceRouteKey
     ? sourceLoadError.message

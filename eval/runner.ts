@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import type { AgentClient, TranscriptEvent, TaskResult, HarnessResult } from './types';
+import type { AgentClient, TranscriptEvent, TaskResult, HarnessResult, EvaluateResult } from './types';
 import { extractScript, computeScore, renderTranscript } from './lib';
 import { evaluateScript } from './oracle/kernelcad-client';
 import { runClosedLoop, type LoopMessage } from '../src/agent/loop/closedLoop.js';
@@ -51,61 +51,74 @@ export interface RunTaskArgs {
    * deterministic.
    */
   candidates?: number;
+  maxAttempts?: number;
+  maxTokens?: number;
+  /** Sent on every call when candidates <= 1 (sweep protocol temperature). */
+  temperature?: number;
 }
 
-export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
+export interface GenerateCaseArgs {
+  taskDir: string;
+  runDir: string;
+  agent: AgentClient;
+  model: string;
+  skillMd: string;
+  startedAt: string;
+  cookbook?: CookbookInjection;
+  candidates?: number;
+  maxAttempts?: number;
+  maxTokens?: number;
+  /** Sent on every call when candidates <= 1 (sweep protocol temperature). */
+  temperature?: number;
+}
+
+export interface GenerateCaseResult {
+  events: TranscriptEvent[];
+  status: 'passed' | 'gate_failed' | 'no_script';
+  attempts: number;
+  tokensIn: number;
+  tokensOut: number;
+  timeMs: number;
+  firstFailureCode?: string;
+  outputScriptPath: string;
+}
+
+export async function generateCase(args: GenerateCaseArgs): Promise<GenerateCaseResult> {
   const taskDirAbs = resolve(args.taskDir);
-  const taskName = taskDirAbs.split('/').pop() ?? 'unknown';
-  const promptPath = join(taskDirAbs, 'prompt.md');
-  const harnessPath = join(taskDirAbs, 'harness.ts');
-  const prompt = readFileSync(promptPath, 'utf8');
+  const prompt = readFileSync(join(taskDirAbs, 'prompt.md'), 'utf8');
 
   mkdirSync(args.runDir, { recursive: true });
   const outputScriptPath = join(args.runDir, 'output.kcad.ts');
-  const transcriptPath = join(args.runDir, 'transcript.md');
-  const scorePath = join(args.runDir, 'score.json');
 
   const events: TranscriptEvent[] = [];
   events.push({ kind: 'system_prompt', chars: args.skillMd.length });
   events.push({ kind: 'user_prompt', content: prompt });
-
   if (args.cookbook) {
-    events.push({
-      kind: 'cookbook_inject',
-      query: args.cookbook.query,
-      hits: args.cookbook.hits,
-    });
+    events.push({ kind: 'cookbook_inject', query: args.cookbook.query, hits: args.cookbook.hits });
   }
 
-  // Per-turn bookkeeping. `attemptNo` mirrors the closed loop's attempt index
-  // so the existing `'turn'`/`'evaluate'` transcript events keep their numbers.
   let attemptNo = 0;
   let totalIn = 0;
   let totalOut = 0;
-  // First non-OK diagnostic code observed across the loop. Set once, never
-  // overwritten — downstream classifiers (portfolio attempt logger) use this
-  // to tag a failed run with the diagnostic that surfaced first.
   let firstFailureCode: string | undefined;
-
   const start = Date.now();
 
-  // Drive the generate→gate→repair loop through the shared closed loop. The
-  // web gate runner gates on evaluate AND interference, so the loop now retries
-  // on interference failures too — not just on evaluate failures.
+  const candidates = args.candidates ?? 1;
+  const maxTokens = args.maxTokens ?? MAX_TOKENS;
+
   const loopResult = await runClosedLoop({
     prompt,
     gateRunner: createWebGateRunner(),
     extractScript,
     buildRepairPrompt,
-    maxAttempts: MAX_ATTEMPTS,
-    candidates: args.candidates ?? 1,
+    maxAttempts: args.maxAttempts ?? MAX_ATTEMPTS,
+    candidates,
     scoreCandidate: async (scriptPath, report) => {
-      // Only score build-valid candidates; gate-failing ones are ranked by stages.
       if (!report.ok) return null;
       try {
         const ev = await evaluateScript(scriptPath);
         if (!ev.ok) return null;
-        const harnessModule = await import(harnessPath);
+        const harnessModule = await import(join(taskDirAbs, 'harness.ts'));
         const hr = await harnessModule.default(scriptPath);
         return reduceHarnessScore(hr);
       } catch {
@@ -119,13 +132,15 @@ export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
     generate: async (messages: LoopMessage[], opts?: { variant?: number }) => {
       attemptNo += 1;
       const turnStart = Date.now();
+      const temperature =
+        candidates > 1 ? variantTemperature(opts?.variant) : args.temperature;
       const resp = await args.agent.generate({
         system: args.skillMd,
         systemAddendum: args.cookbook?.systemPromptAddendum,
         messages: messages.map((m) => ({ role: m.role, content: m.content })),
         model: args.model,
-        max_tokens: MAX_TOKENS,
-        temperature: variantTemperature(opts?.variant),
+        max_tokens: maxTokens,
+        temperature,
       });
       totalIn += resp.tokens_in;
       totalOut += resp.tokens_out;
@@ -161,38 +176,61 @@ export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
     },
   });
 
-  // If we never extracted a script, write a placeholder so the human can read
-  // the run; the harness will be skipped and gate-fail recorded below.
   if (loopResult.status === 'no_script') {
     writeFileSync(outputScriptPath, '// (no script extracted from any attempt)');
   }
 
-  // Re-run evaluate on the final written script to preserve the EXACT prior
-  // clean-decision + firstFailureCode semantics: the harness must still run
-  // when the script evaluates clean, even though the loop may have stopped on
-  // interference (which the harness does not itself gate on).
-  const finalEvaluate =
-    loopResult.status === 'no_script'
-      ? {
-          ok: false,
-          diagnostics: [
-            { code: 'eval.no-script-extracted', message: 'No script extracted from any attempt.' },
-          ],
-        }
-      : await evaluateScript(outputScriptPath);
+  return {
+    events,
+    status: loopResult.status,
+    attempts: loopResult.attempts,
+    tokensIn: totalIn,
+    tokensOut: totalOut,
+    timeMs: Date.now() - start,
+    firstFailureCode,
+    outputScriptPath,
+  };
+}
+
+export interface ScoreCaseArgs {
+  taskDir: string;
+  runDir: string;
+  outputScriptPath: string;
+  events?: TranscriptEvent[];
+  attempts: number;
+  tokensIn: number;
+  tokensOut: number;
+  generationMs: number;
+  startedAt: string;
+  model: string;
+  firstFailureCode?: string;
+  /** True when generation never extracted a script — skips the evaluate call. */
+  noScript?: boolean;
+}
+
+export async function scoreCase(args: ScoreCaseArgs): Promise<TaskResult> {
+  const taskDirAbs = resolve(args.taskDir);
+  const taskName = taskDirAbs.split('/').pop() ?? 'unknown';
+  const events = args.events ?? [];
+  const scoringStart = Date.now();
+
+  const finalEvaluate: EvaluateResult = args.noScript
+    ? {
+        ok: false,
+        diagnostics: [
+          { code: 'eval.no-script-extracted', message: 'No script extracted from any attempt.' },
+        ],
+      }
+    : await evaluateScript(args.outputScriptPath);
+  let firstFailureCode = args.firstFailureCode;
   if (firstFailureCode === undefined && !finalEvaluate.ok && finalEvaluate.diagnostics.length > 0) {
     firstFailureCode = finalEvaluate.diagnostics[0].code;
   }
-  const lastEvaluateOk = finalEvaluate.ok;
 
-  // Run the task's harness against the final output.
   let harnessResult: HarnessResult;
-  if (lastEvaluateOk) {
-    const harnessModule = await import(harnessPath);
-    // Harnesses take an optional ctx so external scorers (cadqueryeval, MUSE)
-    // know where the task's reference artifacts live and where to write
-    // intermediates. Single-arg harnesses ignore the extra argument.
-    harnessResult = await harnessModule.default(outputScriptPath, {
+  if (finalEvaluate.ok) {
+    const harnessModule = await import(join(taskDirAbs, 'harness.ts'));
+    harnessResult = await harnessModule.default(args.outputScriptPath, {
       taskDir: taskDirAbs,
       runDir: args.runDir,
     });
@@ -207,16 +245,16 @@ export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
   });
 
   const score = computeScore(harnessResult, {
-    attempts: loopResult.attempts,
-    tokens_in: totalIn,
-    tokens_out: totalOut,
-    time_ms: Date.now() - start,
+    attempts: args.attempts,
+    tokens_in: args.tokensIn,
+    tokens_out: args.tokensOut,
+    time_ms: args.generationMs + (Date.now() - scoringStart),
     firstFailureCode,
   });
 
-  writeFileSync(scorePath, JSON.stringify(score, null, 2));
+  writeFileSync(join(args.runDir, 'score.json'), JSON.stringify(score, null, 2));
   writeFileSync(
-    transcriptPath,
+    join(args.runDir, 'transcript.md'),
     renderTranscript({
       task: taskName,
       model: args.model,
@@ -227,4 +265,34 @@ export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
   );
 
   return { task: taskName, score };
+}
+
+export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
+  const gen = await generateCase({
+    taskDir: args.taskDir,
+    runDir: args.runDir,
+    agent: args.agent,
+    model: args.model,
+    skillMd: args.skillMd,
+    startedAt: args.startedAt,
+    cookbook: args.cookbook,
+    candidates: args.candidates,
+    maxAttempts: args.maxAttempts,
+    maxTokens: args.maxTokens,
+    temperature: args.temperature,
+  });
+  return scoreCase({
+    taskDir: args.taskDir,
+    runDir: args.runDir,
+    outputScriptPath: gen.outputScriptPath,
+    events: gen.events,
+    attempts: gen.attempts,
+    tokensIn: gen.tokensIn,
+    tokensOut: gen.tokensOut,
+    generationMs: gen.timeMs,
+    startedAt: args.startedAt,
+    model: args.model,
+    firstFailureCode: gen.firstFailureCode,
+    noScript: gen.status === 'no_script',
+  });
 }

@@ -126,6 +126,54 @@ function offsetExpr(base: string, delta: string, sign: 1 | -1): string {
   return `${base}.${sign > 0 ? 'add' : 'subtract'}(${delta})`;
 }
 
+interface AxisSpec {
+  axis: 'x' | 'y';
+  extent: string;
+  offset: string;
+  extra: string;
+  label: string;
+}
+
+/** Binds one block axis' extents / offsets / leftover coordinates into the ledger. */
+function bindAxisParams(
+  { axis, extent, offset, extra, label }: AxisSpec,
+  block: number,
+  rectangle: boolean,
+  corners: Corner[],
+  book: CoordinateBook,
+  addParam: AddParam,
+  measuredOf: (axis: 'x' | 'y', v: number) => number,
+): void {
+  const vals = [...new Set(corners.map((c) => (axis === 'x' ? c.x : c.y)))].sort((p, q) => p - q);
+  const lo = vals[0];
+  const hi = vals[vals.length - 1];
+  const span = (a: number, b: number) => measuredOf(axis, b) - measuredOf(axis, a);
+  // Outer extent first: it is the dimension a reader looks for.
+  const eLo = book.lookup(axis, lo);
+  const eHi = book.lookup(axis, hi);
+  if (eLo && !eHi) {
+    const p = addParam(extent, hi - lo, span(lo, hi), `Profile size along ${label}${block === 1 ? '' : ` of block ${block}`}.`);
+    book.bind(axis, hi, offsetExpr(eLo, p, 1));
+  } else if (!eLo && eHi) {
+    const p = addParam(extent, hi - lo, span(lo, hi), `Profile size along ${label}${block === 1 ? '' : ` of block ${block}`}.`);
+    book.bind(axis, lo, offsetExpr(eHi, p, -1));
+  } else if (!eLo && !eHi) {
+    const o = addParam(offset, lo, measuredOf(axis, lo), `Profile offset along ${label} of block ${block}.`);
+    book.bind(axis, lo, o);
+    const p = addParam(extent, hi - lo, span(lo, hi), `Profile size along ${label} of block ${block}.`);
+    book.bind(axis, hi, offsetExpr(o, p, 1));
+  }
+  if (!rectangle) {
+    let n = 0;
+    for (const v of vals) {
+      if (book.lookup(axis, v)) continue;
+      n++;
+      const p = addParam(`${extra}${n}`, v, measuredOf(axis, v), `Profile corner coordinate along ${label}${block === 1 ? '' : ` of block ${block}`}.`);
+      book.bind(axis, v, p);
+    }
+  }
+}
+
 /**
  * Param-driven corners for one block's rectilinear outline. `measuredOf`
  * returns the unsnapped value of a snapped coordinate (for the ledger).
@@ -139,39 +187,12 @@ export function paramProfile(
   radiusExpr: (r: number) => string | undefined,
 ): ParamProfile {
   const rectangle = corners.length === 4;
-  const axes: Array<{ axis: 'x' | 'y'; extent: string; offset: string; extra: string; label: string }> = [
+  const axes: AxisSpec[] = [
     { axis: 'x', extent: block === 1 ? 'length' : `block${block}Length`, offset: `block${block}X`, extra: block === 1 ? 'profileX' : `block${block}X`, label: 'X' },
     { axis: 'y', extent: block === 1 ? 'width' : `block${block}Width`, offset: `block${block}Y`, extra: block === 1 ? 'profileY' : `block${block}Y`, label: 'Y' },
   ];
-  for (const { axis, extent, offset, extra, label } of axes) {
-    const vals = [...new Set(corners.map((c) => (axis === 'x' ? c.x : c.y)))].sort((p, q) => p - q);
-    const lo = vals[0];
-    const hi = vals[vals.length - 1];
-    const span = (a: number, b: number) => measuredOf(axis, b) - measuredOf(axis, a);
-    // Outer extent first: it is the dimension a reader looks for.
-    const eLo = book.lookup(axis, lo);
-    const eHi = book.lookup(axis, hi);
-    if (eLo && !eHi) {
-      const p = addParam(extent, hi - lo, span(lo, hi), `Profile size along ${label}${block === 1 ? '' : ` of block ${block}`}.`);
-      book.bind(axis, hi, offsetExpr(eLo, p, 1));
-    } else if (!eLo && eHi) {
-      const p = addParam(extent, hi - lo, span(lo, hi), `Profile size along ${label}${block === 1 ? '' : ` of block ${block}`}.`);
-      book.bind(axis, lo, offsetExpr(eHi, p, -1));
-    } else if (!eLo && !eHi) {
-      const o = addParam(offset, lo, measuredOf(axis, lo), `Profile offset along ${label} of block ${block}.`);
-      book.bind(axis, lo, o);
-      const p = addParam(extent, hi - lo, span(lo, hi), `Profile size along ${label} of block ${block}.`);
-      book.bind(axis, hi, offsetExpr(o, p, 1));
-    }
-    if (!rectangle) {
-      let n = 0;
-      for (const v of vals) {
-        if (book.lookup(axis, v)) continue;
-        n++;
-        const p = addParam(`${extra}${n}`, v, measuredOf(axis, v), `Profile corner coordinate along ${label}${block === 1 ? '' : ` of block ${block}`}.`);
-        book.bind(axis, v, p);
-      }
-    }
+  for (const spec of axes) {
+    bindAxisParams(spec, block, rectangle, corners, book, addParam, measuredOf);
   }
   return {
     kind: rectangle ? 'rectangle' : 'rectilinear',

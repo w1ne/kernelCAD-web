@@ -76,11 +76,10 @@ export interface BendInputs {
  *  the pipeline; the spec's intended `BRepAlgoAPI_Splitter` is replaced with
  *  two `BRepAlgoAPI_Cut_3` slab cuts (Splitter is not bound in the bundled
  *  `replicad-opencascadejs` WASM build — verified 2026-05-14). */
-export function lowerSheetMetalBend(inp: BendInputs): SheetMetalBendLoweringResult {
-  const diagnostics: CompilerDiagnostic[] = [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const oc = getOC() as any;
-
+function resolveBendPlane(
+  inp: BendInputs,
+  diagnostics: CompilerDiagnostic[],
+): { axisDirection: [number, number, number]; pn: [number, number, number] } | null {
   // Normalize the axis direction.
   const [adx, ady, adz] = inp.axis.direction;
   const aLen = Math.hypot(adx, ady, adz);
@@ -93,7 +92,7 @@ export function lowerSheetMetalBend(inp: BendInputs): SheetMetalBendLoweringResu
       message: '.bend(): bend axis direction is degenerate (zero-length).',
       hint: '.bend() requires a linear edge with a non-zero direction. Use list_edges to inspect candidates.',
     });
-    return { diagnostics };
+    return null;
   }
   const axisDirection: [number, number, number] = [adx / aLen, ady / aLen, adz / aLen];
 
@@ -116,13 +115,26 @@ export function lowerSheetMetalBend(inp: BendInputs): SheetMetalBendLoweringResu
       message: 'Bend axis is parallel to the top-face normal — cannot define a split plane.',
       hint: 'Pick a different bend edge; the bend axis must lie in the top face.',
     });
-    return { diagnostics };
+    return null;
   }
   const pn: [number, number, number] = [
     planeNormal[0] / pnLen,
     planeNormal[1] / pnLen,
     planeNormal[2] / pnLen,
   ];
+
+  return { axisDirection, pn };
+}
+
+export function lowerSheetMetalBend(inp: BendInputs): SheetMetalBendLoweringResult {
+  const diagnostics: CompilerDiagnostic[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = getOC() as any;
+
+  const plane = resolveBendPlane(inp, diagnostics);
+  if (!plane) return { diagnostics };
+  const { axisDirection, pn } = plane;
+  const [dx, dy, dz] = axisDirection;
 
   const baseShape = (inp.base.getReplicadShape() as { wrapped: unknown }).wrapped;
   if (!baseShape) {
@@ -296,6 +308,21 @@ export function resolveBendAxis(
   const zMid = (bb.min[2] + bb.max[2]) / 2;
 
   // 1. EdgeQuery with atX / atY.
+  const fromEdges = resolveEdgeQueryBendAxis(bb, edgesRef, zMid);
+  if (fromEdges !== undefined) return { axis: fromEdges };
+
+  // 2. Canonical face ref → default to midline of the longer bbox axis.
+  const fromFace = resolveCanonicalFaceBendAxis(bb, faceRef, zMid);
+  if (fromFace !== undefined) return { axis: fromFace };
+
+  return { diagnostic: unsupportedBendAxisDiagnostic(featureId, thickness) };
+}
+
+function resolveEdgeQueryBendAxis(
+  bb: ReturnType<OcctBackend['boundingBox']>,
+  edgesRef: unknown,
+  zMid: number,
+): BendAxisSpec | undefined {
   if (edgesRef && typeof edgesRef === 'object') {
     const ref = (edgesRef as { ref?: unknown }).ref ?? edgesRef;
     if (typeof ref === 'object' && ref !== null) {
@@ -304,28 +331,30 @@ export function resolveBendAxis(
         if (typeof r.query.atX === 'number' && Number.isFinite(r.query.atX)) {
           const x = r.query.atX;
           return {
-            axis: {
-              origin: [x, bb.min[1], zMid],
-              direction: [0, 1, 0],
-              edgeLength: bb.max[1] - bb.min[1],
-            },
+            origin: [x, bb.min[1], zMid],
+            direction: [0, 1, 0],
+            edgeLength: bb.max[1] - bb.min[1],
           };
         }
         if (typeof r.query.atY === 'number' && Number.isFinite(r.query.atY)) {
           const y = r.query.atY;
           return {
-            axis: {
-              origin: [bb.min[0], y, zMid],
-              direction: [1, 0, 0],
-              edgeLength: bb.max[0] - bb.min[0],
-            },
+            origin: [bb.min[0], y, zMid],
+            direction: [1, 0, 0],
+            edgeLength: bb.max[0] - bb.min[0],
           };
         }
       }
     }
   }
+  return undefined;
+}
 
-  // 2. Canonical face ref → default to midline of the longer bbox axis.
+function resolveCanonicalFaceBendAxis(
+  bb: ReturnType<OcctBackend['boundingBox']>,
+  faceRef: unknown,
+  zMid: number,
+): BendAxisSpec | undefined {
   if (faceRef && typeof faceRef === 'object') {
     const ref = (faceRef as { ref?: unknown }).ref ?? faceRef;
     if (typeof ref === 'object' && ref !== null) {
@@ -336,34 +365,34 @@ export function resolveBendAxis(
         if (w >= h) {
           const xMid = (bb.min[0] + bb.max[0]) / 2;
           return {
-            axis: {
-              origin: [xMid, bb.min[1], zMid],
-              direction: [0, 1, 0],
-              edgeLength: h,
-            },
+            origin: [xMid, bb.min[1], zMid],
+            direction: [0, 1, 0],
+            edgeLength: h,
           };
         } else {
           const yMid = (bb.min[1] + bb.max[1]) / 2;
           return {
-            axis: {
-              origin: [bb.min[0], yMid, zMid],
-              direction: [1, 0, 0],
-              edgeLength: w,
-            },
+            origin: [bb.min[0], yMid, zMid],
+            direction: [1, 0, 0],
+            edgeLength: w,
           };
         }
       }
     }
   }
+  return undefined;
+}
 
+function unsupportedBendAxisDiagnostic(
+  featureId: FeatureId,
+  thickness: number,
+): CompilerDiagnostic {
   return {
-    diagnostic: {
-      target: 'export-occt',
-      code: 'feature.bend.edge-not-linear',
-      featureId,
-      severity: 'error',
-      message: '.bend(): could not derive a bend axis from the selector. Slice-1 supports { atX: <n> }, { atY: <n> }, or { face: "top" | "bottom" }.',
-      hint: '.bend() slice-1 selectors: pass an EdgeQuery with atX/atY (e.g. { atX: 50 }) or { face: "top" }. thickness=' + thickness,
-    },
+    target: 'export-occt',
+    code: 'feature.bend.edge-not-linear',
+    featureId,
+    severity: 'error',
+    message: '.bend(): could not derive a bend axis from the selector. Slice-1 supports { atX: <n> }, { atY: <n> }, or { face: "top" | "bottom" }.',
+    hint: '.bend() slice-1 selectors: pass an EdgeQuery with atX/atY (e.g. { atX: 50 }) or { face: "top" }. thickness=' + thickness,
   };
 }

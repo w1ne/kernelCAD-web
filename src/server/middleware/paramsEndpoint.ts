@@ -42,6 +42,41 @@ interface CoalescedBatch {
   waiters: Array<{ resolve: (r: UpdateResult) => void; reject: (e: unknown) => void }>;
 }
 
+// Per-edit shape gate. We accept (name: string, value: number | boolean)
+// and reject anything else here so kernel errors are reserved for
+// semantic problems (out-of-range, unknown param) rather than typos.
+function editShapeError(edits: unknown[]): string | null {
+  for (const e of edits) {
+    if (!e || typeof e !== 'object') {
+      return 'each edit must be an object';
+    }
+    const edit = e as { name?: unknown; value?: unknown };
+    if (typeof edit.name !== 'string' || edit.name.length === 0) {
+      return 'edit.name must be a non-empty string';
+    }
+    if (typeof edit.value !== 'number' && typeof edit.value !== 'boolean' && typeof edit.value !== 'string') {
+      return 'edit.value must be a number, boolean, or string';
+    }
+  }
+  return null;
+}
+
+function writeUpdateError(res: MinimalRes, error: unknown): void {
+  const err = error as { message?: unknown; code?: unknown; hint?: unknown };
+  // KernelError carries `.code` and `.hint`; surface both so the client
+  // can render the structured diagnostic instead of a generic toast.
+  if (typeof err?.code === 'string') {
+    return writeJson(res, 422, {
+      error: typeof err.message === 'string' ? err.message : String(error),
+      code: err.code,
+      hint: typeof err.hint === 'string' ? err.hint : undefined,
+    });
+  }
+  return writeJson(res, 500, {
+    error: error instanceof Error ? error.message : String(error),
+  });
+}
+
 export function createParamsEndpoint(deps: ParamsEndpointDeps) {
   // Per-session trailing-edge coalescing. A slider drag fires one POST per
   // tick; each kernel relower costs ~1-2 s, so running them all serially
@@ -119,20 +154,9 @@ export function createParamsEndpoint(deps: ParamsEndpointDeps) {
       if (!Array.isArray(edits)) {
         return writeJson(res, 400, { error: 'body.edits must be an array' });
       }
-      // Per-edit shape gate. We accept (name: string, value: number | boolean)
-      // and reject anything else here so kernel errors are reserved for
-      // semantic problems (out-of-range, unknown param) rather than typos.
-      for (const e of edits) {
-        if (!e || typeof e !== 'object') {
-          return writeJson(res, 400, { error: 'each edit must be an object' });
-        }
-        const edit = e as { name?: unknown; value?: unknown };
-        if (typeof edit.name !== 'string' || edit.name.length === 0) {
-          return writeJson(res, 400, { error: 'edit.name must be a non-empty string' });
-        }
-        if (typeof edit.value !== 'number' && typeof edit.value !== 'boolean' && typeof edit.value !== 'string') {
-          return writeJson(res, 400, { error: 'edit.value must be a number, boolean, or string' });
-        }
+      const shapeError = editShapeError(edits);
+      if (shapeError !== null) {
+        return writeJson(res, 400, { error: shapeError });
       }
 
       try {
@@ -143,19 +167,7 @@ export function createParamsEndpoint(deps: ParamsEndpointDeps) {
           warnings: result.warnings ?? [],
         });
       } catch (error) {
-        const err = error as { message?: unknown; code?: unknown; hint?: unknown };
-        // KernelError carries `.code` and `.hint`; surface both so the client
-        // can render the structured diagnostic instead of a generic toast.
-        if (typeof err?.code === 'string') {
-          return writeJson(res, 422, {
-            error: typeof err.message === 'string' ? err.message : String(error),
-            code: err.code,
-            hint: typeof err.hint === 'string' ? err.hint : undefined,
-          });
-        }
-        return writeJson(res, 500, {
-          error: error instanceof Error ? error.message : String(error),
-        });
+        return writeUpdateError(res, error);
       }
     } catch (error) {
       return writeJson(res, 500, {

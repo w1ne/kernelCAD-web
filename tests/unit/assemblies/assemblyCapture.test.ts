@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createApi } from '../../../src/modeling/api';
+import { isKernelError, KernelError } from '../../../src/shared/intent/kernelError';
 
 // Vec3Param assertion helper: assembly Vec3 surfaces store as
 // { x: Param, y: Param, z: Param } since Task 5 widened them to EditableVec3.
@@ -328,6 +329,117 @@ describe('assembly capture contract', () => {
         },
       },
     ]);
+  });
+
+  // Regression: assembly-split quality-slice-4 fix round 1 (C1/C2). These
+  // two diagnostic hints were rewritten during the assembly.ts split — one
+  // by dropping the fixed, actionable hint text in favor of restating the
+  // message, the other by deriving the hint's dotted-namespace-to-kebab-code
+  // prefix instead of passing it through literally. Pin the exact hint
+  // strings so a future move of this code cannot silently regress them.
+  it('mate() capacity.structure that is not a joint.clevis() descriptor throws the fixed clevis-capacity hint (C1)', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('clevis hint regression');
+    arm.part('a', kcad.box(10, 10, 10)).connector('pin', {
+      type: 'axis',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+      axis: [0, 0, 1],
+    });
+    arm.part('b', kcad.box(10, 10, 10)).connector('pin', {
+      type: 'axis',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+      axis: [0, 0, 1],
+    });
+
+    let thrown: unknown;
+    try {
+      arm.mate('pin-mate', 'a.pin', 'b.pin', 'revolute', {
+        // Not a descriptor emitted by joint.clevis() — triggers
+        // throwInvalidStructuralModel via validateClevisStructuralModel.
+        capacity: { structure: {} as never },
+      });
+    } catch (e) {
+      thrown = e;
+    }
+    expect(isKernelError(thrown)).toBe(true);
+    expect((thrown as KernelError).hint).toBe(
+      'invalid-args.assembly.mate-invalid-capacity — pass the structural descriptor returned by joint.clevis() without modifying its geometry or material fields.',
+    );
+  });
+
+  it('mechanicalJoint() requiredSupport.minBearingLengthMm <= 0 throws the literal mechanical-joint hint (C2)', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('required-support hint regression');
+    arm
+      .part('base', kcad.box(40, 40, 4, true))
+      .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 2] }, axis: [0, 0, 1] });
+    arm
+      .part('link', kcad.box(30, 8, 6, true))
+      .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.part('servo', kcad.box(20, 12, 20, true));
+    arm.part('shaft', kcad.cylinder(8, 2).alongAxis([0, 0, 1]));
+    arm.part('support', kcad.box(12, 12, 8, true));
+    arm.mate('yaw', 'base.axis', 'link.axis', 'revolute');
+
+    let thrown: unknown;
+    try {
+      arm.mechanicalJoint('yaw-drive', {
+        mate: 'yaw',
+        actuator: 'servo',
+        shaft: 'shaft',
+        supports: ['support'],
+        output: 'link',
+        requiredSupport: {
+          kind: 'hinge-bracket',
+          around: 'base.axis',
+          supports: ['support'],
+          minBearingLengthMm: -1,
+        },
+      });
+    } catch (e) {
+      thrown = e;
+    }
+    expect(isKernelError(thrown)).toBe(true);
+    expect((thrown as KernelError).hint).toBe(
+      'invalid-args.assembly.mechanical-joint-invalid-required-support — pass minBearingLengthMm > 0, or omit it.',
+    );
+  });
+
+  it('jointSupport() requiredSupport.clearanceMm < 0 throws the literal joint-support hint (C2)', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('joint-support hint regression');
+    let thrown: unknown;
+    try {
+      arm.jointSupport('yaw-support', {
+        mate: 'yaw',
+        shaft: 'shaft',
+        supports: ['support'],
+        output: 'link',
+        requiredSupport: {
+          kind: 'hinge-bracket',
+          around: 'base.axis',
+          supports: ['support'],
+          clearanceMm: -1,
+        },
+      });
+    } catch (e) {
+      thrown = e;
+    }
+    expect(isKernelError(thrown)).toBe(true);
+    expect((thrown as KernelError).hint).toBe(
+      'invalid-args.assembly.joint-support-invalid-required-support — pass clearanceMm >= 0, or omit it.',
+    );
+  });
+
+  it('keeps Assembly.name an own enumerable property', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('own-name');
+    expect(Object.keys(arm)).toContain('name');
+    expect(arm.name).toBe('own-name');
   });
 
   it('stores contact target part roles', () => {

@@ -16,7 +16,7 @@ import {
   sampleTrackAt,
   sampleTracks,
   keyframeSampleSet,
-} from '../../../src/agent/render/animationSampler';
+} from '../../../src/modeling/animation/animationSampler';
 
 function key(atMs: number, value: number, ease: AnimationEase = 'linear'): NormalizedAnimationKey {
   return { atMs, value, ease };

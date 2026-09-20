@@ -3,6 +3,7 @@
 import type { CaptureSession } from './captureSession';
 import type { FeatureId, Vec3 } from '../../shared/intent/types';
 import type { Curve3DMetadata } from '../../shared/intent/curve3dRecord';
+import type { Curve3DMetadataCarrier } from '../../kernel/geometry/curveCarriers';
 import { KernelError } from '../../shared/intent/kernelError';
 import { lazyEvalCurve } from '../backends/occt/curve3dEval';
 import { Curve3DAnalyticsImpl } from './curveAnalyticsProxy';
@@ -36,7 +37,7 @@ import { bridgeCurves } from './bridgeCurves';
  * `curveAnalyticsProxy.ts`. Today the proxy is consumed by `variableSweep`
  * — agents can also call the evaluation methods directly for sampling.
  */
-export interface Curve3D {
+export interface Curve3D extends Curve3DMetadataCarrier {
   readonly id: FeatureId;
   readonly metadata: Curve3DMetadata;
   /** Sample `n + 1` evenly-spaced points along the curve in `[0, 1]`. */
@@ -114,7 +115,7 @@ export interface CurveSurfaceIntersection {
  * data is returned without a kernel round-trip (geometry stays in OCCT).
  *
  * Errors surface as `KernelError` with `feature.curve3d.analytics.*` codes
- * (see `src/shared/diagnostics/registry.ts`).
+ * (see `src/shared/diagnostics/registry/`).
  */
 export interface Curve3DAnalytics {
   /** Closest point on the curve to `pt` (Newton-Raphson). */

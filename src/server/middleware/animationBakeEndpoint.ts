@@ -58,11 +58,11 @@ import {
   type BuiltModel,
   type ParamUpdateEdit,
 } from '../../modeling/buildModel';
-import { sampleTracks } from '../../agent/render/animationSampler';
+import { sampleTracks, type AnimationFrameSample } from '../../modeling/animation/animationSampler';
 import {
   verifyAnimation,
   type AnimationCollision,
-} from '../../agent/render/verifyAnimation';
+} from '../../modeling/animation/verifyAnimation';
 import type {
   AnimationViewMetadata,
   NormalizedAnimationTrack,
@@ -144,6 +144,257 @@ function liveTail(model: BuiltModel): unknown {
   return cached ?? model.tailShape;
 }
 
+interface ResolvedBakeRequest {
+  token: string;
+  model: BuiltModel;
+  tracks: readonly NormalizedAnimationTrack[];
+  fps: number;
+  schedule: AnimationFrameSample[];
+  durationMs: number;
+}
+
+/** Resolve the session + animationView metadata, writing the error envelope
+ *  and returning null on any guard failure. */
+function resolveBakeRequest(
+  req: AnimationBakeReqLike,
+  res: MinimalRes,
+  pool: SessionPool,
+  inFlight: ReadonlySet<string>,
+): ResolvedBakeRequest | null {
+  const token = readQuery(req.url, 'session');
+  if (!token) {
+    writeJson(res, 400, { error: 'missing session query parameter' });
+    return null;
+  }
+  const entry = pool.get(token);
+  if (!entry) {
+    writeJson(res, 404, { error: 'unknown session token' });
+    return null;
+  }
+
+  if (inFlight.has(token)) {
+    writeJson(res, 409, {
+      error: 'a bake is already in flight for this session',
+      code: 'animation.bake.in-flight',
+      hint: 'Await the in-flight bake (the client caches the result) instead of issuing a second one.',
+    });
+    return null;
+  }
+
+  const model = entry.model;
+  const metadata = selectAnimationMetadata(model);
+  if (!metadata) {
+    writeJson(res, 422, {
+      error: 'session has no animationView() record to bake',
+      code: 'animation.bake.no-view',
+      hint: 'Declare an animationView({ tracks: [...] }) in the script before requesting a bake.',
+    });
+    return null;
+  }
+
+  const tracks: readonly NormalizedAnimationTrack[] = metadata.tracks;
+  const fps = metadata.fps;
+  const { frames: schedule, durationMs } = sampleTracks(tracks, fps);
+  if (schedule.length > MAX_BAKE_FRAMES) {
+    writeJson(res, 422, {
+      error: `animation timeline bakes to ${schedule.length} frames, above the ${MAX_BAKE_FRAMES}-frame ceiling`,
+      code: 'animation.bake.too-many-frames',
+      hint: `Lower the animationView fps or shorten durationMs so frames ≤ ${MAX_BAKE_FRAMES}, or use offline MP4 capture for long timelines.`,
+    });
+    return null;
+  }
+  return { token, model, tracks, fps, schedule, durationMs };
+}
+
+/** Snapshot pre-bake values of every animated param so the pooled session
+ *  (reused by the live viewport) is restored to its current pose after the
+ *  sweep — same discipline as verifyAnimation. */
+function snapshotOriginalParams(
+  model: BuiltModel,
+  tracks: readonly NormalizedAnimationTrack[],
+): { originals: ParamUpdateEdit[]; assemblyIndex: number; recordIndexById: Map<string, number> } {
+  const originals: ParamUpdateEdit[] = [];
+  const seen = new Set<string>();
+  for (const track of tracks) {
+    if (seen.has(track.param)) continue;
+    seen.add(track.param);
+    originals.push({
+      name: track.param,
+      value: model.session.paramTable.get(track.param).value,
+    });
+  }
+
+  // Chain index of the assembly (scene) record. A geometry-driving track
+  // param re-lowers a part record BEFORE this index (the geometry-param
+  // guard below); a pose-only edit re-lowers only at/after it.
+  const assemblyIndex = firstAssemblyIndex(model);
+  const recordIndexById = new Map<string, number>();
+  model.records.forEach((rec, idx) => recordIndexById.set(rec.id, idx));
+  return { originals, assemblyIndex, recordIndexById };
+}
+
+interface BakeSweep {
+  times: number[];
+  order: string[];
+  byPart: Map<string, number[][]>;
+}
+
+/** Solve every scheduled frame and collect per-part world matrices. Writes
+ *  the error envelope and returns null if a pose resolves the wrong shape. */
+async function sweepBakeFrames(
+  model: BuiltModel,
+  schedule: AnimationFrameSample[],
+  tracks: readonly NormalizedAnimationTrack[],
+  assemblyIndex: number,
+  recordIndexById: Map<string, number>,
+  res: MinimalRes,
+): Promise<BakeSweep | null> {
+  const times: number[] = [];
+  // partName → matrices[frame]. Preserve first-seen part order.
+  const order: string[] = [];
+  const byPart = new Map<string, number[][]>();
+
+  for (let i = 0; i < schedule.length; i += 1) {
+    const frame = schedule[i];
+    times.push(frame.tMs);
+    const edits: ParamUpdateEdit[] = tracks.map((track) => ({
+      name: track.param,
+      value: frame.values[track.param],
+    }));
+    // `silent` so the per-frame pose solve does NOT fan a relower out
+    // to SSE subscribers. Without this each baked frame fired one
+    // `event: relower` → the client re-fetched `/transforms` per frame
+    // (25 useless fetches across a 24-frame bake) and the live viewport
+    // twitched through every pose mid-bake. The single post-restore
+    // relower below is the only one a bake should produce.
+    const { model: updated, result: updateResult } = await updateModelParams(
+      model,
+      edits,
+      { silent: true },
+    );
+    // Geometry-param guard (B1). Studio baked playback only re-applies
+    // RIGID per-part world transforms — it never re-meshes. A track param
+    // that drives part GEOMETRY (a dimension, extrude depth, hole radius)
+    // re-lowers a part record BEFORE the assembly record; the baked
+    // transforms would then pose the PRE-EDIT shape → silently wrong.
+    // Detect on the first sampled frame and refuse: if any re-lowered
+    // record sits at a lower chain index than the assembly record, the
+    // edit changed geometry, not just a mate pose.
+    if (i === 0 && assemblyIndex >= 0) {
+      const touchedGeometry = updateResult.relowered.some((id) => {
+        const idx = recordIndexById.get(id);
+        return idx !== undefined && idx < assemblyIndex;
+      });
+      if (touchedGeometry) {
+        writeJson(res, 422, {
+          error:
+            'this animationView timeline drives part GEOMETRY (a dimension / extrude depth / hole radius), not just a mate pose — ' +
+            'Studio baked playback only re-applies rigid per-part transforms, so it cannot represent a changing shape.',
+          code: 'animation.bake.geometry-param',
+          hint:
+            'Studio playback supports POSE-ONLY (mate-driven) timelines. Render geometry-animating timelines with `kernelcad animate` ' +
+            '(offline MP4 re-meshes every frame).',
+        });
+        return null;
+      }
+    }
+    const tail = liveTail(updated);
+    if (!isSceneBackend(tail)) {
+      writeJson(res, 422, {
+        error: `the pose at tMs=${frame.tMs} did not resolve an assembly scene; baked playback needs per-part transforms`,
+        code: 'animation.bake.no-scene',
+        hint: 'Return the solved assembly from the script — `return asm.solvedModel(...)` — so each pose lowers to a scene with per-part world transforms.',
+      });
+      return null;
+    }
+    for (const part of tail.parts) {
+      let matrices = byPart.get(part.name);
+      if (!matrices) {
+        matrices = [];
+        byPart.set(part.name, matrices);
+        order.push(part.name);
+      }
+      matrices.push(Array.from(part.worldTransform.toMat4()));
+    }
+  }
+
+  return { times, order, byPart };
+}
+
+/** ADVISORY collision check (I1). Run the SAME keyframe-sample
+ *  interference check `kernelcad animate` uses — keyframe times +
+ *  segment midpoints (~11 poses), NOT every baked frame — so Studio can
+ *  warn on a self-colliding mechanism the offline tool would catch.
+ *  NON-FATAL: a failure here must never sink a bake whose transforms are
+ *  already computed, so it is wrapped and yields an empty list on error.
+ *  `silent` so the keyframe re-solves do NOT each fan a relower out (the
+ *  bake emits its own single trailing relower after the param restore
+ *  below); verifyAnimation restores its own intermediate params, and the
+ *  authoritative restore to the true pre-bake pose happens in `finally`. */
+async function collectAdvisoryCollisions(
+  model: BuiltModel,
+  tracks: readonly NormalizedAnimationTrack[],
+  token: string,
+): Promise<AnimationCollision[]> {
+  try {
+    const verdict = await verifyAnimation(model, tracks, { silent: true });
+    return verdict.collisions;
+  } catch (e) {
+    console.warn(
+      `[animation-bake] advisory collision check failed for session ${token}:`,
+      e instanceof Error ? e.message : String(e),
+    );
+    return [];
+  }
+}
+
+/** Restore the pre-bake pose (the single non-silent relower a bake emits)
+ *  and drop the single-flight lock. A restore failure leaves the session at
+ *  the last baked pose; surface nothing here (the bake result already went
+ *  out) but log it. */
+async function restoreOriginalParams(
+  model: BuiltModel,
+  originals: ParamUpdateEdit[],
+  token: string,
+): Promise<void> {
+  // This restore solve is the ONLY relower a bake emits: the per-frame
+  // sweep above ran `silent`, so this single (non-silent) update fans one
+  // `event: relower` out to SSE subscribers AFTER the session is back at
+  // its pre-bake pose — any open client resyncs its transforms exactly
+  // once instead of once per baked frame.
+  if (originals.length > 0) {
+    try {
+      await updateModelParams(model, originals);
+    } catch (e) {
+      console.warn(
+        `[animation-bake] failed to restore params for session ${token}:`,
+        e instanceof Error ? e.message : String(e),
+      );
+    }
+  } else {
+    // No animated params were edited (degenerate timeline): the silent
+    // sweep emitted nothing, so emit one synthetic empty relower so a
+    // client that began listening mid-bake still gets a single resync.
+    model.session.engine?.emitRelower([]);
+  }
+}
+
+/** Typed-error envelope for anything thrown out of the bake body. */
+function writeBakeError(res: MinimalRes, error: unknown): void {
+  const err = error as { message?: unknown; code?: unknown; hint?: unknown };
+  if (typeof err?.code === 'string') {
+    writeJson(res, 422, {
+      error: typeof err.message === 'string' ? err.message : String(error),
+      code: err.code,
+      hint: typeof err.hint === 'string' ? err.hint : undefined,
+    });
+    return;
+  }
+  writeJson(res, 500, {
+    error: error instanceof Error ? error.message : String(error),
+  });
+}
+
 export function createAnimationBakeEndpoint(deps: AnimationBakeEndpointDeps) {
   // Single-flight per session token. A bake is deterministic and mutates the
   // shared session pose mid-sweep (restored at the end); two overlapping bakes
@@ -157,205 +408,37 @@ export function createAnimationBakeEndpoint(deps: AnimationBakeEndpointDeps) {
   ): Promise<void> {
     let token: string | null = null;
     try {
-      token = readQuery(req.url, 'session');
-      if (!token) {
-        return writeJson(res, 400, { error: 'missing session query parameter' });
-      }
-      const entry = deps.pool.get(token);
-      if (!entry) {
-        return writeJson(res, 404, { error: 'unknown session token' });
-      }
-
-      if (inFlight.has(token)) {
-        return writeJson(res, 409, {
-          error: 'a bake is already in flight for this session',
-          code: 'animation.bake.in-flight',
-          hint: 'Await the in-flight bake (the client caches the result) instead of issuing a second one.',
-        });
-      }
-
-      const model = entry.model;
-      const metadata = selectAnimationMetadata(model);
-      if (!metadata) {
-        return writeJson(res, 422, {
-          error: 'session has no animationView() record to bake',
-          code: 'animation.bake.no-view',
-          hint: 'Declare an animationView({ tracks: [...] }) in the script before requesting a bake.',
-        });
-      }
-
-      const tracks: readonly NormalizedAnimationTrack[] = metadata.tracks;
-      const fps = metadata.fps;
-      const { frames: schedule, durationMs } = sampleTracks(tracks, fps);
-      if (schedule.length > MAX_BAKE_FRAMES) {
-        return writeJson(res, 422, {
-          error: `animation timeline bakes to ${schedule.length} frames, above the ${MAX_BAKE_FRAMES}-frame ceiling`,
-          code: 'animation.bake.too-many-frames',
-          hint: `Lower the animationView fps or shorten durationMs so frames ≤ ${MAX_BAKE_FRAMES}, or use offline MP4 capture for long timelines.`,
-        });
-      }
+      const resolved = resolveBakeRequest(req, res, deps.pool, inFlight);
+      if (!resolved) return;
+      token = resolved.token;
+      const { model, tracks, fps, schedule, durationMs } = resolved;
 
       inFlight.add(token);
 
-      // Snapshot pre-bake values of every animated param so the pooled session
-      // (reused by the live viewport) is restored to its current pose after the
-      // sweep — same discipline as verifyAnimation.
-      const originals: ParamUpdateEdit[] = [];
-      const seen = new Set<string>();
-      for (const track of tracks) {
-        if (seen.has(track.param)) continue;
-        seen.add(track.param);
-        originals.push({
-          name: track.param,
-          value: model.session.paramTable.get(track.param).value,
-        });
-      }
-
-      // Chain index of the assembly (scene) record. A geometry-driving track
-      // param re-lowers a part record BEFORE this index (the geometry-param
-      // guard below); a pose-only edit re-lowers only at/after it.
-      const assemblyIndex = firstAssemblyIndex(model);
-      const recordIndexById = new Map<string, number>();
-      model.records.forEach((rec, idx) => recordIndexById.set(rec.id, idx));
+      const { originals, assemblyIndex, recordIndexById } = snapshotOriginalParams(model, tracks);
 
       try {
-        const times: number[] = [];
-        // partName → matrices[frame]. Preserve first-seen part order.
-        const order: string[] = [];
-        const byPart = new Map<string, number[][]>();
+        const swept = await sweepBakeFrames(model, schedule, tracks, assemblyIndex, recordIndexById, res);
+        if (!swept) return;
 
-        for (let i = 0; i < schedule.length; i += 1) {
-          const frame = schedule[i];
-          times.push(frame.tMs);
-          const edits: ParamUpdateEdit[] = tracks.map((track) => ({
-            name: track.param,
-            value: frame.values[track.param],
-          }));
-          // `silent` so the per-frame pose solve does NOT fan a relower out
-          // to SSE subscribers. Without this each baked frame fired one
-          // `event: relower` → the client re-fetched `/transforms` per frame
-          // (25 useless fetches across a 24-frame bake) and the live viewport
-          // twitched through every pose mid-bake. The single post-restore
-          // relower below is the only one a bake should produce.
-          const { model: updated, result: updateResult } = await updateModelParams(
-            model,
-            edits,
-            { silent: true },
-          );
-          // Geometry-param guard (B1). Studio baked playback only re-applies
-          // RIGID per-part world transforms — it never re-meshes. A track param
-          // that drives part GEOMETRY (a dimension, extrude depth, hole radius)
-          // re-lowers a part record BEFORE the assembly record; the baked
-          // transforms would then pose the PRE-EDIT shape → silently wrong.
-          // Detect on the first sampled frame and refuse: if any re-lowered
-          // record sits at a lower chain index than the assembly record, the
-          // edit changed geometry, not just a mate pose.
-          if (i === 0 && assemblyIndex >= 0) {
-            const touchedGeometry = updateResult.relowered.some((id) => {
-              const idx = recordIndexById.get(id);
-              return idx !== undefined && idx < assemblyIndex;
-            });
-            if (touchedGeometry) {
-              return writeJson(res, 422, {
-                error:
-                  'this animationView timeline drives part GEOMETRY (a dimension / extrude depth / hole radius), not just a mate pose — ' +
-                  'Studio baked playback only re-applies rigid per-part transforms, so it cannot represent a changing shape.',
-                code: 'animation.bake.geometry-param',
-                hint:
-                  'Studio playback supports POSE-ONLY (mate-driven) timelines. Render geometry-animating timelines with `kernelcad animate` ' +
-                  '(offline MP4 re-meshes every frame).',
-              });
-            }
-          }
-          const tail = liveTail(updated);
-          if (!isSceneBackend(tail)) {
-            return writeJson(res, 422, {
-              error: `the pose at tMs=${frame.tMs} did not resolve an assembly scene; baked playback needs per-part transforms`,
-              code: 'animation.bake.no-scene',
-              hint: 'Return the solved assembly from the script — `return asm.solvedModel(...)` — so each pose lowers to a scene with per-part world transforms.',
-            });
-          }
-          for (const part of tail.parts) {
-            let matrices = byPart.get(part.name);
-            if (!matrices) {
-              matrices = [];
-              byPart.set(part.name, matrices);
-              order.push(part.name);
-            }
-            matrices.push(Array.from(part.worldTransform.toMat4()));
-          }
-        }
-
-        // ADVISORY collision check (I1). Run the SAME keyframe-sample
-        // interference check `kernelcad animate` uses — keyframe times +
-        // segment midpoints (~11 poses), NOT every baked frame — so Studio can
-        // warn on a self-colliding mechanism the offline tool would catch.
-        // NON-FATAL: a failure here must never sink a bake whose transforms are
-        // already computed, so it is wrapped and yields an empty list on error.
-        // `silent` so the keyframe re-solves do NOT each fan a relower out (the
-        // bake emits its own single trailing relower after the param restore
-        // below); verifyAnimation restores its own intermediate params, and the
-        // authoritative restore to the true pre-bake pose happens in `finally`.
-        let collisions: AnimationCollision[] = [];
-        try {
-          const verdict = await verifyAnimation(model, tracks, { silent: true });
-          collisions = verdict.collisions;
-        } catch (e) {
-          console.warn(
-            `[animation-bake] advisory collision check failed for session ${token}:`,
-            e instanceof Error ? e.message : String(e),
-          );
-        }
+        const collisions = await collectAdvisoryCollisions(model, tracks, token);
 
         const result: AnimationBakeResult = {
           frames: schedule.length,
           durationMs,
           fps,
-          times,
-          parts: order.map((name) => ({ name, matrices: byPart.get(name) ?? [] })),
+          times: swept.times,
+          parts: swept.order.map((name) => ({ name, matrices: swept.byPart.get(name) ?? [] })),
           collisions,
         };
         return writeJson(res, 200, result);
       } finally {
-        // Restore the pre-bake pose, then drop the single-flight lock. A
-        // restore failure leaves the session at the last baked pose; surface
-        // nothing here (the bake result already went out) but log it.
-        //
-        // This restore solve is the ONLY relower a bake emits: the per-frame
-        // sweep above ran `silent`, so this single (non-silent) update fans one
-        // `event: relower` out to SSE subscribers AFTER the session is back at
-        // its pre-bake pose — any open client resyncs its transforms exactly
-        // once instead of once per baked frame.
-        if (originals.length > 0) {
-          try {
-            await updateModelParams(model, originals);
-          } catch (e) {
-            console.warn(
-              `[animation-bake] failed to restore params for session ${token}:`,
-              e instanceof Error ? e.message : String(e),
-            );
-          }
-        } else {
-          // No animated params were edited (degenerate timeline): the silent
-          // sweep emitted nothing, so emit one synthetic empty relower so a
-          // client that began listening mid-bake still gets a single resync.
-          model.session.engine?.emitRelower([]);
-        }
+        await restoreOriginalParams(model, originals, token);
         inFlight.delete(token);
       }
     } catch (error) {
       if (token) inFlight.delete(token);
-      const err = error as { message?: unknown; code?: unknown; hint?: unknown };
-      if (typeof err?.code === 'string') {
-        return writeJson(res, 422, {
-          error: typeof err.message === 'string' ? err.message : String(error),
-          code: err.code,
-          hint: typeof err.hint === 'string' ? err.hint : undefined,
-        });
-      }
-      return writeJson(res, 500, {
-        error: error instanceof Error ? error.message : String(error),
-      });
+      writeBakeError(res, error);
     }
   };
 }

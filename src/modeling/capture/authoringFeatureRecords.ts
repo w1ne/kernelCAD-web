@@ -69,19 +69,11 @@ export interface ProjectCurveCaptureArgs {
   asEdge?: boolean;
 }
 
-export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
-  const bad = (field: string, why: string): never => {
-    throw new KernelError(
-      'feature.invalid-args',
-      `dfmSpec: ${field} ${why}.`,
-      undefined,
-      `invalid-args.dfm-spec.${field} — fix the field; dfmSpec is an enforcement gate, malformed declarations fail the build rather than silently disabling checks.`,
-    );
-  };
+type BadFn = (field: string, why: string) => never;
 
-  // FDM fields first: a stray `nozzleMm` without `process: 'fdm'` deserves
-  // the specific fix, not the generic "declares no checks".
-  const fdm = normalizeFdmSettings(args, bad);
+// FDM fields first: a stray `nozzleMm` without `process: 'fdm'` deserves
+// the specific fix, not the generic "declares no checks".
+function validateDfmSpecCheckFields(args: DfmSpec, fdm: DfmFdmMetadata | undefined, bad: BadFn): void {
   if (
     args.minWall === undefined && args.minClearance === undefined &&
     !(args.channels?.length) && fdm === undefined
@@ -100,6 +92,9 @@ export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
   if (args.includeArticulatedMates === true && args.minClearance === undefined) {
     bad('includeArticulatedMates', 'requires minClearance because it only changes which pairs that distance gate measures');
   }
+}
+
+function validateDfmSpecArrayFieldShapes(args: DfmSpec, bad: BadFn): void {
   if (args.ignore !== undefined && !Array.isArray(args.ignore)) {
     bad('ignore', `must be an array of [partA, partB] pairs; got ${JSON.stringify(args.ignore)}`);
   }
@@ -109,6 +104,9 @@ export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
   if (args.channels !== undefined && !Array.isArray(args.channels)) {
     bad('channels', `must be an array of { part, name, openings, sealed? } entries; got ${JSON.stringify(args.channels)}`);
   }
+}
+
+function validateDfmSpecIgnoreEntries(args: DfmSpec, bad: BadFn): void {
   for (const [i, pair] of (args.ignore ?? []).entries()) {
     const isPair = Array.isArray(pair) && pair.length === 2 &&
       pair.every(p => typeof p === 'string' && p.length > 0);
@@ -119,6 +117,9 @@ export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
       bad(`ignore[${i}]`, `must name two different parts; ['${pair[0]}', '${pair[1]}'] can never match a distinct-part pair`);
     }
   }
+}
+
+function validateDfmSpecExcludeEntries(args: DfmSpec, bad: BadFn): void {
   for (const [i, name] of (args.exclude ?? []).entries()) {
     if (typeof name !== 'string' || name.length === 0) {
       bad(`exclude[${i}]`, `must be a non-empty part-name string; got ${JSON.stringify(name)}`);
@@ -128,6 +129,9 @@ export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
       bad(`exclude[${i}]`, `must be a literal part name or a trailing-'*' prefix glob (e.g. 'servo-*'); got ${JSON.stringify(name)}`);
     }
   }
+}
+
+function validateDfmSpecChannelEntries(args: DfmSpec, bad: BadFn): void {
   for (const [i, c] of (args.channels ?? []).entries()) {
     if (typeof c !== 'object' || c === null) {
       bad(`channels[${i}]`, `must be a { part, name, openings, sealed? } object; got ${JSON.stringify(c)}`);
@@ -157,8 +161,10 @@ export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
     }
     channelKeys.add(key);
   }
+}
 
-  const metadata: DfmSpecMetadata = {
+function buildDfmSpecMetadata(args: DfmSpec, fdm: DfmFdmMetadata | undefined): DfmSpecMetadata {
+  return {
     virtual: true,
     ...(args.minWall !== undefined ? { minWall: args.minWall } : {}),
     ...(args.minClearance !== undefined ? { minClearance: args.minClearance } : {}),
@@ -170,6 +176,26 @@ export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
     })),
     ...(fdm !== undefined ? { fdm } : {}),
   };
+}
+
+export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
+  const bad: BadFn = (field: string, why: string): never => {
+    throw new KernelError(
+      'feature.invalid-args',
+      `dfmSpec: ${field} ${why}.`,
+      undefined,
+      `invalid-args.dfm-spec.${field} — fix the field; dfmSpec is an enforcement gate, malformed declarations fail the build rather than silently disabling checks.`,
+    );
+  };
+
+  const fdm = normalizeFdmSettings(args, bad);
+  validateDfmSpecCheckFields(args, fdm, bad);
+  validateDfmSpecArrayFieldShapes(args, bad);
+  validateDfmSpecIgnoreEntries(args, bad);
+  validateDfmSpecExcludeEntries(args, bad);
+  validateDfmSpecChannelEntries(args, bad);
+
+  const metadata = buildDfmSpecMetadata(args, fdm);
 
   return {
     kind: 'dfmSpec',
@@ -204,6 +230,15 @@ function normalizeFdmSettings(
     bad('process', `must be 'fdm' (the only supported process); got ${JSON.stringify(args.process)}`);
   }
 
+  const buildDirection = normalizeFdmBuildDirection(args, bad);
+  const nozzleMm = readPositiveFdmNumber('nozzleMm', args.nozzleMm, FDM_DEFAULTS.nozzleMm, bad);
+  const maxBridgeMm = readPositiveFdmNumber('maxBridgeMm', args.maxBridgeMm, FDM_DEFAULTS.maxBridgeMm, bad);
+  const maxOverhangDeg = normalizeFdmOverhang(args, bad);
+  const printer = normalizeFdmPrinter(args, bad);
+  return { buildDirection, nozzleMm, maxOverhangDeg, maxBridgeMm, printer };
+}
+
+function normalizeFdmBuildDirection(args: DfmSpec, bad: BadFn): [number, number, number] {
   let buildDirection: [number, number, number] = [...FDM_DEFAULTS.buildDirection];
   const dir = args.buildDirection;
   if (dir !== undefined) {
@@ -222,28 +257,37 @@ function normalizeFdmSettings(
       buildDirection = [dir[0] / len, dir[1] / len, dir[2] / len];
     }
   }
-  const positive = (field: 'nozzleMm' | 'maxBridgeMm', v: number | undefined, dflt: number): number => {
-    if (v === undefined) return dflt;
-    if (!(typeof v === 'number' && Number.isFinite(v) && v > 0)) {
-      bad(field, `must be a positive finite number; got ${v}`);
-    }
-    return v;
-  };
-  const nozzleMm = positive('nozzleMm', args.nozzleMm, FDM_DEFAULTS.nozzleMm);
-  const maxBridgeMm = positive('maxBridgeMm', args.maxBridgeMm, FDM_DEFAULTS.maxBridgeMm);
-  let maxOverhangDeg: number = FDM_DEFAULTS.maxOverhangDeg;
-  if (args.maxOverhangDeg !== undefined) {
-    const v = args.maxOverhangDeg;
-    if (!(typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 90)) {
-      bad('maxOverhangDeg', `must be a finite number of degrees in [0, 90] (0 = vertical wall, 90 = flat ceiling); got ${v}`);
-    }
-    maxOverhangDeg = v;
+  return buildDirection;
+}
+
+function readPositiveFdmNumber(
+  field: 'nozzleMm' | 'maxBridgeMm',
+  v: number | undefined,
+  dflt: number,
+  bad: BadFn,
+): number {
+  if (v === undefined) return dflt;
+  if (!(typeof v === 'number' && Number.isFinite(v) && v > 0)) {
+    bad(field, `must be a positive finite number; got ${v}`);
   }
+  return v;
+}
+
+function normalizeFdmOverhang(args: DfmSpec, bad: BadFn): number {
+  if (args.maxOverhangDeg === undefined) return FDM_DEFAULTS.maxOverhangDeg;
+  const v = args.maxOverhangDeg;
+  if (!(typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 90)) {
+    bad('maxOverhangDeg', `must be a finite number of degrees in [0, 90] (0 = vertical wall, 90 = flat ceiling); got ${v}`);
+  }
+  return v;
+}
+
+function normalizeFdmPrinter(args: DfmSpec, bad: BadFn): string {
   const printer = args.printer ?? DEFAULT_PRINTER_PROFILE;
   if (typeof printer !== 'string' || PRINTER_PROFILES[printer] === undefined) {
     bad('printer', `must name a bundled printer profile (${Object.keys(PRINTER_PROFILES).join(', ')}); got ${JSON.stringify(printer)}`);
   }
-  return { buildDirection, nozzleMm, maxOverhangDeg, maxBridgeMm, printer };
+  return printer;
 }
 
 export function buildCurve3DFeatureSpec(args: Curve3DCaptureArgs): AuthoringFeatureSpec {
@@ -444,7 +488,7 @@ export function buildProjectCurveFeatureSpec(
  *  do is resolve the face selectors — that needs lowered geometry, so it
  *  happens in the runner and surfaces as `fea.study.*-unresolved`. */
 export function buildFeaStudyFeatureSpec(args: FeaStudySpec, shapeRef: FeatureRef): AuthoringFeatureSpec {
-  const bad = (field: string, why: string): never => {
+  const bad: BadFn = (field: string, why: string): never => {
     throw new KernelError(
       'feature.invalid-args',
       `feaStudy: ${field} ${why}.`,
@@ -453,57 +497,9 @@ export function buildFeaStudyFeatureSpec(args: FeaStudySpec, shapeRef: FeatureRe
     );
   };
 
-  const validSelector = (v: unknown): boolean =>
-    (typeof v === 'string' && v.length > 0) || (typeof v === 'object' && v !== null && !Array.isArray(v));
-
-  if (args === null || typeof args !== 'object') bad('spec', 'must be an object');
-  if (args.material === undefined) {
-    bad('material', 'is required; pass a grade name or { E, nu, yield } in MPa');
-  }
-  const mat = resolveFeaMaterial(args.material);
-  if (!mat.ok) {
-    throw new KernelError('feature.invalid-args', mat.message, undefined, mat.hint);
-  }
-  if (!validSelector(args.fixed)) {
-    bad('fixed', `must be a FaceQuery object or a '@kc[...]' ref string; got ${JSON.stringify(args.fixed)}`);
-  }
-  if (!Array.isArray(args.loads) || args.loads.length === 0) {
-    bad('loads', 'must be a non-empty array — a study with no load reports nothing');
-  }
-  const loads: FeaLoadMetadata[] = [];
-  for (const [i, load] of args.loads.entries()) {
-    if (load === null || typeof load !== 'object') bad(`loads[${i}]`, 'must be an object');
-    if (!validSelector(load.faces)) {
-      bad(`loads[${i}].faces`, `must be a FaceQuery object or a '@kc[...]' ref string; got ${JSON.stringify(load.faces)}`);
-    }
-    const f = load.force;
-    if (!Array.isArray(f) || f.length !== 3 || !f.every(v => typeof v === 'number' && Number.isFinite(v))) {
-      bad(`loads[${i}].force`, `must be three finite numbers [Fx, Fy, Fz] in newtons; got ${JSON.stringify(f)}`);
-    }
-    if (f[0] === 0 && f[1] === 0 && f[2] === 0) {
-      bad(`loads[${i}].force`, 'is the zero vector; a zero load would report an infinite safety factor');
-    }
-    if (load.name !== undefined && (typeof load.name !== 'string' || load.name.length === 0)) {
-      bad(`loads[${i}].name`, `must be a non-empty string; got ${JSON.stringify(load.name)}`);
-    }
-    loads.push({
-      faces: load.faces,
-      force: [f[0], f[1], f[2]],
-      name: load.name ?? `load${i}`,
-    });
-  }
-  if (args.meshSize !== undefined && !(Number.isFinite(args.meshSize) && args.meshSize > 0)) {
-    bad('meshSize', `must be a positive finite number of mm; got ${args.meshSize}`);
-  }
-  if (
-    args.minSafetyFactor !== undefined &&
-    !(Number.isFinite(args.minSafetyFactor) && args.minSafetyFactor > 0)
-  ) {
-    bad('minSafetyFactor', `must be a positive finite number; got ${args.minSafetyFactor}`);
-  }
-  if (args.name !== undefined && (typeof args.name !== 'string' || args.name.length === 0)) {
-    bad('name', `must be a non-empty string; got ${JSON.stringify(args.name)}`);
-  }
+  validateFeaStudyHeader(args, bad);
+  const loads = validateFeaStudyLoads(args.loads, bad);
+  validateFeaStudyOptions(args, bad);
 
   const metadata: FeaStudyMetadata = {
     virtual: true,
@@ -521,6 +517,68 @@ export function buildFeaStudyFeatureSpec(args: FeaStudySpec, shapeRef: FeatureRe
     inputs: { shape: shapeRef },
     metadata: metadata as unknown as Record<string, unknown>,
   };
+}
+
+function validFeaSelector(v: unknown): boolean {
+  return (typeof v === 'string' && v.length > 0) || (typeof v === 'object' && v !== null && !Array.isArray(v));
+}
+
+function validateFeaStudyHeader(args: FeaStudySpec, bad: BadFn): void {
+  if (args === null || typeof args !== 'object') bad('spec', 'must be an object');
+  if (args.material === undefined) {
+    bad('material', 'is required; pass a grade name or { E, nu, yield } in MPa');
+  }
+  const mat = resolveFeaMaterial(args.material);
+  if (!mat.ok) {
+    throw new KernelError('feature.invalid-args', mat.message, undefined, mat.hint);
+  }
+  if (!validFeaSelector(args.fixed)) {
+    bad('fixed', `must be a FaceQuery object or a '@kc[...]' ref string; got ${JSON.stringify(args.fixed)}`);
+  }
+  if (!Array.isArray(args.loads) || args.loads.length === 0) {
+    bad('loads', 'must be a non-empty array — a study with no load reports nothing');
+  }
+}
+
+function validateFeaStudyLoads(loads: FeaStudySpec['loads'], bad: BadFn): FeaLoadMetadata[] {
+  const out: FeaLoadMetadata[] = [];
+  for (const [i, load] of loads.entries()) {
+    if (load === null || typeof load !== 'object') bad(`loads[${i}]`, 'must be an object');
+    if (!validFeaSelector(load.faces)) {
+      bad(`loads[${i}].faces`, `must be a FaceQuery object or a '@kc[...]' ref string; got ${JSON.stringify(load.faces)}`);
+    }
+    const f = load.force;
+    if (!Array.isArray(f) || f.length !== 3 || !f.every(v => typeof v === 'number' && Number.isFinite(v))) {
+      bad(`loads[${i}].force`, `must be three finite numbers [Fx, Fy, Fz] in newtons; got ${JSON.stringify(f)}`);
+    }
+    if (f[0] === 0 && f[1] === 0 && f[2] === 0) {
+      bad(`loads[${i}].force`, 'is the zero vector; a zero load would report an infinite safety factor');
+    }
+    if (load.name !== undefined && (typeof load.name !== 'string' || load.name.length === 0)) {
+      bad(`loads[${i}].name`, `must be a non-empty string; got ${JSON.stringify(load.name)}`);
+    }
+    out.push({
+      faces: load.faces,
+      force: [f[0], f[1], f[2]],
+      name: load.name ?? `load${i}`,
+    });
+  }
+  return out;
+}
+
+function validateFeaStudyOptions(args: FeaStudySpec, bad: BadFn): void {
+  if (args.meshSize !== undefined && !(Number.isFinite(args.meshSize) && args.meshSize > 0)) {
+    bad('meshSize', `must be a positive finite number of mm; got ${args.meshSize}`);
+  }
+  if (
+    args.minSafetyFactor !== undefined &&
+    !(Number.isFinite(args.minSafetyFactor) && args.minSafetyFactor > 0)
+  ) {
+    bad('minSafetyFactor', `must be a positive finite number; got ${args.minSafetyFactor}`);
+  }
+  if (args.name !== undefined && (typeof args.name !== 'string' || args.name.length === 0)) {
+    bad('name', `must be a non-empty string; got ${JSON.stringify(args.name)}`);
+  }
 }
 
 const isQueryObject = (v: unknown): boolean =>
@@ -573,6 +631,21 @@ export function buildDrawingToleranceFeatureSpec(
   spec: DrawingToleranceSpec,
   shapeRef: FeatureRef,
 ): AuthoringFeatureSpec {
+  const { hasFace, hasEdge } = validateToleranceTarget(spec);
+  const datums = validateToleranceDatums(spec);
+  validateToleranceModifier(spec);
+  const metadata = buildToleranceMetadata(spec, hasFace, hasEdge, datums);
+  return {
+    kind: 'drawingTolerance',
+    params: {},
+    inputs: { shape: shapeRef },
+    metadata: metadata as unknown as Record<string, unknown>,
+  };
+}
+
+function validateToleranceTarget(
+  spec: DrawingToleranceSpec,
+): { readonly hasFace: boolean; readonly hasEdge: boolean } {
   if (!isQueryObject(spec)) invalidGdt('tolerance', 'spec', 'must be an object');
   if (!GDT_TYPES.includes(spec.type)) {
     invalidGdt('tolerance', 'type', `must be one of ${GDT_TYPES.join(' | ')}; got ${JSON.stringify(spec.type)}`);
@@ -591,6 +664,10 @@ export function buildDrawingToleranceFeatureSpec(
   if (hasEdge && !isQueryObject(spec.edge)) {
     invalidGdt('tolerance', 'edge', `must be an EdgeQuery object; got ${JSON.stringify(spec.edge)}`);
   }
+  return { hasFace, hasEdge };
+}
+
+function validateToleranceDatums(spec: DrawingToleranceSpec): string[] {
   const datums = spec.datums ?? [];
   if (!Array.isArray(datums)) {
     invalidGdt('tolerance', 'datums', `must be an array of datum letters; got ${JSON.stringify(spec.datums)}`);
@@ -606,10 +683,22 @@ export function buildDrawingToleranceFeatureSpec(
   if (GDT_FORM_TYPES.includes(spec.type) && datums.length > 0) {
     invalidGdt('tolerance', 'datums', `must be empty for ${spec.type}: a form tolerance controls the feature on its own`);
   }
+  return [...datums];
+}
+
+function validateToleranceModifier(spec: DrawingToleranceSpec): void {
   if (spec.modifier !== undefined && !GDT_MODIFIERS.includes(spec.modifier)) {
     invalidGdt('tolerance', 'modifier', `must be one of ${GDT_MODIFIERS.join(' | ')}; got ${JSON.stringify(spec.modifier)}`);
   }
-  const metadata: DrawingToleranceMetadata = {
+}
+
+function buildToleranceMetadata(
+  spec: DrawingToleranceSpec,
+  hasFace: boolean,
+  hasEdge: boolean,
+  datums: readonly string[],
+): DrawingToleranceMetadata {
+  return {
     virtual: true,
     type: spec.type,
     value: spec.value,
@@ -617,11 +706,5 @@ export function buildDrawingToleranceFeatureSpec(
     ...(hasEdge ? { edge: spec.edge } : {}),
     datums: [...datums],
     ...(spec.modifier !== undefined ? { modifier: spec.modifier } : {}),
-  };
-  return {
-    kind: 'drawingTolerance',
-    params: {},
-    inputs: { shape: shapeRef },
-    metadata: metadata as unknown as Record<string, unknown>,
   };
 }

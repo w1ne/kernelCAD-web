@@ -23,13 +23,14 @@ import {
   ALL_VIEWS,
   type HeadlessObjectFilter,
   type HeadlessInspectionChannel,
+  type HeadlessRenderResult,
 } from '../../render/headlessRender';
 import { resolveRenderBaseUrl } from '../../render/playerServer';
 import { buildModelFromFile } from '../../../modeling/buildModel';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
-import { parseExplodeInput } from '../../../modeling/runtime/explodedPoses';
+import { parseExplodeInput, type ParsedExplode } from '../../../modeling/runtime/explodedPoses';
 
 export interface RenderInput {
   file: string;
@@ -281,11 +282,21 @@ async function withRenderBase<T>(
   }
 }
 
-export async function renderScript(input: RenderInput): Promise<RenderCliResult> {
-  const filePath = resolve(input.file);
+type RenderSection = { axis: 'x' | 'y' | 'z'; position: number; positionRaw: string; flip: boolean };
+
+type RenderFlagsResolution =
+  | { ok: true; objectFilter: HeadlessObjectFilter | undefined; section: RenderSection | undefined; explode: ParsedExplode | undefined }
+  | { ok: false; result: RenderCliResult };
+
+/**
+ * Parse and validate the `--focus`/`--hide`, `--section`, and `--explode*`
+ * flags in one try/catch, so any malformed value exits 1 before the render
+ * surface is provisioned (same contract the original inline block used).
+ */
+function resolveRenderFlags(input: RenderInput): RenderFlagsResolution {
   let objectFilter: HeadlessObjectFilter | undefined;
-  let section: { axis: 'x' | 'y' | 'z'; position: number; positionRaw: string; flip: boolean } | undefined;
-  let explode: { factor: number; mode: 'radial' | 'mate-axis' } | undefined;
+  let section: RenderSection | undefined;
+  let explode: ParsedExplode | undefined;
   try {
     objectFilter = buildObjectFilter(input);
     if (input.section !== undefined) {
@@ -303,20 +314,45 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
     }
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
-    return { exitCode: 1, outputPaths: [] };
+    return { ok: false, result: { exitCode: 1, outputPaths: [] } };
   }
+  return { ok: true, objectFilter, section, explode };
+}
 
-  // Physics-loop probe — P1 surface convergence. Same refuse/watermark
-  // protocol as renderInspectBundle (see runRenderMechanismProbe).
+type RenderProbeResolution =
+  | { proceed: true; mechanismProbe: MechanismProbe }
+  | { proceed: false; result: RenderCliResult };
+
+/**
+ * Physics-loop probe — P1 surface convergence. Same refuse/watermark
+ * protocol as renderInspectBundle (see runRenderMechanismProbe).
+ */
+async function resolveRenderMechanismProbe(
+  input: RenderInput,
+  filePath: string,
+): Promise<RenderProbeResolution> {
   const skipProbe = input.noMechanismCheck === true && !isRenderStrictMode();
   const mechanismProbe = skipProbe
     ? { mechanism: 'unverified' as const, failures: [] }
     : await runRenderMechanismProbe(filePath);
   if (mechanismProbe.mechanism === 'broken' && isRenderStrictMode()) {
     reportBrokenMechanismToStderr(mechanismProbe.failures);
-    return { exitCode: 2, outputPaths: [] };
+    return { proceed: false, result: { exitCode: 2, outputPaths: [] } };
   }
+  return { proceed: true, mechanismProbe };
+}
 
+type RenderCaptureResolution =
+  | { ok: true; result: HeadlessRenderResult }
+  | { ok: false; result: RenderCliResult };
+
+async function runRenderCapture(
+  input: RenderInput,
+  filePath: string,
+  objectFilter: HeadlessObjectFilter | undefined,
+  section: RenderSection | undefined,
+  explode: ParsedExplode | undefined,
+): Promise<RenderCaptureResolution> {
   let result;
   try {
     result = await withRenderBase(input.baseUrl, (baseUrl) =>
@@ -337,93 +373,143 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
     );
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
-    return { exitCode: 1, outputPaths: [] };
+    return { ok: false, result: { exitCode: 1, outputPaths: [] } };
   }
+  return { ok: true, result };
+}
+
+async function writeSeparateRenderViews(
+  input: RenderInput,
+  result: HeadlessRenderResult,
+  dir: string,
+  stem: string,
+  stamp: (buf: Buffer) => Promise<Buffer>,
+): Promise<string[]> {
+  const written: string[] = [];
+  for (const view of ALL_VIEWS) {
+    const buf = result.pngsByView[view];
+    if (!buf) continue;
+    const outPath = input.out
+      ? input.out.replace(/\.png$/i, `.${view}.png`)
+      : join(dir, `${stem}.${view}.png`);
+    await writeFile(outPath, await stamp(buf));
+    written.push(outPath);
+  }
+  // Also emit pose-keyed PNGs alongside the view tiles.
+  for (const [poseKey, buf] of Object.entries(result.pngsByPose ?? {})) {
+    const [az, el] = poseKey.split(',').map((s) => s.trim());
+    const suffix = `pose-${az}-${el}.png`;
+    const outPath = input.out
+      ? input.out.replace(/\.png$/i, `.${suffix}`)
+      : join(dir, `${stem}.${suffix}`);
+    await writeFile(outPath, await stamp(buf));
+    written.push(outPath);
+  }
+  return written;
+}
+
+async function writeCompositeRenderViews(
+  input: RenderInput,
+  result: HeadlessRenderResult,
+  dir: string,
+  stem: string,
+  stamp: (buf: Buffer) => Promise<Buffer>,
+): Promise<string[]> {
+  const written: string[] = [];
+  const outPath = input.out ?? join(dir, `${stem}.png`);
+  const grid = await composite2x2(result.pngsByView, input.width, input.height);
+  await writeFile(outPath, await stamp(grid));
+  written.push(outPath);
+  // In composite mode, pose captures still emit as separate files next to
+  // the composite output. Resolves the `node ... render --pose <az,el> -o
+  // /tmp/<stem>.png` flow which expects `/tmp/<stem>.pose-<az>-<el>.png`.
+  for (const [poseKey, buf] of Object.entries(result.pngsByPose ?? {})) {
+    const [az, el] = poseKey.split(',').map((s) => s.trim());
+    const suffix = `pose-${az}-${el}.png`;
+    const posePath = (input.out ?? join(dir, `${stem}.png`)).replace(/\.png$/i, `.${suffix}`);
+    await writeFile(posePath, await stamp(buf));
+    written.push(posePath);
+  }
+  return written;
+}
+
+export async function renderScript(input: RenderInput): Promise<RenderCliResult> {
+  const filePath = resolve(input.file);
+  const flags = resolveRenderFlags(input);
+  if (!flags.ok) return flags.result;
+  const { objectFilter, section, explode } = flags;
+
+  const probe = await resolveRenderMechanismProbe(input, filePath);
+  if (!probe.proceed) return probe.result;
+  const mechanismProbe = probe.mechanismProbe;
+
+  const capture = await runRenderCapture(input, filePath, objectFilter, section, explode);
+  if (!capture.ok) return capture.result;
+  const result = capture.result;
 
   const dir = dirname(filePath);
   const stem = basename(filePath).replace(/\.kcad\.ts$/, '').replace(/\.ts$/, '');
-  const written: string[] = [];
   const stamp = async (buf: Buffer): Promise<Buffer> =>
     mechanismProbe.mechanism === 'broken'
       ? watermarkBrokenMechanism(buf, mechanismProbe.failures)
       : buf;
 
-  if (input.separate) {
-    for (const view of ALL_VIEWS) {
-      const buf = result.pngsByView[view];
-      if (!buf) continue;
-      const outPath = input.out
-        ? input.out.replace(/\.png$/i, `.${view}.png`)
-        : join(dir, `${stem}.${view}.png`);
-      await writeFile(outPath, await stamp(buf));
-      written.push(outPath);
-    }
-    // Also emit pose-keyed PNGs alongside the view tiles.
-    for (const [poseKey, buf] of Object.entries(result.pngsByPose ?? {})) {
-      const [az, el] = poseKey.split(',').map((s) => s.trim());
-      const suffix = `pose-${az}-${el}.png`;
-      const outPath = input.out
-        ? input.out.replace(/\.png$/i, `.${suffix}`)
-        : join(dir, `${stem}.${suffix}`);
-      await writeFile(outPath, await stamp(buf));
-      written.push(outPath);
-    }
-  } else {
-    const outPath = input.out ?? join(dir, `${stem}.png`);
-    const grid = await composite2x2(result.pngsByView, input.width, input.height);
-    await writeFile(outPath, await stamp(grid));
-    written.push(outPath);
-    // In composite mode, pose captures still emit as separate files next to
-    // the composite output. Resolves the `node ... render --pose <az,el> -o
-    // /tmp/<stem>.png` flow which expects `/tmp/<stem>.pose-<az>-<el>.png`.
-    for (const [poseKey, buf] of Object.entries(result.pngsByPose ?? {})) {
-      const [az, el] = poseKey.split(',').map((s) => s.trim());
-      const suffix = `pose-${az}-${el}.png`;
-      const posePath = (input.out ?? join(dir, `${stem}.png`)).replace(/\.png$/i, `.${suffix}`);
-      await writeFile(posePath, await stamp(buf));
-      written.push(posePath);
-    }
-  }
+  const written = input.separate
+    ? await writeSeparateRenderViews(input, result, dir, stem, stamp)
+    : await writeCompositeRenderViews(input, result, dir, stem, stamp);
 
   return { exitCode: 0, outputPaths: written };
 }
 
-export async function renderInspectBundle(input: RenderInspectInput): Promise<RenderCliResult> {
-  const filePath = resolve(input.file);
-  const outDir = resolve(input.outDir);
-  const rgbDir = join(outDir, 'channels', 'rgb');
-  const maskDir = join(outDir, 'channels', 'mask');
-  const depthDir = join(outDir, 'channels', 'depth');
-  const normalsDir = join(outDir, 'channels', 'normals');
+type MechanismProbe = Awaited<ReturnType<typeof runRenderMechanismProbe>>;
+
+type InspectInputResolution =
+  | { ok: true; requestedChannels: HeadlessInspectionChannel[]; objectFilter: HeadlessObjectFilter | undefined }
+  | { ok: false; result: RenderCliResult };
+
+function resolveInspectInputs(input: RenderInspectInput): InspectInputResolution {
   let requestedChannels: HeadlessInspectionChannel[];
   try {
     requestedChannels = normalizeInspectChannels(input.channels);
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
-    return { exitCode: 1, outputPaths: [] };
+    return { ok: false, result: { exitCode: 1, outputPaths: [] } };
   }
   let objectFilter: HeadlessObjectFilter | undefined;
   try {
     objectFilter = buildObjectFilter(input);
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
-    return { exitCode: 1, outputPaths: [] };
+    return { ok: false, result: { exitCode: 1, outputPaths: [] } };
   }
+  return { ok: true, requestedChannels, objectFilter };
+}
 
-  // Physics-loop probe — P1 surface convergence. Runs BEFORE the
-  // (slow) headless render so strict mode refuses without spinning up
-  // a browser tile. The renderer's existing exit-1 paths take
-  // precedence over this; only a real broken mechanism + zero render
-  // errors trigger refuse/watermark.
+type InspectProbeResolution =
+  | { ok: true; mechanismProbe: MechanismProbe }
+  | { ok: false; result: RenderCliResult };
+
+async function probeInspectMechanism(filePath: string): Promise<InspectProbeResolution> {
   const mechanismProbe = await runRenderMechanismProbe(filePath);
   if (mechanismProbe.mechanism === 'broken' && isRenderStrictMode()) {
     reportBrokenMechanismToStderr(mechanismProbe.failures);
-    return { exitCode: 2, outputPaths: [] };
+    return { ok: false, result: { exitCode: 2, outputPaths: [] } };
   }
+  return { ok: true, mechanismProbe };
+}
 
-  let result;
+type InspectRenderResolution =
+  | { ok: true; result: HeadlessRenderResult }
+  | { ok: false; result: RenderCliResult };
+
+async function renderInspectViews(
+  input: RenderInspectInput,
+  filePath: string,
+  objectFilter: HeadlessObjectFilter | undefined,
+  requestedChannels: HeadlessInspectionChannel[],
+): Promise<InspectRenderResolution> {
   try {
-    result = await withRenderBase(input.baseUrl, (baseUrl) =>
+    const result = await withRenderBase(input.baseUrl, (baseUrl) =>
       headlessRender({
         scriptPath: filePath,
         viewportWidth: input.width,
@@ -437,11 +523,20 @@ export async function renderInspectBundle(input: RenderInspectInput): Promise<Re
         inspectionChannels: requestedChannels,
       }),
     );
+    return { ok: true, result };
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
-    return { exitCode: 1, outputPaths: [] };
+    return { ok: false, result: { exitCode: 1, outputPaths: [] } };
   }
+}
 
+async function ensureInspectChannelDirs(
+  requestedChannels: HeadlessInspectionChannel[],
+  rgbDir: string,
+  maskDir: string,
+  depthDir: string,
+  normalsDir: string,
+): Promise<void> {
   if (requestedChannels.includes('rgb')) {
     await mkdir(rgbDir, { recursive: true });
   }
@@ -454,55 +549,80 @@ export async function renderInspectBundle(input: RenderInspectInput): Promise<Re
   if (requestedChannels.includes('normals')) {
     await mkdir(normalsDir, { recursive: true });
   }
+}
 
-  const channelPaths: Record<string, Record<string, string>> = {};
-  const pngPaths: string[] = [];
-  if (requestedChannels.includes('rgb')) {
-    channelPaths.rgb = {};
-    for (const view of ALL_VIEWS) {
-      const buf = result.pngsByView[view];
-      if (!buf) throw new Error(`renderInspectBundle: missing rgb view '${view}'`);
-      const relativePath = `channels/rgb/${view}.png`;
-      const outPath = join(outDir, relativePath);
-      // Physics-loop watermark — only the RGB channel gets the
-      // broken-mechanism overlay. Mask / depth / normals channels are
-      // analytical data; rewriting them with a text overlay would
-      // corrupt downstream tooling that reads object-ids out of mask
-      // RGB or normalized depth out of the depth tile.
-      const finalBuf = mechanismProbe.mechanism === 'broken'
-        ? await watermarkBrokenMechanism(buf, mechanismProbe.failures)
-        : buf;
-      await writeFile(outPath, finalBuf);
-      channelPaths.rgb[view] = relativePath;
-      pngPaths.push(outPath);
-    }
+async function writeRgbInspectViews(
+  result: HeadlessRenderResult,
+  outDir: string,
+  mechanismProbe: MechanismProbe,
+  channelPaths: Record<string, Record<string, string>>,
+  pngPaths: string[],
+): Promise<void> {
+  channelPaths.rgb = {};
+  for (const view of ALL_VIEWS) {
+    const buf = result.pngsByView[view];
+    if (!buf) throw new Error(`renderInspectBundle: missing rgb view '${view}'`);
+    const relativePath = `channels/rgb/${view}.png`;
+    const outPath = join(outDir, relativePath);
+    // Physics-loop watermark — only the RGB channel gets the
+    // broken-mechanism overlay. Mask / depth / normals channels are
+    // analytical data; rewriting them with a text overlay would
+    // corrupt downstream tooling that reads object-ids out of mask
+    // RGB or normalized depth out of the depth tile.
+    const finalBuf = mechanismProbe.mechanism === 'broken'
+      ? await watermarkBrokenMechanism(buf, mechanismProbe.failures)
+      : buf;
+    await writeFile(outPath, finalBuf);
+    channelPaths.rgb[view] = relativePath;
+    pngPaths.push(outPath);
   }
-  if (requestedChannels.includes('mask')) {
-    channelPaths.mask = {};
-    for (const view of ALL_VIEWS) {
-      const buf = result.maskPngsByView?.[view];
-      if (!buf) throw new Error(`renderInspectBundle: missing mask view '${view}'`);
-      const relativePath = `channels/mask/${view}.png`;
-      const outPath = join(outDir, relativePath);
-      await writeFile(outPath, buf);
-      channelPaths.mask[view] = relativePath;
-      pngPaths.push(outPath);
-    }
-  }
-  for (const channel of ['depth', 'normals'] as const) {
-    if (!requestedChannels.includes(channel)) continue;
-    channelPaths[channel] = {};
-    for (const view of ALL_VIEWS) {
-      const buf = result.inspectionPngsByChannel?.[channel]?.[view];
-      if (!buf) throw new Error(`renderInspectBundle: missing ${channel} view '${view}'`);
-      const relativePath = `channels/${channel}/${view}.png`;
-      const outPath = join(outDir, relativePath);
-      await writeFile(outPath, buf);
-      channelPaths[channel][view] = relativePath;
-      pngPaths.push(outPath);
-    }
-  }
+}
 
+async function writeMaskInspectViews(
+  result: HeadlessRenderResult,
+  outDir: string,
+  channelPaths: Record<string, Record<string, string>>,
+  pngPaths: string[],
+): Promise<void> {
+  channelPaths.mask = {};
+  for (const view of ALL_VIEWS) {
+    const buf = result.maskPngsByView?.[view];
+    if (!buf) throw new Error(`renderInspectBundle: missing mask view '${view}'`);
+    const relativePath = `channels/mask/${view}.png`;
+    const outPath = join(outDir, relativePath);
+    await writeFile(outPath, buf);
+    channelPaths.mask[view] = relativePath;
+    pngPaths.push(outPath);
+  }
+}
+
+async function writeGenericInspectViews(
+  channel: 'depth' | 'normals',
+  result: HeadlessRenderResult,
+  outDir: string,
+  channelPaths: Record<string, Record<string, string>>,
+  pngPaths: string[],
+): Promise<void> {
+  channelPaths[channel] = {};
+  for (const view of ALL_VIEWS) {
+    const buf = result.inspectionPngsByChannel?.[channel]?.[view];
+    if (!buf) throw new Error(`renderInspectBundle: missing ${channel} view '${view}'`);
+    const relativePath = `channels/${channel}/${view}.png`;
+    const outPath = join(outDir, relativePath);
+    await writeFile(outPath, buf);
+    channelPaths[channel][view] = relativePath;
+    pngPaths.push(outPath);
+  }
+}
+
+function buildInspectManifest(
+  input: RenderInspectInput,
+  filePath: string,
+  requestedChannels: HeadlessInspectionChannel[],
+  channelPaths: Record<string, Record<string, string>>,
+  objectFilter: HeadlessObjectFilter | undefined,
+  result: HeadlessRenderResult,
+) {
   const channelMetadata = {
     ...(result.maskObjects !== undefined
       ? {
@@ -521,8 +641,7 @@ export async function renderInspectBundle(input: RenderInspectInput): Promise<Re
       : {}),
   };
 
-  const manifestPath = join(outDir, 'manifest.json');
-  const manifest = {
+  return {
     bundleVersion: 1,
     scriptPath: filePath,
     generatedAt: new Date().toISOString(),
@@ -559,6 +678,48 @@ export async function renderInspectBundle(input: RenderInspectInput): Promise<Re
     ],
     channels: channelPaths,
   };
+}
+
+export async function renderInspectBundle(input: RenderInspectInput): Promise<RenderCliResult> {
+  const filePath = resolve(input.file);
+  const outDir = resolve(input.outDir);
+  const rgbDir = join(outDir, 'channels', 'rgb');
+  const maskDir = join(outDir, 'channels', 'mask');
+  const depthDir = join(outDir, 'channels', 'depth');
+  const normalsDir = join(outDir, 'channels', 'normals');
+  const resolved = resolveInspectInputs(input);
+  if (!resolved.ok) return resolved.result;
+  const { requestedChannels, objectFilter } = resolved;
+
+  // Physics-loop probe — P1 surface convergence. Runs BEFORE the
+  // (slow) headless render so strict mode refuses without spinning up
+  // a browser tile. The renderer's existing exit-1 paths take
+  // precedence over this; only a real broken mechanism + zero render
+  // errors trigger refuse/watermark.
+  const probe = await probeInspectMechanism(filePath);
+  if (!probe.ok) return probe.result;
+
+  const rendered = await renderInspectViews(input, filePath, objectFilter, requestedChannels);
+  if (!rendered.ok) return rendered.result;
+  const result = rendered.result;
+
+  await ensureInspectChannelDirs(requestedChannels, rgbDir, maskDir, depthDir, normalsDir);
+
+  const channelPaths: Record<string, Record<string, string>> = {};
+  const pngPaths: string[] = [];
+  if (requestedChannels.includes('rgb')) {
+    await writeRgbInspectViews(result, outDir, probe.mechanismProbe, channelPaths, pngPaths);
+  }
+  if (requestedChannels.includes('mask')) {
+    await writeMaskInspectViews(result, outDir, channelPaths, pngPaths);
+  }
+  for (const channel of ['depth', 'normals'] as const) {
+    if (!requestedChannels.includes(channel)) continue;
+    await writeGenericInspectViews(channel, result, outDir, channelPaths, pngPaths);
+  }
+
+  const manifestPath = join(outDir, 'manifest.json');
+  const manifest = buildInspectManifest(input, filePath, requestedChannels, channelPaths, objectFilter, result);
   await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 
   return { exitCode: 0, outputPaths: [manifestPath, ...pngPaths] };

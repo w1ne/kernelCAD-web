@@ -250,6 +250,167 @@ function attachCreatedRefs(
   return merged;
 }
 
+/** Resolve the cutout profile sketch's commands from the referenced
+ *  sketch FeatureRecord's metadata. */
+function resolveProfileCommands(
+  feature: FeatureRecord,
+  records: readonly FeatureRecord[] | undefined,
+): SketchCommand[] | { error: CompilerDiagnostic } {
+  // The profile sketch's commands live in the sketch FeatureRecord's metadata.
+  const profileRef = feature.inputs.profile;
+  const profileFeatureId = profileRef && profileRef.kind === 'feature' ? profileRef.id : undefined;
+  const profileRecord = records?.find(r => r.id === profileFeatureId);
+  const commands = ((profileRecord?.metadata as { commands?: SketchCommand[] } | undefined)?.commands) ?? [];
+  if (commands.length === 0) {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.invalid-args',
+        featureId: feature.id,
+        severity: 'error',
+        message: 'cutout: profile sketch has no commands.',
+        hint: 'The cutout profile must be a closed sketch built via path().moveTo(...).lineTo(...).close().',
+      },
+    };
+  }
+  return commands;
+}
+
+interface CutoutDepth {
+  effectiveDepth: number;
+  through: boolean;
+  symmetric: boolean;
+}
+
+/** Resolve the cutout depth mode (`through` / `symmetric` / numeric). */
+function resolveCutoutDepth(
+  feature: FeatureRecord,
+  target: OcctBackend,
+  entry: ResolvedEntry,
+): CutoutDepth | { error: CompilerDiagnostic } {
+  const depthMode = String(feature.params.depthMode.expression).replace(/'/g, '');
+  const through = depthMode === 'through';
+  const symmetric = depthMode === 'symmetric';
+  const numericDepth = feature.params.depth?.evaluated;
+
+  if (through) {
+    const td = deriveThroughDepth(target, entry, feature.id);
+    if (typeof td !== 'number') return td;
+    return { effectiveDepth: td, through, symmetric };
+  }
+  if (numericDepth !== undefined) {
+    return { effectiveDepth: numericDepth, through, symmetric };
+  }
+  return {
+    error: {
+      target: 'export-occt',
+      code: 'feature.invalid-args',
+      featureId: feature.id,
+      severity: 'error',
+      message: 'cutout: missing depth.',
+      hint: "Set either depth (number or 'through') or upToFace; one is required.",
+    },
+  };
+}
+
+/** Build the prism tool, converting a construction throw into a diagnostic. */
+function tryBuildPrismTool(
+  entry: ResolvedEntry,
+  commands: readonly SketchCommand[],
+  effectiveDepth: number,
+  symmetric: boolean,
+  featureId: string,
+): replicad.Shape3D | { error: CompilerDiagnostic } {
+  try {
+    return buildPrismTool(entry, commands, effectiveDepth, symmetric);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.kernel-failed',
+        featureId,
+        severity: 'error',
+        message: `cutout prism construction failed: ${msg}`,
+        hint: 'OCCT could not build the cutout prism. Inspect the profile for self-intersection or zero-area issues.',
+      },
+    };
+  }
+}
+
+/** Boolean-cut the tool out of the target, converting a throw into a diagnostic. */
+function tryCutWithHistory(
+  target: OcctBackend,
+  toolBackend: OcctBackend,
+  featureId: string,
+): ReturnType<typeof cutWithHistory> | { error: CompilerDiagnostic } {
+  try {
+    return cutWithHistory(target, toolBackend);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.kernel-failed',
+        featureId,
+        severity: 'error',
+        message: `OCCT boolean cut failed during cutout lowering: ${msg}`,
+        hint: 'OCCT produced an empty solid or rejected the boolean. Verify the profile lies within the face bounds.',
+      },
+    };
+  }
+}
+
+/** Wrap the boolean result shape and reject an empty solid. */
+function wrapCutResult(
+  cutResult: ReturnType<typeof cutWithHistory>,
+  featureId: string,
+): { intermediate: OcctBackend; wrapped: replicad.Shape3D } | { error: CompilerDiagnostic } {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const wrapped = replicad.cast(cutResult.shape as any) as replicad.Shape3D;
+  const intermediate = new OcctBackend(wrapped, undefined);
+  if (intermediate.isEmpty()) {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.kernel-failed',
+        featureId,
+        severity: 'error',
+        message: 'Cutout boolean produced an empty result.',
+        hint: 'OCCT produced an empty solid; the cutout profile likely missed the body. Check the profile coords against the face bounds.',
+      },
+    };
+  }
+  return { intermediate, wrapped };
+}
+
+/** Profile-larger-than-face warning: compare profile bbox extent to
+ *  entry face bbox extent (cheap approximation via face bounding box on
+ *  the world axes; slice-1 limitation). */
+function pushProfileBboxWarning(
+  diagnostics: CompilerDiagnostic[],
+  entry: ResolvedEntry,
+  pBboxR: number,
+  featureId: string,
+): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const fbb = (entry.face as any).boundingBox as { bounds: [Vec3, Vec3] } | undefined;
+  if (fbb && fbb.bounds) {
+    const [fmin, fmax] = fbb.bounds;
+    const faceMaxR = Math.max(fmax[0] - fmin[0], fmax[1] - fmin[1], fmax[2] - fmin[2]) / 2;
+    if (pBboxR > faceMaxR + 1e-3) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.kernel-failed',
+        featureId,
+        severity: 'warn',
+        message: 'Cutout profile bbox exceeds the entry face bbox.',
+        hint: 'Cutout profile is larger than the target face. If this is intentional (edge-bridging cut), ignore this warning.',
+      });
+    }
+  }
+}
+
 export function lowerCutout(
   feature: FeatureRecord,
   target: OcctBackend,
@@ -264,120 +425,46 @@ export function lowerCutout(
   }
   const entry = entryRes;
 
-  // The profile sketch's commands live in the sketch FeatureRecord's metadata.
-  const profileRef = feature.inputs.profile;
-  const profileFeatureId = profileRef && profileRef.kind === 'feature' ? profileRef.id : undefined;
-  const profileRecord = records?.find(r => r.id === profileFeatureId);
-  const commands = ((profileRecord?.metadata as { commands?: SketchCommand[] } | undefined)?.commands) ?? [];
-  if (commands.length === 0) {
-    diagnostics.push({
-      target: 'export-occt',
-      code: 'feature.invalid-args',
-      featureId: feature.id,
-      severity: 'error',
-      message: 'cutout: profile sketch has no commands.',
-      hint: 'The cutout profile must be a closed sketch built via path().moveTo(...).lineTo(...).close().',
-    });
+  const commandsRes = resolveProfileCommands(feature, records);
+  if ('error' in commandsRes) {
+    diagnostics.push(commandsRes.error);
     return { backend: target, diagnostics };
   }
+  const commands = commandsRes;
   // Suppress unused-var warning until slice-2 might consume profileBackend.
   void profileBackend;
 
-  const depthMode = String(feature.params.depthMode.expression).replace(/'/g, '');
-  const through = depthMode === 'through';
-  const symmetric = depthMode === 'symmetric';
-  const numericDepth = feature.params.depth?.evaluated;
-
-  let effectiveDepth: number;
-  if (through) {
-    const td = deriveThroughDepth(target, entry, feature.id);
-    if (typeof td !== 'number') {
-      diagnostics.push(td.error);
-      return { backend: target, diagnostics };
-    }
-    effectiveDepth = td;
-  } else if (numericDepth !== undefined) {
-    effectiveDepth = numericDepth;
-  } else {
-    diagnostics.push({
-      target: 'export-occt',
-      code: 'feature.invalid-args',
-      featureId: feature.id,
-      severity: 'error',
-      message: 'cutout: missing depth.',
-      hint: "Set either depth (number or 'through') or upToFace; one is required.",
-    });
+  const depthRes = resolveCutoutDepth(feature, target, entry);
+  if ('error' in depthRes) {
+    diagnostics.push(depthRes.error);
     return { backend: target, diagnostics };
   }
+  const { effectiveDepth, through, symmetric } = depthRes;
 
-  let toolShape: replicad.Shape3D;
-  try {
-    toolShape = buildPrismTool(entry, commands, effectiveDepth, symmetric);
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    diagnostics.push({
-      target: 'export-occt',
-      code: 'feature.kernel-failed',
-      featureId: feature.id,
-      severity: 'error',
-      message: `cutout prism construction failed: ${msg}`,
-      hint: 'OCCT could not build the cutout prism. Inspect the profile for self-intersection or zero-area issues.',
-    });
+  const toolRes = tryBuildPrismTool(entry, commands, effectiveDepth, symmetric, feature.id);
+  if ('error' in toolRes) {
+    diagnostics.push(toolRes.error);
     return { backend: target, diagnostics };
   }
+  const toolShape = toolRes;
 
   const toolBackend = new OcctBackend(toolShape);
-  let cutResult;
-  try {
-    cutResult = cutWithHistory(target, toolBackend);
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    diagnostics.push({
-      target: 'export-occt',
-      code: 'feature.kernel-failed',
-      featureId: feature.id,
-      severity: 'error',
-      message: `OCCT boolean cut failed during cutout lowering: ${msg}`,
-      hint: 'OCCT produced an empty solid or rejected the boolean. Verify the profile lies within the face bounds.',
-    });
+  const cutRes = tryCutWithHistory(target, toolBackend, feature.id);
+  if ('error' in cutRes) {
+    diagnostics.push(cutRes.error);
     return { backend: target, diagnostics };
   }
+  const cutResult = cutRes;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const wrapped = replicad.cast(cutResult.shape as any) as replicad.Shape3D;
-  const intermediate = new OcctBackend(wrapped, undefined);
-  if (intermediate.isEmpty()) {
-    diagnostics.push({
-      target: 'export-occt',
-      code: 'feature.kernel-failed',
-      featureId: feature.id,
-      severity: 'error',
-      message: 'Cutout boolean produced an empty result.',
-      hint: 'OCCT produced an empty solid; the cutout profile likely missed the body. Check the profile coords against the face bounds.',
-    });
+  const wrappedRes = wrapCutResult(cutResult, feature.id);
+  if ('error' in wrappedRes) {
+    diagnostics.push(wrappedRes.error);
     return { backend: target, diagnostics };
   }
+  const { intermediate, wrapped } = wrappedRes;
 
-  // Profile-larger-than-face warning: compare profile bbox extent to
-  // entry face bbox extent (cheap approximation via face bounding box on
-  // the world axes; slice-1 limitation).
   const pBboxR = profileBboxRadius(commands);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const fbb = (entry.face as any).boundingBox as { bounds: [Vec3, Vec3] } | undefined;
-  if (fbb && fbb.bounds) {
-    const [fmin, fmax] = fbb.bounds;
-    const faceMaxR = Math.max(fmax[0] - fmin[0], fmax[1] - fmin[1], fmax[2] - fmin[2]) / 2;
-    if (pBboxR > faceMaxR + 1e-3) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.kernel-failed',
-        featureId: feature.id,
-        severity: 'warn',
-        message: 'Cutout profile bbox exceeds the entry face bbox.',
-        hint: 'Cutout profile is larger than the target face. If this is intentional (edge-bridging cut), ignore this warning.',
-      });
-    }
-  }
+  pushProfileBboxWarning(diagnostics, entry, pBboxR, feature.id);
 
   const frame: CutoutFrame = {
     entryPoint: entry.centroid,

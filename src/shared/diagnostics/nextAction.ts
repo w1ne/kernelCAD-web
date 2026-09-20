@@ -3,9 +3,9 @@
 // Back-compat re-exports for the `NextAction` type and per-code map.
 //
 // The structured form of "what to try next" is now declared inline in
-// `./registry.ts` (DIAGNOSTIC_REGISTRY[code].nextAction). This module is
+// `./registry/` (DIAGNOSTIC_REGISTRY[code].nextAction). This module is
 // retained so existing import paths keep compiling; the `NextAction` union
-// lives here because registry.ts imports it (avoiding a circular dependency).
+// lives here because registry/ imports it (avoiding a circular dependency).
 //
 // The kinds below cover the full set of recoveries the milestone-C codes
 // describe. Adding a new kind requires extending DIAGNOSTIC_REGISTRY for

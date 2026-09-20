@@ -454,7 +454,53 @@ function measureBearingCoplanarity(
   const platePerpThreshold = PLATE_PERP_FACTOR * pinR;
 
   const childInterval = axisInterval(child, axisOrigin, axisDir);
+  const { plateInnerPositive, plateInnerNegative, inferredPlateT } =
+    collectForkPlateFaces(
+      parent,
+      childInterval,
+      axisOrigin,
+      axisDir,
+      axisThickThreshold,
+      platePerpThreshold,
+    );
+  if (plateInnerPositive === undefined && plateInnerNegative === undefined) {
+    return undefined;
+  }
+  const gapPositive = plateInnerPositive !== undefined
+    ? Math.max(0, plateInnerPositive - childInterval.max)
+    : 0;
+  const gapNegative = plateInnerNegative !== undefined
+    ? Math.max(0, childInterval.min - plateInnerNegative)
+    : 0;
+  // Fork-gap axial centre + width, tongue axial centre, overlap test.
+  const { forkGapY, forkAxialCentre, tongueOutsideForkGap } = computeForkGap(
+    plateInnerPositive,
+    plateInnerNegative,
+    childInterval,
+  );
+  const tongueAxialCentre = 0.5 * (childInterval.min + childInterval.max);
+  return {
+    gap: Math.max(gapPositive, gapNegative),
+    ...(inferredPlateT !== undefined ? { plateT: inferredPlateT } : {}),
+    ...(forkGapY !== undefined ? { forkGapY } : {}),
+    ...(forkAxialCentre !== undefined ? { forkAxialCentre } : {}),
+    tongueAxialCentre,
+    tongueOutsideForkGap,
+  };
+}
 
+function collectForkPlateFaces(
+  parent: OcctBackend,
+  childInterval: { min: number; max: number },
+  axisOrigin: Vec3,
+  axisDir: Vec3,
+  axisThickThreshold: number,
+  platePerpThreshold: number,
+): {
+  plateInnerPositive: number | undefined;
+  plateInnerNegative: number | undefined;
+  inferredPlateT: number | undefined;
+} {
   let plateInnerPositive: number | undefined; // nearest parent inner-cheek face on +axis side
   let plateInnerNegative: number | undefined; // nearest parent inner-cheek face on -axis side
   let inferredPlateT: number | undefined;
@@ -483,16 +529,18 @@ function measureBearingCoplanarity(
       }
     }
   }
-  if (plateInnerPositive === undefined && plateInnerNegative === undefined) {
-    return undefined;
-  }
-  const gapPositive = plateInnerPositive !== undefined
-    ? Math.max(0, plateInnerPositive - childInterval.max)
-    : 0;
-  const gapNegative = plateInnerNegative !== undefined
-    ? Math.max(0, childInterval.min - plateInnerNegative)
-    : 0;
-  // Fork-gap axial centre + width, tongue axial centre, overlap test.
+  return { plateInnerPositive, plateInnerNegative, inferredPlateT };
+}
+
+function computeForkGap(
+  plateInnerPositive: number | undefined,
+  plateInnerNegative: number | undefined,
+  childInterval: { min: number; max: number },
+): {
+  forkGapY: number | undefined;
+  forkAxialCentre: number | undefined;
+  tongueOutsideForkGap: boolean;
+} {
   let forkGapY: number | undefined;
   let forkAxialCentre: number | undefined;
   let tongueOutsideForkGap = false;
@@ -502,15 +550,7 @@ function measureBearingCoplanarity(
     tongueOutsideForkGap =
       childInterval.max < plateInnerNegative || childInterval.min > plateInnerPositive;
   }
-  const tongueAxialCentre = 0.5 * (childInterval.min + childInterval.max);
-  return {
-    gap: Math.max(gapPositive, gapNegative),
-    ...(inferredPlateT !== undefined ? { plateT: inferredPlateT } : {}),
-    ...(forkGapY !== undefined ? { forkGapY } : {}),
-    ...(forkAxialCentre !== undefined ? { forkAxialCentre } : {}),
-    tongueAxialCentre,
-    tongueOutsideForkGap,
-  };
+  return { forkGapY, forkAxialCentre, tongueOutsideForkGap };
 }
 
 /**

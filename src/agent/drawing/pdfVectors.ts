@@ -173,17 +173,24 @@ export function mergeTextRuns(runs: readonly PositionedText[]): PositionedText[]
     .filter(t => t.text.length > 0);
 }
 
-/**
- * Read page `page` (1-based) of a PDF into sheet-millimetre vectors and text.
- *
- * @throws {PdfReadError} when the bytes are not a readable PDF or the page
- *   number is out of range.
- */
-export async function readPdfPageVectors(data: Uint8Array, page = 1): Promise<PdfPageVectors> {
+type PdfJsModule = typeof import('pdfjs-dist/legacy/build/pdf.mjs');
+type PdfDocumentProxy = Awaited<ReturnType<PdfJsModule['getDocument']>['promise']>;
+
+interface OpenedPdfPage {
+  pdfPage: Awaited<ReturnType<PdfDocumentProxy['getPage']>>;
+  V: Mat;
+  widthMm: number;
+  heightMm: number;
+  toSheet: (m: Mat, x: number, y: number) => [number, number];
+}
+
+type PdfOperatorList = Awaited<ReturnType<OpenedPdfPage['pdfPage']['getOperatorList']>>;
+type PdfTextContent = Awaited<ReturnType<OpenedPdfPage['pdfPage']['getTextContent']>>;
+
+async function loadPdfDocument(data: Uint8Array): Promise<PdfDocumentProxy> {
   const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
-  let doc: Awaited<ReturnType<typeof pdfjs.getDocument>['promise']>;
   try {
-    doc = await pdfjs.getDocument({
+    return await pdfjs.getDocument({
       // pdf.js transfers (detaches) the buffer it is given; hand it a copy.
       data: new Uint8Array(data),
       isEvalSupported: false,
@@ -194,167 +201,215 @@ export async function readPdfPageVectors(data: Uint8Array, page = 1): Promise<Pd
   } catch (err) {
     throw new PdfReadError('unreadable', `not a readable PDF: ${err instanceof Error ? err.message : String(err)}`);
   }
-  try {
-    if (!Number.isInteger(page) || page < 1 || page > doc.numPages) {
-      throw new PdfReadError('page-out-of-range', `page ${page} is out of range — the document has ${doc.numPages} page(s).`);
+}
+
+async function openPdfPage(doc: PdfDocumentProxy, page: number): Promise<OpenedPdfPage> {
+  if (!Number.isInteger(page) || page < 1 || page > doc.numPages) {
+    throw new PdfReadError('page-out-of-range', `page ${page} is out of range — the document has ${doc.numPages} page(s).`);
+  }
+  const pdfPage = await doc.getPage(page);
+  const viewport = pdfPage.getViewport({ scale: 1 });
+  // Viewport maps PDF user space to a y-down, rotation-applied frame in points.
+  const V = viewport.transform as Mat;
+  const widthMm = viewport.width * MM_PER_PT;
+  const heightMm = viewport.height * MM_PER_PT;
+  const toSheet = (m: Mat, x: number, y: number): [number, number] => {
+    const [dx, dy] = apply(m, x, y);
+    const [vx, vy] = apply(V, dx, dy);
+    return [vx * MM_PER_PT, vy * MM_PER_PT];
+  };
+  return { pdfPage, V, widthMm, heightMm, toSheet };
+}
+
+function formXObjectBeginOp(args: unknown[], gs: GState): GState {
+  const matrix = args[0] as number[] | null;
+  if (Array.isArray(matrix) || ArrayBuffer.isView(matrix)) {
+    return { ...gs, ctm: mul(gs.ctm, Array.from(matrix as ArrayLike<number>) as Mat) };
+  }
+  return gs;
+}
+
+function setGStateOp(args: unknown[], gs: GState): GState {
+  for (const [key, value] of (args[0] as Array<[string, unknown]>) ?? []) {
+    if (key === 'LW') gs = { ...gs, lineWidth: Number(value) };
+    if (key === 'D' && Array.isArray(value)) {
+      gs = { ...gs, dash: Array.from((value[0] as ArrayLike<number>) ?? []).map(Number) };
     }
-    const pdfPage = await doc.getPage(page);
-    const viewport = pdfPage.getViewport({ scale: 1 });
-    // Viewport maps PDF user space to a y-down, rotation-applied frame in points.
-    const V = viewport.transform as Mat;
-    const widthMm = viewport.width * MM_PER_PT;
-    const heightMm = viewport.height * MM_PER_PT;
-    const toSheet = (m: Mat, x: number, y: number): [number, number] => {
-      const [dx, dy] = apply(m, x, y);
-      const [vx, vy] = apply(V, dx, dy);
-      return [vx * MM_PER_PT, vy * MM_PER_PT];
-    };
+  }
+  return gs;
+}
+
+interface PathSink {
+  widthMm: number;
+  dash: number[];
+  stroked: boolean;
+  filled: boolean;
+  paths: VectorPath[];
+}
+
+function appendPathBuffer(buf: ArrayLike<number>, toSheet: OpenedPdfPage['toSheet'], ctm: Mat, out: PathSink): void {
+  let current: [number, number][] = [];
+  let start: [number, number] | null = null;
+  let curved = false;
+  let closed = false;
+  const flush = () => {
+    if (current.length >= 2) {
+      const pts: Pt[] = current.map(([x, y]) => toSheet(ctm, x, y));
+      out.paths.push({ points: pts, closed, widthMm: out.widthMm, dash: out.dash, stroked: out.stroked, filled: out.filled, curved });
+    }
+    current = [];
+    curved = false;
+    closed = false;
+  };
+  for (let k = 0; k < buf.length;) {
+    const code = buf[k++];
+    if (code === DRAW.moveTo) {
+      flush();
+      start = [buf[k], buf[k + 1]];
+      current.push(start);
+      k += 2;
+    } else if (code === DRAW.lineTo) {
+      current.push([buf[k], buf[k + 1]]);
+      k += 2;
+    } else if (code === DRAW.curveTo) {
+      const p0 = current[current.length - 1] ?? [buf[k + 4], buf[k + 5]];
+      flattenCubic(current, p0, [buf[k], buf[k + 1]], [buf[k + 2], buf[k + 3]], [buf[k + 4], buf[k + 5]]);
+      curved = true;
+      k += 6;
+    } else if (code === DRAW.quadraticCurveTo) {
+      const p0 = current[current.length - 1] ?? [buf[k + 2], buf[k + 3]];
+      const c: Pt = [buf[k], buf[k + 1]];
+      const p3: Pt = [buf[k + 2], buf[k + 3]];
+      flattenCubic(
+        current,
+        p0,
+        [p0[0] + (2 / 3) * (c[0] - p0[0]), p0[1] + (2 / 3) * (c[1] - p0[1])],
+        [p3[0] + (2 / 3) * (c[0] - p3[0]), p3[1] + (2 / 3) * (c[1] - p3[1])],
+        p3,
+      );
+      curved = true;
+      k += 4;
+    } else if (code === DRAW.closePath) {
+      if (start && current.length > 0) {
+        const last = current[current.length - 1];
+        if (last[0] !== start[0] || last[1] !== start[1]) current.push([start[0], start[1]]);
+      }
+      closed = true;
+      const reopen = start;
+      flush();
+      if (reopen) current.push(reopen);
+    } else {
+      break; // unknown code: stop reading this buffer rather than misparse it
+    }
+  }
+  if (current.length >= 2) flush();
+}
+
+function handleConstructPath(args: unknown[], gs: GState, toSheet: OpenedPdfPage['toSheet'], paths: VectorPath[]): void {
+  const paintOp = Number(args[0]);
+  const buffers = args[1] as ArrayLike<number>[] | undefined;
+  const buf = buffers?.[0];
+  const stroked = STROKE_OPS.has(paintOp);
+  const filled = FILL_OPS.has(paintOp);
+  if (!buf || (!stroked && !filled)) return;
+  const scale = linearScale(gs.ctm);
+  const widthMm = stroked ? gs.lineWidth * scale * MM_PER_PT : 0;
+  const dash = stroked ? gs.dash.map(d => d * scale * MM_PER_PT) : [];
+  appendPathBuffer(buf, toSheet, gs.ctm, { widthMm, dash, stroked, filled, paths });
+}
+
+function collectVectors(ops: PdfOperatorList, toSheet: OpenedPdfPage['toSheet']): { paths: VectorPath[]; imageCount: number; imageArea: number } {
+  const paths: VectorPath[] = [];
+  let imageCount = 0;
+  let imageArea = 0;
+  const stack: GState[] = [];
+  let gs: GState = { ctm: IDENTITY, lineWidth: 1, dash: [] };
+
+  for (let i = 0; i < ops.fnArray.length; i++) {
+    const fn = ops.fnArray[i];
+    const args = ops.argsArray[i] as unknown[];
+    switch (fn) {
+      case OP.save:
+        stack.push({ ...gs, dash: [...gs.dash] });
+        break;
+      case OP.restore:
+        gs = stack.pop() ?? gs;
+        break;
+      case OP.transform:
+        gs = { ...gs, ctm: mul(gs.ctm, args as unknown as Mat) };
+        break;
+      case OP.paintFormXObjectBegin:
+        stack.push({ ...gs, dash: [...gs.dash] });
+        gs = formXObjectBeginOp(args, gs);
+        break;
+      case OP.paintFormXObjectEnd:
+        gs = stack.pop() ?? gs;
+        break;
+      case OP.setLineWidth:
+        gs = { ...gs, lineWidth: Number(args[0]) };
+        break;
+      case OP.setDash:
+        gs = { ...gs, dash: Array.from((args[0] as ArrayLike<number>) ?? []).map(Number) };
+        break;
+      case OP.setGState:
+        gs = setGStateOp(args, gs);
+        break;
+      case OP.constructPath:
+        handleConstructPath(args, gs, toSheet, paths);
+        break;
+      default:
+        if (IMAGE_OPS.has(fn)) {
+          imageCount++;
+          const corners = [[0, 0], [1, 0], [0, 1], [1, 1]].map(([x, y]) => toSheet(gs.ctm, x, y));
+          const xs = corners.map(c => c[0]);
+          const ys = corners.map(c => c[1]);
+          imageArea += (Math.max(...xs) - Math.min(...xs)) * (Math.max(...ys) - Math.min(...ys));
+        }
+        break;
+    }
+  }
+  return { paths, imageCount, imageArea };
+}
+
+function readTextRuns(content: PdfTextContent, toSheet: OpenedPdfPage['toSheet'], V: Mat): PositionedText[] {
+  const runs: PositionedText[] = [];
+  for (const raw of content.items as unknown[]) {
+    const item = raw as PdfJsTextItem;
+    if (typeof item.str !== 'string' || !Array.isArray(item.transform)) continue;
+    const [a, b, c, d, e, f] = item.transform;
+    const [x, y] = toSheet(IDENTITY, e, f);
+    const [dx0, dy0] = apply(V, a, b);
+    const [ox, oy] = apply(V, 0, 0);
+    const dirX = dx0 - ox, dirY = dy0 - oy;
+    const dirLen = Math.hypot(dirX, dirY) || 1;
+    runs.push({
+      text: item.str,
+      x,
+      y,
+      dir: [dirX / dirLen, dirY / dirLen],
+      sizeMm: Math.hypot(c, d) * MM_PER_PT,
+      widthMm: item.width * MM_PER_PT,
+    });
+  }
+  return runs;
+}
+
+/**
+ * Read page `page` (1-based) of a PDF into sheet-millimetre vectors and text.
+ *
+ * @throws {PdfReadError} when the bytes are not a readable PDF or the page
+ *   number is out of range.
+ */
+export async function readPdfPageVectors(data: Uint8Array, page = 1): Promise<PdfPageVectors> {
+  const doc = await loadPdfDocument(data);
+  try {
+    const { pdfPage, V, widthMm, heightMm, toSheet } = await openPdfPage(doc, page);
 
     const ops = await pdfPage.getOperatorList();
-    const paths: VectorPath[] = [];
-    let imageCount = 0;
-    let imageArea = 0;
-    const stack: GState[] = [];
-    let gs: GState = { ctm: IDENTITY, lineWidth: 1, dash: [] };
-
-    for (let i = 0; i < ops.fnArray.length; i++) {
-      const fn = ops.fnArray[i];
-      const args = ops.argsArray[i] as unknown[];
-      switch (fn) {
-        case OP.save:
-          stack.push({ ...gs, dash: [...gs.dash] });
-          break;
-        case OP.restore:
-          gs = stack.pop() ?? gs;
-          break;
-        case OP.transform:
-          gs = { ...gs, ctm: mul(gs.ctm, args as unknown as Mat) };
-          break;
-        case OP.paintFormXObjectBegin: {
-          stack.push({ ...gs, dash: [...gs.dash] });
-          const matrix = args[0] as number[] | null;
-          if (Array.isArray(matrix) || ArrayBuffer.isView(matrix)) {
-            gs = { ...gs, ctm: mul(gs.ctm, Array.from(matrix as ArrayLike<number>) as Mat) };
-          }
-          break;
-        }
-        case OP.paintFormXObjectEnd:
-          gs = stack.pop() ?? gs;
-          break;
-        case OP.setLineWidth:
-          gs = { ...gs, lineWidth: Number(args[0]) };
-          break;
-        case OP.setDash:
-          gs = { ...gs, dash: Array.from((args[0] as ArrayLike<number>) ?? []).map(Number) };
-          break;
-        case OP.setGState: {
-          for (const [key, value] of (args[0] as Array<[string, unknown]>) ?? []) {
-            if (key === 'LW') gs = { ...gs, lineWidth: Number(value) };
-            if (key === 'D' && Array.isArray(value)) {
-              gs = { ...gs, dash: Array.from((value[0] as ArrayLike<number>) ?? []).map(Number) };
-            }
-          }
-          break;
-        }
-        case OP.constructPath: {
-          const paintOp = Number(args[0]);
-          const buffers = args[1] as ArrayLike<number>[] | undefined;
-          const buf = buffers?.[0];
-          const stroked = STROKE_OPS.has(paintOp);
-          const filled = FILL_OPS.has(paintOp);
-          if (!buf || (!stroked && !filled)) break;
-          const scale = linearScale(gs.ctm);
-          const widthMm = stroked ? gs.lineWidth * scale * MM_PER_PT : 0;
-          const dash = stroked ? gs.dash.map(d => d * scale * MM_PER_PT) : [];
-          let current: [number, number][] = [];
-          let start: [number, number] | null = null;
-          let curved = false;
-          let closed = false;
-          const flush = () => {
-            if (current.length >= 2) {
-              const pts: Pt[] = current.map(([x, y]) => toSheet(gs.ctm, x, y));
-              paths.push({ points: pts, closed, widthMm, dash, stroked, filled, curved });
-            }
-            current = [];
-            curved = false;
-            closed = false;
-          };
-          for (let k = 0; k < buf.length;) {
-            const code = buf[k++];
-            if (code === DRAW.moveTo) {
-              flush();
-              start = [buf[k], buf[k + 1]];
-              current.push(start);
-              k += 2;
-            } else if (code === DRAW.lineTo) {
-              current.push([buf[k], buf[k + 1]]);
-              k += 2;
-            } else if (code === DRAW.curveTo) {
-              const p0 = current[current.length - 1] ?? [buf[k + 4], buf[k + 5]];
-              flattenCubic(current, p0, [buf[k], buf[k + 1]], [buf[k + 2], buf[k + 3]], [buf[k + 4], buf[k + 5]]);
-              curved = true;
-              k += 6;
-            } else if (code === DRAW.quadraticCurveTo) {
-              const p0 = current[current.length - 1] ?? [buf[k + 2], buf[k + 3]];
-              const c: Pt = [buf[k], buf[k + 1]];
-              const p3: Pt = [buf[k + 2], buf[k + 3]];
-              flattenCubic(
-                current,
-                p0,
-                [p0[0] + (2 / 3) * (c[0] - p0[0]), p0[1] + (2 / 3) * (c[1] - p0[1])],
-                [p3[0] + (2 / 3) * (c[0] - p3[0]), p3[1] + (2 / 3) * (c[1] - p3[1])],
-                p3,
-              );
-              curved = true;
-              k += 4;
-            } else if (code === DRAW.closePath) {
-              if (start && current.length > 0) {
-                const last = current[current.length - 1];
-                if (last[0] !== start[0] || last[1] !== start[1]) current.push([start[0], start[1]]);
-              }
-              closed = true;
-              const reopen = start;
-              flush();
-              if (reopen) current.push(reopen);
-            } else {
-              break; // unknown code: stop reading this buffer rather than misparse it
-            }
-          }
-          if (current.length >= 2) flush();
-          break;
-        }
-        default:
-          if (IMAGE_OPS.has(fn)) {
-            imageCount++;
-            const corners = [[0, 0], [1, 0], [0, 1], [1, 1]].map(([x, y]) => toSheet(gs.ctm, x, y));
-            const xs = corners.map(c => c[0]);
-            const ys = corners.map(c => c[1]);
-            imageArea += (Math.max(...xs) - Math.min(...xs)) * (Math.max(...ys) - Math.min(...ys));
-          }
-          break;
-      }
-    }
+    const { paths, imageCount, imageArea } = collectVectors(ops, toSheet);
 
     const content = await pdfPage.getTextContent();
-    const runs: PositionedText[] = [];
-    for (const raw of content.items as unknown[]) {
-      const item = raw as PdfJsTextItem;
-      if (typeof item.str !== 'string' || !Array.isArray(item.transform)) continue;
-      const [a, b, c, d, e, f] = item.transform;
-      const [x, y] = toSheet(IDENTITY, e, f);
-      const [dx0, dy0] = apply(V, a, b);
-      const [ox, oy] = apply(V, 0, 0);
-      const dirX = dx0 - ox, dirY = dy0 - oy;
-      const dirLen = Math.hypot(dirX, dirY) || 1;
-      runs.push({
-        text: item.str,
-        x,
-        y,
-        dir: [dirX / dirLen, dirY / dirLen],
-        sizeMm: Math.hypot(c, d) * MM_PER_PT,
-        widthMm: item.width * MM_PER_PT,
-      });
-    }
+    const runs = readTextRuns(content, toSheet, V);
 
     return {
       page,

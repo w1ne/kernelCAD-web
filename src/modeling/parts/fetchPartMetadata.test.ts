@@ -27,8 +27,8 @@ vi.mock('./fromSTEP', () => ({
   ),
 }));
 
-vi.mock('../../agent/inspect/inspectStep', () => ({
-  inspectStepFile: vi.fn(async (path: string) => ({ file: path, solidCount: 1, solids: [] })),
+vi.mock('../../kernel/import/inspectStep', () => ({
+  inspectStepBuffer: vi.fn(async (_bytes: Buffer, label: string) => ({ file: label, solidCount: 1, solids: [] })),
 }));
 
 vi.mock('./synthesizeConnectors', () => ({
@@ -44,7 +44,7 @@ import {
   validateHashBoundConnectorManifest,
   type ConnectorEntry,
 } from '../../shared/parts/connectorManifestSchema';
-import { inspectStepFile } from '../../agent/inspect/inspectStep';
+import { inspectStepBuffer } from '../../kernel/import/inspectStep';
 import { synthesizeConnectorsFromReport } from './synthesizeConnectors';
 import { fromStepBytes } from './fromSTEP';
 import { fetchPartHost, validateManifestAgainstStepBytes } from './fetchPart';
@@ -119,8 +119,8 @@ describe('lib.fetchPart catalog semantic identity', () => {
     cacheDir = mkdtempSync(join(tmpdir(), 'kc-fetch-part-metadata-'));
     process.env.KERNELCAD_CACHE_DIR = cacheDir;
     __resetUserCacheForTests();
-    vi.mocked(inspectStepFile).mockImplementation(async (path: string) => ({
-      file: path,
+    vi.mocked(inspectStepBuffer).mockImplementation(async (_bytes: Buffer, label: string) => ({
+      file: label,
       solidCount: 1,
       solids: [],
     }));
@@ -241,7 +241,7 @@ describe('lib.fetchPart catalog semantic identity', () => {
       { partsBaseUrl: BASE_URL },
     );
 
-    expect(inspectStepFile).not.toHaveBeenCalled();
+    expect(inspectStepBuffer).not.toHaveBeenCalled();
     expect(synthesizeConnectorsFromReport).not.toHaveBeenCalled();
     expect(record.connectors).toEqual(['pwm-contact', 'shaft-axis']);
     const exact = session.catalogConnectors.get(shape.id);
@@ -281,7 +281,7 @@ describe('lib.fetchPart catalog semantic identity', () => {
       ),
     ).toThrow(/geometrySha256/);
     expect(fromStepBytes).not.toHaveBeenCalled();
-    expect(inspectStepFile).not.toHaveBeenCalled();
+    expect(inspectStepBuffer).not.toHaveBeenCalled();
     expect(synthesizeConnectorsFromReport).not.toHaveBeenCalled();
   });
 
@@ -296,7 +296,7 @@ describe('lib.fetchPart catalog semantic identity', () => {
       { partsBaseUrl: BASE_URL },
     );
 
-    expect(inspectStepFile).toHaveBeenCalledTimes(1);
+    expect(inspectStepBuffer).toHaveBeenCalledTimes(1);
     expect(synthesizeConnectorsFromReport).toHaveBeenCalledTimes(1);
     expect(record.connectors).toEqual(['mating-face']);
     expect(session.autoConnectors.get(shape.id)).toEqual([SYNTHESIZED_CONNECTOR]);
@@ -331,7 +331,7 @@ describe('lib.fetchPart catalog semantic identity', () => {
     await expect(
       fetchPartHost({ session }, PART_ID, { partsBaseUrl: BASE_URL }),
     ).rejects.toThrow(error);
-    expect(inspectStepFile).not.toHaveBeenCalled();
+    expect(inspectStepBuffer).not.toHaveBeenCalled();
     expect(synthesizeConnectorsFromReport).not.toHaveBeenCalled();
   });
 });

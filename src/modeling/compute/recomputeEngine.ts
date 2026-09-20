@@ -63,6 +63,33 @@ function selectorRoot(label: string): string {
   return end === undefined ? label : label.slice(0, end);
 }
 
+/** Build the dependency graph and its derived lookups (topo order,
+ *  predecessor lists, id → record index) for one `run()` call. */
+function buildRecomputeGraph(records: readonly FeatureRecord[]): {
+  order: FeatureId[];
+  predecessorsOf: Map<FeatureId, FeatureId[]>;
+  idToRecord: Map<FeatureId, FeatureRecord>;
+} {
+  const graph = new DependencyGraph();
+  for (const r of records) graph.addNode(r.id);
+  const predecessorsOf = new Map<FeatureId, FeatureId[]>();
+  for (const r of records) {
+    const preds: FeatureId[] = [];
+    for (const ref of Object.values(r.inputs)) {
+      if (ref.kind === 'feature' || ref.kind === 'face' || ref.kind === 'edge' || ref.kind === 'vertex') {
+        const upstreamId = ref.kind === 'feature' ? ref.id : ref.featureId;
+        graph.addEdge(upstreamId, r.id);
+        preds.push(upstreamId);
+      }
+    }
+    predecessorsOf.set(r.id, preds);
+  }
+
+  const order = graph.topologicalOrder();
+  const idToRecord = new Map(records.map(r => [r.id, r]));
+  return { order, predecessorsOf, idToRecord };
+}
+
 function findGatedLineageWarning(
   record: FeatureRecord,
   opts: RecomputeOptions | undefined,
@@ -111,7 +138,7 @@ export interface RecomputeResult {
   /**
    * Structured per-failure list. Always populated to the empty array when
    * `mechanism === 'real'`. Each diagnostic uses one of the
-   * `mechanism.*` codes from `src/shared/diagnostics/registry.ts`.
+   * `mechanism.*` codes from `src/shared/diagnostics/registry/`.
    */
   mechanismFailures?: readonly CompilerDiagnostic[];
 }
@@ -181,6 +208,277 @@ export class RecomputeEngine {
     }
   }
 
+  /** Resolve one record's upstream inputs into `byKey`, ready for the
+   *  lowerer. `inputsOk` is false when any non-virtual, non-surface input
+   *  is missing from `shapes` (already-diagnosed as an error). */
+  private resolveRecordInputs(
+    r: FeatureRecord,
+    idToRecord: Map<FeatureId, FeatureRecord>,
+    shapes: Map<FeatureId, ShapeBackend>,
+    diagnostics: CompilerDiagnostic[],
+  ): { byKey: Record<string, ShapeBackend>; inputsOk: boolean } {
+    const byKey: Record<string, ShapeBackend> = {};
+    let inputsOk = true;
+    for (const [key, ref] of Object.entries(r.inputs)) {
+      // W1.3: 'surface' refs point to a SurfaceRecord, not a FeatureRecord.
+      // The lowerer resolves them via its session hook (see OcctLowerer.
+      // resolveSurfaceFaceForRecord) — skip here.
+      if (ref.kind === 'surface') continue;
+      const upstreamId = ref.kind === 'feature' ? ref.id : (ref as { featureId: FeatureId }).featureId;
+      // Virtual upstream records (curve3d today; referenceImage) produce no
+      // ShapeBackend on `shapes` — they side-effect onto session-level maps
+      // like `importedGeometry`. Skip the missing-shape check; the
+      // downstream lowerer arm is responsible for resolving the virtual
+      // input (e.g. variableSweep finds its curve3d spine via the records
+      // list passed in `inputs.records`).
+      const upstreamRecord = idToRecord.get(upstreamId);
+      if (upstreamRecord?.metadata?.virtual === true) continue;
+      const s = shapes.get(upstreamId);
+      if (!s) {
+        inputsOk = false;
+        diagnostics.push({
+          target: this.lowerer.target,
+          code: 'recompute.input.missing',
+          featureId: r.id,
+          severity: 'error',
+          message: `Input '${key}' references missing/failed feature '${upstreamId}'`,
+          hint: 'Walk the upstream chain with why_did_this_fail to find the root cause.',
+        });
+        break;
+      }
+      byKey[key] = s;
+    }
+    return { byKey, inputsOk };
+  }
+
+  /** Resolve one record to its pre-lowering state: suppression / virtual /
+   *  seed-cache skips are health-marked here and reported as `null` (nothing
+   *  to lower); otherwise returns the record to lower plus its gate state. */
+  private prepareRecord(
+    id: FeatureId,
+    r: FeatureRecord,
+    opts: RecomputeOptions | undefined,
+    health: Map<FeatureId, 'healthy' | 'warning' | 'error'>,
+  ): { recordForLower: FeatureRecord; isGatedOff: boolean } | null {
+    if (r.suppressed) return null;
+    if (r.metadata?.virtual === true) {
+      // Virtual records (referenceImage today; future construction-only kinds)
+      // produce no BREP. Mark healthy and skip the lowerer entirely.
+      health.set(r.id, 'healthy');
+      return null;
+    }
+    const recordForLower: FeatureRecord = opts?.paramTable
+      ? resolveParams(r, opts.paramTable) as FeatureRecord
+      : r;
+    const gatedParamName = enabledGateParamName(r);
+    const isGatedOff = isEnabledFalse(recordForLower);
+
+    if (isGatedOff) {
+      registerGatedName(recordForLower, opts?.gatedFeatureNames, gatedParamName);
+    }
+
+    // Slice-3: cache hit — record's lowered output was seeded by `params.update`.
+    // Skip lowering; mark healthy.
+    if (opts?.seedShapes && opts.seedShapes.has(id)) {
+      health.set(id, 'healthy');
+      return null;
+    }
+
+    return { recordForLower, isGatedOff };
+  }
+
+  /** Emit the `feature.failed` event for a record whose inputs did not
+   *  resolve. Returns 1 when an event was emitted, else 0. */
+  private emitInputFailure(
+    r: FeatureRecord,
+    diagnostics: CompilerDiagnostic[],
+    predecessorsOf: Map<FeatureId, FeatureId[]>,
+    onEvent: FeatureEventSink | undefined,
+  ): number {
+    if (onEvent) {
+      onEvent({
+        kind: 'feature.failed',
+        featureId: r.id,
+        featureKind: r.kind,
+        predecessors: predecessorsOf.get(r.id) ?? [],
+        diagnostics: diagnostics.filter((d) => d.featureId === r.id),
+      });
+      return 1;
+    }
+    return 0;
+  }
+
+  /** Gated-off records pass their upstream shape through instead of lowering
+   *  (warning health when a face ref names the gated feature, healthy
+   *  otherwise). Returns true when the record was resolved without lowering. */
+  private tryGatedPassthrough(
+    r: FeatureRecord,
+    recordForLower: FeatureRecord,
+    isGatedOff: boolean,
+    byKey: Record<string, ShapeBackend>,
+    opts: RecomputeOptions | undefined,
+    shapes: Map<FeatureId, ShapeBackend>,
+    health: Map<FeatureId, 'healthy' | 'warning' | 'error'>,
+  ): boolean {
+    const gatedLineage = findGatedLineageWarning(recordForLower, opts);
+    if (gatedLineage) {
+      opts?.warningSink?.(gatedLineage);
+      const passthrough = passthroughShape(byKey);
+      if (passthrough) {
+        shapes.set(r.id, passthrough);
+        health.set(r.id, 'warning');
+        return true;
+      }
+    }
+
+    if (isGatedOff) {
+      const passthrough = passthroughShape(byKey);
+      if (passthrough) {
+        shapes.set(r.id, passthrough);
+        health.set(r.id, 'healthy');
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /** Process one topo-ordered record within a `run()` pass: resolve its
+   *  inputs, apply gating/passthrough, lower it, and emit the matching
+   *  event. Returns 1 if an event was emitted onto `ctx.onEvent`, else 0 —
+   *  the caller accumulates this into `emittedCount`. */
+  private async processRecord(
+    id: FeatureId,
+    records: readonly FeatureRecord[],
+    ctx: {
+      idToRecord: Map<FeatureId, FeatureRecord>;
+      predecessorsOf: Map<FeatureId, FeatureId[]>;
+      shapes: Map<FeatureId, ShapeBackend>;
+      diagnostics: CompilerDiagnostic[];
+      health: Map<FeatureId, 'healthy' | 'warning' | 'error'>;
+      onEvent: FeatureEventSink | undefined;
+      opts: RecomputeOptions | undefined;
+    },
+  ): Promise<number> {
+    const { idToRecord, predecessorsOf, shapes, diagnostics, health, onEvent, opts } = ctx;
+    const r = idToRecord.get(id)!;
+    const prepared = this.prepareRecord(id, r, opts, health);
+    if (prepared === null) return 0;
+
+    // Resolve inputs
+    const { byKey, inputsOk } = this.resolveRecordInputs(r, idToRecord, shapes, diagnostics);
+    if (!inputsOk) {
+      health.set(r.id, 'error');
+      return this.emitInputFailure(r, diagnostics, predecessorsOf, onEvent);
+    }
+
+    if (this.tryGatedPassthrough(r, prepared.recordForLower, prepared.isGatedOff, byKey, opts, shapes, health)) {
+      return 0;
+    }
+
+    // Lower
+    return this.lowerAndEmit(prepared.recordForLower, r, records, byKey, {
+      predecessorsOf, shapes, diagnostics, health, onEvent,
+    });
+  }
+
+  /** Lowering phase of `processRecord`: calls the lowerer, then emits the
+   *  matching `feature.compiled` / `feature.failed` event. Returns 1 if an
+   *  event was emitted, else 0. */
+  private async lowerAndEmit(
+    recordForLower: FeatureRecord,
+    r: FeatureRecord,
+    records: readonly FeatureRecord[],
+    byKey: Record<string, ShapeBackend>,
+    ctx: {
+      predecessorsOf: Map<FeatureId, FeatureId[]>;
+      shapes: Map<FeatureId, ShapeBackend>;
+      diagnostics: CompilerDiagnostic[];
+      health: Map<FeatureId, 'healthy' | 'warning' | 'error'>;
+      onEvent: FeatureEventSink | undefined;
+    },
+  ): Promise<number> {
+    const { predecessorsOf, shapes, diagnostics, health, onEvent } = ctx;
+    try {
+      const res = await this.lowerer.lower(recordForLower, { byKey, records });
+      diagnostics.push(...res.diagnostics);
+      const featureDiags = res.diagnostics;
+      if (featureDiags.some((d) => d.severity === 'error')) {
+        health.set(r.id, 'error');
+        if (onEvent) {
+          onEvent({
+            kind: 'feature.failed',
+            featureId: r.id,
+            featureKind: r.kind,
+            predecessors: predecessorsOf.get(r.id) ?? [],
+            diagnostics: featureDiags,
+          });
+          return 1;
+        }
+        return 0;
+      } else {
+        const featureHealth: 'healthy' | 'warning' = featureDiags.some((d) => d.severity === 'warn')
+          ? 'warning'
+          : 'healthy';
+        health.set(r.id, featureHealth);
+        shapes.set(r.id, res.shape);
+        if (onEvent) {
+          const op = r.kind === 'boolean'
+            ? normalizeBooleanOp(r.params.op?.expression)
+            : undefined;
+          onEvent({
+            kind: 'feature.compiled',
+            featureId: r.id,
+            featureKind: r.kind,
+            shape: res.shape,
+            predecessors: predecessorsOf.get(r.id) ?? [],
+            diagnostics: featureDiags,
+            health: featureHealth,
+            op,
+          });
+          return 1;
+        }
+        return 0;
+      }
+    } catch (e) {
+      // Preserve `KernelError.code`/`.hint` so e.g. `normalizeAxis` raising
+      // `feature.invalid-args` with hint `invalid-args.axis.zero` surfaces as
+      // a structured diagnostic instead of being flattened to the generic
+      // `recompute.lowering.exception` shape. Non-KernelError throws still
+      // fall through to the generic path.
+      const failDiag: CompilerDiagnostic = e instanceof KernelError
+        ? {
+            target: this.lowerer.target,
+            code: e.code,
+            featureId: e.featureId ?? r.id,
+            severity: 'error',
+            message: e.message,
+            hint: e.hint ?? HINT_TEMPLATES[e.code].template,
+          }
+        : {
+            target: this.lowerer.target,
+            code: 'recompute.lowering.exception',
+            featureId: r.id,
+            severity: 'error',
+            message: e instanceof Error ? e.message : String(e),
+            hint: 'An exception was raised during lowering; read the message for the underlying error.',
+          };
+      diagnostics.push(failDiag);
+      health.set(r.id, 'error');
+      if (onEvent) {
+        onEvent({
+          kind: 'feature.failed',
+          featureId: r.id,
+          featureKind: r.kind,
+          predecessors: predecessorsOf.get(r.id) ?? [],
+          diagnostics: [failDiag],
+        });
+        return 1;
+      }
+      return 0;
+    }
+  }
+
   async run(records: readonly FeatureRecord[], opts?: RecomputeOptions): Promise<RecomputeResult> {
     const shapes = opts?.seedShapes ? new Map(opts.seedShapes) : new Map<FeatureId, ShapeBackend>();
     const diagnostics: CompilerDiagnostic[] = [];
@@ -189,194 +487,13 @@ export class RecomputeEngine {
     opts?.gatedFeatureNames?.clear();
 
     // Build dep graph
-    const graph = new DependencyGraph();
-    for (const r of records) graph.addNode(r.id);
-    const predecessorsOf = new Map<FeatureId, FeatureId[]>();
-    for (const r of records) {
-      const preds: FeatureId[] = [];
-      for (const ref of Object.values(r.inputs)) {
-        if (ref.kind === 'feature' || ref.kind === 'face' || ref.kind === 'edge' || ref.kind === 'vertex') {
-          const upstreamId = ref.kind === 'feature' ? ref.id : ref.featureId;
-          graph.addEdge(upstreamId, r.id);
-          preds.push(upstreamId);
-        }
-      }
-      predecessorsOf.set(r.id, preds);
-    }
-
-    const order = graph.topologicalOrder();
-    const idToRecord = new Map(records.map(r => [r.id, r]));
+    const { order, predecessorsOf, idToRecord } = buildRecomputeGraph(records);
     let emittedCount = 0;
 
     for (const id of order) {
-      const r = idToRecord.get(id)!;
-      if (r.suppressed) continue;
-      if (r.metadata?.virtual === true) {
-        // Virtual records (referenceImage today; future construction-only kinds)
-        // produce no BREP. Mark healthy and skip the lowerer entirely.
-        health.set(r.id, 'healthy');
-        continue;
-      }
-      const recordForLower: FeatureRecord = opts?.paramTable
-        ? resolveParams(r, opts.paramTable) as FeatureRecord
-        : r;
-      const gatedParamName = enabledGateParamName(r);
-      const isGatedOff = isEnabledFalse(recordForLower);
-
-      if (isGatedOff) {
-        registerGatedName(recordForLower, opts?.gatedFeatureNames, gatedParamName);
-      }
-
-      // Slice-3: cache hit — record's lowered output was seeded by `params.update`.
-      // Skip lowering; mark healthy.
-      if (opts?.seedShapes && opts.seedShapes.has(id)) {
-        health.set(id, 'healthy');
-        continue;
-      }
-
-      // Resolve inputs
-      const byKey: Record<string, ShapeBackend> = {};
-      let inputsOk = true;
-      for (const [key, ref] of Object.entries(r.inputs)) {
-        // W1.3: 'surface' refs point to a SurfaceRecord, not a FeatureRecord.
-        // The lowerer resolves them via its session hook (see OcctLowerer.
-        // resolveSurfaceFaceForRecord) — skip here.
-        if (ref.kind === 'surface') continue;
-        const upstreamId = ref.kind === 'feature' ? ref.id : (ref as { featureId: FeatureId }).featureId;
-        // Virtual upstream records (curve3d today; referenceImage) produce no
-        // ShapeBackend on `shapes` — they side-effect onto session-level maps
-        // like `importedGeometry`. Skip the missing-shape check; the
-        // downstream lowerer arm is responsible for resolving the virtual
-        // input (e.g. variableSweep finds its curve3d spine via the records
-        // list passed in `inputs.records`).
-        const upstreamRecord = idToRecord.get(upstreamId);
-        if (upstreamRecord?.metadata?.virtual === true) continue;
-        const s = shapes.get(upstreamId);
-        if (!s) {
-          inputsOk = false;
-          diagnostics.push({
-            target: this.lowerer.target,
-            code: 'recompute.input.missing',
-            featureId: r.id,
-            severity: 'error',
-            message: `Input '${key}' references missing/failed feature '${upstreamId}'`,
-            hint: 'Walk the upstream chain with why_did_this_fail to find the root cause.',
-          });
-          break;
-        }
-        byKey[key] = s;
-      }
-      if (!inputsOk) {
-        health.set(r.id, 'error');
-        if (onEvent) {
-          onEvent({
-            kind: 'feature.failed',
-            featureId: r.id,
-            featureKind: r.kind,
-            predecessors: predecessorsOf.get(r.id) ?? [],
-            diagnostics: diagnostics.filter((d) => d.featureId === r.id),
-          });
-          emittedCount++;
-        }
-        continue;
-      }
-
-      const gatedLineage = findGatedLineageWarning(recordForLower, opts);
-      if (gatedLineage) {
-        opts?.warningSink?.(gatedLineage);
-        const passthrough = passthroughShape(byKey);
-        if (passthrough) {
-          shapes.set(r.id, passthrough);
-          health.set(r.id, 'warning');
-          continue;
-        }
-      }
-
-      if (isGatedOff) {
-        const passthrough = passthroughShape(byKey);
-        if (passthrough) {
-          shapes.set(r.id, passthrough);
-          health.set(r.id, 'healthy');
-          continue;
-        }
-      }
-
-      // Lower
-      try {
-        const res = await this.lowerer.lower(recordForLower, { byKey, records });
-        diagnostics.push(...res.diagnostics);
-        const featureDiags = res.diagnostics;
-        if (featureDiags.some((d) => d.severity === 'error')) {
-          health.set(r.id, 'error');
-          if (onEvent) {
-            onEvent({
-              kind: 'feature.failed',
-              featureId: r.id,
-              featureKind: r.kind,
-              predecessors: predecessorsOf.get(r.id) ?? [],
-              diagnostics: featureDiags,
-            });
-            emittedCount++;
-          }
-        } else {
-          const featureHealth: 'healthy' | 'warning' = featureDiags.some((d) => d.severity === 'warn')
-            ? 'warning'
-            : 'healthy';
-          health.set(r.id, featureHealth);
-          shapes.set(r.id, res.shape);
-          if (onEvent) {
-            const op = r.kind === 'boolean'
-              ? normalizeBooleanOp(r.params.op?.expression)
-              : undefined;
-            onEvent({
-              kind: 'feature.compiled',
-              featureId: r.id,
-              featureKind: r.kind,
-              shape: res.shape,
-              predecessors: predecessorsOf.get(r.id) ?? [],
-              diagnostics: featureDiags,
-              health: featureHealth,
-              op,
-            });
-            emittedCount++;
-          }
-        }
-      } catch (e) {
-        // Preserve `KernelError.code`/`.hint` so e.g. `normalizeAxis` raising
-        // `feature.invalid-args` with hint `invalid-args.axis.zero` surfaces as
-        // a structured diagnostic instead of being flattened to the generic
-        // `recompute.lowering.exception` shape. Non-KernelError throws still
-        // fall through to the generic path.
-        const failDiag: CompilerDiagnostic = e instanceof KernelError
-          ? {
-              target: this.lowerer.target,
-              code: e.code,
-              featureId: e.featureId ?? r.id,
-              severity: 'error',
-              message: e.message,
-              hint: e.hint ?? HINT_TEMPLATES[e.code].template,
-            }
-          : {
-              target: this.lowerer.target,
-              code: 'recompute.lowering.exception',
-              featureId: r.id,
-              severity: 'error',
-              message: e instanceof Error ? e.message : String(e),
-              hint: 'An exception was raised during lowering; read the message for the underlying error.',
-            };
-        diagnostics.push(failDiag);
-        health.set(r.id, 'error');
-        if (onEvent) {
-          onEvent({
-            kind: 'feature.failed',
-            featureId: r.id,
-            featureKind: r.kind,
-            predecessors: predecessorsOf.get(r.id) ?? [],
-            diagnostics: [failDiag],
-          });
-          emittedCount++;
-        }
-      }
+      emittedCount += await this.processRecord(id, records, {
+        idToRecord, predecessorsOf, shapes, diagnostics, health, onEvent, opts,
+      });
     }
 
     if (onEvent) {

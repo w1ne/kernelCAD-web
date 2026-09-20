@@ -45,7 +45,9 @@
 // mass raises export.usd.mass-missing. A physics stage silently missing a DOF
 // or a mass is worse than a refused export.
 
-import type { Assembly, AssemblyPartStored } from '../../capture/assembly';
+import type { Assembly, AssemblyJointStored, AssemblyPartStored } from '../../capture/assembly';
+import type { MateRecord } from '../../mates/mate';
+import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { meshShapeForExport, type OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import {
@@ -326,12 +328,32 @@ function meshLayerText(primName: string, shape: OcctBackend): string {
   ].join('\n');
 }
 
-function materialBlock(rootPath: string, primName: string, pbr: PBRMaterial | undefined, color: string | undefined): string {
-  const baseHex = resolveColor(pbr?.baseColor) ?? resolveColor(color) ?? DEFAULT_COLOR;
-  const diffuse = hexToLinear(baseHex);
-  const opacity = pbr?.opacity ?? (pbr?.transmission !== undefined && pbr.transmission > 0
+/** Resolve the material's base color hex: PBR base color, then the lineage
+ *  color, then the default. */
+function resolveMaterialBaseHex(pbr: PBRMaterial | undefined, color: string | undefined): string {
+  return resolveColor(pbr?.baseColor) ?? resolveColor(color) ?? DEFAULT_COLOR;
+}
+
+/** Resolve the shader opacity: explicit PBR opacity, else derive from
+ *  transmission, else fully opaque. */
+function resolveMaterialOpacity(pbr: PBRMaterial | undefined): number {
+  return pbr?.opacity ?? (pbr?.transmission !== undefined && pbr.transmission > 0
     ? Math.max(0.05, 1 - pbr.transmission)
     : 1);
+}
+
+/** Append the optional UsdPreviewSurface inputs (clearcoat, ior, opacity). */
+function appendOptionalSurfaceInputs(lines: string[], pbr: PBRMaterial | undefined, opacity: number): void {
+  if (pbr?.clearcoat !== undefined) lines.push(`                float inputs:clearcoat = ${f(pbr.clearcoat)}`);
+  if (pbr?.clearcoatRoughness !== undefined) lines.push(`                float inputs:clearcoatRoughness = ${f(pbr.clearcoatRoughness)}`);
+  if (pbr?.ior !== undefined) lines.push(`                float inputs:ior = ${f(pbr.ior)}`);
+  if (opacity < 1) lines.push(`                float inputs:opacity = ${f(opacity)}`);
+}
+
+function materialBlock(rootPath: string, primName: string, pbr: PBRMaterial | undefined, color: string | undefined): string {
+  const baseHex = resolveMaterialBaseHex(pbr, color);
+  const diffuse = hexToLinear(baseHex);
+  const opacity = resolveMaterialOpacity(pbr);
   const matPath = `${rootPath}/Materials/${primName}`;
   const lines = [
     `        def Material "${primName}"`,
@@ -345,10 +367,7 @@ function materialBlock(rootPath: string, primName: string, pbr: PBRMaterial | un
     `                float inputs:metallic = ${f(pbr?.metalness ?? 0)}`,
     `                float inputs:roughness = ${f(pbr?.roughness ?? 0.5)}`,
   ];
-  if (pbr?.clearcoat !== undefined) lines.push(`                float inputs:clearcoat = ${f(pbr.clearcoat)}`);
-  if (pbr?.clearcoatRoughness !== undefined) lines.push(`                float inputs:clearcoatRoughness = ${f(pbr.clearcoatRoughness)}`);
-  if (pbr?.ior !== undefined) lines.push(`                float inputs:ior = ${f(pbr.ior)}`);
-  if (opacity < 1) lines.push(`                float inputs:opacity = ${f(opacity)}`);
+  appendOptionalSurfaceInputs(lines, pbr, opacity);
   lines.push(
     '                token outputs:surface',
     '            }',
@@ -357,25 +376,18 @@ function materialBlock(rootPath: string, primName: string, pbr: PBRMaterial | un
   return lines.join('\n');
 }
 
-// ----- serializer ------------------------------------------------------------
+// ----- serializer phases -----------------------------------------------------
 
-export async function usdIsaacSerialize(
-  arm: Assembly,
+/** Reject joint/mate kinds with no UsdPhysics joint that preserves their DOF
+ *  count, and drives that do not name a revolute/prismatic joint. The caller
+ *  fails closed when any appended diagnostic is an error. */
+function appendPreflightDiagnostics(
+  legacyJoints: readonly AssemblyJointStored[],
+  mates: readonly MateRecord[],
   opts: UsdIsaacSerializeOptions,
-): Promise<UsdIsaacSerializeResult> {
-  const diagnostics: CompilerDiagnostic[] = [];
-  const parts = arm.__parts();
-  const legacyJoints = arm.__joints();
-  const mates = arm.__mates();
-  const meshPrefix = opts.meshPrefix ?? DEFAULT_MESH_PREFIX;
-  const approximation = opts.collisionApproximation ?? 'convexHull';
-
-  const rootName = makeNamer()(arm.name || 'Robot');
-  const rootPath = `/${rootName}`;
-  const linkName = makeNamer();
-  const jointName = makeNamer();
-  const records = arm.__session().getRecords();
-
+  armName: string,
+  diagnostics: CompilerDiagnostic[],
+): void {
   // Fail closed on unsupported joint kinds BEFORE any expensive work.
   for (const j of legacyJoints) {
     if (j.kind !== 'fixed' && j.kind !== 'revolute' && j.kind !== 'prismatic') {
@@ -399,7 +411,7 @@ export async function usdIsaacSerialize(
         target: 'export-occt',
         code: 'cli.invalid-args',
         severity: 'error',
-        message: `options.drives names '${name}', which is not a revolute or prismatic joint of assembly '${arm.name}'.`,
+        message: `options.drives names '${name}', which is not a revolute or prismatic joint of assembly '${armName}'.`,
         hint: `Key options.drives by the name of a revolute or prismatic mate. Drivable joints: ${[...drivable].join(', ') || '(none)'}.`,
         nextAction: NEXT_ACTIONS['cli.invalid-args'],
       });
@@ -414,26 +426,39 @@ export async function usdIsaacSerialize(
       });
     }
   }
-  if (diagnostics.some((d) => d.severity === 'error')) {
-    return { usda: '', meshLayers: [], diagnostics };
-  }
+}
 
-  const poses = await solveLinkPoses(arm, diagnostics);
+interface LinkBlockContext {
+  records: readonly FeatureRecord[];
+  poses: Map<string, Transform> | undefined;
+  rootPath: string;
+  meshPrefix: string;
+  approximation: 'convexHull' | 'convexDecomposition';
+  defaultDensity: number | undefined;
+  linkName: (raw: string) => string;
+  diagnostics: CompilerDiagnostic[];
+}
 
+/** Emit the Xform + visual/collision mesh blocks, material blocks and mesh
+ *  layers for every part. Mass errors are appended to ctx.diagnostics. */
+async function buildLinkBlocks(
+  parts: readonly AssemblyPartStored[],
+  ctx: LinkBlockContext,
+): Promise<{ linkBlocks: string[]; materialBlocks: string[]; meshLayers: UsdMeshLayer[] }> {
   const linkBlocks: string[] = [];
   const materialBlocks: string[] = [];
   const meshLayers: UsdMeshLayer[] = [];
 
   for (const part of parts) {
-    const prim = linkName(part.name);
-    const density = part.density ?? opts.density;
+    const prim = ctx.linkName(part.name);
+    const density = part.density ?? ctx.defaultDensity;
     const lowered = await part.originalShape.lower();
     if (density === undefined) {
-      diagnostics.push(...linkInertialBlock(lowered, undefined).diagnostics);
+      ctx.diagnostics.push(...linkInertialBlock(lowered, undefined).diagnostics);
     }
     const mp = lowered.massProperties(density ?? 1000);
     if (!Number.isFinite(mp.mass) || mp.mass <= 0) {
-      diagnostics.push({
+      ctx.diagnostics.push({
         target: 'export-occt',
         code: 'export.usd.mass-missing',
         severity: 'error',
@@ -445,16 +470,16 @@ export async function usdIsaacSerialize(
     }
     const inertia = linkInertia(mp);
 
-    const sourceRecord = records.find((r) => r.id === part.originalShape.id);
-    const pbr = sourceRecord ? lookupMaterialFromLineage(sourceRecord, records) : undefined;
-    const color = sourceRecord ? lookupColorFromLineage(sourceRecord, records) : undefined;
+    const sourceRecord = ctx.records.find((r) => r.id === part.originalShape.id);
+    const pbr = sourceRecord ? lookupMaterialFromLineage(sourceRecord, ctx.records) : undefined;
+    const color = sourceRecord ? lookupColorFromLineage(sourceRecord, ctx.records) : undefined;
     const hasAppearance = pbr !== undefined || color !== undefined;
-    if (hasAppearance) materialBlocks.push(materialBlock(rootPath, prim, pbr, color));
+    if (hasAppearance) materialBlocks.push(materialBlock(ctx.rootPath, prim, pbr, color));
 
-    const relPath = `${meshPrefix}${prim}.usda`;
+    const relPath = `${ctx.meshPrefix}${prim}.usda`;
     meshLayers.push({ partName: part.name, relPath, usda: meshLayerText(prim, lowered) });
 
-    const pose = poses?.get(part.name);
+    const pose = ctx.poses?.get(part.name);
     const translate = pose ? pose.point([0, 0, 0]).map((n) => n * MM_TO_M) : [0, 0, 0];
     const orient = pose ? transformQuat(pose) : ([1, 0, 0, 0] as Quat);
 
@@ -476,7 +501,7 @@ export async function usdIsaacSerialize(
       `                prepend references = @${relPath}@`,
       '            )',
       '            {',
-      ...(hasAppearance ? [`                rel material:binding = <${rootPath}/Materials/${prim}>`] : []),
+      ...(hasAppearance ? [`                rel material:binding = <${ctx.rootPath}/Materials/${prim}>`] : []),
       '            }',
       '',
       '            def Mesh "collision" (',
@@ -484,17 +509,28 @@ export async function usdIsaacSerialize(
       `                prepend references = @${relPath}@`,
       '            )',
       '            {',
-      `                uniform token physics:approximation = "${approximation}"`,
+      `                uniform token physics:approximation = "${ctx.approximation}"`,
       '                uniform token purpose = "guide"',
       '            }',
       '        }',
     ].join('\n'));
   }
 
-  if (diagnostics.some((d) => d.severity === 'error')) {
-    return { usda: '', meshLayers: [], diagnostics };
-  }
+  return { linkBlocks, materialBlocks, meshLayers };
+}
 
+/** Emit the UsdPhysics joint blocks for the legacy joints then the mates, in
+ *  declaration order. */
+function buildJointBlocks(
+  legacyJoints: readonly AssemblyJointStored[],
+  mates: readonly MateRecord[],
+  parts: readonly AssemblyPartStored[],
+  poses: Map<string, Transform> | undefined,
+  opts: UsdIsaacSerializeOptions,
+  rootPath: string,
+  linkName: (raw: string) => string,
+  jointName: (raw: string) => string,
+): string[] {
   const jointBlocks: string[] = [];
   const partByName = new Map(parts.map((p) => [p.name, p]));
   const partNameById = (id: string): string => parts.find((p) => p.id === id)?.name ?? id;
@@ -595,7 +631,17 @@ export async function usdIsaacSerialize(
     });
   }
 
-  const usda = [
+  return jointBlocks;
+}
+
+/** Join the per-prim blocks into the final stage text. */
+function assembleUsda(
+  rootName: string,
+  linkBlocks: readonly string[],
+  jointBlocks: readonly string[],
+  materialBlocks: readonly string[],
+): string {
+  return [
     '#usda 1.0',
     '(',
     `    defaultPrim = "${rootName}"`,
@@ -622,6 +668,52 @@ export async function usdIsaacSerialize(
     '}',
     '',
   ].join('\n');
+}
+
+// ----- serializer ------------------------------------------------------------
+
+export async function usdIsaacSerialize(
+  arm: Assembly,
+  opts: UsdIsaacSerializeOptions,
+): Promise<UsdIsaacSerializeResult> {
+  const diagnostics: CompilerDiagnostic[] = [];
+  const parts = arm.__parts();
+  const legacyJoints = arm.__joints();
+  const mates = arm.__mates();
+  const meshPrefix = opts.meshPrefix ?? DEFAULT_MESH_PREFIX;
+  const approximation = opts.collisionApproximation ?? 'convexHull';
+
+  const rootName = makeNamer()(arm.name || 'Robot');
+  const rootPath = `/${rootName}`;
+  const linkName = makeNamer();
+  const jointName = makeNamer();
+  const records = arm.__session().getRecords();
+
+  appendPreflightDiagnostics(legacyJoints, mates, opts, arm.name, diagnostics);
+  if (diagnostics.some((d) => d.severity === 'error')) {
+    return { usda: '', meshLayers: [], diagnostics };
+  }
+
+  const poses = await solveLinkPoses(arm, diagnostics);
+
+  const { linkBlocks, materialBlocks, meshLayers } = await buildLinkBlocks(parts, {
+    records,
+    poses,
+    rootPath,
+    meshPrefix,
+    approximation,
+    defaultDensity: opts.density,
+    linkName,
+    diagnostics,
+  });
+
+  if (diagnostics.some((d) => d.severity === 'error')) {
+    return { usda: '', meshLayers: [], diagnostics };
+  }
+
+  const jointBlocks = buildJointBlocks(legacyJoints, mates, parts, poses, opts, rootPath, linkName, jointName);
+
+  const usda = assembleUsda(rootName, linkBlocks, jointBlocks, materialBlocks);
 
   return { usda, meshLayers, diagnostics };
 }
