@@ -325,12 +325,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/assemblyParts.ts",
-    "symbol": "Function 'recordSubAssembly'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/assemblySolve.ts",
     "symbol": "Function 'checkPoseLimits'",
     "value": 16
