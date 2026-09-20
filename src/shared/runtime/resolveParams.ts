@@ -100,40 +100,38 @@ export function resolveParams<T>(blob: T, table: ParamTable): T {
   return walkResolve(blob, table) as T;
 }
 
-function walkResolve(node: unknown, table: ParamTable): unknown {
-  if (node === null || node === undefined) return node;
-  if (Array.isArray(node)) {
-    let changed = false;
-    const out: unknown[] = new Array(node.length);
-    for (let i = 0; i < node.length; i++) {
-      const v = walkResolve(node[i], table);
-      if (v !== node[i]) changed = true;
-      out[i] = v;
+function resolveParamNode(node: Param, table: ParamTable): Param {
+  if (!node.paramRef) return node;
+  if (typeof node.paramRef === 'string') {
+    const entry = table.get(node.paramRef);
+    if (entry.type === 'boolean') {
+      // Boolean Params: encode as evaluated 0|1 to stay number-typed; consumers
+      // (lowerer dispatcher's `enabled` check) will read entry.value directly
+      // through a parallel resolveBooleanParam path. For numeric-shape Params,
+      // this branch shouldn't be reached because boolean values are stored as
+      // their own field on the record (see capture proxy). Defensive: pass
+      // through as 0/1.
+      return { ...node, evaluated: entry.value ? 1 : 0 };
     }
-    return changed ? out : node;
+    return { ...node, evaluated: entry.value as number };
   }
-  if (typeof node !== 'object') return node;
-  if (isParam(node)) {
-    if (!node.paramRef) return node;
-    if (typeof node.paramRef === 'string') {
-      const entry = table.get(node.paramRef);
-      if (entry.type === 'boolean') {
-        // Boolean Params: encode as evaluated 0|1 to stay number-typed; consumers
-        // (lowerer dispatcher's `enabled` check) will read entry.value directly
-        // through a parallel resolveBooleanParam path. For numeric-shape Params,
-        // this branch shouldn't be reached because boolean values are stored as
-        // their own field on the record (see capture proxy). Defensive: pass
-        // through as 0/1.
-        return { ...node, evaluated: entry.value ? 1 : 0 };
-      }
-      return { ...node, evaluated: entry.value as number };
-    }
-    // Structured AST: walk the expression tree against the table.
-    const evaluated = resolveExpr(node.paramRef, table);
-    return { ...node, evaluated };
+  // Structured AST: walk the expression tree against the table.
+  const evaluated = resolveExpr(node.paramRef, table);
+  return { ...node, evaluated };
+}
+
+function walkResolveArray(node: unknown[], table: ParamTable): unknown {
+  let changed = false;
+  const out: unknown[] = new Array(node.length);
+  for (let i = 0; i < node.length; i++) {
+    const v = walkResolve(node[i], table);
+    if (v !== node[i]) changed = true;
+    out[i] = v;
   }
-  // Plain object: walk its entries.
-  const obj = node as Record<string, unknown>;
+  return changed ? out : node;
+}
+
+function walkResolveObject(obj: Record<string, unknown>, table: ParamTable): unknown {
   let changed = false;
   const out: Record<string, unknown> = {};
   for (const k of Object.keys(obj)) {
@@ -141,7 +139,15 @@ function walkResolve(node: unknown, table: ParamTable): unknown {
     if (v !== obj[k]) changed = true;
     out[k] = v;
   }
-  return changed ? out : node;
+  return changed ? out : obj;
+}
+
+function walkResolve(node: unknown, table: ParamTable): unknown {
+  if (node === null || node === undefined) return node;
+  if (Array.isArray(node)) return walkResolveArray(node, table);
+  if (typeof node !== 'object') return node;
+  if (isParam(node)) return resolveParamNode(node, table);
+  return walkResolveObject(node as Record<string, unknown>, table);
 }
 
 export function collectParamRefs(blob: unknown): Set<string> {

@@ -391,12 +391,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/shared/runtime/resolveParams.ts",
-    "symbol": "Function 'walkResolve'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/StagedEditSlot.tsx",
     "symbol": "Function 'StagedEditContextDetails'",
     "value": 16
