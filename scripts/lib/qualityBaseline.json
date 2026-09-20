@@ -169,12 +169,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/repair/candidates.ts",
-    "symbol": "Function 'recentreEmbossAnchor'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/script-runtime/exportDrawing.ts",
     "symbol": "Async function 'exportSvgDrawing'",
     "value": 16
