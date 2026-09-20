@@ -77,11 +77,13 @@ export async function runInterferenceCli(input: InterferenceCliInput): Promise<I
       console.log('No assembly Scene to check (script returned a Shape, not a Scene).');
       return { exitCode: 0 };
     }
+    const scopeNote = r.scope === 'compound'
+      ? `a compound of ${r.partCount} solids`
+      : `a ${r.partCount}-part assembly`;
     if (r.pairs.length === 0) {
-      const scopeNote = r.scope === 'compound' ? `compound of ${r.partCount} solids` : `${r.partCount} parts`;
       console.log(`No interferences detected (${scopeNote}, ${r.comparisonCount} comparisons, ε=${input.epsilon}mm³).`);
     } else {
-      console.error(`Detected ${r.pairs.length} interference${r.pairs.length === 1 ? '' : 's'} in ${r.partCount}-part assembly:`);
+      console.error(`Detected ${r.pairs.length} interference${r.pairs.length === 1 ? '' : 's'} in ${scopeNote}:`);
       for (const p of r.pairs) {
         console.error(`  ${p.a}  ↔  ${p.b}    ${p.volumeMm3.toFixed(3)} mm³`);
       }

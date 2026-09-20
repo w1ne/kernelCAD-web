@@ -118,7 +118,10 @@ export function detectInterferences(
 }
 
 /** Pairwise clash detection inside a single ShapeBackend with ≥2 top-level
- *  solids (e.g. a union of disjoint bodies). Pair names are `solid[i]`. */
+ *  solids. A union of disjoint bodies lowers to one compound; overlapping
+ *  solids inside one Shape come from `Scene.toCompound()` (makeCompound, no
+ *  fuse — `Scene.toUnion()` fuses them into a single solid) or from imported
+ *  multi-solid BREPs. Pair names are `solid[i]`. */
 export function detectCompoundInterferences(
   shape: ShapeBackend,
   epsilonMm3: number,
