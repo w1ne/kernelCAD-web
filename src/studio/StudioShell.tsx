@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { StudioQuickStart } from './start/StudioQuickStart';
 import { Header } from './components/Layout/Header';
 import { Toolbar } from './Toolbar';
 import { useStudioConfig } from './config/StudioConfigContext';
@@ -169,6 +170,7 @@ export function StudioShell() {
             data-testid="workbench-ready"
         >
             {showHeader && <Header />}
+            {showHeader && <StudioQuickStart />}
             <Toolbar
                 isModified={isModified}
                 onValidate={handleValidate}

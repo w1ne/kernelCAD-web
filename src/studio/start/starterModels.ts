@@ -47,3 +47,23 @@ return base.union(back).union(lip);
 `;
   }
 }
+
+export function studioStarterCode(model: StarterModel): string {
+  let code = starterCode(model);
+  for (const [dimension, variable] of [['width', 'w'], ['depth', 'd'], ['height', 'h']] as const) {
+    const { min, max } = SIZE_LIMITS[dimension];
+    code = code.replace(`const ${variable} = ${model.sizes[dimension]};`,
+      `const ${variable} = param('${dimension}', ${model.sizes[dimension]}, { min: ${min}, max: ${max} });`);
+  }
+  return code
+    .replaceAll('w - 2*t', 'w.add(-2*t)')
+    .replaceAll('d - 2*t', 'd.add(-2*t)')
+    .replaceAll('w/4', 'w.divide(4)')
+    .replaceAll('w*0.75', 'w.multiply(0.75)')
+    .replaceAll('w/2', 'w.divide(2)')
+    .replaceAll('d*0.65', 'd.multiply(0.65)')
+    .replaceAll('h*0.65', 'h.multiply(0.65)')
+    .replaceAll('(h - 1) / Math.cos(Math.PI / 15)', 'h.subtract(1).divide(Math.cos(Math.PI / 15))')
+    .replaceAll('d*0.5 - 14', 'd.multiply(0.5).subtract(14)')
+    .replaceAll('d*0.5', 'd.multiply(0.5)');
+}

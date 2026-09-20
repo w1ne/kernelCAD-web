@@ -4,7 +4,8 @@ const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:5173';
 
 test('home offers a free example before sign-in', async ({ page }) => {
   await page.goto(`${BASE}/`);
-  await expect(page.getByRole('heading', { name: 'What would you like to make?' })).toBeVisible();
+  await expect(page.getByTestId('workbench-ready')).toBeVisible();
+  await page.getByRole('button', { name: 'Quick start', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Bracket', exact: true })).toBeVisible();
   await expect(page.getByRole('dialog')).toHaveCount(0);
 });
