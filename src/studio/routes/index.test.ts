@@ -6,11 +6,10 @@ import { describe, expect, it } from 'vitest';
 describe('App root route (src/studio/routes/index.tsx)', () => {
   const source = readFileSync('src/studio/routes/index.tsx', 'utf8');
 
-  it('keeps the full Studio available for existing deep links', () => {
+  it('opens the full Studio at the homepage', () => {
     expect(source).toMatch(/import\s+App\s+from\s+['"]\.\.\/App['"]/);
     expect(source).toMatch(/<App\s*\/>/);
-    expect(source).toContain("['script', 'gallery', 'headless']");
-    expect(source).toContain('if (!hasStudioLink) return <StartPage />');
+    expect(source).not.toContain('StartPage');
   });
 });
 

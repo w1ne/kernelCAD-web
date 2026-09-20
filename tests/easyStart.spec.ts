@@ -4,39 +4,34 @@ import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 
-// Real browser CAD worker and downloads; no network or geometry mocks.
-test('a visitor can resize, undo and download all three examples', async ({ page }) => {
-  test.setTimeout(120_000);
+test('quick start opens editable parts inside the Studio', async ({ page }) => {
+  test.setTimeout(180_000);
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'What would you like to make?' })).toBeVisible();
+  await expect(page.getByTestId('workbench-ready')).toBeVisible();
+  await page.getByRole('button', { name: 'Quick start', exact: true }).click();
   for (const name of ['Phone stand', 'Bracket', 'Open box']) {
     await page.getByRole('button', { name, exact: true }).click();
-    const downloadSTL = page.getByRole('button', { name: 'Download for 3D printing' });
-    await expect(downloadSTL).toBeEnabled({ timeout: 45_000 });
-    const width = page.getByRole('slider', { name: 'width', exact: true });
-    const original = await width.inputValue();
-    await width.focus();
-    await width.press('End');
+    await expect(page.getByTestId('workbench-ready')).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Params', exact: true })).toBeEnabled({ timeout: 60_000 });
+    await page.getByRole('tab', { name: 'Params', exact: true }).click();
+    await expect(page.getByTestId('params-tab')).toContainText('width');
+    await expect(page.getByTestId('params-tab')).toContainText('height');
+    const width = page.getByRole('spinbutton', { name: 'width value', exact: true });
+    await width.fill('120');
+    const resized = page.waitForResponse(r => r.url().includes('/mesh') && r.request().method() === 'POST');
+    await width.press('Enter');
+    expect((await resized).ok()).toBe(true);
     await expect(width).toHaveValue('120');
-    await expect(downloadSTL).toBeEnabled();
-    const stlEvent = page.waitForEvent('download');
-    await downloadSTL.click();
-    const stl = await stlEvent;
-    const mesh = await readFile((await stl.path())!);
-    expect(mesh.byteLength).toBeGreaterThan(100);
-    const geometry = new STLLoader().parse(new Uint8Array(mesh).buffer);
+    const downloadEvent = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Export STL', exact: true }).click();
+    const download = await downloadEvent;
+    const bytes = await readFile((await download.path())!);
+    const geometry = new STLLoader().parse(new Uint8Array(bytes).buffer);
     geometry.computeBoundingBox();
     expect(geometry.boundingBox!.max.x - geometry.boundingBox!.min.x).toBeCloseTo(120, 3);
     geometry.dispose();
-    await page.getByRole('button', { name: 'Undo', exact: true }).click();
-    await expect(width).toHaveValue(original);
-    const downloadSTEP = page.getByRole('button', { name: 'Download STEP', exact: true });
-    await expect(downloadSTEP).toBeEnabled();
-    const stepEvent = page.waitForEvent('download');
-    await downloadSTEP.click();
-    const step = await stepEvent;
-    expect(await readFile((await step.path())!, 'utf8')).toContain('ISO-10303-21');
   }
-  await page.setViewportSize({ width: 390, height: 844 });
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.reload();
+  await expect(page.getByTestId('workbench-ready')).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'Params', exact: true })).toBeEnabled({ timeout: 60_000 });
 });

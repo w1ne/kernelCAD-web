@@ -11,7 +11,7 @@ interface ProjectContextType {
     activeProject: KernelCADProject | null;
     isSaving: boolean;
     openProject: (id: string) => void;
-    createProject: (name?: string) => string;
+    createProject: (name?: string, code?: string) => string;
     deleteProject: (id: string) => void;
     renameActiveProject: (newName: string) => void;
     saveActiveProject: (project: Partial<KernelCADProject>) => void;
@@ -93,9 +93,9 @@ function initializeProjectState(
 }
 
 /** Create and persist a fresh project, then make it active. Returns its id. */
-function createNewProject(name: string, setters: ProjectListSetters): string {
+function createNewProject(name: string, setters: ProjectListSetters, code = defaultCode): string {
     const id = projectService.generateId();
-    const newProj = projectService.createProject(defaultCode, {
+    const newProj = projectService.createProject(code, {
         viewMode: 'code',
         viewMode3D: 'shadedWithEdges',
         sidePanelVisible: true,
@@ -113,7 +113,7 @@ function deleteProjectById(
     id: string,
     activeProjectId: string | null,
     setters: ProjectListSetters,
-    createProject: (name?: string) => string,
+    createProject: (name?: string, code?: string) => string,
 ): void {
     projectService.deleteProject(id);
     const newList = projectService.listProjects();
@@ -229,8 +229,8 @@ export function ProjectProvider({ children, initialCode, projectName }: {
         setActiveProjectId(id);
     }, []);
 
-    const createProject = useCallback((name: string = 'Untitled Project') => {
-        return createNewProject(name, { setProjects, setActiveProjectId });
+    const createProject = useCallback((name: string = 'Untitled Project', code = defaultCode) => {
+        return createNewProject(name, { setProjects, setActiveProjectId }, code);
     }, []);
 
     const deleteProject = useCallback((id: string) => {
