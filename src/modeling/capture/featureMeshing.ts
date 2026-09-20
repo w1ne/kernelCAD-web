@@ -360,7 +360,25 @@ function buildHelixTubeMesh(
   const ringCount = polyline.length;
   const tubeR = wireDiameterMm * 0.5;
 
-  // Per-ring tangents (central differences interior; one-sided at ends).
+  const tangents = helixTubeTangents(polyline);
+
+  const vertCount = ringCount * radialSegments;
+  const vertices = new Float32Array(vertCount * 3);
+  const normals = new Float32Array(vertCount * 3);
+  writeHelixTubeRings(polyline, tangents, radialSegments, tubeR, vertices, normals);
+
+  const indices = buildHelixTubeIndices(ringCount, radialSegments);
+  return {
+    vertices,
+    indices,
+    normals,
+    faceId: 0,
+  };
+}
+
+/** Per-ring tangents (central differences interior; one-sided at ends). */
+function helixTubeTangents(polyline: readonly Vec3[]): Vec3[] {
+  const ringCount = polyline.length;
   const tangents: Vec3[] = new Array(ringCount);
   for (let i = 0; i < ringCount; i++) {
     const prev = polyline[Math.max(0, i - 1)];
@@ -372,7 +390,20 @@ function buildHelixTubeMesh(
     tx /= len; ty /= len; tz /= len;
     tangents[i] = [tx, ty, tz];
   }
+  return tangents;
+}
 
+/** Write ring vertices/normals for a tube swept along `polyline` using a
+ *  parallel-transport frame. */
+function writeHelixTubeRings(
+  polyline: readonly Vec3[],
+  tangents: readonly Vec3[],
+  radialSegments: number,
+  tubeR: number,
+  vertices: Float32Array,
+  normals: Float32Array,
+): void {
+  const ringCount = polyline.length;
   // Parallel-transport frame: pick an initial up vector ⊥ tangents[0],
   // then rotate it forward at each step to stay perpendicular.
   const seed: Vec3 = Math.abs(tangents[0][2]) < 0.9 ? [0, 0, 1] : [1, 0, 0];
@@ -386,10 +417,6 @@ function buildHelixTubeMesh(
   let vx = tangents[0][1] * uz - tangents[0][2] * uy;
   let vy = tangents[0][2] * ux - tangents[0][0] * uz;
   let vz = tangents[0][0] * uy - tangents[0][1] * ux;
-
-  const vertCount = ringCount * radialSegments;
-  const vertices = new Float32Array(vertCount * 3);
-  const normals = new Float32Array(vertCount * 3);
 
   for (let i = 0; i < ringCount; i++) {
     const center = polyline[i];
@@ -422,8 +449,10 @@ function buildHelixTubeMesh(
       normals[vi + 2] = nz;
     }
   }
+}
 
-  // Two triangles per (ring i → ring i+1, radial s → s+1) quad.
+/** Two triangles per (ring i → ring i+1, radial s → s+1) quad. */
+function buildHelixTubeIndices(ringCount: number, radialSegments: number): Uint32Array {
   const quadCount = (ringCount - 1) * radialSegments;
   const indices = new Uint32Array(quadCount * 6);
   let idx = 0;
@@ -442,12 +471,7 @@ function buildHelixTubeMesh(
       indices[idx++] = d;
     }
   }
-  return {
-    vertices,
-    indices,
-    normals,
-    faceId: 0,
-  };
+  return indices;
 }
 
 /**
