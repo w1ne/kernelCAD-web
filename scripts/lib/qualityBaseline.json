@@ -931,12 +931,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/studio/context/geometry/types.ts",
-    "symbol": "Function 'mergePhysicalUseCaseReview'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/hooks/viewer/useDirectEditDrag.ts",
     "symbol": "Async arrow function",
     "value": 16
