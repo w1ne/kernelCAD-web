@@ -19,12 +19,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/cli/commands/export.ts",
-    "symbol": "Async function 'trustedManifestPath'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/drawing/reconstructPhases.ts",
     "symbol": "Function 'applyRadialCallouts'",
     "value": 16
