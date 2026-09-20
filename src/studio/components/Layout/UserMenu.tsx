@@ -20,6 +20,70 @@ export default function UserMenu() {
     return <UserMenuInner />;
 }
 
+function SignInControl() {
+    return (
+        <span title="Sign in to use the agent and save projects">
+            <SignInButton className="inline-flex items-center gap-2 rounded bg-[#222] hover:bg-[#333] text-gray-300 hover:text-white px-2 py-1 text-xs font-medium transition-colors">
+                Sign in
+            </SignInButton>
+        </span>
+    );
+}
+
+function AccountDropdown({
+    dropdownRef,
+    anchor,
+    email,
+    onSignOut,
+}: {
+    dropdownRef: React.RefObject<HTMLDivElement | null>;
+    anchor: { top: number; right: number } | null;
+    email: string;
+    onSignOut: () => void;
+}) {
+    return (
+        <div
+            ref={dropdownRef}
+            role="menu"
+            style={{
+                position: 'fixed',
+                top: anchor?.top ?? 0,
+                right: anchor?.right ?? 0,
+            }}
+            className="w-56 bg-[#1a1a1a] border border-[#333] rounded shadow-lg z-[1000] py-1"
+            data-testid="user-menu-dropdown"
+        >
+            <div className="px-3 py-1.5 text-xs text-gray-400 truncate" data-testid="user-menu-email">
+                {email}
+            </div>
+            <div className="h-px bg-[#333] my-1" />
+            <a
+                href="/me"
+                className="block px-3 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-[#222] no-underline transition-colors"
+                role="menuitem"
+            >
+                Your projects
+            </a>
+            <a
+                href="/billing"
+                className="block px-3 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-[#222] no-underline transition-colors"
+                role="menuitem"
+            >
+                Usage &amp; billing
+            </a>
+            <div className="h-px bg-[#333] my-1" />
+            <button
+                type="button"
+                onClick={onSignOut}
+                className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-[#222] transition-colors"
+                role="menuitem"
+            >
+                Sign out
+            </button>
+        </div>
+    );
+}
+
 function UserMenuInner() {
     const { session, loading } = useSession();
     const [open, setOpen] = useState(false);
@@ -73,13 +137,7 @@ function UserMenuInner() {
     if (loading) return null;
 
     if (session === null) {
-        return (
-            <span title="Sign in to use the agent and save projects">
-                <SignInButton className="inline-flex items-center gap-2 rounded bg-[#222] hover:bg-[#333] text-gray-300 hover:text-white px-2 py-1 text-xs font-medium transition-colors">
-                    Sign in
-                </SignInButton>
-            </span>
-        );
+        return <SignInControl />;
     }
 
     const email = session.user.email ?? '';
@@ -97,45 +155,12 @@ function UserMenuInner() {
     };
 
     const dropdown = open ? (
-        <div
-            ref={dropdownRef}
-            role="menu"
-            style={{
-                position: 'fixed',
-                top: anchor?.top ?? 0,
-                right: anchor?.right ?? 0,
-            }}
-            className="w-56 bg-[#1a1a1a] border border-[#333] rounded shadow-lg z-[1000] py-1"
-            data-testid="user-menu-dropdown"
-        >
-            <div className="px-3 py-1.5 text-xs text-gray-400 truncate" data-testid="user-menu-email">
-                {email}
-            </div>
-            <div className="h-px bg-[#333] my-1" />
-            <a
-                href="/me"
-                className="block px-3 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-[#222] no-underline transition-colors"
-                role="menuitem"
-            >
-                Your projects
-            </a>
-            <a
-                href="/billing"
-                className="block px-3 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-[#222] no-underline transition-colors"
-                role="menuitem"
-            >
-                Usage &amp; billing
-            </a>
-            <div className="h-px bg-[#333] my-1" />
-            <button
-                type="button"
-                onClick={handleSignOut}
-                className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-[#222] transition-colors"
-                role="menuitem"
-            >
-                Sign out
-            </button>
-        </div>
+        <AccountDropdown
+            dropdownRef={dropdownRef}
+            anchor={anchor}
+            email={email}
+            onSignOut={handleSignOut}
+        />
     ) : null;
 
     return (
