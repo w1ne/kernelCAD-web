@@ -23,13 +23,13 @@ describe('PromptBox', () => {
     render(<PromptBox onSubmit={onSubmit} />);
     const textarea = screen.getByLabelText(/CAD prompt/) as HTMLTextAreaElement;
     fireEvent.change(textarea, { target: { value: '  make a cube  ' } });
-    fireEvent.click(screen.getByRole('button', { name: /Generate/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Create/i }));
     expect(onSubmit).toHaveBeenCalledWith('make a cube');
   });
 
   it('submit button disabled when value is empty', () => {
     render(<PromptBox onSubmit={() => {}} />);
-    const btn = screen.getByRole('button', { name: /Generate/i }) as HTMLButtonElement;
+    const btn = screen.getByRole('button', { name: /Create/i }) as HTMLButtonElement;
     expect(btn.disabled).toBe(true);
   });
 

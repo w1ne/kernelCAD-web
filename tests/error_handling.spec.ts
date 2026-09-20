@@ -22,7 +22,7 @@ test.describe('Error Handling E2E', () => {
         page.on('console', msg => {
             console.log(`BROWSER [${msg.type()}]: ${msg.text()}`);
         });
-        await page.goto('/');
+        await page.goto('/studio');
         await page.waitForFunction(() => (window as any).isEditorReady === true);
         await page.waitForFunction(() => (window as any).isEngineReady === true);
 

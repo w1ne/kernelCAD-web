@@ -7,7 +7,7 @@ test.describe('Camera Focus & Sketching', () => {
         page.on('pageerror', err => console.log(`[Browser Error]: ${err.message}`));
 
         // 1. Load Application with clean state
-        await page.goto('/');
+        await page.goto('/studio');
         await page.evaluate(() => localStorage.clear());
         await page.reload();
         await page.waitForSelector('[data-testid="workbench-ready"]', { state: 'attached' });

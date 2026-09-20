@@ -15,7 +15,7 @@ async function waitForStability(page: Page, expectedCount?: number) {
 
 test.describe('Undo/Redo Shortcuts', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/studio');
     await page.waitForSelector('canvas', { timeout: 20000 });
     await page.waitForFunction(() => (window as any).isEditorReady === true, { timeout: 30000 });
     await page.waitForFunction(() => (window as any).isEngineReady === true, { timeout: 30000 });

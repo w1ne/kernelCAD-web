@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('tooltips include keyboard shortcuts', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/studio');
 
     await page.waitForSelector('canvas', { timeout: 20000 });
     await page.waitForFunction(() => (window as any).isEditorReady === true, { timeout: 30000 });

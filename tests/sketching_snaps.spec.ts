@@ -12,7 +12,7 @@ async function waitForStability(page: Page, expectedCount?: number) {
 
 test.describe('Sketching Snaps and Constraints E2E', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto('/');
+        await page.goto('/studio');
         await page.waitForSelector('canvas', { timeout: 60000 });
         await page.waitForFunction(() => (window as any).isEditorReady === true, { timeout: 60000 });
         await page.waitForFunction(() => (window as any).isEngineReady === true, { timeout: 60000 });

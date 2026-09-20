@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Visibility and Selection System', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto('/');
+        await page.goto('/studio');
 
         // Clear storage to avoid cross-test pollution
         await page.evaluate(() => window.localStorage.clear());
