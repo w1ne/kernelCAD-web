@@ -530,6 +530,24 @@ export function computeConstructionClosure(
   // Seed with assembly construction-node IDs (the part/joint/connect
   // records themselves don't produce renderable single-shape meshes —
   // SceneBackend handles their composed presentation).
+  seedAssemblyConstructionNodes(records, closure);
+
+  // Walk upstream from each assemblyPart's source shape, visiting all
+  // feature-kind input refs transitively. Any record that contributes to
+  // the BUILD of an assembly part is construction debris from the
+  // renderer's perspective.
+  const queue = seedConstructionQueue(records);
+
+  walkConstructionClosure(queue, recordById, closure);
+
+  return closure;
+}
+
+/** Seed `closure` with assembly construction-node IDs. */
+function seedAssemblyConstructionNodes(
+  records: readonly FeatureRecord[],
+  closure: Set<FeatureId>,
+): void {
   for (const r of records) {
     if (
       r.kind === 'assemblyPart' ||
@@ -539,18 +557,26 @@ export function computeConstructionClosure(
       closure.add(r.id);
     }
   }
+}
 
-  // Walk upstream from each assemblyPart's source shape, visiting all
-  // feature-kind input refs transitively. Any record that contributes to
-  // the BUILD of an assembly part is construction debris from the
-  // renderer's perspective.
+/** Collect each assemblyPart's source-shape ref as the upstream walk seeds. */
+function seedConstructionQueue(records: readonly FeatureRecord[]): FeatureId[] {
   const queue: FeatureId[] = [];
   for (const r of records) {
     if (r.kind !== 'assemblyPart') continue;
     const shapeRef = r.inputs.shape as FeatureRef | undefined;
     if (shapeRef && shapeRef.kind === 'feature') queue.push(shapeRef.id);
   }
+  return queue;
+}
 
+/** Walk upstream from the seeded queue, following all feature-kind input
+ *  refs transitively. */
+function walkConstructionClosure(
+  queue: FeatureId[],
+  recordById: ReadonlyMap<FeatureId, FeatureRecord>,
+  closure: Set<FeatureId>,
+): void {
   while (queue.length > 0) {
     const id = queue.pop()!;
     if (closure.has(id)) continue;
@@ -565,8 +591,6 @@ export function computeConstructionClosure(
       }
     }
   }
-
-  return closure;
 }
 
 export function splitConnectorRef(ref: string): [string | undefined, string | undefined] {

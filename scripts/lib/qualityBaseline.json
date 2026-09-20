@@ -163,12 +163,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/featureMeshingPhases.ts",
-    "symbol": "Function 'computeConstructionClosure'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/export/usd/usdIsaacSerializer.ts",
     "symbol": "Async function 'buildLinkBlocks'",
     "value": 16
