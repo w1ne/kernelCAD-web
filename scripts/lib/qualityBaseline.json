@@ -175,12 +175,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/findPart.ts",
-    "symbol": "Async function 'findPartTool'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/getFaceLineage.ts",
     "symbol": "Async function 'getFaceLineageTool'",
     "value": 19

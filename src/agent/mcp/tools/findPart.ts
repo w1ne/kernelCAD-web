@@ -41,6 +41,23 @@ export interface FindPartErr {
 
 export type FindPartOutput = FindPartOk | FindPartErr;
 
+function buildFindPartOpts(input: FindPartInput): FindPartOpts {
+  return {
+    ...(input.category !== undefined ? { category: input.category } : {}),
+    ...(input.family !== undefined ? { family: input.family } : {}),
+    ...(input.standard !== undefined ? { standard: input.standard } : {}),
+    ...(input.tag !== undefined ? { tag: input.tag } : {}),
+    ...(input.limit !== undefined ? { limit: input.limit } : {}),
+    ...(input.source !== undefined ? { source: input.source } : {}),
+    ...(input.partsBaseUrl !== undefined
+      ? { partsBaseUrl: input.partsBaseUrl }
+      : {}),
+    ...(input.licenseClass !== undefined
+      ? { licenseClass: input.licenseClass }
+      : {}),
+  };
+}
+
 export async function findPartTool(
   input: FindPartInput,
 ): Promise<FindPartOutput> {
@@ -61,20 +78,7 @@ export async function findPartTool(
     };
   }
   try {
-    const opts: FindPartOpts = {
-      ...(input.category !== undefined ? { category: input.category } : {}),
-      ...(input.family !== undefined ? { family: input.family } : {}),
-      ...(input.standard !== undefined ? { standard: input.standard } : {}),
-      ...(input.tag !== undefined ? { tag: input.tag } : {}),
-      ...(input.limit !== undefined ? { limit: input.limit } : {}),
-      ...(input.source !== undefined ? { source: input.source } : {}),
-      ...(input.partsBaseUrl !== undefined
-        ? { partsBaseUrl: input.partsBaseUrl }
-        : {}),
-      ...(input.licenseClass !== undefined
-        ? { licenseClass: input.licenseClass }
-        : {}),
-    };
+    const opts = buildFindPartOpts(input);
     const r = await findPartHost(input.query ?? '', opts);
     return { ok: true, ...r };
   } catch (e) {
