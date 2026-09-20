@@ -530,6 +530,24 @@ export function computeConstructionClosure(
   // Seed with assembly construction-node IDs (the part/joint/connect
   // records themselves don't produce renderable single-shape meshes —
   // SceneBackend handles their composed presentation).
+  seedAssemblyConstructionNodes(records, closure);
+
+  // Walk upstream from each assemblyPart's source shape, visiting all
+  // feature-kind input refs transitively. Any record that contributes to
+  // the BUILD of an assembly part is construction debris from the
+  // renderer's perspective.
+  const queue = seedConstructionQueue(records);
+
+  walkConstructionClosure(queue, recordById, closure);
+
+  return closure;
+}
+
+/** Seed `closure` with assembly construction-node IDs. */
+function seedAssemblyConstructionNodes(
+  records: readonly FeatureRecord[],
+  closure: Set<FeatureId>,
+): void {
   for (const r of records) {
     if (
       r.kind === 'assemblyPart' ||
@@ -539,18 +557,26 @@ export function computeConstructionClosure(
       closure.add(r.id);
     }
   }
+}
 
-  // Walk upstream from each assemblyPart's source shape, visiting all
-  // feature-kind input refs transitively. Any record that contributes to
-  // the BUILD of an assembly part is construction debris from the
-  // renderer's perspective.
+/** Collect each assemblyPart's source-shape ref as the upstream walk seeds. */
+function seedConstructionQueue(records: readonly FeatureRecord[]): FeatureId[] {
   const queue: FeatureId[] = [];
   for (const r of records) {
     if (r.kind !== 'assemblyPart') continue;
     const shapeRef = r.inputs.shape as FeatureRef | undefined;
     if (shapeRef && shapeRef.kind === 'feature') queue.push(shapeRef.id);
   }
+  return queue;
+}
 
+/** Walk upstream from the seeded queue, following all feature-kind input
+ *  refs transitively. */
+function walkConstructionClosure(
+  queue: FeatureId[],
+  recordById: ReadonlyMap<FeatureId, FeatureRecord>,
+  closure: Set<FeatureId>,
+): void {
   while (queue.length > 0) {
     const id = queue.pop()!;
     if (closure.has(id)) continue;
@@ -565,8 +591,6 @@ export function computeConstructionClosure(
       }
     }
   }
-
-  return closure;
 }
 
 export function splitConnectorRef(ref: string): [string | undefined, string | undefined] {
@@ -629,11 +653,35 @@ function detectAttributeShadowing(
   const featureById = new Map<FeatureId, FeatureMesh>();
   for (const f of features) featureById.set(f.featureId, f);
 
-  // Reverse adjacency for fuse-style edges only. A leaf at `id` flows into
-  // `descendantsByPredecessor.get(id)` when those descendants list it as a
-  // predecessor AND the descendant's op is union/intersect (or no-op, for
-  // non-boolean records that just consume the shape — modifiers/transforms
-  // preserve material reachability).
+  const descendantsByPredecessor = buildShadowDescendantIndex(features);
+
+  const out: AttributeShadowingWarning[] = [];
+  for (const leaf of features) {
+    if (leaf.virtual) continue;
+    if (!attributeByFeatureId.has(leaf.featureId)) continue;
+
+    const shadower = findShadowingFeature(
+      leaf.featureId,
+      attributeByFeatureId,
+      descendantsByPredecessor,
+      featureById,
+    );
+    if (shadower) {
+      out.push(attributeShadowingWarning(attribute, leaf, shadower));
+    }
+  }
+
+  return out;
+}
+
+/** Reverse adjacency for fuse-style edges only. A leaf at `id` flows into
+ *  `descendantsByPredecessor.get(id)` when those descendants list it as a
+ *  predecessor AND the descendant's op is union/intersect (or no-op, for
+ *  non-boolean records that just consume the shape — modifiers/transforms
+ *  preserve material reachability). */
+function buildShadowDescendantIndex(
+  features: readonly FeatureMesh[],
+): Map<FeatureId, FeatureId[]> {
   const descendantsByPredecessor = new Map<FeatureId, FeatureId[]>();
   for (const f of features) {
     if (f.virtual) continue;
@@ -647,51 +695,57 @@ function detectAttributeShadowing(
       else descendantsByPredecessor.set(predId, [f.featureId]);
     }
   }
+  return descendantsByPredecessor;
+}
 
-  const out: AttributeShadowingWarning[] = [];
-  for (const leaf of features) {
-    if (leaf.virtual) continue;
-    if (!attributeByFeatureId.has(leaf.featureId)) continue;
+/** BFS forward from `leafId`; stop at the first attributed descendant on each
+ *  branch. We only need one shadower per leaf for the diagnostic; if there's a
+ *  chain (.union().union().union()), the FIRST one with its own attribution is
+ *  the load-bearing one. */
+function findShadowingFeature(
+  leafId: FeatureId,
+  attributeByFeatureId: ReadonlyMap<FeatureId, PBRMaterial | string>,
+  descendantsByPredecessor: ReadonlyMap<FeatureId, FeatureId[]>,
+  featureById: ReadonlyMap<FeatureId, FeatureMesh>,
+): FeatureMesh | undefined {
+  const visited = new Set<FeatureId>([leafId]);
+  const queue: FeatureId[] = [];
+  const seedDescendants = descendantsByPredecessor.get(leafId);
+  if (seedDescendants) queue.push(...seedDescendants);
 
-    // BFS forward; stop at the first attributed descendant on each
-    // branch. We only need one shadower per leaf for the diagnostic; if
-    // there's a chain (.union().union().union()), the FIRST one with its
-    // own attribution is the load-bearing one.
-    const visited = new Set<FeatureId>([leaf.featureId]);
-    const queue: FeatureId[] = [];
-    const seedDescendants = descendantsByPredecessor.get(leaf.featureId);
-    if (seedDescendants) queue.push(...seedDescendants);
-
-    let shadower: FeatureMesh | undefined;
-    while (queue.length > 0) {
-      const id = queue.shift()!;
-      if (visited.has(id)) continue;
-      visited.add(id);
-      if (attributeByFeatureId.has(id)) {
-        shadower = featureById.get(id);
-        break;
-      }
-      const next = descendantsByPredecessor.get(id);
-      if (next) queue.push(...next);
+  let shadower: FeatureMesh | undefined;
+  while (queue.length > 0) {
+    const id = queue.shift()!;
+    if (visited.has(id)) continue;
+    visited.add(id);
+    if (attributeByFeatureId.has(id)) {
+      shadower = featureById.get(id);
+      break;
     }
-
-    if (shadower) {
-      out.push({
-        attribute,
-        leafFeatureId: leaf.featureId,
-        leafFeatureKind: leaf.featureKind,
-        shadowingFeatureId: shadower.featureId,
-        shadowingFeatureKind: shadower.featureKind,
-        message:
-          `leaf '${leaf.featureId}' (${leaf.featureKind}) has its own ${attribute} but is unioned into ` +
-          `'${shadower.featureId}' (${shadower.featureKind}) which also has its own ${attribute}. ` +
-          `The leaf ${attribute} is visible during the build animation only; the static render ` +
-          `(kernelcad render, post-rotate capture-demo) shows the head ${attribute} on the fused silhouette. ` +
-          `To preserve per-leaf ${attribute} in the static render, split the construction so the leaf is not ` +
-          `unioned into a ${attribute}-bearing parent, or author the leaf as a separate assemblyPart.`,
-      });
-    }
+    const next = descendantsByPredecessor.get(id);
+    if (next) queue.push(...next);
   }
+  return shadower;
+}
 
-  return out;
+/** Build the structured warning for one (leaf, shadowing record) pair. */
+function attributeShadowingWarning(
+  attribute: ShadowedAttribute,
+  leaf: FeatureMesh,
+  shadower: FeatureMesh,
+): AttributeShadowingWarning {
+  return {
+    attribute,
+    leafFeatureId: leaf.featureId,
+    leafFeatureKind: leaf.featureKind,
+    shadowingFeatureId: shadower.featureId,
+    shadowingFeatureKind: shadower.featureKind,
+    message:
+      `leaf '${leaf.featureId}' (${leaf.featureKind}) has its own ${attribute} but is unioned into ` +
+      `'${shadower.featureId}' (${shadower.featureKind}) which also has its own ${attribute}. ` +
+      `The leaf ${attribute} is visible during the build animation only; the static render ` +
+      `(kernelcad render, post-rotate capture-demo) shows the head ${attribute} on the fused silhouette. ` +
+      `To preserve per-leaf ${attribute} in the static render, split the construction so the leaf is not ` +
+      `unioned into a ${attribute}-bearing parent, or author the leaf as a separate assemblyPart.`,
+  };
 }

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { projectService, type KernelCADProject, type ProjectMetadata, type ProjectRevision } from '../../authoring/projectService';
 import { defaultCode } from '../../shared/worker/geometryEngine';
 
@@ -32,6 +33,156 @@ export function isEphemeralProjectId(id: string | null): boolean {
     return id === EPHEMERAL_ID;
 }
 
+/** State setters the project mutation helpers drive. */
+interface ProjectStateSetters {
+    setActiveProjectId: Dispatch<SetStateAction<string | null>>;
+    setProjects: Dispatch<SetStateAction<ProjectMetadata[]>>;
+    setEphemeralProject: Dispatch<SetStateAction<KernelCADProject | null>>;
+    setProjectVersion: Dispatch<SetStateAction<number>>;
+    setIsSaving: Dispatch<SetStateAction<boolean>>;
+}
+
+type ProjectListSetters = Pick<ProjectStateSetters, 'setActiveProjectId' | 'setProjects'>;
+
+/** Initial load and migration: funnel route builds an in-memory project, the
+ *  normal route hydrates from (and persists to) localStorage. */
+function initializeProjectState(
+    initialCode: string | undefined,
+    projectName: string | undefined,
+    setters: ProjectListSetters & Pick<ProjectStateSetters, 'setEphemeralProject'>,
+): void {
+    if (initialCode !== undefined) {
+        // Funnel route: do NOT hydrate from localStorage. Build an in-memory
+        // project so the editor + header still work, but never persist.
+        const proj = projectService.createProject(initialCode, {
+            viewMode: 'code',
+            viewMode3D: 'shadedWithEdges',
+            sidePanelVisible: true,
+            showSketches: true,
+        }, projectName ?? 'Generated');
+        setters.setEphemeralProject(proj);
+        setters.setActiveProjectId(EPHEMERAL_ID);
+        return;
+    }
+
+    const migratedId = projectService.migrateLegacyIfNeeded();
+    const list = projectService.listProjects();
+    setters.setProjects(list);
+
+    if (migratedId) {
+        setters.setActiveProjectId(migratedId);
+    } else if (list.length > 0) {
+        const lastId = localStorage.getItem('kernelcad_last_project_id');
+        if (lastId && list.some(p => p.id === lastId)) {
+            setters.setActiveProjectId(lastId);
+        } else {
+            setters.setActiveProjectId(list[0].id);
+        }
+    } else {
+        const id = projectService.generateId();
+        const defaultProj = projectService.createProject(defaultCode, {
+            viewMode: 'code',
+            viewMode3D: 'shadedWithEdges',
+            sidePanelVisible: true,
+            showSketches: true
+        }, 'Untitled Project');
+        projectService.saveProject(id, defaultProj);
+        setters.setProjects(projectService.listProjects());
+        setters.setActiveProjectId(id);
+    }
+}
+
+/** Create and persist a fresh project, then make it active. Returns its id. */
+function createNewProject(name: string, setters: ProjectListSetters): string {
+    const id = projectService.generateId();
+    const newProj = projectService.createProject(defaultCode, {
+        viewMode: 'code',
+        viewMode3D: 'shadedWithEdges',
+        sidePanelVisible: true,
+        showSketches: true
+    }, name);
+    projectService.saveProject(id, newProj);
+    setters.setProjects(projectService.listProjects());
+    setters.setActiveProjectId(id);
+    return id;
+}
+
+/** Delete a project, falling back to the first remaining one (or a fresh
+ *  project when the list empties) if the deleted project was active. */
+function deleteProjectById(
+    id: string,
+    activeProjectId: string | null,
+    setters: ProjectListSetters,
+    createProject: (name?: string) => string,
+): void {
+    projectService.deleteProject(id);
+    const newList = projectService.listProjects();
+    setters.setProjects(newList);
+
+    if (activeProjectId === id) {
+        if (newList.length > 0) {
+            setters.setActiveProjectId(newList[0].id);
+        } else {
+            createProject();
+        }
+    }
+}
+
+/** Rename the active project (in memory for the ephemeral funnel project). */
+function renameProjectById(
+    activeProjectId: string | null,
+    activeProject: KernelCADProject | null,
+    newName: string,
+    setters: Pick<ProjectStateSetters, 'setEphemeralProject' | 'setProjects' | 'setProjectVersion'>,
+): void {
+    if (!activeProjectId || !activeProject) return;
+    if (activeProjectId === EPHEMERAL_ID) {
+        setters.setEphemeralProject(p => (p ? { ...p, name: newName } : p));
+        return;
+    }
+    const updated = { ...activeProject, name: newName };
+    projectService.saveProject(activeProjectId, updated);
+    setters.setProjects(projectService.listProjects());
+    setters.setProjectVersion(v => v + 1);
+}
+
+/** Persist a partial update to the active project. */
+function persistActiveProject(
+    activeProjectId: string | null,
+    activeProject: KernelCADProject | null,
+    updates: Partial<KernelCADProject>,
+    setters: Pick<ProjectStateSetters, 'setEphemeralProject' | 'setIsSaving' | 'setProjects' | 'setProjectVersion'>,
+): void {
+    if (!activeProjectId || !activeProject) return;
+    if (activeProjectId === EPHEMERAL_ID) {
+        // Funnel route: keep edits in memory; never write to localStorage.
+        setters.setEphemeralProject(p => (p ? { ...p, ...updates } : p));
+        return;
+    }
+    setters.setIsSaving(true);
+    const updated = { ...activeProject, ...updates };
+    projectService.saveProject(activeProjectId, updated);
+
+    if (updates.name) {
+        setters.setProjects(projectService.listProjects());
+    }
+    setters.setProjectVersion(v => v + 1);
+    setTimeout(() => setters.setIsSaving(false), 500);
+}
+
+/** Restore a revision's code into the active project. */
+function restoreProjectRevision(
+    v: number,
+    activeProjectId: string | null,
+    revisions: ProjectRevision[],
+    saveActiveProject: (project: Partial<KernelCADProject>) => void,
+): void {
+    if (!activeProjectId || activeProjectId === EPHEMERAL_ID) return;
+    const rev = revisions.find(r => r.v === v);
+    if (!rev) return;
+    saveActiveProject({ code: rev.code });
+}
+
 export function ProjectProvider({ children, initialCode, projectName }: {
     children: React.ReactNode;
     initialCode?: string;
@@ -45,45 +196,11 @@ export function ProjectProvider({ children, initialCode, projectName }: {
 
     // Initial load and migration
     useEffect(() => {
-        if (initialCode !== undefined) {
-            // Funnel route: do NOT hydrate from localStorage. Build an in-memory
-            // project so the editor + header still work, but never persist.
-            const proj = projectService.createProject(initialCode, {
-                viewMode: 'code',
-                viewMode3D: 'shadedWithEdges',
-                sidePanelVisible: true,
-                showSketches: true,
-            }, projectName ?? 'Generated');
-            setEphemeralProject(proj);
-            setActiveProjectId(EPHEMERAL_ID);
-            return;
-        }
-
-        const migratedId = projectService.migrateLegacyIfNeeded();
-        const list = projectService.listProjects();
-        setProjects(list);
-
-        if (migratedId) {
-            setActiveProjectId(migratedId);
-        } else if (list.length > 0) {
-            const lastId = localStorage.getItem('kernelcad_last_project_id');
-            if (lastId && list.some(p => p.id === lastId)) {
-                setActiveProjectId(lastId);
-            } else {
-                setActiveProjectId(list[0].id);
-            }
-        } else {
-            const id = projectService.generateId();
-            const defaultProj = projectService.createProject(defaultCode, {
-                viewMode: 'code',
-                viewMode3D: 'shadedWithEdges',
-                sidePanelVisible: true,
-                showSketches: true
-            }, 'Untitled Project');
-            projectService.saveProject(id, defaultProj);
-            setProjects(projectService.listProjects());
-            setActiveProjectId(id);
-        }
+        initializeProjectState(initialCode, projectName, {
+            setEphemeralProject,
+            setActiveProjectId,
+            setProjects,
+        });
     }, [initialCode, projectName]);
 
     // Derive active project data
@@ -113,68 +230,32 @@ export function ProjectProvider({ children, initialCode, projectName }: {
     }, []);
 
     const createProject = useCallback((name: string = 'Untitled Project') => {
-        const id = projectService.generateId();
-        const newProj = projectService.createProject(defaultCode, {
-            viewMode: 'code',
-            viewMode3D: 'shadedWithEdges',
-            sidePanelVisible: true,
-            showSketches: true
-        }, name);
-        projectService.saveProject(id, newProj);
-        setProjects(projectService.listProjects());
-        setActiveProjectId(id);
-        return id;
+        return createNewProject(name, { setProjects, setActiveProjectId });
     }, []);
 
     const deleteProject = useCallback((id: string) => {
-        projectService.deleteProject(id);
-        const newList = projectService.listProjects();
-        setProjects(newList);
-
-        if (activeProjectId === id) {
-            if (newList.length > 0) {
-                setActiveProjectId(newList[0].id);
-            } else {
-                createProject();
-            }
-        }
+        deleteProjectById(id, activeProjectId, { setProjects, setActiveProjectId }, createProject);
     }, [activeProjectId, createProject]);
 
     const renameActiveProject = useCallback((newName: string) => {
-        if (!activeProjectId || !activeProject) return;
-        if (activeProjectId === EPHEMERAL_ID) {
-            setEphemeralProject(p => (p ? { ...p, name: newName } : p));
-            return;
-        }
-        const updated = { ...activeProject, name: newName };
-        projectService.saveProject(activeProjectId, updated);
-        setProjects(projectService.listProjects());
-        setProjectVersion(v => v + 1);
+        renameProjectById(activeProjectId, activeProject, newName, {
+            setEphemeralProject,
+            setProjects,
+            setProjectVersion,
+        });
     }, [activeProjectId, activeProject]);
 
     const saveActiveProject = useCallback((updates: Partial<KernelCADProject>) => {
-        if (!activeProjectId || !activeProject) return;
-        if (activeProjectId === EPHEMERAL_ID) {
-            // Funnel route: keep edits in memory; never write to localStorage.
-            setEphemeralProject(p => (p ? { ...p, ...updates } : p));
-            return;
-        }
-        setIsSaving(true);
-        const updated = { ...activeProject, ...updates };
-        projectService.saveProject(activeProjectId, updated);
-
-        if (updates.name) {
-            setProjects(projectService.listProjects());
-        }
-        setProjectVersion(v => v + 1);
-        setTimeout(() => setIsSaving(false), 500);
+        persistActiveProject(activeProjectId, activeProject, updates, {
+            setEphemeralProject,
+            setIsSaving,
+            setProjects,
+            setProjectVersion,
+        });
     }, [activeProjectId, activeProject]);
 
     const restoreRevision = useCallback((v: number) => {
-        if (!activeProjectId || activeProjectId === EPHEMERAL_ID) return;
-        const rev = revisions.find(r => r.v === v);
-        if (!rev) return;
-        saveActiveProject({ code: rev.code });
+        restoreProjectRevision(v, activeProjectId, revisions, saveActiveProject);
     }, [activeProjectId, revisions, saveActiveProject]);
 
     const value = useMemo(() => ({

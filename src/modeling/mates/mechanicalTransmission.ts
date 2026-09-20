@@ -349,6 +349,22 @@ function pointTriangleDistanceSquared(p: Vec3, a: Vec3, b: Vec3, c: Vec3): numbe
     return lengthSquared(sub(p, add(a, scale(ab, v))));
   }
 
+  return pointTriangleDistanceSquaredRemaining(p, a, b, c, ab, ac, d1, d2, d3, d4, vc);
+}
+
+function pointTriangleDistanceSquaredRemaining(
+  p: Vec3,
+  a: Vec3,
+  b: Vec3,
+  c: Vec3,
+  ab: Vec3,
+  ac: Vec3,
+  d1: number,
+  d2: number,
+  d3: number,
+  d4: number,
+  vc: number,
+): number {
   const cp = sub(p, c);
   const d5 = dot(ab, cp);
   const d6 = dot(ac, cp);

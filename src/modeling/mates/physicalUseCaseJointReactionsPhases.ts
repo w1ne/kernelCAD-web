@@ -302,6 +302,11 @@ function contactHeldWorldNormal(
   return safePartName(contact.a) === heldPart ? worldNormal : scale(worldNormal, -1);
 }
 
+interface SolvedContactEndpoints {
+  readonly aPoint: ResolvedConnectorPoint;
+  readonly bPoint: ResolvedConnectorPoint;
+}
+
 export async function validateSolvedContact(
   arm: Assembly,
   transforms: ReadonlyMap<string, Transform>,
@@ -315,22 +320,10 @@ export async function validateSolvedContact(
   if (declared === undefined) {
     return `Certified contact '${contact.evidence.contactA}' to '${contact.evidence.contactB}' is not declared.`;
   }
-  const aPoint = await resolveConnectorPoint(arm, transforms, declared.a);
-  if (typeof aPoint === 'string') return aPoint;
-  const bPoint = await resolveConnectorPoint(arm, transforms, declared.b);
-  if (typeof bPoint === 'string') return bPoint;
-  const maxSlipMm = useCase.criteria?.maxSlipMm ?? 0;
-  if (!Number.isFinite(maxSlipMm) || maxSlipMm < 0) {
-    return `Use-case maxSlipMm must be a finite non-negative value.`;
-  }
-  const endpointDistanceMm = distance(aPoint.pointWorldMm, bPoint.pointWorldMm);
-  if (endpointDistanceMm > maxSlipMm + CONTACT_DISTANCE_TOLERANCE_MM) {
-    return `Solved contact endpoint distance ${endpointDistanceMm} mm for '${declared.a}' to '${declared.b}' exceeds maxSlipMm ${maxSlipMm}.`;
-  }
-  const expectedPoint = midpoint(aPoint.pointWorldMm, bPoint.pointWorldMm);
-  if (distance(contact.evidence.pointWorldMm, expectedPoint) > CERTIFICATE_POINT_TOLERANCE_MM) {
-    return `Certified contact point for '${declared.a}' to '${declared.b}' does not match the solved endpoint midpoint.`;
-  }
+  const endpoints = await resolveSolvedContactEndpoints(arm, transforms, declared);
+  if (typeof endpoints === 'string') return endpoints;
+  const pointsIssue = validateSolvedContactPoints(useCase, declared, contact, endpoints);
+  if (pointsIssue !== undefined) return pointsIssue;
 
   const heldNormal = contactHeldWorldNormal(
     declared,
@@ -338,6 +331,47 @@ export async function validateSolvedContact(
     transforms,
   );
   if (typeof heldNormal === 'string') return heldNormal;
+  return validateSolvedContactForce(declared, contact, heldNormal);
+}
+
+async function resolveSolvedContactEndpoints(
+  arm: Assembly,
+  transforms: ReadonlyMap<string, Transform>,
+  declared: PhysicalUseCaseRecord['contacts'][number],
+): Promise<SolvedContactEndpoints | string> {
+  const aPoint = await resolveConnectorPoint(arm, transforms, declared.a);
+  if (typeof aPoint === 'string') return aPoint;
+  const bPoint = await resolveConnectorPoint(arm, transforms, declared.b);
+  if (typeof bPoint === 'string') return bPoint;
+  return { aPoint, bPoint };
+}
+
+function validateSolvedContactPoints(
+  useCase: PhysicalUseCaseRecord,
+  declared: PhysicalUseCaseRecord['contacts'][number],
+  contact: CertifiedMechanismContact,
+  endpoints: SolvedContactEndpoints,
+): string | undefined {
+  const maxSlipMm = useCase.criteria?.maxSlipMm ?? 0;
+  if (!Number.isFinite(maxSlipMm) || maxSlipMm < 0) {
+    return `Use-case maxSlipMm must be a finite non-negative value.`;
+  }
+  const endpointDistanceMm = distance(endpoints.aPoint.pointWorldMm, endpoints.bPoint.pointWorldMm);
+  if (endpointDistanceMm > maxSlipMm + CONTACT_DISTANCE_TOLERANCE_MM) {
+    return `Solved contact endpoint distance ${endpointDistanceMm} mm for '${declared.a}' to '${declared.b}' exceeds maxSlipMm ${maxSlipMm}.`;
+  }
+  const expectedPoint = midpoint(endpoints.aPoint.pointWorldMm, endpoints.bPoint.pointWorldMm);
+  if (distance(contact.evidence.pointWorldMm, expectedPoint) > CERTIFICATE_POINT_TOLERANCE_MM) {
+    return `Certified contact point for '${declared.a}' to '${declared.b}' does not match the solved endpoint midpoint.`;
+  }
+  return undefined;
+}
+
+function validateSolvedContactForce(
+  declared: PhysicalUseCaseRecord['contacts'][number],
+  contact: CertifiedMechanismContact,
+  heldNormal: Vec3,
+): string | undefined {
   const normalForceN = dot(contact.evidence.forceOnHeldWorldN, heldNormal);
   const tangentialForceN = norm(sub(
     contact.evidence.forceOnHeldWorldN,
@@ -368,35 +402,56 @@ export async function resolveSolvedLoads(
 ): Promise<{ loads: ResolvedSolvedLoad[]; referencePoint: Vec3 } | string> {
   const loads: ResolvedSolvedLoad[] = [];
   for (const load of useCase.loads) {
-    if (load.force !== undefined && !isFiniteVec3(load.force)) {
-      return `Declared force load on '${load.part}' is not a finite Vec3.`;
-    }
-    if (load.torque !== undefined && !isFiniteVec3(load.torque)) {
-      return `Declared torque load on '${load.part}' is not a finite Vec3.`;
-    }
-    let pointWorldMm: Vec3 | undefined;
-    if (load.at !== undefined) {
-      const parsed = safeParseConnectorRef(load.at);
-      if (parsed?.partName !== certificate.heldPart) {
-        return `Load application connector '${load.at}' does not belong to held part '${certificate.heldPart}'.`;
-      }
-      const resolved = await resolveConnectorPoint(arm, transforms, load.at);
-      if (typeof resolved === 'string') return resolved;
-      pointWorldMm = resolved.pointWorldMm;
-    } else if (hasNonZeroVec(load.force)) {
-      return `Force load on '${load.part}' has no application connector at the certified pose.`;
-    }
-    loads.push({
-      force: load.force === undefined ? [0, 0, 0] : copyVec(load.force),
-      torque: load.torque === undefined ? [0, 0, 0] : copyVec(load.torque),
-      ...(pointWorldMm === undefined ? {} : { pointWorldMm }),
-    });
+    const resolved = await resolveSolvedLoad(load, arm, transforms, certificate.heldPart);
+    if (typeof resolved === 'string') return resolved;
+    loads.push(resolved);
   }
   const referencePoint = loads.find((load) => load.pointWorldMm !== undefined)?.pointWorldMm;
   if (referencePoint === undefined) {
     return `Held part '${certificate.heldPart}' has no resolved load application connector.`;
   }
   return { loads, referencePoint };
+}
+
+async function resolveSolvedLoad(
+  load: PhysicalUseCaseRecord['loads'][number],
+  arm: Assembly,
+  transforms: ReadonlyMap<string, Transform>,
+  heldPart: string,
+): Promise<ResolvedSolvedLoad | string> {
+  if (load.force !== undefined && !isFiniteVec3(load.force)) {
+    return `Declared force load on '${load.part}' is not a finite Vec3.`;
+  }
+  if (load.torque !== undefined && !isFiniteVec3(load.torque)) {
+    return `Declared torque load on '${load.part}' is not a finite Vec3.`;
+  }
+  const pointWorldMm = await resolveSolvedLoadPoint(load, arm, transforms, heldPart);
+  if (typeof pointWorldMm === 'string') return pointWorldMm;
+  return {
+    force: load.force === undefined ? [0, 0, 0] : copyVec(load.force),
+    torque: load.torque === undefined ? [0, 0, 0] : copyVec(load.torque),
+    ...(pointWorldMm === undefined ? {} : { pointWorldMm }),
+  };
+}
+
+async function resolveSolvedLoadPoint(
+  load: PhysicalUseCaseRecord['loads'][number],
+  arm: Assembly,
+  transforms: ReadonlyMap<string, Transform>,
+  heldPart: string,
+): Promise<Vec3 | undefined | string> {
+  if (load.at !== undefined) {
+    const parsed = safeParseConnectorRef(load.at);
+    if (parsed?.partName !== heldPart) {
+      return `Load application connector '${load.at}' does not belong to held part '${heldPart}'.`;
+    }
+    const resolved = await resolveConnectorPoint(arm, transforms, load.at);
+    if (typeof resolved === 'string') return resolved;
+    return resolved.pointWorldMm;
+  } else if (hasNonZeroVec(load.force)) {
+    return `Force load on '${load.part}' has no application connector at the certified pose.`;
+  }
+  return undefined;
 }
 
 export function computeHeldNetWrench(

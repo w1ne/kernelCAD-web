@@ -48,15 +48,16 @@ export interface MeshDeviationResult {
   subsampled: boolean;
 }
 
-/** Squared distance from point p to triangle (a, b, c). Standard
- *  Ericson (Real-Time Collision Detection §5.1.5) barycentric region test —
- *  branchy but exact and allocation-free. */
-export function pointTriangleDistanceSq(
+/** First half of the Ericson region cascade (Real-Time Collision Detection
+ *  §5.1.5): vertex A, vertex B, then edge AB. Returns `undefined` when the
+ *  point is in none of those regions, so the caller continues with the
+ *  C/AC/BC cascade. Pure arithmetic, allocation-free. */
+function closestBeforeVertexCSq(
   px: number, py: number, pz: number,
   ax: number, ay: number, az: number,
   bx: number, by: number, bz: number,
   cx: number, cy: number, cz: number,
-): number {
+): number | undefined {
   const abx = bx - ax, aby = by - ay, abz = bz - az;
   const acx = cx - ax, acy = cy - ay, acz = cz - az;
   const apx = px - ax, apy = py - ay, apz = pz - az;
@@ -76,6 +77,28 @@ export function pointTriangleDistanceSq(
     const qx = ax + abx * v - px, qy = ay + aby * v - py, qz = az + abz * v - pz;
     return qx * qx + qy * qy + qz * qz;
   }
+  return undefined;
+}
+
+/** Second half of the Ericson region cascade: vertex C, edge AC, edge BC,
+ *  then the face interior. Recomputes the d1–d4 projections the first half
+ *  also derived — same pure arithmetic on the same inputs, so the region
+ *  tests see bit-identical values. */
+function closestFromVertexCSq(
+  px: number, py: number, pz: number,
+  ax: number, ay: number, az: number,
+  bx: number, by: number, bz: number,
+  cx: number, cy: number, cz: number,
+): number {
+  const abx = bx - ax, aby = by - ay, abz = bz - az;
+  const acx = cx - ax, acy = cy - ay, acz = cz - az;
+  const apx = px - ax, apy = py - ay, apz = pz - az;
+  const d1 = abx * apx + aby * apy + abz * apz;
+  const d2 = acx * apx + acy * apy + acz * apz;
+  const bpx = px - bx, bpy = py - by, bpz = pz - bz;
+  const d3 = abx * bpx + aby * bpy + abz * bpz;
+  const d4 = acx * bpx + acy * bpy + acz * bpz;
+  const vc = d1 * d4 - d3 * d2;
 
   const cpx = px - cx, cpy = py - cy, cpz = pz - cz;
   const d5 = abx * cpx + aby * cpy + abz * cpz;
@@ -105,6 +128,20 @@ export function pointTriangleDistanceSq(
   const qy = ay + aby * v + acy * w - py;
   const qz = az + abz * v + acz * w - pz;
   return qx * qx + qy * qy + qz * qz;
+}
+
+/** Squared distance from point p to triangle (a, b, c). Standard
+ *  Ericson (Real-Time Collision Detection §5.1.5) barycentric region test —
+ *  branchy but exact and allocation-free. */
+export function pointTriangleDistanceSq(
+  px: number, py: number, pz: number,
+  ax: number, ay: number, az: number,
+  bx: number, by: number, bz: number,
+  cx: number, cy: number, cz: number,
+): number {
+  const beforeVertexC = closestBeforeVertexCSq(px, py, pz, ax, ay, az, bx, by, bz, cx, cy, cz);
+  if (beforeVertexC !== undefined) return beforeVertexC;
+  return closestFromVertexCSq(px, py, pz, ax, ay, az, bx, by, bz, cx, cy, cz);
 }
 
 interface TriangleSoup {

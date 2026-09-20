@@ -105,37 +105,21 @@ function EmbedPage() {
 
   const sourceSettled = loadedSourceKey === sourceKey;
 
-  const uiPhase: EmbedUiPhase = (() => {
-    if (revision === null) return 'missing';
-    if (!sourceSettled || sourceState === 'loading') return 'loading_source';
-    if (sourceState === 'missing') return 'missing';
-    if (sourceState === 'error') return 'source_error';
-    // Source ready — project is fetched/persisted; viewer owns display readiness.
-    if (!viewerPhase) return 'project_saved';
-    if (viewerPhase === 'building_geometry') return 'building_geometry';
-    if (viewerPhase === 'loading_mesh') return 'loading_mesh';
-    if (viewerPhase === 'model_displayed') return 'model_displayed';
-    if (viewerPhase === 'build_failed') return 'build_failed';
-    if (viewerPhase === 'viewer_failed') return 'viewer_failed';
-    return 'project_saved';
-  })();
+  const uiPhase = deriveEmbedUiPhase({ revision, sourceSettled, sourceState, viewerPhase });
+  const statusMessage = embedStatusMessage(uiPhase, err, viewerDetail);
+  const canRetry = canRetryEmbed(uiPhase);
 
-  const statusMessage = (() => {
-    switch (uiPhase) {
-      case 'loading_source': return 'Loading…';
-      case 'project_saved': return 'Project saved. Building geometry…';
-      case 'building_geometry': return 'Building geometry…';
-      case 'loading_mesh': return 'Loading mesh…';
-      case 'model_displayed': return null;
-      case 'missing': return 'Model not available.';
-      case 'source_error': return `Failed to load: ${err}`;
-      case 'build_failed': return `Build failed: ${viewerDetail ?? 'unknown error'}`;
-      case 'viewer_failed': return `Viewer failed: ${viewerDetail ?? 'unknown error'}`;
-      default: return 'Loading…';
-    }
-  })();
-
-  const canRetry = uiPhase === 'build_failed' || uiPhase === 'viewer_failed' || uiPhase === 'source_error';
+  const retryViewer = () => {
+    setViewerPhase(null);
+    setViewerDetail(null);
+    setRetryKey((k) => k + 1);
+  };
+  const retrySource = () => {
+    setErr(null);
+    setSourceState('loading');
+    setLoadedSourceKey(null);
+    setRetryKey((k) => k + 1);
+  };
 
   if (revision !== null && sourceSettled && sourceState === 'ready' && code) {
     if (mode === 'studio') {
@@ -146,56 +130,137 @@ function EmbedPage() {
       );
     }
     return (
-      <div className="fixed inset-0" data-embed-phase={uiPhase}>
-        <FunnelViewer
-          code={code}
-          meshUrl={meshUrl}
-          resetKey={retryKey}
-          onPhaseChange={onPhaseChange}
-        />
-        {statusMessage ? (
-          <div
-            className="absolute inset-x-0 bottom-0 p-4 flex flex-col items-center gap-2 pointer-events-none"
-            data-testid="embed-status"
-            role="status"
-            aria-live="polite"
-          >
-            <p className="text-ink-faint font-mono text-xs bg-vellum/90 px-3 py-1.5 rounded">
-              {statusMessage}
-            </p>
-            {canRetry ? (
-              <button
-                type="button"
-                className="pointer-events-auto font-mono text-xs underline text-ink-faint"
-                onClick={() => {
-                  setViewerPhase(null);
-                  setViewerDetail(null);
-                  setRetryKey((k) => k + 1);
-                }}
-              >
-                Retry
-              </button>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
+      <EmbedViewerSurface
+        code={code}
+        meshUrl={meshUrl}
+        retryKey={retryKey}
+        uiPhase={uiPhase}
+        statusMessage={statusMessage}
+        canRetry={canRetry}
+        onPhaseChange={onPhaseChange}
+        onRetry={retryViewer}
+      />
     );
   }
 
   return (
-    <main className="fixed inset-0 bg-vellum font-sans grid place-items-center p-8" data-embed-phase={uiPhase}>
+    <EmbedPending
+      uiPhase={uiPhase}
+      statusMessage={statusMessage}
+      canRetry={canRetry}
+      onRetry={retrySource}
+    />
+  );
+}
+
+/** Derive the embed's UI phase from the source-load state and viewer phase. */
+function deriveEmbedUiPhase(args: {
+  revision: number | null | undefined;
+  sourceSettled: boolean;
+  sourceState: 'loading' | 'ready' | 'missing' | 'error';
+  viewerPhase: FunnelViewerPhase | null;
+}): EmbedUiPhase {
+  const { revision, sourceSettled, sourceState, viewerPhase } = args;
+  if (revision === null) return 'missing';
+  if (!sourceSettled || sourceState === 'loading') return 'loading_source';
+  if (sourceState === 'missing') return 'missing';
+  if (sourceState === 'error') return 'source_error';
+  // Source ready — project is fetched/persisted; viewer owns display readiness.
+  if (!viewerPhase) return 'project_saved';
+  if (viewerPhase === 'building_geometry') return 'building_geometry';
+  if (viewerPhase === 'loading_mesh') return 'loading_mesh';
+  if (viewerPhase === 'model_displayed') return 'model_displayed';
+  if (viewerPhase === 'build_failed') return 'build_failed';
+  if (viewerPhase === 'viewer_failed') return 'viewer_failed';
+  return 'project_saved';
+}
+
+/** Status line for the current UI phase; `null` when the phase is silent. */
+function embedStatusMessage(
+  uiPhase: EmbedUiPhase,
+  err: string | null,
+  viewerDetail: string | null,
+): string | null {
+  switch (uiPhase) {
+    case 'loading_source': return 'Loading…';
+    case 'project_saved': return 'Project saved. Building geometry…';
+    case 'building_geometry': return 'Building geometry…';
+    case 'loading_mesh': return 'Loading mesh…';
+    case 'model_displayed': return null;
+    case 'missing': return 'Model not available.';
+    case 'source_error': return `Failed to load: ${err}`;
+    case 'build_failed': return `Build failed: ${viewerDetail ?? 'unknown error'}`;
+    case 'viewer_failed': return `Viewer failed: ${viewerDetail ?? 'unknown error'}`;
+    default: return 'Loading…';
+  }
+}
+
+/** Whether the current phase offers a Retry affordance. */
+function canRetryEmbed(uiPhase: EmbedUiPhase): boolean {
+  return uiPhase === 'build_failed' || uiPhase === 'viewer_failed' || uiPhase === 'source_error';
+}
+
+/** Ready-model viewer branch: the chrome-free FunnelViewer plus its status
+ *  overlay and retry affordance. */
+function EmbedViewerSurface(props: {
+  code: string;
+  meshUrl: string | undefined;
+  retryKey: number;
+  uiPhase: EmbedUiPhase;
+  statusMessage: string | null;
+  canRetry: boolean;
+  onPhaseChange: (phase: FunnelViewerPhase, detail?: string | null) => void;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="fixed inset-0" data-embed-phase={props.uiPhase}>
+      <FunnelViewer
+        code={props.code}
+        meshUrl={props.meshUrl}
+        resetKey={props.retryKey}
+        onPhaseChange={props.onPhaseChange}
+      />
+      {props.statusMessage ? (
+        <div
+          className="absolute inset-x-0 bottom-0 p-4 flex flex-col items-center gap-2 pointer-events-none"
+          data-testid="embed-status"
+          role="status"
+          aria-live="polite"
+        >
+          <p className="text-ink-faint font-mono text-xs bg-vellum/90 px-3 py-1.5 rounded">
+            {props.statusMessage}
+          </p>
+          {props.canRetry ? (
+            <button
+              type="button"
+              className="pointer-events-auto font-mono text-xs underline text-ink-faint"
+              onClick={props.onRetry}
+            >
+              Retry
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** Not-yet-ready branch: centered status line and retry affordance. */
+function EmbedPending(props: {
+  uiPhase: EmbedUiPhase;
+  statusMessage: string | null;
+  canRetry: boolean;
+  onRetry: () => void;
+}) {
+  return (
+    <main className="fixed inset-0 bg-vellum font-sans grid place-items-center p-8" data-embed-phase={props.uiPhase}>
       <div className="flex flex-col items-center gap-3">
-        <p className="text-ink-faint font-mono text-sm" data-testid="embed-status">{statusMessage ?? 'Loading…'}</p>
-        {canRetry ? (
+        <p className="text-ink-faint font-mono text-sm" data-testid="embed-status">{props.statusMessage ?? 'Loading…'}</p>
+        {props.canRetry ? (
           <button
             type="button"
             className="font-mono text-xs underline text-ink-faint"
-            onClick={() => {
-              setErr(null);
-              setSourceState('loading');
-              setLoadedSourceKey(null);
-              setRetryKey((k) => k + 1);
-            }}
+            onClick={props.onRetry}
           >
             Retry
           </button>

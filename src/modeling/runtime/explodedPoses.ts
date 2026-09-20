@@ -190,6 +190,32 @@ function declarationChain(names: readonly string[], geom: ReadonlyMap<string, Pa
   return edges;
 }
 
+/** World-space step from a parent to its child along the resolved mate axis:
+ *  child-size extent × factor × spacingScale, flipped so the child moves away
+ *  from the parent centroid when a geometry pair is known. */
+function mateAxisStep(
+  e: TreeEdge,
+  parentOff: Vec3,
+  parentT: Transform,
+  geomByName: ReadonlyMap<string, PartGeom>,
+  factor: number,
+  spacingScale: number,
+): Vec3 {
+  let axis = normalize(parentT.axisDir(e.axisLocal));
+  if (hypot3(axis) < 1e-12) axis = [0, 0, 1];
+  const parentG = geomByName.get(e.parent);
+  const childG = geomByName.get(e.child);
+  if (parentG && childG) {
+    const away = sub(childG.centroid, parentG.centroid);
+    if (away[0] * axis[0] + away[1] * axis[1] + away[2] * axis[2] < 0) {
+      axis = scaleVec(axis, -1);
+    }
+  }
+  const extent = childG ? Math.max(extentAlong(childG.size, axis), 1e-6) : 1;
+  const step = scaleVec(axis, extent * factor * spacingScale);
+  return add(parentOff, step);
+}
+
 function mateAxisOffsets(
   arm: Assembly,
   scene: SceneBackend,
@@ -212,19 +238,7 @@ function mateAxisOffsets(
   for (const e of edges) {
     const parentOff = offsets.get(e.parent) ?? ZERO;
     const parentT = worldT.get(e.parent) ?? Transform.identity();
-    let axis = normalize(parentT.axisDir(e.axisLocal));
-    if (hypot3(axis) < 1e-12) axis = [0, 0, 1];
-    const parentG = geomByName.get(e.parent);
-    const childG = geomByName.get(e.child);
-    if (parentG && childG) {
-      const away = sub(childG.centroid, parentG.centroid);
-      if (away[0] * axis[0] + away[1] * axis[1] + away[2] * axis[2] < 0) {
-        axis = scaleVec(axis, -1);
-      }
-    }
-    const extent = childG ? Math.max(extentAlong(childG.size, axis), 1e-6) : 1;
-    const step = scaleVec(axis, extent * factor * spacingScale);
-    offsets.set(e.child, add(parentOff, step));
+    offsets.set(e.child, mateAxisStep(e, parentOff, parentT, geomByName, factor, spacingScale));
   }
   return offsets;
 }

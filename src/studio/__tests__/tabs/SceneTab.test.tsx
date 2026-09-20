@@ -6,10 +6,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { ValidatorResult } from '../../../modeling/mates/validator';
 import type { StudioRecomputeResult } from '../../types';
+import type { GeometryResult } from '../../../shared/worker/workerTypes';
 
 const mockUseRecomputeResult = vi.fn<() => StudioRecomputeResult>();
 const mockSelectFeature = vi.fn();
 const mockSelectedFeatureId = { value: null as string | null };
+const mockGeometries = { value: [] as GeometryResult[] };
+const mockHiddenIds = { value: [] as string[] };
+const mockToggleVisibility = vi.fn();
 
 vi.mock('../../hooks/useRecomputeResult', () => ({
     useRecomputeResult: () => mockUseRecomputeResult(),
@@ -29,20 +33,20 @@ vi.mock('../../context/WorkbenchContext', () => ({
         planes: [],
         selectedItemId: null,
         hoveredItemId: null,
-        hiddenIds: [],
+        hiddenIds: mockHiddenIds.value,
         setSelectedItemId: vi.fn(),
         setHoveredItemId: vi.fn(),
-        toggleVisibility: vi.fn(),
+        toggleVisibility: mockToggleVisibility,
         togglePlaneVisibility: vi.fn(),
     }),
 }));
 
-// SceneTab reads `geometries` for the assembly Parts list; these tests
-// exercise the feature-row path, so an empty geometry list keeps the
-// legacy rows rendered without mounting the full GeometryProvider.
+// SceneTab reads `geometries` for the assembly Parts list; tests that
+// exercise the feature-row path leave it empty so the legacy rows render
+// without mounting the full GeometryProvider.
 vi.mock('../../context/GeometryContext', async (importOriginal) => ({
     ...(await importOriginal<object>()),
-    useGeometry: () => ({ geometries: [] }),
+    useGeometry: () => ({ geometries: mockGeometries.value }),
 }));
 
 import { SceneTab } from '../../tabs/SceneTab';
@@ -93,12 +97,18 @@ afterEach(() => {
     mockSelectFeature.mockReset();
     mockUseRecomputeResult.mockReset();
     mockSelectedFeatureId.value = null;
+    mockGeometries.value = [];
+    mockHiddenIds.value = [];
+    mockToggleVisibility.mockReset();
 });
 
 beforeEach(() => {
     mockSelectFeature.mockReset();
     mockUseRecomputeResult.mockReset();
     mockSelectedFeatureId.value = null;
+    mockGeometries.value = [];
+    mockHiddenIds.value = [];
+    mockToggleVisibility.mockReset();
 });
 
 describe('SceneTab', () => {
@@ -149,5 +159,74 @@ describe('SceneTab', () => {
         expect(selected.className).toContain('scene-row-selected');
         expect(other.getAttribute('data-selected')).toBe('false');
         expect(other.className).not.toContain('scene-row-selected');
+    });
+});
+
+describe('SceneTab assembly parts', () => {
+    function withParts(): void {
+        mockGeometries.value = [
+            { faces: [], assemblyPartName: 'base-link' },
+            { faces: [], assemblyPartName: 'base-link' },
+            { faces: [], assemblyPartName: 'arm' },
+        ];
+    }
+
+    it('lists unique assembly parts in first-seen order with severity dots', () => {
+        withParts();
+        mockUseRecomputeResult.mockReturnValue(
+            baseResult({ validity: validityWithFloating('arm') }),
+        );
+
+        render(<SceneTab />);
+
+        expect(screen.getByTestId('scene-tab-parts')).toBeTruthy();
+        const rows = screen.getAllByTestId(/^part-row-/);
+        expect(rows.map((r) => r.getAttribute('data-testid'))).toEqual([
+            'part-row-base-link',
+            'part-row-arm',
+        ]);
+        expect(rows[0].textContent).toContain('base-link');
+        expect(rows[1].textContent).toContain('arm');
+        expect(rows[0].querySelector('span')?.getAttribute('aria-label')).toBe('validity ok');
+        expect(rows[1].querySelector('span')?.getAttribute('aria-label')).toBe('validity error');
+    });
+
+    it('selects the part when its row is clicked and toggles visibility without selecting', () => {
+        withParts();
+        mockUseRecomputeResult.mockReturnValue(baseResult({}));
+
+        render(<SceneTab />);
+        fireEvent.click(screen.getByTestId('part-row-arm'));
+        expect(mockSelectFeature).toHaveBeenCalledTimes(1);
+        expect(mockSelectFeature).toHaveBeenCalledWith('arm');
+
+        mockSelectFeature.mockReset();
+        fireEvent.click(screen.getByTestId('part-visibility-base-link'));
+        expect(mockToggleVisibility).toHaveBeenCalledTimes(1);
+        expect(mockToggleVisibility).toHaveBeenCalledWith('base-link');
+        expect(mockSelectFeature).not.toHaveBeenCalled();
+    });
+
+    it('shows Show all only while a part is hidden and toggles just the hidden parts', () => {
+        withParts();
+        mockHiddenIds.value = ['arm'];
+        mockUseRecomputeResult.mockReturnValue(baseResult({}));
+
+        render(<SceneTab />);
+
+        expect(screen.getByTestId('part-visibility-arm').getAttribute('title')).toBe('Show part');
+        expect(screen.getByTestId('part-visibility-base-link').getAttribute('title')).toBe('Hide part');
+        fireEvent.click(screen.getByTestId('parts-show-all'));
+        expect(mockToggleVisibility).toHaveBeenCalledTimes(1);
+        expect(mockToggleVisibility).toHaveBeenCalledWith('arm');
+    });
+
+    it('omits Show all when nothing is hidden', () => {
+        withParts();
+        mockUseRecomputeResult.mockReturnValue(baseResult({}));
+
+        render(<SceneTab />);
+
+        expect(screen.queryByTestId('parts-show-all')).toBeNull();
     });
 });

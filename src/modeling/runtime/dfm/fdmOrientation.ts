@@ -397,6 +397,130 @@ function forEachSteepRegion(
   }
 }
 
+/** Per-orientation values the overhang-region phase reads. */
+interface RegionAnalysisContext {
+  mesh: FaceTaggedMesh;
+  T: ArrayLike<number>;
+  V: ArrayLike<number>;
+  areas: Float64Array;
+  pu: Float64Array;
+  pv: Float64Array;
+  pw: Float64Array;
+  wMin: number;
+  neighbors: Int32Array;
+  regionOf: Int32Array;
+  rw: Vec3;
+  isBed: Uint8Array;
+  settings: FdmSettings;
+  downOf: (i: number) => number;
+  onBed: (vi: number) => boolean;
+}
+
+/** Anchored when the edge lies on the bed, borders bed contact, or the
+ *  surface across it descends from the edge. */
+function edgeAnchored(ctx: RegionAnalysisContext, a: number, b: number, n: number): boolean {
+  const { T, V, rw, isBed, onBed } = ctx;
+  if (onBed(a) && onBed(b)) return true;
+  if (n < 0) return false;
+  if (isBed[n]) return true;
+  const na = T[3 * n], nb = T[3 * n + 1], nc = T[3 * n + 2];
+  const c = na !== a && na !== b ? na : nb !== a && nb !== b ? nb : nc;
+  const ex = V[3 * b] - V[3 * a], ey = V[3 * b + 1] - V[3 * a + 1], ez = V[3 * b + 2] - V[3 * a + 2];
+  const el = Math.hypot(ex, ey, ez);
+  if (el <= 0) return false;
+  const cx = V[3 * c] - V[3 * a], cy = V[3 * c + 1] - V[3 * a + 1], cz = V[3 * c + 2] - V[3 * a + 2];
+  const along = (cx * ex + cy * ey + cz * ez) / (el * el);
+  const dx = cx - along * ex, dy = cy - along * ey, dz = cz - along * ez;
+  const dl = Math.hypot(dx, dy, dz);
+  const dw = dx * rw[0] + dy * rw[1] + dz * rw[2];
+  return dl > 0 && dw < -1e-3 * dl;
+}
+
+/** One steep region: area, bbox, boundary segments, samples, and verdict. */
+function analyzeRegion(ctx: RegionAnalysisContext, tris: number[], id: number): FdmOverhangRegion {
+  const { mesh, T, V, areas, pu, pv, pw, wMin, neighbors, regionOf, settings, downOf } = ctx;
+  let area = 0;
+  let maxDown = 0;
+  let maxRise = 0;
+  let horizontal = true;
+  const faceArea = new Map<number, number>();
+  const bboxMin: Vec3 = [Infinity, Infinity, Infinity];
+  const bboxMax: Vec3 = [-Infinity, -Infinity, -Infinity];
+  const segs: Seg[] = [];
+  const samples: number[] = [];
+  const stride = Math.max(1, Math.ceil((tris.length * 4) / MAX_SAMPLES));
+  tris.forEach((t, idx) => {
+    area += areas[t];
+    const down = downOf(t);
+    if (down > maxDown) maxDown = down;
+    if (down < HORIZONTAL_COS) horizontal = false;
+    const f = mesh.faceOfTri[t];
+    faceArea.set(f, (faceArea.get(f) ?? 0) + areas[t]);
+    const vi = [T[3 * t], T[3 * t + 1], T[3 * t + 2]];
+    for (const v of vi) {
+      if (pw[v] - wMin > maxRise) maxRise = pw[v] - wMin;
+      for (let d = 0; d < 3; d++) {
+        const c = V[3 * v + d];
+        if (c < bboxMin[d]) bboxMin[d] = c;
+        if (c > bboxMax[d]) bboxMax[d] = c;
+      }
+    }
+    const cu = (pu[vi[0]] + pu[vi[1]] + pu[vi[2]]) / 3;
+    const cv = (pv[vi[0]] + pv[vi[1]] + pv[vi[2]]) / 3;
+    if (idx % stride === 0) {
+      samples.push(cu, cv);
+      for (const v of vi) samples.push(0.75 * pu[v] + 0.25 * cu, 0.75 * pv[v] + 0.25 * cv);
+    }
+    for (let k = 0; k < 3; k++) {
+      const n = neighbors[3 * t + k];
+      if (n >= 0 && regionOf[n] === id) continue;
+      const a = vi[k];
+      const b = vi[(k + 1) % 3];
+      segs.push({ ax: pu[a], ay: pv[a], bx: pu[b], by: pv[b], anchored: edgeAnchored(ctx, a, b, n) });
+    }
+  });
+
+  let faceRef: string | undefined;
+  let best = -1;
+  for (const [f, fa] of [...faceArea.entries()].sort((p, q) => p[0] - q[0])) {
+    if (fa > best) { best = fa; faceRef = mesh.faceRefs[f]; }
+  }
+  const region: FdmOverhangRegion = {
+    status: 'unsupported',
+    areaMm2: area,
+    maxOverhangDeg: (Math.asin(Math.min(1, maxDown)) * 180) / Math.PI,
+    horizontal,
+    bboxMin,
+    bboxMax,
+    ...(faceRef !== undefined ? { faceRef } : {}),
+  };
+
+  const anchored = segs.filter(s => s.anchored);
+  if (anchored.length === 0) {
+    region.reachMm = Infinity;
+    return region;
+  }
+  if (maxRise <= settings.nozzleMm + ANGLE_EPS) {
+    region.status = 'first-layer';
+    return region;
+  }
+  const span = bridgeSpan(samples, segs, anchored);
+  if (Number.isFinite(span)) {
+    region.spanMm = span;
+    region.status = span <= settings.maxBridgeMm + ANGLE_EPS ? 'bridged' : 'unsupported';
+    return region;
+  }
+  const reachPts = samples.slice();
+  for (const s of segs) if (!s.anchored) reachPts.push(s.ax, s.ay, s.bx, s.by);
+  let reach = 0;
+  for (let i = 0; i < reachPts.length; i += 2) {
+    reach = Math.max(reach, distanceToSegments(reachPts[i], reachPts[i + 1], anchored));
+  }
+  region.reachMm = reach;
+  region.status = reach <= settings.nozzleMm + ANGLE_EPS ? 'short-reach' : 'unsupported';
+  return region;
+}
+
 /** Analyze one build direction (unit vector, part-local frame). */
 export function analyzeBuildDirection(
   prep: PreparedFdmMesh,
@@ -428,111 +552,12 @@ export function analyzeBuildDirection(
   // Overhang regions.
   const regionOf = new Int32Array(triCount).fill(-1);
   const overhangs: FdmOverhangRegion[] = [];
+  const regionCtx: RegionAnalysisContext = {
+    mesh, T, V, areas, pu, pv, pw, wMin, neighbors, regionOf, rw, isBed, settings, downOf, onBed,
+  };
   forEachSteepRegion(triCount, isSteep, neighbors, regionOf, (tris, regionId) => {
-    overhangs.push(analyzeRegion(tris, regionId));
+    overhangs.push(analyzeRegion(regionCtx, tris, regionId));
   });
-
-  function analyzeRegion(tris: number[], id: number): FdmOverhangRegion {
-    let area = 0;
-    let maxDown = 0;
-    let maxRise = 0;
-    let horizontal = true;
-    const faceArea = new Map<number, number>();
-    const bboxMin: Vec3 = [Infinity, Infinity, Infinity];
-    const bboxMax: Vec3 = [-Infinity, -Infinity, -Infinity];
-    const segs: Seg[] = [];
-    const samples: number[] = [];
-    const stride = Math.max(1, Math.ceil((tris.length * 4) / MAX_SAMPLES));
-    tris.forEach((t, idx) => {
-      area += areas[t];
-      const down = downOf(t);
-      if (down > maxDown) maxDown = down;
-      if (down < HORIZONTAL_COS) horizontal = false;
-      const f = mesh.faceOfTri[t];
-      faceArea.set(f, (faceArea.get(f) ?? 0) + areas[t]);
-      const vi = [T[3 * t], T[3 * t + 1], T[3 * t + 2]];
-      for (const v of vi) {
-        if (pw[v] - wMin > maxRise) maxRise = pw[v] - wMin;
-        for (let d = 0; d < 3; d++) {
-          const c = V[3 * v + d];
-          if (c < bboxMin[d]) bboxMin[d] = c;
-          if (c > bboxMax[d]) bboxMax[d] = c;
-        }
-      }
-      const cu = (pu[vi[0]] + pu[vi[1]] + pu[vi[2]]) / 3;
-      const cv = (pv[vi[0]] + pv[vi[1]] + pv[vi[2]]) / 3;
-      if (idx % stride === 0) {
-        samples.push(cu, cv);
-        for (const v of vi) samples.push(0.75 * pu[v] + 0.25 * cu, 0.75 * pv[v] + 0.25 * cv);
-      }
-      for (let k = 0; k < 3; k++) {
-        const n = neighbors[3 * t + k];
-        if (n >= 0 && regionOf[n] === id) continue;
-        const a = vi[k];
-        const b = vi[(k + 1) % 3];
-        segs.push({ ax: pu[a], ay: pv[a], bx: pu[b], by: pv[b], anchored: edgeAnchored(a, b, n) });
-      }
-    });
-
-    let faceRef: string | undefined;
-    let best = -1;
-    for (const [f, fa] of [...faceArea.entries()].sort((p, q) => p[0] - q[0])) {
-      if (fa > best) { best = fa; faceRef = mesh.faceRefs[f]; }
-    }
-    const region: FdmOverhangRegion = {
-      status: 'unsupported',
-      areaMm2: area,
-      maxOverhangDeg: (Math.asin(Math.min(1, maxDown)) * 180) / Math.PI,
-      horizontal,
-      bboxMin,
-      bboxMax,
-      ...(faceRef !== undefined ? { faceRef } : {}),
-    };
-
-    const anchored = segs.filter(s => s.anchored);
-    if (anchored.length === 0) {
-      region.reachMm = Infinity;
-      return region;
-    }
-    if (maxRise <= settings.nozzleMm + ANGLE_EPS) {
-      region.status = 'first-layer';
-      return region;
-    }
-    const span = bridgeSpan(samples, segs, anchored);
-    if (Number.isFinite(span)) {
-      region.spanMm = span;
-      region.status = span <= settings.maxBridgeMm + ANGLE_EPS ? 'bridged' : 'unsupported';
-      return region;
-    }
-    const reachPts = samples.slice();
-    for (const s of segs) if (!s.anchored) reachPts.push(s.ax, s.ay, s.bx, s.by);
-    let reach = 0;
-    for (let i = 0; i < reachPts.length; i += 2) {
-      reach = Math.max(reach, distanceToSegments(reachPts[i], reachPts[i + 1], anchored));
-    }
-    region.reachMm = reach;
-    region.status = reach <= settings.nozzleMm + ANGLE_EPS ? 'short-reach' : 'unsupported';
-    return region;
-  }
-
-  /** Anchored when the edge lies on the bed, borders bed contact, or the
-   *  surface across it descends from the edge. */
-  function edgeAnchored(a: number, b: number, n: number): boolean {
-    if (onBed(a) && onBed(b)) return true;
-    if (n < 0) return false;
-    if (isBed[n]) return true;
-    const na = T[3 * n], nb = T[3 * n + 1], nc = T[3 * n + 2];
-    const c = na !== a && na !== b ? na : nb !== a && nb !== b ? nb : nc;
-    const ex = V[3 * b] - V[3 * a], ey = V[3 * b + 1] - V[3 * a + 1], ez = V[3 * b + 2] - V[3 * a + 2];
-    const el = Math.hypot(ex, ey, ez);
-    if (el <= 0) return false;
-    const cx = V[3 * c] - V[3 * a], cy = V[3 * c + 1] - V[3 * a + 1], cz = V[3 * c + 2] - V[3 * a + 2];
-    const along = (cx * ex + cy * ey + cz * ez) / (el * el);
-    const dx = cx - along * ex, dy = cy - along * ey, dz = cz - along * ez;
-    const dl = Math.hypot(dx, dy, dz);
-    const dw = dx * rw[0] + dy * rw[1] + dz * rw[2];
-    return dl > 0 && dw < -1e-3 * dl;
-  }
 
   overhangs.sort((p, q) => q.areaMm2 - p.areaMm2);
   const unsupportedAreaMm2 = overhangs

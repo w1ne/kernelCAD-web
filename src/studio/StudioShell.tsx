@@ -121,44 +121,19 @@ export function StudioShell() {
     // viewerMode below.)
     const agentEnabled = resolveAgentEnabled(enableAgentRail, authConfigured, !!session);
     const { viewerMode } = useStudioChrome();
-    const handleToggleMarkingMode = useCallback(() => {
-        shellStore.toggleMarkingMode();
-    }, []);
-    const handleToggleSectionMode = useCallback(() => {
-        // Section and marking are independent overlays; turning one on retires
-        // the other so the viewport never hosts both at once.
-        if (shellStore.getSnapshot().markingMode) shellStore.setMarkingMode(false);
-        shellStore.toggleSectionMode();
-    }, []);
+    const {
+        handleToggleMarkingMode,
+        handleToggleSectionMode,
+        handleValidate,
+        handleRun,
+        handleToggleAgentRail,
+        handleToggleInspector,
+    } = useStudioShellHandlers(workbench, agentRailOpen);
     const recompute = useRecomputeResult();
     const { activeProject } = useProject();
-    const handleValidate = useCallback(() => {
-        // Force a re-fetch of /__kernelcad/review by re-running the
-        // geometry pipeline. The review fetch is chained inside
-        // GeometryContext.executeGeometry, so re-executing pulls a fresh
-        // validity result into shellStore.
-        workbench.executeGeometry?.(workbench.code);
-    }, [workbench]);
-
-    const handleRun = useCallback(() => {
-        // Run forces a re-execution of the current script. The existing
-        // recompute auto-runs on code changes; this is the manual button.
-        workbench.mutateCode?.((current: string) => current, 'studio.toolbar.run');
-    }, [workbench]);
-
     const isModified = resolveIsModified(activeProject?.code, workbench.code);
 
-    // Test/integration hook so MCP (Slice 1.5b) and the browser console can
-    // stage a proposed edit. Mounted on the window object behind a
-    // __kernelcad_ prefix so it's clearly internal.
-    useEffect(() => {
-        if (typeof window === 'undefined') return;
-        const w = window as unknown as { __kernelcad_propose_edit?: (edit: StagedEdit) => void };
-        w.__kernelcad_propose_edit = (edit) => shellStore.proposeStagedEdit(edit);
-        return () => {
-            delete w.__kernelcad_propose_edit;
-        };
-    }, []);
+    useProposeEditBridge();
 
     // Bridge shell selection → Viewer's existing selectedItemIds. Identity
     // reconciliation: shell selectedFeatureId is a FeatureRecord.id (e.g.
@@ -167,27 +142,7 @@ export function StudioShell() {
     // features[i] corresponds to returnedVariables[i] in capture order.
     // Falls back to the raw id when no variable maps; falls back to null
     // for null selection.
-    const { setSelectedItemId, codeContext } = workbench;
-    useEffect(() => {
-        if (selectedFeatureId == null) {
-            setSelectedItemId(null);
-            return;
-        }
-        const idx = recompute.features.findIndex((f) => f.id === selectedFeatureId);
-        const returned = (codeContext?.returnedVariables ?? []) as (string | null)[];
-        const mapped = idx >= 0 && typeof returned[idx] === 'string'
-            ? returned[idx]
-            : selectedFeatureId;
-        setSelectedItemId(mapped);
-    }, [selectedFeatureId, recompute.features, codeContext, setSelectedItemId]);
-
-    const handleToggleAgentRail = useCallback(() => {
-        shellStore.setAgentRailOpen(!agentRailOpen);
-    }, [agentRailOpen]);
-
-    const handleToggleInspector = useCallback(() => {
-        shellStore.toggleInspectorOpen();
-    }, []);
+    useShellSelectionBridge(selectedFeatureId, recompute, workbench);
 
     const {
         referenceImagesPresent,
@@ -200,15 +155,7 @@ export function StudioShell() {
     } = useViewportToggles(recompute.features);
 
 
-    const tabSlots = {
-        scene: <SceneTab />,
-        code: <CodeTab />,
-        params: <ParamsTab />,
-        joints: <JointsTab />,
-        validity: <ValidityTab />,
-        export: <ExportTab />,
-        animation: <AnimationTab />,
-    };
+    const tabSlots = buildTabSlots();
 
     // HUD counts actionable interferences, not contact-noise slivers. Raw
     // pairs stay available to diagnostic tabs, but the footer follows the same
@@ -261,6 +208,25 @@ export function StudioShell() {
 
             </div>
 
+            {renderStudioFooter({
+                workbench,
+                recompute,
+                directEditNotice,
+                interferenceCount,
+            })}
+        </div>
+    );
+}
+
+function renderStudioFooter(props: {
+    workbench: ReturnType<typeof useWorkbench>;
+    recompute: ReturnType<typeof useRecomputeResult>;
+    directEditNotice: string | null;
+    interferenceCount: number;
+}) {
+    const { workbench, recompute, directEditNotice, interferenceCount } = props;
+    return (
+        <>
             <BottomDrawer />
 
             <StatusBar
@@ -281,6 +247,97 @@ export function StudioShell() {
                 isOpen={workbench.activeDialog === 'projectManager'}
                 onClose={() => workbench.setActiveDialog(null)}
             />
-        </div>
+        </>
     );
+}
+
+function useStudioShellHandlers(
+    workbench: ReturnType<typeof useWorkbench>,
+    agentRailOpen: boolean,
+) {
+    const handleToggleMarkingMode = useCallback(() => {
+        shellStore.toggleMarkingMode();
+    }, []);
+    const handleToggleSectionMode = useCallback(() => {
+        // Section and marking are independent overlays; turning one on retires
+        // the other so the viewport never hosts both at once.
+        if (shellStore.getSnapshot().markingMode) shellStore.setMarkingMode(false);
+        shellStore.toggleSectionMode();
+    }, []);
+    const handleValidate = useCallback(() => {
+        // Force a re-fetch of /__kernelcad/review by re-running the
+        // geometry pipeline. The review fetch is chained inside
+        // GeometryContext.executeGeometry, so re-executing pulls a fresh
+        // validity result into shellStore.
+        workbench.executeGeometry?.(workbench.code);
+    }, [workbench]);
+
+    const handleRun = useCallback(() => {
+        // Run forces a re-execution of the current script. The existing
+        // recompute auto-runs on code changes; this is the manual button.
+        workbench.mutateCode?.((current: string) => current, 'studio.toolbar.run');
+    }, [workbench]);
+
+    const handleToggleAgentRail = useCallback(() => {
+        shellStore.setAgentRailOpen(!agentRailOpen);
+    }, [agentRailOpen]);
+
+    const handleToggleInspector = useCallback(() => {
+        shellStore.toggleInspectorOpen();
+    }, []);
+
+    return {
+        handleToggleMarkingMode,
+        handleToggleSectionMode,
+        handleValidate,
+        handleRun,
+        handleToggleAgentRail,
+        handleToggleInspector,
+    };
+}
+
+function useProposeEditBridge(): void {
+    // Test/integration hook so MCP (Slice 1.5b) and the browser console can
+    // stage a proposed edit. Mounted on the window object behind a
+    // __kernelcad_ prefix so it's clearly internal.
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const w = window as unknown as { __kernelcad_propose_edit?: (edit: StagedEdit) => void };
+        w.__kernelcad_propose_edit = (edit) => shellStore.proposeStagedEdit(edit);
+        return () => {
+            delete w.__kernelcad_propose_edit;
+        };
+    }, []);
+}
+
+function useShellSelectionBridge(
+    selectedFeatureId: string | null,
+    recompute: ReturnType<typeof useRecomputeResult>,
+    workbench: ReturnType<typeof useWorkbench>,
+): void {
+    const { setSelectedItemId, codeContext } = workbench;
+    useEffect(() => {
+        if (selectedFeatureId == null) {
+            setSelectedItemId(null);
+            return;
+        }
+        const idx = recompute.features.findIndex((f) => f.id === selectedFeatureId);
+        const returned = (codeContext?.returnedVariables ?? []) as (string | null)[];
+        const mapped = idx >= 0 && typeof returned[idx] === 'string'
+            ? returned[idx]
+            : selectedFeatureId;
+        setSelectedItemId(mapped);
+    }, [selectedFeatureId, recompute.features, codeContext, setSelectedItemId]);
+}
+
+function buildTabSlots() {
+    return {
+        scene: <SceneTab />,
+        code: <CodeTab />,
+        params: <ParamsTab />,
+        joints: <JointsTab />,
+        validity: <ValidityTab />,
+        export: <ExportTab />,
+        animation: <AnimationTab />,
+    };
 }

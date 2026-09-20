@@ -68,6 +68,43 @@ function resolveScalarPose(
  * Pure: joints + poses in, diagnostics out — shared by both solve() and
  * solvedModel() so the two surfaces report identically.
  */
+type DeclaredPoseLimits = readonly [number, number];
+
+function readJointPoseLimits(j: AssemblyJointStored): DeclaredPoseLimits | undefined {
+  if (j.kind !== 'revolute' && j.kind !== 'prismatic') return undefined;
+  return j.kind === 'revolute' ? j.limitsDeg : j.limitsMm;
+}
+
+function resolveFiniteJointPose(
+  raw: Poses[string] | undefined,
+  session: CaptureSession,
+): number | undefined {
+  if (raw === undefined || Array.isArray(raw)) return undefined;
+  if (!isParamRef(raw) && typeof raw !== 'number') return undefined;
+  const value = currentValue(raw as Editable<number>, session.paramTable);
+  if (typeof value !== 'number' || !Number.isFinite(value)) return undefined;
+  return value;
+}
+
+function buildPoseOutOfLimitsDiagnostic(
+  j: AssemblyJointStored,
+  value: number,
+  limits: DeclaredPoseLimits,
+): ValidatorDiagnostic {
+  const [min, max] = limits;
+  const unit = j.kind === 'revolute' ? '°' : 'mm';
+  const field = j.kind === 'revolute' ? 'limitsDeg' : 'limitsMm';
+  return {
+    code: 'kinematic.pose.out-of-limits',
+    severity: 'warning',
+    message: `joint '${j.name}' pose ${value}${unit} exceeds declared ${field} [${min}, ${max}]`,
+    hint: `invalid-args.kinematic.pose-out-of-limits — clamp '${j.name}' to [${min}, ${max}], or widen ${field} on the joint if the mechanism is intended to travel that far.`,
+    mateName: j.name,
+    pose: value,
+    limits,
+  };
+}
+
 function checkPoseLimits(
   joints: readonly AssemblyJointStored[],
   poses: Poses,
@@ -75,27 +112,13 @@ function checkPoseLimits(
 ): ValidatorDiagnostic[] {
   const out: ValidatorDiagnostic[] = [];
   for (const j of joints) {
-    if (j.kind !== 'revolute' && j.kind !== 'prismatic') continue;
-    const limits = j.kind === 'revolute' ? j.limitsDeg : j.limitsMm;
+    const limits = readJointPoseLimits(j);
     if (limits === undefined) continue;
-    const raw = poses[j.name];
-    if (raw === undefined || Array.isArray(raw)) continue;
-    if (!isParamRef(raw) && typeof raw !== 'number') continue;
-    const value = currentValue(raw as Editable<number>, session.paramTable);
-    if (typeof value !== 'number' || !Number.isFinite(value)) continue;
+    const value = resolveFiniteJointPose(poses[j.name], session);
+    if (value === undefined) continue;
     const [min, max] = limits;
     if (value >= min && value <= max) continue;
-    const unit = j.kind === 'revolute' ? '°' : 'mm';
-    const field = j.kind === 'revolute' ? 'limitsDeg' : 'limitsMm';
-    out.push({
-      code: 'kinematic.pose.out-of-limits',
-      severity: 'warning',
-      message: `joint '${j.name}' pose ${value}${unit} exceeds declared ${field} [${min}, ${max}]`,
-      hint: `invalid-args.kinematic.pose-out-of-limits — clamp '${j.name}' to [${min}, ${max}], or widen ${field} on the joint if the mechanism is intended to travel that far.`,
-      mateName: j.name,
-      pose: value,
-      limits,
-    });
+    out.push(buildPoseOutOfLimitsDiagnostic(j, value, limits));
   }
   return out;
 }

@@ -75,18 +75,32 @@ type BadFn = (field: string, why: string) => never;
 // FDM fields first: a stray `nozzleMm` without `process: 'fdm'` deserves
 // the specific fix, not the generic "declares no checks".
 function validateDfmSpecCheckFields(args: DfmSpec, fdm: DfmFdmMetadata | undefined, bad: BadFn): void {
+  validateDfmSpecDeclaresChecks(args, fdm, bad);
+  validateDfmSpecPositiveNumber('minWall', args.minWall, bad);
+  validateDfmSpecPositiveNumber('minClearance', args.minClearance, bad);
+  validateDfmSpecArticulatedMates(args, bad);
+}
+
+function validateDfmSpecDeclaresChecks(args: DfmSpec, fdm: DfmFdmMetadata | undefined, bad: BadFn): void {
   if (
     args.minWall === undefined && args.minClearance === undefined &&
     !(args.channels?.length) && fdm === undefined
   ) {
     bad('spec', "declares no checks; pass minWall, minClearance, channels, and/or process: 'fdm'");
   }
-  if (args.minWall !== undefined && !(Number.isFinite(args.minWall) && args.minWall > 0)) {
-    bad('minWall', `must be a positive finite number; got ${args.minWall}`);
+}
+
+function validateDfmSpecPositiveNumber(
+  field: 'minWall' | 'minClearance',
+  value: number | undefined,
+  bad: BadFn,
+): void {
+  if (value !== undefined && !(Number.isFinite(value) && value > 0)) {
+    bad(field, `must be a positive finite number; got ${value}`);
   }
-  if (args.minClearance !== undefined && !(Number.isFinite(args.minClearance) && args.minClearance > 0)) {
-    bad('minClearance', `must be a positive finite number; got ${args.minClearance}`);
-  }
+}
+
+function validateDfmSpecArticulatedMates(args: DfmSpec, bad: BadFn): void {
   if (args.includeArticulatedMates !== undefined && typeof args.includeArticulatedMates !== 'boolean') {
     bad('includeArticulatedMates', `must be a boolean; got ${JSON.stringify(args.includeArticulatedMates)}`);
   }
@@ -376,13 +390,14 @@ export function buildCurve3DFeatureSpec(args: Curve3DCaptureArgs): AuthoringFeat
   };
 }
 
-export function buildEmbossTextFeatureSpec(
-  parentFeatureId: FeatureId,
-  args: EmbossTextCaptureArgs,
-  faceInputRef: FeatureRef,
-): AuthoringFeatureSpec {
-  const diagnostics: CompilerDiagnostic[] = [];
+function isEmbossTextAnchorOutOfRange(anchor: Param): boolean {
+  return !(anchor.evaluated >= 0 && anchor.evaluated <= 1);
+}
 
+function validateEmbossTextFields(
+  args: EmbossTextCaptureArgs,
+  diagnostics: CompilerDiagnostic[],
+): { depthParam: Param; anchorUParam: Param; anchorVParam: Param } {
   if (typeof args.textContent !== 'string' || args.textContent.trim().length === 0) {
     diagnostics.push({
       target: 'export-occt',
@@ -406,9 +421,7 @@ export function buildEmbossTextFeatureSpec(
 
   const anchorUParam = toParam(args.anchorU ?? 0.5, 'unitless');
   const anchorVParam = toParam(args.anchorV ?? 0.5, 'unitless');
-  const outOfRangeU = !(anchorUParam.evaluated >= 0 && anchorUParam.evaluated <= 1);
-  const outOfRangeV = !(anchorVParam.evaluated >= 0 && anchorVParam.evaluated <= 1);
-  if (outOfRangeU || outOfRangeV) {
+  if (isEmbossTextAnchorOutOfRange(anchorUParam) || isEmbossTextAnchorOutOfRange(anchorVParam)) {
     diagnostics.push({
       target: 'export-occt',
       code: 'feature.face.invalid-uv-anchor',
@@ -417,6 +430,17 @@ export function buildEmbossTextFeatureSpec(
       hint: HINT_TEMPLATES['feature.face.invalid-uv-anchor'].template,
     });
   }
+
+  return { depthParam, anchorUParam, anchorVParam };
+}
+
+export function buildEmbossTextFeatureSpec(
+  parentFeatureId: FeatureId,
+  args: EmbossTextCaptureArgs,
+  faceInputRef: FeatureRef,
+): AuthoringFeatureSpec {
+  const diagnostics: CompilerDiagnostic[] = [];
+  const { depthParam, anchorUParam, anchorVParam } = validateEmbossTextFields(args, diagnostics);
 
   const faceRef =
     faceInputRef.kind === 'face'

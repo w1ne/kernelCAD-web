@@ -43,6 +43,36 @@ export function createSourceEndpoint(deps: SourceEndpointDeps) {
   const writeFile = deps.writeFile ?? nodeWriteFile;
   const renameFile = deps.renameFile ?? nodeRename;
   const unlinkFile = deps.unlinkFile ?? nodeUnlink;
+  async function handlePutSource(
+    scriptPath: string,
+    req: ReqLike,
+    res: ResLike,
+  ): Promise<void> {
+    let payload: unknown;
+    try {
+      payload = JSON.parse(await readBody(req as unknown as NodeJS.ReadableStream));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (/too large/.test(message)) {
+        return writeJson(res, 413, { error: message });
+      }
+      return writeJson(res, 400, { error: 'body is not valid JSON' });
+    }
+    const source = (payload as { source?: unknown } | null | undefined)?.source;
+    if (typeof source !== 'string' || source.length === 0) {
+      return writeJson(res, 400, { error: 'body must include a non-empty "source" string' });
+    }
+    const tmpPath = `${scriptPath}.tmp-${process.pid}-${randomUUID()}`;
+    try {
+      await writeFile(tmpPath, source, 'utf8');
+      await renameFile(tmpPath, scriptPath);
+    } catch (error) {
+      await unlinkFile(tmpPath).catch(() => {});
+      throw error;
+    }
+    return writeJson(res, 200, { ok: true, bytes: Buffer.byteLength(source, 'utf8') });
+  }
+
   return async function sourceHandler(req: ReqLike, res: ResLike): Promise<void> {
     try {
       const method = (req.method ?? 'GET').toUpperCase();
@@ -59,29 +89,8 @@ export function createSourceEndpoint(deps: SourceEndpointDeps) {
       }
 
       if (method === 'PUT') {
-        let payload: unknown;
-        try {
-          payload = JSON.parse(await readBody(req as unknown as NodeJS.ReadableStream));
-        } catch (error) {
-          const message = error instanceof Error ? error.message : String(error);
-          if (/too large/.test(message)) {
-            return writeJson(res, 413, { error: message });
-          }
-          return writeJson(res, 400, { error: 'body is not valid JSON' });
-        }
-        const source = (payload as { source?: unknown } | null | undefined)?.source;
-        if (typeof source !== 'string' || source.length === 0) {
-          return writeJson(res, 400, { error: 'body must include a non-empty "source" string' });
-        }
-        const tmpPath = `${scriptPath}.tmp-${process.pid}-${randomUUID()}`;
-        try {
-          await writeFile(tmpPath, source, 'utf8');
-          await renameFile(tmpPath, scriptPath);
-        } catch (error) {
-          await unlinkFile(tmpPath).catch(() => {});
-          throw error;
-        }
-        return writeJson(res, 200, { ok: true, bytes: Buffer.byteLength(source, 'utf8') });
+        await handlePutSource(scriptPath, req, res);
+        return;
       }
 
       const source = await readFile(scriptPath, 'utf8');
