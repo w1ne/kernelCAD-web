@@ -1,20 +1,32 @@
 [
   {
     "rule": "complexity",
-    "file": "src/agent/cli/commands/animate.ts",
-    "symbol": "Async function 'runAnimate'",
+    "file": "src/agent/drawing/reconstructPhases.ts",
+    "symbol": "Function 'applyRadialCallouts'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/agent/cli/commands/evaluate.ts",
-    "symbol": "Async arrow function",
+    "file": "src/agent/drawing/reconstructPhases.ts",
+    "symbol": "Function 'collectDimensionEdges'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/agent/cli/commands/evaluate.ts",
-    "symbol": "Async function 'evaluateAndBuildScript'",
+    "file": "src/agent/mcp/tools/diffGeometry.ts",
+    "symbol": "Async function 'diffGeometryTool'",
+    "value": 16
+  },
+  {
+    "rule": "complexity",
+    "file": "src/agent/mcp/tools/drawingToCad.ts",
+    "symbol": "Async function 'drawingToCadTool'",
+    "value": 16
+  },
+  {
+    "rule": "complexity",
+    "file": "src/agent/mcp/tools/listAssemblies.ts",
+    "symbol": "Function 'summarizeAssemblies'",
     "value": 16
   },
   {
@@ -187,12 +199,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/capture/assemblyParts.ts",
-    "symbol": "Function 'makePartRef'",
-    "value": 134
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/modeling/capture/featureMeshing.ts",
     "symbol": "Async function 'meshFeaturesPerFeature'",
     "value": 114
@@ -292,12 +298,6 @@
     "file": "src/studio/components/viewer/overlays/useMarkingCanvas.ts",
     "symbol": "Function 'useMarkingCanvas'",
     "value": 119
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/context/CodeContext.tsx",
-    "symbol": "Function 'CodeProvider'",
-    "value": 135
   },
   {
     "rule": "max-lines-per-function",

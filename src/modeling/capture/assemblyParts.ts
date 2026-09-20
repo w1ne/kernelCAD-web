@@ -303,25 +303,26 @@ function resolvePartPlacement(
   };
 }
 
-export function makePartRef(
+/** Build the part-ref `connector` chain method.
+ *
+ *  Overload: `connector(name)` returns the v0.5 kinematic AssemblyConnectorRef;
+ *  `connector(name, opts)` registers a v0.6 mate-style Connector and returns
+ *  the part-ref for chaining. Defined as a standalone function so the
+ *  overloaded union return type can be narrowed by `opts !== undefined`.
+ *  `getRef` resolves the part ref the registering form chains back to; it is
+ *  assigned by `makePartRef` before the method can be called. Extracted from
+ *  `makePartRef` to keep it under the quality-ratchet function-length
+ *  budget. */
+function createPartConnector(
   assemblyName: string,
   id: FeatureId,
   name: string,
   at: Vec3Param,
   connectors: Record<string, AssemblyConnectorFrameStored>,
   mateConnectors: Connector[],
-  wrapGeoms: WrapGeomRecord[],
-  addPart: (name: string, shape: Shape, opts?: AssemblyPartOpts) => AssemblyPartRef,
-  // Owning assembly — the ref's chain terminators (`model` / `solve` /
-  // `solvedModel`) delegate straight to it so there is exactly one
-  // implementation of each.
-  owner: Assembly,
-): AssemblyPartRef {
-  // Overload: `connector(name)` returns the v0.5 kinematic AssemblyConnectorRef;
-  // `connector(name, opts)` registers a v0.6 mate-style Connector and returns
-  // the part-ref for chaining. Defined as a standalone function so the
-  // overloaded union return type can be narrowed by `opts !== undefined`.
-  const connector = (
+  getRef: () => AssemblyPartRef,
+): (connectorName: string, opts?: AssemblyConnectorOpts) => AssemblyConnectorRef | AssemblyPartRef {
+  return (
     connectorName: string,
     opts?: AssemblyConnectorOpts,
   ): AssemblyConnectorRef | AssemblyPartRef => {
@@ -352,7 +353,7 @@ export function makePartRef(
             : {}),
         }),
       );
-      return ref;
+      return getRef();
     }
     const frame = connectors[connectorName];
     if (!frame) {
@@ -378,10 +379,23 @@ export function makePartRef(
       ...(frame.axis !== undefined ? { axis: frame.axis } : {}),
     };
   };
-  // P11 Slice 2 — declare a collision-OFF wrap cylinder for tendon
-  // routing. Mirrors the mate-style `connector(name, opts)` chain: validate,
-  // push into the shared `wrapGeoms` array, return `ref`.
-  const wrapGeom = (
+}
+
+/** Build the part-ref `wrapGeom` chain method.
+ *
+ *  P11 Slice 2 — declare a collision-OFF wrap cylinder for tendon
+ *  routing. Mirrors the mate-style `connector(name, opts)` chain: validate,
+ *  push into the shared `wrapGeoms` array, return `ref`. `getRef` resolves
+ *  the part ref to chain; it is assigned by `makePartRef` before the method
+ *  can be called. Extracted from `makePartRef` to keep it under the
+ *  quality-ratchet function-length budget. */
+function createPartWrapGeom(
+  id: FeatureId,
+  name: string,
+  wrapGeoms: WrapGeomRecord[],
+  getRef: () => AssemblyPartRef,
+): (wrapName: string, opts: WrapGeomOptions) => AssemblyPartRef {
+  return (
     wrapName: string,
     opts: WrapGeomOptions,
   ): AssemblyPartRef => {
@@ -432,8 +446,28 @@ export function makePartRef(
       ...(opts.halfLengthMm !== undefined ? { halfLengthMm: opts.halfLengthMm } : {}),
     };
     wrapGeoms.push(rec);
-    return ref;
+    return getRef();
   };
+}
+
+export function makePartRef(
+  assemblyName: string,
+  id: FeatureId,
+  name: string,
+  at: Vec3Param,
+  connectors: Record<string, AssemblyConnectorFrameStored>,
+  mateConnectors: Connector[],
+  wrapGeoms: WrapGeomRecord[],
+  addPart: (name: string, shape: Shape, opts?: AssemblyPartOpts) => AssemblyPartRef,
+  // Owning assembly — the ref's chain terminators (`model` / `solve` /
+  // `solvedModel`) delegate straight to it so there is exactly one
+  // implementation of each.
+  owner: Assembly,
+): AssemblyPartRef {
+  const connector = createPartConnector(
+    assemblyName, id, name, at, connectors, mateConnectors, () => ref,
+  );
+  const wrapGeom = createPartWrapGeom(id, name, wrapGeoms, () => ref);
   const ref: AssemblyPartRef = {
     id,
     name,

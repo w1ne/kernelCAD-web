@@ -108,6 +108,67 @@ export interface EvaluateAndBuildResult {
   feaReport?: FeaGateReport;
 }
 
+/** Build the model for an evaluate input, or return the failure evaluation
+ *  that should be surfaced verbatim. File-read faults get their dedicated
+ *  diagnostic; every other build throw is projected through
+ *  `kernelErrorToDiagnostic`. */
+async function buildModelForInput(
+  input: EvaluateInput,
+): Promise<{ model: BuiltModel } | { evaluation: EvaluateResult }> {
+  try {
+    const model = input.code !== undefined
+      ? await buildModel({
+          code: input.code,
+          fileName: input.file ?? '<inline>',
+          ...(input.scriptDir !== undefined ? { scriptDir: input.scriptDir } : {}),
+        })
+      : await buildModelFromFile({ file: input.file! });
+    return { model };
+  } catch (e) {
+    if (isFileReadError(e)) {
+      return { evaluation: fileReadEvaluation(e) };
+    }
+    const diag = kernelErrorToDiagnostic(e);
+    return {
+      evaluation: { exitCode: 1, featureCount: 0, diagnostics: [diag], featureHealth: [] },
+    };
+  }
+}
+
+/** Run the opt-in gates over a build that had no fatal diagnostics.
+ *
+ *  W3 DFM enforcement: when the script declares dfmSpec(...), run the
+ *  declared gates and merge their diagnostics into the model's. This one
+ *  hook covers CLI evaluate, MCP evaluate_script (delegates here), and the
+ *  eval harness. Zero cost for scripts without the record (findDfmSpec is
+ *  a records scan returning undefined). Skipped after fatal build
+ *  diagnostics — the underlying failure surfaces first.
+ *
+ *  Structural enforcement: same seam, same opt-in shape as the DFM gate.
+ *  Only studies that declare `minSafetyFactor` run here — a study without
+ *  one is a report you fetch with `run_fea`, not a gate. */
+async function runOptInGates(
+  model: BuiltModel,
+  fatal: boolean,
+): Promise<{ dfmReport?: DfmCheckReport; feaReport?: FeaGateReport }> {
+  let dfmReport: DfmCheckReport | undefined;
+  if (!fatal) {
+    dfmReport = await runDfmChecksOnModel(model);
+    if (dfmReport) model.diagnostics.push(...dfmReport.diagnostics);
+  }
+
+  let feaReport: FeaGateReport | undefined;
+  if (!fatal) {
+    feaReport = await runFeaGateOnModel(model);
+    if (feaReport) model.diagnostics.push(...feaReport.diagnostics);
+  }
+
+  return {
+    ...(dfmReport !== undefined ? { dfmReport } : {}),
+    ...(feaReport !== undefined ? { feaReport } : {}),
+  };
+}
+
 export async function evaluateAndBuildScript(input: EvaluateInput): Promise<EvaluateAndBuildResult> {
   // T10: harness-style evaluation flips the `solvedModel` validate gate to
   // `'error'` (read by T9 in `Assembly.solvedModel`). Done before script
@@ -119,24 +180,9 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
     return { evaluation: invalidArgsEvaluation() };
   }
 
-  let model;
-  try {
-    model = input.code !== undefined
-      ? await buildModel({
-          code: input.code,
-          fileName: input.file ?? '<inline>',
-          ...(input.scriptDir !== undefined ? { scriptDir: input.scriptDir } : {}),
-        })
-      : await buildModelFromFile({ file: input.file! });
-  } catch (e) {
-    if (isFileReadError(e)) {
-      return { evaluation: fileReadEvaluation(e) };
-    }
-    const diag = kernelErrorToDiagnostic(e);
-    return {
-      evaluation: { exitCode: 1, featureCount: 0, diagnostics: [diag], featureHealth: [] },
-    };
-  }
+  const built = await buildModelForInput(input);
+  if ('evaluation' in built) return { evaluation: built.evaluation };
+  const model = built.model;
   const fatal = model.diagnostics.some(d => d.severity === 'error');
 
   // Agent-parts-discipline: flag multi-body models authored as loose
@@ -152,26 +198,7 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
     );
   }
 
-  // W3 DFM enforcement: when the script declares dfmSpec(...), run the
-  // declared gates and merge their diagnostics into the model's. This one
-  // hook covers CLI evaluate, MCP evaluate_script (delegates here), and the
-  // eval harness. Zero cost for scripts without the record (findDfmSpec is
-  // a records scan returning undefined). Skipped after fatal build
-  // diagnostics — the underlying failure surfaces first.
-  let dfmReport: DfmCheckReport | undefined;
-  if (!fatal) {
-    dfmReport = await runDfmChecksOnModel(model);
-    if (dfmReport) model.diagnostics.push(...dfmReport.diagnostics);
-  }
-
-  // Structural enforcement: same seam, same opt-in shape as the DFM gate.
-  // Only studies that declare `minSafetyFactor` run here — a study without
-  // one is a report you fetch with `run_fea`, not a gate.
-  let feaReport: FeaGateReport | undefined;
-  if (!fatal) {
-    feaReport = await runFeaGateOnModel(model);
-    if (feaReport) model.diagnostics.push(...feaReport.diagnostics);
-  }
+  const gates = await runOptInGates(model, fatal);
 
   const fatalAfterGates = model.diagnostics.some(d => d.severity === 'error');
   return {
@@ -182,8 +209,7 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
       featureHealth: nonHealthyFeatures(model.health),
     },
     model,
-    ...(dfmReport !== undefined ? { dfmReport } : {}),
-    ...(feaReport !== undefined ? { feaReport } : {}),
+    ...gates,
   };
 }
 
@@ -488,6 +514,67 @@ function isFileReadError(e: unknown): boolean {
   );
 }
 
+interface EvaluateCliOptions {
+  json?: boolean;
+  envelope?: boolean;
+  samplesPerMate?: number;
+  combinatorial?: boolean;
+  traceOut?: string;
+}
+
+/** Map parsed commander options onto the `evaluateWithEnvelope` input shape,
+ *  forwarding only the flags that were actually supplied. */
+function evaluateCliInput(file: string, opts: EvaluateCliOptions): EvaluateWithEnvelopeInput {
+  return {
+    file,
+    ...(opts.envelope ? { envelope: true } : {}),
+    ...(opts.samplesPerMate !== undefined ? { samplesPerMate: opts.samplesPerMate } : {}),
+    ...(opts.combinatorial ? { combinatorial: true } : {}),
+    ...(opts.traceOut !== undefined ? { trace: true } : {}),
+  };
+}
+
+/** Write the per-feature trace to `--trace-out <file>` when both the flag and
+ *  a trace were produced. */
+async function writeTraceOut(
+  file: string,
+  traceOut: string | undefined,
+  r: EvaluateWithEnvelopeResult,
+): Promise<void> {
+  if (traceOut !== undefined && r.trace !== undefined) {
+    await writeFile(traceOut, `${JSON.stringify({ file, trace: r.trace }, null, 2)}\n`, 'utf8');
+  }
+}
+
+/** Emit the evaluation result on stdout/stderr — the `--json` envelope or the
+ *  human summary. Console text is the CLI's observable output. */
+function printEvaluateResult(r: EvaluateWithEnvelopeResult, opts: EvaluateCliOptions): void {
+  const envelopeErrors = (r.envelopeDiagnostics ?? []).filter((d) => d.severity === 'error');
+
+  if (opts.json) {
+    console.log(JSON.stringify({
+      ok: r.exitCode === 0,
+      featureCount: r.featureCount,
+      diagnostics: r.diagnostics,
+      ...(r.envelopeDiagnostics !== undefined ? {
+        envelopeDiagnostics: r.envelopeDiagnostics,
+        envelopeSampleCount: r.envelopeSampleCount,
+      } : {}),
+    }, null, 2));
+  } else {
+    console.log(`Features: ${r.featureCount}`);
+    if (r.diagnostics.length > 0) {
+      console.log(formatHuman(r.diagnostics));
+    }
+    if (envelopeErrors.length > 0) {
+      console.error(formatEnvelopeDiagnostics(envelopeErrors));
+    } else if (r.envelopeDiagnostics !== undefined) {
+      console.log(`Pose-envelope: ${r.envelopeSampleCount} sample${r.envelopeSampleCount === 1 ? '' : 's'} clean.`);
+    }
+    if (r.exitCode === 0) console.log('OK');
+  }
+}
+
 export function evaluateCommand(): Command {
   const cmd = new Command('evaluate')
     .description('Run a .kcad.ts script and report diagnostics')
@@ -497,18 +584,10 @@ export function evaluateCommand(): Command {
     .option('--samples-per-mate <n>', 'interior samples per mate for the envelope sweep (integer ≥ 1)', (v) => parseInt(v, 10))
     .option('--combinatorial', 'enumerate corner combinations across all limited mates (cap: 8 mates)')
     .option('--trace-out <file>', 'write the per-feature trace (call site, AST node range, diagnostics, inputs, dependents) to a JSON file')
-    .action(async (file: string, opts: { json?: boolean; envelope?: boolean; samplesPerMate?: number; combinatorial?: boolean; traceOut?: string }) => {
-      const r = await evaluateWithEnvelope({
-        file,
-        ...(opts.envelope ? { envelope: true } : {}),
-        ...(opts.samplesPerMate !== undefined ? { samplesPerMate: opts.samplesPerMate } : {}),
-        ...(opts.combinatorial ? { combinatorial: true } : {}),
-        ...(opts.traceOut !== undefined ? { trace: true } : {}),
-      });
+    .action(async (file: string, opts: EvaluateCliOptions) => {
+      const r = await evaluateWithEnvelope(evaluateCliInput(file, opts));
 
-      if (opts.traceOut !== undefined && r.trace !== undefined) {
-        await writeFile(opts.traceOut, `${JSON.stringify({ file, trace: r.trace }, null, 2)}\n`, 'utf8');
-      }
+      await writeTraceOut(file, opts.traceOut, r);
 
       if (r.misuseMessage) {
         console.error(r.misuseMessage);
@@ -516,30 +595,7 @@ export function evaluateCommand(): Command {
         return;
       }
 
-      const envelopeErrors = (r.envelopeDiagnostics ?? []).filter((d) => d.severity === 'error');
-
-      if (opts.json) {
-        console.log(JSON.stringify({
-          ok: r.exitCode === 0,
-          featureCount: r.featureCount,
-          diagnostics: r.diagnostics,
-          ...(r.envelopeDiagnostics !== undefined ? {
-            envelopeDiagnostics: r.envelopeDiagnostics,
-            envelopeSampleCount: r.envelopeSampleCount,
-          } : {}),
-        }, null, 2));
-      } else {
-        console.log(`Features: ${r.featureCount}`);
-        if (r.diagnostics.length > 0) {
-          console.log(formatHuman(r.diagnostics));
-        }
-        if (envelopeErrors.length > 0) {
-          console.error(formatEnvelopeDiagnostics(envelopeErrors));
-        } else if (r.envelopeDiagnostics !== undefined) {
-          console.log(`Pose-envelope: ${r.envelopeSampleCount} sample${r.envelopeSampleCount === 1 ? '' : 's'} clean.`);
-        }
-        if (r.exitCode === 0) console.log('OK');
-      }
+      printEvaluateResult(r, opts);
       process.exitCode = r.exitCode;
     });
   return cmd;
