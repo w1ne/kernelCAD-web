@@ -31,12 +31,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/diffGeometry.ts",
-    "symbol": "Async function 'diffGeometryTool'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/listFaces.ts",
     "symbol": "Async function 'listFacesTool'",
     "value": 16
