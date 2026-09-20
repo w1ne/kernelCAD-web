@@ -217,12 +217,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/drawingAnnotations.ts",
-    "symbol": "Arrow function",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/drawingAuto/placePhases.ts",
     "symbol": "Function 'placeRadiusAndChamferNotes'",
     "value": 16
@@ -616,12 +610,6 @@
     "file": "src/funnel/components/GallerySection.tsx",
     "symbol": "Function 'GallerySection'",
     "value": 116
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/kernel/backends/occt/drawingAnnotations.ts",
-    "symbol": "Function 'renderAnnotations'",
-    "value": 118
   },
   {
     "rule": "max-lines-per-function",
