@@ -481,12 +481,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/surfaceQuality.ts",
-    "symbol": "Function 'inspectContinuity'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/fea/runFea.ts",
     "symbol": "Function 'computeFeaSummary'",
     "value": 19
