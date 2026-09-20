@@ -19,32 +19,32 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/drawing/reconstructPhases.ts",
-    "symbol": "Function 'applyRadialCallouts'",
+    "file": "src/agent/mcp/tools/listFaces.ts",
+    "symbol": "Async function 'listFacesTool'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/agent/drawing/reconstructPhases.ts",
-    "symbol": "Function 'collectDimensionEdges'",
+    "file": "src/agent/mcp/tools/listFaces.ts",
+    "symbol": "Function 'summarizeLineage'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/diffGeometry.ts",
-    "symbol": "Async function 'diffGeometryTool'",
+    "file": "src/agent/mcp/tools/reviewPaint.ts",
+    "symbol": "Async function 'reviewPaintPeekLatestTool'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/drawingToCad.ts",
-    "symbol": "Async function 'drawingToCadTool'",
+    "file": "src/agent/reconstruct/analysis.ts",
+    "symbol": "Function 'classifyRegions'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/listAssemblies.ts",
-    "symbol": "Function 'summarizeAssemblies'",
+    "file": "src/agent/reconstruct/planPhases/ops.ts",
+    "symbol": "Function 'emitCutoutOps'",
     "value": 16
   },
   {

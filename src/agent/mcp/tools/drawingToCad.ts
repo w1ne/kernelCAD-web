@@ -10,7 +10,7 @@
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { basename, dirname, resolve } from 'node:path';
-import { drawingToCad, type DrawingToCadResult } from '../../drawing/index';
+import { drawingToCad, type DrawingToCadInput, type DrawingToCadResult } from '../../drawing/index';
 import { FILE_READ_CODE } from '../../../shared/diagnostics/fileReadError';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES, NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
@@ -103,15 +103,32 @@ export async function drawingToCadTool(input: DrawingToCadToolInput): Promise<Dr
 
   const scriptPath = input.out !== undefined ? resolve(input.out) : undefined;
   const ledgerPath = scriptPath ? ledgerPathFor(scriptPath) : undefined;
-  const result = await drawingToCad({
+  const result = await drawingToCad(drawingToCadRequest(input, pdf, source, ledgerPath));
+
+  return persistDrawingToCadOutput(result, scriptPath, ledgerPath);
+}
+
+function drawingToCadRequest(
+  input: DrawingToCadToolInput,
+  pdf: Uint8Array,
+  source: string,
+  ledgerPath: string | undefined,
+): DrawingToCadInput {
+  return {
     pdf,
     source,
     ...(input.page !== undefined ? { page: input.page } : {}),
     ...(input.projection !== undefined ? { projection: input.projection } : {}),
     ...(input.verify !== undefined ? { verify: input.verify } : {}),
     ...(ledgerPath ? { ledgerPath: `./${basename(ledgerPath)}` } : {}),
-  });
+  };
+}
 
+async function persistDrawingToCadOutput(
+  result: DrawingToCadResult,
+  scriptPath: string | undefined,
+  ledgerPath: string | undefined,
+): Promise<DrawingToCadToolOutput> {
   if (!scriptPath || !ledgerPath || result.script === undefined) return result;
   await mkdir(dirname(scriptPath), { recursive: true });
   await writeFile(scriptPath, result.script, 'utf8');
