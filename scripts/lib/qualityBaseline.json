@@ -73,12 +73,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/modeling/capture/featureMeshing.ts",
-    "symbol": "Async function 'meshFeaturesPerFeature'",
-    "value": 114
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/modeling/constraints/sketchConverter.ts",
     "symbol": "Function 'convertSketchEntitiesToConstraints'",
     "value": 111
