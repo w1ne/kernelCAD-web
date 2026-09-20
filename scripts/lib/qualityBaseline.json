@@ -37,12 +37,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/drawingToCad.ts",
-    "symbol": "Async function 'drawingToCadTool'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/listFaces.ts",
     "symbol": "Async function 'listFacesTool'",
     "value": 16
