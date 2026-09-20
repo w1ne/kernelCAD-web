@@ -139,12 +139,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/dfmPreflight.ts",
-    "symbol": "Async function 'dfmPreflightTool'",
-    "value": 19
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/diffGeometry.ts",
     "symbol": "Async function 'diffGeometryTool'",
     "value": 16
@@ -958,12 +952,6 @@
     "file": "src/agent/cli/commands/render.ts",
     "symbol": "Function 'renderCommand'",
     "value": 133
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/agent/mcp/tools/dfmPreflight.ts",
-    "symbol": "Async function 'dfmPreflightTool'",
-    "value": 101
   },
   {
     "rule": "max-lines-per-function",
