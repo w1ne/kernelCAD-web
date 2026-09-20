@@ -697,12 +697,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/shared/codeGeneration/codeAnalysis.ts",
-    "symbol": "Function 'classifyVariable'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/shared/codeGeneration/stripTypeScript.ts",
     "symbol": "Arrow function",
     "value": 16
