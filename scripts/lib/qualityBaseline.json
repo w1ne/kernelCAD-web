@@ -565,12 +565,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/shared/worker/geometryHelpers.ts",
-    "symbol": "Arrow function",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/StagedEditSlot.tsx",
     "symbol": "Function 'StagedEditContextDetails'",
     "value": 16
