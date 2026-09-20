@@ -283,12 +283,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/naming/queryEvaluator.ts",
-    "symbol": "Function 'evalAst'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/apiSurfaceMethods.ts",
     "symbol": "Method 'variableSweep'",
     "value": 17
