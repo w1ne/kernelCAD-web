@@ -85,12 +85,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/Toolbar.tsx",
-    "symbol": "Function 'Toolbar'",
-    "value": 121
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/Layout/Header.tsx",
     "symbol": "Function 'Header'",
     "value": 117
