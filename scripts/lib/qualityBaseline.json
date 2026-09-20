@@ -337,12 +337,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/pathNurbsLowerer.ts",
-    "symbol": "Function 'processCommand'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/sketchToDrawing.ts",
     "symbol": "Function 'drawingForLoop'",
     "value": 16
@@ -837,7 +831,7 @@
     "rule": "max-lines-per-function",
     "file": "src/kernel/backends/occt/pathNurbsLowerer.ts",
     "symbol": "Function 'buildNurbsSketchOnPlane'",
-    "value": 143
+    "value": 140
   },
   {
     "rule": "max-lines-per-function",

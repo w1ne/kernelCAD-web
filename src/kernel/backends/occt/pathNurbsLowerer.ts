@@ -320,6 +320,12 @@ function resolveSketchStart(commands: SketchCommand[]): {
   return { closeIdx, startX, startY };
 }
 
+type SimplePenCommand = Extract<
+  SketchCommand,
+  { kind: 'lineTo' | 'tangentArc' | 'threePointsArc' | 'sagittaArc' | 'bulgeArc' | 'smoothSpline' }
+>;
+type NurbsCommand = Extract<SketchCommand, { kind: 'spline' | 'nurbsSegment' | 'hermiteG2_2d' }>;
+
 /**
  * Lower a `SketchCommand[]` containing at least one NURBS segment into a
  * `replicad.Sketch` on the requested plane.
@@ -373,97 +379,97 @@ export function buildNurbsSketchOnPlane(
     return pen;
   }
 
-  function processCommand(c: SketchCommand): void {
+  function applySimplePenCommand(c: SimplePenCommand): void {
+    const p = ensurePen();
     if (c.kind === 'lineTo') {
-      const p = ensurePen();
       pen = p.lineTo([c.x.evaluated, c.y.evaluated]) as replicad.DrawingPen;
-      currentX = c.x.evaluated;
-      currentY = c.y.evaluated;
     } else if (c.kind === 'tangentArc') {
-      const p = ensurePen();
       pen = p.tangentArcTo([c.x.evaluated, c.y.evaluated]) as replicad.DrawingPen;
-      currentX = c.x.evaluated;
-      currentY = c.y.evaluated;
     } else if (c.kind === 'threePointsArc') {
-      const p = ensurePen();
       pen = p.threePointsArcTo(
         [c.x.evaluated, c.y.evaluated],
         [c.midX.evaluated, c.midY.evaluated],
       ) as replicad.DrawingPen;
-      currentX = c.x.evaluated;
-      currentY = c.y.evaluated;
     } else if (c.kind === 'sagittaArc') {
-      const p = ensurePen();
       pen = p.sagittaArcTo([c.x.evaluated, c.y.evaluated], c.sagitta.evaluated) as replicad.DrawingPen;
-      currentX = c.x.evaluated;
-      currentY = c.y.evaluated;
     } else if (c.kind === 'bulgeArc') {
-      const p = ensurePen();
       pen = p.bulgeArcTo([c.x.evaluated, c.y.evaluated], c.bulge.evaluated) as replicad.DrawingPen;
-      currentX = c.x.evaluated;
-      currentY = c.y.evaluated;
-    } else if (c.kind === 'radiusArc') {
-      // Convert radiusArc → sagittaArc via the same math as `fromSketchCommands`.
-      const cx = c.x.evaluated;
-      const cy = c.y.evaluated;
-      const cr = c.radius.evaluated;
-      const chord = Math.hypot(cx - currentX, cy - currentY);
-      if (chord < 1e-9) {
-        throw new Error(`radiusArc: degenerate chord (start ≈ end) at point (${cx}, ${cy})`);
-      }
-      if (Math.abs(cr) < chord / 2) {
-        throw new Error(`radiusArc: radius (${cr}) too small for chord length ${chord.toFixed(3)} — needs |radius| >= chord/2`);
-      }
-      const halfChord = chord / 2;
-      const sagittaMagnitude = Math.abs(cr) - Math.sqrt(cr * cr - halfChord * halfChord);
-      const signedSagitta = Math.sign(cr) * sagittaMagnitude;
-      const p = ensurePen();
-      pen = p.sagittaArcTo([cx, cy], signedSagitta) as replicad.DrawingPen;
-      currentX = cx;
-      currentY = cy;
-    } else if (c.kind === 'smoothSpline') {
-      const p = ensurePen();
+    } else {
       pen = p.smoothSplineTo([c.x.evaluated, c.y.evaluated]) as replicad.DrawingPen;
-      currentX = c.x.evaluated;
-      currentY = c.y.evaluated;
+    }
+    currentX = c.x.evaluated;
+    currentY = c.y.evaluated;
+  }
+
+  function applyRadiusArc(c: Extract<SketchCommand, { kind: 'radiusArc' }>): void {
+    // Convert radiusArc → sagittaArc via the same math as `fromSketchCommands`.
+    const cx = c.x.evaluated;
+    const cy = c.y.evaluated;
+    const cr = c.radius.evaluated;
+    const chord = Math.hypot(cx - currentX, cy - currentY);
+    if (chord < 1e-9) {
+      throw new Error(`radiusArc: degenerate chord (start ≈ end) at point (${cx}, ${cy})`);
+    }
+    if (Math.abs(cr) < chord / 2) {
+      throw new Error(`radiusArc: radius (${cr}) too small for chord length ${chord.toFixed(3)} — needs |radius| >= chord/2`);
+    }
+    const halfChord = chord / 2;
+    const sagittaMagnitude = Math.abs(cr) - Math.sqrt(cr * cr - halfChord * halfChord);
+    const signedSagitta = Math.sign(cr) * sagittaMagnitude;
+    const p = ensurePen();
+    pen = p.sagittaArcTo([cx, cy], signedSagitta) as replicad.DrawingPen;
+    currentX = cx;
+    currentY = cy;
+  }
+
+  function applyNurbsCommand(c: NurbsCommand): void {
+    // Connectivity guard (defense-in-depth behind PathBuilder's own
+    // capture-time checks): the NURBS segment must start at the current
+    // pen position. A gap leaves the edge chain disconnected — OCCT's
+    // BRepBuilderAPI_MakeWire silently drops edges it cannot reach (its
+    // Error() flag reflects only the LAST Add, so a later connectable
+    // edge resets it to WireDone) and the profile degenerates with no
+    // kernel error (issue #447). Throwing here surfaces as a blocking
+    // `feature.kernel-failed` diagnostic in the consumer lowerers.
+    const segStart = c.kind === 'spline'
+      ? { x: c.points[0].x.evaluated, y: c.points[0].y.evaluated }
+      : c.kind === 'nurbsSegment'
+        ? { x: c.controlPoints[0].x.evaluated, y: c.controlPoints[0].y.evaluated }
+        : { x: c.ax.evaluated, y: c.ay.evaluated };
+    const gap = Math.hypot(segStart.x - currentX, segStart.y - currentY);
+    if (gap > 1e-6) {
+      throw new Error(
+        `buildNurbsSketchOnPlane: ${c.kind} segment starts at (${segStart.x}, ${segStart.y}) but the path pen is at (${currentX}, ${currentY}) — ${gap.toFixed(6)} mm gap. Segments must chain head-to-tail; make the segment's first point equal the previous segment's endpoint (or add a lineTo bridging the gap).`,
+      );
+    }
+    commitPenRun();
+    let edge: replicad.Edge;
+    if (c.kind === 'spline') {
+      edge = buildSplineEdge(c, plane);
+      const last = c.points[c.points.length - 1];
+      currentX = last.x.evaluated;
+      currentY = last.y.evaluated;
+    } else if (c.kind === 'nurbsSegment') {
+      edge = buildNurbsSegmentEdge(c, plane);
+      const last = c.controlPoints[c.controlPoints.length - 1];
+      currentX = last.x.evaluated;
+      currentY = last.y.evaluated;
+    } else {
+      edge = buildHermiteG2Edge(c, plane);
+      currentX = c.bx.evaluated;
+      currentY = c.by.evaluated;
+    }
+    edges.push(edge);
+  }
+
+  function processCommand(c: SketchCommand): void {
+    if (c.kind === 'lineTo' || c.kind === 'tangentArc' || c.kind === 'threePointsArc'
+      || c.kind === 'sagittaArc' || c.kind === 'bulgeArc' || c.kind === 'smoothSpline') {
+      applySimplePenCommand(c);
+    } else if (c.kind === 'radiusArc') {
+      applyRadiusArc(c);
     } else if (c.kind === 'spline' || c.kind === 'nurbsSegment' || c.kind === 'hermiteG2_2d') {
-      // Connectivity guard (defense-in-depth behind PathBuilder's own
-      // capture-time checks): the NURBS segment must start at the current
-      // pen position. A gap leaves the edge chain disconnected — OCCT's
-      // BRepBuilderAPI_MakeWire silently drops edges it cannot reach (its
-      // Error() flag reflects only the LAST Add, so a later connectable
-      // edge resets it to WireDone) and the profile degenerates with no
-      // kernel error (issue #447). Throwing here surfaces as a blocking
-      // `feature.kernel-failed` diagnostic in the consumer lowerers.
-      const segStart = c.kind === 'spline'
-        ? { x: c.points[0].x.evaluated, y: c.points[0].y.evaluated }
-        : c.kind === 'nurbsSegment'
-          ? { x: c.controlPoints[0].x.evaluated, y: c.controlPoints[0].y.evaluated }
-          : { x: c.ax.evaluated, y: c.ay.evaluated };
-      const gap = Math.hypot(segStart.x - currentX, segStart.y - currentY);
-      if (gap > 1e-6) {
-        throw new Error(
-          `buildNurbsSketchOnPlane: ${c.kind} segment starts at (${segStart.x}, ${segStart.y}) but the path pen is at (${currentX}, ${currentY}) — ${gap.toFixed(6)} mm gap. Segments must chain head-to-tail; make the segment's first point equal the previous segment's endpoint (or add a lineTo bridging the gap).`,
-        );
-      }
-      commitPenRun();
-      let edge: replicad.Edge;
-      if (c.kind === 'spline') {
-        edge = buildSplineEdge(c, plane);
-        const last = c.points[c.points.length - 1];
-        currentX = last.x.evaluated;
-        currentY = last.y.evaluated;
-      } else if (c.kind === 'nurbsSegment') {
-        edge = buildNurbsSegmentEdge(c, plane);
-        const last = c.controlPoints[c.controlPoints.length - 1];
-        currentX = last.x.evaluated;
-        currentY = last.y.evaluated;
-      } else {
-        edge = buildHermiteG2Edge(c, plane);
-        currentX = c.bx.evaluated;
-        currentY = c.by.evaluated;
-      }
-      edges.push(edge);
+      applyNurbsCommand(c);
     }
   }
 
