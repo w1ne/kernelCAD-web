@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { AgentClient, AgentMessage, AgentResponse } from './types';
+import type { ToolChatClient, ToolChatMessage, ToolChatResult, ToolSpec } from './lib/toolLoop';
 
 export interface OpenAICompatOptions {
   baseUrl: string;
@@ -14,7 +15,10 @@ export interface OpenAICompatOptions {
 
 interface ChatCompletionResponse {
   choices?: Array<{
-    message?: { content?: string | null };
+    message?: {
+      content?: string | null;
+      tool_calls?: Array<{ id?: string; type?: string; function?: { name?: string; arguments?: string } }>;
+    };
     finish_reason?: string | null;
   }>;
   usage?: { prompt_tokens?: number; completion_tokens?: number };
@@ -34,7 +38,7 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export class OpenAICompatAgentClient implements AgentClient {
+export class OpenAICompatAgentClient implements AgentClient, ToolChatClient {
   private readonly baseUrl: string;
   private readonly apiKey: string;
   private readonly maxRetries: number;
@@ -142,5 +146,38 @@ export class OpenAICompatAgentClient implements AgentClient {
       return { text: '', tokens_in: tokensIn, tokens_out: 0, finish_reason: finish };
     }
     return { text, tokens_in: tokensIn, tokens_out: tokensOut, finish_reason: finish };
+  }
+
+  async chatWithTools(args: {
+    system: string;
+    messages: ToolChatMessage[];
+    tools: ToolSpec[];
+    model: string;
+    max_tokens: number;
+    temperature?: number;
+  }): Promise<ToolChatResult> {
+    const data = await this.request({
+      model: args.model,
+      max_tokens: args.max_tokens,
+      messages: [{ role: 'system', content: args.system }, ...args.messages],
+      tools: args.tools,
+      tool_choice: 'auto',
+      ...(args.temperature !== undefined ? { temperature: args.temperature } : {}),
+    });
+    const choice = data.choices?.[0];
+    const toolCalls = (choice?.message?.tool_calls ?? [])
+      .map((tc, i) => ({
+        id: tc.id ?? `call_${i}`,
+        name: tc.function?.name ?? '',
+        arguments: tc.function?.arguments ?? '{}',
+      }))
+      .filter((tc) => tc.name.length > 0);
+    return {
+      text: choice?.message?.content ?? '',
+      toolCalls,
+      finishReason: choice?.finish_reason ?? 'stop',
+      tokensIn: num(data.usage?.prompt_tokens),
+      tokensOut: num(data.usage?.completion_tokens),
+    };
   }
 }

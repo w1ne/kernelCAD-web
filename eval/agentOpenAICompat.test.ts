@@ -186,6 +186,48 @@ describe('OpenAICompatAgentClient', () => {
     expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
 
+  it('chatWithTools maps tool definitions and tool_calls responses', async () => {
+    const fetchImpl = vi.fn(async () =>
+      jsonResponse({
+        choices: [
+          {
+            message: {
+              content: 'checking',
+              tool_calls: [
+                {
+                  id: 'call_1',
+                  type: 'function',
+                  function: { name: 'evaluate_script', arguments: '{"code":"x"}' },
+                },
+              ],
+            },
+            finish_reason: 'tool_calls',
+          },
+        ],
+        usage: { prompt_tokens: 21, completion_tokens: 6 },
+      }),
+    );
+    const client = new OpenAICompatAgentClient({
+      baseUrl: 'https://api.example.com/v1',
+      apiKey: 'k',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    const out = await client.chatWithTools({
+      system: 'S',
+      messages: [{ role: 'user', content: 'hi' }],
+      tools: [{ type: 'function', function: { name: 'evaluate_script', description: 'd', parameters: { type: 'object' } } }],
+      model: 'm',
+      max_tokens: 100,
+    });
+    expect(out.toolCalls).toEqual([{ id: 'call_1', name: 'evaluate_script', arguments: '{"code":"x"}' }]);
+    expect(out.finishReason).toBe('tool_calls');
+    expect(out.tokensIn).toBe(21);
+    const body = JSON.parse((fetchImpl.mock.calls[0][1] as RequestInit).body as string);
+    expect(body.tools[0].function.name).toBe('evaluate_script');
+    expect(body.tool_choice).toBe('auto');
+    expect(body.messages[0]).toEqual({ role: 'system', content: 'S' });
+  });
+
   it('caps continuation at two turns', async () => {
     const fetchImpl = vi.fn(async () =>
       jsonResponse({
