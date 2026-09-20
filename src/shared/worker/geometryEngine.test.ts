@@ -33,7 +33,8 @@ vi.mock('replicad', () => {
 
 // Mock Worker
 class MockWorker {
-  static mode: 'success' | 'initError' | 'crashOnExecute' | 'noResponse' | 'invalidResponse' = 'success';
+  static mode: 'success' | 'initError' | 'crashOnExecute' | 'noResponse' | 'invalidResponse' | 'poisonOnce' = 'success';
+  static poisonArmed = true;
   static sentMessages: Array<{ id: string; type: string }> = [];
   onmessage: ((e: { data: unknown }) => void) | null = null;
   onerror: ((e: unknown) => void) | null = null;
@@ -65,6 +66,21 @@ class MockWorker {
         return;
       }
 
+      if (MockWorker.mode === 'poisonOnce') {
+        if (MockWorker.poisonArmed) {
+          MockWorker.poisonArmed = false;
+          this.onmessage?.({
+            data: {
+              type: 'ERROR',
+              id: data.id,
+              error: 'RuntimeError: memory access out of bounds',
+            },
+          });
+          return;
+        }
+        // Fall through to success after GeometryEngine terminates+retries.
+      }
+
       // Simulate execute success response
       this.onmessage?.({
         data: {
@@ -88,6 +104,7 @@ describe('Geometry Engine', () => {
     GeometryEngine.getInstance().terminate();
     GeometryEngine.getInstance().resetDiagnostics();
     MockWorker.mode = 'success';
+    MockWorker.poisonArmed = true;
     MockWorker.sentMessages = [];
     vi.useRealTimers();
   });
@@ -206,6 +223,15 @@ describe('Geometry Engine', () => {
     expect(results.geometries).toHaveLength(1);
     expect(GeometryEngine.getInstance().getDiagnostics().workerCrashes).toBe(1);
     // Verify it was a new worker or at least it works
+    expect(MockWorker.sentMessages.filter(m => m.type === 'INIT').length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('should terminate+retry once when the worker soft-fails with OCCT wasm poison', async () => {
+    MockWorker.mode = 'poisonOnce';
+    MockWorker.poisonArmed = true;
+    const results = await executeCode('return replicad.makeBox(1,1,1);');
+    expect(results.geometries).toHaveLength(1);
+    // First attempt poisoned; second (after terminate) succeeded — so at least two INITs.
     expect(MockWorker.sentMessages.filter(m => m.type === 'INIT').length).toBeGreaterThanOrEqual(2);
   });
 });

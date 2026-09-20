@@ -12,6 +12,8 @@ import { KernelError } from '../../shared/intent/kernelError';
 import type { ParamTable } from '../../shared/runtime/paramTable';
 import { resolveParams } from '../../shared/runtime/resolveParams';
 import type { SoftWarningPhase, SoftWarningSink } from '../../shared/runtime/softWarning';
+import { isOcctWasmPoisoned, WASM_POISON_MARKER, describeOcctThrow } from '../../kernel/backends/occt/occtException';
+import { resetOcct } from '../../kernel/backends/occt/occtBackend';
 
 function normalizeBooleanOp(expr: string | undefined): 'subtract' | 'union' | 'intersect' | undefined {
   if (!expr) return undefined;
@@ -499,6 +501,11 @@ export class RecomputeEngine {
         return emitFeatureCompiledEvent(r, res.shape, featureDiags, featureHealth, predecessorsOf, onEvent);
       }
     } catch (e) {
+      // Wasm poison (OOB / Aborted) corrupts the process-global OCCT heap —
+      // swallowing it as a per-feature diagnostic leaves every later lower
+      // broken. Rethrow so `run()` can resetOcct + retry the full pass once.
+      if (isOcctWasmPoisoned(e)) throw e;
+
       const failDiag: CompilerDiagnostic = loweringFailureDiagnostic(this.lowerer.target, e, r.id);
       diagnostics.push(failDiag);
       health.set(r.id, 'error');
@@ -506,7 +513,7 @@ export class RecomputeEngine {
     }
   }
 
-  async run(records: readonly FeatureRecord[], opts?: RecomputeOptions): Promise<RecomputeResult> {
+  private async runPass(records: readonly FeatureRecord[], opts?: RecomputeOptions): Promise<RecomputeResult> {
     const shapes = opts?.seedShapes ? new Map(opts.seedShapes) : new Map<FeatureId, ShapeBackend>();
     const diagnostics: CompilerDiagnostic[] = [];
     const health = new Map<FeatureId, 'healthy' | 'warning' | 'error'>();
@@ -575,5 +582,37 @@ export class RecomputeEngine {
       mechanism: 'unverified',
       mechanismFailures: [],
     };
+  }
+
+  async run(records: readonly FeatureRecord[], opts?: RecomputeOptions): Promise<RecomputeResult> {
+    try {
+      return await this.runPass(records, opts);
+    } catch (e) {
+      if (!isOcctWasmPoisoned(e)) throw e;
+      await resetOcct();
+      try {
+        return await this.runPass(records, opts);
+      } catch (retryErr) {
+        if (!isOcctWasmPoisoned(retryErr)) throw retryErr;
+        const message =
+          `${WASM_POISON_MARKER}: ${describeOcctThrow(retryErr)}. ` +
+          'OCCT was reset and the full recompute retried; still failing. Restart the host process.';
+        return {
+          shapes: new Map(),
+          diagnostics: [{
+            target: this.lowerer.target,
+            code: 'recompute.lowering.exception',
+            severity: 'error',
+            message,
+            hint:
+              'The OCCT wasm heap was corrupted (often by an embind double-free). ' +
+              'Reset + retry did not recover; restart the Node/export process or reload Studio.',
+          }],
+          health: new Map(),
+          mechanism: 'unverified',
+          mechanismFailures: [],
+        };
+      }
+    }
   }
 }

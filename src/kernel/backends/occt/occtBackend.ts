@@ -23,6 +23,7 @@ import { sceneToWorldFrameParts } from './sceneToWorldFrame';
 import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../properties/massProperties';
 
 export { initOcct, type InitOcctOptions } from './backendInit';
+export { resetOcct, registerOcctResetHook, withOcctPoisonRecovery } from './backendInit';
 export { meshShapeForExport } from './backendMesh';
 
 type ReplicadEdge = replicad.Edge;
