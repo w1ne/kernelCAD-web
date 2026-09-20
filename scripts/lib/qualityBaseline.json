@@ -43,12 +43,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/listAssemblies.ts",
-    "symbol": "Function 'summarizeAssemblies'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/mcp/tools/listFaces.ts",
     "symbol": "Async function 'listFacesTool'",
     "value": 16
