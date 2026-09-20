@@ -91,12 +91,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/vision/opencvBackend.ts",
-    "symbol": "Async function 'extractSilhouettePolyline'",
-    "value": 16
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/meshing.ts",
     "symbol": "Function 'tryExtractPlaneFromPlaneRecord'",
     "value": 16
