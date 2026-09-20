@@ -133,12 +133,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/viewer/overlays/useMarkingCanvas.ts",
-    "symbol": "Function 'useMarkingCanvas'",
-    "value": 119
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/context/geometry/useRelowerSubscription.ts",
     "symbol": "Function 'useRelowerSubscription'",
     "value": 102
