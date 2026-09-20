@@ -538,11 +538,5 @@
     "file": "src/studio/routes/me.tsx",
     "symbol": "Function 'MePage'",
     "value": 115
-  },
-  {
-    "rule": "max-lines-per-function",
-    "file": "src/studio/tabs/SceneTab.tsx",
-    "symbol": "Function 'SceneTab'",
-    "value": 138
   }
 ]
