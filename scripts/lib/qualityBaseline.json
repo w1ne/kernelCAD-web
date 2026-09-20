@@ -373,12 +373,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/naming/resolveFaceRef.ts",
-    "symbol": "Function 'resolveCreated'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/apiSurfaceMethods.ts",
     "symbol": "Method 'variableSweep'",
     "value": 17
