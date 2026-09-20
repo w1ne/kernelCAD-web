@@ -85,12 +85,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/components/Layout/Header.tsx",
-    "symbol": "Function 'Header'",
-    "value": 117
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/components/Layout/UserMenu.tsx",
     "symbol": "Function 'UserMenuInner'",
     "value": 122
