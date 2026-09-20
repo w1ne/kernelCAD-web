@@ -145,12 +145,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/features-ui/ai/AIAssistant.tsx",
-    "symbol": "Function 'AIAssistant'",
-    "value": 101
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/hooks/useRecomputeResult.ts",
     "symbol": "Function 'useRecomputeResult'",
     "value": 103
