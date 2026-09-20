@@ -20,6 +20,64 @@ export interface ProjectClaimControlProps {
   onUpgrade: () => void;
 }
 
+function SavedBadge(): ReactNode {
+  return <span className="text-[11px] text-green-500 font-mono">Saved ✓</span>;
+}
+
+function SignInToSaveButton(): ReactNode {
+  return (
+    <SignInButton
+      redirectTo={typeof window !== 'undefined' ? window.location.href : undefined}
+      className={BTN_CLASS}
+    >
+      Sign in to save
+    </SignInButton>
+  );
+}
+
+function SaveToProjectsButton({ claiming, onClaim }: {
+  claiming: boolean;
+  onClaim: () => void;
+}): ReactNode {
+  return (
+    <button type="button" onClick={onClaim} disabled={claiming} className={BTN_CLASS}>
+      {claiming ? 'Saving…' : 'Save to my projects'}
+    </button>
+  );
+}
+
+function UpgradeButton({ onUpgrade }: { onUpgrade: () => void }): ReactNode {
+  return (
+    <button type="button" onClick={onUpgrade} className={BTN_CLASS} title="Private projects require Pro">
+      Upgrade to keep private
+    </button>
+  );
+}
+
+function PrivacyToggleButton({ isPrivate, privacyBusy, onTogglePrivacy }: {
+  isPrivate: boolean;
+  privacyBusy: boolean;
+  onTogglePrivacy: () => void;
+}): ReactNode {
+  // Icon-only below `md`: spelled out, this button plus Share crowds the
+  // project title off a phone-width header entirely.
+  return (
+    <button
+      type="button"
+      onClick={onTogglePrivacy}
+      disabled={privacyBusy}
+      className={BTN_CLASS}
+      aria-label={isPrivate ? 'Make public' : 'Make private'}
+      title={isPrivate ? 'Make public' : 'Make private'}
+    >
+      {isPrivate ? <Globe size={12} /> : <Lock size={12} />}
+      <span className="hidden md:inline">
+        {privacyBusy ? '…' : isPrivate ? 'Make public' : 'Make private'}
+      </span>
+    </button>
+  );
+}
+
 /** Claim/save, owner privacy toggle, and upgrade CTA rendered in the /p/:slug
  *  header's right slot. */
 export function ProjectClaimControl({
@@ -41,43 +99,20 @@ export function ProjectClaimControl({
 
   let claimControl: ReactNode = null;
   if (claimed) {
-    claimControl = <span className="text-[11px] text-green-500 font-mono">Saved ✓</span>;
+    claimControl = <SavedBadge />;
   } else if (isAnonymous && !session) {
-    claimControl = (
-      <SignInButton
-        redirectTo={typeof window !== 'undefined' ? window.location.href : undefined}
-        className={BTN_CLASS}
-      >
-        Sign in to save
-      </SignInButton>
-    );
+    claimControl = <SignInToSaveButton />;
   } else if (isAnonymous && session) {
-    claimControl = (
-      <button type="button" onClick={onClaim} disabled={claiming} className={BTN_CLASS}>
-        {claiming ? 'Saving…' : 'Save to my projects'}
-      </button>
-    );
+    claimControl = <SaveToProjectsButton claiming={claiming} onClaim={onClaim} />;
   } else if (isOwner) {
     claimControl = upgradeNeeded ? (
-      <button type="button" onClick={onUpgrade} className={BTN_CLASS} title="Private projects require Pro">
-        Upgrade to keep private
-      </button>
+      <UpgradeButton onUpgrade={onUpgrade} />
     ) : (
-      // Icon-only below `md`: spelled out, this button plus Share crowds the
-      // project title off a phone-width header entirely.
-      <button
-        type="button"
-        onClick={onTogglePrivacy}
-        disabled={privacyBusy}
-        className={BTN_CLASS}
-        aria-label={isPrivate ? 'Make public' : 'Make private'}
-        title={isPrivate ? 'Make public' : 'Make private'}
-      >
-        {isPrivate ? <Globe size={12} /> : <Lock size={12} />}
-        <span className="hidden md:inline">
-          {privacyBusy ? '…' : isPrivate ? 'Make public' : 'Make private'}
-        </span>
-      </button>
+      <PrivacyToggleButton
+        isPrivate={isPrivate}
+        privacyBusy={privacyBusy}
+        onTogglePrivacy={onTogglePrivacy}
+      />
     );
   }
 

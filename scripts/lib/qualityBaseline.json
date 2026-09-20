@@ -775,12 +775,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/studio/routes/-ProjectClaimControl.tsx",
-    "symbol": "Function 'ProjectClaimControl'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/studio/routes/GenerateHero.tsx",
     "symbol": "Function 'GenerateHero'",
     "value": 16
