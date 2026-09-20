@@ -277,12 +277,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/backendMesh.ts",
-    "symbol": "Function 'meshShapeForExport'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/kernel/backends/occt/drawingAnnotations.ts",
     "symbol": "Arrow function",
     "value": 17
