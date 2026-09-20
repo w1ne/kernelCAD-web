@@ -402,35 +402,56 @@ export async function resolveSolvedLoads(
 ): Promise<{ loads: ResolvedSolvedLoad[]; referencePoint: Vec3 } | string> {
   const loads: ResolvedSolvedLoad[] = [];
   for (const load of useCase.loads) {
-    if (load.force !== undefined && !isFiniteVec3(load.force)) {
-      return `Declared force load on '${load.part}' is not a finite Vec3.`;
-    }
-    if (load.torque !== undefined && !isFiniteVec3(load.torque)) {
-      return `Declared torque load on '${load.part}' is not a finite Vec3.`;
-    }
-    let pointWorldMm: Vec3 | undefined;
-    if (load.at !== undefined) {
-      const parsed = safeParseConnectorRef(load.at);
-      if (parsed?.partName !== certificate.heldPart) {
-        return `Load application connector '${load.at}' does not belong to held part '${certificate.heldPart}'.`;
-      }
-      const resolved = await resolveConnectorPoint(arm, transforms, load.at);
-      if (typeof resolved === 'string') return resolved;
-      pointWorldMm = resolved.pointWorldMm;
-    } else if (hasNonZeroVec(load.force)) {
-      return `Force load on '${load.part}' has no application connector at the certified pose.`;
-    }
-    loads.push({
-      force: load.force === undefined ? [0, 0, 0] : copyVec(load.force),
-      torque: load.torque === undefined ? [0, 0, 0] : copyVec(load.torque),
-      ...(pointWorldMm === undefined ? {} : { pointWorldMm }),
-    });
+    const resolved = await resolveSolvedLoad(load, arm, transforms, certificate.heldPart);
+    if (typeof resolved === 'string') return resolved;
+    loads.push(resolved);
   }
   const referencePoint = loads.find((load) => load.pointWorldMm !== undefined)?.pointWorldMm;
   if (referencePoint === undefined) {
     return `Held part '${certificate.heldPart}' has no resolved load application connector.`;
   }
   return { loads, referencePoint };
+}
+
+async function resolveSolvedLoad(
+  load: PhysicalUseCaseRecord['loads'][number],
+  arm: Assembly,
+  transforms: ReadonlyMap<string, Transform>,
+  heldPart: string,
+): Promise<ResolvedSolvedLoad | string> {
+  if (load.force !== undefined && !isFiniteVec3(load.force)) {
+    return `Declared force load on '${load.part}' is not a finite Vec3.`;
+  }
+  if (load.torque !== undefined && !isFiniteVec3(load.torque)) {
+    return `Declared torque load on '${load.part}' is not a finite Vec3.`;
+  }
+  const pointWorldMm = await resolveSolvedLoadPoint(load, arm, transforms, heldPart);
+  if (typeof pointWorldMm === 'string') return pointWorldMm;
+  return {
+    force: load.force === undefined ? [0, 0, 0] : copyVec(load.force),
+    torque: load.torque === undefined ? [0, 0, 0] : copyVec(load.torque),
+    ...(pointWorldMm === undefined ? {} : { pointWorldMm }),
+  };
+}
+
+async function resolveSolvedLoadPoint(
+  load: PhysicalUseCaseRecord['loads'][number],
+  arm: Assembly,
+  transforms: ReadonlyMap<string, Transform>,
+  heldPart: string,
+): Promise<Vec3 | undefined | string> {
+  if (load.at !== undefined) {
+    const parsed = safeParseConnectorRef(load.at);
+    if (parsed?.partName !== heldPart) {
+      return `Load application connector '${load.at}' does not belong to held part '${heldPart}'.`;
+    }
+    const resolved = await resolveConnectorPoint(arm, transforms, load.at);
+    if (typeof resolved === 'string') return resolved;
+    return resolved.pointWorldMm;
+  } else if (hasNonZeroVec(load.force)) {
+    return `Force load on '${load.part}' has no application connector at the certified pose.`;
+  }
+  return undefined;
 }
 
 export function computeHeldNetWrench(
