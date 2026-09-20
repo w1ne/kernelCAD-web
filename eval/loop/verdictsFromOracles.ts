@@ -39,6 +39,8 @@ export function verdictsFromOracles(evaluateResult: EvaluateLike, interferenceRe
         ok: false,
         code: 'interference.overlap',
         message: `${pair.partA} overlaps ${pair.partB} by ${Math.round(pair.volumeMm3)} mm³`,
+        hint:
+          'Clear the overlap: shorten or offset the mating feature along its insertion axis, add clearance, or move the part. Target zero intersection volume for every listed pair.',
         margin: pair.volumeMm3,
         locus: `${pair.partA}∩${pair.partB}`,
       });

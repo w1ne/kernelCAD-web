@@ -15,6 +15,7 @@ describe('verdictsFromOracles', () => {
     expect(interference!.margin).toBe(42);
     expect(interference!.locus).toBe('shade∩beam');
     expect(interference!.code).toBe('interference.overlap');
+    expect(interference!.hint).toMatch(/clearance/i);
   });
 
   it('surfaces interference diagnostics when failing with no pair detail (CLI exception)', () => {
