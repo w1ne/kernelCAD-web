@@ -1,7 +1,12 @@
 # Sweep Prompt Compaction — design
 
-Status: design approved 2026-09-20. Drives
-`docs/superpowers/plans/2026-09-20-sweep-prompt-compaction.md`.
+Status: implemented and **A/B tested 2026-09-20 — not adopted**. Paired result
+on the 58-case attribution subset (same driver/conditions): full 181 KB prompt
+16/58 sandbox, `v2_lean` (57 KB) 12/58, `v1` (76 KB) 10/58. Compaction gained
+4–5 cases but lost 10–12, clustered on detail-heavy models (pegboards, pen
+holders, combs, CNC tables). The presets and builder ship as opt-in tooling
+(`--prompt-preset`), default remains `full`. Evidence:
+kernelCAD-private runbook §7.
 
 ## Evidence
 
