@@ -427,12 +427,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/assemblyFeatureRecords.ts",
-    "symbol": "Function 'validateSolvedAssemblyPoses'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/assemblyMateCapacity.ts",
     "symbol": "Function 'validateMateCapacityOptions'",
     "value": 17
