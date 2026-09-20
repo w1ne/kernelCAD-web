@@ -123,14 +123,27 @@ export interface CircleFit {
 export function fitCircle2D(xy: ArrayLike<number>, start = 0, end = xy.length / 2): CircleFit | null {
   const n = end - start;
   if (n < 3) return null;
+  const { mx, my } = centroid2D(xy, start, end);
+  const seed = kasaCircle(xy, start, end, mx, my);
+  if (!seed) return null;
+  const { cx, cy, r } = refineCircle(xy, start, end, mx, my, seed.cx, seed.cy, seed.r);
+  if (!(r > 0) || !Number.isFinite(r)) return null;
+  return { cx: cx + mx, cy: cy + my, r, ...circleResiduals(xy, start, end, mx, my, cx, cy, r, n) };
+}
+
+function centroid2D(xy: ArrayLike<number>, start: number, end: number): { mx: number; my: number } {
+  const n = end - start;
   let mx = 0;
   let my = 0;
   for (let i = start; i < end; i++) {
     mx += xy[2 * i];
     my += xy[2 * i + 1];
   }
-  mx /= n;
-  my /= n;
+  return { mx: mx / n, my: my / n };
+}
+
+function kasaCircle(xy: ArrayLike<number>, start: number, end: number, mx: number, my: number): { cx: number; cy: number; r: number } | null {
+  const n = end - start;
   // Kåsa: minimise Σ (x² + y² + D x + E y + F)².
   let sxx = 0, sxy = 0, syy = 0, sx = 0, sy = 0, sz = 0, sxz = 0, syz = 0;
   for (let i = start; i < end; i++) {
@@ -150,11 +163,26 @@ export function fitCircle2D(xy: ArrayLike<number>, start = 0, end = xy.length / 
     [-sxz, -syz, -sz],
   );
   if (!sol) return null;
-  let cx = -sol[0] / 2;
-  let cy = -sol[1] / 2;
+  const cx = -sol[0] / 2;
+  const cy = -sol[1] / 2;
   const r2 = cx * cx + cy * cy - sol[2];
   if (!(r2 > 0) || !Number.isFinite(r2)) return null;
-  let r = Math.sqrt(r2);
+  return { cx, cy, r: Math.sqrt(r2) };
+}
+
+function refineCircle(
+  xy: ArrayLike<number>,
+  start: number,
+  end: number,
+  mx: number,
+  my: number,
+  cx0: number,
+  cy0: number,
+  r0: number,
+): { cx: number; cy: number; r: number } {
+  let cx = cx0;
+  let cy = cy0;
+  let r = r0;
   // Gauss-Newton on geometric residuals d_i = |p_i − c| − r.
   for (let iter = 0; iter < 20; iter++) {
     let j00 = 0, j01 = 0, j02 = 0, j11 = 0, j12 = 0, j22 = 0, g0 = 0, g1 = 0, g2 = 0;
@@ -184,7 +212,20 @@ export function fitCircle2D(xy: ArrayLike<number>, start = 0, end = xy.length / 
     r += step[2];
     if (Math.abs(step[0]) + Math.abs(step[1]) + Math.abs(step[2]) < 1e-12 * Math.max(1, r)) break;
   }
-  if (!(r > 0) || !Number.isFinite(r)) return null;
+  return { cx, cy, r };
+}
+
+function circleResiduals(
+  xy: ArrayLike<number>,
+  start: number,
+  end: number,
+  mx: number,
+  my: number,
+  cx: number,
+  cy: number,
+  r: number,
+  n: number,
+): { rms: number; maxResidual: number } {
   let sumSq = 0;
   let maxResidual = 0;
   for (let i = start; i < end; i++) {
@@ -192,7 +233,7 @@ export function fitCircle2D(xy: ArrayLike<number>, start = 0, end = xy.length / 
     sumSq += res * res;
     if (res > maxResidual) maxResidual = res;
   }
-  return { cx: cx + mx, cy: cy + my, r, rms: Math.sqrt(sumSq / n), maxResidual };
+  return { rms: Math.sqrt(sumSq / n), maxResidual };
 }
 
 export interface LineFit {

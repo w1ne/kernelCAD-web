@@ -32,30 +32,47 @@ export async function* parsePreviewStream(
   }
 }
 
-function parseBlock(raw: string): PreviewEvent | null {
+function parseSseFields(raw: string): { name: string; dataLine: string } {
   let name = '', dataLine = '';
   for (const line of raw.split('\n')) {
     if (line.startsWith('event: ')) name = line.slice(7).trim();
     else if (line.startsWith('data: ')) dataLine = line.slice(6);
   }
+  return { name, dataLine };
+}
+
+function parseStatusEvent(p: Record<string, unknown>): PreviewEvent {
+  return { kind: 'status', progress: Number(p['progress'] ?? 0) };
+}
+
+function parsePreviewDoneEvent(p: Record<string, unknown>): PreviewEvent {
+  return {
+    kind: 'preview_done',
+    glbUrl: typeof p['glbUrl'] === 'string' ? p['glbUrl'] : '',
+    costUsd: typeof p['costUsd'] === 'number' ? p['costUsd'] : null,
+    taskId: typeof p['taskId'] === 'string' ? p['taskId'] : '',
+    renderImageUrl: typeof p['renderImageUrl'] === 'string' ? p['renderImageUrl'] : null,
+    proportions: Array.isArray(p['proportions']) ? (p['proportions'] as number[]) : null,
+  };
+}
+
+function parseErrorEvent(p: Record<string, unknown>): PreviewEvent {
+  return {
+    kind: 'error',
+    code: typeof p['code'] === 'string' ? p['code'] : 'error',
+    message: typeof p['message'] === 'string' ? p['message'] : '',
+  };
+}
+
+function parseBlock(raw: string): PreviewEvent | null {
+  const { name, dataLine } = parseSseFields(raw);
   if (!name || !dataLine) return null;
   let p: Record<string, unknown>;
   try { p = JSON.parse(dataLine); } catch { return null; }
   switch (name) {
-    case 'status': return { kind: 'status', progress: Number(p['progress'] ?? 0) };
-    case 'preview_done': return {
-      kind: 'preview_done',
-      glbUrl: typeof p['glbUrl'] === 'string' ? p['glbUrl'] : '',
-      costUsd: typeof p['costUsd'] === 'number' ? p['costUsd'] : null,
-      taskId: typeof p['taskId'] === 'string' ? p['taskId'] : '',
-      renderImageUrl: typeof p['renderImageUrl'] === 'string' ? p['renderImageUrl'] : null,
-      proportions: Array.isArray(p['proportions']) ? (p['proportions'] as number[]) : null,
-    };
-    case 'error': return {
-      kind: 'error',
-      code: typeof p['code'] === 'string' ? p['code'] : 'error',
-      message: typeof p['message'] === 'string' ? p['message'] : '',
-    };
+    case 'status': return parseStatusEvent(p);
+    case 'preview_done': return parsePreviewDoneEvent(p);
+    case 'error': return parseErrorEvent(p);
     default: return null;
   }
 }

@@ -724,6 +724,40 @@ function applySolvedMateFk(
   return true;
 }
 
+type PartPlacementMeta = {
+  at?: { x?: { evaluated?: number }; y?: { evaluated?: number }; z?: { evaluated?: number } };
+  placedBy?: unknown;
+  partName?: string;
+};
+
+/** Read the authored `at:` vec3; defaults every missing coordinate to 0. */
+function readPartAtVector(partAt: PartPlacementMeta['at']): [number, number, number] {
+  const ax = partAt?.x?.evaluated ?? 0;
+  const ay = partAt?.y?.evaluated ?? 0;
+  const az = partAt?.z?.evaluated ?? 0;
+  return [ax, ay, az];
+}
+
+function emitPlacementIgnoredByMateFk(
+  ctx: LowerContext,
+  partRec: FeatureRecord,
+  partMeta: PartPlacementMeta | undefined,
+  partId: FeatureId,
+  ax: number,
+  ay: number,
+  az: number,
+): void {
+  const partName = partMeta?.partName ?? partId;
+  ctx.diagnostics.push({
+    target: ctx.target,
+    code: 'assembly.placement-ignored-by-mate-fk',
+    featureId: partRec.id,
+    severity: 'info',
+    message: `assembly.part '${partName}' has both an authored \`at:\` placement (${ax.toFixed(2)}, ${ay.toFixed(2)}, ${az.toFixed(2)}) AND a mate-FK-derived pose; the \`at:\` is being ignored.`,
+    hint: "Remove the `at:` and let the mate decide the pose, or place the part's local frame so its mate connector sits at the origin (mate FK composes parent_world ∘ trans(parent_conn) ∘ joint ∘ trans(-child_conn)).",
+  });
+}
+
 /**
  * Exp-B four-bolt-flange surfaced this: when a part has an authored `at:` AND
  * is positioned by mate FK, the `at:` is silently dropped — the agent only
@@ -743,27 +777,12 @@ function warnPlacementIgnoredByMateFk(
   // (the placedBy/connect path leaves `at` synthesized from the
   // connector pair — that's not a conflict, it's how connect
   // was designed; skip those).
-  const partMeta = partRec?.metadata as
-    | { at?: { x?: { evaluated?: number }; y?: { evaluated?: number }; z?: { evaluated?: number } };
-        placedBy?: unknown;
-        partName?: string }
-    | undefined;
-  const partAt = partMeta?.at;
-  const ax = partAt?.x?.evaluated ?? 0;
-  const ay = partAt?.y?.evaluated ?? 0;
-  const az = partAt?.z?.evaluated ?? 0;
+  const partMeta = partRec?.metadata as PartPlacementMeta | undefined;
+  const [ax, ay, az] = readPartAtVector(partMeta?.at);
   const atIsNonTrivial = Math.abs(ax) + Math.abs(ay) + Math.abs(az) > 1e-6;
   const placedByConnect = partMeta?.placedBy !== undefined;
   if (partRec && atIsNonTrivial && !placedByConnect) {
-    const partName = partMeta?.partName ?? partId;
-    ctx.diagnostics.push({
-      target: ctx.target,
-      code: 'assembly.placement-ignored-by-mate-fk',
-      featureId: partRec.id,
-      severity: 'info',
-      message: `assembly.part '${partName}' has both an authored \`at:\` placement (${ax.toFixed(2)}, ${ay.toFixed(2)}, ${az.toFixed(2)}) AND a mate-FK-derived pose; the \`at:\` is being ignored.`,
-      hint: "Remove the `at:` and let the mate decide the pose, or place the part's local frame so its mate connector sits at the origin (mate FK composes parent_world ∘ trans(parent_conn) ∘ joint ∘ trans(-child_conn)).",
-    });
+    emitPlacementIgnoredByMateFk(ctx, partRec, partMeta, partId, ax, ay, az);
   }
 }
 

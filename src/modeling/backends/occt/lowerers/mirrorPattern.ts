@@ -74,6 +74,107 @@ export function lowerMirror(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
   return built(shape);
 }
 
+type PatternInstance = { i: number; applyTo: (s: OcctBackend) => OcctBackend };
+
+function buildPatternInstances(pattern: PatternSpec): PatternInstance[] {
+  // --- Instance enumeration -------------------------------------------
+  // Build an iterator yielding (i, transformFn) pairs covering all
+  // count-1 derived instances. Instance 0 = base (no transform applied
+  // beyond retag). Order: linear/circular walk i=1..count-1; grid walks
+  // (x,y) skipping (0,0) in (x then y) order. We preserve the (x,y)
+  // order so historyMap entries match an externally predictable instance
+  // numbering: i = x * y.count + y, skipping (0,0).
+  const instances: PatternInstance[] = [];
+  if (pattern.kind === 'linear') {
+    for (let i = 1; i < pattern.count; i++) {
+      const [dx, dy, dz] = pattern.direction;
+      const s = pattern.spacing * i;
+      instances.push({
+        i,
+        applyTo: (sh) => sh.translate(dx * s, dy * s, dz * s),
+      });
+    }
+  } else if (pattern.kind === 'circular') {
+    for (let i = 1; i < pattern.count; i++) {
+      const ang = (pattern.angleDeg / pattern.count) * i;
+      instances.push({
+        i,
+        applyTo: (sh) => sh.rotate(pattern.axis, ang),
+      });
+    }
+  } else {
+    // grid: instance index = x * y.count + y; skip (0,0).
+    for (let x = 0; x < pattern.x.count; x++) {
+      for (let y = 0; y < pattern.y.count; y++) {
+        if (x === 0 && y === 0) continue;
+        const idx = x * pattern.y.count + y;
+        const tx =
+          pattern.x.direction[0] * pattern.x.spacing * x +
+          pattern.y.direction[0] * pattern.y.spacing * y;
+        const ty =
+          pattern.x.direction[1] * pattern.x.spacing * x +
+          pattern.y.direction[1] * pattern.y.spacing * y;
+        const tz =
+          pattern.x.direction[2] * pattern.x.spacing * x +
+          pattern.y.direction[2] * pattern.y.spacing * y;
+        instances.push({ i: idx, applyTo: (sh) => sh.translate(tx, ty, tz) });
+      }
+    }
+  }
+  return instances;
+}
+
+function fusePatternInstances(
+  base: OcctBackend,
+  sourceId: string,
+  instances: readonly PatternInstance[],
+): OcctBackend {
+  // --- Cumulative fuse with retagged-per-instance history --------------
+
+  // Instance 0 — base, no transform. Retag its lineage entries.
+  // We reuse `base`'s TopoDS directly (no clone), so its face hashes
+  // match `tagged0`'s keys. Subsequent fuses build new OcctBackends so
+  // base remains untouched.
+  const base0Map = (base.historyMap ?? new Map()) as HistoryMap;
+  const tagged0 = retagInstance(base0Map, sourceId, 0);
+  let cumulative = new OcctBackend(
+    base.getReplicadShape() as replicad.Shape3D,
+    base.kind,
+    tagged0,
+  );
+
+  // Hashes are read from `base` directly (not a clone). Cloning may
+  // refresh TShape pointers and shift face hashes; reading from `base`
+  // keeps them aligned with `base.historyMap`. The transform is applied
+  // to a clone so it doesn't mutate `base`.
+  const baseInputHashes = base.faceHashes();
+  for (const inst of instances) {
+    // Clone base, apply transform; propagate history through transform.
+    const cloneOfBase = base.clone();
+    const transformed = inst.applyTo(cloneOfBase);
+    const outputHashes = transformed.faceHashes();
+    let transformedMap: HistoryMap;
+    if (base.historyMap && outputHashes.length === baseInputHashes.length) {
+      transformedMap = propagateTransformHistory(base.historyMap, baseInputHashes, outputHashes);
+    } else {
+      transformedMap = new Map();   // defensive — no history to propagate
+    }
+    const taggedInstanceMap = retagInstance(transformedMap, sourceId, inst.i);
+    const instanceBackend = new OcctBackend(
+      transformed.getReplicadShape() as replicad.Shape3D,
+      base.kind,
+      taggedInstanceMap,
+    );
+    // History-aware fuse — same pattern as `case 'boolean':`.
+    const fused = fuseWithHistory(cumulative, instanceBackend);
+    const newMap = mergeBooleanHistory(cumulative.historyMap, instanceBackend.historyMap, fused);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wrapped = replicad.cast(fused.shape as any) as replicad.Shape3D;
+    cumulative = new OcctBackend(wrapped, base.kind, newMap);
+  }
+  return cumulative;
+}
+
 /** `pattern` — linear / circular / grid instancing, fused cumulatively with
  *  per-instance lineage retagging. */
 export function lowerPattern(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
@@ -123,96 +224,7 @@ export function lowerPattern(ctx: LowerContext, r: FeatureRecord): LowerOutcome 
   // references. We retag every lineage entry whose featureId matches it.
   const sourceId = (r.inputs.base as { kind: 'feature'; id: string }).id;
 
-  // --- Instance enumeration -------------------------------------------
-  // Build an iterator yielding (i, transformFn) pairs covering all
-  // count-1 derived instances. Instance 0 = base (no transform applied
-  // beyond retag). Order: linear/circular walk i=1..count-1; grid walks
-  // (x,y) skipping (0,0) in (x then y) order. We preserve the (x,y)
-  // order so historyMap entries match an externally predictable instance
-  // numbering: i = x * y.count + y, skipping (0,0).
-
-  type Instance = { i: number; applyTo: (s: OcctBackend) => OcctBackend };
-  const instances: Instance[] = [];
-  if (pattern.kind === 'linear') {
-    for (let i = 1; i < pattern.count; i++) {
-      const [dx, dy, dz] = pattern.direction;
-      const s = pattern.spacing * i;
-      instances.push({
-        i,
-        applyTo: (sh) => sh.translate(dx * s, dy * s, dz * s),
-      });
-    }
-  } else if (pattern.kind === 'circular') {
-    for (let i = 1; i < pattern.count; i++) {
-      const ang = (pattern.angleDeg / pattern.count) * i;
-      instances.push({
-        i,
-        applyTo: (sh) => sh.rotate(pattern.axis, ang),
-      });
-    }
-  } else {
-    // grid: instance index = x * y.count + y; skip (0,0).
-    for (let x = 0; x < pattern.x.count; x++) {
-      for (let y = 0; y < pattern.y.count; y++) {
-        if (x === 0 && y === 0) continue;
-        const idx = x * pattern.y.count + y;
-        const tx =
-          pattern.x.direction[0] * pattern.x.spacing * x +
-          pattern.y.direction[0] * pattern.y.spacing * y;
-        const ty =
-          pattern.x.direction[1] * pattern.x.spacing * x +
-          pattern.y.direction[1] * pattern.y.spacing * y;
-        const tz =
-          pattern.x.direction[2] * pattern.x.spacing * x +
-          pattern.y.direction[2] * pattern.y.spacing * y;
-        instances.push({ i: idx, applyTo: (sh) => sh.translate(tx, ty, tz) });
-      }
-    }
-  }
-
-  // --- Cumulative fuse with retagged-per-instance history --------------
-
-  // Instance 0 — base, no transform. Retag its lineage entries.
-  // We reuse `base`'s TopoDS directly (no clone), so its face hashes
-  // match `tagged0`'s keys. Subsequent fuses build new OcctBackends so
-  // base remains untouched.
-  const base0Map = (base.historyMap ?? new Map()) as HistoryMap;
-  const tagged0 = retagInstance(base0Map, sourceId, 0);
-  let cumulative = new OcctBackend(
-    base.getReplicadShape() as replicad.Shape3D,
-    base.kind,
-    tagged0,
-  );
-
-  // Hashes are read from `base` directly (not a clone). Cloning may
-  // refresh TShape pointers and shift face hashes; reading from `base`
-  // keeps them aligned with `base.historyMap`. The transform is applied
-  // to a clone so it doesn't mutate `base`.
-  const baseInputHashes = base.faceHashes();
-  for (const inst of instances) {
-    // Clone base, apply transform; propagate history through transform.
-    const cloneOfBase = base.clone();
-    const transformed = inst.applyTo(cloneOfBase);
-    const outputHashes = transformed.faceHashes();
-    let transformedMap: HistoryMap;
-    if (base.historyMap && outputHashes.length === baseInputHashes.length) {
-      transformedMap = propagateTransformHistory(base.historyMap, baseInputHashes, outputHashes);
-    } else {
-      transformedMap = new Map();   // defensive — no history to propagate
-    }
-    const taggedInstanceMap = retagInstance(transformedMap, sourceId, inst.i);
-    const instanceBackend = new OcctBackend(
-      transformed.getReplicadShape() as replicad.Shape3D,
-      base.kind,
-      taggedInstanceMap,
-    );
-    // History-aware fuse — same pattern as `case 'boolean':`.
-    const fused = fuseWithHistory(cumulative, instanceBackend);
-    const newMap = mergeBooleanHistory(cumulative.historyMap, instanceBackend.historyMap, fused);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const wrapped = replicad.cast(fused.shape as any) as replicad.Shape3D;
-    cumulative = new OcctBackend(wrapped, base.kind, newMap);
-  }
-  const shape: ShapeBackend = cumulative;
+  const instances = buildPatternInstances(pattern);
+  const shape: ShapeBackend = fusePatternInstances(base, sourceId, instances);
   return built(shape);
 }

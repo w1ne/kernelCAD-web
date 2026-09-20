@@ -330,38 +330,37 @@ export function buildFaceBook(nb: number, bandBody: Region[][], levels: number[]
     if (below.length > 0) book.addDifference('Z', levels[L], below, above);
     if (above.length > 0) book.addDifference('-Z', levels[L], above, below);
   }
-  if (body.kind === 'extrude') {
-    for (const blk of body.blocks) {
-      for (const loop of blk.loops) {
-        if (loop.kind !== 'path') continue;
-        for (const p of loop.prims) {
-          if (p.kind !== 'line') continue;
-          const dx = p.b[0] - p.a[0];
-          const dy = p.b[1] - p.a[1];
-          const len = Math.hypot(dx, dy);
-          if (len < 1e-9) continue;
-          let label: AxisLabel | undefined;
-          let level = 0;
-          let s0 = 0, s1 = 0;
-          if (Math.abs(dy) < 1e-9) {
-            label = dx > 0 ? '-Y' : 'Y';
-            level = p.a[1];
-            s0 = Math.min(p.a[0], p.b[0]);
-            s1 = Math.max(p.a[0], p.b[0]);
-          } else if (Math.abs(dx) < 1e-9) {
-            label = dy > 0 ? 'X' : '-X';
-            level = p.a[0];
-            s0 = Math.min(p.a[1], p.b[1]);
-            s1 = Math.max(p.a[1], p.b[1]);
-          }
-          if (!label) continue;
-          const rect = Float64Array.from([s0, blk.z0, s1, blk.z0, s1, blk.z1, s0, blk.z1]);
-          book.addDifference(label, level, [polygonRegion(rect)], []);
-        }
+  if (body.kind === 'extrude') addExtrudeSideWalls(book, body.blocks);
+  return book;
+}
+
+function addExtrudeSideWalls(book: FaceBook, blocks: ExtrudeBlockOut[]): void {
+  for (const blk of blocks) {
+    for (const loop of blk.loops) {
+      if (loop.kind !== 'path') continue;
+      for (const p of loop.prims) {
+        if (p.kind !== 'line') continue;
+        const wall = axisWall(p);
+        if (!wall) continue;
+        const rect = Float64Array.from([wall.s0, blk.z0, wall.s1, blk.z0, wall.s1, blk.z1, wall.s0, blk.z1]);
+        book.addDifference(wall.label, wall.level, [polygonRegion(rect)], []);
       }
     }
   }
-  return book;
+}
+
+function axisWall(p: Extract<ProfilePrim, { kind: 'line' }>): { label: AxisLabel; level: number; s0: number; s1: number } | undefined {
+  const dx = p.b[0] - p.a[0];
+  const dy = p.b[1] - p.a[1];
+  const len = Math.hypot(dx, dy);
+  if (len < 1e-9) return undefined;
+  if (Math.abs(dy) < 1e-9) {
+    return { label: dx > 0 ? '-Y' : 'Y', level: p.a[1], s0: Math.min(p.a[0], p.b[0]), s1: Math.max(p.a[0], p.b[0]) };
+  }
+  if (Math.abs(dx) < 1e-9) {
+    return { label: dy > 0 ? 'X' : '-X', level: p.a[0], s0: Math.min(p.a[1], p.b[1]), s1: Math.max(p.a[1], p.b[1]) };
+  }
+  return undefined;
 }
 
 /**
