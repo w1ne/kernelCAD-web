@@ -613,12 +613,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/capture/assemblyJoints.ts",
-    "symbol": "Function 'recordMate'",
-    "value": 20
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/capture/assemblyMateCapacity.ts",
     "symbol": "Function 'validateMateCapacityOptions'",
     "value": 17
