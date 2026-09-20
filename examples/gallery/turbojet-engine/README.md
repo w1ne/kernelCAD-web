@@ -137,6 +137,22 @@ idle machine with the command above (it starts its own vite). Note that
 `scripts/lint-demos.ts` checks media only for tagged modules, so it will not
 flag this until `v0.17.0` is tagged.
 
+### Post-merge status (2026-09-20)
+
+The branch was merged with `origin/develop` (477 commits: the `lowerers/`
+dispatch refactor and the sketch/occtBackend splits). The v0.17 twist features
+were ported onto the new architecture (`lowerers/loft.ts`,
+`lowerers/sketchExtrude.ts`) and re-verified: tsc clean, twist suites green,
+turbojet evaluate 276 features `OK`, skill/drift suites green, dist rebuilt.
+The previously deferred kernel gaps in this log were then closed on the merged
+tree: **#5** variableSweep intermediate stations (spine subdivision; t is the
+normalized curve parameter), **#6** spline-only revolve profiles, **#17**
+loft null tolerance, **#18** `twistAngle` on rect/circle/polygon/rounded-rect
+extrudes, **#19** rail-loft NURBS section `origin`, **#22** non-finite
+rotation guard. Remaining deferred entries are environmental/scale limits
+(render-inspect, validate-interference, heap, local imports, tsconfig
+coverage, jointCount display, lighting, spline pen contract).
+
 ## Gap log
 
 Every kernel/model friction found while building this artifact, with
@@ -148,8 +164,8 @@ reproduction and disposition. "Fixed" means the v0.17 diff on this branch.
 | 2 | NURBS loft sections dropped `planes[].origin` | NURBS section on a translated plane → `feature.empty-result` | lowerer placed every NURBS section at the world origin | **Fixed** (Task 3) |
 | 3 | `extrude({ twistAngle })` silently ignored | rect extrude with twist → straight prism | option parsed, never lowered | **Fixed** (Task 4): real twist + typed guards |
 | 4 | Skill docs advertised `{ normal, origin }` for loft planes | read `kernelcad-nurbs` SKILL.md pre-v0.17 | docs drifted from the shipped API | **Fixed** (Task 5): docs + `listApi` + cheat sheet |
-| 5 | `variableSweep` >2 stations unsupported | `variableSweep` with 3 stations → error | only t=0/t=1 are lowered | **Deferred**: `node dist/cli/index.js evaluate` on a 3-station variable sweep still fails; log-only in v0.17 |
-| 6 | `revolve` rejects spline-only profiles | revolve a 24-point spline torus → `feature.invalid-args` "no line/arc segments" | revolve lowerer needs line/arc segments | **Worked around in-model** (use `torus`); kernel-side support not added |
+| 5 | `variableSweep` >2 stations unsupported | `variableSweep` with 3 stations → error | only t=0/t=1 are lowered | **Fixed** (post-v0.17 working tree): the lowerer subdivides the spine at each intermediate station (`BRep_Tool.Curve_2` → `BRepBuilderAPI_MakeEdge_29` sub-edges with shared vertices → `BRepBuilderAPI_MakeWire`), then anchors the profile at the matched station vertex; a 3-station sweep builds. Coverage: `tests/unit/backends/occt/variableSweepLowerer.test.ts` (3/4-station bbox + validation) and `tests/integration/variableSweepEndToEnd.test.ts` (engine path) |
+| 6 | `revolve` rejects spline-only profiles | revolve a closed `spline`-only path → `feature.invalid-args` "no line/arc segments" | revolve lowerer counted only lineTo/tangentArc segments | **Fixed** (post-v0.17 working tree): all segment kinds accepted; axis check covers spline/NURBS/hermite points; tests in `tests/unit/backends/occt/revolveSplineProfile.test.ts` |
 | 7 | `.kcad.ts` scripts cannot import local TS modules | `import { K } from './lib.ts'` in a script → `ReferenceError: K is not defined` | imports are stripped before execution | **Deferred**: scratch/test reuse requires inline copies; caused duplicate helper code in `/tmp` probes |
 | 8 | No tsconfig project covers `examples/**/*.kcad.ts` | `tsc --noEmit -p tsconfig.app.json --listFilesOnly` shows 0 example files | examples are outside every project | **Deferred**: examples get eslint + runtime only |
 | 9 | `render inspect` impractical at 42 parts | `render inspect … --channels rgb,mask,depth,normals` ran >90 min, wrote no manifest; RGB-only >60 min | per-part/per-channel frame explosion | **Deferred**: use plain multi-view renders + `--hide`/`--section` |
@@ -161,8 +177,8 @@ reproduction and disposition. "Fixed" means the v0.17 diff on this branch.
 | 15 | Exterior render reads dark | full-engine RGB render with casing `#565d67`, later `#7b838d` | curved surfaces fall in shade under the default rig | **Style note**: use the cutaway/section for hero reads; beauty lighting is a future pass |
 | 16 | `path().spline` requires the first point to exactly repeat the pen position | spinner ogive spline without a duplicated tip point → `feature.path.spline.degenerate-points` | spline chaining contract | **Documented** (Task 10): duplicate the tip point; ergonomics minor |
 | 17 | `Sketch.loft` crashes on `opts = null` while `Sketch.extrude` tolerates it | `loft(others, null)` | inconsistent null handling | **Fixed** (pre-commit review): capture does `opts ??= {}` like extrude; regression test in `tests/unit/capture/loftTwistOptions.test.ts` |
-| 18 | `twistAngle` on rect/circle/polygon extrude records is ignored | extrude those profiles with `twistAngle` | only the spline/profile path lowers twist | **Deferred** (from Task 4 scope) |
-| 19 | Rail-guided lofts reject `rotationDeg` and ignore `planes[].origin` for NURBS sections | rail loft with rotation → lowering error | rail branch has no rotated-section support | **Deferred** (documented in the Task 5 truth pass) |
+| 18 | `twistAngle` on rect/circle/polygon extrude records is ignored | extrude those profiles with `twistAngle` | only the spline/profile path lowers twist | **Fixed** (post-v0.17 working tree): all four primitive builders accept and lower `twistAngle` with the same typed guards as `Sketch.extrude` (capture stores a `'deg'` param, backend twists about the profile origin, 0 keeps the legacy call). Coverage: `tests/unit/capture/extrudeTwistCapture.test.ts` (capture: default 0, ParamRef, unknown-key/non-finite rejection, all four kinds) and `tests/unit/backends/occt/extrudeTwist.test.ts` (backend + lowerer: 0 equals legacy, twist grows the bbox, non-finite → `feature.invalid-args`) |
+| 19 | Rail-guided lofts reject `rotationDeg` and ignore `planes[].origin` for NURBS sections | rail loft with rotation → lowering error | rail branch has no rotated-section support | **Rotation still rejected by design** (loud `feature.invalid-args`, rails follow the rails); **`origin` now applied to NURBS sections** (post-v0.17 working tree), regression test in `tests/unit/capture/loftWithRails.test.ts` |
 | 20 | Duplicate allowed-keys guard loops (loft vs extrude) | read `src/modeling/capture/sketch.ts` | two hand-rolled guards grew independently | **Deferred** (cosmetic) |
 | 21 | One kernel test flaked under parallel load | first `vitest run` (parallel) failed 1/513; `--no-file-parallelism` clean | known load-sensitive capture suite | **Workaround documented**: run the sweep serialized |
 | 22 | `buildNurbsSketchOnPlane` silently ignored non-finite `rotationDeg` | NURBS section with `rotationDeg: NaN` → section placed unrotated | truthiness check skipped `NaN` and fed non-finite values into `rotateSketchCommands` | **Fixed** (pre-commit review): now throws; test in `tests/unit/backends/occt/loftSectionRotation.test.ts` |
