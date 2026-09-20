@@ -225,23 +225,9 @@ function adoptFragments(
       const c = pool[ci];
       if (c.coverageRad < Math.PI / 2) continue;
       let tris = c.tris;
-      for (let i = planes.length - 1; i >= 0; i--) {
-        const p = planes[i];
-        if (p.area >= 0.02 * totalArea || !onSurface(c, p.tris)) continue;
-        tris = tris.concat(p.tris);
-        planes.splice(i, 1);
-      }
-      for (let i = freeform.length - 1; i >= 0; i--) {
-        if (!onSurface(c, freeform[i].tris)) continue;
-        tris = tris.concat(freeform[i].tris);
-        freeform.splice(i, 1);
-      }
-      for (let j = pool.length - 1; j > ci; j--) {
-        const other = pool[j];
-        if (other.area >= c.area || !onSurface(c, other.tris)) continue;
-        tris = tris.concat(other.tris);
-        pool.splice(j, 1);
-      }
+      tris = adoptSmallPlaneFragments(c, tris, planes, onSurface, totalArea);
+      tris = adoptFreeformFragments(c, tris, freeform, onSurface);
+      tris = adoptSmallerCylinderFragments(c, ci, tris, pool, onSurface);
       if (tris.length === c.tris.length) continue;
       const refit = fitCylinder(mesh, tris, Infinity, Infinity) ?? fitCylinder(mesh, tris, Infinity, Infinity, c.axis);
       if (refit) {
@@ -252,6 +238,52 @@ function adoptFragments(
     pool = mergeCoaxial(mesh, pool, tol);
   }
   return pool;
+}
+
+function adoptSmallPlaneFragments(
+  c: CylinderRegion,
+  tris: number[],
+  planes: PlaneRegion[],
+  onSurface: (c: CylinderRegion, tris: number[]) => boolean,
+  totalArea: number,
+): number[] {
+  for (let i = planes.length - 1; i >= 0; i--) {
+    const p = planes[i];
+    if (p.area >= 0.02 * totalArea || !onSurface(c, p.tris)) continue;
+    tris = tris.concat(p.tris);
+    planes.splice(i, 1);
+  }
+  return tris;
+}
+
+function adoptFreeformFragments(
+  c: CylinderRegion,
+  tris: number[],
+  freeform: FreeformRegion[],
+  onSurface: (c: CylinderRegion, tris: number[]) => boolean,
+): number[] {
+  for (let i = freeform.length - 1; i >= 0; i--) {
+    if (!onSurface(c, freeform[i].tris)) continue;
+    tris = tris.concat(freeform[i].tris);
+    freeform.splice(i, 1);
+  }
+  return tris;
+}
+
+function adoptSmallerCylinderFragments(
+  c: CylinderRegion,
+  ci: number,
+  tris: number[],
+  pool: CylinderRegion[],
+  onSurface: (c: CylinderRegion, tris: number[]) => boolean,
+): number[] {
+  for (let j = pool.length - 1; j > ci; j--) {
+    const other = pool[j];
+    if (other.area >= c.area || !onSurface(c, other.tris)) continue;
+    tris = tris.concat(other.tris);
+    pool.splice(j, 1);
+  }
+  return tris;
 }
 
 function vertex(mesh: IndexedMesh, v: number): V3 {

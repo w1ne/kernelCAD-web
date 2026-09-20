@@ -79,32 +79,32 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/reconstruct/segment.ts",
-    "symbol": "Function 'adoptFragments'",
+    "file": "src/kernel/backends/occt/meshing.ts",
+    "symbol": "Function 'tryExtractPlaneFromPlaneRecord'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/agent/script-runtime/exportDrawing.ts",
-    "symbol": "Async function 'exportSvgDrawing'",
+    "file": "src/kernel/backends/occt/meshing.ts",
+    "symbol": "Function 'tryExtractPlaneViaReplicadHelper'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/agent/vision/opencvBackend.ts",
-    "symbol": "Async function 'extractSilhouettePolyline'",
+    "file": "src/kernel/backends/occt/meshing.ts",
+    "symbol": "Function 'tryGetVolume'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/drawingAuto/placePhases.ts",
-    "symbol": "Function 'placeRadiusAndChamferNotes'",
+    "file": "src/kernel/backends/occt/sketchToDrawing.ts",
+    "symbol": "Function 'drawingForLoop'",
     "value": 16
   },
   {
     "rule": "complexity",
-    "file": "src/kernel/backends/occt/edgeSelection.ts",
-    "symbol": "Function 'resolveEdgesRef'",
+    "file": "src/kernel/import/contourAssembly.ts",
+    "symbol": "Function 'chainLoops'",
     "value": 16
   },
   {
