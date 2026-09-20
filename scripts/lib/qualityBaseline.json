@@ -685,12 +685,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/runtime/tendonBodyIntersect.ts",
-    "symbol": "Function 'checkTendonBodyIntersectAtPose'",
-    "value": 18
-  },
-  {
-    "rule": "complexity",
     "file": "src/server/middleware/sourceEndpoint.ts",
     "symbol": "Async function 'sourceHandler'",
     "value": 16
