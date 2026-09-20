@@ -592,9 +592,7 @@ function recenterPlaneOntoVertices(
   }
 }
 
-function tryGetVolume(shape: unknown): number | undefined {
-  if (!isRecord(shape)) return undefined;
-
+function volumeViaReplicadMeasure(shape: unknown): number | undefined {
   // Try measureVolume from replicad
   try {
     const v = (replicad as unknown as Record<string, (s: unknown) => unknown>).measureVolume(shape);
@@ -602,9 +600,14 @@ function tryGetVolume(shape: unknown): number | undefined {
   } catch {
     // ignore
   }
+  return undefined;
+}
 
-  const raw = (isRecord(shape._wrapped) ? shape._wrapped : null) ?? (isRecord(shape.occ) ? shape.occ : null) ?? shape;
+function unwrapShape(shape: UnknownRecord): unknown {
+  return (isRecord(shape._wrapped) ? shape._wrapped : null) ?? (isRecord(shape.occ) ? shape.occ : null) ?? shape;
+}
 
+function volumeViaMethod(raw: unknown, shape: UnknownRecord): number | undefined {
   // Try to call volume() method with context
   const volFn = getFn(raw, 'volume') ?? getFn(shape, 'volume');
   if (volFn) {
@@ -616,7 +619,10 @@ function tryGetVolume(shape: unknown): number | undefined {
       // ignore and look for property
     }
   }
+  return undefined;
+}
 
+function volumeViaProperty(raw: unknown, shape: UnknownRecord): number | undefined {
   // Try to read volume property
   const volVal = (raw as UnknownRecord).volume;
   if (typeof volVal === 'number') return volVal;
@@ -625,6 +631,20 @@ function tryGetVolume(shape: unknown): number | undefined {
   if (typeof shapeVolVal === 'number') return shapeVolVal;
 
   return undefined;
+}
+
+function tryGetVolume(shape: unknown): number | undefined {
+  if (!isRecord(shape)) return undefined;
+
+  const viaMeasure = volumeViaReplicadMeasure(shape);
+  if (viaMeasure !== undefined) return viaMeasure;
+
+  const raw = unwrapShape(shape);
+
+  const viaMethod = volumeViaMethod(raw, shape);
+  if (viaMethod !== undefined) return viaMethod;
+
+  return volumeViaProperty(raw, shape);
 }
 
 /**
