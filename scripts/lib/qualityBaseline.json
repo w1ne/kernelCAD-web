@@ -145,12 +145,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/studio/hooks/useRecomputeResult.ts",
-    "symbol": "Function 'useRecomputeResult'",
-    "value": 103
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/studio/routes/-ServerRevisionHistory.tsx",
     "symbol": "Function 'ServerRevisionHistory'",
     "value": 102
