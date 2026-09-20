@@ -115,12 +115,6 @@
   },
   {
     "rule": "complexity",
-    "file": "src/agent/mcp/tools/solveMates.ts",
-    "symbol": "Async function 'solveMatesTool'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/agent/reconstruct/analysis.ts",
     "symbol": "Function 'classifyRegions'",
     "value": 16
