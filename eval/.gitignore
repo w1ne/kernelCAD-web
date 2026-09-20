@@ -1,3 +1,7 @@
 # Live runs are not committed; only golden fixtures (runs/golden-*) are.
 runs/*
 !runs/golden-*/
+
+# Python bytecode from eval/oracle wrappers
+__pycache__/
+*.pyc

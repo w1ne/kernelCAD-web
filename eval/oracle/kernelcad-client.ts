@@ -6,6 +6,9 @@ import type { EvaluateResult, ShapeInfo } from '../types';
 
 const LOCAL_BUILD = './dist/cli/index.js';
 
+/** Hard cap on a single CLI invocation; runaway OCCT jobs are killed. */
+const CLI_TIMEOUT_MS = Number(process.env.KERNELCAD_CLI_TIMEOUT_MS ?? 300_000);
+
 function getBin(): { cmd: string; baseArgs: string[] } {
   const override = process.env.KERNELCAD_BIN;
   if (override) {
@@ -27,13 +30,26 @@ function getBin(): { cmd: string; baseArgs: string[] } {
 async function runOnce(args: string[], stdin?: string): Promise<{ code: number; stdout: string; stderr: string }> {
   const { cmd, baseArgs } = getBin();
   return await new Promise((resolve, reject) => {
-    const child = spawn(cmd, [...baseArgs, ...args], { stdio: ['pipe', 'pipe', 'pipe'] });
+    const child = spawn(cmd, [...baseArgs, ...args], {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      timeout: CLI_TIMEOUT_MS,
+    });
     let stdout = '';
     let stderr = '';
     child.stdout.on('data', (d) => (stdout += d.toString()));
     child.stderr.on('data', (d) => (stderr += d.toString()));
     child.on('error', reject);
-    child.on('close', (code) => resolve({ code: code ?? -1, stdout, stderr }));
+    child.on('close', (code, signal) => {
+      if (signal !== null && child.killed) {
+        resolve({
+          code: -1,
+          stdout,
+          stderr: `${stderr}\n[timeout] kernelcad CLI killed after ${CLI_TIMEOUT_MS}ms (${signal})`,
+        });
+        return;
+      }
+      resolve({ code: code ?? -1, stdout, stderr });
+    });
     if (stdin !== undefined) {
       child.stdin.write(stdin);
     }
