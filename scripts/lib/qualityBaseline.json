@@ -13,12 +13,6 @@
   },
   {
     "rule": "max-lines-per-function",
-    "file": "src/funnel/components/GallerySection.tsx",
-    "symbol": "Function 'GallerySection'",
-    "value": 116
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/kernel/backends/occt/drawingSections.ts",
     "symbol": "Function 'renderObliqueSection'",
     "value": 105
