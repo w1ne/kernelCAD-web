@@ -1,12 +1,6 @@
 [
   {
     "rule": "max-lines-per-function",
-    "file": "src/agent/reconstruct/planPhases/body.ts",
-    "symbol": "Function 'buildBody'",
-    "value": 111
-  },
-  {
-    "rule": "max-lines-per-function",
     "file": "src/agent/reconstruct/reconstruct.ts",
     "symbol": "Function 'buildMeshLedger'",
     "value": 122
