@@ -4,10 +4,8 @@ import type { Diagnostic, HarnessResult, Score, TranscriptEvent } from './types'
 
 const FENCED_LANGS = ['typescript', 'ts', 'kcad', ''];
 
-export function extractScript(text: string): string | null {
-  if (!text || !text.trim()) return null;
-
-  // Match fenced blocks: ``` followed by optional language tag, newline, body, then ```
+export function extractFencedScript(text: string): string | null {
+  if (!text) return null;
   const fenceRegex = /```(\w*)\n([\s\S]*?)```/g;
   let m: RegExpExecArray | null;
   while ((m = fenceRegex.exec(text)) !== null) {
@@ -16,9 +14,12 @@ export function extractScript(text: string): string | null {
       return m[2].trim();
     }
   }
+  return null;
+}
 
-  // No matching fence — return the whole text trimmed.
-  return text.trim();
+export function extractScript(text: string): string | null {
+  if (!text || !text.trim()) return null;
+  return extractFencedScript(text) ?? text.trim();
 }
 
 export function formatDiagnostics(diagnostics: Diagnostic[]): string {
@@ -141,6 +142,12 @@ export function renderTranscript(args: RenderTranscriptArgs): string {
       lines.push(`## Evaluate (attempt ${ev.attempt}) — ${verdict}`);
       if (ev.diagnostics.length > 0) {
         lines.push(formatDiagnostics(ev.diagnostics));
+      }
+      lines.push('');
+    } else if (ev.kind === 'tool_call') {
+      lines.push(`## Tool call ${ev.call} — ${ev.name} — ${ev.ok ? 'OK' : 'FAIL'}`);
+      if (ev.diagnostics.length > 0) {
+        for (const d of ev.diagnostics) lines.push(`- ${d}`);
       }
       lines.push('');
     } else if (ev.kind === 'cookbook_inject') {

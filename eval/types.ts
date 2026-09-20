@@ -91,6 +91,7 @@ export type TranscriptEvent =
       ms: number;
     }
   | { kind: 'evaluate'; attempt: number; ok: boolean; diagnostics: Diagnostic[] }
+  | { kind: 'tool_call'; call: number; name: string; ok: boolean; diagnostics: string[] }
   | { kind: 'cookbook_inject'; query: string; hits: Array<{ id: string; score: number }> }
   | { kind: 'score'; gates: Record<string, boolean>; scored: Record<string, boolean> };
 
