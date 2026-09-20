@@ -616,12 +616,24 @@ function bridgeSpan(samples: number[], segs: Seg[], anchored: Seg[]): number {
   return best;
 }
 
-/** Chord through (px, py) along ±(dx, dy) to the nearest boundary crossing
- *  each way; its length when both ends are anchored, else undefined. Ties
- *  between an anchored and a free crossing resolve to free. */
-function anchoredChord(px: number, py: number, dx: number, dy: number, segs: Seg[]): number | undefined {
-  let fwd = Infinity, fwdAnchored = false;
-  let back = Infinity, backAnchored = false;
+/** A boundary crossing's signed ray parameter and the anchoring of the
+ *  segment it crossed. */
+interface ChordCrossing {
+  t: number;
+  anchored: boolean;
+}
+
+/** Nearest crossing on one side of (px, py): `t` is the distance along the
+ *  ray, `anchored` is the AND of every crossing within 1e-7 of it. */
+interface ChordEnd {
+  t: number;
+  anchored: boolean;
+}
+
+/** Every non-parallel segment crossing the ray through (px, py) along
+ *  ±(dx, dy) within its bounds, with the ray parameter t. */
+function collectChordCrossings(px: number, py: number, dx: number, dy: number, segs: Seg[]): ChordCrossing[] {
+  const crossings: ChordCrossing[] = [];
   for (const s of segs) {
     const ex = s.bx - s.ax, ey = s.by - s.ay;
     const denom = dx * ey - dy * ex;
@@ -630,17 +642,39 @@ function anchoredChord(px: number, py: number, dx: number, dy: number, segs: Seg
     const t = (wx * ey - wy * ex) / denom;
     const u = (wx * dy - wy * dx) / denom;
     if (u < -1e-9 || u > 1 + 1e-9) continue;
-    if (t > 1e-9) {
-      if (t < fwd - 1e-7) { fwd = t; fwdAnchored = s.anchored; }
-      else if (t <= fwd + 1e-7) fwdAnchored = fwdAnchored && s.anchored;
-    } else if (t < -1e-9) {
-      const bt = -t;
-      if (bt < back - 1e-7) { back = bt; backAnchored = s.anchored; }
-      else if (bt <= back + 1e-7) backAnchored = backAnchored && s.anchored;
-    }
+    crossings.push({ t, anchored: s.anchored });
   }
-  if (!Number.isFinite(fwd) || !Number.isFinite(back) || !fwdAnchored || !backAnchored) return undefined;
-  return fwd + back;
+  return crossings;
+}
+
+/** Folds a crossing into the nearest end so far: strictly nearer replaces it,
+ *  a tie within 1e-7 ANDs the anchoring (so ties resolve to free). */
+function mergeChordEnd(current: ChordEnd | undefined, t: number, anchored: boolean): ChordEnd {
+  if (current === undefined || t < current.t - 1e-7) return { t, anchored };
+  if (t <= current.t + 1e-7) return { t: current.t, anchored: current.anchored && anchored };
+  return current;
+}
+
+/** Nearest forward (t > 1e-9) and backward (t < -1e-9) crossing, if any. */
+function nearestChordEnds(crossings: ChordCrossing[]): { fwd: ChordEnd | undefined; back: ChordEnd | undefined } {
+  let fwd: ChordEnd | undefined;
+  let back: ChordEnd | undefined;
+  for (const c of crossings) {
+    if (c.t > 1e-9) fwd = mergeChordEnd(fwd, c.t, c.anchored);
+    else if (c.t < -1e-9) back = mergeChordEnd(back, -c.t, c.anchored);
+  }
+  return { fwd, back };
+}
+
+/** Chord through (px, py) along ±(dx, dy) to the nearest boundary crossing
+ *  each way; its length when both ends are anchored, else undefined. Ties
+ *  between an anchored and a free crossing resolve to free. */
+function anchoredChord(px: number, py: number, dx: number, dy: number, segs: Seg[]): number | undefined {
+  const crossings = collectChordCrossings(px, py, dx, dy, segs);
+  const { fwd, back } = nearestChordEnds(crossings);
+  if (fwd === undefined || back === undefined) return undefined;
+  if (!fwd.anchored || !back.anchored) return undefined;
+  return fwd.t + back.t;
 }
 
 function distanceToSegments(px: number, py: number, segs: Seg[]): number {

@@ -174,52 +174,15 @@ export async function validateJointVisualExposure(
 
   const out: ValidatorDiagnostic[] = [];
   for (const mate of arm.__mates()) {
-    // Non-revolute joints are out of scope per spec §"Locked decisions" §1
-    // and §"Out of scope" — `prismatic` / `pin_slot` / `ball` etc. get
-    // their own gates later if they exhibit the same failure mode.
-    if (mate.type !== 'revolute') continue;
+    const joint = await resolveExposedJoint(mate, partsByName, loweredShapes, worldTransforms);
+    if (joint === undefined) continue;
 
-    // Concealed-by-design skip — `exposure: 'concealed'` is the script's
-    // explicit declaration that this revolute is an ENCLOSED mechanism
-    // (valve rotor in a bore, internal spindle, worm shaft) where fork
-    // daylight is structurally impossible. The hinge-visibility
-    // measurement below assumes fork+tongue+pin construction and only
-    // produces false positives on such joints (the daylight is
-    // normalized by the parent's perpendicular extent, so a compact
-    // rotor inside a large body can never pass). Exposed hinges — the
-    // Luxo failure class this gate guards — never set this flag.
-    if (mate.exposure === 'concealed') continue;
-
-    const sideA = await resolveSide(mate.a, partsByName, worldTransforms);
-    const sideB = await resolveSide(mate.b, partsByName, worldTransforms);
-    if (!sideA || !sideB) continue;
-
-    const parentShape = loweredShapes.get(sideA.partName);
-    const childShape = loweredShapes.get(sideB.partName);
-    if (!parentShape || !childShape) continue;
-
-    // Microscale skip — combined parent+child bounding-sphere radius
-    // below the threshold means the joint is too small to expect to
-    // read as a hinge at typical viewing distance. Spec §"Locked
-    // decisions" §5.
-    const combinedRadius = combinedBoundingSphereRadius(parentShape, childShape);
-    if (combinedRadius < MICROSCALE_BOUNDING_RADIUS) continue;
-
-    // Build the joint-axis world line. Axis direction is consistent on
-    // both sides of a revolute mate (the mate-graph validator enforces
-    // axis-axis pairing); use side A's. Gate 2 already guarantees the
-    // line passes through both bodies, so we can use side A's origin
-    // without loss.
-    const axisOrigin = sideA.origin;
-    const axisDir = normalize(sideA.direction);
-    if (axisDir === undefined) continue; // degenerate axis — out of scope
-
-    const inferredPinR = inferPinRadius(parentShape, childShape, axisOrigin, axisDir);
+    const inferredPinR = inferPinRadius(joint.parentShape, joint.childShape, joint.axisOrigin, joint.axisDir);
     const measurements = measureJointVisuals(
-      parentShape,
-      childShape,
-      axisOrigin,
-      axisDir,
+      joint.parentShape,
+      joint.childShape,
+      joint.axisOrigin,
+      joint.axisDir,
       inferredPinR,
     );
     const minPinStickout = MIN_PIN_STICKOUT_FACTOR * inferredPinR;
@@ -228,11 +191,7 @@ export async function validateJointVisualExposure(
     const pinFails = measurements.pinStickout < minPinStickout;
     if (!gapFails && !pinFails) continue;
 
-    const failureCause: 'gap' | 'pin-stickout' | 'both' = gapFails && pinFails
-      ? 'both'
-      : gapFails
-        ? 'gap'
-        : 'pin-stickout';
+    const failureCause = jointFailureCause(gapFails, pinFails);
 
     out.push({
       code: 'assembly.joint.not-visible',
@@ -243,6 +202,71 @@ export async function validateJointVisualExposure(
     });
   }
   return out;
+}
+
+interface ExposedJoint {
+  readonly parentShape: OcctBackend;
+  readonly childShape: OcctBackend;
+  readonly axisOrigin: Vec3;
+  readonly axisDir: Vec3;
+}
+
+/** Resolves the shapes and joint-axis world line for a mate this gate has
+ *  an opinion on, or undefined when the mate is out of scope / too small /
+ *  unresolved. */
+async function resolveExposedJoint(
+  mate: MateRecord,
+  partsByName: ReadonlyMap<string, AssemblyPartStored>,
+  loweredShapes: ReadonlyMap<string, OcctBackend>,
+  worldTransforms: ReadonlyMap<string, Transform>,
+): Promise<ExposedJoint | undefined> {
+  // Non-revolute joints are out of scope per spec §"Locked decisions" §1
+  // and §"Out of scope" — `prismatic` / `pin_slot` / `ball` etc. get
+  // their own gates later if they exhibit the same failure mode.
+  if (mate.type !== 'revolute') return undefined;
+
+  // Concealed-by-design skip — `exposure: 'concealed'` is the script's
+  // explicit declaration that this revolute is an ENCLOSED mechanism
+  // (valve rotor in a bore, internal spindle, worm shaft) where fork
+  // daylight is structurally impossible. The hinge-visibility
+  // measurement below assumes fork+tongue+pin construction and only
+  // produces false positives on such joints (the daylight is
+  // normalized by the parent's perpendicular extent, so a compact
+  // rotor inside a large body can never pass). Exposed hinges — the
+  // Luxo failure class this gate guards — never set this flag.
+  if (mate.exposure === 'concealed') return undefined;
+
+  const sideA = await resolveSide(mate.a, partsByName, worldTransforms);
+  const sideB = await resolveSide(mate.b, partsByName, worldTransforms);
+  if (!sideA || !sideB) return undefined;
+
+  const parentShape = loweredShapes.get(sideA.partName);
+  const childShape = loweredShapes.get(sideB.partName);
+  if (!parentShape || !childShape) return undefined;
+
+  // Microscale skip — combined parent+child bounding-sphere radius
+  // below the threshold means the joint is too small to expect to
+  // read as a hinge at typical viewing distance. Spec §"Locked
+  // decisions" §5.
+  const combinedRadius = combinedBoundingSphereRadius(parentShape, childShape);
+  if (combinedRadius < MICROSCALE_BOUNDING_RADIUS) return undefined;
+
+  // Build the joint-axis world line. Axis direction is consistent on
+  // both sides of a revolute mate (the mate-graph validator enforces
+  // axis-axis pairing); use side A's. Gate 2 already guarantees the
+  // line passes through both bodies, so we can use side A's origin
+  // without loss.
+  const axisOrigin = sideA.origin;
+  const axisDir = normalize(sideA.direction);
+  if (axisDir === undefined) return undefined; // degenerate axis — out of scope
+
+  return { parentShape, childShape, axisOrigin, axisDir };
+}
+
+function jointFailureCause(gapFails: boolean, pinFails: boolean): 'gap' | 'pin-stickout' | 'both' {
+  if (gapFails && pinFails) return 'both';
+  if (gapFails) return 'gap';
+  return 'pin-stickout';
 }
 
 interface ResolvedSide {

@@ -379,21 +379,9 @@
   },
   {
     "rule": "complexity",
-    "file": "src/modeling/mates/jointVisualExposure.ts",
-    "symbol": "Async function 'validateJointVisualExposure'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
     "file": "src/modeling/mates/matePhysicalRealization.ts",
     "symbol": "Async function 'validateMatePhysicalRealization'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/matePhysicalRealization.ts",
-    "symbol": "Function 'analyzeMate'",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -416,12 +404,6 @@
   {
     "rule": "complexity",
     "file": "src/modeling/mates/physicalUseCaseStatics.ts",
-    "symbol": "Async function 'reviewPhysicalUseCaseStatics'",
-    "value": 17
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/physicalUseCaseStatics.ts",
     "symbol": "Function 'validateActuatorLimit'",
     "value": 16
   },
@@ -430,12 +412,6 @@
     "file": "src/modeling/mates/physicalUseCaseStaticsPhases.ts",
     "symbol": "Function 'resolveStaticLoads'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/mates/poseEnvelope.ts",
-    "symbol": "Async function 'reviewPoseEnvelope'",
-    "value": 17
   },
   {
     "rule": "complexity",
@@ -454,12 +430,6 @@
     "file": "src/modeling/mates/solver.ts",
     "symbol": "Function 'mateFk'",
     "value": 16
-  },
-  {
-    "rule": "complexity",
-    "file": "src/modeling/runtime/dfm/fdmOrientation.ts",
-    "symbol": "Function 'anchoredChord'",
-    "value": 17
   },
   {
     "rule": "complexity",
