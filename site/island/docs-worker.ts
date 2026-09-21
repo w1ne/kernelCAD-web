@@ -24,7 +24,7 @@
 
 import wasmUrl from 'replicad-opencascadejs/src/replicad_single.wasm?url';
 import { initOcct } from '../../src/kernel/backends/occt/occtBackend';
-import { runScriptInBrowser } from '../../src/modeling/runtime/browserRuntime';
+import { runScriptInBrowser } from '../../src/composition/browserRuntime';
 import {
   meshFeaturesPerFeature,
   selectTerminalFeatures,

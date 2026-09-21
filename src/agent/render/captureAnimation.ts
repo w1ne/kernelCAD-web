@@ -51,7 +51,7 @@
 // already-written PNGs but the result still says ok:false.
 
 import { rm } from 'node:fs/promises';
-import type { BuiltModel } from '../../modeling/buildModel';
+import type { BuiltModel } from '../../composition/buildModel';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { AnimationViewMetadata } from '../../shared/intent/animationViewRecord';
 import type { AnimationCollision } from '../../modeling/animation/verifyAnimation';

@@ -65,7 +65,7 @@
 
 import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
-import type { BuiltModel } from '../modeling/buildModel';
+import type { BuiltModel } from '../composition/buildModel';
 
 export interface SessionPoolEntry {
   readonly token: string;
@@ -170,6 +170,100 @@ interface EntryInternals {
   rebuildQueued: boolean;
 }
 
+interface PoolContext {
+  readonly byToken: Map<string, SessionPoolEntry>;
+  readonly byKey: Map<string, string>;
+  readonly internals: Map<string, EntryInternals>;
+  readonly runExclusive: <T>(fn: () => Promise<T>) => Promise<T>;
+  readonly touch: (entry: SessionPoolEntry) => SessionPoolEntry;
+  readonly wireEngine: (entry: SessionPoolEntry) => void;
+  readonly evictLru: () => void;
+  readonly rebuildEntry: (entry: SessionPoolEntry) => Promise<void>;
+}
+
+async function getOrCreateEntry(
+  ctx: PoolContext,
+  opts: SessionPoolOptions,
+  scriptPath: string,
+  options?: GetOrCreateOptions,
+): Promise<SessionPoolEntry> {
+  const key = options?.key ?? scriptPath;
+  const ownerId = options?.ownerId;
+  const existingToken = ctx.byKey.get(key);
+  if (existingToken !== undefined) {
+    const existing = ctx.byToken.get(existingToken);
+    if (existing) return ctx.touch(existing);
+    // Stale reverse-index entry (entry was pruned/evicted between accesses).
+    ctx.byKey.delete(key);
+  }
+  const model = await ctx.runExclusive(() => opts.build(scriptPath));
+  // Enforce the count cap AFTER the (awaited) build but BEFORE inserting,
+  // so a fresh insert never pushes the live count past maxEntries. Evict
+  // the LRU entry first — never the one we're about to add.
+  if (opts.maxEntries !== undefined) {
+    while (ctx.byToken.size >= opts.maxEntries) {
+      const before = ctx.byToken.size;
+      ctx.evictLru();
+      if (ctx.byToken.size >= before) break; // safety: nothing evictable
+    }
+  }
+  const token = randomUUID();
+  const listeners = new Set<(affectedIds: string[]) => void>();
+  const entry: SessionPoolEntry = {
+    token,
+    scriptPath,
+    key,
+    ownerId,
+    model,
+    lastAccessAt: Date.now(),
+    onRelower(cb) {
+      listeners.add(cb);
+      return () => {
+        listeners.delete(cb);
+      };
+    },
+  };
+  ctx.internals.set(token, {
+    listeners,
+    detachEngine: null,
+    rebuildInFlight: null,
+    rebuildQueued: false,
+  });
+  ctx.byToken.set(token, entry);
+  ctx.byKey.set(key, token);
+  ctx.wireEngine(entry);
+  return entry;
+}
+
+async function rebuildEntriesByScript(ctx: PoolContext, file: string): Promise<boolean> {
+  const resolved = resolve(file);
+  let rebuilt = false;
+  for (const entry of ctx.byToken.values()) {
+    if (resolve(entry.scriptPath) !== resolved) continue;
+    const ints = ctx.internals.get(entry.token);
+    if (!ints) continue;
+    if (ints.rebuildInFlight) {
+      // Coalesce: the queued rebuild reads the newest file state, so
+      // any number of saves during an in-flight rebuild need exactly
+      // one trailing rebuild.
+      ints.rebuildQueued = true;
+      await ints.rebuildInFlight;
+      if (!ints.rebuildQueued) {
+        rebuilt = true;
+        continue;
+      }
+    }
+    ints.rebuildQueued = false;
+    const run = ctx.rebuildEntry(entry).finally(() => {
+      ints.rebuildInFlight = null;
+    });
+    ints.rebuildInFlight = run;
+    await run;
+    rebuilt = true;
+  }
+  return rebuilt;
+}
+
 export function createSessionPool(opts: SessionPoolOptions): SessionPool {
   const byToken = new Map<string, SessionPoolEntry>();
   // Reverse index from the opaque identity key (NOT the bare scriptPath) to
@@ -243,56 +337,22 @@ export function createSessionPool(opts: SessionPoolOptions): SessionPool {
     fanout(entry.token, []);
   }
 
+  const ctx: PoolContext = {
+    byToken,
+    byKey,
+    internals,
+    runExclusive,
+    touch,
+    wireEngine,
+    evictLru,
+    rebuildEntry,
+  };
+
   return {
     runExclusive,
 
     async getOrCreate(scriptPath: string, options?: GetOrCreateOptions): Promise<SessionPoolEntry> {
-      const key = options?.key ?? scriptPath;
-      const ownerId = options?.ownerId;
-      const existingToken = byKey.get(key);
-      if (existingToken !== undefined) {
-        const existing = byToken.get(existingToken);
-        if (existing) return touch(existing);
-        // Stale reverse-index entry (entry was pruned/evicted between accesses).
-        byKey.delete(key);
-      }
-      const model = await runExclusive(() => opts.build(scriptPath));
-      // Enforce the count cap AFTER the (awaited) build but BEFORE inserting,
-      // so a fresh insert never pushes the live count past maxEntries. Evict
-      // the LRU entry first — never the one we're about to add.
-      if (opts.maxEntries !== undefined) {
-        while (byToken.size >= opts.maxEntries) {
-          const before = byToken.size;
-          evictLru();
-          if (byToken.size >= before) break; // safety: nothing evictable
-        }
-      }
-      const token = randomUUID();
-      const listeners = new Set<(affectedIds: string[]) => void>();
-      const entry: SessionPoolEntry = {
-        token,
-        scriptPath,
-        key,
-        ownerId,
-        model,
-        lastAccessAt: Date.now(),
-        onRelower(cb) {
-          listeners.add(cb);
-          return () => {
-            listeners.delete(cb);
-          };
-        },
-      };
-      internals.set(token, {
-        listeners,
-        detachEngine: null,
-        rebuildInFlight: null,
-        rebuildQueued: false,
-      });
-      byToken.set(token, entry);
-      byKey.set(key, token);
-      wireEngine(entry);
-      return entry;
+      return getOrCreateEntry(ctx, opts, scriptPath, options);
     },
 
     get(token: string): SessionPoolEntry | undefined {
@@ -319,32 +379,7 @@ export function createSessionPool(opts: SessionPoolOptions): SessionPool {
     },
 
     async rebuildByScript(file: string): Promise<boolean> {
-      const resolved = resolve(file);
-      let rebuilt = false;
-      for (const entry of byToken.values()) {
-        if (resolve(entry.scriptPath) !== resolved) continue;
-        const ints = internals.get(entry.token);
-        if (!ints) continue;
-        if (ints.rebuildInFlight) {
-          // Coalesce: the queued rebuild reads the newest file state, so
-          // any number of saves during an in-flight rebuild need exactly
-          // one trailing rebuild.
-          ints.rebuildQueued = true;
-          await ints.rebuildInFlight;
-          if (!ints.rebuildQueued) {
-            rebuilt = true;
-            continue;
-          }
-        }
-        ints.rebuildQueued = false;
-        const run = rebuildEntry(entry).finally(() => {
-          ints.rebuildInFlight = null;
-        });
-        ints.rebuildInFlight = run;
-        await run;
-        rebuilt = true;
-      }
-      return rebuilt;
+      return rebuildEntriesByScript(ctx, file);
     },
   };
 }

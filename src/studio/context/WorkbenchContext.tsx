@@ -16,6 +16,7 @@ import { useFaceSelection } from '../hooks/useFaceSelection';
 import { SketchingProvider, useSketching, type SketchingContextType } from './SketchingContext';
 import { type CodeGenerationContext } from '../../shared/codeGeneration/index';
 import { useWorkbenchValue } from './useWorkbenchValue';
+import { usePersistentParams } from './usePersistentParams';
 
 // Combined type for backward compatibility
 export interface WorkbenchContextType extends
@@ -51,6 +52,7 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
     const uiCtx = useUI();
     const selectionCtx = useSelection();
     const geometryCtx = useGeometry();
+    const persistentGeometry = usePersistentParams(codeCtx, geometryCtx);
     const sketchingCtx = useSketching();
 
     // Use face selection hook with geometry dependencies
@@ -80,7 +82,7 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         codeCtx,
         uiCtx,
         selectionCtx,
-        geometryCtx,
+        geometryCtx: persistentGeometry,
         sketchingCtx,
         selectedFace,
         selectedFacePlane,

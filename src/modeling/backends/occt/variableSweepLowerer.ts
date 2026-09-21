@@ -119,6 +119,16 @@ export interface LowerVariableSweepOpts {
  *   wrap and map into a `feature.kernel-failed` diagnostic with the
  *   underlying message.
  */
+type Oc = ReturnType<typeof getOC>;
+type OcEdge = ConstructorParameters<Oc['BRepBuilderAPI_MakeWire_2']>[0];
+type OcPipeShell = InstanceType<Oc['BRepOffsetAPI_MakePipeShell']>;
+
+interface SpineAnchor {
+  spineWire: ReturnType<Oc['BRepBuilderAPI_MakeWire_2']['Wire']>;
+  firstVertex: ReturnType<Oc['TopoDS']['Vertex_1']>;
+  lastVertex: ReturnType<Oc['TopoDS']['Vertex_1']>;
+}
+
 export function lowerVariableSweep(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   spineEdge: any,
@@ -145,19 +155,11 @@ export function lowerVariableSweep(
   let stationVertices: any[];
 
   if (intermediateTs.length === 0) {
-    // 2-section path — byte-identical to the pre-subdivision behavior.
-    // Wrap the spine edge in a TopoDS_Wire and snapshot its first/last
-    // vertices (OCCT's `Add_2` only accepts spine-owned vertices).
-    spineWire = new oc.BRepBuilderAPI_MakeWire_2(spineEdge).Wire();
-    const spineVertices = exploreVertices(oc, spineWire);
-    if (spineVertices.length < 2) {
-      throw new Error(
-        `lowerVariableSweep: spine wire has only ${spineVertices.length} vertex (need ≥ 2).`,
-      );
-    }
-    const firstVertex = spineVertices[0];
-    const lastVertex = spineVertices[spineVertices.length - 1];
-    stationVertices = sections.map((s) => (s.t <= 0.5 ? firstVertex : lastVertex));
+    // 2-section path — same anchor collection as the pre-subdivision code
+    // (OCCT's `Add_2` only accepts spine-owned vertices).
+    const anchor = collectSpineAnchor(oc, spineEdge);
+    spineWire = anchor.spineWire;
+    stationVertices = sections.map((s) => (s.t <= 0.5 ? anchor.firstVertex : anchor.lastVertex));
   } else {
     spineWire = subdivideSpineAtStations(oc, spineEdge, intermediateTs);
     const adaptor = new oc.BRepAdaptor_Curve_2(spineEdge);
@@ -170,32 +172,9 @@ export function lowerVariableSweep(
   }
 
   const pipeShell = new oc.BRepOffsetAPI_MakePipeShell(spineWire);
+  applyOrientationMode(oc, pipeShell, opts);
+  pipeShell.SetTransitionMode(resolveTransitionMode(oc, opts));
 
-  // Orientation: default is corrected-Frenet (SetMode_1(false)). For a
-  // straight spine this is the safe choice (pure Frenet is undefined when
-  // curvature is zero).
-  const orient = opts.orientation ?? 'corrected-frenet';
-  if (orient === 'frenet') {
-    pipeShell.SetMode_1(true);
-  } else if (orient === 'discrete') {
-    pipeShell.SetDiscreteMode();
-  } else if (typeof orient === 'object' && 'up' in orient) {
-    const [ux, uy, uz] = orient.up;
-    pipeShell.SetMode_3(new oc.gp_Dir_4(ux, uy, uz));
-  } else {
-    pipeShell.SetMode_1(false);
-  }
-
-  // Continuity → transition-mode mapping. C2 picks the rounded transition
-  // for smoother blends across stations; everything else (incl. default
-  // 'C1') uses the OCCT default right-corner transition.
-  const transitionMode =
-    opts.continuity === 'C2'
-      ? oc.BRepBuilderAPI_TransitionMode.BRepBuilderAPI_RoundCorner
-      : oc.BRepBuilderAPI_TransitionMode.BRepBuilderAPI_RightCorner;
-  pipeShell.SetTransitionMode(transitionMode);
-
-  // Add each profile, anchored at a spine-owned vertex.
   // `withContact` controls `BRepOffsetAPI_MakePipeShell::Add_2`'s third
   // argument: when true, OCCT translates the profile so its anchor matches
   // the spine vertex (used for sketch-lifted profiles in the dispatch arm);
@@ -205,9 +184,7 @@ export function lowerVariableSweep(
   // each profile to be perpendicular to the spine tangent at its vertex.
   const withContact = opts.withContact ?? false;
   const withCorrection = opts.withCorrection ?? false;
-  for (let i = 0; i < sections.length; i++) {
-    pipeShell.Add_2(sections[i].profileWire, stationVertices[i], withContact, withCorrection);
-  }
+  addProfileSections(pipeShell, sections, stationVertices, withContact, withCorrection);
 
   const progress = new oc.Message_ProgressRange_1();
   pipeShell.Build(progress);
@@ -412,4 +389,71 @@ function matchStationVertex(
     );
   }
   return best;
+}
+
+// Wrap the spine edge in a TopoDS_Wire and snapshot its first/last vertices —
+// OCCT's `Add_2` only accepts spine-owned vertices.
+function collectSpineAnchor(oc: Oc, spineEdge: OcEdge): SpineAnchor {
+  const spineWire = new oc.BRepBuilderAPI_MakeWire_2(spineEdge).Wire();
+
+  const spineVertices: SpineAnchor['firstVertex'][] = [];
+  const exp = new oc.TopExp_Explorer_2(
+    spineWire,
+    oc.TopAbs_ShapeEnum.TopAbs_VERTEX,
+    oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
+  );
+  while (exp.More()) {
+    spineVertices.push(oc.TopoDS.Vertex_1(exp.Current()));
+    exp.Next();
+  }
+  if (spineVertices.length < 2) {
+    throw new Error(
+      `lowerVariableSweep: spine wire has only ${spineVertices.length} vertex (need ≥ 2).`,
+    );
+  }
+  return {
+    spineWire,
+    firstVertex: spineVertices[0],
+    lastVertex: spineVertices[spineVertices.length - 1],
+  };
+}
+
+// Orientation: default is corrected-Frenet (SetMode_1(false)). For a
+// straight spine this is the safe choice (pure Frenet is undefined when
+// curvature is zero).
+function applyOrientationMode(oc: Oc, pipeShell: OcPipeShell, opts: LowerVariableSweepOpts): void {
+  const orient = opts.orientation ?? 'corrected-frenet';
+  if (orient === 'frenet') {
+    pipeShell.SetMode_1(true);
+  } else if (orient === 'discrete') {
+    pipeShell.SetDiscreteMode();
+  } else if (typeof orient === 'object' && 'up' in orient) {
+    const [ux, uy, uz] = orient.up;
+    pipeShell.SetMode_3(new oc.gp_Dir_4(ux, uy, uz));
+  } else {
+    pipeShell.SetMode_1(false);
+  }
+}
+
+// Continuity → transition-mode mapping. C2 picks the rounded transition
+// for smoother blends across stations; everything else (incl. default
+// 'C1') uses the OCCT default right-corner transition.
+function resolveTransitionMode(oc: Oc, opts: LowerVariableSweepOpts) {
+  return opts.continuity === 'C2'
+    ? oc.BRepBuilderAPI_TransitionMode.BRepBuilderAPI_RoundCorner
+    : oc.BRepBuilderAPI_TransitionMode.BRepBuilderAPI_RightCorner;
+}
+
+// Add each profile, anchored at its station vertex (first/last for the
+// two-section path, matched spine vertices when stations are subdivided).
+function addProfileSections(
+  pipeShell: OcPipeShell,
+  sections: VariableSweepSectionLowered[],
+  stationVertices: SpineAnchor['firstVertex'][],
+  withContact: boolean,
+  withCorrection: boolean,
+): void {
+  for (let i = 0; i < sections.length; i++) {
+    pipeShell.Add_2(sections[i].profileWire, stationVertices[i], withContact, withCorrection);
+  }
 }

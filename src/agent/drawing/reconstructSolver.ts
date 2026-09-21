@@ -227,6 +227,55 @@ function extrudeAxisIsThinnest(axis: ModelAxis, kind: PartModel['kind'], normalA
   return AXES.every(o => o === axis || ext(axis) <= 0.25 * ext(o));
 }
 
+/** Revolve axial spans: `length`, else a ranked `step`/`shoulder` name. */
+function revolveLevelName(
+  axis: ModelAxis,
+  lo: number,
+  hi: number,
+  L: AxisLevels,
+  kind: PartModel['kind'],
+  axialAxis: ModelAxis,
+  isMin: boolean,
+  isMax: boolean,
+): string | null {
+  if (kind !== 'revolve' || axis !== axialAxis) return null;
+  if (isMin && isMax) return 'length';
+  const sorted = L.levels.map((l, i) => [l.measured, i] as const).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+  const rankHi = sorted.indexOf(hi);
+  return sorted.indexOf(lo) === rankHi - 1 ? `step${rankHi}Length` : `shoulder${rankHi}Offset`;
+}
+
+/** Spans touching a hole centre take a `hole<n><axis>` family name. */
+function holeLevelName(
+  isMin: boolean,
+  isMax: boolean,
+  loHole: number | undefined,
+  hiHole: number | undefined,
+  A: string,
+): string | null {
+  if (hiHole !== undefined && isMin) return `hole${hiHole + 1}${A}`;
+  if (loHole !== undefined && isMax) return `hole${loHole + 1}${A}FromEnd`;
+  if (loHole !== undefined && hiHole !== undefined) return `hole${loHole + 1}To${hiHole + 1}${A}`;
+  return null;
+}
+
+/** Remaining spans: side-relative `Thickness`/`Offset`, else `<axis>Step`. */
+function relativeLevelName(
+  axis: ModelAxis,
+  lo: number,
+  hi: number,
+  L: AxisLevels,
+  isMin: boolean,
+  isMax: boolean,
+): string {
+  const ext = L.levels[L.max].measured - L.levels[L.min].measured;
+  const span = Math.abs(L.levels[hi].measured - L.levels[lo].measured);
+  const role = span <= 0.25 * ext ? 'Thickness' : 'Offset';
+  if (isMin) return `${SIDES[axis][0]}${role}`;
+  if (isMax) return `${SIDES[axis][1]}${role}`;
+  return `${axis}Step`;
+}
+
 /** Name the parameter for a span between two levels. */
 function levelNamer(
   axis: ModelAxis,
@@ -241,22 +290,12 @@ function levelNamer(
   const isMin = lo === L.min, isMax = hi === L.max;
   const loHole = L.levels[lo].hole, hiHole = L.levels[hi].hole;
   const A = axis.toUpperCase();
-  if (kind === 'revolve' && axis === axialAxis) {
-    if (isMin && isMax) return 'length';
-    const sorted = L.levels.map((l, i) => [l.measured, i] as const).sort((a, b) => a[0] - b[0]).map(x => x[1]);
-    const rankHi = sorted.indexOf(hi);
-    return sorted.indexOf(lo) === rankHi - 1 ? `step${rankHi}Length` : `shoulder${rankHi}Offset`;
-  }
+  const revolveName = revolveLevelName(axis, lo, hi, L, kind, axialAxis, isMin, isMax);
+  if (revolveName !== null) return revolveName;
   if (isMin && isMax) return extrudeAxisIsThinnest(axis, kind, normalAxis, axisLevels) ? 'thickness' : EXTENT_NAMES[axis];
-  if (hiHole !== undefined && isMin) return `hole${hiHole + 1}${A}`;
-  if (loHole !== undefined && isMax) return `hole${loHole + 1}${A}FromEnd`;
-  if (loHole !== undefined && hiHole !== undefined) return `hole${loHole + 1}To${hiHole + 1}${A}`;
-  const ext = L.levels[L.max].measured - L.levels[L.min].measured;
-  const span = Math.abs(L.levels[hi].measured - L.levels[lo].measured);
-  const role = span <= 0.25 * ext ? 'Thickness' : 'Offset';
-  if (isMin) return `${SIDES[axis][0]}${role}`;
-  if (isMax) return `${SIDES[axis][1]}${role}`;
-  return `${axis}Step`;
+  const holeName = holeLevelName(isMin, isMax, loHole, hiHole, A);
+  if (holeName !== null) return holeName;
+  return relativeLevelName(axis, lo, hi, L, isMin, isMax);
 }
 
 /** Solve every axis level outward from the minimum, then by symmetry, then linework. */

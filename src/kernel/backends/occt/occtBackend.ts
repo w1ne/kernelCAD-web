@@ -32,12 +32,47 @@ import {
 } from './backendExtrudeProfiles';
 
 export { initOcct, type InitOcctOptions } from './backendInit';
+export { resetOcct, registerOcctResetHook, withOcctPoisonRecovery } from './backendInit';
 export { meshShapeForExport } from './backendMesh';
 
 type ReplicadEdge = replicad.Edge;
 type ReplicadFace = replicad.Face;
 
 type ReplicadShape3D = replicad.Shape3D;
+
+type CanonicalFaceName = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
+
+const CANONICAL_FACE_AXIS: Record<CanonicalFaceName, { axisIndex: 0 | 1 | 2; bound: 'min' | 'max' }> = {
+  top:    { axisIndex: 2, bound: 'max' },
+  bottom: { axisIndex: 2, bound: 'min' },
+  right:  { axisIndex: 0, bound: 'max' },
+  left:   { axisIndex: 0, bound: 'min' },
+  back:   { axisIndex: 1, bound: 'max' },
+  front:  { axisIndex: 1, bound: 'min' },
+};
+
+function assertCanonicalFaceSupported(
+  kind: 'box' | 'cylinder' | 'sphere' | 'sketch' | undefined,
+  face: CanonicalFaceName,
+): void {
+  if (!kind) {
+    throw new Error('findCanonicalFaceHash: only valid on primitives (box/cylinder/sphere); kind is unset');
+  }
+  if (kind === 'sphere') {
+    throw new Error('findCanonicalFaceHash: spheres have no canonical planar face names');
+  }
+  if (kind === 'cylinder' && face !== 'top' && face !== 'bottom') {
+    throw new Error(`findCanonicalFaceHash: '${face}' is not applicable to cylinder (only top/bottom)`);
+  }
+}
+
+function resolveCanonicalFaceTarget(
+  face: CanonicalFaceName,
+  bb: { min: Vec3; max: Vec3 },
+): { axisIndex: 0 | 1 | 2; value: number } {
+  const { axisIndex, bound } = CANONICAL_FACE_AXIS[face];
+  return { axisIndex, value: bound === 'max' ? bb.max[axisIndex] : bb.min[axisIndex] };
+}
 
 /**
  * `ShapeBackend` implementation backed by Replicad / OpenCascade.
@@ -1311,29 +1346,12 @@ export class OcctBackend implements ShapeBackend {
    * @throws {Error} If the face name is not applicable to this primitive.
    * @throws {Error} If no matching face is found within tolerance.
    */
-  findCanonicalFaceHash(face: 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back'): string {
+  findCanonicalFaceHash(face: CanonicalFaceName): string {
     const TOL = 1e-4;
-    if (!this.kind) {
-      throw new Error('findCanonicalFaceHash: only valid on primitives (box/cylinder/sphere); kind is unset');
-    }
-    if (this.kind === 'sphere') {
-      throw new Error('findCanonicalFaceHash: spheres have no canonical planar face names');
-    }
-    if (this.kind === 'cylinder' && face !== 'top' && face !== 'bottom') {
-      throw new Error(`findCanonicalFaceHash: '${face}' is not applicable to cylinder (only top/bottom)`);
-    }
+    assertCanonicalFaceSupported(this.kind, face);
 
     const bb = this.boundingBox();
-    let axisIndex: 0 | 1 | 2;
-    let value: number;
-    switch (face) {
-      case 'top':    axisIndex = 2; value = bb.max[2]; break;
-      case 'bottom': axisIndex = 2; value = bb.min[2]; break;
-      case 'right':  axisIndex = 0; value = bb.max[0]; break;
-      case 'left':   axisIndex = 0; value = bb.min[0]; break;
-      case 'back':   axisIndex = 1; value = bb.max[1]; break;
-      case 'front':  axisIndex = 1; value = bb.min[1]; break;
-    }
+    const { axisIndex, value } = resolveCanonicalFaceTarget(face, bb);
 
     // Walk faces via replicad's .faces accessor (they have .center with x/y/z),
     // find the matching face, then hash its underlying OCCT subshape.

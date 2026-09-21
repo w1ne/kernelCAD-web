@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { runScript } from '../../modeling/runtime/runScript';
+import { runScript } from '../../composition/runScript';
 import { exportSceneToSTEPAsync, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exportDxf';
 import { export3mfAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';

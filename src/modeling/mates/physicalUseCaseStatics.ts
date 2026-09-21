@@ -7,7 +7,6 @@ import type { Transform } from '../../shared/runtime/se3';
 import { expandCoupledPoses } from './coupledPoses';
 import { solveMates } from './solver';
 import type {
-  PhysicalUseCaseActuatorLimit,
   PhysicalUseCaseContact,
   PhysicalUseCaseRecord,
 } from './physicalUseCase';
@@ -21,7 +20,6 @@ import {
   copyVec,
   cross,
   findStablePartPath,
-  isPositiveFinite,
   norm,
   resolveStaticContacts,
   resolveStaticHeldPart,
@@ -31,6 +29,7 @@ import {
   scale,
   sub,
   sumExternalLoads,
+  validateActuatorLimit,
 } from './physicalUseCaseStaticsPhases';
 
 export {
@@ -143,96 +142,147 @@ interface SearchCandidate {
   readonly actuatorTorques: readonly PhysicalUseCaseStaticActuatorTorqueEvidence[];
 }
 
+interface StaticSearchState {
+  best:
+    | { poses: NumericPoses; forceResidualN: number; torqueResidualNmm: number; score: number }
+    | undefined;
+  bestActuator:
+    | {
+        poses: NumericPoses;
+        actuatorTorques: readonly PhysicalUseCaseStaticActuatorTorqueEvidence[];
+        violation: number;
+      }
+    | undefined;
+  equilibriumFound: boolean;
+}
+
 export async function reviewPhysicalUseCaseStatics(
   arm: Assembly,
   useCase: PhysicalUseCaseRecord,
   witnesses: readonly PhysicalUseCasePoseWitness[],
 ): Promise<PhysicalUseCaseStaticsResult> {
   if (witnesses.length === 0) {
-    return {
-      certificates: [],
-      issues: [{
-        kind: 'static-input-incomplete',
-        useCaseName: useCase.name,
-        message: 'No complete common-contact pose witness was provided for static review.',
-      }],
-    };
+    return staticInputIncomplete(
+      useCase.name,
+      'No complete common-contact pose witness was provided for static review.',
+    );
   }
 
-  let best: { poses: NumericPoses; forceResidualN: number; torqueResidualNmm: number; score: number } | undefined;
-  let bestActuator: {
-    poses: NumericPoses;
-    actuatorTorques: readonly PhysicalUseCaseStaticActuatorTorqueEvidence[];
-    violation: number;
-  } | undefined;
-  let equilibriumFound = false;
+  const state: StaticSearchState = { best: undefined, bestActuator: undefined, equilibriumFound: false };
   for (const witness of witnesses) {
-    const resolved = await resolveStaticSample(arm, useCase, witness);
-    if (typeof resolved === 'string') {
-      return {
-        certificates: [],
-        issues: [{ kind: 'static-input-incomplete', useCaseName: useCase.name, message: resolved }],
-      };
-    }
+    const result = await reviewStaticWitness(arm, useCase, witness, state);
+    if (result !== undefined) return result;
+  }
 
-    const contactCandidate = searchContactAllocation(resolved, false);
-    if (
-      best === undefined ||
-      contactCandidate.normalizedResidual < best.score
-    ) {
-      best = {
-        poses: { ...resolved.poses },
-        forceResidualN: contactCandidate.forceResidualN,
-        torqueResidualNmm: contactCandidate.torqueResidualNmm,
-        score: contactCandidate.normalizedResidual,
-      };
-    }
+  if (state.equilibriumFound) {
+    return staticActuatorTorqueIssue(useCase.name, state.bestActuator);
+  }
 
-    if (!isVerifiedContactCertificate(resolved, contactCandidate)) continue;
-    equilibriumFound = true;
-    const candidate = resolved.actuators.length === 0
-      ? contactCandidate
-      : searchContactAllocation(resolved, true);
-    const actuatorViolation = totalActuatorViolation(candidate.actuatorTorques);
-    if (bestActuator === undefined || actuatorViolation < bestActuator.violation) {
-      bestActuator = {
-        poses: { ...resolved.poses },
-        actuatorTorques: candidate.actuatorTorques,
-        violation: actuatorViolation,
-      };
-    }
-    if (!isVerifiedContactCertificate(resolved, candidate) || !areActuatorsWithinLimits(candidate)) continue;
-    return {
-      issues: [],
-      certificates: [{
-        useCaseName: useCase.name,
-        heldPart: resolved.heldPart,
-        poses: { ...resolved.poses },
-        forceResidualN: candidate.forceResidualN,
-        torqueResidualNmm: candidate.torqueResidualNmm,
-        contactForces: candidate.contactForces,
-        actuatorTorques: candidate.actuatorTorques,
-      }],
+  return staticEquilibriumIssue(useCase.name, state.best);
+}
+
+/** Resolves one witness and folds it into the running bests; returns a result
+ *  when the witness is incomplete or certifies an equilibrium, else undefined. */
+async function reviewStaticWitness(
+  arm: Assembly,
+  useCase: PhysicalUseCaseRecord,
+  witness: PhysicalUseCasePoseWitness,
+  state: StaticSearchState,
+): Promise<PhysicalUseCaseStaticsResult | undefined> {
+  const resolved = await resolveStaticSample(arm, useCase, witness);
+  if (typeof resolved === 'string') {
+    return staticInputIncomplete(useCase.name, resolved);
+  }
+
+  const contactCandidate = searchContactAllocation(resolved, false);
+  if (
+    state.best === undefined ||
+    contactCandidate.normalizedResidual < state.best.score
+  ) {
+    state.best = {
+      poses: { ...resolved.poses },
+      forceResidualN: contactCandidate.forceResidualN,
+      torqueResidualNmm: contactCandidate.torqueResidualNmm,
+      score: contactCandidate.normalizedResidual,
     };
   }
 
-  if (equilibriumFound) {
-    return {
-      certificates: [],
-      issues: [{
-        kind: 'static-actuator-torque-insufficient',
-        useCaseName: useCase.name,
-        ...(bestActuator === undefined ? {} : { bestPoses: bestActuator.poses }),
-        actuatorTorques: bestActuator?.actuatorTorques ?? [],
-      }],
+  if (!isVerifiedContactCertificate(resolved, contactCandidate)) return undefined;
+  state.equilibriumFound = true;
+  const candidate = resolved.actuators.length === 0
+    ? contactCandidate
+    : searchContactAllocation(resolved, true);
+  const actuatorViolation = totalActuatorViolation(candidate.actuatorTorques);
+  if (state.bestActuator === undefined || actuatorViolation < state.bestActuator.violation) {
+    state.bestActuator = {
+      poses: { ...resolved.poses },
+      actuatorTorques: candidate.actuatorTorques,
+      violation: actuatorViolation,
     };
   }
+  if (!isVerifiedContactCertificate(resolved, candidate) || !areActuatorsWithinLimits(candidate)) {
+    return undefined;
+  }
+  return staticCertificate(useCase, resolved, candidate);
+}
 
+function staticInputIncomplete(
+  useCaseName: string,
+  message: string,
+): PhysicalUseCaseStaticsResult {
+  return {
+    certificates: [],
+    issues: [{
+      kind: 'static-input-incomplete',
+      useCaseName,
+      message,
+    }],
+  };
+}
+
+function staticCertificate(
+  useCase: PhysicalUseCaseRecord,
+  resolved: ResolvedStaticSample,
+  candidate: SearchCandidate,
+): PhysicalUseCaseStaticsResult {
+  return {
+    issues: [],
+    certificates: [{
+      useCaseName: useCase.name,
+      heldPart: resolved.heldPart,
+      poses: { ...resolved.poses },
+      forceResidualN: candidate.forceResidualN,
+      torqueResidualNmm: candidate.torqueResidualNmm,
+      contactForces: candidate.contactForces,
+      actuatorTorques: candidate.actuatorTorques,
+    }],
+  };
+}
+
+function staticActuatorTorqueIssue(
+  useCaseName: string,
+  bestActuator: StaticSearchState['bestActuator'],
+): PhysicalUseCaseStaticsResult {
+  return {
+    certificates: [],
+    issues: [{
+      kind: 'static-actuator-torque-insufficient',
+      useCaseName,
+      ...(bestActuator === undefined ? {} : { bestPoses: bestActuator.poses }),
+      actuatorTorques: bestActuator?.actuatorTorques ?? [],
+    }],
+  };
+}
+
+function staticEquilibriumIssue(
+  useCaseName: string,
+  best: StaticSearchState['best'],
+): PhysicalUseCaseStaticsResult {
   return {
     certificates: [],
     issues: [{
       kind: 'static-equilibrium-unmet',
-      useCaseName: useCase.name,
+      useCaseName,
       ...(best === undefined ? {} : {
         bestPoses: best.poses,
         bestForceResidualN: best.forceResidualN,
@@ -336,59 +386,6 @@ async function resolveActuators(
   return actuators;
 }
 
-function validateActuatorLimit(
-  limit: PhysicalUseCaseActuatorLimit,
-  matesByName: ReadonlyMap<string, ReturnType<Assembly['__mates']>[number]>,
-  couplings: ReturnType<Assembly['__mateCouplings']>,
-  transmissions: ReturnType<Assembly['__transmissionIntents']>,
-  witness: PhysicalUseCasePoseWitness,
-): { readonly poseDeg: number; readonly minDeg: number; readonly maxDeg: number } | string {
-  if (!isPositiveFinite(limit.maxTorqueNmm)) {
-    return `Actuator '${limit.mate}' requires a positive finite maxTorqueNmm.`;
-  }
-  const mate = matesByName.get(limit.mate);
-  if (mate === undefined) return `Actuator mate '${limit.mate}' does not exist.`;
-  if (mate.type !== 'revolute') {
-    return `Actuator mate '${limit.mate}' must be revolute for static torque review v1.`;
-  }
-  if (
-    mate.limitsDeg === undefined ||
-    !mate.limitsDeg.every(Number.isFinite) ||
-    mate.limitsDeg[0] > mate.limitsDeg[1]
-  ) {
-    return `Actuator mate '${limit.mate}' requires finite ordered limitsDeg.`;
-  }
-  if (couplings.some((coupling) => coupling.driven === limit.mate)) {
-    return `Actuator limit '${limit.mate}' names a driven coupled mate; name its independent source mate instead.`;
-  }
-
-  const movedCouplings = collectMovedCouplings(limit.mate, couplings);
-  for (const coupling of movedCouplings) {
-    const transmission = transmissions.find((candidate) =>
-      candidate.sourceMate === coupling.source &&
-      candidate.drivenMates.includes(coupling.driven));
-    if (transmission === undefined) {
-      return `Coupled motion '${coupling.source}' to '${coupling.driven}' requires arm.transmission(...) evidence for static torque review.`;
-    }
-    if (
-      transmission.ratio !== undefined &&
-      !nearlyEqual(transmission.ratio, coupling.ratio)
-    ) {
-      return `Transmission '${transmission.name}' ratio ${transmission.ratio} contradicts coupling ratio ${coupling.ratio} for '${coupling.source}' to '${coupling.driven}'.`;
-    }
-  }
-
-  const poseDeg = witness.poses[limit.mate];
-  if (typeof poseDeg !== 'number' || !Number.isFinite(poseDeg)) {
-    return `Actuator mate '${limit.mate}' has no finite scalar pose in the common-pose witness.`;
-  }
-  const [minDeg, maxDeg] = mate.limitsDeg;
-  if (poseDeg < minDeg - 1e-9 || poseDeg > maxDeg + 1e-9) {
-    return `Actuator mate '${limit.mate}' pose ${poseDeg} deg is outside limitsDeg.`;
-  }
-  return { poseDeg, minDeg, maxDeg };
-}
-
 function requiredContactPathActuatorSources(
   arm: Assembly,
   useCase: PhysicalUseCaseRecord,
@@ -441,25 +438,6 @@ function ultimateCouplingSource(
     current = couplingByDriven.get(current)!;
   }
   return current;
-}
-
-function collectMovedCouplings(
-  sourceMate: string,
-  couplings: ReturnType<Assembly['__mateCouplings']>,
-): ReturnType<Assembly['__mateCouplings']>[number][] {
-  const movedMates = new Set([sourceMate]);
-  const movedCouplings: ReturnType<Assembly['__mateCouplings']>[number][] = [];
-  let changed = true;
-  while (changed) {
-    changed = false;
-    for (const coupling of couplings) {
-      if (!movedMates.has(coupling.source) || movedMates.has(coupling.driven)) continue;
-      movedCouplings.push(coupling);
-      movedMates.add(coupling.driven);
-      changed = true;
-    }
-  }
-  return movedCouplings;
 }
 
 async function relativeContactJacobian(
@@ -795,8 +773,4 @@ function dotArray(a: readonly number[], b: readonly number[]): number {
 
 function normArray(values: readonly number[]): number {
   return Math.sqrt(values.reduce((sum, value) => sum + value * value, 0));
-}
-
-function nearlyEqual(a: number, b: number): boolean {
-  return Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b));
 }

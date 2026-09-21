@@ -97,21 +97,7 @@ export interface EvaluateScriptOutput {
 export async function evaluateScriptTool(
   input: EvaluateScriptInput,
 ): Promise<EvaluateScriptOutput> {
-  if (input.dryRun) {
-    const { evaluation: r, returnValue } = await dryRunScript(input as EvaluateInput);
-    const parts =
-      returnValue instanceof Scene
-        ? { count: returnValue.parts.length, names: returnValue.parts.map(p => p.name) }
-        : undefined;
-    return {
-      ok: r.exitCode === 0,
-      dryRun: true,
-      featureCount: r.featureCount,
-      diagnostics: withNextActions(r.diagnostics),
-      featureHealth: r.featureHealth,
-      ...(parts !== undefined ? { parts } : {}),
-    };
-  }
+  if (input.dryRun) return evaluateDryRun(input);
 
   const { evaluation: r, model, dfmReport } = await evaluateAndBuildScript(input as EvaluateInput);
   // Session policy: keep/refresh the active session whenever the model
@@ -123,31 +109,12 @@ export async function evaluateScriptTool(
   // out of the 9 session-dependent tools exactly while iterating on the
   // dfm fix. Genuine build failures (model missing or non-dfm errors)
   // still clear the session — its shapes would be stale or absent.
-  const dfmErrors = new Set(dfmReport?.diagnostics ?? []);
-  const buildSucceeded =
-    model !== undefined &&
-    model.diagnostics.every(d => d.severity !== 'error' || dfmErrors.has(d));
-  if (buildSucceeded) {
-    setActiveMcpSession({
-      session: model.session,
-      tailId: model.tailId,
-      tailShape: model.tailShape,
-      rootId: model.rootId,
-      rootShape: model.rootShape,
-    });
-  } else {
-    clearActiveMcpSession();
-  }
+  const buildSucceeded = didBuildSucceed(model, dfmReport);
+  refreshActiveSession(model, buildSucceeded);
   // Assembly-built scene: surface the named-part roster so agents can
   // confirm the model carries part identity. Absent for single-shape /
   // non-assembly returns.
-  const parts =
-    model?.returnValue instanceof Scene
-      ? {
-          count: model.returnValue.parts.length,
-          names: model.returnValue.parts.map(p => p.name),
-        }
-      : undefined;
+  const parts = sceneParts(model?.returnValue);
 
   // T3 — mechanism verify BY DEFAULT on the agent path. An agent calling
   // evaluate_script on an assembly used to get ok:true even when the
@@ -159,16 +126,7 @@ export async function evaluateScriptTool(
   // NOTE: this is the agent-facing surface ONLY. The RecomputeEngine
   // recompute path (Studio's per-keystroke lower) deliberately does NOT run
   // this sweep and is untouched here.
-  let mechanism: 'real' | 'broken' | 'unverified' | undefined;
-  const mechanismFailures: CompilerDiagnostic[] = [];
-  if (buildSucceeded && model !== undefined && input.skipMechanismCheck !== true) {
-    const assemblies = Array.from(model.session.assemblies.values()) as Assembly[];
-    if (assemblies.length > 0) {
-      const probe = await probeAssemblies(assemblies);
-      mechanism = probe.mechanism;
-      mechanismFailures.push(...probe.failures);
-    }
-  }
+  const { mechanism, mechanismFailures } = await probeSceneMechanism(model, buildSucceeded, input.skipMechanismCheck);
 
   // Merge mechanism diagnostics into the surfaced list (de-duped against
   // what's already there by reference). Derive `ok` honestly: a 'broken'
@@ -194,4 +152,65 @@ export async function evaluateScriptTool(
     ...(parts !== undefined ? { parts } : {}),
     ...(mechanism !== undefined ? { mechanism } : {}),
   };
+}
+
+type BuildOutcome = Awaited<ReturnType<typeof evaluateAndBuildScript>>;
+
+async function evaluateDryRun(input: EvaluateScriptInput): Promise<EvaluateScriptOutput> {
+  const { evaluation: r, returnValue } = await dryRunScript(input as EvaluateInput);
+  const parts = sceneParts(returnValue);
+  return {
+    ok: r.exitCode === 0,
+    dryRun: true,
+    featureCount: r.featureCount,
+    diagnostics: withNextActions(r.diagnostics),
+    featureHealth: r.featureHealth,
+    ...(parts !== undefined ? { parts } : {}),
+  };
+}
+
+function sceneParts(returnValue: unknown): { count: number; names: string[] } | undefined {
+  return returnValue instanceof Scene
+    ? { count: returnValue.parts.length, names: returnValue.parts.map(p => p.name) }
+    : undefined;
+}
+
+function didBuildSucceed(model: BuildOutcome['model'], dfmReport: BuildOutcome['dfmReport']): boolean {
+  const dfmErrors = new Set(dfmReport?.diagnostics ?? []);
+  return (
+    model !== undefined &&
+    model.diagnostics.every(d => d.severity !== 'error' || dfmErrors.has(d))
+  );
+}
+
+function refreshActiveSession(model: BuildOutcome['model'], buildSucceeded: boolean): void {
+  if (buildSucceeded && model !== undefined) {
+    setActiveMcpSession({
+      session: model.session,
+      tailId: model.tailId,
+      tailShape: model.tailShape,
+      rootId: model.rootId,
+      rootShape: model.rootShape,
+    });
+  } else {
+    clearActiveMcpSession();
+  }
+}
+
+async function probeSceneMechanism(
+  model: BuildOutcome['model'],
+  buildSucceeded: boolean,
+  skipMechanismCheck: boolean | undefined,
+): Promise<{ mechanism?: 'real' | 'broken' | 'unverified'; mechanismFailures: CompilerDiagnostic[] }> {
+  let mechanism: 'real' | 'broken' | 'unverified' | undefined;
+  const mechanismFailures: CompilerDiagnostic[] = [];
+  if (buildSucceeded && model !== undefined && skipMechanismCheck !== true) {
+    const assemblies = Array.from(model.session.assemblies.values()) as Assembly[];
+    if (assemblies.length > 0) {
+      const probe = await probeAssemblies(assemblies);
+      mechanism = probe.mechanism;
+      mechanismFailures.push(...probe.failures);
+    }
+  }
+  return { mechanism, mechanismFailures };
 }

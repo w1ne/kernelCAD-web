@@ -16,7 +16,7 @@ import {
   validateHashBoundConnectorManifest,
   type HashBoundConnectorManifest,
 } from '../src/shared/parts/connectorManifestSchema';
-import { runScript } from '../src/modeling/runtime/runScript';
+import { runScript } from '../src/composition/runScript';
 
 type Axis = 0 | 1 | 2;
 

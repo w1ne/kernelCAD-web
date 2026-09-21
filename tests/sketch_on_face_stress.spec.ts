@@ -11,7 +11,7 @@ test.describe('Sketch on Face Stress Test', () => {
         await page.setViewportSize({ width: 1280, height: 800 });
 
         // 1. Load App
-        await page.goto('/');
+        await page.goto('/studio');
         await page.waitForSelector('canvas');
 
         // 2. Inject Anonymous Shape Code
@@ -131,7 +131,7 @@ return [ replicad.makeCylinder(20, 40) ];
         await page.setViewportSize({ width: 1280, height: 800 });
 
         // 1. Load App
-        await page.goto('/');
+        await page.goto('/studio');
         await page.waitForSelector('canvas');
 
         // 2. Inject Named Shape Code

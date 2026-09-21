@@ -251,10 +251,10 @@ function fitGuidedLoop(
   guide: LoopGuide,
   hole: boolean,
 ): FittedLoop | null {
-  if (!(boundary >= 0 && labels.some((l) => l !== 0))) return null;
+  if (!hasGuidedRuns(boundary, labels)) return null;
   // Walk runs of equally labelled segments, starting on a run boundary.
   const rotated = range(pts, boundary, boundary + n - 1);
-  const lab = Array.from({ length: n }, (_, i) => labels[(boundary + i) % n]);
+  const lab = rotateLabels(labels, boundary, n);
   const segments: ProfileSegment[] = [];
   let a = 0;
   while (a < n) {
@@ -264,43 +264,9 @@ function fitGuidedLoop(
     const last = b + 1;
     const geom = lab[a] !== 0 ? guide.geometry(lab[a]) : undefined;
     if (geom && geom.kind === 'line') {
-      const tx = rotated[2 * (last % n)] - rotated[2 * first];
-      const ty = rotated[2 * (last % n) + 1] - rotated[2 * first + 1];
-      const sgn = geom.dx * tx + geom.dy * ty >= 0 ? 1 : -1;
-      // Direction from the wall plane; offset from the section it cuts (a
-      // plane fit can tilt a little where it borders a round), weighted by
-      // length: a sparse tessellated wall is one long chord, and the short
-      // chord of a blend facet grown into the region must not pull it.
-      let ox = 0;
-      let oy = 0;
-      let wsum = 0;
-      for (let q = first; q < last; q++) {
-        const ax = rotated[2 * (q % n)], ay = rotated[2 * (q % n) + 1];
-        const bx = rotated[2 * ((q + 1) % n)], by = rotated[2 * ((q + 1) % n) + 1];
-        const w = Math.hypot(bx - ax, by - ay);
-        ox += (w * (ax + bx)) / 2;
-        oy += (w * (ay + by)) / 2;
-        wsum += w;
-      }
-      if (wsum <= 1e-12) {
-        ox = rotated[2 * first];
-        oy = rotated[2 * first + 1];
-        wsum = 1;
-      }
-      segments.push({ geom: { kind: 'line', px: ox / wsum, py: oy / wsum, dx: geom.dx * sgn, dy: geom.dy * sgn }, first, last, fixed: true });
+      pushGuidedLineSegment(rotated, n, first, last, geom, segments);
     } else if (geom && geom.kind === 'circle') {
-      let sweep = 0;
-      let prev = Math.atan2(rotated[2 * first + 1] - geom.cy, rotated[2 * first] - geom.cx);
-      for (let q = first + 1; q <= last; q++) {
-        const m = q % n;
-        const ang = Math.atan2(rotated[2 * m + 1] - geom.cy, rotated[2 * m] - geom.cx);
-        let d = ang - prev;
-        while (d > Math.PI) d -= 2 * Math.PI;
-        while (d < -Math.PI) d += 2 * Math.PI;
-        sweep += d;
-        prev = ang;
-      }
-      segments.push({ geom: { kind: 'arc', cx: geom.cx, cy: geom.cy, r: geom.r, ccw: sweep >= 0 }, first, last, fixed: true });
+      pushGuidedCircleSegment(rotated, n, first, last, geom, segments);
     } else {
       segments.push(...greedySegments(rotated, first, last, eps, maxRadius));
     }
@@ -309,6 +275,74 @@ function fitGuidedLoop(
   mergeCollinear(rotated, segments, eps);
   refineSegments(rotated, segments);
   return { kind: 'path', segments, hole, points: rotated };
+}
+
+/** A run boundary exists and at least one segment carries a region label. */
+function hasGuidedRuns(boundary: number, labels: number[]): boolean {
+  return boundary >= 0 && labels.some((l) => l !== 0);
+}
+
+/** The labels rotated so index 0 starts at `boundary`. */
+function rotateLabels(labels: number[], boundary: number, n: number): number[] {
+  return Array.from({ length: n }, (_, i) => labels[(boundary + i) % n]);
+}
+
+/** Emit the labelled run [first, last] as a fixed line from its wall plane. */
+function pushGuidedLineSegment(
+  rotated: Float64Array,
+  n: number,
+  first: number,
+  last: number,
+  geom: Extract<RegionSection, { kind: 'line' }>,
+  segments: ProfileSegment[],
+): void {
+  const tx = rotated[2 * (last % n)] - rotated[2 * first];
+  const ty = rotated[2 * (last % n) + 1] - rotated[2 * first + 1];
+  const sgn = geom.dx * tx + geom.dy * ty >= 0 ? 1 : -1;
+  // Direction from the wall plane; offset from the section it cuts (a
+  // plane fit can tilt a little where it borders a round), weighted by
+  // length: a sparse tessellated wall is one long chord, and the short
+  // chord of a blend facet grown into the region must not pull it.
+  let ox = 0;
+  let oy = 0;
+  let wsum = 0;
+  for (let q = first; q < last; q++) {
+    const ax = rotated[2 * (q % n)], ay = rotated[2 * (q % n) + 1];
+    const bx = rotated[2 * ((q + 1) % n)], by = rotated[2 * ((q + 1) % n) + 1];
+    const w = Math.hypot(bx - ax, by - ay);
+    ox += (w * (ax + bx)) / 2;
+    oy += (w * (ay + by)) / 2;
+    wsum += w;
+  }
+  if (wsum <= 1e-12) {
+    ox = rotated[2 * first];
+    oy = rotated[2 * first + 1];
+    wsum = 1;
+  }
+  segments.push({ geom: { kind: 'line', px: ox / wsum, py: oy / wsum, dx: geom.dx * sgn, dy: geom.dy * sgn }, first, last, fixed: true });
+}
+
+/** Emit the labelled run [first, last] as a fixed arc on its cylinder axis. */
+function pushGuidedCircleSegment(
+  rotated: Float64Array,
+  n: number,
+  first: number,
+  last: number,
+  geom: Extract<RegionSection, { kind: 'circle' }>,
+  segments: ProfileSegment[],
+): void {
+  let sweep = 0;
+  let prev = Math.atan2(rotated[2 * first + 1] - geom.cy, rotated[2 * first] - geom.cx);
+  for (let q = first + 1; q <= last; q++) {
+    const m = q % n;
+    const ang = Math.atan2(rotated[2 * m + 1] - geom.cy, rotated[2 * m] - geom.cx);
+    let d = ang - prev;
+    while (d > Math.PI) d -= 2 * Math.PI;
+    while (d < -Math.PI) d += 2 * Math.PI;
+    sweep += d;
+    prev = ang;
+  }
+  segments.push({ geom: { kind: 'arc', cx: geom.cx, cy: geom.cy, r: geom.r, ccw: sweep >= 0 }, first, last, fixed: true });
 }
 
 function fitUnguidedLoop(pts: Float64Array, n: number, eps: number, maxRadius: number, hole: boolean): FittedLoop {

@@ -269,108 +269,128 @@ export function renderSections(input: SectionRenderInput): SectionRenderResult {
       if (oblique.hatched) usesHatchPattern = true;
       return;
     }
-    const { axis, position } = resolved;
-    const min = bbox.min[AXIS_INDEX[axis]];
-    const max = bbox.max[AXIS_INDEX[axis]];
-    const eps = Math.max((max - min) * 1e-6, 1e-4);
-    if (position < min + eps || position > max - eps) {
-      throw new KernelError(
-        'drawing.section.plane-misses-body',
-        `${role}: the cutting plane (axis '${axis}' at ${position}) does not pass through the body ` +
-          `(bounding range [${min}, ${max}]).`,
-        undefined,
-        "Move the plane origin so it passes through the body's interior, or check the plane normal.",
-      );
-    }
-
-    const info = AXIS_INFO[axis];
-    groups.push(cuttingPlaneIndicatorSvg(axis, position, mainViewPlacements[info.parentView], mainScale, spec.label));
-
-    const kept = buildKeptHalf(compound, axis, position);
-    const keptShape = kept.getReplicadShape();
-    const camera = makeDrawingCamera(info.sectionView);
-    const raw = projectShapeForDrawing(keptShape, camera, { withHidden: true });
-    const [vSharp, vOutline, vSmooth, hSharp, hOutline] = dedupPolylineClasses([
-      raw.visibleSharp, raw.visibleOutline, raw.visibleSmooth, raw.hiddenSharp, raw.hiddenOutline,
-    ]);
-    const visible: Polyline2[] = [...vSharp, ...vOutline];
-    const tangent: Polyline2[] = vSmooth;
-    const hidden: Polyline2[] = [...hSharp, ...hOutline];
-    const projBox: ViewBox2 = viewBoxOfPolylines([visible, tangent, hidden]) ?? { x: 0, y: 0, w: 1, h: 1 };
-
-    const availW = slotW - 2 * CELL_PAD;
-    const availH = bandHeight - 2 * CELL_PAD;
-    const cellScale = Math.min(
-      mainScale,
-      projBox.w > 0 ? availW / projBox.w : mainScale,
-      projBox.h > 0 ? availH / projBox.h : mainScale,
+    const axisSection = renderAxisSection(
+      compound, spec, role, resolved.axis, resolved.position, bbox, mainViewPlacements, mainScale,
+      bandOrigin[0] + i * slotW, bandOrigin[1], slotW, bandHeight,
     );
-    const slotX = bandOrigin[0] + i * slotW;
-    const cellW = projBox.w * cellScale;
-    const cellH = projBox.h * cellScale;
-    const sheetX = slotX + (slotW - cellW) / 2;
-    const sheetY = bandOrigin[1] + (bandHeight - cellH) / 2;
-    const placement: ViewPlacement = {
-      tx: sheetX - projBox.x * cellScale,
-      ty: sheetY + (projBox.y + projBox.h) * cellScale,
-      box: { x: sheetX, y: sheetY, w: cellW, h: cellH },
-    };
-
-    // Cut cross-section face(s): the true hatch boundary.
-    const faceQuery = axis === 'x'
-      ? { atX: position, ofSurfaceType: 'PLANE' as const }
-      : axis === 'y'
-        ? { atY: position, ofSurfaceType: 'PLANE' as const }
-        : { atZ: position, ofSurfaceType: 'PLANE' as const };
-    const cutFaces = resolveFaceQuery(kept, faceQuery);
-    const hatchPaths: string[] = [];
-    for (const face of cutFaces) {
-      // Both `Face.outerWire()` and `Face.innerWires()` self-delete `this`
-      // (replicad frees the underlying OCCT handle once the wire is
-      // extracted) — call each on its own clone so the second call doesn't
-      // find the face already disposed.
-      const outer = wireToSheetPath(face.clone().outerWire(), info.sectionView, placement, cellScale);
-      const inner = face.clone().innerWires().map(w => wireToSheetPath(w, info.sectionView, placement, cellScale));
-      hatchPaths.push([outer, ...inner].join(' '));
-    }
-    if (hatchPaths.length > 0) usesHatchPattern = true;
-    const hatchGroup = hatchPaths.length === 0
-      ? ''
-      : `<g class="section-hatch">${hatchPaths
-        .map(d => `<path d="${d}" fill="url(#kc-section-hatch)" fill-rule="evenodd" stroke="none"/>`)
-        .join('')}</g>`;
-
-    const pathGroup = (cls: string, style: string, polylines: Polyline2[]): string => {
-      const paths = polylines
-        .map(pl => {
-          const d = pl.map(([mx, my], k) => {
-            const [sx, sy] = [placement.tx + mx * cellScale, placement.ty - my * cellScale];
-            return `${k === 0 ? 'M' : 'L'} ${round3(sx)} ${round3(sy)}`;
-          }).join(' ');
-          return `<path d="${d}"/>`;
-        })
-        .join('');
-      return `<g class="${cls}" ${style}>${paths}</g>`;
-    };
-
-    const caption =
-      `<text class="view-label" x="${round3(placement.box.x + placement.box.w / 2)}" ` +
-      `y="${round3(placement.box.y + placement.box.h + 6)}" font-size="2.6" text-anchor="middle" ` +
-      `fill="#555" stroke="none">SECTION ${spec.label}-${spec.label}</text>`;
-
-    groups.push(
-      `<g id="view-section-${spec.label}" data-view="section-${spec.label}" fill="none" stroke="#000" ` +
-      `stroke-linecap="round" stroke-linejoin="round">` +
-      hatchGroup +
-      pathGroup('hidden', 'stroke-width="0.25" stroke-dasharray="1.6 0.8"', hidden) +
-      pathGroup('tangent', 'stroke-width="0.13"', tangent) +
-      pathGroup('visible', 'stroke-width="0.5"', visible) +
-      caption +
-      `</g>`,
-    );
+    groups.push(axisSection.indicator, axisSection.cell);
+    if (axisSection.hatched) usesHatchPattern = true;
   });
 
   return { svg: groups.join(''), usesHatchPattern };
+}
+
+function renderAxisSection(
+  compound: OcctBackend,
+  spec: DrawingSectionSpec,
+  role: string,
+  axis: Axis,
+  position: number,
+  bbox: { min: Vec3; max: Vec3 },
+  mainViewPlacements: Record<DrawingViewName, ViewPlacement>,
+  mainScale: number,
+  slotX: number,
+  slotY: number,
+  slotW: number,
+  bandHeight: number,
+): { indicator: string; cell: string; hatched: boolean } {
+  const min = bbox.min[AXIS_INDEX[axis]];
+  const max = bbox.max[AXIS_INDEX[axis]];
+  const eps = Math.max((max - min) * 1e-6, 1e-4);
+  if (position < min + eps || position > max - eps) {
+    throw new KernelError(
+      'drawing.section.plane-misses-body',
+      `${role}: the cutting plane (axis '${axis}' at ${position}) does not pass through the body ` +
+        `(bounding range [${min}, ${max}]).`,
+      undefined,
+      "Move the plane origin so it passes through the body's interior, or check the plane normal.",
+    );
+  }
+
+  const info = AXIS_INFO[axis];
+  const indicator = cuttingPlaneIndicatorSvg(axis, position, mainViewPlacements[info.parentView], mainScale, spec.label);
+
+  const kept = buildKeptHalf(compound, axis, position);
+  const keptShape = kept.getReplicadShape();
+  const camera = makeDrawingCamera(info.sectionView);
+  const raw = projectShapeForDrawing(keptShape, camera, { withHidden: true });
+  const [vSharp, vOutline, vSmooth, hSharp, hOutline] = dedupPolylineClasses([
+    raw.visibleSharp, raw.visibleOutline, raw.visibleSmooth, raw.hiddenSharp, raw.hiddenOutline,
+  ]);
+  const visible: Polyline2[] = [...vSharp, ...vOutline];
+  const tangent: Polyline2[] = vSmooth;
+  const hidden: Polyline2[] = [...hSharp, ...hOutline];
+  const projBox: ViewBox2 = viewBoxOfPolylines([visible, tangent, hidden]) ?? { x: 0, y: 0, w: 1, h: 1 };
+
+  const availW = slotW - 2 * CELL_PAD;
+  const availH = bandHeight - 2 * CELL_PAD;
+  const cellScale = Math.min(
+    mainScale,
+    projBox.w > 0 ? availW / projBox.w : mainScale,
+    projBox.h > 0 ? availH / projBox.h : mainScale,
+  );
+  const cellW = projBox.w * cellScale;
+  const cellH = projBox.h * cellScale;
+  const sheetX = slotX + (slotW - cellW) / 2;
+  const sheetY = slotY + (bandHeight - cellH) / 2;
+  const placement: ViewPlacement = {
+    tx: sheetX - projBox.x * cellScale,
+    ty: sheetY + (projBox.y + projBox.h) * cellScale,
+    box: { x: sheetX, y: sheetY, w: cellW, h: cellH },
+  };
+
+  // Cut cross-section face(s): the true hatch boundary.
+  const faceQuery = axis === 'x'
+    ? { atX: position, ofSurfaceType: 'PLANE' as const }
+    : axis === 'y'
+      ? { atY: position, ofSurfaceType: 'PLANE' as const }
+      : { atZ: position, ofSurfaceType: 'PLANE' as const };
+  const cutFaces = resolveFaceQuery(kept, faceQuery);
+  const hatchPaths: string[] = [];
+  for (const face of cutFaces) {
+    // Both `Face.outerWire()` and `Face.innerWires()` self-delete `this`
+    // (replicad frees the underlying OCCT handle once the wire is
+    // extracted) — call each on its own clone so the second call doesn't
+    // find the face already disposed.
+    const outer = wireToSheetPath(face.clone().outerWire(), info.sectionView, placement, cellScale);
+    const inner = face.clone().innerWires().map(w => wireToSheetPath(w, info.sectionView, placement, cellScale));
+    hatchPaths.push([outer, ...inner].join(' '));
+  }
+  const hatchGroup = hatchPaths.length === 0
+    ? ''
+    : `<g class="section-hatch">${hatchPaths
+      .map(d => `<path d="${d}" fill="url(#kc-section-hatch)" fill-rule="evenodd" stroke="none"/>`)
+      .join('')}</g>`;
+
+  const pathGroup = (cls: string, style: string, polylines: Polyline2[]): string => {
+    const paths = polylines
+      .map(pl => {
+        const d = pl.map(([mx, my], k) => {
+          const [sx, sy] = [placement.tx + mx * cellScale, placement.ty - my * cellScale];
+          return `${k === 0 ? 'M' : 'L'} ${round3(sx)} ${round3(sy)}`;
+        }).join(' ');
+        return `<path d="${d}"/>`;
+      })
+      .join('');
+    return `<g class="${cls}" ${style}>${paths}</g>`;
+  };
+
+  const caption =
+    `<text class="view-label" x="${round3(placement.box.x + placement.box.w / 2)}" ` +
+    `y="${round3(placement.box.y + placement.box.h + 6)}" font-size="2.6" text-anchor="middle" ` +
+    `fill="#555" stroke="none">SECTION ${spec.label}-${spec.label}</text>`;
+
+  const cell =
+    `<g id="view-section-${spec.label}" data-view="section-${spec.label}" fill="none" stroke="#000" ` +
+    `stroke-linecap="round" stroke-linejoin="round">` +
+    hatchGroup +
+    pathGroup('hidden', 'stroke-width="0.25" stroke-dasharray="1.6 0.8"', hidden) +
+    pathGroup('tangent', 'stroke-width="0.13"', tangent) +
+    pathGroup('visible', 'stroke-width="0.5"', visible) +
+    caption +
+    `</g>`;
+
+  return { indicator, cell, hatched: hatchPaths.length > 0 };
 }
 
 // ---------------------------------------------------------------------------
@@ -595,30 +615,7 @@ function renderObliqueSection(input: ObliqueSectionInput): { indicator: string; 
   const n = unit3(input.plane.normal);
   const bb = compound.boundingBox();
 
-  // A plane misses the body when every bounding-box corner lies on one side.
-  let lo = Infinity;
-  let hi = -Infinity;
-  for (const x of [bb.min[0], bb.max[0]]) {
-    for (const y of [bb.min[1], bb.max[1]]) {
-      for (const z of [bb.min[2], bb.max[2]]) {
-        const v = dot3([x, y, z], n);
-        lo = Math.min(lo, v);
-        hi = Math.max(hi, v);
-      }
-    }
-  }
-  const at = dot3(origin, n);
-  const eps = Math.max((hi - lo) * 1e-6, 1e-4);
-  if (at < lo + eps || at > hi - eps) {
-    throw new KernelError(
-      'drawing.section.plane-misses-body',
-      `${role}: the cutting plane (normal ${JSON.stringify(n.map(v => Math.round(v * 1e4) / 1e4))} through ` +
-        `${JSON.stringify(origin)}) does not pass through the body (offset ${round3(at)}, body spans ` +
-        `[${round3(lo)}, ${round3(hi)}] along the normal).`,
-      undefined,
-      "Move the plane origin so it passes through the body's interior, or check the plane normal.",
-    );
-  }
+  assertObliquePlaneHitsBody(role, bb, origin, n);
 
   const bodyCentre: V3 = [
     (bb.min[0] + bb.max[0]) / 2,
@@ -653,31 +650,7 @@ function renderObliqueSection(input: ObliqueSectionInput): { indicator: string; 
   const toSheet = (mx: number, my: number): string =>
     `${round3(tx + mx * cellScale)} ${round3(ty - my * cellScale)}`;
 
-  // True cross-section: planar faces of the kept half lying on the cutting
-  // plane with their outward normal along +normal (the cut face looks back
-  // at the viewer).
-  const diag = Math.hypot(bb.max[0] - bb.min[0], bb.max[1] - bb.min[1], bb.max[2] - bb.min[2]) || 1;
-  const planeTol = Math.max(diag * 1e-6, 1e-3);
-  const chainTol = Math.max(diag * 1e-6, 1e-4);
-  const faces = (keptShape as unknown as { faces: Face[] }).faces;
-  const hatchPaths: string[] = [];
-  for (const face of faces) {
-    if ((face as unknown as { geomType?: string }).geomType !== 'PLANE') continue;
-    const fn = face.normalAt();
-    if (dot3([fn.x, fn.y, fn.z], n) < 0.999) continue;
-    const c = face.center;
-    if (Math.abs(dot3(sub3([c.x, c.y, c.z], origin), n)) > planeTol) continue;
-    const loops = [
-      sampleWireLoop(face.clone().outerWire() as unknown as { edges: EdgeLike[] }, chainTol),
-      ...face.clone().innerWires().map(w => sampleWireLoop(w as unknown as { edges: EdgeLike[] }, chainTol)),
-    ];
-    hatchPaths.push(loops
-      .filter(loop => loop.length >= 3)
-      .map(loop => loop
-        .map((p, k) => `${k === 0 ? 'M' : 'L'} ${toSheet(dot3(p, basis.x), dot3(p, basis.y))}`)
-        .join(' ') + ' Z')
-      .join(' '));
-  }
+  const hatchPaths = obliqueHatchPaths(keptShape, origin, n, basis, toSheet, bb);
   const hatchGroup = hatchPaths.length === 0
     ? ''
     : `<g class="section-hatch">${hatchPaths
@@ -706,4 +679,72 @@ function renderObliqueSection(input: ObliqueSectionInput): { indicator: string; 
     `</g>`;
 
   return { indicator, cell, hatched: hatchPaths.length > 0 };
+}
+
+function assertObliquePlaneHitsBody(
+  role: string,
+  bb: { min: Vec3; max: Vec3 },
+  origin: Vec3,
+  n: V3,
+): void {
+  // A plane misses the body when every bounding-box corner lies on one side.
+  let lo = Infinity;
+  let hi = -Infinity;
+  for (const x of [bb.min[0], bb.max[0]]) {
+    for (const y of [bb.min[1], bb.max[1]]) {
+      for (const z of [bb.min[2], bb.max[2]]) {
+        const v = dot3([x, y, z], n);
+        lo = Math.min(lo, v);
+        hi = Math.max(hi, v);
+      }
+    }
+  }
+  const at = dot3(origin, n);
+  const eps = Math.max((hi - lo) * 1e-6, 1e-4);
+  if (at < lo + eps || at > hi - eps) {
+    throw new KernelError(
+      'drawing.section.plane-misses-body',
+      `${role}: the cutting plane (normal ${JSON.stringify(n.map(v => Math.round(v * 1e4) / 1e4))} through ` +
+        `${JSON.stringify(origin)}) does not pass through the body (offset ${round3(at)}, body spans ` +
+        `[${round3(lo)}, ${round3(hi)}] along the normal).`,
+      undefined,
+      "Move the plane origin so it passes through the body's interior, or check the plane normal.",
+    );
+  }
+}
+
+/** True cross-section: planar faces of the kept half lying on the cutting
+ *  plane with their outward normal along +normal (the cut face looks back
+ *  at the viewer). */
+function obliqueHatchPaths(
+  keptShape: unknown,
+  origin: Vec3,
+  n: V3,
+  basis: { direction: V3; x: V3; y: V3 },
+  toSheet: (mx: number, my: number) => string,
+  bb: { min: Vec3; max: Vec3 },
+): string[] {
+  const diag = Math.hypot(bb.max[0] - bb.min[0], bb.max[1] - bb.min[1], bb.max[2] - bb.min[2]) || 1;
+  const planeTol = Math.max(diag * 1e-6, 1e-3);
+  const chainTol = Math.max(diag * 1e-6, 1e-4);
+  const faces = (keptShape as unknown as { faces: Face[] }).faces;
+  const hatchPaths: string[] = [];
+  for (const face of faces) {
+    if ((face as unknown as { geomType?: string }).geomType !== 'PLANE') continue;
+    const fn = face.normalAt();
+    if (dot3([fn.x, fn.y, fn.z], n) < 0.999) continue;
+    const c = face.center;
+    if (Math.abs(dot3(sub3([c.x, c.y, c.z], origin), n)) > planeTol) continue;
+    const loops = [
+      sampleWireLoop(face.clone().outerWire() as unknown as { edges: EdgeLike[] }, chainTol),
+      ...face.clone().innerWires().map(w => sampleWireLoop(w as unknown as { edges: EdgeLike[] }, chainTol)),
+    ];
+    hatchPaths.push(loops
+      .filter(loop => loop.length >= 3)
+      .map(loop => loop
+        .map((p, k) => `${k === 0 ? 'M' : 'L'} ${toSheet(dot3(p, basis.x), dot3(p, basis.y))}`)
+        .join(' ') + ' Z')
+      .join(' '));
+  }
+  return hatchPaths;
 }

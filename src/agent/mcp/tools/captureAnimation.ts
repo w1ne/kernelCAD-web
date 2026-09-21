@@ -44,10 +44,12 @@
 
 import {
   captureAnimation,
+  type CaptureAnimationOpts,
   type CaptureAnimationResult,
   type CaptureFailureKind,
 } from '../../render/captureAnimation';
 import { buildObjectFilter } from '../../cli/commands/render';
+import type { HeadlessObjectFilter } from '../../render/headlessRender';
 import type { AnimationCollision } from '../../../modeling/animation/verifyAnimation';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
@@ -191,55 +193,66 @@ function toolRefusal(
   };
 }
 
-export async function captureAnimationTool(
-  input: CaptureAnimationInput,
-): Promise<CaptureAnimationOutput> {
-  // File-only: a clear refusal beats a confusing engine crash. The asymmetry
-  // vs export_model is documented in the file header.
+type CaptureInputCheck =
+  | { ok: false; refusal: CaptureAnimationOutput }
+  | { ok: true; file: string };
+
+/** File-only: a clear refusal beats a confusing engine crash. The asymmetry
+ *  vs export_model is documented in the file header. */
+function checkCaptureInput(input: CaptureAnimationInput): CaptureInputCheck {
   if (input.code !== undefined && input.file === undefined) {
-    return toolRefusal(
-      'cli.invalid-args',
-      'capture_animation: inline { code } is not supported — the capture engine renders from a file on disk only. Write the script to a .kcad.ts file and pass { file }.',
-      'Save the script to a .kcad.ts file (so relative lib.fromSTEP(...) imports resolve) and call capture_animation with { file } instead of { code }.',
-      'environment',
-    );
+    return {
+      ok: false,
+      refusal: toolRefusal(
+        'cli.invalid-args',
+        'capture_animation: inline { code } is not supported — the capture engine renders from a file on disk only. Write the script to a .kcad.ts file and pass { file }.',
+        'Save the script to a .kcad.ts file (so relative lib.fromSTEP(...) imports resolve) and call capture_animation with { file } instead of { code }.',
+        'environment',
+      ),
+    };
   }
   if (typeof input.file !== 'string' || input.file.length === 0) {
-    return toolRefusal(
-      'cli.invalid-args',
-      'capture_animation: { file } is required (path to a .kcad.ts script with an animationView({...}) record).',
-      'Pass { file: "<path-to-script.kcad.ts>" }; inline { code } is not supported by the capture engine.',
-      'environment',
-    );
+    return {
+      ok: false,
+      refusal: toolRefusal(
+        'cli.invalid-args',
+        'capture_animation: { file } is required (path to a .kcad.ts script with an animationView({...}) record).',
+        'Pass { file: "<path-to-script.kcad.ts>" }; inline { code } is not supported by the capture engine.',
+        'environment',
+      ),
+    };
   }
   if (input.output_path !== undefined && input.frames_dir !== undefined) {
-    return toolRefusal(
-      'cli.invalid-args',
-      'capture_animation: output_path and frames_dir are mutually exclusive — pick MP4 mode (output_path) or PNG-sequence mode (frames_dir).',
-      'Drop output_path to write a PNG sequence into frames_dir, or drop frames_dir to encode an MP4.',
-      'environment',
-    );
+    return {
+      ok: false,
+      refusal: toolRefusal(
+        'cli.invalid-args',
+        'capture_animation: output_path and frames_dir are mutually exclusive — pick MP4 mode (output_path) or PNG-sequence mode (frames_dir).',
+        'Drop output_path to write a PNG sequence into frames_dir, or drop frames_dir to encode an MP4.',
+        'environment',
+      ),
+    };
   }
-  // focus / hide → object-visibility filter (render-parity: same builder, same
-  // mutual-exclusivity rule). Visibility is render-only — it does NOT affect the
-  // pose verification, which runs against the full model.
-  let objectFilter;
-  try {
-    objectFilter = buildObjectFilter({
-      ...(input.focus !== undefined ? { focus: input.focus } : {}),
-      ...(input.hide !== undefined ? { hide: input.hide } : {}),
-    });
-  } catch (e) {
-    return toolRefusal(
-      'cli.invalid-args',
-      e instanceof Error ? e.message.replace(/^render: /, 'capture_animation: ') : String(e),
-      'Pass only focus OR hide, not both.',
-      'environment',
-    );
-  }
+  return { ok: true, file: input.file };
+}
 
-  const capturePromise = captureAnimation({
-    scriptPath: input.file,
+/** focus / hide → object-visibility filter (render-parity: same builder, same
+ *  mutual-exclusivity rule). Visibility is render-only — it does NOT affect the
+ *  pose verification, which runs against the full model. */
+function objectFilterSource(input: CaptureAnimationInput): { focus?: string[]; hide?: string[] } {
+  return {
+    ...(input.focus !== undefined ? { focus: input.focus } : {}),
+    ...(input.hide !== undefined ? { hide: input.hide } : {}),
+  };
+}
+
+function captureRequest(
+  input: CaptureAnimationInput,
+  file: string,
+  objectFilter: HeadlessObjectFilter | undefined,
+): CaptureAnimationOpts {
+  return {
+    scriptPath: file,
     ...(input.output_path !== undefined ? { outPath: input.output_path } : {}),
     ...(input.frames_dir !== undefined ? { framesDir: input.frames_dir } : {}),
     ...(input.fps !== undefined ? { fps: input.fps } : {}),
@@ -247,13 +260,15 @@ export async function captureAnimationTool(
     ...(input.verify_every !== undefined ? { verifyEveryNthFrame: input.verify_every } : {}),
     ...(objectFilter !== undefined ? { objectFilter } : {}),
     // No onProgress: MCP is request/response with no streaming channel.
-  });
+  };
+}
 
-  // Promise.race against a generous deadline. The engine has no timeout/abort
-  // seam, so on timeout we abandon the RESULT only — the underlying capture
-  // may still be finishing in the background (documented in the header + hint).
+/** Promise.race against a generous deadline. The engine has no timeout/abort
+ *  seam, so on timeout we abandon the RESULT only — the underlying capture
+ *  may still be finishing in the background (documented in the header + hint). */
+function captureDeadline(): { promise: Promise<CaptureAnimationOutput>; cancel: () => void } {
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const timeoutPromise = new Promise<CaptureAnimationOutput>((res) => {
+  const promise = new Promise<CaptureAnimationOutput>((res) => {
     timer = setTimeout(
       () =>
         res(
@@ -268,6 +283,35 @@ export async function captureAnimationTool(
     );
     timer.unref?.();
   });
+  return {
+    promise,
+    cancel: () => {
+      if (timer !== undefined) clearTimeout(timer);
+    },
+  };
+}
+
+export async function captureAnimationTool(
+  input: CaptureAnimationInput,
+): Promise<CaptureAnimationOutput> {
+  const inputCheck = checkCaptureInput(input);
+  if (!inputCheck.ok) return inputCheck.refusal;
+
+  let objectFilter: HeadlessObjectFilter | undefined;
+  try {
+    objectFilter = buildObjectFilter(objectFilterSource(input));
+  } catch (e) {
+    return toolRefusal(
+      'cli.invalid-args',
+      e instanceof Error ? e.message.replace(/^render: /, 'capture_animation: ') : String(e),
+      'Pass only focus OR hide, not both.',
+      'environment',
+    );
+  }
+
+  const capturePromise = captureAnimation(captureRequest(input, inputCheck.file, objectFilter));
+
+  const deadline = captureDeadline();
 
   // Map the engine result into the envelope. Attach a no-op .catch so that if
   // the timeout WINS the race and the underlying capture later REJECTS (a wedged
@@ -278,9 +322,8 @@ export async function captureAnimationTool(
   resultPromise.catch(() => undefined);
 
   try {
-    const result = await Promise.race([resultPromise, timeoutPromise]);
-    return result;
+    return await Promise.race([resultPromise, deadline.promise]);
   } finally {
-    if (timer !== undefined) clearTimeout(timer);
+    deadline.cancel();
   }
 }

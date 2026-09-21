@@ -160,32 +160,10 @@ export function validateManifestAgainstStepBytes(
   });
 }
 
-/**
- * FETCH-BY-URL entrypoint. Resolves a direct geometry URL on a trusted host to
- * a fetch-only PartRecord (STEP → inspected + connector-synthesized; mesh →
- * cached, flagged non-BREP). Never re-hosts. See classifyPartUrl for routing.
- */
-export async function fetchPartFromUrlHost(
-  ctx: FetchPartCtx,
-  url: string,
-  opts: FetchPartUrlOpts = {},
-): Promise<FetchPartUrlOutcome> {
-  const mode = classifyPartUrl(url);
-  if (mode === 'link_out') {
-    return {
-      ok: true,
-      kind: 'link_out',
-      url,
-      instruction:
-        'Download the STEP from this configurator and ingest it locally with fetch_part({ file })',
-    };
-  }
-  if (mode === 'blocked') {
-    return { ok: false, error: 'url_host_not_allowed', host: parseUrlHost(url) };
-  }
-
-  const doFetch = opts.fetchImpl ?? fetch;
-  const fetcher = async (u: string): Promise<Buffer> => {
+/** Wrap a fetch implementation so non-2xx responses raise the same
+ *  parts.fetch.api-error the URL path has always produced. */
+function createUrlBytesFetcher(doFetch: typeof fetch): (u: string) => Promise<Buffer> {
+  return async (u: string): Promise<Buffer> => {
     const resp = await doFetch(u);
     if (!resp.ok) {
       throw new KernelError(
@@ -197,7 +175,11 @@ export async function fetchPartFromUrlHost(
     }
     return Buffer.from(await resp.arrayBuffer());
   };
+}
 
+/** Classify the URL extension, throwing the same feature.invalid-args when it
+ *  is neither a STEP nor a recognized mesh suffix. */
+function urlGeometryKind(url: string): 'mesh' | 'step' {
   const isMesh = MESH_EXT_RE.test(url);
   const isStep = STEP_EXT_RE.test(url);
   if (!isMesh && !isStep) {
@@ -208,53 +190,57 @@ export async function fetchPartFromUrlHost(
       'parts.fetch.url.unsupported-ext — point at a direct .step/.stp (BREP) or .stl/.dae/.obj (mesh) URL.',
     );
   }
+  return isMesh ? 'mesh' : 'step';
+}
 
-  const ext = isMesh ? meshExt(url) : '.step';
-  // Cache under the same ~/.cache/kernelcad/parts/<sha256(url)><ext> path the
-  // remote tier uses. No expectedSha256: the URL is the trust anchor here, and
-  // we hash the bytes ourselves for the record's provenance field.
-  const path = await getOrFetchAsync({
-    consumer: 'parts',
-    url,
-    ext,
-    ttlMs: null,
-    fetcher,
+/** Build the cached mesh-import handle (no BREP) for a fetched mesh URL. */
+function buildUrlMeshPart(
+  ctx: FetchPartCtx,
+  url: string,
+  path: string,
+  sha256: string,
+  baseName: string,
+): FetchPartResult {
+  // Mesh import: we do NOT have a BREP path here, so return a usable cached
+  // handle flagged as a mesh. The cache path is exposed via metadata so the
+  // mesh-import escape hatch can pick it up.
+  const record: PartRecord = {
+    id: `url:${sha256.slice(0, 16)}`,
+    name: baseName,
+    category: 'imported',
+    family: 'url-import',
+    tags: ['url-import', 'mesh-import'],
+    attributes: { geometryKind: 'mesh', cachePath: path },
+    sha256,
+    source: 'remote',
+    license: 'unknown',
+    connectors: [],
+    stepUrl: url,
+    redistribution: 'fetch-only',
+  };
+  // Mesh imports have no Shape (no BREP); surface the cached path on a stub
+  // shape so callers keep a uniform { shape, record } contract. We park no
+  // geometry — the lowerer treats this as a mesh-import escape hatch.
+  const shape = ctx.session.createShape({
+    kind: 'importedMesh',
+    params: {},
+    inputs: {},
+    metadata: { sourcePath: path, geometryKind: 'mesh' },
   });
-  const bytes = readFileSync(path);
-  const sha256 = sha256Hex(bytes);
-  const baseName = urlBaseName(url);
+  attachCatalogPartMetadata(ctx, shape, record);
+  return { shape, record };
+}
 
-  if (isMesh) {
-    // Mesh import: we do NOT have a BREP path here, so return a usable cached
-    // handle flagged as a mesh. The cache path is exposed via metadata so the
-    // mesh-import escape hatch can pick it up.
-    const record: PartRecord = {
-      id: `url:${sha256.slice(0, 16)}`,
-      name: baseName,
-      category: 'imported',
-      family: 'url-import',
-      tags: ['url-import', 'mesh-import'],
-      attributes: { geometryKind: 'mesh', cachePath: path },
-      sha256,
-      source: 'remote',
-      license: 'unknown',
-      connectors: [],
-      stepUrl: url,
-      redistribution: 'fetch-only',
-    };
-    // Mesh imports have no Shape (no BREP); surface the cached path on a stub
-    // shape so callers keep a uniform { shape, record } contract. We park no
-    // geometry — the lowerer treats this as a mesh-import escape hatch.
-    const shape = ctx.session.createShape({
-      kind: 'importedMesh',
-      params: {},
-      inputs: {},
-      metadata: { sourcePath: path, geometryKind: 'mesh' },
-    });
-    attachCatalogPartMetadata(ctx, shape, record);
-    return { ok: true, kind: 'part', result: { shape, record } };
-  }
-
+/** Import fetched STEP bytes and synthesize connectors exactly as the remote
+ *  catalog tier does. */
+async function buildUrlStepPart(
+  ctx: FetchPartCtx,
+  url: string,
+  bytes: Buffer,
+  path: string,
+  sha256: string,
+  baseName: string,
+): Promise<FetchPartResult> {
   // STEP path: import → inspect → synthesize connectors (same flow the remote
   // tier uses for catalog STEP).
   const shape = await fromStepBytes(ctx, bytes, url);
@@ -286,7 +272,66 @@ export async function fetchPartFromUrlHost(
     redistribution: 'fetch-only',
   };
   attachCatalogPartMetadata(ctx, shape, record);
-  return { ok: true, kind: 'part', result: { shape, record } };
+  return { shape, record };
+}
+
+/**
+ * FETCH-BY-URL entrypoint. Resolves a direct geometry URL on a trusted host to
+ * a fetch-only PartRecord (STEP → inspected + connector-synthesized; mesh →
+ * cached, flagged non-BREP). Never re-hosts. See classifyPartUrl for routing.
+ */
+export async function fetchPartFromUrlHost(
+  ctx: FetchPartCtx,
+  url: string,
+  opts: FetchPartUrlOpts = {},
+): Promise<FetchPartUrlOutcome> {
+  const mode = classifyPartUrl(url);
+  if (mode === 'link_out') {
+    return {
+      ok: true,
+      kind: 'link_out',
+      url,
+      instruction:
+        'Download the STEP from this configurator and ingest it locally with fetch_part({ file })',
+    };
+  }
+  if (mode === 'blocked') {
+    return { ok: false, error: 'url_host_not_allowed', host: parseUrlHost(url) };
+  }
+
+  const doFetch = opts.fetchImpl ?? fetch;
+  const fetcher = createUrlBytesFetcher(doFetch);
+
+  const isMesh = urlGeometryKind(url) === 'mesh';
+
+  const ext = isMesh ? meshExt(url) : '.step';
+  // Cache under the same ~/.cache/kernelcad/parts/<sha256(url)><ext> path the
+  // remote tier uses. No expectedSha256: the URL is the trust anchor here, and
+  // we hash the bytes ourselves for the record's provenance field.
+  const path = await getOrFetchAsync({
+    consumer: 'parts',
+    url,
+    ext,
+    ttlMs: null,
+    fetcher,
+  });
+  const bytes = readFileSync(path);
+  const sha256 = sha256Hex(bytes);
+  const baseName = urlBaseName(url);
+
+  if (isMesh) {
+    return {
+      ok: true,
+      kind: 'part',
+      result: buildUrlMeshPart(ctx, url, path, sha256, baseName),
+    };
+  }
+
+  return {
+    ok: true,
+    kind: 'part',
+    result: await buildUrlStepPart(ctx, url, bytes, path, sha256, baseName),
+  };
 }
 
 function meshExt(url: string): string {

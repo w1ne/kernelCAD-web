@@ -1,6 +1,6 @@
 // tests/unit/mcp/edits/setParamValue.test.ts
 import { describe, it, expect } from 'vitest';
-import { setParamValue, parseParamDeclaration } from '../../../../src/agent/mcp/edits/setParamValue';
+import { setParamValue, parseParamDeclaration } from '../../../../src/modeling/edits/setParamValue';
 import { parseCode } from '../../../../src/shared/codeGeneration/ast';
 
 function expectParseable(code: string): void {

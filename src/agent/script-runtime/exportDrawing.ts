@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { runScript } from '../../modeling/runtime/runScript';
+import { runScript } from '../../composition/runScript';
 import { type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { renderSvgDrawing, type SvgDrawingOptions } from '../../kernel/backends/occt/exportSvgDrawing';
 import { explodedPoses, applyExplodedOffsets, parseExplodeInput } from '../../modeling/runtime/explodedPoses';
@@ -32,11 +32,9 @@ export async function exportSvgDrawing(
   const baseName = fileName.split(/[\\/]/).pop() ?? fileName;
   const modelName =
     opts.modelName ?? baseName.replace(/(\.kcad)?\.ts$/, '');
-  const drawingParts: WorldFramePart[] = isSceneBackend(lowered)
-    ? sceneToWorldFrameParts(lowered)
-    : [{ name: 'part', shape: lowered as OcctBackend }];
+  const drawingParts = drawingPartsForBackend(lowered);
   const assemblies = run.session.assemblies as Map<string, Assembly>;
-  const arm = assemblies.size > 0 ? assemblies.values().next().value as Assembly | undefined : undefined;
+  const arm = firstAssemblyOrUndefined(assemblies);
 
   const exploded = await resolveExplodedParts(opts.exploded, lowered, arm, diagnostics, featureCount);
   if ('result' in exploded) return exploded.result;
@@ -49,10 +47,7 @@ export async function exportSvgDrawing(
   // GD&T declared on the feature graph (shape.datum / shape.tolerance) for
   // this target or anything feeding it.
   const captured = collectDrawingDeclarations(run.records, targetId);
-  const declarations = {
-    datums: [...(opts.declarations?.datums ?? []), ...captured.datums],
-    tolerances: [...(opts.declarations?.tolerances ?? []), ...captured.tolerances],
-  };
+  const declarations = mergeDrawingDeclarations(opts, captured);
   const rendered = renderSvgDrawing(drawingParts, {
     ...opts,
     modelName,
@@ -65,6 +60,26 @@ export async function exportSvgDrawing(
     featureCount,
     diagnostics: [...diagnostics, ...exploded.diagnostics, ...bom.diagnostics, ...rendered.diagnostics],
     ...(rendered.report === undefined ? {} : { drawingReport: rendered.report }),
+  };
+}
+
+function drawingPartsForBackend(lowered: ShapeBackend): WorldFramePart[] {
+  return isSceneBackend(lowered)
+    ? sceneToWorldFrameParts(lowered)
+    : [{ name: 'part', shape: lowered as OcctBackend }];
+}
+
+function firstAssemblyOrUndefined(assemblies: Map<string, Assembly>): Assembly | undefined {
+  return assemblies.size > 0 ? assemblies.values().next().value as Assembly | undefined : undefined;
+}
+
+function mergeDrawingDeclarations(
+  opts: SvgDrawingOptions,
+  captured: ReturnType<typeof collectDrawingDeclarations>,
+): ReturnType<typeof collectDrawingDeclarations> {
+  return {
+    datums: [...(opts.declarations?.datums ?? []), ...captured.datums],
+    tolerances: [...(opts.declarations?.tolerances ?? []), ...captured.tolerances],
   };
 }
 

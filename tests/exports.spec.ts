@@ -4,7 +4,7 @@ test.describe('Export Functionality E2E', () => {
     test.setTimeout(120000);
 
     test.beforeEach(async ({ page }) => {
-        await page.goto('/');
+        await page.goto('/studio');
         await page.waitForSelector('canvas');
         await page.waitForFunction(() => (window as any).isEditorReady === true);
         await page.waitForFunction(() => (window as any).isEngineReady === true);

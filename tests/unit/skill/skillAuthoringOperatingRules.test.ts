@@ -62,8 +62,8 @@ describe('kernelCAD agent authoring operating rules', () => {
     const indexHtml = readFileSync('site/index.html', 'utf8');
     const gallery = JSON.parse(readFileSync('site/gallery/entries.json', 'utf8'));
 
-    expect(indexHtml).toMatch(/Editable Source/);
-    expect(indexHtml).toMatch(/review_cad/);
+    expect(indexHtml).toMatch(/Edit your design/);
+    expect(indexHtml).toMatch(/Check your model/);
     expect(indexHtml).not.toMatch(/capability-name">Words to Geometry/);
     expect(gallery.entries[0].tags).toContain('words-to-geometry');
     expect(gallery.entries[1].tags).toContain('words-to-geometry');

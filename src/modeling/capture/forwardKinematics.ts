@@ -40,6 +40,22 @@ export function forwardKinematics(
   poses: NumericPoses,
 ): Map<FeatureId, Transform> {
   // 1. Build the parent-joint index: each part has at most one parent joint.
+  const parentJointByPart = buildParentJointIndex(joints);
+
+  // 2. Cycle detection via DFS through joint-parent links.
+  detectJointGraphCycles(parts, parentJointByPart);
+
+  // 3. Topological sort: roots first, then walk down to leaves via parent-joint links.
+  const topoOrder = topoSortParts(parts, parentJointByPart);
+
+  // 4. Forward kinematics: walk in topo order, computing world transform per part.
+  return computeWorldTransforms(topoOrder, parentJointByPart, poses);
+}
+
+/** Build the parent-joint index: each part has at most one parent joint. */
+function buildParentJointIndex(
+  joints: readonly AssemblyJointStored[],
+): Map<FeatureId, AssemblyJointStored> {
   const parentJointByPart = new Map<FeatureId, AssemblyJointStored>();
   for (const j of joints) {
     if (parentJointByPart.has(j.childPartId)) {
@@ -53,8 +69,14 @@ export function forwardKinematics(
     }
     parentJointByPart.set(j.childPartId, j);
   }
+  return parentJointByPart;
+}
 
-  // 2. Cycle detection via DFS through joint-parent links.
+/** Cycle detection via DFS through joint-parent links. */
+function detectJointGraphCycles(
+  parts: readonly AssemblyPartStored[],
+  parentJointByPart: Map<FeatureId, AssemblyJointStored>,
+): void {
   const visited = new Set<FeatureId>();
   const stack = new Set<FeatureId>();
   const dfs = (partId: FeatureId): void => {
@@ -74,8 +96,13 @@ export function forwardKinematics(
     visited.add(partId);
   };
   for (const part of parts) dfs(part.id);
+}
 
-  // 3. Topological sort: roots first, then walk down to leaves via parent-joint links.
+/** Topological sort: roots first, then walk down to leaves via parent-joint links. */
+function topoSortParts(
+  parts: readonly AssemblyPartStored[],
+  parentJointByPart: Map<FeatureId, AssemblyJointStored>,
+): AssemblyPartStored[] {
   const topoOrder: AssemblyPartStored[] = [];
   const seen = new Set<FeatureId>();
   const visit = (part: AssemblyPartStored): void => {
@@ -89,8 +116,51 @@ export function forwardKinematics(
     topoOrder.push(part);
   };
   for (const part of parts) visit(part);
+  return topoOrder;
+}
 
-  // 4. Forward kinematics: walk in topo order, computing world transform per part.
+/** Local SE(3) transform for one parent joint at the supplied numeric pose. */
+function jointLocalTransform(parentJ: AssemblyJointStored, poses: NumericPoses): Transform {
+  let jointLocalT: Transform;
+  switch (parentJ.kind) {
+    case 'revolute': {
+      const deg = (poses[parentJ.name] as number | undefined) ?? 0;
+      const ax = parentJ.axis as Se3Vec3;
+      jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2])
+        .compose(Transform.rotationAxisAngleDeg(ax, deg));
+      break;
+    }
+    case 'prismatic': {
+      const stroke = (poses[parentJ.name] as number | undefined) ?? 0;
+      const ax = parentJ.axis as Se3Vec3;
+      const len = Math.hypot(ax[0], ax[1], ax[2]) || 1;
+      const dx = (ax[0] / len) * stroke;
+      const dy = (ax[1] / len) * stroke;
+      const dz = (ax[2] / len) * stroke;
+      jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2])
+        .compose(Transform.translation(dx, dy, dz));
+      break;
+    }
+    case 'fixed': {
+      jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2]);
+      break;
+    }
+    case 'ball': {
+      const euler = (poses[parentJ.name] as [number, number, number] | undefined) ?? [0, 0, 0];
+      jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2])
+        .compose(Transform.eulerXYZDeg(euler[0], euler[1], euler[2]));
+      break;
+    }
+  }
+  return jointLocalT;
+}
+
+/** Forward kinematics: walk in topo order, computing world transform per part. */
+function computeWorldTransforms(
+  topoOrder: readonly AssemblyPartStored[],
+  parentJointByPart: Map<FeatureId, AssemblyJointStored>,
+  poses: NumericPoses,
+): Map<FeatureId, Transform> {
   const worldT = new Map<FeatureId, Transform>();
   for (const part of topoOrder) {
     const parentJ = parentJointByPart.get(part.id);
@@ -109,40 +179,7 @@ export function forwardKinematics(
         'invalid-args.solve.internal — please file a bug.',
       );
     }
-
-    let jointLocalT: Transform;
-    switch (parentJ.kind) {
-      case 'revolute': {
-        const deg = (poses[parentJ.name] as number | undefined) ?? 0;
-        const ax = parentJ.axis as Se3Vec3;
-        jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2])
-          .compose(Transform.rotationAxisAngleDeg(ax, deg));
-        break;
-      }
-      case 'prismatic': {
-        const stroke = (poses[parentJ.name] as number | undefined) ?? 0;
-        const ax = parentJ.axis as Se3Vec3;
-        const len = Math.hypot(ax[0], ax[1], ax[2]) || 1;
-        const dx = (ax[0] / len) * stroke;
-        const dy = (ax[1] / len) * stroke;
-        const dz = (ax[2] / len) * stroke;
-        jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2])
-          .compose(Transform.translation(dx, dy, dz));
-        break;
-      }
-      case 'fixed': {
-        jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2]);
-        break;
-      }
-      case 'ball': {
-        const euler = (poses[parentJ.name] as [number, number, number] | undefined) ?? [0, 0, 0];
-        jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2])
-          .compose(Transform.eulerXYZDeg(euler[0], euler[1], euler[2]));
-        break;
-      }
-    }
-    worldT.set(part.id, parentT.compose(jointLocalT));
+    worldT.set(part.id, parentT.compose(jointLocalTransform(parentJ, poses)));
   }
-
   return worldT;
 }

@@ -3,6 +3,7 @@
 import type { FeatureKind, FeatureId, FeatureRef, Param } from '../../shared/intent/types';
 import {
   FDM_DEFAULTS,
+  type DfmChannelSpec,
   type DfmFdmMetadata,
   type DfmSpec,
   type DfmSpecMetadata,
@@ -74,18 +75,32 @@ type BadFn = (field: string, why: string) => never;
 // FDM fields first: a stray `nozzleMm` without `process: 'fdm'` deserves
 // the specific fix, not the generic "declares no checks".
 function validateDfmSpecCheckFields(args: DfmSpec, fdm: DfmFdmMetadata | undefined, bad: BadFn): void {
+  validateDfmSpecDeclaresChecks(args, fdm, bad);
+  validateDfmSpecPositiveNumber('minWall', args.minWall, bad);
+  validateDfmSpecPositiveNumber('minClearance', args.minClearance, bad);
+  validateDfmSpecArticulatedMates(args, bad);
+}
+
+function validateDfmSpecDeclaresChecks(args: DfmSpec, fdm: DfmFdmMetadata | undefined, bad: BadFn): void {
   if (
     args.minWall === undefined && args.minClearance === undefined &&
     !(args.channels?.length) && fdm === undefined
   ) {
     bad('spec', "declares no checks; pass minWall, minClearance, channels, and/or process: 'fdm'");
   }
-  if (args.minWall !== undefined && !(Number.isFinite(args.minWall) && args.minWall > 0)) {
-    bad('minWall', `must be a positive finite number; got ${args.minWall}`);
+}
+
+function validateDfmSpecPositiveNumber(
+  field: 'minWall' | 'minClearance',
+  value: number | undefined,
+  bad: BadFn,
+): void {
+  if (value !== undefined && !(Number.isFinite(value) && value > 0)) {
+    bad(field, `must be a positive finite number; got ${value}`);
   }
-  if (args.minClearance !== undefined && !(Number.isFinite(args.minClearance) && args.minClearance > 0)) {
-    bad('minClearance', `must be a positive finite number; got ${args.minClearance}`);
-  }
+}
+
+function validateDfmSpecArticulatedMates(args: DfmSpec, bad: BadFn): void {
   if (args.includeArticulatedMates !== undefined && typeof args.includeArticulatedMates !== 'boolean') {
     bad('includeArticulatedMates', `must be a boolean; got ${JSON.stringify(args.includeArticulatedMates)}`);
   }
@@ -131,28 +146,28 @@ function validateDfmSpecExcludeEntries(args: DfmSpec, bad: BadFn): void {
   }
 }
 
-function validateDfmSpecChannelEntries(args: DfmSpec, bad: BadFn): void {
-  for (const [i, c] of (args.channels ?? []).entries()) {
-    if (typeof c !== 'object' || c === null) {
-      bad(`channels[${i}]`, `must be a { part, name, openings, sealed? } object; got ${JSON.stringify(c)}`);
-    }
-    if (typeof c.part !== 'string' || c.part.length === 0) {
-      bad(`channels[${i}].part`, `must be a non-empty part-name string; got ${JSON.stringify(c.part)}`);
-    }
-    if (typeof c.name !== 'string' || c.name.length === 0) {
-      bad(`channels[${i}].name`, `must be a non-empty label string; got ${JSON.stringify(c.name)}`);
-    }
-    if (!Number.isInteger(c.openings) || c.openings < 0) {
-      bad(`channels[${i}].openings`, `must be a non-negative integer; got ${c.openings}`);
-    }
-    if (c.openings === 0 && c.sealed !== true) {
-      bad(`channels[${i}].openings`, `is 0 but the channel is not declared sealed; pass sealed: true for an intentionally sealed void`);
-    }
-    if (c.sealed === true && c.openings !== 0) {
-      bad(`channels[${i}].openings`, `must be 0 when sealed: true; got ${c.openings}`);
-    }
+function validateDfmSpecChannelFields(i: number, c: DfmChannelSpec, bad: BadFn): void {
+  if (typeof c !== 'object' || c === null) {
+    bad(`channels[${i}]`, `must be a { part, name, openings, sealed? } object; got ${JSON.stringify(c)}`);
   }
+  if (typeof c.part !== 'string' || c.part.length === 0) {
+    bad(`channels[${i}].part`, `must be a non-empty part-name string; got ${JSON.stringify(c.part)}`);
+  }
+  if (typeof c.name !== 'string' || c.name.length === 0) {
+    bad(`channels[${i}].name`, `must be a non-empty label string; got ${JSON.stringify(c.name)}`);
+  }
+  if (!Number.isInteger(c.openings) || c.openings < 0) {
+    bad(`channels[${i}].openings`, `must be a non-negative integer; got ${c.openings}`);
+  }
+  if (c.openings === 0 && c.sealed !== true) {
+    bad(`channels[${i}].openings`, `is 0 but the channel is not declared sealed; pass sealed: true for an intentionally sealed void`);
+  }
+  if (c.sealed === true && c.openings !== 0) {
+    bad(`channels[${i}].openings`, `must be 0 when sealed: true; got ${c.openings}`);
+  }
+}
 
+function validateDfmSpecChannelDuplicates(args: DfmSpec, bad: BadFn): void {
   const channelKeys = new Set<string>();
   for (const [i, c] of (args.channels ?? []).entries()) {
     const key = JSON.stringify([c.part, c.name]);
@@ -161,6 +176,13 @@ function validateDfmSpecChannelEntries(args: DfmSpec, bad: BadFn): void {
     }
     channelKeys.add(key);
   }
+}
+
+function validateDfmSpecChannelEntries(args: DfmSpec, bad: BadFn): void {
+  for (const [i, c] of (args.channels ?? []).entries()) {
+    validateDfmSpecChannelFields(i, c, bad);
+  }
+  validateDfmSpecChannelDuplicates(args, bad);
 }
 
 function buildDfmSpecMetadata(args: DfmSpec, fdm: DfmFdmMetadata | undefined): DfmSpecMetadata {
@@ -368,13 +390,14 @@ export function buildCurve3DFeatureSpec(args: Curve3DCaptureArgs): AuthoringFeat
   };
 }
 
-export function buildEmbossTextFeatureSpec(
-  parentFeatureId: FeatureId,
-  args: EmbossTextCaptureArgs,
-  faceInputRef: FeatureRef,
-): AuthoringFeatureSpec {
-  const diagnostics: CompilerDiagnostic[] = [];
+function isEmbossTextAnchorOutOfRange(anchor: Param): boolean {
+  return !(anchor.evaluated >= 0 && anchor.evaluated <= 1);
+}
 
+function validateEmbossTextFields(
+  args: EmbossTextCaptureArgs,
+  diagnostics: CompilerDiagnostic[],
+): { depthParam: Param; anchorUParam: Param; anchorVParam: Param } {
   if (typeof args.textContent !== 'string' || args.textContent.trim().length === 0) {
     diagnostics.push({
       target: 'export-occt',
@@ -398,9 +421,7 @@ export function buildEmbossTextFeatureSpec(
 
   const anchorUParam = toParam(args.anchorU ?? 0.5, 'unitless');
   const anchorVParam = toParam(args.anchorV ?? 0.5, 'unitless');
-  const outOfRangeU = !(anchorUParam.evaluated >= 0 && anchorUParam.evaluated <= 1);
-  const outOfRangeV = !(anchorVParam.evaluated >= 0 && anchorVParam.evaluated <= 1);
-  if (outOfRangeU || outOfRangeV) {
+  if (isEmbossTextAnchorOutOfRange(anchorUParam) || isEmbossTextAnchorOutOfRange(anchorVParam)) {
     diagnostics.push({
       target: 'export-occt',
       code: 'feature.face.invalid-uv-anchor',
@@ -409,6 +430,17 @@ export function buildEmbossTextFeatureSpec(
       hint: HINT_TEMPLATES['feature.face.invalid-uv-anchor'].template,
     });
   }
+
+  return { depthParam, anchorUParam, anchorVParam };
+}
+
+export function buildEmbossTextFeatureSpec(
+  parentFeatureId: FeatureId,
+  args: EmbossTextCaptureArgs,
+  faceInputRef: FeatureRef,
+): AuthoringFeatureSpec {
+  const diagnostics: CompilerDiagnostic[] = [];
+  const { depthParam, anchorUParam, anchorVParam } = validateEmbossTextFields(args, diagnostics);
 
   const faceRef =
     faceInputRef.kind === 'face'

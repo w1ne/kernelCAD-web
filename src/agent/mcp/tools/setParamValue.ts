@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/setParamValue.ts
-import { setParamValue, parseParamDeclaration, type ParamDeclaration } from '../edits/setParamValue';
+import { setParamValue, parseParamDeclaration, type ParamDeclaration } from '../../../modeling/edits/setParamValue';
 import { evaluateScriptTool } from './evaluateScript';
 import { evaluateAndBuildScript } from '../../cli/commands/evaluate';
 import { isKernelError } from '../../../shared/intent/kernelError';

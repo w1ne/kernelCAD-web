@@ -7,189 +7,47 @@ import { Command } from 'commander';
 import { formatHuman } from '../../../shared/diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
-import {
-  FILE_READ_CODE, FILE_READ_HINT, fileReadErrorMessage,
-} from '../../../shared/diagnostics/fileReadError';
-import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
-import { buildModel, buildModelFromFile, type BuiltModel } from '../../../modeling/buildModel';
 import { initOcct } from '../../../kernel/backends/occt/occtBackend';
-import { runScript, type RunScriptResult } from '../../../modeling/runtime/runScript';
-import {
-  runDfmChecksOnModel,
-  type DfmCheckReport,
-} from '../../../modeling/runtime/dfm/runDfmChecks';
-import {
-  runFeaGateOnModel,
-  type FeaGateReport,
-} from '../../../modeling/runtime/fea/runFeaGate';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import {
   reviewPoseEnvelope,
   type PoseEnvelopeDiagnostic,
 } from '../../../modeling/mates/poseEnvelope';
 import { detectUnstructuredBodies } from '../../../modeling/validation/unstructuredBodies';
+import { kernelErrorToDiagnostic } from '../../../shared/diagnostics/kernelErrorToDiagnostic';
 import { buildFeatureTrace } from '../../repair/trace';
 import type { FeatureTraceEntry } from '../../repair/types';
+import type { BuiltModel } from '../../../composition/buildModel';
+import {
+  applyEvaluateDefaults,
+  evaluateAndBuildScript,
+  fileReadEvaluation,
+  invalidArgsEvaluation,
+  isFileReadError,
+  type EvaluateInput,
+  type EvaluateResult,
+} from '../../../composition/scriptEvaluation';
+import { runScript, type RunScriptResult } from '../../../composition/runScript';
 
-export interface EvaluateInput {
-  file?: string;
-  code?: string;
-  /** Absolute directory to resolve relative imports/assets against when
-   *  evaluating an inline `code` string. Unused on the `file` path. */
-  scriptDir?: string;
-}
-
-/**
- * Apply `kernelcad evaluate`-specific environment defaults before the
- * user script is loaded. Currently flips `Assembly.solvedModel`'s validate
- * gate default to `'error'` (T9 reads `process.env.KERNELCAD_VALIDATE_DEFAULT`)
- * so harness runs trip on invalid assemblies rather than silently emitting
- * warnings.
- *
- * Idempotent: a caller-supplied `KERNELCAD_VALIDATE_DEFAULT` (including
- * `warn` / `off`) is preserved so users can still opt out with
- * `KERNELCAD_VALIDATE_DEFAULT=warn npx kernelcad evaluate ...`.
- *
- * Per spec 2026-05-11-assembly-mates-validator-design.md §"Validity gate"
- * (T10 of the v0.6 assembly mates plan).
- */
-export function applyEvaluateDefaults(): void {
-  if (process.env.KERNELCAD_VALIDATE_DEFAULT === undefined) {
-    process.env.KERNELCAD_VALIDATE_DEFAULT = 'error';
-  }
-}
-
-/** A single non-healthy feature surfaced from the RecomputeEngine health
- *  map. Only features that degraded to `warning` (e.g. a silent passthrough
- *  fallback) or `error` are listed — healthy features are omitted to keep the
- *  agent-facing payload lean. */
-export interface FeatureHealthEntry {
-  featureId: string;
-  status: 'warning' | 'error';
-}
-
-/** Project the RecomputeEngine health map down to the lean non-healthy list.
- *  Returns `[]` when every feature is healthy. */
-export function nonHealthyFeatures(
-  health: ReadonlyMap<string, 'healthy' | 'warning' | 'error'>,
-): FeatureHealthEntry[] {
-  const out: FeatureHealthEntry[] = [];
-  for (const [featureId, status] of health) {
-    if (status === 'warning' || status === 'error') out.push({ featureId, status });
-  }
-  return out;
-}
-
-export interface EvaluateResult {
-  exitCode: number;
-  featureCount: number;
-  diagnostics: CompilerDiagnostic[];
-  /** Per-feature health degradations from the recompute pass — ONLY the
-   *  features that fell back to a passthrough (`warning`) or failed to lower
-   *  (`error`). Empty when every feature is healthy. Lets an agent see WHICH
-   *  feature degraded even when `exitCode` is still 0 (e.g. a gated-off
-   *  upstream that turned a downstream feature into a no-op passthrough).
-   *  A full build always populates this (possibly `[]`); a dry run leaves it
-   *  `[]` since no geometry is lowered. */
-  featureHealth: FeatureHealthEntry[];
-}
-
-export interface EvaluateAndBuildResult {
-  evaluation: EvaluateResult;
-  model?: BuiltModel;
-  /** DFM gate report when the script declares `dfmSpec(...)` and the build
-   *  had no fatal diagnostics. Undefined otherwise — the gates are opt-in.
-   *  Its diagnostics are already merged into `evaluation.diagnostics`. */
-  dfmReport?: DfmCheckReport;
-  /** Structural gate report when the script declares a `feaStudy(...)` with a
-   *  `minSafetyFactor` and the build had no fatal diagnostics. Undefined
-   *  otherwise. Its diagnostics are already merged into
-   *  `evaluation.diagnostics`. */
-  feaReport?: FeaGateReport;
-}
-
-export async function evaluateAndBuildScript(input: EvaluateInput): Promise<EvaluateAndBuildResult> {
-  // T10: harness-style evaluation flips the `solvedModel` validate gate to
-  // `'error'` (read by T9 in `Assembly.solvedModel`). Done before script
-  // load so the env var is visible to anything user-script transitively
-  // touches. Does not override a caller-supplied value.
-  applyEvaluateDefaults();
-
-  if (input.code === undefined && input.file === undefined) {
-    return { evaluation: invalidArgsEvaluation() };
-  }
-
-  let model;
-  try {
-    model = input.code !== undefined
-      ? await buildModel({
-          code: input.code,
-          fileName: input.file ?? '<inline>',
-          ...(input.scriptDir !== undefined ? { scriptDir: input.scriptDir } : {}),
-        })
-      : await buildModelFromFile({ file: input.file! });
-  } catch (e) {
-    if (isFileReadError(e)) {
-      return { evaluation: fileReadEvaluation(e) };
-    }
-    const diag = kernelErrorToDiagnostic(e);
-    return {
-      evaluation: { exitCode: 1, featureCount: 0, diagnostics: [diag], featureHealth: [] },
-    };
-  }
-  const fatal = model.diagnostics.some(d => d.severity === 'error');
-
-  // Agent-parts-discipline: flag multi-body models authored as loose
-  // top-level bodies instead of named `assembly().part(...)`. Runs on a
-  // clean build only — a broken build surfaces its own failure first.
-  // Emitting here (the shared producer for `evaluate_script` AND the
-  // `/__kernelcad/review` payload, plus the CLI) surfaces the info
-  // diagnostic on every authoring surface from a single seam, and — unlike
-  // the assembly validator — runs for NON-assembly scripts too.
-  if (!fatal) {
-    model.diagnostics.push(
-      ...detectUnstructuredBodies({ returnValue: model.returnValue, code: model.code }),
-    );
-  }
-
-  // W3 DFM enforcement: when the script declares dfmSpec(...), run the
-  // declared gates and merge their diagnostics into the model's. This one
-  // hook covers CLI evaluate, MCP evaluate_script (delegates here), and the
-  // eval harness. Zero cost for scripts without the record (findDfmSpec is
-  // a records scan returning undefined). Skipped after fatal build
-  // diagnostics — the underlying failure surfaces first.
-  let dfmReport: DfmCheckReport | undefined;
-  if (!fatal) {
-    dfmReport = await runDfmChecksOnModel(model);
-    if (dfmReport) model.diagnostics.push(...dfmReport.diagnostics);
-  }
-
-  // Structural enforcement: same seam, same opt-in shape as the DFM gate.
-  // Only studies that declare `minSafetyFactor` run here — a study without
-  // one is a report you fetch with `run_fea`, not a gate.
-  let feaReport: FeaGateReport | undefined;
-  if (!fatal) {
-    feaReport = await runFeaGateOnModel(model);
-    if (feaReport) model.diagnostics.push(...feaReport.diagnostics);
-  }
-
-  const fatalAfterGates = model.diagnostics.some(d => d.severity === 'error');
-  return {
-    evaluation: {
-      exitCode: fatalAfterGates ? 1 : 0,
-      featureCount: model.records.length,
-      diagnostics: withNextActions(model.diagnostics),
-      featureHealth: nonHealthyFeatures(model.health),
-    },
-    model,
-    ...(dfmReport !== undefined ? { dfmReport } : {}),
-    ...(feaReport !== undefined ? { feaReport } : {}),
-  };
-}
-
-export async function evaluateScript(input: EvaluateInput): Promise<EvaluateResult> {
-  return (await evaluateAndBuildScript(input)).evaluation;
-}
+// The evaluation core moved to `src/composition/scriptEvaluation.ts` so the
+// sweep-tolerance evaluator (also composition) can share it without importing
+// this agent CLI tree. Re-exported here to keep the agent-facing import
+// surface (`evaluateAndBuildScript`, `EvaluateResult`, …) unchanged.
+export {
+  applyEvaluateDefaults,
+  evaluateAndBuildScript,
+  evaluateScript,
+  fileReadEvaluation,
+  invalidArgsEvaluation,
+  isFileReadError,
+  nonHealthyFeatures,
+} from '../../../composition/scriptEvaluation';
+export type {
+  EvaluateAndBuildResult,
+  EvaluateInput,
+  EvaluateResult,
+  FeatureHealthEntry,
+} from '../../../composition/scriptEvaluation';
 
 export interface DryRunScriptResult {
   evaluation: EvaluateResult;
@@ -269,28 +127,6 @@ export async function dryRunScript(input: EvaluateInput): Promise<DryRunScriptRe
   };
 }
 
-function invalidArgsEvaluation(): EvaluateResult {
-  return {
-    exitCode: 2, featureCount: 0, featureHealth: [],
-    diagnostics: withNextActions([{
-      target: 'export-occt', code: 'cli.invalid-args', severity: 'error',
-      message: 'evaluateScript: must provide either { file } or { code }.',
-      hint: 'Pass --file <path> on the CLI, or { file } / { code } when calling programmatically.',
-    }]),
-  };
-}
-
-function fileReadEvaluation(e: unknown): EvaluateResult {
-  return {
-    exitCode: 2, featureCount: 0, featureHealth: [],
-    diagnostics: withNextActions([{
-      target: 'export-occt', code: FILE_READ_CODE, severity: 'error',
-      message: fileReadErrorMessage(e),
-      hint: FILE_READ_HINT,
-    }]),
-  };
-}
-
 export interface EvaluateWithEnvelopeInput extends EvaluateInput {
   /** When true, run `reviewPoseEnvelope` on every captured assembly after
    *  the script settles. Any envelope `severity: 'error'` diagnostic causes
@@ -349,8 +185,38 @@ export interface EvaluateWithEnvelopeResult {
 export async function evaluateWithEnvelope(
   input: EvaluateWithEnvelopeInput,
 ): Promise<EvaluateWithEnvelopeResult> {
-  // Misuse check first — agent supplies sampling flags without enabling the
-  // gate. Fail fast and tell the user how to enable it. No script run.
+  const misuse = envelopeMisuse(input);
+  if (misuse !== undefined) return misuse;
+
+  const built = await evaluateAndBuildScript({ file: input.file, code: input.code });
+  const { evaluation, model } = built;
+  const trace = input.trace === true ? traceOfBuiltModel(model, input.file) : undefined;
+
+  if (!input.envelope) return evaluationResult(evaluation, trace);
+
+  // Don't run envelope on a broken script — surface the underlying failure.
+  // The `!model` case shouldn't happen for exitCode 0, but be defensive.
+  if (evaluation.exitCode !== 0 || !model) return envelopeResult(evaluation, evaluation.exitCode);
+
+  const assemblies = Array.from(model.session.assemblies.values()) as Assembly[];
+  if (assemblies.length === 0) return envelopeResult(evaluation, 0);
+
+  const { envelopeDiagnostics, envelopeSampleCount } = await reviewAssemblies(assemblies, input);
+
+  const hasError = envelopeDiagnostics.some((d) => d.severity === 'error');
+  return {
+    exitCode: hasError ? 2 : 0,
+    featureCount: evaluation.featureCount,
+    diagnostics: evaluation.diagnostics,
+    envelopeDiagnostics,
+    envelopeSampleCount,
+    ...(trace !== undefined ? { trace } : {}),
+  };
+}
+
+/** Misuse check first — agent supplies sampling flags without enabling the
+ *  gate. Fail fast and tell the user how to enable it. No script run. */
+function envelopeMisuse(input: EvaluateWithEnvelopeInput): EvaluateWithEnvelopeResult | undefined {
   if (!input.envelope) {
     if (input.samplesPerMate !== undefined) {
       return {
@@ -381,53 +247,35 @@ export async function evaluateWithEnvelope(
         `--samples-per-mate must be an integer ≥ 1; got ${input.samplesPerMate}.`,
     };
   }
+  return undefined;
+}
 
-  const built = await evaluateAndBuildScript({ file: input.file, code: input.code });
-  const { evaluation, model } = built;
-  const trace = input.trace === true ? traceOfBuiltModel(model, input.file) : undefined;
+function evaluationResult(
+  evaluation: EvaluateResult,
+  trace: FeatureTraceEntry[] | undefined,
+): EvaluateWithEnvelopeResult {
+  return {
+    exitCode: evaluation.exitCode,
+    featureCount: evaluation.featureCount,
+    diagnostics: evaluation.diagnostics,
+    ...(trace !== undefined ? { trace } : {}),
+  };
+}
 
-  if (!input.envelope) {
-    return {
-      exitCode: evaluation.exitCode,
-      featureCount: evaluation.featureCount,
-      diagnostics: evaluation.diagnostics,
-      ...(trace !== undefined ? { trace } : {}),
-    };
-  }
+function envelopeResult(evaluation: EvaluateResult, exitCode: number): EvaluateWithEnvelopeResult {
+  return {
+    exitCode,
+    featureCount: evaluation.featureCount,
+    diagnostics: evaluation.diagnostics,
+    envelopeDiagnostics: [],
+    envelopeSampleCount: 0,
+  };
+}
 
-  if (evaluation.exitCode !== 0) {
-    // Don't run envelope on a broken script — surface the underlying failure.
-    return {
-      exitCode: evaluation.exitCode,
-      featureCount: evaluation.featureCount,
-      diagnostics: evaluation.diagnostics,
-      envelopeDiagnostics: [],
-      envelopeSampleCount: 0,
-    };
-  }
-
-  if (!model) {
-    // Shouldn't happen for exitCode 0, but be defensive.
-    return {
-      exitCode: evaluation.exitCode,
-      featureCount: evaluation.featureCount,
-      diagnostics: evaluation.diagnostics,
-      envelopeDiagnostics: [],
-      envelopeSampleCount: 0,
-    };
-  }
-
-  const assemblies = Array.from(model.session.assemblies.values()) as Assembly[];
-  if (assemblies.length === 0) {
-    return {
-      exitCode: 0,
-      featureCount: evaluation.featureCount,
-      diagnostics: evaluation.diagnostics,
-      envelopeDiagnostics: [],
-      envelopeSampleCount: 0,
-    };
-  }
-
+async function reviewAssemblies(
+  assemblies: readonly Assembly[],
+  input: EvaluateWithEnvelopeInput,
+): Promise<{ envelopeDiagnostics: PoseEnvelopeDiagnostic[]; envelopeSampleCount: number }> {
   const reviewOpts: { samplesPerMate?: number; combinatorial?: boolean; includeInterference: true } = {
     includeInterference: true,
   };
@@ -441,16 +289,7 @@ export async function evaluateWithEnvelope(
     envelopeDiagnostics.push(...review.diagnostics);
     envelopeSampleCount += review.samples.length;
   }
-
-  const hasError = envelopeDiagnostics.some((d) => d.severity === 'error');
-  return {
-    exitCode: hasError ? 2 : 0,
-    featureCount: evaluation.featureCount,
-    diagnostics: evaluation.diagnostics,
-    envelopeDiagnostics,
-    envelopeSampleCount,
-    ...(trace !== undefined ? { trace } : {}),
-  };
+  return { envelopeDiagnostics, envelopeSampleCount };
 }
 
 /**
@@ -464,8 +303,7 @@ export async function evaluateWithEnvelope(
 function traceOfBuiltModel(
   model: BuiltModel | undefined,
   file: string | undefined,
-): FeatureTraceEntry[] | undefined {
-  if (model === undefined || model.code === undefined) return undefined;
+): FeatureTraceEntry[] | undefined {  if (model === undefined || model.code === undefined) return undefined;
   return buildFeatureTrace({
     records: model.records,
     source: model.code,
@@ -475,14 +313,65 @@ function traceOfBuiltModel(
   });
 }
 
-function isFileReadError(e: unknown): boolean {
-  return (
-    typeof e === 'object' &&
-    e !== null &&
-    'code' in e &&
-    typeof (e as { code?: unknown }).code === 'string' &&
-    ['ENOENT', 'EACCES', 'EPERM', 'EISDIR', 'ENOTDIR'].includes((e as { code: string }).code)
-  );
+interface EvaluateCliOptions {
+  json?: boolean;
+  envelope?: boolean;
+  samplesPerMate?: number;
+  combinatorial?: boolean;
+  traceOut?: string;
+}
+
+/** Map parsed commander options onto the `evaluateWithEnvelope` input shape,
+ *  forwarding only the flags that were actually supplied. */
+function evaluateCliInput(file: string, opts: EvaluateCliOptions): EvaluateWithEnvelopeInput {
+  return {
+    file,
+    ...(opts.envelope ? { envelope: true } : {}),
+    ...(opts.samplesPerMate !== undefined ? { samplesPerMate: opts.samplesPerMate } : {}),
+    ...(opts.combinatorial ? { combinatorial: true } : {}),
+    ...(opts.traceOut !== undefined ? { trace: true } : {}),
+  };
+}
+
+/** Write the per-feature trace to `--trace-out <file>` when both the flag and
+ *  a trace were produced. */
+async function writeTraceOut(
+  file: string,
+  traceOut: string | undefined,
+  r: EvaluateWithEnvelopeResult,
+): Promise<void> {
+  if (traceOut !== undefined && r.trace !== undefined) {
+    await writeFile(traceOut, `${JSON.stringify({ file, trace: r.trace }, null, 2)}\n`, 'utf8');
+  }
+}
+
+/** Emit the evaluation result on stdout/stderr — the `--json` envelope or the
+ *  human summary. Console text is the CLI's observable output. */
+function printEvaluateResult(r: EvaluateWithEnvelopeResult, opts: EvaluateCliOptions): void {
+  const envelopeErrors = (r.envelopeDiagnostics ?? []).filter((d) => d.severity === 'error');
+
+  if (opts.json) {
+    console.log(JSON.stringify({
+      ok: r.exitCode === 0,
+      featureCount: r.featureCount,
+      diagnostics: r.diagnostics,
+      ...(r.envelopeDiagnostics !== undefined ? {
+        envelopeDiagnostics: r.envelopeDiagnostics,
+        envelopeSampleCount: r.envelopeSampleCount,
+      } : {}),
+    }, null, 2));
+  } else {
+    console.log(`Features: ${r.featureCount}`);
+    if (r.diagnostics.length > 0) {
+      console.log(formatHuman(r.diagnostics));
+    }
+    if (envelopeErrors.length > 0) {
+      console.error(formatEnvelopeDiagnostics(envelopeErrors));
+    } else if (r.envelopeDiagnostics !== undefined) {
+      console.log(`Pose-envelope: ${r.envelopeSampleCount} sample${r.envelopeSampleCount === 1 ? '' : 's'} clean.`);
+    }
+    if (r.exitCode === 0) console.log('OK');
+  }
 }
 
 export function evaluateCommand(): Command {
@@ -494,18 +383,10 @@ export function evaluateCommand(): Command {
     .option('--samples-per-mate <n>', 'interior samples per mate for the envelope sweep (integer ≥ 1)', (v) => parseInt(v, 10))
     .option('--combinatorial', 'enumerate corner combinations across all limited mates (cap: 8 mates)')
     .option('--trace-out <file>', 'write the per-feature trace (call site, AST node range, diagnostics, inputs, dependents) to a JSON file')
-    .action(async (file: string, opts: { json?: boolean; envelope?: boolean; samplesPerMate?: number; combinatorial?: boolean; traceOut?: string }) => {
-      const r = await evaluateWithEnvelope({
-        file,
-        ...(opts.envelope ? { envelope: true } : {}),
-        ...(opts.samplesPerMate !== undefined ? { samplesPerMate: opts.samplesPerMate } : {}),
-        ...(opts.combinatorial ? { combinatorial: true } : {}),
-        ...(opts.traceOut !== undefined ? { trace: true } : {}),
-      });
+    .action(async (file: string, opts: EvaluateCliOptions) => {
+      const r = await evaluateWithEnvelope(evaluateCliInput(file, opts));
 
-      if (opts.traceOut !== undefined && r.trace !== undefined) {
-        await writeFile(opts.traceOut, `${JSON.stringify({ file, trace: r.trace }, null, 2)}\n`, 'utf8');
-      }
+      await writeTraceOut(file, opts.traceOut, r);
 
       if (r.misuseMessage) {
         console.error(r.misuseMessage);
@@ -513,30 +394,7 @@ export function evaluateCommand(): Command {
         return;
       }
 
-      const envelopeErrors = (r.envelopeDiagnostics ?? []).filter((d) => d.severity === 'error');
-
-      if (opts.json) {
-        console.log(JSON.stringify({
-          ok: r.exitCode === 0,
-          featureCount: r.featureCount,
-          diagnostics: r.diagnostics,
-          ...(r.envelopeDiagnostics !== undefined ? {
-            envelopeDiagnostics: r.envelopeDiagnostics,
-            envelopeSampleCount: r.envelopeSampleCount,
-          } : {}),
-        }, null, 2));
-      } else {
-        console.log(`Features: ${r.featureCount}`);
-        if (r.diagnostics.length > 0) {
-          console.log(formatHuman(r.diagnostics));
-        }
-        if (envelopeErrors.length > 0) {
-          console.error(formatEnvelopeDiagnostics(envelopeErrors));
-        } else if (r.envelopeDiagnostics !== undefined) {
-          console.log(`Pose-envelope: ${r.envelopeSampleCount} sample${r.envelopeSampleCount === 1 ? '' : 's'} clean.`);
-        }
-        if (r.exitCode === 0) console.log('OK');
-      }
+      printEvaluateResult(r, opts);
       process.exitCode = r.exitCode;
     });
   return cmd;

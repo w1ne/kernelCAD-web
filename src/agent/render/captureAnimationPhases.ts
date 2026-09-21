@@ -17,7 +17,7 @@ import {
   updateModelParams,
   type BuiltModel,
   type ParamUpdateEdit,
-} from '../../modeling/buildModel';
+} from '../../composition/buildModel';
 import { meshFeaturesPerFeature } from '../../modeling/capture/featureMeshing';
 import { serializeForBridge } from '../../modeling/capture/featureMeshSerialize';
 import type { CompilerDiagnostic, DiagnosticCode } from '../../shared/diagnostics/diagnostic';
@@ -405,6 +405,139 @@ export async function bootstrapPagePhase(
   return pageHandle;
 }
 
+async function updateFrameModelPhase(params: {
+  frame: FrameList[number];
+  i: number;
+  model: BuiltModel;
+  written: number;
+  durationMs: number;
+  fps: number;
+  stashedWarns: CompilerDiagnostic[];
+  verifyFields: VerifyFieldsFn;
+  partialNote: string;
+  abortFfmpeg: () => Promise<void>;
+}): Promise<{ meshing: MeshResult } | { failure: CaptureAnimationResult }> {
+  const { frame, i, model, written, durationMs, fps, stashedWarns, verifyFields, partialNote, abortFfmpeg } = params;
+  // (a) param-update / solve / mesh — MODEL fault.
+  let meshing;
+  try {
+    const updates: ParamUpdateEdit[] = Object.entries(frame.values)
+      .map(([name, value]) => ({ name, value }));
+    await updateModelParams(model, updates);
+    meshing = await meshFeaturesPerFeature(
+      model.records, model.session.paramTable, model.session,
+    );
+  } catch (e) {
+    await abortFfmpeg();
+    return {
+      failure: {
+        ok: false, frameCount: written, durationMs, fps, failureKind: 'model', ...verifyFields(),
+        diagnostics: [...stashedWarns, diag(
+          'recompute.lowering.exception',
+          `captureAnimation: frame ${i} (tMs=${frame.tMs}) failed during param-update/solve/mesh: ${errMsg(e)}. `
+            + partialNote,
+          'Fix the underlying solve/mesh error in the message, or adjust the animationView keyframes to avoid the failing pose.',
+        )],
+      },
+    };
+  }
+  return { meshing };
+}
+
+async function renderFramePhase(params: {
+  frame: FrameList[number];
+  i: number;
+  page: Page;
+  meshing: MeshResult;
+  opts: CaptureAnimationOpts;
+  written: number;
+  durationMs: number;
+  fps: number;
+  stashedWarns: CompilerDiagnostic[];
+  verifyFields: VerifyFieldsFn;
+  partialNote: string;
+  abortFfmpeg: () => Promise<void>;
+}): Promise<{ png: Buffer } | { failure: CaptureAnimationResult }> {
+  const { frame, i, page, meshing, opts, written, durationMs, fps, stashedWarns, verifyFields, partialNote, abortFfmpeg } = params;
+  // (b) browser render ops — ENVIRONMENT fault.
+  let png: Buffer;
+  try {
+    await loadFeatureMeshesIntoPage(page, meshing.features.map(serializeForBridge), meshing.bounds);
+    // Re-apply the object-visibility filter AFTER each reload:
+    // loadFeatureMeshes rebuilds every feature group with visible:true
+    // (DemoPlayerPage.loadFeatureMeshes), so a once-after-first-load
+    // application would be wiped on frame 1. Re-applying every frame keeps
+    // the hidden/focused parts hidden across the whole capture. Visibility
+    // is render-only — it never touches the (already-run) pose verification.
+    if (opts.objectFilter !== undefined) {
+      await page.evaluate(
+        (filter) => window.__demoPlayer!.applyObjectVisibilityFilter(filter),
+        opts.objectFilter,
+      );
+    }
+    await page.evaluate(() => window.__demoPlayer!.forceFullOpacity());
+    // Tick the AnimationEngine so Three.js renders the updated scene.
+    await page.evaluate(() => window.__demoPlayer!.advance(16));
+    png = await page.screenshot({ type: 'png' });
+  } catch (e) {
+    await abortFfmpeg();
+    return {
+      failure: {
+        ok: false, frameCount: written, durationMs, fps, failureKind: 'environment', ...verifyFields(),
+        diagnostics: [...stashedWarns, diag(
+          'cli.export-exception',
+          `captureAnimation: frame ${i} (tMs=${frame.tMs}) failed during the browser render (load meshes / page eval / screenshot): ${errMsg(e)}. `
+            + partialNote,
+          'Read the diagnostic message; common causes are a crashed/wedged demo-player page or a lost studio dev server (run `npm run dev`). Retry once the page is healthy.',
+        )],
+      },
+    };
+  }
+  return { png };
+}
+
+async function writeFrameOutputPhase(params: {
+  frame: FrameList[number];
+  i: number;
+  framesDir: string | undefined;
+  ffmpeg: FfmpegProcessLike | undefined;
+  png: Buffer;
+  written: number;
+  durationMs: number;
+  fps: number;
+  stashedWarns: CompilerDiagnostic[];
+  verifyFields: VerifyFieldsFn;
+  abortFfmpeg: () => Promise<void>;
+}): Promise<{ done: true } | { failure: CaptureAnimationResult }> {
+  const { frame, i, framesDir, ffmpeg, png, written, durationMs, fps, stashedWarns, verifyFields, abortFfmpeg } = params;
+  // (c) frame OUTPUT write — ENVIRONMENT fault.
+  try {
+    if (framesDir !== undefined) {
+      await writeFile(join(framesDir, animationFrameFileName(i)), png);
+    } else {
+      await new Promise<void>((res, rej) =>
+        ffmpeg!.stdin.write(png, (err) => (err ? rej(err) : res())));
+    }
+  } catch (e) {
+    await abortFfmpeg();
+    return {
+      failure: {
+        ok: false, frameCount: written, durationMs, fps, failureKind: 'environment', ...verifyFields(),
+        diagnostics: [...stashedWarns, diag(
+          'cli.export-exception',
+          framesDir !== undefined
+            ? `captureAnimation: writing frame ${i} (tMs=${frame.tMs}) to ${framesDir} failed: ${errMsg(e)}. The ${written} frame PNG(s) already written were kept.`
+            : `captureAnimation: the ffmpeg encoder rejected the frame ${i} (tMs=${frame.tMs}) stdin write: ${errMsg(e)}. The encoder likely crashed mid-encode; the partial MP4 was deleted.`,
+          framesDir !== undefined
+            ? 'Check the frames directory is writable and has free space, then re-run.'
+            : 'Re-run in frames mode (framesDir / --frames <dir>) to bypass the encoder, or read the ffmpeg error and retry.',
+        )],
+      },
+    };
+  }
+  return { done: true };
+}
+
 export async function runFrameLoopPhase(params: {
   frames: FrameList;
   model: BuiltModel;
@@ -437,88 +570,18 @@ export async function runFrameLoopPhase(params: {
     : 'The partial MP4 was deleted.';
   for (let i = 0; i < frames.length; i += 1) {
     const frame = frames[i];
-    // (a) param-update / solve / mesh — MODEL fault.
-    let meshing;
-    try {
-      const updates: ParamUpdateEdit[] = Object.entries(frame.values)
-        .map(([name, value]) => ({ name, value }));
-      await updateModelParams(model, updates);
-      meshing = await meshFeaturesPerFeature(
-        model.records, model.session.paramTable, model.session,
-      );
-    } catch (e) {
-      await abortFfmpeg();
-      return {
-        failure: {
-          ok: false, frameCount: written, durationMs, fps, failureKind: 'model', ...verifyFields(),
-          diagnostics: [...stashedWarns, diag(
-            'recompute.lowering.exception',
-            `captureAnimation: frame ${i} (tMs=${frame.tMs}) failed during param-update/solve/mesh: ${errMsg(e)}. `
-              + partialNote,
-            'Fix the underlying solve/mesh error in the message, or adjust the animationView keyframes to avoid the failing pose.',
-          )],
-        },
-      };
-    }
-    // (b) browser render ops — ENVIRONMENT fault.
-    let png: Buffer;
-    try {
-      await loadFeatureMeshesIntoPage(page, meshing.features.map(serializeForBridge), meshing.bounds);
-      // Re-apply the object-visibility filter AFTER each reload:
-      // loadFeatureMeshes rebuilds every feature group with visible:true
-      // (DemoPlayerPage.loadFeatureMeshes), so a once-after-first-load
-      // application would be wiped on frame 1. Re-applying every frame keeps
-      // the hidden/focused parts hidden across the whole capture. Visibility
-      // is render-only — it never touches the (already-run) pose verification.
-      if (opts.objectFilter !== undefined) {
-        await page.evaluate(
-          (filter) => window.__demoPlayer!.applyObjectVisibilityFilter(filter),
-          opts.objectFilter,
-        );
-      }
-      await page.evaluate(() => window.__demoPlayer!.forceFullOpacity());
-      // Tick the AnimationEngine so Three.js renders the updated scene.
-      await page.evaluate(() => window.__demoPlayer!.advance(16));
-      png = await page.screenshot({ type: 'png' });
-    } catch (e) {
-      await abortFfmpeg();
-      return {
-        failure: {
-          ok: false, frameCount: written, durationMs, fps, failureKind: 'environment', ...verifyFields(),
-          diagnostics: [...stashedWarns, diag(
-            'cli.export-exception',
-            `captureAnimation: frame ${i} (tMs=${frame.tMs}) failed during the browser render (load meshes / page eval / screenshot): ${errMsg(e)}. `
-              + partialNote,
-            'Read the diagnostic message; common causes are a crashed/wedged demo-player page or a lost studio dev server (run `npm run dev`). Retry once the page is healthy.',
-          )],
-        },
-      };
-    }
-    // (c) frame OUTPUT write — ENVIRONMENT fault.
-    try {
-      if (framesDir !== undefined) {
-        await writeFile(join(framesDir, animationFrameFileName(i)), png);
-      } else {
-        await new Promise<void>((res, rej) =>
-          ffmpeg!.stdin.write(png, (err) => (err ? rej(err) : res())));
-      }
-    } catch (e) {
-      await abortFfmpeg();
-      return {
-        failure: {
-          ok: false, frameCount: written, durationMs, fps, failureKind: 'environment', ...verifyFields(),
-          diagnostics: [...stashedWarns, diag(
-            'cli.export-exception',
-            framesDir !== undefined
-              ? `captureAnimation: writing frame ${i} (tMs=${frame.tMs}) to ${framesDir} failed: ${errMsg(e)}. The ${written} frame PNG(s) already written were kept.`
-              : `captureAnimation: the ffmpeg encoder rejected the frame ${i} (tMs=${frame.tMs}) stdin write: ${errMsg(e)}. The encoder likely crashed mid-encode; the partial MP4 was deleted.`,
-            framesDir !== undefined
-              ? 'Check the frames directory is writable and has free space, then re-run.'
-              : 'Re-run in frames mode (framesDir / --frames <dir>) to bypass the encoder, or read the ffmpeg error and retry.',
-          )],
-        },
-      };
-    }
+    const meshResult = await updateFrameModelPhase({
+      frame, i, model, written, durationMs, fps, stashedWarns, verifyFields, partialNote, abortFfmpeg,
+    });
+    if ('failure' in meshResult) return meshResult;
+    const renderResult = await renderFramePhase({
+      frame, i, page, meshing: meshResult.meshing, opts, written, durationMs, fps, stashedWarns, verifyFields, partialNote, abortFfmpeg,
+    });
+    if ('failure' in renderResult) return renderResult;
+    const writeResult = await writeFrameOutputPhase({
+      frame, i, framesDir, ffmpeg, png: renderResult.png, written, durationMs, fps, stashedWarns, verifyFields, abortFfmpeg,
+    });
+    if ('failure' in writeResult) return writeResult;
     written += 1;
     if (written % 10 === 0 || written === frames.length) {
       onProgress(`frame ${written}/${frames.length} (tMs=${Math.round(frame.tMs)}) +${Date.now() - t0}ms`);

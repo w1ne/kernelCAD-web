@@ -58,17 +58,29 @@ function isParamShape(p: unknown): p is Param {
   return typeof o.evaluated === 'number';
 }
 
+function hasParamFields(m: Partial<EmbossTextMetadata>): boolean {
+  return isParamShape(m.size)
+    && isParamShape(m.depth)
+    && isParamShape(m.anchorU)
+    && isParamShape(m.anchorV)
+    && isParamShape(m.rotation);
+}
+
+function isAlign(value: unknown): value is EmbossTextAlign {
+  return value === 'left' || value === 'center' || value === 'right';
+}
+
+function isScaleMode(value: unknown): value is EmbossTextScaleMode {
+  return value === 'original' || value === 'native' || value === 'bounds';
+}
+
 export function isEmbossTextMetadata(value: unknown): value is EmbossTextMetadata {
   if (value === null || typeof value !== 'object') return false;
   const m = value as Partial<EmbossTextMetadata>;
   if (typeof m.textContent !== 'string') return false;
-  if (!isParamShape(m.size)) return false;
-  if (!isParamShape(m.depth)) return false;
-  if (!isParamShape(m.anchorU)) return false;
-  if (!isParamShape(m.anchorV)) return false;
-  if (!isParamShape(m.rotation)) return false;
-  if (m.align !== 'left' && m.align !== 'center' && m.align !== 'right') return false;
-  if (m.scaleMode !== 'original' && m.scaleMode !== 'native' && m.scaleMode !== 'bounds') return false;
+  if (!hasParamFields(m)) return false;
+  if (!isAlign(m.align)) return false;
+  if (!isScaleMode(m.scaleMode)) return false;
   if (m.faceRef === undefined || typeof m.faceRef !== 'object') return false;
   return true;
 }

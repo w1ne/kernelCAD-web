@@ -924,6 +924,38 @@ function fcfAnnotationSvg(
   );
 }
 
+function renderAnnotationSvg(a: DrawingAnnotation, ctx: AnnotationRenderContext): string {
+  switch (a.kind) {
+    case 'linear':
+      return linearAnnotationSvg(a, ctx);
+
+    case 'radius':
+    case 'diameter':
+      return radialAnnotationSvg(a, ctx);
+
+    case 'angular':
+      return angularAnnotationSvg(a, ctx);
+
+    case 'note':
+      return noteAnnotationSvg(a, ctx);
+
+    case 'hole':
+      return holeAnnotationSvg(a, ctx);
+
+    case 'fillet':
+      return filletAnnotationSvg(a, ctx);
+
+    case 'chamfer':
+      return chamferAnnotationSvg(a, ctx);
+
+    case 'datum':
+      return datumAnnotationSvg(a, ctx);
+
+    case 'fcf':
+      return fcfAnnotationSvg(a, ctx);
+  }
+}
+
 /**
  * Stacking rule (deterministic, geometry-independent):
  *
@@ -982,53 +1014,7 @@ export function renderAnnotations(input: AnnotationRenderInput): AnnotationRende
     };
 
     try {
-      switch (a.kind) {
-        case 'linear': {
-          svg.push(linearAnnotationSvg(a, ctx));
-          break;
-        }
-
-        case 'radius':
-        case 'diameter': {
-          svg.push(radialAnnotationSvg(a, ctx));
-          break;
-        }
-
-        case 'angular': {
-          svg.push(angularAnnotationSvg(a, ctx));
-          break;
-        }
-
-        case 'note': {
-          svg.push(noteAnnotationSvg(a, ctx));
-          break;
-        }
-
-        case 'hole': {
-          svg.push(holeAnnotationSvg(a, ctx));
-          break;
-        }
-
-        case 'fillet': {
-          svg.push(filletAnnotationSvg(a, ctx));
-          break;
-        }
-
-        case 'chamfer': {
-          svg.push(chamferAnnotationSvg(a, ctx));
-          break;
-        }
-
-        case 'datum': {
-          svg.push(datumAnnotationSvg(a, ctx));
-          break;
-        }
-
-        case 'fcf': {
-          svg.push(fcfAnnotationSvg(a, ctx));
-          break;
-        }
-      }
+      svg.push(renderAnnotationSvg(a, ctx));
     } catch (e) {
       if (e instanceof UnresolvedWithCode) codedFailures.push(e);
       else if (e instanceof Unresolved) failures.push(e.message);

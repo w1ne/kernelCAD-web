@@ -13,6 +13,7 @@ import {
   type SweepParamsDeclaration,
   type SweepToleranceResult,
 } from '../../../kinematic';
+import { defaultSweepEvaluator } from '../../../composition/scriptEvaluation';
 
 export interface SweepToleranceInput {
   /** Path to a .kcad.ts script file. Mutually exclusive with `code`. */
@@ -67,7 +68,7 @@ export async function sweepToleranceTool(
       assembly: input.assembly,
       params: input.params,
       gates: input.gates,
-    });
+    }, defaultSweepEvaluator);
     return { ...result, ok: true };
   } catch (e) {
     return {

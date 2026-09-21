@@ -217,19 +217,9 @@ function findSurfaceTypeForFallback(
   return undefined;
 }
 
-/** Unified topology-ref resolver. */
-export function resolveTopoRef(ref: TopoRef, ctx: TopoResolveContext): TopoResolveResult {
-  const map = ctx.currentShape.historyMap;
-
-  // 1. No history → not-resolvable.
-  if (map === undefined) {
-    return {
-      kind: 'not-resolvable',
-      code: 'feature.face-ref.not-resolvable',
-      message: `historyMap not initialized on shape kind '${ctx.currentShape.kind ?? 'unknown'}'; cannot resolve '${ref.raw}'.`,
-    };
-  }
-
+/** Screen a ref for the two shape-level not-resolvable cases the face/edge
+ *  resolver owns: bare-owner refs and kinds that a sibling slice dispatches. */
+function screenResolvableKind(ref: TopoRef): TopoResolveResult | undefined {
   // 2. Bare-owner ref (e.g. `@kc[base]`) → no segment to resolve at this layer.
   if (ref.segments.length === 0) {
     return {
@@ -249,45 +239,20 @@ export function resolveTopoRef(ref: TopoRef, ctx: TopoResolveContext): TopoResol
     };
   }
 
-  // 4. Name-propagation primary path. Try ordinal/named first; if zero, retry
-  //    collective so `base/face/top` still resolves against shape-root lineages.
-  let parsed = topoRefToParsedSelector(ref);
-  if (parsed === null) {
-    return {
-      kind: 'not-resolvable',
-      code: 'feature.face-ref.not-resolvable',
-      message: `unable to derive a selector from '${ref.raw}'.`,
-    };
-  }
+  return undefined;
+}
 
-  let lineageHits = lineageMatches(map, parsed, ctx.records);
-  if (lineageHits.length === 0) {
-    const collective = tryCollective(ref);
-    if (collective !== null) {
-      const altHits = lineageMatches(map, collective, ctx.records);
-      if (altHits.length > 0) {
-        parsed = collective;
-        lineageHits = altHits;
-      }
-    }
-  }
-
-  if (lineageHits.length === 1) {
-    return { kind: 'ok', entityHash: lineageHits[0], path: 'lineage' };
-  }
-  if (lineageHits.length >= 2) {
-    return {
-      kind: 'ambiguous',
-      code: 'feature.face-ref.ambiguous-after-split',
-      candidates: lineageHits,
-      message: `topology ref '${ref.raw}' matches ${lineageHits.length} surviving lineage descendants; an upstream split made it ambiguous.`,
-    };
-  }
-
-  // 5. Snapshot fallback. Look for a fingerprint via the original parsed form
-  //    (ordinal/named only — collective has no fallback path by design).
-  //    After step 4, `parsed` is guaranteed to be the original (non-collective)
-  //    form — collective only takes effect via an early return above.
+/** Snapshot fallback phase of `resolveTopoRef` — fingerprint lookup, surface
+ *  discrimination, and geometry-snapshot matching against the history map. */
+function resolveSnapshotFallback(
+  map: HistoryMap,
+  parsed: ParsedSelector,
+  ref: TopoRef,
+): TopoResolveResult {
+  // Look for a fingerprint via the original parsed form (ordinal/named only —
+  // collective has no fallback path by design). After step 4, `parsed` is
+  // guaranteed to be the original (non-collective) form — collective only
+  // takes effect via an early return above.
   const fallbackSelector = parsed;
   const fingerprint = findFallbackSnapshot(map, fallbackSelector);
   if (fingerprint === null) {
@@ -339,4 +304,62 @@ export function resolveTopoRef(ref: TopoRef, ctx: TopoResolveContext): TopoResol
     code: 'feature.face-ref.not-resolvable',
     message: `topology ref '${ref.raw}' produced no lineage hits and no snapshot match within tolerance.`,
   };
+}
+
+/** Unified topology-ref resolver. */
+export function resolveTopoRef(ref: TopoRef, ctx: TopoResolveContext): TopoResolveResult {
+  const map = ctx.currentShape.historyMap;
+
+  // 1. No history → not-resolvable.
+  if (map === undefined) {
+    return {
+      kind: 'not-resolvable',
+      code: 'feature.face-ref.not-resolvable',
+      message: `historyMap not initialized on shape kind '${ctx.currentShape.kind ?? 'unknown'}'; cannot resolve '${ref.raw}'.`,
+    };
+  }
+
+  // 2 & 3. Shape-level screenings owned by this resolver.
+  const screen = screenResolvableKind(ref);
+  if (screen !== undefined) {
+    return screen;
+  }
+
+  // 4. Name-propagation primary path. Try ordinal/named first; if zero, retry
+  //    collective so `base/face/top` still resolves against shape-root lineages.
+  let parsed = topoRefToParsedSelector(ref);
+  if (parsed === null) {
+    return {
+      kind: 'not-resolvable',
+      code: 'feature.face-ref.not-resolvable',
+      message: `unable to derive a selector from '${ref.raw}'.`,
+    };
+  }
+
+  let lineageHits = lineageMatches(map, parsed, ctx.records);
+  if (lineageHits.length === 0) {
+    const collective = tryCollective(ref);
+    if (collective !== null) {
+      const altHits = lineageMatches(map, collective, ctx.records);
+      if (altHits.length > 0) {
+        parsed = collective;
+        lineageHits = altHits;
+      }
+    }
+  }
+
+  if (lineageHits.length === 1) {
+    return { kind: 'ok', entityHash: lineageHits[0], path: 'lineage' };
+  }
+  if (lineageHits.length >= 2) {
+    return {
+      kind: 'ambiguous',
+      code: 'feature.face-ref.ambiguous-after-split',
+      candidates: lineageHits,
+      message: `topology ref '${ref.raw}' matches ${lineageHits.length} surviving lineage descendants; an upstream split made it ambiguous.`,
+    };
+  }
+
+  // 5. Snapshot fallback (fingerprint lookup, surface discrimination, match).
+  return resolveSnapshotFallback(map, parsed, ref);
 }

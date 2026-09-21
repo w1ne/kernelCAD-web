@@ -48,6 +48,19 @@ const res = box.cut(cyl);
             expect(vars[1]).toEqual({ name: 'cyl', type: 'Cylinder', line: 2 });
             expect(vars[2]).toEqual({ name: 'res', type: 'Cut', line: 3 });
         });
+
+        it('should classify a sketcher and carry its plane literal as detail', () => {
+            const code = "const sketch = new Sketcher('XY').lineTo([1, 1]).done();";
+            const vars = extractVariables(code);
+            expect(vars).toEqual([{ name: 'sketch', type: 'Sketch', line: 1, detail: 'XY' }]);
+        });
+
+        it('should leave detail undefined for non-sketch shapes', () => {
+            const code = 'const box = replicad.makeBox(1, 1, 1);';
+            const vars = extractVariables(code);
+            expect(vars).toEqual([{ name: 'box', type: 'Box', line: 1 }]);
+            expect('detail' in vars[0]).toBe(false);
+        });
     });
 
     describe('extractHistoryItems', () => {

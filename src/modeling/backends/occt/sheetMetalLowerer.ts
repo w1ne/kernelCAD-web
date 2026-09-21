@@ -59,6 +59,8 @@ export interface SheetMetalBendLoweringResult {
   };
 }
 
+type OcFactory = ReturnType<typeof getOC>;
+
 export interface BendInputs {
   featureId: FeatureId;
   base: OcctBackend;
@@ -134,7 +136,6 @@ export function lowerSheetMetalBend(inp: BendInputs): SheetMetalBendLoweringResu
   const plane = resolveBendPlane(inp, diagnostics);
   if (!plane) return { diagnostics };
   const { axisDirection, pn } = plane;
-  const [dx, dy, dz] = axisDirection;
 
   const baseShape = (inp.base.getReplicadShape() as { wrapped: unknown }).wrapped;
   if (!baseShape) {
@@ -158,53 +159,8 @@ export function lowerSheetMetalBend(inp: BendInputs): SheetMetalBendLoweringResu
   );
   const SLAB = diag * 4;
 
-  // Helper: build a slab cutter on one side of the bend plane.
-  // Side = +1 cuts the +pn half-space, leaving the -pn body half.
-  // Side = -1 cuts the -pn half-space, leaving the +pn body half.
-  const buildSlab = (side: 1 | -1): unknown => {
-    // Offset the cutter origin slightly off the bend plane so the cut surface
-    // sits *outside* the bend plane proper — keeps the bend section's seam
-    // attachable later.
-    const offset = 1e-4;
-    const ox = inp.axis.origin[0] + side * pn[0] * offset;
-    const oy = inp.axis.origin[1] + side * pn[1] * offset;
-    const oz = inp.axis.origin[2] + side * pn[2] * offset;
-    const origin = new oc.gp_Pnt_3(ox, oy, oz);
-    const xDir = new oc.gp_Dir_4(side * pn[0], side * pn[1], side * pn[2]);
-    const zDir = new oc.gp_Dir_4(dx, dy, dz);
-    const ax2 = new oc.gp_Ax2_2(origin, zDir, xDir);
-    const box = new oc.BRepPrimAPI_MakeBox_5(ax2, SLAB, SLAB, SLAB);
-    const slab = box.Shape();
-    box.delete();
-    return slab;
-  };
-
-  let movingHalf: unknown, fixedHalf: unknown;
-  try {
-    const cutterPos = buildSlab(1);
-    const cutterNeg = buildSlab(-1);
-    // Fixed half: body minus the +pn slab → keeps the -pn half.
-    const cutFixed = new oc.BRepAlgoAPI_Cut_3(baseShape, cutterPos, new oc.Message_ProgressRange_1());
-    cutFixed.Build(new oc.Message_ProgressRange_1());
-    fixedHalf = cutFixed.Shape();
-    cutFixed.delete();
-    // Moving half: body minus the -pn slab → keeps the +pn half.
-    const cutMoving = new oc.BRepAlgoAPI_Cut_3(baseShape, cutterNeg, new oc.Message_ProgressRange_1());
-    cutMoving.Build(new oc.Message_ProgressRange_1());
-    movingHalf = cutMoving.Shape();
-    cutMoving.delete();
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    diagnostics.push({
-      target: 'export-occt',
-      code: 'feature.kernel-failed',
-      featureId: inp.featureId,
-      severity: 'error',
-      message: `Splitting the sheet at the bend axis failed: ${msg}`,
-      hint: 'OCCT could not split the body along the bend axis. The bend axis may not pass through the sheet — verify the bend selector lies on the body.',
-    });
-    return { diagnostics };
-  }
+  const halves = splitBodyAtBendPlane(oc, inp, baseShape, axisDirection, pn, SLAB, diagnostics);
+  if (!halves) return { diagnostics };
 
   // Bend angle in radians; bend-allowance length.
   const angleRad = inp.angleDeg * Math.PI / 180;
@@ -215,16 +171,107 @@ export function lowerSheetMetalBend(inp: BendInputs): SheetMetalBendLoweringResu
     thickness: inp.thickness,
   });
 
-  // Rotate the moving half about the bend axis by angleRad. Slice-1
-  // simplifies the sewing step: we union the rotated moving half with the
-  // fixed half via BRepAlgoAPI_Fuse_3, accepting a sharp inner-corner where
-  // a rounded bend section would normally live. The K-factor neutral-axis
-  // math is still correct for `.flattenPattern()` because we record the
-  // bend's `arcLength` regardless of whether the cylinder section is
-  // physically present in the lowered solid. Slice 2 will add the curved
-  // bend cylinder via BRepPrimAPI_MakeRevol_1 once we work around the
-  // current OCCT binding issue on the revolution arg list.
-  let movingHalfRotated: unknown;
+  const rotated = rotateMovingHalf(oc, inp, halves.movingHalf, axisDirection, angleRad, diagnostics);
+  if (!rotated) return { diagnostics };
+
+  const fused = fuseBentHalves(
+    oc,
+    inp,
+    halves.fixedHalf,
+    rotated.shape,
+    axisDirection,
+    angleRad,
+    arcLength,
+    diagnostics,
+  );
+  if (fused) return fused;
+  return { diagnostics };
+}
+
+// Helper: build a slab cutter on one side of the bend plane.
+// Side = +1 cuts the +pn half-space, leaving the -pn body half.
+// Side = -1 cuts the -pn half-space, leaving the +pn body half.
+function buildBendSlab(
+  oc: OcFactory,
+  inp: BendInputs,
+  pn: [number, number, number],
+  axisDirection: [number, number, number],
+  slabSize: number,
+  side: 1 | -1,
+): unknown {
+  // Offset the cutter origin slightly off the bend plane so the cut surface
+  // sits *outside* the bend plane proper — keeps the bend section's seam
+  // attachable later.
+  const [dx, dy, dz] = axisDirection;
+  const offset = 1e-4;
+  const ox = inp.axis.origin[0] + side * pn[0] * offset;
+  const oy = inp.axis.origin[1] + side * pn[1] * offset;
+  const oz = inp.axis.origin[2] + side * pn[2] * offset;
+  const origin = new oc.gp_Pnt_3(ox, oy, oz);
+  const xDir = new oc.gp_Dir_4(side * pn[0], side * pn[1], side * pn[2]);
+  const zDir = new oc.gp_Dir_4(dx, dy, dz);
+  const ax2 = new oc.gp_Ax2_2(origin, zDir, xDir);
+  const box = new oc.BRepPrimAPI_MakeBox_5(ax2, slabSize, slabSize, slabSize);
+  const slab = box.Shape();
+  box.delete();
+  return slab;
+}
+
+function splitBodyAtBendPlane(
+  oc: OcFactory,
+  inp: BendInputs,
+  baseShape: unknown,
+  axisDirection: [number, number, number],
+  pn: [number, number, number],
+  slabSize: number,
+  diagnostics: CompilerDiagnostic[],
+): { movingHalf: unknown; fixedHalf: unknown } | null {
+  try {
+    const cutterPos = buildBendSlab(oc, inp, pn, axisDirection, slabSize, 1);
+    const cutterNeg = buildBendSlab(oc, inp, pn, axisDirection, slabSize, -1);
+    // Fixed half: body minus the +pn slab → keeps the -pn half.
+    const cutFixed = new oc.BRepAlgoAPI_Cut_3(baseShape, cutterPos, new oc.Message_ProgressRange_1());
+    cutFixed.Build(new oc.Message_ProgressRange_1());
+    const fixedHalf = cutFixed.Shape();
+    cutFixed.delete();
+    // Moving half: body minus the -pn slab → keeps the +pn half.
+    const cutMoving = new oc.BRepAlgoAPI_Cut_3(baseShape, cutterNeg, new oc.Message_ProgressRange_1());
+    cutMoving.Build(new oc.Message_ProgressRange_1());
+    const movingHalf = cutMoving.Shape();
+    cutMoving.delete();
+    return { movingHalf, fixedHalf };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.kernel-failed',
+      featureId: inp.featureId,
+      severity: 'error',
+      message: `Splitting the sheet at the bend axis failed: ${msg}`,
+      hint: 'OCCT could not split the body along the bend axis. The bend axis may not pass through the sheet — verify the bend selector lies on the body.',
+    });
+    return null;
+  }
+}
+
+// Rotate the moving half about the bend axis by angleRad. Slice-1
+// simplifies the sewing step: we union the rotated moving half with the
+// fixed half via BRepAlgoAPI_Fuse_3, accepting a sharp inner-corner where
+// a rounded bend section would normally live. The K-factor neutral-axis
+// math is still correct for `.flattenPattern()` because we record the
+// bend's `arcLength` regardless of whether the cylinder section is
+// physically present in the lowered solid. Slice 2 will add the curved
+// bend cylinder via BRepPrimAPI_MakeRevol_1 once we work around the
+// current OCCT binding issue on the revolution arg list.
+function rotateMovingHalf(
+  oc: OcFactory,
+  inp: BendInputs,
+  movingHalf: unknown,
+  axisDirection: [number, number, number],
+  angleRad: number,
+  diagnostics: CompilerDiagnostic[],
+): { shape: unknown } | null {
+  const [dx, dy, dz] = axisDirection;
   try {
     const trsf = new oc.gp_Trsf_1();
     const ax1Origin = new oc.gp_Pnt_3(inp.axis.origin[0], inp.axis.origin[1], inp.axis.origin[2]);
@@ -232,8 +279,9 @@ export function lowerSheetMetalBend(inp: BendInputs): SheetMetalBendLoweringResu
     const ax1 = new oc.gp_Ax1_2(ax1Origin, ax1Dir);
     trsf.SetRotation_1(ax1, angleRad);
     const xform = new oc.BRepBuilderAPI_Transform_2(movingHalf, trsf, false);
-    movingHalfRotated = xform.Shape();
+    const shape = xform.Shape();
     xform.delete();
+    return { shape };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     diagnostics.push({
@@ -244,12 +292,23 @@ export function lowerSheetMetalBend(inp: BendInputs): SheetMetalBendLoweringResu
       message: `Rotating the moving half failed: ${msg}`,
       hint: 'OCCT could not rotate the body half about the bend axis. Verify the bend axis lies on the body.',
     });
-    return { diagnostics };
+    return null;
   }
+}
 
-  // Fuse the fixed half with the rotated moving half. For a non-zero bend
-  // angle the two halves only meet along the bend axis edge — fuse still
-  // produces a valid TopoDS_Compound that subsequent operations can consume.
+// Fuse the fixed half with the rotated moving half. For a non-zero bend
+// angle the two halves only meet along the bend axis edge — fuse still
+// produces a valid TopoDS_Compound that subsequent operations can consume.
+function fuseBentHalves(
+  oc: OcFactory,
+  inp: BendInputs,
+  fixedHalf: unknown,
+  movingHalfRotated: unknown,
+  axisDirection: [number, number, number],
+  angleRad: number,
+  arcLength: number,
+  diagnostics: CompilerDiagnostic[],
+): SheetMetalBendLoweringResult | null {
   try {
     const fuse = new oc.BRepAlgoAPI_Fuse_3(fixedHalf, movingHalfRotated, new oc.Message_ProgressRange_1());
     fuse.Build(new oc.Message_ProgressRange_1());
@@ -259,8 +318,7 @@ export function lowerSheetMetalBend(inp: BendInputs): SheetMetalBendLoweringResu
     // Cast back through replicad so OcctBackend recognises the shape. Use
     // the same pattern as historyAwareBooleans / occtBackend.scale (cast
     // produces a Compound/Solid wrapper with the boundingBox getter populated).
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const castShape = replicad.cast(fusedShape as any) as import('replicad').Shape3D;
+    const castShape = replicad.cast(fusedShape) as import('replicad').Shape3D;
     const result = new OcctBackend(castShape);
     return {
       shape: result,
@@ -286,7 +344,7 @@ export function lowerSheetMetalBend(inp: BendInputs): SheetMetalBendLoweringResu
       message: `Fusing the bent body halves failed: ${msg}`,
       hint: 'OCCT could not fuse the bend halves. Try a different bend angle or radius.',
     });
-    return { diagnostics };
+    return null;
   }
 }
 

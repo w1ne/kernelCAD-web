@@ -9,6 +9,53 @@ import type { InnerRef } from './runs';
 import { circleRegion } from './body';
 import { fmt, roundUv } from './format';
 
+interface CutoutEntry {
+  openHigh: boolean;
+  openLow: boolean;
+  tLow: number;
+  tHigh: number;
+  prims: ProfilePrim[];
+  fromHigh: boolean;
+  label: AxisLabel;
+  probePt: V2;
+  piece: FacePiece;
+}
+
+function resolveCutoutEntry(
+  run: InnerRef[],
+  nb: number,
+  levels: number[],
+  allAir: (bi: number, pts: V2[]) => boolean,
+  book: FaceBook,
+  levelTol: number,
+  remainderPrisms: Op[],
+  notRepresented: string[],
+): CutoutEntry | undefined {
+  const first = run[0];
+  const last = run[run.length - 1];
+  const openHigh = last.band === nb - 1 || allAir(last.band + 1, last.samples);
+  const openLow = first.band === 0 || allAir(first.band - 1, first.samples);
+  const tLow = levels[first.band];
+  const tHigh = levels[last.band + 1];
+  const prims = loopPrimitives(first.loop);
+  if (!openHigh && !openLow) {
+    remainderPrisms.push({ kind: 'subtractPrism', name: `void${remainderPrisms.length + 1}`, prims, z0: tLow, length: tHigh - tLow });
+    notRepresented.push(`inner loop at (${fmt(first.cx)}, ${fmt(first.cy)}): its opening is covered by material, so no face-based cutout reaches it; subtracted as a boolean.`);
+    return undefined;
+  }
+  const fromHigh = openHigh;
+  const label: AxisLabel = fromHigh ? 'Z' : '-Z';
+  const entryLevel = fromHigh ? tHigh : tLow;
+  const probePt = first.samples[0] ?? [first.cx, first.cy];
+  const piece = book.find(label, entryLevel, probePt, levelTol);
+  if (!piece) {
+    remainderPrisms.push({ kind: 'subtractPrism', name: `void${remainderPrisms.length + 1}`, prims, z0: tLow, length: tHigh - tLow });
+    notRepresented.push(`pocket at (${fmt(first.cx)}, ${fmt(first.cy)}): no planar entry face found; subtracted as a boolean.`);
+    return undefined;
+  }
+  return { openHigh, openLow, tLow, tHigh, prims, fromHigh, label, probePt, piece };
+}
+
 export function emitCutoutOps(
   cutoutRuns: InnerRef[][],
   nb: number,
@@ -30,26 +77,9 @@ export function emitCutoutOps(
   for (const run of cutoutRuns) {
     const first = run[0];
     const last = run[run.length - 1];
-    const openHigh = last.band === nb - 1 || allAir(last.band + 1, last.samples);
-    const openLow = first.band === 0 || allAir(first.band - 1, first.samples);
-    const tLow = levels[first.band];
-    const tHigh = levels[last.band + 1];
-    const prims = loopPrimitives(first.loop);
-    if (!openHigh && !openLow) {
-      remainderPrisms.push({ kind: 'subtractPrism', name: `void${remainderPrisms.length + 1}`, prims, z0: tLow, length: tHigh - tLow });
-      notRepresented.push(`inner loop at (${fmt(first.cx)}, ${fmt(first.cy)}): its opening is covered by material, so no face-based cutout reaches it; subtracted as a boolean.`);
-      continue;
-    }
-    const fromHigh = openHigh;
-    const label: AxisLabel = fromHigh ? 'Z' : '-Z';
-    const entryLevel = fromHigh ? tHigh : tLow;
-    const probePt = first.samples[0] ?? [first.cx, first.cy];
-    const piece = book.find(label, entryLevel, probePt, levelTol);
-    if (!piece) {
-      remainderPrisms.push({ kind: 'subtractPrism', name: `void${remainderPrisms.length + 1}`, prims, z0: tLow, length: tHigh - tLow });
-      notRepresented.push(`pocket at (${fmt(first.cx)}, ${fmt(first.cy)}): no planar entry face found; subtracted as a boolean.`);
-      continue;
-    }
+    const entry = resolveCutoutEntry(run, nb, levels, allAir, book, levelTol, remainderPrisms, notRepresented);
+    if (!entry) continue;
+    const { openHigh, openLow, tLow, tHigh, prims, fromHigh, label, probePt, piece } = entry;
     pocketN++;
     const name = `pocket${pocketN}`;
     const depth = tHigh - tLow;

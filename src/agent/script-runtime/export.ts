@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { runScript } from '../../modeling/runtime/runScript';
+import { runScript } from '../../composition/runScript';
 import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
 import { meshShapeForExport, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
@@ -38,6 +38,7 @@ import {
   resolveExportTarget,
 } from './exportPhases';
 import { exportSvgDrawing } from './exportDrawing';
+import { withOcctPoisonRecovery } from '../../kernel/backends/occt/occtBackend';
 export { stlNotWatertightDiagnostic } from './exportDiagnostics';
 
 export type { GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
@@ -146,6 +147,8 @@ export interface ExportResult {
 }
 
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
+  return withOcctPoisonRecovery(async () => {
+
   const { code, fileName, format, feature_id, scriptDir, connectorManifest: manifestRequest } = input;
 
   const optionMismatch = optionsFormatMismatchDiagnostic(input);
@@ -228,6 +231,8 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   return exportSingleShape(
     input, format, shape, targetId, scriptDir, run, r.diagnostics, featureCount,
   );
+
+  });
 }
 
 
@@ -324,6 +329,7 @@ export async function resolveWorldFrameScene(
  * callers decide whether a failing report is fatal (verify default-on).
  */
 export async function runAndExportParts(input: ExportPartsInput): Promise<ExportPartsResult> {
+  return withOcctPoisonRecovery(async () => {
   const resolved = await resolveWorldFrameScene(input);
   const { featureCount } = resolved;
   if (!resolved.parts) {
@@ -365,4 +371,6 @@ export async function runAndExportParts(input: ExportPartsInput): Promise<Export
     });
   }
   return { parts, featureCount, diagnostics: resolved.diagnostics };
+
+  });
 }

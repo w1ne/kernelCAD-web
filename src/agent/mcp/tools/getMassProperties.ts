@@ -12,7 +12,7 @@
 // mass of a part. This exposes it.
 import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
-import { resolveRootId } from '../../../modeling/buildModel';
+import { resolveRootId } from '../../../composition/buildModel';
 import { runMcpScript } from '../runMcpScript';
 import { tryResolveMaterial } from '../../../modeling/properties/materialLibrary';
 import type { MassProperties } from '../../../kernel/properties/massProperties';

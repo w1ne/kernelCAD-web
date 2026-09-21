@@ -14,7 +14,7 @@
 
 import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
-import { resolveRootId } from '../../../modeling/buildModel';
+import { resolveRootId } from '../../../composition/buildModel';
 import { runMcpScript } from '../runMcpScript';
 import type { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import {

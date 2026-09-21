@@ -27,8 +27,8 @@ import { dirname, resolve } from 'node:path';
 import { initOcct } from '../../../kernel/backends/occt/occtBackend';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import type { CaptureSession } from '../../../modeling/capture/captureSession';
-import { buildModelFromFile } from '../../../modeling/buildModel';
-import { runScript } from '../../../modeling/runtime/runScript';
+import { buildModelFromFile } from '../../../composition/buildModel';
+import { runScript } from '../../../composition/runScript';
 import { lowerScriptScene } from '../../script-runtime/checkInterference';
 import {
   detectInterferences,

@@ -57,7 +57,7 @@ import {
   updateModelParams,
   type BuiltModel,
   type ParamUpdateEdit,
-} from '../../modeling/buildModel';
+} from '../../composition/buildModel';
 import { sampleTracks, type AnimationFrameSample } from '../../modeling/animation/animationSampler';
 import {
   verifyAnimation,

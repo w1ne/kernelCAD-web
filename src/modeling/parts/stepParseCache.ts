@@ -24,7 +24,7 @@
 
 import * as replicad from 'replicad';
 import { createHash } from 'node:crypto';
-import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
+import { OcctBackend, initOcct, registerOcctResetHook } from '../../kernel/backends/occt/occtBackend';
 import { describeOcctThrow, isOcctOutOfMemory } from '../../kernel/backends/occt/occtException';
 
 /** Why a STEP byte buffer could not be turned into a 3D solid. Reported so
@@ -55,6 +55,14 @@ const MAX_ENTRIES = 32;
 const cache = new Map<string, OcctBackend>();
 let hits = 0;
 let misses = 0;
+
+// When OCCT is reset after wasm poison, abandon cached masters WITHOUT dispose —
+// dispose() would call into the poisoned heap and throw again. The old wasm
+// module is being dropped; its handles are unreachable after reset.
+registerOcctResetHook(() => {
+  cache.clear();
+});
+
 
 function sha256Hex(bytes: Buffer | Uint8Array): string {
   return createHash('sha256').update(bytes).digest('hex');

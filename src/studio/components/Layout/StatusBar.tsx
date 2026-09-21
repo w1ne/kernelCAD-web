@@ -41,6 +41,25 @@ function compactError(error: string): string {
     return firstLine.length > 96 ? `${firstLine.slice(0, 93)}...` : firstLine;
 }
 
+function StateIndicator({ error, isComputing }: { error: string | null; isComputing: boolean }) {
+    const stateLabel = error ? 'Error' : isComputing ? 'Computing...' : 'Ready';
+
+    return (
+        <span className={`inline-flex items-center gap-1 font-medium ${error ? 'text-red-300' : isComputing ? 'text-blue-300' : 'text-emerald-300'}`}>
+            {error ? <AlertTriangle size={12} /> : isComputing ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle2 size={12} />}
+            {stateLabel}
+        </span>
+    );
+}
+
+function StateDiagnostics({ error }: { error: string | null }) {
+    return error ? (
+        <span className="truncate text-red-200 max-w-[48vw]">{compactError(error)}</span>
+    ) : (
+        <span className="truncate">No diagnostics</span>
+    );
+}
+
 export function StatusBar({
     isComputing,
     error,
@@ -54,7 +73,6 @@ export function StatusBar({
     interferenceSummary,
     recomputeMs,
 }: StatusBarProps) {
-    const stateLabel = error ? 'Error' : isComputing ? 'Computing...' : 'Ready';
     const bodyLabel = geometryCount === 1 ? '1 body' : `${geometryCount} bodies`;
     const selectionLabel = selectedCount === 1 ? '1 selected' : `${selectedCount} selected`;
     const interferenceTitle = interferenceSummary
@@ -72,10 +90,7 @@ export function StatusBar({
                 aria-atomic="true"
                 className="flex items-center gap-3 min-w-0 flex-1"
             >
-                <span className={`inline-flex items-center gap-1 font-medium ${error ? 'text-red-300' : isComputing ? 'text-blue-300' : 'text-emerald-300'}`}>
-                    {error ? <AlertTriangle size={12} /> : isComputing ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle2 size={12} />}
-                    {stateLabel}
-                </span>
+                <StateIndicator error={error} isComputing={isComputing} />
                 {activeCommandLabel && (
                     <span className="text-blue-300 truncate max-w-[24vw]">{activeCommandLabel}</span>
                 )}
@@ -88,11 +103,7 @@ export function StatusBar({
                         {directEditNotice}
                     </span>
                 )}
-                {error ? (
-                    <span className="truncate text-red-200 max-w-[48vw]">{compactError(error)}</span>
-                ) : (
-                    <span className="truncate">No diagnostics</span>
-                )}
+                <StateDiagnostics error={error} />
             </div>
             <div className="flex items-center gap-3 shrink-0 ml-auto">
                 <span>{bodyLabel}</span>

@@ -23,7 +23,7 @@ import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { runMcpScript } from '../runMcpScript';
-import type { RunScriptResult } from '../../../modeling/runtime/runScript';
+import type { RunScriptResult } from '../../../composition/runScript';
 import {
   findFeaStudies,
   selectFeaStudy,

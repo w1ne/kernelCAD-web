@@ -24,7 +24,7 @@ import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { detectCylindricalHoles } from '../../kernel/backends/occt/holeDetection';
 import { projectDrawingViews } from '../../kernel/backends/occt/exportSvgDrawing';
-import { resolveRootId } from '../../modeling/buildModel';
+import { resolveRootId } from '../../composition/buildModel';
 import { runMcpScript } from '../mcp/runMcpScript';
 import { outerBoundary, polylineSegments, silhouetteIoU, type P2, type Seg2 } from './geometry2d';
 import type { PartModel, ViewGeometry } from './reconstruct';

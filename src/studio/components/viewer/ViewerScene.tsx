@@ -104,30 +104,23 @@ export function ViewerScene({
             <RendererSnapshotPublisher />
             <SceneBackground mode={viewportBackground} />
 
-            <ambientLight intensity={0.5} />
-            <directionalLight position={[10, 20, 10]} intensity={0.7} />
-            <directionalLight position={[-5, -10, -5]} intensity={0.3} />
+            <SceneLights />
 
-            <InteractionHandler setHovered={setHoveredItem} setSnap={setSnapPoint} />
-            <HighlightOverlay hovered={hoveredItem} geometries={geometries} />
-            <SnapIndicator snap={snapPoint} />
-            <SelectionOutline geometries={geometries} itemNames={itemNames} selectedItemIds={selectedItemIds} />
+            <SceneOverlays
+                geometries={geometries}
+                itemNames={itemNames}
+                selectedItemIds={selectedItemIds}
+                hoveredItem={hoveredItem}
+                setHoveredItem={setHoveredItem}
+                snapPoint={snapPoint}
+                setSnapPoint={setSnapPoint}
+            />
 
-            {!sketchActive && gridVisible && (
-                <group userData={CAPTURE_HIDDEN_USERDATA}>
-                    <Grid
-                        position={[0, 0, gridPlacement.z]}
-                        rotation={[Math.PI / 2, 0, 0]}
-                        infiniteGrid
-                        cellSize={5}
-                        sectionSize={25}
-                        cellColor="#404040"
-                        sectionColor="#606060"
-                        fadeDistance={gridPlacement.fade}
-                        fadeStrength={1.5}
-                    />
-                </group>
-            )}
+            <GroundGrid
+                gridPlacement={gridPlacement}
+                gridVisible={gridVisible}
+                sketchActive={sketchActive}
+            />
 
             <GeometryLayer
                 geometries={geometries}
@@ -145,6 +138,131 @@ export function ViewerScene({
                 ))}
             </group>
 
+            <SketchEditLayers
+                showSketches={showSketches}
+                sketchesGeometries={sketchesGeometries}
+                hiddenIds={hiddenIds}
+                selectedSketchName={selectedSketchName}
+                selectedItemIds={selectedItemIds}
+                toggleSelection={toggleSelection}
+                setSelectedFace={setSelectedFace}
+                setSelectedSketchName={setSelectedSketchName}
+                setSelectedItemId={setSelectedItemId}
+                setContextMenu={setContextMenu}
+                sketchActive={sketchActive}
+                geometries={geometries}
+                itemNames={itemNames}
+                planes={planes}
+            />
+
+            <SceneControls
+                sketchActive={sketchActive}
+                geometries={geometries}
+                navigationRequest={navigationRequest}
+                focusRequest={focusRequest}
+            />
+        </>
+    );
+}
+
+function SceneLights() {
+    return (
+        <>
+            <ambientLight intensity={0.5} />
+            <directionalLight position={[10, 20, 10]} intensity={0.7} />
+            <directionalLight position={[-5, -10, -5]} intensity={0.3} />
+        </>
+    );
+}
+
+function SceneOverlays({
+    geometries,
+    itemNames,
+    selectedItemIds,
+    hoveredItem,
+    setHoveredItem,
+    snapPoint,
+    setSnapPoint,
+}: Pick<
+    ViewerSceneProps,
+    | 'geometries'
+    | 'itemNames'
+    | 'selectedItemIds'
+    | 'hoveredItem'
+    | 'setHoveredItem'
+    | 'snapPoint'
+    | 'setSnapPoint'
+>) {
+    return (
+        <>
+            <InteractionHandler setHovered={setHoveredItem} setSnap={setSnapPoint} />
+            <HighlightOverlay hovered={hoveredItem} geometries={geometries} />
+            <SnapIndicator snap={snapPoint} />
+            <SelectionOutline geometries={geometries} itemNames={itemNames} selectedItemIds={selectedItemIds} />
+        </>
+    );
+}
+
+function GroundGrid({
+    gridPlacement,
+    gridVisible,
+    sketchActive,
+}: Pick<ViewerSceneProps, 'gridPlacement' | 'gridVisible' | 'sketchActive'>) {
+    return (
+        <>
+            {!sketchActive && gridVisible && (
+                <group userData={CAPTURE_HIDDEN_USERDATA}>
+                    <Grid
+                        position={[0, 0, gridPlacement.z]}
+                        rotation={[Math.PI / 2, 0, 0]}
+                        infiniteGrid
+                        cellSize={5}
+                        sectionSize={25}
+                        cellColor="#404040"
+                        sectionColor="#606060"
+                        fadeDistance={gridPlacement.fade}
+                        fadeStrength={1.5}
+                    />
+                </group>
+            )}
+        </>
+    );
+}
+
+function SketchEditLayers({
+    showSketches,
+    sketchesGeometries,
+    hiddenIds,
+    selectedSketchName,
+    selectedItemIds,
+    toggleSelection,
+    setSelectedFace,
+    setSelectedSketchName,
+    setSelectedItemId,
+    setContextMenu,
+    sketchActive,
+    geometries,
+    itemNames,
+    planes,
+}: Pick<
+    ViewerSceneProps,
+    | 'showSketches'
+    | 'sketchesGeometries'
+    | 'hiddenIds'
+    | 'selectedSketchName'
+    | 'selectedItemIds'
+    | 'toggleSelection'
+    | 'setSelectedFace'
+    | 'setSelectedSketchName'
+    | 'setSelectedItemId'
+    | 'setContextMenu'
+    | 'sketchActive'
+    | 'geometries'
+    | 'itemNames'
+    | 'planes'
+>) {
+    return (
+        <>
             {showSketches && (
                 <SketchLayer
                     sketchesGeometries={sketchesGeometries}
@@ -167,6 +285,18 @@ export function ViewerScene({
                 <PlaneLayer planes={planes} />
             </group>
             {sketchActive && <ParametricLayer />}
+        </>
+    );
+}
+
+function SceneControls({
+    sketchActive,
+    geometries,
+    navigationRequest,
+    focusRequest,
+}: Pick<ViewerSceneProps, 'sketchActive' | 'geometries' | 'navigationRequest' | 'focusRequest'>) {
+    return (
+        <>
             <OrbitControls
                 makeDefault
                 enabled={!sketchActive}

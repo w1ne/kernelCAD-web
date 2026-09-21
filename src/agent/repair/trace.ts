@@ -82,6 +82,55 @@ export function buildFeatureTrace(input: BuildTraceInput): FeatureTraceEntry[] {
   });
 }
 
+function pushUniqueRange(ranges: RepairRegionRange[], range: RepairRegionRange): void {
+  const duplicate = ranges.some(
+    existing =>
+      existing.startLine === range.startLine &&
+      existing.endLine === range.endLine &&
+      existing.role === range.role,
+  );
+  if (!duplicate) ranges.push(range);
+}
+
+function collectInputFeatureRanges(
+  target: FeatureTraceEntry | undefined,
+  byId: ReadonlyMap<string, FeatureTraceEntry>,
+  ranges: RepairRegionRange[],
+): void {
+  for (const inputId of target?.inputs ?? []) {
+    const upstream = byId.get(inputId);
+    if (upstream?.statementRange === undefined) continue;
+    pushUniqueRange(ranges, { ...upstream.statementRange, role: 'input-feature', featureId: inputId });
+  }
+}
+
+function collectParamSourceNames(
+  target: FeatureTraceEntry | undefined,
+  byId: ReadonlyMap<string, FeatureTraceEntry>,
+): Set<string> {
+  const paramNames = new Set<string>(target?.paramRefs ?? []);
+  for (const inputId of target?.inputs ?? []) {
+    for (const name of byId.get(inputId)?.paramRefs ?? []) paramNames.add(name);
+  }
+  return paramNames;
+}
+
+function collectParamDeclarationRanges(
+  paramNames: ReadonlySet<string>,
+  spans: ScriptSpanIndex,
+  ranges: RepairRegionRange[],
+): void {
+  for (const name of paramNames) {
+    const range = spans.paramDeclarationRange(name);
+    if (range === undefined) continue;
+    pushUniqueRange(ranges, { ...range, role: 'parameter-source', paramName: name });
+  }
+}
+
+function compareRepairRanges(a: RepairRegionRange, b: RepairRegionRange): number {
+  return a.startLine - b.startLine || a.endLine - b.endLine;
+}
+
 /**
  * The minimal set of line ranges whose edit can address a failure at
  * `featureId`: the failing feature's own statement, the statements that
@@ -102,37 +151,16 @@ export function computeRepairRegion(args: {
   const target = byId.get(args.featureId);
   const ranges: RepairRegionRange[] = [];
 
-  const push = (range: RepairRegionRange): void => {
-    const duplicate = ranges.some(
-      existing =>
-        existing.startLine === range.startLine &&
-        existing.endLine === range.endLine &&
-        existing.role === range.role,
-    );
-    if (!duplicate) ranges.push(range);
-  };
-
   if (target?.statementRange !== undefined) {
-    push({ ...target.statementRange, role: 'failing-feature', featureId: target.feature_id });
+    pushUniqueRange(ranges, { ...target.statementRange, role: 'failing-feature', featureId: target.feature_id });
   }
 
-  for (const inputId of target?.inputs ?? []) {
-    const upstream = byId.get(inputId);
-    if (upstream?.statementRange === undefined) continue;
-    push({ ...upstream.statementRange, role: 'input-feature', featureId: inputId });
-  }
+  collectInputFeatureRanges(target, byId, ranges);
 
-  const paramNames = new Set<string>(target?.paramRefs ?? []);
-  for (const inputId of target?.inputs ?? []) {
-    for (const name of byId.get(inputId)?.paramRefs ?? []) paramNames.add(name);
-  }
-  for (const name of paramNames) {
-    const range = args.spans.paramDeclarationRange(name);
-    if (range === undefined) continue;
-    push({ ...range, role: 'parameter-source', paramName: name });
-  }
+  const paramNames = collectParamSourceNames(target, byId);
+  collectParamDeclarationRanges(paramNames, args.spans, ranges);
 
-  ranges.sort((a, b) => a.startLine - b.startLine || a.endLine - b.endLine);
+  ranges.sort(compareRepairRanges);
   return { file: args.fileName, ranges };
 }
 

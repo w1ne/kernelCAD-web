@@ -78,59 +78,91 @@ function summarizeAssemblies(records: readonly FeatureRecord[]): AssemblySummary
     const assembly = getOrCreateAssembly(assemblies, assemblyName);
 
     if (record.kind === 'assemblyPart') {
-      assembly.parts.push({
-        id: record.id,
-        name: stringMetadata(metadata.partName, record.id),
-        shapeId: featureInputId(record.inputs.shape),
-        at: metadata.at,
-        connectors: objectMetadata(metadata.connectors),
-        ...(metadata.placedBy !== undefined ? { placedBy: metadata.placedBy } : {}),
-      });
+      appendPartSummary(assembly, record, metadata);
     }
 
     if (record.kind === 'assemblyJoint') {
-      assembly.joints.push({
-        id: record.id,
-        name: stringMetadata(metadata.jointName, record.id),
-        kind: stringMetadata(metadata.jointKind, 'joint'),
-        partIds: {
-          a: featureInputId(record.inputs.a),
-          b: featureInputId(record.inputs.b),
-        },
-        ...(metadata.axis !== undefined ? { axis: metadata.axis } : {}),
-        ...(metadata.origin !== undefined ? { origin: metadata.origin } : {}),
-        ...(metadata.limitsDeg !== undefined ? { limitsDeg: metadata.limitsDeg } : {}),
-      });
+      appendJointSummary(assembly, record, metadata);
     }
 
     if (record.kind === 'assemblyConnect') {
-      assembly.connections.push({
-        id: record.id,
-        name: stringMetadata(metadata.connectName, record.id),
-        kind: stringMetadata(metadata.kind, 'fixed'),
-        partIds: {
-          a: featureInputId(record.inputs.a),
-          b: featureInputId(record.inputs.b),
-        },
-        ...(metadata.a !== undefined ? { a: metadata.a } : {}),
-        ...(metadata.b !== undefined ? { b: metadata.b } : {}),
-      });
+      appendConnectionSummary(assembly, record, metadata);
     }
 
     if (record.kind === 'assemblyModel') {
-      assembly.models.push({
-        id: record.id,
-        partIds: Array.isArray(metadata.partIds)
-          ? metadata.partIds.filter((partId): partId is FeatureId => typeof partId === 'string')
-          : Object.entries(record.inputs)
-            .sort(([a], [b]) => a.localeCompare(b))
-            .map(([, ref]) => featureInputId(ref))
-            .filter((partId): partId is FeatureId => partId !== undefined),
-      });
+      appendModelSummary(assembly, record, metadata);
     }
   }
 
   return [...assemblies.values()];
+}
+
+function appendPartSummary(
+  assembly: AssemblySummary,
+  record: FeatureRecord,
+  metadata: NonNullable<FeatureRecord['metadata']>,
+): void {
+  assembly.parts.push({
+    id: record.id,
+    name: stringMetadata(metadata.partName, record.id),
+    shapeId: featureInputId(record.inputs.shape),
+    at: metadata.at,
+    connectors: objectMetadata(metadata.connectors),
+    ...(metadata.placedBy !== undefined ? { placedBy: metadata.placedBy } : {}),
+  });
+}
+
+function appendJointSummary(
+  assembly: AssemblySummary,
+  record: FeatureRecord,
+  metadata: NonNullable<FeatureRecord['metadata']>,
+): void {
+  assembly.joints.push({
+    id: record.id,
+    name: stringMetadata(metadata.jointName, record.id),
+    kind: stringMetadata(metadata.jointKind, 'joint'),
+    partIds: {
+      a: featureInputId(record.inputs.a),
+      b: featureInputId(record.inputs.b),
+    },
+    ...(metadata.axis !== undefined ? { axis: metadata.axis } : {}),
+    ...(metadata.origin !== undefined ? { origin: metadata.origin } : {}),
+    ...(metadata.limitsDeg !== undefined ? { limitsDeg: metadata.limitsDeg } : {}),
+  });
+}
+
+function appendConnectionSummary(
+  assembly: AssemblySummary,
+  record: FeatureRecord,
+  metadata: NonNullable<FeatureRecord['metadata']>,
+): void {
+  assembly.connections.push({
+    id: record.id,
+    name: stringMetadata(metadata.connectName, record.id),
+    kind: stringMetadata(metadata.kind, 'fixed'),
+    partIds: {
+      a: featureInputId(record.inputs.a),
+      b: featureInputId(record.inputs.b),
+    },
+    ...(metadata.a !== undefined ? { a: metadata.a } : {}),
+    ...(metadata.b !== undefined ? { b: metadata.b } : {}),
+  });
+}
+
+function appendModelSummary(
+  assembly: AssemblySummary,
+  record: FeatureRecord,
+  metadata: NonNullable<FeatureRecord['metadata']>,
+): void {
+  assembly.models.push({
+    id: record.id,
+    partIds: Array.isArray(metadata.partIds)
+      ? metadata.partIds.filter((partId): partId is FeatureId => typeof partId === 'string')
+      : Object.entries(record.inputs)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([, ref]) => featureInputId(ref))
+        .filter((partId): partId is FeatureId => partId !== undefined),
+  });
 }
 
 function getOrCreateAssembly(

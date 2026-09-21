@@ -239,17 +239,10 @@ export function decomposeRun(
   }
   const rMin = Math.min(...segs.map((s) => s.r));
   const minSeg = segs.find((s) => s.r === rMin)!;
-  const fromHigh = openHigh && (!openLow || segs[segs.length - 1].r >= segs[0].r);
-  if (openHigh && openLow && Math.abs(segs[segs.length - 1].r - segs[0].r) <= 1e-9) {
-    assumptions.push({
-      feature: source,
-      statement: `${source}: both ends are open and equal in size, so the drilling side is not recoverable from geometry; drilled from the ${axis === 'Z' ? '+Z (top)' : `+${axis}`} face.`,
-    });
-  }
+  const { fromHigh, entryLevel, farLevel, through } = resolveDrillingSides(
+    segs, openLow, openHigh, axis, source, tLow, tHigh, assumptions,
+  );
   const ordered = fromHigh ? [...segs].reverse() : segs;
-  const entryLevel = fromHigh ? tHigh : tLow;
-  const farLevel = fromHigh ? tLow : tHigh;
-  const through = openLow && openHigh;
 
   const { entrySteps, farSteps, interior } = partitionRunSteps(ordered, rMin, through);
   pushRunRemainders(interior, axis, center, source, remainder);
@@ -264,4 +257,31 @@ export function decomposeRun(
   const counterboreStep = entryOk && entrySteps.length > 0 ? entrySteps[0] : undefined;
   drills.push(makeRunDrill({ axis, fromHigh, center, rMin, minSeg, tLow, tHigh, segs, through, entryLevel, farLevel, source }, counterboreStep));
   pushRunStepDrills(entrySteps, farFromEnd, entryOk, farOk, through, { axis, fromHigh, center, entryLevel, farLevel, source }, counterboreStep, drills);
+}
+
+/** Drilling side, entry/far levels and through-ness; records the
+ *  equal-open-ends assumption when the side is not recoverable from geometry. */
+function resolveDrillingSides(
+  segs: RunSeg[],
+  openLow: boolean,
+  openHigh: boolean,
+  axis: 'Z' | 'X' | 'Y',
+  source: string,
+  tLow: number,
+  tHigh: number,
+  assumptions: EntrySideAssumption[],
+): { fromHigh: boolean; entryLevel: number; farLevel: number; through: boolean } {
+  const fromHigh = openHigh && (!openLow || segs[segs.length - 1].r >= segs[0].r);
+  if (openHigh && openLow && Math.abs(segs[segs.length - 1].r - segs[0].r) <= 1e-9) {
+    assumptions.push({
+      feature: source,
+      statement: `${source}: both ends are open and equal in size, so the drilling side is not recoverable from geometry; drilled from the ${axis === 'Z' ? '+Z (top)' : `+${axis}`} face.`,
+    });
+  }
+  return {
+    fromHigh,
+    entryLevel: fromHigh ? tHigh : tLow,
+    farLevel: fromHigh ? tLow : tHigh,
+    through: openLow && openHigh,
+  };
 }

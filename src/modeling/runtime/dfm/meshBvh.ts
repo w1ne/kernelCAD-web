@@ -310,6 +310,58 @@ export class TriangleBvh {
     return t0 <= t1 ? t0 : Infinity;
   }
 
+  /** Tighten (bestT, bestTri) over the triangles of leaf `node`. */
+  private scanLeaf(
+    node: number,
+    ox: number, oy: number, oz: number,
+    dx: number, dy: number, dz: number,
+    tMin: number, bestT: number, bestTri: number, skipTri: number,
+  ): { bestT: number; bestTri: number } {
+    const lo = this.start[node];
+    const cnt = this.count[node];
+    for (let k = lo; k < lo + cnt; k++) {
+      const s = this.triOrder[k];
+      if (this.srcIndex[s] === skipTri) continue;
+      const t = this.intersectTri(s, ox, oy, oz, dx, dy, dz);
+      if (t > tMin && t < bestT) {
+        bestT = t;
+        bestTri = this.srcIndex[s];
+      }
+    }
+    return { bestT, bestTri };
+  }
+
+  /** Push the two children of internal `node` with the FARTHER child first
+   *  (so it is popped last) and return the updated stack pointer. */
+  private pushNodeChildren(
+    node: number,
+    ox: number, oy: number, oz: number,
+    ix: number, iy: number, iz: number,
+    tMin: number, bestT: number, sp: number,
+  ): number {
+    const stack = this.traversalStack;
+    const tStack = this.traversalTStack;
+    let nearNode = node + 1;
+    let farNode = this.rightChild[node];
+    let nearT = this.nodeEnterT(nearNode, ox, oy, oz, ix, iy, iz, tMin, bestT);
+    let farT = this.nodeEnterT(farNode, ox, oy, oz, ix, iy, iz, tMin, bestT);
+    if (farT < nearT) {
+      const n = nearNode; nearNode = farNode; farNode = n;
+      const t = nearT; nearT = farT; farT = t;
+    }
+    if (farT < Infinity) { // farther child first => popped last
+      stack[sp] = farNode;
+      tStack[sp] = farT;
+      sp++;
+    }
+    if (nearT < Infinity) {
+      stack[sp] = nearNode;
+      tStack[sp] = nearT;
+      sp++;
+    }
+    return sp;
+  }
+
   /** Nearest hit with t > tMin (default 0), optionally skipping one source
    *  triangle (original-mesh index, e.g. the triangle a sample ray was
    *  launched from). Direction need not be normalized; t is in units of
@@ -344,37 +396,12 @@ export class TriangleBvh {
       sp--;
       if (tStack[sp] >= bestT) continue; // bestT shrank since this was pushed
       const node = stack[sp];
-      const cnt = this.count[node];
-      if (cnt > 0) {
-        const lo = this.start[node];
-        for (let k = lo; k < lo + cnt; k++) {
-          const s = this.triOrder[k];
-          if (this.srcIndex[s] === skipTri) continue;
-          const t = this.intersectTri(s, ox, oy, oz, dx, dy, dz);
-          if (t > tMin && t < bestT) {
-            bestT = t;
-            bestTri = this.srcIndex[s];
-          }
-        }
+      if (this.count[node] > 0) {
+        const scanned = this.scanLeaf(node, ox, oy, oz, dx, dy, dz, tMin, bestT, bestTri, skipTri);
+        bestT = scanned.bestT;
+        bestTri = scanned.bestTri;
       } else {
-        let nearNode = node + 1;
-        let farNode = this.rightChild[node];
-        let nearT = this.nodeEnterT(nearNode, ox, oy, oz, ix, iy, iz, tMin, bestT);
-        let farT = this.nodeEnterT(farNode, ox, oy, oz, ix, iy, iz, tMin, bestT);
-        if (farT < nearT) {
-          const n = nearNode; nearNode = farNode; farNode = n;
-          const t = nearT; nearT = farT; farT = t;
-        }
-        if (farT < Infinity) { // farther child first => popped last
-          stack[sp] = farNode;
-          tStack[sp] = farT;
-          sp++;
-        }
-        if (nearT < Infinity) {
-          stack[sp] = nearNode;
-          tStack[sp] = nearT;
-          sp++;
-        }
+        sp = this.pushNodeChildren(node, ox, oy, oz, ix, iy, iz, tMin, bestT, sp);
       }
     }
     return bestTri >= 0 ? { t: bestT, triIndex: bestTri } : null;

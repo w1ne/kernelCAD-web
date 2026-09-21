@@ -27,7 +27,7 @@ import {
   type RenderView,
 } from '../../render/headlessRender';
 import { resolveRenderBaseUrl } from '../../render/playerServer';
-import { buildModelFromFile } from '../../../modeling/buildModel';
+import { buildModelFromFile } from '../../../composition/buildModel';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -759,15 +759,7 @@ export async function renderInspectBundle(input: RenderInspectInput): Promise<Re
   return { exitCode: 0, outputPaths: [manifestPath, ...pngPaths] };
 }
 
-export function renderCommand(): Command {
-  const cmd = new Command('render')
-    .description('Render a .kcad.ts script to multi-view PNG (front, right, top, iso)')
-    // Without positional options, `render`'s own --width/--height/--focus/
-    // --hide (composite mode) greedily claim the identically-named flags
-    // written after `render inspect <file> <outDir>`, so the inspect
-    // subcommand silently never received them (#394).
-    .enablePositionalOptions();
-
+function configureRenderInspectSubcommand(cmd: Command): void {
   cmd
     .command('inspect')
     .description('Render a .kcad.ts script to an inspection bundle directory')
@@ -819,7 +811,9 @@ export function renderCommand(): Command {
       for (const p of r.outputPaths) console.log(`Wrote ${p}`);
       process.exitCode = r.exitCode;
     });
+}
 
+function configureRenderCommandOptions(cmd: Command): void {
   cmd
     .argument('<file>', 'path to .kcad.ts script')
     .option('-o, --out <path>', 'output PNG path (composite mode) or stem with .png suffix (separate mode)')
@@ -896,5 +890,18 @@ export function renderCommand(): Command {
       for (const p of r.outputPaths) console.log(`Wrote ${p}`);
       process.exitCode = r.exitCode;
     });
+}
+
+export function renderCommand(): Command {
+  const cmd = new Command('render')
+    .description('Render a .kcad.ts script to multi-view PNG (front, right, top, iso)')
+    // Without positional options, `render`'s own --width/--height/--focus/
+    // --hide (composite mode) greedily claim the identically-named flags
+    // written after `render inspect <file> <outDir>`, so the inspect
+    // subcommand silently never received them (#394).
+    .enablePositionalOptions();
+
+  configureRenderInspectSubcommand(cmd);
+  configureRenderCommandOptions(cmd);
   return cmd;
 }

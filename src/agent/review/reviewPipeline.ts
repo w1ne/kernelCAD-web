@@ -6,6 +6,7 @@ import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../shared/diagnostics/diagnostic';
 import {
   summarizeMechanismFitness,
+  type MechanismBlockingReason,
   type MechanismFitnessResult,
 } from '../../modeling/mates/mechanismFitness';
 import type { GripperApertureRequest } from '../../modeling/mates/gripperAperture';
@@ -47,7 +48,7 @@ import {
 } from '../../modeling/runtime/interferenceClassification';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { analyzeContactGraph, type ContactGraphResult } from '../../modeling/runtime/contactGraph';
-import type { BuiltModel } from '../../modeling/buildModel';
+import type { BuiltModel } from '../../composition/buildModel';
 import { clearActiveMcpSession, setActiveMcpSession } from '../mcp/activeSession';
 
 export interface ReviewCadInput {
@@ -789,22 +790,22 @@ async function buildRepairContext(
   };
 }
 
-function buildSuggestedRepairPrompt(
+interface RepairFactCandidate {
+  code: string;
+  fact: string;
+}
+
+function collectRepairFactCandidates(
+  blockingReasons: readonly MechanismBlockingReason[],
   diagnostics: readonly ReviewDiagnostic[],
-  fitness?: MechanismFitnessResult,
-  input?: Pick<ReviewCadInput, 'designGoal' | 'preserveInterfaces'>,
-): string {
-  const blockingReasons = fitness?.blockingReasons ?? [];
-  if (diagnostics.length === 0 && blockingReasons.length === 0) {
-    return 'No structured diagnostics were produced. Re-run review_cad after returning an assembly scene from the script.';
-  }
+): RepairFactCandidate[] {
   // Filter out non-actionable informational diagnostics. The prompt has a
   // bounded evidence budget, so make room for every distinct blocker before
   // repeating lower-level instances of the same diagnostic code.
   const actionableDiagnostics = diagnostics.filter((d) =>
     'severity' in d ? d.severity !== 'info' : true,
   );
-  const factCandidates = [
+  return [
     ...blockingReasons.map((reason) => ({
       code: reason.code,
       fact: `- ${reason.code}: ${reason.message} Hint: ${reason.repairHint}`,
@@ -819,6 +820,9 @@ function buildSuggestedRepairPrompt(
       };
     }),
   ];
+}
+
+function selectBoundedRepairFacts(factCandidates: readonly RepairFactCandidate[]): string[] {
   const facts: string[] = [];
   const includedCodes = new Set<string>();
   const includedFacts = new Set<string>();
@@ -840,13 +844,37 @@ function buildSuggestedRepairPrompt(
     facts.push(candidate.fact);
     includedFacts.add(candidate.fact);
   }
-  const repairDirective = fitness === undefined
+  return facts;
+}
+
+function buildRepairDirective(fitness: MechanismFitnessResult | undefined): string {
+  return fitness === undefined
     ? ''
     : `\nRepair mode: ${fitness.repairMode}\nDirective: ${fitness.repairDirective}\n`;
+}
+
+function buildDesignContextBlock(
+  input?: Pick<ReviewCadInput, 'designGoal' | 'preserveInterfaces'>,
+): string {
   const designContext = [
     input?.designGoal ? `Design goal: ${input.designGoal}` : undefined,
     input?.preserveInterfaces?.length ? `Preserve interfaces: ${input.preserveInterfaces.join(', ')}` : undefined,
   ].filter((line): line is string => line !== undefined);
-  const designBlock = designContext.length === 0 ? '' : `\n${designContext.join('\n')}\n`;
+  return designContext.length === 0 ? '' : `\n${designContext.join('\n')}\n`;
+}
+
+function buildSuggestedRepairPrompt(
+  diagnostics: readonly ReviewDiagnostic[],
+  fitness?: MechanismFitnessResult,
+  input?: Pick<ReviewCadInput, 'designGoal' | 'preserveInterfaces'>,
+): string {
+  const blockingReasons = fitness?.blockingReasons ?? [];
+  if (diagnostics.length === 0 && blockingReasons.length === 0) {
+    return 'No structured diagnostics were produced. Re-run review_cad after returning an assembly scene from the script.';
+  }
+  const factCandidates = collectRepairFactCandidates(blockingReasons, diagnostics);
+  const facts = selectBoundedRepairFacts(factCandidates);
+  const repairDirective = buildRepairDirective(fitness);
+  const designBlock = buildDesignContextBlock(input);
   return `Repair the kernelCAD script using these deterministic review facts:${repairDirective}${designBlock}\n${facts.join('\n')}`;
 }
