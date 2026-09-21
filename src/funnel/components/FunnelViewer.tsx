@@ -179,38 +179,54 @@ function boundsAttribute(bounds: MeshArtifactBounds): string {
   return `${bounds.min.join(',')},${bounds.max.join(',')}`;
 }
 
-export function FunnelViewer({
-  code,
-  meshUrl,
-  revision = null,
-  instanceId,
-  onPhaseChange,
-  resetKey = 0,
-}: FunnelViewerProps) {
-  const meshKey = meshUrl ? `${meshUrl}\n${revision ?? ''}\n${String(resetKey)}\n${code}` : '';
-  const [meshResult, setMeshResult] = useState<{
-    key: string;
-    geometries: GeometryResult[] | null;
-    bounds: MeshArtifactBounds | null;
-    fallback: boolean;
-    error: string | null;
-  } | null>(null);
+interface MeshLoadResult {
+  key: string;
+  geometries: GeometryResult[] | null;
+  bounds: MeshArtifactBounds | null;
+  fallback: boolean;
+  error: string | null;
+}
+
+function meshRequestKey(meshUrl: string, revision: number | null, resetKey: number | string, code: string): string {
+  return `${meshUrl}\n${revision ?? ''}\n${String(resetKey)}\n${code}`;
+}
+
+function meshHttpError(body: unknown, status: number): string {
+  if (body && typeof body === 'object' && 'error' in body) {
+    return String((body as { error: unknown }).error);
+  }
+  return `Mesh request failed (${status}).`;
+}
+
+async function fetchRevisionMesh(meshUrl: string, revision: number | null) {
+  const response = await fetch(meshUrl);
+  const body: unknown = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(meshHttpError(body, response.status));
+  return parseMeshArtifact(body, revision);
+}
+
+function meshFailure(key: string, err: unknown, code: string): MeshLoadResult {
+  const message = err instanceof Error ? err.message : String(err);
+  const fallback = code.trim().length > 0;
+  return {
+    key,
+    geometries: null,
+    bounds: null,
+    fallback,
+    error: fallback ? null : message,
+  };
+}
+
+function useRevisionMesh(props: FunnelViewerProps): MeshLoadResult | null {
+  const { code, meshUrl, revision = null, resetKey = 0 } = props;
+  const meshKey = meshUrl ? meshRequestKey(meshUrl, revision, resetKey, code) : '';
+  const [meshResult, setMeshResult] = useState<MeshLoadResult | null>(null);
 
   useEffect(() => {
     if (!meshUrl) return undefined;
     const key = meshKey;
     let cancelled = false;
-    fetch(meshUrl)
-      .then(async (response) => {
-        const body: unknown = await response.json().catch(() => null);
-        if (!response.ok) {
-          const message = body && typeof body === 'object' && body !== null && 'error' in body
-            ? String((body as { error: unknown }).error)
-            : `Mesh request failed (${response.status}).`;
-          throw new Error(message);
-        }
-        return parseMeshArtifact(body, revision);
-      })
+    fetchRevisionMesh(meshUrl, revision)
       .then((artifact) => {
         if (cancelled) return;
         setMeshResult({
@@ -223,72 +239,61 @@ export function FunnelViewer({
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        const message = err instanceof Error ? err.message : String(err);
-        const fallback = code.trim().length > 0;
-        setMeshResult({
-          key,
-          geometries: null,
-          bounds: null,
-          fallback,
-          error: fallback ? null : message,
-        });
+        setMeshResult(meshFailure(key, err, code));
       });
     return () => {
       cancelled = true;
     };
   }, [meshUrl, meshKey, revision, code]);
 
-  const settled = meshResult !== null && meshResult.key === meshKey;
-  const useSourceFallback = settled && meshResult.fallback;
-  const meshError = settled ? meshResult.error : null;
-  const meshGeometries = settled ? meshResult.geometries : null;
-  const cameraBounds = settled ? meshResult.bounds : null;
+  if (!meshResult || meshResult.key !== meshKey) return null;
+  return meshResult;
+}
 
-  if (!meshUrl || useSourceFallback) {
+function MeshStatus(props: { message: string }) {
+  return (
+    <div className="relative w-full h-full bg-code-bg grid place-items-center" data-testid="funnel-viewer-status" role="status">
+      <p className="text-ink-faint font-mono text-sm px-6 text-center">{props.message}</p>
+    </div>
+  );
+}
+
+function LoadedMeshViewer(props: FunnelViewerProps & { geometries: GeometryResult[]; bounds: MeshArtifactBounds }) {
+  return (
+    <div
+      className="relative w-full h-full bg-code-bg"
+      data-mesh-url={props.meshUrl ?? undefined}
+      data-camera-bounds={boundsAttribute(props.bounds)}
+      data-source-suspended="true"
+    >
+      <WorkbenchProvider
+        key={`${props.resetKey ?? 0}:mesh`}
+        initialCode=""
+        suspendSourceExecution
+        externalGeometries={props.geometries}
+      >
+        <FunnelViewerInner onPhaseChange={props.onPhaseChange} revision={props.revision} instanceId={props.instanceId} />
+      </WorkbenchProvider>
+    </div>
+  );
+}
+
+export function FunnelViewer(props: FunnelViewerProps) {
+  const mesh = useRevisionMesh(props);
+  if (!props.meshUrl || mesh?.fallback) {
     return (
-      <div className="relative w-full h-full bg-code-bg" data-mesh-url={meshUrl ?? undefined} data-source-fallback={useSourceFallback ? 'true' : 'false'}>
+      <div className="relative w-full h-full bg-code-bg" data-mesh-url={props.meshUrl ?? undefined} data-source-fallback={mesh?.fallback ? 'true' : 'false'}>
         <SourceViewer
-          code={code}
-          onPhaseChange={onPhaseChange}
-          resetKey={resetKey}
-          revision={revision}
-          instanceId={instanceId}
+          code={props.code}
+          onPhaseChange={props.onPhaseChange}
+          resetKey={props.resetKey ?? 0}
+          revision={props.revision}
+          instanceId={props.instanceId}
         />
       </div>
     );
   }
-
-  if (meshError) {
-    return (
-      <div className="relative w-full h-full bg-code-bg grid place-items-center" data-testid="funnel-viewer-status" role="status">
-        <p className="text-ink-faint font-mono text-sm px-6 text-center">Viewer failed: {meshError}</p>
-      </div>
-    );
-  }
-
-  if (!meshGeometries || !cameraBounds) {
-    return (
-      <div className="relative w-full h-full bg-code-bg grid place-items-center" data-testid="funnel-viewer-status" role="status">
-        <p className="text-ink-faint font-mono text-sm">Loading mesh…</p>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className="relative w-full h-full bg-code-bg"
-      data-mesh-url={meshUrl}
-      data-camera-bounds={boundsAttribute(cameraBounds)}
-      data-source-suspended="true"
-    >
-      <WorkbenchProvider
-        key={`${resetKey}:mesh`}
-        initialCode=""
-        suspendSourceExecution
-        externalGeometries={meshGeometries}
-      >
-        <FunnelViewerInner onPhaseChange={onPhaseChange} revision={revision} instanceId={instanceId} />
-      </WorkbenchProvider>
-    </div>
-  );
+  if (mesh?.error) return <MeshStatus message={`Viewer failed: ${mesh.error}`} />;
+  if (!mesh?.geometries || !mesh.bounds) return <MeshStatus message="Loading mesh…" />;
+  return <LoadedMeshViewer {...props} geometries={mesh.geometries} bounds={mesh.bounds} />;
 }
