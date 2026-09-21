@@ -15,7 +15,7 @@
 
 import type { SceneBackend } from '../sceneBackend';
 import type { PBRMaterial } from '../../../shared/intent/material';
-import { OcctBackend } from './occtBackend';
+import type { OcctBackend } from './occtBackend';
 
 export interface WorldFramePart {
   /** Part name as declared by `assembly.part(name, ...)`. */
